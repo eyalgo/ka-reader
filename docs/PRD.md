@@ -1,8 +1,8 @@
 # PRD — Nozoki 覗き
 
-**Status:** Draft
+**Status:** Settled
 **Owner:** CPO
-**Version:** 1 — initial product definition: a strictly read-only local code workspace viewer
+**Version:** 2 — live refresh enters v1 (the view follows a changing tree, with a bar to match); the read-only promise is stated in full, with the boundary for the tool's own state drawn; the acquisition mechanism is dropped in favour of the single-simple-path product property; switching the viewed repository is named a future direction
 
 > The PRD is the product source of truth: the product-facing **what and why**, read cold by the
 > CTO, Principal PM, and Principal Architect. It is updated in place with versioning (bump the
@@ -28,7 +28,7 @@ highlighting, and the editor shell; a hosting site's web UI shows only pushed st
 local working tree is exactly what inspection is usually about. The pain is sharpest in states
 that must not be perturbed: mid-review of uncommitted work, and a working tree that an automated
 tool or agent is in the middle of changing *(this scenario: added — not in the input beyond its
-"agent workflows" future note; drafted, awaiting owner confirmation)*.
+"agent workflows" future note; owner-confirmed: prd_trail/cycle-1.md)*.
 
 ## Why This
 
@@ -50,12 +50,12 @@ Assumptions).
 
 ## Target Users
 
-*(added — the input names no user; drafted, awaiting owner confirmation)*
+*(added — the input names no user; owner-confirmed: prd_trail/cycle-1.md)*
 
 - Developers inspecting a local repository they do not want to risk touching: reading unfamiliar
   code, checking the state of uncommitted work, verifying what changed.
 - Developers peeking at a working tree that an automated tool or coding agent is actively
-  changing — watching progress without perturbing it.
+  changing — watching progress without perturbing it. This is the driving scenario.
 
 ## Goals
 
@@ -73,15 +73,24 @@ maintainer time, held down by the deliberately small surface (see Assumptions).
 
 ## Success Metrics
 
-- **Read-only integrity:** writes by the product to the target repository — working tree or Git
-  state — under any operation. Bar: zero, absolutely; a single violation is a release-blocking
-  defect. Reckoned at every release. *(the whole-product scope of this bar: changed from the
-  input, which scoped "read-only" to the editor area; drafted, awaiting owner confirmation)*
-- **Time-to-first-success:** on a fresh machine, following only the README, from acquiring the
-  tool to viewing a file of the user's own repository. Bar: ≤ 5 minutes, checked before each
-  release. *(bar value: added — drafted, awaiting owner confirmation)*
+- **Read-only integrity:** violations of the product's promises, under any operation — stated
+  separately, none implied by another: no write to the working tree; no Git mutation (no
+  checkout, stash, index, or commit operation); no telemetry; no non-essential network call.
+  Nothing the product does writes into the repository it is pointed at — its own kept state
+  lives elsewhere on the machine (see Data & Privacy). Bar: zero, absolutely; a single
+  violation is a release-blocking defect. Reckoned at every release. *(whole-product scope:
+  changed from the input, which scoped "read-only" to the editor area; owner-confirmed:
+  prd_trail/cycle-1.md)*
+- **Time-to-first-success:** from a stranger deciding to try Nozoki — by its single install
+  path, whatever that path is — to viewing a file of their own repository. Bar: ≤ 5 minutes,
+  checked before each release. *(bar value: added — not in the input; owner-confirmed:
+  prd_trail/cycle-1.md)*
 - **Zero required configuration:** launching against a repository requires the repository's
   location and nothing else. Bar: pass/fail, checked at each release.
+- **Refresh immediacy:** a change on disk — file content, the tree, or Git state — appears in
+  the view within a few seconds, with no user action. Bar: exact latency threshold TBD, tracked
+  from the first working build. *(added — not in the input; owner-confirmed:
+  prd_trail/cycle-1.md)*
 - **File-switch immediacy:** selecting a file displays its content with no perceived wait. Bar:
   threshold TBD, tracked from the first working build.
 
@@ -93,9 +102,9 @@ maintainer time, held down by the deliberately small surface (see Assumptions).
 2. Mid-work, a developer switches the sidebar to the Git view — branch, changed files, staged
    files at a glance — opens the changed files to read them, and closes certain the tree is
    exactly as they found it.
-3. A developer peeks at a repository an automated tool or agent is working on, checking its
-   progress without perturbing the tree *(added — drafted, awaiting owner confirmation, with
-   Target Users)*.
+3. A developer peeks at a repository an automated tool or agent is working on, watching its
+   progress as the view follows the changing tree — without perturbing it *(added — not in the
+   input; owner-confirmed: prd_trail/cycle-1.md, with Target Users)*.
 
 ## Core Features
 
@@ -103,6 +112,9 @@ maintainer time, held down by the deliberately small surface (see Assumptions).
 - A file tree with changed-file markers and selected-file highlight.
 - A sidebar that toggles between **Files** and **Git**.
 - A Git view: changed files, staged files, branch name, short repository status.
+- **Live refresh:** a change on disk — file content, the tree, or Git state — appears in the
+  view automatically, with no user action *(added — not in the input; owner-confirmed:
+  prd_trail/cycle-1.md)*.
 - Fast file switching inside a familiar workbench-style shell.
 - An empty state that prompts file selection when nothing is open.
 
@@ -111,6 +123,9 @@ maintainer time, held down by the deliberately small surface (see Assumptions).
 - The editor panel is the dominant visual surface; navigation is text-first, icons secondary.
 - Dark and light themes from the start.
 - Instantly familiar to anyone who has used VS Code; no onboarding, no configuration surface.
+- The view follows the tree — there is no refresh control, because the driving scenario is
+  watching progress, and a manual refresh turns the user into a poller *(added — not in the
+  input; owner-confirmed: prd_trail/cycle-1.md)*.
 - Empty state: a simple prompt such as "Select a file to view."
 - v1 is mouse-driven — keyboard navigation is deferred (see Out of Scope), so v1 makes no
   keyboard-accessibility promise.
@@ -120,18 +135,22 @@ maintainer time, held down by the deliberately small surface (see Assumptions).
 ## Scope (In)
 
 v1 is the smallest version that proves the thesis: everything under Core Features, operating
-against a **single local Git repository** on the user's own machine.
+against a **single local Git repository** on the user's own machine — one repository at a time
+is a v1 cut, not a permanent property *(owner-confirmed: prd_trail/cycle-1.md)*.
 
-**Run & distribution posture** *(added — the input never states how the tool runs against a
-repository or how it is acquired; drafted, awaiting owner confirmation)*: Nozoki is a local
-tool — the user launches it on their own machine against one local repository. v1 is acquired
-clone-and-run from the public repository, with packaged distribution a later decision. Nothing
-about the tool's operation leaves the machine.
+**Run posture** *(added — the input never states how the tool runs against a repository;
+owner-confirmed: prd_trail/cycle-1.md)*: Nozoki is a local tool — the user launches it on their
+own machine against one local repository at a time; nothing about its operation leaves the
+machine; there is no hosted mode. There is **exactly one way to get and start Nozoki, and it is
+simple** — one path, not a menu of them: a stranger should not have to choose how to install a
+viewer. The mechanism of that path is not stated here (see Out of Scope); that it must be single
+and simple is the product's, and the time-to-first-success bar measures it.
 
 The full ambition, so the cut reads as deliberate: a complete read-only inspection surface —
-diffs, commit history, search, keyboard-driven navigation — and, further out, a front end for
-watching agent workflows and repository-inspection services (the input's own growth direction).
-v1 cuts to browsing, reading, and status.
+diffs, commit history, search, keyboard-driven navigation, switching which repository is viewed
+without restarting (always one at a time) — and, further out, a front end for watching agent
+workflows and repository-inspection services (the input's own growth direction). v1 cuts to
+browsing, reading, status, and live refresh.
 
 ## Out of Scope
 
@@ -143,8 +162,14 @@ v1 cuts to browsing, reading, and status.
 - **Pane resizing and keyboard navigation** — beyond v1 (input roadmap).
 - **Remote or hosted repositories, and any hosted operation of the tool itself** — the product
   runs locally against local state.
-- **Multiple repositories in one session.**
+- **Changing the viewed repository without restarting** — beyond v1: a named future direction
+  (see Scope), never a v1 capability *(owner-confirmed: prd_trail/cycle-1.md)*.
+- **Several repositories at once** — one at a time is the product; what becomes revisitable
+  later is *which* one, never *how many* *(owner-confirmed: prd_trail/cycle-1.md)*.
 - **Telemetry and any non-essential network call** — see Data & Privacy.
+- **The acquisition and start mechanism** — how Nozoki is obtained and launched is not stated
+  here; the product property is only that there is exactly one such path and it is simple (see
+  Scope) *(owner-confirmed: prd_trail/cycle-1.md)*.
 - The input's implementation-stack recommendations (editor component, UI framework, styling
   approach) are not carried here: implementation choices, not product properties.
 - The input's three-phase delivery sequencing is not carried here: delivery, not product. Its
@@ -160,7 +185,7 @@ v1 cuts to browsing, reading, and status.
   maintainer time; the deliberately small surface is the sustainability strategy, and a version
   that can no longer be maintained is archived visibly rather than left looking staffed
   *(added — instance doctrine, not in the input)*.
-- **Licence:** MIT *(added — not in the input; drafted, awaiting owner confirmation; recorded
+- **Licence:** MIT *(added — not in the input; owner-confirmed: prd_trail/cycle-1.md; recorded
   with its reason at first release)*.
 - **Regulatory posture:** published as free, non-monetized open source outside any commercial
   activity, Nozoki is outside the EU Cyber Resilience Act's scope *(verified (external):
@@ -170,7 +195,8 @@ v1 cuts to browsing, reading, and status.
 
 ## Dependencies / Integrations (Conceptual)
 
-- The local filesystem — the repository's files and folders.
+- The local filesystem — the repository's files and folders, read continuously enough that the
+  view follows changes on disk.
 - Git — the product reads repository state (branch, changed files, staged files); it performs no
   Git operation that alters that state.
 
@@ -179,8 +205,11 @@ v1 cuts to browsing, reading, and status.
 - Nozoki stores nothing about its users: no accounts, no identity, no behavioural data.
 - No telemetry and no non-essential network calls — the tool's operation stays entirely on the
   user's machine *(added — instance doctrine default, not in the input)*.
-- The product reads only the repository it is pointed at and persists nothing of it. Any
-  preference it keeps (such as theme choice) is stored locally and holds nothing personal.
+- The product reads only the repository it is pointed at and persists nothing of it.
+- Nozoki may keep its own state — preferences such as theme choice, window state, anything it
+  remembers between sessions — and that lives where the tool keeps its own data on the machine,
+  **never inside the repository it is pointed at**. It holds nothing personal. *(boundary:
+  owner-confirmed: prd_trail/cycle-1.md)*
 
 ## Risks
 
@@ -200,4 +229,4 @@ v1 cuts to browsing, reading, and status.
 
 ## Open Questions
 
-None — every unsettled call is drafted in place above and marked *awaiting owner confirmation*.
+None.
