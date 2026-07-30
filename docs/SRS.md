@@ -1,8 +1,8 @@
 # SRS — Nozoki 覗き
 
-**Status:** Draft
+**Status:** Settled
 **Owner:** CTO
-**Version:** 1 — first authoring, derived from PRD v3 (Settled) and bounded by the project's declared Agari
+**Version:** 2 — folded the owner's cycle-1 answers (`docs/srs_trail/cycle-1.md`): the diff/history surface widened by override (FR-17 distinguishes staged from unstaged, FR-22 adds the per-commit diff, AC-12 widened, history filtering placed outside done); C-3, FR-10, C-6, and C-7 confirmed as drafted; two stale FR-18 pointers corrected to FR-19 (RN-13)
 
 > The SRS is the technical source of truth: the system-level **what**, derived from the PRD and
 > read cold by the Principal PM (Delivery Plan / FDR) and the Principal Architect (ADR / NFDR).
@@ -41,7 +41,9 @@ forgotten:
   v1, and the Agari places them outside done; Nozoki is done without them. One accepted
   consequence, carried from the Agari: the product is mouse-driven and makes no
   keyboard-accessibility promise — with keyboard navigation outside the terminus, that absence is
-  permanent, not deferred.
+  permanent, not deferred. History filtering and search stay outside done with them — adjacent to
+  the sidebar search, and placed out by the owner when widening the history surface *(owner:
+  `docs/srs_trail/cycle-1.md` §2.2)*.
 - **A front end for agent workflows and repository-inspection services** — the PRD's further-out
   growth direction; the Agari names it as where a next product might go, not where this one
   docks. Consequently this system exposes no programmatic surface (§5.2).
@@ -50,7 +52,7 @@ forgotten:
 any version — the product has no write path to the repository; Git operations (staging,
 committing, pushing, branch switching, discarding); remote or hosted repositories and any hosted
 operation of the tool; several repositories at once — one at a time is the product, and only
-*which* one becomes revisitable (FR-18); telemetry and non-essential network calls.
+*which* one becomes revisitable (FR-19); telemetry and non-essential network calls.
 
 ## 3. Functional Requirements
 
@@ -62,7 +64,7 @@ operation of the tool; several repositories at once — one at a time is the pro
   configuration", Scope (In) run posture)*
 - **FR-2:** In v1 the repository to view is supplied when the system starts; the system offers no
   in-product way to choose or change it. Changing the viewed repository from inside the product
-  is FR-18, beyond v1. *(traces to: PRD Out of Scope "Changing the viewed repository without
+  is FR-19, beyond v1. *(traces to: PRD Out of Scope "Changing the viewed repository without
   restarting"; see RN-1)*
 - **FR-3:** Pointed at a path that is not a readable local Git repository, the system says so
   clearly and touches nothing. *(traces to: PRD Scope (In) "single local Git repository"; see
@@ -89,7 +91,8 @@ operation of the tool; several repositories at once — one at a time is the pro
   *(traces to: PRD Out of Scope "Editing, permanently")*
 - **FR-10:** A file that cannot be rendered as text (binary or undecodable content) is presented,
   not rendered: a clear placeholder states why the content is not shown, the shell remains fully
-  usable, and the file is not modified. *(choice to confirm — see `SRS_open_issues.md` §2.3)*
+  usable, and the file is not modified. *(owner-confirmed: `docs/srs_trail/cycle-1.md` §2.3; see
+  RN-14)*
 
 ### 3.4 Sidebar & Git view
 
@@ -114,15 +117,20 @@ operation of the tool; several repositories at once — one at a time is the pro
 
 ### 3.6 Beyond v1, inside the terminus
 
-- **FR-17:** *(beyond v1)* For any file the Git view reports as changed, the system presents the
-  difference between its working state and its last committed state, read-only. *(traces to: PRD
-  Scope (In) full-ambition "diffs"; choice to confirm — see `SRS_open_issues.md` §2.2)*
-- **FR-18:** *(beyond v1)* The system presents the repository's commit history — for each commit
-  its identifier, message, author, and date — read-only. *(traces to: PRD Scope (In)
-  full-ambition "commit history"; choice to confirm — see `SRS_open_issues.md` §2.2)*
+- **FR-17:** *(beyond v1)* For any file the Git view reports as changed, the system presents its
+  changes read-only, distinguishing staged changes from unstaged ones rather than collapsing both
+  into a single working-vs-committed view. *(traces to: PRD Scope (In) full-ambition "diffs";
+  widened by owner override: `docs/srs_trail/cycle-1.md` §2.2; see RN-13)*
+- **FR-18:** *(beyond v1)* The system presents the repository's commit history as a read-only
+  list — for each commit its identifier, message, author, and date. *(traces to: PRD Scope (In)
+  full-ambition "commit history"; owner-confirmed as a list: `docs/srs_trail/cycle-1.md` §2.2)*
 - **FR-19:** *(beyond v1)* The user can switch which repository is viewed without restarting the
   system — always exactly one at a time, never several at once. *(traces to: PRD Scope (In)
   "one repository at a time is a v1 cut", Out of Scope "Several repositories at once")*
+- **FR-22:** *(beyond v1)* Selecting a commit in the history presents what that commit changed,
+  read-only, in the same diff presentation FR-17 requires. *(traces to: PRD Scope (In)
+  full-ambition "diffs, commit history"; added by owner override: `docs/srs_trail/cycle-1.md`
+  §2.2; see RN-13)*
 
 ### 3.7 Appearance & own state
 
@@ -273,19 +281,20 @@ see RN-8)*
   at most one widely-available prerequisite, which the README's first screen names; the ≤ 5-minute
   clock (NFR-13) includes installing that prerequisite when absent. The concrete channel is
   fixed in the SDD, where the runtime is chosen (RN-7). *(traces to: PRD Scope (In) single-path
-  property, Goals "Pick-it-up adoption"; choice to confirm — see `SRS_open_issues.md` §2.1)*
+  property, Goals "Pick-it-up adoption"; owner-confirmed: `docs/srs_trail/cycle-1.md` §2.1; see
+  RN-12)*
 - **C-4:** Licence: MIT at first release, recorded with its reason; the code is open source.
   *(traces to: PRD Assumptions "Licence: MIT")*
 - **C-5:** Every release carries the licence notices of the third-party components it ships.
   *(owner decision: RN-6)*
 - **C-6:** From the first 1.0.0 release, releases are semantically versioned and a breaking
   change to the product's public contract requires a major version; before 1.0.0, that anything
-  may change is stated plainly rather than left implied. *(choice to confirm — see
-  `SRS_open_issues.md` §2.4)*
+  may change is stated plainly rather than left implied. *(owner-confirmed:
+  `docs/srs_trail/cycle-1.md` §2.4; see RN-15)*
 - **C-7:** Before the first public release, a private vulnerability-reporting channel is enabled
   on the public repository, and a SECURITY.md names where to report and what response to expect,
   consistent with the README's stated support posture. *(traces to: PRD Risks "Maintenance is a
-  standing liability"; choice to confirm — see `SRS_open_issues.md` §2.5)*
+  standing liability"; owner-confirmed: `docs/srs_trail/cycle-1.md` §2.5; see RN-16)*
 - **C-8:** UI language: English. *(traces to: PRD UX Notes)*
 - **C-9:** The README's first screen is product surface and carries: what the tool does in one
   sentence, one install path, one copy-paste example, and what the tool will and will not touch.
@@ -325,8 +334,9 @@ see RN-8)*
   timed manual walk — deliberately not automated, because the thing measured is a stranger's
   path. *(covers: NFR-13, C-3, C-9)*
 - **AC-11:** Both themes are present and usable from the first release. *(covers: FR-20)*
-- **AC-12:** At the closing release, the diff view, commit history, and repository switching are
-  present, read-only, and AC-1 – AC-3 still pass with them exercised. *(covers: FR-17 – FR-19)*
+- **AC-12:** At the closing release, the diff view (staged distinguished from unstaged), the
+  commit history with its per-commit diffs, and repository switching are present, read-only, and
+  AC-1 – AC-3 still pass with them exercised. *(covers: FR-17 – FR-19, FR-22)*
 - **AC-13:** After a session in which preferences changed, new or changed files exist only in the
   tool's own data location — none under the repository path — and inspection finds nothing
   personal and no repository content in them. *(covers: FR-21, DR-5)*
@@ -371,8 +381,8 @@ see RN-8)*
   routed the mechanism to the CTO (`docs/prd_trail/cycle-1.md` §2.2), and at the SRS tier naming
   a channel would fix the runtime choice inside the *what*; this SRS binds the path by
   requirement instead (C-3, NFR-13, AC-10), and the one product-visible part of the call — that
-  the path is not build-from-source and what it may presume installed — is drafted as a choice
-  to confirm *(re: C-3)*.
+  the path is not build-from-source and what it may presume installed — was drafted as a choice
+  and confirmed by the owner (RN-12) *(re: C-3)*.
 - **RN-8:** A seventh NFR category, Usability & Adoption, was added — *because* the PRD's
   headline success metrics (time-to-first-success, zero configuration, no learning curve) are
   usability bars with no home among the six standard categories *(re: NFR-13 – NFR-15)*.
@@ -388,11 +398,34 @@ see RN-8)*
   *because* the driving scenario guarantees transient unreadable states (a file mid-write, a Git
   lock), so failure containment is a reliability requirement, not an implementation nicety; the
   minimal presentation is specified *(re: NFR-3; PRD source: Key Use Case 3)*.
+- **RN-12:** C-3's bounds confirmed as drafted — no build from source, at most one
+  widely-available prerequisite named on the README's first screen, its installation counted
+  inside the ≤ 5-minute bar; the concrete channel stays the SDD's. The owner kept the bound
+  knowing the likely prerequisite is a runtime whose cold install can consume most of that bar —
+  the pressure toward a self-contained artifact is intended, not accidental *(re: C-3, NFR-13,
+  AC-10; owner confirmation: `docs/srs_trail/cycle-1.md` §2.1)*.
+- **RN-13:** The diff and commit-history surface was widened by owner override — the diff
+  distinguishes staged changes from unstaged ones (FR-17), selecting a commit presents what it
+  changed (FR-22), and the history stays a read-only list (FR-18); history filtering and search
+  stay outside done, adjacent to the sidebar search the Agari excludes *(re: FR-17, FR-18,
+  FR-22, AC-12, §2; owner override: `docs/srs_trail/cycle-1.md` §2.2)*. Propagating the override
+  surfaced two pointers naming FR-18 as the repository-switch requirement — FR-2 and §2's
+  one-at-a-time line — while that requirement is FR-19; both now point at FR-19. A reference
+  correction forced by FR-18's changed content, not a re-derivation of either requirement.
+- **RN-14:** FR-10's presentation of unrenderable files confirmed as drafted — a placeholder
+  stating why the content is not rendered; no hex viewer, no image preview, nothing hidden from
+  the tree *(re: FR-10, AC-5; owner confirmation: `docs/srs_trail/cycle-1.md` §2.3)*.
+- **RN-15:** C-6 confirmed — recorded by the owner as a consequence of the Agari rather than a
+  fresh call: done already requires a public MIT release at 1.0.0 or later with the
+  semantic-versioning promise in force, so C-6 is that condition's realization here *(re: C-6,
+  AC-14; owner confirmation: `docs/srs_trail/cycle-1.md` §2.4)*.
+- **RN-16:** C-7 confirmed as drafted — private vulnerability reporting enabled and a
+  SECURITY.md in place before the first public release *(re: C-7, AC-14; owner confirmation:
+  `docs/srs_trail/cycle-1.md` §2.5)*.
 
 ---
 
 ## Open Questions
 
-None — every unsettled call is drafted into the body and listed in `SRS_open_issues.md` as a
-choice to confirm; the numeric thresholds are settled-as-process (RN-4), awaiting a build, not an
-answer.
+None — the owner's cycle-1 answers (`docs/srs_trail/cycle-1.md`) settled every drafted choice;
+the numeric thresholds are settled-as-process (RN-4), awaiting a build, not an answer.
