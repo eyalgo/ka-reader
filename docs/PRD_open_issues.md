@@ -48,18 +48,20 @@ a choice to confirm.
   Local-only fits that frame and the instance's no-network commitment; clone-and-run is the
   smallest v1 distribution. The mechanism by which the app reaches files and Git state is
   downstream — this settles only what the product *is*.
-- **Confirm or override:** **Overridden on acquisition; confirmed on the rest.** Local-only, one
-  repository at a time, nothing about its operation leaving the machine, and no hosted mode: all
-  confirmed. **But nozoki is an installed application, not a repository you clone and run.** You
-  launch the app, and you open a repository *from inside it* — an Open-Folder-style action and a
-  recent list — rather than naming a path at launch. Drop clone-and-run from v1; v1 is acquired as
-  a downloadable, installable build. Three things follow:
-  - **The source stays public.** The build is how a stranger *gets* nozoki, not a replacement for
-    the public repository — the code is open-sourced, and the README remains the product's front
-    door.
-  - **No auto-update.** It would be a non-essential network call, which the product promises not to
-    make. A new version means downloading a new build.
-  - The 5-minute bar in 2.4 is restated against this shape (download → install → open a repo).
+- **Confirm or override:** **Confirmed on what is product; the acquisition mechanism is struck as
+  not the PRD's to settle.**
+  - **Confirmed:** nozoki is local — it runs on the user's own machine, against one repository at a
+    time; nothing about its operation leaves the machine; there is no hosted mode.
+  - **Struck:** *how* nozoki is obtained and started — clone-and-run, a package, an installed
+    build. **That is a CTO call and belongs to the SRS, not the PRD.** Remove the clone-and-run
+    sentence from Scope (In) rather than replacing it with a different mechanism.
+  - **What the PRD keeps instead, as a product property:** there is **exactly one** way to get and
+    start nozoki, and it is simple. One path, not a menu of them — a stranger should not have to
+    choose how to install a viewer. How that is achieved is the CTO's; that it must be single and
+    simple is the product's, and the time-to-first-success bar in 2.4 is what measures it.
+  - Note for the SRS, not a product decision: the drafted clone-and-run shape sits in tension with
+    that bar and with the "pick-it-up adoption" goal, since it asks for a toolchain, a clone, a
+    dependency install and a run. Flagging the tension, not resolving it here.
 
 ### 2.3 The read-only promise widened to the whole product
 - **Drafted into the PRD:** the product never writes to the repository — working tree or Git
@@ -75,10 +77,10 @@ a choice to confirm.
   rest — no write to the working tree, no Git mutation (no checkout, stash, index or commit
   operation), no telemetry, no non-essential network call.
   **Where the line falls:** nozoki writes nothing *into the repository it is pointed at*, under any
-  operation. It does keep its own state — preferences, window state, the recent-repositories list
-  the app now needs — and that lives in its own application data location on the machine, never
-  inside the repository. Say this in the PRD; leaving it implicit is how a stranger discovers a
-  promise that was never made.
+  operation. It may keep its own state — preferences, window state, anything it remembers between
+  sessions — and that lives wherever it keeps its own data on the machine, never inside the
+  repository. Say this in the PRD; leaving it implicit is how a stranger discovers a promise that
+  was never made.
 
 ### 2.4 Success bars
 - **Drafted into the PRD:** time-to-first-success ≤ 5 minutes (fresh machine, README only),
@@ -88,10 +90,10 @@ a choice to confirm.
   domain's time-to-first-success framing at a level a clone-and-run tool should comfortably
   make; it is a starting bar to tighten with evidence, not a law.
 - **Confirm or override:** **Confirmed — with one restatement and one addition.**
-  - **Restate time-to-first-success against the installed-app shape (2.2):** measure from
-    downloading the build to viewing a file of the user's own repository. "Fresh machine, README
-    only" was framed for clone-and-run. ≤ 5 minutes stands, now as a generous ceiling rather than a
-    stretch — which is what a bar should be.
+  - **Restate time-to-first-success without naming a mechanism (2.2):** measure from a stranger
+    deciding to try nozoki, by whatever its single install path turns out to be, to viewing a file
+    of their own repository. "Fresh machine, README only" presumed clone-and-run; the bar should
+    outlive whatever the CTO picks. ≤ 5 minutes stands.
   - **Add a refresh bar.** Refresh is in v1 (2.1) and the driving scenario is watching a tree that
     something else is changing, yet no metric measures whether the view keeps up. Add: a change on
     disk appears in the view within a few seconds, with no user action. Without it, the scenario
@@ -108,11 +110,11 @@ a choice to confirm.
   surface; copyleft would serve a downstream-source-freedom goal this product doesn't claim.
 - **Confirm or override:** **Confirmed — MIT.** The reasoning holds: a local read-only viewer has
   essentially no patent-sensitive surface, so Apache-2.0's express patent grant buys little here,
-  and copyleft would serve a goal nozoki does not claim. **The code is open-sourced** — the
-  installed-build decision in 2.2 is about distribution, not about closing the source.
-  Not a PRD call, recorded so it is not lost: an installed application bundles third-party
-  components, and their licences ride along — the release has to carry their notices. That is a
-  release obligation for the SRS/SDD, not a product property.
+  and copyleft would serve a goal nozoki does not claim. **The code is open-sourced**, and nothing
+  about how it is distributed (2.2) changes that.
+  Not a PRD call, recorded so it is not lost: whatever nozoki ships as, it will bundle third-party
+  components whose licences ride along — the release has to carry their notices. That is a release
+  obligation for the SRS/SDD, not a product property.
 
 ## 3. Directives — an external action the owner confirms as a gate
 
