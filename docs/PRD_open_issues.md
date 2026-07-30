@@ -52,6 +52,14 @@ a choice to confirm.
   not the PRD's to settle.**
   - **Confirmed:** nozoki is local — it runs on the user's own machine, against one repository at a
     time; nothing about its operation leaves the machine; there is no hosted mode.
+  - **One repository at a time is a v1 cut, not a permanent property.** **Switching which
+    repository you are looking at — picking a different one from inside the product — is a named
+    future direction.** Still one at a time, never several at once: the change is that the choice
+    becomes revisitable without restarting. Put it in the ambition paragraph in Scope (In) beside
+    diffs, history and search, and make sure Out of Scope reads as *"changing repository without
+    restarting — beyond v1"* rather than leaving "single local Git repository" sounding permanent.
+    Recorded here so the SRS knows v1 must not design the single repository in so deeply that
+    switching becomes a rewrite.
   - **Struck:** *how* nozoki is obtained and started — clone-and-run, a package, an installed
     build. **That is a CTO call and belongs to the SRS, not the PRD.** Remove the clone-and-run
     sentence from Scope (In) rather than replacing it with a different mechanism.
