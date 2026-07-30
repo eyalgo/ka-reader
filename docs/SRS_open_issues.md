@@ -39,7 +39,11 @@ a choice to confirm.
   bounds; NFR-13 / AC-10 stay and become the only guard on the path's simplicity — the tension
   the owner flagged in cycle 1 returns and must survive the timed per-release check on evidence;
   C-9's "one install path" line on the README first screen widens to carry toolchain steps.
-- **Confirm or override:**
+- **Confirm or override:** **CONFIRM as drafted.** No build from source, at most one widely-available
+  prerequisite, and installing it counts inside the ≤ 5-minute bar. The channel stays the SDD's.
+  - *Note surfaced when answering:* with a TypeScript stack the one prerequisite is likely a runtime
+    whose cold install can consume most of the five minutes. The bound is kept knowingly, and it
+    pushes the SDD toward a self-contained artifact — that pressure is intended, not accidental.
 
 ### 2.2 The minimal diff and commit-history surface (beyond v1, inside the terminus)
 
@@ -56,7 +60,19 @@ a choice to confirm.
 - **If overridden** (richer surfaces — staged-vs-unstaged diffs, per-commit diffs, history
   filtering): FR-17 / FR-18 reword accordingly and AC-12 widens; nothing else in the SRS depends
   on the cut.
-- **Confirm or override:**
+- **Confirm or override:** **OVERRIDE — widen on two axes.** Keep the commit history a read-only
+  list, and add:
+  - **Per-commit diff** — selecting a commit shows what that commit changed, reusing the diff view
+    FR-17 already requires.
+  - **Staged vs unstaged** — the diff distinguishes staged changes from unstaged ones, rather than
+    collapsing both into one working-vs-committed view. Read-only throughout: showing the staged
+    state is not staging anything, and no Git mutation is introduced.
+
+  **History filtering / search stays out** — it is adjacent to the sidebar search the Agari
+  deliberately places outside the dock.
+  - *Reason:* the drafted cut lets a reader see that a commit happened but never what it did, which
+    for an inspection tool is a history that cannot be inspected. This is inside the dock, so
+    whatever is settled here is permanent.
 
 ### 2.3 Files that cannot be rendered as text are presented, not rendered
 
@@ -70,7 +86,8 @@ a choice to confirm.
 - **If overridden** (e.g. render images, or hide binary files from selection): FR-10 rewords;
   AC-5's read path gains the chosen behavior; hiding files from selection would also touch FR-5
   (the tree presents the repository's files) and needs a stated exclusion rule.
-- **Confirm or override:**
+- **Confirm or override:** **CONFIRM as drafted.** A placeholder stating why the content is not
+  rendered. No hex viewer, no image preview, nothing hidden from the tree.
 
 ### 2.4 Semantic versioning from 1.0.0 as a stated constraint
 
@@ -87,7 +104,12 @@ a choice to confirm.
 - **If overridden** (no versioning promise in the SRS): C-6 drops and AC-14 narrows; the Agari's
   closing condition would then have no realization in the technical definition, which I would
   record as an open gap rather than paper over.
-- **Confirm or override:**
+- **Confirm or override:** **CONFIRM as drafted.** Recorded as a consequence of the Agari rather than
+  a fresh call: done already requires a public MIT release at 1.0.0 or later, so C-6 is that
+  condition's realization here.
+  - *Follow-up, not settled here:* the PRD carries no versioning statement at all, so the promise
+    lives in the Agari and the SRS but not in the product source of truth. Folding it upstream is a
+    PRD correction cycle — its own move, carried forward rather than opened now.
 
 ### 2.5 A private vulnerability-reporting channel and SECURITY.md before the first public release
 
@@ -105,4 +127,5 @@ a choice to confirm.
 - **If overridden:** C-7 drops and AC-14 narrows; the maintenance-risk mitigation stays
   README-only, and the first vulnerability report may arrive as a public disclosure — accepted
   knowingly rather than by omission.
-- **Confirm or override:**
+- **Confirm or override:** **CONFIRM as drafted.** Private vulnerability reporting enabled and a
+  `SECURITY.md` in place before the first public release.
