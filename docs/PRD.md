@@ -2,7 +2,7 @@
 
 **Status:** Settled
 **Owner:** CPO
-**Version:** 2 — live refresh enters v1 (the view follows a changing tree, with a bar to match); the read-only promise is stated in full, with the boundary for the tool's own state drawn; the acquisition mechanism is dropped in favour of the single-simple-path product property; switching the viewed repository is named a future direction
+**Version:** 3 — the product's identity no longer borrows VS Code's: it is stated in its own terms (a familiar editor-style shell), and the usability bar is reset — anyone who can find their way around a repository on GitHub and follow a README can use it, no editor experience required; the goals and metrics state only the property that the sole input is which repository to view, never when or how it is supplied
 
 > The PRD is the product source of truth: the product-facing **what and why**, read cold by the
 > CTO, Principal PM, and Principal Architect. It is updated in place with versioning (bump the
@@ -13,11 +13,11 @@
 
 ## Purpose
 
-Nozoki (覗き — *"to peek / peer in"*) is a lightweight code workspace viewer: a stripped-down,
-VS Code-like shell for browsing a project's files and inspecting its Git status, in which nothing
-can be changed. It is optimized for inspection rather than authoring — look, don't touch. It
-exists because inspecting a working tree today is done with tools built for *authoring*, whose
-safety against accidental change is discipline, not guarantee.
+Nozoki (覗き — *"to peek / peer in"*) is a lightweight code workspace viewer: a stripped-down
+shell for browsing a project's files and inspecting its Git status, in which nothing can be
+changed. It is optimized for inspection rather than authoring — look, don't touch. It exists
+because inspecting a working tree today is done with tools built for *authoring*, whose safety
+against accidental change is discipline, not guarantee.
 
 ## Problem Statement
 
@@ -32,21 +32,21 @@ tool or agent is in the middle of changing *(this scenario: added — not in the
 
 ## Why This
 
-The nearest alternative is opening the repository in VS Code and being careful. VS Code can mark
-paths read-only, but that is opt-in per-path configuration, not a whole-repository guarantee
-*(verified (external): https://code.visualstudio.com/updates/v1_79 — covers: the read-only
-settings and their per-path scope)*, and its Restricted Mode limits code execution while still
-permitting editing *(verified (external):
-https://code.visualstudio.com/docs/editing/workspaces/workspace-trust — the FAQ states text
-editing is always supported)*. Nozoki's edge is that the guarantee **is** the product: there is
-no write path to configure away. Beside that, it is lighter than an editor — nothing to
-configure, nothing installed into the repository.
+The nearest alternative is opening the repository in a full code editor and being careful. An
+editor's protections do not add up to the guarantee: VS Code's read-only settings are opt-in
+per-path configuration, not a whole-repository guarantee *(verified (external):
+https://code.visualstudio.com/updates/v1_79 — covers: the read-only settings and their per-path
+scope)*, and its Restricted Mode limits code execution while still permitting editing *(verified
+(external): https://code.visualstudio.com/docs/editing/workspaces/workspace-trust — the FAQ
+states text editing is always supported)*. Nozoki's edge is that the guarantee **is** the
+product: there is no write path to configure away. Beside that, it is lighter than an editor —
+nothing to configure, nothing installed into the repository.
 
 Stated honestly: for a developer content to rely on their own care, the full editor they already
 have is good enough. The edge exists only where the no-write guarantee matters — trees that must
-not be perturbed, or wanting the certainty itself. And the bet that a familiar editor-like shell
-is what makes inspection comfortable is unproven; it is the product's central UX assumption (see
-Assumptions).
+not be perturbed, or wanting the certainty itself. And the bet that a conventional editor-style
+layout is what makes inspection comfortable is unproven; it is the product's central UX
+assumption (see Assumptions).
 
 ## Target Users
 
@@ -65,8 +65,10 @@ Assumptions).
   repository in minutes, guided by the README alone. The README's first screen is product
   surface: what the tool does in one sentence, one install path, one copy-paste example, and
   what the tool will and will not touch *(added — instance doctrine, not in the input)*.
-- **Zero-config familiarity** — anyone who has used VS Code needs no learning; launching
-  requires naming a repository and nothing else.
+- **No learning curve** — anyone who can find their way around a repository on GitHub and follow
+  a README can use Nozoki. No editor experience required, no onboarding, and no configuration of
+  any kind: no settings, no project file, no setup step. The only input it ever needs is which
+  repository to view *(owner-confirmed: prd_trail/cycle-2.md)*.
 
 No revenue applies: Nozoki is free, non-commercial open source by design; its cost side is
 maintainer time, held down by the deliberately small surface (see Assumptions).
@@ -85,8 +87,9 @@ maintainer time, held down by the deliberately small surface (see Assumptions).
   path, whatever that path is — to viewing a file of their own repository. Bar: ≤ 5 minutes,
   checked before each release. *(bar value: added — not in the input; owner-confirmed:
   prd_trail/cycle-1.md)*
-- **Zero required configuration:** launching against a repository requires the repository's
-  location and nothing else. Bar: pass/fail, checked at each release.
+- **Zero required configuration:** the only input Nozoki requires is which repository to view —
+  no settings, no project file, no setup step. Bar: pass/fail, checked at each release.
+  *(owner-confirmed: prd_trail/cycle-2.md)*
 - **Refresh immediacy:** a change on disk — file content, the tree, or Git state — appears in
   the view within a few seconds, with no user action. Bar: exact latency threshold TBD, tracked
   from the first working build. *(added — not in the input; owner-confirmed:
@@ -122,7 +125,8 @@ maintainer time, held down by the deliberately small surface (see Assumptions).
 
 - The editor panel is the dominant visual surface; navigation is text-first, icons secondary.
 - Dark and light themes from the start.
-- Instantly familiar to anyone who has used VS Code; no onboarding, no configuration surface.
+- Instantly usable without instruction — the layout explains itself; no onboarding, no
+  configuration surface *(owner-confirmed: prd_trail/cycle-2.md)*.
 - The view follows the tree — there is no refresh control, because the driving scenario is
   watching progress, and a manual refresh turns the user into a poller *(added — not in the
   input; owner-confirmed: prd_trail/cycle-1.md)*.
@@ -179,8 +183,9 @@ browsing, reading, status, and live refresh.
 
 - Users can acquire and launch a local developer-style tool; for the v1 audience (developers)
   this is taken as given.
-- **The familiarity thesis:** a VS Code-like shell is what makes inspection comfortable — the
-  product's central UX assumption, unproven. If false, the product needs rethinking, not tuning.
+- **The familiarity thesis:** a conventional editor-style layout — a file tree beside a reading
+  panel — is what makes inspection comfortable. The product's central UX assumption, unproven;
+  if false, the product needs rethinking, not tuning. *(owner-confirmed: prd_trail/cycle-2.md)*
 - Nozoki is free, non-commercial open source; no revenue exists or is intended. The cost is
   maintainer time; the deliberately small surface is the sustainability strategy, and a version
   that can no longer be maintained is archived visibly rather than left looking staffed
@@ -217,9 +222,9 @@ browsing, reading, status, and live refresh.
   refreshed index, a lock file, a cache dropped into the tree — breaks the defining promise, and
   for a stranger once is permanently. Shows up as modified files or changed repository state in
   the target. Treated as release-blocking (see Success Metrics).
-- **Familiarity backfires.** Looking like VS Code invites expecting VS Code — editing, search,
-  extensions. Shows up as instant abandonment or standing pressure to widen scope. The response
-  is scope discipline, not accommodation.
+- **Familiarity backfires.** Looking like an editor invites expecting an editor — editing,
+  search, extensions. Shows up as instant abandonment or standing pressure to widen scope. The
+  response is scope discipline, not accommodation.
 - **"Careful enough" wins.** If the no-write guarantee doesn't matter to enough developers, the
   full editor they already have is good enough and adoption stalls. This is the Why This edge
   failing, not a marketing problem.
