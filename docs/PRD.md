@@ -2,7 +2,7 @@
 
 **Status:** Settled
 **Owner:** CPO
-**Version:** 6 — v1's accessibility posture beyond the mouse-driven line is settled: v1 makes no assistive-technology promise; its accessibility surface is what the product already carries
+**Version:** 6 — v1 makes no assistive-technology promise beyond the mouse-driven line; its accessibility surface is what the product already carries
 
 > The PRD is the product source of truth: the product-facing **what and why**, read cold by the
 > CTO, the CDO, Principal PM, and Principal Architect. It is updated in place with versioning (bump the
