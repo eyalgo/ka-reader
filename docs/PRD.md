@@ -1,8 +1,8 @@
 # PRD — Nozoki 覗き
 
-**Status:** Draft
+**Status:** Settled
 **Owner:** CPO
-**Version:** 5 — `## UX Notes` now states the experience whole for the reader who designs from it: the end-to-end path from arrival to leaving, the live and failure states (empty, watching, vanished file, mid-operation repository, non-repository, non-text file) and the movement between them, the view-never-lies rule, and what must feel effortless; v1's accessibility posture beyond the mouse-driven line is drafted, awaiting confirmation
+**Version:** 6 — v1's accessibility posture beyond the mouse-driven line is settled: v1 makes no assistive-technology promise; its accessibility surface is what the product already carries
 
 > The PRD is the product source of truth: the product-facing **what and why**, read cold by the
 > CTO, Principal PM, and Principal Architect. It is updated in place with versioning (bump the
@@ -201,8 +201,7 @@ Git expert:
   keyboard-accessibility promise.
 - Beyond that line, v1 makes no assistive-technology promise: its accessibility surface is
   what the product already carries — two themes, text-first navigation — kept small with the
-  rest of the surface *(added — not in the input; drafted this cycle, awaiting confirmation:
-  PRD_open_issues.md §2.1)*.
+  rest of the surface *(added — not in the input; owner-confirmed: prd_trail/cycle-5.md)*.
 - UI language: English *(added — defaulted, not routed: the instance's products and their
   documentation are English-first)*.
 
