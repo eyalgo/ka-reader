@@ -2,7 +2,7 @@
 
 **Status:** Settled
 **Owner:** CTO
-**Version:** 2 — folded the owner's cycle-1 answers (`docs/srs_trail/cycle-1.md`): the diff/history surface widened by override (FR-17 distinguishes staged from unstaged, FR-22 adds the per-commit diff, AC-12 widened, history filtering placed outside done); C-3, FR-10, C-6, and C-7 confirmed as drafted; two stale FR-18 pointers corrected to FR-19 (RN-13)
+**Version:** 3 — folded the owner's cycle-2 authorization (`docs/srs_trail/cycle-2.md`): the re-authored PRD `## UX Notes` (PRD v6) derived into the SRS — six new requirements (FR-23 – FR-28), FR-3 and AC-15 widened, FR-10 gains its PRD trace, the v1 assistive-technology posture stated in §5.1, six new criteria (AC-16 – AC-21)
 
 > The SRS is the technical source of truth: the system-level **what**, derived from the PRD and
 > read cold by the Principal PM (Delivery Plan / FDR) and the Principal Architect (ADR / NFDR).
@@ -56,7 +56,7 @@ operation of the tool; several repositories at once — one at a time is the pro
 
 ## 3. Functional Requirements
 
-### 3.1 Startup & repository
+### 3.1 Startup, shutdown & repository
 
 - **FR-1:** The system operates against exactly one local Git repository per run, and the only
   input it ever requires is which repository to view — no settings, no project file, no setup
@@ -66,11 +66,17 @@ operation of the tool; several repositories at once — one at a time is the pro
   in-product way to choose or change it. Changing the viewed repository from inside the product
   is FR-19, beyond v1. *(traces to: PRD Out of Scope "Changing the viewed repository without
   restarting"; see RN-1)*
-- **FR-3:** Pointed at a path that is not a readable local Git repository, the system says so
-  clearly and touches nothing. *(traces to: PRD Scope (In) "single local Git repository"; see
-  RN-10)*
+- **FR-3:** Pointed at a path that is not a readable local Git repository — or one that does not
+  exist or cannot be read — the system states plainly what went wrong and what to do next,
+  pitched at the PRD's no-learning-curve bar (no dead end that presumes expertise), and touches
+  nothing. *(traces to: PRD Scope (In) "single local Git repository", UX Notes "Failure states
+  speak the user's language"; widened from "says so clearly" by the re-authored UX Notes: RN-17;
+  see RN-10)*
 - **FR-4:** When no file is open, the system presents an empty state that prompts file selection.
   *(traces to: PRD Core Features "empty state")*
+- **FR-23:** Closing the system asks nothing — no save prompt, no confirmation, nothing to
+  dismiss; there is never anything to save. *(traces to: PRD UX Notes "The path" step 5
+  "Leaving")*
 
 ### 3.2 File tree
 
@@ -91,8 +97,13 @@ operation of the tool; several repositories at once — one at a time is the pro
   *(traces to: PRD Out of Scope "Editing, permanently")*
 - **FR-10:** A file that cannot be rendered as text (binary or undecodable content) is presented,
   not rendered: a clear placeholder states why the content is not shown, the shell remains fully
-  usable, and the file is not modified. *(owner-confirmed: `docs/srs_trail/cycle-1.md` §2.3; see
-  RN-14)*
+  usable, and the file is not modified. *(traces to: PRD UX Notes "Failure states" — a stated
+  cannot-display-as-text state, never a garbled render, never an error; owner-confirmed:
+  `docs/srs_trail/cycle-1.md` §2.3; see RN-14, RN-17)*
+- **FR-24:** The system presents no editing affordance, enabled or disabled, and no framing that
+  implies an editable mode exists elsewhere — nothing in the interface suggests the repository
+  could be changed from it. *(traces to: PRD UX Notes "The character" — read-only is the
+  product's identity, not a mode)*
 
 ### 3.4 Sidebar & Git view
 
@@ -102,6 +113,12 @@ operation of the tool; several repositories at once — one at a time is the pro
   a short repository status. *(traces to: PRD Core Features "Git view", Key Use Case 2)*
 - **FR-13:** A file listed in the Git view can be opened for reading exactly as a tree selection
   is. *(traces to: PRD Key Use Case 2 "opens the changed files to read them")*
+- **FR-25:** Sidebar mode and the open file are independent: switching the sidebar between Files
+  and Git never closes or changes the file being read. *(traces to: PRD UX Notes "The path"
+  step 3 "Checking")*
+- **FR-26:** A repository mid-operation — a merge, a rebase, a detached state — is presented by
+  the Git view as the state the repository is truly in: an inspection subject, never an error.
+  *(traces to: PRD UX Notes "the view never lies"; tolerance of the same states is FR-16's)*
 
 ### 3.5 Live refresh
 
@@ -114,6 +131,14 @@ operation of the tool; several repositories at once — one at a time is the pro
   in transient mid-operation states. None of it crashes the shell, blocks the view, or causes a
   write; the view converges to the state on disk. *(traces to: PRD Target Users driving
   scenario, Key Use Case 3; see RN-2)*
+- **FR-27:** An automatic update never takes the user's place away: the tree state they expanded,
+  the file they have open, and the position they are reading survive a refresh — only what
+  actually changed changes. *(traces to: PRD UX Notes "the view never lies")*
+- **FR-28:** When the open file disappears from disk, the view states plainly that it is gone —
+  never presenting the vanished content as if it were still there. What is shown is the
+  repository's current state within the refresh bar (NFR-2), or explicitly marked as no longer
+  there; the view never presents stale content as current. *(traces to: PRD UX Notes "the view
+  never lies"; crash-safety of the same event is FR-16's)*
 
 ### 3.6 Beyond v1, inside the terminus
 
@@ -229,7 +254,10 @@ see RN-8)*
   secondary; the layout explains itself — no onboarding surface, no configuration surface.
   *(traces to: PRD UX Notes)*
 - Dark and light themes (FR-20). Mouse-driven; no keyboard-accessibility promise (§2, from the
-  Agari).
+  Agari — permanent). Beyond that line, v1 makes no assistive-technology promise: its
+  accessibility surface is what the product already carries — the two themes, text-first
+  navigation — a v1-scoped statement, not a permanent bound (RN-18). *(traces to: PRD UX Notes
+  "The bounds v1 draws"; owner-confirmed: `docs/prd_trail/cycle-5.md`)*
 - UI language: English (C-8).
 
 ### 5.2 API
@@ -250,10 +278,11 @@ see RN-8)*
 - **DR-1:** **The viewed repository** — identified by its path; the source of everything
   displayed; strictly a read-only input (NFR-5, NFR-6). Nothing of its content is persisted by
   the system. *(traces to: PRD Data & Privacy "persists nothing of it")*
-- **DR-2:** **File tree model** — the repository's folders and files with changed markers and
-  the current selection; derived from disk and Git state, held in memory, never persisted.
-- **DR-3:** **File view** — the open file's path, content, and detected language; derived, never
-  persisted.
+- **DR-2:** **File tree model** — the repository's folders and files with changed markers, the
+  current selection, and the user's expanded state (FR-27); derived from disk and Git state,
+  held in memory, never persisted.
+- **DR-3:** **File view** — the open file's path, content, detected language, and the reading
+  position FR-27 preserves; derived and in-session, never persisted.
 - **DR-4:** **Git state** — branch name, changed files, staged files, short status; derived from
   repository metadata by read-only means, never persisted.
 - **DR-5:** **Own state** — preferences the system remembers between sessions (theme choice,
@@ -344,8 +373,24 @@ see RN-8)*
   README first screen carries its four items; the version number obeys C-6; SECURITY.md and the
   private reporting channel exist per C-7. *(covers: C-4 – C-7, C-9)*
 - **AC-15:** With no file selected the empty state prompts selection; pointed at a path that is
-  not a readable Git repository, the system says so clearly and a filesystem check shows it
-  touched nothing. *(covers: FR-3, FR-4)*
+  not a readable Git repository, the system states plainly what went wrong and what to do next,
+  and a filesystem check shows it touched nothing. *(covers: FR-3, FR-4; widened with FR-3:
+  RN-17)*
+- **AC-16:** Inspection of the full UI surface finds no editing affordance, enabled or disabled,
+  and no framing implying an editable mode. *(covers: FR-24)*
+- **AC-17:** With a file open, toggling the sidebar between Files and Git leaves the open file —
+  and the position being read — unchanged. *(covers: FR-25)*
+- **AC-18:** Against a repository mid-merge and one in a detached-HEAD state, the Git view
+  presents the actual state, no error state is shown, and files still open for reading.
+  *(covers: FR-26, FR-12)*
+- **AC-19:** An external change arriving while tree nodes are expanded and a file is open at a
+  reading position leaves the expanded nodes, the open file, and the position intact; only what
+  changed updates. *(covers: FR-27)*
+- **AC-20:** Externally deleting the open file yields a plain in-view statement that it is gone;
+  the vanished content is not presented as current. *(covers: FR-28; the same event's
+  crash-safety: AC-8)*
+- **AC-21:** Closing at any moment — a file open, a refresh mid-flight — presents no prompt and
+  no confirmation. *(covers: FR-23)*
 
 ---
 
@@ -393,7 +438,8 @@ see RN-8)*
 - **RN-10:** Behavior on an invalid repository path stated (FR-3) — *because* the PRD implies it
   (zero configuration, a layout that explains itself) but never states it; the minimal reading —
   say so clearly, touch nothing — is taken *(re: FR-3, AC-15; PRD source: Scope (In), UX
-  Notes)*.
+  Notes)*. The re-authored UX Notes later stated the behavior itself; FR-3's widening to match
+  is RN-17's.
 - **RN-11:** Transient read failures degrade one item's view, visibly, never the shell (NFR-3) —
   *because* the driving scenario guarantees transient unreadable states (a file mid-write, a Git
   lock), so failure containment is a reliability requirement, not an implementation nicety; the
@@ -422,10 +468,35 @@ see RN-8)*
 - **RN-16:** C-7 confirmed as drafted — private vulnerability reporting enabled and a
   SECURITY.md in place before the first public release *(re: C-7, AC-14; owner confirmation:
   `docs/srs_trail/cycle-1.md` §2.5)*.
+- **RN-17:** This revision (v3) derives the PRD's v4 → v6 move — `## UX Notes` re-authored whole
+  (`docs/prd_trail/cycle-4.md`) and v1's accessibility posture settled
+  (`docs/prd_trail/cycle-5.md`) — authorized by the owner's cycle-2 answer
+  (`docs/srs_trail/cycle-2.md`): derive from the PRD as it now reads; every delta below traces
+  to that upstream change, the stability rule's own permitted branch. The re-authored section's
+  requirement-bearing statements land as FR-23 (closing asks nothing), FR-24 (no editing
+  affordance, enabled or disabled), FR-25 (sidebar/open-file independence), FR-26
+  (mid-operation states presented, not errored), FR-27 (refresh preserves the user's place),
+  and FR-28 (a vanished open file is stated, never shown as current), each with its new
+  criterion (AC-16 – AC-21); FR-3 and AC-15 widen from "says so clearly" to the PRD's now-stated
+  what-went-wrong-and-what-to-do-next; FR-10 gains the PRD trace it previously lacked — the
+  section now states the cannot-display-as-text behavior the owner had confirmed at cycle-1, so
+  the requirement is unchanged and its source strengthened; DR-2 and DR-3 name the expanded
+  state and reading position FR-27 preserves; §3.1 is retitled to hold FR-23. The rest of the
+  re-authored section produces **no requirement delta** — its character, effortlessness, and
+  trust statements restate what the SRS already carries (FR-4, FR-14 – FR-16, FR-20, NFR-1,
+  NFR-2, NFR-5 – NFR-9, NFR-13 – NFR-15, §5.1) — a stated no-delta outcome, per the owner's
+  answer *(re: FR-3, FR-10, FR-23 – FR-28, DR-2, DR-3, AC-15 – AC-21; PRD source: UX Notes,
+  v6)*.
+- **RN-18:** The assistive-technology posture is stated in §5.1 as a v1-scoped statement,
+  deliberately apart from §2's keyboard line — *because* the two differ in duration: the
+  keyboard absence is permanent (the Agari holds keyboard navigation outside done), while the
+  wider no-assistive-technology-promise is the PRD's statement about v1 only *(re: §5.1, §2;
+  PRD source: UX Notes "The bounds v1 draws"; owner-confirmed: `docs/prd_trail/cycle-5.md`)*.
 
 ---
 
 ## Open Questions
 
-None — the owner's cycle-1 answers (`docs/srs_trail/cycle-1.md`) settled every drafted choice;
-the numeric thresholds are settled-as-process (RN-4), awaiting a build, not an answer.
+None — the owner's cycle-1 answers (`docs/srs_trail/cycle-1.md`) settled every drafted choice,
+and the cycle-2 answer (`docs/srs_trail/cycle-2.md`) scoped this revision to the moved PRD; the
+numeric thresholds are settled-as-process (RN-4), awaiting a build, not an answer.
