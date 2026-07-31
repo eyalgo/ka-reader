@@ -1,8 +1,8 @@
 # PRD — Nozoki 覗き
 
-**Status:** Settled
+**Status:** Draft
 **Owner:** CPO
-**Version:** 4 — the product now carries its versioning promise (releases are semantically versioned; 1.0.0 is the moment the compatibility promise to adopters starts), folded up from the Agari's closing condition per the owner's recorded follow-up; the Purpose states the why-now — working trees that automated agents are actively changing have made the state that must not be perturbed an everyday one; the mouse-driven v1 cut no longer reads as a deferral promise; time-to-first-success is named as the no-learning-curve goal's observable
+**Version:** 5 — `## UX Notes` now states the experience whole for the reader who designs from it: the end-to-end path from arrival to leaving, the live and failure states (empty, watching, vanished file, mid-operation repository, non-repository, non-text file) and the movement between them, the view-never-lies rule, and what must feel effortless; v1's accessibility posture beyond the mouse-driven line is drafted, awaiting confirmation
 
 > The PRD is the product source of truth: the product-facing **what and why**, read cold by the
 > CTO, Principal PM, and Principal Architect. It is updated in place with versioning (bump the
@@ -128,16 +128,81 @@ maintainer time, held down by the deliberately small surface (see Assumptions).
 
 ## UX Notes
 
-- The editor panel is the dominant visual surface; navigation is text-first, icons secondary.
-- Dark and light themes from the start.
-- Instantly usable without instruction — the layout explains itself; no onboarding, no
-  configuration surface *(owner-confirmed: prd_trail/cycle-2.md)*.
-- The view follows the tree — there is no refresh control, because the driving scenario is
-  watching progress, and a manual refresh turns the user into a poller *(added — not in the
-  input; owner-confirmed: prd_trail/cycle-1.md)*.
-- Empty state: a simple prompt such as "Select a file to view."
+*(Section re-authored whole for the reader who designs the product's experience from it —
+owner-delegated, standard and authorization: prd_trail/cycle-4.md; decisions earlier cycles
+settled keep their tags. Product-level only: no visual design, no mechanism.)*
+
+**The character.** Nozoki looks at a repository; it never acts on one — and the experience
+should feel like that: calm, truthful, still. The product presents state; the person moves
+their attention around it. Read-only is the product's identity, not a mode: nothing in the
+experience suggests the repository could be changed from here — no editing affordances
+present-but-disabled, no framing that implies an editable mode exists somewhere else. The
+editor panel is the dominant visual surface; navigation is text-first, icons secondary; dark
+and light themes from the start.
+
+**The path, end to end.** The experience begins with Nozoki open against one local
+repository — whatever precedes that moment belongs to the acquisition-and-start mechanism,
+which this PRD deliberately does not state (see Out of Scope).
+
+1. **Arrival.** The workbench opens with the file tree visible and nothing open — the empty
+   state, a simple prompt such as "Select a file to view." Nothing to set up, sign into, or
+   dismiss: instantly usable without instruction — the layout explains itself; no onboarding,
+   no configuration surface *(owner-confirmed: prd_trail/cycle-2.md)*.
+2. **Reading.** Selecting a file shows it with syntax highlighting, with no perceived wait
+   (see Success Metrics). The person moves file to file as fast as they can decide what to
+   read next.
+3. **Checking.** The sidebar toggles between Files and Git — branch, changed files, staged
+   files at a glance, with changed-file markers in the tree. Sidebar mode and the open file
+   are independent: checking Git never closes what the person is reading.
+4. **Watching.** The view follows the tree as the repository changes — the driving scenario.
+   Changes appear on their own, within the refresh bar; there is no refresh control, because
+   a manual refresh turns the user into a poller *(owner-confirmed: prd_trail/cycle-1.md)*.
+5. **Leaving.** Closing Nozoki asks nothing — nothing to save, nothing to confirm — and the
+   person leaves certain the repository is exactly as they found it.
+
+**The rule for every live state: the view never lies.** What is shown is the repository's
+current state, or is explicitly marked as no longer there; the view never presents stale
+content as current. And an update the person did not ask for never takes their place away —
+the tree they expanded, the file they have open, the position they are reading stay theirs;
+only what actually changed changes. Concretely:
+
+- The open file changes on disk: its content updates in place, within the refresh bar.
+- The open file disappears: the view says so plainly, rather than showing what is gone as if
+  it were still there.
+- The repository is mid-operation (a merge, a rebase, a detached state): an inspection
+  subject, not an error — the Git view presents whatever state the repository is truly in.
+  Those are exactly the trees that must not be perturbed.
+
+**Failure states speak the user's language.** Error and edge states are pitched at the
+no-learning-curve bar — someone who can find their way around a repository on GitHub, not a
+Git expert:
+
+- Pointed at something that is not a local Git repository, or a path that does not exist or
+  cannot be read: a plain statement of what went wrong and what to do next — no dead end that
+  presumes expertise.
+- A file that cannot be shown as text (binary and similar): openable like any file, landing
+  in a stated cannot-display-as-text state — never a garbled render, never an error.
+  Rendering non-text content richly is not part of v1's proof; the input's own scope is code
+  viewing.
+
+**What must feel effortless.**
+
+- From arrival to reading a first file — minutes, README alone (the time-to-first-success
+  bar).
+- Switching files, and answering "what changed?" — a glance at the tree markers or the Git
+  view, not an investigation.
+- Trusting the tool: the person never wonders whether what they see is current, and never
+  feels the need to check that the repository is untouched. Certainty is the product; the
+  experience must never give a reason to doubt it.
+
+**The bounds v1 draws.**
+
 - v1 is mouse-driven — keyboard navigation is not in v1 (see Out of Scope), so v1 makes no
   keyboard-accessibility promise.
+- Beyond that line, v1 makes no assistive-technology promise: its accessibility surface is
+  what the product already carries — two themes, text-first navigation — kept small with the
+  rest of the surface *(added — not in the input; drafted this cycle, awaiting confirmation:
+  PRD_open_issues.md §2.1)*.
 - UI language: English *(added — defaulted, not routed: the instance's products and their
   documentation are English-first)*.
 

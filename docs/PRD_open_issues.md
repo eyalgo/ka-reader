@@ -1,12 +1,10 @@
 # PRD open issues — Nozoki 覗き
 
-> Companion to `PRD.md`. **Answer inline** — fill each **Answer** /
+> Companion to `PRD.md`. The CPO authored the PRD non-interactively; this file holds
+> what it could not settle from the inputs. **Answer inline** — fill each **Answer** /
 > **Confirm-or-override** slot — **commit this file**, then re-run `product-prd`. It folds
 > your answers into the PRD and drops the resolved items. When nothing is left unresolved,
 > `product-prd` clears this file: no file = the PRD is done.
->
-> **This cycle was opened by the owner, not by the CPO.** The PRD settled with no companion;
-> the single entry below is a decision already made, not a question.
 >
 > **Commit before re-running.** The run that finishes a round removes this file, and git
 > refuses to remove a file with uncommitted edits in it — so an uncommitted answer stops
@@ -20,33 +18,27 @@
 
 ## 1. Open issues — product-defining questions with no answer yet
 
-None — the one item this cycle is an owner decision already made.
+None this cycle — the one unsettled call carries a defensible lean, so it is listed under §2
+as a choice to confirm.
 
 ## 2. Choices to confirm — the CPO drafted a best-effort answer; confirm or override
 
-### 2.1 `## UX Notes` is written for the reader who designs the whole experience from it
-
-- **Drafted into the PRD:** `## UX Notes` (`docs/PRD.md:129-142`) is seven bullets — the editor
-  panel as the dominant surface with text-first navigation, dark and light themes, instantly
-  usable without instruction, the view following the tree with no refresh control, one
-  empty-state prompt, v1 as mouse-driven with keyboard navigation out of scope, and English as
-  the UI language. Each is a true property of the product; together they read as asides
-  appended after the features rather than the product's experience stated whole.
-- **Rationale:** the section was authored for readers who design nothing from it. It now has a
-  reader who does — one who works from this section and reads the PRD cold.
-- **Confirm or override:** **Override — re-author `## UX Notes` for that reader.**
-  - Its current bullets are **not settled for this cycle**; principle 7's protection is lifted
-    on this section by this answer.
-  - The standard: someone who has read only this PRD should be able to design the product's
-    whole experience from `## UX Notes` — what it feels like to use, the states it puts a
-    person in and how they move between them, and what must be effortless — without needing a
-    decision back from the CPO.
-  - **What the section should contain is yours to determine from that standard.** The current
-    bullets are neither floor nor ceiling: keep what still holds, and what a design reader
-    would need and cannot find is what is missing.
-  - The two existing boundaries hold: no visual design, and no mechanism.
-  - Anything the standard demands that the PRD has no basis to settle is an **open issue** next
-    round, not a guess.
+### 2.1 v1's accessibility posture beyond the mouse-driven line
+- **Drafted into the PRD:** in `## UX Notes` ("The bounds v1 draws"): beyond the
+  no-keyboard-navigation line, v1 makes no assistive-technology promise — its accessibility
+  surface is what the product already carries (two themes, text-first navigation), kept small
+  with the rest of the surface.
+- **Rationale:** your re-authoring standard is that the design reader should not need a
+  decision back from the CPO — and the design station authors an accessibility bar, while the
+  PRD's only accessibility statement was the keyboard line. The lean rests on the PRD's own
+  basis: the precedent of the keyboard cut (an accessibility dimension deliberately cut from
+  v1 without promise — and held outside the product's terminus by the Agari,
+  `agari_trail/cycle-1.md`), and the small-surface sustainability strategy in Assumptions.
+  The counter-lean is real, which is why this is yours: the no-learning-curve goal claims
+  "anyone who can find their way around a repository on GitHub" — read literally, an
+  assistive-technology user is inside that audience, and promising them anything in v1
+  changes product scope. Scope is the owner's.
+- **Confirm or override:** <"confirm", or "override: <what v1 promises instead>">
 
 ## 3. Directives — an external action the owner confirms as a gate
 
