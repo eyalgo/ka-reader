@@ -38,7 +38,7 @@ as a choice to confirm.
   "anyone who can find their way around a repository on GitHub" — read literally, an
   assistive-technology user is inside that audience, and promising them anything in v1
   changes product scope. Scope is the owner's.
-- **Confirm or override:** <"confirm", or "override: <what v1 promises instead>">
+- **Confirm or override:** confirm
 
 ## 3. Directives — an external action the owner confirms as a gate
 
