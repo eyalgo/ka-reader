@@ -2,7 +2,7 @@
 
 **Status:** Settled
 **Owner:** CPO
-**Version:** 3 — the product's identity no longer borrows VS Code's: it is stated in its own terms (a familiar editor-style shell), and the usability bar is reset — anyone who can find their way around a repository on GitHub and follow a README can use it, no editor experience required; the goals and metrics state only the property that the sole input is which repository to view, never when or how it is supplied
+**Version:** 4 — the product now carries its versioning promise (releases are semantically versioned; 1.0.0 is the moment the compatibility promise to adopters starts), folded up from the Agari's closing condition per the owner's recorded follow-up; the Purpose states the why-now — working trees that automated agents are actively changing have made the state that must not be perturbed an everyday one; the mouse-driven v1 cut no longer reads as a deferral promise; time-to-first-success is named as the no-learning-curve goal's observable
 
 > The PRD is the product source of truth: the product-facing **what and why**, read cold by the
 > CTO, Principal PM, and Principal Architect. It is updated in place with versioning (bump the
@@ -17,7 +17,10 @@ Nozoki (覗き — *"to peek / peer in"*) is a lightweight code workspace viewer
 shell for browsing a project's files and inspecting its Git status, in which nothing can be
 changed. It is optimized for inspection rather than authoring — look, don't touch. It exists
 because inspecting a working tree today is done with tools built for *authoring*, whose safety
-against accidental change is discipline, not guarantee.
+against accidental change is discipline, not guarantee. And it exists *now* because the state
+that most needs a guarantee has become an everyday one: working trees that automated tools and
+coding agents are actively changing — the product's driving scenario *(added — not in the input;
+the scenario itself owner-confirmed: prd_trail/cycle-1.md)*.
 
 ## Problem Statement
 
@@ -85,8 +88,10 @@ maintainer time, held down by the deliberately small surface (see Assumptions).
   prd_trail/cycle-1.md)*
 - **Time-to-first-success:** from a stranger deciding to try Nozoki — by its single install
   path, whatever that path is — to viewing a file of their own repository. Bar: ≤ 5 minutes,
-  checked before each release. *(bar value: added — not in the input; owner-confirmed:
-  prd_trail/cycle-1.md)*
+  checked before each release. This same clock is the no-learning-curve goal's observable: it
+  runs through first use — finding, starting, and viewing — not install alone *(that link:
+  added — reconciliation of an existing goal to an existing bar; no new bar)*. *(bar value:
+  added — not in the input; owner-confirmed: prd_trail/cycle-1.md)*
 - **Zero required configuration:** the only input Nozoki requires is which repository to view —
   no settings, no project file, no setup step. Bar: pass/fail, checked at each release.
   *(owner-confirmed: prd_trail/cycle-2.md)*
@@ -131,7 +136,7 @@ maintainer time, held down by the deliberately small surface (see Assumptions).
   watching progress, and a manual refresh turns the user into a poller *(added — not in the
   input; owner-confirmed: prd_trail/cycle-1.md)*.
 - Empty state: a simple prompt such as "Select a file to view."
-- v1 is mouse-driven — keyboard navigation is deferred (see Out of Scope), so v1 makes no
+- v1 is mouse-driven — keyboard navigation is not in v1 (see Out of Scope), so v1 makes no
   keyboard-accessibility promise.
 - UI language: English *(added — defaulted, not routed: the instance's products and their
   documentation are English-first)*.
@@ -192,6 +197,13 @@ browsing, reading, status, and live refresh.
   *(added — instance doctrine, not in the input)*.
 - **Licence:** MIT *(added — not in the input; owner-confirmed: prd_trail/cycle-1.md; recorded
   with its reason at first release)*.
+- **Versioning:** releases are semantically versioned, and the version number is a compatibility
+  promise to adopters. Before 1.0.0 anything may change, and that is stated plainly wherever a
+  release is offered. Reaching 1.0.0 is a product event — the moment the promise starts — and
+  after it a breaking change to what users rely on is priced, batched, and announced, never
+  casual. *(added — not in the input; the 1.0.0-or-later closing condition is the project
+  Agari's, quoted and owner-confirmed at srs_trail/cycle-1.md §2.4, whose recorded follow-up
+  routed the promise into the PRD)*
 - **Regulatory posture:** published as free, non-monetized open source outside any commercial
   activity, Nozoki is outside the EU Cyber Resilience Act's scope *(verified (external):
   https://digital-strategy.ec.europa.eu/en/policies/cra-open-source — non-monetised free
