@@ -20,59 +20,69 @@
 ## 1. Open issues — experience questions with no answer yet
 
 None this cycle — every unsettled call carried a defensible lean, so each is listed under §2 as
-a choice to confirm.
+a choice to confirm. All three arise from your cycle-1 answer (`docs/uxd_trail/cycle-1.md` §2.1)
+and the reference it supplied (`docs/ux_reference/README.md`): the topology directive's drafted
+statement, and the two placement questions the reference routes back here.
 
 ## 2. Choices to confirm — the CDO drafted a best-effort answer; confirm or override
 
-### 2.1 The design direction — a restrained code-workbench built from primitives, no established component design system
+### 2.1 The history view's branch topology — the drafted experience statement
 
-- **Drafted into the UXD:** § 1 (Design Read) and § 9 (Design-System Direction): no established
-  component design system; a restrained code-workbench aesthetic built from primitives — reading
-  panel dominant, text-first navigation, minimal chrome, nothing decorative. One system for the
-  product. `DESIGN.md` will be authored from primitives against § 9's constraints (both themes
-  first-class with the initial polarity from the platform signal; state distinctions legible
-  without color, with deficiency-safe pairs as swappable tokens; legible code-reading text;
-  syntax highlighting and monospace held as expectations).
-- **Rationale:** the PRD's familiarity thesis names the layout — a conventional editor-style
-  workbench, which no general-purpose component design system provides — and the character
-  ("calm, truthful, still"; nothing decorative) rules out imported component aesthetics. In this
-  domain restraint is the credibility signal. The aesthetic lean is a taste call, so however
-  confidently drafted, it is yours to confirm.
-- **If overridden** (an established design system named instead): § 1's read and § 9's direction
-  and constraints re-anchor to that system; `DESIGN.md` would be authored from the named
-  system's official package rather than from primitives; § 2's dial reasoning is re-checked
-  against the system's own idiom (values may move); RN-8 records the override. The flows,
-  screens, and states (§§ 5–6) do not move — they are layout- and state-level, not
-  aesthetic-level.
-- **Confirm or override:** **CONFIRM as drafted.** Primitives; no established component design
-  system.
-  - *Reference material supplied when answering:* `docs/ux_reference/` holds three VS Code
-    screenshots with a `README.md` annotating every element as taken or excluded, each exclusion
-    citing the UXD entry it comes from. They are a reference for **layout, not style** — VS Code's
-    visual language is not being adopted, and reading them as a style target would reverse this
-    answer. That file also carries **two owner directives** to draft into the UXD, and two
-    placement questions to lean on and route back through this companion. Read it whole; none of
-    it is restated here.
-  - *The three `.png` files are inputs, not assets.* Intake's "skip binary assets" rule does not
-    reach them: the owner supplied them as the reference this answer rests on, and the annotation
-    names elements that only the images show. **Open all three.**
+- **Drafted into the UXD:** UX-F4 and UX-S6 (RN-14): when the repository's history holds more
+  than one branch, the reader can see the branches as branches — which commits belong to which,
+  and where they diverge and merge — never a flat list that flattens them together. The history
+  is scoped by a branch choice (the current branch and what relates to it), not an attempt to
+  draw every ref at once. Per commit: identifier, message, author, and date, with its changed
+  files reachable from its entry; selecting a commit presents what it changed, in the same diff
+  presentation. Read-only throughout; history filtering and search stay out (§ 10 — that part of
+  `docs/srs_trail/cycle-1.md` §2.2 is untouched).
+- **Rationale:** your directive reopened the flat-list shape and asked for a drafted statement
+  after looking at what VS Code's own source-control graph presents. Its documentation calls the
+  graph "a graphical representation of your commit history and branch relationships",
+  highlighting incoming and outgoing commits
+  (https://code.visualstudio.com/docs/sourcecontrol/overview); your screenshots show that graph
+  scoped by a branch selector, with each commit's changed files beneath it. The draft carries
+  those three properties at experience level — topology visible, branch-scoped, per-commit
+  changed files — and adds nothing else: no filtering, no search, no promise about how topology
+  is rendered (that is the SDD's). Feasibility is downstream and does not narrow the statement.
+- **If confirmed, one consequence is handed forward:** the SRS's FR-18 describes the history as
+  a flat read-only list (`SRS.md` FR-18) and needs a CTO revision once this lands — the CDO
+  hands the collision forward; it is not silently absorbed here.
+- **If overridden** (back to the flat list, or a different shape): UX-F4 and UX-S6 reword to the
+  shape you name; RN-14 records the outcome and RN-6 re-records the history shape as settled;
+  with a flat list the SRS's FR-18 needs no revision. The diff shape (staged/unstaged,
+  per-commit diff) is untouched either way.
+- **Confirm or override:**
 
-### 2.2 The v1 accessibility posture is stated in the README (UX-A3)
+### 2.2 Where the repository selector lives — the shell chrome, not the Git view header
 
-- **Drafted into the UXD:** UX-A3 — one plain sentence on the README stating what UX-A1 holds:
-  v1 is mouse-driven and makes no assistive-technology promise. No claim beyond the settled
-  posture.
-- **Rationale:** the posture you settled (`docs/prd_trail/cycle-5.md`) currently lives in the
-  PRD and the UXD, which an adopter never reads. A silent floor fails them quietly; a stated
-  narrow floor is information they can act on before spending their first minute, and a claim
-  the project can be held to. It adds a line to a surface the CPO owns — the README, whose
-  first-screen content the PRD already fixes — which is why this is routed to you rather than
-  asserted.
-- **If overridden** (keep the posture out of the README): UX-A3 drops from the UXD and RN-10
-  records the decision; UX-A1 (the posture itself) and UX-A2 (no meaning by hue alone) stand
-  untouched; the posture stays discoverable only in the product documents.
-- **Confirm or override:** **CONFIRM**, with one placement bound. The posture is stated on the
-  README — **not on its first screen**. UX-A3 as drafted says "the README", and read that way the
-  adopter still reads it before adopting while the four things the PRD fixes for the first screen
-  (`PRD.md:66-69`) stay undiluted. One plain sentence, further down, stating the fact and not
-  apologising for it.
+- **Drafted into the UXD:** UX-F5 and § 4 (RN-15): the selector — the dropdown you named, current
+  repository's name as both label and control, remembered repositories plus a browse entry —
+  lives in the **shell chrome**: the identity element (RN-2) becomes the control. The dropdown
+  itself is your directive and is not in question here; only its home is.
+- **Rationale:** your own framing — a name in one place and a switch in another is two elements
+  telling one truth — points at the chrome: what names the repository is what changes it, and
+  the chrome is reachable from either sidebar mode, while the Git view header is unreachable
+  with the sidebar in Files mode. Switching is a whole-shell act (it resets the arrival state),
+  not a Git-scoped one, so it belongs to the shell rather than to one sidebar view.
+- **If overridden** (the Git view header, as the reference image shows): the selector moves into
+  UX-S3's header, grouped with repository-scoped state; the chrome's identity element (§ 4,
+  RN-2) stays display-only; UX-F5 gains a step — switching from Files mode means toggling to
+  Git first — and RN-15 records the trade taken knowingly.
+- **Confirm or override:**
+
+### 2.3 The Files/Git switch — a pair of labelled tabs at the top of the sidebar
+
+- **Drafted into the UXD:** § 4 (RN-16): the sidebar's two modes are switched by a pair of
+  labelled tabs at the top of the sidebar — text-first, exactly the two destinations that
+  exist; not an icon rail.
+- **Rationale:** the reference raises this and settles nothing (`docs/ux_reference/README.md`
+  § "One question the reference raises"). VS Code's rail is built for many destinations and
+  identifies them by icon alone; Nozoki's § 4 rule is text-first with icons secondary, and it
+  has two destinations, ever — the Agari admits no third view. Labelled tabs say what each mode
+  is in words, cost no chrome the shell doesn't already have, and keep the sidebar's full width
+  for content.
+- **If overridden** (a rail, or another control): § 4's presentation line and RN-16 reword; an
+  icon rail would need a stated exception to § 4's text-first rule, recorded rather than
+  implied.
+- **Confirm or override:**
