@@ -52,7 +52,20 @@ statement, and the two placement questions the reference routes back here.
   shape you name; RN-14 records the outcome and RN-6 re-records the history shape as settled;
   with a flat list the SRS's FR-18 needs no revision. The diff shape (staged/unstaged,
   per-commit diff) is untouched either way.
-- **Confirm or override:**
+- **Confirm or override:** **CONFIRM as drafted**, with one refinement and one consequence
+  accepted.
+  - *Refinement — the scoping is a set, not a single branch.* `docs/ux_reference/vscode-branch-filter.png`,
+    supplied after this was drafted, shows the graph drawn against a chosen **set** of refs: one
+    branch, several, or all of them, with a default that asks nothing. Reword UX-S6 and RN-14
+    accordingly. That image is annotated in `docs/ux_reference/README.md`; the property taken is
+    that the reader chooses what the graph draws and does not have to, not the modal checklist
+    that does the choosing there. Read it before rewording.
+  - *Consequence accepted.* The SRS's FR-18 describes the history as a flat read-only list and now
+    needs a CTO revision. Hand it forward as the draft already says — it is not this document's to
+    absorb, and it is not a reason to narrow the statement.
+  - *Unchanged.* History filtering and search stay outside done (§ 10). The ref filter in that
+    image filters the ref list, not the history; nothing here reopens the owner decision at
+    `docs/srs_trail/cycle-1.md` §2.2 beyond the shape it already named.
 
 ### 2.2 Where the repository selector lives — the shell chrome, not the Git view header
 
@@ -69,7 +82,17 @@ statement, and the two placement questions the reference routes back here.
   UX-S3's header, grouped with repository-scoped state; the chrome's identity element (§ 4,
   RN-2) stays display-only; UX-F5 gains a step — switching from Files mode means toggling to
   Git first — and RN-15 records the trade taken knowingly.
-- **Confirm or override:**
+- **Confirm or override:** **CONFIRM as drafted** — the shell chrome. The identity element (RN-2)
+  becomes the control.
+  - *The counter-evidence, named rather than left out.* `docs/ux_reference/vscode-branch-filter.png`
+    shows VS Code carrying the repository selector **and** a branch selector together in the
+    graph's header row, and that arrangement is the one I called convenient when I supplied the
+    image. It is the strongest case for the Git view header, and it does not carry the day: what
+    it buys is grouping, what it costs is reachability, and reachability is what keeps one element
+    telling one truth from either sidebar mode.
+  - *One thing this does not decide.* Where a **branch** control lives is a separate question and
+    is not settled here. § 2.1's set-scoping control belongs to the history view, which is beyond
+    v1; putting the repository selector in the chrome says nothing about it.
 
 ### 2.3 The Files/Git switch — a pair of labelled tabs at the top of the sidebar
 
@@ -85,4 +108,8 @@ statement, and the two placement questions the reference routes back here.
 - **If overridden** (a rail, or another control): § 4's presentation line and RN-16 reword; an
   icon rail would need a stated exception to § 4's text-first rule, recorded rather than
   implied.
-- **Confirm or override:**
+- **Confirm or override:** **CONFIRM as drafted** — a pair of labelled tabs at the top of the
+  sidebar. Two destinations exist and the Agari admits no third, so the argument for a rail — that
+  it scales to many — is an argument about a product this one is not going to become. No exception
+  to § 4's text-first rule is being taken, which is the point of choosing tabs over the reference's
+  own control.
