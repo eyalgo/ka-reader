@@ -44,7 +44,18 @@ a choice to confirm.
   against the system's own idiom (values may move); RN-8 records the override. The flows,
   screens, and states (§§ 5–6) do not move — they are layout- and state-level, not
   aesthetic-level.
-- **Confirm or override:**
+- **Confirm or override:** **CONFIRM as drafted.** Primitives; no established component design
+  system.
+  - *Reference material supplied when answering:* `docs/ux_reference/` holds three VS Code
+    screenshots with a `README.md` annotating every element as taken or excluded, each exclusion
+    citing the UXD entry it comes from. They are a reference for **layout, not style** — VS Code's
+    visual language is not being adopted, and reading them as a style target would reverse this
+    answer. That file also carries **two owner directives** to draft into the UXD, and two
+    placement questions to lean on and route back through this companion. Read it whole; none of
+    it is restated here.
+  - *The three `.png` files are inputs, not assets.* Intake's "skip binary assets" rule does not
+    reach them: the owner supplied them as the reference this answer rests on, and the annotation
+    names elements that only the images show. **Open all three.**
 
 ### 2.2 The v1 accessibility posture is stated in the README (UX-A3)
 
@@ -60,4 +71,8 @@ a choice to confirm.
 - **If overridden** (keep the posture out of the README): UX-A3 drops from the UXD and RN-10
   records the decision; UX-A1 (the posture itself) and UX-A2 (no meaning by hue alone) stand
   untouched; the posture stays discoverable only in the product documents.
-- **Confirm or override:**
+- **Confirm or override:** **CONFIRM**, with one placement bound. The posture is stated on the
+  README — **not on its first screen**. UX-A3 as drafted says "the README", and read that way the
+  adopter still reads it before adopting while the four things the PRD fixes for the first screen
+  (`PRD.md:66-69`) stay undiluted. One plain sentence, further down, stating the fact and not
+  apologising for it.
