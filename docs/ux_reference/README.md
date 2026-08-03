@@ -1,6 +1,6 @@
 # UX reference — layout, not style
 
-Two screenshots of VS Code, taken by the owner as a layout reference for Nozoki's shell.
+Four screenshots of VS Code, taken by the owner as a layout reference for Nozoki's shell.
 
 They are here for **what the layout does** — where things sit, how the sidebar relates to the
 reading panel, how a changed file is marked. They are **not** a reference for how Nozoki should
@@ -98,6 +98,57 @@ and choosing it is how the viewed repository changes.
 
 ---
 
+## `vscode-branch-filter.png` — choosing which branches the graph draws
+
+The same Git view with its ref picker open, supplied after the CDO had already drafted the topology
+statement. The picker lists the repository's refs as checkboxes — `All`, `Auto` ("current history
+item reference(s)"), then the local branches under a **branches** heading and `origin/*` under
+**remote branches**, each with its tip identifier — over a filter field and an `OK`. Behind it the
+graph is drawn with rails and commit dots, and the commit that is a branch tip carries the branch's
+name as a chip.
+
+The owner's framing when supplying it: **the mechanism is convenient, not binding.** What is taken
+is that the reader chooses what the graph draws and does not have to; the modal checklist that does
+the choosing here is one control among several that would serve.
+
+### Take
+
+- **The graph is drawn against a chosen set of refs, not against every ref there is.** This is the
+  scoping property the topology statement rests on, shown as a mechanism rather than argued for.
+  *(UX-S6)*
+- **A default that asks nothing.** `Auto` — the current branch and what relates to it — means the
+  reader who never opens the picker still gets a graph. The argument for taking it: a scoping
+  control with no default would make the history view's arrival state a prompt, and every other
+  surface in this product arrives as a state. *(UX-S6's arrival cell)*
+- **Refs grouped by kind, each showing its tip identifier.** The list says what each entry is in
+  words, without the reader knowing a naming convention. *(UX-I6, read as covering what the
+  product labels and not only what it reports)*
+- **The branch name on the commit that is its tip.** Where a branch currently points is readable in
+  the graph itself, not only in the control that scopes it.
+
+### Do not take
+
+- **`origin/HEAD` and `origin/main`.** Nozoki reports the state of the local repository; a remote's
+  refs describe a relationship it does not report. The same exclusion as the outgoing-changes
+  framing in `vscode-git-view.png`.
+- **The `Outgoing Changes` group** behind the picker — excluded already, and named again here
+  because this image is where it is most visible.
+- **The commit boxes, `Sync Changes`, and the `Commit` button** — these write. *(UX-I1)*
+- **Two repositories open at once** — same exclusion as `vscode-repo-selector.png`. *(UX-F5)*
+
+### Not what it looks like
+
+The picker's filter field filters **the ref list**, not the history. History filtering and search
+stay out of v1 (`UXD.md` § 10), and nothing in this image reopens them.
+
+### One refinement it hands the CDO
+
+The drafted statement (`docs/UXD_open_issues.md` § 2.1) scopes the history by *a* branch choice.
+This image shows the choice is a **set** — one branch, several, or all of them. The next round
+reconciles the wording; it is a refinement of the drafted shape, not a new question.
+
+---
+
 ## Owner directives
 
 Two things the owner decided while reviewing these images. Both are for the CDO to draft into the
@@ -126,6 +177,9 @@ lands.
 Still inside the terminus either way — the Agari places the history inside done and does not bound
 its shape.
 
+**Where it now stands:** drafted, awaiting the owner. The statement is `docs/UXD_open_issues.md`
+§ 2.1; `vscode-branch-filter.png` above was supplied after it was drafted.
+
 ### 2. Switching the viewed repository is a dropdown
 
 `UX-F5` says only "a single switch action in the shell". The owner names the control: a dropdown,
@@ -146,6 +200,9 @@ in one place and a switch in another is two elements telling one truth.
 
 The CDO drafts a lean with the whole document in view and routes it back through the companion.
 
+**Where it now stands:** the dropdown is drafted into the UXD; the placement is leaned and awaiting
+the owner at `docs/UXD_open_issues.md` § 2.2.
+
 ---
 
 ## One question the reference raises
@@ -154,3 +211,5 @@ VS Code switches views with a vertical rail of icons. Nozoki's navigation is tex
 secondary (§ 4), and it has exactly two destinations. Whether the Files/Git switch is a rail, a
 pair of labelled tabs at the top of the sidebar, or something else is not settled by these images
 and is not settled here.
+
+**Where it now stands:** leaned and awaiting the owner at `docs/UXD_open_issues.md` § 2.3.
