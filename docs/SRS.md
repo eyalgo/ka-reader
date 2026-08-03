@@ -2,7 +2,7 @@
 
 **Status:** Settled
 **Owner:** CTO
-**Version:** 3 — folded the owner's cycle-2 authorization (`docs/srs_trail/cycle-2.md`): the re-authored PRD `## UX Notes` (PRD v6) derived into the SRS — six new requirements (FR-23 – FR-28), FR-3 and AC-15 widened, FR-10 gains its PRD trace, the v1 assistive-technology posture stated in §5.1, six new criteria (AC-16 – AC-21)
+**Version:** 4 — folded the owner's cycle-3 override (`docs/srs_trail/cycle-3.md`): FR-18's commit history revised from a flat read-only list to branch topology drawn against a chosen set of branches, the owner-confirmed experience shape (`UXD.md` UX-S6, RN-14); AC-12's history coverage widened, RN-13's history clause superseded, §2's filtering exclusion clarified (RN-19)
 
 > The SRS is the technical source of truth: the system-level **what**, derived from the PRD and
 > read cold by the Principal PM (Delivery Plan / FDR) and the Principal Architect (ADR / NFDR).
@@ -43,7 +43,9 @@ forgotten:
   keyboard-accessibility promise — with keyboard navigation outside the terminus, that absence is
   permanent, not deferred. History filtering and search stay outside done with them — adjacent to
   the sidebar search, and placed out by the owner when widening the history surface *(owner:
-  `docs/srs_trail/cycle-1.md` §2.2)*.
+  `docs/srs_trail/cycle-1.md` §2.2)*. FR-18's branch-set scoping — choosing which branches the
+  history is presented against — is not a filter or a search, and does not reopen this exclusion
+  *(owner: `docs/srs_trail/cycle-3.md`)*.
 - **A front end for agent workflows and repository-inspection services** — the PRD's further-out
   growth direction; the Agari names it as where a next product might go, not where this one
   docks. Consequently this system exposes no programmatic surface (§5.2).
@@ -146,9 +148,17 @@ operation of the tool; several repositories at once — one at a time is the pro
   changes read-only, distinguishing staged changes from unstaged ones rather than collapsing both
   into a single working-vs-committed view. *(traces to: PRD Scope (In) full-ambition "diffs";
   widened by owner override: `docs/srs_trail/cycle-1.md` §2.2; see RN-13)*
-- **FR-18:** *(beyond v1)* The system presents the repository's commit history as a read-only
-  list — for each commit its identifier, message, author, and date. *(traces to: PRD Scope (In)
-  full-ambition "commit history"; owner-confirmed as a list: `docs/srs_trail/cycle-1.md` §2.2)*
+- **FR-18:** *(beyond v1)* The system presents the repository's commit history read-only. When
+  the history holds more than one branch, the user can see the branches as branches — which
+  commits belong to which branch, and where they diverge and merge — never a flat list that
+  flattens them together. The history is presented against a chosen **set** of branches — one,
+  several, or all of them — with a default that asks nothing (the current branch and what relates
+  to it), so the user chooses what is presented and does not have to. Per commit: its identifier,
+  message, author, and date, with its changed files reachable from its entry. The properties are
+  bound; how the history is drawn and what chooses the branch set stay downstream. *(traces to:
+  PRD Scope (In) full-ambition "commit history"; shape: owner override
+  `docs/srs_trail/cycle-3.md`, superseding the cycle-1 list (`docs/srs_trail/cycle-1.md` §2.2);
+  experience authority: `UXD.md` UX-S6, RN-14; see RN-19)*
 - **FR-19:** *(beyond v1)* The user can switch which repository is viewed without restarting the
   system — always exactly one at a time, never several at once. *(traces to: PRD Scope (In)
   "one repository at a time is a v1 cut", Out of Scope "Several repositories at once")*
@@ -364,8 +374,11 @@ see RN-8)*
   path. *(covers: NFR-13, C-3, C-9)*
 - **AC-11:** Both themes are present and usable from the first release. *(covers: FR-20)*
 - **AC-12:** At the closing release, the diff view (staged distinguished from unstaged), the
-  commit history with its per-commit diffs, and repository switching are present, read-only, and
-  AC-1 – AC-3 still pass with them exercised. *(covers: FR-17 – FR-19, FR-22)*
+  commit history — against a repository whose history holds more than one branch: the branches
+  visible as branches, the presented branch set choosable, and the default asking nothing — with
+  its per-commit diffs, and repository switching are present, read-only, and AC-1 – AC-3 still
+  pass with them exercised. *(covers: FR-17 – FR-19, FR-22; history coverage widened with FR-18:
+  RN-19)*
 - **AC-13:** After a session in which preferences changed, new or changed files exist only in the
   tool's own data location — none under the repository path — and inspection finds nothing
   personal and no repository content in them. *(covers: FR-21, DR-5)*
@@ -452,9 +465,10 @@ see RN-8)*
   AC-10; owner confirmation: `docs/srs_trail/cycle-1.md` §2.1)*.
 - **RN-13:** The diff and commit-history surface was widened by owner override — the diff
   distinguishes staged changes from unstaged ones (FR-17), selecting a commit presents what it
-  changed (FR-22), and the history stays a read-only list (FR-18); history filtering and search
-  stay outside done, adjacent to the sidebar search the Agari excludes *(re: FR-17, FR-18,
-  FR-22, AC-12, §2; owner override: `docs/srs_trail/cycle-1.md` §2.2)*. Propagating the override
+  changed (FR-22), and the history stayed a read-only list (FR-18) — a shape the owner has since
+  revised to branch topology (RN-19); history filtering and search stay outside done, adjacent
+  to the sidebar search the Agari excludes *(re: FR-17, FR-18, FR-22, AC-12, §2; owner override:
+  `docs/srs_trail/cycle-1.md` §2.2)*. Propagating the override
   surfaced two pointers naming FR-18 as the repository-switch requirement — FR-2 and §2's
   one-at-a-time line — while that requirement is FR-19; both now point at FR-19. A reference
   correction forced by FR-18's changed content, not a re-derivation of either requirement.
@@ -492,11 +506,29 @@ see RN-8)*
   keyboard absence is permanent (the Agari holds keyboard navigation outside done), while the
   wider no-assistive-technology-promise is the PRD's statement about v1 only *(re: §5.1, §2;
   PRD source: UX Notes "The bounds v1 draws"; owner-confirmed: `docs/prd_trail/cycle-5.md`)*.
+- **RN-19:** *(changed — this revision, v4)* FR-18's history shape revised from a flat read-only
+  list to branch topology, by owner override (`docs/srs_trail/cycle-3.md`) — superseding the
+  cycle-1 answer on the history's shape only; cycle-1's diff decisions (FR-17, FR-22) and its
+  history-filtering/search exclusion stand untouched. The owner reopened the shape during the
+  UXD's rounds and confirmed the experience statement there; the wording authority is `UXD.md`
+  UX-S6 and RN-14 (owner-confirmed: `docs/uxd_trail/cycle-2.md` §2.1). The properties are
+  bound — the branches visible as branches when more than one exists, a chosen set of branches
+  with a default that asks nothing, per commit its identifier, message, author, and date with
+  changed files reachable — and the mechanism is not: how the history is drawn and what chooses
+  the set stay downstream (the choosing's placement is the UXD's; the rendering is the SDD's).
+  FR-18 stays *(beyond v1)* and inside the terminus — commit history is named in the Agari's
+  first condition. Propagation: AC-12's history coverage widened to exercise the shape, RN-13's
+  history clause marked superseded, §2's filtering exclusion clarified (branch-set scoping is
+  not a filter or a search). Topology's scale exposure rides the existing NFR-10 process —
+  history length is already a named scale dimension there, its reference sizes fixed from the
+  first working build (RN-4) — so no new performance item is raised. *(re: FR-18, AC-12, RN-13,
+  §2; PRD source: Scope (In) full ambition "commit history")*
 
 ---
 
 ## Open Questions
 
 None — the owner's cycle-1 answers (`docs/srs_trail/cycle-1.md`) settled every drafted choice,
-and the cycle-2 answer (`docs/srs_trail/cycle-2.md`) scoped this revision to the moved PRD; the
-numeric thresholds are settled-as-process (RN-4), awaiting a build, not an answer.
+the cycle-2 answer (`docs/srs_trail/cycle-2.md`) scoped the v3 revision to the moved PRD, and the
+cycle-3 override (`docs/srs_trail/cycle-3.md`) revised FR-18's history shape at v4; the numeric
+thresholds are settled-as-process (RN-4), awaiting a build, not an answer.
