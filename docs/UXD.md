@@ -1,8 +1,8 @@
 # UXD — Nozoki 覗き
 
-**Status:** Draft
+**Status:** Settled
 **Owner:** CDO
-**Version:** 2 — owner answers folded (direction confirmed; README posture placed); the owner's layout reference drawn in; branch topology and the repository selector drafted per owner directives
+**Version:** 3 — the owner's cycle-2 answers folded and the companion closed: the history topology confirmed with the set-scoping refinement; the repository selector placed in the shell chrome; the Files/Git tabs confirmed
 
 > The UXD is the experience source of truth: the experience-level **what**, derived from the
 > settled PRD, authored concurrent with the SRS, and consumed cold by the SDD write pass (so
@@ -63,13 +63,15 @@ truthful, still"; § Assumptions, the familiarity thesis. The aesthetic lean is 
 - **The sidebar toggles between Files and Git** (v1). The toggle is a mode of the sidebar only;
   it never affects the reading panel (UX-I3). Presentation: a pair of labelled tabs at the top of
   the sidebar — text-first, and exactly the two destinations that exist; not an icon rail.
-  *(→ PRD § Core Features; the tab presentation: the CDO's drafted call, pending owner
-  confirmation — RN-16)*
+  *(→ PRD § Core Features; the tab presentation: owner-confirmed — `docs/uxd_trail/cycle-2.md`
+  §2.3, RN-16)*
 - **Navigation is text-first, icons secondary.** *(→ PRD § UX Notes "The character")*
 - **The shell names what it is looking at** — the viewed repository is identified in the shell
   chrome; the branch lives in the Git view (§ Core Features). Certainty about *what* is being
   inspected is part of the trust the product sells, and it becomes load-bearing when the viewed
-  repository can change (UX-F5). *(added — RN-2)*
+  repository can change (UX-F5). Beyond v1 the identity element is itself the repository
+  selector — what names the repository is what changes it (UX-F5; placement owner-confirmed:
+  RN-15). *(added — RN-2)*
 - **Beyond v1, inside the terminus:** the same single window holds everything. Diffs are shown in
   the reading panel — a diff is content to read; commit history is reached from the Git side;
   switching the viewed repository is the repository selector (UX-F5). No second window, ever.
@@ -123,21 +125,23 @@ truthful, still"; § Assumptions, the familiarity thesis. The aesthetic lean is 
   changes distinguished from unstaged ones — in the reading panel. From the Git side they open
   the **commit history**. When the repository's history holds more than one branch, the reader
   can see the branches as branches: which commits belong to which, and where they diverge and
-  merge — never a flat list that flattens them together. The history is scoped by a branch
-  choice — the current branch and what relates to it — not an attempt to draw every ref at once.
-  Per commit: identifier, message, author, and date, with its changed files reachable from its
-  entry. Selecting a commit presents what that commit changed, in the same diff presentation.
+  merge — never a flat list that flattens them together. The history is drawn against a chosen
+  **set** of branches — one, several, or all of them — with a default that asks nothing: the
+  current branch and what relates to it, so a reader who never touches the choice still arrives
+  at a graph, not a prompt. The choosing belongs to the history view itself. Per commit:
+  identifier, message, author, and date, with its changed files reachable from its entry.
+  Selecting a commit presents what that commit changed, in the same diff presentation.
 - Data the UI needs at each step: per changed file, its diff content with the staged/unstaged
   distinction; the commit history with its parent relationships (the topology) and branch
-  identity, scoped by the chosen branch; per commit — identifier, message, author, date, changed
-  files; per selected commit, what it changed.
+  identity, scoped by the chosen branch set; per commit — identifier, message, author, date,
+  changed files; per selected commit, what it changed.
 - Failure/recovery: read-only throughout — presenting the staged state stages nothing. History
   filtering and search do not exist (outside done — § 10). A diff or history item that cannot be
   read degrades only itself, as everywhere (UX-I10).
 - The diff shape — staged-vs-unstaged, per-commit diff reusing the same presentation — is the
-  owner's settled decision, carried here (RN-6). The history shape was **reopened by the owner**:
-  the flat list is revised to the topology statement above, drafted pending owner confirmation
-  (RN-14).
+  owner's settled decision, carried here (RN-6). The history shape was reopened by the owner and
+  is now settled: the topology statement above, confirmed with the set-scoping refinement
+  (`docs/uxd_trail/cycle-2.md` §2.1 — RN-14).
 
 ### 5.5 UX-F5 — Switch the viewed repository *(beyond v1)* *(→ PRD § Scope (In) "one repository at a time is a v1 cut"; § Out of Scope "Changing the viewed repository without restarting")*
 
@@ -149,8 +153,8 @@ truthful, still"; § Assumptions, the familiarity thesis. The aesthetic lean is 
   (UX-F1) for that repository. Always exactly one repository at a time — switching replaces,
   never adds.
 - The remembered list is the tool's own state, kept outside the viewed repository (→ PRD § Data &
-  Privacy). Where the selector lives — the shell chrome's identity element becoming the control —
-  is the CDO's drafted call, pending owner confirmation (RN-15).
+  Privacy). Where the selector lives is settled: the shell chrome — the identity element (§ 4,
+  RN-2) is the control (owner-confirmed: `docs/uxd_trail/cycle-2.md` §2.2 — RN-15).
 - Data the UI needs at each step: the remembered-repositories list; the new repository's
   identity, tree, and Git state; the shell chrome's repository name updates (§ 4).
 - Failure/recovery: a chosen path that is not a readable local Git repository gets the same plain
@@ -169,7 +173,7 @@ its reason.
 | UX-S3 | Git view | A clean tree is stated plainly — "nothing changed" is information, not a blank pane *(added — RN-3)* | State appears as it is read | Git state transiently unreadable: a visible degraded indication on that item, recovering on refresh. A repository mid-operation (merge, rebase, detached) is **not** an error: the true state, presented *(→ PRD § UX Notes "the view never lies")* | Branch, changed files, staged files, short status *(→ PRD § Core Features)* |
 | UX-S4 | Startup failure | n/a — the surface exists only in failure | n/a | Pointed at something that is not a local Git repository, or a path that does not exist or cannot be read: a plain statement of what went wrong and what to do next, at the no-learning-curve bar — no dead end that presumes expertise *(→ PRD § UX Notes "Failure states")* | n/a — success is the workbench (UX-S1–S3) |
 | UX-S5 | Diff view *(beyond v1)* | A file with no remaining changes: stated | As UX-S1 | A diff that cannot be produced: plain statement, shell intact | Read-only diff, staged distinguished from unstaged (UX-F4) |
-| UX-S6 | History view *(beyond v1)* | A repository with no commits: stated | The history appears as it is read | History unreadable: plain statement, shell intact | Read-only history with branch topology visible when more than one branch exists — which commits belong to which branch, where they diverge and merge; per commit its identifier, message, author, and date, with its changed files reachable from its entry; selecting a commit opens its diff (UX-F4; drafted shape pending owner confirmation, RN-14) |
+| UX-S6 | History view *(beyond v1)* | A repository with no commits: stated | The history appears as it is read | History unreadable: plain statement, shell intact | Read-only history with branch topology visible when more than one branch exists — which commits belong to which branch, where they diverge and merge — drawn against a chosen set of branches with a default that asks nothing (UX-F4); per commit its identifier, message, author, and date, with its changed files reachable from its entry; selecting a commit opens its diff (owner-confirmed shape, RN-14) |
 | UX-S7 | Repository selector *(beyond v1)* | First run: no remembered repositories — the list holds only the browse entry *(owner directive — RN-15)* | n/a — the list is the tool's own remembered state, held locally | A chosen path that is not a readable repository: the same plain failure language as UX-S4; the current repository stays viewed | The selector lists remembered repositories plus browse; choosing one lands the arrival state (UX-F1) for the new repository, and the shell's repository name updates (§ 4) |
 
 ## 7. Interaction Patterns
@@ -286,14 +290,14 @@ UX-S5–S7 are designed here despite being beyond v1.
 | UX-F1 | § Key Use Cases 1; § UX Notes "The path" 1–2; § Core Features |
 | UX-F2 | § Key Use Cases 2; § UX Notes "The path" 3 |
 | UX-F3 | § Key Use Cases 3; § UX Notes "The path" 4, "the view never lies"; § Success Metrics "Refresh immediacy" |
-| UX-F4 | § Scope (In) full ambition (diffs, commit history); diff shape: owner decision, `docs/srs_trail/cycle-1.md` §2.2 (RN-6); history shape: reopened by the owner, `docs/uxd_trail/cycle-1.md` §2.1 → `docs/ux_reference/README.md` § Owner directives 1, drafted (RN-14) |
-| UX-F5 | § Scope (In) "one repository at a time is a v1 cut"; § Out of Scope "Changing the viewed repository without restarting"; the selector: owner directive, `docs/uxd_trail/cycle-1.md` §2.1 (RN-15) |
+| UX-F4 | § Scope (In) full ambition (diffs, commit history); diff shape: owner decision, `docs/srs_trail/cycle-1.md` §2.2 (RN-6); history shape: reopened by the owner, `docs/uxd_trail/cycle-1.md` §2.1 → `docs/ux_reference/README.md` § Owner directives 1; confirmed with the set-scoping refinement: `docs/uxd_trail/cycle-2.md` §2.1 (RN-14) |
+| UX-F5 | § Scope (In) "one repository at a time is a v1 cut"; § Out of Scope "Changing the viewed repository without restarting"; the selector: owner directive, `docs/uxd_trail/cycle-1.md` §2.1 (RN-15); placement owner-confirmed: `docs/uxd_trail/cycle-2.md` §2.2 (RN-15) |
 | UX-S1 | § Core Features "empty state", "read-only viewing"; § UX Notes "Failure states", "the view never lies" |
 | UX-S2 | § Core Features "file tree", markers, selection; empty/error cells added (RN-3) |
 | UX-S3 | § Core Features "Git view"; § UX Notes "the view never lies"; empty cell added (RN-3) |
 | UX-S4 | § UX Notes "Failure states" |
 | UX-S5 | § Scope (In) full ambition; owner decision `docs/srs_trail/cycle-1.md` §2.2 |
-| UX-S6 | § Scope (In) full ambition; history shape: reopened by the owner, drafted (RN-14) |
+| UX-S6 | § Scope (In) full ambition; history shape: owner-confirmed, `docs/uxd_trail/cycle-2.md` §2.1 (RN-14) |
 | UX-S7 | § Scope (In) / § Out of Scope (repository switching); the selector: owner directive (RN-15) |
 | UX-I1 | § UX Notes "The character" |
 | UX-I2 | § UX Notes "The path" 4; no-ceremony: added (RN-4) |
@@ -311,8 +315,8 @@ UX-S5–S7 are designed here despite being beyond v1.
 | UX-A3 | owner-confirmed with placement bound, `docs/uxd_trail/cycle-1.md` §2.2 (RN-10) |
 | § 4 IA (shell, sidebar, text-first) | § UX Notes "The character", "The path" 1; § Core Features |
 | § 4 layout reference | owner answer, `docs/uxd_trail/cycle-1.md` §2.1 (RN-13) |
-| § 4 Files/Git switch presentation | drafted pending confirmation (RN-16) |
-| § 4 repository identity in shell | added (RN-2) |
+| § 4 Files/Git switch presentation | owner-confirmed: `docs/uxd_trail/cycle-2.md` §2.3 (RN-16) |
+| § 4 repository identity in shell | added (RN-2); the element is the selector control beyond v1 — owner-confirmed (RN-15) |
 | § 9 Direction | § UX Notes "The character"; § Assumptions; owner-confirmed `docs/uxd_trail/cycle-1.md` §2.1 (RN-8) |
 
 ---
@@ -357,7 +361,7 @@ UX-S5–S7 are designed here despite being beyond v1.
   and a second window would break the one-shell arrival model. The **history shape** that §2.2
   also settled — a flat read-only list — was **reopened by the owner's own revision**
   (`docs/uxd_trail/cycle-1.md` §2.1 → `docs/ux_reference/README.md` § Owner directives 1); its
-  drafted replacement is RN-14. History filtering and search stay out — that part of the §2.2
+  confirmed replacement is RN-14. History filtering and search stay out — that part of the §2.2
   decision is untouched (§ 10). *(re: UX-F4, UX-S5, UX-S6, § 4; PRD source: Scope (In) full
   ambition)*
 - **RN-7:** *(added)* Public visual surfaces must match the running product (UX-I11) — *because*
@@ -395,53 +399,62 @@ UX-S5–S7 are designed here despite being beyond v1.
   in the shell. Read-only *enforcement* is likewise the SRS's; this document carries its
   experience half (UX-I1, UX-I4, UX-I7). *(re: reverse walk; PRD source: Assumptions, Success
   Metrics)*
-- **RN-13:** *(added — owner answer)* The layout reference `docs/ux_reference/` — three VS Code
+- **RN-13:** *(added — owner answer)* The layout reference `docs/ux_reference/` — VS Code
   screenshots from the owner's own workbench with a README annotating every element as taken or
   excluded; an element not listed there was not considered. Its authority is **layout, not
   style** (the direction stays primitives, RN-8), and this document points at it rather than
   restating it — a copied annotation would drift from the one the owner maintains. *(re: § 4,
   § 9; owner answer: `docs/uxd_trail/cycle-1.md` §2.1)*
-- **RN-14:** *(changed — drafted pending owner confirmation)* The history view shows branch
-  topology — *because* the owner directed it: a reader with more than one branch must see that,
-  rather than a flat list that flattens them together (`docs/uxd_trail/cycle-1.md` §2.1 →
-  `docs/ux_reference/README.md` § Owner directives 1 — the owner's own revision of the
-  `docs/srs_trail/cycle-1.md` §2.2 list shape, not an inference from screenshots). The drafted
-  statement (UX-F4, UX-S6) is experience-level only — what a reader must be able to see — and
-  its basis is what the directive asked to be examined: VS Code's own documentation describes
-  its source-control graph as "a graphical representation of your commit history and branch
-  relationships", highlighting incoming and outgoing commits
+- **RN-14:** *(confirmed choice — with the owner's set-scoping refinement)* The history view
+  shows branch topology — the owner directed it (`docs/uxd_trail/cycle-1.md` §2.1 →
+  `docs/ux_reference/README.md` § Owner directives 1) and confirmed the drafted statement
+  (`docs/uxd_trail/cycle-2.md` §2.1): a reader with more than one branch sees which commits
+  belong to which and where they diverge and merge, never a flat list. The refinement the
+  confirmation carried: the scoping is a chosen **set** of branches — one, several, or all of
+  them — with a default that asks nothing (the current branch and what relates to it), so the
+  reader chooses what the graph draws and does not have to
+  (`docs/ux_reference/vscode-branch-filter.png`, annotated in `docs/ux_reference/README.md`).
+  The reference's modal checklist is one control among several that would serve — the owner
+  bound the properties, not the mechanism — and the set-scoping choice belongs to the history
+  view itself (owner: `docs/uxd_trail/cycle-2.md` §2.2). The statement's basis is what the
+  directive asked to be examined: VS Code's own documentation describes its source-control graph
+  as "a graphical representation of your commit history and branch relationships"
   (https://code.visualstudio.com/docs/sourcecontrol/overview), and the supplied screenshots show
-  that graph scoped by a branch choice, with each commit's changed files beneath it. Feasibility
-  is downstream (SRS/SDD) and does not narrow the statement. Consequence handed forward: the
-  SRS's FR-18 describes the history as a flat list and needs a CTO revision once this is
-  confirmed — named in the companion, not silently absorbed. *(re: UX-F4, UX-S6, RN-6; PRD
-  source: Scope (In) full ambition "commit history")*
-- **RN-15:** *(added — owner directive; placement drafted pending owner confirmation)* The
-  repository switch is a **dropdown selector** showing the current repository's name — the name
-  is both label and control — listing the repositories Nozoki remembers plus a browse entry,
-  empty of all but browse on first run. The control is the owner's own naming
-  (`docs/uxd_trail/cycle-1.md` §2.1 → `docs/ux_reference/README.md` § Owner directives 2);
-  remembering repositories is already permitted (PRD § Data & Privacy — tool state outside the
-  viewed repository), so nothing here needs the CPO. What remains drafted is **where it
-  lives**: the shell chrome — the identity element (RN-2) becomes the control — *because* what
-  names the repository should be what changes it (one element telling one truth, per the
-  owner's own framing), and the chrome is reachable from either sidebar mode while the Git view
-  header is not. The alternative (the Git view header, as the reference image shows) is mapped
-  in the companion. *(re: UX-F5, UX-S7, § 4; PRD source: Scope (In) / Out of Scope, repository
-  switching; Data & Privacy)*
-- **RN-16:** *(added — drafted pending owner confirmation)* The Files/Git switch is presented as
-  a pair of labelled tabs at the top of the sidebar — *because* § 4's navigation rule is
-  text-first with icons secondary and the product has exactly two destinations: an icon rail
-  (the reference's own mechanism, `docs/ux_reference/README.md` § "One question") is built for
-  many destinations and identifies them by icon alone, which the text-first rule and the
-  two-destination reality both argue against. Raised by the owner's reference as unsettled;
-  routed through the companion. *(re: § 4; PRD source: UX Notes "The character" — text-first;
-  Core Features — the sidebar toggle)*
+  that graph drawn against a chosen ref set, with each commit's changed files beneath it.
+  Feasibility is downstream (SRS/SDD) and does not narrow the statement. Consequence handed
+  forward, accepted by the owner with the confirmation: the SRS's FR-18 still describes the
+  history as a flat read-only list (`SRS.md` FR-18) and needs a CTO revision — recorded here,
+  not absorbed. *(re: UX-F4, UX-S6, RN-6; PRD source: Scope (In) full ambition "commit
+  history")*
+- **RN-15:** *(added — owner directive; placement owner-confirmed)* The repository switch is a
+  **dropdown selector** showing the current repository's name — the name is both label and
+  control — listing the repositories Nozoki remembers plus a browse entry, empty of all but
+  browse on first run. The control is the owner's own naming (`docs/uxd_trail/cycle-1.md` §2.1 →
+  `docs/ux_reference/README.md` § Owner directives 2); remembering repositories is already
+  permitted (PRD § Data & Privacy — tool state outside the viewed repository), so nothing here
+  needs the CPO. Where it lives is settled (`docs/uxd_trail/cycle-2.md` §2.2): the **shell
+  chrome** — the identity element (RN-2) is the control — *because* what names the repository is
+  what changes it (one element telling one truth, per the owner's own framing), and the chrome
+  is reachable from either sidebar mode while the Git view header is not. The alternative the
+  reference shows — the selector grouped with repository-scoped state in the Git view header —
+  was weighed by the owner and declined: what it buys is grouping, what it costs is
+  reachability. One fence the owner drew with the answer: where a **branch** control lives is a
+  separate question, not settled by this placement — the history view's set-scoping choice is
+  RN-14's and lives with that view. *(re: UX-F5, UX-S7, § 4; PRD source: Scope (In) / Out of
+  Scope, repository switching; Data & Privacy)*
+- **RN-16:** *(confirmed choice)* The Files/Git switch is a pair of labelled tabs at the top of
+  the sidebar — *because* § 4's navigation rule is text-first with icons secondary and the
+  product has exactly two destinations: an icon rail (the reference's own mechanism,
+  `docs/ux_reference/README.md` § "One question") is built for many destinations and identifies
+  them by icon alone. Confirmed by the owner (`docs/uxd_trail/cycle-2.md` §2.3): the Agari
+  admits no third view, so the argument for a rail — that it scales to many — is an argument
+  about a product this one is not going to become; no exception to § 4's text-first rule is
+  taken. *(re: § 4; PRD source: UX Notes "The character" — text-first; Core Features — the
+  sidebar toggle)*
 
 ---
 
 ## Open Questions
 
-None held open in this document — the three calls awaiting the owner are drafted in and listed in
-`docs/UXD_open_issues.md` (§ 2): the history view's branch topology (RN-14), where the repository
-selector lives (RN-15), and the Files/Git switch presentation (RN-16).
+None — nothing awaits the owner. Every answered round is retired whole to `docs/uxd_trail/`,
+where each decision and its reasoning stay citable.
