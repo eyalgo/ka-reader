@@ -1,0 +1,148 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Components — Nozoki 覗き</title>
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { padding: 28px 26px 64px; }
+  header { display: flex; align-items: baseline; gap: 16px; margin-bottom: 4px; }
+  h1 { font: var(--type-title); margin: 0; }
+  .lede { font: var(--type-body); color: var(--text-secondary); max-width: var(--panel-max-prose); margin: 0 0 26px; }
+  h2 {
+    font: var(--type-section); letter-spacing: var(--tracking-caps); text-transform: uppercase;
+    color: var(--text-tertiary); margin: 30px 0 10px; padding-bottom: 6px; border-bottom: var(--hairline);
+  }
+  .row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 12px; }
+  .pane {
+    background: var(--surface-panel); border: var(--hairline);
+    border-radius: var(--radius-md); overflow: hidden;
+  }
+  .sidebar { width: 264px; background: var(--surface-sidebar); }
+  .tall { height: 200px; }
+  .split { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+  .note { font: var(--type-meta); color: var(--text-tertiary); margin: 4px 0 14px; }
+  button.toggle {
+    font: var(--type-chrome); color: var(--text-primary); background: transparent;
+    border: var(--rule); border-radius: var(--radius-md); padding: 4px 10px; cursor: pointer;
+  }
+</style></head>
+<body>
+<header>
+  <h1>Components</h1>
+  <button class="toggle" id="theme" type="button">Dark</button>
+</header>
+<p class="lede">Fifteen framework-free custom elements, reading the same tokens the specimens do.
+  A reference implementation — not yet the product's <code>src/</code>. Nothing here fetches
+  anything.</p>
+
+<h2>Core</h2>
+<div class="row">
+  <nz-button variant="primary">Choose a folder</nz-button>
+  <nz-button>Cancel</nz-button>
+  <nz-button variant="ghost">Dismiss</nz-button>
+  <nz-button disabled>Unavailable</nz-button>
+</div>
+<div class="row">
+  <nz-button size="sm" variant="primary">Small</nz-button>
+  <nz-button size="sm">Small</nz-button>
+  <nz-icon-button name="sun" label="Light theme"></nz-icon-button>
+  <nz-icon-button name="moon" label="Dark theme" active></nz-icon-button>
+  <nz-icon name="folder"></nz-icon>
+  <nz-icon name="file-code"></nz-icon>
+  <nz-icon name="git-branch"></nz-icon>
+  <nz-icon name="git-commit-horizontal"></nz-icon>
+  <nz-icon name="git-merge"></nz-icon>
+  <nz-chip>12</nz-chip>
+  <nz-chip tone="outline">a4f19c2</nz-chip>
+  <nz-chip tone="accent" pill>current</nz-chip>
+</div>
+
+<h2>Navigation</h2>
+<div class="split">
+  <div class="pane sidebar">
+    <nz-sidebar-tabs value="Files"></nz-sidebar-tabs>
+    <nz-tree-row name="docs" kind="folder" expanded></nz-tree-row>
+    <nz-tree-row name="DESIGN.md" depth="1" status="A"></nz-tree-row>
+    <nz-tree-row name="UXD.md" depth="1" selected></nz-tree-row>
+    <nz-tree-row name="SRS.md" depth="1" status="M"></nz-tree-row>
+    <nz-tree-row name="notes.md" depth="1" status="D" missing></nz-tree-row>
+    <nz-tree-row name="ux_reference" kind="folder" depth="1"></nz-tree-row>
+    <nz-tree-row name="README.md" status="U"></nz-tree-row>
+  </div>
+  <div class="pane sidebar">
+    <nz-sidebar-tabs value="Git"></nz-sidebar-tabs>
+    <nz-section-header label="Changes" count="3" collapsible></nz-section-header>
+    <nz-tree-row name="SRS.md" depth="1" status="M"></nz-tree-row>
+    <nz-tree-row name="README.md" depth="1" status="U"></nz-tree-row>
+    <nz-section-header label="Staged" count="1" collapsible></nz-section-header>
+    <nz-tree-row name="DESIGN.md" depth="1" status="A"></nz-tree-row>
+  </div>
+  <div>
+    <div class="row" style="background:var(--surface-chrome);padding:6px 10px;border-radius:var(--radius-md)">
+      <nz-repository-selector name="nozoki" id="selector"></nz-repository-selector>
+    </div>
+    <div class="note">The name is the control. Click it — first run holds only the browse entry.</div>
+  </div>
+</div>
+
+<h2>Git</h2>
+<div class="row">
+  <nz-status-letter status="A"></nz-status-letter>
+  <nz-status-letter status="M"></nz-status-letter>
+  <nz-status-letter status="D"></nz-status-letter>
+  <nz-status-letter status="U"></nz-status-letter>
+  <nz-status-letter status="R"></nz-status-letter>
+  <nz-status-letter status="C"></nz-status-letter>
+  <nz-branch-chip name="main" current></nz-branch-chip>
+  <nz-branch-chip name="topology"></nz-branch-chip>
+</div>
+<div class="pane">
+  <nz-commit-row sha="a4f19c2" message="the design language moves into the repository" author="Eyal" date="today" lane="0" lanes="2" selected id="c1"></nz-commit-row>
+  <nz-commit-row sha="3fc595b" message="SRS v4: FR-18 revised to branch topology" author="Eyal" date="5 Aug" lane="1" lanes="2"></nz-commit-row>
+  <nz-commit-row sha="c05a76b" message="merge topology into main" author="Eyal" date="3 Aug" lane="0" lanes="2" merge></nz-commit-row>
+</div>
+<div class="note">Rails carry topology; a merge is a hollow node, so it reads without colour.</div>
+
+<h2>Reading</h2>
+<div class="split">
+  <div class="pane tall" style="flex:1;min-width:320px"><nz-code-surface id="code"></nz-code-surface></div>
+  <div class="pane tall" style="flex:1;min-width:320px"><nz-diff-surface id="diff" staged></nz-diff-surface></div>
+</div>
+
+<h2>Feedback</h2>
+<div class="split">
+  <div class="pane tall" style="flex:1;min-width:300px">
+    <nz-empty-state icon="file" title="Select a file to view"></nz-empty-state>
+  </div>
+  <div style="flex:1;min-width:300px;display:grid;gap:10px">
+    <nz-status-message tone="info" title="Nothing changed"></nz-status-message>
+    <nz-status-message tone="degraded" title="Git status is being read again"></nz-status-message>
+    <nz-status-message tone="error"
+      title="That folder isn't a Git repository."
+      detail="Choose a folder that contains a .git directory.">
+      <nz-button variant="primary" size="sm">Choose a folder</nz-button>
+    </nz-status-message>
+  </div>
+</div>
+
+<script type="module">
+import './index.js'
+
+document.getElementById('code').code = `// the view never lies
+export function openRepository(path) {
+  const repo = readOnly(path);
+  if (repo.changed > 0) present(repo.status);
+  return repo;
+}`
+
+document.getElementById('diff').hunks = [
+  { header: '@@ -12,7 +12,9 @@ FR-18', lines: [' const history = read(repo);', '-  return flatten(history);', '+  return topology(history, refs);', ' }'] },
+]
+
+document.getElementById('c1').tips = [{ name: 'main', current: true }]
+
+const btn = document.getElementById('theme')
+btn.addEventListener('click', () => {
+  const dark = document.documentElement.getAttribute('data-theme') === 'dark'
+  document.documentElement.setAttribute('data-theme', dark ? 'light' : 'dark')
+  btn.textContent = dark ? 'Dark' : 'Light'
+})
+</script>
+</body></html>

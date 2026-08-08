@@ -34,6 +34,30 @@ Two rules the harvest answers to, both checked by `scripts/design-check.mjs`:
 - **Nothing here is tooling exhaust.** A public MIT repository should read as the product and
   nothing else.
 
+## Components
+
+`components/` holds fifteen framework-free custom elements — `nz-button`, `nz-tree-row`,
+`nz-status-letter`, `nz-commit-row`, `nz-diff-surface` and the rest — built on nothing but
+`HTMLElement` and the tokens. `components/components.html` shows all of them in both themes.
+
+They are a **reference implementation, not the product's `src/`**. Nozoki's stack is "Lit or
+direct DOM" (`docs/proposal.md`) and the SDD has not chosen between them, so these are written to
+the common subset: standard custom elements. If the SDD picks Lit, Lit *is* custom elements and
+these survive as a base-class change; if it picks direct DOM, they already are that. Nothing here
+pre-empts that decision, and none of it has been through the change pipeline.
+
+Where the React originals tracked hover and press in component state, these use CSS `:hover` and
+`:active`. Same behaviour, less machinery, and the rule stays legible in one place.
+
+The demo page loads ES modules, which browsers refuse over `file://`. Serve the folder instead:
+
+```
+python3 -m http.server        # then open /docs/design_reference/components/components.html
+```
+
+A local server is not network egress — the no-network rule is about what the *product* does at
+runtime, and nothing on these pages fetches anything.
+
 ## Specimens
 
 The twenty files in `guidelines/` each show one foundation, and each links two stylesheets: the
