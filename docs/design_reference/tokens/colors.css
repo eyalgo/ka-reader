@@ -1,0 +1,146 @@
+/* Base palette — warm stone neutrals + persimmon accent.
+   Every state distinction in Nozoki also carries a letter or position (UX-A2); colour never
+   carries meaning alone. */
+:root {
+  --stone-0: #ffffff;
+  --stone-1: #faf9f7;
+  --stone-2: #f3f1ee;
+  --stone-3: #e8e5e0;
+  --stone-4: #d8d4cd;
+  --stone-5: #b6b1a8;
+  --stone-6: #8b867d;
+  --stone-7: #625d56;
+  --stone-8: #3c3833;
+  --stone-9: #262320;
+  --stone-10: #1a1815;
+  --stone-11: #111008;
+
+  --persimmon-300: #f3b48c;
+  --persimmon-400: #ea7f3d;
+  --persimmon-500: #d4520f;
+  --persimmon-600: #c2410c;
+  --persimmon-700: #9a3412;
+
+  --green-500: #3f7d3f;
+  --green-400: #6baa5f;
+  --ochre-500: #a16207;
+  --ochre-400: #d3a03b;
+  --red-500: #b3261e;
+  --red-400: #e0705f;
+  --teal-500: #0f766e;
+  --teal-400: #4fa8a0;
+  --indigo-500: #4e6cb8;
+  --indigo-400: #8aa3dd;
+}
+
+/* ── Light theme (the signal-less hard default, UXD RN-5) ────────────────────── */
+:root {
+  --surface-app: var(--stone-2);
+  --surface-panel: var(--stone-0);
+  --surface-sidebar: var(--stone-1);
+  --surface-chrome: var(--stone-2);
+  --surface-raised: var(--stone-0);
+  --surface-sunken: var(--stone-2);
+  --surface-hover: #0000000a;
+  --surface-active: #00000012;
+  --surface-selected: #c2410c14;
+  --surface-inactive-selected: #0000000d;
+  --surface-scrim: #26232052;
+
+  --text-primary: var(--stone-9);
+  --text-secondary: var(--stone-7);
+  --text-tertiary: var(--stone-6);
+  --text-disabled: var(--stone-5);
+  --text-accent: var(--persimmon-600);
+  --text-on-accent: var(--stone-0);
+  --text-code: var(--stone-9);
+
+  --border-subtle: var(--stone-3);
+  --border-default: var(--stone-4);
+  --border-strong: var(--stone-5);
+  --border-accent: var(--persimmon-600);
+  --focus-ring: var(--persimmon-600);
+
+  --accent-solid: var(--persimmon-600);
+  --accent-solid-hover: var(--persimmon-700);
+  --accent-quiet: #c2410c14;
+
+  --git-added: var(--green-500);
+  --git-modified: var(--ochre-500);
+  --git-deleted: var(--red-500);
+  --git-untracked: var(--teal-500);
+  --git-renamed: var(--indigo-500);
+  --git-conflict: var(--persimmon-700);
+
+  --status-error: var(--red-500);
+  --status-degraded: var(--ochre-500);
+  --status-ok: var(--green-500);
+
+  --diff-added-bg: #3f7d3f1f;
+  --diff-removed-bg: #b3261e1a;
+  --diff-gutter: var(--stone-2);
+
+  --code-keyword: #9a3412;
+  --code-string: #3f7d3f;
+  --code-comment: var(--stone-6);
+  --code-number: #4e6cb8;
+  --code-function: #6b21a8;
+  --code-type: #0f766e;
+  --code-punctuation: var(--stone-7);
+}
+
+/* ── Dark theme — first-class, equally maintained (UX-I9) ────────────────────── */
+[data-theme="dark"] {
+  --surface-app: var(--stone-11);
+  --surface-panel: var(--stone-10);
+  --surface-sidebar: var(--stone-11);
+  --surface-chrome: var(--stone-11);
+  --surface-raised: var(--stone-9);
+  --surface-sunken: #0d0c0a;
+  --surface-hover: #ffffff0f;
+  --surface-active: #ffffff1a;
+  --surface-selected: #ea7f3d26;
+  --surface-inactive-selected: #ffffff12;
+  --surface-scrim: #0d0c0a99;
+
+  --text-primary: var(--stone-2);
+  --text-secondary: var(--stone-5);
+  --text-tertiary: var(--stone-6);
+  --text-disabled: var(--stone-7);
+  --text-accent: var(--persimmon-400);
+  --text-on-accent: var(--stone-11);
+  --text-code: var(--stone-3);
+
+  --border-subtle: #ffffff14;
+  --border-default: #ffffff24;
+  --border-strong: #ffffff3d;
+  --border-accent: var(--persimmon-400);
+  --focus-ring: var(--persimmon-400);
+
+  --accent-solid: var(--persimmon-500);
+  --accent-solid-hover: var(--persimmon-400);
+  --accent-quiet: #ea7f3d1f;
+
+  --git-added: var(--green-400);
+  --git-modified: var(--ochre-400);
+  --git-deleted: var(--red-400);
+  --git-untracked: var(--teal-400);
+  --git-renamed: var(--indigo-400);
+  --git-conflict: var(--persimmon-300);
+
+  --status-error: var(--red-400);
+  --status-degraded: var(--ochre-400);
+  --status-ok: var(--green-400);
+
+  --diff-added-bg: #6baa5f26;
+  --diff-removed-bg: #e0705f24;
+  --diff-gutter: #ffffff0a;
+
+  --code-keyword: #ea7f3d;
+  --code-string: #6baa5f;
+  --code-comment: var(--stone-6);
+  --code-number: #8aa3dd;
+  --code-function: #c8a2e8;
+  --code-type: #4fa8a0;
+  --code-punctuation: var(--stone-5);
+}

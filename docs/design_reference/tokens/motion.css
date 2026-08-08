@@ -1,0 +1,20 @@
+/* Motion only ever communicates a change (UXD dial: MOTION 2). Nothing animates for effect;
+   there are no entrances, no bounces, no attention bids. */
+:root {
+  --duration-instant: 0ms;
+  --duration-fast: 80ms;
+  --duration-base: 120ms;
+  --duration-slow: 200ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0.38, 0.9);
+  --ease-exit: cubic-bezier(0.2, 0, 1, 0.9);
+  --transition-hover: background-color var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard);
+  --transition-theme: background-color var(--duration-slow) var(--ease-standard),
+    color var(--duration-slow) var(--ease-standard);
+}
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition-hover: none;
+    --transition-theme: none;
+  }
+}

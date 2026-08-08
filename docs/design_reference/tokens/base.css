@@ -1,0 +1,15 @@
+/* Minimal element defaults so specimens and kits inherit the workbench baseline. */
+html { color-scheme: light; }
+html[data-theme="dark"] { color-scheme: dark; }
+body {
+  margin: 0;
+  background: var(--surface-app);
+  color: var(--text-primary);
+  font: var(--type-body);
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--text-accent); text-decoration: none; }
+a:hover { color: var(--accent-solid-hover); text-decoration: underline; }
+code, pre { font: var(--type-code); color: var(--text-code); }
+:focus-visible { outline: var(--border-width-strong) solid var(--focus-ring); outline-offset: 1px; }
+::selection { background: var(--accent-quiet); }
