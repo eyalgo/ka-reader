@@ -37,7 +37,9 @@
   about you, not the product, and I have no basis to pick between a personal handle and an
   organisation. Once answered it lands in Assumptions beside the licence, and the two `[OPEN]`
   lines in Open Questions collapse to one or none.
-- **Answer:**
+- **Answer:** kensaiapp — the repository sits under the `kensaiapp` GitHub organisation
+  (already true on disk: `git@github.com:kensaiapp/nozoki.git`), and `kensaiapp` is also the name
+  the tool is maintained under. No personal handle is the public face.
 
 ### 1.2 Which platforms does v1 promise to run on?
 - **Why it matters:** the PRD promises a stranger *one* supported install path and a
@@ -51,7 +53,9 @@
   narrower promise but a truthful one. No lean offered — this is a capacity call only you can
   make. Whatever you answer becomes a line in Scope (In) and a bound in Out of Scope, and the
   time-to-first-success check is run on each platform promised.
-- **Answer:**
+- **Answer:** macOS. v1 promises macOS and nothing else — Linux and Windows are out of
+  scope for v1, stated as an exclusion rather than left unmentioned. The time-to-first-success
+  bar is measured on macOS.
 
 ## 2. Choices to confirm — the CPO drafted a best-effort answer; confirm or override
 
@@ -65,7 +69,7 @@
   English-first, and a second UI language is a maintained surface the product has no reason to
   carry. Cycle 4 listed the bullet among the seven the re-authoring could keep, which is not a
   confirmation of it.
-- **Confirm or override:**
+- **Confirm or override:** confirm
 
 ### 2.2 Rich rendering of non-text content is beyond v1 — an exclusion that was never confirmed
 - **Drafted into the PRD:** unchanged in substance — UX Notes already said a binary file lands in
@@ -76,7 +80,7 @@
   (principle 4), and this one was written in the cycle-4 re-authoring and never listed for you.
   The lean holds: the input's scope is code viewing, and image or document rendering is a
   product widening with its own maintenance cost.
-- **Confirm or override:**
+- **Confirm or override:** confirm — rich rendering of non-text content is beyond v1.
 
 ### 2.3 The network promise: "no non-essential network call" or "no network call during operation"
 - **Drafted into the PRD:** unchanged — Success Metrics, Out of Scope and Data & Privacy all say
@@ -90,7 +94,11 @@
   is a stronger promise than the PRD makes today, which is why it is yours: it moves the bar the
   read-only integrity metric is reckoned against. The project's Agari quotes the current
   wording; a tighter PRD promise sits inside it, not against it.
-- **Confirm or override:**
+- **Confirm or override:** override — do not tighten. The wording stays *no non-essential
+  network call*. The "essential" case is not empty after all: an update / version-check
+  feature may be built in the future, and the looser phrase is what leaves room for it
+  without the PRD having to be walked back. Operation still stays on the user's machine;
+  what is being kept is the headroom, not a current call.
 
 ### 2.4 The support posture — stated, not just promised
 - **Drafted into the PRD:** unchanged — Risks says a "stated support posture in the README" is a
@@ -104,7 +112,14 @@
   longer be maintained is archived visibly. Confirmed, it lands in Assumptions as the support
   posture the README carries. Anything firmer than best-effort is a capacity commitment only you
   can make.
-- **Confirm or override:**
+- **Confirm or override:** confirm best-effort, and state it harder than the lean does.
+  The maintainer is a private individual and Nozoki is a side project, so **nothing is
+  promised at all** — issues and questions are welcome and read when there is time, with
+  no response time, no commitment to fix, and no commitment to a fix ever arriving. That
+  applies to security reports too: a private channel exists and reports are read, but the
+  acknowledgement in the lean is **not** promised and no expected response time is stated.
+  A version that can no longer be maintained is archived visibly (already in Assumptions).
+  The README says this plainly rather than implying more.
 
 ### 2.5 Syntax highlighting is best-effort by language; a file with no highlighter reads as plain text
 - **Drafted into the PRD:** unchanged — Core Features says "read-only viewing of any file in the
@@ -116,7 +131,15 @@
   refused and never mis-highlighted. Which languages those are is downstream; that a
   no-highlighter file is still fully readable is the product fact, and it is a new state promise,
   so it is yours to confirm before it goes into Core Features and UX Notes.
-- **Confirm or override:**
+- **Confirm or override:** override — v1 does promise a floor, and it is this. Highlighting
+  is promised for **every language kensaiapp currently writes in** — measured on disk today:
+  Python (`.py`), shell (`.sh`) and JavaScript (`.mjs` / `.js`) — **plus JSON, YAML and
+  TOML**. `.md` is not highlighted: a markdown file is **rendered by default, with a raw
+  toggle** to see the source. If the toggle proves too big for v1, v1 ships rendered-only and
+  the toggle waits — that fallback is the maintainer's call, not a reason to hold v1.
+  For every other language there is no promise; a file the product cannot highlight is
+  shown as plain text, never refused and never mis-highlighted. The list grows only when
+  the maintainer needs it to — "if I need something, I will probably add".
 
 ## 3. Directives — an external action the owner confirms as a gate
 
