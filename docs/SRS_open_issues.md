@@ -47,7 +47,10 @@ confirm.
 - **If overridden** (shebang / content recognition allowed, or a named extension set fixed here):
   FR-29 gains the recognition rule in its own text; AC-5 adds the extension-less case to its
   walk; the SDD's latitude narrows to match. Nothing else moves.
-- **Confirm or override:**
+- **Confirm or override:** confirm — recognition is by file extension, as drafted.
+  On the extension set, asked separately and answered separately: *"yes. we should cover
+  the options."* Each floor language is recognized by all of its common extensions, not
+  one apiece.
 
 ### 2.2 What a link inside a rendered Markdown file does when activated
 
@@ -70,6 +73,9 @@ confirm.
   itself", AC-23's link check narrows to the same, and RN-23 records that the initiation is
   accepted. Either half alone is possible.
 - **Confirm or override:**
+  <!-- Left unanswered deliberately. An earlier recording of this item added wording the
+       owner did not say, and that round was reset rather than patched. Ask this item
+       fresh. -->
 
 ### 2.3 Whether the Markdown raw-source switch is inside the terminus
 
@@ -87,7 +93,9 @@ confirm.
 - **If overridden** (the switch is outside done): AC-12 drops the FR-31 clause; FR-31 stays as
   the PRD's stated feature with no closing-release criterion; RN-23 records the placement. The
   Agari itself is untouched either way — this item asks how to read it, not to change it.
-- **Confirm or override:**
+- **Confirm or override:** override — the switch is outside the terminus. *"The switch came
+  as a compromise/proposal. From my point of view, render is what i need."* And on whether
+  it is built at all: *"add the toggle if it costs nothing."*
 
 ### 2.4 Whether a second platform is outside the terminus
 
@@ -106,7 +114,7 @@ confirm.
   covered set; C-11 gains the second platform with its own minimum-version placement; NFR-13
   and AC-10 run the time-to-first-success check on each platform promised, as the PRD's own
   metric says it would; RN-21 records the reading.
-- **Confirm or override:**
+- **Confirm or override:** confirm
 
 ## 3. Directives — an external action the owner confirms as a gate
 
