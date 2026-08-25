@@ -1,8 +1,8 @@
 # SRS — Nozoki 覗き
 
-**Status:** Settled
+**Status:** Draft
 **Owner:** CTO
-**Version:** 4 — folded the owner's cycle-3 override (`docs/srs_trail/cycle-3.md`): FR-18's commit history revised from a flat read-only list to branch topology drawn against a chosen set of branches, the owner-confirmed experience shape (`UXD.md` UX-S6, RN-14); AC-12's history coverage widened, RN-13's history clause superseded, §2's filtering exclusion clarified (RN-19)
+**Version:** 5 — re-authored against PRD v8, template 1.9.0 and prompt 3.6.0 on the owner's instruction (`docs/srs_trail/cycle-4.md`): the macOS-only platform (C-11); the syntax-highlighting floor and its plain-text fallback (FR-8, FR-29); Markdown rendered with a raw-source toggle, and the no-fetch / no-execution bounds rendering carries (FR-30 – FR-32, NFR-16); the public identity and the support posture (C-7, C-12, C-13); C-6 gains its PRD trace; RN-3 repaired; `## Open Questions` omitted under the template's rule; the SDD's three seats named where the SRS names its readers (RN-20 – RN-26). Four choices to confirm are in the companion.
 
 > The SRS is the technical source of truth: the system-level **what**, derived from the PRD and
 > read cold by the Principal PM (Delivery Plan / FDR) and the Principal Architect (ADR / NFDR).
@@ -10,8 +10,10 @@
 > delta in a revision traces to an owner answer/directive or a change in the upstream PRD, and
 > the Version line names what changed and why.
 > Every requirement traces back to a PRD feature or goal — no requirement without a source. The
-> **how** — architecture, component design, delivery sequencing — belongs downstream (the SDD,
-> the ADRs/NFDR, the Delivery Plan).
+> **how** — architecture, component design, delivery sequencing — is kept out; it belongs
+> downstream (the SDD, worked as one run by the CTO, the CPO and the CDO; the ADRs/NFDR the
+> Principal Architect owns; the Delivery Plan). Every item carries a stable typed ID (`FR-n`,
+> `NFR-n`, `DR-n`, `C-n`, `AC-n`) so downstream documents can reference it.
 
 ---
 
@@ -49,6 +51,10 @@ forgotten:
 - **A front end for agent workflows and repository-inspection services** — the PRD's further-out
   growth direction; the Agari names it as where a next product might go, not where this one
   docks. Consequently this system exposes no programmatic surface (§5.2).
+- **Linux and Windows** — the PRD promises macOS only for v1 and states the other two as an
+  exclusion (C-11). The Agari draws the dock as three named surfaces beyond v1 and no platform,
+  so a second platform sits outside done as the Agari stands; the reading is the owner's to
+  confirm (RN-21).
 
 **Excluded by the PRD itself, permanently** (restated because they are load-bearing): editing, in
 any version — the product has no write path to the repository; Git operations (staging,
@@ -91,17 +97,40 @@ operation of the tool; several repositories at once — one at a time is the pro
 
 ### 3.3 Reading files
 
-- **FR-8:** Selecting a file displays its content read-only, with syntax highlighting for
-  recognized languages. *(traces to: PRD Core Features "read-only viewing … with syntax
-  highlighting", Key Use Case 1)*
+- **FR-8:** Selecting a file displays its content read-only. A file in one of the floor languages
+  — Python, shell, JavaScript, JSON, YAML, TOML — is displayed with syntax highlighting for that
+  language. The floor is the whole of the highlighting promise: no other language is promised in
+  v1, and the floor grows only by a PRD revision, which this SRS then follows. *(traces to: PRD
+  Core Features "read-only viewing … with syntax highlighting", the stated floor; Key Use Case 1;
+  floor: owner-confirmed `docs/prd_trail/cycle-7.md` §2.5; revised at v5 from "recognized
+  languages": RN-22)*
+- **FR-29:** A text file the system does not recognize as one of the floor languages is displayed
+  as plain text — never refused, and never displayed with another language's highlighting. Which
+  files the system recognizes as a floor language, and how, is drafted as a choice in the
+  companion (RN-22). *(traces to: PRD Core Features "shown as plain text, never refused and never
+  mis-highlighted")*
+- **FR-30:** A Markdown file is displayed rendered by default. *(traces to: PRD Core Features
+  "Markdown is rendered by default"; owner-confirmed `docs/prd_trail/cycle-7.md` §2.5; see RN-23)*
+- **FR-31:** A rendered Markdown file can be switched to its raw source and back, in the reading
+  panel. v1 may ship rendered-only, in which case the switch lands in a later release — the PRD's
+  stated fallback, not an open question. Whether the closing release requires the switch is
+  drafted as a choice in the companion (RN-23). *(traces to: PRD Core Features "with a toggle to
+  the raw source. If the toggle proves too costly for v1, v1 ships rendered-only and the toggle
+  follows")*
+- **FR-32:** Rendering a Markdown file fetches nothing from outside the viewed repository: a
+  remote image or other remote resource the document references is not loaded, and the system
+  follows no link the document contains. What a link does when activated is drafted as a choice
+  in the companion (RN-23). *(traces to: PRD Data & Privacy "v1 makes no network call at all
+  during operation"; added consequence of NFR-8 for rendered content: RN-23)*
 - **FR-9:** No interaction with the displayed content changes it or the underlying file — typing,
   pasting, and dropping into the reading panel produce no modification, on screen or on disk.
   *(traces to: PRD Out of Scope "Editing, permanently")*
 - **FR-10:** A file that cannot be rendered as text (binary or undecodable content) is presented,
-  not rendered: a clear placeholder states why the content is not shown, the shell remains fully
+  not rendered: a placeholder states why the content is not shown, the shell remains fully
   usable, and the file is not modified. *(traces to: PRD UX Notes "Failure states" — a stated
-  cannot-display-as-text state, never a garbled render, never an error; owner-confirmed:
-  `docs/srs_trail/cycle-1.md` §2.3; see RN-14, RN-17)*
+  cannot-display-as-text state, never a garbled render, never an error; PRD Out of Scope "Rich
+  rendering of non-text content"; owner-confirmed: `docs/srs_trail/cycle-1.md` §2.3; see RN-14,
+  RN-17)*
 - **FR-24:** The system presents no editing affordance, enabled or disabled, and no framing that
   implies an editable mode exists elsewhere — nothing in the interface suggests the repository
   could be changed from it. *(traces to: PRD UX Notes "The character" — read-only is the
@@ -158,7 +187,8 @@ operation of the tool; several repositories at once — one at a time is the pro
   bound; how the history is drawn and what chooses the branch set stay downstream. *(traces to:
   PRD Scope (In) full-ambition "commit history"; shape: owner override
   `docs/srs_trail/cycle-3.md`, superseding the cycle-1 list (`docs/srs_trail/cycle-1.md` §2.2);
-  experience authority: `UXD.md` UX-S6, RN-14; see RN-19)*
+  the experience document that override cited is no longer on disk — the wording stands on the
+  cycle-3 answer alone: RN-20; see RN-19)*
 - **FR-19:** *(beyond v1)* The user can switch which repository is viewed without restarting the
   system — always exactly one at a time, never several at once. *(traces to: PRD Scope (In)
   "one repository at a time is a v1 cut", Out of Scope "Several repositories at once")*
@@ -211,11 +241,19 @@ The PRD states the product's promises separately, none implied by another; so do
   telemetry", Data & Privacy)*
 - **NFR-8:** The system makes no network call during operation — none, not merely no
   non-essential ones; its operation stays entirely on the user's machine. Acquisition of the
-  tool is not operation. *(traces to: PRD Data & Privacy "the tool's operation stays entirely on
-  the user's machine"; tightening recorded: RN-3)*
+  tool is not operation. The PRD keeps the phrase "no non-essential network call" as headroom for
+  a possible future update or version check; such a feature enters the PRD as a stated feature
+  before it exists, and reaches this SRS by revision — until then, none. *(traces to: PRD Data &
+  Privacy "v1 makes no network call at all during operation; acquiring the tool uses the network,
+  operating it does not", and its stated headroom; see RN-3)*
 - **NFR-9:** The bar on NFR-5 – NFR-8 is zero violations, absolutely, reckoned at every release;
   a single violation is a release-blocking defect. *(traces to: PRD Success Metrics "Read-only
   integrity" bar)*
+- **NFR-16:** Content read from the viewed repository is displayed, never executed: rendering a
+  file — Markdown included — runs no script, loads no active content, and gives the file no
+  path to the filesystem, the network, or the system's own state. *(traces to: PRD Success
+  Metrics "Read-only integrity" under any operation, Data & Privacy; added consequence of DR-6's
+  untrusted-input bar for rendered content: RN-23)*
 
 ### 4.4 Scalability
 
@@ -245,7 +283,8 @@ see RN-8)*
 
 - **NFR-13:** Time-to-first-success: from a stranger deciding to try Nozoki — by its single
   install path, whatever that path is — to viewing a file of their own repository, ≤ 5 minutes,
-  checked before each release. *(traces to: PRD Success Metrics "Time-to-first-success")*
+  checked before each release on macOS, the one platform v1 promises (C-11). *(traces to: PRD
+  Success Metrics "Time-to-first-success" — "on macOS — the one platform v1 promises")*
 - **NFR-14:** Zero required configuration: the only input the system requires is which repository
   to view — no settings, no project file, no setup step required by any feature, v1 or later.
   Pass/fail, checked at each release. *(traces to: PRD Success Metrics "Zero required
@@ -291,8 +330,9 @@ see RN-8)*
 - **DR-2:** **File tree model** — the repository's folders and files with changed markers, the
   current selection, and the user's expanded state (FR-27); derived from disk and Git state,
   held in memory, never persisted.
-- **DR-3:** **File view** — the open file's path, content, detected language, and the reading
-  position FR-27 preserves; derived and in-session, never persisted.
+- **DR-3:** **File view** — the open file's path, content, the floor language recognized for it
+  or none (FR-8, FR-29), whether it is Markdown and which of rendered / raw is showing (FR-30,
+  FR-31), and the reading position FR-27 preserves; derived and in-session, never persisted.
 - **DR-4:** **Git state** — branch name, changed files, staged files, short status; derived from
   repository metadata by read-only means, never persisted.
 - **DR-5:** **Own state** — preferences the system remembers between sessions (theme choice,
@@ -302,10 +342,11 @@ see RN-8)*
 - **DR-6:** **The input bar** — the system requires nothing of the repository beyond being a
   readable local Git repository (FR-3 is the failure behavior). Everything else it must
   tolerate, not require: content changing at any moment mid-read (FR-16), unreadable, binary, or
-  arbitrarily large files (FR-10, NFR-3, NFR-10), and transiently inconsistent Git metadata
-  (FR-16). The repository is live, untrusted input; requirements on the *system's behavior*
-  carry the tolerance, and no requirement assumes a quiescent repository. *(traces to: PRD
-  Target Users driving scenario)*
+  arbitrarily large files (FR-10, NFR-3, NFR-10), transiently inconsistent Git metadata
+  (FR-16), and file content that is hostile when rendered (NFR-16). The repository is live,
+  untrusted input; requirements on the *system's behavior* carry the tolerance, and no
+  requirement assumes a quiescent or well-meaning repository. *(traces to: PRD Target Users
+  driving scenario)*
 
 ## 7. Constraints
 
@@ -328,12 +369,17 @@ see RN-8)*
   *(owner decision: RN-6)*
 - **C-6:** From the first 1.0.0 release, releases are semantically versioned and a breaking
   change to the product's public contract requires a major version; before 1.0.0, that anything
-  may change is stated plainly rather than left implied. *(owner-confirmed:
-  `docs/srs_trail/cycle-1.md` §2.4; see RN-15)*
+  may change is stated plainly rather than left implied. *(traces to: PRD Assumptions
+  "Versioning" — carried upstream since PRD v7; owner-confirmed: `docs/srs_trail/cycle-1.md`
+  §2.4; see RN-15, RN-24)*
 - **C-7:** Before the first public release, a private vulnerability-reporting channel is enabled
-  on the public repository, and a SECURITY.md names where to report and what response to expect,
-  consistent with the README's stated support posture. *(traces to: PRD Risks "Maintenance is a
-  standing liability"; owner-confirmed: `docs/srs_trail/cycle-1.md` §2.5; see RN-16)*
+  on the public repository (C-12), and a SECURITY.md names where to report and states the
+  posture the PRD sets for what follows — "Security reports have a private channel and are read,
+  with no acknowledgement or response time promised" (`docs/PRD.md` § Assumptions, "Support
+  posture") — in those terms, promising nothing the PRD does not. *(traces to: PRD Risks
+  "Maintenance is a standing liability", Assumptions "Support posture"; owner-confirmed:
+  `docs/srs_trail/cycle-1.md` §2.5; the response wording resolved at v5 from the PRD's stated
+  posture: RN-24; see RN-16)*
 - **C-8:** UI language: English. *(traces to: PRD UX Notes)*
 - **C-9:** The README's first screen is product surface and carries: what the tool does in one
   sentence, one install path, one copy-paste example, and what the tool will and will not touch.
@@ -343,6 +389,22 @@ see RN-8)*
   The classification rests on that character and falls with it; revisiting the character is the
   CPO's call, and would reopen the classification. *(traces to: PRD Assumptions "Regulatory
   posture")*
+- **C-11:** Platform: v1 runs on macOS and promises no other platform; Linux and Windows are
+  outside v1. The minimum macOS version is not set by the PRD; it is fixed in the SDD with the
+  runtime (the placement C-3 gives the acquisition channel, RN-7) and stated wherever the install
+  path is offered, so a stranger knows before installing. *(traces to: PRD Scope (In)
+  "Platform", Out of Scope "Linux and Windows"; owner-confirmed: `docs/prd_trail/cycle-7.md`
+  §1.2; the version-floor placement: RN-21)*
+- **C-12:** Public identity: the product is published from the `kensaiapp` GitHub organisation
+  (`github.com/kensaiapp/nozoki`) and maintained under that name; that repository is where C-7's
+  channel is enabled and where releases are offered. *(traces to: PRD Assumptions "Public
+  identity"; owner-confirmed: `docs/prd_trail/cycle-7.md` §1.1)*
+- **C-13:** The README states the support posture in the PRD's terms — "Issues and questions are
+  welcome and read when there is time, with no response time, no commitment to fix, and no
+  commitment that a fix ever arrives" (`docs/PRD.md` § Assumptions, "Support posture") — and
+  promises nothing beyond it. *(traces to: PRD Assumptions "Support posture" — "The README says
+  this plainly rather than implying more"; owner-confirmed: `docs/prd_trail/cycle-7.md` §2.4;
+  see RN-24)*
 
 ## 8. Acceptance Criteria
 
@@ -355,8 +417,11 @@ see RN-8)*
   release. *(covers: NFR-7, NFR-8)*
 - **AC-4:** Typing, pasting, and dropping into the reading panel change nothing, on screen or on
   disk. *(covers: FR-9)*
-- **AC-5:** A user can navigate the tree, open files from it, and read them with syntax
-  highlighting; changed files are marked and the selection highlighted. *(covers: FR-5 – FR-8)*
+- **AC-5:** A user can navigate the tree, open files from it, and read them: a file in each of
+  the six floor languages is displayed with that language's highlighting, and a text file outside
+  the floor is displayed as plain text with no other language's highlighting; changed files are
+  marked and the selection highlighted. *(covers: FR-5 – FR-8, FR-29; widened at v5 with the
+  floor: RN-22)*
 - **AC-6:** Against a repository with staged and unstaged changes on a named branch, the Git view
   shows all four elements (changed files, staged files, branch, status) correctly, and its files
   open for reading. *(covers: FR-11 – FR-13)*
@@ -368,23 +433,26 @@ see RN-8)*
 - **AC-9:** On a machine that has never run the product, it starts with the repository location
   as its only input; no settings, project file, or setup step exists to need. Pass/fail at each
   release. *(covers: FR-1, NFR-14)*
-- **AC-10:** A timed first-use check before each release: a user new to the tool, guided by the
-  README alone, reaches a viewed file of their own repository in ≤ 5 minutes. Verification is a
-  timed manual walk — deliberately not automated, because the thing measured is a stranger's
-  path. *(covers: NFR-13, C-3, C-9)*
+- **AC-10:** A timed first-use check before each release, on macOS: a user new to the tool,
+  guided by the README alone, reaches a viewed file of their own repository in ≤ 5 minutes.
+  Verification is a timed manual walk — deliberately not automated, because the thing measured
+  is a stranger's path. *(covers: NFR-13, C-3, C-9, C-11)*
 - **AC-11:** Both themes are present and usable from the first release. *(covers: FR-20)*
 - **AC-12:** At the closing release, the diff view (staged distinguished from unstaged), the
   commit history — against a repository whose history holds more than one branch: the branches
   visible as branches, the presented branch set choosable, and the default asking nothing — with
   its per-commit diffs, and repository switching are present, read-only, and AC-1 – AC-3 still
-  pass with them exercised. *(covers: FR-17 – FR-19, FR-22; history coverage widened with FR-18:
-  RN-19)*
+  pass with them exercised. The Markdown raw-source switch (FR-31) is exercised here too, on the
+  reading that it is inside the terminus — the owner's to confirm (RN-23). *(covers: FR-17 –
+  FR-19, FR-22, FR-31; history coverage widened with FR-18: RN-19)*
 - **AC-13:** After a session in which preferences changed, new or changed files exist only in the
   tool's own data location — none under the repository path — and inspection finds nothing
   personal and no repository content in them. *(covers: FR-21, DR-5)*
 - **AC-14:** Release inspection: the release carries the MIT licence and third-party notices; the
-  README first screen carries its four items; the version number obeys C-6; SECURITY.md and the
-  private reporting channel exist per C-7. *(covers: C-4 – C-7, C-9)*
+  README first screen carries its four items and the README states the support posture in the
+  PRD's terms; the version number obeys C-6; SECURITY.md and the private reporting channel exist
+  per C-7, on the repository C-12 names, and SECURITY.md promises nothing the PRD does not.
+  *(covers: C-4 – C-7, C-9, C-12, C-13; widened at v5: RN-24)*
 - **AC-15:** With no file selected the empty state prompts selection; pointed at a path that is
   not a readable Git repository, the system states plainly what went wrong and what to do next,
   and a filesystem check shows it touched nothing. *(covers: FR-3, FR-4; widened with FR-3:
@@ -404,6 +472,14 @@ see RN-8)*
   crash-safety: AC-8)*
 - **AC-21:** Closing at any moment — a file open, a refresh mid-flight — presents no prompt and
   no confirmation. *(covers: FR-23)*
+- **AC-22:** Selecting a Markdown file displays it rendered; where the raw-source switch is
+  shipped, switching shows the file's source byte-for-byte as on disk and switching back
+  restores the rendered view, with the file unmodified throughout. A release that ships
+  rendered-only states so where the release is offered. *(covers: FR-30, FR-31)*
+- **AC-23:** Rendering a Markdown file that references a remote image, contains an external link,
+  and embeds a script and active HTML content produces zero outbound traffic, executes nothing,
+  and leaves the filesystem and the tool's own state unchanged; the link is not followed by the
+  system. *(covers: FR-32, NFR-16, NFR-8)*
 
 ---
 
@@ -419,10 +495,17 @@ see RN-8)*
   never states as a behavior: a viewer that crashes, blocks, or writes when the tree moves under
   it cannot serve the scenario the product is driven by *(re: FR-16, NFR-3, DR-6; PRD source:
   Target Users, Key Use Case 3)*.
-- **RN-3:** Runtime network tightened from "no non-essential call" to "none" (NFR-8) — *because*
-  the PRD's own Data & Privacy sentence — "the tool's operation stays entirely on the user's
-  machine" — leaves no runtime call essential; acquisition uses the network but is not
-  operation *(re: NFR-8; PRD source: Data & Privacy, Success Metrics)*.
+- **RN-3:** *(repaired at v5)* NFR-8's "no network call during operation — none" is the PRD's own
+  statement since v8 — "v1 makes no network call at all during operation; acquiring the tool
+  uses the network, operating it does not" (`docs/PRD.md` § Data & Privacy) — so the requirement
+  no longer tightens beyond its source, and the earlier rationale here (that the SRS tightened
+  "no non-essential call" to "none" on its own reading) no longer describes a divergence. The PRD
+  keeps "non-essential" as headroom for a possible future update or version check, entering the
+  PRD as a stated feature before it exists (owner: `docs/prd_trail/cycle-7.md` §2.3); NFR-8 now
+  carries that headroom in the same sentence as the bar, so a reader of NFR-8 alone sees both.
+  The repair was authorized by the owner's instruction at `docs/srs_trail/cycle-4.md` §2.1
+  ("RN-3 explains a divergence from the PRD that no longer exists. Repair the note; NFR-8 itself
+  stands") *(re: NFR-8; PRD source: Data & Privacy, Success Metrics)*.
 - **RN-4:** The numeric thresholds for file-switch immediacy, refresh latency, and scalability
   reference sizes are deliberately unset — *because* the owner ruled that a threshold invented
   before there is a build to measure is noise; they are measured from the first working build
@@ -474,7 +557,10 @@ see RN-8)*
   correction forced by FR-18's changed content, not a re-derivation of either requirement.
 - **RN-14:** FR-10's presentation of unrenderable files confirmed as drafted — a placeholder
   stating why the content is not rendered; no hex viewer, no image preview, nothing hidden from
-  the tree *(re: FR-10, AC-5; owner confirmation: `docs/srs_trail/cycle-1.md` §2.3)*.
+  the tree *(re: FR-10, AC-5; owner confirmation: `docs/srs_trail/cycle-1.md` §2.3)*. PRD v8's
+  Out of Scope line "Rich rendering of non-text content" (owner-confirmed:
+  `docs/prd_trail/cycle-7.md` §2.2) states the same exclusion upstream; FR-10 gains that trace
+  at v5 and is otherwise unchanged (RN-20).
 - **RN-15:** C-6 confirmed — recorded by the owner as a consequence of the Agari rather than a
   fresh call: done already requires a public MIT release at 1.0.0 or later with the
   semantic-versioning promise in force, so C-6 is that condition's realization here *(re: C-6,
@@ -522,13 +608,101 @@ see RN-8)*
   not a filter or a search). Topology's scale exposure rides the existing NFR-10 process —
   history length is already a named scale dimension there, its reference sizes fixed from the
   first working build (RN-4) — so no new performance item is raised. *(re: FR-18, AC-12, RN-13,
-  §2; PRD source: Scope (In) full ambition "commit history")*
-
----
-
-## Open Questions
-
-None — the owner's cycle-1 answers (`docs/srs_trail/cycle-1.md`) settled every drafted choice,
-the cycle-2 answer (`docs/srs_trail/cycle-2.md`) scoped the v3 revision to the moved PRD, and the
-cycle-3 override (`docs/srs_trail/cycle-3.md`) revised FR-18's history shape at v4; the numeric
-thresholds are settled-as-process (RN-4), awaiting a build, not an answer.
+  §2; PRD source: Scope (In) full ambition "commit history")* The two files this note cites as
+  wording authority, `UXD.md` and `docs/uxd_trail/cycle-2.md`, were removed from the product
+  repository at `9017ae2` — see RN-20 for what FR-18 now stands on.
+- **RN-20:** *(this revision, v5 — the pass and its bounds)* Re-authored on the owner's
+  instruction (`docs/srs_trail/cycle-4.md` §2.1) against PRD v8, template 1.9.0 and prompt 3.6.0.
+  The instruction reopened no requirement on its own: every value confirmed in
+  `docs/srs_trail/cycle-1.md` – `cycle-3.md` stands as written, and every delta at v5 traces to
+  one of three sources — a PRD fact added at v7/v8 (RN-21 – RN-24), a carrier rule (this note),
+  or a wording repair that moves no technical fact (this note). Carrier deltas: the header
+  blockquote takes template 1.9.0's shape, naming the SDD's three seats — the template's own
+  wording says "the SDD you co-author with the CPO" while prompt 3.6.0 and the owner's
+  instruction say the CTO, the CPO and the CDO; the conflict is about what the sentence
+  contains, so the prompt and the owner's instruction settle it, and the template's two-seat
+  wording is not carried. `## Open Questions` is omitted: the v4 section held no question — a
+  "None" and its explanation — and template 1.9.0 omits an empty section because an empty
+  heading reads as an unanswered question; nothing that section explained is lost (RN-4 holds
+  the thresholds' process, and this trail holds the rest). Wording repairs: FR-10's "a clear
+  placeholder" reads "a placeholder" — the sentence already states what the placeholder says,
+  and "clear" collapses under the writing bar's prove-it test (`system/doctrine/writing_bar.md`
+  § 1.2). The missing experience document: `docs/UXD.md` and `docs/uxd_trail/` were removed at
+  `9017ae2` "to be authored again by a skill that has been measured"; FR-18's wording is the one
+  folded at v4 and stands on the owner's cycle-3 answer, which is on disk — the instruction
+  forbade re-deriving the UXD and forbade dropping what was traced to it, and neither is done;
+  FR-18's trace and RN-19 now say so rather than citing a file a reader cannot open. Nothing
+  at v5 needed the UXD to settle. The narration in RN-13, RN-17 and RN-19 of the rounds that
+  wrote them predates prompt 3.6.0's rule that the trail records the system and not the round;
+  those notes are settled wording and are left as written — the rule binds notes written from
+  v5 on. *(re: header, §2, FR-10, FR-18, RN-19, the omitted section)*
+- **RN-21:** *(added)* Platform constraint C-11 — *because* PRD v8 states v1 runs on macOS only
+  and names Linux and Windows as an exclusion (owner: `docs/prd_trail/cycle-7.md` §1.2), a fact
+  the SRS at v4 did not carry at all. Propagation: NFR-13 and AC-10 fix the time-to-first-success
+  check to macOS, as the PRD's own metric does. Two consequences the PRD does not state: (i) a
+  minimum macOS version is a limit a stranger reads before installing, so C-11 names who fixes it
+  (the SDD, with the runtime — the same placement as the acquisition channel, RN-7) and requires
+  it stated wherever the install path is offered; (ii) the Agari draws the dock as three named
+  surfaces beyond v1 and says nothing of platform, so §2 reads a second platform as outside done
+  and routes that reading to the owner as a choice — the terminus is the CPO's, not this
+  document's to extend *(re: C-11, NFR-13, AC-10, §2; PRD source: Scope (In) "Platform", Out of
+  Scope "Linux and Windows", Success Metrics "Time-to-first-success")*.
+- **RN-22:** *(changed — FR-8; added — FR-29)* The highlighting promise now has a floor —
+  *because* PRD v8 promises highlighting for Python, shell, JavaScript, JSON, YAML and TOML and
+  for no other language in v1, with a plain-text fallback that never refuses and never
+  mis-highlights (owner: `docs/prd_trail/cycle-7.md` §2.5). FR-8 at v4 said "recognized
+  languages", which promised an unstated set; it now names the floor, and FR-29 carries the
+  fallback as its own testable behavior. AC-5 widens to exercise both. The PRD's growth rule —
+  the floor grows when the maintainer needs a language — lands as no requirement: a change to
+  the floor is a PRD revision this SRS follows, not a system behavior. One product-visible call
+  the PRD leaves open is how a file is recognized as a floor language — by extension per the
+  owner's own measurement (`.py`, `.sh`, `.js` / `.mjs`), which leaves an extension-less shell
+  script, a `.yml` file, or a shebang script as plain text unless the recognition says
+  otherwise; drafted as extension-based with the extension set the SDD's, and routed to the
+  companion as a choice *(re: FR-8, FR-29, AC-5, DR-3; PRD source: Core Features)*.
+- **RN-23:** *(added — FR-30 – FR-32, NFR-16, AC-22, AC-23)* Markdown rendering — *because* PRD
+  v8 states it: rendered by default, a toggle to the raw source, and the fallback that v1 may
+  ship rendered-only with the toggle following (owner: `docs/prd_trail/cycle-7.md` §2.5). FR-30
+  and FR-31 carry the two behaviors; FR-31 carries the fallback as a permission, in the PRD's own
+  terms. Two bounds follow from requirements already settled, and are added with that basis
+  rather than routed as choices: FR-32 — a rendered document may reference remote resources, and
+  loading one is a network call during operation, which NFR-8 forbids absolutely; so rendering
+  fetches nothing. NFR-16 — DR-6 already holds the repository as untrusted input, and a
+  Markdown file may embed script or active HTML; a renderer that executed it would hand the
+  repository a path to the filesystem, the network and the tool's own state, which NFR-4, NFR-5
+  and NFR-8 each forbid; so rendered content executes nothing. AC-23 exercises both with a
+  hostile document. Two product-visible calls are routed to the companion: what a link in a
+  rendered document does when activated (drafted: nothing — the system follows none, FR-32),
+  and whether the raw-source switch is inside the terminus (drafted: yes — AC-12 exercises it at
+  the closing release, on the reading that "reading with highlighting" in the Agari's first
+  condition covers the whole reading surface the PRD now draws) *(re: FR-30 – FR-32, NFR-16,
+  DR-3, DR-6, AC-12, AC-22, AC-23; PRD source: Core Features, Data & Privacy, Success Metrics)*.
+- **RN-24:** *(added — C-12, C-13; changed — C-6's trace, C-7's response wording)* Identity and
+  support posture — *because* PRD v8 states the public identity (`github.com/kensaiapp/nozoki`,
+  owner: `docs/prd_trail/cycle-7.md` §1.1) and a support posture in which nothing is promised
+  (owner: `docs/prd_trail/cycle-7.md` §2.4). C-12 carries the identity as the place C-7's
+  channel and the releases live. C-7 at v4 asked SECURITY.md to state "what response to expect"
+  against a posture the PRD had not yet stated; the PRD now states it, so C-7 quotes it and
+  binds SECURITY.md to promise nothing beyond it. C-13 carries the PRD's requirement that the
+  README states the posture plainly, quoting the PRD's terms — the writing bar requires a
+  commitment quoted, never paraphrased (`system/doctrine/writing_bar.md` § 1.5). AC-14 widens to
+  inspect both. C-6 gains its PRD trace: the versioning promise cycle-1 noted as absent from the
+  PRD (`docs/srs_trail/cycle-1.md` §2.4, the follow-up) has been in PRD Assumptions since v7,
+  so the constraint no longer rests on the Agari and this trail alone. The PRD's "a version that
+  can no longer be maintained is archived visibly" lands as no requirement: it is an act on the
+  repository after maintenance ends, not a behavior of the system, and this trail records the
+  drop so a reader does not mistake the silence *(re: C-6, C-7, C-12, C-13, AC-14; PRD source:
+  Assumptions "Public identity", "Support posture", "Versioning")*.
+- **RN-25:** *(reverse walk, PRD v8)* Every PRD unit not named above lands where v4 already
+  placed it: the Blurb restates Purpose and Problem Statement (no new unit); the familiarity
+  thesis (Assumptions) is a product assumption with no system behavior, unchanged since v1 of
+  this SRS; the Out of Scope line for rich rendering of non-text content is FR-10's (RN-14). No
+  other unit of Goals, Success Metrics, Key Use Cases, Core Features, UX Notes, Scope, Out of
+  Scope, Assumptions, Dependencies, Data & Privacy or Risks moved between PRD v6 and v8 beyond
+  the four RN-21 – RN-24 derive *(re: §2 – §8)*.
+- **RN-26:** *(the terminus, at v5)* The Agari (`system/projects/nozoki/agari.md`) is unchanged
+  since v4 of this SRS and predates PRD v7/v8. Two of v5's additions sit against its edge and
+  are routed to the owner rather than read into it — the platform (RN-21) and the raw-source
+  switch (RN-23). Its second condition quotes the promise as "no non-essential network call";
+  NFR-8's "none" sits inside that wording, not against it, so no collision is raised *(re: §2,
+  AC-12, NFR-8)*.
