@@ -1,8 +1,8 @@
 # PRD — Nozoki 覗き
 
-**Status:** Draft
+**Status:** Settled
 **Owner:** CPO
-**Version:** 7 — the product is stated in two sentences up front; the body says what the product is without narrating how it was authored; no scope, user, metric or exclusion moves
+**Version:** 8 — v1 runs on macOS only; syntax highlighting has a promised floor and Markdown is rendered; the network promise keeps its headroom, now defined; the support posture is stated (nothing is promised); the product is published under the kensaiapp organisation
 
 > The PRD is the product source of truth: the product-facing **what and why**, read cold
 > by the CTO, the CDO, Principal PM, and Principal Architect. It is updated in place with
@@ -106,10 +106,10 @@ maintainer time, held down by the deliberately small surface (see Assumptions).
   prd_trail/cycle-1.md)*
 - **Time-to-first-success:** from a stranger deciding to try Nozoki — by its single install
   path, whatever that path is — to viewing a file of their own repository. Bar: ≤ 5 minutes,
-  checked before each release. This same clock is the no-learning-curve goal's observable: it
-  runs through first use — finding, starting, and viewing — not install alone *(that link:
-  added — not in the input)*. *(bar value: added — not in the input; owner-confirmed:
-  prd_trail/cycle-1.md)*
+  checked before each release, on macOS — the one platform v1 promises (see Scope). This same
+  clock is the no-learning-curve goal's observable: it runs through first use — finding,
+  starting, and viewing — not install alone *(that link: added — not in the input)*. *(bar
+  value: added — not in the input; owner-confirmed: prd_trail/cycle-1.md)*
 - **Zero required configuration:** the only input Nozoki requires is which repository to view —
   no settings, no project file, no setup step. Bar: pass/fail, checked at each release.
   *(owner-confirmed: prd_trail/cycle-2.md)*
@@ -134,7 +134,15 @@ maintainer time, held down by the deliberately small surface (see Assumptions).
 
 ## Core Features
 
-- Read-only viewing of any file in the repository, with syntax highlighting.
+- Read-only viewing of any file in the repository, with syntax highlighting. Highlighting is
+  promised for a stated floor of languages — Python, shell, JavaScript, JSON, YAML and TOML —
+  and offered for no other in v1: a text file outside that floor is shown as plain text, never
+  refused and never mis-highlighted. The floor grows when the maintainer needs a language, not
+  on request *(floor and growth rule: added — not in the input; owner-confirmed:
+  prd_trail/cycle-7.md)*.
+- Markdown is rendered by default, with a toggle to the raw source. If the toggle proves too
+  costly for v1, v1 ships rendered-only and the toggle follows — a stated fallback, not an open
+  question *(added — not in the input; owner-confirmed: prd_trail/cycle-7.md)*.
 - A file tree with changed-file markers and selected-file highlight.
 - A sidebar that toggles between **Files** and **Git**.
 - A Git view: changed files, staged files, branch name, short repository status.
@@ -164,9 +172,10 @@ which this PRD deliberately does not state (see Out of Scope).
    state, a simple prompt such as "Select a file to view." Nothing to set up, sign into, or
    dismiss: instantly usable without instruction — the layout explains itself; no onboarding,
    no configuration surface *(owner-confirmed: prd_trail/cycle-2.md)*.
-2. **Reading.** Selecting a file shows it with syntax highlighting, with no perceived wait
-   (see Success Metrics). The person moves file to file as fast as they can decide what to
-   read next.
+2. **Reading.** Selecting a file shows it with syntax highlighting within the promised floor,
+   as plain text outside it, and rendered when it is Markdown (see Core Features) — always with
+   no perceived wait (see Success Metrics). The person moves file to file as fast as they can
+   decide what to read next.
 3. **Checking.** The sidebar toggles between Files and Git — branch, changed files, staged
    files at a glance, with changed-file markers in the tree. Sidebar mode and the open file
    are independent: checking Git never closes what the person is reading.
@@ -199,7 +208,7 @@ Git expert:
 - A file that cannot be shown as text (binary and similar): openable like any file, landing
   in a stated cannot-display-as-text state — never a garbled render, never an error.
   Rendering non-text content richly is not part of v1's proof; the input's own scope is code
-  viewing *(added — not in the input)*.
+  viewing *(added — not in the input; owner-confirmed: prd_trail/cycle-7.md)*.
 
 **What must feel effortless.**
 
@@ -218,7 +227,7 @@ Git expert:
 - Beyond that line, v1 makes no assistive-technology promise: its accessibility surface is
   what the product already carries — two themes, text-first navigation — kept small with the
   rest of the surface *(added — not in the input; owner-confirmed: prd_trail/cycle-5.md)*.
-- UI language: English *(added — not in the input)*.
+- UI language: English *(added — not in the input; owner-confirmed: prd_trail/cycle-7.md)*.
 
 ## Scope (In)
 
@@ -233,6 +242,10 @@ machine; there is no hosted mode. There is **exactly one way to get and start No
 simple** — one path, not a menu of them: a stranger should not have to choose how to install a
 viewer. The mechanism of that path is not stated here (see Out of Scope); that it must be single
 and simple is the product's, and the time-to-first-success bar measures it.
+
+**Platform** *(added — the input never states one; owner-confirmed: prd_trail/cycle-7.md)*: v1
+runs on macOS, and promises nothing else. The promise is scoped to the maintenance it will get —
+one platform is a narrower promise than three, and a truthful one.
 
 The full ambition, so the cut reads as deliberate: a complete read-only inspection surface —
 diffs, commit history, search, keyboard-driven navigation, switching which repository is viewed
@@ -249,8 +262,12 @@ browsing, reading, status, and live refresh.
 - **Sidebar search / filter** — beyond v1 (input roadmap).
 - **Pane resizing and keyboard navigation** — beyond v1 (input roadmap).
 - **Rich rendering of non-text content** — beyond v1: a file that cannot be shown as text lands
-  in a stated cannot-display state (see UX Notes); the input's own scope is code viewing
-  *(added — not in the input)*.
+  in a stated cannot-display state (see UX Notes); the input's own scope is code viewing.
+  Markdown is text and is rendered (see Core Features); this line is about images, documents
+  and the like *(added — not in the input; owner-confirmed: prd_trail/cycle-7.md)*.
+- **Linux and Windows** — beyond v1: v1 promises macOS only (see Scope). Stated as an
+  exclusion rather than left unmentioned *(added — not in the input; owner-confirmed:
+  prd_trail/cycle-7.md)*.
 - **Remote or hosted repositories, and any hosted operation of the tool itself** — the product
   runs locally against local state.
 - **Changing the viewed repository without restarting** — beyond v1: a named future direction
@@ -284,6 +301,16 @@ browsing, reading, status, and live refresh.
   *(added — instance doctrine, not in the input)*.
 - **Licence:** MIT *(added — not in the input; owner-confirmed: prd_trail/cycle-1.md; recorded
   with its reason at first release)*.
+- **Public identity:** Nozoki is published under the `kensaiapp` GitHub organisation
+  (`github.com/kensaiapp/nozoki`) and maintained under that name; no personal handle is the
+  public face. The maintainer behind it is a private individual, and Nozoki is a side project
+  *(added — not in the input; owner-confirmed: prd_trail/cycle-7.md)*.
+- **Support posture — nothing is promised.** Issues and questions are welcome and read when
+  there is time, with no response time, no commitment to fix, and no commitment that a fix ever
+  arrives. Security reports have a private channel and are read, with no acknowledgement or
+  response time promised. The README says this plainly rather than implying more; and, as above,
+  a version that can no longer be maintained is archived visibly *(added — not in the input;
+  owner-confirmed: prd_trail/cycle-7.md)*.
 - **Versioning:** releases are semantically versioned, and the version number is a compatibility
   promise to adopters. Before 1.0.0 anything may change, and that is stated plainly wherever a
   release is offered. Reaching 1.0.0 is a product event — the moment the promise starts — and
@@ -307,7 +334,12 @@ browsing, reading, status, and live refresh.
 
 - Nozoki stores nothing about its users: no accounts, no identity, no behavioural data.
 - No telemetry and no non-essential network calls — the tool's operation stays entirely on the
-  user's machine *(added — instance doctrine default, not in the input)*.
+  user's machine *(added — instance doctrine default, not in the input)*. v1 makes no network
+  call at all during operation; acquiring the tool uses the network, operating it does not. The
+  word "non-essential" is kept deliberately: it leaves room for a possible future update or
+  version check, which would enter this PRD as a stated feature before it exists — the headroom
+  is what is being kept, not a current call *(the definition and the headroom: added — not in
+  the input; owner-confirmed: prd_trail/cycle-7.md)*.
 - The product reads only the repository it is pointed at and persists nothing of it.
 - Nozoki may keep its own state — preferences such as theme choice, window state, anything it
   remembers between sessions — and that lives where the tool keeps its own data on the machine,
@@ -327,12 +359,10 @@ browsing, reading, status, and live refresh.
   full editor they already have is good enough and adoption stalls. This is the Why This edge
   failing, not a marketing problem.
 - **Maintenance is a standing liability.** Publishing opens issues, questions, and security
-  reports against finite maintainer time; the small surface and a stated support posture in the
-  README are the mitigations *(added — instance doctrine)*.
+  reports against finite maintainer time; the small surface and the support posture stated in
+  Assumptions — carried in the README — are the mitigations *(added — instance doctrine)*.
 
 ## Open Questions
 
-- [OPEN: under what public identity — which account, which name — Nozoki is published, and so who
-  the tool's maintainer is to a stranger reading its repository]
-- [OPEN: which platforms v1 promises to run on — the README's single install path is supported
-  somewhere, and that somewhere is unstated]
+None — every product-defining question raised to date is answered in the body, with its trail
+record beside it.
