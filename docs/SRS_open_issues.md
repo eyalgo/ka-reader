@@ -72,10 +72,23 @@ confirm.
   are handed to the system browser* — FR-32's "follows no link" narrows to "makes no call
   itself", AC-23's link check narrows to the same, and RN-23 records that the initiation is
   accepted. Either half alone is possible.
-- **Confirm or override:**
-  <!-- Left unanswered deliberately. An earlier recording of this item added wording the
-       owner did not say, and that round was reset rather than patched. Ask this item
-       fresh. -->
+- **Confirm or override:** in the owner's words, first on the item as a whole: *"link only
+  if it costs *nothing*, otherwise, it's not important for v1."* The two halves were then
+  put separately — external links handed to the system browser, relative links opening the
+  target in the reading panel — and the owner answered: *"per each, if it costs nothing,
+  do it."*
+
+  So the condition is build cost, applied to each half on its own. Neither half is required
+  for v1 and neither is refused; whether a half meets the condition is not settled here.
+
+  <!-- Session facts, NOT owner statements, recorded so the fold does not have to infer them.
+       (a) Neither pre-written branch above matches: the answer is a permission conditional on
+       cost, not a wholesale confirm or override, and the owner used neither word.
+       (b) Before answering, the owner was told that cost is not the axis the external half
+       turns on — this item's own rationale leans on Way 2's promise, and handing a URL to the
+       system browser makes Nozoki the initiator of a call another process makes. The answer
+       above came after that was said. The owner did not say the trade is accepted, and no
+       acceptance is recorded here. -->
 
 ### 2.3 Whether the Markdown raw-source switch is inside the terminus
 
