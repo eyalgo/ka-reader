@@ -1,15 +1,33 @@
 # PRD — Nozoki 覗き
 
-**Status:** Settled
+**Status:** Draft
 **Owner:** CPO
-**Version:** 6 — v1 makes no assistive-technology promise beyond the mouse-driven line; its accessibility surface is what the product already carries
+**Version:** 7 — the product is stated in two sentences up front; the body says what the product is without narrating how it was authored; no scope, user, metric or exclusion moves
 
-> The PRD is the product source of truth: the product-facing **what and why**, read cold by the
-> CTO, the CDO, Principal PM, and Principal Architect. It is updated in place with versioning (bump the
-> line above on each material change). The **how** — architecture, system requirements, delivery
-> sequencing — belongs to the roles downstream.
+> The PRD is the product source of truth: the product-facing **what and why**, read cold
+> by the CTO, the CDO, Principal PM, and Principal Architect. It is updated in place with
+> versioning (bump the line above on each material change). Keep the **how** — architecture,
+> system requirements, delivery sequencing — out; that belongs to the roles downstream.
+> Omit a section only when it genuinely does not apply; do not pad one to fill it.
+>
+> **A decision the CPO introduced, or departed from the input on, wears its relation inline** —
+> beside the decision itself, in whatever section it lives, so a cold reader can tell what came
+> from the input and what the CPO put there without holding the two documents side by side. Which
+> relations exist, which marker each takes, and when one is owed are the authoring prompt's
+> (`<CORE>/prompts/cpo_create_prd.md` § *Every decision cites its relation to your input*); this
+> template says only that the markers sit in the body, never in a section of their own. A
+> **suggested removal** has nothing to mark here — the thing it concerns is not in the document —
+> and lives only in the companion as a choice to confirm.
 
 ---
+
+## Blurb
+
+Nozoki is a read-only viewer for a local Git repository: browse the tree, read files with
+syntax highlighting, see what has changed, and watch the tree as it changes — with the certainty
+that nothing about the repository can be changed from here. It is for developers inspecting a
+working tree they must not disturb, above all one that a coding agent or automated tool is
+actively changing.
 
 ## Purpose
 
@@ -90,8 +108,8 @@ maintainer time, held down by the deliberately small surface (see Assumptions).
   path, whatever that path is — to viewing a file of their own repository. Bar: ≤ 5 minutes,
   checked before each release. This same clock is the no-learning-curve goal's observable: it
   runs through first use — finding, starting, and viewing — not install alone *(that link:
-  added — reconciliation of an existing goal to an existing bar; no new bar)*. *(bar value:
-  added — not in the input; owner-confirmed: prd_trail/cycle-1.md)*
+  added — not in the input)*. *(bar value: added — not in the input; owner-confirmed:
+  prd_trail/cycle-1.md)*
 - **Zero required configuration:** the only input Nozoki requires is which repository to view —
   no settings, no project file, no setup step. Bar: pass/fail, checked at each release.
   *(owner-confirmed: prd_trail/cycle-2.md)*
@@ -128,9 +146,7 @@ maintainer time, held down by the deliberately small surface (see Assumptions).
 
 ## UX Notes
 
-*(Section re-authored whole for the reader who designs the product's experience from it —
-owner-delegated, standard and authorization: prd_trail/cycle-4.md; decisions earlier cycles
-settled keep their tags. Product-level only: no visual design, no mechanism.)*
+*(Product-level only: no visual design, no mechanism.)*
 
 **The character.** Nozoki looks at a repository; it never acts on one — and the experience
 should feel like that: calm, truthful, still. The product presents state; the person moves
@@ -183,7 +199,7 @@ Git expert:
 - A file that cannot be shown as text (binary and similar): openable like any file, landing
   in a stated cannot-display-as-text state — never a garbled render, never an error.
   Rendering non-text content richly is not part of v1's proof; the input's own scope is code
-  viewing.
+  viewing *(added — not in the input)*.
 
 **What must feel effortless.**
 
@@ -202,8 +218,7 @@ Git expert:
 - Beyond that line, v1 makes no assistive-technology promise: its accessibility surface is
   what the product already carries — two themes, text-first navigation — kept small with the
   rest of the surface *(added — not in the input; owner-confirmed: prd_trail/cycle-5.md)*.
-- UI language: English *(added — defaulted, not routed: the instance's products and their
-  documentation are English-first)*.
+- UI language: English *(added — not in the input)*.
 
 ## Scope (In)
 
@@ -233,6 +248,9 @@ browsing, reading, status, and live refresh.
 - **Diff and commit-history views** — beyond v1 (the input's own roadmap defers them).
 - **Sidebar search / filter** — beyond v1 (input roadmap).
 - **Pane resizing and keyboard navigation** — beyond v1 (input roadmap).
+- **Rich rendering of non-text content** — beyond v1: a file that cannot be shown as text lands
+  in a stated cannot-display state (see UX Notes); the input's own scope is code viewing
+  *(added — not in the input)*.
 - **Remote or hosted repositories, and any hosted operation of the tool itself** — the product
   runs locally against local state.
 - **Changing the viewed repository without restarting** — beyond v1: a named future direction
@@ -244,7 +262,12 @@ browsing, reading, status, and live refresh.
   here; the product property is only that there is exactly one such path and it is simple (see
   Scope) *(owner-confirmed: prd_trail/cycle-1.md)*.
 - The input's implementation-stack recommendations (editor component, UI framework, styling
-  approach) are not carried here: implementation choices, not product properties.
+  approach, module structure) are not carried here: implementation choices, not product
+  properties.
+- The input's layout measurements and visual styling specifics (sidebar width, separators,
+  button sizing, an optional header and status bar) are not carried here: visual design, which
+  is decided downstream of this document. What the input says about the experience — the
+  reading panel dominant, text-first navigation, two themes — is carried in UX Notes.
 - The input's three-phase delivery sequencing is not carried here: delivery, not product. Its
   phase-3 items appear above as the v1 exclusions they define.
 
@@ -266,8 +289,7 @@ browsing, reading, status, and live refresh.
   release is offered. Reaching 1.0.0 is a product event — the moment the promise starts — and
   after it a breaking change to what users rely on is priced, batched, and announced, never
   casual. *(added — not in the input; the 1.0.0-or-later closing condition is the project
-  Agari's, quoted and owner-confirmed at srs_trail/cycle-1.md §2.4, whose recorded follow-up
-  routed the promise into the PRD)*
+  Agari's, owner-confirmed: srs_trail/cycle-1.md §2.4)*
 - **Regulatory posture:** published as free, non-monetized open source outside any commercial
   activity, Nozoki is outside the EU Cyber Resilience Act's scope *(verified (external):
   https://digital-strategy.ec.europa.eu/en/policies/cra-open-source — non-monetised free
@@ -310,4 +332,7 @@ browsing, reading, status, and live refresh.
 
 ## Open Questions
 
-None.
+- [OPEN: under what public identity — which account, which name — Nozoki is published, and so who
+  the tool's maintainer is to a stranger reading its repository]
+- [OPEN: which platforms v1 promises to run on — the README's single install path is supported
+  somewhere, and that somewhere is unstated]
