@@ -60,7 +60,7 @@ confirm.
   acceptance in your words. The Agari's second condition ("no non-essential network call") is
   unchanged either way; whether an opened browser page is *essential* is the reading this answer
   settles.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm
 
 ## 3. Directives — an external action the owner confirms as a gate
 
