@@ -1,8 +1,8 @@
 # SRS — Nozoki 覗き
 
-**Status:** Draft
+**Status:** Settled
 **Owner:** CTO
-**Version:** 6 — folds the owner's cycle-5 answers (`docs/srs_trail/cycle-5.md`): a floor language is recognized by file extension, every common extension per language (FR-29, AC-5, RN-27); a relative link in rendered Markdown may open its target, built only if it costs nothing, while an external link stays unfollowed pending one residue in the companion (FR-32, AC-23, RN-28); the raw-source switch is outside the terminus and permitted, not required (FR-31, AC-12, §2, RN-29); a second platform outside the terminus is confirmed (§2, RN-30). One choice to confirm remains in the companion.
+**Version:** 7 — folds the owner's cycle-6 answer (`docs/srs_trail/cycle-6.md` §2.1): an external link in a rendered Markdown file is displayed and not followed — the owner's confirmed call, so NFR-8's "none" stays unqualified (FR-32, RN-28). Nothing is left for the owner to answer; the companion is closed.
 
 > The SRS is the technical source of truth: the system-level **what**, derived from the PRD and
 > read cold by the Principal PM (Delivery Plan / FDR) and the Principal Architect (ADR / NFDR).
@@ -131,11 +131,11 @@ operation of the tool; several repositories at once — one at a time is the pro
   to another program. A relative link to a file inside the viewed repository is displayed and, by
   default, not followed; the system may instead open that file in the reading panel exactly as a
   tree selection does (FR-7, FR-13) — permitted, not required, outside the terminus, and built
-  only if it costs nothing, a build-cost judgment the SDD makes and records. Whether the external
-  link may become a permission on the same terms is open, named in `docs/SRS_open_issues.md`, and
-  the owner's to answer (RN-28). *(traces to: PRD Data & Privacy "v1 makes no network call at all
-  during operation"; added consequence of NFR-8 for rendered content: RN-23; link behavior
-  owner-answered: `docs/srs_trail/cycle-5.md` §2.2, see RN-28)*
+  only if it costs nothing, a build-cost judgment the SDD makes and records. That an external
+  link stays unfollowed is the owner's confirmed call (`docs/srs_trail/cycle-6.md` §2.1, RN-28).
+  *(traces to: PRD Data & Privacy "v1 makes no network call at all during operation"; added
+  consequence of NFR-8 for rendered content: RN-23; link behavior owner-answered:
+  `docs/srs_trail/cycle-5.md` §2.2 and `docs/srs_trail/cycle-6.md` §2.1, see RN-28)*
 - **FR-9:** No interaction with the displayed content changes it or the underlying file — typing,
   pasting, and dropping into the reading panel produce no modification, on screen or on disk.
   *(traces to: PRD Out of Scope "Editing, permanently")*
@@ -734,7 +734,7 @@ see RN-8)*
   full extension set is fixed in the SDD; AC-5 exercises each extension that set names, plus the
   two cases the rule leaves as plain text — no extension, and an extension outside the set
   *(re: FR-29, AC-5, DR-3; PRD source: Core Features)*.
-- **RN-28:** *(owner answer — FR-32, AC-23; one residue open)* Links in rendered Markdown. The
+- **RN-28:** *(owner answer — FR-32, AC-23)* Links in rendered Markdown. The
   owner's answer is a permission conditioned on build cost, applied to each half on its own —
   "per each, if it costs nothing, do it" (`docs/srs_trail/cycle-5.md` §2.2): neither half is
   required for v1, neither is refused, and neither is inside the terminus. The relative-link half
@@ -744,10 +744,11 @@ see RN-8)*
   system the initiator of a network call another process makes; the owner was told before
   answering that this half turns on Way 2's promise and not on cost, and the answer records no
   acceptance of that trade (`docs/srs_trail/cycle-5.md` §2.2, the session note beneath the
-  answer). Until the owner rules on it, FR-32 keeps the external link displayed and unfollowed —
-  the reading that leaves NFR-8's "none" unqualified — and the question is the one item in
-  `docs/SRS_open_issues.md`, the owner's to answer *(re: FR-32, NFR-8, AC-3, AC-23; PRD source:
-  Data & Privacy)*.
+  answer). That half went back as its own choice to confirm and the owner confirmed the default
+  (`docs/srs_trail/cycle-6.md` §2.1): an external link is displayed and not followed — the
+  system neither opens it nor hands it to another program — the reading that leaves NFR-8's
+  "none" unqualified and AC-3's zero-outbound-traffic check whole *(re: FR-32, NFR-8, AC-3,
+  AC-23; PRD source: Data & Privacy)*.
 - **RN-29:** *(changed — FR-31, AC-12, §2)* The raw-source switch is outside the terminus and
   permitted, not required — owner override (`docs/srs_trail/cycle-5.md` §2.3): "render is what
   i need", and "add the toggle if it costs nothing". This departs from the PRD, which says the
