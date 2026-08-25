@@ -2,7 +2,7 @@
 
 **Status:** Draft
 **Owner:** CTO
-**Version:** 5 — re-authored against PRD v8, template 1.9.0 and prompt 3.6.0 on the owner's instruction (`docs/srs_trail/cycle-4.md`): the macOS-only platform (C-11); the syntax-highlighting floor and its plain-text fallback (FR-8, FR-29); Markdown rendered with a raw-source toggle, and the no-fetch / no-execution bounds rendering carries (FR-30 – FR-32, NFR-16); the public identity and the support posture (C-7, C-12, C-13); C-6 gains its PRD trace; RN-3 repaired; `## Open Questions` omitted under the template's rule; the SDD's three seats named where the SRS names its readers (RN-20 – RN-26). Four choices to confirm are in the companion.
+**Version:** 6 — folds the owner's cycle-5 answers (`docs/srs_trail/cycle-5.md`): a floor language is recognized by file extension, every common extension per language (FR-29, AC-5, RN-27); a relative link in rendered Markdown may open its target, built only if it costs nothing, while an external link stays unfollowed pending one residue in the companion (FR-32, AC-23, RN-28); the raw-source switch is outside the terminus and permitted, not required (FR-31, AC-12, §2, RN-29); a second platform outside the terminus is confirmed (§2, RN-30). One choice to confirm remains in the companion.
 
 > The SRS is the technical source of truth: the system-level **what**, derived from the PRD and
 > read cold by the Principal PM (Delivery Plan / FDR) and the Principal Architect (ADR / NFDR).
@@ -53,8 +53,12 @@ forgotten:
   docks. Consequently this system exposes no programmatic surface (§5.2).
 - **Linux and Windows** — the PRD promises macOS only for v1 and states the other two as an
   exclusion (C-11). The Agari draws the dock as three named surfaces beyond v1 and no platform,
-  so a second platform sits outside done as the Agari stands; the reading is the owner's to
-  confirm (RN-21).
+  so a second platform sits outside done — the owner's confirmed reading (RN-30).
+- **The Markdown raw-source switch, and a link in a rendered Markdown file opening its target** —
+  the owner placed the switch outside done (`docs/srs_trail/cycle-5.md` §2.3), and made the
+  switch and a relative link opening its target each a permission conditioned on build cost,
+  neither required for v1 (`docs/srs_trail/cycle-5.md` §2.2, §2.3). FR-31 and FR-32 carry them as
+  permitted, not required, and no closing-release criterion exercises them (RN-28, RN-29).
 
 **Excluded by the PRD itself, permanently** (restated because they are load-bearing): editing, in
 any version — the product has no write path to the repository; Git operations (staging,
@@ -105,23 +109,33 @@ operation of the tool; several repositories at once — one at a time is the pro
   floor: owner-confirmed `docs/prd_trail/cycle-7.md` §2.5; revised at v5 from "recognized
   languages": RN-22)*
 - **FR-29:** A text file the system does not recognize as one of the floor languages is displayed
-  as plain text — never refused, and never displayed with another language's highlighting. Which
-  files the system recognizes as a floor language, and how, is drafted as a choice in the
-  companion (RN-22). *(traces to: PRD Core Features "shown as plain text, never refused and never
-  mis-highlighted")*
+  as plain text — never refused, and never displayed with another language's highlighting. The
+  system recognizes a floor language by the file's extension alone, never by its content: each
+  floor language is recognized by every extension in common use for it — JavaScript by `.js` and
+  `.mjs` both, never one alone — with the full extension set fixed in the SDD; a file with no
+  extension, or with an extension outside that set, is plain text. *(traces to: PRD Core
+  Features "shown as plain text, never refused and never mis-highlighted"; recognition rule
+  owner-confirmed: `docs/srs_trail/cycle-5.md` §2.1; see RN-22, RN-27)*
 - **FR-30:** A Markdown file is displayed rendered by default. *(traces to: PRD Core Features
   "Markdown is rendered by default"; owner-confirmed `docs/prd_trail/cycle-7.md` §2.5; see RN-23)*
-- **FR-31:** A rendered Markdown file can be switched to its raw source and back, in the reading
-  panel. v1 may ship rendered-only, in which case the switch lands in a later release — the PRD's
-  stated fallback, not an open question. Whether the closing release requires the switch is
-  drafted as a choice in the companion (RN-23). *(traces to: PRD Core Features "with a toggle to
-  the raw source. If the toggle proves too costly for v1, v1 ships rendered-only and the toggle
-  follows")*
+- **FR-31:** A rendered Markdown file may be switchable to its raw source and back, in the
+  reading panel. The switch is permitted, not required, and it is outside the terminus: it is
+  built only if it costs nothing — a build-cost judgment the SDD makes and records — and a
+  release that ships rendered-only states so where the release is offered. *(traces to: PRD Core
+  Features "with a toggle to the raw source. If the toggle proves too costly for v1, v1 ships
+  rendered-only and the toggle follows"; changed from the PRD's "the toggle follows" by owner
+  override: `docs/srs_trail/cycle-5.md` §2.3; see RN-23, RN-29)*
 - **FR-32:** Rendering a Markdown file fetches nothing from outside the viewed repository: a
-  remote image or other remote resource the document references is not loaded, and the system
-  follows no link the document contains. What a link does when activated is drafted as a choice
-  in the companion (RN-23). *(traces to: PRD Data & Privacy "v1 makes no network call at all
-  during operation"; added consequence of NFR-8 for rendered content: RN-23)*
+  remote image or other remote resource the document references is not loaded. An external link
+  the document contains is displayed and not followed — the system neither opens it nor hands it
+  to another program. A relative link to a file inside the viewed repository is displayed and, by
+  default, not followed; the system may instead open that file in the reading panel exactly as a
+  tree selection does (FR-7, FR-13) — permitted, not required, outside the terminus, and built
+  only if it costs nothing, a build-cost judgment the SDD makes and records. Whether the external
+  link may become a permission on the same terms is open, named in `docs/SRS_open_issues.md`, and
+  the owner's to answer (RN-28). *(traces to: PRD Data & Privacy "v1 makes no network call at all
+  during operation"; added consequence of NFR-8 for rendered content: RN-23; link behavior
+  owner-answered: `docs/srs_trail/cycle-5.md` §2.2, see RN-28)*
 - **FR-9:** No interaction with the displayed content changes it or the underlying file — typing,
   pasting, and dropping into the reading panel produce no modification, on screen or on disk.
   *(traces to: PRD Out of Scope "Editing, permanently")*
@@ -417,11 +431,13 @@ see RN-8)*
   release. *(covers: NFR-7, NFR-8)*
 - **AC-4:** Typing, pasting, and dropping into the reading panel change nothing, on screen or on
   disk. *(covers: FR-9)*
-- **AC-5:** A user can navigate the tree, open files from it, and read them: a file in each of
-  the six floor languages is displayed with that language's highlighting, and a text file outside
-  the floor is displayed as plain text with no other language's highlighting; changed files are
-  marked and the selection highlighted. *(covers: FR-5 – FR-8, FR-29; widened at v5 with the
-  floor: RN-22)*
+- **AC-5:** A user can navigate the tree, open files from it, and read them: a file under each
+  extension the SDD's set names for each of the six floor languages is displayed with that
+  language's highlighting; a text file outside the floor, a file with no extension (a shell
+  script whose only marker is a `#!/bin/sh` first line), and a file whose extension is outside
+  the set are each displayed as plain text with no other language's highlighting; changed files
+  are marked and the selection highlighted. *(covers: FR-5 – FR-8, FR-29; widened at v5 with the
+  floor: RN-22; the recognition cases added at v6: RN-27)*
 - **AC-6:** Against a repository with staged and unstaged changes on a named branch, the Git view
   shows all four elements (changed files, staged files, branch, status) correctly, and its files
   open for reading. *(covers: FR-11 – FR-13)*
@@ -442,9 +458,8 @@ see RN-8)*
   commit history — against a repository whose history holds more than one branch: the branches
   visible as branches, the presented branch set choosable, and the default asking nothing — with
   its per-commit diffs, and repository switching are present, read-only, and AC-1 – AC-3 still
-  pass with them exercised. The Markdown raw-source switch (FR-31) is exercised here too, on the
-  reading that it is inside the terminus — the owner's to confirm (RN-23). *(covers: FR-17 –
-  FR-19, FR-22, FR-31; history coverage widened with FR-18: RN-19)*
+  pass with them exercised. *(covers: FR-17 – FR-19, FR-22; history coverage widened with FR-18:
+  RN-19; the FR-31 clause removed at v6, the switch being outside the terminus: RN-29)*
 - **AC-13:** After a session in which preferences changed, new or changed files exist only in the
   tool's own data location — none under the repository path — and inspection finds nothing
   personal and no repository content in them. *(covers: FR-21, DR-5)*
@@ -476,10 +491,13 @@ see RN-8)*
   shipped, switching shows the file's source byte-for-byte as on disk and switching back
   restores the rendered view, with the file unmodified throughout. A release that ships
   rendered-only states so where the release is offered. *(covers: FR-30, FR-31)*
-- **AC-23:** Rendering a Markdown file that references a remote image, contains an external link,
-  and embeds a script and active HTML content produces zero outbound traffic, executes nothing,
-  and leaves the filesystem and the tool's own state unchanged; the link is not followed by the
-  system. *(covers: FR-32, NFR-16, NFR-8)*
+- **AC-23:** Rendering a Markdown file that references a remote image, contains an external link
+  and a relative link to a file in the repository, and embeds a script and active HTML content
+  produces zero outbound traffic, executes nothing, and leaves the filesystem and the tool's own
+  state unchanged; activating the external link opens nothing and produces no outbound traffic;
+  activating the relative link either does nothing or — where the release opens relative links —
+  displays the target file read-only, exactly as selecting it in the tree would, with the file
+  unmodified. *(covers: FR-32, NFR-16, NFR-8; the relative-link case added at v6: RN-28)*
 
 ---
 
@@ -644,8 +662,9 @@ see RN-8)*
   (the SDD, with the runtime — the same placement as the acquisition channel, RN-7) and requires
   it stated wherever the install path is offered; (ii) the Agari draws the dock as three named
   surfaces beyond v1 and says nothing of platform, so §2 reads a second platform as outside done
-  and routes that reading to the owner as a choice — the terminus is the CPO's, not this
-  document's to extend *(re: C-11, NFR-13, AC-10, §2; PRD source: Scope (In) "Platform", Out of
+  and routed that reading to the owner as a choice — the terminus is the CPO's, not this
+  document's to extend — who confirmed it (RN-30) *(re: C-11, NFR-13, AC-10, §2; PRD source:
+  Scope (In) "Platform", Out of
   Scope "Linux and Windows", Success Metrics "Time-to-first-success")*.
 - **RN-22:** *(changed — FR-8; added — FR-29)* The highlighting promise now has a floor —
   *because* PRD v8 promises highlighting for Python, shell, JavaScript, JSON, YAML and TOML and
@@ -658,8 +677,9 @@ see RN-8)*
   the PRD leaves open is how a file is recognized as a floor language — by extension per the
   owner's own measurement (`.py`, `.sh`, `.js` / `.mjs`), which leaves an extension-less shell
   script, a `.yml` file, or a shebang script as plain text unless the recognition says
-  otherwise; drafted as extension-based with the extension set the SDD's, and routed to the
-  companion as a choice *(re: FR-8, FR-29, AC-5, DR-3; PRD source: Core Features)*.
+  otherwise; drafted as extension-based with the extension set the SDD's, routed to the
+  companion as a choice, and confirmed (RN-27) *(re: FR-8, FR-29, AC-5, DR-3; PRD source: Core
+  Features)*.
 - **RN-23:** *(added — FR-30 – FR-32, NFR-16, AC-22, AC-23)* Markdown rendering — *because* PRD
   v8 states it: rendered by default, a toggle to the raw source, and the fallback that v1 may
   ship rendered-only with the toggle following (owner: `docs/prd_trail/cycle-7.md` §2.5). FR-30
@@ -671,7 +691,8 @@ see RN-8)*
   Markdown file may embed script or active HTML; a renderer that executed it would hand the
   repository a path to the filesystem, the network and the tool's own state, which NFR-4, NFR-5
   and NFR-8 each forbid; so rendered content executes nothing. AC-23 exercises both with a
-  hostile document. Two product-visible calls are routed to the companion: what a link in a
+  hostile document. Two product-visible calls were routed to the companion and answered at
+  cycle-5 (RN-28, RN-29): what a link in a
   rendered document does when activated (drafted: nothing — the system follows none, FR-32),
   and whether the raw-source switch is inside the terminus (drafted: yes — AC-12 exercises it at
   the closing release, on the reading that "reading with highlighting" in the Agari's first
@@ -701,8 +722,44 @@ see RN-8)*
   Scope, Assumptions, Dependencies, Data & Privacy or Risks moved between PRD v6 and v8 beyond
   the four RN-21 – RN-24 derive *(re: §2 – §8)*.
 - **RN-26:** *(the terminus, at v5)* The Agari (`system/projects/nozoki/agari.md`) is unchanged
-  since v4 of this SRS and predates PRD v7/v8. Two of v5's additions sit against its edge and
-  are routed to the owner rather than read into it — the platform (RN-21) and the raw-source
-  switch (RN-23). Its second condition quotes the promise as "no non-essential network call";
+  since v4 of this SRS and predates PRD v7/v8. Two of v5's additions sat against its edge and
+  were routed to the owner rather than read into it — the platform (RN-21) and the raw-source
+  switch (RN-23); the owner placed both outside done (RN-29, RN-30). Its second condition quotes the promise as "no non-essential network call";
   NFR-8's "none" sits inside that wording, not against it, so no collision is raised *(re: §2,
   AC-12, NFR-8)*.
+- **RN-27:** *(confirmed choice — FR-29, AC-5)* A floor language is recognized by file extension,
+  never by content, and each floor language is recognized by every extension in common use for
+  it — the owner confirmed the extension rule and, asked separately, ruled that the set is not one
+  extension per language: "we should cover the options" (`docs/srs_trail/cycle-5.md` §2.1). The
+  full extension set is fixed in the SDD; AC-5 exercises each extension that set names, plus the
+  two cases the rule leaves as plain text — no extension, and an extension outside the set
+  *(re: FR-29, AC-5, DR-3; PRD source: Core Features)*.
+- **RN-28:** *(owner answer — FR-32, AC-23; one residue open)* Links in rendered Markdown. The
+  owner's answer is a permission conditioned on build cost, applied to each half on its own —
+  "per each, if it costs nothing, do it" (`docs/srs_trail/cycle-5.md` §2.2): neither half is
+  required for v1, neither is refused, and neither is inside the terminus. The relative-link half
+  is folded as that permission — FR-32 lets a relative link open its target in the reading
+  panel, the build-cost judgment the SDD's, AC-23 exercising whichever the release does. The
+  external half is not folded as a permission: handing a URL to the system browser makes the
+  system the initiator of a network call another process makes; the owner was told before
+  answering that this half turns on Way 2's promise and not on cost, and the answer records no
+  acceptance of that trade (`docs/srs_trail/cycle-5.md` §2.2, the session note beneath the
+  answer). Until the owner rules on it, FR-32 keeps the external link displayed and unfollowed —
+  the reading that leaves NFR-8's "none" unqualified — and the question is the one item in
+  `docs/SRS_open_issues.md`, the owner's to answer *(re: FR-32, NFR-8, AC-3, AC-23; PRD source:
+  Data & Privacy)*.
+- **RN-29:** *(changed — FR-31, AC-12, §2)* The raw-source switch is outside the terminus and
+  permitted, not required — owner override (`docs/srs_trail/cycle-5.md` §2.3): "render is what
+  i need", and "add the toggle if it costs nothing". This departs from the PRD, which says the
+  toggle "follows" when v1 ships rendered-only (`docs/PRD.md` § Core Features): the PRD promises
+  it in a later release; the SRS now promises it in none, carrying it as a permission the SDD
+  settles on build cost. AC-12's FR-31 clause is removed; AC-22 stands, exercising the switch
+  only where a release ships it. The PRD is not corrected here — folding the override upstream is
+  a PRD correction cycle, the CPO's, carried forward the way `docs/srs_trail/cycle-1.md` §2.4
+  carried the versioning promise *(re: FR-31, AC-12, AC-22, §2; PRD source: Core Features)*.
+- **RN-30:** *(confirmed choice — §2, C-11)* A second platform is outside the terminus — the owner
+  confirmed the reading (`docs/srs_trail/cycle-5.md` §2.4): the Agari's first condition
+  enumerates the beyond-v1 features inside done and platform is not among them, so Nozoki is
+  done on macOS alone. C-11, NFR-13 and AC-10 stand as written. The confirmation does not say
+  Linux or Windows is never built — only that done does not wait for either *(re: §2, C-11,
+  NFR-13, AC-10; PRD source: Out of Scope "Linux and Windows")*.
