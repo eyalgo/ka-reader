@@ -299,7 +299,7 @@ components:
 
 **Status:** Settled
 **Owner:** CDO
-**Version:** 3 — the owner's cycle-2 answers folded (`docs/design_trail/cycle-2.md`): the no-tooltip Don't is lifted on the owner's v1 decision and a tooltip contract enters — one surface, the status letter, as `{components.tooltip}` drawn from existing tokens (RN-11, RN-23); the status letters' VS Code vocabulary is stated rather than left implicit, with the porcelain collision recorded (RN-24); and the UX-I9 traceability row and RN-10 are repointed at the settled UXD record. No colour, type, spacing or radius value moves; the companion is gone again. (v2: the owner's cycle-1 answers folded — `docs/design_trail/cycle-1.md`.)
+**Version:** 4 — the owner's cycle-3 answers folded (`docs/design_trail/cycle-3.md`): `{components.status-message}` names the **unexplained fault** (`docs/UXD.md` UX-I16) as the second class of every failure state it covers — same treatment, same slot, same route out — and the Traceability table gains the UX-I16 row (RN-25). No token, colour, type, spacing or radius value moves; the companion is gone again. (v3: the owner's cycle-2 answers folded (`docs/design_trail/cycle-2.md`): the no-tooltip Don't is lifted on the owner's v1 decision and a tooltip contract enters — one surface, the status letter, as `{components.tooltip}` drawn from existing tokens (RN-11, RN-23); the status letters' VS Code vocabulary is stated rather than left implicit, with the porcelain collision recorded (RN-24); and the UX-I9 traceability row and RN-10 are repointed at the settled UXD record. No colour, type, spacing or radius value moves; the companion is gone again. (v2: the owner's cycle-1 answers folded — `docs/design_trail/cycle-1.md`.)
 
 > The design language is the visual source of truth: the tokens are normative, the prose says
 > how to apply them. It is authored off the UXD's § Design-System Direction — that section names
@@ -656,7 +656,11 @@ that remote content is not loaded.
 
 **Status messages.** `{components.status-message}` is every empty, pending, and failure state
 the UXD names (`docs/UXD.md` § 6): the empty reading panel, the empty tree, the clean Git view,
-a cannot-display placeholder, a vanished file, an unreadable entry, a startup failure. It is
+a cannot-display placeholder, a vanished file, an unreadable entry, a startup failure — and, in
+every failure slot, the second class § 6 gives each of them, the **unexplained fault** (UX-I16):
+the surface's work stopped and nothing read accounts for it, drawn in the same slot, at the same
+scope, with the same route out as the observed condition it sits beside; only the words differ,
+and those are `docs/CONTENT.md`'s. It is
 `{typography.ui}` in `{colors.ink-muted}` on `{colors.surface}`, inset `{spacing.xl}`,
 left-aligned at the top of its surface — never centred in the void, because a centred message
 is a watermark and the product has none. It leads with `info` for an empty or pending state and
@@ -966,6 +970,24 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
   is recorded on that document's own companion (`docs/CONTENT_open_issues.md` § 1.2,
   `nozoki@1593434`) and is the Content Editor's, not this document's. *(re: § Components "Status
   letters"; source: owner answer)*
+- **RN-25:** *(upstream UXD change)* `{components.status-message}` names the **unexplained fault**
+  as the second class of every failure state it covers, and the Traceability table carries a UX-I16
+  row — *because* the UXD reached v5 after revision 3 was authored and its § 6 now holds two classes
+  per failure cell, with UX-I16 giving the second its presentation; revision 3's enumeration listed
+  observed conditions only, so its claim to cover *every* failure state the UXD names had gone stale
+  (`docs/design_trail/cycle-3.md` § 1.1, § 1.2). The enumeration moves and the treatment does not:
+  `circle-alert`, `{typography.ui}` in `{colors.ink-muted}` on `{colors.surface}`, inset
+  `{spacing.xl}`, top-left and never centred, the glyph never alone, the route out following on the
+  same surface — which is what UX-I16 asks for (what was observed and nothing more, scoped to the
+  item that stopped, recovering without ceremony) and what UX-I14 already required. No new
+  component, no new token, no value moves. Two things this revision deliberately leaves as they
+  were: the tooltip stays bound to the status letter alone (RN-23; the Don't in § Do's and Don'ts),
+  which is what holds UXD RN-24 — no control on any surface reveals, expands or copies a fault's
+  detail — and the fault message carries no reveal, expand or copy control of any kind. The
+  machine gate on this revision — the same pinned `lint`, run 2026-08-26 — reported 0 errors,
+  0 warnings and 1 info, `token-summary` with the counts RN-21 records unchanged; no diagnostic is
+  accepted or routed. *(re: § Components "Status messages", § Traceability; source: upstream UXD
+  change, `docs/UXD.md` v5 UX-I16 / RN-23 / RN-24)*
 
 ## Traceability
 
@@ -987,6 +1009,7 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
 | UX-I13 — no indicator before the state is observed | Counts and letters drawn only after Git state is read; pending is a word, never a bar (§ Components "Status messages", Do's) |
 | UX-I14 — every failure carries a route out on the same surface | § Components "Status messages": the route follows the message; the Do's require it |
 | UX-I15 — every asset ships with the tool | § Typography, § Components "Icons", the Do's |
+| UX-I16 — the unexplained fault shown in the item's own failure slot, scoped, with a route out, no detail control | § Components "Status messages": the second class of the same component, same treatment and same route out (RN-25); UXD RN-24's no-detail-control rule is held by the tooltip's single home (RN-23) and the Don't that binds it |
 | § 4 / RN-16 — the rail leads with the glyph, label beneath; which icons is DESIGN.md's | `folder` / *Files*, `git-branch` / *Git*; 20px glyph over 10px label (§ Components "The rail", RN-12) |
 | UX-F5 / RN-15 — the selector in the chrome, the name as label and control; browse entry; empty on first run | `{components.control}` + `{components.menu}` with *Browse…* last (§ Components "The chrome", "The menu") |
 | UX-S5 / UX-S6 — diff with staged distinguished in text; history as topology with branch names at tips | Diff section headers; `{components.branch-chip}`; ink-only rails and dots (§ Components "Diff", "The branch chip") |
