@@ -299,7 +299,7 @@ components:
 
 **Status:** Settled
 **Owner:** CDO
-**Version:** 4 — the owner's cycle-3 answers folded (`docs/design_trail/cycle-3.md`): `{components.status-message}` names the **unexplained fault** (`docs/UXD.md` UX-I16) as the second class of every failure state it covers — same treatment, same slot, same route out — and the Traceability table gains the UX-I16 row (RN-25). No token, colour, type, spacing or radius value moves; the companion is gone again. (v3: the owner's cycle-2 answers folded (`docs/design_trail/cycle-2.md`): the no-tooltip Don't is lifted on the owner's v1 decision and a tooltip contract enters — one surface, the status letter, as `{components.tooltip}` drawn from existing tokens (RN-11, RN-23); the status letters' VS Code vocabulary is stated rather than left implicit, with the porcelain collision recorded (RN-24); and the UX-I9 traceability row and RN-10 are repointed at the settled UXD record. No colour, type, spacing or radius value moves; the companion is gone again. (v2: the owner's cycle-1 answers folded — `docs/design_trail/cycle-1.md`.)
+**Version:** 5 — the owner's cycle-4 answers folded (`docs/design_trail/cycle-4.md`): `{components.status-message}` states its one exception — the **observed plain folder's Git view** (`docs/UXD.md` UX-I17) carries no message and so holds no instance of the component, while the Git view's reading and fault appearances stay inside it — and the Traceability table gains the UX-I17 row, satisfied by drawing nothing (RN-26). No token, colour, type, spacing or radius value moves; the companion is gone again. (v4: the owner's cycle-3 answers folded (`docs/design_trail/cycle-3.md`): `{components.status-message}` names the **unexplained fault** (`docs/UXD.md` UX-I16) as the second class of every failure state it covers — same treatment, same slot, same route out — and the Traceability table gains the UX-I16 row (RN-25). No token, colour, type, spacing or radius value moves; the companion is gone again. (v3: the owner's cycle-2 answers folded (`docs/design_trail/cycle-2.md`): the no-tooltip Don't is lifted on the owner's v1 decision and a tooltip contract enters — one surface, the status letter, as `{components.tooltip}` drawn from existing tokens (RN-11, RN-23); the status letters' VS Code vocabulary is stated rather than left implicit, with the porcelain collision recorded (RN-24); and the UX-I9 traceability row and RN-10 are repointed at the settled UXD record. No colour, type, spacing or radius value moves; the companion is gone again. (v2: the owner's cycle-1 answers folded — `docs/design_trail/cycle-1.md`.))
 
 > The design language is the visual source of truth: the tokens are normative, the prose says
 > how to apply them. It is authored off the UXD's § Design-System Direction — that section names
@@ -660,7 +660,17 @@ a cannot-display placeholder, a vanished file, an unreadable entry, a startup fa
 every failure slot, the second class § 6 gives each of them, the **unexplained fault** (UX-I16):
 the surface's work stopped and nothing read accounts for it, drawn in the same slot, at the same
 scope, with the same route out as the observed condition it sits beside; only the words differ,
-and those are `docs/CONTENT.md`'s. It is
+and those are `docs/CONTENT.md`'s. **One state § 6 names is not this component:** the Git view of an
+**observed plain folder** (UX-I17) shows nothing — no message, no label, no glyph, no control — and
+so holds no instance of `{components.status-message}`; it carries no words because the two things
+a Git-less folder would otherwise be offered, initialising a repository and publishing it, are
+writes this product can never offer, so there is no truthful next step to state (the owner's
+decision, `docs/prd_trail/cycle-10.md` § 2.2). The exception is exactly that wide: the Git view
+**before** the tool has found whether the folder is a repository is a pending status message
+(UX-I13), and a Git view whose finding-out **stopped** is the unexplained fault, a failure status
+message (UX-I16) — never nothing. A clean repository and a plain folder are told apart by what the
+clean view carries — the branch and its stated "nothing changed" — against nothing at all; the
+shell adds no other cue (UXD RN-27). It is
 `{typography.ui}` in `{colors.ink-muted}` on `{colors.surface}`, inset `{spacing.xl}`,
 left-aligned at the top of its surface — never centred in the void, because a centred message
 is a watermark and the product has none. It leads with `info` for an empty or pending state and
@@ -988,6 +998,26 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
   0 warnings and 1 info, `token-summary` with the counts RN-21 records unchanged; no diagnostic is
   accepted or routed. *(re: § Components "Status messages", § Traceability; source: upstream UXD
   change, `docs/UXD.md` v5 UX-I16 / RN-23 / RN-24)*
+- **RN-26:** *(upstream UXD change)* `{components.status-message}` now states one exception to its
+  scope — the Git view of an **observed plain folder** carries no message and holds no instance of
+  the component — and the Traceability table carries a UX-I17 row — *because* the UXD reached v6
+  after revision 4 was authored and UX-I17 adds an empty state that is not a status message: the
+  plain folder's Git view is present and shows nothing, and revision 4's claim to cover *every*
+  empty state the UXD names had gone stale for the second time in the same way (RN-25;
+  `docs/design_trail/cycle-4.md` § 1.1, § 1.2). The scope claim moves and nothing else does: the
+  wordlessness is the owner's decision (`docs/prd_trail/cycle-10.md` § 2.2 — the offers VS Code
+  makes on that surface are writes this product never makes, so there is no truthful next step),
+  and the Git view's other two appearances stay inside the component explicitly — pending before
+  the finding (UX-I13) and the unexplained fault where the finding stopped (UX-I16) — so the
+  exception cannot be read wider than one observed state. No cue, affordance or component is added
+  to tell a plain folder from a clean repository: the clean view's own words against nothing is the
+  whole distinction, per UXD RN-27, and that was put to the owner and settled as *simple*. The
+  UX-I17 row records that the entry is satisfied by drawing **nothing** — the one row in the table
+  whose home is the absence of a component. No new component, no new token, no value moves. The
+  machine gate on this revision — the same pinned `lint`, run 2026-08-26 — reported 0 errors,
+  0 warnings and 1 info, `token-summary` with the counts RN-21 records unchanged; no diagnostic is
+  accepted or routed. *(re: § Components "Status messages", § Traceability; source: upstream UXD
+  change, `docs/UXD.md` v6 UX-I17 / RN-27; owner decision `docs/prd_trail/cycle-10.md` § 2.2)*
 
 ## Traceability
 
@@ -1010,6 +1040,7 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
 | UX-I14 — every failure carries a route out on the same surface | § Components "Status messages": the route follows the message; the Do's require it |
 | UX-I15 — every asset ships with the tool | § Typography, § Components "Icons", the Do's |
 | UX-I16 — the unexplained fault shown in the item's own failure slot, scoped, with a route out, no detail control | § Components "Status messages": the second class of the same component, same treatment and same route out (RN-25); UXD RN-24's no-detail-control rule is held by the tooltip's single home (RN-23) and the Don't that binds it |
+| UX-I17 — the observed plain folder's Git view is present and shows nothing: no message, no label, no control, nothing that invites creating a repository; a working state, no route out owed | Satisfied by drawing **nothing**: § Components "Status messages" states this view as the one empty state that holds no instance of `{components.status-message}`, and keeps the pending (UX-I13) and fault (UX-I16) appearances of the same view inside the component (RN-26); no cue is added to the shell (UXD RN-27) |
 | § 4 / RN-16 — the rail leads with the glyph, label beneath; which icons is DESIGN.md's | `folder` / *Files*, `git-branch` / *Git*; 20px glyph over 10px label (§ Components "The rail", RN-12) |
 | UX-F5 / RN-15 — the selector in the chrome, the name as label and control; browse entry; empty on first run | `{components.control}` + `{components.menu}` with *Browse…* last (§ Components "The chrome", "The menu") |
 | UX-S5 / UX-S6 — diff with staged distinguished in text; history as topology with branch names at tips | Diff section headers; `{components.branch-chip}`; ink-only rails and dots (§ Components "Diff", "The branch chip") |
