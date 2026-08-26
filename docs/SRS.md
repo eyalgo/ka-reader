@@ -2,7 +2,7 @@
 
 **Status:** Settled
 **Owner:** CTO
-**Version:** 7 — folds the owner's cycle-6 answer (`docs/srs_trail/cycle-6.md` §2.1): an external link in a rendered Markdown file is displayed and not followed — the owner's confirmed call, so NFR-8's "none" stays unqualified (FR-32, RN-28). Nothing is left for the owner to answer; the companion is closed.
+**Version:** 8 — the input contract widens from one local Git repository to one local folder, a Git repository or not, as PRD v11 states it (`docs/prd_trail/cycle-9.md` § 1.1, `docs/prd_trail/cycle-10.md` § 2.2 – § 2.4; the owner's fold directive: `docs/srs_trail/cycle-7.md` § 1.1). FR-33 says when Git is read and FR-34 what holds when it is not, and every Git-derived requirement cites them (RN-31 – RN-33); PRD v9's reader floor and README lines are folded on the same upstream branch (RN-34). Nothing is left for the owner to answer; the companion is closed. (v7: the external-link call confirmed — `docs/srs_trail/cycle-6.md` § 2.1.)
 
 > The SRS is the technical source of truth: the system-level **what**, derived from the PRD and
 > read cold by the Principal PM (Delivery Plan / FDR) and the Principal Architect (ADR / NFDR).
@@ -19,12 +19,13 @@
 
 ## 1. Purpose
 
-Nozoki is a local, read-only viewer for one Git repository at a time: it must present the
-repository's file tree, file contents with syntax highlighting, and Git status, keep that view
-following the repository as it changes on disk, and do all of it while provably changing nothing
-about the repository it is pointed at. This SRS states what the system must do and hold to realize
-the PRD's intent — inspection without risk, picked up by a stranger from the README alone, with no
-learning curve and no configuration.
+Nozoki is a local, read-only reader of folders, files and repositories, one folder at a time: it
+must present the folder's file tree and file contents with syntax highlighting — and, where the
+folder is itself the root of a Git repository, its Git status — keep that view following the
+folder as it changes on disk, and do all of it while provably changing nothing about the folder
+it is pointed at. This SRS states what the system must do and hold to realize the PRD's intent —
+inspection without risk, picked up by a stranger from the README alone, with no learning curve
+and no configuration.
 
 ## 2. Scope
 
@@ -32,9 +33,16 @@ learning curve and no configuration.
 scoped against is the project's 上がり Agari (`system/projects/nozoki/agari.md`): the v1 cut the
 PRD locks in (file tree, reading with highlighting, Git status, live refresh) **plus** the three
 deferred features the Agari places inside done — diff view, commit history, and switching the
-viewed repository without restarting (always one at a time). Requirements below that the PRD
-places beyond v1 are marked *(beyond v1)*; they are product scope, and when they are delivered is
-the Delivery Plan's, not this document's.
+viewed folder without restarting (always one at a time). Requirements below that the PRD places
+beyond v1 are marked *(beyond v1)*; they are product scope, and when they are delivered is the
+Delivery Plan's, not this document's.
+
+**The input is a local folder, a Git repository or not.** A folder that is not a Git repository —
+a plain folder — is inside v1 and inside the terminus: it is an input the whole surface takes, not
+a capability added to it. The diff view and the commit history are Git's and exist only where the
+folder is a repository (FR-33); the switch takes any folder *(traces to: PRD Scope (In) "a Git
+repository or not"; owner-confirmed `docs/prd_trail/cycle-9.md` § 1.1, `docs/prd_trail/cycle-10.md`
+§ 2.3; the terminus widened to the same input: `system/projects/nozoki/agari.md`; see RN-31)*.
 
 **Deliberately outside this SRS, with the terminus as the reason** — considered and bounded, not
 forgotten:
@@ -61,29 +69,65 @@ forgotten:
   permitted, not required, and no closing-release criterion exercises them (RN-28, RN-29).
 
 **Excluded by the PRD itself, permanently** (restated because they are load-bearing): editing, in
-any version — the product has no write path to the repository; Git operations (staging,
-committing, pushing, branch switching, discarding); remote or hosted repositories and any hosted
-operation of the tool; several repositories at once — one at a time is the product, and only
-*which* one becomes revisitable (FR-19); telemetry and non-essential network calls.
+any version — the product has no write path to the viewed folder; Git operations (staging,
+committing, pushing, branch switching, discarding); Git found anywhere but at the opened folder's
+root — a folder inside a repository, or a folder holding repositories, opens as a plain folder in
+any version (FR-33); creating or initialising a Git repository — the empty Git view offers no way
+to change what the system found (FR-34); remote or hosted repositories and any hosted operation of
+the tool; several folders at once — one at a time is the product, and only *which* one becomes
+revisitable (FR-19); telemetry and non-essential network calls.
 
 ## 3. Functional Requirements
 
-### 3.1 Startup, shutdown & repository
+### 3.1 Startup, shutdown & the viewed folder
 
-- **FR-1:** The system operates against exactly one local Git repository per run, and the only
-  input it ever requires is which repository to view — no settings, no project file, no setup
-  step. *(traces to: PRD Goals "No learning curve", Success Metrics "Zero required
-  configuration", Scope (In) run posture)*
-- **FR-2:** In v1 the repository to view is supplied when the system starts; the system offers no
-  in-product way to choose or change it. Changing the viewed repository from inside the product
-  is FR-19, beyond v1. *(traces to: PRD Out of Scope "Changing the viewed repository without
-  restarting"; see RN-1)*
-- **FR-3:** Pointed at a path that is not a readable local Git repository — or one that does not
-  exist or cannot be read — the system states plainly what went wrong and what to do next,
-  pitched at the PRD's no-learning-curve bar (no dead end that presumes expertise), and touches
-  nothing. *(traces to: PRD Scope (In) "single local Git repository", UX Notes "Failure states
-  speak the user's language"; widened from "says so clearly" by the re-authored UX Notes: RN-17;
-  see RN-10)*
+- **FR-1:** The system operates against exactly one local folder per run — a Git repository or
+  not — and the only input it ever requires is which folder to view: no settings, no project file,
+  no setup step. Whether the folder is a Git repository is found by the system (FR-33), never
+  declared by the user. *(traces to: PRD Goals "No learning curve", Success Metrics "Zero required
+  configuration" — "whether the folder is a Git repository is found, never asked", Scope (In) run
+  posture; widened at v8 from one Git repository: RN-31)*
+- **FR-2:** In v1 the folder to view is supplied when the system starts; the system offers no
+  in-product way to choose or change it. Changing the viewed folder from inside the product is
+  FR-19, beyond v1. *(traces to: PRD Out of Scope "Changing the viewed folder without
+  restarting"; see RN-1; the word widened at v8 with the PRD: RN-31)*
+- **FR-3:** Pointed at a path that does not exist, is not a folder, or cannot be read, the system
+  states plainly what went wrong and what to do next, pitched at the PRD's no-learning-curve bar
+  (no dead end that presumes expertise), and touches nothing. A readable folder that is not a Git
+  repository is not on this list: it opens (FR-34). *(traces to: PRD UX Notes "Failure states
+  speak the user's language" — "A folder without Git is not on this list: it opens"; widened from
+  "says so clearly" by the re-authored UX Notes: RN-17; narrowed at v8 from "not a readable local
+  Git repository": RN-31; see RN-10)*
+- **FR-33:** The system reads Git state only when the opened folder is itself the root of a Git
+  repository: the folder is the top level of a Git working tree, not a folder beneath one. A
+  folder inside a repository — one whose root is an ancestor of the opened folder — and a folder
+  that contains repositories — rooted in its descendants — are each opened as a plain folder: the
+  tree and the Git view always describe the same folder. A folder that is the top level of its own
+  working tree, a linked worktree or a submodule's folder included, is a repository's root by this
+  rule. A determination that turns on Git resolving a repository from any folder beneath its root
+  is not this rule. Finding out is a read and creates nothing — no `.git`, no entry of any kind
+  (NFR-5, NFR-6); how the determination is made is the SDD's, bounded here. The determination is
+  live, as the view is (FR-14): a repository whose root is the opened folder appearing or
+  disappearing during a session is a change in that folder's Git state, and the view follows it
+  within NFR-2's bar. *(traces to: PRD Core Features "Git is read only when the folder opened is
+  itself the root of a Git repository", Out of Scope "Git found anywhere but at the opened
+  folder's root", UX Notes "The path" — "Whether the folder is a Git repository is Nozoki's to
+  find out"; owner-confirmed `docs/prd_trail/cycle-10.md` § 2.4; the determination stated as a
+  requirement: RN-32; the live clause: RN-33)*
+- **FR-34:** In a plain folder — a folder FR-33 does not find to be a repository's root — the
+  system presents the tree, the reading panel, the empty state and the live refresh exactly as it
+  does in a repository (FR-4 – FR-10, FR-14 – FR-16, FR-23 – FR-25, FR-27 – FR-32). The Git view
+  is present and shows nothing: no message, no explanation, no offer of a next step — nothing
+  that invites creating or initialising a repository; the tree carries no changed-file markers;
+  and every Git-derived presentation (FR-6, FR-12, FR-13, FR-17, FR-18, FR-22, FR-26) presents
+  nothing. The system needs nothing from Git in this state. It is a working state, not a failure
+  (FR-3). That an empty Git view cannot by itself tell a plain folder apart from a failure to read
+  a repository is accepted: a fault the user must know about is NFR-3's and NFR-11's, never a
+  message in this state. *(traces to: PRD Core Features "Git view … When it is not, the Git view
+  is present and shows nothing", Key Use Case 4, UX Notes "The path" step 3 "Checking", Out of
+  Scope "Creating or initialising a Git repository", Dependencies / Integrations "it needs
+  nothing from Git when the folder is not a repository"; owner-confirmed
+  `docs/prd_trail/cycle-9.md` § 1.1 and `docs/prd_trail/cycle-10.md` § 2.2; see RN-31)*
 - **FR-4:** When no file is open, the system presents an empty state that prompts file selection.
   *(traces to: PRD Core Features "empty state")*
 - **FR-23:** Closing the system asks nothing — no save prompt, no confirmation, nothing to
@@ -92,10 +136,11 @@ operation of the tool; several repositories at once — one at a time is the pro
 
 ### 3.2 File tree
 
-- **FR-5:** The system presents the repository's files and folders as a navigable tree.
-  *(traces to: PRD Core Features "file tree")*
-- **FR-6:** Files the repository's Git state reports as changed are marked as changed in the
-  tree. *(traces to: PRD Core Features "changed-file markers")*
+- **FR-5:** The system presents the viewed folder's files and folders as a navigable tree.
+  *(traces to: PRD Core Features "file tree"; the word widened at v8: RN-31)*
+- **FR-6:** Where the folder is a repository (FR-33), files its Git state reports as changed are
+  marked as changed in the tree; in a plain folder there are no markers (FR-34). *(traces to: PRD
+  Core Features "changed-file markers", "the changed-file markers in the tree are absent")*
 - **FR-7:** The currently selected file is visibly highlighted in the tree. *(traces to: PRD Core
   Features "selected-file highlight")*
 
@@ -122,20 +167,22 @@ operation of the tool; several repositories at once — one at a time is the pro
   reading panel. The switch is permitted, not required, and it is outside the terminus: it is
   built only if it costs nothing — a build-cost judgment the SDD makes and records — and a
   release that ships rendered-only states so where the release is offered. *(traces to: PRD Core
-  Features "with a toggle to the raw source. If the toggle proves too costly for v1, v1 ships
-  rendered-only and the toggle follows"; changed from the PRD's "the toggle follows" by owner
-  override: `docs/srs_trail/cycle-5.md` §2.3; see RN-23, RN-29)*
-- **FR-32:** Rendering a Markdown file fetches nothing from outside the viewed repository: a
-  remote image or other remote resource the document references is not loaded. An external link
-  the document contains is displayed and not followed — the system neither opens it nor hands it
-  to another program. A relative link to a file inside the viewed repository is displayed and, by
+  Features "A switch to the raw source is permitted, not promised: it is built if it costs
+  nothing, and a release that ships rendered-only says so where the release is offered" — the
+  PRD's own line since v11, owner-confirmed `docs/prd_trail/cycle-10.md` § 2.5, carrying the
+  override first given at `docs/srs_trail/cycle-5.md` §2.3; see RN-23, RN-29, RN-35)*
+- **FR-32:** Rendering a Markdown file fetches nothing from outside the viewed folder: a remote
+  image or other remote resource the document references is not loaded. An external link the
+  document contains is displayed and not followed — the system neither opens it nor hands it to
+  another program. A relative link to a file inside the viewed folder is displayed and, by
   default, not followed; the system may instead open that file in the reading panel exactly as a
   tree selection does (FR-7, FR-13) — permitted, not required, outside the terminus, and built
   only if it costs nothing, a build-cost judgment the SDD makes and records. That an external
   link stays unfollowed is the owner's confirmed call (`docs/srs_trail/cycle-6.md` §2.1, RN-28).
   *(traces to: PRD Data & Privacy "v1 makes no network call at all during operation"; added
   consequence of NFR-8 for rendered content: RN-23; link behavior owner-answered:
-  `docs/srs_trail/cycle-5.md` §2.2 and `docs/srs_trail/cycle-6.md` §2.1, see RN-28)*
+  `docs/srs_trail/cycle-5.md` §2.2 and `docs/srs_trail/cycle-6.md` §2.1, see RN-28; the word
+  widened at v8: RN-31)*
 - **FR-9:** No interaction with the displayed content changes it or the underlying file — typing,
   pasting, and dropping into the reading panel produce no modification, on screen or on disk.
   *(traces to: PRD Out of Scope "Editing, permanently")*
@@ -146,16 +193,18 @@ operation of the tool; several repositories at once — one at a time is the pro
   rendering of non-text content"; owner-confirmed: `docs/srs_trail/cycle-1.md` §2.3; see RN-14,
   RN-17)*
 - **FR-24:** The system presents no editing affordance, enabled or disabled, and no framing that
-  implies an editable mode exists elsewhere — nothing in the interface suggests the repository
+  implies an editable mode exists elsewhere — nothing in the interface suggests the viewed folder
   could be changed from it. *(traces to: PRD UX Notes "The character" — read-only is the
-  product's identity, not a mode)*
+  product's identity, not a mode; the word widened at v8: RN-31)*
 
 ### 3.4 Sidebar & Git view
 
 - **FR-11:** A sidebar toggles between a **Files** view and a **Git** view. *(traces to: PRD Core
   Features "sidebar that toggles")*
-- **FR-12:** The Git view presents the repository's changed files, staged files, branch name, and
-  a short repository status. *(traces to: PRD Core Features "Git view", Key Use Case 2)*
+- **FR-12:** Where the folder is a repository (FR-33), the Git view presents the repository's
+  changed files, staged files, branch name, and a short repository status; in a plain folder it
+  shows nothing (FR-34). *(traces to: PRD Core Features "Git view", Key Use Case 2, Key Use Case
+  4)*
 - **FR-13:** A file listed in the Git view can be opened for reading exactly as a tree selection
   is. *(traces to: PRD Key Use Case 2 "opens the changed files to read them")*
 - **FR-25:** Sidebar mode and the open file are independent: switching the sidebar between Files
@@ -171,28 +220,31 @@ operation of the tool; several repositories at once — one at a time is the pro
   automatically, with no user action. *(traces to: PRD Core Features "Live refresh")*
 - **FR-15:** The system has no manual refresh control. *(traces to: PRD UX Notes "there is no
   refresh control")*
-- **FR-16:** The system tolerates a repository being changed by another process at any moment —
-  files created, modified, or deleted, including while being read or displayed, and Git metadata
-  in transient mid-operation states. None of it crashes the shell, blocks the view, or causes a
-  write; the view converges to the state on disk. *(traces to: PRD Target Users driving
-  scenario, Key Use Case 3; see RN-2)*
+- **FR-16:** The system tolerates the viewed folder being changed by another process at any
+  moment — files created, modified, or deleted, including while being read or displayed, and,
+  where the folder is a repository (FR-33), Git metadata in transient mid-operation states. None
+  of it crashes the shell, blocks the view, or causes a write; the view converges to the state on
+  disk. *(traces to: PRD Target Users driving scenario, Key Use Case 3; see RN-2; the Git clause
+  bounded at v8: RN-31)*
 - **FR-27:** An automatic update never takes the user's place away: the tree state they expanded,
   the file they have open, and the position they are reading survive a refresh — only what
   actually changed changes. *(traces to: PRD UX Notes "the view never lies")*
 - **FR-28:** When the open file disappears from disk, the view states plainly that it is gone —
-  never presenting the vanished content as if it were still there. What is shown is the
-  repository's current state within the refresh bar (NFR-2), or explicitly marked as no longer
+  never presenting the vanished content as if it were still there. What is shown is the viewed
+  folder's current state within the refresh bar (NFR-2), or explicitly marked as no longer
   there; the view never presents stale content as current. *(traces to: PRD UX Notes "the view
-  never lies"; crash-safety of the same event is FR-16's)*
+  never lies"; crash-safety of the same event is FR-16's; the word widened at v8: RN-31)*
 
 ### 3.6 Beyond v1, inside the terminus
 
-- **FR-17:** *(beyond v1)* For any file the Git view reports as changed, the system presents its
-  changes read-only, distinguishing staged changes from unstaged ones rather than collapsing both
-  into a single working-vs-committed view. *(traces to: PRD Scope (In) full-ambition "diffs";
-  widened by owner override: `docs/srs_trail/cycle-1.md` §2.2; see RN-13)*
-- **FR-18:** *(beyond v1)* The system presents the repository's commit history read-only. When
-  the history holds more than one branch, the user can see the branches as branches — which
+- **FR-17:** *(beyond v1)* Where the folder is a repository (FR-33), for any file the Git view
+  reports as changed, the system presents its changes read-only, distinguishing staged changes
+  from unstaged ones rather than collapsing both into a single working-vs-committed view; in a
+  plain folder it presents nothing (FR-34). *(traces to: PRD Scope (In) full-ambition "diffs";
+  widened by owner override: `docs/srs_trail/cycle-1.md` §2.2; see RN-13; bounded at v8: RN-31)*
+- **FR-18:** *(beyond v1)* Where the folder is a repository (FR-33), the system presents the
+  repository's commit history read-only; in a plain folder it presents nothing (FR-34). When the
+  history holds more than one branch, the user can see the branches as branches — which
   commits belong to which branch, and where they diverge and merge — never a flat list that
   flattens them together. The history is presented against a chosen **set** of branches — one,
   several, or all of them — with a default that asks nothing (the current branch and what relates
@@ -202,10 +254,12 @@ operation of the tool; several repositories at once — one at a time is the pro
   PRD Scope (In) full-ambition "commit history"; shape: owner override
   `docs/srs_trail/cycle-3.md`, superseding the cycle-1 list (`docs/srs_trail/cycle-1.md` §2.2);
   the experience document that override cited is no longer on disk — the wording stands on the
-  cycle-3 answer alone: RN-20; see RN-19)*
-- **FR-19:** *(beyond v1)* The user can switch which repository is viewed without restarting the
-  system — always exactly one at a time, never several at once. *(traces to: PRD Scope (In)
-  "one repository at a time is a v1 cut", Out of Scope "Several repositories at once")*
+  cycle-3 answer alone: RN-20; see RN-19; bounded at v8: RN-31)*
+- **FR-19:** *(beyond v1)* The user can switch which folder is viewed without restarting the
+  system — always exactly one at a time, never several at once; the folder switched to is any
+  folder FR-1 admits, and FR-33 is applied to it afresh. *(traces to: PRD Scope (In) "one folder
+  at a time is a v1 cut", Out of Scope "Changing the viewed folder without restarting", "Several
+  folders at once"; the word widened at v8 with the PRD: RN-31)*
 - **FR-22:** *(beyond v1)* Selecting a commit in the history presents what that commit changed,
   read-only, in the same diff presentation FR-17 requires. *(traces to: PRD Scope (In)
   full-ambition "diffs, commit history"; added by owner override: `docs/srs_trail/cycle-1.md`
@@ -217,7 +271,8 @@ operation of the tool; several repositories at once — one at a time is the pro
   UX Notes "Dark and light themes from the start")*
 - **FR-21:** The system's own remembered state — theme choice, window state, anything kept
   between sessions — persists in the tool's own data location on the machine, never inside the
-  viewed repository. *(traces to: PRD Data & Privacy own-state boundary)*
+  viewed folder. *(traces to: PRD Data & Privacy own-state boundary — "never inside the folder it
+  is pointed at"; the word widened at v8: RN-31)*
 
 ## 4. Non-Functional Requirements
 
@@ -235,21 +290,24 @@ operation of the tool; several repositories at once — one at a time is the pro
 - **NFR-3:** A failure to read any one file or any part of Git state degrades only that item's
   view, with a visible indication — never the shell as a whole — and recovers on a subsequent
   refresh once the item is readable again. *(traces to: PRD Key Use Case 3; see RN-11)*
-- **NFR-4:** No failure mode of the system can lose or corrupt anything in the viewed
-  repository: the read-only requirements (NFR-5 – NFR-8) hold during and after crashes and
-  abnormal exits, not only in normal operation. *(traces to: PRD Success Metrics "Read-only
-  integrity" — "under any operation")*
+- **NFR-4:** No failure mode of the system can lose or corrupt anything in the viewed folder: the
+  read-only requirements (NFR-5 – NFR-8) hold during and after crashes and abnormal exits, not
+  only in normal operation. *(traces to: PRD Success Metrics "Read-only integrity" — "under any
+  operation"; the word widened at v8: RN-31)*
 
 ### 4.3 Security & Privacy
 
 The PRD states the product's promises separately, none implied by another; so does this SRS:
 
-- **NFR-5:** The system performs no write inside the viewed repository — no file or directory
-  created, modified, or deleted anywhere under the repository's path, `.git` included, under any
-  operation. *(traces to: PRD Success Metrics "no write to the working tree")*
-- **NFR-6:** The system performs no Git mutation — no checkout, stash, index, or commit
-  operation; the repository's full Git state (refs, HEAD, index, stash, objects) is identical
-  before and after any session. *(traces to: PRD Success Metrics "no Git mutation")*
+- **NFR-5:** The system performs no write inside the viewed folder — no file or directory
+  created, modified, or deleted anywhere under the folder's path, `.git` included where the
+  folder is a repository, under any operation. Finding out whether the folder is a repository
+  (FR-33) is inside this bar. *(traces to: PRD Success Metrics "no write to the viewed folder";
+  the word widened at v8: RN-31)*
+- **NFR-6:** Where the folder is a repository (FR-33), the system performs no Git mutation — no
+  checkout, stash, index, or commit operation; the repository's full Git state (refs, HEAD,
+  index, stash, objects) is identical before and after any session. *(traces to: PRD Success
+  Metrics "no Git mutation"; bounded at v8: RN-31)*
 - **NFR-7:** The system collects and transmits nothing about its users or their usage — no
   telemetry, no accounts, no identity, no behavioural data. *(traces to: PRD Success Metrics "no
   telemetry", Data & Privacy)*
@@ -263,32 +321,32 @@ The PRD states the product's promises separately, none implied by another; so do
 - **NFR-9:** The bar on NFR-5 – NFR-8 is zero violations, absolutely, reckoned at every release;
   a single violation is a release-blocking defect. *(traces to: PRD Success Metrics "Read-only
   integrity" bar)*
-- **NFR-16:** Content read from the viewed repository is displayed, never executed: rendering a
+- **NFR-16:** Content read from the viewed folder is displayed, never executed: rendering a
   file — Markdown included — runs no script, loads no active content, and gives the file no
   path to the filesystem, the network, or the system's own state. *(traces to: PRD Success
   Metrics "Read-only integrity" under any operation, Data & Privacy; added consequence of DR-6's
-  untrusted-input bar for rendered content: RN-23)*
+  untrusted-input bar for rendered content: RN-23; the word widened at v8: RN-31)*
 
 ### 4.4 Scalability
 
-- **NFR-10:** The performance bars (NFR-1, NFR-2) hold across realistic repository scale — the
+- **NFR-10:** The performance bars (NFR-1, NFR-2) hold across realistic folder scale — the
   dimensions that matter are file count, tree depth, individual file size, and history length.
   Reference sizes are fixed alongside the first-build thresholds (same process as NFR-1/NFR-2)
   and recorded here by revision. *(traces to: PRD Success Metrics immediacy bars; threshold
-  process: RN-4)*
+  process: RN-4; the word widened at v8: RN-31)*
 
 ### 4.5 Observability
 
 - **NFR-11:** A failure the user must know about is visible in the UI itself; any diagnostic
-  output the system produces lives with its own state (FR-21), never inside the viewed
-  repository and never transmitted anywhere. *(traces to: PRD UX Notes "instantly usable without
-  instruction", Data & Privacy; see RN-9)*
+  output the system produces lives with its own state (FR-21), never inside the viewed folder
+  and never transmitted anywhere. *(traces to: PRD UX Notes "instantly usable without
+  instruction", Data & Privacy; see RN-9; the word widened at v8: RN-31)*
 
 ### 4.6 Maintainability
 
-- **NFR-12:** The viewed repository is an input, not a structural singleton: moving from FR-2
+- **NFR-12:** The viewed folder is an input, not a structural singleton: moving from FR-2
   (supplied at start) to FR-19 (switch without restarting) must not require rewriting the viewing
-  surface. *(owner instruction: RN-5)*
+  surface. *(owner instruction: RN-5; the word widened at v8: RN-31)*
 
 ### 4.7 Usability & Adoption
 
@@ -297,25 +355,31 @@ see RN-8)*
 
 - **NFR-13:** Time-to-first-success: from a stranger deciding to try Nozoki — by its single
   install path, whatever that path is — to viewing a file of their own repository, ≤ 5 minutes,
-  checked before each release on macOS, the one platform v1 promises (C-11). *(traces to: PRD
-  Success Metrics "Time-to-first-success" — "on macOS — the one platform v1 promises")*
-- **NFR-14:** Zero required configuration: the only input the system requires is which repository
-  to view — no settings, no project file, no setup step required by any feature, v1 or later.
-  Pass/fail, checked at each release. *(traces to: PRD Success Metrics "Zero required
-  configuration")*
-- **NFR-15:** Usable without instruction, at the PRD's bar: anyone who can find their way around
-  a repository on GitHub and follow a README can use it — no editor experience, no onboarding.
-  Verified by per-release first-use inspection, not machine check. *(traces to: PRD Goals "No
-  learning curve", UX Notes)*
+  checked before each release on macOS, the one platform v1 promises (C-11). The clock is read
+  against a Git repository, the fuller path; a plain folder is the same path with less in it and
+  is not measured separately. *(traces to: PRD Success Metrics "Time-to-first-success" — "on
+  macOS — the one platform v1 promises", "not measured separately"; owner-confirmed
+  `docs/prd_trail/cycle-10.md` § 2.3)*
+- **NFR-14:** Zero required configuration: the only input the system requires is which folder
+  to view — no settings, no project file, no setup step required by any feature, v1 or later;
+  whether the folder is a Git repository is found (FR-33), never asked. Pass/fail, checked at
+  each release. *(traces to: PRD Success Metrics "Zero required configuration"; the word widened
+  at v8 with the PRD: RN-31)*
+- **NFR-15:** Usable without instruction, at the PRD's bar: anyone who works with Git and can
+  follow a README can use it — the reader is assumed to know Git, and the product may leave
+  Git's own vocabulary unexplained; no editor experience, no onboarding. Verified by per-release
+  first-use inspection, not machine check. *(traces to: PRD Goals "No learning curve", UX Notes
+  "Failure states" — "someone who works with Git, not necessarily an expert in it"; the floor
+  owner-confirmed `docs/prd_trail/cycle-8.md` § 1.1, superseding the GitHub-browsing floor: RN-34)*
 
 ## 5. Interfaces
 
 ### 5.1 User Interface
 
-- One shell: a sidebar toggling Files/Git (FR-11) beside a dominant read-only reading panel
-  (FR-8), with an empty state when nothing is open (FR-4). Navigation is text-first, icons
-  secondary; the layout explains itself — no onboarding surface, no configuration surface.
-  *(traces to: PRD UX Notes)*
+- One shell: a sidebar toggling Files/Git (FR-11; the Git view empty in a plain folder, FR-34)
+  beside a dominant read-only reading panel (FR-8), with an empty state when nothing is open
+  (FR-4). Navigation is text-first, icons secondary; the layout explains itself — no onboarding
+  surface, no configuration surface. *(traces to: PRD UX Notes)*
 - Dark and light themes (FR-20). Mouse-driven; no keyboard-accessibility promise (§2, from the
   Agari — permanent). Beyond that line, v1 makes no assistive-technology promise: its
   accessibility surface is what the product already carries — the two themes, text-first
@@ -330,46 +394,51 @@ see RN-8)*
 
 ### 5.3 External Services
 
-- None. The system depends on exactly two local sources, both read-only: the local filesystem
-  (the repository's files and folders, read continuously enough for FR-14) and the repository's
-  Git state (branch, changed files, staged files — read without any state-altering operation).
-  *(traces to: PRD Dependencies / Integrations)* Whether Git state is read through an installed
-  Git or a library is the SDD's call, bounded either way by NFR-5, NFR-6, and C-2.
+- None. The system depends on at most two local sources, both read-only: the local filesystem
+  (the viewed folder's files and folders, read continuously enough for FR-14) and — only where
+  the folder is a repository's root (FR-33) — that repository's Git state (branch, changed files,
+  staged files — read without any state-altering operation). In a plain folder the system needs
+  nothing from Git (FR-34). *(traces to: PRD Dependencies / Integrations — "it needs nothing from
+  Git when the folder is not a repository")* Whether Git state is read through an installed Git
+  or a library is the SDD's call, bounded either way by NFR-5, NFR-6, and C-2.
 
 ## 6. Data Requirements
 
-- **DR-1:** **The viewed repository** — identified by its path; the source of everything
-  displayed; strictly a read-only input (NFR-5, NFR-6). Nothing of its content is persisted by
-  the system. *(traces to: PRD Data & Privacy "persists nothing of it")*
-- **DR-2:** **File tree model** — the repository's folders and files with changed markers, the
-  current selection, and the user's expanded state (FR-27); derived from disk and Git state,
-  held in memory, never persisted.
+- **DR-1:** **The viewed folder** — identified by its path, and by whether it is a repository's
+  root, a property the system finds (FR-33) and never asks; the source of everything displayed;
+  strictly a read-only input (NFR-5, NFR-6). Nothing of its content is persisted by the system.
+  *(traces to: PRD Data & Privacy "persists nothing of it", Success Metrics "Zero required
+  configuration"; widened at v8: RN-31)*
+- **DR-2:** **File tree model** — the viewed folder's folders and files, with changed markers
+  where the folder is a repository (FR-6), the current selection, and the user's expanded state
+  (FR-27); derived from disk and Git state, held in memory, never persisted.
 - **DR-3:** **File view** — the open file's path, content, the floor language recognized for it
   or none (FR-8, FR-29), whether it is Markdown and which of rendered / raw is showing (FR-30,
   FR-31), and the reading position FR-27 preserves; derived and in-session, never persisted.
 - **DR-4:** **Git state** — branch name, changed files, staged files, short status; derived from
-  repository metadata by read-only means, never persisted.
+  repository metadata by read-only means, never persisted; present only where the folder is a
+  repository's root (FR-33), and empty in a plain folder (FR-34).
 - **DR-5:** **Own state** — preferences the system remembers between sessions (theme choice,
   window state, and the like), stored in the tool's own data location on the machine, never
-  inside the viewed repository; contains nothing personal and no repository content. *(traces
-  to: PRD Data & Privacy)*
-- **DR-6:** **The input bar** — the system requires nothing of the repository beyond being a
-  readable local Git repository (FR-3 is the failure behavior). Everything else it must
-  tolerate, not require: content changing at any moment mid-read (FR-16), unreadable, binary, or
-  arbitrarily large files (FR-10, NFR-3, NFR-10), transiently inconsistent Git metadata
-  (FR-16), and file content that is hostile when rendered (NFR-16). The repository is live,
-  untrusted input; requirements on the *system's behavior* carry the tolerance, and no
-  requirement assumes a quiescent or well-meaning repository. *(traces to: PRD Target Users
-  driving scenario)*
+  inside the viewed folder; contains nothing personal and no content of the viewed folder.
+  *(traces to: PRD Data & Privacy; the word widened at v8: RN-31)*
+- **DR-6:** **The input bar** — the system requires nothing of the folder beyond being a readable
+  local folder (FR-3 is the failure behavior); being a Git repository is found, never required
+  (FR-33). Everything else it must tolerate, not require: content changing at any moment mid-read
+  (FR-16), unreadable, binary, or arbitrarily large files (FR-10, NFR-3, NFR-10), transiently
+  inconsistent Git metadata where the folder is a repository (FR-16), and file content that is
+  hostile when rendered (NFR-16). The folder is live, untrusted input; requirements on the
+  *system's behavior* carry the tolerance, and no requirement assumes a quiescent or well-meaning
+  folder. *(traces to: PRD Target Users driving scenario; widened at v8: RN-31)*
 
 ## 7. Constraints
 
 - **C-1:** Local-only: the system runs on the user's machine against local state; no hosted mode,
   no remote repositories, nothing about its operation leaves the machine. *(traces to: PRD Scope
   (In) run posture, Out of Scope)*
-- **C-2:** Viewer-only, permanently: no write path to the viewed repository exists in any
-  version; adding one would be a different product. *(traces to: PRD Out of Scope "Editing,
-  permanently")*
+- **C-2:** Viewer-only, permanently: no write path to the viewed folder exists in any version;
+  adding one would be a different product. *(traces to: PRD Out of Scope "Editing,
+  permanently", Success Metrics "no write to the viewed folder"; the word widened at v8: RN-31)*
 - **C-3:** Exactly one acquisition-and-start path, and it is simple: documented on the README's
   first screen, requiring no clone of the source repository and no build from source, presuming
   at most one widely-available prerequisite, which the README's first screen names; the ≤ 5-minute
@@ -422,9 +491,11 @@ see RN-8)*
 
 ## 8. Acceptance Criteria
 
-- **AC-1:** Exercising the full product surface against an instrumented repository leaves the
-  filesystem under the repository's path byte-identical — file set, content, and Git internals
-  (`.git` included). Run at every release. *(covers: NFR-5, NFR-9, C-2)*
+- **AC-1:** Exercising the full product surface against an instrumented repository and against
+  an instrumented plain folder leaves the filesystem under each folder's path byte-identical —
+  file set, content, and, for the repository, Git internals (`.git` included); under the plain
+  folder no `.git` and no other entry has appeared. Run at every release. *(covers: NFR-5,
+  NFR-9, C-2, FR-33; the plain folder added at v8: RN-31)*
 - **AC-2:** After any session, the repository's full Git state — refs, HEAD, index, stash,
   objects — is identical to before it. Run at every release. *(covers: NFR-6)*
 - **AC-3:** Network monitoring across a full session shows zero outbound traffic. Run at every
@@ -442,13 +513,18 @@ see RN-8)*
   shows all four elements (changed files, staged files, branch, status) correctly, and its files
   open for reading. *(covers: FR-11 – FR-13)*
 - **AC-7:** An external file create, modify, and delete, and an external Git staging operation,
-  each appear in the view with no user action, within NFR-2's bar. *(covers: FR-14, NFR-2)*
+  each appear in the view with no user action, within NFR-2's bar. In a plain folder the file
+  create, modify and delete appear the same way; and a repository initialised at the opened
+  folder's root mid-session, or removed from it, is followed — the Git view populates, or
+  empties, and the tree's markers appear, or go, within the same bar. *(covers: FR-14, NFR-2,
+  FR-33; the plain-folder and presence clauses added at v8: RN-33)*
 - **AC-8:** Scripted rapid concurrent changes — create/modify/delete including deleting the file
   currently displayed, plus Git operations mid-flight — cause no crash, no write, and the view
   converges to the final on-disk state. *(covers: FR-16, NFR-3, NFR-4)*
-- **AC-9:** On a machine that has never run the product, it starts with the repository location
-  as its only input; no settings, project file, or setup step exists to need. Pass/fail at each
-  release. *(covers: FR-1, NFR-14)*
+- **AC-9:** On a machine that has never run the product, it starts with the folder location as
+  its only input; no settings, project file, or setup step exists to need, and nothing asks
+  whether the folder is a repository. Pass/fail at each release. *(covers: FR-1, NFR-14; widened
+  at v8: RN-31)*
 - **AC-10:** A timed first-use check before each release, on macOS: a user new to the tool,
   guided by the README alone, reaches a viewed file of their own repository in ≤ 5 minutes.
   Verification is a timed manual walk — deliberately not automated, because the thing measured
@@ -457,21 +533,27 @@ see RN-8)*
 - **AC-12:** At the closing release, the diff view (staged distinguished from unstaged), the
   commit history — against a repository whose history holds more than one branch: the branches
   visible as branches, the presented branch set choosable, and the default asking nothing — with
-  its per-commit diffs, and repository switching are present, read-only, and AC-1 – AC-3 still
-  pass with them exercised. *(covers: FR-17 – FR-19, FR-22; history coverage widened with FR-18:
-  RN-19; the FR-31 clause removed at v6, the switch being outside the terminus: RN-29)*
+  its per-commit diffs, and folder switching — to a repository and to a plain folder, each
+  behaving as FR-33 and FR-34 require — are present, read-only, and AC-1 – AC-3 still pass with
+  them exercised. *(covers: FR-17 – FR-19, FR-22; history coverage widened with FR-18: RN-19; the
+  FR-31 clause removed at v6, the switch being outside the terminus: RN-29; the switch's two
+  targets added at v8: RN-31)*
 - **AC-13:** After a session in which preferences changed, new or changed files exist only in the
-  tool's own data location — none under the repository path — and inspection finds nothing
-  personal and no repository content in them. *(covers: FR-21, DR-5)*
+  tool's own data location — none under the viewed folder's path — and inspection finds nothing
+  personal and no content of the viewed folder in them. *(covers: FR-21, DR-5; the word widened
+  at v8: RN-31)*
 - **AC-14:** Release inspection: the release carries the MIT licence and third-party notices; the
-  README first screen carries its four items and the README states the support posture in the
-  PRD's terms; the version number obeys C-6; SECURITY.md and the private reporting channel exist
-  per C-7, on the repository C-12 names, and SECURITY.md promises nothing the PRD does not.
-  *(covers: C-4 – C-7, C-9, C-12, C-13; widened at v5: RN-24)*
-- **AC-15:** With no file selected the empty state prompts selection; pointed at a path that is
-  not a readable Git repository, the system states plainly what went wrong and what to do next,
-  and a filesystem check shows it touched nothing. *(covers: FR-3, FR-4; widened with FR-3:
-  RN-17)*
+  README first screen carries its four items, its one-sentence description does not call the
+  tool a web app, the README states sidebar search / filter, pane resizing and keyboard
+  navigation as outside the product's done rather than promising them, and the README states the
+  support posture in the PRD's terms; the version number obeys C-6; SECURITY.md and the private
+  reporting channel exist per C-7, on the repository C-12 names, and SECURITY.md promises nothing
+  the PRD does not. *(covers: C-4 – C-7, C-9, C-12, C-13; widened at v5: RN-24; the two README
+  lines added at v8: RN-34)*
+- **AC-15:** With no file selected the empty state prompts selection; pointed at a path that does
+  not exist, is not a folder, or cannot be read, the system states plainly what went wrong and
+  what to do next, and a filesystem check shows it touched nothing. *(covers: FR-3, FR-4; widened
+  with FR-3: RN-17; the failure list narrowed at v8 with FR-3: RN-31)*
 - **AC-16:** Inspection of the full UI surface finds no editing affordance, enabled or disabled,
   and no framing implying an editable mode. *(covers: FR-24)*
 - **AC-17:** With a file open, toggling the sidebar between Files and Git leaves the open file —
@@ -492,12 +574,24 @@ see RN-8)*
   restores the rendered view, with the file unmodified throughout. A release that ships
   rendered-only states so where the release is offered. *(covers: FR-30, FR-31)*
 - **AC-23:** Rendering a Markdown file that references a remote image, contains an external link
-  and a relative link to a file in the repository, and embeds a script and active HTML content
+  and a relative link to a file in the viewed folder, and embeds a script and active HTML content
   produces zero outbound traffic, executes nothing, and leaves the filesystem and the tool's own
   state unchanged; activating the external link opens nothing and produces no outbound traffic;
   activating the relative link either does nothing or — where the release opens relative links —
   displays the target file read-only, exactly as selecting it in the tree would, with the file
-  unmodified. *(covers: FR-32, NFR-16, NFR-8; the relative-link case added at v6: RN-28)*
+  unmodified. *(covers: FR-32, NFR-16, NFR-8; the relative-link case added at v6: RN-28; the word
+  widened at v8: RN-31)*
+- **AC-24:** Against a readable folder that is not a Git repository: the workbench opens with no
+  failure state; the tree, file reading (AC-5's cases), the empty state and the sidebar toggle
+  work as against a repository; the Git view is present and, opened, contains no text, no
+  control and no marker of any kind; the tree carries no changed-file markers; and a filesystem
+  check shows nothing created or changed under the folder — no `.git`. *(covers: FR-34, FR-3,
+  FR-33, NFR-5; added at v8: RN-31)*
+- **AC-25:** Against one repository opened three ways — at its root, at a folder inside it, and
+  at a parent folder that contains it beside a second repository — only the root shows Git state
+  (AC-6); the other two behave exactly as AC-24. A linked worktree and a submodule's folder, each
+  opened at its own top level, show their own Git state, not the enclosing repository's.
+  *(covers: FR-33; added at v8: RN-32)*
 
 ---
 
@@ -764,3 +858,84 @@ see RN-8)*
   done on macOS alone. C-11, NFR-13 and AC-10 stand as written. The confirmation does not say
   Linux or Windows is never built — only that done does not wait for either *(re: §2, C-11,
   NFR-13, AC-10; PRD source: Out of Scope "Linux and Windows")*.
+- **RN-31:** *(changed — §1, §2, FR-1 – FR-3, FR-5, FR-6, FR-12, FR-16 – FR-19, FR-21, FR-24,
+  FR-28, FR-32, NFR-4 – NFR-6, NFR-10 – NFR-14, NFR-16, §5.1, §5.3, DR-1, DR-2, DR-4 – DR-6, C-2,
+  AC-1, AC-9, AC-12, AC-13, AC-15, AC-23; added — FR-34, AC-24)* The input contract widens from
+  one local Git repository to one local folder, a Git repository or not — *because* PRD v10 and
+  v11 admit the plain folder as a supported input inside v1, with the Git view present and
+  showing nothing, and Git read only at a repository's root (owner: `docs/prd_trail/cycle-9.md`
+  § 1.1; `docs/prd_trail/cycle-10.md` § 2.2 – § 2.4); the owner directed this SRS to carry the
+  absence through every Git-derived requirement, and delegated the technical statement of it
+  (`docs/srs_trail/cycle-7.md` § 1.1). Two structural calls under that delegation. First, the
+  rule is stated once and cited: FR-33 says when Git is read and FR-34 what holds when it is not,
+  and each Git-derived requirement (FR-6, FR-12, FR-16 – FR-18, NFR-6) carries the one clause
+  that binds it to them, so a requirement read alone still says what it does without Git and no
+  two requirements can drift apart on the answer. Second, "the viewed repository" reads "the
+  viewed folder" wherever a requirement holds for both inputs, while a requirement that is Git's
+  alone — FR-13, FR-22, FR-26, NFR-6, AC-2, AC-6, AC-18 — keeps "repository", now bounded by
+  FR-33; the switch (FR-19) takes any folder, as the PRD's own line does. FR-3's failure list
+  narrows to the PRD's three — a path that does not exist, is not a folder, or cannot be read —
+  and AC-15 with it. AC-24 is the plain folder's criterion end to end, including that finding out
+  created nothing. Time-to-first-success stays read against a repository (NFR-13), as the PRD's
+  metric does. The terminus (`system/projects/nozoki/agari.md`) widened to the same input on the
+  owner's direction, its integrity bar now reading "no write to the viewed folder — whether or
+  not it is a repository"; §2 scopes against it as widened, and nothing in this revision sits
+  against its edge *(re: as listed; PRD source: Purpose, Success Metrics, Key Use Case 4, Core
+  Features, UX Notes, Scope (In), Out of Scope, Dependencies / Integrations, Data & Privacy)*.
+- **RN-32:** *(added — FR-33's determination, AC-25)* "Root" is stated as: the opened folder is
+  the top level of a Git working tree — *because* the PRD's rule, "what the tree shows and what
+  the Git view reports are always the same folder", forbids the resolution Git itself performs
+  from any folder beneath a root; a requirement that said "ask Git whether this is a repository"
+  would specify the behaviour the PRD excludes. Consequences of the definition, not further
+  calls: a linked worktree and a submodule's folder are each the top level of their own working
+  tree and count as a root; a bare repository has no working tree and is a plain folder; whether
+  the folder's `.git` entry is a directory or a file (a worktree's or submodule's pointer) decides
+  nothing — the working-tree top level does. The determination sits inside NFR-5's bar because
+  the one way a check can write is to create what it looks for. The mechanism stays the SDD's.
+  CTO-derived under the owner's delegation of "how 'is this folder a repository's root?' is
+  determined" (`docs/srs_trail/cycle-7.md` § 1.1) *(re: FR-33, AC-25, NFR-5; PRD source: Core
+  Features, Out of Scope "Git found anywhere but at the opened folder's root")*.
+- **RN-33:** *(added — FR-33's live clause; changed — AC-7)* Live refresh in a plain folder is
+  the same requirement (FR-14) with nothing Git-shaped to move — *because* PRD Key Use Case 4
+  states "the tree, the reading, and the live refresh work as they always do" there; only the
+  Git-derived half is empty (FR-34), so FR-14 and NFR-2 gain no clause. That the presence
+  determination is itself live is CTO-derived with basis, under the owner's delegation of
+  "whether the live refresh changes at all in a plain folder" (`docs/srs_trail/cycle-7.md`
+  § 1.1): the PRD's "the view never lies" holds that what is shown is the current state and never
+  stale, and "Refresh immediacy" names Git state among the changes that appear with no user
+  action; a repository initialised at the opened folder's root mid-session is a change in that
+  folder's Git state, and a Git view that stayed empty after it would present stale state as
+  current. So FR-33 follows the disk as the rest of the view does, and AC-7 exercises both
+  directions. The owner may narrow this to a start-time determination by answer; AC-7's clause
+  and this note move with it *(re: FR-33, FR-14, AC-7; PRD source: Key Use Case 4, Success
+  Metrics "Refresh immediacy", UX Notes "the view never lies")*.
+- **RN-34:** *(changed — NFR-15, AC-14)* PRD v9's units, upstream since SRS v7 and folded on the
+  stability rule's upstream-change branch, apart from the widening: NFR-15's floor reads the
+  PRD's "anyone who works with Git and can follow a README", superseding "find their way around
+  a repository on GitHub" (owner: `docs/prd_trail/cycle-8.md` § 1.1), and carries the PRD's
+  permission to leave Git's own vocabulary unexplained — a permission, so `may`. AC-14's README
+  inspection gains the two things PRD v9 states of the README: its one-sentence description does
+  not call the tool a web app (owner: `docs/prd_trail/cycle-8.md` § 1.3), and sidebar search /
+  filter, pane resizing and keyboard navigation are stated as outside the product's done rather
+  than promised (owner: `docs/prd_trail/cycle-8.md` § 1.2). What the shipped shape technically
+  is stays out of the PRD and lands as no requirement here — the SDD's, with the runtime (RN-7).
+  PRD v9's "the keyboard absence is permanent" was already §2's from the Agari. No other v9 unit
+  moves a requirement *(re: NFR-15, AC-14; PRD source: Goals "No learning curve", UX Notes
+  "Failure states", Out of Scope)*.
+- **RN-35:** *(reverse walk, PRD v8 → v11; the sibling)* Every unit the PRD moved lands above or
+  is accounted for here: the Blurb and Purpose sentence in §1; "Read-only integrity" ("viewed
+  folder") in NFR-5, NFR-9; "Zero required configuration" (found, never asked) in FR-1, NFR-14,
+  DR-1, AC-9; "Time-to-first-success" (read against a repository) in NFR-13; Key Use Case 4 in
+  FR-34, AC-24; Core Features' Git view and root rule in FR-12, FR-33, FR-34; UX Notes "The
+  path" (one local folder, Nozoki's to find out, "Checking") in FR-1, FR-33, FR-34; "Failure
+  states" in FR-3, AC-15; Scope (In) and its run posture in §2, FR-1; Out of Scope's two new
+  lines in §2, FR-33, FR-34; the widened "Changing the viewed folder" and "Several folders" in
+  §2, FR-2, FR-19; Dependencies / Integrations in §5.3; Data & Privacy's own-state boundary in
+  FR-21; and the Markdown switch line (`docs/prd_trail/cycle-10.md` § 2.5) is the PRD carrying
+  the override FR-31 already holds, so FR-31's trace now names the PRD's own line and RN-29's
+  "the PRD is not corrected here" describes a state that has since ended — the note stands as
+  written, this one records the close. The accepted ambiguity of an empty Git view lands in
+  FR-34 as an acceptance, not a requirement. The sibling: `docs/UXD.md` UX-S4 still makes a
+  non-repository a startup failure; the UXD follows the PRD, not this SRS, and its revision is
+  the CDO's through the UXD's own skill — this SRS records the divergence and does not reshape
+  FR-3 or FR-34 to it *(re: §1 – §8, FR-31, RN-29)*.
