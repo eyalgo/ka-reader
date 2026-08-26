@@ -54,7 +54,12 @@ None this round — every call the PRD does not make carried a defensible lean, 
   against the system's idiom; UX-I15 still holds (every asset ships with the tool), so a system
   that loads fonts or icons from a remote origin at runtime is out; RN-8 records the override.
   The flows, screens and states (§§ 5–6) do not move.
-- **Confirm or override:**
+- **Confirm or override:** confirm — no established component design system; built from primitives.
+  The owner agrees with both grounds put to them: every asset must ship inside the tool (UX-I15), so a
+  system that fetches fonts or icons at runtime would have to be audited and vendored anyway — the cost
+  without the convenience; and the surface is one reading panel, one sidebar, one chrome strip and a
+  two-entry mode switch, too small for a design system's payoff of consistency across many unfamiliar
+  components to arrive.
 
 ### 2.2 Where the repository selector lives — the shell chrome, not the Git view header
 
@@ -73,7 +78,11 @@ None this round — every call the PRD does not make carried a defensible lean, 
   moves into UX-S3's header, grouped with repository-scoped state; the chrome's identity element
   (§ 4, RN-2) stays display-only; UX-F5 gains a step — switching from Files mode means switching
   to Git first; UX-S7's route-out cell moves with it; RN-15 records the trade taken knowingly.
-- **Confirm or override:**
+- **Confirm or override:** confirm — the selector lives in the shell chrome; the identity element
+  becomes the control. The owner's word was "i agree", and nothing beyond it. The reachability
+  argument put to them before they answered — that with the selector in the Git view header a reader
+  in Files mode must switch to Git purely to switch repository — is the session's, recorded as what
+  they were shown, not as something they said.
 
 ### 2.3 The Files/Git switch — a pair of labelled tabs at the top of the sidebar
 
@@ -90,7 +99,11 @@ None this round — every call the PRD does not make carried a defensible lean, 
 - **If overridden** (a rail, or another control): § 4's presentation line and RN-16 reword; an
   icon rail needs a stated exception to § 4's text-first rule and to UX-A4 (no control by glyph
   alone), recorded rather than implied.
-- **Confirm or override:**
+- **Confirm or override:** override — a VS Code-style icon rail down the left edge, not labelled tabs
+  at the top of the sidebar. **Each of the two rail entries carries its icon with a small text label
+  beneath it**, not an icon alone — so UX-A4 (no control by glyph alone) is satisfied and no exception
+  to it is owed. § 4's presentation line and RN-16 reword to the labelled rail; § 4's text-first rule
+  still needs a stated exception recorded explicitly, since the rail leads with the glyph.
 
 ### 2.4 The v1 accessibility posture is stated on the README, not on its first screen (UX-A3)
 
@@ -108,7 +121,11 @@ None this round — every call the PRD does not make carried a defensible lean, 
 - **If overridden** (keep the posture out of the README): UX-A3 drops from the UXD and RN-17
   records the decision; UX-A1 and UX-A2 stand untouched; the posture stays discoverable only in
   the product documents.
-- **Confirm or override:**
+- **Confirm or override:** confirm — UX-A3 stands: one plain sentence on the README stating what
+  UX-A1 holds. The owner's words: "agreed, keep it below the first screen" — so the placement bound
+  is theirs and stated, not inherited from the draft. The reasons put to them beforehand (the sentence
+  serves the adopter who can act on it before spending their first minute; a first-screen disclaimer
+  would read as the product apologising for itself) are the session's, not their statement.
 
 ### 2.5 The initial theme follows the platform's appearance setting; with no setting to read, light
 
@@ -127,7 +144,9 @@ None this round — every call the PRD does not make carried a defensible lean, 
 - **If overridden** (dark as the signal-less default, or always-follow-the-platform with no
   hard default): UX-I9 and § 9's first constraint reword; RN-7 records the choice; `DESIGN.md`
   carries the stated default.
-- **Confirm or override:**
+- **Confirm or override:** confirm — **light** is the hard default where no platform appearance
+  signal can be read; the initial theme otherwise follows macOS's setting, the user may override, and
+  the choice is remembered. The stated default goes into `DESIGN.md` per the draft.
 
 ### 2.6 A link in rendered Markdown that does nothing is drawn as text with its destination readable, not as a control
 
@@ -150,4 +169,10 @@ None this round — every call the PRD does not make carried a defensible lean, 
 - **If overridden** (links drawn as links, inert when activated): UX-I12's link sentences
   reword to the SRS trail's drafted wording; RN-10 records that the inert control is accepted
   knowingly against the fence's shape; nothing else moves.
-- **Confirm or override:**
+- **Confirm or override:** confirm — UX-I12 as drafted: a link is drawn with its destination
+  readable, and is a control only where activating it does something; an external link is never a
+  control; a relative link is a control only in a release that opens relative links; an unfetched
+  remote image shows a stated not-loaded placeholder. The owner's word was "agree", and nothing
+  beyond it. The argument put to them — that readable destination text gives the reader an address
+  they can copy and judge, where an inert control promises a route the tool has decided not to take —
+  is the session's, recorded as what they were shown.
