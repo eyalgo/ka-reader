@@ -1,8 +1,8 @@
 # UXD — Nozoki 覗き
 
-**Status:** Draft
+**Status:** Settled
 **Owner:** CDO
-**Version:** 1 — re-authored from PRD v8 after the earlier UXD was removed at `9017ae2`; six experience calls the PRD does not make are drafted here and wait for the owner in `docs/UXD_open_issues.md`
+**Version:** 2 — the owner's cycle-1 answers folded (`docs/uxd_trail/cycle-1.md`): five drafted calls confirmed — the direction, the selector's home in the chrome, the README posture sentence, light as the signal-less theme default, the link presentation — and one overridden: the Files/Git switch is a labelled icon rail, not a pair of tabs. Nothing is left for the owner; the companion is gone.
 
 > The UXD is the experience source of truth: the experience-level **what**, derived from the
 > settled PRD, authored concurrent with the SRS, and consumed cold by the SDD (so
@@ -28,7 +28,7 @@ Reading this as: **a local, read-only repository viewer for developers, with a c
 plain-spoken language, leaning toward a restrained code-workbench aesthetic built from
 primitives rather than an established component design system.** *(→ PRD § Purpose; § UX Notes
 "The character" — "calm, truthful, still"; § Assumptions, the familiarity thesis. The aesthetic
-lean is a taste call and is drafted, not settled — `docs/UXD_open_issues.md` § 2.1; see § 9 and
+lean is a taste call, confirmed by the owner — `docs/uxd_trail/cycle-1.md` § 2.1; see § 9 and
 RN-8.)*
 
 ## 2. Design Dials
@@ -68,18 +68,22 @@ RN-8.)*
   and this document points at it rather than restating it. *(context the owner handed over;
   RN-13)*
 - **The sidebar toggles between Files and Git** (v1). The toggle is a mode of the sidebar only
-  and never affects the reading panel (UX-I3). Presentation: a pair of labelled tabs at the top
-  of the sidebar — text-first, exactly the two destinations that exist; not an icon rail.
-  *(→ PRD § Core Features "A sidebar that toggles"; the tab presentation is drafted, not
-  settled — `docs/UXD_open_issues.md` § 2.3, RN-16)*
+  and never affects the reading panel (UX-I3). Presentation: a vertical **rail** down the
+  sidebar's left edge holding exactly the two entries that exist, Files and Git; each entry
+  carries its icon with a small text label beneath it, never the icon alone. The rail leads with
+  the glyph, which is a stated exception to the text-first rule below — recorded here, not
+  implied (RN-16); the label beneath each entry keeps UX-A4 whole. *(→ PRD § Core Features "A
+  sidebar that toggles"; the rail is the owner's override of the drafted tabs —
+  `docs/uxd_trail/cycle-1.md` § 2.3, RN-16)*
 - **Navigation is text-first, icons secondary.** Every icon sits beside a text label or has a
-  text form (UX-A4). *(→ PRD § UX Notes "The character")*
+  text form (UX-A4). One stated exception: the sidebar rail leads with its glyph, label beneath
+  (above; RN-16). *(→ PRD § UX Notes "The character")*
 - **The shell names what it is looking at.** The viewed repository is identified in the shell
   chrome; the branch lives in the Git view. Certainty about *what* is being inspected is part of
   the trust the product sells, and it becomes load-bearing when the viewed repository can change
   (UX-F5). Beyond v1 the identity element is itself the repository selector — what names the
-  repository is what changes it (UX-F5; the placement is drafted, not settled —
-  `docs/UXD_open_issues.md` § 2.2, RN-15). *(added — RN-2)*
+  repository is what changes it (UX-F5; the placement is owner-confirmed —
+  `docs/uxd_trail/cycle-1.md` § 2.2, RN-15). *(added — RN-2)*
 - **The reading panel names what is open.** The open file's repository-relative path is shown
   with its content, so the panel tells the reader what they are reading and, when that file is
   gone, what is gone (UX-I4). *(added — RN-3)*
@@ -168,9 +172,8 @@ RN-8.)*
   there. Choosing one returns the shell to the arrival state (UX-F1) for that repository.
   Always exactly one repository at a time — switching replaces, never adds.
 - The remembered list is the tool's own state, kept outside the viewed repository (→ PRD § Data
-  & Privacy). Where the selector lives is drafted as the shell chrome — the identity element
-  (§ 4, RN-2) is the control — and waits for the owner (`docs/UXD_open_issues.md` § 2.2,
-  RN-15).
+  & Privacy). The selector lives in the shell chrome — the identity element (§ 4, RN-2) is the
+  control (owner-confirmed: `docs/uxd_trail/cycle-1.md` § 2.2, RN-15).
 - Data the UI needs at each step: the remembered-repositories list; the new repository's
   identity, tree and Git state; the shell chrome's repository name.
 - Failure/recovery: a chosen path that is not a readable local Git repository gets the same
@@ -223,10 +226,11 @@ stands for (UX-I13), and every failure cell carries a route out on the same surf
   outside the product's done. *(→ PRD § UX Notes "The bounds v1 draws"; permanence: the Agari,
   § 10)*
 - **UX-I9** — Themes: dark and light from the start, both first-class and equally maintained.
-  The initial theme follows the platform's own appearance setting; the user may override, and
-  the choice is remembered in the tool's own state — never in the repository. *(→ PRD § UX Notes
-  "The character"; persistence: § Data & Privacy "theme choice"; the platform-signal default is
-  drafted, not settled — `docs/UXD_open_issues.md` § 2.5, RN-7)*
+  The initial theme follows the platform's own appearance setting; where no platform appearance
+  signal can be read, the initial theme is light. The user may override, and the choice is
+  remembered in the tool's own state — never in the repository. *(→ PRD § UX Notes "The
+  character"; persistence: § Data & Privacy "theme choice"; the platform-signal default and the
+  signal-less light default are owner-confirmed — `docs/uxd_trail/cycle-1.md` § 2.5, RN-7)*
 - **UX-I10** — A slow or failing item degrades only its own presentation, visibly; the shell as
   a whole never blocks. *(→ PRD § Key Use Cases 3 — a view that blocks cannot watch a moving
   tree; § UX Notes "Failure states"; added as a stated pattern — RN-5)*
@@ -245,7 +249,7 @@ stands for (UX-I13), and every failure cell carries a route out on the same surf
   never a control and never opens anything. *(→ PRD § Core Features "Markdown is rendered by
   default"; § Data & Privacy "no network call at all during operation"; the switch and the
   relative-link permission are the owner's settled calls, RN-10; the link presentation is
-  drafted, not settled — `docs/UXD_open_issues.md` § 2.6, RN-10)*
+  owner-confirmed — `docs/uxd_trail/cycle-1.md` § 2.6, RN-10)*
 - **UX-I13** — No indicator is drawn before the tool has observed the state it stands for: no
   changed-file marker before Git state is read, no "nothing changed" before it is read, no
   progress indicator that advances without observed progress. Where the tool does not yet know,
@@ -282,8 +286,9 @@ stands for (UX-I13), and every failure cell carries a route out on the same surf
   adopting — the README, **not its first screen**: one plain sentence further down, stating the
   fact and not apologising for it, so the first screen keeps to the four things the PRD fixes
   for it. No claim beyond what UX-A1 holds. The sentence's wording is `docs/CONTENT.md`'s and
-  the README is the CPO's; this entry asks only that the sentence exists and where. *(drafted,
-  not settled — `docs/UXD_open_issues.md` § 2.4, RN-17)*
+  the README is the CPO's; this entry asks only that the sentence exists and where. *(→ PRD
+  § UX Notes "The bounds v1 draws"; § Goals "Pick-it-up adoption"; owner-confirmed, the
+  not-first-screen bound in the owner's own words — `docs/uxd_trail/cycle-1.md` § 2.4, RN-17)*
 - **UX-A4** — No control and no state is carried by a glyph alone: every icon sits beside a text
   label or has a text form the surface shows. *(→ PRD § UX Notes "navigation is text-first,
   icons secondary"; added — RN-12)*
@@ -295,17 +300,19 @@ stands for (UX-I13), and every failure cell carries a route out on the same surf
 
 - **Direction:** no established component design system. A restrained code-workbench aesthetic
   built from primitives: the reading panel is the dominant visual surface, navigation is
-  text-first with icons secondary, chrome is minimal, and nothing visible is decorative — in
+  text-first with icons secondary (one stated exception, the sidebar rail — § 4, RN-16), chrome
+  is minimal, and nothing visible is decorative — in
   this domain restraint is the credibility signal, and the product's own character ("calm,
   truthful, still") rules out imported component aesthetics. One system for the product. The
   platform's own controls and appearance are the starting point where this document and
   `DESIGN.md` are silent (`system/experience/visual_direction.md` § Overview, line 2).
-  *(→ PRD § UX Notes "The character"; § Assumptions, the familiarity thesis. Drafted, not
-  settled — `docs/UXD_open_issues.md` § 2.1, RN-8. Layout reference, not style:
+  *(→ PRD § UX Notes "The character"; § Assumptions, the familiarity thesis. Owner-confirmed —
+  `docs/uxd_trail/cycle-1.md` § 2.1, RN-8. Layout reference, not style:
   `docs/ux_reference/`, RN-13.)*
 - **Constraints the design language must satisfy:**
   - Dark and light as first-class, equally maintained themes; initial polarity from the
-    platform's appearance setting (UX-I9, RN-7).
+    platform's appearance setting, and light where no signal can be read — `DESIGN.md` carries
+    that default as a stated value with its reason (UX-I9, RN-7).
   - Every state distinction legible without colour, in both themes (UX-A2); the colour pairs are
     swappable token pairs, never hardcoded into a component.
   - Body text and code legible at code-reading sizes on both themes; the contrast floor stated
@@ -381,23 +388,23 @@ UX-S5–S7 are designed here despite being beyond v1.
 | UX-I6 | § UX Notes "Failure states", "The bounds v1 draws" |
 | UX-I7 | § Out of Scope "Editing, permanently"; § Data & Privacy |
 | UX-I8 | § UX Notes "The bounds v1 draws"; permanence: Agari |
-| UX-I9 | § UX Notes "The character"; § Data & Privacy; platform-signal default: drafted (RN-7) |
+| UX-I9 | § UX Notes "The character"; § Data & Privacy; platform-signal default and signal-less light: owner-confirmed `docs/uxd_trail/cycle-1.md` § 2.5 (RN-7) |
 | UX-I10 | § Key Use Cases 3; § UX Notes "Failure states"; added as pattern (RN-5) |
 | UX-I11 | § Goals "Pick-it-up adoption"; added (RN-9) |
-| UX-I12 | § Core Features "Markdown is rendered by default"; § Data & Privacy; owner calls `docs/srs_trail/cycle-5.md` § 2.2, § 2.3, `docs/srs_trail/cycle-6.md` § 2.1 (RN-10) |
+| UX-I12 | § Core Features "Markdown is rendered by default"; § Data & Privacy; owner calls `docs/srs_trail/cycle-5.md` § 2.2, § 2.3, `docs/srs_trail/cycle-6.md` § 2.1; link presentation: owner-confirmed `docs/uxd_trail/cycle-1.md` § 2.6 (RN-10) |
 | UX-I13 | § UX Notes "the view never lies"; instance fence; added (RN-11) |
 | UX-I14 | § UX Notes "Failure states"; instance fence; added (RN-11) |
 | UX-I15 | § Data & Privacy; instance fence; added (RN-11) |
 | UX-A1 | § UX Notes "The bounds v1 draws"; owner-confirmed `docs/prd_trail/cycle-5.md` § 2.1 |
 | UX-A2 | § Core Features "changed-file markers"; added (RN-12), inside UX-A1's posture |
-| UX-A3 | § UX Notes "The bounds v1 draws"; § Goals "Pick-it-up adoption"; drafted (RN-17) |
+| UX-A3 | § UX Notes "The bounds v1 draws"; § Goals "Pick-it-up adoption"; owner-confirmed `docs/uxd_trail/cycle-1.md` § 2.4 (RN-17) |
 | UX-A4 | § UX Notes "The character" — text-first; added (RN-12) |
 | § 4 IA (shell, sidebar, text-first) | § UX Notes "The character", "The path" 1; § Core Features |
 | § 4 layout reference | context the owner handed over, `docs/ux_reference/README.md` (RN-13) |
-| § 4 Files/Git switch presentation | § Core Features "sidebar that toggles"; § UX Notes text-first; drafted (RN-16) |
-| § 4 repository identity in shell | added (RN-2); the element is the selector control beyond v1 — drafted (RN-15) |
+| § 4 Files/Git switch presentation | § Core Features "sidebar that toggles"; § UX Notes text-first, one stated exception; owner override — a labelled rail, `docs/uxd_trail/cycle-1.md` § 2.3 (RN-16) |
+| § 4 repository identity in shell | added (RN-2); the element is the selector control beyond v1 — owner-confirmed `docs/uxd_trail/cycle-1.md` § 2.2 (RN-15) |
 | § 4 open file's path in the reading panel | § UX Notes "the view never lies"; added (RN-3) |
-| § 9 Direction | § UX Notes "The character"; § Assumptions; drafted (RN-8) |
+| § 9 Direction | § UX Notes "The character"; § Assumptions; owner-confirmed `docs/uxd_trail/cycle-1.md` § 2.1 (RN-8) |
 
 ---
 
@@ -444,31 +451,36 @@ UX-S5–S7 are designed here despite being beyond v1.
   shell's IA has exactly those two homes and a second window would break the one-shell arrival
   model. History filtering and search stay out — that part of the same answer is untouched
   (§ 10). *(re: UX-F4, UX-S5, UX-S6, § 4; PRD source: Scope (In) full ambition)*
-- **RN-7:** *(drafted — awaiting the owner)* The initial theme follows the platform's own
-  appearance setting — *because* the adopter's environment outranks the product's aesthetic:
-  which polarity reads better depends on the room the user is in, and the operating system
-  already carries their answer; the instance direction starts every surface from the platform's
-  own look (`system/experience/visual_direction.md` § Overview, line 2). Dark stays a
-  first-class, equally maintained theme — a preference honoured, never an ergonomic claim. What
-  a signal-less machine gets is the owner's call and is routed with this item
-  (`docs/UXD_open_issues.md` § 2.5). *(re: UX-I9, § 9; PRD source: UX Notes "dark and light
-  themes from the start", Data & Privacy)*
-- **RN-8:** *(drafted — awaiting the owner)* The design direction — a restrained code-workbench
-  built from primitives, no established component design system — is a taste call and is
-  routed (`docs/UXD_open_issues.md` § 2.1). The owner confirmed the same lean once, in a trail
-  that is no longer on disk (`nozoki@1d5c553:docs/uxd_trail/cycle-1.md` § 2.1, readable in the
-  product repository's history); that answer is evidence of the owner's taste and not an
-  authorization this document can stand on, since `9017ae2` removed it and the station that
-  opened this run records that the removed UXD binds nothing
-  (`system/projects/nozoki/journey/shukuba/2026-08-26_experience.md` § What it is). *(re: § 1,
-  § 9; PRD source: UX Notes "The character", Assumptions)*
+- **RN-7:** *(confirmed choice)* The initial theme follows the platform's own appearance
+  setting, and where no platform signal can be read the initial theme is **light** — *because*
+  the adopter's environment outranks the product's aesthetic: which polarity reads better depends
+  on the room the user is in, and the operating system already carries their answer; the instance
+  direction starts every surface from the platform's own look
+  (`system/experience/visual_direction.md` § Overview, line 2). The signal-less default is a
+  polarity choice with no PRD basis; the lean to light rests on this seat's reading that
+  dark-text-on-light is the more widely evidenced legibility default for reading text — held as
+  reasoning, not a citation — and the owner confirmed it (`docs/uxd_trail/cycle-1.md` § 2.5).
+  Dark stays a first-class, equally maintained theme — a preference honoured, never an ergonomic
+  claim. `DESIGN.md` carries the stated default as a value with its reason. *(re: UX-I9, § 9;
+  PRD source: UX Notes "dark and light themes from the start", Data & Privacy)*
+- **RN-8:** *(confirmed choice)* The design direction — a restrained code-workbench built from
+  primitives, no established component design system — is a taste call, and the owner confirmed
+  it (`docs/uxd_trail/cycle-1.md` § 2.1) on two grounds of their own: every asset must ship
+  inside the tool (UX-I15), so a system that fetches fonts or icons at runtime would have to be
+  audited and vendored anyway — the cost without the convenience; and the surface is one reading
+  panel, one sidebar, one chrome strip and a two-entry mode switch, too small for a design
+  system's payoff of consistency across many unfamiliar components to arrive. An earlier
+  confirmation of the same lean sits in a trail `9017ae2` removed
+  (`nozoki@1d5c553:docs/uxd_trail/cycle-1.md` § 2.1); it was evidence, and the cycle-1 answer is
+  the authorization this document stands on. *(re: § 1, § 9; PRD source: UX Notes "The
+  character", Assumptions)*
 - **RN-9:** *(added)* Public pictures of the shell must match the running product (UX-I11) —
   *because* the PRD makes the README's first screen product surface, and for a public tool the
   picture is part of the claim being checked there: a stale screenshot fails an adopter the same
   way a stale install command does (`system/doctrine/kensaiapp_doctrine.md` § Adoption is
   decided before the tool runs). This constrains truthfulness only; what the README says is the
   CPO's. *(re: UX-I11; PRD source: Goals "Pick-it-up adoption")*
-- **RN-10:** *(owner decisions carried; one elaboration drafted)* Markdown (UX-I12). Rendered by
+- **RN-10:** *(owner decisions carried; one elaboration confirmed)* Markdown (UX-I12). Rendered by
   default is the PRD's. The raw-source switch is permitted, not required, and outside done —
   the owner's words: *"render is what i need"* and *"add the toggle if it costs nothing"*
   (`docs/srs_trail/cycle-5.md` § 2.3). A relative link may open its target if it costs nothing
@@ -481,7 +493,8 @@ UX-S5–S7 are designed here despite being beyond v1.
   (`system/experience/visual_restrictions.md` § `failure-says-what-next`), and a remote image
   that is not fetched is shown as a stated not-loaded placeholder, *because* a blank where an
   image belongs is a state the tool never established (UX-I13). Both are product-visible, so
-  the link presentation goes to the owner (`docs/UXD_open_issues.md` § 2.6). *(re: UX-I12,
+  the link presentation went to the owner, who confirmed it as drafted
+  (`docs/uxd_trail/cycle-1.md` § 2.6). *(re: UX-I12,
   UX-S1; PRD source: Core Features, Data & Privacy)*
 - **RN-11:** *(added — the fence as product commitments)* UX-I13, UX-I14 and UX-I15 restate,
   as requirements this product's surfaces hold, three entries of the instance's visual fence —
@@ -513,8 +526,8 @@ UX-S5–S7 are designed here despite being beyond v1.
   opened for this revision. One defect beside the claim: that README's three *"Where it now
   stands"* lines and its § 2.1–2.3 pointers name a companion that `9017ae2` removed; this
   document keeps the `UX-…` identifiers the README cites so its entry references still resolve,
-  and the companion this run writes numbers the two placement questions the README routes
-  (§ 2.2, § 2.3) to match. The README is the owner's file and is not edited here. *(re: § 4,
+  and the retired companion (`docs/uxd_trail/cycle-1.md`) numbers the two placement questions
+  the README routes (§ 2.2, § 2.3) to match. The README is the owner's file and is not edited here. *(re: § 4,
   § 9)*
 - **RN-14:** *(owner decision)* The history view shows branch topology drawn against a chosen
   set of branches with a default that asks nothing — the owner's own statement of the shape, in
@@ -529,7 +542,7 @@ UX-S5–S7 are designed here despite being beyond v1.
   § `vscode-branch-filter.png`). The branch name shown at its tip commit is taken from the same
   annotation. Feasibility is downstream and does not narrow the statement. *(re: UX-F4, UX-S6;
   PRD source: Scope (In) full ambition "commit history")*
-- **RN-15:** *(owner directive; placement drafted — awaiting the owner)* The repository switch
+- **RN-15:** *(owner directive; placement confirmed)* The repository switch
   is a **dropdown selector** showing the current repository's name — the name is both label and
   control — listing the repositories Nozoki remembers plus a browse entry, empty of all but
   browse on first run: the owner's own naming (`docs/ux_reference/README.md` § Owner directives
@@ -539,31 +552,37 @@ UX-S5–S7 are designed here despite being beyond v1.
   repository is what changes it (one element telling one truth, the owner's own framing in that
   directive), and the chrome is reachable from either sidebar mode while the Git view header is
   not. The alternative the reference shows — the selector grouped with repository-scoped state
-  in the Git view header — buys grouping and costs reachability. Routed at
-  `docs/UXD_open_issues.md` § 2.2; the owner confirmed the same placement once in the removed
-  trail (`nozoki@1d5c553:docs/uxd_trail/cycle-2.md` § 2.2), which is evidence, not
-  authorization (RN-8). One fence drawn with it: where a **branch** control lives is a separate
+  in the Git view header — buys grouping and costs reachability. The owner confirmed
+  the chrome (`docs/uxd_trail/cycle-1.md` § 2.2); the earlier confirmation in the removed trail
+  (`nozoki@1d5c553:docs/uxd_trail/cycle-2.md` § 2.2) was evidence, and the cycle-1 answer is
+  the authorization. One fence drawn with it: where a **branch** control lives is a separate
   question — the history view's set-scoping choice is RN-14's and lives with that view. *(re:
   UX-F5, UX-S7, § 4; PRD source: Scope (In) / Out of Scope, repository switching; Data &
   Privacy)*
-- **RN-16:** *(drafted — awaiting the owner)* The Files/Git switch is a pair of labelled tabs at
-  the top of the sidebar — *because* § 4's navigation rule is text-first with icons secondary
-  and the product has exactly two destinations: an icon rail (the reference's own mechanism,
-  `docs/ux_reference/README.md` § One question the reference raises) is built for many
-  destinations and identifies them by icon alone, and the Agari admits no third view. Routed at
-  `docs/UXD_open_issues.md` § 2.3; confirmed once in the removed trail
-  (`nozoki@1d5c553:docs/uxd_trail/cycle-2.md` § 2.3) — evidence, not authorization (RN-8).
-  *(re: § 4; PRD source: UX Notes "The character" — text-first; Core Features — the sidebar
-  toggle)*
-- **RN-17:** *(drafted — awaiting the owner)* The accessibility posture is stated on the README,
-  not its first screen (UX-A3) — *because* the posture the owner settled
+- **RN-16:** *(owner decision — override)* The Files/Git switch is a vertical rail down the
+  sidebar's left edge, each of its two entries carrying its icon with a small text label beneath
+  it — the owner's override of the drafted labelled tabs (`docs/uxd_trail/cycle-1.md` § 2.3).
+  The draft's ground — § 4's text-first rule and a product with exactly two destinations — did
+  not carry; the reference's own mechanism (`docs/ux_reference/README.md` § One question the
+  reference raises) is taken, with the label the owner attached. Two consequences, both stated in
+  the owner's answer: the rail leads with the glyph, so § 4 records a stated exception to its
+  text-first rule rather than implying one; and the label beneath each entry means no control is
+  carried by a glyph alone, so UX-A4 holds and no exception to it is owed. Which icons the two
+  entries carry is `DESIGN.md`'s. An earlier confirmation of the tabs in the removed trail
+  (`nozoki@1d5c553:docs/uxd_trail/cycle-2.md` § 2.3) was evidence, and this answer supersedes
+  it. *(re: § 4, § 9, UX-A4; PRD source: UX Notes "The character" — text-first; Core Features —
+  the sidebar toggle)*
+- **RN-17:** *(confirmed choice)* The accessibility posture is stated on the README, not its
+  first screen (UX-A3) — *because* the posture the owner settled
   (`docs/prd_trail/cycle-5.md` § 2.1) otherwise lives only in the PRD and this document, which an
   adopter never reads; a stated narrow floor is information they can act on before spending
   their first minute, and a claim the project can be held to. It adds a line to a surface the
-  CPO owns, which is why it is routed (`docs/UXD_open_issues.md` § 2.4) rather than asserted;
-  confirmed once with the not-first-screen bound in the removed trail
-  (`nozoki@1d5c553:docs/uxd_trail/cycle-1.md` § 2.2) — evidence, not authorization (RN-8).
-  *(re: UX-A3; PRD source: UX Notes "The bounds v1 draws"; Goals "Pick-it-up adoption")*
+  CPO owns, which is why it went to the owner rather than being asserted; the owner confirmed it,
+  and the below-the-first-screen bound is their own words — *"agreed, keep it below the first
+  screen"* (`docs/uxd_trail/cycle-1.md` § 2.4). The earlier confirmation in the removed trail
+  (`nozoki@1d5c553:docs/uxd_trail/cycle-1.md` § 2.2) was evidence; the cycle-1 answer is the
+  authorization. *(re: UX-A3; PRD source: UX Notes "The bounds v1 draws"; Goals "Pick-it-up
+  adoption")*
 - **RN-18:** *(added)* Syntax highlighting and monospace are recorded as expectations, not
   benefits — *because* their comprehension value is unproven while their absence reads as
   unfinished, and in this domain looking unfinished loses the stranger in the first minute
