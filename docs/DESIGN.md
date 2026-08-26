@@ -189,6 +189,12 @@ components:
     backgroundColor: "{colors.canvas}"
     textColor: "{colors.git-renamed}"
     typography: "{typography.ui}"
+  tooltip:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.primary}"
+    typography: "{typography.ui}"
+    rounded: "{rounded.sm}"
+    padding: "{spacing.xs}"
   branch-chip:
     backgroundColor: "{colors.canvas}"
     textColor: "{colors.primary}"
@@ -293,7 +299,7 @@ components:
 
 **Status:** Settled
 **Owner:** CDO
-**Version:** 2 — the owner's cycle-1 answers folded (`docs/design_trail/cycle-1.md`): the open issue closed (the earlier token set in history stays history), six calls confirmed as drafted, and one overridden in part — a hover state enters on clickable rows as `{colors.hover}`. Nothing is left for the owner; the companion is gone.
+**Version:** 3 — the owner's cycle-2 answers folded (`docs/design_trail/cycle-2.md`): the no-tooltip Don't is lifted on the owner's v1 decision and a tooltip contract enters — one surface, the status letter, as `{components.tooltip}` drawn from existing tokens (RN-11, RN-23); the status letters' VS Code vocabulary is stated rather than left implicit, with the porcelain collision recorded (RN-24); and the UX-I9 traceability row and RN-10 are repointed at the settled UXD record. No colour, type, spacing or radius value moves; the companion is gone again. (v2: the owner's cycle-1 answers folded — `docs/design_trail/cycle-1.md`.)
 
 > The design language is the visual source of truth: the tokens are normative, the prose says
 > how to apply them. It is authored off the UXD's § Design-System Direction — that section names
@@ -353,7 +359,7 @@ token — never two palettes with two rules.
   `{colors.gutter}` is line numbers only, and appears nowhere else.
 - **Surfaces — `{colors.surface}`, `{colors.canvas}`, `{colors.rail}`, `{colors.line}`,
   `{colors.selection}`.** Three stepped greys and one hairline. `{colors.surface}` is the reading
-  panel and any menu that floats over it — the brightest (light) or darkest (dark) plane, because
+  panel and whatever floats over the shell — the menu and the tooltip (§ Components) — the brightest (light) or darkest (dark) plane, because
   it carries the content. `{colors.canvas}` is the sidebar and the chrome, one step back.
   `{colors.rail}` is the Files/Git rail, one step further. `{colors.line}` is every separator.
   `{colors.selection}` is the selected row and an open control, and nothing else.
@@ -509,6 +515,11 @@ selector's list, the history view's branch-set control) sits on `{colors.surface
 in dark — because a menu that opens over content must read as *over*, and tone alone cannot
 say that when the menu and the reading panel share a surface. Nothing else may use it.
 
+The **tooltip** (§ Components) floats too, and carries no shadow: its ground is the sidebar's
+`{colors.canvas}`, one tone from its own `{colors.surface}`, and a `{colors.line}` hairline bounds
+it — so tone and line say *over* in exactly the case the menu's shadow exists for the absence of,
+and the count of shadows in the product stays at one (RN-23).
+
 Focus rings: none are designed. The product has no keyboard model (`docs/UXD.md` UX-I8), so no
 element ever receives keyboard focus, and drawing a ring for a state that cannot arise would be
 an indicator of something the tool never established.
@@ -519,12 +530,12 @@ Three radii, each with one home. **`{rounded.none}`** (0px) for every row — tr
 commit rows, menu items, section headers, rail entries: a row runs edge to edge and its
 selection fill runs with it, the way a Finder list row does. **`{rounded.sm}`** (3px) for
 things that sit *inside* a row or a line: the chrome controls, branch chips, inline code,
-image placeholders. **`{rounded.md}`** (6px) for the one floating menu. No larger radius exists,
+image placeholders, and the tooltip, which is sized to a row. **`{rounded.md}`** (6px) for the one floating menu. No larger radius exists,
 and nothing is a pill or a circle.
 
 Borders: `{colors.line}` at 1px, solid, and only where § Elevation & Depth places them plus one
-more — the branch chip and the image placeholder carry a hairline border so they read as
-bounded objects in a surface that otherwise has no boxes. No other element has a border, and no
+more — the branch chip, the image placeholder and the tooltip carry a hairline border so they
+read as bounded objects in a surface that otherwise has no boxes. No other element has a border, and no
 border is ever thicker than 1px or any colour but `{colors.line}`.
 
 **Selection is a fill and a bar.** The selected tree row is `{colors.selection}` edge to edge,
@@ -585,7 +596,28 @@ same hue in the tree and the Git view, so a changed file is visible at a glance 
 says which way. In the Git view the same rows sit under `{components.section-header}`s —
 *Changes* and *Staged* — and the staged/unstaged distinction is the heading a row sits under,
 never a hue (`docs/UXD.md` UX-A2). A count after a header (*Changes 3*) is `{colors.ink-muted}`
-and is drawn only after the Git state has been read.
+and is drawn only after the Git state has been read. **The letters are VS Code's badge
+vocabulary, not Git porcelain's**: `U` is *untracked* and `C` is *conflict*, which is why `U`
+sits with `A` and `C` with `D`. Git's own `--porcelain` output uses the same two letters for
+*updated but unmerged* and *copied*, so a reader who checks this grouping against porcelain will
+conclude it is wrong; it is not. The product is modelled on VS Code (`README.md` § What it is;
+`docs/ux_reference/`) and the letters exist to be recognised from there (RN-24). One VS Code
+behaviour is not copied: a renamed file is `R`, never `U`. The word each letter stands for is
+`docs/CONTENT.md`'s to write, in this vocabulary; the tooltip (next) is where the product says it.
+
+**The tooltip.** `{components.tooltip}` is the one floating word in the product, and it has one
+home: a status letter, wherever one is drawn — the tree and the Git view. While the pointer rests
+on the letter — the letter, not the row — the tooltip appears below it, its right edge on the
+letter's right edge so it never runs past the sidebar, carrying the file's name and the letter's
+word, in that order; the words are `docs/CONTENT.md`'s. It is `{typography.ui}` in
+`{colors.primary}` on `{colors.surface}`, `{spacing.xs}` padding, `{rounded.sm}`, a
+`{colors.line}` hairline and no shadow (§ Elevation & Depth); one line, never wrapped. It appears
+after the pointer has rested on the letter for 500ms, and leaves the moment the pointer leaves the
+letter or a refresh changes the row's state — appearing and leaving in place, with no transition.
+It stacks with the row's hover fill, which is the row's and not the letter's: the row shows
+`{colors.hover}` and the tooltip sits over it. No other surface raises a tooltip: the rail
+entries, the chrome controls and every status glyph already carry their word beside them, and a
+tooltip there would be a second surface for words the label already carries (RN-11, RN-23).
 
 **The reading panel.** `{components.reading-panel}` is the content surface. Its first row is
 always `{components.path-line}`: the open file's repository-relative path in `{typography.path}`
@@ -667,10 +699,14 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
 - Do keep the chrome to two controls and the rail to two entries.
 - Do draw the hover fill only on a row that a click acts on, and never on a row that nothing
   acts on; the hover is a promise of an action, and a promise with nothing behind it is a lie.
-- Don't animate. No transition on selection, theme, mode switch or content update; a change
+- Do show a status letter's word in the tooltip the letter itself raises, and raise a tooltip
+  nowhere else — every other glyph and control already carries its word beside it.
+- Don't animate. No transition on selection, hover, tooltip, theme, mode switch or content
+  update; a change
   appears in place, and nothing moves that did not change.
-- Don't draw a focus ring, a tooltip, a badge, a toast, or a notification — none exists in the
-  product; and don't draw the hover fill on anything that is not a clickable row.
+- Don't draw a focus ring, a badge, a toast, or a notification — none exists in the product;
+  don't raise a tooltip on anything but a status letter; and don't draw the hover fill on anything
+  that is not a clickable row.
 - Don't draw an editing affordance, enabled or disabled, or any control that writes: no cursor
   caret in the code view, no commit box, no refresh button.
 - Don't fetch a font, an icon, an image or a stylesheet from any origin at runtime; a remote image
@@ -780,24 +816,32 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
   surface reachable in every mode, and the rail and sidebar are the repository's. This is a
   structural placement the UXD does not make, so it went to the owner, who **confirmed it**
   knowing the confirmation carried a UXD amendment with it (`docs/design_trail/cycle-1.md`
-  § 2.5). The UXD half is not this document's to write: the owner re-opened
-  `docs/UXD_open_issues.md` with that one already-answered item (§ 1.1, `nozoki@ee8abcf`) for
-  `product-uxd` to fold into `docs/UXD.md` § 4, so that the two documents state one placement
-  between them. Until that fold lands, this document is the only one of the two that places the
-  control. The glyph names the theme the control switches *to*, so the control reads as an action
+  § 2.5). The UXD half was not this document's to write: the owner re-opened the UXD's companion
+  with that one already-answered item (`nozoki@ee8abcf`) and `product-uxd` folded it — `docs/UXD.md`
+  § 4 now records the chrome as the control's home, its RN-22 carries the basis, and the owner's
+  answer is readable at `docs/uxd_trail/cycle-2.md` § 1.1 (`nozoki@f4bc928`). The two documents
+  state one placement between them; revision 3 updates this note's tense and the Traceability row
+  on the owner's cycle-2 answer (`docs/design_trail/cycle-2.md` § 1.3). The glyph names the theme the control switches *to*, so the control reads as an action
   rather than a status. *(re: § Components "The chrome"; source: UXD UX-I9, UX-I7; design reason;
   owner answer; **changed** — placement added beyond the UXD, confirmed)*
-- **RN-11:** No focus ring, no transition, no tooltip — *because* the motion dial is 2 with "only
-  what actually changed changes" (`docs/UXD.md` § 2, UX-I2), the product has no keyboard model to
-  focus (UX-I8), and a tooltip is a second surface for words the label already carries (UX-A4).
-  Each absence is a count of elements removed, which is the tie-breaker the instance's direction
-  hands a design run. **The no-hover rule drafted in revision 1 is overridden by the owner**, in
-  their words: *"hovering is something that developers use"* (`docs/design_trail/cycle-1.md`
-  § 2.3) — so a hover state enters, scoped as the owner stated it to rows that are actually
-  clickable, and never to an inert row where a fill would promise an action that is not there
-  (§ Components "Rows", RN-22). The owner overrode hover alone; the other three absences were not
-  spoken to and stand as drafted. *(re: § Components "Rows", § Elevation & Depth, § Do's and
-  Don'ts; source: UXD § 2, UX-I2, UX-I8; design reason; owner answer — **changed**)*
+- **RN-11:** No focus ring and no transition — *because* the motion dial is 2 with "only what
+  actually changed changes" (`docs/UXD.md` § 2, UX-I2) and the product has no keyboard model to
+  focus (UX-I8); each absence is a count of elements removed, which is the tie-breaker the
+  instance's direction hands a design run. Revision 1 drafted two further absences, and the owner
+  has since overridden both; this note records each. **Hover** — *"hovering is something that
+  developers use"* (`docs/design_trail/cycle-1.md` § 2.3): a hover state enters, scoped as the
+  owner stated it to rows that are actually clickable, never to an inert row where a fill would
+  promise an action that is not there (§ Components "Rows", RN-22). **Tooltip** — *"i think that
+  tooltips should be included in v1"*, given while settling the status letters and recorded as a
+  v1 decision rather than a one-off exception (`docs/design_trail/cycle-2.md` § 1.1; the ruling's
+  own record is `docs/CONTENT_open_issues.md` § 1.2 at `nozoki@3692585`). Revision 1's reason for
+  the ban — that a tooltip is a second surface for words the label already carries (UX-A4) — holds
+  wherever a control carries its own word, the rail entries and the chrome controls, and it is why
+  those still raise none; it never covered a status letter, a single character carrying no word at
+  all, which is the one case the rule was written without in view. The tooltip's contract is
+  RN-23. The no-transition rule and the absent focus ring were not spoken to and stand. *(re:
+  § Components "Rows", "The tooltip", § Elevation & Depth, § Do's and Don'ts; source: UXD § 2,
+  UX-I2, UX-I8; design reason; owner answers — **changed**)*
 - **RN-12:** The Lucide set on disk is the icon inventory, and the rail carries `folder` and
   `git-branch` — *because* the fourteen glyphs are the product's own vendored source
   (`third_party/lucide/icons/`, ISC notice at `third_party/lucide/LICENSE`, committed at
@@ -859,10 +903,11 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
   no token category in the format, so its policy is prose (§ Do's and Don'ts, RN-11); no
   category is declared in `omitted:` because each of the five applies. *(re: § Do's and Don'ts,
   frontmatter; source: `system/projects/nozoki/agari.md`, UXD § 10)*
-- **RN-21:** The machine gate on revision 2 — `npx @google/design.md@0.4.0 lint`, run
+- **RN-21:** The machine gate on revision 3 — `npx @google/design.md@0.4.0 lint`, run
   2026-08-26 — reported 0 errors, 0 warnings and 1 info, the info being `token-summary` (20
-  colours, 10 typography levels, 3 rounding levels, 15 spacing tokens, 45 components); no
-  diagnostic is accepted or routed. The gate checks only the frontmatter's light pairs; RN-6
+  colours, 10 typography levels, 3 rounding levels, 15 spacing tokens, 46 components — the
+  forty-sixth is `{components.tooltip}`); no diagnostic is accepted or routed. Revision 2's run
+  reported the same counts at 45 components. The gate checks only the frontmatter's light pairs; RN-6
   and RN-22 carry the dark pairs. Revision 1's run reported 0 errors, 0 warnings and 1 info
   (`token-summary`: 19 colours, 10 typography levels, 3 rounding levels, 15 spacing tokens, 43
   components). *(re: whole document; source: the linter's JSON summary on this run)*
@@ -880,6 +925,48 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
   and the motion posture (RN-11) is untouched. *(re: `{colors.hover}`, § Components "Rows", "The
   menu"; source: owner answer `docs/design_trail/cycle-1.md` § 2.3; computed on this run)*
 
+- **RN-23:** The tooltip is one component with one home — the status letter — drawn as
+  `{typography.ui}` in `{colors.primary}` on `{colors.surface}` with a `{colors.line}` hairline,
+  `{rounded.sm}`, `{spacing.xs}` padding and no shadow; raised by the letter after a 500ms rest,
+  dismissed when the pointer leaves it, stacked over the row's hover fill, and raised by no other
+  surface — *because* the owner put a tooltip in v1 for the letter's sake and described the
+  behaviour they meant: *"in VS code, when you hover over an `M` for example, there's a short-time
+  'file and + Modified'"* (`docs/design_trail/cycle-2.md` § 1.1). Every value under that is this
+  seat's, decided by the direction's order. No new colour or type level enters, because the shell
+  speaks at one size and the pair `primary` on `surface` is already specified and measured (RN-6)
+  — the count of new tokens is zero. No shadow, because the tooltip's ground is `canvas`, one tone
+  from `surface`, which is precisely the case the menu's shadow exists for the absence of (RN-15)
+  — the count of shadows stays at one. The trigger is the letter and not the row, because the
+  row's hover already means *clickable* and the tooltip means *what this letter says*; one target
+  for two meanings would be one cue doing two jobs. The 500ms rest is chosen so a pointer crossing
+  the sidebar toward a row raises nothing on the letters it passes, while a deliberate stop reads
+  as answered; it is a delay before an appearance in place, not a transition, so the motion posture
+  holds. Dismissal is on leaving rather than on a timer: the owner's *short-time* is read as *while
+  you hover*, which is the VS Code behaviour they described, and it costs no second clock to tune.
+  The words the tooltip carries are `docs/CONTENT.md`'s (RN-24). *(re: `{components.tooltip}`,
+  § Components "The tooltip", § Elevation & Depth, § Shapes, § Do's and Don'ts; source: owner
+  answer; design reason)*
+- **RN-24:** The status letters follow VS Code's badge vocabulary — `U` untracked, `C` conflict —
+  and § Components now says so where revision 2 left it implicit; the grouping itself does not
+  move — *because* the owner's cycle-2 round opened this as a defect on the premise that Git
+  porcelain's `U` (updated but unmerged) and `C` (copied) were the letters' meanings, and the
+  research the owner asked for found the premise wrong: the two write-ups the owner's answer
+  cites agree that VS Code's `U` means *Untracked* and `C` means *Conflict*
+  (https://bobbyhadz.com/blog/what-are-u-and-m-file-markers-in-vscode;
+  https://www.mehmetbaykar.com/posts/understanding-git-status-indicators-u-m-a-d-c-r-in-vs-code/),
+  with the colours this document already draws — U and A green, M amber, D red. The owner's
+  ruling: *"No change to `DESIGN.md`. Its mapping is correct"* (`docs/design_trail/cycle-2.md`
+  § 1.2, `nozoki@fdee2fc`). VS Code's is the right vocabulary because the product is modelled on
+  it and the letters exist to be recognised by readers who have seen them there, not in porcelain
+  output; the collision is written into § Components because an unstated convention that
+  contradicts the underlying tool is a defect the next careful reader introduces. Not copied from
+  VS Code: badging a renamed file `U` — Nozoki keeps `R`, since collapsing renamed into untracked
+  would lose a distinction the four families draw. The consequence lands in `docs/CONTENT.md`,
+  whose expansion at its revision 1 uses porcelain's words (*copied*, *unmerged*); the correction
+  is recorded on that document's own companion (`docs/CONTENT_open_issues.md` § 1.2,
+  `nozoki@1593434`) and is the Content Editor's, not this document's. *(re: § Components "Status
+  letters"; source: owner answer)*
+
 ## Traceability
 
 | UXD constraint | How this document satisfies it |
@@ -893,9 +980,9 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
 | § 9 — the Markdown rendered view and the code view are two treatments of one panel: same path line, same position rule, same route out | `{components.path-line}` is the first row of every treatment; the optional switch is one control on that line (§ Components "The reading panel") |
 | § 8 — minimum contrast, no conformance number claimed; DESIGN.md states the floor its tokens hold | § Colors "The contrast floor" states the number and the surfaces it binds; no standard is claimed |
 | UX-A2 — no meaning by hue alone | Letters, headings, bars; the Do's make the cue mandatory and the hue the repeat |
-| UX-A4 — no control by glyph alone | Rail labels beneath glyphs; chrome controls carry a word; status glyphs never stand alone (§ Components) |
-| UX-I2 / UX-I3 — no ceremony on update; the user's place survives | No transition, no flash, no notification (§ Do's and Don'ts, RN-11); the hover fill is pointer-driven and never fires on an update (RN-22) |
-| UX-I9 — themes; user override; choice remembered | Theme control in the chrome (§ Components, RN-10 — placement added beyond the UXD and owner-confirmed; the UXD-side record is pending in `docs/UXD_open_issues.md` § 1.1) |
+| UX-A4 — no control by glyph alone | Rail labels beneath glyphs; chrome controls carry a word; status glyphs never stand alone; the status letter's word is a tooltip the letter raises, and no labelled control raises one (§ Components, RN-11, RN-23) |
+| UX-I2 / UX-I3 — no ceremony on update; the user's place survives | No transition, no flash, no notification (§ Do's and Don'ts, RN-11); the hover fill and the tooltip are pointer-driven and never fire on an update (RN-22, RN-23) |
+| UX-I9 — themes; user override; choice remembered | Theme control in the chrome (§ Components, RN-10 — placement added beyond the UXD and owner-confirmed; the UXD records the same home at `docs/UXD.md` § 4 and its RN-22, the owner's answer at `docs/uxd_trail/cycle-2.md` § 1.1) |
 | UX-I12 — links with destination readable; remote images as stated placeholders | `{components.link-text}` + `{components.link-destination}`; `{components.image-placeholder}` (RN-13) |
 | UX-I13 — no indicator before the state is observed | Counts and letters drawn only after Git state is read; pending is a word, never a bar (§ Components "Status messages", Do's) |
 | UX-I14 — every failure carries a route out on the same surface | § Components "Status messages": the route follows the message; the Do's require it |
