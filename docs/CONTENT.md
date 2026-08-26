@@ -8,9 +8,9 @@ omitted:
 
 # CONTENT — Nozoki 覗き
 
-**Status:** Draft
+**Status:** Settled
 **Owner:** Content Editor
-**Version:** 2 — the owner's eight answers folded (`docs/content_trail/cycle-1.md`): the read-only sentence is scoped to the repository, the Git status letters are expanded in a hover tooltip, in the vocabulary the editor Nozoki resembles uses, and § Message patterns *Error* splits into an observed condition and an unexplained fault. Re-derived against `docs/PRD.md` v9, which assumes the reader knows Git. One item is open in `docs/CONTENT_open_issues.md`.
+**Version:** 3 — the unexplained fault has its surfaces. `docs/UXD.md` settled at v4: every failure cell in its § 6 now holds two classes, and UX-I16 says where the second one is shown — so § Message patterns *Error* and § Traceability are repointed at it, and this document no longer carries a message pattern with no declared home. Two corrections ride with it: the status letters' expansion is raised by the letter rather than the row, which is what the owner described and what `docs/DESIGN.md` draws, and RN-12's dependency on the design language is discharged rather than left in flight. No rule in this document moves. The two calls this document was waiting on came back settled and moved nothing in it (`docs/content_trail/cycle-2.md` § 1.1; RN-22), so nothing is left open and the companion is gone.
 
 > The verbal language is the source of truth for everything this product says to a person. It is
 > the peer of `DESIGN.md`, not a part of it: a rule about how something **looks** belongs there,
@@ -242,11 +242,20 @@ and the one thing you can do next.* Three sentences at most, in that order. The 
 the whole difference: Nozoki states the limit of what it knows rather than naming a cause it never
 read, because a cause guessed here is the first failed claim the reader can check.
 
-**This class never widens beyond its own failure.** It names what still works, because an
-unexplained fault in one file is not a statement about the repository (`docs/SRS.md` NFR-3, a
-failing item degrades only itself). And the route out is on the surface (`docs/UXD.md` UX-I14): an
-issue tracker is not a route out and never stands alone, so no message in this class ends by asking
-the reader to report it.
+**This class never widens beyond its own failure.** It is written in the failure slot of the item
+that stopped — the open file, the tree row, the Git view, the startup surface — and names what still
+works, because an unexplained fault in one file is not a statement about the repository
+(`docs/UXD.md` UX-I16, which puts it in that item's own slot; `docs/SRS.md` NFR-3, a failing item
+degrades only itself). And the route out is on the surface (`docs/UXD.md` UX-I14): an issue tracker
+is not a route out and never stands alone, so no message in this class ends by asking the reader to
+report it. UX-I16 states that limit too, and adds the one this document is the reason for: no
+control anywhere reveals, expands or copies the fault's detail, so there is no such control to write
+a label for and no exception owed to § Terminology, *Banned*.
+
+**A stopped read is never dressed as a pending one.** Once Nozoki has stopped, § Message patterns
+*Loading* does not apply to it: a *"Reading this file."* left standing over a fault claims work that
+is not happening, which is the one thing every message here may not do (`docs/UXD.md` UX-I16,
+UX-I13).
 
 **A permission that was refused is not this class** — a refusal Nozoki read is something it
 observed, and it takes the first formula: *"Nozoki can't read this folder."* This class is for the
@@ -316,10 +325,12 @@ product's own words legible to everyone reading them on the screen.
   a heading, a letter with its expansion, or the sentence itself. A state whose only text is a
   colour name has no text.
 - **A single letter is not a word, so the view expands it.** Git's status letters — `A`, `M`,
-  `D`, `R`, `C`, `U` — are shown beside a changed file, and hovering the row names the file and
-  the letter in words: *added*, *modified*, *deleted*, *renamed*, *untracked*, *conflict*. The
-  expansion lives in the view, on demand — not as a permanent legend beside the rows, and not as a
-  list in the README the reader has already left.
+  `D`, `R`, `C`, `U` — are shown beside a changed file, and resting the pointer **on the letter**
+  names the file and then the letter in words: *added*, *modified*, *deleted*, *renamed*,
+  *untracked*, *conflict*. The expansion lives in the view, on demand — not as a permanent legend
+  beside the rows, and not as a list in the README the reader has already left. What raises it and
+  how it is drawn are the design language's (`docs/DESIGN.md` § Components, "The tooltip"); the two
+  words it carries, and their order, are this document's.
   **Those six words are the letters' meanings in this product and are not Git's porcelain
   vocabulary.** `U` is *untracked* and `C` is *conflict*, which is what the editor this product
   resembles means by them and what `docs/DESIGN.md` § Components ("Status letters") draws; a
@@ -395,7 +406,7 @@ Every state and requirement in the UXD that carries text, and what covers it her
 | UX-S2 File tree — empty | Message patterns § Empty | *"This repository has no files."* |
 | UX-S2 File tree — loading | Message patterns § Loading | *"Reading this folder."* |
 | UX-S2 File tree — error (one entry) | Message patterns § Partial | Marked on the row; the rest of the tree stands. |
-| UX-S2 File tree — success (markers) | Accessibility of text (a word carries the distinction; the letters' expansion) | Hovering the row names the file and the letter in words. The six words are this product's, not Git's porcelain. |
+| UX-S2 File tree — success (markers) | Accessibility of text (a word carries the distinction; the letters' expansion) | Resting the pointer on the letter names the file and then the letter in words. The six words are this product's, not Git's porcelain. |
 | UX-S3 Git view — empty | Message patterns § Empty | *"Nothing has changed in this repository."*, after reading. |
 | UX-S3 Git view — loading | Message patterns § Loading | *"Reading Git status."* |
 | UX-S3 Git view — error (lock) | Message patterns § Error | The nothing-to-do form, with the condition that ends the wait. |
@@ -420,7 +431,8 @@ Every state and requirement in the UXD that carries text, and what covers it her
 | UX-A2 No meaning by hue alone | Accessibility of text (first two rules) | The verbal half of the rule. |
 | UX-A3 The posture sentence on the README | Terminology § Standing sentences | The wording UX-A3 asks this document for. |
 | UX-A4 No control by glyph alone | Accessibility of text (alternative text) | |
-| An unexplained fault, on any surface | Message patterns § Error — *an unexplained fault* | **The UXD names no such state.** Every failure cell in `docs/UXD.md` § 6 is a condition Nozoki observed. The wording is settled here; which surfaces carry it is the CDO's, and is open at `docs/CONTENT_open_issues.md` § 1.1. |
+| UX-I16 An unexplained fault, on the surface of the item that stopped | Message patterns § Error — *an unexplained fault* | The failure slot of the item that stopped, scoped to it, naming what still works. No control shows the detail, so this document writes no label for one. |
+| `docs/UXD.md` § 6 — every failure cell holds two classes | Message patterns § Error (both classes, and the question that chooses between them) | § 6 fixes that each cell has two readings; which one is being written, and its wording, are this document's. |
 | UX-I11 Public pictures tell the same truth | Not covered — out of scope here | A picture is not a string; UX-I11 binds the picture. |
 | PRD § Goals "Pick-it-up adoption" (the README's first screen) | Tone § first-run flow; Terminology § Standing sentences | What the README claims is the PRD's; how it is worded is this document's. |
 
@@ -499,11 +511,12 @@ Every state and requirement in the UXD that carries text, and what covers it her
   tooltips are in v1. `docs/UXD.md` UX-A2 permits a letter as the cue that survives without colour,
   and this rule does not reopen that — the question it answers is whether the letter can be
   understood at all.
-  **Two things this rule depends on are in flight, and neither is this document's:** the no-tooltip
-  Don't in `docs/DESIGN.md` § Do's and Don'ts has to be lifted, and the tooltip specified, which is
-  the CDO's and is answered in `docs/DESIGN_open_issues.md` § 1.1 awaiting that document's fold. If
-  the tooltip does not ship, the letters are unexpanded and this rule fails open — it is recorded
-  here so that whoever writes the strings sees the dependency rather than discovering it.
+  *(v3: the dependency is discharged. `docs/DESIGN.md` settled at v3 with the no-tooltip Don't
+  lifted on the owner's v1 decision and the tooltip specified as a component with one home — the
+  status letter, which raises it. So the letters are expanded, and this rule no longer fails open.
+  The trigger is corrected with it: this document said the **row** raised the expansion, which was
+  never what the owner described —* "when you hover over an `M` … there's a short-time 'file and +
+  Modified'" *(`docs/content_trail/cycle-1.md` § 1.2) — nor what the design language draws.)*
 - **RN-13:** § Localization holds, although `docs/PRD.md` § UX Notes fixes the UI language as
   English and no translation is planned — *because* every rule in it constrains how a string is
   written rather than requiring a translation, and each is unaffordable to apply once strings
@@ -540,10 +553,10 @@ Every state and requirement in the UXD that carries text, and what covers it her
   true thing and the only one it can keep. The owner stated the distinction and not the remedy;
   the two formulas, the boundary between them (*is there something Nozoki observed?*), and the
   ruling that a refused permission is an observed condition rather than a fault are this seat's.
-  **What is not settled: which surfaces carry the second class.** `docs/UXD.md` § 6 names no
-  unexplained-fault state — every failure cell there is a condition Nozoki read — so the wording
-  exists with no declared home. That is the CDO's to declare and is open at
-  `docs/CONTENT_open_issues.md` § 1.1.
+  *(v3: the missing half arrived. `docs/UXD.md` v4 gives every failure cell in its § 6 a second
+  class and UX-I16 says where the second one is shown, so this pattern's wording now has a declared
+  home and § Traceability records it. Nothing in the two formulas moved — the CDO declared the
+  surfaces, which is what this document was waiting for, not a wording.)*
 - **RN-18:** *(v2)* The reading bar's third permitted source widens from four enumerated Git words
   to *a word Git itself uses for the state being reported* — *because* the PRD settled at v9 that
   the reader is assumed to know Git and the product may leave Git's own vocabulary unexplained,
@@ -561,3 +574,36 @@ Every state and requirement in the UXD that carries text, and what covers it her
   sentence is read as tightening that limit rather than replacing it, and the exception it does
   have — acquiring the tool — is inside the one wording rather than footnoted where it is needed.
   Owner-settled: `docs/content_trail/cycle-1.md` § 1.1.
+- **RN-20:** *(v3)* The unexplained fault is written into the failure slot of the item that stopped,
+  and § Traceability no longer records a pattern with no declared state — *because* the CDO answered
+  the half this document raised: `docs/UXD.md` v4 states that every failure cell in its § 6 holds two
+  classes, and UX-I16 places the second one on the surface of the item that stopped, scoped to it,
+  with the route out the shell already provides. The rules here did not move to meet it, which is the
+  test that the seam held: this document had already written *"this class never widens beyond its own
+  failure"* from `docs/SRS.md` NFR-3 and `docs/UXD.md` UX-I14, and UX-I16 grounds the same scope in
+  the experience rather than replacing it. One clause is added and is genuinely new — that a
+  *Loading* sentence never stands over a stopped read — *because* UX-I16 rules out a pending
+  treatment standing in for a fault, and without the clause the *Loading* pattern was the obvious
+  wrong thing for a writer to reach for.
+- **RN-22:** *(v3)* The two questions this document raised about the fault class and could not answer
+  are settled, and neither moved a word here — recorded because a reader who finds the companion gone
+  is owed the reason. Both were the owner's, answered in the CDO's own companion
+  (`nozoki@bdbc494`) after the surfaces landed. **Whether any control reveals, expands or copies the
+  fault's detail: no**, confirmed as UX-I16 drafted it — which is the answer that costs this document
+  nothing, because § Terminology, *Banned* already refuses the internal text such a control would
+  show, so no label is owed and no exception to that ban is owed. Had it gone the other way this
+  document would have reopened for both. **Whether v1 reaches the class at all: yes**, every read path
+  in scope — which is a scope call, so it lands on the SDD and the first change rather than here: the
+  second formula was written for the first release that reaches the state and stays written word for
+  word now that the release is v1. The class was never conditional in this document's wording, which
+  is why the answer is recorded rather than applied.
+- **RN-21:** *(v3)* The status letters' expansion is raised by resting the pointer on the **letter**,
+  not on the row — *because* that is what the owner described when they settled it
+  (`docs/content_trail/cycle-1.md` § 1.2, *"when you hover over an `M`"*) and what the design
+  language draws (`docs/DESIGN.md` § Components, "The tooltip": *"the letter, not the row"*). This
+  document said *the row* at v2, which was a mis-transcription of the answer it was folding rather
+  than a decision, and it contradicted a sibling that had already settled. It is corrected rather
+  than raised, because no rule of this document turns on it: what the expansion says, and that it
+  lives in the view on demand, are unchanged. What raises it was never this seat's to state, so the
+  corrected sentence hands that back to `docs/DESIGN.md` and keeps only the two words and their
+  order.
