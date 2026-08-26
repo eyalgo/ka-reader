@@ -13,77 +13,93 @@
 > Your answers are never thrown away. Each time the CPO folds them in, it first copies this file
 > whole to `docs/prd_trail/` — so what you decided, and why, stays readable and citable for good.
 
-> **This companion was opened by the owner, not by a `product-prd` run.** The PRD is settled at v9
-> and its companion was correctly deleted. It is re-opened deliberately because the owner issued a
-> product directive during a downstream run — the SDD's `companion-answer` walk — and the PRD's loop
-> has no other channel: with no companion on disk a `product-prd` re-run reads the document as done
-> and has nothing to act on.
->
-> **The directive arrives with the owner's ruling already recorded**, so this round is a fold and
-> not an interview. What is *not* settled is the wording, the product sentence it implies, and the
-> knock-on lines listed in § 2 — those are the CPO's to write. The round's job is to make `PRD.md`
-> say this and stay coherent with everything else it settles at v9.
+> **This round folded your plain-folder directive** (`docs/prd_trail/cycle-9.md` § 1.1) into
+> `PRD.md` v10. The directive itself is settled and is not re-asked. What is below is the four
+> calls the directive left to the CPO — drafted into the PRD, each marked *awaiting
+> confirmation* where it sits — plus one correction the PRD owed from an earlier override of
+> yours downstream. Confirm each, or override it.
 
 ---
 
 ## 1. Open issues — product-defining questions with no answer yet
 
-### 1.1 A folder that is not a Git repository is a startup failure; the owner wants it to open, with the Git view disabled
-
-- **Why it matters:** `PRD.md` today admits exactly one input — a local Git repository — and every
-  document downstream reads it that way. `docs/UXD.md:205` (UX-S4) makes a non-repository a
-  **startup failure**, a surface that "exists only in failure", whose route out in v1 is "to change
-  the path and start again"; `docs/SDD.md:276-280` (C-R3) implements exactly that, and its
-  `read-a-repository` slice is built against it. Making a plain folder open is therefore not a
-  UX tweak downstream — it changes what the product *is*, which is this document's and nobody
-  else's. Until the PRD says it, the SRS cannot widen its input contract (FR-1, FR-2) and the UXD
-  cannot draw a state that the product definition does not admit.
-- **Reasoning / what would settle it:** the owner settled it; what follows is the record. The
-  directive was given on 2026-08-26 during the `companion-answer` walk of `docs/SDD_open_issues.md`,
-  in these words: *"and repo without git should be acdesible. the git tree will be disabled."* It was
-  deliberately **not** written into any slot of that companion — an SDD companion slot would have
-  put a product decision where only the CTO reads it, and the PRD, SRS and UXD would have gone on
-  saying the opposite. It is recorded in full in the body of the answering commit, `nozoki@86903c2`.
-  The journey moves that followed are `kensaiapp-opensource@9fb6e9f` (the SDD station parked
-  unreached) and `@04b709b` (the definition seed un-picked), and this station is item 1 of the seed
-  `2026-08-26_open-a-plain-folder`.
-- **Answer:** **A folder that is not a Git repository opens.** The tree and the reading panel work
-  normally against it; the **Git view is disabled**, not absent-by-failure. Nozoki becomes a folder
-  viewer that lights up Git when it finds it, rather than a Git repository viewer that refuses
-  everything else.
-
-  **What is not settled here, and is the CPO's:**
-
-  1. **The product sentence.** § Purpose, § Blurb and § Scope (In) all describe the input as a
-     repository. Whether the product is now stated as *a folder viewer that lights up Git* or as *a
-     repository viewer that degrades to a folder* is a positioning call, and it changes the README's
-     first line. Neither is implied by the directive.
-  2. **What "disabled" is promised to mean at product level.** The directive says the Git view is
-     disabled. Whether the PRD promises the view is *present and inert* (visible, stating why) or
-     *not offered at all* in that state is a product promise, and station 3 (`uxd-plain-folder`)
-     draws whichever this settles. The PRD should say which, and stop — the treatment itself is the
-     CDO's.
-  3. **Whether the plain folder is v1 or beyond v1.** The directive does not say. § Scope and
-     § Out of Scope both need a line either way, and `system/projects/nozoki/agari.md` decides
-     whether the terminus moves with it.
+None.
 
 ## 2. Choices to confirm — the CPO drafted a best-effort answer; confirm or override
 
-*(none drafted — this companion was opened by the owner, so the round that reads it is the first
-CPO pass over the directive. Items the CPO drafts belong here on its own run.)*
+### 2.1 The product sentence: a folder viewer that lights up Git, not a repository viewer that degrades
 
-**Knock-on lines the round must reconcile, listed so none is missed rather than as choices:**
+- **Drafted into the PRD:** § Blurb and § Purpose now say Nozoki is *a read-only viewer for a
+  local folder* that, *when the folder is a Git repository*, also shows what has changed — *a
+  folder viewer that lights up Git when it finds it, not a repository viewer that refuses
+  everything else*. The Problem Statement, Why This and Target Users keep their repository-shaped
+  wording: the pain and the driving scenario are still Git working trees under change; only the
+  input widened.
+- **Rationale:** it is the framing your own directive was recorded in (the answering commit,
+  `nozoki@86903c2`, says the sentence changes *from a Git repository viewer to a folder viewer
+  that lights up Git when it finds one*), and it is the honest one: a plain folder is a fully
+  working state, so calling it a *degraded* repository would make the README's first line
+  describe the exception as the product's failure. The alternative — *a repository viewer that
+  also opens plain folders* — keeps Git in the first sentence, which is where the driving scenario
+  lives; it is a fair reading, and the reason this is a choice rather than a fact.
+- **Confirm or override:**
 
-- § Success Metrics *"Time-to-first-success"* and *"Zero required configuration"* — both are measured
-  through opening a repository. Whether the bar is now measured against a plain folder too.
-- § Out of Scope *"Several repositories at once"* and *"Changing the viewed repository without
-  restarting"* — both say *repository*. Whether the words widen to *folder* or the exclusions stay
-  repository-shaped.
-- § Key Use Cases — the cases are written over a repository with Git state. Whether a no-Git case
-  joins them.
-- **Everything else the PRD settles at v9 stands.** macOS only, read-only forever, one at a time,
-  and sidebar search / filter, pane resizing and keyboard navigation permanently outside the done
-  (`system/projects/nozoki/agari.md`). This round widens the input; it does not reopen scope.
+### 2.2 "Disabled" means present and inert, saying why — not hidden
+
+- **Drafted into the PRD:** § Core Features and § UX Notes ("Checking") promise that in a plain
+  folder the Git view *is there, disabled, and states plainly that this folder is not a Git
+  repository* — a working state, not an error — and that nothing about it invites the person to
+  create a repository. The changed-file markers in the tree are absent. How the disabled view is
+  drawn is left to the UXD, as the station's guardrail requires.
+- **Rationale:** your word was *disabled*, and a thing can only be disabled if it is present; a
+  view that vanishes would leave a Git user wondering whether Nozoki failed to find their
+  repository. Present-and-saying-why is also what the PRD's *view never lies* rule asks: the state
+  is shown, with its reason. The alternative — the Git view not offered at all in a plain folder,
+  the sidebar showing Files only — is simpler to draw and is the override if you meant that.
+- **Confirm or override:**
+
+### 2.3 The plain folder is inside v1, not beyond it
+
+- **Drafted into the PRD:** § Scope (In) now reads *a single local folder — a Git repository or
+  not*; § Key Use Cases gains case 4 (a plain folder); § Out of Scope no longer lists a
+  non-repository as a failure. Time-to-first-success stays measured against a Git repository —
+  the fuller path — with a plain folder not measured separately.
+- **Rationale:** the directive was given while the SDD was cutting v1's slices, and it subtracts a
+  failure rather than adding a feature: the tree, the reading and the live refresh already work;
+  what changes is that the window opens. Deferring it would have v1 build the refusal and a later
+  release remove it. **One consequence for you to note, not answer here:** the project's Agari
+  (`system/projects/nozoki/agari.md`) describes the terminus as *point it at a local repository*;
+  once this is confirmed it wants the same widening through its own skill, `project-agari` — a
+  separate run, outside this station.
+- **Confirm or override:**
+
+### 2.4 Git is read only when the opened folder is itself a repository's root
+
+- **Drafted into the PRD:** § Core Features: *Git is read only when the folder opened is itself
+  the root of a Git repository. A folder inside a repository, and a folder that contains
+  repositories, both open as plain folders.* § Out of Scope carries the exclusion.
+- **Rationale:** no input mentions either case, and the product cannot stay silent on them — Git
+  itself finds a repository from any folder beneath its root, so without a rule Nozoki would open
+  `src/` of a repository with a Git view reporting changes in files the tree does not show, and a
+  folder of ten repositories with a Git view for none or one. *The tree and the Git view always
+  describe the same folder* is the smallest rule that keeps the view from lying. The override
+  with a real case for it: a folder inside a repository shows Git scoped to that subtree — useful
+  for monorepos, and a bigger promise than v1 needs.
+- **Confirm or override:**
+
+### 2.5 The Markdown raw-source switch is a permission, not a promise — the PRD's own line, corrected
+
+- **Drafted into the PRD:** § Core Features: *Markdown is rendered by default. A switch to the
+  raw source is permitted, not promised: it is built if it costs nothing, and a release that
+  ships rendered-only says so where the release is offered.* Replaces *"if the toggle proves too
+  costly for v1, v1 ships rendered-only and the toggle follows"*.
+- **Rationale:** you overrode the earlier line downstream — `docs/srs_trail/cycle-5.md` § 2.3,
+  *"render is what i need", "add the toggle if it costs nothing"* — and confirmed at
+  `docs/SDD_open_issues.md` § 2.1 that the stale PRD line *"is a PRD correction for its own run"*.
+  This is that correction. It is listed because the line it replaces was itself owner-confirmed
+  (`docs/prd_trail/cycle-7.md`), so the supersession is put to you rather than made silently;
+  nothing else about Markdown moves.
+- **Confirm or override:**
 
 ## 3. Directives — an external action the owner confirms as a gate
 

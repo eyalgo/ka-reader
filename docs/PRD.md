@@ -1,8 +1,8 @@
 # PRD — Nozoki 覗き
 
-**Status:** Settled
+**Status:** Draft
 **Owner:** CPO
-**Version:** 9 — the reader is assumed to know Git (the no-configuration half of the learning-curve goal is unchanged); sidebar search / filter, pane resizing and keyboard navigation are outside the product's done, not merely beyond v1; the README's self-description and roadmap say so and no longer call Nozoki a web app
+**Version:** 10 — the input is a local folder, not only a Git repository: a folder that is not a Git repository opens and reads normally, with the Git view present and disabled; Git is read only when the folder opened is itself a repository's root; the Markdown raw-source switch is a permission, not a promise
 
 > The PRD is the product source of truth: the product-facing **what and why**, read cold
 > by the CTO, the CDO, Principal PM, and Principal Architect. It is updated in place with
@@ -23,22 +23,26 @@
 
 ## Blurb
 
-Nozoki is a read-only viewer for a local Git repository: browse the tree, read files with
-syntax highlighting, see what has changed, and watch the tree as it changes — with the certainty
-that nothing about the repository can be changed from here. It is for developers inspecting a
-working tree they must not disturb, above all one that a coding agent or automated tool is
-actively changing.
+Nozoki is a read-only viewer for a local folder: browse the tree, read files with syntax
+highlighting, watch the tree as it changes — and, when the folder is a Git repository, see what
+has changed — with the certainty that nothing in the folder can be changed from here. It is for
+developers inspecting a working tree they must not disturb, above all one that a coding agent or
+automated tool is actively changing.
 
 ## Purpose
 
 Nozoki (覗き — *"to peek / peer in"*) is a lightweight code workspace viewer: a stripped-down
-shell for browsing a project's files and inspecting its Git status, in which nothing can be
-changed. It is optimized for inspection rather than authoring — look, don't touch. It exists
-because inspecting a working tree today is done with tools built for *authoring*, whose safety
-against accidental change is discipline, not guarantee. And it exists *now* because the state
-that most needs a guarantee has become an everyday one: working trees that automated tools and
-coding agents are actively changing — the product's driving scenario *(added — not in the input;
-the scenario itself owner-confirmed: prd_trail/cycle-1.md)*.
+shell for browsing a folder's files — and, when that folder is a Git repository, inspecting its
+Git status — in which nothing can be changed. It is a folder viewer that lights up Git when it
+finds it, not a repository viewer that refuses everything else *(the plain folder as a supported
+input: changed — the input admits only a Git repository; owner-confirmed: prd_trail/cycle-9.md
+§ 1.1; the positioning sentence is the CPO's and awaits confirmation)*. It is optimized for
+inspection rather than authoring — look, don't touch. It exists because inspecting a working
+tree today is done with tools built for *authoring*, whose safety against accidental change is
+discipline, not guarantee. And it exists *now* because the state that most needs a guarantee
+has become an everyday one: working trees that automated tools and coding agents are actively
+changing — the product's driving scenario *(added — not in the input; the scenario itself
+owner-confirmed: prd_trail/cycle-1.md)*.
 
 ## Problem Statement
 
@@ -80,7 +84,7 @@ assumption (see Assumptions).
 
 ## Goals
 
-- **Inspection without risk** — a user can browse and read anything in the repository with the
+- **Inspection without risk** — a user can browse and read anything in the folder with the
   certainty that nothing about it changes.
 - **Pick-it-up adoption** — a stranger goes from finding the tool to viewing a file of their own
   repository in minutes, guided by the README alone. The README's first screen is product
@@ -89,10 +93,11 @@ assumption (see Assumptions).
 - **No learning curve** — anyone who works with Git and can follow a README can use Nozoki: the
   reader is assumed to know Git, and the product may leave Git's own vocabulary unexplained. No
   editor experience required, no onboarding, and no configuration of any kind: no settings, no
-  project file, no setup step. The only input it ever needs is which repository to view *(the
-  assumed Git knowledge: changed — supersedes the "find their way around a repository on GitHub"
-  floor owner-confirmed in prd_trail/cycle-2.md; owner-confirmed: prd_trail/cycle-8.md § 1.1. The
-  no-configuration half is unchanged: owner-confirmed: prd_trail/cycle-2.md)*.
+  project file, no setup step. The only input it ever needs is which folder to view *(folder,
+  not repository: owner-confirmed: prd_trail/cycle-9.md § 1.1; the assumed Git knowledge:
+  changed — supersedes the "find their way around a repository on GitHub" floor owner-confirmed
+  in prd_trail/cycle-2.md; owner-confirmed: prd_trail/cycle-8.md § 1.1. The no-configuration
+  half is unchanged: owner-confirmed: prd_trail/cycle-2.md)*.
 
 No revenue applies: Nozoki is free, non-commercial open source by design; its cost side is
 maintainer time, held down by the deliberately small surface (see Assumptions).
@@ -100,22 +105,26 @@ maintainer time, held down by the deliberately small surface (see Assumptions).
 ## Success Metrics
 
 - **Read-only integrity:** violations of the product's promises, under any operation — stated
-  separately, none implied by another: no write to the working tree; no Git mutation (no
+  separately, none implied by another: no write to the viewed folder; no Git mutation (no
   checkout, stash, index, or commit operation); no telemetry; no non-essential network call.
-  Nothing the product does writes into the repository it is pointed at — its own kept state
+  Nothing the product does writes into the folder it is pointed at — its own kept state
   lives elsewhere on the machine (see Data & Privacy). Bar: zero, absolutely; a single
   violation is a release-blocking defect. Reckoned at every release. *(whole-product scope:
   changed from the input, which scoped "read-only" to the editor area; owner-confirmed:
   prd_trail/cycle-1.md)*
 - **Time-to-first-success:** from a stranger deciding to try Nozoki — by its single install
   path, whatever that path is — to viewing a file of their own repository. Bar: ≤ 5 minutes,
-  checked before each release, on macOS — the one platform v1 promises (see Scope). This same
+  checked before each release, on macOS — the one platform v1 promises (see Scope). The clock is
+  read against a Git repository, the fuller path; a plain folder is the same path with less in
+  it and is not measured separately *(added — not in the input; the CPO's reconciliation of
+  the plain-folder input with this bar, awaiting confirmation)*. This same
   clock is the no-learning-curve goal's observable: it runs through first use — finding,
   starting, and viewing — not install alone *(that link: added — not in the input)*. *(bar
   value: added — not in the input; owner-confirmed: prd_trail/cycle-1.md)*
-- **Zero required configuration:** the only input Nozoki requires is which repository to view —
-  no settings, no project file, no setup step. Bar: pass/fail, checked at each release.
-  *(owner-confirmed: prd_trail/cycle-2.md)*
+- **Zero required configuration:** the only input Nozoki requires is which folder to view —
+  no settings, no project file, no setup step; whether the folder is a Git repository is found,
+  never asked. Bar: pass/fail, checked at each release. *(owner-confirmed: prd_trail/cycle-2.md;
+  folder rather than repository: owner-confirmed: prd_trail/cycle-9.md § 1.1)*
 - **Refresh immediacy:** a change on disk — file content, the tree, or Git state — appears in
   the view within a few seconds, with no user action. Bar: exact latency threshold TBD, tracked
   from the first working build. *(added — not in the input; owner-confirmed:
@@ -134,6 +143,11 @@ maintainer time, held down by the deliberately small surface (see Assumptions).
 3. A developer peeks at a repository an automated tool or agent is working on, watching its
    progress as the view follows the changing tree — without perturbing it *(added — not in the
    input; owner-confirmed: prd_trail/cycle-1.md, with Target Users)*.
+4. A developer opens Nozoki against a folder that is not a Git repository — a download, an
+   export, a project that has no Git yet — and browses and reads it exactly as in case 1. The
+   Git view is there and disabled, saying plainly that this folder is not a Git repository; the
+   tree, the reading, and the live refresh work as they always do *(changed — the input makes a
+   non-repository a failure; owner-confirmed: prd_trail/cycle-9.md § 1.1)*.
 
 ## Core Features
 
@@ -143,12 +157,23 @@ maintainer time, held down by the deliberately small surface (see Assumptions).
   refused and never mis-highlighted. The floor grows when the maintainer needs a language, not
   on request *(floor and growth rule: added — not in the input; owner-confirmed:
   prd_trail/cycle-7.md)*.
-- Markdown is rendered by default, with a toggle to the raw source. If the toggle proves too
-  costly for v1, v1 ships rendered-only and the toggle follows — a stated fallback, not an open
-  question *(added — not in the input; owner-confirmed: prd_trail/cycle-7.md)*.
+- Markdown is rendered by default. A switch to the raw source is permitted, not promised: it is
+  built if it costs nothing, and a release that ships rendered-only says so where the release is
+  offered *(rendering: added — not in the input; owner-confirmed: prd_trail/cycle-7.md. The
+  switch as a permission: changed — supersedes the "the toggle follows" promise owner-confirmed
+  in prd_trail/cycle-7.md; owner-confirmed: srs_trail/cycle-5.md § 2.3, awaiting confirmation
+  here as the PRD's own line)*.
 - A file tree with changed-file markers and selected-file highlight.
 - A sidebar that toggles between **Files** and **Git**.
-- A Git view: changed files, staged files, branch name, short repository status.
+- A Git view: changed files, staged files, branch name, short repository status — when the
+  folder is a Git repository. When it is not, the Git view is present and disabled, and says
+  why; the changed-file markers in the tree are absent (see UX Notes) *(changed — the input
+  admits only a repository; owner-confirmed: prd_trail/cycle-9.md § 1.1; present-and-disabled
+  is the CPO's reading of the owner's word "disabled", awaiting confirmation)*.
+- Git is read only when the folder opened is itself the root of a Git repository. A folder
+  inside a repository, and a folder that contains repositories, both open as plain folders: what
+  the tree shows and what the Git view reports are always the same folder *(added — no input
+  states it; the CPO's call, awaiting confirmation)*.
 - **Live refresh:** a change on disk — file content, the tree, or Git state — appears in the
   view automatically, with no user action *(added — not in the input; owner-confirmed:
   prd_trail/cycle-1.md)*.
@@ -167,9 +192,10 @@ present-but-disabled, no framing that implies an editable mode exists somewhere 
 editor panel is the dominant visual surface; navigation is text-first, icons secondary; dark
 and light themes from the start.
 
-**The path, end to end.** The experience begins with Nozoki open against one local
-repository — whatever precedes that moment belongs to the acquisition-and-start mechanism,
-which this PRD deliberately does not state (see Out of Scope).
+**The path, end to end.** The experience begins with Nozoki open against one local folder —
+whatever precedes that moment belongs to the acquisition-and-start mechanism, which this PRD
+deliberately does not state (see Out of Scope). Whether the folder is a Git repository is
+Nozoki's to find out, never the person's to declare.
 
 1. **Arrival.** The workbench opens with the file tree visible and nothing open — the empty
    state, a simple prompt such as "Select a file to view." Nothing to set up, sign into, or
@@ -181,7 +207,11 @@ which this PRD deliberately does not state (see Out of Scope).
    decide what to read next.
 3. **Checking.** The sidebar toggles between Files and Git — branch, changed files, staged
    files at a glance, with changed-file markers in the tree. Sidebar mode and the open file
-   are independent: checking Git never closes what the person is reading.
+   are independent: checking Git never closes what the person is reading. In a folder that is
+   not a Git repository the Git view is still there, disabled, and states plainly that this
+   folder is not a Git repository — a working state, not an error, and nothing about it invites
+   the person to fix it: Nozoki does not create repositories. The treatment of the disabled view
+   is decided downstream of this document *(owner-confirmed: prd_trail/cycle-9.md § 1.1)*.
 4. **Watching.** The view follows the tree as the repository changes — the driving scenario.
    Changes appear on their own, within the refresh bar; there is no refresh control, because
    a manual refresh turns the user into a poller *(owner-confirmed: prd_trail/cycle-1.md)*.
@@ -205,9 +235,10 @@ only what actually changed changes. Concretely:
 no-learning-curve bar — someone who works with Git, not necessarily an expert in it *(the
 floor: owner-confirmed: prd_trail/cycle-8.md § 1.1)*:
 
-- Pointed at something that is not a local Git repository, or a path that does not exist or
-  cannot be read: a plain statement of what went wrong and what to do next — no dead end that
-  presumes expertise.
+- Pointed at a path that does not exist, is not a folder, or cannot be read: a plain statement
+  of what went wrong and what to do next — no dead end that presumes expertise. A folder without
+  Git is not on this list: it opens (see "Checking", above) *(changed — the input's own frame
+  makes a non-repository a failure; owner-confirmed: prd_trail/cycle-9.md § 1.1)*.
 - A file that cannot be shown as text (binary and similar): openable like any file, landing
   in a stated cannot-display-as-text state — never a garbled render, never an error.
   Rendering non-text content richly is not part of v1's proof; the input's own scope is code
@@ -236,12 +267,15 @@ floor: owner-confirmed: prd_trail/cycle-8.md § 1.1)*:
 ## Scope (In)
 
 v1 is the smallest version that proves the thesis: everything under Core Features, operating
-against a **single local Git repository** on the user's own machine — one repository at a time
-is a v1 cut, not a permanent property *(owner-confirmed: prd_trail/cycle-1.md)*.
+against a **single local folder** on the user's own machine — a Git repository or not — one
+folder at a time is a v1 cut, not a permanent property *(owner-confirmed: prd_trail/cycle-1.md;
+the plain folder inside v1 rather than beyond it: changed — the input admits only a repository;
+the directive is owner-confirmed at prd_trail/cycle-9.md § 1.1 and its placement in v1 is the
+CPO's, awaiting confirmation)*.
 
 **Run posture** *(added — the input never states how the tool runs against a repository;
 owner-confirmed: prd_trail/cycle-1.md)*: Nozoki is a local tool — the user launches it on their
-own machine against one local repository at a time; nothing about its operation leaves the
+own machine against one local folder at a time; nothing about its operation leaves the
 machine; there is no hosted mode. There is **exactly one way to get and start Nozoki, and it is
 simple** — one path, not a menu of them: a stranger should not have to choose how to install a
 viewer. The mechanism of that path is not stated here (see Out of Scope); that it must be single
@@ -280,10 +314,16 @@ browsing, reading, status, and live refresh.
   prd_trail/cycle-7.md)*.
 - **Remote or hosted repositories, and any hosted operation of the tool itself** — the product
   runs locally against local state.
-- **Changing the viewed repository without restarting** — beyond v1: a named future direction
-  (see Scope), never a v1 capability *(owner-confirmed: prd_trail/cycle-1.md)*.
-- **Several repositories at once** — one at a time is the product; what becomes revisitable
-  later is *which* one, never *how many* *(owner-confirmed: prd_trail/cycle-1.md)*.
+- **Changing the viewed folder without restarting** — beyond v1: a named future direction
+  (see Scope), never a v1 capability *(owner-confirmed: prd_trail/cycle-1.md; the word widened
+  from repository to folder with the input: prd_trail/cycle-9.md § 1.1)*.
+- **Several folders at once** — one at a time is the product; what becomes revisitable later is
+  *which* one, never *how many* *(owner-confirmed: prd_trail/cycle-1.md; widened as above)*.
+- **Git found anywhere but at the opened folder's root** — a folder inside a repository, or a
+  folder holding repositories, opens as a plain folder in any version this document describes
+  (see Core Features) *(added — no input states it; awaiting confirmation)*.
+- **Creating or initialising a Git repository** — a plain folder is viewed as it is; the disabled
+  Git view offers no way to change that *(added — not in the input)*.
 - **Telemetry and any non-essential network call** — see Data & Privacy.
 - **The acquisition and start mechanism** — how Nozoki is obtained and launched is not stated
   here; the product property is only that there is exactly one such path and it is simple (see
@@ -340,10 +380,11 @@ browsing, reading, status, and live refresh.
 
 ## Dependencies / Integrations (Conceptual)
 
-- The local filesystem — the repository's files and folders, read continuously enough that the
-  view follows changes on disk.
-- Git — the product reads repository state (branch, changed files, staged files); it performs no
-  Git operation that alters that state.
+- The local filesystem — the viewed folder's files and folders, read continuously enough that
+  the view follows changes on disk.
+- Git — when the viewed folder is a repository, the product reads its state (branch, changed
+  files, staged files); it performs no Git operation that alters that state, and it needs nothing
+  from Git when the folder is not a repository.
 
 ## Data & Privacy
 
@@ -355,15 +396,15 @@ browsing, reading, status, and live refresh.
   version check, which would enter this PRD as a stated feature before it exists — the headroom
   is what is being kept, not a current call *(the definition and the headroom: added — not in
   the input; owner-confirmed: prd_trail/cycle-7.md)*.
-- The product reads only the repository it is pointed at and persists nothing of it.
+- The product reads only the folder it is pointed at and persists nothing of it.
 - Nozoki may keep its own state — preferences such as theme choice, window state, anything it
   remembers between sessions — and that lives where the tool keeps its own data on the machine,
-  **never inside the repository it is pointed at**. It holds nothing personal. *(boundary:
+  **never inside the folder it is pointed at**. It holds nothing personal. *(boundary:
   owner-confirmed: prd_trail/cycle-1.md)*
 
 ## Risks
 
-- **The promise breaks incidentally.** Any write to the target repository, however small — a
+- **The promise breaks incidentally.** Any write to the target folder, however small — a
   refreshed index, a lock file, a cache dropped into the tree — breaks the defining promise, and
   for a stranger once is permanently. Shows up as modified files or changed repository state in
   the target. Treated as release-blocking (see Success Metrics).
