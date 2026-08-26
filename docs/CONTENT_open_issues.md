@@ -119,10 +119,46 @@
      audience line is to be revisited through its own companion, by the CPO, and is not settled
      here.
 
-  **Unchanged and still true regardless of the above:** `docs/DESIGN.md` groups the letters as
-  "A and U (added); M (modified); D and C (deleted, conflict); R (renamed)", while Git's porcelain
-  reports `C` as *copied* and `U` as *unmerged*. Whatever the tooltip says has to say the right
-  word, so the mapping defect below must be fixed before the tooltip text is written.
+  **~~Unchanged and still true regardless of the above: `docs/DESIGN.md` groups the letters as "A
+  and U (added); M (modified); D and C (deleted, conflict); R (renamed)", while Git's porcelain
+  reports `C` as copied and `U` as unmerged. Whatever the tooltip says has to say the right word, so
+  the mapping defect below must be fixed before the tooltip text is written.~~ — WITHDRAWN. This
+  paragraph was written by this session and was wrong.** It is struck rather than deleted so the
+  trail shows the claim and its correction. What replaced it:
+
+  **`DESIGN.md` is correct, and `CONTENT.md` is the document that must change.** The owner asked for
+  research before it was acted on. VS Code's badges use `U` = **Untracked** (green, with Added) and
+  `C` = **Conflict** (red) — not the porcelain meanings — confirmed by two sources, one stating it in
+  as many words: *"U means Untracked, not unmerged; C means Conflict, not copied"*
+  (https://bobbyhadz.com/blog/what-are-u-and-m-file-markers-in-vscode; same set at
+  https://www.mehmetbaykar.com/posts/understanding-git-status-indicators-u-m-a-d-c-r-in-vs-code/).
+  The colours agree with `DESIGN.md` too: U and A green, M brown/yellow, D red. So `DESIGN.md`
+  carries VS Code's vocabulary and carries it correctly. The full finding is
+  `docs/DESIGN_open_issues.md` § 1.2 (`nozoki@fdee2fc`).
+
+  **The correction owed here, and it is this document's:** `docs/CONTENT.md:282` expands the letters
+  as *"added, modified, deleted, renamed, **copied**, **unmerged**"* — porcelain vocabulary, against
+  the VS Code vocabulary `DESIGN.md` draws. Two settled documents disagreeing about what the same six
+  letters mean is exactly the failure § Terminology exists to prevent, and once the tooltip exists it
+  is **this document's wording the tooltip speaks**. So on the fold:
+
+  > **`docs/CONTENT.md:282` — *copied* becomes *untracked*, and *unmerged* becomes *conflict*.** The
+  > other four expansions (*added*, *modified*, *deleted*, *renamed*) are unchanged. The rule around
+  > them — that a single-letter code is never the whole of a statement, and every letter is named in
+  > words — is unchanged; only the two words are wrong.
+
+  **Also for the fold, and not this session's to edit:** this item's own *"What was searched"* bullet
+  above carries the same withdrawn claim — it says Git's porcelain *"reports `C` as copied and `U` as
+  unmerged. If that grouping is what ships, the expansion has to match what the letters actually
+  mean"*. That is the producing run's text, left untouched here per the rule that a companion's
+  supporting text is the producing skill's to correct. It should be corrected on the fold, not
+  carried into `CONTENT.md`. Its *drafted meanwhile* line — the README expansion listing *copied* and
+  *unmerged* — is wrong in the same way and is superseded twice over: by the owner choosing a tooltip
+  over a README list, and by the vocabulary correction above.
+
+  **One VS Code quirk deliberately not copied:** recent VS Code versions badge a renamed file as `U`
+  rather than `R`. Nozoki keeps `R` for renamed — the letters follow VS Code's *vocabulary*, not its
+  every behaviour.
 
 ### 1.3 The README promises three things the Agari places permanently outside done, and calls Nozoki a web app
 
