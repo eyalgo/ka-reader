@@ -1,8 +1,8 @@
 # UXD — Nozoki 覗き
 
-**Status:** Draft
+**Status:** Settled
 **Owner:** CDO
-**Version:** 4 — the unexplained-fault state the verbal language wrote (`docs/CONTENT.md` § Message patterns *Error*) is given its surfaces: it is the second class of every failure cell in § 6, in the same slot with the same route out, and UX-I16 states it; no control reveals the fault's detail (a choice to confirm). Whether v1 reaches the class at all is the owner's scope call and is open in the companion — nothing here settles it. RN-23 and RN-24 carry the basis. (v3: the theme control's home — `docs/uxd_trail/cycle-2.md`; v2: the owner's cycle-1 answers — `docs/uxd_trail/cycle-1.md`.)
+**Version:** 5 — the owner's cycle-3 answers folded (`docs/uxd_trail/cycle-3.md`): v1 **has** the unexplained-fault class — every read path is one that can end in *stopped, can't tell why*, and the SDD sizes it (§ 1.1, RN-23); and the no-detail-control call is confirmed — no control on any surface reveals, expands or copies a fault's detail (§ 2.1, RN-24, UX-I16). No entry moves on either: UX-I16 was written scope-neutral and stands as drafted. (v4: the fault state given its surfaces — § 6, UX-I16, RN-23, RN-24; v3: the theme control's home — `docs/uxd_trail/cycle-2.md`; v2: the owner's cycle-1 answers — `docs/uxd_trail/cycle-1.md`.)
 
 > The UXD is the experience source of truth: the experience-level **what**, derived from the
 > settled PRD, authored concurrent with the SRS, and consumed cold by the SDD (so
@@ -297,7 +297,8 @@ the first; only what the message says differs, and that is `docs/CONTENT.md`'s (
   it declares what the first fault that proves the class real looks like. *(→ PRD § UX Notes
   "Failure states" — a plain statement of what went wrong and what to do next, no dead end; "the
   view never lies"; the class itself is the owner's — `docs/content_trail/cycle-1.md` § 2.3;
-  added — RN-23; the no-detail-control call is drafted, RN-24)*
+  added — RN-23; the no-detail-control call is owner-confirmed `docs/uxd_trail/cycle-3.md`
+  § 2.1, RN-24)*
 
 ## 8. Accessibility Requirements
 
@@ -427,7 +428,7 @@ UX-S5–S7 are designed here despite being beyond v1.
 | UX-I13 | § UX Notes "the view never lies"; instance fence; added (RN-11) |
 | UX-I14 | § UX Notes "Failure states"; instance fence; added (RN-11) |
 | UX-I15 | § Data & Privacy; instance fence; added (RN-11) |
-| UX-I16 | § UX Notes "Failure states", "the view never lies"; the class: owner decision `docs/content_trail/cycle-1.md` § 2.3; added (RN-23); no-detail-control: drafted (RN-24) |
+| UX-I16 | § UX Notes "Failure states", "the view never lies"; the class: owner decision `docs/content_trail/cycle-1.md` § 2.3; added (RN-23); no-detail-control: owner-confirmed `docs/uxd_trail/cycle-3.md` § 2.1 (RN-24) |
 | § 6 two classes per failure cell | § UX Notes "Failure states"; added (RN-23) |
 | UX-A1 | § UX Notes "The bounds v1 draws"; owner-confirmed `docs/prd_trail/cycle-5.md` § 2.1 |
 | UX-A2 | § Core Features "changed-file markers"; added (RN-12), inside UX-A1's posture |
@@ -635,9 +636,8 @@ UX-S5–S7 are designed here despite being beyond v1.
   "Why This" edge is carried as UX-I1. *(re: reverse walk; PRD source: Assumptions, Success
   Metrics, Why This)*
 - **RN-20:** *(the SRS, read as a sibling)* No entry here traces to `docs/SRS.md`. It was read
-  for collisions and none was found: its UI-visible requirements — FR-3, FR-4, FR-23–FR-32 —
-  say what this document says, and the station that opened this run lists them as states the
-  UXD inherits (`system/projects/nozoki/journey/shukuba/2026-08-26_experience.md` § Guardrail).
+  for collisions and none was found: its UI-visible requirements — `docs/SRS.md` FR-3, FR-4 and
+  FR-23–FR-32 — say what this document says.
   One seam is handed forward rather than absorbed: FR-2 supplies the repository at start with no
   in-product chooser, so where UX-S4 renders in v1 depends on the start mechanism the SDD fixes
   (§ Open Questions). *(re: UX-S4, § Open Questions)*
@@ -670,13 +670,17 @@ UX-S5–S7 are designed here despite being beyond v1.
   UX-I13 is met because the stopped state *is* the observation — what the tool has not established
   is the cause, and the message says exactly that. The entry is written for *the first fault that
   proves the class real* — the shape `docs/CONTENT.md` § Message patterns *Recovered* uses — so it
-  declares no scope: whether v1 reaches the class is the owner's, and is open in the companion.
+  declares no scope. The scope call was the owner's, and it is made: **v1 has the class**
+  (`docs/uxd_trail/cycle-3.md` § 1.1) — the delivery tier treats every read path (a file, a tree
+  entry, Git state, the repository at startup) as one that can end in *stopped, can't tell why*
+  and builds the UX-I16 presentation on each; the SDD sizes it. The entry itself does not move on
+  that answer, by design.
   The routing that put this here — which surface carries it is the CDO's, the detail control is
   the CDO's to declare and the CTO's to cost, the scope call is the owner's — is the owner's own
   partition (`nozoki@0713035`, the companion as opened; `docs/CONTENT_open_issues.md` § 1.1) and
   is carried, not re-made. *(re: § 6, UX-I16; PRD source: UX Notes "Failure states", "the view
   never lies")*
-- **RN-24:** *(drafted — a choice to confirm)* No control on any surface reveals, expands or
+- **RN-24:** *(owner answer)* No control on any surface reveals, expands or
   copies an unexplained fault's detail (UX-I16) — *because* three settled rules leave a
   detail control nothing legitimate to show or do: the internal text such a control would reveal
   is banned from anything a person sees (`docs/CONTENT.md` § Terminology, *Banned* — *error,
@@ -689,8 +693,10 @@ UX-S5–S7 are designed here despite being beyond v1.
   collision and none found. A fault nobody can see is a fault nobody can report, and that is
   accepted as the cost of the three rules rather than papered over: the surface tells the reader
   the limit of what the tool knows and what still works, which is the smaller true thing. The call
-  is product-visible, so it goes to the owner. *(re: UX-I16; PRD source: UX Notes "Failure
-  states"; Data & Privacy)*
+  is product-visible, so it went to the owner, who confirmed it as drafted
+  (`docs/uxd_trail/cycle-3.md` § 2.1) — nothing reopens: `docs/CONTENT.md` owes no string and no
+  exception to its ban, `docs/DESIGN.md` owes no control component, and the SRS's NFR-11 is asked
+  for nothing more. *(re: UX-I16; PRD source: UX Notes "Failure states"; Data & Privacy)*
 
 ---
 
