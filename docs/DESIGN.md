@@ -12,6 +12,7 @@ colors:
   rail: "#EAEAE7"
   line: "#D8D8D4"
   selection: "#E2E3DF"
+  hover: "#EBEBE8"
   git-added: "#166A34"
   git-modified: "#8F5400"
   git-deleted: "#B3261E"
@@ -125,6 +126,9 @@ components:
     typography: "{typography.ui}"
     height: "{spacing.row}"
     padding: "{spacing.sm}"
+  menu-item-hover:
+    backgroundColor: "{colors.hover}"
+    textColor: "{colors.primary}"
   separator:
     backgroundColor: "{colors.line}"
     height: "{spacing.hairline}"
@@ -163,6 +167,9 @@ components:
     padding: "{spacing.xs}"
   tree-row-selected:
     backgroundColor: "{colors.selection}"
+    textColor: "{colors.primary}"
+  tree-row-hover:
+    backgroundColor: "{colors.hover}"
     textColor: "{colors.primary}"
   tree-row-indent:
     width: "{spacing.indent}"
@@ -284,9 +291,9 @@ components:
 
 # DESIGN — Nozoki 覗き
 
-**Status:** Draft
+**Status:** Settled
 **Owner:** CDO
-**Version:** 1 — first authoring, off `docs/UXD.md` v2 § 9; seven calls and one open issue parked in `docs/DESIGN_open_issues.md`
+**Version:** 2 — the owner's cycle-1 answers folded (`docs/design_trail/cycle-1.md`): the open issue closed (the earlier token set in history stays history), six calls confirmed as drafted, and one overridden in part — a hover state enters on clickable rows as `{colors.hover}`. Nothing is left for the owner; the companion is gone.
 
 > The design language is the visual source of truth: the tokens are normative, the prose says
 > how to apply them. It is authored off the UXD's § Design-System Direction — that section names
@@ -335,7 +342,7 @@ take the one with fewer elements on the surface.
 
 ## Colors
 
-Nineteen colour tokens, in four roles. Every value in the frontmatter is the **light** theme; the
+Twenty colour tokens, in four roles. Every value in the frontmatter is the **light** theme; the
 dark value of each token is in the table below, and the two are one system with one rule per
 token — never two palettes with two rules.
 
@@ -349,8 +356,10 @@ token — never two palettes with two rules.
   panel and any menu that floats over it — the brightest (light) or darkest (dark) plane, because
   it carries the content. `{colors.canvas}` is the sidebar and the chrome, one step back.
   `{colors.rail}` is the Files/Git rail, one step further. `{colors.line}` is every separator.
-  `{colors.selection}` is the selected row and an open control, and nothing else: there is no
-  hover colour anywhere in the product (§ Components, *Rows*).
+  `{colors.selection}` is the selected row and an open control, and nothing else.
+  `{colors.hover}` is the row under the pointer — only a row that can be clicked, and only while
+  the pointer is over it (§ Components, *Rows*); it sits one step between `canvas` and `selection`
+  so that rest, hovered and selected read as a sequence in one direction.
 - **Git state — `{colors.git-added}`, `{colors.git-modified}`, `{colors.git-deleted}`,
   `{colors.git-renamed}`.** Four hue families for the six status letters: **A** and **U** are
   green (something is here that was not), **M** is amber (something changed), **D** and **C** are
@@ -388,6 +397,7 @@ legibility default for reading text, held as reasoning — and this document add
 | `rail` | `#EAEAE7` | `#2A2B2F` |
 | `line` | `#D8D8D4` | `#3B3C41` |
 | `selection` | `#E2E3DF` | `#34363B` |
+| `hover` | `#EBEBE8` | `#2C2D31` |
 | `git-added` | `#166A34` | `#6FCB80` |
 | `git-modified` | `#8F5400` | `#E6B45B` |
 | `git-deleted` | `#B3261E` | `#F28B82` |
@@ -402,11 +412,11 @@ legibility default for reading text, held as reasoning — and this document add
 
 **The contrast floor, as a number** (`docs/UXD.md` § 8 "Minimum contrast"; § 9 third constraint):
 `{colors.primary}` holds **at least 9:1** against every surface it is drawn on — `surface`,
-`canvas`, `rail`, `selection`, `diff-added`, `diff-removed` — in both themes; **every other text
+`canvas`, `rail`, `selection`, `hover`, `diff-added`, `diff-removed` — in both themes; **every other text
 token holds at least 4.5:1** against every surface this document specifies it for, in both themes.
-The specification is the contract: `ink-muted` on `surface`, `canvas`, `selection` and the two diff
-tints; `gutter` on `surface` only; the four Git tokens on `canvas` and `selection`; the five code
-tokens on `surface` only. Drawing a text token on a surface outside its specification is a
+The specification is the contract: `ink-muted` on `surface`, `canvas`, `selection`, `hover` and the
+two diff tints; `gutter` on `surface` only; the four Git tokens on `canvas`, `selection` and `hover`;
+the five code tokens on `surface` only. Drawing a text token on a surface outside its specification is a
 contrast defect even if the pair happens to pass. The measured minima are recorded in RN-6.
 
 **Neither theme is ever pure.** No `#000000`, no `#FFFFFF`: the extremes are reserved so that
@@ -540,7 +550,8 @@ and no product name in the shell (RN-9).
 **The menu.** `{components.menu}` is the floating list under an open control, on
 `{colors.surface}` with the one shadow (§ Elevation & Depth). `{components.menu-item}` rows
 are `{spacing.row}` tall; the current item carries a leading `{colors.primary}` bar like a
-selected tree row, never a checkmark glyph. The selector's menu lists remembered repositories
+selected tree row, never a checkmark glyph; the item under the pointer is
+`{components.menu-item-hover}`, since every menu item is clickable. The selector's menu lists remembered repositories
 by name, and its last item is *Browse…*; on first run it holds only *Browse…*.
 
 **The rail.** `{components.rail}` holds two `{components.rail-entry}`s. Each is a
@@ -556,9 +567,15 @@ padding and type. A row is `{spacing.row}` tall, `{typography.ui}`, on `{colors.
 indents by one `{components.tree-row-indent}` per level. A folder row leads with `chevron-right`
 (closed) or `chevron-down` (open) then `folder` or `folder-open`; a file row leads with `file`,
 or `file-code` when the file is in one of the six floor languages. The selected row is
-`{components.tree-row-selected}` with the left bar (§ Shapes). **There is no hover state**: the
-pointer changes over a row and nothing else does, as in a Finder list. A row never wraps; it
-clips at its end.
+`{components.tree-row-selected}` with the left bar (§ Shapes). **A clickable row has a hover
+state and an inert row has none:** while the pointer is over a row that selection or opening
+acts on — a tree row, a Git-view file row, a commit row, a menu item — the row is
+`{components.tree-row-hover}`, a `{colors.hover}` fill edge to edge and nothing else: no bar, no
+change of ink, no glyph. A row that nothing acts on — a section header, a status message, the
+path line, a diff line — never takes it, because a hover fill promises an action, and on those
+rows there is none. The selected row keeps `{colors.selection}` and its bar under the pointer;
+selection outranks hover. The fill appears and leaves without transition (§ Do's and Don'ts). A
+row never wraps; it clips at its end.
 
 **Status letters.** `{components.status-added}`, `{components.status-modified}`,
 `{components.status-deleted}`, `{components.status-renamed}` set the single capital letter that
@@ -648,10 +665,12 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
 - Do keep every asset inside the installed product: the two families are the platform's, the
   fourteen glyphs are vendored, and a surface renders whole with the network unavailable.
 - Do keep the chrome to two controls and the rail to two entries.
+- Do draw the hover fill only on a row that a click acts on, and never on a row that nothing
+  acts on; the hover is a promise of an action, and a promise with nothing behind it is a lie.
 - Don't animate. No transition on selection, theme, mode switch or content update; a change
   appears in place, and nothing moves that did not change.
-- Don't draw a hover state, a focus ring, a tooltip, a badge, a toast, or a notification — none
-  exists in the product.
+- Don't draw a focus ring, a tooltip, a badge, a toast, or a notification — none exists in the
+  product; and don't draw the hover fill on anything that is not a clickable row.
 - Don't draw an editing affordance, enabled or disabled, or any control that writes: no cursor
   caret in the code view, no commit box, no refresh button.
 - Don't fetch a font, an icon, an image or a stylesheet from any origin at runtime; a remote image
@@ -686,11 +705,12 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
   state and syntax; and the UXD already frames density as the repository's, not the shell's
   (`docs/UXD.md` § 2). An accent for interaction would colour a product whose interactions are
   choosing what to look at. The risk is held by the left bar on selection and the rail (§ Shapes)
-  — the structural cue that makes an achromatic selected state unambiguous — and it is on the
-  approval list. Stated design reason; no evidence pins a palette (the instance carries none). The
-  alternative rejected is a single accent for selection and controls, which is the default a
-  workbench reaches for. *(re: § Colors, `{colors.selection}`, `{colors.primary}`; source: design
-  reason)*
+  — the structural cue that makes an achromatic selected state unambiguous. Stated design reason;
+  no evidence pins a palette (the instance carries none). The alternative rejected is a single
+  accent for selection and controls, which is the default a workbench reaches for. **Confirmed by
+  the owner** — "confirm", and the argument as put to them is recorded there
+  (`docs/design_trail/cycle-1.md` § 2.1). *(re: § Colors, `{colors.selection}`,
+  `{colors.primary}`; source: design reason; owner answer)*
 - **RN-3:** The neutral scale is three steps and one hairline per theme, cool-neutral, and never
   pure black or white — *because* the surfaces the product has are exactly three (content,
   sidebar/chrome, rail) and a scale with more steps than surfaces invents surfaces; the extremes
@@ -705,8 +725,10 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
   to learn where four families say *here / changed / gone / moved*; and in a diff the change is
   the one thing to see, so the added/removed tint is the only colour. The hues are chosen; the
   green/amber/red/teal assignment follows the near-universal convention for add/modify/delete so
-  that the repeat is one the reader already has. *(re: `{colors.git-*}`, `{colors.diff-*}`;
-  source: design reason)*
+  that the repeat is one the reader already has. **Both calls confirmed by the owner**, on the
+  stated understanding that a diff already carries colour in its two tints and the syntax layer
+  would be a further one on top, not the diff's only colour (`docs/design_trail/cycle-1.md`
+  § 2.4). *(re: `{colors.git-*}`, `{colors.diff-*}`; source: design reason; owner answer)*
 - **RN-5:** Five syntax roles, not more — *because* the highlighting promise is six
   data-and-scripting languages (`docs/PRD.md` § Core Features) whose grammars map onto keyword,
   string, number, comment and name, and each further role is one more hue in a still surface.
@@ -721,8 +743,11 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
   on selection 5.06 (dark); `code-comment` on surface 5.07 (light). 9:1 rather than 7:1 for ink
   because the palette clears it with margin and a stated number should be the one the values
   hold, not a threshold they happen to exceed. The machine gate checks only the frontmatter's
-  light pairs; the dark pairs are this document's own check, recorded here. *(re: § Colors "The
-  contrast floor"; source: computed on this run, UXD § 8)*
+  light pairs; the dark pairs are this document's own check, recorded here. **Confirmed by the
+  owner** at the two drafted numbers (`docs/design_trail/cycle-1.md` § 2.7). Revision 2 adds
+  `hover` to the surfaces `primary`, `ink-muted` and the four Git tokens are specified for; its
+  minima are in RN-22. *(re: § Colors "The contrast floor"; source: computed on this run, UXD
+  § 8; owner answer)*
 - **RN-7:** Type is the platform's own two families, nothing shipped — *because* every asset
   must ship with the tool or already be on the machine (`docs/UXD.md` UX-I15, § 9), the product is
   macOS-only where SF Pro and SF Mono are stock (`docs/SRS.md` C-11), the instance's direction
@@ -731,8 +756,9 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
   face would be a design choice the brief argues against. The sizes are the platform's: 13px is
   macOS's regular control size, and the scale is built from it rather than from a ratio.
   `scripts/design-check.mjs` says "fonts are self-hosted"; this document ships none, which
-  satisfies the check by having nothing to host. *(re: `{typography.*}`; source: UXD § 2, § 9;
-  `docs/SRS.md` C-11; `scripts/design-check.mjs`)*
+  satisfies the check by having nothing to host. **Confirmed by the owner** — no typeface is
+  shipped (`docs/design_trail/cycle-1.md` § 2.2). *(re: `{typography.*}`; source: UXD § 2, § 9;
+  `docs/SRS.md` C-11; `scripts/design-check.mjs`; owner answer)*
 - **RN-8:** Widths — rail 48, sidebar 260, chrome 36, minimum window 720, rows 24, indent 12 —
   *because* the proposal's 240–280 sidebar is input and 260 is the midpoint that holds a
   five-level path at 13px (`docs/proposal.md` § UI Shape, carried as visual design the PRD
@@ -740,36 +766,48 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
   that holds a 20px glyph over a 10px label with the row rhythm's 4px margins; 24px rows are the
   platform's list row height at 13px text; and 720 is the width below which the reading panel
   stops dominating. Pane resizing is outside done, so the sidebar width is a value, not a range.
-  *(re: `{spacing.*}`; source: design reason; `docs/proposal.md`; UXD § 10)*
+  **Every measurement confirmed by the owner** as drafted (`docs/design_trail/cycle-1.md` § 2.3).
+  *(re: `{spacing.*}`; source: design reason; `docs/proposal.md`; UXD § 10; owner answer)*
 - **RN-9:** No wordmark, logo or product name in the shell — *because* the one job is what is on
   the surface and the chrome's element is the repository's identity (`docs/UXD.md` § 4, RN-2), the
   instance carries no shared mark, and a product name in the chrome would be the one thing on
   screen that is Nozoki's rather than the repository's. The product's name and its kanji live on
-  the README, which is the CPO's. *(re: § Components "The chrome"; source: UXD § 4; design
-  reason)*
+  the README, which is the CPO's. **Confirmed by the owner** (`docs/design_trail/cycle-1.md`
+  § 2.6). *(re: § Components "The chrome"; source: UXD § 4; design reason; owner answer)*
 - **RN-10:** The theme control is in the chrome, right end, glyph plus word — *because* the UXD
   requires that the user may override the theme (UX-I9) and that every preference is reversible
   by the control that set it (UX-I7), but places the control nowhere; the chrome is the one
   surface reachable in every mode, and the rail and sidebar are the repository's. This is a
-  structural placement the UXD does not make, so it is on the approval list; if confirmed, the
-  UXD's § 4 should record it. The glyph names the theme the control switches *to*, so the control
-  reads as an action rather than a status. *(re: § Components "The chrome"; source: UXD UX-I9,
-  UX-I7; design reason; **changed** — placement added beyond the UXD)*
-- **RN-11:** No hover state, no focus ring, no transition, no tooltip — *because* the motion dial
-  is 2 with "only what actually changed changes" (`docs/UXD.md` § 2, UX-I2), macOS's own list
-  rows do not highlight on hover, the product has no keyboard model to focus (UX-I8), and a
-  tooltip is a second surface for words the label already carries (UX-A4). Each absence is a
-  count of elements removed, which is the tie-breaker the instance's direction hands a design run.
-  *(re: § Components "Rows", § Elevation & Depth, § Do's and Don'ts; source: UXD § 2, UX-I2,
-  UX-I8; design reason)*
+  structural placement the UXD does not make, so it went to the owner, who **confirmed it**
+  knowing the confirmation carried a UXD amendment with it (`docs/design_trail/cycle-1.md`
+  § 2.5). The UXD half is not this document's to write: the owner re-opened
+  `docs/UXD_open_issues.md` with that one already-answered item (§ 1.1, `nozoki@ee8abcf`) for
+  `product-uxd` to fold into `docs/UXD.md` § 4, so that the two documents state one placement
+  between them. Until that fold lands, this document is the only one of the two that places the
+  control. The glyph names the theme the control switches *to*, so the control reads as an action
+  rather than a status. *(re: § Components "The chrome"; source: UXD UX-I9, UX-I7; design reason;
+  owner answer; **changed** — placement added beyond the UXD, confirmed)*
+- **RN-11:** No focus ring, no transition, no tooltip — *because* the motion dial is 2 with "only
+  what actually changed changes" (`docs/UXD.md` § 2, UX-I2), the product has no keyboard model to
+  focus (UX-I8), and a tooltip is a second surface for words the label already carries (UX-A4).
+  Each absence is a count of elements removed, which is the tie-breaker the instance's direction
+  hands a design run. **The no-hover rule drafted in revision 1 is overridden by the owner**, in
+  their words: *"hovering is something that developers use"* (`docs/design_trail/cycle-1.md`
+  § 2.3) — so a hover state enters, scoped as the owner stated it to rows that are actually
+  clickable, and never to an inert row where a fill would promise an action that is not there
+  (§ Components "Rows", RN-22). The owner overrode hover alone; the other three absences were not
+  spoken to and stand as drafted. *(re: § Components "Rows", § Elevation & Depth, § Do's and
+  Don'ts; source: UXD § 2, UX-I2, UX-I8; design reason; owner answer — **changed**)*
 - **RN-12:** The Lucide set on disk is the icon inventory, and the rail carries `folder` and
   `git-branch` — *because* the fourteen glyphs are the product's own vendored source
   (`third_party/lucide/icons/`, ISC notice at `third_party/lucide/LICENSE`, committed at
   `c4fb333`), the proposal names Lucide (`docs/proposal.md` § Core stack), and the UXD hands the
   choice of rail icons to this document (`docs/UXD.md` RN-16). Which glyph does which job is this
-  document's assignment and is on the approval list with the rail pair. The set is treated as a
-  fence: a fifteenth glyph is vendored, never fetched. *(re: § Components "Icons", "The rail";
-  source: `third_party/lucide/`, `docs/proposal.md`, UXD RN-16)*
+  document's assignment; the rail pair, the fourteen-glyph inventory and the theme control's
+  placement were **confirmed by the owner together** — "confirm all three"
+  (`docs/design_trail/cycle-1.md` § 2.5). The set is treated as a fence: a fifteenth glyph is
+  vendored, never fetched. *(re: § Components "Icons", "The rail"; source: `third_party/lucide/`,
+  `docs/proposal.md`, UXD RN-16; owner answer)*
 - **RN-13:** Links in rendered Markdown are text plus a readable destination, and a remote image
   is a bordered placeholder with alt text and source — *because* the UXD settles the behaviour
   (UX-I12, owner-confirmed `docs/uxd_trail/cycle-1.md` § 2.6) and this document only says what it
@@ -803,10 +841,12 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
   and removed at `1d5c553` ("comes out of the repo for the instance-pointing experiment"). It is
   **not** read as evidence here: it is not on disk, it was produced by a design run rather than
   by the product's own code, and a design-run output enters this document only through a pointer
-  item the owner writes into the companion. Every value here is derived fresh; whether that
-  earlier set should be folded is an open issue for the owner
-  (`docs/DESIGN_open_issues.md` § 1.1). *(re: whole document; source: `git log` of the product
-  repository)*
+  item the owner writes into the companion. Every value here is derived fresh. **The owner
+  closed the question: this draft is the baseline** — *"i prefer not to use the old
+  information"* (`docs/design_trail/cycle-1.md` § 1.1). The earlier set is not folded, no
+  pointer item is written for it, and the restore command `1d5c553` records is deliberately not
+  used; its values stay history. *(re: whole document; source: `git log` of the product
+  repository; owner answer)*
 - **RN-19:** The SRS was read as a sibling and no collision was found: FR-20 (two themes), FR-21
   (own state outside the repository), FR-24 (no editing affordance), FR-29–FR-32 (plain text
   outside the floor, Markdown rendered, the optional switch, nothing fetched) and NFR-8 are each
@@ -819,11 +859,26 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
   no token category in the format, so its policy is prose (§ Do's and Don'ts, RN-11); no
   category is declared in `omitted:` because each of the five applies. *(re: § Do's and Don'ts,
   frontmatter; source: `system/projects/nozoki/agari.md`, UXD § 10)*
-- **RN-21:** The machine gate on this revision — `npx @google/design.md@0.4.0 lint`, run
-  2026-08-26 — reported 0 errors, 0 warnings and 1 info, the info being `token-summary` (19
-  colours, 10 typography levels, 3 rounding levels, 15 spacing tokens, 43 components); no
+- **RN-21:** The machine gate on revision 2 — `npx @google/design.md@0.4.0 lint`, run
+  2026-08-26 — reported 0 errors, 0 warnings and 1 info, the info being `token-summary` (20
+  colours, 10 typography levels, 3 rounding levels, 15 spacing tokens, 45 components); no
   diagnostic is accepted or routed. The gate checks only the frontmatter's light pairs; RN-6
-  carries the dark pairs. *(re: whole document; source: the linter's JSON summary on this run)*
+  and RN-22 carry the dark pairs. Revision 1's run reported 0 errors, 0 warnings and 1 info
+  (`token-summary`: 19 colours, 10 typography levels, 3 rounding levels, 15 spacing tokens, 43
+  components). *(re: whole document; source: the linter's JSON summary on this run)*
+- **RN-22:** `{colors.hover}` is `#EBEBE8` in light and `#2C2D31` in dark, one step between
+  `canvas` and `selection` in each theme, and it carries two component pairs
+  (`{components.tree-row-hover}`, `{components.menu-item-hover}`) — *because* the owner's
+  override (RN-11) adds a state between rest and selected, and a fill that sat outside the
+  canvas→selection run would read as a fourth surface rather than a row state; the value is
+  chosen so that rest, hovered and selected step in one direction, measured in relative luminance
+  (light 0.887 → 0.829 → 0.764; dark 0.018 → 0.026 → 0.037). Every text token specified for it
+  was re-checked on this run with the WCAG 2.x formula and clears the floor: `primary` 13.80
+  (light) / 11.10 (dark); `ink-muted` 5.51 / 6.06; the lowest Git pair `git-renamed` 5.02 (light)
+  and `git-deleted` 5.76 (dark). No other value moved. The hover is a fill and nothing else — no
+  bar, no ink change, no transition — so the selected row's bar stays the one cue that outranks it,
+  and the motion posture (RN-11) is untouched. *(re: `{colors.hover}`, § Components "Rows", "The
+  menu"; source: owner answer `docs/design_trail/cycle-1.md` § 2.3; computed on this run)*
 
 ## Traceability
 
@@ -839,8 +894,8 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
 | § 8 — minimum contrast, no conformance number claimed; DESIGN.md states the floor its tokens hold | § Colors "The contrast floor" states the number and the surfaces it binds; no standard is claimed |
 | UX-A2 — no meaning by hue alone | Letters, headings, bars; the Do's make the cue mandatory and the hue the repeat |
 | UX-A4 — no control by glyph alone | Rail labels beneath glyphs; chrome controls carry a word; status glyphs never stand alone (§ Components) |
-| UX-I2 / UX-I3 — no ceremony on update; the user's place survives | No transition, no flash, no notification (§ Do's and Don'ts, RN-11) |
-| UX-I9 — themes; user override; choice remembered | Theme control in the chrome (§ Components, RN-10 — placement added, on the approval list) |
+| UX-I2 / UX-I3 — no ceremony on update; the user's place survives | No transition, no flash, no notification (§ Do's and Don'ts, RN-11); the hover fill is pointer-driven and never fires on an update (RN-22) |
+| UX-I9 — themes; user override; choice remembered | Theme control in the chrome (§ Components, RN-10 — placement added beyond the UXD and owner-confirmed; the UXD-side record is pending in `docs/UXD_open_issues.md` § 1.1) |
 | UX-I12 — links with destination readable; remote images as stated placeholders | `{components.link-text}` + `{components.link-destination}`; `{components.image-placeholder}` (RN-13) |
 | UX-I13 — no indicator before the state is observed | Counts and letters drawn only after Git state is read; pending is a word, never a bar (§ Components "Status messages", Do's) |
 | UX-I14 — every failure carries a route out on the same surface | § Components "Status messages": the route follows the message; the Do's require it |
