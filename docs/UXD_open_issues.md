@@ -42,18 +42,43 @@
     otherwise, and no v1 change is asked to implement them. This is the reading the raising item
     named as legitimate (`nozoki@0713035`; `docs/CONTENT_open_issues.md` § 1.1, part 3).
   The call moves nothing in `UXD.md` either way — the entry is scope-neutral by design — but it
-  decides whether the SDD and the first change built from it carry the state, so it has to be yours.
+  decides whether v1 is built to reach the state at all, so it has to be yours.
 - **Answer:** **Yes — v1 has the class.** The owner's word was "yes", answering the question as the
   item put it. That is the first of the two readings the item set out, and it is taken with the
   consequence the item states: the delivery tier treats **every read path** — a file, a tree entry,
   Git state, the repository at startup — as one that can end in *stopped, can't tell why*, and builds
   the UX-I16 presentation on each. **The SDD sizes it.**
 
-  So the class is not written-for-later. It is in scope for v1, and the first change built from it
-  carries it.
+  So the class is not written-for-later: it is in scope for v1.
   Nothing in `UXD.md` moves on this answer — the entry is scope-neutral by design, as the item
-  records — but `product-sdd` and the delivery plan now inherit it rather than inheriting a pattern
-  held in reserve.
+  records — but `product-sdd` now inherits a live requirement rather than a pattern held in reserve.
+
+### 1.2 RN-20 cites a file under `journey/`, which a definition document may not do
+
+- **Why it matters:** `docs/UXD.md` **RN-20** (`UXD.md:637-640`) sources its claim to
+  `system/projects/nozoki/journey/shukuba/2026-08-26_experience.md` § Guardrail. That is a citation
+  a definition document may not make: *"A product document's sources are the PRD, the project's
+  Agari, its doctrine, and its sibling documents — all of which settle. A journey file moves to
+  `trail/` the week after, so a settled product document that cites one cites a path that no longer
+  exists"* (`<CORE>/doctrine/setup/setting_up_a_project.md` § *The definition set never names the
+  journey*). The station is a legitimate **input** to the run — its guardrail binds, and a run that
+  ignored it would be the defect — but it is not a legitimate source. This is the only such citation
+  in the whole set; `PRD.md`, `SRS.md`, `DESIGN.md`, `CONTENT.md` and `README.md` carry none.
+- **What was searched:** every settled document in `docs/` plus `README.md`, for any citation of a
+  path under `journey/` and for each of that folder's stage names — one hit, `UXD.md:640`. Citations of
+  `system/projects/nozoki/agari.md` were checked and are **not** this: the Agari is a declaration and
+  a named legitimate source, not a journey file.
+- **Answer:** **Re-source RN-20 to the SRS itself.** The note's fact does not change — no entry here
+  traces to `docs/SRS.md`; it was read for collisions and none was found; its UI-visible requirements
+  FR-3, FR-4 and FR-23–FR-32 say what this document says. Cite those requirements directly, which is
+  where the fact actually lives, and drop the clause that reaches for the station. The FR-2 seam the
+  note hands forward is unaffected and stays as written.
+
+  **Make the change silently.** RN-20 should read as though it had always been sourced this way: no
+  new review note, no added clause explaining what it no longer cites, and no version-line entry
+  describing the correction. A note explaining the change would have to name what was removed, which
+  would put the reference back into `UXD.md` permanently and undo the point of the item. Nothing else
+  in the document moves.
 
 ## 2. Choices to confirm — the CDO drafted a best-effort answer; confirm or override
 
