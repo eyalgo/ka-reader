@@ -2,7 +2,7 @@
 
 **Status:** Settled
 **Owner:** CDO
-**Version:** 2 — the owner's cycle-1 answers folded (`docs/uxd_trail/cycle-1.md`): five drafted calls confirmed — the direction, the selector's home in the chrome, the README posture sentence, light as the signal-less theme default, the link presentation — and one overridden: the Files/Git switch is a labelled icon rail, not a pair of tabs. Nothing is left for the owner; the companion is gone.
+**Version:** 3 — the theme control UX-I9 requires is given its home (`docs/uxd_trail/cycle-2.md` § 1.1): the shell chrome's right end, a glyph with the word naming the theme it switches to — § 4 records it beside the identity element, RN-22 carries the basis. Nothing else moves; the companion is gone again. (v2: the owner's cycle-1 answers folded — `docs/uxd_trail/cycle-1.md`.)
 
 > The UXD is the experience source of truth: the experience-level **what**, derived from the
 > settled PRD, authored concurrent with the SRS, and consumed cold by the SDD (so
@@ -84,6 +84,13 @@ RN-8.)*
   (UX-F5). Beyond v1 the identity element is itself the repository selector — what names the
   repository is what changes it (UX-F5; the placement is owner-confirmed —
   `docs/uxd_trail/cycle-1.md` § 2.2, RN-15). *(added — RN-2)*
+- **The theme control lives in the shell chrome, at its right end.** It is a `sun` or `moon`
+  glyph with the word *Light* or *Dark* beside it, naming the theme the control switches **to**
+  — so it reads as an action, never as a report of the current theme — and it keeps UX-A4
+  whole: the glyph never stands alone. Theme is shell-scoped state, which is why it sits in
+  the chrome beside the identity element (above) rather than in either sidebar mode. *(→ PRD § UX Notes "The
+  character" — dark and light themes; the placement is the owner's — `docs/uxd_trail/cycle-2.md`
+  § 1.1, RN-22)*
 - **The reading panel names what is open.** The open file's repository-relative path is shown
   with its content, so the panel tells the reader what they are reading and, when that file is
   gone, what is gone (UX-I4). *(added — RN-3)*
@@ -228,9 +235,11 @@ stands for (UX-I13), and every failure cell carries a route out on the same surf
 - **UX-I9** — Themes: dark and light from the start, both first-class and equally maintained.
   The initial theme follows the platform's own appearance setting; where no platform appearance
   signal can be read, the initial theme is light. The user may override, and the choice is
-  remembered in the tool's own state — never in the repository. *(→ PRD § UX Notes "The
+  remembered in the tool's own state — never in the repository. The control that overrides it
+  is in the shell chrome (§ 4, RN-22). *(→ PRD § UX Notes "The
   character"; persistence: § Data & Privacy "theme choice"; the platform-signal default and the
-  signal-less light default are owner-confirmed — `docs/uxd_trail/cycle-1.md` § 2.5, RN-7)*
+  signal-less light default are owner-confirmed — `docs/uxd_trail/cycle-1.md` § 2.5, RN-7; the
+  control's home is owner-set — `docs/uxd_trail/cycle-2.md` § 1.1, RN-22)*
 - **UX-I10** — A slow or failing item degrades only its own presentation, visibly; the shell as
   a whole never blocks. *(→ PRD § Key Use Cases 3 — a view that blocks cannot watch a moving
   tree; § UX Notes "Failure states"; added as a stated pattern — RN-5)*
@@ -388,7 +397,7 @@ UX-S5–S7 are designed here despite being beyond v1.
 | UX-I6 | § UX Notes "Failure states", "The bounds v1 draws" |
 | UX-I7 | § Out of Scope "Editing, permanently"; § Data & Privacy |
 | UX-I8 | § UX Notes "The bounds v1 draws"; permanence: Agari |
-| UX-I9 | § UX Notes "The character"; § Data & Privacy; platform-signal default and signal-less light: owner-confirmed `docs/uxd_trail/cycle-1.md` § 2.5 (RN-7) |
+| UX-I9 | § UX Notes "The character"; § Data & Privacy; platform-signal default and signal-less light: owner-confirmed `docs/uxd_trail/cycle-1.md` § 2.5 (RN-7); the control's home in the chrome: owner-set `docs/uxd_trail/cycle-2.md` § 1.1 (RN-22) |
 | UX-I10 | § Key Use Cases 3; § UX Notes "Failure states"; added as pattern (RN-5) |
 | UX-I11 | § Goals "Pick-it-up adoption"; added (RN-9) |
 | UX-I12 | § Core Features "Markdown is rendered by default"; § Data & Privacy; owner calls `docs/srs_trail/cycle-5.md` § 2.2, § 2.3, `docs/srs_trail/cycle-6.md` § 2.1; link presentation: owner-confirmed `docs/uxd_trail/cycle-1.md` § 2.6 (RN-10) |
@@ -403,6 +412,7 @@ UX-S5–S7 are designed here despite being beyond v1.
 | § 4 layout reference | context the owner handed over, `docs/ux_reference/README.md` (RN-13) |
 | § 4 Files/Git switch presentation | § Core Features "sidebar that toggles"; § UX Notes text-first, one stated exception; owner override — a labelled rail, `docs/uxd_trail/cycle-1.md` § 2.3 (RN-16) |
 | § 4 repository identity in shell | added (RN-2); the element is the selector control beyond v1 — owner-confirmed `docs/uxd_trail/cycle-1.md` § 2.2 (RN-15) |
+| § 4 theme control in shell chrome | § UX Notes "The character" (the themes); the placement: owner answer `docs/uxd_trail/cycle-2.md` § 1.1 (RN-22) |
 | § 4 open file's path in the reading panel | § UX Notes "the view never lies"; added (RN-3) |
 | § 9 Direction | § UX Notes "The character"; § Assumptions; owner-confirmed `docs/uxd_trail/cycle-1.md` § 2.1 (RN-8) |
 
@@ -611,6 +621,17 @@ UX-S5–S7 are designed here despite being beyond v1.
   search, resizing, keyboard navigation, history filtering and a second platform serve work
   outside done and are recorded in § 10, not designed. No entry traces to the Agari alone.
   *(re: § 10)*
+- **RN-22:** *(owner answer)* The theme control UX-I9 requires lives in the **shell chrome, at
+  its right end**, as a `sun`/`moon` glyph plus the word *Light*/*Dark* naming the theme it
+  switches to (`docs/uxd_trail/cycle-2.md` § 1.1) — *because* the theme is shell-scoped state,
+  exactly as the repository selector is (RN-15): the chrome is reachable from either sidebar
+  mode, while the sidebar's foot — the other candidate — would tie a whole-shell setting to one
+  of the sidebar's two modes. Labelling the control with its destination removes the ambiguity a
+  lone moon glyph carries (is it the current theme or the next one?) and keeps UX-A4 whole.
+  `docs/DESIGN.md` carries the same
+  placement as tokens and a component contract; this entry is the experience half, so the two
+  documents state one placement between them. *(re: § 4, UX-I9, UX-A4; PRD source: UX Notes
+  "The character" — "dark and light themes from the start")*
 
 ---
 
