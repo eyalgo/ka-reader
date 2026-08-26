@@ -2,7 +2,7 @@
 
 **Status:** Settled
 **Owner:** CPO
-**Version:** 8 — v1 runs on macOS only; syntax highlighting has a promised floor and Markdown is rendered; the network promise keeps its headroom, now defined; the support posture is stated (nothing is promised); the product is published under the kensaiapp organisation
+**Version:** 9 — the reader is assumed to know Git (the no-configuration half of the learning-curve goal is unchanged); sidebar search / filter, pane resizing and keyboard navigation are outside the product's done, not merely beyond v1; the README's self-description and roadmap say so and no longer call Nozoki a web app
 
 > The PRD is the product source of truth: the product-facing **what and why**, read cold
 > by the CTO, the CDO, Principal PM, and Principal Architect. It is updated in place with
@@ -86,10 +86,13 @@ assumption (see Assumptions).
   repository in minutes, guided by the README alone. The README's first screen is product
   surface: what the tool does in one sentence, one install path, one copy-paste example, and
   what the tool will and will not touch *(added — instance doctrine, not in the input)*.
-- **No learning curve** — anyone who can find their way around a repository on GitHub and follow
-  a README can use Nozoki. No editor experience required, no onboarding, and no configuration of
-  any kind: no settings, no project file, no setup step. The only input it ever needs is which
-  repository to view *(owner-confirmed: prd_trail/cycle-2.md)*.
+- **No learning curve** — anyone who works with Git and can follow a README can use Nozoki: the
+  reader is assumed to know Git, and the product may leave Git's own vocabulary unexplained. No
+  editor experience required, no onboarding, and no configuration of any kind: no settings, no
+  project file, no setup step. The only input it ever needs is which repository to view *(the
+  assumed Git knowledge: changed — supersedes the "find their way around a repository on GitHub"
+  floor owner-confirmed in prd_trail/cycle-2.md; owner-confirmed: prd_trail/cycle-8.md § 1.1. The
+  no-configuration half is unchanged: owner-confirmed: prd_trail/cycle-2.md)*.
 
 No revenue applies: Nozoki is free, non-commercial open source by design; its cost side is
 maintainer time, held down by the deliberately small surface (see Assumptions).
@@ -199,8 +202,8 @@ only what actually changed changes. Concretely:
   Those are exactly the trees that must not be perturbed.
 
 **Failure states speak the user's language.** Error and edge states are pitched at the
-no-learning-curve bar — someone who can find their way around a repository on GitHub, not a
-Git expert:
+no-learning-curve bar — someone who works with Git, not necessarily an expert in it *(the
+floor: owner-confirmed: prd_trail/cycle-8.md § 1.1)*:
 
 - Pointed at something that is not a local Git repository, or a path that does not exist or
   cannot be read: a plain statement of what went wrong and what to do next — no dead end that
@@ -222,8 +225,9 @@ Git expert:
 
 **The bounds v1 draws.**
 
-- v1 is mouse-driven — keyboard navigation is not in v1 (see Out of Scope), so v1 makes no
-  keyboard-accessibility promise.
+- Nozoki is mouse-driven — keyboard navigation is outside the product's done (see Out of
+  Scope), so the absence of a keyboard-accessibility promise is permanent, not deferred *(the
+  permanence: the project Agari's; owner-confirmed: prd_trail/cycle-8.md § 1.2)*.
 - Beyond that line, v1 makes no assistive-technology promise: its accessibility surface is
   what the product already carries — two themes, text-first navigation — kept small with the
   rest of the surface *(added — not in the input; owner-confirmed: prd_trail/cycle-5.md)*.
@@ -259,8 +263,14 @@ browsing, reading, status, and live refresh.
   any version. Adding one would be a different product.
 - **Git operations** — staging, committing, pushing, branch switching, discarding: viewer only.
 - **Diff and commit-history views** — beyond v1 (the input's own roadmap defers them).
-- **Sidebar search / filter** — beyond v1 (input roadmap).
-- **Pane resizing and keyboard navigation** — beyond v1 (input roadmap).
+- **Sidebar search / filter** — outside the product's done, not merely beyond v1: the project's
+  Agari (`system/projects/nozoki/agari.md`) places it outside the terminus, and the README says
+  so rather than promising it *(changed — the input's roadmap lists it as a later phase;
+  owner-confirmed: prd_trail/cycle-8.md § 1.2)*.
+- **Pane resizing and keyboard navigation** — outside the product's done, on the same footing as
+  the line above; the keyboard absence is permanent (see UX Notes, "The bounds v1 draws")
+  *(changed — the input's roadmap lists them as a later phase; owner-confirmed:
+  prd_trail/cycle-8.md § 1.2)*.
 - **Rich rendering of non-text content** — beyond v1: a file that cannot be shown as text lands
   in a stated cannot-display state (see UX Notes); the input's own scope is code viewing.
   Markdown is text and is rendered (see Core Features); this line is about images, documents
@@ -286,7 +296,12 @@ browsing, reading, status, and live refresh.
   is decided downstream of this document. What the input says about the experience — the
   reading panel dominant, text-first navigation, two themes — is carried in UX Notes.
 - The input's three-phase delivery sequencing is not carried here: delivery, not product. Its
-  phase-3 items appear above as the v1 exclusions they define.
+  phase-3 items appear above — diffs and commit history as v1 exclusions, the other three as
+  exclusions from the product's done.
+- The README's one-line self-description does not call Nozoki a *web app*: nothing hosted is on
+  offer (see Scope, "Run posture"), and the word tells a stranger the wrong thing about what they
+  are getting. What the shipped shape technically is stays out of this document *(changed — the
+  input's README says "web app"; owner-confirmed: prd_trail/cycle-8.md § 1.3)*.
 
 ## Assumptions
 
