@@ -1,8 +1,8 @@
 # UXD — Nozoki 覗き
 
-**Status:** Settled
+**Status:** Draft
 **Owner:** CDO
-**Version:** 3 — the theme control UX-I9 requires is given its home (`docs/uxd_trail/cycle-2.md` § 1.1): the shell chrome's right end, a glyph with the word naming the theme it switches to — § 4 records it beside the identity element, RN-22 carries the basis. Nothing else moves; the companion is gone again. (v2: the owner's cycle-1 answers folded — `docs/uxd_trail/cycle-1.md`.)
+**Version:** 4 — the unexplained-fault state the verbal language wrote (`docs/CONTENT.md` § Message patterns *Error*) is given its surfaces: it is the second class of every failure cell in § 6, in the same slot with the same route out, and UX-I16 states it; no control reveals the fault's detail (a choice to confirm). Whether v1 reaches the class at all is the owner's scope call and is open in the companion — nothing here settles it. RN-23 and RN-24 carry the basis. (v3: the theme control's home — `docs/uxd_trail/cycle-2.md`; v2: the owner's cycle-1 answers — `docs/uxd_trail/cycle-1.md`.)
 
 > The UXD is the experience source of truth: the experience-level **what**, derived from the
 > settled PRD, authored concurrent with the SRS, and consumed cold by the SDD (so
@@ -192,6 +192,10 @@ RN-8.)*
 The product has one window; the rows are its surfaces. A state that cannot arise is `n/a` with
 its reason. Every indicator in every cell is drawn only after the tool has observed the state it
 stands for (UX-I13), and every failure cell carries a route out on the same surface (UX-I14).
+Every failure cell holds two classes of failure, not one: the **observed condition** the cell
+names, and the **unexplained fault** — the tool stopped doing that cell's work and nothing it read
+accounts for it. The second class takes the same slot, the same scope and the same route out as
+the first; only what the message says differs, and that is `docs/CONTENT.md`'s (UX-I16, RN-23).
 
 | ID | Screen | Empty | Loading | Error | Success |
 |---|---|---|---|---|---|
@@ -275,6 +279,25 @@ stands for (UX-I13), and every failure cell carries a route out on the same surf
   network unavailable. *(→ PRD § Data & Privacy "no network call at all during operation"; the
   instance fence `system/experience/visual_restrictions.md` § `no-runtime-remote-asset`;
   added — RN-11)*
+- **UX-I16** — An **unexplained fault** — the tool stopped doing one surface's work and cannot
+  account for it from anything it read — is presented **on that surface, in the failure slot of the
+  item it stopped on**, exactly where that surface's observed-condition failure is presented (§ 6):
+  the reading panel for the open file, the tree row for a tree entry, the Git view for Git state,
+  the startup surface for opening the repository, the diff and history views for their own
+  content, the selector for a chosen repository. It is scoped to that item: the rest of the shell
+  stands and is the route out (UX-I10, UX-I14), and the state names what still works. What is
+  drawn is what was observed — that the work stopped — and nothing more: no cause is shown, no
+  pending treatment stands in for it, since the tool is not still working (UX-I13). It recovers
+  the way an observed condition does: the next successful read replaces it, without ceremony
+  (UX-I2). **No control on any surface reveals, expands or copies the fault's detail**, and no
+  message asks the reader to report it; where the tool keeps a diagnostic, it keeps it away from
+  every surface, and where that is is the SRS's. A fault that stops the shell itself has no
+  surface to be shown on and is `n/a` here: not a state, but the crash-safety the SRS binds.
+  Whether a given release can reach this class at all is a scope call this entry does not make;
+  it declares what the first fault that proves the class real looks like. *(→ PRD § UX Notes
+  "Failure states" — a plain statement of what went wrong and what to do next, no dead end; "the
+  view never lies"; the class itself is the owner's — `docs/content_trail/cycle-1.md` § 2.3;
+  added — RN-23; the no-detail-control call is drafted, RN-24)*
 
 ## 8. Accessibility Requirements
 
@@ -404,6 +427,8 @@ UX-S5–S7 are designed here despite being beyond v1.
 | UX-I13 | § UX Notes "the view never lies"; instance fence; added (RN-11) |
 | UX-I14 | § UX Notes "Failure states"; instance fence; added (RN-11) |
 | UX-I15 | § Data & Privacy; instance fence; added (RN-11) |
+| UX-I16 | § UX Notes "Failure states", "the view never lies"; the class: owner decision `docs/content_trail/cycle-1.md` § 2.3; added (RN-23); no-detail-control: drafted (RN-24) |
+| § 6 two classes per failure cell | § UX Notes "Failure states"; added (RN-23) |
 | UX-A1 | § UX Notes "The bounds v1 draws"; owner-confirmed `docs/prd_trail/cycle-5.md` § 2.1 |
 | UX-A2 | § Core Features "changed-file markers"; added (RN-12), inside UX-A1's posture |
 | UX-A3 | § UX Notes "The bounds v1 draws"; § Goals "Pick-it-up adoption"; owner-confirmed `docs/uxd_trail/cycle-1.md` § 2.4 (RN-17) |
@@ -632,6 +657,40 @@ UX-S5–S7 are designed here despite being beyond v1.
   placement as tokens and a component contract; this entry is the experience half, so the two
   documents state one placement between them. *(re: § 4, UX-I9, UX-A4; PRD source: UX Notes
   "The character" — "dark and light themes from the start")*
+
+- **RN-23:** *(added)* Every failure cell in § 6 holds a second class, the **unexplained fault**,
+  and UX-I16 says where it is shown — *because* the class exists: the owner drew the line between
+  a *file not found* and a system error while settling the verbal language
+  (`docs/content_trail/cycle-1.md` § 2.3), `docs/CONTENT.md` § Message patterns *Error* carries a
+  formula for it, and this document's own rule (RN-4) makes a state with no declared surface a
+  defect here, not there. The surfaces are derived, not chosen: a fault is the tool stopping
+  *one surface's* work, so it lands in that surface's existing failure slot, with the scope UX-I10
+  already fixes (only the item degrades) and the route out UX-I14 already requires (the shell
+  around it). Nothing new is drawn; the seven cells gain a second reading, not a new column.
+  UX-I13 is met because the stopped state *is* the observation — what the tool has not established
+  is the cause, and the message says exactly that. The entry is written for *the first fault that
+  proves the class real* — the shape `docs/CONTENT.md` § Message patterns *Recovered* uses — so it
+  declares no scope: whether v1 reaches the class is the owner's, and is open in the companion.
+  The routing that put this here — which surface carries it is the CDO's, the detail control is
+  the CDO's to declare and the CTO's to cost, the scope call is the owner's — is the owner's own
+  partition (`nozoki@0713035`, the companion as opened; `docs/CONTENT_open_issues.md` § 1.1) and
+  is carried, not re-made. *(re: § 6, UX-I16; PRD source: UX Notes "Failure states", "the view
+  never lies")*
+- **RN-24:** *(drafted — a choice to confirm)* No control on any surface reveals, expands or
+  copies an unexplained fault's detail (UX-I16) — *because* three settled rules leave a
+  detail control nothing legitimate to show or do: the internal text such a control would reveal
+  is banned from anything a person sees (`docs/CONTENT.md` § Terminology, *Banned* — *error,
+  exception, stack trace, ENOENT, EACCES*, a product tightening of
+  `system/experience/voice_restrictions.md` § `no-author-only-surface`); the one use of a copied
+  detail is a report to a channel this instance does not staff, which UX-I14 rules is not a route
+  out and `system/doctrine/kensaiapp_doctrine.md` § Maintainer capacity says will not be answered;
+  and the diagnostic already has a home away from every surface — the SRS keeps it with the
+  tool's own state, never transmitted (`docs/SRS.md` NFR-11), read here as a sibling for
+  collision and none found. A fault nobody can see is a fault nobody can report, and that is
+  accepted as the cost of the three rules rather than papered over: the surface tells the reader
+  the limit of what the tool knows and what still works, which is the smaller true thing. The call
+  is product-visible, so it goes to the owner. *(re: UX-I16; PRD source: UX Notes "Failure
+  states"; Data & Privacy)*
 
 ---
 

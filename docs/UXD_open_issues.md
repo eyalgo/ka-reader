@@ -16,63 +16,57 @@
 > file whole to `docs/uxd_trail/` — so what you decided, and why, stays readable and citable
 > for good.
 
-> **This companion was opened by the owner, not by a `product-uxd` run.** `UXD.md` is settled at v3
-> and its companion was correctly deleted. It is re-opened deliberately because the **verbal
-> language** round downstream of it produced a state with no surface, and `docs/UXD.md` is where a
-> state is declared to exist. It carries one item.
+> **Round 2 on the fault state.** The companion you opened (`nozoki@0713035`) carried one item
+> with three parts and said which seat each belongs to. This run took the two it was told it
+> could: **where** the unexplained-fault state is shown is now `UXD.md` § 6 and UX-I16 (RN-23),
+> and **whether a control reveals the fault's detail** is drafted as *no* and put up for your
+> sign-off below (§ 2.1). The third part — **whether v1 has this class at all** — is a scope
+> call and is yours; it is § 1.1, unchanged in substance and not settled by implication: UX-I16
+> is written for *the first fault that proves the class real* and says so.
 
 ---
 
 ## 1. Open issues — experience questions with no answer yet
 
-### 1.1 `CONTENT.md` now has an unexplained-fault message, and § 6 declares no surface that shows it
+### 1.1 Does v1 ship with the unexplained-fault class at all, or only with the surfaces that would carry it?
 
-- **Why it matters:** `docs/UXD.md` **RN-4** (`UXD.md:444-448`) states the principle this item is
-  measured against — *"an unhandled state is a defect of this document."* § 6's screen inventory
-  carries a **Failure** cell for every surface (UX-S1 through UX-S7), and **every one of them is a
-  condition Nozoki observed**: a path that is not a readable repository, a file no longer on disk, a
-  file that cannot be read, Git state transiently unreadable behind a lock. There is no cell for a
-  fault the tool cannot account for. Until § 6 says where such a state appears — or that it does not
-  exist in v1 — `CONTENT.md` holds a wording rule with no surface, which is precisely the shape it
-  refuses to carry elsewhere.
+- **Why it matters:** `UXD.md` UX-I16 and § 6 now declare where an unexplained fault is shown,
+  and `docs/CONTENT.md` § Message patterns *Error* carries its wording — but both are written
+  the way § Message patterns *Recovered* is: for the first release that reaches the state. What
+  neither settles is scope. Two answers are legitimate and complete:
+  - **v1 has the class.** The delivery tier treats every read path (file, tree entry, Git state,
+    the repository at startup) as one that can end in *stopped, can't tell why*, and builds the
+    UX-I16 presentation on each. The SDD sizes it.
+  - **v1 ships without it.** Every failure v1 can reach is one it observed (the § 6 cells as they
+    stood at v3); UX-I16 and the CONTENT formula stand written for the first release that proves
+    otherwise, and no v1 change is asked to implement them. This is the reading the raising item
+    named as legitimate (`nozoki@0713035`; `docs/CONTENT_open_issues.md` § 1.1, part 3).
+  The call moves nothing in `UXD.md` either way — the entry is scope-neutral by design — but it
+  decides whether the SDD and the first Tobiishi carry the state, so it has to be yours.
+- **Answer:** <the owner fills this in>
 
-- **What was searched:** `docs/UXD.md` § 6 (`:190`, table rows at `:198-204`) for a failure cell
-  naming an unaccounted fault — there is none; `:194` for the rule that *"every failure cell carries
-  a route out on the same surface (UX-I14)"*, which any new cell must satisfy; RN-4 (`:444-448`) for
-  the unhandled-state principle. The state's origin is the owner's own distinction, made while
-  settling the error pattern — *"there's a difference between `file not found` ... and a system
-  error"* (`docs/content_trail/cycle-1.md` § 2.3) — and acted on in the CONTENT fold
-  (`nozoki@9ff5144`), which split § Message patterns *Error* into two formulas: applied to a fault
-  with nothing behind it, the original formula's *what it observed* clause is empty and the message
-  degrades to *something went wrong*. The second formula replaces that clause with the limit of what
-  the tool knows, names what is unaffected, and keeps the route out. Its wording is settled;
-  `docs/CONTENT_open_issues.md` § 1.1 raised the surface question rather than deciding it, and
-  `CONTENT.md` § Traceability already records that the UXD names no state for it — so nothing can
-  ship the message by accident.
+## 2. Choices to confirm — the CDO drafted a best-effort answer; confirm or override
 
-  **Three sub-questions, and they do not belong to one seat.** The raising item partitioned them and
-  that partition is carried here rather than re-made:
+### 2.1 No control on any surface reveals, expands or copies an unexplained fault's detail
 
-  1. **Which surfaces carry it** — the reading panel, a file tree row, the Git view, the whole shell
-     at startup, or some subset. **This is the CDO's and is derivable on this run**: declaring that a
-     state exists and where is `docs/UXD.md`'s job. Whatever is declared owes UX-I14 a route out on
-     the same surface, and UX-I13 that nothing is drawn before the state is established.
-  2. **Whether the underlying fault is ever visible or reportable to the reader.** `CONTENT.md`
-     § Terminology *Banned* forbids passing internal text through (*error, exception, stack trace,
-     ENOENT, EACCES*), and UX-I14 rules that an issue tracker is not a route out and never stands
-     alone. Both hold and neither is reopened. But a fault nobody can see is a fault nobody can
-     report, and the support posture declines to promise a fix rather than declining the report.
-     Offering any way to see or copy the detail is **a control**, so it is the CDO's to declare and
-     **the CTO's to cost** — which is why an answer here may hand work to `product-srs` rather than
-     finishing it.
-  3. **Whether v1 has this class at all.** Answering that v1 ships without it is legitimate and
-     complete: every failure Nozoki can reach is one it observed, and the second formula stands
-     written for the first release that proves otherwise — the shape § Message patterns *Recovered*
-     already uses, a decision rather than a string. **This one is a scope call and is the owner's**;
-     it is not answered below, and the run should not settle it silently. If the run's derivation for
-     (1) makes the class real in v1, say so and park (3) for the owner rather than treating the
-     derivation as the scope decision.
-
-- **Answer:** <the owner fills this in — or, where the run can derive (1) and (2) from § 6, UX-I13
-  and UX-I14 without a scope decision, it may do so and park (3). What must not happen is (3) being
-  settled by implication.>
+- **Drafted into the UXD:** UX-I16's closing rule — no reveal / expand / copy control, no
+  message that asks the reader to report the fault; where the tool keeps a diagnostic it keeps
+  it away from every surface, and where that is is the SRS's (RN-24).
+- **Rationale:** three rules already on the record leave such a control nothing legitimate to
+  show or do. The text it would reveal is banned from anything a person sees
+  (`docs/CONTENT.md` § Terminology, *Banned*: *error, exception, stack trace, ENOENT, EACCES*).
+  The one thing a copied detail is for is a report to a channel this instance does not staff —
+  not a route out under UX-I14, and not answered under
+  `system/doctrine/kensaiapp_doctrine.md` § Maintainer capacity. And the diagnostic already has
+  a home off the surface: `docs/SRS.md` NFR-11 keeps it with the tool's own state, never
+  transmitted. The cost is stated rather than hidden: a fault nobody can see is a fault nobody
+  can report. The surface gives the reader the smaller true thing — the limit of what the tool
+  knows, and what still works.
+- **If overridden:** UX-I16 gains a control (its label and placement), which is a component
+  `docs/DESIGN.md` must carry and a string `docs/CONTENT.md` must write — and CONTENT's ban on
+  internal text needs a stated exception for what the control shows, which reopens
+  `product-content`. The SRS gains a requirement for what the detail is and where it is copied
+  from (NFR-11 today says only where it lives), so `product-srs` re-runs to cost it. UX-I14
+  itself does not move: a copy control beside a message is not a route out and never stands
+  alone, so the surface's route out stays the shell around the failed item.
+- **Confirm or override:** <"confirm", or "override: <what to do instead>">
