@@ -42,7 +42,15 @@ None.
   describe the exception as the product's failure. The alternative — *a repository viewer that
   also opens plain folders* — keeps Git in the first sentence, which is where the driving scenario
   lives; it is a fair reading, and the reason this is a choice rather than a fact.
-- **Confirm or override:**
+- **Override.** Neither framing: **it is a reader of folders, files and repos.** The owner's own
+  sentence. The three are named flat and none is subordinate to another — not a folder viewer that
+  lights up Git, and not a repository viewer that degrades. A repository is one of the things it
+  reads, not the thing it is for; a file is named in its own right rather than left implicit inside
+  "folder".
+  The CPO writes the Blurb and Purpose from that sentence. What the drafted answer got right and
+  should survive: nothing about a plain folder is described as degraded or failed. What it got
+  wrong: the ordering question it posed — folder-first or Git-first — is not the choice, because
+  the product does not rank them.
 
 ### 2.2 "Disabled" means present and inert, saying why — not hidden
 
@@ -56,7 +64,24 @@ None.
   repository. Present-and-saying-why is also what the PRD's *view never lies* rule asks: the state
   is shown, with its reason. The alternative — the Git view not offered at all in a plain folder,
   the sidebar showing Files only — is simpler to draw and is the override if you meant that.
-- **Confirm or override:**
+- **Override.** The Git view is **present and shows nothing**. Not "present and inert, stating
+  plainly that this folder is not a Git repository" as drafted, and not hidden either: the control
+  is there, and what it opens is **empty**. The owner's words: *"the git button doesn't show
+  anything. simple."*
+  **The grounds are a contrast the owner supplied** (VS Code screenshot, 2026-08-26 22:43, a folder
+  named `voxnote-project` with no repository). VS Code fills that empty state with an explanation
+  and two offers — *Initialize Repository* and *Publish to GitHub*. **Both are writes, and Nozoki
+  can never offer either**, so the surface that VS Code uses to sell a next step has no next step
+  here. With nothing truthful to offer, the view says nothing rather than explaining its own
+  emptiness.
+  So the drafted answer is right that nothing may invite the person to create a repository, and
+  right that the changed-file markers in the tree are absent. What is overridden is the explanatory
+  sentence: there is no message. The CDO draws an empty view at `uxd-plain-folder`.
+  *Raised and answered during the walk, recorded so it is not re-opened as a defect:* an empty view
+  cannot, on its own, tell a Git user "this folder has no repository" apart from "Nozoki failed to
+  read it". The owner chose the simpler surface knowing that. If the fault case ever needs to be
+  told apart, that is the unexplained-fault class the UXD already owns (UX-I16), not a message in
+  this state.
 
 ### 2.3 The plain folder is inside v1, not beyond it
 
@@ -71,7 +96,14 @@ None.
   (`system/projects/nozoki/agari.md`) describes the terminus as *point it at a local repository*;
   once this is confirmed it wants the same widening through its own skill, `project-agari` — a
   separate run, outside this station.
-- **Confirm or override:**
+- **Confirm or override:** Confirm. The plain folder is **inside v1**, not beyond it. Scope (In)
+  reads *a single local folder — a Git repository or not*, Key Use Cases gains the plain-folder
+  case, and Out of Scope no longer lists a non-repository as a failure. Time-to-first-success stays
+  measured against a Git repository.
+  **On the Agari consequence the item flagged:** the owner did not defer it. They directed that a
+  CPO be invoked to widen `system/projects/nozoki/agari.md` *while this PRD round is still open*,
+  rather than waiting for the PRD to settle. That is a separate run against a separate repository
+  and file, and it does not touch `PRD.md` or this companion.
 
 ### 2.4 Git is read only when the opened folder is itself a repository's root
 
@@ -85,7 +117,11 @@ None.
   describe the same folder* is the smallest rule that keeps the view from lying. The override
   with a real case for it: a folder inside a repository shows Git scoped to that subtree — useful
   for monorepos, and a bigger promise than v1 needs.
-- **Confirm or override:**
+- **Confirm or override:** Confirm. Git is read **only when the folder opened is itself the root of
+  a Git repository**. A folder inside a repository, and a folder that contains repositories, both
+  open as plain folders — and in a plain folder the Git view shows nothing (§ 2.2). The rule that
+  holds it is the drafted one: the tree and the Git view always describe the same folder. The
+  monorepo override — Git scoped to a subtree — is not taken.
 
 ### 2.5 The Markdown raw-source switch is a permission, not a promise — the PRD's own line, corrected
 
@@ -99,7 +135,12 @@ None.
   This is that correction. It is listed because the line it replaces was itself owner-confirmed
   (`docs/prd_trail/cycle-7.md`), so the supersession is put to you rather than made silently;
   nothing else about Markdown moves.
-- **Confirm or override:**
+- **Confirm or override:** Confirm. Markdown is rendered by default; the raw-source switch is
+  **permitted, not promised** — built if it costs nothing, and a release that ships rendered-only
+  says so where the release is offered. This supersedes the owner-confirmed line at
+  `docs/prd_trail/cycle-7.md` deliberately, and it is the last of the three documents that line
+  lived in: the SRS already carries the override (FR-31, RN-29) and the SDD confirmed it at
+  `docs/SDD_open_issues.md` § 2.1. Nothing else about Markdown moves.
 
 ## 3. Directives — an external action the owner confirms as a gate
 
