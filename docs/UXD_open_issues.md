@@ -42,14 +42,15 @@
     otherwise, and no v1 change is asked to implement them. This is the reading the raising item
     named as legitimate (`nozoki@0713035`; `docs/CONTENT_open_issues.md` § 1.1, part 3).
   The call moves nothing in `UXD.md` either way — the entry is scope-neutral by design — but it
-  decides whether the SDD and the first Tobiishi carry the state, so it has to be yours.
+  decides whether the SDD and the first change built from it carry the state, so it has to be yours.
 - **Answer:** **Yes — v1 has the class.** The owner's word was "yes", answering the question as the
   item put it. That is the first of the two readings the item set out, and it is taken with the
   consequence the item states: the delivery tier treats **every read path** — a file, a tree entry,
   Git state, the repository at startup — as one that can end in *stopped, can't tell why*, and builds
   the UX-I16 presentation on each. **The SDD sizes it.**
 
-  So the class is not written-for-later. It is in scope for v1, and the first Tobiishi carries it.
+  So the class is not written-for-later. It is in scope for v1, and the first change built from it
+  carries it.
   Nothing in `UXD.md` moves on this answer — the entry is scope-neutral by design, as the item
   records — but `product-sdd` and the delivery plan now inherit it rather than inheriting a pattern
   held in reserve.
