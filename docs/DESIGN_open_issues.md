@@ -127,8 +127,12 @@
   vocabulary — while `DESIGN.md` draws VS Code's. The two settled documents disagree about what the
   same six letters mean, and once § 1.1's tooltip exists it is `CONTENT.md`'s wording that the
   tooltip will speak. `CONTENT.md` is the one that must change: *copied* becomes *untracked* and
-  *unmerged* becomes *conflict*. That is `product-content`'s and is **not** actioned here; its
-  companion is open and unfolded at the time of writing.
+  *unmerged* becomes *conflict*. That is `product-content`'s and is **not** actioned here.
+
+  **It is recorded where it will be acted on:** `docs/CONTENT_open_issues.md` § 1.2 now carries that
+  correction as a directive on its own fold, and the withdrawn claim there is struck in place
+  (`nozoki@1593434`). So neither companion is left asserting what `fdee2fc` disproved, and the fix
+  lands in the document that owns the words.
 
   **One VS Code quirk deliberately not copied:** recent VS Code versions badge a renamed file as `U`
   rather than `R` (per the bobbyhadz source). Nozoki keeps `R` for renamed, as `DESIGN.md` has it —
