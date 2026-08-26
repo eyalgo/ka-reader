@@ -43,7 +43,16 @@
     named as legitimate (`nozoki@0713035`; `docs/CONTENT_open_issues.md` § 1.1, part 3).
   The call moves nothing in `UXD.md` either way — the entry is scope-neutral by design — but it
   decides whether the SDD and the first Tobiishi carry the state, so it has to be yours.
-- **Answer:** <the owner fills this in>
+- **Answer:** **Yes — v1 has the class.** The owner's word was "yes", answering the question as the
+  item put it. That is the first of the two readings the item set out, and it is taken with the
+  consequence the item states: the delivery tier treats **every read path** — a file, a tree entry,
+  Git state, the repository at startup — as one that can end in *stopped, can't tell why*, and builds
+  the UX-I16 presentation on each. **The SDD sizes it.**
+
+  So the class is not written-for-later. It is in scope for v1, and the first Tobiishi carries it.
+  Nothing in `UXD.md` moves on this answer — the entry is scope-neutral by design, as the item
+  records — but `product-sdd` and the delivery plan now inherit it rather than inheriting a pattern
+  held in reserve.
 
 ## 2. Choices to confirm — the CDO drafted a best-effort answer; confirm or override
 
@@ -69,4 +78,19 @@
   from (NFR-11 today says only where it lives), so `product-srs` re-runs to cost it. UX-I14
   itself does not move: a copy control beside a message is not a route out and never stands
   alone, so the surface's route out stays the shell around the failed item.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** **confirm** — UX-I16's closing rule stands: no control on any surface
+  reveals, expands or copies an unexplained fault's detail, and no message asks the reader to report
+  it. Where the tool keeps a diagnostic it keeps it away from every surface, and where that is stays
+  the SRS's (RN-24, `docs/SRS.md` NFR-11).
+
+  The owner said "confirm" and nothing more. The three grounds the draft rests on are the CDO's, not
+  restated as theirs: the text such a control would reveal is banned from anything a person sees
+  (`docs/CONTENT.md` § Terminology, *Banned*); a copied detail's one use is a report to a channel
+  this instance does not staff, which is not a route out under UX-I14; and the diagnostic already has
+  a home off the surface (`docs/SRS.md` NFR-11). The stated cost is accepted with the confirm: **a
+  fault nobody can see is a fault nobody can report.**
+
+  **Consequence of confirming, as against overriding:** nothing reopens. `product-content` owes no
+  string and no exception to its ban on internal text, `docs/DESIGN.md` owes no control component,
+  and `product-srs` does not re-run — NFR-11 already says where the diagnostic lives, and confirming
+  asks it for nothing more.
