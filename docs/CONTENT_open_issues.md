@@ -72,7 +72,43 @@ for without a home.
   `CONTENT.md` § Traceability records that the UXD names no state for it. No release can ship the
   message by accident, because no surface has been told to show it.
 
-- **Answer:**
+- **Answer:** **Part 1 is answered by the UXD and is no longer this document's to wait on. Parts 2
+  and 3 are not answered, and are open in the UXD's own companion as the owner's.** This slot
+  records the state rather than a decision, because two of the three are still gated.
+
+  **Part 1 — which surfaces carry it: DERIVED AND SETTLED.** `UXD.md` is at **v4**
+  (`nozoki@8af3e8d`). The run derived rather than chose: a fault is the tool stopping one surface's
+  work, so it lands in **that surface's existing failure slot**, with the scope UX-I10 already fixes
+  and the route out UX-I14 already requires. § 6's preamble now states that **every failure cell
+  holds two classes** — the observed condition and the unexplained fault — and **UX-I16** states the
+  presentation: on the surface of the item that stopped, scoped to it, drawn as what was observed
+  (that the work stopped) and nothing more, recovering without ceremony. **RN-23** carries the basis
+  and cites the owner's partition. A fault that takes the whole shell down is **n/a** — it has no
+  surface, and is the SRS's crash-safety rather than a state.
+
+  So `CONTENT.md` § Traceability's note that the UXD names no state for this is now **stale** and
+  should be repointed at UX-I16 and § 6 on the fold. § 6's preamble also fixes the division of
+  labour in this document's favour: *"only what the message says differs, and that is
+  `docs/CONTENT.md`'s"* (`UXD.md:198`).
+
+  **Part 2 — whether any control reveals or copies the fault's detail: DRAFTED "no", NOT CONFIRMED.**
+  It is `docs/UXD_open_issues.md` § 2.1, a choice awaiting the owner. **The fold must not treat it as
+  settled.** As drafted it changes nothing here: UX-I16's closing rule bans the control, which is
+  consistent with this document's existing ban on internal text (§ Terminology, *Banned*) and needs
+  no exception. **If the owner overrides it**, this document reopens — CONTENT would owe a string for
+  the control and a stated exception to that ban — and `product-srs` re-runs to cost the detail.
+  Nothing is written for that case now.
+
+  **Part 3 — whether v1 has the class at all: OPEN, and the owner's scope call.** It is
+  `docs/UXD_open_issues.md` § 1.1. The UXD records both answers as legitimate and complete, and that
+  the call *"moves nothing in `UXD.md` either way — the entry is scope-neutral by design"*. The same
+  is true here: the second formula is written and stays written whichever way it goes, in the shape
+  § Message patterns *Recovered* already uses. What the call decides is whether the SDD and the first
+  Tobiishi carry the state.
+
+  **So what this round can fold is part 1 and nothing else.** If parts 2 and 3 are still unanswered
+  when this is read, re-park them as a residue item pointing at the UXD companion rather than
+  resolving them here — they are not this document's to close, and neither is blocking part 1.
 
 <!-- Nothing is in § 2 this round: every choice put up for confirmation in round 1 was answered,
      and this run made no new call that the document hangs from. -->
