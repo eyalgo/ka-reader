@@ -24,9 +24,10 @@
 > `product-design` re-run reads the document as done and has nothing to act on.
 >
 > **The three are not equal.** § 1.1 arrives with the owner's ruling already recorded and is a fold.
-> § 1.2 is a **factual defect** in a settled document, and the correction reaches back into a call
-> the owner confirmed at `docs/design_trail/cycle-1.md` § 2.4 — so it carries a real question.
-> § 1.3 is a stale cross-reference and needs no decision.
+> § 1.2 was opened as a factual defect and, on research the owner asked for, turned out **not to be
+> one** — `DESIGN.md` is correct and nothing in it changes; what it needs is the convention stated
+> rather than left implicit, and the real defect it uncovered belongs to `CONTENT.md`. § 1.3 is a
+> stale cross-reference and needs no decision.
 
 ---
 
@@ -69,7 +70,11 @@
   badge, the toast and the notification, and it should record that the tooltip left the list by the
   owner's decision and why its original UX-A4 reasoning did not reach this case.
 
-### 1.2 The status-letter mapping is wrong: `U` is not "added" and `C` is not "conflict"
+### 1.2 Two vocabularies exist for the status letters, and `DESIGN.md` and `CONTENT.md` each use a different one
+
+> **The two bullets below were written on a wrong premise and are SUPERSEDED by this item's Answer.**
+> They are kept, not rewritten, so the trail shows what was believed and what corrected it. Read the
+> Answer first: `DESIGN.md`'s mapping is right, and nothing in it changes.
 
 - **Why it matters:** `docs/DESIGN.md:580-584`, § Components *"Status letters"*, is what the product
   draws beside every changed file, and — once § 1.1's tooltip exists — it is also what the tooltip
@@ -87,15 +92,48 @@
   wrong**: the grouping meant to put the conflict state with deleted, and named `C` where it meant
   `U`. `docs/CONTENT.md` already carries the correct words — its § Accessibility of text expansion
   lists *copied* and *unmerged*.
-- **Answer:** <the owner fills this in. The correction itself is not in doubt — `C` is copied and
-  `U` is unmerged, and the document must say so. What needs your call is the **hue grouping**, which
-  you confirmed at `docs/design_trail/cycle-1.md` § 2.4 on the strength of the wrong mapping.
-  The minimal reading, which preserves both your four-family confirm and the grouping's evident
-  intent, is a straight swap: **`A`, `C` (added, copied) green; `M` (modified) amber; `D`, `U`
-  (deleted, unmerged) red; `R` (renamed) teal** — four families, four tokens, nothing else moves.
-  The alternative is that an unmerged file is different enough from a deleted one to deserve its own
-  treatment, which makes it a fifth family with a fifth token and a dark value, re-checked against
-  `canvas`, `selection` and `hover`. Answer "the swap" or name the fifth family.>
+- **Answer:** **No change to `DESIGN.md`. Its mapping is correct, and the item's own premise above
+  was wrong** — it is left standing rather than rewritten, so this trail records the error and its
+  correction instead of hiding it.
+
+  **What the research found.** VS Code's badges use `U` = **Untracked** (green, shown with Added)
+  and `C` = **Conflict** (red) — not the porcelain meanings. Two independent sources agree:
+  *"U means Untracked, not unmerged; C means Conflict, not copied"*
+  (https://bobbyhadz.com/blog/what-are-u-and-m-file-markers-in-vscode), and the same letter set is
+  documented at
+  https://www.mehmetbaykar.com/posts/understanding-git-status-indicators-u-m-a-d-c-r-in-vs-code/.
+  Colour matches too: U and A green, M brown/yellow, D red. So `DESIGN.md:580-584` — *"`A`, `U`
+  (added); `M` (modified); `D`, `C` (deleted, conflict); `R` (renamed)"* — is **VS Code's
+  vocabulary, used correctly**, and the four-hue-family grouping the owner confirmed at
+  `docs/design_trail/cycle-1.md` § 2.4 rests on a sound mapping after all. Nothing about it moves.
+
+  **Both vocabularies are real, which is why this needs to be written down rather than just left
+  alone.** Git's own porcelain does use `C` for *copied* and `U` for *updated but unmerged*, and a
+  reader who checks the letters against `git status --porcelain` — as this session did — will
+  conclude the document is wrong and try to "fix" it. VS Code's convention is the right one for
+  Nozoki: the product is explicitly modelled on it (`README.md` § What it is,
+  `docs/ux_reference/` is VS Code screenshots), and the letters exist to be recognised by readers
+  who have seen them somewhere, which for this audience is VS Code and not porcelain output.
+
+  **So the CDO's work on this item is to make the choice explicit, not to change it.** § Components
+  *"Status letters"* should state that the letters follow VS Code's badge vocabulary rather than
+  porcelain's, and a review note should record the collision — that `C` and `U` mean different
+  things in the two systems, that VS Code's reading is the one this product uses, and why. An
+  unstated convention that contradicts the underlying tool is a defect waiting to be introduced by
+  the next careful reader.
+
+  **The real defect this uncovered is in `CONTENT.md`, not here.** `docs/CONTENT.md:282` expands the
+  letters as *"added, modified, deleted, renamed, **copied**, **unmerged**"* — the porcelain
+  vocabulary — while `DESIGN.md` draws VS Code's. The two settled documents disagree about what the
+  same six letters mean, and once § 1.1's tooltip exists it is `CONTENT.md`'s wording that the
+  tooltip will speak. `CONTENT.md` is the one that must change: *copied* becomes *untracked* and
+  *unmerged* becomes *conflict*. That is `product-content`'s and is **not** actioned here; its
+  companion is open and unfolded at the time of writing.
+
+  **One VS Code quirk deliberately not copied:** recent VS Code versions badge a renamed file as `U`
+  rather than `R` (per the bobbyhadz source). Nozoki keeps `R` for renamed, as `DESIGN.md` has it —
+  the letters follow VS Code's *vocabulary*, not its every behaviour, and collapsing renamed into
+  untracked would lose a distinction the four-family grouping already draws.
 
 ### 1.3 A traceability row points at a companion that no longer exists
 
