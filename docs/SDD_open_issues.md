@@ -32,7 +32,14 @@
   turns on this: whether the sandbox is enforced under an ad-hoc signature is an Open Question in
   `SDD.md`, and an unsigned release may not be able to pass the sandbox gate. The answer moves
   C-R4's README wording and `pick-it-up-release`'s bar; nothing else.
-- **Answer:**
+- **Answer:** Unsigned. Nothing is paid for this app, and that holds for any app in this
+  instance — no Apple Developer Program membership, now or later. The app is **not** going into
+  the Mac App Store; the only channel is a download from GitHub. The README carries whatever
+  Gatekeeper step macOS requires. Do not raise signing again.
+  **The install mechanism itself is the CTO's to figure out** — there are plenty of ways to install
+  an app on a Mac, and picking one is a technical call, not the owner's. The bounds it must hold:
+  costs nothing, comes from GitHub, and stays the single simple path `docs/PRD.md` § Scope (In)
+  requires.
 
 ### 1.2 In the Git view, what does a reader do to open a changed file's diff rather than the file itself?
 - **Raised by:** CDO
@@ -49,7 +56,15 @@
   which gives the letter a second job beside the tooltip; **(c)** the diff opens from the reading
   panel's path line once a changed file is open, leaving the Git view's row as UX-F2 has it. The
   answer is folded into the UXD by its own run, and `SDD.md` then cites the revised entry.
-- **Answer:**
+- **Answer:** **(a)** — the row opens the **diff**. One click target on the row; the file itself is
+  read by clicking it in the tree. UX-F2 is revised to say so.
+  Answered by demonstration: the owner supplied two VS Code screenshots (2026-08-26 22:03 and
+  22:06) of its Source Control view and asked that Nozoki behave the same way. In them, clicking a
+  changed file row — in the working-tree `CHANGES` list and under a commit in the graph alike —
+  opens a side-by-side diff in the editor (`PRD.md (07efc27) ↔ PRD.md (a85bc24)`), never the file.
+  **The status letter stays a label, not a second click target** — `M`, `A` and `R` are visible at
+  the right edge of the rows and are read, not clicked. That is the owner's stated reason for
+  rejecting (b); (c) was not taken.
 
 ### 1.3 Where is the history view drawn — in the sidebar, in the reading panel, or in place of one of them?
 - **Raised by:** CDO
@@ -62,7 +77,12 @@
   way; the shell layout a seed builds does not. The CDO's own lean is the sidebar: the history is
   Git state, a commit's diff already takes the reading panel, and a graph in the panel would leave
   the reader's diff nowhere to go. The answer is folded into the UXD by its own run.
-- **Answer:**
+- **Answer:** **The sidebar** — the CDO's own lean, confirmed. The history is Git state and belongs
+  with the other Git furniture; the reading panel stays free for the diff.
+  Answered by the same two VS Code screenshots: the commit graph is drawn as rows in the sidebar
+  below the changes list, a selected commit expands to show its changed files as rows of the same
+  kind, and selecting one opens that commit's diff in the editor panel. The owner asked for that
+  arrangement.
 
 ## 2. Choices to confirm — a seat drafted a best-effort answer; confirm or override
 
@@ -78,7 +98,10 @@
 - **If overridden:** If the PRD's line stands as the promise — the toggle ships in a later release —
   `read-markdown` gains a required second treatment of the reading panel and AC-22's switch clause
   becomes a bar rather than a conditional; nothing else moves.
-- **Confirm or override:**
+- **Confirm or override:** Confirm. The SDD follows the SRS: render is what is needed, and the
+  raw-source switch and relative-link opening stay build-cost permissions the CTO may take or
+  leave. The stale `docs/PRD.md` § Core Features line ("the toggle follows") is a PRD correction
+  for its own run; it does not change this.
 
 ### 2.2 The runtime: Tauri 2 — a Rust host, the surfaces in the system WKWebView — as one sandboxed `.app`
 - **Raised by:** CTO
@@ -97,7 +120,16 @@
   `markdown-renderer` are redrawn (attributed strings, no HTML, no CSP), seam 4 becomes in-process
   calls, C-R7 is dropped, TO-1 reverses; the slices, their order and the harness stand. To Electron:
   § 4 C-R1 names it, C-R6's allowlist grows by the engine, TO-4 changes; nothing else moves.
-- **Confirm or override:**
+- **Confirm or override:** Confirm. Tauri 2 — a Rust host over `nozoki-core`, the surfaces in the
+  system WKWebView, one sandboxed `Nozoki.app`, no bundled engine.
+  **The `DESIGN.md` / `CONTENT.md` check the rationale asked for was run during this walk, and it
+  supports the call rather than unsettling it.** `docs/DESIGN.md:330` realises the system "in plain
+  CSS custom properties over the product's own markup on a macOS window", and RN-1
+  (`docs/DESIGN.md:733-740`) states outright that the runtime — "a browser tab or a native window"
+  — is the SDD's, while **every value the design language holds is a CSS value**. So DESIGN.md
+  leaves the runtime open and binds the surface to CSS: a web-rendered surface satisfies it as
+  written, and the native AppKit / SwiftUI runner-up would require re-authoring a document settled
+  at v4 with no companion beside it. `docs/CONTENT.md` names no rendering technology at all.
 
 ### 2.3 The start mechanism: the repository is granted through the system Open panel at launch, and startup failure renders in the app's window
 - **Raised by:** CTO
@@ -116,7 +148,21 @@
   the sandbox cannot grant it: C-R2's read-only entitlement goes, the OS wall goes with it, and the
   no-write promise rests on the harness and the code alone — § 2's first question answered "if the
   code is careful". UX-S4 may then render in a terminal and the terminal fences bind it.
-- **Confirm or override:**
+- **Confirm or override:** Confirm. The repository is granted through the system Open panel, and
+  startup failure renders in the app's window.
+  **The owner first read this as contradicting their request to see several repositories; it does
+  not, and the reason is worth keeping.** The sandbox grant is once **per repository**, not once
+  per viewing: C-R2 adds `com.apple.security.files.bookmarks.app-scope` from
+  `switch-the-repository` on, which is what makes a granted folder re-openable without asking
+  again. So the panel is the door walked through once per repository — after that it is the
+  chrome's remembered list (S-6, `SDD.md:924-948`), two clicks and no panel, with *Browse…* the way
+  to add another. Several repositories **at once** stays permanently out
+  (`docs/PRD.md:285-286`, owner-confirmed `prd_trail/cycle-1.md`); switching *which one* is S-6 and
+  is in the cut.
+  **One reconciliation for the CTO, not an owner question:** C-R3 says the host asks through the
+  Open panel "at start", written before S-6's remembered list existed in the same document. Once
+  S-6 lands, launch presumably restores the last-viewed repository rather than always presenting a
+  panel. Reconcile C-R3's wording on the fold.
 
 ### 2.4 Images in rendered Markdown are not loaded in any release — remote or inside the repository — and show the not-loaded placeholder
 - **Raised by:** CTO
@@ -130,7 +176,12 @@
   granted repository, C-R7's `img-src` widens to that handler, AC-23's fixture gains a local image,
   and the CDO's UX-I12 placeholder text narrows to remote images. `read-markdown`'s bar grows; no
   other slice moves.
-- **Confirm or override:**
+- **Override.** Local images — an image that lives inside the granted repository — **are loaded**
+  and render in place. `read-markdown` gains a read-only asset handler on the host, scoped to the
+  granted repository; C-R7's `img-src` widens to that handler; AC-23's fixture gains a local image.
+  Remote images are unchanged and still not fetched — the no-network promise is untouched — so
+  `docs/UXD.md` UX-I12's placeholder text narrows to remote images, which is folded by the UXD's
+  own run. `read-markdown`'s bar grows; no other slice moves.
 
 ## 3. Cut calls to confirm — where the slicing could reasonably have gone another way
 
