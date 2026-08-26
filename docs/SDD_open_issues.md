@@ -196,7 +196,19 @@
   build-cost judgments on FR-31/FR-32 land in the first slice rather than the second.
 - **Why it is yours to call:** Both cuts pass the four tests. The question is appetite: whether the
   first thing proved is the promise alone (as drafted) or the promise with the whole reading surface.
-- **Keep or re-cut:**
+- **Keep or re-cut:** **Keep** — but taken as *either is acceptable*, not as a preference between
+  them. The owner's words: *"bottom line, it can be either."*
+  **The owner's standing appetite, for the seats to apply instead of asking:** smaller tasks rather
+  than larger, **but not too small**.
+  **And the reason this was not a decision worth their turn — carry it forward:** *"don't forget,
+  the PPM will slice even more."* A slice is not a unit of work; the Principal PM draws one and cuts
+  it into one or more 根回し Nemawashi seeds (`SDD.md` § 8 and its header). So the SDD's slice
+  granularity is not the granularity anything is built at, and a keep-or-re-cut question of this
+  shape asks the owner to settle something a later stage re-settles anyway.
+  **Routing note for the next `product-sdd` run — the owner's own:** *"this is a question that I
+  think should not come to me."* Cut-granularity calls between two options that both pass the four
+  tests are the seats' to make on the standing appetite above. Park an item for the owner when the
+  answer changes what the product **promises**, not when it changes how the work is divided.
 
 ### 3.2 `read-the-history` is one slice — topology and the branch-set choice together
 - **Raised by:** CPO
@@ -209,7 +221,17 @@
 - **Why it is yours to call:** The default already needs the topology drawn, so the CPO reads the
   split as a task inside a slice, not a decision; but the order you want value in — history sooner
   versus the whole owner-settled shape at once — is not written down anywhere.
-- **Keep or re-cut:**
+- **Keep or re-cut:** **Keep**, on the owner's standing rule rather than a fresh decision — this
+  item is the same class as § 3.1 and was **not put to the owner again**. Both cuts pass the four
+  tests, neither changes what the product promises, and the Principal PM re-slices whatever the SDD
+  draws (`SDD.md` § 8), so the choice does not survive to the build as stated.
+  This item's own text reaches the same place from the other side: *"the CPO reads the split as a
+  task inside a slice, not a decision."* Where a seat can already see that, it should decide.
+  **Applied appetite:** smaller rather than larger, but not too small. Keeping one slice here is
+  consistent with it, because the default set already requires the topology drawn — splitting the
+  branch-set choice out would leave a second slice whose whole content is one control.
+  See § 3.1 for the owner's routing rule in full: park an item for the owner when the answer changes
+  what the product **promises**, not when it changes how the work is divided.
 
 ### 3.3 When `pick-it-up-release` lands — after the whole v1 cut, or as soon as reading works
 - **Raised by:** CPO
@@ -226,7 +248,35 @@
 - **Why it is yours to call:** Appetite for a public partial versus a first impression that matches
   the PRD's v1; the four tests do not decide it, and the PRD's "v1" names a feature set, not a
   release timing.
-- **Keep or re-cut:**
+- **Keep or re-cut:** **Re-cut** — take the alternative. *"let's go with v1."* The first public
+  release waits for the **full v1 cut** the PRD names, so the first thing a stranger meets is the
+  product `docs/PRD.md` calls v1, not a partial. `pick-it-up-release` moves to after the v1 slices
+  in § 7 rather than sitting among them.
+  **The consequence the owner accepted, recorded so the SDD does not have to rediscover it:** the
+  acquisition-path decision (SRS C-3, RN-12) is proved later, after the slices built on the runtime
+  it constrains. That matters more than it did when this item was drafted, because § 1.1 has since
+  been answered **unsigned** — and `SDD.md` § 11 R-8 makes the sandbox probe a **release gate**, a
+  bundle failing it not being published, with enforcement under an ad-hoc signature still an Open
+  Question.
+  **A mitigation for the CTO, not a question for the owner:** publishing late does not require
+  *verifying* late. The bundle, the entitlement list and R-8's probe (`codesign -d --entitlements`)
+  can be proved on an unpublished artifact as early as the runtime exists, so the release gate is
+  not first exercised at the moment the first release is due. How and where that check sits is the
+  SDD's to place.
+  **Owner-directed note — fix the stale part of this item when folding it.** *The cut as drafted*
+  above describes the value as a stranger reading *"a file of their own **repository**"*. The input
+  widened while this station was parked: `docs/PRD.md` v11 takes **a local folder, a Git repository
+  or not**, and `docs/SRS.md` v8 FR-1 carries it. Read it as **folder** and correct the wording on
+  the fold.
+  **And it is not only this line.** This whole companion, and `SDD.md` run 1 itself, were written
+  against the older definition set — PRD v9, SRS v7, UXD v5, DESIGN v4, CONTENT v3. All five have
+  since moved (v11, v8, v6, v5, v4). So the fold owes a sweep, not a single correction. The one
+  that is load-bearing rather than cosmetic: **`SDD.md` § 4 C-R3 still reads "Pointed at something
+  that is not a repository, the window shows UX-S4", with a violation clause against any slice that
+  does otherwise.** That is now backwards — `docs/UXD.md` v6 narrows UX-S4 and makes the plain
+  folder a working state whose Git view shows nothing (UX-I17). `read-a-repository` is likewise a
+  slice named and scoped around an input that widened. Correct against the current documents rather
+  than against this companion's own prose, which is the older set's.
 
 ---
 
