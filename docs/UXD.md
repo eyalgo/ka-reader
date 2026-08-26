@@ -2,7 +2,7 @@
 
 **Status:** Settled
 **Owner:** CDO
-**Version:** 5 — the owner's cycle-3 answers folded (`docs/uxd_trail/cycle-3.md`): v1 **has** the unexplained-fault class — every read path is one that can end in *stopped, can't tell why*, and the SDD sizes it (§ 1.1, RN-23); and the no-detail-control call is confirmed — no control on any surface reveals, expands or copies a fault's detail (§ 2.1, RN-24, UX-I16). No entry moves on either: UX-I16 was written scope-neutral and stands as drafted. (v4: the fault state given its surfaces — § 6, UX-I16, RN-23, RN-24; v3: the theme control's home — `docs/uxd_trail/cycle-2.md`; v2: the owner's cycle-1 answers — `docs/uxd_trail/cycle-1.md`.)
+**Version:** 6 — PRD v11 and the owner's fold directive (`docs/uxd_trail/cycle-4.md` § 1.1) folded: the input is one local folder, a Git repository or not. The plain folder is drawn as a **working state** — a condition on the surfaces that already exist, not a surface of its own — with its Git view present and showing nothing (UX-I17, RN-26, RN-27); UX-S4 narrows to a path that does not exist, is not a folder, or cannot be read; and every "repository" that meant the input now reads "folder", the selector included (RN-25). The SRS was re-read as a sibling and no collision found (RN-28). (v5: the owner's cycle-3 answers folded (`docs/uxd_trail/cycle-3.md`): v1 **has** the unexplained-fault class — every read path is one that can end in *stopped, can't tell why*, and the SDD sizes it (§ 1.1, RN-23); and the no-detail-control call is confirmed — no control on any surface reveals, expands or copies a fault's detail (§ 2.1, RN-24, UX-I16). No entry moves on either: UX-I16 was written scope-neutral and stands as drafted. (v4: the fault state given its surfaces — § 6, UX-I16, RN-23, RN-24; v3: the theme control's home — `docs/uxd_trail/cycle-2.md`; v2: the owner's cycle-1 answers — `docs/uxd_trail/cycle-1.md`.)
 
 > The UXD is the experience source of truth: the experience-level **what**, derived from the
 > settled PRD, authored concurrent with the SRS, and consumed cold by the SDD (so
@@ -24,9 +24,11 @@ they behave; it binds no token value and no wording standard.
 
 ## 1. Design Read
 
-Reading this as: **a local, read-only repository viewer for developers, with a calm, still,
-plain-spoken language, leaning toward a restrained code-workbench aesthetic built from
-primitives rather than an established component design system.** *(→ PRD § Purpose; § UX Notes
+Reading this as: **a local, read-only reader of folders, files and repositories for developers,
+with a calm, still, plain-spoken language, leaning toward a restrained code-workbench aesthetic
+built from primitives rather than an established component design system.** *(→ PRD § Purpose —
+the three named flat, the owner's own sentence; the product kind widened at v6 with PRD v11,
+RN-25; § UX Notes
 "The character" — "calm, truthful, still"; § Assumptions, the familiarity thesis. The aesthetic
 lean is a taste call, confirmed by the owner — `docs/uxd_trail/cycle-1.md` § 2.1; see § 9 and
 RN-8.)*
@@ -52,9 +54,11 @@ RN-8.)*
   own surface, so the view is read in glances and never asks for an action to stay current.
   *(→ PRD § Target Users; § Key Use Cases 3)*
 - **UX-U3** — Context, both users: the tool runs on the user's own macOS machine, in a windowed
-  environment, against one local repository at a time; interaction is mouse-driven; the UI
-  language is English. Assistive technology: v1 makes no assistive-technology promise (UX-A1).
-  *(→ PRD § Scope (In) run posture and platform; § UX Notes "The bounds v1 draws")*
+  environment, against one local folder at a time — a Git repository or not: a download, an
+  export, a project with no Git yet is opened and read exactly as a repository is (UX-I17);
+  interaction is mouse-driven; the UI language is English. Assistive technology: v1 makes no
+  assistive-technology promise (UX-A1). *(→ PRD § Scope (In) run posture and platform; § Key Use
+  Cases 4; § UX Notes "The bounds v1 draws"; the folder widening at v6 — RN-25)*
 
 ## 4. Information Architecture
 
@@ -78,12 +82,14 @@ RN-8.)*
 - **Navigation is text-first, icons secondary.** Every icon sits beside a text label or has a
   text form (UX-A4). One stated exception: the sidebar rail leads with its glyph, label beneath
   (above; RN-16). *(→ PRD § UX Notes "The character")*
-- **The shell names what it is looking at.** The viewed repository is identified in the shell
-  chrome; the branch lives in the Git view. Certainty about *what* is being inspected is part of
-  the trust the product sells, and it becomes load-bearing when the viewed repository can change
-  (UX-F5). Beyond v1 the identity element is itself the repository selector — what names the
-  repository is what changes it (UX-F5; the placement is owner-confirmed —
-  `docs/uxd_trail/cycle-1.md` § 2.2, RN-15). *(added — RN-2)*
+- **The shell names what it is looking at.** The viewed folder is identified in the shell
+  chrome; where the folder is a Git repository, the branch lives in the Git view. The chrome
+  carries no mark saying whether the folder is a repository: that fact is shown by what the Git
+  view holds, and nowhere else (UX-I17, RN-27). Certainty about *what* is being inspected is part
+  of the trust the product sells, and it becomes load-bearing when the viewed folder can change
+  (UX-F5). Beyond v1 the identity element is itself the folder selector — what names the folder
+  is what changes it (UX-F5; the placement is owner-confirmed — `docs/uxd_trail/cycle-1.md`
+  § 2.2, RN-15). *(added — RN-2; "repository" read "folder" from v6 — RN-25)*
 - **The theme control lives in the shell chrome, at its right end.** It is a `sun` or `moon`
   glyph with the word *Light* or *Dark* beside it, naming the theme the control switches **to**
   — so it reads as an action, never as a report of the current theme — and it keeps UX-A4
@@ -96,14 +102,15 @@ RN-8.)*
   gone, what is gone (UX-I4). *(added — RN-3)*
 - **Beyond v1, inside the terminus:** the same single window holds everything. A diff is shown
   in the reading panel — a diff is content to read; commit history is reached from the Git
-  view; switching the viewed repository is the repository selector (UX-F5). No second window.
+  view; switching the viewed folder is the folder selector (UX-F5). No second window.
   *(→ PRD § Scope (In) full ambition; placement: RN-6)*
 
 ## 5. Key Flows
 
 ### 5.1 UX-F1 — Arrive and read *(→ PRD § Key Use Cases 1; § UX Notes "The path" steps 1–2)*
 
-- Steps: the experience begins with Nozoki open against one local repository — what precedes
+- Steps: the experience begins with Nozoki open against one local folder — a Git repository or
+  not, and which it is is the tool's to find out, never the person's to declare — what precedes
   that moment is out of scope (§ 10). The workbench opens with the file tree visible and the
   reading panel in its empty state, prompting file selection. The user selects a file; its
   content appears with no perceived wait (PRD § Success Metrics "File-switch immediacy"): with
@@ -111,12 +118,14 @@ RN-8.)*
   is any other text, rendered when it is Markdown, and as a stated cannot-display-as-text state
   when it is not text (UX-S1). They move file to file as fast as they can decide what to read
   next.
-- Data the UI needs at each step: the repository's identity; the tree — folders, files, and for
-  each file whether Git reports it changed; per selected file — its path, its content, which
+- Data the UI needs at each step: the folder's identity, and whether it is a Git repository;
+  the tree — folders, files, and, where the folder is a repository, for each file whether Git
+  reports it changed; per selected file — its path, its content, which
   floor language its extension maps to or none, and whether it is Markdown; the current
   selection.
-- Failure/recovery: pointed at a path that is not a readable local Git repository — UX-S4. A
-  file that cannot be shown as text — the stated placeholder (UX-S1 Error), the shell fully
+- Failure/recovery: pointed at a path that does not exist, is not a folder, or cannot be read —
+  UX-S4. A folder that is not a Git repository is not a failure: it opens, and its Git view shows
+  nothing (UX-I17). A file that cannot be shown as text — the stated placeholder (UX-S1 Error), the shell fully
   usable. A single unreadable item degrades only its own presentation, never the shell (UX-I10).
 
 ### 5.2 UX-F2 — Check what changed *(→ PRD § Key Use Cases 2; § UX Notes "The path" step 3)*
@@ -124,9 +133,12 @@ RN-8.)*
 - Steps: mid-reading, the user switches the sidebar to Git — branch, changed files, staged files
   and short repository status at a glance. They open a changed file from the Git view to read it
   (opening from the Git view behaves exactly as a tree selection). They switch back to Files;
-  the open file and their reading position are untouched throughout.
-- Data the UI needs at each step: Git state — branch name, the changed files, the staged files,
-  the short status; tree markers consistent with the Git view's list.
+  the open file and their reading position are untouched throughout. In a plain folder the same
+  switch opens a Git view that shows nothing (UX-I17), and the switch back is the same: the
+  checking step has nothing to report, which is not an error to explain.
+- Data the UI needs at each step: whether the folder is a repository; where it is, Git state —
+  branch name, the changed files, the staged files, the short status; tree markers consistent
+  with the Git view's list, and absent in a plain folder.
 - Failure/recovery: Git state transiently unreadable (a lock mid-operation) — that item's view
   shows that it is not yet read and recovers on a later refresh (UX-S3 Error). A repository
   mid-operation — a merge, a rebase, a detached state — is an inspection subject: the Git view
@@ -135,12 +147,16 @@ RN-8.)*
 ### 5.3 UX-F3 — Watch a moving tree *(→ PRD § Key Use Cases 3; § UX Notes "The path" step 4, "the view never lies")*
 
 - Steps: the user leaves the view open while another process — an automated tool, an agent —
-  changes the repository. Changes on disk appear in the view on their own, within the refresh
+  changes the folder. Changes on disk appear in the view on their own, within the refresh
   bar (PRD § Success Metrics "Refresh immediacy"); there is no refresh control (UX-I2). The
   user's place survives every update: expanded tree nodes, the open file, the reading position —
   only what actually changed changes (UX-I3). If the open file changes on disk, its content
-  updates in place; if it disappears, the view says so plainly (UX-I4).
-- Data the UI needs at each step: the current tree and Git state, fresh enough to meet the
+  updates in place; if it disappears, the view says so plainly (UX-I4). In a plain folder the
+  same flow runs with nothing Git-shaped to move; a repository appearing at the folder's root
+  mid-session, or leaving it, is a change in Git state like any other and arrives the same way
+  (UX-I17).
+- Data the UI needs at each step: the current tree and Git state — including whether the folder
+  is a repository — fresh enough to meet the
   refresh bar; which items changed since the last view, so that only those update; for the open
   file, whether it still exists and whether its content changed.
 - Failure/recovery: rapid concurrent changes never blank, block, or crash the shell; the view
@@ -149,6 +165,8 @@ RN-8.)*
 
 ### 5.4 UX-F4 — Inspect changes and history *(beyond v1)* *(→ PRD § Scope (In) full ambition: diffs, commit history)*
 
+- Exists only where the folder is a Git repository: in a plain folder the Git view holds
+  nothing to open a diff or a history from (UX-I17).
 - Steps: from the Git view, the user opens a changed file's **diff** — read-only, with staged
   changes distinguished from unstaged ones — in the reading panel. From the Git view they open
   the **commit history**. When the repository's history holds more than one branch, the reader
@@ -170,22 +188,24 @@ RN-8.)*
 - The diff shape and the history shape are the owner's settled decisions, carried here and not
   reopened (RN-6, RN-14).
 
-### 5.5 UX-F5 — Switch the viewed repository *(beyond v1)* *(→ PRD § Scope (In) "one repository at a time is a v1 cut"; § Out of Scope "Changing the viewed repository without restarting")*
+### 5.5 UX-F5 — Switch the viewed folder *(beyond v1)* *(→ PRD § Scope (In) "one folder at a time is a v1 cut"; § Out of Scope "Changing the viewed folder without restarting")*
 
-- Steps: the **repository selector** shows the current repository's name — the name is both the
-  label and the control (the owner's directive: `docs/ux_reference/README.md` § Owner
-  directives 2 — RN-15). Opening it lists the repositories Nozoki remembers, with an entry to
-  browse for one not in the list; on first run the list is empty and only the browse entry is
-  there. Choosing one returns the shell to the arrival state (UX-F1) for that repository.
-  Always exactly one repository at a time — switching replaces, never adds.
-- The remembered list is the tool's own state, kept outside the viewed repository (→ PRD § Data
+- Steps: the **folder selector** shows the current folder's name — the name is both the label
+  and the control (the owner's directive: `docs/ux_reference/README.md` § Owner directives 2 —
+  RN-15; named the *repository selector* there, before the input widened: the same control,
+  RN-25). Opening it lists the folders Nozoki remembers, with an entry to browse for one not in
+  the list; on first run the list is empty and only the browse entry is there. Choosing one
+  returns the shell to the arrival state (UX-F1) for that folder — a repository or a plain
+  folder alike (UX-I17). Always exactly one folder at a time — switching replaces, never adds.
+- The remembered list is the tool's own state, kept outside the viewed folder (→ PRD § Data
   & Privacy). The selector lives in the shell chrome — the identity element (§ 4, RN-2) is the
   control (owner-confirmed: `docs/uxd_trail/cycle-1.md` § 2.2, RN-15).
-- Data the UI needs at each step: the remembered-repositories list; the new repository's
-  identity, tree and Git state; the shell chrome's repository name.
-- Failure/recovery: a chosen path that is not a readable local Git repository gets the same
-  plain failure language as startup (UX-S4 / UX-S7), and the previously viewed repository stays
-  viewed; nothing about either repository changes.
+- Data the UI needs at each step: the remembered-folders list; the new folder's identity,
+  whether it is a repository, its tree and Git state; the shell chrome's folder name.
+- Failure/recovery: a chosen path that does not exist, is not a folder, or cannot be read gets
+  the same plain failure language as startup (UX-S4 / UX-S7), and the previously viewed folder
+  stays viewed; nothing about either folder changes. A plain folder is not a failure: choosing
+  one lands the arrival state with an empty Git view (UX-I17).
 
 ## 6. Screen Inventory & States
 
@@ -196,16 +216,20 @@ Every failure cell holds two classes of failure, not one: the **observed conditi
 names, and the **unexplained fault** — the tool stopped doing that cell's work and nothing it read
 accounts for it. The second class takes the same slot, the same scope and the same route out as
 the first; only what the message says differs, and that is `docs/CONTENT.md`'s (UX-I16, RN-23).
+Two inputs share every row: a folder that is a Git repository, and a **plain folder** — one the
+tool has found is not a repository's root. The plain folder is a condition on the surfaces below,
+not a surface of its own: it changes what UX-S3 holds and whether UX-S2 carries markers, and
+nothing else; every cell not naming it holds for both inputs as written (UX-I17, RN-26, RN-27).
 
 | ID | Screen | Empty | Loading | Error | Success |
 |---|---|---|---|---|---|
 | UX-S1 | Reading panel | No file selected: one prompt to select a file, and nothing else — no shortcut list, no watermark *(→ PRD § Core Features "empty state"; § UX Notes "The path" step 1)* | The bar is no perceived wait (PRD § Success Metrics); a file that is genuinely still being read shows that it is being read, without a progress claim the tool has not measured, and without blocking the shell | A file that is not text: a stated cannot-display-as-text placeholder naming the file and saying why its content is not shown — never a garbled render, never an error *(→ PRD § UX Notes "Failure states")*. The open file gone from disk: the panel keeps the file's name and states plainly that it is no longer there; the vanished content is not shown as current (UX-I4). A file the tool cannot read: a plain statement of what it was doing and what it observed, recovering when readable. In every case the tree beside the panel stays enabled, and is the route out | Read-only content named by its path (§ 4): syntax-highlighted for the six floor languages, plain text for every other text file, rendered for Markdown (UX-I12); reading position preserved across refreshes (UX-I3) |
-| UX-S2 | Files view (tree) | A repository with no files: a stated empty-tree message, not a blank pane *(added — RN-4)* | The tree appears as it is read; a folder not yet read shows that it is pending rather than showing as empty; changed-file markers appear only once Git state has been read *(added — RN-4, UX-I13)* | An entry that cannot be read is marked so with what the tool observed; the rest of the tree stands *(added — RN-4)* | The tree with changed-file markers and the selected file highlighted, the marker carrying its meaning in text as well as colour (UX-A2) *(→ PRD § Core Features)* |
-| UX-S3 | Git view | A clean tree, once Git state has been read: stated plainly — "nothing changed" is information, not a blank pane, and it is shown only after the tool has observed it *(added — RN-4, UX-I13)* | State appears as it is read; before it is read, the view shows that it is reading, not a clean tree | Git state transiently unreadable: that item shows what the tool observed (a lock, an unreadable file) and recovers on refresh. A repository mid-operation (merge, rebase, detached) is **not** an error: the true state, presented *(→ PRD § UX Notes "the view never lies")* | Branch, changed files, staged files, short status; each file's state carried by a letter or word beside it, with colour repeating it (UX-A2) *(→ PRD § Core Features)* |
-| UX-S4 | Startup failure | n/a — the surface exists only in failure | n/a | Pointed at something that is not a local Git repository, or a path that does not exist or cannot be read: a plain statement of what the tool tried to open, what it observed, and what to do next, at the no-learning-curve bar — no dead end that presumes expertise *(→ PRD § UX Notes "Failure states")*. In v1 the route out is to change the path and start again, and the surface says so and carries a way to leave; beyond v1 the route is the selector's browse entry (UX-S7). Where the surface renders is a downstream question (§ Open Questions) | n/a — success is the workbench (UX-S1–S3) |
+| UX-S2 | Files view (tree) | A repository with no files: a stated empty-tree message, not a blank pane *(added — RN-4)* | The tree appears as it is read; a folder not yet read shows that it is pending rather than showing as empty; changed-file markers appear only once Git state has been read *(added — RN-4, UX-I13)* | An entry that cannot be read is marked so with what the tool observed; the rest of the tree stands *(added — RN-4)* | The tree with the selected file highlighted and, where the folder is a repository, changed-file markers, each carrying its meaning in text as well as colour (UX-A2); in a plain folder the tree carries no markers (UX-I17) *(→ PRD § Core Features)* |
+| UX-S3 | Git view | A clean tree, once Git state has been read: stated plainly — "nothing changed" is information, not a blank pane, and it is shown only after the tool has observed it *(added — RN-4, UX-I13)*. **A plain folder**, once the tool has found that the folder is not a repository's root: the view is present and shows **nothing** — no message, no label, no explanation, no control, and nothing that offers to create a repository (UX-I17). A clean repository and a plain folder are told apart by what the clean view carries — the branch, and its stated "nothing changed" — against nothing at all; the shell adds no other cue (RN-27) *(→ PRD § Core Features "the Git view is present and shows nothing"; § Key Use Cases 4)* | State appears as it is read; before it is read — before the tool has found whether the folder is a repository at all — the view shows that it is reading: not a clean tree, and not nothing (UX-I13, UX-I17) | Git state transiently unreadable: that item shows what the tool observed (a lock, an unreadable file) and recovers on refresh. A repository mid-operation (merge, rebase, detached) is **not** an error: the true state, presented *(→ PRD § UX Notes "the view never lies")*. Finding out whether the folder is a repository **stopped**: an unexplained fault in this slot (UX-I16), shown as a fault and never as nothing — nothing is shown only for an observed plain folder (UX-I17, RN-27) | Branch, changed files, staged files, short status; each file's state carried by a letter or word beside it, with colour repeating it (UX-A2) *(→ PRD § Core Features)* |
+| UX-S4 | Startup failure | n/a — the surface exists only in failure | n/a | Pointed at a path that does not exist, is not a folder, or cannot be read: a plain statement of what the tool tried to open, what it observed, and what to do next, at the no-learning-curve bar — no dead end that presumes expertise *(→ PRD § UX Notes "Failure states")*. A folder that is not a Git repository is not on this list: it opens (UX-I17; narrowed at v6 with PRD v11 — RN-25). In v1 the route out is to change the path and start again, and the surface says so and carries a way to leave; beyond v1 the route is the selector's browse entry (UX-S7). Where the surface renders is a downstream question (§ Open Questions) | n/a — success is the workbench (UX-S1–S3) |
 | UX-S5 | Diff view *(beyond v1)* | A file with no remaining changes: stated | As UX-S1 | A diff that cannot be produced: plain statement of what the tool observed, shell intact, the Git view beside it the route out | Read-only diff, staged distinguished from unstaged in text as well as colour (UX-F4, UX-A2) |
 | UX-S6 | History view *(beyond v1)* | A repository with no commits: stated | The history appears as it is read; a graph not yet drawn shows as pending, never as a shorter history | History unreadable: plain statement, shell intact, the Git view the route out | Read-only history with branch topology visible when more than one branch exists — which commits belong to which branch, where they diverge and merge — drawn against a chosen set of branches with a default that asks nothing (UX-F4); each branch named at the commit that is its tip; per commit its identifier, message, author and date, with its changed files reachable from its entry; selecting a commit opens its diff (owner-settled shape, RN-14) |
-| UX-S7 | Repository selector *(beyond v1)* | First run: no remembered repositories — the list holds only the browse entry *(owner directive — RN-15)* | n/a — the list is the tool's own remembered state, held locally | A chosen path that is not a readable repository: the same plain failure language as UX-S4, with the current repository still viewed and the selector still open as the route out | The selector lists remembered repositories plus browse; choosing one lands the arrival state (UX-F1) for the new repository, and the shell's repository name updates (§ 4) |
+| UX-S7 | Folder selector *(beyond v1)* | First run: no remembered folders — the list holds only the browse entry *(owner directive — RN-15)* | n/a — the list is the tool's own remembered state, held locally | A chosen path that does not exist, is not a folder, or cannot be read: the same plain failure language as UX-S4, with the current folder still viewed and the selector still open as the route out. A plain folder is not a failure (UX-I17) | The selector lists remembered folders plus browse; choosing one lands the arrival state (UX-F1) for the new folder, and the shell's folder name updates (§ 4) *("repository" read "folder" from v6 — RN-25)* |
 
 ## 7. Interaction Patterns
 
@@ -283,8 +307,8 @@ the first; only what the message says differs, and that is `docs/CONTENT.md`'s (
   account for it from anything it read — is presented **on that surface, in the failure slot of the
   item it stopped on**, exactly where that surface's observed-condition failure is presented (§ 6):
   the reading panel for the open file, the tree row for a tree entry, the Git view for Git state,
-  the startup surface for opening the repository, the diff and history views for their own
-  content, the selector for a chosen repository. It is scoped to that item: the rest of the shell
+  the startup surface for opening the folder, the diff and history views for their own
+  content, the selector for a chosen folder. It is scoped to that item: the rest of the shell
   stands and is the route out (UX-I10, UX-I14), and the state names what still works. What is
   drawn is what was observed — that the work stopped — and nothing more: no cause is shown, no
   pending treatment stands in for it, since the tool is not still working (UX-I13). It recovers
@@ -299,6 +323,27 @@ the first; only what the message says differs, and that is `docs/CONTENT.md`'s (
   view never lies"; the class itself is the owner's — `docs/content_trail/cycle-1.md` § 2.3;
   added — RN-23; the no-detail-control call is owner-confirmed `docs/uxd_trail/cycle-3.md`
   § 2.1, RN-24)*
+- **UX-I17** — In a **plain folder** — one the tool has found is not the root of a Git
+  repository — the Git view is present and shows **nothing**: no message, no label, no
+  explanation, no control, and nothing that invites creating or initialising a repository; the
+  tree carries no changed-file markers; and the Git-derived surfaces (UX-S5, UX-S6) have nothing
+  to be reached from. The Files/Git switch, the tree, the reading panel, the empty state and the
+  live refresh are exactly as in a repository. It is a working state, not a failure: UX-I14 binds
+  failure states and this is not one, so the view owes no route out — there is nothing to leave.
+  Three states of the Git view are three different observations and are never drawn alike:
+  **pending**, before the tool has found out (UX-I13); **nothing**, once it has found a plain
+  folder; and the **unexplained fault**, where finding out stopped (UX-I16). The finding is live:
+  a repository appearing at the folder's root mid-session, or leaving it, is a change in Git state
+  and arrives as every change does — the Git view fills or empties and the markers appear or go,
+  without ceremony (UX-I2), the reader's place untouched (UX-I3). That an empty view cannot by
+  itself tell a plain folder apart from a repository the tool failed to read is accepted upstream;
+  the fault the reader must know about is UX-I16's, never a message in this state. *(→ PRD § Core
+  Features "the Git view is present and shows nothing"; § Key Use Cases 4; § UX Notes "The path"
+  step 3 "Checking"; § Out of Scope "Creating or initialising a Git repository"; § Success
+  Metrics "Refresh immediacy" — Git state among the changes that appear on their own; the
+  wordless view is the owner's — `docs/prd_trail/cycle-10.md` § 2.2, carried to this document by
+  `docs/uxd_trail/cycle-4.md` § 1.1; added — RN-26; the four calls the owner left to this seat —
+  RN-27)*
 
 ## 8. Accessibility Requirements
 
@@ -388,6 +433,8 @@ UX-S5–S7 are designed here despite being beyond v1.
   shell (UX-I11) and asks for one posture sentence (UX-A3).
 - **Editing and Git operations** — excluded by the PRD as product capability; this document's
   share of that exclusion is UX-I1 (no affordance, no framing).
+- **Creating or initialising a Git repository** — excluded by the PRD (§ Out of Scope); this
+  document's share is UX-I17: the empty Git view carries nothing that offers it.
 - **The standard the product's words are written to** — voice, tone, terminology, the wording
   of every message and of every promise the product states, and the accessibility bar for text —
   `docs/CONTENT.md`'s, inside `system/experience/voice_restrictions.md`. The words shown in this
@@ -400,19 +447,19 @@ UX-S5–S7 are designed here despite being beyond v1.
 |---|---|
 | UX-U1 | § Target Users; § Goals "No learning curve" |
 | UX-U2 | § Target Users (driving scenario); § Key Use Cases 3 |
-| UX-U3 | § Scope (In) run posture, platform; § UX Notes "The bounds v1 draws" |
-| UX-F1 | § Key Use Cases 1; § UX Notes "The path" 1–2; § Core Features (highlighting floor, Markdown, empty state) |
-| UX-F2 | § Key Use Cases 2; § UX Notes "The path" 3 |
+| UX-U3 | § Scope (In) run posture, platform; § Key Use Cases 4; § UX Notes "The bounds v1 draws"; the folder widening: PRD v11 (RN-25) |
+| UX-F1 | § Key Use Cases 1, 4; § UX Notes "The path" 1–2, "Failure states"; § Core Features (highlighting floor, Markdown, empty state) |
+| UX-F2 | § Key Use Cases 2, 4; § UX Notes "The path" 3 |
 | UX-F3 | § Key Use Cases 3; § UX Notes "The path" 4, "the view never lies"; § Success Metrics "Refresh immediacy" |
 | UX-F4 | § Scope (In) full ambition (diffs, commit history); diff shape: owner decision `docs/srs_trail/cycle-1.md` § 2.2 (RN-6); history shape: owner decision `docs/srs_trail/cycle-3.md` § 2.1 (RN-14) |
-| UX-F5 | § Scope (In) "one repository at a time is a v1 cut"; § Out of Scope "Changing the viewed repository without restarting"; § Data & Privacy (remembered list); the selector: owner directive `docs/ux_reference/README.md` § Owner directives 2 (RN-15) |
+| UX-F5 | § Scope (In) "one folder at a time is a v1 cut"; § Out of Scope "Changing the viewed folder without restarting"; § Data & Privacy (remembered list); the selector: owner directive `docs/ux_reference/README.md` § Owner directives 2 (RN-15); the input widened to any folder: PRD v11 (RN-25) |
 | UX-S1 | § Core Features "empty state", "read-only viewing", the highlighting floor, Markdown; § UX Notes "Failure states", "the view never lies" |
-| UX-S2 | § Core Features "file tree", markers, selection; empty/loading/error cells added (RN-4) |
-| UX-S3 | § Core Features "Git view"; § UX Notes "the view never lies"; empty cell added (RN-4) |
-| UX-S4 | § UX Notes "Failure states" |
+| UX-S2 | § Core Features "file tree", markers, selection; empty/loading/error cells added (RN-4); no markers in a plain folder: § Core Features "Git view" (UX-I17) |
+| UX-S3 | § Core Features "Git view", "the Git view is present and shows nothing"; § Key Use Cases 4; § UX Notes "the view never lies"; empty cell added (RN-4); the plain-folder state: owner decision `docs/prd_trail/cycle-10.md` § 2.2 (RN-26); the three-observations line and the no-cue call (RN-27) |
+| UX-S4 | § UX Notes "Failure states" — "A folder without Git is not on this list"; narrowed at v6: PRD v11 (RN-25) |
 | UX-S5 | § Scope (In) full ambition; owner decision `docs/srs_trail/cycle-1.md` § 2.2 |
 | UX-S6 | § Scope (In) full ambition; history shape: owner decision `docs/srs_trail/cycle-3.md` § 2.1 (RN-14) |
-| UX-S7 | § Scope (In) / § Out of Scope (repository switching); the selector: owner directive (RN-15) |
+| UX-S7 | § Scope (In) / § Out of Scope (folder switching); the selector: owner directive (RN-15); any folder: PRD v11 (RN-25) |
 | UX-I1 | § UX Notes "The character" |
 | UX-I2 | § UX Notes "The path" 4; no-ceremony: added (RN-5) |
 | UX-I3 | § UX Notes "the view never lies", "The path" 3 |
@@ -429,7 +476,11 @@ UX-S5–S7 are designed here despite being beyond v1.
 | UX-I14 | § UX Notes "Failure states"; instance fence; added (RN-11) |
 | UX-I15 | § Data & Privacy; instance fence; added (RN-11) |
 | UX-I16 | § UX Notes "Failure states", "the view never lies"; the class: owner decision `docs/content_trail/cycle-1.md` § 2.3; added (RN-23); no-detail-control: owner-confirmed `docs/uxd_trail/cycle-3.md` § 2.1 (RN-24) |
+| UX-I17 | § Core Features "the Git view is present and shows nothing", "Git is read only when the folder opened is itself the root"; § Key Use Cases 4; § UX Notes "The path" 3 "Checking"; § Out of Scope "Creating or initialising a Git repository"; § Success Metrics "Refresh immediacy"; the wordless view: owner decision `docs/prd_trail/cycle-10.md` § 2.2, carried by `docs/uxd_trail/cycle-4.md` § 1.1 (RN-26); the delegated calls (RN-27) |
 | § 6 two classes per failure cell | § UX Notes "Failure states"; added (RN-23) |
+| § 6 two inputs share every row | § Scope (In) "a Git repository or not"; § Key Use Cases 4; the condition-not-row call (RN-27) |
+| § 1 Design Read (product kind) | § Purpose — "a reader of folders, files and repositories", owner's sentence `docs/prd_trail/cycle-10.md` § 2.1 (RN-25) |
+| § 10 creating a repository | § Out of Scope "Creating or initialising a Git repository" (UX-I17) |
 | UX-A1 | § UX Notes "The bounds v1 draws"; owner-confirmed `docs/prd_trail/cycle-5.md` § 2.1 |
 | UX-A2 | § Core Features "changed-file markers"; added (RN-12), inside UX-A1's posture |
 | UX-A3 | § UX Notes "The bounds v1 draws"; § Goals "Pick-it-up adoption"; owner-confirmed `docs/uxd_trail/cycle-1.md` § 2.4 (RN-17) |
@@ -437,7 +488,7 @@ UX-S5–S7 are designed here despite being beyond v1.
 | § 4 IA (shell, sidebar, text-first) | § UX Notes "The character", "The path" 1; § Core Features |
 | § 4 layout reference | context the owner handed over, `docs/ux_reference/README.md` (RN-13) |
 | § 4 Files/Git switch presentation | § Core Features "sidebar that toggles"; § UX Notes text-first, one stated exception; owner override — a labelled rail, `docs/uxd_trail/cycle-1.md` § 2.3 (RN-16) |
-| § 4 repository identity in shell | added (RN-2); the element is the selector control beyond v1 — owner-confirmed `docs/uxd_trail/cycle-1.md` § 2.2 (RN-15) |
+| § 4 folder identity in shell | added (RN-2); the element is the selector control beyond v1 — owner-confirmed `docs/uxd_trail/cycle-1.md` § 2.2 (RN-15); no repository-or-not mark in the chrome (RN-27) |
 | § 4 theme control in shell chrome | § UX Notes "The character" (the themes); the placement: owner answer `docs/uxd_trail/cycle-2.md` § 1.1 (RN-22) |
 | § 4 open file's path in the reading panel | § UX Notes "the view never lies"; added (RN-3) |
 | § 9 Direction | § UX Notes "The character"; § Assumptions; owner-confirmed `docs/uxd_trail/cycle-1.md` § 2.1 (RN-8) |
@@ -697,6 +748,80 @@ UX-S5–S7 are designed here despite being beyond v1.
   (`docs/uxd_trail/cycle-3.md` § 2.1) — nothing reopens: `docs/CONTENT.md` owes no string and no
   exception to its ban, `docs/DESIGN.md` owes no control component, and the SRS's NFR-11 is asked
   for nothing more. *(re: UX-I16; PRD source: UX Notes "Failure states"; Data & Privacy)*
+- **RN-25:** *(changed — upstream PRD v11)* The input is **one local folder, a Git repository or
+  not**, and every place this document said "repository" where it meant the input now says
+  "folder": the Design Read's product kind (§ 1), UX-U3, § 4's identity element and its beyond-v1
+  bullet, UX-F1's opening and data, UX-F3's subject, UX-F5 and UX-S7 whole, UX-I16's list of
+  surfaces. UX-S4 **narrows** on the same authority — a path that does not exist, is not a folder,
+  or cannot be read stays a startup failure, and the non-repository case leaves it — *because*
+  PRD v11 settles the product as *"a reader of folders, files and repositories — the three named
+  flat"* (`docs/PRD.md` § Purpose; the owner's own sentence, `docs/prd_trail/cycle-10.md` § 2.1),
+  admits the plain folder as a supported input inside v1 (`docs/PRD.md` § Scope (In); the
+  directive `docs/prd_trail/cycle-9.md` § 1.1, its placement `docs/prd_trail/cycle-10.md` § 2.3),
+  and strikes the non-repository from its own failure list (`docs/PRD.md` § UX Notes "Failure
+  states" — *"A folder without Git is not on this list: it opens"*). The owner directed this
+  document to catch up on exactly that ground (`docs/uxd_trail/cycle-4.md` § 1.1). Where the PRD
+  keeps "repository" — § Target Users, § Problem Statement, the driving scenario — this document
+  keeps it too: UX-U1 and UX-U2 do not move. The selector is renamed with the input, from the
+  *repository selector* of the owner's directive (`docs/ux_reference/README.md` § Owner
+  directives 2, written before the input widened) to the **folder selector**: the control, its
+  list, its browse entry and its home are unchanged; only its input is wider, and one concept
+  keeps one name across the product's documents (`system/experience/voice_restrictions.md`
+  § `one-term-per-concept`). *(re: § 1, § 4, UX-U3, UX-F1, UX-F3, UX-F5, UX-S4, UX-S7, UX-I16;
+  PRD source: Purpose, Scope (In), Out of Scope, Key Use Cases 4, UX Notes "Failure states")*
+- **RN-26:** *(owner decision)* In a plain folder the Git view is present and shows **nothing** —
+  no message, no label, no explanation, no control, no offer to create a repository — and the tree
+  carries no changed-file markers (UX-I17, UX-S3 Empty, UX-S2 Success). The owner's words: *"the
+  git button doesn't show anything. simple."* — overriding the CPO's drafted *present, disabled,
+  and says why* (`docs/prd_trail/cycle-10.md` § 2.2, carried to this document at
+  `docs/uxd_trail/cycle-4.md` § 1.1). The grounds are the owner's, recorded so this document does
+  not soften them: VS Code fills the same empty state with *Initialize Repository* and *Publish to
+  GitHub*, and **both are writes Nozoki can never offer** — so the surface an editor uses to sell
+  a next step has no truthful next step here, and saying nothing beats explaining its own
+  emptiness. The accepted cost is the owner's too: an empty view cannot by itself tell a plain
+  folder apart from a repository the tool failed to read; where a fault needs telling apart it is
+  UX-I16's, never a message in this state. Nothing here is a route-out breach: UX-I14 and the
+  fence it restates (`system/experience/visual_restrictions.md` § `failure-says-what-next`) bind
+  failure and refusal states, and the PRD names this one *"A working state, not an error"*
+  (`docs/PRD.md` § UX Notes "The path" step 3). *(re: UX-I17, UX-S2, UX-S3; PRD source: Core
+  Features "Git view", Key Use Cases 4, UX Notes "Checking", Out of Scope "Creating or
+  initialising a Git repository")*
+- **RN-27:** *(CDO-derived with basis — the four calls the owner's answer left to this seat,
+  `docs/uxd_trail/cycle-4.md` § 1.1 "What is not settled here, and is the CDO's")* **(a) A
+  condition, not a row.** The plain folder is drawn as a condition on UX-S2 and UX-S3 rather than
+  as a new § 6 row — *because* no new surface exists: the shell, the tree, the reading panel and
+  the Git view are the same objects in both inputs, and a row would name a screen the product
+  does not have and owe it four states it cannot have. The two cells it changes are named in
+  § 6's preface so a cold reader finds them without reading every row. **(b) No cue beyond the
+  view itself.** The shell carries no mark saying whether the folder is a repository (§ 4) —
+  *because* the clean Git view carries words (the branch; its stated "nothing changed") and the
+  plain-folder view carries none, so the two are already told apart by what is on the surface; a
+  second cue in the chrome would be a second statement of one fact, and during the live
+  transition (d) the two could disagree, which is the state "the view never lies" forbids; and
+  the owner chose a surface that says nothing, so a cue elsewhere would be the message moved, not
+  removed. **(c) Three observations, three drawings.** Pending, nothing, and the unexplained
+  fault are kept distinct in UX-S3 and UX-I17 — *because* UX-I13 forbids drawing a state the tool
+  has not established: *nothing* is the drawing for an observed plain folder; before that
+  observation the view is pending; and a determination that stopped is a stop the tool observed,
+  which UX-I16 already places in this slot — so the new state arrives with both failure classes,
+  as every cell does (RN-23). **(d) The live transition simply happens.** A repository appearing
+  at the folder's root mid-session, or leaving it, is drawn as any Git-state change is — the
+  view fills or empties, the markers appear or go — with no transition of its own — *because* the
+  PRD names Git state among the changes that *"appear on their own"* (§ Success Metrics "Refresh
+  immediacy"), UX-I2 already rules that the changed content is the signal and nothing else bids
+  for attention, UX-I3 keeps the reader's place, and the motion dial (§ 2) admits movement only
+  where content moved. Each is a design derivation from settled entries and PRD facts, none is a
+  taste call, and the owner delegated all four in the answer cited. *(re: § 4, § 6 preface,
+  UX-S3, UX-I17; PRD source: UX Notes "the view never lies", "Checking"; Success Metrics
+  "Refresh immediacy")*
+- **RN-28:** *(the SRS, read as a sibling)* `docs/SRS.md` v8 was read for collisions with this
+  revision and none was found: its FR-33 and FR-34 (`docs/SRS.md` § 3.1) state, as system
+  requirements, what UX-I17 states as experience — Git read only at a repository's root, the Git
+  view present and showing nothing, no markers, a working state. No entry here traces to it. One
+  seam is noted rather than absorbed: the SRS records its live-determination clause as CTO-derived
+  and open to the owner narrowing it to a start-time check (`docs/SRS.md` RN-33). If that
+  narrowing is ever made, UX-I17's live sentence has nothing to move and stands as written: a
+  transition that cannot occur is not a state this document draws differently. *(re: UX-I17)*
 
 ---
 
