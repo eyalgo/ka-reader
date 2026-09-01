@@ -54,4 +54,22 @@ None this round.
 - **If overridden:** leaving RN-35 as written keeps a claim about another document that a reader
   who opens `docs/UXD.md` finds false at the row it names. There is no third branch: the clause
   is either added or the sentence stands.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** **confirm — with two additions, and the clause is pinned.** RN-35's
+  sibling sentence gains its closing clause as drafted, written as history at a version, in this
+  shape: *the divergence ended at UXD v6 (`nozoki@dd08f2d`, 2026-08-26): UX-S4 narrowed to a path
+  that does not exist, is not a folder, or cannot be read, and a plain folder opens (`docs/UXD.md`
+  § UX-S4, RN-25); UXD RN-28 read this SRS at v8 as its sibling and found no collision with FR-33 /
+  FR-34.* (1) **Pinned, because the sentence went false by being written in the present tense about
+  a document that moved** — a clause naming the version and the commit stays true whatever UXD v8
+  does, as RN-35's own "PRD v8 → v11" and RN-19's `9017ae2` already do. (2) **The form is the
+  appended sentence, and its precedent in this document is RN-10 and RN-19, not RN-35's record of
+  RN-29** — that one is the later-note form; RN-10's closing sentence ("The re-authored UX Notes
+  later stated the behavior itself; FR-3's widening to match is RN-17's") and RN-19's on `9017ae2`
+  are closes appended to the note they close, so a reader of RN-35 alone sees the divergence and its
+  end — RN-3's own reason for putting the bar and its headroom in one sentence. The rest of RN-35's
+  sentence stands as written: FR-3 and FR-34 are not reshaped, and now agree with the UXD. Nothing
+  downstream quotes the sentence — `docs/SDD.md` RN-9 already records "with UXD v6, a plain folder
+  is not on UX-S4's list at all", and `docs/fdr.md` R-9 traces to FR-3 / FR-34 — so the fold reaches
+  RN-35 and the Version line and nothing else. Re-measured on 2026-09-01 (UXD v7 Settled, "nothing
+  about the experience changes"; no `docs/UXD_open_issues.md` on disk), not inherited from the run
+  that raised it. Decided in the owner's seat: `docs/trail/srs/self_answer-2.md` § 2.1.
