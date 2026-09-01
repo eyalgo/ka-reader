@@ -221,4 +221,45 @@
 - **If overridden:** nothing else moves. The note's substantive claim — that no NFDR trace turns on
   an item that companion holds — was read against all thirteen by this run and was not found false;
   the fourteenth is the NFDR's own question sent upstream, and QC-60 will trace to its answer.
+- **Confirm or override:** confirm, with the ground moved under it: the note is corrected as
+  history, not as present state. Thirteen is right for the moment v1 read —
+  `git show a50718a:docs/fdr_open_issues.md | grep -c '^### '` prints `13`, and `a50718a` is the
+  FDR's v1 commit, fifteen minutes before this document's first commit `b23ed43` — so "eight" was
+  false when written. But `docs/fdr_open_issues.md` no longer exists: the FDR folded to v2 at
+  `0eb5c67` and to v3 at `3325469`, Settled, the companion removed and its two rounds kept at
+  `docs/trail/fdr/cycle-1.md` and `cycle-2.md`. So RN-2 on the fold reads as a record of what v1
+  read — the FDR Draft at v1 with thirteen companion items, pinned to `nozoki@a50718a` — and of
+  where the FDR now stands, Settled at v3 (`nozoki@3325469`); the `Inputs read:` line takes the
+  FDR's present status, which is the record `unsettled_inputs.md` fixes. The note's other two
+  sentences close the same way: "none turns on an item that companion holds" was true at v1 and
+  is history now — QC-60's own question came back as R-168 – R-170 and PD-39 (item 2.2's fold);
+  and the FR-13 contradiction ended at SRS v12, which carries both readings (`docs/fdr.md` RN-25).
+  Reasoning: `docs/trail/architecture/self_answer-2.md` § 2.8.
+
+### 2.9 Two FDR moves under v2 that a constraint and two records cite have not been seen — QC-40's remembered-folder clause, and R-21 in ADR-0003 and ADR-0005
+
+> **This item was raised by a `companion-self-answer` run answering this companion, not by a
+> `product-architecture` run.** It came from reading `docs/nfdr.md` and `docs/adr/` whole against
+> `docs/fdr.md` at v3, which moved twice after this document read it at v1
+> (`docs/trail/architecture/self_answer-2.md` § Raised on this document).
+
+- **Lands in:** `nfdr.md` QC-40; `adr/0003-app-sandbox-wall-and-open-panel-grant.md` and
+  `adr/0005-root-finding-behind-the-git-port.md` — in whatever form the log's append-only rule
+  allows
+- **Drafted into the records:** QC-40 reads "a remembered folder until its entry is removed".
+  ADR-0003 § Consequences and ADR-0005 § Consequences each say the Git view presents the
+  outside-the-grant case "as a failure naming the folder to choose", citing `docs/fdr.md` R-21.
+- **Rationale:** both were true of the FDR at v1 (`a50718a`) and are not at v3. R-182 says no
+  control removes an entry and the list changes only by viewing a folder; R-178 and R-180 say an
+  entry stays until it ages out of the ten; R-110 binds that an aged-out entry is not restored —
+  so QC-40's retention clause states a removal the FDR forbids, and a delivery reader checking a
+  change to the selector against it finds the wrong bar. R-21 was overridden at v2 (`0eb5c67`):
+  the failure state names where the Git directory lies and offers no folder to choose. Neither
+  record's decision moves — the sandbox wall and the port's report are what they were — but each
+  consequence sentence now describes behaviour the FDR no longer states, and an accepted record is
+  never edited in place; how the log carries a consequence that moved under an accepted record is
+  the fold's call, in this seat's posture. Item 2.2's fold already covers the third move — QC-60
+  tracing to R-168 – R-170 and PD-39 — and it is not repeated here.
+- **If overridden:** QC-40 keeps a clause the FDR contradicts; the two records stay as written and
+  a reader following their R-21 citation finds a different sentence than the one described.
 - **Confirm or override:**
