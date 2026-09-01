@@ -69,4 +69,24 @@
   authorization cited would be this companion's own trail cycle: the SDD's trail is downstream of
   this document and is not a source a requirement may trace to (`<CORE>/prompts/cto_create_srs.md`
   § *Inputs you work from*).
-- **Confirm or override:**
+- **Confirm or override:** confirm — FR-13 takes the two readings as a system state, in this
+  document's own terms: where the diff (FR-17) is not present, activating a changed file's row in
+  the Git view opens the file for reading exactly as a tree selection does; where it is present,
+  activating the row opens that file's diff, and the file is read from the tree. AC-6 takes the
+  same two readings and AC-12 gains the row opening the diff; FR-17 and FR-22 do not move. Four
+  things ride with it. **(1)** FR-13 carries the *changed* marker at the requirement itself, and
+  the departure is a *changed* review note (the next free number) in the shape RN-29 takes: Key
+  Use Case 2 stays the trace of the first reading; the second reading's authorization is this
+  companion's own trail cycle, which quotes the owner's words — *"the row opens the diff. One
+  click target on the row; the file itself is read by clicking it in the tree"* — so no
+  requirement cites `docs/trail/sdd/`. **(2)** The PRD is not reopened: Key Use Case 2 names no
+  control, and *"opens the changed files to read them"* holds at the closing release — from the
+  tree, with FR-6's markers naming which — so the note records why nothing is raised upstream.
+  **(3)** Beyond FR-13, AC-6 and AC-12 the fold walks four sites that name FR-13 or its
+  behaviour — FR-32's "(FR-7, FR-13)" pointer, FR-34's list of Git-derived presentations, AC-18's
+  "files still open for reading", RN-31's FR-13 mention — each stays as written, and the fold
+  reports any site beyond these. **(4)** The row never falls back: a diff that cannot be produced
+  degrades that item under NFR-3 and the file stays readable from the tree; which diff a
+  staged-and-modified, untracked or conflicted row opens is behaviour at the FDR's altitude
+  (`docs/fdr_open_issues.md` § 2.1) and is not lifted into this document. Reasoning:
+  `docs/trail/srs/self_answer-3.md` § 2.1.
