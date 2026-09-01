@@ -52,3 +52,28 @@
   it by the Principal Architect's own revision, and the departure from the TypeScript packet's pnpm
   rule is recorded there with its reason.
 - **Confirm or override:** <"confirm", or "override: <what to do instead>">
+
+### 2.2 Every trail pointer in this document is dead — the folders moved and the citations did not
+
+> **Raised by a `companion-self-answer` run answering `docs/UXD_open_issues.md`, not by a run of this
+> document's own producing skill.** No item on this companion asked for it. It is raised because the
+> same defect was measured across every document in `docs/` while answering that companion's § 2.1,
+> and this document carries **40** of it. The full measurement is `docs/trail/uxd/self_answer-1.md`.
+
+- **Raised by:** the run above — not one of this document's own seats.
+- **What this document says:** **40** citations of the form `docs/<x>_trail/…` (`docs/sdd_trail/`).
+- **What is true:** none of those folders exists. The retired cycles live at `docs/trail/<x>/`, moved by
+  `nozoki@1e8bf3d` ("the six answer-trails move under `docs/trail/`"), which did not update the documents citing them. Every one is a pointer a cold reader follows and finds nothing, and these are mostly
+  **authorization** pointers — the owner answer a Review Note rests on cannot be opened to check it.
+- **Drafted:** each `docs/<x>_trail/` becomes `docs/trail/<x>/`. Nothing the document says changes;
+  only where it points. A pointer repair, not a revision.
+- **One exception, and it is not hypothetical.** A citation pinned to a commit — the form
+  `nozoki@<sha>:docs/<x>_trail/…` — must be left exactly as it is: it resolves at a commit where that
+  path did exist (verified — `git show 1d5c553:docs/uxd_trail/cycle-1.md` returns the file), so
+  rewriting it breaks a citation that currently works. This document carries **0** pinned citations; `docs/UXD.md` carries 4. A sweep that does not exclude the
+  pinned form is wrong.
+- **Scale, so this is not read as a local slip:** **235** dead pointers across six documents — PRD 2,
+  SRS 80, SDD 40, UXD 71, DESIGN 30, CONTENT 12; 231 of them unpinned. The cheapest repair is plainly
+  one mechanical sweep across all six rather than six document cycles, and which way it is done is the
+  owner's call. This item exists so the defect is not invisible if no cycle is ever spent on it.
+- **Confirm or override:** <"confirm", or "override: <what to do instead>">
