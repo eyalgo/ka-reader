@@ -107,4 +107,16 @@
   known to be partial: repairing the UXD alone leaves seven dead pointers standing in two sibling
   documents, and whoever folds this item should say so rather than let the repair read as complete.
 
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** **confirm — with two additions, and each changes what the repair must
+  do.** (1) **The scale was understated.** The item says the version line cites four cycles; the
+  document actually carries **71** `docs/<x>_trail/` citations across **four** dead folders —
+  `uxd_trail`, `prd_trail`, `srs_trail`, `content_trail` — and the defect is repo-wide: **235**
+  across six documents, one cause, `nozoki@1e8bf3d`. (2) **A blind sweep would introduce a new
+  defect.** Four of the UXD's 71 are pinned to a commit — the `nozoki@<sha>:docs/uxd_trail/…` form in
+  RN-8, RN-15, RN-16 and RN-17 — and those *resolve*, at a commit where the path did exist (`git show
+  1d5c553:docs/uxd_trail/cycle-1.md` returns the file). They must be left exactly as they are; only
+  the 67 unpinned ones move. The item's "surfaced not fixed" for the sibling documents is now
+  carried rather than only named: the change is raised on all five, at
+  `docs/SRS_open_issues.md` § 2.2, `docs/SDD_open_issues.md` § 2.2, and the newly opened
+  `docs/PRD_open_issues.md`, `docs/CONTENT_open_issues.md` and `docs/DESIGN_open_issues.md`, each
+  § 2.1. Reasoning and the full measurement: `docs/trail/uxd/self_answer-1.md`.
