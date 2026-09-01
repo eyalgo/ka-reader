@@ -72,4 +72,24 @@ None this round.
 - **If overridden:** the five stand as written, RN-25's keep list names them so the residue reads
   as a decision and not an oversight, and `docs/DESIGN.md` keeps its two quoted phrases on the
   same ground. Nothing downstream moves.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm — the five read *folder* (the path line *folder-relative*), and
+  RN-25's list of what moved grows by them. Three things are added. **(1)** Three more body places,
+  found reading the document whole, join that list on the same authority: UX-F3's closing sentence
+  *"the repository is exactly as they found it"* (`:173`), UX-S2's Empty cell *"A repository with
+  no files"* (`:237`), and § 10's terminus line *"repository switching"* (`:428`), which misquotes
+  the Agari — it names the terminus *"switching the viewed folder"* and calls that *"the same word
+  the PRD uses for it"* (`system/projects/nozoki/agari.md:23-26`). **(2)** The doubt is settled by
+  rule, not by whether the PRD's matching sentence has moved: *repository* stays only where Git's
+  own state is what the sentence is about (`docs/CONTENT.md` § Terminology `:154-155`, `:185`).
+  So UX-U1 and UX-U2 stay, because they describe the developer and RN-25 keeps them; UX-F2's
+  *"short repository status"*, UX-S3, UX-S6, UX-F4 and UX-I17 stay, because they report Git
+  state; and the eight places above are product rules that hold for a plain folder, so they read
+  *folder* whatever the PRD does — *folder* includes *repository*, and no rule becomes false. The
+  PRD carries the same residue in the sentences UX-I4, UX-I7 and § 10 mirror, in neither its v11
+  keep-list nor its moved lines, and that is raised on its own companion
+  (`docs/PRD_open_issues.md` § 2.1, `nozoki@70abec1`); this document's fold does not wait on it.
+  **(3)** The line numbers above are v8's; at v9 the eight sit at `:41-42`, `:101`, `:173`,
+  `:237`, `:256`, `:267`, `:276`, `:428` and `:447`. Review notes are records and do not move.
+  `docs/DESIGN.md` § Overview and `{components.path-line}` follow on the fold, as its own
+  companion's answer already states (`docs/DESIGN_open_issues.md` § 2.1). Reasoning:
+  `docs/trail/uxd/self_answer-4.md` § 2.2.
