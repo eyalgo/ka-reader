@@ -62,4 +62,13 @@ None this round.
   either way — this decides only whether the note points at the Agari or restates its ground. Take
   the alternative and RN-15 changes, which reaches every citation in the document rather than this
   one.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** override: keep RN-15 exactly as it stands — the choice between the two
+  options goes the drafted way and no rule moves — but do not restate the Agari's ground in Nozoki's
+  own words. Drop the outside pointer and put the in-repository source of the same sentence in its
+  place: `docs/PRD.md` § Purpose, which already states the promise over the wider input — *"browsing
+  a folder's files — and, when that folder is a Git repository, inspecting its Git status — in which
+  nothing can be changed"* — and which `system/projects/nozoki/agari.md` itself defers to for that
+  sentence (*"the product sentence is the PRD's, `docs/PRD.md` § Purpose"*). The drafted remedy would
+  have paraphrased a commitment to avoid an unopenable locator, and the house bar forbids both:
+  *"A commitment is quoted, never paraphrased"* (`system/doctrine/writing_bar.md` § 1.5 *What open source adds*). Citing the
+  PRD loses neither. Reasoning: `docs/trail/content/self_answer-2.md`.
