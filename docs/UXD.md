@@ -2,7 +2,7 @@
 
 **Status:** Settled
 **Owner:** CDO
-**Version:** 6 — PRD v11 and the owner's fold directive (`docs/uxd_trail/cycle-4.md` § 1.1) folded: the input is one local folder, a Git repository or not. The plain folder is drawn as a **working state** — a condition on the surfaces that already exist, not a surface of its own — with its Git view present and showing nothing (UX-I17, RN-26, RN-27); UX-S4 narrows to a path that does not exist, is not a folder, or cannot be read; and every "repository" that meant the input now reads "folder", the selector included (RN-25). The SRS was re-read as a sibling and no collision found (RN-28). (v5: the owner's cycle-3 answers folded (`docs/uxd_trail/cycle-3.md`): v1 **has** the unexplained-fault class — every read path is one that can end in *stopped, can't tell why*, and the SDD sizes it (§ 1.1, RN-23); and the no-detail-control call is confirmed — no control on any surface reveals, expands or copies a fault's detail (§ 2.1, RN-24, UX-I16). No entry moves on either: UX-I16 was written scope-neutral and stands as drafted. (v4: the fault state given its surfaces — § 6, UX-I16, RN-23, RN-24; v3: the theme control's home — `docs/uxd_trail/cycle-2.md`; v2: the owner's cycle-1 answers — `docs/uxd_trail/cycle-1.md`.)
+**Version:** 7 — nothing about the experience changes. The layout reference is counted at seven images, not four (§ 4, RN-13): the three added at `nozoki@b7119cb` were read and move no entry, by the owner's directive that this seat decide (`docs/trail/uxd/cycle-5.md` § 1.1). And the 67 unpinned `docs/<x>_trail/` citations this document rests on are repaired to `docs/trail/<x>/`, the answer-trails having moved at `nozoki@1e8bf3d` without the citing documents; the four commit-pinned `nozoki@1d5c553:docs/uxd_trail/` citations in RN-8, RN-15, RN-16 and RN-17 resolve as written and stand (`docs/trail/uxd/cycle-5.md` § 2.1). (v6: PRD v11 and the owner's fold directive (`docs/trail/uxd/cycle-4.md` § 1.1) folded: the input is one local folder, a Git repository or not. The plain folder is drawn as a **working state** — a condition on the surfaces that already exist, not a surface of its own — with its Git view present and showing nothing (UX-I17, RN-26, RN-27); UX-S4 narrows to a path that does not exist, is not a folder, or cannot be read; and every "repository" that meant the input now reads "folder", the selector included (RN-25). The SRS was re-read as a sibling and no collision found (RN-28). (v5: the owner's cycle-3 answers folded (`docs/trail/uxd/cycle-3.md`): v1 **has** the unexplained-fault class — every read path is one that can end in *stopped, can't tell why*, and the SDD sizes it (§ 1.1, RN-23); and the no-detail-control call is confirmed — no control on any surface reveals, expands or copies a fault's detail (§ 2.1, RN-24, UX-I16). No entry moves on either: UX-I16 was written scope-neutral and stands as drafted. (v4: the fault state given its surfaces — § 6, UX-I16, RN-23, RN-24; v3: the theme control's home — `docs/trail/uxd/cycle-2.md`; v2: the owner's cycle-1 answers — `docs/trail/uxd/cycle-1.md`.))
 
 > The UXD is the experience source of truth: the experience-level **what**, derived from the
 > settled PRD, authored concurrent with the SRS, and consumed cold by the SDD (so
@@ -30,7 +30,7 @@ built from primitives rather than an established component design system.** *(�
 the three named flat, the owner's own sentence; the product kind widened at v6 with PRD v11,
 RN-25; § UX Notes
 "The character" — "calm, truthful, still"; § Assumptions, the familiarity thesis. The aesthetic
-lean is a taste call, confirmed by the owner — `docs/uxd_trail/cycle-1.md` § 2.1; see § 9 and
+lean is a taste call, confirmed by the owner — `docs/trail/uxd/cycle-1.md` § 2.1; see § 9 and
 RN-8.)*
 
 ## 2. Design Dials
@@ -65,8 +65,9 @@ RN-8.)*
 - **One window, one shell.** A sidebar beside a dominant reading panel. No other top-level area
   exists: no settings area, no configuration surface, no onboarding surface — nothing to set
   up, sign into, or dismiss. *(→ PRD § UX Notes "The path" step 1; § Goals "No learning curve")*
-- **The layout reference is `docs/ux_reference/`** — four VS Code screenshots the owner
-  supplied, with a README annotating every element as taken or excluded. It is a reference for
+- **The layout reference is `docs/ux_reference/`** — seven VS Code screenshots the owner
+  supplied, with a README annotating every element of the first four as taken or excluded; the
+  three added later are unannotated and bind nothing yet (RN-13). It is a reference for
   **layout, not style** (`docs/ux_reference/README.md`, its opening paragraph); the proportions
   (narrow navigation column, dominant reading panel) and the tree's shape are anchored there,
   and this document points at it rather than restating it. *(context the owner handed over;
@@ -78,7 +79,7 @@ RN-8.)*
   the glyph, which is a stated exception to the text-first rule below — recorded here, not
   implied (RN-16); the label beneath each entry keeps UX-A4 whole. *(→ PRD § Core Features "A
   sidebar that toggles"; the rail is the owner's override of the drafted tabs —
-  `docs/uxd_trail/cycle-1.md` § 2.3, RN-16)*
+  `docs/trail/uxd/cycle-1.md` § 2.3, RN-16)*
 - **Navigation is text-first, icons secondary.** Every icon sits beside a text label or has a
   text form (UX-A4). One stated exception: the sidebar rail leads with its glyph, label beneath
   (above; RN-16). *(→ PRD § UX Notes "The character")*
@@ -88,14 +89,14 @@ RN-8.)*
   view holds, and nowhere else (UX-I17, RN-27). Certainty about *what* is being inspected is part
   of the trust the product sells, and it becomes load-bearing when the viewed folder can change
   (UX-F5). Beyond v1 the identity element is itself the folder selector — what names the folder
-  is what changes it (UX-F5; the placement is owner-confirmed — `docs/uxd_trail/cycle-1.md`
+  is what changes it (UX-F5; the placement is owner-confirmed — `docs/trail/uxd/cycle-1.md`
   § 2.2, RN-15). *(added — RN-2; "repository" read "folder" from v6 — RN-25)*
 - **The theme control lives in the shell chrome, at its right end.** It is a `sun` or `moon`
   glyph with the word *Light* or *Dark* beside it, naming the theme the control switches **to**
   — so it reads as an action, never as a report of the current theme — and it keeps UX-A4
   whole: the glyph never stands alone. Theme is shell-scoped state, which is why it sits in
   the chrome beside the identity element (above) rather than in either sidebar mode. *(→ PRD § UX Notes "The
-  character" — dark and light themes; the placement is the owner's — `docs/uxd_trail/cycle-2.md`
+  character" — dark and light themes; the placement is the owner's — `docs/trail/uxd/cycle-2.md`
   § 1.1, RN-22)*
 - **The reading panel names what is open.** The open file's repository-relative path is shown
   with its content, so the panel tells the reader what they are reading and, when that file is
@@ -199,7 +200,7 @@ RN-8.)*
   folder alike (UX-I17). Always exactly one folder at a time — switching replaces, never adds.
 - The remembered list is the tool's own state, kept outside the viewed folder (→ PRD § Data
   & Privacy). The selector lives in the shell chrome — the identity element (§ 4, RN-2) is the
-  control (owner-confirmed: `docs/uxd_trail/cycle-1.md` § 2.2, RN-15).
+  control (owner-confirmed: `docs/trail/uxd/cycle-1.md` § 2.2, RN-15).
 - Data the UI needs at each step: the remembered-folders list; the new folder's identity,
   whether it is a repository, its tree and Git state; the shell chrome's folder name.
 - Failure/recovery: a chosen path that does not exist, is not a folder, or cannot be read gets
@@ -266,8 +267,8 @@ nothing else; every cell not naming it holds for both inputs as written (UX-I17,
   remembered in the tool's own state — never in the repository. The control that overrides it
   is in the shell chrome (§ 4, RN-22). *(→ PRD § UX Notes "The
   character"; persistence: § Data & Privacy "theme choice"; the platform-signal default and the
-  signal-less light default are owner-confirmed — `docs/uxd_trail/cycle-1.md` § 2.5, RN-7; the
-  control's home is owner-set — `docs/uxd_trail/cycle-2.md` § 1.1, RN-22)*
+  signal-less light default are owner-confirmed — `docs/trail/uxd/cycle-1.md` § 2.5, RN-7; the
+  control's home is owner-set — `docs/trail/uxd/cycle-2.md` § 1.1, RN-22)*
 - **UX-I10** — A slow or failing item degrades only its own presentation, visibly; the shell as
   a whole never blocks. *(→ PRD § Key Use Cases 3 — a view that blocks cannot watch a moving
   tree; § UX Notes "Failure states"; added as a stated pattern — RN-5)*
@@ -286,7 +287,7 @@ nothing else; every cell not naming it holds for both inputs as written (UX-I17,
   never a control and never opens anything. *(→ PRD § Core Features "Markdown is rendered by
   default"; § Data & Privacy "no network call at all during operation"; the switch and the
   relative-link permission are the owner's settled calls, RN-10; the link presentation is
-  owner-confirmed — `docs/uxd_trail/cycle-1.md` § 2.6, RN-10)*
+  owner-confirmed — `docs/trail/uxd/cycle-1.md` § 2.6, RN-10)*
 - **UX-I13** — No indicator is drawn before the tool has observed the state it stands for: no
   changed-file marker before Git state is read, no "nothing changed" before it is read, no
   progress indicator that advances without observed progress. Where the tool does not yet know,
@@ -320,8 +321,8 @@ nothing else; every cell not naming it holds for both inputs as written (UX-I17,
   Whether a given release can reach this class at all is a scope call this entry does not make;
   it declares what the first fault that proves the class real looks like. *(→ PRD § UX Notes
   "Failure states" — a plain statement of what went wrong and what to do next, no dead end; "the
-  view never lies"; the class itself is the owner's — `docs/content_trail/cycle-1.md` § 2.3;
-  added — RN-23; the no-detail-control call is owner-confirmed `docs/uxd_trail/cycle-3.md`
+  view never lies"; the class itself is the owner's — `docs/trail/content/cycle-1.md` § 2.3;
+  added — RN-23; the no-detail-control call is owner-confirmed `docs/trail/uxd/cycle-3.md`
   § 2.1, RN-24)*
 - **UX-I17** — In a **plain folder** — one the tool has found is not the root of a Git
   repository — the Git view is present and shows **nothing**: no message, no label, no
@@ -341,8 +342,8 @@ nothing else; every cell not naming it holds for both inputs as written (UX-I17,
   Features "the Git view is present and shows nothing"; § Key Use Cases 4; § UX Notes "The path"
   step 3 "Checking"; § Out of Scope "Creating or initialising a Git repository"; § Success
   Metrics "Refresh immediacy" — Git state among the changes that appear on their own; the
-  wordless view is the owner's — `docs/prd_trail/cycle-10.md` § 2.2, carried to this document by
-  `docs/uxd_trail/cycle-4.md` § 1.1; added — RN-26; the four calls the owner left to this seat —
+  wordless view is the owner's — `docs/trail/prd/cycle-10.md` § 2.2, carried to this document by
+  `docs/trail/uxd/cycle-4.md` § 1.1; added — RN-26; the four calls the owner left to this seat —
   RN-27)*
 
 ## 8. Accessibility Requirements
@@ -352,7 +353,7 @@ nothing else; every cell not naming it holds for both inputs as written (UX-I17,
   product's done (§ 10). Beyond that line, v1 makes no assistive-technology promise: its
   accessibility surface is what the product already carries — two themes, text-first
   navigation. This is a stated posture, not a conformance target; no standard is claimed. *(→
-  PRD § UX Notes "The bounds v1 draws"; owner-confirmed: `docs/prd_trail/cycle-5.md` § 2.1)*
+  PRD § UX Notes "The bounds v1 draws"; owner-confirmed: `docs/trail/prd/cycle-5.md` § 2.1)*
 - **UX-A2** — No meaning by hue alone: changed-file markers, the staged/unstaged distinction,
   the selected file, and every other state distinction carry a cue that survives without
   colour — a letter, a word, a shape or a position — in both themes. This is a design-quality
@@ -366,7 +367,7 @@ nothing else; every cell not naming it holds for both inputs as written (UX-I17,
   for it. No claim beyond what UX-A1 holds. The sentence's wording is `docs/CONTENT.md`'s and
   the README is the CPO's; this entry asks only that the sentence exists and where. *(→ PRD
   § UX Notes "The bounds v1 draws"; § Goals "Pick-it-up adoption"; owner-confirmed, the
-  not-first-screen bound in the owner's own words — `docs/uxd_trail/cycle-1.md` § 2.4, RN-17)*
+  not-first-screen bound in the owner's own words — `docs/trail/uxd/cycle-1.md` § 2.4, RN-17)*
 - **UX-A4** — No control and no state is carried by a glyph alone: every icon sits beside a text
   label or has a text form the surface shows. *(→ PRD § UX Notes "navigation is text-first,
   icons secondary"; added — RN-12)*
@@ -385,7 +386,7 @@ nothing else; every cell not naming it holds for both inputs as written (UX-I17,
   platform's own controls and appearance are the starting point where this document and
   `DESIGN.md` are silent (`system/experience/visual_direction.md` § Overview, line 2).
   *(→ PRD § UX Notes "The character"; § Assumptions, the familiarity thesis. Owner-confirmed —
-  `docs/uxd_trail/cycle-1.md` § 2.1, RN-8. Layout reference, not style:
+  `docs/trail/uxd/cycle-1.md` § 2.1, RN-8. Layout reference, not style:
   `docs/ux_reference/`, RN-13.)*
 - **Constraints the design language must satisfy:**
   - Dark and light as first-class, equally maintained themes; initial polarity from the
@@ -416,14 +417,14 @@ UX-S5–S7 are designed here despite being beyond v1.
   outside done; not designed here, and nothing here is drawn around their absence as if they
   were coming. The keyboard absence is permanent, not deferred (UX-I8, UX-A1).
 - **History filtering and search** — outside done with them (owner decision:
-  `docs/srs_trail/cycle-1.md` § 2.2). The history view's branch-set choice is not a filter: it
+  `docs/trail/srs/cycle-1.md` § 2.2). The history view's branch-set choice is not a filter: it
   chooses what the graph draws, and does not search the history (UX-F4).
 - **The Markdown raw-source switch and relative-link opening** — permitted, not required, and
-  outside done (owner: `docs/srs_trail/cycle-5.md` § 2.2, § 2.3). UX-I12 states what each looks
+  outside done (owner: `docs/trail/srs/cycle-5.md` § 2.2, § 2.3). UX-I12 states what each looks
   like in a release that ships it, so that a release which does is not designed at code time;
   neither is a condition of done.
 - **A second platform** — v1 promises macOS only, and done does not wait for Linux or Windows
-  (owner: `docs/srs_trail/cycle-5.md` § 2.4). Nothing here is designed for another platform's
+  (owner: `docs/trail/srs/cycle-5.md` § 2.4). Nothing here is designed for another platform's
   conventions.
 - **A front end for agent workflows and repository-inspection services** — where a next product
   might go, not where this one docks; nothing here designs for it.
@@ -451,14 +452,14 @@ UX-S5–S7 are designed here despite being beyond v1.
 | UX-F1 | § Key Use Cases 1, 4; § UX Notes "The path" 1–2, "Failure states"; § Core Features (highlighting floor, Markdown, empty state) |
 | UX-F2 | § Key Use Cases 2, 4; § UX Notes "The path" 3 |
 | UX-F3 | § Key Use Cases 3; § UX Notes "The path" 4, "the view never lies"; § Success Metrics "Refresh immediacy" |
-| UX-F4 | § Scope (In) full ambition (diffs, commit history); diff shape: owner decision `docs/srs_trail/cycle-1.md` § 2.2 (RN-6); history shape: owner decision `docs/srs_trail/cycle-3.md` § 2.1 (RN-14) |
+| UX-F4 | § Scope (In) full ambition (diffs, commit history); diff shape: owner decision `docs/trail/srs/cycle-1.md` § 2.2 (RN-6); history shape: owner decision `docs/trail/srs/cycle-3.md` § 2.1 (RN-14) |
 | UX-F5 | § Scope (In) "one folder at a time is a v1 cut"; § Out of Scope "Changing the viewed folder without restarting"; § Data & Privacy (remembered list); the selector: owner directive `docs/ux_reference/README.md` § Owner directives 2 (RN-15); the input widened to any folder: PRD v11 (RN-25) |
 | UX-S1 | § Core Features "empty state", "read-only viewing", the highlighting floor, Markdown; § UX Notes "Failure states", "the view never lies" |
 | UX-S2 | § Core Features "file tree", markers, selection; empty/loading/error cells added (RN-4); no markers in a plain folder: § Core Features "Git view" (UX-I17) |
-| UX-S3 | § Core Features "Git view", "the Git view is present and shows nothing"; § Key Use Cases 4; § UX Notes "the view never lies"; empty cell added (RN-4); the plain-folder state: owner decision `docs/prd_trail/cycle-10.md` § 2.2 (RN-26); the three-observations line and the no-cue call (RN-27) |
+| UX-S3 | § Core Features "Git view", "the Git view is present and shows nothing"; § Key Use Cases 4; § UX Notes "the view never lies"; empty cell added (RN-4); the plain-folder state: owner decision `docs/trail/prd/cycle-10.md` § 2.2 (RN-26); the three-observations line and the no-cue call (RN-27) |
 | UX-S4 | § UX Notes "Failure states" — "A folder without Git is not on this list"; narrowed at v6: PRD v11 (RN-25) |
-| UX-S5 | § Scope (In) full ambition; owner decision `docs/srs_trail/cycle-1.md` § 2.2 |
-| UX-S6 | § Scope (In) full ambition; history shape: owner decision `docs/srs_trail/cycle-3.md` § 2.1 (RN-14) |
+| UX-S5 | § Scope (In) full ambition; owner decision `docs/trail/srs/cycle-1.md` § 2.2 |
+| UX-S6 | § Scope (In) full ambition; history shape: owner decision `docs/trail/srs/cycle-3.md` § 2.1 (RN-14) |
 | UX-S7 | § Scope (In) / § Out of Scope (folder switching); the selector: owner directive (RN-15); any folder: PRD v11 (RN-25) |
 | UX-I1 | § UX Notes "The character" |
 | UX-I2 | § UX Notes "The path" 4; no-ceremony: added (RN-5) |
@@ -468,30 +469,30 @@ UX-S5–S7 are designed here despite being beyond v1.
 | UX-I6 | § UX Notes "Failure states", "The bounds v1 draws" |
 | UX-I7 | § Out of Scope "Editing, permanently"; § Data & Privacy |
 | UX-I8 | § UX Notes "The bounds v1 draws"; permanence: Agari |
-| UX-I9 | § UX Notes "The character"; § Data & Privacy; platform-signal default and signal-less light: owner-confirmed `docs/uxd_trail/cycle-1.md` § 2.5 (RN-7); the control's home in the chrome: owner-set `docs/uxd_trail/cycle-2.md` § 1.1 (RN-22) |
+| UX-I9 | § UX Notes "The character"; § Data & Privacy; platform-signal default and signal-less light: owner-confirmed `docs/trail/uxd/cycle-1.md` § 2.5 (RN-7); the control's home in the chrome: owner-set `docs/trail/uxd/cycle-2.md` § 1.1 (RN-22) |
 | UX-I10 | § Key Use Cases 3; § UX Notes "Failure states"; added as pattern (RN-5) |
 | UX-I11 | § Goals "Pick-it-up adoption"; added (RN-9) |
-| UX-I12 | § Core Features "Markdown is rendered by default"; § Data & Privacy; owner calls `docs/srs_trail/cycle-5.md` § 2.2, § 2.3, `docs/srs_trail/cycle-6.md` § 2.1; link presentation: owner-confirmed `docs/uxd_trail/cycle-1.md` § 2.6 (RN-10) |
+| UX-I12 | § Core Features "Markdown is rendered by default"; § Data & Privacy; owner calls `docs/trail/srs/cycle-5.md` § 2.2, § 2.3, `docs/trail/srs/cycle-6.md` § 2.1; link presentation: owner-confirmed `docs/trail/uxd/cycle-1.md` § 2.6 (RN-10) |
 | UX-I13 | § UX Notes "the view never lies"; instance fence; added (RN-11) |
 | UX-I14 | § UX Notes "Failure states"; instance fence; added (RN-11) |
 | UX-I15 | § Data & Privacy; instance fence; added (RN-11) |
-| UX-I16 | § UX Notes "Failure states", "the view never lies"; the class: owner decision `docs/content_trail/cycle-1.md` § 2.3; added (RN-23); no-detail-control: owner-confirmed `docs/uxd_trail/cycle-3.md` § 2.1 (RN-24) |
-| UX-I17 | § Core Features "the Git view is present and shows nothing", "Git is read only when the folder opened is itself the root"; § Key Use Cases 4; § UX Notes "The path" 3 "Checking"; § Out of Scope "Creating or initialising a Git repository"; § Success Metrics "Refresh immediacy"; the wordless view: owner decision `docs/prd_trail/cycle-10.md` § 2.2, carried by `docs/uxd_trail/cycle-4.md` § 1.1 (RN-26); the delegated calls (RN-27) |
+| UX-I16 | § UX Notes "Failure states", "the view never lies"; the class: owner decision `docs/trail/content/cycle-1.md` § 2.3; added (RN-23); no-detail-control: owner-confirmed `docs/trail/uxd/cycle-3.md` § 2.1 (RN-24) |
+| UX-I17 | § Core Features "the Git view is present and shows nothing", "Git is read only when the folder opened is itself the root"; § Key Use Cases 4; § UX Notes "The path" 3 "Checking"; § Out of Scope "Creating or initialising a Git repository"; § Success Metrics "Refresh immediacy"; the wordless view: owner decision `docs/trail/prd/cycle-10.md` § 2.2, carried by `docs/trail/uxd/cycle-4.md` § 1.1 (RN-26); the delegated calls (RN-27) |
 | § 6 two classes per failure cell | § UX Notes "Failure states"; added (RN-23) |
 | § 6 two inputs share every row | § Scope (In) "a Git repository or not"; § Key Use Cases 4; the condition-not-row call (RN-27) |
-| § 1 Design Read (product kind) | § Purpose — "a reader of folders, files and repositories", owner's sentence `docs/prd_trail/cycle-10.md` § 2.1 (RN-25) |
+| § 1 Design Read (product kind) | § Purpose — "a reader of folders, files and repositories", owner's sentence `docs/trail/prd/cycle-10.md` § 2.1 (RN-25) |
 | § 10 creating a repository | § Out of Scope "Creating or initialising a Git repository" (UX-I17) |
-| UX-A1 | § UX Notes "The bounds v1 draws"; owner-confirmed `docs/prd_trail/cycle-5.md` § 2.1 |
+| UX-A1 | § UX Notes "The bounds v1 draws"; owner-confirmed `docs/trail/prd/cycle-5.md` § 2.1 |
 | UX-A2 | § Core Features "changed-file markers"; added (RN-12), inside UX-A1's posture |
-| UX-A3 | § UX Notes "The bounds v1 draws"; § Goals "Pick-it-up adoption"; owner-confirmed `docs/uxd_trail/cycle-1.md` § 2.4 (RN-17) |
+| UX-A3 | § UX Notes "The bounds v1 draws"; § Goals "Pick-it-up adoption"; owner-confirmed `docs/trail/uxd/cycle-1.md` § 2.4 (RN-17) |
 | UX-A4 | § UX Notes "The character" — text-first; added (RN-12) |
 | § 4 IA (shell, sidebar, text-first) | § UX Notes "The character", "The path" 1; § Core Features |
 | § 4 layout reference | context the owner handed over, `docs/ux_reference/README.md` (RN-13) |
-| § 4 Files/Git switch presentation | § Core Features "sidebar that toggles"; § UX Notes text-first, one stated exception; owner override — a labelled rail, `docs/uxd_trail/cycle-1.md` § 2.3 (RN-16) |
-| § 4 folder identity in shell | added (RN-2); the element is the selector control beyond v1 — owner-confirmed `docs/uxd_trail/cycle-1.md` § 2.2 (RN-15); no repository-or-not mark in the chrome (RN-27) |
-| § 4 theme control in shell chrome | § UX Notes "The character" (the themes); the placement: owner answer `docs/uxd_trail/cycle-2.md` § 1.1 (RN-22) |
+| § 4 Files/Git switch presentation | § Core Features "sidebar that toggles"; § UX Notes text-first, one stated exception; owner override — a labelled rail, `docs/trail/uxd/cycle-1.md` § 2.3 (RN-16) |
+| § 4 folder identity in shell | added (RN-2); the element is the selector control beyond v1 — owner-confirmed `docs/trail/uxd/cycle-1.md` § 2.2 (RN-15); no repository-or-not mark in the chrome (RN-27) |
+| § 4 theme control in shell chrome | § UX Notes "The character" (the themes); the placement: owner answer `docs/trail/uxd/cycle-2.md` § 1.1 (RN-22) |
 | § 4 open file's path in the reading panel | § UX Notes "the view never lies"; added (RN-3) |
-| § 9 Direction | § UX Notes "The character"; § Assumptions; owner-confirmed `docs/uxd_trail/cycle-1.md` § 2.1 (RN-8) |
+| § 9 Direction | § UX Notes "The character"; § Assumptions; owner-confirmed `docs/trail/uxd/cycle-1.md` § 2.1 (RN-8) |
 
 ---
 
@@ -532,7 +533,7 @@ UX-S5–S7 are designed here despite being beyond v1.
   UX Notes "The character", Key Use Cases 3)*
 - **RN-6:** *(owner decision — placement added)* The beyond-v1 **diff** surfaces carry the
   owner's settled shape — staged distinguished from unstaged, per-commit diff reusing the same
-  presentation (`docs/srs_trail/cycle-1.md` § 2.2, the override) — and this document's placement
+  presentation (`docs/trail/srs/cycle-1.md` § 2.2, the override) — and this document's placement
   decisions are its own: the diff in the reading panel (a diff is content to read), history
   reached from the Git view (it is Git state), both in the same single window, *because* the
   shell's IA has exactly those two homes and a second window would break the one-shell arrival
@@ -546,13 +547,13 @@ UX-S5–S7 are designed here despite being beyond v1.
   (`system/experience/visual_direction.md` § Overview, line 2). The signal-less default is a
   polarity choice with no PRD basis; the lean to light rests on this seat's reading that
   dark-text-on-light is the more widely evidenced legibility default for reading text — held as
-  reasoning, not a citation — and the owner confirmed it (`docs/uxd_trail/cycle-1.md` § 2.5).
+  reasoning, not a citation — and the owner confirmed it (`docs/trail/uxd/cycle-1.md` § 2.5).
   Dark stays a first-class, equally maintained theme — a preference honoured, never an ergonomic
   claim. `DESIGN.md` carries the stated default as a value with its reason. *(re: UX-I9, § 9;
   PRD source: UX Notes "dark and light themes from the start", Data & Privacy)*
 - **RN-8:** *(confirmed choice)* The design direction — a restrained code-workbench built from
   primitives, no established component design system — is a taste call, and the owner confirmed
-  it (`docs/uxd_trail/cycle-1.md` § 2.1) on two grounds of their own: every asset must ship
+  it (`docs/trail/uxd/cycle-1.md` § 2.1) on two grounds of their own: every asset must ship
   inside the tool (UX-I15), so a system that fetches fonts or icons at runtime would have to be
   audited and vendored anyway — the cost without the convenience; and the surface is one reading
   panel, one sidebar, one chrome strip and a two-entry mode switch, too small for a design
@@ -570,9 +571,9 @@ UX-S5–S7 are designed here despite being beyond v1.
 - **RN-10:** *(owner decisions carried; one elaboration confirmed)* Markdown (UX-I12). Rendered by
   default is the PRD's. The raw-source switch is permitted, not required, and outside done —
   the owner's words: *"render is what i need"* and *"add the toggle if it costs nothing"*
-  (`docs/srs_trail/cycle-5.md` § 2.3). A relative link may open its target if it costs nothing
-  (`docs/srs_trail/cycle-5.md` § 2.2); an external link is *"shown, the reader can see where it
-  points, and the system opens no path off the machine"* (`docs/srs_trail/cycle-6.md` § 2.1,
+  (`docs/trail/srs/cycle-5.md` § 2.3). A relative link may open its target if it costs nothing
+  (`docs/trail/srs/cycle-5.md` § 2.2); an external link is *"shown, the reader can see where it
+  points, and the system opens no path off the machine"* (`docs/trail/srs/cycle-6.md` § 2.1,
   the rationale the owner confirmed). Nothing fetched is the PRD's own promise. What this
   document adds and routes: a link that does nothing is drawn as text with its destination
   readable rather than as a control, *because* a control drawn as a route and wired to nothing
@@ -581,7 +582,7 @@ UX-S5–S7 are designed here despite being beyond v1.
   that is not fetched is shown as a stated not-loaded placeholder, *because* a blank where an
   image belongs is a state the tool never established (UX-I13). Both are product-visible, so
   the link presentation went to the owner, who confirmed it as drafted
-  (`docs/uxd_trail/cycle-1.md` § 2.6). *(re: UX-I12,
+  (`docs/trail/uxd/cycle-1.md` § 2.6). *(re: UX-I12,
   UX-S1; PRD source: Core Features, Data & Privacy)*
 - **RN-11:** *(added — the fence as product commitments)* UX-I13, UX-I14 and UX-I15 restate,
   as requirements this product's surfaces hold, three entries of the instance's visual fence —
@@ -605,23 +606,38 @@ UX-S5–S7 are designed here despite being beyond v1.
   in its UXD (`system/experience/visual_restrictions.md` § 3), which is what these two entries
   do. *(re: UX-A2, UX-A4; PRD source: Core Features "changed-file markers", UX Notes
   "text-first")*
-- **RN-13:** *(context the owner handed over)* The layout reference `docs/ux_reference/` — four
+- **RN-13:** *(context the owner handed over)* The layout reference `docs/ux_reference/` — seven
   VS Code screenshots from the owner's own workbench with a README annotating every element as
   taken or excluded; an element not listed there was not considered. Its authority is **layout,
   not style** (its own opening paragraph), and this document points at it rather than restating
-  it — a copied annotation would drift from the one the owner maintains. The four images were
-  opened for this revision. One defect beside the claim: that README's three *"Where it now
-  stands"* lines and its § 2.1–2.3 pointers name a companion that `9017ae2` removed; this
-  document keeps the `UX-…` identifiers the README cites so its entry references still resolve,
-  and the retired companion (`docs/uxd_trail/cycle-1.md`) numbers the two placement questions
-  the README routes (§ 2.2, § 2.3) to match. The README is the owner's file and is not edited here. *(re: § 4,
-  § 9)*
+  it — a copied annotation would drift from the one the owner maintains. All seven images were
+  opened for this revision. The README annotates the first four; the three added at
+  `nozoki@b7119cb` — `vscode-git-view-worktree-stack.png`, `vscode-git-graph-merge-lanes.png`,
+  `vscode-branch-filter-many-branches.png` — are not annotated, so by the README's own rule
+  nothing in them is yet taken or excluded, and this document's entries rest on the four that
+  are. Read against the entries they bear on, the three move nothing, and the owner directed
+  this seat to make that call and record it (`docs/trail/uxd/cycle-5.md` § 1.1): the worktree
+  stack lists several working trees as peers in one view, each with its own commit controls —
+  several folders at once and editing affordances, both already excluded (UX-F5, UX-I1; PRD
+  § Out of Scope); the merge-lanes graph is a picture of what UX-F4 and UX-S6 already state —
+  commits belonging to branches, diverging and merging in both directions, the tip named — with
+  branch membership carried by lane position as well as colour, which is UX-A2 as written; and
+  the many-branches picker is the control `vscode-branch-filter.png` already shows, at a scale
+  where its ref-list filter earns its place — the mechanism is unbound by the owner's own word
+  (RN-14), and a ref-list filter is not history filtering (§ 10). Annotating the three is the
+  README's owner's, not this seat's and not `product-design`'s: both of the README's commits
+  carry `Role: Product` (`nozoki@d8ebfb1`, `nozoki@ea2e78a`). One defect beside the claim: that
+  README's three *"Where it now stands"* lines and its § 2.1–2.3 pointers name a companion that
+  `9017ae2` removed; this document keeps the `UX-…` identifiers the README cites so its entry
+  references still resolve, and the retired companion (`docs/trail/uxd/cycle-1.md`) numbers the
+  two placement questions the README routes (§ 2.2, § 2.3) to match. The README is the owner's
+  file and is not edited here. *(re: § 4, § 9)*
 - **RN-14:** *(owner decision)* The history view shows branch topology drawn against a chosen
   set of branches with a default that asks nothing — the owner's own statement of the shape, in
   their words: *"the reader can see the branches as branches — which commits belong to which,
   and where they diverge and merge — never a flat list that flattens them together. The history
   is drawn against a chosen set of branches — one, several, or all of them — with a default
-  that asks nothing"* (`docs/srs_trail/cycle-3.md` § 2.1). The owner bound the properties, not
+  that asks nothing"* (`docs/trail/srs/cycle-3.md` § 2.1). The owner bound the properties, not
   the mechanism (same answer, *"Bind the properties, not the mechanism"*): how the graph is
   drawn and what control chooses the set stay downstream; that the choosing lives with the
   history view is this document's placement (RN-15's fence). The reference's modal checklist is
@@ -640,7 +656,7 @@ UX-S5–S7 are designed here despite being beyond v1.
   directive), and the chrome is reachable from either sidebar mode while the Git view header is
   not. The alternative the reference shows — the selector grouped with repository-scoped state
   in the Git view header — buys grouping and costs reachability. The owner confirmed
-  the chrome (`docs/uxd_trail/cycle-1.md` § 2.2); the earlier confirmation in the removed trail
+  the chrome (`docs/trail/uxd/cycle-1.md` § 2.2); the earlier confirmation in the removed trail
   (`nozoki@1d5c553:docs/uxd_trail/cycle-2.md` § 2.2) was evidence, and the cycle-1 answer is
   the authorization. One fence drawn with it: where a **branch** control lives is a separate
   question — the history view's set-scoping choice is RN-14's and lives with that view. *(re:
@@ -648,7 +664,7 @@ UX-S5–S7 are designed here despite being beyond v1.
   Privacy)*
 - **RN-16:** *(owner decision — override)* The Files/Git switch is a vertical rail down the
   sidebar's left edge, each of its two entries carrying its icon with a small text label beneath
-  it — the owner's override of the drafted labelled tabs (`docs/uxd_trail/cycle-1.md` § 2.3).
+  it — the owner's override of the drafted labelled tabs (`docs/trail/uxd/cycle-1.md` § 2.3).
   The draft's ground — § 4's text-first rule and a product with exactly two destinations — did
   not carry; the reference's own mechanism (`docs/ux_reference/README.md` § One question the
   reference raises) is taken, with the label the owner attached. Two consequences, both stated in
@@ -661,12 +677,12 @@ UX-S5–S7 are designed here despite being beyond v1.
   the sidebar toggle)*
 - **RN-17:** *(confirmed choice)* The accessibility posture is stated on the README, not its
   first screen (UX-A3) — *because* the posture the owner settled
-  (`docs/prd_trail/cycle-5.md` § 2.1) otherwise lives only in the PRD and this document, which an
+  (`docs/trail/prd/cycle-5.md` § 2.1) otherwise lives only in the PRD and this document, which an
   adopter never reads; a stated narrow floor is information they can act on before spending
   their first minute, and a claim the project can be held to. It adds a line to a surface the
   CPO owns, which is why it went to the owner rather than being asserted; the owner confirmed it,
   and the below-the-first-screen bound is their own words — *"agreed, keep it below the first
-  screen"* (`docs/uxd_trail/cycle-1.md` § 2.4). The earlier confirmation in the removed trail
+  screen"* (`docs/trail/uxd/cycle-1.md` § 2.4). The earlier confirmation in the removed trail
   (`nozoki@1d5c553:docs/uxd_trail/cycle-1.md` § 2.2) was evidence; the cycle-1 answer is the
   authorization. *(re: UX-A3; PRD source: UX Notes "The bounds v1 draws"; Goals "Pick-it-up
   adoption")*
@@ -699,7 +715,7 @@ UX-S5–S7 are designed here despite being beyond v1.
   *(re: § 10)*
 - **RN-22:** *(owner answer)* The theme control UX-I9 requires lives in the **shell chrome, at
   its right end**, as a `sun`/`moon` glyph plus the word *Light*/*Dark* naming the theme it
-  switches to (`docs/uxd_trail/cycle-2.md` § 1.1) — *because* the theme is shell-scoped state,
+  switches to (`docs/trail/uxd/cycle-2.md` § 1.1) — *because* the theme is shell-scoped state,
   exactly as the repository selector is (RN-15): the chrome is reachable from either sidebar
   mode, while the sidebar's foot — the other candidate — would tie a whole-shell setting to one
   of the sidebar's two modes. Labelling the control with its destination removes the ambiguity a
@@ -712,7 +728,7 @@ UX-S5–S7 are designed here despite being beyond v1.
 - **RN-23:** *(added)* Every failure cell in § 6 holds a second class, the **unexplained fault**,
   and UX-I16 says where it is shown — *because* the class exists: the owner drew the line between
   a *file not found* and a system error while settling the verbal language
-  (`docs/content_trail/cycle-1.md` § 2.3), `docs/CONTENT.md` § Message patterns *Error* carries a
+  (`docs/trail/content/cycle-1.md` § 2.3), `docs/CONTENT.md` § Message patterns *Error* carries a
   formula for it, and this document's own rule (RN-4) makes a state with no declared surface a
   defect here, not there. The surfaces are derived, not chosen: a fault is the tool stopping
   *one surface's* work, so it lands in that surface's existing failure slot, with the scope UX-I10
@@ -722,7 +738,7 @@ UX-S5–S7 are designed here despite being beyond v1.
   is the cause, and the message says exactly that. The entry is written for *the first fault that
   proves the class real* — the shape `docs/CONTENT.md` § Message patterns *Recovered* uses — so it
   declares no scope. The scope call was the owner's, and it is made: **v1 has the class**
-  (`docs/uxd_trail/cycle-3.md` § 1.1) — the delivery tier treats every read path (a file, a tree
+  (`docs/trail/uxd/cycle-3.md` § 1.1) — the delivery tier treats every read path (a file, a tree
   entry, Git state, the repository at startup) as one that can end in *stopped, can't tell why*
   and builds the UX-I16 presentation on each; the SDD sizes it. The entry itself does not move on
   that answer, by design.
@@ -745,7 +761,7 @@ UX-S5–S7 are designed here despite being beyond v1.
   accepted as the cost of the three rules rather than papered over: the surface tells the reader
   the limit of what the tool knows and what still works, which is the smaller true thing. The call
   is product-visible, so it went to the owner, who confirmed it as drafted
-  (`docs/uxd_trail/cycle-3.md` § 2.1) — nothing reopens: `docs/CONTENT.md` owes no string and no
+  (`docs/trail/uxd/cycle-3.md` § 2.1) — nothing reopens: `docs/CONTENT.md` owes no string and no
   exception to its ban, `docs/DESIGN.md` owes no control component, and the SRS's NFR-11 is asked
   for nothing more. *(re: UX-I16; PRD source: UX Notes "Failure states"; Data & Privacy)*
 - **RN-25:** *(changed — upstream PRD v11)* The input is **one local folder, a Git repository or
@@ -755,12 +771,12 @@ UX-S5–S7 are designed here despite being beyond v1.
   surfaces. UX-S4 **narrows** on the same authority — a path that does not exist, is not a folder,
   or cannot be read stays a startup failure, and the non-repository case leaves it — *because*
   PRD v11 settles the product as *"a reader of folders, files and repositories — the three named
-  flat"* (`docs/PRD.md` § Purpose; the owner's own sentence, `docs/prd_trail/cycle-10.md` § 2.1),
+  flat"* (`docs/PRD.md` § Purpose; the owner's own sentence, `docs/trail/prd/cycle-10.md` § 2.1),
   admits the plain folder as a supported input inside v1 (`docs/PRD.md` § Scope (In); the
-  directive `docs/prd_trail/cycle-9.md` § 1.1, its placement `docs/prd_trail/cycle-10.md` § 2.3),
+  directive `docs/trail/prd/cycle-9.md` § 1.1, its placement `docs/trail/prd/cycle-10.md` § 2.3),
   and strikes the non-repository from its own failure list (`docs/PRD.md` § UX Notes "Failure
   states" — *"A folder without Git is not on this list: it opens"*). The owner directed this
-  document to catch up on exactly that ground (`docs/uxd_trail/cycle-4.md` § 1.1). Where the PRD
+  document to catch up on exactly that ground (`docs/trail/uxd/cycle-4.md` § 1.1). Where the PRD
   keeps "repository" — § Target Users, § Problem Statement, the driving scenario — this document
   keeps it too: UX-U1 and UX-U2 do not move. The selector is renamed with the input, from the
   *repository selector* of the owner's directive (`docs/ux_reference/README.md` § Owner
@@ -773,8 +789,8 @@ UX-S5–S7 are designed here despite being beyond v1.
   no message, no label, no explanation, no control, no offer to create a repository — and the tree
   carries no changed-file markers (UX-I17, UX-S3 Empty, UX-S2 Success). The owner's words: *"the
   git button doesn't show anything. simple."* — overriding the CPO's drafted *present, disabled,
-  and says why* (`docs/prd_trail/cycle-10.md` § 2.2, carried to this document at
-  `docs/uxd_trail/cycle-4.md` § 1.1). The grounds are the owner's, recorded so this document does
+  and says why* (`docs/trail/prd/cycle-10.md` § 2.2, carried to this document at
+  `docs/trail/uxd/cycle-4.md` § 1.1). The grounds are the owner's, recorded so this document does
   not soften them: VS Code fills the same empty state with *Initialize Repository* and *Publish to
   GitHub*, and **both are writes Nozoki can never offer** — so the surface an editor uses to sell
   a next step has no truthful next step here, and saying nothing beats explaining its own
@@ -787,7 +803,7 @@ UX-S5–S7 are designed here despite being beyond v1.
   Features "Git view", Key Use Cases 4, UX Notes "Checking", Out of Scope "Creating or
   initialising a Git repository")*
 - **RN-27:** *(CDO-derived with basis — the four calls the owner's answer left to this seat,
-  `docs/uxd_trail/cycle-4.md` § 1.1 "What is not settled here, and is the CDO's")* **(a) A
+  `docs/trail/uxd/cycle-4.md` § 1.1 "What is not settled here, and is the CDO's")* **(a) A
   condition, not a row.** The plain folder is drawn as a condition on UX-S2 and UX-S3 rather than
   as a new § 6 row — *because* no new surface exists: the shell, the tree, the reading panel and
   the Git view are the same objects in both inputs, and a row would name a screen the product
