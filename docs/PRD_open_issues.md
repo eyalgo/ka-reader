@@ -47,4 +47,17 @@
   SRS 80, SDD 40, UXD 71, DESIGN 30, CONTENT 12; 231 of them unpinned. The cheapest repair is plainly
   one mechanical sweep across all six rather than six document cycles, and which way it is done is the
   owner's call. This item exists so the defect is not invisible if no cycle is ever spent on it.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** **confirm — with one addition, and it changes what the repair must
+  touch.** The drafted rule stands: each `docs/<x>_trail/` becomes `docs/trail/<x>/`. But this
+  document carries **62** dead trail pointers, not 2. The 2 measured are the only ones written with
+  a `docs/` prefix (both on the version line, `docs/PRD.md:5`); the other **60** are the bare form
+  the PRD cites its trail in throughout — `prd_trail/cycle-N.md` (58) and `srs_trail/cycle-N.md`
+  (2) — which resolve relative to `docs/`, where the PRD sits, to the same missing folders. The same
+  move applies without the prefix: `prd_trail/` becomes `trail/prd/`, `srs_trail/` becomes
+  `trail/srs/`. Every one of the nine distinct files cited exists at its new location (verified
+  2026-09-01). Pinned form: **0** in this file, checked on the whole document, so the exception is
+  inert here. The undercount is this document's alone — the five siblings' totals equal their
+  `docs/`-prefixed counts — so the repo-wide figure is **295**, not 235, and a sweep whose pattern
+  requires the `docs/` prefix misses this file almost whole. The fold records the change on the
+  version line with its reason, `nozoki@1e8bf3d`. Reasoning: `docs/trail/prd/self_answer-1.md`
+  § 2.1.
