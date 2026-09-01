@@ -1,8 +1,8 @@
 # PRD — Nozoki 覗き
 
-**Status:** Draft
+**Status:** Settled
 **Owner:** CPO
-**Version:** 14 — one word in § UX Notes "The character": the dominant surface is the *reading panel*, not the *editor panel*, marked *awaiting confirmation* where it sits. The authorization is the document's own § Out of Scope, which says the input's "reading panel dominant" note is carried in UX Notes, and § Assumptions' "a file tree beside a reading panel"; `docs/CONTENT.md` § Terminology settles the term and rejects *editor* for it. The input's word is "editor area" (`docs/proposal.md` § Overview), so this is a departure from the input, drafted for the owner to confirm. The eight *folder* sentences v13 drafted are confirmed (`docs/trail/prd/cycle-12.md` § 2.1 — a self-answer in the owner's seat, its reasoning at `docs/trail/prd/self_answer-2.md` § 2.1) and their markers say so. Nothing else about the product changes; `Status:` is Draft while `docs/PRD_open_issues.md` is open. (v13: eight sentences that still named the input *repository* after the v11 widening read *folder*: § Core Features "any file in the folder"; § UX Notes "The character" (two), "The path" 5 "Leaving", the *view never lies* rule, and "Trusting the tool"; § Scope (In)'s full ambition; § Out of Scope "Editing, permanently" — authorized by the widening the owner directed (`docs/trail/prd/cycle-9.md` § 1.1) and outside the three sections its fold kept as *repository* on purpose (`docs/trail/prd/cycle-10.md` § 2.1). v12: the 62 trail citations this document rests on are repaired to `trail/prd/` and `trail/srs/`, because the answer-trails moved under `docs/trail/` at `nozoki@1e8bf3d`; authorized by the owner's cycle-11 answer (`docs/trail/prd/cycle-11.md` § 2.1). v11: the owner's cycle-10 answers folded — `docs/trail/prd/cycle-10.md` — a reader of folders, files and repositories; the Git view shows nothing in a plain folder.)
+**Version:** 15 — the close: the one sentence v14 drafted in § UX Notes "The character" — the dominant surface is the *reading panel*, not the *editor panel* — is confirmed (`docs/trail/prd/cycle-13.md` § 2.1 — a self-answer in the owner's seat, its reasoning at `docs/trail/prd/self_answer-3.md` § 2.1) and its marker says so. The answer carried one correction, folded into the marker: the input sentence departed from is § Styling Guidance's "Make the editor panel the dominant visual surface" (`docs/proposal.md` § Styling Guidance), verbatim — not § Overview's "editor area" that v14 cited — so the marker now points where the departure is. Nothing else about the product changes; `docs/PRD_open_issues.md` is removed and `Status:` is Settled. (v14: that sentence drafted as *reading panel*, awaiting confirmation — authorized by the document's own § Out of Scope, § Assumptions, and `docs/CONTENT.md` § Terminology, which settles the term and rejects *editor* for it; the eight *folder* sentences v13 drafted confirmed at `docs/trail/prd/cycle-12.md` § 2.1, a self-answer in the owner's seat, its reasoning at `docs/trail/prd/self_answer-2.md` § 2.1. v13: eight sentences that still named the input *repository* after the v11 widening read *folder*: § Core Features "any file in the folder"; § UX Notes "The character" (two), "The path" 5 "Leaving", the *view never lies* rule, and "Trusting the tool"; § Scope (In)'s full ambition; § Out of Scope "Editing, permanently" — authorized by the widening the owner directed (`docs/trail/prd/cycle-9.md` § 1.1) and outside the three sections its fold kept as *repository* on purpose (`docs/trail/prd/cycle-10.md` § 2.1). v12: the 62 trail citations this document rests on are repaired to `trail/prd/` and `trail/srs/`, because the answer-trails moved under `docs/trail/` at `nozoki@1e8bf3d`; authorized by the owner's cycle-11 answer (`docs/trail/prd/cycle-11.md` § 2.1). v11: the owner's cycle-10 answers folded — `docs/trail/prd/cycle-10.md` — a reader of folders, files and repositories; the Git view shows nothing in a plain folder.)
 
 > The PRD is the product source of truth: the product-facing **what and why**, read cold
 > by the CTO, the CDO, Principal PM, and Principal Architect. It is updated in place with
@@ -200,10 +200,12 @@ reading panel is the dominant visual surface; navigation is text-first, icons se
 and light themes from the start *(folder, not repository, in the first and third sentences:
 the widening owner-confirmed at trail/prd/cycle-9.md § 1.1, applied here; confirmed at
 trail/prd/cycle-12.md § 2.1 — a self-answer in the owner's seat, its reasoning at
-trail/prd/self_answer-2.md § 2.1. Reading panel, not editor panel: changed — the input's word
-is "editor area"; the document's own § Out of Scope and § Assumptions say reading panel, and
-`docs/CONTENT.md` § Terminology settles it as the one name; applied here awaiting
-confirmation)*.
+trail/prd/self_answer-2.md § 2.1. Reading panel, not editor panel: changed — the input's
+sentence is "Make the editor panel the dominant visual surface" (`docs/proposal.md`
+§ Styling Guidance); the document's own § Out of Scope and § Assumptions say reading panel,
+and `docs/CONTENT.md` § Terminology settles it as the one name; confirmed at
+trail/prd/cycle-13.md § 2.1 — a self-answer in the owner's seat, its reasoning at
+trail/prd/self_answer-3.md § 2.1)*.
 
 **The path, end to end.** The experience begins with Nozoki open against one local folder —
 whatever precedes that moment belongs to the acquisition-and-start mechanism, which this PRD
