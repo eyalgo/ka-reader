@@ -1,8 +1,8 @@
 # PRD — Nozoki 覗き
 
-**Status:** Settled
+**Status:** Draft
 **Owner:** CPO
-**Version:** 12 — nothing about the product changes: the 62 trail citations this document rests on (`prd_trail/`, `srs_trail/` — 58 and 2 in the body, 2 on this line) are repaired to `trail/prd/` and `trail/srs/`, because the answer-trails moved under `docs/trail/` at `nozoki@1e8bf3d` and the citing documents were not moved with them; commit-pinned citations were excluded, and this document carries none. Authorized by the owner's cycle-11 answer (`docs/trail/prd/cycle-11.md` § 2.1). (v11: the owner's cycle-10 answers folded — `docs/trail/prd/cycle-10.md` — a reader of folders, files and repositories; the Git view shows nothing in a plain folder.)
+**Version:** 13 — eight sentences that still named the input *repository* after the v11 widening now read *folder*, each marked *awaiting confirmation* where it sits: § Core Features "any file in the folder"; § UX Notes "The character" (two), "The path" 5 "Leaving", the *view never lies* rule, and "Trusting the tool"; § Scope (In)'s full ambition; § Out of Scope "Editing, permanently". The authorization is the widening the owner directed (`docs/trail/prd/cycle-9.md` § 1.1) and the three sections its fold kept as *repository* on purpose — Problem Statement, Why This, Target Users (`docs/trail/prd/cycle-10.md` § 2.1) — which none of the eight is in; one of them, the full ambition's *"switching which repository is viewed"*, contradicted § Out of Scope's own *"Changing the viewed folder"* and the project Agari. Nothing else about the product changes; `Status:` is Draft while `docs/PRD_open_issues.md` is open. (v12: nothing about the product changes: the 62 trail citations this document rests on (`prd_trail/`, `srs_trail/` — 58 and 2 in the body, 2 on this line) are repaired to `trail/prd/` and `trail/srs/`, because the answer-trails moved under `docs/trail/` at `nozoki@1e8bf3d` and the citing documents were not moved with them; commit-pinned citations were excluded, and this document carries none. Authorized by the owner's cycle-11 answer (`docs/trail/prd/cycle-11.md` § 2.1). (v11: the owner's cycle-10 answers folded — `docs/trail/prd/cycle-10.md` — a reader of folders, files and repositories; the Git view shows nothing in a plain folder.))
 
 > The PRD is the product source of truth: the product-facing **what and why**, read cold
 > by the CTO, the CDO, Principal PM, and Principal Architect. It is updated in place with
@@ -154,7 +154,9 @@ maintainer time, held down by the deliberately small surface (see Assumptions).
 
 ## Core Features
 
-- Read-only viewing of any file in the repository, with syntax highlighting. Highlighting is
+- Read-only viewing of any file in the folder *(folder, not repository: the widening
+  owner-confirmed at trail/prd/cycle-9.md § 1.1, applied to this sentence awaiting
+  confirmation)*, with syntax highlighting. Highlighting is
   promised for a stated floor of languages — Python, shell, JavaScript, JSON, YAML and TOML —
   and offered for no other in v1: a text file outside that floor is shown as plain text, never
   refused and never mis-highlighted. The floor grows when the maintainer needs a language, not
@@ -188,13 +190,15 @@ maintainer time, held down by the deliberately small surface (see Assumptions).
 
 *(Product-level only: no visual design, no mechanism.)*
 
-**The character.** Nozoki looks at a repository; it never acts on one — and the experience
+**The character.** Nozoki looks at a folder; it never acts on one — and the experience
 should feel like that: calm, truthful, still. The product presents state; the person moves
 their attention around it. Read-only is the product's identity, not a mode: nothing in the
-experience suggests the repository could be changed from here — no editing affordances
+experience suggests the folder could be changed from here — no editing affordances
 present-but-disabled, no framing that implies an editable mode exists somewhere else. The
 editor panel is the dominant visual surface; navigation is text-first, icons secondary; dark
-and light themes from the start.
+and light themes from the start *(folder, not repository, in the first and third sentences:
+the widening owner-confirmed at trail/prd/cycle-9.md § 1.1, applied here awaiting
+confirmation)*.
 
 **The path, end to end.** The experience begins with Nozoki open against one local folder —
 whatever precedes that moment belongs to the acquisition-and-start mechanism, which this PRD
@@ -225,13 +229,17 @@ Nozoki's to find out, never the person's to declare.
    Changes appear on their own, within the refresh bar; there is no refresh control, because
    a manual refresh turns the user into a poller *(owner-confirmed: trail/prd/cycle-1.md)*.
 5. **Leaving.** Closing Nozoki asks nothing — nothing to save, nothing to confirm — and the
-   person leaves certain the repository is exactly as they found it.
+   person leaves certain the folder is exactly as they found it *(folder, not repository: the
+   widening owner-confirmed at trail/prd/cycle-9.md § 1.1, applied here awaiting
+   confirmation)*.
 
-**The rule for every live state: the view never lies.** What is shown is the repository's
+**The rule for every live state: the view never lies.** What is shown is the folder's
 current state, or is explicitly marked as no longer there; the view never presents stale
 content as current. And an update the person did not ask for never takes their place away —
 the tree they expanded, the file they have open, the position they are reading stay theirs;
-only what actually changed changes. Concretely:
+only what actually changed changes *(the folder's, not the repository's: the widening
+owner-confirmed at trail/prd/cycle-9.md § 1.1, applied here awaiting confirmation)*.
+Concretely:
 
 - The open file changes on disk: its content updates in place, within the refresh bar.
 - The open file disappears: the view says so plainly, rather than showing what is gone as if
@@ -260,8 +268,9 @@ floor: owner-confirmed: trail/prd/cycle-8.md § 1.1)*:
 - Switching files, and answering "what changed?" — a glance at the tree markers or the Git
   view, not an investigation.
 - Trusting the tool: the person never wonders whether what they see is current, and never
-  feels the need to check that the repository is untouched. Certainty is the product; the
-  experience must never give a reason to doubt it.
+  feels the need to check that the folder is untouched. Certainty is the product; the
+  experience must never give a reason to doubt it *(folder, not repository: the widening
+  owner-confirmed at trail/prd/cycle-9.md § 1.1, applied here awaiting confirmation)*.
 
 **The bounds v1 draws.**
 
@@ -295,15 +304,18 @@ runs on macOS, and promises nothing else. The promise is scoped to the maintenan
 one platform is a narrower promise than three, and a truthful one.
 
 The full ambition, so the cut reads as deliberate: a complete read-only inspection surface —
-diffs, commit history, search, keyboard-driven navigation, switching which repository is viewed
-without restarting (always one at a time) — and, further out, a front end for watching agent
+diffs, commit history, search, keyboard-driven navigation, switching which folder is viewed
+without restarting (always one at a time) *(folder, not repository: the word § Out of Scope
+already uses for this capability, widened at trail/prd/cycle-9.md § 1.1; applied here awaiting
+confirmation)* — and, further out, a front end for watching agent
 workflows and repository-inspection services (the input's own growth direction). v1 cuts to
 browsing, reading, status, and live refresh.
 
 ## Out of Scope
 
-- **Editing, permanently** — not a v1 cut: the product has no write path to the repository, in
-  any version. Adding one would be a different product.
+- **Editing, permanently** — not a v1 cut: the product has no write path to the folder, in
+  any version. Adding one would be a different product *(folder, not repository: the widening
+  owner-confirmed at trail/prd/cycle-9.md § 1.1, applied here awaiting confirmation)*.
 - **Git operations** — staging, committing, pushing, branch switching, discarding: viewer only.
 - **Diff and commit-history views** — beyond v1 (the input's own roadmap defers them).
 - **Sidebar search / filter** — outside the product's done, not merely beyond v1: the project's
