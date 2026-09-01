@@ -1,6 +1,6 @@
 # ADR-0009: The physical module set — `nozoki-core` as a library both the host and the harness link, `nozoki-app` as the only Tauri-aware unit, `nozoki-ui` as a capability-free bundle, `checks/` outside the bundle
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-09-01
 
 ## Context
@@ -62,6 +62,9 @@ record fixes are the ones `docs/nfdr.md` § 1.2 binds, and moving one moves that
 - `arch_defaults.md` v2.0.0 § Package Structure, § Composition Root — drawn on, not applied; a
   doctrine file of the organisation that publishes this product, outside this repository.
 - ADR-0001 (the seams), ADR-0002 (the units' languages), ADR-0004 (the port).
+- `docs/trail/architecture/cycle-1.md` § 2.5 — the owner's confirmation: the record moves to
+  Accepted with its *(Reconstructed …)* marking kept, because the unit set is settled SDD content
+  and only the weighing is this seat's.
 
 ## Binds
 

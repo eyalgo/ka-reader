@@ -1,9 +1,9 @@
 # NFDR — Nozoki 覗き
 
-**Status:** Draft
+**Status:** Settled
 **Owner:** Principal Architect
-**Version:** 1 — the constraint set stated for the first time, over the settled SDD and SRS with the FDR beside them: the module set and its import graph, the read-only and no-network invariants as machine checks, the three walls around rendered content, the release and sandbox gates, and the test-strategy realization for a Rust host with a TypeScript renderer. Nine items are parked for the owner in `docs/architecture_open_issues.md`.
-**Inputs read:** SRS Settled · SDD Settled · FDR Draft · PRD Settled · UXD Settled · DESIGN Settled · CONTENT Settled
+**Version:** 2 — the close: the owner's cycle-1 answers folded (`docs/trail/architecture/cycle-1.md`), ten of its eleven items, and the eleventh settled by derivation from the FDR at v3 (RN-11, RN-12). What this document now binds that v1 did not: a critical advisory blocks release with **no remediation window** — none, not undecided — and `cargo audit` gates every advisory with a reasoned ignore by id (QC-27); the secrets scan is `gitleaks git` (QC-28); QC-33's revocation clause names identity alone; the diagnostic log's bound is the SRS's — one session's lines, 1 MiB on disk, a failed write surfacing nowhere — and own-state retention follows the FDR's R-110 and R-178 – R-182, so QC-40 is a machine check with a § 10 row; the public contract's breaking/additive split (QC-59); own-state read whole or discarded whole, symmetric, silent, never a startup failure (QC-60). ADR-0009 is Accepted. RN-2 is corrected as history, RN-3, RN-4, RN-5 and RN-9 close on the trail, and the upstream moves since v1 read its sources are measured and recorded (RN-13). Nothing is left for the owner; `docs/architecture_open_issues.md` is removed and `Status:` is Settled. (v1: the constraint set stated for the first time, over the settled SDD and SRS with the FDR beside them: the module set and its import graph, the read-only and no-network invariants as machine checks, the three walls around rendered content, the release and sandbox gates, and the test-strategy realization for a Rust host with a TypeScript renderer; nine items parked for the owner.)
+**Inputs read:** SRS Settled · SDD Settled · FDR Settled · PRD Settled · UXD Settled · DESIGN Settled · CONTENT Settled
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
 > constraint a change is checked against, derived from the SRS, the SDD, the FDR and the ADR —
@@ -206,18 +206,27 @@ and an artifact that is not the reviewed tag.
   — *verified by:* `checks/no-network.sh` (the tree); the lockfile diff at `development-design`
   (the change) *(traces to: SDD § 4 C-R6; `quality_defaults.md` § Dependencies; TypeScript packet
   `toolchain.md` § Adding, pinning and locking a dependency; ADR-0004)*
-- **QC-27:** A dependency with a known critical vulnerability blocks the next release. **No
-  remediation window is stated**: the support posture promises no fix time (`docs/SRS.md` § 7
-  C-7, C-13; `docs/fdr.md` PD-22), and whether a window exists at all is the owner's — open at
-  `docs/architecture_open_issues.md` § 1.1.
-  — *verified by:* `cargo audit` and `pnpm audit --audit-level=critical` exit 0 (the tree), as a
-  release gate *(traces to: `quality_defaults.md` § Dependencies; SRS C-7; the commands are this
-  document's realization — RN-3)*
+- **QC-27:** A dependency with a known critical vulnerability blocks the next release, for as
+  long as it takes to fix, replace or remove the dependency. **No remediation window exists** —
+  none, not undecided: the support posture promises "no commitment to fix, and no commitment that
+  a fix ever arrives" (`docs/SRS.md` § 7 C-13, quoting `docs/PRD.md` § Assumptions "Support
+  posture"; `docs/fdr.md` PD-22), a fix for an advisory is a fix, and where the SRS states the bar
+  it outranks the doctrine floor's window. The floor's cost — an obligation nobody is late against
+  — is accepted, and is what the posture already tells adopters. The audit databases are fetched
+  by CI, never by the product (QC-32).
+  — *verified by:* `pnpm audit --audit-level=critical` exits 0; `cargo audit` exits 0 — it has no
+  severity threshold, so it gates on every advisory, stricter than *critical*: a non-critical
+  advisory a release carries is ignored by id, `--ignore <RUSTSEC-id>`, the ignore and its reason
+  added in the change that adds it and reviewed as code the way `checks/deps.allow` is (QC-26);
+  both over the tree, as a release gate *(traces to: `quality_defaults.md` § Dependencies; SRS C-7,
+  C-13; FDR PD-22; the commands are this document's realization — RN-3; the no-window call and the
+  `cargo audit` gate confirmed at `docs/trail/architecture/cycle-1.md` § 1.1, § 2.7 — RN-11)*
 - **QC-28:** No secret is in the repository, and the release workflow holds no signing identity.
-  — *verified by:* `gitleaks detect` exits 0 over the tree; `gh secret list --repo kensaiapp/nozoki`
-  prints no entry; `codesign -dv Nozoki.app` on the downloaded bundle reports `Signature=adhoc`
-  *(traces to: `quality_defaults.md` § Secrets; SDD § 4 C-R4; ADR-0007; the scanner is this
-  document's realization — RN-3)*
+  — *verified by:* `gitleaks git` exits 0 over the repository — exit 1 on a leak or an error;
+  `gh secret list --repo kensaiapp/nozoki` prints no entry; `codesign -dv Nozoki.app` on the
+  downloaded bundle reports `Signature=adhoc` *(traces to: `quality_defaults.md` § Secrets; SDD § 4
+  C-R4; ADR-0007; the scanner is this document's realization — RN-3; the command confirmed at
+  `docs/trail/architecture/cycle-1.md` § 2.7 — RN-11)*
 - **QC-29:** Every release's `SHA256SUMS` matches its artifact, and the artifact is built from the
   release's tagged commit by `.github/workflows/release.yml`; a release with no build from its tag
   is not offered.
@@ -249,10 +258,13 @@ and an artifact that is not the reviewed tag.
   exists: no account, no user record, no device identifier. Authorization is the operating
   system's — the sandbox grant to the folder the user chose in the Open panel is the whole of the
   product's authority over the folder. This stops being true the day the product gains a hosted
-  mode or a second folder, both of which the FDR places out of scope.
+  mode, an account, or any identifier — the hosted mode the FDR places out of scope. A second
+  granted folder would still be the operating system's grant and creates no identity, so it
+  revokes nothing here.
   — *verified by:* review at `development-specs` when a change adds a hosted mode, an account, or
   any identifier — a declared absence has nothing to run *(traces to: SDD § 4 C-D1; SRS NFR-7;
-  FDR PD-14, PD-33, OOS-11, OOS-12; ADR-0003)*
+  FDR PD-14, PD-33, OOS-11; ADR-0003; confirmed with the correction at
+  `docs/trail/architecture/cycle-1.md` § 2.3 — RN-9)*
 
 The **privilege** half binds. These are *reach* checks, not import checks (§ 1.2): a unit can
 import nothing forbidden and still read a path it was never granted.
@@ -291,12 +303,22 @@ import nothing forbidden and still read a path it was never granted.
   entries, never transmitted.
   — *verified by:* unit test on the log writer's line shape (layer 1); `checks/own-state.sh` —
   the log lies under the container (layer 5) *(traces to: SDD § 4 C-I2; SRS NFR-11; FDR R-93)*
-- **QC-40:** Retention: own-state persists until the user changes it by the control that set it,
-  and a remembered folder until its entry is removed. **The diagnostic log's size and retention
-  bound is undecided**; the owner decides it at `docs/architecture_open_issues.md` § 1.2, and the
-  SRS states it at NFR-11 by revision.
-  — *verified by:* review at `development-design` when a change touches own-state or the log — no
-  bound exists yet to assert *(traces to: FDR R-110; SRS NFR-11; SDD § 4 C-I2)*
+- **QC-40:** Retention. Own-state: a deliberate choice — the theme, the window state, which folder
+  is viewed — persists until the user changes it by the control that made it; the remembered-folders
+  list holds the ten folders most recently viewed, an entry persists until an eleventh ages it out,
+  no control removes an entry or clears the list, and an aged-out entry is not restored. The
+  diagnostic log holds at most the current session's lines: a launch creates the file where none
+  exists and truncates it where one does; within a session it is bounded to 1 MiB on disk, past
+  which it is emptied and writing continues; a failed write surfaces nowhere, stops no item and is
+  not retried.
+  — *verified by:* unit tests (layer 1) — the log writer truncates at launch and empties at the
+  cap (`cargo test -p nozoki-app`), and the remembered list evicts the oldest entry on the eleventh
+  and exposes no removal (`cargo test -p nozoki-core`); `checks/own-state.sh` after
+  `checks/churn.sh` — the log under the container is no larger than 1 MiB, and a line written
+  before a relaunch is absent after it (layer 5; `docs/SRS.md` AC-13's inspection, machine-run)
+  *(traces to: SRS NFR-11, AC-13; FDR R-110, R-178, R-180, R-182; SDD § 4 C-I2; § 3 `own-state`;
+  the bound raised from this document and folded at SRS v9 — `docs/trail/architecture/cycle-1.md`
+  § 1.2, RN-11; the remembered-folder clause brought to FDR v3 — RN-12)*
 - **QC-41:** Every release carries `LICENSE` (MIT) and a `THIRD_PARTY_NOTICES.md` listing every
   crate and package the bundle ships with its licence.
   — *verified by:* `checks/notices.sh` — the names in `cargo tree` and `pnpm ls --prod` each
@@ -431,19 +453,32 @@ exceeds the card.
 - **QC-59:** From the first 1.0.0 release the public contract semantic versioning binds is:
   every rule and product decision in `docs/fdr.md` as observable behaviour; the install path
   (QC-57); the readability of an earlier version's own-state (QC-60); and the macOS floor
-  (QC-56). A change to any of these is a major version after 1.0.0. **Drafted, awaiting
-  confirmation** — `docs/architecture_open_issues.md` § 2.1.
+  (QC-56). A *breaking* change to any of these — a behaviour the FDR states that no longer holds,
+  an install path or a floor that an adopter on the old one loses, an own-state a later version
+  can no longer read — is a major version after 1.0.0; an added behaviour that leaves every stated
+  rule holding — a seventh highlighted language, a new read surface, a lowered floor — is a minor
+  version. `docs/SRS.md` C-6's "the product's public contract" points here; the definition is a
+  constraint — a change could ship breaking as minor silently, and a check names it — so it lives
+  in this document and no SRS revision carries it.
   — *verified by:* review at `development-specs` — a change spec names which of the four it
-  touches, and the version bump follows; release inspection reads the version against the change
-  set (`docs/SRS.md` AC-14) *(traces to: SRS C-6; FDR R-142, PD-20; the contract's content is this
-  document's draft — RN-5)*
-- **QC-60:** A later version either reads an earlier version's own-state or discards it whole,
-  and in neither case touches the viewed folder; before 1.0.0 a discard is permitted and stated
-  where the release is offered; after 1.0.0 a discard is a breaking change under QC-59. **Drafted,
-  awaiting confirmation** — `docs/architecture_open_issues.md` § 2.2.
+  touches and whether the change is breaking or additive, and the version bump follows; release
+  inspection reads the version against the change set (`docs/SRS.md` AC-14) *(traces to: SRS C-6;
+  FDR R-142, PD-20; confirmed with the breaking/additive split at
+  `docs/trail/architecture/cycle-1.md` § 2.1 — RN-5, RN-11)*
+- **QC-60:** Own-state is read whole or discarded whole, and the rule is symmetric: a version
+  that meets own-state it cannot read — written by an earlier version or a later one — discards it
+  whole and opens as on first run, never reads it in part, never treats it as a startup failure,
+  says nothing about it in the window, and in neither case touches the viewed folder; two instances
+  of different versions sharing one own-state each read or discard whole at their own launch.
+  Before 1.0.0 a discard is inside the anything-may-change statement where the release is offered;
+  after 1.0.0 a discard is a breaking change under QC-59.
   — *verified by:* `checks/own-state.sh --from <previous-tag>` — a container written by the
-  previous release is opened by the current build without a write outside the container
-  (layer 5) *(traces to: SRS DR-5, C-6; FDR R-108, R-109; the rule is this document's draft — RN-5)*
+  previous release is opened by the current build without a write outside the container, and a
+  container the build cannot read leaves it at first-run state with no failure surface (layer 5);
+  unit test on own-state's reader (layer 1): an unreadable fixture yields the first-run state,
+  never a partial one *(traces to: FDR R-168 – R-170, PD-39; SRS DR-5, C-6, FR-3; FDR R-108,
+  R-109; the rule raised from this document, answered on the FDR's companion and folded at FDR v2
+  — `docs/trail/architecture/cycle-1.md` § 2.2, RN-5, RN-11)*
 
 ## 9. Test strategy
 
@@ -501,8 +536,8 @@ is right and this row is stale.
 | QC-23, QC-24, QC-36 | CSP; capability file; no plugin | `cargo test -p nozoki-app --test config` | the tree | CI build |
 | QC-25 | entitlements; sandbox present | `checks/bundle.sh` | the tree | CI build; release gate |
 | QC-26 | allowlist; frozen lockfiles | `checks/no-network.sh`; `pnpm install --frozen-lockfile`; `cargo build --locked` | the tree | CI build |
-| QC-27 | critical vulnerability | `cargo audit`; `pnpm audit --audit-level=critical` | the tree | release |
-| QC-28 | no secret; no signing identity | `gitleaks detect`; `gh secret list --repo kensaiapp/nozoki`; `codesign -dv Nozoki.app` | the tree; the release | CI build; release |
+| QC-27 | critical vulnerability | `cargo audit` (every advisory; `--ignore <RUSTSEC-id>` with its reason); `pnpm audit --audit-level=critical` | the tree | release |
+| QC-28 | no secret; no signing identity | `gitleaks git`; `gh secret list --repo kensaiapp/nozoki`; `codesign -dv Nozoki.app` | the tree; the release | CI build; release |
 | QC-29 | artifact = tag build | `shasum -a 256 -c SHA256SUMS` against a rebuild | the release | release |
 | QC-30, QC-58 | no other entry point; no configuration | `checks/structure.sh` | the tree | CI build |
 | QC-32 | empty egress set | AC-3 network monitor; `checks/no-network.sh` | the release; the tree | release; CI build |
@@ -511,6 +546,7 @@ is right and this row is stale.
 | QC-37 | asset handler | `cargo test -p nozoki-core --test markdown` | the change | `development-implementation` |
 | QC-38 | own-state fields | `checks/own-state.sh` | the tree | CI build |
 | QC-39, QC-52 | log shape and location | `cargo test -p nozoki-app` (layer 1); `checks/own-state.sh` | the change; the tree | `development-implementation`; CI build |
+| QC-40 | log bound; own-state retention | `cargo test -p nozoki-app`, `cargo test -p nozoki-core` (layer 1); `checks/own-state.sh` after `checks/churn.sh` | the change; the tree | `development-implementation`; CI build |
 | QC-41 | third-party notices | `checks/notices.sh` | the release | release |
 | QC-42 | private reporting; SECURITY.md | `gh api repos/kensaiapp/nozoki/private-vulnerability-reporting` | the release | release |
 | QC-44 | standing sentences verbatim | `checks/readme.sh` | the release | release |
@@ -524,7 +560,7 @@ is right and this row is stale.
 | QC-60 | own-state read across versions | `checks/own-state.sh --from <previous-tag>` | the release | release |
 
 Entries with no row are review gates, each arguing its downgrade in its own tail: QC-13 (the
-delegation half), QC-18, QC-21, QC-31, QC-33, QC-40, QC-43, QC-45, QC-50, QC-54, QC-57, QC-59.
+delegation half), QC-18, QC-21, QC-31, QC-33, QC-43, QC-45, QC-50, QC-54, QC-57, QC-59.
 
 ---
 
@@ -535,31 +571,65 @@ delegation half), QC-18, QC-21, QC-31, QC-33, QC-40, QC-43, QC-45, QC-50, QC-54,
   originates here. The SDD's § 4 conditions (`C-R`, `C-I`, `C-D`) are the source of most § 2 – § 8
   entries; the SDD describes each once and this document carries the checkable form, per the
   ownership rule that the enforceable statement lives where the checker looks.
-- **RN-2:** *(the FDR at Draft)* `docs/fdr.md` is Draft at v1 with eight companion items open
-  (`docs/fdr_open_issues.md`). Every FDR trace here is to a rule or decision the FDR carries from a
-  settled source; none turns on an item that companion holds. The one FDR contradiction with the
-  SRS — FR-13 versus the Git-view row opening the diff (`docs/fdr.md` RN-1) — is behaviour and
-  moves nothing structural.
+- **RN-2:** *(the FDR at Draft — history, corrected at v2)* v1 of this document read `docs/fdr.md`
+  at Draft, v1, with thirteen companion items open — `nozoki@a50718a`, the FDR's v1 commit;
+  `git show a50718a:docs/fdr_open_issues.md | grep -c '^### '` prints `13` — and v1 of this note
+  said *eight*, which was the second bucket alone and false when written. Every FDR trace v1 wrote
+  was to a rule or decision the FDR carried from a settled source, and none turned on an item that
+  companion held; the fourteenth item, this document's own QC-60 question (`nozoki@98df76b`), came
+  back as R-168 – R-170 and PD-39 and QC-60 traces to them. The FR-13 contradiction v1 recorded —
+  the Git-view row opening the diff against the SRS's row opening the file — ended at SRS v12
+  (`nozoki@5c9dda7`; `docs/fdr.md` RN-25) and was behaviour throughout. The FDR now stands Settled
+  at v3 (`nozoki@3325469`), its companion removed and its two rounds at `docs/trail/fdr/cycle-1.md`
+  and `cycle-2.md`; the header's `Inputs read:` line carries the present status. Corrected on the
+  owner's-seat answer at `docs/trail/architecture/cycle-1.md` § 2.8, which moved the count under
+  its commit and made the note history rather than present state.
 - **RN-3:** *(tools this document names where the SDD named none)* `cargo audit`,
-  `pnpm audit --audit-level=critical`, `gitleaks detect`, `checks/structure.sh`,
+  `pnpm audit --audit-level=critical`, `gitleaks git`, `checks/structure.sh`,
   `checks/notices.sh`, `checks/readme.sh`, `checks/strings.sh` and
   `cargo test -p nozoki-app --test config` are this document's realizations of obligations whose
   source names the obligation and not the command — the doctrine floors for secrets and
   dependencies, and the SDD's config, notice and wording bars. Another tool with an exit code
-  satisfies the same entry; the tool choice is the CTO's toolchain lane and is put to the owner as
-  `docs/architecture_open_issues.md` § 2.7. *(re: QC-9 – QC-17, QC-27, QC-28, QC-41, QC-44, QC-53;
-  source: `quality_defaults.md` § Secrets, § Dependencies; SDD § 4 C-R7, § 6 S-2, S-5)*
+  satisfies the same entry; the tool choice is the CTO's toolchain lane and was put to the owner,
+  who confirmed the set with two corrections (`docs/trail/architecture/cycle-1.md` § 2.7):
+  `gitleaks detect` — v1's spelling — is deprecated since gitleaks v8.19.0 in favour of
+  `gitleaks git` and `gitleaks dir`, exit 0 on no leak and 1 on a leak or an error
+  (https://github.com/gitleaks/gitleaks/blob/master/README.md), so QC-28 and § 10 name
+  `gitleaks git`; and `cargo audit` has no severity threshold — its only filter is
+  `--ignore <RUSTSEC-id>` (https://github.com/rustsec/rustsec/blob/main/cargo-audit/README.md) —
+  so QC-27 says its gate is every advisory and gives a non-critical one a recorded way through.
+  `pnpm audit --audit-level=critical` is as documented (https://pnpm.io/cli/audit). *(re: QC-9 –
+  QC-17, QC-27, QC-28, QC-41, QC-44, QC-53; source: `quality_defaults.md` § Secrets,
+  § Dependencies; SDD § 4 C-R7, § 6 S-2, S-5; `docs/trail/architecture/cycle-1.md` § 2.7)*
 - **RN-4:** *(an obligation the SRS states and the harness did not cover)* NFR-4 binds the
   promises "during and after crashes and abnormal exits", and the SDD's harness hashes a fixture
   around a clean run. QC-49 adds a kill mid-churn to `checks/read-only.sh`, because a delivery
-  session would otherwise find the crash half of NFR-4 unverified at release. *(re: QC-49; source:
-  SRS NFR-4, NFR-9; SDD § 4 C-I3)*
-- **RN-5:** *(two product-shaping gaps, drafted and routed)* The SRS binds semantic versioning
-  from 1.0.0 to "the product's public contract" and defines that contract nowhere (C-6); and no
-  document states what a later version does with an earlier version's own-state (DR-5). Both are
-  case-2 silences — two architects could answer differently — so QC-59 and QC-60 carry a draft and
-  the owner decides at `docs/architecture_open_issues.md` § 2.1 and § 2.2; the SRS is where each
-  lands by revision. *(re: QC-59, QC-60; source: SRS C-6, DR-5; FDR PD-20)*
+  session would otherwise find the crash half of NFR-4 unverified at release. Confirmed at
+  `docs/trail/architecture/cycle-1.md` § 2.6; how many kills and at which points is the layer-5
+  test's realization when it is written, not this entry's. *(re: QC-49; source: SRS NFR-4, NFR-9;
+  SDD § 4 C-I3; `docs/trail/architecture/cycle-1.md` § 2.6)*
+- **RN-5:** *(two product-shaping gaps, drafted, routed, and answered)* The SRS binds semantic
+  versioning from 1.0.0 to "the product's public contract" and defines that contract nowhere
+  (C-6); and no document stated what a later version does with an earlier version's own-state
+  (DR-5). Both were case-2 silences — two architects could answer differently — so v1 drafted
+  QC-59 and QC-60 and routed them. Both are answered. **QC-59** is confirmed with one addition
+  (`docs/trail/architecture/cycle-1.md` § 2.1): the word v1 dropped from C-6 — *breaking* — is
+  restored, with the additive case named as a minor version, because read literally the draft made
+  PD-9's floor growth a major version. The definition stays here rather than landing in the SRS as
+  v1 expected: it is a constraint by lifecycle — a change could ship breaking as minor silently and
+  `development-specs` naming the parts touched is the check — and C-6's "the product's public
+  contract" points at it; three of its four parts are the FDR itself or FDR rules (R-129, R-133).
+  **QC-60** was overridden into a wider rule and its behavioural half carried upstream
+  (`docs/trail/architecture/cycle-1.md` § 2.2): raised on the FDR's companion (`nozoki@98df76b`),
+  confirmed by the owner's seat with the discard made silent (`docs/trail/fdr/cycle-1.md` § 2.9),
+  and folded at FDR v2 as R-168 – R-170 and PD-39 (`nozoki@0eb5c67`) — symmetric, so a downgrade
+  is covered; never a startup failure, because FR-3's list is closed; silent in the window, the
+  release notes carrying the statement. QC-60 keeps its check and traces to those rules; its
+  verified-by gains the unreadable-container case and a layer-1 test on the reader — this
+  document's realization of R-168 and R-169, the way RN-4 extends C-I3 — and the
+  crash-mid-write of own-state that QC-49's kill can produce is exactly the case its
+  discard-whole clause exists for. *(re: QC-59, QC-60; source: SRS C-6, DR-5, FR-3; FDR PD-20,
+  R-168 – R-170, PD-39; `docs/trail/architecture/cycle-1.md` § 2.1, § 2.2)*
 - **RN-6:** *(the project card)* `system/projects/nozoki/project.md` still carries a provisional
   `pytest` test command and no `Languages:` line, while the SDD's command bar is
   `cargo test --workspace` and the units are Rust and TypeScript. § 8 points at the card as the
@@ -578,12 +648,81 @@ delegation half), QC-18, QC-21, QC-31, QC-33, QC-40, QC-43, QC-45, QC-50, QC-54,
   full, so the trace is provenance and never a dependency — the same resolution
   `docs/CONTENT.md` § CONTENT Review Notes RN-15 records for that document. *(re: QC-26 – QC-32,
   QC-38, QC-53, § 9)*
-- **RN-9:** *(two not-applicable declarations)* § 3's identity half and § 7's non-repudiation
-  clause are declared not applicable, each with the boundary that makes it true and the change
-  that would revoke it; both reach the owner as `docs/architecture_open_issues.md` § 2.3 and § 2.4
-  rather than as silent holes. *(re: QC-33, QC-54)*
+- **RN-9:** *(two not-applicable declarations, confirmed)* § 3's identity half and § 7's
+  non-repudiation clause are declared not applicable, each with the boundary that makes it true and
+  the change that would revoke it; both reached the owner rather than standing as silent holes, and
+  both are confirmed (`docs/trail/architecture/cycle-1.md` § 2.3, § 2.4). One correction rode with
+  QC-33: v1's revocation sentence named "a hosted mode or a second folder", and a second granted
+  folder is still the operating system's grant and creates no identity — it revokes nothing — so the
+  sentence now names what the entry's own verified-by already named, a hosted mode, an account, or
+  any identifier, and OOS-12 leaves the trace. The security-scoped bookmark (beyond v1) identifies a
+  folder, not a person or a device, and stays inside the declaration. *(re: QC-33, QC-54;
+  `docs/trail/architecture/cycle-1.md` § 2.3, § 2.4)*
 - **RN-10:** *(what stays out)* The raw-source switch not built (SDD TO-5), the extension set
   (SDD RN-12) and the default branch set (SDD RN-16) are product-visible behaviour the FDR carries
   (PD-11, R-44, R-117) and earn no record or entry here: each is cheap to reverse and a change to
   it is behaviour-visible, which is the FDR's tell. The macOS floor (SDD TO-8) is an entry (QC-56)
   and not a record, because its undo cost is one value and a machine to test on.
+- **RN-11:** *(the cycle-1 fold — what moved, and on whose authority)* Every change to settled
+  content in this revision names its authorization; the companion as answered is
+  `docs/trail/architecture/cycle-1.md`, and its ten answers were the owner's seat's — nine by a
+  `companion-self-answer` run (`docs/trail/architecture/self_answer-1.md`, `nozoki@a44a19e`), one
+  more by a second (`self_answer-2.md`, `nozoki@357190e`). § 1.1 → QC-27 (no window; the SRS bar
+  C-13 outranks the floor). § 1.2 → QC-40 takes the number the SRS folded at v9 (`nozoki@82c199a`,
+  NFR-11, AC-13) and becomes a machine check — the two layer-1 tests and the `checks/own-state.sh`
+  reading it names are this document's realization, as RN-3's tools are; the pointer to the
+  companion goes. § 2.1 → QC-59's
+  breaking/additive split (RN-5). § 2.2 → QC-60 restated on the FDR's R-168 – R-170 and PD-39
+  (RN-5). § 2.3 → QC-33's revocation clause (RN-9). § 2.4 → QC-54 stands. § 2.5 → ADR-0009 moves
+  to Accepted, its reconstructed marking kept, one trace line added while it was still Proposed;
+  the index follows. § 2.6 → QC-49 stands (RN-4). § 2.7 → `gitleaks git` and `cargo audit`'s
+  every-advisory gate (RN-3). § 2.8 → RN-2 as history. § 2.9 had no answer and is settled by
+  derivation (RN-12). No `QC` ID is renumbered or reused; no accepted record is edited beyond
+  ADR-0009's Status line and the one trace line added before it was accepted. *(re: QC-27, QC-28,
+  QC-33, QC-40, QC-49, QC-54, QC-59, QC-60, § 10, RN-2 – RN-5, RN-9; ADR-0009; source:
+  `docs/trail/architecture/cycle-1.md`)*
+- **RN-12:** *(the FDR moved under two accepted records and one entry; settled by derivation)*
+  Item 2.9 of the cycle-1 companion was raised by the second self-answer run with an empty slot and
+  the note that how the log carries it "is the producing run's call". Both halves are derived here
+  rather than routed, because the test between a decision and a derivation — could two architects
+  reading the same sources answer differently? — returns the same answer for each. **QC-40.** v1
+  wrote "a remembered folder until its entry is removed", true of the FDR at v1 (`nozoki@a50718a`)
+  and false at v3: R-178 – R-182 (`nozoki@0eb5c67`) and R-110 as re-worded at v3 (`nozoki@3325469`)
+  state that no control removes an entry, the list changes only by viewing a folder, and an
+  aged-out entry is not restored. A settled entry changes on a new upstream sentence, and the FDR is
+  upstream of this document; QC-40 now states the FDR's rule and traces to it — transcription, not
+  a call. **ADR-0003 and ADR-0005.** Each record's § Consequences says the Git view presents the
+  outside-the-grant case "as a failure naming the folder to choose", citing `docs/fdr.md` R-21 —
+  the FDR's v1 text (`nozoki@a50718a:docs/fdr.md`, R-21). The owner's seat overrode R-21 at v2
+  (`docs/trail/fdr/cycle-1.md` § 2.7; `docs/fdr.md` RN-7): the failure state names where the Git
+  directory lies, says this folder's Git state is therefore not read, and offers no folder to
+  choose, because choosing that folder views *that* folder (PD-4) and the route led somewhere else.
+  Neither record's decision moved — the sandbox wall and the port's `probe` reporting the `gitdir`
+  target are what they were — and an accepted record is never edited; a superseding record is how a
+  *reversal* lands, and no decision reversed. So the two records stand as written, dated, and this
+  note is where a reader following their R-21 citation is told the sentence behind it moved: the
+  behaviour a delivery reader builds and QA verifies is `docs/fdr.md` R-21 at its current version,
+  never a record's consequence sentence, which is a dated reading of the source it cites. No entry
+  here restates the failure state's wording — QC-5 binds the finding, not the surface — so nothing
+  in § 1 – § 8 was false for it. *(re: QC-40; ADR-0003 § Consequences, ADR-0005 § Consequences;
+  source: FDR R-21, R-110, R-178 – R-182, RN-7, RN-26; `docs/trail/fdr/cycle-1.md` § 1.2, § 2.7;
+  `docs/trail/fdr/cycle-2.md` § 2.3; `docs/trail/architecture/cycle-1.md` § 2.9)*
+- **RN-13:** *(upstream moved under this document since v1 read its sources)* Measured on
+  2026-09-01 as `git diff --stat b23ed43 HEAD` over the seven inputs, `b23ed43` being v1's own
+  commit. `docs/SRS.md` v8 → v12: NFR-11 and AC-13 gained the log's bound at v9 (`nozoki@82c199a`)
+  — QC-40 carries it; FR-13, AC-6 and AC-12 took the Git-view row's two readings at v12
+  (`nozoki@5c9dda7`) — behaviour, no entry moves, RN-2 records the close; RN-35's clause closed at
+  v10 and 80 trail pointers were repaired at v9 — nothing here cites a repaired path.
+  `docs/SDD.md` v2 → v3 (`nozoki@5c776aa`): C-R6 reads `pnpm ls` where it read `npm ls` — QC-3 and
+  QC-26 already realized the clause as pnpm, so nothing moves; § 12 and RN-6 – RN-8 name ADR-0001,
+  ADR-0002 and ADR-0004; 40 trail pointers repaired. `docs/fdr.md` v1 → v3 (`nozoki@0eb5c67`,
+  `nozoki@3325469`), now Settled: R-168 – R-170 and PD-39 — QC-60; R-178 – R-182 and R-110 —
+  QC-40 (RN-12); R-21 overridden — RN-12; the 37 rules and one decision v2 added beyond those
+  (`docs/fdr.md` header, its v2 clause) and R-166 are behaviour and move no entry. `docs/PRD.md` v11 → v15, `docs/UXD.md` v6 → v10, `docs/DESIGN.md` v5 → v8 and
+  `docs/CONTENT.md` v4 → v6: wording, the startup surface, the history's home, the folder rename
+  and citation repairs — none states a structural fact, a quality floor or a standing sentence
+  differently from what QC-44, QC-51, QC-53 and QC-55 – QC-58 bind, and the six standing sentences
+  QC-44 names read at v6 as they read at v4 (`docs/CONTENT.md` § Standing sentences, its table
+  diffed against `b23ed43:docs/CONTENT.md` — no line differs). The project card (RN-6) is unchanged and still
+  provisional. *(re: header `Inputs read:`; QC-3, QC-26, QC-40, QC-44, QC-60; source: the seven
+  documents at HEAD, 2026-09-01)*
