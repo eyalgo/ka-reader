@@ -50,4 +50,16 @@
   SRS 80, SDD 40, UXD 71, DESIGN 30, CONTENT 12; 231 of them unpinned. The cheapest repair is plainly
   one mechanical sweep across all six rather than six document cycles, and which way it is done is the
   owner's call. This item exists so the defect is not invisible if no cycle is ever spent on it.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm — the rule as drafted, `docs/<x>_trail/` → `docs/trail/<x>/`,
+  applied to all 30, and the measurement holds for this document: 30 citations with the `docs/`
+  prefix and 30 without it, so there is no bare-form citation the pattern misses (the PRD's case,
+  `docs/trail/prd/self_answer-1.md` § 2.1), and 0 pinned to a commit, so nothing is excluded. All
+  seven distinct targets exist at the new path and all seventeen cited sections carry the heading
+  this document attributes to them, checked one by one on 2026-09-01. The six `docs/uxd_trail/`
+  citations are to the re-authored UXD's trail, not the one removed at `nozoki@9017ae2`: this
+  document's v1 was authored 2026-08-26 off UXD v2 (`nozoki@e1e54f6`), and the sections it cites
+  (cycle-1 § 2.5 and § 2.6; cycle-2 § 1.1, cited with `nozoki@f4bc928`) exist only in the
+  re-authored files — so the hazard the SRS run found on its own `uxd_trail` lines
+  (`docs/trail/srs/self_answer-1.md` § 2.2) does not arise here and none of the six is repaired by
+  hand. The reason to record on the version line is `nozoki@1e8bf3d`. Reasoning:
+  `docs/trail/design/self_answer-1.md` § 2.1.
