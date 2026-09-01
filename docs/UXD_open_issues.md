@@ -103,4 +103,59 @@
   surface with its two routes — and leave UX-S4 as the failure case, rather than rename UX-S4; say so
   in the slot if the one row is preferred. And where the startup surface renders stays in § Open
   Questions either way; the cancelled-panel cell does not settle it.
-- **Confirm or override:**
+- **Confirm or override:** confirm — UX-F2, § 4 and UX-S6 take the owner's two demonstrated
+  answers, and § 6 gains the four states, with the following settled so the fold lands one shape.
+  **(1) The Git-view row.** UX-F2 states the row as a system state, in this document's own terms:
+  where the diff (UX-S5) is not present, opening a changed file from the Git view reads it exactly
+  as a tree selection does; where it is present, the row opens that file's diff in the reading
+  panel — one click target, the status letter a label and never a second one — and the file is
+  read from the tree. The row never falls back: a diff that cannot be produced is UX-S5's failure
+  cell, and the file stays readable from the tree. UX-F2's data line gains the diff's presence;
+  UX-F4 already agrees and does not move. Which diff a staged-and-modified, untracked or
+  conflicted row opens is behaviour at the FDR's altitude and is not lifted here. UX-F2 carries
+  the *changed* marker at the entry against PRD § Key Use Cases 2, with a review note in RN-25's
+  shape; the PRD is not reopened — that sentence names no control, and the changed files are
+  still opened and read, from the tree. **(2) The history's home.** § 4 *Beyond v1, inside the
+  terminus* and UX-S6's success cell state that the Git view carries an entry for the history
+  and, opened, the history is drawn in the sidebar as commit rows beneath the changes list, a
+  selected commit's diff taking the reading panel; nothing else in UX-S6 or RN-14 moves.
+  **(3) The stated end (c).** UX-S6's success cell: where the history shown ends before the
+  repository's does, the view states at its end that older commits are not shown; where the
+  whole history fits, nothing is stated; no control loads more; a chosen branch whose divergence
+  lies past that end runs to it without its join drawn. **(4) The startup surface (a) — one
+  row, not two.** UX-S4 is re-titled *Startup surface*; its Empty cell holds the Open panel
+  dismissed before any folder is chosen — the surface with its two routes (choose a folder,
+  leave) and no failure sentence, because nothing failed; dismissing the panel again returns to
+  the same surface, as often as it happens; beyond v1, when the panel is presented for want of a
+  remembered folder, the selector's browse entry is the route. Its Error cell stands as written;
+  Loading and Success stay n/a with their reasons. A separate row is not opened: § 6's rows are
+  surfaces, and RN-27(a)'s ground — a row per state names a screen the product does not have —
+  holds here too. **And the [OPEN] closes:** the startup surface renders in the app's window,
+  never as terminal text. The question named its own closing condition — *settled by the SDD
+  when it fixes the start mechanism* — and the SDD has: the system Open panel at launch, UX-S4 in
+  the window (`docs/SDD.md` § 4 C-R3; owner-confirmed `docs/trail/sdd/cycle-1.md` § 2.3). RN-11's
+  terminal-fence clause and RN-20's handed-forward seam close with it. **(5) The selector (b).**
+  UX-S7's success cell: the list holds the ten folders most recently viewed, most recent first,
+  the current one among them and marked, an eleventh viewed dropping the one viewed longest ago;
+  an entry stays until it ages out — choosing one whose folder is gone is the Error cell as
+  written, the current folder still viewed — and no control removes an entry or clears the list.
+  The Empty cell is read as the state before any folder has been viewed — the startup surface's
+  selector, beyond v1 — and says so; from the first folder viewed the list holds it. How the
+  current entry is marked is `docs/DESIGN.md`'s. **(6) Images (d).** UX-I12 states three cases:
+  an image inside the folder renders in place (the owner's call, `docs/trail/sdd/cycle-1.md`
+  § 2.4 — this document has never said so); an image whose reference points outside the folder —
+  remote, or a path that escapes it — takes the stated not-fetched placeholder, its "remote"
+  reading "outside the folder"; an image inside the folder whose file is missing, unreadable or
+  not an image takes a placeholder stating what was observed, never a broken-image glyph.
+  **(7) The short status.** UX-S3's success cell carries what the status says, not a pointer:
+  the repository's non-normal state in Git's own word — merge, rebase, cherry-pick, revert,
+  bisect, detached — or that nothing has changed when the tree and index are clean; it carries
+  no count, the two lists do; on a detached HEAD the branch element shows the commit's
+  identifier; during a rebase the branch being rebased is not shown — named uncovered. The words
+  are `docs/CONTENT.md`'s. **Authorization and traces:** every delta cites this companion's own
+  trail cycle; the owner's demonstrations (`docs/trail/sdd/cycle-1.md` § 1.2, § 1.3, § 2.3,
+  § 2.4) are the evidence the review note quotes, and the FDR is cited nowhere. § 11 gains a row
+  per touched entry. `docs/CONTENT.md` and `docs/DESIGN.md` are owed a round **after** this
+  fold — the sentences for the new states and the drawing of the startup surface's empty
+  state — and nothing is opened on either now, because there is no settled text yet for them to
+  follow. Reasoning: `docs/trail/uxd/self_answer-3.md` § 2.1.
