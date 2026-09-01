@@ -82,3 +82,35 @@
 - **Rationale:** `docs/SDD.md` § 4 C-D3 has the product answer nothing for a path outside the folder (symbolic links followed), and the SDD's CDO seat drew that nothing as the same placeholder a remote image takes, naming it a reading the UXD's own run outranks (`docs/SDD.md` § SDD Review Notes RN-26). Two seats hedged it, and what the reader sees where an image would be is product-visible, so it is yours.
 - **If overridden:** drawing the escaping image differently from a remote one — a distinct statement, or an empty box — rewords R-59 and the example row, and asks the UXD's UX-I12 and the verbal language for the new state; nothing about R-56 – R-58 moves.
 - **Confirm or override:**
+
+### 2.9 What a later version does with an earlier version's own state — kept, or discarded whole, never a startup failure
+
+> **This item was raised by a `companion-self-answer` run on the architecture companion
+> (`docs/architecture_open_issues.md` § 2.2), not by a `product-fdr` run.** The Principal Architect
+> drafted the rule as `docs/nfdr.md` QC-60 and put it to the owner; its visible half — remembered
+> folders and the theme surviving an upgrade, or not — is behaviour, which is this document's, so
+> the item lands here with the run's answer and its reasoning
+> (`docs/trail/architecture/self_answer-1.md` § 2.2). The decision is the next round's.
+
+- **Drafted into the FDR:** nothing yet — proposed as a rule beside R-108 – R-110: *A later version
+  of the product either reads an earlier version's own state — theme, window state, remembered
+  folders — or discards it whole, and in neither case touches the viewed folder; a version that
+  meets own state it cannot read, earlier or later, discards it whole and opens as on first run,
+  never as a startup failure. Before 1.0.0 a discard is inside the anything-may-change statement
+  (R-142); from 1.0.0 a discard is a breaking change and takes a major version (PD-20).*
+- **Rationale:** own state is the one thing a stranger accumulates across releases (`docs/SRS.md`
+  § 6 DR-5; R-108), and no rule says whether an upgrade keeps it — "my remembered folders vanished"
+  is behaviour an adopter meets. The NFDR's draft (QC-60) is taken with two additions. The rule is
+  made *symmetric*, so a downgrade — an older `.dmg` over a newer own state, which a rule about
+  "a later version" cannot bind once the older version has shipped — is covered by every version
+  discarding what it cannot read. And an unreadable own state is named as *not a startup failure*:
+  R-7's failure list is closed to the three folder cases, and a product that would not open because
+  of its own file breaks that. "Read or discard whole", never partial, because a half-read state is
+  one nobody can reason about. Adjacent to § 1.2 above: that item is about retention *inside* a
+  version, this one about survival *across* versions; answering them together keeps R-108's two
+  halves in one place.
+- **If overridden:** requiring migration always adds a check per release and a migration path from
+  the first release on; permitting discard always removes own state from what semantic versioning
+  protects (`docs/nfdr.md` QC-59's contract). Either way the NFDR's QC-60 follows this document's
+  rule by its own revision and keeps its check (`checks/own-state.sh --from <previous-tag>`).
+- **Confirm or override:**
