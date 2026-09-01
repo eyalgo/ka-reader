@@ -1,8 +1,8 @@
 # SRS — Nozoki 覗き
 
-**Status:** Draft
+**Status:** Settled
 **Owner:** CTO
-**Version:** 11 — bookkeeping only. `Status:` returns to Draft: a companion is open beside this document (`docs/SRS_open_issues.md`), and this SRS is Settled only when none is. No requirement, criterion, constraint or review note changed — the companion's one item is unanswered, and an unanswered re-run changes nothing this document states. (v10: one change, with its authorization. RN-35's sibling sentence gains its close: the divergence it records — `docs/UXD.md` UX-S4 making a non-repository a startup failure — ended at UXD v6 (`nozoki@dd08f2d`, 2026-08-26), and the close is pinned to that version and commit so it stays true whatever the UXD does next; confirmed at `docs/trail/srs/cycle-9.md` § 2.1. No requirement moves: FR-3 and FR-34 are unchanged and agree with the UXD. Nothing is left for the owner to answer; the companion is closed. (v9: two changes, each with its authorization. NFR-11 gains the diagnostic log's bound — one session's lines, the file created or truncated at launch, at most 1 MiB on disk within a session with emptied-and-continue, and a failed log write surfacing nowhere — the choice confirmed at `docs/trail/srs/cycle-8.md` § 2.1 (RN-36; AC-13 inspects it). And the 80 trail citations this document rests on are repaired: the 77 `docs/prd_trail/` and `docs/srs_trail/` pointers read `docs/trail/prd/` and `docs/trail/srs/`, because the answer-trails moved under `docs/trail/` at `nozoki@1e8bf3d` and the citing documents were not moved with them (authorized: `docs/trail/srs/cycle-8.md` § 2.2); nothing those citations authorize changes. Of the three `docs/uxd_trail/` mentions, RN-19's authorization for FR-18's shape takes the commit-pinned form `nozoki@1d5c553:docs/uxd_trail/cycle-2.md` § 2.1 — the file now at `docs/trail/uxd/cycle-2.md` is the re-authored UXD's cycle 2, not the one cited — and the two in RN-19 and RN-20 that describe the folder's removal at `9017ae2` are history and stand as written. One item stays open in `docs/SRS_open_issues.md`. (v8: the input contract widens from one local Git repository to one local folder, a Git repository or not, as PRD v11 states it (`docs/trail/prd/cycle-9.md` § 1.1, `docs/trail/prd/cycle-10.md` § 2.2 – § 2.4; the owner's fold directive: `docs/trail/srs/cycle-7.md` § 1.1). FR-33 says when Git is read and FR-34 what holds when it is not, and every Git-derived requirement cites them (RN-31 – RN-33); PRD v9's reader floor and README lines are folded on the same upstream branch (RN-34). Nothing is left for the owner to answer; the companion is closed.)))
+**Version:** 12 — one change, with its authorization. FR-13 takes two readings, stated as a system state: where the diff (FR-17) is not present, activating a changed file's row in the Git view opens the file for reading exactly as a tree selection does; where it is present, activating the row opens that file's diff, and the file is read from the tree — the owner's call, confirmed at `docs/trail/srs/cycle-10.md` § 2.1 (RN-37). FR-13 carries the *changed* marker at the requirement; AC-6 takes both readings and AC-12 gains the row opening the diff; FR-17 and FR-22 do not move; the PRD is not reopened (RN-37). Nothing is left for the owner to answer; the companion is closed. (v11: bookkeeping only. `Status:` returns to Draft: a companion is open beside this document (`docs/SRS_open_issues.md`), and this SRS is Settled only when none is. No requirement, criterion, constraint or review note changed — the companion's one item is unanswered, and an unanswered re-run changes nothing this document states. (v10: one change, with its authorization. RN-35's sibling sentence gains its close: the divergence it records — `docs/UXD.md` UX-S4 making a non-repository a startup failure — ended at UXD v6 (`nozoki@dd08f2d`, 2026-08-26), and the close is pinned to that version and commit so it stays true whatever the UXD does next; confirmed at `docs/trail/srs/cycle-9.md` § 2.1. No requirement moves: FR-3 and FR-34 are unchanged and agree with the UXD. Nothing is left for the owner to answer; the companion is closed. (v9: two changes, each with its authorization. NFR-11 gains the diagnostic log's bound — one session's lines, the file created or truncated at launch, at most 1 MiB on disk within a session with emptied-and-continue, and a failed log write surfacing nowhere — the choice confirmed at `docs/trail/srs/cycle-8.md` § 2.1 (RN-36; AC-13 inspects it). And the 80 trail citations this document rests on are repaired: the 77 `docs/prd_trail/` and `docs/srs_trail/` pointers read `docs/trail/prd/` and `docs/trail/srs/`, because the answer-trails moved under `docs/trail/` at `nozoki@1e8bf3d` and the citing documents were not moved with them (authorized: `docs/trail/srs/cycle-8.md` § 2.2); nothing those citations authorize changes. Of the three `docs/uxd_trail/` mentions, RN-19's authorization for FR-18's shape takes the commit-pinned form `nozoki@1d5c553:docs/uxd_trail/cycle-2.md` § 2.1 — the file now at `docs/trail/uxd/cycle-2.md` is the re-authored UXD's cycle 2, not the one cited — and the two in RN-19 and RN-20 that describe the folder's removal at `9017ae2` are history and stand as written. One item stays open in `docs/SRS_open_issues.md`. (v8: the input contract widens from one local Git repository to one local folder, a Git repository or not, as PRD v11 states it (`docs/trail/prd/cycle-9.md` § 1.1, `docs/trail/prd/cycle-10.md` § 2.2 – § 2.4; the owner's fold directive: `docs/trail/srs/cycle-7.md` § 1.1). FR-33 says when Git is read and FR-34 what holds when it is not, and every Git-derived requirement cites them (RN-31 – RN-33); PRD v9's reader floor and README lines are folded on the same upstream branch (RN-34). Nothing is left for the owner to answer; the companion is closed.))))
 
 > The SRS is the technical source of truth: the system-level **what**, derived from the PRD and
 > read cold by the Principal PM (Delivery Plan / FDR) and the Principal Architect (ADR / NFDR).
@@ -205,8 +205,15 @@ revisitable (FR-19); telemetry and non-essential network calls.
   changed files, staged files, branch name, and a short repository status; in a plain folder it
   shows nothing (FR-34). *(traces to: PRD Core Features "Git view", Key Use Case 2, Key Use Case
   4)*
-- **FR-13:** A file listed in the Git view can be opened for reading exactly as a tree selection
-  is. *(traces to: PRD Key Use Case 2 "opens the changed files to read them")*
+- **FR-13:** *(changed)* What activating a changed file's row in the Git view opens is a system
+  state, not a delivery moment. Where the diff (FR-17) is not present, activating the row opens
+  the file for reading exactly as a tree selection does. Where the diff is present, activating the
+  row opens that file's diff, and the file is read from the tree (FR-5, FR-7). The row never falls
+  back: a diff that cannot be produced degrades that item's view under NFR-3, and the file stays
+  readable from the tree. In a plain folder the Git view lists nothing (FR-34). *(traces to: PRD
+  Key Use Case 2 "opens the changed files to read them" — the first reading; the second reading
+  is the owner's call, confirmed at `docs/trail/srs/cycle-10.md` § 2.1, and departs from the
+  settled reading of that sentence: RN-37)*
 - **FR-25:** Sidebar mode and the open file are independent: switching the sidebar between Files
   and Git never closes or changes the file being read. *(traces to: PRD UX Notes "The path"
   step 3 "Checking")*
@@ -518,8 +525,10 @@ see RN-8)*
   are marked and the selection highlighted. *(covers: FR-5 – FR-8, FR-29; widened at v5 with the
   floor: RN-22; the recognition cases added at v6: RN-27)*
 - **AC-6:** Against a repository with staged and unstaged changes on a named branch, the Git view
-  shows all four elements (changed files, staged files, branch, status) correctly, and its files
-  open for reading. *(covers: FR-11 – FR-13)*
+  shows all four elements (changed files, staged files, branch, status) correctly, and activating
+  a listed file's row opens the file for reading where the build under test has no diff (FR-17),
+  or opens that file's diff where it does — the file readable from the tree either way. *(covers:
+  FR-11 – FR-13; FR-13's two readings at v12: RN-37)*
 - **AC-7:** An external file create, modify, and delete, and an external Git staging operation,
   each appear in the view with no user action, within NFR-2's bar. In a plain folder the file
   create, modify and delete appear the same way; and a repository initialised at the opened
@@ -538,14 +547,16 @@ see RN-8)*
   Verification is a timed manual walk — deliberately not automated, because the thing measured
   is a stranger's path. *(covers: NFR-13, C-3, C-9, C-11)*
 - **AC-11:** Both themes are present and usable from the first release. *(covers: FR-20)*
-- **AC-12:** At the closing release, the diff view (staged distinguished from unstaged), the
-  commit history — against a repository whose history holds more than one branch: the branches
-  visible as branches, the presented branch set choosable, and the default asking nothing — with
-  its per-commit diffs, and folder switching — to a repository and to a plain folder, each
-  behaving as FR-33 and FR-34 require — are present, read-only, and AC-1 – AC-3 still pass with
-  them exercised. *(covers: FR-17 – FR-19, FR-22; history coverage widened with FR-18: RN-19; the
-  FR-31 clause removed at v6, the switch being outside the terminus: RN-29; the switch's two
-  targets added at v8: RN-31)*
+- **AC-12:** At the closing release, the diff view (staged distinguished from unstaged) — opened
+  by activating a changed file's row in the Git view, with the file still read from the tree —
+  the commit history — against a repository whose history holds more than one branch: the
+  branches visible as branches, the presented branch set choosable, and the default asking
+  nothing — with its per-commit diffs, and folder switching — to a repository and to a plain
+  folder, each behaving as FR-33 and FR-34 require — are present, read-only, and AC-1 – AC-3
+  still pass with them exercised. *(covers: FR-13, FR-17 – FR-19, FR-22; history coverage widened
+  with FR-18: RN-19; the FR-31 clause removed at v6, the switch being outside the terminus:
+  RN-29; the switch's two targets added at v8: RN-31; the row opening the diff added at v12:
+  RN-37)*
 - **AC-13:** After a session in which preferences changed, new or changed files exist only in the
   tool's own data location — none under the viewed folder's path — and inspection finds nothing
   personal and no content of the viewed folder in them. Where a diagnostic log is among them, it
@@ -973,3 +984,29 @@ see RN-8)*
   AC-13's own-state inspection gains the bound; the mechanism and the test that reads the number
   are downstream, the SDD's and the NFDR's *(re: NFR-11, AC-13, FR-21, DR-5; PRD source: Data &
   Privacy, UX Notes)*.
+- **RN-37:** *(changed — FR-13, AC-6, AC-12)* What activating a changed file's row in the Git view
+  opens — the owner's call, confirmed at `docs/trail/srs/cycle-10.md` § 2.1, which carries the
+  owner's words: *"the row opens the diff. One click target on the row; the file itself is read by
+  clicking it in the tree."* The PRD says *"opens the changed files to read them"* (`docs/PRD.md`
+  § Key Use Cases, item 2), and FR-13 traced to that sentence unconditionally, reading it as the
+  Git view's row opening the file. FR-13 now states two readings as a system state, never a
+  delivery moment — FR-17 already reads *(beyond v1)*: where the diff is not present the row opens
+  the file for reading as a tree selection does, and Key Use Case 2 stays the trace of that
+  reading; where it is present the row opens that file's diff and the file is read from the tree.
+  The second reading departs from the settled reading of the PRD sentence, so the relation is
+  *changed*, as RN-29's is. The PRD is not reopened: Key Use Case 2 names no control and no row,
+  and "opens the changed files to read them" holds at the closing release — from the tree, with
+  FR-6's markers naming which files — so no PRD fact is false and nothing upstream of it moved;
+  this note records that so a later reverse walk does not re-raise it. The row never falls back: a
+  diff that cannot be produced degrades that item's view under NFR-3 and the file stays readable
+  from the tree — a row that changed meaning on failure would give one control two jobs, against
+  the owner's "one click target on the row". Which diff a staged-and-modified, an untracked or a
+  conflicted row opens is behaviour below this document's altitude and is not stated here: FR-13
+  says the row opens *that file's diff*, and FR-17 says what a diff distinguishes. Propagation:
+  AC-6 takes both readings; AC-12 exercises the row opening the diff at the closing release; FR-17
+  and FR-22 do not move. Four further sites name FR-13 or its behaviour and stand as written —
+  FR-32's "exactly as a tree selection does (FR-7, FR-13)" names the shape a relative link opens
+  with, which the first reading still carries; FR-34's list of Git-derived presentations, true of
+  both readings; AC-18's "files still open for reading", the tree's; RN-31's list of the
+  requirements that keep "repository". No site beyond these names FR-13 *(re: FR-13, AC-6, AC-12;
+  PRD source: Key Use Case 2)*.
