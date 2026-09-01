@@ -2,7 +2,7 @@
 
 **Status:** Draft
 **Owner:** CPO
-**Version:** 13 — eight sentences that still named the input *repository* after the v11 widening now read *folder*, each marked *awaiting confirmation* where it sits: § Core Features "any file in the folder"; § UX Notes "The character" (two), "The path" 5 "Leaving", the *view never lies* rule, and "Trusting the tool"; § Scope (In)'s full ambition; § Out of Scope "Editing, permanently". The authorization is the widening the owner directed (`docs/trail/prd/cycle-9.md` § 1.1) and the three sections its fold kept as *repository* on purpose — Problem Statement, Why This, Target Users (`docs/trail/prd/cycle-10.md` § 2.1) — which none of the eight is in; one of them, the full ambition's *"switching which repository is viewed"*, contradicted § Out of Scope's own *"Changing the viewed folder"* and the project Agari. Nothing else about the product changes; `Status:` is Draft while `docs/PRD_open_issues.md` is open. (v12: nothing about the product changes: the 62 trail citations this document rests on (`prd_trail/`, `srs_trail/` — 58 and 2 in the body, 2 on this line) are repaired to `trail/prd/` and `trail/srs/`, because the answer-trails moved under `docs/trail/` at `nozoki@1e8bf3d` and the citing documents were not moved with them; commit-pinned citations were excluded, and this document carries none. Authorized by the owner's cycle-11 answer (`docs/trail/prd/cycle-11.md` § 2.1). (v11: the owner's cycle-10 answers folded — `docs/trail/prd/cycle-10.md` — a reader of folders, files and repositories; the Git view shows nothing in a plain folder.))
+**Version:** 14 — one word in § UX Notes "The character": the dominant surface is the *reading panel*, not the *editor panel*, marked *awaiting confirmation* where it sits. The authorization is the document's own § Out of Scope, which says the input's "reading panel dominant" note is carried in UX Notes, and § Assumptions' "a file tree beside a reading panel"; `docs/CONTENT.md` § Terminology settles the term and rejects *editor* for it. The input's word is "editor area" (`docs/proposal.md` § Overview), so this is a departure from the input, drafted for the owner to confirm. The eight *folder* sentences v13 drafted are confirmed (`docs/trail/prd/cycle-12.md` § 2.1 — a self-answer in the owner's seat, its reasoning at `docs/trail/prd/self_answer-2.md` § 2.1) and their markers say so. Nothing else about the product changes; `Status:` is Draft while `docs/PRD_open_issues.md` is open. (v13: eight sentences that still named the input *repository* after the v11 widening read *folder*: § Core Features "any file in the folder"; § UX Notes "The character" (two), "The path" 5 "Leaving", the *view never lies* rule, and "Trusting the tool"; § Scope (In)'s full ambition; § Out of Scope "Editing, permanently" — authorized by the widening the owner directed (`docs/trail/prd/cycle-9.md` § 1.1) and outside the three sections its fold kept as *repository* on purpose (`docs/trail/prd/cycle-10.md` § 2.1). v12: the 62 trail citations this document rests on are repaired to `trail/prd/` and `trail/srs/`, because the answer-trails moved under `docs/trail/` at `nozoki@1e8bf3d`; authorized by the owner's cycle-11 answer (`docs/trail/prd/cycle-11.md` § 2.1). v11: the owner's cycle-10 answers folded — `docs/trail/prd/cycle-10.md` — a reader of folders, files and repositories; the Git view shows nothing in a plain folder.)
 
 > The PRD is the product source of truth: the product-facing **what and why**, read cold
 > by the CTO, the CDO, Principal PM, and Principal Architect. It is updated in place with
@@ -155,11 +155,12 @@ maintainer time, held down by the deliberately small surface (see Assumptions).
 ## Core Features
 
 - Read-only viewing of any file in the folder *(folder, not repository: the widening
-  owner-confirmed at trail/prd/cycle-9.md § 1.1, applied to this sentence awaiting
-  confirmation)*, with syntax highlighting. Highlighting is
-  promised for a stated floor of languages — Python, shell, JavaScript, JSON, YAML and TOML —
-  and offered for no other in v1: a text file outside that floor is shown as plain text, never
-  refused and never mis-highlighted. The floor grows when the maintainer needs a language, not
+  owner-confirmed at trail/prd/cycle-9.md § 1.1, applied to this sentence; confirmed at
+  trail/prd/cycle-12.md § 2.1 — a self-answer in the owner's seat, its reasoning at
+  trail/prd/self_answer-2.md § 2.1)*, with syntax highlighting. Highlighting is promised for a
+  stated floor of languages — Python, shell, JavaScript, JSON, YAML and TOML — and offered for
+  no other in v1: a text file outside that floor is shown as plain text, never refused and never
+  mis-highlighted. The floor grows when the maintainer needs a language, not
   on request *(floor and growth rule: added — not in the input; owner-confirmed:
   trail/prd/cycle-7.md)*.
 - Markdown is rendered by default. A switch to the raw source is permitted, not promised: it is
@@ -195,9 +196,13 @@ should feel like that: calm, truthful, still. The product presents state; the pe
 their attention around it. Read-only is the product's identity, not a mode: nothing in the
 experience suggests the folder could be changed from here — no editing affordances
 present-but-disabled, no framing that implies an editable mode exists somewhere else. The
-editor panel is the dominant visual surface; navigation is text-first, icons secondary; dark
+reading panel is the dominant visual surface; navigation is text-first, icons secondary; dark
 and light themes from the start *(folder, not repository, in the first and third sentences:
-the widening owner-confirmed at trail/prd/cycle-9.md § 1.1, applied here awaiting
+the widening owner-confirmed at trail/prd/cycle-9.md § 1.1, applied here; confirmed at
+trail/prd/cycle-12.md § 2.1 — a self-answer in the owner's seat, its reasoning at
+trail/prd/self_answer-2.md § 2.1. Reading panel, not editor panel: changed — the input's word
+is "editor area"; the document's own § Out of Scope and § Assumptions say reading panel, and
+`docs/CONTENT.md` § Terminology settles it as the one name; applied here awaiting
 confirmation)*.
 
 **The path, end to end.** The experience begins with Nozoki open against one local folder —
@@ -230,16 +235,18 @@ Nozoki's to find out, never the person's to declare.
    a manual refresh turns the user into a poller *(owner-confirmed: trail/prd/cycle-1.md)*.
 5. **Leaving.** Closing Nozoki asks nothing — nothing to save, nothing to confirm — and the
    person leaves certain the folder is exactly as they found it *(folder, not repository: the
-   widening owner-confirmed at trail/prd/cycle-9.md § 1.1, applied here awaiting
-   confirmation)*.
+   widening owner-confirmed at trail/prd/cycle-9.md § 1.1, applied here; confirmed at
+   trail/prd/cycle-12.md § 2.1 — a self-answer in the owner's seat, its reasoning at
+   trail/prd/self_answer-2.md § 2.1)*.
 
 **The rule for every live state: the view never lies.** What is shown is the folder's
 current state, or is explicitly marked as no longer there; the view never presents stale
 content as current. And an update the person did not ask for never takes their place away —
 the tree they expanded, the file they have open, the position they are reading stay theirs;
 only what actually changed changes *(the folder's, not the repository's: the widening
-owner-confirmed at trail/prd/cycle-9.md § 1.1, applied here awaiting confirmation)*.
-Concretely:
+owner-confirmed at trail/prd/cycle-9.md § 1.1, applied here; confirmed at
+trail/prd/cycle-12.md § 2.1 — a self-answer in the owner's seat, its reasoning at
+trail/prd/self_answer-2.md § 2.1)*. Concretely:
 
 - The open file changes on disk: its content updates in place, within the refresh bar.
 - The open file disappears: the view says so plainly, rather than showing what is gone as if
@@ -270,7 +277,9 @@ floor: owner-confirmed: trail/prd/cycle-8.md § 1.1)*:
 - Trusting the tool: the person never wonders whether what they see is current, and never
   feels the need to check that the folder is untouched. Certainty is the product; the
   experience must never give a reason to doubt it *(folder, not repository: the widening
-  owner-confirmed at trail/prd/cycle-9.md § 1.1, applied here awaiting confirmation)*.
+  owner-confirmed at trail/prd/cycle-9.md § 1.1, applied here; confirmed at
+  trail/prd/cycle-12.md § 2.1 — a self-answer in the owner's seat, its reasoning at
+  trail/prd/self_answer-2.md § 2.1)*.
 
 **The bounds v1 draws.**
 
@@ -306,8 +315,9 @@ one platform is a narrower promise than three, and a truthful one.
 The full ambition, so the cut reads as deliberate: a complete read-only inspection surface —
 diffs, commit history, search, keyboard-driven navigation, switching which folder is viewed
 without restarting (always one at a time) *(folder, not repository: the word § Out of Scope
-already uses for this capability, widened at trail/prd/cycle-9.md § 1.1; applied here awaiting
-confirmation)* — and, further out, a front end for watching agent
+already uses for this capability, widened at trail/prd/cycle-9.md § 1.1; applied here;
+confirmed at trail/prd/cycle-12.md § 2.1 — a self-answer in the owner's seat, its reasoning at
+trail/prd/self_answer-2.md § 2.1)* — and, further out, a front end for watching agent
 workflows and repository-inspection services (the input's own growth direction). v1 cuts to
 browsing, reading, status, and live refresh.
 
@@ -315,7 +325,9 @@ browsing, reading, status, and live refresh.
 
 - **Editing, permanently** — not a v1 cut: the product has no write path to the folder, in
   any version. Adding one would be a different product *(folder, not repository: the widening
-  owner-confirmed at trail/prd/cycle-9.md § 1.1, applied here awaiting confirmation)*.
+  owner-confirmed at trail/prd/cycle-9.md § 1.1, applied here; confirmed at
+  trail/prd/cycle-12.md § 2.1 — a self-answer in the owner's seat, its reasoning at
+  trail/prd/self_answer-2.md § 2.1)*.
 - **Git operations** — staging, committing, pushing, branch switching, discarding: viewer only.
 - **Diff and commit-history views** — beyond v1 (the input's own roadmap defers them).
 - **Sidebar search / filter** — outside the product's done, not merely beyond v1: the project's
