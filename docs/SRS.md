@@ -1,8 +1,8 @@
 # SRS — Nozoki 覗き
 
-**Status:** Settled
+**Status:** Draft
 **Owner:** CTO
-**Version:** 8 — the input contract widens from one local Git repository to one local folder, a Git repository or not, as PRD v11 states it (`docs/prd_trail/cycle-9.md` § 1.1, `docs/prd_trail/cycle-10.md` § 2.2 – § 2.4; the owner's fold directive: `docs/srs_trail/cycle-7.md` § 1.1). FR-33 says when Git is read and FR-34 what holds when it is not, and every Git-derived requirement cites them (RN-31 – RN-33); PRD v9's reader floor and README lines are folded on the same upstream branch (RN-34). Nothing is left for the owner to answer; the companion is closed. (v7: the external-link call confirmed — `docs/srs_trail/cycle-6.md` § 2.1.)
+**Version:** 9 — two changes, each with its authorization. NFR-11 gains the diagnostic log's bound — one session's lines, the file created or truncated at launch, at most 1 MiB on disk within a session with emptied-and-continue, and a failed log write surfacing nowhere — the choice confirmed at `docs/trail/srs/cycle-8.md` § 2.1 (RN-36; AC-13 inspects it). And the 80 trail citations this document rests on are repaired: the 77 `docs/prd_trail/` and `docs/srs_trail/` pointers read `docs/trail/prd/` and `docs/trail/srs/`, because the answer-trails moved under `docs/trail/` at `nozoki@1e8bf3d` and the citing documents were not moved with them (authorized: `docs/trail/srs/cycle-8.md` § 2.2); nothing those citations authorize changes. Of the three `docs/uxd_trail/` mentions, RN-19's authorization for FR-18's shape takes the commit-pinned form `nozoki@1d5c553:docs/uxd_trail/cycle-2.md` § 2.1 — the file now at `docs/trail/uxd/cycle-2.md` is the re-authored UXD's cycle 2, not the one cited — and the two in RN-19 and RN-20 that describe the folder's removal at `9017ae2` are history and stand as written. One item stays open in `docs/SRS_open_issues.md`. (v8: the input contract widens from one local Git repository to one local folder, a Git repository or not, as PRD v11 states it (`docs/trail/prd/cycle-9.md` § 1.1, `docs/trail/prd/cycle-10.md` § 2.2 – § 2.4; the owner's fold directive: `docs/trail/srs/cycle-7.md` § 1.1). FR-33 says when Git is read and FR-34 what holds when it is not, and every Git-derived requirement cites them (RN-31 – RN-33); PRD v9's reader floor and README lines are folded on the same upstream branch (RN-34). Nothing is left for the owner to answer; the companion is closed.)
 
 > The SRS is the technical source of truth: the system-level **what**, derived from the PRD and
 > read cold by the Principal PM (Delivery Plan / FDR) and the Principal Architect (ADR / NFDR).
@@ -41,7 +41,7 @@ Delivery Plan's, not this document's.
 a plain folder — is inside v1 and inside the terminus: it is an input the whole surface takes, not
 a capability added to it. The diff view and the commit history are Git's and exist only where the
 folder is a repository (FR-33); the switch takes any folder *(traces to: PRD Scope (In) "a Git
-repository or not"; owner-confirmed `docs/prd_trail/cycle-9.md` § 1.1, `docs/prd_trail/cycle-10.md`
+repository or not"; owner-confirmed `docs/trail/prd/cycle-9.md` § 1.1, `docs/trail/prd/cycle-10.md`
 § 2.3; the terminus widened to the same input: `system/projects/nozoki/agari.md`; see RN-31)*.
 
 **Deliberately outside this SRS, with the terminus as the reason** — considered and bounded, not
@@ -53,9 +53,9 @@ forgotten:
   keyboard-accessibility promise — with keyboard navigation outside the terminus, that absence is
   permanent, not deferred. History filtering and search stay outside done with them — adjacent to
   the sidebar search, and placed out by the owner when widening the history surface *(owner:
-  `docs/srs_trail/cycle-1.md` §2.2)*. FR-18's branch-set scoping — choosing which branches the
+  `docs/trail/srs/cycle-1.md` §2.2)*. FR-18's branch-set scoping — choosing which branches the
   history is presented against — is not a filter or a search, and does not reopen this exclusion
-  *(owner: `docs/srs_trail/cycle-3.md`)*.
+  *(owner: `docs/trail/srs/cycle-3.md`)*.
 - **A front end for agent workflows and repository-inspection services** — the PRD's further-out
   growth direction; the Agari names it as where a next product might go, not where this one
   docks. Consequently this system exposes no programmatic surface (§5.2).
@@ -63,9 +63,9 @@ forgotten:
   exclusion (C-11). The Agari draws the dock as three named surfaces beyond v1 and no platform,
   so a second platform sits outside done — the owner's confirmed reading (RN-30).
 - **The Markdown raw-source switch, and a link in a rendered Markdown file opening its target** —
-  the owner placed the switch outside done (`docs/srs_trail/cycle-5.md` §2.3), and made the
+  the owner placed the switch outside done (`docs/trail/srs/cycle-5.md` §2.3), and made the
   switch and a relative link opening its target each a permission conditioned on build cost,
-  neither required for v1 (`docs/srs_trail/cycle-5.md` §2.2, §2.3). FR-31 and FR-32 carry them as
+  neither required for v1 (`docs/trail/srs/cycle-5.md` §2.2, §2.3). FR-31 and FR-32 carry them as
   permitted, not required, and no closing-release criterion exercises them (RN-28, RN-29).
 
 **Excluded by the PRD itself, permanently** (restated because they are load-bearing): editing, in
@@ -112,7 +112,7 @@ revisitable (FR-19); telemetry and non-essential network calls.
   within NFR-2's bar. *(traces to: PRD Core Features "Git is read only when the folder opened is
   itself the root of a Git repository", Out of Scope "Git found anywhere but at the opened
   folder's root", UX Notes "The path" — "Whether the folder is a Git repository is Nozoki's to
-  find out"; owner-confirmed `docs/prd_trail/cycle-10.md` § 2.4; the determination stated as a
+  find out"; owner-confirmed `docs/trail/prd/cycle-10.md` § 2.4; the determination stated as a
   requirement: RN-32; the live clause: RN-33)*
 - **FR-34:** In a plain folder — a folder FR-33 does not find to be a repository's root — the
   system presents the tree, the reading panel, the empty state and the live refresh exactly as it
@@ -127,7 +127,7 @@ revisitable (FR-19); telemetry and non-essential network calls.
   is present and shows nothing", Key Use Case 4, UX Notes "The path" step 3 "Checking", Out of
   Scope "Creating or initialising a Git repository", Dependencies / Integrations "it needs
   nothing from Git when the folder is not a repository"; owner-confirmed
-  `docs/prd_trail/cycle-9.md` § 1.1 and `docs/prd_trail/cycle-10.md` § 2.2; see RN-31)*
+  `docs/trail/prd/cycle-9.md` § 1.1 and `docs/trail/prd/cycle-10.md` § 2.2; see RN-31)*
 - **FR-4:** When no file is open, the system presents an empty state that prompts file selection.
   *(traces to: PRD Core Features "empty state")*
 - **FR-23:** Closing the system asks nothing — no save prompt, no confirmation, nothing to
@@ -151,7 +151,7 @@ revisitable (FR-19); telemetry and non-essential network calls.
   language. The floor is the whole of the highlighting promise: no other language is promised in
   v1, and the floor grows only by a PRD revision, which this SRS then follows. *(traces to: PRD
   Core Features "read-only viewing … with syntax highlighting", the stated floor; Key Use Case 1;
-  floor: owner-confirmed `docs/prd_trail/cycle-7.md` §2.5; revised at v5 from "recognized
+  floor: owner-confirmed `docs/trail/prd/cycle-7.md` §2.5; revised at v5 from "recognized
   languages": RN-22)*
 - **FR-29:** A text file the system does not recognize as one of the floor languages is displayed
   as plain text — never refused, and never displayed with another language's highlighting. The
@@ -160,17 +160,17 @@ revisitable (FR-19); telemetry and non-essential network calls.
   `.mjs` both, never one alone — with the full extension set fixed in the SDD; a file with no
   extension, or with an extension outside that set, is plain text. *(traces to: PRD Core
   Features "shown as plain text, never refused and never mis-highlighted"; recognition rule
-  owner-confirmed: `docs/srs_trail/cycle-5.md` §2.1; see RN-22, RN-27)*
+  owner-confirmed: `docs/trail/srs/cycle-5.md` §2.1; see RN-22, RN-27)*
 - **FR-30:** A Markdown file is displayed rendered by default. *(traces to: PRD Core Features
-  "Markdown is rendered by default"; owner-confirmed `docs/prd_trail/cycle-7.md` §2.5; see RN-23)*
+  "Markdown is rendered by default"; owner-confirmed `docs/trail/prd/cycle-7.md` §2.5; see RN-23)*
 - **FR-31:** A rendered Markdown file may be switchable to its raw source and back, in the
   reading panel. The switch is permitted, not required, and it is outside the terminus: it is
   built only if it costs nothing — a build-cost judgment the SDD makes and records — and a
   release that ships rendered-only states so where the release is offered. *(traces to: PRD Core
   Features "A switch to the raw source is permitted, not promised: it is built if it costs
   nothing, and a release that ships rendered-only says so where the release is offered" — the
-  PRD's own line since v11, owner-confirmed `docs/prd_trail/cycle-10.md` § 2.5, carrying the
-  override first given at `docs/srs_trail/cycle-5.md` §2.3; see RN-23, RN-29, RN-35)*
+  PRD's own line since v11, owner-confirmed `docs/trail/prd/cycle-10.md` § 2.5, carrying the
+  override first given at `docs/trail/srs/cycle-5.md` §2.3; see RN-23, RN-29, RN-35)*
 - **FR-32:** Rendering a Markdown file fetches nothing from outside the viewed folder: a remote
   image or other remote resource the document references is not loaded. An external link the
   document contains is displayed and not followed — the system neither opens it nor hands it to
@@ -178,10 +178,10 @@ revisitable (FR-19); telemetry and non-essential network calls.
   default, not followed; the system may instead open that file in the reading panel exactly as a
   tree selection does (FR-7, FR-13) — permitted, not required, outside the terminus, and built
   only if it costs nothing, a build-cost judgment the SDD makes and records. That an external
-  link stays unfollowed is the owner's confirmed call (`docs/srs_trail/cycle-6.md` §2.1, RN-28).
+  link stays unfollowed is the owner's confirmed call (`docs/trail/srs/cycle-6.md` §2.1, RN-28).
   *(traces to: PRD Data & Privacy "v1 makes no network call at all during operation"; added
   consequence of NFR-8 for rendered content: RN-23; link behavior owner-answered:
-  `docs/srs_trail/cycle-5.md` §2.2 and `docs/srs_trail/cycle-6.md` §2.1, see RN-28; the word
+  `docs/trail/srs/cycle-5.md` §2.2 and `docs/trail/srs/cycle-6.md` §2.1, see RN-28; the word
   widened at v8: RN-31)*
 - **FR-9:** No interaction with the displayed content changes it or the underlying file — typing,
   pasting, and dropping into the reading panel produce no modification, on screen or on disk.
@@ -190,7 +190,7 @@ revisitable (FR-19); telemetry and non-essential network calls.
   not rendered: a placeholder states why the content is not shown, the shell remains fully
   usable, and the file is not modified. *(traces to: PRD UX Notes "Failure states" — a stated
   cannot-display-as-text state, never a garbled render, never an error; PRD Out of Scope "Rich
-  rendering of non-text content"; owner-confirmed: `docs/srs_trail/cycle-1.md` §2.3; see RN-14,
+  rendering of non-text content"; owner-confirmed: `docs/trail/srs/cycle-1.md` §2.3; see RN-14,
   RN-17)*
 - **FR-24:** The system presents no editing affordance, enabled or disabled, and no framing that
   implies an editable mode exists elsewhere — nothing in the interface suggests the viewed folder
@@ -241,7 +241,7 @@ revisitable (FR-19); telemetry and non-essential network calls.
   reports as changed, the system presents its changes read-only, distinguishing staged changes
   from unstaged ones rather than collapsing both into a single working-vs-committed view; in a
   plain folder it presents nothing (FR-34). *(traces to: PRD Scope (In) full-ambition "diffs";
-  widened by owner override: `docs/srs_trail/cycle-1.md` §2.2; see RN-13; bounded at v8: RN-31)*
+  widened by owner override: `docs/trail/srs/cycle-1.md` §2.2; see RN-13; bounded at v8: RN-31)*
 - **FR-18:** *(beyond v1)* Where the folder is a repository (FR-33), the system presents the
   repository's commit history read-only; in a plain folder it presents nothing (FR-34). When the
   history holds more than one branch, the user can see the branches as branches — which
@@ -252,7 +252,7 @@ revisitable (FR-19); telemetry and non-essential network calls.
   message, author, and date, with its changed files reachable from its entry. The properties are
   bound; how the history is drawn and what chooses the branch set stay downstream. *(traces to:
   PRD Scope (In) full-ambition "commit history"; shape: owner override
-  `docs/srs_trail/cycle-3.md`, superseding the cycle-1 list (`docs/srs_trail/cycle-1.md` §2.2);
+  `docs/trail/srs/cycle-3.md`, superseding the cycle-1 list (`docs/trail/srs/cycle-1.md` §2.2);
   the experience document that override cited is no longer on disk — the wording stands on the
   cycle-3 answer alone: RN-20; see RN-19; bounded at v8: RN-31)*
 - **FR-19:** *(beyond v1)* The user can switch which folder is viewed without restarting the
@@ -262,7 +262,7 @@ revisitable (FR-19); telemetry and non-essential network calls.
   folders at once"; the word widened at v8 with the PRD: RN-31)*
 - **FR-22:** *(beyond v1)* Selecting a commit in the history presents what that commit changed,
   read-only, in the same diff presentation FR-17 requires. *(traces to: PRD Scope (In)
-  full-ambition "diffs, commit history"; added by owner override: `docs/srs_trail/cycle-1.md`
+  full-ambition "diffs, commit history"; added by owner override: `docs/trail/srs/cycle-1.md`
   §2.2; see RN-13)*
 
 ### 3.7 Appearance & own state
@@ -339,8 +339,16 @@ The PRD states the product's promises separately, none implied by another; so do
 
 - **NFR-11:** A failure the user must know about is visible in the UI itself; any diagnostic
   output the system produces lives with its own state (FR-21), never inside the viewed folder
-  and never transmitted anywhere. *(traces to: PRD UX Notes "instantly usable without
-  instruction", Data & Privacy; see RN-9; the word widened at v8: RN-31)*
+  and never transmitted anywhere. Where that output is a diagnostic log, the log holds at most
+  the current session's lines: a launch creates the file where none exists and truncates it
+  where one does, so nothing from an earlier session survives a launch. Within a session the log
+  is bounded to 1 MiB, measured as the file's size on disk — so the bound holds when two
+  instances of the system write one file — past which it is emptied and writing continues, so
+  the most recent lines are always the ones present and the file never grows without bound. A
+  failure to write the log is not a failure the user must know about: it surfaces nowhere, stops
+  no item's presentation, and is not retried — the line is not written. *(traces to: PRD UX
+  Notes "instantly usable without instruction", Data & Privacy; see RN-9; the word widened at
+  v8: RN-31; the log's bound and the write-failure rule confirmed at v9: RN-36)*
 
 ### 4.6 Maintainability
 
@@ -359,7 +367,7 @@ see RN-8)*
   against a Git repository, the fuller path; a plain folder is the same path with less in it and
   is not measured separately. *(traces to: PRD Success Metrics "Time-to-first-success" — "on
   macOS — the one platform v1 promises", "not measured separately"; owner-confirmed
-  `docs/prd_trail/cycle-10.md` § 2.3)*
+  `docs/trail/prd/cycle-10.md` § 2.3)*
 - **NFR-14:** Zero required configuration: the only input the system requires is which folder
   to view — no settings, no project file, no setup step required by any feature, v1 or later;
   whether the folder is a Git repository is found (FR-33), never asked. Pass/fail, checked at
@@ -370,7 +378,7 @@ see RN-8)*
   Git's own vocabulary unexplained; no editor experience, no onboarding. Verified by per-release
   first-use inspection, not machine check. *(traces to: PRD Goals "No learning curve", UX Notes
   "Failure states" — "someone who works with Git, not necessarily an expert in it"; the floor
-  owner-confirmed `docs/prd_trail/cycle-8.md` § 1.1, superseding the GitHub-browsing floor: RN-34)*
+  owner-confirmed `docs/trail/prd/cycle-8.md` § 1.1, superseding the GitHub-browsing floor: RN-34)*
 
 ## 5. Interfaces
 
@@ -384,7 +392,7 @@ see RN-8)*
   Agari — permanent). Beyond that line, v1 makes no assistive-technology promise: its
   accessibility surface is what the product already carries — the two themes, text-first
   navigation — a v1-scoped statement, not a permanent bound (RN-18). *(traces to: PRD UX Notes
-  "The bounds v1 draws"; owner-confirmed: `docs/prd_trail/cycle-5.md`)*
+  "The bounds v1 draws"; owner-confirmed: `docs/trail/prd/cycle-5.md`)*
 - UI language: English (C-8).
 
 ### 5.2 API
@@ -444,7 +452,7 @@ see RN-8)*
   at most one widely-available prerequisite, which the README's first screen names; the ≤ 5-minute
   clock (NFR-13) includes installing that prerequisite when absent. The concrete channel is
   fixed in the SDD, where the runtime is chosen (RN-7). *(traces to: PRD Scope (In) single-path
-  property, Goals "Pick-it-up adoption"; owner-confirmed: `docs/srs_trail/cycle-1.md` §2.1; see
+  property, Goals "Pick-it-up adoption"; owner-confirmed: `docs/trail/srs/cycle-1.md` §2.1; see
   RN-12)*
 - **C-4:** Licence: MIT at first release, recorded with its reason; the code is open source.
   *(traces to: PRD Assumptions "Licence: MIT")*
@@ -453,7 +461,7 @@ see RN-8)*
 - **C-6:** From the first 1.0.0 release, releases are semantically versioned and a breaking
   change to the product's public contract requires a major version; before 1.0.0, that anything
   may change is stated plainly rather than left implied. *(traces to: PRD Assumptions
-  "Versioning" — carried upstream since PRD v7; owner-confirmed: `docs/srs_trail/cycle-1.md`
+  "Versioning" — carried upstream since PRD v7; owner-confirmed: `docs/trail/srs/cycle-1.md`
   §2.4; see RN-15, RN-24)*
 - **C-7:** Before the first public release, a private vulnerability-reporting channel is enabled
   on the public repository (C-12), and a SECURITY.md names where to report and states the
@@ -461,7 +469,7 @@ see RN-8)*
   with no acknowledgement or response time promised" (`docs/PRD.md` § Assumptions, "Support
   posture") — in those terms, promising nothing the PRD does not. *(traces to: PRD Risks
   "Maintenance is a standing liability", Assumptions "Support posture"; owner-confirmed:
-  `docs/srs_trail/cycle-1.md` §2.5; the response wording resolved at v5 from the PRD's stated
+  `docs/trail/srs/cycle-1.md` §2.5; the response wording resolved at v5 from the PRD's stated
   posture: RN-24; see RN-16)*
 - **C-8:** UI language: English. *(traces to: PRD UX Notes)*
 - **C-9:** The README's first screen is product surface and carries: what the tool does in one
@@ -476,17 +484,17 @@ see RN-8)*
   outside v1. The minimum macOS version is not set by the PRD; it is fixed in the SDD with the
   runtime (the placement C-3 gives the acquisition channel, RN-7) and stated wherever the install
   path is offered, so a stranger knows before installing. *(traces to: PRD Scope (In)
-  "Platform", Out of Scope "Linux and Windows"; owner-confirmed: `docs/prd_trail/cycle-7.md`
+  "Platform", Out of Scope "Linux and Windows"; owner-confirmed: `docs/trail/prd/cycle-7.md`
   §1.2; the version-floor placement: RN-21)*
 - **C-12:** Public identity: the product is published from the `kensaiapp` GitHub organisation
   (`github.com/kensaiapp/nozoki`) and maintained under that name; that repository is where C-7's
   channel is enabled and where releases are offered. *(traces to: PRD Assumptions "Public
-  identity"; owner-confirmed: `docs/prd_trail/cycle-7.md` §1.1)*
+  identity"; owner-confirmed: `docs/trail/prd/cycle-7.md` §1.1)*
 - **C-13:** The README states the support posture in the PRD's terms — "Issues and questions are
   welcome and read when there is time, with no response time, no commitment to fix, and no
   commitment that a fix ever arrives" (`docs/PRD.md` § Assumptions, "Support posture") — and
   promises nothing beyond it. *(traces to: PRD Assumptions "Support posture" — "The README says
-  this plainly rather than implying more"; owner-confirmed: `docs/prd_trail/cycle-7.md` §2.4;
+  this plainly rather than implying more"; owner-confirmed: `docs/trail/prd/cycle-7.md` §2.4;
   see RN-24)*
 
 ## 8. Acceptance Criteria
@@ -540,8 +548,10 @@ see RN-8)*
   targets added at v8: RN-31)*
 - **AC-13:** After a session in which preferences changed, new or changed files exist only in the
   tool's own data location — none under the viewed folder's path — and inspection finds nothing
-  personal and no content of the viewed folder in them. *(covers: FR-21, DR-5; the word widened
-  at v8: RN-31)*
+  personal and no content of the viewed folder in them. Where a diagnostic log is among them, it
+  is no larger than 1 MiB, and a line it held before a launch is absent after that launch.
+  *(covers: FR-21, DR-5, NFR-11; the word widened at v8: RN-31; the log's bound added at v9:
+  RN-36)*
 - **AC-14:** Release inspection: the release carries the MIT licence and third-party notices; the
   README first screen carries its four items, its one-sentence description does not call the
   tool a web app, the README states sidebar search / filter, pane resizing and keyboard
@@ -601,7 +611,7 @@ see RN-8)*
   *because* an in-product way to choose a repository is exactly the "changing the viewed
   repository without restarting" capability the PRD places beyond v1, and the owner delegated
   the start mechanism to the CTO *(re: FR-2; PRD source: Out of Scope; owner delegation:
-  `docs/prd_trail/cycle-2.md` §2.2)*.
+  `docs/trail/prd/cycle-2.md` §2.2)*.
 - **RN-2:** Mid-change tolerance stated as a requirement (FR-16) — *because* the PRD's driving
   scenario is watching a tree an automated tool is actively changing, which the PRD implies but
   never states as a behavior: a viewer that crashes, blocks, or writes when the tree moves under
@@ -613,25 +623,25 @@ see RN-8)*
   no longer tightens beyond its source, and the earlier rationale here (that the SRS tightened
   "no non-essential call" to "none" on its own reading) no longer describes a divergence. The PRD
   keeps "non-essential" as headroom for a possible future update or version check, entering the
-  PRD as a stated feature before it exists (owner: `docs/prd_trail/cycle-7.md` §2.3); NFR-8 now
+  PRD as a stated feature before it exists (owner: `docs/trail/prd/cycle-7.md` §2.3); NFR-8 now
   carries that headroom in the same sentence as the bar, so a reader of NFR-8 alone sees both.
-  The repair was authorized by the owner's instruction at `docs/srs_trail/cycle-4.md` §2.1
+  The repair was authorized by the owner's instruction at `docs/trail/srs/cycle-4.md` §2.1
   ("RN-3 explains a divergence from the PRD that no longer exists. Repair the note; NFR-8 itself
   stands") *(re: NFR-8; PRD source: Data & Privacy, Success Metrics)*.
 - **RN-4:** The numeric thresholds for file-switch immediacy, refresh latency, and scalability
   reference sizes are deliberately unset — *because* the owner ruled that a threshold invented
   before there is a build to measure is noise; they are measured from the first working build
   and folded in here by revision *(re: NFR-1, NFR-2, NFR-10; owner decision:
-  `docs/prd_trail/cycle-1.md` §2.4)*.
+  `docs/trail/prd/cycle-1.md` §2.4)*.
 - **RN-5:** Repository selection must not be structurally singular (NFR-12) — *because* the
   owner recorded, for this SRS by name, that v1 must not design the single repository in so
   deeply that switching becomes a rewrite *(re: NFR-12, FR-19; owner instruction:
-  `docs/prd_trail/cycle-1.md` §2.2)*.
+  `docs/trail/prd/cycle-1.md` §2.2)*.
 - **RN-6:** Third-party licence notices ride every release (C-5) — *because* the owner recorded
   it as a release obligation routed to the SRS/SDD when confirming the MIT licence *(re: C-5;
-  owner decision: `docs/prd_trail/cycle-1.md` §2.5)*.
+  owner decision: `docs/trail/prd/cycle-1.md` §2.5)*.
 - **RN-7:** The concrete acquisition channel is fixed in the SDD, not here — *because* the owner
-  routed the mechanism to the CTO (`docs/prd_trail/cycle-1.md` §2.2), and at the SRS tier naming
+  routed the mechanism to the CTO (`docs/trail/prd/cycle-1.md` §2.2), and at the SRS tier naming
   a channel would fix the runtime choice inside the *what*; this SRS binds the path by
   requirement instead (C-3, NFR-13, AC-10), and the one product-visible part of the call — that
   the path is not build-from-source and what it may presume installed — was drafted as a choice
@@ -657,33 +667,33 @@ see RN-8)*
   inside the ≤ 5-minute bar; the concrete channel stays the SDD's. The owner kept the bound
   knowing the likely prerequisite is a runtime whose cold install can consume most of that bar —
   the pressure toward a self-contained artifact is intended, not accidental *(re: C-3, NFR-13,
-  AC-10; owner confirmation: `docs/srs_trail/cycle-1.md` §2.1)*.
+  AC-10; owner confirmation: `docs/trail/srs/cycle-1.md` §2.1)*.
 - **RN-13:** The diff and commit-history surface was widened by owner override — the diff
   distinguishes staged changes from unstaged ones (FR-17), selecting a commit presents what it
   changed (FR-22), and the history stayed a read-only list (FR-18) — a shape the owner has since
   revised to branch topology (RN-19); history filtering and search stay outside done, adjacent
   to the sidebar search the Agari excludes *(re: FR-17, FR-18, FR-22, AC-12, §2; owner override:
-  `docs/srs_trail/cycle-1.md` §2.2)*. Propagating the override
+  `docs/trail/srs/cycle-1.md` §2.2)*. Propagating the override
   surfaced two pointers naming FR-18 as the repository-switch requirement — FR-2 and §2's
   one-at-a-time line — while that requirement is FR-19; both now point at FR-19. A reference
   correction forced by FR-18's changed content, not a re-derivation of either requirement.
 - **RN-14:** FR-10's presentation of unrenderable files confirmed as drafted — a placeholder
   stating why the content is not rendered; no hex viewer, no image preview, nothing hidden from
-  the tree *(re: FR-10, AC-5; owner confirmation: `docs/srs_trail/cycle-1.md` §2.3)*. PRD v8's
+  the tree *(re: FR-10, AC-5; owner confirmation: `docs/trail/srs/cycle-1.md` §2.3)*. PRD v8's
   Out of Scope line "Rich rendering of non-text content" (owner-confirmed:
-  `docs/prd_trail/cycle-7.md` §2.2) states the same exclusion upstream; FR-10 gains that trace
+  `docs/trail/prd/cycle-7.md` §2.2) states the same exclusion upstream; FR-10 gains that trace
   at v5 and is otherwise unchanged (RN-20).
 - **RN-15:** C-6 confirmed — recorded by the owner as a consequence of the Agari rather than a
   fresh call: done already requires a public MIT release at 1.0.0 or later with the
   semantic-versioning promise in force, so C-6 is that condition's realization here *(re: C-6,
-  AC-14; owner confirmation: `docs/srs_trail/cycle-1.md` §2.4)*.
+  AC-14; owner confirmation: `docs/trail/srs/cycle-1.md` §2.4)*.
 - **RN-16:** C-7 confirmed as drafted — private vulnerability reporting enabled and a
   SECURITY.md in place before the first public release *(re: C-7, AC-14; owner confirmation:
-  `docs/srs_trail/cycle-1.md` §2.5)*.
+  `docs/trail/srs/cycle-1.md` §2.5)*.
 - **RN-17:** This revision (v3) derives the PRD's v4 → v6 move — `## UX Notes` re-authored whole
-  (`docs/prd_trail/cycle-4.md`) and v1's accessibility posture settled
-  (`docs/prd_trail/cycle-5.md`) — authorized by the owner's cycle-2 answer
-  (`docs/srs_trail/cycle-2.md`): derive from the PRD as it now reads; every delta below traces
+  (`docs/trail/prd/cycle-4.md`) and v1's accessibility posture settled
+  (`docs/trail/prd/cycle-5.md`) — authorized by the owner's cycle-2 answer
+  (`docs/trail/srs/cycle-2.md`): derive from the PRD as it now reads; every delta below traces
   to that upstream change, the stability rule's own permitted branch. The re-authored section's
   requirement-bearing statements land as FR-23 (closing asks nothing), FR-24 (no editing
   affordance, enabled or disabled), FR-25 (sidebar/open-file independence), FR-26
@@ -703,13 +713,13 @@ see RN-8)*
   deliberately apart from §2's keyboard line — *because* the two differ in duration: the
   keyboard absence is permanent (the Agari holds keyboard navigation outside done), while the
   wider no-assistive-technology-promise is the PRD's statement about v1 only *(re: §5.1, §2;
-  PRD source: UX Notes "The bounds v1 draws"; owner-confirmed: `docs/prd_trail/cycle-5.md`)*.
+  PRD source: UX Notes "The bounds v1 draws"; owner-confirmed: `docs/trail/prd/cycle-5.md`)*.
 - **RN-19:** *(changed — this revision, v4)* FR-18's history shape revised from a flat read-only
-  list to branch topology, by owner override (`docs/srs_trail/cycle-3.md`) — superseding the
+  list to branch topology, by owner override (`docs/trail/srs/cycle-3.md`) — superseding the
   cycle-1 answer on the history's shape only; cycle-1's diff decisions (FR-17, FR-22) and its
   history-filtering/search exclusion stand untouched. The owner reopened the shape during the
   UXD's rounds and confirmed the experience statement there; the wording authority is `UXD.md`
-  UX-S6 and RN-14 (owner-confirmed: `docs/uxd_trail/cycle-2.md` §2.1). The properties are
+  UX-S6 and RN-14 (owner-confirmed: `nozoki@1d5c553:docs/uxd_trail/cycle-2.md` § 2.1). The properties are
   bound — the branches visible as branches when more than one exists, a chosen set of branches
   with a default that asks nothing, per commit its identifier, message, author, and date with
   changed files reachable — and the mechanism is not: how the history is drawn and what chooses
@@ -724,9 +734,9 @@ see RN-8)*
   wording authority, `UXD.md` and `docs/uxd_trail/cycle-2.md`, were removed from the product
   repository at `9017ae2` — see RN-20 for what FR-18 now stands on.
 - **RN-20:** *(this revision, v5 — the pass and its bounds)* Re-authored on the owner's
-  instruction (`docs/srs_trail/cycle-4.md` §2.1) against PRD v8, template 1.9.0 and prompt 3.6.0.
+  instruction (`docs/trail/srs/cycle-4.md` §2.1) against PRD v8, template 1.9.0 and prompt 3.6.0.
   The instruction reopened no requirement on its own: every value confirmed in
-  `docs/srs_trail/cycle-1.md` – `cycle-3.md` stands as written, and every delta at v5 traces to
+  `docs/trail/srs/cycle-1.md` – `cycle-3.md` stands as written, and every delta at v5 traces to
   one of three sources — a PRD fact added at v7/v8 (RN-21 – RN-24), a carrier rule (this note),
   or a wording repair that moves no technical fact (this note). Carrier deltas: the header
   blockquote takes template 1.9.0's shape, naming the SDD's three seats — the template's own
@@ -749,7 +759,7 @@ see RN-8)*
   those notes are settled wording and are left as written — the rule binds notes written from
   v5 on. *(re: header, §2, FR-10, FR-18, RN-19, the omitted section)*
 - **RN-21:** *(added)* Platform constraint C-11 — *because* PRD v8 states v1 runs on macOS only
-  and names Linux and Windows as an exclusion (owner: `docs/prd_trail/cycle-7.md` §1.2), a fact
+  and names Linux and Windows as an exclusion (owner: `docs/trail/prd/cycle-7.md` §1.2), a fact
   the SRS at v4 did not carry at all. Propagation: NFR-13 and AC-10 fix the time-to-first-success
   check to macOS, as the PRD's own metric does. Two consequences the PRD does not state: (i) a
   minimum macOS version is a limit a stranger reads before installing, so C-11 names who fixes it
@@ -763,7 +773,7 @@ see RN-8)*
 - **RN-22:** *(changed — FR-8; added — FR-29)* The highlighting promise now has a floor —
   *because* PRD v8 promises highlighting for Python, shell, JavaScript, JSON, YAML and TOML and
   for no other language in v1, with a plain-text fallback that never refuses and never
-  mis-highlights (owner: `docs/prd_trail/cycle-7.md` §2.5). FR-8 at v4 said "recognized
+  mis-highlights (owner: `docs/trail/prd/cycle-7.md` §2.5). FR-8 at v4 said "recognized
   languages", which promised an unstated set; it now names the floor, and FR-29 carries the
   fallback as its own testable behavior. AC-5 widens to exercise both. The PRD's growth rule —
   the floor grows when the maintainer needs a language — lands as no requirement: a change to
@@ -776,7 +786,7 @@ see RN-8)*
   Features)*.
 - **RN-23:** *(added — FR-30 – FR-32, NFR-16, AC-22, AC-23)* Markdown rendering — *because* PRD
   v8 states it: rendered by default, a toggle to the raw source, and the fallback that v1 may
-  ship rendered-only with the toggle following (owner: `docs/prd_trail/cycle-7.md` §2.5). FR-30
+  ship rendered-only with the toggle following (owner: `docs/trail/prd/cycle-7.md` §2.5). FR-30
   and FR-31 carry the two behaviors; FR-31 carries the fallback as a permission, in the PRD's own
   terms. Two bounds follow from requirements already settled, and are added with that basis
   rather than routed as choices: FR-32 — a rendered document may reference remote resources, and
@@ -794,15 +804,15 @@ see RN-8)*
   DR-3, DR-6, AC-12, AC-22, AC-23; PRD source: Core Features, Data & Privacy, Success Metrics)*.
 - **RN-24:** *(added — C-12, C-13; changed — C-6's trace, C-7's response wording)* Identity and
   support posture — *because* PRD v8 states the public identity (`github.com/kensaiapp/nozoki`,
-  owner: `docs/prd_trail/cycle-7.md` §1.1) and a support posture in which nothing is promised
-  (owner: `docs/prd_trail/cycle-7.md` §2.4). C-12 carries the identity as the place C-7's
+  owner: `docs/trail/prd/cycle-7.md` §1.1) and a support posture in which nothing is promised
+  (owner: `docs/trail/prd/cycle-7.md` §2.4). C-12 carries the identity as the place C-7's
   channel and the releases live. C-7 at v4 asked SECURITY.md to state "what response to expect"
   against a posture the PRD had not yet stated; the PRD now states it, so C-7 quotes it and
   binds SECURITY.md to promise nothing beyond it. C-13 carries the PRD's requirement that the
   README states the posture plainly, quoting the PRD's terms — the writing bar requires a
   commitment quoted, never paraphrased (`system/doctrine/writing_bar.md` § 1.5). AC-14 widens to
   inspect both. C-6 gains its PRD trace: the versioning promise cycle-1 noted as absent from the
-  PRD (`docs/srs_trail/cycle-1.md` §2.4, the follow-up) has been in PRD Assumptions since v7,
+  PRD (`docs/trail/srs/cycle-1.md` §2.4, the follow-up) has been in PRD Assumptions since v7,
   so the constraint no longer rests on the Agari and this trail alone. The PRD's "a version that
   can no longer be maintained is archived visibly" lands as no requirement: it is an act on the
   repository after maintenance ends, not a behavior of the system, and this trail records the
@@ -824,36 +834,36 @@ see RN-8)*
 - **RN-27:** *(confirmed choice — FR-29, AC-5)* A floor language is recognized by file extension,
   never by content, and each floor language is recognized by every extension in common use for
   it — the owner confirmed the extension rule and, asked separately, ruled that the set is not one
-  extension per language: "we should cover the options" (`docs/srs_trail/cycle-5.md` §2.1). The
+  extension per language: "we should cover the options" (`docs/trail/srs/cycle-5.md` §2.1). The
   full extension set is fixed in the SDD; AC-5 exercises each extension that set names, plus the
   two cases the rule leaves as plain text — no extension, and an extension outside the set
   *(re: FR-29, AC-5, DR-3; PRD source: Core Features)*.
 - **RN-28:** *(owner answer — FR-32, AC-23)* Links in rendered Markdown. The
   owner's answer is a permission conditioned on build cost, applied to each half on its own —
-  "per each, if it costs nothing, do it" (`docs/srs_trail/cycle-5.md` §2.2): neither half is
+  "per each, if it costs nothing, do it" (`docs/trail/srs/cycle-5.md` §2.2): neither half is
   required for v1, neither is refused, and neither is inside the terminus. The relative-link half
   is folded as that permission — FR-32 lets a relative link open its target in the reading
   panel, the build-cost judgment the SDD's, AC-23 exercising whichever the release does. The
   external half is not folded as a permission: handing a URL to the system browser makes the
   system the initiator of a network call another process makes; the owner was told before
   answering that this half turns on Way 2's promise and not on cost, and the answer records no
-  acceptance of that trade (`docs/srs_trail/cycle-5.md` §2.2, the session note beneath the
+  acceptance of that trade (`docs/trail/srs/cycle-5.md` §2.2, the session note beneath the
   answer). That half went back as its own choice to confirm and the owner confirmed the default
-  (`docs/srs_trail/cycle-6.md` §2.1): an external link is displayed and not followed — the
+  (`docs/trail/srs/cycle-6.md` §2.1): an external link is displayed and not followed — the
   system neither opens it nor hands it to another program — the reading that leaves NFR-8's
   "none" unqualified and AC-3's zero-outbound-traffic check whole *(re: FR-32, NFR-8, AC-3,
   AC-23; PRD source: Data & Privacy)*.
 - **RN-29:** *(changed — FR-31, AC-12, §2)* The raw-source switch is outside the terminus and
-  permitted, not required — owner override (`docs/srs_trail/cycle-5.md` §2.3): "render is what
+  permitted, not required — owner override (`docs/trail/srs/cycle-5.md` §2.3): "render is what
   i need", and "add the toggle if it costs nothing". This departs from the PRD, which says the
   toggle "follows" when v1 ships rendered-only (`docs/PRD.md` § Core Features): the PRD promises
   it in a later release; the SRS now promises it in none, carrying it as a permission the SDD
   settles on build cost. AC-12's FR-31 clause is removed; AC-22 stands, exercising the switch
   only where a release ships it. The PRD is not corrected here — folding the override upstream is
-  a PRD correction cycle, the CPO's, carried forward the way `docs/srs_trail/cycle-1.md` §2.4
+  a PRD correction cycle, the CPO's, carried forward the way `docs/trail/srs/cycle-1.md` §2.4
   carried the versioning promise *(re: FR-31, AC-12, AC-22, §2; PRD source: Core Features)*.
 - **RN-30:** *(confirmed choice — §2, C-11)* A second platform is outside the terminus — the owner
-  confirmed the reading (`docs/srs_trail/cycle-5.md` §2.4): the Agari's first condition
+  confirmed the reading (`docs/trail/srs/cycle-5.md` §2.4): the Agari's first condition
   enumerates the beyond-v1 features inside done and platform is not among them, so Nozoki is
   done on macOS alone. C-11, NFR-13 and AC-10 stand as written. The confirmation does not say
   Linux or Windows is never built — only that done does not wait for either *(re: §2, C-11,
@@ -863,10 +873,10 @@ see RN-8)*
   AC-1, AC-9, AC-12, AC-13, AC-15, AC-23; added — FR-34, AC-24)* The input contract widens from
   one local Git repository to one local folder, a Git repository or not — *because* PRD v10 and
   v11 admit the plain folder as a supported input inside v1, with the Git view present and
-  showing nothing, and Git read only at a repository's root (owner: `docs/prd_trail/cycle-9.md`
-  § 1.1; `docs/prd_trail/cycle-10.md` § 2.2 – § 2.4); the owner directed this SRS to carry the
+  showing nothing, and Git read only at a repository's root (owner: `docs/trail/prd/cycle-9.md`
+  § 1.1; `docs/trail/prd/cycle-10.md` § 2.2 – § 2.4); the owner directed this SRS to carry the
   absence through every Git-derived requirement, and delegated the technical statement of it
-  (`docs/srs_trail/cycle-7.md` § 1.1). Two structural calls under that delegation. First, the
+  (`docs/trail/srs/cycle-7.md` § 1.1). Two structural calls under that delegation. First, the
   rule is stated once and cited: FR-33 says when Git is read and FR-34 what holds when it is not,
   and each Git-derived requirement (FR-6, FR-12, FR-16 – FR-18, NFR-6) carries the one clause
   that binds it to them, so a requirement read alone still says what it does without Git and no
@@ -893,14 +903,14 @@ see RN-8)*
   nothing — the working-tree top level does. The determination sits inside NFR-5's bar because
   the one way a check can write is to create what it looks for. The mechanism stays the SDD's.
   CTO-derived under the owner's delegation of "how 'is this folder a repository's root?' is
-  determined" (`docs/srs_trail/cycle-7.md` § 1.1) *(re: FR-33, AC-25, NFR-5; PRD source: Core
+  determined" (`docs/trail/srs/cycle-7.md` § 1.1) *(re: FR-33, AC-25, NFR-5; PRD source: Core
   Features, Out of Scope "Git found anywhere but at the opened folder's root")*.
 - **RN-33:** *(added — FR-33's live clause; changed — AC-7)* Live refresh in a plain folder is
   the same requirement (FR-14) with nothing Git-shaped to move — *because* PRD Key Use Case 4
   states "the tree, the reading, and the live refresh work as they always do" there; only the
   Git-derived half is empty (FR-34), so FR-14 and NFR-2 gain no clause. That the presence
   determination is itself live is CTO-derived with basis, under the owner's delegation of
-  "whether the live refresh changes at all in a plain folder" (`docs/srs_trail/cycle-7.md`
+  "whether the live refresh changes at all in a plain folder" (`docs/trail/srs/cycle-7.md`
   § 1.1): the PRD's "the view never lies" holds that what is shown is the current state and never
   stale, and "Refresh immediacy" names Git state among the changes that appear with no user
   action; a repository initialised at the opened folder's root mid-session is a change in that
@@ -912,12 +922,12 @@ see RN-8)*
 - **RN-34:** *(changed — NFR-15, AC-14)* PRD v9's units, upstream since SRS v7 and folded on the
   stability rule's upstream-change branch, apart from the widening: NFR-15's floor reads the
   PRD's "anyone who works with Git and can follow a README", superseding "find their way around
-  a repository on GitHub" (owner: `docs/prd_trail/cycle-8.md` § 1.1), and carries the PRD's
+  a repository on GitHub" (owner: `docs/trail/prd/cycle-8.md` § 1.1), and carries the PRD's
   permission to leave Git's own vocabulary unexplained — a permission, so `may`. AC-14's README
   inspection gains the two things PRD v9 states of the README: its one-sentence description does
-  not call the tool a web app (owner: `docs/prd_trail/cycle-8.md` § 1.3), and sidebar search /
+  not call the tool a web app (owner: `docs/trail/prd/cycle-8.md` § 1.3), and sidebar search /
   filter, pane resizing and keyboard navigation are stated as outside the product's done rather
-  than promised (owner: `docs/prd_trail/cycle-8.md` § 1.2). What the shipped shape technically
+  than promised (owner: `docs/trail/prd/cycle-8.md` § 1.2). What the shipped shape technically
   is stays out of the PRD and lands as no requirement here — the SDD's, with the runtime (RN-7).
   PRD v9's "the keyboard absence is permanent" was already §2's from the Agari. No other v9 unit
   moves a requirement *(re: NFR-15, AC-14; PRD source: Goals "No learning curve", UX Notes
@@ -931,7 +941,7 @@ see RN-8)*
   states" in FR-3, AC-15; Scope (In) and its run posture in §2, FR-1; Out of Scope's two new
   lines in §2, FR-33, FR-34; the widened "Changing the viewed folder" and "Several folders" in
   §2, FR-2, FR-19; Dependencies / Integrations in §5.3; Data & Privacy's own-state boundary in
-  FR-21; and the Markdown switch line (`docs/prd_trail/cycle-10.md` § 2.5) is the PRD carrying
+  FR-21; and the Markdown switch line (`docs/trail/prd/cycle-10.md` § 2.5) is the PRD carrying
   the override FR-31 already holds, so FR-31's trace now names the PRD's own line and RN-29's
   "the PRD is not corrected here" describes a state that has since ended — the note stands as
   written, this one records the close. The accepted ambiguity of an empty Git view lands in
@@ -939,3 +949,22 @@ see RN-8)*
   non-repository a startup failure; the UXD follows the PRD, not this SRS, and its revision is
   the CDO's through the UXD's own skill — this SRS records the divergence and does not reshape
   FR-3 or FR-34 to it *(re: §1 – §8, FR-31, RN-29)*.
+- **RN-36:** *(confirmed choice — NFR-11, AC-13)* The diagnostic log's bound: one session's lines,
+  the file created or truncated at launch, at most 1 MiB on disk within a session with
+  emptied-and-continue, and a failed log write surfacing nowhere — *because* NFR-11 placed
+  diagnostics with own state and bounded neither their size nor their retention, and a bound no
+  document states is one a builder picks silently; the Principal Architect's constraint set
+  records the bound as undecided and names NFR-11 as where it lands (`docs/nfdr.md` QC-40). The
+  number is a design bound a reader can check, not a threshold a build measures, so RN-4's rule
+  does not reach it. The cap is on the file's size on disk rather than on what one process wrote,
+  because a second instance of the system can write the same file (`man open`: `-n` — "Open a new
+  instance of the application(s) even if one is already running") and the bound must hold with two
+  writers; that a second launch's truncation discards the first instance's lines is accepted. A
+  failed log write sits outside NFR-11's first clause because the log is diagnostics, not a
+  promise: it stops no item and is not retried. A one-generation rotation was declined: the log
+  records item failures, not crashes of the host, and an item failure that persists is reproduced
+  at the next session's first refresh (NFR-3). Confirmed at `docs/trail/srs/cycle-8.md` § 2.1 — a
+  self-answer in the owner's seat, its reasoning at `docs/trail/srs/self_answer-1.md` § 2.1.
+  AC-13's own-state inspection gains the bound; the mechanism and the test that reads the number
+  are downstream, the SDD's and the NFDR's *(re: NFR-11, AC-13, FR-21, DR-5; PRD source: Data &
+  Privacy, UX Notes)*.
