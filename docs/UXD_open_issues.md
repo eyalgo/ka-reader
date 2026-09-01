@@ -25,6 +25,14 @@
 > no cell for. With no companion on disk a `product-uxd` re-run reads the UXD as done and has
 > nothing to act on. The one item below arrives with the run's finding and its reasoning; the
 > decision is the next round's.
+>
+> **Where this round stands.** A `product-uxd` run has taken this file up, found its one answer slot
+> empty, and so folded nothing and retired no trail cycle. That run changed one thing in the UXD and
+> nothing else: its `Status:` line, which read `Settled` while this companion sat beside it, and the
+> `Version:` line that records why. **No flow, screen row, interaction pattern, accessibility
+> requirement or review note changed** — an unanswered re-run may not touch settled content
+> (`<CORE>/prompts/cdo_create_uxd.md` § *On a re-run or a re-authoring — fold, don't re-author*).
+> Item 2.1 is the original, with one bullet added by this seat.
 
 ---
 
@@ -64,4 +72,35 @@
   the SDD's settled RN-20 and with the FDR's R-70 and R-73 at the closing release, and the SDD goes
   on citing the trail instead of the entries. Declining the four states leaves them stated in the
   FDR with no experience cell, and CONTENT and DESIGN with nothing to trace them to.
+- **What this seat adds, taking the item up:** four things the finding does not say, after opening
+  every source it cites and finding each as described. **(1) The contingency has moved.** Since this
+  item was written the owner answered the FDR's companion (`docs/fdr_open_issues.md`, committed at
+  `nozoki@ec2b3f9`): § 2.1 reads *confirm* on R-70 and sends UX-F2 to this item by name; § 1.1,
+  § 1.2, § 1.3, § 1.4 and § 2.8 each answer the state named above as (a), (b), (c), the short status
+  and (d), and none is overridden. `product-fdr` has not folded them — `docs/fdr.md` last changed at
+  `nozoki@a50718a`, before the answers. That fold is no longer what this item waits on. The FDR is
+  downstream of this document and never a source it may trace to (`<CORE>/prompts/cdo_create_uxd.md`
+  § *Inputs you work from*), so an answer written there does not authorize a fold here; the
+  authorization the fold would cite is this companion's own trail cycle, which is why the slot below
+  is filled here rather than the FDR's *confirm* read as the answer. **(2) The sibling has settled
+  its half.** `docs/SRS.md` § 3.4 FR-13 now reads that activating a changed file's row opens the
+  file where the diff (FR-17) is not present and that file's diff where it is, the row never falling
+  back (confirmed at `docs/trail/srs/cycle-10.md` § 2.1). UX-F2 as written — *"behaves exactly as a
+  tree selection"* — collides with that sibling wherever the diff exists; a collision noted, not a
+  source. Confirming would state UX-F2 the same way, as a system state and not a delivery moment, and
+  UX-F4 (§ 5.4, *"from the Git view, the user opens a changed file's **diff**"*) then agrees with
+  it. **(3) What the fold would touch**, so the answer settles what lands: UX-F2's step and its data
+  line; § 4 *Beyond v1, inside the terminus* gains where the history is drawn — commit rows in the
+  sidebar beneath the changes list, a selected commit's diff taking the reading panel; UX-S6's
+  success cell gains that placement and the stated end (c); UX-S7's success cell gains (b); UX-S3's
+  success cell carries or points at the short status's content; UX-I12 gains the in-folder
+  missing, unreadable or not-an-image placeholder (d); the § 11 rows for each of those; and one
+  review note recording the owner answer, with UX-F2 marked *changed* against the PRD's Key Use
+  Case 2 *"opens the changed files to read them"* — that sentence is the CPO's, and nothing is opened
+  on the PRD from here. **(4) Two things (a) leaves open, for the answer to settle or leave.** UX-S4
+  is named *Startup failure* and its Empty cell reads *"n/a — the surface exists only in failure"*;
+  a cancelled Open panel is not a failure, so this seat would land it as its own row — a startup
+  surface with its two routes — and leave UX-S4 as the failure case, rather than rename UX-S4; say so
+  in the slot if the one row is preferred. And where the startup surface renders stays in § Open
+  Questions either way; the cancelled-panel cell does not settle it.
 - **Confirm or override:**
