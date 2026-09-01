@@ -297,9 +297,9 @@ components:
 
 # DESIGN — Nozoki 覗き
 
-**Status:** Draft
+**Status:** Settled
 **Owner:** CDO
-**Version:** 7 — *(upstream UXD change)* the viewed input and the chrome's control are renamed with the UXD: every place this document said *repository* where it meant the **viewed folder** or named the **selector** now reads *folder* / **folder selector** — § Overview (two sentences), § Layout (the sidebar's width reason and the chrome line), § Elevation & Depth (the menu), § Components "The chrome and its controls" and "The menu", the wordmark Don't, RN-9, RN-10, RN-20 and the UX-F5 Traceability row — and "The menu"'s *by name* is disambiguated to *each shown by its name*. Authorized by `docs/UXD.md` v6 RN-25, which renamed the control with PRD v11's input: the prompt's *upstream UXD change* delta, not an owner answer — the companion's one item (`docs/DESIGN_open_issues.md` § 2.1) is unanswered, so no answer is folded and no trail cycle is retired, and the item stays as the owner's sign-off on what this revision applied (RN-27). `Status:` reads Draft because a companion is on disk, and this document is Settled only when none is. No token, colour, type, spacing or radius value moves. The machine gate on this revision — the same pinned `lint`, run 2026-09-01 — reported 0 errors, 0 warnings and 1 info, `token-summary` with the counts RN-21 records unchanged; no diagnostic is accepted or routed. (v6: nothing about the design language changes: the 30 unpinned `docs/<x>_trail/` citations this document rests on (21 `design_trail/`, 6 `uxd_trail/`, 3 `prd_trail/`) are repaired to `docs/trail/<x>/`, the answer-trails having moved at `nozoki@1e8bf3d` without the citing documents. This document carries no commit-pinned citation, so none is excluded; and the six `uxd_trail/` citations are to the re-authored UXD's trail — the sections they cite exist only there — so the mechanical rule is safe on all six. No token, colour, type, spacing or radius value moves, and the companion is gone again. Authorized by the owner's cycle-5 answer (`docs/trail/design/cycle-5.md` § 2.1). The machine gate on this revision — the same pinned `lint`, run 2026-09-01 — reported 0 errors, 0 warnings and 1 info, `token-summary` with the counts RN-21 records unchanged; no diagnostic is accepted or routed. (v5: the owner's cycle-4 answers folded (`docs/trail/design/cycle-4.md`): `{components.status-message}` states its one exception — the **observed plain folder's Git view** (`docs/UXD.md` UX-I17) carries no message and so holds no instance of the component, while the Git view's reading and fault appearances stay inside it — and the Traceability table gains the UX-I17 row, satisfied by drawing nothing (RN-26). No token, colour, type, spacing or radius value moves; the companion is gone again. (v4: the owner's cycle-3 answers folded (`docs/trail/design/cycle-3.md`): `{components.status-message}` names the **unexplained fault** (`docs/UXD.md` UX-I16) as the second class of every failure state it covers — same treatment, same slot, same route out — and the Traceability table gains the UX-I16 row (RN-25). No token, colour, type, spacing or radius value moves; the companion is gone again. (v3: the owner's cycle-2 answers folded (`docs/trail/design/cycle-2.md`): the no-tooltip Don't is lifted on the owner's v1 decision and a tooltip contract enters — one surface, the status letter, as `{components.tooltip}` drawn from existing tokens (RN-11, RN-23); the status letters' VS Code vocabulary is stated rather than left implicit, with the porcelain collision recorded (RN-24); and the UX-I9 traceability row and RN-10 are repointed at the settled UXD record. No colour, type, spacing or radius value moves; the companion is gone again. (v2: the owner's cycle-1 answers folded — `docs/trail/design/cycle-1.md`.))))
+**Version:** 8 — the close, and the UXD v9 fold. The owner's cycle-6 answer is folded (`docs/trail/design/cycle-6.md` § 2.1 — a self-answer in the owner's seat, its reasoning at `docs/trail/design/self_answer-2.md` § 2.1): the *folder* / *folder selector* rename v7 applied stands as applied, RN-27 records the confirmation, `docs/DESIGN_open_issues.md` is removed and `Status:` is Settled. On the same revision the upstream UXD change since v7 is folded — `docs/UXD.md` v9 (`nozoki@b8010dd`, its RN-29), read on disk and recorded at RN-28: the **startup surface** (UX-S4) gains its empty state and its drawing, and *startup failure* reads *the startup surface's failure*; the **history** is drawn where the UXD now places it — the Git view's `clock` entry, commit rows beneath the changes list, the selected commit's diff in the reading panel — with its **stated end** as one inert muted row; the selector's list follows UX-S7's bound and order, and the current entry's mark is the leading bar this document already draws; an **in-folder image** renders in place and the placeholder covers the two cases that do not; the **branch chip** carries the commit's identifier on a detached HEAD; UX-F2's one-click-target rule is recorded as already held; and the terminal Don't, RN-16 and its Traceability row retire, because UX-S4 renders in the app's window and no surface of this product prints to a terminal. Two kept phrases stand until the UXD folds its own answered item (`docs/UXD_open_issues.md` § 2.2): *Density is the repository's* and *repository-relative path* quote `docs/UXD.md` § 2 and § 4 as they read at v9 (RN-27). No token, colour, type, spacing or radius value moves; no component enters or leaves. The machine gate on this revision — the same pinned `lint`, run 2026-09-01 — reported 0 errors, 0 warnings and 1 info, `token-summary` with the counts RN-21 records unchanged; no diagnostic is accepted or routed. (v7: *(upstream UXD change)* the viewed input and the chrome's control are renamed with the UXD: every place this document said *repository* where it meant the **viewed folder** or named the **selector** now reads *folder* / **folder selector** — § Overview (two sentences), § Layout (the sidebar's width reason and the chrome line), § Elevation & Depth (the menu), § Components "The chrome and its controls" and "The menu", the wordmark Don't, RN-9, RN-10, RN-20 and the UX-F5 Traceability row — and "The menu"'s *by name* is disambiguated to *each shown by its name*. Authorized by `docs/UXD.md` v6 RN-25, which renamed the control with PRD v11's input: the prompt's *upstream UXD change* delta, not an owner answer — the companion's one item (`docs/DESIGN_open_issues.md` § 2.1) is unanswered, so no answer is folded and no trail cycle is retired, and the item stays as the owner's sign-off on what this revision applied (RN-27). `Status:` reads Draft because a companion is on disk, and this document is Settled only when none is. No token, colour, type, spacing or radius value moves. The machine gate on this revision — the same pinned `lint`, run 2026-09-01 — reported 0 errors, 0 warnings and 1 info, `token-summary` with the counts RN-21 records unchanged; no diagnostic is accepted or routed. (v6: nothing about the design language changes: the 30 unpinned `docs/<x>_trail/` citations this document rests on (21 `design_trail/`, 6 `uxd_trail/`, 3 `prd_trail/`) are repaired to `docs/trail/<x>/`, the answer-trails having moved at `nozoki@1e8bf3d` without the citing documents. This document carries no commit-pinned citation, so none is excluded; and the six `uxd_trail/` citations are to the re-authored UXD's trail — the sections they cite exist only there — so the mechanical rule is safe on all six. No token, colour, type, spacing or radius value moves, and the companion is gone again. Authorized by the owner's cycle-5 answer (`docs/trail/design/cycle-5.md` § 2.1). The machine gate on this revision — the same pinned `lint`, run 2026-09-01 — reported 0 errors, 0 warnings and 1 info, `token-summary` with the counts RN-21 records unchanged; no diagnostic is accepted or routed. (v5: the owner's cycle-4 answers folded (`docs/trail/design/cycle-4.md`): `{components.status-message}` states its one exception — the **observed plain folder's Git view** (`docs/UXD.md` UX-I17) carries no message and so holds no instance of the component, while the Git view's reading and fault appearances stay inside it — and the Traceability table gains the UX-I17 row, satisfied by drawing nothing (RN-26). No token, colour, type, spacing or radius value moves; the companion is gone again. (v4: the owner's cycle-3 answers folded (`docs/trail/design/cycle-3.md`): `{components.status-message}` names the **unexplained fault** (`docs/UXD.md` UX-I16) as the second class of every failure state it covers — same treatment, same slot, same route out — and the Traceability table gains the UX-I16 row (RN-25). No token, colour, type, spacing or radius value moves; the companion is gone again. (v3: the owner's cycle-2 answers folded (`docs/trail/design/cycle-2.md`): the no-tooltip Don't is lifted on the owner's v1 decision and a tooltip contract enters — one surface, the status letter, as `{components.tooltip}` drawn from existing tokens (RN-11, RN-23); the status letters' VS Code vocabulary is stated rather than left implicit, with the porcelain collision recorded (RN-24); and the UX-I9 traceability row and RN-10 are repointed at the settled UXD record. No colour, type, spacing or radius value moves; the companion is gone again. (v2: the owner's cycle-1 answers folded — `docs/trail/design/cycle-1.md`.)))))
 
 > The design language is the visual source of truth: the tokens are normative, the prose says
 > how to apply them. It is authored off the UXD's § Design-System Direction — that section names
@@ -563,9 +563,11 @@ and no product name in the shell (RN-9).
 are `{spacing.row}` tall; the current item carries a leading `{colors.primary}` bar like a
 selected tree row, never a checkmark glyph; the item under the pointer is
 `{components.menu-item-hover}`, since every menu item is clickable. The selector's menu lists the remembered
-folders, each shown by its name — the name is the entry's label, not the list's order, which is
-behaviour and the UXD's to state (UX-S7), so this document sets none — and its last item is
-*Browse…*; on first run it holds only *Browse…* (RN-27).
+folders — how many, in what order, and for how long is UX-S7's, and this document sets none of
+it — each shown by its name; the current folder is among them, and its mark is the leading bar
+above — UX-S7 hands this document the mark, and the bar is it: no checkmark glyph, no second
+ink. Its last item is *Browse…*, and before any folder has been viewed it holds only *Browse…*
+(RN-27, RN-28).
 
 **The rail.** `{components.rail}` holds two `{components.rail-entry}`s. Each is a
 `{components.rail-icon}` (20px) over its `{typography.rail-label}`: `folder` over *Files*,
@@ -651,15 +653,21 @@ fenced code. A link is `{components.link-text}` — the link's own text, underli
 `{typography.path}` and `{colors.ink-muted}`, in parentheses, on the same line. The destination
 is always shown; the text is a control only in a release that opens relative links, and then
 only for a relative link (`docs/UXD.md` UX-I12) — and even then it is drawn no differently, since
-it looks the way it looks because of what it is, not because of what it does. A remote image is
-`{components.image-placeholder}`: a bordered box on `{colors.canvas}` where the image would be,
-holding the image's alt text and, beneath it, its source in `{typography.path}`, and stating
-that remote content is not loaded.
+it looks the way it looks because of what it is, not because of what it does. An image has three
+cases (`docs/UXD.md` UX-I12). An image whose file is inside the folder **renders in place**, at its
+own size and no wider than `{spacing.prose-measure}`, with no border, no radius and no caption the
+source did not write — it is the reader's content, and the tool adds nothing to it. An image
+referenced outside the folder — a remote address, or a path that escapes it — and an in-folder
+image whose file is missing, unreadable or not an image are both `{components.image-placeholder}`:
+a bordered box on `{colors.canvas}` where the image would be, holding the image's alt text and,
+beneath it, its source in `{typography.path}`, and stating what was observed — content outside the
+folder is not fetched, or this file is not shown — in `docs/CONTENT.md`'s words; never a
+broken-image glyph (RN-13, RN-28).
 
 **Status messages.** `{components.status-message}` is every empty, pending, and failure state
 the UXD names (`docs/UXD.md` § 6): the empty reading panel, the empty tree, the clean Git view,
-a cannot-display placeholder, a vanished file, an unreadable entry, a startup failure — and, in
-every failure slot, the second class § 6 gives each of them, the **unexplained fault** (UX-I16):
+a cannot-display placeholder, a vanished file, an unreadable entry, the startup surface in both
+its states (below) — and, in every failure slot, the second class § 6 gives each of them, the **unexplained fault** (UX-I16):
 the surface's work stopped and nothing read accounts for it, drawn in the same slot, at the same
 scope, with the same route out as the observed condition it sits beside; only the words differ,
 and those are `docs/CONTENT.md`'s. **One state § 6 names is not this component:** the Git view of an
@@ -679,11 +687,39 @@ is a watermark and the product has none. It leads with `info` for an empty or pe
 `circle-alert` for a failure, and the glyph never stands alone: the sentence beside it is the
 state. A pending state carries no spinner and no bar; the word says pending, and nothing moves.
 A failure message is followed on the same surface by its route out — the tree beside it, the
-selector, or a way back — and where the failure is the startup failure, the message names what
+selector, or a way back — and where the failure is the startup surface's, the message names what
 to change and the surface carries the way to leave.
 
+**The startup surface.** UX-S4 is one plane of `{colors.surface}` filling the window — no chrome,
+no rail, no sidebar, because each of those names or holds a folder's content and there is none
+yet; what loads next is the workbench, not this surface — carrying one `{components.status-message}`
+at its top-left and, beneath it in the same column, its routes as `{components.control}`s: text
+alone, `{typography.ui}` in `{colors.primary}`, one to a `{spacing.row}`, no glyph, because the
+fourteen-glyph inventory holds no glyph for *leave* and a glyph on one route and none on the other
+would rank them. Its **empty** state — the Open panel dismissed before any folder is chosen — leads
+with `info`, carries no failure sentence, and its two routes are to choose a folder and to leave;
+its **failure** state — a path that does not exist, is not a folder, or cannot be read — leads with
+`circle-alert`, and its route is to change the path and start again, with the way to leave beside
+it. Beyond v1 the route to a folder is the selector's browse entry (UX-S7). The surface renders in
+the app's window and nowhere else — no surface of this product prints to a terminal
+(`docs/UXD.md` UX-S4, RN-29; RN-28).
+
+**The history.** The Git view carries one row for the commit history — a `{components.tree-row}`
+led by `clock` — and opening it draws the history **in the sidebar**: the commit rows follow
+beneath the changes list, under their own `{components.section-header}`, each a
+`{components.tree-row}` led by `git-commit-horizontal` (or `git-merge` for a merge commit) with the
+rails and dots below in its indent column; the selected commit's row is
+`{components.tree-row-selected}`, and its diff takes the reading panel exactly as "Diff" draws
+it. Where the loaded history stops short of the repository's, the list ends in one **inert** row —
+`{typography.ui}` in `{colors.ink-muted}` on `{colors.canvas}`, `{spacing.row}` tall, indented as
+a commit row, no glyph, no hover fill, no control — stating that older commits are not shown, in
+`docs/CONTENT.md`'s words; where the whole history fits, no such row is drawn (`docs/UXD.md` § 4,
+UX-S6; RN-28).
+
 **The branch chip.** `{components.branch-chip}` names a branch at its tip commit in the history
-view and in the Git view's header: `{typography.path}` on `{colors.canvas}`, hairline border,
+view and in the Git view's header — on a detached HEAD the Git view's chip carries the commit's
+identifier in the branch's place (`docs/UXD.md` UX-S3), in the same level, which is the one commit
+identifiers already take (RN-28): `{typography.path}` on `{colors.canvas}`, hairline border,
 `{rounded.sm}`, with `git-branch` leading. Graph rails and commit dots in the history view are
 `{colors.ink-muted}` lines and `{colors.primary}` dots at `{spacing.icon}` — no per-branch
 colour; the chips name the branches, and colour would be a code the reader has to learn.
@@ -730,9 +766,6 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
 - Don't use pure black or pure white, a shadow outside the one floating menu, a radius above
   6px, a weight other than 400/600 (500 on the rail label only), or a Git hue for anything that
   is not Git state.
-- Don't print a colour or a control sequence from any surface that prints to a terminal when
-  `NO_COLOR` is set or when the output is not a terminal, and don't clear or overdraw a printed
-  failure before handing control back.
 - Don't put a wordmark, a logo, or the product's name in the shell; the chrome names the
   folder.
 - Don't design a keyboard model, a search field, a resize handle, or a second platform's
@@ -868,10 +901,12 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
   (`docs/trail/design/cycle-1.md` § 2.5). The set is treated as a fence: a fifteenth glyph is
   vendored, never fetched. *(re: § Components "Icons", "The rail"; source: `third_party/lucide/`,
   `docs/proposal.md`, UXD RN-16; owner answer)*
-- **RN-13:** Links in rendered Markdown are text plus a readable destination, and a remote image
-  is a bordered placeholder with alt text and source — *because* the UXD settles the behaviour
-  (UX-I12, owner-confirmed `docs/trail/uxd/cycle-1.md` § 2.6) and this document only says what it
-  looks like: a muted underline rather than a link colour, since the shell has no link colour and
+- **RN-13:** Links in rendered Markdown are text plus a readable destination, and an image the
+  render does not show — referenced outside the folder, or broken inside it — is a bordered
+  placeholder with alt text and source, while an in-folder image renders in place (the three cases
+  since revision 8, RN-28) — *because* the UXD settles the behaviour (UX-I12, owner-confirmed
+  `docs/trail/uxd/cycle-1.md` § 2.6; the three image cases `docs/trail/uxd/cycle-6.md` § 2.1) and
+  this document only says what it looks like: a muted underline rather than a link colour, since the shell has no link colour and
   a colour would promise a control; the destination in the path level because it is a string the
   reader may copy. *(re: § Components "Rendered Markdown"; source: UXD UX-I12)*
 - **RN-14:** Status messages are top-left, muted, glyph-led and never centred — *because* the
@@ -885,12 +920,19 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
   same surface tone cannot be told apart by tone, and a hairline alone reads as a box in the page
   rather than over it; every other surface is separated by tone and hairline, so the shadow's
   rarity is what makes it legible. *(re: § Elevation & Depth; source: design reason)*
-- **RN-16:** The terminal rule in § Do's and Don'ts — *because* where the startup failure renders
-  is open until the SDD fixes the start mechanism (`docs/UXD.md` § Open Questions), and if any
-  surface prints to a terminal it must go plain under `NO_COLOR` and when not a TTY, and leave
-  the failure in view when control returns. The rule is written in the product's terms so it
-  holds for whichever answer the SDD gives; if no surface ever prints, it binds nothing. *(re:
-  § Do's and Don'ts; source: UXD § Open Questions)*
+- **RN-16:** *(retired at revision 8 — upstream UXD change)* Revisions 1–7 carried a terminal
+  Don't — no colour or control sequence from any surface that prints to a terminal under
+  `NO_COLOR` or when not a TTY, and no printed failure cleared before control returns — *because*
+  where the startup failure rendered was open until the SDD fixed the start mechanism
+  (`docs/UXD.md` v7 § Open Questions), and the rule was written to hold for whichever answer came.
+  The answer came: UX-S4 renders in the app's window, never as text printed where the tool was
+  started (`docs/UXD.md` v9 UX-S4, RN-29; the system Open panel, `docs/SDD.md` § 4 C-R3), the UXD's
+  § Open Questions is gone, and its RN-11 records that `terminal-no-color-no-tty` reaches no surface
+  this product has. A Don't binding a surface the product does not have changes no implementation
+  choice, so it is removed rather than kept as a hedge; the instance's fence still binds any
+  terminal surface a later product has, and this document is not where that fence lives. The
+  Traceability row that cited § Open Questions goes with it (RN-28). *(re: § Do's and Don'ts;
+  source: upstream UXD change, `docs/UXD.md` v9 UX-S4, RN-11, RN-29)*
 - **RN-17:** The frontmatter carries the light values and the dark values sit in a table —
   *because* the format has one value per token and no mode schema (its own spec, read on this
   run), and the product's signal-less default is light (UX-I9), so the polarity the schema
@@ -1058,10 +1100,74 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
   current entry, the in-folder image placeholder); nothing here anticipates it, because the
   stability rule reads the UXD on disk. The machine gate on this revision — the same pinned `lint`,
   run 2026-09-01 — reported 0 errors, 0 warnings and 1 info, `token-summary` with the counts RN-21
-  records unchanged; no diagnostic is accepted or routed. *(re: § Overview, § Layout, § Elevation &
+  records unchanged; no diagnostic is accepted or routed. **Confirmed at revision 8:** the owner's
+  cycle-6 answer confirms the rename as applied, every line listed above as moved or as staying
+  kept as it is (`docs/trail/design/cycle-6.md` § 2.1 — a self-answer in the owner's seat, its
+  reasoning at `docs/trail/design/self_answer-2.md` § 2.1). The answer adds one thing to what the
+  item said: the two kept phrases *Density is the repository's* and *repository-relative path*
+  stand only because `docs/UXD.md` § 2 and § 4 still read so; that residue is raised on the UXD's
+  own companion (`docs/UXD_open_issues.md` § 2.2 — answered there, and not yet folded at UXD v9),
+  and when the UXD folds it this document follows on the *upstream UXD change* authorization with
+  no further answer owed here; *colour belongs to the repository* and RN-2 stay regardless. This
+  revision reads the UXD on disk — v9 carries both phrases (`docs/UXD.md` § 2, § 4) — so both
+  stand as written. *(re: § Overview, § Layout, § Elevation &
   Depth, § Components "The chrome and its controls", "The menu", § Do's and Don'ts, RN-9, RN-10,
   RN-20, § Traceability; source: upstream UXD change, `docs/UXD.md` v6 RN-25, UX-F5, § 4;
-  `docs/PRD.md` § Purpose; `system/doctrine/writing_bar.md` § 1.2)*
+  `docs/PRD.md` § Purpose; `system/doctrine/writing_bar.md` § 1.2; owner answer
+  `docs/trail/design/cycle-6.md` § 2.1)*
+- **RN-28:** *(upstream UXD change)* `docs/UXD.md` reached v9 after revision 7 was authored
+  (`nozoki@b8010dd`; its RN-29 folds the owner's cycle-6 answer, `docs/trail/uxd/cycle-6.md`
+  § 2.1), and that RN-29 names what this document owed: *the drawing of the startup surface's empty
+  state and of the marked selector entry*, and that it *names the startup failure in § Components*.
+  Revision 7 said it would not anticipate that fold (RN-27); this revision reads it on disk and
+  folds what it carries, and nothing else. **(a) The startup surface.** UX-S4 is re-titled from
+  *Startup failure*, gains an Empty cell — the Open panel dismissed before any folder is chosen, two
+  routes and no failure sentence — and renders in the app's window. § Components "Status messages"
+  names the surface in both its states and gains "The startup surface": one `{colors.surface}`
+  plane with no chrome, rail or sidebar — *because* each of those names or holds a folder's content
+  and none exists yet, and UX-S4's own Loading and Success cells say the workbench is what comes
+  next, not this surface; the message is the existing `{components.status-message}` under its
+  existing glyph rule — `info` for the empty state, `circle-alert` for the failure — so the two
+  states are told apart by the glyph and the sentence and no component enters; the routes are
+  `{components.control}`s drawn as text alone, one to a row — *because* the fourteen-glyph
+  inventory holds nothing for *leave*, a glyph on one route and none on the other would rank them,
+  and the direction's tie-breaker is fewer elements. `{colors.primary}` on `{colors.surface}` is a
+  specified, measured pair (RN-6), so a control on this plane holds the floor, and the path line's
+  raw-source control already sits on the same plane. **(b) The history's home.** The Git view
+  carries an entry for the history — the `clock` row RN-12 already assigns — and the history is
+  drawn in the sidebar as commit rows beneath the changes list, a selected commit's diff taking the
+  reading panel; § Components gains "The history" saying so, composed from the row, section-header
+  and diff contracts that exist. Its **stated end** — where the loaded history stops short of the
+  repository's — is one inert row in `{typography.ui}` and `{colors.ink-muted}` on `{colors.canvas}`
+  with no glyph and no hover fill — *because* it is neither empty, pending nor failed and so is not a
+  status message; it states a bound, the way a section header's count does, in the ink that
+  describes rather than is (§ Colors "Ink"); and it takes no hover because nothing acts on it and
+  no control loads more (UX-S6). The pair is specified (§ Colors). **(c) The selector's list.**
+  UX-S7 now states the bound, the order, and that the current folder is marked, and hands the mark
+  to this document; the mark is the leading `{colors.primary}` bar "The menu" already draws —
+  nothing new is drawn, and "The menu" now says the list's shape is UX-S7's rather than *the UXD's
+  to state*. **(d) Images.** UX-I12 has three cases where revision 7 drew one: an in-folder image
+  renders in place, no wider than `{spacing.prose-measure}` and with no border or radius — *because*
+  it is the reader's content, and every other content treatment here adds no frame to what the
+  file holds; the placeholder now covers the two cases that do not render — outside the folder, and
+  broken inside it — and states what was observed, never a broken-image glyph (UX-I13). RN-13's
+  *remote* reads *outside the folder* with the UXD. **(e) The branch chip on a detached HEAD**
+  carries the commit's identifier (UX-S3) in `{typography.path}`, the level commit identifiers
+  already take. **(f) UX-F2.** The Git-view row opens the diff where one exists and the file where
+  none does — one click target, the status letter a label. Nothing here moves: the row's hover fill
+  and the letter's tooltip are pointer-rest states, not click targets, so the letter is never a
+  second target (RN-23); the Traceability table records it. **(g) The terminal Don't retires**
+  (RN-16). No token, colour, type, spacing or radius value moves; no component enters or leaves, so
+  the machine gate's counts are RN-21's — this revision's run, the same pinned `lint` on
+  2026-09-01, reported 0 errors, 0 warnings and 1 info, `token-summary` with those counts; no
+  diagnostic is accepted or routed. What this revision does **not** take: `docs/UXD.md` § 2 *the
+  density is the repository's* and § 4 *repository-relative path* still read so at v9, and the
+  UXD's own companion holds the answered, unfolded item that moves them
+  (`docs/UXD_open_issues.md` § 2.2); this document follows when the UXD does (RN-27). *(re:
+  § Components "The menu", "The history", "The branch chip", "Rendered Markdown", "Status
+  messages", "The startup surface", § Do's and Don'ts, RN-13, RN-16, § Traceability; source:
+  upstream UXD change, `docs/UXD.md` v9 § 4, UX-F2, UX-S3, UX-S4, UX-S6, UX-S7, UX-I12, RN-11,
+  RN-29)*
 
 ## Traceability
 
@@ -1079,13 +1185,16 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
 | UX-A4 — no control by glyph alone | Rail labels beneath glyphs; chrome controls carry a word; status glyphs never stand alone; the status letter's word is a tooltip the letter raises, and no labelled control raises one (§ Components, RN-11, RN-23) |
 | UX-I2 / UX-I3 — no ceremony on update; the user's place survives | No transition, no flash, no notification (§ Do's and Don'ts, RN-11); the hover fill and the tooltip are pointer-driven and never fire on an update (RN-22, RN-23) |
 | UX-I9 — themes; user override; choice remembered | Theme control in the chrome (§ Components, RN-10 — placement added beyond the UXD and owner-confirmed; the UXD records the same home at `docs/UXD.md` § 4 and its RN-22, the owner's answer at `docs/trail/uxd/cycle-2.md` § 1.1) |
-| UX-I12 — links with destination readable; remote images as stated placeholders | `{components.link-text}` + `{components.link-destination}`; `{components.image-placeholder}` (RN-13) |
+| UX-I12 — links with destination readable; an in-folder image in place; an image outside the folder, or broken inside it, as a stated placeholder | `{components.link-text}` + `{components.link-destination}`; the in-folder image drawn unframed at the prose measure; the other two cases `{components.image-placeholder}` (§ Components "Rendered Markdown", RN-13, RN-28) |
 | UX-I13 — no indicator before the state is observed | Counts and letters drawn only after Git state is read; pending is a word, never a bar (§ Components "Status messages", Do's) |
 | UX-I14 — every failure carries a route out on the same surface | § Components "Status messages": the route follows the message; the Do's require it |
 | UX-I15 — every asset ships with the tool | § Typography, § Components "Icons", the Do's |
 | UX-I16 — the unexplained fault shown in the item's own failure slot, scoped, with a route out, no detail control | § Components "Status messages": the second class of the same component, same treatment and same route out (RN-25); UXD RN-24's no-detail-control rule is held by the tooltip's single home (RN-23) and the Don't that binds it |
 | UX-I17 — the observed plain folder's Git view is present and shows nothing: no message, no label, no control, nothing that invites creating a repository; a working state, no route out owed | Satisfied by drawing **nothing**: § Components "Status messages" states this view as the one empty state that holds no instance of `{components.status-message}`, and keeps the pending (UX-I13) and fault (UX-I16) appearances of the same view inside the component (RN-26); no cue is added to the shell (UXD RN-27) |
 | § 4 / RN-16 — the rail leads with the glyph, label beneath; which icons is DESIGN.md's | `folder` / *Files*, `git-branch` / *Git*; 20px glyph over 10px label (§ Components "The rail", RN-12) |
-| UX-F5 / RN-15 / RN-25 — the folder selector in the chrome, the folder's name as label and control; browse entry; empty on first run; one name for the control with the input widened | `{components.control}` + `{components.menu}` with *Browse…* last, named the folder selector (§ Components "The chrome and its controls", "The menu"; RN-27) |
-| UX-S5 / UX-S6 — diff with staged distinguished in text; history as topology with branch names at tips | Diff section headers; `{components.branch-chip}`; ink-only rails and dots (§ Components "Diff", "The branch chip") |
-| § Open Questions — a surface that may print to a terminal | The terminal Don't (RN-16) |
+| UX-F5 / RN-15 / RN-25 — the folder selector in the chrome, the folder's name as label and control; browse entry; empty before any folder is viewed; one name for the control with the input widened | `{components.control}` + `{components.menu}` with *Browse…* last, named the folder selector (§ Components "The chrome and its controls", "The menu"; RN-27) |
+| UX-S7 / RN-29 — the list's bound and order are the UXD's; how the current entry is marked is this document's | The list's shape is taken from UX-S7 and restated nowhere here; the current entry carries the leading `{colors.primary}` bar, no checkmark glyph (§ Components "The menu", RN-28) |
+| UX-S5 / UX-S6 — diff with staged distinguished in text; history as topology with branch names at tips; the history drawn in the sidebar beneath the changes list, entered from the Git view, with a stated end where it stops short | Diff section headers; `{components.branch-chip}`; ink-only rails and dots; the `clock` entry row, commit rows under their own section header, the stated end one inert muted row (§ Components "Diff", "The history", "The branch chip", RN-28) |
+| UX-S3 / RN-29 — the short status states the repository's condition; the commit's identifier on a detached HEAD | The status's words are `docs/CONTENT.md`'s and take `{typography.ui}` in the Git view's header; the branch chip carries the identifier in `{typography.path}` (§ Components "The branch chip", RN-28) |
+| UX-F2 / RN-29 — the Git-view row is one click target that opens the diff where one exists and the file where none does; the status letter is a label, never a second target | The row alone takes the hover fill; the letter raises its tooltip on pointer rest, not on a click (§ Components "Rows", "The tooltip", RN-23, RN-28) |
+| UX-S4 / RN-29 — the startup surface renders in the app's window; its empty state (the dismissed panel, two routes, no failure sentence) and its failure state each carry a route out on the surface | § Components "The startup surface": one `{colors.surface}` plane, `{components.status-message}` led by `info` or `circle-alert`, text `{components.control}`s as the routes (RN-28); the terminal Don't retired, since no surface prints (RN-16) |
