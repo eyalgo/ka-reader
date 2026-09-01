@@ -19,6 +19,13 @@
 > record as this document's to resolve, with nothing raised here since. With no companion on disk
 > a `product-srs` re-run reads the SRS as done and has nothing to act on. The one item below
 > arrives with the run's proposal and its reasoning; the decision is the next round's.
+>
+> **Where this round stands.** A `product-srs` run has taken this file up, found its one answer slot
+> empty, and so folded nothing and retired no trail cycle. That run changed one thing in the SRS and
+> nothing else: its `Status:` line, which read `Settled` while this companion sat beside it, and the
+> `Version:` line that records why. **No requirement, criterion, constraint or review note changed** —
+> an unanswered re-run may not touch settled content (`<CORE>/prompts/cto_create_srs.md` § *On a
+> re-run — fold, don't re-author*). Item 2.1 is the original, with one bullet added by this seat.
 
 ---
 
@@ -48,4 +55,18 @@
   or a control on the reading panel's path line — which is the UXD's call and reaches the FDR
   through it (`docs/fdr_open_issues.md` § 2.1 "If overridden"); the owner's trail answer is then
   the thing overridden, and RN-20 in the SDD says so.
+- **What this seat adds, taking the item up:** two things the proposal does not say, so that the
+  answer settles what would actually land. **(1)** FR-13's trace is the PRD's second key use case,
+  *"opens the changed files to read them"* (`docs/PRD.md` § Key Use Cases, item 2). Confirming makes
+  FR-13 depart from that sentence wherever the diff is present — recorded in the SRS as a *changed*
+  review note, the shape the FDR's RN-1 already takes — and the PRD sentence itself is the CPO's:
+  whether it is revised to match the owner's decision reaches the PRD through its own companion, not
+  this one, and nothing is opened on it here. **(2)** The condition would be stated as a system state,
+  not a delivery moment: this document already marks the diff *(beyond v1)* (FR-17), so FR-13 would
+  read that activating a changed file's row opens the file for reading where the diff (FR-17) is not
+  present, and opens that file's diff where it is — the fact R-69 and R-70 state, in this document's
+  own terms. AC-6 takes the same two readings, and AC-12 gains the row opening the diff. The
+  authorization cited would be this companion's own trail cycle: the SDD's trail is downstream of
+  this document and is not a source a requirement may trace to (`<CORE>/prompts/cto_create_srs.md`
+  § *Inputs you work from*).
 - **Confirm or override:**
