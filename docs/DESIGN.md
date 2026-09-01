@@ -299,7 +299,7 @@ components:
 
 **Status:** Settled
 **Owner:** CDO
-**Version:** 5 — the owner's cycle-4 answers folded (`docs/design_trail/cycle-4.md`): `{components.status-message}` states its one exception — the **observed plain folder's Git view** (`docs/UXD.md` UX-I17) carries no message and so holds no instance of the component, while the Git view's reading and fault appearances stay inside it — and the Traceability table gains the UX-I17 row, satisfied by drawing nothing (RN-26). No token, colour, type, spacing or radius value moves; the companion is gone again. (v4: the owner's cycle-3 answers folded (`docs/design_trail/cycle-3.md`): `{components.status-message}` names the **unexplained fault** (`docs/UXD.md` UX-I16) as the second class of every failure state it covers — same treatment, same slot, same route out — and the Traceability table gains the UX-I16 row (RN-25). No token, colour, type, spacing or radius value moves; the companion is gone again. (v3: the owner's cycle-2 answers folded (`docs/design_trail/cycle-2.md`): the no-tooltip Don't is lifted on the owner's v1 decision and a tooltip contract enters — one surface, the status letter, as `{components.tooltip}` drawn from existing tokens (RN-11, RN-23); the status letters' VS Code vocabulary is stated rather than left implicit, with the porcelain collision recorded (RN-24); and the UX-I9 traceability row and RN-10 are repointed at the settled UXD record. No colour, type, spacing or radius value moves; the companion is gone again. (v2: the owner's cycle-1 answers folded — `docs/design_trail/cycle-1.md`.))
+**Version:** 6 — nothing about the design language changes: the 30 unpinned `docs/<x>_trail/` citations this document rests on (21 `design_trail/`, 6 `uxd_trail/`, 3 `prd_trail/`) are repaired to `docs/trail/<x>/`, the answer-trails having moved at `nozoki@1e8bf3d` without the citing documents. This document carries no commit-pinned citation, so none is excluded; and the six `uxd_trail/` citations are to the re-authored UXD's trail — the sections they cite exist only there — so the mechanical rule is safe on all six. No token, colour, type, spacing or radius value moves, and the companion is gone again. Authorized by the owner's cycle-5 answer (`docs/trail/design/cycle-5.md` § 2.1). The machine gate on this revision — the same pinned `lint`, run 2026-09-01 — reported 0 errors, 0 warnings and 1 info, `token-summary` with the counts RN-21 records unchanged; no diagnostic is accepted or routed. (v5: the owner's cycle-4 answers folded (`docs/trail/design/cycle-4.md`): `{components.status-message}` states its one exception — the **observed plain folder's Git view** (`docs/UXD.md` UX-I17) carries no message and so holds no instance of the component, while the Git view's reading and fault appearances stay inside it — and the Traceability table gains the UX-I17 row, satisfied by drawing nothing (RN-26). No token, colour, type, spacing or radius value moves; the companion is gone again. (v4: the owner's cycle-3 answers folded (`docs/trail/design/cycle-3.md`): `{components.status-message}` names the **unexplained fault** (`docs/UXD.md` UX-I16) as the second class of every failure state it covers — same treatment, same slot, same route out — and the Traceability table gains the UX-I16 row (RN-25). No token, colour, type, spacing or radius value moves; the companion is gone again. (v3: the owner's cycle-2 answers folded (`docs/trail/design/cycle-2.md`): the no-tooltip Don't is lifted on the owner's v1 decision and a tooltip contract enters — one surface, the status letter, as `{components.tooltip}` drawn from existing tokens (RN-11, RN-23); the status letters' VS Code vocabulary is stated rather than left implicit, with the porcelain collision recorded (RN-24); and the UX-I9 traceability row and RN-10 are repointed at the settled UXD record. No colour, type, spacing or radius value moves; the companion is gone again. (v2: the owner's cycle-1 answers folded — `docs/trail/design/cycle-1.md`.)))
 
 > The design language is the visual source of truth: the tokens are normative, the prose says
 > how to apply them. It is authored off the UXD's § Design-System Direction — that section names
@@ -327,7 +327,7 @@ dresses it: **calm, truthful, still** (`docs/PRD.md` § UX Notes "The character"
 
 **The one system is a restrained code-workbench built from primitives** — no established
 component design system, no component library, no imported aesthetic (`docs/UXD.md` § 9,
-owner-confirmed at `docs/uxd_trail/cycle-1.md` § 2.1). It is realised in plain CSS custom
+owner-confirmed at `docs/trail/uxd/cycle-1.md` § 2.1). It is realised in plain CSS custom
 properties over the product's own markup on a macOS window (`docs/SRS.md` C-11; `README.md`
 § Planned stack), and it starts from what a stock Mac already draws: the platform's own fonts, its
 own text sizes, its own flat list rows. Nothing visual ships that the machine does not already
@@ -386,7 +386,7 @@ token — never two palettes with two rules.
 
 **The signal-less default is light.** The initial theme follows the platform's appearance
 setting; where no signal can be read, the initial theme is light (`docs/UXD.md` UX-I9, RN-7,
-owner-confirmed at `docs/uxd_trail/cycle-1.md` § 2.5). This document carries that default as the
+owner-confirmed at `docs/trail/uxd/cycle-1.md` § 2.5). This document carries that default as the
 frontmatter's polarity: the light values are the token values, and the dark values below are the
 alternate. The reason is the UXD's own — dark text on a light ground is the more widely evidenced
 legibility default for reading text, held as reasoning — and this document adds nothing to it.
@@ -665,7 +665,7 @@ and those are `docs/CONTENT.md`'s. **One state § 6 names is not this component:
 so holds no instance of `{components.status-message}`; it carries no words because the two things
 a Git-less folder would otherwise be offered, initialising a repository and publishing it, are
 writes this product can never offer, so there is no truthful next step to state (the owner's
-decision, `docs/prd_trail/cycle-10.md` § 2.2). The exception is exactly that wide: the Git view
+decision, `docs/trail/prd/cycle-10.md` § 2.2). The exception is exactly that wide: the Git view
 **before** the tool has found whether the folder is a repository is a pending status message
 (UX-I13), and a Git view whose finding-out **stopped** is the unexplained fault, a failure status
 message (UX-I16) — never nothing. A clean repository and a plain folder are told apart by what the
@@ -742,7 +742,7 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
 
 - **RN-1:** The one system is a workbench from primitives in plain CSS custom properties on
   macOS, with the platform's own look as the starting point — *because* the UXD's direction
-  names exactly that (`docs/UXD.md` § 9, owner-confirmed `docs/uxd_trail/cycle-1.md` § 2.1), the
+  names exactly that (`docs/UXD.md` § 9, owner-confirmed `docs/trail/uxd/cycle-1.md` § 2.1), the
   proposal names plain CSS / CSS variables and the README repeats it (`docs/proposal.md`
   § Styling, `README.md` § Planned stack), the product is macOS-only (`docs/SRS.md` C-11), and the
   instance's direction starts every product from its platform's defaults. The runtime — a
@@ -759,7 +759,7 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
   no evidence pins a palette (the instance carries none). The alternative rejected is a single
   accent for selection and controls, which is the default a workbench reaches for. **Confirmed by
   the owner** — "confirm", and the argument as put to them is recorded there
-  (`docs/design_trail/cycle-1.md` § 2.1). *(re: § Colors, `{colors.selection}`,
+  (`docs/trail/design/cycle-1.md` § 2.1). *(re: § Colors, `{colors.selection}`,
   `{colors.primary}`; source: design reason; owner answer)*
 - **RN-3:** The neutral scale is three steps and one hairline per theme, cool-neutral, and never
   pure black or white — *because* the surfaces the product has are exactly three (content,
@@ -777,7 +777,7 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
   green/amber/red/teal assignment follows the near-universal convention for add/modify/delete so
   that the repeat is one the reader already has. **Both calls confirmed by the owner**, on the
   stated understanding that a diff already carries colour in its two tints and the syntax layer
-  would be a further one on top, not the diff's only colour (`docs/design_trail/cycle-1.md`
+  would be a further one on top, not the diff's only colour (`docs/trail/design/cycle-1.md`
   § 2.4). *(re: `{colors.git-*}`, `{colors.diff-*}`; source: design reason; owner answer)*
 - **RN-5:** Five syntax roles, not more — *because* the highlighting promise is six
   data-and-scripting languages (`docs/PRD.md` § Core Features) whose grammars map onto keyword,
@@ -794,7 +794,7 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
   because the palette clears it with margin and a stated number should be the one the values
   hold, not a threshold they happen to exceed. The machine gate checks only the frontmatter's
   light pairs; the dark pairs are this document's own check, recorded here. **Confirmed by the
-  owner** at the two drafted numbers (`docs/design_trail/cycle-1.md` § 2.7). Revision 2 adds
+  owner** at the two drafted numbers (`docs/trail/design/cycle-1.md` § 2.7). Revision 2 adds
   `hover` to the surfaces `primary`, `ink-muted` and the four Git tokens are specified for; its
   minima are in RN-22. *(re: § Colors "The contrast floor"; source: computed on this run, UXD
   § 8; owner answer)*
@@ -807,7 +807,7 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
   macOS's regular control size, and the scale is built from it rather than from a ratio.
   `scripts/design-check.mjs` says "fonts are self-hosted"; this document ships none, which
   satisfies the check by having nothing to host. **Confirmed by the owner** — no typeface is
-  shipped (`docs/design_trail/cycle-1.md` § 2.2). *(re: `{typography.*}`; source: UXD § 2, § 9;
+  shipped (`docs/trail/design/cycle-1.md` § 2.2). *(re: `{typography.*}`; source: UXD § 2, § 9;
   `docs/SRS.md` C-11; `scripts/design-check.mjs`; owner answer)*
 - **RN-8:** Widths — rail 48, sidebar 260, chrome 36, minimum window 720, rows 24, indent 12 —
   *because* the proposal's 240–280 sidebar is input and 260 is the midpoint that holds a
@@ -816,26 +816,26 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
   that holds a 20px glyph over a 10px label with the row rhythm's 4px margins; 24px rows are the
   platform's list row height at 13px text; and 720 is the width below which the reading panel
   stops dominating. Pane resizing is outside done, so the sidebar width is a value, not a range.
-  **Every measurement confirmed by the owner** as drafted (`docs/design_trail/cycle-1.md` § 2.3).
+  **Every measurement confirmed by the owner** as drafted (`docs/trail/design/cycle-1.md` § 2.3).
   *(re: `{spacing.*}`; source: design reason; `docs/proposal.md`; UXD § 10; owner answer)*
 - **RN-9:** No wordmark, logo or product name in the shell — *because* the one job is what is on
   the surface and the chrome's element is the repository's identity (`docs/UXD.md` § 4, RN-2), the
   instance carries no shared mark, and a product name in the chrome would be the one thing on
   screen that is Nozoki's rather than the repository's. The product's name and its kanji live on
-  the README, which is the CPO's. **Confirmed by the owner** (`docs/design_trail/cycle-1.md`
+  the README, which is the CPO's. **Confirmed by the owner** (`docs/trail/design/cycle-1.md`
   § 2.6). *(re: § Components "The chrome"; source: UXD § 4; design reason; owner answer)*
 - **RN-10:** The theme control is in the chrome, right end, glyph plus word — *because* the UXD
   requires that the user may override the theme (UX-I9) and that every preference is reversible
   by the control that set it (UX-I7), but places the control nowhere; the chrome is the one
   surface reachable in every mode, and the rail and sidebar are the repository's. This is a
   structural placement the UXD does not make, so it went to the owner, who **confirmed it**
-  knowing the confirmation carried a UXD amendment with it (`docs/design_trail/cycle-1.md`
+  knowing the confirmation carried a UXD amendment with it (`docs/trail/design/cycle-1.md`
   § 2.5). The UXD half was not this document's to write: the owner re-opened the UXD's companion
   with that one already-answered item (`nozoki@ee8abcf`) and `product-uxd` folded it — `docs/UXD.md`
   § 4 now records the chrome as the control's home, its RN-22 carries the basis, and the owner's
-  answer is readable at `docs/uxd_trail/cycle-2.md` § 1.1 (`nozoki@f4bc928`). The two documents
+  answer is readable at `docs/trail/uxd/cycle-2.md` § 1.1 (`nozoki@f4bc928`). The two documents
   state one placement between them; revision 3 updates this note's tense and the Traceability row
-  on the owner's cycle-2 answer (`docs/design_trail/cycle-2.md` § 1.3). The glyph names the theme the control switches *to*, so the control reads as an action
+  on the owner's cycle-2 answer (`docs/trail/design/cycle-2.md` § 1.3). The glyph names the theme the control switches *to*, so the control reads as an action
   rather than a status. *(re: § Components "The chrome"; source: UXD UX-I9, UX-I7; design reason;
   owner answer; **changed** — placement added beyond the UXD, confirmed)*
 - **RN-11:** No focus ring and no transition — *because* the motion dial is 2 with "only what
@@ -843,11 +843,11 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
   focus (UX-I8); each absence is a count of elements removed, which is the tie-breaker the
   instance's direction hands a design run. Revision 1 drafted two further absences, and the owner
   has since overridden both; this note records each. **Hover** — *"hovering is something that
-  developers use"* (`docs/design_trail/cycle-1.md` § 2.3): a hover state enters, scoped as the
+  developers use"* (`docs/trail/design/cycle-1.md` § 2.3): a hover state enters, scoped as the
   owner stated it to rows that are actually clickable, never to an inert row where a fill would
   promise an action that is not there (§ Components "Rows", RN-22). **Tooltip** — *"i think that
   tooltips should be included in v1"*, given while settling the status letters and recorded as a
-  v1 decision rather than a one-off exception (`docs/design_trail/cycle-2.md` § 1.1; the ruling's
+  v1 decision rather than a one-off exception (`docs/trail/design/cycle-2.md` § 1.1; the ruling's
   own record is `docs/CONTENT_open_issues.md` § 1.2 at `nozoki@3692585`). Revision 1's reason for
   the ban — that a tooltip is a second surface for words the label already carries (UX-A4) — holds
   wherever a control carries its own word, the rail entries and the chrome controls, and it is why
@@ -863,12 +863,12 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
   choice of rail icons to this document (`docs/UXD.md` RN-16). Which glyph does which job is this
   document's assignment; the rail pair, the fourteen-glyph inventory and the theme control's
   placement were **confirmed by the owner together** — "confirm all three"
-  (`docs/design_trail/cycle-1.md` § 2.5). The set is treated as a fence: a fifteenth glyph is
+  (`docs/trail/design/cycle-1.md` § 2.5). The set is treated as a fence: a fifteenth glyph is
   vendored, never fetched. *(re: § Components "Icons", "The rail"; source: `third_party/lucide/`,
   `docs/proposal.md`, UXD RN-16; owner answer)*
 - **RN-13:** Links in rendered Markdown are text plus a readable destination, and a remote image
   is a bordered placeholder with alt text and source — *because* the UXD settles the behaviour
-  (UX-I12, owner-confirmed `docs/uxd_trail/cycle-1.md` § 2.6) and this document only says what it
+  (UX-I12, owner-confirmed `docs/trail/uxd/cycle-1.md` § 2.6) and this document only says what it
   looks like: a muted underline rather than a link colour, since the shell has no link colour and
   a colour would promise a control; the destination in the path level because it is a string the
   reader may copy. *(re: § Components "Rendered Markdown"; source: UXD UX-I12)*
@@ -901,7 +901,7 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
   by the product's own code, and a design-run output enters this document only through a pointer
   item the owner writes into the companion. Every value here is derived fresh. **The owner
   closed the question: this draft is the baseline** — *"i prefer not to use the old
-  information"* (`docs/design_trail/cycle-1.md` § 1.1). The earlier set is not folded, no
+  information"* (`docs/trail/design/cycle-1.md` § 1.1). The earlier set is not folded, no
   pointer item is written for it, and the restore command `1d5c553` records is deliberately not
   used; its values stay history. *(re: whole document; source: `git log` of the product
   repository; owner answer)*
@@ -937,7 +937,7 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
   and `git-deleted` 5.76 (dark). No other value moved. The hover is a fill and nothing else — no
   bar, no ink change, no transition — so the selected row's bar stays the one cue that outranks it,
   and the motion posture (RN-11) is untouched. *(re: `{colors.hover}`, § Components "Rows", "The
-  menu"; source: owner answer `docs/design_trail/cycle-1.md` § 2.3; computed on this run)*
+  menu"; source: owner answer `docs/trail/design/cycle-1.md` § 2.3; computed on this run)*
 
 - **RN-23:** The tooltip is one component with one home — the status letter — drawn as
   `{typography.ui}` in `{colors.primary}` on `{colors.surface}` with a `{colors.line}` hairline,
@@ -945,7 +945,7 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
   dismissed when the pointer leaves it, stacked over the row's hover fill, and raised by no other
   surface — *because* the owner put a tooltip in v1 for the letter's sake and described the
   behaviour they meant: *"in VS code, when you hover over an `M` for example, there's a short-time
-  'file and + Modified'"* (`docs/design_trail/cycle-2.md` § 1.1). Every value under that is this
+  'file and + Modified'"* (`docs/trail/design/cycle-2.md` § 1.1). Every value under that is this
   seat's, decided by the direction's order. No new colour or type level enters, because the shell
   speaks at one size and the pair `primary` on `surface` is already specified and measured (RN-6)
   — the count of new tokens is zero. No shadow, because the tooltip's ground is `canvas`, one tone
@@ -969,7 +969,7 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
   (https://bobbyhadz.com/blog/what-are-u-and-m-file-markers-in-vscode;
   https://www.mehmetbaykar.com/posts/understanding-git-status-indicators-u-m-a-d-c-r-in-vs-code/),
   with the colours this document already draws — U and A green, M amber, D red. The owner's
-  ruling: *"No change to `DESIGN.md`. Its mapping is correct"* (`docs/design_trail/cycle-2.md`
+  ruling: *"No change to `DESIGN.md`. Its mapping is correct"* (`docs/trail/design/cycle-2.md`
   § 1.2, `nozoki@fdee2fc`). VS Code's is the right vocabulary because the product is modelled on
   it and the letters exist to be recognised by readers who have seen them there, not in porcelain
   output; the collision is written into § Components because an unstated convention that
@@ -985,7 +985,7 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
   row — *because* the UXD reached v5 after revision 3 was authored and its § 6 now holds two classes
   per failure cell, with UX-I16 giving the second its presentation; revision 3's enumeration listed
   observed conditions only, so its claim to cover *every* failure state the UXD names had gone stale
-  (`docs/design_trail/cycle-3.md` § 1.1, § 1.2). The enumeration moves and the treatment does not:
+  (`docs/trail/design/cycle-3.md` § 1.1, § 1.2). The enumeration moves and the treatment does not:
   `circle-alert`, `{typography.ui}` in `{colors.ink-muted}` on `{colors.surface}`, inset
   `{spacing.xl}`, top-left and never centred, the glyph never alone, the route out following on the
   same surface — which is what UX-I16 asks for (what was observed and nothing more, scoped to the
@@ -1004,8 +1004,8 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
   after revision 4 was authored and UX-I17 adds an empty state that is not a status message: the
   plain folder's Git view is present and shows nothing, and revision 4's claim to cover *every*
   empty state the UXD names had gone stale for the second time in the same way (RN-25;
-  `docs/design_trail/cycle-4.md` § 1.1, § 1.2). The scope claim moves and nothing else does: the
-  wordlessness is the owner's decision (`docs/prd_trail/cycle-10.md` § 2.2 — the offers VS Code
+  `docs/trail/design/cycle-4.md` § 1.1, § 1.2). The scope claim moves and nothing else does: the
+  wordlessness is the owner's decision (`docs/trail/prd/cycle-10.md` § 2.2 — the offers VS Code
   makes on that surface are writes this product never makes, so there is no truthful next step),
   and the Git view's other two appearances stay inside the component explicitly — pending before
   the finding (UX-I13) and the unexplained fault where the finding stopped (UX-I16) — so the
@@ -1017,7 +1017,7 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
   machine gate on this revision — the same pinned `lint`, run 2026-08-26 — reported 0 errors,
   0 warnings and 1 info, `token-summary` with the counts RN-21 records unchanged; no diagnostic is
   accepted or routed. *(re: § Components "Status messages", § Traceability; source: upstream UXD
-  change, `docs/UXD.md` v6 UX-I17 / RN-27; owner decision `docs/prd_trail/cycle-10.md` § 2.2)*
+  change, `docs/UXD.md` v6 UX-I17 / RN-27; owner decision `docs/trail/prd/cycle-10.md` § 2.2)*
 
 ## Traceability
 
@@ -1034,7 +1034,7 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
 | UX-A2 — no meaning by hue alone | Letters, headings, bars; the Do's make the cue mandatory and the hue the repeat |
 | UX-A4 — no control by glyph alone | Rail labels beneath glyphs; chrome controls carry a word; status glyphs never stand alone; the status letter's word is a tooltip the letter raises, and no labelled control raises one (§ Components, RN-11, RN-23) |
 | UX-I2 / UX-I3 — no ceremony on update; the user's place survives | No transition, no flash, no notification (§ Do's and Don'ts, RN-11); the hover fill and the tooltip are pointer-driven and never fire on an update (RN-22, RN-23) |
-| UX-I9 — themes; user override; choice remembered | Theme control in the chrome (§ Components, RN-10 — placement added beyond the UXD and owner-confirmed; the UXD records the same home at `docs/UXD.md` § 4 and its RN-22, the owner's answer at `docs/uxd_trail/cycle-2.md` § 1.1) |
+| UX-I9 — themes; user override; choice remembered | Theme control in the chrome (§ Components, RN-10 — placement added beyond the UXD and owner-confirmed; the UXD records the same home at `docs/UXD.md` § 4 and its RN-22, the owner's answer at `docs/trail/uxd/cycle-2.md` § 1.1) |
 | UX-I12 — links with destination readable; remote images as stated placeholders | `{components.link-text}` + `{components.link-destination}`; `{components.image-placeholder}` (RN-13) |
 | UX-I13 — no indicator before the state is observed | Counts and letters drawn only after Git state is read; pending is a word, never a bar (§ Components "Status messages", Do's) |
 | UX-I14 — every failure carries a route out on the same surface | § Components "Status messages": the route follows the message; the Do's require it |
