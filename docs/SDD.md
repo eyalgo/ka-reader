@@ -7,7 +7,7 @@
        signal, and the state a finished SDD carries; the open-issues file is gone.
      Locked = ratified as the source of truth. -->
 **Owner:** CTO · CPO · CDO — one run, three seats
-**Version:** 2 — run 2 folded the owner's answers to all 10 run-1 companion items (`docs/sdd_trail/cycle-1.md`): unsigned release with the install mechanism the CTO's to design (§ 1.1); the Git-view row opens the diff, one click target (§ 1.2); the history view sits in the sidebar (§ 1.3); the SDD follows the SRS on the Markdown raw-source switch (§ 2.1); Tauri 2 confirmed (§ 2.2); the system Open-panel start mechanism confirmed (§ 2.3); local repository images now load in place (§ 2.4, overridden); `read-markdown` and `read-the-history` kept as their own slices (§§ 3.1–3.2); `pick-it-up-release` re-cut to land after the full v1 cut (§ 3.3). The owner's widened input — a repository is now any local folder, Git or not — drove a folder-vs-repository sweep across every section and slice, renaming two slices (`read-a-repository` → `read-a-folder`, `switch-the-repository` → `switch-the-folder`); both halves (command and observable) of all eight slices now carry the plain-folder case. The companion is empty and removed this run; nothing is open.
+**Version:** 3 — run 3 folds the two confirmed items of the companion a `companion-self-answer` run opened on this Settled document (`docs/trail/sdd/cycle-2.md` § 2.1, § 2.2). In the CPO's lanes nothing this document says changes: the 12 `docs/sdd_trail/` citations it rests on — 11 in § 5 step 4, S-5 *Not in this slice*, § 12 *The PRD boundary*, RN-1, RN-3, RN-22 and RN-23, and 1 on this line — read `docs/trail/sdd/`, because the answer-trails moved under `docs/trail/` at `nozoki@1e8bf3d` and this document was not moved with them; a commit-pinned citation would be left as written, and this document carries none. In the CTO's lanes: § 4 C-R6 reads `pnpm ls` where it read `npm ls` (§ 2.1 — `docs/nfdr.md` QC-3 and QC-26 trace to C-R6 and already realize the clause as pnpm, so the spelling carried no decision); the 19 `docs/sdd_trail/` citations in this seat's lanes — § 2's table, C-R1, C-R3, C-R4, C-R7, C-I3, § 5 steps 3 and 5, S-5 *Why here in the order*, § 7, § 11, RN-7, RN-9, RN-11, RN-13, RN-17, RN-25 and *Open Questions* — read `docs/trail/sdd/` on the same ground; and the companion's § 2.3, raised on this document and left unfilled, is settled inside this lane rather than carried: § 12's downstream boundary and RN-6, RN-7 and RN-8 name the records that hold the three decisions they surfaced — ADR-0001, ADR-0002, ADR-0004 — with nothing thinned for it (RN-27). In the CDO's lanes: the 9 `docs/sdd_trail/` citations in this seat's lanes — S-2 *Traces to*, S-7 *Reached when*, S-8 *Reached when* and *Traces to*, § 12 *The UXD boundary*, RN-20 and RN-26 — read `docs/trail/sdd/` on the same ground (§ 2.2), which leaves this document with no `docs/sdd_trail/` citation outside this line; and RN-19 keeps its wording and gains a closing clause — its contingency closed at run 2 (RN-22; § 7's `pick-it-up-release` `depends_on` `see-what-changed` edge) — with its pointer to a companion item that no longer exists repaired to `docs/trail/sdd/cycle-1.md` § 3.3 (§ 2.1). Nothing the experience binds moves: UXD v7 still carries the pre-answer UX-F2 and UX-S6 text RN-20 names, so that note stands as written. With both halves landed the companion holds no item; nothing is open. (v2: run 2 folded the owner's answers to all 10 run-1 companion items (`docs/trail/sdd/cycle-1.md`): unsigned release with the install mechanism the CTO's to design (§ 1.1); the Git-view row opens the diff, one click target (§ 1.2); the history view sits in the sidebar (§ 1.3); the SDD follows the SRS on the Markdown raw-source switch (§ 2.1); Tauri 2 confirmed (§ 2.2); the system Open-panel start mechanism confirmed (§ 2.3); local repository images now load in place (§ 2.4, overridden); `read-markdown` and `read-the-history` kept as their own slices (§§ 3.1–3.2); `pick-it-up-release` re-cut to land after the full v1 cut (§ 3.3). The owner's widened input — a repository is now any local folder, Git or not — drove a folder-vs-repository sweep across every section and slice, renaming two slices (`read-a-repository` → `read-a-folder`, `switch-the-repository` → `switch-the-folder`); both halves (command and observable) of all eight slices now carry the plain-folder case. The companion is empty and removed this run; nothing is open.)
 
 > The SDD is the technical **how**, and it ends in a **cut**. It states the architecture the rest of
 > the system builds against — derived from the PRD (the *what and why*), the SRS (the system-level
@@ -178,7 +178,7 @@ structurally, whatever else it costs.
 | **Capability-split read pipeline** — two read-only sources → one in-memory repository model → surfaces; the surfaces in a renderer process holding no filesystem, network or shell capability; the host holding read capability only, fenced by the OS sandbox | the invariant to guard is the *absence* of a capability, the sources are few and stable, and untrusted content is rendered (forces 2, 3; DR-6) | rich domain rules need a guarded core, or the surfaces need direct disk access to be fast — neither is in the SRS | **yes** — the one candidate that answers § 1's three questions structurally: no write and no network because the renderer has neither and the OS denies the host; a stranger's install is one bundle; the model follows a moving tree because every read is off-thread and per-item |
 | Hexagonal — a domain core behind ports, an adapter at every edge | many volatile edges, or rules in the core worth shielding from them | two stable edges and a core that would hold DR-2 – DR-4 and no rule (forces 2, 3) | no — the core would guard nothing; its one useful port, the Git reader, is kept (§ 3 seam 2). It wins if the agent-workflow front end ever comes inside the Agari and brings its own edges — it is outside (`system/projects/nozoki/agari.md`, first condition) |
 | Layered, one process — UI over services over a data-access layer | one code base serves several UIs, or the data layer's generality pays | the data layer's generic filesystem and network access is exactly the capability this product must not hold, so not-writing becomes discipline (force 3; § 1's "if the code is careful") | no — fails § 1's first question by construction |
-| Native single-process model-view (AppKit / SwiftUI) under the same sandbox | nothing untrusted is rendered as HTML and the design language is native controls | Markdown must render (FR-30), and the design language is expressed as web tokens and SVG icons (`docs/UXD.md` § 9; the repository's vendored `third_party/lucide/`) | no — the honest runner-up: it keeps the sandbox wall and loses the renderer wall. The owner confirmed the WebView runtime (`docs/sdd_trail/cycle-1.md` § 2.2), and `docs/DESIGN.md` RN-1 binds no runtime — "every value here is a CSS value and holds in either" — so this row wins only if the design language is ever re-expressed natively, which nothing inside the Agari asks for |
+| Native single-process model-view (AppKit / SwiftUI) under the same sandbox | nothing untrusted is rendered as HTML and the design language is native controls | Markdown must render (FR-30), and the design language is expressed as web tokens and SVG icons (`docs/UXD.md` § 9; the repository's vendored `third_party/lucide/`) | no — the honest runner-up: it keeps the sandbox wall and loses the renderer wall. The owner confirmed the WebView runtime (`docs/trail/sdd/cycle-1.md` § 2.2), and `docs/DESIGN.md` RN-1 binds no runtime — "every value here is a CSS value and holds in either" — so this row wins only if the design language is ever re-expressed natively, which nothing inside the Agari asks for |
 | Local server + browser tab — the input proposal's "web app" | a hosted or multi-client direction is inside the terminus | the product promises no network call during operation (NFR-8) and a listening socket is one; the README no longer calls it a web app (`docs/PRD.md` § Out of Scope, last item) | no — fails § 1's first question, and the direction it serves is outside the dock |
 
 **Undoing it.** The model in the middle survives every reversal. Collapsing the two processes into
@@ -287,7 +287,7 @@ channel and C-11's macOS floor are fixed here, where the SRS places them — its
   `com.kensaiapp.nozoki`: a Tauri 2 host (`nozoki-app`, Rust) over `nozoki-core`, rendering
   `nozoki-ui` in the system WKWebView. Every asset the renderer uses ships inside the bundle
   (UX-I15). *Violated by:* a slice that adds a second binary, a prerequisite, a runtime install, or
-  a fetched asset. (The runtime: RN-7, owner-confirmed — `docs/sdd_trail/cycle-1.md` § 2.2.)
+  a fetched asset. (The runtime: RN-7, owner-confirmed — `docs/trail/sdd/cycle-1.md` § 2.2.)
 - **C-R2.** The bundle runs under the App Sandbox with exactly these entitlements:
   `com.apple.security.app-sandbox`, `com.apple.security.files.user-selected.read-only`, and — from
   `switch-the-folder` on — `com.apple.security.files.bookmarks.app-scope`. No network
@@ -308,7 +308,7 @@ channel and C-11's macOS floor are fixed here, where the SRS places them — its
   exist, is not a folder, or cannot be read, the window shows UX-S4 — in v1 with a way to choose
   again and a way to quit, beyond v1 with the selector as the route out — and never a terminal
   line; the UXD's open question is settled by that (RN-9, owner-confirmed —
-  `docs/sdd_trail/cycle-1.md` § 2.3). A readable folder that is not a repository's root is **not**
+  `docs/trail/sdd/cycle-1.md` § 2.3). A readable folder that is not a repository's root is **not**
   on that list: it opens, as a working state (FR-34, UX-I17). *Violated by:* a slice that reads a
   path it was not granted, that prints a surface to a terminal, that presents the panel for a
   folder the bookmark still resolves, or that treats a plain folder as a startup failure.
@@ -317,7 +317,7 @@ channel and C-11's macOS floor are fixed here, where the SRS places them — its
   a maintainer's machine. The bundle is **ad-hoc signed** (`codesign --sign -`) in that build — a
   signature that costs nothing and is what binds the entitlements to the binary at all — and is
   **never Developer ID-signed or notarized**: the owner's standing call, for this and every app in
-  the instance (`docs/sdd_trail/cycle-1.md` § 1.1), not to be raised again. The install path is
+  the instance (`docs/trail/sdd/cycle-1.md` § 1.1), not to be raised again. The install path is
   therefore: download the `.dmg`, drag `Nozoki.app` to Applications, and — on first launch — the
   one System Settings › Privacy & Security step macOS Sequoia requires for software that is not
   notarized, Control-click no longer overriding Gatekeeper
@@ -333,7 +333,7 @@ channel and C-11's macOS floor are fixed here, where the SRS places them — its
   release page that omits it, or a bundle whose `LSMinimumSystemVersion` disagrees.
 - **C-R6.** The host links no network code: libgit2 is built without its HTTPS and SSH transports,
   and the dependency allowlist `checks/deps.allow` names every crate and package the bundle may
-  contain; `cargo tree` and `npm ls` are diffed against it in CI. A dependency-tree change is
+  contain; `cargo tree` and `pnpm ls` are diffed against it in CI. A dependency-tree change is
   reviewed as code in the change that makes it; lockfiles with integrity hashes are committed.
   *Violated by:* a lockfile diff adding a dependency outside the allowlist without the review
   recorded.
@@ -344,7 +344,7 @@ channel and C-11's macOS floor are fixed here, where the SRS places them — its
   accepts for it is settled in `read-markdown` (Open Questions); the renderer is granted no
   capability beyond the commands § 3 seam 4 lists and that one scheme. *Violated by:* a slice that
   loosens the policy past this — `http:`, `https:`, `file:`, `asset:` or `*` in any directive — or
-  enables a plugin. (The image clause: the owner's override, `docs/sdd_trail/cycle-1.md` § 2.4.)
+  enables a plugin. (The image clause: the owner's override, `docs/trail/sdd/cycle-1.md` § 2.4.)
 
 **C-I — instrumentation and failure visibility** *(serves NFR-3, NFR-11; the mechanism beneath
 UX-I13 and UX-I16 — RN-4 agreed, RN-14)*
@@ -371,7 +371,7 @@ UX-I13 and UX-I16 — RN-4 agreed, RN-14)*
   first green build on** — on every CI build, published or not — so that the release gate § 11 R-8
   names has been passing for four slices before the first release is due, and a failure of it under
   the ad-hoc signature C-R4 fixes is found with one reader written, not on release day (the owner's
-  mitigation, `docs/sdd_trail/cycle-1.md` § 3.3). *Violated by:* a slice that lands without
+  mitigation, `docs/trail/sdd/cycle-1.md` § 3.3). *Violated by:* a slice that lands without
   extending the fixtures for the reads it adds, or a build whose bundle the probe did not run on.
 - **C-I4.** A performance number is measured, never asserted: `checks/latency.sh` prints file-switch
   and refresh p95 in milliseconds over the reference fixtures, and the numbers reach the SRS by
@@ -591,7 +591,7 @@ without A because <fact>" — and each a `depends_on` row in § 7)*:
   file; and — since run 2 — not without `read-markdown`, `see-what-changed` and
   `watch-a-moving-tree` either, because its *Delivers* now names "the whole v1 cut behind it": a
   release of less than that is a different slice, one the owner struck
-  (`docs/sdd_trail/cycle-1.md` § 3.3; RN-22). The test holds without "should": the fact is the
+  (`docs/trail/sdd/cycle-1.md` § 3.3; RN-22). The test holds without "should": the fact is the
   slice's own definition. What it does **not** wait for is the proof of the bundle, the
   entitlements and the sandbox gate — C-I3 runs that from `read-a-folder`'s first build.
 - `switch-the-folder` cannot exist without `pick-it-up-release`, because the remembered list its
@@ -626,7 +626,7 @@ each slice is the size it is)*:
 The sizes below are made on the owner's standing appetite — *smaller rather than larger, but not
 too small* — and a cut call between two sizes that both pass the four tests is the seats' to make on
 it, never the owner's; only an answer that changes what the product *promises* is parked
-(`docs/sdd_trail/cycle-1.md` § 3.1, the owner's routing rule; RN-23).
+(`docs/trail/sdd/cycle-1.md` § 3.1, the owner's routing rule; RN-23).
 
 - `read-a-folder` (E1) settles whether the shape keeps the promise by construction — one
   release-shaped check of AC-1 – AC-3 against a real repository and against a plain folder, with
@@ -640,7 +640,7 @@ it, never the owner's; only an answer that changes what the product *promises* i
   asked again (RN-1, RN-23).
 - `read-markdown` (E2) settles the renderer and, with it, the two build-cost permissions the SRS
   routes here (FR-31, FR-32) — the CTO records the judgment — and now the read-only asset path for
-  an image inside the folder (`docs/sdd_trail/cycle-1.md` § 2.4): a second decision, but one whose
+  an image inside the folder (`docs/trail/sdd/cycle-1.md` § 2.4): a second decision, but one whose
   answer changes only this slice's bar, so it stays inside the slice rather than becoming one.
 - `see-what-changed` (E3) settles how Git state is read without mutation (`docs/SRS.md` § 5.3 leaves
   installed-Git versus library to this document) and how a folder is found to be a repository's
@@ -658,7 +658,7 @@ it, never the owner's; only an answer that changes what the product *promises* i
   one decision a stranger meets — and is checkable by the timed walk (AC-10) and the release
   inspection (AC-14). It lands after the whole v1 cut, so that the first thing a stranger meets is
   the product `docs/PRD.md` § Scope (In) calls v1 — the owner's call
-  (`docs/sdd_trail/cycle-1.md` § 3.3; RN-22); its place in the build order is § 7's.
+  (`docs/trail/sdd/cycle-1.md` § 3.3; RN-22); its place in the build order is § 7's.
 - `read-the-diff` (E7) is checkable on its own (AC-12's diff clause) and its presentation is reused
   by `read-the-history`; smaller than one slice it would be a task.
 - `read-the-history` (E8) is one slice: the default that asks nothing — the current branch and what
@@ -700,7 +700,7 @@ says so plainly; a number is not a reason.
 5. `pick-it-up-release` — after the four above by dependency, not preference (step 3): its
    *Delivers* is the v1 cut. Before the three beyond v1 because `switch-the-folder` needs the
    own-state it lands, and because a first impression that matches the PRD's v1 is what the owner
-   chose over an earlier proof of the channel (`docs/sdd_trail/cycle-1.md` § 3.3). The one thing
+   chose over an earlier proof of the channel (`docs/trail/sdd/cycle-1.md` § 3.3). The one thing
    this position would have deferred — the release gate's first exercise — it does not: C-I3's
    bundle probe has run on every build since slice 1.
 6. `switch-the-folder` — first of the three beyond v1, because it falsifies § 3's claim that the
@@ -879,7 +879,7 @@ the PRD clause and leaves the SRS and UXD clauses to their seats.>
   NFR-16, DR-3, AC-22 (the rendered clause), AC-23; UXD: UX-I12 (rendered by default, nothing
   fetched, the link presentation, the not-fetched placeholder for remote content; the raw-source
   switch clause is not realized — RN-10; the local image shown in place is the owner's call,
-  `docs/sdd_trail/cycle-1.md` § 2.4, folded as RN-11 — UX-I12 forbids only fetching); UX-S1 (success, "rendered for Markdown"); § 9 last constraint (two
+  `docs/trail/sdd/cycle-1.md` § 2.4, folded as RN-11 — UX-I12 forbids only fetching); UX-S1 (success, "rendered for Markdown"); § 9 last constraint (two
   treatments of one panel); § 4 "The reading panel names what is open".
 - **Moves toward:** The Agari's first condition, "reading with highlighting" — the reading surface
   the PRD draws includes rendered Markdown; and its second, "no non-essential network call", held
@@ -1086,11 +1086,11 @@ the PRD clause and leaves the SRS and UXD clauses to their seats.>
   may change (`docs/PRD.md` § Assumptions "Versioning"). A public release of less than the v1 cut —
   never: this slice lands after `read-a-folder`, `read-markdown`, `see-what-changed` and
   `watch-a-moving-tree`, so its README describes the product the PRD calls v1 and nothing short of
-  it (the owner's call, `docs/sdd_trail/cycle-1.md` § 3.3; RN-22). Proving the bundle, the
+  it (the owner's call, `docs/trail/sdd/cycle-1.md` § 3.3; RN-22). Proving the bundle, the
   entitlements and the sandbox gate before this slice — a check, not a release, and where it sits
   is the CTO's (§ 4 C-I3). A second platform — outside done (`docs/SRS.md` § 2).
 - **Why here in the order:** Fifth — after the four v1 slices by dependency, since its *Delivers*
-  is the v1 cut (§ 5 step 3; the owner's call, `docs/sdd_trail/cycle-1.md` § 3.3), and before the
+  is the v1 cut (§ 5 step 3; the owner's call, `docs/trail/sdd/cycle-1.md` § 3.3), and before the
   three beyond v1 because `switch-the-folder` needs the own-state it lands. The proof this position
   might have deferred — that the ad-hoc-signed bundle passes the sandbox gate — has run on every
   build since `read-a-folder` (C-I3), so what this slice first exercises is the channel and the
@@ -1153,7 +1153,7 @@ the PRD clause and leaves the SRS and UXD clauses to their seats.>
   it, staged changes distinguished from unstaged.
 - **Reached when:** *(CDO)* A reader clicks a changed file's row in the Git view — the row is
   one click target and it opens the diff, the status letter beside it a label and nothing more
-  (the owner's call, `docs/sdd_trail/cycle-1.md` § 1.2; RN-20) — and the reading panel shows,
+  (the owner's call, `docs/trail/sdd/cycle-1.md` § 1.2; RN-20) — and the reading panel shows,
   under the file's path line, the
   changed lines with a `+` or `−` in the gutter and a tint behind each, unchanged context in plain
   ink, and no syntax colour. For the file that is both staged and modified, the hunks sit under
@@ -1204,7 +1204,7 @@ the PRD clause and leaves the SRS and UXD clauses to their seats.>
   repository with no commits it states that there are none. Nothing on the view checks out,
   switches or acts on a branch. The history is drawn in the sidebar, as rows beneath the Git
   view's changes list, and the reading panel stays free for the diff a commit opens (the owner's
-  call, `docs/sdd_trail/cycle-1.md` § 1.3; RN-20). *(CTO)* `cargo test -p nozoki-core --test history` exits 0 over
+  call, `docs/trail/sdd/cycle-1.md` § 1.3; RN-20). *(CTO)* `cargo test -p nozoki-core --test history` exits 0 over
   `checks/fixtures/branches` (three branches, one merge, one divergence): every commit's parents
   and branch membership equal what the fixture's build script declares; the default set computes
   to the set the script declares (RN-16); a commit's diff payload is kind `commit` and equals the
@@ -1219,7 +1219,7 @@ the PRD clause and leaves the SRS and UXD clauses to their seats.>
   asks nothing, the per-commit fields, a commit's diff); UX-S6 (all cells); § 4 "Beyond v1, inside
   the terminus" (history reached from the Git view); RN-14 (the owner-settled shape, carried).
   The history view's home in the shell — the sidebar — is the owner's answer
-  (`docs/sdd_trail/cycle-1.md` § 1.3), cited until the UXD carries it (RN-20).
+  (`docs/trail/sdd/cycle-1.md` § 1.3), cited until the UXD carries it (RN-20).
 - **Moves toward:** The Agari's first condition, "commit history".
 - **Not in this slice:** History filtering and search — outside done (`docs/SRS.md` § 2;
   `docs/UXD.md` § 10); the branch-set choice is not a filter. A history in a plain folder — there
@@ -1249,7 +1249,7 @@ right.)*
 | `watch-a-moving-tree` | `depends_on` | `read-a-folder` | the tree and the open file are what the refresh updates (FR-27) |
 | `watch-a-moving-tree` | `depends_on` | `see-what-changed` | "every change — file content, the tree, Git state" (FR-14) and a root appearing (FR-33) cannot show without a Git view and a root finding |
 | `pick-it-up-release` | `depends_on` | `read-a-folder` | AC-10's walk ends at a viewed file |
-| `pick-it-up-release` | `depends_on` | `read-markdown` | its *Delivers* is the v1 cut, which includes rendered Markdown (`docs/sdd_trail/cycle-1.md` § 3.3; RN-22) |
+| `pick-it-up-release` | `depends_on` | `read-markdown` | its *Delivers* is the v1 cut, which includes rendered Markdown (`docs/trail/sdd/cycle-1.md` § 3.3; RN-22) |
 | `pick-it-up-release` | `depends_on` | `see-what-changed` | its *Delivers* is the v1 cut, which includes Git status (same source) |
 | `pick-it-up-release` | `depends_on` | `watch-a-moving-tree` | its *Delivers* is the v1 cut, which includes live refresh (same source) |
 | `switch-the-folder` | `depends_on` | `read-a-folder` | it lands the arrival state |
@@ -1398,7 +1398,7 @@ A risk with no trigger and no response is an observation.>
   missed, or a later macOS changes the step — *shows up as* AC-10's walk exceeding five minutes or
   ending at launch; *response* C-R4's README step, written as the exact click path and re-walked
   on every macOS the floor admits before each release; signing is not a response — the owner has
-  ruled it out (`docs/sdd_trail/cycle-1.md` § 1.1) — so if the step ever exceeds the clock, the
+  ruled it out (`docs/trail/sdd/cycle-1.md` § 1.1) — so if the step ever exceeds the clock, the
   finding goes to the SRS's C-3 as a companion item, not to a signing identity.
 - **R-3:** The sandbox grant does not cover what the folder points at — a linked worktree whose
   `.git` is a file naming a `gitdir` outside the granted folder, or a submodule whose `gitdir`
@@ -1470,7 +1470,7 @@ while cutting — a value a slice needs that the PRD does not hold, or a PRD lin
 overridden downstream — is an item in `docs/SDD_open_issues.md` and a later PRD revision cycle, never
 a rewrite here, and not by the CPO seat either: in this run that seat holds the PRD's boundary, not
 its pen. The one such line run 1 found — the Markdown raw-source switch — was confirmed by the owner
-as the SRS's reading (`docs/sdd_trail/cycle-1.md` § 2.1) and has since been corrected in the PRD
+as the SRS's reading (`docs/trail/sdd/cycle-1.md` § 2.1) and has since been corrected in the PRD
 itself by its own cycle (`docs/PRD.md` § Core Features, "permitted, not promised" — version 11), so
 no PRD gap stands after run 2 (RN-3). The reverse direction is bound the same way: where the PRD
 moved between runs — the input widened from a repository to a folder at v10 and v11 — this document
@@ -1496,15 +1496,23 @@ UX-S4 renders — the CTO's C-R3 makes it and RN-9 records it; this seat does no
 the UXD. A gap in the UXD found while cutting is an item in `docs/SDD_open_issues.md`, never a
 redesign here — and not by this seat either, which holds the UXD's pen in another run and its
 boundary in this one. Two such gaps were found in run 1 and answered by the owner before run 2
-(`docs/sdd_trail/cycle-1.md` § 1.2, § 1.3; RN-20); this document cites the answers and leaves the
+(`docs/trail/sdd/cycle-1.md` § 1.2, § 1.3; RN-20); this document cites the answers and leaves the
 UXD's entries to the UXD's own run. One consequence of a condition was recorded rather than
 designed around (RN-19).
 
-**The downstream boundary** *(CTO)*. This document authors no ADR. Three decisions are surfaced for
+**The downstream boundary** *(CTO)*. This document authors no ADR. Three decisions were surfaced for
 the Principal Architect to record, in § 2, § 4 and their notes: the capability-split shape and its
 sandbox (RN-6), the runtime — Tauri 2, a Rust host, WKWebView (RN-7) — and Git read through libgit2
-behind a port (RN-8). Once recorded, this document references those ADRs and does not restate them.
-It designs no individual change: § 6's slices are cut into seeds by the Principal PM (§ 8), and
+behind a port (RN-8). All three are recorded, each carrying `**Status:** Accepted` — ADR-0001
+(`docs/adr/0001-capability-split-read-pipeline.md`), ADR-0002
+(`docs/adr/0002-tauri-2-rust-host-wkwebview-renderer.md`) and ADR-0004
+(`docs/adr/0004-git-read-through-libgit2-behind-a-port.md`) — and the log holds further records the
+Principal Architect drew from this document beyond the three it named; `docs/adr/README.md` is the
+log's index and the current statement of what is recorded, and this document does not mirror it.
+This document references those records and does not restate them: nothing a record adds — its
+consequences, its status, a supersession — is copied here, and nothing here is thinned for it,
+because every record cites this document as the source it derives from (RN-27). It designs no
+individual change: § 6's slices are cut into seeds by the Principal PM (§ 8), and
 each change against this system is the delivery-tier Architect's `change_design.md`.
 
 ---
@@ -1536,7 +1544,7 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   plain-text reading surface proves the promise without waiting on it (§ 5 step 4). The PRD lists
   both under one feature set and states no cut. Run 1 put the one-slice alternative to the owner;
   the answer was *either is acceptable* with a standing appetite for the seats to apply instead
-  (`docs/sdd_trail/cycle-1.md` § 3.1; RN-23), and the two-slice cut is kept on it *(re: § 5,
+  (`docs/trail/sdd/cycle-1.md` § 3.1; RN-23), and the two-slice cut is kept on it *(re: § 5,
   `read-a-folder`, `read-markdown`; source: PRD § Core Features; SRS FR-30, FR-32, NFR-16)*.
 - **RN-2:** *(CPO)* *(added)* 1.0.0 is not a slice — *because* the Agari's third condition is a
   release event that restates the first condition's completion, the sixth-cut list's milestone; it
@@ -1548,7 +1556,7 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   slice — *because* it is a permission conditioned on build cost, not a promise (`docs/SRS.md`
   FR-31, RN-29). In run 1 the PRD still said "the toggle follows" and this document followed the
   SRS against it, parking the departure as a choice to confirm; the owner confirmed the SRS's
-  reading (`docs/sdd_trail/cycle-1.md` § 2.1), and the PRD has since carried the same line itself
+  reading (`docs/trail/sdd/cycle-1.md` § 2.1), and the PRD has since carried the same line itself
   ("permitted, not promised" — `docs/PRD.md` § Core Features, version 11), so the note no longer
   records a departure from any upstream document *(re: `read-markdown`, § 12; source: PRD § Core
   Features; SRS FR-31)*.
@@ -1565,7 +1573,8 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   *because* the one invariant worth guarding is negative (no write, no connection, no execution;
   NFR-5, NFR-6, NFR-8, NFR-16) and must survive a crash (NFR-4), and a negative invariant is held
   by withholding capability at a boundary the OS enforces, not by a guarded domain core; the four
-  alternatives and the conditions under which each would win are § 2's table. Surfaced for an ADR
+  alternatives and the conditions under which each would win are § 2's table. Surfaced for an ADR,
+  and recorded as ADR-0001 (`docs/adr/0001-capability-split-read-pipeline.md`, Accepted; RN-27)
   *(re: § 2, § 3, § 4 C-R2; source: SRS NFR-4 – NFR-8, NFR-16, DR-6, C-1)*.
 - **RN-7:** *(CTO)* *(added)* The runtime is Tauri 2 — a Rust host over `nozoki-core`, the surfaces
   in the system WKWebView — packaged as one `.app` on a GitHub Release and running under the App
@@ -1575,12 +1584,13 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   largest dependency the alternative (Electron) would add; and a Tauri host exposes only the
   commands it registers, which is the closed list § 3 seam 4 needs. Native AppKit / SwiftUI is the
   runner-up (§ 2). Run 1 made this call without opening `docs/DESIGN.md` or `docs/CONTENT.md` and
-  said so; the owner confirmed it at the fold (`docs/sdd_trail/cycle-1.md` § 2.2) and ran the check
+  said so; the owner confirmed it at the fold (`docs/trail/sdd/cycle-1.md` § 2.2) and ran the check
   the note asked for: `docs/DESIGN.md` RN-1 states that the runtime — "a browser tab or a native
   window" — is the SDD's and that "every value here is a CSS value and holds in either", and
   `docs/CONTENT.md` names no rendering technology; this run re-read both lines and they say that.
-  Confirmed, and surfaced for an ADR *(re: § 2, § 4 C-R1, C-R5; source: SRS C-3, C-11, RN-7,
-  RN-12; DESIGN RN-1)*.
+  Confirmed, surfaced for an ADR, and recorded as ADR-0002
+  (`docs/adr/0002-tauri-2-rust-host-wkwebview-renderer.md`, Accepted; RN-27) *(re: § 2, § 4 C-R1,
+  C-R5; source: SRS C-3, C-11, RN-7, RN-12; DESIGN RN-1)*.
 - **RN-8:** *(CTO)* *(added)* Git state is read through libgit2 behind a port, not by spawning the
   installed `git` — *because* on a fresh macOS "invoking any command in Xcode or the command-line
   tools package (such as git) from the command line prompts you to download and install the
@@ -1591,7 +1601,9 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   is given (https://git-scm.com/docs/git-status), a write under `.git` that AC-1 counts; and
   because a library links only the calls the tool makes, so the absence of a mutating call is a
   fact of the binary. The installed-`git` adapter is the port's standing substitute (§ 11 R-1).
-  Surfaced for an ADR *(re: § 3 `git-reader`, seam 2; source: SRS § 5.3, NFR-5, NFR-6, C-3)*.
+  Surfaced for an ADR, and recorded as ADR-0004
+  (`docs/adr/0004-git-read-through-libgit2-behind-a-port.md`, Accepted; RN-27) *(re: § 3
+  `git-reader`, seam 2; source: SRS § 5.3, NFR-5, NFR-6, C-3)*.
 - **RN-9:** *(CTO)* *(owner answer folded)* The start mechanism: the folder is granted through the
   system Open panel, and the startup failure renders in the app's window — *because* under the
   sandbox a folder is readable only when the user selected it, and the entitlement C-R2 carries is
@@ -1599,7 +1611,7 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   (https://developer.apple.com/documentation/bundleresources/entitlements/com.apple.security.files.user-selected.read-only).
   This settles the UXD's open question (`docs/UXD.md` § Open Questions — where UX-S4 renders) in
   the window, so the terminal fences do not bind. FR-2 holds: the panel is the start, and no control
-  changes the folder once viewing. Confirmed by the owner (`docs/sdd_trail/cycle-1.md` § 2.3), with
+  changes the folder once viewing. Confirmed by the owner (`docs/trail/sdd/cycle-1.md` § 2.3), with
   one reconciliation they asked for and this run wrote into C-R3: the grant is once *per folder*,
   not once per launch — from `switch-the-folder` on, launch restores the last-viewed folder from
   its bookmark and the panel appears only when nothing is remembered or the bookmark no longer
@@ -1619,7 +1631,7 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   **is loaded** and renders in place; a remote image, or one whose path escapes the folder, takes
   the not-loaded placeholder — *because* run 1 drafted the conservative reading (no image loaded,
   since the renderer holds no path to the folder, § 2 force 3) and the owner overrode it
-  (`docs/sdd_trail/cycle-1.md` § 2.4). The mechanism keeps the wall the draft was protecting: the
+  (`docs/trail/sdd/cycle-1.md` § 2.4). The mechanism keeps the wall the draft was protecting: the
   renderer still holds no path — it addresses one scheme, and the host's asset handler answers
   only for a path `fs-reader`'s containment check passes, so the capability handed over is "read a
   byte the host has already confirmed is inside the folder", not "read". The no-network promise is
@@ -1636,7 +1648,7 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   *because* the first of the three beyond v1 is the one that falsifies § 3's folder-as-input claim
   (NFR-12) before two more surfaces are built on the model; the CPO's provisional value order
   placed switching last, and the technical order is this seat's. `pick-it-up-release` is fifth: in
-  run 1 as a stated preference, and since the owner's re-cut (`docs/sdd_trail/cycle-1.md` § 3.3;
+  run 1 as a stated preference, and since the owner's re-cut (`docs/trail/sdd/cycle-1.md` § 3.3;
   RN-22) as a dependency — its *Delivers* is the v1 cut, so step 3's test now holds without
   "should", and § 7 carries three edges it did not *(re: § 5 step 3, step 5, § 6, § 7; source: SRS
   NFR-12, RN-5)*.
@@ -1664,7 +1676,7 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   and a floor is a claim the release check must back, so it is the version the check runs on, not
   the oldest the runtime supports. Signing and notarization were the owner's and are answered:
   never — no Apple Developer Program membership for any app in this instance, no Mac App Store,
-  GitHub the only channel (`docs/sdd_trail/cycle-1.md` § 1.1), and the owner handed the install
+  GitHub the only channel (`docs/trail/sdd/cycle-1.md` § 1.1), and the owner handed the install
   mechanism itself to this seat within three bounds: costs nothing, comes from GitHub, one simple
   path. The mechanism chosen is C-R4's — an ad-hoc-signed `.dmg` on the Release, drag to
   Applications, the Privacy & Security step named on the README's first screen — *because* the
@@ -1703,11 +1715,44 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   bundle, not first at release — *because* the owner accepted that moving `pick-it-up-release`
   after the v1 cut proves the acquisition path later, and asked that the bundle, the entitlement
   list and R-8's probe be proved on an unpublished artifact as soon as the runtime exists
-  (`docs/sdd_trail/cycle-1.md` § 3.3). C-I3's `checks/bundle.sh` is that check; S-1's command bar
+  (`docs/trail/sdd/cycle-1.md` § 3.3). C-I3's `checks/bundle.sh` is that check; S-1's command bar
   runs it; § 5 step 5's first position names it; and a failure of it under the ad-hoc signature is
   a § 10 trigger on the gate's mechanism (R-8), since the signature is not a lever *(re: § 4
-  C-I3, § 5 step 5, S-1, S-5, § 11 R-8; source: `docs/sdd_trail/cycle-1.md` § 1.1, § 3.3; SRS
+  C-I3, § 5 step 5, S-1, S-5, § 11 R-8; source: `docs/trail/sdd/cycle-1.md` § 1.1, § 3.3; SRS
   AC-14)*.
+- **RN-27:** *(CTO)* *(changed — § 12's own condition fired)* § 12's downstream boundary and RN-6,
+  RN-7 and RN-8 name the records that hold the three decisions they surfaced — ADR-0001, ADR-0002
+  and ADR-0004 — *because* the condition § 12 set on itself, "Once recorded, this document
+  references those ADRs", has fired: at this fold, 2026-09-01, `ls docs/adr/` listed nine records,
+  ADR-0001 – ADR-0009, each carrying `**Status:** Accepted` except ADR-0009 (`Proposed`), and the
+  three named here are among the Accepted. The item was raised on this document by a
+  `companion-self-answer` run, not by a seat, and its slot was left at the placeholder because "the
+  decision is the next round's" and the edit's extent is "the CTO's on the fold"
+  (`docs/trail/sdd/self_answer-1.md` § Raised on this document; the item as raised is
+  `docs/trail/sdd/cycle-2.md` § 2.3). This seat settles it inside its lane rather than carrying it
+  to the owner: it changes no promise and no other seat's column, and the seat's own lens sends it
+  to `docs/adr/` for exactly this case — "a run that has not read them re-surfaces a decision
+  already recorded" (`<CORE>/prompts/cto_create_sdd.md` § What you open). Three calls the item
+  left to this seat, with their reasons. **(1) Nothing in § 2, § 4 or these notes is thinned under
+  "does not restate them."** The records derive from this document and cite it as their source —
+  every one of the nine cites `docs/SDD.md` in its own text (`grep -c 'docs/SDD.md'
+  docs/adr/000*.md`, 3 to 11 hits per record, 2026-09-01) — so the text here is what they trace
+  to, and thinning it would leave a record pointing at a source that no longer holds the reasoning.
+  "Does not restate" is met by copying nothing a record adds: its consequences, its status, a
+  supersession. **(2) Only the three surfaced decisions gain a pointer in their notes.** The index's
+  titles show the log also holds the sandbox grant, the sanitizer, the release form and the bundle
+  probe (`docs/adr/README.md`, the table), each of which this document decides in a note of its
+  own, and none of those notes gains a pointer: they never said they awaited a record, so nothing in
+  them is stale, and a per-note map of the log would be a second projection of it that goes false
+  at the next supersession — the log is append-only and "a reversal is a new record that
+  supersedes an old one, never an edit to it" (`docs/adr/README.md`, first paragraph). § 12 names
+  the index instead, one hop from every note. **(3) No count of records stands in § 12.** A count
+  with no method and no moment is false the day the log grows; the count above carries both, and
+  § 12 points at the index as the current statement *(re: § 12 *The downstream boundary*, RN-6,
+  RN-7, RN-8; source: `docs/adr/0001-capability-split-read-pipeline.md`,
+  `docs/adr/0002-tauri-2-rust-host-wkwebview-renderer.md`,
+  `docs/adr/0004-git-read-through-libgit2-behind-a-port.md`, `docs/adr/README.md`;
+  `docs/trail/sdd/cycle-2.md` § 2.3)*.
 - **RN-26:** *(CDO)* *(changed — upstream moved)* This seat's lane follows UXD v6 and the owner's
   § 2.4 answer, with these consequences and no others: **(1)** the § 4 C-E preamble opens the
   experience against a folder, a repository or not, and names the plain folder a working state
@@ -1719,7 +1764,7 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   Git view present and showing nothing — and its failure clause is UX-S7's, the same three cases,
   a plain folder not among them; **(4)** `read-markdown`'s bar shows the image inside the fixture
   as the image, in place, and the remote image as the placeholder stating remote content is not
-  fetched (UX-I12, narrowed to remote; the owner's call, `docs/sdd_trail/cycle-1.md` § 2.4,
+  fetched (UX-I12, narrowed to remote; the owner's call, `docs/trail/sdd/cycle-1.md` § 2.4,
   folded by the CTO as RN-11). One reading is this seat's, named rather than left implicit: for
   an image whose path **escapes** the folder the UXD says nothing — UX-I12 speaks of remote
   content — and C-D3 has the host answer nothing for it; the bar draws that "nothing" as the same
@@ -1735,7 +1780,7 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   no control either way (UX-I17's live sentence, UX-I2, UX-I3; FR-33) *(re: § 4 C-E preamble,
   `read-a-folder`, `read-markdown`, `see-what-changed`, `watch-a-moving-tree`,
   `switch-the-folder`; source: UXD v6 UX-S3, UX-S4, UX-S7, UX-I2, UX-I3, UX-I12, UX-I17, UX-F5;
-  `docs/sdd_trail/cycle-1.md` § 2.4; SRS v8 FR-1, FR-33, FR-34, AC-24, AC-25; fence
+  `docs/trail/sdd/cycle-1.md` § 2.4; SRS v8 FR-1, FR-33, FR-34, AC-24, AC-25; fence
   § `no-unestablished-state`)*.
 - **RN-18:** *(CDO)* *(added)* § 5 step 1's observability check, applied to E1 – E10: every entry
   passes — each names something a person watches on a surface the product has (the window, the
@@ -1744,15 +1789,19 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   observed as a filesystem diff after a session (AC-13), and E10's "1.0.0 or later" is observed as
   a tag on the release page; both are surfaces, so both stand. No entry was returned to the CPO
   *(re: § 5 step 1; source: PRD § Key Use Cases, § Core Features; SRS AC-13, C-6)*.
-- **RN-19:** *(CDO)* *(added; slug moved at run 2 — RN-21)* `read-a-folder`'s rail carries the *Files* entry alone, and
+- **RN-19:** *(CDO)* *(added; slug moved at run 2 — RN-21; contingency closed at run 3)* `read-a-folder`'s rail carries the *Files* entry alone, and
   *Git* arrives with `see-what-changed` — *because* C-E1 forbids a control drawn as enabled whose
   destination does not exist, and a *Git* entry in a build with no Git view could only show
   *pending* for work the tool is not doing, which UX-I16 names as a state that lies (the tool is
   not still working). `docs/DESIGN.md` § Components "The rail" draws two entries; that is the
   released shell, and a slice is not a release — from `see-what-changed` on the rail is as drawn.
-  If the owner moves `pick-it-up-release` ahead of `see-what-changed` (`docs/SDD_open_issues.md`
+  If the owner moves `pick-it-up-release` ahead of `see-what-changed` (`docs/trail/sdd/cycle-1.md`
   § 3.3) the first public release ships a one-entry rail, and its README says so under
-  `pick-it-up-release`'s fence. The same reasoning fixes S-1's polarity: the shell renders in the
+  `pick-it-up-release`'s fence — a contingency that closed at run 2, when the owner placed
+  `pick-it-up-release` after the whole v1 cut (RN-22; the same § 3.3) and § 7 gained the edge
+  `pick-it-up-release` `depends_on` `see-what-changed`, so the branch that sentence conditions on
+  cannot be taken; it stands as the reasoning's history, not as a live case, and nothing that
+  cites this note rests on it. The same reasoning fixes S-1's polarity: the shell renders in the
   platform's reported appearance, or light where none is read (UX-I9's default), with no control to
   change it until `pick-it-up-release` — a control that arrives with its destination, not before
   *(re: `read-a-folder`, `see-what-changed`, § 4 C-E1, C-E6; source: UXD § 4 the rail, UX-I9,
@@ -1762,7 +1811,7 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   file to read while UX-F4 had the same entry open its diff, with no control named that told the
   two apart; and UX-F4 with § 4 placed the diff in the reading panel and reached the history
   "from the Git view" without saying where the history view itself is drawn. The owner answered
-  both (`docs/sdd_trail/cycle-1.md` § 1.2, § 1.3), by demonstration against VS Code's Source
+  both (`docs/trail/sdd/cycle-1.md` § 1.2, § 1.3), by demonstration against VS Code's Source
   Control view: **the Git-view row opens the diff** — one click target; the status letter stays a
   label, never a second target; the file itself is read from the tree — so the row's meaning
   changes at `read-the-diff`, and `see-what-changed`'s bar, where the row opens the file, holds
@@ -1771,7 +1820,7 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   observable bars now state those answers. The UXD at v6 still carries the pre-answer text in
   UX-F2 and UX-S6; the entries are revised by the UXD's own run, not here (§ 12), and this document
   cites the trail until it can cite the revised entries *(re: `see-what-changed`, `read-the-diff`,
-  `read-the-history`, § 12; source: `docs/sdd_trail/cycle-1.md` § 1.2, § 1.3; UXD UX-F2, UX-F4,
+  `read-the-history`, § 12; source: `docs/trail/sdd/cycle-1.md` § 1.2, § 1.3; UXD UX-F2, UX-F4,
   § 4, UX-S5, UX-S6)*.
 - **RN-21:** *(CPO)* *(changed — upstream moved)* The input is one local folder, a Git
   repository or not, and this seat's lane now says so — *because* run 1 was written against PRD
@@ -1799,22 +1848,22 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   `read-a-folder`, `read-markdown`, `see-what-changed`, `watch-a-moving-tree` — never among them —
   *because* the owner chose the first impression over the early proof: "let's go with v1", the
   first thing a stranger meets being the product `docs/PRD.md` § Scope (In) calls v1
-  (`docs/sdd_trail/cycle-1.md` § 3.3). This is the value reason and the fence (§ 5 step 4, S-5
+  (`docs/trail/sdd/cycle-1.md` § 3.3). This is the value reason and the fence (§ 5 step 4, S-5
   *Not in this slice*); the slice's number in the build order is § 7's, and the consequence the
   owner accepted — the acquisition path proved later — is recorded in the trail beside the answer
   and is the CTO's to place a check for. The § 6 field *Delivers* on S-5 now names the v1 cut it
   ships *(re: § 5 step 4, S-5; source: PRD § Scope (In) "everything under Core Features";
-  `docs/sdd_trail/cycle-1.md` § 3.3)*.
+  `docs/trail/sdd/cycle-1.md` § 3.3)*.
 - **RN-23:** *(CPO)* *(owner directive folded)* Cut-granularity calls are this seat's, made on the
   owner's standing appetite — *smaller rather than larger, but not too small* — and are not
   parked for the owner unless the answer changes what the product promises — *because* the owner
   said so on run 1's § 3.1 ("this is a question that I think should not come to me"), answered
   § 3.1 as *either is acceptable*, and § 3.2 was closed on the same rule without being re-asked
-  (`docs/sdd_trail/cycle-1.md` § 3.1, § 3.2). Applied: `read-markdown` stays its own slice (RN-1)
+  (`docs/trail/sdd/cycle-1.md` § 3.1, § 3.2). Applied: `read-markdown` stays its own slice (RN-1)
   and `read-the-history` stays one slice, the branch-set choice alone being *too small*. Carried
   forward as the routing rule for every later cut this seat makes; the Principal PM re-slices
   whatever § 6 draws (§ 8), which is why the granularity here never needed the owner's turn *(re:
-  § 5 step 4, § 6; source: `docs/sdd_trail/cycle-1.md` § 3.1, § 3.2)*.
+  § 5 step 4, § 6; source: `docs/trail/sdd/cycle-1.md` § 3.1, § 3.2)*.
 
 ---
 
@@ -1849,7 +1898,7 @@ question.>
   from `checks/latency.sh`, alongside NFR-10's reference sizes.]
 - [OPEN: Whether the App Sandbox is enforced on a bundle carrying the entitlements under an ad-hoc
   signature. Settled in `read-a-folder` by the bundle probe (C-I3) — the first CI build answers it.
-  Signing is not a lever (the owner's § 1.1 answer, `docs/sdd_trail/cycle-1.md`), so a *no* here is
+  Signing is not a lever (the owner's § 1.1 answer, `docs/trail/sdd/cycle-1.md`), so a *no* here is
   a § 10 trigger on the gate's mechanism (R-8): what changes is how the wall is proved, not whether
   the release is signed.]
 - [OPEN: The origin form the WebView accepts in `img-src` for the host's `nozoki-asset` scheme
