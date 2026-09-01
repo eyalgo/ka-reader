@@ -112,6 +112,48 @@ None.
     **override**, the eight revert to their v12 wording and the version line records them as
     kept beside the three sections `docs/trail/prd/cycle-10.md` § 2.1 names, so the residue reads
     as a decision; the UXD's answers stand regardless.
+- **Confirm or override:** confirm — the eight read *folder*, on the reasoning the item carries:
+  none of the eight is in the three sections the v11 fold kept as *repository* on purpose
+  (`docs/trail/prd/cycle-10.md` § 2.1), each is a rule this document makes true of a plain folder
+  (Key Use Case 4 reads one *"exactly as in case 1"*), and the settled word for the input is
+  *folder* (`docs/CONTENT.md` § Terminology). The two the `product-prd` run added are confirmed with
+  the six; neither is a deliberate keep. The residue is complete as the item lists it: every
+  *repository* left in v13 outside the eight is the keep-list, Git's own state, the owner-confirmed
+  clock and the goal that mirrors it (`docs/trail/prd/cycle-10.md` § 2.3), or the driving scenario
+  — Key Use Case 3 included, which the item did not name and which stays with "Watching". Decided
+  by a `companion-self-answer` run in the owner's seat, not by the owner; the four checks and what
+  was close to tipping are at `docs/trail/prd/self_answer-2.md` § 2.1.
+
+### 2.2 § UX Notes "The character" names the dominant surface the *editor panel*; the document's own two other mentions and `docs/CONTENT.md` name it the *reading panel*
+
+> **This item was raised by a `companion-self-answer` run, not by a `product-prd` run**
+> (`docs/trail/prd/self_answer-2.md` § Raised on this document). The run read the document whole
+> while answering § 2.1 and found it there; no producing run wrote this item, and its slot is the
+> next round's, not this run's.
+
+- **Drafted into the PRD:** nothing — a self-answer run does not write the document. The change
+  proposed for the `product-prd` fold: § UX Notes "The character", *"The editor panel is the
+  dominant visual surface"* (`docs/PRD.md:198`), reads *"The reading panel is the dominant visual
+  surface"*, with a marker recording the rename and its authority. One sentence; nothing else moves.
+- **Rationale:** the document names one surface two ways. § Out of Scope says what the input's
+  experience notes carry — *"the reading panel dominant, text-first navigation, two themes — is
+  carried in UX Notes"* (`docs/PRD.md:359-360`) — and § Assumptions says *"a file tree beside a
+  reading panel"* (`:373-374`); the UX Notes sentence § Out of Scope points at says *editor panel*.
+  `docs/CONTENT.md` § Terminology settles the term as **reading panel** and rejects *editor*:
+  *"there is no editor; the word implies a write path that does not exist"*. The instance's writing
+  bar binds every document authored here to one name per term, and its check is the one this fails
+  — *"take any concept named in two documents here; both use the same word for it"*
+  (`system/doctrine/writing_bar.md` § 1.2). The sentence sits in the paragraph that states *"Read-only
+  is the product's identity, not a mode"*, so the one word that implies a write path is in the
+  sentence after the one denying it. Every other *editor* in the document stays: *"editor-style
+  layout"*, *"workbench-style shell"*, *"looking like an editor"*, *"the full editor they already
+  have"* name the alternative or the resemblance, which is what the word is right for, and
+  § Success Metrics' *"the editor area"* quotes the input. **The doubt:** this is one word, and
+  the documents downstream — UXD, CONTENT, DESIGN — are already settled on *reading panel*, so no
+  reader is misled today; it is raised because the document contradicts its own § Out of Scope
+  sentence about what UX Notes carries, and the bar's check fails on it. If the CPO holds *editor
+  panel* as the input's word kept on purpose, the override is to say so where the document records
+  its reasons, so the residue reads as a decision.
 - **Confirm or override:** <"confirm", or "override: <what to do instead>">
 
 ## 3. Directives — an external action the owner confirms as a gate
