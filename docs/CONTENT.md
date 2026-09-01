@@ -8,9 +8,9 @@ omitted:
 
 # CONTENT — Nozoki 覗き
 
-**Status:** Settled
+**Status:** Draft
 **Owner:** Content Editor
-**Version:** 4 — the input widened, and most of this round is subtraction. `docs/PRD.md` v11 and `docs/UXD.md` v6 make the input **one local folder, a Git repository or not**, so § Terminology's word for it becomes *folder* and *repository* narrows to Git's own thing (RN-23); the read-only standing sentence widens with it (RN-24); the worked example that refused a folder without Git is removed from the three places it stood, because the product can no longer produce it (RN-25); and § Message patterns states the one surface that carries no words on purpose (RN-26). No voice behaviour, tone entry or message formula moves. The shipped README now disagrees with this document again and a revision is owed (RN-27). (v3: the unexplained fault has its surfaces. `docs/UXD.md` settled at v4: every failure cell in its § 6 now holds two classes, and UX-I16 says where the second one is shown — so § Message patterns *Error* and § Traceability are repointed at it, and this document no longer carries a message pattern with no declared home. Two corrections ride with it: the status letters' expansion is raised by the letter rather than the row, which is what the owner described and what `docs/DESIGN.md` draws, and RN-12's dependency on the design language is discharged rather than left in flight. No rule in this document moves. The two calls this document was waiting on came back settled and moved nothing in it (`docs/content_trail/cycle-2.md` § 1.1; RN-22), so nothing is left open and the companion is gone.)
+**Version:** 5 — nothing this document says changes: the 12 `docs/<x>_trail/` citations it rests on (10 `content_trail/`, 2 `prd_trail/`) are repaired to `docs/trail/<x>/`, the answer-trails having moved at `nozoki@1e8bf3d` without the citing documents being moved with them. None of the 12 is commit-pinned, so none is left as written, and all four cited files and all nine cited `§` sections resolve at the new location. The ground is RN-15 rather than tidiness: this document cites only files a reader who has cloned this repository can open, so the twelve were it breaking its own stated rule, and the owner answers a Review Note rests on could not be opened to check them (authorized: `docs/trail/content/cycle-4.md` § 2.1). Nothing those citations authorize changes. One item stays open in `docs/CONTENT_open_issues.md`. (v4: the input widened, and most of this round is subtraction. `docs/PRD.md` v11 and `docs/UXD.md` v6 make the input **one local folder, a Git repository or not**, so § Terminology's word for it becomes *folder* and *repository* narrows to Git's own thing (RN-23); the read-only standing sentence widens with it (RN-24); the worked example that refused a folder without Git is removed from the three places it stood, because the product can no longer produce it (RN-25); and § Message patterns states the one surface that carries no words on purpose (RN-26). No voice behaviour, tone entry or message formula moves. The shipped README now disagrees with this document again and a revision is owed (RN-27). (v3: the unexplained fault has its surfaces. `docs/UXD.md` settled at v4: every failure cell in its § 6 now holds two classes, and UX-I16 says where the second one is shown — so § Message patterns *Error* and § Traceability are repointed at it, and this document no longer carries a message pattern with no declared home. Two corrections ride with it: the status letters' expansion is raised by the letter rather than the row, which is what the owner described and what `docs/DESIGN.md` draws, and RN-12's dependency on the design language is discharged rather than left in flight. No rule in this document moves. The two calls this document was waiting on came back settled and moved nothing in it (`docs/trail/content/cycle-2.md` § 1.1; RN-22), so nothing is left open and the companion is gone.))
 
 > The verbal language is the source of truth for everything this product says to a person. It is
 > the peer of `DESIGN.md`, not a part of it: a rule about how something **looks** belongs there,
@@ -214,7 +214,7 @@ folder Nozoki has found is not the root of a Git repository, the Git view is pre
 nothing: no message, no label, no explanation (`docs/UXD.md` UX-I17). It is a working state and not
 a failure, so no pattern below reaches it and none is written for it. The reason is that there is
 nothing truthful to say: the two next steps an editor offers on this same surface — create a
-repository, publish it — are writes Nozoki can never make (`docs/prd_trail/cycle-10.md` § 2.2), and
+repository, publish it — are writes Nozoki can never make (`docs/trail/prd/cycle-10.md` § 2.2), and
 with no action to name, a sentence here could only explain the view's own emptiness, which is the
 tool talking about itself. The cost was accepted where the decision was made: an empty view cannot
 by itself tell this folder apart from a repository Nozoki failed to read, and the failure the reader
@@ -493,7 +493,7 @@ Every state and requirement in the UXD that carries text, and what covers it her
   *workspace* and *codebase*, all for one concept, in a file that also says *repository* twice.
   The rename costs a README revision and nothing else while the product has no strings, which is
   the cheapest this decision will ever be. *(v2: confirmed, and landed. The owner confirmed the
-  rename and all four rejections — `docs/content_trail/cycle-1.md` § 2.5 — and `README.md` was
+  rename and all four rejections — `docs/trail/content/cycle-1.md` § 2.5 — and `README.md` was
   revised in the same pass that settled the PRD at v9. The shipped corpus now says* repository
   *throughout, so this note records a rename that has happened rather than one being proposed.)*
 - **RN-7:** *Tree* alone is rejected for the sidebar's list — *because* `docs/PRD.md` uses "the
@@ -521,7 +521,7 @@ Every state and requirement in the UXD that carries text, and what covers it her
   sources are checkable that way, which is the test this document is written to.
 - **RN-12:** The Git status letters are expanded in a hover tooltip on the row, and the interim
   README list this document carried at v1 is withdrawn — *because* the owner settled both halves
-  (`docs/content_trail/cycle-1.md` § 1.2): the expansion belongs in the view, on demand, and
+  (`docs/trail/content/cycle-1.md` § 1.2): the expansion belongs in the view, on demand, and
   tooltips are in v1. `docs/UXD.md` UX-A2 permits a letter as the cue that survives without colour,
   and this rule does not reopen that — the question it answers is whether the letter can be
   understood at all.
@@ -530,7 +530,7 @@ Every state and requirement in the UXD that carries text, and what covers it her
   status letter, which raises it. So the letters are expanded, and this rule no longer fails open.
   The trigger is corrected with it: this document said the **row** raised the expansion, which was
   never what the owner described —* "when you hover over an `M` … there's a short-time 'file and +
-  Modified'" *(`docs/content_trail/cycle-1.md` § 1.2) — nor what the design language draws.)*
+  Modified'" *(`docs/trail/content/cycle-1.md` § 1.2) — nor what the design language draws.)*
 - **RN-13:** § Localization holds, although `docs/PRD.md` § UX Notes fixes the UI language as
   English and no translation is planned — *because* every rule in it constrains how a string is
   written rather than requiring a translation, and each is unaffordable to apply once strings
@@ -558,11 +558,11 @@ Every state and requirement in the UXD that carries text, and what covers it her
   the failure a one-wording rule exists to prevent. The scoped sentence is also the stronger claim:
   it is about the folder they pointed Nozoki at, not about the filesystem. *(The control and the
   input carry their v4 names here — RN-23; the note's own argument is unchanged.)* Owner-set on the session's proposal —
-  `docs/content_trail/cycle-1.md` § 2.2.
+  `docs/trail/content/cycle-1.md` § 2.2.
 - **RN-17:** *(v2)* § Message patterns *Error* carries two formulas rather than one — *because* the
   single formula assumed every failure has something Nozoki observed, and the owner named the class
   that has not: a system error, as against a *file not found*
-  (`docs/content_trail/cycle-1.md` § 2.3). Applied to an unexplained fault the original formula's
+  (`docs/trail/content/cycle-1.md` § 2.3). Applied to an unexplained fault the original formula's
   second clause has nothing to put in it, and the message degrades to *something went wrong*. The
   second formula replaces that clause with the limit of what the tool knows, which is the smaller
   true thing and the only one it can keep. The owner stated the distinction and not the remedy;
@@ -588,7 +588,7 @@ Every state and requirement in the UXD that carries text, and what covers it her
   this product does not use, which understates the promise rather than keeping it. The stronger
   sentence is read as tightening that limit rather than replacing it, and the exception it does
   have — acquiring the tool — is inside the one wording rather than footnoted where it is needed.
-  Owner-settled: `docs/content_trail/cycle-1.md` § 1.1.
+  Owner-settled: `docs/trail/content/cycle-1.md` § 1.1.
 - **RN-20:** *(v3)* The unexplained fault is written into the failure slot of the item that stopped,
   and § Traceability no longer records a pattern with no declared state — *because* the CDO answered
   the half this document raised: `docs/UXD.md` v4 states that every failure cell in its § 6 holds two
@@ -614,7 +614,7 @@ Every state and requirement in the UXD that carries text, and what covers it her
   is why the answer is recorded rather than applied.
 - **RN-21:** *(v3)* The status letters' expansion is raised by resting the pointer on the **letter**,
   not on the row — *because* that is what the owner described when they settled it
-  (`docs/content_trail/cycle-1.md` § 1.2, *"when you hover over an `M`"*) and what the design
+  (`docs/trail/content/cycle-1.md` § 1.2, *"when you hover over an `M`"*) and what the design
   language draws (`docs/DESIGN.md` § Components, "The tooltip": *"the letter, not the row"*). This
   document said *the row* at v2, which was a mis-transcription of the answer it was folding rather
   than a decision, and it contradicted a sibling that had already settled. It is corrected rather
@@ -628,7 +628,7 @@ Every state and requirement in the UXD that carries text, and what covers it her
   named flat"* (§ Purpose) and admits a folder without Git as a supported input inside v1, and
   `docs/UXD.md` v6 carried that through every entry that meant the input (RN-25 there). This is an
   upstream change, which is one of the three deltas this document permits, and the owner directed the
-  widening (`docs/content_trail/cycle-3.md` § 1.4). It reaches **only the words that meant the
+  widening (`docs/trail/content/cycle-3.md` § 1.4). It reaches **only the words that meant the
   input**: Git's own furniture — branch, commit, staged, changed, diff, history — is untouched, and
   so is every sentence about Git's state, which exists only where the folder is a repository. Three
   consequences are recorded rather than left to inference. The *repository selector* becomes the
@@ -657,7 +657,7 @@ Every state and requirement in the UXD that carries text, and what covers it her
   failure list (*"A folder without Git is not on this list: it opens"*) and `docs/UXD.md` v6 narrows
   UX-S4 to a path that does not exist, is not a folder, or cannot be read. The owner ruled out
   rewriting it into a message for a state that does not exist
-  (`docs/content_trail/cycle-3.md` § 1.1), so the *Terminal* behaviour is illustrated with a failure
+  (`docs/trail/content/cycle-3.md` § 1.1), so the *Terminal* behaviour is illustrated with a failure
   that survives. The removal reaches **three** places, not the one the owner's item named: the § Voice
   table, the § Message patterns *Error* example that carried the same message, and the § Terminology
   banned row that used *"there's no Git repository at this path"* as its model of what Nozoki
@@ -671,7 +671,7 @@ Every state and requirement in the UXD that carries text, and what covers it her
   used — *because* whether a message is needed is this document's call and not only how one is worded,
   and silence on the point is indistinguishable from having overlooked it: the next person to read
   the file would have found five patterns, an unserved state, and nothing saying which. The decision
-  is the owner's (`docs/prd_trail/cycle-10.md` § 2.2, overriding a drafted *present, disabled, and
+  is the owner's (`docs/trail/prd/cycle-10.md` § 2.2, overriding a drafted *present, disabled, and
   says why*), and the grounds are recorded because they are what stops it being reopened as a defect:
   the two next steps an editor offers on that surface are writes Nozoki can never make, so there is
   no truthful action to name, and the only sentence left would explain the view's own emptiness.
