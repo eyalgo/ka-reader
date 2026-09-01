@@ -86,7 +86,16 @@ None.
     `docs/CONTENT.md` and `docs/DESIGN.md` already say *reading panel*. On **override**, the
     sentence reverts to *editor panel* and the version line records it as the input's word kept
     on purpose, so the residue reads as a decision.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm — the sentence reads *reading panel*, on the reasoning the item
+  carries: the document's own § Out of Scope and § Assumptions already say *reading panel*,
+  `docs/CONTENT.md` § Terminology settles the term and rejects *editor* for it, and no other
+  *editor* in v14 names the surface — each names the alternative, the resemblance, or the input
+  quoted. Confirmed with one addition: the input's own phrase for this sentence is *"Make the
+  editor panel the dominant visual surface"* (`docs/proposal.md` § Styling Guidance), verbatim —
+  not § Overview's *"editor area"*, which the item and the v14 marker cite — so the *changed*
+  marker on fold should point at § Styling Guidance, where the sentence departed from actually
+  is. Decided by a `companion-self-answer` run in the owner's seat; reasoning at
+  `docs/trail/prd/self_answer-3.md` § 2.1.
 
 ## 3. Directives — an external action the owner confirms as a gate
 
