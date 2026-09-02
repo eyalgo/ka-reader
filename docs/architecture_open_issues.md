@@ -87,6 +87,36 @@
   are emitted at is the delivery tier's placement under the packet's ladder, not this entry's.
   Reasoning: `docs/trail/architecture/self_answer-3.md` § 1.1.
 
+
+### 1.2 The card's per-change gate now runs the packet's *release-time* command shape
+
+> **Raised by an owner-directed session on 2026-09-02, not by a `product-architecture` run**, while
+> verifying the `cto:` run that added `--locked` (`kensaiapp-opensource@3a960a7`). No item asked for
+> it. It is raised here because § 9's table is what assigns a command to a gate, so the disagreement
+> is this document's before it is the card's.
+
+- **Lands in:** `nfdr.md` § 9 (the *gated at* column for the Rust layers), and the project card's
+  `Test command:` field if the answer moves it.
+- **Why it matters:** the Rust packet draws a line this product has not yet read. Layers 1–3 live in
+  the library crate so `-p <library-crate>` is the change-time suite, layer 5 lives in the binary
+  crate and has a command of its own, and of the whole-workspace form the packet says: **"`cargo test
+  --workspace --locked` runs every layer at once and is the release-time run rather than the
+  change-time one"** (`<CORE>/doctrine/engineering/languages/rust/testing.md:L34-L35`). The card's
+  field is not a release command — `development-implementation` runs it **per task**
+  (`.claude/skills/development-implementation/SKILL.md:L119`), so as it now stands every task runs
+  layer 5, the built-bundle end-to-end suite, which `testing_doctrine.md` holds out of the layers 1–4
+  run ("Layer 5 runs separately", quoted in the packet at the same lines).
+- **What is *not* the question:** `--locked` itself. That is settled and correct — the packet puts it
+  on every per-change gate command (`<CORE>/doctrine/engineering/languages/rust/quality_gates.md:L164`
+  "**`--locked` is on every per-change gate command above.**"). Only the *shape* around it is open.
+- **Why this is not already closed by RN-6:** RN-6 records the card's history and reads "closed at
+  v3", but what it closed was `pytest` → `cargo` and the missing `Languages:` line. It weighs the
+  workspace form only as "the SDD's S-1 bar", which was written before any Rust packet existed, so
+  the change-time/release-time split has never been put to this product.
+- **Whose call:** the CTO's — it owns the SDD's command bar and set the card's field twice. This item
+  is the channel, not the decision.
+- **Answer:** <the owner fills this in>
+
 ## 2. Choices to confirm — the Principal Architect drafted a best-effort answer; confirm or override
 
 ### 2.1 Three statements that "no Rust packet exists" are now false, and § 9's test paths move to `crates/`
@@ -165,3 +195,23 @@
   the card's own `Languages:` comment still reads "Rust has no packet yet" — a fact the managing
   instance owns and this document does not. Reasoning: `docs/trail/architecture/self_answer-3.md`
   § 2.2.
+
+### 2.3 § 8's sentence about the card's test command is one flag out of date
+
+> **Raised by the same owner-directed session**, and reported by the `cto:` run itself as something it
+> could not act on because this document is read-only to it.
+
+- **Lands in:** `nfdr.md` § 8.
+- **Drafted into the records:** § 8 reads "That card's test command is the SDD's command bar for the
+  Rust workspace and Vitest for the renderer" (`docs/nfdr.md:L429-L432`). The card now reads
+  `cargo test --workspace --locked && (cd nozoki-ui && pnpm exec vitest run)`
+  (`kensaiapp-opensource@3a960a7`), which is **stricter than** the SDD's S-1 bar rather than equal to
+  it. Proposed: the sentence says the card's command satisfies the S-1 bar and adds the packet's
+  `--locked`, naming the packet as the flag's source.
+- **Rationale:** the SDD's bar is "`cargo test --workspace` exits 0" (`docs/SDD.md:L783`); a run with
+  `--locked` satisfies it a fortiori, so no SDD change is owed and only this sentence is wrong. Left
+  as written it says the two are the same command, which a reader can check and find false.
+- **If overridden:** if § 8 should not track the card's exact text at all, the sentence reduces to
+  the pointer § 8 already makes and stops restating the command — which would also make it immune to
+  the next card change.
+- **Confirm or override:** <"confirm", or "override: <what to do instead>">
