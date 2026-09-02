@@ -61,7 +61,31 @@
   readable from a binary on `tracing`, so the choice is cheap to reverse. If overridden to
   `tracing`: the same entry, a second crate in `checks/deps.allow`, and a subscriber initialized
   in `nozoki-app`.
-- **Answer:** <the owner fills this in>
+- **Answer:** `log`, recorded as a constraint in `nfdr.md` § 7 beside QC-52, and no ADR — the choice
+  fails the significance test: the packet records that a library on `log` stays readable from a
+  binary on `tracing`, so reversal is one allowlist change, and neither half of the choice surprises
+  a cold reader. The entry binds three things. (1) Every shipped Rust crate depends on the `log`
+  facade for diagnostics and on nothing else — no `tracing`, no `slog`; `nozoki-core` uses the five
+  macros and initializes nothing. (2) The implementation is `nozoki-app`'s own log module — the
+  writer QC-39, QC-40 and QC-52 already bind, implementing `log::Log` — installed once at startup in
+  `nozoki-app`, the composition root (QC-17), with no third-party implementation crate. The reason is
+  a constraint already on disk, not taste: the stock implementations of `log` read their level from
+  the environment, and QC-30 / QC-58 forbid `std::env::var` in any shipped crate, so an off-the-shelf
+  logger fails `checks/structure.sh` the day it lands. The level the writer admits is fixed in code
+  and read from nothing outside; it holds what QC-39 and QC-52 describe and nothing below it. (3)
+  Verified by: `checks/no-network.sh` — `checks/deps.allow` gains `log` and names no `tracing*`,
+  `env_logger`, `slog*` or `log4rs` crate, so a swap fails the allowlist diff (QC-3, QC-26);
+  `checks/structure.sh` — `log::set_logger` / `log::set_boxed_logger` appears only in `nozoki-app`
+  (layer 6). Ground for `log` over `tracing`: the packet's discriminator is *queried by field or
+  attributed to a concurrent operation* against *read as lines*, and this log is read as lines by
+  construction — one line per `failed` or `stopped` item naming the part, the operation and the error
+  text (`docs/SDD.md` § 4 C-I2; QC-39), the most recent lines always the ones present (`docs/SRS.md`
+  NFR-11), nothing in the product reading it back (QC-52: the only diagnostic output) — and the
+  attribution a concurrent read needs is in the line already. If a later change needs spans or
+  fields, the reversal is the packet's own bridge — `tracing` in the binary consuming `log` records —
+  as one allowlist change and one revision of this entry. Which macro a `failed` and a `stopped` item
+  are emitted at is the delivery tier's placement under the packet's ladder, not this entry's.
+  Reasoning: `docs/trail/architecture/self_answer-3.md` § 1.1.
 
 ## 2. Choices to confirm — the Principal Architect drafted a best-effort answer; confirm or override
 
@@ -99,7 +123,21 @@
   the packet's answer. Nothing else moves: the card's test command is workspace-relative
   (`cargo test --workspace`) and unaffected, and the renderer's `cd nozoki-ui` is a TypeScript package,
   not a workspace member.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm, with one addition to RN-7's departure list. The three edits stand
+  as applied at v3, verified against the packet: `layout.md` § A multi-crate product names this
+  document's § 9 as the one that adapts and the ruling as `kensaiapp-dev@49e0444f`; RN-7's two
+  departures and its `cargo audit` / `--locked` agreement read as the packet states them
+  (`testing.md` § Layers 1–5, § The rules that make that table work; `quality_gates.md`
+  § Dependency advisories — the owner's call of 2026-09-02, citing this RN-7). The addition: the
+  packet puts `--locked` on every `cargo test` command, layers 1–6 and the workspace run alike, with
+  its reason — "a run allowed to re-resolve dependencies is a run against a tree nobody reviewed"
+  (`testing.md` § Layers 1–5) — and § 9's table and § 10's rows carry it on no `cargo test` command,
+  while RN-7 lists it neither as followed nor as a departure. Follow the packet: the `cargo test`
+  commands in § 9 and § 10 take `--locked`, and RN-7's "where § 9 now follows the packet" names it
+  beside the `crates/` paths. QC-26 already makes the CI build `--locked`; this closes the same hole
+  on the test side. The card's `cargo test --workspace` is the instance's own field and not this
+  document's to edit — § 8 states the card as it reads — and whether the card takes `--locked` is
+  put to the owner in the report. Reasoning: `docs/trail/architecture/self_answer-3.md` § 2.1.
 
 ### 2.2 RN-7 says the card has no `Languages:` line; it now has one
 
@@ -118,4 +156,12 @@
 - **If overridden:** if either note should stay as written, it needs the pinning treatment cycle 1
   applied to RN-2 — a note that states what was true at a named commit rather than a live claim that
   goes false again.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm. RN-6 as applied is history pinned to a commit and stays true
+  whatever the card does next: `git show 4bdfddd:system/projects/nozoki/project.md` carries
+  `**Test command:** pytest tests/` marked PROVISIONAL and no `Languages:` line, and the two closes
+  are the commits named — `c2155cc` (2026-09-01, not 2026-09-02 as this item's rationale says) and
+  `0af5fb9` (2026-09-02); RN-7 now resolves both packets at step 1 of the chain from the
+  `Languages:` line. One thing the fold does not carry, put to the owner rather than drafted here:
+  the card's own `Languages:` comment still reads "Rust has no packet yet" — a fact the managing
+  instance owns and this document does not. Reasoning: `docs/trail/architecture/self_answer-3.md`
+  § 2.2.
