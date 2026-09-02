@@ -7,7 +7,7 @@
        signal, and the state a finished SDD carries; the open-issues file is gone.
      Locked = ratified as the source of truth. -->
 **Owner:** CTO · CPO · CDO — one run, three seats
-**Version:** 3 — run 3 folds the two confirmed items of the companion a `companion-self-answer` run opened on this Settled document (`docs/trail/sdd/cycle-2.md` § 2.1, § 2.2). In the CPO's lanes nothing this document says changes: the 12 `docs/sdd_trail/` citations it rests on — 11 in § 5 step 4, S-5 *Not in this slice*, § 12 *The PRD boundary*, RN-1, RN-3, RN-22 and RN-23, and 1 on this line — read `docs/trail/sdd/`, because the answer-trails moved under `docs/trail/` at `nozoki@1e8bf3d` and this document was not moved with them; a commit-pinned citation would be left as written, and this document carries none. In the CTO's lanes: § 4 C-R6 reads `pnpm ls` where it read `npm ls` (§ 2.1 — `docs/nfdr.md` QC-3 and QC-26 trace to C-R6 and already realize the clause as pnpm, so the spelling carried no decision); the 19 `docs/sdd_trail/` citations in this seat's lanes — § 2's table, C-R1, C-R3, C-R4, C-R7, C-I3, § 5 steps 3 and 5, S-5 *Why here in the order*, § 7, § 11, RN-7, RN-9, RN-11, RN-13, RN-17, RN-25 and *Open Questions* — read `docs/trail/sdd/` on the same ground; and the companion's § 2.3, raised on this document and left unfilled, is settled inside this lane rather than carried: § 12's downstream boundary and RN-6, RN-7 and RN-8 name the records that hold the three decisions they surfaced — ADR-0001, ADR-0002, ADR-0004 — with nothing thinned for it (RN-27). In the CDO's lanes: the 9 `docs/sdd_trail/` citations in this seat's lanes — S-2 *Traces to*, S-7 *Reached when*, S-8 *Reached when* and *Traces to*, § 12 *The UXD boundary*, RN-20 and RN-26 — read `docs/trail/sdd/` on the same ground (§ 2.2), which leaves this document with no `docs/sdd_trail/` citation outside this line; and RN-19 keeps its wording and gains a closing clause — its contingency closed at run 2 (RN-22; § 7's `pick-it-up-release` `depends_on` `see-what-changed` edge) — with its pointer to a companion item that no longer exists repaired to `docs/trail/sdd/cycle-1.md` § 3.3 (§ 2.1). Nothing the experience binds moves: UXD v7 still carries the pre-answer UX-F2 and UX-S6 text RN-20 names, so that note stands as written. With both halves landed the companion holds no item; nothing is open. (v2: run 2 folded the owner's answers to all 10 run-1 companion items (`docs/trail/sdd/cycle-1.md`): unsigned release with the install mechanism the CTO's to design (§ 1.1); the Git-view row opens the diff, one click target (§ 1.2); the history view sits in the sidebar (§ 1.3); the SDD follows the SRS on the Markdown raw-source switch (§ 2.1); Tauri 2 confirmed (§ 2.2); the system Open-panel start mechanism confirmed (§ 2.3); local repository images now load in place (§ 2.4, overridden); `read-markdown` and `read-the-history` kept as their own slices (§§ 3.1–3.2); `pick-it-up-release` re-cut to land after the full v1 cut (§ 3.3). The owner's widened input — a repository is now any local folder, Git or not — drove a folder-vs-repository sweep across every section and slice, renaming two slices (`read-a-repository` → `read-a-folder`, `switch-the-repository` → `switch-the-folder`); both halves (command and observable) of all eight slices now carry the plain-folder case. The companion is empty and removed this run; nothing is open.)
+**Version:** 4 — run 4 folds the companion a `companion-self-answer` run opened on this Settled document because `sdd_template.md` moved underneath it, 3.1.0 → 4.0.1 (`docs/trail/sdd/cycle-3.md` §§ 5.1–5.3). In the CPO's lanes the template's move changes nothing: the bump touched the preamble's loader citation, § 3 and § 8's opening and no other line (kensaiapp-dev@8f5105cb → @f5d070b9), so § 1, § 5 steps 1, 2 and 4, § 6's CPO fields and § 12 *The PRD boundary* are measured at 4.0.1 exactly as at 3.1.0, and no "seam n" citation sits in this seat's lanes for the re-cut's `SM-n` ids to reach. Two things do change here, on other grounds: E2 and E6 read *folder* where they read *repository* — the two sentences RN-21's sweep missed, against `docs/SRS.md` FR-32 and FR-21 and the PRD's own v13 sweep (RN-29) — and cycle-3 § 5.3, the question of the `**Status:**` line, is settled by no seat: that line is the runner's, and this seat's position on the rule going forward is recorded for the owner rather than set (RN-28). PRD v15 and the Agari as of 2026-09-01 read at every section this seat's *Traces to* fields cite. In the CTO's lanes the move is the whole of the fold, and cycle-3 §§ 5.1–5.2 settle every call in it: § 3 is re-cut to 4.0.1's two fixed tables — the seven seams, a numbered prose list since v1, become rows `SM-1` – `SM-7` in their standing order, so every "seam n" cited from § 2, § 4, § 6, § 9, § 11 and these notes resolves as `SM-n` and none of those sites is touched; the three `Lives in` cells `product-skeleton` refused read `nozoki-core`, `nozoki-ui` and `checks`, each trailing clause moved into *Owns* or dropped where `SM-2` already carries it; every `Lives in` cell loses its backticks; the entity table stays a table, already below the two; and `fs-reader`'s *Owns* reads "the extension set below" for "the table below" (RN-30). The preamble and § 8 cite `principal_pm_global.md` whole, the two section names that no longer exist deleted and nothing else in either block moved (§ 5.2, RN-30). Measured after the edit, not assumed: `parse_parts_table`, `PART_SLUG_RE` and `LIVES_IN_RE` lifted from `<CORE>/launchers/product-skeleton/launcher.sh` and run over this file read nine rows, nine slugs and nine cells passing, 2026-09-02. On cycle-3 § 5.3 this seat concurs with the CPO — the `**Status:**` line is the runner's, and the rule going forward is surfaced for the owner, not set (RN-31). Round 2, on the CDO's finding that `docs/UXD.md` moved v7 → v10 after run 3 read it: UX-I12's third case — an in-folder image that is missing, unreadable or not an image — has its mechanism in § 3 (`fs-reader` reads the reference as an item and `markdown-renderer` emits the observed-condition placeholder with no `<img>`; `surfaces` swaps a failed load for a could-not-be-loaded placeholder, for the file that vanishes between render and request), § 3 fixes the image set — PNG, JPEG, GIF, WebP, SVG outside it in v1 — and `read-markdown`'s command half names five fixture files shared with the CDO's observable half; C-R3 carries UX-S4's dismissed panel as a clause; RN-9's and C-R3's citations of the UXD's vanished § Open Questions, and RN-11's prediction that UX-I12 would narrow to remote images, are repaired to what v9 did (RN-34). In the CDO's lanes the template's move changes nothing either: the diff between the two pinned commits has three hunks — the preamble's loader citation, § 3's two tables, § 8's opening — and none reaches § 4's C-E clause, § 5 step 1's observability check, § 6's observable bars and UXD traces, or § 12 *The UXD boundary* (`git diff 8f5105cb f5d070b9 -- core/templates/product-templates/sdd_template.md`, read 2026-09-02). What does move in this seat's lanes moves on another ground: `docs/UXD.md` went v7 → v10 after run 3 read it (`nozoki@b8010dd` 17:07 and `@4d7b653` 17:55 on 2026-09-01, against run 3's `@5c776aa` at 13:31), folding the two owner answers RN-20 had cited from the trail and binding four states the bars did not carry — so `read-the-diff` and `read-the-history` cite UX-F2, § 4 and UX-S6 in place of `cycle-1.md`; the observable halves and traces of `read-a-folder`, `read-markdown`, `see-what-changed` and `read-the-history` gain what UX-S4, UX-I12, UX-S3 and UX-S6 now bind; `switch-the-folder`'s first-run list is corrected against UX-S7; § 12 *The UXD boundary*, RN-20 and RN-26 close their "until the UXD carries it" clauses; and two C-E sentences that named the input *repository* read *folder*, RN-21's rule applied to this lane (RN-32). The cut — no slice's *Delivers*, fence, *Rests on* or place in the order — does not move, which is why this is a review note and not an RC. On cycle-3 § 5.3 this seat concurs with RN-28 and RN-31, and the item is dropped on the three seats' concurrence (RN-33). (v3: run 3 folds the two confirmed items of the companion a `companion-self-answer` run opened on this Settled document (`docs/trail/sdd/cycle-2.md` § 2.1, § 2.2). In the CPO's lanes nothing this document says changes: the 12 `docs/sdd_trail/` citations it rests on — 11 in § 5 step 4, S-5 *Not in this slice*, § 12 *The PRD boundary*, RN-1, RN-3, RN-22 and RN-23, and 1 on this line — read `docs/trail/sdd/`, because the answer-trails moved under `docs/trail/` at `nozoki@1e8bf3d` and this document was not moved with them; a commit-pinned citation would be left as written, and this document carries none. In the CTO's lanes: § 4 C-R6 reads `pnpm ls` where it read `npm ls` (§ 2.1 — `docs/nfdr.md` QC-3 and QC-26 trace to C-R6 and already realize the clause as pnpm, so the spelling carried no decision); the 19 `docs/sdd_trail/` citations in this seat's lanes — § 2's table, C-R1, C-R3, C-R4, C-R7, C-I3, § 5 steps 3 and 5, S-5 *Why here in the order*, § 7, § 11, RN-7, RN-9, RN-11, RN-13, RN-17, RN-25 and *Open Questions* — read `docs/trail/sdd/` on the same ground; and the companion's § 2.3, raised on this document and left unfilled, is settled inside this lane rather than carried: § 12's downstream boundary and RN-6, RN-7 and RN-8 name the records that hold the three decisions they surfaced — ADR-0001, ADR-0002, ADR-0004 — with nothing thinned for it (RN-27). In the CDO's lanes: the 9 `docs/sdd_trail/` citations in this seat's lanes — S-2 *Traces to*, S-7 *Reached when*, S-8 *Reached when* and *Traces to*, § 12 *The UXD boundary*, RN-20 and RN-26 — read `docs/trail/sdd/` on the same ground (§ 2.2), which leaves this document with no `docs/sdd_trail/` citation outside this line; and RN-19 keeps its wording and gains a closing clause — its contingency closed at run 2 (RN-22; § 7's `pick-it-up-release` `depends_on` `see-what-changed` edge) — with its pointer to a companion item that no longer exists repaired to `docs/trail/sdd/cycle-1.md` § 3.3 (§ 2.1). Nothing the experience binds moves: UXD v7 still carries the pre-answer UX-F2 and UX-S6 text RN-20 names, so that note stands as written. With both halves landed the companion holds no item; nothing is open. (v2: run 2 folded the owner's answers to all 10 run-1 companion items (`docs/trail/sdd/cycle-1.md`): unsigned release with the install mechanism the CTO's to design (§ 1.1); the Git-view row opens the diff, one click target (§ 1.2); the history view sits in the sidebar (§ 1.3); the SDD follows the SRS on the Markdown raw-source switch (§ 2.1); Tauri 2 confirmed (§ 2.2); the system Open-panel start mechanism confirmed (§ 2.3); local repository images now load in place (§ 2.4, overridden); `read-markdown` and `read-the-history` kept as their own slices (§§ 3.1–3.2); `pick-it-up-release` re-cut to land after the full v1 cut (§ 3.3). The owner's widened input — a repository is now any local folder, Git or not — drove a folder-vs-repository sweep across every section and slice, renaming two slices (`read-a-repository` → `read-a-folder`, `switch-the-repository` → `switch-the-folder`); both halves (command and observable) of all eight slices now carry the plain-folder case. The companion is empty and removed this run; nothing is open.))
 
 > The SDD is the technical **how**, and it ends in a **cut**. It states the architecture the rest of
 > the system builds against — derived from the PRD (the *what and why*), the SRS (the system-level
@@ -15,8 +15,7 @@
 > **slices, each of which delivers something on its own**. A slice is not itself a unit of work:
 > the Principal PM draws one and cuts it into **one or more** 根回し Nemawashi seeds. § 8 states how
 > a slice's fields land in them; how many seeds, when a slice is drawn, and what a seed's stations
-> reach into are all `<CORE>/roles/loaders/principal_pm_global.md`'s — § *The loop* and § *Where a
-> seed's stations reach*.
+> reach into are all `<CORE>/roles/loaders/principal_pm_global.md`'s.
 >
 > **The cut is the point of the document.** Part B states the method — the steps that turn a design
 > into contained slices — and Part C is what those steps produce. A reader who needs to know how to
@@ -199,15 +198,15 @@ UXD, not against code: the product repository holds `docs/`, `scripts/design-che
 
 | Part | Lives in | Owns | Must not own |
 |---|---|---|---|
-| `fs-reader` | `nozoki-core` | Listing a folder; reading a file's bytes; deciding text / not-text and decoding; recognizing a floor language or Markdown by extension (the table below); the **containment check** — that a path, symlinks resolved, lies inside the granted folder — which every read and the asset handler run before opening; every open is read-only | Any write, anywhere; any path outside the granted folder; knowledge of what a surface does with the result |
-| `git-reader` | `nozoki-core`, behind the **Git port** | The **root finding** (FR-33): whether the granted folder is itself the top level of a working tree — a `.git` folder or a `.git` file naming a `gitdir` at the folder itself, never a repository discovered from an ancestor — answered by reading and creating nothing; repository state (normal / merge / rebase / cherry-pick / revert / bisect / detached); HEAD and branch name; changed and staged files with status letters; short status; *(beyond v1)* diffs — index-to-worktree, HEAD-to-index, parent-to-commit — and the commit walk with parents and branch tips | Any call that mutates — no checkout, no index write, no ref update, no lock file; a discovery that walks up from the folder; spawning `git`; a network transport |
-| `watcher` | `nozoki-core` | Subscribing to the granted folder through FSEvents and emitting *the paths that changed*, coalesced over a short window — the folder's own `.git` entry included, so a repository appearing or leaving at the root is a change like any other | Reading content; deciding what a change means; anything under the tool's own state |
-| `folder-model` | `nozoki-core` | The in-memory state of exactly one folder (DR-1 – DR-4): the tree with markers, the open file, and the root finding with its Git state — present where `git-reader` found a root, `plain` where it did not, in which case every Git-derived projection is empty and the tree carries no marker (FR-34); the **item state** of every read (`pending` / `observed` / `failed(condition)` / `stopped`); the reducer that applies a watcher event by re-reading only the paths named — a change to the root's `.git` entry re-running the root finding (FR-33's live clause) — and keeping expansion, selection and reading position (FR-27); opening a *different* folder by replacing the whole model (NFR-12) | Persisting anything; holding two folders; reaching a source other than through `fs-reader`, `git-reader`, `watcher`; inventing a message for the plain state — it projects nothing, and the surface draws nothing (UX-I17) |
-| `own-state` | `nozoki-core` | DR-5: theme, window state, *(beyond v1)* the remembered-folders list as security-scoped bookmarks with display names, and which of them was viewed last; read and written in the app's own container only | Folder content; anything personal; a path outside the container |
-| `markdown-renderer` | `nozoki-core` | Markdown → HTML on the host, through a sanitizer whose allowlist admits no script, style, frame, object, event attribute or `src` — with one rewrite, not an exception: an image whose reference resolves, by `fs-reader`'s containment check, to a file inside the granted folder becomes an `<img>` whose `src` is that file's path on the host's asset scheme (§ 4 C-R7); any other image — remote, or escaping the folder — becomes the not-loaded placeholder (RN-11); an external link becomes inert text with its destination readable; a relative link becomes a data attribute the renderer turns into an open-file command | Fetching anything; emitting a URL on any scheme but the asset scheme; emitting a `file:` or `http(s):` URL ever |
-| `ipc-surface` | `nozoki-app` | The closed list of commands the renderer may invoke — reads, and writes to own-state only — and the events pushed to it (model projections, item-state changes); the **asset handler** — a custom URI scheme registered on the host that answers a request for a path by running `fs-reader`'s containment check and returning the bytes read-only, or nothing; the window; the sandbox entitlements; the Content Security Policy | A generic filesystem, shell, HTTP or dialog command; a scheme that serves anything outside the granted folder, or serves it writable; any Tauri plugin beyond what the listed commands need |
-| `surfaces` | `nozoki-ui` (HTML / CSS / TypeScript, every asset bundled) | The shell chrome (identity / selector, theme control, sidebar rail), the tree, the Git view — drawn empty, with no text and no control, when the model's root finding is `plain` (UX-I17) — the reading panel and its treatments (code, Markdown, cannot-display, gone; *beyond v1* diff, history), the highlighter with bundled grammars for the six floor languages | Any filesystem, network or shell access — it has none; any state that is not a projection of the model or of own-state |
-| `read-only-harness` | `checks/` (build-time, not shipped) | AC-1 – AC-3, AC-5, AC-8, AC-13, AC-23, AC-24, AC-25 as machine checks over fixture folders — repositories, plain folders, a folder inside a repository, a parent of two, a linked worktree, a submodule — run against `nozoki-core` and the built bundle in CI and before every release; and the bundle probe — entitlements and sandbox, § 4 C-I3 — run on every build from the first bundle on | Product behaviour; anything inside the bundle |
+| `fs-reader` | nozoki-core | Listing a folder; reading a file's bytes; deciding text / not-text and decoding; recognizing a floor language or Markdown by extension (the extension set below); reading an image reference as an item — `observed`, or `failed(not found)` / `failed(not readable)` / `failed(not an image)`, the last decided on the bytes' signature against the image set below, never on the extension (RN-34); the **containment check** — that a path, symlinks resolved, lies inside the granted folder — which every read and the asset handler run before opening; every open is read-only | Any write, anywhere; any path outside the granted folder; knowledge of what a surface does with the result |
+| `git-reader` | nozoki-core | The **root finding** (FR-33): whether the granted folder is itself the top level of a working tree — a `.git` folder or a `.git` file naming a `gitdir` at the folder itself, never a repository discovered from an ancestor — answered by reading and creating nothing; repository state (normal / merge / rebase / cherry-pick / revert / bisect / detached); HEAD and branch name; changed and staged files with status letters; short status; *(beyond v1)* diffs — index-to-worktree, HEAD-to-index, parent-to-commit — and the commit walk with parents and branch tips | Any call that mutates — no checkout, no index write, no ref update, no lock file; a discovery that walks up from the folder; spawning `git`; a network transport |
+| `watcher` | nozoki-core | Subscribing to the granted folder through FSEvents and emitting *the paths that changed*, coalesced over a short window — the folder's own `.git` entry included, so a repository appearing or leaving at the root is a change like any other | Reading content; deciding what a change means; anything under the tool's own state |
+| `folder-model` | nozoki-core | The in-memory state of exactly one folder (DR-1 – DR-4): the tree with markers, the open file, and the root finding with its Git state — present where `git-reader` found a root, `plain` where it did not, in which case every Git-derived projection is empty and the tree carries no marker (FR-34); the **item state** of every read (`pending` / `observed` / `failed(condition)` / `stopped`); the reducer that applies a watcher event by re-reading only the paths named — a change to the root's `.git` entry re-running the root finding (FR-33's live clause) — and keeping expansion, selection and reading position (FR-27); opening a *different* folder by replacing the whole model (NFR-12) | Persisting anything; holding two folders; reaching a source other than through `fs-reader`, `git-reader`, `watcher`; inventing a message for the plain state — it projects nothing, and the surface draws nothing (UX-I17) |
+| `own-state` | nozoki-core | DR-5: theme, window state, *(beyond v1)* the remembered-folders list as security-scoped bookmarks with display names, and which of them was viewed last; read and written in the app's own container only | Folder content; anything personal; a path outside the container |
+| `markdown-renderer` | nozoki-core | Markdown → HTML on the host, through a sanitizer whose allowlist admits no script, style, frame, object, event attribute or `src` — with one rewrite, not an exception: an image whose reference resolves, by `fs-reader`'s containment check, to a file inside the granted folder becomes an `<img>` whose `src` is that file's path on the host's asset scheme (§ 4 C-R7); any other image — remote, or escaping the folder — becomes the not-fetched placeholder (RN-11); an image inside the folder that `fs-reader` reads as `failed(not found)`, `failed(not readable)` or `failed(not an image)` becomes the observed-condition placeholder, with no `<img>` emitted for it (UX-I12's third case, RN-34); an external link becomes inert text with its destination readable; a relative link becomes a data attribute the renderer turns into an open-file command | Fetching anything; emitting a URL on any scheme but the asset scheme; emitting a `file:` or `http(s):` URL ever |
+| `ipc-surface` | nozoki-app | The closed list of commands the renderer may invoke — reads, and writes to own-state only — and the events pushed to it (model projections, item-state changes); the **asset handler** — a custom URI scheme registered on the host that answers a request for a path by running `fs-reader`'s containment check and returning the bytes read-only, or nothing; the window; the sandbox entitlements; the Content Security Policy | A generic filesystem, shell, HTTP or dialog command; a scheme that serves anything outside the granted folder, or serves it writable; any Tauri plugin beyond what the listed commands need |
+| `surfaces` | nozoki-ui | HTML / CSS / TypeScript, every asset it uses shipping inside the bundle: the shell chrome (identity / selector, theme control, sidebar rail), the tree, the Git view — drawn empty, with no text and no control, when the model's root finding is `plain` (UX-I17) — the reading panel and its treatments (code, Markdown, cannot-display, gone; *beyond v1* diff, history) — in the Markdown treatment, an `<img>` whose load fails is swapped for the placeholder stating the file could not be loaded, C-I1's `stopped`, so a file gone between render and request never shows the WebView's broken-image glyph (RN-34) — the highlighter with bundled grammars for the six floor languages | Any filesystem, network or shell access — it has none; any state that is not a projection of the model or of own-state |
+| `read-only-harness` | checks | Build-time only: AC-1 – AC-3, AC-5, AC-8, AC-13, AC-23, AC-24, AC-25 as machine checks over fixture folders — repositories, plain folders, a folder inside a repository, a parent of two, a linked worktree, a submodule — run against `nozoki-core` and the built bundle in CI and before every release; and the bundle probe — entitlements and sandbox, § 4 C-I3 — run on every build from the first bundle on | Product behaviour; anything inside the bundle |
 
 The parts realize § 2's shape: the three sources and the model are the pipeline, `ipc-surface` is
 the capability boundary, `surfaces` is the capability-free side of it, and `read-only-harness` is
@@ -221,40 +220,18 @@ SDD's"). The CPO's cut lands the finding-out in `see-what-changed` (§ 5 step 4)
 what makes that cut buildable — `read-a-folder` links no `git-reader`, and its model's root finding
 is `pending`-never-asked until that slice, which is why its shell carries no Git surface (RN-19).
 
-**The seams — what crosses, and whose contract it is.**
+**The seams.** Each names what crosses and which side owns the contract. The ids keep the order
+the seams have held since v1, so a "seam *n*" anywhere else in this document is `SM-n`.
 
-1. **OS filesystem ↔ `fs-reader` / `watcher`.** Read-only opens and FSEvents. Contract: Apple's,
-   fenced by the sandbox grant (§ 4 C-R2). Crosses: bytes and change notifications; nothing crosses
-   the other way.
-2. **The Git port — `folder-model` ↔ `git-reader`.** Contract owned by the model: `probe(folder)`
-   — the root finding, returning `root` or `plain` and never a path above the folder — then, only
-   on `root`, `state()`, `status()`, `diff(kind, path)`, `walk(tips, window)`, each returning plain
-   data and each documented as read-only. Two adapters may stand behind it: **libgit2**, the one
-   built (RN-8), and an **installed-`git` adapter** kept as the substitution force 2 named — never
-   built ahead of § 11 R-1 firing, by § 5 step 2.
-3. **`watcher` → `folder-model`.** Crosses: a coalesced set of folder-relative paths. Contract owned
-   by the model; the watcher knows nothing of what a path means.
-4. **`nozoki-app` ↔ `nozoki-ui` — the IPC surface.** Crosses host → renderer: JSON projections of
-   the model with item states, sanitized HTML for Markdown, decoded text for the highlighter, and —
-   on request, over the asset scheme — the bytes of an image inside the granted folder; renderer →
-   host: one command from the closed list (`open_folder`, `list_tree`, `select_file`,
-   `open_relative_link`, `set_theme`, and *(beyond v1)* `open_diff`, `walk_history`,
-   `switch_folder`), each named in `nozoki-app`'s capability file, plus a request on the asset
-   scheme, which the handler answers only for a path the containment check passes. Contract owned
-   by the host. This seam *is* the promise: a builder of the renderer who holds only this contract
-   cannot write or connect, because nothing on the list does either — and cannot read outside the
-   folder, because the one read channel it can address refuses.
-5. **`folder-model` → `surfaces`.** Crosses: per-surface view state, every item carrying its
-   state, and the root finding; the surface draws `pending`, `failed` and `stopped` in the slot the
-   UXD fixes (UX-I16), and draws the Git view empty — no text, no control — on `plain` (UX-I17).
-   Contract owned by the model; the surface projects and never derives.
-6. **`own-state` ↔ shell chrome.** Crosses: theme, window state, the remembered list and the
-   last-viewed entry. Contract owned by `own-state`. A change here is the only write the product
-   ever performs, and it is to the container.
-7. **`markdown-renderer` → `surfaces`.** Crosses: sanitized HTML, its only URLs on the asset scheme.
-   Contract owned by `markdown-renderer` (what the allowlist admits); the renderer's CSP (§ 4 C-R7)
-   is the second wall behind it, owned by `ipc-surface`, and the asset handler's containment check
-   the third — a bypass of the first two still reaches no byte outside the folder.
+| Seam | What crosses | Owner of the contract |
+|---|---|---|
+| `SM-1` OS filesystem ↔ `fs-reader` / `watcher` | Read-only opens and FSEvents: bytes and change notifications; nothing crosses the other way | Apple's, fenced by the sandbox grant (§ 4 C-R2). The left side is the OS, not a part; the row stands because it carries the fence § 2's argument rests on |
+| `SM-2` `folder-model` ↔ `git-reader` — the Git port | `probe(folder)` — the root finding, returning `root` or `plain` and never a path above the folder — then, only on `root`, `state()`, `status()`, `diff(kind, path)`, `walk(tips, window)`, each returning plain data and each documented as read-only | The model. Two adapters may stand behind the port: **libgit2**, the one built (RN-8), and an **installed-`git` adapter** kept as the substitution force 2 named — never built ahead of § 11 R-1 firing, by § 5 step 2 |
+| `SM-3` `watcher` → `folder-model` | A coalesced set of folder-relative paths | The model; the watcher knows nothing of what a path means |
+| `SM-4` `ipc-surface` ↔ `surfaces` — the IPC surface, a process boundary | Host → renderer: JSON projections of the model with item states, sanitized HTML for Markdown, decoded text for the highlighter, and — on request, over the asset scheme — the bytes of an image inside the granted folder. Renderer → host: one command from the closed list (`open_folder`, `list_tree`, `select_file`, `open_relative_link`, `set_theme`, and *(beyond v1)* `open_diff`, `walk_history`, `switch_folder`), each named in `nozoki-app`'s capability file, plus a request on the asset scheme, which the handler answers only for a path the containment check passes. This seam *is* the promise: a builder of the renderer who holds only this contract cannot write or connect, because nothing on the list does either — and cannot read outside the folder, because the one read channel it can address refuses | The host — `ipc-surface` |
+| `SM-5` `folder-model` → `surfaces` | Per-surface view state, every item carrying its state, and the root finding; the surface draws `pending`, `failed` and `stopped` in the slot the UXD fixes (UX-I16), and draws the Git view empty — no text, no control — on `plain` (UX-I17) | The model; the surface projects and never derives |
+| `SM-6` `own-state` ↔ `surfaces` — the shell chrome | Theme, window state, the remembered list and the last-viewed entry. A change here is the only write the product ever performs, and it is to the container | `own-state` |
+| `SM-7` `markdown-renderer` → `surfaces` | Sanitized HTML, its only URLs on the asset scheme | `markdown-renderer` — what the allowlist admits. The renderer's CSP (§ 4 C-R7) is the second wall behind it, owned by `ipc-surface`, and the asset handler's containment check the third: a bypass of the first two still reaches no byte outside the folder |
 
 **What the system holds** — design-level, each traced to the DR it realizes.
 
@@ -273,6 +250,15 @@ is `pending`-never-asked until that slice, which is why its shell carries no Git
 the last extension only (RN-12): Python `.py` `.pyi` `.pyw`; shell `.sh` `.bash` `.zsh`; JavaScript
 `.js` `.mjs` `.cjs` `.jsx`; JSON `.json` `.jsonc`; YAML `.yaml` `.yml`; TOML `.toml`. Markdown:
 `.md` `.markdown`. A file with no extension, or any extension outside this set, is plain text.
+
+**The image set** — what "not an image" in UX-I12's third case is decided against, on the bytes'
+signature and never the extension (DR-6: content is untrusted, and an extension is content):
+PNG, JPEG, GIF, WebP. **SVG is outside the set in v1.** The format admits `<script>` and `<style>`
+elements (W3C SVG 1.1, https://www.w3.org/TR/SVG11/script.html and
+https://www.w3.org/TR/SVG11/styling.html), and admitting it means establishing what WKWebView does
+with each inside an `<img>` — a check this design has not made and a wall it would then have to
+state. An in-folder `.svg` therefore takes the not-an-image placeholder; the visible cost is that a
+folder's own `.svg` diagram in its README is not drawn in v1 (RN-34).
 
 ## 4. What every slice inherits
 
@@ -301,17 +287,21 @@ channel and C-11's macOS floor are fixed here, where the SRS places them — its
   `codesign -d --entitlements :- Nozoki.app` against this list.
 - **C-R3.** The folder is granted, never typed. The grant is the sandbox's user-selected one, made
   once per folder through the system Open panel: in v1 the host presents the panel at every
-  launch, and the folder chosen is the session's (FR-2); from `switch-the-folder` on, launch
+  launch, and the folder chosen is the session's (FR-2) — dismissed without a choice, the window
+  shows UX-S4's startup surface, choose again presenting the panel and quit leaving, and the host
+  neither exits on its own nor re-presents the panel unasked, as often as it happens (UX-S4's
+  Empty cell, v9; RN-34); from `switch-the-folder` on, launch
   restores the last-viewed folder from its bookmark and presents the panel only when there is no
   remembered folder or the bookmark no longer resolves — a remembered folder is re-opened without
   asking, and the panel is the selector's *Browse…* entry (UX-S7). Pointed at a path that does not
   exist, is not a folder, or cannot be read, the window shows UX-S4 — in v1 with a way to choose
   again and a way to quit, beyond v1 with the selector as the route out — and never a terminal
-  line; the UXD's open question is settled by that (RN-9, owner-confirmed —
-  `docs/trail/sdd/cycle-1.md` § 2.3). A readable folder that is not a repository's root is **not**
+  line; the UXD closed its question on this clause at v9 (UX-S4, its RN-29; RN-9, owner-confirmed
+  — `docs/trail/sdd/cycle-1.md` § 2.3). A readable folder that is not a repository's root is **not**
   on that list: it opens, as a working state (FR-34, UX-I17). *Violated by:* a slice that reads a
-  path it was not granted, that prints a surface to a terminal, that presents the panel for a
-  folder the bookmark still resolves, or that treats a plain folder as a startup failure.
+  path it was not granted, that prints a surface to a terminal, that exits or re-presents the panel
+  when it is dismissed without a choice, that presents the panel for a folder the bookmark still
+  resolves, or that treats a plain folder as a startup failure.
 - **C-R4.** The acquisition channel is a GitHub Release on `github.com/kensaiapp/nozoki` (C-12)
   carrying `Nozoki-<version>.dmg` and `SHA256SUMS`, built by CI from the tagged commit and never on
   a maintainer's machine. The bundle is **ad-hoc signed** (`codesign --sign -`) in that build — a
@@ -427,7 +417,7 @@ experience") and these conditions do not reach it.)*
   mode elsewhere; no undo, save or confirmation model exists; closing asks nothing (`docs/UXD.md`
   UX-I1, UX-I5, UX-I7; `docs/DESIGN.md` § Do's and Don'ts, "Don't draw an editing affordance").
   *Violated by:* a caret in the code view, a disabled *Save*, a quit prompt, any control whose act
-  reaches the repository.
+  reaches the folder.
 - **C-E4.** An update the user did not ask for never takes their place: expanded tree nodes, the
   open file, the sidebar mode and the reading position survive every refresh, only what changed
   changes, and it changes in place with no transition, flash or attention bid; there is no manual
@@ -466,7 +456,7 @@ experience") and these conditions do not reach it.)*
   text in a row that clips (`docs/CONTENT.md` § Localization). *Violated by:* a message assembled
   from fragments at runtime; a positional placeholder; a message placed in a clipping row.
 - **C-E9.** One window, one shell — rail · sidebar · reading panel under one chrome strip — with
-  the sidebar toggling Files and Git and nothing else; the chrome carries the repository identity
+  the sidebar toggling Files and Git and nothing else; the chrome carries the folder identity
   (the selector, beyond v1) and the theme control and no third thing, no wordmark and no product
   name; the reading panel is one panel with several treatments — code, rendered Markdown, cannot-
   display, gone, and beyond v1 the diff — sharing one path line, one position rule and one route
@@ -507,7 +497,7 @@ documents, a design-check script and vendored icons, and no product code)*:
   text for any other text, a stated cannot-display state for what is not text — and close with the
   folder exactly as they found it.
 - **E2** — after this, a developer can open a Markdown file and read it rendered, with nothing
-  fetched from outside the repository and nothing in it executed.
+  fetched from outside the folder and nothing in it executed.
 - **E3** — after this, a developer can switch the sidebar to Git and, where the folder is a
   repository's root, see the branch, the changed files, the staged files and the short status at
   a glance, see changed files marked in the tree, and open a changed file from the Git view — a
@@ -521,7 +511,7 @@ documents, a design-check script and vendored icons, and no product code)*:
   alone, be reading a file of their own folder within five minutes, under the MIT licence, with
   the support posture stated and the security channel open.
 - **E6** — after this, a developer can read in the theme their machine uses, switch it, and find
-  the choice remembered — outside the repository.
+  the choice remembered — outside the folder.
 - **E7** — after this, a developer can open a changed file's diff from the Git view and read it,
   staged changes distinguished from unstaged.
 - **E8** — after this, a developer can open the commit history and read it as branches — which
@@ -778,7 +768,11 @@ the PRD clause and leaves the SRS and UXD clauses to their seats.>
   folder is not a failure (`docs/UXD.md` UX-I17). Choosing a path that does not exist, is not a
   folder, or cannot be read shows in the window a statement of what Nozoki tried to open, what it
   observed and what to do, with an enabled control to choose again and a way to quit — no
-  terminal output (UX-S4 as narrowed at v6). Every one of these renders the same with Wi-Fi off.
+  terminal output (UX-S4 as narrowed at v6). Dismissing the Open panel without choosing shows, in
+  the window, the same startup surface in its empty state: the two routes — choose a folder, and
+  quit — and no failure sentence; choosing again presents the panel, and dismissing it again
+  returns to the surface, as often as it happens (UX-S4's Empty cell, v9). Every one of these
+  renders the same with Wi-Fi off.
   *(CTO — the
   command, its result, the artifact)* `cargo test --workspace` exits 0, and inside it
   `checks/read-only.sh` prints `unchanged` against `checks/fixtures/basic` (a repository) and
@@ -815,8 +809,9 @@ the PRD clause and leaves the SRS and UXD clauses to their seats.>
   Git-view clause with `see-what-changed`); UXD: UX-F1
   (arrive and read); § 4 "One window, one shell", "The shell names what it is looking at", "The
   reading panel names what is open"; UX-S1 (empty, loading, the cannot-display and cannot-read
-  cells, success minus rendered Markdown), UX-S2 (all cells, success minus markers), UX-S4 (its
-  v6 list: a path that does not exist, is not a folder, or cannot be read); UX-I17 (a plain folder
+  cells, success minus rendered Markdown), UX-S2 (all cells, success minus markers), UX-S4 (the
+  startup surface: its Empty cell — the panel dismissed before a folder is chosen, v9 — and its
+  v6 failure list: a path that does not exist, is not a folder, or cannot be read); UX-I17 (a plain folder
   opens — its Git-view and marker clauses wait for a Git view, `see-what-changed`); UX-I1, UX-I5,
   UX-I6, UX-I7, UX-I10, UX-I13, UX-I14, UX-I15, UX-I16 (for the file, tree and startup read
   paths); UX-A2 (the selection bar), UX-A4; § 9 (the direction and the monospace expectation).
@@ -851,35 +846,53 @@ the PRD clause and leaves the SRS and UXD clauses to their seats.>
   by its destination in parentheses, and clicking it does nothing — no window, no dialog, no
   change on screen; the relative link the same way, and clicking it opens the target file in the
   panel with the tree's highlight moving to it, exactly as clicking that file in the tree does;
-  the image whose file lives inside the fixture shown as the image itself, where the prose places
-  it; where the remote image would be, a bordered box holding the image's alt text and its source
-  and stating that remote content is not fetched; the two images whose paths escape the fixture —
-  by `..` and by a symlink out of it — each shown as that same bordered box, never as an image
-  (RN-26); the `<script>`, the event handler and the `<iframe>` rendered
+  `inside.png`, the image whose file lives inside the fixture, shown as the image itself, where
+  the prose places it; where the remote image would be, a bordered box holding the image's alt
+  text and its source and stating that content outside the folder is not fetched; the two images
+  whose paths escape the fixture — by `..` and by a symlink out of it — each shown as that same
+  bordered box, never as an image (`docs/UXD.md` UX-I12's second case, v9; RN-26); and, for the
+  three in-folder references that are not a drawable image, a bordered box stating what was
+  observed and never a broken-image glyph — `missing.png`: the file is not there;
+  `not-an-image.txt` and `diagram.svg`: the file is not an image (an `.svg` is outside § 3's
+  image set in v1, RN-34) — and for `vanishes.png`, present when the page rendered and deleted
+  before it was fetched, the same box stating the file could not be loaded, the reader seeing the
+  box and at no moment the glyph (UX-I12's third case, v9; the vanished case is C-I1's `stopped`,
+  RN-32); the `<script>`, the
+  event handler and the `<iframe>` rendered
   as nothing at all — no text of theirs on screen, nothing executed, no dialog. Switching to a
   code file and back to the Markdown file shows it rendered again. *(CTO)* `cargo test -p
-  nozoki-core --test markdown` exits 0: rendering `checks/fixtures/hostile.md` — a remote image, a
-  local image inside the fixture, an image whose path escapes the fixture by `..` and one by a
-  symlink out of it, an external link, a relative link, a `<script>`, an inline event handler, an
-  `<iframe>` — yields HTML containing no `<script`, no `on*=`, no `<iframe`, and exactly one
-  `src=`, on the local image, whose value is on the `nozoki-asset` scheme and names the fixture-
-  relative path; the remote image and both escaping images as the placeholder; the external link
-  as inert text with its URL visible; the relative link as `data-nozoki-open="<path>"`; a request
-  to the asset handler for the local image returns its bytes and for each escaping path returns
-  nothing (C-D3); `checks/read-only.sh` on the fixture prints `unchanged`; `checks/no-network.sh`
+  nozoki-core --test markdown` exits 0: rendering `checks/fixtures/hostile.md` — a remote image,
+  `inside.png` inside the fixture, an image whose path escapes the fixture by `..` and one by a
+  symlink out of it, a reference to `missing.png` (not present), to `not-an-image.txt` and to
+  `diagram.svg` (present, neither in § 3's image set), to `vanishes.png` (present at render), an
+  external link, a relative link, a `<script>`, an inline event handler, an `<iframe>` — yields
+  HTML containing no `<script`, no `on*=`, no `<iframe`, and exactly two `src=`, on `inside.png`
+  and `vanishes.png`, each on the `nozoki-asset` scheme naming the fixture-relative path; the
+  remote image and both escaping images as the not-fetched placeholder; `missing.png` as the
+  observed-condition placeholder carrying `not found`, and `not-an-image.txt` and `diagram.svg`
+  as the same placeholder carrying `not an image`, with no `<img>` for any of the three; the
+  external link as inert text with its URL visible; the relative link as
+  `data-nozoki-open="<path>"`; a request to the asset handler for `inside.png` returns its bytes,
+  for each escaping path returns nothing (C-D3), and for `vanishes.png` — deleted from the fixture
+  copy after render — returns nothing, which is the request the renderer's swap answers (§ 3
+  `surfaces`); `checks/read-only.sh` on the fixture prints `unchanged`; `checks/no-network.sh`
   exits 0; the CSP string in `tauri.conf.json` equals C-R7's with the asset scheme's origin form
   filled in, and that form is recorded in these notes (Open Questions closed). The release notes
   of any release from this slice on state rendered-only (FR-31, RN-10).
-- **Rests on:** § 3 — `markdown-renderer`, `fs-reader`'s containment check, `ipc-surface`'s asset
-  handler, seam 7, seam 4's `open_relative_link` and the asset scheme; § 4 — C-R7, C-D3. Slices:
+- **Rests on:** § 3 — `markdown-renderer`, `fs-reader`'s containment check and image read, the
+  image set, `surfaces`' failed-load swap, `ipc-surface`'s asset handler, seam 7, seam 4's `open_relative_link` and the asset scheme; § 4 — C-R7, C-D3. Slices:
   `read-a-folder`.
 - **Traces to:** PRD § Core Features "Markdown is rendered by default"; § Data & Privacy "v1 makes
   no network call at all during operation"; § Success Metrics "Read-only integrity" ("no
   non-essential network call"); SRS: FR-30, FR-31 (the build-cost judgment, RN-10), FR-32, NFR-8,
   NFR-16, DR-3, AC-22 (the rendered clause), AC-23; UXD: UX-I12 (rendered by default, nothing
-  fetched, the link presentation, the not-fetched placeholder for remote content; the raw-source
-  switch clause is not realized — RN-10; the local image shown in place is the owner's call,
-  `docs/trail/sdd/cycle-1.md` § 2.4, folded as RN-11 — UX-I12 forbids only fetching); UX-S1 (success, "rendered for Markdown"); § 9 last constraint (two
+  fetched, the link presentation, and its three image cases at v9 — an in-folder image in place,
+  the not-fetched placeholder for a reference outside the folder, remote or escaping, and the
+  observed-condition placeholder for an in-folder image whose file is missing, unreadable or not
+  an image — the vanished-after-render file drawn to the same rule as C-I1's `stopped` — never a
+  broken-image glyph; the raw-source switch clause is not realized — RN-10; the in-place image was
+  the owner's call, `docs/trail/sdd/cycle-1.md` § 2.4, folded here as RN-11 before the UXD carried
+  it); UX-S1 (success, "rendered for Markdown"); § 9 last constraint (two
   treatments of one panel); § 4 "The reading panel names what is open".
 - **Moves toward:** The Agari's first condition, "reading with highlighting" — the reading surface
   the PRD draws includes rendered Markdown; and its second, "no non-essential network call", held
@@ -910,13 +923,15 @@ the PRD clause and leaves the SRS and UXD clauses to their seats.>
   Against `checks/fixtures/staged-unstaged`, with a file open and scrolled, a reader clicks *Git*
   and sees, in the sidebar: the branch name; a *Changes* heading with the modified and the
   both-staged-and-modified files under it; a *Staged* heading with the staged files; the short
-  status; each file's name followed by its status letter, name and letter in one hue; and a count
-  after each heading. Before Git state is read the view shows the word *pending* and no count, no
+  status — one statement, carrying no count of its own (UX-S3 at v9); each file's name followed
+  by its status letter, name and letter in one hue; and a count after each heading. Before Git state is read the view shows the word *pending* and no count, no
   letter and no "nothing changed". Resting the pointer on a letter — not the row — shows one line
   naming the file and then the letter's word. Switching to *Files* shows the same files coloured
   and lettered in the tree, and the open file and its scroll position are exactly as left — so is
   the sidebar after switching back. Clicking a file in the Git view opens it in the panel as the
-  tree would, with the tree's highlight on it. Against `checks/fixtures/mid-merge` the view names
+  tree would, with the tree's highlight on it — the row opens the file while no diff view is
+  present, UX-F2's first reading at v9, and holds so until `read-the-diff` (RN-20). Against
+  `checks/fixtures/mid-merge` the view names
   the merge in progress and lists the conflicting files with `C`, no failure treatment on the
   surface; against `checks/fixtures/detached` it names the detached state and the commit; against
   a clean repository it states that nothing changed, after reading, never a blank pane. Against
@@ -950,8 +965,8 @@ the PRD clause and leaves the SRS and UXD clauses to their seats.>
   Scope "Git found anywhere but at the opened folder's root", "Creating or initialising a Git
   repository"; § Success Metrics "Read-only integrity" ("no Git mutation"), "Zero required
   configuration" ("found, never asked"); SRS: FR-33, FR-34, AC-24, AC-25, FR-6, FR-11, FR-12, FR-13, FR-25, FR-26, NFR-3, NFR-6, DR-4, AC-5 (the
-  marker clause), AC-6, AC-17, AC-18, AC-24 (the Git-view clause), AC-25; UXD: UX-F2 (check what changed, its plain-folder switch); § 4 "The sidebar toggles
-  between Files and Git" (the rail); UX-S3 (all cells — the plain-folder empty cell included), UX-S2 (success — the markers, and none in a plain folder); UX-I17 (the Git view present and showing nothing; the tree unmarked); UX-I3 (the
+  marker clause), AC-6, AC-17, AC-18, AC-24 (the Git-view clause), AC-25; UXD: UX-F2 (check what changed, its plain-folder switch; the row opens the file where no diff view is present — its first reading at v9); § 4 "The sidebar toggles
+  between Files and Git" (the rail); UX-S3 (all cells — the plain-folder empty cell included, and the short status's content at v9), UX-S2 (success — the markers, and none in a plain folder); UX-I17 (the Git view present and showing nothing; the tree unmarked); UX-I3 (the
   sidebar mode and the open file survive the switch), UX-I13 (no marker before Git state is read),
   UX-I16 (the Git-state read path); UX-A2 (the letter carries the meaning), UX-A4 (the rail's
   labels).
@@ -1037,7 +1052,9 @@ the PRD clause and leaves the SRS and UXD clauses to their seats.>
   licence, with the support posture stated and the security channel open.
 - **Reached when:** *(CDO)* On a Mac whose appearance is set to Dark and that has never run
   Nozoki, a stranger holding only the README reaches a viewed file of their own repository — the
-  walk AC-10 times — and the shell opens dark. The chrome's right end shows a sun glyph with the
+  walk AC-10 times, read against a repository because the PRD's clock is: a plain folder "is the
+  same path with less in it and is not measured separately" (`docs/PRD.md` § Success Metrics
+  "Time-to-first-success") — and the shell opens dark. The chrome's right end shows a sun glyph with the
   word *Light* beside it; clicking it switches every surface to light with no transition, and the
   control now shows a moon with *Dark*. Quitting and relaunching opens light; setting the Mac to
   Light on a machine that has never seen the control opens light. Every surface this release
@@ -1103,16 +1120,21 @@ the PRD clause and leaves the SRS and UXD clauses to their seats.>
   remembers, or one browsed to; a repository or a plain folder — and be at the arrival state for
   it without restarting, always exactly one at a time, with nothing about either folder changed.
 - **Reached when:** *(CDO)* The chrome's left end shows the viewed folder's name with a chevron
-  after it. With `checks/fixtures/staged-unstaged` (A, a repository) open on first run, clicking
-  the name opens a list holding *Browse…* and nothing else; choosing *Browse…* opens the system
+  after it. With `checks/fixtures/staged-unstaged` (A, a repository) open as the first folder
+  ever viewed, clicking the name opens a list holding A — marked as the current entry by the
+  leading bar a selected row carries — and *Browse…*, nothing else, and no control on it removes
+  an entry (`docs/UXD.md` UX-S7 at v9; the mark is `docs/DESIGN.md` § Components "The menu");
+  choosing *Browse…* opens the system
   Open panel, and choosing `checks/fixtures/plain` (B) there puts the shell at the arrival state
   for B — its name in the chrome, its tree with no marker on any file, the panel's one prompt, and
   the Git view, once read, present and showing nothing at all: no message, no control, no offer
-  to create a repository (`docs/UXD.md` UX-I17). Clicking the name again lists A and B, the
-  current one marked with the bar a selected row carries, and choosing A lands A's arrival state
-  — its markers back in the tree, its branch and changes back in the Git view. At no moment are
-  two folders' trees, names or Git states on screen. Choosing a path that does not exist, is not
-  a folder, or cannot be read shows the same statement the startup failure shows — what was
+  to create a repository (`docs/UXD.md` UX-I17). Clicking the name again lists B above A — most
+  recently viewed first — B marked as current, and choosing A lands A's arrival state
+  — its markers back in the tree, its branch and changes back in the Git view. A reader who views
+  eleven folders in turn finds the list holding the ten most recent and the first gone (UX-S7).
+  At no moment are two folders' trees, names or Git states on screen. Choosing a path that does
+  not exist, is not a folder, or cannot be read — a remembered entry whose folder has since gone
+  included — shows the same statement the startup failure shows — what was
   tried, what was observed, what to do — with the current folder still viewed behind it and the
   selector still open as the way back (UX-S7); nothing in A or B changes, which the reader
   confirms with `git status` in A and with a listing of B that shows no `.git`. *(CTO)*
@@ -1133,7 +1155,9 @@ the PRD clause and leaves the SRS and UXD clauses to their seats.>
   § Out of Scope "Changing the viewed folder without restarting — beyond v1", "Several folders at
   once"; § Data & Privacy (the remembered list is own state, outside the folder); SRS: FR-19, FR-3 (through the selector), NFR-12, DR-5, AC-12 (the switching
   clause), AC-13, AC-15; UXD: UX-F5 (switch the viewed folder — "a repository or a plain folder
-  alike"); UX-S7 (all cells, its v6 failure list); UX-I17 (the plain folder's arrival state); § 4
+  alike"); UX-S7 (all cells — its v6 failure list, and at v9 the ten-entry bound, the recency
+  order, the marked current entry from the first folder viewed, and the no-removal rule); UX-I17
+  (the plain folder's arrival state); § 4
   "The shell names what it is looking at" (the identity element is the selector); UX-S4 (the
   failure language reused, and its beyond-v1 route out).
 - **Moves toward:** The Agari's first condition, "switching the viewed folder without restarting
@@ -1153,7 +1177,7 @@ the PRD clause and leaves the SRS and UXD clauses to their seats.>
   it, staged changes distinguished from unstaged.
 - **Reached when:** *(CDO)* A reader clicks a changed file's row in the Git view — the row is
   one click target and it opens the diff, the status letter beside it a label and nothing more
-  (the owner's call, `docs/trail/sdd/cycle-1.md` § 1.2; RN-20) — and the reading panel shows,
+  (`docs/UXD.md` UX-F2 — the owner's call, carried there at v9; RN-20) — and the reading panel shows,
   under the file's path line, the
   changed lines with a `+` or `−` in the gutter and a tint behind each, unchanged context in plain
   ink, and no syntax colour. For the file that is both staged and modified, the hunks sit under
@@ -1169,11 +1193,13 @@ the PRD clause and leaves the SRS and UXD clauses to their seats.>
 - **Rests on:** § 3 — `git-reader`'s diff calls through the Git port, the Diff entity, the reading
   panel's diff treatment, seam 4's `open_diff`; § 4 — C-I1. Slices: `see-what-changed`.
 - **Traces to:** PRD § Scope (In), the full ambition — "diffs"; § Out of Scope "Diff and
-  commit-history views — beyond v1"; SRS: FR-17, NFR-3, DR-4, AC-12 (the diff clause); UXD: UX-F4
-  (the diff steps and its read-only failure clause); UX-S5 (all cells); § 4 "Beyond v1, inside the
-  terminus" (a diff is shown in the reading panel); UX-A2 (staged / unstaged in text as well as
-  colour); § 9 last constraint (a treatment of the one panel). The control that opens a diff
-  rather than the file is a gap in the UXD, routed to the companion (§ 1.2), not filled here.
+  commit-history views — beyond v1"; SRS: FR-17, NFR-3, DR-4, AC-12 (the diff clause); UXD: UX-F2
+  (the row opens the diff where the diff view is present — one click target, the status letter a
+  label, the file read from the tree; v9); UX-F4 (the diff steps and its read-only failure
+  clause); UX-S5 (all cells); § 4 "Beyond v1, inside the terminus" (a diff is shown in the reading
+  panel); UX-A2 (staged / unstaged in text as well as colour); § 9 last constraint (a treatment of
+  the one panel). The control that opens a diff rather than the file was a gap in the UXD in run 1,
+  answered by the owner and now UX-F2's own text (RN-20, RN-32).
 - **Moves toward:** The Agari's first condition, "diffs"; the presentation is the one
   `read-the-history` reuses per commit.
 - **Not in this slice:** A commit's own diff (`read-the-history`). A diff in a plain folder —
@@ -1201,10 +1227,13 @@ the PRD clause and leaves the SRS and UXD clauses to their seats.>
   choosing one, several or all redraws the graph to that set. Clicking a commit shows what it
   changed in the reading panel, in the same presentation `read-the-diff` draws. While the history
   is still being read the view shows the word *pending*, never a shorter list; against a
-  repository with no commits it states that there are none. Nothing on the view checks out,
-  switches or acts on a branch. The history is drawn in the sidebar, as rows beneath the Git
-  view's changes list, and the reading panel stays free for the diff a commit opens (the owner's
-  call, `docs/trail/sdd/cycle-1.md` § 1.3; RN-20). *(CTO)* `cargo test -p nozoki-core --test history` exits 0 over
+  repository with no commits it states that there are none. Where the loaded history stops short
+  of the repository's — a repository longer than RN-16's window — the list ends with a statement
+  that older commits are not shown, and no control loads more; against `checks/fixtures/branches`,
+  whose history fits whole, nothing is stated at the end (UX-S6 at v9). Nothing on the view
+  checks out, switches or acts on a branch. The history is drawn in the sidebar, as rows beneath
+  the Git view's changes list, and the reading panel stays free for the diff a commit opens
+  (`docs/UXD.md` § 4, UX-S6 — the owner's call, carried there at v9; RN-20). *(CTO)* `cargo test -p nozoki-core --test history` exits 0 over
   `checks/fixtures/branches` (three branches, one merge, one divergence): every commit's parents
   and branch membership equal what the fixture's build script declares; the default set computes
   to the set the script declares (RN-16); a commit's diff payload is kind `commit` and equals the
@@ -1216,10 +1245,12 @@ the PRD clause and leaves the SRS and UXD clauses to their seats.>
 - **Traces to:** PRD § Scope (In), the full ambition — "commit history"; § Out of Scope "Diff and
   commit-history views — beyond v1"; SRS: FR-18, FR-22, NFR-10, DR-4, AC-12, C-6 (the 1.0.0
   clause); UXD: UX-F4 (the history steps: branches as branches, the chosen set, the default that
-  asks nothing, the per-commit fields, a commit's diff); UX-S6 (all cells); § 4 "Beyond v1, inside
-  the terminus" (history reached from the Git view); RN-14 (the owner-settled shape, carried).
-  The history view's home in the shell — the sidebar — is the owner's answer
-  (`docs/trail/sdd/cycle-1.md` § 1.3), cited until the UXD carries it (RN-20).
+  asks nothing, the per-commit fields, a commit's diff); UX-S6 (all cells — the stated end
+  included, v9); § 4 "Beyond v1, inside the terminus" (the Git view's entry for the history; the
+  history drawn in the sidebar as commit rows beneath the changes list; a selected commit's diff
+  in the reading panel — v9); RN-14 (the owner-settled shape, carried). The history's home was
+  the owner's answer (`docs/trail/sdd/cycle-1.md` § 1.3), cited from the trail until the UXD
+  carried it — it does from v9 (RN-20, RN-32).
 - **Moves toward:** The Agari's first condition, "commit history".
 - **Not in this slice:** History filtering and search — outside done (`docs/SRS.md` § 2;
   `docs/UXD.md` § 10); the branch-set choice is not a filter. A history in a plain folder — there
@@ -1272,8 +1303,8 @@ before `read-the-diff` is § 5 step 5's and carries no row.
 <Stated once, here, so that cutting a slice is reading rather than re-deriving. A slice is **not a
 seed**: the Principal PM draws one and cuts it into **one or more** 根回し Nemawashi seeds, authored
 to `<CORE>/templates/journey-templates/nemawashi_template.md`. How many, and when a slice is drawn
-at all, are that seat's — `<CORE>/roles/loaders/principal_pm_global.md` § *The loop* owns the round,
-and this section neither restates it nor constrains it. What this section owns is the other half:
+at all, are that seat's — `<CORE>/roles/loaders/principal_pm_global.md` owns the round, and this
+section neither restates it nor constrains it. What this section owns is the other half:
 where a slice's fields land once the cut is made. Leave this table as written.>
 
 <Because a slice can yield several seeds, a field does one of three things, and the third column
@@ -1492,13 +1523,15 @@ interaction pattern and accessibility entry in `docs/UXD.md` reads after this ru
 it, and every token value stays in `docs/DESIGN.md`. § 4's C-E conditions and § 6's observable bars
 are sourced in those two documents, `docs/CONTENT.md`'s two cross-cutting parts and the instance
 fence; none states an experience they do not. Where the UXD routed a call here by name — where
-UX-S4 renders — the CTO's C-R3 makes it and RN-9 records it; this seat does not write it back into
-the UXD. A gap in the UXD found while cutting is an item in `docs/SDD_open_issues.md`, never a
+UX-S4 renders — the CTO's C-R3 makes it and RN-9 records it; this seat did not write it back into
+the UXD, whose own run closed the question on that answer at v9 (`docs/UXD.md` UX-S4, its RN-29).
+A gap in the UXD found while cutting is an item in `docs/SDD_open_issues.md`, never a
 redesign here — and not by this seat either, which holds the UXD's pen in another run and its
 boundary in this one. Two such gaps were found in run 1 and answered by the owner before run 2
-(`docs/trail/sdd/cycle-1.md` § 1.2, § 1.3; RN-20); this document cites the answers and leaves the
-UXD's entries to the UXD's own run. One consequence of a condition was recorded rather than
-designed around (RN-19).
+(`docs/trail/sdd/cycle-1.md` § 1.2, § 1.3; RN-20); this document cited the answers from the trail
+and left the UXD's entries to the UXD's own run, which folded them at v9 — UX-F2, § 4, UX-S6 — so
+from run 4 this document cites those entries (RN-32). One consequence of a condition was recorded
+rather than designed around (RN-19).
 
 **The downstream boundary** *(CTO)*. This document authors no ADR. Three decisions were surfaced for
 the Principal Architect to record, in § 2, § 4 and their notes: the capability-split shape and its
@@ -1609,8 +1642,9 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   sandbox a folder is readable only when the user selected it, and the entitlement C-R2 carries is
   defined on "files the user has selected using an Open or Save dialog"
   (https://developer.apple.com/documentation/bundleresources/entitlements/com.apple.security.files.user-selected.read-only).
-  This settles the UXD's open question (`docs/UXD.md` § Open Questions — where UX-S4 renders) in
-  the window, so the terminal fences do not bind. FR-2 holds: the panel is the start, and no control
+  This settled the question the UXD then held open — where UX-S4 renders — in the window, so the
+  terminal fences do not bind; the UXD closed it on this clause at v9 (UX-S4, its RN-29), and its
+  § Open Questions went with it (RN-34). FR-2 holds: the panel is the start, and no control
   changes the folder once viewing. Confirmed by the owner (`docs/trail/sdd/cycle-1.md` § 2.3), with
   one reconciliation they asked for and this run wrote into C-R3: the grant is once *per folder*,
   not once per launch — from `switch-the-folder` on, launch restores the last-viewed folder from
@@ -1635,8 +1669,11 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   renderer still holds no path — it addresses one scheme, and the host's asset handler answers
   only for a path `fs-reader`'s containment check passes, so the capability handed over is "read a
   byte the host has already confirmed is inside the folder", not "read". The no-network promise is
-  untouched: the scheme is local and the CSP admits no other. UX-I12's placeholder text narrows to
-  remote images by the UXD's own run *(re: § 3 `markdown-renderer`, `ipc-surface`, seam 4, seam 7;
+  untouched: the scheme is local and the CSP admits no other. This note once predicted UX-I12
+  would narrow its placeholder to remote images; at v9 the UXD went the other way — a remote
+  address and a path that escapes the folder are one case, "content outside the folder is not
+  fetched", which is this mechanism read back — and added a third case, the in-folder image that
+  cannot be drawn, which RN-34 lands *(re: § 3 `markdown-renderer`, `ipc-surface`, seam 4, seam 7;
   § 4 C-R7, C-D3; § 9 TO-6; § 11 R-10; `read-markdown`; source: SRS FR-32, NFR-16; UXD UX-I12)*.
 - **RN-12:** *(CTO)* *(added)* The floor-language extension set in § 3 — *because* FR-29 fixes it
   here and the owner's rule is every extension in common use for each language
@@ -1771,7 +1808,9 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   not-fetched placeholder, never as an image, because the fence's `no-unestablished-state`
   forbids a surface showing content the tool did not establish and the placeholder is the one
   shape UX-I12 already gives an image that is not loaded. Should the UXD's own run draw the
-  escaping image differently, that entry outranks this bar. On the CPO's recall (run 2, round
+  escaping image differently, that entry outranks this bar — it did not: at v9 UX-I12 draws a
+  reference outside the folder, remote or escaping, as the same not-fetched placeholder (RN-32).
+  On the CPO's recall (run 2, round
   1) two more, the same ground: **(5)** `see-what-changed`'s bar carries the three plain
   fixtures — Git view *pending* then nothing, tree unmarked, the clean repository's branch and
   "nothing changed" the only cue (UX-S3, UX-I17; AC-24, AC-25); **(6)** `watch-a-moving-tree`'s
@@ -1785,8 +1824,8 @@ SDD states something they do not) or *changed* (it departs from what they say).>
 - **RN-18:** *(CDO)* *(added)* § 5 step 1's observability check, applied to E1 – E10: every entry
   passes — each names something a person watches on a surface the product has (the window, the
   README, the release page, the tool's own container on disk) and none names a layer, a schema or
-  a readiness. The two that sit nearest the line are recorded: E6's "outside the repository" is
-  observed as a filesystem diff after a session (AC-13), and E10's "1.0.0 or later" is observed as
+  a readiness. The two that sit nearest the line are recorded: E6's "outside the folder" (so
+  worded since RN-29) is observed as a filesystem diff after a session (AC-13), and E10's "1.0.0 or later" is observed as
   a tag on the release page; both are surfaces, so both stand. No entry was returned to the CPO
   *(re: § 5 step 1; source: PRD § Key Use Cases, § Core Features; SRS AC-13, C-6)*.
 - **RN-19:** *(CDO)* *(added; slug moved at run 2 — RN-21; contingency closed at run 3)* `read-a-folder`'s rail carries the *Files* entry alone, and
@@ -1806,7 +1845,7 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   change it until `pick-it-up-release` — a control that arrives with its destination, not before
   *(re: `read-a-folder`, `see-what-changed`, § 4 C-E1, C-E6; source: UXD § 4 the rail, UX-I9,
   UX-I13, UX-I16; DESIGN § Components "The rail")*.
-- **RN-20:** *(CDO)* *(owner answers folded — was *added* in run 1)* Two gaps in the UXD surfaced
+- **RN-20:** *(CDO)* *(owner answers folded — was *added* in run 1; closed at run 4)* Two gaps in the UXD surfaced
   by writing the observable bars in run 1: `docs/UXD.md` UX-F2 had a Git-view file entry open the
   file to read while UX-F4 had the same entry open its diff, with no control named that told the
   two apart; and UX-F4 with § 4 placed the diff in the reading panel and reached the history
@@ -1817,11 +1856,12 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   changes at `read-the-diff`, and `see-what-changed`'s bar, where the row opens the file, holds
   until then; and **the history sits in the sidebar**, as commit rows beneath the changes list, a
   selected commit's diff taking the reading panel. `read-the-diff`'s and `read-the-history`'s
-  observable bars now state those answers. The UXD at v6 still carries the pre-answer text in
-  UX-F2 and UX-S6; the entries are revised by the UXD's own run, not here (§ 12), and this document
-  cites the trail until it can cite the revised entries *(re: `see-what-changed`, `read-the-diff`,
-  `read-the-history`, § 12; source: `docs/trail/sdd/cycle-1.md` § 1.2, § 1.3; UXD UX-F2, UX-F4,
-  § 4, UX-S5, UX-S6)*.
+  observable bars now state those answers. The UXD at v6 — and at v7, when run 3 read it — still
+  carried the pre-answer text in UX-F2 and UX-S6; the entries were revised by the UXD's own run,
+  not here (§ 12), at v9 (`nozoki@b8010dd`, its RN-29), and this document cites the trail no
+  longer: `read-the-diff` and `read-the-history` cite UX-F2, § 4 and UX-S6 (RN-32) *(re:
+  `see-what-changed`, `read-the-diff`, `read-the-history`, § 12; source:
+  `docs/trail/sdd/cycle-1.md` § 1.2, § 1.3; UXD v9 UX-F2, UX-F4, § 4, UX-S5, UX-S6)*.
 - **RN-21:** *(CPO)* *(changed — upstream moved)* The input is one local folder, a Git
   repository or not, and this seat's lane now says so — *because* run 1 was written against PRD
   v9 and SRS v7, and both have since widened the input (`docs/PRD.md` § Purpose, § Scope (In),
@@ -1864,6 +1904,199 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   forward as the routing rule for every later cut this seat makes; the Principal PM re-slices
   whatever § 6 draws (§ 8), which is why the granularity here never needed the owner's turn *(re:
   § 5 step 4, § 6; source: `docs/trail/sdd/cycle-1.md` § 3.1, § 3.2)*.
+- **RN-28:** *(CPO)* *(added — a companion item settled by the run, no owner answer)* The
+  `**Status:**` line is stamped by the runner and written by no seat, and this run did not flip it
+  to `Draft` while the companion stood — *because* that line sits outside every lane (the owner's
+  call of 2026-08-25, carried in each seat's lens), so the question cycle-3 § 5.3 put to this run
+  — whether a companion opened on a Settled document by a downstream reader flips the document to
+  `Draft` while it stands — has two halves with two different owners. **For this document:** the
+  runner's stamp at close is the answer, and it is mooted in the same run, because the fold that
+  re-cuts § 3 (cycle-3 § 5.1) and repairs the two citations (§ 5.2) is the fold that clears the
+  companion; nothing a seat could write on that line would outlive the round. **As a rule going
+  forward:** this seat holds that the lean's effect is right and its actor is wrong — the legend
+  beneath the line already ties `Settled` to "the open-issues file is gone", so a Settled line
+  beside a live companion is a false fact, and the seat that reads `Status:` at face value while
+  a tool refuses § 3 is the hazard the item names; but the flip belongs to the tool that opens the
+  companion (`companion-self-answer`, or the downstream reader's own move) and the restore to the
+  runner that clears it, never to a seat inside the run, exactly as the stamp at close already is.
+  That rule lives in `<CORE>` — the skill and the template's legend — which is the owner's and not
+  this run's to set, so it is **surfaced here and decided by no one in this document**; a seat
+  holding the contrary position writes it beside this note and the item goes to the companion with
+  both, per the conduct body *(re: the `**Status:**` line; source:
+  `docs/trail/sdd/cycle-3.md` § 5.3; `docs/trail/sdd/self_answer-1.md`'s contrary call for its
+  round, and why the ground moved)*.
+- **RN-29:** *(CPO)* *(changed — upstream moved; two sentences RN-21's sweep missed)* E2 reads
+  "nothing fetched from outside the *folder*" and E6 "remembered — outside the *folder*", where
+  both read *repository* through run 3 — *because* both sentences name the input, not Git, and the
+  settled documents say *folder* at exactly those two facts: `docs/SRS.md` FR-32 "fetches nothing
+  from outside the viewed folder" and FR-21 "never inside the viewed folder"; the PRD swept the
+  same class of sentence at v13 (`docs/PRD.md`, Version line, "eight sentences that still named
+  the input *repository* after the v11 widening read *folder*", 2026-09-01, after run 3's inputs
+  were read), and RN-21's fourth consequence already binds this lane to the same rule. Verified
+  before changing: every other *repository* in § 1, § 5 steps 1, 2 and 4, § 6's CPO fields and
+  § 12 either means Git — a repository's root, a repository appearing, a repository mid-merge —
+  or names both inputs side by side, and S-5 *Delivers* already reads "their own folder" and
+  "remembered outside the folder". No slice, bar, fence or trace changes: E2 is `read-markdown`'s
+  entry and E6 is folded into `pick-it-up-release` (RN-2), and both slices' CPO fields already
+  carry the folder wording *(re: § 5 step 1 E2, E6; source: SRS FR-32, FR-21; PRD v13–v15
+  § Core Features, § Data & Privacy; RN-21)*.
+- **RN-30:** *(CTO)* *(changed — the template moved; cycle-3 §§ 5.1–5.2 folded)* § 3 carries
+  4.0.1's two fixed tables, and the preamble and § 8 cite
+  `<CORE>/roles/loaders/principal_pm_global.md` whole — *because* `sdd_template.md` moved
+  underneath this Settled document, 3.1.0 → 4.0.1 (kensaiapp-dev@8f5105cb → @f5d070b9), and one
+  half of that move is enforced by a tool: `<CORE>/launchers/product-skeleton/launcher.sh` refuses
+  a `Lives in` cell that is not a bare path (`LIVES_IN_RE`), and three of this section's nine were
+  prose. Both items were raised by the Principal PM and answered, every sub-call decided, by a
+  `companion-self-answer` run (`docs/trail/sdd/cycle-3.md` § 5.1, § 5.2; reasoning
+  `docs/trail/sdd/self_answer-2.md`); this fold takes those answers as given and decides none
+  afresh. What moved, and why each was taken as answered. **(1) The three cells.** `git-reader`
+  lives in `nozoki-core`, "behind the **Git port**" dropped — `SM-2` one table below owns it.
+  `surfaces` lives in `nozoki-ui`, its *Owns* gaining the leading clause "HTML / CSS / TypeScript,
+  every asset it uses shipping inside the bundle" — a fact the cell carried and *Owns* did not,
+  and one no tool loses, since the skeleton takes a product's languages from the project card.
+  `read-only-harness` lives in `checks`, not empty: the launcher joins cell to slug, so `checks`
+  builds `checks/read-only-harness/` beside the `checks/*.sh` this document already names (§ 4
+  C-I3), where an empty cell would build a root directory the product does not have; "build-time"
+  moves into *Owns*, and "not shipped" is copied nowhere because *Must not own* already reads
+  "anything inside the bundle". **(2) The seams table.** The seven seams become `SM-1` – `SM-7` in
+  their standing order, because "seam 1", "seam 2", "seam 4", "seam 5" and "seam 7" are cited by
+  number from § 2, § 4, § 6, § 9, § 11, RN-11 and RN-24, and this fold reaches nothing outside
+  § 3 — the table's intro states the resolution rule instead. `SM-1` keeps the OS on its left: the
+  template's `<part> ↔ <part>` is an example, no tool reads this table (the launcher finds the
+  parts table by a header carrying both `Part` and `Lives in`), and the row carries the sandbox
+  fence § 2 rests on. `SM-4` and `SM-6` name parts — `ipc-surface ↔ surfaces`, `own-state ↔
+  surfaces` — where the prose named two packages and a region of one surface, each package being
+  that part's own `Lives in` cell; "this seam *is* the promise" stays in *What crosses*. **(3) The
+  entity table stays a table.** 4.0.1's "in prose below the tables" binds on placement, which
+  already held; its shape half is not read as binding for a table no tool reads, whose eight rows
+  carry column-scanned `DR-n` traces prose loses. **(4)** Backticks leave `Lives in` and stay on
+  `Part`, each as 4.0.1 says. **(5)** `fs-reader`'s "the table below" reads "the extension set
+  below" — the set is prose. **(6) The citations.** The preamble's "— § *The loop* and § *Where a
+  seed's stations reach*" and § 8's "§ *The loop*" are deleted: the loader carries neither heading
+  (its eleven `##` headings are listed in cycle-3 § 5.2), and 4.0.1's own boilerplate cites it
+  whole. The third citation to that loader, § 5's *Six cuts*, is left as written on cycle-3's
+  ground — template boilerplate 4.0.1 still carries verbatim. Measured after the edit:
+  `parse_parts_table`, `PART_SLUG_RE` and `LIVES_IN_RE`, lifted from the launcher and run over
+  this file, read nine rows with nine slugs and nine cells passing (2026-09-02) *(re: § 3, the
+  preamble, § 8; source: `sdd_template.md` 4.0.1 § 3, § 8; `docs/trail/sdd/cycle-3.md`
+  §§ 5.1–5.2)*.
+- **RN-31:** *(CTO)* *(added — a companion item settled by the run, no owner answer)* This seat
+  concurs with RN-28 on cycle-3 § 5.3 and adds one fact from its own lane — *because* the
+  legend's second condition, "no open technical question", was false on a tool's refusal and not
+  on a judgment, and this fold is what makes it true again: with § 3 re-cut, `product-skeleton`'s
+  parser passes this document (RN-30), so at the runner's stamp every one of the legend's three
+  conditions holds on the same evidence the item measured them by. On the rule going forward —
+  whether a companion opened on a Settled document flips it to `Draft` — the actor is the tool
+  that opens the companion and the runner that clears it, never a seat, exactly as RN-28 states;
+  nothing is contested, so the item carries one position from two seats *(re: the `**Status:**`
+  line; source: `docs/trail/sdd/cycle-3.md` § 5.3; RN-28)*.
+- **RN-32:** *(CDO)* *(changed — upstream moved)* This seat's lane follows `docs/UXD.md` v10,
+  which moved after run 3 read it at v7 — v9 at `nozoki@b8010dd` (2026-09-01 17:07) and v10 at
+  `@4d7b653` (17:55), against run 3's own commit `@5c776aa` (13:31) — with these consequences and
+  no others. What v9 folded is the owner's cycle-6 answer (`docs/trail/uxd/cycle-6.md` § 2.1; the
+  UXD's RN-29) and what v10 folded is wording (its RN-30); `docs/DESIGN.md` followed at v8
+  (`@269bcf5`) and `docs/CONTENT.md` moved by a pointer repair only (`@6789e19`), so every heading
+  and value § 4's C-E clauses cite in those two was re-read on disk and stands. **(1) The two
+  owner answers RN-20 cited from the trail are the UXD's own text**: UX-F2 carries the Git-view
+  row — the file where no diff view is present, the diff where one is, one click target, the
+  letter a label, the file read from the tree — and § 4 with UX-S6 carry the history's home;
+  `read-the-diff`'s and `read-the-history`'s bars and traces cite those entries in place of
+  `docs/trail/sdd/cycle-1.md` § 1.2 and § 1.3, `see-what-changed`'s bar names UX-F2's first
+  reading as what it holds until `read-the-diff`, and § 12 *The UXD boundary*, RN-20 and RN-26
+  close their "until the UXD carries it" clauses. **(2) Four states the UXD now binds enter the
+  bars they belong to**, each an observable a checker can watch and none a redesign: UX-S4's Empty
+  cell — the Open panel dismissed before a folder is chosen, the surface with two routes and no
+  failure sentence — in `read-a-folder`; UX-I12's third case — an in-folder image whose file is
+  missing takes a placeholder stating what was observed, never a broken-image glyph — in
+  `read-markdown`, whose placeholder for a reference outside the folder now says so in UX-I12's
+  words rather than "remote" — and, in round 2, named to the five fixture files the CTO's command
+  half names (`inside.png`, `missing.png`, `not-an-image.txt`, `diagram.svg`, `vanishes.png`),
+  with two readings carried into the bar from that seat's mechanism (RN-34) rather than from the
+  UXD: an in-folder `.svg` takes the not-an-image placeholder, because § 3's image set excludes
+  SVG in v1 — UX-I12 promises nothing about which formats count as an image, so no promise moves
+  and this is a note, not a companion item; and a file that vanishes between render and request
+  takes a placeholder stating it could not be loaded, C-I1's `stopped`, because a render-time
+  check alone cannot keep "never a glyph" under S-4's moving tree; UX-S3's short status as one statement carrying no count in
+  `see-what-changed`; and UX-S6's stated end — older commits not shown, no control loads more — in
+  `read-the-history`. **(3) One bar was against the UXD and is corrected**: `switch-the-folder`
+  had the selector's list hold *Browse…* alone with the first folder open, and UX-S7 at v9 holds
+  the current folder in the list, marked, from the first folder viewed; the bar now carries the
+  list as UX-S7 binds it — most recent first, at most ten, the current entry marked with the bar
+  `docs/DESIGN.md` § Components "The menu" fixes, no removal control. **(4) Two C-E sentences that
+  named the input *repository* read *folder*** — C-E3's "reaches the folder", C-E9's "the folder
+  identity" — on RN-21's rule (*repository* only where Git is the subject), the UXD's own v10
+  sweep (RN-30) and its § 4 "The viewed folder is identified in the shell chrome";
+  `pick-it-up-release`'s "their own repository" stays, with its source named beside it — the
+  PRD's clock is read against a repository (`docs/PRD.md` § Success Metrics
+  "Time-to-first-success"). **Why a note and not an RC.** § 10 names an upstream UXD change as a
+  trigger and this seat owns that ground; it is not pulled, because § 10's first sentence is "a
+  cut meets a reality that contradicts it" and nothing here contradicts the cut — no slice's
+  *Delivers*, fence, *Rests on* or place in the order moves; the bars gain observables and lose
+  one error, and the traces move from the trail to the entries that now carry the claim. RN-26
+  handled UXD v6 the same way, and this note follows it. **What is not folded here, and why.**
+  The mechanism behind UX-I12's third case — an in-folder image whose file is missing must reach
+  the surface as a placeholder and not as the WebView's broken-image glyph, which § 3
+  `markdown-renderer` and `surfaces` did not say how — and the fixture that proves it were the
+  CTO's, named to that seat in round 1 rather than written here, and landed by it in round 2
+  (§ 3 `fs-reader`, `markdown-renderer`, `surfaces`, the image set; RN-34). The sentences the UXD's RN-29
+  records `docs/CONTENT.md` as owing — the dismissed-panel surface, the stated end, the in-folder
+  placeholder, the short status — are that document's own run's, already recorded upstream and
+  not raised again *(re: § 4 C-E3, C-E9; `read-a-folder`, `read-markdown`, `see-what-changed`,
+  `pick-it-up-release`, `switch-the-folder`, `read-the-diff`, `read-the-history`; § 12 *The UXD
+  boundary*; RN-18, RN-20, RN-26; source: UXD v9–v10 § 4, UX-F2, UX-S3, UX-S4, UX-S6, UX-S7,
+  UX-I12, RN-29, RN-30; DESIGN v8 § Components "The menu", "The startup surface"; PRD v15
+  § Success Metrics; RN-21, RN-29)*.
+- **RN-33:** *(CDO)* *(added — a companion item settled by the run, no owner answer)* This seat
+  concurs with RN-28 and RN-31 on cycle-3 § 5.3 — the `**Status:**` line is the runner's, the
+  lean's effect is right and its actor is the tool that opens the companion and the runner that
+  clears it — and adds one fact from its own lane: the effect is already this instance's practice
+  one document up. `docs/UXD.md` v8 reads "`Status:` returned to Draft: a companion was open
+  beside this document, and this UXD is Settled only when none is" and names its author — "an
+  unanswered re-run" of the document's own producing skill — and v10 returned the line to Settled
+  when the companion closed (its Version line; `nozoki@3fce6ed`, `@4d7b653`). For the SDD the
+  producing run is the runner, and the moment is its stamp at open and at close — not a seat
+  inside a round, which is the actor RN-28 rules out. Three seats concur, so the item carries one
+  position and is dropped from the live companion; the rule going forward stays surfaced for the
+  owner in `<CORE>`, as RN-28 states *(re: the `**Status:**` line; source:
+  `docs/trail/sdd/cycle-3.md` § 5.3; RN-28, RN-31; `docs/UXD.md` v8 and v10, Version line)*.
+- **RN-34:** *(CTO)* *(changed — upstream moved)* UX-I12's third case has a mechanism, § 3 fixes
+  an image set, and C-R3 carries the dismissed panel — *because* `docs/UXD.md` moved v7 → v10
+  after run 3 read it (`nozoki@b8010dd`, `@4d7b653`), and two of its v9 changes bind this lane;
+  the CDO named them to this seat in round 1. **(1) The image that cannot be drawn.** UX-I12 now
+  says an in-folder image "whose file is missing, unreadable or not an image takes a placeholder
+  stating what was observed, never a broken-image glyph". § 3 as run 3 left it emitted an `<img>`
+  for every in-folder reference and had the asset handler answer "bytes, or nothing" — and
+  nothing, in a WebView, is the glyph. Two walls, host judging and renderer projecting, which is
+  § 2's shape unchanged: at render time `fs-reader` reads the reference as an item —
+  `failed(not found)`, `failed(not readable)`, `failed(not an image)` — and `markdown-renderer`
+  emits the observed-condition placeholder with no `<img>`, C-I1's ItemState applied to an image
+  read; and `surfaces` swaps an `<img>` whose load fails for a placeholder stating the file could
+  not be loaded — C-I1's `stopped` — because a file can vanish between render and request (S-4's
+  moving tree) and a render-time check alone cannot keep "never a glyph". The asset handler is
+  unchanged — nothing is what it returns for a vanished file, and the second wall is what draws
+  it — and C-D3 is unchanged: the swap resolves no path. **(2) "Not an image" is decided on the
+  bytes' signature against a set this document fixes** — PNG, JPEG, GIF, WebP — never on the
+  extension, because an extension is content and DR-6 treats content as untrusted. **SVG is
+  outside the set in v1** for the reason § 3 states beside the set — the format admits `<script>`
+  and `<style>`, and admitting it means establishing what WKWebView does with each in an `<img>`,
+  a check this design has not made. The one visible cost, for a README's author: a folder's own
+  `.svg` diagram is the not-an-image placeholder in v1. UX-I12 promises nothing about which
+  formats count as an image, so no promise moves and this is no companion item; bringing SVG in
+  is a later one. **(3) The fixture.** `hostile.md` gains `inside.png` (the one drawn),
+  `missing.png`, `not-an-image.txt`, `diagram.svg` and `vanishes.png`, named here so the CDO's
+  observable half and this seat's command half of `read-markdown`'s bar check the same five files.
+  **(4) C-R3 gains the dismissed panel** — UX-S4's Empty cell at v9: the surface in the window,
+  choose again or quit, the host neither exiting nor re-presenting unasked — as a clause rather
+  than a note, because a host that exits on cancel or loops the panel violates it, and a
+  condition a slice can violate is § 4's shape; S-1's observable bar is the other half of the same
+  fact. **(5) Two citations repaired.** RN-9 and C-R3 cited `docs/UXD.md` § Open Questions, gone
+  at v9 (its RN-29); both now cite the close. RN-11's closing sentence predicted UX-I12 would
+  narrow its placeholder to remote images; v9 went the other way — remote and escaping as one
+  case, "outside the folder" — and that sentence now records what happened. Nothing in the cut
+  moves: no slice's fence, place or *Delivers* changes, which is why this is a note and not an RC
+  *(re: § 3 `fs-reader`, `markdown-renderer`, `surfaces`, the image set; § 4 C-R3;
+  `read-markdown` command half and *Rests on*; RN-9, RN-11; source: `docs/UXD.md` v10 UX-I12,
+  UX-S4, its RN-29; SRS FR-2, FR-32, NFR-3, NFR-16, DR-6)*.
 
 ---
 
