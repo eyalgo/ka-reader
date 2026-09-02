@@ -1,8 +1,8 @@
 # NFDR — Nozoki 覗き
 
-**Status:** Draft
+**Status:** Settled
 **Owner:** Principal Architect
-**Version:** 3 — an input moved underneath a settled document, and the companion is re-opened on it: the organisation's language registry gained a Rust packet on 2026-09-02 (`kensaiapp-dev@d628f75c`; its placement ruling `kensaiapp-dev@49e0444f`), and three statements here that no such packet existed are false. This revision applies the two drafts the re-opened companion carries, awaiting the owner's confirmation (`docs/architecture_open_issues.md` § 2.1, § 2.2): § 9's preamble and RN-7 read Rust tooling as the packet's, with what this product fixes differently and why; § 9's Rust test paths move under `crates/`, the placement the owner ruled for every Rust product here; RN-6 and § 8 record the project card's two closes — the two-toolchain test command (`kensaiapp-opensource@c2155cc`) and the `Languages:` line (`kensaiapp-opensource@0af5fb9`) — as history pinned to `kensaiapp-opensource@4bdfddd`. One question stays open and no entry moves for it: the packet requires the binary crate to select a logging facade, `log` or `tracing`, and leaves the choice to this document (§ 1.1 of the companion); RN-14 names what waits on it. No obligation is added, removed or renumbered; no record changes — ADR-0009 names its crates by name and fixes no directory. `Status:` is Draft because a companion is on disk, and this document is Settled only when none is. (v2: the close: the owner's cycle-1 answers folded (`docs/trail/architecture/cycle-1.md`), ten of its eleven items, and the eleventh settled by derivation from the FDR at v3 (RN-11, RN-12). What this document now binds that v1 did not: a critical advisory blocks release with **no remediation window** — none, not undecided — and `cargo audit` gates every advisory with a reasoned ignore by id (QC-27); the secrets scan is `gitleaks git` (QC-28); QC-33's revocation clause names identity alone; the diagnostic log's bound is the SRS's — one session's lines, 1 MiB on disk, a failed write surfacing nowhere — and own-state retention follows the FDR's R-110 and R-178 – R-182, so QC-40 is a machine check with a § 10 row; the public contract's breaking/additive split (QC-59); own-state read whole or discarded whole, symmetric, silent, never a startup failure (QC-60). ADR-0009 is Accepted. RN-2 is corrected as history, RN-3, RN-4, RN-5 and RN-9 close on the trail, and the upstream moves since v1 read its sources are measured and recorded (RN-13). Nothing is left for the owner; `docs/architecture_open_issues.md` is removed and `Status:` is Settled. (v1: the constraint set stated for the first time, over the settled SDD and SRS with the FDR beside them: the module set and its import graph, the read-only and no-network invariants as machine checks, the three walls around rendered content, the release and sandbox gates, and the test-strategy realization for a Rust host with a TypeScript renderer; nine items parked for the owner.))
+**Version:** 4 — the close: the re-opened companion's five answers folded (`docs/trail/architecture/cycle-2.md`), all five in the owner's seat by two `companion-self-answer` runs (RN-15). What this document now binds that v3 did not: the logging facade is `log`, implemented by `nozoki-app`'s own writer installed once at the composition root — no third-party implementation and no `tracing` — held by a machine check on the allowlist and on `log::set_logger` (QC-61, with a § 10 row); every `cargo test` command in § 9, § 10 and the entries' tails carries `--locked`, following the Rust packet where v3 had neither followed it nor recorded a departure (RN-7); and § 9 fixes that layer 5 stays outside `cargo test`, which is why the card's `cargo test --workspace --locked` is this product's change-time run against the packet's release-time classification — the condition that would flip it named and checked (RN-7 departure (1)). § 8's sentence about the card is true again — the card's command satisfies the S-1 bar and adds the packet's flag — and RN-6's pinned history gains the card's third and fourth commits. The v3 drafts on § 9's preamble, its `crates/` paths, RN-7 and RN-6 are confirmed and stand. The `testing_doctrine.md` cite moves to v2.2.0 under no answer (RN-15). QC-61 is the one new ID; no obligation is removed or renumbered; no record changes. Nothing is left for the owner; `docs/architecture_open_issues.md` is removed and `Status:` is Settled. (v3: an input moved underneath a settled document, and the companion is re-opened on it: the organisation's language registry gained a Rust packet on 2026-09-02 (`kensaiapp-dev@d628f75c`; its placement ruling `kensaiapp-dev@49e0444f`), and three statements here that no such packet existed are false. This revision applies the two drafts the re-opened companion carries, awaiting the owner's confirmation (`docs/architecture_open_issues.md` § 2.1, § 2.2): § 9's preamble and RN-7 read Rust tooling as the packet's, with what this product fixes differently and why; § 9's Rust test paths move under `crates/`, the placement the owner ruled for every Rust product here; RN-6 and § 8 record the project card's two closes — the two-toolchain test command (`kensaiapp-opensource@c2155cc`) and the `Languages:` line (`kensaiapp-opensource@0af5fb9`) — as history pinned to `kensaiapp-opensource@4bdfddd`. One question stays open and no entry moves for it: the packet requires the binary crate to select a logging facade, `log` or `tracing`, and leaves the choice to this document (§ 1.1 of the companion); RN-14 names what waits on it. No obligation is added, removed or renumbered; no record changes — ADR-0009 names its crates by name and fixes no directory. `Status:` is Draft because a companion is on disk, and this document is Settled only when none is. (v2: the close: the owner's cycle-1 answers folded (`docs/trail/architecture/cycle-1.md`), ten of its eleven items, and the eleventh settled by derivation from the FDR at v3 (RN-11, RN-12). What this document now binds that v1 did not: a critical advisory blocks release with **no remediation window** — none, not undecided — and `cargo audit` gates every advisory with a reasoned ignore by id (QC-27); the secrets scan is `gitleaks git` (QC-28); QC-33's revocation clause names identity alone; the diagnostic log's bound is the SRS's — one session's lines, 1 MiB on disk, a failed write surfacing nowhere — and own-state retention follows the FDR's R-110 and R-178 – R-182, so QC-40 is a machine check with a § 10 row; the public contract's breaking/additive split (QC-59); own-state read whole or discarded whole, symmetric, silent, never a startup failure (QC-60). ADR-0009 is Accepted. RN-2 is corrected as history, RN-3, RN-4, RN-5 and RN-9 close on the trail, and the upstream moves since v1 read its sources are measured and recorded (RN-13). Nothing is left for the owner; `docs/architecture_open_issues.md` is removed and `Status:` is Settled. (v1: the constraint set stated for the first time, over the settled SDD and SRS with the FDR beside them: the module set and its import graph, the read-only and no-network invariants as machine checks, the three walls around rendered content, the release and sandbox gates, and the test-strategy realization for a Rust host with a TypeScript renderer; nine items parked for the owner.)))
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · PRD Settled · UXD Settled · DESIGN Settled · CONTENT Settled
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
@@ -25,7 +25,7 @@
 >
 > **Two things about how this document cites.** A trace to a `QC` or an `ADR` opens in this
 > repository. A trace to `quality_defaults.md` v1.1.0, `arch_defaults.md` v2.0.0,
-> `testing_doctrine.md` v2.1.1, the TypeScript packet (`languages/typescript/`, `testing.md`
+> `testing_doctrine.md` v2.2.0, the TypeScript packet (`languages/typescript/`, `testing.md`
 > v2.0.1, `toolchain.md` v1.1.0, `quality_gates.md` v1.1.0) or the Rust packet (`languages/rust/`,
 > `testing.md` v1.0.0, `layout.md` v1.1.0, `errors_logging.md` v1.1.0, `quality_gates.md` v1.1.0,
 > `toolchain.md` v1.1.0) names an engineering-doctrine file of
@@ -69,14 +69,14 @@ of each is the developer's.
   to: SDD § 3 ItemState; § 4 C-I1, C-E1; SRS NFR-3; FDR R-19, R-36, R-94)*
 - **QC-5:** The root finding never answers with a path above the granted folder; on `plain` the
   model holds no `GitState`, every Git-derived projection is empty, and the tree carries no marker.
-  — *verified by:* `cargo test -p nozoki-core --test root_finding` over the plain,
+  — *verified by:* `cargo test --locked -p nozoki-core --test root_finding` over the plain,
   inside-a-repository, parent-of-two, linked-worktree and submodule fixtures (layer 2) *(traces to:
   ADR-0005; SRS FR-33, FR-34, AC-24, AC-25)*
 - **QC-6:** Every path derived from content or from outside — a tree entry, a symlink target, a
   Markdown image reference, a relative link, an asset request — passes `fs-reader`'s containment
   check on the canonical path, symlinks resolved and after decoding, before any open; the asset
   handler re-runs it on every request.
-  — *verified by:* `cargo test -p nozoki-core --test markdown` — the `..` and symlink-out fixtures
+  — *verified by:* `cargo test --locked -p nozoki-core --test markdown` — the `..` and symlink-out fixtures
   yield the placeholder and the handler returns nothing for them (layer 2); unit tests on the check
   (layer 1) *(traces to: ADR-0006; SDD § 3 `fs-reader`; § 4 C-D3; § 11 R-10; FDR R-34, R-59, R-62)*
 - **QC-7:** `git-reader` makes no mutating call — no checkout, index write, ref update or lock
@@ -154,7 +154,7 @@ explicitly and never inferred.
   replaces the whole model, and adding the folder selector touches `folder-model`'s replace,
   `own-state`'s bookmarks and the shell chrome only — the tree, the Git view and the reading panel
   do not change.
-  — *verified by:* `cargo test -p nozoki-core --test switch` (layer 3);
+  — *verified by:* `cargo test --locked -p nozoki-core --test switch` (layer 3);
   `git diff --stat <last-release-tag>..HEAD -- nozoki-ui/src/tree nozoki-ui/src/git-view
   nozoki-ui/src/reading-panel` prints nothing on the change that adds the selector (the change)
   *(traces to: SRS NFR-12, FR-19; FDR PD-29; SDD § 3 `folder-model`, § 6 S-6)*
@@ -182,18 +182,18 @@ and an artifact that is not the reviewed tag.
 - **QC-22:** Rendering the hostile fixture yields HTML with no `<script`, no `on*=` attribute, no
   `<iframe`, and exactly one `src=` — on the in-folder image, on the `nozoki-asset` scheme; the
   external link is inert text with its URL visible; the relative link is a data attribute.
-  — *verified by:* `cargo test -p nozoki-core --test markdown` over `checks/fixtures/hostile.md`
+  — *verified by:* `cargo test --locked -p nozoki-core --test markdown` over `checks/fixtures/hostile.md`
   (layer 2) *(traces to: SRS NFR-16, FR-32, AC-23; SDD § 4 C-D3; ADR-0006)*
 - **QC-23:** The renderer's Content Security Policy in `tauri.conf.json` equals
   `default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: <asset-scheme>;
   font-src 'self'`, with `<asset-scheme>` the origin form settled for `nozoki-asset`; no directive
   admits `http:`, `https:`, `file:`, `asset:` or `*`.
-  — *verified by:* `cargo test -p nozoki-app --test config` — string equality against the entry
+  — *verified by:* `cargo test --locked -p nozoki-app --test config` — string equality against the entry
   (layer 2) *(traces to: SDD § 4 C-R7; ADR-0006)*
 - **QC-24:** The host's capability file grants the renderer exactly the commands `open_folder`,
   `list_tree`, `select_file`, `open_relative_link`, `set_theme`, and — where built — `open_diff`,
   `walk_history`, `switch_folder`, plus the asset scheme, and no plugin.
-  — *verified by:* `cargo test -p nozoki-app --test config` — set equality against the list
+  — *verified by:* `cargo test --locked -p nozoki-app --test config` — set equality against the list
   (layer 2) *(traces to: SDD § 3 seam 4; § 4 C-R7; ADR-0001)*
 - **QC-25:** The bundle carries exactly the entitlements `com.apple.security.app-sandbox`,
   `com.apple.security.files.user-selected.read-only` and — once the folder selector exists —
@@ -282,12 +282,12 @@ import nothing forbidden and still read a path it was never granted.
   — *verified by:* `checks/own-state.sh` and `checks/read-only.sh` (layer 5); the sandbox grant
   (QC-25) *(traces to: FDR R-101, R-102; SDD § 4 C-D1, C-D2; ADR-0003)*
 - **QC-36:** No unit spawns a process, and no Tauri shell or process plugin is present.
-  — *verified by:* `checks/structure.sh` (layer 6); `cargo test -p nozoki-app --test config` —
+  — *verified by:* `checks/structure.sh` (layer 6); `cargo test --locked -p nozoki-app --test config` —
   no plugin registered *(traces to: SDD § 3 `git-reader` "Must not own", `ipc-surface` "Must not
   own"; ADR-0004)*
 - **QC-37:** The asset handler serves bytes read-only, only for a path the containment check
   passes, and returns nothing for any other request.
-  — *verified by:* `cargo test -p nozoki-core --test markdown` — a request for the in-folder image
+  — *verified by:* `cargo test --locked -p nozoki-core --test markdown` — a request for the in-folder image
   returns its bytes; for each escaping path, nothing (layer 2) *(traces to: SDD § 3 `ipc-surface`;
   § 4 C-D3; ADR-0006)*
 
@@ -314,8 +314,8 @@ import nothing forbidden and still read a path it was never granted.
   which it is emptied and writing continues; a failed write surfaces nowhere, stops no item and is
   not retried.
   — *verified by:* unit tests (layer 1) — the log writer truncates at launch and empties at the
-  cap (`cargo test -p nozoki-app`), and the remembered list evicts the oldest entry on the eleventh
-  and exposes no removal (`cargo test -p nozoki-core`); `checks/own-state.sh` after
+  cap (`cargo test --locked -p nozoki-app`), and the remembered list evicts the oldest entry on the eleventh
+  and exposes no removal (`cargo test --locked -p nozoki-core`); `checks/own-state.sh` after
   `checks/churn.sh` — the log under the container is no larger than 1 MiB, and a line written
   before a relaunch is absent after it (layer 5; `docs/SRS.md` AC-13's inspection, machine-run)
   *(traces to: SRS NFR-11, AC-13; FDR R-110, R-178, R-180, R-182; SDD § 4 C-I2; § 3 `own-state`;
@@ -371,7 +371,7 @@ binds the *process*, and asserts no number of its own.
 
 - **QC-47:** A failure to read one file, one tree entry or one part of Git state degrades only
   that item, and the next successful read of the same item replaces it without ceremony.
-  — *verified by:* `cargo test -p nozoki-core --test watch` — an unreadable fixture entry yields
+  — *verified by:* `cargo test --locked -p nozoki-core --test watch` — an unreadable fixture entry yields
   `failed` on that item and `observed` on its siblings (layer 2); UI tests (layer 4): the failure
   slot renders and the rest of the surface stands *(traces to: SRS NFR-3; SDD § 4 C-I1, C-E2;
   FDR R-83, R-85)*
@@ -380,7 +380,7 @@ binds the *process*, and asserts no number of its own.
   does not panic, the model's final snapshot equals a fresh open of the fixture, expansion,
   selection and reading position survive, and the fixture is byte-identical to the script's own
   final state.
-  — *verified by:* `cargo test -p nozoki-core --test watch` running `checks/churn.sh <fixture> 30`;
+  — *verified by:* `cargo test --locked -p nozoki-core --test watch` running `checks/churn.sh <fixture> 30`;
   `checks/read-only.sh` against the churn's final state as baseline (layer 3) *(traces to: SRS
   FR-16, NFR-3, NFR-4, AC-8; SDD § 6 S-4; ADR-0008)*
 - **QC-49:** The read-only and no-network promises hold through abnormal exit: the host killed
@@ -409,6 +409,28 @@ binds the *process*, and asserts no number of its own.
   line per `failed` or `stopped` item; it is the product's only diagnostic output.
   — *verified by:* `checks/own-state.sh` (layer 5); unit test on the writer's path and line shape
   (layer 1) *(traces to: SDD § 4 C-I2; SRS NFR-11; FDR PD-32)*
+- **QC-61:** The logging facade is `log`, and its implementation is the product's own. Every
+  shipped Rust crate depends on the `log` facade for diagnostics and on nothing else — no
+  `tracing`, no `slog`, no second facade; `nozoki-core` uses the five macros and initializes
+  nothing. The implementation is `nozoki-app`'s own log module — the writer QC-39, QC-40 and QC-52
+  already bind — implementing `log::Log`, installed once at startup in `nozoki-app`, the
+  composition root (QC-17), with no third-party implementation crate; the level it admits is fixed
+  in code and read from nothing outside the binary, and it holds what QC-39 and QC-52 describe and
+  nothing below it. The implementation is the product's own because of a constraint already here,
+  not taste: the stock implementations read their level from the environment — `env_logger` is "a
+  simple logger that can be configured via environment variables", `RUST_LOG` controlling the
+  filter (https://docs.rs/env_logger/latest/env_logger/) — and QC-30 and QC-58 forbid
+  `std::env::var` in any shipped crate, so an off-the-shelf logger fails `checks/structure.sh` the
+  day it lands. Which macro a `failed` and a `stopped` item are emitted at is the delivery tier's
+  placement under the packet's ladder, not this entry's.
+  — *verified by:* `checks/no-network.sh` — `checks/deps.allow` names `log` and names no
+  `tracing*`, `env_logger`, `slog*` or `log4rs` crate, so a swap fails the allowlist diff (QC-3,
+  QC-26; the tree); `checks/structure.sh` (layer 6) — `log::set_logger` and
+  `log::set_boxed_logger` appear only in `nozoki-app` *(traces to:
+  `languages/rust/errors_logging.md` v1.1.0 § Logging, § Which facade — the packet requires the
+  binary to select an implementation and this document to record the facade, and fixes no default;
+  SDD § 4 C-I2; SRS NFR-11; FDR PD-32; QC-17, QC-30, QC-39, QC-52, QC-58; ADR-0009 § Decision;
+  answered in the owner's seat at `docs/trail/architecture/cycle-2.md` § 1.1 — RN-15)*
 - **QC-53:** No internal text reaches any surface: no stack trace, no error code, no library name,
   and none of the words `docs/CONTENT.md` § Terminology bans; every message the product shows is a
   whole sentence from its catalogue.
@@ -428,8 +450,11 @@ binds the *process*, and asserts no number of its own.
 
 The execution context — execution type, test command, parallelism — is the project card's
 (`system/projects/nozoki/project.md` in the managing instance), not restated here. That card's
-test command is the SDD's command bar for the Rust workspace and Vitest for the renderer, and its
-`Languages:` line names Rust, TypeScript and Shell (RN-6). What follows exceeds the card.
+test command satisfies the SDD's command bar for the Rust workspace — `cargo test --workspace`
+exits 0 (`docs/SDD.md` § 6 S-1), a floor — and adds the Rust packet's `--locked`
+(`languages/rust/testing.md` § Layers 1–5), and Vitest for the renderer; its `Languages:` line
+names Rust, TypeScript and Shell (RN-6). Why the workspace form is this product's change-time run,
+where the packet classifies it as release-time, is RN-7. What follows exceeds the card.
 
 - **QC-55:** The product is one macOS application bundle, `Nozoki.app`, bundle identifier
   `com.kensaiapp.nozoki`; no second binary, no prerequisite, no runtime install, no fetched asset.
@@ -484,7 +509,7 @@ test command is the SDD's command bar for the Rust workspace and Vitest for the 
 
 ## 9. Test strategy
 
-The layer set is **not defined here** — it is `testing_doctrine.md` v2.1.1, and this table is one
+The layer set is **not defined here** — it is `testing_doctrine.md` v2.2.0, and this table is one
 project's realization of it. Tooling for the renderer comes from the TypeScript packet
 (`languages/typescript/testing.md` v2.0.1) and for the host and core from the Rust packet
 (`languages/rust/testing.md` v1.0.0); what this table fixes differently from either packet, and
@@ -493,12 +518,12 @@ wrong.
 
 | Level | Scope | Tool | Where it lives |
 |---|---|---|---|
-| 1 — Unit | The reducer, `ItemState` transitions, the containment check, extension recognition, the sanitizer allowlist, the log line shape | `cargo test` (`#[cfg(test)]` beside the module); Vitest for `nozoki-ui` | inside each `nozoki-core` / `nozoki-app` module; `nozoki-ui/tests/unit/<module>.test.ts` |
-| 2 — Integration | `fs-reader` and `git-reader` against real fixture folders and repositories; the Markdown pipeline against `hostile.md`; the host's config against its own files | `cargo test -p nozoki-core --test git_state`, `--test root_finding`, `--test markdown`, `--test watch`; `cargo test -p nozoki-app --test config` | `crates/nozoki-core/tests/`, `crates/nozoki-app/tests/`, over `checks/fixtures/` |
-| 3 — Application | The IPC command list driven in-process through `nozoki-core`, bypassing the renderer; the whole-model switch | `checks/read-only.sh`; `cargo test -p nozoki-core --test switch` | `checks/`, `crates/nozoki-core/tests/` |
+| 1 — Unit | The reducer, `ItemState` transitions, the containment check, extension recognition, the sanitizer allowlist, the log line shape | `cargo test --locked` (`#[cfg(test)]` beside the module); Vitest for `nozoki-ui` | inside each `nozoki-core` / `nozoki-app` module; `nozoki-ui/tests/unit/<module>.test.ts` |
+| 2 — Integration | `fs-reader` and `git-reader` against real fixture folders and repositories; the Markdown pipeline against `hostile.md`; the host's config against its own files | `cargo test --locked -p nozoki-core --test git_state`, `--test root_finding`, `--test markdown`, `--test watch`; `cargo test --locked -p nozoki-app --test config` | `crates/nozoki-core/tests/`, `crates/nozoki-app/tests/`, over `checks/fixtures/` |
+| 3 — Application | The IPC command list driven in-process through `nozoki-core`, bypassing the renderer; the whole-model switch | `checks/read-only.sh`; `cargo test --locked -p nozoki-core --test switch` | `checks/`, `crates/nozoki-core/tests/` |
 | 4 — UI | A surface renders truthfully given a model projection: *pending* as the word, no marker before `observed`, the Git view empty on `plain`, the failure slot and its route, both themes | Vitest Browser Mode with the Playwright provider (`pnpm exec vitest run`) | `nozoki-ui/tests/ui/<component>.test.ts` |
 | 5 — End-to-end | The built bundle: entitlements and sandbox, own-state after a session, churn and kill, latency figures; the timed release walk | `checks/bundle.sh`, `checks/own-state.sh`, `checks/churn.sh`, `checks/latency.sh`, `checks/read-only.sh --kill`; `docs/SRS.md` AC-10 as a manual timed walk | `checks/` |
-| 6 — Architecture | § 1.2's graph, § 1.3's I/O ownership, § 3's reach rules | `checks/structure.sh` (Rust, grep rules); `pnpm exec vitest run tests/architecture` (TypeScript) | `checks/`, `nozoki-ui/tests/architecture/<property>.test.ts` |
+| 6 — Architecture | § 1.2's graph, § 1.3's I/O ownership, § 3's reach rules, and this section's layer-5 placement (no `CARGO_BIN_EXE_` reference under `crates/*/tests/`) | `checks/structure.sh` (Rust, grep rules); `pnpm exec vitest run tests/architecture` (TypeScript) | `checks/`, `nozoki-ui/tests/architecture/<property>.test.ts` |
 | 7 — Specification | The SRS's acceptance criteria as scenarios through the real entry point | the SDD's per-slice command bars and the AC walk at release, until a QA seat writes the layer | `checks/` |
 
 - **Layer 3 is present**, realized as the harness: it enters inside the boundary by calling the
@@ -509,7 +534,12 @@ wrong.
   proves the bundle (RN-7).
 - **Layer 5 departs from the TypeScript packet's Playwright row**: Tauri has no WKWebView driver on
   macOS (ADR-0008), so the built bundle is exercised by the harness scripts and the rendered UI by
-  the timed manual walk, deliberately not automated (`docs/SRS.md` AC-10).
+  the timed manual walk, deliberately not automated (`docs/SRS.md` AC-10). **Layer 5 also stays
+  outside `cargo test`**, against the Rust packet's shape (`tests/<flow>.rs` in the binary crate):
+  the only `--test` file `nozoki-app` carries is `config` (layer 2), and no file under
+  `crates/*/tests/` starts the built binary — no `CARGO_BIN_EXE_` reference there, a
+  `checks/structure.sh` rule (layer 6, row 6). That placement is what makes
+  `cargo test --workspace --locked` this product's change-time run (RN-7).
 - **Layers 6–7 are QA-role ATDD work.** No QA seat has written either for this product yet; until
   one does, layer 6 is verified by `checks/structure.sh` and the architecture tests named above,
   run in CI, and layer 7 by the SDD's per-slice command bars and the acceptance walk at release.
@@ -524,19 +554,19 @@ is right and this row is stale.
 | QC-1 | renderer capability | `pnpm exec vitest run tests/architecture`; `checks/no-network.sh` | the tree | CI build |
 | QC-2 | no write under the folder | `checks/read-only.sh <fixture>`; `checks/structure.sh` | the tree | CI build; release |
 | QC-3 | no network transport | `checks/no-network.sh` | the tree | CI build |
-| QC-4 | ItemState on every read | `cargo test -p nozoki-core` (layer 1); `pnpm exec vitest run` (layer 4) | the change | `development-implementation` |
-| QC-5 | root finding | `cargo test -p nozoki-core --test root_finding` | the change | `development-implementation` |
-| QC-6 | containment check | `cargo test -p nozoki-core --test markdown` | the change | `development-implementation` |
+| QC-4 | ItemState on every read | `cargo test --locked -p nozoki-core` (layer 1); `pnpm exec vitest run` (layer 4) | the change | `development-implementation` |
+| QC-5 | root finding | `cargo test --locked -p nozoki-core --test root_finding` | the change | `development-implementation` |
+| QC-6 | containment check | `cargo test --locked -p nozoki-core --test markdown` | the change | `development-implementation` |
 | QC-7 | no mutating Git call, no spawn | `checks/read-only.sh`; `checks/structure.sh` | the tree | CI build |
 | QC-8 | `nozoki-ui` imports | `pnpm exec vitest run tests/architecture` | the tree | CI build |
 | QC-9 – QC-12, QC-14 | `nozoki-core` / `checks/` imports | `checks/structure.sh`; `checks/no-network.sh`; `cargo tree -p nozoki-app` | the tree | CI build |
 | QC-13 | `nozoki-app` imports | `checks/structure.sh` | the tree | CI build |
 | QC-15, QC-17 | I/O ownership; composition root | `checks/structure.sh` | the tree | CI build |
 | QC-16 | writes only in the container | `checks/own-state.sh` | the tree | CI build; release |
-| QC-19 | folder replace-whole | `cargo test -p nozoki-core --test switch`; `git diff --stat …` | the change | `development-implementation` |
+| QC-19 | folder replace-whole | `cargo test --locked -p nozoki-core --test switch`; `git diff --stat …` | the change | `development-implementation` |
 | QC-20 | own-state isolation | `checks/structure.sh` | the tree | CI build |
-| QC-22 | sanitizer output | `cargo test -p nozoki-core --test markdown` | the change | `development-implementation` |
-| QC-23, QC-24, QC-36 | CSP; capability file; no plugin | `cargo test -p nozoki-app --test config` | the tree | CI build |
+| QC-22 | sanitizer output | `cargo test --locked -p nozoki-core --test markdown` | the change | `development-implementation` |
+| QC-23, QC-24, QC-36 | CSP; capability file; no plugin | `cargo test --locked -p nozoki-app --test config` | the tree | CI build |
 | QC-25 | entitlements; sandbox present | `checks/bundle.sh` | the tree | CI build; release gate |
 | QC-26 | allowlist; frozen lockfiles | `checks/no-network.sh`; `pnpm install --frozen-lockfile`; `cargo build --locked` | the tree | CI build |
 | QC-27 | critical vulnerability | `cargo audit` (every advisory; `--ignore <RUSTSEC-id>` with its reason); `pnpm audit --audit-level=critical` | the tree | release |
@@ -546,21 +576,22 @@ is right and this row is stale.
 | QC-32 | empty egress set | AC-3 network monitor; `checks/no-network.sh` | the release; the tree | release; CI build |
 | QC-34 | renderer reach | `pnpm exec vitest run tests/architecture`; `checks/no-network.sh` | the tree | CI build |
 | QC-35 | host reach | `checks/own-state.sh`; `checks/read-only.sh` | the tree | CI build |
-| QC-37 | asset handler | `cargo test -p nozoki-core --test markdown` | the change | `development-implementation` |
+| QC-37 | asset handler | `cargo test --locked -p nozoki-core --test markdown` | the change | `development-implementation` |
 | QC-38 | own-state fields | `checks/own-state.sh` | the tree | CI build |
-| QC-39, QC-52 | log shape and location | `cargo test -p nozoki-app` (layer 1); `checks/own-state.sh` | the change; the tree | `development-implementation`; CI build |
-| QC-40 | log bound; own-state retention | `cargo test -p nozoki-app`, `cargo test -p nozoki-core` (layer 1); `checks/own-state.sh` after `checks/churn.sh` | the change; the tree | `development-implementation`; CI build |
+| QC-39, QC-52 | log shape and location | `cargo test --locked -p nozoki-app` (layer 1); `checks/own-state.sh` | the change; the tree | `development-implementation`; CI build |
+| QC-40 | log bound; own-state retention | `cargo test --locked -p nozoki-app`, `cargo test --locked -p nozoki-core` (layer 1); `checks/own-state.sh` after `checks/churn.sh` | the change; the tree | `development-implementation`; CI build |
 | QC-41 | third-party notices | `checks/notices.sh` | the release | release |
 | QC-42 | private reporting; SECURITY.md | `gh api repos/kensaiapp/nozoki/private-vulnerability-reporting` | the release | release |
 | QC-44 | standing sentences verbatim | `checks/readme.sh` | the release | release |
 | QC-46 | latency figures | `checks/latency.sh` | the tree | CI build |
-| QC-47, QC-48 | per-item degradation; churn | `cargo test -p nozoki-core --test watch` with `checks/churn.sh` | the change | `development-implementation` |
+| QC-47, QC-48 | per-item degradation; churn | `cargo test --locked -p nozoki-core --test watch` with `checks/churn.sh` | the change | `development-implementation` |
 | QC-49 | promises through kill | `checks/read-only.sh --kill` | the tree | CI build; release |
 | QC-51 | failure visible in window | `pnpm exec vitest run` (layer 4); `checks/structure.sh` | the change; the tree | `development-implementation`; CI build |
 | QC-53 | no internal text | `checks/strings.sh`; layer-5 error-path tests | the tree | CI build |
 | QC-55 | one bundle | `checks/bundle.sh` | the tree | CI build |
 | QC-56 | macOS floor in the bundle | `/usr/libexec/PlistBuddy -c 'Print :LSMinimumSystemVersion' …` | the release | release |
 | QC-60 | own-state read across versions | `checks/own-state.sh --from <previous-tag>` | the release | release |
+| QC-61 | logging facade and its implementation | `checks/no-network.sh`; `checks/structure.sh` | the tree | CI build |
 
 Entries with no row are review gates, each arguing its downgrade in its own tail: QC-13 (the
 delegation half), QC-18, QC-21, QC-31, QC-33, QC-43, QC-45, QC-50, QC-54, QC-57, QC-59.
@@ -633,19 +664,26 @@ delegation half), QC-18, QC-21, QC-31, QC-33, QC-43, QC-45, QC-50, QC-54, QC-57,
   crash-mid-write of own-state that QC-49's kill can produce is exactly the case its
   discard-whole clause exists for. *(re: QC-59, QC-60; source: SRS C-6, DR-5, FR-3; FDR PD-20,
   R-168 – R-170, PD-39; `docs/trail/architecture/cycle-1.md` § 2.1, § 2.2)*
-- **RN-6:** *(the project card — history, closed at v3)* At v1 and v2
+- **RN-6:** *(the project card — history, pinned by commit)* At v1 and v2
   `system/projects/nozoki/project.md` carried a provisional `pytest tests/` test command and no
   `Languages:` line (`kensaiapp-opensource@4bdfddd`, the card as it stood when v2 read it), while
   the SDD's command bar was `cargo test --workspace` and the units Rust and TypeScript; § 8 pointed
-  at the card as the template requires and named the disagreement. Both halves closed in the
-  managing instance: the test command reads
+  at the card as the template requires and named the disagreement. The card has moved four times
+  since, each pinned. The test command became
   `cargo test --workspace && (cd nozoki-ui && pnpm exec vitest run)` — the SDD's S-1 bar for the
   Rust workspace and Vitest for `nozoki-ui`, one gate over the two toolchains ADR-0009 fixes
-  (`kensaiapp-opensource@c2155cc`, 2026-09-01) — and the card declares
-  `Languages: Rust, TypeScript, Shell` (`kensaiapp-opensource@0af5fb9`, 2026-09-02). § 8 now
-  states the card as it reads. Drafted at `docs/architecture_open_issues.md` § 2.2 and applied here
-  awaiting confirmation (RN-14). *(re: § 8; source: SDD § 6 S-1; ADR-0009; the three commits
-  named)*
+  (`kensaiapp-opensource@c2155cc`, 2026-09-01). The card declared
+  `Languages: Rust, TypeScript, Shell` (`kensaiapp-opensource@0af5fb9`, 2026-09-02). Its
+  `Languages:` comment stopped saying Rust had no packet (`kensaiapp-opensource@ff43026`,
+  2026-09-02) — the fact v3's fold could not reach and left for the owner, closed in the managing
+  instance. And the test command took the Rust packet's `--locked`, a `cto:` run's field
+  (`kensaiapp-opensource@3a960a7`, 2026-09-02), so it reads
+  `cargo test --workspace --locked && (cd nozoki-ui && pnpm exec vitest run)`. § 8 states the card
+  as it reads at the last of those commits, and goes false at the card's next move until this note
+  is extended — the accepted cost of a live sentence with its pinned history beside it, the shape
+  the owner's seat confirmed for RN-2 and again here (`docs/trail/architecture/cycle-2.md` § 2.2,
+  § 2.3). *(re: § 8; source: SDD § 6 S-1; ADR-0009; `languages/rust/testing.md` v1.0.0; the four
+  commits named)*
 - **RN-7:** *(language packets — re-derived at v3)* Both packets resolve at step 1 of
   `languages/README.md` § The resolution chain, from the card's `Languages:` line (RN-6): the
   renderer to the TypeScript packet, the host and core to the Rust packet, which the organisation's
@@ -659,7 +697,22 @@ delegation half), QC-18, QC-21, QC-31, QC-33, QC-43, QC-45, QC-50, QC-54, QC-57,
   the tool set (`docs/trail/architecture/cycle-1.md` § 2.7; RN-3) — where the packet's shape is
   `tests/<use_case>.rs`, `tests/<flow>.rs` and `tests/architecture.rs` under `cargo test`
   (`languages/rust/testing.md` § Layers 1–5, § Layers 6–7); the SDD and an owner answer each
-  outrank the packet. (2) Layer 4 is present, on Vitest Browser Mode with Playwright — the packet's
+  outrank the packet. One consequence follows, and it is this product's own: because layer 5 is
+  not under `cargo test`, `cargo test --workspace --locked` is the union of
+  `cargo test --locked -p nozoki-core` and `cargo test --locked -p nozoki-app` — layers 1–3 across
+  the two crates ADR-0009 fixes — and is this product's *change-time* run, which the project card's
+  per-task field carries (RN-6), where the packet classifies the workspace form as release-time for
+  the one reason it states: that layer 5 lives in the binary crate's `tests/<flow>.rs` and the
+  workspace run includes it (`languages/rust/testing.md` § Layers 1–5). `testing_doctrine.md`'s
+  "Layer 5 runs separately" is met by the harness running outside the per-task gate, not by a
+  crate selector. The condition that would flip it is named and checked: a
+  `crates/nozoki-app/tests/<flow>.rs` that starts the built binary through `CARGO_BIN_EXE_*` would
+  put layer 5 inside the workspace run silently, and § 9 forbids it by keeping layer 5 on `checks/`
+  — `checks/structure.sh` (layer 6), no `CARGO_BIN_EXE_` reference under `crates/*/tests/`. No SDD
+  sentence moves — S-1's bar is a floor the card satisfies — and the card's field stands on this
+  ground, which its own commit did not state: it rested the workspace choice on RN-6, which weighed
+  only the S-1 bar. Answered in the owner's seat at `docs/trail/architecture/cycle-2.md` § 1.2.
+  (2) Layer 4 is present, on Vitest Browser Mode with Playwright — the packet's
   own rule for a Rust product that renders is that it "records its layer-4 tooling in its own
   `docs/nfdr.md` § 9" (`languages/rust/testing.md` § The rules that make that table work); the
   browser Playwright drives is not the WKWebView the product ships in, so § 9 splits what layer 4
@@ -668,7 +721,15 @@ delegation half), QC-18, QC-21, QC-31, QC-33, QC-43, QC-45, QC-50, QC-54, QC-57,
   `crates/nozoki-core/tests/`, `crates/nozoki-app/tests/` — the owner's ruling for every Rust
   product here (`languages/rust/layout.md` § A multi-crate product; `kensaiapp-dev@49e0444f`),
   which names this document's § 9 as the one that adapts; ADR-0009 names the crates by name and
-  fixes no directory, so no record moves. **Where the two already agree.** `cargo audit` at
+  fixes no directory, so no record moves. And every `cargo test` command in § 9, § 10 and the
+  entries' tails carries `--locked`, which the packet puts on every run command with its reason —
+  "a run allowed to re-resolve dependencies is a run against a tree nobody reviewed"
+  (`languages/rust/testing.md` § Layers 1–5) — where v3 carried it on none and listed it neither as
+  followed nor as a departure: an omission, not a decision, so the packet's form is followed
+  (confirmed at `docs/trail/architecture/cycle-2.md` § 2.1). The tails move with § 10 because § 10
+  is their projection, and a row that disagreed with its entry would be stale by this document's
+  own rule. QC-26 already makes the CI build `--locked`; this closes the same hole on the test
+  side. **Where the two already agree.** `cargo audit` at
   release with `--ignore <RUSTSEC-id>` and its reason (QC-27) and `cargo build --locked` (QC-26)
   are the packet's own gates since `kensaiapp-dev@5ee506e9`, adopted from this document
   (`languages/rust/quality_gates.md` § Dependency advisories). The packet's per-change gates —
@@ -676,13 +737,15 @@ delegation half), QC-18, QC-21, QC-31, QC-33, QC-43, QC-45, QC-50, QC-54, QC-57,
   `cargo check --workspace --all-targets --locked` — and its `unsafe_code = "forbid"` default bind
   Rust code through the resolution chain and are not entries here, as the TypeScript packet's gates
   are not: no SRS floor names them and the packet is their owner. **What the packet leaves to this
-  document, and is still open:** the logging facade the binary crate must select
-  (`languages/rust/errors_logging.md` § Which facade) — `docs/architecture_open_issues.md` § 1.1;
-  RN-14. Drafted at § 2.1 of that companion and applied here awaiting confirmation. *(re: § 9;
-  QC-26, QC-27; source: `languages/README.md` § The resolution chain, § Precedence;
+  document** — the logging facade the binary crate must select
+  (`languages/rust/errors_logging.md` § Which facade) — is QC-61, answered at
+  `docs/trail/architecture/cycle-2.md` § 1.1 (RN-15). The v3 drafts on this note, on § 9's
+  preamble and on its `crates/` paths were confirmed there (§ 2.1). *(re: § 8, § 9, § 10; QC-26,
+  QC-27, QC-61; source: `languages/README.md` § The resolution chain, § Precedence;
   `languages/rust/` — `testing.md` v1.0.0, `layout.md` v1.1.0, `quality_gates.md` v1.1.0,
   `errors_logging.md` v1.1.0; `languages/typescript/testing.md` v2.0.1; SDD § 4 C-I3, § 6 S-1;
-  ADR-0008, ADR-0009; `docs/trail/architecture/cycle-1.md` § 2.7)*
+  ADR-0008, ADR-0009; `docs/trail/architecture/cycle-1.md` § 2.7;
+  `docs/trail/architecture/cycle-2.md` § 1.2, § 2.1)*
 - **RN-8:** *(citations outside this repository)* Entries tracing to `quality_defaults.md`,
   `arch_defaults.md`, `testing_doctrine.md`, the TypeScript packet or the Rust packet name files of
   the publishing organisation that a reader of this repository cannot open. Each such entry states its rule in
@@ -797,3 +860,44 @@ delegation half), QC-18, QC-21, QC-31, QC-33, QC-43, QC-45, QC-50, QC-54, QC-57,
   *(re: header `Status:`, `Version:`; § 8, § 9, RN-6, RN-7; source:
   `docs/architecture_open_issues.md` § 1.1, § 2.1, § 2.2; `languages/rust/errors_logging.md`
   v1.1.0; ADR-0009; the commits named)*
+- **RN-15:** *(v4 — the close of the re-opened companion; what moved, and on whose authority)* The
+  companion re-opened at `nozoki@5003906` was answered in the owner's seat by two
+  `companion-self-answer` runs — three items (`docs/trail/architecture/self_answer-3.md`,
+  `nozoki@5b285e4`), then two more raised by an owner-directed session (`nozoki@b55a6d4`) and
+  answered (`self_answer-4.md`, `nozoki@6415c46`) — and as answered is
+  `docs/trail/architecture/cycle-2.md`. **§ 1.1 → QC-61:** `log`, the product's own `log::Log`
+  writer installed once in `nozoki-app`, no third-party implementation. Two things the entry does
+  not carry are recorded here. Why no record: the choice fails the significance test — the packet
+  records that a library on `log` stays readable from a binary on `tracing` ("It is not a fork
+  paid for twice", `languages/rust/errors_logging.md` § Which facade), so reversal is one allowlist
+  change and one revision of QC-61, and neither half of the choice surprises a cold reader; the
+  ground for `log` over `tracing` is the packet's own discriminator — diagnostics queried by field
+  or attributed to a concurrent operation want `tracing`, diagnostics read as lines do not — and
+  this log is read as lines by construction: one line per `failed` or `stopped` item (SDD § 4
+  C-I2; QC-39), the most recent lines always the ones present (SRS NFR-11), nothing in the product
+  reading it back (QC-52), observability minimal by decision (FDR PD-32). What the entry rests on,
+  and whose it stays: the `log` crate is the Rust project's (https://github.com/rust-lang/log;
+  "Libraries should link only to the `log` crate", "Executables should choose a logging
+  implementation and initialize it early", "The logging system may only be initialized once" —
+  https://docs.rs/log/latest/log/, read 2026-09-02); if that holder stops answering, the facade
+  still compiles, the writer is this product's own, and the reversal above is the packet's bridge
+  — the day the holder goes silent un-makes nothing here. QC-61 traces to ADR-0009 § Decision and
+  that record's `## Binds` is not extended: an accepted record is never edited, and the pair stays
+  navigable from the entry. **§ 1.2 →** RN-7's departure (1) gains its consequence and § 9 its
+  layer-5 rule, run by `checks/structure.sh` under § 9 row 6; nothing in § 10 moves and the card's
+  field stands. The rule is held in § 9 rather than minted as a `QC` because it binds the test
+  strategy's own realization, which § 9 owns and the answer placed there; a reader who needs it as
+  an entry may say so on the next companion. **§ 2.1 →** confirmed, with `--locked` on every
+  `cargo test` command in § 9, § 10 and the tails (RN-7). **§ 2.2 →** confirmed; RN-6 as applied
+  at v3 stands, and the card's comment the fold could not reach was closed in the managing instance
+  (`kensaiapp-opensource@ff43026`). **§ 2.3 →** § 8's sentence reads *satisfies and adds*, and
+  RN-6's pinned history gains the card's third and fourth commits. One cite moves under no answer:
+  `testing_doctrine.md` is v2.2.0 (`kensaiapp-dev@8db7a6b4`, merged at `f5c9ef2c`, 2026-09-02) —
+  the bump added one rule, that a test hands a unit its fake through the seam production wires the
+  real collaborator through, and moved no layer, so § 9's table stands and its cite follows the
+  file. The seven inputs did not move: `git diff --stat 9229881 HEAD` over them prints nothing
+  (2026-09-02), so the `Inputs read:` line stands. QC-61 is the one new ID; no `QC` is renumbered
+  or reused; no record is edited — ADR-0009 names its crates by name, and the facade is a
+  dependency under a crate, not a unit. *(re: header `Status:`, `Version:`; § 8, § 9, § 10, QC-61,
+  RN-6, RN-7; source: `docs/trail/architecture/cycle-2.md`; `languages/rust/errors_logging.md`
+  v1.1.0, `testing.md` v1.0.0; `testing_doctrine.md` v2.2.0; the commits named)*
