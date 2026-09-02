@@ -115,7 +115,32 @@
   the change-time/release-time split has never been put to this product.
 - **Whose call:** the CTO's — it owns the SDD's command bar and set the card's field twice. This item
   is the channel, not the decision.
-- **Answer:** <the owner fills this in>
+- **Answer:** the shape stands — the card's `cargo test --workspace --locked` is this product's
+  change-time suite, § 10's *gated at* assignments do not move, and the card's field does not move.
+  The item rests on a premise that is false for this product as § 9 stands: that the workspace form
+  runs layer 5 on every task. The packet classifies `cargo test --workspace --locked` as release-time
+  for the one reason it states — layer 5 lives in the binary crate's `tests/<flow>.rs`, so the
+  workspace run includes it (`languages/rust/testing.md` § Layers 1–5) — and § 9 departs from exactly
+  that shape with the owner's confirmation (RN-7 departure (1); `docs/trail/architecture/cycle-1.md`
+  § 2.7): layer 5 is `checks/bundle.sh`, `checks/own-state.sh`, `checks/churn.sh`,
+  `checks/latency.sh`, `checks/read-only.sh --kill` and the manual AC-10 walk, all under `checks/`
+  and none under `cargo test`, gated at CI build and release (§ 9 row 5; § 10). The only `--test`
+  file the binary crate carries is `config` (layer 2), and ADR-0009 fixes exactly two crates, so
+  `cargo test --workspace` here is the union of `cargo test -p nozoki-core` and
+  `cargo test -p nozoki-app` — layers 1–3 across both — and the packet's per-crate form would run the
+  same set. `testing_doctrine.md`'s "Layer 5 runs separately" is satisfied by the harness running
+  outside the per-task gate, not by the flag or the crate selector. What the record is owed is the
+  sentence that says so: RN-7's departure (1) gains its consequence — because layer 5 is not under
+  `cargo test`, the workspace form is this product's change-time run and the card's per-task field
+  may carry it, differently from `testing.md` § Layers 1–5's classification and for that reason —
+  with the condition that flips it named: a `crates/nozoki-app/tests/<flow>.rs` that starts the
+  built binary (`CARGO_BIN_EXE_*`) would put layer 5 inside the workspace run, and § 9 row 5 forbids
+  it by keeping layer 5 on `checks/`; verified by `checks/structure.sh` (layer 6) — no
+  `CARGO_BIN_EXE_` reference under `crates/*/tests/`. No SDD sentence moves — S-1's bar
+  (`docs/SDD.md` § 6 S-1) is a floor the card satisfies — and the CTO's field
+  (`kensaiapp-opensource@3a960a7`) stands, on a ground its commit did not state: it rests the
+  workspace choice on RN-6, which weighed only the S-1 bar; the ground is § 9's layer-5 placement.
+  Reasoning: `docs/trail/architecture/self_answer-4.md` § 1.2.
 
 ## 2. Choices to confirm — the Principal Architect drafted a best-effort answer; confirm or override
 
@@ -214,4 +239,20 @@
 - **If overridden:** if § 8 should not track the card's exact text at all, the sentence reduces to
   the pointer § 8 already makes and stops restating the command — which would also make it immune to
   the next card change.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm, with one addition. The sentence as drafted is true as measured:
+  the card reads `cargo test --workspace --locked && (cd nozoki-ui && pnpm exec vitest run)`
+  (`kensaiapp-opensource@3a960a7`, 2026-09-02), which satisfies the S-1 bar (`docs/SDD.md` § 6 S-1,
+  "`cargo test --workspace` exits 0") and adds the Rust packet's `--locked`
+  (`languages/rust/testing.md` § Layers 1–5; `quality_gates.md` "`--locked` is on every per-change
+  gate command"), so § 8 says *satisfies and adds*, naming the packet as the flag's source, and no
+  SDD change is owed because the bar is a floor. The addition: RN-6 is the pointer § 8 hands a
+  reader, and it stops at `c2155cc` — it names the command without `--locked` and says "§ 8 now
+  states the card as it reads", which the card's third move made false too. RN-6's history gains the
+  third commit — `kensaiapp-opensource@3a960a7`, 2026-09-02, `--locked` from the Rust packet, a
+  `cto:` run — so its pinned history is complete and its sentence about § 8 is true again. This
+  keeps the shape § 2.2 settled for the `Languages:` sentence: a live sentence in § 8 with RN-6's
+  pinned commits beside it, the treatment cycle 1 gave RN-2. The *if overridden* alternative — § 8
+  stops restating the command — is not taken: it would give the test-command sentence and the
+  `Languages:` sentence two shapes for the same kind of fact. Named and not covered: the next card
+  change makes the sentence false again until RN-6 is extended; the RN-6 pointer is the reader's
+  route, as § 2.2 accepted. Reasoning: `docs/trail/architecture/self_answer-4.md` § 2.3.
