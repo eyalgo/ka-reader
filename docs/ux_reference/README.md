@@ -1,16 +1,24 @@
 # UX reference — layout, not style
 
-Four screenshots of VS Code, taken by the owner as a layout reference for Nozoki's shell.
+Eight screenshots of VS Code, taken by the owner as a layout reference for Nozoki's shell.
 
 They are here for **what the layout does** — where things sit, how the sidebar relates to the
 reading panel, how a changed file is marked. They are **not** a reference for how Nozoki should
 look. The design direction is a restrained workbench built from primitives, no established
 component design system (`UXD.md` § 9); VS Code's own visual language is not being adopted.
 
-Neither image is annotated. This file is the annotation: every element is either taken or
-excluded below, and an element not listed here was not considered.
+None of the images is annotated in itself. This file is the annotation: every element is either
+taken or excluded below, and an element not listed here was not considered.
 
-Both shots are dark. That says nothing about Nozoki's default — the initial theme follows the
+**Four of the eight carry a take / do-not-take reading; four carry only a description.** The four
+annotated are the ones this file opened with — `vscode-files-view.png`, `vscode-git-view.png`,
+`vscode-repo-selector.png`, `vscode-branch-filter.png`. The four added later — three at
+`nozoki@b7119cb`, one at `nozoki@8879041` — are described under *Four images described, not
+adjudicated* below, and by the rule above nothing in them is taken or excluded. That is not an
+oversight to read past: `UXD.md` RN-13 rests on it, recording that the UXD's entries stand on the
+four annotated images alone.
+
+Every shot is dark. That says nothing about Nozoki's default — the initial theme follows the
 platform's signal, and both themes are first-class (UX-I9).
 
 ---
@@ -143,9 +151,72 @@ stay out of v1 (`UXD.md` § 10), and nothing in this image reopens them.
 
 ### One refinement it hands the CDO
 
-The drafted statement (`docs/UXD_open_issues.md` § 2.1) scopes the history by *a* branch choice.
-This image shows the choice is a **set** — one branch, several, or all of them. The next round
-reconciles the wording; it is a refinement of the drafted shape, not a new question.
+The drafted statement scoped the history by *a* branch choice. This image shows the choice is a
+**set** — one branch, several, or all of them. The next round reconciles the wording; it is a
+refinement of the drafted shape, not a new question.
+
+**It was reconciled.** *Set* is the word both settled documents now use — `UXD.md` UX-F4 and
+`SRS.md` FR-18, each reading "a chosen **set** of branches — one, several, or all of them". The
+draft this pointed at (`docs/UXD_open_issues.md` § 2.1) was removed at `nozoki@9017ae2`.
+
+---
+
+## Four images described, not adjudicated
+
+Three were added at `nozoki@b7119cb` and one at `nozoki@8879041`, all from the same workbench.
+They are here as evidence, not as annotation: nothing in them is taken or excluded, and by this
+file's own rule nothing in them has been considered.
+
+For the three from `b7119cb` there is a reading on record, made elsewhere. The owner directed the
+CDO seat to say whether they moved any UXD entry, and the answer was that they move none, with a
+reason per image — `UXD.md` RN-13, from the run at `docs/trail/uxd/cycle-5.md` § 1.1. **That is a
+decision about the UXD, not an annotation of these images:** it says what the three do not change,
+not what this file takes from them. The summaries below carry it so a reader here need not go and
+find it.
+
+### `vscode-git-view-worktree-stack.png` — the changes list under several working trees
+
+The Source Control view with a repository and three worktree branches listed as peers, each its
+own collapsible section with its own message box and its own `Commit` or `Publish Branch` button;
+one section is expanded to its changed files, with `M` and `U` status letters and `.worktrees/…`
+paths. The graph sits beneath it, drawn on `main`.
+
+Recorded read (RN-13): moves no entry — several folders open at once, and editing affordances, are
+both already excluded (UX-F5, UX-I1; `PRD.md` § Out of Scope).
+
+### `vscode-git-graph-merge-lanes.png` — the graph under two lanes
+
+The same view scrolled to the graph, which draws two lanes in different colours with merge commits
+running both ways — `merge: ppm-creates-seeds → main` and `merge: main → ppm-creates-seeds` —
+where the earlier shots show one lane. The tip commit carries the `main` chip.
+
+Recorded read (RN-13): moves no entry — it is a picture of what UX-F4 and UX-S6 already state,
+with branch membership carried by lane position as well as by colour, which is UX-A2 as written.
+
+### `vscode-branch-filter-many-branches.png` — the same picker at scale
+
+The ref picker of `vscode-branch-filter.png` over nine local branches plus `origin/HEAD` and
+`origin/main`, `main` alone checked and the header reading `1 Selected`, with the graph and an
+open file behind it. Kept as that image's sibling so the two sort together.
+
+Recorded read (RN-13): moves no entry — the same control at a scale where its ref-list filter
+earns its place; the mechanism is unbound by the owner's own word (RN-14), and a ref-list filter
+is not history filtering (`UXD.md` § 10).
+
+### `vscode-commit-detail-pane.png` — what selecting a commit opens
+
+Added at `nozoki@8879041`. The graph with one commit selected and its detail filling the reading
+panel: author avatar and name, the time both relative and absolute, the message body in full, the
+commit's trailers as plain lines, the branch chip, `1 file changed`, the short identifier with a
+copy control, and an `Open on GitHub` link. The seven images before it show the changes list and
+the graph; none shows what selecting a commit opens.
+
+**No read on record.** No seat has yet said what this image moves or does not move: it landed
+after `UXD.md` v10, and after RN-13 counted seven. Two things it sits beside, named so the
+question stays legible and not so it is answered here — UX-F4 and UX-S6 already settle that
+selecting a commit presents what that commit changed and that a commit's entry carries identifier,
+message, author and date; UX-I1 already excludes what writes. Whether anything else in this pane
+is taken is open.
 
 ---
 
@@ -159,11 +230,12 @@ UXD; neither is settled here.
 The owner wants a reader with more than one branch to be able to see that, rather than reading a
 flat list that flattens them together.
 
-This revises a decision the owner made earlier: `docs/srs_trail/cycle-1.md` §2.2 settled the
+This revises a decision the owner made earlier: `docs/trail/srs/cycle-1.md` §2.2 settled the
 history as a read-only list of identifier, message, author and date. A list cannot show where
 branches diverge or merge, so the shape is open again, by the owner's own revision — not by
-inference from these screenshots. `UXD.md` RN-6 currently records the beyond-v1 shape as carried
-and not re-opened; that note is now out of date.
+inference from these screenshots. RN-6 recorded the beyond-v1 shape as carried and not re-opened,
+which this paragraph flagged as out of date; it since was. RN-6 now carries the **diff** shape and
+the placement calls only, and the history's shape is RN-14's.
 
 **What the CDO is asked to do:** look at what VS Code's own source-control graph presents and what
 its documentation says about it, then draft the experience-level statement — what a reader must be
@@ -172,13 +244,18 @@ able to see when a repository has more than one branch. Draft it; do not settle 
 **Feasibility is downstream.** Whether topology is expensive to render is the SRS's and the SDD's
 question, not this document's. It does not narrow what the UXD asks for. One consequence to hand
 forward: the SRS's `FR-18` describes the history as a list, so it needs a revision once this
-lands.
+lands. **It got one** — FR-18 now binds the topology and the chosen branch set as properties, with
+the drawing and the choosing left downstream (`docs/SRS.md` FR-18, on the owner's override at
+`docs/trail/srs/cycle-3.md`).
 
 Still inside the terminus either way — the Agari places the history inside done and does not bound
 its shape.
 
-**Where it now stands:** drafted, awaiting the owner. The statement is `docs/UXD_open_issues.md`
-§ 2.1; `vscode-branch-filter.png` above was supplied after it was drafted.
+**Where it now stands: settled.** The owner bound the properties and not the mechanism, in their
+own words at `docs/trail/srs/cycle-3.md` § 2.1. The UXD carries the shape at UX-F4 and UX-S6 and
+the reasoning at RN-14, and § 5.4's closing line records it as carried and not reopened. The
+companion this line used to point at (`docs/UXD_open_issues.md` § 2.1) was removed at
+`nozoki@9017ae2`.
 
 ### 2. Switching the viewed repository is a dropdown
 
@@ -200,8 +277,12 @@ in one place and a switch in another is two elements telling one truth.
 
 The CDO drafts a lean with the whole document in view and routes it back through the companion.
 
-**Where it now stands:** the dropdown is drafted into the UXD; the placement is leaned and awaiting
-the owner at `docs/UXD_open_issues.md` § 2.2.
+**Where it now stands: settled — the shell chrome.** The owner confirmed it
+(`docs/trail/uxd/cycle-1.md` § 2.2); the UXD carries it at UX-F5, UX-S7 and § 4, with the
+reasoning at RN-15. Two things moved with it, and restating them is not this file's job: the input
+widened from a repository to any local folder, so the control is the **folder selector** (RN-25),
+and its list is bounded to ten by recency (UX-S7, RN-29). The companion this line used to point at
+(`docs/UXD_open_issues.md` § 2.2) was removed at `nozoki@9017ae2`.
 
 ---
 
@@ -212,4 +293,8 @@ secondary (§ 4), and it has exactly two destinations. Whether the Files/Git swi
 pair of labelled tabs at the top of the sidebar, or something else is not settled by these images
 and is not settled here.
 
-**Where it now stands:** leaned and awaiting the owner at `docs/UXD_open_issues.md` § 2.3.
+**Where it now stands: settled — a vertical rail,** each of its two entries carrying its icon with
+a small text label beneath it. The owner overrode the drafted labelled tabs
+(`docs/trail/uxd/cycle-1.md` § 2.3), so the mechanism this section questioned is the one taken,
+with a label attached; `UXD.md` RN-16 carries it. The companion this line used to point at
+(`docs/UXD_open_issues.md` § 2.3) was removed at `nozoki@9017ae2`.
