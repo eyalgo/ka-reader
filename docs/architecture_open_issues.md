@@ -23,6 +23,13 @@
 > false, and the third is a choice the packet deliberately leaves to this product. The physical module
 > set is untouched: `adr/0009-physical-module-set.md` names its crates by **name** and fixes no
 > directory, so no record is superseded and the append-only rule is not in play.
+>
+> **Applied at NFDR v3.** The first `product-architecture` run after this file was opened found its
+> slots unfilled — nothing to fold, no trail cycle — and applied the two § 2 drafts to `docs/nfdr.md`
+> (§ 9's preamble and Rust paths, RN-7, RN-6, § 8; its RN-14 records the run), so *Drafted into the
+> records* below is now literal. The items stand for your confirmation, and § 1.1 for your answer;
+> `docs/nfdr.md` reads Draft until this file is gone. The `docs/nfdr.md:L…` locators below are v2's
+> (`nozoki@1329741`).
 
 ---
 
@@ -30,8 +37,8 @@
 
 ### 1.1 The Rust packet requires a binary crate to select a logging facade, and this product names none
 
-- **Lands in:** `nfdr.md` (a new QC under § Errors and logging's obligations), and an ADR if the
-  choice is judged architecturally significant.
+- **Lands in:** `nfdr.md` § 7 (a new QC beside QC-52, the log's location and shape), and an ADR if
+  the choice is judged architecturally significant.
 - **Why it matters:** the packet fixes the *shape* and deliberately not the choice — a library crate
   depends only on the facade, and **"A binary crate selects an implementation and initializes it once,
   early"** (`<CORE>/doctrine/engineering/languages/rust/errors_logging.md:L86`). The two candidates it
@@ -42,6 +49,18 @@
   seed too — its retire commit records "only log versus tracing is left"
   (`kensaiapp-dev@49e0444f`), so neither side has chosen and the product is the side that must.
   Until it is chosen, NFDR RN-11's diagnostic-log obligations name no facade to hold them.
+  **A lean, offered and not drafted — `log`.** The packet's discriminator is whether diagnostics
+  are "queried by field, or attributed to a concurrent operation" (`tracing`) or "read as lines"
+  (`log`), and "A product that cannot tell which it has, has the second"
+  (`<CORE>/doctrine/engineering/languages/rust/errors_logging.md` § Which facade). This product's
+  log is one line per `failed` or `stopped` item naming the part, the operation and the error text
+  (`docs/SDD.md` § 4 C-I2; NFDR QC-39), bounded as a file a person opens in an editor
+  (`docs/SRS.md` § SRS Review Notes RN-36), and nothing queries it; the attribution a concurrent
+  read needs is already in the line (the part and the operation). `log` is the smaller dependency,
+  which the allowlist (QC-3, QC-26) prefers, and the packet records that a library on `log` stays
+  readable from a binary on `tracing`, so the choice is cheap to reverse. If overridden to
+  `tracing`: the same entry, a second crate in `checks/deps.allow`, and a subscriber initialized
+  in `nozoki-app`.
 - **Answer:** <the owner fills this in>
 
 ## 2. Choices to confirm — the Principal Architect drafted a best-effort answer; confirm or override
@@ -49,7 +68,8 @@
 ### 2.1 Three statements that "no Rust packet exists" are now false, and § 9's test paths move to `crates/`
 
 - **Lands in:** `nfdr.md` § 9 preamble, `nfdr.md` § 9's table rows, and `nfdr.md` RN-7.
-- **Drafted into the records:** three edits, all in the constraint set and none in the decision log.
+- **Drafted into the records:** three edits, all in the constraint set and none in the decision log —
+  applied at NFDR v3 (§ 9's preamble, § 9 rows 2–3, RN-7).
   1. The § 9 preamble reads "the host and core are Rust, for which no language packet exists, so their
      tooling is this product's own, recorded here (RN-7)" (`docs/nfdr.md:L485-L487`). The registry now
      carries `| Rust | rust | `.rs` |`, so the clause is false and its consequence inverts: Rust
@@ -86,7 +106,8 @@
 - **Lands in:** `nfdr.md` RN-7, and RN-6 where it states the same gap.
 - **Drafted into the records:** RN-7's parenthetical "no `Languages:` line on the card — RN-6" is
   struck, and RN-6's own sentence naming "a `pytest` test command and no `Languages:` line" becomes
-  history rather than present state, pinned to the commit that was true when it was written.
+  history rather than present state, pinned to the commit that was true when it was written —
+  applied at NFDR v3 (RN-6 pinned to `kensaiapp-opensource@4bdfddd`; § 8's preamble follows it).
 - **Rationale:** both halves of RN-6 were closed on 2026-09-02 in the managing instance. The card now
   reads `**Test command:** cargo test --workspace && (cd nozoki-ui && pnpm exec vitest run)`
   (`kensaiapp-opensource@c2155cc`, authored by a `cto:` run off the SDD's S-1 command bar) and

@@ -1,8 +1,8 @@
 # NFDR — Nozoki 覗き
 
-**Status:** Settled
+**Status:** Draft
 **Owner:** Principal Architect
-**Version:** 2 — the close: the owner's cycle-1 answers folded (`docs/trail/architecture/cycle-1.md`), ten of its eleven items, and the eleventh settled by derivation from the FDR at v3 (RN-11, RN-12). What this document now binds that v1 did not: a critical advisory blocks release with **no remediation window** — none, not undecided — and `cargo audit` gates every advisory with a reasoned ignore by id (QC-27); the secrets scan is `gitleaks git` (QC-28); QC-33's revocation clause names identity alone; the diagnostic log's bound is the SRS's — one session's lines, 1 MiB on disk, a failed write surfacing nowhere — and own-state retention follows the FDR's R-110 and R-178 – R-182, so QC-40 is a machine check with a § 10 row; the public contract's breaking/additive split (QC-59); own-state read whole or discarded whole, symmetric, silent, never a startup failure (QC-60). ADR-0009 is Accepted. RN-2 is corrected as history, RN-3, RN-4, RN-5 and RN-9 close on the trail, and the upstream moves since v1 read its sources are measured and recorded (RN-13). Nothing is left for the owner; `docs/architecture_open_issues.md` is removed and `Status:` is Settled. (v1: the constraint set stated for the first time, over the settled SDD and SRS with the FDR beside them: the module set and its import graph, the read-only and no-network invariants as machine checks, the three walls around rendered content, the release and sandbox gates, and the test-strategy realization for a Rust host with a TypeScript renderer; nine items parked for the owner.)
+**Version:** 3 — an input moved underneath a settled document, and the companion is re-opened on it: the organisation's language registry gained a Rust packet on 2026-09-02 (`kensaiapp-dev@d628f75c`; its placement ruling `kensaiapp-dev@49e0444f`), and three statements here that no such packet existed are false. This revision applies the two drafts the re-opened companion carries, awaiting the owner's confirmation (`docs/architecture_open_issues.md` § 2.1, § 2.2): § 9's preamble and RN-7 read Rust tooling as the packet's, with what this product fixes differently and why; § 9's Rust test paths move under `crates/`, the placement the owner ruled for every Rust product here; RN-6 and § 8 record the project card's two closes — the two-toolchain test command (`kensaiapp-opensource@c2155cc`) and the `Languages:` line (`kensaiapp-opensource@0af5fb9`) — as history pinned to `kensaiapp-opensource@4bdfddd`. One question stays open and no entry moves for it: the packet requires the binary crate to select a logging facade, `log` or `tracing`, and leaves the choice to this document (§ 1.1 of the companion); RN-14 names what waits on it. No obligation is added, removed or renumbered; no record changes — ADR-0009 names its crates by name and fixes no directory. `Status:` is Draft because a companion is on disk, and this document is Settled only when none is. (v2: the close: the owner's cycle-1 answers folded (`docs/trail/architecture/cycle-1.md`), ten of its eleven items, and the eleventh settled by derivation from the FDR at v3 (RN-11, RN-12). What this document now binds that v1 did not: a critical advisory blocks release with **no remediation window** — none, not undecided — and `cargo audit` gates every advisory with a reasoned ignore by id (QC-27); the secrets scan is `gitleaks git` (QC-28); QC-33's revocation clause names identity alone; the diagnostic log's bound is the SRS's — one session's lines, 1 MiB on disk, a failed write surfacing nowhere — and own-state retention follows the FDR's R-110 and R-178 – R-182, so QC-40 is a machine check with a § 10 row; the public contract's breaking/additive split (QC-59); own-state read whole or discarded whole, symmetric, silent, never a startup failure (QC-60). ADR-0009 is Accepted. RN-2 is corrected as history, RN-3, RN-4, RN-5 and RN-9 close on the trail, and the upstream moves since v1 read its sources are measured and recorded (RN-13). Nothing is left for the owner; `docs/architecture_open_issues.md` is removed and `Status:` is Settled. (v1: the constraint set stated for the first time, over the settled SDD and SRS with the FDR beside them: the module set and its import graph, the read-only and no-network invariants as machine checks, the three walls around rendered content, the release and sandbox gates, and the test-strategy realization for a Rust host with a TypeScript renderer; nine items parked for the owner.))
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · PRD Settled · UXD Settled · DESIGN Settled · CONTENT Settled
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
@@ -25,8 +25,10 @@
 >
 > **Two things about how this document cites.** A trace to a `QC` or an `ADR` opens in this
 > repository. A trace to `quality_defaults.md` v1.1.0, `arch_defaults.md` v2.0.0,
-> `testing_doctrine.md` v2.1.1 or the TypeScript packet (`languages/typescript/`, `testing.md`
-> v2.0.1, `toolchain.md` v1.1.0, `quality_gates.md` v1.1.0) names an engineering-doctrine file of
+> `testing_doctrine.md` v2.1.1, the TypeScript packet (`languages/typescript/`, `testing.md`
+> v2.0.1, `toolchain.md` v1.1.0, `quality_gates.md` v1.1.0) or the Rust packet (`languages/rust/`,
+> `testing.md` v1.0.0, `layout.md` v1.1.0, `errors_logging.md` v1.1.0, `quality_gates.md` v1.1.0,
+> `toolchain.md` v1.1.0) names an engineering-doctrine file of
 > the organisation that publishes this product, which is not in this repository; every such entry
 > states the rule in full here, so the trace is provenance and never a dependency. Every command
 > named below is one the SDD names for a product that has no code yet, or one this document names
@@ -426,8 +428,8 @@ binds the *process*, and asserts no number of its own.
 
 The execution context — execution type, test command, parallelism — is the project card's
 (`system/projects/nozoki/project.md` in the managing instance), not restated here. That card's
-test command reads as provisional and disagrees with the SDD's command bar (RN-6). What follows
-exceeds the card.
+test command is the SDD's command bar for the Rust workspace and Vitest for the renderer, and its
+`Languages:` line names Rust, TypeScript and Shell (RN-6). What follows exceeds the card.
 
 - **QC-55:** The product is one macOS application bundle, `Nozoki.app`, bundle identifier
   `com.kensaiapp.nozoki`; no second binary, no prerequisite, no runtime install, no fetched asset.
@@ -484,15 +486,16 @@ exceeds the card.
 
 The layer set is **not defined here** — it is `testing_doctrine.md` v2.1.1, and this table is one
 project's realization of it. Tooling for the renderer comes from the TypeScript packet
-(`languages/typescript/testing.md` v2.0.1); the host and core are Rust, for which no language packet
-exists, so their tooling is this product's own, recorded here (RN-7). If this table and the
-doctrine disagree on the layers, this table is the copy and is wrong.
+(`languages/typescript/testing.md` v2.0.1) and for the host and core from the Rust packet
+(`languages/rust/testing.md` v1.0.0); what this table fixes differently from either packet, and
+why, is RN-7. If this table and the doctrine disagree on the layers, this table is the copy and is
+wrong.
 
 | Level | Scope | Tool | Where it lives |
 |---|---|---|---|
 | 1 — Unit | The reducer, `ItemState` transitions, the containment check, extension recognition, the sanitizer allowlist, the log line shape | `cargo test` (`#[cfg(test)]` beside the module); Vitest for `nozoki-ui` | inside each `nozoki-core` / `nozoki-app` module; `nozoki-ui/tests/unit/<module>.test.ts` |
-| 2 — Integration | `fs-reader` and `git-reader` against real fixture folders and repositories; the Markdown pipeline against `hostile.md`; the host's config against its own files | `cargo test -p nozoki-core --test git_state`, `--test root_finding`, `--test markdown`, `--test watch`; `cargo test -p nozoki-app --test config` | `nozoki-core/tests/`, `nozoki-app/tests/`, over `checks/fixtures/` |
-| 3 — Application | The IPC command list driven in-process through `nozoki-core`, bypassing the renderer; the whole-model switch | `checks/read-only.sh`; `cargo test -p nozoki-core --test switch` | `checks/`, `nozoki-core/tests/` |
+| 2 — Integration | `fs-reader` and `git-reader` against real fixture folders and repositories; the Markdown pipeline against `hostile.md`; the host's config against its own files | `cargo test -p nozoki-core --test git_state`, `--test root_finding`, `--test markdown`, `--test watch`; `cargo test -p nozoki-app --test config` | `crates/nozoki-core/tests/`, `crates/nozoki-app/tests/`, over `checks/fixtures/` |
+| 3 — Application | The IPC command list driven in-process through `nozoki-core`, bypassing the renderer; the whole-model switch | `checks/read-only.sh`; `cargo test -p nozoki-core --test switch` | `checks/`, `crates/nozoki-core/tests/` |
 | 4 — UI | A surface renders truthfully given a model projection: *pending* as the word, no marker before `observed`, the Git view empty on `plain`, the failure slot and its route, both themes | Vitest Browser Mode with the Playwright provider (`pnpm exec vitest run`) | `nozoki-ui/tests/ui/<component>.test.ts` |
 | 5 — End-to-end | The built bundle: entitlements and sandbox, own-state after a session, churn and kill, latency figures; the timed release walk | `checks/bundle.sh`, `checks/own-state.sh`, `checks/churn.sh`, `checks/latency.sh`, `checks/read-only.sh --kill`; `docs/SRS.md` AC-10 as a manual timed walk | `checks/` |
 | 6 — Architecture | § 1.2's graph, § 1.3's I/O ownership, § 3's reach rules | `checks/structure.sh` (Rust, grep rules); `pnpm exec vitest run tests/architecture` (TypeScript) | `checks/`, `nozoki-ui/tests/architecture/<property>.test.ts` |
@@ -630,21 +633,59 @@ delegation half), QC-18, QC-21, QC-31, QC-33, QC-43, QC-45, QC-50, QC-54, QC-57,
   crash-mid-write of own-state that QC-49's kill can produce is exactly the case its
   discard-whole clause exists for. *(re: QC-59, QC-60; source: SRS C-6, DR-5, FR-3; FDR PD-20,
   R-168 – R-170, PD-39; `docs/trail/architecture/cycle-1.md` § 2.1, § 2.2)*
-- **RN-6:** *(the project card)* `system/projects/nozoki/project.md` still carries a provisional
-  `pytest` test command and no `Languages:` line, while the SDD's command bar is
-  `cargo test --workspace` and the units are Rust and TypeScript. § 8 points at the card as the
-  template requires; the card is the PM's to correct. *(re: § 8; source: SDD § 6 S-1)*
-- **RN-7:** *(language packets)* The renderer resolves to the TypeScript packet by the units the
-  SDD names (`docs/SDD.md` § 3; no `Languages:` line on the card — RN-6). The host and core are
-  Rust, for which the organisation's registry has no packet, so their tooling falls to the
-  language-agnostic floor and is fixed here: `cargo test` for layers 1–3, `cargo build --locked`
-  and `cargo audit` for the tree. Layer 4's browser is Playwright's, not WKWebView, so § 9 splits
-  what layer 4 proves (rendering given state) from what layer 5 proves (the bundle). *(re: § 9;
-  source: `languages/README.md` § The resolution chain; `languages/typescript/testing.md`;
-  ADR-0008)*
+- **RN-6:** *(the project card — history, closed at v3)* At v1 and v2
+  `system/projects/nozoki/project.md` carried a provisional `pytest tests/` test command and no
+  `Languages:` line (`kensaiapp-opensource@4bdfddd`, the card as it stood when v2 read it), while
+  the SDD's command bar was `cargo test --workspace` and the units Rust and TypeScript; § 8 pointed
+  at the card as the template requires and named the disagreement. Both halves closed in the
+  managing instance: the test command reads
+  `cargo test --workspace && (cd nozoki-ui && pnpm exec vitest run)` — the SDD's S-1 bar for the
+  Rust workspace and Vitest for `nozoki-ui`, one gate over the two toolchains ADR-0009 fixes
+  (`kensaiapp-opensource@c2155cc`, 2026-09-01) — and the card declares
+  `Languages: Rust, TypeScript, Shell` (`kensaiapp-opensource@0af5fb9`, 2026-09-02). § 8 now
+  states the card as it reads. Drafted at `docs/architecture_open_issues.md` § 2.2 and applied here
+  awaiting confirmation (RN-14). *(re: § 8; source: SDD § 6 S-1; ADR-0009; the three commits
+  named)*
+- **RN-7:** *(language packets — re-derived at v3)* Both packets resolve at step 1 of
+  `languages/README.md` § The resolution chain, from the card's `Languages:` line (RN-6): the
+  renderer to the TypeScript packet, the host and core to the Rust packet, which the organisation's
+  registry gained on 2026-09-02 (`kensaiapp-dev@d628f75c`). v1 and v2 of this note said no packet
+  existed and Rust tooling fell to the language-agnostic floor — true when written, false since. A
+  packet refines the floor and never overrides this product's own records (`languages/README.md`
+  § Precedence), so what stays here is what this product fixes *differently* from a packet, each
+  with its reason; the rest is the packet's and is not restated. **Where § 9 departs from the Rust
+  packet.** (1) Layers 3, 5 and 6 are realized by the `checks/` harness and `checks/structure.sh` —
+  the SDD names the harness by script (`docs/SDD.md` § 4 C-I3; § 6 S-1) and the owner confirmed
+  the tool set (`docs/trail/architecture/cycle-1.md` § 2.7; RN-3) — where the packet's shape is
+  `tests/<use_case>.rs`, `tests/<flow>.rs` and `tests/architecture.rs` under `cargo test`
+  (`languages/rust/testing.md` § Layers 1–5, § Layers 6–7); the SDD and an owner answer each
+  outrank the packet. (2) Layer 4 is present, on Vitest Browser Mode with Playwright — the packet's
+  own rule for a Rust product that renders is that it "records its layer-4 tooling in its own
+  `docs/nfdr.md` § 9" (`languages/rust/testing.md` § The rules that make that table work); the
+  browser Playwright drives is not the WKWebView the product ships in, so § 9 splits what layer 4
+  proves (rendering given state) from what layer 5 proves (the bundle) — this product's own,
+  unchanged. **Where § 9 now follows the packet.** The Rust test paths sit under `crates/` —
+  `crates/nozoki-core/tests/`, `crates/nozoki-app/tests/` — the owner's ruling for every Rust
+  product here (`languages/rust/layout.md` § A multi-crate product; `kensaiapp-dev@49e0444f`),
+  which names this document's § 9 as the one that adapts; ADR-0009 names the crates by name and
+  fixes no directory, so no record moves. **Where the two already agree.** `cargo audit` at
+  release with `--ignore <RUSTSEC-id>` and its reason (QC-27) and `cargo build --locked` (QC-26)
+  are the packet's own gates since `kensaiapp-dev@5ee506e9`, adopted from this document
+  (`languages/rust/quality_gates.md` § Dependency advisories). The packet's per-change gates —
+  `cargo fmt --all --check`, `cargo clippy --workspace --all-targets --locked -- -D warnings`,
+  `cargo check --workspace --all-targets --locked` — and its `unsafe_code = "forbid"` default bind
+  Rust code through the resolution chain and are not entries here, as the TypeScript packet's gates
+  are not: no SRS floor names them and the packet is their owner. **What the packet leaves to this
+  document, and is still open:** the logging facade the binary crate must select
+  (`languages/rust/errors_logging.md` § Which facade) — `docs/architecture_open_issues.md` § 1.1;
+  RN-14. Drafted at § 2.1 of that companion and applied here awaiting confirmation. *(re: § 9;
+  QC-26, QC-27; source: `languages/README.md` § The resolution chain, § Precedence;
+  `languages/rust/` — `testing.md` v1.0.0, `layout.md` v1.1.0, `quality_gates.md` v1.1.0,
+  `errors_logging.md` v1.1.0; `languages/typescript/testing.md` v2.0.1; SDD § 4 C-I3, § 6 S-1;
+  ADR-0008, ADR-0009; `docs/trail/architecture/cycle-1.md` § 2.7)*
 - **RN-8:** *(citations outside this repository)* Entries tracing to `quality_defaults.md`,
-  `arch_defaults.md`, `testing_doctrine.md` or the TypeScript packet name files of the publishing
-  organisation that a reader of this repository cannot open. Each such entry states its rule in
+  `arch_defaults.md`, `testing_doctrine.md`, the TypeScript packet or the Rust packet name files of
+  the publishing organisation that a reader of this repository cannot open. Each such entry states its rule in
   full, so the trace is provenance and never a dependency — the same resolution
   `docs/CONTENT.md` § CONTENT Review Notes RN-15 records for that document. *(re: QC-26 – QC-32,
   QC-38, QC-53, § 9)*
@@ -726,3 +767,33 @@ delegation half), QC-18, QC-21, QC-31, QC-33, QC-43, QC-45, QC-50, QC-54, QC-57,
   diffed against `b23ed43:docs/CONTENT.md` — no line differs). The project card (RN-6) is unchanged and still
   provisional. *(re: header `Inputs read:`; QC-3, QC-26, QC-40, QC-44, QC-60; source: the seven
   documents at HEAD, 2026-09-01)*
+- **RN-14:** *(v3 — an input moved under a settled document; what this revision did and did not
+  do, and on whose authority)* The registry gained a Rust packet on 2026-09-02
+  (`kensaiapp-dev@d628f75c`, merged at `bc12fcbe`), after v2 closed on 2026-09-01
+  (`nozoki@1329741`). With no companion on disk a
+  `product-architecture` re-run reads both records as done, so the companion was re-opened by an
+  owner-directed session (`nozoki@5003906`) with two drafts and one question, and this run — the
+  first `product-architecture` run after it — is what applied the drafts: § 2.1 → § 9's preamble,
+  § 9's two Rust paths and RN-7; § 2.2 → RN-6 and § 8's preamble. Neither is confirmed: the
+  companion's slots are unfilled, so nothing was folded and no trail cycle is written; the items
+  stay, now describing edits that are in the document rather than proposed for it, and `Status:`
+  reads Draft. The seven inputs did not move: `git diff --stat 1329741 HEAD` over them prints
+  nothing (2026-09-02), so the `Inputs read:` line stands. **What waits on the open question.** The
+  Rust packet requires the binary crate to select a logging facade and initialize it once, early,
+  and leaves the choice — `log` or `tracing` — to this document
+  (`languages/rust/errors_logging.md` § Logging, § Which facade; the owner's relaxation of the
+  packet's first shape, `kensaiapp-dev@819f6708`). `nozoki-app` is that crate and the composition
+  root (ADR-0009 § Decision). No entry names a facade, and none is false for it: QC-39 and QC-52
+  bind the log's line shape and location and QC-40 its bound, and each holds under either. What the
+  choice moves when made: `checks/deps.allow` gains the facade crate and its implementation — a
+  reviewed allowlist change either way (QC-3, QC-26) — and the entry recording the choice lands
+  under § 7 beside QC-52, because the packet makes recording it an obligation of this document
+  ("Recording it is the part that is not optional", same section) and a facade a change could
+  swap silently is a constraint by lifecycle. Two architects reading the same SDD could answer
+  differently — the packet's discriminator is whether diagnostics are queried by field or read as
+  lines — so it is routed, not derived. **No record moves.** ADR-0009 names `nozoki-core` and
+  `nozoki-app` by name and fixes no directory: the `crates/` placement is a layout fact under it,
+  not a reversal of it, and ADR-0002's *two languages* and ADR-0009's *two toolchains* stay true.
+  *(re: header `Status:`, `Version:`; § 8, § 9, RN-6, RN-7; source:
+  `docs/architecture_open_issues.md` § 1.1, § 2.1, § 2.2; `languages/rust/errors_logging.md`
+  v1.1.0; ADR-0009; the commits named)*
