@@ -50,7 +50,45 @@
   the sandbox argument alone (RN-3), and the in-folder image case is in the UXD's own body
   (UX-I12). If your answer is that the prior answers bind, name which — a bare "yes" would have
   three seats re-reading three files this run was told not to open.
-- **Answer:** <the owner fills this in>
+- **Answer:** **They bind — and for most of them "binding" adds nothing, because they already
+  reach this run through documents it was told to read.** Taking the three files apart so that no
+  seat has to open them:
+  1. **Carried by the settled upstream set, and binding through it rather than through the trail.**
+     cycle-1 § 1.2 (a changed file's row opens the diff; one click target, the status letter a
+     label) and § 1.3 (the history drawn in the sidebar beneath the changes list, a selected
+     commit's diff taking the reading panel) are folded into `docs/UXD.md` v9 and carried by UX-F2
+     and UX-S6 (its version line, RN-29). cycle-1 § 2.1 (the SDD follows the SRS on the raw-source
+     switch) is carried by `docs/SRS.md` FR-31. **cycle-1 § 2.4 is the one to be careful with:**
+     its text says an image inside the repository is *not* loaded, and that was overridden
+     afterwards — `docs/UXD.md` UX-I12's first case now renders an in-folder image in place
+     (RN-29 (6)). The UXD is the live statement; the cycle-1 text is superseded and binds nothing.
+  2. **cycle-1 § 1.1 — unsigned, GitHub, one simple path — binds through the decision log, not
+     through the trail, and is not yours to re-give.**
+     `docs/adr/0007-ad-hoc-signed-dmg-on-a-github-release.md` is Accepted and was never deleted,
+     and its § Context quotes the standing call verbatim, "Do not raise signing again" included.
+     RN-5 already carries it from there rather than from the trail, so C-R4 and § 9 TO-9 stand as
+     written and RN-5's contingency does not open. cycle-1 § 2.2 (Tauri 2) and § 2.3 (the
+     Open-panel grant) are the same shape: ADR-0002 and ADR-0003 hold them, and RN-2 and RN-3
+     re-derived them afresh in any case.
+  3. **Two answers live only in the deleted trail, and they bind because this answer says so.**
+     - **cycle-1 § 3.3 — the first public release waits for the full v1 cut.** The words were
+       *"Re-cut — take the alternative. 'let's go with v1.' The first public release waits for the
+       full v1 cut the PRD names, so the first thing a stranger meets is the product
+       `docs/PRD.md` calls v1, not a partial."* This settles § 3.1 of this companion; see it.
+     - **cycle-1 § 3.1 — the standing routing rule and the appetite.** *"this is a question that I
+       think should not come to me"*; a cut-granularity call between two options that both pass the
+       four tests is the seats'; the appetite is smaller rather than larger, but not too small;
+       *"don't forget, the PPM will slice even more"*; and the rule itself — **park an item for the
+       owner when the answer changes what the product promises, not when it changes how the work is
+       divided.** This binds this companion's own routing, and § 2.2 is left open under it.
+  4. **cycle-2 and cycle-3 bind nothing, and no seat should open them.** Their items are defects of
+     the deleted SDD — an `npm ls` that should have read `pnpm ls`, 40 dead trail pointers, and a
+     § 12 that cited no ADRs — and their answers were written by self-answer runs, not by you. The
+     document they corrected no longer exists, and the re-authored § 12 cites the log throughout,
+     which is what cycle-2 § 2.3 was about.
+  Nothing above needs `cycle-1.md`, `cycle-2.md` or `cycle-3.md` opened: 1 and 2 route through
+  documents already in the input set, and 3 states both answers in full. Reasoning:
+  `docs/trail/sdd/self_answer-1.md` § 1.1.
 
 ## 2. Choices to confirm — a seat drafted a best-effort answer; confirm or override
 
@@ -73,7 +111,29 @@
   SVG fixture. UX-I12 does not move in either direction: it names no format now and would name none
   after. Confirming as drafted moves nothing in the SDD; the Content Editor adds the placeholder's
   sentence at their fold (RN-31).
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** **confirm** — the SVG exclusion stands, with two things added that the
+  draft leaves implicit.
+  (1) **State the fit with UX-I12's third case rather than assuming it.** That case is *"an image
+  inside the folder whose file is missing, unreadable or **not an image**"*, and a well-formed SVG
+  is none of the three in the ordinary sense: it *is* an image, and the placeholder is being
+  justified by reading "not an image" as "not a bitmap the asset scheme serves". That reading is
+  defensible and it is the SDD's to make — RN-31 already says the UXD left the format open — but a
+  reader who follows the citation finds a case about broken files and an SVG that is not broken.
+  C-D3 and RN-8 should carry the narrowing in a clause, so that the sentence the Content Editor
+  adds at their fold describes a format the tool does not render rather than a file it could not
+  read (RN-31; `docs/CONTENT.md` § *Message patterns* → *Partial*).
+  (2) **Name the reopening condition, so this is a v1 cut and not a silent permanence.** Adding SVG
+  later is additive — it removes no surface, raises no floor, adds no prerequisite and changes no
+  install path — so under S-11's contract as drafted (itself still yours, § 2.2) it costs a minor
+  version, not a major one. What would reopen it is evidence rather than taste: the timed release
+  walk (AC-10) or an adopter report showing that an in-folder SVG is common enough in a README to
+  be the first thing a stranger meets. Until then the conservative branch is right, for RN-8's own
+  reason — the scheme serves bytes the sanitizer never sees, and C-D3's three walls are the
+  product's whole claim. Worth noting on the cost side: the SVG most often seen in a README is a
+  remote badge, and a remote reference is already the not-fetched placeholder under UX-I12's second
+  case whatever this item decides.
+  Neither addition moves a slice: C-D3 gains a clause, RN-8 gains the reopening condition, and
+  `read-markdown`'s bar is unchanged. Reasoning: `docs/trail/sdd/self_answer-1.md` § 2.1.
 
 ### 2.2 What the 1.0.0 promise covers — the contract the version number starts
 - **Raised by:** CPO
@@ -128,7 +188,27 @@ here. It is a defect, and it is fixed in the SDD rather than asked about.>
   strangers on a v1 that will change, with issues and security reports arriving against the
   support posture before the surface is whole — or a quieter build to the terminus with one release
   at the end. The drafted cut is this seat's product call (RN-17); the other is defensible.
-- **Keep or re-cut:** <"keep", or "re-cut: <the shape to take instead>">
+- **Keep or re-cut:** **keep** — and on firmer ground than the appetite this item offers: you have
+  already decided it, and the drafted cut is your decision.
+  At `docs/trail/sdd/cycle-1.md` § 3.3 (`nozoki@70a879a`) the same question was put — the first
+  public release as soon as reading works, or after the full v1 cut — and the answer was *"Re-cut —
+  take the alternative. 'let's go with v1.' The first public release waits for the **full v1 cut**
+  the PRD names, so the first thing a stranger meets is the product `docs/PRD.md` calls v1, not a
+  partial."* § 1.1 of this companion binds that answer. It settles this item twice over: it places
+  the release **after** the v1 cut, which is where S-7 sits, and it places one **at** the v1 cut,
+  which rules out the alternative offered here — waiting for the terminus, three slices further on.
+  Two riders from that same answer, both already met and worth not rediscovering. The consequence
+  accepted then was that the acquisition-path decision is proved late; the mitigation given with it
+  — *"publishing late does not require verifying late"* — is exactly what § 4 C-I3 and RN-11 now
+  carry, with the bundle, the entitlement list and R-8's probe green from the first slice's first
+  build. The risk that made this a real question has already been retired, independently of where
+  the release sits.
+  **And it holds even if § 1.1 were answered the other way.** RN-17's own argument stands alone:
+  the PRD names the familiarity thesis unproven and says that if it is false the product needs
+  rethinking rather than tuning, so putting the v1 cut in strangers' hands before `read-a-diff`,
+  `read-the-history` and `switch-the-folder` are paid for is the product reason; C-6 makes a
+  pre-1.0.0 release honest about what it is; and S-7's *Delivers* already carries the caveat.
+  Nothing in the SDD moves. Reasoning: `docs/trail/sdd/self_answer-1.md` § 3.1.
 
 ---
 
@@ -171,4 +251,83 @@ position you pick; what stays here until you pick is both.>
   previous version of this document (v4) got wrong. The seams table, the entity table, the
   extension set and every other section of § 3 are untouched by this move, as is every section
   outside § 3. This is an addition, not a re-cut.
+- **Answer:** **Add the units table exactly as this item scopes it — four rows, and nothing else in
+  § 3 touched.** The rows:
+
+  | Unit | Language | Kind |
+  |---|---|---|
+  | `crates/nozoki-core` | `Rust` | `crate` |
+  | `crates/nozoki-app` | `Rust` | `crate` |
+  | `nozoki-ui` | `TypeScript` | `package` |
+  | `checks` | `Shell` | `directory` |
+
+  Where each value comes from:
+  - **The two Rust rows.** The card's `Languages: Rust, TypeScript, Shell` names Rust; `crate` is
+    the Rust packet's own word, and its placement rule is already satisfied — *"Workspace members
+    live under `crates/`, one directory per member"*
+    (`<CORE>/doctrine/engineering/languages/rust/layout.md` § *A multi-crate product*), which is why
+    this item finds the parts table owes nothing. Both rows get the Rust frame — a `Cargo.toml` and
+    a `src/` — which is exactly what the measured run did not create for either of them.
+  - **`nozoki-ui` — TypeScript, `package`.** The card names TypeScript; the unit is a `package`
+    because what has to be created is a `package.json` and its config. **This row is the one that
+    fixes the measured misplacement**, and the template says so in its own words: *"Where a
+    language's frame lands is this table's to say."* The packet's tree is written for a product at
+    the repository root — `index.html`, `package.json`, `vite.config.ts` at the top
+    (`languages/typescript/layout.md` § *The tree*) — and here that frame lands **inside
+    `nozoki-ui/`**, which is also where the card's own test command goes to find it
+    (`cd nozoki-ui && pnpm exec vitest run`).
+  - **`checks` — Shell, `directory`.** Shell because the card declares it, and declares it for this
+    unit specifically: its own comment reads *"plus the `checks/*.sh` harness the NFDR names"*.
+    Writing `none` would leave the card's third language attached to no unit at all and tell a
+    reader that no packet governs those scripts, which is false — `languages/shell/conventions.md`,
+    `testing.md` and `quality_gates.md` all bind them. `directory` because Shell ships **no
+    `layout.md`**, so its packet has no word for a buildable unit, and `checks` builds nothing: it
+    produces no artifact, and § 3 forbids it from being a dependency of any shipped unit. What it
+    needs created is exactly itself, which is the template's own test for `directory`.
+  **One tension named rather than papered over.** The template glosses `directory` as *"a unit with
+  no language at all"*, and the `checks` row has a language. The gloss describes the common case;
+  the load-bearing sentence beside it is about what gets created — *"a `crate` or `package` gets its
+  language's frame, a `module root` gets nothing of its own, and a `directory` gets exactly
+  itself"* — and `checks` is a `directory` on that test. No new Kind word is invented here. If that
+  reading is wrong the fix is `sdd_template.md`'s, not this document's, and the row that changes is
+  one cell.
+  **Nothing else moves**, exactly as this item says: no part slug, no `Lives in` cell, no seams
+  row, no entity, no extension-set line, and no section outside § 3. The table goes under the parts
+  table and above the seams table, which is where `sdd_template.md` § 3 places it. Reasoning:
+  `docs/trail/sdd/self_answer-1.md` § 5.1.
+
+### 5.2 The re-author broke 38 citations in the decision log and the NFDR, and this document records the UXD's equivalent defect but not this one
+
+> **No producing run wrote this item.** It was raised on 2026-09-03 by the `companion-self-answer`
+> run that answered the items above, under `<CORE>/prompts/decide_companion_answers.md` § *The items
+> are not the whole of what a document is owed*. What prompted it: reading the decision log as an
+> input to § 1.1 — which turns on what survived the deletion of `docs/trail/sdd/` — and finding
+> that RN-32 reports exactly this defect in the UXD and nothing reports the larger one in the
+> records. Its slot is left at the placeholder: the reasoning is that run's, the decision is the
+> next round's.
+
+- **Raised by:** `companion-self-answer`, answering this file — 2026-09-03
+- **Tracked by:** none. nozoki has no active 根回し Nemawashi seed and no open 宿場 Shukuba station
+  (`system/projects/nozoki/journey/`, 2026-09-03); this was found while reading the log as an input
+  to the items above, not while cutting work from this document.
+- **What it blocks:** no slice is uncuttable and no § 8 field is unfillable. What is missing is a
+  **Review Note**. RN-32 records that five of the UXD's RN-29 citations died with the trail and
+  reports the defect rather than repairing it; the same run left the larger equivalent in
+  `docs/adr/` and `docs/nfdr.md` unrecorded, so a reader takes RN-32's presence to mean the sweep
+  was done and the rest of the chain is clean.
+- **Where it shows:** § 12, *The downstream boundary*, which rests on the log — "the record is
+  cited rather than re-surfaced" (RN-1) — without noting that the log's citations back into this
+  document no longer resolve; and § SDD Review Notes, which carries RN-32 for the UXD and nothing
+  for the records. Measured 2026-09-03 against `nozoki@c3eb937`: **14** citations of
+  `docs/trail/sdd/cycle-1.md` across ADR-0002, ADR-0003, ADR-0006, ADR-0007 and ADR-0008, dead
+  since `nozoki@9c91359`; **23** citations of this document's review notes by number across
+  ADR-0001 – ADR-0008, all written against the deleted numbering, of which RN-24 and RN-25 have no
+  note at all here and the eight that resolve now carry notes on other subjects (ADR-0002's RN-7,
+  ADR-0004's RN-8 and ADR-0007's RN-17 checked one by one); and **1** in `docs/nfdr.md:385`,
+  `SDD § 6 S-4`, which named live refresh and now names `see-git-status`.
+- **If a document has to be written:** none, and **the repair is not this document's** — § 12 fixes
+  that a defect found here is reported, never repaired from here. It is already routed:
+  `docs/architecture_open_issues.md` § 3.1 carries it to the Principal Architect, opened at
+  `nozoki@20b9a94`. What this document owes is one Review Note in RN-32's own shape, recording what
+  was found, that it was reported rather than repaired, and where it went.
 - **Answer:** <the owner fills this in>
