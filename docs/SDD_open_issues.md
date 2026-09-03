@@ -106,8 +106,9 @@
   diagram or logo is an SVG shows a placeholder where every other image renders, and the owner set
   the in-folder case by override (`docs/UXD.md` RN-29 (6)).
 - **If overridden:** `markdown-renderer` or the asset handler gains an SVG sanitizer, or SVG is
-  served sanitized rather than as bytes — a CTO call on the mechanism; C-D3's format list, C-R7's
-  `img-src` and RN-8 move; the slice that renders Markdown grows by that work and its bar gains an
+  served sanitized rather than as bytes — a CTO call on the mechanism, which RN-8 states; C-D3's
+  format list and RN-8 move, and C-R7 does not, since the sanitized bytes travel on the scheme
+  `img-src` already names; the slice that renders Markdown grows by that work and its bar gains an
   SVG fixture. UX-I12 does not move in either direction: it names no format now and would name none
   after. Confirming as drafted moves nothing in the SDD; the Content Editor adds the placeholder's
   sentence at their fold (RN-31).
