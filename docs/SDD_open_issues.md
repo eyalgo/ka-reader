@@ -197,7 +197,42 @@
 - **If overridden:** the sentence stands as one list of four, and a reader works out for themselves
   which members the closing clause reaches. Nothing else moves either way — no slice, no § 4
   condition, no other § 6 field, and no other section of § 12.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** **confirm** — the contract states two kinds of thing, not one list of
+  four, exactly as this item scopes it. Two additions, one of which corrects a citation the item
+  leans on.
+  (1) **(b) is not one member, and the unconditional set may not claim more than its constraints
+  give.** The read-only half is unconditional in the strongest sense the chain has:
+  *"Viewer-only, permanently: no write path to the viewed folder exists in any version; adding one
+  would be a different product"* (`docs/SRS.md` C-2), and `NFR-7` excludes telemetry, accounts,
+  identity and behavioural data outright with no route out. The no-network half does not read that
+  way on its own text. `docs/SRS.md` NFR-8 forbids network calls during operation *and names its
+  own amendment route in the same entry* — *"The PRD keeps the phrase 'no non-essential network
+  call' as headroom for a possible future update or version check; such a feature enters the PRD as
+  a stated feature before it exists, and reaches this SRS by revision — until then, none."* So the
+  item's rationale is right that a version bump does not buy a network call, and wrong that NFR-8
+  excludes one the way C-2 does: what NFR-8 excludes is a network call arriving without the PRD
+  saying so first. Stated as *"what no version changes"* with no clause, the SDD would assert
+  something its own input contradicts, and a maintainer costing an update check would read a wall
+  where the SRS wrote a door. The unconditional set therefore names NFR-8's route as part of the
+  no-network member: **the change starts upstream with a PRD revision, not with a version bump, and
+  until one lands there is none.** This is the *stale* path in the prompt's check 4 — the sentence
+  is true today and the clause is what keeps it true after the PRD moves.
+  (2) **State the classification as a rule and derive the placements, rather than fixing them
+  here.** This item is answered while § 2.2 is still open, and `product-sdd` folds the companion in
+  one pass — so a *Delivers* sentence that hard-names *(c) by § 4 C-D4* in the unconditional set
+  can be contradicted by the owner's very next answer. § 2.2's own drafted (c) promises **safety**
+  — read whole or discarded whole, touching no folder — which is unconditional because § 4 C-D4
+  already binds it at every version. If the owner instead means **continuity**, the bundle
+  identifier joins what the number prices and (c) moves to the priced set. The rule that survives
+  both branches is the one this item actually found: **a member sits in the priced set when a
+  change to it is on offer and the closing clause reaches it, and in the unconditional set when an
+  upstream constraint forbids the change at every version — and each member names the constraint
+  that puts it there.** RN-19 gains the same rule. Applied today the sets are (a) and (d) priced,
+  read-only and no-network and own-state unconditional; applied after § 2.2 they are whatever that
+  answer makes them, with no second decision needed.
+  Neither addition adds or removes a member, and nothing outside the sentence and RN-19 moves — no
+  slice, no § 4 condition, no other § 6 field, no other section of § 12. Reasoning:
+  `docs/trail/sdd/self_answer-4.md` § 2.3.
 
 ## 3. Cut calls to confirm — where the slicing could reasonably have gone another way
 
