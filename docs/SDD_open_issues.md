@@ -330,4 +330,38 @@ position you pick; what stays here until you pick is both.>
   `docs/architecture_open_issues.md` § 3.1 carries it to the Principal Architect, opened at
   `nozoki@20b9a94`. What this document owes is one Review Note in RN-32's own shape, recording what
   was found, that it was reported rather than repaired, and where it went.
-- **Answer:** <the owner fills this in>
+- **Answer:** **Write the Review Note, as this item scopes it — and two things it does not
+  scope.** The note is the **CTO's**, `*(added)*`, because the boundary it corrects is the CTO's by
+  the standing split (`SDD.md` § *Who holds what* — "§ 12 — the SRS boundary, and the downstream
+  boundary | **CTO**"), where RN-32's is the CDO's for the same reason on the UXD side. Its content
+  is what this item measured: 14 dead citations of `docs/trail/sdd/cycle-1.md` across ADR-0002,
+  ADR-0003, ADR-0006, ADR-0007 and ADR-0008; the review-note citations across ADR-0001 – ADR-0008
+  written against the deleted numbering; `docs/nfdr.md:385`'s `SDD § 6 S-4`; that the file stands at
+  `nozoki@70a879a` and the repair is the records' own, not this document's (§ 12); and where it went
+  — `docs/architecture_open_issues.md` § 3.1, opened at `nozoki@20b9a94`. Re-measured against
+  `nozoki@59287c9`, 2026-09-03: the 14 and the `nfdr.md:385` line are unchanged, and the ADR
+  citations still name RN-24 and RN-25, which this document does not have.
+
+  **(1) The § 12 sentence goes with it, or the note fixes half the defect.** RN-32 is not a note
+  alone: it is paired with one sentence in § 12's matching boundary clause — *"One defect in the UXD
+  itself was found and is reported, not repaired from here: five citations in its RN-29 no longer
+  resolve (RN-32)."* This item's own *Where it shows* names two places, § 12's downstream boundary
+  and the Review Notes, and then asks for one Review Note. In RN-32's shape means both: the
+  downstream boundary paragraph, which rests on the log and says the record is cited rather than
+  re-surfaced (RN-1), gains the equivalent sentence naming the new note. Without it a reader of § 12
+  still meets a boundary resting on a log whose pointers back into this document misdirect, with
+  nothing said — and that is the half of the defect this item measured first.
+
+  **(2) Number it after RN-33 — never into the 20–29 gap.** This document's notes run RN-1 – RN-19
+  and RN-30 – RN-33; 20 – 29 are empty. They are also exactly where the dead citations point:
+  ADR-0007 and ADR-0008 cite `SDD Review Notes RN-25` in three places between them, and ADR-0005
+  cites RN-24 in two (measured 2026-09-03 against `nozoki@59287c9`). A note dropped into that gap turns a citation that visibly fails into one that silently
+  resolves to the wrong subject, which is worse than the defect being recorded — RN-32's own
+  finding, that a broken pointer at least announces itself, run in reverse. So the note is RN-34,
+  and the gap stays empty until the records are repaired. The two rounds are otherwise independent
+  and may run in either order: if `product-architecture` re-points those citations first the hazard
+  is gone, and if it runs second the gap being empty is what keeps it gone in the meantime.
+
+  **Nothing else moves.** No slice, no § 4 condition, no § 6 field, no other section of § 12, and no
+  existing note — including RN-32, which stays exactly as written and is the model rather than the
+  subject. Reasoning: `docs/trail/sdd/self_answer-2.md` § 5.2.
