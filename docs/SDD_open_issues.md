@@ -158,6 +158,47 @@
   events, which is the cost to weigh.
 - **Confirm or override:** <"confirm", or "override: <what to do instead>">
 
+### 2.3 S-11's *Delivers* states the contract as one list of four — two of its members are invariants no version can buy
+
+> **No producing run wrote this item.** It was split out of § 2.2 on 2026-09-03 by the
+> `companion-self-answer` run answering this file, under
+> `<CORE>/prompts/decide_companion_answers.md` § *An item with two seats splits*. § 2.2 asks what
+> the 1.0.0 promise covers — a promise to strangers, and the owner's to make. Inside it sat a
+> second question with a different seat: whether the *Delivers* sentence, whatever it ends up
+> covering, may present its members as one kind of thing. That one is answerable from settled
+> upstream constraints alone and binds nothing outside this document, so it is this document's and
+> not the owner's, and it is the half that moved here. **§ 2.2 is left asking only the first** —
+> what the contract covers, and whether the owner is willing to be held to it; its slot is
+> untouched. This item's slot is left at its placeholder too: the reasoning is that run's, the
+> decision is the next round's. Reasoning: `docs/trail/sdd/self_answer-3.md` § 2.3.
+
+- **Raised by:** `companion-self-answer`, answering this file — 2026-09-03 (split out of § 2.2)
+- **Drafted into the SDD:** `SDD.md` § 6 S-11 *Delivers* states the contract as one list of four —
+  (a) the one install path and the macOS floor, (b) the read-only and no-network promises, (c) own
+  state read by every later version or discarded whole, (d) every surface the PRD names present and
+  read-only — and closes on *"so that removing a surface, raising the floor, adding a prerequisite
+  or changing the install path costs a major version."*
+- **Rationale:** The four breaking changes in that closing clause reach (a) and (d), and nothing
+  else. (b) and (c) are named as covered by the version number with no price attached — and the
+  reason there is no price is that neither is purchasable at any price. `docs/SRS.md` C-2 makes the
+  product viewer-only *"permanently: no write path to the viewed folder exists in any version;
+  adding one would be a different product"*; NFR-7 and NFR-8 exclude telemetry and network calls
+  outright, not merely by default; and this document's own § 4 C-D4 binds own state to read-whole-
+  or-discard-whole, touching no folder, at every version. So the sentence puts two different kinds
+  of thing in one list — what the version number **prices**, and what nothing buys — and a reader
+  asking what a given change costs gets no answer from (b) or (c), because that change is not on
+  offer at any version. A major-version bump is the most a reader could infer, and it is wrong.
+- **The change:** *Delivers* states the two kinds separately, each naming the constraint that binds
+  it: the **priced** set — (a), (d), and whatever else § 2.2 settles — with the closing clause
+  reading on that set alone; and the **unconditional** set — (b) by C-2, NFR-7 and NFR-8, (c) by
+  § 4 C-D4 — stated as what no version changes. RN-19 gains the same split. **No member is added or
+  removed by this item.** Which things the contract covers is § 2.2's call, and this classification
+  applies to whatever that item settles, including an override that drops a member.
+- **If overridden:** the sentence stands as one list of four, and a reader works out for themselves
+  which members the closing clause reaches. Nothing else moves either way — no slice, no § 4
+  condition, no other § 6 field, and no other section of § 12.
+- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+
 ## 3. Cut calls to confirm — where the slicing could reasonably have gone another way
 
 <This section is the SDD's own, and has no twin in the upstream companions. The four tests in
