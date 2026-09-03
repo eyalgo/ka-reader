@@ -6,9 +6,14 @@
        signal, and the state a finished SDD carries; the open-issues file is gone.
      Locked = ratified as the source of truth. -->
 **Owner:** CTO · CPO · CDO — one run, three seats
-**Version:** 1 — first complete cut: §§ 1–7, 9, 11, 12 and Review Notes RN-1–RN-37 written across
-a run interrupted once (API 529, resumed clean per `docs/trail/sdd/run-1.md`); `SDD_open_issues.md`
-still open at § 2.2 for the owner, so this document stays Draft.
+**Version:** 2 — run 2 (`docs/trail/sdd/run-2.md`): folded companion § 2.4 into § 6 S-11 *Delivers*
+(priced set's (d) drops "and read-only", covered instead by the unconditional set's C-2) and RN-19;
+repointed every `SDD.md` citation of a companion item folded since run 1 (§§ 1.1, 2.1, 2.3, 3.1,
+5.1, 5.2) from the transient `SDD_open_issues.md` to its permanent copy at
+`docs/trail/sdd/cycle-1.md`, across all three lanes. `SDD_open_issues.md` still open at § 2.2 for
+the owner, so this document stays Draft. Version 1 — first complete cut: §§ 1–7, 9, 11, 12 and
+Review Notes RN-1–RN-37 written across a run interrupted once (API 529, resumed clean per
+`docs/trail/sdd/run-1.md`).
 
 > The SDD is the technical **how**, and it ends in a **cut**. It states the architecture the rest of
 > the system builds against — derived from the PRD (the *what and why*), the SRS (the system-level
@@ -837,7 +842,7 @@ names that no entry did.
   beyond-v1 slices, as a release below 1.0.0. Bar: AC-10 on the floor's macOS, AC-14 on the
   release, and AC-1 – AC-3 green over the whole surface built so far. The alternative — one public
   release at 1.0.0 with the terminus whole — passes the four tests too; the choice between them was
-  the owner's, raised at `SDD_open_issues.md` § 3.1 and answered **keep**: the owner had already
+  the owner's, raised at `docs/trail/sdd/cycle-1.md` § 3.1 and answered **keep**: the owner had already
   ruled it — "The first public release waits for the full v1 cut the PRD names, so the first thing
   a stranger meets is the product `docs/PRD.md` calls v1, not a partial" (the previous SDD's
   `cycle-1.md` § 3.3, quoted in the § 3.1 answer and bound to this run by the § 1.1 answer). So the
@@ -1084,8 +1089,8 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   the image's alt text saying that content outside the folder is not fetched — never a broken-image
   glyph (UX-I12 second case, UX-I13; the sentence is `docs/CONTENT.md` § *Message patterns* →
   *Partial*'s). Where it references an in-folder image that is missing, unreadable or not one of
-  the formats the tool shows — an SVG among them, as `SDD_open_issues.md` § 2.1 confirms — the
-  placeholder states what was observed: the file's condition, or its format, and that it is not
+  the formats the tool shows — an SVG among them, as `docs/trail/sdd/cycle-1.md` § 2.1 confirms —
+  the placeholder states what was observed: the file's condition, or its format, and that it is not
   shown (UX-I12 third case; RN-31). An external link is shown with its destination readable and
   does nothing when clicked — no browser opens, nothing is fetched; a relative link to a file in
   the folder opens that file in the panel exactly as a tree selection does, and the tree's selected
@@ -1114,12 +1119,12 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   AC-22, AC-23. UXD: UX-I12 whole — rendered by default, the absent switch stated by silence, the
   three image cases, the two link behaviours; UX-S1 Success (rendered for Markdown); UX-F1 (rendered
   when it is Markdown); UX-I13, UX-I15; § 4 C-E1, C-E7 of this document. The SVG case is not in the
-  UXD's text and is not traced to it: it is the confirmed choice at `SDD_open_issues.md` § 2.1
-  (RN-31).
+  UXD's text and is not traced to it: it is the confirmed choice at `docs/trail/sdd/cycle-1.md`
+  § 2.1 (RN-31).
 - **Moves toward:** first — reading, of which rendered Markdown is the PRD's stated part; second —
   the first untrusted content the product renders, with the promise held through it.
 - **Not in this slice:** the raw-source switch — not built (§ 9 TO-5); an SVG inside the folder
-  rendered in place — the placeholder, confirmed at `SDD_open_issues.md` § 2.1 as a v1 cut that
+  rendered in place — the placeholder, confirmed at `docs/trail/sdd/cycle-1.md` § 2.1 as a v1 cut that
   evidence reopens (RN-8), never a slice ahead of that evidence; a diff's rendering —
   `read-a-diff`; images and documents outside Markdown — beyond v1 (PRD § Out of Scope).
 - **Why here in the order:** Third because it is the first slice that renders untrusted content
@@ -1539,8 +1544,8 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
 - **Delivers:** After this, an adopter can rely on the version number: the release reads 1.0.0, the
   README's "anything may change" caveat is gone, and in its place the contract the number covers is
   stated as two kinds of thing, each member naming the constraint that places it — **what the
-  number prices:** the one install path and the macOS floor, and every surface the PRD names present
-  and read-only, so that removing a surface, raising the floor, adding a prerequisite or changing the
+  number prices:** the one install path and the macOS floor, and every surface the PRD names
+  present, so that removing a surface, raising the floor, adding a prerequisite or changing the
   install path costs a major version; and **what no version changes:** no write to the viewed
   folder ("no write path to the viewed folder exists in any version", `docs/SRS.md` C-2), no
   telemetry (NFR-7), no network call during operation — whose only route in is the one the SRS
@@ -1864,8 +1869,8 @@ that holds the PRD's pen in that run**. One gap was found and is in the companio
 what the 1.0.0 promise covers for an application with no library surface, which § Assumptions
 "Versioning" names as "what users rely on" and does not define (`SDD_open_issues.md` § 2.2,
 RN-19). One further item is not a gap but a call the PRD leaves open by design — "Before 1.0.0
-anything may change" — raised as the owner's cut call (§ 3.1) and answered *keep* on the owner's
-own prior ruling (RN-17). The immediacy
+anything may change" — raised as the owner's cut call (`docs/trail/sdd/cycle-1.md` § 3.1) and
+answered *keep* on the owner's own prior ruling (RN-17). The immediacy
 thresholds the PRD leaves TBD are the SRS's to fold in by revision, and no slice here writes a
 number for them.
 
@@ -1884,9 +1889,9 @@ them by reference. Where the UXD delegates to a document beside or below it — 
 SRS (UX-I16) — this document cites the delegate and fixes nothing of its own. A gap in the UXD found
 here is a companion item for the CDO's own UXD run, never a redesign from this document — even by
 the seat that holds the UXD's pen in that run. One was found: UX-I12's in-folder image case names
-no format, and § 4 C-D3 decides what an SVG is (`SDD_open_issues.md` § 2.1, RN-31). One defect in
-the UXD itself was found and is reported, not repaired from here: five citations in its RN-29 no
-longer resolve (RN-32).
+no format, and § 4 C-D3 decides what an SVG is (`docs/trail/sdd/cycle-1.md` § 2.1, RN-31). One
+defect in the UXD itself was found and is reported, not repaired from here: five citations in its
+RN-29 no longer resolve (RN-32).
 
 **The downstream boundary.** This document authors no ADR and designs no individual change. The
 decision log already holds nine records written from the previous SDD
@@ -1953,8 +1958,8 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   on that answer** — it stands on the sandbox argument alone, and would read the same under either
   answer. The record is ADR-0003. § 1.1 was answered at round 3 — the prior answers bind, the
   Open-panel grant among them through ADR-0003 — and nothing here moved for it, as this note
-  said it would not (`SDD_open_issues.md` § 1.1, answer 2) *(re: § 4 C-R2, C-R3; source: SRS
-  FR-2, FR-3, NFR-4, NFR-14; UXD UX-S4, UX-S7)*.
+  said it would not (`docs/trail/sdd/cycle-1.md` § 1.1, answer 2) *(re: § 4 C-R2, C-R3; source:
+  SRS FR-2, FR-3, NFR-4, NFR-14; UXD UX-S4, UX-S7)*.
 - **RN-4:** *(CTO)* *(added)* The parts' *Lives in* cells read `crates/nozoki-core`,
   `crates/nozoki-app`, `nozoki-ui` and `checks` — *because* the `crates/` placement is the owner's
   ruling for every Rust product in this instance, as `docs/nfdr.md` carries it (its Version line,
@@ -1977,8 +1982,8 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   stated. **Closed at round 3:** § 1.1 is answered — the prior answers bind, and this one binds
   through the decision log rather than the trail: ADR-0007 is Accepted and was never deleted, so
   "C-R4 and § 9 TO-9 stand as written and RN-5's contingency does not open"
-  (`SDD_open_issues.md` § 1.1, answer 2; reasoning `docs/trail/sdd/self_answer-1.md` § 1.1)
-  *(re: § 4 C-R4, § 9 TO-9, § 11 R-2, R-7; source: SRS C-3, C-11, C-12, NFR-13)*.
+  (`docs/trail/sdd/cycle-1.md` § 1.1, answer 2; reasoning `docs/trail/sdd/self_answer-1.md`
+  § 1.1) *(re: § 4 C-R4, § 9 TO-9, § 11 R-2, R-7; source: SRS C-3, C-11, C-12, NFR-13)*.
 - **RN-6:** *(CTO)* *(added)* The macOS floor is 14.0 — *because* C-11 delegates it here; the
   runtime does not force it (Tauri 2's prerequisites page: "macOS Catalina (10.15) and later"), so
   it is the oldest version the timed walk is run on, chosen for fewer WKWebView generations to hold
@@ -2009,8 +2014,8 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   admitting no script, no event attribute, no external reference and no `foreignObject` — with the
   sanitized bytes served on the same `nozoki-asset` scheme: C-D3's format list and
   `read-markdown`'s bar move, and C-R7 does not, since `img-src` already names the scheme.
-  Confirmed as drafted with these two additions at `SDD_open_issues.md` § 2.1 *(re: § 4 C-D3,
-  C-R7, § 9 TO-6; source: SRS FR-32, NFR-16; UXD UX-I12)*.
+  Confirmed as drafted with these two additions at `docs/trail/sdd/cycle-1.md` § 2.1 *(re: § 4
+  C-D3, C-R7, § 9 TO-6; source: SRS FR-32, NFR-16; UXD UX-I12)*.
 - **RN-9:** *(CTO)* *(added)* The first slice links no `git-reader` and never resolves the
   model's `kind` — *because* step 5 demands the smallest reversible slice that proves the shape,
   and the shape's claim is the wall, not Git; the root finding is a port call asked only when a
@@ -2077,7 +2082,7 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   hands early is that the bet is tested before the three slices that build on it are paid for; and
   C-6 makes a pre-1.0.0 release honest about what it is. The CTO's step 3 finds no dependency
   forbidding it; the one alternative that passes the four tests — a single public release at 1.0.0
-  with the terminus whole — is the owner's call and was raised at `SDD_open_issues.md` § 3.1.
+  with the terminus whole — is the owner's call and was raised at `docs/trail/sdd/cycle-1.md` § 3.1.
   **Changed at round 3**, authorized by that item's answer (`docs/trail/sdd/self_answer-1.md`
   § 3.1, binding through § 1.1's answer, same file): **keep** — and on the owner's own prior ruling
   rather than on this seat's argument: the previous SDD's companion had put the same question and
@@ -2089,8 +2094,8 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   placement is step 3's call, the CTO's, and S-7's *Rests on* and *Why here in the order* and § 7's
   closing paragraph are theirs to reword. This seat's argument stands beneath the ruling and is
   kept as the reason the ruling was right *(re: § 5 step 4, § 6 S-7, § 7; source: PRD § Scope
-  (In), § Assumptions "Versioning", "The familiarity thesis"; SRS C-6; `SDD_open_issues.md` § 3.1,
-  § 1.1)*.
+  (In), § Assumptions "Versioning", "The familiarity thesis"; SRS C-6; `docs/trail/sdd/cycle-1.md`
+  § 3.1, § 1.1)*.
 - **RN-18:** *(CPO)* *(changed)* Between `read-a-file` landing and `read-markdown` landing, a `.md`
   file is shown as plain text — a departure from FR-30 ("displayed rendered by default") for an
   intermediate build — *because* rendering untrusted content is a decision `read-a-file` never
@@ -2107,9 +2112,10 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   (the flags, exit codes, output formats and config schema a CLI would declare have their
   application-shaped equivalents here). It is a best-effort draft of product intent the PRD does
   not carry, so it is routed to the owner as `SDD_open_issues.md` § 2.2, and § 12's PRD boundary
-  names it as the one PRD gap this run found. **Changed at the round-2 re-run**, authorized by the
-  companion's § 2.3 — an item split out of § 2.2 by the `companion-self-answer` run and confirmed
-  there (`docs/trail/sdd/self_answer-3.md` § 2.3; `docs/trail/sdd/self_answer-4.md` § 2.3): the
+  names it as the one PRD gap this run found. **Changed at run 1's round-2 re-run**, authorized by
+  the companion's § 2.3 (retired to `docs/trail/sdd/cycle-1.md` § 2.3) — an item split out of
+  § 2.2 by the `companion-self-answer` run and confirmed there (`docs/trail/sdd/self_answer-3.md`
+  § 2.3; `docs/trail/sdd/self_answer-4.md` § 2.3): the
   *Delivers* sentence had put two kinds of thing in one list of four, and a reader asking what a
   change to the read-only or no-network promise costs got a major version as the only inference,
   which is wrong — no version buys either. It now states the two kinds apart under this rule: **a
@@ -2121,10 +2127,21 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   than asserting a wall the SRS wrote as a door) and own-state safety (§ 4 C-D4) are unconditional.
   No member was added or removed; § 2.2 — which members the contract covers, and whether the owner
   is willing to be held to it — stays the owner's, under the routing rule the companion's § 1.1
-  answer binds: an item goes to the owner when its answer changes what the product promises, not
-  when it changes how the work is divided (`docs/trail/sdd/self_answer-1.md` § 1.1). The rule above
-  applies to whatever § 2.2 settles, with no second decision *(re: § 6 S-11, § 12; source: PRD
-  § Assumptions "Versioning"; SRS C-2, C-6, NFR-7, NFR-8; § 4 C-R5, C-D4)*.
+  answer binds (`docs/trail/sdd/cycle-1.md` § 1.1, answer 3): an item goes to the owner when its
+  answer changes what the product promises, not when it changes how the work is divided
+  (`docs/trail/sdd/self_answer-1.md` § 1.1). The rule above applies to whatever § 2.2 settles, with
+  no second decision. **Changed at run 2, round 1**, authorized by the companion's § 2.4 — raised
+  by the `companion-self-answer` run after run 1 closed, with its slot left for this run
+  (`docs/trail/sdd/self_answer-5.md` § 2.4) — and decided by this seat, not the owner, under the
+  same routing rule: it changes where a promise already made is stated, not what the product
+  promises. The priced set's member (d) read "present and read-only", and read-only is C-2's — the
+  invariant the unconditional set already carries — so the two sets gave a reader opposite answers
+  to what making a surface writable costs: a major version from the one, *never, at any version*
+  from the other, which is what C-2 says. The two words are deleted and (d) reads *every surface
+  the PRD names, present*. No member is added or removed; read-only stays covered, in the set whose
+  constraint places it; and this too applies to whatever § 2.2 settles — an override that drops (d)
+  moots it *(re: § 6 S-11, § 12; source: PRD § Assumptions "Versioning"; SRS C-2, C-6, NFR-7,
+  NFR-8; § 4 C-R5, C-D4, C-E5)*.
 - **RN-30:** *(CDO)* *(added)* § 5 step 1's observability read passes all eleven entries — and
   E-8 among them — *because* observable does not mean graphical: a command's output and a file the
   product leaves untouched are surfaces, and behaviour on them passes the check, where a layer being
@@ -2138,14 +2155,14 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   inside the folder renders in place* — names no format, so the SDD is deciding an experience the
   UXD left open rather than contradicting one; but a reader of a README whose diagram is an SVG
   sees a placeholder where the UXD promised the image, and that is a narrowing the owner can see.
-  It is routed to `SDD_open_issues.md` § 2.1 as a choice to confirm, not written into the UXD from
-  here (§ 12, the UXD boundary). Two consequences hold either way: the placeholder states what was
+  It was routed to the companion's § 2.1 — retired to `docs/trail/sdd/cycle-1.md` § 2.1 — as a
+  choice to confirm, not written into the UXD from here (§ 12, the UXD boundary). Two consequences hold either way: the placeholder states what was
   observed — the file's format, which the tool does not show — and never a broken-image glyph
   (UX-I12, UX-I13); and its sentence follows `docs/CONTENT.md` § *Message patterns* → *Partial* —
   *what is not shown, marked in the place it would have been* — whose one example covers the
   remote case only, so a sentence for this case is the Content Editor's to add at their fold, and
-  this note names the gap rather than wording it. **Confirmed** at `SDD_open_issues.md` § 2.1, with
-  one clause this seat carries: the fit with UX-I12's third case is stated, not assumed. That case
+  this note names the gap rather than wording it. **Confirmed** at `docs/trail/sdd/cycle-1.md`
+  § 2.1, with one clause this seat carries: the fit with UX-I12's third case is stated, not assumed. That case
   reads *missing, unreadable or not an image*, and a well-formed SVG is none of those in the
   ordinary sense; the placeholder therefore describes **a format the tool does not render**, never a
   file it could not read — which is what the Content Editor's sentence must say, and what
@@ -2187,8 +2204,8 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   that range keeps failing visibly rather than resolving silently to the wrong subject — which is
   why this note is RN-34 and the next is RN-35; and this run's own citations of the records (§ 2,
   § 4, § 12, RN-1 – RN-13) point at record numbers and section names, never at a record's review-note
-  numbers. Measured 2026-09-03 against `nozoki@59287c9`; raised at `SDD_open_issues.md` § 5.2
-  *(re: § 12; source: `docs/adr/0001` – `0008`; `docs/nfdr.md:385`)*.
+  numbers. Measured 2026-09-03 against `nozoki@59287c9`; raised at `docs/trail/sdd/cycle-1.md`
+  § 5.2 *(re: § 12; source: `docs/adr/0001` – `0008`; `docs/nfdr.md:385`)*.
 - **RN-35:** *(CTO)* *(added)* Two values for the history that FR-18 leaves downstream, fixed in
   `read-the-history`'s command half: the port's **window** is 1,000 commits from the requested
   tips, past which the walk stops and says so — the mechanism behind UX-S6's stated end, "older
@@ -2212,8 +2229,8 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   One tension, named: the template glosses `directory` as a unit with no language, and this row has
   one; the load-bearing test is what gets created, and on that test `checks` is a `directory`. If
   that reading is wrong the fix is the template's and the row that changes is one cell. Answered
-  in the owner's seat at `SDD_open_issues.md` § 5.1 *(re: § 3; source: `sdd_template.md` v4.1.0
-  § 3; `system/projects/nozoki/project.md` `Languages:`)*.
+  in the owner's seat at `docs/trail/sdd/cycle-1.md` § 5.1 *(re: § 3; source: `sdd_template.md`
+  v4.1.0 § 3; `system/projects/nozoki/project.md` `Languages:`)*.
 - **RN-37:** *(CPO)* *(changed)* From `open-a-folder` until `see-git-status` lands, the sidebar
   holds the Files view alone — S-1's *Not in this slice* fences the rail's Git entry and the Git
   view to `see-git-status`, and S-1's observable half states the consequence — which departs, for
@@ -2222,7 +2239,7 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   step 5), and a Git entry whose view could show only *pending* forever would draw a state the
   tool never resolves (UX-I13). It is the same shape as RN-18's `.md`-as-plain-text intermediate,
   and closes the same way: no release ships it. `first-public-release` lands after the whole v1
-  cut by the owner's ruling (RN-17; `SDD_open_issues.md` § 3.1, § 1.1), and `see-git-status` is
+  cut by the owner's ruling (RN-17; `docs/trail/sdd/cycle-1.md` § 3.1, § 1.1), and `see-git-status` is
   inside that cut *(re: § 6 S-1 *Not in this slice*, S-4; source: UXD § 4, UX-I13; SRS FR-11)*.
 
 ---
