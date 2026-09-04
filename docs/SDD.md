@@ -1,19 +1,29 @@
 # SDD — nozoki
 
-**Status:** Draft
+**Status:** Settled
 <!-- Draft = open issues or choices to confirm remain (open-issues file present).
      Settled = nothing left for the owner to answer and no open technical question — the done
        signal, and the state a finished SDD carries; the open-issues file is gone.
      Locked = ratified as the source of truth. -->
 **Owner:** CTO · CPO · CDO — one run, three seats
-**Version:** 2 — run 2 (`docs/trail/sdd/run-2.md`): folded companion § 2.4 into § 6 S-11 *Delivers*
-(priced set's (d) drops "and read-only", covered instead by the unconditional set's C-2) and RN-19;
-repointed every `SDD.md` citation of a companion item folded since run 1 (§§ 1.1, 2.1, 2.3, 3.1,
-5.1, 5.2) from the transient `SDD_open_issues.md` to its permanent copy at
-`docs/trail/sdd/cycle-1.md`, across all three lanes. `SDD_open_issues.md` still open at § 2.2 for
-the owner, so this document stays Draft. Version 1 — first complete cut: §§ 1–7, 9, 11, 12 and
-Review Notes RN-1–RN-37 written across a run interrupted once (API 529, resumed clean per
-`docs/trail/sdd/run-1.md`).
+**Version:** 3 — run 3 (`docs/trail/sdd/run-3.md`): folded the owner's confirm of companion § 2.2
+(the 1.0.0 promise's contract) into § 6 S-11 *Delivers* / *Not in this slice* and § 12 *The PRD
+boundary* (CPO); added § 3's `contract.sh` row, § 4 C-I6 (a tag-anchored contract-pin check
+enforcing the priced set's install-path/floor/surface-presence members, which had no enforcing
+command before), § 6 S-11's command half, § 11 R-12, and RN-38 (CTO); repointed § 6 S-11 *Reached
+when*'s observable half and added the fourth confirmed exclusion, "nothing the harness prints"
+(CDO, RN-40); added the exclusions sentence itself to § 6 S-11 *Delivers*, which the companion's
+draft had carried since run 1 but the SDD never stated (CPO, round 2, RN-19); fixed two
+found-while-walking defects in place, unrelated to § 2.2 (RN-39, RN-40); repointed every `SDD.md`
+citation of the now-resolved companion items to `docs/trail/sdd/cycle-2.md` across all three lanes.
+`SDD_open_issues.md` now holds no open item anywhere and is removed — nothing is left for the owner
+to answer, so this document is Settled. Version 2 — run 2 (`docs/trail/sdd/run-2.md`): folded
+companion § 2.4 into § 6 S-11 *Delivers* (priced set's (d) drops "and read-only", covered instead
+by the unconditional set's C-2) and RN-19; repointed every `SDD.md` citation of a companion item
+folded since run 1 (§§ 1.1, 2.1, 2.3, 3.1, 5.1, 5.2) from the transient `SDD_open_issues.md` to its
+permanent copy at `docs/trail/sdd/cycle-1.md`, across all three lanes. Version 1 — first complete
+cut: §§ 1–7, 9, 11, 12 and Review Notes RN-1–RN-37 written across a run interrupted once (API 529,
+resumed clean per `docs/trail/sdd/run-1.md`).
 
 > The SDD is the technical **how**, and it ends in a **cut**. It states the architecture the rest of
 > the system builds against — derived from the PRD (the *what and why*), the SRS (the system-level
@@ -245,7 +255,7 @@ interpret gives a different answer twice over the same settled text. Leave both 
 | `own-state` | crates/nozoki-core | The tool's own remembered state — theme, window frame, and beyond v1 the remembered folders as security-scoped bookmarks with display names and which was viewed last — read whole or discarded whole, written only inside the app's container (FR-21, DR-5) | Anything of the folder's content. The diagnostic log. A path outside the container |
 | `ipc-surface` | crates/nozoki-app | The Tauri 2 host and **composition root**: the closed command list and the events the renderer receives (SM-4); the asset handler serving bytes only for a path the containment check passes; the Open panel and the sandbox grant; the one window; the entitlements, the capability file and the Content Security Policy (§ 4 C-R2, C-R7); the diagnostic log writer (§ 4 C-I2); wiring the libgit2 adapter to the Git port | Read logic — every command delegates to `folder-model` and formats the result. Any plugin. A second window. A terminal line |
 | `surfaces` | nozoki-ui | The shell the UXD draws: the rail, the tree, the reading panel and its treatments (code, rendered Markdown, and beyond v1 the diff), the Git view (and beyond v1 the history beneath its changes list), the chrome with the identity element and the theme control (`docs/UXD.md` § 4, § 6); the highlighter with its six bundled grammars; the theme tokens; the message catalogue. It draws projections and draws no state the host did not send | Filesystem, network or shell capability of any kind. Building a URL from content. A fetch, a socket, a dynamic import of a URL. A message not in the catalogue. A dialog, a toast, a notification |
-| `read-only-harness` | checks | The scripts and fixtures that prove the promises on every build and every release: `read-only.sh`, `no-network.sh`, `bundle.sh`, `own-state.sh`, `churn.sh`, `latency.sh`, `structure.sh`, `deps.allow`, and the fixture folders — a repository, a plain folder, a folder inside a repository, a parent of two repositories, a linked worktree, a submodule, a hostile Markdown corpus (§ 4 C-I3) | Being a dependency of any shipped unit. Driving the rendered UI. Shipping in the bundle |
+| `read-only-harness` | checks | The scripts and fixtures that prove the promises on every build and every release: `read-only.sh`, `no-network.sh`, `bundle.sh`, `own-state.sh`, `churn.sh`, `latency.sh`, `structure.sh`, `deps.allow`, the fixture folders — a repository, a plain folder, a folder inside a repository, a parent of two repositories, a linked worktree, a submodule, a hostile Markdown corpus (§ 4 C-I3) — and, from `promise-one-point-zero`, `contract.sh` with the pin `contract/<major>` it reads (§ 4 C-I6) | Being a dependency of any shipped unit. Driving the rendered UI. Shipping in the bundle |
 
 **Four physical units carry the nine parts.** `crates/nozoki-core` is a Rust library that imports
 no Tauri crate, so the harness links it without a window; `crates/nozoki-app` is the Rust binary
@@ -500,6 +510,22 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   Recognition is by extension alone, case-insensitively; a file with no extension or one outside
   the set is plain text (RN-7). The set grows only when the floor grows (FR-8). *Violated by:*
   content sniffing, a shebang read, an extension added without a floor language behind it.
+- **C-I6.** **The priced contract is proved on every tagged release from 1.0.0, against the pin
+  its major wrote.** `checks/contract/<major>` is written once, at the major's `.0.0` release,
+  from the built bundle and the build's capability file — the macOS floor as
+  `LSMinimumSystemVersion` prints it, the release's asset names (`Nozoki-<version>.dmg`,
+  `SHA256SUMS`), and SM-4's command list as the capability file grants it — and nothing else: no
+  message, no token and no line of the log, which the contract excludes (§ 6 S-11 *Delivers*).
+  `checks/contract.sh <tag>` takes the pin as `git show v<major>.0.0:checks/contract/<major>` —
+  the tag anchors it, so an edit to the working-tree file cannot move what a release is held to —
+  and fails when the bundle's floor is above the pin's, a pinned asset is missing from the
+  release, or a pinned command is absent from the capability file. It reads the priced set — C-R4,
+  C-R5, and the surfaces' presence through SM-4 — and nothing of the unconditional set, which C-I3
+  proves on every build; a new major writes a new pin, and that is the one change the check reads
+  as legal (`docs/SRS.md` C-6; AC-14 "the version number obeys C-6"; C-11). Before `v1.0.0`
+  there is no pin and the script is not run — C-6's pre-1.0.0 half, stated rather than tested.
+  *Violated by:* a tag inside a major whose bundle, asset list or command list disagrees with the
+  pin; a pin rewritten without a new major; a release offered with the script red.
 
 **Identity, authorization and data protection.**
 
@@ -1550,9 +1576,12 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   folder ("no write path to the viewed folder exists in any version", `docs/SRS.md` C-2), no
   telemetry (NFR-7), no network call during operation — whose only route in is the one the SRS
   names, a PRD revision stating the feature before it exists, and until one lands, none (NFR-8) —
-  and own state read whole or discarded whole, touching no folder (§ 4 C-D4). Which members the
-  contract covers is the owner's call (`SDD_open_issues.md` § 2.2); which kind a member is follows
-  the rule RN-19 states, whatever that answer makes the set.
+  and own state read whole or discarded whole, touching no folder (§ 4 C-D4). **Not covered, at
+  any version:** the exact wording of any message, any token value, the diagnostic log's lines,
+  and anything the harness prints — a change to any of those breaks no promise, so `docs/CONTENT.md`
+  and `docs/DESIGN.md` may move without a major version. Which members the contract covers was the
+  owner's call, and is made — the four members above and the exclusions, confirmed as drafted
+  (`docs/trail/sdd/cycle-2.md` § 2.2); which kind a member is follows the rule RN-19 states.
 - **Reached when:** *Observable (CDO):* this slice adds no surface, so what a person watches is
   the whole surface again, on the 1.0.0 bundle they downloaded: every observable half of S-1 to
   S-10 walks as written, in both themes, against a repository and a plain folder. The release page
@@ -1563,12 +1592,16 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   folders are as they were, and no surface says anything about a migration. They launch it over a
   state file they have corrupted: it opens as on first run — the Open panel, then the selector
   holding only browse — and no sentence in the window mentions the state (UX-S7 Empty, UX-I13; § 4
-  C-D4). No message, no token and no line of the log is different from the release before in a way
-  a reader would call a promise broken, because none of those is the promise (`SDD_open_issues.md`
-  § 2.2). *Command (CTO):* the tag is `v1.0.0` and `Cargo.toml`, `CFBundleShortVersionString` and
+  C-D4). No message, no token, no line of the log and nothing the harness prints is different from
+  the release before in a way a reader would call a promise broken, because none of those is the
+  promise (`docs/trail/sdd/cycle-2.md` § 2.2). *Command (CTO):* the tag is `v1.0.0` and `Cargo.toml`, `CFBundleShortVersionString` and
   the release page agree; every command in
-  `first-public-release`'s half passes again on the downloaded bundle, `checks/bundle.sh` now
-  against C-R2's three entries; `checks/own-state.sh --from <previous-tag>` passes — a container
+  `first-public-release`'s half passes again on the downloaded bundle, with two differences —
+  `checks/bundle.sh` now against C-R2's three entries, and that half's closing check inverted: the
+  version is 1.0.0, not below it; `checks/contract/1` exists, written from this bundle and this
+  build's capability file — the floor `14.0`, the two asset names, SM-4's eight commands — and
+  `checks/contract.sh v1.0.0` passes against it (C-I6); `checks/own-state.sh --from
+  <previous-tag>` passes — a container
   written by the previous release is opened by this build with no write outside the container, and
   a container the build cannot read leaves it at first-run state with no failure surface (C-D4);
   `checks/latency.sh`'s figures are within the numbers the SRS now carries, or the SRS still
@@ -1577,8 +1610,9 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   `SM-4`'s complete list — `open_diff`, `walk_history` and `switch_folder` included — and after
   `--kill`; `checks/no-network.sh` exits 0; the network monitor across a full session exercising
   diffs, history and a switch records zero outbound connections (AC-12 with AC-1 – AC-3).
-- **Rests on:** § 4 C-R4, C-R5, C-D4, C-I3, C-I4; § 9 TO-8 (raising the floor is now a major
-  version); § 11 R-7. Slices: `first-public-release`, `switch-the-folder`, `read-the-history`.
+- **Rests on:** § 4 C-R4, C-R5, C-D4, C-I3, C-I4, C-I6; § 9 TO-8 (raising the floor is now a
+  major version); § 11 R-7, R-12. Slices: `first-public-release`, `switch-the-folder`,
+  `read-the-history`.
 - **Traces to:** PRD § Assumptions "Versioning" — "Reaching 1.0.0 is a product event — the moment
   the promise starts"; § Goals "Pick-it-up adoption"; § Success Metrics "Read-only integrity",
   reckoned at the closing release. SRS: C-6 (the 1.0.0 half), C-11, C-3; NFR-9; DR-5; AC-12,
@@ -1591,8 +1625,9 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   semantic-versioning promise in force"; with it the terminus is reached.
 - **Not in this slice:** any new surface — none; a second platform — outside done; a breaking
   change — after this slice, priced, batched and announced, never casual (PRD § Assumptions
-  "Versioning"); the contract's content beyond what is drafted here — the owner's to confirm
-  (`SDD_open_issues.md` § 2.2).
+  "Versioning"); any member the contract does not name — none is on offer: the owner confirmed
+  the draft as it stands (`docs/trail/sdd/cycle-2.md` § 2.2), and widening it changes what the
+  product promises, which the routing rule sends to the owner (RN-19), never to a slice.
 - **Why here in the order:** Last by dependency: the promise it starts covers every surface the
   PRD names, so the surface must be whole (`switch-the-folder`, `read-the-history`); the caveat it
   withdraws was made by `first-public-release`; and the own-state test across versions needs a
@@ -1837,6 +1872,13 @@ A risk with no trigger and no response is an observation.>
   the floor admits; *response* the origin form is settled by the first Markdown slice and written
   into C-R7 (Open Questions); what moves is one directive and the scheme's registration, not the
   sanitizer or the check.
+- **R-12:** A breaking change to the priced set ships under a minor or patch number by oversight
+  — the floor raised in a plist line, a surface's command dropped from SM-4's list, an asset
+  renamed — with every promise test green, because none of them reads the priced set — *shows up
+  as* `checks/contract.sh` failing on the tag against the pin its major wrote (C-I6); before
+  `promise-one-point-zero` it shows up as nothing, which is C-6's pre-1.0.0 half and not a gap;
+  *response* the release is not offered, R-7's rule, and the change is reverted or carried to the
+  next major with a new pin.
 
 ## 12. What this design is not
 
@@ -1865,10 +1907,11 @@ excludes, and § 1 holds every slice to the Agari the PRD is scoped against. The
 value to this document directly — its delegations run through the SRS (the acquisition channel,
 the macOS floor) and this document takes the SRS's word for them. A gap in the PRD found here is a
 companion item for the CPO's own PRD run, never a rewrite from this document — **even by the seat
-that holds the PRD's pen in that run**. One gap was found and is in the companion, not in the PRD:
-what the 1.0.0 promise covers for an application with no library surface, which § Assumptions
-"Versioning" names as "what users rely on" and does not define (`SDD_open_issues.md` § 2.2,
-RN-19). One further item is not a gap but a call the PRD leaves open by design — "Before 1.0.0
+that holds the PRD's pen in that run**. One gap was found and went to the companion, not into the
+PRD: what the 1.0.0 promise covers for an application with no library surface, which
+§ Assumptions "Versioning" names as "what users rely on" and does not define — answered
+**confirm** by the owner, 2026-09-04, and folded (`docs/trail/sdd/cycle-2.md` § 2.2, RN-19); the
+PRD is unchanged by the answer, and the contract lives in § 6 S-11. One further item is not a gap but a call the PRD leaves open by design — "Before 1.0.0
 anything may change" — raised as the owner's cut call (`docs/trail/sdd/cycle-1.md` § 3.1) and
 answered *keep* on the owner's own prior ruling (RN-17). The immediacy
 thresholds the PRD leaves TBD are the SRS's to fold in by revision, and no slice here writes a
@@ -2111,7 +2154,8 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   application with no library surface, and the CPO's own posture makes that declaration this seat's
   (the flags, exit codes, output formats and config schema a CLI would declare have their
   application-shaped equivalents here). It is a best-effort draft of product intent the PRD does
-  not carry, so it is routed to the owner as `SDD_open_issues.md` § 2.2, and § 12's PRD boundary
+  not carry, so it is routed to the owner as the companion's § 2.2 (retired to
+  `docs/trail/sdd/cycle-2.md` § 2.2), and § 12's PRD boundary
   names it as the one PRD gap this run found. **Changed at run 1's round-2 re-run**, authorized by
   the companion's § 2.3 (retired to `docs/trail/sdd/cycle-1.md` § 2.3) — an item split out of
   § 2.2 by the `companion-self-answer` run and confirmed there (`docs/trail/sdd/self_answer-3.md`
@@ -2140,8 +2184,25 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   from the other, which is what C-2 says. The two words are deleted and (d) reads *every surface
   the PRD names, present*. No member is added or removed; read-only stays covered, in the set whose
   constraint places it; and this too applies to whatever § 2.2 settles — an override that drops (d)
-  moots it *(re: § 6 S-11, § 12; source: PRD § Assumptions "Versioning"; SRS C-2, C-6, NFR-7,
-  NFR-8; § 4 C-R5, C-D4, C-E5)*.
+  moots it. **Closed at run 3, round 1**, by the owner's answer to § 2.2 — **confirm**, 2026-09-04,
+  given as "i guess confirm" (`docs/trail/sdd/cycle-2.md` § 2.2): the draft stands exactly as
+  §§ 2.3 and 2.4 left it, four members in two kinds and the exclusions, and none of the six
+  additions the walking session offered was taken (`docs/trail/sdd/self_answer-5.md` § 2.2) — they
+  were that session's, not the item's. The fold changes no member; what it changes is standing:
+  the contract is the owner's declaration now, no longer this seat's draft; the two "whatever
+  § 2.2 settles" clauses above are settled, with (d) kept; and S-11's *Delivers* and *Not in this
+  slice* and § 12's PRD boundary cite the permanent copy in place of the transient companion.
+  **One sentence is added to the *Delivers* at run 3, round 2** — the contract's four exclusions,
+  "the exact wording of any message, any token value, the diagnostic log's lines, and anything the
+  harness prints" — *because* the companion's draft bullet had carried them since run 1
+  (`docs/trail/sdd/cycle-1.md` § 2.2, "Not covered") and the owner confirmed them with the members,
+  but no version of the *Delivers* had ever stated them: the observable half enforced them from
+  run 1 (RN-40) and C-I6 cites the *Delivers* for them (RN-38), both against a sentence that was
+  only in the companion. Found while walking the peers' round-1 edits and fixed in place
+  (`<CORE>/doctrine/governance/found_while_walking.md`, clause 1); the exclusions are the fence of
+  the contract, not a member of it, so the sets and the rule above are unchanged *(re: § 6 S-11,
+  § 12; source: PRD § Assumptions "Versioning"; SRS C-2, C-6, NFR-7, NFR-8; § 4 C-R5, C-D4, C-E5,
+  C-I6)*.
 - **RN-30:** *(CDO)* *(added)* § 5 step 1's observability read passes all eleven entries — and
   E-8 among them — *because* observable does not mean graphical: a command's output and a file the
   product leaves untouched are surfaces, and behaviour on them passes the check, where a layer being
@@ -2241,6 +2302,46 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   and closes the same way: no release ships it. `first-public-release` lands after the whole v1
   cut by the owner's ruling (RN-17; `docs/trail/sdd/cycle-1.md` § 3.1, § 1.1), and `see-git-status` is
   inside that cut *(re: § 6 S-1 *Not in this slice*, S-4; source: UXD § 4, UX-I13; SRS FR-11)*.
+- **RN-38:** *(CTO)* *(added)* § 4 gains C-I6 — the priced contract pinned at each major's `.0.0`
+  tag and proved by `checks/contract.sh` on every tagged release after it — with the script and
+  its pin added to `read-only-harness` (§ 3), the artifact and the command added to
+  `promise-one-point-zero`'s command half, and R-12 naming what it catches — *because* the owner's
+  confirm (`docs/trail/sdd/cycle-2.md` § 2.2) makes the four-member contract the product's
+  declaration rather than a seat's draft, and a declaration is held by a test or by memory. The
+  unconditional set already had its tests on every build — `read-only.sh`, `no-network.sh`,
+  `own-state.sh` (C-I3, C-D4). The priced set had none: the floor was held by a literal `prints
+  14.0` in one slice's bar and by C-R5's sentence that raising it after 1.0.0 is a breaking
+  change, and a surface's presence by nothing — `read-only.sh` exercises whatever SM-4 lists, so a
+  command removed from the list is a command it stops exercising, not a failure. What the check
+  reads is exactly the priced members and nothing the contract excludes: no wording, no token, no
+  log line. The pin is read from the `.0.0` tag rather than the working tree so that holding a
+  release to it needs no reviewer's memory either — the reason `deps.allow` is diffed rather than
+  trusted (C-R6). A technical call inside this seat's lane: it changes no member of the contract
+  and nothing the owner was asked; the CPO's declaration and the CDO's observable half stand as
+  written *(re: § 3 `read-only-harness`, § 4 C-I6, § 6 S-11 *Reached when* and *Rests on*, § 11
+  R-12; source: `docs/trail/sdd/cycle-2.md` § 2.2; SRS C-6, C-11, AC-14; § 4 C-R4, C-R5)*.
+- **RN-39:** *(CTO)* *(changed)* `promise-one-point-zero`'s command half re-runs
+  `first-public-release`'s and now exempts that half's closing check — the version "is below
+  1.0.0" — which the same sentence's `v1.0.0` tag cannot pass; the bar had named only
+  `bundle.sh`'s entry count as the difference. Found while walking the slice at run 3, round 1,
+  and fixed in place (`<CORE>/doctrine/governance/found_while_walking.md`, clause 1); owed since
+  run 1, and no other field or slice moves *(re: § 6 S-11 *Reached when*, command half; source:
+  § 6 S-7 *Reached when*, command half; SRS C-6)*.
+- **RN-40:** *(CDO)* *(changed)* `promise-one-point-zero`'s observable half now cites the owner's
+  confirm where it stands for good (`docs/trail/sdd/cycle-2.md` § 2.2) rather than the transient
+  companion, and its closing sentence names all four of the contract's exclusions where it had
+  named three: the harness's output joins the message wording, the token values and the log's
+  lines as what a person may see differ between releases without a promise breaking — *because*
+  the confirmed item excludes "anything the harness prints" in terms, and that output is a surface
+  a person watches at a release (§ 5 step 1, E-8; RN-30), so an observable half that left it out
+  let a reader hold a changed check line against the promise. Found while repointing at run 3,
+  round 1, and fixed in place (`<CORE>/doctrine/governance/found_while_walking.md`, clause 1). No
+  member of the contract moves, no other field, and nothing in the C-E clause or § 12 reacts to
+  §§ 2.2 or 2.4 settling: C-E5 already carries read-only as the identity, which is the
+  unconditional set's kind and not the priced set's, and every C-E condition names its wording as
+  `docs/CONTENT.md`'s and its tokens as `docs/DESIGN.md`'s — outside the promise, as the confirm
+  leaves them *(re: § 6 S-11 *Reached when*, observable half; source: `docs/trail/sdd/cycle-2.md`
+  § 2.2, the exclusions; § 3 `read-only-harness`; § 4 C-E5)*.
 
 ---
 
