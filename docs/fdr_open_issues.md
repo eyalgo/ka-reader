@@ -217,4 +217,47 @@
 
 ## 3. Raised from downstream — an item raised against the FDR after it settled
 
-<None this round.>
+### 3.1 The SDD has met both sentences RN-29 found, so this document's record of the contradiction — the version note, RN-7, and R-21's and R-46's relation marks — describes a departure that no longer exists
+> **This item was raised on 2026-09-04 by a `companion-self-answer` run, not by a `product-fdr`
+> run.** The run was answering `docs/SDD_open_issues.md` § 5.1 and read `docs/fdr.md` as that
+> item's named source; the finding is that answering it made three sentences here stale, which no
+> item on this file asked. Its Answer slot is left at its placeholder: the reasoning is that run's,
+> the decision is the next round's.
+- **Raised by:** a `companion-self-answer` run answering `docs/SDD_open_issues.md` § 5.1 — 2026-09-04
+  — reading `docs/fdr.md` as that item's source, in no authoring seat.
+- **Tracked by:** none. nozoki has no active 根回し Nemawashi seed and no open 宿場 Shukuba station
+  (`system/projects/nozoki/journey/` — both roots empty, 2026-09-04). Found while reading this
+  document, not while cutting work from it.
+- **What it blocks:** nothing stalls and no gate fails. What it costs is this document's
+  traceability, which is what a reader uses to know whether the FDR and the SDD agree: three
+  sentences say they disagree where they now agree, so a builder or a QA seat chasing the departure
+  finds nothing at the other end and cannot tell a resolved departure from an unrecorded one.
+- **Where it shows:** `docs/SDD.md` moved from v3 to v4 (`nozoki@683db69`) and folded both sentences
+  RN-29 found, under the owner's own answers at `docs/trail/fdr/cycle-1.md` §§ 2.4 and 2.7 — its
+  § 3 `fs-reader` now admits UTF-16 by byte-order mark beside UTF-8 with its boundary stated
+  (`docs/SDD.md` § SDD Review Notes RN-41), and its § 11 R-3's response now names where the Git
+  directory lies as what was observed, says this folder's Git state is therefore not read, and
+  offers no folder to choose (RN-42). Three sites here have not seen it. **(1) The version note**
+  (`docs/fdr.md:5`) — *"Two owner-confirmed rules the re-authored SDD contradicts stand … and are
+  surfaced, not arbitrated (RN-29)"*, present tense, and the SDD contradicts neither at v4.
+  **(2) RN-7** (`docs/fdr.md:396`) — *"the SDD's response has the failure state 'naming the folder
+  that would need granting' (`docs/SDD.md` § 11 R-3)"*, present tense against a live unpinned path
+  that no longer reads that way; and RN-7's closing call, that the wording be met at the SDD's next
+  revision, has been met with nothing here recording it. **(3) R-21's and R-46's relation marks** —
+  R-21 is carried as a *changed* relation to SDD § 11 R-3 (`docs/fdr.md:62`) and R-46 as *added*
+  (`docs/fdr.md:101`), both describing a source that has since caught up. RN-29 itself is not in
+  this list: it pins its finding to *"`docs/SDD.md` v3"* in its own first sentence, so it is a dated
+  record and stays true. `docs/fdr_open_issues.md` § 2.7 is likewise not in it — its slot is filled
+  and an answer given is never rewritten.
+- **If a document has to be written:** none. All three repairs are inside sentences this document
+  already carries, and no rule, product decision, exclusion or example moves: R-21 and R-46 keep
+  their wording exactly, because what changed is the SDD agreeing with them, not either rule.
+  My reading, offered and not drafted: re-point the three sites at `docs/SDD.md` v4 and record the
+  meeting in a review note naming `nozoki@683db69` and SDD RN-41/RN-42 as what met it. Whether
+  R-21's *changed* and R-46's *added* then become realized or agreeing relations is this document's
+  own traceability rule to apply, and this run does not word it.
+- **Answer:** <the owner fills this in>
+
+**How it closes.** `product-fdr` folds it on its next run like any other item.
+
+<!-- add 3.2, 3.3, … as needed -->
