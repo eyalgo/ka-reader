@@ -1,23 +1,35 @@
 # SDD — nozoki
 
-**Status:** Draft
+**Status:** Settled
 <!-- Draft = open issues or choices to confirm remain (open-issues file present).
      Settled = nothing left for the owner to answer and no open technical question — the done
        signal, and the state a finished SDD carries; the open-issues file is gone.
      Locked = ratified as the source of truth. -->
 **Owner:** CTO · CPO · CDO — one run, three seats
-**Version:** 4 — run 4 (`docs/trail/sdd/run-4.md`): all three seats declared `no_followup` with no
-recall outstanding, but `docs/SDD_open_issues.md` still stands on disk (§ 5.1, opened by a
-`companion-self-answer` run on the FDR side, Answer slot unfilled and untouched throughout — the
-skill's rule leaves an unconsumed companion alone), so this document is stamped Draft rather than
-Settled. Content changes, both folded independently of that companion: CTO, under the owner's own
-confirmed FDR-trail answers (`docs/trail/fdr/cycle-1.md` §§ 2.4, 2.7) — widened § 3 `fs-reader`'s
-text rule to admit UTF-16 (BOM) alongside UTF-8, updated § 6 S-2's fixture set to match, rewrote
-§ 11 R-3's response to state an observed condition with nothing to do next and no folder offered,
-added a § 6 S-4 reducer case backing the observable half's linked-worktree/submodule assertion
-(RN-41, RN-42, RN-44). CDO — named the terminal form in § 4 C-E4 (it did not, as written, carry the
-shape R-3's rewritten response now takes) and added § 6 S-4's observable-half sentence for the same
-case (RN-43). CPO — verified its lane unchanged against the current PRD/Agari; no edit. Version 3 —
+**Version:** 5 — run 5 (`docs/trail/sdd/run-5.md`): all three seats declared `no_followup` with no
+recall outstanding, and `docs/SDD_open_issues.md` no longer stands on disk, so this document is
+stamped Settled. The run consumed the one companion item standing at intake (§ 5.1, whose Answer
+slot had come back filled — "confirm — and it is already done" — since run 4 ended): copied whole
+to `docs/trail/sdd/cycle-3.md` before any seat touched it. CTO confirmed the fold it names needed
+nothing further, repointed RN-41 and RN-42 from "keeps its Answer slot for the owner" to the
+owner's confirm and the item's permanent trail copy, and removed `SDD_open_issues.md` from disk
+(empty of items). CDO closed RN-43 with the same provenance: the run-4 C-E4/§ 6 S-4 widening was
+this seat's own reading, now confirmed by the owner at the same trail item, re-checked and
+unchanged. CPO verified its lane unchanged against the current PRD/Agari and named the `successor
+CTO` that opened the close above; no edit. No content sentence changed — only the three review
+notes' provenance, and the companion's removal. Version 4 — run 4 (`docs/trail/sdd/run-4.md`): all
+three seats declared `no_followup` with no recall outstanding, but `docs/SDD_open_issues.md` still
+stood on disk (§ 5.1, opened by a `companion-self-answer` run on the FDR side, Answer slot unfilled
+and untouched throughout — the skill's rule leaves an unconsumed companion alone), so that run
+stamped this document Draft rather than Settled. Content changes, both folded independently of
+that companion: CTO, under the owner's own confirmed FDR-trail answers (`docs/trail/fdr/cycle-1.md`
+§§ 2.4, 2.7) — widened § 3 `fs-reader`'s text rule to admit UTF-16 (BOM) alongside UTF-8, updated
+§ 6 S-2's fixture set to match, rewrote § 11 R-3's response to state an observed condition with
+nothing to do next and no folder offered, added a § 6 S-4 reducer case backing the observable
+half's linked-worktree/submodule assertion (RN-41, RN-42, RN-44). CDO — named the terminal form in
+§ 4 C-E4 (it did not, as written, carry the shape R-3's rewritten response now takes) and added
+§ 6 S-4's observable-half sentence for the same case (RN-43). CPO — verified its lane unchanged
+against the current PRD/Agari; no edit. Version 3 —
 run 3 (`docs/trail/sdd/run-3.md`): folded the owner's confirm of companion § 2.2
 (the 1.0.0 promise's contract) into § 6 S-11 *Delivers* / *Not in this slice* and § 12 *The PRD
 boundary* (CPO); added § 3's `contract.sh` row, § 4 C-I6 (a tag-anchored contract-pin check
@@ -2390,9 +2402,13 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   without that answer in front of it (the SDD this one replaced stated no text rule, so the answer
   had no earlier sentence to land in). The value is taken from where the owner set it and nowhere
   else: the FDR is not an input of this document and no rule is read from it; the companion's § 5.1,
-  which names the same two sentences, keeps its Answer slot for the owner, untouched by this run.
+  which names the same two sentences, kept its Answer slot for the owner, untouched by that run.
+  That slot came back **confirm** — the owner's seat found the fold already matching cycle-1
+  §§ 2.4 and 2.7 clause by clause — and the item stands whole at `docs/trail/sdd/cycle-3.md`
+  § 5.1; run 5 re-checked the fold against the same answers and folded nothing further.
   No part, seam, slice, edge or place in the order moves *(re: § 3 `fs-reader`; § 6 S-2 *Reached
-  when*, command half; source: `docs/trail/fdr/cycle-1.md` § 2.4; SRS FR-10, FR-29)*.
+  when*, command half; source: `docs/trail/fdr/cycle-1.md` § 2.4; SRS FR-10, FR-29;
+  `docs/trail/sdd/cycle-3.md` § 5.1)*.
 - **RN-42:** *(CTO)* *(changed)* § 11 R-3's response no longer has the `failed` Git item "naming
   the folder to choose instead": the item's observed condition is where the Git directory lies,
   this folder's Git state is therefore not read, and no folder is offered. *Because* the owner
@@ -2406,9 +2422,10 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   `docs/CONTENT.md`'s, not this note's; the fixture (AC-25's own-top-level case, C-I3's
   `linked-worktree` and `submodule`) is unchanged. The same provenance rule as RN-41: the owner's
   answer is taken from where it was set, the FDR is read for no rule, and the companion's § 5.1
-  keeps its slot for the owner. No part, seam, slice, edge or place in the order moves *(re: § 11
-  R-3; source: `docs/trail/fdr/cycle-1.md` § 2.7; `docs/fdr.md` RN-7; § 4 C-E4, C-I1, C-I3; SRS
-  FR-1, FR-33)*.
+  kept its slot for the owner — answered **confirm** and retired whole to
+  `docs/trail/sdd/cycle-3.md` § 5.1 (RN-41 carries the close). No part, seam, slice, edge or place
+  in the order moves *(re: § 11 R-3; source: `docs/trail/fdr/cycle-1.md` § 2.7; `docs/fdr.md`
+  RN-7; § 4 C-E4, C-I1, C-I3; SRS FR-1, FR-33; `docs/trail/sdd/cycle-3.md` § 5.1)*.
 - **RN-43:** *(CDO)* *(changed)* § 4 C-E4 names the terminal form a message's third part may
   take, and § 6 `see-git-status`'s observable half gains the linked-worktree and submodule case.
   *Because* the CTO asked this seat to confirm that C-E4 carries the shape § 11 R-3's `failed`
@@ -2436,9 +2453,14 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   entries it instantiates (UX-I10, UX-I14) and R-3 for the case, and no UXD gap is claimed: the
   entries cover it. Nothing else in this seat's lanes reacts to RN-41: `read-a-file`'s observable
   half says *any other text file is plain text* and lets `fs-reader`'s rule decide what text is.
+  The widening was made in run 4 on this seat's own reading of the settled documents, not on an
+  answer; the owner's seat has since read it as one of the "two additions this item did not
+  predict" and confirmed it as correct (`docs/trail/sdd/cycle-3.md` § 5.1, its *Answer* slot),
+  and run 5 re-checked C-E4 and S-4's sentence against that answer and changed neither.
   No part, seam, slice, edge or place in the order moves *(re: § 4 C-E4; § 6 S-4 *Reached when*,
   observable half; source: `docs/CONTENT.md:62`, § *Message patterns*, § *Tone*,
-  § *Traceability*; `docs/UXD.md` UX-I6, UX-I10, UX-I14, UX-S3; § 11 R-3, RN-42)*.
+  § *Traceability*; `docs/UXD.md` UX-I6, UX-I10, UX-I14, UX-S3; § 11 R-3, RN-42;
+  `docs/trail/sdd/cycle-3.md` § 5.1)*.
 - **RN-44:** *(CTO)* *(added)* `see-git-status`'s command half gains one reducer case for § 11
   R-3: a port double whose `probe` answers `root` and whose `state()` returns the error naming a
   Git directory outside the folder, and the model holds the Git item as `failed(condition)` with
