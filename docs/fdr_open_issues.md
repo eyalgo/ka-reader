@@ -37,8 +37,8 @@
   owner's own from `docs/trail/architecture/cycle-3.md` § 3.1, answer (2): a document that is updated
   in place carries trace tags that name *where a fact lives now*. **Re-pointed**, where the
   re-authored SDD carries the subject: R-106 → `§ 4 C-E9` (the initial theme); R-117, R-171 and
-  R-174 → `§ SDD Review Notes RN-35` (the default branch set and the window); R-73 → `§ 3 \`surfaces\``
-  (the history beneath the changes list); R-124 → `§ 3 \`folder-model\`` replace-whole and
+  R-174 → `§ SDD Review Notes RN-35` (the default branch set and the window); R-73 → § 3 `surfaces`
+  (the history beneath the changes list); R-124 → § 3 `folder-model` replace-whole and
   `§ 4 C-E6`; R-126 → `§ 4 C-R3`. **Pinned** to `nozoki@70a879a:docs/SDD.md § SDD Review Notes RN-n`,
   where it does not: R-70 (RN-20 — beside `docs/SRS.md` § SRS Review Notes RN-37, which now carries
   the owner's words), R-124, R-126 and R-181 (RN-26, for the clauses no live section carries), and
