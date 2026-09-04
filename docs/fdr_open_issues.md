@@ -64,7 +64,7 @@
   four review notes pointing at notes on other subjects or at nothing, in a document the Product
   Owner and the QA seat read cold. Either way no rule, product decision or exclusion changes its
   meaning.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm — the re-pointed / pinned split stands as drafted, under the owner's rule for a document revised in place (`docs/trail/architecture/cycle-3.md` § 3.1, answer (2)). Every re-pointed target was opened this run and carries its subject: `docs/SDD.md` § 4 C-E9 states the initial theme, light where no signal can be read (R-106); RN-35 states the default tip set and the window (R-117, R-171, R-174); § 3 `surfaces` reads *"the history beneath its changes list"* (R-73); § 3 `folder-model` reads *replace-whole* and § 4 C-E6 the plain folder's state (R-124); § 4 C-R3 carries the path that cannot be read (R-126). The pinned trail resolves (`git cat-file -e 70a879a:docs/trail/sdd/cycle-1.md`), and `grep -c 'SDD § SDD Review Notes RN-\(16\|19\|20\|26\)'` on `docs/fdr.md`, the `nozoki@70a879a:` prefix excluded, prints 0 (2026-09-04). Not taken: pinning all twelve — a pointer that resolves live is the one signal a later reader has that this document and the SDD still agree, and freezing it hides that. Decided in the owner's seat by a `companion-self-answer` run, 2026-09-04. Reasoning: `docs/trail/fdr/self_answer-3.md` § 2.1.
 
 ### 2.2 The re-author moved further citations outside § 2.1's count — the experience conditions re-lettered, sections moved, the deleted trail — and they take the same two forms
 - **Drafted into the FDR:** the rule of § 2.1 applied to every other `docs/SDD.md` citation the
@@ -105,7 +105,7 @@
   citations edited, at the cost of a document that revises in place pointing at a document no
   working tree holds; or *leave them*, which keeps the tags RN-28 lists landing on other subjects. No rule, product decision or
   exclusion changes its meaning under either.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm — the same rule over the wider set, with the re-lettering map checked condition by condition against `docs/SDD.md` v3 § 4 and the deleted SDD's § 4 (`git show 70a879a:docs/SDD.md`, C-E1 – C-E10 in each): every arrow lands on the condition that carries the subject — C-E3 a failure scoped to its item with its route out, C-E4 the three-part message, C-E5 no editing affordance, C-E2 the reader's place, C-E7 rendering whole offline, C-E8 hue and the accessibility posture, C-E10 the README's posture sentence — and the pins are exactly the claims no live condition states: one shell with two chrome controls and no third, the tooltip clause, Diff's three kinds, the deleted trail's § 1.2 and § 2.4. The four measurements reproduce (73 entries changed, 32 pins, 135 `SDD § ` citations, 0 unpinned notes), and the three tags given a live source were opened: § 4 C-R3 carries the panel dismissed and § 4 C-D4 read-whole-or-discard-whole. Not taken: pinning all 135, for the reason § 2.1 gives. Decided in the owner's seat by a `companion-self-answer` run, 2026-09-04. Reasoning: `docs/trail/fdr/self_answer-3.md` § 2.2.
 
 ### 2.3 R-44 drops `.jsonc`: the re-authored SDD's extension set names `.json` alone for JSON
 - **Drafted into the FDR:** R-44 reads *JSON `.json`*, so a `.jsonc` file is plain text under R-45
@@ -122,7 +122,7 @@
   review note, and a sentence the CTO's SDD run is owed, since FR-29 puts the set there and not here.
   A `.jsonc` file would then highlight as JSON in a build that follows this document and as plain
   text in one that follows the SDD, which is the disagreement the delegation exists to prevent.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm — R-44 reads `.json` alone and a `.jsonc` file is plain text under R-45. The set is the SDD's by FR-29's delegation and R-44 is a verbatim copy of it (RN-2); this document does not carry a value its source dropped. One fact stated for the record rather than acted on: the re-author did not read the deleted SDD's set (`docs/SDD.md` § SDD Review Notes RN-1), so the drop is an independent derivation under RN-7's rule — *an extension on the list must have a floor language behind it* — and not a considered reversal. Weighed for raising on the SDD and not raised: RN-7 states the CTO's own rule for the set, FR-29's *"every extension in common use"* is that seat's judgment by delegation, and nothing the SRS binds is contradicted; whether `.jsonc` returns is the CTO's on their own run. Decided in the owner's seat by a `companion-self-answer` run, 2026-09-04. Reasoning: `docs/trail/fdr/self_answer-3.md` § 2.3.
 
 ### 2.4 An in-folder image renders in place when it is PNG, JPEG, GIF or WebP, and an in-folder SVG takes a placeholder naming its format as one the product does not render
 - **Drafted into the FDR:** R-58 names the four formats; R-160 gains the SVG case — a placeholder
@@ -144,7 +144,7 @@
   believes an in-folder SVG renders, which the build will not do. If SVG is wanted in place, that is
   the SDD's reopening condition and reaches this document by that document's revision (SDD RN-8),
   never from here.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm, with one correction to the ground that the fold should carry into RN-28 (2): the format set is not new with the re-author. The deleted SDD already fixed it — `nozoki@70a879a:docs/SDD.md` § 3 *The image set*: PNG, JPEG, GIF, WebP, *"SVG is outside the set in v1"*, an in-folder `.svg` taking *"the not-an-image placeholder"* (its RN-34) — so R-58's *every in-folder image* and R-160's *not an image the platform renders* were already out of step with the SDD this document read at v2 and v3, a hole this document's own cycle-1 § 2.8 answer opened. The delta is legitimate on both grounds the re-run rule admits — the re-authored SDD is a new document stating the set as a § 4 condition (C-D3), and the exclusion was confirmed at `docs/trail/sdd/cycle-1.md` § 2.1 — and R-58, R-160, PD-12 and the Markdown example row stand as v4 wrote them. Decided in the owner's seat by a `companion-self-answer` run, 2026-09-04. Reasoning: `docs/trail/fdr/self_answer-3.md` § 2.4.
 
 ### 2.5 R-120 no longer says the history's window is undecided — the re-authored SDD fixes it at 1,000 commits as a design bound — and this document does not carry the number
 - **Drafted into the FDR:** R-120 reads *The window's size is not this contract's: the SDD carries
@@ -164,7 +164,7 @@
 - **If overridden:** carrying the number adds *1,000 commits* to R-120 with RN-35 as its source and
   a review note saying it is a design bound; the example row for R-174 – R-176 gains the figure; and
   the SDD's own revisit becomes a change this document has to follow by revision.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm — R-120 names the window as the SDD's design bound and does not carry the number. RN-35 says of the value that it *"is an invented value with no measurement behind it … revisited when `checks/latency.sh` prints figures"*, which is the shape RN-27 kept out of R-93 and PD-30 keeps out of every bar; a number carried here would make each revisit a behaviour change to escalate, and nothing a person relies on rides on it. What a person can rely on is stated whatever the number: every chosen tip lies inside the window (R-174), the end is stated where older commits exist (R-175), and no control loads more (R-176). Checked: a history shorter than the window states nothing (R-175), and a revisit that moves the number changes no example row — the 20 000-commit row names no size. Decided in the owner's seat by a `companion-self-answer` run, 2026-09-04. Reasoning: `docs/trail/fdr/self_answer-3.md` § 2.5.
 
 ### 2.6 PD-40 states the 1.0.0 contract's priced members — the install path, the macOS floor, every surface present, and own-state readability by PD-39 — and what no version changes
 - **Drafted into the FDR:** PD-40, after PD-39: from 1.0.0 the contract R-142 names prices the one
@@ -192,7 +192,7 @@
   Product Owner with no product decision to check it against. If the owner's answer at
   `docs/architecture_open_issues.md` § 1.1 is that own-state readability is not priced, PD-39 and
   PD-40's fourth member move together by that answer, through this document's next run.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm, with one clause added so that PD-40 names what S-11 names: *adding a prerequisite* takes a major version. The SDD's *Delivers* prices four moves by name — *"removing a surface, raising the floor, adding a prerequisite or changing the install path costs a major version"* (`docs/SDD.md` § 6 S-11, confirmed at `docs/trail/sdd/cycle-2.md` § 2.2) — and PD-40 lists three; a prerequisite added does break R-131 inside the priced range, but the Product Owner checking a change reads the named list and not the range. The fourth member stands as the item states it — by PD-39, until `docs/architecture_open_issues.md` § 1.1 is answered, where the run that opened this file left the answer it would have given (`docs/trail/architecture/self_answer-6.md` § 1.1). PD-40 adds no member to either confirmed statement and prices nothing new, which is why it is this seat's to confirm and not the owner's. Decided in the owner's seat by a `companion-self-answer` run, 2026-09-04. Reasoning: `docs/trail/fdr/self_answer-3.md` § 2.6.
 
 ### 2.7 Two owner-confirmed rules the re-authored SDD contradicts stand — R-46's UTF-16 clause and R-21's failure state — and the SDD is owed two sentences through its own run
 - **Drafted into the FDR:** nothing moves. R-46 keeps *a file whose bytes begin with a UTF-16
@@ -213,7 +213,7 @@
   the owner's cycle-1 § 2.4 answer, which this document may not do on its own. If it wins on R-3,
   R-21 returns to the draft the owner overrode at cycle-1 § 2.7, and R-15's example row changes with
   it. Confirming changes nothing here and leaves the two sentences to the SDD's companion.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm — R-46 and R-21 stand, nothing moves here, and the two sentences are now carried where the seat that folds them will meet them: `docs/SDD_open_issues.md` § 5.1, opened by this run and landed in commit `bc34996`. Both rules are owner answers (`docs/trail/fdr/cycle-1.md` § 2.4, § 2.7), and the SDD does not read this document, so its UTF-8-only sentence and its unrevised R-3 are gaps in it and not rulings against the owner; RN-7 had already recorded the owner's call that R-3's wording be met at the SDD's next revision. The item lands in that companion's § 5 — the section its own header gives to a seat that did not write the SDD — with the answer this run would give offered there and its slot left for the next round. Neither *If overridden* path is taken: each would reverse a cycle-1 answer this document may not undo on its own reading. Decided in the owner's seat by a `companion-self-answer` run, 2026-09-04. Reasoning: `docs/trail/fdr/self_answer-3.md` § 2.7.
 
 ## 3. Raised from downstream — an item raised against the FDR after it settled
 
