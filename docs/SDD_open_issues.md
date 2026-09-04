@@ -65,7 +65,13 @@ stands whole at `docs/trail/sdd/cycle-1.md` § 2.1.*
   carries changes with them; nothing in §§ 2–4 or in any other slice moves. Widening the contract
   to wording or tokens would make `docs/CONTENT.md` and `docs/DESIGN.md` revisions major-version
   events, which is the cost to weigh.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** **confirm** — the owner's answer, 2026-09-04, given as "i guess
+  confirm". The draft stands as it is: the four members in the two kinds §§ 2.3 and 2.4 left them,
+  and the exclusions. **None of the six additions the walk offered was taken** — they were raised
+  by the walking session and not by this item, so the answer is to the draft as it stands and the
+  fold adds no clause and changes no member. The residue the walk named as genuinely still open —
+  the install path, and that removing a PRD-named surface costs a major version — is confirmed as
+  drafted.
 
 *§ 2.3 — S-11's contract stated as two kinds of thing, not one list of four — was answered
 **confirm** and folded (`SDD.md` § 6 S-11 *Delivers*, RN-19). It stands whole at
