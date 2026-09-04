@@ -91,6 +91,38 @@
   gains the UTF-16 clause with the boundary R-154 draws, and R-3's response reads the owner's form —
   each with a review note naming `docs/trail/fdr/cycle-1.md` as its authorization, since this
   document does not read the FDR and the trail is where the value was set.
-- **Answer:** <the owner fills this in>
+- **Answer:** confirm — and it is already done. `product-sdd`'s run 4 folded both sentences at
+  `docs/SDD.md` v4 (`nozoki@683db69`), in the form this item offered and with the review notes it
+  asked for. § 3 `fs-reader`'s text rule now reads *"bytes decode as UTF-8, with or without a
+  byte-order mark, or begin with a UTF-16 byte-order mark and decode as UTF-16, and the file is
+  text"*, with R-154's and R-155's boundary stated beside it — no detection from content, no third
+  encoding, one undecodable sequence is not text, an empty file is text (`docs/SDD.md:262`;
+  RN-41). § 11 R-3's response now names where the Git directory lies as what was observed, says
+  this folder's Git state is therefore not read, offers no folder to choose, and leaves the tree
+  and the reading panel unaffected (`docs/SDD.md:1867`; RN-42). Both notes name
+  `docs/trail/fdr/cycle-1.md` as their authorization, which is what this item asked for. I checked
+  the fold against the owner's answers rather than against the notes reporting it: it matches
+  cycle-1 §§ 2.4 and 2.7 clause by clause, and the SDD now agrees with FDR R-46, R-154, R-155 and
+  R-21 word for word. So nothing remains for the SDD to fold on this item's account, and
+  `product-sdd` may drop it as resolved — after which this file is empty of open items, which by
+  the document's own version note is the one thing keeping it Draft rather than Settled.
+  **Two additions this item did not predict.** (1) The fold reached further than the two sentences:
+  § 4 C-E4 was widened to name the terminal form a message's third part may take, because R-3's new
+  response has no next step and C-E4 as written required one — a builder holding C-E4 alone would
+  have written back the wording the owner overrode (RN-43); § 6 S-2's command half gained the
+  UTF-16, empty-file and neither-decodes fixtures (RN-41); and § 6 S-4 gained the observable
+  sentence for the case (RN-43) and a reducer case backing it (RN-44). This item's *"no part, seam,
+  slice, edge or place in the order moves"* therefore held for parts, seams, slices, edges and the
+  order, and not for a condition or two reached-whens — correctly so, and it is the half this item
+  under-read rather than an overreach by the fold. (2) The supporting text above is now stale, and
+  is reported rather than corrected: its two locators and both quoted sentences are v3's, and at v4
+  they sit at `docs/SDD.md:262` and `:1867` reading as folded. Nothing follows from the staleness —
+  it is this item having been answered by the document itself between the two runs.
+  **One consequence beyond this document, already carried:** `docs/fdr.md` still records the
+  contradiction as live in three places — its version note, RN-7's present-tense claim against an
+  unpinned path, and R-21's *changed* / R-46's *added* relation marks — so a raised item now sits
+  at `docs/fdr_open_issues.md` § 3.1 (`nozoki@d347a63`). Nothing here waits on it. Decided in the
+  owner's seat by a `companion-self-answer` run, 2026-09-04. Reasoning:
+  `docs/trail/sdd/self_answer-8.md`.
 
 <!-- add 5.2, 5.3, … as needed -->
