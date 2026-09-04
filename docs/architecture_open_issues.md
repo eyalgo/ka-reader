@@ -77,6 +77,49 @@
   cleanly and quietly changes what the record says it rested on. The log is append-only, so whether
   a citation repair is an edit to a record's own prose or something that needs a superseding record
   is this seat's to say, and this run does not presume it.
-- **Answer:** <the owner fills this in>
+- **Answer:** Repair all 38, and **split the form by which record holds the citation** — the two
+  shapes the item names are both right, each for one record. The owner's answer, 2026-09-04, taking
+  the walk's recommendation whole.
+
+  **(1) The 37 in `adr/0001` – `adr/0008`: pin, to `nozoki@70a879a:`.** Both sets — the 14 of
+  `docs/trail/sdd/cycle-1.md` and the 23 of `docs/SDD.md` § SDD Review Notes — take the same commit,
+  because one commit holds both: `nozoki@70a879a` is the last commit that touched `docs/SDD.md`
+  before `nozoki@9c91359` deleted it, and its `docs/SDD.md` carries RN-1 – RN-34, RN-24 and RN-25
+  included (measured 2026-09-04: `git log 70a879a..9c91359 -- docs/SDD.md` returns only the
+  deletion). So a cycle-1 citation reads `nozoki@70a879a:docs/trail/sdd/cycle-1.md` and a review-note
+  citation reads `nozoki@70a879a:docs/SDD.md` RN-n, with no note re-numbered and no passage
+  re-identified. Three grounds, strongest first. **(a) Re-pointing is not available for all of them:**
+  RN-24 and RN-25 have no successor note in the re-authored SDD, so at least two of the 23 have
+  nothing to point at, and a repair that works for 21 of 23 is not a repair. **(b) The log is
+  append-only so that a record stays a faithful account of what its author decided and on what
+  (`docs/adr/README.md:2-4`);** re-pointing would quietly change what the record says it rested on,
+  which is the class of thing that rule exists to prevent. **(c) The pinned form is this repository's
+  own precedent:** `docs/UXD.md` RN-8, RN-15, RN-16 and RN-17 pin `nozoki@1d5c553:docs/uxd_trail/…`
+  (`docs/UXD.md:578,677,692,703`), and UXD v7 repaired that document's unpinned citations while
+  leaving the pinned ones standing as written.
+
+  **(2) The 1 in `docs/nfdr.md:385`: re-point, `SDD § 6 S-4` → `SDD § 6 S-5`.** Not pinned, and the
+  difference is the document's own rule: the NFDR "is updated in place with versioning (unlike the
+  ADRs, which supersede)" (`docs/nfdr.md` § preamble), so its trace tags name where a fact lives now
+  rather than what a past author read. QC-48's trace is to live refresh, which the re-authored SDD
+  carries at S-5 `follow-the-folder`. `docs/nfdr.md:685`'s `SDD § 6 S-1` resolves correctly and is
+  not touched.
+
+  **(3) Both are edits to the records' own prose. No superseding ADR is written, and none is needed.**
+  `docs/adr/README.md:2-4` scopes append-only to reversals — "a reversal is a new record that
+  supersedes an old one, never an edit to it" — and a citation repair reverses no decision, changes no
+  context, alternative, consequence or trace, and leaves every record's Status at Accepted. Eight
+  superseding records about no decision at all would cost the log more than the broken pointers do.
+  `adr/0009` is untouched, and so is the index's projection.
+
+  **The cost of (1), stated rather than left for a reader to find:** a pinned ADR then cites an SDD
+  that no working tree holds, and says nothing about whether today's SDD still agrees. That is the
+  price of the record being faithful, and it is the price `docs/UXD.md` already chose to pay. The
+  third shape — pin *and* name the current equivalent beside it — was considered and rejected: 23
+  lookups, and it puts a live pointer next to a frozen one in the same citation.
+
+  **Scope, so the fold does not widen:** these 38 and nothing else. No obligation is added, removed or
+  renumbered; no QC id moves; no ADR changes its decision, its Status or its date; the NFDR takes a
+  version bump for (2) as it does for any in-place edit.
 
 **How it closes.** `product-architecture` folds it on its next run like any other item here.
