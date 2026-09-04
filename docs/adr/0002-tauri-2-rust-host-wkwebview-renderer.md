@@ -24,13 +24,13 @@ The product is **one macOS application bundle, `Nozoki.app`, bundle identifier
 rendering `nozoki-ui` (HTML / CSS / TypeScript) in the system WKWebView.** No browser engine is
 bundled; every asset the renderer uses ships inside the bundle (`docs/SDD.md` § 4 C-R1). The owner
 confirmed the runtime after checking that `docs/DESIGN.md` binds no rendering technology
-(`docs/trail/sdd/cycle-1.md` § 2.2).
+(`nozoki@70a879a:docs/trail/sdd/cycle-1.md` § 2.2).
 
 ## Alternatives ruled out
 
 - **Electron** — adds a bundled browser engine, the largest single dependency the alternative
   would carry, against a product whose one install must fit inside five minutes and whose
-  dependency tree is allowlisted (`docs/SDD.md` § SDD Review Notes RN-7; § 4 C-R6).
+  dependency tree is allowlisted (`nozoki@70a879a:docs/SDD.md` § SDD Review Notes RN-7; `docs/SDD.md` § 4 C-R6).
 - **Native AppKit / SwiftUI, single process** — the runner-up. It keeps the sandbox wall and loses
   the renderer wall; it would also re-express a design language settled in CSS. It wins only if that
   language is ever re-expressed natively, which nothing inside the terminus asks for
@@ -67,8 +67,8 @@ renderer's walls, which are checked on every build (ADR-0006, ADR-0008).
 ## Traces to
 
 - `docs/SDD.md` § 2, table row 4 and forces 6–7; § 3, "Three deliverables"; § 4 C-R1; § 9 TO-1,
-  TO-4; § 12, "The downstream boundary"; § SDD Review Notes RN-7.
-- `docs/trail/sdd/cycle-1.md` § 2.2 — the owner's confirmation, with the DESIGN.md check recorded.
+  TO-4; § 12, "The downstream boundary"; `nozoki@70a879a:docs/SDD.md` § SDD Review Notes RN-7.
+- `nozoki@70a879a:docs/trail/sdd/cycle-1.md` § 2.2 — the owner's confirmation, with the DESIGN.md check recorded.
 - `docs/SRS.md` § 7 C-3, C-11; § SRS Review Notes RN-7, RN-12.
 - `docs/DESIGN.md` § DESIGN Review Notes RN-1 — "every value here is a CSS value and holds in either".
 - `docs/fdr.md` PD-15, PD-17, PD-29.

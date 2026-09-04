@@ -1,4 +1,4 @@
-# Architecture open issues — nozoki
+# Architecture open issues — Nozoki 覗き
 
 > Companion to `adr/` and `nfdr.md`. The Principal Architect authored both records
 > non-interactively; this file holds what the run could not settle from its inputs — the SRS, the SDD
@@ -16,110 +16,87 @@
 > them find gaps the authoring run could not. § 3 is where such a seat says so, against both records
 > — an ADR's binding and an NFDR obligation reach the same file.
 
-> **No `product-architecture` run wrote this file.** It was opened on 2026-09-03 by a
-> `companion-self-answer` run answering `docs/SDD_open_issues.md`, to carry one item that belongs to
-> these records and not to the SDD. The architecture round closed clean at `nozoki@7cdc857` and its
-> companion was removed; the finding below arrived afterwards, from the SDD re-author at
-> `nozoki@9c91359`, and a settled record set with nothing beside it has no other channel to the seat
-> that can act on it. §§ 1 and 2 are empty because no authoring run drafted anything — that is what
-> this file's presence means here, and not that a run left questions behind.
+> **Written by the `product-architecture` run of 2026-09-04 that folded cycle 3**
+> (`docs/trail/architecture/cycle-3.md` — the owner's answer on the 38 citations the SDD's re-author
+> broke). Both items below were found while folding it, read against the re-authored SDD
+> (`docs/SDD.md` v3, `nozoki@827aa1c`); neither was asked by that answer, and the fold did not widen
+> for them. What that run did move is `docs/nfdr.md` RN-16.
 
 ---
 
 ## 1. Open issues — questions with no answer yet
 
-<None — see the note above.>
+### 1.1 The SDD's confirmed 1.0.0 contract prices own-state readability nowhere; the FDR and QC-59 price it
+- **Lands in:** `nfdr.md` QC-59, QC-60 — where the answer moves one of them. Where it moves the
+  SDD instead, nothing lands here: the sentence owed is `docs/SDD.md` § 6 S-11's, the CPO's, through
+  the SDD's own run.
+- **Why it matters:** two owner-confirmed statements of the 1.0.0 contract disagree on one member.
+  `docs/fdr.md` PD-39 — *"From 1.0.0 the readability of an earlier version's own state is inside the
+  public contract: a discard is a breaking change and takes a major version"* — was confirmed at
+  `docs/trail/fdr/cycle-1.md` § 2.9, and QC-59 carries it as the contract's third member, with QC-60
+  binding the discard. The re-authored SDD's § 6 S-11 *Delivers*, confirmed as drafted at
+  `docs/trail/sdd/cycle-2.md` § 2.2, states what the number prices as *"the one install path and the
+  macOS floor, and every surface the PRD names present"*, places *"own state read whole or discarded
+  whole, touching no folder (§ 4 C-D4)"* in the set no version changes, and names four exclusions;
+  readability across versions is in none of the three, and C-I6's pin — the floor, the asset names,
+  the command list — does not read it. A reader of S-11 alone concludes a discard costs no version; a
+  reader of PD-39 concludes it costs a major. The README at 1.0.0 states the contract in S-11's words
+  (S-11 *Reached when*), so the gap reaches a stranger, not only a trace. My reading, offered and not
+  drafted: the FDR is right and complete — PD-39 was answered with its reasoning, and the SDD's own
+  C-D4 already traces its discard clause to C-6 — so QC-59 and QC-60 stand as written, and S-11 is
+  owed the member, a CPO fold; nothing in these records moves either way. If instead S-11 is the
+  whole contract, QC-59 drops its third member, QC-60's *"after 1.0.0 a discard is a breaking change"*
+  goes with it, and PD-39 is the FDR's to reconcile — the Principal PM's, not this seat's.
+- **Answer:**
 
 ## 2. Choices to confirm — the Principal Architect drafted a best-effort answer; confirm or override
 
-<None — see the note above.>
+### 2.1 Thirteen more citations in the records the SDD's re-author moved, outside cycle 3's scope — pin them to `nozoki@70a879a:` the same way
+- **Lands in:** `adr/0002-tauri-2-rust-host-wkwebview-renderer.md`,
+  `adr/0004-git-read-through-libgit2-behind-a-port.md`,
+  `adr/0005-root-finding-behind-the-git-port.md`,
+  `adr/0006-markdown-sanitized-on-the-host-three-walls.md`, `adr/0009-physical-module-set.md`
+- **Drafted into the records:** nothing — deliberately. The draft is the owner's own form from
+  cycle 3 § 3.1 (1): each citation reads `nozoki@70a879a:docs/SDD.md` § …, a prose edit, no record
+  superseded. It is not applied because that answer bounded its fold — *"these 38 and nothing else"*
+  — and an accepted record is edited only under an authorization that reaches it. The thirteen,
+  measured 2026-09-04 against `docs/SDD.md` v3 (`nozoki@827aa1c`) and `nozoki@70a879a:docs/SDD.md`:
+  - **ADR-0002 (5).** `§ 9 TO-1, TO-4`, four times (§ Consequences ×3, § Traces to): in the deleted
+    SDD, TO-1 was the surfaces drawn in a WebView and TO-4 the Rust host — the notes the record's
+    *memory safety* and *host language* sentences rest on; in the re-authored § 9, TO-1 is the
+    two-process seam and TO-4 is Apple's rendering engine, and no note carries the Rust-host half.
+    `§ Open Questions, fifth item` (§ Consequences): the CSP origin form, now the **third** item;
+    the fifth is the fixture sizes.
+  - **ADR-0006 (2).** `§ Open Questions, fifth item` (§ Consequences) and `(fifth item)` (§ Traces
+    to) — the same move.
+  - **ADR-0005 (3).** *"the paragraph following the parts table"* (§ Decision, § Alternatives ruled
+    out) and *"the paragraph after the parts table"* (§ Traces to): the deleted SDD's paragraph
+    argued the root finding's placement in `git-reader`; the re-authored one is the four physical
+    units, and that argument now sits in the `git-reader` row and RN-9.
+  - **ADR-0004 (1).** `§ 11 R-1, R-6` (§ Traces to): the deleted R-6 was a dependency bringing a
+    capability the product must not have; the re-authored R-6 is the reader's place lost on a
+    refresh.
+  - **ADR-0009 (2).** `§ 6 S-6` (§ Context, § Traces to): the deleted S-6 was `switch-the-folder`,
+    whose bar names the three `nozoki-ui/src/…` paths; that slice is S-10 now, and S-6 is
+    `choose-a-theme`.
+
+  One more is reworded rather than moved and is not in the count: ADR-0001's `§ 1, last
+  paragraph` — three questions ending *"if the code is careful"* in the deleted SDD, four questions
+  in the re-authored one, the quoted phrase now in § 2's first row.
+- **Rationale:** the ground is the owner's own at cycle 3 § 3.1 (1) — (a) re-pointing is not
+  available for all of them (the Rust-host half of ADR-0002's `TO-4` has no successor note), (b) the
+  log is append-only so a record stays a faithful account of what its author read, (c) the pinned
+  form is this repository's precedent. Every `docs/SDD.md` citation in the nine records was written
+  against `nozoki@70a879a`'s SDD; these thirteen are the ones that now land on another subject, so a
+  reader following one is misdirected with no signal — the cost that answer named as the worse of
+  the two.
+- **If overridden:** *pin every `docs/SDD.md` citation in ADR-0001 – ADR-0009*, not only the
+  thirteen — one rule a reader can carry (a record cites the SDD its author read), at the cost of
+  some fifty further edits and of citations that resolve correctly today reading as frozen; or
+  *re-point the thirteen* to the re-authored passages, which the owner's (b) rejected for the log;
+  or *leave them*, which keeps five records in the state cycle 3 was opened to end.
+- **Confirm or override:**
 
 ## 3. Raised from downstream — an item from a seat that did not write these records
 
-### 3.1 The SDD re-author broke 38 citations in the records — a deleted trail file, a re-numbered review-note set, and one moved slice
-- **Raised by:** `companion-self-answer`, answering `docs/SDD_open_issues.md` — 2026-09-03
-- **Which record:** `adr/0001` – `adr/0008` (all but `adr/0009`), and `nfdr.md` § 8's QC row at
-  `docs/nfdr.md:385`
-- **Tracked by:** none. No 根回し Nemawashi seed watches this; nozoki has no active seed and no open
-  station (`system/projects/nozoki/journey/`, 2026-09-03). It was found while reading the log as an
-  input, not while cutting work from it.
-- **What it blocks:** nothing, and that is the reason it is worth a round rather than a reason to
-  leave it. No cut stalls and no gate fails on a citation. What it costs is silent: a reader who
-  follows one of these pointers lands somewhere plausible that says something else, and has no
-  signal that they were misdirected.
-- **Where it shows:** three sets, measured on 2026-09-03 against `nozoki@c3eb937`.
-  - **14 citations of `docs/trail/sdd/cycle-1.md`** — ADR-0002 (2), ADR-0003 (3), ADR-0006 (3),
-    ADR-0007 (3), ADR-0008 (3) — dead since `nozoki@9c91359` deleted `docs/trail/sdd/` whole for the
-    SDD's re-author. The file itself is intact at `nozoki@70a879a:docs/trail/sdd/cycle-1.md`, and is
-    byte-identical there to the `1e8bf3d` copy that moved it (`git diff --quiet 1e8bf3d 70a879a --
-    docs/trail/sdd/cycle-1.md`). These carry the owner's own answers, ADR-0007's standing
-    no-signing call among them, so what is dead is the provenance of the log's most load-bearing
-    records.
-  - **23 citations of `docs/SDD.md` § SDD Review Notes** — ADR-0001 (1), ADR-0002 (2), ADR-0003 (1),
-    ADR-0004 (3), ADR-0005 (2), ADR-0006 (4), ADR-0007 (5), ADR-0008 (5) — every one written against
-    the deleted SDD's numbering. The re-authored document carries RN-1 – RN-19 and RN-30 – RN-33, so
-    **RN-24 and RN-25 have no note at all**, and the eight numbers that do resolve now carry notes on
-    other subjects. Three checked one by one: ADR-0002's RN-7 (cited for "the dependency tree is
-    allowlisted") now reads the floor's extension set; ADR-0004's RN-8 (cited for the libgit2
-    grounds) now reads the SVG exclusion from the asset scheme; ADR-0007's RN-17 (cited three times,
-    for the channel, the `.zip` and the `xattr` line) now reads `first-public-release`'s placement in
-    the order. **This is the worse of the two sets:** a dead path announces itself, and a pointer that
-    resolves to the wrong note does not.
-  - **1 citation in `nfdr.md:385`** — `SDD § 6 S-4`, beside FR-16, NFR-3, NFR-4 and AC-8, which are
-    the live-refresh requirements. The re-authored S-4 is `see-git-status`; live refresh is S-5
-    `follow-the-folder`. The NFDR's other SDD citation, `SDD § 6 S-1` at `docs/nfdr.md:685`, still
-    resolves correctly and needs nothing.
-- **If a document has to be written:** none. Every repair is inside a record that already exists.
-  Two shapes are available and the choice between them is what this item asks: pin each citation to
-  `nozoki@70a879a:` and to the deleted SDD's commit, keeping the record a faithful account of what
-  its author read — the form `docs/UXD.md` RN-8, RN-15, RN-16 and RN-17 already use for
-  `nozoki@1d5c553` — or re-point each at the equivalent passage in the re-authored SDD, which reads
-  cleanly and quietly changes what the record says it rested on. The log is append-only, so whether
-  a citation repair is an edit to a record's own prose or something that needs a superseding record
-  is this seat's to say, and this run does not presume it.
-- **Answer:** Repair all 38, and **split the form by which record holds the citation** — the two
-  shapes the item names are both right, each for one record. The owner's answer, 2026-09-04, taking
-  the walk's recommendation whole.
-
-  **(1) The 37 in `adr/0001` – `adr/0008`: pin, to `nozoki@70a879a:`.** Both sets — the 14 of
-  `docs/trail/sdd/cycle-1.md` and the 23 of `docs/SDD.md` § SDD Review Notes — take the same commit,
-  because one commit holds both: `nozoki@70a879a` is the last commit that touched `docs/SDD.md`
-  before `nozoki@9c91359` deleted it, and its `docs/SDD.md` carries RN-1 – RN-34, RN-24 and RN-25
-  included (measured 2026-09-04: `git log 70a879a..9c91359 -- docs/SDD.md` returns only the
-  deletion). So a cycle-1 citation reads `nozoki@70a879a:docs/trail/sdd/cycle-1.md` and a review-note
-  citation reads `nozoki@70a879a:docs/SDD.md` RN-n, with no note re-numbered and no passage
-  re-identified. Three grounds, strongest first. **(a) Re-pointing is not available for all of them:**
-  RN-24 and RN-25 have no successor note in the re-authored SDD, so at least two of the 23 have
-  nothing to point at, and a repair that works for 21 of 23 is not a repair. **(b) The log is
-  append-only so that a record stays a faithful account of what its author decided and on what
-  (`docs/adr/README.md:2-4`);** re-pointing would quietly change what the record says it rested on,
-  which is the class of thing that rule exists to prevent. **(c) The pinned form is this repository's
-  own precedent:** `docs/UXD.md` RN-8, RN-15, RN-16 and RN-17 pin `nozoki@1d5c553:docs/uxd_trail/…`
-  (`docs/UXD.md:578,677,692,703`), and UXD v7 repaired that document's unpinned citations while
-  leaving the pinned ones standing as written.
-
-  **(2) The 1 in `docs/nfdr.md:385`: re-point, `SDD § 6 S-4` → `SDD § 6 S-5`.** Not pinned, and the
-  difference is the document's own rule: the NFDR "is updated in place with versioning (unlike the
-  ADRs, which supersede)" (`docs/nfdr.md` § preamble), so its trace tags name where a fact lives now
-  rather than what a past author read. QC-48's trace is to live refresh, which the re-authored SDD
-  carries at S-5 `follow-the-folder`. `docs/nfdr.md:685`'s `SDD § 6 S-1` resolves correctly and is
-  not touched.
-
-  **(3) Both are edits to the records' own prose. No superseding ADR is written, and none is needed.**
-  `docs/adr/README.md:2-4` scopes append-only to reversals — "a reversal is a new record that
-  supersedes an old one, never an edit to it" — and a citation repair reverses no decision, changes no
-  context, alternative, consequence or trace, and leaves every record's Status at Accepted. Eight
-  superseding records about no decision at all would cost the log more than the broken pointers do.
-  `adr/0009` is untouched, and so is the index's projection.
-
-  **The cost of (1), stated rather than left for a reader to find:** a pinned ADR then cites an SDD
-  that no working tree holds, and says nothing about whether today's SDD still agrees. That is the
-  price of the record being faithful, and it is the price `docs/UXD.md` already chose to pay. The
-  third shape — pin *and* name the current equivalent beside it — was considered and rejected: 23
-  lookups, and it puts a live pointer next to a frozen one in the same citation.
-
-  **Scope, so the fold does not widen:** these 38 and nothing else. No obligation is added, removed or
-  renumbered; no QC id moves; no ADR changes its decision, its Status or its date; the NFDR takes a
-  version bump for (2) as it does for any in-place edit.
-
-**How it closes.** `product-architecture` folds it on its next run like any other item here.
+<None this round — cycle 3's § 3.1 is folded; `docs/nfdr.md` RN-16 records how.>

@@ -13,7 +13,7 @@ path is offered (§ 7 C-11). The owner's standing call, for this and every app i
 unsigned — "Nothing is paid for this app … no Apple Developer Program membership, now or later.
 The app is **not** going into the Mac App Store; the only channel is a download from GitHub … Do
 not raise signing again" — with the install mechanism handed to the CTO inside three bounds: costs
-nothing, comes from GitHub, one simple path (`docs/trail/sdd/cycle-1.md` § 1.1). On macOS Sequoia
+nothing, comes from GitHub, one simple path (`nozoki@70a879a:docs/trail/sdd/cycle-1.md` § 1.1). On macOS Sequoia
 a stranger can no longer Control-click to open software that is not notarized; they go through
 System Settings › Privacy & Security (https://developer.apple.com/news/?id=saqachfa).
 
@@ -26,20 +26,20 @@ binds the entitlements to the binary at all — and is **never Developer ID-sign
 install path is: download the `.dmg`, drag `Nozoki.app` to Applications, and on first launch take
 the one Privacy & Security step; the README's first screen names all three as the exact click path,
 and no terminal command (`xattr`, `spctl`) is ever the documented route. A Homebrew cask is not
-offered (`docs/SDD.md` § 4 C-R4; § SDD Review Notes RN-17).
+offered (`docs/SDD.md` § 4 C-R4; `nozoki@70a879a:docs/SDD.md` § SDD Review Notes RN-17).
 
 ## Alternatives ruled out
 
 - **Developer ID signing and notarization** — removes the Gatekeeper step at the cost of a paid
   membership and a signing secret in CI; ruled out by the owner for every app in the instance, and
-  recorded here so the cost is stated, not so it is reopened (`docs/trail/sdd/cycle-1.md` § 1.1;
+  recorded here so the cost is stated, not so it is reopened (`nozoki@70a879a:docs/trail/sdd/cycle-1.md` § 1.1;
   `docs/SDD.md` § 9 TO-9).
 - **A Homebrew cask** — a second path, and Homebrew a prerequisite of its own: fails C-3 twice
   (`docs/SDD.md` § 4 C-R4).
 - **A `.zip`** — the same walk with one convention fewer than the `.dmg` a Mac user expects to
-  drag from (`docs/SDD.md` § SDD Review Notes RN-17).
+  drag from (`nozoki@70a879a:docs/SDD.md` § SDD Review Notes RN-17).
 - **A terminal `xattr` or `spctl` step in the README** — a route the README must not open to a
-  stranger (`docs/SDD.md` § SDD Review Notes RN-17).
+  stranger (`nozoki@70a879a:docs/SDD.md` § SDD Review Notes RN-17).
 
 ## Consequences
 
@@ -66,8 +66,8 @@ serves a file.
 
 ## Traces to
 
-- `docs/SDD.md` § 4 C-R4; § 9 TO-9; § 11 R-2, R-7, R-8; § SDD Review Notes RN-17, RN-25.
-- `docs/trail/sdd/cycle-1.md` § 1.1 (unsigned; the three bounds) and § 3.3 (the release lands
+- `docs/SDD.md` § 4 C-R4; § 9 TO-9; § 11 R-2, R-7, R-8; `nozoki@70a879a:docs/SDD.md` § SDD Review Notes RN-17, RN-25.
+- `nozoki@70a879a:docs/trail/sdd/cycle-1.md` § 1.1 (unsigned; the three bounds) and § 3.3 (the release lands
   after the v1 cut; verify early).
 - `docs/SRS.md` § 7 C-3, C-11, C-12; § 4.7 NFR-13; § 8 AC-10, AC-14; § SRS Review Notes RN-7, RN-12.
 - `docs/fdr.md` R-128 – R-134, PD-15, PD-16, PD-17, OOS-18.

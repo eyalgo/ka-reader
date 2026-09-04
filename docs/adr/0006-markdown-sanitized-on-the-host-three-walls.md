@@ -12,7 +12,7 @@ an external link is displayed and not followed, and a relative link may open its
 (`docs/SRS.md` § 3.3 FR-32). The renderer holds no capability of its own (ADR-0001), so a Markdown
 file that reached it as live HTML would be handed the WebView's. The first design draft loaded no
 image at all; the owner overrode it — an image inside the granted folder is loaded and shown in
-place, a remote one never (`docs/trail/sdd/cycle-1.md` § 2.4).
+place, a remote one never (`nozoki@70a879a:docs/trail/sdd/cycle-1.md` § 2.4).
 
 ## Decision
 
@@ -41,7 +41,7 @@ and again on every request (`docs/SDD.md` § 4 C-D3; § 11 R-10).
 - **Load no image, remote or local** — the run-1 draft, the conservative reading of "the renderer
   holds no path to the folder". Overridden by the owner: image-bearing READMEs render as written,
   and the wall is kept by narrowing the capability handed over to "read a byte the host has already
-  confirmed is inside the folder", not "read" (`docs/trail/sdd/cycle-1.md` § 2.4; `docs/SDD.md`
+  confirmed is inside the folder", not "read" (`nozoki@70a879a:docs/trail/sdd/cycle-1.md` § 2.4; `nozoki@70a879a:docs/SDD.md`
   § SDD Review Notes RN-11).
 - **`file:` URLs, or a wider CSP** — a `file:` URL anywhere, or `http:`, `https:`, `asset:` or `*`
   in any directive, is what C-R7 names as its violation; the asset scheme exists so that neither is
@@ -55,7 +55,7 @@ reported bypass (`docs/SDD.md` § 11 R-4, R-10). Harder: one scheme the renderer
 `img-src`; a containment check that must be right about `..`, symlinks, percent-encoding and
 Unicode normalization; and a raw-source view that is not built, because preserving the reading
 position both ways needs a rendered↔source mapping with no other use (`docs/SDD.md` § 9 TO-5, TO-6;
-§ SDD Review Notes RN-10).
+`nozoki@70a879a:docs/SDD.md` § SDD Review Notes RN-10).
 
 What undoing it costs: removing the handler and the scheme, and the placeholder returning for
 every image (`docs/SDD.md` § 9 TO-6).
@@ -70,8 +70,8 @@ registration — the sanitizer and the containment check stand.
 ## Traces to
 
 - `docs/SDD.md` § 3, `markdown-renderer` and `ipc-surface` rows, seams 4 and 7; § 4 C-R7, C-D3;
-  § 9 TO-5, TO-6; § 11 R-4, R-10; § SDD Review Notes RN-10, RN-11; § Open Questions (fifth item).
-- `docs/trail/sdd/cycle-1.md` § 2.4 — the owner's override.
+  § 9 TO-5, TO-6; § 11 R-4, R-10; § Open Questions (fifth item); `nozoki@70a879a:docs/SDD.md` § SDD Review Notes RN-10, RN-11.
+- `nozoki@70a879a:docs/trail/sdd/cycle-1.md` § 2.4 — the owner's override.
 - `docs/SRS.md` § 3.3 FR-30, FR-31, FR-32; § 4.3 NFR-16; § 6 DR-6; § 8 AC-23.
 - `docs/fdr.md` R-52, R-56 – R-62, PD-11, PD-12, PD-13.
 

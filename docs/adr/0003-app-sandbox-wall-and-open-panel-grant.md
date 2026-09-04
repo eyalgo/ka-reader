@@ -28,14 +28,14 @@ Once the selector exists, launch restores the last-viewed folder from its bookma
 panel only when nothing is remembered or the bookmark no longer resolves. A path that does not
 exist, is not a folder, or cannot be read is reported in the app's window, never on a terminal
 (`docs/SDD.md` § 4 C-R3; owner-confirmed with the per-folder reconciliation,
-`docs/trail/sdd/cycle-1.md` § 2.3).
+`nozoki@70a879a:docs/trail/sdd/cycle-1.md` § 2.3).
 
 ## Alternatives ruled out
 
 - **No sandbox, with a typed path or a launch argument as the start** — the sandbox cannot grant a
   typed path, so the read-only entitlement goes and the OS wall goes with it; the no-write promise
   then rests on the harness and the code alone — § 1's "if the code is careful". This is the
-  override branch the owner was shown and did not take (`docs/trail/sdd/cycle-1.md` § 2.3, "If
+  override branch the owner was shown and did not take (`nozoki@70a879a:docs/trail/sdd/cycle-1.md` § 2.3, "If
   overridden").
 - **The sandbox with the network-client entitlement present** — nothing in the SRS needs a
   connection during operation (`docs/SRS.md` § 4.3 NFR-8; § 5.3), and an entitlement nobody uses is
@@ -63,9 +63,9 @@ the bookmark path — not the shape (ADR-0001), whose renderer still holds nothi
 
 ## Traces to
 
-- `docs/SDD.md` § 2 force 5; § 4 C-R2, C-R3; § 9 TO-3; § 11 R-3, R-8, R-9; § SDD Review Notes RN-9;
-  § Open Questions (first and fourth items).
-- `docs/trail/sdd/cycle-1.md` § 2.3 — the owner's confirmation and the per-folder reconciliation.
+- `docs/SDD.md` § 2 force 5; § 4 C-R2, C-R3; § 9 TO-3; § 11 R-3, R-8, R-9;
+  § Open Questions (first and fourth items); `nozoki@70a879a:docs/SDD.md` § SDD Review Notes RN-9.
+- `nozoki@70a879a:docs/trail/sdd/cycle-1.md` § 2.3 — the owner's confirmation and the per-folder reconciliation.
 - `docs/SRS.md` § 4.2 NFR-4; § 4.3 NFR-5, NFR-8; § 3.1 FR-2, FR-3.
 - `docs/fdr.md` R-3, R-4, R-5, R-7, R-8, R-21, PD-14, OOS-19.
 - Apple's two entitlement pages, cited above, as the SDD cites them.

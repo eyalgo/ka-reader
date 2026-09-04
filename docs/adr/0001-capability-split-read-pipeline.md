@@ -67,7 +67,7 @@ presence is checked on every build rather than assumed (ADR-0008) (`docs/SDD.md`
 ## Traces to
 
 - `docs/SDD.md` § 2 — the seven forces, the candidates table, and "Undoing it"; § 3 seam 4; § 12,
-  "The downstream boundary" (surfaced for an ADR); § SDD Review Notes RN-6.
+  "The downstream boundary" (surfaced for an ADR); `nozoki@70a879a:docs/SDD.md` § SDD Review Notes RN-6.
 - `docs/SRS.md` § 4.2 NFR-4; § 4.3 NFR-5, NFR-6, NFR-8, NFR-16; § 6 DR-6; § 7 C-1.
 - `docs/fdr.md` PD-1, PD-6, PD-7, PD-26, PD-29 — the behaviour this shape realizes.
 - Inputs read for this record: SDD Settled v2 · SRS Settled v8 · FDR Draft v1.
