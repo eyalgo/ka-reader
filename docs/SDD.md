@@ -1,12 +1,24 @@
 # SDD — nozoki
 
-**Status:** Settled
+**Status:** Draft
 <!-- Draft = open issues or choices to confirm remain (open-issues file present).
      Settled = nothing left for the owner to answer and no open technical question — the done
        signal, and the state a finished SDD carries; the open-issues file is gone.
      Locked = ratified as the source of truth. -->
 **Owner:** CTO · CPO · CDO — one run, three seats
-**Version:** 3 — run 3 (`docs/trail/sdd/run-3.md`): folded the owner's confirm of companion § 2.2
+**Version:** 4 — run 4 (`docs/trail/sdd/run-4.md`): all three seats declared `no_followup` with no
+recall outstanding, but `docs/SDD_open_issues.md` still stands on disk (§ 5.1, opened by a
+`companion-self-answer` run on the FDR side, Answer slot unfilled and untouched throughout — the
+skill's rule leaves an unconsumed companion alone), so this document is stamped Draft rather than
+Settled. Content changes, both folded independently of that companion: CTO, under the owner's own
+confirmed FDR-trail answers (`docs/trail/fdr/cycle-1.md` §§ 2.4, 2.7) — widened § 3 `fs-reader`'s
+text rule to admit UTF-16 (BOM) alongside UTF-8, updated § 6 S-2's fixture set to match, rewrote
+§ 11 R-3's response to state an observed condition with nothing to do next and no folder offered,
+added a § 6 S-4 reducer case backing the observable half's linked-worktree/submodule assertion
+(RN-41, RN-42, RN-44). CDO — named the terminal form in § 4 C-E4 (it did not, as written, carry the
+shape R-3's rewritten response now takes) and added § 6 S-4's observable-half sentence for the same
+case (RN-43). CPO — verified its lane unchanged against the current PRD/Agari; no edit. Version 3 —
+run 3 (`docs/trail/sdd/run-3.md`): folded the owner's confirm of companion § 2.2
 (the 1.0.0 promise's contract) into § 6 S-11 *Delivers* / *Not in this slice* and § 12 *The PRD
 boundary* (CPO); added § 3's `contract.sh` row, § 4 C-I6 (a tag-anchored contract-pin check
 enforcing the priced set's install-path/floor/surface-presence members, which had no enforcing
@@ -247,7 +259,7 @@ interpret gives a different answer twice over the same settled text. Leave both 
 
 | Part | Lives in | Owns | Must not own |
 |---|---|---|---|
-| `fs-reader` | crates/nozoki-core | Listing a folder's entries and reading a file's bytes, each returning its outcome as data (bytes, or the condition observed); the text rule — bytes decode as UTF-8 or the file is *cannot-display-as-text* (`docs/SRS.md` FR-10); the extension map that names a floor language or *plain* (FR-29; the set is § 4 C-I5); the **containment check** — a canonical path, symlinks resolved and percent-decoding applied, is inside the granted folder or it is refused — run before any open, for every path derived from content or from outside | Any write. Git, in any form. Watching. Markdown. Deciding what a change means |
+| `fs-reader` | crates/nozoki-core | Listing a folder's entries and reading a file's bytes, each returning its outcome as data (bytes, or the condition observed); the text rule — bytes decode as UTF-8, with or without a byte-order mark, or begin with a UTF-16 byte-order mark and decode as UTF-16, and the file is text; otherwise it is *cannot-display-as-text* (`docs/SRS.md` FR-10) — no encoding is detected from content, no third encoding is admitted, one undecodable sequence makes the file not text, and an empty file is text (the owner's value, RN-41); the extension map that names a floor language or *plain* (FR-29; the set is § 4 C-I5); the **containment check** — a canonical path, symlinks resolved and percent-decoding applied, is inside the granted folder or it is refused — run before any open, for every path derived from content or from outside | Any write. Git, in any form. Watching. Markdown. Deciding what a change means |
 | `git-reader` | crates/nozoki-core | The **Git port** — `probe(folder)` answering `root` or `plain` with discovery disabled and never a path above the folder (FR-33); on a root only, `state()` (branch or detached identifier, the short status word), `status()` (changed and staged entries), `diff(kind, path)` and `walk(tips, window)` (beyond v1) — every method read-only and returning plain data — and its one adapter, libgit2 linked without its HTTPS and SSH transports. The installed-`git` adapter, run with `--no-optional-locks`, is the port's standing substitute and is not built ahead of the risk that needs it (§ 11 R-1) | Any mutating call — checkout, index write, ref update, lock file. Spawning a process. The model. A file outside Git's own on-disk layout |
 | `watcher` | crates/nozoki-core | One FSEvents subscription on the granted folder, the root's `.git` entry included, delivering coalesced change events as paths; nothing else | Reading content. Interpreting a change. Any write |
 | `folder-model` | crates/nozoki-core | The in-memory model of exactly one folder (FR-1): the tree, the selection and expansion, the open file, the Git state where the root finding says `root` and none where it says `plain`; every read held as an item carrying an `ItemState` (§ 4 C-I1); the **reducer** that applies reader results and watcher events and keeps the reader's place (FR-27); **replace-whole** — a new folder replaces the model as a value, never mutates it (NFR-12); the projections the surfaces draw; and the plain Rust API the host wraps and the harness calls (SM-5) | I/O of any kind. The Tauri runtime. Own state. Rendering |
@@ -587,10 +599,18 @@ and no condition here fixes either.
   to report it (UX-I10, UX-I14, UX-I16; the fence § `failure-says-what-next`). C-I1 and C-I2 carry
   the mechanism and the log. *Violated by:* a modal, a toast, a blocking spinner, a "copy details"
   or "show log" control, a channel this instance does not staff standing alone as the route.
-- **C-E4.** **Every message carries what the tool did, what it observed, and what to do next** —
-  never a cause the tool did not observe and never internal text (UX-I6); the wording is
-  `docs/CONTENT.md`'s (§ *Message patterns*) and the catalogue is C-I2's. *Violated by:* a message
-  naming a cause the tool inferred, a string that is not a catalogue sentence.
+- **C-E4.** **Every message carries what the tool did, what it observed, and what to do next —
+  or that there is nothing to do.** The third part takes one of the two forms `docs/CONTENT.md`
+  fixes (§ *Voice*, the *Terminal* row; § *Message patterns* → *Error — an observed condition*,
+  the formula's third part): one thing the reader can do next, or that nothing can be done and
+  what ends the wait. Where no wait ends it, the message says the condition stands and the route
+  out is the surface's own, named in the sentence only where it is not already on screen (UX-I14;
+  that formula's closing sentence) — the not-text file is the precedent, the tree as the way on
+  (`docs/CONTENT.md` § *Tone*, "A file that cannot be shown as text"), and § 11 R-3's Git item is
+  the second case (RN-43). Never a cause the tool did not observe and never internal text
+  (UX-I6); the wording is `docs/CONTENT.md`'s (§ *Message patterns*) and the catalogue is C-I2's.
+  *Violated by:* a message naming a cause the tool inferred, a string that is not a catalogue
+  sentence, a next step named where the tool observed that nothing can be done.
 - **C-E5.** **Read-only is the identity, not a mode.** No editing affordance exists, enabled or
   disabled; no framing implies an editable mode elsewhere; no undo or confirmation model exists;
   closing asks nothing; the only state the reader can change is the tool's own preferences, each
@@ -1069,7 +1089,9 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   `cargo test --locked -p nozoki-core` includes `fs-reader` tests that, for every extension in
   C-I5, name that floor language, and for `checks/fixtures/text/` — a file with no extension, a
   file with an extension outside the set, a shell script whose only marker is a `#!/bin/sh` first
-  line — yield *plain*, and for a non-UTF-8 fixture yield *cannot-display* with its reason;
+  line — yield *plain*, for a UTF-16 fixture that begins with its byte-order mark and for an
+  empty file yield *text*, and for a fixture that decodes as neither UTF-8 nor marked UTF-16 —
+  Latin-1 bytes, and a file torn mid-sequence — yield *cannot-display* with its reason (RN-41);
   `pnpm exec vitest run` includes reading-panel tests that a keystroke, a paste and a drop leave the
   rendered content unchanged and issue no command, and that the panel is named by the file's
   folder-relative path; `pnpm exec vitest run tests/architecture` passes (no `fetch`,
@@ -1184,8 +1206,13 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   are untouched (UX-F2). A repository mid-merge, mid-rebase or detached shows that state, presented
   as the state it is in and never as an error (UX-S3 Error). Git state the tool could not read — a
   lock, an unreadable file — shows on that item what was observed, and the rest of the view stands
-  (UX-S3 Error, UX-I10). They open a plain folder, a folder inside a repository, or a folder
-  holding repositories: the Git view is present and shows nothing at all — no message, no label,
+  (UX-S3 Error, UX-I10). They open a linked worktree, or a submodule, whose `.git` file names a
+  Git directory outside the folder: the Git view's item shows what was observed — where the Git
+  directory lies — and that this folder's Git state is therefore not read; it offers no folder to
+  choose, and the tree and the panel work exactly as before, which is the route out (§ 11 R-3;
+  UX-I10, UX-I14; the sentence's third part is C-E4's terminal form). They open a plain folder, a
+  folder inside a repository, or a folder holding repositories: the Git view is present and shows
+  nothing at all — no message, no label,
   no control, nothing offering to create a repository — the tree carries no markers, and the
   switch, the tree, the panel and the empty state are exactly as in a repository (UX-I17, UX-S3
   Empty). A clean repository and a plain folder are told apart only by the branch and its "nothing
@@ -1200,7 +1227,12 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   level and never a path above it; `--test git_state` passes over a repository with staged and
   unstaged changes on a named branch, one mid-merge, one mid-rebase and one on a detached HEAD:
   branch name or commit identifier, both lists with their status letters, the short status word as
-  Git names the state; `checks/read-only.sh checks/fixtures/repo` with `.git/index` in the hash
+  Git names the state; the same test includes a reducer case with a port double whose `probe`
+  answers `root` and whose `state()` returns the error naming a Git directory outside the folder —
+  the R-3 case, injected because the in-process harness runs under no sandbox grant and the
+  `linked-worktree` fixture reads fine there — and the model holds the Git item as
+  `failed(condition)` with that path as the condition, no folder path in it, and every tree item
+  `observed` (C-I1; RN-44); `checks/read-only.sh checks/fixtures/repo` with `.git/index` in the hash
   prints `unchanged` after `probe`, `state` and `status` — no optional-lock refresh (TO-2);
   `checks/structure.sh` finds no `std::process` in any shipped crate and the libgit2 import in
   `git-reader` alone. *The promise clause:* `checks/read-only.sh` on all six fixtures prints
@@ -1835,8 +1867,12 @@ A risk with no trigger and no response is an observation.>
 - **R-3:** A linked worktree or a submodule whose `.git` *file* names a Git directory outside the
   granted folder cannot be read past the grant — *shows up as* `probe` answering `root` and
   `state()` failing on the gitdir path; *response* the port reports it as a `failed` Git item
-  naming the folder to choose instead, the tree and the reading panel unaffected (C-I1; AC-25's
-  own-top-level case is the fixture).
+  whose observed condition is where the Git directory lies — this folder's Git state is
+  therefore not read — and that offers no folder to choose, because choosing the folder that holds
+  the Git directory views *that* folder (the main worktree in place of the linked one, the
+  superproject in place of the submodule; FR-1's one folder), never this one with its Git state;
+  the tree and the reading panel unaffected (C-I1; the message's shape is C-E4's; AC-25's
+  own-top-level case is the fixture; the owner's wording, RN-42).
 - **R-4:** A sanitizer bypass in the Markdown pipeline — *shows up as* the hostile corpus
   (`checks/fixtures/hostile.md`) producing HTML with a `<script`, an `on*=` attribute, a frame, or
   a `src=` on any scheme but `nozoki-asset`; *response* three independent walls (C-D3) so a bypass
@@ -2342,6 +2378,82 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   `docs/CONTENT.md`'s and its tokens as `docs/DESIGN.md`'s — outside the promise, as the confirm
   leaves them *(re: § 6 S-11 *Reached when*, observable half; source: `docs/trail/sdd/cycle-2.md`
   § 2.2, the exclusions; § 3 `read-only-harness`; § 4 C-E5)*.
+- **RN-41:** *(CTO)* *(changed)* § 3 `fs-reader`'s text rule admits a second encoding: a file whose
+  bytes begin with a UTF-16 byte-order mark and decode as UTF-16 is text, beside UTF-8 with or
+  without its mark; and the rule now states its own boundary — no detection from content, no third
+  encoding, one undecodable sequence makes the file not text, an empty file is text. `read-a-file`'s
+  command half gains the matching fixtures. *Because* the owner set that value, confirmed at
+  `docs/trail/fdr/cycle-1.md` § 2.4: the mark says what the file is, so admitting it is not a
+  guess, and refusing a file the tool can read without guessing is the refusal FR-29's "never
+  refused" is written against. The SRS fixes no encoding — FR-10 names "binary or undecodable
+  content" and no more — so the UTF-8-only sentence was this seat's own reading at run 1, written
+  without that answer in front of it (the SDD this one replaced stated no text rule, so the answer
+  had no earlier sentence to land in). The value is taken from where the owner set it and nowhere
+  else: the FDR is not an input of this document and no rule is read from it; the companion's § 5.1,
+  which names the same two sentences, keeps its Answer slot for the owner, untouched by this run.
+  No part, seam, slice, edge or place in the order moves *(re: § 3 `fs-reader`; § 6 S-2 *Reached
+  when*, command half; source: `docs/trail/fdr/cycle-1.md` § 2.4; SRS FR-10, FR-29)*.
+- **RN-42:** *(CTO)* *(changed)* § 11 R-3's response no longer has the `failed` Git item "naming
+  the folder to choose instead": the item's observed condition is where the Git directory lies,
+  this folder's Git state is therefore not read, and no folder is offered. *Because* the owner
+  overrode the earlier wording at `docs/trail/fdr/cycle-1.md` § 2.7 and called for it to be met at
+  this document's next revision (`docs/fdr.md` RN-7): choosing the folder that holds the Git
+  directory views *that* folder — the main worktree in place of the linked one, the superproject in
+  place of the submodule — never this one with its Git state, so the route the old response named
+  led somewhere else, and a route that leads elsewhere is a dead end in a route's clothes. This
+  document's first cut (run 1) carried the old wording without that answer in front of it. The
+  message's shape — an observed condition with nothing to do next — is C-E4's and
+  `docs/CONTENT.md`'s, not this note's; the fixture (AC-25's own-top-level case, C-I3's
+  `linked-worktree` and `submodule`) is unchanged. The same provenance rule as RN-41: the owner's
+  answer is taken from where it was set, the FDR is read for no rule, and the companion's § 5.1
+  keeps its slot for the owner. No part, seam, slice, edge or place in the order moves *(re: § 11
+  R-3; source: `docs/trail/fdr/cycle-1.md` § 2.7; `docs/fdr.md` RN-7; § 4 C-E4, C-I1, C-I3; SRS
+  FR-1, FR-33)*.
+- **RN-43:** *(CDO)* *(changed)* § 4 C-E4 names the terminal form a message's third part may
+  take, and § 6 `see-git-status`'s observable half gains the linked-worktree and submodule case.
+  *Because* the CTO asked this seat to confirm that C-E4 carries the shape § 11 R-3's `failed`
+  item now takes — an observed condition with nothing to do next (RN-42) — and it did not as
+  written: C-E4 said *what to do next* and no more, narrower than the formula it binds wording
+  to, whose third part is *what you can do next, or that there is nothing to do and what ends the
+  wait* (`docs/CONTENT.md` § *Message patterns* → *Error — an observed condition*; the *Terminal*
+  row of § *Voice*, `docs/CONTENT.md:62`). A builder holding C-E4 alone would write R-3's item a
+  next step, and the one step available — the folder holding the Git directory — is the wording
+  the owner overrode (`docs/trail/fdr/cycle-1.md` § 2.7). The narrowing was not something C-E4
+  could name as a violation, which is the defect: a condition whose positive text is stricter
+  than its source binds by accident. UX-I6 reads the same three parts and is not departed from —
+  it fixes what a message carries and sends the standard to `docs/CONTENT.md`, and the terminal
+  form is that standard's. One reading is this seat's and is stated rather than assumed: the
+  formula's *what ends the wait* is written for a condition a wait ends (its example is
+  `.git/index.lock`), and R-3's condition no wait ends; `docs/CONTENT.md` already applies the same
+  formula to such a case — the not-text file, "with the tree still there as the way on"
+  (§ *Tone*), traced to § *Error* at its § *Traceability* — so the form covers R-3 and no gap is
+  raised against that document. Whether it wants R-3's case as an example of its own is the
+  Content Editor's, and this note names it rather than wording it. The S-4 clause exists so the
+  owner's overridden wording has an observable in the slice that delivers it, not only a line in
+  the risk register: S-4's command half already runs the `linked-worktree` and `submodule`
+  fixtures and its *Traces to* carries AC-25. The UXD names the case nowhere — UX-S3's Error cell
+  enumerates the transient reading, a lock or an unreadable file — so the clause cites the general
+  entries it instantiates (UX-I10, UX-I14) and R-3 for the case, and no UXD gap is claimed: the
+  entries cover it. Nothing else in this seat's lanes reacts to RN-41: `read-a-file`'s observable
+  half says *any other text file is plain text* and lets `fs-reader`'s rule decide what text is.
+  No part, seam, slice, edge or place in the order moves *(re: § 4 C-E4; § 6 S-4 *Reached when*,
+  observable half; source: `docs/CONTENT.md:62`, § *Message patterns*, § *Tone*,
+  § *Traceability*; `docs/UXD.md` UX-I6, UX-I10, UX-I14, UX-S3; § 11 R-3, RN-42)*.
+- **RN-44:** *(CTO)* *(added)* `see-git-status`'s command half gains one reducer case for § 11
+  R-3: a port double whose `probe` answers `root` and whose `state()` returns the error naming a
+  Git directory outside the folder, and the model holds the Git item as `failed(condition)` with
+  that path as the condition, no folder path in it, and every tree item `observed`. *Because* the
+  observable half now states that case (RN-43) and the command half exercised nothing for it: the
+  `linked-worktree` and `submodule` fixtures ran only through `root_finding`, and they cannot
+  produce the failure on their own — the harness drives `nozoki-core` in-process (C-I3), under no
+  sandbox grant, so libgit2 reads a gitdir outside the opened folder there without complaint; the
+  failure R-3 names exists only under the bundle's grant (C-R2). A bar with one half checks one
+  side of the slice. The double is the cheapest honest stand-in, and the check is the reducer's
+  (C-I1: a failure is a state, its siblings `observed`), not the port's — R-3's *shows up as* stays
+  the port's observation on a built bundle. Found while confirming RN-43 at run 4, round 2, and
+  fixed in place (`<CORE>/doctrine/governance/found_while_walking.md`, clause 1). No part, seam,
+  slice, edge or place in the order moves *(re: § 6 S-4 *Reached when*, command half; source:
+  § 11 R-3; § 3 `Item<T>`; § 4 C-I1, C-I3, C-R2; RN-43)*.
 
 ---
 
