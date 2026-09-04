@@ -95,7 +95,23 @@
   some fifty further edits and of citations that resolve correctly today reading as frozen; or
   *re-point the thirteen* to the re-authored passages, which the owner's (b) rejected for the log;
   or *leave them*, which keeps five records in the state cycle 3 was opened to end.
-- **Confirm or override:**
+- **Confirm or override:** confirm, with one addition — a fourteenth: ADR-0001's `docs/SDD.md`
+  § 1, last paragraph (§ Context, `adr/0001-capability-split-read-pipeline.md:14`) takes the same
+  pin. The thirteen are confirmed as counted — each measured this run at the line the item names
+  (ADR-0002 :46, :50, :54, :69 and :64; ADR-0006 :66, :73; ADR-0005 :28, :39, :64; ADR-0004 :64;
+  ADR-0009 :15, :61), and the other § 9 and § 11 citations those records carry — TO-2, TO-5, TO-6,
+  R-1 — keep their subject across the two SDDs and are not pinned. The addition: ADR-0001 quotes
+  "if the code is careful" from a paragraph that no longer holds the words — the re-authored § 1
+  ends in four questions without the phrase, which now sits in § 2's first row — so the record
+  misstates what its author read by the same ground (b) that governs the thirteen, and a quoted
+  phrase is the strongest form of that claim; that the subject survives one section over is a
+  reason the misdirection is mild, not a reason it is absent. Not taken: pinning every `docs/SDD.md`
+  citation in the nine records, because a citation that resolves to the same passage today is a
+  live claim that the record and the SDD still agree, and freezing it would hide that. Prose edits
+  on the owner's cycle-3 ruling (3): no record's Status, date, decision, alternative or consequence
+  moves, no superseding record is written, the index is untouched. Decided in the owner's seat by a
+  `companion-self-answer` run, 2026-09-04. Reasoning: `docs/trail/architecture/self_answer-6.md`
+  § 2.1.
 
 ## 3. Raised from downstream — an item from a seat that did not write these records
 
