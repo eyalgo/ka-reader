@@ -47,7 +47,14 @@
   owed the member, a CPO fold; nothing in these records moves either way. If instead S-11 is the
   whole contract, QC-59 drops its third member, QC-60's *"after 1.0.0 a discard is a breaking change"*
   goes with it, and PD-39 is the FDR's to reconcile — the Principal PM's, not this seat's.
-- **Answer:**
+- **Answer:** The FDR is right. `docs/fdr.md` PD-39 stands, and with it `docs/nfdr.md` QC-59's third
+  member and QC-60's *"after 1.0.0 a discard is a breaking change"* — both as written. **Nothing in
+  these records moves**: no ADR, no obligation, no machine check; QC-60's `checks/own-state.sh` keeps
+  the member it verifies. What is owed is `docs/SDD.md` § 6 S-11 *Delivers*, whose priced set names
+  three members where the contract has four — the CPO's sentence, through the SDD's own run, not this
+  seat's. **No companion is opened on the SDD** — the owner declined one and will invoke that chain
+  themselves (owner, 2026-09-04), so nothing here carries the change and no file outside these
+  records is written by this run. Answered by the owner in a `companion-answer` walk, 2026-09-04.
 
 ## 2. Choices to confirm — the Principal Architect drafted a best-effort answer; confirm or override
 
