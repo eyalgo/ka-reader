@@ -36,6 +36,3 @@ Thumbs.db
 *.sw?
 .vscode/*
 !.vscode/extensions.json
-
-# Added by the product-skeleton launcher — what the Rust toolchain generates
-/target
