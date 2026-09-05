@@ -43,15 +43,15 @@ confirmed the runtime after checking that `docs/DESIGN.md` binds no rendering te
 
 Easier: mature highlighting, diff and graph rendering in the renderer; a renderer that can be handed
 *no* capability; the closed command list the host registers is the seam ADR-0001 rests on; memory
-safety in the process that parses untrusted repository data (`docs/SDD.md` § 9 TO-1, TO-4).
+safety in the process that parses untrusted repository data (`nozoki@70a879a:docs/SDD.md` § 9 TO-1, TO-4).
 
 Harder: a second wall — a host-side sanitizer and a Content Security Policy — to keep NFR-16 once
 content is HTML (ADR-0006); a rendering engine whose behaviour is Apple's, moving with macOS; two
-languages beside each other and the contributor bar that brings (`docs/SDD.md` § 9 TO-1, TO-4).
+languages beside each other and the contributor bar that brings (`nozoki@70a879a:docs/SDD.md` § 9 TO-1, TO-4).
 
 What undoing it costs: replacing the renderer technology costs every surface rewritten, the host
 untouched; replacing the host language costs the host rewritten, the model and the harness fixtures
-surviving (`docs/SDD.md` § 9 TO-1, TO-4). Neither the renderer technology nor the platform is
+surviving (`nozoki@70a879a:docs/SDD.md` § 9 TO-1, TO-4). Neither the renderer technology nor the platform is
 replaceable inside the terminus (`docs/fdr.md` PD-29).
 
 **What this rests on, and whose it stays.** Tauri 2 is maintained by a project this product does
@@ -61,13 +61,13 @@ un-made is the *mechanism* of the closed command list and the custom asset schem
 file and protocol registration) — not the shape: the host is Rust over a library, the IPC seam is
 one surface, and a replacement shell re-implements that seam against the same `nozoki-core`. If
 Apple moves WKWebView — the CSP origin form for a custom scheme is already an open question the
-first Markdown slice settles (`docs/SDD.md` § Open Questions, fifth item) — what moves is the
+first Markdown slice settles (`nozoki@70a879a:docs/SDD.md` § Open Questions, fifth item) — what moves is the
 renderer's walls, which are checked on every build (ADR-0006, ADR-0008).
 
 ## Traces to
 
-- `docs/SDD.md` § 2, table row 4 and forces 6–7; § 3, "Three deliverables"; § 4 C-R1; § 9 TO-1,
-  TO-4; § 12, "The downstream boundary"; `nozoki@70a879a:docs/SDD.md` § SDD Review Notes RN-7.
+- `docs/SDD.md` § 2, table row 4 and forces 6–7; § 3, "Three deliverables"; § 4 C-R1; § 12, "The
+  downstream boundary"; `nozoki@70a879a:docs/SDD.md` § 9 TO-1, TO-4, § SDD Review Notes RN-7.
 - `nozoki@70a879a:docs/trail/sdd/cycle-1.md` § 2.2 — the owner's confirmation, with the DESIGN.md check recorded.
 - `docs/SRS.md` § 7 C-3, C-11; § SRS Review Notes RN-7, RN-12.
 - `docs/DESIGN.md` § DESIGN Review Notes RN-1 — "every value here is a CSS value and holds in either".

@@ -61,8 +61,9 @@ keeps.
 
 ## Traces to
 
-- `docs/SDD.md` § 2 force 2; § 3, `git-reader` row and seam 2; § 4 C-R6; § 9 TO-2; § 11 R-1, R-6;
-  § 12, "The downstream boundary"; § Open Questions (second item); `nozoki@70a879a:docs/SDD.md` § SDD Review Notes RN-8.
+- `docs/SDD.md` § 2 force 2; § 3, `git-reader` row and seam 2; § 4 C-R6; § 9 TO-2; § 11 R-1;
+  § 12, "The downstream boundary"; § Open Questions (second item); `nozoki@70a879a:docs/SDD.md` § 11 R-6, § SDD Review
+  Notes RN-8.
 - `docs/SRS.md` § 5.3; § 4.3 NFR-5, NFR-6; § 7 C-3; § 8 AC-1, AC-2.
 - `docs/fdr.md` PD-27, PD-29.
 - Apple's Command Line Tools page and Git's `git-status` page, cited above, as the SDD cites them.

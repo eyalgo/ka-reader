@@ -11,7 +11,7 @@ hold through a crash, not only in normal operation (`docs/SRS.md` § 4.2 NFR-4; 
 NFR-8, NFR-16). The folder is live, untrusted input that may change at any moment (§ 6 DR-6). The
 design document set itself a test before naming a shape: a candidate that answers "is the no-write,
 no-network promise true by construction?" with *if the code is careful* loses to one that answers it
-structurally, whatever else it costs (`docs/SDD.md` § 1, last paragraph). A negative invariant is
+structurally, whatever else it costs (`nozoki@70a879a:docs/SDD.md` § 1, last paragraph). A negative invariant is
 not held by a guarded domain core; it is held by withholding a capability at a boundary something
 outside the code enforces (`docs/SDD.md` § 2, force 3).
 

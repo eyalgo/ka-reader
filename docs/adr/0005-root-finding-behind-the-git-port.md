@@ -25,8 +25,8 @@ above the folder. The **model consumes the answer as a state**: `root` carries a
 **surfaces draw that state**, and draw the Git view empty on `plain`. The **watcher includes the
 root's `.git` entry**, so a repository appearing at the root mid-session, or leaving it, is one more
 change the reducer applies by re-running the finding (`docs/SDD.md` § 3, the `git-reader`,
-`folder-model` and `watcher` rows, and the paragraph following the parts table; `nozoki@70a879a:docs/SDD.md` § SDD Review Notes
-RN-24 (3)–(4)). A build with no Git surface links no `git-reader` at all, and its model's root
+`folder-model` and `watcher` rows; `nozoki@70a879a:docs/SDD.md` § 3, the paragraph following the parts table, and
+§ SDD Review Notes RN-24 (3)–(4)). A build with no Git surface links no `git-reader` at all, and its model's root
 finding is pending-and-never-asked.
 
 ## Alternatives ruled out
@@ -36,7 +36,7 @@ finding is pending-and-never-asked.
   substituted (ADR-0004) must carry it too: an installed-`git` adapter answers it with
   `git rev-parse --show-toplevel` compared to the folder, a libgit2 adapter by opening with
   discovery disabled. A check outside the port would have to be right for both
-  (`docs/SDD.md` § 3, the paragraph following the parts table).
+  (`nozoki@70a879a:docs/SDD.md` § 3, the paragraph following the parts table).
 - **Answer it in the model** — the same reason; the model consumes the answer and does not know how
   it was found, which is what `docs/SRS.md` FR-33 asks for ("how the determination is made is the
   SDD's").
@@ -60,9 +60,9 @@ one.
 
 ## Traces to
 
-- `docs/SDD.md` § 3 — the `git-reader`, `folder-model`, `watcher` rows and the paragraph after the
-  parts table; seam 2; § 4 C-R3 (a plain folder is not a startup failure); § 11 R-3; `nozoki@70a879a:docs/SDD.md` § SDD Review
-  Notes RN-24 (3)–(5).
+- `docs/SDD.md` § 3 — the `git-reader`, `folder-model`, `watcher` rows; seam 2; § 4 C-R3 (a plain
+  folder is not a startup failure); § 11 R-3; `nozoki@70a879a:docs/SDD.md` § 3, the paragraph after the parts
+  table, and § SDD Review Notes RN-24 (3)–(5).
 - `docs/SRS.md` § 3.1 FR-33, FR-34; § 8 AC-24, AC-25; § SRS Review Notes RN-32, RN-33.
 - `docs/trail/prd/cycle-10.md` § 2.2, § 2.4 — the owner's plain-folder and root-only rulings.
 - `docs/fdr.md` R-12 – R-18, R-22 – R-26, PD-5, PD-37.

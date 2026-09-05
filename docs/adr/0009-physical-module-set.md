@@ -12,8 +12,8 @@ assigns each of nine parts to one of them with what it owns and must not own (`d
 design — the harness exercises "every command on the IPC list through `nozoki-core`"
 (`docs/SDD.md` § 4 C-I3), the first slice's bar says "`nozoki-core` links no `git-reader` in this
 slice" (§ 6 S-1), and the sixth's names `nozoki-ui/src/tree`, `nozoki-ui/src/git-view` and
-`nozoki-ui/src/reading-panel` (§ 6 S-6) — but the choice is argued in none of the SDD's three
-decision surfaces. **This record is reconstructed** from those facts; its alternatives are this
+`nozoki-ui/src/reading-panel` (`nozoki@70a879a:docs/SDD.md` § 6 S-6) — but the choice is argued in
+none of the SDD's three decision surfaces. **This record is reconstructed** from those facts; its alternatives are this
 seat's reading of what the design implies, not a weighing the SDD performed.
 
 ## Decision
@@ -58,7 +58,8 @@ record fixes are the ones `docs/nfdr.md` § 1.2 binds, and moving one moves that
 ## Traces to
 
 - Reconstructed from `docs/SDD.md` § 3 ("Three deliverables …" and the parts table), § 4 C-I3,
-  § 6 S-1 (the command half of *Reached when*) and § 6 S-6 (the `git diff --stat` paths).
+  § 6 S-1 (the command half of *Reached when*), and `nozoki@70a879a:docs/SDD.md` § 6 S-6 (the
+  `git diff --stat` paths).
 - `arch_defaults.md` v2.0.0 § Package Structure, § Composition Root — drawn on, not applied; a
   doctrine file of the organisation that publishes this product, outside this repository.
 - ADR-0001 (the seams), ADR-0002 (the units' languages), ADR-0004 (the port).

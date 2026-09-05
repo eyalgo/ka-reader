@@ -63,14 +63,15 @@ every image (`docs/SDD.md` § 9 TO-6).
 **What this rests on, and whose it stays.** The exact origin form the WebView accepts in `img-src`
 for a custom scheme, and whether Tauri 2's protocol registration on macOS serves it without a
 plugin, are open until the first Markdown slice renders the local-image fixture with no CSP
-violation; the form found is written into C-R7 (`docs/SDD.md` § Open Questions, fifth item). If
+violation; the form found is written into C-R7 (`nozoki@70a879a:docs/SDD.md` § Open Questions, fifth item). If
 that form moves with a WebView release, what is un-made is one CSP directive and the scheme's
 registration — the sanitizer and the containment check stand.
 
 ## Traces to
 
 - `docs/SDD.md` § 3, `markdown-renderer` and `ipc-surface` rows, seams 4 and 7; § 4 C-R7, C-D3;
-  § 9 TO-5, TO-6; § 11 R-4, R-10; § Open Questions (fifth item); `nozoki@70a879a:docs/SDD.md` § SDD Review Notes RN-10, RN-11.
+  § 9 TO-5, TO-6; § 11 R-4, R-10; `nozoki@70a879a:docs/SDD.md` § Open Questions (fifth item), § SDD Review Notes
+  RN-10, RN-11.
 - `nozoki@70a879a:docs/trail/sdd/cycle-1.md` § 2.4 — the owner's override.
 - `docs/SRS.md` § 3.3 FR-30, FR-31, FR-32; § 4.3 NFR-16; § 6 DR-6; § 8 AC-23.
 - `docs/fdr.md` R-52, R-56 – R-62, PD-11, PD-12, PD-13.
