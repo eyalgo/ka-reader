@@ -39,3 +39,6 @@ Thumbs.db
 
 # Added by the product-skeleton launcher — what the Rust toolchain generates
 /target
+
+# Written into the source tree by tauri-build on every build: the ACL manifests and JSON schemas
+/crates/nozoki-app/gen/

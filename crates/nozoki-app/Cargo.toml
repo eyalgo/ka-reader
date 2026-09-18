@@ -8,8 +8,13 @@ workspace = true
 [dependencies]
 thiserror = "2.0.20"
 anyhow = "1.0.104"
+tauri = "2.11.5"
+nozoki-core = { version = "0.0.0", path = "../nozoki-core" }
 
 [dev-dependencies]
 plist = "1.10.1"
 serde_json = "1.0.151"
 toml = "1.1.6"
+
+[build-dependencies]
+tauri-build = "2.6.3"
