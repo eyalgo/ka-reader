@@ -1,5 +1,6 @@
 [package]
 name = "nozoki-app"
+version = "0.0.0"
 edition = "2024"
 
 [lints]
@@ -8,7 +9,7 @@ workspace = true
 [dependencies]
 thiserror = "2.0.20"
 anyhow = "1.0.104"
-tauri = "2.11.5"
+tauri = { version = "2.11.5", features = [] }
 nozoki-core = { version = "0.0.0", path = "../nozoki-core" }
 
 [dev-dependencies]
@@ -17,4 +18,4 @@ serde_json = "1.0.151"
 toml = "1.1.6"
 
 [build-dependencies]
-tauri-build = "2.6.3"
+tauri-build = { version = "2.6.3", features = [] }
