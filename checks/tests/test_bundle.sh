@@ -44,6 +44,7 @@ test_no_sandbox_observed_fails_and_cleans_up
 test_marker_in_the_environment_passes
 test_nonexistent_path_fails
 test_plain_directory_fails
+test_directory_without_app_suffix_fails
 test_unlaunchable_bundle_fails
 test_absent_bundle_fails_the_suite
 test_temporaries_removed
@@ -129,6 +130,7 @@ test_real_bundle_passes() {
   [ "$STATUS" -eq 0 ] || fail "expected exit 0 on the real bundle, got $STATUS. output: $OUT" || return 1
   expect_output_contains "$APP_SANDBOX_KEY" || return 1
   expect_output_contains "$USER_SELECTED_READ_ONLY_KEY" || return 1
+  expect_output_contains "sandbox observed: $SANDBOX_MARKER=" || return 1
   expect_no_bundle_process "$APP"
 }
 
@@ -187,6 +189,7 @@ test_marker_in_the_environment_passes() {
   run_bundle_sh_with_stubs "$WORK/stubs-marker" "$APP"
 
   [ "$STATUS" -eq 0 ] || fail "expected exit 0 with the marker present, got $STATUS. output: $OUT" || return 1
+  expect_output_contains "sandbox observed: $SANDBOX_MARKER=com.kensaiapp.nozoki" || return 1
   expect_no_bundle_process "$APP"
 }
 
@@ -201,6 +204,24 @@ test_plain_directory_fails() {
   mkdir -p "$WORK/plain-directory"
 
   run_bundle_sh "$WORK/plain-directory"
+
+  expect_nonzero_status || return 1
+  expect_output_contains "not an application bundle"
+}
+
+test_directory_without_app_suffix_fails() {
+  # Everything a launchable bundle has except the .app suffix, so only the suffix rule can stop it.
+  mkdir -p "$WORK/NotAnApp/Contents/MacOS"
+  printf '#!/bin/sh\nexit 0\n' > "$WORK/NotAnApp/Contents/MacOS/notanapp"
+  chmod +x "$WORK/NotAnApp/Contents/MacOS/notanapp"
+  cat > "$WORK/NotAnApp/Contents/Info.plist" <<'PLIST'
+<?xml version="1.0" encoding="UTF-8"?>
+<plist version="1.0"><dict>
+<key>CFBundleExecutable</key><string>notanapp</string>
+</dict></plist>
+PLIST
+
+  run_bundle_sh "$WORK/NotAnApp"
 
   expect_nonzero_status || return 1
   expect_output_contains "not an application bundle"
