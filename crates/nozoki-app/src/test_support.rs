@@ -4,7 +4,7 @@
 //! change add exactly one (`rfd`).
 
 use std::fs;
-use std::os::unix::fs::PermissionsExt;
+use std::os::unix::fs::{PermissionsExt, symlink};
 use std::path::{Path, PathBuf};
 use std::process;
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -38,6 +38,21 @@ impl TempDir {
         let path = self.root.join(relative);
         fs::create_dir_all(&path).expect("the folder can be created");
         path
+    }
+
+    /// Creates a file with `contents`, and any missing parent folder.
+    pub fn write_file(&self, relative: &str, contents: &str) -> PathBuf {
+        let path = self.root.join(relative);
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent).expect("the parent folder can be created");
+        }
+        fs::write(&path, contents).expect("the file can be written");
+        path
+    }
+
+    /// Creates a symlink at `relative` whose target is written exactly as `target`.
+    pub fn make_link(&self, relative: &str, target: impl AsRef<Path>) {
+        symlink(target, self.root.join(relative)).expect("the symlink can be created");
     }
 
     pub fn set_mode(&self, relative: &str, mode: u32) {
