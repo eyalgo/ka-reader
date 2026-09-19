@@ -1,3 +1,96 @@
+//! The panel-free half of SM-4: the session and the two commands' logic. Every operation delegates
+//! to `nozoki-core` and only formats the result (QC-13). It never presents a panel — the panel's
+//! result comes in as a plain `Option<PathBuf>`, so none of this needs a Tauri runtime.
+
+use std::path::PathBuf;
+use std::sync::{Mutex, PoisonError};
+
+use nozoki_core::{EntryKind, Listing, OpenedFolder, list_tree, open_folder};
+use serde::Serialize;
+
+/// What `open_folder` returns to the renderer.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+pub struct OpenResult {
+    pub opened: bool,
+}
+
+/// An entry's kind on the wire: `"folder"`, `"file"` or `"symlink"`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum KindDto {
+    Folder,
+    File,
+    Symlink,
+}
+
+impl From<EntryKind> for KindDto {
+    fn from(kind: EntryKind) -> Self {
+        match kind {
+            EntryKind::Folder => Self::Folder,
+            EntryKind::File => Self::File,
+            EntryKind::Symlink => Self::Symlink,
+        }
+    }
+}
+
+/// One listed entry on the wire: exactly `name`, `path` and `kind`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct EntryDto {
+    pub name: String,
+    pub path: String,
+    pub kind: KindDto,
+}
+
+/// The session: at most one opened folder, starting empty, replaced whole by a successful open.
+/// It is meant to live in Tauri's managed state.
+///
+/// # Examples
+///
+/// ```
+/// use nozoki_app::commands::Session;
+///
+/// let session = Session::default();
+///
+/// assert!(session.list("").is_empty(), "nothing is open yet");
+/// assert!(!session.open(None).opened, "a cancelled panel opens nothing");
+/// ```
+#[derive(Default)]
+pub struct Session {
+    opened: Mutex<Option<OpenedFolder>>,
+}
+
+impl Session {
+    /// Opens the folder the panel returned. A chosen path that `nozoki-core` opens replaces the
+    /// session whole. A cancel (`None`), or a path that does not open, leaves the session as it was.
+    pub fn open(&self, chosen: Option<PathBuf>) -> OpenResult {
+        let replacement = chosen.and_then(open_folder);
+        let opened = replacement.is_some();
+        if let Some(folder) = replacement {
+            *self.opened.lock().unwrap_or_else(PoisonError::into_inner) = Some(folder);
+        }
+        OpenResult { opened }
+    }
+
+    /// Lists `path` inside the opened folder. `Refused`, `Failed`, and no folder open are all `[]`.
+    pub fn list(&self, path: &str) -> Vec<EntryDto> {
+        let guard = self.opened.lock().unwrap_or_else(PoisonError::into_inner);
+        let Some(folder) = guard.as_ref() else {
+            return Vec::new();
+        };
+        match list_tree(folder, path) {
+            Listing::Listed(entries) => entries
+                .into_iter()
+                .map(|entry| EntryDto {
+                    name: entry.name,
+                    path: entry.path,
+                    kind: entry.kind.into(),
+                })
+                .collect(),
+            Listing::Refused | Listing::Failed(_) => Vec::new(),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     //! Layer 1: the panel-free half of SM-4 over temporary folders. The panel is Task 11's, so every
