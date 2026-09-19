@@ -7,6 +7,7 @@
 //! The records these hold: `docs/SDD.md` C-R2 (the two entitlements) and C-R7 (the Content Security
 //! Policy), and `docs/nfdr.md` QC-23 (the CSP), QC-24 (the empty grant) and QC-36 (no plugin).
 
+use std::collections::BTreeSet;
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -223,23 +224,135 @@ fn no_plugin_is_configured() {
     assert!(is_absent_or_empty(&config()["plugins"]));
 }
 
+/// The two commands S-1 grants, by the permission identifiers Tauri generates for them.
+const GRANTED_PERMISSIONS: [&str; 2] = ["allow-open-folder", "allow-list-tree"];
+
+/// The two commands the app manifest names, as the renderer invokes them.
+const GRANTED_COMMANDS: [&str; 2] = ["open_folder", "list_tree"];
+
+/// Every file in `capabilities/`, in no particular order.
+fn capability_files() -> Vec<PathBuf> {
+    let directory = crate_dir().join("capabilities");
+    fs::read_dir(&directory)
+        .unwrap_or_else(|error| panic!("{} must be readable: {error}", directory.display()))
+        .map(|entry| entry.expect("a directory entry is readable").path())
+        .collect()
+}
+
+/// The one capability file, parsed. Fails when there is not exactly one.
+fn the_capability() -> Value {
+    let files = capability_files();
+    assert_eq!(
+        files.len(),
+        1,
+        "capabilities/ must hold one file: {files:?}"
+    );
+    let text = fs::read_to_string(&files[0])
+        .unwrap_or_else(|error| panic!("{} must be readable: {error}", files[0].display()));
+    serde_json::from_str(&text).expect("the capability file must be valid JSON")
+}
+
+/// A JSON array of strings, as a set. Panics on any element that is not a plain string, so a
+/// permission carrying a scope object cannot slip past a set comparison.
+fn string_set(value: &Value) -> BTreeSet<String> {
+    value
+        .as_array()
+        .unwrap_or_else(|| panic!("expected an array, got {value}"))
+        .iter()
+        .map(|element| {
+            element
+                .as_str()
+                .unwrap_or_else(|| panic!("expected a plain string, got {element}"))
+                .to_owned()
+        })
+        .collect()
+}
+
+fn owned_set(names: &[&str]) -> BTreeSet<String> {
+    names.iter().map(|name| (*name).to_owned()).collect()
+}
+
+/// The command names `build.rs` passes to the app manifest, read from its text: every quoted string
+/// between `commands(&[` and the `]` that closes it.
+fn commands_declared_in(build_script: &str) -> BTreeSet<String> {
+    let after = build_script
+        .split("commands(&[")
+        .nth(1)
+        .expect("build.rs must declare the app manifest's commands");
+    let list = after
+        .split(']')
+        .next()
+        .expect("the commands list must be closed");
+    list.split('"')
+        .enumerate()
+        .filter(|(index, _)| index % 2 == 1)
+        .map(|(_, name)| name.to_owned())
+        .collect()
+}
+
 #[test]
-fn no_capability_is_declared_or_on_disk() {
+fn capabilities_are_not_declared_in_the_config() {
     let declared = &config()["app"]["security"]["capabilities"];
     assert!(
         is_absent_or_empty(declared),
-        "capabilities are declared: {declared}"
+        "capabilities are declared in tauri.conf.json, so capabilities/ would not be what is read: {declared}"
     );
+}
 
-    let on_disk = crate_dir().join("capabilities");
-    let files_on_disk = fs::read_dir(&on_disk)
-        .map(|entries| entries.count())
-        .unwrap_or(0);
+#[test]
+fn exactly_one_capability_file_is_on_disk() {
+    assert_eq!(capability_files().len(), 1);
+}
+
+#[test]
+fn the_capability_grants_exactly_the_two_commands() {
     assert_eq!(
-        files_on_disk,
-        0,
-        "{} must not hold a capability file",
-        on_disk.display()
+        string_set(&the_capability()["permissions"]),
+        owned_set(&GRANTED_PERMISSIONS)
+    );
+}
+
+#[test]
+fn the_capability_names_no_core_or_plugin_permission() {
+    let permissions = string_set(&the_capability()["permissions"]);
+
+    // A `core:` permission and a `<plugin>:` permission both carry a colon; an app permission never does.
+    let outside_the_app: Vec<&String> = permissions
+        .iter()
+        .filter(|permission| permission.contains(':'))
+        .collect();
+
+    assert!(
+        outside_the_app.is_empty(),
+        "core or plugin permissions: {outside_the_app:?}"
+    );
+}
+
+#[test]
+fn the_capability_applies_to_the_main_window_only() {
+    assert_eq!(
+        string_set(&the_capability()["windows"]),
+        owned_set(&["main"])
+    );
+}
+
+#[test]
+fn the_app_manifest_names_exactly_the_two_commands() {
+    assert_eq!(
+        commands_declared_in(&read_crate_file("build.rs")),
+        owned_set(&GRANTED_COMMANDS)
+    );
+}
+
+#[test]
+fn the_command_reader_finds_every_quoted_name_and_no_other_text() {
+    // The assertion above passes on an empty answer if the reader finds nothing.
+    let script =
+        r#"fn main() { build(AppManifest::new().commands(&["one_two", "three"])); "other" }"#;
+
+    assert_eq!(
+        commands_declared_in(script),
+        owned_set(&["one_two", "three"])
     );
 }
 
