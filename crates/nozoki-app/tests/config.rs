@@ -122,6 +122,13 @@ fn signing_identity_is_ad_hoc() {
 }
 
 #[test]
+fn bundle_target_is_app_only() {
+    // The `.dmg` is out of this change's scope: the bundle command writes `Nozoki.app` and nothing
+    // else (tl_instruction Task 2, *What to build*; Task 3, "and no `.dmg`").
+    assert_eq!(config()["bundle"]["targets"], serde_json::json!(["app"]));
+}
+
+#[test]
 fn entitlements_file_is_configured_and_exists() {
     let configured = macos_bundle_setting(&config(), "entitlements");
     let relative = configured
