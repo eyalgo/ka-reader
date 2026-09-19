@@ -1,8 +1,12 @@
 //! fs-reader: turns a requested path into a location known to lie inside a canonical root, and
 //! lists that location's direct entries.
 
+use std::collections::VecDeque;
+use std::ffi::OsString;
+use std::fmt;
+use std::fs;
 use std::io;
-use std::path::Path;
+use std::path::{Component, Path, PathBuf};
 
 /// What a directory entry is, read without following a link.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -23,8 +27,31 @@ pub struct Entry {
 /// Why a listing inside the root could not be produced.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Failure {
-    Io(io::ErrorKind),
+    /// The operating system refused a read. `os_error` is its own text, which never names a path.
+    Io {
+        kind: io::ErrorKind,
+        os_error: String,
+    },
+    /// A chain of symbolic links was followed further than [`MAX_LINK_HOPS`], as a cycle would be.
     LinkLimit,
+}
+
+impl Failure {
+    fn from_io(error: &io::Error) -> Self {
+        Self::Io {
+            kind: error.kind(),
+            os_error: error.to_string(),
+        }
+    }
+}
+
+impl fmt::Display for Failure {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Io { os_error, .. } => formatter.write_str(os_error),
+            Self::LinkLimit => formatter.write_str("too many levels of symbolic links"),
+        }
+    }
 }
 
 /// The three outcomes of listing one requested path.
@@ -35,8 +62,142 @@ pub enum Listing {
     Failed(Failure),
 }
 
-pub fn list(_root: &Path, _requested: &str) -> Listing {
-    todo!("fs-reader is not implemented yet")
+/// The most symbolic links one requested path may pass through before it is called a cycle.
+const MAX_LINK_HOPS: usize = 32;
+
+/// One step of a requested path, still to be taken.
+enum Step {
+    Parent,
+    Name(OsString),
+}
+
+/// Why a requested path did not resolve to a location that can be listed.
+enum Blocked {
+    Outside,
+    Failed(Failure),
+}
+
+impl From<&io::Error> for Blocked {
+    fn from(error: &io::Error) -> Self {
+        Self::Failed(Failure::from_io(error))
+    }
+}
+
+/// Lists the direct entries of `requested`, a path relative to `root` or absolute, where `root` is
+/// a canonical folder path.
+///
+/// A path that resolves outside `root` is [`Listing::Refused`], and nothing outside `root` is
+/// touched to decide that. A path inside `root` that cannot be listed is [`Listing::Failed`], and
+/// only then is one record logged at `warn`, carrying the operating system's error text and no path.
+pub fn list(root: &Path, requested: &str) -> Listing {
+    match resolve(root, requested).and_then(|location| list_folder(root, &location)) {
+        Ok(entries) => Listing::Listed(entries),
+        Err(Blocked::Outside) => Listing::Refused,
+        Err(Blocked::Failed(failure)) => {
+            log::warn!("fs-reader: list failed: {failure}");
+            Listing::Failed(failure)
+        }
+    }
+}
+
+fn steps_of(path: &Path) -> Result<VecDeque<Step>, Blocked> {
+    let mut steps = VecDeque::new();
+    for component in path.components() {
+        match component {
+            Component::CurDir => {}
+            Component::ParentDir => steps.push_back(Step::Parent),
+            Component::Normal(name) => steps.push_back(Step::Name(name.to_os_string())),
+            Component::RootDir | Component::Prefix(_) => return Err(Blocked::Outside),
+        }
+    }
+    Ok(steps)
+}
+
+/// The steps of an absolute `path` below `root`, compared lexically and by component.
+///
+/// An absolute path is never resolved to learn whether it is inside the root: resolving it would
+/// call `lstat` on components that may lie outside. One spelled through a symlinked ancestor of the
+/// root is therefore refused, and no caller across the IPC boundary sends an absolute path.
+fn steps_below(root: &Path, path: &Path) -> Result<VecDeque<Step>, Blocked> {
+    match path.strip_prefix(root) {
+        Ok(relative) => steps_of(relative),
+        Err(_) => Err(Blocked::Outside),
+    }
+}
+
+fn resolve(root: &Path, requested: &str) -> Result<PathBuf, Blocked> {
+    let requested = Path::new(requested);
+    let mut pending = if requested.is_absolute() {
+        steps_below(root, requested)?
+    } else {
+        steps_of(requested)?
+    };
+    let mut location = root.to_path_buf();
+    let mut links_followed = 0;
+    while let Some(step) = pending.pop_front() {
+        match step {
+            Step::Parent => {
+                if location == root {
+                    return Err(Blocked::Outside);
+                }
+                location.pop();
+            }
+            Step::Name(name) => {
+                let candidate = location.join(name);
+                let metadata =
+                    fs::symlink_metadata(&candidate).map_err(|error| Blocked::from(&error))?;
+                if !pending.is_empty() && !metadata.is_dir() {
+                    return Err(Blocked::from(&io::Error::from(
+                        io::ErrorKind::NotADirectory,
+                    )));
+                }
+                if metadata.is_symlink() {
+                    links_followed += 1;
+                    if links_followed > MAX_LINK_HOPS {
+                        return Err(Blocked::Failed(Failure::LinkLimit));
+                    }
+                    let target =
+                        fs::read_link(&candidate).map_err(|error| Blocked::from(&error))?;
+                    let steps = if target.is_absolute() {
+                        location = root.to_path_buf();
+                        steps_below(root, &target)?
+                    } else {
+                        steps_of(&target)?
+                    };
+                    for step in steps.into_iter().rev() {
+                        pending.push_front(step);
+                    }
+                } else {
+                    location = candidate;
+                }
+            }
+        }
+    }
+    Ok(location)
+}
+
+fn list_folder(root: &Path, location: &Path) -> Result<Vec<Entry>, Blocked> {
+    let below_root = location
+        .strip_prefix(root)
+        .expect("a resolved location lies under the root");
+    let mut entries = Vec::new();
+    for item in fs::read_dir(location).map_err(|error| Blocked::from(&error))? {
+        let item = item.map_err(|error| Blocked::from(&error))?;
+        let file_type = item.file_type().map_err(|error| Blocked::from(&error))?;
+        let name = item.file_name();
+        entries.push(Entry {
+            name: name.to_string_lossy().into_owned(),
+            path: below_root.join(&name).to_string_lossy().into_owned(),
+            kind: if file_type.is_symlink() {
+                EntryKind::Symlink
+            } else if file_type.is_dir() {
+                EntryKind::Folder
+            } else {
+                EntryKind::File
+            },
+        });
+    }
+    Ok(entries)
 }
 
 #[cfg(test)]
