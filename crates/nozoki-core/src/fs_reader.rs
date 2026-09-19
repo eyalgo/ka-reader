@@ -100,53 +100,48 @@ pub fn list(root: &Path, requested: &str) -> Listing {
     }
 }
 
-fn steps_of(path: &Path) -> Result<VecDeque<Step>, Blocked> {
-    let mut steps = VecDeque::new();
-    for component in path.components() {
-        match component {
-            Component::CurDir => {}
-            Component::ParentDir => steps.push_back(Step::Parent),
-            Component::Normal(name) => steps.push_back(Step::Name(name.to_os_string())),
-            Component::RootDir | Component::Prefix(_) => return Err(Blocked::Outside),
-        }
-    }
-    Ok(steps)
-}
-
-/// The steps of an absolute `path` below `root`, compared lexically and by component.
-///
-/// An absolute path is never resolved to learn whether it is inside the root: resolving it would
-/// call `lstat` on components that may lie outside. One spelled through a symlinked ancestor of the
-/// root is therefore refused, and no caller across the IPC boundary sends an absolute path.
-fn steps_below(root: &Path, path: &Path) -> Result<VecDeque<Step>, Blocked> {
-    match path.strip_prefix(root) {
-        Ok(relative) => steps_of(relative),
-        Err(_) => Err(Blocked::Outside),
-    }
+/// The steps of `path`, in order. A root or prefix component carries no step: an absolute path's
+/// walk starts at `/` instead (see [`resolve`]).
+fn steps_of(path: &Path) -> VecDeque<Step> {
+    path.components()
+        .filter_map(|component| match component {
+            Component::ParentDir => Some(Step::Parent),
+            Component::Normal(name) => Some(Step::Name(name.to_os_string())),
+            Component::CurDir | Component::RootDir | Component::Prefix(_) => None,
+        })
+        .collect()
 }
 
 /// Resolves `requested` to a location, returned as its path below `root`.
 ///
-/// The position is tracked below the root and never as an absolute path, so the result can only
-/// name a place inside it: `..` at the root is the one way out, and it is refused.
+/// The walk keeps one lexical position: the root for a relative path, `/` for an absolute one, and
+/// `/` again for a link's absolute target. A `..` moves it up lexically. While the position lies
+/// outside the root, a name moves it down lexically and **nothing is touched**. Only a name whose
+/// position already lies inside the root is read with `lstat`, and a link's target with
+/// `read_link`. So a path that leaves the root and names it again resolves inside it, and one whose
+/// walk ends outside is refused, without a filesystem call on any path outside the root. An absolute
+/// path spelled through a symlinked ancestor of the root never lexically meets the canonical root,
+/// so it is refused. No caller across the IPC boundary sends an absolute path.
 fn resolve(root: &Path, requested: &str) -> Result<PathBuf, Blocked> {
     let requested = Path::new(requested);
-    let mut pending = if requested.is_absolute() {
-        steps_below(root, requested)?
+    let mut position = if requested.is_absolute() {
+        PathBuf::from("/")
     } else {
-        steps_of(requested)?
+        root.to_path_buf()
     };
-    let mut below_root = PathBuf::new();
+    let mut pending = steps_of(requested);
     let mut links_followed = 0;
     while let Some(step) = pending.pop_front() {
         match step {
             Step::Parent => {
-                if !below_root.pop() {
-                    return Err(Blocked::Outside);
-                }
+                position.pop();
             }
             Step::Name(name) => {
-                let candidate = root.join(&below_root).join(&name);
+                let candidate = position.join(&name);
+                if !position.starts_with(root) {
+                    position = candidate;
+                    continue;
+                }
                 let metadata =
                     fs::symlink_metadata(&candidate).map_err(|error| Blocked::from(&error))?;
                 if metadata.is_symlink() {
@@ -156,13 +151,10 @@ fn resolve(root: &Path, requested: &str) -> Result<PathBuf, Blocked> {
                     }
                     let target =
                         fs::read_link(&candidate).map_err(|error| Blocked::from(&error))?;
-                    let steps = if target.is_absolute() {
-                        below_root = PathBuf::new();
-                        steps_below(root, &target)?
-                    } else {
-                        steps_of(&target)?
-                    };
-                    for step in steps.into_iter().rev() {
+                    if target.is_absolute() {
+                        position = PathBuf::from("/");
+                    }
+                    for step in steps_of(&target).into_iter().rev() {
                         pending.push_front(step);
                     }
                 } else if !pending.is_empty() && !metadata.is_dir() {
@@ -170,12 +162,15 @@ fn resolve(root: &Path, requested: &str) -> Result<PathBuf, Blocked> {
                         io::ErrorKind::NotADirectory,
                     )));
                 } else {
-                    below_root.push(name);
+                    position = candidate;
                 }
             }
         }
     }
-    Ok(below_root)
+    position
+        .strip_prefix(root)
+        .map(Path::to_path_buf)
+        .map_err(|_| Blocked::Outside)
 }
 
 fn list_folder(root: &Path, below_root: &Path) -> Result<Vec<Entry>, Blocked> {
