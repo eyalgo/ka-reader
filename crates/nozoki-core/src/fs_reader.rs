@@ -146,7 +146,7 @@ fn resolve(root: &Path, requested: &str) -> Result<PathBuf, Blocked> {
                 let candidate = location.join(name);
                 let metadata =
                     fs::symlink_metadata(&candidate).map_err(|error| Blocked::from(&error))?;
-                if !pending.is_empty() && !metadata.is_dir() {
+                if !pending.is_empty() && !metadata.is_dir() && !metadata.is_symlink() {
                     return Err(Blocked::from(&io::Error::from(
                         io::ErrorKind::NotADirectory,
                     )));
