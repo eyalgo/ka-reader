@@ -334,6 +334,24 @@ mod tests {
         assert_eq!(fs::metadata(&path).expect("the file exists").len(), 40);
     }
 
+    /// Added by development-code-integrity: CP-31 bounds the file ("never exceeds 1 MiB") and CP-32
+    /// forbids a panic in the writer (tl_instruction.md Task 8, "no retry and no panic"). An error
+    /// message can carry any character the operating system's text holds, so a clip that lands inside
+    /// a multi-byte character must still leave one line of text within the bound.
+    #[test]
+    fn test_overlong_multibyte_line_is_clipped_within_bound_as_one_line_of_text() {
+        let folder = TempDir::new();
+        let path = folder.path().join("nozoki.log");
+        let writer = FileLog::new(path.clone(), 41);
+
+        core_warn(&writer, &"é".repeat(500));
+
+        assert!(fs::metadata(&path).expect("the file exists").len() <= 41);
+        let written = contents(&path);
+        assert_eq!(written.lines().count(), 1, "{written:?}");
+        assert!(written.ends_with('\n'), "{written:?}");
+    }
+
     #[test]
     fn test_production_bound_is_one_mebibyte() {
         assert_eq!(PRODUCTION_BOUND_BYTES, 1_048_576);

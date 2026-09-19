@@ -39,6 +39,8 @@ test_modified_file_is_reported
 test_removed_file_is_reported
 test_retargeted_link_is_reported
 test_rekinded_entry_is_reported
+test_several_changes_are_each_reported_once
+test_write_inside_git_is_reported
 test_touch_only_is_unchanged
 test_failed_walk_is_not_unchanged
 test_zero_call_walk_is_not_unchanged
@@ -190,6 +192,35 @@ test_rekinded_entry_is_reported() {
 
   expect_nonzero_status || return 1
   expect_stdout_is "readme.txt"
+}
+
+# Added by development-code-integrity. CP-35: "it prints each differing path, one per line and
+# relative to the fixture". Two changes, one of them nested, give two lines, each once.
+test_several_changes_are_each_reported_once() {
+  copy="$(fixture_copy plain several)"
+  make_cargo_stub "$WORK/stubs-several" 'touch "$last/.DS_Store"; printf "rewritten\n" > "$last/docs/guides/intro.txt"; echo 1'
+
+  run_read_only_with_stubs "$WORK/stubs-several" "$copy"
+
+  expect_nonzero_status || return 1
+  sorted="$(printf '%s\n' "$OUT" | LC_ALL=C sort)"
+  expected="$(printf '%s\n%s' ".DS_Store" "docs/guides/intro.txt")"
+  [ "$sorted" = "$expected" ] || fail "expected exactly the two paths once each, got [$OUT]"
+}
+
+# Added by development-code-integrity. CP-35: the script "hashes the fixture, including `.git`
+# where it has one", so a write inside `repo`'s `.git` is a write like any other.
+test_write_inside_git_is_reported() {
+  mkdir -p "$WORK/gitwrite"
+  cp -R "$ROOT/$FIXTURES/repo" "$WORK/gitwrite/repo"
+  rm -rf "$WORK/gitwrite/repo/.git"
+  cp "$ROOT/$FIXTURES/repo.git.tar" "$WORK/gitwrite/repo.git.tar"
+  make_cargo_stub "$WORK/stubs-gitwrite" 'touch "$last/.git/index.lock"; echo 1'
+
+  run_read_only_with_stubs "$WORK/stubs-gitwrite" "$WORK/gitwrite/repo"
+
+  expect_nonzero_status || return 1
+  expect_stdout_is ".git/index.lock"
 }
 
 test_touch_only_is_unchanged() {

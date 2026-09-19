@@ -155,3 +155,83 @@ fn open_folder_through_a_symlink_roots_at_the_canonical_target() {
         vec![pair("inside.txt", EntryKind::File)]
     );
 }
+
+// ---- Added by development-code-integrity (2026-09-19), each derived from the intent it cites ----
+
+/// C-I1 (tl_instruction.md Task 3, "No panic escapes either call, whatever the input";
+/// change_design.md § 3 A, "No panic escapes either call"). Malformed and hostile strings are handed
+/// to both calls. Nothing panics, and the root still lists afterwards (CP-27, "the commands keep
+/// working").
+#[test]
+fn no_input_makes_either_call_panic() {
+    let folder = TempDir::new();
+    folder.write_file("kept.txt", "");
+    let opened = open_folder(folder.path()).expect("a folder opens");
+    let deep = "a/".repeat(5_000);
+    let climb = "../".repeat(300);
+    let inputs = [
+        "\0",
+        "a\0b",
+        "/",
+        "//",
+        ".",
+        "./..",
+        "\u{FFFF}",
+        "\u{1F600}/\u{1F600}",
+        deep.as_str(),
+        climb.as_str(),
+    ];
+
+    for input in inputs {
+        let _ = list_tree(&opened, input);
+    }
+    for input in ["", "\0", "a\0b", deep.as_str()] {
+        let _ = open_folder(input);
+    }
+
+    assert_eq!(
+        names_and_kinds(list_tree(&opened, "")),
+        vec![pair("kept.txt", EntryKind::File)]
+    );
+}
+
+/// CP-25 and CP-26 split `list_tree`'s input by where the path *resolves*: "any path whose resolution
+/// lies outside the opened folder" is refused, and a folder inside is listed. change_design.md § 3 A
+/// fixes resolution as lexical: "A `..` is applied lexically", and a link's target "is joined and
+/// normalized lexically, and is refused if it leaves the root". A path that steps above the root and
+/// names the root again normalizes to a place inside it, and reaching it touches nothing outside.
+#[test]
+fn a_path_that_leaves_and_reenters_the_root_lexically_lists_inside() {
+    let folder = TempDir::new();
+    folder.write_file("src/main.rs", "");
+    let root_name = folder
+        .path()
+        .file_name()
+        .expect("the root has a name")
+        .to_str()
+        .expect("the root's name is text")
+        .to_string();
+    folder.make_link("back-relative", format!("../{root_name}/src"));
+    folder.make_link(
+        "back-absolute",
+        folder.path().join("..").join(&root_name).join("src"),
+    );
+    let opened = open_folder(folder.path()).expect("a folder opens");
+    let src = vec![pair("main.rs", EntryKind::File)];
+
+    assert_eq!(
+        names_and_kinds(list_tree(&opened, &format!("../{root_name}/src"))),
+        src,
+        "a requested path"
+    );
+    assert_eq!(
+        names_and_kinds(list_tree(&opened, "back-relative")),
+        src,
+        "a link with a relative target"
+    );
+    assert_eq!(
+        names_and_kinds(list_tree(&opened, "back-absolute")),
+        src,
+        "a link with an absolute target"
+    );
+}
