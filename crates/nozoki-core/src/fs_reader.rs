@@ -350,6 +350,22 @@ mod tests {
     }
 
     #[test]
+    fn test_path_continuing_through_a_symlink_to_a_folder_resolves() {
+        let temp = TempDir::new();
+        temp.write_file("real/sub/inner.txt", "");
+        temp.make_link("link", "real");
+
+        assert_eq!(
+            listed(list(temp.path(), "link/sub")),
+            [(
+                "inner.txt".to_string(),
+                "real/sub/inner.txt".to_string(),
+                EntryKind::File
+            )]
+        );
+    }
+
+    #[test]
     fn test_symlink_chain_within_hop_limit_resolves() {
         let temp = TempDir::new();
         temp.write_file("real/inner.txt", "");
