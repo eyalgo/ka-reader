@@ -56,7 +56,35 @@
   *Command* bar sentence that quotes it, and the fourth Open Question's close — all three in
   `SDD.md` by `product-sdd`. ADR-0008 and NFDR QC-25 state the same observable and follow whatever
   is settled here; the architecture companion carries that side.
-- **Answer:** <the owner fills this in>
+- **Answer:** Re-cut the observable to the operating system's own report that the **launched main
+  process** is sandboxed. Drop the environment marker. Three sentences in `SDD.md` change, plus the
+  R-8 sentence that quotes the marker:
+  - **C-I3** (`SDD.md:L516-L519`): `checks/bundle.sh` reads the entitlements as now. It then
+    launches the bundle and takes the pid of the main process this run started, found by its
+    absolute executable path, with no instance of it running beforehand. It fails unless the
+    operating system reports that pid as sandboxed **and** reports two operations as denied for it:
+    a file read outside the grant and an outbound network connection. This is the state Apple names
+    as the verification ("verify that the value in the Sandbox column is Yes",
+    https://developer.apple.com/documentation/security/protecting-user-data-with-app-sandbox). The
+    script reads it through libSystem's `sandbox_check`. That function is exported but is not in the
+    SDK's `sandbox.h`, so C-I3 says the script's mechanism is undocumented. **A negative control is
+    part of the probe:** the script's suite also runs it on the same binary built with no
+    entitlements and requires it to fail, so a probe that cannot tell the two apart goes red
+    instead of green. The failure cases also fail the build: `sandbox_check` missing or returning
+    an error, no pid found, or more than one found. A container directory that already exists is
+    never taken as evidence, because it survives from an earlier launch.
+  - **§ 6 `open-a-folder` *Command*** (`SDD.md:L1043-L1045`): "finds `APP_SANDBOX_CONTAINER_ID`
+    in the launched bundle's environment" becomes "finds the launched main process reported
+    sandboxed, with the out-of-grant read and outbound network denied, and the no-entitlement
+    control reported unsandboxed".
+  - **Fourth Open Question** (`SDD.md:L2508-L2511`) closes on its own terms. The first half is
+    settled: the sandbox is enforced under an ad-hoc signature on macOS 26.6.2, arm64
+    (`nozoki@ccb58d8`). The second half is settled as *no*: the marker is absent from a sandboxed
+    main process under either signature. That is the "re-cut trigger on the probe's mechanism", not
+    R-8 firing. **R-8's *shows up as*** (`SDD.md:L1904-L1906`) names the new observable in place of
+    the marker. One case stays uncovered and should be named: a GitHub-hosted macOS runner, which
+    no one has measured. The C-I3 probe's first CI run settles it.
+  Verdict and reasons: `docs/trail/sdd/self_answer-9.md`.
 
 **How it closes.** `product-sdd` folds this item on its next run like any other item in this file,
 and the trail copy and the delete-when-empty behaviour are unchanged.
