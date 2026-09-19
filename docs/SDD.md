@@ -6,7 +6,7 @@
        signal, and the state a finished SDD carries; the open-issues file is gone.
      Locked = ratified as the source of truth. -->
 **Owner:** CTO · CPO · CDO — one run, three seats
-**Version:** 5 — run 5 (`docs/trail/sdd/run-5.md`): all three seats declared `no_followup` with no
+**Version:** 6 — CTO: § 4 C-I3 (observable and Violated by); § 6 open-a-folder Reached when, command half; § 10 RC-1 (new, first re-cut entry); § 11 R-8 shows up as; Open Questions fourth item (closed, replaced by the hosted-runner question); SDD Review Notes RN-45 (new). Companion items added: none. docs/SDD_open_issues.md removed, empty of items.; CPO: § 5 step 4 (E-1's sizing sentence); SDD Review Notes RN-46 (new). Companion items added: none.
 recall outstanding, and `docs/SDD_open_issues.md` no longer stands on disk, so this document is
 stamped Settled. The run consumed the one companion item standing at intake (§ 5.1, whose Answer
 slot had come back filled — "confirm — and it is already done" — since run 4 ended): copied whole
@@ -513,16 +513,29 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   differing paths — the plain-folder criterion "no `.git` and no entry of any kind has appeared"
   (AC-24) is the same hash; `--kill` sends SIGKILL to the host mid-churn and re-hashes (NFR-4).
   `checks/no-network.sh` diffs `cargo tree` and `pnpm ls` against `deps.allow`. `checks/bundle.sh`
-  reads `codesign -d --entitlements :- Nozoki.app` against C-R2's exact list and launches the
-  bundle, failing unless the launched process carries `APP_SANDBOX_CONTAINER_ID` in its
-  environment — the observable that the sandbox is enforced under an ad-hoc signature, proved on
-  the first built bundle rather than assumed from documents (Open Questions). The harness drives
+  reads `codesign -d --entitlements :- Nozoki.app` against C-R2's exact list, then launches the
+  bundle and takes the pid of the main process this run started — found by its absolute executable
+  path, with no instance of it running beforehand. It fails unless the operating system reports
+  that pid as sandboxed **and** reports two operations denied for it: a file read outside the
+  grant and an outbound network connection. That is the state Apple names as the verification —
+  "verify that the value in the Sandbox column is Yes"
+  (https://developer.apple.com/documentation/security/protecting-user-data-with-app-sandbox) — and
+  the two denials test the wall C-R2 promises rather than a proxy for it. The script reads the
+  state through libSystem's `sandbox_check`, which is exported but is not declared in the SDK's
+  `sandbox.h`: **the mechanism is undocumented, and is held as such.** So a negative control is
+  part of the probe: the script's suite runs it on the same binary built with no entitlements and
+  requires it to fail, and a probe that cannot tell the two apart goes red instead of green. The
+  build also fails when `sandbox_check` is missing or returns an error, when no pid is found, or
+  when more than one is. A container directory that already exists is never evidence, because it
+  survives from an earlier launch. The environment marker this probe first read, and why it was
+  dropped, is § 10 RC-1; the one case still unmeasured is in *Open Questions*. The harness drives
   `nozoki-core` and the command list, **not the rendered UI**: Tauri's WebDriver support states
   "macOS has no WKWebView driver tool" (https://v2.tauri.app/develop/tests/webdriver/), so the
   rendered UI's whole-product check is the timed release walk (AC-10) and the renderer's actual
   command use is covered by holding no capability the harness could catch it using (§ 9 TO-7).
-  The record is ADR-0008. *Violated by:* a build that skips a script, a slice that lands a
-  command the harness does not exercise, a release without AC-1 – AC-3 green.
+  The record is ADR-0008. *Violated by:* a build that skips a script, a bundle probe run without
+  its negative control, a slice that lands a command the harness does not exercise, a release
+  without AC-1 – AC-3 green.
 - **C-I4.** **A performance number is measured, never asserted.** `checks/latency.sh` prints
   file-switch and refresh p95 in milliseconds over reference fixtures on every CI build, so the
   figures the SRS folds in by revision exist from the first working build (NFR-1, NFR-2, NFR-10;
@@ -869,8 +882,10 @@ names that no entry did.
 
 - **E-1 → `open-a-folder`**, one slice. Bar: a folder chosen in the panel shows its tree in the
   window, a bad path and a dismissed panel show UX-S4, and the built bundle carries C-R2's exact
-  entitlements with the sandbox enforced. Not too narrow — if the probe fails, every later slice is
-  redrawn (§ 11 R-8). Not too broad — no intermediate result inside it changes its direction.
+  entitlements with the sandbox enforced. Not too narrow — if the probe finds the wall absent,
+  every later slice is redrawn (§ 11 R-8); a probe that fails while the wall stands redraws the
+  probe and no slice, which is what § 10 RC-1 records. Not too broad — no intermediate result
+  inside it changes its direction.
   **E-6 is not folded into it**, though FR-20 makes both themes a first-release condition: the
   theme is the first thing the tool ever writes, and the slice whose job is to prove the wall is
   kept free of any write at all, so that a red `read-only.sh` on it has one possible cause.
@@ -1041,8 +1056,10 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   `cargo test --workspace --locked` exits 0 with tests on the reducer's tree items, `ItemState`
   transitions and `fs-reader`'s containment check; `.github/workflows/ci.yml` builds `Nozoki.app`
   and runs every script below on every push. `checks/bundle.sh Nozoki.app` prints the entitlement
-  list equal to C-R2's two v1 entries and finds `APP_SANDBOX_CONTAINER_ID` in the launched bundle's
-  environment — the first proof that the wall stands under an ad-hoc signature (R-8). *The promise
+  list equal to C-R2's two v1 entries and finds the launched main process reported sandboxed, with
+  the out-of-grant read and outbound network denied, and the no-entitlement control reported
+  unsandboxed — the first proof that the wall stands under an ad-hoc signature (R-8; the
+  observable is C-I3's, re-cut at § 10 RC-1). *The promise
   clause:* `checks/read-only.sh checks/fixtures/plain` and `checks/read-only.sh
   checks/fixtures/repo` each print `unchanged` after `open_folder` and `list_tree` on every entry,
   `.git` hashed where present; `checks/no-network.sh` exits 0; `checks/own-state.sh` finds the
@@ -1851,14 +1868,44 @@ reversal, and the decision log is append-only: it lands there as a **new record 
 it reverses, in addition to the row here. Without that, shape history has two homes and the log
 silently misses every reversal made mid-build.>
 
-### RC-<n> — <date> — <what was re-cut, in a phrase>
+### RC-1 — 2026-09-19 — the observable C-I3's bundle probe reads, and the `open-a-folder` command bar that quotes it
 
-- **Prior assumption:** <what the cut assumed when it was made>
-- **Observed reality:** <what was seen instead, cited — the run, the commit, the file>
-- **Retained:** <what still holds, and is deliberately not being redrawn>
-- **Changed:** <what the cut now says instead>
-- **Stopped:** <what is no longer being attempted at all>
-- **Still unresolved:** <the question this re-cut did not answer>
+- **Prior assumption:** A sandboxed process carries `APP_SANDBOX_CONTAINER_ID` in its environment,
+  so `checks/bundle.sh` finding that marker in the launched bundle proves the App Sandbox is
+  enforced under an ad-hoc signature. The cut held this without a vendor locator and said so: the
+  fourth *Open Questions* item named the first slice's first built bundle as what would settle it,
+  and a wrong observable as "a re-cut trigger on the probe's mechanism".
+- **Observed reality:** The first built bundle — ad-hoc signed, both C-R2 entitlements `true` —
+  fails the probe under four launch routes while its sandbox holds: over the same process
+  `sandbox_check` reports a read of `~/.zshrc` and outbound network denied, and
+  `~/Library/Containers/com.kensaiapp.nozoki` is created at first launch. A trivial ad-hoc app with
+  the same two entitlements behaves the same way, and the same binary with no entitlements is
+  unsandboxed and also shows no marker (`nozoki@ccb58d8`, commit body; macOS 26.6.2, arm64). A
+  team-signed sandboxed third-party app measured on the same Mac carries no marker in its main
+  process, though its two helper processes do (`docs/trail/sdd/cycle-4.md` § 5.1). So the marker
+  is absent from a sandboxed main process under either signature and does not separate a
+  sandboxed bundle from an unsandboxed one. `open-a-folder`'s command half could not be met as
+  written by any build. R-8 did not fire: the wall stands, and what failed is the observable.
+- **Retained:** § 2's shape, § 3's parts and seams, every slice, every § 7 edge and the order.
+  C-R2's entitlement list and its *Violated by*, which names the probe and not its mechanism. The
+  entitlement half of `checks/bundle.sh`. The probe running on every build from the first slice
+  (§ 5 step 5) — this finding arriving with one reader written is what that placement was for.
+  The ad-hoc signature (§ 9 TO-9) and R-8's response.
+- **Changed:** C-I3's runtime observable is now the operating system's own report on the launched
+  main process — sandboxed, with an out-of-grant file read and an outbound network connection both
+  denied — with a no-entitlement control that must fail (§ 4 C-I3). § 6 `open-a-folder`'s *Command*
+  bar, § 11 R-8's *shows up as* and the fourth *Open Questions* item state the same observable.
+  Neither § 2's shape nor § 3's seams move, so this entry owes the decision log no superseding
+  record on that ground. ADR-0008 and NFDR QC-25 still state the marker
+  (`docs/adr/0008-harness-over-core-and-bundle-probe-from-first-build.md:L28`, `docs/nfdr.md:L203`);
+  both are the Principal Architect's to bring into line (§ 12).
+- **Stopped:** Reading any environment variable as evidence of the sandbox. Taking the container
+  directory as evidence: it survives from an earlier launch, so a stale one would pass an
+  unsandboxed rebuild.
+- **Still unresolved:** Whether the probe reads the same on a GitHub-hosted macOS runner, which no
+  one has measured (`nozoki@ccb58d8`: "I did not test another macOS version or a hosted runner") —
+  carried in *Open Questions*. Why helper processes carry the marker and a main process does not
+  is unexplained by the records; the design no longer rests on it.
 
 ## 11. Technical risks
 
@@ -1902,8 +1949,9 @@ A risk with no trigger and no response is an observation.>
   from the tag; *response* CI builds from the tag, publishes the checksum, and a release with no
   build from its tag is not offered (C-R4).
 - **R-8:** The sandbox is silently absent under an ad-hoc signature — every test green and the
-  wall gone — *shows up as* `checks/bundle.sh` finding no `APP_SANDBOX_CONTAINER_ID` in the
-  launched bundle's environment, or the entitlement list not matching; *response* the probe runs
+  wall gone — *shows up as* `checks/bundle.sh` finding the launched main process not reported
+  sandboxed, or the out-of-grant read or the outbound network connection not denied for it, or the
+  entitlement list not matching; *response* the probe runs
   on every build from the first slice (C-I3), so the finding arrives with one reader written; a
   failure there is a re-cut trigger on the gate's mechanism, never on the signature.
 - **R-9:** The Open panel reads as a setup step to a stranger — *shows up as* the timed walk
@@ -2476,6 +2524,45 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   fixed in place (`<CORE>/doctrine/governance/found_while_walking.md`, clause 1). No part, seam,
   slice, edge or place in the order moves *(re: § 6 S-4 *Reached when*, command half; source:
   § 11 R-3; § 3 `Item<T>`; § 4 C-I1, C-I3, C-R2; RN-43)*.
+- **RN-45:** *(CTO)* *(changed)* C-I3's bundle probe no longer reads `APP_SANDBOX_CONTAINER_ID`
+  from the launched bundle's environment. It reads the operating system's own report that the
+  launched main process is sandboxed, with an out-of-grant file read and an outbound network
+  connection denied, and it carries a no-entitlement control that must fail. Four sentences move
+  with it: § 4 C-I3, § 6 `open-a-folder`'s *Command* bar, § 11 R-8's *shows up as*, and the fourth
+  *Open Questions* item, which closes and leaves one narrower question standing — a GitHub-hosted
+  macOS runner, unmeasured. *Because* the first built bundle answered the question this document
+  had left open, and not the way the probe expected: the marker is absent from a sandboxed main
+  process under either signature and does not separate a sandboxed bundle from an unsandboxed one
+  (`nozoki@ccb58d8`, commit body), while the sandbox itself holds. The PM raised it from a
+  post-build review, since no seat of this run could have seen it. The answer was written in the
+  owner's seat by an unattended `companion-self-answer` run, not by the owner in person — its
+  verdict and reasons are `docs/trail/sdd/self_answer-9.md`, and the item with its answer is kept
+  whole at `docs/trail/sdd/cycle-4.md` § 5.1. This seat folded that answer as written and added
+  two things of its own. First, § 10 RC-1: the template's trigger "a slice's *Reached when* cannot
+  be met as written" held literally for `open-a-folder`'s command half, that half is this seat's,
+  and a bar redrawn with no record would leave the next reader unable to tell this correction
+  from a drift. Second, C-I3's *Violated by* gains "a bundle probe run without its negative
+  control": the answer makes the control part of the probe, and the probe rests on an
+  undocumented function, so the control is what keeps a silent change in that function from
+  reading green — a condition a slice could break, and now one it can be named for breaking.
+  Apple's sentence was re-read at its source this run; the page names neither the marker nor
+  `sandbox_check`. ADR-0008 and NFDR QC-25 still state the marker and are the Principal
+  Architect's to bring into line. No part, seam, slice, edge or place in the order moves *(re:
+  § 4 C-I3; § 6 `open-a-folder` *Reached when*, command half; § 10 RC-1; § 11 R-8; Open Questions;
+  source: `docs/trail/sdd/cycle-4.md` § 5.1; `docs/trail/sdd/self_answer-9.md`; `nozoki@ccb58d8`;
+  https://developer.apple.com/documentation/security/protecting-user-data-with-app-sandbox; SRS
+  NFR-9)*.
+- **RN-46:** *(CPO)* *(added)* § 5 step 4's sizing of E-1 said "if the probe fails, every later
+  slice is redrawn (§ 11 R-8)". It now names which failure it means: the probe finding the wall
+  absent redraws every later slice, and a probe that fails while the wall stands redraws the probe
+  and no slice. *Because* when the sentence was written the document knew one kind of probe
+  failure, and § 10 RC-1 now records the other: the first built bundle failed the probe, R-8 did
+  not fire, and every slice was retained. Left as it was, the sentence would read as contradicted
+  by RC-1 to anyone who met both cold. The sizing itself does not move: `open-a-folder` stays one
+  slice of the same size, not too narrow because its result changes what happens next — and the
+  first result did, by re-cutting the probe. No slug, *Delivers*, *Moves toward*, fence or PRD
+  trace changes, and the PRD names no sandbox observable, so its boundary (§ 12) is untouched
+  *(re: § 5 step 4, E-1; source: § 10 RC-1; § 11 R-8; `docs/trail/sdd/cycle-4.md` § 5.1)*.
 
 ---
 
@@ -2505,10 +2592,11 @@ question.>
   whether Tauri 2's protocol registration on macOS serves it without a plugin. Settled by the
   first Markdown slice rendering the local-image fixture with no CSP violation; the form found is
   written into C-R7.]
-- [OPEN: Whether the App Sandbox is enforced under an ad-hoc signature, and whether
-  `APP_SANDBOX_CONTAINER_ID` is the right observable for it — held without a vendor locator.
-  Settled by `checks/bundle.sh` on the first slice's first built bundle; a failure is R-8 and a
-  re-cut trigger on the probe's mechanism.]
+- [OPEN: Whether C-I3's bundle probe reads the same on a GitHub-hosted macOS runner as on the one
+  Mac it has been measured on (macOS 26.6.2, arm64) — that the sandbox is enforced there under an
+  ad-hoc signature, and that `sandbox_check` reports it. No one has measured a hosted runner.
+  Settled by the probe's first CI run; a control that does not fail there, or a bundle not
+  reported sandboxed, is R-8. The question this item first asked is closed at § 10 RC-1.]
 - [OPEN: What the reference fixture sizes are (NFR-10) and what FSEvents coalescing latency the
   watcher sees on them. Settled by `checks/latency.sh`'s first figures, which the SRS then folds in
   by revision (`docs/SRS.md` RN-4); no number is written here before that.]
