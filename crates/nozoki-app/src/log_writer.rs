@@ -1,3 +1,165 @@
+//! C-I2's log writer: `nozoki-app`'s own `log::Log`, the only place in the crate that touches the
+//! filesystem or names the container path.
+//!
+//! It admits a record only when it comes from `nozoki-core` at `warn` or above, writes it as one
+//! line, and keeps the file inside a byte bound. Every failure to open, write or truncate is
+//! swallowed: no retry, no panic, and nothing the user could see (CP-32).
+
+use std::fs::{self, OpenOptions};
+use std::io::Write;
+use std::path::{Path, PathBuf};
+use std::sync::{Mutex, OnceLock, PoisonError};
+
+use log::{Level, LevelFilter, Log, Metadata, Record, SetLoggerError};
+
+/// Where the log lives below the home directory. The sandbox container's own `Data` folder is the
+/// home directory of a sandboxed process, so this is C-I2's path once the host passes it.
+const LOG_PATH_BELOW_HOME: &str = "Library/Logs/nozoki.log";
+
+/// The log's size bound in production: 1 MiB.
+pub const PRODUCTION_BOUND_BYTES: u64 = 1_048_576;
+
+/// The installed writer. `log::set_logger` wants a `&'static dyn Log`, and `set_boxed_logger` is
+/// behind `log`'s `alloc` feature, which this build does not enable.
+static INSTALLED: OnceLock<FileLog> = OnceLock::new();
+
+/// The module path the crate's records carry, in the underscore spelling Rust gives the crate.
+const CORE_MODULE: &str = "nozoki_core";
+
+/// A `log::Log` that appends admitted records to one file, emptying it when a line would pass the
+/// bound.
+///
+/// # Examples
+///
+/// ```
+/// use log::{Level, Log, Record};
+/// use nozoki_app::log_writer::FileLog;
+///
+/// let folder = std::env::temp_dir().join("nozoki-app-doctest-file-log");
+/// let path = folder.join("nozoki.log");
+/// let writer = FileLog::new(path.clone(), 1024);
+///
+/// writer.log(
+///     &Record::builder()
+///         .args(format_args!("fs-reader: list failed: Permission denied"))
+///         .level(Level::Warn)
+///         .module_path(Some("nozoki_core::fs_reader"))
+///         .build(),
+/// );
+///
+/// let written = std::fs::read_to_string(&path).expect("the log can be read");
+/// assert!(written.contains("Permission denied"));
+/// std::fs::remove_dir_all(&folder).expect("the folder can be removed");
+/// ```
+pub struct FileLog {
+    path: PathBuf,
+    bound: u64,
+    /// Bytes in the file, kept here so the bound check needs no stat per line.
+    written: Mutex<u64>,
+}
+
+impl FileLog {
+    /// Creates the parent directory if it is missing, then creates or empties the file.
+    pub fn new(path: PathBuf, bound: u64) -> Self {
+        if let Some(parent) = path.parent() {
+            // A failure is swallowed by design (CP-32): a log that cannot be opened is a log that
+            // is not written, and the next record tries again on its own.
+            fs::create_dir_all(parent).ok();
+        }
+        fs::File::create(&path).ok();
+        Self {
+            path,
+            bound,
+            written: Mutex::new(0),
+        }
+    }
+
+    /// One admitted record as one line, clipped so the line and its newline fit the bound.
+    fn line_for(&self, record: &Record<'_>) -> String {
+        let flattened = format!("{} {}", record.level(), record.args()).replace(['\n', '\r'], " ");
+        let room = usize::try_from(self.bound.saturating_sub(1)).unwrap_or(usize::MAX);
+        let mut line = clip_to_char_boundary(&flattened, room).to_string();
+        line.push('\n');
+        line
+    }
+
+    fn append(&self, line: &str) {
+        let mut written = self.written.lock().unwrap_or_else(PoisonError::into_inner);
+        let length = u64::try_from(line.len()).unwrap_or(u64::MAX);
+        let crosses_bound = *written + length > self.bound;
+        let mut options = OpenOptions::new();
+        options.create(true);
+        if crosses_bound {
+            options.write(true).truncate(true);
+        } else {
+            options.append(true);
+        }
+        let Ok(mut file) = options.open(&self.path) else {
+            return;
+        };
+        if crosses_bound {
+            *written = 0;
+        }
+        if file.write_all(line.as_bytes()).is_ok() {
+            *written += length;
+        }
+    }
+}
+
+impl Log for FileLog {
+    fn enabled(&self, metadata: &Metadata<'_>) -> bool {
+        metadata.level() <= Level::Warn
+    }
+
+    fn log(&self, record: &Record<'_>) {
+        if self.enabled(record.metadata()) && comes_from_core(record.module_path()) {
+            self.append(&self.line_for(record));
+        }
+    }
+
+    fn flush(&self) {}
+}
+
+/// Installs the writer as the process's logger, at `warn`, on the log path below `home`.
+///
+/// `log`'s maximum level starts at `Off`, so a logger installed without raising it receives
+/// nothing from the macros. The level is fixed here and read from nothing.
+///
+/// # Examples
+///
+/// ```
+/// let home = std::env::temp_dir().join("nozoki-app-doctest-home");
+///
+/// nozoki_app::log_writer::install(&home).expect("no other logger is installed");
+///
+/// assert_eq!(log::max_level(), log::LevelFilter::Warn);
+/// assert!(home.join("Library/Logs/nozoki.log").is_file());
+/// std::fs::remove_dir_all(&home).expect("the folder can be removed");
+/// ```
+pub fn install(home: &Path) -> Result<(), SetLoggerError> {
+    let writer = INSTALLED
+        .get_or_init(|| FileLog::new(home.join(LOG_PATH_BELOW_HOME), PRODUCTION_BOUND_BYTES));
+    log::set_logger(writer)?;
+    log::set_max_level(LevelFilter::Warn);
+    Ok(())
+}
+
+/// Whether `module_path` is the core crate or lies inside it. A bare prefix test would also admit
+/// a crate named `nozoki_core_x`.
+fn comes_from_core(module_path: Option<&str>) -> bool {
+    module_path.is_some_and(|module| {
+        module == CORE_MODULE || module.starts_with(&format!("{CORE_MODULE}::"))
+    })
+}
+
+fn clip_to_char_boundary(text: &str, max_bytes: usize) -> &str {
+    let mut end = max_bytes.min(text.len());
+    while !text.is_char_boundary(end) {
+        end -= 1;
+    }
+    &text[..end]
+}
+
 #[cfg(test)]
 mod tests {
     //! Layer 1: C-I2's writer over temporary directories. Each test builds its own writer; only
@@ -139,6 +301,26 @@ mod tests {
         assert!(!written.contains("aaaa-1"), "{written:?}");
         assert!(!written.contains("aaaa-2"), "{written:?}");
         assert!(fs::metadata(&path).expect("the file exists").len() <= 2 * line);
+    }
+
+    #[test]
+    fn test_lines_after_a_truncation_append_until_the_bound_again() {
+        let line = one_line_bytes("aaaa-1");
+        let folder = TempDir::new();
+        let path = folder.path().join("nozoki.log");
+        let writer = FileLog::new(path.clone(), 2 * line);
+
+        for message in ["aaaa-1", "aaaa-2", "aaaa-3", "aaaa-4"] {
+            core_warn(&writer, message);
+        }
+
+        let written = contents(&path);
+        assert!(written.contains("aaaa-3"), "{written:?}");
+        assert!(written.contains("aaaa-4"), "{written:?}");
+        assert_eq!(
+            fs::metadata(&path).expect("the file exists").len(),
+            2 * line
+        );
     }
 
     #[test]
