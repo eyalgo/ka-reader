@@ -63,7 +63,27 @@
   slice has built. NFDR QC-24 states the same list, and the architecture companion carries that
   side. Doubt: an "exactly the whole list" reading may be intended only for the 1.0.0
   release. If so, the fix is to say that, and not to stage the list.
-- **Answer:** <the owner fills this in>
+- **Answer:** Confirm the PM's lean, with three additions. The SDD's own slices already stage the
+  grant. S-2, S-3 and S-6 put their command "on SM-4's list and in the capability file" in the slice
+  that builds it. S-8, S-9 and S-10 say theirs "joins" the list. S-11 checks for "SM-4's eight
+  commands" at `v1.0.0` (`SDD.md:L1117`, `L1185`, `L1368`, `L1487`, `L1540`, `L1591`, `L1663`). So
+  C-R7 and SM-4 are the sentences that are wrong, not the slices. The fold states the grant once, in
+  C-R7, with SM-4 matching. **A build grants exactly the commands its landed slices register. That
+  set is always inside SM-4's list, and no command is granted before a slice registers it. From
+  `v1.0.0`, the set is SM-4's list whole (S-11, C-I6).** The asset scheme enters the grant in the
+  slice that settles its form (S-3), keyed on C-R7's state, as QC-23 already keys the CSP half. The
+  "only for 1.0.0" doubt is the same sentence: before 1.0.0 the grant follows the slices, and from
+  1.0.0 it is the whole list. The additions: (1) C-I3's "every command on SM-4's list" (`L512`)
+  takes the same staging and becomes "every command the build grants". The item cites it, but its
+  "what is owed" names only C-R7 and SM-4. (2) Set equality is against the commands the host
+  registers, with that set checked to be inside SM-4's list. It is not against a hand-kept copy.
+  Then a deferred task's command, which is never registered, is never granted, and two slices landing
+  commands on separate branches meet at one set when they merge. (3) Named uncovered case: before
+  `v1.0.0`, a later change that stops registering a built command passes the staged check. Nothing
+  but that slice's own bar holds it until C-I6's pin exists. That fits C-6's pre-1.0.0 half, and it
+  is stated here so it is not mistaken for coverage. NFDR QC-24 re-derives from this sentence
+  through `architecture_open_issues.md` § 3.1, which is unchanged. Reasoning:
+  `docs/trail/sdd/self_answer-11.md`.
 
 **How it closes.** `product-sdd` folds it on its next run like every other item in this file, and
 the trail copy and the delete-when-empty behaviour are unchanged.
