@@ -36,6 +36,7 @@ test_missing_log_names_the_path
 test_a_log_at_any_other_path_does_not_count
 test_ignored_stray_file_fails_condition_two_only
 test_untracked_stray_file_fails_conditions_two_and_three
+test_modified_tracked_file_fails_condition_three_only
 test_restored_git_is_not_extra
 test_unrestored_git_is_not_extra
 test_runs_from_anywhere_in_the_repo
@@ -145,6 +146,19 @@ expect_output_contains_condition_three() {
   fail "expected condition 3 to be reported. output: $OUT"
 }
 
+test_modified_tracked_file_fails_condition_three_only() {
+  home="$(home_with_log modified)"
+  cp "$FIXTURES/plain/readme.txt" "$WORK/readme.saved"
+  printf 'appended\n' >> "$FIXTURES/plain/readme.txt"
+
+  run_own_state "$home"
+  cp "$WORK/readme.saved" "$FIXTURES/plain/readme.txt"
+
+  expect_nonzero_status || return 1
+  expect_output_contains_condition_three || return 1
+  expect_output_lacks "condition 2"
+}
+
 test_restored_git_is_not_extra() {
   home="$(home_with_log restored)"
   restore_git
@@ -184,6 +198,7 @@ WORK="$(mktemp -d)"
 [ -e "$FIXTURES/repo/.git" ] && GIT_WAS_PRESENT=1
 cleanup() {
   rm -f "$FIXTURES/plain/x.log" "$FIXTURES/plain/x.tmp"
+  [ ! -f "$WORK/readme.saved" ] || cp "$WORK/readme.saved" "$FIXTURES/plain/readme.txt"
   rm -rf "$FIXTURES/repo/.git"
   if [ "$GIT_WAS_PRESENT" -eq 1 ]; then
     tar -xf "$FIXTURES/repo.git.tar" -C "$FIXTURES/repo"
