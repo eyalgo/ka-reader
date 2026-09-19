@@ -1,0 +1,30 @@
+/* Bundled, not inline: the CSP's `style-src 'self'` refuses a `style` attribute. */
+
+.listing {
+  margin: 0;
+  padding: 8px 12px;
+  list-style: none;
+  font:
+    13px system-ui,
+    sans-serif;
+}
+
+.listing-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 0;
+}
+
+/* Placeholder marks that tell a folder from anything else; the glyphs are a later slice's. */
+.listing-icon {
+  flex: none;
+  width: 14px;
+  height: 11px;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+}
+
+.listing-icon-folder {
+  background: currentColor;
+}
