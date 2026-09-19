@@ -5,7 +5,7 @@
 //! Every test reads the same files the bundler reads, and none launches anything.
 //!
 //! The records these hold: `docs/SDD.md` C-R2 (the two entitlements) and C-R7 (the Content Security
-//! Policy), and `docs/nfdr.md` QC-23 (the CSP), QC-24 (the empty grant) and QC-36 (no plugin).
+//! Policy), and `docs/nfdr.md` QC-23 (the CSP), QC-24 (the two-command grant S-1 uses) and QC-36 (no plugin).
 
 use std::collections::BTreeSet;
 use std::fs;
