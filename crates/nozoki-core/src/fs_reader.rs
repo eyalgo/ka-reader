@@ -284,6 +284,15 @@ mod tests {
     }
 
     #[test]
+    fn test_path_through_a_file_is_failed() {
+        let temp = TempDir::new();
+        temp.write_file("plain.txt", "");
+
+        assert_failed(list(temp.path(), "plain.txt/.."));
+        assert_failed(list(temp.path(), "plain.txt/below"));
+    }
+
+    #[test]
     fn test_listing_a_missing_path_is_failed() {
         let temp = TempDir::new();
 
