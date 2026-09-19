@@ -103,7 +103,8 @@ export async function runStartFlow(invoke: Invoke): Promise<StartOutcome> {
     if (!isWireEntryList(listReply)) throw new UnexpectedReplyError(LIST_TREE);
     return { rows: toRows(listReply) };
   } catch (failure) {
-    // Continuing is safe: the window stays empty, which is what a cancelled panel shows too.
+    // Not rethrown: a rejection here would reach main.ts as an unhandled one, and an empty window
+    // is safe to leave, since it is what a cancelled panel shows too.
     logger.warn("the start flow ended without a listing", {
       reason: failure instanceof Error ? failure.message : String(failure),
     });
