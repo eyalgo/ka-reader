@@ -2,7 +2,7 @@
 
 **Status:** Settled
 **Owner:** Principal Architect
-**Version:** 6 — the close: the cycle-4 fold (`docs/trail/architecture/cycle-4.md`), and two inputs moved beneath a settled document. The owner's two answers are folded (RN-17). § 2.1 → fourteen more `docs/SDD.md` citations the SDD's re-author left on another subject are pinned to `nozoki@70a879a:` — the thirteen the item counted in ADR-0002, ADR-0004, ADR-0005, ADR-0006 and ADR-0009, and ADR-0001's quoted § 1 phrase the answer added — prose edits on the owner's cycle-3 ruling, no record superseded, the index untouched. § 1.1 → the FDR is right: `docs/fdr.md` PD-39, QC-59's third member and QC-60's post-1.0.0 clause stand as written, nothing here moves, and `docs/SDD.md` § 6 S-11 is owed the member through the SDD's own run — no companion opened on it, by the owner's word. The SDD moved v3 → v5 and the FDR v3 → v6 under this document: QC-31 names `fs-reader`'s text rule as the SDD now states it — UTF-16 by byte-order mark beside UTF-8 — where it said *the UTF-8 rule*; QC-59 gains the prerequisite clause `docs/fdr.md` PD-40 prices and traces to PD-40, the FDR's own statement of the priced set, which agrees with this entry on all four members; ADR-0003's and ADR-0005's dated R-21 sentence now diverges from both sources it cites, and RN-12's rule holds unchanged. No `QC` is added, renumbered or reused; no record changes beyond the fourteen pins. Nothing is left for the owner; `docs/architecture_open_issues.md` is removed and `Status:` is Settled. (v5: the cycle-3 fold, under one owner answer, and the SDD re-authored beneath a settled document. The owner's answer to `docs/trail/architecture/cycle-3.md` § 3.1 is folded: the 37 citations in ADR-0001 – ADR-0008 of the deleted SDD's trail and review notes are pinned to `nozoki@70a879a:`, and QC-48's `SDD § 6 S-4` reads `S-5` — prose edits on the owner's ruling, no record superseded (RN-16). The SDD beneath this document is no longer the one v1 – v4 read: it was deleted at `nozoki@9c91359` and re-authored, Settled at v3 (`nozoki@827aa1c`), and this revision re-derives against it as that document's own § 4 rule requires — every trace tag the re-author renumbered is re-pointed (QC-19, QC-21, QC-47, QC-51, QC-53, RN-3, RN-10); § 8's sentence about the card follows S-1's bar, which now carries `--locked` itself; and two of its new sentences bind: C-I6's `checks/contract.sh` gives QC-59's priced members a machine check from `v1.0.0`, with a § 10 row, and C-D3's format list binds the asset handler to four bitmap formats and keeps SVG off the scheme until the mechanism SDD RN-8 states precedes it (QC-37; QC-22 names the PNG). No `QC` is added, renumbered or reused; no record changes beyond the 37 pins. Two items go to the owner and `Status:` is Draft: the re-author moved thirteen further ADR citations the answer's scope did not reach, and the SDD's confirmed 1.0.0 contract prices own-state readability nowhere while `docs/fdr.md` PD-39 and QC-59 do (`docs/architecture_open_issues.md` § 2.1, § 1.1). (v4: the close: the re-opened companion's five answers folded (`docs/trail/architecture/cycle-2.md`), all five in the owner's seat by two `companion-self-answer` runs (RN-15). What this document now binds that v3 did not: the logging facade is `log`, implemented by `nozoki-app`'s own writer installed once at the composition root — no third-party implementation and no `tracing` — held by a machine check on the allowlist and on `log::set_logger` (QC-61, with a § 10 row); every `cargo test` command in § 9, § 10 and the entries' tails carries `--locked`, following the Rust packet where v3 had neither followed it nor recorded a departure (RN-7); and § 9 fixes that layer 5 stays outside `cargo test`, which is why the card's `cargo test --workspace --locked` is this product's change-time run against the packet's release-time classification — the condition that would flip it named and checked (RN-7 departure (1)). § 8's sentence about the card is true again — the card's command satisfies the S-1 bar and adds the packet's flag — and RN-6's pinned history gains the card's third and fourth commits. The v3 drafts on § 9's preamble, its `crates/` paths, RN-7 and RN-6 are confirmed and stand. The `testing_doctrine.md` cite moves to v2.2.0 under no answer (RN-15). QC-61 is the one new ID; no obligation is removed or renumbered; no record changes. Nothing is left for the owner; `docs/architecture_open_issues.md` is removed and `Status:` is Settled. (v3: an input moved underneath a settled document, and the companion is re-opened on it: the organisation's language registry gained a Rust packet on 2026-09-02 (`kensaiapp-dev@d628f75c`; its placement ruling `kensaiapp-dev@49e0444f`), and three statements here that no such packet existed are false. This revision applies the two drafts the re-opened companion carries, awaiting the owner's confirmation (`docs/architecture_open_issues.md` § 2.1, § 2.2): § 9's preamble and RN-7 read Rust tooling as the packet's, with what this product fixes differently and why; § 9's Rust test paths move under `crates/`, the placement the owner ruled for every Rust product here; RN-6 and § 8 record the project card's two closes — the two-toolchain test command (`kensaiapp-opensource@c2155cc`) and the `Languages:` line (`kensaiapp-opensource@0af5fb9`) — as history pinned to `kensaiapp-opensource@4bdfddd`. One question stays open and no entry moves for it: the packet requires the binary crate to select a logging facade, `log` or `tracing`, and leaves the choice to this document (§ 1.1 of the companion); RN-14 names what waits on it. No obligation is added, removed or renumbered; no record changes — ADR-0009 names its crates by name and fixes no directory. `Status:` is Draft because a companion is on disk, and this document is Settled only when none is. (v2: the close: the owner's cycle-1 answers folded (`docs/trail/architecture/cycle-1.md`), ten of its eleven items, and the eleventh settled by derivation from the FDR at v3 (RN-11, RN-12). What this document now binds that v1 did not: a critical advisory blocks release with **no remediation window** — none, not undecided — and `cargo audit` gates every advisory with a reasoned ignore by id (QC-27); the secrets scan is `gitleaks git` (QC-28); QC-33's revocation clause names identity alone; the diagnostic log's bound is the SRS's — one session's lines, 1 MiB on disk, a failed write surfacing nowhere — and own-state retention follows the FDR's R-110 and R-178 – R-182, so QC-40 is a machine check with a § 10 row; the public contract's breaking/additive split (QC-59); own-state read whole or discarded whole, symmetric, silent, never a startup failure (QC-60). ADR-0009 is Accepted. RN-2 is corrected as history, RN-3, RN-4, RN-5 and RN-9 close on the trail, and the upstream moves since v1 read its sources are measured and recorded (RN-13). Nothing is left for the owner; `docs/architecture_open_issues.md` is removed and `Status:` is Settled. (v1: the constraint set stated for the first time, over the settled SDD and SRS with the FDR beside them: the module set and its import graph, the read-only and no-network invariants as machine checks, the three walls around rendered content, the release and sandbox gates, and the test-strategy realization for a Rust host with a TypeScript renderer; nine items parked for the owner.)))))
+**Version:** 7 — the close: the cycle-5 fold (`docs/trail/architecture/cycle-5.md`), three items a downstream seat raised after the first code was built, each answered in the owner's seat (RN-18), and the SDD moved v5 → v6 beneath this document on the first of them. What this document now binds that v6 did not: QC-25's sandbox check reads the operating system's own report on the launched main process — sandboxed, with an out-of-grant file read and an outbound network connection both denied — and carries a no-entitlement negative control that must fail, re-derived from `docs/SDD.md` § 4 C-I3 as it reads at v6, where it read an environment marker measured absent from a sandboxed process; QC-23's string equality is stated in two states keyed on whether SDD § 4 C-R7 still carries the `<asset-scheme>` placeholder, so the check is in force at every build; QC-30's boundary set covers what the shipped process reads whichever crate reads it, held in two halves — the product's own crates by `checks/structure.sh` as before, and the linked dependency tree's environment and argument reads as a reviewed list, `checks/entry-points.allow`, checked by `checks/entry-points.sh`, with a § 10 row — and QC-58 takes the same halves; QC-61's argument is re-pointed to the second half, its conclusion unchanged. One record lands: ADR-0010 supersedes ADR-0008, restating its decision whole with the observable corrected and naming the undocumented `sandbox_check` as what it rests on; ADR-0008's Status line is the only line of it that moved; the index follows, and the live traces in QC-14, QC-25, QC-46, QC-48, QC-49 and § 9 read ADR-0010. The header's sentence that the product *has no code yet* is corrected, false since the first code landed. No `QC` is added, renumbered or reused. Nothing is left for the owner; `docs/architecture_open_issues.md` is removed and `Status:` is Settled. (v6: the close: the cycle-4 fold (`docs/trail/architecture/cycle-4.md`), and two inputs moved beneath a settled document. The owner's two answers are folded (RN-17). § 2.1 → fourteen more `docs/SDD.md` citations the SDD's re-author left on another subject are pinned to `nozoki@70a879a:` — the thirteen the item counted in ADR-0002, ADR-0004, ADR-0005, ADR-0006 and ADR-0009, and ADR-0001's quoted § 1 phrase the answer added — prose edits on the owner's cycle-3 ruling, no record superseded, the index untouched. § 1.1 → the FDR is right: `docs/fdr.md` PD-39, QC-59's third member and QC-60's post-1.0.0 clause stand as written, nothing here moves, and `docs/SDD.md` § 6 S-11 is owed the member through the SDD's own run — no companion opened on it, by the owner's word. The SDD moved v3 → v5 and the FDR v3 → v6 under this document: QC-31 names `fs-reader`'s text rule as the SDD now states it — UTF-16 by byte-order mark beside UTF-8 — where it said *the UTF-8 rule*; QC-59 gains the prerequisite clause `docs/fdr.md` PD-40 prices and traces to PD-40, the FDR's own statement of the priced set, which agrees with this entry on all four members; ADR-0003's and ADR-0005's dated R-21 sentence now diverges from both sources it cites, and RN-12's rule holds unchanged. No `QC` is added, renumbered or reused; no record changes beyond the fourteen pins. Nothing is left for the owner; `docs/architecture_open_issues.md` is removed and `Status:` is Settled. (v5: the cycle-3 fold, under one owner answer, and the SDD re-authored beneath a settled document. The owner's answer to `docs/trail/architecture/cycle-3.md` § 3.1 is folded: the 37 citations in ADR-0001 – ADR-0008 of the deleted SDD's trail and review notes are pinned to `nozoki@70a879a:`, and QC-48's `SDD § 6 S-4` reads `S-5` — prose edits on the owner's ruling, no record superseded (RN-16). The SDD beneath this document is no longer the one v1 – v4 read: it was deleted at `nozoki@9c91359` and re-authored, Settled at v3 (`nozoki@827aa1c`), and this revision re-derives against it as that document's own § 4 rule requires — every trace tag the re-author renumbered is re-pointed (QC-19, QC-21, QC-47, QC-51, QC-53, RN-3, RN-10); § 8's sentence about the card follows S-1's bar, which now carries `--locked` itself; and two of its new sentences bind: C-I6's `checks/contract.sh` gives QC-59's priced members a machine check from `v1.0.0`, with a § 10 row, and C-D3's format list binds the asset handler to four bitmap formats and keeps SVG off the scheme until the mechanism SDD RN-8 states precedes it (QC-37; QC-22 names the PNG). No `QC` is added, renumbered or reused; no record changes beyond the 37 pins. Two items go to the owner and `Status:` is Draft: the re-author moved thirteen further ADR citations the answer's scope did not reach, and the SDD's confirmed 1.0.0 contract prices own-state readability nowhere while `docs/fdr.md` PD-39 and QC-59 do (`docs/architecture_open_issues.md` § 2.1, § 1.1). (v4: the close: the re-opened companion's five answers folded (`docs/trail/architecture/cycle-2.md`), all five in the owner's seat by two `companion-self-answer` runs (RN-15). What this document now binds that v3 did not: the logging facade is `log`, implemented by `nozoki-app`'s own writer installed once at the composition root — no third-party implementation and no `tracing` — held by a machine check on the allowlist and on `log::set_logger` (QC-61, with a § 10 row); every `cargo test` command in § 9, § 10 and the entries' tails carries `--locked`, following the Rust packet where v3 had neither followed it nor recorded a departure (RN-7); and § 9 fixes that layer 5 stays outside `cargo test`, which is why the card's `cargo test --workspace --locked` is this product's change-time run against the packet's release-time classification — the condition that would flip it named and checked (RN-7 departure (1)). § 8's sentence about the card is true again — the card's command satisfies the S-1 bar and adds the packet's flag — and RN-6's pinned history gains the card's third and fourth commits. The v3 drafts on § 9's preamble, its `crates/` paths, RN-7 and RN-6 are confirmed and stand. The `testing_doctrine.md` cite moves to v2.2.0 under no answer (RN-15). QC-61 is the one new ID; no obligation is removed or renumbered; no record changes. Nothing is left for the owner; `docs/architecture_open_issues.md` is removed and `Status:` is Settled. (v3: an input moved underneath a settled document, and the companion is re-opened on it: the organisation's language registry gained a Rust packet on 2026-09-02 (`kensaiapp-dev@d628f75c`; its placement ruling `kensaiapp-dev@49e0444f`), and three statements here that no such packet existed are false. This revision applies the two drafts the re-opened companion carries, awaiting the owner's confirmation (`docs/architecture_open_issues.md` § 2.1, § 2.2): § 9's preamble and RN-7 read Rust tooling as the packet's, with what this product fixes differently and why; § 9's Rust test paths move under `crates/`, the placement the owner ruled for every Rust product here; RN-6 and § 8 record the project card's two closes — the two-toolchain test command (`kensaiapp-opensource@c2155cc`) and the `Languages:` line (`kensaiapp-opensource@0af5fb9`) — as history pinned to `kensaiapp-opensource@4bdfddd`. One question stays open and no entry moves for it: the packet requires the binary crate to select a logging facade, `log` or `tracing`, and leaves the choice to this document (§ 1.1 of the companion); RN-14 names what waits on it. No obligation is added, removed or renumbered; no record changes — ADR-0009 names its crates by name and fixes no directory. `Status:` is Draft because a companion is on disk, and this document is Settled only when none is. (v2: the close: the owner's cycle-1 answers folded (`docs/trail/architecture/cycle-1.md`), ten of its eleven items, and the eleventh settled by derivation from the FDR at v3 (RN-11, RN-12). What this document now binds that v1 did not: a critical advisory blocks release with **no remediation window** — none, not undecided — and `cargo audit` gates every advisory with a reasoned ignore by id (QC-27); the secrets scan is `gitleaks git` (QC-28); QC-33's revocation clause names identity alone; the diagnostic log's bound is the SRS's — one session's lines, 1 MiB on disk, a failed write surfacing nowhere — and own-state retention follows the FDR's R-110 and R-178 – R-182, so QC-40 is a machine check with a § 10 row; the public contract's breaking/additive split (QC-59); own-state read whole or discarded whole, symmetric, silent, never a startup failure (QC-60). ADR-0009 is Accepted. RN-2 is corrected as history, RN-3, RN-4, RN-5 and RN-9 close on the trail, and the upstream moves since v1 read its sources are measured and recorded (RN-13). Nothing is left for the owner; `docs/architecture_open_issues.md` is removed and `Status:` is Settled. (v1: the constraint set stated for the first time, over the settled SDD and SRS with the FDR beside them: the module set and its import graph, the read-only and no-network invariants as machine checks, the three walls around rendered content, the release and sandbox gates, and the test-strategy realization for a Rust host with a TypeScript renderer; nine items parked for the owner.))))))
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · PRD Settled · UXD Settled · DESIGN Settled · CONTENT Settled
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
@@ -31,9 +31,9 @@
 > `toolchain.md` v1.1.0) names an engineering-doctrine file of
 > the organisation that publishes this product, which is not in this repository; every such entry
 > states the rule in full here, so the trace is provenance and never a dependency. Every command
-> named below is one the SDD names for a product that has no code yet, or one this document names
-> as its own realization and says so in § NFDR Review Notes; each becomes executable in the change
-> that lands the script, and until then the gate is `development-design` reading the entry.
+> named below is one the SDD names, or one this document names as its own realization and says so
+> in § NFDR Review Notes. Not every one exists yet: each becomes executable in the change that
+> lands its script, and until then the gate is `development-design` reading the entry.
 
 ---
 
@@ -121,7 +121,7 @@ explicitly and never inferred.
 - **QC-14:** `checks/` may import `nozoki-core` and is **never a dependency** of `nozoki-core`,
   `nozoki-app` or `nozoki-ui`.
   — *verified by:* `cargo tree -p nozoki-app` names no `checks` crate; `checks/structure.sh`
-  (layer 6) *(traces to: ADR-0008; ADR-0009; SDD § 3 `read-only-harness` "Must not own")*
+  (layer 6) *(traces to: ADR-0010; ADR-0009; SDD § 3 `read-only-harness` "Must not own")*
 
 ### 1.3 Layer isolation
 
@@ -185,12 +185,23 @@ and an artifact that is not the reviewed tag.
   — *verified by:* `cargo test --locked -p nozoki-core --test markdown` over `checks/fixtures/hostile.md`
   (layer 2) *(traces to: SRS NFR-16, FR-32, AC-23; SDD § 4 C-D3; § SDD Review Notes RN-8 — the
   SVG case, RN-16; ADR-0006)*
-- **QC-23:** The renderer's Content Security Policy in `tauri.conf.json` equals
-  `default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: <asset-scheme>;
-  font-src 'self'`, with `<asset-scheme>` the origin form settled for `nozoki-asset`; no directive
-  admits `http:`, `https:`, `file:`, `asset:` or `*`.
-  — *verified by:* `cargo test --locked -p nozoki-app --test config` — string equality against the entry
-  (layer 2) *(traces to: SDD § 4 C-R7; ADR-0006)*
+- **QC-23:** The renderer's Content Security Policy in `tauri.conf.json` is `docs/SDD.md` § 4
+  C-R7's — `default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:
+  <asset-scheme>; font-src 'self'`, with `<asset-scheme>` the origin form settled for
+  `nozoki-asset` — and the check in force is keyed on what C-R7 carries. **While C-R7 carries the
+  `<asset-scheme>` placeholder**, the declared policy equals C-R7's string with that token absent:
+  `default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'`.
+  **From the SDD revision at which C-R7 carries the literal origin form**, the declared policy
+  equals C-R7's string whole. In both states no directive admits `http:`, `https:`, `file:`,
+  `asset:` or `*`. A change that adds an asset source while C-R7 still carries the placeholder
+  fails the first state's equality, and that is the intended result: the source enters with the
+  SDD sentence that settles its form. This entry names C-R7's state and nothing else; once C-R7
+  carries the form, the next revision here re-derives the entry to the literal string and drops
+  the first state.
+  — *verified by:* `cargo test --locked -p nozoki-app --test config` — string equality against the
+  state in force, and a scan of every directive for the five forbidden sources (layer 2) *(traces
+  to: SDD § 4 C-R7; § Open Questions, the `nozoki-asset` origin-form item; ADR-0006; the two
+  states answered in the owner's seat at `docs/trail/architecture/cycle-5.md` § 3.2 — RN-18)*
 - **QC-24:** The host's capability file grants the renderer exactly the commands `open_folder`,
   `list_tree`, `select_file`, `open_relative_link`, `set_theme`, and — where built — `open_diff`,
   `walk_history`, `switch_folder`, plus the asset scheme, and no plugin.
@@ -199,9 +210,20 @@ and an artifact that is not the reviewed tag.
 - **QC-25:** The bundle carries exactly the entitlements `com.apple.security.app-sandbox`,
   `com.apple.security.files.user-selected.read-only` and — once the folder selector exists —
   `com.apple.security.files.bookmarks.app-scope`; no other; and the launched bundle runs sandboxed.
-  — *verified by:* `checks/bundle.sh` — `codesign -d --entitlements :- Nozoki.app` equals the list
-  and `APP_SANDBOX_CONTAINER_ID` is set in the launched bundle's environment; on every CI build and
-  as a release gate (layer 5) *(traces to: SDD § 4 C-R2, C-I3; § 11 R-8; ADR-0003; ADR-0008)*
+  — *verified by:* `checks/bundle.sh` — `codesign -d --entitlements :- Nozoki.app` equals the
+  list; the script then launches the bundle, takes the pid of the main process that run started —
+  found by its absolute executable path, with no instance of it running beforehand — and fails
+  unless the operating system reports that pid sandboxed **and** reports a file read outside the
+  grant and an outbound network connection both denied for it, read through libSystem's
+  `sandbox_check`. The script's suite runs the same probe on the same binary built with no
+  entitlements and requires it to fail — the negative control, without which the probe has not
+  run. The build also fails when `sandbox_check` is missing or returns an error, when no pid is
+  found, or when more than one is. A container directory that already exists is never evidence,
+  and no environment variable is. On every CI build and as a release gate (layer 5). This entry
+  asserts nothing about a GitHub-hosted runner, which no one has measured: that question is
+  `docs/SDD.md` § Open Questions', settled by the probe's first CI run *(traces to: SDD § 4 C-R2,
+  C-I3; § 10 RC-1; § 11 R-8; ADR-0003; ADR-0010; the tail re-derived from C-I3 at SDD v6 on the
+  answer at `docs/trail/architecture/cycle-5.md` § 3.1 — RN-18)*
 - **QC-26:** Every dependency is deliberate: `Cargo.lock` and `pnpm-lock.yaml` are committed,
   CI installs with `pnpm install --frozen-lockfile` and `cargo build --locked`, and a lockfile
   diff that adds a name outside `checks/deps.allow` fails the build until the allowlist change is
@@ -237,12 +259,32 @@ and an artifact that is not the reviewed tag.
   release) *(traces to: SDD § 4 C-R4; § 11 R-7; FDR R-132; ADR-0007)*
 - **QC-30:** The boundary set is exactly: the Open-panel grant; the granted folder's content
   (files, entries, `.git`); FSEvents for that folder; the renderer's IPC commands and asset
-  requests; and the product's own files in its container. The product has no other entry point —
-  no argument vector, no environment variable, no configuration file, no socket.
-  — *verified by:* `checks/structure.sh` (layer 6): no `std::env::args`, `std::env::var`, socket
-  or config-file read in any shipped crate; review at `development-design` when a change adds an
-  entry point — a scanner finds a new socket, not a new trust assumption *(traces to:
-  `quality_defaults.md` § The boundary set; SRS NFR-14, FR-1; ADR-0001)*
+  requests; the product's own files in its container; and the environment and argument reads of
+  the linked dependency tree, each named in `checks/entry-points.allow`. The set covers what the
+  shipped process reads, whichever crate holds the line that reads it — an adopter runs one
+  process. It is held in two halves. **(1) The product's own crates** — `nozoki-core` and
+  `nozoki-app` — read no argument vector, no environment variable and no configuration file, and
+  open no socket. **(2) The linked dependency tree** — every environment or argument read in the
+  crates `cargo tree -p nozoki-app --target aarch64-apple-darwin -e normal --locked` resolves is a
+  named member of the set: one line in `checks/entry-points.allow` per crate and name, each with
+  what the read changes. A read not on the list fails the build until the list change is reviewed
+  as code in the same change, the way `checks/deps.allow` is (QC-26); whether a given read is
+  acceptable is decided at that review, by a person. **What the set does not reach:** reads made
+  by the operating system's own frameworks inside the process. They are the platform's, no
+  lockfile names them, and the sandbox (QC-25) is what bounds them.
+  — *verified by:* half (1) — `checks/structure.sh` (layer 6): no `std::env::args`,
+  `std::env::var`, socket or config-file read in the product's own crates. Half (2) —
+  `checks/entry-points.sh` (layer 6): for every crate the `cargo tree` command above names, a scan
+  of the crate's whole package directory in the Cargo registry — its root `build.rs` excepted —
+  for `env::var`, `env::var_os`, `env::vars`, `env::vars_os`, `env::args` and `env::args_os`,
+  diffed against `checks/entry-points.allow`; non-zero on a read not listed, on a listed line no
+  longer found, and on any resolved crate whose sources it cannot open — a crate it cannot scan
+  is a failure, never a pass. The scan covers the package directory and not `src/`, because a
+  crate need not keep its sources there (RN-18). Review at `development-design` when a change adds
+  an entry point — a scanner finds a new read or a new socket, not a new trust assumption *(traces
+  to: `quality_defaults.md` § The boundary set; SRS NFR-14, FR-1; FDR R-2; ADR-0001; the two
+  halves answered in the owner's seat at `docs/trail/architecture/cycle-5.md` § 3.3; the script,
+  the list format and the measurement behind them are this document's — RN-18)*
 - **QC-31:** Every value entering from outside is validated at the boundary it enters through
   before it reaches the model: a path by the containment check (QC-6), a decoded file by
   `fs-reader`'s text rule — UTF-8 with or without its byte-order mark, or UTF-16 by its mark;
@@ -374,7 +416,7 @@ binds the *process*, and asserts no number of its own.
   reference fixtures `checks/fixtures/scale-small`, `scale-medium` and `scale-large`, on every CI
   build.
   — *verified by:* the script exits 0 and prints three figures per metric (layer 5) *(traces to:
-  SDD § 4 C-I4; § 11 R-5; ADR-0008)*
+  SDD § 4 C-I4; § 11 R-5; ADR-0010)*
 
 ## 6. Availability & reliability
 
@@ -391,12 +433,12 @@ binds the *process*, and asserts no number of its own.
   final state.
   — *verified by:* `cargo test --locked -p nozoki-core --test watch` running `checks/churn.sh <fixture> 30`;
   `checks/read-only.sh` against the churn's final state as baseline (layer 3) *(traces to: SRS
-  FR-16, NFR-3, NFR-4, AC-8; SDD § 6 S-5; ADR-0008)*
+  FR-16, NFR-3, NFR-4, AC-8; SDD § 6 S-5; ADR-0010)*
 - **QC-49:** The read-only and no-network promises hold through abnormal exit: the host killed
   mid-churn leaves the fixture unchanged and `.git` byte-identical.
   — *verified by:* `checks/read-only.sh --kill` — the harness sends SIGKILL to the host during
   `checks/churn.sh` and re-hashes (layer 5); the sandbox (QC-25) is what makes the property hold
-  by construction *(traces to: SRS NFR-4, NFR-9; ADR-0003; ADR-0008; the `--kill` mode is this
+  by construction *(traces to: SRS NFR-4, NFR-9; ADR-0003; ADR-0010; the `--kill` mode is this
   document's addition — RN-4)*
 - **QC-50:** The Git port's contract tests are written against the port, not the adapter, so the
   installed-`git` substitute is proved by the same tests when it is built.
@@ -428,9 +470,10 @@ binds the *process*, and asserts no number of its own.
   nothing below it. The implementation is the product's own because of a constraint already here,
   not taste: the stock implementations read their level from the environment — `env_logger` is "a
   simple logger that can be configured via environment variables", `RUST_LOG` controlling the
-  filter (https://docs.rs/env_logger/latest/env_logger/) — and QC-30 and QC-58 forbid
-  `std::env::var` in any shipped crate, so an off-the-shelf logger fails `checks/structure.sh` the
-  day it lands. Which macro a `failed` and a `stopped` item are emitted at is the delivery tier's
+  filter (https://docs.rs/env_logger/latest/env_logger/) — and an off-the-shelf logger is a
+  dependency, so its read of the environment is one QC-30's second half holds by name: it fails
+  `checks/entry-points.sh` the day it lands, as it fails the allowlist diff below, and a level read
+  from outside the binary is what this entry forbids (re-pointed at v7 — RN-18). Which macro a `failed` and a `stopped` item are emitted at is the delivery tier's
   placement under the packet's ladder, not this entry's.
   — *verified by:* `checks/no-network.sh` — `checks/deps.allow` names `log` and names no
   `tracing*`, `env_logger`, `slog*` or `log4rs` crate, so a swap fails the allowlist diff (QC-3,
@@ -482,10 +525,14 @@ where the packet classifies it as release-time, is RN-7. What follows exceeds th
   — *verified by:* release inspection (`docs/SRS.md` AC-10, AC-14) — a review gate: the walk is a
   stranger's path and is deliberately not automated *(traces to: SDD § 4 C-R4; SRS C-3, C-9; FDR
   R-128 – R-130; ADR-0007)*
-- **QC-58:** The product has no configuration surface: it reads no configuration file, no
-  environment variable and no argument; the only input is the folder chosen in the Open panel.
-  — *verified by:* `checks/structure.sh` (layer 6), the same rule as QC-30; `docs/SRS.md` AC-9 at
-  release *(traces to: SRS NFR-14, FR-1, AC-9; FDR R-2; ADR-0003)*
+- **QC-58:** The product offers no configuration surface: its own crates read no configuration
+  file, no environment variable and no argument, and the only input the product requires is the
+  folder chosen in the Open panel. What the linked dependency tree reads from the environment or
+  the argument vector is not a surface the product offers: it is the named list QC-30's second
+  half holds, and no read enters that list unreviewed.
+  — *verified by:* `checks/structure.sh` and `checks/entry-points.sh` (layer 6), the same two
+  rules as QC-30; `docs/SRS.md` AC-9 at release *(traces to: SRS NFR-14, FR-1, AC-9; FDR R-2;
+  ADR-0003; the two halves follow QC-30 — `docs/trail/architecture/cycle-5.md` § 3.3, RN-18)*
 - **QC-59:** From the first 1.0.0 release the public contract semantic versioning binds is:
   every rule and product decision in `docs/fdr.md` as observable behaviour; the install path
   (QC-57); the readability of an earlier version's own-state (QC-60); and the macOS floor
@@ -548,7 +595,7 @@ wrong.
 | 3 — Application | The IPC command list driven in-process through `nozoki-core`, bypassing the renderer; the whole-model switch | `checks/read-only.sh`; `cargo test --locked -p nozoki-core --test switch` | `checks/`, `crates/nozoki-core/tests/` |
 | 4 — UI | A surface renders truthfully given a model projection: *pending* as the word, no marker before `observed`, the Git view empty on `plain`, the failure slot and its route, both themes | Vitest Browser Mode with the Playwright provider (`pnpm exec vitest run`) | `nozoki-ui/tests/ui/<component>.test.ts` |
 | 5 — End-to-end | The built bundle: entitlements and sandbox, own-state after a session, churn and kill, latency figures; from `v1.0.0` the priced contract against its major's pin; the timed release walk | `checks/bundle.sh`, `checks/own-state.sh`, `checks/churn.sh`, `checks/latency.sh`, `checks/read-only.sh --kill`, `checks/contract.sh <tag>`; `docs/SRS.md` AC-10 as a manual timed walk | `checks/` |
-| 6 — Architecture | § 1.2's graph, § 1.3's I/O ownership, § 3's reach rules, and this section's layer-5 placement (no `CARGO_BIN_EXE_` reference under `crates/*/tests/`) | `checks/structure.sh` (Rust, grep rules); `pnpm exec vitest run tests/architecture` (TypeScript) | `checks/`, `nozoki-ui/tests/architecture/<property>.test.ts` |
+| 6 — Architecture | § 1.2's graph, § 1.3's I/O ownership, § 3's reach rules, the linked tree's environment and argument reads against their reviewed list (QC-30), and this section's layer-5 placement (no `CARGO_BIN_EXE_` reference under `crates/*/tests/`) | `checks/structure.sh` (Rust, grep rules); `checks/entry-points.sh` (the resolved dependency tree); `pnpm exec vitest run tests/architecture` (TypeScript) | `checks/`, `nozoki-ui/tests/architecture/<property>.test.ts` |
 | 7 — Specification | The SRS's acceptance criteria as scenarios through the real entry point | the SDD's per-slice command bars and the AC walk at release, until a QA seat writes the layer | `checks/` |
 
 - **Layer 3 is present**, realized as the harness: it enters inside the boundary by calling the
@@ -558,7 +605,7 @@ wrong.
   WKWebView the product ships in, which is why layer 4 proves *rendering given state* and layer 5
   proves the bundle (RN-7).
 - **Layer 5 departs from the TypeScript packet's Playwright row**: Tauri has no WKWebView driver on
-  macOS (ADR-0008), so the built bundle is exercised by the harness scripts and the rendered UI by
+  macOS (ADR-0010), so the built bundle is exercised by the harness scripts and the rendered UI by
   the timed manual walk, deliberately not automated (`docs/SRS.md` AC-10). **Layer 5 also stays
   outside `cargo test`**, against the Rust packet's shape (`tests/<flow>.rs` in the binary crate):
   the only `--test` file `nozoki-app` carries is `config` (layer 2), and no file under
@@ -597,7 +644,8 @@ is right and this row is stale.
 | QC-27 | critical vulnerability | `cargo audit` (every advisory; `--ignore <RUSTSEC-id>` with its reason); `pnpm audit --audit-level=critical` | the tree | release |
 | QC-28 | no secret; no signing identity | `gitleaks git`; `gh secret list --repo kensaiapp/nozoki`; `codesign -dv Nozoki.app` | the tree; the release | CI build; release |
 | QC-29 | artifact = tag build | `shasum -a 256 -c SHA256SUMS` against a rebuild | the release | release |
-| QC-30, QC-58 | no other entry point; no configuration | `checks/structure.sh` | the tree | CI build |
+| QC-30, QC-58 | no other entry point; no configuration — the product's own crates | `checks/structure.sh` | the tree | CI build |
+| QC-30, QC-58 | the linked tree's environment and argument reads, against the reviewed list | `checks/entry-points.sh` against `checks/entry-points.allow` | the tree | CI build |
 | QC-32 | empty egress set | AC-3 network monitor; `checks/no-network.sh` | the release; the tree | release; CI build |
 | QC-34 | renderer reach | `pnpm exec vitest run tests/architecture`; `checks/no-network.sh` | the tree | CI build |
 | QC-35 | host reach | `checks/own-state.sh`; `checks/read-only.sh` | the tree | CI build |
@@ -1077,3 +1125,113 @@ delegation half), QC-18, QC-21, QC-31, QC-33, QC-43, QC-45, QC-50, QC-54, QC-57,
   `docs/trail/architecture/self_answer-6.md`; `docs/SDD.md` v5 — § 3 `fs-reader`, § 4 C-E4, § 6
   S-11, § 11 R-3, RN-41 – RN-44; `docs/fdr.md` v6 — PD-39, PD-40, R-46, R-154, R-155, R-21, RN-28,
   RN-30; `docs/trail/fdr/cycle-3.md` § 2.6; the commits named)*
+- **RN-18:** *(v7 — the close of the cycle-5 companion: three verifications the first built code
+  showed could not run as stated)* **How the companion came to exist.** No `product-architecture`
+  run opened it. Both records were Settled with no companion on disk, and a re-run would have read
+  them as done; the PM opened it on 2026-09-19 from a post-build review (`nozoki@d9cbefc`) with
+  three items, all raised from downstream and none drafted. All three were answered in the owner's
+  seat by one `companion-self-answer` run (`nozoki@0f4eab3`; its reasoning,
+  `docs/trail/architecture/self_answer-8.md`) and as answered the companion is
+  `docs/trail/architecture/cycle-5.md`. Every change below names the answer that authorizes it,
+  and what this run added beyond an answer's words is marked as this run's own. **§ 3.1 → QC-25,
+  and one record.** `docs/SDD.md` moved v5 → v6 (`nozoki@b3439e8`): § 4 C-I3 states a new
+  observable for the bundle probe, § 10 RC-1 records the measurement that retired the old one —
+  `APP_SANDBOX_CONTAINER_ID` is absent from a sandboxed main process under either signature and
+  from an unsandboxed one, so it separates nothing — and RN-45 hands QC-25 and ADR-0008 to this
+  seat. QC-25's tail is re-derived from C-I3 under that document's own rule that the § 4 statement
+  wins, carrying each of C-I3's failure conditions because each is a way the check goes red:
+  transcription, not a call. The obligation clause does not move, and § 10's row names the script
+  and not the mechanism, so it stands. QC-25 asserts nothing about a GitHub-hosted runner; that
+  question is the SDD's and is open there. ADR-0008 held the marker in its § Decision and in the
+  platform fact its last paragraph rests on, so the answer contradicts an accepted record, says in
+  terms that it means a reversal of mechanism and not a correction, and lands as **ADR-0010**,
+  which restates the decision whole; ADR-0008's Status line reads `Superseded by ADR-0010` and no
+  other line of it moved. RN-12's route — leave the record, note the move here — was open and not
+  taken, on the answer's ground: RN-12's stale sentence sat in § Consequences quoting another
+  document, and this one sat in § Decision, which the delivery tier builds from. The live traces
+  to ADR-0008 — QC-14, QC-25, QC-46, QC-48, QC-49 and § 9's layer-5 bullet — read ADR-0010;
+  RN-4's, RN-7's and RN-16's mentions are dated history and stand, and ADR-0001, ADR-0003 and
+  ADR-0007 name ADR-0008 and stand as written, its Status line forwarding their reader. Two
+  platform facts ADR-0010 rests on were re-read for it on 2026-09-19 rather than transcribed: the
+  macOS SDK's `usr/include/sandbox.h` declares `sandbox_init` and `sandbox_free_error` and not
+  `sandbox_check` (`grep -c sandbox_check` prints `0`), while `usr/lib/libSystem.B.tbd` and
+  `usr/lib/system/libsystem_sandbox.tbd` list `_sandbox_check`; and Apple's App Sandbox page
+  carries the Activity Monitor sentence C-I3 quotes and names neither the marker nor the function.
+  One fact a delivery reader needs and no entry states: `checks/bundle.sh` as last committed
+  (`nozoki@ccb58d8`, v1.0.0) still reads the marker, so QC-25 as it now reads is red against the
+  script as built until a change lands C-I3's probe and its control. That is the correct reading,
+  not a defect of this revision — the entry follows the SDD, and the script follows the entry.
+  **§ 3.2 → QC-23.** The entry promised string equality with a string containing `<asset-scheme>`,
+  a form the SDD settles only when the asset handler first exists, so no build could pass it as
+  written. It is now stated in two states keyed on what C-R7 carries. The interim string is
+  derived and not chosen: C-R7 is violated by "any widening", a policy with no asset source admits
+  strictly less, and nothing needs the source before a handler exists. Keyed on C-R7's state
+  rather than on this document's next revision, because the delivery tier does not edit this
+  document, and an entry that waited on a revision here would contradict the test that lands with
+  the form. The first state is what the built test already asserts
+  (`crates/nozoki-app/tests/config.rs:L17`, `:L181-L188`; `tauri.conf.json:L12`), opened this run.
+  The tail's second clause — the scan of every directive for the five forbidden sources — names
+  what the prohibition half of the obligation was always checked by; the old tail named the
+  equality alone. No record moves: ADR-0006 already says the form is open. Not covered, and the
+  SDD's: WKWebView accepting no origin form without a plugin (`docs/SDD.md` § 11 R-11), which
+  would meet QC-24's *no plugin*. **§ 3.3 → QC-30, QC-58, QC-61, § 9, § 10.** QC-30 said the
+  product has "no argument vector, no environment variable", and the process an adopter runs reads
+  both: `tauri-runtime-wry` 2.11.4 reads `TAURI_WEBVIEW_AUTOMATION` (`src/lib.rs:4792`) and
+  `tauri-utils` 2.9.3 collects `std::env::args_os()` (`src/lib.rs:282`), each at the version
+  `Cargo.lock` resolves. The answer: the boundary set covers what the shipped process reads,
+  whichever crate reads it — the floor's subject is *the product* (`quality_defaults.md` § The
+  boundary set) — so this is a correction of a statement measured false and no new requirement.
+  No upstream document made the absolute claim: `docs/fdr.md` R-2 and `docs/SRS.md` FR-1 say "the
+  only input the product requires", which holds, and QC-58 now uses those words. "Any shipped
+  crate" became "the product's own crates", because a dependency ships in the binary too and the
+  phrase read both ways. The answer accepts no read: it makes the entry true and puts every read
+  on a list reviewed as code, the pattern the owner confirmed for `checks/deps.allow` (RN-3,
+  QC-26). **The measurement the answer left to this fold**, taken 2026-09-19 with nothing fetched
+  or re-resolved: `cargo tree -p nozoki-app --target aarch64-apple-darwin -e normal --locked
+  --offline` resolves 216 crates; a scan of their sources for the six primitives QC-30's tail
+  names finds a textual hit in 17 — `tauri-utils`, `tauri-macros`, `tauri-codegen`, `tauri`,
+  `tauri-runtime-wry`, `dirs`, `dirs-sys`, `brotli`, `brotli-decompressor`, `tokio`, `once_cell`,
+  `cargo_metadata`, `winnow`, `syn` (two versions), `string_cache` and `objc2` — the answer's own
+  count, reproduced. That count is textual and is a ceiling, not the list: it includes lines in
+  doc comments (`once_cell`, `string_cache`), modules written for other platforms (`dirs`'s
+  `lin.rs`) and code that runs at build time (`tauri-utils`'s `build` modules, the proc-macro
+  crates). Sorting those is the work of writing the first `checks/entry-points.allow`, which is
+  the delivery tier's, and this note claims no list. **Three things in QC-30's tail are this
+  run's own and go beyond the answer's words.** (1) The names `checks/entry-points.sh` and
+  `checks/entry-points.allow`: the answer fixed "a reviewed list under `checks/`" and left the
+  script and the format to this document, as RN-3's tools are; another name with the same exit
+  code satisfies the entry. (2) The scan covers each crate's whole package directory and not
+  `src/`: 7 of the 216 crates keep no `src/` — `cssparser-macros`, `fnv`, `markup5ever`,
+  `selectors`, `servo_arc` and `web_atoms` hold `lib.rs` at the package root and `swift-rs` holds
+  `src-rs/` — so a scanner keyed on `src/` passes them unread, which is the silent pass the
+  answer's own failure path forbids ("a crate absent from the local registry cannot be scanned,
+  and the check has to fail on that rather than pass"). (3) A listed line no longer found also
+  fails the build: a list that only grows stops describing the process, and these records ship to
+  readers who will take the list at its word. QC-61's sentence that QC-30 and QC-58 forbid
+  `std::env::var` "in any shipped crate, so an off-the-shelf logger fails `checks/structure.sh`"
+  was wrong on the item's own reading — a logger is a dependency, and `checks/structure.sh` never
+  scanned one — and is re-pointed to QC-30's second half and the allowlist; its conclusion and
+  its tail stand. § 9's row 6 and § 10 gain the script. No record moves for § 3.3: ADR-0001 binds
+  QC-30 and its decision is untouched. **Fixed in place, under no answer.** The header said every
+  command named is one the SDD names "for a product that has no code yet". The product has code —
+  `crates/`, `checks/bundle.sh` — and the self-answer run saw the phrase and left it to this fold
+  (`self_answer-8.md`, *Seen in the document and not raised*). It is corrected as a defect found
+  while walking, small enough to fix where it stands; the clause a reader acts on — a command
+  becomes executable in the change that lands its script — is unchanged. **Seen and not raised.**
+  `docs/SDD.md` § 4 C-I3 still ends "The record is ADR-0008". The pointer resolves, and the record
+  it reaches forwards its reader by its Status line, so no companion is opened on the SDD for it;
+  the sentence is the CTO's to move at that document's next run. **What moved beneath this
+  document, and what did not.** `git diff --name-only 00c1bc9 HEAD` over the seven inputs —
+  `00c1bc9` being v6's own commit — prints `docs/SDD.md` alone (2026-09-19). The SDD's move is 138
+  lines, read whole as a diff and every passage cited here opened: § 4 C-I3, § 5 step 4, § 6
+  `open-a-folder`'s command bar, § 10 RC-1, § 11 R-8, § Open Questions, RN-45 and RN-46 — one
+  subject, the probe's observable, and QC-25 is the one entry that follows. The SRS, the FDR, the
+  PRD, the UXD, DESIGN and CONTENT are byte-for-byte what v6 read whole, so they were not re-read
+  whole this run and the `Inputs read:` line stands on the statuses as read — every input
+  Settled. No `QC` is added, renumbered or reused; § 1 – § 8 move only where named above. *(re:
+  header `Version:`, the citing paragraph; QC-14, QC-23, QC-25, QC-30, QC-46, QC-48, QC-49, QC-58,
+  QC-61; § 9, § 10; ADR-0008, ADR-0010; source: `docs/trail/architecture/cycle-5.md` § 3.1 –
+  § 3.3; `docs/trail/architecture/self_answer-8.md`; `docs/SDD.md` v6 — § 4 C-I3, C-R7, § 10
+  RC-1, § 11 R-8, R-11, RN-45, RN-46; `quality_defaults.md` v1.1.0 § The boundary set;
+  https://developer.apple.com/documentation/security/protecting-user-data-with-app-sandbox; the
+  commits named)*

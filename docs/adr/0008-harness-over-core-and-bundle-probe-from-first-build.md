@@ -1,6 +1,6 @@
 # ADR-0008: The read-only proof runs against `nozoki-core` and the IPC command list, not the rendered UI, and the bundle probe runs on every build from the first
 
-**Status:** Accepted
+**Status:** Superseded by ADR-0010
 **Date:** 2026-09-01
 
 ## Context
