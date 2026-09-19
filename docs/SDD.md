@@ -6,7 +6,7 @@
        signal, and the state a finished SDD carries; the open-issues file is gone.
      Locked = ratified as the source of truth. -->
 **Owner:** CTO · CPO · CDO — one run, three seats
-**Version:** 6 — CTO: § 4 C-I3 (observable and Violated by); § 6 open-a-folder Reached when, command half; § 10 RC-1 (new, first re-cut entry); § 11 R-8 shows up as; Open Questions fourth item (closed, replaced by the hosted-runner question); SDD Review Notes RN-45 (new). Companion items added: none. docs/SDD_open_issues.md removed, empty of items.; CPO: § 5 step 4 (E-1's sizing sentence); SDD Review Notes RN-46 (new). Companion items added: none.
+**Version:** 7 — CTO: § 3 SM-4 (what crosses, and owner cell wording); § 4 C-R7 (the staged grant, set equality against registered commands, asset-scheme keying, named pre-1.0.0 uncovered case, Violated by); § 4 C-I3 (every command the build grants); § 6 S-7 Reached when, command half; SDD Review Notes RN-47 (new). Companion items added: none. docs/SDD_open_issues.md removed, empty of items.
 recall outstanding, and `docs/SDD_open_issues.md` no longer stands on disk, so this document is
 stamped Settled. The run consumed the one companion item standing at intake (§ 5.1, whose Answer
 slot had come back filled — "confirm — and it is already done" — since run 4 ended): copied whole
@@ -349,7 +349,7 @@ language because the card declares Shell for the `checks/*.sh` harness by name (
 | `SM-1` `fs-reader` ↔ `folder-model` | Down: a path to list or read. Up: the listing, or the bytes with the text rule applied and the floor language named, or the condition observed — always as data, never a panic | `folder-model` — it states what a read must return; the reader implements it |
 | `SM-2` `git-reader` ↔ `folder-model` | Down: `probe`, and on a root `state`, `status`, `diff`, `walk`. Up: `root` or `plain`; plain-data Git state; or the condition observed. The port is a trait the model owns; the adapter is the only thing that knows libgit2 | `folder-model` — the port is its; a second adapter passes the same contract tests (§ 11 R-1) |
 | `SM-3` `watcher` ↔ `folder-model` | Up only: coalesced change events as paths, the root's `.git` entry among them. The model decides what to re-read | `folder-model` — the event shape is its |
-| `SM-4` `ipc-surface` ↔ `surfaces` | Down (renderer → host): exactly the commands `open_folder`, `list_tree`, `select_file`, `open_relative_link`, `set_theme`, and — where built — `open_diff`, `walk_history`, `switch_folder`; and asset requests on the `nozoki-asset` scheme. Up (host → renderer): the `model_changed` event carrying a projection delta. Nothing else crosses in either direction, and **this seam is the promise**: a builder of the renderer who holds only this contract cannot write, cannot connect and cannot read outside the folder | `ipc-surface` — the host registers the list and grants it in its capability file; the renderer receives what is registered and nothing more |
+| `SM-4` `ipc-surface` ↔ `surfaces` | Down (renderer → host): commands from this list and no other — `open_folder`, `list_tree`, `select_file`, `open_relative_link`, `set_theme`, `open_diff`, `walk_history`, `switch_folder` — each crossing from the build in which a slice registers it and not before, and all eight from `v1.0.0`; and asset requests on the `nozoki-asset` scheme, from the slice that settles its origin form. Which of the list a given build grants is stated once, in § 4 C-R7. Up (host → renderer): the `model_changed` event carrying a projection delta. Nothing else crosses in either direction, and **this seam is the promise**: a builder of the renderer who holds only this contract cannot write, cannot connect and cannot read outside the folder | `ipc-surface` — the host registers the commands its landed slices built and grants exactly what it registers (§ 4 C-R7); the renderer receives what is registered and nothing more |
 | `SM-5` `folder-model` ↔ `ipc-surface` | Down: the operations the commands name, as plain Rust calls. Up: projections and deltas. The harness calls this API directly, in-process, with no window (§ 4 C-I3) | `folder-model` — the API and its types are its; the host wraps, formats and delegates |
 | `SM-6` `own-state` ↔ `ipc-surface` | Down: the theme set, the window frame, and beyond v1 a folder to remember. Up: the state read whole, or the first-run state where it could not be read | `own-state` — the record shape and the read-whole-or-discard-whole rule are its |
 | `SM-7` `markdown-renderer` ↔ `fs-reader`, and the asset handler in `ipc-surface` | Rendering asks `fs-reader` whether an image reference is contained; serving asks the same question again on every request. Only a path that passes both is ever read; a bypass of the sanitizer or the CSP still reaches no byte outside the folder | `fs-reader` — the check is its and has one implementation; the two callers do not re-implement it |
@@ -483,9 +483,24 @@ the UXD binds on every surface, is the CDO's clause and follows them.
 - **C-R7.** The renderer's Content Security Policy, declared in `tauri.conf.json`, is
   `default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: <asset-scheme>;
   font-src 'self'`, where `<asset-scheme>` is the origin form settled for `nozoki-asset` (Open
-  Questions); no directive admits `http:`, `https:`, `file:`, `asset:` or `*`. The host's
-  capability file grants the renderer exactly SM-4's command list and the asset scheme, and no
-  plugin (NFR-16, NFR-8). *Violated by:* any widening of either list.
+  Questions); no directive admits `http:`, `https:`, `file:`, `asset:` or `*`. **A build grants
+  the renderer exactly the commands its landed slices register**, in the host's capability file,
+  and no plugin. That set is always inside SM-4's list, and no command is granted before a slice
+  registers it. From `v1.0.0` the set is SM-4's list whole (§ 6 S-11, C-I6). The check holds set
+  equality between the commands the capability file grants and the commands the host registers,
+  and holds that set inside SM-4's list; it reads the registered set and never a hand-kept copy
+  of it. So a command whose slice has not landed is never granted, and two slices that each
+  register a command apart from one another meet at one set when their changes are joined. The
+  asset scheme enters the grant in the slice that settles its origin form (§ 6 S-3), keyed on
+  this clause's own state: while the policy above carries the `<asset-scheme>` placeholder, no
+  asset scheme is granted; where that grant is written is part of the same Open Question. **Not
+  covered before `v1.0.0`:** a later change that stops registering a command an earlier slice
+  built passes this check, because the grant and the registration move together. Only that
+  slice's own bar holds the command until C-I6's pin exists — C-6's pre-1.0.0 half, stated
+  rather than tested (§ 11 R-12) (NFR-16, NFR-8). *Violated by:* a command granted that the host
+  does not register, or registered and not granted; a granted command outside SM-4's list; an
+  asset scheme granted while the placeholder stands; a plugin; any widening of the policy's
+  directives.
 
 **Instrumentation and failure visibility.**
 
@@ -509,7 +524,7 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   container.
 - **C-I3.** **The promises are proved on every build, from the first slice's first green build.**
   `checks/read-only.sh <fixture>` hashes a fixture (`.git` included where there is one), exercises
-  every command on SM-4's list through SM-5 in-process, hashes again, and prints `unchanged` or the
+  every command the build grants (C-R7) through SM-5 in-process, hashes again, and prints `unchanged` or the
   differing paths — the plain-folder criterion "no `.git` and no entry of any kind has appeared"
   (AC-24) is the same hash; `--kill` sends SIGKILL to the host mid-churn and re-hashes (NFR-4).
   `checks/no-network.sh` diffs `cargo tree` and `pnpm ls` against `deps.allow`. `checks/bundle.sh`
@@ -1429,7 +1444,7 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   and `pnpm audit --audit-level=critical` exit 0; `gitleaks git` exits 0 and `gh secret list --repo
   kensaiapp/nozoki` prints no entry; the version in `Cargo.toml` and `CFBundleShortVersionString`
   is below 1.0.0. *The promise clause, over the whole surface built so far:* `checks/read-only.sh`
-  prints `unchanged` on every fixture after every command on `SM-4`'s list; `checks/no-network.sh`
+  prints `unchanged` on every fixture after every command the build grants (§ 4 C-R7); `checks/no-network.sh`
   exits 0; and a network monitor across one full session against the downloaded bundle records zero
   outbound connections (AC-3) — the result attached to the release as text a reviewer reads.
 - **Rests on:** § 3 `read-only-harness`; § 4 C-R1, C-R4, C-R5, C-R6, C-I3; § 9 TO-8, TO-9; § 11
@@ -2563,6 +2578,44 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   first result did, by re-cutting the probe. No slug, *Delivers*, *Moves toward*, fence or PRD
   trace changes, and the PRD names no sandbox observable, so its boundary (§ 12) is untouched
   *(re: § 5 step 4, E-1; source: § 10 RC-1; § 11 R-8; `docs/trail/sdd/cycle-4.md` § 5.1)*.
+- **RN-47:** *(CTO)* *(changed)* § 4 C-R7 no longer says the capability file grants "exactly SM-4's
+  command list". It says a build grants exactly the commands its landed slices register, that the
+  set is always inside SM-4's list, and that from `v1.0.0` the set is the list whole. The grant is
+  stated there once. § 3 SM-4 matches it: the seam names all eight commands as the closed list,
+  each crossing from the build in which a slice registers it, where it had marked only the last
+  three "where built". § 4 C-I3's `read-only.sh` exercises "every command the build grants", where
+  it said "every command on SM-4's list". *Because* the document contradicted itself, and the
+  built tree showed which side was wrong. The slices already stage the grant: S-2, S-3 and S-6 put
+  their command in the capability file in the slice that builds it, S-8, S-9 and S-10 say theirs
+  "joins" it, and S-11 checks for all eight at `v1.0.0`. So no build before the last slice could
+  meet C-R7 as it read. The first built tree grants `allow-open-folder` and `allow-list-tree` and
+  nothing else (`nozoki@1741429:crates/nozoki-app/capabilities/main.json`). The PM raised it from a
+  post-build review, since no seat of this run could have seen it. The answer was written in the
+  owner's seat by an unattended `companion-self-answer` run, not by the owner in person. Its
+  verdict and reasons are `docs/trail/sdd/self_answer-11.md`, and the item with its answer is kept
+  whole at `docs/trail/sdd/cycle-5.md` § 5.1. This seat folded the answer's sentence and its three
+  additions as written. The first is C-I3's staging, above. The second is that C-R7's set equality
+  reads the commands the host registers and never a hand-kept copy. The tree's test holds two
+  hand-kept constants today (`nozoki@1741429:crates/nozoki-app/tests/config.rs:L228-L231`), and
+  how the test comes to read the registered set is the delivery tier's to plan. The third is the
+  case the staged check does not cover, named in C-R7 so it is not read as coverage: before
+  `v1.0.0`, a change that stops registering a built command passes, and § 11 R-12 already says the
+  same of the priced set. The answer leaves open where the asset scheme's grant is written,
+  because the third *Open Question* asks exactly that, so C-R7 says when the scheme enters the
+  grant and not where. This seat added two things of its own. C-R7's *Violated by* is rewritten
+  from "any widening of either list" to the five violations the new sentences make nameable,
+  because "either list" no longer names a fixed list a slice could widen. And § 6 S-7's command
+  half carried C-I3's old sentence, "every command on `SM-4`'s list", under a clause headed "the
+  whole surface built so far". It now reads "every command the build grants": the same defect in
+  the same lane, fixed in place (`<CORE>/doctrine/governance/found_while_walking.md`). The six
+  slice bars the answer quotes are unchanged, since they were the side that was right, and S-11's
+  "`SM-4`'s complete list" is unchanged, since at `v1.0.0` the two readings are one list. § 10
+  gains no entry: no slice's *Reached when* failed as written, and the sentence that failed is a
+  § 4 condition. `docs/nfdr.md` QC-24 still states the whole list and is the Principal Architect's
+  to bring into line. No part, seam owner, slice, edge or place in the order moves *(re: § 3
+  SM-4; § 4 C-R7, C-I3; § 6 S-7 *Reached when*, command half; source:
+  `docs/trail/sdd/cycle-5.md` § 5.1; `docs/trail/sdd/self_answer-11.md`; `nozoki@1741429`; § 6
+  S-11; § 4 C-I6; § 11 R-12; SRS NFR-16, NFR-8, C-6)*.
 
 ---
 

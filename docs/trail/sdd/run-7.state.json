@@ -1,0 +1,252 @@
+{
+  "change_log": [
+    {
+      "changed_text": "\u00a7 3 SM-4 (what crosses, and owner cell wording); \u00a7 4 C-R7 (the staged grant, set equality against registered commands, asset-scheme keying, named pre-1.0.0 uncovered case, Violated by); \u00a7 4 C-I3 (every command the build grants); \u00a7 6 S-7 Reached when, command half; SDD Review Notes RN-47 (new). Companion items added: none. docs/SDD_open_issues.md removed, empty of items.",
+      "seat": "cto"
+    }
+  ],
+  "companion_present_at_intake": true,
+  "companion_retired": false,
+  "consumed_cycle_path": "/Users/eyalgolan/products/nozoki/docs/trail/sdd/cycle-5.md",
+  "core_root": "/Users/eyalgolan/projects/kensai/kensaiapp-dev/core",
+  "ended": "seats-close",
+  "ended_at": "2026-09-19T19:00:33.889774+00:00",
+  "ended_detail": null,
+  "instance_root": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource",
+  "interruptions": [],
+  "no_change_rounds": 0,
+  "output_tokens": 0,
+  "output_tokens_under_counted": true,
+  "pending_request": {
+    "cdo": "CDO, round 1: my lanes are verified against the CTO's cycle-5 fold and need no edit \u2014 none made.",
+    "cpo": "CPO, round 2: the CTO's fold is checked against my lanes and reaches none of them \u2014 no edit made, and I have nothing further.",
+    "cto": "CTO, round 1: cycle-5 \u00a7 5.1 is folded into my lanes as the CPO named it, and the emptied companion is removed."
+  },
+  "product_path": "/Users/eyalgolan/products/nozoki",
+  "project": "nozoki",
+  "queue": [],
+  "recall_outstanding": null,
+  "recall_refusals": [],
+  "recalls_spent": [],
+  "resolved_inputs": {
+    "cdo": [
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "present": false
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/doctrine/writing_bar.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/prompts/sdd_conversation_conduct.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/templates/product-templates/sdd_template.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/DESIGN.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/CONTENT.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/design_system",
+        "present": false
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/experience/visual_restrictions.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/experience/visual_direction.md",
+        "present": true
+      }
+    ],
+    "cpo": [
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "present": false
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/doctrine/writing_bar.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/prompts/sdd_conversation_conduct.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/templates/product-templates/sdd_template.md",
+        "present": true
+      }
+    ],
+    "cto": [
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "present": false
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/doctrine/writing_bar.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/prompts/sdd_conversation_conduct.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/templates/product-templates/sdd_template.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/adr",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/nfdr.md",
+        "present": true
+      }
+    ]
+  },
+  "round": 2,
+  "round_opened": "2026-09-19T18:59:45.326590+00:00",
+  "round_start_snapshot": {
+    "recall_outstanding": null,
+    "recalls_spent": [],
+    "standing_move": {
+      "cdo": {
+        "kind": "no_followup",
+        "target": null,
+        "work": null
+      },
+      "cpo": {
+        "kind": "successor",
+        "target": "cto",
+        "work": "fold `docs/trail/sdd/cycle-5.md` \u00a7 5.1 into your lanes: the staged-grant sentence in \u00a7 4 C-R7, \u00a7 3 SM-4's list to match, \u00a7 4 C-I3's \"every command the build grants\" with set equality against the registered commands, the named pre-1.0.0 uncovered case, the review note carrying the answer's provenance, and the emptied companion's removal."
+      },
+      "cto": {
+        "kind": "no_followup",
+        "target": null,
+        "work": null
+      }
+    }
+  },
+  "run": "run-7",
+  "schema_version": 1,
+  "sdd_status": "Settled",
+  "seats": {
+    "cdo": "sdd-nozoki-run7-cdo",
+    "cpo": "sdd-nozoki-run7-cpo",
+    "cto": "sdd-nozoki-run7-cto"
+  },
+  "spoke_at": {
+    "cdo": 1,
+    "cpo": 1,
+    "cto": 1
+  },
+  "standing_move": {
+    "cdo": {
+      "kind": "no_followup",
+      "target": null,
+      "work": null
+    },
+    "cpo": {
+      "kind": "no_followup",
+      "target": null,
+      "work": null
+    },
+    "cto": {
+      "kind": "no_followup",
+      "target": null,
+      "work": null
+    }
+  },
+  "turn_log": [
+    {
+      "changed": false,
+      "changed_text": "nothing",
+      "declared": "no_followup",
+      "kind": "ordinary",
+      "no_reply": false,
+      "request_text": "CPO, round 2: the CTO's fold is checked against my lanes and reaches none of them \u2014 no edit made, and I have nothing further.",
+      "seat": "cpo",
+      "spoke": true
+    }
+  ]
+}
