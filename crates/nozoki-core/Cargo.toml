@@ -8,3 +8,9 @@ workspace = true
 [dependencies]
 log = "0.4.34"
 thiserror = "2.0.20"
+
+# The in-process walk `checks/read-only.sh` drives. No libtest harness: it is a program that prints
+# one number, and the harness would print its own lines around it.
+[[test]]
+name = "walk"
+harness = false
