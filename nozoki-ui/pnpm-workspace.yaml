@@ -1,0 +1,11 @@
+# Install the optional packages of BOTH Mac CPUs, whichever CPU runs the install.
+# @tauri-apps/cli ships one binary package per CPU (…-darwin-arm64, …-darwin-x64) as optional
+# dependencies, and `pnpm ls` reports only what was installed. Without this, the package set
+# `checks/no-network.sh` compares against `checks/deps.allow` would depend on the machine's CPU.
+# https://pnpm.io/settings/dependency-resolution#supportedarchitectures
+supportedArchitectures:
+  os:
+    - darwin
+  cpu:
+    - arm64
+    - x64
