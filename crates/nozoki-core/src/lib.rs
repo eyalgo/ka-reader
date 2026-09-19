@@ -1,8 +1,12 @@
 //! nozoki-core: the crate's public surface. No implementation lives here.
 
-pub mod error;
-pub mod fs_reader;
+mod error;
+mod folder_model;
+mod fs_reader;
+
 pub use error::Error;
+pub use folder_model::{OpenedFolder, list_tree, open_folder};
+pub use fs_reader::{Entry, EntryKind, Failure, Listing};
 
 // Shared with the integration tests, which reach the same file as `tests/common/mod.rs`.
 #[cfg(test)]

@@ -3,6 +3,10 @@
 //!
 //! `log` has one global logger per process, so this is the only test in its binary.
 
+#[allow(
+    dead_code,
+    reason = "each test crate uses a subset of the shared helpers"
+)]
 mod common;
 
 use std::sync::Mutex;

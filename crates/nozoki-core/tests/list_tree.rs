@@ -111,8 +111,8 @@ fn open_folder_on_a_file_or_missing_path_is_not_opened() {
     let folder = TempDir::new();
     let file = folder.write_file("a-file", "");
 
-    assert!(open_folder(&file).is_none());
-    assert!(open_folder(&folder.path().join("missing")).is_none());
+    assert!(open_folder(file).is_none());
+    assert!(open_folder(folder.path().join("missing")).is_none());
 }
 
 #[test]
@@ -121,7 +121,7 @@ fn open_folder_on_an_unreadable_folder_opens_and_root_list_is_failed() {
     folder.make_folder("locked");
     folder.set_mode("locked", 0o000);
 
-    let opened = open_folder(&folder.path().join("locked")).expect("an unreadable folder opens");
+    let opened = open_folder(folder.path().join("locked")).expect("an unreadable folder opens");
 
     assert!(matches!(list_tree(&opened, ""), Listing::Failed(_)));
 }
@@ -148,7 +148,7 @@ fn open_folder_through_a_symlink_roots_at_the_canonical_target() {
     folder.write_file("real/inside.txt", "");
     folder.make_link("link", folder.path().join("real"));
 
-    let opened = open_folder(&folder.path().join("link")).expect("a link to a folder opens");
+    let opened = open_folder(folder.path().join("link")).expect("a link to a folder opens");
 
     assert_eq!(
         names_and_kinds(list_tree(&opened, "")),
