@@ -90,7 +90,7 @@ impl From<&io::Error> for Blocked {
 /// touched to decide that. A path inside `root` that cannot be listed is [`Listing::Failed`], and
 /// only then is one record logged at `warn`, carrying the operating system's error text and no path.
 pub fn list(root: &Path, requested: &str) -> Listing {
-    match resolve(root, requested).and_then(|location| list_folder(root, &location)) {
+    match resolve(root, requested).and_then(|below_root| list_folder(root, &below_root)) {
         Ok(entries) => Listing::Listed(entries),
         Err(Blocked::Outside) => Listing::Refused,
         Err(Blocked::Failed(failure)) => {
@@ -125,6 +125,10 @@ fn steps_below(root: &Path, path: &Path) -> Result<VecDeque<Step>, Blocked> {
     }
 }
 
+/// Resolves `requested` to a location, returned as its path below `root`.
+///
+/// The position is tracked below the root and never as an absolute path, so the result can only
+/// name a place inside it: `..` at the root is the one way out, and it is refused.
 fn resolve(root: &Path, requested: &str) -> Result<PathBuf, Blocked> {
     let requested = Path::new(requested);
     let mut pending = if requested.is_absolute() {
@@ -132,25 +136,19 @@ fn resolve(root: &Path, requested: &str) -> Result<PathBuf, Blocked> {
     } else {
         steps_of(requested)?
     };
-    let mut location = root.to_path_buf();
+    let mut below_root = PathBuf::new();
     let mut links_followed = 0;
     while let Some(step) = pending.pop_front() {
         match step {
             Step::Parent => {
-                if location == root {
+                if !below_root.pop() {
                     return Err(Blocked::Outside);
                 }
-                location.pop();
             }
             Step::Name(name) => {
-                let candidate = location.join(name);
+                let candidate = root.join(&below_root).join(&name);
                 let metadata =
                     fs::symlink_metadata(&candidate).map_err(|error| Blocked::from(&error))?;
-                if !pending.is_empty() && !metadata.is_dir() && !metadata.is_symlink() {
-                    return Err(Blocked::from(&io::Error::from(
-                        io::ErrorKind::NotADirectory,
-                    )));
-                }
                 if metadata.is_symlink() {
                     links_followed += 1;
                     if links_followed > MAX_LINK_HOPS {
@@ -159,7 +157,7 @@ fn resolve(root: &Path, requested: &str) -> Result<PathBuf, Blocked> {
                     let target =
                         fs::read_link(&candidate).map_err(|error| Blocked::from(&error))?;
                     let steps = if target.is_absolute() {
-                        location = root.to_path_buf();
+                        below_root = PathBuf::new();
                         steps_below(root, &target)?
                     } else {
                         steps_of(&target)?
@@ -167,21 +165,22 @@ fn resolve(root: &Path, requested: &str) -> Result<PathBuf, Blocked> {
                     for step in steps.into_iter().rev() {
                         pending.push_front(step);
                     }
+                } else if !pending.is_empty() && !metadata.is_dir() {
+                    return Err(Blocked::from(&io::Error::from(
+                        io::ErrorKind::NotADirectory,
+                    )));
                 } else {
-                    location = candidate;
+                    below_root.push(name);
                 }
             }
         }
     }
-    Ok(location)
+    Ok(below_root)
 }
 
-fn list_folder(root: &Path, location: &Path) -> Result<Vec<Entry>, Blocked> {
-    let below_root = location
-        .strip_prefix(root)
-        .expect("a resolved location lies under the root");
+fn list_folder(root: &Path, below_root: &Path) -> Result<Vec<Entry>, Blocked> {
     let mut entries = Vec::new();
-    for item in fs::read_dir(location).map_err(|error| Blocked::from(&error))? {
+    for item in fs::read_dir(root.join(below_root)).map_err(|error| Blocked::from(&error))? {
         let item = item.map_err(|error| Blocked::from(&error))?;
         let file_type = item.file_type().map_err(|error| Blocked::from(&error))?;
         let name = item.file_name();
@@ -363,6 +362,15 @@ mod tests {
                 EntryKind::File
             )]
         );
+    }
+
+    #[test]
+    fn test_path_continuing_through_a_symlink_to_a_file_is_failed() {
+        let temp = TempDir::new();
+        temp.write_file("plain.txt", "");
+        temp.make_link("link", "plain.txt");
+
+        assert_failed(list(temp.path(), "link/below"));
     }
 
     #[test]
