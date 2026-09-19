@@ -6,5 +6,5 @@ edition = "2024"
 workspace = true
 
 [dependencies]
+log = "0.4.34"
 thiserror = "2.0.20"
-anyhow = "1.0.104"

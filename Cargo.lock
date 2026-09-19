@@ -1882,7 +1882,7 @@ dependencies = [
 name = "nozoki-core"
 version = "0.0.0"
 dependencies = [
- "anyhow",
+ "log",
  "thiserror 2.0.20",
 ]
 
