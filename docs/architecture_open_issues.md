@@ -48,7 +48,47 @@
   hand, re-derived from whatever C-R7 settles in `SDD_open_issues.md` § 5.1. The PM's lean is set
   equality against the commands the built slices register, plus the asset scheme once its form is
   settled.
-- **Answer:** <the owner fills this in>
+- **Answer:** Answered in the owner's seat by a `companion-self-answer` run, 2026-09-19. **The
+  PM's lean is confirmed, with additions, and the item no longer waits on anything.**
+  `docs/SDD_open_issues.md` § 5.1 was answered (`nozoki@d9ffe66`) and folded (`nozoki@c1f8a20`).
+  `docs/SDD.md` is Settled at v7, and § 4 C-R7 (`docs/SDD.md:L483-L503`) states the staged grant.
+  The SDD's own rule is that "the § 4 statement wins and the NFDR entry is re-derived"
+  (`docs/SDD.md:L408`), so QC-24 is re-derived from C-R7 as it reads at v7. That is transcription,
+  not a call.
+
+  **What QC-24 states.** A build's capability file grants the renderer exactly the commands the
+  host registers — the commands its landed slices built — and no plugin. That set is always inside
+  the closed list `docs/SDD.md` § 3 SM-4 names (`docs/SDD.md:L352`), and from `v1.0.0` it is that
+  list whole. The asset scheme enters the grant in the slice that settles its origin form, keyed
+  on C-R7's state the way QC-23 is: while C-R7 carries the `<asset-scheme>` placeholder, no asset
+  scheme is granted. QC-24 says when the scheme enters the grant and not where the grant is
+  written, because where is part of the SDD's open question (`docs/SDD.md:L2644`).
+
+  **What verifies it.** `cargo test --locked -p nozoki-app --test config`, holding four things:
+  set equality between the commands the capability file grants and the commands the host
+  registers; that set inside SM-4's list; no plugin; and no asset scheme while the placeholder
+  stands. The test reads the registered set and never a hand-kept copy of it, which is C-R7's own
+  sentence. One clause is this answer's own and goes beyond C-R7's words: a registered set the
+  test cannot read fails the test, the way QC-30's tail fails on a crate it cannot scan. From
+  `v1.0.0` the whole list is held by QC-59's pin, which already reads the capability file's
+  command list.
+
+  **What it does not cover, carried from C-R7 so it is not read as coverage.** Before `v1.0.0`, a
+  change that stops registering a command an earlier slice built passes, because the grant and the
+  registration move together. Only that slice's own bar holds the command until the pin exists.
+
+  **What a delivery reader needs and no entry states.** The test as built holds two hand-kept
+  constants (`crates/nozoki-app/tests/config.rs:L228`, `:L231`, at `nozoki@1741429`). It passes
+  today and does not yet meet the re-derived tail. The entry follows the SDD and the test follows
+  the entry, which is how RN-18 read QC-25 against `checks/bundle.sh`. How the test comes to read
+  the registered set is the delivery tier's to plan (`docs/SDD.md` § SDD Review Notes RN-47).
+
+  **What does not move.** § 10's row for QC-24 (`nfdr.md:L641`) names the command and not the
+  mechanism, so it stands. No record moves: no ADR states a whole-list grant, and ADR-0002's "the
+  closed command list the host registers"
+  (`docs/adr/0002-tauri-2-rust-host-wkwebview-renderer.md:L45`) holds under the staged grant. QC-1,
+  QC-34 and QC-59 read QC-24 and stay true. Reasoning:
+  `docs/trail/architecture/self_answer-9.md` § 3.1.
 
 ### 3.2 QC-61's `structure.sh` check reaches test binaries that must install a logger
 - **Raised by:** PM — 2026-09-19
@@ -69,6 +109,55 @@
 - **If a document has to be written:** none. What is owed is the check's scope stated in the entry.
   The PM's lean is: `set_logger` / `set_boxed_logger` appear only under `crates/nozoki-app/src/`
   among shipped sources, and test targets under `crates/*/tests/` are outside the check.
-- **Answer:** <the owner fills this in>
+- **Answer:** Answered in the owner's seat by a `companion-self-answer` run, 2026-09-19. **The
+  PM's lean is confirmed, with one addition: the scope belongs to `checks/structure.sh`, not to
+  QC-61's rule alone.**
+
+  **QC-61.** `log::set_logger` and `log::set_boxed_logger` appear only under
+  `crates/nozoki-app/src/`, and test targets under `crates/*/tests/` are outside the rule. The
+  obligation clause does not move. The property is "installed once at startup in `nozoki-app`, the
+  composition root" (`nfdr.md:L467-L468`), which is about the shipped process. Cargo compiles each
+  file under `tests/` "as a separate crate"
+  (https://doc.rust-lang.org/cargo/reference/cargo-targets.html, read 2026-09-19), so a logger
+  installed there is never in the process an adopter runs. `set_logger` sets "the global logger"
+  and "may only be called once in the lifetime of a program"
+  (https://docs.rs/log/latest/log/fn.set_logger.html, read 2026-09-19), so a test that asserts on
+  `nozoki-core`'s warn line can observe it only by installing a logger in its own binary.
+  "`nozoki-core` … initializes nothing" stays true of the library:
+  `grep -rn set_logger crates/nozoki-core/src/` prints nothing at `nozoki@1741429`.
+
+  **The addition.** The same script carries other rules that say "in `nozoki-core`", "in
+  `nozoki-app`" or "in the product's own crates" and state no scope. The tree at `nozoki@1741429`
+  holds a test-target site against each:
+  - QC-2's *no write API in `nozoki-core` outside `own-state`* —
+    `crates/nozoki-core/tests/common/mod.rs:L57` (`fs::write`, building a fixture).
+  - QC-9's *`nozoki-core` must not import `std::process`*, the rule QC-7's tail shares —
+    `crates/nozoki-core/tests/common/mod.rs:L11`.
+  - QC-13's *`nozoki-app` must not import `std::fs` outside its log module* —
+    `crates/nozoki-app/tests/config.rs:L11`, the test QC-23 and QC-24 name.
+  - QC-30 half (1)'s *no `std::env::args` in the product's own crates* —
+    `crates/nozoki-core/tests/walk.rs:L66`, the driver `checks/read-only.sh` runs, which has to
+    read its fixture argument.
+
+  Each property is about shipped code, as QC-61's is. Scoping QC-61 alone would leave a reader to
+  infer that the other rules do reach test targets. So the scope is stated once, where § 9
+  describes the script (`nfdr.md:L598`): `checks/structure.sh`'s rules read the product crates'
+  sources outside `crates/*/tests/`. The one rule that reads exactly that path — no
+  `CARGO_BIN_EXE_` reference under `crates/*/tests/` — stays as it is. QC-61's tail carries the
+  scope in words, because the item asked it of that entry. Whether the other tails repeat it or
+  point at § 9 is the fold's drafting.
+
+  **Not covered, named.** (1) A `#[cfg(test)]` module inside `src/` stays inside every rule. The
+  tree holds no such site that breaks one, so nothing is decided for it: a layer-1 test that needs
+  a write or a logger sits under `tests/` until a site shows otherwise. (2)
+  `crates/nozoki-app/build.rs`, and any later `benches/` or `examples/`, are not excluded. No site
+  in the tree needs them to be. (3) Shipped code that pulls in a file from `tests/` through a
+  `#[path]` attribute would escape the rules. No grep rule is added for it. It is a review catch
+  at `development-design`.
+
+  **What does not move.** § 10's row for QC-61 (`nfdr.md:L668`) names the scripts and stands. No
+  record moves. No `QC` is added. `checks/structure.sh` is not in the tree yet (`ls checks/`), so
+  no script changes; the first one written follows the entry as it then reads. Reasoning:
+  `docs/trail/architecture/self_answer-9.md` § 3.2.
 
 **How it closes.** `product-architecture` folds it on its next run like any other item here.
