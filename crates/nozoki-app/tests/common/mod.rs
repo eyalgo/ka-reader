@@ -1,4 +1,6 @@
-//! Test support for `nozoki-app`'s unit tests: a temporary folder built from `std` alone.
+//! Test support for `nozoki-app`'s unit tests: a temporary folder built from `std` alone. It lives
+//! under `tests/common/` and not `src/`, so the production source names no `std::fs`; the unit tests
+//! include it through `#[path]` (see `lib.rs`).
 //!
 //! `tempfile` is not used because it would add a package name to `Cargo.lock`, and QC-26 lets this
 //! change add exactly one (`rfd`).
