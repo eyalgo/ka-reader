@@ -11,6 +11,9 @@ thiserror = "2.0.20"
 anyhow = "1.0.104"
 tauri = { version = "2.11.5", features = [] }
 nozoki-core = { version = "0.0.0", path = "../nozoki-core" }
+log = "0.4.34"
+serde = { version = "1.0.229", features = ["derive"] }
+rfd = { version = "0.17.2", default-features = false }
 
 [dev-dependencies]
 plist = "1.10.1"

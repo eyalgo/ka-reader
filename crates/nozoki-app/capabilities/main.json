@@ -1,0 +1,6 @@
+{
+  "identifier": "main-window",
+  "description": "The main window may call the two commands S-1 registers, and nothing else.",
+  "windows": ["main"],
+  "permissions": ["allow-open-folder", "allow-list-tree"]
+}

@@ -1,18 +1,19 @@
 /**
- * The composition root. A product wires its own concrete implementations to abstractions here, once
- * those exist — this frame ships the wiring point and nothing to wire.
+ * The composition root. It wires the real `invoke` from `@tauri-apps/api/core`, the one place that
+ * package is imported (QC-8), into the start flow, and draws the rows the flow returns.
  *
- * It is not empty, and deliberately so: `index.html` loads this module, and a file holding only
- * comments is one `oxlint` refuses under `unicorn(no-empty-file)`, so a freshly stamped product
- * would fail its own `pnpm lint`. What it holds instead is the shape the root actually has — one
- * `start()` that a product fills in, called once at module load.
+ * `index.html` loads this module, and `start()` runs once at module load: the Open panel appears,
+ * and a chosen folder's root is listed.
  */
 
-import { logger } from "./logger";
+import { invoke } from "@tauri-apps/api/core";
 
-/** Wires the product's dependencies and hands control to it. Empty until there is something to wire. */
-export function start(): void {
-  logger.debug("nozoki-ui started");
+import { renderRows, runStartFlow } from "./start-flow";
+
+/** Runs the start flow with the host's `invoke` and draws what it returns into the page body. */
+export async function start(): Promise<void> {
+  const outcome = await runStartFlow(invoke);
+  renderRows(document.body, outcome.rows);
 }
 
-start();
+await start();
