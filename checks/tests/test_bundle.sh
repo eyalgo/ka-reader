@@ -6,7 +6,8 @@
 # WHY THIS EXISTS
 #   checks/bundle.sh is the wall's proof on a built bundle, so a bug in it is a wall nobody is
 #   checking. These cases run the real script — never a copy of its logic — against the real built
-#   bundle and against re-signed copies of it, with the outside world (`ps`, `open`) stubbed on PATH.
+#   bundle and against re-signed copies of it, with the outside world (`ps`, `open` and the sandbox
+#   probe) stubbed on PATH.
 #   The technique is the shell packet's, minus its runner: this product has no Python, so the runner
 #   is this file (`docs/nfdr.md` § 9 names the product's toolchains).
 #
