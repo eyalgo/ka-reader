@@ -198,16 +198,30 @@ else
   [ -d "$frontend_dist" ] || die "build.frontendDist names a directory that does not exist: $frontend_dist"
   misplaced=""
   renderer_files="$(cd "$frontend_dist" && find . -type f | sed 's#^\./##' | LC_ALL=C sort)"
+  # Every place a renderer path is looked for: Contents itself, and each of its entries bar
+  # Resources. Contents is as much "outside Contents/Resources" as Contents/MacOS is, so a renderer
+  # file dropped at the root of Contents is misplaced too — it was reached by no section while the
+  # entries alone were walked, and the run reported the bundle clean.
+  search_roots="$app/Contents"
   for section in "$app/Contents"/*; do
     [ "$section" != "$app/Contents/Resources" ] || continue
+    search_roots="$search_roots
+$section"
+  done
+  while IFS= read -r search_root; do
+    [ -n "$search_root" ] || continue
     while IFS= read -r renderer_file; do
       [ -n "$renderer_file" ] || continue
-      if [ -e "$section/$renderer_file" ]; then
-        misplaced="${misplaced}renderer file outside Contents/Resources: ${section#"$app"/}/$renderer_file
+      candidate="$search_root/$renderer_file"
+      # A renderer build carrying its own top-level Resources/ would otherwise be flagged for
+      # sitting in the one directory the rule blesses.
+      case "$candidate" in "$app/Contents/Resources/"*) continue ;; esac
+      if [ -e "$candidate" ]; then
+        misplaced="${misplaced}renderer file outside Contents/Resources: ${candidate#"$app"/}
 "
       fi
     done <<< "$renderer_files"
-  done
+  done <<< "$search_roots"
   [ -z "$misplaced" ] || { printf '%s' "$misplaced" >&2; die "the renderer build is not under Contents/Resources; the bundle was not launched"; }
   echo "renderer build: every file of $frontend_dist is under Contents/Resources"
 fi
