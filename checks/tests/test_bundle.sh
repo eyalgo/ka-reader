@@ -51,6 +51,11 @@ test_unresolvable_symbol_fails
 test_probe_error_fails
 test_probe_reports_an_unsandboxed_pid_as_unsandboxed
 test_probe_fails_on_a_pid_that_does_not_exist
+test_instance_already_running_fails_before_launch
+test_no_process_appears_fails
+test_more_than_one_process_fails
+test_already_running_copy_survives
+test_only_the_launched_pid_is_signalled
 test_extra_key_fails_before_launch
 test_false_value_fails
 test_missing_key_fails
@@ -156,6 +161,54 @@ compile_probe() {
     || fail "the probe source did not compile: $(cat "$WORK/probe-build.log" 2> /dev/null)"
 }
 
+# The executable path a bundle's main process has: <app>/Contents/MacOS/<CFBundleExecutable>, with the
+# bundle path resolved the way checks/bundle.sh resolves it.
+bundle_executable_of() {
+  resolved="$(cd "$1" && pwd -P)"
+  name="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$resolved/Contents/Info.plist")"
+  printf '%s/Contents/MacOS/%s' "$resolved" "$name"
+}
+
+# Every process whose executable path is exactly $1 — the identification the script itself uses,
+# never a command-line pattern.
+pids_of_executable() {
+  /bin/ps -axo pid=,comm= | while read -r candidate candidate_path; do
+    if [ "$candidate_path" = "$1" ]; then
+      echo "$candidate"
+    fi
+  done
+}
+
+# Starts a real instance of the bundle at $1 the way a user would, waits for its process, and prints
+# its pid. The pid is recorded so the runner's cleanup stops it whatever the case's verdict.
+start_instance() {
+  open -n -g "$1" || return 1
+  executable="$(bundle_executable_of "$1")"
+  waited=0
+  while [ "$waited" -lt 80 ]; do
+    started="$(pids_of_executable "$executable" | head -1)"
+    if [ -n "$started" ]; then
+      echo "$started" >> "$WORK/started-pids"
+      printf '%s' "$started"
+      return 0
+    fi
+    sleep 0.25
+    waited=$((waited + 1))
+  done
+  return 1
+}
+
+process_is_running() {
+  kill -0 "$1" 2> /dev/null
+}
+
+# A copy of the built bundle carrying exactly the C-R2 entitlement set, so it passes the entitlement
+# half of the script and reaches the launch.
+valid_copy() {
+  write_entitlements "$WORK/valid.plist" "$APP_SANDBOX_KEY" true "$USER_SELECTED_READ_ONLY_KEY" true
+  resigned_copy "$1" "$WORK/valid.plist"
+}
+
 # --- cases ---
 
 test_real_bundle_passes() {
@@ -216,6 +269,80 @@ test_probe_fails_on_a_pid_that_does_not_exist() {
   expect_output_lacks "sandboxed: yes"
 }
 
+# CP-42: three counts, three named failures. `ps` is stubbed on PATH; `open` is stubbed too, so nothing
+# is launched and the stubbed `ps` is the only thing that says what is running.
+test_instance_already_running_fails_before_launch() {
+  executable="$(bundle_executable_of "$APP")"
+  mkdir -p "$WORK/stubs-running"
+  make_stub "$WORK/stubs-running" open "echo \"\$@\" >> \"$WORK/open-running.log\""
+  make_stub "$WORK/stubs-running" ps "echo \"424242 $executable\""
+
+  run_bundle_sh_with_stubs "$WORK/stubs-running" "$APP"
+
+  expect_nonzero_status || return 1
+  expect_output_contains "an instance was already running" || return 1
+  [ ! -e "$WORK/open-running.log" ] || fail "the bundle was launched: $(cat "$WORK/open-running.log")"
+}
+
+test_no_process_appears_fails() {
+  mkdir -p "$WORK/stubs-none"
+  make_stub "$WORK/stubs-none" open "exit 0"
+  make_stub "$WORK/stubs-none" ps "exit 0"
+
+  OUT="$(BUNDLE_SH_LAUNCH_TICKS=2 PATH="$WORK/stubs-none:$PATH" "$BUNDLE_SH" "$APP" 2>&1)"
+  STATUS=$?
+
+  expect_nonzero_status || return 1
+  expect_output_contains "no process appeared"
+}
+
+test_more_than_one_process_fails() {
+  executable="$(bundle_executable_of "$APP")"
+  mkdir -p "$WORK/stubs-many"
+  make_stub "$WORK/stubs-many" open "echo launched > \"$WORK/open-many.log\""
+  # Nothing is running until the launch has happened; then two processes carry the path.
+  make_stub "$WORK/stubs-many" ps "if [ -e \"$WORK/open-many.log\" ]; then echo \"424242 $executable\"; echo \"424243 $executable\"; fi"
+
+  OUT="$(BUNDLE_SH_LAUNCH_TICKS=2 PATH="$WORK/stubs-many:$PATH" "$BUNDLE_SH" "$APP" 2>&1)"
+  STATUS=$?
+
+  expect_nonzero_status || return 1
+  expect_output_contains "more than one process"
+}
+
+# A copy that was running before the script started is not the script's to stop (CP-46).
+test_already_running_copy_survives() {
+  copy="$(valid_copy survivor)" || fail "could not re-sign the copy" || return 1
+  running="$(start_instance "$copy")" || fail "could not start an instance of the copy" || return 1
+
+  run_bundle_sh "$copy"
+
+  expect_nonzero_status || return 1
+  expect_output_contains "an instance was already running" || return 1
+  process_is_running "$running" || fail "the already-running copy (pid $running) was stopped"
+}
+
+# The probe stand-in starts a second process of the same executable path while the script is between
+# recording its pid and stopping it. The script must stop its own pid and leave the second one.
+test_only_the_launched_pid_is_signalled() {
+  copy="$(valid_copy bystander)" || fail "could not re-sign the copy" || return 1
+  executable="$(bundle_executable_of "$copy")"
+  mkdir -p "$WORK/stubs-bystander"
+  make_stub "$WORK/stubs-bystander" nozoki-sandbox-probe "\"$executable\" > /dev/null 2>&1 &
+echo \$! > \"$WORK/bystander-pid\"
+printf 'sandboxed: yes\nout-of-grant-read: denied\noutbound-connection: denied\n'"
+
+  run_bundle_sh_with_stubs "$WORK/stubs-bystander" "$copy"
+
+  bystander="$(cat "$WORK/bystander-pid" 2> /dev/null || true)"
+  [ -n "$bystander" ] && echo "$bystander" >> "$WORK/started-pids"
+  [ -n "$bystander" ] || fail "the stand-in probe started no second process" || return 1
+  launched_pid="$(printf '%s' "$OUT" | sed -n 's/^launched: pid \([0-9]*\).*/\1/p')"
+  [ -n "$launched_pid" ] || fail "the script did not name the pid it launched. output: $OUT" || return 1
+  ! process_is_running "$launched_pid" || fail "the launched pid $launched_pid is still running"
+  process_is_running "$bystander" || fail "the second process (pid $bystander) was stopped with it"
+}
+
 test_extra_key_fails_before_launch() {
   mkdir -p "$WORK/stubs-extra"
   make_stub "$WORK/stubs-extra" open "echo \"\$@\" >> \"$WORK/open-extra.log\""
@@ -259,6 +386,9 @@ test_no_sandbox_observed_fails_and_cleans_up() {
 
   expect_nonzero_status || return 1
   expect_output_contains "the launched process is not sandboxed" || return 1
+  launched_pid="$(printf '%s' "$OUT" | sed -n 's/^launched: pid \([0-9]*\).*/\1/p')"
+  [ -n "$launched_pid" ] || fail "the script did not name the pid it launched. output: $OUT" || return 1
+  ! process_is_running "$launched_pid" || fail "the launched pid $launched_pid is still running" || return 1
   expect_no_bundle_process "$APP"
 }
 
@@ -422,6 +552,12 @@ fi
 WORK="$(mktemp -d)"
 [ -z "${NOZOKI_TEST_WORKDIR_LOG:-}" ] || printf '%s' "$WORK" > "$NOZOKI_TEST_WORKDIR_LOG"
 cleanup() {
+  # Instances a case started on purpose are stopped by pid, never by pattern.
+  if [ -f "$WORK/started-pids" ]; then
+    while read -r started; do
+      kill -TERM "$started" 2> /dev/null || true
+    done < "$WORK/started-pids"
+  fi
   rm -rf "$WORK"
 }
 trap cleanup EXIT
