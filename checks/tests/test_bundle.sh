@@ -29,7 +29,11 @@ APP="${NOZOKI_APP:-$ROOT/target/release/bundle/macos/Nozoki.app}"
 APP_SANDBOX_KEY="com.apple.security.app-sandbox"
 USER_SELECTED_READ_ONLY_KEY="com.apple.security.files.user-selected.read-only"
 EXTRA_KEY="com.apple.security.files.bookmarks.app-scope"
-SANDBOX_MARKER="APP_SANDBOX_CONTAINER_ID"
+# The legacy marker's name, assembled from two halves so this file carries no literal of it: the case
+# that proves the marker is gone from the tree greps for the literal (CP-41), and a literal here would
+# make that grep find its own subject.
+LEGACY_MARKER="APP_SANDBOX""_CONTAINER_ID"
+PROBE_SOURCE="$ROOT/checks/sandbox_probe.rs"
 
 OUT=""
 STATUS=0
@@ -37,11 +41,19 @@ WORK=""
 
 CASES="
 test_real_bundle_passes
+test_outbound_connection_allowed_fails
+test_out_of_grant_read_allowed_fails
+test_not_sandboxed_fails
+test_marker_in_the_environment_does_not_pass
+test_marker_is_absent_from_the_tree
+test_existing_container_is_not_evidence
+test_unresolvable_symbol_fails
+test_probe_error_fails
+test_probe_reports_an_unsandboxed_pid_as_unsandboxed
 test_extra_key_fails_before_launch
 test_false_value_fails
 test_missing_key_fails
 test_no_sandbox_observed_fails_and_cleans_up
-test_marker_in_the_environment_passes
 test_nonexistent_path_fails
 test_plain_directory_fails
 test_directory_without_app_suffix_fails
@@ -95,6 +107,12 @@ expect_output_contains() {
   fail "expected the output to contain: $1. output: $OUT"
 }
 
+expect_output_lacks() {
+  case "$OUT" in
+    *"$1"*) fail "expected the output not to contain: $1. output: $OUT" ;;
+  esac
+}
+
 expect_no_bundle_process() {
   left="$(bundle_processes "$1")"
   [ -z "$left" ] || fail "processes of $1 are still running: $left"
@@ -107,6 +125,13 @@ resigned_copy() {
   cp -R "$APP" "$copy"
   codesign --force --sign - --entitlements "$2" "$copy" > /dev/null 2>&1 || return 1
   printf '%s' "$copy"
+}
+
+# A stand-in for `nozoki-sandbox-probe`, placed ahead of the real one on PATH. $2 is the sandboxed
+# line, $3 the out-of-grant read line, $4 the outbound connection line — each the value the real probe
+# would print, so one condition at a time can be made to fail without an unsandboxed bundle.
+probe_stub() {
+  make_stub "$1" nozoki-sandbox-probe "printf 'sandboxed: %s\nout-of-grant-read: %s\noutbound-connection: %s\n' $2 $3 $4"
 }
 
 write_entitlements() {
@@ -130,7 +155,43 @@ test_real_bundle_passes() {
   [ "$STATUS" -eq 0 ] || fail "expected exit 0 on the real bundle, got $STATUS. output: $OUT" || return 1
   expect_output_contains "$APP_SANDBOX_KEY" || return 1
   expect_output_contains "$USER_SELECTED_READ_ONLY_KEY" || return 1
-  expect_output_contains "sandbox observed: $SANDBOX_MARKER=" || return 1
+  expect_output_contains "sandboxed: yes" || return 1
+  expect_output_contains "out-of-grant-read: denied" || return 1
+  expect_output_contains "outbound-connection: denied" || return 1
+  expect_no_bundle_process "$APP"
+}
+
+# One condition at a time: the probe stub reports two of the three as held and one as not.
+test_outbound_connection_allowed_fails() {
+  mkdir -p "$WORK/stubs-outbound"
+  probe_stub "$WORK/stubs-outbound" yes denied allowed
+
+  run_bundle_sh_with_stubs "$WORK/stubs-outbound" "$APP"
+
+  expect_nonzero_status || return 1
+  expect_output_contains "an outbound network connection is not denied" || return 1
+  expect_no_bundle_process "$APP"
+}
+
+test_out_of_grant_read_allowed_fails() {
+  mkdir -p "$WORK/stubs-read"
+  probe_stub "$WORK/stubs-read" yes allowed denied
+
+  run_bundle_sh_with_stubs "$WORK/stubs-read" "$APP"
+
+  expect_nonzero_status || return 1
+  expect_output_contains "an out-of-grant file read is not denied" || return 1
+  expect_no_bundle_process "$APP"
+}
+
+test_not_sandboxed_fails() {
+  mkdir -p "$WORK/stubs-unsandboxed"
+  probe_stub "$WORK/stubs-unsandboxed" no denied denied
+
+  run_bundle_sh_with_stubs "$WORK/stubs-unsandboxed" "$APP"
+
+  expect_nonzero_status || return 1
+  expect_output_contains "the launched process is not sandboxed" || return 1
   expect_no_bundle_process "$APP"
 }
 
@@ -171,26 +232,88 @@ test_missing_key_fails() {
 
 test_no_sandbox_observed_fails_and_cleans_up() {
   mkdir -p "$WORK/stubs-nosandbox"
-  make_stub "$WORK/stubs-nosandbox" ps 'echo "/some/executable HOME=/Users/someone PATH=/usr/bin"'
+  probe_stub "$WORK/stubs-nosandbox" no allowed allowed
 
   run_bundle_sh_with_stubs "$WORK/stubs-nosandbox" "$APP"
 
   expect_nonzero_status || return 1
-  expect_output_contains "sandbox not found in the launched process" || return 1
+  expect_output_contains "the launched process is not sandboxed" || return 1
   expect_no_bundle_process "$APP"
 }
 
-# The positive twin of the case above. It separates "the script is right" from "the bundle is
-# sandboxed": with the marker present in the observed environment the script must pass.
-test_marker_in_the_environment_passes() {
+# The inverse of the case the legacy marker used to have: the launched process carries the marker and
+# the operating system says it is not sandboxed — the marker changes nothing (CP-41).
+test_marker_in_the_environment_does_not_pass() {
   mkdir -p "$WORK/stubs-marker"
-  make_stub "$WORK/stubs-marker" ps "echo \"/some/executable $SANDBOX_MARKER=com.kensaiapp.nozoki HOME=/Users/someone\""
+  probe_stub "$WORK/stubs-marker" no allowed allowed
 
-  run_bundle_sh_with_stubs "$WORK/stubs-marker" "$APP"
+  OUT="$(env "$LEGACY_MARKER=com.kensaiapp.nozoki" PATH="$WORK/stubs-marker:$PATH" "$BUNDLE_SH" "$APP" 2>&1)"
+  STATUS=$?
 
-  [ "$STATUS" -eq 0 ] || fail "expected exit 0 with the marker present, got $STATUS. output: $OUT" || return 1
-  expect_output_contains "sandbox observed: $SANDBOX_MARKER=com.kensaiapp.nozoki" || return 1
+  expect_nonzero_status || return 1
+  expect_output_contains "the launched process is not sandboxed" || return 1
   expect_no_bundle_process "$APP"
+}
+
+test_marker_is_absent_from_the_tree() {
+  hits="$(grep -n "$LEGACY_MARKER" "$BUNDLE_SH" "$ROOT/checks/tests/test_bundle.sh" || true)"
+  [ -z "$hits" ] || fail "the legacy marker is still in the tree: $hits"
+}
+
+# A container directory the bundle's identifier names is not evidence of a sandbox (CP-41). HOME is
+# redirected so the directory is created in the scratch area, never in the real ~/Library.
+test_existing_container_is_not_evidence() {
+  mkdir -p "$WORK/stubs-container" "$WORK/home/Library/Containers/com.kensaiapp.nozoki"
+  probe_stub "$WORK/stubs-container" no allowed allowed
+
+  OUT="$(HOME="$WORK/home" PATH="$WORK/stubs-container:$PATH" "$BUNDLE_SH" "$APP" 2>&1)"
+  STATUS=$?
+
+  expect_nonzero_status || return 1
+  expect_output_contains "the launched process is not sandboxed" || return 1
+  expect_no_bundle_process "$APP"
+}
+
+# `sandbox_check` cannot be resolved: the run fails naming the symbol, and says nothing that reads as a
+# pass or as a denial (CP-43).
+test_unresolvable_symbol_fails() {
+  mkdir -p "$WORK/stubs-unresolvable"
+  make_stub "$WORK/stubs-unresolvable" nozoki-sandbox-probe 'echo "nozoki-sandbox-probe: sandbox_check cannot be resolved" >&2; exit 2'
+
+  run_bundle_sh_with_stubs "$WORK/stubs-unresolvable" "$APP"
+
+  expect_nonzero_status || return 1
+  expect_output_contains "sandbox_check" || return 1
+  expect_output_lacks "sandboxed: yes" || return 1
+  expect_output_lacks "denied" || return 1
+  expect_no_bundle_process "$APP"
+}
+
+test_probe_error_fails() {
+  mkdir -p "$WORK/stubs-error"
+  make_stub "$WORK/stubs-error" nozoki-sandbox-probe 'echo "nozoki-sandbox-probe: sandbox_check returned an error" >&2; exit 1'
+
+  run_bundle_sh_with_stubs "$WORK/stubs-error" "$APP"
+
+  expect_nonzero_status || return 1
+  expect_output_contains "sandbox_check" || return 1
+  expect_output_lacks "sandboxed: yes" || return 1
+  expect_output_lacks "denied" || return 1
+  expect_no_bundle_process "$APP"
+}
+
+# Every other case stubs the probe, so this is the one that holds the real probe's output contract:
+# the suite's own shell is unsandboxed, and the compiled probe must say so in the lines the script parses.
+test_probe_reports_an_unsandboxed_pid_as_unsandboxed() {
+  mkdir -p "$WORK/probe-bin"
+  rustc --edition 2021 -O -o "$WORK/probe-bin/nozoki-sandbox-probe" "$PROBE_SOURCE" > "$WORK/probe-build.log" 2>&1 \
+    || fail "the probe source did not compile: $(cat "$WORK/probe-build.log" 2> /dev/null)" || return 1
+
+  OUT="$("$WORK/probe-bin/nozoki-sandbox-probe" "$$" 2>&1)"
+  STATUS=$?
+
+  [ "$STATUS" -eq 0 ] || fail "expected the probe to exit 0 on an unsandboxed pid, got $STATUS. output: $OUT" || return 1
+  expect_output_contains "sandboxed: no"
 }
 
 test_nonexistent_path_fails() {
