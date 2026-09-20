@@ -34,6 +34,10 @@ EXTRA_KEY="com.apple.security.files.bookmarks.app-scope"
 # make that grep find its own subject.
 LEGACY_MARKER="APP_SANDBOX""_CONTAINER_ID"
 PROBE_SOURCE="$ROOT/checks/sandbox_probe.rs"
+# The case without which the probe has not run (NFDR QC-25): the same probe, on the same bundle
+# re-signed with no entitlements, must report it NOT sandboxed. The runner, not a case, records that
+# it ran — a case cannot detect its own absence.
+CONTROL_CASE="test_negative_control_reports_unsandboxed"
 
 OUT=""
 STATUS=0
@@ -56,6 +60,10 @@ test_no_process_appears_fails
 test_more_than_one_process_fails
 test_already_running_copy_survives
 test_only_the_launched_pid_is_signalled
+test_negative_control_reports_unsandboxed
+test_negative_control_reported_sandboxed_fails_the_suite
+test_absent_control_fails_the_suite
+test_negative_control_refuses_the_c_r2_entitlement_set
 test_second_executable_fails
 test_renderer_file_outside_resources_fails
 test_renderer_file_under_resources_passes
@@ -350,6 +358,60 @@ printf 'sandboxed: yes\nout-of-grant-read: denied\noutbound-connection: denied\n
 
 # CP-45: one executable under Contents/MacOS, and every file of the renderer build under
 # Contents/Resources. Both are read before anything is launched.
+# CP-44: the negative control. `checks/bundle.sh` refuses to launch a bundle whose entitlements are not
+# exactly C-R2's, so the ordinary path cannot run the probe on a no-entitlement build; --negative-control
+# is the mode that does, and it passes only on a NOT-sandboxed report.
+test_negative_control_reports_unsandboxed() {
+  write_entitlements "$WORK/empty.plist"
+  copy="$(resigned_copy control "$WORK/empty.plist")" || fail "could not re-sign the copy" || return 1
+
+  run_bundle_sh --negative-control "$copy"
+
+  [ "$STATUS" -eq 0 ] || fail "expected exit 0 for the no-entitlement build, got $STATUS. output: $OUT" || return 1
+  expect_output_contains "sandboxed: no" || return 1
+  expect_no_bundle_process "$copy"
+}
+
+# The suite run as its own subject: a probe that reports the no-entitlement build sandboxed cannot tell
+# the two builds apart, so the suite must fail and say which case.
+test_negative_control_reported_sandboxed_fails_the_suite() {
+  mkdir -p "$WORK/stubs-control-sandboxed"
+  probe_stub "$WORK/stubs-control-sandboxed" yes denied denied
+
+  nested="$(PATH="$WORK/stubs-control-sandboxed:$PATH" NOZOKI_TEST_ONLY="$CONTROL_CASE" bash "$0" 2>&1)"
+  nested_status=$?
+
+  [ "$nested_status" -ne 0 ] || fail "the suite exited 0 with the control reported sandboxed. output: $nested" || return 1
+  case "$nested" in
+    *"FAIL $CONTROL_CASE"*) ;;
+    *) fail "the failing control case is not named. output: $nested" ;;
+  esac
+}
+
+# A run in which the control did not run is a failure, not a skip — recorded by the runner.
+test_absent_control_fails_the_suite() {
+  nested="$(NOZOKI_TEST_ONLY=test_missing_key_fails bash "$0" 2>&1)"
+  nested_status=$?
+
+  [ "$nested_status" -ne 0 ] || fail "the suite exited 0 although the negative control did not run. output: $nested" || return 1
+  case "$nested" in
+    *"the negative control did not run: $CONTROL_CASE"*) ;;
+    *) fail "no stated message. output: $nested" ;;
+  esac
+}
+
+# The mode is not a route past the gate: on a bundle carrying the C-R2 keys it refuses, unlaunched.
+test_negative_control_refuses_the_c_r2_entitlement_set() {
+  mkdir -p "$WORK/stubs-refuse"
+  make_stub "$WORK/stubs-refuse" open "echo \"\$@\" >> \"$WORK/open-refuse.log\""
+
+  run_bundle_sh_with_stubs "$WORK/stubs-refuse" --negative-control "$APP"
+
+  expect_nonzero_status || return 1
+  expect_output_contains "the entitlement set of" || return 1
+  [ ! -e "$WORK/open-refuse.log" ] || fail "the bundle was launched: $(cat "$WORK/open-refuse.log")"
+}
+
 test_second_executable_fails() {
   copy="$(valid_copy second-executable)" || fail "could not re-sign the copy" || return 1
   printf '#!/bin/sh\nexit 0\n' > "$copy/Contents/MacOS/second-tool"
@@ -650,10 +712,12 @@ cleanup() {
 trap cleanup EXIT
 
 failed=0
+ran=""
 for case_name in $CASES; do
   if [ -n "${NOZOKI_TEST_ONLY:-}" ] && [ "$case_name" != "$NOZOKI_TEST_ONLY" ]; then
     continue
   fi
+  ran="$ran $case_name"
   if result="$("$case_name" 2>&1)"; then
     echo "ok   $case_name"
   else
@@ -662,6 +726,16 @@ for case_name in $CASES; do
     failed=$((failed + 1))
   fi
 done
+
+# The runner records which cases ran, and a run without the control is a failure: without it the probe
+# has not run (NFDR QC-25).
+case "$ran " in
+  *" $CONTROL_CASE "*) ;;
+  *)
+    echo "test_bundle.sh: the negative control did not run: $CONTROL_CASE" >&2
+    failed=$((failed + 1))
+    ;;
+esac
 
 if [ "$failed" -ne 0 ]; then
   echo "test_bundle.sh: $failed case(s) failed" >&2
