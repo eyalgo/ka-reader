@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.1.0 — the launched sandbox is read from the operating system (sandbox_check, through a compiled probe), not from an environment marker
 # Version: 1.0.0 — first version: the wall proven on a built bundle (entitlements, then the launched sandbox)
 #
 # checks/bundle.sh <path-to-app> — proves the App Sandbox wall on a BUILT Nozoki.app.
@@ -13,8 +14,16 @@
 # USAGE
 #   checks/bundle.sh target/release/bundle/macos/Nozoki.app
 #   Exit 0 only when the entitlement set is exactly the expected one, every value boolean true, and
-#   the launched process's environment carries APP_SANDBOX_CONTAINER_ID. Every failure names its
-#   cause on stderr. On every exit path no process of the bundle is left running.
+#   the operating system reports the launched process sandboxed, an out-of-grant file read denied and
+#   an outbound network connection denied for it. Every failure names its cause on stderr. On every
+#   exit path no process of the bundle is left running.
+#
+# HOW THE OPERATING SYSTEM IS ASKED
+#   Only libSystem's sandbox_check answers, and no shell can call it, so checks/sandbox_probe.rs is
+#   compiled with rustc into this run's temporary directory and run as `nozoki-sandbox-probe <pid>`,
+#   found through PATH — the seam a test uses to stand one condition at a time in for the real probe.
+#   No environment variable and no container directory is evidence of a sandbox: a process can carry
+#   the one and a directory can outlive the other (docs/SDD.md § 4 C-I3; NFDR QC-25; ADR-0010).
 
 set -euo pipefail
 
@@ -41,7 +50,6 @@ executable_name="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$app/
 
 # --- the entitlement set is exactly the expected one ---
 
-SANDBOX_MARKER="APP_SANDBOX_CONTAINER_ID"
 LAUNCH_POLL_TICKS=80   # of 0.25 s: 20 s for the launched process to appear
 STOP_POLL_TICKS=20     # of 0.25 s: 5 s for it to exit after SIGTERM
 
@@ -125,6 +133,20 @@ done
 
 [ -z "$problems" ] || { printf '%s' "$problems" >&2; die "the entitlement set of $app is not the expected one; the bundle was not launched"; }
 
+# --- the probe that asks the operating system ---
+
+# Compiled before anything is launched: a run that cannot ask must not start the bundle. `rustc` is
+# required for the run, so it is guarded here rather than met later (the shell packet's tier 2,
+# `<CORE>/doctrine/engineering/languages/shell/toolchain.md` § What may be depended on).
+PROBE_SOURCE="$(cd "$(dirname "$0")" && pwd -P)/sandbox_probe.rs"
+command -v rustc > /dev/null 2>&1 || die "rustc not found on PATH — the sandbox probe (checks/sandbox_probe.rs) is compiled with it"
+[ -f "$PROBE_SOURCE" ] || die "the probe source is missing: $PROBE_SOURCE"
+mkdir -p "$work/probe-bin"
+rustc --edition 2021 -O -o "$work/probe-bin/nozoki-sandbox-probe" "$PROBE_SOURCE" 2> "$work/probe-build.log" \
+  || die "the sandbox probe did not compile: $(cat "$work/probe-build.log")"
+# Appended, not prepended: a directory ahead of it on PATH (a test's stand-in) is the one that answers.
+PATH="$PATH:$work/probe-bin"
+
 # --- launch it and observe the sandbox ---
 
 # Through LaunchServices, the route a user takes; a direct exec would test a path no user takes.
@@ -141,14 +163,41 @@ while [ -z "$pid" ] && [ "$ticks" -lt "$LAUNCH_POLL_TICKS" ]; do
 done
 [ -n "$pid" ] || die "cannot be launched: no process of $app appeared within $((LAUNCH_POLL_TICKS / 4)) seconds"
 
-# `ps` through PATH so a test can stub it. An empty environment reads as "not found", never as a crash.
-environment="$(ps -wwE -o command= -p "$pid" 2> /dev/null || true)"
-marker_value=""
-case " $environment " in
-  *" $SANDBOX_MARKER="*)
-    marker_value="${environment#*" $SANDBOX_MARKER="}"
-    marker_value="${marker_value%% *}"
-    ;;
+# The probe's own failure — sandbox_check unresolvable, or an error from it — is neither a pass nor
+# a denial (CP-43): the run ends here, naming what it could not read.
+if ! probe_output="$("nozoki-sandbox-probe" "$pid" 2> "$work/probe.err")"; then
+  die "the operating system's sandbox report for pid $pid could not be read: $(cat "$work/probe.err")"
+fi
+printf '%s\n' "$probe_output"
+
+problems=""
+case "
+$probe_output
+" in
+  *"
+sandboxed: yes
+"*) ;;
+  *) problems="${problems}condition not held: the launched process is not sandboxed
+" ;;
 esac
-[ -n "$marker_value" ] || die "sandbox not found in the launched process (pid $pid): $SANDBOX_MARKER is not in its environment"
-echo "sandbox observed: $SANDBOX_MARKER=$marker_value (pid $pid)"
+case "
+$probe_output
+" in
+  *"
+out-of-grant-read: denied
+"*) ;;
+  *) problems="${problems}condition not held: an out-of-grant file read is not denied
+" ;;
+esac
+case "
+$probe_output
+" in
+  *"
+outbound-connection: denied
+"*) ;;
+  *) problems="${problems}condition not held: an outbound network connection is not denied
+" ;;
+esac
+
+[ -z "$problems" ] || { printf '%s' "$problems" >&2; die "the wall does not hold on the launched process (pid $pid)"; }
+echo "sandbox observed: sandboxed, out-of-grant read denied, outbound connection denied (pid $pid)"
