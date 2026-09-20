@@ -56,6 +56,11 @@ test_no_process_appears_fails
 test_more_than_one_process_fails
 test_already_running_copy_survives
 test_only_the_launched_pid_is_signalled
+test_second_executable_fails
+test_renderer_file_outside_resources_fails
+test_renderer_file_under_resources_passes
+test_absent_frontend_dist_states_an_empty_set
+test_named_frontend_dist_that_does_not_exist_fails
 test_extra_key_fails_before_launch
 test_false_value_fails
 test_missing_key_fails
@@ -341,6 +346,87 @@ printf 'sandboxed: yes\nout-of-grant-read: denied\noutbound-connection: denied\n
   [ -n "$launched_pid" ] || fail "the script did not name the pid it launched. output: $OUT" || return 1
   ! process_is_running "$launched_pid" || fail "the launched pid $launched_pid is still running"
   process_is_running "$bystander" || fail "the second process (pid $bystander) was stopped with it"
+}
+
+# CP-45: one executable under Contents/MacOS, and every file of the renderer build under
+# Contents/Resources. Both are read before anything is launched.
+test_second_executable_fails() {
+  copy="$(valid_copy second-executable)" || fail "could not re-sign the copy" || return 1
+  printf '#!/bin/sh\nexit 0\n' > "$copy/Contents/MacOS/second-tool"
+  chmod +x "$copy/Contents/MacOS/second-tool"
+  mkdir -p "$WORK/stubs-second"
+  make_stub "$WORK/stubs-second" open "echo \"\$@\" >> \"$WORK/open-second.log\""
+
+  run_bundle_sh_with_stubs "$WORK/stubs-second" "$copy"
+
+  expect_nonzero_status || return 1
+  expect_output_contains "Contents/MacOS/second-tool" || return 1
+  [ ! -e "$WORK/open-second.log" ] || fail "the copy was launched: $(cat "$WORK/open-second.log")"
+}
+
+# A tauri.conf.json stand-in whose build.frontendDist is $2, written to $1.
+write_tauri_conf() {
+  printf '{"build":{"frontendDist":"%s"}}\n' "$2" > "$1"
+}
+
+# The renderer build the stubbed configuration names: one stylesheet.
+make_renderer_build() {
+  mkdir -p "$WORK/renderer-build/assets"
+  echo 'body {}' > "$WORK/renderer-build/assets/style.css"
+}
+
+test_renderer_file_outside_resources_fails() {
+  make_renderer_build
+  write_tauri_conf "$WORK/conf-renderer.json" "$WORK/renderer-build"
+  copy="$(valid_copy renderer-outside)" || fail "could not re-sign the copy" || return 1
+  mkdir -p "$copy/Contents/MacOS/assets"
+  echo 'body {}' > "$copy/Contents/MacOS/assets/style.css"
+  mkdir -p "$WORK/stubs-renderer"
+  make_stub "$WORK/stubs-renderer" open "echo \"\$@\" >> \"$WORK/open-renderer.log\""
+
+  OUT="$(BUNDLE_SH_TAURI_CONF="$WORK/conf-renderer.json" PATH="$WORK/stubs-renderer:$PATH" "$BUNDLE_SH" "$copy" 2>&1)"
+  STATUS=$?
+
+  expect_nonzero_status || return 1
+  expect_output_contains "Contents/MacOS/assets/style.css" || return 1
+  [ ! -e "$WORK/open-renderer.log" ] || fail "the copy was launched: $(cat "$WORK/open-renderer.log")"
+}
+
+# The counterpart: the same renderer file, where the rule wants it, does not stop the run.
+test_renderer_file_under_resources_passes() {
+  make_renderer_build
+  write_tauri_conf "$WORK/conf-inside.json" "$WORK/renderer-build"
+  copy="$(valid_copy renderer-inside)" || fail "could not re-sign the copy" || return 1
+  mkdir -p "$copy/Contents/Resources/assets"
+  echo 'body {}' > "$copy/Contents/Resources/assets/style.css"
+
+  OUT="$(BUNDLE_SH_TAURI_CONF="$WORK/conf-inside.json" "$BUNDLE_SH" "$copy" 2>&1)"
+  STATUS=$?
+
+  [ "$STATUS" -eq 0 ] || fail "expected exit 0, got $STATUS. output: $OUT" || return 1
+  expect_no_bundle_process "$copy"
+}
+
+# The committed configuration carries no frontendDist (crates/nozoki-app/tests/config.rs holds that), so
+# the renderer half compares against an empty set — and says so, rather than passing in silence.
+test_absent_frontend_dist_states_an_empty_set() {
+  run_bundle_sh "$APP"
+
+  [ "$STATUS" -eq 0 ] || fail "expected exit 0 on the real bundle, got $STATUS. output: $OUT" || return 1
+  expect_output_contains "the renderer set is empty"
+}
+
+test_named_frontend_dist_that_does_not_exist_fails() {
+  write_tauri_conf "$WORK/conf-missing.json" "$WORK/no-such-renderer-build"
+  mkdir -p "$WORK/stubs-missing"
+  make_stub "$WORK/stubs-missing" open "echo \"\$@\" >> \"$WORK/open-missing.log\""
+
+  OUT="$(BUNDLE_SH_TAURI_CONF="$WORK/conf-missing.json" PATH="$WORK/stubs-missing:$PATH" "$BUNDLE_SH" "$APP" 2>&1)"
+  STATUS=$?
+
+  expect_nonzero_status || return 1
+  expect_output_contains "$WORK/no-such-renderer-build" || return 1
+  [ ! -e "$WORK/open-missing.log" ] || fail "the bundle was launched: $(cat "$WORK/open-missing.log")"
 }
 
 test_extra_key_fails_before_launch() {
