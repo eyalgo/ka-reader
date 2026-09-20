@@ -8,12 +8,19 @@ repository — seeing what has changed. Look, don't touch.
 Nozoki never changes the folder you point it at. It writes no file in it, and it runs no Git
 command that alters your repository's state.
 
-> **Status: defined, not yet built.** The product is fully specified — what it is
-> (`docs/PRD.md`), what it does (`docs/SRS.md`, `docs/fdr.md`), how it looks and reads
-> (`docs/UXD.md`, `docs/DESIGN.md`, `docs/CONTENT.md`), and how it is built (`docs/SDD.md`,
-> `docs/adr/`, `docs/nfdr.md`) — and no line of it has been written. There is no release yet.
-> When there is one, it is a `.dmg` on a GitHub Release for macOS 14 or later, under the MIT
-> licence. The original proposal is kept at [`docs/proposal.md`](docs/proposal.md).
+> **Status: specified, partly built.** What exists now: the Rust library that reads a folder
+> (`crates/nozoki-core`), the Tauri 2 host (`crates/nozoki-app`) and the TypeScript renderer
+> (`nozoki-ui`). In the app you choose a folder through the system's Open panel and its root
+> entries are listed. Viewing a file, the Git view and live refresh are not built yet. The product
+> is specified in full — what it is (`docs/PRD.md`), what it does (`docs/SRS.md`, `docs/fdr.md`),
+> how it looks and reads (`docs/UXD.md`, `docs/DESIGN.md`, `docs/CONTENT.md`), and how it is built
+> (`docs/SDD.md`, `docs/adr/`, `docs/nfdr.md`). There is no release yet. When there is one, it is a
+> `.dmg` on a GitHub Release for macOS 14 or later, under the MIT licence.
+>
+> Nozoki is before version 1.0.0. Until 1.0.0, anything in it may change: what it does, how it
+> looks, and how you start it.
+>
+> The original proposal is kept at [`docs/proposal.md`](docs/proposal.md).
 
 ## What it is
 

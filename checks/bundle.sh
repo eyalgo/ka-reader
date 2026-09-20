@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+# Version: 1.4.0 — --negative-control: the same launch-and-probe path on a no-entitlement build, passing only when it is reported NOT sandboxed
+# Version: 1.3.0 — one executable under Contents/MacOS, and the renderer build under Contents/Resources, read before the launch
+# Version: 1.2.0 — one process, found by its executable path and stopped alone (no pattern match, no pkill)
+# Version: 1.1.0 — the launched sandbox is read from the operating system (sandbox_check, through a compiled probe), not from an environment marker
 # Version: 1.0.0 — first version: the wall proven on a built bundle (entitlements, then the launched sandbox)
 #
 # checks/bundle.sh <path-to-app> — proves the App Sandbox wall on a BUILT Nozoki.app.
@@ -12,9 +16,25 @@
 #
 # USAGE
 #   checks/bundle.sh target/release/bundle/macos/Nozoki.app
+#   checks/bundle.sh --negative-control <path-to-app>
+#     The control: the same launch-and-probe path, but the bundle's entitlement set must be EMPTY and
+#     the run passes only when the operating system reports the launched process NOT sandboxed. It
+#     cannot pass on a bundle carrying the C-R2 keys, so it is not a route past the gate above. It
+#     exists because the ordinary path refuses to launch anything but C-R2's set, and a probe that
+#     cannot tell the two builds apart has not run (NFDR QC-25).
 #   Exit 0 only when the entitlement set is exactly the expected one, every value boolean true, and
-#   the launched process's environment carries APP_SANDBOX_CONTAINER_ID. Every failure names its
-#   cause on stderr. On every exit path no process of the bundle is left running.
+#   the operating system reports the launched process sandboxed, an out-of-grant file read denied and
+#   an outbound network connection denied for it. Every failure names its cause on stderr. On every
+#   exit path the one process this run launched, and recorded, is stopped — and only that one: a
+#   process of the same bundle already running when the script started, or started by anything else
+#   while it ran, is never signalled.
+#
+# HOW THE OPERATING SYSTEM IS ASKED
+#   Only libSystem's sandbox_check answers, and no shell can call it, so checks/sandbox_probe.rs is
+#   compiled with rustc into this run's temporary directory and run as `nozoki-sandbox-probe <pid>`,
+#   found through PATH — the seam a test uses to stand one condition at a time in for the real probe.
+#   No environment variable and no container directory is evidence of a sandbox: a process can carry
+#   the one and a directory can outlive the other (docs/SDD.md § 4 C-I3; NFDR QC-25; ADR-0010).
 
 set -euo pipefail
 
@@ -22,8 +42,13 @@ die() { echo "bundle.sh: $*" >&2; exit 1; }
 
 # --- args ---
 
+negative_control=0
+if [ "${1:-}" = "--negative-control" ]; then
+  negative_control=1
+  shift
+fi
 app="${1:-}"
-[ -n "$app" ] || die "usage: checks/bundle.sh <path-to-app>"
+[ -n "$app" ] || die "usage: checks/bundle.sh [--negative-control] <path-to-app>"
 
 # --- the path is a launchable application bundle ---
 
@@ -41,33 +66,43 @@ executable_name="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$app/
 
 # --- the entitlement set is exactly the expected one ---
 
-SANDBOX_MARKER="APP_SANDBOX_CONTAINER_ID"
-LAUNCH_POLL_TICKS=80   # of 0.25 s: 20 s for the launched process to appear
+# An override for a caller that must not wait the full time (a test with no process to wait for).
+LAUNCH_POLL_TICKS="${BUNDLE_SH_LAUNCH_TICKS:-80}"   # of 0.25 s: 20 s for the launched process to appear
 STOP_POLL_TICKS=20     # of 0.25 s: 5 s for it to exit after SIGTERM
 
-# Every process whose executable sits inside the bundle. Anchored at the start of the command line,
-# so `open`, `codesign` and this script — which carry the .app path, not the executable's — do not
-# match.
-bundle_pattern="^$(printf '%s' "$app" | sed 's/[][\.*^$(){}?+|/]/\\&/g')/Contents/MacOS/"
-launched=0
+# The main process is identified by its absolute executable path — never by a pattern over command
+# lines, which would also match every process that merely mentions the bundle. `ps` through PATH so a
+# test can stub it; an unreadable listing reads as "none found", never as a crash.
+bundle_executable="$app/Contents/MacOS/$executable_name"
+executable_pids() {
+  { ps -axo pid=,comm= 2> /dev/null || true; } | while read -r candidate_pid candidate_path; do
+    if [ "$candidate_path" = "$bundle_executable" ]; then
+      echo "$candidate_pid"
+    fi
+  done
+}
 
-bundle_pids() { pgrep -f "$bundle_pattern" || true; }
+# The one pid this run launched. Empty until it has been found and recorded, so a run that never
+# recorded one has nothing of its own to stop.
+launched_pid=""
 
-# On every exit path, leave no process of the bundle running. Only once this run has launched it:
-# a bundle that was never launched has nothing of ours to stop.
-stop_bundle_processes() {
-  [ "$launched" -eq 1 ] || return 0
-  pkill -TERM -f "$bundle_pattern" 2> /dev/null || true
+# On every exit path, stop the pid this run recorded and no other. Whatever else carries the same
+# executable path is not this run's.
+stop_launched_process() {
+  [ -n "$launched_pid" ] || return 0
+  kill -TERM "$launched_pid" 2> /dev/null || true
   ticks=0
-  while [ -n "$(bundle_pids)" ] && [ "$ticks" -lt "$STOP_POLL_TICKS" ]; do
+  while kill -0 "$launched_pid" 2> /dev/null && [ "$ticks" -lt "$STOP_POLL_TICKS" ]; do
     sleep 0.25
     ticks=$((ticks + 1))
   done
-  pkill -KILL -f "$bundle_pattern" 2> /dev/null || true
+  if kill -0 "$launched_pid" 2> /dev/null; then
+    kill -KILL "$launched_pid" 2> /dev/null || true
+  fi
 }
 
 work="$(mktemp -d)"
-trap 'stop_bundle_processes; rm -rf "$work"' EXIT
+trap 'stop_launched_process; rm -rf "$work"' EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
 
@@ -100,6 +135,11 @@ while IFS= read -r line; do
   echo "entitlement: $key = $value"
   declared_keys="$declared_keys$key
 "
+  if [ "$negative_control" -eq 1 ]; then
+    problems="${problems}entitlement present in the negative control: $key
+"
+    continue
+  fi
   case "
 $EXPECTED_ENTITLEMENTS
 " in
@@ -112,43 +152,171 @@ $key
   esac
 done <<< "$entitlement_lines"
 
-for expected_key in $EXPECTED_ENTITLEMENTS; do
-  case "
+# The control expects no entitlement at all, so no key can be missing from it.
+if [ "$negative_control" -eq 0 ]; then
+  for expected_key in $EXPECTED_ENTITLEMENTS; do
+    case "
 $declared_keys" in
-    *"
+      *"
 $expected_key
 "*) ;;
-    *) problems="${problems}missing entitlement: $expected_key
+      *) problems="${problems}missing entitlement: $expected_key
 " ;;
-  esac
-done
+    esac
+  done
+fi
 
 [ -z "$problems" ] || { printf '%s' "$problems" >&2; die "the entitlement set of $app is not the expected one; the bundle was not launched"; }
 
+# --- the bundle holds one executable, and the renderer build sits under Contents/Resources ---
+
+# Read before the probe is compiled and before anything is launched: a bundle with a second
+# executable, or a renderer file where the sandbox review does not expect it, is refused unstarted
+# (NFDR QC-55).
+extra_executables="$(find "$app/Contents/MacOS" -type f -perm -100 | LC_ALL=C sort | tail -n +2)"
+if [ -n "$extra_executables" ]; then
+  printf 'extra executable: %s\n' "${extra_executables//"$app/"/}" >&2
+  die "the bundle holds more than one executable under Contents/MacOS; the bundle was not launched"
+fi
+
+# The renderer build the bundle ships is what tauri.conf.json's build.frontendDist names, read from the
+# committed configuration and not from a build directory that may not exist. The committed
+# configuration carries no such key on purpose — the bundle command supplies it after the renderer
+# build (crates/nozoki-app/tests/config.rs) — so the set is normally empty, and the script says so.
+# An override for a caller that must stand another configuration in (a test).
+TAURI_CONF="${BUNDLE_SH_TAURI_CONF:-$(cd "$(dirname "$0")/.." && pwd -P)/crates/nozoki-app/tauri.conf.json}"
+[ -f "$TAURI_CONF" ] || die "the Tauri configuration is missing: $TAURI_CONF"
+# plutil ships with macOS and reads JSON; an absent key is a non-zero exit, read as "no value".
+frontend_dist="$(plutil -extract build.frontendDist raw -o - "$TAURI_CONF" 2> /dev/null || true)"
+if [ -z "$frontend_dist" ]; then
+  echo "renderer build: build.frontendDist is absent from $TAURI_CONF — the renderer set is empty, so no renderer file was checked"
+else
+  case "$frontend_dist" in
+    /*) ;;
+    *) frontend_dist="$(dirname "$TAURI_CONF")/$frontend_dist" ;;
+  esac
+  [ -d "$frontend_dist" ] || die "build.frontendDist names a directory that does not exist: $frontend_dist"
+  misplaced=""
+  renderer_files="$(cd "$frontend_dist" && find . -type f | sed 's#^\./##' | LC_ALL=C sort)"
+  # Every place a renderer path is looked for: Contents itself, and each of its entries bar
+  # Resources. Contents is as much "outside Contents/Resources" as Contents/MacOS is, so a renderer
+  # file dropped at the root of Contents is misplaced too — it was reached by no section while the
+  # entries alone were walked, and the run reported the bundle clean.
+  search_roots="$app/Contents"
+  for section in "$app/Contents"/*; do
+    [ "$section" != "$app/Contents/Resources" ] || continue
+    search_roots="$search_roots
+$section"
+  done
+  while IFS= read -r search_root; do
+    [ -n "$search_root" ] || continue
+    while IFS= read -r renderer_file; do
+      [ -n "$renderer_file" ] || continue
+      candidate="$search_root/$renderer_file"
+      # A renderer build carrying its own top-level Resources/ would otherwise be flagged for
+      # sitting in the one directory the rule blesses.
+      case "$candidate" in "$app/Contents/Resources/"*) continue ;; esac
+      if [ -e "$candidate" ]; then
+        misplaced="${misplaced}renderer file outside Contents/Resources: ${candidate#"$app"/}
+"
+      fi
+    done <<< "$renderer_files"
+  done <<< "$search_roots"
+  [ -z "$misplaced" ] || { printf '%s' "$misplaced" >&2; die "the renderer build is not under Contents/Resources; the bundle was not launched"; }
+  echo "renderer build: every file of $frontend_dist is under Contents/Resources"
+fi
+
+# --- the probe that asks the operating system ---
+
+# Compiled before anything is launched: a run that cannot ask must not start the bundle. `rustc` is
+# required for the run, so it is guarded here rather than met later (the shell packet's tier 2,
+# `<CORE>/doctrine/engineering/languages/shell/toolchain.md` § What may be depended on).
+PROBE_SOURCE="$(cd "$(dirname "$0")" && pwd -P)/sandbox_probe.rs"
+command -v rustc > /dev/null 2>&1 || die "rustc not found on PATH — the sandbox probe (checks/sandbox_probe.rs) is compiled with it"
+[ -f "$PROBE_SOURCE" ] || die "the probe source is missing: $PROBE_SOURCE"
+mkdir -p "$work/probe-bin"
+rustc --edition 2021 -O -o "$work/probe-bin/nozoki-sandbox-probe" "$PROBE_SOURCE" 2> "$work/probe-build.log" \
+  || die "the sandbox probe did not compile: $(cat "$work/probe-build.log")"
+# Appended, not prepended: a directory ahead of it on PATH (a test's stand-in) is the one that answers.
+PATH="$PATH:$work/probe-bin"
+
 # --- launch it and observe the sandbox ---
 
+# An instance already running would make "the process this run launched" unknowable, and stopping it
+# afterwards would stop someone else's. Refused before anything is launched.
+already_running="$(executable_pids | tr '\n' ' ')"
+[ -z "$already_running" ] \
+  || die "an instance was already running (pid ${already_running% }) with the executable path $bundle_executable; nothing was launched"
+
 # Through LaunchServices, the route a user takes; a direct exec would test a path no user takes.
-launched=1
 open -n -g "$app" || die "cannot be launched: open refused $app"
 
 # Polled for a bounded time rather than slept on once.
-pid=""
+found_pids=""
 ticks=0
-while [ -z "$pid" ] && [ "$ticks" -lt "$LAUNCH_POLL_TICKS" ]; do
-  pid="$(bundle_pids | head -1 || true)"
-  [ -n "$pid" ] || sleep 0.25
+while [ -z "$found_pids" ] && [ "$ticks" -lt "$LAUNCH_POLL_TICKS" ]; do
+  found_pids="$(executable_pids | tr '\n' ' ')"
+  [ -n "$found_pids" ] || sleep 0.25
   ticks=$((ticks + 1))
 done
-[ -n "$pid" ] || die "cannot be launched: no process of $app appeared within $((LAUNCH_POLL_TICKS / 4)) seconds"
+[ -n "$found_pids" ] \
+  || die "cannot be launched: no process appeared — none has the executable path $bundle_executable within $((LAUNCH_POLL_TICKS / 4)) seconds"
+set -- $found_pids
+# Nothing is recorded, so nothing is signalled: which of them this run launched cannot be told.
+[ "$#" -eq 1 ] || die "more than one process has the executable path $bundle_executable after the launch (pids $found_pids); none was stopped, since this run cannot tell which one it launched"
+pid="$1"
+launched_pid="$pid"
+echo "launched: pid $pid ($bundle_executable)"
 
-# `ps` through PATH so a test can stub it. An empty environment reads as "not found", never as a crash.
-environment="$(ps -wwE -o command= -p "$pid" 2> /dev/null || true)"
-marker_value=""
-case " $environment " in
-  *" $SANDBOX_MARKER="*)
-    marker_value="${environment#*" $SANDBOX_MARKER="}"
-    marker_value="${marker_value%% *}"
-    ;;
+# The probe's own failure — sandbox_check unresolvable, or an error from it — is neither a pass nor
+# a denial (CP-43): the run ends here, naming what it could not read.
+if ! probe_output="$("nozoki-sandbox-probe" "$pid" 2> "$work/probe.err")"; then
+  die "the operating system's sandbox report for pid $pid could not be read: $(cat "$work/probe.err")"
+fi
+printf '%s\n' "$probe_output"
+
+# The control asks one thing: is the launched process NOT sandboxed. An entitled build the probe calls
+# sandboxed is the answer the control was built to expect, so the same report on an unentitled build
+# means the probe cannot tell the two apart (CP-59: that is the result, and it is not worked around).
+if [ "$negative_control" -eq 1 ]; then
+  case "
+$probe_output
+" in
+    *"
+sandboxed: no
+"*) echo "negative control: the operating system reports the launched process not sandboxed (pid $pid)"; exit 0 ;;
+    *) die "the negative control was reported sandboxed (pid $pid): the probe cannot tell a build with the entitlements from one without them" ;;
+  esac
+fi
+
+problems=""
+case "
+$probe_output
+" in
+  *"
+sandboxed: yes
+"*) ;;
+  *) problems="${problems}condition not held: the launched process is not sandboxed
+" ;;
 esac
-[ -n "$marker_value" ] || die "sandbox not found in the launched process (pid $pid): $SANDBOX_MARKER is not in its environment"
-echo "sandbox observed: $SANDBOX_MARKER=$marker_value (pid $pid)"
+case "
+$probe_output
+" in
+  *"
+out-of-grant-read: denied
+"*) ;;
+  *) problems="${problems}condition not held: an out-of-grant file read is not denied
+" ;;
+esac
+case "
+$probe_output
+" in
+  *"
+outbound-connection: denied
+"*) ;;
+  *) problems="${problems}condition not held: an outbound network connection is not denied
+" ;;
+esac
+
+[ -z "$problems" ] || { printf '%s' "$problems" >&2; die "the wall does not hold on the launched process (pid $pid)"; }
+echo "sandbox observed: sandboxed, out-of-grant read denied, outbound connection denied (pid $pid)"

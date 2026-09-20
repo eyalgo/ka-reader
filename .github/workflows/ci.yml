@@ -1,0 +1,105 @@
+# The wall, proven on every push: build the app, run the gates, then run the checks that read the built
+# bundle and the machine it ran on.
+#
+# One job, one macOS image, every step fatal: a step that exits non-zero is the job's verdict, and the
+# run is green only when every step exits 0. Nothing here supplies a way to sign and no repository
+# secret is read; the bundle is ad-hoc signed by crates/nozoki-app/tauri.conf.json alone.
+
+name: CI
+
+on:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  wall:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      # package.json `engines.node` is "24" and `packageManager` pins pnpm, which Corepack reads.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Build the workspace
+        run: cargo build --workspace --locked
+
+      - name: Install and build the renderer
+        run: (cd nozoki-ui && pnpm install --frozen-lockfile && pnpm exec vite build)
+
+      - name: Test gate
+        run: cargo test --workspace --locked && (cd nozoki-ui && pnpm exec vitest run)
+
+      # The Tauri CLI reads tauri.conf.json from its working directory, and this product keeps it in
+      # crates/nozoki-app. `build.frontendDist` is supplied here, after the renderer build: the
+      # committed config must not carry it, because a configured directory that does not exist stops
+      # `cargo build` on a clean clone. `--locked` reaches cargo through the arguments after `--`.
+      - name: Build Nozoki.app
+        working-directory: crates/nozoki-app
+        run: ../../nozoki-ui/node_modules/.bin/tauri build --ci --bundles app --config '{"build":{"frontendDist":"../../nozoki-ui/dist"}}' -- --locked
+
+      - name: Bundle probe
+        run: checks/bundle.sh target/release/bundle/macos/Nozoki.app
+
+      # The probe's negative control runs here: without it the probe has not run.
+      - name: Bundle probe suite
+        run: checks/tests/test_bundle.sh
+
+      - name: Read-only, plain folder
+        run: checks/read-only.sh checks/fixtures/plain
+
+      - name: Read-only, repository
+        run: checks/read-only.sh checks/fixtures/repo
+
+      - name: No-network dependency list
+        run: checks/no-network.sh
+
+      # The app's own log is written by a launch. Nothing above this step leaves one behind, so
+      # checks/own-state.sh must come after it and never before.
+      # Reading the app's container can wait on an operating-system consent prompt, so the reader runs
+      # as a child that is polled for a fixed number of ticks, and the step names what it was reading
+      # when the ticks run out. A step timeout would cancel the run and name nothing.
+      - name: Launch the built bundle
+        env:
+          CONTAINER_WAIT_TICKS: 240
+        run: |
+          log="$HOME/Library/Containers/com.kensaiapp.nozoki/Data/Library/Logs/nozoki.log"
+          open target/release/bundle/macos/Nozoki.app
+          ( until [ -f "$log" ]; do sleep 0.25; done ) &
+          reader=$!
+          ticks=0
+          while kill -0 "$reader" 2> /dev/null && [ "$ticks" -lt "$CONTAINER_WAIT_TICKS" ]; do
+            sleep 0.25
+            ticks=$((ticks + 1))
+          done
+          if kill -0 "$reader" 2> /dev/null; then
+            kill -KILL "$reader" 2> /dev/null
+            echo "ci: no log appeared at $log within $CONTAINER_WAIT_TICKS ticks of 0.25s. Reading the app's own container is known to wait on an operating-system consent prompt." >&2
+            exit 1
+          fi
+          wait "$reader"
+
+      # Last: it reads what the launch above left behind.
+      - name: Own state
+        env:
+          CONTAINER_WAIT_TICKS: 240
+        run: |
+          log="$HOME/Library/Containers/com.kensaiapp.nozoki/Data/Library/Logs/nozoki.log"
+          checks/own-state.sh &
+          reader=$!
+          ticks=0
+          while kill -0 "$reader" 2> /dev/null && [ "$ticks" -lt "$CONTAINER_WAIT_TICKS" ]; do
+            sleep 0.25
+            ticks=$((ticks + 1))
+          done
+          if kill -0 "$reader" 2> /dev/null; then
+            kill -KILL "$reader" 2> /dev/null
+            echo "ci: checks/own-state.sh did not finish reading $log within $CONTAINER_WAIT_TICKS ticks of 0.25s. Reading the app's own container is known to wait on an operating-system consent prompt." >&2
+            exit 1
+          fi
+          wait "$reader"
