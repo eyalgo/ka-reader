@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.4.0 — --negative-control: the same launch-and-probe path on a no-entitlement build, passing only when it is reported NOT sandboxed
 # Version: 1.3.0 — one executable under Contents/MacOS, and the renderer build under Contents/Resources, read before the launch
 # Version: 1.2.0 — one process, found by its executable path and stopped alone (no pattern match, no pkill)
 # Version: 1.1.0 — the launched sandbox is read from the operating system (sandbox_check, through a compiled probe), not from an environment marker
@@ -15,6 +16,12 @@
 #
 # USAGE
 #   checks/bundle.sh target/release/bundle/macos/Nozoki.app
+#   checks/bundle.sh --negative-control <path-to-app>
+#     The control: the same launch-and-probe path, but the bundle's entitlement set must be EMPTY and
+#     the run passes only when the operating system reports the launched process NOT sandboxed. It
+#     cannot pass on a bundle carrying the C-R2 keys, so it is not a route past the gate above. It
+#     exists because the ordinary path refuses to launch anything but C-R2's set, and a probe that
+#     cannot tell the two builds apart has not run (NFDR QC-25).
 #   Exit 0 only when the entitlement set is exactly the expected one, every value boolean true, and
 #   the operating system reports the launched process sandboxed, an out-of-grant file read denied and
 #   an outbound network connection denied for it. Every failure names its cause on stderr. On every
@@ -35,8 +42,13 @@ die() { echo "bundle.sh: $*" >&2; exit 1; }
 
 # --- args ---
 
+negative_control=0
+if [ "${1:-}" = "--negative-control" ]; then
+  negative_control=1
+  shift
+fi
 app="${1:-}"
-[ -n "$app" ] || die "usage: checks/bundle.sh <path-to-app>"
+[ -n "$app" ] || die "usage: checks/bundle.sh [--negative-control] <path-to-app>"
 
 # --- the path is a launchable application bundle ---
 
@@ -123,6 +135,11 @@ while IFS= read -r line; do
   echo "entitlement: $key = $value"
   declared_keys="$declared_keys$key
 "
+  if [ "$negative_control" -eq 1 ]; then
+    problems="${problems}entitlement present in the negative control: $key
+"
+    continue
+  fi
   case "
 $EXPECTED_ENTITLEMENTS
 " in
@@ -135,16 +152,19 @@ $key
   esac
 done <<< "$entitlement_lines"
 
-for expected_key in $EXPECTED_ENTITLEMENTS; do
-  case "
+# The control expects no entitlement at all, so no key can be missing from it.
+if [ "$negative_control" -eq 0 ]; then
+  for expected_key in $EXPECTED_ENTITLEMENTS; do
+    case "
 $declared_keys" in
-    *"
+      *"
 $expected_key
 "*) ;;
-    *) problems="${problems}missing entitlement: $expected_key
+      *) problems="${problems}missing entitlement: $expected_key
 " ;;
-  esac
-done
+    esac
+  done
+fi
 
 [ -z "$problems" ] || { printf '%s' "$problems" >&2; die "the entitlement set of $app is not the expected one; the bundle was not launched"; }
 
@@ -240,6 +260,20 @@ if ! probe_output="$("nozoki-sandbox-probe" "$pid" 2> "$work/probe.err")"; then
   die "the operating system's sandbox report for pid $pid could not be read: $(cat "$work/probe.err")"
 fi
 printf '%s\n' "$probe_output"
+
+# The control asks one thing: is the launched process NOT sandboxed. An entitled build the probe calls
+# sandboxed is the answer the control was built to expect, so the same report on an unentitled build
+# means the probe cannot tell the two apart (CP-59: that is the result, and it is not worked around).
+if [ "$negative_control" -eq 1 ]; then
+  case "
+$probe_output
+" in
+    *"
+sandboxed: no
+"*) echo "negative control: the operating system reports the launched process not sandboxed (pid $pid)"; exit 0 ;;
+    *) die "the negative control was reported sandboxed (pid $pid): the probe cannot tell a build with the entitlements from one without them" ;;
+  esac
+fi
 
 problems=""
 case "

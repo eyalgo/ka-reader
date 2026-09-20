@@ -61,6 +61,7 @@ test_more_than_one_process_fails
 test_already_running_copy_survives
 test_only_the_launched_pid_is_signalled
 test_negative_control_reports_unsandboxed
+test_negative_control_reported_sandboxed_fails
 test_negative_control_reported_sandboxed_fails_the_suite
 test_absent_control_fails_the_suite
 test_negative_control_refuses_the_c_r2_entitlement_set
@@ -369,6 +370,22 @@ test_negative_control_reports_unsandboxed() {
 
   [ "$STATUS" -eq 0 ] || fail "expected exit 0 for the no-entitlement build, got $STATUS. output: $OUT" || return 1
   expect_output_contains "sandboxed: no" || return 1
+  expect_no_bundle_process "$copy"
+}
+
+# The script's own judgement, on its own: an unentitled build the operating system reports sandboxed
+# means the probe cannot tell the two builds apart, and the control fails. The suite-level case below
+# would fail on the control case's own assertion whatever the script decided, so it cannot carry this.
+test_negative_control_reported_sandboxed_fails() {
+  write_entitlements "$WORK/empty-judged.plist"
+  copy="$(resigned_copy control-judged "$WORK/empty-judged.plist")" || fail "could not re-sign the copy" || return 1
+  mkdir -p "$WORK/stubs-control-judged"
+  probe_stub "$WORK/stubs-control-judged" yes denied denied
+
+  run_bundle_sh_with_stubs "$WORK/stubs-control-judged" --negative-control "$copy"
+
+  expect_nonzero_status || return 1
+  expect_output_contains "the negative control was reported sandboxed" || return 1
   expect_no_bundle_process "$copy"
 }
 
