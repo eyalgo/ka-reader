@@ -59,6 +59,7 @@ test_probe_fails_on_a_pid_that_does_not_exist
 test_instance_already_running_fails_before_launch
 test_no_process_appears_fails
 test_more_than_one_process_fails
+test_more_than_one_process_signals_neither
 test_already_running_copy_survives
 test_only_the_launched_pid_is_signalled
 test_negative_control_reports_unsandboxed
@@ -68,6 +69,7 @@ test_absent_control_fails_the_suite
 test_negative_control_refuses_the_c_r2_entitlement_set
 test_second_executable_fails
 test_renderer_file_outside_resources_fails
+test_renderer_file_directly_under_contents_fails
 test_renderer_file_under_resources_passes
 test_absent_frontend_dist_states_an_empty_set
 test_named_frontend_dist_that_does_not_exist_fails
@@ -325,6 +327,31 @@ test_more_than_one_process_fails() {
   expect_output_contains "more than one process"
 }
 
+# CP-46 binds EVERY exit path: the script stops the process it launched and stops nothing else. On this
+# path it recorded no pid — it cannot tell which of the two it launched — so it must signal neither.
+# The two processes are real, so "still running afterwards" is a fact about the machine and not about
+# what a stub reported; the case above uses invented pids and cannot assert survival at all. Without
+# this, a stop that went back to signalling everything it found (the pkill-by-pattern defect CP-46
+# exists to retire) would leave the whole suite green.
+test_more_than_one_process_signals_neither() {
+  executable="$(bundle_executable_of "$APP")"
+  first="$(sleep 120 > /dev/null 2>&1 & echo $!)"
+  second="$(sleep 120 > /dev/null 2>&1 & echo $!)"
+  echo "$first" >> "$WORK/started-pids"
+  echo "$second" >> "$WORK/started-pids"
+
+  mkdir -p "$WORK/stubs-many-survive"
+  make_stub "$WORK/stubs-many-survive" open "echo launched > \"$WORK/open-many-survive.log\""
+  make_stub "$WORK/stubs-many-survive" ps "if [ -e \"$WORK/open-many-survive.log\" ]; then echo \"$first $executable\"; echo \"$second $executable\"; fi"
+
+  OUT="$(BUNDLE_SH_LAUNCH_TICKS=2 PATH="$WORK/stubs-many-survive:$PATH" "$BUNDLE_SH" "$APP" 2>&1)"
+  STATUS=$?
+
+  expect_nonzero_status || return 1
+  process_is_running "$first" || fail "the first process (pid $first) was signalled" || return 1
+  process_is_running "$second" || fail "the second process (pid $second) was signalled"
+}
+
 # A copy that was running before the script started is not the script's to stop (CP-46).
 test_already_running_copy_survives() {
   copy="$(valid_copy survivor)" || fail "could not re-sign the copy" || return 1
@@ -453,6 +480,26 @@ write_tauri_conf() {
 make_renderer_build() {
   mkdir -p "$WORK/renderer-build/assets"
   echo 'body {}' > "$WORK/renderer-build/assets/style.css"
+}
+
+# CP-45 names every renderer file found outside Contents/Resources, and Contents itself is outside it.
+# The case above places the file one level down (Contents/MacOS/assets/style.css); this one places the
+# same relative path at the root of Contents, which is just as much "not under Contents/Resources".
+test_renderer_file_directly_under_contents_fails() {
+  make_renderer_build
+  write_tauri_conf "$WORK/conf-at-contents.json" "$WORK/renderer-build"
+  copy="$(valid_copy renderer-at-contents)" || fail "could not re-sign the copy" || return 1
+  mkdir -p "$copy/Contents/assets"
+  echo 'body {}' > "$copy/Contents/assets/style.css"
+  mkdir -p "$WORK/stubs-at-contents"
+  make_stub "$WORK/stubs-at-contents" open "echo \"\$@\" >> \"$WORK/open-at-contents.log\""
+
+  OUT="$(BUNDLE_SH_TAURI_CONF="$WORK/conf-at-contents.json" PATH="$WORK/stubs-at-contents:$PATH" "$BUNDLE_SH" "$copy" 2>&1)"
+  STATUS=$?
+
+  expect_nonzero_status || return 1
+  expect_output_contains "Contents/assets/style.css" || return 1
+  [ ! -e "$WORK/open-at-contents.log" ] || fail "the copy was launched: $(cat "$WORK/open-at-contents.log")"
 }
 
 test_renderer_file_outside_resources_fails() {
