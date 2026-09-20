@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.2.0 — one process, found by its executable path and stopped alone (no pattern match, no pkill)
 # Version: 1.1.0 — the launched sandbox is read from the operating system (sandbox_check, through a compiled probe), not from an environment marker
 # Version: 1.0.0 — first version: the wall proven on a built bundle (entitlements, then the launched sandbox)
 #
@@ -16,7 +17,9 @@
 #   Exit 0 only when the entitlement set is exactly the expected one, every value boolean true, and
 #   the operating system reports the launched process sandboxed, an out-of-grant file read denied and
 #   an outbound network connection denied for it. Every failure names its cause on stderr. On every
-#   exit path no process of the bundle is left running.
+#   exit path the one process this run launched, and recorded, is stopped — and only that one: a
+#   process of the same bundle already running when the script started, or started by anything else
+#   while it ran, is never signalled.
 #
 # HOW THE OPERATING SYSTEM IS ASKED
 #   Only libSystem's sandbox_check answers, and no shell can call it, so checks/sandbox_probe.rs is
@@ -50,32 +53,43 @@ executable_name="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$app/
 
 # --- the entitlement set is exactly the expected one ---
 
-LAUNCH_POLL_TICKS=80   # of 0.25 s: 20 s for the launched process to appear
+# An override for a caller that must not wait the full time (a test with no process to wait for).
+LAUNCH_POLL_TICKS="${BUNDLE_SH_LAUNCH_TICKS:-80}"   # of 0.25 s: 20 s for the launched process to appear
 STOP_POLL_TICKS=20     # of 0.25 s: 5 s for it to exit after SIGTERM
 
-# Every process whose executable sits inside the bundle. Anchored at the start of the command line,
-# so `open`, `codesign` and this script — which carry the .app path, not the executable's — do not
-# match.
-bundle_pattern="^$(printf '%s' "$app" | sed 's/[][\.*^$(){}?+|/]/\\&/g')/Contents/MacOS/"
-launched=0
+# The main process is identified by its absolute executable path — never by a pattern over command
+# lines, which would also match every process that merely mentions the bundle. `ps` through PATH so a
+# test can stub it; an unreadable listing reads as "none found", never as a crash.
+bundle_executable="$app/Contents/MacOS/$executable_name"
+executable_pids() {
+  { ps -axo pid=,comm= 2> /dev/null || true; } | while read -r candidate_pid candidate_path; do
+    if [ "$candidate_path" = "$bundle_executable" ]; then
+      echo "$candidate_pid"
+    fi
+  done
+}
 
-bundle_pids() { pgrep -f "$bundle_pattern" || true; }
+# The one pid this run launched. Empty until it has been found and recorded, so a run that never
+# recorded one has nothing of its own to stop.
+launched_pid=""
 
-# On every exit path, leave no process of the bundle running. Only once this run has launched it:
-# a bundle that was never launched has nothing of ours to stop.
-stop_bundle_processes() {
-  [ "$launched" -eq 1 ] || return 0
-  pkill -TERM -f "$bundle_pattern" 2> /dev/null || true
+# On every exit path, stop the pid this run recorded and no other. Whatever else carries the same
+# executable path is not this run's.
+stop_launched_process() {
+  [ -n "$launched_pid" ] || return 0
+  kill -TERM "$launched_pid" 2> /dev/null || true
   ticks=0
-  while [ -n "$(bundle_pids)" ] && [ "$ticks" -lt "$STOP_POLL_TICKS" ]; do
+  while kill -0 "$launched_pid" 2> /dev/null && [ "$ticks" -lt "$STOP_POLL_TICKS" ]; do
     sleep 0.25
     ticks=$((ticks + 1))
   done
-  pkill -KILL -f "$bundle_pattern" 2> /dev/null || true
+  if kill -0 "$launched_pid" 2> /dev/null; then
+    kill -KILL "$launched_pid" 2> /dev/null || true
+  fi
 }
 
 work="$(mktemp -d)"
-trap 'stop_bundle_processes; rm -rf "$work"' EXIT
+trap 'stop_launched_process; rm -rf "$work"' EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
 
@@ -149,19 +163,31 @@ PATH="$PATH:$work/probe-bin"
 
 # --- launch it and observe the sandbox ---
 
+# An instance already running would make "the process this run launched" unknowable, and stopping it
+# afterwards would stop someone else's. Refused before anything is launched.
+already_running="$(executable_pids | tr '\n' ' ')"
+[ -z "$already_running" ] \
+  || die "an instance was already running (pid ${already_running% }) with the executable path $bundle_executable; nothing was launched"
+
 # Through LaunchServices, the route a user takes; a direct exec would test a path no user takes.
-launched=1
 open -n -g "$app" || die "cannot be launched: open refused $app"
 
 # Polled for a bounded time rather than slept on once.
-pid=""
+found_pids=""
 ticks=0
-while [ -z "$pid" ] && [ "$ticks" -lt "$LAUNCH_POLL_TICKS" ]; do
-  pid="$(bundle_pids | head -1 || true)"
-  [ -n "$pid" ] || sleep 0.25
+while [ -z "$found_pids" ] && [ "$ticks" -lt "$LAUNCH_POLL_TICKS" ]; do
+  found_pids="$(executable_pids | tr '\n' ' ')"
+  [ -n "$found_pids" ] || sleep 0.25
   ticks=$((ticks + 1))
 done
-[ -n "$pid" ] || die "cannot be launched: no process of $app appeared within $((LAUNCH_POLL_TICKS / 4)) seconds"
+[ -n "$found_pids" ] \
+  || die "cannot be launched: no process appeared — none has the executable path $bundle_executable within $((LAUNCH_POLL_TICKS / 4)) seconds"
+set -- $found_pids
+# Nothing is recorded, so nothing is signalled: which of them this run launched cannot be told.
+[ "$#" -eq 1 ] || die "more than one process has the executable path $bundle_executable after the launch (pids $found_pids); none was stopped, since this run cannot tell which one it launched"
+pid="$1"
+launched_pid="$pid"
+echo "launched: pid $pid ($bundle_executable)"
 
 # The probe's own failure — sandbox_check unresolvable, or an error from it — is neither a pass nor
 # a denial (CP-43): the run ends here, naming what it could not read.
