@@ -26,7 +26,6 @@ ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 NO_NETWORK_SH="$ROOT/checks/no-network.sh"
 ALLOWLIST="$ROOT/checks/deps.allow"
 REAL_CARGO="$(command -v cargo)"
-REAL_PNPM="$(command -v pnpm)"
 
 OUT=""
 STATUS=0
