@@ -26,7 +26,7 @@
 //!   sandboxed.
 
 use std::env;
-use std::ffi::{c_char, c_int, c_void, CString};
+use std::ffi::{CString, c_char, c_int, c_void};
 use std::process::exit;
 
 const SYMBOL: &str = "sandbox_check";
@@ -82,19 +82,11 @@ fn read_verdict(result: c_int) -> Result<bool, String> {
 }
 
 fn denied_or_allowed(denied: bool) -> &'static str {
-    if denied {
-        "denied"
-    } else {
-        "allowed"
-    }
+    if denied { "denied" } else { "allowed" }
 }
 
 fn yes_or_no(value: bool) -> &'static str {
-    if value {
-        "yes"
-    } else {
-        "no"
-    }
+    if value { "yes" } else { "no" }
 }
 
 fn parse_pid(arguments: &[String]) -> c_int {
@@ -115,13 +107,18 @@ fn require_running(pid: c_int) {
     // SAFETY: signal 0 performs the existence check and delivers no signal.
     let result = unsafe { kill(pid, 0) };
     if result != 0 && std::io::Error::last_os_error().raw_os_error() == Some(NO_SUCH_PROCESS) {
-        fail(1, &format!("no process has pid {pid}, so {SYMBOL} has nothing to read"));
+        fail(
+            1,
+            &format!("no process has pid {pid}, so {SYMBOL} has nothing to read"),
+        );
     }
 }
 
 fn out_of_grant_path() -> CString {
-    let home = env::var("HOME").unwrap_or_else(|_| fail(1, "HOME is not set, so no out-of-grant path can be named"));
-    CString::new(format!("{home}/{OUT_OF_GRANT_FILE}")).unwrap_or_else(|_| fail(1, "HOME holds a NUL byte"))
+    let home = env::var("HOME")
+        .unwrap_or_else(|_| fail(1, "HOME is not set, so no out-of-grant path can be named"));
+    CString::new(format!("{home}/{OUT_OF_GRANT_FILE}"))
+        .unwrap_or_else(|_| fail(1, "HOME holds a NUL byte"))
 }
 
 fn main() {
@@ -137,15 +134,20 @@ fn main() {
     // SAFETY (all three calls): every pointer is a live NUL-terminated string for the call's
     // duration, and the variadic argument of the path filter is the `const char *` that filter takes.
     let sandboxed = read_verdict(unsafe { sandbox_check(pid, std::ptr::null(), FILTER_NONE) });
-    let read_denied =
-        read_verdict(unsafe { sandbox_check(pid, read_operation.as_ptr(), FILTER_PATH, path.as_ptr()) });
-    let outbound_denied = read_verdict(unsafe { sandbox_check(pid, outbound_operation.as_ptr(), FILTER_NONE) });
+    let read_denied = read_verdict(unsafe {
+        sandbox_check(pid, read_operation.as_ptr(), FILTER_PATH, path.as_ptr())
+    });
+    let outbound_denied =
+        read_verdict(unsafe { sandbox_check(pid, outbound_operation.as_ptr(), FILTER_NONE) });
 
     match (sandboxed, read_denied, outbound_denied) {
         (Ok(sandboxed), Ok(read_denied), Ok(outbound_denied)) => {
             println!("sandboxed: {}", yes_or_no(sandboxed));
             println!("out-of-grant-read: {}", denied_or_allowed(read_denied));
-            println!("outbound-connection: {}", denied_or_allowed(outbound_denied));
+            println!(
+                "outbound-connection: {}",
+                denied_or_allowed(outbound_denied)
+            );
         }
         (Err(message), _, _) | (_, Err(message), _) | (_, _, Err(message)) => fail(1, &message),
     }
