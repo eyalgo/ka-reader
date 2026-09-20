@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.3.0 — one executable under Contents/MacOS, and the renderer build under Contents/Resources, read before the launch
 # Version: 1.2.0 — one process, found by its executable path and stopped alone (no pattern match, no pkill)
 # Version: 1.1.0 — the launched sandbox is read from the operating system (sandbox_check, through a compiled probe), not from an environment marker
 # Version: 1.0.0 — first version: the wall proven on a built bundle (entitlements, then the launched sandbox)
@@ -146,6 +147,50 @@ $expected_key
 done
 
 [ -z "$problems" ] || { printf '%s' "$problems" >&2; die "the entitlement set of $app is not the expected one; the bundle was not launched"; }
+
+# --- the bundle holds one executable, and the renderer build sits under Contents/Resources ---
+
+# Read before the probe is compiled and before anything is launched: a bundle with a second
+# executable, or a renderer file where the sandbox review does not expect it, is refused unstarted
+# (NFDR QC-55).
+extra_executables="$(find "$app/Contents/MacOS" -type f -perm -100 | LC_ALL=C sort | tail -n +2)"
+if [ -n "$extra_executables" ]; then
+  printf 'extra executable: %s\n' "${extra_executables//"$app/"/}" >&2
+  die "the bundle holds more than one executable under Contents/MacOS; the bundle was not launched"
+fi
+
+# The renderer build the bundle ships is what tauri.conf.json's build.frontendDist names, read from the
+# committed configuration and not from a build directory that may not exist. The committed
+# configuration carries no such key on purpose — the bundle command supplies it after the renderer
+# build (crates/nozoki-app/tests/config.rs) — so the set is normally empty, and the script says so.
+# An override for a caller that must stand another configuration in (a test).
+TAURI_CONF="${BUNDLE_SH_TAURI_CONF:-$(cd "$(dirname "$0")/.." && pwd -P)/crates/nozoki-app/tauri.conf.json}"
+[ -f "$TAURI_CONF" ] || die "the Tauri configuration is missing: $TAURI_CONF"
+# plutil ships with macOS and reads JSON; an absent key is a non-zero exit, read as "no value".
+frontend_dist="$(plutil -extract build.frontendDist raw -o - "$TAURI_CONF" 2> /dev/null || true)"
+if [ -z "$frontend_dist" ]; then
+  echo "renderer build: build.frontendDist is absent from $TAURI_CONF — the renderer set is empty, so no renderer file was checked"
+else
+  case "$frontend_dist" in
+    /*) ;;
+    *) frontend_dist="$(dirname "$TAURI_CONF")/$frontend_dist" ;;
+  esac
+  [ -d "$frontend_dist" ] || die "build.frontendDist names a directory that does not exist: $frontend_dist"
+  misplaced=""
+  renderer_files="$(cd "$frontend_dist" && find . -type f | sed 's#^\./##' | LC_ALL=C sort)"
+  for section in "$app/Contents"/*; do
+    [ "$section" != "$app/Contents/Resources" ] || continue
+    while IFS= read -r renderer_file; do
+      [ -n "$renderer_file" ] || continue
+      if [ -e "$section/$renderer_file" ]; then
+        misplaced="${misplaced}renderer file outside Contents/Resources: ${section#"$app"/}/$renderer_file
+"
+      fi
+    done <<< "$renderer_files"
+  done
+  [ -z "$misplaced" ] || { printf '%s' "$misplaced" >&2; die "the renderer build is not under Contents/Resources; the bundle was not launched"; }
+  echo "renderer build: every file of $frontend_dist is under Contents/Resources"
+fi
 
 # --- the probe that asks the operating system ---
 

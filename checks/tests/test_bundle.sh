@@ -425,7 +425,8 @@ test_named_frontend_dist_that_does_not_exist_fails() {
   STATUS=$?
 
   expect_nonzero_status || return 1
-  expect_output_contains "$WORK/no-such-renderer-build" || return 1
+  # The script's own named failure, not merely a failing `cd` under `set -e` that happens to print the path.
+  expect_output_contains "names a directory that does not exist: $WORK/no-such-renderer-build" || return 1
   [ ! -e "$WORK/open-missing.log" ] || fail "the bundle was launched: $(cat "$WORK/open-missing.log")"
 }
 
