@@ -50,6 +50,7 @@ test_existing_container_is_not_evidence
 test_unresolvable_symbol_fails
 test_probe_error_fails
 test_probe_reports_an_unsandboxed_pid_as_unsandboxed
+test_probe_fails_on_a_pid_that_does_not_exist
 test_extra_key_fails_before_launch
 test_false_value_fails
 test_missing_key_fails
@@ -148,6 +149,13 @@ write_entitlements() {
   } > "$path"
 }
 
+# The real probe, compiled once per case that needs it, into $WORK/probe-bin.
+compile_probe() {
+  mkdir -p "$WORK/probe-bin"
+  rustc --edition 2021 -O -o "$WORK/probe-bin/nozoki-sandbox-probe" "$PROBE_SOURCE" > "$WORK/probe-build.log" 2>&1 \
+    || fail "the probe source did not compile: $(cat "$WORK/probe-build.log" 2> /dev/null)"
+}
+
 # --- cases ---
 
 test_real_bundle_passes() {
@@ -193,6 +201,19 @@ test_not_sandboxed_fails() {
   expect_nonzero_status || return 1
   expect_output_contains "the launched process is not sandboxed" || return 1
   expect_no_bundle_process "$APP"
+}
+
+# `sandbox_check` answers "sandboxed, everything denied" for a pid that names no process at all — a
+# measured false positive (pid 99999999, this change). A wall check that reads it as a pass would pass
+# on a process that is not there, so the probe must fail on a pid it cannot find.
+test_probe_fails_on_a_pid_that_does_not_exist() {
+  compile_probe || return 1
+
+  OUT="$("$WORK/probe-bin/nozoki-sandbox-probe" 99999999 2>&1)"
+  STATUS=$?
+
+  expect_nonzero_status || return 1
+  expect_output_lacks "sandboxed: yes"
 }
 
 test_extra_key_fails_before_launch() {
@@ -305,9 +326,7 @@ test_probe_error_fails() {
 # Every other case stubs the probe, so this is the one that holds the real probe's output contract:
 # the suite's own shell is unsandboxed, and the compiled probe must say so in the lines the script parses.
 test_probe_reports_an_unsandboxed_pid_as_unsandboxed() {
-  mkdir -p "$WORK/probe-bin"
-  rustc --edition 2021 -O -o "$WORK/probe-bin/nozoki-sandbox-probe" "$PROBE_SOURCE" > "$WORK/probe-build.log" 2>&1 \
-    || fail "the probe source did not compile: $(cat "$WORK/probe-build.log" 2> /dev/null)" || return 1
+  compile_probe || return 1
 
   OUT="$("$WORK/probe-bin/nozoki-sandbox-probe" "$$" 2>&1)"
   STATUS=$?
