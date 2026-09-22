@@ -88,3 +88,37 @@
 - **Answer:** <the owner fills this in>
 
 **How it closes.** `product-architecture` folds it on its next run like any other item here.
+
+### 3.3 On a hosted runner the out-of-grant read is reported denied for an unsandboxed process too — ADR-0010's "not a correlate" holds for the network half only there
+
+> **No `product-architecture` run wrote this item.** A `companion-self-answer` run answering
+> `docs/SDD_open_issues.md` § 5.1 raised it on 2026-09-23, while re-reading the CI run that item
+> cites. The report is `docs/trail/sdd/self_answer-12.md` § Items worked, 5.1. It is a separate
+> question from § 3.2, which asks *when* the probe reads; this one asks whether one of the three
+> answers it reads tells anything apart on the runner.
+
+- **Raised by:** companion-self-answer, answering `docs/SDD_open_issues.md` § 5.1 — 2026-09-23
+- **Which record:** ADR-0010 § Consequences ("a sandbox probe that tests the two denials the wall
+  promises, so its green means the wall and not a correlate of it"); NFDR § 1 QC-25
+- **Where it shows:** run 35797893381 (`macos-14`, step *Sandbox diagnostic (temporary)*,
+  `gh run view 35797893381 --log`, read 2026-09-23). The unentitled copy answered
+  `sandboxed: no`, `out-of-grant-read: denied`, `outbound-connection: allowed` on all five asks, and
+  the real bundle's unsandboxed first ask answered the same. `checks/sandbox_probe.rs:L76-L81` prints
+  `denied` for any non-zero `sandbox_check` result, so `sandbox_check` said *denied* for a read of
+  `~/.zshrc` by a process it also called unsandboxed. On the runner, then, that denial is reported
+  with the wall and without it. The control still goes red there, on `sandboxed` and on the outbound
+  connection. But the control as `checks/bundle.sh` runs it asks only whether the copy is *not
+  sandboxed*, so nothing checks that the read half separates anything. Why the runner reports it
+  that way is not known. Whether the owner's Mac reports the read *allowed* for the unentitled
+  copy is not recorded anywhere this run read.
+- **What it blocks:** Nothing is waiting on it to be built. The wall is still proved on the runner by
+  the two answers that do separate the builds. What is wrong is the claim that the two denials are
+  both the wall and not a correlate. On a hosted runner that is true of one of them.
+- **The lean:** ADR-0010's § Consequences (and QC-25's *verified by*, when it is re-derived from
+  C-I3) should say that on a GitHub-hosted runner the out-of-grant read is reported denied for the
+  unentitled control too, so there the wall is evidenced by `sandboxed` and the outbound denial.
+  The SDD's § 5.1 answer carries the same addition into C-I3. Whether that sentence is a correction to
+  the record or a new record superseding it is this seat's call, as § 3.2 already asks about the
+  window. The lean is that it is a correction: the observable and the mechanism stay the same, and
+  one of its three readings turns out to separate nothing on one host.
+- **Confirm or override:** <"confirm", or "override: <what to do instead>">
