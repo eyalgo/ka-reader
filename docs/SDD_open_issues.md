@@ -69,7 +69,22 @@
   to name the window in C-I3 without a number, leaving the number to the script. Doubt: a window
   could be read as a probe bent to pass. The measured `no` for the whole window on the unentitled
   copy is what answers that, and the stricter control is what keeps it answered.
-- **Answer:** <the owner fills this in>
+- **Answer:** confirm the PM's lean, with four additions. Close the fourth *Open Questions* item as
+  "the sandbox holds on a hosted runner, and the probe read too early". Add a clause to C-I3 and to
+  R-8's *shows up as* saying the report is read within a bounded window after launch, and state no
+  number in the SDD. (1) C-I3 says the bound is fixed in the script and printed in the probe's output,
+  so a failing run says how long it waited. (2) The pass is the first ask on which all three answers
+  hold at once: sandboxed, the read denied, and the outbound connection denied. Every ask checks
+  first that the launched pid still names a process, because `sandbox_check` reports "sandboxed,
+  everything denied" for a pid that names none (`checks/sandbox_probe.rs:L103-L115`). A process gone
+  before the pass is a failure. (3) The negative control answers `sandboxed: no` on every ask for the
+  whole window. (4) On the hosted runner the unentitled copy reports the out-of-grant read *denied*
+  on every ask (run 35797893381), so there that denial separates nothing. The closed item says so,
+  and C-I3's "the two denials test the wall … rather than a proxy for it" is narrowed to where it
+  holds. The ADR side of (4) is `docs/architecture_open_issues.md` § 3.3. C-I3 names one case the
+  probe does not cover: a report that turns from `yes` back to `no` after the pass is never read.
+  No § 10 entry is owed, because no slice's *Reached when* failed as written. The reasoning is in
+  `docs/trail/sdd/self_answer-12.md`.
 
 **How it closes.** `product-sdd` folds it on its next run like every other item in this file, and
 the trail copy and the delete-when-empty behaviour are unchanged.
