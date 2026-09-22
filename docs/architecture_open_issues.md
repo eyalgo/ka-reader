@@ -21,6 +21,8 @@
 > a `product-architecture` re-run would read them as done and find nothing to act on. The companion
 > holds one § 3 item: QC-3 states a domain — no network transport — and is verified by a check that
 > compares the tree to the allowlist, which proves nothing about the allowlist's own membership.
+> The PM added § 3.2 on 2026-09-23, from the first CI runs on a GitHub-hosted runner: ADR-0010 and
+> QC-25 fix what the sandbox probe reads and not when, and the first runs read it too early.
 
 ---
 
@@ -50,6 +52,39 @@
   — the diff that proves tree-equals-list, and the review that admits a name to the list at all. The
   PM's lean is to name QC-26's same-change code review as the closing half, so the domain is
   enforced by a gate the records point at rather than by the reader's assumption.
+- **Answer:** <the owner fills this in>
+
+### 3.2 ADR-0010 and QC-25 fix what the probe must read, not when — and the first CI runs read too early
+- **Raised by:** PM — 2026-09-23
+- **Which record:** ADR-0010 § Decision and § Consequences; NFDR § 1 QC-25 and its § 10 row
+- **Tracked by:** `nozoki · nemawashi · 2026-09-15_open-a-folder`; the fix to the probe is the change
+  unit `nozoki · tobiishi · 2026-09-23_the-probe-waits-for-the-sandbox`
+  (`kensaiapp-opensource@1523865`); the SDD side is `docs/SDD_open_issues.md` § 5.1
+- **What it blocks:** Nothing waits on it to be built. The change unit makes `checks/bundle.sh` wait,
+  bounded, for the first `sandboxed: yes`, and makes the negative control answer `no` for the whole
+  window. Both records say "fails unless the operating system reports that pid as sandboxed" and
+  neither says when the report is read, so the change fits the words as they stand. What is
+  owed from this side is a ruling that it does — or a record that says otherwise.
+- **Where it shows:**
+  - ADR-0010 § Decision: the probe "fails unless the operating system reports that pid as sandboxed
+    and reports two operations denied for it"; QC-25 (`nfdr.md:L227-L233`) states the same. No
+    timing in either.
+  - ADR-0010 § Consequences: "a probe that fails while the wall stands redraws the probe and no
+    slice"; and replacing the *observable* costs "a superseding record here". The change reads the
+    same observable, `sandbox_check`, and changes only when it is read.
+  - ADR-0010 closes on "One case is unmeasured": the hosted runner, "settled by the probe's first CI
+    run". Measured: run 35797893381 (`macos-14`, SIP disabled) reported the real bundle
+    `sandboxed: no` on ask 1 and `sandboxed: yes`, both denied, on asks 2–5, 0.25 s apart; an
+    unentitled copy `no` on all five. The same first-ask `no` shows on the owner's Mac for a freshly
+    re-signed copy. Full table: `docs/SDD_open_issues.md` § 5.1.
+  - The negative control as recorded — "requires it to fail" — passes on one `no`, and one early
+    `no` is what an entitled launch can report too. The change makes it stricter; that sentence of
+    ADR-0010 is where a reader would look for the rule.
+- **If a document has to be written:** none, on the PM's lean. The log is append-only, and the
+  observable has not moved, so no superseding record is owed. What may be owed is QC-25's *verified
+  by* naming the bounded window and the control's whole-window rule, re-derived from C-I3 once the
+  SDD's § 5.1 is folded. Doubt: if the window is read as part of the mechanism ADR-0010 fixed, it is
+  a new record superseding it, and that is this seat's call, not the PM's.
 - **Answer:** <the owner fills this in>
 
 **How it closes.** `product-architecture` folds it on its next run like any other item here.
