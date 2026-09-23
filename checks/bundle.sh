@@ -381,4 +381,4 @@ outbound-connection: denied
 esac
 
 [ -z "$problems" ] || { printf '%s' "$problems" >&2; die "the wall does not hold on the launched process (pid $pid)$window_clause"; }
-echo "sandbox observed: sandboxed, out-of-grant read denied, outbound connection denied (pid $pid)"
+echo "sandbox observed: sandboxed, out-of-grant read denied, outbound connection denied (pid $pid), the first ask to hold all three within $PROBE_TICKS asks, 0.25 s apart"
