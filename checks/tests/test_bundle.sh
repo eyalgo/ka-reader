@@ -57,6 +57,7 @@ test_existing_container_is_not_evidence
 test_unresolvable_symbol_fails
 test_probe_error_fails
 test_probe_failure_mid_window_ends_the_run
+test_unreadable_report_is_asked_past
 test_probe_reports_an_unsandboxed_pid_as_unsandboxed
 test_probe_fails_on_a_pid_that_does_not_exist
 test_instance_already_running_fails_before_launch
@@ -159,6 +160,29 @@ expect_no_bundle_process() {
 expect_one_report() {
   reports="$(printf '%s\n' "$OUT" | grep -c '^sandboxed: ')"
   [ "$reports" -eq 1 ] || fail "expected exactly one report, got $reports. output: $OUT"
+}
+
+# The run's closing failure line: the last `bundle.sh: ` line the script printed (its `die`).
+closing_line() {
+  printf '%s\n' "$OUT" | grep '^bundle.sh: ' | tail -1
+}
+
+# The closing failure line of a run whose window ran out (CP-65; change_design.md: "The closing failure
+# line says `within <N> asks, 0.25 s apart`", and the prefix `the wall does not hold on the launched
+# process (pid …)` stays on it). $1 is N.
+expect_closing_line_states_the_window() {
+  closing="$(closing_line)"
+  case "$closing" in
+    "bundle.sh: the wall does not hold on the launched process (pid "*"within $1 asks, 0.25 s apart"*) ;;
+    *) fail "expected the closing failure line to state the window of $1 asks, 0.25 s apart. closing line: $closing. output: $OUT" ;;
+  esac
+}
+
+# The not-sandboxed condition line exactly as it reads today: the condition blocks read the kept report
+# unchanged (change_design.md § 4), and the window belongs to the closing line, not to this one.
+expect_not_sandboxed_condition_line_unchanged() {
+  printf '%s\n' "$OUT" | grep -qx 'condition not held: the launched process is not sandboxed' \
+    || fail "expected the unchanged line 'condition not held: the launched process is not sandboxed'. output: $OUT"
 }
 
 # A copy of the built bundle in $WORK, re-signed ad hoc with the entitlements in file $2.
@@ -322,6 +346,10 @@ test_first_sandboxed_report_is_the_one_judged() {
   expect_nonzero_status || return 1
   expect_output_contains "an outbound network connection is not denied" || return 1
   expect_one_report || return 1
+  # The window did not decide this run, so its closing line carries no window clause (design, locked).
+  case "$(closing_line)" in
+    *asks*) fail "the closing line states a window on a run the window did not decide: $(closing_line)" || return 1 ;;
+  esac
   [ "$(asked_count "$seq")" -eq 1 ] || fail "expected 1 ask, got $(asked_count "$seq")" || return 1
   expect_no_bundle_process "$APP"
 }
@@ -853,6 +881,8 @@ test_never_sandboxed_within_the_window_fails_naming_it() {
   expect_output_contains "the launched process is not sandboxed" || return 1
   expect_output_contains "3 asks" || return 1
   expect_output_contains "0.25 s" || return 1
+  expect_not_sandboxed_condition_line_unchanged || return 1
+  expect_closing_line_states_the_window 3 || return 1
   expect_one_report || return 1
   [ "$(asked_count "$seq")" -eq 3 ] || fail "expected 3 asks, got $(asked_count "$seq")" || return 1
 }
@@ -886,6 +916,8 @@ test_no_sandbox_observed_fails_and_cleans_up() {
   expect_output_contains "the launched process is not sandboxed" || return 1
   expect_output_contains "2 asks" || return 1
   expect_output_contains "0.25 s" || return 1
+  expect_not_sandboxed_condition_line_unchanged || return 1
+  expect_closing_line_states_the_window 2 || return 1
   expect_output_contains "an out-of-grant file read is not denied" || return 1
   expect_output_contains "an outbound network connection is not denied" || return 1
   launched_pid="$(printf '%s' "$OUT" | sed -n 's/^launched: pid \([0-9]*\).*/\1/p')"
@@ -952,6 +984,24 @@ test_probe_error_fails() {
   expect_output_contains "sandbox_check" || return 1
   expect_output_lacks "sandboxed: yes" || return 1
   expect_output_lacks "denied" || return 1
+  expect_no_bundle_process "$APP"
+}
+
+# CP-67's last sentence (ordinary half): a report that exits 0 but does not say sandboxed: yes counts as
+# not sandboxed, so the run keeps asking past it — it is neither a failure that ends the run nor a pass.
+test_unreadable_report_is_asked_past() {
+  dir="$WORK/stubs-unreadable-then-yes"
+  mkdir -p "$dir"
+  echo 0 > "$dir/count"
+  make_stub "$dir" nozoki-sandbox-probe "n=\$(( \$(cat \"$dir/count\") + 1 )); echo \"\$n\" > \"$dir/count\"
+if [ \"\$n\" -eq 1 ]; then printf 'garbled\\n'; else printf 'sandboxed: yes\\nout-of-grant-read: denied\\noutbound-connection: denied\\n'; fi"
+
+  run_bundle_sh_with_stubs "$dir" "$APP"
+
+  [ "$STATUS" -eq 0 ] || fail "expected exit 0, got $STATUS. output: $OUT" || return 1
+  expect_output_contains "sandbox observed:" || return 1
+  expect_output_lacks "garbled" || return 1
+  [ "$(cat "$dir/count")" -eq 2 ] || fail "expected 2 asks, got $(cat "$dir/count")" || return 1
   expect_no_bundle_process "$APP"
 }
 
