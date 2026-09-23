@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.5.0 — the probe waits, bounded, for the sandbox report, and its control holds for the whole window; plutil read only on exit 0
 # Version: 1.4.0 — --negative-control: the same launch-and-probe path on a no-entitlement build, passing only when it is reported NOT sandboxed
 # Version: 1.3.0 — one executable under Contents/MacOS, and the renderer build under Contents/Resources, read before the launch
 # Version: 1.2.0 — one process, found by its executable path and stopped alone (no pattern match, no pkill)
@@ -18,8 +19,9 @@
 #   checks/bundle.sh target/release/bundle/macos/Nozoki.app
 #   checks/bundle.sh --negative-control <path-to-app>
 #     The control: the same launch-and-probe path, but the bundle's entitlement set must be EMPTY and
-#     the run passes only when the operating system reports the launched process NOT sandboxed. It
-#     cannot pass on a bundle carrying the C-R2 keys, so it is not a route past the gate above. It
+#     the run passes only when every report the operating system gives, across the whole probe window,
+#     says the launched process is NOT sandboxed. It cannot pass on a bundle carrying the C-R2 keys, so
+#     it is not a route past the gate above. It
 #     exists because the ordinary path refuses to launch anything but C-R2's set, and a probe that
 #     cannot tell the two builds apart has not run (NFDR QC-25).
 #   Exit 0 only when the entitlement set is exactly the expected one, every value boolean true, and
@@ -33,6 +35,9 @@
 #   Only libSystem's sandbox_check answers, and no shell can call it, so checks/sandbox_probe.rs is
 #   compiled with rustc into this run's temporary directory and run as `nozoki-sandbox-probe <pid>`,
 #   found through PATH — the seam a test uses to stand one condition at a time in for the real probe.
+#   The ordinary path asks it up to BUNDLE_SH_PROBE_TICKS times, 0.25 s apart (default 40), and judges
+#   the first report that says sandboxed: yes; if the window runs out without one, the last report
+#   asked is judged instead.
 #   No environment variable and no container directory is evidence of a sandbox: a process can carry
 #   the one and a directory can outlive the other (docs/SDD.md § 4 C-I3; NFDR QC-25; ADR-0010).
 
@@ -69,6 +74,18 @@ executable_name="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$app/
 # An override for a caller that must not wait the full time (a test with no process to wait for).
 LAUNCH_POLL_TICKS="${BUNDLE_SH_LAUNCH_TICKS:-80}"   # of 0.25 s: 20 s for the launched process to appear
 STOP_POLL_TICKS=20     # of 0.25 s: 5 s for it to exit after SIGTERM
+
+# The probe window: up to this many asks, spaced 0.25 s apart, before the ordinary path judges the
+# last report and the negative control gives up waiting for one (both below). An empty value reads as
+# unset, the same way LAUNCH_POLL_TICKS above does. Refused before anything is launched, so a bad
+# value never reaches either loop.
+PROBE_TICKS="${BUNDLE_SH_PROBE_TICKS:-40}"   # of 0.25 s: judged on the first sandboxed: yes report
+case "$PROBE_TICKS" in
+  *[!0-9]*) die "BUNDLE_SH_PROBE_TICKS must be a positive whole number (got: $PROBE_TICKS)" ;;
+esac
+# Read in base 10 (10#…) so a leading zero such as 08 is accepted, rather than read as invalid octal.
+[ "$((10#$PROBE_TICKS))" -gt 0 ] || die "BUNDLE_SH_PROBE_TICKS must be a positive whole number (got: $PROBE_TICKS)"
+PROBE_TICKS=$((10#$PROBE_TICKS))
 
 # The main process is identified by its absolute executable path — never by a pattern over command
 # lines, which would also match every process that merely mentions the bundle. `ps` through PATH so a
@@ -186,8 +203,10 @@ fi
 # An override for a caller that must stand another configuration in (a test).
 TAURI_CONF="${BUNDLE_SH_TAURI_CONF:-$(cd "$(dirname "$0")/.." && pwd -P)/crates/nozoki-app/tauri.conf.json}"
 [ -f "$TAURI_CONF" ] || die "the Tauri configuration is missing: $TAURI_CONF"
-# plutil ships with macOS and reads JSON; an absent key is a non-zero exit, read as "no value".
-frontend_dist="$(plutil -extract build.frontendDist raw -o - "$TAURI_CONF" 2> /dev/null || true)"
+# plutil ships with macOS and reads JSON. A failed extract (any non-zero exit) is read as no value,
+# whatever it printed and on whichever stream — a runner that puts the missing-key diagnostic on
+# stdout must not have that diagnostic read as the path.
+frontend_dist="$(plutil -extract build.frontendDist raw -o - "$TAURI_CONF" 2> /dev/null)" || frontend_dist=""
 if [ -z "$frontend_dist" ]; then
   echo "renderer build: build.frontendDist is absent from $TAURI_CONF — the renderer set is empty, so no renderer file was checked"
 else
@@ -268,28 +287,70 @@ pid="$1"
 launched_pid="$pid"
 echo "launched: pid $pid ($bundle_executable)"
 
-# The probe's own failure — sandbox_check unresolvable, or an error from it — is neither a pass nor
-# a denial (CP-43): the run ends here, naming what it could not read.
-if ! probe_output="$("nozoki-sandbox-probe" "$pid" 2> "$work/probe.err")"; then
-  die "the operating system's sandbox report for pid $pid could not be read: $(cat "$work/probe.err")"
-fi
-printf '%s\n' "$probe_output"
-
-# The control asks one thing: is the launched process NOT sandboxed. An entitled build the probe calls
-# sandboxed is the answer the control was built to expect, so the same report on an unentitled build
-# means the probe cannot tell the two apart (CP-59: that is the result, and it is not worked around).
+# The control asks up to PROBE_TICKS times, 0.25 s apart, and passes only when every report in the
+# window says the launched process is NOT sandboxed (CP-69). Any report that does not say so ends the
+# run at once: an entitled build the probe calls sandboxed is the answer the control was built to
+# expect, so that same report on an unentitled build means the probe cannot tell the two apart (CP-59:
+# that is the result, and it is not worked around). The probe's own failure — sandbox_check
+# unresolvable, or an error from it — is neither a pass nor a denial (CP-43): the run ends here, naming
+# what it could not read. No sleep follows the last ask.
 if [ "$negative_control" -eq 1 ]; then
+  tick=0
+  while :; do
+    tick=$((tick + 1))
+    if ! probe_output="$("nozoki-sandbox-probe" "$pid" 2> "$work/probe.err")"; then
+      die "the operating system's sandbox report for pid $pid could not be read: $(cat "$work/probe.err")"
+    fi
+    case "
+$probe_output
+" in
+      *"
+sandboxed: no
+"*) ;;
+      *) break ;;
+    esac
+    [ "$tick" -lt "$PROBE_TICKS" ] || break
+    sleep 0.25
+  done
+  printf '%s\n' "$probe_output"
   case "
 $probe_output
 " in
     *"
 sandboxed: no
-"*) echo "negative control: the operating system reports the launched process not sandboxed (pid $pid)"; exit 0 ;;
+"*) echo "negative control: the operating system reports the launched process not sandboxed within $PROBE_TICKS asks, 0.25 s apart (pid $pid)"; exit 0 ;;
     *) die "the negative control was reported sandboxed (pid $pid): the probe cannot tell a build with the entitlements from one without them" ;;
   esac
 fi
 
+# The ordinary path asks up to PROBE_TICKS times, 0.25 s apart, and stops at the first report that
+# says sandboxed: yes — that report is the one judged below (CP-64). When the window runs out without
+# one, the last report asked is judged instead, and the closing failure line states the window
+# (CP-65). A probe failure on any ask ends the run at once, on the same die path as the control's
+# (CP-67). No sleep follows the last ask, whichever way the loop ends.
+tick=0
+while :; do
+  tick=$((tick + 1))
+  if ! probe_output="$("nozoki-sandbox-probe" "$pid" 2> "$work/probe.err")"; then
+    die "the operating system's sandbox report for pid $pid could not be read: $(cat "$work/probe.err")"
+  fi
+  case "
+$probe_output
+" in
+    *"
+sandboxed: yes
+"*) break ;;
+  esac
+  [ "$tick" -lt "$PROBE_TICKS" ] || break
+  sleep 0.25
+done
+printf '%s\n' "$probe_output"
+
 problems=""
+# The window clause for the closing line: set only when the window ran out without a sandboxed: yes
+# report — every other exit from the loop above breaks on that report — so a run the window did not
+# decide (a sandboxed: yes report carrying an allowed) closes without one.
+window_clause=""
 case "
 $probe_output
 " in
@@ -297,7 +358,8 @@ $probe_output
 sandboxed: yes
 "*) ;;
   *) problems="${problems}condition not held: the launched process is not sandboxed
-" ;;
+"
+     window_clause=": not reported sandboxed within $PROBE_TICKS asks, 0.25 s apart" ;;
 esac
 case "
 $probe_output
@@ -318,5 +380,5 @@ outbound-connection: denied
 " ;;
 esac
 
-[ -z "$problems" ] || { printf '%s' "$problems" >&2; die "the wall does not hold on the launched process (pid $pid)"; }
+[ -z "$problems" ] || { printf '%s' "$problems" >&2; die "the wall does not hold on the launched process (pid $pid)$window_clause"; }
 echo "sandbox observed: sandboxed, out-of-grant read denied, outbound connection denied (pid $pid)"

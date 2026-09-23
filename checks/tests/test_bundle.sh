@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.1.0 — the probe waits, bounded, for the sandbox report, and its control holds for the whole window; plutil read only on exit 0
 # Version: 1.0.0 — first version: drives the real checks/bundle.sh against the built Nozoki.app
 #
 # checks/tests/test_bundle.sh — the tests of checks/bundle.sh.
@@ -46,6 +47,8 @@ WORK=""
 
 CASES="
 test_real_bundle_passes
+test_probe_waits_past_an_early_unsandboxed_report
+test_first_sandboxed_report_is_the_one_judged
 test_outbound_connection_allowed_fails
 test_out_of_grant_read_allowed_fails
 test_not_sandboxed_fails
@@ -54,6 +57,8 @@ test_marker_is_absent_from_the_tree
 test_existing_container_is_not_evidence
 test_unresolvable_symbol_fails
 test_probe_error_fails
+test_probe_failure_mid_window_ends_the_run
+test_unreadable_report_is_asked_past
 test_probe_reports_an_unsandboxed_pid_as_unsandboxed
 test_probe_fails_on_a_pid_that_does_not_exist
 test_instance_already_running_fails_before_launch
@@ -63,6 +68,10 @@ test_more_than_one_process_signals_neither
 test_already_running_copy_survives
 test_only_the_launched_pid_is_signalled
 test_negative_control_reports_unsandboxed
+test_negative_control_sandboxed_later_in_the_window_fails
+test_negative_control_asks_the_whole_window
+test_negative_control_probe_failure_fails
+test_negative_control_unreadable_report_fails
 test_negative_control_reported_sandboxed_fails
 test_negative_control_reported_sandboxed_fails_the_suite
 test_absent_control_fails_the_suite
@@ -72,10 +81,17 @@ test_renderer_file_outside_resources_fails
 test_renderer_file_directly_under_contents_fails
 test_renderer_file_under_resources_passes
 test_absent_frontend_dist_states_an_empty_set
+test_absent_frontend_dist_stdout_diagnostic_is_not_a_path
 test_named_frontend_dist_that_does_not_exist_fails
 test_extra_key_fails_before_launch
 test_false_value_fails
 test_missing_key_fails
+test_invalid_probe_window_is_refused_before_launch
+test_header_names_the_probe_window
+test_empty_probe_window_reads_as_the_default
+test_leading_zero_window_reads_in_base_ten
+test_never_sandboxed_within_the_window_fails_naming_it
+test_window_exhausted_reads_the_last_report
 test_no_sandbox_observed_fails_and_cleans_up
 test_nonexistent_path_fails
 test_plain_directory_fails
@@ -141,6 +157,35 @@ expect_no_bundle_process() {
   [ -z "$left" ] || fail "processes of $1 are still running: $left"
 }
 
+# "One report" (CP-68): the output holds exactly one `sandboxed:` line — the report the run judged.
+expect_one_report() {
+  reports="$(printf '%s\n' "$OUT" | grep -c '^sandboxed: ')"
+  [ "$reports" -eq 1 ] || fail "expected exactly one report, got $reports. output: $OUT"
+}
+
+# The run's closing failure line: the last `bundle.sh: ` line the script printed (its `die`).
+closing_line() {
+  printf '%s\n' "$OUT" | grep '^bundle.sh: ' | tail -1
+}
+
+# The closing failure line of a run whose window ran out (CP-65; change_design.md: "The closing failure
+# line says `within <N> asks, 0.25 s apart`", and the prefix `the wall does not hold on the launched
+# process (pid …)` stays on it). $1 is N.
+expect_closing_line_states_the_window() {
+  closing="$(closing_line)"
+  case "$closing" in
+    "bundle.sh: the wall does not hold on the launched process (pid "*"within $1 asks, 0.25 s apart"*) ;;
+    *) fail "expected the closing failure line to state the window of $1 asks, 0.25 s apart. closing line: $closing. output: $OUT" ;;
+  esac
+}
+
+# The not-sandboxed condition line exactly as it reads today: the condition blocks read the kept report
+# unchanged (change_design.md § 4), and the window belongs to the closing line, not to this one.
+expect_not_sandboxed_condition_line_unchanged() {
+  printf '%s\n' "$OUT" | grep -qx 'condition not held: the launched process is not sandboxed' \
+    || fail "expected the unchanged line 'condition not held: the launched process is not sandboxed'. output: $OUT"
+}
+
 # A copy of the built bundle in $WORK, re-signed ad hoc with the entitlements in file $2.
 resigned_copy() {
   copy="$WORK/$1/Nozoki.app"
@@ -155,6 +200,42 @@ resigned_copy() {
 # would print, so one condition at a time can be made to fail without an unsandboxed bundle.
 probe_stub() {
   make_stub "$1" nozoki-sandbox-probe "printf 'sandboxed: %s\nout-of-grant-read: %s\noutbound-connection: %s\n' $2 $3 $4"
+}
+
+# A stand-in for `nozoki-sandbox-probe` whose answer depends on how many times it has been called —
+# for proving the ordinary-path and negative-control loops, which ask more than once. $1 is a fresh
+# directory the caller owns; the remaining arguments are the answers, one per ask, each either a
+# three-value report (`sandboxed out-of-grant-read outbound-connection`, space-separated, one call's
+# worth) or the literal FAIL for a probe failure (exits non-zero with a sandbox_check message on
+# stderr, like the real probe's own failure shape). An ask past the last answer repeats the last one.
+# Every call bumps the counter file at $1/count; `asked_count` below reads it as the ask count.
+sequenced_probe_stub() {
+  dir="$1"
+  shift
+  mkdir -p "$dir"
+  printf '%s\n' "$@" > "$dir/answers"
+  echo 0 > "$dir/count"
+  cat > "$dir/nozoki-sandbox-probe" << STUB
+#!/bin/sh
+n=\$(( \$(cat "$dir/count") + 1 ))
+echo "\$n" > "$dir/count"
+total=\$(wc -l < "$dir/answers" | tr -d ' ')
+line_no=\$n
+[ "\$line_no" -le "\$total" ] || line_no="\$total"
+answer=\$(sed -n "\${line_no}p" "$dir/answers")
+if [ "\$answer" = FAIL ]; then
+  echo "nozoki-sandbox-probe: sandbox_check returned an error" >&2
+  exit 1
+fi
+set -- \$answer
+printf 'sandboxed: %s\nout-of-grant-read: %s\noutbound-connection: %s\n' "\$1" "\$2" "\$3"
+STUB
+  chmod +x "$dir/nozoki-sandbox-probe"
+}
+
+# The number of times a sequenced probe stub (above) was called.
+asked_count() {
+  cat "$1/count"
 }
 
 write_entitlements() {
@@ -239,6 +320,41 @@ test_real_bundle_passes() {
   expect_no_bundle_process "$APP"
 }
 
+# CP-64: the loop waits past an early not-sandboxed report and judges the first sandboxed: yes one,
+# at the default window.
+test_probe_waits_past_an_early_unsandboxed_report() {
+  seq="$WORK/seq-waits-past"
+  sequenced_probe_stub "$seq" "no allowed allowed" "no allowed allowed" "yes denied denied"
+
+  run_bundle_sh_with_stubs "$seq" "$APP"
+
+  [ "$STATUS" -eq 0 ] || fail "expected exit 0, got $STATUS. output: $OUT" || return 1
+  expect_output_contains "sandbox observed:" || return 1
+  expect_one_report || return 1
+  expect_output_contains "sandboxed: yes" || return 1
+  [ "$(asked_count "$seq")" -eq 3 ] || fail "expected 3 asks, got $(asked_count "$seq")" || return 1
+  expect_no_bundle_process "$APP"
+}
+
+# CP-64: the ordinary path judges the first sandboxed: yes report as it stands — it does not wait for
+# a better one, even though a later report in the same window would pass.
+test_first_sandboxed_report_is_the_one_judged() {
+  seq="$WORK/seq-first-judged"
+  sequenced_probe_stub "$seq" "yes denied allowed" "yes denied denied"
+
+  run_bundle_sh_with_stubs "$seq" "$APP"
+
+  expect_nonzero_status || return 1
+  expect_output_contains "an outbound network connection is not denied" || return 1
+  expect_one_report || return 1
+  # The window did not decide this run, so its closing line carries no window clause (design, locked).
+  case "$(closing_line)" in
+    *asks*) fail "the closing line states a window on a run the window did not decide: $(closing_line)" || return 1 ;;
+  esac
+  [ "$(asked_count "$seq")" -eq 1 ] || fail "expected 1 ask, got $(asked_count "$seq")" || return 1
+  expect_no_bundle_process "$APP"
+}
+
 # One condition at a time: the probe stub reports two of the three as held and one as not.
 test_outbound_connection_allowed_fails() {
   mkdir -p "$WORK/stubs-outbound"
@@ -266,7 +382,10 @@ test_not_sandboxed_fails() {
   mkdir -p "$WORK/stubs-unsandboxed"
   probe_stub "$WORK/stubs-unsandboxed" no denied denied
 
-  run_bundle_sh_with_stubs "$WORK/stubs-unsandboxed" "$APP"
+  # A bound on the window: with the default, a static stub's answer never changes, so the run would
+  # otherwise ask the whole 40-ask window before failing.
+  OUT="$(BUNDLE_SH_PROBE_TICKS=2 PATH="$WORK/stubs-unsandboxed:$PATH" "$BUNDLE_SH" "$APP" 2>&1)"
+  STATUS=$?
 
   expect_nonzero_status || return 1
   expect_output_contains "the launched process is not sandboxed" || return 1
@@ -398,6 +517,76 @@ test_negative_control_reports_unsandboxed() {
 
   [ "$STATUS" -eq 0 ] || fail "expected exit 0 for the no-entitlement build, got $STATUS. output: $OUT" || return 1
   expect_output_contains "sandboxed: no" || return 1
+  expect_output_contains "40 asks" || return 1
+  expect_output_contains "0.25 s" || return 1
+  expect_one_report || return 1
+  expect_no_bundle_process "$copy"
+}
+
+# CP-69, CP-68: a report that turns sandboxed later in the window still fails the control — waiting
+# for more reports never turns a positive one into a pass.
+test_negative_control_sandboxed_later_in_the_window_fails() {
+  seq="$WORK/seq-control-later"
+  write_entitlements "$WORK/empty-later.plist"
+  copy="$(resigned_copy control-later "$WORK/empty-later.plist")" || fail "could not re-sign the copy" || return 1
+  sequenced_probe_stub "$seq" "no denied denied" "yes denied denied"
+
+  run_bundle_sh_with_stubs "$seq" --negative-control "$copy"
+
+  expect_nonzero_status || return 1
+  expect_output_contains "the negative control was reported sandboxed" || return 1
+  expect_one_report || return 1
+  expect_output_contains "sandboxed: yes" || return 1
+  [ "$(asked_count "$seq")" -eq 2 ] || fail "expected 2 asks, got $(asked_count "$seq")" || return 1
+  expect_no_bundle_process "$copy"
+}
+
+# CP-69: the control asks the whole window before it can pass, and the passing line states it.
+test_negative_control_asks_the_whole_window() {
+  seq="$WORK/seq-control-whole-window"
+  write_entitlements "$WORK/empty-whole.plist"
+  copy="$(resigned_copy control-whole "$WORK/empty-whole.plist")" || fail "could not re-sign the copy" || return 1
+  sequenced_probe_stub "$seq" "no denied denied"
+
+  OUT="$(BUNDLE_SH_PROBE_TICKS=3 PATH="$seq:$PATH" "$BUNDLE_SH" --negative-control "$copy" 2>&1)"
+  STATUS=$?
+
+  [ "$STATUS" -eq 0 ] || fail "expected exit 0, got $STATUS. output: $OUT" || return 1
+  expect_output_contains "3 asks" || return 1
+  expect_output_contains "0.25 s" || return 1
+  expect_one_report || return 1
+  [ "$(asked_count "$seq")" -eq 3 ] || fail "expected 3 asks, got $(asked_count "$seq")" || return 1
+  expect_no_bundle_process "$copy"
+}
+
+# CP-67 (control half): the probe's own failure on any ask ends the run at once, and the run never
+# reaches its passing line.
+test_negative_control_probe_failure_fails() {
+  write_entitlements "$WORK/empty-failure.plist"
+  copy="$(resigned_copy control-failure "$WORK/empty-failure.plist")" || fail "could not re-sign the copy" || return 1
+  mkdir -p "$WORK/stubs-control-failure"
+  make_stub "$WORK/stubs-control-failure" nozoki-sandbox-probe 'echo "nozoki-sandbox-probe: sandbox_check returned an error" >&2; exit 1'
+
+  run_bundle_sh_with_stubs "$WORK/stubs-control-failure" --negative-control "$copy"
+
+  expect_nonzero_status || return 1
+  expect_output_contains "sandbox_check" || return 1
+  expect_output_lacks "negative control: the operating system reports" || return 1
+  expect_no_bundle_process "$copy"
+}
+
+# CP-67's last sentence (control half): a report that exits 0 but carries no sandboxed: line is not a
+# NOT-sandboxed report, so it fails the control exactly as a sandboxed: yes report would.
+test_negative_control_unreadable_report_fails() {
+  write_entitlements "$WORK/empty-unreadable.plist"
+  copy="$(resigned_copy control-unreadable "$WORK/empty-unreadable.plist")" || fail "could not re-sign the copy" || return 1
+  mkdir -p "$WORK/stubs-control-unreadable"
+  make_stub "$WORK/stubs-control-unreadable" nozoki-sandbox-probe "printf 'garbled\n'"
+
+  run_bundle_sh_with_stubs "$WORK/stubs-control-unreadable" --negative-control "$copy"
+
+  expect_nonzero_status || return 1
+  expect_output_contains "the negative control was reported sandboxed" || return 1
   expect_no_bundle_process "$copy"
 }
 
@@ -526,6 +715,10 @@ test_renderer_file_under_resources_passes() {
   copy="$(valid_copy renderer-inside)" || fail "could not re-sign the copy" || return 1
   mkdir -p "$copy/Contents/Resources/assets"
   echo 'body {}' > "$copy/Contents/Resources/assets/style.css"
+  # Adding a file under the bundle after signing breaks its seal; re-sign so the launched copy is
+  # validly sealed like every other launched copy in this suite (PR #1's second half).
+  codesign --force --sign - --entitlements "$WORK/valid.plist" "$copy" > /dev/null 2>&1 \
+    || fail "could not re-sign the copy after adding the renderer file" || return 1
 
   OUT="$(BUNDLE_SH_TAURI_CONF="$WORK/conf-inside.json" "$BUNDLE_SH" "$copy" 2>&1)"
   STATUS=$?
@@ -555,6 +748,24 @@ test_named_frontend_dist_that_does_not_exist_fails() {
   # The script's own named failure, not merely a failing `cd` under `set -e` that happens to print the path.
   expect_output_contains "names a directory that does not exist: $WORK/no-such-renderer-build" || return 1
   [ ! -e "$WORK/open-missing.log" ] || fail "the bundle was launched: $(cat "$WORK/open-missing.log")"
+}
+
+# On CI's runner, plutil's missing-key diagnostic arrives on stdout rather than stderr (the change
+# request's measured cause). A stubbed plutil reproduces that: it prints the diagnostic on stdout and
+# exits 1, so `|| true` alone would keep the diagnostic text as the path. `open` and `ps` are stubbed so
+# the run past the renderer check reaches a bounded, named end rather than an unbounded launch poll.
+test_absent_frontend_dist_stdout_diagnostic_is_not_a_path() {
+  mkdir -p "$WORK/stubs-stdout-diagnostic"
+  make_stub "$WORK/stubs-stdout-diagnostic" plutil \
+    'echo "Could not extract value, error: No value at that key path or invalid key path: build.frontendDist"; exit 1'
+  make_stub "$WORK/stubs-stdout-diagnostic" open "exit 0"
+  make_stub "$WORK/stubs-stdout-diagnostic" ps "exit 0"
+
+  OUT="$(BUNDLE_SH_LAUNCH_TICKS=2 PATH="$WORK/stubs-stdout-diagnostic:$PATH" "$BUNDLE_SH" "$APP" 2>&1)"
+  STATUS=$?
+
+  expect_output_contains "the renderer set is empty" || return 1
+  expect_output_lacks "names a directory that does not exist"
 }
 
 test_extra_key_fails_before_launch() {
@@ -592,14 +803,124 @@ test_missing_key_fails() {
   expect_no_bundle_process "$copy"
 }
 
+# CP-66: a window that is not a positive whole number is refused before anything is launched.
+test_invalid_probe_window_is_refused_before_launch() {
+  mkdir -p "$WORK/stubs-invalid-window"
+  make_stub "$WORK/stubs-invalid-window" open "echo \"\$@\" >> \"$WORK/open-invalid-window.log\""
+
+  for value in 0 -1 abc; do
+    rm -f "$WORK/open-invalid-window.log"
+
+    OUT="$(BUNDLE_SH_PROBE_TICKS="$value" BUNDLE_SH_LAUNCH_TICKS=2 PATH="$WORK/stubs-invalid-window:$PATH" "$BUNDLE_SH" "$APP" 2>&1)"
+    STATUS=$?
+
+    expect_nonzero_status || return 1
+    expect_output_contains "BUNDLE_SH_PROBE_TICKS" || return 1
+    [ ! -e "$WORK/open-invalid-window.log" ] || fail "open was called for BUNDLE_SH_PROBE_TICKS=$value: $(cat "$WORK/open-invalid-window.log")" || return 1
+  done
+}
+
+# CP-66: the header names the variable and its unit, the lines before `set -euo pipefail`.
+test_header_names_the_probe_window() {
+  header="$(awk '/^set -euo pipefail$/{exit} {print}' "$BUNDLE_SH")"
+  case "$header" in
+    *BUNDLE_SH_PROBE_TICKS*) ;;
+    *) fail "the header does not name BUNDLE_SH_PROBE_TICKS. header: $header" || return 1 ;;
+  esac
+  case "$header" in
+    *"0.25 s"*) ;;
+    *) fail "the header does not name the 0.25 s unit. header: $header" ;;
+  esac
+}
+
+# CP-66: an empty value (set, but empty) reads as unset, so the window is still the default of 40.
+# Also proves the default is exactly 40: the run only reaches sandboxed: yes on the 40th ask.
+test_empty_probe_window_reads_as_the_default() {
+  seq="$WORK/seq-empty-window"
+  set --
+  i=1
+  while [ "$i" -le 39 ]; do
+    set -- "$@" "no denied denied"
+    i=$((i + 1))
+  done
+  set -- "$@" "yes denied denied"
+  sequenced_probe_stub "$seq" "$@"
+
+  OUT="$(BUNDLE_SH_PROBE_TICKS= PATH="$seq:$PATH" "$BUNDLE_SH" "$APP" 2>&1)"
+  STATUS=$?
+
+  [ "$STATUS" -eq 0 ] || fail "expected exit 0, got $STATUS. output: $OUT" || return 1
+  expect_output_contains "sandbox observed:" || return 1
+  [ "$(asked_count "$seq")" -eq 40 ] || fail "expected 40 asks, got $(asked_count "$seq")" || return 1
+}
+
+# CP-66: a leading-zero window is a positive whole number, read in base 10 rather than refused as
+# invalid octal.
+test_leading_zero_window_reads_in_base_ten() {
+  seq="$WORK/seq-leading-zero"
+  sequenced_probe_stub "$seq" "no denied denied"
+
+  OUT="$(BUNDLE_SH_PROBE_TICKS=08 PATH="$seq:$PATH" "$BUNDLE_SH" "$APP" 2>&1)"
+  STATUS=$?
+
+  expect_nonzero_status || return 1
+  expect_output_contains "8 asks" || return 1
+  expect_output_lacks "BUNDLE_SH_PROBE_TICKS" || return 1
+  expect_output_lacks "octal" || return 1
+  [ "$(asked_count "$seq")" -eq 8 ] || fail "expected 8 asks, got $(asked_count "$seq")" || return 1
+}
+
+# CP-65, CP-68: never sandboxed within the window — the run fails naming the window it waited.
+test_never_sandboxed_within_the_window_fails_naming_it() {
+  seq="$WORK/seq-never-sandboxed"
+  sequenced_probe_stub "$seq" "no denied denied"
+
+  OUT="$(BUNDLE_SH_PROBE_TICKS=3 PATH="$seq:$PATH" "$BUNDLE_SH" "$APP" 2>&1)"
+  STATUS=$?
+
+  expect_nonzero_status || return 1
+  expect_output_contains "the launched process is not sandboxed" || return 1
+  expect_output_contains "3 asks" || return 1
+  expect_output_contains "0.25 s" || return 1
+  expect_not_sandboxed_condition_line_unchanged || return 1
+  expect_closing_line_states_the_window 3 || return 1
+  expect_one_report || return 1
+  [ "$(asked_count "$seq")" -eq 3 ] || fail "expected 3 asks, got $(asked_count "$seq")" || return 1
+}
+
+# CP-65: when the window runs out, the last report is the one judged — not the first.
+test_window_exhausted_reads_the_last_report() {
+  seq="$WORK/seq-window-exhausted"
+  sequenced_probe_stub "$seq" "no allowed allowed" "no denied denied"
+
+  OUT="$(BUNDLE_SH_PROBE_TICKS=2 PATH="$seq:$PATH" "$BUNDLE_SH" "$APP" 2>&1)"
+  STATUS=$?
+
+  expect_nonzero_status || return 1
+  expect_output_contains "not sandboxed" || return 1
+  expect_output_lacks "an out-of-grant file read is not denied" || return 1
+  expect_output_lacks "an outbound network connection is not denied" || return 1
+  # The second report's own conditions, proving it is the one printed and judged, not the first.
+  expect_output_contains "out-of-grant-read: denied" || return 1
+  expect_one_report || return 1
+  [ "$(asked_count "$seq")" -eq 2 ] || fail "expected 2 asks, got $(asked_count "$seq")" || return 1
+}
+
 test_no_sandbox_observed_fails_and_cleans_up() {
   mkdir -p "$WORK/stubs-nosandbox"
   probe_stub "$WORK/stubs-nosandbox" no allowed allowed
 
-  run_bundle_sh_with_stubs "$WORK/stubs-nosandbox" "$APP"
+  OUT="$(BUNDLE_SH_PROBE_TICKS=2 PATH="$WORK/stubs-nosandbox:$PATH" "$BUNDLE_SH" "$APP" 2>&1)"
+  STATUS=$?
 
   expect_nonzero_status || return 1
   expect_output_contains "the launched process is not sandboxed" || return 1
+  expect_output_contains "2 asks" || return 1
+  expect_output_contains "0.25 s" || return 1
+  expect_not_sandboxed_condition_line_unchanged || return 1
+  expect_closing_line_states_the_window 2 || return 1
+  expect_output_contains "an out-of-grant file read is not denied" || return 1
+  expect_output_contains "an outbound network connection is not denied" || return 1
   launched_pid="$(printf '%s' "$OUT" | sed -n 's/^launched: pid \([0-9]*\).*/\1/p')"
   [ -n "$launched_pid" ] || fail "the script did not name the pid it launched. output: $OUT" || return 1
   ! process_is_running "$launched_pid" || fail "the launched pid $launched_pid is still running" || return 1
@@ -612,7 +933,7 @@ test_marker_in_the_environment_does_not_pass() {
   mkdir -p "$WORK/stubs-marker"
   probe_stub "$WORK/stubs-marker" no allowed allowed
 
-  OUT="$(env "$LEGACY_MARKER=com.kensaiapp.nozoki" PATH="$WORK/stubs-marker:$PATH" "$BUNDLE_SH" "$APP" 2>&1)"
+  OUT="$(env "$LEGACY_MARKER=com.kensaiapp.nozoki" BUNDLE_SH_PROBE_TICKS=2 PATH="$WORK/stubs-marker:$PATH" "$BUNDLE_SH" "$APP" 2>&1)"
   STATUS=$?
 
   expect_nonzero_status || return 1
@@ -631,7 +952,7 @@ test_existing_container_is_not_evidence() {
   mkdir -p "$WORK/stubs-container" "$WORK/home/Library/Containers/com.kensaiapp.nozoki"
   probe_stub "$WORK/stubs-container" no allowed allowed
 
-  OUT="$(HOME="$WORK/home" PATH="$WORK/stubs-container:$PATH" "$BUNDLE_SH" "$APP" 2>&1)"
+  OUT="$(HOME="$WORK/home" BUNDLE_SH_PROBE_TICKS=2 PATH="$WORK/stubs-container:$PATH" "$BUNDLE_SH" "$APP" 2>&1)"
   STATUS=$?
 
   expect_nonzero_status || return 1
@@ -664,6 +985,39 @@ test_probe_error_fails() {
   expect_output_contains "sandbox_check" || return 1
   expect_output_lacks "sandboxed: yes" || return 1
   expect_output_lacks "denied" || return 1
+  expect_no_bundle_process "$APP"
+}
+
+# CP-67's last sentence (ordinary half): a report that exits 0 but does not say sandboxed: yes counts as
+# not sandboxed, so the run keeps asking past it — it is neither a failure that ends the run nor a pass.
+test_unreadable_report_is_asked_past() {
+  dir="$WORK/stubs-unreadable-then-yes"
+  mkdir -p "$dir"
+  echo 0 > "$dir/count"
+  make_stub "$dir" nozoki-sandbox-probe "n=\$(( \$(cat \"$dir/count\") + 1 )); echo \"\$n\" > \"$dir/count\"
+if [ \"\$n\" -eq 1 ]; then printf 'garbled\\n'; else printf 'sandboxed: yes\\nout-of-grant-read: denied\\noutbound-connection: denied\\n'; fi"
+
+  run_bundle_sh_with_stubs "$dir" "$APP"
+
+  [ "$STATUS" -eq 0 ] || fail "expected exit 0, got $STATUS. output: $OUT" || return 1
+  expect_output_contains "sandbox observed:" || return 1
+  expect_output_lacks "garbled" || return 1
+  [ "$(cat "$dir/count")" -eq 2 ] || fail "expected 2 asks, got $(cat "$dir/count")" || return 1
+  expect_no_bundle_process "$APP"
+}
+
+# CP-67: a probe failure on any ask ends the run at once — no later ask is made, and the failure that
+# never happens (ask 3's sandboxed: yes) never gets the chance to be judged.
+test_probe_failure_mid_window_ends_the_run() {
+  seq="$WORK/seq-mid-window"
+  sequenced_probe_stub "$seq" "no denied denied" FAIL "yes denied denied"
+
+  run_bundle_sh_with_stubs "$seq" "$APP"
+
+  expect_nonzero_status || return 1
+  expect_output_contains "sandbox_check" || return 1
+  expect_output_lacks "sandboxed: yes" || return 1
+  [ "$(asked_count "$seq")" -eq 2 ] || fail "expected 2 asks, got $(asked_count "$seq")" || return 1
   expect_no_bundle_process "$APP"
 }
 
