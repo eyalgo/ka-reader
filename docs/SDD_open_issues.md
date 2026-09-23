@@ -287,3 +287,42 @@
   choice on § 1.1 does not move either way, because every seat now refuses (c) on the corrected
   ground.
 - **Confirm or override:** confirm — the owner, 2026-09-23. RC-2's withdrawn ground is still in place at `docs/SDD.md:L2053-L2055` (v12), and RN-56 records the correction; the dated parenthesis goes in as drafted, and RN-52 stays as written.
+
+> **No `product-sdd` run wrote this item either. A `companion-self-answer` run raised it on
+> 2026-09-23** while it answered `docs/architecture_open_issues.md` §§ 2.1 and 2.2. That run read
+> `SDD.md` § 4 C-R2 and C-I3 at v12 and found C-I3 still naming the list C-R2 retired. It also found
+> the two conditions' record lines now point at records that the architecture companion carries
+> forward. No item asked about either. **Nothing is drafted into the SDD.** This run writes no
+> document, so the slot below is the owner's, and the change is the CTO's to draft on the fold.
+
+### 2.3 C-I3 still checks the bundle "against C-R2's exact list", and C-R2 and C-I3 name records that ADR-0011 and ADR-0012 now carry
+- **Raised by:** the `companion-self-answer` run, 2026-09-23 — not one of the SDD's three seats
+- **Drafted into the SDD:** Nothing yet. Two changes are proposed, both in § 4.
+  1. **C-I3's wording.** "`checks/bundle.sh` reads `codesign -d --entitlements :- Nozoki.app`
+     against C-R2's exact list" (`docs/SDD.md:L553-L554`) reads "against the set C-R2's rule admits,
+     as the script's expected set records it". That is the form `docs/nfdr.md` QC-25 took at v10:
+     set equality against the set the script expects, widened only by a change reviewed against the
+     rule.
+  2. **The record lines.** C-R2's "The record is ADR-0003, from which this condition departs on the
+     one word *exactly* (RN-52)" (`docs/SDD.md:L459-L460`) names ADR-0011. C-I3's "The record is
+     ADR-0010" (`docs/SDD.md:L620`) names ADR-0012 beside it for the renderer-gate clause. Both
+     records are Proposed today and become Accepted on the next `product-architecture` fold, which
+     takes the confirm this run wrote at `docs/architecture_open_issues.md` § 2.1. If this fold
+     lands first, each line names the record with its status as the index then shows it.
+- **Rationale:** C-R2 at v12 says the entitlement set is "bound by a **rule**, not held as a list"
+  and that the rule "replaced 'exactly these entitlements'" (`docs/SDD.md:L434-L448`). Further down
+  § 4, C-I3 still checks the bundle against "C-R2's exact list" (`:L554`). So the document
+  contradicts itself. A delivery reader who takes C-I3 at its word fails a bundle carrying
+  `com.apple.security.files.bookmarks.app-scope`, which C-R2 names as a member from the
+  folder-selector slice. The record lines follow from the same ruling. ADR-0011 restates ADR-0003
+  whole with the rule in place of the list and supersedes it on acceptance
+  (`docs/adr/0011-app-sandbox-wall-under-a-rule-no-network-entitlement-ever.md`). ADR-0012 is the
+  renderer gate's own record, which C-I3 claims none for (RN-56;
+  `docs/adr/0012-renderer-run-proved-on-the-shipped-bundle-beside-the-wall.md`). NFDR RN-21
+  reports the C-I3 record line as the CTO's at this fold but raised it nowhere, and this item is
+  where it is raised. It costs no extra cycle, because it rides the fold § 1.1's answer already
+  owes.
+- **If overridden:** C-I3 keeps checking against a list C-R2 no longer holds, and the two
+  conditions keep citing ADR-0003 after it is superseded and no record for the renderer gate.
+  Nothing the SDD decides moves either way: the rule, the gate and the probe stand as written.
+- **Confirm or override:** <"confirm", or "override: <what to do instead>">
