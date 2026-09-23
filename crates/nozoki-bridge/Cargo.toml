@@ -1,0 +1,14 @@
+[package]
+name = "nozoki-bridge"
+version = "0.0.0"
+edition = "2024"
+
+# The static library the native shell links, and an rlib so `cargo test` can build the crate's own tests.
+[lib]
+crate-type = ["staticlib", "rlib"]
+
+[lints]
+workspace = true
+
+[dependencies]
+log = "0.4.34"
