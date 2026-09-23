@@ -33,7 +33,9 @@
 #   Only libSystem's sandbox_check answers, and no shell can call it, so checks/sandbox_probe.rs is
 #   compiled with rustc into this run's temporary directory and run as `nozoki-sandbox-probe <pid>`,
 #   found through PATH — the seam a test uses to stand one condition at a time in for the real probe.
-#   BUNDLE_SH_PROBE_TICKS overrides how many times it is asked, 0.25 s apart; the default is 40.
+#   The ordinary path asks it up to BUNDLE_SH_PROBE_TICKS times, 0.25 s apart (default 40), and judges
+#   the first report that says sandboxed: yes; if the window runs out without one, the last report
+#   asked is judged instead.
 #   No environment variable and no container directory is evidence of a sandbox: a process can carry
 #   the one and a directory can outlive the other (docs/SDD.md § 4 C-I3; NFDR QC-25; ADR-0010).
 
@@ -283,17 +285,16 @@ pid="$1"
 launched_pid="$pid"
 echo "launched: pid $pid ($bundle_executable)"
 
-# The probe's own failure — sandbox_check unresolvable, or an error from it — is neither a pass nor
-# a denial (CP-43): the run ends here, naming what it could not read.
-if ! probe_output="$("nozoki-sandbox-probe" "$pid" 2> "$work/probe.err")"; then
-  die "the operating system's sandbox report for pid $pid could not be read: $(cat "$work/probe.err")"
-fi
-printf '%s\n' "$probe_output"
-
 # The control asks one thing: is the launched process NOT sandboxed. An entitled build the probe calls
 # sandboxed is the answer the control was built to expect, so the same report on an unentitled build
 # means the probe cannot tell the two apart (CP-59: that is the result, and it is not worked around).
+# The probe's own failure — sandbox_check unresolvable, or an error from it — is neither a pass nor
+# a denial (CP-43): the run ends here, naming what it could not read.
 if [ "$negative_control" -eq 1 ]; then
+  if ! probe_output="$("nozoki-sandbox-probe" "$pid" 2> "$work/probe.err")"; then
+    die "the operating system's sandbox report for pid $pid could not be read: $(cat "$work/probe.err")"
+  fi
+  printf '%s\n' "$probe_output"
   case "
 $probe_output
 " in
@@ -304,6 +305,29 @@ sandboxed: no
   esac
 fi
 
+# The ordinary path asks up to PROBE_TICKS times, 0.25 s apart, and stops at the first report that
+# says sandboxed: yes — that report is the one judged below (CP-64). When the window runs out without
+# one, the last report asked is judged instead, and the closing failure line states the window
+# (CP-65). A probe failure on any ask ends the run at once, on the same die path as the control's
+# (CP-67). No sleep follows the last ask, whichever way the loop ends.
+tick=0
+while :; do
+  tick=$((tick + 1))
+  if ! probe_output="$("nozoki-sandbox-probe" "$pid" 2> "$work/probe.err")"; then
+    die "the operating system's sandbox report for pid $pid could not be read: $(cat "$work/probe.err")"
+  fi
+  case "
+$probe_output
+" in
+    *"
+sandboxed: yes
+"*) break ;;
+  esac
+  [ "$tick" -lt "$PROBE_TICKS" ] || break
+  sleep 0.25
+done
+printf '%s\n' "$probe_output"
+
 problems=""
 case "
 $probe_output
@@ -311,7 +335,9 @@ $probe_output
   *"
 sandboxed: yes
 "*) ;;
-  *) problems="${problems}condition not held: the launched process is not sandboxed
+  # Reached only when the window ran out without a sandboxed: yes report — every other exit from the
+  # loop above breaks on that report, so this line and the window clause on it are the same event.
+  *) problems="${problems}condition not held: the launched process is not sandboxed within $PROBE_TICKS asks, 0.25 s apart
 " ;;
 esac
 case "
