@@ -856,7 +856,8 @@ test_invalid_probe_window_is_refused_before_launch() {
   done
 }
 
-# CP-66: the header names the variable and its unit, the lines before `set -euo pipefail`.
+# CP-66, CP-78: the header names the variable and its unit, and states the ordinary path as CP-73's
+# one judgment — never the retired first-yes rule. The lines before `set -euo pipefail`.
 test_header_names_the_probe_window() {
   header="$(awk '/^set -euo pipefail$/{exit} {print}' "$BUNDLE_SH")"
   case "$header" in
@@ -865,7 +866,14 @@ test_header_names_the_probe_window() {
   esac
   case "$header" in
     *"0.25 s"*) ;;
-    *) fail "the header does not name the 0.25 s unit. header: $header" ;;
+    *) fail "the header does not name the 0.25 s unit. header: $header" || return 1 ;;
+  esac
+  case "$header" in
+    *"the first ask on which all three hold"*) ;;
+    *) fail "the header does not state that the pass is the first ask on which all three hold. header: $header" || return 1 ;;
+  esac
+  case "$header" in
+    *"the first report that says sandboxed: yes"*) fail "the header still states the retired rule: the first report that says sandboxed: yes. header: $header" ;;
   esac
 }
 
