@@ -24,6 +24,47 @@
 
 ---
 
+## 2. Choices to confirm — the Principal Architect drafted a best-effort answer; confirm or override
+
+### 2.1 QC-24 holds the export set inside SM-4's list, and the bridge exports `nozoki_free`, which that list leaves out
+
+> **No `product-architecture` run wrote this item, and no record was edited for it.** A
+> `companion-self-answer` run raised it on 2026-09-23 while answering `docs/SDD_open_issues.md`
+> § 5.1. That item finds a flaw in the SDD's C-R7: it holds the bridge's export set inside SM-4's
+> list, but SM-4's own return rule needs `nozoki_free`, and `nozoki_free` is not on the list. The
+> run answered it with `nozoki_free` standing *beside* the list, as the seam's one release
+> function, not on it. QC-24 transcribes C-R7, so the same correction is owed here. The run's
+> reasoning is `docs/trail/sdd/self_answer-23.md` § 5.1. This section heading is added with the
+> item, because the file held § 3 alone.
+
+- **Lands in:** `nfdr.md` QC-24, and QC-59's pin wherever it reads "`SM-4`'s function list as the
+  bridge exports it"
+- **Drafted into the records:** Nothing yet. This run edits no record. The draft it proposes is
+  this. QC-24 holds the export set inside SM-4's list and `nozoki_free`, where it now says inside
+  the list alone. From `v1.0.0` the set is the list whole and `nozoki_free`. The *verified by*
+  clause changes to match: "that set inside the list above, and `nozoki_free`". QC-59's pin
+  records `nozoki_free` along with the nine functions, because the pin reads the export set.
+- **Rationale:** The SDD's § 4 opening note says the NFDR is re-derived from § 4 where the two
+  disagree. When `product-sdd` folds § 5.1, C-R7 will admit `nozoki_free` and QC-24 will not.
+  QC-24 is already false against the built tree. `crates/nozoki-bridge/src/exports.rs:L61`
+  exports `nozoki_free`, and `crates/nozoki-bridge/tests/exports.rs:L17` admits it, but QC-24's
+  rule refuses it (`nfdr.md:L296-L303`). The records already place `nozoki_free` beside the
+  list. ADR-0013 names it after the nine (`adr/0013-sandboxed-single-process-read-pipeline.md:L47-L48`),
+  and ADR-0016 lists it separately from SM-4's functions
+  (`adr/0016-physical-unit-set-core-bridge-mac-checks.md:L28`). So this is a transcription, and
+  no record is superseded. `nozoki_free` is not a command. QC-2's "`checks/read-only.sh` after
+  every function the build exports, driven through `SM-5`" does not reach it, because SM-5 is the
+  model's API and `nozoki_free` never calls the model.
+- **If overridden:** QC-24 stays stricter than the SDD's C-R7. The export test as built already
+  admits a function the entry refuses, and a check written to QC-24's letter would fail the
+  bridge that has been built.
+- **The order:** If this round runs before `product-sdd` folds § 5.1, the SDD's C-R7 does not yet
+  carry the sentence this item transcribes. Whether to wait for that fold or take the wording from
+  that item's answer is the Principal Architect's call.
+- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+
+---
+
 ## 3. Raised from downstream — an item from a seat that did not write these records
 
 ### 3.1 QC-13's import list, read as exhaustive, forbids the four crates the bridge now imports
