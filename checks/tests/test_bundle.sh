@@ -49,6 +49,7 @@ CASES="
 test_real_bundle_passes
 test_probe_waits_past_an_early_unsandboxed_report
 test_first_sandboxed_report_is_the_one_judged
+test_pass_line_states_the_window_in_force
 test_outbound_connection_allowed_fails
 test_out_of_grant_read_allowed_fails
 test_not_sandboxed_fails
@@ -353,6 +354,23 @@ test_first_sandboxed_report_is_the_one_judged() {
   esac
   [ "$(asked_count "$seq")" -eq 1 ] || fail "expected 1 ask, got $(asked_count "$seq")" || return 1
   expect_no_bundle_process "$APP"
+}
+
+# CP-76: the pass line states the window in force ($PROBE_TICKS), never the ask that passed. The pass
+# comes on ask 1 while the line says 5, which is what tells the two apart.
+test_pass_line_states_the_window_in_force() {
+  seq="$WORK/seq-pass-line-window"
+  sequenced_probe_stub "$seq" "yes denied denied"
+
+  OUT="$(BUNDLE_SH_PROBE_TICKS=5 PATH="$seq:$PATH" "$BUNDLE_SH" "$APP" 2>&1)"
+  STATUS=$?
+
+  [ "$STATUS" -eq 0 ] || fail "expected exit 0, got $STATUS. output: $OUT" || return 1
+  [ "$(asked_count "$seq")" -eq 1 ] || fail "expected 1 ask, got $(asked_count "$seq")" || return 1
+  last_line="$(printf '%s\n' "$OUT" | tail -1)"
+  matched="$(printf '%s' "$last_line" | sed -n 's/^sandbox observed: sandboxed, out-of-grant read denied, outbound connection denied (pid [0-9][0-9]*), the first ask to hold all three within 5 asks, 0\.25 s apart$/matched/p')"
+  [ -n "$matched" ] \
+    || fail "expected the last line to be exactly the CP-76 pass line stating the window of 5 asks with a digit pid. last line: $last_line"
 }
 
 # One condition at a time: the probe stub reports two of the three as held and one as not.
