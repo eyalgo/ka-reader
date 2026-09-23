@@ -5,11 +5,11 @@ import Foundation
 ///
 /// `Shell` cannot see the C struct, so a buffer is a Swift value. The `Nozoki` target builds
 /// one from the C return and turns the handle back into the C pointer to free it.
-public struct BridgeBuffer: Equatable, Sendable {
-    public let payload: Data
-    public let handle: UInt
+package struct BridgeBuffer: Equatable, Sendable {
+    package let payload: Data
+    package let handle: UInt
 
-    public init(payload: Data, handle: UInt) {
+    package init(payload: Data, handle: UInt) {
         self.payload = payload
         self.handle = handle
     }

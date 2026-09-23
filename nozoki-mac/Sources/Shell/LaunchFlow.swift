@@ -8,21 +8,21 @@ import Surfaces
 /// bridge decides what a cancel means (CP-90). The flow never presents the panel a second time,
 /// never exits on a cancel and creates one window.
 @MainActor
-public final class LaunchFlow {
+package final class LaunchFlow {
     /// The root of the open folder, as `nozoki_list_tree` reads it.
     private static let rootPath = ""
     private static let folderGlyphName = "folder"
     private static let fileGlyphName = "file"
 
     /// Whether the bridge reported the last `openFolder` as having replaced the session.
-    public private(set) var folderOpened = false
+    package private(set) var folderOpened = false
 
     private let panel: FolderChoosing
     private let bridge: Bridging
     private let glyphs: GlyphSource
     private let presenter: WindowPresenting
 
-    public init(
+    package init(
         panel: FolderChoosing, bridge: Bridging, glyphs: GlyphSource, presenter: WindowPresenting
     ) {
         self.panel = panel
@@ -31,7 +31,7 @@ public final class LaunchFlow {
         self.presenter = presenter
     }
 
-    public func run() {
+    package func run() {
         let location = panel.chooseFolder()
 
         let openBuffer = bridge.openFolder(location: location)

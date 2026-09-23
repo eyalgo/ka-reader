@@ -7,16 +7,16 @@ import AppKit
 /// and never reaches the bridge (SM-8, CP-97). Only root items are drawn; expansion is not
 /// part of this change.
 @MainActor
-public final class RootItemsView: NSScrollView {
+package final class RootItemsView: NSScrollView {
     /// The outline view the rows live in. Exposed so a caller can host it and a test can read
     /// the rows it reports.
-    public let outlineView = NSOutlineView()
+    package let outlineView = NSOutlineView()
 
     private let folderGlyph: NSImage
     private let fileGlyph: NSImage
     private var rows: [Row] = []
 
-    public init(folderGlyph: NSImage, fileGlyph: NSImage) {
+    package init(folderGlyph: NSImage, fileGlyph: NSImage) {
         self.folderGlyph = folderGlyph
         self.fileGlyph = fileGlyph
         super.init(frame: .zero)
@@ -32,12 +32,12 @@ public final class RootItemsView: NSScrollView {
     }
 
     @available(*, unavailable)
-    public required init?(coder: NSCoder) {
+    package required init?(coder: NSCoder) {
         preconditionFailure("RootItemsView is built in code only")
     }
 
     /// Replaces the rows with `entries`, in exactly that order.
-    public func show(_ entries: [Entry]) {
+    package func show(_ entries: [Entry]) {
         rows = entries.map(Row.init)
         outlineView.reloadData()
     }
@@ -91,24 +91,24 @@ private final class Row: NSObject {
 }
 
 extension RootItemsView: NSOutlineViewDataSource {
-    public func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int
+    package func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int
     {
         item == nil ? rows.count : 0
     }
 
-    public func outlineView(_ outlineView: NSOutlineView, child index: Int, ofItem item: Any?)
+    package func outlineView(_ outlineView: NSOutlineView, child index: Int, ofItem item: Any?)
         -> Any
     {
         rows[index]
     }
 
-    public func outlineView(_ outlineView: NSOutlineView, isItemExpandable item: Any) -> Bool {
+    package func outlineView(_ outlineView: NSOutlineView, isItemExpandable item: Any) -> Bool {
         false
     }
 }
 
 extension RootItemsView: NSOutlineViewDelegate {
-    public func outlineView(
+    package func outlineView(
         _ outlineView: NSOutlineView, viewFor tableColumn: NSTableColumn?, item: Any
     ) -> NSView? {
         guard let row = item as? Row else {

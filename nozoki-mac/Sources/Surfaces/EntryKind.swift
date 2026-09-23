@@ -2,7 +2,7 @@
 ///
 /// The set is closed: decoding any other string fails, so a kind the shell has no
 /// glyph for cannot enter a row.
-public enum EntryKind: String, Decodable, Sendable {
+package enum EntryKind: String, Decodable, Sendable {
     case folder
     case file
     case symlink
