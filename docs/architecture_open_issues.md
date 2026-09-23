@@ -52,7 +52,27 @@
   — the diff that proves tree-equals-list, and the review that admits a name to the list at all. The
   PM's lean is to name QC-26's same-change code review as the closing half, so the domain is
   enforced by a gate the records point at rather than by the reader's assumption.
-- **Answer:** <the owner fills this in>
+- **Answer:** Answered in the owner's seat by a `companion-self-answer` run, 2026-09-23. **Yes —
+  QC-3's *verified by* states two halves, and the second is QC-26's same-change review, told what
+  question to ask.** (1) *The tree equals the list*: `checks/no-network.sh`, as now. (2) *The list
+  holds no transport*: the allowlist change reviewed as code in the same change (QC-26, at
+  `development-design`), and that review judges each added name against QC-3's domain — does it,
+  **in the features the lockfile resolves**, link a network transport — not only whether it is
+  deliberate. The features clause is needed because a name alone cannot answer QC-3. `tokio` is on
+  the list (`checks/deps.allow:L204`), and at `nozoki@9b36a42` `cargo tree --offline --locked -e
+  features -i tokio` resolves `bytes, default, fs, io-util, rt, rt-multi-thread, sync` and no
+  `net`, so today it links no socket. And QC-3's own first clause, "libgit2 is built without its
+  HTTPS and SSH transports", is a feature condition that a name diff cannot see at all once `git2`
+  lands. That is the transport-bearing libgit2 build `docs/SDD.md` § 4 C-R6 names under *Violated
+  by*. The upstream already carries this half: C-R6 says the allowlist change "is reviewed in the
+  same change" and that "no shipped unit links a network transport", so this makes QC-3 point at
+  what C-R6 states. It is a correction, not a widening: the NFDR's own preamble says an entry with
+  no nameable verification is not yet an entry, and QC-3's domain half has none. **One case the
+  review does not reach, named:** the 381 names already on the list (218 cargo, 163 pnpm, `bash
+  checks/no-network.sh` at `nozoki@9b36a42`) went through the diff but were never recorded as
+  reviewed against the domain. The entry should require that review once, recorded in the change
+  that realizes the new tail. § 10's QC-3 row gains the review beside the script. Reasoning:
+  `docs/trail/architecture/self_answer-10.md` § Items worked, 3.1.
 
 ### 3.2 ADR-0010 and QC-25 fix what the probe must read, not when — and the first CI runs read too early
 - **Raised by:** PM — 2026-09-23
@@ -85,7 +105,28 @@
   by* naming the bounded window and the control's whole-window rule, re-derived from C-I3 once the
   SDD's § 5.1 is folded. Doubt: if the window is read as part of the mechanism ADR-0010 fixed, it is
   a new record superseding it, and that is this seat's call, not the PM's.
-- **Answer:** <the owner fills this in>
+- **Answer:** Answered in the owner's seat by a `companion-self-answer` run, 2026-09-23, decided
+  together with § 3.3. **The window is a correction, not a new record. ADR-0010 is not superseded,
+  and QC-25 is re-derived from `docs/SDD.md` § 4 C-I3 as it reads at SDD v8.** The mechanism
+  ADR-0010 fixed has not moved: the same observable (`sandbox_check` on the launched main
+  process's pid), the same three answers, and a negative control. C-I3 at v8 says "the bound is
+  the script's to fix and this document states no number" (`docs/SDD.md:L537`), so the
+  window is a parameter the SDD hands to the script, and no record decides it. ADR-0010's
+  "requires it to fail" is still true of a control that must answer `sandboxed: no` on every ask.
+  The line ADR-0010 draws for another record is "replacing the observable", and that has not
+  happened. **QC-25's *verified by* takes C-I3's v8 sentences.** They are: one ask inside a
+  bounded window after launch, with the pass on the first ask where all three hold; the bound
+  fixed and printed by the script; a check before every ask that the pid still names a process,
+  and a process gone before the pass fails; the control answering `sandboxed: no` on every ask
+  for the whole window; `sandbox_check` missing or erroring on any ask fails; and the uncovered
+  case named, a report that turns `yes` → `no` after the pass. **Two sentences are now false and
+  get corrected.** QC-25's "asserts nothing about a GitHub-hosted runner … settled by the probe's
+  first CI run" is false because the run has happened (SDD RN-48). ADR-0010's closing paragraph,
+  "One case is unmeasured … open in `docs/SDD.md` § Open Questions", points at an Open Questions
+  item SDD v8 closed and removed. That paragraph is corrected in place to a dated note pointing at
+  SDD RN-48, the kind of prose correction this log has taken before without a superseding record
+  (NFDR v5 and v6 pins). The § 10 row does not move, since the command is the same. Reasoning:
+  `docs/trail/architecture/self_answer-10.md` § Items worked, 3.2.
 
 **How it closes.** `product-architecture` folds it on its next run like any other item here.
 
@@ -121,4 +162,9 @@
   the record or a new record superseding it is this seat's call, as § 3.2 already asks about the
   window. The lean is that it is a correction: the observable and the mechanism stay the same, and
   one of its three readings turns out to separate nothing on one host.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm — with one addition: the claim is not only in § Consequences.
+  ADR-0010's **§ Decision** also says "the two denials test the wall itself rather than a proxy for
+  it", so the correction reaches that sentence too. It stays a correction, because the probe still
+  requires all three answers and only the claim's scope narrows. It follows `docs/SDD.md` § 4 C-I3
+  at v8, which already says this, and QC-25 takes the same sentence when it is re-derived (§ 3.2,
+  decided together). Reasoning: `docs/trail/architecture/self_answer-10.md` § Items worked, 3.3.
