@@ -167,3 +167,30 @@
   the README when (a) lands — a public surface, not this document's — and the first-release date
   the owner has been counting toward moves out by the rewrite of `surfaces`.
 - **Answer:** <the owner fills this in>
+
+## 2. Choices to confirm — a seat drafted a best-effort answer; confirm or override
+
+> **No `product-sdd` run wrote this item. A `companion-self-answer` run raised it on 2026-09-23**,
+> while answering § 1.1 above. That run read `SDD.md` whole, and this is a line in it that no
+> item asked about. No seat drafted it and nothing in `SDD.md` has changed. The slot below is the
+> next round's to answer.
+
+### 2.1 C-I3 names ADR-0008 as its record, but ADR-0010 superseded ADR-0008 on 2026-09-19
+- **Raised by:** the `companion-self-answer` run, 2026-09-23 — not one of the SDD's three seats
+- **Drafted into the SDD:** Nothing. Proposed: in § 4 C-I3, "The record is ADR-0008" becomes
+  "The record is ADR-0010" (`docs/SDD.md:L620`). Leave RN-11's "The record is ADR-0008"
+  (`docs/SDD.md:L2370`) as it is. That note is dated history and was true when it was written.
+- **Rationale:** ADR-0008's status reads "Superseded by ADR-0010"
+  (`docs/adr/0008-harness-over-core-and-bundle-probe-from-first-build.md:L3`). ADR-0010 says
+  "supersedes ADR-0008" (`docs/adr/0010-harness-over-core-and-bundle-probe-reads-the-os-sandbox-report.md:L3`),
+  and the index shows the same (`docs/adr/README.md:L25-L27`). C-I3 is a live condition. Its own
+  text already describes ADR-0010's observable, the operating system's sandbox report and not
+  ADR-0008's environment marker (§ 10 RC-1). So its citation points at a record that is no
+  longer in force. A reader who follows it reaches the marker that RC-1 says was dropped. This is a
+  claim about another document that is now false. It costs no extra cycle, because it rides the
+  fold § 1.1 already owes.
+- **If overridden:** C-I3 keeps pointing at a superseded record, and nothing else moves. Whichever
+  record carries the new renderer gate is the Principal Architect's to decide
+  (`docs/architecture_open_issues.md` § 2.1). If a new record supersedes ADR-0010 for that gate,
+  this citation moves again at that fold.
+- **Confirm or override:** <"confirm", or "override: <what to do instead>">
