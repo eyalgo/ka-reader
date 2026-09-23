@@ -62,6 +62,30 @@ fn build_library() -> Result<(), String> {
         .ok_or_else(|| format!("cargo build failed: {status}"))
 }
 
+/// Apple's `nm` cannot read the LLVM bitcode of the precompiled `std` members a Rust static library
+/// carries, and exits 1 after listing every member it can read. That is not a failed listing, so this
+/// accepts a non-zero exit only when nm's whole complaint is unreadable members that belong to a
+/// dependency, and never one of the bridge's own (`nozoki_bridge-<hash>…` objects), which is where
+/// an export lives. A member with no symbols is no complaint: it has no export to miss. Any other
+/// complaint, or none at all, is a listing that cannot be trusted (QC-24).
+fn only_dependency_members_unreadable(stderr: &[u8]) -> bool {
+    let text = String::from_utf8_lossy(stderr);
+    let complaints: Vec<&str> = text
+        .lines()
+        .map(str::trim)
+        .filter(|l| !l.is_empty() && !l.ends_with(": no symbols"))
+        .collect();
+    !complaints.is_empty()
+        && complaints.iter().all(|line| {
+            let member = line
+                .split_once("error: ")
+                .and_then(|(_, rest)| rest.split_once(".a("))
+                .and_then(|(_, rest)| rest.split_once("): "))
+                .map(|(member, _)| member);
+            member.is_some_and(|member| !member.starts_with("nozoki_bridge-"))
+        })
+}
+
 /// The `nozoki_` names `nm -gU` reports for `library`. Mach-O prefixes a C symbol with `_`.
 fn exported_names(nm: &str, library: &Path) -> Result<BTreeSet<String>, String> {
     let output = Command::new(nm)
@@ -69,8 +93,12 @@ fn exported_names(nm: &str, library: &Path) -> Result<BTreeSet<String>, String> 
         .arg(library)
         .output()
         .map_err(|error| format!("{nm} could not run: {error}"))?;
-    if !output.status.success() {
-        return Err(format!("{nm} failed: {}", output.status));
+    if !output.status.success() && !only_dependency_members_unreadable(&output.stderr) {
+        return Err(format!(
+            "{nm} failed: {}: {}",
+            output.status,
+            String::from_utf8_lossy(&output.stderr)
+        ));
     }
     Ok(String::from_utf8_lossy(&output.stdout)
         .lines()
@@ -229,4 +257,26 @@ fn test_hand_edited_header_is_regenerated() {
         set(&ADMITTED),
         "the build rewrote the header from the source"
     );
+}
+
+#[test]
+fn test_unreadable_dependency_member_does_not_fail_the_listing() {
+    let stderr = b"nm: error: lib.a(std-1.rcgu.o): Unknown attribute kind (105)\n\nnm: error: lib.a(object-2.rcgu.o): Unknown attribute kind (105)\nlib.a:cfg_if-1.rcgu.o: no symbols\n";
+
+    assert!(only_dependency_members_unreadable(stderr));
+}
+
+#[test]
+fn test_unreadable_bridge_member_fails_the_listing() {
+    let stderr = b"nm: error: lib.a(std-1.rcgu.o): x\nnm: error: lib.a(nozoki_bridge-9f.0.rcgu.o): Unknown attribute kind (105)\n";
+
+    assert!(!only_dependency_members_unreadable(stderr));
+}
+
+#[test]
+fn test_a_complaint_that_names_no_member_fails_the_listing() {
+    assert!(!only_dependency_members_unreadable(
+        b"nm: error: no such file\n"
+    ));
+    assert!(!only_dependency_members_unreadable(b""));
 }
