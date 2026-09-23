@@ -40,9 +40,13 @@ declares no package dependency and links `libnozoki_bridge.a` statically, `nozok
 (§ 3, "Two libraries, one executable, one bundle"). `checks/` may import `nozoki-core` and is never
 a dependency of a shipped unit. The Rust crates sit under `crates/` — the owner's ruling for every
 Rust product in this instance (`kensaiapp-dev@49e0444f`, carried by `docs/nfdr.md` § 9) — and the
-Swift frame (`Package.swift`, `Sources/`, `Tests/`) lands inside `nozoki-mac/`, laid out by the
-slice that lands it, because no Swift packet exists in the organisation's language registry
-(`docs/SDD.md` § 3, the Swift-frame paragraph). Drawn on, not applied: `arch_defaults.md` v2.0.0
+Swift frame (`Package.swift`, `Sources/`, `Tests/`) lands inside `nozoki-mac/`, laid out by hand
+in the slice that landed it, its inner layout the Swift packet's and `docs/nfdr.md` § 9's
+(`docs/SDD.md` § 3, the Swift-frame paragraph at v16) *(corrected in place 2026-09-23 — as
+accepted earlier that day this clause read "laid out by the slice that lands it, because no Swift
+packet exists in the organisation's language registry"; the registry gained `languages/swift/`
+the same day, `kensaiapp-dev@3ab2e8553`; the answer at `docs/trail/architecture/cycle-10.md`
+§ 3.4)*. Drawn on, not applied: `arch_defaults.md` v2.0.0
 § Composition Root — two roots, one per language, each the single place its runtime is touched.
 
 ## Alternatives ruled out
@@ -71,8 +75,10 @@ fall on unit boundaries a reviewer reads in a diff; and the Swift side brings no
 Harder: two toolchains — `cargo` and `swift` — and a C ABI to keep honest: a generated header
 never hand-edited, every buffer owned and freed by `nozoki_free` alone, every function catching a
 panic at the boundary, the bridge's tests under the address sanitizer in CI (§ 11 R-13); and a
-Swift package with no language packet behind it, so its layout and its testing tool are this
-product's own to record (`docs/nfdr.md` § 9).
+Swift package whose departures from the Swift packet — and the toolchain CI builds it with — are
+this product's own to record (`docs/nfdr.md` § 9) *(corrected in place 2026-09-23, as in
+§ Decision; as accepted it read "with no language packet behind it, so its layout and its testing
+tool are this product's own to record")*.
 
 What undoing it costs: merging or splitting crates is a workspace edit; the module boundaries this
 record fixes are the ones `docs/nfdr.md` § 1.2 binds, and moving one moves that section with it.
@@ -108,6 +114,18 @@ Git port), a C header and an intent set, none of which a toolchain owns. The one
   — the model calls `markdown-renderer` and `highlighter` to fill a `FileView`, neither importing
   the model (§ 3, RN-64) — runs inside `nozoki-core` and moves no unit and no boundary this record
   fixes; the import it adds is `docs/nfdr.md` QC-10's.
+- `docs/SDD.md` at v16 (`nozoki@097ef33`, Settled) — § 3, the Swift-frame paragraph as it now
+  rests on the Swift packet; § SDD Review Notes RN-66. `<CORE>/doctrine/engineering/languages/swift/`
+  — `layout.md` v1.0.0, `testing.md` v1.1.0, `toolchain.md` v1.1.0 — in the registry since
+  `kensaiapp-dev@3ab2e8553`, merged at 18:46 on 2026-09-23, after this record was accepted at
+  15:13 (`nozoki@1dfdd86`); the listing in the bullet above was true when taken. Read for the two
+  in-place corrections dated 2026-09-23 above, each authorized in the owner's seat at
+  `docs/trail/architecture/cycle-10.md` § 3.4 as a correction to this record and not a reversal of
+  it — reasoning `docs/trail/architecture/self_answer-13.md` § 3.4; the item as raised and answered
+  on the SDD is `docs/trail/sdd/cycle-12.md` § 5.2. Where `nozoki-mac` stands against the packet —
+  followed, adopted, departed from — is `docs/nfdr.md` § 9's, not this record's. What those
+  corrections do not touch: § Decision's four units and their map, the frame's location inside
+  `nozoki-mac/`, "declares no package dependency"; § Alternatives ruled out; § Binds.
 - Inputs read for this record: SDD Draft v13 · SRS Settled v12 · FDR Settled v8.
 
 ## Binds
