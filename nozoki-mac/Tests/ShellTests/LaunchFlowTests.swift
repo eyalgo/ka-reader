@@ -98,6 +98,55 @@ final class LaunchFlowTests: XCTestCase {
         XCTAssertTrue(harness.flow.folderOpened)
     }
 
+    func testOpenedFalseIsRead() {
+        let harness = Harness(panelAnswer: nil)
+        harness.bridge.openAnswer = Data(#"{"opened":false}"#.utf8)
+
+        harness.flow.run()
+
+        XCTAssertFalse(harness.flow.folderOpened)
+    }
+
+    func testNonConformingOpenPayloadReadsAsNotOpened() {
+        let payloads = ["this is not json", #"{"opened":"yes"}"#, "{}"]
+        for payload in payloads {
+            let harness = Harness(panelAnswer: chosenFolder)
+            harness.bridge.openAnswer = Data(payload.utf8)
+
+            harness.flow.run()
+
+            XCTAssertFalse(harness.flow.folderOpened, payload)
+            XCTAssertEqual(harness.bridge.listedPaths, [""], "the flow continues to list")
+        }
+    }
+
+    func testRowsCarryTheGlyphForTheirKind() throws {
+        let glyphs = FakeGlyphSource()
+        let log = EventLog()
+        let bridge = RecordingBridge(log: log)
+        let presenter = FakeWindowPresenter()
+        let wire =
+            #"[{"name":"docs","path":"docs","kind":"folder"},"#
+            + #"{"name":"a.md","path":"a.md","kind":"file"},"#
+            + #"{"name":"link","path":"link","kind":"symlink"}]"#
+        bridge.listAnswer = Data(wire.utf8)
+        let flow = LaunchFlow(
+            panel: FakePanel(answer: chosenFolder, log: log), bridge: bridge, glyphs: glyphs,
+            presenter: presenter)
+
+        flow.run()
+
+        let view = try XCTUnwrap(presenter.presented.first)
+        let images = try (0..<view.outlineView.numberOfRows).map { row in
+            let made = view.outlineView.view(atColumn: 0, row: row, makeIfNecessary: true)
+            return try XCTUnwrap((made as? NSTableCellView)?.imageView?.image)
+        }
+        XCTAssertEqual(images.count, 3)
+        XCTAssertTrue(images[0] === glyphs.folder, "a folder row draws the folder glyph")
+        XCTAssertTrue(images[1] === glyphs.file, "a file row draws the file glyph")
+        XCTAssertTrue(images[2] === glyphs.file, "a symlink row draws the file glyph")
+    }
+
     func testNilListResultDrawsNoRow() throws {
         let harness = Harness(panelAnswer: chosenFolder)
         harness.bridge.listAnswer = nil

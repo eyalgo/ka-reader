@@ -145,6 +145,20 @@ mod tests {
     }
 
     #[test]
+    fn test_app_path_under_contents_but_not_macos_does_not_install() {
+        let executable = Path::new("/Applications/Nozoki.app/Contents/Resources/Nozoki");
+
+        assert!(!should_install(executable, true));
+    }
+
+    #[test]
+    fn test_app_path_under_macos_but_not_contents_does_not_install() {
+        let executable = Path::new("/Applications/Nozoki.app/Other/MacOS/Nozoki");
+
+        assert!(!should_install(executable, true));
+    }
+
+    #[test]
     fn test_container_path_is_c_i2s() {
         let home = Path::new("/Users/someone");
 
