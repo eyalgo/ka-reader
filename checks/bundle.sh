@@ -186,8 +186,10 @@ fi
 # An override for a caller that must stand another configuration in (a test).
 TAURI_CONF="${BUNDLE_SH_TAURI_CONF:-$(cd "$(dirname "$0")/.." && pwd -P)/crates/nozoki-app/tauri.conf.json}"
 [ -f "$TAURI_CONF" ] || die "the Tauri configuration is missing: $TAURI_CONF"
-# plutil ships with macOS and reads JSON; an absent key is a non-zero exit, read as "no value".
-frontend_dist="$(plutil -extract build.frontendDist raw -o - "$TAURI_CONF" 2> /dev/null || true)"
+# plutil ships with macOS and reads JSON. A failed extract (any non-zero exit) is read as no value,
+# whatever it printed and on whichever stream — a runner that puts the missing-key diagnostic on
+# stdout must not have that diagnostic read as the path.
+frontend_dist="$(plutil -extract build.frontendDist raw -o - "$TAURI_CONF" 2> /dev/null)" || frontend_dist=""
 if [ -z "$frontend_dist" ]; then
   echo "renderer build: build.frontendDist is absent from $TAURI_CONF — the renderer set is empty, so no renderer file was checked"
 else
