@@ -6,7 +6,7 @@
        signal, and the state a finished SDD carries; the open-issues file is gone.
      Locked = ratified as the source of truth. -->
 **Owner:** CTO · CPO · CDO — one run, three seats
-**Version:** 15 — CPO: nothing — verification only; no SDD section, slice or companion item altered.; CTO: SDD § 3 (`folder-model` row and the units paragraph's edge — citation to the confirm only); § 6 S-3 *Reached when* command half (the SM-5 fill case) and *Rests on* (`folder-model`, `SM-5`); § 12 the downstream boundary (confirmed state, NFDR v12 transcription, retired-companion pointer re-aimed); SDD Review Notes RN-64 (*because* corrected in place, dated; *Rests on* pointer; two retired-file pointers) and RN-65 (CTO, changed) — new. Companion: § 2.4 consumed, `docs/SDD_open_issues.md` removed, empty of items (trail: `docs/trail/sdd/cycle-11.md`). Companion items added: none.; CPO: nothing — verification only; the CTO's round-1 fold (S-3 *Rests on* and command half, § 3, § 12 downstream boundary, RN-64, RN-65, companion removed) verified on disk and reaches no CPO field.
+**Version:** 16 — CPO: nothing — verification only; no SDD section, slice or companion item altered.; CTO: § 3 SM-4 row and the Swift-frame paragraph; § 4 C-R7 (held set, `v1.0.0` sentence, the no-second-export sentence, *Violated by*), C-I3 *Violated by* (the command parenthesis), C-I6 (the pin's set); § 6 S-1 and S-11 *Reached when* command halves; § 10 RC-3 *Still unresolved* (dated parenthesis); § 12 the downstream boundary (QC-24 and the Swift premise, raised on the architecture companion § 2.1 and § 3.4); SDD Review Notes RN-60 (dated parenthesis) and RN-66 (CTO, changed) — new. Companion: § 5.1 and § 5.2 consumed, `docs/SDD_open_issues.md` removed, empty of items (trail: `docs/trail/sdd/cycle-12.md`). Companion items added: none.; CPO: nothing — verification only; the CTO's round-1 fold (twelve hunks: § 3 SM-4 and the Swift-frame paragraph, § 4 C-R7 / C-I3 / C-I6, S-1 and S-11 command halves, RC-3, § 12 downstream boundary, RN-60, RN-66; companion removed) verified on disk and reaches no CPO field.
 Version 8 — CTO: § 4 C-I3 (bounded window, first-ask-all-three pass, script-fixed and printed bound with no number here, per-ask live-pid check, uncovered yes→no case, control `no` for the whole window, error-on-any-ask, denial-as-proof clause narrowed to where the control reports the denials allowed with the hosted runner's read denial stated as separating nothing, Violated by extended); § 10 RC-1 Still unresolved (pointer to RN-48); § 11 R-8 shows up as and response; Open Questions (fourth item closed and removed — four remain); SDD Review Notes RN-48 (new). Companion items added: none. docs/SDD_open_issues.md removed, empty of items.
 Version 7 — CTO: § 3 SM-4 (what crosses, and owner cell wording); § 4 C-R7 (the staged grant, set equality against registered commands, asset-scheme keying, named pre-1.0.0 uncovered case, Violated by); § 4 C-I3 (every command the build grants); § 6 S-7 Reached when, command half; SDD Review Notes RN-47 (new). Companion items added: none. docs/SDD_open_issues.md removed, empty of items.
 Version 6 — CTO: § 4 C-I3 (observable and Violated by); § 6 open-a-folder Reached when, command half; § 10 RC-1 (new, first re-cut entry); § 11 R-8 shows up as; Open Questions fourth item (closed, replaced by the hosted-runner question); SDD Review Notes RN-45 (new). Companion items added: none. docs/SDD_open_issues.md removed, empty of items.; CPO: § 5 step 4 (E-1's sizing sentence); SDD Review Notes RN-46 (new). Companion items added: none.
@@ -394,12 +394,13 @@ card's `Languages:` line; *Kind* is the word that language's packet uses for a b
 | `checks` | `Shell` | `directory` |
 
 The Swift frame — `Package.swift`, `Sources/`, `Tests/` — lands inside `nozoki-mac/`, where the
-card's own test command goes to find it. No Swift packet exists in the organisation's language
-registry (`<CORE>/doctrine/engineering/languages/`, listed 2026-09-23: `javascript`, `python`,
-`rust`, `shell`, `typescript`), so *Kind* takes the word Swift Package Manager uses for a buildable
-unit, `package`, and the frame is laid out by the slice that lands it rather than by a launcher; the
-project card's `Languages:` line is owed `Swift` in place of `TypeScript`, and its test command the
-`swift test` half in place of Vitest — outside this document (RN-60). `checks` is `directory` because
+card's own test command goes to find it. *Kind* takes the word the Swift packet uses for a buildable
+unit, `package` (`<CORE>/doctrine/engineering/languages/swift/layout.md`, in the registry since
+`kensaiapp-dev@3ab2e8553`, 2026-09-23), which is also Swift Package Manager's own word; the frame
+was laid out by hand in the slice that landed it rather than by a launcher, and how the package is
+laid out inside is the packet's and `docs/nfdr.md` § 9's, not this section's. The project card
+carries `Swift` in place of `TypeScript` on its `Languages:` line and the `swift test` half in place
+of Vitest in its test command (`kensaiapp-opensource@5b27023`; RN-60, RN-66). `checks` is `directory` because
 it builds nothing and is forbidden from being a dependency of any shipped unit; Shell is its
 language because the card declares Shell for the `checks/*.sh` harness by name (RN-36).
 
@@ -410,7 +411,7 @@ language because the card declares Shell for the `checks/*.sh` harness by name (
 | `SM-1` `fs-reader` ↔ `folder-model` | Down: a path to list or read. Up: the listing, or the bytes with the text rule applied and the floor language named, or the condition observed — always as data, never a panic | `folder-model` — it states what a read must return; the reader implements it |
 | `SM-2` `git-reader` ↔ `folder-model` | Down: `probe`, and on a root `state`, `status`, `diff`, `walk`. Up: `root` or `plain`; plain-data Git state; or the condition observed. The port is a trait the model owns; the adapter is the only thing that knows libgit2 | `folder-model` — the port is its; a second adapter passes the same contract tests (§ 11 R-1) |
 | `SM-3` `watcher` ↔ `folder-model` | Up only: coalesced change events as paths, the root's `.git` entry among them. The model decides what to re-read | `folder-model` — the event shape is its |
-| `SM-4` `core-bridge` ↔ `mac-shell` | Down (shell → core): calls from this list and no other — `open_folder` (taking the URL the Open panel returned, and no path from any other source), `list_tree`, `select_file`, `open_relative_link`, `set_theme`, `open_diff`, `walk_history`, `switch_folder`, `asset_bytes` — each exported from the build in which a slice lands it and not before, and all nine from `v1.0.0`. Which of the list a given build exports is stated once, in § 4 C-R7. Up (core → shell): the `model_changed` callback carrying a projection delta, on a thread the shell marshals to its main thread; and each call's return as an owned buffer of plain data — JSON, or flat structs the header declares — freed by `nozoki_free`; the header is generated from the bridge's source and never hand-kept. Nothing else crosses in either direction. **This seam is where the promise is read, not where it is held**: the wall is the process's entitlements (§ 4 C-R2), and the seam makes visible that the shell reads through the core alone — a builder of the shell who holds only this header has no read, no write and no connection to make, and § 4 C-R7 checks on every build that the shell adds none of its own | `core-bridge` — it exports what its landed slices built, the header is generated from it, and the shell calls what is exported and nothing more |
+| `SM-4` `core-bridge` ↔ `mac-shell` | Down (shell → core): calls from this list and no other — `open_folder` (taking the URL the Open panel returned, and no path from any other source), `list_tree`, `select_file`, `open_relative_link`, `set_theme`, `open_diff`, `walk_history`, `switch_folder`, `asset_bytes` — each exported from the build in which a slice lands it and not before, and all nine from `v1.0.0`; and, **beside the list and not on it**, the seam's one release call, `nozoki_free`, exported from the first build on because every call's return needs it and never staged by slice (the owner's confirm, `docs/trail/sdd/cycle-12.md` § 5.1; RN-66). Which of the list a given build exports is stated once, in § 4 C-R7. Up (core → shell): the `model_changed` callback carrying a projection delta, on a thread the shell marshals to its main thread; and each call's return as an owned buffer of plain data — JSON, or flat structs the header declares — freed by `nozoki_free`; the header is generated from the bridge's source and never hand-kept. Nothing else crosses in either direction: the nine calls and `nozoki_free` down, the callback and the returns up. **This seam is where the promise is read, not where it is held**: the wall is the process's entitlements (§ 4 C-R2), and the seam makes visible that the shell reads through the core alone — a builder of the shell who holds only this header has no read, no write and no connection to make, and § 4 C-R7 checks on every build that the shell adds none of its own | `core-bridge` — it exports what its landed slices built, the header is generated from it, and the shell calls what is exported and nothing more |
 | `SM-5` `folder-model` ↔ `core-bridge` | Down: the operations the functions name, as plain Rust calls. Up: projections and deltas. The harness calls this API directly, in-process, with no window (§ 4 C-I3) | `folder-model` — the API and its types are its; the bridge wraps, formats and delegates |
 | `SM-6` `own-state` ↔ `core-bridge` | Down: the theme set, the window frame, and beyond v1 a folder to remember. Up: the state read whole, or the first-run state where it could not be read | `own-state` — the record shape and the read-whole-or-discard-whole rule are its |
 | `SM-7` `markdown-renderer` ↔ `fs-reader`, and `asset_bytes` in `core-bridge` | Rendering asks `fs-reader` whether an image reference is contained; `asset_bytes` asks the same question again on every call. Only a path that passes both is ever read; a node built wrong still reaches no byte outside the folder | `fs-reader` — the check is its and has one implementation; the two callers do not re-implement it |
@@ -595,10 +596,16 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   exactly the functions its landed slices built**: `cargo test --locked -p nozoki-bridge --test
   exports` holds set equality between the C symbols `libnozoki_bridge.a` exports (`nm -gU`, the
   `nozoki_` prefix) and the functions the generated header declares, and holds that set inside
-  SM-4's list; it reads the exported set and never a hand-kept copy. From `v1.0.0` the set is
-  SM-4's list whole (§ 6 S-11, C-I6). So a function whose slice has not landed is never exported,
-  and two slices that each export a function apart from one another meet at one set when their
-  changes are joined. `checks/view.sh` scans `nozoki-mac/Sources` for the forbidden set and runs
+  SM-4's list and `nozoki_free`; it reads the exported set and never a hand-kept copy. From
+  `v1.0.0` the set is SM-4's list whole and `nozoki_free` (§ 6 S-11, C-I6). So a function whose
+  slice has not landed is never exported, and two slices that each export a function apart from
+  one another meet at one set when their changes are joined. **`nozoki_free` is the one export
+  beside the list**, admitted because every call's return is an owned buffer it alone releases
+  (SM-4); it is not a command — it never reaches the model over SM-5, so C-I3's "every command the
+  build grants" does not name it, and its misuse is § 11 R-13's case. No second plumbing export —
+  a registration call for `model_changed`, or any other — is admitted by this sentence: one is
+  raised, on this condition and SM-4, by the slice that needs it, and not before (the owner's
+  confirm with additions, `docs/trail/sdd/cycle-12.md` § 5.1; RN-66). `checks/view.sh` scans `nozoki-mac/Sources` for the forbidden set and runs
   `otool -L` on the built executable, which names neither `WebKit` nor `JavaScriptCore`. **What
   this is and is not:** a source scan and a link check, run on every build — a reviewer is
   *shown* that the shell adds no I/O — and not a process boundary: the wall is C-R2's, and this
@@ -607,7 +614,7 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   this check, because the export and the header move together; only that slice's own bar holds the
   function until C-I6's pin exists — C-6's pre-1.0.0 half, stated rather than tested (§ 11 R-12)
   (NFR-16, NFR-8). *Violated by:* a symbol exported that the header does not declare, or declared
-  and not exported; an exported function outside SM-4's list; a forbidden symbol in
+  and not exported; an exported function outside SM-4's list and `nozoki_free`; a forbidden symbol in
   `nozoki-mac/Sources`; `WebKit` or `JavaScriptCore` on the executable's link list; a Swift package
   dependency; a view that reads a file, opens a connection or spawns a process by an API the scan
   does not name — the scan is the check, and the first sentence is the rule.
@@ -719,7 +726,10 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   run that ended because the window ran out or on a pass, a failed-ask run that does not name
   what failed, a renderer gate skipped or run without its control, a renderer-gate observation
   read from anything the product wrote or from a path that exists for the gate, a slice
-  that lands a command the harness does not exercise, a release without AC-1 – AC-3 green.
+  that lands a command the harness does not exercise (a command is a call on SM-4's list, driven
+  through SM-5; `nozoki_free` is the seam's release call and no command — it never reaches the
+  model, so this clause does not name it, and its misuse is § 11 R-13's: C-R7, RN-66), a release
+  without AC-1 – AC-3 green.
 - **C-I4.** **A performance number is measured, never asserted.** `checks/latency.sh` prints
   file-switch and refresh p95 in milliseconds over reference fixtures on every CI build, so the
   figures the SRS folds in by revision exist from the first working build (NFR-1, NFR-2, NFR-10;
@@ -735,7 +745,8 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   its major wrote.** `checks/contract/<major>` is written once, at the major's `.0.0` release,
   from the built bundle and `libnozoki_bridge.a` — the macOS floor as
   `LSMinimumSystemVersion` prints it, the release's asset names (`Nozoki-<version>.dmg`,
-  `SHA256SUMS`), and SM-4's function list as the bridge exports it (C-R7) — and nothing else: no
+  `SHA256SUMS`), and SM-4's function list and `nozoki_free`, the set as the bridge exports it
+  (C-R7) — and nothing else: no
   message, no token and no line of the log, which the contract excludes (§ 6 S-11 *Delivers*).
   `checks/contract.sh <tag>` takes the pin as `git show v<major>.0.0:checks/contract/<major>` —
   the tag anchors it, so an edit to the working-tree file cannot move what a release is held to —
@@ -1283,8 +1294,9 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   names no libgit2 binding and no TLS or SSH crate — no `git-reader` links in this slice (RN-9);
   `cargo test --workspace --locked` exits 0 with tests on the reducer's tree items, `ItemState`
   transitions, `fs-reader`'s containment check, and `nozoki-bridge`'s `--test exports` — the
-  staticlib exports `open_folder` and `list_tree`, the header declares the same two, and nothing
-  else (C-R7); `swift test --package-path nozoki-mac` exits 0 with tests that a row is drawn from a
+  staticlib exports `open_folder` and `list_tree` and the release call `nozoki_free`, the header
+  declares the same three, and nothing else (C-R7; SM-4); `swift test --package-path nozoki-mac`
+  exits 0 with tests that a row is drawn from a
   projection and from nothing else, and that the shell issues no call SM-4 does not name;
   `checks/view.sh` finds no forbidden symbol in `nozoki-mac/Sources` and neither `WebKit` nor
   `JavaScriptCore` on the executable's link list (C-R7); `.github/workflows/ci.yml` builds
@@ -1917,8 +1929,8 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   `first-public-release`'s half passes again on the downloaded bundle, with two differences —
   `checks/bundle.sh` now against C-R2's three entries, and that half's closing check inverted: the
   version is 1.0.0, not below it; `checks/contract/1` exists, written from this bundle and this
-  build's `libnozoki_bridge.a` — the floor `14.0`, the two asset names, SM-4's nine functions — and
-  `checks/contract.sh v1.0.0` passes against it (C-I6); `checks/own-state.sh --from
+  build's `libnozoki_bridge.a` — the floor `14.0`, the two asset names, SM-4's nine functions and
+  `nozoki_free` — and `checks/contract.sh v1.0.0` passes against it (C-I6); `checks/own-state.sh --from
   <previous-tag>` passes — a container
   written by the previous release is opened by this build with no write outside the container, and
   a container the build cannot read leaves it at first-run state with no failure surface (C-D4);
@@ -2310,7 +2322,9 @@ silently misses every reversal made mid-build.>
   they read the same on a hosted runner (*Open Questions*). How TextKit lays out UX-I12's two hard
   cells, and which engine compiles the six grammars (*Open Questions*). The records and the NFDR
   entries owed above (§ 12). The project card's `Languages:` and test command, and
-  `README.md:L46-L51`'s stack and proof sentences — outside this document (RN-59, RN-60).
+  `README.md:L46-L51`'s stack and proof sentences — outside this document (RN-59, RN-60) *(the
+  card moved: `Languages: Rust, Swift, Shell` and `swift test --package-path nozoki-mac` in its
+  test command, `kensaiapp-opensource@5b27023`; noted 2026-09-23, RN-66)*.
 
 ## 11. Technical risks
 
@@ -2514,7 +2528,13 @@ placement the companion's § 2.4 drafted — the model fills the `FileView` by c
 carrying the reason the addition states — the renderer's containment call reaches the filesystem
 through `fs-reader` over SM-7, never through the model (`docs/nfdr.md` QC-10 and its v12 note;
 the reading it answers is on that document's trail, `docs/trail/architecture/cycle-9.md` § 1.1).
-Nothing of this document's is owed to that store on this fold. One defect in the records
+Two things of this document's are owed to that store on the cycle-12 fold, and both are already
+raised there rather than from here: C-R7 now admits `nozoki_free` beside SM-4's list, and
+`docs/nfdr.md` QC-24 still holds the export set inside the list alone
+(`docs/architecture_open_issues.md` § 2.1); and § 3's Swift-frame paragraph now rests on the Swift
+packet, where `docs/nfdr.md` § 9 and ADR-0016 still say none exists and `nozoki-mac`'s departures
+from it are that document's to record (`docs/architecture_open_issues.md` § 3.4) — the Principal
+Architect's, both (RN-66). One defect in the records
 themselves was found and is reported, not
 repaired from here: 14 citations of the deleted trail across five ADRs, 23 review-note citations
 written against the previous SDD's numbering, and one stale slice reference in `docs/nfdr.md` no
@@ -3506,7 +3526,10 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   `README.md:L46-L51`'s stack and proof sentences, the CPO's (RN-59); `docs/DESIGN.md`'s
   realisation sentence, the CDO's, in that document's own run (RN-53); and no Swift packet exists
   in `<CORE>/doctrine/engineering/languages/` (listed 2026-09-23), so `nozoki-mac`'s frame is laid
-  out by the slice that lands it. The companion's § 1.1 leaves the file with this fold *(re: § 2
+  out by the slice that lands it *(history: the registry gained `languages/swift/` the same day,
+  `kensaiapp-dev@3ab2e8553`, and the card moved at `kensaiapp-opensource@5b27023`; § 3's
+  Swift-frame paragraph now rests on the packet — noted 2026-09-23, RN-66)*. The companion's
+  § 1.1 leaves the file with this fold *(re: § 2
   whole; § 3 parts, units, seams, *What the system holds*; § 4 C-R1, C-R2, C-R5, C-R6, C-R7, C-I2,
   C-I3, C-I6, C-D3; § 5 step 5; § 6 S-1 – S-3, S-6 – S-11, the CTO's fields; § 9 TO-1, TO-4, TO-5,
   TO-6, TO-7, TO-8; § 10 RC-3; § 11 R-4, R-11, R-12, R-13; § 12 the SRS and downstream boundaries;
@@ -3705,6 +3728,50 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   boundary; RN-64; source: `docs/trail/sdd/cycle-11.md` § 2.4; `docs/trail/sdd/self_answer-22.md`
   § 2.4; `docs/nfdr.md` QC-10, its v12 note; `docs/trail/architecture/cycle-9.md` § 1.1; § 3
   `fs-reader` row, SM-1, SM-5, SM-7; § 4 C-I3; § 6 S-2 *Not in this slice*; RN-64)*.
+- **RN-66:** *(CTO)* *(changed)* The companion's two items folded, both raised from downstream by
+  the PM against the built `nozoki-bridge` and `nozoki-mac` and both answered in the owner's seat
+  (`docs/trail/sdd/cycle-12.md` § 5.1, § 5.2; reasoning `docs/trail/sdd/self_answer-23.md`).
+  **§ 5.1, confirmed with additions — `nozoki_free` stands beside SM-4's list, not on it.** The
+  contradiction was this document's own: SM-4's Down cell admitted "calls from this list and no
+  other", C-R7 held the export set "inside SM-4's list" and S-1's command half read "the same two,
+  and nothing else", while the same SM-4 cell and § 3's `core-bridge` row had every return "freed
+  by `nozoki_free`" — no build could meet both halves, and the one on `main` met the second
+  (`crates/nozoki-bridge/src/exports.rs:L61`, `tests/exports.rs:L17`). Now: SM-4's Down cell and
+  its closing sentence name `nozoki_free` as the seam's one release call beside the nine, exported
+  from the first build on and never staged by slice; C-R7's held set and its `v1.0.0` sentence
+  read the list and `nozoki_free`, its *Violated by* reads "outside SM-4's list and
+  `nozoki_free`", and it states that `nozoki_free` is no command (it never reaches the model over
+  SM-5, so C-I3's "every command the build grants" does not name it, and its misuse is R-13's —
+  said in C-I3's *Violated by* too) and that no second plumbing export is admitted by this fold —
+  one is raised by the slice that needs it, and not before; C-I6's pin takes the same set; S-1's
+  command half reads "the two, and the release call `nozoki_free`, the same three, and nothing
+  else"; S-11's pin reads "SM-4's nine functions and `nozoki_free`". "All nine from `v1.0.0`"
+  stays true everywhere it is said, which is why beside and not on. *Because* a release function
+  is the C ABI's cost of returning owned buffers, not a capability the shell gains — it reads
+  nothing and grants nothing — so it belongs to the seam's mechanics, which SM-4 states once,
+  rather than to the staged list a slice earns. **§ 5.2, answered — *Kind* and where the frame
+  lands hold; their grounds change.** § 3's Swift-frame paragraph rested on "no Swift packet
+  exists" and on the card being owed `Swift` and `swift test`; the registry carries
+  `languages/swift/` (`kensaiapp-dev@3ab2e8553`, 2026-09-23) and the card carries both
+  (`kensaiapp-opensource@5b27023`). The paragraph now cites the packet's `layout.md` for
+  `package`, states that the frame was laid out by hand in the slice that landed it, leaves the
+  package's inner layout to the packet and `docs/nfdr.md` § 9, and reads the card's line as fact;
+  RC-3's *Still unresolved* and RN-60's closing sentence keep their words and gain a dated
+  parenthesis, the shape RC-1 (RN-48) and RN-55 took. **What moves downstream, raised there and
+  not from here:** `docs/nfdr.md` QC-24's "inside SM-4's list" (`docs/architecture_open_issues.md`
+  § 2.1) and § 9's and ADR-0016's Swift premise with `nozoki-mac`'s five departures from the packet
+  (`docs/architecture_open_issues.md` § 3.4) — § 12's downstream boundary names both. No part,
+  seam, slice, slug, *Delivers*, *Moves toward*, fence, § 7 edge or place in the order moves; no
+  observable half moves; no PRD, SRS or UXD gap surfaced. Nothing is left for the owner: both items
+  are consumed, the companion is empty and removed — its absence is the done signal — and its last
+  state is whole at `docs/trail/sdd/cycle-12.md` *(re: § 3 SM-4, the Swift-frame paragraph; § 4
+  C-R7, C-I3 *Violated by*, C-I6; § 6 S-1 and S-11 *Reached when*, command halves; § 10 RC-3
+  *Still unresolved*; § 12 the downstream boundary; RN-60; source: `docs/trail/sdd/cycle-12.md`
+  § 5.1, § 5.2; `docs/trail/sdd/self_answer-23.md` § 5.1, § 5.2; § 3 `core-bridge` row; § 11
+  R-13; `crates/nozoki-bridge/src/exports.rs`, `tests/exports.rs`;
+  `<CORE>/doctrine/engineering/languages/swift/layout.md`;
+  `system/projects/nozoki/project.md`; `docs/architecture_open_issues.md` § 2.1, § 3.4; RN-48,
+  RN-55, RN-60)*.
 
 ---
 
