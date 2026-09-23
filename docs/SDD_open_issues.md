@@ -78,6 +78,40 @@
   technology, and what the seams become, is § 2's weighing to redo once (a) is chosen; it is not
   asked here. The CDO's half — whether the design language survives re-expression, and what
   UX-I12's rendered Markdown becomes — is the CDO's to add to this item.
+  **The ground for refusing (c), corrected — added by the CTO at run 11, round 1.** The (c)
+  bullet above gives this seat's first reason — "the service it opens is the one WebKit treats as
+  network access" — and that reason does not hold as stated: `checkEntitlements` uses the
+  `mach-lookup` of `com.apple.nsurlsessiond` as a stand-in for the question and opens nothing by
+  itself (`Source/WebKit/Shared/EntryPointUtilities/Cocoa/XPCService/XPCServiceEntryPoint.mm:L52-L64`
+  at `bb75cbc0003033ea73c42ef02370767aa52d6ba6`, the commit this item cites). What passing the
+  check does is start WebKit's Networking process, and that process's network access is its own,
+  not the host's: its sandbox profile allows `(remote tcp)` and `(remote udp)` unless the
+  `BlockNetworkAccess` state flag is set
+  (`Source/WebKit/NetworkProcess/mac/com.apple.WebKit.NetworkProcess.sb.in:L492-L496, L563-L568`),
+  and the flag is set only by `blockNetworkAccessIfNeeded` — which on macOS returns early unless
+  the linked-on-or-after check for `NetworkProcessInheritsNetworkAccessFromUIProcess` passes, and
+  otherwise sets the flag when `sandbox_check_by_audit_token` reports the host's `network-outbound`
+  denied (`Source/WebKit/NetworkProcess/cocoa/NetworkProcessCocoa.mm:L90-L121`; enabled for Cocoa
+  at `Source/WTF/wtf/PlatformEnableCocoa.h:L1214-L1216`). That inheritance reached macOS in WebKit
+  on 2026-08-22 — `cb7daacd43`, "[macOS] The Networking process sandbox should inherit network
+  access from the UI process" — after the general change of 2025-12-10, `e0e27e741c`. The
+  renderer is the *system* WKWebView (`SDD.md` § 4 C-R1), so the WebKit a user runs is the one
+  their macOS ships, and C-R5's floor is 14.0: on any macOS whose WebKit predates that change, a
+  page under (c) sits behind a Networking process the operating system lets connect, and only
+  C-R7's CSP would stand between it and the network — a promise the code keeps, which your
+  answer 1 rules out. And C-I3 would not see it: `checks/bundle.sh` asks the operating system
+  about the *host's* pid, which stays denied under (c), so the probe goes green with the gap
+  behind it. So (c) is refused for what runs behind the check, not for the service's name; the
+  refusal is still yours to make. Under (a) the same fact is a gain the positions on this item
+  did not state: a native view starts no second process with a network profile of its own, so
+  the host's missing entitlement covers the whole product and the host-pid probe covers all of
+  it. What this seat does not know is which macOS release first ships the inheritance; the check
+  that would find it is `log show --predicate 'eventMessage CONTAINS "block network access"'` on a
+  (c)-signed bundle on the floor OS — owed only if you read the ruling as leaving (c) open, and
+  then measured before (c) is chosen, from inside the page with the CSP loosened in a throwaway
+  build, so that what refuses the fetch is the operating system and not the CSP. The reading is
+  `docs/trail/sdd/self_answer-19.md` § *Left for the owner*'s; every source it names was re-read
+  at the cited commit for this addition.
   **The CDO's position: (a), on the design's own grounds — and the price § 2 row 4 put on it is
   smaller than priced.** Three things are true of what (a) costs the experience:
   - **The design language survives as values; one sentence of it does not.** Every token
@@ -101,7 +135,8 @@
     starting point" — so the UXD stands at v10 under (a), and so does this document's § 4 CDO
     clause: C-E1 – C-E10 bind observations and tokens, not a web engine. (§ 2 row 4 attributes
     "CSS tokens over the product's own markup" to `docs/UXD.md` § 9; the sentence is
-    `docs/DESIGN.md` § Overview's and RN-1's — a citation the CTO's row should re-point.)
+    `docs/DESIGN.md` § Overview's and RN-1's — a citation the CTO's row should re-point.
+    *Re-pointed at v11, RN-55; the parenthesis stands as it was written.*)
   - **UX-I12 does not move; what moves is who has to meet it.** Rendered by default, nothing
     fetched from outside the folder, three image cases — in-folder in place, outside-the-folder a
     stated not-fetched placeholder *where it would appear*, broken-inside a stated placeholder,
@@ -129,8 +164,14 @@
     under the entitlement the owner refused is a renderer this design cannot be shown on, and a
     language drawn to look native is shorter to draw natively than § 2 row 4 priced when it
     called that "a second design language". (c) would keep `DESIGN.md` byte-for-byte as written
-    — the one exit with no design cost at all — and this seat reads it as the CTO does, a
-    network entitlement under another name; the refusal is yours. Two costs of (a) named so they
+    — the one exit with no design cost at all — and this seat's reading of it follows the CTO's,
+    which moved at run 11 (the CTO's addition above): refused not for the service's name but for
+    what passing the check starts — a Networking process with a network profile of its own, which
+    the host's missing entitlement does not reach on a WebKit before 2026-08-22, and which
+    C-I3's host-pid probe would not see. The corrected ground moves nothing on the design side:
+    (c)'s design cost stays nil, and the refusal is yours. *(This sentence read "as the CTO does,
+    a network entitlement under another name" until run 11, round 1 — the ground the CTO
+    withdrew; RN-57.)* Two costs of (a) named so they
     are not found later: the highlighter and every `{components.*}` contract re-expressed in
     § 3 `surfaces`; and `README.md` § Stack states "the system WKWebView" and "styled in plain
     CSS custom properties" (`README.md:L48-L49`), a public surface that under (a) tells a truth
@@ -160,6 +201,15 @@
     away, and "we hold a network exception but never use it" is the promise the code keeps,
     which your answer 1 ruled out (`docs/trail/sdd/cycle-8.md` § 5.1). So this seat reads (c)
     as refused for the product reason (b) is, not only the technical one; the refusal is yours.
+    *(Run 11, 2026-09-23 — "whatever the probe reports" now has a measured meaning, and it
+    reaches a second public sentence. The CTO's corrected ground above — under (c) the page sits
+    behind a Networking process the operating system lets connect, and C-I3's host-pid probe
+    goes green without seeing it — makes `README.md:L50-L51` false on a (c)-signed bundle: "A
+    shell harness under `checks/` proves the read-only and no-network promises on every build"
+    would be a README claim the harness cannot back, and in this instance a public claim the
+    tool does not keep is a release-blocking defect, not a docs chore. So (c) fails the product
+    test twice — on the entitlements file a reviewer reads, and on the proof sentence a stranger
+    trusts — and the words above stand as written.)*
   - **(e) is not an exit.** The Agari's third condition — public, at 1.0.0 or later, by the README
     alone — cannot be reached by a product whose first window waits on a radar open since 2019
     with no date on it.
@@ -172,14 +222,19 @@
 
 > **No `product-sdd` run wrote this item. A `companion-self-answer` run raised it on 2026-09-23**,
 > while answering § 1.1 above. That run read `SDD.md` whole, and this is a line in it that no
-> item asked about. No seat drafted it and nothing in `SDD.md` has changed. The slot below is the
-> next round's to answer.
+> item asked about. **The CTO drafted it into `SDD.md` at run 11, round 1** (`SDD.md` RN-56); the
+> slot below is the owner's.
 
 ### 2.1 C-I3 names ADR-0008 as its record, but ADR-0010 superseded ADR-0008 on 2026-09-19
 - **Raised by:** the `companion-self-answer` run, 2026-09-23 — not one of the SDD's three seats
-- **Drafted into the SDD:** Nothing. Proposed: in § 4 C-I3, "The record is ADR-0008" becomes
-  "The record is ADR-0010" (`docs/SDD.md:L620`). Leave RN-11's "The record is ADR-0008"
-  (`docs/SDD.md:L2370`) as it is. That note is dated history and was true when it was written.
+- **Drafted into the SDD:** In § 4 C-I3, "The record is ADR-0008" now reads "The record is
+  ADR-0010" (`docs/SDD.md:L620`). RN-11's "The record is ADR-0008" and RN-45's "still state the
+  marker" (`SDD.md` § SDD Review Notes) are left as they are: a note is dated history, and each was
+  true when written. One sentence found on the same walk moved with it: § 10 RC-1's *Changed* said
+  ADR-0008 and QC-25 "still state the marker", true on 2026-09-19 and not since; it keeps its
+  words and gains a dated parenthesis naming ADR-0010 and `docs/nfdr.md:L246-L252` (RN-56). C-I3
+  claims no record for the renderer gate it gained at v11 — that is the Principal Architect's, per
+  *If overridden* below.
 - **Rationale:** ADR-0008's status reads "Superseded by ADR-0010"
   (`docs/adr/0008-harness-over-core-and-bundle-probe-from-first-build.md:L3`). ADR-0010 says
   "supersedes ADR-0008" (`docs/adr/0010-harness-over-core-and-bundle-probe-reads-the-os-sandbox-report.md:L3`),

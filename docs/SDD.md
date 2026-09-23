@@ -6,7 +6,7 @@
        signal, and the state a finished SDD carries; the open-issues file is gone.
      Locked = ratified as the source of truth. -->
 **Owner:** CTO · CPO · CDO — one run, three seats
-**Version:** 11 — CPO: § 1 (read-only bullet — the owner's no-network-entitlement ruling named as a fixed constraint); § 5 step 4 E-1 (bar re-pointed at "the entitlements C-R2 fixes", window-draws half added, third not-too-narrow case); § 12 the PRD boundary (cycle-8 item recorded as touching the promise with no PRD gap); SDD Review Notes RN-51 (CPO, changed). No slug, *Delivers*, *Moves toward* or fence moved; no companion item added.; CPO: nothing this dispatch — the round-1 edits already on disk stand: § 1 (read-only bullet), § 5 step 4 E-1 (bar re-pointed, window-draws half, third not-too-narrow case), § 12 the PRD boundary (cycle-8 item recorded, no PRD gap), SDD Review Notes RN-51 (CPO, changed). No slug, *Delivers*, *Moves toward* or fence moved; no companion item added.; CTO: § 4 C-R2 (rewritten to the owner's rule; *Violated by* rescoped; ADR-0003 departure named); § 4 C-I3 (renderer gate `checks/renderer.sh` added with its control; *Violated by* extended); § 6 S-1 *Reached when* command half (both gates; unmet-until-§ 1.1 note); § 10 RC-2 (new); § 12 the downstream boundary (ADR-0003 departure recorded; QC-25 to re-derive); Open Questions (fifth item, hosted runner); SDD Review Notes RN-52 (CTO, changed). Companion: § 5.1 consumed (trail copy `docs/trail/sdd/cycle-8.md`); item § 1.1 added (CTO — the renderer under C-R2's rule, the owner's call). No slug, slice, edge or place in the order moved.; CDO: § 6 S-1 *Reached when* (observable half — the artifact named: the CI-built bundle launched from Finder; a blank window stated as unmet); § 12 the UXD boundary (the ruling opens no UXD gap; `DESIGN.md`'s realisation sentence is what a native renderer moves); SDD Review Notes RN-53 (CDO, new). Companion: § 1.1 gains the CDO's position (no item added, none consumed).; CPO: companion § 1.1 (the CPO's position added — no item added, none consumed); § 12 the PRD boundary (one sentence: § 1.1 opens no PRD gap); SDD Review Notes RN-54 (CPO, added). No slug, slice, *Delivers*, *Moves toward*, fence or PRD trace moved.; CTO: § 2 row 4 (*Wrong when* citation re-pointed to `docs/DESIGN.md` § Overview / RN-1, UXD § 9 kept for assets, `third_party/lucide/` named); SDD Review Notes RN-2 (one parenthesis naming the correction); RN-55 (CTO, changed). No slice, edge, condition or companion item moved or added.
+**Version:** 12 — CTO: SDD § 4 C-I3 (record line → ADR-0010); § 10 RC-1 *Changed* (dated parenthesis, words kept); SDD Review Notes RN-56 (CTO, changed). Companion: § 2.1 blockquote and *Drafted into the SDD* updated (slot left for the owner); § 1.1 CTO position gains the corrected ground for refusing (c). No item added, none consumed; no slice, edge, condition or place in the order moved.; CDO: SDD Review Notes RN-57 (CDO, changed) — new. Companion § 1.1, the CDO's position: the (c) sentence re-grounded on the CTO's corrected reading (withdrawn wording kept, dated); the § 2 row 4 citation parenthesis gains "re-pointed at v11, RN-55". No SDD section, slice, condition, observable half, UXD trace or § 12 clause moved; no companion item added or consumed.; CPO: companion § 1.1 (the CPO's position — one dated parenthesis on the (c) bullet, words kept); SDD Review Notes RN-58 (CPO, changed) — new. No SDD section, slice, *Delivers*, *Moves toward*, fence or PRD trace moved; no companion item added or consumed.
 Version 8 — CTO: § 4 C-I3 (bounded window, first-ask-all-three pass, script-fixed and printed bound with no number here, per-ask live-pid check, uncovered yes→no case, control `no` for the whole window, error-on-any-ask, denial-as-proof clause narrowed to where the control reports the denials allowed with the hosted runner's read denial stated as separating nothing, Violated by extended); § 10 RC-1 Still unresolved (pointer to RN-48); § 11 R-8 shows up as and response; Open Questions (fourth item closed and removed — four remain); SDD Review Notes RN-48 (new). Companion items added: none. docs/SDD_open_issues.md removed, empty of items.
 Version 7 — CTO: § 3 SM-4 (what crosses, and owner cell wording); § 4 C-R7 (the staged grant, set equality against registered commands, asset-scheme keying, named pre-1.0.0 uncovered case, Violated by); § 4 C-I3 (every command the build grants); § 6 S-7 Reached when, command half; SDD Review Notes RN-47 (new). Companion items added: none. docs/SDD_open_issues.md removed, empty of items.
 Version 6 — CTO: § 4 C-I3 (observable and Violated by); § 6 open-a-folder Reached when, command half; § 10 RC-1 (new, first re-cut entry); § 11 R-8 shows up as; Open Questions fourth item (closed, replaced by the hosted-runner question); SDD Review Notes RN-45 (new). Companion items added: none. docs/SDD_open_issues.md removed, empty of items.; CPO: § 5 step 4 (E-1's sizing sentence); SDD Review Notes RN-46 (new). Companion items added: none.
@@ -617,7 +617,7 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   window that draws on a bundle the wall is not proven on is the shape unchosen (§ 5 step 4, E-1).
   Whether the observation reads the same on a GitHub-hosted macOS runner is unmeasured (*Open
   Questions*).
-  The record is ADR-0008. *Violated by:* a build that skips a script, a bundle probe run without
+  The record is ADR-0010. *Violated by:* a build that skips a script, a bundle probe run without
   its negative control, a probe that reads the report once, an ask judged on a pid that no longer
   names a process, a control passed on fewer asks than the window, a bound not printed on a red
   run that ended because the window ran out or on a pass, a failed-ask run that does not name
@@ -2001,7 +2001,10 @@ silently misses every reversal made mid-build.>
   Neither § 2's shape nor § 3's seams move, so this entry owes the decision log no superseding
   record on that ground. ADR-0008 and NFDR QC-25 still state the marker
   (`docs/adr/0008-harness-over-core-and-bundle-probe-from-first-build.md:L28`, `docs/nfdr.md:L203`);
-  both are the Principal Architect's to bring into line (§ 12).
+  both are the Principal Architect's to bring into line (§ 12). *(Both were, since this entry was
+  written: ADR-0010, Accepted 2026-09-19, supersedes ADR-0008 with this observable as its
+  § Decision, and QC-25 reads the sandbox report — `docs/nfdr.md:L246-L252`. Noted 2026-09-23,
+  RN-56; the sentence above is left as it was written.)*
 - **Stopped:** Reading any environment variable as evidence of the sandbox. Taking the container
   directory as evidence: it survives from an earlier launch, so a stale one would pass an
   unsandboxed rebuild.
@@ -3084,6 +3087,73 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   one — (a) — and the call is the owner's; § 4 of the companion carries no disagreement *(re: § 2
   row 4; RN-2; source: `docs/UXD.md` § 9; `docs/DESIGN.md:L12-L13`, RN-1; ADR-0002 § Context;
   RN-53; RN-54)*.
+- **RN-56:** *(CTO)* *(changed)* § 4 C-I3's record line reads ADR-0010 where it read ADR-0008 —
+  the fold the companion's § 2.1 proposes, drafted here for the owner's confirm — *because*
+  ADR-0008's Status is "Superseded by ADR-0010"
+  (`docs/adr/0008-harness-over-core-and-bundle-probe-from-first-build.md:L3`), ADR-0010 is
+  "Accepted — supersedes ADR-0008"
+  (`docs/adr/0010-harness-over-core-and-bundle-probe-reads-the-os-sandbox-report.md:L3`), and
+  C-I3's observable is the one ADR-0010 § Decision fixes — the operating system's report on the
+  launched pid — so the citation sent a reader to the marker RC-1 dropped. Found on the same walk
+  and fixed with it: RC-1's *Changed* said ADR-0008 and QC-25 "still state the marker", true on
+  2026-09-19 and false since — ADR-0010 landed that day and `docs/nfdr.md` QC-25 reads the
+  sandbox report (`docs/nfdr.md:L246-L252`) — so the sentence keeps its words and gains a dated
+  parenthesis, the shape RC-1's *Still unresolved* took at v8 (RN-48). RN-11 and RN-45 keep
+  "ADR-0008": a note is history (RN-55). What ADR-0010 does not record is the renderer gate C-I3
+  gained at v11; whether a record carries it is the Principal Architect's, raised there as the
+  companion's § 2.1 *If overridden* cites it (`docs/architecture_open_issues.md` § 2.1), and C-I3
+  claims no record for it. On the companion: § 1.1's CTO position gains the ground
+  `docs/trail/sdd/self_answer-19.md` gave for refusing (c), re-read at its WebKit sources this
+  round rather than relayed — the `mach-lookup` is a stand-in in `checkEntitlements`, and what
+  passing it starts is a Networking process whose own profile allows outbound TCP and UDP unless
+  `BlockNetworkAccess` is set, a flag set only under an inheritance that reached macOS in WebKit
+  on 2026-08-22 — so (c) is refused for what runs behind the check, not for the service's name,
+  and C-I3's host-pid probe would not see the gap. The position, (a), does not move. No part,
+  seam, slice, edge, condition or place in the order moves *(re: § 4 C-I3; § 10 RC-1; the
+  companion's § 2.1 and § 1.1; source: ADR-0008:L3; ADR-0010:L3, § Decision;
+  `docs/nfdr.md:L243-L256`; `docs/trail/sdd/self_answer-19.md`; WebKit at
+  `bb75cbc0003033ea73c42ef02370767aa52d6ba6` — `XPCServiceEntryPoint.mm:L52-L64`,
+  `com.apple.WebKit.NetworkProcess.sb.in:L492-L496, L563-L568`,
+  `NetworkProcessCocoa.mm:L90-L121`, `PlatformEnableCocoa.h:L1214-L1216`; WebKit commits
+  `cb7daacd43` 2026-08-22 and `e0e27e741c` 2025-12-10)*.
+- **RN-57:** *(CDO)* *(changed)* Two sentences of this seat's position in the companion's § 1.1
+  brought to what is now true, and no lane of this document moved. The first said this seat
+  reads (c) "as the CTO does, a network entitlement under another name" — the ground the CTO
+  withdrew this round (RN-56), so the sentence attributed to a peer a reading the peer no longer
+  holds; it now follows the corrected ground — refused for what runs behind the check — and
+  states what that correction does on the design side, which is nothing: (c)'s design cost stays
+  nil, and the refusal stays the owner's. The second asked the CTO to re-point § 2 row 4's
+  citation, done at v11 (RN-55); it gains a dated line saying so and keeps its words, the shape
+  RC-1 took this round. *Because* a companion position is the seat's own to keep true, and a
+  ground a peer has corrected is not one this seat may go on citing as the peer's. Verified
+  before writing that nothing upstream moved: `docs/UXD.md` v10 (Settled, `4d7b653`),
+  `docs/DESIGN.md` v8 (`269bcf5`), `docs/CONTENT.md` settled (`6789e19`), `README.md:L48-L49`
+  still the stack sentence this seat's position cites — so § 4's CDO clause, every § 6
+  observable half and UXD trace, and § 12's UXD boundary stand as v11 wrote them, and this
+  seat's position, (a), does not move *(re: the companion's § 1.1, the CDO's position; source:
+  RN-55; RN-56; the companion's § 1.1, the CTO's addition of run 11; `README.md:L48-L49`)*.
+- **RN-58:** *(CPO)* *(changed)* One dated parenthesis added to this seat's position in the
+  companion's § 1.1, on its (c) bullet; no words of the position change, and no lane of this
+  document moves. The bullet said (b) and (c) "fail the same product test, whatever the probe
+  reports"; the CTO's corrected ground this round (RN-56) gives that clause a measured meaning
+  — under (c) the page sits behind a Networking process the operating system lets connect, and
+  C-I3's host-pid probe goes green without seeing it — and the parenthesis names the product
+  consequence the value seat owns: `README.md:L50-L51`, "A shell harness under `checks/` proves
+  the read-only and no-network promises on every build", becomes a public claim the harness
+  cannot back on a (c)-signed bundle. *Because* the position's product test was stated on one
+  public surface, the entitlements file, and the correction reaches a second — the README's
+  proof sentence — and a claim the tool does not keep is release-blocking under this instance's
+  posture, which is a reason for refusing (c) that no technical seat is placed to give. The
+  position, (a), does not move; § 12's PRD boundary does not move — the README is a public
+  surface outside this document, and the PRD names no harness sentence. Verified before writing
+  that nothing above this seat moved: `docs/PRD.md` v15 (Settled, last commit `7c89e19`),
+  `system/projects/nozoki/agari.md` (`ee561fb`, 2026-09-01); so § 1, § 5 steps 1, 2 and 4,
+  every § 6 slug, *Delivers*, *Moves toward*, fence and PRD trace stand as v11 wrote them, and
+  the `read-markdown` re-check RN-54 holds back stays held back — the owner has not chosen (a).
+  On the companion's § 2.1, the CTO's draft this round is in the CTO's lane and is read here
+  only as correct: C-I3 now cites the record in force *(re: the companion's § 1.1, the CPO's
+  position; source: RN-56; `README.md:L50-L51`; `docs/trail/sdd/cycle-8.md` § 5.1, answer 1;
+  `system/loaders/cpo.md` § *The documentation is the product*; RN-54)*.
 
 ---
 

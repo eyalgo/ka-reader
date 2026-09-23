@@ -1,0 +1,295 @@
+{
+  "change_log": [
+    {
+      "changed_text": "SDD \u00a7 4 C-I3 (record line \u2192 ADR-0010); \u00a7 10 RC-1 *Changed* (dated parenthesis, words kept); SDD Review Notes RN-56 (CTO, changed). Companion: \u00a7 2.1 blockquote and *Drafted into the SDD* updated (slot left for the owner); \u00a7 1.1 CTO position gains the corrected ground for refusing (c). No item added, none consumed; no slice, edge, condition or place in the order moved.",
+      "seat": "cto"
+    },
+    {
+      "changed_text": "SDD Review Notes RN-57 (CDO, changed) \u2014 new. Companion \u00a7 1.1, the CDO's position: the (c) sentence re-grounded on the CTO's corrected reading (withdrawn wording kept, dated); the \u00a7 2 row 4 citation parenthesis gains \"re-pointed at v11, RN-55\". No SDD section, slice, condition, observable half, UXD trace or \u00a7 12 clause moved; no companion item added or consumed.",
+      "seat": "cdo"
+    },
+    {
+      "changed_text": "companion \u00a7 1.1 (the CPO's position \u2014 one dated parenthesis on the (c) bullet, words kept); SDD Review Notes RN-58 (CPO, changed) \u2014 new. No SDD section, slice, *Delivers*, *Moves toward*, fence or PRD trace moved; no companion item added or consumed.",
+      "seat": "cpo"
+    }
+  ],
+  "companion_present_at_intake": true,
+  "companion_retired": false,
+  "consumed_cycle_path": null,
+  "core_root": "/Users/eyalgolan/.kensaiapp/pins/20260923T063052Z-ppa1f0/core",
+  "ended": "seats-close",
+  "ended_at": "2026-09-23T10:26:26.390040+00:00",
+  "ended_detail": null,
+  "instance_root": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource",
+  "interruptions": [
+    {
+      "id": "I-1",
+      "round": 1,
+      "spoken": [
+        "cpo"
+      ]
+    },
+    {
+      "id": "I-2",
+      "round": 1,
+      "spoken": [
+        "cpo"
+      ]
+    },
+    {
+      "id": "I-3",
+      "round": 1,
+      "spoken": [
+        "cpo"
+      ]
+    },
+    {
+      "id": "I-4",
+      "round": 1,
+      "spoken": [
+        "cpo"
+      ]
+    }
+  ],
+  "no_change_rounds": 0,
+  "output_tokens": 0,
+  "output_tokens_under_counted": true,
+  "pending_request": {
+    "cdo": "**CDO \u2014 round 1, run-11.** The turn is taken. Both peers' work named for me was none; one thing was mine to fix and is fixed.\n\n**What I did, and on what ground.**\n\n- **Checked my lanes against what moved.** Nothing upstream moved: `docs/UXD.md` v10 Settled (last commit `4d7b653`), `docs/DESIGN.md` v8 (`269bcf5`), `docs/CONTENT.md` settled (`6789e19`), `README.md:L48-L49` still the stack sentence my position cites. So \u00a7 4's CDO clause (C-E1 \u2013 C-E10), every \u00a7 6 observable half and UXD trace, \u00a7 12's UXD boundary and RN-53 stand as v11 wrote them. No edit there.\n- **Companion \u00a7 1.1, my position \u2014 two sentences brought to what is now true.** The CTO said the \"(c) would keep `DESIGN.md` byte-for-byte\" sentence \"reads correctly as it stands\"; I read it otherwise. It said this seat reads (c) \"as the CTO does, a network entitlement under another name\" \u2014 the ground the CTO withdrew this round (RN-56), so my sentence attributed to a peer a reading the peer no longer holds. It now follows the corrected ground (refused for what runs behind the check) and states what that does on the design side: nothing \u2014 (c)'s design cost stays nil, the refusal stays the owner's. The withdrawn wording is kept in a dated parenthesis. Second: my parenthesis asking the CTO to re-point \u00a7 2 row 4's citation was done at v11 (RN-55); it gains a dated line and keeps its words, the shape RC-1 took this round.\n- **RN-57** (CDO, changed) records both, with the verification that nothing upstream moved.\n- Companion \u00a7 4 stays empty \u2014 the three positions on \u00a7 1.1 are one, (a). No item added, none consumed. I did not commit: the commit is the runner's.\n\n**On the loop the CPO grounded:** not my lane to fix; my turn arrived from the runner once, and I took it once.\n\n**To the CTO:** nothing owed back. **To the CPO:** nothing owed back.",
+    "cpo": "**CPO \u2014 round 2, run-11. The turn is taken; one dated addition in my own lane, nothing else moves.**\n\n**What I did, and on what ground.**\n\n- **Companion \u00a7 1.1, my position \u2014 one dated parenthesis on the (c) bullet; the words stand.** The bullet said (b) and (c) \"fail the same product test, whatever the probe reports\" (`docs/SDD_open_issues.md:L197-L203`). The CTO's corrected ground this round (RN-56, `docs/SDD.md:L3090-L3118`) gives that clause a measured meaning \u2014 under (c) the page sits behind a Networking process the OS lets connect, and C-I3's host-pid probe goes green without seeing it \u2014 and it reaches a second public sentence the value seat owns: `README.md:L50-L51`, \"A shell harness under `checks/` proves the read-only and no-network promises on every build\", would be a claim the harness cannot back on a (c)-signed bundle. Under this instance's posture a public claim the tool does not keep is release-blocking, not a docs chore (`system/loaders/cpo.md` \u00a7 *The documentation is the product*). So (c) fails the product test twice \u2014 the entitlements file a reviewer reads, and the proof sentence a stranger trusts. Unlike the CDO's case (RN-57), my sentence attributed no withdrawn reading to the CTO \u2014 \"not only the technical one\" named no ground \u2014 so nothing is corrected, only sharpened. My position, (a), does not move.\n- **RN-58** (CPO, changed) records it with sources (`docs/SDD.md`, after RN-57), and records the verification that nothing above this seat moved: PRD v15 (`7c89e19`), Agari (`ee561fb`). \u00a7 1, \u00a7 5 steps 1/2/4, every \u00a7 6 CPO field and \u00a7 12's PRD boundary stand as v11 wrote them; the `read-markdown` re-check RN-54 holds back stays held back.\n- **\u00a7 2.1** \u2014 the CTO's draft is in the CTO's lane; read here only as correct (C-I3 now cites the record in force). The confirm slot stays the owner's.\n- Companion \u00a7 4 stays empty \u2014 all three positions on \u00a7 1.1 are (a). No item added, none consumed. I did not commit: the commit is the runner's.\n\n**To the CTO and CDO:** nothing owed back; nothing named for you. Nothing in my lane can move until the owner answers \u00a7 1.1 or the PRD moves, so this seat closes.",
+    "cto": "**CTO \u2014 round 1, run-11.** The turn is taken; the successor work the CPO named is done, and one defect found on the same walk is fixed with it.\n\n**What I did, and on what ground.**\n\n- **\u00a7 4 C-I3's record line now reads ADR-0010** (`docs/SDD.md:L620`). Verified before writing: ADR-0008's Status is \"Superseded by ADR-0010\" (`docs/adr/0008-\u2026:L3`), ADR-0010 is \"Accepted \u2014 supersedes ADR-0008\" (`docs/adr/0010-\u2026:L3`), and C-I3's observable is the one ADR-0010 \u00a7 Decision fixes. RN-11 and RN-45 keep \"ADR-0008\" \u2014 a note is history (RN-55's rule).\n- **Boy-scout fix, same lane:** \u00a7 10 RC-1's *Changed* sentence said ADR-0008 and QC-25 \"still state the marker\" \u2014 true when written on 2026-09-19, false since: ADR-0010 landed that day and `docs/nfdr.md` QC-25 reads the sandbox report (`docs/nfdr.md:L246-L252`). The sentence keeps its words and gains a dated parenthesis, the shape RC-1's *Still unresolved* took at v8.\n- **Companion \u00a7 2.1** now records what was drafted (the \u00a7 2 shape: seat drafts, owner confirms); its *Confirm or override* slot stays the owner's. The blockquote no longer says \"nothing in `SDD.md` has changed\".\n- **Companion \u00a7 1.1, CTO position** gains the corrected ground for refusing (c). I did not relay `self_answer-19.md`: I re-read every WebKit source it names at commit `bb75cbc` \u2014 `checkEntitlements` treats the `mach-lookup` as a stand-in (`XPCServiceEntryPoint.mm:L52-L64`); the Networking process's own profile allows `(remote tcp)`/`(remote udp)` unless `BlockNetworkAccess` is set (`NetworkProcess.sb.in:L492-L496, L563-L568`); the flag is set only by `blockNetworkAccessIfNeeded`, gated on macOS by a linked-on-or-after check (`NetworkProcessCocoa.mm:L90-L121`) \u2014 and confirmed both commits via the GitHub API (`cb7daacd43` 2026-08-22, `e0e27e741c` 2025-12-10). So (c) is refused for what runs behind the check, not for the service's name, and C-I3's host-pid probe would not see the gap. My position, (a), does not move. One unknown is stated as unknown \u2014 which macOS release first ships the inheritance \u2014 with the one check that would find it.\n- **RN-56** (CTO, changed) records all of the above with its sources.\n\n**Nothing else moves.** No part, seam, slice, edge, condition or place in the order. \u00a7 4 of the companion stays empty \u2014 the three positions on \u00a7 1.1 are one. I did not commit: the commit is the runner's.\n\n**To the CPO:** nothing owed back; your two named items are done. **To the CDO:** nothing in your lanes moved; if you want the corrected (c) ground reflected in your position's \"(c) would keep `DESIGN.md` byte-for-byte\" sentence, that is your edit, not mine \u2014 it reads correctly as it stands."
+  },
+  "product_path": "/Users/eyalgolan/products/nozoki",
+  "project": "nozoki",
+  "provider": "claude",
+  "queue": [],
+  "recall_outstanding": null,
+  "recall_refusals": [],
+  "recalls_spent": [],
+  "resolved_inputs": {
+    "cdo": [
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "present": false
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/doctrine/writing_bar.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/.kensaiapp/pins/20260923T063052Z-ppa1f0/core/prompts/sdd_conversation_conduct.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/.kensaiapp/pins/20260923T063052Z-ppa1f0/core/templates/product-templates/sdd_template.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/DESIGN.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/CONTENT.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/design_system",
+        "present": false
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/experience/visual_restrictions.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/experience/visual_direction.md",
+        "present": true
+      }
+    ],
+    "cpo": [
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "present": false
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/doctrine/writing_bar.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/.kensaiapp/pins/20260923T063052Z-ppa1f0/core/prompts/sdd_conversation_conduct.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/.kensaiapp/pins/20260923T063052Z-ppa1f0/core/templates/product-templates/sdd_template.md",
+        "present": true
+      }
+    ],
+    "cto": [
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "present": false
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/doctrine/writing_bar.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/.kensaiapp/pins/20260923T063052Z-ppa1f0/core/prompts/sdd_conversation_conduct.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/.kensaiapp/pins/20260923T063052Z-ppa1f0/core/templates/product-templates/sdd_template.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/adr",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/nfdr.md",
+        "present": true
+      }
+    ]
+  },
+  "round": 2,
+  "round_opened": "2026-09-23T10:25:11.188940+00:00",
+  "round_start_snapshot": {
+    "recall_outstanding": null,
+    "recalls_spent": [],
+    "standing_move": {
+      "cdo": {
+        "kind": "no_followup",
+        "target": null,
+        "work": null
+      },
+      "cpo": {
+        "kind": "successor",
+        "target": "cto",
+        "work": "re-point \u00a7 4 C-I3's record from ADR-0008 to ADR-0010 (companion \u00a7 2.1, `docs/SDD.md:L620`), and optionally add `self_answer-19.md`'s Networking-process ground to the CTO's position in companion \u00a7 1.1"
+      },
+      "cto": {
+        "kind": "no_followup",
+        "target": null,
+        "work": null
+      }
+    }
+  },
+  "run": "run-11",
+  "schema_version": 1,
+  "sdd_status": "Draft",
+  "seat_sessions": {
+    "cdo": "8cc9b926-31b6-4508-b140-c0fb3585a998",
+    "cpo": "0919c8f0-28cd-4c2f-9092-e0769e9a6de8",
+    "cto": "0a2c6148-cfc9-4aef-8b6f-4ea661751dc3"
+  },
+  "seats": {
+    "cdo": "sdd-nozoki-run11-cdo",
+    "cpo": "sdd-nozoki-run11-cpo",
+    "cto": "sdd-nozoki-run11-cto"
+  },
+  "spoke_at": {
+    "cdo": 2,
+    "cpo": 3,
+    "cto": 1
+  },
+  "standing_move": {
+    "cdo": {
+      "kind": "no_followup",
+      "target": null,
+      "work": null
+    },
+    "cpo": {
+      "kind": "no_followup",
+      "target": null,
+      "work": null
+    },
+    "cto": {
+      "kind": "no_followup",
+      "target": null,
+      "work": null
+    }
+  },
+  "turn_log": [
+    {
+      "changed": true,
+      "changed_text": "companion \u00a7 1.1 (the CPO's position \u2014 one dated parenthesis on the (c) bullet, words kept); SDD Review Notes RN-58 (CPO, changed) \u2014 new. No SDD section, slice, *Delivers*, *Moves toward*, fence or PRD trace moved; no companion item added or consumed.",
+      "declared": "no_followup",
+      "kind": "ordinary",
+      "no_reply": false,
+      "request_text": "**CPO \u2014 round 2, run-11. The turn is taken; one dated addition in my own lane, nothing else moves.**\n\n**What I did, and on what ground.**\n\n- **Companion \u00a7 1.1, my position \u2014 one dated parenthesis on the (c) bullet; the words stand.** The bullet said (b) and (c) \"fail the same product test, whatever the probe reports\" (`docs/SDD_open_issues.md:L197-L203`). The CTO's corrected ground this round (RN-56, `docs/SDD.md:L3090-L3118`) gives that clause a measured meaning \u2014 under (c) the page sits behind a Networking process the OS lets connect, and C-I3's host-pid probe goes green without seeing it \u2014 and it reaches a second public sentence the value seat owns: `README.md:L50-L51`, \"A shell harness under `checks/` proves the read-only and no-network promises on every build\", would be a claim the harness cannot back on a (c)-signed bundle. Under this instance's posture a public claim the tool does not keep is release-blocking, not a docs chore (`system/loaders/cpo.md` \u00a7 *The documentation is the product*). So (c) fails the product test twice \u2014 the entitlements file a reviewer reads, and the proof sentence a stranger trusts. Unlike the CDO's case (RN-57), my sentence attributed no withdrawn reading to the CTO \u2014 \"not only the technical one\" named no ground \u2014 so nothing is corrected, only sharpened. My position, (a), does not move.\n- **RN-58** (CPO, changed) records it with sources (`docs/SDD.md`, after RN-57), and records the verification that nothing above this seat moved: PRD v15 (`7c89e19`), Agari (`ee561fb`). \u00a7 1, \u00a7 5 steps 1/2/4, every \u00a7 6 CPO field and \u00a7 12's PRD boundary stand as v11 wrote them; the `read-markdown` re-check RN-54 holds back stays held back.\n- **\u00a7 2.1** \u2014 the CTO's draft is in the CTO's lane; read here only as correct (C-I3 now cites the record in force). The confirm slot stays the owner's.\n- Companion \u00a7 4 stays empty \u2014 all three positions on \u00a7 1.1 are (a). No item added, none consumed. I did not commit: the commit is the runner's.\n\n**To the CTO and CDO:** nothing owed back; nothing named for you. Nothing in my lane can move until the owner answers \u00a7 1.1 or the PRD moves, so this seat closes.",
+      "seat": "cpo",
+      "spoke": true
+    }
+  ]
+}
