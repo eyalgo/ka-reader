@@ -72,6 +72,7 @@ test_renderer_file_outside_resources_fails
 test_renderer_file_directly_under_contents_fails
 test_renderer_file_under_resources_passes
 test_absent_frontend_dist_states_an_empty_set
+test_absent_frontend_dist_stdout_diagnostic_is_not_a_path
 test_named_frontend_dist_that_does_not_exist_fails
 test_extra_key_fails_before_launch
 test_false_value_fails
@@ -526,6 +527,10 @@ test_renderer_file_under_resources_passes() {
   copy="$(valid_copy renderer-inside)" || fail "could not re-sign the copy" || return 1
   mkdir -p "$copy/Contents/Resources/assets"
   echo 'body {}' > "$copy/Contents/Resources/assets/style.css"
+  # Adding a file under the bundle after signing breaks its seal; re-sign so the launched copy is
+  # validly sealed like every other launched copy in this suite (PR #1's second half).
+  codesign --force --sign - --entitlements "$WORK/valid.plist" "$copy" > /dev/null 2>&1 \
+    || fail "could not re-sign the copy after adding the renderer file" || return 1
 
   OUT="$(BUNDLE_SH_TAURI_CONF="$WORK/conf-inside.json" "$BUNDLE_SH" "$copy" 2>&1)"
   STATUS=$?
@@ -555,6 +560,24 @@ test_named_frontend_dist_that_does_not_exist_fails() {
   # The script's own named failure, not merely a failing `cd` under `set -e` that happens to print the path.
   expect_output_contains "names a directory that does not exist: $WORK/no-such-renderer-build" || return 1
   [ ! -e "$WORK/open-missing.log" ] || fail "the bundle was launched: $(cat "$WORK/open-missing.log")"
+}
+
+# On CI's runner, plutil's missing-key diagnostic arrives on stdout rather than stderr (the change
+# request's measured cause). A stubbed plutil reproduces that: it prints the diagnostic on stdout and
+# exits 1, so `|| true` alone would keep the diagnostic text as the path. `open` and `ps` are stubbed so
+# the run past the renderer check reaches a bounded, named end rather than an unbounded launch poll.
+test_absent_frontend_dist_stdout_diagnostic_is_not_a_path() {
+  mkdir -p "$WORK/stubs-stdout-diagnostic"
+  make_stub "$WORK/stubs-stdout-diagnostic" plutil \
+    'echo "Could not extract value, error: No value at that key path or invalid key path: build.frontendDist"; exit 1'
+  make_stub "$WORK/stubs-stdout-diagnostic" open "exit 0"
+  make_stub "$WORK/stubs-stdout-diagnostic" ps "exit 0"
+
+  OUT="$(BUNDLE_SH_LAUNCH_TICKS=2 PATH="$WORK/stubs-stdout-diagnostic:$PATH" "$BUNDLE_SH" "$APP" 2>&1)"
+  STATUS=$?
+
+  expect_output_contains "the renderer set is empty" || return 1
+  expect_output_lacks "names a directory that does not exist"
 }
 
 test_extra_key_fails_before_launch() {
