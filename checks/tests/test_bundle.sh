@@ -77,6 +77,8 @@ test_named_frontend_dist_that_does_not_exist_fails
 test_extra_key_fails_before_launch
 test_false_value_fails
 test_missing_key_fails
+test_invalid_probe_window_is_refused_before_launch
+test_header_names_the_probe_window
 test_no_sandbox_observed_fails_and_cleans_up
 test_nonexistent_path_fails
 test_plain_directory_fails
@@ -613,6 +615,36 @@ test_missing_key_fails() {
   expect_nonzero_status || return 1
   expect_output_contains "missing entitlement: $APP_SANDBOX_KEY" || return 1
   expect_no_bundle_process "$copy"
+}
+
+# CP-66: a window that is not a positive whole number is refused before anything is launched.
+test_invalid_probe_window_is_refused_before_launch() {
+  mkdir -p "$WORK/stubs-invalid-window"
+  make_stub "$WORK/stubs-invalid-window" open "echo \"\$@\" >> \"$WORK/open-invalid-window.log\""
+
+  for value in 0 -1 abc; do
+    rm -f "$WORK/open-invalid-window.log"
+
+    OUT="$(BUNDLE_SH_PROBE_TICKS="$value" BUNDLE_SH_LAUNCH_TICKS=2 PATH="$WORK/stubs-invalid-window:$PATH" "$BUNDLE_SH" "$APP" 2>&1)"
+    STATUS=$?
+
+    expect_nonzero_status || return 1
+    expect_output_contains "BUNDLE_SH_PROBE_TICKS" || return 1
+    [ ! -e "$WORK/open-invalid-window.log" ] || fail "open was called for BUNDLE_SH_PROBE_TICKS=$value: $(cat "$WORK/open-invalid-window.log")" || return 1
+  done
+}
+
+# CP-66: the header names the variable and its unit, the lines before `set -euo pipefail`.
+test_header_names_the_probe_window() {
+  header="$(awk '/^set -euo pipefail$/{exit} {print}' "$BUNDLE_SH")"
+  case "$header" in
+    *BUNDLE_SH_PROBE_TICKS*) ;;
+    *) fail "the header does not name BUNDLE_SH_PROBE_TICKS. header: $header" || return 1 ;;
+  esac
+  case "$header" in
+    *"0.25 s"*) ;;
+    *) fail "the header does not name the 0.25 s unit. header: $header" ;;
+  esac
 }
 
 test_no_sandbox_observed_fails_and_cleans_up() {
