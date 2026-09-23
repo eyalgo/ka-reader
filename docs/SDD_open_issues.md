@@ -216,7 +216,7 @@
   Two costs of (a) this seat owns and names now: `README.md:L48-L49`'s stack sentence moves with
   the README when (a) lands — a public surface, not this document's — and the first-release date
   the owner has been counting toward moves out by the rewrite of `surfaces`.
-- **Answer:** <the owner fills this in>
+- **Answer:** **(a) — the renderer leaves WKWebView.** The owner, 2026-09-23. The wall stays as ruled in cycle-8: no network entitlement and no mach-lookup exception, so (b) and (c) are refused, and (d) and (e) are not exits. Which native technology to use, and what the seams become, is § 2's weighing to redo, as the CTO's position says.
 
 ## 2. Choices to confirm — a seat drafted a best-effort answer; confirm or override
 
@@ -286,4 +286,4 @@
   there, rather than to the companion, would refuse (c) for the service's name. The owner's
   choice on § 1.1 does not move either way, because every seat now refuses (c) on the corrected
   ground.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm — the owner, 2026-09-23. `docs/adr/0008-…:L3` reads "Superseded by ADR-0010" and `0010-…:L3` reads "Accepted — supersedes ADR-0008"; C-I3 (`SDD.md:L620` at v11) cites ADR-0010 from this fold.
