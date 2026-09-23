@@ -103,3 +103,39 @@
   read that the renderer technology is being replaced once, on the owner's ruling, and is
   otherwise not replaceable inside the terminus. Nothing else moves.
 - **Confirm or override:** confirm, with one addition. No record supersedes ADR-0002 until the SDD carries the replacement renderer, and QC-21 stands with RN-21 beside it. There is one more reason to wait: exit (a) on the SDD companion also costs the renderer wall and C-D3's three walls. So the superseding record may reach ADR-0001's and ADR-0006's renderer halves too, which only the SDD's § 2 re-weighing can say. **Addition:** QC-21 waits on PD-29, and the FDR had no companion to carry the change. It is now raised at `docs/fdr_open_issues.md` § 2.1 (`nozoki@f5cddef`). Decided in the owner's seat by a `companion-self-answer` run, 2026-09-23; the reasoning is `docs/trail/architecture/self_answer-11.md` § 2.2.
+
+> **No `product-architecture` run wrote § 2.3. A `companion-self-answer` run raised it on
+> 2026-09-23** while answering `docs/SDD_open_issues.md` § 2.3. That run read `SDD.md` whole at v13
+> and found § 10 RC-3 stating that the SDD "owes the decision log superseding records" and "the
+> enforcement store a re-derivation of every entry written against the previous shape", and naming
+> both as the Principal Architect's. No companion carried that. §§ 2.1 and 2.2 above are both
+> answered, so the next fold would clear this file and leave the records reading done.
+
+### 2.3 The SDD at v13 carries the replacement renderer (§ 10 RC-3), and four records and the entries written against the previous shape have not seen it
+- **Lands in:** both. `adr/` gets records superseding ADR-0001 (the two-process shape), ADR-0002
+  (Tauri, WKWebView, the view's language), ADR-0006 (the host sanitizer and the asset scheme) and
+  ADR-0009 (the unit set), whether as four records or fewer is the Principal Architect's call.
+  ADR-0012's mechanism, control and observable's name are re-derived. In `nfdr.md`, every entry
+  that traces to those records or to the previous shape is re-derived: QC-21, QC-62, and the
+  QC-23/QC-24 capability and CSP entries among them.
+- **Drafted into the records:** Nothing. This item is proposed and not drafted. It was raised by a
+  run that holds no posture on these records.
+- **Rationale:** § 2.2's answer said "no record supersedes ADR-0002 until the SDD carries the
+  replacement renderer". The SDD now carries it. `docs/SDD.md` § 2 takes the sandboxed
+  single-process read pipeline (AppKit in Swift over `nozoki-core`, reached through a C ABI, no web
+  engine), and § 3 retires `nozoki-app` and `nozoki-ui` for `nozoki-bridge` and `nozoki-mac`. § 4
+  C-R1, C-R7, C-I3 and C-D3 are re-derived. RC-3's *Changed* names the four records and the
+  NFDR re-derivation as owed, and § 12's downstream boundary names the same departures (RN-60). Two
+  answers already on this file now read against a moved input. § 2.1's addition says the renderer
+  gate "lands with the replacement renderer or after it" and that QC-62's control is a
+  "renderer-removed" build. C-I3 at v13 fixes the control as `checks/fixtures/idle-shell`, because
+  "a single-process shell has no renderer build to remove". The NFDR is re-derived when § 4 and it
+  disagree (`docs/SDD.md` § 4, opening note), and they now disagree. **Inputs:** `docs/SDD.md` is
+  Draft at v13 while `docs/SDD_open_issues.md` § 2.3 folds. None of the RC-3 content depends on
+  that item, which touches only C-R2's and C-I3's record lines. When to derive from a Draft input
+  is `unsettled_inputs.md`'s and the Principal Architect's, not this item's.
+- **If overridden:** the four records and the NFDR entries keep describing a Tauri host and a
+  WKWebView renderer that the SDD no longer designs. A delivery reader who follows ADR-0002 or
+  QC-21 builds the shape the owner's cycle-9 ruling retired. The SDD's RC-3 debt then has no
+  channel, and the architecture records read Settled once this file clears.
+- **Confirm or override:** <"confirm", or "override: <what to do instead>">
