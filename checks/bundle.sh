@@ -323,62 +323,53 @@ sandboxed: no
   esac
 fi
 
-# The ordinary path asks up to PROBE_TICKS times, 0.25 s apart, and stops at the first report that
-# says sandboxed: yes — that report is the one judged below (CP-64). When the window runs out without
-# one, the last report asked is judged instead, and the closing failure line states the window
-# (CP-65). A probe failure on any ask ends the run at once, on the same die path as the control's
-# (CP-67). No sleep follows the last ask, whichever way the loop ends.
+# The ordinary path judges each ask's report once, inside the loop: the first ask whose report holds
+# all three lines ends the loop as a pass (CP-73). Any other report is asked past while the window
+# lasts — a sandboxed: no, a yes carrying an allowed, or a report missing a line. When the window runs
+# out, the last report asked is the one judged, by the same three-condition check (CP-74), and the
+# closing failure line states the window (CP-75). Exactly one report is printed, whichever way the
+# loop ends (CP-77). A probe failure on any ask ends the run at once, on the same die path as the
+# control's (CP-67). No sleep follows the last ask, whichever way the loop ends.
 tick=0
 while :; do
   tick=$((tick + 1))
   if ! probe_output="$("nozoki-sandbox-probe" "$pid" 2> "$work/probe.err")"; then
     die "the operating system's sandbox report for pid $pid could not be read: $(cat "$work/probe.err")"
   fi
+  problems=""
   case "
 $probe_output
 " in
     *"
 sandboxed: yes
-"*) break ;;
+"*) ;;
+    *) problems="${problems}condition not held: the launched process is not sandboxed
+" ;;
   esac
+  case "
+$probe_output
+" in
+    *"
+out-of-grant-read: denied
+"*) ;;
+    *) problems="${problems}condition not held: an out-of-grant file read is not denied
+" ;;
+  esac
+  case "
+$probe_output
+" in
+    *"
+outbound-connection: denied
+"*) ;;
+    *) problems="${problems}condition not held: an outbound network connection is not denied
+" ;;
+  esac
+  [ -n "$problems" ] || break
   [ "$tick" -lt "$PROBE_TICKS" ] || break
   sleep 0.25
 done
 printf '%s\n' "$probe_output"
 
-problems=""
-# The window clause for the closing line: set only when the window ran out without a sandboxed: yes
-# report — every other exit from the loop above breaks on that report — so a run the window did not
-# decide (a sandboxed: yes report carrying an allowed) closes without one.
-window_clause=""
-case "
-$probe_output
-" in
-  *"
-sandboxed: yes
-"*) ;;
-  *) problems="${problems}condition not held: the launched process is not sandboxed
-"
-     window_clause=": not reported sandboxed within $PROBE_TICKS asks, 0.25 s apart" ;;
-esac
-case "
-$probe_output
-" in
-  *"
-out-of-grant-read: denied
-"*) ;;
-  *) problems="${problems}condition not held: an out-of-grant file read is not denied
-" ;;
-esac
-case "
-$probe_output
-" in
-  *"
-outbound-connection: denied
-"*) ;;
-  *) problems="${problems}condition not held: an outbound network connection is not denied
-" ;;
-esac
-
-[ -z "$problems" ] || { printf '%s' "$problems" >&2; die "the wall does not hold on the launched process (pid $pid)$window_clause"; }
+[ -z "$problems" ] \
+  || { printf '%s' "$problems" >&2; die "the wall does not hold on the launched process (pid $pid): no ask held all three within $PROBE_TICKS asks, 0.25 s apart"; }
 echo "sandbox observed: sandboxed, out-of-grant read denied, outbound connection denied (pid $pid), the first ask to hold all three within $PROBE_TICKS asks, 0.25 s apart"
