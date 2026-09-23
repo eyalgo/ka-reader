@@ -50,8 +50,13 @@ fails unless the operating system reports that pid as sandboxed and reports two 
 for it: a file read outside the grant, and an outbound network connection.** That is the state Apple
 names as the verification — "verify that the value in the Sandbox column is Yes"
 (https://developer.apple.com/documentation/security/protecting-user-data-with-app-sandbox) — and the
-two denials test the wall itself rather than a proxy for it. The probe reads that state through
-libSystem's `sandbox_check`.
+two denials test the wall itself rather than a proxy for it where the unentitled control reports
+them allowed. On a GitHub-hosted macOS runner that holds of the outbound half only: there the
+out-of-grant read is reported denied for the unentitled control as well, so on the runner the wall
+is evidenced by the sandboxed report and the outbound denial, and the read denial separates nothing
+*(narrowed in place 2026-09-23 — `docs/SDD.md` § 4 C-I3 at v8, RN-48; the answer at
+`docs/trail/architecture/cycle-7.md` § 3.3)*. The probe reads that state through libSystem's
+`sandbox_check`.
 
 **A negative control is part of the probe, not an accessory to it.** The probe's suite runs it on
 the same binary built with no entitlements and requires it to fail; a probe that cannot tell the two
@@ -92,7 +97,11 @@ C-I3; `nozoki@70a879a:docs/SDD.md` § SDD Review Notes RN-15, RN-25).
 Easier: a proof that runs in CI on macOS with no UI driver; a release gate with a passing history
 before it gates a release; the plain-folder criterion ("no `.git` and no entry of any kind
 appeared") checked by the same hash (`docs/SRS.md` § 8 AC-24); and a sandbox probe that tests the
-two denials the wall promises, so its green means the wall and not a correlate of it.
+two denials the wall promises, so its green means the wall and not a correlate of it where the
+unentitled control reports the denials allowed — on a GitHub-hosted runner the out-of-grant read is
+reported denied for the control too, so there the wall is evidenced by the sandboxed report and the
+outbound denial, and whether the one Mac measured reports the control's read allowed is not
+recorded *(narrowed in place 2026-09-23, as in § Decision)*.
 
 Harder: the renderer's use of the commands is exercised only by a human walk. The probe's suite
 builds the binary twice — once with no entitlements — because the control is the only thing that
@@ -118,10 +127,22 @@ from an unsandboxed one is caught by the negative control, which goes red. Eithe
 a red build, never a silent green, and the sandbox then needs another observable — this record
 superseded in its turn. The entitlement half stands through all of it.
 
-**One case is unmeasured, and this record does not cover it.** Every measurement above was taken on
-one Mac (macOS 26.6.2, arm64). Whether the probe reads the same on a GitHub-hosted macOS runner is
-open in `docs/SDD.md` § Open Questions and is settled by the probe's first CI run; a control that
-does not fail there, or a bundle not reported sandboxed, is R-8.
+**One case was unmeasured when this record was accepted, and it has since been measured** *(this
+paragraph corrected in place 2026-09-23; as accepted on 2026-09-19 it read that the hosted-runner
+case was open in `docs/SDD.md` § Open Questions and settled by the probe's first CI run)*. Every
+measurement above was taken on one Mac (macOS 26.6.2, arm64). The GitHub-hosted macOS runner was
+measured on 2026-09-23 and the SDD's item is closed and removed (`docs/SDD.md` § SDD Review Notes
+RN-48; § 10 RC-1 *Still unresolved*): the wall holds there, and a probe that read the report once,
+at launch, read it too early — the real bundle answered `sandboxed: no` on the first ask and `yes`
+with both operations denied on the next four, which RN-48 reads as a read-once probe racing the
+process's own sandbox initialisation. So the probe now asks within a bounded window after launch
+and passes on the first ask where all three hold, and the control must answer `sandboxed: no` on
+every ask for the whole window. That window is a parameter the SDD hands to the script — "the
+bound is the script's to fix and this document states no number" (`docs/SDD.md` § 4 C-I3 at v8) —
+and not a decision this log holds: the observable, its three answers and the control are what this
+record fixed, none has moved, and so no record supersedes this one for the window
+(`docs/trail/architecture/cycle-7.md` § 3.2). A control that does not fail there on every ask of
+its window, or a bundle not reported sandboxed within the probe's, is still R-8.
 
 ## Traces to
 
@@ -140,6 +161,14 @@ does not fail there, or a bundle not reported sandboxed, is R-8.
 - `docs/SRS.md` § 8 AC-1 – AC-3, AC-10, AC-13, AC-24, AC-25; § 4.3 NFR-9.
 - Tauri's WebDriver page and Apple's App Sandbox page, cited above, each as the SDD cites it; the
   Apple page and the SDK's `sandbox.h` and `.tbd` stubs were re-read for this record on 2026-09-19.
+- `docs/SDD.md` at v8 (`nozoki@9b36a42`) — § 4 C-I3, the bounded window and the hosted-runner
+  narrowing; § SDD Review Notes RN-48; § 10 RC-1 *Still unresolved*; § 11 R-8. Read for the three
+  in-place corrections dated 2026-09-23 above, each authorized in the owner's seat at
+  `docs/trail/architecture/cycle-7.md` §§ 3.2 and 3.3 as a correction to this record and not a
+  reversal of it — reasoning `docs/trail/architecture/self_answer-10.md`; the measurement is
+  GitHub Actions run 35797893381 as RN-48 records it, and the item as raised and answered on the
+  SDD is `docs/trail/sdd/cycle-6.md` § 5.1. What those corrections do not touch: § Decision's
+  observable, its three answers and the control; § Alternatives ruled out; § Binds.
 
 ## Binds
 
