@@ -1,6 +1,6 @@
 # ADR-0014: The view is AppKit in Swift, in the one process — no web engine of any kind; the core stays Rust behind a C ABI; one bundle
 
-**Status:** Proposed — supersedes ADR-0002 on acceptance
+**Status:** Accepted — supersedes ADR-0002
 **Date:** 2026-09-23
 
 ## Context
@@ -122,12 +122,14 @@ native build settles (`docs/SDD.md` § 6 S-1, command half).
   runtime's and stands as history under it.
 - ADR-0011 (the rule the renderer could not start under), ADR-0013 (the shape), ADR-0015 (what the
   view is handed), ADR-0016 (the units).
-- `docs/trail/architecture/cycle-8.md` § 2.3 — the item that raised this record as owed; the
-  record is Proposed until the owner's confirm on the live companion's § 2.3, and ADR-0002 stays in
-  force until then.
+- `docs/trail/architecture/cycle-8.md` § 2.3 — the item that raised this record as owed;
+  `docs/trail/architecture/cycle-9.md` § 2.3 — the owner's confirm, given in the owner's seat by a
+  `companion-self-answer` run on 2026-09-23 (its reasoning,
+  `docs/trail/architecture/self_answer-12.md` § 2.3), on which this record is Accepted and
+  ADR-0002 superseded. Accepted with `docs/SDD.md` at v14 (`nozoki@2739007`, Draft): v14 moves
+  nothing of § 2, the view or the Swift frame (SDD RN-64).
 - Inputs read for this record: SDD Draft v13 · SRS Settled v12 · FDR Settled v8.
 
 ## Binds
 
-QC-21, QC-23. On acceptance, the entries ADR-0002 binds move here with it: QC-1, QC-8, QC-13, QC-17,
-QC-55.
+QC-1, QC-8, QC-13, QC-17, QC-21, QC-23, QC-55.

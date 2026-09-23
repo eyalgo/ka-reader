@@ -1,6 +1,6 @@
 # ADR-0009: The physical module set — `nozoki-core` as a library both the host and the harness link, `nozoki-app` as the only Tauri-aware unit, `nozoki-ui` as a capability-free bundle, `checks/` outside the bundle
 
-**Status:** Accepted
+**Status:** Superseded by ADR-0016
 **Date:** 2026-09-01
 
 ## Context

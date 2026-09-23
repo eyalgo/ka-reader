@@ -1,6 +1,6 @@
 # ADR-0006: Markdown is rendered on the host through a sanitizer, and the renderer sees only inert HTML plus one asset scheme
 
-**Status:** Accepted
+**Status:** Superseded by ADR-0015
 **Date:** 2026-09-01
 
 ## Context

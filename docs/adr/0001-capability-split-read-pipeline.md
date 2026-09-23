@@ -1,6 +1,6 @@
 # ADR-0001: Nozoki is a capability-split read pipeline, and its promise is held by withholding capability
 
-**Status:** Accepted
+**Status:** Superseded by ADR-0013
 **Date:** 2026-09-01
 
 ## Context

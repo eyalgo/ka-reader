@@ -1,6 +1,6 @@
 # ADR-0002: The runtime is Tauri 2 — a Rust host over nozoki-core, the surfaces in the system WKWebView, one bundle
 
-**Status:** Accepted
+**Status:** Superseded by ADR-0014
 **Date:** 2026-09-01
 
 ## Context

@@ -1,6 +1,6 @@
 # ADR-0012: The shipped bundle's shell run is proved beside the wall — observed from the process, never from a marker the product writes, with a control that must go red — on every build after the wall probe and never instead of it
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-09-23
 
 ## Context
@@ -140,9 +140,13 @@ with the native shell, and until then the gate is `development-design` reading `
   by construction until the replacement lands, never cleared by an entitlement or by skipping;
   `checks/renderer.sh` landing with the replacement or after it), given in the owner's seat by a
   `companion-self-answer` run, its reasoning `docs/trail/architecture/self_answer-11.md` § 2.1.
-  The record stays Proposed by that same seat's later reading that it "may also move under the
-  RC-3 re-derivation" (`docs/trail/sdd/cycle-9.md` § 2.3, the owner's addition) — it has, in this
-  revision — and its acceptance rides the live companion's § 2.3 with the four records RC-3 owes.
+  The record stayed Proposed by that same seat's later reading that it "may also move under the
+  RC-3 re-derivation" (`docs/trail/sdd/cycle-9.md` § 2.3, the owner's addition) — it did, in the
+  revision against C-I3 at v13 — and it is Accepted on the owner's confirm at
+  `docs/trail/architecture/cycle-9.md` § 2.3, with the four records RC-3 owes (the reasoning,
+  `docs/trail/architecture/self_answer-12.md` § 2.3). Accepted with `docs/SDD.md` at v14
+  (`nozoki@2739007`, Draft), where C-I3's record line names this record and states no status word
+  (SDD RN-64) — the index row is where its status is read.
 
 ## Binds
 

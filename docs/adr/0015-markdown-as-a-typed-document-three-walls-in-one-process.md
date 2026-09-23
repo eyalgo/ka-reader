@@ -1,6 +1,6 @@
 # ADR-0015: Markdown becomes a typed document on the host and never markup; image bytes cross the seam as bytes for a contained path and are decoded by the platform inside the one process
 
-**Status:** Proposed — supersedes ADR-0006 on acceptance
+**Status:** Accepted — supersedes ADR-0006
 **Date:** 2026-09-23
 
 ## Context
@@ -117,11 +117,19 @@ fed by the check alone.
   containment-check half is carried unchanged.
 - ADR-0013 (the shape), ADR-0014 (the view with no interpreter), ADR-0016 (`asset_bytes` in the
   bridge).
-- `docs/trail/architecture/cycle-8.md` § 2.3 — the item that raised this record as owed; the
-  record is Proposed until the owner's confirm on the live companion's § 2.3, and ADR-0006 stays in
-  force until then.
+- `docs/trail/architecture/cycle-8.md` § 2.3 — the item that raised this record as owed;
+  `docs/trail/architecture/cycle-9.md` § 2.3 — the owner's confirm, given in the owner's seat by a
+  `companion-self-answer` run on 2026-09-23 (its reasoning,
+  `docs/trail/architecture/self_answer-12.md` § 2.3), on which this record is Accepted and
+  ADR-0006 superseded. Accepted with `docs/SDD.md` at v14 (`nozoki@2739007`, Draft): v14 names
+  `folder-model` as the unit that calls `markdown-renderer` (§ 3, RN-64), which this record does
+  not fix and whose import is `docs/nfdr.md` QC-10's; and S-3's command half tests `asset_bytes`
+  in the bridge's crate, where § 3 places it — the decision here is unchanged. The four-format
+  claim rests on Apple's type-level pages (`UTType.webP`, macOS 11.0) and the decode itself is
+  what S-3's `swift test` case settles — named in the confirm's reasoning, and covered by the
+  placeholder for *a format not decoded* if it does not.
 - Inputs read for this record: SDD Draft v13 · SRS Settled v12 · FDR Settled v8.
 
 ## Binds
 
-QC-22, QC-37. On acceptance, the entries ADR-0006 binds move here with it: QC-6, QC-11, QC-31.
+QC-6, QC-11, QC-22, QC-31, QC-37.

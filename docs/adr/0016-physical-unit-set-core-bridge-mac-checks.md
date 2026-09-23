@@ -1,6 +1,6 @@
 # ADR-0016: The physical unit set — `nozoki-core` a Rust library with no `unsafe` and no Apple framework; `nozoki-bridge` a Rust static library, the only unit that exports the C ABI and the only one that holds `unsafe`; `nozoki-mac` a Swift package with no dependency, the only unit that imports AppKit; `checks/` outside the bundle
 
-**Status:** Proposed — supersedes ADR-0009 on acceptance
+**Status:** Accepted — supersedes ADR-0009
 **Date:** 2026-09-23
 
 ## Context
@@ -100,11 +100,16 @@ Git port), a C header and an intent set, none of which a toolchain owns. The one
 - ADR-0009 — the record this one supersedes; its reconstructed marking is kept here for the two
   readings that are still this seat's. ADR-0013 (the seams), ADR-0014 (the languages), ADR-0004
   (the port).
-- `docs/trail/architecture/cycle-8.md` § 2.3 — the item that raised this record as owed; the
-  record is Proposed until the owner's confirm on the live companion's § 2.3, and ADR-0009 stays in
-  force until then.
+- `docs/trail/architecture/cycle-8.md` § 2.3 — the item that raised this record as owed;
+  `docs/trail/architecture/cycle-9.md` § 2.3 — the owner's confirm, given in the owner's seat by a
+  `companion-self-answer` run on 2026-09-23 (its reasoning,
+  `docs/trail/architecture/self_answer-12.md` § 2.3), on which this record is Accepted and
+  ADR-0009 superseded. Accepted with `docs/SDD.md` at v14 (`nozoki@2739007`, Draft): v14's edge
+  — the model calls `markdown-renderer` and `highlighter` to fill a `FileView`, neither importing
+  the model (§ 3, RN-64) — runs inside `nozoki-core` and moves no unit and no boundary this record
+  fixes; the import it adds is `docs/nfdr.md` QC-10's.
 - Inputs read for this record: SDD Draft v13 · SRS Settled v12 · FDR Settled v8.
 
 ## Binds
 
-QC-8 – QC-17, QC-20 — on acceptance; ADR-0009 binds them until then.
+QC-8 – QC-17, QC-20.

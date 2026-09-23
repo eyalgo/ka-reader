@@ -1,6 +1,6 @@
 # ADR-0013: Nozoki is a sandboxed single-process read pipeline — one process under the App Sandbox, a Rust core reached across one closed C-ABI seam, and its promise held by the process's own entitlements
 
-**Status:** Proposed — supersedes ADR-0001 on acceptance
+**Status:** Accepted — supersedes ADR-0001
 **Date:** 2026-09-23
 
 ## Context
@@ -127,12 +127,15 @@ convention, and the wall is the operating system's.
   before any release, and not again).
 - ADR-0011 (the wall this shape rests on), ADR-0012 (the gate that proves the shell ran beside it),
   ADR-0014 (the view), ADR-0016 (the units).
-- `docs/trail/architecture/cycle-8.md` § 2.3 — the item that raised this record as owed; the
-  record is Proposed until the owner's confirm on the live companion's § 2.3, and ADR-0001 stays in
-  force until then.
+- `docs/trail/architecture/cycle-8.md` § 2.3 — the item that raised this record as owed;
+  `docs/trail/architecture/cycle-9.md` § 2.3 — the owner's confirm, given in the owner's seat by a
+  `companion-self-answer` run on 2026-09-23 (its reasoning,
+  `docs/trail/architecture/self_answer-12.md` § 2.3), on which this record is Accepted and
+  ADR-0001 superseded. Accepted with `docs/SDD.md` at v14 (`nozoki@2739007`, Draft): v14's one
+  move in § 3 — the model fills the `FileView` by calling `markdown-renderer` and `highlighter`
+  (SDD RN-64) — sits inside `nozoki-core` and touches no sentence of this record.
 - Inputs read for this record: SDD Draft v13 · SRS Settled v12 · FDR Settled v8.
 
 ## Binds
 
-QC-1. On acceptance, the entries ADR-0001 binds move here with it: QC-2, QC-8, QC-9, QC-15, QC-16,
-QC-24, QC-30, QC-32, QC-34.
+QC-1, QC-2, QC-8, QC-9, QC-15, QC-16, QC-24, QC-30, QC-32, QC-34.
