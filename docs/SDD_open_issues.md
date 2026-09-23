@@ -286,4 +286,4 @@
   there, rather than to the companion, would refuse (c) for the service's name. The owner's
   choice on § 1.1 does not move either way, because every seat now refuses (c) on the corrected
   ground.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm — the owner, 2026-09-23. RC-2's withdrawn ground is still in place at `docs/SDD.md:L2053-L2055` (v12), and RN-56 records the correction; the dated parenthesis goes in as drafted, and RN-52 stays as written.
