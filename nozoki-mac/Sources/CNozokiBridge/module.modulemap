@@ -1,0 +1,7 @@
+// The bridge's generated header, by a path relative to this file: `<repository>/target/include/`.
+// `crates/nozoki-bridge/build.rs` writes it on every build of the bridge, and it is never committed.
+module CNozokiBridge [system] {
+    header "../../../target/include/nozoki_bridge.h"
+    link "nozoki_bridge"
+    export *
+}

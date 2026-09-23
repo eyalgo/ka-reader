@@ -1882,6 +1882,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "nozoki-bridge"
+version = "0.0.0"
+dependencies = [
+ "libc",
+ "log",
+ "nozoki-core",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "nozoki-core"
 version = "0.0.0"
 dependencies = [
