@@ -35,9 +35,10 @@
 #   Only libSystem's sandbox_check answers, and no shell can call it, so checks/sandbox_probe.rs is
 #   compiled with rustc into this run's temporary directory and run as `nozoki-sandbox-probe <pid>`,
 #   found through PATH — the seam a test uses to stand one condition at a time in for the real probe.
-#   The ordinary path asks it up to BUNDLE_SH_PROBE_TICKS times, 0.25 s apart (default 40), and judges
-#   the first report that says sandboxed: yes; if the window runs out without one, the last report
-#   asked is judged instead.
+#   The ordinary path asks it up to BUNDLE_SH_PROBE_TICKS times, 0.25 s apart (default 40).
+#   The pass is the first ask on which all three hold. A report that falls short is asked past until
+#   the window runs out, and the last report asked is then judged. The bound is printed on the pass
+#   line and on the red closing line.
 #   No environment variable and no container directory is evidence of a sandbox: a process can carry
 #   the one and a directory can outlive the other (docs/SDD.md § 4 C-I3; NFDR QC-25; ADR-0010).
 
@@ -79,7 +80,7 @@ STOP_POLL_TICKS=20     # of 0.25 s: 5 s for it to exit after SIGTERM
 # last report and the negative control gives up waiting for one (both below). An empty value reads as
 # unset, the same way LAUNCH_POLL_TICKS above does. Refused before anything is launched, so a bad
 # value never reaches either loop.
-PROBE_TICKS="${BUNDLE_SH_PROBE_TICKS:-40}"   # of 0.25 s: judged on the first sandboxed: yes report
+PROBE_TICKS="${BUNDLE_SH_PROBE_TICKS:-40}"   # of 0.25 s: the bound on every ask
 case "$PROBE_TICKS" in
   *[!0-9]*) die "BUNDLE_SH_PROBE_TICKS must be a positive whole number (got: $PROBE_TICKS)" ;;
 esac
