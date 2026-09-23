@@ -33,6 +33,7 @@
 #   Only libSystem's sandbox_check answers, and no shell can call it, so checks/sandbox_probe.rs is
 #   compiled with rustc into this run's temporary directory and run as `nozoki-sandbox-probe <pid>`,
 #   found through PATH — the seam a test uses to stand one condition at a time in for the real probe.
+#   BUNDLE_SH_PROBE_TICKS overrides how many times it is asked, 0.25 s apart; the default is 40.
 #   No environment variable and no container directory is evidence of a sandbox: a process can carry
 #   the one and a directory can outlive the other (docs/SDD.md § 4 C-I3; NFDR QC-25; ADR-0010).
 
@@ -69,6 +70,18 @@ executable_name="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$app/
 # An override for a caller that must not wait the full time (a test with no process to wait for).
 LAUNCH_POLL_TICKS="${BUNDLE_SH_LAUNCH_TICKS:-80}"   # of 0.25 s: 20 s for the launched process to appear
 STOP_POLL_TICKS=20     # of 0.25 s: 5 s for it to exit after SIGTERM
+
+# The probe window: up to this many asks, spaced 0.25 s apart, before the ordinary path judges the
+# last report and the negative control gives up waiting for one (both below). An empty value reads as
+# unset, the same way LAUNCH_POLL_TICKS above does. Refused before anything is launched, so a bad
+# value never reaches either loop.
+PROBE_TICKS="${BUNDLE_SH_PROBE_TICKS:-40}"   # of 0.25 s: judged on the first sandboxed: yes report
+case "$PROBE_TICKS" in
+  *[!0-9]*) die "BUNDLE_SH_PROBE_TICKS must be a positive whole number (got: $PROBE_TICKS)" ;;
+esac
+# Read in base 10 (10#…) so a leading zero such as 08 is accepted, rather than read as invalid octal.
+[ "$((10#$PROBE_TICKS))" -gt 0 ] || die "BUNDLE_SH_PROBE_TICKS must be a positive whole number (got: $PROBE_TICKS)"
+PROBE_TICKS=$((10#$PROBE_TICKS))
 
 # The main process is identified by its absolute executable path — never by a pattern over command
 # lines, which would also match every process that merely mentions the bundle. `ps` through PATH so a
