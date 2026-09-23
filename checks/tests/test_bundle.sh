@@ -47,6 +47,7 @@ WORK=""
 CASES="
 test_real_bundle_passes
 test_probe_waits_past_an_early_unsandboxed_report
+test_first_sandboxed_report_is_the_one_judged
 test_outbound_connection_allowed_fails
 test_out_of_grant_read_allowed_fails
 test_not_sandboxed_fails
@@ -67,6 +68,8 @@ test_only_the_launched_pid_is_signalled
 test_negative_control_reports_unsandboxed
 test_negative_control_sandboxed_later_in_the_window_fails
 test_negative_control_asks_the_whole_window
+test_negative_control_probe_failure_fails
+test_negative_control_unreadable_report_fails
 test_negative_control_reported_sandboxed_fails
 test_negative_control_reported_sandboxed_fails_the_suite
 test_absent_control_fails_the_suite
@@ -308,6 +311,21 @@ test_probe_waits_past_an_early_unsandboxed_report() {
   expect_no_bundle_process "$APP"
 }
 
+# CP-64: the ordinary path judges the first sandboxed: yes report as it stands — it does not wait for
+# a better one, even though a later report in the same window would pass.
+test_first_sandboxed_report_is_the_one_judged() {
+  seq="$WORK/seq-first-judged"
+  sequenced_probe_stub "$seq" "yes denied allowed" "yes denied denied"
+
+  run_bundle_sh_with_stubs "$seq" "$APP"
+
+  expect_nonzero_status || return 1
+  expect_output_contains "an outbound network connection is not denied" || return 1
+  expect_one_report || return 1
+  [ "$(asked_count "$seq")" -eq 1 ] || fail "expected 1 ask, got $(asked_count "$seq")" || return 1
+  expect_no_bundle_process "$APP"
+}
+
 # One condition at a time: the probe stub reports two of the three as held and one as not.
 test_outbound_connection_allowed_fails() {
   mkdir -p "$WORK/stubs-outbound"
@@ -509,6 +527,37 @@ test_negative_control_asks_the_whole_window() {
   expect_output_contains "0.25 s" || return 1
   expect_one_report || return 1
   [ "$(asked_count "$seq")" -eq 3 ] || fail "expected 3 asks, got $(asked_count "$seq")" || return 1
+  expect_no_bundle_process "$copy"
+}
+
+# CP-67 (control half): the probe's own failure on any ask ends the run at once, and the run never
+# reaches its passing line.
+test_negative_control_probe_failure_fails() {
+  write_entitlements "$WORK/empty-failure.plist"
+  copy="$(resigned_copy control-failure "$WORK/empty-failure.plist")" || fail "could not re-sign the copy" || return 1
+  mkdir -p "$WORK/stubs-control-failure"
+  make_stub "$WORK/stubs-control-failure" nozoki-sandbox-probe 'echo "nozoki-sandbox-probe: sandbox_check returned an error" >&2; exit 1'
+
+  run_bundle_sh_with_stubs "$WORK/stubs-control-failure" --negative-control "$copy"
+
+  expect_nonzero_status || return 1
+  expect_output_contains "sandbox_check" || return 1
+  expect_output_lacks "negative control: the operating system reports" || return 1
+  expect_no_bundle_process "$copy"
+}
+
+# CP-67's last sentence (control half): a report that exits 0 but carries no sandboxed: line is not a
+# NOT-sandboxed report, so it fails the control exactly as a sandboxed: yes report would.
+test_negative_control_unreadable_report_fails() {
+  write_entitlements "$WORK/empty-unreadable.plist"
+  copy="$(resigned_copy control-unreadable "$WORK/empty-unreadable.plist")" || fail "could not re-sign the copy" || return 1
+  mkdir -p "$WORK/stubs-control-unreadable"
+  make_stub "$WORK/stubs-control-unreadable" nozoki-sandbox-probe "printf 'garbled\n'"
+
+  run_bundle_sh_with_stubs "$WORK/stubs-control-unreadable" --negative-control "$copy"
+
+  expect_nonzero_status || return 1
+  expect_output_contains "the negative control was reported sandboxed" || return 1
   expect_no_bundle_process "$copy"
 }
 
