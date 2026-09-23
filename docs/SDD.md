@@ -6,7 +6,7 @@
        signal, and the state a finished SDD carries; the open-issues file is gone.
      Locked = ratified as the source of truth. -->
 **Owner:** CTO · CPO · CDO — one run, three seats
-**Version:** 12 — CTO: SDD § 4 C-I3 (record line → ADR-0010); § 10 RC-1 *Changed* (dated parenthesis, words kept); SDD Review Notes RN-56 (CTO, changed). Companion: § 2.1 blockquote and *Drafted into the SDD* updated (slot left for the owner); § 1.1 CTO position gains the corrected ground for refusing (c). No item added, none consumed; no slice, edge, condition or place in the order moved.; CDO: SDD Review Notes RN-57 (CDO, changed) — new. Companion § 1.1, the CDO's position: the (c) sentence re-grounded on the CTO's corrected reading (withdrawn wording kept, dated); the § 2 row 4 citation parenthesis gains "re-pointed at v11, RN-55". No SDD section, slice, condition, observable half, UXD trace or § 12 clause moved; no companion item added or consumed.; CPO: companion § 1.1 (the CPO's position — one dated parenthesis on the (c) bullet, words kept); SDD Review Notes RN-58 (CPO, changed) — new. No SDD section, slice, *Delivers*, *Moves toward*, fence or PRD trace moved; no companion item added or consumed.
+**Version:** 13 — CPO: SDD § 1 (read-only constraint — the cycle-9 ruling added as a fixed constraint); § 5 step 4 E-1 and E-3 (dated sizing sentences under (a)); § 12 the PRD boundary (exit taken, product cost named); SDD Review Notes RN-59 (CPO, changed) — new. No slice, slug, *Delivers*, *Moves toward*, fence or PRD trace moved; no companion item added or consumed.; CPO: nothing this turn — the previous turn's edits (SDD § 1; § 5 step 4 E-1 and E-3; § 12 the PRD boundary; SDD Review Notes RN-59) are verified on disk and stand as recorded there.; CPO: nothing this turn — the previous turn's edits (SDD § 1; § 5 step 4 E-1 and E-3; § 12 the PRD boundary; SDD Review Notes RN-59) are verified on disk and stand as recorded there.; CTO: SDD § 2 (forces 3–6, table, placement, view-language paragraph, *Undoing it*); § 3 (parts table — `markdown-renderer`, `highlighter` new, `core-bridge`, `mac-shell`, `surfaces`, `read-only-harness`; units paragraph and table; SM-4 – SM-7, SM-8 new; deliverables paragraph; `FileView`, `MarkdownDocument`); § 4 C-R1, C-R2, C-R5, C-R6, C-R7, C-I2, C-I3, C-I6, C-D3; § 5 step 5; § 6 S-1, S-2, S-3, S-6, S-7, S-8, S-9, S-10, S-11 (CTO command halves and *Rests on*, S-1/S-3 *Why here*); § 9 TO-1, TO-4, TO-5, TO-6, TO-7, TO-8; § 10 RC-2 (dated parentheses) and RC-3 new; § 11 R-4, R-11, R-12, R-13 new; § 12 SRS boundary, downstream boundary; Open Questions (item 3 replaced, item 5 rewritten, two added); SDD Review Notes RN-60, RN-61 new. Companion: § 1.1, § 2.1, § 2.2 consumed; § 2.3 drafted (slot the owner's); header note. No slice, slug, *Delivers*, *Moves toward*, fence, § 7 edge or place in the order moved; no companion item added.; CDO: SDD § 4 C-E7 (mechanism sentence); § 6 S-1 *Reached when*, observable half (the excluded-artifact clause); § 12 the UXD boundary (the exit taken, what moves in `DESIGN.md`, what was re-read and stands); SDD Review Notes RN-62 (CDO, changed) — new. No condition, observable, UXD trace, slice or place in the order moved; no § 10 entry; no companion item added or consumed.; CPO: SDD § 1 (one clause — the weighing named as redone); § 5 step 4 E-3 (dated re-read close — `read-markdown`'s sizing stands); SDD Review Notes RN-63 (CPO, changed) — new. No slug, *Delivers*, *Moves toward*, fence or PRD trace moved; no companion item added or consumed.
 Version 8 — CTO: § 4 C-I3 (bounded window, first-ask-all-three pass, script-fixed and printed bound with no number here, per-ask live-pid check, uncovered yes→no case, control `no` for the whole window, error-on-any-ask, denial-as-proof clause narrowed to where the control reports the denials allowed with the hosted runner's read denial stated as separating nothing, Violated by extended); § 10 RC-1 Still unresolved (pointer to RN-48); § 11 R-8 shows up as and response; Open Questions (fourth item closed and removed — four remain); SDD Review Notes RN-48 (new). Companion items added: none. docs/SDD_open_issues.md removed, empty of items.
 Version 7 — CTO: § 3 SM-4 (what crosses, and owner cell wording); § 4 C-R7 (the staged grant, set equality against registered commands, asset-scheme keying, named pre-1.0.0 uncovered case, Violated by); § 4 C-I3 (every command the build grants); § 6 S-7 Reached when, command half; SDD Review Notes RN-47 (new). Companion items added: none. docs/SDD_open_issues.md removed, empty of items.
 Version 6 — CTO: § 4 C-I3 (observable and Violated by); § 6 open-a-folder Reached when, command half; § 10 RC-1 (new, first re-cut entry); § 11 R-8 shows up as; Open Questions fourth item (closed, replaced by the hosted-runner question); SDD Review Notes RN-45 (new). Companion items added: none. docs/SDD_open_issues.md removed, empty of items.; CPO: § 5 step 4 (E-1's sizing sentence); SDD Review Notes RN-46 (new). Companion items added: none.
@@ -167,7 +167,13 @@ re-listed:
   single one release-blocking (`docs/SRS.md` NFR-4 – NFR-9, C-2). The no-network half is held
   by the operating system, never by the code: no network entitlement is ever granted, whatever
   granting one would buy — the owner's ruling (`docs/trail/sdd/cycle-8.md` § 5.1), which § 4
-  C-R2 answers to. What the folder holds is displayed, never executed (NFR-16); the folder is
+  C-R2 answers to. The owner's second ruling holds the same line against the one thing it was
+  found to cost: no mach-lookup exception under another name either, so the renderer that could
+  not start without one leaves the system WKWebView (`docs/trail/sdd/cycle-9.md` § 1.1,
+  2026-09-23). That is a constraint § 2's shape is re-chosen against, and this section names it
+  as one; which native view, and what the seams become, is § 2's weighing and never this
+  section's — redone under that ruling (§ 2; § 10 RC-3). What the folder holds is displayed,
+  never executed (NFR-16); the folder is
   live, untrusted input that the system tolerates and never requires anything of (DR-6).
 - **Local, macOS, one folder.** No hosted mode (C-1); macOS only, with a version floor this SDD
   fixes (C-11); exactly one folder per run, found to be a repository's root or not and never asked
@@ -210,22 +216,35 @@ the fact that grounds it is on the line.
    few and small: the root finding (FR-33), path containment for rendered content (FR-32, NFR-16),
    never draw an unobserved state (`docs/UXD.md` UX-I13, UX-I16), keep the reader's place across a
    refresh (FR-27). A negative invariant is not held by a guarded domain core; it is held by
-   *withholding a capability* at a boundary something outside the code enforces.
+   *withholding a capability* at a boundary something outside the code enforces. Since the
+   owner's two rulings that boundary has a name — the process's own entitlements (§ 1) — and a
+   shape that needs a second process the operating system will not start under them (a system
+   service that checks the host's network entitlement at its own start, § 10 RC-2) is asking the
+   wall for what the wall refuses.
 4. **What must be replaceable inside the terminus.** Two things, both live: the viewed folder —
    "an input, not a structural singleton", and the switch is inside done (`docs/SRS.md` NFR-12,
    FR-19; `system/projects/nozoki/agari.md`, first condition) — and the Git mechanism (force 2).
-   Nothing else will be swapped before done: not the renderer technology, not the platform (C-11).
-   A seam for either of those would be cost with no buyer.
+   Nothing else will be swapped before done: not the platform (C-11), and not the view technology
+   *again* — it moved once, before any release, when the system WKWebView was found unable to
+   start under the wall (§ 10 RC-2, RC-3; `docs/trail/sdd/cycle-9.md` § 1.1). That reversal was
+   priced "expensive" in this section's first draft and was paid at the cheapest moment it could
+   be: one slice scaffolded, nothing shipped. A seam for a second swap would be cost with no buyer.
 5. **What the numbers force at runtime.** One machine, one process tree, one folder per run
    (`docs/SRS.md` C-1, FR-1); no network call during operation, none (NFR-8); own state in the
    tool's own data location and never in the folder (FR-21, DR-5); no configuration of any kind
    (NFR-14). And the promise must survive a crash (NFR-4) — which is what turns "the code declines
    to write" into "the operating system refuses the write": only a wall outside the process holds
-   through the process dying.
+   through the process dying. One more thing the rulings force: no network entitlement and no
+   mach-lookup exception, ever (§ 1; `docs/trail/sdd/cycle-8.md` § 5.1; `docs/trail/sdd/cycle-9.md`
+   § 1.1) — so every process the product runs starts under that profile, and a view whose own
+   processes must pass a network check at their start (WebKit's, RC-2) has no process to run in.
+   That leaves one process.
 6. **What a first slice could prove.** For each candidate below: the smallest build that shows it
    right or wrong is one that opens a folder, shows its tree, reads one file, and has the *wall*
-   in place and machine-checked — because the wall is the shape's whole claim. A candidate whose
-   wall cannot be checked until the product is whole carries a warning about itself.
+   in place and machine-checked — because the wall is the shape's whole claim — and, since
+   RC-2, a window shown to draw *under* that wall: a wall proven on a bundle whose window never
+   drew proved nothing a person could use (§ 4 C-I3, the renderer gate). A candidate whose wall
+   cannot be checked until the product is whole carries a warning about itself.
 7. **What being wrong costs.** Stated per row, below the table.
 
 **The candidates, run against the forces.** Each row is checked against § 1's four questions —
@@ -235,29 +254,50 @@ the row is named on it.
 
 | Shape | Right when | Wrong when | Taken? |
 |---|---|---|---|
-| **Capability-split read pipeline** — a sandboxed host that holds *read* capability only, feeding one in-memory folder model; the surfaces in a separate renderer process that holds *no* filesystem, network or shell capability, reached through a closed command list and one read-only asset scheme | The system's rules are negative invariants that must hold through a crash (force 3, force 5), and change arrives as read surfaces rather than capabilities (force 1): the wall is then the design, and adding a surface costs nothing at the wall | The system needs a capability the wall forbids — a write, a socket, a process — or its rules are positive domain logic worth a guarded core; then the split is two processes and a serialized seam bought for nothing | **yes** — it answers § 1's first question with an entitlements file a reviewer reads (`codesign -d --entitlements`), not with "if the code is careful"; the second with a watcher and a model that never hold a write; the third with the folder as a value the model is replaced by (§ 3); the fourth with one bundle (§ 4 C-R1, C-R4) |
+| **Sandboxed single-process read pipeline** — one process under the App Sandbox with no network entitlement; a Rust library that reads two sources into one in-memory folder model; an AppKit shell that draws the model's projections and holds no I/O of its own, reached across one closed C-ABI seam | The system's rules are negative invariants that must hold through a crash and are held by the process's own entitlements (force 3, force 5); change arrives as read surfaces rather than capabilities (force 1); and what is shown executes nothing — content reaches the view as data a text engine lays out, so no second process is needed to wall a script engine off | Content must be rendered by an engine that executes it — then a view process that can be handed nothing is worth its seam; or the view needs a system service the wall refuses to start | **yes** — it answers § 1's first question with one entitlements file a reviewer reads (`codesign -d --entitlements`) that covers everything the product runs; the second with a watcher and a model that never hold a write; the third with the folder as a value the model is replaced by (§ 3); the fourth with one bundle and no dependency the view brings (§ 4 C-R1, C-R4, C-R6). Taken over the row below on § 10 RC-2 and the owner's (a) (`docs/trail/sdd/cycle-9.md` § 1.1) |
+| **Capability-split read pipeline** — the shape this document held to v12 (ADR-0001): the surfaces in a separate renderer process holding *no* filesystem, network or shell capability, reached through a closed command list and one read-only asset scheme | The renderer executes content — HTML, script — so the process that runs it must be one that can be handed nothing; and the operating system starts that process under the wall | The only renderer that fits refuses to start under the wall (RC-2: WebKit's processes check the host's network entitlement at their own start), or the content is data no engine executes — then the second process guards a threat the design no longer has and costs a serialized seam | no — yes until the owner's (a). No native view process exists that would earn the seam: a view that executes nothing has nothing to be walled off from. It returns if a view that executes content *and* starts under the rule ever exists; none is known |
 | **Hexagonal** — a domain core behind ports, an adapter at every edge | Many volatile edges owned by others, and a core carrying rules worth guarding from them (force 2, force 3 the other way round) | The edges are two, stable, and owned by Apple and Git, and the core would hold a folder model and no rule (force 2, force 3): every port but one guards nothing | no — insulating a stable edge is ceremony; its one useful port, the Git reader (force 2), is kept inside the taken shape (§ 3 SM-2). It would win only if the agent-workflow front end came inside the terminus and brought its own edges, which the Agari places outside done |
 | **Layered, one process** — UI over services over a data-access layer | A product whose data layer's generic filesystem and network access is the point | A product whose defining promise is that such access does *not* exist (force 3): not-writing becomes discipline in a layer built to write | no — fails § 1's first question by construction: a reviewer is *told* the data layer never writes; nothing shows it |
-| **Native single-process model-view (AppKit / SwiftUI) under the same sandbox** | The design language is native, no untrusted content is rendered as markup, and one language is worth more than a second wall | Markdown must render (`docs/SRS.md` FR-30) and the design language is realised as plain CSS custom properties over the product's own markup (`docs/DESIGN.md` § Overview, its opening sentence; RN-1 there), with every asset — the vendored SVG icons among them — shipping with the tool (`docs/UXD.md` § 9; `third_party/lucide/`): re-expressing it natively is a second design language. What survives re-expression is the CDO's finding, not this row's (RN-53) | no — the honest runner-up: it keeps the sandbox wall and loses the renderer wall, and it re-expresses a settled design language. It wins if that language is ever redrawn natively, which nothing inside the terminus asks for |
+| **Rust-native toolkit, single process** — egui, iced, gpui or Slint: widgets the toolkit draws itself over a GPU surface, one language throughout | One language outweighs the platform's look, and the toolkit's dependency tree is one the product can vouch for | The design starts from what a stock Mac already draws — the platform's fonts, its text sizes, its flat list rows (`docs/DESIGN.md` § Overview; `docs/UXD.md` § 9, "the platform's own controls and appearance are the starting point") — and every dependency is a decision reviewed against an allowlist (§ 4 C-R6): a toolkit that rasterises its own text and ships a GPU stack is a second look and the largest tree of any row, brought to the one seat where the design asks for nothing shipped | no — it keeps one language and loses the look the design is drawn from, and it spends the dependency budget where the platform already provides everything |
+| **In-process web engine** — WebKitLegacy's `WebView`, or HTML imported through `NSAttributedString` | The CSS design language must be kept byte for byte, and a deprecated API is acceptable | The engine is deprecated (macOS 10.14), it executes content inside the one process the wall covers, and whether it starts and stays offline under the rule is unmeasured | no — the renderer wall gone *and* a script engine in the host: the worst of the two rows above, on an API Apple has retired. (The previous table's row 4, "Native single-process model-view (AppKit / SwiftUI)", is the taken row now; what survives re-expression of the design language is the CDO's finding, RN-53, not this table's) |
 | **Local server + browser tab** — the input proposal's "web app" | A hosted or multi-client direction is inside done | A listening socket is a network call during operation, which NFR-8 forbids outright; and the README no longer calls the product a web app (`docs/PRD.md` § Out of Scope, last item) | no — fails § 1's first and fourth questions: a socket is a capability the wall must forbid, and a browser tab is a second thing to install |
 
 **Which side this product falls on, and why.** The four questions § 1 sets are all *structural*:
-each asks for something a reviewer can check without trusting the code. The capability-split
-pipeline is the only candidate whose answer to every one is a boundary — an entitlement list, a
-closed command list, a Content Security Policy, a model replaced whole — rather than a discipline.
-The hexagonal shape answers the same questions with more seams than the product has volatile
-edges; the layered and web-app shapes cannot answer the first question at all; the native shape
-answers all four and loses only on the cost of re-expressing the experience. The Principal
-Architect's log already records this shape and its runner-up as ADR-0001 (`docs/adr/0001-capability-split-read-pipeline.md`);
-this run weighed it again from the forces above, against the SRS, UXD and PRD as they stand today,
-and landed where the record stands (RN-1).
+each asks for something a reviewer can check without trusting the code — and they are now answered
+by one boundary rather than two. The process's entitlements — a read-only grant on the chosen
+folder, no network, ever — cover everything the product runs, because everything it runs is one
+process (§ 4 C-R2). What the previous shape added, a renderer process that could be handed nothing,
+guarded a threat this shape does not carry: content reaches the view as data — a tree of typed
+nodes, spans, bytes — and the view hands it to a text layout engine, never to an interpreter (§ 3
+`markdown-renderer`; § 4 C-D3). The hexagonal shape still answers with more seams than the product
+has volatile edges; the layered and web-app shapes still cannot answer the first question; the
+Rust toolkit answers all four and loses on the look and the tree; the in-process engine loses both
+walls at once. Until v12 this section landed where ADR-0001 stands
+(`docs/adr/0001-capability-split-read-pipeline.md`; RN-1); it departs from that record now, on the
+forces as the two rulings re-read them, and the departure is surfaced (§ 10 RC-3; § 12; RN-60).
+
+**The view is AppKit, and its language is Swift.** Two ways draw AppKit: Swift, Apple's own
+language for it, or Rust through the `objc2` bindings. Rust would keep the product to one language,
+and it costs: every message send is `unsafe` in a workspace that forbids it (`Cargo.toml`,
+`[workspace.lints.rust]`), TextKit and `NSOutlineView` are driven through bindings written for a
+different idiom, and the contributor who knows AppKit knows it in Swift. Swift costs a second
+language beside Rust — the count this product already carried with TypeScript — and one C ABI
+between them (§ 3 SM-4); it buys the platform's own controls, and it brings nothing to the tree:
+`Package.swift` declares no dependency (§ 4 C-R6). SwiftUI is not taken for the view: the reading
+panel is a text view with attachments and block layout (`docs/UXD.md` UX-I12), which is TextKit's
+through `NSTextView`, and a SwiftUI layer over it would add a second layout system for no surface
+that needs one. The Principal Architect's log records the previous runtime as ADR-0002
+(`docs/adr/0002-tauri-2-rust-host-wkwebview-renderer.md`); this paragraph departs from it whole, and
+the departure is surfaced with the shape's (§ 10 RC-3; RN-60).
 
 **Undoing it.** Three reversals, priced separately because they cost differently:
 
-- *Collapsing the two processes into one* costs the IPC surface (§ 3 SM-4) rewritten as direct
-  calls, and nothing else — the folder model, the readers and the harness survive. Cheap.
-- *Replacing the renderer technology* costs every surface rewritten (§ 3 `surfaces`); the host, the
-  model and the harness survive. Expensive, and not foreseen inside the terminus (force 4).
+- *Moving the view into a second process* costs the bridge (§ 3 SM-4) re-wired as IPC, and nothing
+  else — the folder model, the readers and the harness survive. Cheap in code, and blocked while the
+  rule stands for any view whose processes check the host's network entitlement (RC-2).
+- *Replacing the view technology* costs every surface rewritten (§ 3 `surfaces`, `mac-shell`); the
+  core, the bridge's contract and the harness survive. Expensive — paid once, before any release
+  (§ 10 RC-3) — and not foreseen again inside the terminus (force 4).
 - *Removing the sandbox* costs one entitlements file — and the wall. That is the one reversal the
   design refuses to make cheap to *forget*: the wall's presence is checked on every build (§ 4
   C-I3), so it cannot go missing without a red build saying so.
@@ -282,21 +322,27 @@ interpret gives a different answer twice over the same settled text. Leave both 
 | `git-reader` | crates/nozoki-core | The **Git port** — `probe(folder)` answering `root` or `plain` with discovery disabled and never a path above the folder (FR-33); on a root only, `state()` (branch or detached identifier, the short status word), `status()` (changed and staged entries), `diff(kind, path)` and `walk(tips, window)` (beyond v1) — every method read-only and returning plain data — and its one adapter, libgit2 linked without its HTTPS and SSH transports. The installed-`git` adapter, run with `--no-optional-locks`, is the port's standing substitute and is not built ahead of the risk that needs it (§ 11 R-1) | Any mutating call — checkout, index write, ref update, lock file. Spawning a process. The model. A file outside Git's own on-disk layout |
 | `watcher` | crates/nozoki-core | One FSEvents subscription on the granted folder, the root's `.git` entry included, delivering coalesced change events as paths; nothing else | Reading content. Interpreting a change. Any write |
 | `folder-model` | crates/nozoki-core | The in-memory model of exactly one folder (FR-1): the tree, the selection and expansion, the open file, the Git state where the root finding says `root` and none where it says `plain`; every read held as an item carrying an `ItemState` (§ 4 C-I1); the **reducer** that applies reader results and watcher events and keeps the reader's place (FR-27); **replace-whole** — a new folder replaces the model as a value, never mutates it (NFR-12); the projections the surfaces draw; and the plain Rust API the host wraps and the harness calls (SM-5) | I/O of any kind. The Tauri runtime. Own state. Rendering |
-| `markdown-renderer` | crates/nozoki-core | Markdown → sanitized HTML on the host, from bytes `fs-reader` read: an allowlist admitting no script, style, frame, object, event attribute or `src`, with one rewrite — an image whose reference passes the containment check becomes an `<img>` on the `nozoki-asset` scheme, every other image a stated placeholder; an external link inert text with its destination readable; a relative link a data attribute (`docs/SRS.md` FR-32, NFR-16; `docs/UXD.md` UX-I12) | Any network. Emitting a `file:` or `http(s):` URL. Reading the file itself. The raw-source view (§ 9 TO-5) |
+| `markdown-renderer` | crates/nozoki-core | Markdown → a **typed document**, from bytes `fs-reader` read: a `MarkdownDocument` (*What the system holds*, below) whose node kinds are a closed set and never markup — heading, paragraph, list, quote, rule, fenced code with its language and `highlighter`'s spans; an image whose reference passes the containment check carrying that folder-relative path, every other image a placeholder node carrying the condition observed; an external link an inert node with its destination readable; a relative link a node carrying its target path; raw HTML in the source a text node (`docs/SRS.md` FR-30, FR-32, NFR-16; `docs/UXD.md` UX-I12) | Any network. Emitting a URL of any scheme. Markup of any kind. Reading the file itself, or an image's bytes. The raw-source view (§ 9 TO-5) |
+| `highlighter` | crates/nozoki-core | Text and a floor language → spans, each a byte range and one of the five token classes `docs/DESIGN.md` § Colors names (keyword, string, number, comment, name), for the reading panel's code treatment and for a fenced block in a `MarkdownDocument`; the six grammars compiled into the library — which grammar engine compiles them is a dependency decision under § 4 C-R6, made in the slice that lands it (*Open Questions*) (FR-8, FR-29; § 4 C-I5) | Reading a file. Naming the language — that is `fs-reader`'s extension map. Drawing. A seventh grammar with no floor language behind it |
 | `own-state` | crates/nozoki-core | The tool's own remembered state — theme, window frame, and beyond v1 the remembered folders as security-scoped bookmarks with display names and which was viewed last — read whole or discarded whole, written only inside the app's container (FR-21, DR-5) | Anything of the folder's content. The diagnostic log. A path outside the container |
-| `ipc-surface` | crates/nozoki-app | The Tauri 2 host and **composition root**: the closed command list and the events the renderer receives (SM-4); the asset handler serving bytes only for a path the containment check passes; the Open panel and the sandbox grant; the one window; the entitlements, the capability file and the Content Security Policy (§ 4 C-R2, C-R7); the diagnostic log writer (§ 4 C-I2); wiring the libgit2 adapter to the Git port | Read logic — every command delegates to `folder-model` and formats the result. Any plugin. A second window. A terminal line |
-| `surfaces` | nozoki-ui | The shell the UXD draws: the rail, the tree, the reading panel and its treatments (code, rendered Markdown, and beyond v1 the diff), the Git view (and beyond v1 the history beneath its changes list), the chrome with the identity element and the theme control (`docs/UXD.md` § 4, § 6); the highlighter with its six bundled grammars; the theme tokens; the message catalogue. It draws projections and draws no state the host did not send | Filesystem, network or shell capability of any kind. Building a URL from content. A fetch, a socket, a dynamic import of a URL. A message not in the catalogue. A dialog, a toast, a notification |
-| `read-only-harness` | checks | The scripts and fixtures that prove the promises on every build and every release: `read-only.sh`, `no-network.sh`, `bundle.sh`, `own-state.sh`, `churn.sh`, `latency.sh`, `structure.sh`, `deps.allow`, the fixture folders — a repository, a plain folder, a folder inside a repository, a parent of two repositories, a linked worktree, a submodule, a hostile Markdown corpus (§ 4 C-I3) — and, from `promise-one-point-zero`, `contract.sh` with the pin `contract/<major>` it reads (§ 4 C-I6) | Being a dependency of any shipped unit. Driving the rendered UI. Shipping in the bundle |
+| `core-bridge` | crates/nozoki-bridge | The C ABI over `folder-model`'s API and the **Rust-side composition root**: the closed function list the shell calls (SM-4), each function a thin wrapper that decodes its arguments, calls `folder-model` and returns plain data as an owned buffer freed by one `nozoki_free`; the `model_changed` callback; `asset_bytes`, returning an image's bytes only for a path the containment check passes (SM-7); the diagnostic log writer's install (§ 4 C-I2); wiring the libgit2 adapter to the Git port. The one unit that holds `unsafe`, with the reason recorded in its manifest and its record (workspace `Cargo.toml`, `[workspace.lints.rust]`) | Read logic — every function delegates and formats. AppKit, or any Apple framework. A window. A path outside the grant. Anything the harness could not exercise through SM-5 |
+| `mac-shell` | nozoki-mac | The `NSApplication`, the one window and the app's **composition root** on the Swift side: it presents the Open panel and holds the grant the panel returns, calls SM-4 and decodes what returns, marshals `model_changed` onto the main thread, hands projections to `surfaces` and turns their intents into SM-4 calls (SM-8); it owns `Info.plist`, `Entitlements.plist` and the bundle's assembly (§ 4 C-R1, C-R2) | Drawing — that is `surfaces`. Read logic. Any I/O of its own — a file read, a network API, a spawned process, `NSWorkspace.open` (§ 4 C-R7). A second window. A terminal line |
+| `surfaces` | nozoki-mac | The shell's views as the UXD draws them: the rail, the tree (`NSOutlineView`), the reading panel and its treatments — code, rendered Markdown laid out from a `MarkdownDocument` by TextKit, and beyond v1 the diff — the Git view (and beyond v1 the history beneath its changes list), the chrome with the identity element and the theme control (`docs/UXD.md` § 4, § 6); the theme tokens as values; the message catalogue. It draws projections and draws no state the bridge did not send | The bridge — a surface never calls SM-4; it hands `mac-shell` an intent (SM-8). Filesystem, network or process capability of any kind. A URL built from content and handed to any framework. An HTML import. A message not in the catalogue. A dialog, a toast, a notification |
+| `read-only-harness` | checks | The scripts and fixtures that prove the promises on every build and every release: `read-only.sh`, `no-network.sh`, `bundle.sh`, `renderer.sh`, `view.sh`, `own-state.sh`, `churn.sh`, `latency.sh`, `structure.sh`, `deps.allow`, the fixture folders — a repository, a plain folder, a folder inside a repository, a parent of two repositories, a linked worktree, a submodule, a hostile Markdown corpus, and `idle-shell`, the renderer gate's control bundle (§ 4 C-I3) — and, from `promise-one-point-zero`, `contract.sh` with the pin `contract/<major>` it reads (§ 4 C-I6) | Being a dependency of any shipped unit. Driving the AppKit views. Shipping in the bundle |
 
-**Four physical units carry the nine parts.** `crates/nozoki-core` is a Rust library that imports
-no Tauri crate, so the harness links it without a window; `crates/nozoki-app` is the Rust binary
-and the only unit that imports Tauri; `nozoki-ui` is a TypeScript package bundled into the app and
-holding no capability; `checks` is build-time and never shipped. The unit set is the one ADR-0009
-records (`docs/adr/0009-physical-module-set.md`); the `crates/` placement is the owner's ruling
-for every Rust product in this instance as `docs/nfdr.md` § 9 carries it (RN-4). Only `git-reader`
-imports the libgit2 binding; only `own-state` and the host's log writer write anything; the
-readers, the watcher and the renderer import neither the model nor one another, with one stated
-edge — `markdown-renderer` calls `fs-reader`'s containment check.
+**Four physical units carry the eleven parts.** `crates/nozoki-core` is a Rust library that
+imports no Apple framework and holds no `unsafe`, so the harness links it without a window;
+`crates/nozoki-bridge` is a Rust static library, the only unit that exports a C ABI and the only
+one that holds `unsafe`; `nozoki-mac` is a Swift package building the app's one executable, the
+only unit that imports AppKit, declaring no package dependency and linking `libnozoki_bridge.a`;
+`checks` is build-time and never shipped. The unit set departs from the one ADR-0009 records
+(`docs/adr/0009-physical-module-set.md`) — `nozoki-app` and `nozoki-ui` leave, `nozoki-bridge` and
+`nozoki-mac` arrive — and the departure is surfaced, not recorded here (§ 10 RC-3; RN-60); the
+`crates/` placement is the owner's ruling for every Rust product in this instance as
+`docs/nfdr.md` § 9 carries it (RN-4). Only `git-reader` imports the libgit2 binding; only
+`own-state` and the bridge's log writer write anything; the readers, the watcher, the highlighter
+and the renderer import neither the model nor one another, with two stated edges —
+`markdown-renderer` calls `fs-reader`'s containment check, and `highlighter` for a fenced block.
 
 <**Part** is a **slug**, and what makes one usable is not cosmetic. **Lowercase letters and digits,
 single hyphens between them, and nothing else**, written in backticks — no capital, no space, no
@@ -340,12 +386,17 @@ card's `Languages:` line; *Kind* is the word that language's packet uses for a b
 | Unit | Language | Kind |
 |---|---|---|
 | `crates/nozoki-core` | `Rust` | `crate` |
-| `crates/nozoki-app` | `Rust` | `crate` |
-| `nozoki-ui` | `TypeScript` | `package` |
+| `crates/nozoki-bridge` | `Rust` | `crate` |
+| `nozoki-mac` | `Swift` | `package` |
 | `checks` | `Shell` | `directory` |
 
-The TypeScript frame — `package.json`, `vite.config.ts` and the packet's tree — lands inside
-`nozoki-ui/`, where the card's own test command goes to find it. `checks` is `directory` because
+The Swift frame — `Package.swift`, `Sources/`, `Tests/` — lands inside `nozoki-mac/`, where the
+card's own test command goes to find it. No Swift packet exists in the organisation's language
+registry (`<CORE>/doctrine/engineering/languages/`, listed 2026-09-23: `javascript`, `python`,
+`rust`, `shell`, `typescript`), so *Kind* takes the word Swift Package Manager uses for a buildable
+unit, `package`, and the frame is laid out by the slice that lands it rather than by a launcher; the
+project card's `Languages:` line is owed `Swift` in place of `TypeScript`, and its test command the
+`swift test` half in place of Vitest — outside this document (RN-60). `checks` is `directory` because
 it builds nothing and is forbidden from being a dependency of any shipped unit; Shell is its
 language because the card declares Shell for the `checks/*.sh` harness by name (RN-36).
 
@@ -356,14 +407,17 @@ language because the card declares Shell for the `checks/*.sh` harness by name (
 | `SM-1` `fs-reader` ↔ `folder-model` | Down: a path to list or read. Up: the listing, or the bytes with the text rule applied and the floor language named, or the condition observed — always as data, never a panic | `folder-model` — it states what a read must return; the reader implements it |
 | `SM-2` `git-reader` ↔ `folder-model` | Down: `probe`, and on a root `state`, `status`, `diff`, `walk`. Up: `root` or `plain`; plain-data Git state; or the condition observed. The port is a trait the model owns; the adapter is the only thing that knows libgit2 | `folder-model` — the port is its; a second adapter passes the same contract tests (§ 11 R-1) |
 | `SM-3` `watcher` ↔ `folder-model` | Up only: coalesced change events as paths, the root's `.git` entry among them. The model decides what to re-read | `folder-model` — the event shape is its |
-| `SM-4` `ipc-surface` ↔ `surfaces` | Down (renderer → host): commands from this list and no other — `open_folder`, `list_tree`, `select_file`, `open_relative_link`, `set_theme`, `open_diff`, `walk_history`, `switch_folder` — each crossing from the build in which a slice registers it and not before, and all eight from `v1.0.0`; and asset requests on the `nozoki-asset` scheme, from the slice that settles its origin form. Which of the list a given build grants is stated once, in § 4 C-R7. Up (host → renderer): the `model_changed` event carrying a projection delta. Nothing else crosses in either direction, and **this seam is the promise**: a builder of the renderer who holds only this contract cannot write, cannot connect and cannot read outside the folder | `ipc-surface` — the host registers the commands its landed slices built and grants exactly what it registers (§ 4 C-R7); the renderer receives what is registered and nothing more |
-| `SM-5` `folder-model` ↔ `ipc-surface` | Down: the operations the commands name, as plain Rust calls. Up: projections and deltas. The harness calls this API directly, in-process, with no window (§ 4 C-I3) | `folder-model` — the API and its types are its; the host wraps, formats and delegates |
-| `SM-6` `own-state` ↔ `ipc-surface` | Down: the theme set, the window frame, and beyond v1 a folder to remember. Up: the state read whole, or the first-run state where it could not be read | `own-state` — the record shape and the read-whole-or-discard-whole rule are its |
-| `SM-7` `markdown-renderer` ↔ `fs-reader`, and the asset handler in `ipc-surface` | Rendering asks `fs-reader` whether an image reference is contained; serving asks the same question again on every request. Only a path that passes both is ever read; a bypass of the sanitizer or the CSP still reaches no byte outside the folder | `fs-reader` — the check is its and has one implementation; the two callers do not re-implement it |
+| `SM-4` `core-bridge` ↔ `mac-shell` | Down (shell → core): calls from this list and no other — `open_folder` (taking the URL the Open panel returned, and no path from any other source), `list_tree`, `select_file`, `open_relative_link`, `set_theme`, `open_diff`, `walk_history`, `switch_folder`, `asset_bytes` — each exported from the build in which a slice lands it and not before, and all nine from `v1.0.0`. Which of the list a given build exports is stated once, in § 4 C-R7. Up (core → shell): the `model_changed` callback carrying a projection delta, on a thread the shell marshals to its main thread; and each call's return as an owned buffer of plain data — JSON, or flat structs the header declares — freed by `nozoki_free`; the header is generated from the bridge's source and never hand-kept. Nothing else crosses in either direction. **This seam is where the promise is read, not where it is held**: the wall is the process's entitlements (§ 4 C-R2), and the seam makes visible that the shell reads through the core alone — a builder of the shell who holds only this header has no read, no write and no connection to make, and § 4 C-R7 checks on every build that the shell adds none of its own | `core-bridge` — it exports what its landed slices built, the header is generated from it, and the shell calls what is exported and nothing more |
+| `SM-5` `folder-model` ↔ `core-bridge` | Down: the operations the functions name, as plain Rust calls. Up: projections and deltas. The harness calls this API directly, in-process, with no window (§ 4 C-I3) | `folder-model` — the API and its types are its; the bridge wraps, formats and delegates |
+| `SM-6` `own-state` ↔ `core-bridge` | Down: the theme set, the window frame, and beyond v1 a folder to remember. Up: the state read whole, or the first-run state where it could not be read | `own-state` — the record shape and the read-whole-or-discard-whole rule are its |
+| `SM-7` `markdown-renderer` ↔ `fs-reader`, and `asset_bytes` in `core-bridge` | Rendering asks `fs-reader` whether an image reference is contained; `asset_bytes` asks the same question again on every call. Only a path that passes both is ever read; a node built wrong still reaches no byte outside the folder | `fs-reader` — the check is its and has one implementation; the two callers do not re-implement it |
+| `SM-8` `mac-shell` ↔ `surfaces` | Down: projections and deltas as Swift values the shell decoded from SM-4, delivered on the main thread. Up: intents — a row activated, a file selected, a link activated, a theme chosen, a folder chosen from the selector — named after SM-4's functions and nothing else; a surface never holds a path it did not receive in a projection, and never reaches the bridge | `mac-shell` — the intent set is its, and it alone calls the bridge |
 
-**Three deliverables, one bundle.** The nine parts ship as `Nozoki.app`: the host binary with
-`nozoki-core` linked in, and the renderer's built assets inside `Contents/Resources`. `checks`
-runs against that bundle and is never inside it.
+**Two libraries, one executable, one bundle.** The eleven parts ship as `Nozoki.app`: the
+`nozoki-mac` executable with `libnozoki_bridge.a` — `nozoki-core` inside it — linked statically,
+and the fourteen icons inside `Contents/Resources`; the six grammars are compiled in, and no font
+ships because the design's fonts are the platform's (`docs/DESIGN.md` § Typography). `checks` runs
+against that bundle and is never inside it.
 
 <Two tables, not one: merging them loses the seam's owner, and the unowned seam is the thing this
 section already says arguments start over.>
@@ -382,9 +436,19 @@ section already says arguments start over.>
   marker, a count or a "nothing changed" only from `observed` (UX-I13). This is the mechanism
   behind § 4 C-I1 and NFR-3.
 - **`FileView`** — the open file (DR-3): its folder-relative path; its content as one of *text*
-  (with the floor language or *plain*), *markdown* (the sanitized HTML), *cannot-display* (the
-  reason), or *gone* (the file vanished under the reader — FR-28); the reading position the
-  reducer preserves across a refresh (FR-27). In-session only.
+  (with the floor language or *plain*, and `highlighter`'s spans where there is a language),
+  *markdown* (a `MarkdownDocument`), *cannot-display* (the reason), or *gone* (the file vanished
+  under the reader — FR-28); the reading position the reducer preserves across a refresh (FR-27).
+  In-session only.
+- **`MarkdownDocument`** — the rendered form of a Markdown `FileView` (DR-3, DR-6; FR-30, FR-32;
+  `docs/UXD.md` UX-I12): an ordered list of block nodes — heading with its level, paragraph, list
+  with its items, quote, rule, fenced code with its language and spans — each holding inline nodes
+  — text, emphasis, code, image, link. An image node is *resolved* (a contained folder-relative
+  path in one of § 4 C-D3's four formats) or a *placeholder* carrying the condition observed
+  (outside the folder; missing; unreadable; a format not decoded). A link node is *external*
+  (inert, its destination readable) or *relative* (a contained target path). The set is closed: no
+  node carries markup, none names a URL the shell fetches, and raw HTML in the source is a text
+  node. In-session only.
 - **`GitState`** — present only where `kind` is `root` (DR-4): the branch name or, detached, the
   commit identifier; the changed entries and the staged entries, each with its status letter; the
   short status word; and beyond v1 the history window — commits with identifier, message, author,
@@ -425,12 +489,18 @@ the UXD binds on every surface, is the CDO's clause and follows them.
 **The runtime and deployment shape.**
 
 - **C-R1.** The product is one macOS application bundle, `Nozoki.app`, bundle identifier
-  `com.kensaiapp.nozoki`: a Tauri 2 host (`crates/nozoki-app`, Rust) over the `nozoki-core`
-  library, rendering `nozoki-ui` in the system WKWebView. No browser engine is bundled, no
-  runtime is installed, and every asset a surface renders — fonts, the six grammars, the fourteen
-  icons, the stylesheets — ships inside the bundle (`docs/SRS.md` C-3, NFR-13; `docs/UXD.md`
-  UX-I15). *Violated by:* a second binary, a prerequisite the README must name, an asset fetched
-  at runtime. The Principal Architect's record is ADR-0002 (RN-2).
+  `com.kensaiapp.nozoki`, and **one process**: an AppKit shell in Swift (`nozoki-mac`) over the
+  `nozoki-core` library, reached through `crates/nozoki-bridge`'s C ABI, with **no web engine of
+  any kind** — no WKWebView, no WebKitLegacy `WebView`, no HTML import through
+  `NSAttributedString`, no JavaScriptCore. No runtime is installed, no UI dependency ships
+  (C-R6), and every asset a surface renders — the fourteen icons, the six grammars compiled into
+  the library — ships inside the bundle; fonts are the platform's and none ship (`docs/SRS.md`
+  C-3, NFR-13; `docs/UXD.md` UX-I15; `docs/DESIGN.md` § Typography). *Violated by:* a second
+  binary, a second process the product starts, a prerequisite the README must name, an asset
+  fetched at runtime, a web engine linked or loaded. The Principal Architect's record is ADR-0002
+  (RN-2), from which this condition departs whole — the runtime, the renderer and the view's
+  language — on the owner's (a) (`docs/trail/sdd/cycle-9.md` § 1.1); the departure is surfaced for
+  a superseding record and none is written here (§ 10 RC-3; RN-60).
 - **C-R2.** The bundle runs under the App Sandbox, and its entitlement set is bound by a **rule**,
   not held as a list. The rule, the owner's (`docs/trail/sdd/cycle-8.md` § 5.1, answer 2): **no
   network entitlement, ever** — not `com.apple.security.network.client`, not
@@ -452,12 +522,17 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   entitlement reference states what the user-selected entitlement grants — "read-only access to
   files the user has selected using an Open or Save dialog"
   (https://developer.apple.com/documentation/bundleresources/entitlements/com.apple.security.files.user-selected.read-only).
-  **What the rule is known to cost is § 10 RC-2:** under it the system WKWebView does not start in
-  this bundle, and which gives way — the renderer C-R1 names, or nothing — is the owner's, open in
-  the companion. *Violated by:* a network entitlement of any kind on any build; an entitlement
+  **What the rule cost is § 10 RC-2 and RC-3:** the system WKWebView did not start under it, and
+  the renderer gave way — the owner's (a), `docs/trail/sdd/cycle-9.md` § 1.1. Under one process
+  the rule covers the whole product: no process the product runs has a network profile of its
+  own, and the probe on the main process's pid (C-I3) covers everything that draws. *Violated
+  by:* a network entitlement of any kind on any build; an entitlement
   outside the named set with no record naming its need; a build whose bundle the probe (C-I3)
   finds unsandboxed, or reports the out-of-grant read or the outbound connection allowed. The
-  record is ADR-0003, from which this condition departs on the one word *exactly* (RN-52).
+  record is ADR-0011 — Proposed, superseding ADR-0003 on acceptance (`docs/adr/README.md`, its
+  row) — which restates the wall under this rule; until it is Accepted, ADR-0003 is the record in
+  force and this condition departs from it on the one word *exactly* (RN-52; the record line
+  drafted on the companion's § 2.3, RN-61).
 - **C-R3.** The folder is **granted, never typed**. In v1 the host presents the system Open panel
   at launch; the folder chosen is the session's (FR-2). The panel dismissed without a choice shows
   UX-S4's startup surface in the window, with its two routes — choose again, which presents the
@@ -488,42 +563,50 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   second install path, an `xattr` or `spctl` line in the README.
 - **C-R5.** The minimum macOS version is **14.0** (Sonoma): the bundle's `LSMinimumSystemVersion`
   is `14.0` and the floor is stated wherever the install path is offered (C-11). The runtime does
-  not force it — Tauri 2 supports "macOS Catalina (10.15) and later"
-  (https://v2.tauri.app/start/prerequisites/) — so the floor is the maintainer's narrowing: it is
-  the oldest macOS the timed release walk (AC-10) is run on, and one WKWebView generation fewer
-  to hold the walls (C-R7) against per release. The value is the one `docs/nfdr.md` QC-56 already
+  is not forced by the stack — AppKit runs on every macOS Apple supports, and TextKit 2's
+  `NSTextLayoutManager`, which the reading panel's Markdown treatment lays out with, is available
+  from macOS 12.0 (https://developer.apple.com/documentation/appkit/nstextlayoutmanager) — so the
+  floor is the maintainer's narrowing: it is
+  the oldest macOS the timed release walk (AC-10) is run on, and one AppKit generation fewer to
+  walk UX-I12's layout fixtures on per release (§ 11 R-11). The value is the one `docs/nfdr.md` QC-56 already
   binds, kept because nothing upstream moved to change it (RN-6). Raising it after 1.0.0 is a
   breaking change under C-6. *Violated by:* a bundle whose plist says otherwise, an install page
   that does not state it.
-- **C-R6.** **Every dependency is a decision, and the tree is reviewed as code.** `Cargo.lock`
-  and `pnpm-lock.yaml` are committed; CI installs with `--locked` and `--frozen-lockfile`; every
-  crate and package the bundle contains is named in `checks/deps.allow`, and a lockfile diff that
-  adds a name outside it fails the build until the allowlist change is reviewed in the same
-  change. libgit2 is built without its HTTPS and SSH transports; no shipped unit links a network
-  transport (NFR-8). Each dependency's licence rides into `THIRD_PARTY_NOTICES.md` (C-5).
-  *Violated by:* a dependency added without an allowlist line, a lockfile not committed, a
+- **C-R6.** **Every dependency is a decision, and the tree is reviewed as code.** `Cargo.lock` is
+  committed and CI builds with `--locked`; `nozoki-mac/Package.swift` declares **no dependency**
+  and no `Package.resolved` exists — the view brings nothing to the tree; every crate the bundle
+  contains is named in `checks/deps.allow`, and a lockfile diff that adds a name outside it fails
+  the build until the allowlist change is reviewed in the same change. libgit2 is built without
+  its HTTPS and SSH transports; no shipped unit links a network transport (NFR-8). Each
+  dependency's licence rides into `THIRD_PARTY_NOTICES.md` (C-5). *Violated by:* a dependency
+  added without an allowlist line, a lockfile not committed, a Swift package dependency, a
   transport-bearing build of libgit2.
-- **C-R7.** The renderer's Content Security Policy, declared in `tauri.conf.json`, is
-  `default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: <asset-scheme>;
-  font-src 'self'`, where `<asset-scheme>` is the origin form settled for `nozoki-asset` (Open
-  Questions); no directive admits `http:`, `https:`, `file:`, `asset:` or `*`. **A build grants
-  the renderer exactly the commands its landed slices register**, in the host's capability file,
-  and no plugin. That set is always inside SM-4's list, and no command is granted before a slice
-  registers it. From `v1.0.0` the set is SM-4's list whole (§ 6 S-11, C-I6). The check holds set
-  equality between the commands the capability file grants and the commands the host registers,
-  and holds that set inside SM-4's list; it reads the registered set and never a hand-kept copy
-  of it. So a command whose slice has not landed is never granted, and two slices that each
-  register a command apart from one another meet at one set when their changes are joined. The
-  asset scheme enters the grant in the slice that settles its origin form (§ 6 S-3), keyed on
-  this clause's own state: while the policy above carries the `<asset-scheme>` placeholder, no
-  asset scheme is granted; where that grant is written is part of the same Open Question. **Not
-  covered before `v1.0.0`:** a later change that stops registering a command an earlier slice
-  built passes this check, because the grant and the registration move together. Only that
-  slice's own bar holds the command until C-I6's pin exists — C-6's pre-1.0.0 half, stated
-  rather than tested (§ 11 R-12) (NFR-16, NFR-8). *Violated by:* a command granted that the host
-  does not register, or registered and not granted; a granted command outside SM-4's list; an
-  asset scheme granted while the placeholder stands; a plugin; any widening of the policy's
-  directives.
+- **C-R7.** **The shell holds no I/O of its own, and reaches the core through the exported list
+  alone.** `nozoki-mac` reads no file, opens no connection, spawns no process, hands no URL to
+  another program and imports no web engine. The forbidden set: `WKWebView`, `WebView`,
+  `JSContext`, `NSAttributedString` initialised from HTML or with the `.html` document type,
+  `URLSession`, `NSURLConnection`, `Process`, `NSWorkspace.open`, `NSSharingService`, `FileManager`
+  reads, `Data(contentsOf:)`, `String(contentsOf:)`, `dlopen`, and `Bundle.main` reads outside
+  `Contents/Resources`. Every byte a surface shows crossed SM-4. **A build exports to the shell
+  exactly the functions its landed slices built**: `cargo test --locked -p nozoki-bridge --test
+  exports` holds set equality between the C symbols `libnozoki_bridge.a` exports (`nm -gU`, the
+  `nozoki_` prefix) and the functions the generated header declares, and holds that set inside
+  SM-4's list; it reads the exported set and never a hand-kept copy. From `v1.0.0` the set is
+  SM-4's list whole (§ 6 S-11, C-I6). So a function whose slice has not landed is never exported,
+  and two slices that each export a function apart from one another meet at one set when their
+  changes are joined. `checks/view.sh` scans `nozoki-mac/Sources` for the forbidden set and runs
+  `otool -L` on the built executable, which names neither `WebKit` nor `JavaScriptCore`. **What
+  this is and is not:** a source scan and a link check, run on every build — a reviewer is
+  *shown* that the shell adds no I/O — and not a process boundary: the wall is C-R2's, and this
+  condition keeps the shell inside it rather than raising a second wall (§ 9 TO-1). **Not covered
+  before `v1.0.0`:** a later change that stops exporting a function an earlier slice built passes
+  this check, because the export and the header move together; only that slice's own bar holds the
+  function until C-I6's pin exists — C-6's pre-1.0.0 half, stated rather than tested (§ 11 R-12)
+  (NFR-16, NFR-8). *Violated by:* a symbol exported that the header does not declare, or declared
+  and not exported; an exported function outside SM-4's list; a forbidden symbol in
+  `nozoki-mac/Sources`; `WebKit` or `JavaScriptCore` on the executable's link list; a Swift package
+  dependency; a view that reads a file, opens a connection or spawns a process by an API the scan
+  does not name — the scan is the check, and the first sentence is the rule.
 
 **Instrumentation and failure visibility.**
 
@@ -542,7 +625,7 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   or truncates it; within a session it is bounded to 1 MiB on disk, past which it is emptied and
   writing continues; a failed write surfaces nowhere, stops nothing and is not retried (NFR-11).
   No internal text — no stack trace, error code or library name — reaches any surface; every
-  message a surface shows is a whole sentence from the renderer's catalogue (UX-I6). *Violated
+  message a surface shows is a whole sentence from `surfaces`' catalogue (UX-I6). *Violated
   by:* a second log, a line carrying content, a diagnostic on a surface, a log outside the
   container.
 - **C-I3.** **The promises are proved on every build, from the first slice's first green build.**
@@ -550,8 +633,11 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   every command the build grants (C-R7) through SM-5 in-process, hashes again, and prints `unchanged` or the
   differing paths — the plain-folder criterion "no `.git` and no entry of any kind has appeared"
   (AC-24) is the same hash; `--kill` sends SIGKILL to the host mid-churn and re-hashes (NFR-4).
-  `checks/no-network.sh` diffs `cargo tree` and `pnpm ls` against `deps.allow`. `checks/bundle.sh`
-  reads `codesign -d --entitlements :- Nozoki.app` against C-R2's exact list, then launches the
+  `checks/no-network.sh` diffs `cargo tree` against `deps.allow`, and fails where
+  `nozoki-mac/Package.swift` declares a dependency or a `Package.resolved` exists (C-R6).
+  `checks/bundle.sh` reads `codesign -d --entitlements :- Nozoki.app` against the set C-R2's rule
+  admits, as the script's expected set records it — set equality, the expected set widened only
+  by a change reviewed against the rule (drafted on the companion's § 2.3, RN-61) — then launches the
   bundle and takes the pid of the main process this run started — found by its absolute executable
   path, with no instance of it running beforehand. It then asks the operating system about that
   pid within a bounded window after launch, and it fails unless one ask inside the window reports
@@ -591,33 +677,38 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   than one is. A container directory that already exists is never evidence, because it survives
   from an earlier launch. The environment marker this probe first read, and why it was dropped,
   is § 10 RC-1; the hosted runner, measured on 2026-09-23, is RN-48. The harness drives
-  `nozoki-core` and the command list, **not the rendered UI**: Tauri's WebDriver support states
-  "macOS has no WKWebView driver tool" (https://v2.tauri.app/develop/tests/webdriver/), so the
-  rendered UI's whole-product check is the timed release walk (AC-10) and the renderer's actual
-  command use is covered by holding no capability the harness could catch it using (§ 9 TO-7).
-  **The renderer's run is proved on the shipped bundle, beside the wall** — the owner's ruling
+  `nozoki-core` and SM-4's list through SM-5, **not the AppKit views**: no UI driver is built —
+  driving AppKit from outside the process runs through the accessibility surface UX-A1 disclaims,
+  and an XCUITest target needs an Xcode project this product does not keep — so the views'
+  whole-product check is the timed release walk (AC-10), and the shell's actual use of the bridge
+  is covered by its holding no I/O of its own (C-R7; § 9 TO-7).
+  **The shell's run is proved on the shipped bundle, beside the wall** — the owner's ruling
   (`docs/trail/sdd/cycle-8.md` § 5.1, answer 4), because a bundle passed every gate above and
-  opened an empty window (§ 10 RC-2). `checks/renderer.sh Nozoki.app` launches the bundle CI
-  built, as a user launches it, takes the pid the way `checks/bundle.sh` does, and within a
-  bounded window of the same kind fails unless the launched main process is observed **inside
-  `open_folder`** — the renderer's first and only unconditional command, invoked at page load
-  (`nozoki-ui/src/main.ts:L14-L19`) and parked in the Open panel until someone answers it
-  (`crates/nozoki-app/src/main.rs:L17-L19`). This is not the harness driving the rendered UI: it
-  is the operating system's or the process's own report that the page ran far enough to call the
-  host. The mechanism measured on one Mac is a thread sample of the launched pid showing the
-  command's frames — `pick_folder → run_on_main` present exactly where the window drew and
-  absent where it did not (`docs/trail/sdd/cycle-8.md` § 5.1, the sample table) — and the script
-  fixes which mechanism it reads; what it may never read is a marker the product writes for the
-  check, an environment variable, or a code path that exists for the gate: the shipped bundle is
-  the artifact under test and holds nothing for the test. The gate's negative control is the same
-  bundle with its renderer build removed from `Contents/Resources` (the build `checks/bundle.sh`
-  reads before launch, its v1.3.0 line), which must go red — a page that never loads never
-  reaches `open_folder`. It runs on every CI build after `checks/bundle.sh` and never instead of
-  it: a wall proven on a bundle whose window never draws proved nothing a person could use, and a
-  window that draws on a bundle the wall is not proven on is the shape unchosen (§ 5 step 4, E-1).
-  Whether the observation reads the same on a GitHub-hosted macOS runner is unmeasured (*Open
-  Questions*).
-  The record is ADR-0010. *Violated by:* a build that skips a script, a bundle probe run without
+  opened an empty window (§ 10 RC-2); the ruling names no renderer, so it binds the native shell
+  as it bound the page. `checks/renderer.sh Nozoki.app` launches the bundle CI built, as a user
+  launches it, takes the pid the way `checks/bundle.sh` does, and within a bounded window of the
+  same kind fails unless the launched main process is observed **inside `open_folder`'s call** —
+  the shell's first and only unconditional act, presenting the Open panel at launch (C-R3) and
+  parked in it until someone answers. This is not the harness driving the views: it is the
+  operating system's or the process's own report that the shell ran far enough to present the
+  panel. The mechanism measured on one Mac, for the previous renderer, was a thread sample of the
+  launched pid showing the command's frames — present exactly where the window drew and absent
+  where it did not (`docs/trail/sdd/cycle-8.md` § 5.1, the sample table); the frames a native
+  shell shows are re-measured on the first slice's first built bundle, and the script fixes which
+  mechanism it reads. What it may never read is a marker the product writes for the check, an
+  environment variable, or a code path that exists for the gate: the shipped bundle is the
+  artifact under test and holds nothing for the test. The gate's negative control is a bundle the
+  harness owns, not a build removed from the product — a single-process shell has no renderer
+  build to remove: `checks/fixtures/idle-shell`, an AppKit executable that opens one window and
+  never presents the panel, signed and entitled as the product is (the shape the empty window
+  took), which must go red. It runs on every CI build after `checks/bundle.sh` and never instead
+  of it: a wall proven on a bundle whose window never draws proved nothing a person could use,
+  and a window that draws on a bundle the wall is not proven on is the shape unchosen (§ 5 step
+  4, E-1). Whether the observation reads the same on a GitHub-hosted macOS runner is unmeasured
+  (*Open Questions*).
+  The record is ADR-0010; the renderer gate's own record is ADR-0012 — Proposed
+  (`docs/adr/README.md`, its row) — whose mechanism, control and observable's name are re-derived
+  from this clause as it now reads (RN-61). *Violated by:* a build that skips a script, a bundle probe run without
   its negative control, a probe that reads the report once, an ask judged on a pid that no longer
   names a process, a control passed on fewer asks than the window, a bound not printed on a red
   run that ended because the window ran out or on a pass, a failed-ask run that does not name
@@ -637,14 +728,14 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   content sniffing, a shebang read, an extension added without a floor language behind it.
 - **C-I6.** **The priced contract is proved on every tagged release from 1.0.0, against the pin
   its major wrote.** `checks/contract/<major>` is written once, at the major's `.0.0` release,
-  from the built bundle and the build's capability file — the macOS floor as
+  from the built bundle and `libnozoki_bridge.a` — the macOS floor as
   `LSMinimumSystemVersion` prints it, the release's asset names (`Nozoki-<version>.dmg`,
-  `SHA256SUMS`), and SM-4's command list as the capability file grants it — and nothing else: no
+  `SHA256SUMS`), and SM-4's function list as the bridge exports it (C-R7) — and nothing else: no
   message, no token and no line of the log, which the contract excludes (§ 6 S-11 *Delivers*).
   `checks/contract.sh <tag>` takes the pin as `git show v<major>.0.0:checks/contract/<major>` —
   the tag anchors it, so an edit to the working-tree file cannot move what a release is held to —
   and fails when the bundle's floor is above the pin's, a pinned asset is missing from the
-  release, or a pinned command is absent from the capability file. It reads the priced set — C-R4,
+  release, or a pinned function is absent from the bridge's exports. It reads the priced set — C-R4,
   C-R5, and the surfaces' presence through SM-4 — and nothing of the unconditional set, which C-I3
   proves on every build; a new major writes a new pin, and that is the one change the check reads
   as legal (`docs/SRS.md` C-6; AC-14 "the version number obeys C-6"; C-11). Before `v1.0.0`
@@ -664,16 +755,25 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   *Violated by:* a write anywhere else, a cache, a lock file, an index.
 - **C-D3.** **Content is untrusted input** (DR-6, NFR-16): rendering executes nothing and loads no
   active content; every path derived from content or from outside — a tree entry, a symlink
-  target, an image reference, a relative link, an asset request — passes `fs-reader`'s containment
-  check before any open, and the asset handler re-runs it on every request. Three walls fail
-  independently: the sanitizer, the CSP (C-R7), and the containment check — so a bypass of any one
-  moves no byte across the folder's edge (SM-7). In-folder images are served for PNG, JPEG, GIF
-  and WebP; SVG is excluded from the scheme in v1 because it is a document, not a bitmap, and the
-  scheme serves bytes the sanitizer never sees (RN-8). An in-folder SVG therefore takes a
-  placeholder stating that the format is one the tool does not render — UX-I12's "not an image"
-  read as *not a bitmap format the asset scheme serves*, never as a file the tool could not read;
-  the exclusion is a v1 cut with a stated reopening condition (RN-8). *Violated by:* an `<img>` on
-  any other scheme, a path opened without the check, a `file:` URL anywhere.
+  target, an image reference, a relative link, an `asset_bytes` call — passes `fs-reader`'s
+  containment check before any open, and `asset_bytes` re-runs it on every call. Three walls fail
+  independently. **The containment check.** **The document is data:** `markdown-renderer` emits
+  a `MarkdownDocument` whose node set is closed (§ 3), no node carries markup or a URL the shell
+  fetches, raw HTML in the source is a text node, and the shell has no interpreter to hand a node
+  to (C-R7: no web engine, no HTML import) — so "nothing executes" is a property of the type, not
+  of a filter over markup. **Image bytes cross only as bytes, for a contained path**, and are
+  decoded in the shell by the platform's own decoder (`NSImage`) for PNG, JPEG, GIF and WebP
+  alone — a hostile bitmap's failure is the decoder's, inside the one sandboxed process, with no
+  write and no connection for it to reach (C-R2; § 11 R-4). So a wall built wrong still moves no
+  byte across the folder's edge (SM-7). SVG is excluded in v1: it is a document, not a bitmap —
+  it can reference resources and carry script — and `NSImage` renders it as one (RN-8). An
+  in-folder SVG therefore takes a placeholder stating that the format is one the tool does not
+  render — UX-I12's "not an image" read as *not a bitmap format the tool decodes*, never as a
+  file the tool could not read; the exclusion is a v1 cut with a stated reopening condition
+  (RN-8). *Violated by:* an HTML or attributed-string import from content anywhere in
+  `nozoki-mac`; a node kind outside `MarkdownDocument`'s set; an image decoded from bytes
+  `asset_bytes` did not return; a path opened without the check; a `file:` or `http(s):` URL
+  built from content and handed to any framework.
 - **C-D4.** `OwnState` holds the theme, the window frame, and beyond v1 the remembered folders
   (bookmark, display name, last-viewed mark, at most ten) — and nothing else (DR-5, UX-S7). It is
   read whole or discarded whole: a version that meets own state it cannot read opens as on first
@@ -738,8 +838,10 @@ and no condition here fixes either.
 - **C-E7.** **Every surface renders whole, offline, on a stock machine.** No font, icon, image or
   stylesheet is fetched from any origin at runtime, and nothing a surface needs to be read depends
   on what the reader's machine is not known to have (UX-I15; the fence § `no-runtime-remote-asset`,
-  § `no-author-only-surface`). C-R7 and C-D3 make it structurally true. *Violated by:* a web font, an
-  icon from a CDN, a glyph the tool does not ship.
+  § `no-author-only-surface`). C-R1 (every asset ships inside the bundle; fonts are the
+  platform's), C-R2 (the one process holds no network entitlement) and C-D3 (no URL built from
+  content reaches any framework) make it structurally true; C-R7's scan shows the shell adds no
+  fetch of its own. *Violated by:* a web font, an icon from a CDN, a glyph the tool does not ship.
 - **C-E8.** **No meaning by hue alone, and no control by glyph alone**, in both themes: every state
   distinction carries a letter, word, shape or position that survives without colour, and every icon
   sits beside a text label or has a text form the surface shows; the contrast floor is the number
@@ -977,7 +1079,12 @@ names that no entry did.
   is redrawn (§ 11 R-8); a probe that fails while the wall stands redraws the probe and no slice,
   which is what § 10 RC-1 records; a window that does not draw while the wall stands redraws the
   entitlement list or the host's configuration (C-R2) and no slice — unless the mechanism found
-  forces a shape § 2 rejected, which is § 10's to record. Not too broad — no intermediate result
+  forces a shape § 2 rejected, which is § 10's to record. *That case arrived (§ 10 RC-2), and the
+  owner answered it: the renderer leaves WKWebView (`docs/trail/sdd/cycle-9.md` § 1.1,
+  2026-09-23). The slice is not resized by the answer — its bar is still one bar on one artifact,
+  the wall proven on the bundle whose window draws, and the window drawn is now a native one; what
+  moves is the part § 3 draws behind the bar, which is the CTO's, and the date the bar is first
+  met, which is no slice's.* Not too broad — no intermediate result
   inside it changes its direction.
   **E-6 is not folded into it**, though FR-20 makes both themes a first-release condition: the
   theme is the first thing the tool ever writes, and the slice whose job is to prove the wall is
@@ -989,7 +1096,20 @@ names that no entry did.
   renders with nothing executed, nothing fetched and the folder unchanged (AC-23), and an in-folder
   image renders in place. The decision it carries — that three walls hold against untrusted content
   — is one `read-a-file` never asks, so a merged slice would hide two answers: files read, Markdown
-  not yet safe.
+  not yet safe. *Under the owner's answer at `docs/trail/sdd/cycle-9.md` § 1.1 the decision's
+  content moves — what "three walls" become under a single-process view with no script engine is
+  C-D3's redraw, the CTO's, and this seat re-reads this sentence once § 2 is redrawn — but the
+  sizing does not wait on it: the slice stays its own under any renderer, because the
+  intermediate result named here — files read, Markdown not yet right — changes the acceptance
+  whichever engine draws, and that is the whole of step 4's test.* *Re-read against § 2 and C-D3
+  as redrawn, 2026-09-23: the three walls are now the containment check, the document as data,
+  and the decoder fed by the check alone (§ 4 C-D3), and the decision is still one `read-a-file`
+  never asks — a plain or highlighted file crosses no content-derived path, no image and no link
+  — so the sizing stands. The one question the redraw leaves inside this slice — how TextKit lays
+  out UX-I12's two hard cells (*Open Questions*, third item) — is not a second slice: it settles
+  in this slice's first build, its result changes nothing that happens next outside
+  `read-markdown` (step 4's too-narrow test), and the bar it answers to — UX-I12's cells — is the
+  UXD's and does not move with the layout form found. RN-63.*
 - **E-4 → `see-git-status`**, one slice, both conditions together. Bar: AC-6 and AC-18 on a
   repository; AC-24 on a plain folder; AC-25 on the three openings, the linked worktree and the
   submodule. The plain-folder half is not a slice of its own because it is the same decision
@@ -1043,10 +1163,13 @@ says so plainly; a number is not a reason.
 
 **Applied to nozoki — the first slice, and the order this seat argues for.** The shape's whole
 claim is the wall (§ 2, force 6): that a sandboxed, ad-hoc-signed bundle refuses the write and the
-connection by construction, and that a renderer holding only SM-4 can show a folder. **The first
-slice is E-1 alone, with the harness and the bundle probe green** — a granted folder, its tree, the
-reading panel empty, UX-S4 in the window, and `checks/bundle.sh` proving the entitlement list and
-the sandbox on the built bundle. It is the smallest build that can be wrong cheaply: if the sandbox
+connection by construction, and that a shell holding no I/O of its own (§ 4 C-R7) can draw a
+folder's window under that wall — the window drawing being, since § 10 RC-2, half of what the
+first slice proves. **The first slice is E-1 alone, with the harness, the bundle probe and the
+renderer gate green** — a granted folder, its tree, the reading panel empty, UX-S4 in the window,
+`checks/bundle.sh` proving the entitlement set and the sandbox on the built bundle, and
+`checks/renderer.sh` proving the panel presented under them. It is the smallest build that can be
+wrong cheaply: if the sandbox
 is not enforced under an ad-hoc signature (§ 11 R-8), that is found with one reader written and no
 Git, no watcher and no Markdown to unpick; if it is, every later slice inherits a wall that has
 already been shown. It is not too narrow by step 4's test — its result changes what happens next.
@@ -1126,8 +1249,10 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   and what to do next.
 - **Reached when:** *Observable (CDO):* someone who did not build it takes the `Nozoki.app` CI
   built from the commit under test — the same bundle `checks/bundle.sh` and `checks/renderer.sh`
-  ran on, carrying the entitlements it ships with, and never a developer's dev-server window or a
-  bundle re-signed by hand — and double-clicks it in Finder: the system Open panel appears with
+  ran on, carrying the entitlements it ships with, and never a build launched from the toolchain
+  outside a signed bundle (the previous shape's dev-server window, `docs/trail/sdd/cycle-8.md`
+  § 5.1's sample table, is one such) or a bundle re-signed by hand — and double-clicks it in
+  Finder: the system Open panel appears with
   nothing typed and nothing asked. A window that opens and shows nothing — no panel, no startup
   surface, no response to a right-click — is this half unmet, whatever the command half reported
   (the reading `e7b2bcd` gave; `docs/trail/sdd/cycle-8.md` § 5.1). They choose a
@@ -1148,30 +1273,34 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   sentence shown says what the tool did, what it observed and what to do next, and no internal text
   appears (UX-I6). With the network disconnected, all of the above renders identically (UX-I15).
   *Command (CTO):* the workspace exists as § 3 draws it — `crates/nozoki-core`,
-  `crates/nozoki-app`, `nozoki-ui`, `checks/` — and `cargo build --workspace --locked` and
-  `pnpm install --frozen-lockfile && pnpm exec vite build` each exit 0; `cargo tree -p nozoki-core`
+  `crates/nozoki-bridge`, `nozoki-mac`, `checks/` — and `cargo build --workspace --locked` and
+  `swift build --package-path nozoki-mac -c release` each exit 0; `cargo tree -p nozoki-core`
   names no libgit2 binding and no TLS or SSH crate — no `git-reader` links in this slice (RN-9);
   `cargo test --workspace --locked` exits 0 with tests on the reducer's tree items, `ItemState`
-  transitions and `fs-reader`'s containment check; `.github/workflows/ci.yml` builds `Nozoki.app`
-  and runs every script below on every push. `checks/bundle.sh Nozoki.app` prints the entitlement
-  set C-R2's rule fixes for this slice — the two v1 entitlements, no network entitlement — and
-  finds the launched main process reported sandboxed, with the out-of-grant read and outbound
-  network denied, and the no-entitlement control reported unsandboxed — the first proof that the
-  wall stands under an ad-hoc signature (R-8; the observable is C-I3's, re-cut at § 10 RC-1);
-  `checks/renderer.sh Nozoki.app` finds the same bundle's launched main process inside
-  `open_folder` within its window, and its control — the bundle with the renderer build removed —
-  goes red (C-I3; re-cut at § 10 RC-2). *Until the owner's call on the renderer (companion
-  § 1.1), no build meets both halves: the bundle that passes `checks/bundle.sh` under C-R2's rule
-  is a bundle whose WKWebView does not start (RC-2).* *The promise
+  transitions, `fs-reader`'s containment check, and `nozoki-bridge`'s `--test exports` — the
+  staticlib exports `open_folder` and `list_tree`, the header declares the same two, and nothing
+  else (C-R7); `swift test --package-path nozoki-mac` exits 0 with tests that a row is drawn from a
+  projection and from nothing else, and that the shell issues no call SM-4 does not name;
+  `checks/view.sh` finds no forbidden symbol in `nozoki-mac/Sources` and neither `WebKit` nor
+  `JavaScriptCore` on the executable's link list (C-R7); `.github/workflows/ci.yml` builds
+  `Nozoki.app` and runs every script below on every push. `checks/bundle.sh Nozoki.app` prints the
+  entitlement set C-R2's rule admits for this slice — the two v1 entitlements, no network
+  entitlement — and finds the launched main process reported sandboxed, with the out-of-grant
+  read and outbound network denied, and the no-entitlement control reported unsandboxed — the
+  first proof that the wall stands under an ad-hoc signature (R-8; the observable is C-I3's,
+  re-cut at § 10 RC-1); `checks/renderer.sh Nozoki.app` finds the same bundle's launched main
+  process inside `open_folder`'s call — the panel presented — within its window, and its control,
+  `checks/fixtures/idle-shell`, goes red (C-I3; re-cut at § 10 RC-2 and RC-3); the frames the
+  gate reads are fixed by the script from this bundle (*Open Questions*). *The promise
   clause:* `checks/read-only.sh checks/fixtures/plain` and `checks/read-only.sh
   checks/fixtures/repo` each print `unchanged` after `open_folder` and `list_tree` on every entry,
   `.git` hashed where present; `checks/no-network.sh` exits 0; `checks/own-state.sh` finds the
   diagnostic log under `~/Library/Containers/com.kensaiapp.nozoki/` and no entry under either
   fixture (C-I2, C-D2).
 - **Rests on:** § 2 (the shape — this is the slice that proves it); § 3 `fs-reader`, `folder-model`
-  (the tree and the `pending` kind), `ipc-surface`, `surfaces`, `read-only-harness`; `SM-1`, `SM-4`
-  (`open_folder`, `list_tree`), `SM-5`; § 4 C-R1, C-R2, C-R3, C-R6, C-R7, C-I1, C-I2, C-I3, C-D1,
-  C-D2. Slices: none — this is the first.
+  (the tree and the `pending` kind), `core-bridge`, `mac-shell`, `surfaces`, `read-only-harness`;
+  `SM-1`, `SM-4` (`open_folder`, `list_tree`), `SM-5`, `SM-8`; § 4 C-R1, C-R2, C-R3, C-R6, C-R7,
+  C-I1, C-I2, C-I3, C-D1, C-D2. Slices: none — this is the first.
 - **Traces to:** PRD § Key Use Cases 1; § UX Notes "The path" 1, "Failure states"; § Success
   Metrics "Zero required configuration"; § Scope (In) "Run posture", "Platform". SRS: FR-1, FR-2,
   FR-3, FR-4, FR-5, FR-23; NFR-4, NFR-5, NFR-8, NFR-9, NFR-11, NFR-14; DR-1, DR-2, DR-6; C-1, C-2,
@@ -1191,10 +1320,10 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   and the public release — `first-public-release`; remembering the folder across launches, and
   switching it — `switch-the-folder`.
 - **Why here in the order:** First because it is the smallest reversible slice that proves the
-  shape (§ 5 step 5): the wall — entitlements, sandbox under an ad-hoc signature, a renderer holding
-  only `SM-4` — is the design's whole claim, and this slice shows it with no Git, no watcher and no
-  Markdown to unpick if the probe fails. Its result changes what happens next, which is step 4's
-  test for not-too-narrow.
+  shape (§ 5 step 5): the wall — entitlements, sandbox under an ad-hoc signature, a shell holding
+  no I/O of its own with its window drawn under them — is the design's whole claim, and this slice
+  shows it with no Git, no watcher and no Markdown to unpick if the probe or the gate fails. Its
+  result changes what happens next, which is step 4's test for not-too-narrow.
 
 ### S-2 — Any file, read and unchangeable
 
@@ -1217,23 +1346,28 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   editing affordance exists anywhere, enabled or disabled (UX-I1, UX-I7). They quit with a file
   open: no prompt (UX-I5). A file that is genuinely still being read shows that it is being read,
   with no progress figure the tool has not measured (UX-S1 Loading, UX-I13). *Command (CTO):*
-  `select_file` is on `SM-4`'s list and in the capability file — `cargo test --locked -p nozoki-app --test config` passes set equality;
-  `cargo test --locked -p nozoki-core` includes `fs-reader` tests that, for every extension in
+  `select_file` is on `SM-4`'s list and exported — `cargo test --locked -p nozoki-bridge --test
+  exports` passes set equality with the wider set (C-R7); `cargo test --locked -p nozoki-core`
+  includes `fs-reader` tests that, for every extension in
   C-I5, name that floor language, and for `checks/fixtures/text/` — a file with no extension, a
   file with an extension outside the set, a shell script whose only marker is a `#!/bin/sh` first
   line — yield *plain*, for a UTF-16 fixture that begins with its byte-order mark and for an
   empty file yield *text*, and for a fixture that decodes as neither UTF-8 nor marked UTF-16 —
   Latin-1 bytes, and a file torn mid-sequence — yield *cannot-display* with its reason (RN-41);
-  `pnpm exec vitest run` includes reading-panel tests that a keystroke, a paste and a drop leave the
-  rendered content unchanged and issue no command, and that the panel is named by the file's
-  folder-relative path; `pnpm exec vitest run tests/architecture` passes (no `fetch`,
-  `XMLHttpRequest`, `WebSocket`, `EventSource`, `sendBeacon` or URL import in `nozoki-ui`); the six
-  grammars are files under `nozoki-ui/src/` and ship in `Contents/Resources`. *The promise clause:*
+  `cargo test --locked -p nozoki-core --test highlight` yields, for one fixture per floor language,
+  spans in the five token classes and none outside them, and for a *plain* fixture no span
+  (`highlighter`; C-I5); `swift test --package-path nozoki-mac` includes reading-panel tests that
+  the text view reports `isEditable` false and registers no drop type, that a keystroke, a paste
+  and a drop leave the drawn content unchanged and raise no intent (SM-8), and that the panel is
+  named by the file's folder-relative path; `checks/view.sh` passes (C-R7); the six grammars are
+  compiled into `nozoki-core`, and the engine that compiles them is named in `checks/deps.allow`
+  where it is a crate (C-R6; *Open Questions*). *The promise clause:*
   `checks/read-only.sh` on both fixtures prints `unchanged` after `select_file` on every entry, the
   non-text ones included; `checks/no-network.sh` and `checks/bundle.sh` exit 0.
-- **Rests on:** § 3 `fs-reader` (the text rule, the extension map), `folder-model` (`FileView`),
-  `surfaces` (the reading panel and the highlighter); `SM-1`, `SM-4` (`select_file`); § 4 C-I5,
-  C-I1, C-D3 (the containment check on every tree path before open). Slices: `open-a-folder`.
+- **Rests on:** § 3 `fs-reader` (the text rule, the extension map), `highlighter`, `folder-model`
+  (`FileView`), `surfaces` (the reading panel and its code treatment), `mac-shell`; `SM-1`, `SM-4`
+  (`select_file`), `SM-8`; § 4 C-I5, C-I1, C-R7, C-D3 (the containment check on every tree path
+  before open). Slices: `open-a-folder`.
 - **Traces to:** PRD § Key Use Cases 1; § Core Features "Read-only viewing of any file in the
   folder"; § UX Notes "The path" 2 and 5, "Failure states", "The character"; § Success Metrics
   "File-switch immediacy". SRS: FR-7, FR-8, FR-9, FR-10, FR-23, FR-24, FR-29; NFR-1 (measured, not
@@ -1278,20 +1412,27 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   text and nothing runs, no dialog, no navigation. With the network disconnected, every rendered
   document is pixel-for-pixel what it was with it connected (UX-I15). *Command (CTO):* `cargo test
   --locked -p nozoki-core --test markdown` passes over `checks/fixtures/hostile.md` — a document embedding a script, an
-  event attribute, a frame, a style, a remote image, an in-folder PNG, an in-folder SVG, a `..`
-  image path, a symlink-out image path, an external link and a relative link — with output that
-  contains no `<script`, no `on*=` attribute, no `<iframe`, no `<style`, and exactly one `src=`,
-  on the in-folder PNG, on the `nozoki-asset` scheme; the remote, `..` and symlink-out references
-  each yield the not-fetched placeholder and the SVG the observed-condition placeholder (C-D3); the
-  external link is inert text with its destination visible; the relative link is a data attribute;
-  the asset handler returns the PNG's bytes for its path and nothing for every escaping path, on a
-  second call with the same inputs. `open_relative_link` is on `SM-4`'s list; `cargo test --locked
-  -p nozoki-app --test config` passes string equality of the CSP against C-R7 with the
-  `nozoki-asset` origin form found — the third Open Question closes and C-R7 is updated in this
-  slice. *The promise clause:* `checks/read-only.sh checks/fixtures/repo` prints `unchanged` after
-  rendering every `.md` under it and requesting every asset; `checks/no-network.sh` exits 0.
-- **Rests on:** § 3 `markdown-renderer`, `fs-reader` (the containment check), `ipc-surface` (the
-  asset handler); `SM-4` (`open_relative_link`, the asset scheme), `SM-7`; § 4 C-R7, C-D3; § 9
+  event attribute, a frame, a style, a raw HTML block, a remote image, an in-folder PNG, an
+  in-folder SVG, a `..` image path, a symlink-out image path, an external link and a relative
+  link — with a `MarkdownDocument` in which every node's kind is in § 3's closed set, the script,
+  the event attribute, the frame, the style and the HTML block are each a text node holding their
+  source verbatim, exactly one image node is *resolved* — the in-folder PNG, to its
+  folder-relative path — and the remote, `..` and symlink-out references are each a placeholder
+  node carrying *outside the folder* and the SVG a placeholder carrying *a format not decoded*
+  (C-D3); the external link is an *external* node with its destination; the relative link a
+  *relative* node with its target path; and `asset_bytes` returns the PNG's bytes for its path and
+  a refusal for every escaping path, on a second call with the same inputs (SM-7).
+  `open_relative_link` and `asset_bytes` join `SM-4`'s list and the exports (`--test exports`
+  passes with the wider set); `swift test --package-path nozoki-mac` includes a Markdown-treatment
+  test that a *resolved* image node is drawn from the bytes `asset_bytes` returned and a
+  placeholder node from no bytes at all, and that no attributed string in the treatment is built
+  from HTML — the third Open Question closes and `surfaces`' row names the layout form found in
+  this slice. *The promise clause:* `checks/read-only.sh checks/fixtures/repo` prints `unchanged`
+  after rendering every `.md` under it and calling `asset_bytes` on every image reference;
+  `checks/no-network.sh` exits 0.
+- **Rests on:** § 3 `markdown-renderer`, `highlighter` (a fenced block's spans), `fs-reader` (the
+  containment check), `core-bridge` (`asset_bytes`), `surfaces` (the Markdown treatment, laid out
+  by TextKit); `SM-4` (`open_relative_link`, `asset_bytes`), `SM-7`, `SM-8`; § 4 C-R7, C-D3; § 9
   TO-5, TO-6; § 11 R-4, R-10, R-11. Slices: `read-a-file`.
 - **Traces to:** PRD § Core Features "Markdown is rendered by default"; § Data & Privacy "v1 makes
   no network call at all during operation"; § Out of Scope "Rich rendering of non-text content".
@@ -1308,8 +1449,9 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   evidence reopens (RN-8), never a slice ahead of that evidence; a diff's rendering —
   `read-a-diff`; images and documents outside Markdown — beyond v1 (PRD § Out of Scope).
 - **Why here in the order:** Third because it is the first slice that renders untrusted content
-  as HTML, and so the first that must prove C-D3's three walls — cheaper to prove on one treatment,
-  with the hostile corpus, than after the diff and the history have added two more; and because
+  beyond plain text, and so the first that must prove C-D3's three walls — the check, the closed
+  document, the decoder fed by the check alone — cheaper to prove on one treatment, with the
+  hostile corpus, than after the diff and the history have added two more; and because
   no public release may ship a `.md` shown as plain text (RN-18), so it must precede
   `first-public-release`.
 
@@ -1468,15 +1610,15 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   on both themes meets the contrast floor that document names. They quit and relaunch: the theme
   they chose and the window's size and position are as they left them. They switch back: the same
   control, and nothing else, undoes it (UX-I7). The folder they were viewing has no new file in it
-  afterwards, and no file in it changed. *Command (CTO):* `set_theme` is on `SM-4`'s list and in
-  the capability file (`--test config` passes); `cargo test --locked -p nozoki-core` includes
+  afterwards, and no file in it changed. *Command (CTO):* `set_theme` is on `SM-4`'s list and
+  exported (`--test exports` passes); `cargo test --locked -p nozoki-core` includes
   `own-state` tests that a record is read whole, that an unreadable or foreign-shaped record yields
   the first-run state and never a partial one, and that the record holds the theme and the window
   frame and no other field (C-D4); `checks/own-state.sh` after a session in which the theme
   changed finds every changed file under `$HOME` inside
   `~/Library/Containers/com.kensaiapp.nozoki/` and none under the fixture, and inspection of the
   container finds the theme, the window frame, the log and nothing of the fixture's content;
-  `checks/structure.sh` finds the container path in `own-state` and the host's log module alone.
+  `checks/structure.sh` finds the container path in `own-state` and the bridge's log module alone.
   *The promise clause:* `checks/read-only.sh` on both fixtures prints `unchanged` after
   `set_theme`; `checks/no-network.sh` exits 0.
 - **Rests on:** § 3 `own-state`, `surfaces` (the theme control in the chrome, the token pairs);
@@ -1526,10 +1668,11 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   GitHub Release on `kensaiapp/nozoki`; on the *downloaded* bundle, `shasum -a 256 -c SHA256SUMS`
   passes, `codesign -dv Nozoki.app` reports `Signature=adhoc`, `/usr/libexec/PlistBuddy -c 'Print
   :LSMinimumSystemVersion' Nozoki.app/Contents/Info.plist` prints `14.0`, and `checks/bundle.sh`
-  passes with C-R2's two entries; `checks/notices.sh` finds every name in `cargo tree` and `pnpm ls
-  --prod` in `THIRD_PARTY_NOTICES.md`; `LICENSE` is MIT; `SECURITY.md` exists and `gh api
+  passes with C-R2's two entries; `checks/notices.sh` finds every name in `cargo tree` in
+  `THIRD_PARTY_NOTICES.md` — the Swift package declares no dependency to notice (C-R6); `LICENSE`
+  is MIT; `SECURITY.md` exists and `gh api
   repos/kensaiapp/nozoki/private-vulnerability-reporting` returns `"enabled": true`; `cargo audit`
-  and `pnpm audit --audit-level=critical` exit 0; `gitleaks git` exits 0 and `gh secret list --repo
+  exits 0; `gitleaks git` exits 0 and `gh secret list --repo
   kensaiapp/nozoki` prints no entry; the version in `Cargo.toml` and `CFBundleShortVersionString`
   is below 1.0.0. *The promise clause, over the whole surface built so far:* `checks/read-only.sh`
   prints `unchanged` on every fixture after every command the build grants (§ 4 C-R7); `checks/no-network.sh`
@@ -1587,18 +1730,18 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   (UX-S5 Error, UX-F2). Nothing they do in the diff has an affordance to stage, unstage, revert or
   edit (UX-I1), and `git status` afterwards reports what it reported before. In a plain folder
   there is no row to click, and nothing offers one (UX-F4). *Command (CTO):* `diff(kind, path)` is
-  on the port and `open_diff` joins `SM-4`'s list and the capability file (`--test config` passes with the wider
-  set); `cargo test --locked -p nozoki-core --test git_state` passes diff cases over
+  on the port and `open_diff` joins `SM-4`'s list and the exports (`--test exports` passes with
+  the wider set); `cargo test --locked -p nozoki-core --test git_state` passes diff cases over
   `checks/fixtures/repo` — a file with staged changes only, unstaged only, both (two diffs, told
   apart in the data), an untracked file — and a file removed between `status` and `diff` yields
-  `failed` on that item with the file's tree entry still `observed`; the renderer's diff treatment
-  is a surface test in `pnpm exec vitest run` that staged and unstaged carry a text cue and not
-  colour alone. *The promise clause:* `checks/read-only.sh checks/fixtures/repo` with
+  `failed` on that item with the file's tree entry still `observed`; the diff treatment is a
+  `swift test` case that staged and unstaged carry a text cue and not colour alone, and that the
+  treatment is built from the `Diff`'s hunks as text and from no markup. *The promise clause:* `checks/read-only.sh checks/fixtures/repo` with
   `.git/index` hashed prints `unchanged` after `open_diff` on every changed entry;
   `checks/no-network.sh` exits 0.
 - **Rests on:** § 3 `git-reader` (`diff`), `folder-model` (`Diff`), `surfaces` (the diff
   treatment of the reading panel; the row's second reading); `SM-2`, `SM-4` (`open_diff`); § 4
-  C-I1, C-R7 (the diff is text the renderer draws, never HTML from content). Slices:
+  C-I1, C-R7, C-D3 (the diff is text the shell lays out, never markup from content). Slices:
   `see-git-status`.
 - **Traces to:** PRD § Scope (In), the full ambition — "diffs"; § Out of Scope "Diff and
   commit-history views — beyond v1"; § Key Use Cases 2. SRS: FR-13 (the second reading), FR-17,
@@ -1640,12 +1783,12 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   view the route out (UX-S6 Error). No control anywhere filters or searches the history, and
   nothing on the surface stages, checks out, or otherwise changes the repository — `git log` and
   `git status` afterwards report what they reported before (UX-I1). *Command (CTO):* `walk(tips,
-  window)` is on the port and `walk_history` joins `SM-4`'s list and the capability file (`--test config` passes); `cargo test
+  window)` is on the port and `walk_history` joins `SM-4`'s list and the exports (`--test exports` passes); `cargo test
   --locked -p nozoki-core --test git_state` passes history cases over `checks/fixtures/history` —
   a repository whose branches diverge and merge — returning, for the requested tips and a window of
   1,000 commits (RN-35), each commit's identifier, message, author, date, parents and branch
   membership, the tips named, and a flag that the window ended before the walk did; the default
-  request the renderer sends names HEAD and every local branch sharing a commit with it inside the
+  request the shell sends names HEAD and every local branch sharing a commit with it inside the
   window (RN-35); a commit's `diff` reuses `read-a-diff`'s port call and treatment. *The promise
   clause:* `checks/read-only.sh checks/fixtures/history` prints `unchanged` after `walk_history`
   with every tip set and `open_diff` on every commit in the window; `checks/no-network.sh` exits 0.
@@ -1691,20 +1834,20 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   the selector's list holds only that entry (UX-S4 Empty, UX-S7 Empty). A repository and a plain
   folder are chosen and arrived at the same way (UX-I17). *Command (CTO):* the entitlement list
   gains `com.apple.security.files.bookmarks.app-scope` and nothing else — `checks/bundle.sh` passes
-  against C-R2's three entries; `switch_folder` joins `SM-4`'s list and the capability file
-  (`--test config` passes); `cargo test --locked -p nozoki-core --test switch` passes: opening B
+  against C-R2's three entries; `switch_folder` joins `SM-4`'s list and the exports
+  (`--test exports` passes); `cargo test --locked -p nozoki-core --test switch` passes: opening B
   after A yields a model equal to a fresh open of B with no item of A remaining, the root finding
   applied to B afresh; `own-state` holds A's and B's bookmark, display name and last-viewed mark
   and no folder content; an eleventh folder evicts the one viewed longest ago and no operation
   removes an entry; relaunching the bundle opens B with no Open panel, and relaunching after the
   container's remembered list is removed presents the panel (C-R3). `git diff --stat
-  <first-public-release tag>..HEAD -- nozoki-ui/src/tree nozoki-ui/src/git-view
-  nozoki-ui/src/reading-panel` prints nothing — the viewing surface untouched by the change that
-  adds the selector (NFR-12). *The promise clause:* `checks/read-only.sh` prints `unchanged` on A
+  <first-public-release tag>..HEAD -- nozoki-mac` lists only files of the selector and of
+  `mac-shell`'s launch-time restore, and no file of the tree, the Git view or the reading panel —
+  the viewing surface untouched by the change that adds the selector (NFR-12). *The promise clause:* `checks/read-only.sh` prints `unchanged` on A
   and on B after the switch, `.git` hashed where present; `checks/own-state.sh` finds every write
   inside the container; `checks/no-network.sh` exits 0.
 - **Rests on:** § 3 `folder-model` (replace-whole), `own-state` (bookmarks, the ten-entry list),
-  `ipc-surface` (the grant restored from a bookmark), `surfaces` (the identity element become the
+  `mac-shell` (the grant restored from a bookmark), `surfaces` (the identity element become the
   selector); `SM-4` (`switch_folder`), `SM-6`; § 4 C-R2 (the third entitlement), C-R3 (the
   restore-on-launch clause), C-D4. Slices: `open-a-folder`, `choose-a-theme`.
 - **Traces to:** PRD § Scope (In) "one folder at a time is a v1 cut", the full ambition —
@@ -1763,7 +1906,7 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   `first-public-release`'s half passes again on the downloaded bundle, with two differences —
   `checks/bundle.sh` now against C-R2's three entries, and that half's closing check inverted: the
   version is 1.0.0, not below it; `checks/contract/1` exists, written from this bundle and this
-  build's capability file — the floor `14.0`, the two asset names, SM-4's eight commands — and
+  build's `libnozoki_bridge.a` — the floor `14.0`, the two asset names, SM-4's nine functions — and
   `checks/contract.sh v1.0.0` passes against it (C-I6); `checks/own-state.sh --from
   <previous-tag>` passes — a container
   written by the previous release is opened by this build with no write outside the container, and
@@ -1771,7 +1914,8 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   `checks/latency.sh`'s figures are within the numbers the SRS now carries, or the SRS still
   carries none and the figures are attached to the release (C-I4). *The promise clause, over the
   terminus whole:* `checks/read-only.sh` prints `unchanged` on every fixture after every command on
-  `SM-4`'s complete list — `open_diff`, `walk_history` and `switch_folder` included — and after
+  `SM-4`'s complete list — `open_diff`, `walk_history`, `switch_folder` and `asset_bytes`
+  included — and after
   `--kill`; `checks/no-network.sh` exits 0; the network monitor across a full session exercising
   diffs, history and a switch records zero outbound connections (AC-12 with AC-1 – AC-3).
 - **Rests on:** § 4 C-R4, C-R5, C-D4, C-I3, C-I4, C-I6; § 9 TO-8 (raising the floor is now a
@@ -1900,10 +2044,14 @@ one of its seeds without one.
 <What this design gives up, one line each, with what it buys. A design with no stated cost has not
 been weighed. For each, say what undoing it would take if it turned out wrong.>
 
-- **TO-1:** Two processes and one serialized seam, with every projection crossing it — *buys* a
-  renderer that can be handed *no* capability, so § 1's first question is answered by a list a
-  reviewer reads (SM-4); *undoing it costs* the IPC surface rewritten as direct calls, the model
-  untouched.
+- **TO-1:** One process and one C-ABI seam, the shell drawing only what crosses it — *buys* a wall
+  that covers the whole product with one entitlements file and one probe (C-R2, C-I3), a shell
+  with no script engine to wall off, and no serialization on every projection; *costs* the
+  renderer wall — a process that could be handed *no* capability — replaced by a shell whose "no
+  I/O of its own" is a source scan and a link check on every build (C-R7), not a process boundary;
+  *undoing it costs* the bridge re-wired as IPC, the model untouched — when a view exists that
+  starts under the rule and earns the seam (§ 2, the second row). *(Until v12 this row read the
+  other way: two processes, bought for the renderer wall; § 10 RC-3.)*
 - **TO-2:** A native C dependency, libgit2, vendored and built — *buys* zero prerequisites on a
   fresh Mac (a spawned `git` prompts a Command Line Tools install on a fresh macOS —
   https://developer.apple.com/documentation/xcode/installing-the-command-line-tools — inside the
@@ -1916,31 +2064,41 @@ been weighed. For each, say what undoing it would take if it turned out wrong.>
   through the Open panel rather than typed, C-R3), bookmarks for remembering, and the
   linked-worktree and submodule cases whose Git directory may lie outside the grant (§ 11 R-3);
   *undoing it costs* one entitlements file — and the wall.
-- **TO-4:** A rendering engine that is Apple's and moves with macOS — *buys* no bundled browser
-  engine and a bundle that fits the install clock; *costs* a second wall (sanitizer and CSP, C-D3,
-  C-R7) once untrusted content is HTML, and walls re-proved per WKWebView generation (C-R5);
-  *undoing it costs* every surface rewritten (§ 2, "Undoing it").
+- **TO-4:** A view drawn by AppKit — Apple's, moving with macOS — *buys* no engine bundled, no UI
+  dependency at all (C-R6), and the look the design starts from drawn by the platform that
+  defines it (`docs/DESIGN.md` § Overview); *costs* a second language, Swift, beside Rust and one
+  C ABI between them (SM-4), Markdown laid out by TextKit from a document tree rather than by a
+  web engine from CSS — UX-I12's two hard cells, an image or its placeholder in the flow and code
+  on its own surface, are what the CDO priced that at (`docs/trail/sdd/cycle-9.md` § 1.1) — and
+  layout fixtures re-walked per macOS generation (C-R5; § 11 R-11); *undoing it costs* every
+  surface rewritten (§ 2, "Undoing it") — paid once already, from the WKWebView (§ 10 RC-3).
 - **TO-5:** The Markdown raw-source switch is **not built** — FR-31 permits it only "if it costs
   nothing", and it does not: switching "preserves the reading position both ways"
   (`docs/UXD.md` UX-I12), which needs a rendered↔source position mapping with no other use.
   A release ships rendered-only and says so where it is offered (AC-22); *buys* nothing added to
   the reading panel for a feature outside done; *undoing it costs* the mapping and one control.
-  **The relative link opening its target is built** (FR-32's permission): a data attribute the
-  renderer turns into the existing `select_file` command, on a path the containment check already
-  validates — one attribute and no new capability (RN-10).
-- **TO-6:** One asset scheme the renderer can address, and a wider `img-src` — *buys* a README
-  whose in-folder images render in place with the network off (UX-I12); *costs* a containment
-  check that must be right about `..`, symlinks, percent-encoding and Unicode normalization, run
-  twice (SM-7); *undoing it costs* removing the handler and the scheme, the placeholder returning
-  for every image.
-- **TO-7:** No harness drives the rendered UI (C-I3) — *buys* a proof that runs in CI on macOS
-  with no WebView driver; *costs* the renderer's actual command use being exercised only by the
-  timed release walk — accepted because the renderer holds nothing the harness could catch it
-  using; *undoing it costs* an embedded-WebDriver harness when one is worth its dependencies.
-- **TO-8:** A macOS floor of 14 where the runtime allows 10.15 (C-R5) — *buys* one walk per
-  release over the versions the maintainer will actually run, and fewer WKWebView generations to
-  hold the walls against; *costs* every adopter on 12 or 13; *undoing it costs* a plist line and
-  the walk widened — cheap before 1.0.0, a breaking change after it (C-6).
+  **The relative link opening its target is built** (FR-32's permission): a *relative* link node
+  the shell turns into the existing `select_file` call, on a path the containment check already
+  validates — one node kind and no new capability (RN-10). *(Re-read under the native view,
+  2026-09-23: the switch is no cheaper when both treatments are TextKit's — the raw source is the
+  code treatment over the same bytes, and the position between a rendered block and its source
+  line is still a mapping with no other use; the judgment stands. RN-60.)*
+- **TO-6:** Image bytes cross the seam as bytes, for a contained path, and are decoded in the one
+  process by the platform's decoder — *buys* a README whose in-folder images render in place with
+  the network off (UX-I12), with no asset scheme, no handler and no policy to widen; *costs* a
+  hostile bitmap decoded inside the process the wall covers (§ 11 R-4), and a containment check
+  that must be right about `..`, symlinks, percent-encoding and Unicode normalization, run twice
+  (SM-7); *undoing it costs* an out-of-process decoder — a second process, under the rule (§ 2,
+  the second row's condition) — or the placeholder returning for every image.
+- **TO-7:** No harness drives the AppKit views (C-I3) — *buys* a proof that runs in CI on macOS
+  with no UI driver and no Xcode project; *costs* the shell's actual use of the bridge being
+  exercised only by the renderer gate and the timed release walk — accepted because the shell
+  holds no I/O the harness could catch it using (C-R7); *undoing it costs* an XCUITest target and
+  the Xcode project it needs, when one is worth what it brings.
+- **TO-8:** A macOS floor of 14 where nothing in the stack forces one above 11 (C-R5) — *buys* one
+  walk per release over the versions the maintainer will actually run, and fewer AppKit
+  generations to walk UX-I12's layout fixtures on; *costs* every adopter on 12 or 13; *undoing it
+  costs* a plist line and the walk widened — cheap before 1.0.0, a breaking change after it (C-6).
 - **TO-9:** Ad-hoc signing, never notarized (C-R4) — *buys* a channel that costs nothing and
   holds no signing secret in CI; *costs* a Gatekeeper step inside every stranger's first five
   minutes, and a sandbox whose enforcement is proved by a probe rather than a signing chain
@@ -2052,7 +2210,13 @@ silently misses every reversal made mid-build.>
   (`com.apple.security.temporary-exception.mach-lookup.global-name` naming
   `com.apple.nsurlsessiond`), which is unmeasured and which this seat reads as a network
   entitlement under another name: the service it opens is the one WebKit's own check treats as
-  network access. `open-a-folder`'s command half could not be met as written by the bundle its
+  network access. *(The ground in the sentence just given was withdrawn at run 11: the
+  `mach-lookup` is a stand-in in `checkEntitlements` and opens nothing by itself; what passing it
+  starts is WebKit's Networking process, whose own sandbox profile allows outbound TCP and UDP
+  unless `BlockNetworkAccess` is set. RN-56 and `docs/trail/sdd/cycle-9.md` § 1.1, the CTO's
+  addition, carry the corrected ground and its WebKit sources; the sentence keeps its words.
+  Confirmed by the owner, `docs/trail/sdd/cycle-9.md` § 2.2, 2026-09-23; RN-61.)*
+  `open-a-folder`'s command half could not be met as written by the bundle its
   wall half admits. R-8 did not fire: the wall stands, and what failed is the renderer behind it.
 - **Retained:** § 2's forces and the sandbox wall — the ruling makes the wall firmer, not weaker.
   § 3's parts and seams. Every slice, every § 7 edge and the order. C-R2's v1 members (the two
@@ -2074,10 +2238,68 @@ silently misses every reversal made mid-build.>
   rests on it (§ 7).
 - **Stopped:** Reading a green wall probe as a bundle that runs. Taking "no entitlement forbids
   it" as evidence that a system process will start. Holding an entitlement set by exact members.
-- **Still unresolved:** The renderer (companion § 1.1). Whether `checks/renderer.sh`'s observation
-  reads the same on a GitHub-hosted runner (*Open Questions*). ADR-0003 § Decision and NFDR QC-25
-  (`docs/nfdr.md:L243-L245`) still state *exactly*, and are the Principal Architect's to bring
-  into line (§ 12).
+- **Still unresolved:** The renderer (companion § 1.1) *(answered — the owner's (a),
+  `docs/trail/sdd/cycle-9.md` § 1.1; the cut is redrawn at RC-3)*. Whether `checks/renderer.sh`'s
+  observation reads the same on a GitHub-hosted runner (*Open Questions*). ADR-0003 § Decision and
+  NFDR QC-25 (`docs/nfdr.md:L243-L245`) still state *exactly*, and are the Principal Architect's
+  to bring into line (§ 12) *(QC-25 states the rule since NFDR v10, and ADR-0011 restates ADR-0003
+  under it, Proposed — `docs/nfdr.md` § Version, its v10 note; `docs/adr/README.md`; noted
+  2026-09-23, RN-61)*.
+
+### RC-3 — 2026-09-23 — the renderer leaves WKWebView: one process, an AppKit shell in Swift, a C-ABI seam in place of IPC
+
+- **Prior assumption:** Two processes: a host holding read capability and a renderer holding
+  none, the seam between them a closed command list and one asset scheme, and that seam the
+  promise (§ 2's first row to v12; § 3 SM-4; § 9 TO-1). The renderer was the system WKWebView
+  (C-R1; ADR-0002), and § 2 force 4 held the renderer technology as not replaceable inside the
+  terminus, priced "expensive" under *Undoing it* and never expected to be paid.
+- **Observed reality:** RC-2's — WebKit's processes check the host's network entitlement at
+  their own start, and the owner's rule forbids it (`docs/trail/sdd/cycle-8.md` § 5.1) — and the
+  owner's second ruling on the exit: the renderer leaves WKWebView; no network entitlement and no
+  mach-lookup exception; (b) and (c) refused, (d) and (e) not exits (`docs/trail/sdd/cycle-9.md`
+  § 1.1, 2026-09-23). Two facts the weighing added. A view that executes nothing has nothing for
+  a second process to wall off: content laid out by a text engine from typed data carries no
+  script for a renderer wall to contain, so the wall the previous shape bought guarded a threat
+  the new one does not have. And under one process the rule covers the whole product: no process
+  the product runs has a network profile of its own, which was (c)'s exact gap (RN-56).
+- **Retained:** § 1 whole. § 2's forces 1, 2 and 7 as written; forces 3, 4, 5 and 6 with the
+  rulings folded in. The sandbox wall, C-R2's rule and the entitlement set. § 3's seven
+  `nozoki-core` parts — `fs-reader`, `git-reader`, `watcher`, `folder-model`, `own-state`, and
+  `markdown-renderer` in its place with its output redrawn — and SM-1, SM-2, SM-3, SM-6 as
+  written. SM-4's function names, the closed-list rule and its staging by slice (C-R7). Every
+  slice, every slug, every *Delivers*, every § 7 edge and the order: step 1 made the entries from
+  behaviour and never from the boxes (RN-30, RN-59). `checks/bundle.sh` whole; the renderer gate's
+  two rules — observed from the process, never from a marker; a control that must go red — and its
+  place after the wall probe (ADR-0012's decision). C-D3's three-wall structure and the SVG
+  exclusion (RN-8). TO-2, TO-3, TO-5's judgment, TO-9, TO-10. R-1 – R-3, R-5 – R-10.
+- **Changed:** § 2's taken shape is the **sandboxed single-process read pipeline**, the previous
+  shape now the second row and rejected on the rulings; the view is AppKit in Swift, chosen over
+  a Rust toolkit, an in-process web engine and AppKit through `objc2`, each with its row or
+  paragraph. § 3: `ipc-surface` (`crates/nozoki-app`) and `surfaces` (`nozoki-ui`) leave;
+  `core-bridge` (`crates/nozoki-bridge`), `mac-shell` and `surfaces` (`nozoki-mac`) and
+  `highlighter` (`crates/nozoki-core`) arrive; the units table reads Rust, Rust, Swift, Shell;
+  SM-4 is a C ABI with `asset_bytes` its ninth function and the header generated, SM-5 – SM-7
+  name the bridge, SM-8 is new; `markdown-renderer` emits a `MarkdownDocument` and no HTML.
+  § 4: C-R1 (one process, no web engine), C-R6 (no Swift dependency), C-R7 (from CSP and
+  capability grant to the shell's no-I/O scan and the bridge's export set), C-I3 (the harness
+  against SM-5; the gate's observable and its control re-derived), C-I6 (the pin reads the
+  exports), C-D3 (the three walls: the check, the document as data, the decoder fed by the check
+  alone). § 5 step 5's first-slice sentence. § 6 S-1 – S-3, S-6 – S-11's command halves and CTO
+  *Rests on*. § 9 TO-1, TO-4, TO-6, TO-7, TO-8. § 11 R-4, R-11, R-12, and R-13 added. **This
+  entry moves § 2's shape and § 3's seams, so it owes the decision log superseding records** — for
+  ADR-0001 (the shape), ADR-0002 (the runtime, renderer and view language), ADR-0006 (the sanitizer
+  and the asset scheme) and ADR-0009 (the unit set) — and the enforcement store a re-derivation of
+  every entry written against the previous shape (§ 12, the downstream boundary). Both are the
+  Principal Architect's; this document surfaces and records nothing there (RN-60).
+- **Stopped:** Reading a second process as the way a "never" is held — the wall is the process's
+  entitlements, and a view that executes nothing needs no wall of its own. Pricing a view's
+  replacement as unforeseeable: it was paid, and the price is on this row. Rendering untrusted
+  content as markup anywhere in the product.
+- **Still unresolved:** The frames `checks/renderer.sh` reads on the native shell, and whether
+  they read the same on a hosted runner (*Open Questions*). How TextKit lays out UX-I12's two hard
+  cells, and which engine compiles the six grammars (*Open Questions*). The records and the NFDR
+  entries owed above (§ 12). The project card's `Languages:` and test command, and
+  `README.md:L46-L51`'s stack and proof sentences — outside this document (RN-59, RN-60).
 
 ## 11. Technical risks
 
@@ -2104,10 +2326,16 @@ A risk with no trigger and no response is an observation.>
   superproject in place of the submodule; FR-1's one folder), never this one with its Git state;
   the tree and the reading panel unaffected (C-I1; the message's shape is C-E4's; AC-25's
   own-top-level case is the fixture; the owner's wording, RN-42).
-- **R-4:** A sanitizer bypass in the Markdown pipeline — *shows up as* the hostile corpus
-  (`checks/fixtures/hostile.md`) producing HTML with a `<script`, an `on*=` attribute, a frame, or
-  a `src=` on any scheme but `nozoki-asset`; *response* three independent walls (C-D3) so a bypass
-  moves no byte across the folder's edge, and every reported bypass becomes a corpus line.
+- **R-4:** Untrusted content reaches something that interprets it — a `MarkdownDocument` node
+  built from a passage the parser must leave as text, a surface that imports HTML into an
+  attributed string, or a hostile bitmap that crashes the platform's decoder — *shows up as* the
+  hostile corpus (`checks/fixtures/hostile.md`) yielding a node outside § 3's closed set or a
+  text node that does not hold its source verbatim, `checks/view.sh` finding an HTML import in
+  `nozoki-mac/Sources`, or the churn fixture's malformed-image case ending the process; *response*
+  three independent walls (C-D3) so a wall built wrong moves no byte across the folder's edge,
+  and a decoder crash is a crash inside a process that cannot write or connect (C-R2, NFR-4); a
+  malformed PNG, JPEG, GIF and WebP join the fixtures, and every reported case becomes a corpus
+  line.
 - **R-5:** FSEvents storms and large trees push the refresh bar — an agent rewriting thousands of
   files, a tree deeper or wider than the reference fixtures — *shows up as* `checks/latency.sh`'s
   p95 figures rising across builds, or the shell blocking under `checks/churn.sh`; *response* the
@@ -2140,18 +2368,27 @@ A risk with no trigger and no response is an observation.>
   `..` and symlink-out fixtures yielding bytes instead of the placeholder; *response* the check
   runs on the canonical path, symlinks resolved and after decoding, has one implementation, and
   is called at render and again at every asset request (SM-7).
-- **R-11:** Tauri 2's protocol registration or WKWebView's CSP handling of a custom scheme moves
-  with a release — *shows up as* the local-image fixture rendering with a CSP violation on a macOS
-  the floor admits; *response* the origin form is settled by the first Markdown slice and written
-  into C-R7 (Open Questions); what moves is one directive and the scheme's registration, not the
-  sanitizer or the check.
+- **R-11:** TextKit's layout of an attachment or a text block moves with a macOS release — *shows
+  up as* UX-I12's layout fixtures (an image or its placeholder in the flow of the prose; code on
+  its own surface) mis-laid on a macOS the floor admits, in the release walk; *response* the
+  layout form is settled by the first Markdown slice and written into `surfaces`' row (*Open
+  Questions*), the fixtures are walked on every macOS the floor admits before each release
+  (C-R5), and what moves is the treatment's layout, never the `MarkdownDocument` or the check.
 - **R-12:** A breaking change to the priced set ships under a minor or patch number by oversight
-  — the floor raised in a plist line, a surface's command dropped from SM-4's list, an asset
+  — the floor raised in a plist line, a function dropped from SM-4's exports, an asset
   renamed — with every promise test green, because none of them reads the priced set — *shows up
   as* `checks/contract.sh` failing on the tag against the pin its major wrote (C-I6); before
   `promise-one-point-zero` it shows up as nothing, which is C-6's pre-1.0.0 half and not a gap;
   *response* the release is not offered, R-7's rule, and the change is reverted or carried to the
   next major with a new pin.
+- **R-13:** The C ABI seam is misused — a buffer freed twice or never, a lifetime crossed, a panic
+  unwinding into Swift — in `nozoki-bridge`, the one unit that holds `unsafe` (§ 3) — *shows up
+  as* the process ending under `checks/churn.sh` or the address sanitizer's report on the
+  bridge's tests; *response* the bridge holds no logic, every function catches a panic at the
+  boundary and returns a failure value, every buffer it returns is owned and freed by
+  `nozoki_free` alone, the header is generated and never hand-edited, and the bridge's tests run
+  under `-Zsanitizer=address` in CI on every build; a crash there is a crash inside the wall
+  (NFR-4), and the fix is in one unit.
 
 ## 12. What this design is not
 
@@ -2191,10 +2428,13 @@ without opening a gap: a network entitlement was found to make the shipped windo
 (`docs/trail/sdd/cycle-8.md` § 5.1), and the owner's answer held the PRD's line — "no network
 call at all during operation" (`docs/PRD.md` § Data & Privacy) — as the operating system's
 refusal and not the code's, so the PRD is unchanged and the mechanism moves in § 4 C-R2, never
-here. The item that ruling left open — the renderer that cannot start under it, companion
-§ 1.1 — opens no PRD gap either: the PRD names no renderer, its § Dependencies / Integrations
-naming the filesystem and Git alone, so whichever exit the owner takes changes nothing the
-product promises, and the PRD stays at v15. The immediacy
+here. The item that ruling left open — the renderer that cannot start under it — is answered:
+the renderer leaves WKWebView (`docs/trail/sdd/cycle-9.md` § 1.1, the owner, 2026-09-23), and it
+opens no PRD gap either: the PRD names no renderer, its § Dependencies / Integrations naming the
+filesystem and Git alone, so the exit taken changes nothing the product promises, and the PRD
+stays at v15. What the exit costs in product terms is a date and not a surface — every slice
+rests on `open-a-folder` (§ 7), so the first public release moves later, not smaller — and the
+one public sentence it does reach is the README's, not the PRD's (RN-59). The immediacy
 thresholds the PRD leaves TBD are the SRS's to fold in by revision, and no slice here writes a
 number for them.
 
@@ -2204,7 +2444,9 @@ document — the acquisition channel (C-3, RN-7), the macOS floor (C-11), the Gi
 the extension set (FR-29), the build-cost judgment on the raw-source switch and the relative link
 (FR-31, FR-32), how the root finding is made (FR-33) — the value is fixed here and traced back. A
 gap found in the SRS while designing is a companion item for the CTO's own SRS run, never a
-rewrite from this document; none was found in this run.
+rewrite from this document; none was found in this run, and none in the fold of the owner's (a):
+FR-30, FR-31 and FR-32 name no engine, and the two build-cost judgments they delegate are re-made
+here under the native view with the same result (§ 9 TO-5; RN-60).
 
 **The UXD boundary.** This design changes no experience. Every `UX-` entry cited above is cited as
 `docs/UXD.md` v10 (Settled) states it; the C-E conditions restate none of them and bind the slices to
@@ -2215,27 +2457,43 @@ here is a companion item for the CDO's own UXD run, never a redesign from this d
 the seat that holds the UXD's pen in that run. One was found: UX-I12's in-folder image case names
 no format, and § 4 C-D3 decides what an SVG is (`docs/trail/sdd/cycle-1.md` § 2.1, RN-31). One
 defect in the UXD itself was found and is reported, not repaired from here: five citations in its
-RN-29 no longer resolve (RN-32). The cycle-8 ruling and the renderer question it leaves (§ 10
-RC-2; the companion's § 1.1) open no UXD gap: UX-I12 and § 9 name no renderer and no CSS, so the
-UXD stands at v10 whichever exit the owner takes. What would move under a native renderer is
-`docs/DESIGN.md`'s realisation sentence (its § Overview, RN-1) — in that document's own run, which
-may trail this one — and no token value, no C-E condition and no *Traces to* UXD clause in § 6
-(RN-53).
+RN-29 no longer resolve (RN-32). The cycle-8 ruling and the exit the owner took from the renderer
+question it left — the renderer leaves WKWebView for an AppKit view in one process (§ 2; § 10
+RC-2, RC-3; `docs/trail/sdd/cycle-9.md` § 1.1, the owner, 2026-09-23) — open no UXD gap: UX-I12
+and § 9 name no renderer and no CSS, § 9's direction is the platform's own controls and
+appearance, and every `UX-` entry cited in § 4's C-E conditions and § 6's observable halves and
+UXD traces was re-read against § 2 as it now stands and binds an observation or a token, never
+an engine — so the UXD stands at v10 under the view taken. What the exit moves is
+`docs/DESIGN.md`'s, in that document's own run, which may trail this one: its realisation
+sentence (§ Overview, "realised in plain CSS custom properties over the product's own markup"),
+the CSS font-stack syntax its § Typography and frontmatter use to name the platform's two
+families, and RN-1's "every value here is a CSS value and holds in either" — and no token value,
+since every value that document fixes is a number or a colour a native view draws directly. No
+C-E condition, no observable half and no *Traces to* UXD clause in § 6 moved for it (RN-53,
+RN-62).
 
 **The downstream boundary.** This document authors no ADR and designs no individual change. The
 decision log already holds nine records written from the previous SDD
 (`docs/adr/README.md`, ADR-0001 – ADR-0009); this run's § 2 table, § 9 and the Review Notes are
 the three surfaces the Principal Architect reads, and where a decision here lands where a record
 already stands, the record is cited rather than re-surfaced (RN-1). Where this document departs
-from a record, the departure is a Review Note naming the record — one so far: C-R2 departs from
-ADR-0003's "exactly these entitlements" on the owner's cycle-8 ruling (RN-52), and the same ruling
-leaves C-R1 and ADR-0002 standing against C-R2 with the choice the owner's, not a departure this
-document makes (§ 10 RC-2; the companion's § 1.1) — and the log is append-only: a departure is a
-superseding record, never an edit. The enforcement store, `docs/nfdr.md`, is re-derived from § 4
-where the two disagree (§ 4, opening note); the first run found no disagreement, one confirmation
-(C-R5's floor) and one placement it takes from that document (the `crates/` layout, RN-4), and the
-cycle-8 fold leaves one to re-derive: QC-25 states C-R2's members as *exactly*
-(`docs/nfdr.md:L243-L245`) where C-R2 now states a rule (RC-2). One defect in the records themselves was found and is reported, not
+from a record, the departure is a Review Note naming the record — and after the owner's (a) the
+departures are these, every one surfaced for a superseding record and none written here: ADR-0001's
+two-process shape and ADR-0002's runtime, renderer and view language (§ 2; § 10 RC-3; RN-60);
+ADR-0006's sanitizer and asset scheme (§ 4 C-D3; RN-60); ADR-0009's unit set (§ 3; RN-60); and
+C-R2's departure from ADR-0003's "exactly these entitlements" on the owner's cycle-8 ruling
+(RN-52), which ADR-0011 restates and supersedes on acceptance (RN-61). ADR-0012's gate stands as
+decided — observed from the process, a control that goes red, after the wall probe — and its
+mechanism, control and observable's name are re-derived from C-I3 as it now reads (RN-61). The
+log is append-only: a departure is a superseding record, never an edit. The enforcement store,
+`docs/nfdr.md`, is re-derived from § 4 where the two disagree (§ 4, opening note); the first run
+found no disagreement, one confirmation (C-R5's floor) and one placement it takes from that
+document (the `crates/` layout, RN-4); the cycle-8 fold left QC-25 to re-derive from C-R2's rule,
+which NFDR v10 did (`docs/nfdr.md` § Version, its v10 note); and the (a) fold leaves every entry
+written against the previous shape to re-derive from §§ 2 – 4 as they now read — QC-21's
+non-invariant (the view technology *was* replaced, once, before any release), QC-23 (the CSP),
+QC-24 (the capability grant), QC-62's mechanism and control, and every entry naming `nozoki-app`,
+`nozoki-ui`, `pnpm` or Vitest (`docs/nfdr.md` § 9) — the Principal Architect's (RN-60). One defect in the records themselves was found and is reported, not
 repaired from here: 14 citations of the deleted trail across five ADRs, 23 review-note citations
 written against the previous SDD's numbering, and one stale slice reference in `docs/nfdr.md` no
 longer resolve (RN-34) — routed to the Principal Architect, and the reason RN-20 – RN-29 are left
@@ -3154,6 +3412,181 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   only as correct: C-I3 now cites the record in force *(re: the companion's § 1.1, the CPO's
   position; source: RN-56; `README.md:L50-L51`; `docs/trail/sdd/cycle-8.md` § 5.1, answer 1;
   `system/loaders/cpo.md` § *The documentation is the product*; RN-54)*.
+- **RN-59:** *(CPO)* *(changed)* The owner's answer to the companion's § 1.1 — **(a), the renderer
+  leaves WKWebView; no network entitlement and no mach-lookup exception, (b) and (c) refused, (d)
+  and (e) not exits** (`docs/trail/sdd/cycle-9.md` § 1.1, 2026-09-23) — folded into this seat's
+  lanes, in three places. § 1's read-only constraint gains the second ruling as a constraint the
+  shape is re-chosen against, with the weighing itself left to § 2. § 5 step 4 gains two dated
+  sentences: on E-1, that the case its "unless" clause held open (RN-51) has arrived and the slice
+  is not resized by it — one bar on one artifact, the window drawn now native; on E-3, that
+  `read-markdown` stays its own slice under any renderer, because step 4's test — an intermediate
+  result that changes the acceptance — is met whichever engine draws, while the *content* of its
+  decision is C-D3's redraw, the CTO's, and this seat re-reads the sentence once § 2 is redrawn.
+  § 12's PRD boundary moves from "whichever exit the owner takes" to the exit taken, and names what
+  the exit costs in product terms: a date, since every slice rests on `open-a-folder` (§ 7).
+  *Because* the answer is an owner directive on settled content, and RN-54 had held the step-4
+  sentences back for exactly one reason — the owner had not chosen (a) — which no longer holds.
+  What does not move, and why: § 5 step 1's entries E-1 – E-11, step 2's strikes, every § 6 slug,
+  *Delivers*, *Moves toward*, fence and PRD trace, because step 1 made the entries from behaviour
+  and never from the boxes (RN-30) and a renderer is a box; and the PRD, at v15 — re-verified
+  before writing: `docs/PRD.md` last commit `7c89e19` (2026-09-01), `system/projects/nozoki/agari.md`
+  `ee561fb` (2026-09-01), neither touched since RN-58. Two things this seat owns and names as
+  owed outside this document, so the fold is not read as complete: `README.md:L46-L49` ("rendering
+  a TypeScript package (`nozoki-ui`) in the system WKWebView", "styled in plain CSS custom
+  properties") becomes a public sentence the product no longer keeps once (a) lands, and moves
+  with the README in its own change — never from here; and the first-release date the owner has
+  been counting toward moves out by the rewrite of § 3 `surfaces`, which is the CTO's to price.
+  The companion's § 1.1 is the CTO's item; this seat's position in it stands as written and the
+  item leaves the companion with the CTO's fold of § 2 *(re: § 1; § 5 step 4, E-1 and E-3; § 12
+  the PRD boundary; source: `docs/trail/sdd/cycle-9.md` § 1.1; `docs/PRD.md` § Dependencies /
+  Integrations; `system/projects/nozoki/agari.md`; § 7; § 10 RC-2; RN-30, RN-51, RN-54, RN-58)*.
+- **RN-60:** *(CTO)* *(changed)* The owner's answer to the companion's § 1.1 — **(a), the renderer
+  leaves WKWebView** (`docs/trail/sdd/cycle-9.md` § 1.1, 2026-09-23) — is folded on every lane
+  this seat holds, and § 2's weighing is redone from the forces rather than patched. **The
+  shape:** the taken row is the *sandboxed single-process read pipeline* — one process, a Rust
+  core, an AppKit shell that holds no I/O of its own, one closed C-ABI seam — and the
+  capability-split shape this document held to v12 is the second row, rejected on RC-2 and on a
+  fact the weighing added: a view that executes nothing has nothing for a renderer wall to
+  contain, so the second process guarded a threat the new shape does not carry. Three further
+  rows and one paragraph weigh what (a) left open — a Rust-native toolkit (loses on the look the
+  design starts from and on the tree, `docs/DESIGN.md` § Overview, `docs/UXD.md` § 9, C-R6), an
+  in-process web engine (deprecated, and a script engine inside the wall), and AppKit through
+  `objc2` against AppKit in Swift (Swift taken: `unsafe` on every message send in a workspace that
+  forbids it, `Cargo.toml` `[workspace.lints.rust]`; the contributor who knows AppKit knows it in
+  Swift; no dependency either way). Forces 3, 4, 5 and 6 carry the rulings; force 4 records that
+  the view technology moved once, before any release, at the cheapest moment the reversal could
+  be paid. **The parts and seams:** `ipc-surface` and `surfaces` in `nozoki-ui` leave;
+  `core-bridge` (`crates/nozoki-bridge`, the one unit holding `unsafe` and the C ABI), `mac-shell`
+  and `surfaces` (`nozoki-mac`, Swift, no package dependency) and `highlighter`
+  (`crates/nozoki-core`, the six grammars compiled in) arrive; SM-4 is the C ABI with
+  `asset_bytes` its ninth function and a generated header, SM-8 is the shell ↔ surfaces intent
+  seam, and `markdown-renderer` emits a `MarkdownDocument` — a closed set of typed nodes — and no
+  HTML. **The conditions:** C-R1 (one process, no web engine of any kind), C-R6 (`Package.swift`
+  declares nothing), C-R7 (from CSP and capability grant to the shell's forbidden-API scan, the
+  link check and the bridge's export-set test — stated plainly as a scan and not a process
+  boundary), C-I3 (the harness against SM-5; the gate's observable is `open_folder`'s call with
+  the panel presented, its control a harness-owned `idle-shell` bundle, the frames re-measured on
+  the first native build), C-I6 (the pin reads the exports), C-D3 (three walls: the check, the
+  document as data, the decoder fed by the check alone; SVG still excluded, now because `NSImage`
+  renders it as a document). **The cut's CTO fields:** S-1 – S-3 and S-6 – S-11's command halves
+  and *Rests on* read the new units and checks; no slice, slug, edge or place in the order moves
+  (RN-59). **Costs and risks:** TO-1, TO-4, TO-6, TO-7, TO-8 redrawn; TO-5's judgment re-read and
+  kept; R-4, R-11, R-12 redrawn; R-13 (the C ABI seam) added. **§ 10 RC-3** records the re-cut
+  before the redraw, and states that it moves the shape and the seams and so owes the decision log
+  superseding records for ADR-0001, ADR-0002, ADR-0006 and ADR-0009 and the NFDR a re-derivation of
+  every entry written against the previous shape — the Principal Architect's, surfaced in § 12 and
+  written nowhere here. *Because* the answer is an owner directive on a question this seat raised,
+  and § 2's bar — a shape presented with no alternative has been assumed — binds the redraw as it
+  bound the first draft: the native view is chosen against three alternatives from the forces, not
+  read off the ruling. **Owed outside this document, named so the fold is not read as complete:**
+  the project card's `Languages:` line (`Swift` in place of `TypeScript`) and its test command
+  (`swift test` in place of Vitest) — `system/projects/nozoki/project.md`, not this seat's to edit;
+  `README.md:L46-L51`'s stack and proof sentences, the CPO's (RN-59); `docs/DESIGN.md`'s
+  realisation sentence, the CDO's, in that document's own run (RN-53); and no Swift packet exists
+  in `<CORE>/doctrine/engineering/languages/` (listed 2026-09-23), so `nozoki-mac`'s frame is laid
+  out by the slice that lands it. The companion's § 1.1 leaves the file with this fold *(re: § 2
+  whole; § 3 parts, units, seams, *What the system holds*; § 4 C-R1, C-R2, C-R5, C-R6, C-R7, C-I2,
+  C-I3, C-I6, C-D3; § 5 step 5; § 6 S-1 – S-3, S-6 – S-11, the CTO's fields; § 9 TO-1, TO-4, TO-5,
+  TO-6, TO-7, TO-8; § 10 RC-3; § 11 R-4, R-11, R-12, R-13; § 12 the SRS and downstream boundaries;
+  *Open Questions*; source: `docs/trail/sdd/cycle-9.md` § 1.1 — the owner's answer and the three
+  positions; `docs/trail/sdd/cycle-8.md` § 5.1; `docs/DESIGN.md` § Overview, § Typography;
+  `docs/UXD.md` § 9, UX-I12; `docs/SRS.md` FR-30 – FR-32, NFR-16, C-3, C-11; `Cargo.toml`
+  `[workspace.lints.rust]`; `docs/adr/README.md`; `docs/nfdr.md` § Version (v10), QC-21, QC-62;
+  `<CORE>/doctrine/engineering/languages/` listing; RN-1, RN-8, RN-30, RN-53, RN-56, RN-59)*.
+- **RN-61:** *(CTO)* *(changed)* Two folds from the companion, one drafted for the owner and one
+  confirmed. **§ 2.3, drafted here for the owner's confirm:** § 4 C-I3's `checks/bundle.sh` reads
+  the entitlements "against the set C-R2's rule admits, as the script's expected set records it"
+  where it read "against C-R2's exact list" — the form `docs/nfdr.md` QC-25 took at v10 — *because*
+  C-R2 has stated a rule since v12 and a delivery reader taking C-I3 at its word would fail the
+  bundle that carries the folder-selector's third entitlement. The record lines move with it:
+  C-R2 names ADR-0011 — Proposed, superseding ADR-0003 on acceptance — and says ADR-0003 is the
+  record in force until then; C-I3 names ADR-0012 — Proposed — beside ADR-0010 for the renderer
+  gate, and says its mechanism, control and observable's name are re-derived from C-I3 as it now
+  reads under RC-3. Each line states the status `docs/adr/README.md` shows on 2026-09-23. **§ 2.2,
+  confirmed by the owner** (`docs/trail/sdd/cycle-9.md` § 2.2): § 10 RC-2's *Observed reality*
+  keeps its words and gains the dated parenthesis the item drafted — the `mach-lookup` is a
+  stand-in in `checkEntitlements`, what passing it starts is a Networking process with a network
+  profile of its own — pointing at RN-56 and the companion's § 1.1 for the sources rather than
+  restating the WebKit citations; RN-52's matching sentence stays as written, a note being dated
+  history (RN-55). Found on the same walk: RC-2's *Still unresolved* said QC-25 "still state[s]
+  *exactly*", true on 2026-09-23 at the hour it was written and not since NFDR v10; it keeps its
+  words and gains a dated parenthesis, and § 12's downstream boundary says the same. § 2.1 was
+  drafted at v12 (RN-56) and confirmed by the owner (`cycle-9.md` § 2.1); nothing further moves
+  for it, and it leaves the companion. The companion after this turn holds § 2.3 alone, its slot
+  the owner's *(re: § 4 C-I3, C-R2's record line; § 10 RC-2 *Observed reality*, *Still unresolved*;
+  § 12 the downstream boundary; the companion's §§ 2.1 – 2.3; source: `docs/trail/sdd/cycle-9.md`
+  §§ 2.1 – 2.3; `docs/adr/README.md` rows ADR-0011, ADR-0012; `docs/nfdr.md` § Version (v10),
+  QC-25; RN-52, RN-55, RN-56)*.
+- **RN-62:** *(CDO)* *(changed)* The owner's (a) read through this seat's lanes against § 2 as
+  the CTO redrew it; three sentences moved and no condition, observable or trace did. **§ 12's
+  UXD boundary** said the UXD stands "whichever exit the owner takes" and named what "would move
+  under a native renderer" — a clause written before the exit and stale once it was taken. It
+  now names the exit (§ 2; § 10 RC-3; `docs/trail/sdd/cycle-9.md` § 1.1), records that every
+  `UX-` entry the C-E conditions and the § 6 observable halves and UXD traces cite was re-read
+  against the AppKit view and binds an observation or a token, never an engine, and lists what
+  the exit does move — three sentences of `docs/DESIGN.md` (its realisation sentence, § Overview;
+  the CSS font-stack syntax of § Typography and the frontmatter; RN-1's "every value here is a
+  CSS value") and no token value — in that document's own run, which may trail this one
+  (`<CORE>/roles/loaders/cdo_global.md` § *Output*). **C-E7's mechanism pointer** said "C-R7 and
+  C-D3 make it structurally true"; C-R7 as redrawn is a source scan and a link check and says of
+  itself that it is "not a process boundary: the wall is C-R2's", so the pointer now names what
+  holds the condition by structure — C-R1 (every asset ships inside the bundle, fonts the
+  platform's), C-R2 (no network entitlement on the one process) and C-D3 (no URL from content
+  reaches a framework) — and keeps C-R7 as the scan that shows the shell adds no fetch of its
+  own; the condition's words, its UXD and fence sources and its *Violated by* are unchanged.
+  **S-1's observable half** excluded "a developer's dev-server window" — an artifact of the
+  previous shape that the taken one cannot produce; the exclusion is now stated as the class it
+  belongs to, a build launched from the toolchain outside a signed bundle, with the dev-server
+  window kept as the cited instance (`docs/trail/sdd/cycle-8.md` § 5.1's sample table; RN-53).
+  *Because* the observable halves, the C-E conditions and the UXD traces were made from the
+  UXD's surfaces and never from the boxes, a renderer change reaches them only where a sentence
+  named the box — and three did. Checked and unmoved: S-3's observable half (rendered headings,
+  lists and code; the in-folder image in place; the two placeholders; the inert external link;
+  the hostile document shown as text; pixel-identical offline) states what a person sees on the
+  panel and holds under a TextKit view exactly as under a web one — how TextKit lays out
+  UX-I12's two hard cells is the CTO's *Open Question*, and the bar it must meet is UX-I12's and
+  `docs/DESIGN.md` § Components "Rendered Markdown"'s, neither of which moved; S-7's "in a
+  browser" is the stranger's, reading the README; every other observable half and UXD trace
+  names no engine (`grep -n -i 'wkwebview\|webview\|css\|webkit\|html' docs/SDD.md` over § 4's
+  CDO clause, § 6 and § 12, 2026-09-23 — the hits outside the three sentences above are S-1's
+  command half, S-3's command-half fixture list and § 12's PRD clause). Verified before
+  writing that nothing above this seat moved: `docs/UXD.md` v10 (Settled, `4d7b653`),
+  `docs/DESIGN.md` v8 (Settled, `269bcf5`), `docs/CONTENT.md` v6 (Settled, `6789e19`) — the
+  commits RN-57 pinned. No § 10 entry from this seat: the UXD did not change upstream and no
+  observable half failed as written, so neither trigger that would name this seat fired; RC-3
+  is rightly the CTO's. No companion item: nothing here is the owner's to settle *(re: § 4 C-E7,
+  the mechanism sentence; § 6 S-1 *Reached when*, observable half; § 12 the UXD boundary; source:
+  `docs/trail/sdd/cycle-9.md` § 1.1; § 2 as redrawn, § 4 C-R1, C-R2, C-R7, C-D3, § 10 RC-3;
+  `docs/UXD.md` § 9, UX-I12, UX-I15; `docs/DESIGN.md` § Overview, § Typography, § Components
+  "Rendered Markdown", RN-1; `system/experience/visual_restrictions.md` § `no-runtime-remote-asset`;
+  RN-53, RN-57, RN-60)*.
+- **RN-63:** *(CPO)* *(changed)* This seat's lanes re-read against § 2 and § 4 C-D3 as the CTO
+  redrew them under the owner's (a) (§ 10 RC-3; RN-60) — the successor work the CTO named — with
+  two sentences moved and everything else left as it stands. § 5 step 4's E-3 sentence gains its
+  dated close: the three walls are now the containment check, the document as data and the
+  decoder fed by the check alone, the decision is still one `read-a-file` never asks (a plain or
+  highlighted file crosses no content-derived path, no image and no link), so `read-markdown`'s
+  sizing stands; and the layout question the redraw leaves — how TextKit lays out UX-I12's two
+  hard cells (*Open Questions*, third item) — is not a second slice: it settles inside this
+  slice's first build, its result changes nothing that happens next outside the slice, which is
+  step 4's too-narrow test, and the bar it answers to is the UXD's and does not move with the
+  form found. § 1's clause "§ 2's weighing to redo" read as work still owed once § 2 was redrawn;
+  it now says the weighing is § 2's and was redone under the ruling. *Because* RN-59 held the
+  E-3 re-read open until § 2 existed to read it against, and the CTO's redraw is that ground.
+  What was checked and left alone, and why: § 6 S-3's *Delivers* names behaviour a TextKit view
+  draws as a web one did; its fence "the raw-source switch — not built" rests on § 9 TO-5, whose
+  judgment the CTO re-read under the native view and kept (TO-5's dated parenthesis); the SVG
+  placeholder in the same fence is C-D3's exclusion, kept (RN-8); its PRD trace is unchanged.
+  Every other § 6 slug, *Delivers*, *Moves toward*, fence and PRD trace, step 1's entries and
+  step 2's strikes stand — RC-3 § *Retained* says so with RN-59, and this seat confirms it from
+  its own lane. The second language § 2 takes — Swift beside Rust — reaches no product promise:
+  `grep -n -i 'swift\|rust\|typescript\|appkit' docs/PRD.md` (2026-09-23) hits only the
+  highlighting floor's six languages (`docs/PRD.md:L161-L163`), the `highlighter`'s grammars and
+  not the product's language, and the Agari names none; so § 12's PRD boundary stands as RN-59
+  wrote it. Nothing for the companion: it holds § 2.3 alone, the owner's slot, and no product
+  call is open. Nothing further is owed from this seat in this run *(re: § 1; § 5 step 4, E-3;
+  source: § 2 as redrawn; § 4 C-D3; § 9 TO-5; § 10 RC-3; *Open Questions*, third item;
+  `docs/PRD.md` § Core Features; `system/projects/nozoki/agari.md`; RN-8, RN-59, RN-60)*.
 
 ---
 
@@ -3179,15 +3612,28 @@ question.>
   discovery disabled, for a plain `.git` folder and for a `.git` file naming a gitdir inside the
   grant. Settled by the first Git slice's `root_finding` and `git_state` fixtures running green
   on the built bundle; a failure is R-1 firing early.]
-- [OPEN: The exact origin form WKWebView accepts in `img-src` for the `nozoki-asset` scheme, and
-  whether Tauri 2's protocol registration on macOS serves it without a plugin. Settled by the
-  first Markdown slice rendering the local-image fixture with no CSP violation; the form found is
-  written into C-R7.]
+- [OPEN: How TextKit lays out UX-I12's two hard cells — an image or its placeholder box in the
+  flow of the prose, and fenced code on its own surface inside prose: `NSTextAttachment` and
+  `NSTextBlock`, or a custom layout fragment. Settled by `read-markdown`'s first build rendering
+  the layout fixtures at `docs/DESIGN.md`'s prose measure on the floor macOS; the form found is
+  written into `surfaces`' row in § 3. *(This item replaced the WKWebView `img-src` origin
+  question on 2026-09-23, which § 10 RC-3 made moot; RN-60.)*]
+- [OPEN: Which grammar engine compiles the six floor grammars into `nozoki-core` (§ 3
+  `highlighter`), and what it adds to `checks/deps.allow`. Settled in `read-a-file` by the
+  dependency review that change carries under C-R6; the five token classes and the extension map
+  do not wait on it.]
+- [OPEN: In what form `open_folder`'s argument crosses the bridge so that the grant the Open panel
+  conferred is the one the core reads under — the path alone, on the process-wide grant the panel
+  confers for the session, or the URL's security-scoped form once `switch-the-folder`'s bookmarks
+  exist (C-R3, C-D1). Settled in `open-a-folder` by the first read through the bridge on the
+  built bundle; a read the sandbox refuses on the panel's own path is a re-cut trigger on SM-4's
+  first function.]
 - [OPEN: What the reference fixture sizes are (NFR-10) and what FSEvents coalescing latency the
   watcher sees on them. Settled by `checks/latency.sh`'s first figures, which the SRS then folds in
   by revision (`docs/SRS.md` RN-4); no number is written here before that.]
-- [OPEN: Whether `checks/renderer.sh`'s observation — the launched main process seen inside
-  `open_folder` — reads the same on a GitHub-hosted macOS runner as on the one Mac where a thread
-  sample showed it (C-I3; § 10 RC-2). Settled by the gate's first run there, on whichever renderer
-  the owner's companion call leaves standing; a runner that cannot observe it is a re-cut trigger
-  on the gate's mechanism, never on the gate.]
+- [OPEN: Which frames the native shell shows inside `open_folder`'s call — the observation
+  `checks/renderer.sh` reads (C-I3) — and whether they read the same on a GitHub-hosted macOS
+  runner as on the one Mac where a thread sample showed the previous renderer's (§ 10 RC-2, RC-3).
+  Settled by the gate's first run on the first slice's first native bundle, on that Mac and on the
+  runner; a runner that cannot observe it is a re-cut trigger on the gate's mechanism, never on
+  the gate.]

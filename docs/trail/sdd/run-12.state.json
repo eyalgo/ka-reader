@@ -1,0 +1,310 @@
+{
+  "change_log": [
+    {
+      "changed_text": "SDD \u00a7 1 (read-only constraint \u2014 the cycle-9 ruling added as a fixed constraint); \u00a7 5 step 4 E-1 and E-3 (dated sizing sentences under (a)); \u00a7 12 the PRD boundary (exit taken, product cost named); SDD Review Notes RN-59 (CPO, changed) \u2014 new. No slice, slug, *Delivers*, *Moves toward*, fence or PRD trace moved; no companion item added or consumed.",
+      "seat": "cpo"
+    },
+    {
+      "changed_text": "nothing this turn \u2014 the previous turn's edits (SDD \u00a7 1; \u00a7 5 step 4 E-1 and E-3; \u00a7 12 the PRD boundary; SDD Review Notes RN-59) are verified on disk and stand as recorded there.",
+      "seat": "cpo"
+    },
+    {
+      "changed_text": "nothing this turn \u2014 the previous turn's edits (SDD \u00a7 1; \u00a7 5 step 4 E-1 and E-3; \u00a7 12 the PRD boundary; SDD Review Notes RN-59) are verified on disk and stand as recorded there.",
+      "seat": "cpo"
+    },
+    {
+      "changed_text": "SDD \u00a7 2 (forces 3\u20136, table, placement, view-language paragraph, *Undoing it*); \u00a7 3 (parts table \u2014 `markdown-renderer`, `highlighter` new, `core-bridge`, `mac-shell`, `surfaces`, `read-only-harness`; units paragraph and table; SM-4 \u2013 SM-7, SM-8 new; deliverables paragraph; `FileView`, `MarkdownDocument`); \u00a7 4 C-R1, C-R2, C-R5, C-R6, C-R7, C-I2, C-I3, C-I6, C-D3; \u00a7 5 step 5; \u00a7 6 S-1, S-2, S-3, S-6, S-7, S-8, S-9, S-10, S-11 (CTO command halves and *Rests on*, S-1/S-3 *Why here*); \u00a7 9 TO-1, TO-4, TO-5, TO-6, TO-7, TO-8; \u00a7 10 RC-2 (dated parentheses) and RC-3 new; \u00a7 11 R-4, R-11, R-12, R-13 new; \u00a7 12 SRS boundary, downstream boundary; Open Questions (item 3 replaced, item 5 rewritten, two added); SDD Review Notes RN-60, RN-61 new. Companion: \u00a7 1.1, \u00a7 2.1, \u00a7 2.2 consumed; \u00a7 2.3 drafted (slot the owner's); header note. No slice, slug, *Delivers*, *Moves toward*, fence, \u00a7 7 edge or place in the order moved; no companion item added.",
+      "seat": "cto"
+    },
+    {
+      "changed_text": "SDD \u00a7 4 C-E7 (mechanism sentence); \u00a7 6 S-1 *Reached when*, observable half (the excluded-artifact clause); \u00a7 12 the UXD boundary (the exit taken, what moves in `DESIGN.md`, what was re-read and stands); SDD Review Notes RN-62 (CDO, changed) \u2014 new. No condition, observable, UXD trace, slice or place in the order moved; no \u00a7 10 entry; no companion item added or consumed.",
+      "seat": "cdo"
+    },
+    {
+      "changed_text": "SDD \u00a7 1 (one clause \u2014 the weighing named as redone); \u00a7 5 step 4 E-3 (dated re-read close \u2014 `read-markdown`'s sizing stands); SDD Review Notes RN-63 (CPO, changed) \u2014 new. No slug, *Delivers*, *Moves toward*, fence or PRD trace moved; no companion item added or consumed.",
+      "seat": "cpo"
+    }
+  ],
+  "companion_present_at_intake": true,
+  "companion_retired": false,
+  "consumed_cycle_path": "/Users/eyalgolan/products/nozoki/docs/trail/sdd/cycle-9.md",
+  "core_root": "/Users/eyalgolan/.kensaiapp/pins/20260923T063052Z-ppa1f0/core",
+  "ended": "seats-close",
+  "ended_at": "2026-09-23T11:34:32.729500+00:00",
+  "ended_detail": null,
+  "instance_root": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource",
+  "interruptions": [
+    {
+      "id": "I-1",
+      "round": 1,
+      "spoken": [
+        "cpo"
+      ]
+    },
+    {
+      "id": "I-2",
+      "round": 1,
+      "spoken": [
+        "cpo"
+      ]
+    },
+    {
+      "id": "I-3",
+      "round": 1,
+      "spoken": [
+        "cpo"
+      ]
+    }
+  ],
+  "no_change_rounds": 0,
+  "output_tokens": 0,
+  "output_tokens_under_counted": true,
+  "pending_request": {
+    "cdo": "**What this turn did \u2014 the taken exit read through this seat's lanes against \u00a7 2 as redrawn; three sentences moved, no condition, observable or trace did.**\n\n- **\u00a7 12, the UXD boundary** (`docs/SDD.md:L2451-L2466`) \u2014 the clause the CTO named. It read \"whichever exit the owner takes\" and \"what *would* move under a native renderer\"; it now names the exit (\u00a7 2; \u00a7 10 RC-3; `docs/trail/sdd/cycle-9.md` \u00a7 1.1), records that every `UX-` entry the C-E conditions and the \u00a7 6 observable halves and UXD traces cite was re-read against the AppKit view and binds an observation or a token, never an engine \u2014 so the UXD stands at v10 \u2014 and lists what the exit does move: three sentences of `docs/DESIGN.md` (the realisation sentence at `docs/DESIGN.md:L330`, the CSS font-stack syntax at `:L29-L76` and `:L434-L435`, RN-1 at `:L778`), no token value, in that document's own run, which may trail this one.\n- **\u00a7 4 C-E7** (`:L837-L843`) \u2014 its mechanism sentence said \"C-R7 and C-D3 make it structurally true\". C-R7 as redrawn is a source scan and a link check and says of itself \"not a process boundary: the wall is C-R2's\" (`:L583-L611`), so the pointer now names C-R1, C-R2 and C-D3 as what holds the condition by structure and keeps C-R7 as the scan. The condition's words, sources and *Violated by* are unchanged.\n- **\u00a7 6 S-1 *Reached when*, observable half** (`:L1241-L1246`) \u2014 \"a developer's dev-server window\" is an artifact the taken shape cannot produce; the exclusion is now stated as its class (a build launched from the toolchain outside a signed bundle) with the dev-server window kept as the cited instance.\n- **RN-62** (`:L3511`) \u2014 the three moves, the reason, and what was checked and left alone: S-3's observable half holds under a TextKit view as under a web one (the layout of UX-I12's two hard cells is the CTO's *Open Question*; the bar is UX-I12's and `docs/DESIGN.md` \u00a7 Components \"Rendered Markdown\"'s, neither moved); the cited grep over \u00a7 4's CDO clause, \u00a7 6 and \u00a7 12 finds no engine named in any other observable half or UXD trace. Upstream pinned unmoved: UXD `4d7b653`, DESIGN `269bcf5`, CONTENT `6789e19`.\n\nNo \u00a7 10 entry from this seat \u2014 neither trigger that names me fired (the UXD did not change upstream; no observable half failed as written). No companion item \u2014 nothing here is the owner's to settle; the companion holds \u00a7 2.3 alone, its slot the owner's. Nothing was committed: the commit is the runner's.\n\n**To the CTO:** nothing owed from my side; C-E7's pointer now reads C-R1/C-R2/C-D3 as they stand and asks no change of your clauses. **To the CPO:** nothing named for me in your request; your E-1/E-3 sizing sentences are on disk as recorded.",
+    "cpo": "Nothing further is needed from a tool: the three edits landed, and the checks they rest on were made before writing.\n\nCPO \u2014 round 2. The CTO's successor work is done: step 4's E-3 sentence re-read against \u00a7 2 and C-D3 as redrawn, and `read-markdown`'s sizing confirmed.\n\n**What moved, all in my lanes**\n\n- **\u00a7 5 step 4, E-3** \u2014 a dated close: the three walls are now the containment check, the document as data, and the decoder fed by the check alone (\u00a7 4 C-D3); the decision is still one `read-a-file` never asks \u2014 a plain or highlighted file crosses no content-derived path, no image and no link \u2014 so the sizing stands. The layout question the redraw leaves (how TextKit lays out UX-I12's two hard cells, *Open Questions* third item) is not a second slice: it settles in this slice's first build, its result changes nothing outside the slice (step 4's too-narrow test), and the bar it answers to is the UXD's and does not move with the form found.\n- **\u00a7 1** \u2014 \"\u00a7 2's weighing to redo\" read as work still owed once \u00a7 2 was redrawn; it now says the weighing is \u00a7 2's and was redone under the ruling (\u00a7 2; \u00a7 10 RC-3).\n- **RN-63** \u2014 the provenance, and what was checked and left alone: S-3's *Delivers* holds under a TextKit view; its fence \"raw-source switch \u2014 not built\" rests on \u00a7 9 TO-5, whose judgment the CTO re-read under the native view and kept; the SVG placeholder is C-D3's exclusion, kept; the PRD trace is unchanged. Swift beside Rust reaches no product promise \u2014 `grep -n -i 'swift\\|rust\\|typescript\\|appkit' docs/PRD.md` hits only the highlighting floor's six languages (`docs/PRD.md:L161-L163`), and the Agari names none \u2014 so \u00a7 12's PRD boundary stands as RN-59 wrote it.\n\n**Companion:** nothing added or consumed; it holds \u00a7 2.3 alone, the owner's slot, and no product call is open.\n\n**To the CTO:** the re-read you named is done and the sizing stands; nothing owed from my side. **To the CDO:** nothing named for me in your turn; your S-3 observable-half reading and mine agree \u2014 the layout question is the CTO's, the bar is UX-I12's. My lanes are complete for this run; a change either of you makes that reaches a \u00a7 1 constraint, a step-4 sizing, or a \u00a7 6 CPO field is a recall on that point.",
+    "cto": "Nothing further is needed from a tool: the verification read is complete and every item I needed is on disk.\n\n**Round 2 \u2014 verification only; no edit from this seat.**\n\nThe two peers' round-1 folds were read against the clauses they cite, and each states mine as written:\n\n- **C-E7** (CDO) now grounds the condition on C-R1, C-R2 and C-D3 and names C-R7 as \"the scan\" that shows the shell adds no fetch of its own (`docs/SDD.md` \u00a7 4 C-E7, the mechanism sentence) \u2014 the reading C-R7 gives of itself (\"a source scan and a link check \u2026 not a process boundary: the wall is C-R2's\"). Correct, and it asks no change of my clauses.\n- **\u00a7 1** (CPO) names the weighing as \u00a7 2's, \"redone under that ruling (\u00a7 2; \u00a7 10 RC-3)\" \u2014 true of the document as it stands.\n- **\u00a7 12, the UXD boundary** (CDO) names the exit taken \u2014 an AppKit view in one process \u2014 cites \u00a7 2 and RC-3, and lists what moves in `docs/DESIGN.md`; nothing there claims a change to a CTO lane.\n- **\u00a7 5 step 4 E-3** (CPO) closes against C-D3's three walls as I redrew them; `read-markdown`'s sizing stands, and no slice, edge or place in the order moved.\n\nState of my lanes: \u00a7 2, \u00a7 3, \u00a7 4 (C-R, C-I, C-D), \u00a7 5 steps 3 and 5, \u00a7 6's CTO fields, \u00a7\u00a7 7, 9, 11, \u00a7 12's SRS and downstream boundaries, \u00a7 10 RC-3 and *Open Questions* are as RN-60 and RN-61 record them; `git status` shows `docs/SDD.md` and `docs/SDD_open_issues.md` modified and uncommitted, which is the runner's to commit. The companion holds **\u00a7 2.3 alone** \u2014 drafted into C-I3 and both record lines, its slot the owner's \u2014 so the SDD's `Status:` stays Draft until the owner confirms or overrides it; that stamp is the runner's, not mine. No technical question remains that this run could close: the four *Open Questions* resolve downstream, in `open-a-folder` and `read-a-file` / `read-markdown`'s first builds.\n\nNothing is owed to me and I owe nothing further in this run. The work owed outside the document stands as named (RN-60): the project card's `Languages:` and test command, `README.md:L46-L51`, `docs/DESIGN.md`'s realisation sentences, superseding records for ADR-0001/0002/0006/0009 and the NFDR re-derivation \u2014 none of them any seat's edit here."
+  },
+  "product_path": "/Users/eyalgolan/products/nozoki",
+  "project": "nozoki",
+  "provider": "claude",
+  "queue": [],
+  "recall_outstanding": null,
+  "recall_refusals": [],
+  "recalls_spent": [],
+  "resolved_inputs": {
+    "cdo": [
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "present": false
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/doctrine/writing_bar.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/.kensaiapp/pins/20260923T063052Z-ppa1f0/core/prompts/sdd_conversation_conduct.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/.kensaiapp/pins/20260923T063052Z-ppa1f0/core/templates/product-templates/sdd_template.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/DESIGN.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/CONTENT.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/design_system",
+        "present": false
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/experience/visual_restrictions.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/experience/visual_direction.md",
+        "present": true
+      }
+    ],
+    "cpo": [
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "present": false
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/doctrine/writing_bar.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/.kensaiapp/pins/20260923T063052Z-ppa1f0/core/prompts/sdd_conversation_conduct.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/.kensaiapp/pins/20260923T063052Z-ppa1f0/core/templates/product-templates/sdd_template.md",
+        "present": true
+      }
+    ],
+    "cto": [
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "present": false
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/doctrine/writing_bar.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/.kensaiapp/pins/20260923T063052Z-ppa1f0/core/prompts/sdd_conversation_conduct.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/.kensaiapp/pins/20260923T063052Z-ppa1f0/core/templates/product-templates/sdd_template.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/adr",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/nfdr.md",
+        "present": true
+      }
+    ]
+  },
+  "round": 2,
+  "round_opened": "2026-09-23T11:31:38.242094+00:00",
+  "round_start_snapshot": {
+    "recall_outstanding": null,
+    "recalls_spent": [],
+    "standing_move": {
+      "cdo": {
+        "kind": "no_followup",
+        "target": null,
+        "work": null
+      },
+      "cpo": {
+        "kind": "successor",
+        "target": "cto",
+        "work": "redo \u00a7 2's weighing under the owner's (a) (`docs/trail/sdd/cycle-9.md` \u00a7 1.1): the native view, the seams (\u00a7 3 `surfaces`, SM-4), C-R1/C-R7/C-D3, then drop the companion's \u00a7 1.1 and draft \u00a7 2.3."
+      },
+      "cto": {
+        "kind": "successor",
+        "target": "cpo",
+        "work": "re-read \u00a7 5 step 4's E-3 sentence against \u00a7 2 and \u00a7 4 C-D3 as redrawn (three walls: the check, the document as data, the decoder), and confirm `read-markdown`'s sizing stands."
+      }
+    }
+  },
+  "run": "run-12",
+  "schema_version": 1,
+  "sdd_status": "Draft",
+  "seat_sessions": {
+    "cdo": "e68317ef-7039-4446-abde-5ea995dd9927",
+    "cpo": "a7f48646-657e-4dd0-8042-c0f02c306d72",
+    "cto": "8b9fb2ce-8483-4a37-aa0e-3d674167a171"
+  },
+  "seats": {
+    "cdo": "sdd-nozoki-run12-cdo",
+    "cpo": "sdd-nozoki-run12-cpo",
+    "cto": "sdd-nozoki-run12-cto"
+  },
+  "spoke_at": {
+    "cdo": 5,
+    "cpo": 6,
+    "cto": 6
+  },
+  "standing_move": {
+    "cdo": {
+      "kind": "no_followup",
+      "target": null,
+      "work": null
+    },
+    "cpo": {
+      "kind": "no_followup",
+      "target": null,
+      "work": null
+    },
+    "cto": {
+      "kind": "no_followup",
+      "target": null,
+      "work": null
+    }
+  },
+  "turn_log": [
+    {
+      "changed": true,
+      "changed_text": "SDD \u00a7 1 (one clause \u2014 the weighing named as redone); \u00a7 5 step 4 E-3 (dated re-read close \u2014 `read-markdown`'s sizing stands); SDD Review Notes RN-63 (CPO, changed) \u2014 new. No slug, *Delivers*, *Moves toward*, fence or PRD trace moved; no companion item added or consumed.",
+      "declared": "no_followup",
+      "kind": "ordinary",
+      "no_reply": false,
+      "request_text": "Nothing further is needed from a tool: the three edits landed, and the checks they rest on were made before writing.\n\nCPO \u2014 round 2. The CTO's successor work is done: step 4's E-3 sentence re-read against \u00a7 2 and C-D3 as redrawn, and `read-markdown`'s sizing confirmed.\n\n**What moved, all in my lanes**\n\n- **\u00a7 5 step 4, E-3** \u2014 a dated close: the three walls are now the containment check, the document as data, and the decoder fed by the check alone (\u00a7 4 C-D3); the decision is still one `read-a-file` never asks \u2014 a plain or highlighted file crosses no content-derived path, no image and no link \u2014 so the sizing stands. The layout question the redraw leaves (how TextKit lays out UX-I12's two hard cells, *Open Questions* third item) is not a second slice: it settles in this slice's first build, its result changes nothing outside the slice (step 4's too-narrow test), and the bar it answers to is the UXD's and does not move with the form found.\n- **\u00a7 1** \u2014 \"\u00a7 2's weighing to redo\" read as work still owed once \u00a7 2 was redrawn; it now says the weighing is \u00a7 2's and was redone under the ruling (\u00a7 2; \u00a7 10 RC-3).\n- **RN-63** \u2014 the provenance, and what was checked and left alone: S-3's *Delivers* holds under a TextKit view; its fence \"raw-source switch \u2014 not built\" rests on \u00a7 9 TO-5, whose judgment the CTO re-read under the native view and kept; the SVG placeholder is C-D3's exclusion, kept; the PRD trace is unchanged. Swift beside Rust reaches no product promise \u2014 `grep -n -i 'swift\\|rust\\|typescript\\|appkit' docs/PRD.md` hits only the highlighting floor's six languages (`docs/PRD.md:L161-L163`), and the Agari names none \u2014 so \u00a7 12's PRD boundary stands as RN-59 wrote it.\n\n**Companion:** nothing added or consumed; it holds \u00a7 2.3 alone, the owner's slot, and no product call is open.\n\n**To the CTO:** the re-read you named is done and the sizing stands; nothing owed from my side. **To the CDO:** nothing named for me in your turn; your S-3 observable-half reading and mine agree \u2014 the layout question is the CTO's, the bar is UX-I12's. My lanes are complete for this run; a change either of you makes that reaches a \u00a7 1 constraint, a step-4 sizing, or a \u00a7 6 CPO field is a recall on that point.",
+      "seat": "cpo",
+      "spoke": true
+    },
+    {
+      "changed": false,
+      "changed_text": "nothing",
+      "declared": "no_followup",
+      "kind": "ordinary",
+      "no_reply": false,
+      "request_text": "Nothing further is needed from a tool: the verification read is complete and every item I needed is on disk.\n\n**Round 2 \u2014 verification only; no edit from this seat.**\n\nThe two peers' round-1 folds were read against the clauses they cite, and each states mine as written:\n\n- **C-E7** (CDO) now grounds the condition on C-R1, C-R2 and C-D3 and names C-R7 as \"the scan\" that shows the shell adds no fetch of its own (`docs/SDD.md` \u00a7 4 C-E7, the mechanism sentence) \u2014 the reading C-R7 gives of itself (\"a source scan and a link check \u2026 not a process boundary: the wall is C-R2's\"). Correct, and it asks no change of my clauses.\n- **\u00a7 1** (CPO) names the weighing as \u00a7 2's, \"redone under that ruling (\u00a7 2; \u00a7 10 RC-3)\" \u2014 true of the document as it stands.\n- **\u00a7 12, the UXD boundary** (CDO) names the exit taken \u2014 an AppKit view in one process \u2014 cites \u00a7 2 and RC-3, and lists what moves in `docs/DESIGN.md`; nothing there claims a change to a CTO lane.\n- **\u00a7 5 step 4 E-3** (CPO) closes against C-D3's three walls as I redrew them; `read-markdown`'s sizing stands, and no slice, edge or place in the order moved.\n\nState of my lanes: \u00a7 2, \u00a7 3, \u00a7 4 (C-R, C-I, C-D), \u00a7 5 steps 3 and 5, \u00a7 6's CTO fields, \u00a7\u00a7 7, 9, 11, \u00a7 12's SRS and downstream boundaries, \u00a7 10 RC-3 and *Open Questions* are as RN-60 and RN-61 record them; `git status` shows `docs/SDD.md` and `docs/SDD_open_issues.md` modified and uncommitted, which is the runner's to commit. The companion holds **\u00a7 2.3 alone** \u2014 drafted into C-I3 and both record lines, its slot the owner's \u2014 so the SDD's `Status:` stays Draft until the owner confirms or overrides it; that stamp is the runner's, not mine. No technical question remains that this run could close: the four *Open Questions* resolve downstream, in `open-a-folder` and `read-a-file` / `read-markdown`'s first builds.\n\nNothing is owed to me and I owe nothing further in this run. The work owed outside the document stands as named (RN-60): the project card's `Languages:` and test command, `README.md:L46-L51`, `docs/DESIGN.md`'s realisation sentences, superseding records for ADR-0001/0002/0006/0009 and the NFDR re-derivation \u2014 none of them any seat's edit here.",
+      "seat": "cto",
+      "spoke": true
+    }
+  ]
+}
