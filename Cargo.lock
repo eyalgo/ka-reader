@@ -1886,6 +1886,9 @@ name = "nozoki-bridge"
 version = "0.0.0"
 dependencies = [
  "log",
+ "nozoki-core",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
