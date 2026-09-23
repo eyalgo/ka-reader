@@ -48,7 +48,7 @@
   QC-11's two stated edges (`markdown-renderer` → `fs-reader`'s check, `markdown-renderer` →
   `highlighter`) are the SDD's own words. Whichever the SDD's seat states, QC-10 and § 1.3's
   ownership follow by transcription.
-- **Answer:** <the owner fills this in>
+- **Answer:** Reading (a), carried to the SDD's companion as `docs/SDD_open_issues.md` § 2.4 (`nozoki@5e6198c`), because the sentence that settles this is the SDD's. `folder-model` calls `highlighter` and `markdown-renderer` on the bytes `fs-reader` returned, and holds a failed call as the item's `failed(condition)`. `core-bridge`'s row is what rules out (b): it must not own read logic, nor "anything the harness could not exercise through SM-5", and SM-5 is `folder-model`'s API. Nothing in these records moves yet. QC-10 stays as written until the SDD folds § 2.4. On that fold, QC-10's may-import set gains `markdown-renderer` and `highlighter`, its exclusion of `markdown-renderer` is retired, and its exclusions of `own-state` and the libgit2 binding stand. QC-11 and ADR-0016 do not move. Decided in the owner's seat by a `companion-self-answer` run, 2026-09-23. The reasoning is in `docs/trail/architecture/self_answer-12.md` § 1.1.
 
 ## 2. Choices to confirm — the Principal Architect drafted a best-effort answer; confirm or override
 
@@ -119,4 +119,4 @@
   else moves. *Reject a record's alternative or consequence* — say which; it is revised at Proposed.
   The four superseded records do not move under any override until a superseding record is
   accepted.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm, with one addition. Accept ADR-0013, ADR-0014, ADR-0015 and ADR-0016 as drafted. Each supersedes the record it restates (ADR-0001, ADR-0002, ADR-0006, ADR-0009), which are exactly the four `docs/SDD.md` § 10 RC-3 says are owed. Accept ADR-0012 as revised against C-I3 at v13, and accept the re-derived constraint set. **Addition:** two entries still describe the previous shape. QC-2's *verified by* says `checks/read-only.sh` runs "after every IPC command". QC-30's boundary set still lists "the renderer's IPC commands and asset requests", although RN-22 counts QC-30 as re-derived. Both are bound by ADR-0013 on acceptance, and ADR-0013 has no IPC. On the fold, QC-2 should say "after every function the build exports, driven through SM-5" (C-I3's own words, "every command the build grants (C-R7) through SM-5"). QC-30's member should read "the `SM-4` functions the shell calls, `asset_bytes` among them". One count in the NFDR is also wrong. The header's `Version:` line and RN-22 both say "three items await the owner", but this file carries two (§ 1.1 and § 2.3). The acceptance does not depend on § 1.1's answer: ADR-0016 places every part in `nozoki-core` either way. Decided in the owner's seat by a `companion-self-answer` run, 2026-09-23. The reasoning is in `docs/trail/architecture/self_answer-12.md` § 2.3.
