@@ -248,4 +248,42 @@
   record carries the new renderer gate is the Principal Architect's to decide
   (`docs/architecture_open_issues.md` § 2.1). If a new record supersedes ADR-0010 for that gate,
   this citation moves again at that fold.
+- **Confirm or override:** confirm — the draft holds as it stands: `docs/SDD.md:L620` now names
+  the record in force, and RC-1's dated parenthesis is true against `docs/nfdr.md:L246-L252`.
+  Decided in the owner's seat by a `companion-self-answer` run, 2026-09-23; the reasoning is
+  `docs/trail/sdd/self_answer-20.md` § 2.1.
+
+> **No `product-sdd` run wrote this item either. A `companion-self-answer` run raised it on
+> 2026-09-23** while it answered §§ 1.1 and 2.1 above. That run read `SDD.md` whole at v12 and found
+> § 10 RC-2 still giving the reason for refusing (c) that the CTO withdrew at run 11 (RN-56). No item
+> asked about it. **Nothing is drafted into the SDD.** This run writes no document, so the slot below
+> is the owner's, and the change is the CTO's to draft on the fold.
+
+### 2.2 § 10 RC-2 still gives the reason for refusing (c) that the CTO withdrew at run 11
+- **Raised by:** the `companion-self-answer` run, 2026-09-23 — not one of the SDD's three seats
+- **Drafted into the SDD:** Nothing yet. The proposed change: in § 10 RC-2's *Observed reality*,
+  the sentence "which this seat reads as a network entitlement under another name: the service it
+  opens is the one WebKit's own check treats as network access" (`docs/SDD.md:L2053-L2055`) keeps
+  its words. It gains a dated parenthesis, the shape RC-1's *Changed* took at v12 (RN-56). The
+  parenthesis says the ground was withdrawn at run 11 and names the corrected one: the
+  `mach-lookup` is only a stand-in in `checkEntitlements` and opens nothing by itself. What passing
+  it starts is WebKit's Networking process, whose own sandbox profile allows outbound TCP and UDP
+  unless `BlockNetworkAccess` is set. The parenthesis points at RN-56 and the companion's § 1.1
+  rather than restating the WebKit citations. RN-52's matching sentence (`docs/SDD.md:L2973-L2976`)
+  stays as it is, because a note is dated history (RN-55).
+- **Rationale:** RC-2 is the record a reader opens to learn why (c) is refused. It still gives the
+  reason the CTO has said "does not hold as stated" (companion § 1.1, the CTO's run-11 addition;
+  RN-56). Three sources confirm the withdrawal. WebKit's check performs no lookup. It asks the
+  sandbox whether the host *may* look up `com.apple.nsurlsessiond`, with `SANDBOX_CHECK_NO_REPORT`
+  (`Source/WebKit/Shared/EntryPointUtilities/Cocoa/XPCService/XPCServiceEntryPoint.mm`, WebKit
+  `bb75cbc0003033ea73c42ef02370767aa52d6ba6`, unchanged on `main`, re-read 2026-09-23). The
+  Networking process sets `BlockNetworkAccess` only from the host's `network-outbound` state, and
+  on macOS only past a linked-on-or-after check (`NetworkProcessCocoa.mm:L90-L121` at the same
+  commit). The CDO's and the CPO's positions have both moved to the corrected ground (RN-57,
+  RN-58). RC-2 is the one place in the document that still carries the old one. It costs no
+  extra cycle, because it rides the fold § 2.1's answer already owes.
+- **If overridden:** RC-2 keeps giving a ground its own author withdrew. A reader who follows it
+  there, rather than to the companion, would refuse (c) for the service's name. The owner's
+  choice on § 1.1 does not move either way, because every seat now refuses (c) on the corrected
+  ground.
 - **Confirm or override:** <"confirm", or "override: <what to do instead>">
