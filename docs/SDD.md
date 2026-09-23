@@ -6,7 +6,7 @@
        signal, and the state a finished SDD carries; the open-issues file is gone.
      Locked = ratified as the source of truth. -->
 **Owner:** CTO · CPO · CDO — one run, three seats
-**Version:** 13 — CPO: SDD § 1 (read-only constraint — the cycle-9 ruling added as a fixed constraint); § 5 step 4 E-1 and E-3 (dated sizing sentences under (a)); § 12 the PRD boundary (exit taken, product cost named); SDD Review Notes RN-59 (CPO, changed) — new. No slice, slug, *Delivers*, *Moves toward*, fence or PRD trace moved; no companion item added or consumed.; CPO: nothing this turn — the previous turn's edits (SDD § 1; § 5 step 4 E-1 and E-3; § 12 the PRD boundary; SDD Review Notes RN-59) are verified on disk and stand as recorded there.; CPO: nothing this turn — the previous turn's edits (SDD § 1; § 5 step 4 E-1 and E-3; § 12 the PRD boundary; SDD Review Notes RN-59) are verified on disk and stand as recorded there.; CTO: SDD § 2 (forces 3–6, table, placement, view-language paragraph, *Undoing it*); § 3 (parts table — `markdown-renderer`, `highlighter` new, `core-bridge`, `mac-shell`, `surfaces`, `read-only-harness`; units paragraph and table; SM-4 – SM-7, SM-8 new; deliverables paragraph; `FileView`, `MarkdownDocument`); § 4 C-R1, C-R2, C-R5, C-R6, C-R7, C-I2, C-I3, C-I6, C-D3; § 5 step 5; § 6 S-1, S-2, S-3, S-6, S-7, S-8, S-9, S-10, S-11 (CTO command halves and *Rests on*, S-1/S-3 *Why here*); § 9 TO-1, TO-4, TO-5, TO-6, TO-7, TO-8; § 10 RC-2 (dated parentheses) and RC-3 new; § 11 R-4, R-11, R-12, R-13 new; § 12 SRS boundary, downstream boundary; Open Questions (item 3 replaced, item 5 rewritten, two added); SDD Review Notes RN-60, RN-61 new. Companion: § 1.1, § 2.1, § 2.2 consumed; § 2.3 drafted (slot the owner's); header note. No slice, slug, *Delivers*, *Moves toward*, fence, § 7 edge or place in the order moved; no companion item added.; CDO: SDD § 4 C-E7 (mechanism sentence); § 6 S-1 *Reached when*, observable half (the excluded-artifact clause); § 12 the UXD boundary (the exit taken, what moves in `DESIGN.md`, what was re-read and stands); SDD Review Notes RN-62 (CDO, changed) — new. No condition, observable, UXD trace, slice or place in the order moved; no § 10 entry; no companion item added or consumed.; CPO: SDD § 1 (one clause — the weighing named as redone); § 5 step 4 E-3 (dated re-read close — `read-markdown`'s sizing stands); SDD Review Notes RN-63 (CPO, changed) — new. No slug, *Delivers*, *Moves toward*, fence or PRD trace moved; no companion item added or consumed.
+**Version:** 14 — CPO: nothing — verification only; no SDD section, slice or companion item altered.; CTO: SDD § 3 (`folder-model` row — *Owns* and *Must not own*; the units paragraph's edge sentence); § 4 C-R2 and C-I3 (record lines, no status word); § 6 S-3 *Reached when*, command half (`asset_bytes` assertion moved to the bridge crate's command); § 12 the downstream boundary (record count, status sentence, QC-10 follow-on); SDD Review Notes RN-64 (CTO, changed) — new. Companion: § 2.3 consumed (on the trail, `docs/trail/sdd/cycle-10.md`); § 2.4 drafted (slot the owner's); header note and § 2.4 preface updated. No slice, slug, *Delivers*, *Moves toward*, fence, seam, § 7 edge or place in the order moved; no companion item added.; CPO: nothing — verification only; no SDD section, slice or companion item altered.; CTO: nothing — verification only; every round-1 edit (SDD § 3 `folder-model` row and units edge; § 4 C-R2, C-I3 record lines; § 6 S-3 command half; § 12 downstream boundary; RN-64; companion § 2.3 consumed, § 2.4 drafted) is verified on disk and stands as recorded.
 Version 8 — CTO: § 4 C-I3 (bounded window, first-ask-all-three pass, script-fixed and printed bound with no number here, per-ask live-pid check, uncovered yes→no case, control `no` for the whole window, error-on-any-ask, denial-as-proof clause narrowed to where the control reports the denials allowed with the hosted runner's read denial stated as separating nothing, Violated by extended); § 10 RC-1 Still unresolved (pointer to RN-48); § 11 R-8 shows up as and response; Open Questions (fourth item closed and removed — four remain); SDD Review Notes RN-48 (new). Companion items added: none. docs/SDD_open_issues.md removed, empty of items.
 Version 7 — CTO: § 3 SM-4 (what crosses, and owner cell wording); § 4 C-R7 (the staged grant, set equality against registered commands, asset-scheme keying, named pre-1.0.0 uncovered case, Violated by); § 4 C-I3 (every command the build grants); § 6 S-7 Reached when, command half; SDD Review Notes RN-47 (new). Companion items added: none. docs/SDD_open_issues.md removed, empty of items.
 Version 6 — CTO: § 4 C-I3 (observable and Violated by); § 6 open-a-folder Reached when, command half; § 10 RC-1 (new, first re-cut entry); § 11 R-8 shows up as; Open Questions fourth item (closed, replaced by the hosted-runner question); SDD Review Notes RN-45 (new). Companion items added: none. docs/SDD_open_issues.md removed, empty of items.; CPO: § 5 step 4 (E-1's sizing sentence); SDD Review Notes RN-46 (new). Companion items added: none.
@@ -321,7 +321,7 @@ interpret gives a different answer twice over the same settled text. Leave both 
 | `fs-reader` | crates/nozoki-core | Listing a folder's entries and reading a file's bytes, each returning its outcome as data (bytes, or the condition observed); the text rule — bytes decode as UTF-8, with or without a byte-order mark, or begin with a UTF-16 byte-order mark and decode as UTF-16, and the file is text; otherwise it is *cannot-display-as-text* (`docs/SRS.md` FR-10) — no encoding is detected from content, no third encoding is admitted, one undecodable sequence makes the file not text, and an empty file is text (the owner's value, RN-41); the extension map that names a floor language or *plain* (FR-29; the set is § 4 C-I5); the **containment check** — a canonical path, symlinks resolved and percent-decoding applied, is inside the granted folder or it is refused — run before any open, for every path derived from content or from outside | Any write. Git, in any form. Watching. Markdown. Deciding what a change means |
 | `git-reader` | crates/nozoki-core | The **Git port** — `probe(folder)` answering `root` or `plain` with discovery disabled and never a path above the folder (FR-33); on a root only, `state()` (branch or detached identifier, the short status word), `status()` (changed and staged entries), `diff(kind, path)` and `walk(tips, window)` (beyond v1) — every method read-only and returning plain data — and its one adapter, libgit2 linked without its HTTPS and SSH transports. The installed-`git` adapter, run with `--no-optional-locks`, is the port's standing substitute and is not built ahead of the risk that needs it (§ 11 R-1) | Any mutating call — checkout, index write, ref update, lock file. Spawning a process. The model. A file outside Git's own on-disk layout |
 | `watcher` | crates/nozoki-core | One FSEvents subscription on the granted folder, the root's `.git` entry included, delivering coalesced change events as paths; nothing else | Reading content. Interpreting a change. Any write |
-| `folder-model` | crates/nozoki-core | The in-memory model of exactly one folder (FR-1): the tree, the selection and expansion, the open file, the Git state where the root finding says `root` and none where it says `plain`; every read held as an item carrying an `ItemState` (§ 4 C-I1); the **reducer** that applies reader results and watcher events and keeps the reader's place (FR-27); **replace-whole** — a new folder replaces the model as a value, never mutates it (NFR-12); the projections the surfaces draw; and the plain Rust API the host wraps and the harness calls (SM-5) | I/O of any kind. The Tauri runtime. Own state. Rendering |
+| `folder-model` | crates/nozoki-core | The in-memory model of exactly one folder (FR-1): the tree, the selection and expansion, the open file, the Git state where the root finding says `root` and none where it says `plain`; every read held as an item carrying an `ItemState` (§ 4 C-I1); the **reducer** that applies reader results and watcher events and keeps the reader's place (FR-27); **the fill of the open `FileView`** — the model calls `highlighter` for a text file in a floor language and `markdown-renderer` for a Markdown file, on the bytes `fs-reader` returned, and holds a call that fails as that item's `failed(condition)`, never a panic (§ 4 C-I1; `docs/SRS.md` FR-8, FR-30, DR-6; drafted on the companion's § 2.4, RN-64); **replace-whole** — a new folder replaces the model as a value, never mutates it (NFR-12); the projections the surfaces draw; and the plain Rust API the host wraps and the harness calls (SM-5) | I/O of any kind. Any Apple framework. Own state. Drawing |
 | `markdown-renderer` | crates/nozoki-core | Markdown → a **typed document**, from bytes `fs-reader` read: a `MarkdownDocument` (*What the system holds*, below) whose node kinds are a closed set and never markup — heading, paragraph, list, quote, rule, fenced code with its language and `highlighter`'s spans; an image whose reference passes the containment check carrying that folder-relative path, every other image a placeholder node carrying the condition observed; an external link an inert node with its destination readable; a relative link a node carrying its target path; raw HTML in the source a text node (`docs/SRS.md` FR-30, FR-32, NFR-16; `docs/UXD.md` UX-I12) | Any network. Emitting a URL of any scheme. Markup of any kind. Reading the file itself, or an image's bytes. The raw-source view (§ 9 TO-5) |
 | `highlighter` | crates/nozoki-core | Text and a floor language → spans, each a byte range and one of the five token classes `docs/DESIGN.md` § Colors names (keyword, string, number, comment, name), for the reading panel's code treatment and for a fenced block in a `MarkdownDocument`; the six grammars compiled into the library — which grammar engine compiles them is a dependency decision under § 4 C-R6, made in the slice that lands it (*Open Questions*) (FR-8, FR-29; § 4 C-I5) | Reading a file. Naming the language — that is `fs-reader`'s extension map. Drawing. A seventh grammar with no floor language behind it |
 | `own-state` | crates/nozoki-core | The tool's own remembered state — theme, window frame, and beyond v1 the remembered folders as security-scoped bookmarks with display names and which was viewed last — read whole or discarded whole, written only inside the app's container (FR-21, DR-5) | Anything of the folder's content. The diagnostic log. A path outside the container |
@@ -343,6 +343,9 @@ only unit that imports AppKit, declaring no package dependency and linking `libn
 `own-state` and the bridge's log writer write anything; the readers, the watcher, the highlighter
 and the renderer import neither the model nor one another, with two stated edges —
 `markdown-renderer` calls `fs-reader`'s containment check, and `highlighter` for a fenced block.
+The model calls down to `markdown-renderer` and `highlighter` to fill a `FileView`, and neither
+of them imports the model — the one edge from the model into the two, in that direction only
+(drafted on the companion's § 2.4, RN-64).
 
 <**Part** is a **slug**, and what makes one usable is not cosmetic. **Lowercase letters and digits,
 single hyphens between them, and nothing else**, written in backticks — no capital, no space, no
@@ -529,10 +532,11 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   by:* a network entitlement of any kind on any build; an entitlement
   outside the named set with no record naming its need; a build whose bundle the probe (C-I3)
   finds unsandboxed, or reports the out-of-grant read or the outbound connection allowed. The
-  record is ADR-0011 — Proposed, superseding ADR-0003 on acceptance (`docs/adr/README.md`, its
-  row) — which restates the wall under this rule; until it is Accepted, ADR-0003 is the record in
-  force and this condition departs from it on the one word *exactly* (RN-52; the record line
-  drafted on the companion's § 2.3, RN-61).
+  record is ADR-0011, superseding ADR-0003 — its status is the index row's
+  (`docs/adr/README.md`, its row) and this line states none — which restates the wall under this
+  rule; until it is Accepted, ADR-0003 is the record in force and this condition departs from it
+  on the one word *exactly* (RN-52; the record line drafted on the companion's § 2.3, RN-61, and
+  confirmed with the owner's addition, RN-64).
 - **C-R3.** The folder is **granted, never typed**. In v1 the host presents the system Open panel
   at launch; the folder chosen is the session's (FR-2). The panel dismissed without a choice shows
   UX-S4's startup surface in the window, with its two routes — choose again, which presents the
@@ -706,9 +710,10 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   and a window that draws on a bundle the wall is not proven on is the shape unchosen (§ 5 step
   4, E-1). Whether the observation reads the same on a GitHub-hosted macOS runner is unmeasured
   (*Open Questions*).
-  The record is ADR-0010; the renderer gate's own record is ADR-0012 — Proposed
-  (`docs/adr/README.md`, its row) — whose mechanism, control and observable's name are re-derived
-  from this clause as it now reads (RN-61). *Violated by:* a build that skips a script, a bundle probe run without
+  The record is ADR-0010; the renderer gate's own record is ADR-0012 — its status is the index
+  row's (`docs/adr/README.md`, its row) and this line states none — whose mechanism, control and
+  observable's name are re-derived from this clause as it now reads (RN-61; confirmed with the
+  owner's addition, RN-64). *Violated by:* a build that skips a script, a bundle probe run without
   its negative control, a probe that reads the report once, an ask judged on a pid that no longer
   names a process, a control passed on fewer asks than the window, a bound not printed on a red
   run that ended because the window ran out or on a pass, a failed-ask run that does not name
@@ -1420,8 +1425,10 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   folder-relative path — and the remote, `..` and symlink-out references are each a placeholder
   node carrying *outside the folder* and the SVG a placeholder carrying *a format not decoded*
   (C-D3); the external link is an *external* node with its destination; the relative link a
-  *relative* node with its target path; and `asset_bytes` returns the PNG's bytes for its path and
-  a refusal for every escaping path, on a second call with the same inputs (SM-7).
+  *relative* node with its target path. `cargo test --locked -p nozoki-bridge --test asset_bytes`
+  passes: `asset_bytes` returns the PNG's bytes for its path and a refusal for every escaping
+  path, on a second call with the same inputs (SM-7) — tested in the bridge's crate, where § 3
+  places the function (RN-64).
   `open_relative_link` and `asset_bytes` join `SM-4`'s list and the exports (`--test exports`
   passes with the wider set); `swift test --package-path nozoki-mac` includes a Markdown-treatment
   test that a *resolved* image node is drawn from the bytes `asset_bytes` returned and a
@@ -2473,8 +2480,8 @@ C-E condition, no observable half and no *Traces to* UXD clause in § 6 moved fo
 RN-62).
 
 **The downstream boundary.** This document authors no ADR and designs no individual change. The
-decision log already holds nine records written from the previous SDD
-(`docs/adr/README.md`, ADR-0001 – ADR-0009); this run's § 2 table, § 9 and the Review Notes are
+decision log holds sixteen records (`docs/adr/README.md`, ADR-0001 – ADR-0016, read 2026-09-23),
+the first nine written from the previous SDD; this run's § 2 table, § 9 and the Review Notes are
 the three surfaces the Principal Architect reads, and where a decision here lands where a record
 already stands, the record is cited rather than re-surfaced (RN-1). Where this document departs
 from a record, the departure is a Review Note naming the record — and after the owner's (a) the
@@ -2482,9 +2489,12 @@ departures are these, every one surfaced for a superseding record and none writt
 two-process shape and ADR-0002's runtime, renderer and view language (§ 2; § 10 RC-3; RN-60);
 ADR-0006's sanitizer and asset scheme (§ 4 C-D3; RN-60); ADR-0009's unit set (§ 3; RN-60); and
 C-R2's departure from ADR-0003's "exactly these entitlements" on the owner's cycle-8 ruling
-(RN-52), which ADR-0011 restates and supersedes on acceptance (RN-61). ADR-0012's gate stands as
+(RN-52), which ADR-0011 restates and supersedes (RN-61). ADR-0012's gate stands as
 decided — observed from the process, a control that goes red, after the wall probe — and its
-mechanism, control and observable's name are re-derived from C-I3 as it now reads (RN-61). The
+mechanism, control and observable's name are re-derived from C-I3 as it now reads (RN-61). What
+status either record holds is the index row's to say and never this document's: C-R2's and
+C-I3's record lines cite the row and state no status word (the owner's addition,
+`docs/trail/sdd/cycle-10.md` § 2.3; RN-64). The
 log is append-only: a departure is a superseding record, never an edit. The enforcement store,
 `docs/nfdr.md`, is re-derived from § 4 where the two disagree (§ 4, opening note); the first run
 found no disagreement, one confirmation (C-R5's floor) and one placement it takes from that
@@ -2493,7 +2503,11 @@ which NFDR v10 did (`docs/nfdr.md` § Version, its v10 note); and the (a) fold l
 written against the previous shape to re-derive from §§ 2 – 4 as they now read — QC-21's
 non-invariant (the view technology *was* replaced, once, before any release), QC-23 (the CSP),
 QC-24 (the capability grant), QC-62's mechanism and control, and every entry naming `nozoki-app`,
-`nozoki-ui`, `pnpm` or Vitest (`docs/nfdr.md` § 9) — the Principal Architect's (RN-60). One defect in the records themselves was found and is reported, not
+`nozoki-ui`, `pnpm` or Vitest (`docs/nfdr.md` § 9) — the Principal Architect's (RN-60). The § 3
+draft on the companion's § 2.4 — the model fills the `FileView` by calling `markdown-renderer`
+and `highlighter` — leaves QC-10's import set to follow by transcription once the owner confirms,
+as that entry says of itself (`docs/nfdr.md` QC-10; `docs/architecture_open_issues.md` § 1.1,
+its Answer; RN-64). One defect in the records themselves was found and is reported, not
 repaired from here: 14 citations of the deleted trail across five ADRs, 23 review-note citations
 written against the previous SDD's numbering, and one stale slice reference in `docs/nfdr.md` no
 longer resolve (RN-34) — routed to the Principal Architect, and the reason RN-20 – RN-29 are left
@@ -3587,6 +3601,56 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   call is open. Nothing further is owed from this seat in this run *(re: § 1; § 5 step 4, E-3;
   source: § 2 as redrawn; § 4 C-D3; § 9 TO-5; § 10 RC-3; *Open Questions*, third item;
   `docs/PRD.md` § Core Features; `system/projects/nozoki/agari.md`; RN-8, RN-59, RN-60)*.
+- **RN-64:** *(CTO)* *(changed)* Two folds from the companion (`docs/trail/sdd/cycle-10.md`), one
+  confirmed and one drafted for the owner. **§ 2.3, confirmed with one addition** (the owner's
+  seat, 2026-09-23): the C-I3 wording and the two record lines RN-61 drafted hold, and the record
+  lines drop the status word — C-R2's read "ADR-0011 — Proposed, superseding ADR-0003 on
+  acceptance" and C-I3's "ADR-0012 — Proposed"; each now names its record, says its status is the
+  index row's (`docs/adr/README.md`) and states none. *Because* the index moved under the draft
+  before this fold — ADR-0011 reads `Accepted — supersedes ADR-0003` on 2026-09-23 and ADR-0012
+  still `Proposed`, and ADR-0012 may move again under the RC-3 re-derivation
+  (`docs/architecture_open_issues.md` § 2.3) — so a status word here is a copy of a row that
+  changes without this document, and this companion item was the file's last: the word would
+  have misstated a record with no fold left to correct it. C-R2's conditional, "until it is
+  Accepted, ADR-0003 is the record in force", is true in both states and stays as written, per
+  the addition. § 12's downstream boundary says the same in one sentence, and its count of the
+  log — "nine records", true when written and sixteen on the index today — is corrected on the
+  same walk (`docs/adr/README.md`, the table). **§ 2.4, drafted here for the owner's confirm,
+  reading (a):** `folder-model`'s *Owns* gains the fill of the open `FileView` — the model calls
+  `highlighter` for a text file in a floor language and `markdown-renderer` for a Markdown file,
+  on the bytes `fs-reader` returned, a failed call held as the item's `failed(condition)`; its
+  *Must not own* reads "I/O of any kind. Any Apple framework. Own state. Drawing" where it read
+  "I/O of any kind. The Tauri runtime. Own state. Rendering"; and the units paragraph gains the
+  edge — the model calls down to the two, neither imports the model. *Because* the row for
+  `core-bridge` rules out the other reading: the bridge "must not own read logic — every function
+  delegates and formats" and nothing "the harness could not exercise through SM-5", SM-5 is the
+  model's API driven in-process with no window (§ 4 C-I3), and a parse of untrusted content
+  belongs nowhere near the one unit that holds `unsafe` (§ 11 R-13) — so the value is built in
+  the unit that holds it and the harness reaches it there. "Rendering" was the previous shape's
+  word for what the renderer process did and never named the model's actual bar, which is
+  drawing — `surfaces`' alone (§ 3, its row); "The Tauri runtime" named a runtime § 10 RC-3
+  retired, and "Any Apple framework" is the boundary the units paragraph already states for
+  `nozoki-core`. The model's "I/O of any kind" still holds: neither callee reads anything (their
+  *Must not own*). What the draft leaves to others, named so the fold is not read as complete:
+  `docs/nfdr.md` QC-10's import set follows by transcription on the owner's confirm — the
+  Principal Architect's, and that entry says so of itself; `docs/architecture_open_issues.md`
+  § 1.1's Answer already routes to this item. No slice, slug, *Rests on*, § 7 edge or place in
+  the order moves: S-2 and S-3 name behaviour and never a unit, and the call sits inside
+  `nozoki-core`, which every slice already links. **Found on the same walk, in this seat's own
+  field:** S-3's command half had `cargo test --locked -p nozoki-core --test markdown` asserting
+  what `asset_bytes` returns, and § 3 places `asset_bytes` in `core-bridge`, `crates/nozoki-bridge`
+  — a command that cannot reach the function it names; the assertion now runs as `cargo test
+  --locked -p nozoki-bridge --test asset_bytes`, the `MarkdownDocument` assertions stay in the
+  core crate, and nothing S-3 delivers or fences moves (`docs/nfdr.md` RN-22 saw it and left it
+  to this run; QC-37 cites the command as the SDD states it and follows in that document's own
+  run). The companion after this turn holds § 2.4
+  alone, its slot the owner's; § 2.3 leaves it, consumed and on the trail *(re: § 3 `folder-model`
+  row, the units paragraph's edges; § 4 C-R2 and C-I3, the record lines; § 6 S-3 *Reached when*,
+  command half; § 12 the downstream
+  boundary; the companion's §§ 2.3 – 2.4; source: `docs/trail/sdd/cycle-10.md` §§ 2.3, 2.4;
+  `docs/adr/README.md` rows ADR-0011, ADR-0012; `docs/nfdr.md` QC-10, RN-22;
+  `docs/architecture_open_issues.md` § 1.1, § 2.3; `docs/SRS.md` FR-8, FR-30, DR-6; § 3
+  `core-bridge` row, SM-5; § 4 C-I1, C-I3; § 11 R-13; RN-52, RN-56, RN-60, RN-61)*.
 
 ---
 
