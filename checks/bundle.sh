@@ -18,8 +18,9 @@
 #   checks/bundle.sh target/release/bundle/macos/Nozoki.app
 #   checks/bundle.sh --negative-control <path-to-app>
 #     The control: the same launch-and-probe path, but the bundle's entitlement set must be EMPTY and
-#     the run passes only when the operating system reports the launched process NOT sandboxed. It
-#     cannot pass on a bundle carrying the C-R2 keys, so it is not a route past the gate above. It
+#     the run passes only when every report the operating system gives, across the whole probe window,
+#     says the launched process is NOT sandboxed. It cannot pass on a bundle carrying the C-R2 keys, so
+#     it is not a route past the gate above. It
 #     exists because the ordinary path refuses to launch anything but C-R2's set, and a probe that
 #     cannot tell the two builds apart has not run (NFDR QC-25).
 #   Exit 0 only when the entitlement set is exactly the expected one, every value boolean true, and
@@ -285,22 +286,38 @@ pid="$1"
 launched_pid="$pid"
 echo "launched: pid $pid ($bundle_executable)"
 
-# The control asks one thing: is the launched process NOT sandboxed. An entitled build the probe calls
-# sandboxed is the answer the control was built to expect, so the same report on an unentitled build
-# means the probe cannot tell the two apart (CP-59: that is the result, and it is not worked around).
-# The probe's own failure — sandbox_check unresolvable, or an error from it — is neither a pass nor
-# a denial (CP-43): the run ends here, naming what it could not read.
+# The control asks up to PROBE_TICKS times, 0.25 s apart, and passes only when every report in the
+# window says the launched process is NOT sandboxed (CP-69). Any report that does not say so ends the
+# run at once: an entitled build the probe calls sandboxed is the answer the control was built to
+# expect, so that same report on an unentitled build means the probe cannot tell the two apart (CP-59:
+# that is the result, and it is not worked around). The probe's own failure — sandbox_check
+# unresolvable, or an error from it — is neither a pass nor a denial (CP-43): the run ends here, naming
+# what it could not read. No sleep follows the last ask.
 if [ "$negative_control" -eq 1 ]; then
-  if ! probe_output="$("nozoki-sandbox-probe" "$pid" 2> "$work/probe.err")"; then
-    die "the operating system's sandbox report for pid $pid could not be read: $(cat "$work/probe.err")"
-  fi
+  tick=0
+  while :; do
+    tick=$((tick + 1))
+    if ! probe_output="$("nozoki-sandbox-probe" "$pid" 2> "$work/probe.err")"; then
+      die "the operating system's sandbox report for pid $pid could not be read: $(cat "$work/probe.err")"
+    fi
+    case "
+$probe_output
+" in
+      *"
+sandboxed: no
+"*) ;;
+      *) break ;;
+    esac
+    [ "$tick" -lt "$PROBE_TICKS" ] || break
+    sleep 0.25
+  done
   printf '%s\n' "$probe_output"
   case "
 $probe_output
 " in
     *"
 sandboxed: no
-"*) echo "negative control: the operating system reports the launched process not sandboxed (pid $pid)"; exit 0 ;;
+"*) echo "negative control: the operating system reports the launched process not sandboxed within $PROBE_TICKS asks, 0.25 s apart (pid $pid)"; exit 0 ;;
     *) die "the negative control was reported sandboxed (pid $pid): the probe cannot tell a build with the entitlements from one without them" ;;
   esac
 fi
