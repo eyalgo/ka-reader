@@ -1,5 +1,6 @@
 //! nozoki-bridge: the crate's public surface. No implementation lives here.
 
+pub mod boundary;
 pub mod log_writer;
 pub mod session;
 
