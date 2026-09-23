@@ -88,8 +88,11 @@ pub fn install_if_application_bundle() {
     };
     let container = container_path(&home);
     if should_install(&executable, log_writer::directory_exists(&container)) {
-        // A logger already installed by the host is not the bridge's to replace.
-        log_writer::install(&container).ok();
+        // A logger already installed by the host is not the bridge's to replace, and continuing is
+        // correct. The host's logger is the one place the refusal can be said.
+        if let Err(error) = log_writer::install(&container) {
+            log::warn!("the bridge's log writer was not installed: {error}");
+        }
     }
 }
 
