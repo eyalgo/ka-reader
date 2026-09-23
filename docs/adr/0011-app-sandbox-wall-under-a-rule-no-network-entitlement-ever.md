@@ -1,6 +1,6 @@
 # ADR-0011: The App Sandbox is the write-and-network wall, held by a rule and not by a list — no network entitlement ever, a read-only grant on the chosen folder, any other entitlement only with a record — and the folder is granted through the Open panel and never typed
 
-**Status:** Proposed — supersedes ADR-0003 on acceptance
+**Status:** Accepted — supersedes ADR-0003
 **Date:** 2026-09-23
 
 ## Context
@@ -72,11 +72,13 @@ per-folder reconciliation, `nozoki@70a879a:docs/trail/sdd/cycle-1.md` § 2.3).
 
 **What the rule is known to cost.** Under it the system WKWebView does not start in this bundle
 (`docs/SDD.md` § 10 RC-2). Which gives way — the renderer ADR-0002 names, or nothing — was the
-owner's, and the owner has answered it on the SDD's companion: the renderer leaves WKWebView
-(`docs/SDD_open_issues.md` § 1.1, *Answer*, at `nozoki@a1d8f2c`). That answer is not folded into
-the SDD as this record is written — § 4 C-R1 still renders in WKWebView — and what replaces the
-renderer is the SDD's § 2 to weigh. It is recorded here as the cost the rule was chosen with, and
-it lands in this log as its own record when the SDD carries the replacement (§ Consequences).
+owner's, and the owner answered it: the renderer leaves WKWebView (`docs/trail/sdd/cycle-9.md`
+§ 1.1, the owner's (a), 2026-09-23). The SDD has since redone its weighing under the rule and
+carries the replacement — one process, an AppKit shell in Swift, a C-ABI seam in place of IPC
+(`docs/SDD.md` § 2; § 10 RC-3) — and that lands in this log as its own records, ADR-0013 and
+ADR-0014, which restate the shape and the view whole. It is recorded here as the cost the rule was
+chosen with; under one process the rule covers the whole product, because no process the product
+runs has a network profile of its own (`docs/SDD.md` § 4 C-R2).
 
 ## Alternatives ruled out
 
@@ -88,7 +90,7 @@ it lands in this log as its own record when the SDD carries the replacement (§ 
   draw (the sample table's third row) and refused by the owner (answer 1): granting it makes "no
   network" a promise the code keeps, which is the thing the wall exists to rule out. ADR-0003 ruled
   it out on a weaker ground — nothing needs a connection (`docs/SRS.md` § 4.3 NFR-8) — that no
-  longer holds: something does need it, and it is refused all the same.
+  longer holds: something did need it, and it is refused all the same.
 - **The mach-lookup exception alone** — `com.apple.security.temporary-exception.mach-lookup.global-name`
   for `com.apple.nsurlsessiond`, which passes WebKit's check with no network entitlement by name.
   Refused for what passing the check starts, not for the service's name: WebKit's Networking
@@ -97,7 +99,7 @@ it lands in this log as its own record when the SDD carries the replacement (§ 
   linked against — so on the macOS 14 floor the page would sit behind a process the operating system
   lets connect, with only the CSP between it and the network; and the bundle probe, which asks about
   the host's pid, would stay green without seeing it (`docs/SDD.md` RN-56;
-  `docs/trail/sdd/self_answer-19.md`; the CTO's corrected ground in `docs/SDD_open_issues.md`
+  `docs/trail/sdd/self_answer-19.md`; the CTO's corrected ground in `docs/trail/sdd/cycle-9.md`
   § 1.1). The CPO's product ground stands beside it: an entitlement naming the network daemon on
   the file a reviewer reads, and a README proof sentence the harness could not back
   (`docs/SDD.md` RN-58).
@@ -106,7 +108,7 @@ it lands in this log as its own record when the SDD carries the replacement (§ 
   exit (d) on the SDD's companion: the read-only entitlement goes and the OS wall goes with it.
 - **Waiting for Apple to drop the check** — WebKit's own FIXME says the check goes "once WebKit can
   work without network access"; the radar is from 2019, the file is unchanged since 2026-01-29, and
-  the Agari's third condition cannot wait on a date nobody has given (`docs/SDD_open_issues.md`
+  the Agari's third condition cannot wait on a date nobody has given (`docs/trail/sdd/cycle-9.md`
   § 1.1, exit (e); `docs/trail/sdd/self_answer-20.md`).
 
 ## Consequences
@@ -120,15 +122,15 @@ a violation, and a network entitlement is a violation whatever record claims it.
 Harder: the Open panel is the start, which can read as a setup step to a stranger (`docs/SDD.md`
 § 11 R-9); remembering a folder needs bookmarks; a linked worktree or a submodule whose Git
 directory lies outside the granted folder cannot be read past the grant (`docs/SDD.md` § 11 R-3;
-`docs/fdr.md` R-21) — unchanged from ADR-0003. New: the renderer ADR-0002 names cannot start under
-this rule, so the runtime decision is reopened by the owner's answer, and until the SDD carries the
-replacement no build meets `open-a-folder`'s command bar (`docs/SDD.md` § 6 S-1) and every later
-slice waits on it (§ 7). And the wall gate's green is no longer read as a bundle a person can use —
-that is ADR-0012's gate, which runs beside this wall's probe.
+`docs/fdr.md` R-21) — unchanged from ADR-0003. New: the renderer ADR-0002 named could not start
+under this rule, so the view was replaced — the price is on ADR-0014 and `docs/SDD.md` § 10 RC-3 —
+and until the native shell lands, no build meets `open-a-folder`'s command bar (`docs/SDD.md` § 6
+S-1) and every later slice waits on it (§ 7). And the wall gate's green is no longer read as a
+bundle a person can use — that is ADR-0012's gate, which runs beside this wall's probe.
 
 What undoing it costs: one entitlements file — and the wall (`docs/SDD.md` § 9 TO-3); and now a
 reversal of the owner's ruling, which lands as a record superseding this one, never as an edit to
-`crates/nozoki-app/Entitlements.plist` alone.
+the bundle's `Entitlements.plist` alone.
 
 **What this rests on, and whose it stays.** The App Sandbox, its entitlement semantics and the
 Open-panel grant are Apple's and move with macOS on Apple's schedule, as ADR-0003 said. The rule
@@ -137,20 +139,24 @@ in its XPC services' launch path — Apple's, undated, and the reason the render
 opened. If Apple drops the check, nothing here moves — the rule is about the wall, not the renderer
 — and WKWebView returns to the SDD's § 2 as a candidate. If Apple narrows what a user-selected grant
 covers, what is un-made is the start mechanism (C-R3) and the bookmark path, not the shape
-(ADR-0001), whose renderer still holds nothing. Of the two things ADR-0003 held unverified from
-documents, one has since been measured — the sandbox is enforced under an ad-hoc signature
+(ADR-0013), whose shell still holds no I/O of its own. Of the two things ADR-0003 held unverified
+from documents, one has since been measured — the sandbox is enforced under an ad-hoc signature
 (ADR-0010; `docs/SDD.md` § 10 RC-1) — and the drop / Open-With grant stays an SDD Open Question.
 
 ## Traces to
 
 - `docs/SDD.md` at v12 (`nozoki@6ebdc42`, Draft) — § 1, the read-only bullet; § 4 C-R2 (the rule,
   and "departs from ADR-0003 on the one word *exactly*"), C-R3; § 10 RC-2; § 12, the downstream
-  boundary; § SDD Review Notes RN-51, RN-52, RN-56, RN-58.
+  boundary; § SDD Review Notes RN-51, RN-52, RN-56, RN-58 — the SDD this record was drafted against.
+  Re-read at v13 (`nozoki@b236e7b`, Draft) for acceptance: C-R2 names this record and says ADR-0003
+  is the record in force until it is Accepted; § 10 RC-3 § *Retained* keeps "the sandbox wall,
+  C-R2's rule and the entitlement set" unchanged under the re-cut, so nothing in § Decision moves
+  for it, and the dated paragraph on what the rule cost reads the replacement as the SDD now carries
+  it.
 - `docs/trail/sdd/cycle-8.md` § 5.1 — the owner's ruling: answers 1 and 2 (the rule), answer 3
   (the mechanism owed, and found at RC-2).
-- `docs/SDD_open_issues.md` § 1.1 at `nozoki@a1d8f2c` — the owner's answer that the renderer leaves
-  WKWebView, and the three seats' priced exits; `docs/trail/sdd/self_answer-19.md`,
-  `self_answer-20.md`.
+- `docs/trail/sdd/cycle-9.md` § 1.1 — the owner's answer that the renderer leaves WKWebView, and
+  the three seats' priced exits; `docs/trail/sdd/self_answer-19.md`, `self_answer-20.md`.
 - ADR-0003 — the record this one supersedes; its decision is restated here whole, so nothing in
   this record depends on that one being open. Its traces stand under this record:
   `nozoki@70a879a:docs/trail/sdd/cycle-1.md` § 2.3; `docs/SRS.md` § 4.2 NFR-4, § 4.3 NFR-5, NFR-8,
@@ -160,10 +166,11 @@ documents, one has since been measured — the sandbox is enforced under an ad-h
   `NetworkProcessCocoa.mm:L90-L121` and `com.apple.WebKit.NetworkProcess.sb.in:L492-L496,
   L563-L568` at the same commit — were read at those locators by the SDD's seats and the
   self-answer runs named above; this record transcribes their reading and re-read none of them.
-- `docs/architecture_open_issues.md` § 2.1 — the item that carries this record for the owner's
-  confirm; the record is Proposed until that answer, and ADR-0003 stays in force until then.
+- `docs/trail/architecture/cycle-8.md` § 2.1 — the owner's confirm, given in the owner's seat by a
+  `companion-self-answer` run on 2026-09-23 (its reasoning
+  `docs/trail/architecture/self_answer-11.md` § 2.1): this record accepted as drafted, ADR-0003
+  superseded, and the seven sites that cite ADR-0003 beside QC-25 moved with it.
 
 ## Binds
 
-QC-25. On acceptance, the entries ADR-0003 binds move here with it: QC-2, QC-32, QC-33, QC-35,
-QC-49, QC-58.
+QC-25, QC-2, QC-32, QC-33, QC-35, QC-49, QC-58.

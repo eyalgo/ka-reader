@@ -1,6 +1,6 @@
 # ADR-0003: The App Sandbox is the write-and-network wall, so the folder is granted through the Open panel and never typed
 
-**Status:** Accepted
+**Status:** Superseded by ADR-0011
 **Date:** 2026-09-01
 
 ## Context
