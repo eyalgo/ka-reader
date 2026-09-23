@@ -38,7 +38,9 @@ final class RootItemsViewTests: XCTestCase {
     }
 
     func testDotNamedEntryIsKept() throws {
-        let view = makeView(showing: [Entry(name: ".hidden-note", path: ".hidden-note", kind: .file)])
+        let view = makeView(showing: [
+            Entry(name: ".hidden-note", path: ".hidden-note", kind: .file)
+        ])
 
         XCTAssertEqual(view.outlineView.numberOfRows, 1)
         XCTAssertEqual(try cell(view, row: 0).textField?.stringValue, ".hidden-note")
@@ -76,7 +78,8 @@ final class RootItemsViewTests: XCTestCase {
     }
 
     func testKindDecodesFromTheThreeWireStrings() throws {
-        let wire = #"[{"name":"a","path":"a","kind":"folder"},"#
+        let wire =
+            #"[{"name":"a","path":"a","kind":"folder"},"#
             + #"{"name":"b","path":"b","kind":"file"},"#
             + #"{"name":"c","path":"c","kind":"symlink"}]"#
 
