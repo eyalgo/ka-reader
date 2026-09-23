@@ -7,8 +7,8 @@ public protocol GlyphSource {
 }
 
 /// The glyphs the assembled bundle carries in `Contents/Resources`, found through `Bundle`'s image
-/// lookup. C-R7 admits `Bundle.main` reads inside `Contents/Resources` and forbids
-/// `Data(contentsOf:)` whatever it reads (CP-98).
+/// lookup. C-R7 admits `Bundle.main` reads inside `Contents/Resources` and forbids reading a
+/// file's bytes any other way, whatever the file is (CP-98).
 public struct BundleGlyphSource: GlyphSource {
     public init() {}
 
