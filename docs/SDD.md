@@ -6,7 +6,7 @@
        signal, and the state a finished SDD carries; the open-issues file is gone.
      Locked = ratified as the source of truth. -->
 **Owner:** CTO · CPO · CDO — one run, three seats
-**Version:** 7 — CTO: § 3 SM-4 (what crosses, and owner cell wording); § 4 C-R7 (the staged grant, set equality against registered commands, asset-scheme keying, named pre-1.0.0 uncovered case, Violated by); § 4 C-I3 (every command the build grants); § 6 S-7 Reached when, command half; SDD Review Notes RN-47 (new). Companion items added: none. docs/SDD_open_issues.md removed, empty of items.
+**Version:** 8 — CTO: § 4 C-I3 (bounded window, first-ask-all-three pass, script-fixed and printed bound with no number here, per-ask live-pid check, uncovered yes→no case, control `no` for the whole window, error-on-any-ask, denial-as-proof clause narrowed to where the control reports the denials allowed with the hosted runner's read denial stated as separating nothing, Violated by extended); § 10 RC-1 Still unresolved (pointer to RN-48); § 11 R-8 shows up as and response; Open Questions (fourth item closed and removed — four remain); SDD Review Notes RN-48 (new). Companion items added: none. docs/SDD_open_issues.md removed, empty of items.
 recall outstanding, and `docs/SDD_open_issues.md` no longer stands on disk, so this document is
 stamped Settled. The run consumed the one companion item standing at intake (§ 5.1, whose Answer
 slot had come back filled — "confirm — and it is already done" — since run 4 ended): copied whole
@@ -530,27 +530,41 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   `checks/no-network.sh` diffs `cargo tree` and `pnpm ls` against `deps.allow`. `checks/bundle.sh`
   reads `codesign -d --entitlements :- Nozoki.app` against C-R2's exact list, then launches the
   bundle and takes the pid of the main process this run started — found by its absolute executable
-  path, with no instance of it running beforehand. It fails unless the operating system reports
-  that pid as sandboxed **and** reports two operations denied for it: a file read outside the
-  grant and an outbound network connection. That is the state Apple names as the verification —
-  "verify that the value in the Sandbox column is Yes"
+  path, with no instance of it running beforehand. It then asks the operating system about that
+  pid within a bounded window after launch, and it fails unless one ask inside the window reports
+  the pid as sandboxed **and** reports two operations denied for it: a file read outside the
+  grant and an outbound network connection. The pass is the first ask on which all three hold at
+  once. The bound is the script's to fix and this document states no number; the script prints
+  the bound in the probe's output, so a red run says how long it waited. Every ask first checks
+  that the pid still names a process, because `sandbox_check` answers "sandboxed, everything
+  denied" for a pid that names none (`checks/sandbox_probe.rs:L103-L115`); a process gone before
+  the pass is a failure. One case the window does not cover: a report that turns from `yes` back
+  to `no` after the pass is never read. The sandboxed report is the state Apple names as the
+  verification — "verify that the value in the Sandbox column is Yes"
   (https://developer.apple.com/documentation/security/protecting-user-data-with-app-sandbox) — and
-  the two denials test the wall C-R2 promises rather than a proxy for it. The script reads the
-  state through libSystem's `sandbox_check`, which is exported but is not declared in the SDK's
-  `sandbox.h`: **the mechanism is undocumented, and is held as such.** So a negative control is
-  part of the probe: the script's suite runs it on the same binary built with no entitlements and
-  requires it to fail, and a probe that cannot tell the two apart goes red instead of green. The
-  build also fails when `sandbox_check` is missing or returns an error, when no pid is found, or
-  when more than one is. A container directory that already exists is never evidence, because it
-  survives from an earlier launch. The environment marker this probe first read, and why it was
-  dropped, is § 10 RC-1; the one case still unmeasured is in *Open Questions*. The harness drives
+  the two denials test the wall C-R2 promises rather than a proxy for it where the unentitled
+  control reports them allowed. On a GitHub-hosted macOS runner that holds of the outbound half
+  only: there the out-of-grant read is reported denied for the unentitled control on every ask as
+  well, so on the runner the wall is evidenced by the sandboxed report and the outbound denial, and
+  the read denial separates nothing. Why the runner reports it that way is not known, and whether
+  the one Mac measured reports that read allowed for the control is not recorded (RN-48). The
+  script reads the state through libSystem's `sandbox_check`, which is exported but is not
+  declared in the SDK's `sandbox.h`: **the mechanism is undocumented, and is held as such.** So a
+  negative control is part of the probe: the script's suite runs it on the same binary built with
+  no entitlements and requires it to answer `sandboxed: no` on every ask for the whole window, and
+  a probe that cannot tell the two apart goes red instead of green. The build also fails when
+  `sandbox_check` is missing or returns an error on any ask, when no pid is found, or when more
+  than one is. A container directory that already exists is never evidence, because it survives
+  from an earlier launch. The environment marker this probe first read, and why it was dropped,
+  is § 10 RC-1; the hosted runner, measured on 2026-09-23, is RN-48. The harness drives
   `nozoki-core` and the command list, **not the rendered UI**: Tauri's WebDriver support states
   "macOS has no WKWebView driver tool" (https://v2.tauri.app/develop/tests/webdriver/), so the
   rendered UI's whole-product check is the timed release walk (AC-10) and the renderer's actual
   command use is covered by holding no capability the harness could catch it using (§ 9 TO-7).
   The record is ADR-0008. *Violated by:* a build that skips a script, a bundle probe run without
-  its negative control, a slice that lands a command the harness does not exercise, a release
-  without AC-1 – AC-3 green.
+  its negative control, a probe that reads the report once, an ask judged on a pid that no longer
+  names a process, a control passed on fewer asks than the window, a bound not printed, a slice
+  that lands a command the harness does not exercise, a release without AC-1 – AC-3 green.
 - **C-I4.** **A performance number is measured, never asserted.** `checks/latency.sh` prints
   file-switch and refresh p95 in milliseconds over reference fixtures on every CI build, so the
   figures the SRS folds in by revision exist from the first working build (NFR-1, NFR-2, NFR-10;
@@ -1919,8 +1933,10 @@ silently misses every reversal made mid-build.>
   unsandboxed rebuild.
 - **Still unresolved:** Whether the probe reads the same on a GitHub-hosted macOS runner, which no
   one has measured (`nozoki@ccb58d8`: "I did not test another macOS version or a hosted runner") —
-  carried in *Open Questions*. Why helper processes carry the marker and a main process does not
-  is unexplained by the records; the design no longer rests on it.
+  carried in *Open Questions* when this entry was written; measured on 2026-09-23 and closed at
+  RN-48: the wall holds there, and a read-once probe read too early. Why helper processes carry
+  the marker and a main process does not is unexplained by the records; the design no longer
+  rests on it.
 
 ## 11. Technical risks
 
@@ -1964,11 +1980,16 @@ A risk with no trigger and no response is an observation.>
   from the tag; *response* CI builds from the tag, publishes the checksum, and a release with no
   build from its tag is not offered (C-R4).
 - **R-8:** The sandbox is silently absent under an ad-hoc signature — every test green and the
-  wall gone — *shows up as* `checks/bundle.sh` finding the launched main process not reported
-  sandboxed, or the out-of-grant read or the outbound network connection not denied for it, or the
-  entitlement list not matching; *response* the probe runs
-  on every build from the first slice (C-I3), so the finding arrives with one reader written; a
-  failure there is a re-cut trigger on the gate's mechanism, never on the signature.
+  wall gone — *shows up as* `checks/bundle.sh` finding no ask, within the bounded window C-I3
+  fixes after launch, on which the launched main process is reported sandboxed with the
+  out-of-grant read and the outbound network connection both denied for it — the red run printing
+  how long it waited — or the negative control reported sandboxed on any ask of its window, or
+  the entitlement list not matching; on a GitHub-hosted runner the read denial separates nothing
+  (C-I3), so there the finding rests on the sandboxed report and the outbound denial; *response*
+  the probe runs on every build from the first slice (C-I3), so the finding arrives with one
+  reader written; a failure there is a re-cut trigger on the gate's mechanism, never on the
+  signature; a probe that fails while the wall stands is not this risk — it redraws the probe and
+  no slice (§ 10 RC-1; RN-48).
 - **R-9:** The Open panel reads as a setup step to a stranger — *shows up as* the timed walk
   stalling at launch, or a first-use inspection (NFR-15) recording confusion at the panel;
   *response* the panel *is* the one input NFR-14 admits — which folder — and the README's first
@@ -2616,6 +2637,60 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   SM-4; § 4 C-R7, C-I3; § 6 S-7 *Reached when*, command half; source:
   `docs/trail/sdd/cycle-5.md` § 5.1; `docs/trail/sdd/self_answer-11.md`; `nozoki@1741429`; § 6
   S-11; § 4 C-I6; § 11 R-12; SRS NFR-16, NFR-8, C-6)*.
+- **RN-48:** *(CTO)* *(changed)* § 4 C-I3's bundle probe reads the operating system's report
+  within a bounded window after launch, not once: the pass is the first ask on which the launched
+  main process is reported sandboxed with the out-of-grant read and the outbound connection both
+  denied, every ask first checks that the pid still names a process, the bound is the script's to
+  fix and is printed in the probe's output, and this document states no number. The negative
+  control answers `sandboxed: no` on every ask for the whole window. C-I3's "the two denials test
+  the wall C-R2 promises rather than a proxy for it" is narrowed to where the unentitled control
+  reports them allowed, and C-I3 now says that on a GitHub-hosted macOS runner the read denial
+  separates nothing. § 11 R-8's *shows up as* states the same window, and the fourth *Open
+  Questions* item — whether the probe reads the same on a hosted runner — is closed and removed:
+  the sandbox holds on a hosted runner, and the probe read too early. § 10 RC-1's *Still
+  unresolved* gains the pointer here, because its "carried in *Open Questions*" would otherwise
+  lead a cold reader to nothing. *Because* the hosted runner was measured on 2026-09-23 and the
+  measurement was neither of the two outcomes the item named. A temporary CI diagnostic (product
+  branch `ci-sandbox-diagnostic`, `nozoki@247b5ed`) launched a bundle and asked
+  `checks/sandbox_probe.rs` five times, 0.25 s apart. GitHub Actions run 35797893381 (`macos-14`,
+  read with `gh run view 35797893381 --log` on 2026-09-23 by the answering run): the real bundle
+  `sandboxed: no` with the outbound connection allowed on ask 1, then `sandboxed: yes` with both
+  denied on asks 2–5; the unentitled copy `sandboxed: no` on all five, with the out-of-grant read
+  reported `denied` on every one; the same run's one-ask *Bundle probe* step failed on pid 18980,
+  `sandboxed: no`. Run 35794012057 answered `yes` on all 60 asks of three launches. On the owner's
+  Mac the same diagnostic's re-signed copy answered `no` on ask 1 and `yes` on asks 2–5 — taken
+  from the item's own record (`docs/trail/sdd/cycle-6.md` § 5.1); this seat did not measure it. A
+  read-once probe was racing the process's own sandbox initialisation, and the wall stood. The PM
+  raised it from the first hosted-runner CI runs, since no seat of this run could have seen it.
+  The answer was written in the owner's seat by an unattended `companion-self-answer` run, not by
+  the owner in person — its verdict and reasons are `docs/trail/sdd/self_answer-12.md`, and the
+  item with its answer is kept whole at `docs/trail/sdd/cycle-6.md` § 5.1. This seat folded the
+  answer's close and its four additions as written. The dead-pid check rests on what the probe
+  records of `sandbox_check` — "sandboxed, everything denied" for a pid that names no process
+  (`checks/sandbox_probe.rs:L103-L115`) — and the script on `main` already holds the window, the
+  printed bound, the whole-window control and the per-ask existence check (`nozoki@cf539a4`;
+  `checks/bundle.sh:L38-L40`, `:L76-L82`, `:L290-L296`, `:L326-L330`, `:L383`): the fold makes
+  this document state what the script relies on. This seat added three things of its own. First,
+  C-I3's *Violated by* names the four conditions the new sentences make nameable — a read-once
+  probe, an ask judged on a pid that no longer names a process, a control passed on fewer asks
+  than the window, a bound not printed — because a condition a slice cannot be named for
+  breaking binds nothing. Second, C-I3 names the case the window does not cover, a report that
+  turns from `yes` back to `no` after the pass, so the window is not read as coverage; every
+  observed sequence is `no` then `yes`, and no run has shown the other. Third, § 10 gains no
+  entry, and the reason is recorded because the other side was close: every red one-ask run read
+  literally as R-8, but RC-1 exists because the *observable* was wrong, and here the observable
+  is right and only the moment it was read was wrong — `open-a-folder`'s command bar states the
+  observable and not the timing, so no *Reached when* failed as written, and that bar is
+  unchanged. A reader who takes the other side would record RC-2 with *Changed* limited to C-I3's
+  timing clause, and nothing else here would move. Why the runner reports the out-of-grant read
+  denied for an unsandboxed process is not known: the log shows it and nothing this seat read
+  explains it. The same narrowing stands in ADR-0010 § Consequences and NFDR QC-25, which are the
+  Principal Architect's to bring into line; the window and the narrowing are raised there as
+  `docs/architecture_open_issues.md` §§ 3.2 and 3.3. No part, seam, slice, edge or place in the
+  order moves *(re: § 4 C-I3; § 10 RC-1; § 11 R-8; Open Questions; source:
+  `docs/trail/sdd/cycle-6.md` § 5.1; `docs/trail/sdd/self_answer-12.md`; `nozoki@247b5ed`;
+  `nozoki@cf539a4`; `checks/sandbox_probe.rs:L103-L115`; `checks/bundle.sh:L38-L40`; ADR-0010
+  § Consequences; SRS NFR-9)*.
 
 ---
 
@@ -2645,11 +2720,6 @@ question.>
   whether Tauri 2's protocol registration on macOS serves it without a plugin. Settled by the
   first Markdown slice rendering the local-image fixture with no CSP violation; the form found is
   written into C-R7.]
-- [OPEN: Whether C-I3's bundle probe reads the same on a GitHub-hosted macOS runner as on the one
-  Mac it has been measured on (macOS 26.6.2, arm64) — that the sandbox is enforced there under an
-  ad-hoc signature, and that `sandbox_check` reports it. No one has measured a hosted runner.
-  Settled by the probe's first CI run; a control that does not fail there, or a bundle not
-  reported sandboxed, is R-8. The question this item first asked is closed at § 10 RC-1.]
 - [OPEN: What the reference fixture sizes are (NFR-10) and what FSEvents coalescing latency the
   watcher sees on them. Settled by `checks/latency.sh`'s first figures, which the SRS then folds in
   by revision (`docs/SRS.md` RN-4); no number is written here before that.]
