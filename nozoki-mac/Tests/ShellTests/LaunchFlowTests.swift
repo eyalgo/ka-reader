@@ -8,7 +8,7 @@ final class LaunchFlowTests: XCTestCase {
     private let chosenFolder = URL(fileURLWithPath: "/Users/someone/notes", isDirectory: true)
     private let namedExports: Set<String> = ["open_folder", "list_tree", "free"]
 
-    private struct Harness {
+    @MainActor private struct Harness {
         let log = EventLog()
         let bridge: RecordingBridge
         let panel: FakePanel
@@ -47,9 +47,10 @@ final class LaunchFlowTests: XCTestCase {
 
     func testChosenFolderOpensThenListsRoot() throws {
         let harness = Harness(panelAnswer: chosenFolder)
-        harness.bridge.listAnswer = Data(
+        let wire =
             #"[{"name":"docs","path":"docs","kind":"folder"},"#
-                + #"{"name":"a.md","path":"a.md","kind":"file"}]"#.utf8)
+            + #"{"name":"a.md","path":"a.md","kind":"file"}]"#
+        harness.bridge.listAnswer = Data(wire.utf8)
 
         harness.flow.run()
 
