@@ -8,6 +8,8 @@ let package = Package(
     platforms: [.macOS(.v14)],
     targets: [
         .target(name: "Surfaces"),
+        .target(name: "Shell", dependencies: ["Surfaces"]),
         .testTarget(name: "SurfacesTests", dependencies: ["Surfaces"]),
+        .testTarget(name: "ShellTests", dependencies: ["Shell", "Surfaces"]),
     ]
 )
