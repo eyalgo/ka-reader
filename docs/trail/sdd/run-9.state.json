@@ -1,0 +1,262 @@
+{
+  "change_log": [
+    {
+      "changed_text": "header \u2014 `**Inputs read:**` line added after the Version block; SDD Review Notes \u2014 RN-49 (CPO, added). No slice, no \u00a7 1/\u00a7 5/\u00a7 6/\u00a7 12 sentence, no companion item added.",
+      "seat": "cpo"
+    },
+    {
+      "changed_text": "\u00a7 4 C-I3 (three additions and *Violated by* rescoped); header Version line (v9 entry; v5 opening clause and v6/v7/v8 entries restored); SDD Review Notes RN-50 (new). Companion items added: none. `docs/SDD_open_issues.md` consumed and removed.",
+      "seat": "cto"
+    }
+  ],
+  "companion_present_at_intake": true,
+  "companion_retired": false,
+  "consumed_cycle_path": "/Users/eyalgolan/products/nozoki/docs/trail/sdd/cycle-7.md",
+  "core_root": "/Users/eyalgolan/.kensaiapp/pins/20260923T063052Z-ppa1f0/core",
+  "ended": "seats-close",
+  "ended_at": "2026-09-23T07:57:29.949029+00:00",
+  "ended_detail": null,
+  "instance_root": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource",
+  "interruptions": [],
+  "no_change_rounds": 0,
+  "output_tokens": 0,
+  "output_tokens_under_counted": true,
+  "pending_request": {
+    "cdo": "## Turn summary \u2014 CDO, round 1\n\n**My lane, verified against its sources \u2014 nothing moved, no edit.** Every document my clauses must be sourced in is Settled and unchanged since before v8: the UXD is v10 Settled, last changed `4d7b653 2026-09-01` (`docs/UXD.md:L3-L5`; `git log -1 -- docs/UXD.md`); `DESIGN.md` v8 at `269bcf5 2026-09-01`; `CONTENT.md` v6 at `6789e19 2026-09-01`; the instance fence at `3ab9bba 2026-08-30` (`git log -1 -- system/experience/visual_restrictions.md system/experience/visual_direction.md`). v8 and v9 both date 2026-09-23, so \u00a7 4's C-E1\u2013C-E10 (`docs/SDD.md:L642-L720`), \u00a7 5 step 1's observability read (`:L815`), every \u00a7 6 *Observable (CDO)* half and UXD trace, and \u00a7 12's UXD boundary (`:L2078-L2086`, citing UXD v10 Settled \u2014 the same version the header's new `**Inputs read:**` line names, `:L55`) stand as written. The anchors the C-E clauses cite still resolve: UX-I12/I16/I17/A4 in `docs/UXD.md` (`:L58`, `:L80-L96`, `:L132-L145`), and the four fence entries `no-unestablished-state`, `no-runtime-remote-asset`, `no-author-only-surface`, `failure-says-what-next` in `visual_restrictions.md` (`:L33`, `:L55`, `:L79`, `:L122`).\n\n**The CTO's C-I3 fold reaches none of my fields.** I checked the CPO's claim myself: across \u00a7 6 (`docs/SDD.md:L1059-L1800`) the words *waited*, *bound*, *how long* and *window* hit only the CTO's command half of `open-a-folder` (the observable is quoted, not the bound, `:L1105-L1108`), S-2's `bound \u2014 C-I4` trace (`:L1184`), S-9's history *window* (`:L1587-L1596`), and the app's *window* in my own halves (`:L1083-L1093`, `:L1361-L1363`, `:L1403-L1422`) \u2014 none is the probe's wait bound. The probe's output is a CI surface under C-I3, the CTO's row in `sdd_template.md` \u00a7 *Who holds what*; nothing a person watches on the product's surface changed, so no observable half owes a sentence and no \u00a7 10 entry is triggered on my ground.\n\n**Companion state confirmed as the CTO reported:** `docs/SDD_open_issues.md` is off disk, `docs/trail/sdd/cycle-7.md` and `self_answer-17.md` are present (`ls`), and the `**Inputs read:**` header line stands exactly once (`grep -n \"^\\*\\*Inputs read:\\*\\*\"` \u2192 `:L55` only). I add no second, per the CPO's ask.\n\nNo review note written: a lane verified unchanged is not a call the upstream documents left unsettled, so there is nothing for RN to carry with my seat tag. **To the CPO and CTO:** nothing in my lane asks anything of yours.",
+    "cpo": "Verified against the file, round 2:\n\n- **Version line restored as \u00a7 2.1 asked** \u2014 v9's entry opens the line, then `Version 8`, `Version 7`, `Version 6` each on its own line, and v5's opening clause \"run 5 (`docs/trail/sdd/run-5.md`): all three seats declared `no_followup` with no\" is back in front of its continuation (`docs/SDD.md:L9-L14`). The CTO's one departure (`Version <n> \u2014` without the bold marker for the restored entries) matches the form the v4\u2192v1 entries already use in that block; the false crediting the item named is gone.\n- **C-I3 carries the fold** \u2014 \"the only red run the bound reaches\" is the window-out one, a failed-ask run \"ends at once and names what failed\", and the failed-ask line's silence on *which* ask is named as uncovered (`docs/SDD.md:L542-L556`, sentences at L543-L544 and L553). None of this is in my lane, and my \u00a7 6 `open-a-folder` fields are untouched (`git diff HEAD -- docs/SDD.md` shows zero `Delivers / Moves toward / Not in this slice / Traces to` lines changed).\n- **`**Inputs read:**` stands exactly once** (`:L55`); no seat added a second.\n- **Companion consumed** \u2014 `docs/SDD_open_issues.md` is off disk (`git status` \u2192 `D`), trail copy `cycle-7.md` present. RN-50 (CTO) at `:L2725` records both folds.\n\nMy lane's sources have not moved since round 1 (PRD `7c89e19`, Agari `ee561fb`, both 2026-09-01), so \u00a7 1, \u00a7 5 steps 1/2/4, \u00a7 6's product fields and \u00a7 12's PRD clause stand as written. Both peers stated nothing is asked of me; I ask nothing of them. Nothing remains for this seat.",
+    "cto": "The fold is in place and reads cleanly. Nothing further is needed from the tree \u2014 the turn summary follows.\n\n## Turn summary \u2014 CTO, round 1\n\n**Companion \u00a7 5.1 folded into \u00a7 4 C-I3, as the answer's three additions state.** Each was verified against the script before writing: the ordinary path's failed ask dies with the probe's stderr and no bound (`checks/bundle.sh:L338`), the control's failed ask dies the same way (`:L303`), the window-out red line is the one that states the bound (`:L375`), the control's pass line is its only bound-bearing line (`:L322`, red at `:L323`), and a gone pid reaches the failed-ask path because the probe refuses it (`checks/sandbox_probe.rs:L103-L115`). So C-I3 (`docs/SDD.md:L542-L556`) now says (a) the bound reaches only a red run that ends because the window ran out, with the reason the bound exists (`self_answer-12.md`, addition 1) rather than the PM's \"did not wait\"; (b) the control is scoped the same way; (c) the failed-ask line's silence on *which* ask is named as a second uncovered case, beside yes\u2192no. *Violated by* (`:L582-L583`) is rescoped to match. \u00a7 11 R-8 already described only the window-out case (`:L1983-L1993`) \u2014 unchanged. `checks/bundle.sh` changes nothing. NFDR QC-25 (`docs/nfdr.md:L253-L254`) copies the v8 sentence and is the Principal Architect's to re-derive under \u00a7 4's opening note \u2014 not contradicted, only less precise, so no architecture item raised (the self-answer raised none either, `self_answer-17.md` \u00a7 5.1 check 3).\n\n**Companion \u00a7 2.1 \u2014 the Version line restored** in the same v9 bump (`docs/SDD.md:L9-L14`): v5's opening clause and the v6/v7/v8 entries written back verbatim from line 9 of `67372a5`, `b3439e8`, `c1f8a20`, `9b36a42`, newest first, each on its own line. One departure from the item's literal draft, recorded: the restored entries open `Version <n> \u2014`, not `**Version:** <n> \u2014`, so the bold marker names the header line alone \u2014 the form this document already uses for Versions 4\u21921. Taken as found-while-walking clause 1 (a header line stating something false; text all in git), since the raising run named the decision as this round's.\n\n**RN-50** (`docs/SDD.md:L2725-L2768`) carries both folds, the provenance (PM raised; answered in the owner's seat by `companion-self-answer`, not the owner in person), and the widening held until a run occurs.\n\n**Companion consumed.** `docs/SDD_open_issues.md` removed from disk empty of items (`git status` \u2192 `D docs/SDD_open_issues.md`); its trail copy `docs/trail/sdd/cycle-7.md` was already on disk and identical (`diff` returned nothing) before any seat touched it.\n\n**To the CPO:** nothing further asked. **To the CDO:** \u00a7 4's `C-E` clauses and \u00a7 6's observable halves were not touched; nothing in my lane asks anything of yours."
+  },
+  "product_path": "/Users/eyalgolan/products/nozoki",
+  "project": "nozoki",
+  "provider": "claude",
+  "queue": [],
+  "recall_outstanding": null,
+  "recall_refusals": [],
+  "recalls_spent": [],
+  "resolved_inputs": {
+    "cdo": [
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "present": false
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/doctrine/writing_bar.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/.kensaiapp/pins/20260923T063052Z-ppa1f0/core/prompts/sdd_conversation_conduct.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/.kensaiapp/pins/20260923T063052Z-ppa1f0/core/templates/product-templates/sdd_template.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/DESIGN.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/CONTENT.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/design_system",
+        "present": false
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/experience/visual_restrictions.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/experience/visual_direction.md",
+        "present": true
+      }
+    ],
+    "cpo": [
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "present": false
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/doctrine/writing_bar.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/.kensaiapp/pins/20260923T063052Z-ppa1f0/core/prompts/sdd_conversation_conduct.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/.kensaiapp/pins/20260923T063052Z-ppa1f0/core/templates/product-templates/sdd_template.md",
+        "present": true
+      }
+    ],
+    "cto": [
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "present": false
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/doctrine/writing_bar.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/.kensaiapp/pins/20260923T063052Z-ppa1f0/core/prompts/sdd_conversation_conduct.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/.kensaiapp/pins/20260923T063052Z-ppa1f0/core/templates/product-templates/sdd_template.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/adr",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/nfdr.md",
+        "present": true
+      }
+    ]
+  },
+  "round": 2,
+  "round_opened": "2026-09-23T07:56:52.170376+00:00",
+  "round_start_snapshot": {
+    "recall_outstanding": null,
+    "recalls_spent": [],
+    "standing_move": {
+      "cdo": {
+        "kind": "no_followup",
+        "target": null,
+        "work": null
+      },
+      "cpo": {
+        "kind": "successor",
+        "target": "cto",
+        "work": "fold companion \u00a7 5.1 into \u00a7 4 C-I3 (three additions), and restore the Version line's v5\u2013v7 entries (\u00a7 2.1) in the same v9 bump; then consume `docs/SDD_open_issues.md`."
+      },
+      "cto": {
+        "kind": "no_followup",
+        "target": null,
+        "work": null
+      }
+    }
+  },
+  "run": "run-9",
+  "schema_version": 1,
+  "sdd_status": "Settled",
+  "seat_sessions": {
+    "cdo": "6489463b-49cd-4002-b85a-8bd40276300a",
+    "cpo": "0166034f-7e96-4b44-99b8-2b50fadf70f4",
+    "cto": "e4dcebe2-be00-45bc-8c21-e03cc1aa5f8c"
+  },
+  "seats": {
+    "cdo": "sdd-nozoki-run9-cdo",
+    "cpo": "sdd-nozoki-run9-cpo",
+    "cto": "sdd-nozoki-run9-cto"
+  },
+  "spoke_at": {
+    "cdo": 2,
+    "cpo": 2,
+    "cto": 2
+  },
+  "standing_move": {
+    "cdo": {
+      "kind": "no_followup",
+      "target": null,
+      "work": null
+    },
+    "cpo": {
+      "kind": "no_followup",
+      "target": null,
+      "work": null
+    },
+    "cto": {
+      "kind": "no_followup",
+      "target": null,
+      "work": null
+    }
+  },
+  "turn_log": [
+    {
+      "changed": false,
+      "changed_text": "nothing",
+      "declared": "no_followup",
+      "kind": "ordinary",
+      "no_reply": false,
+      "request_text": "Verified against the file, round 2:\n\n- **Version line restored as \u00a7 2.1 asked** \u2014 v9's entry opens the line, then `Version 8`, `Version 7`, `Version 6` each on its own line, and v5's opening clause \"run 5 (`docs/trail/sdd/run-5.md`): all three seats declared `no_followup` with no\" is back in front of its continuation (`docs/SDD.md:L9-L14`). The CTO's one departure (`Version <n> \u2014` without the bold marker for the restored entries) matches the form the v4\u2192v1 entries already use in that block; the false crediting the item named is gone.\n- **C-I3 carries the fold** \u2014 \"the only red run the bound reaches\" is the window-out one, a failed-ask run \"ends at once and names what failed\", and the failed-ask line's silence on *which* ask is named as uncovered (`docs/SDD.md:L542-L556`, sentences at L543-L544 and L553). None of this is in my lane, and my \u00a7 6 `open-a-folder` fields are untouched (`git diff HEAD -- docs/SDD.md` shows zero `Delivers / Moves toward / Not in this slice / Traces to` lines changed).\n- **`**Inputs read:**` stands exactly once** (`:L55`); no seat added a second.\n- **Companion consumed** \u2014 `docs/SDD_open_issues.md` is off disk (`git status` \u2192 `D`), trail copy `cycle-7.md` present. RN-50 (CTO) at `:L2725` records both folds.\n\nMy lane's sources have not moved since round 1 (PRD `7c89e19`, Agari `ee561fb`, both 2026-09-01), so \u00a7 1, \u00a7 5 steps 1/2/4, \u00a7 6's product fields and \u00a7 12's PRD clause stand as written. Both peers stated nothing is asked of me; I ask nothing of them. Nothing remains for this seat.",
+      "seat": "cpo",
+      "spoke": true
+    }
+  ]
+}

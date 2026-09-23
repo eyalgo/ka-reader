@@ -6,7 +6,11 @@
        signal, and the state a finished SDD carries; the open-issues file is gone.
      Locked = ratified as the source of truth. -->
 **Owner:** CTO · CPO · CDO — one run, three seats
-**Version:** 8 — CTO: § 4 C-I3 (bounded window, first-ask-all-three pass, script-fixed and printed bound with no number here, per-ask live-pid check, uncovered yes→no case, control `no` for the whole window, error-on-any-ask, denial-as-proof clause narrowed to where the control reports the denials allowed with the hosted runner's read denial stated as separating nothing, Violated by extended); § 10 RC-1 Still unresolved (pointer to RN-48); § 11 R-8 shows up as and response; Open Questions (fourth item closed and removed — four remain); SDD Review Notes RN-48 (new). Companion items added: none. docs/SDD_open_issues.md removed, empty of items.
+**Version:** 10 — CPO: header — `**Inputs read:**` line added after the Version block; SDD Review Notes — RN-49 (CPO, added). No slice, no § 1/§ 5/§ 6/§ 12 sentence, no companion item added.; CTO: § 4 C-I3 (three additions and *Violated by* rescoped); header Version line (v9 entry; v5 opening clause and v6/v7/v8 entries restored); SDD Review Notes RN-50 (new). Companion items added: none. `docs/SDD_open_issues.md` consumed and removed.
+Version 8 — CTO: § 4 C-I3 (bounded window, first-ask-all-three pass, script-fixed and printed bound with no number here, per-ask live-pid check, uncovered yes→no case, control `no` for the whole window, error-on-any-ask, denial-as-proof clause narrowed to where the control reports the denials allowed with the hosted runner's read denial stated as separating nothing, Violated by extended); § 10 RC-1 Still unresolved (pointer to RN-48); § 11 R-8 shows up as and response; Open Questions (fourth item closed and removed — four remain); SDD Review Notes RN-48 (new). Companion items added: none. docs/SDD_open_issues.md removed, empty of items.
+Version 7 — CTO: § 3 SM-4 (what crosses, and owner cell wording); § 4 C-R7 (the staged grant, set equality against registered commands, asset-scheme keying, named pre-1.0.0 uncovered case, Violated by); § 4 C-I3 (every command the build grants); § 6 S-7 Reached when, command half; SDD Review Notes RN-47 (new). Companion items added: none. docs/SDD_open_issues.md removed, empty of items.
+Version 6 — CTO: § 4 C-I3 (observable and Violated by); § 6 open-a-folder Reached when, command half; § 10 RC-1 (new, first re-cut entry); § 11 R-8 shows up as; Open Questions fourth item (closed, replaced by the hosted-runner question); SDD Review Notes RN-45 (new). Companion items added: none. docs/SDD_open_issues.md removed, empty of items.; CPO: § 5 step 4 (E-1's sizing sentence); SDD Review Notes RN-46 (new). Companion items added: none.
+Version 5 — run 5 (`docs/trail/sdd/run-5.md`): all three seats declared `no_followup` with no
 recall outstanding, and `docs/SDD_open_issues.md` no longer stands on disk, so this document is
 stamped Settled. The run consumed the one companion item standing at intake (§ 5.1, whose Answer
 slot had come back filled — "confirm — and it is already done" — since run 4 ended): copied whole
@@ -48,6 +52,7 @@ folded since run 1 (§§ 1.1, 2.1, 2.3, 3.1, 5.1, 5.2) from the transient `SDD_o
 permanent copy at `docs/trail/sdd/cycle-1.md`, across all three lanes. Version 1 — first complete
 cut: §§ 1–7, 9, 11, 12 and Review Notes RN-1–RN-37 written across a run interrupted once (API 529,
 resumed clean per `docs/trail/sdd/run-1.md`).
+**Inputs read:** PRD Settled · SRS Settled · UXD Settled
 
 > The SDD is the technical **how**, and it ends in a **cut**. It states the architecture the rest of
 > the system builds against — derived from the PRD (the *what and why*), the SRS (the system-level
@@ -535,11 +540,19 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   the pid as sandboxed **and** reports two operations denied for it: a file read outside the
   grant and an outbound network connection. The pass is the first ask on which all three hold at
   once. The bound is the script's to fix and this document states no number; the script prints
-  the bound in the probe's output, so a red run says how long it waited. Every ask first checks
+  the bound in the probe's output, so a red run that ends because the window ran out says how
+  long it waited — and that is the only red run the bound reaches. A run ended by a failed ask —
+  `sandbox_check` missing or returning an error, or the pid no longer naming a process — ends at
+  once and names what failed; it prints no bound, because the bound exists to separate "waited
+  the whole window and the wall is absent" from "gave up early", and a run that stopped on a
+  named failure did neither. Every ask first checks
   that the pid still names a process, because `sandbox_check` answers "sandboxed, everything
   denied" for a pid that names none (`checks/sandbox_probe.rs:L103-L115`); a process gone before
-  the pass is a failure. One case the window does not cover: a report that turns from `yes` back
-  to `no` after the pass is never read. The sandboxed report is the state Apple names as the
+  the pass is a failure, and it ends the run on that same failed-ask path. Two cases the window
+  does not cover: a report that turns from `yes` back
+  to `no` after the pass is never read; and the failed-ask line does not say on which ask the run
+  ended, so a process that dies does not say whether it died at launch or late in the window —
+  the line names the failure and nothing about its timing. The sandboxed report is the state Apple names as the
   verification — "verify that the value in the Sandbox column is Yes"
   (https://developer.apple.com/documentation/security/protecting-user-data-with-app-sandbox) — and
   the two denials test the wall C-R2 promises rather than a proxy for it where the unentitled
@@ -552,7 +565,10 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   declared in the SDK's `sandbox.h`: **the mechanism is undocumented, and is held as such.** So a
   negative control is part of the probe: the script's suite runs it on the same binary built with
   no entitlements and requires it to answer `sandboxed: no` on every ask for the whole window, and
-  a probe that cannot tell the two apart goes red instead of green. The build also fails when
+  a probe that cannot tell the two apart goes red instead of green. The control's red run ends
+  at once on the first report that is not `sandboxed: no`, so no red run of the control ends
+  because its window ran out, and of the control's lines only its pass line prints the bound —
+  the same scoping as the ordinary path's. The build also fails when
   `sandbox_check` is missing or returns an error on any ask, when no pid is found, or when more
   than one is. A container directory that already exists is never evidence, because it survives
   from an earlier launch. The environment marker this probe first read, and why it was dropped,
@@ -563,7 +579,9 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   command use is covered by holding no capability the harness could catch it using (§ 9 TO-7).
   The record is ADR-0008. *Violated by:* a build that skips a script, a bundle probe run without
   its negative control, a probe that reads the report once, an ask judged on a pid that no longer
-  names a process, a control passed on fewer asks than the window, a bound not printed, a slice
+  names a process, a control passed on fewer asks than the window, a bound not printed on a red
+  run that ended because the window ran out or on a pass, a failed-ask run that does not name
+  what failed, a slice
   that lands a command the harness does not exercise, a release without AC-1 – AC-3 green.
 - **C-I4.** **A performance number is measured, never asserted.** `checks/latency.sh` prints
   file-switch and refresh p95 in milliseconds over reference fixtures on every CI build, so the
@@ -2691,6 +2709,68 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   `docs/trail/sdd/cycle-6.md` § 5.1; `docs/trail/sdd/self_answer-12.md`; `nozoki@247b5ed`;
   `nozoki@cf539a4`; `checks/sandbox_probe.rs:L103-L115`; `checks/bundle.sh:L38-L40`; ADR-0010
   § Consequences; SRS NFR-9)*.
+- **RN-49:** *(CPO)* *(added)* The header gains the `**Inputs read:**` line — `PRD Settled · SRS
+  Settled · UXD Settled` — in the one form `<CORE>/doctrine/governance/unsettled_inputs.md` § *The
+  rule* fixes. *Because* the line was absent, and had never been in this document (`git log
+  -S'Inputs read' -- docs/SDD.md` returns no commit, 2026-09-23), while the template
+  (`<CORE>/templates/product-templates/sdd_template.md`, header) and the rule require it on every
+  revision, so that a later reader can tell the document was built on settled ground rather than
+  on ground nobody checked. A defect found while walking, fixed in place
+  (`<CORE>/doctrine/governance/found_while_walking.md` § *The rule*, clause 1); the line names no
+  seat's part in § *Who holds what*, so no lane is crossed. The statuses are read from the inputs'
+  own headers this run: `docs/PRD.md:L3` (v15), `docs/SRS.md:L3` (v12), `docs/UXD.md:L3` (v10) —
+  the same versions § 12's three boundary clauses cite. Nothing in §§ 1–12 moves *(re: header;
+  source: `unsettled_inputs.md` § *The rule*; `docs/PRD.md:L3-L5`; `docs/SRS.md:L3-L5`;
+  `docs/UXD.md:L3-L5`)*.
+- **RN-50:** *(CTO)* *(changed)* § 4 C-I3's "a red run says how long it waited" now states which
+  red runs it reaches: only a run that ends because the window ran out. A run ended by a failed
+  ask — `sandbox_check` missing or returning an error, or the pid no longer naming a process —
+  ends at once, names what failed, and prints no bound; a process gone before the pass is named
+  as taking that same path. The negative control is scoped the same way: its red run ends at once
+  on the first report that is not `sandboxed: no`, so only its pass line carries the bound. A
+  second case the window does not cover is named beside the yes→no one — the failed-ask line does
+  not say on which ask the run ended, so a process that dies does not say whether it died at
+  launch or late in the window. *Violated by*'s "a bound not printed" is rescoped to the two
+  lines that owe one (the pass line and the window-ran-out red line), and gains "a failed-ask run
+  that does not name what failed", which is the condition the failed-ask path is now bound to.
+  *Because* the sentence as v8 wrote it named one failure and read as covering three, and the
+  script it describes has never printed the bound on the failed-ask path: the ordinary loop's
+  failed ask dies with the probe's stderr and no bound (`checks/bundle.sh:L338`), the control's
+  failed ask dies the same way (`:L303`), the window-out red line is the one that states the
+  bound (`:L375`), the control's pass line is the control's only one (`:L322`, red at `:L323`),
+  and a gone pid reaches the failed-ask path because the probe refuses it
+  (`checks/sandbox_probe.rs:L103-L115`). The reason the clause gives for the bound — separating
+  "waited the whole window and the wall is absent" from "gave up early" — is the one the bound
+  was added under (`docs/trail/sdd/self_answer-12.md`, addition 1), and it is why a failed-ask
+  run owes none: it neither waited out the window nor gave up. The PM raised it
+  (`docs/trail/sdd/cycle-7.md` § 5.1, "a run that did not wait has no wait to report"); the
+  answer was written in the owner's seat by an unattended `companion-self-answer` run, not by the
+  owner in person — its verdict, the corrected reason, and the three additions (a)–(c) are
+  `docs/trail/sdd/self_answer-17.md` § 5.1, and this seat folded them as written. The doubt's
+  widening — "or on which ask it ended" — is not taken: the item cites no run where a process was
+  gone mid-window, and the answer holds it until one occurs; C-I3 names the gap instead, so a
+  reader does not take the window as coverage of it. `checks/bundle.sh` changes nothing. § 11
+  R-8's *shows up as* already describes only the window-out case and does not move; the
+  `open-a-folder` command bar quotes the observable, not the bound, and does not move. NFDR QC-25
+  (`docs/nfdr.md:L253-L254`) copies the v8 sentence and is the Principal Architect's to re-derive
+  from § 4 under this section's opening note — not contradicted, only less precise, so no item is
+  raised on the architecture companion. **The Version line** (companion § 2.1): runs 6, 7 and 8
+  each replaced line 9 instead of adding above it, so v8's entry ran into the tail of v5's and
+  v5–v7 had no opening — `nozoki@67372a5`, `b3439e8`, `c1f8a20`, `9b36a42`, line 9 of each. This
+  seat restored v5's opening clause and the v6, v7 and v8 entries from those commits verbatim,
+  newest first below v9, each as its own line. One departure from the item's literal draft: the
+  restored entries open `Version <n> —`, not `**Version:** <n> —`, so the bold marker names the
+  header line alone, the way this document already writes Versions 4 to 1 inline. The item's slot
+  was left at its placeholder by the raising run, which named the decision as this round's; a
+  header line stating something false is a defect found while walking, clause 1
+  (`<CORE>/doctrine/governance/found_while_walking.md` § *The rule*), and the text is all in git,
+  so nothing was re-derived. The companion was consumed this run: copied whole to
+  `docs/trail/sdd/cycle-7.md` before any seat touched it, and removed from disk empty of items.
+  No part, seam, slice, edge or place in the order moves *(re: § 4 C-I3; header; source:
+  `docs/trail/sdd/cycle-7.md` §§ 2.1, 5.1; `docs/trail/sdd/self_answer-17.md`;
+  `docs/trail/sdd/self_answer-12.md`; `checks/bundle.sh:L303`, `:L322-L323`, `:L338`, `:L375`;
+  `checks/sandbox_probe.rs:L103-L115`; `nozoki@67372a5`; `nozoki@b3439e8`; `nozoki@c1f8a20`;
+  `nozoki@9b36a42`; SRS NFR-9)*.
 
 ---
 
