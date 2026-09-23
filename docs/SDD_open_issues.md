@@ -22,58 +22,148 @@
 > only the SDD can fix. Its `Raised by:` therefore takes a wider set than §§ 1–3's, which stay fixed
 > to the three authoring seats on purpose.
 
-> **No `product-sdd` run opened this companion. The owner opened it on 2026-09-23**, from the
-> station's Finder walk (condition 8). `SDD.md` is settled at v10 and had no companion on disk.
-> Without one, a `product-sdd` re-run would read the SDD as done and find nothing to act on. The
-> companion holds one item, § 5.1, already answered.
+> **The cycle-8 item this file carried (§ 5.1, the owner's no-network ruling) is folded and on the
+> trail** (`docs/trail/sdd/cycle-8.md`; `SDD.md` § 4 C-R2, C-I3; § 10 RC-2; RN-51, RN-52). The
+> ruling's answer 3 asked for the mechanism before any entitlement was chosen; the mechanism is
+> found, and it is not a configuration — which leaves the one question below, raised by the CTO,
+> that the ruling did not decide.
 
 ---
 
-## 5. Raised from downstream — an item from a seat that did not write the SDD
+## 1. Open issues — questions with no answer yet
 
-### 5.1 Under C-R2's exact entitlements the renderer never starts, so the window is empty
-- **Raised by:** Owner — 2026-09-23, from the Finder walk on `e7b2bcd`
-- **Tracked by:** `nozoki · shukuba · 2026-09-18_the-wall-holds` (condition 8)
-- **What it blocks:** The station's close, and v1 itself. Condition 8 fails at its first step: the
-  bundle built from `e7b2bcd` opens one window titled "Nozoki", empty, with no Open panel, and the
-  window takes no right-click. CI run 35840538490 on the same commit is green, so no gate saw it.
-- **Where it shows:** A two-second thread sample (`sample <pid> 2`) of each build, launched from
-  Finder with `open -n`:
-
-  | Build | Entitlements | `WebProcessProxy::processDidTerminateOrFailedToLaunch` in the sample | rfd `pick_folder` → `run_on_main` in the sample |
-  |---|---|---|---|
-  | release, as CI builds it | `app-sandbox`, `files.user-selected.read-only` | present | absent |
-  | debug (`tauri build --debug`) | the same two | present | not sampled |
-  | release, re-signed | the same two + `network.client` | absent | present |
-  | release, re-signed | none (no sandbox) | absent | present |
-
-  The main thread is idle in `NSApplication run` in every case, so nothing blocks. WebKit's web
-  content process fails to launch or ends, the page never runs, and `main.ts` never calls
-  `open_folder` (`nozoki-ui/src/main.ts:L14-L19`). **The mechanism is not known.** The system log
-  gave no lines to this session, and no crash report was written for a WebKit process
-  (`~/Library/Logs/DiagnosticReports/`). C-R2 grants **exactly** the two v1 entitlements and names
-  "a slice that adds an entitlement" as its violation (`SDD.md:L432-L442`), so C-R2 cannot hold as
-  written and give a window that draws. `checks/bundle.sh` passes because it proves the wall on the
-  launched process (`sandboxed: yes`, out-of-grant read and outbound connection denied), and never
-  that the page ran.
-- **If a document has to be written:** C-R2 is rewritten per the answer, with an ADR for any
-  entitlement it adds (ADR-0003 is C-R2's record). C-I3, or a new gate beside it, owes a check that
-  the shipped bundle's renderer runs. `docs/nfdr.md` follows through the architecture chain.
-- **Answer:** **No network, ever — the promise is the operating system refusing an outgoing
-  connection, not the list.** Decided by the owner, 2026-09-23.
-  1. `com.apple.security.network.client`, and every other network entitlement, is **never**
-     granted, although it is proven to make the window draw. Granting it would make "no network"
-     a promise the code keeps, which is the thing C-R2 exists to rule out.
-  2. C-R2's "exactly these entitlements" gives way to: *no network entitlement; a read-only grant
-     on the chosen folder; any other entitlement only with an ADR that names why it is needed, and
-     only where the probe (C-I3) still finds the launched process sandboxed with the out-of-grant
-     read and the outbound connection both denied.* The *Violated by* clause changes to match.
-  3. The CTO owes the mechanism: why WebKit's content process does not start under the two v1
-     entitlements, found from the system log or Apple's own documentation, before any entitlement
-     is chosen. If the fix needs no entitlement (a WebKit or Tauri configuration), the list stands.
-  4. A new gate: the bundle CI ships must be shown to run its renderer under its shipped
-     entitlements — at the least, that the page reached `open_folder`. The empty window got past
-     every gate, so this gate is what stops it happening again.
-
-**How it closes.** `product-sdd` folds it on its next run like every other item in this file, and
-the trail copy and the delete-when-empty behaviour are unchanged.
+### 1.1 Under C-R2's rule the system WKWebView cannot start — so the renderer gives way, or the rule's reach does, and which is yours
+- **Raised by:** CTO
+- **Why it matters:** `SDD.md` § 4 C-R1 renders `nozoki-ui` in the system WKWebView (ADR-0002);
+  § 4 C-R2 now states your rule — no network entitlement, ever. WKWebView's own processes refuse to
+  start under that rule: WebKit checks the *host's* entitlements at each XPC service's start, and
+  a sandboxed host without `com.apple.security.network.client` fails the check unless its sandbox
+  allows a `mach-lookup` of `com.apple.nsurlsessiond`
+  (https://github.com/WebKit/WebKit/blob/bb75cbc0003033ea73c42ef02370767aa52d6ba6/Source/WebKit/Shared/EntryPointUtilities/Cocoa/XPCService/XPCServiceEntryPoint.mm,
+  `checkEntitlements`; WebKit's comment on the line: "This requirement is too strict, it should
+  be possible to load file:// resources without network access", open since 2019 as
+  `rdar://problem/54178641` / FB6993802). On your Mac the unified log shows exactly that: in both
+  of your 2026-09-23 sampling windows, `com.apple.WebKit.Networking` logs `Application does not
+  have permission to communicate with network resources` and is relaunched every 15–30 ms under
+  the running `nozoki-app` (`SDD.md` RN-52 carries the command and the lines). No Tauri key, no
+  WebKit setting and no line of this product's reaches the check, so answer 3's "if the fix needs
+  no entitlement, the list stands" does not decide this case. Where it bites: § 2's shape (row 1
+  taken, row 4 the runner-up), § 3 `surfaces` and `SM-4`, § 4 C-R1, C-R2, C-R7, C-D3; § 6
+  `open-a-folder`, whose command bar no build can meet until this is answered, and every later
+  slice rests on it (§ 7). The exits, priced:
+  - **(a) The renderer leaves WKWebView** — a single-process view under the same sandbox: § 2's
+    row 4 (AppKit / SwiftUI), or a Rust-native toolkit so the host language stays one. Keeps the
+    wall as you ruled it. Loses the renderer wall — the process that holds no capability (§ 9
+    TO-1) — with the IPC seam collapsing to direct calls, priced cheap in § 2 *Undoing it*. Costs
+    every surface rewritten (`surfaces`; priced expensive there), the design language re-expressed
+    off CSS (`docs/DESIGN.md` — the CDO's to weigh), Markdown rendered without a web engine
+    (FR-30; C-D3's three walls redrawn for a native renderer), ADR-0002 superseded, and
+    `docs/fdr.md` PD-29's "not replaceable inside the terminus" reversed.
+  - **(b) Grant `com.apple.security.network.client`** — the window draws today (your sample
+    table, cycle-8). Refused by your answer 1; listed so (a)'s price is seen against it.
+  - **(c) Grant only the mach-lookup WebKit's check names** —
+    `com.apple.security.temporary-exception.mach-lookup.global-name` for `com.apple.nsurlsessiond`.
+    Unmeasured: whether WebKit then runs, and whether `checks/bundle.sh` still reports the
+    outbound connection denied. The CTO reads it as a network entitlement under another name —
+    the service it opens is the one WebKit treats as network access — and so as refused by
+    answer 1; it is listed so that refusal is yours and not assumed.
+  - **(d) Drop the sandbox** — refused in cycle-1
+    (`nozoki@70a879a:docs/trail/sdd/cycle-1.md` § 2.3).
+  - **(e) Wait for Apple** — WebKit's own FIXME says the check goes "once WebKit can work without
+    network access"; the radar is from 2019 and carries no date.
+  **The CTO's position: (a).** The wall is the product — § 1's first question, and the Way this
+  instance holds a "never" by structure — and the renderer wall was always the cheaper of the two
+  to lose: § 2's row 4 says so, and the runner-up was rejected only on the cost of re-expressing
+  the design language, a cost now weighed against the product not running at all. Which native
+  technology, and what the seams become, is § 2's weighing to redo once (a) is chosen; it is not
+  asked here. The CDO's half — whether the design language survives re-expression, and what
+  UX-I12's rendered Markdown becomes — is the CDO's to add to this item.
+  **The CDO's position: (a), on the design's own grounds — and the price § 2 row 4 put on it is
+  smaller than priced.** Three things are true of what (a) costs the experience:
+  - **The design language survives as values; one sentence of it does not.** Every token
+    `docs/DESIGN.md` fixes is a value — a hex colour, a pixel size, a weight, a line-height, a
+    radius, a 4px rhythm (§ Colors, § Typography, § Layout, § Shapes) — and the language was
+    drawn to look like the platform from the start: "it starts from what a stock Mac already
+    draws: the platform's own fonts, its own text sizes, its own flat list rows" (§ Overview);
+    a row's selection runs edge to edge "the way a Finder list row does" (§ Shapes); no shadow
+    but one, no focus ring, no accent (§ Elevation & Depth, RN-2). A native renderer draws that
+    directly. What does not carry is the realisation sentence — "realised in plain CSS custom
+    properties over the product's own markup" (§ Overview; RN-1) — the CSS font-stack syntax
+    the frontmatter uses to name the system fonts (`-apple-system, system-ui`;
+    `ui-monospace, "SF Mono", Menlo`, § Typography), and RN-1's "the runtime — a browser tab or a
+    native window — is the SDD's; every value here is a CSS value and holds in either", which
+    was written when both runtimes drew CSS and does not cover (a). Those move in `DESIGN.md`'s
+    own run, which is licensed to trail this document
+    (`<CORE>/roles/loaders/cdo_global.md` § *Output*: "`DESIGN.md` may trail the SDD, and the UXD
+    may not"). No value moves; every `{components.*}` contract is re-mapped to a native view
+    with the same numbers. The UXD names no renderer and no CSS — § 9's direction is "no
+    established component design system… the platform's own controls and appearance are the
+    starting point" — so the UXD stands at v10 under (a), and so does this document's § 4 CDO
+    clause: C-E1 – C-E10 bind observations and tokens, not a web engine. (§ 2 row 4 attributes
+    "CSS tokens over the product's own markup" to `docs/UXD.md` § 9; the sentence is
+    `docs/DESIGN.md` § Overview's and RN-1's — a citation the CTO's row should re-point.)
+  - **UX-I12 does not move; what moves is who has to meet it.** Rendered by default, nothing
+    fetched from outside the folder, three image cases — in-folder in place, outside-the-folder a
+    stated not-fetched placeholder *where it would appear*, broken-inside a stated placeholder,
+    never a broken-image glyph — and a link shown with its destination readable
+    (`docs/UXD.md` UX-I12) are the requirement whichever engine renders. `docs/DESIGN.md`'s
+    contract for them stands unchanged too: `{components.prose}` at the 44rem measure, three
+    heading levels distinct and h4–h6 collapsed to `prose-h3` muted, inline and fenced code on
+    `{colors.canvas}`, the link's text underlined with its destination in `{typography.path}` on
+    the same line, the in-folder image at its own size and no wider than the measure, the
+    placeholder a bordered box holding alt text and source (§ Components "Rendered Markdown";
+    § Typography). Under (a) a native renderer must produce every one of those cells from the
+    Markdown source without a web engine, and two of them are where the cost sits: block-level
+    layout a text view is not born doing — an image or its placeholder box *in the flow of the
+    prose*, and code on its own surface inside prose — and the six bundled grammars the code
+    treatment shares with the highlighter (§ 3 `surfaces`). Which native technology meets them,
+    and whether FR-31's raw-source switch still "costs nothing" once rendered Markdown itself is
+    dearer, is § 2's re-weighing (the CTO's; `docs/SRS.md` FR-31 leaves that judgment to this
+    document). The bar is not lowered by the exit: a native renderer that shows a glyph for a
+    missing image, or a link without its destination, violates UX-I12 the same way a web one
+    would. One cell gets cheaper: "rendering fetches nothing from outside the folder" stops
+    being a policy the reviewer trusts (C-R7's CSP) and becomes the wall the host already holds
+    — a single-process view under a host with no network entitlement has no fetch to forbid
+    (C-D3's redraw, the CTO's).
+  - **Why (a) and not the exits that keep WKWebView.** From this seat: a renderer that draws only
+    under the entitlement the owner refused is a renderer this design cannot be shown on, and a
+    language drawn to look native is shorter to draw natively than § 2 row 4 priced when it
+    called that "a second design language". (c) would keep `DESIGN.md` byte-for-byte as written
+    — the one exit with no design cost at all — and this seat reads it as the CTO does, a
+    network entitlement under another name; the refusal is yours. Two costs of (a) named so they
+    are not found later: the highlighter and every `{components.*}` contract re-expressed in
+    § 3 `surfaces`; and `README.md` § Stack states "the system WKWebView" and "styled in plain
+    CSS custom properties" (`README.md:L48-L49`), a public surface that under (a) tells a truth
+    the product no longer has (§ 4 C-E10) — the CPO's to move with the README.
+  **The CPO's position: (a) — and the cut does not move with it.** Four things from the value
+  seat, each sourced:
+  - **Nothing the product promises names a renderer.** `docs/PRD.md` § Dependencies /
+    Integrations names the filesystem and Git and nothing else; no PRD section names WKWebView,
+    Tauri or CSS (`grep -n -i 'webview\|tauri\|css' docs/PRD.md` returns nothing, 2026-09-23),
+    and the Agari's three conditions name none (`system/projects/nozoki/agari.md`). So (a)
+    changes nothing a stranger was promised and opens no PRD gap — the PRD stays at v15 under
+    every exit, and `SDD.md` § 12's PRD boundary now says so.
+  - **What (a) costs in product terms is a date, not a surface.** Every slice rests on
+    `open-a-folder` (`SDD.md` § 7), so the first public release moves later, not smaller. The
+    cut holds: § 5 step 1's entries were made from behaviour and never from the boxes, so E-1 –
+    E-11, the eleven slices, their slugs, *Delivers*, fences and PRD traces stand whatever
+    draws them. One sizing this seat re-checks once § 2 is redrawn, and only then:
+    `read-markdown`, whose decision — three walls hold against untrusted content — becomes part
+    structure under a single-process view (no script engine to wall off) and part layout
+    (UX-I12's cells, as the CDO prices them). It stays a slice of its own and not a share of
+    `read-a-file`, for the reason step 4 already gives: merged, an intermediate result (files
+    read, Markdown not yet right) would change its acceptance.
+  - **(b) and (c) fail the same product test, whatever the probe reports.** The promise is what
+    a stranger can *show*: § 2's taken row answers § 1's first question "with an entitlements
+    file a reviewer reads (`codesign -d --entitlements`)". An entitlement on that file naming
+    `com.apple.nsurlsessiond` — the network daemon — is one the README would have to explain
+    away, and "we hold a network exception but never use it" is the promise the code keeps,
+    which your answer 1 ruled out (`docs/trail/sdd/cycle-8.md` § 5.1). So this seat reads (c)
+    as refused for the product reason (b) is, not only the technical one; the refusal is yours.
+  - **(e) is not an exit.** The Agari's third condition — public, at 1.0.0 or later, by the README
+    alone — cannot be reached by a product whose first window waits on a radar open since 2019
+    with no date on it.
+  Two costs of (a) this seat owns and names now: `README.md:L48-L49`'s stack sentence moves with
+  the README when (a) lands — a public surface, not this document's — and the first-release date
+  the owner has been counting toward moves out by the rewrite of `surfaces`.
+- **Answer:** <the owner fills this in>
