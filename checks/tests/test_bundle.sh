@@ -50,6 +50,8 @@ test_real_bundle_passes
 test_probe_waits_past_an_early_unsandboxed_report
 test_first_ask_holding_all_three_passes
 test_pass_line_states_the_window_in_force
+test_pass_line_is_on_stdout
+test_red_verdict_lines_are_on_stderr
 test_outbound_connection_allowed_fails
 test_out_of_grant_read_allowed_fails
 test_not_sandboxed_fails
@@ -375,6 +377,52 @@ test_pass_line_states_the_window_in_force() {
   matched="$(printf '%s' "$last_line" | sed -n 's/^sandbox observed: sandboxed, out-of-grant read denied, outbound connection denied (pid [0-9][0-9]*), the first ask to hold all three within 5 asks, 0\.25 s apart$/matched/p')"
   [ -n "$matched" ] \
     || fail "expected the last line to be exactly the CP-76 pass line stating the window of 5 asks with a digit pid. last line: $last_line"
+}
+
+# CP-76: the pass line is printed on stdout — it is the run's last stdout line, and stderr never
+# carries it. Every other case merges the two streams, so none of them could tell.
+test_pass_line_is_on_stdout() {
+  seq="$WORK/seq-pass-stdout"
+  sequenced_probe_stub "$seq" "yes denied denied"
+
+  BUNDLE_SH_PROBE_TICKS=2 PATH="$seq:$PATH" "$BUNDLE_SH" "$APP" > "$WORK/pass.out" 2> "$WORK/pass.err"
+  STATUS=$?
+  OUT="stdout: $(cat "$WORK/pass.out") stderr: $(cat "$WORK/pass.err")"
+
+  [ "$STATUS" -eq 0 ] || fail "expected exit 0, got $STATUS. output: $OUT" || return 1
+  last_line="$(tail -1 "$WORK/pass.out")"
+  case "$last_line" in
+    "sandbox observed: sandboxed, out-of-grant read denied, outbound connection denied (pid "*"), the first ask to hold all three within 2 asks, 0.25 s apart") ;;
+    *) fail "expected stdout's last line to be the CP-76 pass line. stdout's last line: $last_line. output: $OUT" || return 1 ;;
+  esac
+  ! grep -q 'sandbox observed:' "$WORK/pass.err" \
+    || fail "the pass line was printed on stderr. output: $OUT" || return 1
+  expect_no_bundle_process "$APP"
+}
+
+# CP-74, CP-75: a red run's condition lines and its closing line are printed on stderr, and stdout
+# carries neither — the closing line is stderr's last line.
+test_red_verdict_lines_are_on_stderr() {
+  seq="$WORK/seq-red-stderr"
+  sequenced_probe_stub "$seq" "yes denied allowed"
+
+  BUNDLE_SH_PROBE_TICKS=2 PATH="$seq:$PATH" "$BUNDLE_SH" "$APP" > "$WORK/red.out" 2> "$WORK/red.err"
+  STATUS=$?
+  OUT="stdout: $(cat "$WORK/red.out") stderr: $(cat "$WORK/red.err")"
+
+  expect_nonzero_status || return 1
+  grep -qx 'condition not held: an outbound network connection is not denied' "$WORK/red.err" \
+    || fail "expected the condition line on stderr. output: $OUT" || return 1
+  last_err="$(tail -1 "$WORK/red.err")"
+  case "$last_err" in
+    "bundle.sh: the wall does not hold on the launched process (pid "*"): no ask held all three within 2 asks, 0.25 s apart") ;;
+    *) fail "expected stderr's last line to be the CP-75 closing line. stderr's last line: $last_err. output: $OUT" || return 1 ;;
+  esac
+  ! grep -q 'condition not held:' "$WORK/red.out" \
+    || fail "a condition line was printed on stdout. output: $OUT" || return 1
+  ! grep -q 'the wall does not hold' "$WORK/red.out" \
+    || fail "the closing line was printed on stdout. output: $OUT" || return 1
+  expect_no_bundle_process "$APP"
 }
 
 # CP-74, CP-75: a `yes` report is not exempt when the window runs out — one condition short still
@@ -909,6 +957,8 @@ test_leading_zero_window_reads_in_base_ten() {
 
   expect_nonzero_status || return 1
   expect_output_contains "8 asks" || return 1
+  # CP-75: <N> is the window in force, read in base 10 — 8, never the override's spelling 08.
+  expect_closing_line_states_the_window 8 || return 1
   expect_output_lacks "BUNDLE_SH_PROBE_TICKS" || return 1
   expect_output_lacks "octal" || return 1
   [ "$(asked_count "$seq")" -eq 8 ] || fail "expected 8 asks, got $(asked_count "$seq")" || return 1
@@ -927,6 +977,9 @@ test_never_sandboxed_within_the_window_fails_naming_it() {
   expect_output_contains "3 asks" || return 1
   expect_output_contains "0.25 s" || return 1
   expect_not_sandboxed_condition_line_unchanged || return 1
+  # CP-74: only the condition the last report fails is named (spec § Examples, `no denied denied`).
+  expect_output_lacks "an out-of-grant file read is not denied" || return 1
+  expect_output_lacks "an outbound network connection is not denied" || return 1
   expect_closing_line_states_the_window 3 || return 1
   expect_one_report || return 1
   [ "$(asked_count "$seq")" -eq 3 ] || fail "expected 3 asks, got $(asked_count "$seq")" || return 1
