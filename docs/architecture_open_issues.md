@@ -75,7 +75,7 @@
   and its § 10 row go, and the renderer gate has no NFDR obligation until something else raises it.
   An override that keeps the drafts but moves the gate into ADR-0011, or into a record superseding
   ADR-0010, is one record's worth of rewriting at Proposed. Nothing else moves.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm, with one addition to QC-62. The two records and the two entries hold as drafted: ADR-0011 is the owner's cycle-8 rule, answers 1–2, restated whole. ADR-0012 and QC-62 are answer 4. QC-25's two halves are what "only with a record" requires. On acceptance, ADR-0003 is superseded and the seven sites that cite it move with it. **Addition:** QC-62's tail states that under the rule no bundle this product may ship reaches `open_folder` until the renderer leaves WKWebView (SDD § 10 RC-2). So the gate is red by construction until the replacement lands. That red is the gate working. It is never cleared by granting an entitlement or by skipping the script, and `checks/renderer.sh` lands with the replacement renderer or after it. Decided in the owner's seat by a `companion-self-answer` run, 2026-09-23; the reasoning is `docs/trail/architecture/self_answer-11.md` § 2.1.
 
 ### 2.2 ADR-0002 is not superseded, and QC-21 stands, on your SDD-companion answer alone — the record lands when the SDD carries the replacement renderer
 - **Lands in:** `adr/` — a record superseding ADR-0002 (the system WKWebView); `nfdr.md` QC-21 (no
@@ -102,4 +102,4 @@
   its turn when the SDD lands the replacement — two records where one would do. QC-21 would then
   read that the renderer technology is being replaced once, on the owner's ruling, and is
   otherwise not replaceable inside the terminus. Nothing else moves.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm, with one addition. No record supersedes ADR-0002 until the SDD carries the replacement renderer, and QC-21 stands with RN-21 beside it. There is one more reason to wait: exit (a) on the SDD companion also costs the renderer wall and C-D3's three walls. So the superseding record may reach ADR-0001's and ADR-0006's renderer halves too, which only the SDD's § 2 re-weighing can say. **Addition:** QC-21 waits on PD-29, and the FDR had no companion to carry the change. It is now raised at `docs/fdr_open_issues.md` § 2.1 (`nozoki@f5cddef`). Decided in the owner's seat by a `companion-self-answer` run, 2026-09-23; the reasoning is `docs/trail/architecture/self_answer-11.md` § 2.2.
