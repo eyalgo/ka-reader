@@ -28,6 +28,42 @@
 
 ---
 
+## 2. Choices to confirm — a seat drafted a best-effort answer; confirm or override
+
+### 2.1 The Version line has lost versions 5–7, and v8's entry runs into the tail of v5's
+
+> **No producing run wrote this item.** The `companion-self-answer` run answering this file raised
+> it on 2026-09-23, under `<CORE>/prompts/decide_companion_answers.md` § *The items are not the
+> whole of what a document is owed*. That section covers this case as *the document you are
+> answering*. It came from reading `SDD.md` whole to answer § 5.1, and it has nothing to do with
+> § 5.1. This item's slot is left at its placeholder: the reasoning is that run's, and the decision
+> belongs to the next round. Reasoning: `docs/trail/sdd/self_answer-17.md`, § *Raised on this
+> document*.
+
+- **Raised by:** `companion-self-answer`, answering this file — 2026-09-23
+- **Drafted into the SDD:** Nothing has been written into the SDD yet. As it stands,
+  `SDD.md:L9-L50` gives v8's entry. Its next line starts mid-sentence: "recall outstanding, and
+  `docs/SDD_open_issues.md` no longer stands on disk, so this document is stamped Settled. The run
+  consumed the one companion item …". That is v5's entry with its opening clause missing, and
+  there is no entry for v6 or v7. The draft change: put back v5's opening clause, "**Version:** 5
+  — run 5 (`docs/trail/sdd/run-5.md`): all three seats declared `no_followup` with no"
+  (`nozoki@67372a5:docs/SDD.md:L9`). Write back the v7 and v6 entries from line 9 of
+  `nozoki@c1f8a20` and `nozoki@b3439e8`, newest first after v8. Any later bump then adds a new
+  first line above the old ones and never replaces it.
+- **Rationale:** Runs 6, 7 and 8 each replaced line 9 when they should have added a line above
+  it. At `67372a5` (v5), line 9 opens v5's entry and line 10 continues it. At `b3439e8` (v6),
+  `c1f8a20` (v7) and `9b36a42` (v8), line 9 is that run's own version and line 10 is still v5's
+  continuation. So the Version line now says something false. A cold reader takes run 5's close
+  as v8's: the `cycle-3.md` consumption, RN-41 – RN-43 repointed, and "`SDD_open_issues.md`
+  removed". Run 5 did those things. The v6 and v7 changes (RC-1, RN-45 – RN-47) have no entry at
+  all. This needs no further argument than the measurement. The text to restore is all in git,
+  so nothing is re-derived.
+- **If overridden:** Nothing outside the Version line moves. Without the change, the line keeps
+  crediting run 5's work to v8, and the next bump that replaces line 9 hides v8 in the same way.
+- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+
+---
+
 ## 5. Raised from downstream — an item from a seat that did not write the SDD
 
 ### 5.1 C-I3's "a red run says how long it waited" does not say whether it covers a run ended by a failed ask
@@ -54,7 +90,26 @@
   An ask count on the failure line would say whether the process died at launch or late in the
   window. If the seat wants that, C-I3 should say "a red run says how long it waited, or on which
   ask it ended", and the script owes that line a change.
-- **Answer:** <the owner fills this in>
+- **Answer:** Take the PM's lean: the sentence covers only a red run that ends because the window
+  ran out. The lean gives the wrong reason, though, and three things need adding. The reason: the
+  bound is printed so that a red run can tell "waited out the whole window, and the wall is
+  absent" apart from "gave up early" (`docs/trail/sdd/self_answer-12.md`, addition 1). A run
+  ended by a failed ask did not give up waiting. It stopped on a failure that it names. It may
+  well have waited, so "a run that did not wait" is the wrong ground. The additions:
+  (a) C-I3 says in one clause which red runs the bound reaches. A red run that ends because the
+  window ran out says how long it waited. A run ended by a failed ask ends at once and names what
+  failed — `sandbox_check` missing or returning an error, or the pid no longer naming a process.
+  *Violated by*'s "a bound not printed" reads the same way. § 11 R-8 already describes only the
+  window-out case and does not change.
+  (b) The same holds for the negative control. The control's red run ends at once, on the first
+  report that is not `sandboxed: no` (`checks/bundle.sh:L311`, `:L323`), so of the control's
+  lines only its pass line prints the bound (`:L322`).
+  (c) The failed-ask line does not say on which ask the run ended, so a process that dies does
+  not say whether it died at launch or late in the window. C-I3 names this as a case it does not
+  cover. The widening the doubt proposes ("or on which ask it ended") cites no run where that
+  mattered, so it waits until one occurs. `checks/bundle.sh` stays as it is. After the fold,
+  NFDR QC-25 (`docs/nfdr.md:L253-L254`), which copies the sentence, is re-derived from § 4.
+  Reasoning: `docs/trail/sdd/self_answer-17.md` § 5.1.
 
 **How it closes.** `product-sdd` folds it on its next run like every other item in this file, and
 the trail copy and the delete-when-empty behaviour are unchanged.
