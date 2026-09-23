@@ -7,8 +7,12 @@ edition = "2024"
 [lib]
 crate-type = ["staticlib", "rlib"]
 
-[lints]
-workspace = true
+# Restated, not inherited: cargo refuses to override one workspace lint on top of `workspace = true`.
+# `unsafe_code` is the only lint the workspace sets. This crate relaxes it because the C ABI needs
+# un-mangled exports, the raw pointers they take, and (Task 7) the load-time initializer's link
+# section. It is the only manifest that does (CP-93); every other crate keeps the workspace's `forbid`.
+[lints.rust]
+unsafe_code = "allow"
 
 [dependencies]
 log = "0.4.34"
