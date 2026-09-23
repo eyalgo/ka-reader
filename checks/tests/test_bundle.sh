@@ -48,7 +48,10 @@ WORK=""
 CASES="
 test_real_bundle_passes
 test_probe_waits_past_an_early_unsandboxed_report
-test_first_sandboxed_report_is_the_one_judged
+test_first_ask_holding_all_three_passes
+test_pass_line_states_the_window_in_force
+test_pass_line_is_on_stdout
+test_red_verdict_lines_are_on_stderr
 test_outbound_connection_allowed_fails
 test_out_of_grant_read_allowed_fails
 test_not_sandboxed_fails
@@ -91,6 +94,8 @@ test_header_names_the_probe_window
 test_empty_probe_window_reads_as_the_default
 test_leading_zero_window_reads_in_base_ten
 test_never_sandboxed_within_the_window_fails_naming_it
+test_window_exhausted_after_a_short_yes_judges_the_last_report
+test_probe_failure_after_a_short_yes_ends_the_run
 test_window_exhausted_reads_the_last_report
 test_no_sandbox_observed_fails_and_cleans_up
 test_nonexistent_path_fails
@@ -157,7 +162,8 @@ expect_no_bundle_process() {
   [ -z "$left" ] || fail "processes of $1 are still running: $left"
 }
 
-# "One report" (CP-68): the output holds exactly one `sandboxed:` line — the report the run judged.
+# "One report" (CP-68, CP-77): the output holds exactly one `sandboxed:` line — the report the run
+# judged. CP-68 is the negative control's half; CP-77 is the ordinary path's.
 expect_one_report() {
   reports="$(printf '%s\n' "$OUT" | grep -c '^sandboxed: ')"
   [ "$reports" -eq 1 ] || fail "expected exactly one report, got $reports. output: $OUT"
@@ -168,15 +174,14 @@ closing_line() {
   printf '%s\n' "$OUT" | grep '^bundle.sh: ' | tail -1
 }
 
-# The closing failure line of a run whose window ran out (CP-65; change_design.md: "The closing failure
-# line says `within <N> asks, 0.25 s apart`", and the prefix `the wall does not hold on the launched
-# process (pid …)` stays on it). $1 is N.
+# The closing failure line of a run whose window ran out (CP-75), matched exactly: "bundle.sh: the wall
+# does not hold on the launched process (pid <digits>): no ask held all three within <N> asks, 0.25 s
+# apart". $1 is N.
 expect_closing_line_states_the_window() {
   closing="$(closing_line)"
-  case "$closing" in
-    "bundle.sh: the wall does not hold on the launched process (pid "*"within $1 asks, 0.25 s apart"*) ;;
-    *) fail "expected the closing failure line to state the window of $1 asks, 0.25 s apart. closing line: $closing. output: $OUT" ;;
-  esac
+  matched="$(printf '%s' "$closing" | sed -n "s/^bundle\.sh: the wall does not hold on the launched process (pid [0-9][0-9]*): no ask held all three within $1 asks, 0\.25 s apart\$/matched/p")"
+  [ -n "$matched" ] \
+    || fail "expected the closing failure line to state the window of $1 asks, 0.25 s apart exactly. closing line: $closing. output: $OUT"
 }
 
 # The not-sandboxed condition line exactly as it reads today: the condition blocks read the kept report
@@ -320,8 +325,8 @@ test_real_bundle_passes() {
   expect_no_bundle_process "$APP"
 }
 
-# CP-64: the loop waits past an early not-sandboxed report and judges the first sandboxed: yes one,
-# at the default window.
+# CP-73: the loop asks past an early report that falls short and passes on the first ask holding all
+# three, at the default window.
 test_probe_waits_past_an_early_unsandboxed_report() {
   seq="$WORK/seq-waits-past"
   sequenced_probe_stub "$seq" "no allowed allowed" "no allowed allowed" "yes denied denied"
@@ -336,45 +341,124 @@ test_probe_waits_past_an_early_unsandboxed_report() {
   expect_no_bundle_process "$APP"
 }
 
-# CP-64: the ordinary path judges the first sandboxed: yes report as it stands — it does not wait for
-# a better one, even though a later report in the same window would pass.
-test_first_sandboxed_report_is_the_one_judged() {
-  seq="$WORK/seq-first-judged"
+# CP-73: the loop's stop and the verdict are the same judgment, computed once per ask — the first ask
+# whose report holds all three lines ends the loop as a pass. A first `yes` carrying an `allowed` is
+# asked past, not judged as it stands (the split CP-73 reverses).
+test_first_ask_holding_all_three_passes() {
+  seq="$WORK/seq-first-all-three"
   sequenced_probe_stub "$seq" "yes denied allowed" "yes denied denied"
 
   run_bundle_sh_with_stubs "$seq" "$APP"
 
-  expect_nonzero_status || return 1
-  expect_output_contains "an outbound network connection is not denied" || return 1
+  [ "$STATUS" -eq 0 ] || fail "expected exit 0, got $STATUS. output: $OUT" || return 1
+  [ "$(asked_count "$seq")" -eq 2 ] || fail "expected 2 asks, got $(asked_count "$seq")" || return 1
   expect_one_report || return 1
-  # The window did not decide this run, so its closing line carries no window clause (design, locked).
-  case "$(closing_line)" in
-    *asks*) fail "the closing line states a window on a run the window did not decide: $(closing_line)" || return 1 ;;
-  esac
-  [ "$(asked_count "$seq")" -eq 1 ] || fail "expected 1 ask, got $(asked_count "$seq")" || return 1
+  expect_output_contains "outbound-connection: denied" || return 1
+  expect_output_lacks "outbound-connection: allowed" || return 1
+  last_line="$(printf '%s\n' "$OUT" | tail -1)"
+  matched="$(printf '%s' "$last_line" | sed -n 's/^sandbox observed: sandboxed, out-of-grant read denied, outbound connection denied (pid [0-9][0-9]*), the first ask to hold all three within 40 asks, 0\.25 s apart$/matched/p')"
+  [ -n "$matched" ] \
+    || fail "expected the last line to be exactly the CP-76 pass line with 40 asks. last line: $last_line" || return 1
   expect_no_bundle_process "$APP"
 }
 
-# One condition at a time: the probe stub reports two of the three as held and one as not.
-test_outbound_connection_allowed_fails() {
-  mkdir -p "$WORK/stubs-outbound"
-  probe_stub "$WORK/stubs-outbound" yes denied allowed
+# CP-76: the pass line states the window in force ($PROBE_TICKS), never the ask that passed. The pass
+# comes on ask 1 while the line says 5, which is what tells the two apart.
+test_pass_line_states_the_window_in_force() {
+  seq="$WORK/seq-pass-line-window"
+  sequenced_probe_stub "$seq" "yes denied denied"
 
-  run_bundle_sh_with_stubs "$WORK/stubs-outbound" "$APP"
+  OUT="$(BUNDLE_SH_PROBE_TICKS=5 PATH="$seq:$PATH" "$BUNDLE_SH" "$APP" 2>&1)"
+  STATUS=$?
+
+  [ "$STATUS" -eq 0 ] || fail "expected exit 0, got $STATUS. output: $OUT" || return 1
+  [ "$(asked_count "$seq")" -eq 1 ] || fail "expected 1 ask, got $(asked_count "$seq")" || return 1
+  last_line="$(printf '%s\n' "$OUT" | tail -1)"
+  matched="$(printf '%s' "$last_line" | sed -n 's/^sandbox observed: sandboxed, out-of-grant read denied, outbound connection denied (pid [0-9][0-9]*), the first ask to hold all three within 5 asks, 0\.25 s apart$/matched/p')"
+  [ -n "$matched" ] \
+    || fail "expected the last line to be exactly the CP-76 pass line stating the window of 5 asks with a digit pid. last line: $last_line"
+}
+
+# CP-76: the pass line is printed on stdout — it is the run's last stdout line, and stderr never
+# carries it. Every other case merges the two streams, so none of them could tell.
+test_pass_line_is_on_stdout() {
+  seq="$WORK/seq-pass-stdout"
+  sequenced_probe_stub "$seq" "yes denied denied"
+
+  BUNDLE_SH_PROBE_TICKS=2 PATH="$seq:$PATH" "$BUNDLE_SH" "$APP" > "$WORK/pass.out" 2> "$WORK/pass.err"
+  STATUS=$?
+  OUT="stdout: $(cat "$WORK/pass.out") stderr: $(cat "$WORK/pass.err")"
+
+  [ "$STATUS" -eq 0 ] || fail "expected exit 0, got $STATUS. output: $OUT" || return 1
+  last_line="$(tail -1 "$WORK/pass.out")"
+  case "$last_line" in
+    "sandbox observed: sandboxed, out-of-grant read denied, outbound connection denied (pid "*"), the first ask to hold all three within 2 asks, 0.25 s apart") ;;
+    *) fail "expected stdout's last line to be the CP-76 pass line. stdout's last line: $last_line. output: $OUT" || return 1 ;;
+  esac
+  ! grep -q 'sandbox observed:' "$WORK/pass.err" \
+    || fail "the pass line was printed on stderr. output: $OUT" || return 1
+  expect_no_bundle_process "$APP"
+}
+
+# CP-74, CP-75: a red run's condition lines and its closing line are printed on stderr, and stdout
+# carries neither — the closing line is stderr's last line.
+test_red_verdict_lines_are_on_stderr() {
+  seq="$WORK/seq-red-stderr"
+  sequenced_probe_stub "$seq" "yes denied allowed"
+
+  BUNDLE_SH_PROBE_TICKS=2 PATH="$seq:$PATH" "$BUNDLE_SH" "$APP" > "$WORK/red.out" 2> "$WORK/red.err"
+  STATUS=$?
+  OUT="stdout: $(cat "$WORK/red.out") stderr: $(cat "$WORK/red.err")"
 
   expect_nonzero_status || return 1
+  grep -qx 'condition not held: an outbound network connection is not denied' "$WORK/red.err" \
+    || fail "expected the condition line on stderr. output: $OUT" || return 1
+  last_err="$(tail -1 "$WORK/red.err")"
+  case "$last_err" in
+    "bundle.sh: the wall does not hold on the launched process (pid "*"): no ask held all three within 2 asks, 0.25 s apart") ;;
+    *) fail "expected stderr's last line to be the CP-75 closing line. stderr's last line: $last_err. output: $OUT" || return 1 ;;
+  esac
+  ! grep -q 'condition not held:' "$WORK/red.out" \
+    || fail "a condition line was printed on stdout. output: $OUT" || return 1
+  ! grep -q 'the wall does not hold' "$WORK/red.out" \
+    || fail "the closing line was printed on stdout. output: $OUT" || return 1
+  expect_no_bundle_process "$APP"
+}
+
+# CP-74, CP-75: a `yes` report is not exempt when the window runs out — one condition short still
+# fails after every ask, and the closing line states the window. Bounded at 3 asks: at the default the
+# static stub would be asked 40 times, about 10 s.
+test_outbound_connection_allowed_fails() {
+  seq="$WORK/seq-outbound-allowed"
+  sequenced_probe_stub "$seq" "yes denied allowed"
+
+  OUT="$(BUNDLE_SH_PROBE_TICKS=3 PATH="$seq:$PATH" "$BUNDLE_SH" "$APP" 2>&1)"
+  STATUS=$?
+
+  expect_nonzero_status || return 1
+  expect_one_report || return 1
   expect_output_contains "an outbound network connection is not denied" || return 1
+  expect_output_lacks "the launched process is not sandboxed" || return 1
+  expect_output_lacks "an out-of-grant file read is not denied" || return 1
+  expect_closing_line_states_the_window 3 || return 1
+  [ "$(asked_count "$seq")" -eq 3 ] || fail "expected 3 asks, got $(asked_count "$seq")" || return 1
   expect_no_bundle_process "$APP"
 }
 
 test_out_of_grant_read_allowed_fails() {
-  mkdir -p "$WORK/stubs-read"
-  probe_stub "$WORK/stubs-read" yes allowed denied
+  seq="$WORK/seq-read-allowed"
+  sequenced_probe_stub "$seq" "yes allowed denied"
 
-  run_bundle_sh_with_stubs "$WORK/stubs-read" "$APP"
+  OUT="$(BUNDLE_SH_PROBE_TICKS=3 PATH="$seq:$PATH" "$BUNDLE_SH" "$APP" 2>&1)"
+  STATUS=$?
 
   expect_nonzero_status || return 1
+  expect_one_report || return 1
   expect_output_contains "an out-of-grant file read is not denied" || return 1
+  expect_output_lacks "the launched process is not sandboxed" || return 1
+  expect_output_lacks "an outbound network connection is not denied" || return 1
+  expect_closing_line_states_the_window 3 || return 1
+  [ "$(asked_count "$seq")" -eq 3 ] || fail "expected 3 asks, got $(asked_count "$seq")" || return 1
   expect_no_bundle_process "$APP"
 }
 
@@ -820,7 +904,8 @@ test_invalid_probe_window_is_refused_before_launch() {
   done
 }
 
-# CP-66: the header names the variable and its unit, the lines before `set -euo pipefail`.
+# CP-66, CP-78: the header names the variable and its unit, and states the ordinary path as CP-73's
+# one judgment — never the retired first-yes rule. The lines before `set -euo pipefail`.
 test_header_names_the_probe_window() {
   header="$(awk '/^set -euo pipefail$/{exit} {print}' "$BUNDLE_SH")"
   case "$header" in
@@ -829,7 +914,14 @@ test_header_names_the_probe_window() {
   esac
   case "$header" in
     *"0.25 s"*) ;;
-    *) fail "the header does not name the 0.25 s unit. header: $header" ;;
+    *) fail "the header does not name the 0.25 s unit. header: $header" || return 1 ;;
+  esac
+  case "$header" in
+    *"the first ask on which all three hold"*) ;;
+    *) fail "the header does not state that the pass is the first ask on which all three hold. header: $header" || return 1 ;;
+  esac
+  case "$header" in
+    *"the first report that says sandboxed: yes"*) fail "the header still states the retired rule: the first report that says sandboxed: yes. header: $header" ;;
   esac
 }
 
@@ -865,12 +957,14 @@ test_leading_zero_window_reads_in_base_ten() {
 
   expect_nonzero_status || return 1
   expect_output_contains "8 asks" || return 1
+  # CP-75: <N> is the window in force, read in base 10 — 8, never the override's spelling 08.
+  expect_closing_line_states_the_window 8 || return 1
   expect_output_lacks "BUNDLE_SH_PROBE_TICKS" || return 1
   expect_output_lacks "octal" || return 1
   [ "$(asked_count "$seq")" -eq 8 ] || fail "expected 8 asks, got $(asked_count "$seq")" || return 1
 }
 
-# CP-65, CP-68: never sandboxed within the window — the run fails naming the window it waited.
+# CP-74, CP-75, CP-77: never sandboxed within the window — the run fails naming the window it waited.
 test_never_sandboxed_within_the_window_fails_naming_it() {
   seq="$WORK/seq-never-sandboxed"
   sequenced_probe_stub "$seq" "no denied denied"
@@ -883,12 +977,57 @@ test_never_sandboxed_within_the_window_fails_naming_it() {
   expect_output_contains "3 asks" || return 1
   expect_output_contains "0.25 s" || return 1
   expect_not_sandboxed_condition_line_unchanged || return 1
+  # CP-74: only the condition the last report fails is named (spec § Examples, `no denied denied`).
+  expect_output_lacks "an out-of-grant file read is not denied" || return 1
+  expect_output_lacks "an outbound network connection is not denied" || return 1
   expect_closing_line_states_the_window 3 || return 1
   expect_one_report || return 1
   [ "$(asked_count "$seq")" -eq 3 ] || fail "expected 3 asks, got $(asked_count "$seq")" || return 1
 }
 
-# CP-65: when the window runs out, the last report is the one judged — not the first.
+# CP-74: a short `yes` (missing a condition) does not survive to the end of the window — asked past
+# like any other report short of all three, and when the window runs out the last report asked is
+# judged, even though an earlier report said sandboxed: yes.
+test_window_exhausted_after_a_short_yes_judges_the_last_report() {
+  seq="$WORK/seq-short-yes-exhausted"
+  sequenced_probe_stub "$seq" "yes denied allowed" "no allowed allowed"
+
+  OUT="$(BUNDLE_SH_PROBE_TICKS=2 PATH="$seq:$PATH" "$BUNDLE_SH" "$APP" 2>&1)"
+  STATUS=$?
+
+  expect_nonzero_status || return 1
+  [ "$(asked_count "$seq")" -eq 2 ] || fail "expected 2 asks, got $(asked_count "$seq")" || return 1
+  expect_one_report || return 1
+  expect_output_lacks "sandboxed: yes" || return 1
+  expect_output_contains "the launched process is not sandboxed" || return 1
+  expect_output_contains "an out-of-grant file read is not denied" || return 1
+  expect_output_contains "an outbound network connection is not denied" || return 1
+  expect_closing_line_states_the_window 2 || return 1
+}
+
+# CP-80.2: a probe failure on any ask ends the run at once — a short `yes` on an earlier ask changes
+# nothing, and the report that would have followed (a full sandboxed: yes) never gets the chance to be
+# judged.
+test_probe_failure_after_a_short_yes_ends_the_run() {
+  seq="$WORK/seq-short-yes-then-fail"
+  sequenced_probe_stub "$seq" "yes denied allowed" FAIL "yes denied denied"
+
+  run_bundle_sh_with_stubs "$seq" "$APP"
+
+  expect_nonzero_status || return 1
+  [ "$(asked_count "$seq")" -eq 2 ] || fail "expected 2 asks, got $(asked_count "$seq")" || return 1
+  case "$(closing_line)" in
+    "bundle.sh: the operating system's sandbox report for pid "*) ;;
+    *) fail "expected the closing line to open with the probe-failure message. closing line: $(closing_line)" || return 1 ;;
+  esac
+  expect_output_contains "sandbox_check" || return 1
+  expect_output_lacks "asks" || return 1
+  expect_output_lacks "sandbox observed:" || return 1
+  expect_output_lacks "condition not held:" || return 1
+  expect_no_bundle_process "$APP"
+}
+
+# CP-74: when the window runs out, the last report is the one judged — not the first.
 test_window_exhausted_reads_the_last_report() {
   seq="$WORK/seq-window-exhausted"
   sequenced_probe_stub "$seq" "no allowed allowed" "no denied denied"
@@ -988,8 +1127,9 @@ test_probe_error_fails() {
   expect_no_bundle_process "$APP"
 }
 
-# CP-67's last sentence (ordinary half): a report that exits 0 but does not say sandboxed: yes counts as
-# not sandboxed, so the run keeps asking past it — it is neither a failure that ends the run nor a pass.
+# CP-73: a report that exits 0 but is missing a line — a report the judgment cannot read as holding
+# that condition — is asked past like any report short of all three; it is neither a failure that ends
+# the run nor a pass.
 test_unreadable_report_is_asked_past() {
   dir="$WORK/stubs-unreadable-then-yes"
   mkdir -p "$dir"
