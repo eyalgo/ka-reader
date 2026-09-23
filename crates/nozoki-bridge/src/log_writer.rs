@@ -120,6 +120,17 @@ impl Log for FileLog {
     fn flush(&self) {}
 }
 
+/// The log path below `home`: `home` joined with `Library/Logs/nozoki.log`.
+pub fn log_path_below(home: &Path) -> PathBuf {
+    home.join(LOG_PATH_BELOW_HOME)
+}
+
+/// Whether `path` is an existing directory. The one existence check the bridge makes, kept here
+/// because this module is the only one that touches the filesystem (QC-13).
+pub fn directory_exists(path: &Path) -> bool {
+    path.is_dir()
+}
+
 /// Installs the writer as the process's logger, at `warn`, on the log path below `home`.
 ///
 /// `log`'s maximum level starts at `Off`, so a logger installed without raising it receives
@@ -137,8 +148,8 @@ impl Log for FileLog {
 /// std::fs::remove_dir_all(&home).expect("the folder can be removed");
 /// ```
 pub fn install(home: &Path) -> Result<(), SetLoggerError> {
-    let writer = INSTALLED
-        .get_or_init(|| FileLog::new(home.join(LOG_PATH_BELOW_HOME), PRODUCTION_BOUND_BYTES));
+    let writer =
+        INSTALLED.get_or_init(|| FileLog::new(log_path_below(home), PRODUCTION_BOUND_BYTES));
     log::set_logger(writer)?;
     log::set_max_level(LevelFilter::Warn);
     Ok(())
@@ -171,7 +182,7 @@ mod tests {
 
     use log::{Level, LevelFilter, Log, Record};
 
-    use super::{FileLog, PRODUCTION_BOUND_BYTES, install};
+    use super::{FileLog, PRODUCTION_BOUND_BYTES, directory_exists, install};
     use crate::test_support::TempDir;
 
     const ROOMY_BOUND: u64 = 1_048_576;

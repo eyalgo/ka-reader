@@ -6,6 +6,7 @@ use std::ffi::c_char;
 use std::sync::LazyLock;
 
 use crate::boundary::{guarded, list_entries, open_location};
+use crate::log_install::install_if_application_bundle;
 use crate::session::Session;
 
 /// An owned buffer of JSON bytes, made by the bridge and released by `nozoki_free`.
@@ -65,4 +66,18 @@ pub unsafe extern "C" fn nozoki_free(buffer: *mut NozokiBuffer) {
     let buffer = unsafe { Box::from_raw(buffer) };
     // SAFETY: `bytes` and `len` are exactly the boxed slice `allocate` leaked.
     drop(unsafe { Box::from_raw(std::ptr::slice_from_raw_parts_mut(buffer.bytes, buffer.len)) });
+}
+
+/// The load-time initializer: one function pointer in Mach-O's `__DATA,__mod_init_func`, run when
+/// the process loads the image. It sits in this file, the same object as the three exports, because
+/// the linker pulls an archive member only for a symbol it resolves, and an initializer anywhere else
+/// would be dropped silently. No export installs the writer, and no test process does: the guard
+/// answers no unless the process is an application bundle's executable.
+#[used]
+#[unsafe(link_section = "__DATA,__mod_init_func")]
+static INSTALL_LOG_AT_LOAD: extern "C" fn() = install_log_at_load;
+
+extern "C" fn install_log_at_load() {
+    // A panic must not unwind out of an `extern "C"` function, and the log is best effort.
+    std::panic::catch_unwind(install_if_application_bundle).ok();
 }

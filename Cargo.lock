@@ -1885,6 +1885,7 @@ dependencies = [
 name = "nozoki-bridge"
 version = "0.0.0"
 dependencies = [
+ "libc",
  "log",
  "nozoki-core",
  "serde",

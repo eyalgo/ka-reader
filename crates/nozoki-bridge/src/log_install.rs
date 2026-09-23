@@ -1,3 +1,98 @@
+//! The log's load-time install: when a process that is an application bundle's executable loads the
+//! bridge, and only then, install C-I2's writer at the log path inside the sandbox container.
+//!
+//! Nothing here reads `HOME` (QC-30 half 1): the home directory is the password database's answer
+//! for the current user. Nothing here touches the filesystem either; the one existence check lives in
+//! `log_writer` (QC-13). The guard is a pure function so its cases need no process to load.
+
+use std::ffi::{CStr, OsStr};
+use std::os::unix::ffi::OsStrExt;
+use std::path::{Path, PathBuf};
+
+use crate::log_writer;
+
+/// C-I2's container folder, below the user's home. The writer appends its own `Library/Logs/nozoki.log`.
+const CONTAINER_BELOW_HOME: &str = "Library/Containers/com.kensaiapp.nozoki/Data";
+
+/// The first password-database buffer, and the most it grows to before the lookup gives up.
+const PASSWORD_BUFFER_START: usize = 1024;
+const PASSWORD_BUFFER_LIMIT: usize = 1 << 20;
+
+/// The sandbox container's `Data` folder below `home`.
+pub fn container_path(home: &Path) -> PathBuf {
+    home.join(CONTAINER_BELOW_HOME)
+}
+
+/// Whether the writer is installed: `executable` is `<x>.app/Contents/MacOS/<exe>` and the
+/// container's `Data` directory already exists. A cargo test binary, an `.xctest` bundle and a
+/// bundle with no container all answer no, so no test process installs a logger and the bridge never
+/// creates a container.
+pub fn should_install(executable: &Path, container_exists: bool) -> bool {
+    container_exists && is_application_bundle_executable(executable)
+}
+
+fn is_application_bundle_executable(executable: &Path) -> bool {
+    let macos = executable.parent();
+    let contents = macos.and_then(Path::parent);
+    let bundle = contents.and_then(Path::parent);
+    name_of(macos) == Some(OsStr::new("MacOS"))
+        && name_of(contents) == Some(OsStr::new("Contents"))
+        && name_of(bundle).is_some_and(|name| name.as_bytes().ends_with(b".app"))
+}
+
+fn name_of(path: Option<&Path>) -> Option<&OsStr> {
+    path.and_then(Path::file_name)
+}
+
+/// The current user's home directory, from the password database (`getpwuid_r` over `getuid`).
+pub fn home_directory() -> Option<PathBuf> {
+    let mut size = PASSWORD_BUFFER_START;
+    while size <= PASSWORD_BUFFER_LIMIT {
+        let mut buffer = vec![0 as libc::c_char; size];
+        // SAFETY: an all-zero `passwd` is a valid value to pass as the out-parameter.
+        let mut entry: libc::passwd = unsafe { std::mem::zeroed() };
+        let mut found: *mut libc::passwd = std::ptr::null_mut();
+        // SAFETY: `entry`, `buffer` and `found` are live locals, and `size` is `buffer`'s length.
+        let status = unsafe {
+            libc::getpwuid_r(
+                libc::getuid(),
+                &mut entry,
+                buffer.as_mut_ptr(),
+                size,
+                &mut found,
+            )
+        };
+        if status == libc::ERANGE {
+            size *= 2;
+            continue;
+        }
+        if status != 0 || found.is_null() || entry.pw_dir.is_null() {
+            return None;
+        }
+        // SAFETY: `pw_dir` points into `buffer`, NUL-terminated by `getpwuid_r`, and `buffer` is alive.
+        let home = unsafe { CStr::from_ptr(entry.pw_dir) };
+        return Some(PathBuf::from(OsStr::from_bytes(home.to_bytes())));
+    }
+    None
+}
+
+/// Installs the writer when the running process is an application bundle's executable and its
+/// container exists. Every other case does nothing, and a failure has nowhere to be reported: this
+/// runs at load, before the shell exists.
+pub fn install_if_application_bundle() {
+    let Ok(executable) = std::env::current_exe() else {
+        return;
+    };
+    let Some(home) = home_directory() else {
+        return;
+    };
+    let container = container_path(&home);
+    if should_install(&executable, log_writer::directory_exists(&container)) {
+        // A logger already installed by the host is not the bridge's to replace.
+        log_writer::install(&container).ok();
+    }
+}
+
 #[cfg(test)]
 mod tests {
     //! Layer 1: the install guard and the container path as pure functions. Nothing here installs a
