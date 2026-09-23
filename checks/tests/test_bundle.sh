@@ -65,6 +65,8 @@ test_more_than_one_process_signals_neither
 test_already_running_copy_survives
 test_only_the_launched_pid_is_signalled
 test_negative_control_reports_unsandboxed
+test_negative_control_sandboxed_later_in_the_window_fails
+test_negative_control_asks_the_whole_window
 test_negative_control_reported_sandboxed_fails
 test_negative_control_reported_sandboxed_fails_the_suite
 test_absent_control_fails_the_suite
@@ -468,6 +470,45 @@ test_negative_control_reports_unsandboxed() {
 
   [ "$STATUS" -eq 0 ] || fail "expected exit 0 for the no-entitlement build, got $STATUS. output: $OUT" || return 1
   expect_output_contains "sandboxed: no" || return 1
+  expect_output_contains "40 asks" || return 1
+  expect_output_contains "0.25 s" || return 1
+  expect_one_report || return 1
+  expect_no_bundle_process "$copy"
+}
+
+# CP-69, CP-68: a report that turns sandboxed later in the window still fails the control — waiting
+# for more reports never turns a positive one into a pass.
+test_negative_control_sandboxed_later_in_the_window_fails() {
+  seq="$WORK/seq-control-later"
+  write_entitlements "$WORK/empty-later.plist"
+  copy="$(resigned_copy control-later "$WORK/empty-later.plist")" || fail "could not re-sign the copy" || return 1
+  sequenced_probe_stub "$seq" "no denied denied" "yes denied denied"
+
+  run_bundle_sh_with_stubs "$seq" --negative-control "$copy"
+
+  expect_nonzero_status || return 1
+  expect_output_contains "the negative control was reported sandboxed" || return 1
+  expect_one_report || return 1
+  expect_output_contains "sandboxed: yes" || return 1
+  [ "$(asked_count "$seq")" -eq 2 ] || fail "expected 2 asks, got $(asked_count "$seq")" || return 1
+  expect_no_bundle_process "$copy"
+}
+
+# CP-69: the control asks the whole window before it can pass, and the passing line states it.
+test_negative_control_asks_the_whole_window() {
+  seq="$WORK/seq-control-whole-window"
+  write_entitlements "$WORK/empty-whole.plist"
+  copy="$(resigned_copy control-whole "$WORK/empty-whole.plist")" || fail "could not re-sign the copy" || return 1
+  sequenced_probe_stub "$seq" "no denied denied"
+
+  OUT="$(BUNDLE_SH_PROBE_TICKS=3 PATH="$seq:$PATH" "$BUNDLE_SH" --negative-control "$copy" 2>&1)"
+  STATUS=$?
+
+  [ "$STATUS" -eq 0 ] || fail "expected exit 0, got $STATUS. output: $OUT" || return 1
+  expect_output_contains "3 asks" || return 1
+  expect_output_contains "0.25 s" || return 1
+  expect_one_report || return 1
+  [ "$(asked_count "$seq")" -eq 3 ] || fail "expected 3 asks, got $(asked_count "$seq")" || return 1
   expect_no_bundle_process "$copy"
 }
 
