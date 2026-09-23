@@ -286,4 +286,4 @@
   there, rather than to the companion, would refuse (c) for the service's name. The owner's
   choice on § 1.1 does not move either way, because every seat now refuses (c) on the corrected
   ground.
-- **Confirm or override:** confirm — the owner, 2026-09-23. `docs/adr/0008-…:L3` reads "Superseded by ADR-0010" and `0010-…:L3` reads "Accepted — supersedes ADR-0008"; C-I3 (`SDD.md:L620` at v11) cites ADR-0010 from this fold.
+- **Confirm or override:** <"confirm", or "override: <what to do instead>">
