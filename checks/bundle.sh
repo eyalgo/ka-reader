@@ -346,16 +346,19 @@ done
 printf '%s\n' "$probe_output"
 
 problems=""
+# The window clause for the closing line: set only when the window ran out without a sandboxed: yes
+# report — every other exit from the loop above breaks on that report — so a run the window did not
+# decide (a sandboxed: yes report carrying an allowed) closes without one.
+window_clause=""
 case "
 $probe_output
 " in
   *"
 sandboxed: yes
 "*) ;;
-  # Reached only when the window ran out without a sandboxed: yes report — every other exit from the
-  # loop above breaks on that report, so this line and the window clause on it are the same event.
-  *) problems="${problems}condition not held: the launched process is not sandboxed within $PROBE_TICKS asks, 0.25 s apart
-" ;;
+  *) problems="${problems}condition not held: the launched process is not sandboxed
+"
+     window_clause=": not reported sandboxed within $PROBE_TICKS asks, 0.25 s apart" ;;
 esac
 case "
 $probe_output
@@ -376,5 +379,5 @@ outbound-connection: denied
 " ;;
 esac
 
-[ -z "$problems" ] || { printf '%s' "$problems" >&2; die "the wall does not hold on the launched process (pid $pid)"; }
+[ -z "$problems" ] || { printf '%s' "$problems" >&2; die "the wall does not hold on the launched process (pid $pid)$window_clause"; }
 echo "sandbox observed: sandboxed, out-of-grant read denied, outbound connection denied (pid $pid)"
