@@ -2,6 +2,7 @@
 
 pub mod boundary;
 pub mod exports;
+pub mod log_install;
 pub mod log_writer;
 pub mod session;
 

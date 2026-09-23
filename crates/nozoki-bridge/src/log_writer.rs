@@ -379,6 +379,17 @@ mod tests {
     }
 
     #[test]
+    fn test_directory_exists_answers_for_a_folder_a_file_and_nothing() {
+        let folder = TempDir::new();
+        let file = folder.write_file("a-file", "");
+        let missing = folder.path().join("missing");
+
+        assert!(directory_exists(folder.path()));
+        assert!(!directory_exists(&file), "a file is not a directory");
+        assert!(!directory_exists(&missing));
+    }
+
+    #[test]
     fn test_install_sets_the_facade_to_warn() {
         let folder = TempDir::new();
 
