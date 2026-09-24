@@ -63,7 +63,17 @@ None.
   say that all six are on steps from `nozoki@ab39502`, each as the `run` of its own step. The
   `nozoki@153f5a1` sentence stays as dated history, and a clause after it says the case passes once
   the header carries the runner reading.
-- **Answer:** <the owner fills this in>
+- **Answer:** Confirmed with addition, decided together with § 3.3. § 9's bullet and § 10's
+  preamble say that all six suites are on CI steps from `nozoki@ab39502`, each the whole `run` of
+  its own step (`ci.yml:L35-L36`, `:L41-L42`, `:L52-L53`, `:L61-L62`, `:L67-L68`, `:L70-L71`,
+  re-measured this run). The `nozoki@153f5a1` sentence stays as dated history. Three additions:
+  (1) the ordering rule for `test_renderer.sh` is now history too, and it held. The header's
+  runner reading landed in `2b83dce` and the suite's step in `66ba2e8`, both in the change merged
+  at `ab39502`. The bullet says so in the past tense and does not keep it as a live rule.
+  (2) § 10's preamble loses its clause saying "that bullet's tail is what fails while the rest are
+  not". Once all six are on steps nothing fails, and § 3.3 decides what the tail says now.
+  (3) The count is dated at `nozoki@ab39502`, so a later suite reads as a re-measurement and not
+  as a contradiction. Reasoning: `docs/trail/architecture/self_answer-17.md` § 3.1.
 
 ### 3.2 § 9 says the five suites join "as each is green on the hosted runner", and they joined before any hosted runner ran them
 - **Raised by:** PM — 2026-09-24
@@ -92,7 +102,19 @@ None.
   `:L944-L947` already has). The other branch is that the tree is in breach of the rule as written,
   and the five come off CI until each is measured. That would take them off every gate and leave a
   red suite invisible, which is what the bullet was written to end.
-- **Answer:** <the owner fills this in>
+- **Answer:** Confirmed with addition. § 9 states the order as it now is. A suite joins as a fatal
+  step, and its first CI run is its hosted-runner reading. A suite that is red there moves to a
+  named release step on the Mac, recorded in this bullet with the measurement (the rule
+  `:L944-L947` already has). Three additions: (1) the bullet states where the five stand when the
+  fold runs. At `nozoki@ab39502`, `origin/main` is `c461b29` and no CI run has run the five
+  (`gh run list --repo kensaiapp/nozoki --workflow ci.yml` newest is 35988399477 on `37a962d`,
+  re-read this run). The fold re-reads that list and records what it finds: the run id and each
+  suite's result if a run exists, or "not yet run on the hosted runner" if none does. (2) The one
+  ruled-out way to join is named: a suite may not join as a non-fatal step (`continue-on-error`,
+  or an `if:` that skips it) while it waits for its reading. That is a gate that cannot go red,
+  which ADR-0012 § Decision rules out ("a gate that cannot go red has not run"). (3) A red suite
+  on `main` is fixed by the next change: that suite's move to a Mac release step, or its fix.
+  The CI step is never quieted. Reasoning: `docs/trail/architecture/self_answer-17.md` § 3.2.
 
 ### 3.3 § 9's tail says the comparison becomes a `checks/` script "the day the five are on steps", and that day has come with no script
 - **Raised by:** PM — 2026-09-24
@@ -111,7 +133,18 @@ None.
 - **If a document has to be written:** None. **The PM's lean:** the tail says the five are on
   steps and the comparison's script is owed. It stays a review gate until that script lands, and
   the tail names the script then. The script itself is work, and it is on no route yet.
-- **Answer:** <the owner fills this in>
+- **Answer:** Confirmed with addition, decided together with § 3.1. The tail loses its false
+  argument ("red on every build until the five land"). In its place it says three things: the
+  five are on steps from `nozoki@ab39502`, the comparison prints nothing there (re-run this
+  run), and the `checks/` script its own sentence promised for that day is now owed. The review
+  gate at `development-design` stands until the script lands. Its only ground now is that the
+  script does not exist yet. Two additions: (1) the tail states the shape of what is owed so the
+  change that writes it has a bar: a `checks/` script that runs the comparison and exits non-zero
+  when any suite under `checks/tests/` is named by no step of `ci.yml`, on a CI step of its own.
+  If that script has a suite, the suite lands its own step in the same change, by the bullet's
+  existing rule. (2) The day the script lands, the tail names it and drops the review gate, as
+  the tail already promises. Routing that work is the PM's and not this record's. Reasoning:
+  `docs/trail/architecture/self_answer-17.md` § 3.3.
 
 ### 3.4 QC-62 and ADR-0012 cite the runner reading "from the run because the header does not carry it yet", and the header carries it
 - **Raised by:** PM — 2026-09-24
@@ -131,7 +164,15 @@ None.
 - **If a document has to be written:** None. **The PM's lean:** both cite the runner reading from
   `checks/renderer.sh:L62-L65`, as they cite the Mac reading from `:L58-L61`. ADR-0012 is corrected
   in place, the way its other dated notes are.
-- **Answer:** <the owner fills this in>
+- **Answer:** Confirmed with addition, decided together with § 3.5, since both correct ADR-0012
+  in the same fold. QC-62's *verified by* and ADR-0012 each cite the runner reading from
+  `checks/renderer.sh:L62-L65`, as they cite the Mac reading from `:L58-L61`. Both ranges were
+  re-read this run at `nozoki@ab39502`, and the frame list at `:L44-L57` has not moved. The run id
+  and image can stay in the sentence, since the header carries the same ones. One addition: the
+  false clause in ADR-0012 (`:L129-L130`) sits inside the record's own 2026-09-24 *corrected in
+  place* note. The fold adds a new dated note after that one, naming `2b83dce` (the commit that
+  put the reading in the header), and leaves the earlier note as written. That note was true of
+  the tree at the time. Reasoning: `docs/trail/architecture/self_answer-17.md` § 3.4.
 
 ### 3.5 QC-62 and ADR-0012 cite `Renderer gate` at `ci.yml:L43-L44`, and it is at `:L46-L47`
 - **Raised by:** PM — 2026-09-24
@@ -147,6 +188,16 @@ None.
     `run: checks/renderer.sh target/release/bundle/macos/Nozoki.app`). `View check suite` sits above
     it at `:L41-L42`. `Bundle probe`, cited beside it as `:L31-L32`, has not moved.
 - **If a document has to be written:** None. **The PM's lean:** both cite `ci.yml:L46-L47`.
-- **Answer:** <the owner fills this in>
+- **Answer:** Confirmed with addition, decided together with § 3.4. Both cite `Renderer gate` at
+  `.github/workflows/ci.yml:L46-L47`. That was re-read this run at `nozoki@ab39502`, where
+  `Bundle probe` is still at `:L31-L32`. One addition: ADR-0012's `:L43-L44` sits in a dated
+  parenthesis that begins "from `nozoki@153f5a1`", and at that commit the step *was* at `:L43-L44`
+  (`git show 153f5a1:.github/workflows/ci.yml`). So the ADR cite was true when written and has
+  since gone stale. QC-62's cite reads as present tense, so it was false. The fold corrects
+  QC-62 in place and dates the ADR's new line at `nozoki@ab39502`, in the same new note § 3.4
+  adds. The other `ci.yml` line cites in § 9 were re-read (`:L18`, `:L22-L29`, `:L26`, `:L29`,
+  `:L35-L36`) and all still hold. The script § 3.3 makes owed will add a step and may move these
+  lines again, and the change that lands it re-cites them. Reasoning:
+  `docs/trail/architecture/self_answer-17.md` § 3.5.
 
 **How it closes.** `product-architecture` folds it on its next run like any other item here.
