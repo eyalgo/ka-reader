@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.1.0 — the Tauri build leaves — native bundle assembled, bundle.sh and no-network.sh read it, CI builds it, boundaries and README pinned
 # Version: 1.0.0 — first version: drives the real checks/no-network.sh against the real tree and against stubbed ones
 #
 # checks/tests/test_no_network.sh — the tests of checks/no-network.sh and checks/deps.allow.
@@ -7,8 +8,10 @@
 #   checks/no-network.sh is the review gate on what the product is built from: a name in the tree that
 #   nobody put in checks/deps.allow fails the build. A bug in it is a tree nobody is reviewing. These
 #   cases run the real script — never a copy of its logic — against the real tree and against stubbed
-#   ones, with `cargo`, `pnpm` and `uname` stubbed on PATH. A stub that must keep the real tree's shape
-#   runs the real tool and edits its output, so this suite never lists the tree's names by hand.
+#   ones, with `cargo`, `swift`, `pnpm` (only as a guard that is never called) and `uname` stubbed on
+#   PATH. A stub that must keep the real tree's shape runs the real tool and edits its output, so this
+#   suite never lists the tree's names by hand. Every case but the real-tree pass stubs `swift` and
+#   points the Swift package at a work directory, so no case depends on the machine's toolchain.
 #   The runner is this file: the product has no Python (docs/nfdr.md § 9 names its toolchains), which
 #   is why the shell packet's pytest runner is not used here.
 #
@@ -35,13 +38,23 @@ CASES="
 test_clean_tree_passes
 test_crate_not_in_the_allowlist_fails
 test_allowlist_entry_not_in_the_tree_fails
-test_pnpm_reporting_no_package_is_an_error
+test_pnpm_section_is_refused_as_malformed
 test_verdict_is_unchanged_on_an_x64_machine
 test_no_transport_or_libgit2_crate
 test_log_is_the_only_logging_facade
 test_swapped_log_writer_fails
 test_comments_and_blank_lines_are_ignored
-test_a_cargo_section_name_does_not_satisfy_the_pnpm_section
+test_declared_dependency_fails
+test_declared_dependency_names_the_default_manifest
+test_remote_binary_target_fails
+test_local_binary_target_is_admitted
+test_swift_that_fails_is_refused
+test_swift_absent_is_refused
+test_unreadable_dump_is_refused
+test_package_resolved_at_the_package_root_fails
+test_package_resolved_nested_deep_fails
+test_local_binary_target_with_a_null_url_is_admitted
+test_each_package_resolved_is_named
 "
 
 # --- helpers ---
@@ -55,7 +68,24 @@ run_no_network_sh() {
 run_with_stubs() {
   stubs="$1"
   shift
-  OUT="$(PATH="$stubs:$PATH" "$NO_NETWORK_SH" "$@" 2>&1)"
+  OUT="$(PATH="$stubs:$PATH" NO_NETWORK_SWIFT_PACKAGE_DIR="$WORK/pkg-clean" "$NO_NETWORK_SH" "$@" 2>&1)"
+  STATUS=$?
+}
+
+# `swift` that answers every call with the manifest dump in file $2 and does nothing else.
+swift_stub() {
+  make_stub "$1" swift "cat \"$2\""
+}
+
+# A stub directory holding a `swift` whose dump declares nothing.
+clean_swift_stubs() {
+  mkdir -p "$1"
+  swift_stub "$1" "$WORK/dump-clean.json"
+}
+
+# Runs the script with the stubs directory $1 ahead on PATH and the Swift package at directory $2.
+run_swift_case() {
+  OUT="$(PATH="$1:$PATH" NO_NETWORK_SWIFT_PACKAGE_DIR="$2" "$NO_NETWORK_SH" 2>&1)"
   STATUS=$?
 }
 
@@ -96,21 +126,28 @@ cargo_edited_by() {
 
 # --- cases ---
 
-# CP-47: both trees equal their allowlist sections, and nothing names a dependency on stdout.
+# CP-47, CP-126, CP-127, D2-1: on the real tree, with the real `swift`, the cargo names equal their
+# section and the Swift package declares nothing. One line of output names counts only, and `pnpm` —
+# stubbed only as a guard — was never called.
 test_clean_tree_passes() {
-  run_no_network_sh
+  mkdir -p "$WORK/stubs-clean"
+  make_stub "$WORK/stubs-clean" pnpm "echo called >> \"$WORK/pnpm-calls\""
+
+  OUT="$(PATH="$WORK/stubs-clean:$PATH" "$NO_NETWORK_SH" 2>&1)"
+  STATUS=$?
 
   expect_zero_status || return 1
   [ "$(printf '%s\n' "$OUT" | wc -l | tr -d ' ')" -eq 1 ] || fail "expected one line of output, got: $OUT" || return 1
   case "$OUT" in
     "no-network.sh: ok — "*) ;;
-    *) fail "the passing line is not the one that names counts only. output: $OUT" ;;
+    *) fail "the passing line is not the one that names counts only. output: $OUT" || return 1 ;;
   esac
+  [ ! -e "$WORK/pnpm-calls" ] || fail "pnpm was called"
 }
 
 # CP-47, CP-48: a name in the tree with no allowlist line is named, with its section and its side.
 test_crate_not_in_the_allowlist_fails() {
-  mkdir -p "$WORK/stubs-added"
+  clean_swift_stubs "$WORK/stubs-added"
   cargo_edited_by "$WORK/stubs-added" '$a\
 left-pad-rs v1.0.0
 '
@@ -124,34 +161,34 @@ left-pad-rs v1.0.0
 
 # CP-47, CP-48: an allowlist entry the tree does not hold is named, with its section and its side.
 test_allowlist_entry_not_in_the_tree_fails() {
-  mkdir -p "$WORK/stubs-removed"
-  cargo_edited_by "$WORK/stubs-removed" '/^anyhow v/d'
+  clean_swift_stubs "$WORK/stubs-removed"
+  cargo_edited_by "$WORK/stubs-removed" '/^itoa v/d'
 
   run_with_stubs "$WORK/stubs-removed"
 
   expect_nonzero_status || return 1
-  expect_output_contains "cargo: anyhow" || return 1
+  expect_output_contains "cargo: itoa" || return 1
   expect_output_contains "in checks/deps.allow and not in the tree"
 }
 
-# CP-47, rule-implied: a pnpm that reports no package is a missing install, never an empty set that
-# compares clean against an empty section.
-test_pnpm_reporting_no_package_is_an_error() {
-  mkdir -p "$WORK/stubs-nopnpm"
-  make_stub "$WORK/stubs-nopnpm" pnpm 'echo "[{\"name\":\"nozoki-ui\",\"version\":\"0.0.0\"}]"'
+# CP-126, D2-2: the allowlist admits one section. A `pnpm:` section goes down the unknown-section path:
+# the file is called malformed and the section is named.
+test_pnpm_section_is_refused_as_malformed() {
+  printf 'cargo:\nitoa\npnpm:\nleft-pad\n' > "$WORK/with-pnpm.allow"
 
-  run_with_stubs "$WORK/stubs-nopnpm"
+  OUT="$(NO_NETWORK_ALLOW_FILE="$WORK/with-pnpm.allow" "$NO_NETWORK_SH" 2>&1)"
+  STATUS=$?
 
   expect_nonzero_status || return 1
-  expect_output_contains "pnpm ls reported no package" || return 1
-  expect_output_contains "pnpm install --frozen-lockfile"
+  expect_output_contains "is malformed" || return 1
+  expect_output_contains "unknown section: pnpm"
 }
 
 # CP-50: the compared set does not depend on the running CPU. Held by construction — the cargo half names
 # both Apple-Darwin triples itself rather than taking the host's — so the case checks both halves of that:
 # the verdict under a stubbed `uname`, and the triples on the command line.
 test_verdict_is_unchanged_on_an_x64_machine() {
-  mkdir -p "$WORK/stubs-x64"
+  clean_swift_stubs "$WORK/stubs-x64"
   make_stub "$WORK/stubs-x64" uname 'echo x86_64'
   make_stub "$WORK/stubs-x64" cargo "echo \"\$@\" > \"$WORK/cargo-argv\"; \"$REAL_CARGO\" \"\$@\""
 
@@ -195,7 +232,7 @@ test_log_is_the_only_logging_facade() {
 
 # CP-52, CP-47: the log writer swapped for env_logger fails on the new name.
 test_swapped_log_writer_fails() {
-  mkdir -p "$WORK/stubs-swapped"
+  clean_swift_stubs "$WORK/stubs-swapped"
   cargo_edited_by "$WORK/stubs-swapped" 's/^log v.*/env_logger v0.11.0/'
 
   run_with_stubs "$WORK/stubs-swapped"
@@ -209,47 +246,164 @@ test_swapped_log_writer_fails() {
 test_comments_and_blank_lines_are_ignored() {
   awk '{ print; print ""; print "# a-comment-that-reads-like-a-name" }' "$ALLOWLIST" > "$WORK/noisy.allow"
 
-  OUT="$(NO_NETWORK_ALLOW_FILE="$WORK/noisy.allow" "$NO_NETWORK_SH" 2>&1)"
+  clean_swift_stubs "$WORK/stubs-noisy"
+
+  OUT="$(PATH="$WORK/stubs-noisy:$PATH" NO_NETWORK_SWIFT_PACKAGE_DIR="$WORK/pkg-clean" NO_NETWORK_ALLOW_FILE="$WORK/noisy.allow" "$NO_NETWORK_SH" 2>&1)"
   STATUS=$?
 
   expect_zero_status
 }
 
-# Added by the plan: the two sections are compared independently, so a crate name and an npm package
-# name cannot mask one another. Checked in both directions on tiny canned trees.
-test_a_cargo_section_name_does_not_satisfy_the_pnpm_section() {
-  mkdir -p "$WORK/stubs-sections"
-  make_stub "$WORK/stubs-sections" cargo 'printf "shared v1.0.0\ncargo-only v1.0.0\n"'
-  make_stub "$WORK/stubs-sections" pnpm 'cat <<JSON
-[
-  {
-    "name": "nozoki-ui",
-    "dependencies": {
-      "shared": {
-        "from": "shared",
-        "version": "1.0.0"
-      }
-    }
-  }
-]
-JSON'
+# --- the Swift half (CP-127) ---
 
-  # `shared` is allowed under cargo only; the pnpm tree holds it too.
-  printf 'cargo:\ncargo-only\nshared\npnpm:\n' > "$WORK/cargo-only.allow"
-  OUT="$(PATH="$WORK/stubs-sections:$PATH" NO_NETWORK_ALLOW_FILE="$WORK/cargo-only.allow" "$NO_NETWORK_SH" 2>&1)"
-  STATUS=$?
-  expect_nonzero_status || return 1
-  expect_output_contains "pnpm: shared" || return 1
-  expect_output_contains "in the tree and not in checks/deps.allow" || return 1
+# D2-4: a dependency in the manifest's dump fails the run, naming the manifest of the directory the
+# override points at.
+test_declared_dependency_fails() {
+  clean_swift_stubs "$WORK/stubs-dep"
+  swift_stub "$WORK/stubs-dep" "$WORK/dump-dependency.json"
 
-  # The reverse: `cargo-only` is allowed under pnpm as well, and the cargo tree holds it, while cargo:
-  # does not list it.
-  printf 'cargo:\nshared\npnpm:\ncargo-only\nshared\n' > "$WORK/pnpm-only.allow"
-  OUT="$(PATH="$WORK/stubs-sections:$PATH" NO_NETWORK_ALLOW_FILE="$WORK/pnpm-only.allow" "$NO_NETWORK_SH" 2>&1)"
-  STATUS=$?
+  run_swift_case "$WORK/stubs-dep" "$WORK/pkg-clean"
+
   expect_nonzero_status || return 1
-  expect_output_contains "cargo: cargo-only" || return 1
-  expect_output_contains "pnpm: cargo-only"
+  expect_output_contains "$WORK/pkg-clean/Package.swift"
+}
+
+# CP-127 names `nozoki-mac/Package.swift`. Under an override the case above names the override's, so this
+# one runs with no override and holds the default wording.
+test_declared_dependency_names_the_default_manifest() {
+  clean_swift_stubs "$WORK/stubs-dep-default"
+  swift_stub "$WORK/stubs-dep-default" "$WORK/dump-dependency.json"
+
+  OUT="$(PATH="$WORK/stubs-dep-default:$PATH" "$NO_NETWORK_SH" 2>&1)"
+  STATUS=$?
+
+  expect_nonzero_status || return 1
+  expect_output_contains "nozoki-mac/Package.swift" || return 1
+  case "$OUT" in
+    *"$ROOT/nozoki-mac/Package.swift"*) fail "the default manifest is named by an absolute path. output: $OUT" ;;
+  esac
+}
+
+# D2-5: a remote binary target declares a download the `dependencies` array does not show.
+test_remote_binary_target_fails() {
+  clean_swift_stubs "$WORK/stubs-remote"
+  swift_stub "$WORK/stubs-remote" "$WORK/dump-remote-binary.json"
+
+  run_swift_case "$WORK/stubs-remote" "$WORK/pkg-clean"
+
+  expect_nonzero_status || return 1
+  expect_output_contains "$WORK/pkg-clean/Package.swift"
+}
+
+# A binary target over a local artifact bundle (a path, no url) downloads nothing and stays admitted; a
+# check that refused every binary target would pass every case above.
+test_local_binary_target_is_admitted() {
+  clean_swift_stubs "$WORK/stubs-local"
+  swift_stub "$WORK/stubs-local" "$WORK/dump-local-binary.json"
+
+  run_swift_case "$WORK/stubs-local" "$WORK/pkg-clean"
+
+  expect_zero_status
+}
+
+# D2-6: what the manifest declares could not be read, so the run is red and never passes.
+test_swift_that_fails_is_refused() {
+  mkdir -p "$WORK/stubs-swift-fails"
+  make_stub "$WORK/stubs-swift-fails" swift 'echo "swift: stubbed failure" >&2; exit 1'
+
+  run_swift_case "$WORK/stubs-swift-fails" "$WORK/pkg-clean"
+
+  expect_nonzero_status || return 1
+  case "$OUT" in
+    *"no-network.sh: ok"*) fail "the run passed with a swift that failed. output: $OUT" ;;
+  esac
+}
+
+# D2-6: `swift` absent. PATH is built from links to the tools the script calls, so `swift` — which sits
+# in /usr/bin beside awk, sort and comm — is the one thing missing.
+test_swift_absent_is_refused() {
+  tools="$WORK/tools-without-swift"
+  mkdir -p "$tools"
+  for tool in awk basename bash cat cut dirname env find grep head ls mktemp plutil rm sed sh sort tail tr uname wc xargs comm; do
+    found="$(command -v "$tool" 2> /dev/null)" || continue
+    ln -sf "$found" "$tools/$tool"
+  done
+  limited_path="$tools:$(dirname "$REAL_CARGO")"
+  [ -z "$(PATH="$limited_path" command -v swift 2> /dev/null)" ] || fail "the limited PATH still finds swift" || return 1
+
+  OUT="$(PATH="$limited_path" NO_NETWORK_SWIFT_PACKAGE_DIR="$WORK/pkg-clean" "$NO_NETWORK_SH" 2>&1)"
+  STATUS=$?
+
+  expect_nonzero_status || return 1
+  case "$OUT" in
+    *"no-network.sh: ok"*) fail "the run passed with no swift. output: $OUT" ;;
+  esac
+}
+
+# D2-6: a dump that cannot be read is not an empty one.
+test_unreadable_dump_is_refused() {
+  mkdir -p "$WORK/stubs-unreadable"
+  make_stub "$WORK/stubs-unreadable" swift 'echo "this is not a manifest dump"'
+
+  run_swift_case "$WORK/stubs-unreadable" "$WORK/pkg-clean"
+
+  expect_nonzero_status || return 1
+  case "$OUT" in
+    *"no-network.sh: ok"*) fail "the run passed on a dump it could not read. output: $OUT" ;;
+  esac
+}
+
+# D2-7: a resolution file at the package root, named by its path.
+test_package_resolved_at_the_package_root_fails() {
+  clean_swift_stubs "$WORK/stubs-resolved-root"
+  mkdir -p "$WORK/pkg-resolved-root"
+  echo '{}' > "$WORK/pkg-resolved-root/Package.resolved"
+
+  run_swift_case "$WORK/stubs-resolved-root" "$WORK/pkg-resolved-root"
+
+  expect_nonzero_status || return 1
+  expect_output_contains "$WORK/pkg-resolved-root/Package.resolved"
+}
+
+# D2-7: at any depth.
+test_package_resolved_nested_deep_fails() {
+  clean_swift_stubs "$WORK/stubs-resolved-deep"
+  mkdir -p "$WORK/pkg-resolved-deep/a/b"
+  echo '{}' > "$WORK/pkg-resolved-deep/a/b/Package.resolved"
+
+  run_swift_case "$WORK/stubs-resolved-deep" "$WORK/pkg-resolved-deep"
+
+  expect_nonzero_status || return 1
+  expect_output_contains "$WORK/pkg-resolved-deep/a/b/Package.resolved"
+}
+
+# --- added by the code-integrity review ---
+
+# A local binary target is admitted because it carries no url (change_design.md § Architect Review Notes;
+# tl_instruction.md, Task 2, "a path and no url exits 0"). A dump that writes the absent url as an explicit
+# JSON null carries no url either, and is the same admitted target.
+test_local_binary_target_with_a_null_url_is_admitted() {
+  clean_swift_stubs "$WORK/stubs-null-url"
+  swift_stub "$WORK/stubs-null-url" "$WORK/dump-local-binary-null-url.json"
+
+  run_swift_case "$WORK/stubs-null-url" "$WORK/pkg-clean"
+
+  expect_zero_status
+}
+
+# CP-127, D2-7: each Package.resolved is named — a script that named only the first would pass the two
+# cases above.
+test_each_package_resolved_is_named() {
+  clean_swift_stubs "$WORK/stubs-resolved-each"
+  mkdir -p "$WORK/pkg-resolved-each/a/b"
+  echo '{}' > "$WORK/pkg-resolved-each/Package.resolved"
+  echo '{}' > "$WORK/pkg-resolved-each/a/b/Package.resolved"
+
+  run_swift_case "$WORK/stubs-resolved-each" "$WORK/pkg-resolved-each"
+
+  expect_nonzero_status || return 1
+  expect_output_contains "$WORK/pkg-resolved-each/Package.resolved —" || return 1
+  expect_output_contains "$WORK/pkg-resolved-each/a/b/Package.resolved"
 }
 
 # --- the runner ---
@@ -259,6 +413,14 @@ cleanup() {
   rm -rf "$WORK"
 }
 trap cleanup EXIT
+
+# The manifest dumps the `swift` stubs answer with, and the package directory a case points the script at.
+mkdir -p "$WORK/pkg-clean"
+echo '{"dependencies":[],"targets":[{"name":"Nozoki","type":"executable"}]}' > "$WORK/dump-clean.json"
+echo '{"dependencies":[{"sourceControl":[{"identity":"left-pad","location":{"remote":[{"urlString":"https://example.invalid/left-pad.git"}]}}]}],"targets":[{"name":"Nozoki","type":"executable"}]}' > "$WORK/dump-dependency.json"
+echo '{"dependencies":[],"targets":[{"name":"Nozoki","type":"executable"},{"name":"Blob","type":"binary","url":"https://example.invalid/Blob.zip"}]}' > "$WORK/dump-remote-binary.json"
+echo '{"dependencies":[],"targets":[{"name":"Nozoki","type":"executable"},{"name":"Blob","type":"binary","path":"Blob.artifactbundle"}]}' > "$WORK/dump-local-binary.json"
+echo '{"dependencies":[],"targets":[{"name":"Nozoki","type":"executable"},{"name":"Blob","type":"binary","path":"Blob.artifactbundle","url":null}]}' > "$WORK/dump-local-binary-null-url.json"
 
 failed=0
 for case_name in $CASES; do

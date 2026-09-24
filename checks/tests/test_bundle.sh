@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.2.0 — the Tauri build leaves — native bundle assembled, bundle.sh and no-network.sh read it, CI builds it, boundaries and README pinned
 # Version: 1.1.0 — the probe waits, bounded, for the sandbox report, and its control holds for the whole window; plutil read only on exit 0
 # Version: 1.0.0 — first version: drives the real checks/bundle.sh against the built Nozoki.app
 #
@@ -40,6 +41,10 @@ PROBE_SOURCE="$ROOT/checks/sandbox_probe.rs"
 # re-signed with no entitlements, must report it NOT sandboxed. The runner, not a case, records that
 # it ran — a case cannot detect its own absence.
 CONTROL_CASE="test_negative_control_reports_unsandboxed"
+# What the drawn-from rule prints on a pass: how many members of the expected set it checked. On the
+# real bundle the set is the fourteen files of third_party/lucide/icons.
+DRAWN_FROM_PASS_LINE="glyph set: 14 members checked"
+EXPECTED_SET_DIR="$ROOT/third_party/lucide/icons"
 
 OUT=""
 STATUS=0
@@ -80,12 +85,31 @@ test_negative_control_reported_sandboxed_fails_the_suite
 test_absent_control_fails_the_suite
 test_negative_control_refuses_the_c_r2_entitlement_set
 test_second_executable_fails
-test_renderer_file_outside_resources_fails
-test_renderer_file_directly_under_contents_fails
-test_renderer_file_under_resources_passes
-test_absent_frontend_dist_states_an_empty_set
-test_absent_frontend_dist_stdout_diagnostic_is_not_a_path
-test_named_frontend_dist_that_does_not_exist_fails
+test_drawn_from_pass_line_is_on_stdout
+test_expected_set_is_read_from_the_source_tree
+test_glyph_under_macos_fails
+test_glyph_directly_under_contents_fails
+test_svg_nested_deep_outside_resources_fails
+test_foreign_svg_outside_resources_fails
+test_empty_expected_set_fails_saying_why
+test_missing_expected_set_directory_fails_saying_why
+test_glyphs_missing_from_resources_are_each_named
+test_files_outside_the_set_under_resources_pass
+test_executable_bit_file_under_resources_fails
+test_mach_o_without_execute_bit_fails
+test_font_by_extension_fails
+test_font_by_signature_fails
+test_copy_of_a_checks_file_fails
+test_empty_file_is_not_a_checks_copy
+test_checks_listing_that_fails_is_refused
+test_empty_checks_listing_is_refused
+test_pre_launch_refusals_are_on_stderr
+test_every_font_extension_fails_in_any_case
+test_every_font_signature_fails
+test_every_mach_o_magic_is_an_executable
+test_group_or_other_execute_bit_fails
+test_member_name_without_svg_suffix_outside_resources_fails
+test_dotfile_in_the_expected_set_is_a_member
 test_extra_key_fails_before_launch
 test_false_value_fails
 test_missing_key_fails
@@ -322,6 +346,12 @@ test_real_bundle_passes() {
   expect_output_contains "sandboxed: yes" || return 1
   expect_output_contains "out-of-grant-read: denied" || return 1
   expect_output_contains "outbound-connection: denied" || return 1
+  expect_output_contains "$DRAWN_FROM_PASS_LINE" || return 1
+  expect_output_lacks "extra executable" || return 1
+  expect_output_lacks "font: " || return 1
+  expect_output_lacks "copy of a checks/ file" || return 1
+  expect_output_lacks "glyph missing from" || return 1
+  expect_output_lacks "glyph outside" || return 1
   expect_no_bundle_process "$APP"
 }
 
@@ -588,8 +618,6 @@ printf 'sandboxed: yes\nout-of-grant-read: denied\noutbound-connection: denied\n
   process_is_running "$bystander" || fail "the second process (pid $bystander) was stopped with it"
 }
 
-# CP-45: one executable under Contents/MacOS, and every file of the renderer build under
-# Contents/Resources. Both are read before anything is launched.
 # CP-44: the negative control. `checks/bundle.sh` refuses to launch a bundle whose entitlements are not
 # exactly C-R2's, so the ordinary path cannot run the probe on a no-entitlement build; --negative-control
 # is the mode that does, and it passes only on a NOT-sandboxed report.
@@ -744,112 +772,377 @@ test_second_executable_fails() {
   [ ! -e "$WORK/open-second.log" ] || fail "the copy was launched: $(cat "$WORK/open-second.log")"
 }
 
-# A tauri.conf.json stand-in whose build.frontendDist is $2, written to $1.
-write_tauri_conf() {
-  printf '{"build":{"frontendDist":"%s"}}\n' "$2" > "$1"
-}
+# --- the drawn-from rule and the contents block (CP-116 – CP-118) ---
+#
+# Every refusal case asserts two things: the run exits non-zero and names the offending path, and
+# nothing was launched — the `open` stub's log does not exist. A copy that gains or loses a file needs
+# no re-signing for a refusal, because the refusal comes before the launch; a case that expects the run
+# to go past both blocks and launch re-signs it first.
 
-# The renderer build the stubbed configuration names: one stylesheet.
-make_renderer_build() {
-  mkdir -p "$WORK/renderer-build/assets"
-  echo 'body {}' > "$WORK/renderer-build/assets/style.css"
-}
-
-# CP-45 names every renderer file found outside Contents/Resources, and Contents itself is outside it.
-# The case above places the file one level down (Contents/MacOS/assets/style.css); this one places the
-# same relative path at the root of Contents, which is just as much "not under Contents/Resources".
-test_renderer_file_directly_under_contents_fails() {
-  make_renderer_build
-  write_tauri_conf "$WORK/conf-at-contents.json" "$WORK/renderer-build"
-  copy="$(valid_copy renderer-at-contents)" || fail "could not re-sign the copy" || return 1
-  mkdir -p "$copy/Contents/assets"
-  echo 'body {}' > "$copy/Contents/assets/style.css"
-  mkdir -p "$WORK/stubs-at-contents"
-  make_stub "$WORK/stubs-at-contents" open "echo \"\$@\" >> \"$WORK/open-at-contents.log\""
-
-  OUT="$(BUNDLE_SH_TAURI_CONF="$WORK/conf-at-contents.json" PATH="$WORK/stubs-at-contents:$PATH" "$BUNDLE_SH" "$copy" 2>&1)"
+# Runs the script on $1 with an `open` stub that records a launch in $WORK/open-$2.log. Any further
+# argument is a NAME=value pair put into the run's environment. A stub the caller already placed in
+# $WORK/stubs-$2 is kept.
+run_unlaunched() {
+  target="$1"
+  tag="$2"
+  shift 2
+  mkdir -p "$WORK/stubs-$tag"
+  make_stub "$WORK/stubs-$tag" open "echo \"\$@\" >> \"$WORK/open-$tag.log\""
+  OUT="$(env "$@" PATH="$WORK/stubs-$tag:$PATH" "$BUNDLE_SH" "$target" 2>&1)"
   STATUS=$?
-
-  expect_nonzero_status || return 1
-  expect_output_contains "Contents/assets/style.css" || return 1
-  [ ! -e "$WORK/open-at-contents.log" ] || fail "the copy was launched: $(cat "$WORK/open-at-contents.log")"
 }
 
-test_renderer_file_outside_resources_fails() {
-  make_renderer_build
-  write_tauri_conf "$WORK/conf-renderer.json" "$WORK/renderer-build"
-  copy="$(valid_copy renderer-outside)" || fail "could not re-sign the copy" || return 1
-  mkdir -p "$copy/Contents/MacOS/assets"
-  echo 'body {}' > "$copy/Contents/MacOS/assets/style.css"
-  mkdir -p "$WORK/stubs-renderer"
-  make_stub "$WORK/stubs-renderer" open "echo \"\$@\" >> \"$WORK/open-renderer.log\""
-
-  OUT="$(BUNDLE_SH_TAURI_CONF="$WORK/conf-renderer.json" PATH="$WORK/stubs-renderer:$PATH" "$BUNDLE_SH" "$copy" 2>&1)"
-  STATUS=$?
-
-  expect_nonzero_status || return 1
-  expect_output_contains "Contents/MacOS/assets/style.css" || return 1
-  [ ! -e "$WORK/open-renderer.log" ] || fail "the copy was launched: $(cat "$WORK/open-renderer.log")"
+expect_not_launched() {
+  [ ! -e "$WORK/open-$1.log" ] || fail "the bundle was launched: $(cat "$WORK/open-$1.log")"
 }
 
-# The counterpart: the same renderer file, where the rule wants it, does not stop the run.
-test_renderer_file_under_resources_passes() {
-  make_renderer_build
-  write_tauri_conf "$WORK/conf-inside.json" "$WORK/renderer-build"
-  copy="$(valid_copy renderer-inside)" || fail "could not re-sign the copy" || return 1
-  mkdir -p "$copy/Contents/Resources/assets"
-  echo 'body {}' > "$copy/Contents/Resources/assets/style.css"
-  # Adding a file under the bundle after signing breaks its seal; re-sign so the launched copy is
-  # validly sealed like every other launched copy in this suite (PR #1's second half).
+# The shape every refusal shares: non-zero, every path in "$@" named, nothing launched. $1 is the tag.
+expect_refused_naming() {
+  tag="$1"
+  shift
+  expect_nonzero_status || return 1
+  for named in "$@"; do
+    expect_output_contains "$named" || return 1
+  done
+  expect_not_launched "$tag"
+}
+
+# A re-signed copy of the bundle with a file of $3 placed at $2, relative to the bundle. $1 names the copy.
+copy_with_file() {
+  placed="$(valid_copy "$1")" || return 1
+  mkdir -p "$(dirname "$placed/$2")"
+  printf '%s' "$3" > "$placed/$2"
+  printf '%s' "$placed"
+}
+
+# CP-117: on the real bundle the rule prints one line saying how many members it checked, and the
+# contents block refuses nothing.
+test_drawn_from_pass_line_is_on_stdout() {
+  mkdir -p "$WORK/stubs-pass-line"
+  make_stub "$WORK/stubs-pass-line" open "exit 0"
+  make_stub "$WORK/stubs-pass-line" ps "exit 0"
+
+  stdout_only="$(BUNDLE_SH_LAUNCH_TICKS=2 PATH="$WORK/stubs-pass-line:$PATH" "$BUNDLE_SH" "$APP" 2> /dev/null)"
+
+  case "$stdout_only" in
+    *"$DRAWN_FROM_PASS_LINE"*) ;;
+    *) fail "expected stdout alone to carry: $DRAWN_FROM_PASS_LINE. stdout: $stdout_only" ;;
+  esac
+}
+
+# D1-2: the expected set is the source tree's, read when the script runs — a set with one more member
+# than the bundle holds is refused, naming it.
+test_expected_set_is_read_from_the_source_tree() {
+  mkdir -p "$WORK/set-plus-extra"
+  cp "$EXPECTED_SET_DIR"/* "$WORK/set-plus-extra/"
+  echo '<svg/>' > "$WORK/set-plus-extra/extra.svg"
+
+  run_unlaunched "$APP" set-plus-extra BUNDLE_SH_GLYPH_DIR="$WORK/set-plus-extra"
+
+  expect_refused_naming set-plus-extra "extra.svg"
+}
+
+# D1-3: a member's name under Contents/MacOS is outside Contents/Resources.
+test_glyph_under_macos_fails() {
+  copy="$(copy_with_file glyph-macos Contents/MacOS/folder.svg '<svg/>')" || fail "could not re-sign the copy" || return 1
+
+  run_unlaunched "$copy" glyph-macos
+
+  expect_refused_naming glyph-macos "Contents/MacOS/folder.svg"
+}
+
+# D1-4: Contents itself is outside Contents/Resources.
+test_glyph_directly_under_contents_fails() {
+  copy="$(copy_with_file glyph-contents Contents/folder.svg '<svg/>')" || fail "could not re-sign the copy" || return 1
+
+  run_unlaunched "$copy" glyph-contents
+
+  expect_refused_naming glyph-contents "Contents/folder.svg"
+}
+
+# D1-5: at any depth.
+test_svg_nested_deep_outside_resources_fails() {
+  copy="$(copy_with_file svg-deep Contents/MacOS/a/b/file.svg '<svg/>')" || fail "could not re-sign the copy" || return 1
+
+  run_unlaunched "$copy" svg-deep
+
+  expect_refused_naming svg-deep "Contents/MacOS/a/b/file.svg"
+}
+
+# D1-6: a name that is not in the set, ending in .svg. Only the suffix half of the rule can refuse it.
+test_foreign_svg_outside_resources_fails() {
+  copy="$(copy_with_file svg-foreign Contents/MacOS/stray.svg '<svg/>')" || fail "could not re-sign the copy" || return 1
+
+  run_unlaunched "$copy" svg-foreign
+
+  expect_refused_naming svg-foreign "Contents/MacOS/stray.svg"
+}
+
+# D1-7 (CP-117 a): an empty set is red, and the output says it was empty and why.
+test_empty_expected_set_fails_saying_why() {
+  mkdir -p "$WORK/set-empty"
+
+  run_unlaunched "$APP" set-empty BUNDLE_SH_GLYPH_DIR="$WORK/set-empty"
+
+  expect_refused_naming set-empty "the expected glyph set is empty" "holds no regular file"
+}
+
+# D1-8 (CP-117 a): a directory that does not exist is the same verdict.
+test_missing_expected_set_directory_fails_saying_why() {
+  run_unlaunched "$APP" set-missing BUNDLE_SH_GLYPH_DIR="$WORK/no-such-set"
+
+  expect_refused_naming set-missing "the expected glyph set is empty" "does not exist"
+}
+
+# D1-9 (CP-117 b): every missing member is named, not only the first.
+test_glyphs_missing_from_resources_are_each_named() {
+  copy="$(valid_copy glyphs-missing)" || fail "could not re-sign the copy" || return 1
+  rm "$copy/Contents/Resources/folder.svg" "$copy/Contents/Resources/file.svg"
   codesign --force --sign - --entitlements "$WORK/valid.plist" "$copy" > /dev/null 2>&1 \
-    || fail "could not re-sign the copy after adding the renderer file" || return 1
+    || fail "could not re-sign the copy after removing the glyphs" || return 1
 
-  OUT="$(BUNDLE_SH_TAURI_CONF="$WORK/conf-inside.json" "$BUNDLE_SH" "$copy" 2>&1)"
-  STATUS=$?
+  run_unlaunched "$copy" glyphs-missing
+
+  expect_refused_naming glyphs-missing "folder.svg" "file.svg"
+}
+
+# D1-10: files of any other name, at any depth under Contents/Resources, are outside the rule and do not
+# stop the run. The rule's output never names the three entries outside its domain.
+test_files_outside_the_set_under_resources_pass() {
+  copy="$(copy_with_file resources-extra Contents/Resources/sub/x.txt 'x')" || fail "could not place the file" || return 1
+  codesign --force --sign - --entitlements "$WORK/valid.plist" "$copy" > /dev/null 2>&1 \
+    || fail "could not re-sign the copy after adding the file" || return 1
+
+  run_bundle_sh "$copy"
 
   [ "$STATUS" -eq 0 ] || fail "expected exit 0, got $STATUS. output: $OUT" || return 1
+  expect_output_contains "$DRAWN_FROM_PASS_LINE" || return 1
+  expect_output_lacks "Info.plist" || return 1
+  expect_output_lacks "_CodeSignature" || return 1
+  expect_output_lacks "icon.icns" || return 1
   expect_no_bundle_process "$copy"
 }
 
-# The committed configuration carries no frontendDist (crates/nozoki-app/tests/config.rs holds that), so
-# the renderer half compares against an empty set — and says so, rather than passing in silence.
-test_absent_frontend_dist_states_an_empty_set() {
-  run_bundle_sh "$APP"
+# D1-11 (CP-118 a): the execute bit alone, on a file that is no binary, under Resources.
+test_executable_bit_file_under_resources_fails() {
+  copy="$(copy_with_file exec-bit Contents/Resources/helper '#!/bin/sh
+exit 0
+')" || fail "could not place the file" || return 1
+  chmod 755 "$copy/Contents/Resources/helper"
 
-  [ "$STATUS" -eq 0 ] || fail "expected exit 0 on the real bundle, got $STATUS. output: $OUT" || return 1
-  expect_output_contains "the renderer set is empty"
+  run_unlaunched "$copy" exec-bit
+
+  expect_refused_naming exec-bit "Contents/Resources/helper"
 }
 
-test_named_frontend_dist_that_does_not_exist_fails() {
-  write_tauri_conf "$WORK/conf-missing.json" "$WORK/no-such-renderer-build"
-  mkdir -p "$WORK/stubs-missing"
-  make_stub "$WORK/stubs-missing" open "echo \"\$@\" >> \"$WORK/open-missing.log\""
+# D1-12 (CP-118 a): a Mach-O binary is an executable whatever its mode. Only the magic can refuse it.
+test_mach_o_without_execute_bit_fails() {
+  copy="$(valid_copy mach-o)" || fail "could not re-sign the copy" || return 1
+  cp "$copy/Contents/MacOS/Nozoki" "$copy/Contents/Resources/bin"
+  chmod 644 "$copy/Contents/Resources/bin"
 
-  OUT="$(BUNDLE_SH_TAURI_CONF="$WORK/conf-missing.json" PATH="$WORK/stubs-missing:$PATH" "$BUNDLE_SH" "$APP" 2>&1)"
-  STATUS=$?
+  run_unlaunched "$copy" mach-o
 
-  expect_nonzero_status || return 1
-  # The script's own named failure, not merely a failing `cd` under `set -e` that happens to print the path.
-  expect_output_contains "names a directory that does not exist: $WORK/no-such-renderer-build" || return 1
-  [ ! -e "$WORK/open-missing.log" ] || fail "the bundle was launched: $(cat "$WORK/open-missing.log")"
+  expect_refused_naming mach-o "Contents/Resources/bin"
 }
 
-# On CI's runner, plutil's missing-key diagnostic arrives on stdout rather than stderr (the change
-# request's measured cause). A stubbed plutil reproduces that: it prints the diagnostic on stdout and
-# exits 1, so `|| true` alone would keep the diagnostic text as the path. `open` and `ps` are stubbed so
-# the run past the renderer check reaches a bounded, named end rather than an unbounded launch poll.
-test_absent_frontend_dist_stdout_diagnostic_is_not_a_path() {
-  mkdir -p "$WORK/stubs-stdout-diagnostic"
-  make_stub "$WORK/stubs-stdout-diagnostic" plutil \
-    'echo "Could not extract value, error: No value at that key path or invalid key path: build.frontendDist"; exit 1'
-  make_stub "$WORK/stubs-stdout-diagnostic" open "exit 0"
-  make_stub "$WORK/stubs-stdout-diagnostic" ps "exit 0"
+# D1-13 (CP-118 b): a font by its extension, with contents that are no font. Only the extension can
+# refuse it.
+test_font_by_extension_fails() {
+  copy="$(copy_with_file font-ext Contents/Resources/Inter.ttf 'not a font')" || fail "could not place the file" || return 1
 
-  OUT="$(BUNDLE_SH_LAUNCH_TICKS=2 PATH="$WORK/stubs-stdout-diagnostic:$PATH" "$BUNDLE_SH" "$APP" 2>&1)"
-  STATUS=$?
+  run_unlaunched "$copy" font-ext
 
-  expect_output_contains "the renderer set is empty" || return 1
-  expect_output_lacks "names a directory that does not exist"
+  expect_refused_naming font-ext "Contents/Resources/Inter.ttf"
+}
+
+# D1-13 (CP-118 b): a font by its first four bytes, under a name no extension list holds. Only the
+# signature can refuse it.
+test_font_by_signature_fails() {
+  copy="$(copy_with_file font-sig Contents/Resources/glyphs.dat 'OTTO and then some bytes')" || fail "could not place the file" || return 1
+
+  run_unlaunched "$copy" font-sig
+
+  expect_refused_naming font-sig "Contents/Resources/glyphs.dat"
+}
+
+# D1-14 (CP-118 c): a byte copy of a tracked checks/ file, whatever its name. Its mode is set to 644 so
+# the execute bit does not refuse it first: only the copy rule can.
+test_copy_of_a_checks_file_fails() {
+  copy="$(valid_copy checks-copy)" || fail "could not re-sign the copy" || return 1
+  cp "$ROOT/checks/bundle.sh" "$copy/Contents/Resources/x"
+  chmod 644 "$copy/Contents/Resources/x"
+
+  run_unlaunched "$copy" checks-copy
+
+  expect_refused_naming checks-copy "Contents/Resources/x"
+}
+
+# D1-14 (CP-118 c): an empty file matches nothing — checks/.gitkeep is tracked and empty — so the run
+# goes past the blocks and reaches the launch, which the `open` stub records.
+test_empty_file_is_not_a_checks_copy() {
+  copy="$(copy_with_file empty-file Contents/Resources/empty '')" || fail "could not place the file" || return 1
+
+  run_unlaunched "$copy" empty-file BUNDLE_SH_LAUNCH_TICKS=2
+
+  expect_output_lacks "copy of a checks/ file" || return 1
+  expect_output_lacks "the bundle holds files it must not ship" || return 1
+  [ -e "$WORK/open-empty-file.log" ] || fail "the run stopped before the launch. output: $OUT"
+}
+
+# D1-15 (CP-118 c): a listing of checks/ that fails is a refusal naming the cause, never a pass.
+test_checks_listing_that_fails_is_refused() {
+  mkdir -p "$WORK/stubs-git-fails"
+  make_stub "$WORK/stubs-git-fails" git 'echo "git: stubbed failure" >&2; exit 3'
+
+  run_unlaunched "$APP" git-fails
+
+  expect_refused_naming git-fails "cannot list the files tracked under checks/"
+}
+
+# The listing that comes back empty: a set of candidates with no member would let every copy through.
+test_empty_checks_listing_is_refused() {
+  mkdir -p "$WORK/stubs-git-empty"
+  make_stub "$WORK/stubs-git-empty" git 'exit 0'
+
+  run_unlaunched "$APP" git-empty
+
+  expect_refused_naming git-empty "the list of files tracked under checks/ is empty"
+}
+
+# CP-117 and CP-118 name the cause on stderr. The suite's helper folds the streams together, so this is
+# the one case that reads stderr alone: with stdout discarded, a drawn-from refusal and a contents
+# refusal each still name their path.
+test_pre_launch_refusals_are_on_stderr() {
+  mkdir -p "$WORK/stubs-stderr"
+  make_stub "$WORK/stubs-stderr" open "exit 0"
+  drawn="$(copy_with_file stderr-drawn Contents/MacOS/folder.svg '<svg/>')" || fail "could not place the file" || return 1
+  contents="$(copy_with_file stderr-contents Contents/Resources/helper '#!/bin/sh
+exit 0
+')" || fail "could not place the file" || return 1
+  chmod 755 "$contents/Contents/Resources/helper"
+
+  stderr_drawn="$(PATH="$WORK/stubs-stderr:$PATH" "$BUNDLE_SH" "$drawn" 2>&1 > /dev/null)"
+  stderr_contents="$(PATH="$WORK/stubs-stderr:$PATH" "$BUNDLE_SH" "$contents" 2>&1 > /dev/null)"
+
+  case "$stderr_drawn" in
+    *"Contents/MacOS/folder.svg"*) ;;
+    *) fail "the drawn-from refusal did not name its path on stderr. stderr: $stderr_drawn" || return 1 ;;
+  esac
+  case "$stderr_contents" in
+    *"Contents/Resources/helper"*) ;;
+    *) fail "the contents refusal did not name its path on stderr. stderr: $stderr_contents" ;;
+  esac
+}
+
+# --- added by the code-integrity review: each member of a closed list, and each half of a rule ---
+#
+# The cases above test one member of each list the plan fixed (tl_instruction.md, Task 2, 2b). A script
+# that dropped any other member would still pass them, so each case below places every member at once
+# and asserts each is named. Every file is mode 644 unless the case is about the mode.
+
+# CP-118 (b): every extension of the plan's set, compared case-insensitively. The contents are no font,
+# so only the extension can refuse them.
+test_every_font_extension_fails_in_any_case() {
+  copy="$(valid_copy font-exts)" || fail "could not re-sign the copy" || return 1
+  for name in a.OTF b.ttc c.Otc d.woff e.WOFF2 f.dfont g.TTF; do
+    printf 'not a font' > "$copy/Contents/Resources/$name"
+  done
+
+  run_unlaunched "$copy" font-exts
+
+  expect_refused_naming font-exts \
+    "font: Contents/Resources/a.OTF" "font: Contents/Resources/b.ttc" "font: Contents/Resources/c.Otc" \
+    "font: Contents/Resources/d.woff" "font: Contents/Resources/e.WOFF2" "font: Contents/Resources/f.dfont" \
+    "font: Contents/Resources/g.TTF"
+}
+
+# CP-118 (b): every signature of the plan's set, under names no extension list holds.
+test_every_font_signature_fails() {
+  copy="$(valid_copy font-sigs)" || fail "could not re-sign the copy" || return 1
+  printf '\000\001\000\000rest' > "$copy/Contents/Resources/truetype.dat"
+  printf 'OTTOrest' > "$copy/Contents/Resources/otto.dat"
+  printf 'truerest' > "$copy/Contents/Resources/true.dat"
+  printf 'typ1rest' > "$copy/Contents/Resources/typ1.dat"
+  printf 'ttcfrest' > "$copy/Contents/Resources/ttcf.dat"
+  printf 'wOFFrest' > "$copy/Contents/Resources/woff.dat"
+  printf 'wOF2rest' > "$copy/Contents/Resources/woff2.dat"
+
+  run_unlaunched "$copy" font-sigs
+
+  expect_refused_naming font-sigs \
+    "font: Contents/Resources/truetype.dat" "font: Contents/Resources/otto.dat" \
+    "font: Contents/Resources/true.dat" "font: Contents/Resources/typ1.dat" \
+    "font: Contents/Resources/ttcf.dat" "font: Contents/Resources/woff.dat" \
+    "font: Contents/Resources/woff2.dat"
+}
+
+# CP-118 (a): a Mach-O is an executable whatever its mode — thin or fat, in either byte order. Each file is
+# the four magic bytes and nothing else, at mode 644, so only the magic can refuse it.
+test_every_mach_o_magic_is_an_executable() {
+  copy="$(valid_copy mach-o-magics)" || fail "could not re-sign the copy" || return 1
+  printf '\376\355\372\316' > "$copy/Contents/Resources/m-feedface"
+  printf '\376\355\372\317' > "$copy/Contents/Resources/m-feedfacf"
+  printf '\316\372\355\376' > "$copy/Contents/Resources/m-cefaedfe"
+  printf '\317\372\355\376' > "$copy/Contents/Resources/m-cffaedfe"
+  printf '\312\376\272\276' > "$copy/Contents/Resources/m-cafebabe"
+  printf '\312\376\272\277' > "$copy/Contents/Resources/m-cafebabf"
+  printf '\276\272\376\312' > "$copy/Contents/Resources/m-bebafeca"
+  printf '\277\272\376\312' > "$copy/Contents/Resources/m-bfbafeca"
+  chmod 644 "$copy"/Contents/Resources/m-*
+
+  run_unlaunched "$copy" mach-o-magics
+
+  expect_refused_naming mach-o-magics \
+    "extra executable: Contents/Resources/m-feedface" "extra executable: Contents/Resources/m-feedfacf" \
+    "extra executable: Contents/Resources/m-cefaedfe" "extra executable: Contents/Resources/m-cffaedfe" \
+    "extra executable: Contents/Resources/m-cafebabe" "extra executable: Contents/Resources/m-cafebabf" \
+    "extra executable: Contents/Resources/m-bebafeca" "extra executable: Contents/Resources/m-bfbafeca"
+}
+
+# CP-118 (a): "any execute permission bit" — the group's alone, and the others' alone, each make an
+# executable. The user bit is the case test_executable_bit_file_under_resources_fails already holds.
+test_group_or_other_execute_bit_fails() {
+  copy="$(valid_copy group-other-exec)" || fail "could not re-sign the copy" || return 1
+  printf 'x' > "$copy/Contents/Resources/group-exec"
+  printf 'x' > "$copy/Contents/Resources/other-exec"
+  chmod 654 "$copy/Contents/Resources/group-exec"
+  chmod 645 "$copy/Contents/Resources/other-exec"
+
+  run_unlaunched "$copy" group-other-exec
+
+  expect_refused_naming group-other-exec \
+    "extra executable: Contents/Resources/group-exec" "extra executable: Contents/Resources/other-exec"
+}
+
+# CP-117 (c): a path outside Contents/Resources is refused when its name is a member's, as well as when it
+# ends in .svg. Every real member ends in .svg, so the name half is proved with a set that holds one member
+# that does not; the copy carries it under Resources too, so only (c) can refuse.
+test_member_name_without_svg_suffix_outside_resources_fails() {
+  mkdir -p "$WORK/set-plain-member"
+  cp "$EXPECTED_SET_DIR"/* "$WORK/set-plain-member/"
+  printf 'x' > "$WORK/set-plain-member/plain-member"
+  copy="$(valid_copy plain-member)" || fail "could not re-sign the copy" || return 1
+  printf 'x' > "$copy/Contents/Resources/plain-member"
+  printf 'x' > "$copy/Contents/MacOS/plain-member"
+  chmod 644 "$copy/Contents/MacOS/plain-member"
+
+  run_unlaunched "$copy" plain-member BUNDLE_SH_GLYPH_DIR="$WORK/set-plain-member"
+
+  expect_refused_naming plain-member "glyph outside Contents/Resources: Contents/MacOS/plain-member" || return 1
+  expect_output_lacks "glyph missing from Contents/Resources"
+}
+
+# CP-117: the expected set is every file in the glyph directory, dotfiles included (tl_instruction.md,
+# Task 2, 2b). A dotfile member the bundle lacks is a missing member, named.
+test_dotfile_in_the_expected_set_is_a_member() {
+  mkdir -p "$WORK/set-dotfile"
+  cp "$EXPECTED_SET_DIR"/* "$WORK/set-dotfile/"
+  printf 'x' > "$WORK/set-dotfile/.hidden-member"
+
+  run_unlaunched "$APP" set-dotfile BUNDLE_SH_GLYPH_DIR="$WORK/set-dotfile"
+
+  expect_refused_naming set-dotfile "glyph missing from Contents/Resources: .hidden-member"
 }
 
 test_extra_key_fails_before_launch() {

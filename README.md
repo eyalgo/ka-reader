@@ -9,8 +9,8 @@ Nozoki never changes the folder you point it at. It writes no file in it, and it
 command that alters your repository's state.
 
 > **Status: specified, partly built.** What exists now: the Rust library that reads a folder
-> (`crates/nozoki-core`), the Tauri 2 host (`crates/nozoki-app`) and the TypeScript renderer
-> (`nozoki-ui`). In the app you choose a folder through the system's Open panel and its root
+> (`crates/nozoki-core`), the C interface over it (`crates/nozoki-bridge`) and the AppKit shell in
+> Swift (`nozoki-mac`). In the app you choose a folder through the system's Open panel and its root
 > entries are listed. Viewing a file, the Git view and live refresh are not built yet. The product
 > is specified in full — what it is (`docs/PRD.md`), what it does (`docs/SRS.md`, `docs/fdr.md`),
 > how it looks and reads (`docs/UXD.md`, `docs/DESIGN.md`, `docs/CONTENT.md`), and how it is built
@@ -43,13 +43,11 @@ what Nozoki is built to become.
 
 ## Stack
 
-One macOS application bundle: a Tauri 2 host in Rust (`crates/nozoki-app`) over a Rust library
-that does all the reading (`crates/nozoki-core`), rendering a TypeScript package (`nozoki-ui`) in
-the system WKWebView — no browser engine bundled. Git is read through libgit2 and never
-mutated. The renderer is built with Vite, styled in plain CSS custom properties, and ships its
-six highlighting grammars and fourteen Lucide icons inside the bundle. A shell harness under
-`checks/` proves the read-only and no-network promises on every build. The decisions and their
-reasons are in [`docs/adr/`](docs/adr/README.md).
+One macOS application bundle, running as one process: an AppKit shell in Swift (`nozoki-mac`)
+over a Rust library that does all the reading (`crates/nozoki-core`), reached through a C
+interface (`crates/nozoki-bridge`). There is no web engine in it. The fourteen Lucide icons ship
+inside the bundle. A shell harness under `checks/` proves the read-only and no-network promises
+on every build. The decisions and their reasons are in [`docs/adr/`](docs/adr/README.md).
 
 ## Roadmap
 
