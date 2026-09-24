@@ -58,6 +58,7 @@ test_near_frame_names_do_not_count
 test_tree_characters_carry_no_meaning
 test_pid_gone_fails_at_once
 test_sample_error_fails_at_once
+test_sample_writing_no_report_fails_at_once
 test_window_runs_out
 test_pass_line_on_stdout_failures_on_stderr
 test_header_names_frames_and_the_mac_reading
@@ -230,6 +231,9 @@ case " $* " in
       previous="$argument"
     done
     echo "$*" > "$STUB/signing_call"
+    # What is being signed: its layout, and the Info.plist it carries.
+    (cd "$target_path" && find . -type f | LC_ALL=C sort) > "$STUB/signed_layout"
+    cp "$target_path/Contents/Info.plist" "$STUB/signed_info_plist" 2> /dev/null
     if [ -n "$entitlements_path" ]; then
       cp "$entitlements_path" "$STUB/signed_with.xml"
       if [ -f "$STUB/control_override.xml" ]; then
@@ -493,6 +497,8 @@ test_running_instance_refused() {
   expect_status 1 || return 1
   expect_stderr_contains "$running_pid" || return 1
   expect_no_open_call || return 1
+  # Refused before the control is built, not only before anything is launched.
+  [ ! -e "$STUBS/swiftc_calls" ] || fail "the control was built although an instance was already running" || return 1
   alive "$running_pid" || fail "the running instance (pid $running_pid) was signalled" || return 1
 }
 
@@ -625,9 +631,17 @@ test_main_thread_under_its_early_label_counts() {
   # are the main thread's.
   MAIN_HEADER=": Main Thread   DispatchQueue_<multiple>" write_report "$STUBS/report.1" "$IDLE_FRAMES"
   MAIN_HEADER=": Main Thread   DispatchQueue_<multiple>" write_report "$STUBS/report.2" "$FULL_FRAMES"
+  write_report "$STUBS/report.default" "$IDLE_FRAMES"
   RENDERER_SH_OBSERVATIONS=5 run_renderer "$APP"
   expect_status 0 || return 1
-  expect_sample_calls 2 || return 1
+  # The product passes on the second observation, after the first was read under the early label; the
+  # control then takes its five.
+  product_line="$(printf '%s\n' "$STDOUT" | head -1)"
+  case "$product_line" in
+    *"observation 2 "*) ;;
+    *) fail "expected the product to pass on observation 2, got: $product_line" || return 1 ;;
+  esac
+  expect_sample_calls 7 || return 1
 }
 
 test_frames_out_of_order_do_not_count() {
@@ -731,6 +745,18 @@ test_sample_error_fails_at_once() {
   expect_stderr_contains "main-thread" || return 1
   expect_stderr_lacks "bound" || return 1
   expect_sample_calls 1 || return 1
+}
+
+test_sample_writing_no_report_fails_at_once() {
+  new_case no-report
+  # The product passes on the first sample. The control's first sample writes no file at all, and the
+  # product's report must not be taken for it.
+  write_report "$STUBS/report.1" "$FULL_FRAMES"
+  RENDERER_SH_OBSERVATIONS=5 run_renderer "$APP"
+  expect_status 1 || return 1
+  expect_stderr_contains "wrote no report" || return 1
+  expect_stderr_lacks "bound" || return 1
+  expect_sample_calls 2 || return 1
 }
 
 test_window_runs_out() {
@@ -889,6 +915,13 @@ test_control_signed_ad_hoc_with_the_hardened_runtime() {
   esac
   cmp -s "$STUBS/signed_with.xml" "$STUBS/product_entitlements.xml" \
     || fail "the entitlements file the control was signed with is not the set read from the product's signature" || return 1
+  # The control that was signed is the layout the gate launches: the compiled executable and the
+  # fixture's own Info.plist, and nothing else.
+  layout="$(tr '\n' ' ' < "$STUBS/signed_layout")"
+  [ "$layout" = "./Contents/Info.plist ./Contents/MacOS/idle-shell " ] \
+    || fail "the signed control's layout is: $layout" || return 1
+  cmp -s "$STUBS/signed_info_plist" "$ROOT/checks/fixtures/idle-shell/Info.plist" \
+    || fail "the signed control's Info.plist is not the fixture's" || return 1
 }
 
 test_product_signature_unreadable_fails_before_any_launch() {
@@ -915,7 +948,7 @@ test_swiftc_absent_fails_before_any_launch() {
   tools_without_swiftc "$CASE_DIR/tools"
   run_renderer_with_path "$STUBS:$CASE_DIR/tools" "$APP"
   expect_status 1 || return 1
-  expect_stderr_contains "swiftc" || return 1
+  expect_stderr_contains "swiftc not found on PATH" || return 1
   expect_no_open_call || return 1
 }
 
