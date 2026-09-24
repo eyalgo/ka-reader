@@ -180,9 +180,34 @@ const LOGGER_INSTALLERS: [&str; 2] = ["set_logger", "set_boxed_logger"];
 /// The directory of a crate whose sources the logger boundary reads.
 const SOURCE_DIRECTORY_PREFIX: &str = "src/";
 
+/// The code of a line: the part before the `//` that opens a line comment. A `//` inside a
+/// double-quoted string literal opens none (`"http://x"`), so strings and their `\` escapes are
+/// stepped over, and so is the one char literal that holds a quote (`'"'`). Anything this does not
+/// model — a raw string holding a quote, a string spanning lines — can only leave more of the line in
+/// the scan, never less, so it errs toward a violation.
+fn code_before_line_comment(line: &str) -> &str {
+    let bytes = line.as_bytes();
+    let mut index = 0;
+    let mut inside_string = false;
+    while index < bytes.len() {
+        match (inside_string, bytes[index]) {
+            (true, b'\\') => index += 1,
+            (true, b'"') => inside_string = false,
+            (false, b'"') => inside_string = true,
+            (false, b'\'') if line[index..].starts_with("'\"'") => index += 2,
+            (false, b'\'') if line[index..].starts_with("'\\\"'") => index += 3,
+            (false, b'/') if bytes.get(index + 1) == Some(&b'/') => return &line[..index],
+            _ => {}
+        }
+        index += 1;
+    }
+    line
+}
+
 /// The violations in one crate's `src/`: each file that names a logger installer in the code of a
-/// line, meaning the part before any `//`. The match is by substring, so `set_logger_racy` is caught
-/// with `set_logger`, and `use log::set_logger as install;` is caught where it names the function.
+/// line, meaning the part before a `//` that opens a comment. The match is by substring, so
+/// `set_logger_racy` is caught with `set_logger`, and `use log::set_logger as install;` is caught
+/// where it names the function.
 fn logger_violations(member: &CrateSource) -> Vec<String> {
     member
         .sources
@@ -190,7 +215,7 @@ fn logger_violations(member: &CrateSource) -> Vec<String> {
         .filter(|file| file.path.starts_with(SOURCE_DIRECTORY_PREFIX) && file.path.ends_with(".rs"))
         .filter(|file| {
             file.text.lines().any(|line| {
-                let code = line.split("//").next().unwrap_or_default();
+                let code = code_before_line_comment(line);
                 LOGGER_INSTALLERS
                     .iter()
                     .any(|installer| code.contains(installer))

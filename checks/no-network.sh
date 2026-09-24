@@ -128,9 +128,11 @@ else
   target_index=0
   while [ "$target_index" -lt "$swift_target_count" ]; do
     # The key's type, not its value: a null `url` is no download, and a `url` of any other type is one.
+    # plutil names a JSON null's type `(any)`, parentheses included; the bare spellings are kept so a
+    # plutil that drops them still reads a null as one.
     if url_type="$(plutil -type "targets.$target_index.url" "$work/swift.dump" 2> /dev/null)"; then
       case "$url_type" in
-        any | null) ;;
+        "(any)" | any | null) ;;
         *)
           problems="${problems}swift: $manifest — target $target_index carries a url, a download the dependencies array does not show
 "
