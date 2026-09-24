@@ -155,16 +155,16 @@ expect_stdout_lacks() {
 }
 
 # A finding line on stderr: `<file>:<line>: <name>`, where <file> is relative to the product root and
-# the rest of the line names the refused thing. $2 is the file under nozoki-mac/, $3 the line, $4
+# the rest of the line names the refused thing. $1 is the file under nozoki-mac/, $2 the line, $3
 # the name.
 expect_finding() {
   found=0
   while IFS= read -r line; do
     case "$line" in
-      "nozoki-mac/$2:$3: "*"$4"*) found=1 ;;
+      "nozoki-mac/$1:$2: "*"$3"*) found=1 ;;
     esac
   done <<< "$STDERR"
-  [ "$found" -eq 1 ] || fail "expected a finding nozoki-mac/$2:$3: … $4 on stderr. stderr: $STDERR"
+  [ "$found" -eq 1 ] || fail "expected a finding nozoki-mac/$1:$2: … $3 on stderr. stderr: $STDERR"
 }
 
 # Runs the script over one synthetic source and expects it reported at the given line.
