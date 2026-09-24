@@ -30,10 +30,224 @@ struct CrateSource {
     sources: Vec<SourceFile>,
 }
 
+/// The lint whose level the first boundary pins.
+const UNSAFE_LINT: &str = "unsafe_code";
+/// The level a crate must hold it at, as a manifest writes the value.
+const FORBID_VALUE: &str = "\"forbid\"";
+/// The value of `workspace` in a member's `[lints]` table that opts it into the workspace's levels.
+const INHERIT_VALUE: &str = "true";
+
+/// One line of a manifest that this reader recognizes: a table header, or a `key = value` line under
+/// the table header above it (the empty table name is the top of the file).
+enum ManifestItem {
+    Table {
+        name: String,
+        is_array: bool,
+    },
+    Pair {
+        table: String,
+        key: String,
+        value: String,
+    },
+}
+
+/// The line without its `#` comment. A `#` inside a double-quoted string is not a comment.
+fn without_comment(line: &str) -> &str {
+    let mut inside_string = false;
+    for (index, character) in line.char_indices() {
+        match character {
+            '"' => inside_string = !inside_string,
+            '#' if !inside_string => return &line[..index],
+            _ => {}
+        }
+    }
+    line
+}
+
+/// Table headers and `key = value` lines, in file order. A line of any other shape (the tail of a
+/// multi-line value, say) is skipped, and is caught where it matters by the key that opened it.
+fn manifest_items(text: &str) -> Vec<ManifestItem> {
+    let mut table = String::new();
+    let mut items = Vec::new();
+    for raw_line in text.lines() {
+        let line = without_comment(raw_line).trim();
+        if line.is_empty() {
+            continue;
+        }
+        let header = line
+            .strip_prefix("[[")
+            .map(|inner| (inner.trim_end_matches(']'), true))
+            .or_else(|| {
+                line.strip_prefix('[')
+                    .map(|inner| (inner.trim_end_matches(']'), false))
+            });
+        if let Some((name, is_array)) = header {
+            table = name.trim().to_string();
+            items.push(ManifestItem::Table {
+                name: table.clone(),
+                is_array,
+            });
+        } else if let Some((key, value)) = line.split_once('=') {
+            items.push(ManifestItem::Pair {
+                table: table.clone(),
+                key: key.trim().to_string(),
+                value: value.trim().to_string(),
+            });
+        }
+    }
+    items
+}
+
+/// Whether the root manifest's `[workspace.lints.rust]` sets `unsafe_code = "forbid"`.
+fn root_forbids_unsafe(root_manifest: &str) -> bool {
+    manifest_items(root_manifest).iter().any(|item| {
+        matches!(item, ManifestItem::Pair { table, key, value }
+            if table == "workspace.lints.rust" && key == UNSAFE_LINT && value == FORBID_VALUE)
+    })
+}
+
+/// What a crate's manifest says about lints, in the two forms this check recognizes.
+struct CrateLints {
+    /// `[lints]` holds `workspace = true`.
+    inherits_workspace: bool,
+    /// The value `[lints.rust]` gives `unsafe_code`, as written, when it gives one.
+    unsafe_level: Option<String>,
+}
+
+/// Reads a crate manifest's lints. Anything that names lints in a form other than `[lints]` with
+/// `workspace = true`, or a `[lints.<tool>]` table, is an `Err` naming the form: a form this reader
+/// does not know is never read as "no lints".
+fn read_crate_lints(manifest: &str) -> Result<CrateLints, String> {
+    let mut lints = CrateLints {
+        inherits_workspace: false,
+        unsafe_level: None,
+    };
+    for item in manifest_items(manifest) {
+        match item {
+            ManifestItem::Table { name, is_array } => {
+                let segments: Vec<&str> = name.split('.').map(str::trim).collect();
+                let names_lints = segments.contains(&"lints");
+                let recognized = !is_array
+                    && (segments == ["lints"] || (segments.len() == 2 && segments[0] == "lints"));
+                if names_lints && !recognized {
+                    return Err(format!("the table header `[{name}]`"));
+                }
+            }
+            ManifestItem::Pair { table, key, value } => match table.as_str() {
+                "lints" if key == "workspace" && value == INHERIT_VALUE => {
+                    lints.inherits_workspace = true;
+                }
+                "lints" => return Err(format!("`{key} = {value}` under `[lints]`")),
+                "lints.rust" if key == UNSAFE_LINT => lints.unsafe_level = Some(value),
+                "lints.rust" if key.starts_with(&format!("{UNSAFE_LINT}.")) => {
+                    return Err(format!("the dotted key `{key}` under `[lints.rust]`"));
+                }
+                _ if key == "lints" || key.starts_with("lints.") => {
+                    return Err(format!("the key `{key}` under `[{table}]`"));
+                }
+                _ => {}
+            },
+        }
+    }
+    Ok(lints)
+}
+
+/// The violation a crate's manifest carries, if it does not forbid `unsafe`. A crate forbids it when
+/// its own `[lints.rust]` sets the level to forbid, or when it inherits a workspace level that is.
+fn unsafe_violation(directory: &str, manifest: &str, root_forbids: bool) -> Option<String> {
+    let lints = match read_crate_lints(manifest) {
+        Ok(lints) => lints,
+        Err(form) => {
+            return Some(format!(
+                "crate {directory}: a lints form this check does not recognize ({form}); it cannot tell whether `unsafe` is forbidden"
+            ));
+        }
+    };
+    match lints.unsafe_level {
+        Some(level) if level == FORBID_VALUE => None,
+        Some(level) => Some(format!(
+            "crate {directory}: sets `{UNSAFE_LINT} = {level}`, which does not forbid `unsafe`"
+        )),
+        None if lints.inherits_workspace && root_forbids => None,
+        None => Some(format!(
+            "crate {directory}: does not forbid `unsafe` (no `[lints] workspace = true` under a root that forbids it, and no `{UNSAFE_LINT} = {FORBID_VALUE}` of its own)"
+        )),
+    }
+}
+
+/// The two `log` functions that install a logger.
+const LOGGER_INSTALLERS: [&str; 2] = ["set_logger", "set_boxed_logger"];
+/// The directory of a crate whose sources the logger boundary reads.
+const SOURCE_DIRECTORY_PREFIX: &str = "src/";
+
+/// The violations in one crate's `src/`: each file that names a logger installer in the code of a
+/// line, meaning the part before any `//`. The match is by substring, so `set_logger_racy` is caught
+/// with `set_logger`, and `use log::set_logger as install;` is caught where it names the function.
+fn logger_violations(member: &CrateSource) -> Vec<String> {
+    member
+        .sources
+        .iter()
+        .filter(|file| file.path.starts_with(SOURCE_DIRECTORY_PREFIX) && file.path.ends_with(".rs"))
+        .filter(|file| {
+            file.text.lines().any(|line| {
+                let code = line.split("//").next().unwrap_or_default();
+                LOGGER_INSTALLERS
+                    .iter()
+                    .any(|installer| code.contains(installer))
+            })
+        })
+        .map(|file| {
+            format!(
+                "crate {}: {} installs a logger, and only `{BRIDGE_CRATE}` may",
+                member.directory, file.path
+            )
+        })
+        .collect()
+}
+
+/// The violations of a check with nothing to check. Each boundary holds trivially on a tree with no
+/// crate, no bridge to exempt, or no other crate to constrain, so each of those is a failure.
+fn vacuity_violations(crates: &[CrateSource]) -> Vec<String> {
+    if crates.is_empty() {
+        return vec!["no crate found under `crates/`, so no boundary was checked".to_string()];
+    }
+    let mut violations = Vec::new();
+    if !crates.iter().any(|member| member.directory == BRIDGE_CRATE) {
+        violations.push(format!(
+            "no `{BRIDGE_CRATE}` crate found under `crates/`, so the exemption named for it matches nothing"
+        ));
+    }
+    if !crates.iter().any(|member| member.directory != BRIDGE_CRATE) {
+        violations.push(format!(
+            "no crate other than `{BRIDGE_CRATE}` found under `crates/`, so no boundary was checked"
+        ));
+    }
+    violations
+}
+
 /// Every boundary violation in the tree these texts describe. An empty result means every boundary
 /// holds. It is a violation for the texts to hold no crate, no bridge, or no crate beside the bridge.
-fn boundary_violations(_root_manifest: &str, _crates: &[CrateSource]) -> Vec<String> {
-    Vec::new()
+fn boundary_violations(root_manifest: &str, crates: &[CrateSource]) -> Vec<String> {
+    let mut violations = Vec::new();
+    let root_forbids = root_forbids_unsafe(root_manifest);
+    if !root_forbids {
+        violations.push(format!(
+            "root manifest: `[workspace.lints.rust]` does not set `{UNSAFE_LINT} = {FORBID_VALUE}`"
+        ));
+    }
+    for member in crates
+        .iter()
+        .filter(|member| member.directory != BRIDGE_CRATE)
+    {
+        violations.extend(unsafe_violation(
+            &member.directory,
+            &member.manifest,
+            root_forbids,
+        ));
+        violations.extend(logger_violations(member));
+    }
+    violations.extend(vacuity_violations(crates));
+    violations
 }
 
 fn repo_root() -> PathBuf {
@@ -211,7 +425,7 @@ fn test_crate_forbidding_unsafe_locally_passes() {
         member("nozoki-core", FORBIDDING_LOCALLY, &[]),
     ];
 
-    let violations = boundary_violations(ROOT_WITHOUT_FORBID, &crates);
+    let violations = boundary_violations(ROOT_FORBIDDING, &crates);
 
     assert!(violations.is_empty(), "{violations:#?}");
 }
