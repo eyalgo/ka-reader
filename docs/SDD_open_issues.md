@@ -48,7 +48,15 @@
 - **If a document has to be written:** None. **The PM's lean:** a dated parenthesis beside that
   clause, in the form RN-66 gave the card's move, saying the README's sentences moved at
   `nozoki@61748fe`.
-- **Answer:** <the owner fills this in>
+- **Answer:** Confirmed, with one addition. RC-3's *Still unresolved* keeps its words and gets a
+  dated parenthesis in the form RN-66 used for the card: *(the README moved: `## Stack` and the
+  status block now name the one bundle and one process, `nozoki-mac`, `crates/nozoki-core` and
+  `crates/nozoki-bridge`, and no web engine, and they keep the `checks/` proof sentence word for
+  word, `nozoki@61748fe`; the sentences this clause cites stand at
+  `nozoki@a4ab8e6:README.md:L46-L51`; noted 2026-09-24)*. The addition: two other sentences
+  still name the README as owed, and they get the same parenthesis. They are RN-59's
+  `README.md:L46-L49` and RN-60's *Owed outside this document*. RN-66 did the same for the card,
+  on RC-3 and on RN-60. Reasoning: `docs/trail/sdd/self_answer-24.md` § 5.1.
 
 ### 5.2 Three Review Note citations point into files that no longer exist, with no pin
 - **Raised by:** PM — 2026-09-24
@@ -61,7 +69,16 @@
   exists on `main`: `git ls-files nozoki-ui crates/nozoki-app | wc -l` → `0`.
 - **If a document has to be written:** None. **The PM's lean:** pin each to `nozoki@a4ab8e6:`, the
   last commit where both files stood.
-- **Answer:** <the owner fills this in>
+- **Answer:** Confirmed, with one addition, and the reason corrected. Pin each citation to
+  `nozoki@a4ab8e6:`. That covers `nozoki-ui/src/main.ts:L14-L19` and
+  `crates/nozoki-app/src/main.rs:L17-L19` at `SDD.md:L3293`, `:L3294` and `:L3317`. The addition:
+  `crates/nozoki-app/Entitlements.plist` at `SDD.md:L3318` is a fourth citation into a removed
+  file, and it gets the same pin. The item's grep matched only line-anchored paths, so it missed
+  this one. The corrected reason: `a4ab8e6` is not the last commit where the files stood (the
+  merged branch's `5d37fae` is later). It is the last commit on `main`'s first-parent line before
+  the removal merged. Also, all three files are byte-identical from `ba63b44`, the run-10 commit
+  that wrote these citations, through `a4ab8e6`, so the pinned lines are the ones the note read.
+  Reasoning: `docs/trail/sdd/self_answer-24.md` § 5.2.
 
 **How it closes.** `product-sdd` folds it on its next run like every other item in this file, and
 the trail copy and the delete-when-empty behaviour are unchanged.
