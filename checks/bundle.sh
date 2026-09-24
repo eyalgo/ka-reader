@@ -14,6 +14,10 @@
 #   first only about the source; this proves both about the artifact a user would run.
 #   Entitlements are checked first, and a bundle that fails there is never launched — a wrong
 #   entitlement set proves nothing by running.
+#   The contents are read next, and also before anything is launched: exactly one executable (a file
+#   with any execute bit, or a Mach-O binary whatever its mode), no font, no byte copy of a file tracked
+#   under checks/, and every file of third_party/lucide/icons under Contents/Resources and nowhere else
+#   in the bundle. Each offending path is named on stderr.
 #
 # USAGE
 #   checks/bundle.sh target/release/bundle/macos/Nozoki.app
@@ -186,65 +190,127 @@ fi
 
 [ -z "$problems" ] || { printf '%s' "$problems" >&2; die "the entitlement set of $app is not the expected one; the bundle was not launched"; }
 
-# --- the bundle holds one executable, and the renderer build sits under Contents/Resources ---
+# --- the contents: one executable, no font, no copy of a checks/ file ---
 
-# Read before the probe is compiled and before anything is launched: a bundle with a second
-# executable, or a renderer file where the sandbox review does not expect it, is refused unstarted
-# (NFDR QC-55).
-extra_executables="$(find "$app/Contents/MacOS" -type f -perm -100 | LC_ALL=C sort | tail -n +2)"
-if [ -n "$extra_executables" ]; then
-  printf 'extra executable: %s\n' "${extra_executables//"$app/"/}" >&2
-  die "the bundle holds more than one executable under Contents/MacOS; the bundle was not launched"
-fi
+# Read before the probe is compiled and before anything is launched: a bundle that ships more than its
+# one executable and its glyphs is refused unstarted (NFDR QC-55, QC-14). Every offending path is
+# named on stderr, so one run says everything that is wrong.
+product_root="$(cd "$(dirname "$0")/.." && pwd -P)"
+contents_problems=""
 
-# The renderer build the bundle ships is what tauri.conf.json's build.frontendDist names, read from the
-# committed configuration and not from a build directory that may not exist. The committed
-# configuration carries no such key on purpose — the bundle command supplies it after the renderer
-# build (crates/nozoki-app/tests/config.rs) — so the set is normally empty, and the script says so.
-# An override for a caller that must stand another configuration in (a test).
-TAURI_CONF="${BUNDLE_SH_TAURI_CONF:-$(cd "$(dirname "$0")/.." && pwd -P)/crates/nozoki-app/tauri.conf.json}"
-[ -f "$TAURI_CONF" ] || die "the Tauri configuration is missing: $TAURI_CONF"
-# plutil ships with macOS and reads JSON. A failed extract (any non-zero exit) is read as no value,
-# whatever it printed and on whichever stream — a runner that puts the missing-key diagnostic on
-# stdout must not have that diagnostic read as the path.
-frontend_dist="$(plutil -extract build.frontendDist raw -o - "$TAURI_CONF" 2> /dev/null)" || frontend_dist=""
-if [ -z "$frontend_dist" ]; then
-  echo "renderer build: build.frontendDist is absent from $TAURI_CONF — the renderer set is empty, so no renderer file was checked"
-else
-  case "$frontend_dist" in
-    /*) ;;
-    *) frontend_dist="$(dirname "$TAURI_CONF")/$frontend_dist" ;;
+# The candidates for the copy rule: the regular, non-empty files git tracks under checks/. A listing that
+# fails, or comes back empty, is a refusal and never a pass: an empty candidate set would let every copy
+# through.
+tracked_checks="$(git -C "$product_root" ls-files checks 2> "$work/ls-files.err")" \
+  || die "cannot list the files tracked under checks/: $(cat "$work/ls-files.err")"
+[ -n "$tracked_checks" ] || die "the list of files tracked under checks/ is empty — there is nothing to compare the bundle's files against"
+: > "$work/checks.sha"
+while IFS= read -r tracked; do
+  candidate="$product_root/$tracked"
+  if [ -f "$candidate" ] && [ ! -L "$candidate" ] && [ -s "$candidate" ]; then
+    shasum -a 256 "$candidate" >> "$work/checks.sha"
+  fi
+done <<< "$tracked_checks"
+
+# Any execute bit at all, on any regular file under Contents; the magic below catches the binary whose
+# mode says nothing.
+mode_executables="$(find "$app/Contents" -type f \( -perm -100 -o -perm -010 -o -perm -001 \) | LC_ALL=C sort)"
+
+while IFS= read -r member; do
+  [ -n "$member" ] || continue
+  relative="${member#"$app"/}"
+  # The first four bytes, as hex. `file`'s wording is not a contract, so it is not asked.
+  magic="$({ head -c 4 "$member" | od -An -tx1 | tr -d ' \n'; } 2> /dev/null || true)"
+
+  is_executable=0
+  case "
+$mode_executables
+" in
+    *"
+$member
+"*) is_executable=1 ;;
   esac
-  [ -d "$frontend_dist" ] || die "build.frontendDist names a directory that does not exist: $frontend_dist"
-  misplaced=""
-  renderer_files="$(cd "$frontend_dist" && find . -type f | sed 's#^\./##' | LC_ALL=C sort)"
-  # Every place a renderer path is looked for: Contents itself, and each of its entries bar
-  # Resources. Contents is as much "outside Contents/Resources" as Contents/MacOS is, so a renderer
-  # file dropped at the root of Contents is misplaced too — it was reached by no section while the
-  # entries alone were walked, and the run reported the bundle clean.
-  search_roots="$app/Contents"
-  for section in "$app/Contents"/*; do
-    [ "$section" != "$app/Contents/Resources" ] || continue
-    search_roots="$search_roots
-$section"
-  done
-  while IFS= read -r search_root; do
-    [ -n "$search_root" ] || continue
-    while IFS= read -r renderer_file; do
-      [ -n "$renderer_file" ] || continue
-      candidate="$search_root/$renderer_file"
-      # A renderer build carrying its own top-level Resources/ would otherwise be flagged for
-      # sitting in the one directory the rule blesses.
-      case "$candidate" in "$app/Contents/Resources/"*) continue ;; esac
-      if [ -e "$candidate" ]; then
-        misplaced="${misplaced}renderer file outside Contents/Resources: ${candidate#"$app"/}
+  # Mach-O, thin or fat, in either byte order. cafebabe is a Java class file's magic too, so a class file
+  # is refused as well; that fails closed.
+  case "$magic" in
+    feedface | feedfacf | cefaedfe | cffaedfe | cafebabe | cafebabf | bebafeca | bfbafeca) is_executable=1 ;;
+  esac
+  if [ "$is_executable" -eq 1 ] && [ "$relative" != "Contents/MacOS/$executable_name" ]; then
+    contents_problems="${contents_problems}extra executable: $relative
+"
+  fi
+
+  is_font=0
+  lowered_name="$(printf '%s' "${member##*/}" | tr '[:upper:]' '[:lower:]')"
+  case "$lowered_name" in
+    *.ttf | *.otf | *.ttc | *.otc | *.woff | *.woff2 | *.dfont) is_font=1 ;;
+  esac
+  # 00010000 (TrueType), OTTO, true, typ1, ttcf, wOFF, wOF2
+  case "$magic" in
+    00010000 | 4f54544f | 74727565 | 74797031 | 74746366 | 774f4646 | 774f4632) is_font=1 ;;
+  esac
+  if [ "$is_font" -eq 1 ]; then
+    contents_problems="${contents_problems}font: $relative
+"
+  fi
+
+  # A file of checks/ has no business in the bundle whatever it is called. Hashed once each side, and
+  # every hit confirmed byte for byte before it is named.
+  if [ -s "$work/checks.sha" ] && [ -s "$member" ]; then
+    member_hash="$(shasum -a 256 "$member" | awk '{ print $1 }')"
+    while IFS= read -r same_hash_path; do
+      [ -n "$same_hash_path" ] || continue
+      if cmp -s "$member" "$same_hash_path"; then
+        contents_problems="${contents_problems}copy of a checks/ file: $relative (the same bytes as ${same_hash_path#"$product_root"/})
 "
       fi
-    done <<< "$renderer_files"
-  done <<< "$search_roots"
-  [ -z "$misplaced" ] || { printf '%s' "$misplaced" >&2; die "the renderer build is not under Contents/Resources; the bundle was not launched"; }
-  echo "renderer build: every file of $frontend_dist is under Contents/Resources"
-fi
+    done <<< "$(awk -v wanted="$member_hash" '$1 == wanted { print substr($0, 67) }' "$work/checks.sha")"
+  fi
+done <<< "$(find "$app/Contents" -type f | LC_ALL=C sort)"
+
+[ -z "$contents_problems" ] || { printf '%s' "$contents_problems" >&2; die "the bundle holds files it must not ship; the bundle was not launched"; }
+
+# --- the glyphs: every member of the expected set is under Contents/Resources, and nowhere else ---
+
+# The expected set is every regular file directly in the source tree's glyph directory, dotfiles
+# included, read when the script runs — never a list held here. An override for a caller that must stand
+# another directory in (a test).
+GLYPH_DIR="${BUNDLE_SH_GLYPH_DIR:-$product_root/third_party/lucide/icons}"
+[ -d "$GLYPH_DIR" ] || die "the expected glyph set is empty: $GLYPH_DIR does not exist; the bundle was not launched"
+glyph_members="$(find "$GLYPH_DIR" -maxdepth 1 -type f | sed 's#.*/##' | LC_ALL=C sort)"
+[ -n "$glyph_members" ] || die "the expected glyph set is empty: $GLYPH_DIR holds no regular file; the bundle was not launched"
+
+glyph_problems=""
+while IFS= read -r glyph; do
+  [ -f "$app/Contents/Resources/$glyph" ] || glyph_problems="${glyph_problems}glyph missing from Contents/Resources: $glyph
+"
+done <<< "$glyph_members"
+
+# Every path outside Contents/Resources, at any depth, Contents itself included. Info.plist,
+# _CodeSignature and icon.icns are nobody's glyph and are outside the rule: only a member's name or an
+# .svg suffix is read.
+while IFS= read -r outside; do
+  [ -n "$outside" ] || continue
+  outside_name="${outside##*/}"
+  is_glyph=0
+  case "$outside_name" in
+    *.svg) is_glyph=1 ;;
+  esac
+  case "
+$glyph_members
+" in
+    *"
+$outside_name
+"*) is_glyph=1 ;;
+  esac
+  if [ "$is_glyph" -eq 1 ]; then
+    glyph_problems="${glyph_problems}glyph outside Contents/Resources: ${outside#"$app"/}
+"
+  fi
+done <<< "$(find "$app/Contents" -mindepth 1 -path "$app/Contents/Resources" -prune -o -print | LC_ALL=C sort)"
+
+[ -z "$glyph_problems" ] || { printf '%s' "$glyph_problems" >&2; die "the bundle's glyphs are not exactly under Contents/Resources; the bundle was not launched"; }
+echo "glyph set: $(printf '%s\n' "$glyph_members" | wc -l | tr -d ' ') members checked — each is under Contents/Resources and nowhere else in the bundle"
 
 # --- the probe that asks the operating system ---
 

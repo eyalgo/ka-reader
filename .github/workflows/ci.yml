@@ -3,7 +3,7 @@
 #
 # One job, one macOS image, every step fatal: a step that exits non-zero is the job's verdict, and the
 # run is green only when every step exits 0. Nothing here supplies a way to sign and no repository
-# secret is read; the bundle is ad-hoc signed by crates/nozoki-app/tauri.conf.json alone.
+# secret is read; the bundle is ad-hoc signed by nozoki-mac/assemble.sh alone.
 
 name: CI
 
@@ -19,29 +19,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # package.json `engines.node` is "24" and `packageManager` pins pnpm, which Corepack reads.
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-      - name: Enable Corepack
-        run: corepack enable
-
       - name: Build the workspace
         run: cargo build --workspace --locked
 
-      - name: Install and build the renderer
-        run: (cd nozoki-ui && pnpm install --frozen-lockfile && pnpm exec vite build)
-
       - name: Test gate
-        run: cargo test --workspace --locked && (cd nozoki-ui && pnpm exec vitest run)
+        run: cargo test --workspace --locked && swift test --package-path nozoki-mac
 
-      # The Tauri CLI reads tauri.conf.json from its working directory, and this product keeps it in
-      # crates/nozoki-app. `build.frontendDist` is supplied here, after the renderer build: the
-      # committed config must not carry it, because a configured directory that does not exist stops
-      # `cargo build` on a clean clone. `--locked` reaches cargo through the arguments after `--`.
       - name: Build Nozoki.app
-        working-directory: crates/nozoki-app
-        run: ../../nozoki-ui/node_modules/.bin/tauri build --ci --bundles app --config '{"build":{"frontendDist":"../../nozoki-ui/dist"}}' -- --locked
+        run: nozoki-mac/assemble.sh
 
       - name: Bundle probe
         run: checks/bundle.sh target/release/bundle/macos/Nozoki.app
