@@ -40,7 +40,15 @@
   form v13 used for this same paragraph, saying the tree holds ADR-0016's four units from
   `nozoki@0aca57e`. The scripts not yet in the tree (`view.sh`, `renderer.sh`, `structure.sh`,
   `entry-points.sh`) stay as the entries name them.
-- **Answer:** <the owner fills this in>
+- **Answer:** Confirmed, with one addition. Make a dated in-place correction in v13's form: from
+  `nozoki@0aca57e` the tree holds ADR-0016's four units and nothing else (`git ls-files nozoki-ui
+  crates/nozoki-app | wc -l` → `0`). The paragraph's closing clause, "the same reading now for the
+  old ones while they remain", goes with it, because nothing old remains. **Addition:** measure with
+  `git ls-files`, not `ls`, the tool the v13 sentence used. A working copy can still list
+  `nozoki-ui/` and `crates/nozoki-app/` as untracked build output. This checkout does, on
+  2026-09-24: `node_modules/`, `dist/`, `gen/`, `permissions/`. An `ls` there would bring back the
+  false fact. The four scripts not yet in the tree stay as the entries name them. Reasoning:
+  `docs/trail/architecture/self_answer-14.md` § 3.1.
 
 ### 3.2 QC-3's tail still describes its one-time review as owed, and the list it describes is gone
 - **Raised by:** PM — 2026-09-24
@@ -58,7 +66,16 @@
   at `nozoki@0aca57e` over the 17 names the list kept, that the names that left with the Tauri build
   left unreviewed, and whether every name now on the list has passed the review. The seat checks
   that last clause against the review record rather than taking it from here.
-- **Answer:** <the owner fills this in>
+- **Answer:** Overridden in one clause. The half was **not** realized at `nozoki@0aca57e`, and the
+  tail must not say it was. The tail should say this: at `nozoki@0aca57e` the list is one `cargo:`
+  section of 17 names (`checks/deps.allow:L18` onward). The `pnpm:` section (163 names) and 201 of
+  the 218 cargo names left with the Tauri build (`nozoki@fad4e78`), unreviewed, and none of them is
+  shipped now. The 17 that stayed were among the 218 that were never reviewed. So the one-time
+  review is still owed, over those 17, by the change that first realizes this half, and the rest of
+  the tail stands as written. No record shows that review. `nozoki@6acfb65` generated the list and
+  "read" the names against the header's rules. That is a reading by name, and QC-3 itself says a
+  name alone cannot answer the question. `nozoki@fad4e78` records only that the tree equals the
+  list. Reasoning: `docs/trail/architecture/self_answer-14.md` § 3.2.
 
 ### 3.3 QC-25 cites the expected entitlement set five lines high
 - **Raised by:** PM — 2026-09-24
@@ -70,7 +87,14 @@
   contents block above it grew.
 - **If a document has to be written:** None. **The PM's lean:** cite `:L132-L133` as read at
   `nozoki@0aca57e`, or pin the old range to the commit it was read at.
-- **Answer:** <the owner fills this in>
+- **Answer:** Confirmed, with one addition. Of the two options, take the first: QC-25 cites
+  `nozoki@0aca57e:checks/bundle.sh:L132-L133`, the current range pinned to the commit it was read
+  at. That is the form § 3.7 uses. If the contents block grows again, the citation still opens to the
+  right lines instead of silently pointing at the wrong ones. **Addition:** two Review Notes also
+  cite this script's old ranges: `nfdr.md:L1772` (`:L127-L128`, "opened this run") and `:L1827`
+  (`:L127-L187`). Both are dated history, read at their own fold, and were true when read. This
+  answer does not move them. Only QC-25 is a live entry. Reasoning:
+  `docs/trail/architecture/self_answer-14.md` § 3.3.
 
 ### 3.4 § 9 says CI does not build `nozoki-mac`, and CI now builds it twice
 - **Raised by:** PM — 2026-09-24
@@ -88,7 +112,18 @@
   `nozoki-mac` from `nozoki@0aca57e` in two steps, and takes the Swift version and the run id from
   the first CI log on `main` that runs them. If that version is 6.2 or later, the same bullet's
   "adopted then" clause comes due.
-- **Answer:** <the owner fills this in>
+- **Answer:** Confirmed, with two additions. The clause should say that from `nozoki@0aca57e`, CI
+  builds `nozoki-mac` in two steps: `ci.yml:L26` runs `swift test` in `Test gate`, and `:L29` runs
+  `nozoki-mac/assemble.sh`. It should also say the value is still unread, because no CI run on
+  `main` has built it yet (`origin/main` is at `a4ab8e6` on 2026-09-24). If the first log shows 6.2
+  or later, the "adopted then" clause comes due, as the lean says. **Addition 1, if the log says
+  nothing:** `ci.yml` has no `swift --version` step (`:L22-L29`), and this run does not know whether
+  `swift test`'s output names the toolchain. If the first log does not name it, the toolchain line
+  stays *not yet measured* and says what it is waiting for. The tail's review gate then stands
+  until a log names the toolchain. Today the tail says "until CI builds `nozoki-mac`", and that
+  condition is now met. **Addition 2, if the value goes stale:** `macos-14`'s default Xcode can
+  move under the same label. So the line records the runner image version beside the run id and
+  the Swift version. Reasoning: `docs/trail/architecture/self_answer-14.md` § 3.4.
 
 ### 3.5 § 9 and a Review Note cite `release.yml:L18`, and no `release.yml` exists
 - **Raised by:** PM — 2026-09-24
@@ -101,7 +136,12 @@
   citation, and is not this item.)
 - **If a document has to be written:** None. **The PM's lean:** cite `ci.yml:L18` alone until a
   `release.yml` exists.
-- **Answer:** <the owner fills this in>
+- **Answer:** Confirmed, with one addition. `:L910` and the Review Note at `:L2141` cite
+  `ci.yml:L18` alone. **Addition:** RN-24's source list at `nfdr.md:L2218` also names `release.yml`
+  as a file it read. `git log --all --oneline -- .github/workflows/release.yml` prints nothing,
+  2026-09-24. The file has never existed in this repository, so the name comes off that list as well.
+  `:L454` stands: it states an obligation, not a citation. Reasoning:
+  `docs/trail/architecture/self_answer-14.md` § 3.5.
 
 ### 3.6 § 9 says every Swift packet rule it does not name is followed, and `checks/no-network.sh` departs from the packet's dependency gate
 - **Raised by:** PM — 2026-09-24
@@ -122,7 +162,19 @@
   `type == "system"` clause as departed from, with the same reason as the link (a system library
   target brings nothing into the tree), and names `checks/no-network.sh` as the gate that stands in
   its place.
-- **Answer:** <the owner fills this in>
+- **Answer:** Confirmed, with two additions. The bullet names the packet gate's
+  `type == "system"` clause as departed from, for the same reason as the system-library link. The
+  bridge's module is this repository's own `nozoki-bridge`, which is on `checks/deps.allow`, so the
+  link brings nothing new into the tree. The bullet names `checks/no-network.sh` as the gate that
+  stands in its place. **Addition 1, what the stand-in covers:** the departure is that one clause
+  and nothing else. `checks/no-network.sh` holds the packet's other two conditions, a non-empty
+  `dependencies` array and a target with a `url` (`:L31-L32`). It also holds `Package.resolved`
+  more widely than the packet does: at any depth, not only in the working directory. It reads the
+  dump with `plutil`, not `jq`. **Addition 2, when the departure ends:** the clause departs only
+  because `.systemLibrary(name: "CNozokiBridge")` exists (`Package.swift:L19`). So it flips
+  together with the three departures this bullet already names. When the artifact-bundle link
+  replaces the system library, no target has `type == "system"`, and the packet's gate is followed
+  as written. Reasoning: `docs/trail/architecture/self_answer-14.md` § 3.6.
 
 ### 3.7 Seven citations in these records point into files that no longer exist, with no pin
 - **Raised by:** PM — 2026-09-24
@@ -142,6 +194,17 @@
   sentence). ADR-0012 is Accepted.
 - **If a document has to be written:** None. **The PM's lean:** pin each to `nozoki@a4ab8e6:`, the
   form RN-16 and RN-17 used when an earlier move orphaned citations.
-- **Answer:** <the owner fills this in>
+- **Answer:** Confirmed, with one addition. Pin every one to `nozoki@a4ab8e6:`, giving the full path
+  (for example `nozoki@a4ab8e6:crates/nozoki-app/tauri.conf.json:L12`). This run opened each cited
+  line at `a4ab8e6`, and each reads as the records say: `config.rs:L11` `use std::fs;`, `:L17` and
+  `:L181-L188` the CSP assertions, `tauri.conf.json:L12` the `csp` line, `log_writer.rs:L142`
+  `log::set_logger`, `:L201` `fs::write`, `main.ts:L14-L19` `start()` calling `runStartFlow`, and
+  `main.rs:L17-L19` `open_folder` with `pick_folder()`. None of these files changed between
+  `a4ab8e6` and `15e8790`, the last commit before their removal. `a4ab8e6` is on `origin/main`, so a
+  reader of the public repository can open the pin. **Addition:** ADR-0012 is Accepted. Its pins at
+  `:L13-L14` and `:L132` are prose edits on the owner's cycle-3 ruling, the form RN-16 took. No
+  record is superseded and the index does not move. `…/common/mod.rs:L11` at `nfdr.md:L1607` is
+  `nozoki-core`'s file, which still stands, so it is out of scope. Reasoning:
+  `docs/trail/architecture/self_answer-14.md` § 3.7.
 
 **How it closes.** `product-architecture` folds it on its next run like any other item here.
