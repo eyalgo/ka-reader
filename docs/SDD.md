@@ -6,7 +6,7 @@
        signal, and the state a finished SDD carries; the open-issues file is gone.
      Locked = ratified as the source of truth. -->
 **Owner:** CTO · CPO · CDO — one run, three seats
-**Version:** 17 — CPO: SDD Review Notes RN-59 (dated parenthesis on the `README.md:L46-L49` clause) and RN-67 (CPO, changed) — new. No § 1, § 5 or § 6 field altered. Companion items added: none; companion left on disk for the CTO's fold of RC-3, RN-60 and § 5.2.; CTO: § 10 RC-3 *Still unresolved*; SDD Review Notes RN-52 (four citations pinned), RN-60 (*Owed outside this document*), RN-68 (new); `docs/SDD_open_issues.md` removed, empty of items — companion items added: none.; CDO: SDD Review Notes RN-53 (dated parenthesis on the README clause; source-list citation pinned to `nozoki@a4ab8e6:README.md:L48-L49`), RN-57 (dated parenthesis on the verification sentence; source-list citation pinned), RN-69 (CDO, changed) — new. No § 4, § 6, § 10 or § 12 field altered. Companion items added: none.; CPO: SDD Review Notes RN-58 (two citations pinned to `nozoki@a4ab8e6:README.md:L50-L51`) and RN-67 (round-2 sentence recording the pins). No § 1, § 5 or § 6 field altered. Companion items added: none.; CDO: nothing — verification only; no SDD section, slice or companion item altered.
+**Version:** 18 — CPO: nothing — no SDD section, slice or companion item altered by this seat.; CTO: § 4 C-I3 (observable, measured-frames sentence, hosted-runner sentence with the re-cut rule); § 6 `open-a-folder` *Reached when* command half; § 9 TO-7 *costs*; § 10 RC-2 and RC-3 *Still unresolved* (dated parentheses); *Open Questions* (seventh item removed — six remain); SDD Review Notes RN-70 (new); `docs/SDD_open_issues.md` removed, empty of items. Companion items added: none.; CPO: nothing — no SDD section, slice or companion item altered by this seat.
 Version 8 — CTO: § 4 C-I3 (bounded window, first-ask-all-three pass, script-fixed and printed bound with no number here, per-ask live-pid check, uncovered yes→no case, control `no` for the whole window, error-on-any-ask, denial-as-proof clause narrowed to where the control reports the denials allowed with the hosted runner's read denial stated as separating nothing, Violated by extended); § 10 RC-1 Still unresolved (pointer to RN-48); § 11 R-8 shows up as and response; Open Questions (fourth item closed and removed — four remain); SDD Review Notes RN-48 (new). Companion items added: none. docs/SDD_open_issues.md removed, empty of items.
 Version 7 — CTO: § 3 SM-4 (what crosses, and owner cell wording); § 4 C-R7 (the staged grant, set equality against registered commands, asset-scheme keying, named pre-1.0.0 uncovered case, Violated by); § 4 C-I3 (every command the build grants); § 6 S-7 Reached when, command half; SDD Review Notes RN-47 (new). Companion items added: none. docs/SDD_open_issues.md removed, empty of items.
 Version 6 — CTO: § 4 C-I3 (observable and Violated by); § 6 open-a-folder Reached when, command half; § 10 RC-1 (new, first re-cut entry); § 11 R-8 shows up as; Open Questions fourth item (closed, replaced by the hosted-runner question); SDD Review Notes RN-45 (new). Companion items added: none. docs/SDD_open_issues.md removed, empty of items.; CPO: § 5 step 4 (E-1's sizing sentence); SDD Review Notes RN-46 (new). Companion items added: none.
@@ -698,15 +698,21 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   opened an empty window (§ 10 RC-2); the ruling names no renderer, so it binds the native shell
   as it bound the page. `checks/renderer.sh Nozoki.app` launches the bundle CI built, as a user
   launches it, takes the pid the way `checks/bundle.sh` does, and within a bounded window of the
-  same kind fails unless the launched main process is observed **inside `open_folder`'s call** —
-  the shell's first and only unconditional act, presenting the Open panel at launch (C-R3) and
-  parked in it until someone answers. This is not the harness driving the views: it is the
+  same kind fails unless the launched main process is observed **parked in the Open panel's modal
+  run, inside the shell's launch frames** — the shell's first and only unconditional act,
+  presenting the Open panel at launch (C-R3) and parked in it until someone answers. `open_folder`
+  is not among those frames: the shell calls it only after the panel returns
+  (`nozoki-mac/Sources/Shell/LaunchFlow.swift:L35-L37`), and the gate sends no input, so an
+  observation inside that call would need a code path this clause forbids below. The frame list
+  is the script's header's (`checks/renderer.sh:L44-L57`) and is not copied here, the way the
+  probe's bound is the script's. This is not the harness driving the views: it is the
   operating system's or the process's own report that the shell ran far enough to present the
   panel. The mechanism measured on one Mac, for the previous renderer, was a thread sample of the
   launched pid showing the command's frames — present exactly where the window drew and absent
-  where it did not (`docs/trail/sdd/cycle-8.md` § 5.1, the sample table); the frames a native
-  shell shows are re-measured on the first slice's first built bundle, and the script fixes which
-  mechanism it reads. What it may never read is a marker the product writes for the check, an
+  where it did not (`docs/trail/sdd/cycle-8.md` § 5.1, the sample table); the frames the native
+  shell shows were measured on the first slice's first built bundle and are recorded in the
+  script's header (`checks/renderer.sh:L53-L61`), and the script fixes which mechanism it reads.
+  What it may never read is a marker the product writes for the check, an
   environment variable, or a code path that exists for the gate: the shipped bundle is the
   artifact under test and holds nothing for the test. The gate's negative control is a bundle the
   harness owns, not a build removed from the product — a single-process shell has no renderer
@@ -715,8 +721,14 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   took), which must go red. It runs on every CI build after `checks/bundle.sh` and never instead
   of it: a wall proven on a bundle whose window never draws proved nothing a person could use,
   and a window that draws on a bundle the wall is not proven on is the shape unchosen (§ 5 step
-  4, E-1). Whether the observation reads the same on a GitHub-hosted macOS runner is unmeasured
-  (*Open Questions*).
+  4, E-1). The observation was measured on the Mac (`checks/renderer.sh:L58-L61`, macOS 26.6.2)
+  and on a GitHub-hosted macOS runner (GitHub Actions run 35988399477, image `macos-14-arm64`
+  20260831.0302.1, macOS 14.8.9 — inside the C-R5 floor's major): the runner matched the script's
+  five-frame list on observation 1 and its control was not matched on any of 30 — a match of the
+  list the gate reads, not a comparison of full stacks, which only the Mac reading recorded. A
+  runner image or macOS whose Open-panel frames read differently turns the gate red on the next
+  build, because the gate runs on every build; that is a re-cut trigger on the gate's mechanism,
+  never on the gate.
   The record is ADR-0010; the renderer gate's own record is ADR-0012 — its status is the index
   row's (`docs/adr/README.md`, its row) and this line states none — whose mechanism, control and
   observable's name are re-derived from this clause as it now reads (RN-61; confirmed with the
@@ -1306,9 +1318,10 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   read and outbound network denied, and the no-entitlement control reported unsandboxed — the
   first proof that the wall stands under an ad-hoc signature (R-8; the observable is C-I3's,
   re-cut at § 10 RC-1); `checks/renderer.sh Nozoki.app` finds the same bundle's launched main
-  process inside `open_folder`'s call — the panel presented — within its window, and its control,
-  `checks/fixtures/idle-shell`, goes red (C-I3; re-cut at § 10 RC-2 and RC-3); the frames the
-  gate reads are fixed by the script from this bundle (*Open Questions*). *The promise
+  process parked in the Open panel's modal run, inside the shell's launch frames — the panel
+  presented — within its window, and its control, `checks/fixtures/idle-shell`, goes red (C-I3;
+  re-cut at § 10 RC-2 and RC-3); the frames the gate reads are fixed by the script from this
+  bundle (`checks/renderer.sh:L53-L57`). *The promise
   clause:* `checks/read-only.sh checks/fixtures/plain` and `checks/read-only.sh
   checks/fixtures/repo` each print `unchanged` after `open_folder` and `list_tree` on every entry,
   `.git` hashed where present; `checks/no-network.sh` exits 0; `checks/own-state.sh` finds the
@@ -2115,7 +2128,9 @@ been weighed. For each, say what undoing it would take if it turned out wrong.>
   the second row's condition) — or the placeholder returning for every image.
 - **TO-7:** No harness drives the AppKit views (C-I3) — *buys* a proof that runs in CI on macOS
   with no UI driver and no Xcode project; *costs* the shell's actual use of the bridge being
-  exercised only by the renderer gate and the timed release walk — accepted because the shell
+  exercised only by the timed release walk (AC-10) — the renderer gate exercises no bridge call,
+  since the shell makes none before the panel returns; what the gate shows is that the launched
+  shell ran its launch flow as far as the panel — accepted because the shell
   holds no I/O the harness could catch it using (C-R7); *undoing it costs* an XCUITest target and
   the Xcode project it needs, when one is worth what it brings.
 - **TO-8:** A macOS floor of 14 where nothing in the stack forces one above 11 (C-R5) — *buys* one
@@ -2263,7 +2278,9 @@ silently misses every reversal made mid-build.>
   it" as evidence that a system process will start. Holding an entitlement set by exact members.
 - **Still unresolved:** The renderer (companion § 1.1) *(answered — the owner's (a),
   `docs/trail/sdd/cycle-9.md` § 1.1; the cut is redrawn at RC-3)*. Whether `checks/renderer.sh`'s
-  observation reads the same on a GitHub-hosted runner (*Open Questions*). ADR-0003 § Decision and
+  observation reads the same on a GitHub-hosted runner (*Open Questions*) *(measured — the
+  runner matched the script's frame list, run 35988399477, 2026-09-24; the item is closed and
+  removed from *Open Questions*, and C-I3 carries the reading; noted 2026-09-24, RN-70)*. ADR-0003 § Decision and
   NFDR QC-25 (`docs/nfdr.md:L243-L245`) still state *exactly*, and are the Principal Architect's
   to bring into line (§ 12) *(QC-25 states the rule since NFDR v10, and ADR-0011 restates ADR-0003
   under it, Proposed — `docs/nfdr.md` § Version, its v10 note; `docs/adr/README.md`; noted
@@ -2319,7 +2336,10 @@ silently misses every reversal made mid-build.>
   replacement as unforeseeable: it was paid, and the price is on this row. Rendering untrusted
   content as markup anywhere in the product.
 - **Still unresolved:** The frames `checks/renderer.sh` reads on the native shell, and whether
-  they read the same on a hosted runner (*Open Questions*). How TextKit lays out UX-I12's two hard
+  they read the same on a hosted runner (*Open Questions*) *(measured — the five frames are the
+  script's header's, `checks/renderer.sh:L53-L61`, and the runner matched that list, run
+  35988399477; the item is closed and removed from *Open Questions*, and C-I3 carries the reading
+  and the observable's corrected name; noted 2026-09-24, RN-70)*. How TextKit lays out UX-I12's two hard
   cells, and which engine compiles the six grammars (*Open Questions*). The records and the NFDR
   entries owed above (§ 12). The project card's `Languages:` and test command, and
   `README.md:L46-L51`'s stack and proof sentences — outside this document (RN-59, RN-60) *(the
@@ -3902,6 +3922,56 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   RN-53, RN-57; source: `nozoki@a4ab8e6:README.md:L48-L49`; `nozoki@ba63b44`; `nozoki@6ebdc42`;
   `nozoki@61748fe`; `docs/trail/sdd/cycle-13.md` § 5.2; `docs/DESIGN.md:L330`;
   `<CORE>/doctrine/governance/found_while_walking.md` § *The rule*; RN-52, RN-62, RN-67, RN-68)*.
+- **RN-70:** *(CTO)* *(changed)* The companion's § 5.1 and § 5.2 folded, both raised from
+  downstream by the PM on 2026-09-24 and answered by a `companion-self-answer` run, and the file
+  removed. **§ 5.1** — § 4 C-I3's observable no longer reads "inside `open_folder`'s call": the
+  gate fails unless the launched main process is observed parked in the Open panel's modal run,
+  inside the shell's launch frames, and the clause now says why `open_folder` is not among them
+  and where the frame list lives — the script's header, cited and not copied. `open-a-folder`'s
+  command half moves in the same words, and § 9 TO-7's *costs* names the timed release walk
+  alone, with what the gate shows instead. **§ 5.2** — the last *Open Questions* item is closed
+  and removed, the way RN-48 closed the probe's hosted-runner question: C-I3's "is unmeasured"
+  sentence is replaced by the two readings, the Mac's and the runner's, and by the item's own
+  re-cut rule, which now binds from C-I3; RC-2's and RC-3's *Still unresolved* keep their words
+  and gain the dated parenthesis (the form RN-48, RN-66 and RN-68 used), RC-2's because its
+  pointer would otherwise lead a cold reader to nothing; `open-a-folder`'s "fixed by the script
+  from this bundle" keeps the sentence and drops the dead pointer for a line citation. Re-verified
+  before writing, not taken from the answer: `LaunchFlow.swift:L35-L37` calls `panel.chooseFolder()`
+  and only then `bridge.openFolder(location:)`; `checks/renderer.sh:L51-L57` lists the five
+  frames and says `nozoki_open_folder` is not among them for that reason, and `:L58-L61` records
+  the Mac reading (macOS 26.6.2); `gh run view 35988399477 --json headSha,conclusion` → `37a962d`,
+  `success`; its log's *Set up job* prints `Image: macos-14-arm64`, `14.8.9` and the image
+  release `macos-14-arm64/20260831.0302`, and its *Renderer gate* step prints "the main process
+  was observed at the Open panel, inside the shell's launch, on observation 1" and "control pid …
+  was not observed at the Open panel in any of 30 observations — the expected red"; `git diff
+  --stat 37a962d 153f5a1 -- checks/renderer.sh nozoki-mac checks/fixtures/idle-shell` and the
+  same against `HEAD` both print nothing, so the run read the script and the shell `main` holds.
+  *Because* a condition that names an observation no admitted gate can make is a bar every build
+  fails as written while passing in substance, and the owner's cycle-8 floor was written for a
+  page whose `open_folder` call presented the panel — in the native shell that act is the panel's
+  own modal run, and C-I3 already carries the ruling as binding the shell as it bound the page
+  (the self-answer's ground, `docs/trail/sdd/self_answer-25.md` § 5.1); and a question the gate's
+  first runs answered is not open, while the rule it carried still binds the next image or macOS
+  that reads differently. What does not move, and why: no § 10 entry — RC-3's *Still unresolved*
+  recorded the native frames as open and this fold is the resolution it anticipated, not a new
+  contradiction, and no command half is unmet as it now reads; § 2, § 3, § 7 and § 11, because a
+  gate's observable renamed to what it measures and a measurement recorded change no shape, seam,
+  order or risk; TO-7 itself, because its acceptance (the shell holds no I/O, C-R7) still holds
+  and only its *costs* line was false; the *Open Questions* count in § 5 step 4 E-3's "third item"
+  pointer, which keeps its ordinal with the seventh item gone; RN-52's and RN-60's history, which
+  RN-55's rule leaves as written; and the SRS boundary — no requirement moves. The gate's
+  uncovered half stands as before: a thread sample shows the shell is in the panel's run, not
+  that the panel is on screen, which is S-1's observable half, the CDO's. **Downstream:** the same
+  false sentence in NFDR QC-62 and ADR-0012 is raised at `docs/architecture_open_issues.md` § 3.2
+  and is the Principal Architect's; nothing is opened there. **The companion** is consumed: its
+  two items are the whole of it, the trail copy stands at `docs/trail/sdd/cycle-14.md` (`diff`
+  against `docs/SDD_open_issues.md` printed nothing before this turn's edits), and the file is
+  removed, empty of items, per its own header's rule — no file is the done signal *(re: § 4 C-I3;
+  § 6 `open-a-folder` *Reached when*, command half; § 9 TO-7; § 10 RC-2, RC-3; *Open Questions*;
+  source: `docs/trail/sdd/cycle-14.md` §§ 5.1, 5.2; `docs/trail/sdd/self_answer-25.md` §§ 5.1,
+  5.2; `nozoki-mac/Sources/Shell/LaunchFlow.swift:L35-L37`; `checks/renderer.sh:L44-L61`; GitHub
+  Actions run 35988399477 at `nozoki@37a962d`; `nozoki@153f5a1`; `docs/trail/sdd/cycle-8.md`
+  § 5.1; `docs/architecture_open_issues.md` § 3.2; RN-48, RN-55, RN-60, RN-66, RN-68)*.
 
 ## Open Questions
 
@@ -3944,9 +4014,3 @@ question.>
 - [OPEN: What the reference fixture sizes are (NFR-10) and what FSEvents coalescing latency the
   watcher sees on them. Settled by `checks/latency.sh`'s first figures, which the SRS then folds in
   by revision (`docs/SRS.md` RN-4); no number is written here before that.]
-- [OPEN: Which frames the native shell shows inside `open_folder`'s call — the observation
-  `checks/renderer.sh` reads (C-I3) — and whether they read the same on a GitHub-hosted macOS
-  runner as on the one Mac where a thread sample showed the previous renderer's (§ 10 RC-2, RC-3).
-  Settled by the gate's first run on the first slice's first native bundle, on that Mac and on the
-  runner; a runner that cannot observe it is a re-cut trigger on the gate's mechanism, never on
-  the gate.]
