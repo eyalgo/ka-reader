@@ -128,7 +128,16 @@ the panel is on screen — S-1's observable half (RN-70) *(corrected in place 20
 accepted this read that the hosted-runner reading "is unmeasured (`docs/SDD.md` § Open Questions,
 last item)", an item SDD v18 closed; the runner reading is cited from the run because the
 script's header does not carry it yet; the answer at `docs/trail/architecture/cycle-12.md`
-§ 3.1)*.
+§ 3.1)* *(dated in place 2026-09-24, a second note after the one before it, which stands as
+written and was true of the tree at `nozoki@153f5a1` — from `nozoki@2b83dce`, in the change merged
+at `nozoki@ab39502`, the script's header carries the runner reading (`checks/renderer.sh:L62-L65`:
+run 35988399477 on `nozoki@37a962d`, image `macos-14-arm64` 20260831.0302.1, macOS 14.8.9, the
+product at the panel on observation 1 of the bound of 30 and the control there in none), so it is
+cited from the header as the Mac reading is (`:L58-L61`), the frame list at `:L44-L57` unmoved; and
+at `nozoki@ab39502` the `Renderer gate` step is `.github/workflows/ci.yml:L46-L47` — the `:L43-L44`
+§ Decision's parenthesis gives, dated "from `nozoki@153f5a1`", was true there and moved when
+`View check suite` landed above it (`:L41-L42`); `Bundle probe` is still `:L31-L32`; the answers at
+`docs/trail/architecture/cycle-14.md` §§ 3.4, 3.5)*.
 
 What undoing it costs: dropping the gate is a CI edit — and a return to the state where the wall's
 green was the only evidence a person could use the bundle. The owner ordered the gate, so a reversal
@@ -195,6 +204,14 @@ answer at `docs/trail/architecture/cycle-12.md` § 3.1)*.
   `docs/trail/architecture/self_answer-12.md` § 2.3). Accepted with `docs/SDD.md` at v14
   (`nozoki@2739007`, Draft), where C-I3's record line names this record and states no status word
   (SDD RN-64) — the index row is where its status is read.
+- `docs/trail/architecture/cycle-14.md` §§ 3.4, 3.5 — the owner's seat's answers, given by a
+  `companion-self-answer` run (reasoning `docs/trail/architecture/self_answer-17.md` §§ 3.4, 3.5),
+  under which the seventh dated in-place note above lands with NFDR v17 (RN-28): the runner reading
+  cited from the script's header, and `Renderer gate` at `.github/workflows/ci.yml:L46-L47` from
+  `nozoki@ab39502`. A citation repair and a premise the tree moved past — no decision reversed, on
+  the owner's ruling at `docs/trail/architecture/cycle-3.md` § 3.1 and in the form of
+  `cycle-11.md` § 3.7 and `cycle-12.md` §§ 3.1, 3.2. What it does not touch: § Decision's two rules
+  and the gate's place after the wall probe, § Alternatives ruled out, § Binds.
 
 ## Binds
 
