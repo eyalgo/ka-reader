@@ -103,6 +103,12 @@ test_empty_file_is_not_a_checks_copy
 test_checks_listing_that_fails_is_refused
 test_empty_checks_listing_is_refused
 test_pre_launch_refusals_are_on_stderr
+test_every_font_extension_fails_in_any_case
+test_every_font_signature_fails
+test_every_mach_o_magic_is_an_executable
+test_group_or_other_execute_bit_fails
+test_member_name_without_svg_suffix_outside_resources_fails
+test_dotfile_in_the_expected_set_is_a_member
 test_extra_key_fails_before_launch
 test_false_value_fails
 test_missing_key_fails
@@ -1026,6 +1032,116 @@ exit 0
     *"Contents/Resources/helper"*) ;;
     *) fail "the contents refusal did not name its path on stderr. stderr: $stderr_contents" ;;
   esac
+}
+
+# --- added by the code-integrity review: each member of a closed list, and each half of a rule ---
+#
+# The cases above test one member of each list the plan fixed (tl_instruction.md, Task 2, 2b). A script
+# that dropped any other member would still pass them, so each case below places every member at once
+# and asserts each is named. Every file is mode 644 unless the case is about the mode.
+
+# CP-118 (b): every extension of the plan's set, compared case-insensitively. The contents are no font,
+# so only the extension can refuse them.
+test_every_font_extension_fails_in_any_case() {
+  copy="$(valid_copy font-exts)" || fail "could not re-sign the copy" || return 1
+  for name in a.OTF b.ttc c.Otc d.woff e.WOFF2 f.dfont g.TTF; do
+    printf 'not a font' > "$copy/Contents/Resources/$name"
+  done
+
+  run_unlaunched "$copy" font-exts
+
+  expect_refused_naming font-exts \
+    "font: Contents/Resources/a.OTF" "font: Contents/Resources/b.ttc" "font: Contents/Resources/c.Otc" \
+    "font: Contents/Resources/d.woff" "font: Contents/Resources/e.WOFF2" "font: Contents/Resources/f.dfont" \
+    "font: Contents/Resources/g.TTF"
+}
+
+# CP-118 (b): every signature of the plan's set, under names no extension list holds.
+test_every_font_signature_fails() {
+  copy="$(valid_copy font-sigs)" || fail "could not re-sign the copy" || return 1
+  printf '\000\001\000\000rest' > "$copy/Contents/Resources/truetype.dat"
+  printf 'OTTOrest' > "$copy/Contents/Resources/otto.dat"
+  printf 'truerest' > "$copy/Contents/Resources/true.dat"
+  printf 'typ1rest' > "$copy/Contents/Resources/typ1.dat"
+  printf 'ttcfrest' > "$copy/Contents/Resources/ttcf.dat"
+  printf 'wOFFrest' > "$copy/Contents/Resources/woff.dat"
+  printf 'wOF2rest' > "$copy/Contents/Resources/woff2.dat"
+
+  run_unlaunched "$copy" font-sigs
+
+  expect_refused_naming font-sigs \
+    "font: Contents/Resources/truetype.dat" "font: Contents/Resources/otto.dat" \
+    "font: Contents/Resources/true.dat" "font: Contents/Resources/typ1.dat" \
+    "font: Contents/Resources/ttcf.dat" "font: Contents/Resources/woff.dat" \
+    "font: Contents/Resources/woff2.dat"
+}
+
+# CP-118 (a): a Mach-O is an executable whatever its mode — thin or fat, in either byte order. Each file is
+# the four magic bytes and nothing else, at mode 644, so only the magic can refuse it.
+test_every_mach_o_magic_is_an_executable() {
+  copy="$(valid_copy mach-o-magics)" || fail "could not re-sign the copy" || return 1
+  printf '\376\355\372\316' > "$copy/Contents/Resources/m-feedface"
+  printf '\376\355\372\317' > "$copy/Contents/Resources/m-feedfacf"
+  printf '\316\372\355\376' > "$copy/Contents/Resources/m-cefaedfe"
+  printf '\317\372\355\376' > "$copy/Contents/Resources/m-cffaedfe"
+  printf '\312\376\272\276' > "$copy/Contents/Resources/m-cafebabe"
+  printf '\312\376\272\277' > "$copy/Contents/Resources/m-cafebabf"
+  printf '\276\272\376\312' > "$copy/Contents/Resources/m-bebafeca"
+  printf '\277\272\376\312' > "$copy/Contents/Resources/m-bfbafeca"
+  chmod 644 "$copy"/Contents/Resources/m-*
+
+  run_unlaunched "$copy" mach-o-magics
+
+  expect_refused_naming mach-o-magics \
+    "extra executable: Contents/Resources/m-feedface" "extra executable: Contents/Resources/m-feedfacf" \
+    "extra executable: Contents/Resources/m-cefaedfe" "extra executable: Contents/Resources/m-cffaedfe" \
+    "extra executable: Contents/Resources/m-cafebabe" "extra executable: Contents/Resources/m-cafebabf" \
+    "extra executable: Contents/Resources/m-bebafeca" "extra executable: Contents/Resources/m-bfbafeca"
+}
+
+# CP-118 (a): "any execute permission bit" — the group's alone, and the others' alone, each make an
+# executable. The user bit is the case test_executable_bit_file_under_resources_fails already holds.
+test_group_or_other_execute_bit_fails() {
+  copy="$(valid_copy group-other-exec)" || fail "could not re-sign the copy" || return 1
+  printf 'x' > "$copy/Contents/Resources/group-exec"
+  printf 'x' > "$copy/Contents/Resources/other-exec"
+  chmod 654 "$copy/Contents/Resources/group-exec"
+  chmod 645 "$copy/Contents/Resources/other-exec"
+
+  run_unlaunched "$copy" group-other-exec
+
+  expect_refused_naming group-other-exec \
+    "extra executable: Contents/Resources/group-exec" "extra executable: Contents/Resources/other-exec"
+}
+
+# CP-117 (c): a path outside Contents/Resources is refused when its name is a member's, as well as when it
+# ends in .svg. Every real member ends in .svg, so the name half is proved with a set that holds one member
+# that does not; the copy carries it under Resources too, so only (c) can refuse.
+test_member_name_without_svg_suffix_outside_resources_fails() {
+  mkdir -p "$WORK/set-plain-member"
+  cp "$EXPECTED_SET_DIR"/* "$WORK/set-plain-member/"
+  printf 'x' > "$WORK/set-plain-member/plain-member"
+  copy="$(valid_copy plain-member)" || fail "could not re-sign the copy" || return 1
+  printf 'x' > "$copy/Contents/Resources/plain-member"
+  printf 'x' > "$copy/Contents/MacOS/plain-member"
+  chmod 644 "$copy/Contents/MacOS/plain-member"
+
+  run_unlaunched "$copy" plain-member BUNDLE_SH_GLYPH_DIR="$WORK/set-plain-member"
+
+  expect_refused_naming plain-member "glyph outside Contents/Resources: Contents/MacOS/plain-member" || return 1
+  expect_output_lacks "glyph missing from Contents/Resources"
+}
+
+# CP-117: the expected set is every file in the glyph directory, dotfiles included (tl_instruction.md,
+# Task 2, 2b). A dotfile member the bundle lacks is a missing member, named.
+test_dotfile_in_the_expected_set_is_a_member() {
+  mkdir -p "$WORK/set-dotfile"
+  cp "$EXPECTED_SET_DIR"/* "$WORK/set-dotfile/"
+  printf 'x' > "$WORK/set-dotfile/.hidden-member"
+
+  run_unlaunched "$APP" set-dotfile BUNDLE_SH_GLYPH_DIR="$WORK/set-dotfile"
+
+  expect_refused_naming set-dotfile "glyph missing from Contents/Resources: .hidden-member"
 }
 
 test_extra_key_fails_before_launch() {

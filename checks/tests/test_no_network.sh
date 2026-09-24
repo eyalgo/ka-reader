@@ -52,6 +52,8 @@ test_swift_absent_is_refused
 test_unreadable_dump_is_refused
 test_package_resolved_at_the_package_root_fails
 test_package_resolved_nested_deep_fails
+test_local_binary_target_with_a_null_url_is_admitted
+test_each_package_resolved_is_named
 "
 
 # --- helpers ---
@@ -374,6 +376,35 @@ test_package_resolved_nested_deep_fails() {
   expect_output_contains "$WORK/pkg-resolved-deep/a/b/Package.resolved"
 }
 
+# --- added by the code-integrity review ---
+
+# A local binary target is admitted because it carries no url (change_design.md § Architect Review Notes;
+# tl_instruction.md, Task 2, "a path and no url exits 0"). A dump that writes the absent url as an explicit
+# JSON null carries no url either, and is the same admitted target.
+test_local_binary_target_with_a_null_url_is_admitted() {
+  clean_swift_stubs "$WORK/stubs-null-url"
+  swift_stub "$WORK/stubs-null-url" "$WORK/dump-local-binary-null-url.json"
+
+  run_swift_case "$WORK/stubs-null-url" "$WORK/pkg-clean"
+
+  expect_zero_status
+}
+
+# CP-127, D2-7: each Package.resolved is named — a script that named only the first would pass the two
+# cases above.
+test_each_package_resolved_is_named() {
+  clean_swift_stubs "$WORK/stubs-resolved-each"
+  mkdir -p "$WORK/pkg-resolved-each/a/b"
+  echo '{}' > "$WORK/pkg-resolved-each/Package.resolved"
+  echo '{}' > "$WORK/pkg-resolved-each/a/b/Package.resolved"
+
+  run_swift_case "$WORK/stubs-resolved-each" "$WORK/pkg-resolved-each"
+
+  expect_nonzero_status || return 1
+  expect_output_contains "$WORK/pkg-resolved-each/Package.resolved —" || return 1
+  expect_output_contains "$WORK/pkg-resolved-each/a/b/Package.resolved"
+}
+
 # --- the runner ---
 
 WORK="$(mktemp -d)"
@@ -388,6 +419,7 @@ echo '{"dependencies":[],"targets":[{"name":"Nozoki","type":"executable"}]}' > "
 echo '{"dependencies":[{"sourceControl":[{"identity":"left-pad","location":{"remote":[{"urlString":"https://example.invalid/left-pad.git"}]}}]}],"targets":[{"name":"Nozoki","type":"executable"}]}' > "$WORK/dump-dependency.json"
 echo '{"dependencies":[],"targets":[{"name":"Nozoki","type":"executable"},{"name":"Blob","type":"binary","url":"https://example.invalid/Blob.zip"}]}' > "$WORK/dump-remote-binary.json"
 echo '{"dependencies":[],"targets":[{"name":"Nozoki","type":"executable"},{"name":"Blob","type":"binary","path":"Blob.artifactbundle"}]}' > "$WORK/dump-local-binary.json"
+echo '{"dependencies":[],"targets":[{"name":"Nozoki","type":"executable"},{"name":"Blob","type":"binary","path":"Blob.artifactbundle","url":null}]}' > "$WORK/dump-local-binary-null-url.json"
 
 failed=0
 for case_name in $CASES; do

@@ -539,6 +539,63 @@ fn test_set_logger_in_a_line_comment_passes() {
     assert!(violations.is_empty(), "{violations:#?}");
 }
 
+// Added by the code-integrity review. CP-124 fails when another crate calls a logger installer in its
+// sources; the `//` exclusion exists for comments (test_set_logger_in_a_line_comment_passes), and a `//`
+// inside a string literal starts no comment.
+
+#[test]
+fn test_set_logger_after_a_url_in_a_string_fails() {
+    let violations = violations_for_source_in(
+        "nozoki-core",
+        "src/lib.rs",
+        "fn start() {\n    let origin = \"http://x\"; log::set_logger(&WRITER).unwrap();\n}\n",
+    );
+
+    assert_eq!(violations.len(), 1, "{violations:#?}");
+    assert!(
+        names_the_crate(&violations, "nozoki-core"),
+        "{violations:#?}"
+    );
+}
+
+#[test]
+fn test_set_logger_in_a_comment_after_a_url_in_a_string_passes() {
+    let violations = violations_for_source_in(
+        "nozoki-core",
+        "src/lib.rs",
+        "fn start() {\n    let origin = \"http://x\"; // never log::set_logger here\n}\n",
+    );
+
+    assert!(violations.is_empty(), "{violations:#?}");
+}
+
+#[test]
+fn test_other_crate_denying_unsafe_fails() {
+    let denying = "[package]\nname = \"member\"\nedition = \"2024\"\n\n[lints.rust]\nunsafe_code = \"deny\"\n";
+    let crates = vec![
+        member(BRIDGE_CRATE, ALLOWING_UNSAFE, &[]),
+        member("nozoki-core", denying, &[]),
+    ];
+
+    let violations = boundary_violations(ROOT_FORBIDDING, &crates);
+
+    assert_eq!(violations.len(), 1, "{violations:#?}");
+    assert!(
+        names_the_crate(&violations, "nozoki-core"),
+        "{violations:#?}"
+    );
+}
+
+#[test]
+fn test_crate_inheriting_from_a_root_that_does_not_forbid_fails() {
+    let violations = boundary_violations(ROOT_WITHOUT_FORBID, &clean_crates());
+
+    assert!(
+        names_the_crate(&violations, "nozoki-core"),
+        "an inheriting crate under a root that does not forbid is not named: {violations:#?}"
+    );
+}
+
 #[test]
 fn test_no_crate_found_fails() {
     let violations = boundary_violations(ROOT_FORBIDDING, &[]);
