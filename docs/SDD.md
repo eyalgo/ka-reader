@@ -6,7 +6,7 @@
        signal, and the state a finished SDD carries; the open-issues file is gone.
      Locked = ratified as the source of truth. -->
 **Owner:** CTO · CPO · CDO — one run, three seats
-**Version:** 16 — CPO: nothing — verification only; no SDD section, slice or companion item altered.; CTO: § 3 SM-4 row and the Swift-frame paragraph; § 4 C-R7 (held set, `v1.0.0` sentence, the no-second-export sentence, *Violated by*), C-I3 *Violated by* (the command parenthesis), C-I6 (the pin's set); § 6 S-1 and S-11 *Reached when* command halves; § 10 RC-3 *Still unresolved* (dated parenthesis); § 12 the downstream boundary (QC-24 and the Swift premise, raised on the architecture companion § 2.1 and § 3.4); SDD Review Notes RN-60 (dated parenthesis) and RN-66 (CTO, changed) — new. Companion: § 5.1 and § 5.2 consumed, `docs/SDD_open_issues.md` removed, empty of items (trail: `docs/trail/sdd/cycle-12.md`). Companion items added: none.; CPO: nothing — verification only; the CTO's round-1 fold (twelve hunks: § 3 SM-4 and the Swift-frame paragraph, § 4 C-R7 / C-I3 / C-I6, S-1 and S-11 command halves, RC-3, § 12 downstream boundary, RN-60, RN-66; companion removed) verified on disk and reaches no CPO field.
+**Version:** 17 — CPO: SDD Review Notes RN-59 (dated parenthesis on the `README.md:L46-L49` clause) and RN-67 (CPO, changed) — new. No § 1, § 5 or § 6 field altered. Companion items added: none; companion left on disk for the CTO's fold of RC-3, RN-60 and § 5.2.; CTO: § 10 RC-3 *Still unresolved*; SDD Review Notes RN-52 (four citations pinned), RN-60 (*Owed outside this document*), RN-68 (new); `docs/SDD_open_issues.md` removed, empty of items — companion items added: none.; CDO: SDD Review Notes RN-53 (dated parenthesis on the README clause; source-list citation pinned to `nozoki@a4ab8e6:README.md:L48-L49`), RN-57 (dated parenthesis on the verification sentence; source-list citation pinned), RN-69 (CDO, changed) — new. No § 4, § 6, § 10 or § 12 field altered. Companion items added: none.; CPO: SDD Review Notes RN-58 (two citations pinned to `nozoki@a4ab8e6:README.md:L50-L51`) and RN-67 (round-2 sentence recording the pins). No § 1, § 5 or § 6 field altered. Companion items added: none.; CDO: nothing — verification only; no SDD section, slice or companion item altered.
 Version 8 — CTO: § 4 C-I3 (bounded window, first-ask-all-three pass, script-fixed and printed bound with no number here, per-ask live-pid check, uncovered yes→no case, control `no` for the whole window, error-on-any-ask, denial-as-proof clause narrowed to where the control reports the denials allowed with the hosted runner's read denial stated as separating nothing, Violated by extended); § 10 RC-1 Still unresolved (pointer to RN-48); § 11 R-8 shows up as and response; Open Questions (fourth item closed and removed — four remain); SDD Review Notes RN-48 (new). Companion items added: none. docs/SDD_open_issues.md removed, empty of items.
 Version 7 — CTO: § 3 SM-4 (what crosses, and owner cell wording); § 4 C-R7 (the staged grant, set equality against registered commands, asset-scheme keying, named pre-1.0.0 uncovered case, Violated by); § 4 C-I3 (every command the build grants); § 6 S-7 Reached when, command half; SDD Review Notes RN-47 (new). Companion items added: none. docs/SDD_open_issues.md removed, empty of items.
 Version 6 — CTO: § 4 C-I3 (observable and Violated by); § 6 open-a-folder Reached when, command half; § 10 RC-1 (new, first re-cut entry); § 11 R-8 shows up as; Open Questions fourth item (closed, replaced by the hosted-runner question); SDD Review Notes RN-45 (new). Companion items added: none. docs/SDD_open_issues.md removed, empty of items.; CPO: § 5 step 4 (E-1's sizing sentence); SDD Review Notes RN-46 (new). Companion items added: none.
@@ -2324,7 +2324,11 @@ silently misses every reversal made mid-build.>
   entries owed above (§ 12). The project card's `Languages:` and test command, and
   `README.md:L46-L51`'s stack and proof sentences — outside this document (RN-59, RN-60) *(the
   card moved: `Languages: Rust, Swift, Shell` and `swift test --package-path nozoki-mac` in its
-  test command, `kensaiapp-opensource@5b27023`; noted 2026-09-23, RN-66)*.
+  test command, `kensaiapp-opensource@5b27023`; noted 2026-09-23, RN-66)* *(the README moved:
+  `## Stack` and the status block now name the one bundle and one process, `nozoki-mac`,
+  `crates/nozoki-core` and `crates/nozoki-bridge`, and no web engine, and they keep the `checks/`
+  proof sentence word for word, `nozoki@61748fe`; the sentences this clause cites stand at
+  `nozoki@a4ab8e6:README.md:L46-L51`; noted 2026-09-24, RN-68)*.
 
 ## 11. Technical risks
 
@@ -3290,8 +3294,9 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   to launch anything but C-R2's set (`checks/bundle.sh`, its header), and the wall gate must keep
   its meaning when the renderer gate is red. Its observable is the host inside `open_folder` —
   the owner's floor, "at the least, that the page reached `open_folder`" — because it is the
-  renderer's first and only unconditional call (`nozoki-ui/src/main.ts:L14-L19`) and it parks in
-  the panel (`crates/nozoki-app/src/main.rs:L17-L19`), so a bounded window catches it the way
+  renderer's first and only unconditional call (`nozoki@a4ab8e6:nozoki-ui/src/main.ts:L14-L19`)
+  and it parks in the panel (`nozoki@a4ab8e6:crates/nozoki-app/src/main.rs:L17-L19`), so a
+  bounded window catches it the way
   C-I3's window catches the sandbox report. It is read from the operating system or the process
   and never from a line the product writes, for two reasons: C-I2's log holds failed and stopped
   items and nothing else, and a marker written for a check is the class of evidence RC-1 stopped
@@ -3314,8 +3319,9 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   requirement is a fact recorded at RC-2, not a trigger awaited *(re: § 4 C-R2, C-I3; § 6 S-1
   *Reached when*, command half; § 10 RC-2; § 12 the downstream boundary; *Open Questions*;
   source: `docs/trail/sdd/cycle-8.md` § 5.1; WebKit `XPCServiceEntryPoint.mm` at the URL above;
-  the `log show` lines above; `nozoki-ui/src/main.ts:L14-L19`; `crates/nozoki-app/src/main.rs:L17-L19`;
-  `crates/nozoki-app/Entitlements.plist`; `checks/bundle.sh` header, v1.3.0 line; ADR-0002 §
+  the `log show` lines above; `nozoki@a4ab8e6:nozoki-ui/src/main.ts:L14-L19`;
+  `nozoki@a4ab8e6:crates/nozoki-app/src/main.rs:L17-L19`;
+  `nozoki@a4ab8e6:crates/nozoki-app/Entitlements.plist`; `checks/bundle.sh` header, v1.3.0 line; ADR-0002 §
   Consequences; ADR-0003 § Decision; `docs/nfdr.md:L243-L245`; `nozoki@70a879a:docs/trail/sdd/cycle-1.md`
   §§ 2.2, 2.3; RN-51)*.
 - **RN-53:** *(CDO)* *(changed)* Three moves on the cycle-8 ruling, none of them a re-cut.
@@ -3341,10 +3347,14 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   lanes, because which condition gives way is the owner's (RC-2). Two things this note surfaces
   and does not fix: § 2 row 4 cites `docs/UXD.md` § 9 for "CSS tokens over the product's own
   markup", a sentence that is `docs/DESIGN.md`'s (the CTO's row); and `README.md:L48-L49` names
-  the WKWebView and plain CSS on a public surface (C-E10), the CPO's if (a) is taken *(re: § 6
+  the WKWebView and plain CSS on a public surface (C-E10), the CPO's if (a) is taken *(the README
+  moved: `## Stack` and the status block now name the one bundle and one process, `nozoki-mac`,
+  `crates/nozoki-core` and `crates/nozoki-bridge`, and no web engine, and they keep the `checks/`
+  proof sentence word for word, `nozoki@61748fe`; the two lines this clause cites stand at
+  `nozoki@a4ab8e6:README.md:L48-L49`; noted 2026-09-24, RN-69)* *(re: § 6
   S-1 *Reached when*, observable half; § 12 the UXD boundary; companion § 1.1; source:
   `docs/trail/sdd/cycle-8.md` § 5.1; `docs/DESIGN.md` § Overview, § Typography, § Shapes, RN-1;
-  `docs/UXD.md` § 9, UX-I12; `README.md:L48-L49`; RC-2; RN-52)*.
+  `docs/UXD.md` § 9, UX-I12; `nozoki@a4ab8e6:README.md:L48-L49`; RC-2; RN-52)*.
 
 - **RN-54:** *(CPO)* *(added)* Companion § 1.1 — the renderer that cannot start under C-R2's
   rule — carries this seat's position, (a), and § 12's PRD boundary gains one sentence: the item
@@ -3428,17 +3438,20 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   ground a peer has corrected is not one this seat may go on citing as the peer's. Verified
   before writing that nothing upstream moved: `docs/UXD.md` v10 (Settled, `4d7b653`),
   `docs/DESIGN.md` v8 (`269bcf5`), `docs/CONTENT.md` settled (`6789e19`), `README.md:L48-L49`
-  still the stack sentence this seat's position cites — so § 4's CDO clause, every § 6
+  still the stack sentence this seat's position cites *(as read then; those two lines stand at
+  `nozoki@a4ab8e6:README.md:L48-L49`, and the README moved at `nozoki@61748fe`; noted
+  2026-09-24, RN-69)* — so § 4's CDO clause, every § 6
   observable half and UXD trace, and § 12's UXD boundary stand as v11 wrote them, and this
   seat's position, (a), does not move *(re: the companion's § 1.1, the CDO's position; source:
-  RN-55; RN-56; the companion's § 1.1, the CTO's addition of run 11; `README.md:L48-L49`)*.
+  RN-55; RN-56; the companion's § 1.1, the CTO's addition of run 11;
+  `nozoki@a4ab8e6:README.md:L48-L49`)*.
 - **RN-58:** *(CPO)* *(changed)* One dated parenthesis added to this seat's position in the
   companion's § 1.1, on its (c) bullet; no words of the position change, and no lane of this
   document moves. The bullet said (b) and (c) "fail the same product test, whatever the probe
   reports"; the CTO's corrected ground this round (RN-56) gives that clause a measured meaning
   — under (c) the page sits behind a Networking process the operating system lets connect, and
   C-I3's host-pid probe goes green without seeing it — and the parenthesis names the product
-  consequence the value seat owns: `README.md:L50-L51`, "A shell harness under `checks/` proves
+  consequence the value seat owns: `nozoki@a4ab8e6:README.md:L50-L51`, "A shell harness under `checks/` proves
   the read-only and no-network promises on every build", becomes a public claim the harness
   cannot back on a (c)-signed bundle. *Because* the position's product test was stated on one
   public surface, the entitlements file, and the correction reaches a second — the README's
@@ -3452,7 +3465,7 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   the `read-markdown` re-check RN-54 holds back stays held back — the owner has not chosen (a).
   On the companion's § 2.1, the CTO's draft this round is in the CTO's lane and is read here
   only as correct: C-I3 now cites the record in force *(re: the companion's § 1.1, the CPO's
-  position; source: RN-56; `README.md:L50-L51`; `docs/trail/sdd/cycle-8.md` § 5.1, answer 1;
+  position; source: RN-56; `nozoki@a4ab8e6:README.md:L50-L51`; `docs/trail/sdd/cycle-8.md` § 5.1, answer 1;
   `system/loaders/cpo.md` § *The documentation is the product*; RN-54)*.
 - **RN-59:** *(CPO)* *(changed)* The owner's answer to the companion's § 1.1 — **(a), the renderer
   leaves WKWebView; no network entitlement and no mach-lookup exception, (b) and (c) refused, (d)
@@ -3476,7 +3489,11 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   owed outside this document, so the fold is not read as complete: `README.md:L46-L49` ("rendering
   a TypeScript package (`nozoki-ui`) in the system WKWebView", "styled in plain CSS custom
   properties") becomes a public sentence the product no longer keeps once (a) lands, and moves
-  with the README in its own change — never from here; and the first-release date the owner has
+  with the README in its own change — never from here *(the README moved: `## Stack` and the
+  status block now name the one bundle and one process, `nozoki-mac`, `crates/nozoki-core` and
+  `crates/nozoki-bridge`, and no web engine, and they keep the `checks/` proof sentence word for
+  word, `nozoki@61748fe`; the sentences this clause cites stand at
+  `nozoki@a4ab8e6:README.md:L46-L49`; noted 2026-09-24, RN-67)*; and the first-release date the owner has
   been counting toward moves out by the rewrite of § 3 `surfaces`, which is the CTO's to price.
   The companion's § 1.1 is the CTO's item; this seat's position in it stands as written and the
   item leaves the companion with the CTO's fold of § 2 *(re: § 1; § 5 step 4, E-1 and E-3; § 12
@@ -3523,7 +3540,11 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   read off the ruling. **Owed outside this document, named so the fold is not read as complete:**
   the project card's `Languages:` line (`Swift` in place of `TypeScript`) and its test command
   (`swift test` in place of Vitest) — `system/projects/nozoki/project.md`, not this seat's to edit;
-  `README.md:L46-L51`'s stack and proof sentences, the CPO's (RN-59); `docs/DESIGN.md`'s
+  `README.md:L46-L51`'s stack and proof sentences, the CPO's (RN-59) *(the README moved:
+  `## Stack` and the status block now name the one bundle and one process, `nozoki-mac`,
+  `crates/nozoki-core` and `crates/nozoki-bridge`, and no web engine, and they keep the `checks/`
+  proof sentence word for word, `nozoki@61748fe`; the sentences this clause cites stand at
+  `nozoki@a4ab8e6:README.md:L46-L51`; noted 2026-09-24, RN-68)*; `docs/DESIGN.md`'s
   realisation sentence, the CDO's, in that document's own run (RN-53); and no Swift packet exists
   in `<CORE>/doctrine/engineering/languages/` (listed 2026-09-23), so `nozoki-mac`'s frame is laid
   out by the slice that lands it *(history: the registry gained `languages/swift/` the same day,
@@ -3774,6 +3795,113 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   RN-55, RN-60)*.
 
 ---
+
+- **RN-67:** *(CPO)* *(changed)* The companion's § 5.1 folded on this seat's one sentence in it —
+  the addition the owner's answer names, RN-59's `README.md:L46-L49` clause, "confirmed with one
+  addition" (`docs/trail/sdd/cycle-13.md` § 5.1, 2026-09-24). The clause keeps its words and
+  gains the dated parenthesis in the form RN-66 gave the card's move: the README's `## Stack` and
+  status block moved at `nozoki@61748fe`, and the sentences the clause cites are pinned to
+  `nozoki@a4ab8e6:README.md:L46-L49`. Re-verified before writing, not taken from the answer:
+  `git show 61748fe:README.md` lines 44–50 name one bundle running as one process, `nozoki-mac`,
+  `crates/nozoki-core`, `crates/nozoki-bridge` and "no web engine"; its lines 11–13 name the same
+  three units; the sentence "A shell harness under `checks/` proves the read-only and no-network
+  promises on every build." is byte-identical at `a4ab8e6` and `61748fe`; and lines 46–49 at
+  `a4ab8e6` hold both phrases RN-59 quotes. *Because* the clause named as owed something that is
+  done, and a note that records a debt records its payment in the same place, dated, never by
+  rewriting the debt away — the reading RN-66 set for the card. What does not move, and why:
+  RN-59's words before the parenthesis, because the fold this clause guarded against being read
+  as complete was true when written and the parenthesis is how it stops being read that way now;
+  § 1, § 5 steps 1, 2 and 4, every § 6 slug, *Delivers*, *Moves toward*, fence and PRD trace, and
+  § 12's PRD boundary, because a README sentence catching up with the shape is not a product
+  change; and the PRD, at v15, and the Agari — re-verified: `docs/PRD.md` last commit `7c89e19`
+  (2026-09-01), `system/projects/nozoki/agari.md` `ee561fb` (2026-09-01), neither touched since
+  RN-59. The answer's other two places — § 10 RC-3's *Still unresolved* and RN-60's *Owed outside
+  this document* — and the whole of § 5.2 (four citations in RN-52 pinned to `nozoki@a4ab8e6:`)
+  are the CTO's, and this seat writes none of them. Round 2, on the CDO's finding (RN-69): RN-58's
+  two `README.md:L50-L51` citations — the prose and the source list — are of the class § 5.2
+  pinned and the companion did not reach, and are pinned to `nozoki@a4ab8e6:` on the same ground;
+  re-verified: `git show a4ab8e6:README.md` lines 50–51 hold the proof sentence RN-58 quotes,
+  RN-58 was written at `6ebdc42` and `git diff --quiet 6ebdc42 a4ab8e6 -- README.md` is silent.
+  No dated parenthesis: RN-58 names the sentence as a public claim, not as owed, and the claim
+  stands word for word at `HEAD` (lines 49–50), so a pin dates the reading and nothing is paid
+  *(re: SDD Review Notes RN-59, RN-58; source: `docs/trail/sdd/cycle-13.md` § 5.1;
+  `nozoki@61748fe:README.md:L11-L13`, `:L44-L50`; `nozoki@a4ab8e6:README.md:L46-L49`, `:L50-L51`;
+  RN-59, RN-60, RN-66, RN-69)*.
+- **RN-68:** *(CTO)* *(changed)* The companion's § 5.1 and § 5.2 folded on this seat's ground, and
+  the file removed. **§ 5.1** — the two places the owner's answer names as this seat's: § 10 RC-3's
+  *Still unresolved* and RN-60's *Owed outside this document*, each keeping its words and gaining
+  the dated parenthesis RN-67 gave RN-59's clause — the README's `## Stack` and status block moved
+  at `nozoki@61748fe`, the sentences each clause cites pinned to `nozoki@a4ab8e6:README.md:L46-L51`.
+  Re-verified before writing, not taken from the answer: `git show 61748fe:README.md` lines 44–50
+  name one bundle running as one process, `nozoki-mac`, `crates/nozoki-core`,
+  `crates/nozoki-bridge` and "no web engine", lines 11–13 the same three units; the sentence "A
+  shell harness under `checks/` proves the read-only and no-network promises on every build." reads
+  the same at `a4ab8e6` (lines 50–51) and `61748fe` (lines 49–50), wrapped differently and word for
+  word the same; `nozoki@a4ab8e6:README.md:L46-L51` is the Tauri stack paragraph these clauses cite.
+  **§ 5.2** — RN-52's four citations into files the tree no longer holds are pinned to
+  `nozoki@a4ab8e6:`: `nozoki-ui/src/main.ts:L14-L19` and `crates/nozoki-app/src/main.rs:L17-L19` in
+  the gate's prose and again in the note's source list, and `crates/nozoki-app/Entitlements.plist`
+  in the source list — the fourth the owner's answer added, which the item's line-anchored grep had
+  missed. Re-verified: `git ls-files nozoki-ui crates/nozoki-app | wc -l` → `0` on `main`;
+  `git show a4ab8e6:nozoki-ui/src/main.ts` lines 14–19 hold `start()` calling `runStartFlow` and
+  `renderRows` then `await start()`, and `a4ab8e6:crates/nozoki-app/src/main.rs` lines 17–19 hold
+  `open_folder` calling `pick_folder()` — the lines the note describes; `git diff --quiet ba63b44
+  a4ab8e6 -- <path>` is silent for all three, so the pinned lines are the ones run 10 read;
+  `a4ab8e6` is an ancestor of `HEAD` and the last first-parent commit before `0aca57e`, the
+  removal's merge, so a reader following the pin lands on `main`'s own line. *Because* a citation
+  into a file that has left the tree is a claim a reader cannot check until it says when it was
+  read, and a note that records a debt records its payment beside it, dated, never by rewriting
+  the debt away (RN-66, RN-67). What does not move, and why: RC-3's and RN-60's words before the
+  parentheses, and RN-52's claim about the gate's observable — the mechanism it measured was the
+  previous renderer's, superseded at RC-3 and C-I3 as RN-60 records, and a pin dates a reading, it
+  does not re-argue it; § 2, § 3, § 4, § 7, § 9, § 11 and *Open Questions*, because a README
+  catching up with the shape and four citations gaining a commit change no shape, seam, condition,
+  order, cost or risk; and the SRS boundary — no requirement moves. **The companion** is consumed:
+  its two items are the whole of it, the trail copy stands at `docs/trail/sdd/cycle-13.md`
+  (`diff docs/SDD_open_issues.md docs/trail/sdd/cycle-13.md` printed nothing before this turn's
+  edits), and the file is removed, empty of items, per its own header's rule — no file is the done
+  signal *(re: § 10 RC-3; SDD Review Notes RN-52, RN-60; source: `docs/trail/sdd/cycle-13.md`
+  §§ 5.1, 5.2; `nozoki@61748fe:README.md:L11-L13`, `:L44-L50`; `nozoki@a4ab8e6:README.md:L46-L51`;
+  `nozoki@a4ab8e6:nozoki-ui/src/main.ts:L14-L19`; `nozoki@a4ab8e6:crates/nozoki-app/src/main.rs:L17-L19`;
+  `nozoki@a4ab8e6:crates/nozoki-app/Entitlements.plist`; `nozoki@0aca57e`; RN-52, RN-59, RN-60,
+  RN-66, RN-67)*.
+- **RN-69:** *(CDO)* *(changed)* Four citations in this seat's own notes pinned, found while
+  walking the companion's fold and not raised by it. RN-53 and RN-57 each cite `README.md:L48-L49`
+  twice — RN-53 for the WKWebView and plain-CSS sentence it surfaced as a public surface the CPO
+  would own under (a), RN-57 for the verification that the sentence still stood — and none of
+  the four says when it was read. At `HEAD` those two lines hold the bridge and the Lucide icons
+  (`sed -n 48,49p README.md`), and `grep -n -i "tauri\|webview\|css\|nozoki-ui\|typescript"
+  README.md` exits 1: the citations point at lines that no longer carry the claim, the class the
+  companion's § 5.2 pinned in RN-52 (`docs/trail/sdd/cycle-13.md` § 5.2). All four now read
+  `nozoki@a4ab8e6:README.md:L48-L49`; RN-53's surfaced-and-not-fixed clause gains the dated
+  parenthesis RN-67 and RN-68 gave RN-59, RC-3 and RN-60, since it named as the CPO's a public
+  sentence that has since moved, and RN-57's verification gains a shorter one saying it is a
+  reading of that date. Re-verified before writing, not taken from the answer: RN-53 was written
+  at `nozoki@ba63b44` and RN-57 at `nozoki@6ebdc42` (`git log -S` on each note's heading), lines
+  48–49 at both hold "the system WKWebView — no browser engine bundled" and "styled in plain CSS
+  custom properties", and `git diff --quiet <each> a4ab8e6 -- README.md` is silent for both —
+  so the pin is the owner's own for § 5.2, the last first-parent commit before the removal's
+  merge `0aca57e`, and the lines pinned are the ones each note read. *Because* the boy-scout
+  rule fixes a small defect where the session finds it (`<CORE>/doctrine/governance/found_while_walking.md`
+  § *The rule*, clause 1), and a citation into lines a later change rewrote is one until it
+  says which commit it read — and these are this seat's own notes, so the pin is this seat's to
+  write and no request to a peer. What does not move, and why: RN-53's and RN-57's words before
+  the parentheses, because a pin dates a reading and does not re-argue it (RN-68); § 4's CDO
+  clause, every § 6 observable half and UXD trace, and § 12's UXD boundary, because no citation in
+  them names a file the tree has lost (`grep` for line-anchored paths over § 4 C-E1 – C-E10, § 6
+  and § 12's UXD clause finds only these four, 2026-09-24) and the documents they bind stand at
+  the commits RN-62 pinned — `docs/UXD.md` v10 (`4d7b653`), `docs/DESIGN.md` v8 (`269bcf5`),
+  `docs/CONTENT.md` v6 (`6789e19`), `git log 4d7b653..HEAD` on the three printing nothing — and
+  `docs/DESIGN.md:L330` still reads "realised in plain CSS custom properties", so the sentence
+  § 12's UXD clause says that document's own run will move is still there to move. No § 10 entry:
+  the UXD did not change upstream and no observable half failed as written. No companion item:
+  nothing here is the owner's to settle. Two citations of the same class sit in peers' notes and
+  are theirs to pin, requested in this seat's turn and not written here: RN-55's
+  `README.md:L48-L49` (the CTO) and RN-58's `README.md:L50-L51`, twice (the CPO) — the proof
+  sentence, which at `nozoki@a4ab8e6` is lines 50–51 as RN-68 records *(re: SDD Review Notes
+  RN-53, RN-57; source: `nozoki@a4ab8e6:README.md:L48-L49`; `nozoki@ba63b44`; `nozoki@6ebdc42`;
+  `nozoki@61748fe`; `docs/trail/sdd/cycle-13.md` § 5.2; `docs/DESIGN.md:L330`;
+  `<CORE>/doctrine/governance/found_while_walking.md` § *The rule*; RN-52, RN-62, RN-67, RN-68)*.
 
 ## Open Questions
 
