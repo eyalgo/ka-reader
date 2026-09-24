@@ -35,6 +35,14 @@ jobs:
       - name: Bundle probe suite
         run: checks/tests/test_bundle.sh
 
+      - name: View check
+        run: checks/view.sh
+
+      # The gate runs its own idle-shell control: a run without the control has not run the gate.
+      # Its launch of the product may leave the app's log behind before "Launch the built bundle" runs.
+      - name: Renderer gate
+        run: checks/renderer.sh target/release/bundle/macos/Nozoki.app
+
       - name: Read-only, plain folder
         run: checks/read-only.sh checks/fixtures/plain
 
