@@ -62,6 +62,7 @@ test_sample_writing_no_report_fails_at_once
 test_window_runs_out
 test_pass_line_on_stdout_failures_on_stderr
 test_header_names_frames_and_the_mac_reading
+test_header_names_the_runner_reading
 test_bound_override_validated
 test_control_set_must_equal_product_set
 test_control_signed_ad_hoc_with_the_hardened_runtime
@@ -818,6 +819,18 @@ test_header_names_frames_and_the_mac_reading() {
   esac
   printf '%s\n' "$header" | grep -Eq 'macOS [0-9]+\.[0-9]+' \
     || fail "the header names no macOS version for the Mac reading" || return 1
+}
+
+test_header_names_the_runner_reading() {
+  # The hosted runner's reading is recorded in the header: a GitHub Actions run id (all digits) beside
+  # the words that label it, and the runner image that run names. Read from the script, not a copy.
+  header="$(awk '/^set -/ { exit } { print }' "$RENDERER_SH")"
+  printf '%s\n' "$header" | grep -Eqi 'hosted runner.*run [0-9]+|run [0-9]+.*hosted runner' \
+    || fail "the header carries no GitHub Actions run id labelled as the hosted runner's reading" || return 1
+  printf '%s\n' "$header" | grep -Eq 'macos-[0-9]+' \
+    || fail "the header names no runner image for the hosted runner's reading" || return 1
+  printf '%s\n' "$header" | grep -Eq 'macOS [0-9]+\.[0-9]+' \
+    || fail "the header names no macOS version for the Mac reading beside it" || return 1
 }
 
 test_bound_override_validated() {
