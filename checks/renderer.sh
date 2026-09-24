@@ -59,6 +59,10 @@
 #   nozoki-mac/assemble.sh launched by open -n -g and sampled while the panel was up. The main thread
 #   showed start, main, -[NSApplication run], the launch-notification frames, then the five frames
 #   above nested in that order, then _NSTryRunModal.
+#   Hosted runner reading: GitHub Actions run 35988399477 on nozoki@37a962d, image macos-14-arm64
+#   20260831.0302.1, macOS 14.8.9. The product's main process was observed at the Open panel, inside
+#   the shell's launch, on observation 1 of the bound of 30, so the frame list matched. The
+#   idle-shell control was observed there in none of the 30 observations, which is its expected red.
 #
 # HOW THE OPERATING SYSTEM IS ASKED
 #   `ps`, `open` and `sample` are found through PATH — the seams a test stands its own in for. The
