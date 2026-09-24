@@ -10,9 +10,10 @@ the sandbox probe with its negative control, the allowlist diff — and the bund
 window with no Open panel and no response to a right-click (`docs/trail/sdd/cycle-8.md` § 5.1;
 `docs/SDD.md` § 10 RC-2). The wall stood; nothing ran behind it. That bundle's page never reached
 `open_folder` — the renderer's first and only unconditional command, invoked at page load
-(`nozoki-ui/src/main.ts:L14-L19`) and parked in the Open panel until someone answers it
-(`crates/nozoki-app/src/main.rs:L17-L19`) — because WebKit's content process never got a network
-process to pair with (RC-2). The owner ordered a gate (`docs/trail/sdd/cycle-8.md` § 5.1,
+(`nozoki@a4ab8e6:nozoki-ui/src/main.ts:L14-L19`) and parked in the Open panel until someone
+answers it (`nozoki@a4ab8e6:crates/nozoki-app/src/main.rs:L17-L19`) — because WebKit's content
+process never got a network process to pair with (RC-2). The owner ordered a gate
+(`docs/trail/sdd/cycle-8.md` § 5.1,
 answer 4): the bundle CI ships must be shown to run its view under its shipped entitlements —
 at the least, that the view reached `open_folder` — because the empty window got past every gate,
 and this gate is what stops it happening again. The ruling names no renderer, so it binds the
@@ -129,9 +130,13 @@ with the native shell, and until then the gate is `development-design` reading `
   mechanism was first measured in.
 - `docs/trail/sdd/cycle-9.md` § 1.1 — the owner's answer that moves the renderer, under which the
   mechanism, the control and the observable's name were re-derived at v13.
-- `nozoki-ui/src/main.ts:L14-L19`; `crates/nozoki-app/src/main.rs:L17-L19`; `checks/bundle.sh`
-  header, its v1.3.0 line — each opened on 2026-09-23 for the measurement this record's § Context
-  reports, which was taken on the previous shape's bundle.
+- `nozoki@a4ab8e6:nozoki-ui/src/main.ts:L14-L19`;
+  `nozoki@a4ab8e6:crates/nozoki-app/src/main.rs:L17-L19`; `checks/bundle.sh` header, its v1.3.0
+  line — each opened on 2026-09-23 for the measurement this record's § Context reports, which was
+  taken on the previous shape's bundle. The two source citations were pinned on 2026-09-24 to the
+  last commit on `main` before those files left the tree, on the owner's ruling that a citation
+  repair reverses no decision (`docs/trail/architecture/cycle-3.md` § 3.1;
+  `docs/trail/architecture/cycle-11.md` § 3.7).
 - ADR-0010 — the wall probe this gate runs after; its decision is untouched. ADR-0011 — the rule
   under which the previous renderer's bundle cannot reach `open_folder`. ADR-0013, ADR-0014 — the
   shape and the view the gate now proves ran.
