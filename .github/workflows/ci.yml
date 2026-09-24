@@ -38,10 +38,19 @@ jobs:
       - name: View check
         run: checks/view.sh
 
+      - name: View check suite
+        run: checks/tests/test_view.sh
+
       # The gate runs its own idle-shell control: a run without the control has not run the gate.
       # Its launch of the product may leave the app's log behind before "Launch the built bundle" runs.
       - name: Renderer gate
         run: checks/renderer.sh target/release/bundle/macos/Nozoki.app
+
+      # The suite's real-bundle cases run the gate on the real bundle, and the gate refuses to launch
+      # while an instance is running. "Launch the built bundle" leaves the app running, so this step
+      # comes before it.
+      - name: Renderer gate suite
+        run: checks/tests/test_renderer.sh
 
       - name: Read-only, plain folder
         run: checks/read-only.sh checks/fixtures/plain
@@ -49,11 +58,22 @@ jobs:
       - name: Read-only, repository
         run: checks/read-only.sh checks/fixtures/repo
 
+      - name: Read-only suite
+        run: checks/tests/test_read_only.sh
+
       - name: No-network dependency list
         run: checks/no-network.sh
 
-      # The app's own log is written by a launch. Nothing above this step leaves one behind, so
-      # checks/own-state.sh must come after it and never before.
+      - name: No-network suite
+        run: checks/tests/test_no_network.sh
+
+      - name: Own state suite
+        run: checks/tests/test_own_state.sh
+
+      # The app's own log is written by a launch. Steps above this one launch the product, and each may
+      # already have left the log behind: Bundle probe, Bundle probe suite, Renderer gate and Renderer
+      # gate suite. Own state, the step that runs checks/own-state.sh against this runner's own home and
+      # the app's real log, comes after this step and never before it.
       # Reading the app's container can wait on an operating-system consent prompt, so the reader runs
       # as a child that is polled for a fixed number of ticks, and the step names what it was reading
       # when the ticks run out. A step timeout would cancel the run and name nothing.
