@@ -160,7 +160,10 @@ function scanre(s, re, lead, trail, mode,   t, i, start, len, m) {
     else if (mode == "call") { sub(/^./, "", m); sub(/[ \t]*[(]$/, "", m) }
     else m = substr(m, lead + 1, length(m) - lead - trail)
     report(m)
-    i += start + len
+    # Resume on the match's last character (s-index i + start + len - 2), not after it: that character
+    # (the `(` of a free call, the boundary after a member) may be the boundary the next match opens
+    # with, as in system(open(…)). Every pattern here matches two characters or more, so i advances.
+    i += start + len - 2
   }
 }
 
@@ -209,7 +212,15 @@ function apply(s) {
 
 # The comment and string machine. Comment characters become spaces and newlines are kept, so every
 # rule reports the true line. String contents stay.
-BEGIN { mode = "code"; depth = 0; hashes = 0; hashstr = ""; panel_runmodal = 0 }
+# A string's interpolation — \( in a string, \#( in a #-raw string — is code, and may hold strings of its
+# own, so entering one pushes the string's state and the matching `)` pops it: a // or /* in a literal
+# inside an interpolation is still inside a string. `parens` counts the open parentheses of the code
+# being read, so only the `)` that closes the interpolation pops.
+function sethash(   k) { hashstr = ""; for (k = 0; k < hashes; k++) hashstr = hashstr "#" }
+function push_interpolation() { sp++; stk_mode[sp] = mode; stk_parens[sp] = parens; stk_hashes[sp] = hashes; mode = "code"; parens = 0 }
+function pop_interpolation() { mode = stk_mode[sp]; parens = stk_parens[sp]; hashes = stk_hashes[sp]; sethash(); sp-- }
+
+BEGIN { mode = "code"; depth = 0; hashes = 0; hashstr = ""; panel_runmodal = 0; sp = 0; parens = 0 }
 
 {
   line = $0
@@ -231,7 +242,13 @@ BEGIN { mode = "code"; depth = 0; hashes = 0; hashstr = ""; panel_runmodal = 0 }
         if (substr(line, j, 3) == "\"\"\"") { mode = "rawm"; hashes = h; out = out substr(line, i, j - i + 3); i = j + 3 }
         else if (substr(line, j, 1) == "\"") { mode = "raw"; hashes = h; out = out substr(line, i, j - i + 1); i = j + 1 }
         else { out = out substr(line, i, j - i); i = j }
-        if (mode == "raw" || mode == "rawm") { hashstr = ""; for (k = 0; k < hashes; k++) hashstr = hashstr "#" }
+        if (mode == "raw" || mode == "rawm") sethash()
+      }
+      else if (c == "(") { parens++; out = out c; i++ }
+      else if (c == ")") {
+        if (parens == 0 && sp > 0) pop_interpolation()
+        else if (parens > 0) parens--
+        out = out c; i++
       }
       else { out = out c; i++ }
     }
@@ -241,26 +258,34 @@ BEGIN { mode = "code"; depth = 0; hashes = 0; hashstr = ""; panel_runmodal = 0 }
       else { out = out " "; i++ }
     }
     else if (mode == "str") {
-      if (c == "\\") { out = out substr(line, i, 2); i += 2 }
+      if (c2 == "\\(") { push_interpolation(); out = out c2; i += 2 }
+      else if (c == "\\") { out = out substr(line, i, 2); i += 2 }
       else if (c == "\"") { mode = "code"; out = out c; i++ }
       else { out = out c; i++ }
     }
     else if (mode == "mstr") {
-      if (c == "\\") { out = out substr(line, i, 2); i += 2 }
+      if (c2 == "\\(") { push_interpolation(); out = out c2; i += 2 }
+      else if (c == "\\") { out = out substr(line, i, 2); i += 2 }
       else if (c3 == "\"\"\"") { mode = "code"; out = out c3; i += 3 }
       else { out = out c; i++ }
     }
     else if (mode == "raw") {
-      if (c == "\"" && substr(line, i + 1, hashes) == hashstr) { mode = "code"; out = out substr(line, i, 1 + hashes); i += 1 + hashes }
+      if (c == "\\" && substr(line, i + 1, hashes) == hashstr && substr(line, i + 1 + hashes, 1) == "(") { out = out substr(line, i, 2 + hashes); i += 2 + hashes; push_interpolation() }
+      else if (c == "\"" && substr(line, i + 1, hashes) == hashstr) { mode = "code"; out = out substr(line, i, 1 + hashes); i += 1 + hashes }
       else { out = out c; i++ }
     }
     else {
-      if (c3 == "\"\"\"" && substr(line, i + 3, hashes) == hashstr) { mode = "code"; out = out substr(line, i, 3 + hashes); i += 3 + hashes }
+      if (c == "\\" && substr(line, i + 1, hashes) == hashstr && substr(line, i + 1 + hashes, 1) == "(") { out = out substr(line, i, 2 + hashes); i += 2 + hashes; push_interpolation() }
+      else if (c3 == "\"\"\"" && substr(line, i + 3, hashes) == hashstr) { mode = "code"; out = out substr(line, i, 3 + hashes); i += 3 + hashes }
       else { out = out c; i++ }
     }
   }
-  # A single-line string or raw string ends with its line.
-  if (mode == "str" || mode == "raw") mode = "code"
+  # A single-line string or raw string ends with its line, and so does every interpolation opened
+  # inside one: unwind to the code around the outermost single-line string still open.
+  k = 0
+  for (q = 1; q <= sp; q++) if (stk_mode[q] == "str" || stk_mode[q] == "raw") { k = q; break }
+  if (k > 0) { mode = "code"; parens = stk_parens[k]; sp = k - 1 }
+  else if (mode == "str" || mode == "raw") mode = "code"
   apply(out)
 }
 AWK
