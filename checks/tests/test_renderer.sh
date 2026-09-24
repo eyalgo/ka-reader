@@ -49,6 +49,7 @@ test_no_input_sent
 test_sample_writes_only_into_the_run_directory
 test_first_matching_observation_passes
 test_frames_on_another_thread_do_not_count
+test_main_thread_under_its_early_label_counts
 test_frames_out_of_order_do_not_count
 test_generic_modal_alone_does_not_count
 test_panel_without_shell_frames_does_not_count
@@ -278,7 +279,7 @@ write_report() {
     echo "Process:         Nozoki [4242]"
     echo ""
     echo "Call graph:"
-    echo "    867 Thread_1   DispatchQueue_1: com.apple.main-thread  (serial)"
+    echo "    867 Thread_1${MAIN_HEADER:-   DispatchQueue_1: com.apple.main-thread  (serial)}"
     printf '%s\n' "$2" | frames_from_stdin "${TREE_MARK:-+}"
     echo ""
     if [ -n "${3:-}" ]; then
@@ -482,6 +483,18 @@ test_frames_on_another_thread_do_not_count() {
   expect_stderr_contains "never observed" || return 1
 }
 
+test_main_thread_under_its_early_label_counts() {
+  new_case early-label
+  # Until the main queue is up, sample labels the main thread "Main Thread" and not
+  # com.apple.main-thread. A launch observed that early is not a failed observation, and its frames
+  # are the main thread's.
+  MAIN_HEADER=": Main Thread   DispatchQueue_<multiple>" write_report "$STUBS/report.1" "$IDLE_FRAMES"
+  MAIN_HEADER=": Main Thread   DispatchQueue_<multiple>" write_report "$STUBS/report.2" "$FULL_FRAMES"
+  RENDERER_SH_OBSERVATIONS=5 run_renderer "$APP"
+  expect_status 0 || return 1
+  expect_sample_calls 2 || return 1
+}
+
 test_frames_out_of_order_do_not_count() {
   new_case out-of-order
   # The panel's frames hang off a sibling of LaunchFlow.run(), not off it.
@@ -521,12 +534,13 @@ test_panel_without_shell_frames_does_not_count() {
 
 test_near_frame_names_do_not_count() {
   new_case near-names
-  # LaunchFlow.runAgain() is not LaunchFlow.run(): a frame is its whole symbol, not a substring.
+  # "specialized LaunchFlow.run()" is not LaunchFlow.run(): a frame is its whole symbol, not a part of
+  # one, so a symbol that merely contains a listed name does not advance the match.
   write_report "$STUBS/report.default" "1 start
 2 main
 3 -[NSApplication run]
 4 AppDelegate.applicationDidFinishLaunching(_:)
-5 LaunchFlow.runAgain()
+5 specialized LaunchFlow.run()
 6 OpenFolderPanel.chooseFolder()
 7 -[NSSavePanel runModal]
 8 -[NSApplication runModalForWindow:]"
