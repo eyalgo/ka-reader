@@ -32,9 +32,15 @@ and nothing else (`docs/SDD.md` § SDD Review Notes RN-52).
 `checks/renderer.sh Nozoki.app` runs on every CI build **after `checks/bundle.sh` and never
 instead of it**. It launches the bundle CI built, as a user launches it, takes the pid the way
 `checks/bundle.sh` does, and within a bounded window of the same kind **fails unless the launched
-main process is observed inside `open_folder`'s call** — the shell's first and only unconditional
-act, presenting the Open panel at launch (`docs/SDD.md` § 4 C-R3) and parked in it until someone
-answers. The observation is the operating system's or the process's own report that the shell ran
+main process is observed parked in the Open panel's modal run, inside the shell's launch frames**
+— the shell's first and only unconditional act, presenting the Open panel at launch
+(`docs/SDD.md` § 4 C-R3) and parked in it until someone answers; `open_folder` is not among those
+frames, because the shell calls it only after the panel returns
+(`nozoki-mac/Sources/Shell/LaunchFlow.swift:L35-L37`) and the gate sends no input *(corrected in
+place 2026-09-24 — as accepted this clause read "observed inside `open_folder`'s call", the
+observation the page's `open_folder` made and the native shell does not; `docs/SDD.md` § 4 C-I3
+at v18, RN-70; the answer at `docs/trail/architecture/cycle-12.md` § 3.2)*. The observation is
+the operating system's or the process's own report that the shell ran
 far enough to present the panel — never a marker the product writes for the check, never an
 environment variable, never a code path that exists for the gate: the shipped bundle is the
 artifact under test and holds nothing for the test. The script fixes which mechanism it reads and
@@ -43,7 +49,10 @@ previous renderer, was a thread sample of the launched pid showing the command's
 `pick_folder → run_on_main` present exactly where the window drew and absent where it did not
 (`docs/trail/sdd/cycle-8.md` § 5.1, the sample table); the frames the native shell shows are
 re-measured on the first slice's first built bundle, and the script fixes them from that bundle
-(`docs/SDD.md` § 4 C-I3; § Open Questions, last item).
+(`docs/SDD.md` § 4 C-I3) *(pointer corrected in place 2026-09-24 — as accepted it also cited
+"§ Open Questions, last item", the hosted-runner question, which SDD v18 closed and removed
+(RN-70), so the pointer now lands on another question; the measurement is in § Consequences; the
+answer at `docs/trail/architecture/cycle-12.md` § 3.1)*.
 
 **A negative control is part of the gate, not an accessory to it**, and it is a bundle the harness
 owns, not a build removed from the product — a single-process shell has no renderer build to
@@ -60,7 +69,13 @@ working.** Under the rule (ADR-0011) no bundle built from the previous shape —
 record is written, `crates/nozoki-app` over `nozoki-ui` — reaches `open_folder` (`docs/SDD.md`
 § 10 RC-2). The red is never cleared by granting an entitlement or by skipping the script;
 `checks/renderer.sh` and `checks/fixtures/idle-shell` land with the native shell or after it (the
-owner's addition, `docs/trail/architecture/cycle-8.md` § 2.1).
+owner's addition, `docs/trail/architecture/cycle-8.md` § 2.1) *(dated in place 2026-09-24 — this
+paragraph was a rule for the tree before the native shell, and that tree is gone: from
+`nozoki@153f5a1` `checks/renderer.sh` and `checks/fixtures/idle-shell` are in the tree and run on
+every CI build as `Renderer gate` (`.github/workflows/ci.yml:L43-L44`), after `Bundle probe`, and
+the gate passes on the native shell's bundle; the never-cleared clause stands on its own ground,
+C-I3's *Violated by* ("a renderer gate skipped") and ADR-0011; the answer at
+`docs/trail/architecture/cycle-12.md` § 3.1)*.
 
 ## Alternatives ruled out
 
@@ -94,13 +109,26 @@ window — is caught on the first build that reproduces it.
 
 Harder: the suite launches two bundles more per CI run (the gate and its `idle-shell` control), and
 the harness owns a second signed and entitled executable that must be kept in step with the
-product's entitlements. The observation is a process-level read of the shell's call into the
-bridge, so the frames it reads are the shell's own symbols and the script fixes them from the first
-native bundle. What this record fixes is the gate, its two rules — observed from the process and
-never from a marker; a control that must go red — and its place after the wall probe, not the
-frames. Whether the observation reads the same on a GitHub-hosted runner is unmeasured
-(`docs/SDD.md` § Open Questions, last item); a runner that cannot observe it is a re-cut trigger on
-the mechanism, never on the gate.
+product's entitlements. The observation is a thread sample of the launched main thread: the
+shell's launch symbols with AppKit's Open-panel modal run nested inside them, and no bridge frame
+*(corrected in place 2026-09-24 — as accepted this read "a process-level read of the shell's call
+into the bridge"; the shell makes no bridge call before the panel returns; the answer at
+`docs/trail/architecture/cycle-12.md` § 3.2)*, so the frames it reads are the shell's own symbols
+and the script fixes them from the first native bundle. What this record fixes is the gate, its
+two rules — observed from the process and never from a marker; a control that must go red — and
+its place after the wall probe, not the frames. The observation was measured on a Mac
+(`checks/renderer.sh:L58-L61`, macOS 26.6.2) and on a GitHub-hosted runner — GitHub Actions run
+35988399477 on `nozoki@37a962d`, image `macos-14-arm64` 20260831.0302.1, macOS 14.8.9, its
+`checks/renderer.sh` byte-equal to `main`'s — where the product matched the script's five-frame
+list on observation 1 and the control on none of 30; a runner image or macOS whose Open-panel
+frames read differently turns the gate red on the next build, a re-cut trigger on the mechanism,
+never on the gate (`docs/SDD.md` § 4 C-I3 at v18, RN-70). What the gate does not show, named so
+it is not read as coverage: a thread sample shows the shell in the panel's modal run, not that
+the panel is on screen — S-1's observable half (RN-70) *(corrected in place 2026-09-24 — as
+accepted this read that the hosted-runner reading "is unmeasured (`docs/SDD.md` § Open Questions,
+last item)", an item SDD v18 closed; the runner reading is cited from the run because the
+script's header does not carry it yet; the answer at `docs/trail/architecture/cycle-12.md`
+§ 3.1)*.
 
 What undoing it costs: dropping the gate is a CI edit — and a return to the state where the wall's
 green was the only evidence a person could use the bundle. The owner ordered the gate, so a reversal
@@ -112,7 +140,10 @@ sampling tool's output, or the view technology — the mechanism is re-derived a
 `checks/renderer.sh` and `checks/fixtures/idle-shell` are not in the tree as this record is written
 (`ls checks/`, 2026-09-23: `bundle.sh`, `deps.allow`, `fixtures`, `no-network.sh`, `own-state.sh`,
 `read-only.sh`, `sandbox_probe.rs`, `tests`); they become executable in the change that lands them
-with the native shell, and until then the gate is `development-design` reading `docs/nfdr.md` QC-62.
+with the native shell, and until then the gate is `development-design` reading `docs/nfdr.md` QC-62
+*(dated in place 2026-09-24 — that change landed: `ls checks checks/fixtures` at `nozoki@153f5a1`
+lists `renderer.sh` and `idle-shell`, and the gate is `Renderer gate` on every CI build; the
+answer at `docs/trail/architecture/cycle-12.md` § 3.1)*.
 
 ## Traces to
 
@@ -137,6 +168,18 @@ with the native shell, and until then the gate is `development-design` reading `
   last commit on `main` before those files left the tree, on the owner's ruling that a citation
   repair reverses no decision (`docs/trail/architecture/cycle-3.md` § 3.1;
   `docs/trail/architecture/cycle-11.md` § 3.7).
+- `docs/SDD.md` at v18 (`nozoki@399ef71`, Settled) — § 4 C-I3 as it now reads: the observable
+  "parked in the Open panel's modal run, inside the shell's launch frames", the two readings and
+  the re-cut rule; § 9 TO-7 *costs*; § SDD Review Notes RN-70; *Open Questions* with its seventh
+  item removed. Read for the six in-place corrections dated 2026-09-24 above, each authorized in
+  the owner's seat at `docs/trail/architecture/cycle-12.md` §§ 3.1 and 3.2 as a correction to this
+  record and not a reversal of it — reasoning `docs/trail/architecture/self_answer-15.md` §§ 3.1,
+  3.2; the item as raised and answered on the SDD is `docs/trail/sdd/cycle-14.md` §§ 5.1, 5.2; the
+  runner reading is GitHub Actions run 35988399477 as RN-70 records it, and the tree's state is
+  `nozoki@153f5a1`. This record says what it fixes is the gate and not the frames, which is why a
+  moved observable is a correction and not a supersession. What those corrections do not touch:
+  § Decision's two rules — observed from the process and never from a marker; a control that must
+  go red — and the gate's place after the wall probe; § Alternatives ruled out; § Binds.
 - ADR-0010 — the wall probe this gate runs after; its decision is untouched. ADR-0011 — the rule
   under which the previous renderer's bundle cannot reach `open_folder`. ADR-0013, ADR-0014 — the
   shape and the view the gate now proves ran.
