@@ -38,6 +38,9 @@ jobs:
       - name: View check
         run: checks/view.sh
 
+      - name: View check suite
+        run: checks/tests/test_view.sh
+
       # The gate runs its own idle-shell control: a run without the control has not run the gate.
       # Its launch of the product may leave the app's log behind before "Launch the built bundle" runs.
       - name: Renderer gate
@@ -49,8 +52,17 @@ jobs:
       - name: Read-only, repository
         run: checks/read-only.sh checks/fixtures/repo
 
+      - name: Read-only suite
+        run: checks/tests/test_read_only.sh
+
       - name: No-network dependency list
         run: checks/no-network.sh
+
+      - name: No-network suite
+        run: checks/tests/test_no_network.sh
+
+      - name: Own state suite
+        run: checks/tests/test_own_state.sh
 
       # The app's own log is written by a launch. Nothing above this step leaves one behind, so
       # checks/own-state.sh must come after it and never before.
