@@ -66,4 +66,10 @@
 - **If overridden:** The clause keeps reading as if no `main` run had built `nozoki-mac`. A reviewer
   checking a CI change against it would wait for a first run that has already happened, and would
   not know its log was silent on the toolchain.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm, with one addition. Every fact in the drafted clause was re-read and
+  holds: run 35968105480 is `success` on `main` at `c461b29`, image `macos-14-arm64` 20260831.0302.1
+  on macOS 14.8.9, and its log's only `swift-version` lines are the build file's name. No earlier run
+  on `main` had `swift test` in `ci.yml`, and no later run on `main` exists yet. The addition: the
+  clause's closing parenthesis points at this companion's § 2.1, and the fold deletes this file. The
+  fold re-points it to the trail cycle that keeps this answer, as the entries do for every earlier
+  cycle. Reasoning: `docs/trail/architecture/self_answer-16.md`.
