@@ -18,10 +18,11 @@
 
 > **No `product-architecture` run opened this companion. The PM opened it on 2026-09-24.**
 > `nfdr.md` is Settled at v14 and the records had no companion on disk, so a `product-architecture`
-> re-run would read them as done and find nothing to act on. The companion holds four items,
-> §§ 3.1 – 3.4. Each one comes from measuring the tree on `main` at `nozoki@153f5a1` against these
-> records, after `checks/view.sh`, `checks/renderer.sh` and `checks/fixtures/idle-shell` landed. Each
-> states a fact the records hold that is now false.
+> re-run would read them as done and find nothing to act on. The companion holds five items,
+> §§ 3.1 – 3.5. Each one comes from measuring the tree on `main` at `nozoki@153f5a1` against these
+> records, after `checks/view.sh`, `checks/renderer.sh` and `checks/fixtures/idle-shell` landed.
+> §§ 3.1 – 3.4 each state a fact the records hold that is now false. § 3.5 is something the records
+> never state, found through a suite that is red on `main`.
 
 ---
 
@@ -104,4 +105,27 @@
   - QC-1 (`nfdr.md:L71-L72`) and QC-23 (`:L315-L316`) cite the same scan.
 - **If a document has to be written:** None. **The PM's lean:** name the thirteen families, or
   point at `checks/view.sh`'s header as the list and keep C-R7's set as the floor.
+- **Answer:** <the owner fills this in>
+
+### 3.5 No record says where the harness's own suites run, and one is red on `main` while every gate is green
+- **Raised by:** PM — 2026-09-24
+- **Which record:** `nfdr.md` § 10, the verification map
+- **Tracked by:** `nozoki · nemawashi · 2026-09-15_open-a-folder`
+- **What it blocks:** The suites under `checks/tests/` are what prove each `checks/*.sh` script
+  reads what its entry says it reads. Only one of the six runs on any gate, so a script can regress
+  unseen.
+- **Where it shows:**
+  - `ls checks/tests` lists six suites: `test_bundle.sh`, `test_no_network.sh`,
+    `test_own_state.sh`, `test_read_only.sh`, `test_renderer.sh` and `test_view.sh`.
+  - `grep -n 'checks/tests' docs/nfdr.md docs/SDD.md` prints nothing.
+  - CI runs one suite, `test_bundle.sh`, as `Bundle probe suite` (`.github/workflows/ci.yml:L34-L36`).
+  - The project's test command is `cargo test --workspace --locked && swift test --package-path
+    nozoki-mac`, which runs none of them.
+  - On `main` at `nozoki@153f5a1`, `checks/tests/test_renderer.sh` prints `FAIL
+    test_header_names_the_runner_reading` and `1 case(s) failed`. CI run 35988399477, on a tree
+    whose `renderer.sh` is byte-equal to `main`'s, is green.
+- **If a document has to be written:** None. **The PM's lean:** § 10 states where each
+  `checks/tests/*.sh` suite runs. That can be a CI step per suite, the way `Bundle probe suite`
+  runs `test_bundle.sh`, or a named release step. Or § 10 states that they are owner-run and gate
+  nothing. Either way, a red suite is no longer invisible to every gate.
 - **Answer:** <the owner fills this in>
