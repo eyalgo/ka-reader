@@ -263,6 +263,7 @@ test_each_family_is_reported() {
   check_family F7 Shell/S.swift 'FileManager.default.createFile(atPath: p, contents: nil)' 'FileManager'
   check_family F7 Shell/S.swift 'let d = Data(contentsOf: url)' 'contentsOf:'
   check_family F7 Shell/S.swift 'let i = NSImage(contentsOfFile: p)' 'contentsOfFile:'
+  check_family F7 Shell/S.swift 'let d: Data = .init(contentsOf: url)' 'contentsOf:'
   check_family F7 Shell/S.swift 'try d.write(to: url)' 'write(to:'
   check_family F7 Shell/S.swift 'let i = NSImage(byReferencing: url)' 'byReferencing'
   check_family F7 Shell/S.swift 'let h = FileHandle.standardInput' 'FileHandle'
