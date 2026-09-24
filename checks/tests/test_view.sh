@@ -44,8 +44,11 @@ test_bundle_main_lookups_admitted
 test_surfaces_may_not_call_the_bridge
 test_open_panel_exception_is_narrow
 test_comments_are_not_code
+test_interpolation_does_not_end_a_string
 test_findings_name_the_true_line
+test_adjacent_refused_calls_are_each_reported
 test_link_list_names_webkit
+test_fat_binary_link_list
 test_every_finding_in_one_run
 test_no_swift_source_fails
 test_missing_executable_fails
@@ -283,6 +286,17 @@ test_each_family_is_reported() {
   check_family F13 Shell/S.swift 'NSAlert().runModal()' 'NSAlert'
   check_family F13 Shell/S.swift 'window.beginSheet(other)' 'beginSheet'
   check_family F13 Shell/S.swift 'let c = UNUserNotificationCenter.current()' 'UNUserNotificationCenter'
+  # The members change_spec.md names outright (CP-135, CP-136), each asserted by name.
+  check_family F2 Shell/S.swift 'let w = WebView()' 'WebView'
+  check_family F3 Shell/S.swift 'let o: [NSAttributedString.DocumentAttributeKey: Any] = [.documentType: .html]' '.html'
+  check_family F4 Shell/S.swift 'let c = NSURLConnection(request: r, delegate: nil)' 'NSURLConnection'
+  check_family F5 Shell/S.swift 'let s = NSAppleScript(source: "x")' 'NSAppleScript'
+  check_family F7 Shell/S.swift 'let t = try String(contentsOf: url)' 'contentsOf:'
+  check_family F11 Shell/S.swift 'let a = ProcessInfo.processInfo.arguments' '.arguments'
+  check_family F13 Shell/S.swift 'let c = NSUserNotificationCenter.default' 'NSUserNotificationCenter'
+  check_family F13 Shell/S.swift 'let m = NSApp.beginModalSession(for: w)' 'beginModalSession'
+  check_family F13 Shell/S.swift 'controller.presentAsModalWindow(other)' 'presentAsModalWindow'
+  check_family F13 Shell/S.swift 'controller.presentAsSheet(other)' 'presentAsSheet'
   [ -z "$bad" ] || fail "families not reported:$bad"
 }
 
@@ -374,9 +388,36 @@ test_comments_are_not_code() {
     'import AppKit\nlet c = NSClassFromString("NSTask")\n' 2 NSClassFromString || return 1
 }
 
+# A string's interpolation holds code, and that code may hold string literals of its own. A `//` or
+# `/*` inside such a literal is inside a string still, so it opens no comment, and whatever follows
+# the outer string on its line is code and is scanned (CP-135: "anywhere in nozoki-mac/Sources").
+test_interpolation_does_not_end_a_string() {
+  expect_source_reported interp-slashes Sources/Shell/P.swift \
+    'import AppKit\nlet u = "\\(name ?? "https://x")" ; FileManager.default\n' 2 FileManager || return 1
+  expect_source_reported interp-block Sources/Shell/P.swift \
+    'import AppKit\nlet v = "a\\(f("/*"))b"\nlet g = FileManager.default\n' 3 FileManager || return 1
+  expect_source_reported interp-nested Sources/Shell/P.swift \
+    'import AppKit\nlet w = "\\(g("\\(h("//"))"))" ; FileManager.default\n' 2 FileManager || return 1
+  expect_source_reported interp-raw Sources/Shell/P.swift \
+    'import AppKit\nlet r = #"\\#(f("//"))"# ; FileManager.default\n' 2 FileManager || return 1
+  expect_source_reported interp-multiline Sources/Shell/P.swift \
+    'import AppKit\nlet m = """\n\\(f("/*"))\n"""\nlet h = FileManager.default\n' 5 FileManager || return 1
+  # And an interpolation does not turn a real comment after the string into code.
+  expect_source_clean interp-then-comment Sources/Shell/P.swift \
+    'import AppKit\nlet s = "\\(a) and \\(f(b))" // FileManager\n' || return 1
+}
+
 test_findings_name_the_true_line() {
   expect_source_reported true-line Sources/Shell/T.swift \
     '/* one\n   two\n   three */\nimport AppKit\nfunc f() {\n}\nlet x = FileManager.default\n' 7 FileManager || return 1
+}
+
+# Each refused name is its own finding (CP-138: each finding is one line), so a refused call written
+# directly inside another is reported as well as the call around it.
+test_adjacent_refused_calls_are_each_reported() {
+  expect_source_reported outer-call Sources/Shell/A.swift \
+    'import AppKit\nlet n = system(open("/x", 0))\n' 2 system || return 1
+  expect_finding Sources/Shell/A.swift 2 open || return 1
 }
 
 test_link_list_names_webkit() {
@@ -397,6 +438,35 @@ test_link_list_names_webkit() {
 /opt/x/NotWebKit.framework/NotWebKit (compatibility version 1.0.0, current version 1.0.0)"
   run_view "$link_root" "$WORK/otool-near"
   expect_status 0 || return 1
+}
+
+# A fat binary: otool -L prints "<path> (architecture <arch>):" before each slice's list. Those lines
+# are not install names, and a slice after the first is read like the first (CP-137: any linked
+# library's install name).
+test_fat_binary_link_list() {
+  fat_root="$(new_root link-fat)"
+  mkdir -p "$WORK/otool-fat"
+  cat > "$WORK/otool-fat/otool" << 'STUB'
+#!/bin/sh
+echo "$2 (architecture x86_64):"
+printf '\t%s\n' "/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1351.0.0)"
+echo "$2 (architecture arm64):"
+printf '\t%s\n' "/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1351.0.0)"
+printf '\t%s\n' "/System/Library/Frameworks/WebKit.framework/Versions/A/WebKit (compatibility version 1.0.0, current version 619.1.15)"
+STUB
+  chmod +x "$WORK/otool-fat/otool"
+  run_view "$fat_root" "$WORK/otool-fat"
+  expect_status 1 || return 1
+  expect_stderr_contains "link: /System/Library/Frameworks/WebKit.framework/Versions/A/WebKit" || return 1
+  expect_stderr_lacks "architecture" || return 1
+  # Architecture lines alone are no install name: the check read nothing.
+  mkdir -p "$WORK/otool-fat-empty"
+  printf '#!/bin/sh\necho "$2 (architecture x86_64):"\necho "$2 (architecture arm64):"\n' > "$WORK/otool-fat-empty/otool"
+  chmod +x "$WORK/otool-fat-empty/otool"
+  run_view "$fat_root" "$WORK/otool-fat-empty"
+  expect_status 1 || return 1
+  expect_stderr_contains "install name" || return 1
+  expect_stdout_lacks "nothing found" || return 1
 }
 
 test_every_finding_in_one_run() {

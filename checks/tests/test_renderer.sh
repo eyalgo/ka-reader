@@ -46,7 +46,6 @@ test_two_pids_after_launch
 test_no_pid_appears
 test_pid_found_by_path_not_pattern
 test_stops_only_its_own_pid
-test_no_input_sent
 test_sample_writes_only_into_the_run_directory
 test_first_matching_observation_passes
 test_frames_on_another_thread_do_not_count
@@ -76,6 +75,7 @@ test_control_at_the_panel_fails
 test_control_line_states_the_bound
 test_nothing_written_under_fixtures
 test_no_checks_file_matches_a_bundle_file
+test_no_input_sent
 "
 
 # --- helpers ---
@@ -497,6 +497,8 @@ test_running_instance_refused() {
   run_renderer "$APP"
   expect_status 1 || return 1
   expect_stderr_contains "$running_pid" || return 1
+  # A failed observation: the run did not wait out the window, so no bound is printed (CP-144).
+  expect_stderr_lacks "bound" || return 1
   expect_no_open_call || return 1
   # Refused before the control is built, not only before anything is launched.
   [ ! -e "$STUBS/swiftc_calls" ] || fail "the control was built although an instance was already running" || return 1
@@ -509,6 +511,7 @@ test_two_pids_after_launch() {
   run_renderer "$APP"
   expect_status 1 || return 1
   expect_stderr_contains "more than one" || return 1
+  expect_stderr_lacks "bound" || return 1
   expect_sample_calls 0 || return 1
   while read -r each_pid; do
     alive "$each_pid" || fail "pid $each_pid was signalled although the run could not tell which was its own" || return 1
@@ -563,12 +566,18 @@ test_stops_only_its_own_pid() {
   done
 }
 
+# Listed last in CASES, so the stand-ins of every case the run has already made are on disk to read.
 test_no_input_sent() {
   new_case no-input
   pass_reports
   run_renderer "$APP"
   expect_status 0 || return 1
   [ ! -e "$STUBS/input_calls" ] || fail "an input tool was called: $(cat "$STUBS/input_calls")" || return 1
+  # Across every stand-in case of this run, not only this one: no input tool recorded a call.
+  for input_log in "$WORK"/*/stubs/input_calls; do
+    [ -e "$input_log" ] || continue
+    fail "an input tool was called in $(basename "$(dirname "$(dirname "$input_log")")"): $(cat "$input_log")" || return 1
+  done
   # The script reads nothing the product wrote: no path under its container, in any line of code.
   code_lines="$(grep -v '^[[:space:]]*#' "$RENDERER_SH" || true)"
   case "$code_lines" in
