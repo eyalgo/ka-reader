@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Version: 1.0.0 — first version: drives the real checks/renderer.sh over stand-in ps, open and sample, and over the real bundle
+# Version: 1.0.0 — first version: drives the real checks/renderer.sh, both halves, over stand-in ps, open, sample, codesign and swiftc, and over the real bundle
 #
 # checks/tests/test_renderer.sh — the tests of checks/renderer.sh.
 #
 # WHY THIS EXISTS
 #   checks/renderer.sh is the proof that the shipped shell reaches the Open panel, so a bug in it is a
-#   wall nobody is watching. These cases run the real script — never a copy of its logic. `ps`, `open`
-#   and `sample` are stood in on PATH, the seams the script has. The pids are real processes (`sleep`),
+#   wall nobody is watching. These cases run the real script — never a copy of its logic. `ps`, `open`,
+#   `sample`, `codesign` and `swiftc` are stood in on PATH, the seams the script has. The pids are real processes (`sleep`),
 #   started and stopped by pid, because the script asks the operating system whether a pid still names
 #   a process and signals it.
 #   The technique is the shell packet's, minus its runner: this product has no Python, so the runner
@@ -14,9 +14,9 @@
 #
 # USAGE
 #   checks/tests/test_renderer.sh
-#   The real-bundle case launches target/release/bundle/macos/Nozoki.app and samples it, so run
-#   nozoki-mac/assemble.sh first and run this in a logged-in GUI session. A bundle that is absent FAILS
-#   that case with a stated message and never skips it: a skip would let CI conclude green having
+#   The real-bundle cases launch target/release/bundle/macos/Nozoki.app and samples it, so run
+#   nozoki-mac/assemble.sh first and run this in a logged-in GUI session; they also build and sign the
+#   real control with the real swiftc and codesign. A bundle that is absent FAILS those cases with a stated message and never skips it: a skip would let CI conclude green having
 #   proved nothing.
 #   NOZOKI_TEST_ONLY=<case> runs one case.
 #
@@ -38,6 +38,7 @@ CASE_COUNTER=0
 
 CASES="
 test_real_bundle_passes
+test_real_bundle_passes_with_its_control
 test_not_an_app_launches_nothing
 test_launch_goes_through_open
 test_running_instance_refused
@@ -61,6 +62,18 @@ test_window_runs_out
 test_pass_line_on_stdout_failures_on_stderr
 test_header_names_frames_and_the_mac_reading
 test_bound_override_validated
+test_control_set_must_equal_product_set
+test_control_signed_ad_hoc_with_the_hardened_runtime
+test_product_signature_unreadable_fails_before_any_launch
+test_swiftc_absent_fails_before_any_launch
+test_product_half_alone_is_not_a_pass
+test_product_stopped_before_the_control_launches
+test_control_pid_not_found_once_fails
+test_control_crash_is_not_a_red
+test_control_at_the_panel_fails
+test_control_line_states_the_bound
+test_nothing_written_under_fixtures
+test_no_checks_file_matches_a_bundle_file
 "
 
 # --- helpers ---
@@ -96,6 +109,13 @@ PLIST
   printf '%s' "$app_dir"
 }
 
+# An entitlement property list at $1 holding the entries $2, in the form codesign prints.
+set_entitlements() {
+  printf '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "https://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict>%s</dict></plist>\n' "$2" > "$1"
+}
+
+PRODUCT_ENTITLEMENTS='<key>com.apple.security.app-sandbox</key><true/><key>com.apple.security.files.user-selected.read-only</key><true/>'
+
 # The stand-ins for one case, in $WORK/<case>/stubs. Their behaviour is set by small files beside them.
 make_stubs() {
   stubs="$WORK/$1/stubs"
@@ -121,14 +141,25 @@ STUB
 # Records its call, then starts the launched process: one, two, or none, by $STUB/open_mode.
 echo "$*" >> "$STUB/open_calls"
 for last_argument in "$@"; do :; done
-executable="$last_argument/Contents/MacOS/Nozoki"
+executable="$last_argument/Contents/MacOS/$(ls "$last_argument/Contents/MacOS" | head -1)"
 echo "$executable" > "$STUB/exe_path"
+open_number="$(wc -l < "$STUB/open_calls" | tr -d ' ')"
+# What the first launch's process is doing when a later launch is made: the run must have stopped it.
+if [ "$open_number" -ge 2 ]; then
+  first_pid="$(head -1 "$STUB/spawned")"
+  if kill -0 "$first_pid" 2> /dev/null; then
+    echo "open $open_number: first pid $first_pid alive" >> "$STUB/events"
+  else
+    echo "open $open_number: first pid $first_pid stopped" >> "$STUB/events"
+  fi
+fi
 spawn() {
   spawned_pid="$( (sleep 300 > /dev/null 2>&1 & echo $!) )"
   echo "$spawned_pid $executable" >> "$STUB/ps_table"
   echo "$spawned_pid" >> "$STUB/spawned"
 }
-case "$(cat "$STUB/open_mode" 2> /dev/null || echo one)" in
+open_mode="$(cat "$STUB/open_mode.$open_number" 2> /dev/null || cat "$STUB/open_mode" 2> /dev/null || echo one)"
+case "$open_mode" in
   none) ;;
   two) spawn; spawn ;;
   *) spawn ;;
@@ -172,6 +203,67 @@ if [ "$(cat "$STUB/kill_after" 2> /dev/null)" = "$call_number" ]; then
 fi
 exit 0
 STUB
+
+  cat > "$stubs/codesign" << 'STUB'
+#!/bin/bash
+# -d ... <app>: prints the entitlement plist of the product, or of the control (what it was last signed
+# with, unless a case overrides it). --sign ...: records the call and keeps the entitlements it was given.
+echo "$*" >> "$STUB/codesign_calls"
+for target_path in "$@"; do :; done
+case " $* " in
+  *" -d "*)
+    case "$target_path" in
+      *idle-shell.app*) plist_source="$STUB/control_entitlements.xml" ;;
+      *)
+        [ ! -e "$STUB/product_unreadable" ] || exit 1
+        plist_source="$STUB/product_entitlements.xml"
+        ;;
+    esac
+    [ -f "$plist_source" ] && cat "$plist_source"
+    exit 0
+    ;;
+  *" --sign "*)
+    previous=""
+    entitlements_path=""
+    for argument in "$@"; do
+      [ "$previous" = "--entitlements" ] && entitlements_path="$argument"
+      previous="$argument"
+    done
+    echo "$*" > "$STUB/signing_call"
+    if [ -n "$entitlements_path" ]; then
+      cp "$entitlements_path" "$STUB/signed_with.xml"
+      if [ -f "$STUB/control_override.xml" ]; then
+        cp "$STUB/control_override.xml" "$STUB/control_entitlements.xml"
+      else
+        cp "$entitlements_path" "$STUB/control_entitlements.xml"
+      fi
+    fi
+    exit 0
+    ;;
+esac
+exit 0
+STUB
+
+  cat > "$stubs/swiftc" << 'STUB'
+#!/bin/bash
+# Records its call and writes an executable at the -o path, unless a case makes it fail.
+echo "$*" >> "$STUB/swiftc_calls"
+output_path=""
+previous=""
+for argument in "$@"; do
+  [ "$previous" = "-o" ] && output_path="$argument"
+  previous="$argument"
+done
+if [ -e "$STUB/swiftc_fails" ]; then
+  echo "swiftc: error: stand-in build failure" >&2
+  exit 1
+fi
+printf '#!/bin/sh\nexit 0\n' > "$output_path"
+chmod +x "$output_path"
+exit 0
+STUB
+
+  set_entitlements "$stubs/product_entitlements.xml" "$PRODUCT_ENTITLEMENTS"
 
   for tool in osascript cliclick; do
     printf '#!/bin/sh\necho "$0 $*" >> "$STUB/input_calls"\nexit 0\n' > "$stubs/$tool"
@@ -309,6 +401,37 @@ IDLE_FRAMES="1 start
 3 -[NSApplication run]
 4 _DPSNextEvent"
 
+# Reports for a run that should exit 0: the product is observed at the panel on the first sample, and
+# the control never is.
+pass_reports() {
+  write_report "$STUBS/report.1" "$FULL_FRAMES"
+  write_report "$STUBS/report.default" "$IDLE_FRAMES"
+}
+
+# The ordinary run with PATH exactly $1 (the stand-ins first, then a directory of ordinary tools): for
+# the case where one tool must be absent.
+run_renderer_with_path() {
+  restricted_path="$1"
+  shift
+  STUB="$STUBS" PATH="$restricted_path" "$RENDERER_SH" "$@" > "$CASE_DIR/stdout" 2> "$CASE_DIR/stderr"
+  STATUS=$?
+  STDOUT="$(cat "$CASE_DIR/stdout")"
+  STDERR="$(cat "$CASE_DIR/stderr")"
+}
+
+# A directory of links to the ordinary tools and to no `swiftc`, so a run on it finds everything but
+# the seam.
+tools_without_swiftc() {
+  mkdir -p "$1"
+  for tool in bash env awk grep sed find sort tr cat cut head tail wc basename dirname mktemp rm mkdir \
+    ls uniq expr od date cp mv tee xargs sh test kill sleep printf chmod cmp git; do
+    resolved="$(command -v "$tool" 2> /dev/null || true)"
+    case "$resolved" in
+      /*) ln -sf "$resolved" "$1/$tool" ;;
+    esac
+  done
+}
+
 # --- cases ---
 
 test_real_bundle_passes() {
@@ -352,11 +475,14 @@ test_not_an_app_launches_nothing() {
 
 test_launch_goes_through_open() {
   new_case through-open
-  write_report "$STUBS/report.default" "$FULL_FRAMES"
+  pass_reports
   run_renderer "$APP"
   expect_status 0 || return 1
-  calls="$(cat "$STUBS/open_calls")"
-  [ "$calls" = "-n -g $APP" ] || fail "expected exactly one open call '-n -g $APP', got: $calls" || return 1
+  # The product is the first launch. The control's is the second, and it too goes through open.
+  first_call="$(head -1 "$STUBS/open_calls")"
+  [ "$first_call" = "-n -g $APP" ] || fail "expected the product's launch to be 'open -n -g $APP', got: $first_call" || return 1
+  calls="$(wc -l < "$STUBS/open_calls" | tr -d ' ')"
+  [ "$calls" -eq 2 ] || fail "expected two open calls (the product, then the control), got $calls" || return 1
   [ ! -e "$CASE_DIR/direct_exec" ] || fail "the bundle's executable was run directly"
 }
 
@@ -394,7 +520,7 @@ test_no_pid_appears() {
 
 test_pid_found_by_path_not_pattern() {
   new_case by-path
-  write_report "$STUBS/report.default" "$FULL_FRAMES"
+  pass_reports
   # Not the product: another executable whose command line names the product's path.
   namesake="$(spawn_listed "/usr/bin/other-tool" "$APP_EXE --serve")"
   run_renderer "$APP"
@@ -411,7 +537,7 @@ test_stops_only_its_own_pid() {
     new_case "own-pid-$ending"
     touch "$STUBS/decoy_on_first"
     case "$ending" in
-      pass) write_report "$STUBS/report.default" "$FULL_FRAMES" ;;
+      pass) pass_reports ;;
       runs-out) write_report "$STUBS/report.default" "$IDLE_FRAMES" ;;
       failed-observation)
         write_report "$STUBS/report.default" "$IDLE_FRAMES"
@@ -432,7 +558,7 @@ test_stops_only_its_own_pid() {
 
 test_no_input_sent() {
   new_case no-input
-  write_report "$STUBS/report.default" "$FULL_FRAMES"
+  pass_reports
   run_renderer "$APP"
   expect_status 0 || return 1
   [ ! -e "$STUBS/input_calls" ] || fail "an input tool was called: $(cat "$STUBS/input_calls")" || return 1
@@ -447,12 +573,14 @@ test_sample_writes_only_into_the_run_directory() {
   new_case run-directory
   write_report "$STUBS/report.default" "$IDLE_FRAMES"
   write_report "$STUBS/report.3" "$FULL_FRAMES"
+  # Three observations of the product, which passes on the third, then three of the control.
+  export RENDERER_SH_OBSERVATIONS=3
   run_dir_parent="$CASE_DIR/tmp"
   mkdir -p "$run_dir_parent"
   run_dir_parent="$(cd "$run_dir_parent" && pwd -P)"
   TMPDIR="$run_dir_parent" run_renderer "$APP"
   expect_status 0 || return 1
-  expect_sample_calls 3 || return 1
+  expect_sample_calls 6 || return 1
   while read -r call; do
     case "$call" in
       *" -file $run_dir_parent/"*) ;;
@@ -468,9 +596,16 @@ test_first_matching_observation_passes() {
   write_report "$STUBS/report.1" "$IDLE_FRAMES"
   write_report "$STUBS/report.2" "$LAUNCH_FRAMES"
   write_report "$STUBS/report.3" "$FULL_FRAMES"
+  write_report "$STUBS/report.default" "$IDLE_FRAMES"
   RENDERER_SH_OBSERVATIONS=10 run_renderer "$APP"
   expect_status 0 || return 1
-  expect_sample_calls 3 || return 1
+  # The product's own line names the observation it passed on; the control then takes ten more samples.
+  product_line="$(printf '%s\n' "$STDOUT" | head -1)"
+  case "$product_line" in
+    *"observation 3 "*) ;;
+    *) fail "expected the product to pass on observation 3, got: $product_line" || return 1 ;;
+  esac
+  expect_sample_calls 13 || return 1
   expect_stdout_contains "10" || return 1
 }
 
@@ -553,8 +688,9 @@ test_tree_characters_carry_no_meaning() {
   new_case tree-characters
   for mark in '|' ':' '!'; do
     rm -f "$STUBS/sample_count" "$STUBS/sample_calls"
-    TREE_MARK="$mark" write_report "$STUBS/report.default" "$FULL_FRAMES"
-    run_renderer "$APP"
+    TREE_MARK="$mark" write_report "$STUBS/report.1" "$FULL_FRAMES"
+    write_report "$STUBS/report.default" "$IDLE_FRAMES"
+    RENDERER_SH_OBSERVATIONS=2 run_renderer "$APP"
     expect_status 0 || return 1
     # Each run starts its own process; stop it so the next run's "already running" check is clean.
     rm -f "$STUBS/ps_table" "$STUBS/spawned"
@@ -614,12 +750,12 @@ test_window_runs_out() {
 
 test_pass_line_on_stdout_failures_on_stderr() {
   new_case streams-pass
-  write_report "$STUBS/report.default" "$FULL_FRAMES"
+  pass_reports
   run_renderer "$APP"
   expect_status 0 || return 1
   [ -z "$STDERR" ] || fail "expected empty stderr on a pass, got: $STDERR" || return 1
   lines="$(printf '%s\n' "$STDOUT" | wc -l | tr -d ' ')"
-  [ "$lines" -eq 1 ] || fail "expected one stdout line on a pass, got $lines: $STDOUT" || return 1
+  [ "$lines" -eq 2 ] || fail "expected two stdout lines on a pass (the product's, then the control's), got $lines: $STDOUT" || return 1
   new_case streams-runs-out
   write_report "$STUBS/report.default" "$IDLE_FRAMES"
   RENDERER_SH_OBSERVATIONS=2 run_renderer "$APP"
@@ -677,9 +813,223 @@ test_bound_override_validated() {
   expect_sample_calls 8 || return 1
   # An empty value reads as unset.
   new_case bound-empty
-  write_report "$STUBS/report.default" "$FULL_FRAMES"
+  pass_reports
   RENDERER_SH_OBSERVATIONS="" RENDERER_SH_LAUNCH_TICKS="" run_renderer "$APP"
   expect_status 0 || return 1
+}
+
+# The number after "bound: " on a line of output.
+bound_of() {
+  printf '%s\n' "$1" | sed -n 's/.*bound: \([0-9][0-9]*\) observations.*/\1/p' | head -1
+}
+
+test_real_bundle_passes_with_its_control() {
+  [ -d "$REAL_APP" ] || fail "no bundle at $REAL_APP — run nozoki-mac/assemble.sh first (a missing bundle fails, never skips)" || return 1
+  real_dir="$WORK/real-control"
+  mkdir -p "$real_dir"
+  "$RENDERER_SH" "$REAL_APP" > "$real_dir/stdout" 2> "$real_dir/stderr"
+  STATUS=$?
+  STDOUT="$(cat "$real_dir/stdout")"
+  STDERR="$(cat "$real_dir/stderr")"
+  expect_status 0 || return 1
+  lines="$(printf '%s\n' "$STDOUT" | wc -l | tr -d ' ')"
+  [ "$lines" -eq 2 ] || fail "expected two stdout lines, got $lines: $STDOUT" || return 1
+  product_line="$(printf '%s\n' "$STDOUT" | sed -n 1p)"
+  control_line="$(printf '%s\n' "$STDOUT" | sed -n 2p)"
+  case "$control_line" in
+    *control*) ;;
+    *) fail "the second line is not the control's: $control_line" || return 1 ;;
+  esac
+  [ -n "$(bound_of "$product_line")" ] && [ "$(bound_of "$product_line")" = "$(bound_of "$control_line")" ] \
+    || fail "the two lines do not carry the same bound: $STDOUT" || return 1
+  for line in "$product_line" "$control_line"; do
+    each_pid="$(printf '%s' "$line" | sed -n 's/.*pid \([0-9][0-9]*\).*/\1/p' | head -1)"
+    [ -n "$each_pid" ] || fail "no pid on the line: $line" || return 1
+    if alive "$each_pid"; then
+      fail "pid $each_pid still names a process after the run"
+      return 1
+    fi
+  done
+  [ -z "$(git -C "$ROOT" status --porcelain -- checks/fixtures)" ] \
+    || fail "the run left something under checks/fixtures: $(git -C "$ROOT" status --porcelain -- checks/fixtures)"
+}
+
+test_control_set_must_equal_product_set() {
+  new_case set-differs
+  pass_reports
+  set_entitlements "$STUBS/control_override.xml" '<key>com.apple.security.app-sandbox</key><true/>'
+  run_renderer "$APP"
+  expect_status 1 || return 1
+  expect_no_open_call || return 1
+  expect_stderr_contains "control" || return 1
+  expect_stderr_contains "product" || return 1
+  # Both sets are printed: the read-only entitlement is in the product's alone, the sandbox in both.
+  read_only_lines="$(printf '%s\n' "$STDERR" | grep -c 'com.apple.security.files.user-selected.read-only')"
+  sandbox_lines="$(printf '%s\n' "$STDERR" | grep -c 'com.apple.security.app-sandbox')"
+  [ "$read_only_lines" -eq 1 ] && [ "$sandbox_lines" -eq 2 ] \
+    || fail "expected both sets printed (read-only once, sandbox twice), got $read_only_lines and $sandbox_lines. stderr: $STDERR" || return 1
+}
+
+test_control_signed_ad_hoc_with_the_hardened_runtime() {
+  new_case signing
+  pass_reports
+  run_renderer "$APP"
+  expect_status 0 || return 1
+  [ -s "$STUBS/signing_call" ] || fail "no signing call was made" || return 1
+  signing_call=" $(cat "$STUBS/signing_call") "
+  for wanted in " --sign - " " --options runtime " " --entitlements "; do
+    case "$signing_call" in
+      *"$wanted"*) ;;
+      *) fail "the signing call lacks '$wanted': $signing_call" || return 1 ;;
+    esac
+  done
+  case "$signing_call" in
+    *"idle-shell.app "*) ;;
+    *) fail "the signing call is not on the control: $signing_call" || return 1 ;;
+  esac
+  cmp -s "$STUBS/signed_with.xml" "$STUBS/product_entitlements.xml" \
+    || fail "the entitlements file the control was signed with is not the set read from the product's signature" || return 1
+}
+
+test_product_signature_unreadable_fails_before_any_launch() {
+  new_case product-unreadable
+  pass_reports
+  touch "$STUBS/product_unreadable"
+  run_renderer "$APP"
+  expect_status 1 || return 1
+  expect_stderr_contains "entitlements" || return 1
+  expect_no_open_call || return 1
+  # A signature that carries no entitlements at all leaves nothing to sign the control with.
+  rm -f "$STUBS/product_unreadable"
+  : > "$STUBS/product_entitlements.xml"
+  run_renderer "$APP"
+  expect_status 1 || return 1
+  expect_stderr_contains "empty" || return 1
+  expect_no_open_call || return 1
+}
+
+test_swiftc_absent_fails_before_any_launch() {
+  new_case no-swiftc
+  pass_reports
+  rm -f "$STUBS/swiftc"
+  tools_without_swiftc "$CASE_DIR/tools"
+  run_renderer_with_path "$STUBS:$CASE_DIR/tools" "$APP"
+  expect_status 1 || return 1
+  expect_stderr_contains "swiftc" || return 1
+  expect_no_open_call || return 1
+}
+
+test_product_half_alone_is_not_a_pass() {
+  new_case product-alone
+  pass_reports
+  touch "$STUBS/swiftc_fails"
+  run_renderer "$APP"
+  expect_status 1 || return 1
+  expect_stderr_contains "control" || return 1
+  expect_no_open_call || return 1
+  expect_sample_calls 0 || return 1
+  [ -z "$STDOUT" ] || fail "expected no stdout when the control cannot be built, got: $STDOUT"
+}
+
+test_product_stopped_before_the_control_launches() {
+  new_case product-first
+  pass_reports
+  run_renderer "$APP"
+  expect_status 0 || return 1
+  grep -q '^open 2: first pid [0-9]* stopped$' "$STUBS/events" \
+    || fail "the product's pid was not stopped before the control's open call. events: $(cat "$STUBS/events" 2> /dev/null)"
+}
+
+test_control_pid_not_found_once_fails() {
+  new_case control-no-pid
+  pass_reports
+  echo none > "$STUBS/open_mode.2"
+  RENDERER_SH_LAUNCH_TICKS=2 run_renderer "$APP"
+  expect_status 1 || return 1
+  expect_stderr_contains "no process appeared" || return 1
+  new_case control-two-pids
+  pass_reports
+  echo two > "$STUBS/open_mode.2"
+  run_renderer "$APP"
+  expect_status 1 || return 1
+  expect_stderr_contains "more than one" || return 1
+  # The first spawned pid is the product's, stopped by its own half; the other two are the control's.
+  sed -n '2,$p' "$STUBS/spawned" | while read -r control_pid; do
+    alive "$control_pid" || exit 1
+  done || fail "a control pid was signalled although the run could not tell which was its own" || return 1
+}
+
+test_control_crash_is_not_a_red() {
+  new_case control-crash
+  pass_reports
+  echo 3 > "$STUBS/kill_after"
+  RENDERER_SH_OBSERVATIONS=4 run_renderer "$APP"
+  expect_status 1 || return 1
+  expect_stderr_contains "no longer names a process" || return 1
+  [ -z "$STDOUT" ] || fail "expected no stdout when the control dies, got: $STDOUT"
+}
+
+test_control_at_the_panel_fails() {
+  new_case control-at-panel
+  write_report "$STUBS/report.1" "$FULL_FRAMES"
+  write_report "$STUBS/report.2" "$FULL_FRAMES"
+  write_report "$STUBS/report.default" "$IDLE_FRAMES"
+  RENDERER_SH_OBSERVATIONS=5 run_renderer "$APP"
+  expect_status 1 || return 1
+  expect_sample_calls 2 || return 1
+  expect_stderr_contains "control" || return 1
+  expect_stderr_contains "Open panel" || return 1
+  [ -z "$STDOUT" ] || fail "expected no stdout when the control matches, got: $STDOUT"
+}
+
+test_control_line_states_the_bound() {
+  new_case control-bound-default
+  pass_reports
+  run_renderer "$APP"
+  expect_status 0 || return 1
+  product_line="$(printf '%s\n' "$STDOUT" | sed -n 1p)"
+  control_line="$(printf '%s\n' "$STDOUT" | sed -n 2p)"
+  [ "$(bound_of "$control_line")" = "30" ] && [ "$(bound_of "$product_line")" = "30" ] \
+    || fail "expected both lines to state a bound of 30, got: $STDOUT" || return 1
+  new_case control-bound-override
+  pass_reports
+  RENDERER_SH_OBSERVATIONS=7 run_renderer "$APP"
+  expect_status 0 || return 1
+  product_line="$(printf '%s\n' "$STDOUT" | sed -n 1p)"
+  control_line="$(printf '%s\n' "$STDOUT" | sed -n 2p)"
+  [ "$(bound_of "$control_line")" = "7" ] && [ "$(bound_of "$product_line")" = "7" ] \
+    || fail "expected both lines to state a bound of 7, got: $STDOUT" || return 1
+}
+
+test_nothing_written_under_fixtures() {
+  new_case fixtures-clean
+  pass_reports
+  run_renderer "$APP"
+  expect_status 0 || return 1
+  dirty="$(git -C "$ROOT" status --porcelain -- checks/fixtures)"
+  [ -z "$dirty" ] || fail "the run left something under checks/fixtures: $dirty" || return 1
+  held="$(ls -A "$ROOT/checks/fixtures/idle-shell" | tr '\n' ' ')"
+  [ "$held" = "Info.plist main.swift " ] || fail "checks/fixtures/idle-shell holds: $held" || return 1
+}
+
+test_no_checks_file_matches_a_bundle_file() {
+  [ -d "$REAL_APP" ] || fail "no bundle at $REAL_APP — run nozoki-mac/assemble.sh first (a missing bundle fails, never skips)" || return 1
+  bundle_hashes="$(find "$REAL_APP/Contents" -type f -exec shasum -a 256 {} + | awk '{ print $1 }' | LC_ALL=C sort -u)"
+  [ -n "$bundle_hashes" ] || fail "the bundle holds no file" || return 1
+  tracked="$(git -C "$ROOT" ls-files checks)"
+  [ -n "$tracked" ] || fail "no file is tracked under checks/" || return 1
+  while IFS= read -r tracked_file; do
+    candidate="$ROOT/$tracked_file"
+    [ -f "$candidate" ] && [ ! -L "$candidate" ] && [ -s "$candidate" ] || continue
+    candidate_hash="$(shasum -a 256 "$candidate" | awk '{ print $1 }')"
+    case "
+$bundle_hashes
+" in
+      *"
+$candidate_hash
+"*) fail "$tracked_file has the same bytes as a file in the bundle" || return 1 ;;
+    esac
+  done <<< "$tracked"
 }
 
 # --- runner ---
