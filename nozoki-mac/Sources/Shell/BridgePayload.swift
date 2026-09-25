@@ -2,7 +2,7 @@ import Foundation
 import Surfaces
 
 /// Reads the bridge's JSON payloads. Anything that does not conform reads as the failure value:
-/// not opened, or no entries.
+/// not opened, or no root listing (`nil`).
 enum BridgePayload {
     private struct OpenResult: Decodable {
         let opened: Bool
@@ -14,8 +14,34 @@ enum BridgePayload {
         return result?.opened ?? false
     }
 
-    static func decodeEntries(_ buffer: BridgeBuffer?) -> [Entry] {
-        guard let buffer else { return [] }
-        return (try? JSONDecoder().decode([Entry].self, from: buffer.payload)) ?? []
+    /// The list answer's wire (design § 3 C). `pending` means nothing was read, so it carries no
+    /// listing, and a state, entry or condition this shell does not know throws.
+    private struct ListAnswer: Decodable {
+        let listing: RootListing?
+
+        private enum Key: String, CodingKey {
+            case state, entries, condition
+        }
+
+        private enum StateTag: String, Decodable {
+            case pending, observed, failed
+        }
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: Key.self)
+            switch try container.decode(StateTag.self, forKey: .state) {
+            case .pending:
+                listing = nil
+            case .observed:
+                listing = .observed(try container.decode([Entry].self, forKey: .entries))
+            case .failed:
+                listing = .failed(try container.decode(Condition.self, forKey: .condition))
+            }
+        }
+    }
+
+    static func decodeRoot(_ buffer: BridgeBuffer?) -> RootListing? {
+        guard let buffer else { return nil }
+        return (try? JSONDecoder().decode(ListAnswer.self, from: buffer.payload))?.listing
     }
 }
