@@ -40,17 +40,17 @@ None.
 ### 2.1 § Do's says "show pending as the word *pending*", and the words are CONTENT's — which fixes a different sentence
 - **Drafted into DESIGN.md:** the line as it stands — "Do draw an indicator — a status letter, a
   count, a 'nothing changed', a pending word — only after Nozoki has read the state it stands for,
-  and show pending as the word *pending*, not as a bar or a spinner" (`docs/DESIGN.md:L744-L746`).
+  and show pending as the word *pending*, not as a bar or a spinner" (`docs/DESIGN.md:L745-L747`).
   The lean, for the seat that folds it: keep the rule and drop the string — "show pending as a
   word, in `docs/CONTENT.md`'s wording, not as a bar or a spinner" — which is what RN-14 already
-  says of it ("Pending states carry a word and nothing that moves", `:L916-L917`).
+  says of it ("Pending states carry a word and nothing that moves", `:L917-L918`).
 - **Grounds:** `docs/DESIGN.md` § Components "Status messages" hands the words of every empty,
-  pending and failure state to `docs/CONTENT.md` (`:L667-L673`, "only the words differ, and those
+  pending and failure state to `docs/CONTENT.md` (`:L668-L674`, "only the words differ, and those
   are `docs/CONTENT.md`'s"). CONTENT § Message patterns *Loading* fixes *"Reading this folder."*
   for the pending folder (`docs/CONTENT.md:L314`), and its RN-4 records the collision with this
   line and says it "is raised to the CDO rather than applied silently" (`:L547-L554`). No Review
   Note here and no file under `docs/trail/design/` records that raise arriving:
-  `grep -n 'ellipsis\|full stop\|Reading this' docs/DESIGN.md` finds one line, `:L470`, about a
+  `grep -n 'ellipsis\|full stop\|Reading this' docs/DESIGN.md` finds one line, `:L471`, about a
   clipped row name, and `grep -ni pending docs/trail/design/*.md` finds only a record described as
   pending, never the word on a surface. The same string sits in `docs/fdr.md` R-94 and is raised
   on that document's companion (`docs/fdr_open_issues.md` § 2.1); the NFDR check that verified it
