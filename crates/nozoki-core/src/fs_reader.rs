@@ -5,6 +5,7 @@ use std::collections::VecDeque;
 use std::ffi::OsString;
 use std::fs;
 use std::io;
+use std::os::unix::ffi::OsStrExt;
 use std::path::{Component, Path, PathBuf};
 
 /// What a directory entry is once it is resolved. A link lists as the folder or file it reaches.
@@ -219,12 +220,35 @@ fn resolve(root: &Path, requested: &Path) -> Result<Resolved, Blocked> {
         .map_err(|_| Blocked::outside())
 }
 
-/// The direct entries of the folder at `below_root`, each with its own state.
+/// An entry beside the raw name the operating system reported for it. The reported name is lossy
+/// for a name that is not UTF-8, so the raw bytes are what make the order total.
+struct Listed {
+    raw_name: OsString,
+    entry: Entry,
+}
+
+/// Puts `items` in the order the FDR fixes for a folder's entries: every entry that lists as a folder
+/// first, then everything else. Within a group, names compare on their lowercase forms by code
+/// point, with digits as characters. A tie falls back to the reported name's bytes, and then to the
+/// raw name's bytes. No Unicode normalization is applied. The order comes from this key alone and
+/// never from the order the disk listed the entries in.
+fn order(items: &mut [Listed]) {
+    items.sort_by_cached_key(|item| {
+        (
+            item.entry.kind != EntryKind::Folder,
+            item.entry.name.to_lowercase(),
+            item.entry.name.clone(),
+            item.raw_name.as_bytes().to_vec(),
+        )
+    });
+}
+
+/// The direct entries of the folder at `below_root`, each with its own state, in the FDR's order.
 ///
 /// An error on the directory stream itself carries no name to attach, so it fails the whole answer.
 /// An error on one named entry's kind fails that entry, and its siblings stand.
 fn list_folder(root: &Path, below_root: &Path) -> Result<Vec<Entry>, Blocked> {
-    let mut entries = Vec::new();
+    let mut items = Vec::new();
     for item in fs::read_dir(root.join(below_root)).map_err(|error| Blocked::from(&error))? {
         let item = item.map_err(|error| Blocked::from(&error))?;
         let name = item.file_name();
@@ -238,14 +262,18 @@ fn list_folder(root: &Path, below_root: &Path) -> Result<Vec<Entry>, Blocked> {
             },
             Ok(_) => (EntryKind::File, ItemState::Observed(())),
         };
-        entries.push(Entry {
-            name: name.to_string_lossy().into_owned(),
-            path: path.to_string_lossy().into_owned(),
-            kind,
-            state,
+        items.push(Listed {
+            entry: Entry {
+                name: name.to_string_lossy().into_owned(),
+                path: path.to_string_lossy().into_owned(),
+                kind,
+                state,
+            },
+            raw_name: name,
         });
     }
-    Ok(entries)
+    order(&mut items);
+    Ok(items.into_iter().map(|item| item.entry).collect())
 }
 
 /// The kind and state an entry has when it is a folder or a file that was read.
@@ -652,6 +680,23 @@ mod tests {
 
         assert_eq!(raw_order(vec![low(), high()]), [vec![0xFE], vec![0xFF]]);
         assert_eq!(raw_order(vec![high(), low()]), [vec![0xFE], vec![0xFF]]);
+    }
+
+    #[test]
+    fn test_order_compares_the_reported_name_before_the_raw_bytes() {
+        // Both names lowercase to "\u{FFFD}a". Raw byte order puts `[0x80, b'a']` first, and the
+        // reported names put "\u{FFFD}A" first, so only the reported-name key decides this pair.
+        let lossy = || listed_entry(&[0x80, b'a'], "\u{FFFD}a", EntryKind::File);
+        let valid = || listed_entry("\u{FFFD}A".as_bytes(), "\u{FFFD}A", EntryKind::File);
+
+        assert_eq!(
+            ordered_names(vec![lossy(), valid()]),
+            ["\u{FFFD}A", "\u{FFFD}a"]
+        );
+        assert_eq!(
+            ordered_names(vec![valid(), lossy()]),
+            ["\u{FFFD}A", "\u{FFFD}a"]
+        );
     }
 
     #[test]
