@@ -6,7 +6,8 @@
        signal, and the state a finished SDD carries; the open-issues file is gone.
      Locked = ratified as the source of truth. -->
 **Owner:** CTO · CPO · CDO — one run, three seats
-**Version:** 18 — CPO: nothing — no SDD section, slice or companion item altered by this seat.; CTO: § 4 C-I3 (observable, measured-frames sentence, hosted-runner sentence with the re-cut rule); § 6 `open-a-folder` *Reached when* command half; § 9 TO-7 *costs*; § 10 RC-2 and RC-3 *Still unresolved* (dated parentheses); *Open Questions* (seventh item removed — six remain); SDD Review Notes RN-70 (new); `docs/SDD_open_issues.md` removed, empty of items. Companion items added: none.; CPO: nothing — no SDD section, slice or companion item altered by this seat.
+**Version:** 20 — CPO: nothing — no SDD section, slice or companion item altered by this seat.; CTO: § 3 `fs-reader` (containment check); § 4 C-D1 *Violated by*; § 9 TO-6 *costs*; § 11 R-10 *response*; header Version 19; SDD Review Notes RN-71 (new); `docs/SDD_open_issues.md` removed. Companion items added: none.; CDO: § 4 C-E4 (new clause and *Violated by*); SDD Review Notes RN-72 (new); header Version 19, CDO part. No slice altered — § 6 S-1 and S-3 observable halves read, unchanged. Companion items added: none.; CPO: nothing — no SDD section, slice or companion item altered by this seat.; CTO: nothing — no SDD section, slice or companion item altered by this seat.
+Version 18 — CPO: nothing — no SDD section, slice or companion item altered by this seat.; CTO: § 4 C-I3 (observable, measured-frames sentence, hosted-runner sentence with the re-cut rule); § 6 `open-a-folder` *Reached when* command half; § 9 TO-7 *costs*; § 10 RC-2 and RC-3 *Still unresolved* (dated parentheses); *Open Questions* (seventh item removed — six remain); SDD Review Notes RN-70 (new); `docs/SDD_open_issues.md` removed, empty of items. Companion items added: none.; CPO: nothing — no SDD section, slice or companion item altered by this seat.
 Version 8 — CTO: § 4 C-I3 (bounded window, first-ask-all-three pass, script-fixed and printed bound with no number here, per-ask live-pid check, uncovered yes→no case, control `no` for the whole window, error-on-any-ask, denial-as-proof clause narrowed to where the control reports the denials allowed with the hosted runner's read denial stated as separating nothing, Violated by extended); § 10 RC-1 Still unresolved (pointer to RN-48); § 11 R-8 shows up as and response; Open Questions (fourth item closed and removed — four remain); SDD Review Notes RN-48 (new). Companion items added: none. docs/SDD_open_issues.md removed, empty of items.
 Version 7 — CTO: § 3 SM-4 (what crosses, and owner cell wording); § 4 C-R7 (the staged grant, set equality against registered commands, asset-scheme keying, named pre-1.0.0 uncovered case, Violated by); § 4 C-I3 (every command the build grants); § 6 S-7 Reached when, command half; SDD Review Notes RN-47 (new). Companion items added: none. docs/SDD_open_issues.md removed, empty of items.
 Version 6 — CTO: § 4 C-I3 (observable and Violated by); § 6 open-a-folder Reached when, command half; § 10 RC-1 (new, first re-cut entry); § 11 R-8 shows up as; Open Questions fourth item (closed, replaced by the hosted-runner question); SDD Review Notes RN-45 (new). Companion items added: none. docs/SDD_open_issues.md removed, empty of items.; CPO: § 5 step 4 (E-1's sizing sentence); SDD Review Notes RN-46 (new). Companion items added: none.
@@ -318,7 +319,7 @@ interpret gives a different answer twice over the same settled text. Leave both 
 
 | Part | Lives in | Owns | Must not own |
 |---|---|---|---|
-| `fs-reader` | crates/nozoki-core | Listing a folder's entries and reading a file's bytes, each returning its outcome as data (bytes, or the condition observed); the text rule — bytes decode as UTF-8, with or without a byte-order mark, or begin with a UTF-16 byte-order mark and decode as UTF-16, and the file is text; otherwise it is *cannot-display-as-text* (`docs/SRS.md` FR-10) — no encoding is detected from content, no third encoding is admitted, one undecodable sequence makes the file not text, and an empty file is text (the owner's value, RN-41); the extension map that names a floor language or *plain* (FR-29; the set is § 4 C-I5); the **containment check** — a canonical path, symlinks resolved and percent-decoding applied, is inside the granted folder or it is refused — run before any open, for every path derived from content or from outside | Any write. Git, in any form. Watching. Markdown. Deciding what a change means |
+| `fs-reader` | crates/nozoki-core | Listing a folder's entries and reading a file's bytes, each returning its outcome as data (bytes, or the condition observed); the text rule — bytes decode as UTF-8, with or without a byte-order mark, or begin with a UTF-16 byte-order mark and decode as UTF-16, and the file is text; otherwise it is *cannot-display-as-text* (`docs/SRS.md` FR-10) — no encoding is detected from content, no third encoding is admitted, one undecodable sequence makes the file not text, and an empty file is text (the owner's value, RN-41); the extension map that names a floor language or *plain* (FR-29; the set is § 4 C-I5); the **containment check** — after percent-decoding, the path is walked position by position from the granted folder: at every position *inside* the grant the canonical form is taken, symlinks resolved, and the walk goes on from it; at a position *outside* the grant nothing is read — no `lstat`, no `realpath` — and names are compared as spelled, the walk re-entering the grant only on the folder's own name met from its parent position: as spelled, or in another letter case where the folder is not the root of its volume and that volume ignores letter case, both read from the folder itself — never two names the volume keeps apart, and as spelled wherever it cannot be sure; a walk that ends inside the grant is contained and one that does not is refused — run before any open, for every path derived from content or from outside. Three spellings are refused as outside although they may lead in, because proving it would take a read outside the grant (§ 4 C-D1): a path that leaves by more than one level and returns in another case, a Unicode-normalization difference (§ 11 R-10), and a granted folder that is the root of its volume (the owner's answer, `docs/trail/sdd/cycle-15.md` § 5.1; RN-71) | Any write. Git, in any form. Watching. Markdown. Deciding what a change means |
 | `git-reader` | crates/nozoki-core | The **Git port** — `probe(folder)` answering `root` or `plain` with discovery disabled and never a path above the folder (FR-33); on a root only, `state()` (branch or detached identifier, the short status word), `status()` (changed and staged entries), `diff(kind, path)` and `walk(tips, window)` (beyond v1) — every method read-only and returning plain data — and its one adapter, libgit2 linked without its HTTPS and SSH transports. The installed-`git` adapter, run with `--no-optional-locks`, is the port's standing substitute and is not built ahead of the risk that needs it (§ 11 R-1) | Any mutating call — checkout, index write, ref update, lock file. Spawning a process. The model. A file outside Git's own on-disk layout |
 | `watcher` | crates/nozoki-core | One FSEvents subscription on the granted folder, the root's `.git` entry included, delivering coalesced change events as paths; nothing else | Reading content. Interpreting a change. Any write |
 | `folder-model` | crates/nozoki-core | The in-memory model of exactly one folder (FR-1): the tree, the selection and expansion, the open file, the Git state where the root finding says `root` and none where it says `plain`; every read held as an item carrying an `ItemState` (§ 4 C-I1); the **reducer** that applies reader results and watcher events and keeps the reader's place (FR-27); **the fill of the open `FileView`** — the model calls `highlighter` for a text file in a floor language and `markdown-renderer` for a Markdown file, on the bytes `fs-reader` returned, and holds a call that fails as that item's `failed(condition)`, never a panic (§ 4 C-I1; `docs/SRS.md` FR-8, FR-30, DR-6; drafted at RN-64, confirmed by the owner at `docs/trail/sdd/cycle-11.md` § 2.4 — RN-65); **replace-whole** — a new folder replaces the model as a value, never mutates it (NFR-12); the projections the surfaces draw; and the plain Rust API the host wraps and the harness calls (SM-5) | I/O of any kind. Any Apple framework. Own state. Drawing |
@@ -776,7 +777,9 @@ the UXD binds on every surface, is the CDO's clause and follows them.
 - **C-D1.** No identity exists — no account, no user record, no device identifier (NFR-7) — and
   authorization is the operating system's: the sandbox grant to the folder the user chose is the
   whole of the product's authority over it, and the product holds no other. *Violated by:* any
-  identifier, and by any read outside the granted folder and the app's own container.
+  identifier, and by any read outside the granted folder and the app's own container — an
+  `lstat` or `realpath` taken to canonicalize a position outside the grant included, which is why
+  § 3 `fs-reader`'s containment check compares spellings there and reads nothing (RN-71).
 - **C-D2.** The only writes the product performs are `own-state`'s and C-I2's log, both inside
   the app's container; nothing is written under the granted folder under any operation, and
   nothing of the folder's content is persisted anywhere (NFR-5, FR-21, DR-1, DR-5; AC-13).
@@ -850,8 +853,19 @@ and no condition here fixes either.
   (`docs/CONTENT.md` § *Tone*, "A file that cannot be shown as text"), and § 11 R-3's Git item is
   the second case (RN-43). Never a cause the tool did not observe and never internal text
   (UX-I6); the wording is `docs/CONTENT.md`'s (§ *Message patterns*) and the catalogue is C-I2's.
+  A path the containment check refuses is one thing the tool observed: the spelled path left the
+  grant and no spelling § 3 `fs-reader` accepts brought it back, and nothing was read past that
+  point. So a tree row, or an image's placeholder, for a refused path carries `docs/CONTENT.md`'s
+  one outside sentence (§ *Message patterns* → *Partial*, "outside the folder you opened") — for
+  the three spellings § 3 names as refused although they may lead in as much as for a path that
+  does lead out. For those three the sentence is wrong about where the link leads; that is the
+  owner's call (`docs/trail/sdd/cycle-15.md` § 5.1) and the price of C-D1, and no observable half
+  in § 6 tells them from a true outside, because someone watching the surface cannot without the
+  read the tool does not make. No further sentence exists for them: a wording is
+  `docs/CONTENT.md`'s to change, never this document's (RN-72).
   *Violated by:* a message naming a cause the tool inferred, a string that is not a catalogue
-  sentence, a next step named where the tool observed that nothing can be done.
+  sentence, a next step named where the tool observed that nothing can be done, a sentence written
+  for a refused-though-inward spelling that the catalogue does not carry.
 - **C-E5.** **Read-only is the identity, not a mode.** No editing affordance exists, enabled or
   disabled; no framing implies an editable mode elsewhere; no undo or confirmation model exists;
   closing asks nothing; the only state the reader can change is the tool's own preferences, each
@@ -2124,7 +2138,9 @@ been weighed. For each, say what undoing it would take if it turned out wrong.>
   the network off (UX-I12), with no asset scheme, no handler and no policy to widen; *costs* a
   hostile bitmap decoded inside the process the wall covers (§ 11 R-4), and a containment check
   that must be right about `..`, symlinks, percent-encoding and Unicode normalization, run twice
-  (SM-7); *undoing it costs* an out-of-process decoder — a second process, under the rule (§ 2,
+  (SM-7) — where *right* at a position outside the grant means refused as outside, never taken
+  for inside, since the check reads nothing there (§ 3 `fs-reader`; RN-71); *undoing it costs* an
+  out-of-process decoder — a second process, under the rule (§ 2,
   the second row's condition) — or the placeholder returning for every image.
 - **TO-7:** No harness drives the AppKit views (C-I3) — *buys* a proof that runs in CI on macOS
   with no UI driver and no Xcode project; *costs* the shell's actual use of the bridge being
@@ -2415,8 +2431,11 @@ A risk with no trigger and no response is an observation.>
 - **R-10:** The containment check is wrong about one encoding — `..` after percent-decoding, a
   symlink out of the folder, a Unicode normalization that compares unequal — *shows up as* the
   `..` and symlink-out fixtures yielding bytes instead of the placeholder; *response* the check
-  runs on the canonical path, symlinks resolved and after decoding, has one implementation, and
-  is called at render and again at every asset request (SM-7).
+  runs as § 3 `fs-reader` defines it — after decoding, the canonical form with symlinks resolved
+  at every position inside the grant, and spellings compared with nothing read at a position
+  outside it, so a normalization difference met outside is refused as outside and never taken for
+  inside — has one implementation, and is called at render and again at every asset request
+  (SM-7). The response moves with § 3's definition (RN-71).
 - **R-11:** TextKit's layout of an attachment or a text block moves with a macOS release — *shows
   up as* UX-I12's layout fixtures (an image or its placeholder in the flow of the prose; code on
   its own surface) mis-laid on a macOS the floor admits, in the release walk; *response* the
@@ -3972,6 +3991,82 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   5.2; `nozoki-mac/Sources/Shell/LaunchFlow.swift:L35-L37`; `checks/renderer.sh:L44-L61`; GitHub
   Actions run 35988399477 at `nozoki@37a962d`; `nozoki@153f5a1`; `docs/trail/sdd/cycle-8.md`
   § 5.1; `docs/architecture_open_issues.md` § 3.2; RN-48, RN-55, RN-60, RN-66, RN-68)*.
+- **RN-71:** *(CTO)* *(changed)* The companion's § 5.1 folded — raised from downstream by the PM
+  on 2026-09-25, answered by a `companion-self-answer` run — and the file removed. **§ 3
+  `fs-reader`'s containment check** no longer reads "a canonical path, symlinks resolved and
+  percent-decoding applied, is inside the granted folder or it is refused", which left open
+  whether reaching the canonical form may touch a position outside the grant. It now says where
+  the canonical form is taken: at every position inside the grant, with symlinks resolved; at a
+  position outside it nothing is read — no `lstat`, no `realpath` — and names are compared as
+  spelled, the walk re-entering the grant only on the folder's own name met from its parent
+  position, as spelled or, under two conditions both read from the folder itself (not the root of
+  its volume; that volume ignores letter case), in another letter case — never two names the
+  volume keeps apart, and as spelled wherever the check cannot be sure. Three spellings are named
+  as refused although they may lead in — more than one level out and back in another case, a
+  Unicode-normalization difference, a granted folder that is the root of its volume — because
+  proving otherwise takes a read outside the grant. So `back → ../<NAME>` on a case-folding
+  volume re-enters the folder and ends as a cycle, and `../<NAME>/docs` is read as its target;
+  the three named cases stay outside and their row's sentence stays wrong about where the link
+  leads, C-D1 winning there. **§ 4 C-D1**'s *Violated by* names the canonicalizing read outside
+  the grant as one of the reads it forbids, which is the ground the § 3 definition rests on.
+  **§ 9 TO-6**'s *costs* keeps "right about … Unicode normalization" and says what *right* means
+  outside the grant — refused, never taken for inside. **§ 11 R-10**'s response describes the
+  check as § 3 does and says it moves with § 3, so the two cannot drift again. Re-verified before
+  writing, not taken from the answer: `crates/nozoki-core/src/fs_reader.rs:L170-L177` documents
+  the walk as one lexical position, "nothing is touched" while it lies outside the root, `lstat`
+  only on a name whose position lies inside — the reader already meets the definition on every
+  spelling but the one re-entry spelling the answer adds; `docs/nfdr.md:L130-L134` QC-6 states
+  the check in the old words ("on the canonical path, symlinks resolved and after decoding") with
+  SM-7's one-implementation clause; SM-7 (§ 3, the seams) is unchanged — one implementation, two
+  callers. *Because* the SDD defined the check on a canonical form it did not say how to reach,
+  and the one way to reach it for a path outside the grant is a read C-D1 and `docs/nfdr.md`
+  QC-35 forbid, so the two settled statements disagreed on exactly one spelling and the fold picks
+  the reading under which both hold (the self-answer's ground, `docs/trail/sdd/self_answer-26.md`
+  § 5.1); and a definition that names its own refused cases is one a fixture can be written
+  against, where "canonical" alone was not. What does not move, and why: § 2, § 7 and the cut,
+  because a check's reach redrawn inside one part changes no shape, seam, order or slice; SM-7,
+  because one implementation serving two callers is still the whole of it; § 4 C-D3, because
+  "passes `fs-reader`'s containment check before any open" is true of the check as now defined;
+  no § 10 entry, because no command half is unmet as written and the SRS did not move; the SRS
+  boundary, because FR-32 and NFR-16 ask for containment and neither says how the form is
+  reached. What a link row *says* in the three refused cases is the CDO's ground (§ 4 C-E4, the
+  observable halves) and is raised to that seat in this run, not written here. **Downstream:**
+  `docs/nfdr.md` QC-6 is owed re-derivation from § 3 as it now reads, by the NFDR's own rule for
+  an input moving beneath it, and is the Principal Architect's; no item is opened at
+  `docs/architecture_open_issues.md`, per the self-answer's reasoning that there was nothing to
+  re-derive until the fold landed. **The companion** is consumed: its one item is the whole of
+  it, the trail copy stands at `docs/trail/sdd/cycle-15.md` (`diff` against
+  `docs/SDD_open_issues.md` printed nothing before this turn's edits), and the file is removed,
+  empty of items, per its own header's rule — no file is the done signal *(re: § 3 `fs-reader`;
+  § 4 C-D1; § 9 TO-6; § 11 R-10; source: `docs/trail/sdd/cycle-15.md` § 5.1;
+  `docs/trail/sdd/self_answer-26.md` § 5.1; `crates/nozoki-core/src/fs_reader.rs:L170-L177`;
+  `docs/nfdr.md:L130-L134`, QC-35 at `:L579-L580`; `docs/fdr.md` R-34, R-151, R-152; SRS FR-32,
+  NFR-16; UXD UX-I4; RN-70)*.
+- **RN-72:** *(CDO)* *(changed)* § 4 C-E4 now says what a link row or an image's placeholder
+  carries for a path the containment check refuses, the three refused-though-inward spellings
+  § 3 `fs-reader` names among them: the refusal is a thing the tool observed — the spelled path
+  left the grant, no accepted spelling brought it back, nothing was read past that point — so the
+  row carries `docs/CONTENT.md`'s one outside sentence (§ *Message patterns* → *Partial*), wrong
+  about where the link leads in those three cases by the owner's call, and no observable half in
+  § 6 separates them from a true outside. *Because* the CTO's fold (RN-71) raised to this seat
+  whether any observable half or experience condition states what the row *says* there, and none
+  did: § 6 `open-a-folder`'s observable half binds "marked with what the tool observed" (UXD
+  UX-S2 Error), `read-markdown`'s binds "a placeholder … saying that content outside the folder is
+  not fetched" (UX-I12), and C-E4 bound "never a cause the tool did not observe" — and a builder
+  holding those beside § 3's "refused as outside although they may lead in" could read the outside
+  sentence as an inferred cause and write a fourth sentence the catalogue does not carry. The
+  clause closes that reading in the one place every slice inherits, and adds it to *Violated
+  by*. What this seat did not do, and why: no edit to `open-a-folder`'s or `read-markdown`'s
+  observable half — "what the tool observed" and "outside the folder" are each stated on the
+  check's verdict, not on the volume's truth, and stay true as written; no companion item — the
+  owner settled the sentence's being wrong there at the same trail item and C-D1 winning is not a
+  two-position disagreement; no wording written — the sentence is `docs/CONTENT.md`'s, and UX-I4
+  ("the view never lies") is not reopened here: a gap in the UXD found in this run is that seat's
+  in another run (§ 12), and the owner's answer already holds the tension. *Traces to* unchanged:
+  no slice gains a UXD section. *(re: § 4 C-E4; § 6 S-1 and S-3 *Reached when*, observable
+  halves — read, unchanged; source: `docs/trail/sdd/cycle-15.md` § 5.1; § 3 `fs-reader`; § 4
+  C-D1; `docs/CONTENT.md` § *Message patterns* → *Partial*, § *Terminology* "link";
+  `docs/UXD.md` UX-S2 Error, UX-I4, UX-I12; `docs/fdr.md` R-34, R-152; RN-71)*.
 
 ## Open Questions
 
