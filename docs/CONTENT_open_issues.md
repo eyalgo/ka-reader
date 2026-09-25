@@ -62,6 +62,33 @@ None.
   product's words is the verbal language's call, and it has not made it.
 - **If a document has to be written:** none. `CONTENT.md` § Message patterns, Partial takes the
   sentences, or others in their place, as examples. `product-content` is the tool.
-- **Answer:** <the owner fills this in>
+- **Answer:** The verbal language takes all four cases: two sentences as the shell has them, and two
+  replaced. § Message patterns, Partial gains them as tree-row examples beside *"Nozoki can't read
+  this folder."*:
+  - outside — *"This link leads outside the folder you opened, so Nozoki doesn't read it."*
+    (**replaced**). On a tree row, *this folder* already means the row's own folder in the sibling
+    example, so the shell's sentence says two things with one phrase. Its *"Nozoki reads nothing
+    outside it"* also claims more than is true, because Nozoki reads its own remembered state from
+    outside the folder (`docs/UXD.md` UX-I9). That is the shape RN-16 corrected;
+  - loops — *"This link loops back on itself, so Nozoki can't read it."* (**as the shell has it**);
+  - missing target — *"This link leads to something that isn't there."* (**as the shell has it**);
+  - too many links — *"This link leads through more links than Nozoki follows."* (**replaced**).
+    *Too many* describes the reader's own links as failing the tool, which is the *Strict* row of
+    § Voice. The replacement puts the limit on Nozoki, and it states no number, because no document
+    fixes the bound: it is a constant in `crates/nozoki-core/src/fs_reader.rs:L56`, and § Grammar
+    allows only numbers counted from the folder.
+
+  None of the four names a next step. The rest of the tree is the way on, and it is already on screen
+  (`docs/SDD.md` § 4 C-E4). Two consequences go with the fold:
+  - § Terminology gains **link**, for a symbolic link in the folder. *Symlink* is rejected as an
+    abbreviation the product never expands. *Alias* is rejected because on macOS it names Finder's
+    own, different thing.
+  - § Accessibility of text's reading bar has to admit *link*, which none of its three sources holds.
+    `README.md` does not use the word. The Partial example already there, with *image*, *loaded* and
+    *fetches*, also falls outside the bar as written. So the fold adds a fourth source, *a word
+    § Terminology fixes*, and checks the Partial examples against it.
+
+  § Traceability's UX-S2 one-entry row names the link cases. Reasoning:
+  `docs/trail/content/self_answer-3.md`.
 
 **How it closes.** `product-content` folds it on its next run exactly as it folds §§ 1–2.
