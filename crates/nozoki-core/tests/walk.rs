@@ -13,7 +13,9 @@
 
 use std::path::{Path, PathBuf};
 
-use nozoki_core::{EntryKind, Listing, OpenedFolder, list_tree, open_folder};
+use std::collections::HashSet;
+
+use nozoki_core::{EntryKind, ItemState, OpenedFolder, list_tree, open_folder};
 
 const FIXTURES: [&str; 2] = ["plain", "repo"];
 
@@ -23,22 +25,32 @@ struct Walk {
     root_has_entries: bool,
 }
 
-/// Calls `list_tree` on `path`, then on each entry it returns. A folder entry is walked in turn,
-/// and a file or a link is listed once and not descended. A Refused or Failed result stops
-/// nothing: it has no entries to go on to.
-fn walk_from(opened: &OpenedFolder, path: &str, calls: &mut usize) -> bool {
+/// Calls `list_tree` on `path`, then on each entry it returns. A folder entry is walked in turn, and
+/// every other entry is listed once and not descended. A failed answer stops nothing: it has no
+/// entries to go on to. No path is listed twice, so folder links that reach each other end.
+fn walk_from(
+    opened: &OpenedFolder,
+    path: &str,
+    listed: &mut HashSet<String>,
+    calls: &mut usize,
+) -> bool {
+    if !listed.insert(path.to_string()) {
+        return false;
+    }
     *calls += 1;
-    let Listing::Listed(entries) = list_tree(opened, path) else {
+    let ItemState::Observed(entries) = list_tree(opened, path) else {
         return false;
     };
     for entry in &entries {
         match entry.kind {
             EntryKind::Folder => {
-                walk_from(opened, &entry.path, calls);
+                walk_from(opened, &entry.path, listed, calls);
             }
-            EntryKind::File | EntryKind::Symlink => {
-                *calls += 1;
-                list_tree(opened, &entry.path);
+            EntryKind::File => {
+                if listed.insert(entry.path.clone()) {
+                    *calls += 1;
+                    list_tree(opened, &entry.path);
+                }
             }
         }
     }
@@ -48,7 +60,8 @@ fn walk_from(opened: &OpenedFolder, path: &str, calls: &mut usize) -> bool {
 fn walk_folder(folder: &Path) -> Option<Walk> {
     let opened = open_folder(folder)?;
     let mut calls = 0;
-    let root_has_entries = walk_from(&opened, "", &mut calls);
+    let mut listed = HashSet::new();
+    let root_has_entries = walk_from(&opened, "", &mut listed, &mut calls);
     Some(Walk {
         calls,
         root_has_entries,

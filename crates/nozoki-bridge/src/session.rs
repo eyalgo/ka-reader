@@ -5,7 +5,7 @@
 use std::path::PathBuf;
 use std::sync::{Mutex, PoisonError};
 
-use nozoki_core::{EntryKind, Listing, OpenedFolder, list_tree, open_folder};
+use nozoki_core::{Condition, EntryKind, ItemState, OpenedFolder, list_tree, open_folder};
 use serde::Serialize;
 
 /// What `open_folder` answers across the bridge.
@@ -14,13 +14,12 @@ pub struct OpenResult {
     pub opened: bool,
 }
 
-/// An entry's kind on the wire: `"folder"`, `"file"` or `"symlink"`.
+/// An entry's kind on the wire: `"folder"` or `"file"`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "lowercase")]
 pub enum KindDto {
     Folder,
     File,
-    Symlink,
 }
 
 impl From<EntryKind> for KindDto {
@@ -28,17 +27,75 @@ impl From<EntryKind> for KindDto {
         match kind {
             EntryKind::Folder => Self::Folder,
             EntryKind::File => Self::File,
-            EntryKind::Symlink => Self::Symlink,
         }
     }
 }
 
-/// One listed entry on the wire: exactly `name`, `path` and `kind`.
+/// A failure's condition on the wire, one string from the closed set: `"unreadable"`, `"outside"`,
+/// `"cycle"`, `"missing"`, `"not_a_folder"` or `"too_many_links"`. It carries no text and no path.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ConditionDto {
+    Unreadable,
+    Outside,
+    Cycle,
+    Missing,
+    NotAFolder,
+    TooManyLinks,
+}
+
+impl From<Condition> for ConditionDto {
+    fn from(condition: Condition) -> Self {
+        match condition {
+            Condition::Unreadable => Self::Unreadable,
+            Condition::Outside => Self::Outside,
+            Condition::Cycle => Self::Cycle,
+            Condition::Missing => Self::Missing,
+            Condition::NotAFolder => Self::NotAFolder,
+            Condition::TooManyLinks => Self::TooManyLinks,
+        }
+    }
+}
+
+/// An entry's state on the wire, tagged by `state`. `condition` appears only beside `"failed"`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(tag = "state", rename_all = "snake_case")]
+pub enum EntryStateDto {
+    Pending,
+    Observed,
+    Failed { condition: ConditionDto },
+}
+
+impl From<ItemState<()>> for EntryStateDto {
+    fn from(state: ItemState<()>) -> Self {
+        match state {
+            ItemState::Pending => Self::Pending,
+            ItemState::Observed(()) => Self::Observed,
+            ItemState::Failed(condition) => Self::Failed {
+                condition: condition.into(),
+            },
+        }
+    }
+}
+
+/// One listed entry on the wire: `name`, `path`, `kind` and `state`, and `condition` when failed.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct EntryDto {
     pub name: String,
     pub path: String,
     pub kind: KindDto,
+    #[serde(flatten)]
+    pub state: EntryStateDto,
+}
+
+/// What `list_tree` answers across the bridge, tagged by `state`: `observed` with its entries in
+/// core's order, `failed` with a condition, or `pending` when nothing was read.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(tag = "state", rename_all = "snake_case")]
+pub enum ListAnswerDto {
+    Observed { entries: Vec<EntryDto> },
+    Failed { condition: ConditionDto },
+    Pending,
 }
 
 /// The session: at most one opened folder, starting empty, replaced whole by a successful open.
@@ -75,22 +132,30 @@ impl Session {
         OpenResult { opened }
     }
 
-    /// Lists `path` inside the opened folder. `Refused`, `Failed`, and no folder open are all `[]`.
-    pub fn list(&self, path: &str) -> Vec<EntryDto> {
+    /// Lists `path` inside the opened folder. Core's item is carried over as it is: `observed`
+    /// with the entries, or `failed` with its condition. No folder open is `pending`, because
+    /// nothing was read.
+    pub fn list(&self, path: &str) -> ListAnswerDto {
         let guard = self.opened.lock().unwrap_or_else(PoisonError::into_inner);
         let Some(folder) = guard.as_ref() else {
-            return Vec::new();
+            return ListAnswerDto::Pending;
         };
         match list_tree(folder, path) {
-            Listing::Listed(entries) => entries
-                .into_iter()
-                .map(|entry| EntryDto {
-                    name: entry.name,
-                    path: entry.path,
-                    kind: entry.kind.into(),
-                })
-                .collect(),
-            Listing::Refused | Listing::Failed(_) => Vec::new(),
+            ItemState::Observed(entries) => ListAnswerDto::Observed {
+                entries: entries
+                    .into_iter()
+                    .map(|entry| EntryDto {
+                        name: entry.name,
+                        path: entry.path,
+                        kind: entry.kind.into(),
+                        state: entry.state.into(),
+                    })
+                    .collect(),
+            },
+            ItemState::Failed(condition) => ListAnswerDto::Failed {
+                condition: condition.into(),
+            },
+            ItemState::Pending => ListAnswerDto::Pending,
         }
     }
 }

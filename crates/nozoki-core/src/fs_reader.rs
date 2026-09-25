@@ -1,69 +1,64 @@
 //! fs-reader: turns a requested path into a location known to lie inside a canonical root, and
-//! lists that location's direct entries.
+//! lists that location's direct entries, each with its own state.
 
 use std::collections::VecDeque;
 use std::ffi::OsString;
-use std::fmt;
 use std::fs;
 use std::io;
 use std::path::{Component, Path, PathBuf};
 
-/// What a directory entry is, read without following a link.
+/// What a directory entry is once it is resolved. A link lists as the folder or file it reaches.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum EntryKind {
     Folder,
     File,
-    Symlink,
+}
+
+/// Why an item could not be read, drawn from a closed set. It carries no text and no path.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Condition {
+    /// The operating system refused the read, or the read failed in a way this set does not name.
+    Unreadable,
+    /// The path or link target leaves the opened folder. Nothing outside it was touched.
+    Outside,
+    /// A link whose resolution loops back on itself.
+    Cycle,
+    /// Something on the path is not there.
+    Missing,
+    /// A file was listed, or a path went through one.
+    NotAFolder,
+    /// A chain of links longer than [`MAX_LINK_HOPS`], with no cycle found.
+    TooManyLinks,
+}
+
+/// Where an item stands: not read yet, read, or failed to read for a named reason.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ItemState<T> {
+    Pending,
+    Observed(T),
+    Failed(Condition),
 }
 
 /// One direct entry of a listed folder.
+///
+/// A folder is `Pending`, and a file is `Observed`. An entry that failed is always a `File`.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Entry {
     pub name: String,
     pub path: String,
     pub kind: EntryKind,
+    pub state: ItemState<()>,
 }
 
-/// Why a listing inside the root could not be produced.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum Failure {
-    /// The operating system refused a read. `os_error` is its own text, which never names a path.
-    Io {
-        kind: io::ErrorKind,
-        os_error: String,
-    },
-    /// A chain of symbolic links was followed further than [`MAX_LINK_HOPS`], as a cycle would be.
-    LinkLimit,
-}
-
-impl Failure {
-    fn from_io(error: &io::Error) -> Self {
-        Self::Io {
-            kind: error.kind(),
-            os_error: error.to_string(),
-        }
-    }
-}
-
-impl fmt::Display for Failure {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Io { os_error, .. } => formatter.write_str(os_error),
-            Self::LinkLimit => formatter.write_str("too many levels of symbolic links"),
-        }
-    }
-}
-
-/// The three outcomes of listing one requested path.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum Listing {
-    Listed(Vec<Entry>),
-    Refused,
-    Failed(Failure),
-}
-
-/// The most symbolic links one requested path may pass through before it is called a cycle.
+/// The most symbolic links one requested path may pass through before the answer is `TooManyLinks`.
 const MAX_LINK_HOPS: usize = 32;
+
+/// The text a log line carries for a path that leaves the opened folder. The operating system was
+/// never asked, so there is no error text of its own.
+const OUTSIDE_TEXT: &str = "the path leaves the opened folder";
+
+/// The text a log line carries when the hop bound is passed.
+const TOO_MANY_LINKS_TEXT: &str = "too many levels of symbolic links";
 
 /// One step of a requested path, still to be taken.
 enum Step {
@@ -71,31 +66,68 @@ enum Step {
     Name(OsString),
 }
 
-/// Why a requested path did not resolve to a location that can be listed.
-enum Blocked {
-    Outside,
-    Failed(Failure),
+/// Why a requested path did not resolve to a location that can be listed. `text` is what a log
+/// line carries: the operating system's own error text, or a fixed phrase. It never names a path.
+struct Blocked {
+    condition: Condition,
+    text: String,
+}
+
+impl Blocked {
+    fn outside() -> Self {
+        Self {
+            condition: Condition::Outside,
+            text: OUTSIDE_TEXT.to_string(),
+        }
+    }
+
+    fn too_many_links() -> Self {
+        Self {
+            condition: Condition::TooManyLinks,
+            text: TOO_MANY_LINKS_TEXT.to_string(),
+        }
+    }
 }
 
 impl From<&io::Error> for Blocked {
     fn from(error: &io::Error) -> Self {
-        Self::Failed(Failure::from_io(error))
+        Self {
+            condition: condition_for(error.kind()),
+            text: error.to_string(),
+        }
     }
+}
+
+/// The condition an I/O error kind is reported as. A kind this set does not name is `Unreadable`.
+fn condition_for(kind: io::ErrorKind) -> Condition {
+    match kind {
+        io::ErrorKind::NotFound => Condition::Missing,
+        io::ErrorKind::NotADirectory => Condition::NotAFolder,
+        _ => Condition::Unreadable,
+    }
+}
+
+/// A location resolution reached, below the root, and what the last step found there.
+struct Resolved {
+    below_root: PathBuf,
+    kind: EntryKind,
 }
 
 /// Lists the direct entries of `requested`, a path relative to `root` or absolute, where `root` is
 /// a canonical folder path.
 ///
-/// A path that resolves outside `root` is [`Listing::Refused`], and nothing outside `root` is
-/// touched to decide that. A path inside `root` that cannot be listed is [`Listing::Failed`], and
-/// only then is one record logged at `warn`, carrying the operating system's error text and no path.
-pub fn list(root: &Path, requested: &str) -> Listing {
-    match resolve(root, requested).and_then(|below_root| list_folder(root, &below_root)) {
-        Ok(entries) => Listing::Listed(entries),
-        Err(Blocked::Outside) => Listing::Refused,
-        Err(Blocked::Failed(failure)) => {
-            log::warn!("fs-reader: list failed: {failure}");
-            Listing::Failed(failure)
+/// The answer is `Observed` with the entries, or `Failed` with the condition that stopped it. It is
+/// never `Pending`. A path that resolves outside `root` is `Failed(Outside)`, and nothing outside
+/// `root` is touched to decide that. One record is logged at `warn` for a failed answer, prefixed
+/// `fs-reader: list failed: `, and one for each entry that failed, prefixed
+/// `fs-reader: entry failed: `. Each carries the operating system's error text or a fixed phrase,
+/// and no path.
+pub fn list(root: &Path, requested: &str) -> ItemState<Vec<Entry>> {
+    match resolve(root, Path::new(requested)).and_then(|at| list_folder(root, &at.below_root)) {
+        Ok(entries) => ItemState::Observed(entries),
+        Err(blocked) => {
+            log::warn!("fs-reader: list failed: {}", blocked.text);
+            ItemState::Failed(blocked.condition)
         }
     }
 }
@@ -112,18 +144,22 @@ fn steps_of(path: &Path) -> VecDeque<Step> {
         .collect()
 }
 
-/// Resolves `requested` to a location, returned as its path below `root`.
+/// Resolves `requested` to a location, returned as its path below `root`, with the kind of what the
+/// last step found.
 ///
 /// The walk keeps one lexical position: the root for a relative path, `/` for an absolute one, and
 /// `/` again for a link's absolute target. A `..` moves it up lexically. While the position lies
 /// outside the root, a name moves it down lexically and **nothing is touched**. Only a name whose
 /// position already lies inside the root is read with `lstat`, and a link's target with
 /// `read_link`. So a path that leaves the root and names it again resolves inside it, and one whose
-/// walk ends outside is refused, without a filesystem call on any path outside the root. An absolute
-/// path spelled through a symlinked ancestor of the root never lexically meets the canonical root,
-/// so it is refused. No caller across the IPC boundary sends an absolute path.
-fn resolve(root: &Path, requested: &str) -> Result<PathBuf, Blocked> {
-    let requested = Path::new(requested);
+/// walk ends outside is `Outside`, without a filesystem call on any path outside the root. An
+/// absolute path spelled through a symlinked ancestor of the root never lexically meets the
+/// canonical root, so it is `Outside`. No caller across the IPC boundary sends an absolute path.
+///
+/// A link entry is classified by resolving its own path here, so the containment check has one
+/// implementation. The kind is the one the last step's `lstat` reported. A walk that ends on the
+/// root, or on a `..`, reached a folder.
+fn resolve(root: &Path, requested: &Path) -> Result<Resolved, Blocked> {
     let mut position = if requested.is_absolute() {
         PathBuf::from("/")
     } else {
@@ -131,10 +167,12 @@ fn resolve(root: &Path, requested: &str) -> Result<PathBuf, Blocked> {
     };
     let mut pending = steps_of(requested);
     let mut links_followed = 0;
+    let mut kind = EntryKind::Folder;
     while let Some(step) = pending.pop_front() {
         match step {
             Step::Parent => {
                 position.pop();
+                kind = EntryKind::Folder;
             }
             Step::Name(name) => {
                 let candidate = position.join(&name);
@@ -147,7 +185,7 @@ fn resolve(root: &Path, requested: &str) -> Result<PathBuf, Blocked> {
                 if metadata.is_symlink() {
                     links_followed += 1;
                     if links_followed > MAX_LINK_HOPS {
-                        return Err(Blocked::Failed(Failure::LinkLimit));
+                        return Err(Blocked::too_many_links());
                     }
                     let target =
                         fs::read_link(&candidate).map_err(|error| Blocked::from(&error))?;
@@ -162,6 +200,11 @@ fn resolve(root: &Path, requested: &str) -> Result<PathBuf, Blocked> {
                         io::ErrorKind::NotADirectory,
                     )));
                 } else {
+                    kind = if metadata.is_dir() {
+                        EntryKind::Folder
+                    } else {
+                        EntryKind::File
+                    };
                     position = candidate;
                 }
             }
@@ -169,29 +212,54 @@ fn resolve(root: &Path, requested: &str) -> Result<PathBuf, Blocked> {
     }
     position
         .strip_prefix(root)
-        .map(Path::to_path_buf)
-        .map_err(|_| Blocked::Outside)
+        .map(|below_root| Resolved {
+            below_root: below_root.to_path_buf(),
+            kind,
+        })
+        .map_err(|_| Blocked::outside())
 }
 
+/// The direct entries of the folder at `below_root`, each with its own state.
+///
+/// An error on the directory stream itself carries no name to attach, so it fails the whole answer.
+/// An error on one named entry's kind fails that entry, and its siblings stand.
 fn list_folder(root: &Path, below_root: &Path) -> Result<Vec<Entry>, Blocked> {
     let mut entries = Vec::new();
     for item in fs::read_dir(root.join(below_root)).map_err(|error| Blocked::from(&error))? {
         let item = item.map_err(|error| Blocked::from(&error))?;
-        let file_type = item.file_type().map_err(|error| Blocked::from(&error))?;
         let name = item.file_name();
+        let path = below_root.join(&name);
+        let (kind, state) = match item.file_type() {
+            Err(error) => failed_entry(&Blocked::from(&error)),
+            Ok(file_type) if file_type.is_dir() => (EntryKind::Folder, ItemState::Pending),
+            Ok(file_type) if file_type.is_symlink() => match resolve(root, &path) {
+                Ok(reached) => item_of(reached.kind),
+                Err(blocked) => failed_entry(&blocked),
+            },
+            Ok(_) => (EntryKind::File, ItemState::Observed(())),
+        };
         entries.push(Entry {
             name: name.to_string_lossy().into_owned(),
-            path: below_root.join(&name).to_string_lossy().into_owned(),
-            kind: if file_type.is_symlink() {
-                EntryKind::Symlink
-            } else if file_type.is_dir() {
-                EntryKind::Folder
-            } else {
-                EntryKind::File
-            },
+            path: path.to_string_lossy().into_owned(),
+            kind,
+            state,
         });
     }
     Ok(entries)
+}
+
+/// The kind and state an entry has when it is a folder or a file that was read.
+fn item_of(kind: EntryKind) -> (EntryKind, ItemState<()>) {
+    match kind {
+        EntryKind::Folder => (EntryKind::Folder, ItemState::Pending),
+        EntryKind::File => (EntryKind::File, ItemState::Observed(())),
+    }
+}
+
+/// The kind and state of an entry that failed, and its one log line. A failed entry is a file.
+fn failed_entry(blocked: &Blocked) -> (EntryKind, ItemState<()>) {
+    log::warn!("fs-reader: entry failed: {}", blocked.text);
+    (EntryKind::File, ItemState::Failed(blocked.condition))
 }
 
 #[cfg(test)]

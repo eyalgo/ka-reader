@@ -10,7 +10,7 @@ use std::path::PathBuf;
 use serde::Serialize;
 
 use crate::exports::NozokiBuffer;
-use crate::session::{EntryDto, OpenResult, Session};
+use crate::session::{ListAnswerDto, OpenResult, Session};
 
 /// Runs `work` under `catch_unwind` and hands its answer across as an owned buffer of JSON bytes.
 ///
@@ -34,7 +34,8 @@ pub fn guarded<T: Serialize>(work: impl FnOnce() -> T) -> *mut NozokiBuffer {
 pub enum ListPath {
     Root,
     Under(String),
-    /// Bytes that are not UTF-8. `nozoki_core::list_tree` takes `&str`, so this answers `[]`.
+    /// Bytes that are not UTF-8. `nozoki_core::list_tree` takes `&str`, so this answers
+    /// `{"state":"pending"}`: nothing was read.
     NotUtf8,
 }
 
@@ -81,17 +82,18 @@ pub unsafe fn open_location(session: &Session, location: *const c_char) -> OpenR
     session.open(unsafe { decode_location(location) })
 }
 
-/// Lists `path` in `session`. A path that is not UTF-8 answers `[]`, as a refused listing does.
+/// Lists `path` in `session`. A path that is not UTF-8 answers `{"state":"pending"}`, because
+/// nothing was read.
 ///
 /// # Safety
 ///
 /// As `decode_list_path`.
-pub unsafe fn list_entries(session: &Session, path: *const c_char) -> Vec<EntryDto> {
+pub unsafe fn list_entries(session: &Session, path: *const c_char) -> ListAnswerDto {
     // SAFETY: forwarded from the caller.
     match unsafe { decode_list_path(path) } {
         ListPath::Root => session.list(""),
         ListPath::Under(relative) => session.list(&relative),
-        ListPath::NotUtf8 => Vec::new(),
+        ListPath::NotUtf8 => ListAnswerDto::Pending,
     }
 }
 

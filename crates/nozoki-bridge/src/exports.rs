@@ -40,8 +40,10 @@ pub unsafe extern "C" fn nozoki_open_folder(location: *const c_char) -> *mut Noz
 }
 
 /// Lists a path relative to the open folder's root; NULL or empty is the root. Answers a JSON
-/// array of `{"name", "path", "kind"}`, or NULL on failure; a non-NULL answer is freed with
-/// `nozoki_free`.
+/// object tagged by `state`: `{"state":"observed","entries":[…]}` with each entry
+/// `{"name","path","kind","state"}` and a `"condition"` beside `"failed"`,
+/// `{"state":"failed","condition":…}`, or `{"state":"pending"}` when nothing was read. NULL on
+/// failure; a non-NULL answer is freed with `nozoki_free`.
 ///
 /// # Safety
 ///

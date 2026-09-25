@@ -69,7 +69,7 @@ fn pathless_text<'a>(message: &'a str, prefix: &str, what: &str, root: &str) -> 
 }
 
 #[test]
-fn every_failed_shape_emits_one_pathless_warn() {
+fn every_failed_shape_emits_one_pathless_warn_and_a_root_one_line_per_failed_entry() {
     log::set_logger(&CAPTURE).expect("no other logger is installed in this binary");
     log::set_max_level(LevelFilter::Warn);
     let folder = TempDir::new();
@@ -111,12 +111,12 @@ fn every_failed_shape_emits_one_pathless_warn() {
         assert_eq!(*level, log::Level::Warn, "{failed}");
         pathless_text(message, LIST_PREFIX, failed, &root);
     }
+
+    listing_the_root_emits_one_entry_line_for_each_failed_entry_and_no_list_line();
 }
 
-#[test]
+/// Listing the root, which holds four failed entries, emits four entry lines and no list line.
 fn listing_the_root_emits_one_entry_line_for_each_failed_entry_and_no_list_line() {
-    log::set_logger(&CAPTURE).expect("no other logger is installed in this binary");
-    log::set_max_level(LevelFilter::Warn);
     let folder = TempDir::new();
     let outside = TempDir::new();
     folder.write_file("zq-file", "");
