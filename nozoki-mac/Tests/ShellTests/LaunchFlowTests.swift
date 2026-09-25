@@ -154,7 +154,7 @@ final class LaunchFlowTests: XCTestCase {
             .first { $0.identifier?.rawValue == "entryCondition" }
         XCTAssertEqual(
             sentence?.stringValue,
-            "This link leads outside this folder, and Nozoki reads nothing outside it.")
+            "This link leads outside the folder you opened, so Nozoki doesn't read it.")
     }
 
     func testNilListResultDrawsNoRow() throws {

@@ -46,7 +46,7 @@ final class RootItemsViewTests: XCTestCase {
     }
 
     private let outsideSentence =
-        "This link leads outside this folder, and Nozoki reads nothing outside it."
+        "This link leads outside the folder you opened, so Nozoki doesn't read it."
     private let cantReadSentence = "Nozoki can't read this folder."
     private let noFilesSentence = "This folder has no files."
 
@@ -135,14 +135,11 @@ final class RootItemsViewTests: XCTestCase {
             (.unreadable, "Nozoki can't read this folder."),
             (
                 .outside,
-                "This link leads outside this folder, and Nozoki reads nothing outside it."
+                "This link leads outside the folder you opened, so Nozoki doesn't read it."
             ),
             (.cycle, "This link loops back on itself, so Nozoki can't read it."),
             (.missing, "This link leads to something that isn't there."),
-            (
-                .tooManyLinks,
-                "This link leads through too many other links, so Nozoki can't read it."
-            ),
+            (.tooManyLinks, "This link leads through more links than Nozoki follows."),
             (.notAFolder, "Nozoki can't read this folder."),
         ]
 
@@ -151,6 +148,24 @@ final class RootItemsViewTests: XCTestCase {
         }
         XCTAssertEqual(ConditionSentences.failedRoot, "Nozoki can't read this folder.")
         XCTAssertEqual(ConditionSentences.emptyRoot, "This folder has no files.")
+    }
+
+    func testEachRootRowCarriesItsConditionsSentence() throws {
+        let view = makeView(showing: [
+            entry("ping", .file, .failed(.cycle)),
+            entry("pong", .file, .failed(.cycle)),
+            entry("gone", .file, .failed(.missing)),
+            entry("bad", .file, .failed(.missing)),
+            entry("notes.txt", .file, .observed),
+        ])
+        let loopSentence = "This link loops back on itself, so Nozoki can't read it."
+        let missingSentence = "This link leads to something that isn't there."
+
+        XCTAssertEqual(try conditionText(cell(view, row: 0)), loopSentence)
+        XCTAssertEqual(try conditionText(cell(view, row: 1)), loopSentence)
+        XCTAssertEqual(try conditionText(cell(view, row: 2)), missingSentence)
+        XCTAssertEqual(try conditionText(cell(view, row: 3)), missingSentence)
+        XCTAssertNil(try conditionText(cell(view, row: 4)))
     }
 
     func testFailedFileEntryDrawsTheFileGlyph() throws {
