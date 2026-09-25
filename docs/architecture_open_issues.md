@@ -74,7 +74,17 @@ None.
   spellings' bar from. *Override the draft's detail* — a layer-1 case to add or drop, a trace to
   remove, the tree-state clause to cut — moves QC-6 at v19 under that answer and nothing else;
   § 10's row does not move either way.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm, with one addition — decided in the owner's seat by a
+  `companion-self-answer` run; reasoning at `docs/trail/architecture/self_answer-19.md` § 2.1.
+  The obligation, the trace and § 10's row stand as v18 holds them. The addition is to the
+  *verified by*'s layer-1 list and its source only: `docs/fdr.md`'s example rows (`:L357-L358`)
+  fix three of the four spellings, not four — the re-entry in two forms (`self → ../NOZOKI`
+  ending `Cycle`, R-152; `up → ../NOZOKI/docs` resolving inside and read as its target, R-34,
+  R-151), the multi-level return (`far`) and the volume root (`back`) — and the
+  Unicode-normalization refusal has no example row, resting on R-184's second clause and SDD
+  § 11 R-10. The list cites it there, and names both re-entry forms, both `Outside` on the walk
+  at `nozoki@88b237f` (`crates/nozoki-core/src/fs_reader.rs:L211-L215`) until the change that
+  builds the re-entry lands.
 
 ## 3. Raised from downstream — an item from a seat that did not write these records
 
