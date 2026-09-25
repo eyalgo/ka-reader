@@ -51,7 +51,11 @@ pub struct EntryDto {
 ///
 /// let session = Session::default();
 ///
-/// assert!(session.list("").is_empty(), "nothing is open yet");
+/// assert_eq!(
+///     serde_json::to_value(session.list("")).expect("the answer serializes"),
+///     serde_json::json!({ "state": "pending" }),
+///     "nothing is open yet"
+/// );
 /// assert!(!session.open(None).opened, "a cancelled panel opens nothing");
 /// ```
 #[derive(Default)]
@@ -100,15 +104,29 @@ mod tests {
 
     use serde_json::{Value, json};
 
-    use nozoki_core::{Listing, list_tree, open_folder};
+    use nozoki_core::{ItemState, list_tree, open_folder};
 
-    use super::{EntryDto, Session};
+    use super::Session;
     use crate::test_support::TempDir;
 
-    fn names(entries: &[EntryDto]) -> Vec<String> {
-        let mut names: Vec<String> = entries.iter().map(|entry| entry.name.clone()).collect();
+    /// The answer to `path` as the JSON the shell reads.
+    fn answer(session: &Session, path: &str) -> Value {
+        serde_json::to_value(session.list(path)).expect("the answer serializes")
+    }
+
+    /// The names of the entries of an observed answer, sorted.
+    fn names(answer: &Value) -> Vec<String> {
+        let mut names: Vec<String> = entries_of(answer)
+            .iter()
+            .map(|entry| entry["name"].as_str().expect("a name").to_string())
+            .collect();
         names.sort();
         names
+    }
+
+    fn entries_of(answer: &Value) -> &Vec<Value> {
+        assert_eq!(answer["state"], "observed", "{answer}");
+        answer["entries"].as_array().expect("an entries array")
     }
 
     fn opened(session: &Session, folder: &TempDir) {
@@ -125,7 +143,7 @@ mod tests {
         let result = session.open(Some(folder.path().to_path_buf()));
 
         assert!(result.opened);
-        assert_eq!(names(&session.list("")), vec!["chosen.txt"]);
+        assert_eq!(names(&answer(&session, "")), vec!["chosen.txt"]);
     }
 
     #[test]
@@ -139,7 +157,7 @@ mod tests {
 
         opened(&session, &second);
 
-        assert_eq!(names(&session.list("")), vec!["from-b.txt"]);
+        assert_eq!(names(&answer(&session, "")), vec!["from-b.txt"]);
     }
 
     #[test]
@@ -152,7 +170,7 @@ mod tests {
         let result = session.open(None);
 
         assert!(!result.opened);
-        assert_eq!(names(&session.list("")), vec!["kept.txt"]);
+        assert_eq!(names(&answer(&session, "")), vec!["kept.txt"]);
     }
 
     #[test]
@@ -169,7 +187,7 @@ mod tests {
         assert!(!result.opened);
         assert!(!missing.opened);
         assert_eq!(
-            names(&session.list("")),
+            names(&answer(&session, "")),
             vec!["kept.txt", "not-a-folder.txt"]
         );
     }
@@ -184,6 +202,59 @@ mod tests {
     }
 
     #[test]
+    fn test_list_answers_state_and_condition_for_each_entry() {
+        let folder = TempDir::new();
+        folder.write_file("docs/guide.txt", "");
+        folder.write_file(".hidden-note", "");
+        folder.write_file("readme.txt", "");
+        let outside = TempDir::new();
+        folder.make_link("outside-link", outside.path());
+        let session = Session::default();
+        opened(&session, &folder);
+        let core_folder = open_folder(folder.path()).expect("the folder opens");
+        let ItemState::Observed(core_entries) = list_tree(&core_folder, "") else {
+            panic!("the root lists");
+        };
+        let core_names: Vec<String> = core_entries.into_iter().map(|entry| entry.name).collect();
+
+        let root = answer(&session, "");
+
+        let entries = entries_of(&root);
+        let listed: Vec<String> = entries
+            .iter()
+            .map(|entry| entry["name"].as_str().expect("a name").to_string())
+            .collect();
+        assert_eq!(listed, core_names, "core's order, none added or dropped");
+        for entry in entries {
+            let keys: Vec<&str> = entry
+                .as_object()
+                .expect("an object")
+                .keys()
+                .map(String::as_str)
+                .collect();
+            let expected = if entry["state"] == "failed" { 5 } else { 4 };
+            assert_eq!(
+                keys.len(),
+                expected,
+                "name, path, kind, state and, when failed, condition: {keys:?}"
+            );
+            if let Some(condition) = entry.get("condition") {
+                assert!(
+                    !condition.as_str().expect("a string").contains('/'),
+                    "a condition holds no path: {condition}"
+                );
+            }
+        }
+        let outside_link = entries
+            .iter()
+            .find(|entry| entry["name"] == "outside-link")
+            .expect("the link is listed");
+        assert_eq!(outside_link["state"], "failed");
+        assert_eq!(outside_link["condition"], "outside");
+        assert_eq!(outside_link["kind"], "file");
+    }
+
+    #[test]
     fn test_list_formats_listed_entries() {
         let folder = TempDir::new();
         folder.write_file("src/main.rs", "");
@@ -192,19 +263,22 @@ mod tests {
         let session = Session::default();
         opened(&session, &folder);
 
-        let root = serde_json::to_value(session.list("")).expect("the entries serialize");
-        let nested = serde_json::to_value(session.list("src")).expect("the entries serialize");
+        let root = answer(&session, "");
+        let nested = answer(&session, "src");
 
-        let mut root_kinds: Vec<(String, String)> = root
-            .as_array()
-            .expect("an array")
+        let mut root_kinds: Vec<(String, String, String)> = entries_of(&root)
             .iter()
             .map(|entry| {
                 let keys: Vec<&String> = entry.as_object().expect("an object").keys().collect();
-                assert_eq!(keys.len(), 3, "exactly name, path and kind: {keys:?}");
+                assert_eq!(
+                    keys.len(),
+                    4,
+                    "exactly name, path, kind and state: {keys:?}"
+                );
                 (
                     entry["name"].as_str().expect("a name").to_string(),
                     entry["kind"].as_str().expect("a kind").to_string(),
+                    entry["state"].as_str().expect("a state").to_string(),
                 )
             })
             .collect();
@@ -212,46 +286,65 @@ mod tests {
         assert_eq!(
             root_kinds,
             vec![
-                ("link".to_string(), "symlink".to_string()),
-                ("src".to_string(), "folder".to_string()),
-                ("top.txt".to_string(), "file".to_string()),
+                (
+                    "link".to_string(),
+                    "file".to_string(),
+                    "observed".to_string()
+                ),
+                (
+                    "src".to_string(),
+                    "folder".to_string(),
+                    "pending".to_string()
+                ),
+                (
+                    "top.txt".to_string(),
+                    "file".to_string(),
+                    "observed".to_string()
+                ),
             ]
         );
         assert_eq!(
             nested,
-            Value::Array(vec![
-                json!({ "name": "main.rs", "path": "src/main.rs", "kind": "file" })
-            ])
+            json!({
+                "state": "observed",
+                "entries": [
+                    { "name": "main.rs", "path": "src/main.rs", "kind": "file", "state": "observed" }
+                ]
+            })
         );
     }
 
     #[test]
-    fn test_list_refused_is_empty_array() {
+    fn test_list_outside_answers_failed_outside() {
         let folder = TempDir::new();
         folder.write_file("inside.txt", "");
         let session = Session::default();
         opened(&session, &folder);
+        let expected = json!({ "state": "failed", "condition": "outside" });
 
-        assert!(session.list("../").is_empty());
-        assert!(session.list("/etc").is_empty());
+        assert_eq!(answer(&session, ".."), expected);
+        assert_eq!(answer(&session, "/etc"), expected);
     }
 
     #[test]
-    fn test_list_failed_is_empty_array() {
+    fn test_list_file_answers_failed_not_a_folder() {
         let folder = TempDir::new();
         folder.write_file("a-file", "");
         let session = Session::default();
         opened(&session, &folder);
 
-        assert!(session.list("a-file").is_empty());
-        assert_eq!(names(&session.list("")), vec!["a-file"]);
+        assert_eq!(
+            answer(&session, "a-file"),
+            json!({ "state": "failed", "condition": "not_a_folder" })
+        );
+        assert_eq!(names(&answer(&session, "")), vec!["a-file"]);
     }
 
     #[test]
-    fn test_list_with_no_folder_open_is_empty_array() {
+    fn test_list_with_no_folder_open_answers_pending() {
         let session = Session::default();
 
-        assert!(session.list("").is_empty());
+        assert_eq!(answer(&session, ""), json!({ "state": "pending" }));
     }
 
     #[test]
@@ -263,15 +356,14 @@ mod tests {
         let session = Session::default();
         opened(&session, &folder);
         let opened_folder = open_folder(folder.path()).expect("the folder opens");
-        let Listing::Listed(core_entries) = list_tree(&opened_folder, "") else {
+        let ItemState::Observed(core_entries) = list_tree(&opened_folder, "") else {
             panic!("the root lists");
         };
         let core_names: Vec<String> = core_entries.into_iter().map(|entry| entry.name).collect();
 
-        let listed: Vec<String> = session
-            .list("")
-            .into_iter()
-            .map(|entry| entry.name)
+        let listed: Vec<String> = entries_of(&answer(&session, ""))
+            .iter()
+            .map(|entry| entry["name"].as_str().expect("a name").to_string())
             .collect();
 
         assert_eq!(

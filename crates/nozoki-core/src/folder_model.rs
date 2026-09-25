@@ -39,11 +39,11 @@ pub fn open_folder(path: impl AsRef<Path>) -> Option<OpenedFolder> {
 /// # Examples
 ///
 /// ```
-/// use nozoki_core::{Listing, list_tree, open_folder};
+/// use nozoki_core::{Condition, ItemState, list_tree, open_folder};
 ///
 /// let opened = open_folder(std::env::temp_dir()).expect("the temporary folder opens");
-/// assert!(matches!(list_tree(&opened, ""), Listing::Listed(_)));
-/// assert_eq!(list_tree(&opened, ".."), Listing::Refused);
+/// assert!(matches!(list_tree(&opened, ""), ItemState::Observed(_)));
+/// assert_eq!(list_tree(&opened, ".."), ItemState::Failed(Condition::Outside));
 /// ```
 pub fn list_tree(opened: &OpenedFolder, path: &str) -> Listing {
     fs_reader::list(&opened.root, path)

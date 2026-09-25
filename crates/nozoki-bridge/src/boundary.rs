@@ -201,7 +201,7 @@ mod tests {
     }
 
     #[test]
-    fn test_non_utf8_list_path_answers_empty_array() {
+    fn test_non_utf8_list_path_answers_pending() {
         let folder = TempDir::new();
         folder.write_file("present.txt", "");
         let session = Session::default();
@@ -209,7 +209,7 @@ mod tests {
         let path = CString::new(&b"docs/\xff"[..]).expect("no interior NUL");
 
         // SAFETY: `path` is NUL-terminated and outlives both calls.
-        let (decoded, entries) = unsafe {
+        let (decoded, answer) = unsafe {
             (
                 decode_list_path(path.as_ptr()),
                 list_entries(&session, path.as_ptr()),
@@ -217,10 +217,19 @@ mod tests {
         };
 
         assert_eq!(decoded, ListPath::NotUtf8);
-        assert!(entries.is_empty(), "`[]`, and never a lossy guess");
+        assert_eq!(
+            serde_json::to_value(answer).expect("the answer serializes"),
+            serde_json::json!({ "state": "pending" }),
+            "nothing was read, and never a lossy guess"
+        );
         // SAFETY: NULL is the root, and the folder holds one entry.
         let root = unsafe { list_entries(&session, ptr::null::<c_char>()) };
-        assert_eq!(root.len(), 1, "the same session does list its root");
+        let root = serde_json::to_value(root).expect("the answer serializes");
+        assert_eq!(
+            root["state"], "observed",
+            "the same session does list its root"
+        );
+        assert_eq!(root["entries"].as_array().expect("entries").len(), 1);
     }
 
     #[test]

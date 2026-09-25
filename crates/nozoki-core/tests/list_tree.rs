@@ -2,25 +2,40 @@
 
 mod common;
 
-use common::TempDir;
-use nozoki_core::{Entry, EntryKind, Listing, list_tree, open_folder};
+use std::os::unix::net::UnixListener;
 
-/// The name and kind of every entry, sorted by name so a test does not depend on the order the
-/// operating system lists in.
-fn names_and_kinds(listing: Listing) -> Vec<(String, EntryKind)> {
-    let Listing::Listed(entries) = listing else {
-        panic!("expected a Listed outcome, got {listing:?}");
+use common::TempDir;
+use nozoki_core::{Condition, Entry, EntryKind, ItemState, list_tree, open_folder};
+
+/// The name, kind and state of every entry, sorted by name so a test does not depend on the order
+/// the operating system lists in.
+fn names_and_kinds(listing: ItemState<Vec<Entry>>) -> Vec<(String, EntryKind, ItemState<()>)> {
+    let ItemState::Observed(entries) = listing else {
+        panic!("expected an Observed answer, got {listing:?}");
     };
-    let mut pairs: Vec<(String, EntryKind)> = entries
+    let mut triples: Vec<(String, EntryKind, ItemState<()>)> = entries
         .into_iter()
-        .map(|Entry { name, kind, .. }| (name, kind))
+        .map(
+            |Entry {
+                 name, kind, state, ..
+             }| (name, kind, state),
+        )
         .collect();
-    pairs.sort_by(|left, right| left.0.cmp(&right.0));
-    pairs
+    triples.sort_by(|left, right| left.0.cmp(&right.0));
+    triples
 }
 
-fn pair(name: &str, kind: EntryKind) -> (String, EntryKind) {
-    (name.to_string(), kind)
+/// A folder entry arrives `Pending` and any other entry `Observed`, as CP-170 and CP-169 fix.
+fn pair(name: &str, kind: EntryKind) -> (String, EntryKind, ItemState<()>) {
+    let state = match kind {
+        EntryKind::Folder => ItemState::Pending,
+        EntryKind::File => ItemState::Observed(()),
+    };
+    (name.to_string(), kind, state)
+}
+
+fn failed(condition: Condition) -> ItemState<Vec<Entry>> {
+    ItemState::Failed(condition)
 }
 
 #[test]
@@ -30,18 +45,53 @@ fn list_root_returns_every_entry_including_hidden_and_git() {
     folder.make_folder(".git");
     folder.make_folder("src");
     folder.write_file("README.md", "hello");
+    folder.make_folder("locked");
+    folder.set_mode("locked", 0o000);
     let opened = open_folder(folder.path()).expect("a folder opens");
 
     let listed = names_and_kinds(list_tree(&opened, ""));
 
+    // A folder that cannot be read is still a `Pending` folder here: listing it is a later read.
     assert_eq!(
         listed,
         vec![
             pair(".env", EntryKind::File),
             pair(".git", EntryKind::Folder),
             pair("README.md", EntryKind::File),
+            pair("locked", EntryKind::Folder),
             pair("src", EntryKind::Folder),
         ]
+    );
+}
+
+#[test]
+fn a_socket_lists_as_an_observed_file() {
+    let folder = TempDir::new();
+    // The path limit of a Unix socket is 104 bytes, so the name stays short.
+    let _socket = UnixListener::bind(folder.path().join("s.sock")).expect("the socket binds");
+    let opened = open_folder(folder.path()).expect("a folder opens");
+
+    assert_eq!(
+        names_and_kinds(list_tree(&opened, "")),
+        vec![pair("s.sock", EntryKind::File)]
+    );
+}
+
+#[test]
+fn a_locked_folder_fails_then_lists_once_readable() {
+    let folder = TempDir::new();
+    folder.write_file("locked/inner.txt", "");
+    folder.set_mode("locked", 0o000);
+    let opened = open_folder(folder.path()).expect("a folder opens");
+
+    assert_eq!(list_tree(&opened, "locked"), failed(Condition::Unreadable));
+
+    folder.set_mode("locked", 0o755);
+
+    assert_eq!(
+        names_and_kinds(list_tree(&opened, "locked")),
+        vec![pair("inner.txt", EntryKind::File)],
+        "nothing is carried over from the failed read"
     );
 }
 
@@ -65,7 +115,7 @@ fn list_subfolder_returns_only_its_direct_entries() {
 }
 
 #[test]
-fn list_outside_paths_is_refused() {
+fn list_outside_paths_is_failed_outside() {
     let folder = TempDir::new();
     folder.make_folder("src");
     let outside = TempDir::new();
@@ -76,8 +126,8 @@ fn list_outside_paths_is_refused() {
     for requested in ["/etc", "..", "../x", "escape"] {
         assert_eq!(
             list_tree(&opened, requested),
-            Listing::Refused,
-            "{requested} must be refused"
+            failed(Condition::Outside),
+            "{requested} must be Failed(Outside)"
         );
     }
 }
@@ -92,10 +142,15 @@ fn list_unlistable_inside_paths_is_failed_and_root_still_lists() {
     std::fs::remove_dir(folder.path().join("gone")).expect("the folder can be removed");
     folder.set_mode("locked", 0o000);
 
-    for requested in ["a-file", "gone", "locked"] {
-        assert!(
-            matches!(list_tree(&opened, requested), Listing::Failed(_)),
-            "{requested} must be Failed"
+    for (requested, condition) in [
+        ("a-file", Condition::NotAFolder),
+        ("gone", Condition::Missing),
+        ("locked", Condition::Unreadable),
+    ] {
+        assert_eq!(
+            list_tree(&opened, requested),
+            failed(condition),
+            "{requested} must be Failed({condition:?})"
         );
         let root = names_and_kinds(list_tree(&opened, ""));
         assert_eq!(
@@ -104,6 +159,19 @@ fn list_unlistable_inside_paths_is_failed_and_root_still_lists() {
             "the root still lists after {requested}: {root:?}"
         );
     }
+}
+
+#[test]
+fn an_empty_folder_is_observed_with_no_entries() {
+    let folder = TempDir::new();
+    folder.make_folder("empty");
+    let opened = open_folder(folder.path()).expect("a folder opens");
+
+    assert_eq!(
+        list_tree(&opened, "empty"),
+        ItemState::Observed(Vec::new()),
+        "an empty folder is read and holds nothing, which is not a failure"
+    );
 }
 
 #[test]
@@ -123,7 +191,7 @@ fn open_folder_on_an_unreadable_folder_opens_and_root_list_is_failed() {
 
     let opened = open_folder(folder.path().join("locked")).expect("an unreadable folder opens");
 
-    assert!(matches!(list_tree(&opened, ""), Listing::Failed(_)));
+    assert_eq!(list_tree(&opened, ""), failed(Condition::Unreadable));
 }
 
 #[test]

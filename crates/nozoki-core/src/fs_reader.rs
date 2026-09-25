@@ -199,30 +199,40 @@ mod tests {
     use super::*;
     use crate::test_support::TempDir;
 
-    /// The listed entries as sorted `(name, path, kind)` triples, or a panic naming the outcome.
-    fn listed(outcome: Listing) -> Vec<(String, String, EntryKind)> {
+    /// The entries of an observed answer, sorted by name, or a panic naming the answer.
+    fn entries_of(outcome: ItemState<Vec<Entry>>) -> Vec<Entry> {
         match outcome {
-            Listing::Listed(entries) => {
-                let mut triples: Vec<_> = entries
-                    .into_iter()
-                    .map(|entry| (entry.name, entry.path, entry.kind))
-                    .collect();
-                triples.sort_by(|left, right| left.0.cmp(&right.0));
-                triples
+            ItemState::Observed(mut entries) => {
+                entries.sort_by(|left, right| left.name.cmp(&right.name));
+                entries
             }
-            other => panic!("expected Listed, got {other:?}"),
+            other => panic!("expected Observed, got {other:?}"),
         }
     }
 
-    fn names(outcome: Listing) -> Vec<String> {
+    /// The listed entries as `(name, path, kind)` triples, sorted by name.
+    fn listed(outcome: ItemState<Vec<Entry>>) -> Vec<(String, String, EntryKind)> {
+        entries_of(outcome)
+            .into_iter()
+            .map(|entry| (entry.name, entry.path, entry.kind))
+            .collect()
+    }
+
+    fn names(outcome: ItemState<Vec<Entry>>) -> Vec<String> {
         listed(outcome).into_iter().map(|triple| triple.0).collect()
     }
 
-    fn assert_failed(outcome: Listing) {
-        assert!(
-            matches!(outcome, Listing::Failed(_)),
-            "expected Failed, got {outcome:?}"
-        );
+    fn entry(name: &str, path: &str, kind: EntryKind, state: ItemState<()>) -> Entry {
+        Entry {
+            name: name.to_string(),
+            path: path.to_string(),
+            kind,
+            state,
+        }
+    }
+
+    fn failed(condition: Condition) -> ItemState<Vec<Entry>> {
+        ItemState::Failed(condition)
     }
 
     #[test]
@@ -238,13 +248,13 @@ mod tests {
     }
 
     #[test]
-    fn test_dotdot_leaving_root_is_refused() {
+    fn test_dotdot_leaving_root_is_outside() {
         let temp = TempDir::new();
         temp.make_folder("src");
 
-        assert_eq!(list(temp.path(), ".."), Listing::Refused);
-        assert_eq!(list(temp.path(), "../x"), Listing::Refused);
-        assert_eq!(list(temp.path(), "src/../../x"), Listing::Refused);
+        assert_eq!(list(temp.path(), ".."), failed(Condition::Outside));
+        assert_eq!(list(temp.path(), "../x"), failed(Condition::Outside));
+        assert_eq!(list(temp.path(), "src/../../x"), failed(Condition::Outside));
     }
 
     #[test]
@@ -271,10 +281,10 @@ mod tests {
     }
 
     #[test]
-    fn test_absolute_path_outside_root_is_refused() {
+    fn test_absolute_path_outside_root_is_outside() {
         let temp = TempDir::new();
 
-        assert_eq!(list(temp.path(), "/etc"), Listing::Refused);
+        assert_eq!(list(temp.path(), "/etc"), failed(Condition::Outside));
     }
 
     #[test]
@@ -290,26 +300,26 @@ mod tests {
     }
 
     #[test]
-    fn test_absolute_dotdot_leaving_root_is_refused() {
+    fn test_absolute_dotdot_leaving_root_is_outside() {
         let temp = TempDir::new();
         let leaving = format!("{}/../elsewhere", temp.path().display());
 
-        assert_eq!(list(temp.path(), &leaving), Listing::Refused);
+        assert_eq!(list(temp.path(), &leaving), failed(Condition::Outside));
     }
 
     #[test]
-    fn test_absolute_path_through_symlinked_ancestor_is_refused() {
+    fn test_absolute_path_through_symlinked_ancestor_is_outside() {
         let temp = TempDir::new();
         temp.write_file("real/src/inner.txt", "");
         temp.make_link("alias", temp.path().join("real"));
         let root = temp.path().join("real");
         let through_alias = format!("{}/alias/src", temp.path().display());
 
-        assert_eq!(list(&root, &through_alias), Listing::Refused);
+        assert_eq!(list(&root, &through_alias), failed(Condition::Outside));
     }
 
     #[test]
-    fn test_symlink_to_outside_is_refused_without_touching_target() {
+    fn test_symlink_to_outside_is_outside_without_touching_target() {
         let temp = TempDir::new();
         let root = temp.make_folder("root");
         temp.write_file("outside/locked/child", "");
@@ -317,19 +327,19 @@ mod tests {
         temp.make_link("root/absolute", temp.path().join("outside/locked/child"));
         temp.make_link("root/relative", "../outside/locked/child");
 
-        // A read of the target would fail on the mode and report Failed, not Refused.
-        assert_eq!(list(&root, "absolute"), Listing::Refused);
-        assert_eq!(list(&root, "relative"), Listing::Refused);
+        // A read of the target would fail on the mode and answer Unreadable, not Outside.
+        assert_eq!(list(&root, "absolute"), failed(Condition::Outside));
+        assert_eq!(list(&root, "relative"), failed(Condition::Outside));
     }
 
     #[test]
-    fn test_relative_symlink_escaping_root_is_refused() {
+    fn test_relative_symlink_escaping_root_is_outside() {
         let temp = TempDir::new();
         let root = temp.make_folder("root");
         temp.make_folder("sibling");
         temp.make_link("root/up", "../sibling");
 
-        assert_eq!(list(&root, "up"), Listing::Refused);
+        assert_eq!(list(&root, "up"), failed(Condition::Outside));
     }
 
     #[test]
@@ -365,7 +375,10 @@ mod tests {
         temp.write_file("plain.txt", "");
         temp.make_link("link", "plain.txt");
 
-        assert_failed(list(temp.path(), "link/below"));
+        assert_eq!(
+            list(temp.path(), "link/below"),
+            failed(Condition::NotAFolder)
+        );
     }
 
     #[test]
@@ -385,10 +398,8 @@ mod tests {
         temp.make_link("ping", "pong");
         temp.make_link("pong", "ping");
 
-        assert_eq!(
-            list(temp.path(), "ping"),
-            Listing::Failed(Failure::LinkLimit)
-        );
+        // Task 3 makes this `Cycle`. Until then only the hop bound stops the walk.
+        assert_eq!(list(temp.path(), "ping"), failed(Condition::TooManyLinks));
     }
 
     #[test]
@@ -396,7 +407,7 @@ mod tests {
         let temp = TempDir::new();
         temp.make_link("dangling", "nowhere");
 
-        assert_failed(list(temp.path(), "dangling"));
+        assert_eq!(list(temp.path(), "dangling"), failed(Condition::Missing));
     }
 
     #[test]
@@ -409,21 +420,18 @@ mod tests {
         temp.make_link("link", "folder");
 
         assert_eq!(
-            listed(list(temp.path(), "")),
+            entries_of(list(temp.path(), "")),
             [
-                (".env".to_string(), ".env".to_string(), EntryKind::File),
-                (".git".to_string(), ".git".to_string(), EntryKind::Folder),
-                (
-                    "file.txt".to_string(),
-                    "file.txt".to_string(),
-                    EntryKind::File
+                entry(".env", ".env", EntryKind::File, ItemState::Observed(())),
+                entry(".git", ".git", EntryKind::Folder, ItemState::Pending),
+                entry(
+                    "file.txt",
+                    "file.txt",
+                    EntryKind::File,
+                    ItemState::Observed(())
                 ),
-                (
-                    "folder".to_string(),
-                    "folder".to_string(),
-                    EntryKind::Folder
-                ),
-                ("link".to_string(), "link".to_string(), EntryKind::Symlink),
+                entry("folder", "folder", EntryKind::Folder, ItemState::Pending),
+                entry("link", "link", EntryKind::Folder, ItemState::Pending),
             ]
         );
     }
@@ -433,7 +441,7 @@ mod tests {
         let temp = TempDir::new();
         temp.make_folder("empty");
 
-        assert_eq!(list(temp.path(), "empty"), Listing::Listed(Vec::new()));
+        assert_eq!(list(temp.path(), "empty"), ItemState::Observed(Vec::new()));
     }
 
     #[test]
@@ -460,7 +468,10 @@ mod tests {
         let temp = TempDir::new();
         temp.write_file("plain.txt", "");
 
-        assert_failed(list(temp.path(), "plain.txt"));
+        assert_eq!(
+            list(temp.path(), "plain.txt"),
+            failed(Condition::NotAFolder)
+        );
     }
 
     #[test]
@@ -468,15 +479,21 @@ mod tests {
         let temp = TempDir::new();
         temp.write_file("plain.txt", "");
 
-        assert_failed(list(temp.path(), "plain.txt/.."));
-        assert_failed(list(temp.path(), "plain.txt/below"));
+        assert_eq!(
+            list(temp.path(), "plain.txt/.."),
+            failed(Condition::NotAFolder)
+        );
+        assert_eq!(
+            list(temp.path(), "plain.txt/below"),
+            failed(Condition::NotAFolder)
+        );
     }
 
     #[test]
     fn test_listing_a_missing_path_is_failed() {
         let temp = TempDir::new();
 
-        assert_failed(list(temp.path(), "missing"));
+        assert_eq!(list(temp.path(), "missing"), failed(Condition::Missing));
     }
 
     #[test]
@@ -485,6 +502,24 @@ mod tests {
         temp.make_folder("locked");
         temp.set_mode("locked", 0o000);
 
-        assert_failed(list(temp.path(), "locked"));
+        assert_eq!(list(temp.path(), "locked"), failed(Condition::Unreadable));
+    }
+
+    #[test]
+    fn test_io_error_kinds_map_to_their_conditions() {
+        assert_eq!(condition_for(io::ErrorKind::NotFound), Condition::Missing);
+        assert_eq!(
+            condition_for(io::ErrorKind::NotADirectory),
+            Condition::NotAFolder
+        );
+        assert_eq!(
+            condition_for(io::ErrorKind::PermissionDenied),
+            Condition::Unreadable
+        );
+        // A kind the table does not name is still an unreadable read (design § 3 A, "every other I/O kind").
+        assert_eq!(
+            condition_for(io::ErrorKind::Interrupted),
+            Condition::Unreadable
+        );
     }
 }
