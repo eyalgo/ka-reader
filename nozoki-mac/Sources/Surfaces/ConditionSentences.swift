@@ -9,6 +9,12 @@ package enum ConditionSentences {
     /// The line for a root that was read and holds nothing (`docs/CONTENT.md`).
     package static let emptyRoot = "This folder has no files."
 
+    /// The line drawn beneath a folder while its read is out (`docs/CONTENT.md`, *Loading*).
+    package static let readingFolder = "Reading this folder."
+
+    /// The line drawn beneath a folder that was read and holds nothing.
+    package static let emptyFolder = emptyRoot
+
     /// The sentence shown on the row of an entry that failed with `condition`.
     package static func row(for condition: Condition) -> String {
         switch condition {

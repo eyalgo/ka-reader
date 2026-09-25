@@ -7,13 +7,16 @@ package typealias ListTreeAnswer = @MainActor (RootListing?) -> Void
 package typealias ListTreeIntent =
     @MainActor (_ path: String, _ answer: @escaping ListTreeAnswer) -> Void
 
-/// The root-items tree view: one row per entry, in the order given, each with the entry's
-/// name beside a glyph chosen by kind. An entry that failed also shows its sentence on its row. A
-/// root with nothing to list, or one that could not be read, shows one line instead of rows.
+/// The tree view: one row per entry, in the order given, each with the entry's name beside a glyph
+/// chosen by kind. A folder row can be expanded, and every expansion reads the folder again through
+/// the `listTree` intent. What sits beneath an expanded row follows that read: a line while it is
+/// out, the entries it found, a line for an empty folder, or nothing. A folder that could not be
+/// read shows its sentence beside its row, as a failed file does. A root with nothing to list, or
+/// one that could not be read, shows one line instead of rows.
 ///
-/// The two glyph images arrive from the caller, because this target never loads a resource
-/// and never reaches the bridge (SM-8, CP-97). Only root items are drawn; expansion is not
-/// part of this change.
+/// The two glyph images arrive from the caller, because this target never loads a resource and
+/// never reaches the bridge (SM-8, CP-97). The read itself is the owner's: this view hands out the
+/// path to read and takes the answer back through a one-shot sink.
 @MainActor
 package final class RootItemsView: NSScrollView {
     /// The outline view the rows live in. Exposed so a caller can host it and a test can read
@@ -23,12 +26,15 @@ package final class RootItemsView: NSScrollView {
     private let folderGlyph: NSImage
     private let fileGlyph: NSImage
     private var rows: [Row] = []
+    private var isReloading = false
     private let rootLine = NSTextField(labelWithString: "")
 
     /// The one line drawn outside the rows, or nil when none is drawn.
     package private(set) var rootLineText: String?
 
-    /// Set by the view's owner. Called once per expansion of a folder row.
+    /// Set by the view's owner, and called on the main actor once per expansion of a folder row.
+    /// It is handed the path the row's entry reports, never its name, and a sink for the answer.
+    /// While it is unset an expansion still draws the reading line, and no answer ever comes.
     package var listTree: ListTreeIntent?
 
     /// The entry the row at `row` draws, or nil for a row that is not an entry.
@@ -38,7 +44,7 @@ package final class RootItemsView: NSScrollView {
 
     /// The text of the line item at `row`, or nil for a row that is not a line.
     package func lineText(atRow row: Int) -> String? {
-        nil
+        (outlineView.item(atRow: row) as? LineItem)?.text
     }
 
     package init(folderGlyph: NSImage, fileGlyph: NSImage) {
@@ -70,7 +76,8 @@ package final class RootItemsView: NSScrollView {
     }
 
     /// Replaces what is drawn with `root`: its entries in exactly that order, or one line when the
-    /// root is empty or could not be read, or nothing when there is no answer (`nil`).
+    /// root is empty or could not be read, or nothing when there is no answer (`nil`). Every row is
+    /// replaced, so an answer still owed to an earlier row is ignored when it arrives.
     package func show(_ root: RootListing?) {
         var entries: [Entry] = []
         switch root {
@@ -82,7 +89,7 @@ package final class RootItemsView: NSScrollView {
         case .failed?:
             rootLineText = ConditionSentences.failedRoot
         }
-        rows = entries.map(Row.init)
+        rows = entries.map { Row($0, parent: nil) }
         rootLine.stringValue = rootLineText ?? ""
         rootLine.isHidden = rootLineText == nil
         outlineView.reloadData()
@@ -90,6 +97,7 @@ package final class RootItemsView: NSScrollView {
 
     private static let columnIdentifier = NSUserInterfaceItemIdentifier("entry")
     private static let cellIdentifier = NSUserInterfaceItemIdentifier("entryCell")
+    private static let lineCellIdentifier = NSUserInterfaceItemIdentifier("lineCell")
     private static let conditionIdentifier = NSUserInterfaceItemIdentifier("entryCondition")
     private static let glyphSize: CGFloat = 16
     private static let glyphSpacing: CGFloat = 6
@@ -135,6 +143,101 @@ package final class RootItemsView: NSScrollView {
         ])
         return cell
     }
+
+    private func makeLineCell() -> NSTableCellView {
+        let cell = NSTableCellView()
+        cell.identifier = Self.lineCellIdentifier
+        let textField = NSTextField(labelWithString: "")
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.textColor = .secondaryLabelColor
+        cell.addSubview(textField)
+        cell.textField = textField
+        NSLayoutConstraint.activate([
+            textField.leadingAnchor.constraint(equalTo: cell.leadingAnchor),
+            textField.centerYAnchor.constraint(equalTo: cell.centerYAnchor),
+        ])
+        return cell
+    }
+
+    /// The sentence beside a row: a folder's from its read, a file's from its own entry.
+    private func conditionSentence(for row: Row) -> String? {
+        let state: ReadState
+        switch row.entry.kind {
+        case .folder:
+            state = row.read
+        case .file:
+            if case .failed(let condition) = row.entry.state {
+                state = .failed(condition)
+            } else {
+                state = .unread
+            }
+        }
+        guard case .failed(let condition) = state else { return nil }
+        return ConditionSentences.row(for: condition)
+    }
+
+    /// Every expansion reads: the row goes to *reading*, drops what it held and asks the owner for
+    /// its path. Its earlier sinks go stale, because the generation moves.
+    fileprivate func beginRead(of row: Row) {
+        row.generation += 1
+        row.read = .reading
+        row.children = []
+        row.line = LineItem(ConditionSentences.readingFolder)
+        reload(row)
+        listTree?(row.entry.path, makeAnswerSink(for: row))
+    }
+
+    private func makeAnswerSink(for row: Row) -> ListTreeAnswer {
+        let generation = row.generation
+        let latch = AnswerLatch()
+        return { [weak self, weak row] listing in
+            guard !latch.fired else { return }
+            latch.fired = true
+            guard let self, let row, row.generation == generation, self.isInTree(row) else {
+                return
+            }
+            self.apply(listing, to: row)
+        }
+    }
+
+    /// Whether `row` is still drawn from the current root: every row above it still holds it.
+    private func isInTree(_ row: Row) -> Bool {
+        var current = row
+        while let parent = current.parent {
+            guard parent.children.contains(where: { $0 === current }) else { return false }
+            current = parent
+        }
+        return rows.contains { $0 === current }
+    }
+
+    private func apply(_ listing: RootListing?, to row: Row) {
+        row.children = []
+        row.line = nil
+        switch listing {
+        case nil:
+            row.read = .noAnswer
+        case .observed(let entries)?:
+            if entries.isEmpty {
+                row.read = .empty
+                row.line = LineItem(ConditionSentences.emptyFolder)
+            } else {
+                row.read = .entries
+                row.children = entries.map { Row($0, parent: row) }
+            }
+        case .failed(let condition)?:
+            row.read = .failed(condition)
+        }
+        reload(row)
+    }
+
+    /// Draws `row` and what is beneath it again. Reloading an item that is already expanded posts
+    /// the expansion notification a second time (measured), and that one is not an expansion the
+    /// user or a caller asked for, so it must not start another read.
+    private func reload(_ row: Row) {
+        isReloading = true
+        defer { isReloading = false }
+        outlineView.reloadItem(row, reloadChildren: true)
+    }
 }
 
 /// A row's cell: the name and glyph every row has, and the label a failed entry's sentence goes in.
@@ -142,29 +245,74 @@ private final class EntryCell: NSTableCellView {
     let conditionLabel = NSTextField(labelWithString: "")
 }
 
-/// A row's item. `NSOutlineView` identifies items by object, so each entry gets a reference.
+/// Where a folder row's read stands. A file row stays *unread*.
+private enum ReadState: Equatable {
+    case unread
+    case reading
+    case entries
+    case empty
+    case failed(Condition)
+    case noAnswer
+}
+
+/// The line drawn beneath an expanded folder while its read is out, or when it holds nothing.
+private final class LineItem: NSObject {
+    let text: String
+
+    init(_ text: String) {
+        self.text = text
+    }
+}
+
+/// Makes a sink answer once.
+private final class AnswerLatch {
+    var fired = false
+}
+
+/// A row's item. `NSOutlineView` identifies items by object, so each entry gets a reference, and a
+/// folder's reference owns its read state, its children and the generation of its latest read.
 private final class Row: NSObject {
     let entry: Entry
+    weak var parent: Row?
+    var read = ReadState.unread
+    var generation = 0
+    var children: [Row] = []
+    var line: LineItem?
 
-    init(_ entry: Entry) {
+    init(_ entry: Entry, parent: Row?) {
         self.entry = entry
+        self.parent = parent
+    }
+
+    /// What the outline view finds beneath this row.
+    var childItems: [NSObject] {
+        switch read {
+        case .entries: return children
+        case .reading, .empty: return line.map { [$0] } ?? []
+        case .unread, .failed, .noAnswer: return []
+        }
     }
 }
 
 extension RootItemsView: NSOutlineViewDataSource {
     package func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int
     {
-        item == nil ? rows.count : 0
+        guard let item else { return rows.count }
+        return (item as? Row)?.childItems.count ?? 0
     }
 
     package func outlineView(_ outlineView: NSOutlineView, child index: Int, ofItem item: Any?)
         -> Any
     {
-        rows[index]
+        guard let item else { return rows[index] }
+        guard let row = item as? Row else {
+            preconditionFailure("only an entry row has rows beneath it")
+        }
+        return row.childItems[index]
     }
 
     package func outlineView(_ outlineView: NSOutlineView, isItemExpandable item: Any) -> Bool {
-        false
+        (item as? Row)?.entry.kind == .folder
     }
 }
 
@@ -172,8 +320,15 @@ extension RootItemsView: NSOutlineViewDelegate {
     package func outlineView(
         _ outlineView: NSOutlineView, viewFor tableColumn: NSTableColumn?, item: Any
     ) -> NSView? {
+        if let line = item as? LineItem {
+            let cell =
+                outlineView.makeView(withIdentifier: Self.lineCellIdentifier, owner: self)
+                as? NSTableCellView ?? makeLineCell()
+            cell.textField?.stringValue = line.text
+            return cell
+        }
         guard let row = item as? Row else {
-            preconditionFailure("every item this view hands the outline view is a Row")
+            preconditionFailure("every item this view hands the outline view is a Row or a line")
         }
         let cell =
             outlineView.makeView(withIdentifier: Self.cellIdentifier, owner: self)
@@ -181,13 +336,21 @@ extension RootItemsView: NSOutlineViewDelegate {
         cell.textField?.stringValue = row.entry.name
         cell.imageView?.image = glyph(for: row.entry.kind)
         // Every row sets the sentence, so a reused cell never carries a stale one.
-        if case .failed(let condition) = row.entry.state {
-            cell.conditionLabel.stringValue = ConditionSentences.row(for: condition)
+        if let sentence = conditionSentence(for: row) {
+            cell.conditionLabel.stringValue = sentence
             cell.conditionLabel.isHidden = false
         } else {
             cell.conditionLabel.stringValue = ""
             cell.conditionLabel.isHidden = true
         }
         return cell
+    }
+
+    /// The one hook every expansion passes through. `expandItem(_:)` fires it before the item
+    /// opens (measured in the plan for this change), and it is the callback AppKit posts on
+    /// expansion, which a disclosure click is also.
+    package func outlineViewItemWillExpand(_ notification: Notification) {
+        guard !isReloading, let row = notification.userInfo?["NSObject"] as? Row else { return }
+        beginRead(of: row)
     }
 }
