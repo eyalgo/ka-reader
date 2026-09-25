@@ -54,6 +54,32 @@ None.
   nozoki-mac` (layer 4): a projection with a `pending` item draws no marker, no count and no
   empty-folder sentence, and where the surface gives the pending state words, they are CONTENT's
   *"Reading this folder."*"
-- **Answer:** <the owner fills this in>
+- **Answer:** Confirmed, with additions — decided in the owner's seat by a `companion-self-answer`
+  run; reasoning at `docs/trail/architecture/self_answer-18.md` § 3.1. The layer-4 half is false as
+  stated, and the obligation holds. But the false clause is not this document's own: it is
+  `docs/fdr.md` R-94's second clause, "the surface shows the word *pending*" (`:L176`), which QC-4
+  traces to, and `docs/DESIGN.md` § Do's says the same (`:L744-L746`) — while `docs/CONTENT.md`
+  § Message patterns *Loading* fixes *"Reading this folder."* (`:L314`; the item's `:L302` and
+  `:L420` held at `nozoki@4c59262` and moved when CONTENT reached v7 at `nozoki@1c95030`). So the
+  check verifies neither word. QC-4's obligation is the negative, and which words a surface shows
+  is already QC-53's (every message a catalogue sentence, `docs/CONTENT.md`'s) and FDR R-88's ("the
+  wording standard is `docs/CONTENT.md`'s", `:L170`). The layer-4 half reads: "`swift test
+  --package-path nozoki-mac` (layer 4): a projection with a `pending` item draws no marker, no count
+  and no empty-folder sentence, and the only words it may carry for the state are the *Loading*
+  sentence `docs/CONTENT.md` § Message patterns fixes — by pointer, never copied here." The drafted
+  first clause is kept as drafted; the drafted second clause, which copied CONTENT's sentence into
+  this document, is replaced — a string is CONTENT's to hold, and a check that copies it goes false
+  the day CONTENT re-words it. At `nozoki@46bb275` the check passes on
+  `nozoki-mac/Tests/SurfacesTests/RootItemsViewTests.swift:L96-L115` as it stands, and rows do not
+  expand there (`nozoki-mac/Sources/Surfaces/RootItemsView.swift:L147-L149`), so no surface yet
+  exists for the sentence; the pointer covers the day one does. The same fold moves one line the
+  item did not cite: the layer table's row 4 (`docs/nfdr.md:L888`) says "*pending* as the word" and
+  reads instead "nothing drawn from `pending` but the entry's name, its glyph and CONTENT's *Loading*
+  sentence". § 10's QC-4 row (`:L1084`) names commands only and does not move. QC-4's trace to R-94
+  stays, since R-94's first clause is the obligation. Which word R-94 means — the state or the
+  string — is the FDR's seat's and is raised at `docs/fdr_open_issues.md` § 2.1; the same string in
+  `docs/DESIGN.md` is raised at `docs/DESIGN_open_issues.md` § 2.1. This answer is built on R-88's
+  reading; if the FDR's seat answers that R-94 is literal, the word comes back to this check on a
+  fresh item.
 
 **How it closes.** `product-architecture` folds it on its next run like any other item here.
