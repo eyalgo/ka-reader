@@ -178,7 +178,7 @@ package final class RootItemsView: NSScrollView {
 
     /// Every expansion reads: the row goes to *reading*, drops what it held and asks the owner for
     /// its path. Its earlier sinks go stale, because the generation moves.
-    fileprivate func beginRead(of row: Row) {
+    private func beginRead(of row: Row) {
         row.generation += 1
         row.read = .reading
         row.children = []
