@@ -55,7 +55,20 @@ None.
   pending, never the word on a surface. The same string sits in `docs/fdr.md` R-94 and is raised
   on that document's companion (`docs/fdr_open_issues.md` § 2.1); the NFDR check that verified it
   is being corrected on `docs/architecture_open_issues.md` § 3.1.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm — the rule stays and the string goes: the Do's line reads
+  "show pending as a word, in `docs/CONTENT.md`'s wording, not as a bar or a spinner". Two
+  things are added to what the item says. The same fold rewords the one other line in this
+  document that names the string — § Components "Status messages", "the word says pending"
+  (`docs/DESIGN.md:L689`), which is the line CONTENT RN-4 actually cites (`docs/CONTENT.md:L548`)
+  — to say that the word says the state is pending, in `docs/CONTENT.md`'s wording; the
+  Traceability row for UX-I13 (`:L1227`) already reads "pending is a word, never a bar" and
+  does not move. And the Review Note that records this fold records receiving RN-4's raise,
+  which is the gap the Grounds above name. The answer holds whichever way
+  `docs/fdr_open_issues.md` § 2.1 is answered: which words a state carries is CONTENT's under
+  this document's own seam (`:L668-L674`) and under the CDO's (`<CORE>/roles/loaders/cdo_global.md:L58-L65`),
+  so if R-94 is read as literal it is CONTENT that moves, and this document's pointer still
+  points at it. Decided in the owner's seat by a `companion-self-answer` run; reasoning at
+  `docs/trail/design/self_answer-3.md` § 2.1.
 
 ## 3. Raised from downstream — an item from a seat that did not write the design language
 
