@@ -48,8 +48,9 @@ final class LaunchFlowTests: XCTestCase {
     func testChosenFolderOpensThenListsRoot() throws {
         let harness = Harness(panelAnswer: chosenFolder)
         let wire =
-            #"[{"name":"docs","path":"docs","kind":"folder"},"#
-            + #"{"name":"a.md","path":"a.md","kind":"file"}]"#
+            #"{"state":"observed","entries":["#
+            + #"{"name":"docs","path":"docs","kind":"folder","state":"pending"},"#
+            + #"{"name":"a.md","path":"a.md","kind":"file","state":"observed"}]}"#
         harness.bridge.listAnswer = Data(wire.utf8)
 
         harness.flow.run()
@@ -126,9 +127,10 @@ final class LaunchFlowTests: XCTestCase {
         let bridge = RecordingBridge(log: log)
         let presenter = FakeWindowPresenter()
         let wire =
-            #"[{"name":"docs","path":"docs","kind":"folder"},"#
-            + #"{"name":"a.md","path":"a.md","kind":"file"},"#
-            + #"{"name":"link","path":"link","kind":"symlink"}]"#
+            #"{"state":"observed","entries":["#
+            + #"{"name":"docs","path":"docs","kind":"folder","state":"pending"},"#
+            + #"{"name":"a.md","path":"a.md","kind":"file","state":"observed"},"#
+            + #"{"name":"link","path":"link","kind":"file","state":"failed","condition":"outside"}]}"#
         bridge.listAnswer = Data(wire.utf8)
         let flow = LaunchFlow(
             panel: FakePanel(answer: chosenFolder, log: log), bridge: bridge, glyphs: glyphs,
@@ -144,7 +146,15 @@ final class LaunchFlowTests: XCTestCase {
         XCTAssertEqual(images.count, 3)
         XCTAssertTrue(images[0] === glyphs.folder, "a folder row draws the folder glyph")
         XCTAssertTrue(images[1] === glyphs.file, "a file row draws the file glyph")
-        XCTAssertTrue(images[2] === glyphs.file, "a symlink row draws the file glyph")
+        XCTAssertTrue(images[2] === glyphs.file, "a failed entry draws the file glyph")
+        let failedCell = try XCTUnwrap(
+            view.outlineView.view(atColumn: 0, row: 2, makeIfNecessary: true)
+                as? NSTableCellView)
+        let sentence = failedCell.subviews.compactMap { $0 as? NSTextField }
+            .first { $0.identifier?.rawValue == "entryCondition" }
+        XCTAssertEqual(
+            sentence?.stringValue,
+            "This link leads outside this folder, and Nozoki reads nothing outside it.")
     }
 
     func testNilListResultDrawsNoRow() throws {
@@ -154,12 +164,19 @@ final class LaunchFlowTests: XCTestCase {
         harness.flow.run()
 
         XCTAssertEqual(try drawnLabels(harness), [])
+        XCTAssertNil(try XCTUnwrap(harness.presenter.presented.first).rootLineText)
     }
 
     func testNonConformingListPayloadDrawsNoRow() throws {
         let payloads = [
             "this is not json",
             #"[{"name":"a","path":"a","kind":"socket"}]"#,
+            "[]",
+            #"{"state":"pending"}"#,
+            #"{"state":"stopped"}"#,
+            #"{"state":"failed","condition":"gone"}"#,
+            #"{"state":"observed","entries":[{"name":"a","path":"a","kind":"file","state":"stopped"}]}"#,
+            #"{"state":"observed","entries":[{"name":"a","path":"a","kind":"file","state":"failed","condition":"gone"}]}"#,
         ]
         for payload in payloads {
             let harness = Harness(panelAnswer: chosenFolder)
@@ -168,7 +185,30 @@ final class LaunchFlowTests: XCTestCase {
             harness.flow.run()
 
             XCTAssertEqual(try drawnLabels(harness), [], payload)
+            XCTAssertNil(try XCTUnwrap(harness.presenter.presented.first).rootLineText, payload)
         }
+    }
+
+    func testObservedEmptyPayloadDrawsTheNoFilesLine() throws {
+        let harness = Harness(panelAnswer: chosenFolder)
+        harness.bridge.listAnswer = Data(#"{"state":"observed","entries":[]}"#.utf8)
+
+        harness.flow.run()
+
+        let view = try XCTUnwrap(harness.presenter.presented.first)
+        XCTAssertEqual(view.outlineView.numberOfRows, 0)
+        XCTAssertEqual(view.rootLineText, "This folder has no files.")
+    }
+
+    func testFailedRootPayloadDrawsTheCantReadLine() throws {
+        let harness = Harness(panelAnswer: chosenFolder)
+        harness.bridge.listAnswer = Data(#"{"state":"failed","condition":"unreadable"}"#.utf8)
+
+        harness.flow.run()
+
+        let view = try XCTUnwrap(harness.presenter.presented.first)
+        XCTAssertEqual(view.outlineView.numberOfRows, 0)
+        XCTAssertEqual(view.rootLineText, "Nozoki can't read this folder.")
     }
 
     func testEveryCallIsANamedExport() {
@@ -182,7 +222,7 @@ final class LaunchFlowTests: XCTestCase {
 
     func testEveryNonNilBufferIsFreedExactlyOnce() {
         let scenarios: [(open: Data?, list: Data?)] = [
-            (Data(#"{"opened":true}"#.utf8), Data("[]".utf8)),
+            (Data(#"{"opened":true}"#.utf8), Data(#"{"state":"observed","entries":[]}"#.utf8)),
             (nil, nil),
             (Data("not json".utf8), Data("not json".utf8)),
         ]

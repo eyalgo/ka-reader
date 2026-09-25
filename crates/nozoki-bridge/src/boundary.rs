@@ -10,7 +10,7 @@ use std::path::PathBuf;
 use serde::Serialize;
 
 use crate::exports::NozokiBuffer;
-use crate::session::{EntryDto, OpenResult, Session};
+use crate::session::{ListAnswerDto, OpenResult, Session};
 
 /// Runs `work` under `catch_unwind` and hands its answer across as an owned buffer of JSON bytes.
 ///
@@ -34,7 +34,8 @@ pub fn guarded<T: Serialize>(work: impl FnOnce() -> T) -> *mut NozokiBuffer {
 pub enum ListPath {
     Root,
     Under(String),
-    /// Bytes that are not UTF-8. `nozoki_core::list_tree` takes `&str`, so this answers `[]`.
+    /// Bytes that are not UTF-8. `nozoki_core::list_tree` takes `&str`, so this answers
+    /// `{"state":"pending"}`: nothing was read.
     NotUtf8,
 }
 
@@ -81,17 +82,18 @@ pub unsafe fn open_location(session: &Session, location: *const c_char) -> OpenR
     session.open(unsafe { decode_location(location) })
 }
 
-/// Lists `path` in `session`. A path that is not UTF-8 answers `[]`, as a refused listing does.
+/// Lists `path` in `session`. A path that is not UTF-8 answers `{"state":"pending"}`, because
+/// nothing was read.
 ///
 /// # Safety
 ///
 /// As `decode_list_path`.
-pub unsafe fn list_entries(session: &Session, path: *const c_char) -> Vec<EntryDto> {
+pub unsafe fn list_entries(session: &Session, path: *const c_char) -> ListAnswerDto {
     // SAFETY: forwarded from the caller.
     match unsafe { decode_list_path(path) } {
         ListPath::Root => session.list(""),
         ListPath::Under(relative) => session.list(&relative),
-        ListPath::NotUtf8 => Vec::new(),
+        ListPath::NotUtf8 => ListAnswerDto::Pending,
     }
 }
 
@@ -201,7 +203,7 @@ mod tests {
     }
 
     #[test]
-    fn test_non_utf8_list_path_answers_empty_array() {
+    fn test_non_utf8_list_path_answers_pending() {
         let folder = TempDir::new();
         folder.write_file("present.txt", "");
         let session = Session::default();
@@ -209,7 +211,7 @@ mod tests {
         let path = CString::new(&b"docs/\xff"[..]).expect("no interior NUL");
 
         // SAFETY: `path` is NUL-terminated and outlives both calls.
-        let (decoded, entries) = unsafe {
+        let (decoded, answer) = unsafe {
             (
                 decode_list_path(path.as_ptr()),
                 list_entries(&session, path.as_ptr()),
@@ -217,10 +219,19 @@ mod tests {
         };
 
         assert_eq!(decoded, ListPath::NotUtf8);
-        assert!(entries.is_empty(), "`[]`, and never a lossy guess");
+        assert_eq!(
+            serde_json::to_value(answer).expect("the answer serializes"),
+            serde_json::json!({ "state": "pending" }),
+            "nothing was read, and never a lossy guess"
+        );
         // SAFETY: NULL is the root, and the folder holds one entry.
         let root = unsafe { list_entries(&session, ptr::null::<c_char>()) };
-        assert_eq!(root.len(), 1, "the same session does list its root");
+        let root = serde_json::to_value(root).expect("the answer serializes");
+        assert_eq!(
+            root["state"], "observed",
+            "the same session does list its root"
+        );
+        assert_eq!(root["entries"].as_array().expect("entries").len(), 1);
     }
 
     #[test]

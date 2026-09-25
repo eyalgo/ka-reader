@@ -1,5 +1,5 @@
-//! CP-30, the core half: a Failed listing emits exactly one `warn` record without a path, and
-//! neither a Refused nor a Listed listing emits any.
+//! CP-30 and CP-180, the core half: a failed answer emits exactly one `warn` record without a path,
+//! a failed entry emits one, and an answer whose entries all stand emits none.
 //!
 //! `log` has one global logger per process, so this is the only test in its binary.
 
@@ -13,7 +13,7 @@ use std::sync::Mutex;
 
 use common::TempDir;
 use log::{LevelFilter, Log, Metadata, Record};
-use nozoki_core::{Listing, list_tree, open_folder};
+use nozoki_core::{ItemState, list_tree, open_folder};
 
 struct Capture {
     records: Mutex<Vec<(log::Level, String)>>,
@@ -48,29 +48,52 @@ fn take_records() -> Vec<(log::Level, String)> {
 }
 
 #[test]
-fn failed_listing_emits_one_warn_without_path_and_others_emit_none() {
+fn failed_items_emit_one_warn_each_without_a_path_and_others_emit_none() {
     log::set_logger(&CAPTURE).expect("no other logger is installed in this binary");
     log::set_max_level(LevelFilter::Warn);
     let folder = TempDir::new();
     folder.write_file("readable/file.txt", "");
     folder.make_folder("locked-folder");
     folder.set_mode("locked-folder", 0o000);
+    let root_with_failure = TempDir::new();
+    root_with_failure.make_link("gone", "nowhere");
+    root_with_failure.make_folder("locked");
+    root_with_failure.set_mode("locked", 0o000);
     let opened = open_folder(folder.path()).expect("a folder opens");
+    let opened_with_failure = open_folder(root_with_failure.path()).expect("a folder opens");
 
-    assert!(matches!(list_tree(&opened, "readable"), Listing::Listed(_)));
-    assert_eq!(list_tree(&opened, ".."), Listing::Refused);
-    assert!(take_records().is_empty(), "Listed and Refused emit nothing");
+    assert!(matches!(
+        list_tree(&opened, "readable"),
+        ItemState::Observed(_)
+    ));
+    assert!(
+        take_records().is_empty(),
+        "an answer with no failed entry emits nothing"
+    );
+
+    // `gone` fails as an entry. `locked` is a Pending folder, and adds none.
+    assert!(matches!(
+        list_tree(&opened_with_failure, ""),
+        ItemState::Observed(_)
+    ));
+    let records = take_records();
+    assert_eq!(records.len(), 1, "one record, for `gone`: {records:?}");
+    assert_eq!(records[0].0, log::Level::Warn);
+    assert!(
+        records[0].1.starts_with("fs-reader: entry failed: "),
+        "{records:?}"
+    );
 
     assert!(matches!(
         list_tree(&opened, "locked-folder"),
-        Listing::Failed(_)
+        ItemState::Failed(_)
     ));
     let records = take_records();
 
     assert_eq!(
         records.len(),
         1,
-        "one record per Failed listing: {records:?}"
+        "one record per failed answer: {records:?}"
     );
     let (level, message) = &records[0];
     assert_eq!(*level, log::Level::Warn);

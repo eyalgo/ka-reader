@@ -39,13 +39,13 @@ package final class LaunchFlow {
         release(openBuffer)
 
         let listBuffer = bridge.listTree(path: Self.rootPath)
-        let entries = BridgePayload.decodeEntries(listBuffer)
+        let root = BridgePayload.decodeRoot(listBuffer)
         release(listBuffer)
 
         let view = RootItemsView(
             folderGlyph: glyph(named: Self.folderGlyphName),
             fileGlyph: glyph(named: Self.fileGlyphName))
-        view.show(entries)
+        view.show(root)
         presenter.present(view)
     }
 

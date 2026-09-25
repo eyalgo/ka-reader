@@ -31,7 +31,7 @@ final class FakePanel: FolderChoosing {
 /// A bridge that answers from canned bytes and records every call, buffer and free.
 final class RecordingBridge: Bridging {
     var openAnswer: Data? = Data(#"{"opened":true}"#.utf8)
-    var listAnswer: Data? = Data("[]".utf8)
+    var listAnswer: Data? = Data(#"{"state":"observed","entries":[]}"#.utf8)
 
     private let log: EventLog
     private var nextHandle: UInt = 1

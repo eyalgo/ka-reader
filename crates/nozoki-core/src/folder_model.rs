@@ -3,7 +3,7 @@
 
 use std::path::{Path, PathBuf};
 
-use crate::fs_reader::{self, Listing};
+use crate::fs_reader::{self, Entry, ItemState};
 
 /// A folder the user chose, held as its canonical path.
 ///
@@ -17,7 +17,7 @@ pub struct OpenedFolder {
 /// Opens `path` as a folder, rooted at its canonical path.
 ///
 /// Returns `None` when `path` does not resolve to a folder. Whether the folder can be read is not
-/// asked here: [`list_tree`] finds out and reports it as [`Listing::Failed`].
+/// asked here: [`list_tree`] finds out and reports it as the failed item [`ItemState::Failed`].
 ///
 /// # Examples
 ///
@@ -34,17 +34,18 @@ pub fn open_folder(path: impl AsRef<Path>) -> Option<OpenedFolder> {
 }
 
 /// Lists the direct entries of `path` inside an opened folder, where `path` is relative to the
-/// folder's root (the empty string is the root itself).
+/// folder's root (the empty string is the root itself). The answer is `Observed` with the entries,
+/// or `Failed` with a condition, and never `Pending`. Nothing is cached, so every call reads again.
 ///
 /// # Examples
 ///
 /// ```
-/// use nozoki_core::{Listing, list_tree, open_folder};
+/// use nozoki_core::{Condition, ItemState, list_tree, open_folder};
 ///
 /// let opened = open_folder(std::env::temp_dir()).expect("the temporary folder opens");
-/// assert!(matches!(list_tree(&opened, ""), Listing::Listed(_)));
-/// assert_eq!(list_tree(&opened, ".."), Listing::Refused);
+/// assert!(matches!(list_tree(&opened, ""), ItemState::Observed(_)));
+/// assert_eq!(list_tree(&opened, ".."), ItemState::Failed(Condition::Outside));
 /// ```
-pub fn list_tree(opened: &OpenedFolder, path: &str) -> Listing {
+pub fn list_tree(opened: &OpenedFolder, path: &str) -> ItemState<Vec<Entry>> {
     fs_reader::list(&opened.root, path)
 }
