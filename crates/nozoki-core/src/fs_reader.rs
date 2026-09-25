@@ -61,10 +61,21 @@ const OUTSIDE_TEXT: &str = "the path leaves the opened folder";
 /// The text a log line carries when the hop bound is passed.
 const TOO_MANY_LINKS_TEXT: &str = "too many levels of symbolic links";
 
+/// The text a log line carries when a link leads back to itself. The operating system was never
+/// asked, so there is no error text of its own.
+const CYCLE_TEXT: &str = "the link leads back to itself";
+
 /// One step of a requested path, still to be taken.
 enum Step {
     Parent,
     Name(OsString),
+    /// The end of a link's target. It sits in the queue behind the target's own steps, so a link is
+    /// still being resolved for as long as its marker is queued. `link` is the link's location and
+    /// `parent` is the position the link was met from.
+    EndOfLink {
+        link: PathBuf,
+        parent: PathBuf,
+    },
 }
 
 /// Why a requested path did not resolve to a location that can be listed. `text` is what a log
@@ -79,6 +90,13 @@ impl Blocked {
         Self {
             condition: Condition::Outside,
             text: OUTSIDE_TEXT.to_string(),
+        }
+    }
+
+    fn cycle() -> Self {
+        Self {
+            condition: Condition::Cycle,
+            text: CYCLE_TEXT.to_string(),
         }
     }
 
@@ -160,6 +178,14 @@ fn steps_of(path: &Path) -> VecDeque<Step> {
 /// A link entry is classified by resolving its own path here, so the containment check has one
 /// implementation. The kind is the one the last step's `lstat` reported. A walk that ends on the
 /// root, or on a `..`, reached a folder.
+///
+/// A link's target is resolved from the link's parent position, and the link stays "being resolved"
+/// until its target is finished. A link met again while it is being resolved is a `Cycle`, and so is
+/// a link whose finished target lies inside the root and holds the link's own position. A link that
+/// finished earlier may be followed again. A target that lies outside the root is left to the
+/// lexical walk, so a link to an ancestor of the root ends `Outside`. One hop count runs across the
+/// whole request, and past `MAX_LINK_HOPS` the answer is `TooManyLinks`, so a hostile tree still
+/// produces a state and never hangs.
 fn resolve(root: &Path, requested: &Path) -> Result<Resolved, Blocked> {
     let mut position = if requested.is_absolute() {
         PathBuf::from("/")
@@ -175,6 +201,11 @@ fn resolve(root: &Path, requested: &Path) -> Result<Resolved, Blocked> {
                 position.pop();
                 kind = EntryKind::Folder;
             }
+            Step::EndOfLink { parent, .. } => {
+                if position.starts_with(root) && parent.starts_with(&position) {
+                    return Err(Blocked::cycle());
+                }
+            }
             Step::Name(name) => {
                 let candidate = position.join(&name);
                 if !position.starts_with(root) {
@@ -184,19 +215,29 @@ fn resolve(root: &Path, requested: &Path) -> Result<Resolved, Blocked> {
                 let metadata =
                     fs::symlink_metadata(&candidate).map_err(|error| Blocked::from(&error))?;
                 if metadata.is_symlink() {
+                    if pending.iter().any(
+                        |queued| matches!(queued, Step::EndOfLink { link, .. } if *link == candidate),
+                    ) {
+                        return Err(Blocked::cycle());
+                    }
                     links_followed += 1;
                     if links_followed > MAX_LINK_HOPS {
                         return Err(Blocked::too_many_links());
                     }
                     let target =
                         fs::read_link(&candidate).map_err(|error| Blocked::from(&error))?;
+                    let parent = position.clone();
                     if target.is_absolute() {
                         position = PathBuf::from("/");
                     }
+                    pending.push_front(Step::EndOfLink {
+                        link: candidate,
+                        parent,
+                    });
                     for step in steps_of(&target).into_iter().rev() {
                         pending.push_front(step);
                     }
-                } else if !pending.is_empty() && !metadata.is_dir() {
+                } else if !metadata.is_dir() && goes_on(&pending) {
                     return Err(Blocked::from(&io::Error::from(
                         io::ErrorKind::NotADirectory,
                     )));
@@ -218,6 +259,13 @@ fn resolve(root: &Path, requested: &Path) -> Result<Resolved, Blocked> {
             kind,
         })
         .map_err(|_| Blocked::outside())
+}
+
+/// Whether the walk still has a name or a `..` to take. A queued end-of-link marker takes no step.
+fn goes_on(pending: &VecDeque<Step>) -> bool {
+    pending
+        .iter()
+        .any(|queued| !matches!(queued, Step::EndOfLink { .. }))
 }
 
 /// An entry beside the raw name the operating system reported for it. The reported name is lossy
