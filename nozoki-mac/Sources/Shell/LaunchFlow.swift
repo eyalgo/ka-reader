@@ -23,7 +23,8 @@ package final class LaunchFlow {
     private let presenter: WindowPresenting
 
     package init(
-        panel: FolderChoosing, bridge: Bridging, glyphs: GlyphSource, presenter: WindowPresenting
+        panel: FolderChoosing, bridge: Bridging, glyphs: GlyphSource, presenter: WindowPresenting,
+        reader: ReadRunning = OffMainReadRunner()
     ) {
         self.panel = panel
         self.bridge = bridge

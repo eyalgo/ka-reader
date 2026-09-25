@@ -15,12 +15,19 @@ final class LaunchFlowTests: XCTestCase {
         let presenter = FakeWindowPresenter()
         let flow: LaunchFlow
 
-        init(panelAnswer: URL?) {
+        /// `reader: nil` builds the flow without a runner, as the launch tests always did.
+        init(panelAnswer: URL?, reader: ReadRunning? = nil) {
             let log = self.log
             bridge = RecordingBridge(log: log)
             panel = FakePanel(answer: panelAnswer, log: log)
-            flow = LaunchFlow(
-                panel: panel, bridge: bridge, glyphs: FakeGlyphSource(), presenter: presenter)
+            if let reader {
+                flow = LaunchFlow(
+                    panel: panel, bridge: bridge, glyphs: FakeGlyphSource(), presenter: presenter,
+                    reader: reader)
+            } else {
+                flow = LaunchFlow(
+                    panel: panel, bridge: bridge, glyphs: FakeGlyphSource(), presenter: presenter)
+            }
         }
     }
 
@@ -211,10 +218,14 @@ final class LaunchFlowTests: XCTestCase {
         XCTAssertEqual(view.rootLineText, "Nozoki can't read this folder.")
     }
 
-    func testEveryCallIsANamedExport() {
+    func testEveryCallIsANamedExport() throws {
         for answer in [chosenFolder, nil] {
-            let harness = Harness(panelAnswer: answer)
+            let harness = Harness(panelAnswer: answer, reader: InlineReadRunner())
+            harness.bridge.listAnswer = Data(Self.docsRoot.utf8)
+            harness.bridge.listAnswers["docs"] = Data(Self.docsWithGuides.utf8)
             harness.flow.run()
+            try expandRow(0, of: harness)
+            XCTAssertEqual(harness.bridge.listedPaths, ["", "docs"])
             let calls = harness.log.events.filter { $0 != "panel" }
             XCTAssertTrue(Set(calls).isSubset(of: namedExports), "\(calls)")
         }
@@ -237,6 +248,135 @@ final class LaunchFlowTests: XCTestCase {
                 harness.bridge.freed.sorted(), harness.bridge.handedOut.sorted(),
                 "each buffer handed out is freed once, and a nil is never freed")
         }
+    }
+
+    func testEveryExpansionBufferIsFreedExactlyOnce() throws {
+        let expansions: [Data?] = [
+            Data(#"{"state":"observed","entries":[]}"#.utf8), nil, Data("not json".utf8),
+        ]
+        for expansion in expansions {
+            let harness = Harness(panelAnswer: chosenFolder, reader: InlineReadRunner())
+            harness.bridge.listAnswer = Data(Self.docsRoot.utf8)
+            harness.bridge.listAnswers["docs"] = .some(expansion)
+
+            harness.flow.run()
+            try expandRow(0, of: harness)
+
+            XCTAssertEqual(harness.bridge.listedPaths, ["", "docs"])
+            XCTAssertEqual(
+                harness.bridge.freed.sorted(), harness.bridge.handedOut.sorted(),
+                "each buffer handed out is freed once, and a nil is never freed")
+        }
+    }
+
+    private static let docsRoot =
+        #"{"state":"observed","entries":["#
+        + #"{"name":"docs","path":"docs","kind":"folder","state":"pending"}]}"#
+    private static let docsWithGuides =
+        #"{"state":"observed","entries":["#
+        + #"{"name":"guides","path":"docs/guides","kind":"folder","state":"pending"}]}"#
+
+    private func expandRow(_ row: Int, of harness: Harness) throws {
+        let view = try XCTUnwrap(harness.presenter.presented.first)
+        view.outlineView.expandItem(view.outlineView.item(atRow: row))
+    }
+
+    private func collapseRow(_ row: Int, of harness: Harness) throws {
+        let view = try XCTUnwrap(harness.presenter.presented.first)
+        view.outlineView.collapseItem(view.outlineView.item(atRow: row))
+    }
+
+    private func docsHarness(reader: ReadRunning) -> Harness {
+        let harness = Harness(panelAnswer: chosenFolder, reader: reader)
+        harness.bridge.listAnswer = Data(Self.docsRoot.utf8)
+        harness.bridge.listAnswers["docs"] = Data(Self.docsWithGuides.utf8)
+        return harness
+    }
+
+    func testExpandingAFolderReadsItsPathThroughListTree() throws {
+        let harness = docsHarness(reader: InlineReadRunner())
+        harness.flow.run()
+
+        try expandRow(0, of: harness)
+
+        XCTAssertEqual(harness.bridge.listedPaths, ["", "docs"])
+        XCTAssertEqual(try drawnLabels(harness), ["docs", "guides"])
+    }
+
+    func testReExpandingReadsAgain() throws {
+        let harness = docsHarness(reader: InlineReadRunner())
+        harness.flow.run()
+
+        try expandRow(0, of: harness)
+        try collapseRow(0, of: harness)
+        try expandRow(0, of: harness)
+
+        XCTAssertEqual(harness.bridge.listedPaths, ["", "docs", "docs"])
+    }
+
+    func testAHeldReadShowsTheReadingLineUntilReleased() throws {
+        let runner = HoldingReadRunner()
+        let harness = docsHarness(reader: runner)
+        harness.flow.run()
+        let view = try XCTUnwrap(harness.presenter.presented.first)
+
+        try expandRow(0, of: harness)
+
+        XCTAssertEqual(view.outlineView.numberOfRows, 2)
+        XCTAssertEqual(view.lineText(atRow: 1), "Reading this folder.")
+        XCTAssertEqual(harness.bridge.listedPaths, [""], "the read has not started")
+
+        runner.release()
+
+        XCTAssertEqual(try drawnLabels(harness), ["docs", "guides"])
+        XCTAssertEqual(harness.bridge.listedPaths, ["", "docs"])
+    }
+
+    func testAnExpansionWithNoAnswerDrawsNothingBeneath() throws {
+        let answers: [Data?] = [
+            nil, Data(#"{"state":"pending"}"#.utf8), Data("not json".utf8),
+        ]
+        for answer in answers {
+            let harness = docsHarness(reader: InlineReadRunner())
+            harness.bridge.listAnswers["docs"] = .some(answer)
+            harness.flow.run()
+            let view = try XCTUnwrap(harness.presenter.presented.first)
+
+            try expandRow(0, of: harness)
+
+            XCTAssertEqual(view.outlineView.numberOfRows, 1, "nothing beneath docs")
+            XCTAssertEqual(try drawnLabels(harness), ["docs"])
+        }
+    }
+
+    func testTheProductionRunnerReadsOffTheMainThreadAndAnswersOnIt() async throws {
+        let bridge = ThreadRecordingBridge(listAnswers: [
+            "": Data(Self.docsRoot.utf8), "docs": Data(Self.docsWithGuides.utf8),
+        ])
+        let presenter = FakeWindowPresenter()
+        let flow = LaunchFlow(
+            panel: FakePanel(answer: chosenFolder, log: EventLog()), bridge: bridge,
+            glyphs: FakeGlyphSource(), presenter: presenter, reader: OffMainReadRunner())
+        flow.run()
+        let view = try XCTUnwrap(presenter.presented.first)
+        let answered = expectation(description: "the expansion's answer reached the view")
+        var sinkRanOnMain: Bool?
+        let intent = try XCTUnwrap(view.listTree)
+        view.listTree = { path, answer in
+            intent(path) { listing in
+                sinkRanOnMain = Thread.isMainThread
+                answer(listing)
+                answered.fulfill()
+            }
+        }
+
+        view.outlineView.expandItem(view.outlineView.item(atRow: 0))
+        await fulfillment(of: [answered], timeout: 10)
+
+        XCTAssertEqual(bridge.ranOnMain("list_tree:docs"), [false])
+        XCTAssertEqual(bridge.ranOnMain("free:docs"), [false])
+        XCTAssertEqual(sinkRanOnMain, true)
+        XCTAssertEqual(try labels(of: view), ["docs", "guides"])
     }
 
     func testLaunchCreatesOneWindow() {
