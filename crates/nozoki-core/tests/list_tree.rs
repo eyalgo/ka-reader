@@ -7,22 +7,20 @@ use std::os::unix::net::UnixListener;
 use common::TempDir;
 use nozoki_core::{Condition, Entry, EntryKind, ItemState, list_tree, open_folder};
 
-/// The name, kind and state of every entry, sorted by name so a test does not depend on the order
-/// the operating system lists in.
+/// The name, kind and state of every entry, in the order the answer carries them. Nothing is
+/// re-sorted here, so a test sees the order CP-168 defines and not one it made up.
 fn names_and_kinds(listing: ItemState<Vec<Entry>>) -> Vec<(String, EntryKind, ItemState<()>)> {
     let ItemState::Observed(entries) = listing else {
         panic!("expected an Observed answer, got {listing:?}");
     };
-    let mut triples: Vec<(String, EntryKind, ItemState<()>)> = entries
+    entries
         .into_iter()
         .map(
             |Entry {
                  name, kind, state, ..
              }| (name, kind, state),
         )
-        .collect();
-    triples.sort_by(|left, right| left.0.cmp(&right.0));
-    triples
+        .collect()
 }
 
 /// A folder entry arrives `Pending` and any other entry `Observed`, as CP-170 and CP-169 fix.
@@ -55,13 +53,68 @@ fn list_root_returns_every_entry_including_hidden_and_git() {
     assert_eq!(
         listed,
         vec![
-            pair(".env", EntryKind::File),
             pair(".git", EntryKind::Folder),
-            pair("README.md", EntryKind::File),
             pair("locked", EntryKind::Folder),
             pair("src", EntryKind::Folder),
-        ]
+            pair(".env", EntryKind::File),
+            pair("README.md", EntryKind::File),
+        ],
+        "folders first, then files, each group by name without regard to case (CP-168)"
     );
+}
+
+/// CP-168, Ex. 1 without `readme`: `readme` cannot share a folder with `Readme` on a
+/// case-insensitive volume, so the tie between them is proved at unit level.
+#[test]
+fn the_root_lists_folders_first_then_by_name_without_regard_to_case() {
+    let folder = TempDir::new();
+    folder.make_folder("B");
+    folder.make_folder("a");
+    folder.write_file("file10", "");
+    folder.write_file("file2", "");
+    folder.write_file(".dot", "");
+    folder.write_file("Readme", "");
+    let opened = open_folder(folder.path()).expect("a folder opens");
+
+    let names: Vec<String> = names_and_kinds(list_tree(&opened, ""))
+        .into_iter()
+        .map(|triple| triple.0)
+        .collect();
+
+    assert_eq!(names, ["a", "B", ".dot", "file10", "file2", "Readme"]);
+}
+
+/// CP-168, Ex. 2: digits compare as characters and `_` (U+005F) precedes a lowercase letter.
+#[test]
+fn an_underscore_name_precedes_a_letter() {
+    let folder = TempDir::new();
+    folder.write_file("apple", "");
+    folder.write_file("_notes", "");
+    let opened = open_folder(folder.path()).expect("a folder opens");
+
+    let names: Vec<String> = names_and_kinds(list_tree(&opened, ""))
+        .into_iter()
+        .map(|triple| triple.0)
+        .collect();
+
+    assert_eq!(names, ["_notes", "apple"]);
+}
+
+/// CP-168, Ex. 3: names compare on their lowercase forms, so `ecrit` precedes `Écrit`. The accented
+/// name is spelled with an escape so the source file's normalization cannot change it.
+#[test]
+fn a_lowercase_fold_puts_ecrit_before_the_accented_name() {
+    let folder = TempDir::new();
+    folder.write_file("\u{C9}crit", "");
+    folder.write_file("ecrit", "");
+    let opened = open_folder(folder.path()).expect("a folder opens");
+
+    let names: Vec<String> = names_and_kinds(list_tree(&opened, ""))
+        .into_iter()
+        .map(|triple| triple.0)
+        .collect();
+
+    assert_eq!(names, ["ecrit", "\u{C9}crit"]);
 }
 
 #[test]

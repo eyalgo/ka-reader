@@ -27,11 +27,6 @@ fn named<'a>(entries: &'a [Entry], name: &str) -> &'a Entry {
         .unwrap_or_else(|| panic!("no entry called {name}: {entries:?}"))
 }
 
-fn sorted_by_name(mut entries: Vec<Entry>) -> Vec<Entry> {
-    entries.sort_by(|left, right| left.name.cmp(&right.name));
-    entries
-}
-
 fn assert_folder(entry: &Entry) {
     assert_eq!(entry.kind, EntryKind::Folder, "{entry:?}");
     assert_eq!(entry.state, ItemState::Pending, "{entry:?}");
@@ -58,8 +53,8 @@ fn a_link_to_a_folder_inside_lists_as_a_pending_folder() {
     let opened = open(&folder);
 
     let root = observed(list_tree(&opened, ""));
-    let through_link = sorted_by_name(observed(list_tree(&opened, "z-link")));
-    let direct = sorted_by_name(observed(list_tree(&opened, "docs")));
+    let through_link = observed(list_tree(&opened, "z-link"));
+    let direct = observed(list_tree(&opened, "docs"));
 
     assert_folder(named(&root, "z-link"));
     assert_eq!(
@@ -162,5 +157,46 @@ fn a_chain_past_the_hop_bound_fails_as_too_many_links() {
     assert_eq!(
         list_tree(&opened, "c00"),
         ItemState::Failed(Condition::TooManyLinks)
+    );
+}
+
+/// CP-168, Ex. 5: a link that lists as a folder sorts with the folders, ahead of every file.
+#[test]
+fn a_link_to_a_folder_inside_sorts_with_the_folders() {
+    let folder = TempDir::new();
+    folder.make_folder("docs");
+    folder.write_file("a.txt", "");
+    folder.make_link("z-link", "docs");
+    let opened = open(&folder);
+
+    let names: Vec<String> = observed(list_tree(&opened, ""))
+        .into_iter()
+        .map(|entry| entry.name)
+        .collect();
+
+    assert_eq!(names, ["docs", "z-link", "a.txt"]);
+}
+
+/// CP-168, Ex. 7: the folder shaped like `checks/fixtures/plain`. The failed link is a file, so it
+/// sorts with the files.
+#[test]
+fn the_plain_shaped_folder_lists_in_the_fdr_order() {
+    let folder = TempDir::new();
+    folder.write_file("docs/guide.txt", "");
+    folder.write_file(".hidden-note", "");
+    folder.write_file("readme.txt", "");
+    let outside = TempDir::new();
+    outside.make_folder("target");
+    folder.make_link("outside-link", outside.path().join("target"));
+    let opened = open(&folder);
+
+    let names: Vec<String> = observed(list_tree(&opened, ""))
+        .into_iter()
+        .map(|entry| entry.name)
+        .collect();
+
+    assert_eq!(
+        names,
+        ["docs", ".hidden-note", "outside-link", "readme.txt"]
     );
 }

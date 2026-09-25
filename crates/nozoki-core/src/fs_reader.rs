@@ -266,6 +266,7 @@ fn failed_entry(blocked: &Blocked) -> (EntryKind, ItemState<()>) {
 mod tests {
     use super::*;
     use crate::test_support::TempDir;
+    use std::os::unix::ffi::OsStringExt;
 
     /// The entries of an observed answer, sorted by name, or a panic naming the answer.
     fn entries_of(outcome: ItemState<Vec<Entry>>) -> Vec<Entry> {
@@ -589,5 +590,87 @@ mod tests {
             condition_for(io::ErrorKind::Interrupted),
             Condition::Unreadable
         );
+    }
+
+    fn listed_entry(raw_name: &[u8], name: &str, kind: EntryKind) -> Listed {
+        let state = match kind {
+            EntryKind::Folder => ItemState::Pending,
+            EntryKind::File => ItemState::Observed(()),
+        };
+        Listed {
+            raw_name: OsString::from_vec(raw_name.to_vec()),
+            entry: entry(name, name, kind, state),
+        }
+    }
+
+    fn ordered_names(mut items: Vec<Listed>) -> Vec<String> {
+        order(&mut items);
+        items.into_iter().map(|item| item.entry.name).collect()
+    }
+
+    #[test]
+    fn test_order_puts_folders_first_then_names_without_regard_to_case() {
+        let items = [
+            ("B", EntryKind::Folder),
+            ("a", EntryKind::Folder),
+            ("file10", EntryKind::File),
+            ("file2", EntryKind::File),
+            (".dot", EntryKind::File),
+            ("Readme", EntryKind::File),
+            ("readme", EntryKind::File),
+        ]
+        .map(|(name, kind)| listed_entry(name.as_bytes(), name, kind));
+
+        assert_eq!(
+            ordered_names(items.into()),
+            ["a", "B", ".dot", "file10", "file2", "Readme", "readme"]
+        );
+    }
+
+    #[test]
+    fn test_order_breaks_a_lowercase_tie_by_byte_order() {
+        let upper = || listed_entry(b"Readme", "Readme", EntryKind::File);
+        let lower = || listed_entry(b"readme", "readme", EntryKind::File);
+
+        assert_eq!(ordered_names(vec![lower(), upper()]), ["Readme", "readme"]);
+        assert_eq!(ordered_names(vec![upper(), lower()]), ["Readme", "readme"]);
+    }
+
+    #[test]
+    fn test_order_is_total_for_names_with_the_same_lossy_form() {
+        // Both raw names are invalid UTF-8 and both report as "\u{FFFD}" once made lossy.
+        let low = || listed_entry(&[0xFF], "\u{FFFD}", EntryKind::File);
+        let high = || listed_entry(&[0xFE], "\u{FFFD}", EntryKind::File);
+        let raw_order = |items: Vec<Listed>| {
+            let mut items = items;
+            order(&mut items);
+            items
+                .into_iter()
+                .map(|item| item.raw_name.into_vec())
+                .collect::<Vec<_>>()
+        };
+
+        assert_eq!(raw_order(vec![low(), high()]), [vec![0xFE], vec![0xFF]]);
+        assert_eq!(raw_order(vec![high(), low()]), [vec![0xFE], vec![0xFF]]);
+    }
+
+    #[test]
+    fn test_a_failed_entry_and_a_socket_sort_with_the_files() {
+        let failed = Listed {
+            raw_name: OsString::from("a-failed"),
+            entry: entry(
+                "a-failed",
+                "a-failed",
+                EntryKind::File,
+                ItemState::Failed(Condition::Missing),
+            ),
+        };
+        let items = vec![
+            listed_entry(b"z-folder", "z-folder", EntryKind::Folder),
+            listed_entry(b"m-socket", "m-socket", EntryKind::File),
+            failed,
+        ];
+
+        assert_eq!(ordered_names(items), ["z-folder", "a-failed", "m-socket"]);
     }
 }
