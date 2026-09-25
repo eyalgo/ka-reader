@@ -67,6 +67,10 @@ const TOO_MANY_LINKS_TEXT: &str = "too many levels of symbolic links";
 /// asked, so there is no error text of its own.
 const CYCLE_TEXT: &str = "the link leads back to itself";
 
+/// The two spellings that end a link's target in a demand that its last name be a folder. Both are
+/// dropped by `Path::components`, so [`target_steps_of`] looks for them in the raw bytes.
+const FOLDER_DEMANDING_ENDINGS: [&[u8]; 2] = [b"/", b"/."];
+
 /// One step of a requested path, still to be taken.
 enum Step {
     Parent,
@@ -183,7 +187,10 @@ fn steps_of(path: &Path) -> VecDeque<Step> {
 fn target_steps_of(target: &Path) -> VecDeque<Step> {
     let mut steps = steps_of(target);
     let spelling = target.as_os_str().as_bytes();
-    if spelling.ends_with(b"/") || spelling.ends_with(b"/.") {
+    if FOLDER_DEMANDING_ENDINGS
+        .iter()
+        .any(|ending| spelling.ends_with(ending))
+    {
         steps.push_back(Step::MustBeFolder);
     }
     steps
