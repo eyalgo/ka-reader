@@ -59,7 +59,11 @@ None.
 - **What moves if you override:** Nothing else. The three places keep the current sentence, and
   the folder sentence in § Message patterns, *Partial* stands on its own grounds either way
   (RN-34).
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm — all three places take *"This file is no longer there."*, and
+  the grounds gain one: the current sentence's bare *the folder* can be read as the open file's
+  own parent folder or as the folder you opened. § Terminology's *folder* row names the opened
+  one *the folder you opened*, so the bare phrase is neither. Reasoning:
+  `docs/trail/content/self_answer-6.md`.
 
 ## 3. Raised from downstream — an item from a seat that did not write the verbal language
 
