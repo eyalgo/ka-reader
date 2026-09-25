@@ -25,9 +25,10 @@ pub enum Condition {
     Outside,
     /// A link whose resolution loops back on itself.
     Cycle,
-    /// Something on the path is not there.
+    /// Something on the path is not there. A link whose target runs through a file is Missing too:
+    /// the target names something that is not there.
     Missing,
-    /// A file was listed, or a path went through one.
+    /// A file was listed, or a path the caller spelled went through one.
     NotAFolder,
     /// A chain of links longer than [`MAX_LINK_HOPS`], with no cycle found.
     TooManyLinks,
@@ -70,6 +71,10 @@ const CYCLE_TEXT: &str = "the link leads back to itself";
 enum Step {
     Parent,
     Name(OsString),
+    /// A link target's demand, spelled by a trailing separator or a trailing `.`, that the name
+    /// before it be a folder. `Path::components` drops both spellings, so the demand is queued as a
+    /// step of its own. Taking it moves nothing and changes nothing.
+    MustBeFolder,
     /// The end of a link's target. It sits in the queue behind the target's own steps, so a link is
     /// still being resolved for as long as its marker is queued. `link` is the link's location and
     /// `parent` is the position the link was met from.
@@ -98,6 +103,15 @@ impl Blocked {
         Self {
             condition: Condition::Cycle,
             text: CYCLE_TEXT.to_string(),
+        }
+    }
+
+    /// A link's target ran into a file where it needs a folder. The link leads to something that is
+    /// not there, and the log line keeps what the operating system says of a file met as a folder.
+    fn through_a_file() -> Self {
+        Self {
+            condition: Condition::Missing,
+            text: io::Error::from(io::ErrorKind::NotADirectory).to_string(),
         }
     }
 
@@ -164,6 +178,17 @@ fn steps_of(path: &Path) -> VecDeque<Step> {
         .collect()
 }
 
+/// The steps of a link's `target`: its own steps, and a [`Step::MustBeFolder`] behind them when the
+/// target is spelled with a trailing separator or a trailing `.`, both of which [`steps_of`] drops.
+fn target_steps_of(target: &Path) -> VecDeque<Step> {
+    let mut steps = steps_of(target);
+    let spelling = target.as_os_str().as_bytes();
+    if spelling.ends_with(b"/") || spelling.ends_with(b"/.") {
+        steps.push_back(Step::MustBeFolder);
+    }
+    steps
+}
+
 /// Resolves `requested` to a location, returned as its path below `root`, with the kind of what the
 /// last step found.
 ///
@@ -175,6 +200,10 @@ fn steps_of(path: &Path) -> VecDeque<Step> {
 /// walk ends outside is `Outside`, without a filesystem call on any path outside the root. An
 /// absolute path spelled through a symlinked ancestor of the root never lexically meets the
 /// canonical root, so it is `Outside`. No caller across the IPC boundary sends an absolute path.
+///
+/// A file met where the path needs a folder ends the walk. It is `Missing` when the step that needs
+/// the folder belongs to a link's target, at any depth of links, and `NotAFolder` when it belongs to
+/// the path the caller spelled.
 ///
 /// A link entry is classified by resolving its own path here, so the containment check has one
 /// implementation. The kind is the one the last step's `lstat` reported. A walk that ends on the
@@ -202,6 +231,7 @@ fn resolve(root: &Path, requested: &Path) -> Result<Resolved, Blocked> {
                 position.pop();
                 kind = EntryKind::Folder;
             }
+            Step::MustBeFolder => {}
             Step::EndOfLink { parent, .. } => {
                 if position.starts_with(root) && holds(root, &position, &parent)? {
                     return Err(Blocked::cycle());
@@ -235,13 +265,15 @@ fn resolve(root: &Path, requested: &Path) -> Result<Resolved, Blocked> {
                         link: candidate,
                         parent,
                     });
-                    for step in steps_of(&target).into_iter().rev() {
+                    for step in target_steps_of(&target).into_iter().rev() {
                         pending.push_front(step);
                     }
                 } else if !metadata.is_dir() && goes_on(&pending) {
-                    return Err(Blocked::from(&io::Error::from(
-                        io::ErrorKind::NotADirectory,
-                    )));
+                    return Err(if next_step_is_a_links_target(&pending) {
+                        Blocked::through_a_file()
+                    } else {
+                        Blocked::from(&io::Error::from(io::ErrorKind::NotADirectory))
+                    });
                 } else {
                     kind = if metadata.is_dir() {
                         EntryKind::Folder
@@ -294,6 +326,17 @@ fn goes_on(pending: &VecDeque<Step>) -> bool {
     pending
         .iter()
         .any(|queued| !matches!(queued, Step::EndOfLink { .. }))
+}
+
+/// Whether the next step to take belongs to some link's target. A link's target steps are queued
+/// ahead of that link's end-of-link marker, so that holds exactly when a marker is still queued
+/// behind the next step. The caller's own steps are queued last, with no marker behind them.
+fn next_step_is_a_links_target(pending: &VecDeque<Step>) -> bool {
+    pending
+        .iter()
+        .skip_while(|queued| matches!(queued, Step::EndOfLink { .. }))
+        .skip(1)
+        .any(|queued| matches!(queued, Step::EndOfLink { .. }))
 }
 
 /// An entry beside the raw name the operating system reported for it. The reported name is lossy
