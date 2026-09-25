@@ -102,8 +102,15 @@ final class RootItemsViewTests: XCTestCase {
 
         XCTAssertEqual(view.outlineView.numberOfRows, 3)
         XCTAssertNil(view.rootLineText)
+        let names = [".git", "src", "README.md"]
         for row in 0..<3 {
-            XCTAssertNil(try conditionText(cell(view, row: row)))
+            let drawn = try cell(view, row: row)
+            XCTAssertNil(conditionText(drawn))
+            // The only text a row draws is the name: no count, no marker, no word beside it.
+            let visibleText = drawn.subviews.compactMap { $0 as? NSTextField }
+                .filter { !$0.isHidden }.map(\.stringValue)
+            XCTAssertEqual(visibleText, [names[row]])
+            XCTAssertNotNil(drawn.imageView?.image)
         }
     }
 
