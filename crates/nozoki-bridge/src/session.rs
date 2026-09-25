@@ -405,6 +405,29 @@ mod tests {
         assert_eq!(names(&answer(&session, "")), vec!["a-file"]);
     }
 
+    /// CP-195: a link whose target runs through a file is `missing`, and the bridge carries the
+    /// core's condition across as it stands, as the entry's condition and as the listed answer.
+    #[test]
+    fn test_a_link_through_a_file_crosses_as_missing() {
+        let folder = TempDir::new();
+        folder.write_file("notes.txt", "");
+        folder.make_link("bad", "notes.txt/x");
+        let session = Session::default();
+        opened(&session, &folder);
+
+        let root = answer(&session, "");
+        let bad = entries_of(&root)
+            .iter()
+            .find(|entry| entry["name"] == "bad")
+            .expect("the link is listed");
+        assert_eq!(bad["state"], "failed");
+        assert_eq!(bad["condition"], "missing");
+        assert_eq!(
+            answer(&session, "bad"),
+            json!({ "state": "failed", "condition": "missing" })
+        );
+    }
+
     #[test]
     fn test_list_with_no_folder_open_answers_pending() {
         let session = Session::default();
