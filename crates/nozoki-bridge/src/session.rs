@@ -437,4 +437,42 @@ mod tests {
         );
         assert_eq!(listed.len(), 5);
     }
+
+    // ---- Added by development-code-integrity (2026-09-25), derived from the intent it cites ----
+
+    /// CP-181: from the answer alone the shell "can tell which condition a failed item carries".
+    /// Design § 3 C fixes the six strings, and the Swift shell decodes them from that document and
+    /// not from this code, so nothing but this test holds the Rust side to them. Each condition is
+    /// checked both as a failed answer and as a failed entry's state.
+    #[test]
+    fn test_every_condition_crosses_the_wire_as_its_design_string() {
+        use nozoki_core::Condition;
+
+        use super::{ConditionDto, EntryStateDto, ListAnswerDto};
+
+        for (condition, wire) in [
+            (Condition::Unreadable, "unreadable"),
+            (Condition::Outside, "outside"),
+            (Condition::Cycle, "cycle"),
+            (Condition::Missing, "missing"),
+            (Condition::NotAFolder, "not_a_folder"),
+            (Condition::TooManyLinks, "too_many_links"),
+        ] {
+            let answer = ListAnswerDto::Failed {
+                condition: ConditionDto::from(condition),
+            };
+            let entry_state = EntryStateDto::from(ItemState::<()>::Failed(condition));
+
+            assert_eq!(
+                serde_json::to_value(answer).expect("the answer serializes"),
+                json!({ "state": "failed", "condition": wire }),
+                "{condition:?} as an answer"
+            );
+            assert_eq!(
+                serde_json::to_value(entry_state).expect("the state serializes"),
+                json!({ "state": "failed", "condition": wire }),
+                "{condition:?} as an entry's state"
+            );
+        }
+    }
 }

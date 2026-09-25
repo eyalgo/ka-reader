@@ -252,4 +252,33 @@ final class RootItemsViewTests: XCTestCase {
 
         XCTAssertThrowsError(try JSONDecoder().decode(Entry.self, from: Data(wire.utf8)))
     }
+
+    // ---- Added by development-code-integrity (2026-09-25), derived from the intent it cites ----
+
+    /// The text of every visible label the view draws outside its rows.
+    private func drawnLines(_ view: RootItemsView) -> [String] {
+        view.subviews.compactMap { $0 as? NSTextField }
+            .filter { !$0.isHidden }
+            .map(\.stringValue)
+    }
+
+    /// CP-186, CP-187 and CP-188 are about what the window *draws*: exactly one line for an observed
+    /// empty root and for a failed one, and no line where there are rows or no answer. The other
+    /// tests read `rootLineText`, which is set beside the label and would stay right if the label
+    /// were never filled or never shown. This one reads the label itself.
+    func testTheRootLineIsTheOneLabelDrawnOutsideTheRows() {
+        let cases: [(String, RootListing?, [String])] = [
+            ("observed and empty", .observed([]), [noFilesSentence]),
+            ("failed", .failed(.unreadable), [cantReadSentence]),
+            ("observed with rows", .observed([entry("a.txt", .file, .observed)]), []),
+            ("no answer", nil, []),
+        ]
+
+        for (label, root, expected) in cases {
+            XCTAssertEqual(drawnLines(makeView(showing: root)), expected, label)
+        }
+        let reused = makeView(showing: .observed([]))
+        reused.show(.observed([entry("a.txt", .file, .observed)]))
+        XCTAssertEqual(drawnLines(reused), [], "a line drawn earlier is taken down")
+    }
 }

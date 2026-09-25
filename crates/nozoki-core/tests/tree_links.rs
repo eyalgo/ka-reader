@@ -286,3 +286,72 @@ fn a_link_followed_again_after_it_finished_still_resolves() {
     assert_eq!(through_twice, direct);
     assert_eq!(through_twice.len(), 1);
 }
+
+// ---- Added by development-code-integrity (2026-09-25), each derived from the intent it cites ----
+
+/// CP-174's first class is "a link whose target is a folder that contains the link's own position,
+/// the opened folder itself included". It names the folder, not how the target spells it. Each link
+/// below reaches a folder that holds it by a different spelling: through a grandparent, by an
+/// absolute target, and by a target that steps out of the opened folder and names it again (which
+/// CP-173 does not make Outside, because the target lies inside).
+#[test]
+fn a_link_to_a_folder_holding_it_fails_as_cycle_however_its_target_is_spelled() {
+    let folder = TempDir::new();
+    let root_name = folder
+        .path()
+        .file_name()
+        .expect("the root has a name")
+        .to_str()
+        .expect("the root's name is text")
+        .to_string();
+    folder.make_folder("a/b");
+    folder.make_link("a/b/top", "../..");
+    folder.make_link("a/home", folder.path().join("a"));
+    folder.make_link("back", format!("../{root_name}"));
+    let opened = open(&folder);
+
+    assert_failed(
+        named(&observed(list_tree(&opened, "a/b")), "top"),
+        Condition::Cycle,
+    );
+    assert_failed(
+        named(&observed(list_tree(&opened, "a")), "home"),
+        Condition::Cycle,
+    );
+    assert_failed(
+        named(&observed(list_tree(&opened, "")), "back"),
+        Condition::Cycle,
+    );
+    for requested in ["a/b/top", "a/home", "back"] {
+        assert_eq!(
+            list_tree(&opened, requested),
+            ItemState::Failed(Condition::Cycle),
+            "{requested}"
+        );
+    }
+}
+
+/// CP-174's first class on a volume that ignores letter case, which is what the product runs on
+/// (macOS, CI's `macos-14`). There `../A` names the folder `a`, so `a/up → ../A` reaches the folder
+/// that holds it. Listing it as a folder would show `a` inside itself without end (spec Gap 4). On a
+/// volume that keeps case, `../A` names nothing, and the link is Missing (CP-175).
+#[test]
+fn a_link_to_the_folder_holding_it_spelled_in_another_case_fails_as_cycle() {
+    let folder = TempDir::new();
+    folder.make_folder("a");
+    folder.make_link("a/up", "../A");
+    let opened = open(&folder);
+    let folds_case = folder.path().join("A").exists();
+    let expected = if folds_case {
+        Condition::Cycle
+    } else {
+        Condition::Missing
+    };
+
+    assert_failed(named(&observed(list_tree(&opened, "a")), "up"), expected);
+    assert_eq!(
+        list_tree(&opened, "a/up"),
+        ItemState::Failed(expected),
+        "folds case: {folds_case}"
+    );
+}
