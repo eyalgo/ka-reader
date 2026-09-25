@@ -200,3 +200,89 @@ fn the_plain_shaped_folder_lists_in_the_fdr_order() {
         ["docs", ".hidden-note", "outside-link", "readme.txt"]
     );
 }
+
+/// CP-174's first cycle class, Ex. 8: a link whose target is a folder that contains the link's own
+/// position. `self` reaches the root, which holds it. A path that goes on through it is a cycle too
+/// (CP-177, "a path through a link that forms a cycle").
+#[test]
+fn a_link_to_the_root_fails_as_cycle() {
+    let folder = TempDir::new();
+    folder.make_link("self", ".");
+    let opened = open(&folder);
+
+    let root = observed(list_tree(&opened, ""));
+
+    assert_failed(named(&root, "self"), Condition::Cycle);
+    assert_eq!(
+        list_tree(&opened, "self"),
+        ItemState::Failed(Condition::Cycle)
+    );
+    assert_eq!(
+        list_tree(&opened, "self/x"),
+        ItemState::Failed(Condition::Cycle)
+    );
+}
+
+/// CP-174's first cycle class, Ex. 8: `a/up` reaches `a`'s parent, which holds `a` and so holds `up`.
+#[test]
+fn a_link_to_its_own_parent_fails_as_cycle() {
+    let folder = TempDir::new();
+    folder.make_folder("a");
+    folder.make_link("a/up", "..");
+    let opened = open(&folder);
+
+    let inside = observed(list_tree(&opened, "a"));
+
+    assert_failed(named(&inside, "up"), Condition::Cycle);
+    assert_eq!(
+        list_tree(&opened, "a/up"),
+        ItemState::Failed(Condition::Cycle)
+    );
+}
+
+/// CP-174's second cycle class, Ex. 9: a chain of links that returns to a link it is still resolving.
+#[test]
+fn two_links_naming_each_other_fail_as_cycle() {
+    let folder = TempDir::new();
+    folder.make_link("ping", "pong");
+    folder.make_link("pong", "ping");
+    let opened = open(&folder);
+
+    let root = observed(list_tree(&opened, ""));
+
+    assert_failed(named(&root, "ping"), Condition::Cycle);
+    assert_failed(named(&root, "pong"), Condition::Cycle);
+}
+
+/// CP-174's second cycle class, Ex. 9, through a real folder: `a` leads into `b/c`, and `c` leads back
+/// to `a`, so resolving `a` meets `a` again while it is still being resolved.
+#[test]
+fn a_chain_through_a_real_folder_back_to_its_start_fails_as_cycle() {
+    let folder = TempDir::new();
+    folder.make_folder("b");
+    folder.make_link("a", "b/c");
+    folder.make_link("b/c", "../a");
+    let opened = open(&folder);
+
+    let root = observed(list_tree(&opened, ""));
+    let inside_b = observed(list_tree(&opened, "b"));
+
+    assert_failed(named(&root, "a"), Condition::Cycle);
+    assert_failed(named(&inside_b, "c"), Condition::Cycle);
+}
+
+/// A link that finished earlier may be followed again: only a link still being resolved is a cycle
+/// (design § 4 A). `link/../link` reaches `real` twice and never loops.
+#[test]
+fn a_link_followed_again_after_it_finished_still_resolves() {
+    let folder = TempDir::new();
+    folder.write_file("real/inner.txt", "");
+    folder.make_link("link", "real");
+    let opened = open(&folder);
+
+    let through_twice = observed(list_tree(&opened, "link/../link"));
+    let direct = observed(list_tree(&opened, "real"));
+
+    assert_eq!(through_twice, direct);
+    assert_eq!(through_twice.len(), 1);
+}

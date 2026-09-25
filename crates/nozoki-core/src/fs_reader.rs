@@ -495,8 +495,7 @@ mod tests {
         temp.make_link("ping", "pong");
         temp.make_link("pong", "ping");
 
-        // Task 3 makes this `Cycle`. Until then only the hop bound stops the walk.
-        assert_eq!(list(temp.path(), "ping"), failed(Condition::TooManyLinks));
+        assert_eq!(list(temp.path(), "ping"), failed(Condition::Cycle));
     }
 
     #[test]
