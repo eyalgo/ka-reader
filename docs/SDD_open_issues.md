@@ -72,7 +72,25 @@ None.
   the reader answers this spelling follows from that choice.
 - **If a document has to be written:** none. `SDD.md` § 3 states which of the two the check is,
   using `product-sdd`.
-- **Answer:** <the owner fills this in>
+- **Answer:** The check compares spellings while a path lies outside the grant, and never reaches
+  the canonical form there. Reaching it would take an `lstat` or a `realpath` outside the grant,
+  and § 4 C-D1 names "any read outside the granted folder" as a violation (`docs/SDD.md:L778-L779`;
+  `docs/nfdr.md` QC-35). So § 3's "a canonical path, symlinks resolved" is the canonical form of
+  every position inside the grant, and the row should say so. Outside the grant the walk touches
+  nothing. It re-enters the granted folder only on a name that is certain to name it. That is the
+  folder's own name as spelled, or the same name in another letter case, met from the folder's
+  parent position. The second form counts only where the folder is not the root of its volume and
+  that volume ignores letter case, both read from the folder itself. The comparison may never
+  treat two names as one where the volume keeps them apart. Where it cannot be sure, it compares
+  as spelled. So `back → ../<NAME>` on a case-folding volume re-enters the folder and ends `Cycle`
+  (FDR R-152), and `../<NAME>/docs` is read as its target (R-34, R-151). **Named, not covered:**
+  three cases stay `Outside`, because proving otherwise needs a read outside the grant. They are
+  a path that leaves by more than one level and comes back in another case, a Unicode-normalization
+  difference (§ 11 R-10's class), and a granted folder that is the root of its volume. For those,
+  the row's sentence is wrong about where the link leads, and C-D1 is what wins. § 11 R-10's
+  response describes the check as § 3 does, and it moves with § 3. § 9 TO-6's "right about … Unicode
+  normalization" then means refused as outside, never taken for inside. `docs/nfdr.md` QC-6 is
+  re-derived from the fold. Reasoning: `docs/trail/sdd/self_answer-26.md` § 5.1.
 
 **How it closes.** `product-sdd` folds it on its next run like every other item in this file, and
 the trail copy and the delete-when-empty behaviour are unchanged.
