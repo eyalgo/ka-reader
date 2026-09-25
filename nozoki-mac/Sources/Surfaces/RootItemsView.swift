@@ -346,9 +346,9 @@ extension RootItemsView: NSOutlineViewDelegate {
         return cell
     }
 
-    /// The one hook every expansion passes through. `expandItem(_:)` fires it before the item
-    /// opens (measured in the plan for this change), and it is the callback AppKit posts on
-    /// expansion, which a disclosure click is also.
+    /// The one hook an expansion passes through. `expandItem(_:)` fires it before the item opens
+    /// (measured in the plan for this change). That a disclosure click fires it too is not
+    /// measured here: it is held by review, and by the owner's walk of the running app.
     package func outlineViewItemWillExpand(_ notification: Notification) {
         guard !isReloading, let row = notification.userInfo?["NSObject"] as? Row else { return }
         beginRead(of: row)
