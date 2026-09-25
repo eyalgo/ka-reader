@@ -354,6 +354,58 @@ final class RootItemsViewExpansionTests: XCTestCase {
         XCTAssertEqual(rowLabels(view), ["docs", "first.txt"])
     }
 
+    /// CP-201: the sentence stays beside the row "collapsed or expanded", so collapsing a folder whose
+    /// failure arrived while it was open keeps the sentence, and reads nothing.
+    func testAFailedFolderKeepsItsSentenceWhenCollapsed() throws {
+        let (view, log) = makeView([folder("locked"), file("a.txt")])
+        try expand("locked", in: view)
+        try deliver(log, 0, .failed(.unreadable))
+
+        try collapse("locked", in: view)
+
+        XCTAssertEqual(rowLabels(view), ["locked", "a.txt"])
+        XCTAssertEqual(try conditionText(view, "locked"), cantReadSentence)
+        XCTAssertEqual(log.paths, ["locked"], "a collapse reads nothing")
+    }
+
+    /// CP-198: collapsing a row hides every row beneath it, at every depth, and every row that is not
+    /// beneath it stays as it was — an expanded sibling keeps its children.
+    func testCollapsingHidesEveryDepthBeneathAndLeavesAnExpandedSiblingAsItWas() throws {
+        let (view, log) = makeView([folder("docs"), folder("src")])
+        try expand("docs", in: view)
+        try deliver(log, 0, .observed([folder("guides", path: "docs/guides")]))
+        try expand("guides", in: view)
+        try deliver(log, 1, .observed([file("intro.md", path: "docs/guides/intro.md")]))
+        try expand("src", in: view)
+        try deliver(log, 2, .observed([file("main.rs", path: "src/main.rs")]))
+
+        try collapse("docs", in: view)
+
+        XCTAssertEqual(rowLabels(view), ["docs", "src", "main.rs"])
+        XCTAssertTrue(view.outlineView.isItemExpanded(view.outlineView.item(atRow: 1)))
+        XCTAssertEqual(log.paths, ["docs", "docs/guides", "src"], "a collapse reads nothing")
+    }
+
+    /// CP-198: a child row follows the rules a root row follows, so it carries the glyph for its
+    /// kind (CP-184); a failed child is a file and carries the file glyph.
+    func testChildRowsCarryTheGlyphForTheirKind() throws {
+        let (view, log) = makeView([folder("docs")])
+        try expand("docs", in: view)
+
+        try deliver(
+            log, 0,
+            .observed([
+                folder("guides", path: "docs/guides"),
+                file("a.txt", path: "docs/a.txt"),
+                file("gone", path: "docs/gone", state: .failed(.missing)),
+            ]))
+
+        XCTAssertEqual(rowLabels(view), ["docs", "guides", "a.txt", "gone"])
+        XCTAssertTrue(try cell(view, row: 1).imageView?.image === folderGlyph, "guides")
+        XCTAssertTrue(try cell(view, row: 2).imageView?.image === fileGlyph, "a.txt")
+        XCTAssertTrue(try cell(view, row: 3).imageView?.image === fileGlyph, "gone")
+    }
+
     func testExpandingWithNoIntentStillDrawsTheReadingLine() throws {
         let view = RootItemsView(folderGlyph: folderGlyph, fileGlyph: fileGlyph)
         view.show(.observed([folder("docs")]))

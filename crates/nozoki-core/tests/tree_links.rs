@@ -511,3 +511,49 @@ fn a_link_out_of_the_folder_through_a_file_is_outside() {
         ItemState::Failed(Condition::Outside)
     );
 }
+
+/// CP-193 holds through a chain of links: the step the file blocks belongs to the outer link's target
+/// however many links are followed before the file is met, and that includes a trailing separator
+/// that demands a link to a file be a folder.
+#[test]
+fn a_link_blocked_by_a_file_behind_a_chain_of_links_is_missing() {
+    let folder = TempDir::new();
+    folder.write_file("notes.txt", "");
+    folder.make_link("note-link", "notes.txt");
+    folder.make_link("c2", "note-link");
+    folder.make_link("bad5", "c2/x");
+    folder.make_link("ts2", "note-link/");
+    folder.make_link("ts3", "c2/");
+    let opened = open(&folder);
+
+    let root = observed(list_tree(&opened, ""));
+
+    assert_file(named(&root, "c2"));
+    for blocked in ["bad5", "ts2", "ts3"] {
+        assert_failed(named(&root, blocked), Condition::Missing);
+        assert_eq!(
+            list_tree(&opened, blocked),
+            ItemState::Failed(Condition::Missing),
+            "{blocked}"
+        );
+    }
+}
+
+/// CP-194 holds through a chain of links too: a path the caller spells past a link that reaches a
+/// file through a second link meets the file on the caller's own step, so it keeps NotAFolder.
+#[test]
+fn a_path_the_caller_spells_past_a_chain_of_links_to_a_file_keeps_not_a_folder() {
+    let folder = TempDir::new();
+    folder.write_file("notes.txt", "");
+    folder.make_link("note-link", "notes.txt");
+    folder.make_link("c2", "note-link");
+    let opened = open(&folder);
+
+    for requested in ["c2", "c2/x", "c2/..", "c2/"] {
+        assert_eq!(
+            list_tree(&opened, requested),
+            ItemState::Failed(Condition::NotAFolder),
+            "{requested}"
+        );
+    }
+}
