@@ -1,7 +1,9 @@
 import AppKit
 import Surfaces
 
-/// The launch: present the Open panel, pass its answer to the bridge, list the root, draw it.
+/// The launch: present the Open panel, pass its answer to the bridge, list the root, draw it. Each
+/// folder the user then expands is read through `list_tree` off the main thread, and its answer is
+/// handed back to the view on the main actor.
 ///
 /// The panel comes first and nothing is asked before it (CP-81). What the panel returned is the
 /// only thing handed to `openFolder`; a cancel is passed as `nil` and the flow goes on, so the
