@@ -6,6 +6,7 @@ use std::ffi::OsString;
 use std::fs;
 use std::io;
 use std::os::unix::ffi::OsStrExt;
+use std::os::unix::fs::MetadataExt;
 use std::path::{Component, Path, PathBuf};
 
 /// What a directory entry is once it is resolved. A link lists as the folder or file it reaches.
@@ -202,7 +203,7 @@ fn resolve(root: &Path, requested: &Path) -> Result<Resolved, Blocked> {
                 kind = EntryKind::Folder;
             }
             Step::EndOfLink { parent, .. } => {
-                if position.starts_with(root) && parent.starts_with(&position) {
+                if position.starts_with(root) && holds(root, &position, &parent)? {
                     return Err(Blocked::cycle());
                 }
             }
@@ -259,6 +260,33 @@ fn resolve(root: &Path, requested: &Path) -> Result<Resolved, Blocked> {
             kind,
         })
         .map_err(|_| Blocked::outside())
+}
+
+/// Whether `target`, a location inside `root`, is the folder `parent` or one that holds it, where
+/// `parent` is the position inside `root` a link was met from.
+///
+/// Folders are compared as folders, by device and inode, and not only by how their paths are spelled:
+/// on a volume that ignores letter case, `../A` names the folder `a`, and a link reaching it that way
+/// still reaches the folder that holds it. Every path read here lies inside `root`, and none holds a
+/// link, because a position only ever moves onto a location that `lstat` found was not one.
+fn holds(root: &Path, target: &Path, parent: &Path) -> Result<bool, Blocked> {
+    if parent.starts_with(target) {
+        return Ok(true);
+    }
+    let target = fs::symlink_metadata(target).map_err(|error| Blocked::from(&error))?;
+    if !target.is_dir() {
+        return Ok(false);
+    }
+    for folder in parent
+        .ancestors()
+        .take_while(|ancestor| ancestor.starts_with(root))
+    {
+        let folder = fs::symlink_metadata(folder).map_err(|error| Blocked::from(&error))?;
+        if (folder.dev(), folder.ino()) == (target.dev(), target.ino()) {
+            return Ok(true);
+        }
+    }
+    Ok(false)
 }
 
 /// Whether the walk still has a name or a `..` to take. A queued end-of-link marker takes no step.
