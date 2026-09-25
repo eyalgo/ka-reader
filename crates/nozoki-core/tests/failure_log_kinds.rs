@@ -79,6 +79,7 @@ fn every_failed_shape_emits_one_pathless_warn_and_a_root_one_line_per_failed_ent
     folder.make_link("zq-loop-a", "zq-loop-b");
     folder.make_link("zq-loop-b", "zq-loop-a");
     folder.make_link("zq-escape", outside.path());
+    folder.make_link("zq-through", "zq-file/zq-x");
     let opened = open_folder(folder.path()).expect("a folder opens");
     let root = folder.path().display().to_string();
 
@@ -93,6 +94,16 @@ fn every_failed_shape_emits_one_pathless_warn_and_a_root_one_line_per_failed_ent
         assert_eq!(records[0].0, log::Level::Warn, "{outside_path}");
         pathless_text(&records[0].1, LIST_PREFIX, outside_path, &root);
     }
+
+    // A link whose target runs through a file is Missing (CP-193), and it logs like the rest.
+    assert_eq!(
+        list_tree(&opened, "zq-through"),
+        ItemState::Failed(Condition::Missing)
+    );
+    let records = take_records();
+    assert_eq!(records.len(), 1, "zq-through: one record: {records:?}");
+    assert_eq!(records[0].0, log::Level::Warn, "zq-through");
+    pathless_text(&records[0].1, LIST_PREFIX, "zq-through", &root);
 
     for failed in [
         "zq-file",
@@ -115,7 +126,7 @@ fn every_failed_shape_emits_one_pathless_warn_and_a_root_one_line_per_failed_ent
     listing_the_root_emits_one_entry_line_for_each_failed_entry_and_no_list_line();
 }
 
-/// Listing the root, which holds four failed entries, emits four entry lines and no list line.
+/// Listing the root, which holds five failed entries, emits five entry lines and no list line.
 fn listing_the_root_emits_one_entry_line_for_each_failed_entry_and_no_list_line() {
     let folder = TempDir::new();
     let outside = TempDir::new();
@@ -124,14 +135,16 @@ fn listing_the_root_emits_one_entry_line_for_each_failed_entry_and_no_list_line(
     folder.make_link("zq-loop-a", "zq-loop-b");
     folder.make_link("zq-loop-b", "zq-loop-a");
     folder.make_link("zq-escape", outside.path());
+    folder.make_link("zq-through", "zq-file/zq-x");
     let opened = open_folder(folder.path()).expect("a folder opens");
     let root = folder.path().display().to_string();
 
     assert!(matches!(list_tree(&opened, ""), ItemState::Observed(_)));
     let records = take_records();
 
-    // zq-dangling, zq-loop-a, zq-loop-b and zq-escape fail as entries. zq-file is observed and adds none.
-    assert_eq!(records.len(), 4, "one line per failed entry: {records:?}");
+    // zq-dangling, zq-loop-a, zq-loop-b, zq-escape and zq-through fail as entries. zq-file is observed
+    // and adds none.
+    assert_eq!(records.len(), 5, "one line per failed entry: {records:?}");
     for (level, message) in &records {
         assert_eq!(*level, log::Level::Warn);
         pathless_text(message, ENTRY_PREFIX, "a failed entry", &root);

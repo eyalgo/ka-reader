@@ -32,6 +32,9 @@ final class FakePanel: FolderChoosing {
 final class RecordingBridge: Bridging {
     var openAnswer: Data? = Data(#"{"opened":true}"#.utf8)
     var listAnswer: Data? = Data(#"{"state":"observed","entries":[]}"#.utf8)
+    /// An answer for one path. A path with no entry here gets `listAnswer`, and an entry holding
+    /// `nil` is the bridge's failure value for that path.
+    var listAnswers: [String: Data?] = [:]
 
     private let log: EventLog
     private var nextHandle: UInt = 1
@@ -53,7 +56,7 @@ final class RecordingBridge: Bridging {
     func listTree(path: String) -> BridgeBuffer? {
         log.record("list_tree")
         listedPaths.append(path)
-        return makeBuffer(from: listAnswer)
+        return makeBuffer(from: listAnswers[path] ?? listAnswer)
     }
 
     func free(_ buffer: BridgeBuffer) {
@@ -89,5 +92,86 @@ struct FakeGlyphSource: GlyphSource {
         case "file": return file
         default: return nil
         }
+    }
+}
+
+/// Runs the read and the delivery at once, on the caller's thread.
+@MainActor
+struct InlineReadRunner: ReadRunning {
+    func run(
+        _ read: @escaping @Sendable () -> RootListing?,
+        deliver: @escaping @MainActor (RootListing?) -> Void
+    ) {
+        deliver(read())
+    }
+}
+
+/// Keeps every read until the test releases it, then runs each one inline.
+@MainActor
+final class HoldingReadRunner: ReadRunning {
+    private var held: [@MainActor () -> Void] = []
+
+    func run(
+        _ read: @escaping @Sendable () -> RootListing?,
+        deliver: @escaping @MainActor (RootListing?) -> Void
+    ) {
+        held.append { deliver(read()) }
+    }
+
+    func release() {
+        let batch = held
+        held = []
+        for work in batch {
+            work()
+        }
+    }
+}
+
+/// A bridge that may be called from any thread. It answers from canned bytes by path and records,
+/// for each call, whether it ran on the main thread.
+///
+/// `@unchecked Sendable` because the read runner calls it from a background queue. The lock is
+/// enough: every stored property but `listAnswers` (a `let`, set once in `init`) is read and written
+/// only inside `lock`, and `record` takes the thread reading before it takes the lock.
+final class ThreadRecordingBridge: Bridging, @unchecked Sendable {
+    private let lock = NSLock()
+    private let listAnswers: [String: Data]
+    private var nextHandle: UInt = 1
+    private var pathOfHandle: [UInt: String] = [:]
+    private var calls: [(name: String, onMain: Bool)] = []
+
+    init(listAnswers: [String: Data]) {
+        self.listAnswers = listAnswers
+    }
+
+    /// Whether the named call ran on the main thread, for every call of that name.
+    func ranOnMain(_ name: String) -> [Bool] {
+        lock.withLock { calls.filter { $0.name == name }.map(\.onMain) }
+    }
+
+    func openFolder(location: URL?) -> BridgeBuffer? {
+        record("open_folder")
+        return nil
+    }
+
+    func listTree(path: String) -> BridgeBuffer? {
+        record("list_tree:\(path)")
+        return lock.withLock {
+            guard let payload = listAnswers[path] else { return nil }
+            let handle = nextHandle
+            nextHandle += 1
+            pathOfHandle[handle] = path
+            return BridgeBuffer(payload: payload, handle: handle)
+        }
+    }
+
+    func free(_ buffer: BridgeBuffer) {
+        let path = lock.withLock { pathOfHandle[buffer.handle] ?? "?" }
+        record("free:\(path)")
+    }
+
+    private func record(_ name: String) {
+        let onMain = Thread.isMainThread
+        lock.withLock { calls.append((name, onMain)) }
     }
 }

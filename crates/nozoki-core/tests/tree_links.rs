@@ -1,6 +1,7 @@
 //! Layer 2: how a link entry is listed and how a path through a link is answered, over temporary
 //! folders. A link lists as the folder or file it reaches, and it fails as one of the closed
-//! conditions when it cannot be resolved (CP-171 – CP-177).
+//! conditions when it cannot be resolved (CP-171 – CP-177). A link whose target runs through a file
+//! is Missing, and a path the caller spells through a file stays NotAFolder (CP-193, CP-194).
 
 mod common;
 
@@ -354,4 +355,205 @@ fn a_link_to_the_folder_holding_it_spelled_in_another_case_fails_as_cycle() {
         ItemState::Failed(expected),
         "folds case: {folds_case}"
     );
+}
+
+// ---- CP-193 and CP-194: a file where the path needs a folder ----
+
+/// A link's target that runs through a file names something that is not there, so the link is Missing
+/// (CP-193). The listing that holds it still stands.
+#[test]
+fn a_link_through_a_file_lists_as_missing() {
+    let folder = TempDir::new();
+    folder.write_file("notes.txt", "");
+    folder.make_link("bad", "notes.txt/x");
+    let opened = open(&folder);
+
+    let root = observed(list_tree(&opened, ""));
+
+    assert_failed(named(&root, "bad"), Condition::Missing);
+    assert_file(named(&root, "notes.txt"));
+    assert_eq!(root.len(), 2);
+}
+
+/// The listed-path answer agrees with the entry answer, and a path that goes on past such a link is
+/// Missing too (CP-193).
+#[test]
+fn listing_a_link_through_a_file_or_a_path_past_it_answers_missing() {
+    let folder = TempDir::new();
+    folder.write_file("notes.txt", "");
+    folder.make_link("bad", "notes.txt/x");
+    let opened = open(&folder);
+
+    assert_eq!(
+        list_tree(&opened, "bad"),
+        ItemState::Failed(Condition::Missing)
+    );
+    assert_eq!(
+        list_tree(&opened, "bad/y"),
+        ItemState::Failed(Condition::Missing)
+    );
+}
+
+/// CP-193 closes its class by domain: every link whose target, followed through any further links, is
+/// blocked by a file. Each link below is blocked at a different depth of links or by a different
+/// spelling of the step past the file.
+#[test]
+fn every_link_blocked_by_a_file_is_missing_at_any_depth() {
+    let folder = TempDir::new();
+    folder.write_file("notes.txt", "");
+    folder.make_link("note-link", "notes.txt");
+    folder.make_link("bad2", "note-link/x");
+    folder.make_link("bad3", "notes.txt/..");
+    folder.write_file("sub/notes.txt", "");
+    folder.make_link("bad4", "sub/notes.txt/x");
+    folder.make_link("bad", "notes.txt/x");
+    folder.make_link("chain", "bad");
+    let opened = open(&folder);
+
+    let root = observed(list_tree(&opened, ""));
+
+    assert_file(named(&root, "note-link"));
+    for blocked in ["bad", "bad2", "bad3", "bad4", "chain"] {
+        assert_failed(named(&root, blocked), Condition::Missing);
+        assert_eq!(
+            list_tree(&opened, blocked),
+            ItemState::Failed(Condition::Missing),
+            "{blocked}"
+        );
+    }
+}
+
+/// `Path::components` drops a trailing separator and a trailing `.`, so a target spelled
+/// `notes.txt/` or `notes.txt/.` leaves no step after the file. Both still demand that the file be a
+/// folder, and macOS answers "Not a directory" for them, so they belong to CP-193's class.
+#[test]
+fn a_link_whose_target_ends_past_a_file_is_missing() {
+    let folder = TempDir::new();
+    folder.write_file("notes.txt", "");
+    folder.make_link("ts", "notes.txt/");
+    folder.make_link("td", "notes.txt/.");
+    let opened = open(&folder);
+
+    let root = observed(list_tree(&opened, ""));
+
+    for blocked in ["ts", "td"] {
+        assert_failed(named(&root, blocked), Condition::Missing);
+        assert_eq!(
+            list_tree(&opened, blocked),
+            ItemState::Failed(Condition::Missing),
+            "{blocked}"
+        );
+    }
+}
+
+/// The regression fence for the test above: a trailing separator on a target that reaches a folder is
+/// not a demand the folder fails.
+#[test]
+fn a_link_to_a_folder_spelled_with_a_trailing_separator_still_lists_as_a_folder() {
+    let folder = TempDir::new();
+    folder.write_file("docs/guide.txt", "");
+    folder.make_link("dl", "docs/");
+    let opened = open(&folder);
+
+    let root = observed(list_tree(&opened, ""));
+    let through_link = observed(list_tree(&opened, "dl"));
+    let direct = observed(list_tree(&opened, "docs"));
+
+    assert_folder(named(&root, "dl"));
+    assert_eq!(through_link, direct);
+    assert_eq!(through_link.len(), 1);
+}
+
+/// CP-194: a path the caller spells through a file keeps NotAFolder, in the same tree where the
+/// links blocked by a file are Missing, so the two answers are told apart by whose step it was.
+#[test]
+fn a_path_the_caller_spells_through_a_file_keeps_not_a_folder() {
+    let folder = TempDir::new();
+    folder.write_file("notes.txt", "");
+    folder.make_link("note-link", "notes.txt");
+    folder.make_link("bad2", "note-link/x");
+    let opened = open(&folder);
+
+    for requested in [
+        "notes.txt",
+        "notes.txt/x",
+        "notes.txt/..",
+        "note-link/x",
+        "notes.txt/",
+        "notes.txt/.",
+    ] {
+        assert_eq!(
+            list_tree(&opened, requested),
+            ItemState::Failed(Condition::NotAFolder),
+            "{requested}"
+        );
+    }
+    assert_eq!(
+        list_tree(&opened, "bad2"),
+        ItemState::Failed(Condition::Missing)
+    );
+}
+
+/// CP-194: a link out of the opened folder that would run through a file is Outside, and the answer
+/// being Outside and not NotAFolder or Missing is the evidence that nothing under `/etc` was read (the
+/// same argument as `a_link_outside_fails_as_outside_without_reading_its_target`).
+#[test]
+fn a_link_out_of_the_folder_through_a_file_is_outside() {
+    let folder = TempDir::new();
+    folder.make_link("outx", "/etc/hosts/x");
+    let opened = open(&folder);
+
+    let root = observed(list_tree(&opened, ""));
+
+    assert_failed(named(&root, "outx"), Condition::Outside);
+    assert_eq!(
+        list_tree(&opened, "outx"),
+        ItemState::Failed(Condition::Outside)
+    );
+}
+
+/// CP-193 holds through a chain of links: the step the file blocks belongs to the outer link's target
+/// however many links are followed before the file is met, and that includes a trailing separator
+/// that demands a link to a file be a folder.
+#[test]
+fn a_link_blocked_by_a_file_behind_a_chain_of_links_is_missing() {
+    let folder = TempDir::new();
+    folder.write_file("notes.txt", "");
+    folder.make_link("note-link", "notes.txt");
+    folder.make_link("c2", "note-link");
+    folder.make_link("bad5", "c2/x");
+    folder.make_link("ts2", "note-link/");
+    folder.make_link("ts3", "c2/");
+    let opened = open(&folder);
+
+    let root = observed(list_tree(&opened, ""));
+
+    assert_file(named(&root, "c2"));
+    for blocked in ["bad5", "ts2", "ts3"] {
+        assert_failed(named(&root, blocked), Condition::Missing);
+        assert_eq!(
+            list_tree(&opened, blocked),
+            ItemState::Failed(Condition::Missing),
+            "{blocked}"
+        );
+    }
+}
+
+/// CP-194 holds through a chain of links too: a path the caller spells past a link that reaches a
+/// file through a second link meets the file on the caller's own step, so it keeps NotAFolder.
+#[test]
+fn a_path_the_caller_spells_past_a_chain_of_links_to_a_file_keeps_not_a_folder() {
+    let folder = TempDir::new();
+    folder.write_file("notes.txt", "");
+    folder.make_link("note-link", "notes.txt");
+    folder.make_link("c2", "note-link");
+    let opened = open(&folder);
+
+    for requested in ["c2", "c2/x", "c2/..", "c2/"] {
+        assert_eq!(
+            list_tree(&opened, requested),
+            ItemState::Failed(Condition::NotAFolder),
+            "{requested}"
+        );
+    }
 }

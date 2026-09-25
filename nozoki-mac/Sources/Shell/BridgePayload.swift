@@ -2,7 +2,7 @@ import Foundation
 import Surfaces
 
 /// Reads the bridge's JSON payloads. Anything that does not conform reads as the failure value:
-/// not opened, or no root listing (`nil`).
+/// not opened, or no listing (`nil`) for the root or for any folder.
 enum BridgePayload {
     private struct OpenResult: Decodable {
         let opened: Bool
