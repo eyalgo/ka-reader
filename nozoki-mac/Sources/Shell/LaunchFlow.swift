@@ -21,6 +21,7 @@ package final class LaunchFlow {
     private let bridge: Bridging
     private let glyphs: GlyphSource
     private let presenter: WindowPresenting
+    private let reader: ReadRunning
 
     package init(
         panel: FolderChoosing, bridge: Bridging, glyphs: GlyphSource, presenter: WindowPresenting,
@@ -30,6 +31,7 @@ package final class LaunchFlow {
         self.bridge = bridge
         self.glyphs = glyphs
         self.presenter = presenter
+        self.reader = reader
     }
 
     package func run() {
@@ -37,20 +39,31 @@ package final class LaunchFlow {
 
         let openBuffer = bridge.openFolder(location: location)
         folderOpened = BridgePayload.decodeOpened(openBuffer)
-        release(openBuffer)
+        Self.release(openBuffer, through: bridge)
 
-        let listBuffer = bridge.listTree(path: Self.rootPath)
-        let root = BridgePayload.decodeRoot(listBuffer)
-        release(listBuffer)
+        let root = Self.listing(at: Self.rootPath, through: bridge)
 
         let view = RootItemsView(
             folderGlyph: glyph(named: Self.folderGlyphName),
             fileGlyph: glyph(named: Self.fileGlyphName))
         view.show(root)
+        view.listTree = { [bridge, reader] path, answer in
+            reader.run({ Self.listing(at: path, through: bridge) }, deliver: answer)
+        }
         presenter.present(view)
     }
 
-    private func release(_ buffer: BridgeBuffer?) {
+    /// One `list_tree` read, decoded and freed in the same call, so the buffer stays on the thread
+    /// that received it.
+    private nonisolated static func listing(at path: String, through bridge: Bridging)
+        -> RootListing?
+    {
+        let buffer = bridge.listTree(path: path)
+        defer { release(buffer, through: bridge) }
+        return BridgePayload.decodeRoot(buffer)
+    }
+
+    private nonisolated static func release(_ buffer: BridgeBuffer?, through bridge: Bridging) {
         if let buffer {
             bridge.free(buffer)
         }
