@@ -14,12 +14,16 @@
 > two are different acts at different times, and § 3 keeps the later one visible instead of letting
 > it be quietly folded back into § 1 as though the authoring run had asked it.
 
-> **No `product-fdr` run opened this companion.** A `companion-self-answer` run answering
-> `docs/architecture_open_issues.md` § 3.1 opened it on 2026-09-25, in the Principal Architect's
-> posture. `fdr.md` is Settled at v8 and had no companion on disk, so a `product-fdr` re-run would
-> read it as done and find nothing to act on. It holds one item, § 2.1: a clause of R-94 that the
-> NFDR's QC-4 check was verifying word for word, found while that check was being corrected. The
-> reasoning is `docs/trail/architecture/self_answer-18.md`.
+> **How this companion came to exist.** No `product-fdr` run opened it. A `companion-self-answer`
+> run answering `docs/architecture_open_issues.md` § 3.1 opened it on 2026-09-25 (`nozoki@80c222e`),
+> in the Principal Architect's posture: `fdr.md` was Settled at v8 with no companion on disk, so
+> without this file a `product-fdr` re-run would have read it as done. It held one item, § 2.1 — a
+> clause of R-94 that the NFDR's QC-4 check was verifying word for word, found while that check was
+> being corrected; the reasoning is `docs/trail/architecture/self_answer-18.md`. **The first
+> `product-fdr` run after it — v9, 2026-09-25 — left § 2.1 as raised** (the re-run rule: R-94's one
+> source did not move, so no rule moves on this seat's own preference) **and raised § 2.2**, on the
+> SDD's move from v13 Draft to v20 Settled beneath this document and what the fold drafted. Both
+> slots are yours.
 
 ---
 
@@ -35,6 +39,13 @@ None.
   the product does not yet know, the surface shows that it is pending, in the words
   `docs/CONTENT.md` § Message patterns *Loading* fixes, and no spinner or progress bar is drawn."
   R-19 and R-32 already say it that way ("shows that it is pending", `docs/fdr.md:L61`, `:L82`).
+  *(v9, 2026-09-25: R-94 stands as written. Its one source, SDD § 4 C-E1, did not move between v8
+  and v20 — no hunk falls on it (`git diff 5003426 HEAD -- docs/SDD.md`) — and the re-run rule lets
+  no settled rule move on this seat's own preference; the lean above is what a* confirm *writes into
+  R-94, and the fold re-reads the entries that name the state beside it — R-19, R-32, R-157 and the
+  example rows. The sibling move that bears on it: `docs/DESIGN.md` v10 handed the word to
+  `docs/CONTENT.md` on both its lines (its RN-30), so R-94 is now the one line in the definition set
+  naming the string — FDR RN-14.)*
 - **Rationale:** R-88 makes `docs/CONTENT.md` the wording standard for every message the product
   writes (`docs/fdr.md:L170`). CONTENT § Message patterns *Loading* gives the pending folder
   *"Reading this folder."* (`docs/CONTENT.md:L314`; UX-S2's loading row at `:L492`), and its RN-4
@@ -51,6 +62,52 @@ None.
   (`nozoki-mac/Sources/Surfaces/RootItemsView.swift:L161-L170`;
   `nozoki-mac/Tests/SurfacesTests/RootItemsViewTests.swift:L96-L115`). That is then a behaviour
   gap to route as a change, and the NFDR's QC-4 check takes the word back on a fresh item.
+- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+
+### 2.2 The SDD moved from v13 to v20 beneath this document and stands Settled; this run folded what the move reached — two rules added, the header line moved — and every other SDD-sourced entry was opened and holds
+- **Drafted into the FDR:** R-183 and R-184, two example rows, and the header's `Inputs read:` line
+  reading `SDD Settled`. R-183 states what *inside the viewed folder* means wherever R-34, R-59,
+  R-61, R-62, R-151 and R-160 say it of a target — established while reading nothing outside the
+  folder (R-101): a path outside the folder is compared as spelled, nothing about it is looked up,
+  and it counts as back inside only on the folder's own name met from its parent, as spelled or in
+  another letter case where the folder is not the root of its volume and that volume ignores letter
+  case. R-184 names the three spellings presented as outside although their target may lie inside —
+  more than one level out and back in another case, a Unicode-normalization difference, a viewed
+  folder that is the root of its volume — and what each surface shows for them: R-34's entry that
+  cannot be read, R-59's placeholder, R-62's link that does nothing, each marked as outside the
+  folder in the sentence R-88's standard fixes, a mark that for these three is not where the target
+  lies. No rule, product decision or exclusion changes its wording. RN-14, RN-17 and RN-18 carry a
+  v9 re-read, and RN-34 records the move whole — what moved, the two rules, every entry opened
+  against v20 with the diff's hunk list as the proof, and what lands as no rule.
+- **Rationale:** The re-run rule: an upstream document that changed under a settled FDR is a
+  legitimate source of a delta and a finding — fold what the change requires and surface the change
+  itself with what it moved (`<CORE>/prompts/principal_pm_create_fdr.md` § *On a re-run*). The SDD
+  moved six times, runs 13 – 18 (`git diff --stat 5003426 HEAD -- docs/SDD.md`: 550 insertions,
+  78 deletions, 2026-09-25). One move reaches behaviour: the owner's answer at
+  `docs/trail/sdd/cycle-15.md` § 5.1 defined the containment check as comparing spellings outside
+  the grant and never canonicalizing there, named the three spellings that stay refused although
+  they may lead in, and accepted that their row sentence is wrong about where the link leads —
+  C-D1 winning (`docs/SDD.md` § 3 `fs-reader`; § 4 C-D1, C-E4; SDD RN-71, RN-72). A stranger meets
+  that: a link a case-folding volume would resolve inside is marked as outside. R-34 read alone — a
+  target *inside* is read as its target — would have a builder or the QA seat file that as a defect,
+  and the Product Owner would check a change against a rule the SDD contradicts. Two rules rather
+  than a reworded R-34, because the SDD adds a definition and three cases and reverses no sentence
+  of R-34: its *inside* is R-183's, and it stays true as written. The mark's words are
+  `docs/CONTENT.md`'s by R-88 and are pointed at, never copied — CONTENT v7 carries the one outside
+  sentence (its § Message patterns *Partial*). Everything else the move touched is structure,
+  process or the route (RN-34, part 3), re-walked under RN-13's list with the same result. The
+  `Inputs read:` line is the stale case RN-33 asked to be walked: `product-sdd` folded § 2.3 at v14
+  (SDD RN-64) and the fold reached no entry here (RN-18).
+- **If overridden:** (a) *Fold R-183 and R-184 into R-34 instead* — R-34's wording moves, and every
+  downstream citation of it (`docs/nfdr.md` QC-6; `docs/CONTENT.md` § Message patterns *Partial*)
+  reads a changed rule; nothing else moves. (b) *Do not state the three spellings* — the FDR then
+  contradicts the SDD and the built reader (`docs/trail/sdd/cycle-15.md` § 5.1 measured
+  `Failed(Outside)` on the two-level case), and the next bar written from R-34 fails as written.
+  (c) *A site the fold missed* — name it; RN-34 lists every entry opened and the hunks the diff
+  holds, so a miss is one the walk did not reach and lands as a further delta under the same rule.
+  Either way `docs/nfdr.md` QC-6 is owed the Principal Architect's re-derivation — named by SDD
+  RN-71 and by RN-34, and raised on no companion by either, an input moving beneath the NFDR being
+  that document's own rule to meet.
 - **Confirm or override:** <"confirm", or "override: <what to do instead>">
 
 ## 3. Raised from downstream — an item raised against the FDR after it settled
