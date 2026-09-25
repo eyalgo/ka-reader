@@ -10,7 +10,8 @@ omitted:
 
 **Status:** Settled
 **Owner:** Content Editor
-**Version:** 6 — the last citation pointing outside this repository is repaired. RN-24 cited `system/projects/nozoki/agari.md` for the wording of the read-only promise, and that file is not in this repository — the one place RN-15 was still broken after v5 repaired the other twelve. It now cites `docs/PRD.md` § Purpose, which states the promise over the same wider input inside this repository; RN-24 and the standing sentence it explains now cite one document instead of two. The pointer is replaced rather than restated in Nozoki's own words, because a commitment this document carries is quoted from the document that owns it and never paraphrased — restating it would have traded an unopenable locator for an unsourced assertion. RN-15 does not move, no rule moves, and nothing this document states changes (authorized: `docs/trail/content/cycle-5.md` § 2.1). Nothing is left open and the companion is gone. (v5: nothing this document says changes: the 12 `docs/<x>_trail/` citations it rests on (10 `content_trail/`, 2 `prd_trail/`) are repaired to `docs/trail/<x>/`, the answer-trails having moved at `nozoki@1e8bf3d` without the citing documents being moved with them. None of the 12 is commit-pinned, so none is left as written, and all four cited files and all nine cited `§` sections resolve at the new location. The ground is RN-15 rather than tidiness: this document cites only files a reader who has cloned this repository can open, so the twelve were it breaking its own stated rule, and the owner answers a Review Note rests on could not be opened to check them (authorized: `docs/trail/content/cycle-4.md` § 2.1). Nothing those citations authorize changes. One item stays open in `docs/CONTENT_open_issues.md`. (v4: the input widened, and most of this round is subtraction. `docs/PRD.md` v11 and `docs/UXD.md` v6 make the input **one local folder, a Git repository or not**, so § Terminology's word for it becomes *folder* and *repository* narrows to Git's own thing (RN-23); the read-only standing sentence widens with it (RN-24); the worked example that refused a folder without Git is removed from the three places it stood, because the product can no longer produce it (RN-25); and § Message patterns states the one surface that carries no words on purpose (RN-26). No voice behaviour, tone entry or message formula moves. The shipped README now disagrees with this document again and a revision is owed (RN-27). (v3: the unexplained fault has its surfaces. `docs/UXD.md` settled at v4: every failure cell in its § 6 now holds two classes, and UX-I16 says where the second one is shown — so § Message patterns *Error* and § Traceability are repointed at it, and this document no longer carries a message pattern with no declared home. Two corrections ride with it: the status letters' expansion is raised by the letter rather than the row, which is what the owner described and what `docs/DESIGN.md` draws, and RN-12's dependency on the design language is discharged rather than left in flight. No rule in this document moves. The two calls this document was waiting on came back settled and moved nothing in it (`docs/trail/content/cycle-2.md` § 1.1; RN-22), so nothing is left open and the companion is gone.)))
+**Version:** 7 — the owner's § 3.1 answer, and what `docs/UXD.md` v9 left this document owing. A link that cannot be followed gets its four tree-row sentences in § Message patterns *Partial*, two as the shell had them and two replaced (authorized: `docs/trail/content/cycle-6.md` § 3.1; RN-28). With them § Terminology gains *link* (RN-30), and § Accessibility of text's reading bar gains a fourth source, a word § Terminology fixes, against which the *Partial* examples were checked. The remote-image example failed that check, and it used *this folder* for the opened folder, so it takes the link's wording, which is now § Message patterns' one wording for anything outside the folder (RN-29). The four states `docs/UXD.md` RN-29 names as owed here are written: the startup surface with no folder chosen (§ Empty), the in-folder image that can't be shown and the history's stated end (§ Partial), and the short status of a repository mid-operation (§ Message patterns, *The short status*). *Image*, *quit* and *Browse…* join § Terminology, and § Tone's *Starting it* row admits the one startup sentence that is not a failure (RN-31, RN-32). UX-S4 is cited by its new title, *Startup surface*. One dead citation is repaired: PRD § Out of Scope's *"Several repositories at once"* now reads *"Several folders at once"*. The README disagreement recorded in RN-27 has closed (RN-33), and the header carries the **Inputs read:** line. No voice behaviour moves, no tone entry is re-leaned and no formula changes. Nothing is left open and the companion is gone. (v6: the last citation pointing outside this repository is repaired. RN-24 cited `system/projects/nozoki/agari.md` for the wording of the read-only promise, and that file is not in this repository — the one place RN-15 was still broken after v5 repaired the other twelve. It now cites `docs/PRD.md` § Purpose, which states the promise over the same wider input inside this repository; RN-24 and the standing sentence it explains now cite one document instead of two. The pointer is replaced rather than restated in Nozoki's own words, because a commitment this document carries is quoted from the document that owns it and never paraphrased — restating it would have traded an unopenable locator for an unsourced assertion. RN-15 does not move, no rule moves, and nothing this document states changes (authorized: `docs/trail/content/cycle-5.md` § 2.1). Nothing is left open and the companion is gone. (v5: nothing this document says changes: the 12 `docs/<x>_trail/` citations it rests on (10 `content_trail/`, 2 `prd_trail/`) are repaired to `docs/trail/<x>/`, the answer-trails having moved at `nozoki@1e8bf3d` without the citing documents being moved with them. None of the 12 is commit-pinned, so none is left as written, and all four cited files and all nine cited `§` sections resolve at the new location. The ground is RN-15 rather than tidiness: this document cites only files a reader who has cloned this repository can open, so the twelve were it breaking its own stated rule, and the owner answers a Review Note rests on could not be opened to check them (authorized: `docs/trail/content/cycle-4.md` § 2.1). Nothing those citations authorize changes. One item stays open in `docs/CONTENT_open_issues.md`. (v4: the input widened, and most of this round is subtraction. `docs/PRD.md` v11 and `docs/UXD.md` v6 make the input **one local folder, a Git repository or not**, so § Terminology's word for it becomes *folder* and *repository* narrows to Git's own thing (RN-23); the read-only standing sentence widens with it (RN-24); the worked example that refused a folder without Git is removed from the three places it stood, because the product can no longer produce it (RN-25); and § Message patterns states the one surface that carries no words on purpose (RN-26). No voice behaviour, tone entry or message formula moves. The shipped README now disagrees with this document again and a revision is owed (RN-27). (v3: the unexplained fault has its surfaces. `docs/UXD.md` settled at v4: every failure cell in its § 6 now holds two classes, and UX-I16 says where the second one is shown — so § Message patterns *Error* and § Traceability are repointed at it, and this document no longer carries a message pattern with no declared home. Two corrections ride with it: the status letters' expansion is raised by the letter rather than the row, which is what the owner described and what `docs/DESIGN.md` draws, and RN-12's dependency on the design language is discharged rather than left in flight. No rule in this document moves. The two calls this document was waiting on came back settled and moved nothing in it (`docs/trail/content/cycle-2.md` § 1.1; RN-22), so nothing is left open and the companion is gone.))))
+**Inputs read:** PRD Settled · UXD Settled · SRS Settled · DESIGN Settled · FDR Settled
 
 > The verbal language is the source of truth for everything this product says to a person. It is
 > the peer of `DESIGN.md`, not a part of it: a rule about how something **looks** belongs there,
@@ -77,7 +78,7 @@ gets, and how much of the reader's attention Nozoki is entitled to take.
 | Moment | Tone, and how far | Why it changes here |
 |---|---|---|
 | The README's first screen | The most words this product ever spends in one place, and every one of them a claim that can be checked in the next minute: what Nozoki does, one way to install it, one thing to type, and what it never touches. | It is the only surface that has to answer a stranger who has not started the tool, cannot ask anyone anything, and arrives expecting the documentation to be out of date. |
-| Starting it | Silence, unless something failed. No banner, no version line, no greeting. | The reader started the tool in order to look at a folder; anything printed before the folder appears is the tool talking about itself. |
+| Starting it | Silence, unless something failed, or the Open panel was dismissed before a folder was chosen — then one sentence naming the action that ends the wait (§ Message patterns, *Empty*). No banner, no version line, no greeting. | The reader started the tool in order to look at a folder; anything said before the folder appears is the tool talking about itself, except the one sentence that tells a reader with no folder yet how to choose one (`docs/UXD.md` UX-S4). |
 | Startup fails | Three sentences at most: what Nozoki was doing, what it found, what to do next. Written for someone who works with Git but is not necessarily an expert in it (`docs/PRD.md` § UX Notes "Failure states"). | This is the first minute, and it is the one moment where the reader has been stopped by the tool rather than by their folder. A dead end here ends the adoption. |
 | Arrival, nothing open | One sentence, an instruction, no welcome. *"Select a file to view."* | There is nothing to set up, sign into, or dismiss (`docs/UXD.md` § 4), so the only thing to say is the one action available. |
 | The first file opens | Nothing. The path line and the content are the whole message. | The product's job just happened; a message saying so would be Nozoki congratulating itself. |
@@ -103,14 +104,15 @@ gets, and how much of the reader's attention Nozoki is entitled to take.
   about the tool's own behaviour except where a named condition follows: *"the Git view shows the
   status as soon as Nozoki can read it"*, never *"will refresh shortly"*.
 - **Sentence case everywhere**, including labels, headings and controls. The only capitalised
-  words inside a sentence are *Nozoki*, *Git*, *Markdown*, and names taken from the reader's own
+  words inside a sentence are *Nozoki*, *Git*, *Markdown*, *HEAD* — Git's own name, written as Git
+  writes it (§ Message patterns, *The short status*) — and names taken from the reader's own
   folder. The Git view's section headings are written *Changes*, *Staged*, *Unstaged*,
   *Branches* and appear in capitals because the design language sets that level in uppercase
   (`docs/DESIGN.md` § Typography, `{typography.label}`); the string is written in sentence case
   and the transform is visual, so nothing in the source is typed in capitals.
 - **Full stops.** A full sentence ends with a full stop, including a one-sentence status message.
   A label or a control's text carries none: *Files*, *Git*, *Light*, *Dark*, *Rendered*,
-  *Source*, *Browse…*.
+  *Source*, *Browse…*, *Quit*.
 - **Ellipsis.** The character `…` appears in exactly one place: at the end of a control that opens
   something asking the reader for more — *Browse…* (`docs/DESIGN.md` § Components, "The menu"). It
   never marks work in progress, and no message trails off.
@@ -151,7 +153,7 @@ rejected word coming back.
 
 | Concept | The term | Rejected, and why | Notes |
 |---|---|---|---|
-| The thing Nozoki is pointed at: one local folder, its files, and its Git state where it has one | **folder** | *repository* — narrower than the input: a repository is one of the things Nozoki reads, not the thing it is for, and using it for the input made a folder without Git read as a refusal. *repo* — an abbreviation the product never expands. *project* — used by the README today; it also means a unit of work, and Nozoki has no concept of one. *workspace* — used by the README today; in the editor this product resembles it names a saved multi-folder configuration, which Nozoki has not got. *codebase* — names the code, and a folder Nozoki opens need not hold any. | The word for both the thing on disk and the thing on screen; there is only one at a time (`docs/PRD.md` § Out of Scope, "Several repositories at once"). *Folder* also names a node inside the file tree, which is the same kind of thing one level down, not a second concept. |
+| The thing Nozoki is pointed at: one local folder, its files, and its Git state where it has one | **folder** | *repository* — narrower than the input: a repository is one of the things Nozoki reads, not the thing it is for, and using it for the input made a folder without Git read as a refusal. *repo* — an abbreviation the product never expands. *project* — used by the README today; it also means a unit of work, and Nozoki has no concept of one. *workspace* — used by the README today; in the editor this product resembles it names a saved multi-folder configuration, which Nozoki has not got. *codebase* — names the code, and a folder Nozoki opens need not hold any. | The word for both the thing on disk and the thing on screen; there is only one at a time (`docs/PRD.md` § Out of Scope, "Several folders at once"). *Folder* also names a node inside the file tree, which is the same kind of thing one level down, not a second concept. So where a sentence has to say which folder is meant, the one Nozoki is showing is *the folder you opened* — never *this folder*, which on a tree row already means the row's own folder (§ Message patterns, *Partial*). |
 | A folder that is the root of a Git repository, and the Git state Nozoki reads from it | **repository** | *repo* — an abbreviation the product never expands. *Git folder*, *versioned folder* — coined here, and used by nobody the reader has met. | The narrower of the two words for what Nozoki opens: every repository is a folder, and a folder is called a repository only where Git's own state is what the sentence is about (`docs/PRD.md` § Purpose names folders, files and repositories flat). |
 | The sidebar's navigable list of folders and files | **file tree** | *tree* alone — the PRD uses "the tree" for both this list and the folder's files on disk, which are two concepts under one word. *explorer* — the editor's name for its own panel. *files pane* — *pane* names nothing else in this product. | Shortened to *the tree* only where the same sentence has already said *file tree*. |
 | The dominant surface where a file's content is read | **reading panel** | *editor* — there is no editor; the word implies a write path that does not exist (`docs/UXD.md` UX-I1). *viewer* — the whole product is the viewer. *preview* — implies a lesser rendering of something authoritative elsewhere. | The same panel holds code, rendered Markdown, raw Markdown and a diff (`docs/UXD.md` § 9). |
@@ -166,12 +168,17 @@ rejected word coming back.
 | The list of commits, with the branches they belong to | **history** | *log* — Git's command name, and it collides with diagnostic logs. *timeline* — implies time is the axis; the branch topology is (`docs/UXD.md` UX-F4). | Beyond v1. |
 | Where the reader points Nozoki when it starts | **path** | *directory* — the machine's word for what this product calls a folder. *location*, *workspace root* — vague, and jargon. | *Path* and *folder* are not two words for one concept: the path is where the folder is, the folder is the thing there. The distinction is load-bearing at startup, where a path that does not exist, is not a folder, or cannot be read is a failure (`docs/UXD.md` UX-S4) — a statement about the path, not about a folder Nozoki found. |
 | The tool's light and dark presentation | **theme**, with the values **Light** and **Dark** | *appearance*, *mode* — *mode* already names the sidebar's Files/Git state (`docs/UXD.md` UX-I3). | The control's text is the theme it switches to (`docs/DESIGN.md` § Components). |
+| A symbolic link in the folder | **link** | *symlink* — an abbreviation the product never expands, on the ground *repo* is refused. *alias* — on macOS it names Finder's own, different thing. | Said of the link, on its own tree row, by what Nozoki observed (§ Message patterns, *Partial*). A link inside a Markdown file is a different thing under the same word, and the two never meet in a message: a Markdown link is the reader's own content, shown with its destination and never described in a sentence Nozoki writes (`docs/UXD.md` UX-I12), so in a message *link* always means this one (RN-30). |
+| A picture a Markdown file places in its text | **image** | *picture* — Markdown, where every image this product shows comes from, calls it an image. *img* — HTML's abbreviation, which the product never expands. | Said of the reader's image by what Nozoki observed about it (§ Message patterns, *Partial*), never by its failure to be shown. |
+| The control that opens the system's Open panel, to choose a folder | **Browse…** | *Open…*, *Choose a folder…* — a second name for the one control the folder selector already calls *Browse…*. | One control, one name, on every surface that carries it: the startup surface in v1 and the folder selector's list beyond it (`docs/UXD.md` UX-S4, UX-S7). What the reader does with it is *choose* a folder, which is the word `README.md` uses. |
+| Ending Nozoki from its own surface | **quit** | *exit* — the word of a program run in a terminal, and no surface of this product is one (`docs/DESIGN.md` § Components, "The startup surface"). *close* — on macOS, closing a window and quitting an application are two different acts. *leave* — the documents' word for the route, not one the platform uses. | macOS's own word for ending an application. The startup surface carries it as one of its two routes (`docs/UXD.md` UX-S4). |
 
 **Banned in anything a person sees:**
 
 | Never | Say instead | Why |
 |---|---|---|
 | repo | repository | An abbreviation the product never expands. |
+| symlink | link | An abbreviation the product never expands. |
 | invalid, illegal, malformed, unsupported, refused, rejected | What Nozoki observed: *"Nozoki can't read this folder."*, *"this file isn't text"* | Describes the reader's own material by its failure to satisfy the machine, in a product that promises never to refuse a file (`docs/SRS.md` FR-29). |
 | binary | can't be shown as text | The reader is assumed to know Git, which says nothing about how a file is encoded; and the fact they need is about the display, not the encoding. |
 | the floor (of languages) | the languages Nozoki highlights | This project's internal vocabulary for its own promise. |
@@ -206,8 +213,9 @@ built system is the SRS's. This table fixes only the words, once the promise exi
 
 ## Message patterns
 
-Five standing states. Every message Nozoki writes is an instance of one of them, and *Error*
-has two classes that are chosen between before a word is written.
+Five standing states. Every message Nozoki writes is an instance of one of them, except the one
+sentence that reports Git's own state rather than Nozoki's work (*The short status*, below); and
+*Error* has two classes that are chosen between before a word is written.
 
 **One surface carries no words at all, and that is a decision made here rather than a gap.** In a
 folder Nozoki has found is not the root of a Git repository, the Git view is present and shows
@@ -290,6 +298,10 @@ shown before Nozoki has read the state it is reporting (`docs/UXD.md` UX-I13).
   message.
 - *"Nothing has changed in this repository."* — the Git view on a clean repository, shown only
   after Git state has been read.
+- *"Choose a folder to view."* — the startup surface when the Open panel was dismissed before any
+  folder was chosen (`docs/UXD.md` UX-S4). Nothing failed, so there is no failure sentence; the
+  surface's two controls, *Browse…* and *Quit*, are its routes, and the sentence names the one that
+  ends the empty state.
 
 ### Loading
 **Formula:** *Reading* + *the thing being read.* Present participle, one clause, ending in a full
@@ -306,12 +318,42 @@ showing a state that has not been read.
 *which of the two the reader is holding.* The missing piece is named where it belongs, never
 summarised in a banner over the whole surface, because the rest of the surface is still true.
 
-**Examples:**
-- *"This image isn't loaded: Nozoki fetches nothing from outside this folder."* — in the box
-  where a remote image would sit in rendered Markdown, beneath the image's own alt text
-  (`docs/SRS.md` FR-32; `docs/DESIGN.md` § Components, "Rendered Markdown").
-- *"Nozoki can't read this folder."* — on the one tree row, with the rest of the file tree
-  standing (`docs/SRS.md` NFR-3).
+**Anything outside the folder is said one way.** A link, an image, or anything else that leads
+outside the folder Nozoki is showing is described as being *outside the folder you opened*, and
+Nozoki *doesn't read it*. Never *this folder* for the opened folder — on a tree row that phrase
+already means the row's own folder. And never a wider claim such as *"Nozoki reads nothing outside
+it"*: Nozoki reads its own remembered state from outside the folder (`docs/UXD.md` UX-I9), so the
+wider sentence is false, which is the shape RN-16 corrected. *Doesn't*, not *can't*: this is
+Nozoki's rule, not something it is unable to do.
+
+**Examples** — on a tree row, with the rest of the file tree standing (`docs/SRS.md` NFR-3;
+`docs/fdr.md` R-33, R-34):
+- *"Nozoki can't read this folder."*
+- *"This link leads outside the folder you opened, so Nozoki doesn't read it."*
+- *"This link loops back on itself, so Nozoki can't read it."*
+- *"This link leads to something that isn't there."*
+- *"This link leads through more links than Nozoki follows."* — the limit is Nozoki's, so the
+  sentence puts it on Nozoki rather than calling the reader's links *too many*. It states no
+  number, because that number is not counted from the folder (§ Grammar and mechanics, *Numbers*).
+
+None of these names a next step: the rest of the tree is the way on, and it is already on screen
+(`docs/SDD.md` § 4 C-E4).
+
+**Examples** — in rendered Markdown, in the box where an image would sit, which also holds the
+image's own alt text and its source (`docs/UXD.md` UX-I12; `docs/DESIGN.md` § Components, "Rendered
+Markdown"):
+- *"This image is outside the folder you opened, so Nozoki doesn't read it."* — a remote address
+  and a path that escapes the folder alike.
+- *"There's no file where this image points."* — an image inside the folder whose file is missing.
+- *"Nozoki can't read this image."* — an image inside the folder whose file is there but
+  unreadable.
+- *"Nozoki doesn't show images in this format."* — a file inside the folder in a format Nozoki
+  does not draw. The limit is Nozoki's, so the file is never called *unsupported*.
+
+**Example** — at the end of the history, where the history shown stops short of the repository's
+(`docs/UXD.md` UX-S6):
+- *"Older commits aren't shown."* — no number, and nothing offers to load more. Where the whole
+  history fits, nothing is said.
 
 ### Recovered
 **Formula:** *Nothing.* The failure or pending sentence disappears and the state takes its place.
@@ -324,6 +366,32 @@ about a cause Nozoki never observed.
   replaced by the branch, the changed files and the staged files. Nothing else appears.
 - A file that had vanished is written again: the panel's *"This file is no longer in the
   folder."* is replaced by the file's content. No *"restored"*, no *"back"*.
+
+### The short status — Git's state, in Git's word
+
+The Git view's short status is the one sentence Nozoki writes about Git's state rather than about
+its own work, so none of the five formulas applies to it. It is shown only once Git state has been
+read (`docs/UXD.md` UX-I13), and it says one of three things (`docs/UXD.md` UX-S3;
+`docs/fdr.md` R-162 – R-165):
+
+- **Clean** — the working tree and the index hold no change: the *Empty* sentence, *"Nothing has
+  changed in this repository."*
+- **Changed, in the normal state** — nothing. The changed and staged lists and their counts
+  already say it, and the status adds no count.
+- **Mid-operation, or HEAD detached** — one whole sentence naming the state by the word Git itself
+  uses for it: *merge*, *rebase*, *cherry-pick*, *revert*, *bisect*, or *HEAD* being *detached*.
+  That is six states and six whole sentences, never one sentence with the operation substituted
+  in (§ Localization). Where two hold at once, as when a rebase runs on a detached HEAD, the
+  operation is the one named (`docs/fdr.md` R-165).
+
+It never names a remote, never gives a count, and never uses a word Git does not use for the
+state — not *paused*, *stuck*, *interrupted* or *broken*, each of which judges a state the reader
+may be in on purpose. It does not name the branch being rebased, a case the view leaves uncovered
+(`docs/UXD.md` UX-S3).
+
+**Examples:**
+- *"A rebase is in progress in this repository."*
+- *"HEAD is detached in this repository."*
 
 ## Accessibility of text
 
@@ -363,14 +431,18 @@ product's own words legible to everyone reading them on the screen.
   in this product, so the tie between an error and its subject is made by naming the file, the
   path or the view inside the message, rather than by placing the message near something.
 - **The reading bar, stated as a rule rather than a grade.** Every word in a message Nozoki writes
-  is one of three things: a word the README already uses, a name taken from the reader's own
-  folder, or a word Git itself uses for the state being reported — *branch*, *changed*,
-  *staged*, *commit*, *untracked*, *conflict*. A word that is none of the three does not go in a
-  message. The third source is wide because the reader is assumed to know Git and the product may
-  leave Git's own vocabulary unexplained (`docs/PRD.md` § Goals, "No learning curve"); it is not
-  unlimited, because a word Git does not use for the state in hand is this tool's own jargon
-  however technical it sounds. The bar stays checkable against one string without knowing anything
-  about the reader — which is the test, and the reason it is three sources rather than a grade.
+  is one of four things: a word the README already uses, a name taken from the reader's own
+  folder, a word Git itself uses for the state being reported — *branch*, *changed*,
+  *staged*, *commit*, *untracked*, *conflict* — or a word § Terminology fixes. A word that is none
+  of the four does not go in a message. The third source is wide because the reader is assumed to
+  know Git and the product may leave Git's own vocabulary unexplained (`docs/PRD.md` § Goals, "No
+  learning curve"); it is not unlimited, because a word Git does not use for the state in hand is
+  this tool's own jargon however technical it sounds. The fourth is how a concept the README never
+  needed to name — a *link* on a tree row, an *image* in rendered Markdown — reaches a message
+  without becoming jargon: a word enters § Terminology only with its concept, the names it was
+  chosen over, and the reason, which is the argument a word needs before a reader meets it. The bar
+  stays checkable against one string and this document without knowing anything about the reader
+  — which is the test, and the reason it is four sources rather than a grade.
 
 ## Localization
 
@@ -418,17 +490,18 @@ Every state and requirement in the UXD that carries text, and what covers it her
 | UX-S1 Reading panel — success | Grammar and mechanics (path line, no emphasis) | Content and path only; no message. |
 | UX-S2 File tree — empty | Message patterns § Empty | *"This folder has no files."* |
 | UX-S2 File tree — loading | Message patterns § Loading | *"Reading this folder."* |
-| UX-S2 File tree — error (one entry) | Message patterns § Partial | Marked on the row; the rest of the tree stands. |
+| UX-S2 File tree — error (one entry) | Message patterns § Partial (on a tree row); Terminology (*link*) | Marked on the row; the rest of the tree stands. A link that leads outside the folder, loops, leads to nothing, or runs through more links than Nozoki follows has its own sentence, and none names a next step. |
 | UX-S2 File tree — success (markers) | Accessibility of text (a word carries the distinction; the letters' expansion) | Resting the pointer on the letter names the file and then the letter in words. The six words are this product's, not Git's porcelain. |
 | UX-S3 Git view — empty | Message patterns § Empty | *"Nothing has changed in this repository."*, after reading. |
 | UX-S3 Git view — loading | Message patterns § Loading | *"Reading Git status."* |
 | UX-S3 Git view — error (lock) | Message patterns § Error | The nothing-to-do form, with the condition that ends the wait. |
-| UX-S3 Git view — error (mid-operation is not an error) | Voice (report Git's state in Git's words, only where Git said it) | Presented as state, never as failure. |
-| UX-S3 Git view — success (headings, letters) | Grammar and mechanics (sentence case, visual uppercase); Accessibility of text | *Changes*, *Staged*, *Unstaged*, *Branches*. |
-| UX-S4 Startup failure | Message patterns § Error — *an observed condition*; Tone (first-run flow) | A path that does not exist, is not a folder, or cannot be read. A folder without Git is not on this list: it opens (UX-I17). Three sentences at most, and the route out is to change the path and start again. |
+| UX-S3 Git view — error (mid-operation is not an error) | Message patterns § The short status; Voice (report Git's state in Git's words, only where Git said it) | Presented as state, never as failure: Git's word for the operation, in one whole sentence per state. |
+| UX-S3 Git view — success (headings, letters, short status) | Grammar and mechanics (sentence case, visual uppercase); Accessibility of text; Message patterns § The short status | *Changes*, *Staged*, *Unstaged*, *Branches*. The short status is clean, silent, or Git's word for the state — never a count. |
+| UX-S4 Startup surface — empty (the Open panel dismissed) | Message patterns § Empty; Terminology (*Browse…*, *quit*); Tone (first-run flow) | *"Choose a folder to view."* No failure sentence, because nothing failed. |
+| UX-S4 Startup surface — failure | Message patterns § Error — *an observed condition*; Tone (first-run flow) | A path that does not exist, is not a folder, or cannot be read. A folder without Git is not on this list: it opens (UX-I17). Three sentences at most, and the route out is to change the path and start again. |
 | UX-S5 Diff view (beyond v1) | Terminology (*diff*); Message patterns § Empty, § Error | *"This file has no remaining changes."* |
-| UX-S6 History view (beyond v1) | Terminology (*history*, *branch*); Grammar (dates, numerals) | Absolute dates; identifiers untranslated. |
-| UX-S7 Folder selector (beyond v1) | Terminology (*folder selector*); Grammar (*Browse…*) | First run: the browse entry alone, no explanatory sentence. |
+| UX-S6 History view (beyond v1) | Terminology (*history*, *branch*); Grammar (dates, numerals); Message patterns § Partial (the stated end) | Absolute dates; identifiers untranslated. Where the history shown stops short: *"Older commits aren't shown."* |
+| UX-S7 Folder selector (beyond v1) | Terminology (*folder selector*, *Browse…*); Grammar (*Browse…*) | First run: the browse entry alone, no explanatory sentence. |
 | UX-F1 Arrive and read | Tone § first-run flow | Silence at start; one sentence at arrival. |
 | UX-F2 Check what changed | Terminology (*changed*, *staged*) | Git's words where Git's state is reported. |
 | UX-F3 Watch a moving tree | Tone § lifecycle (habitual use); Voice (no attention bid) | No message accompanies any update. |
@@ -437,7 +510,7 @@ Every state and requirement in the UXD that carries text, and what covers it her
 | UX-I2 No refresh control, no ceremony | Voice (nothing asks for attention); Terminology (*live refresh* is never a verb) | |
 | UX-I4 The view never lies | Voice (say what was observed); Message patterns § Error, § Partial | |
 | UX-I6 Every message at the no-learning-curve bar | Message patterns § Error; Accessibility of text (the reading bar) | UX-I6 fixes what a message carries; this document fixes how it is worded. |
-| UX-I12 Markdown, links, remote images | Message patterns § Partial; Accessibility of text (link text) | The reader's own link text is never rewritten. |
+| UX-I12 Markdown, links, images | Message patterns § Partial (in rendered Markdown); Terminology (*image*); Accessibility of text (link text) | An image outside the folder, and one inside it that can't be shown, each say what Nozoki observed. The reader's own link text is never rewritten. |
 | UX-I13 No indicator before observation | Message patterns § Empty, § Loading | *"Nothing has changed"* only after reading. |
 | UX-I14 A route out on the same surface | Message patterns § Error (the third part of the formula) | |
 | UX-A1 The declared posture | Terminology § Standing sentences | No claim beyond it anywhere. |
@@ -685,3 +758,65 @@ Every state and requirement in the UXD that carries text, and what covers it her
   holds rules and not copy, so revising the README is the work of whichever change writes it, not of
   this run; recording it here is what stops the drift being discovered as a defect later. RN-2 and
   RN-6 record the same sequence resolving the last time the corpus fell behind.
+- **RN-28:** *(v7 — owner answer)* § Message patterns *Partial* takes four tree-row sentences for a
+  link that cannot be followed: *loops* and *missing target* as the shell had them, *outside* and
+  *too many links* replaced — *because* the shell drew four sentences no rule stood behind, for
+  conditions the product already reaches (`docs/fdr.md` R-33, R-34, R-152), and the owner answered
+  (`docs/trail/content/cycle-6.md` § 3.1, reasoning at `docs/trail/content/self_answer-3.md`).
+  *Outside* is replaced because *this folder* already means the row's own folder in the sibling
+  example, and because *"Nozoki reads nothing outside it"* claims more than is true. *Too many
+  links* is replaced because it judges the reader's links by the tool's limit, which the *Strict*
+  row of § Voice forbids. The replacement states no number, because no document fixes the bound.
+  None of the four names a next step, because the rest of the tree is on screen
+  (`docs/SDD.md` § 4 C-E4).
+- **RN-29:** *(v7 — owner answer)* The reading bar gains a fourth source, *a word § Terminology
+  fixes*, and the *Partial* examples were checked against it, as the same answer directs. The
+  remote-image example failed: *loaded* and *fetches* are in none of the four sources, and *image*
+  was in none until § Terminology took it. It also said *this folder* for the opened folder, the
+  ambiguity the answer corrected on the tree row, and one that `docs/UXD.md` v9 made real in
+  Markdown, because an image elsewhere in the opened folder now renders (UX-I12). So the example
+  takes the link's wording. That wording is stated once, as the rule for anything outside the
+  folder, rather than left as two examples that agree by accident. The state the placeholder has to
+  carry, that content outside the folder is not fetched (`docs/UXD.md` UX-I12; `docs/fdr.md` R-57,
+  R-59), is carried by *Nozoki doesn't read it*.
+- **RN-30:** *(v7)* *Link* names a symbolic link, although this document also uses the word for a
+  link in a Markdown file — *because* the two never meet in a message. A Markdown link is the
+  reader's own content, shown with its destination and never described in a sentence Nozoki writes
+  (`docs/UXD.md` UX-I12), so every *link* in a message is a symbolic link. The Terminology row says
+  how the two differ, which is what one term per concept asks of a word that names two things. The
+  owner's answer took *link* and rejected *symlink* and *alias* without weighing this collision;
+  it is settled here rather than raised, because both halves are this document's words and neither
+  moves what the product does.
+- **RN-31:** *(v7 — upstream `docs/UXD.md` v9)* Three states the UXD re-drew now have words — *because*
+  its RN-29 records them as owed here, and an upstream change is one of the three deltas this
+  document permits. **The startup surface with no folder chosen** takes *"Choose a folder to
+  view."*: nothing failed, so it is the *Empty* formula and not an error; *choose* is the README's
+  own word for the act (`README.md`, *"you choose a folder through the system's Open panel"*); and
+  § Tone's *Starting it* row admits it, since *"silence, unless something failed"* would otherwise
+  forbid a sentence the UXD requires. Its two routes need names. *Browse…* is the name the
+  selector's list already gives the same control, and a second name on the startup surface would
+  be two words for one control. *Quit* is macOS's word, and the FDR's (`docs/fdr.md` § Examples, the
+  cancelled-panel row, *"a way to quit"*; R-146). **The in-folder image that can't be shown**
+  follows `docs/fdr.md` R-160: what Nozoki observed about the file, and for a format it does not
+  draw, the limit put on Nozoki rather than on the file. **The history's stated end** states no
+  number, because the loaded window's size is the system's and is not counted from the folder.
+- **RN-32:** *(v7 — upstream `docs/UXD.md` v9 and `docs/fdr.md` R-162 – R-165)* The short status gets its own rule
+  rather than an example under one of the five patterns — *because* it reports Git's state, not
+  Nozoki's work, so no formula here fits it. *"In Git's own word"* is the owner's
+  (`docs/trail/fdr/cycle-1.md` § 1.4). The words are the ones Git's own `git status` uses for each
+  state: *"rebase in progress"*, *"Cherry-pick currently in progress."*, *"Revert currently in
+  progress."*, *"You are currently bisecting."*, *"All conflicts fixed but you are still
+  merging."*, *"HEAD detached at"* (Git's source, `wt-status.c`,
+  https://github.com/git/git/blob/master/wt-status.c, read 2026-09-25). Nozoki does not pass
+  Git's sentence through: Git's *"You are currently rebasing"* makes the reader the actor, and
+  Nozoki observed a state, not who started it. So the sentence is Nozoki's and the word is Git's,
+  which is the *Bilingual* row of § Voice. *HEAD* joins the capitalised words in § Grammar
+  because it is Git's own name for the thing, written as Git writes it. That source sits outside
+  this repository, which RN-15 does not forbid: RN-15 refuses pointers a reader cannot follow,
+  and this one is public.
+- **RN-33:** *(v7 — a change in the evidence)* The disagreement RN-27 recorded has closed — *because*
+  `README.md` was revised after v4 (`nozoki@2aa3fc2`). It now frames the input as a folder,
+  carries the read-only standing sentence in RN-24's wording, and carries the pre-1.0.0 and
+  accessibility-posture sentences word for word. None of § Terminology's banned words appears in
+  it. As with RN-2 and RN-6, the corpus moved to meet this document, and nothing here was
+  re-derived from it.
