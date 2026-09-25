@@ -129,6 +129,10 @@ final class HoldingReadRunner: ReadRunning {
 
 /// A bridge that may be called from any thread. It answers from canned bytes by path and records,
 /// for each call, whether it ran on the main thread.
+///
+/// `@unchecked Sendable` because the read runner calls it from a background queue. The lock is
+/// enough: every stored property but `listAnswers` (a `let`, set once in `init`) is read and written
+/// only inside `lock`, and `record` takes the thread reading before it takes the lock.
 final class ThreadRecordingBridge: Bridging, @unchecked Sendable {
     private let lock = NSLock()
     private let listAnswers: [String: Data]
