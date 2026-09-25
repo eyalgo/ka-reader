@@ -1,5 +1,12 @@
 import AppKit
 
+/// The answer to one folder read: its entries, the reason it failed, or `nil` when none came.
+package typealias ListTreeAnswer = @MainActor (RootListing?) -> Void
+
+/// The read a folder row asks for: the entry's path and the sink its answer goes to.
+package typealias ListTreeIntent =
+    @MainActor (_ path: String, _ answer: @escaping ListTreeAnswer) -> Void
+
 /// The root-items tree view: one row per entry, in the order given, each with the entry's
 /// name beside a glyph chosen by kind. An entry that failed also shows its sentence on its row. A
 /// root with nothing to list, or one that could not be read, shows one line instead of rows.
@@ -20,6 +27,19 @@ package final class RootItemsView: NSScrollView {
 
     /// The one line drawn outside the rows, or nil when none is drawn.
     package private(set) var rootLineText: String?
+
+    /// Set by the view's owner. Called once per expansion of a folder row.
+    package var listTree: ListTreeIntent?
+
+    /// The entry the row at `row` draws, or nil for a row that is not an entry.
+    package func entry(atRow row: Int) -> Entry? {
+        (outlineView.item(atRow: row) as? Row)?.entry
+    }
+
+    /// The text of the line item at `row`, or nil for a row that is not a line.
+    package func lineText(atRow row: Int) -> String? {
+        nil
+    }
 
     package init(folderGlyph: NSImage, fileGlyph: NSImage) {
         self.folderGlyph = folderGlyph

@@ -64,8 +64,13 @@ final class RootItemsViewTests: XCTestCase {
         for row in [0, 1, 3] {
             XCTAssertNil(try conditionText(cell(view, row: row)))
         }
-        for row in 0..<4 {
-            XCTAssertFalse(view.outlineView.isExpandable(view.outlineView.item(atRow: row)))
+        let docs = view.outlineView.item(atRow: 0)
+        XCTAssertTrue(view.outlineView.isExpandable(docs), "a folder row can be expanded")
+        XCTAssertFalse(view.outlineView.isItemExpanded(docs), "and arrives collapsed")
+        for row in 1...3 {
+            XCTAssertFalse(
+                view.outlineView.isExpandable(view.outlineView.item(atRow: row)),
+                "a file row, a failed entry included, cannot")
         }
     }
 
