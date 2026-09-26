@@ -588,6 +588,63 @@ mod tests {
     }
 
     #[test]
+    fn test_other_case_reentry_requires_both_confirmed_facts_without_outside_io() {
+        let temp = TempDir::new();
+        let root = temp.make_folder("nozoki");
+        let facts = VolumeFacts {
+            root_is_volume_root: Some(false),
+            ignores_letter_case: Some(true),
+        };
+
+        assert!(is_admitted_case_folded_return(
+            &root,
+            root.parent().expect("temporary root has a parent"),
+            std::ffi::OsStr::new("NOZOKI"),
+            &facts,
+        ));
+
+        for root_is_volume_root in [Some(true), None] {
+            for ignores_letter_case in [Some(true), Some(false), None] {
+                assert!(!is_admitted_case_folded_return(
+                    &root,
+                    root.parent().expect("temporary root has a parent"),
+                    std::ffi::OsStr::new("NOZOKI"),
+                    &VolumeFacts {
+                        root_is_volume_root,
+                        ignores_letter_case,
+                    },
+                ));
+            }
+        }
+
+        for ignores_letter_case in [Some(false), None] {
+            assert!(!is_admitted_case_folded_return(
+                &root,
+                root.parent().expect("temporary root has a parent"),
+                std::ffi::OsStr::new("NOZOKI"),
+                &VolumeFacts {
+                    root_is_volume_root: Some(false),
+                    ignores_letter_case,
+                },
+            ));
+        }
+    }
+
+    #[test]
+    fn test_filesystem_seam_rejects_outside_queries() {
+        let temp = TempDir::new();
+        let root = temp.make_folder("nozoki");
+        temp.make_folder("nozoki/docs");
+
+        let filesystem = RecordingFilesystem::new(&root, Some(false), Some(true));
+        assert_eq!(
+            list_with_filesystem(&filesystem, &root, "../NOZOKI/docs"),
+            ItemState::Observed(Vec::new()),
+        );
+        assert!(filesystem.outside_queries().is_empty());
+    }
+
+    #[test]
     fn test_dotdot_staying_inside_root_is_allowed() {
         let temp = TempDir::new();
         temp.write_file("src/inner.txt", "");
