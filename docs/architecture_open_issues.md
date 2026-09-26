@@ -64,7 +64,20 @@ None.
   reader at `development-design` holding the packet and § 9 would require a setting tools version
   5.9 refuses, or would read the manifest's silence as a departure nobody recorded — the shape
   §§ 3.1 and 3.2 were raised for.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** Overridden — keep both settings in the same tools-version flip, but make
+  their placement and cost exact (`docs/trail/architecture/self_answer-21.md:L31-L50`).
+  `.strictMemorySafety()` goes on every **Swift** target, including the test targets;
+  `.defaultIsolation(MainActor.self)` goes only on `Surfaces` and `Nozoki`, not on `Shell`,
+  `SurfacesTests` or `ShellTests` (`docs/trail/architecture/self_answer-21.md:L52-L61`). Strict memory
+  safety currently requires `unsafe` acknowledgements at both kinds of boundary the package already
+  has: the C-pointer uses in `nozoki-mac/Sources/Nozoki/NativeBridge.swift` and AppKit's
+  `unowned(unsafe)` properties used in `nozoki-mac/Sources/Surfaces/RootItemsView.swift`
+  (`docs/trail/architecture/self_answer-21.md:L63-L76`). Default main-actor isolation does **not**
+  land on `ReadRunning.swift`; the off-main failures already named in § 3.2 are the Swift 6
+  language-mode cost, not this setting's (`docs/trail/architecture/self_answer-21.md:L52-L61`). No
+  separate current source failure is named for default isolation: with the language mode held at
+  Swift 5 to isolate this setting, the current `Nozoki` target builds when default isolation is
+  applied at the packet's two target boundaries (`docs/trail/architecture/self_answer-21.md:L78-L83`).
 
 ## 3. Raised from downstream — an item from a seat that did not write these records
 
