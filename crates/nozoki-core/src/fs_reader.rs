@@ -440,11 +440,48 @@ fn is_admitted_case_folded_return(
             .file_name()
             .zip(name.to_str())
             .is_some_and(|(root_name, name)| {
-                root_name != name
-                    && root_name
-                        .to_str()
-                        .is_some_and(|root_name| root_name.to_lowercase() == name.to_lowercase())
+                root_name
+                    .to_str()
+                    .is_some_and(|root_name| is_case_only_spelling(root_name, name))
             })
+}
+
+// Whole-string lowercase equality admits İ versus i + combining dot
+// (change_spec.md CP-213; change_design.md §4). Case-only means each original
+// scalar corresponds to exactly one candidate scalar under case comparison.
+fn is_case_only_spelling(root_name: &str, candidate: &str) -> bool {
+    if root_name == candidate {
+        return false;
+    }
+    let mut root_scalars = root_name.chars();
+    let mut candidate_scalars = candidate.chars();
+    loop {
+        match (root_scalars.next(), candidate_scalars.next()) {
+            (None, None) => return true,
+            (Some(root_scalar), Some(candidate_scalar)) => {
+                if !scalars_match_as_one_case(root_scalar, candidate_scalar) {
+                    return false;
+                }
+            }
+            _ => return false,
+        }
+    }
+}
+
+fn scalars_match_as_one_case(left: char, right: char) -> bool {
+    if left == right {
+        return true;
+    }
+    match (lowercase_one_scalar(left), lowercase_one_scalar(right)) {
+        (Some(left_lower), Some(right_lower)) => left_lower == right_lower,
+        _ => false,
+    }
+}
+
+fn lowercase_one_scalar(scalar: char) -> Option<char> {
+    let mut lowered = scalar.to_lowercase();
+    let first = lowered.next()?;
+    lowered.next().is_none().then_some(first)
 }
 
 /// Whether `target`, a location inside `root`, is the folder `parent` or one that holds it, where
