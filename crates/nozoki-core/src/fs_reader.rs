@@ -481,6 +481,17 @@ mod tests {
     }
 
     #[test]
+    fn test_other_case_return_to_root_is_cycle() {
+        let temp = TempDir::new();
+        let root = temp.make_folder("nozoki");
+
+        assert_eq!(
+            list(&root, "../NOZOKI"),
+            failed(Condition::Cycle),
+        );
+    }
+
+    #[test]
     fn test_dotdot_staying_inside_root_is_allowed() {
         let temp = TempDir::new();
         temp.write_file("src/inner.txt", "");
