@@ -16,6 +16,8 @@
 #     `log::Log` (`tracing`, `slog`, `log4rs`, `env_logger`, `fern`, `simplelog` likewise examples).
 
 cargo:
+bitflags
+errno
 itoa
 libc
 log
@@ -32,4 +34,5 @@ syn
 thiserror
 thiserror-impl
 unicode-ident
+rustix
 zmij

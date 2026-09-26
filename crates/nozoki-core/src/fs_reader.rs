@@ -5,7 +5,7 @@ use std::collections::VecDeque;
 use std::ffi::OsString;
 use std::fs;
 use std::io;
-use std::os::unix::ffi::OsStrExt;
+use std::os::unix::ffi::{OsStrExt, OsStringExt};
 use std::os::unix::fs::MetadataExt;
 use std::path::{Component, Path, PathBuf};
 
@@ -86,6 +86,12 @@ enum Step {
         link: PathBuf,
         parent: PathBuf,
     },
+}
+
+#[derive(Default)]
+struct VolumeFacts {
+    root_is_volume_root: Option<bool>,
+    ignores_letter_case: Option<bool>,
 }
 
 /// Why a requested path did not resolve to a location that can be listed. `text` is what a log
@@ -232,9 +238,13 @@ fn resolve(root: &Path, requested: &Path) -> Result<Resolved, Blocked> {
     let mut pending = steps_of(requested);
     let mut links_followed = 0;
     let mut kind = EntryKind::Folder;
+    let mut volume_facts = VolumeFacts::default();
     while let Some(step) = pending.pop_front() {
         match step {
             Step::Parent => {
+                if position == root {
+                    volume_facts = volume_facts_for(root);
+                }
                 position.pop();
                 kind = EntryKind::Folder;
             }
@@ -245,11 +255,15 @@ fn resolve(root: &Path, requested: &Path) -> Result<Resolved, Blocked> {
                 }
             }
             Step::Name(name) => {
-                let candidate = position.join(&name);
                 if !position.starts_with(root) {
-                    position = candidate;
+                    if is_admitted_case_folded_return(root, &position, &name, &volume_facts) {
+                        position = root.to_path_buf();
+                    } else {
+                        position = position.join(&name);
+                    }
                     continue;
                 }
+                let candidate = position.join(&name);
                 let metadata =
                     fs::symlink_metadata(&candidate).map_err(|error| Blocked::from(&error))?;
                 if metadata.is_symlink() {
@@ -299,6 +313,89 @@ fn resolve(root: &Path, requested: &Path) -> Result<Resolved, Blocked> {
             kind,
         })
         .map_err(|_| Blocked::outside())
+}
+
+fn volume_facts_for(root: &Path) -> VolumeFacts {
+    VolumeFacts {
+        root_is_volume_root: root_is_volume_root(root),
+        ignores_letter_case: ignores_letter_case(root),
+    }
+}
+
+#[cfg(target_os = "macos")]
+fn root_is_volume_root(root: &Path) -> Option<bool> {
+    let filesystem = rustix::fs::statfs(root.as_os_str().as_bytes()).ok()?;
+    let mount_bytes = filesystem.f_mntonname;
+    let end = mount_bytes.iter().position(|byte| *byte == 0)?;
+    let mount = PathBuf::from(OsString::from_vec(
+        mount_bytes[..end].iter().map(|byte| *byte as u8).collect(),
+    ));
+    Some(mount == root)
+}
+
+#[cfg(not(target_os = "macos"))]
+fn root_is_volume_root(_: &Path) -> Option<bool> {
+    None
+}
+
+fn ignores_letter_case(root: &Path) -> Option<bool> {
+    for entry in fs::read_dir(root).ok()? {
+        let entry = entry.ok()?;
+        let name = entry.file_name();
+        let name = name.to_str()?;
+        let alternate = alternate_case(name)?;
+        let metadata = fs::symlink_metadata(entry.path()).ok()?;
+        if metadata.is_symlink() || !metadata.is_dir() {
+            continue;
+        }
+        let alternate_metadata = match fs::symlink_metadata(root.join(alternate)) {
+            Ok(metadata) => metadata,
+            Err(error) if error.kind() == io::ErrorKind::NotFound => return Some(false),
+            Err(_) => return None,
+        };
+        return Some(
+            alternate_metadata.is_dir()
+                && (metadata.dev(), metadata.ino())
+                    == (alternate_metadata.dev(), alternate_metadata.ino()),
+        );
+    }
+    None
+}
+
+fn alternate_case(name: &str) -> Option<String> {
+    let alternate = name
+        .chars()
+        .map(|character| {
+            if character.is_lowercase() {
+                character.to_uppercase().to_string()
+            } else if character.is_uppercase() {
+                character.to_lowercase().to_string()
+            } else {
+                character.to_string()
+            }
+        })
+        .collect::<String>();
+    (alternate != name).then_some(alternate)
+}
+
+fn is_admitted_case_folded_return(
+    root: &Path,
+    position: &Path,
+    name: &std::ffi::OsStr,
+    facts: &VolumeFacts,
+) -> bool {
+    facts.root_is_volume_root == Some(false)
+        && facts.ignores_letter_case == Some(true)
+        && root.parent() == Some(position)
+        && root
+            .file_name()
+            .zip(name.to_str())
+            .is_some_and(|(root_name, name)| {
+                root_name != name
+                    && root_name
+                        .to_str()
+                        .is_some_and(|root_name| root_name.to_lowercase() == name.to_lowercase())
+            })
 }
 
 /// Whether `target`, a location inside `root`, is the folder `parent` or one that holds it, where
@@ -484,11 +581,10 @@ mod tests {
     fn test_other_case_return_to_root_is_cycle() {
         let temp = TempDir::new();
         let root = temp.make_folder("nozoki");
+        temp.make_folder("nozoki/witness");
+        temp.make_link("nozoki/self", "../NOZOKI");
 
-        assert_eq!(
-            list(&root, "../NOZOKI"),
-            failed(Condition::Cycle),
-        );
+        assert_eq!(list(&root, "self"), failed(Condition::Cycle),);
     }
 
     #[test]
