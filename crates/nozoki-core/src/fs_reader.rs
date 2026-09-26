@@ -5,7 +5,7 @@ use std::collections::VecDeque;
 use std::ffi::OsString;
 use std::fs;
 use std::io;
-use std::os::unix::ffi::OsStrExt;
+use std::os::unix::ffi::{OsStrExt, OsStringExt};
 use std::os::unix::fs::MetadataExt;
 use std::path::{Component, Path, PathBuf};
 
@@ -88,6 +88,49 @@ enum Step {
     },
 }
 
+#[derive(Default)]
+struct VolumeFacts {
+    root_is_volume_root: Option<bool>,
+    ignores_letter_case: Option<bool>,
+}
+
+trait Filesystem {
+    fn symlink_metadata(&self, path: &Path) -> io::Result<fs::Metadata>;
+    fn read_link(&self, path: &Path) -> io::Result<PathBuf>;
+    fn read_dir(&self, path: &Path) -> io::Result<Vec<fs::DirEntry>>;
+    fn mount_point(&self, root: &Path) -> Option<PathBuf>;
+    fn case_fact(&self) -> Option<Option<bool>> {
+        None
+    }
+}
+
+struct NativeFilesystem;
+
+impl Filesystem for NativeFilesystem {
+    fn symlink_metadata(&self, path: &Path) -> io::Result<fs::Metadata> {
+        fs::symlink_metadata(path)
+    }
+    fn read_link(&self, path: &Path) -> io::Result<PathBuf> {
+        fs::read_link(path)
+    }
+    fn read_dir(&self, path: &Path) -> io::Result<Vec<fs::DirEntry>> {
+        fs::read_dir(path)?.collect()
+    }
+    #[cfg(target_os = "macos")]
+    fn mount_point(&self, root: &Path) -> Option<PathBuf> {
+        let filesystem = rustix::fs::statfs(root.as_os_str().as_bytes()).ok()?;
+        let bytes = filesystem.f_mntonname;
+        let end = bytes.iter().position(|byte| *byte == 0)?;
+        Some(PathBuf::from(OsString::from_vec(
+            bytes[..end].iter().map(|byte| *byte as u8).collect(),
+        )))
+    }
+    #[cfg(not(target_os = "macos"))]
+    fn mount_point(&self, _: &Path) -> Option<PathBuf> {
+        None
+    }
+}
+
 /// Why a requested path did not resolve to a location that can be listed. `text` is what a log
 /// line carries: the operating system's own error text, or a fixed phrase. It never names a path.
 struct Blocked {
@@ -161,7 +204,17 @@ struct Resolved {
 /// `fs-reader: entry failed: `. Each carries the operating system's error text or a fixed phrase,
 /// and no path.
 pub fn list(root: &Path, requested: &str) -> ItemState<Vec<Entry>> {
-    match resolve(root, Path::new(requested)).and_then(|at| list_folder(root, &at.below_root)) {
+    list_with_filesystem(&NativeFilesystem, root, requested)
+}
+
+fn list_with_filesystem(
+    filesystem: &impl Filesystem,
+    root: &Path,
+    requested: &str,
+) -> ItemState<Vec<Entry>> {
+    match resolve(filesystem, root, Path::new(requested))
+        .and_then(|at| list_folder(filesystem, root, &at.below_root))
+    {
         Ok(entries) => ItemState::Observed(entries),
         Err(blocked) => {
             log::warn!("fs-reader: list failed: {}", blocked.text);
@@ -223,7 +276,11 @@ fn target_steps_of(target: &Path) -> VecDeque<Step> {
 /// lexical walk, so a link to an ancestor of the root ends `Outside`. One hop count runs across the
 /// whole request, and past `MAX_LINK_HOPS` the answer is `TooManyLinks`, so a hostile tree still
 /// produces a state and never hangs.
-fn resolve(root: &Path, requested: &Path) -> Result<Resolved, Blocked> {
+fn resolve(
+    filesystem: &impl Filesystem,
+    root: &Path,
+    requested: &Path,
+) -> Result<Resolved, Blocked> {
     let mut position = if requested.is_absolute() {
         PathBuf::from("/")
     } else {
@@ -232,26 +289,42 @@ fn resolve(root: &Path, requested: &Path) -> Result<Resolved, Blocked> {
     let mut pending = steps_of(requested);
     let mut links_followed = 0;
     let mut kind = EntryKind::Folder;
+    let mut volume_facts = VolumeFacts::default();
+    let mut case_folded_return_is_one_level = false;
     while let Some(step) = pending.pop_front() {
         match step {
             Step::Parent => {
+                if position == root {
+                    volume_facts = volume_facts_for(filesystem, root);
+                    case_folded_return_is_one_level = true;
+                } else if !position.starts_with(root) {
+                    case_folded_return_is_one_level = false;
+                }
                 position.pop();
                 kind = EntryKind::Folder;
             }
             Step::MustBeFolder => {}
             Step::EndOfLink { parent, .. } => {
-                if position.starts_with(root) && holds(root, &position, &parent)? {
+                if position.starts_with(root) && holds(filesystem, root, &position, &parent)? {
                     return Err(Blocked::cycle());
                 }
             }
             Step::Name(name) => {
-                let candidate = position.join(&name);
                 if !position.starts_with(root) {
-                    position = candidate;
+                    if case_folded_return_is_one_level
+                        && is_admitted_case_folded_return(root, &position, &name, &volume_facts)
+                    {
+                        position = root.to_path_buf();
+                    } else {
+                        position = position.join(&name);
+                    }
+                    case_folded_return_is_one_level = false;
                     continue;
                 }
-                let metadata =
-                    fs::symlink_metadata(&candidate).map_err(|error| Blocked::from(&error))?;
+                let candidate = position.join(&name);
+                let metadata = filesystem
+                    .symlink_metadata(&candidate)
+                    .map_err(|error| Blocked::from(&error))?;
                 if metadata.is_symlink() {
                     if pending.iter().any(
                         |queued| matches!(queued, Step::EndOfLink { link, .. } if *link == candidate),
@@ -262,8 +335,9 @@ fn resolve(root: &Path, requested: &Path) -> Result<Resolved, Blocked> {
                     if links_followed > MAX_LINK_HOPS {
                         return Err(Blocked::too_many_links());
                     }
-                    let target =
-                        fs::read_link(&candidate).map_err(|error| Blocked::from(&error))?;
+                    let target = filesystem
+                        .read_link(&candidate)
+                        .map_err(|error| Blocked::from(&error))?;
                     let parent = position.clone();
                     if target.is_absolute() {
                         position = PathBuf::from("/");
@@ -301,6 +375,78 @@ fn resolve(root: &Path, requested: &Path) -> Result<Resolved, Blocked> {
         .map_err(|_| Blocked::outside())
 }
 
+fn volume_facts_for(filesystem: &impl Filesystem, root: &Path) -> VolumeFacts {
+    VolumeFacts {
+        root_is_volume_root: filesystem.mount_point(root).map(|mount| mount == root),
+        ignores_letter_case: filesystem
+            .case_fact()
+            .unwrap_or_else(|| ignores_letter_case(filesystem, root)),
+    }
+}
+
+fn ignores_letter_case(filesystem: &impl Filesystem, root: &Path) -> Option<bool> {
+    for entry in filesystem.read_dir(root).ok()? {
+        let name = entry.file_name();
+        let Some(name) = name.to_str() else {
+            continue;
+        };
+        let Some(alternate) = alternate_case(name) else {
+            continue;
+        };
+        let metadata = filesystem.symlink_metadata(&entry.path()).ok()?;
+        if metadata.is_symlink() || !metadata.is_dir() {
+            continue;
+        }
+        let alternate_metadata = match filesystem.symlink_metadata(&root.join(alternate)) {
+            Ok(metadata) => metadata,
+            Err(error) if error.kind() == io::ErrorKind::NotFound => return Some(false),
+            Err(_) => return None,
+        };
+        return Some(
+            alternate_metadata.is_dir()
+                && (metadata.dev(), metadata.ino())
+                    == (alternate_metadata.dev(), alternate_metadata.ino()),
+        );
+    }
+    None
+}
+
+fn alternate_case(name: &str) -> Option<String> {
+    let alternate = name
+        .chars()
+        .map(|character| {
+            if character.is_lowercase() {
+                character.to_uppercase().to_string()
+            } else if character.is_uppercase() {
+                character.to_lowercase().to_string()
+            } else {
+                character.to_string()
+            }
+        })
+        .collect::<String>();
+    (alternate != name).then_some(alternate)
+}
+
+fn is_admitted_case_folded_return(
+    root: &Path,
+    position: &Path,
+    name: &std::ffi::OsStr,
+    facts: &VolumeFacts,
+) -> bool {
+    facts.root_is_volume_root == Some(false)
+        && facts.ignores_letter_case == Some(true)
+        && root.parent() == Some(position)
+        && root
+            .file_name()
+            .zip(name.to_str())
+            .is_some_and(|(root_name, name)| {
+                root_name != name
+                    && root_name
+                        .to_str()
+                        .is_some_and(|root_name| root_name.to_lowercase() == name.to_lowercase())
+            })
+}
+
 /// Whether `target`, a location inside `root`, is the folder `parent` or one that holds it, where
 /// `parent` is the position inside `root` a link was met from.
 ///
@@ -308,11 +454,18 @@ fn resolve(root: &Path, requested: &Path) -> Result<Resolved, Blocked> {
 /// on a volume that ignores letter case, `../A` names the folder `a`, and a link reaching it that way
 /// still reaches the folder that holds it. Every path read here lies inside `root`, and none holds a
 /// link, because a position only ever moves onto a location that `lstat` found was not one.
-fn holds(root: &Path, target: &Path, parent: &Path) -> Result<bool, Blocked> {
+fn holds(
+    filesystem: &impl Filesystem,
+    root: &Path,
+    target: &Path,
+    parent: &Path,
+) -> Result<bool, Blocked> {
     if parent.starts_with(target) {
         return Ok(true);
     }
-    let target = fs::symlink_metadata(target).map_err(|error| Blocked::from(&error))?;
+    let target = filesystem
+        .symlink_metadata(target)
+        .map_err(|error| Blocked::from(&error))?;
     if !target.is_dir() {
         return Ok(false);
     }
@@ -320,7 +473,9 @@ fn holds(root: &Path, target: &Path, parent: &Path) -> Result<bool, Blocked> {
         .ancestors()
         .take_while(|ancestor| ancestor.starts_with(root))
     {
-        let folder = fs::symlink_metadata(folder).map_err(|error| Blocked::from(&error))?;
+        let folder = filesystem
+            .symlink_metadata(folder)
+            .map_err(|error| Blocked::from(&error))?;
         if (folder.dev(), folder.ino()) == (target.dev(), target.ino()) {
             return Ok(true);
         }
@@ -373,16 +528,22 @@ fn order(items: &mut [Listed]) {
 ///
 /// An error on the directory stream itself carries no name to attach, so it fails the whole answer.
 /// An error on one named entry's kind fails that entry, and its siblings stand.
-fn list_folder(root: &Path, below_root: &Path) -> Result<Vec<Entry>, Blocked> {
+fn list_folder(
+    filesystem: &impl Filesystem,
+    root: &Path,
+    below_root: &Path,
+) -> Result<Vec<Entry>, Blocked> {
     let mut items = Vec::new();
-    for item in fs::read_dir(root.join(below_root)).map_err(|error| Blocked::from(&error))? {
-        let item = item.map_err(|error| Blocked::from(&error))?;
+    for item in filesystem
+        .read_dir(&root.join(below_root))
+        .map_err(|error| Blocked::from(&error))?
+    {
         let name = item.file_name();
         let path = below_root.join(&name);
         let (kind, state) = match item.file_type() {
             Err(error) => failed_entry(&Blocked::from(&error)),
             Ok(file_type) if file_type.is_dir() => (EntryKind::Folder, ItemState::Pending),
-            Ok(file_type) if file_type.is_symlink() => match resolve(root, &path) {
+            Ok(file_type) if file_type.is_symlink() => match resolve(filesystem, root, &path) {
                 Ok(reached) => item_of(reached.kind),
                 Err(blocked) => failed_entry(&blocked),
             },
@@ -420,7 +581,69 @@ fn failed_entry(blocked: &Blocked) -> (EntryKind, ItemState<()>) {
 mod tests {
     use super::*;
     use crate::test_support::TempDir;
+    use std::cell::RefCell;
     use std::os::unix::ffi::OsStringExt;
+    use std::os::unix::fs::PermissionsExt as _;
+    use std::time::SystemTime;
+
+    struct RecordingFilesystem {
+        root: PathBuf,
+        mount_point: Option<PathBuf>,
+        case_fact: Option<bool>,
+        outside_queries: RefCell<Vec<PathBuf>>,
+    }
+
+    impl RecordingFilesystem {
+        fn new(root: &Path, root_is_volume_root: Option<bool>, case_fact: Option<bool>) -> Self {
+            let mount_point = root_is_volume_root.map(|is_root| {
+                if is_root {
+                    root.to_path_buf()
+                } else {
+                    root.parent().expect("root parent").to_path_buf()
+                }
+            });
+            Self {
+                root: root.to_path_buf(),
+                mount_point,
+                case_fact,
+                outside_queries: RefCell::new(Vec::new()),
+            }
+        }
+
+        fn outside_queries(&self) -> Vec<PathBuf> {
+            self.outside_queries.borrow().clone()
+        }
+
+        fn guard(&self, path: &Path) -> io::Result<()> {
+            if path.starts_with(&self.root) {
+                return Ok(());
+            }
+            self.outside_queries.borrow_mut().push(path.to_path_buf());
+            Err(io::Error::from(io::ErrorKind::PermissionDenied))
+        }
+    }
+
+    impl Filesystem for RecordingFilesystem {
+        fn symlink_metadata(&self, path: &Path) -> io::Result<fs::Metadata> {
+            self.guard(path)?;
+            fs::symlink_metadata(path)
+        }
+        fn read_link(&self, path: &Path) -> io::Result<PathBuf> {
+            self.guard(path)?;
+            fs::read_link(path)
+        }
+        fn read_dir(&self, path: &Path) -> io::Result<Vec<fs::DirEntry>> {
+            self.guard(path)?;
+            fs::read_dir(path)?.collect()
+        }
+        fn mount_point(&self, root: &Path) -> Option<PathBuf> {
+            self.guard(root).ok()?;
+            self.mount_point.clone()
+        }
+        fn case_fact(&self) -> Option<Option<bool>> {
+            Some(self.case_fact)
+        }
+    }
 
     /// The entries of an observed answer, sorted by name, or a panic naming the answer.
     fn entries_of(outcome: ItemState<Vec<Entry>>) -> Vec<Entry> {
@@ -458,6 +681,62 @@ mod tests {
         ItemState::Failed(condition)
     }
 
+    #[derive(Debug, PartialEq, Eq)]
+    struct SnapshotEntry {
+        path: PathBuf,
+        kind: &'static str,
+        link_target: Option<PathBuf>,
+        bytes: Option<Vec<u8>>,
+        mode: u32,
+        length: u64,
+        modified: Option<SystemTime>,
+    }
+
+    fn snapshot(root: &Path) -> Vec<SnapshotEntry> {
+        fn visit(root: &Path, path: &Path, entries: &mut Vec<SnapshotEntry>) {
+            let mut children = fs::read_dir(path)
+                .expect("snapshot directory")
+                .collect::<Result<Vec<_>, _>>()
+                .expect("snapshot entries");
+            children.sort_by_key(fs::DirEntry::file_name);
+            for child in children {
+                let child_path = child.path();
+                let metadata = fs::symlink_metadata(&child_path).expect("snapshot metadata");
+                let file_type = metadata.file_type();
+                let kind = if file_type.is_symlink() {
+                    "symlink"
+                } else if file_type.is_dir() {
+                    "directory"
+                } else {
+                    "file"
+                };
+                entries.push(SnapshotEntry {
+                    path: child_path
+                        .strip_prefix(root)
+                        .expect("snapshot path below root")
+                        .to_path_buf(),
+                    kind,
+                    link_target: file_type
+                        .is_symlink()
+                        .then(|| fs::read_link(&child_path).expect("snapshot link target")),
+                    bytes: file_type
+                        .is_file()
+                        .then(|| fs::read(&child_path).expect("snapshot file bytes")),
+                    mode: metadata.permissions().mode(),
+                    length: metadata.len(),
+                    modified: metadata.modified().ok(),
+                });
+                if file_type.is_dir() {
+                    visit(root, &child_path, entries);
+                }
+            }
+        }
+
+        let mut entries = Vec::new();
+        visit(root, root, &mut entries);
+        entries
+    }
+
     #[test]
     fn test_relative_path_inside_root_resolves_inside() {
         let temp = TempDir::new();
@@ -478,6 +757,181 @@ mod tests {
         assert_eq!(list(temp.path(), ".."), failed(Condition::Outside));
         assert_eq!(list(temp.path(), "../x"), failed(Condition::Outside));
         assert_eq!(list(temp.path(), "src/../../x"), failed(Condition::Outside));
+    }
+
+    #[test]
+    fn test_volume_root_fact_is_conservative() {
+        let temp = TempDir::new();
+        let root = temp.make_folder("nozoki");
+
+        assert_eq!(
+            volume_facts_for(&RecordingFilesystem::new(&root, Some(true), None), &root)
+                .root_is_volume_root,
+            Some(true),
+        );
+        assert_eq!(
+            volume_facts_for(&RecordingFilesystem::new(&root, Some(false), None), &root)
+                .root_is_volume_root,
+            Some(false),
+        );
+        assert_eq!(
+            volume_facts_for(&RecordingFilesystem::new(&root, None, None), &root)
+                .root_is_volume_root,
+            None,
+        );
+    }
+
+    #[test]
+    fn test_letter_case_fact_uses_an_inside_real_directory_witness() {
+        let temp = TempDir::new();
+        let root = temp.make_folder("nozoki");
+        temp.make_folder("nozoki/123");
+        let witness = temp.make_folder("nozoki/witness");
+        let alternate = root.join("WITNESS");
+        let expected = match fs::symlink_metadata(&alternate) {
+            Ok(metadata) => {
+                let witness = fs::symlink_metadata(witness).expect("witness metadata");
+                Some(
+                    metadata.is_dir()
+                        && (metadata.dev(), metadata.ino()) == (witness.dev(), witness.ino()),
+                )
+            }
+            Err(error) if error.kind() == io::ErrorKind::NotFound => Some(false),
+            Err(_) => None,
+        };
+
+        assert_eq!(ignores_letter_case(&NativeFilesystem, &root), expected);
+        assert_eq!(
+            ignores_letter_case(&NativeFilesystem, &temp.make_folder("nozoki-empty/123")),
+            None
+        );
+    }
+
+    #[test]
+    fn test_other_case_return_to_root_is_cycle_without_outside_io() {
+        let temp = TempDir::new();
+        let root = temp.make_folder("nozoki");
+        temp.make_link("nozoki/self", "../NOZOKI");
+        let filesystem = RecordingFilesystem::new(&root, Some(false), Some(true));
+
+        assert_eq!(
+            list_with_filesystem(&filesystem, &root, "self"),
+            failed(Condition::Cycle),
+        );
+        assert!(filesystem.outside_queries().is_empty());
+    }
+
+    #[test]
+    fn test_other_case_return_then_child_lists_inside_without_outside_io() {
+        let temp = TempDir::new();
+        let root = temp.make_folder("nozoki");
+        temp.write_file("nozoki/docs/guide.md", "guide");
+        temp.make_folder("nozoki/docs/images");
+        temp.make_link("nozoki/up", "../NOZOKI/docs");
+        let filesystem = RecordingFilesystem::new(&root, Some(false), Some(true));
+
+        assert_eq!(
+            list_with_filesystem(&filesystem, &root, "up"),
+            list_with_filesystem(&filesystem, &root, "docs"),
+        );
+        assert!(filesystem.outside_queries().is_empty());
+    }
+
+    #[test]
+    fn test_other_case_reentry_requires_both_confirmed_facts() {
+        let temp = TempDir::new();
+        let root = temp.make_folder("nozoki");
+        temp.make_link("nozoki/self", "../NOZOKI");
+
+        for root_is_volume_root in [Some(true), None] {
+            for ignores_letter_case in [Some(true), Some(false), None] {
+                let filesystem =
+                    RecordingFilesystem::new(&root, root_is_volume_root, ignores_letter_case);
+                assert_eq!(
+                    list_with_filesystem(&filesystem, &root, "self"),
+                    failed(Condition::Outside),
+                );
+                assert!(filesystem.outside_queries().is_empty());
+            }
+        }
+
+        for ignores_letter_case in [Some(false), None] {
+            let filesystem = RecordingFilesystem::new(&root, Some(false), ignores_letter_case);
+            assert_eq!(
+                list_with_filesystem(&filesystem, &root, "self"),
+                failed(Condition::Outside),
+            );
+            assert!(filesystem.outside_queries().is_empty());
+        }
+    }
+
+    #[test]
+    fn test_multi_level_other_case_return_stays_outside_without_outside_io() {
+        let temp = TempDir::new();
+        let root = temp.make_folder("projects/nozoki");
+        temp.make_folder("projects/nozoki/docs");
+        temp.make_link("projects/nozoki/far", "../../projects/NOZOKI/docs");
+        let filesystem = RecordingFilesystem::new(&root, Some(false), Some(true));
+
+        assert_eq!(
+            list_with_filesystem(&filesystem, &root, "far"),
+            failed(Condition::Outside),
+        );
+        assert!(filesystem.outside_queries().is_empty());
+    }
+
+    #[test]
+    fn test_normalization_only_return_stays_outside_without_outside_io() {
+        let temp = TempDir::new();
+        let root = temp.make_folder("café");
+        temp.make_link("café/self", "../CAFE\u{301}");
+        let filesystem = RecordingFilesystem::new(&root, Some(false), Some(true));
+
+        assert_eq!(
+            list_with_filesystem(&filesystem, &root, "self"),
+            failed(Condition::Outside),
+        );
+        assert!(filesystem.outside_queries().is_empty());
+    }
+
+    #[test]
+    fn test_volume_root_return_stays_outside_without_outside_io() {
+        let temp = TempDir::new();
+        let root = temp.make_folder("nozoki");
+        temp.make_link("nozoki/back", "../NOZOKI");
+        let filesystem = RecordingFilesystem::new(&root, Some(true), Some(true));
+
+        assert_eq!(
+            list_with_filesystem(&filesystem, &root, "back"),
+            failed(Condition::Outside),
+        );
+        assert!(filesystem.outside_queries().is_empty());
+    }
+
+    #[test]
+    fn test_containment_spellings_leave_the_filesystem_unchanged() {
+        let temp = TempDir::new();
+        let root = temp.make_folder("projects/nozoki");
+        temp.write_file("projects/nozoki/docs/guide.md", "guide");
+        temp.make_link("projects/nozoki/self", "../NOZOKI");
+        temp.make_link("projects/nozoki/up", "../NOZOKI/docs");
+        temp.make_link("projects/nozoki/far", "../../projects/NOZOKI/docs");
+        let before = snapshot(temp.path());
+
+        let admitted = RecordingFilesystem::new(&root, Some(false), Some(true));
+        let volume_root = RecordingFilesystem::new(&root, Some(true), Some(true));
+        let unknown_case = RecordingFilesystem::new(&root, Some(false), None);
+        for (filesystem, requested) in [
+            (&admitted, "self"),
+            (&admitted, "up"),
+            (&admitted, "far"),
+            (&volume_root, "self"),
+            (&unknown_case, "self"),
+        ] {
+            let _ = list_with_filesystem(filesystem, &root, requested);
+        }
+
+        assert_eq!(snapshot(temp.path()), before);
     }
 
     #[test]
