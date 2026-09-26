@@ -567,6 +567,8 @@ mod tests {
     use crate::test_support::TempDir;
     use std::cell::RefCell;
     use std::os::unix::ffi::OsStringExt;
+    use std::os::unix::fs::PermissionsExt as _;
+    use std::time::SystemTime;
 
     struct RecordingFilesystem {
         root: PathBuf,
@@ -658,6 +660,62 @@ mod tests {
         ItemState::Failed(condition)
     }
 
+    #[derive(Debug, PartialEq, Eq)]
+    struct SnapshotEntry {
+        path: PathBuf,
+        kind: &'static str,
+        link_target: Option<PathBuf>,
+        bytes: Option<Vec<u8>>,
+        mode: u32,
+        length: u64,
+        modified: Option<SystemTime>,
+    }
+
+    fn snapshot(root: &Path) -> Vec<SnapshotEntry> {
+        fn visit(root: &Path, path: &Path, entries: &mut Vec<SnapshotEntry>) {
+            let mut children = fs::read_dir(path)
+                .expect("snapshot directory")
+                .collect::<Result<Vec<_>, _>>()
+                .expect("snapshot entries");
+            children.sort_by_key(fs::DirEntry::file_name);
+            for child in children {
+                let child_path = child.path();
+                let metadata = fs::symlink_metadata(&child_path).expect("snapshot metadata");
+                let file_type = metadata.file_type();
+                let kind = if file_type.is_symlink() {
+                    "symlink"
+                } else if file_type.is_dir() {
+                    "directory"
+                } else {
+                    "file"
+                };
+                entries.push(SnapshotEntry {
+                    path: child_path
+                        .strip_prefix(root)
+                        .expect("snapshot path below root")
+                        .to_path_buf(),
+                    kind,
+                    link_target: file_type
+                        .is_symlink()
+                        .then(|| fs::read_link(&child_path).expect("snapshot link target")),
+                    bytes: file_type
+                        .is_file()
+                        .then(|| fs::read(&child_path).expect("snapshot file bytes")),
+                    mode: metadata.permissions().mode(),
+                    length: metadata.len(),
+                    modified: metadata.modified().ok(),
+                });
+                if file_type.is_dir() {
+                    visit(root, &child_path, entries);
+                }
+            }
+        }
+
+        let mut entries = Vec::new();
+        visit(root, root, &mut entries);
+        entries
+    }
+
     #[test]
     fn test_relative_path_inside_root_resolves_inside() {
         let temp = TempDir::new();
@@ -681,70 +739,178 @@ mod tests {
     }
 
     #[test]
-    fn test_other_case_return_to_root_is_cycle() {
+    fn test_volume_root_fact_is_conservative() {
         let temp = TempDir::new();
         let root = temp.make_folder("nozoki");
-        temp.make_folder("nozoki/witness");
-        temp.make_link("nozoki/self", "../NOZOKI");
 
-        assert_eq!(list(&root, "self"), failed(Condition::Cycle),);
+        assert_eq!(
+            volume_facts_for(&RecordingFilesystem::new(&root, Some(true), None), &root)
+                .root_is_volume_root,
+            Some(true),
+        );
+        assert_eq!(
+            volume_facts_for(&RecordingFilesystem::new(&root, Some(false), None), &root)
+                .root_is_volume_root,
+            Some(false),
+        );
+        assert_eq!(
+            volume_facts_for(&RecordingFilesystem::new(&root, None, None), &root)
+                .root_is_volume_root,
+            None,
+        );
     }
 
     #[test]
-    fn test_other_case_reentry_requires_both_confirmed_facts_without_outside_io() {
+    fn test_letter_case_fact_uses_an_inside_real_directory_witness() {
         let temp = TempDir::new();
         let root = temp.make_folder("nozoki");
-        let facts = VolumeFacts {
-            root_is_volume_root: Some(false),
-            ignores_letter_case: Some(true),
+        temp.make_folder("nozoki/123");
+        let witness = temp.make_folder("nozoki/witness");
+        let alternate = root.join("WITNESS");
+        let expected = match fs::symlink_metadata(&alternate) {
+            Ok(metadata) => {
+                let witness = fs::symlink_metadata(witness).expect("witness metadata");
+                Some(
+                    metadata.is_dir()
+                        && (metadata.dev(), metadata.ino()) == (witness.dev(), witness.ino()),
+                )
+            }
+            Err(error) if error.kind() == io::ErrorKind::NotFound => Some(false),
+            Err(_) => None,
         };
 
-        assert!(is_admitted_case_folded_return(
-            &root,
-            root.parent().expect("temporary root has a parent"),
-            std::ffi::OsStr::new("NOZOKI"),
-            &facts,
-        ));
+        assert_eq!(ignores_letter_case(&root), expected);
+        assert_eq!(
+            ignores_letter_case(&temp.make_folder("nozoki-empty/123")),
+            None
+        );
+    }
+
+    #[test]
+    fn test_other_case_return_to_root_is_cycle_without_outside_io() {
+        let temp = TempDir::new();
+        let root = temp.make_folder("nozoki");
+        temp.make_link("nozoki/self", "../NOZOKI");
+        let filesystem = RecordingFilesystem::new(&root, Some(false), Some(true));
+
+        assert_eq!(
+            list_with_filesystem(&filesystem, &root, "self"),
+            failed(Condition::Cycle),
+        );
+        assert!(filesystem.outside_queries().is_empty());
+    }
+
+    #[test]
+    fn test_other_case_return_then_child_lists_inside_without_outside_io() {
+        let temp = TempDir::new();
+        let root = temp.make_folder("nozoki");
+        temp.write_file("nozoki/docs/guide.md", "guide");
+        temp.make_folder("nozoki/docs/images");
+        temp.make_link("nozoki/up", "../NOZOKI/docs");
+        let filesystem = RecordingFilesystem::new(&root, Some(false), Some(true));
+
+        assert_eq!(
+            list_with_filesystem(&filesystem, &root, "up"),
+            list_with_filesystem(&filesystem, &root, "docs"),
+        );
+        assert!(filesystem.outside_queries().is_empty());
+    }
+
+    #[test]
+    fn test_other_case_reentry_requires_both_confirmed_facts() {
+        let temp = TempDir::new();
+        let root = temp.make_folder("nozoki");
+        temp.make_link("nozoki/self", "../NOZOKI");
 
         for root_is_volume_root in [Some(true), None] {
             for ignores_letter_case in [Some(true), Some(false), None] {
-                assert!(!is_admitted_case_folded_return(
-                    &root,
-                    root.parent().expect("temporary root has a parent"),
-                    std::ffi::OsStr::new("NOZOKI"),
-                    &VolumeFacts {
-                        root_is_volume_root,
-                        ignores_letter_case,
-                    },
-                ));
+                let filesystem =
+                    RecordingFilesystem::new(&root, root_is_volume_root, ignores_letter_case);
+                assert_eq!(
+                    list_with_filesystem(&filesystem, &root, "self"),
+                    failed(Condition::Outside),
+                );
+                assert!(filesystem.outside_queries().is_empty());
             }
         }
 
         for ignores_letter_case in [Some(false), None] {
-            assert!(!is_admitted_case_folded_return(
-                &root,
-                root.parent().expect("temporary root has a parent"),
-                std::ffi::OsStr::new("NOZOKI"),
-                &VolumeFacts {
-                    root_is_volume_root: Some(false),
-                    ignores_letter_case,
-                },
-            ));
+            let filesystem = RecordingFilesystem::new(&root, Some(false), ignores_letter_case);
+            assert_eq!(
+                list_with_filesystem(&filesystem, &root, "self"),
+                failed(Condition::Outside),
+            );
+            assert!(filesystem.outside_queries().is_empty());
         }
     }
 
     #[test]
-    fn test_filesystem_seam_rejects_outside_queries() {
+    fn test_multi_level_other_case_return_stays_outside_without_outside_io() {
         let temp = TempDir::new();
-        let root = temp.make_folder("nozoki");
-        temp.make_folder("nozoki/docs");
-
+        let root = temp.make_folder("projects/nozoki");
+        temp.make_folder("projects/nozoki/docs");
+        temp.make_link("projects/nozoki/far", "../../projects/NOZOKI/docs");
         let filesystem = RecordingFilesystem::new(&root, Some(false), Some(true));
+
         assert_eq!(
-            list_with_filesystem(&filesystem, &root, "../NOZOKI/docs"),
-            ItemState::Observed(Vec::new()),
+            list_with_filesystem(&filesystem, &root, "far"),
+            failed(Condition::Outside),
         );
         assert!(filesystem.outside_queries().is_empty());
+    }
+
+    #[test]
+    fn test_normalization_only_return_stays_outside_without_outside_io() {
+        let temp = TempDir::new();
+        let root = temp.make_folder("café");
+        temp.make_link("café/self", "../CAFE\u{301}");
+        let filesystem = RecordingFilesystem::new(&root, Some(false), Some(true));
+
+        assert_eq!(
+            list_with_filesystem(&filesystem, &root, "self"),
+            failed(Condition::Outside),
+        );
+        assert!(filesystem.outside_queries().is_empty());
+    }
+
+    #[test]
+    fn test_volume_root_return_stays_outside_without_outside_io() {
+        let temp = TempDir::new();
+        let root = temp.make_folder("nozoki");
+        temp.make_link("nozoki/back", "../NOZOKI");
+        let filesystem = RecordingFilesystem::new(&root, Some(true), Some(true));
+
+        assert_eq!(
+            list_with_filesystem(&filesystem, &root, "back"),
+            failed(Condition::Outside),
+        );
+        assert!(filesystem.outside_queries().is_empty());
+    }
+
+    #[test]
+    fn test_containment_spellings_leave_the_filesystem_unchanged() {
+        let temp = TempDir::new();
+        let root = temp.make_folder("projects/nozoki");
+        temp.write_file("projects/nozoki/docs/guide.md", "guide");
+        temp.make_link("projects/nozoki/self", "../NOZOKI");
+        temp.make_link("projects/nozoki/up", "../NOZOKI/docs");
+        temp.make_link("projects/nozoki/far", "../../projects/NOZOKI/docs");
+        let before = snapshot(temp.path());
+
+        let admitted = RecordingFilesystem::new(&root, Some(false), Some(true));
+        let volume_root = RecordingFilesystem::new(&root, Some(true), Some(true));
+        let unknown_case = RecordingFilesystem::new(&root, Some(false), None);
+        for (filesystem, requested) in [
+            (&admitted, "self"),
+            (&admitted, "up"),
+            (&admitted, "far"),
+            (&volume_root, "self"),
+            (&unknown_case, "self"),
+        ] {
+            let _ = list_with_filesystem(filesystem, &root, requested);
+        }
+
+        assert_eq!(snapshot(temp.path()), before);
     }
 
     #[test]
