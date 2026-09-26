@@ -97,6 +97,7 @@ struct VolumeFacts {
 trait Filesystem {
     fn symlink_metadata(&self, path: &Path) -> io::Result<fs::Metadata>;
     fn read_link(&self, path: &Path) -> io::Result<PathBuf>;
+    fn read_dir(&self, path: &Path) -> io::Result<Vec<fs::DirEntry>>;
     fn mount_point(&self, root: &Path) -> Option<PathBuf>;
     fn case_fact(&self) -> Option<Option<bool>> {
         None
@@ -111,6 +112,9 @@ impl Filesystem for NativeFilesystem {
     }
     fn read_link(&self, path: &Path) -> io::Result<PathBuf> {
         fs::read_link(path)
+    }
+    fn read_dir(&self, path: &Path) -> io::Result<Vec<fs::DirEntry>> {
+        fs::read_dir(path)?.collect()
     }
     #[cfg(target_os = "macos")]
     fn mount_point(&self, root: &Path) -> Option<PathBuf> {
@@ -286,11 +290,15 @@ fn resolve(
     let mut links_followed = 0;
     let mut kind = EntryKind::Folder;
     let mut volume_facts = VolumeFacts::default();
+    let mut case_folded_return_is_one_level = false;
     while let Some(step) = pending.pop_front() {
         match step {
             Step::Parent => {
                 if position == root {
                     volume_facts = volume_facts_for(filesystem, root);
+                    case_folded_return_is_one_level = true;
+                } else if !position.starts_with(root) {
+                    case_folded_return_is_one_level = false;
                 }
                 position.pop();
                 kind = EntryKind::Folder;
@@ -303,11 +311,14 @@ fn resolve(
             }
             Step::Name(name) => {
                 if !position.starts_with(root) {
-                    if is_admitted_case_folded_return(root, &position, &name, &volume_facts) {
+                    if case_folded_return_is_one_level
+                        && is_admitted_case_folded_return(root, &position, &name, &volume_facts)
+                    {
                         position = root.to_path_buf();
                     } else {
                         position = position.join(&name);
                     }
+                    case_folded_return_is_one_level = false;
                     continue;
                 }
                 let candidate = position.join(&name);
@@ -369,21 +380,24 @@ fn volume_facts_for(filesystem: &impl Filesystem, root: &Path) -> VolumeFacts {
         root_is_volume_root: filesystem.mount_point(root).map(|mount| mount == root),
         ignores_letter_case: filesystem
             .case_fact()
-            .unwrap_or_else(|| ignores_letter_case(root)),
+            .unwrap_or_else(|| ignores_letter_case(filesystem, root)),
     }
 }
 
-fn ignores_letter_case(root: &Path) -> Option<bool> {
-    for entry in fs::read_dir(root).ok()? {
-        let entry = entry.ok()?;
+fn ignores_letter_case(filesystem: &impl Filesystem, root: &Path) -> Option<bool> {
+    for entry in filesystem.read_dir(root).ok()? {
         let name = entry.file_name();
-        let name = name.to_str()?;
-        let alternate = alternate_case(name)?;
-        let metadata = fs::symlink_metadata(entry.path()).ok()?;
+        let Some(name) = name.to_str() else {
+            continue;
+        };
+        let Some(alternate) = alternate_case(name) else {
+            continue;
+        };
+        let metadata = filesystem.symlink_metadata(&entry.path()).ok()?;
         if metadata.is_symlink() || !metadata.is_dir() {
             continue;
         }
-        let alternate_metadata = match fs::symlink_metadata(root.join(alternate)) {
+        let alternate_metadata = match filesystem.symlink_metadata(&root.join(alternate)) {
             Ok(metadata) => metadata,
             Err(error) if error.kind() == io::ErrorKind::NotFound => return Some(false),
             Err(_) => return None,
@@ -520,8 +534,10 @@ fn list_folder(
     below_root: &Path,
 ) -> Result<Vec<Entry>, Blocked> {
     let mut items = Vec::new();
-    for item in fs::read_dir(root.join(below_root)).map_err(|error| Blocked::from(&error))? {
-        let item = item.map_err(|error| Blocked::from(&error))?;
+    for item in filesystem
+        .read_dir(&root.join(below_root))
+        .map_err(|error| Blocked::from(&error))?
+    {
         let name = item.file_name();
         let path = below_root.join(&name);
         let (kind, state) = match item.file_type() {
@@ -616,7 +632,12 @@ mod tests {
             self.guard(path)?;
             fs::read_link(path)
         }
-        fn mount_point(&self, _: &Path) -> Option<PathBuf> {
+        fn read_dir(&self, path: &Path) -> io::Result<Vec<fs::DirEntry>> {
+            self.guard(path)?;
+            fs::read_dir(path)?.collect()
+        }
+        fn mount_point(&self, root: &Path) -> Option<PathBuf> {
+            self.guard(root).ok()?;
             self.mount_point.clone()
         }
         fn case_fact(&self) -> Option<Option<bool>> {
@@ -779,9 +800,9 @@ mod tests {
             Err(_) => None,
         };
 
-        assert_eq!(ignores_letter_case(&root), expected);
+        assert_eq!(ignores_letter_case(&NativeFilesystem, &root), expected);
         assert_eq!(
-            ignores_letter_case(&temp.make_folder("nozoki-empty/123")),
+            ignores_letter_case(&NativeFilesystem, &temp.make_folder("nozoki-empty/123")),
             None
         );
     }
