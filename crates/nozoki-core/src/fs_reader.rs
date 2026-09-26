@@ -440,11 +440,62 @@ fn is_admitted_case_folded_return(
             .file_name()
             .zip(name.to_str())
             .is_some_and(|(root_name, name)| {
-                root_name != name
-                    && root_name
-                        .to_str()
-                        .is_some_and(|root_name| root_name.to_lowercase() == name.to_lowercase())
+                root_name
+                    .to_str()
+                    .is_some_and(|root_name| is_case_only_spelling(root_name, name))
             })
+}
+
+// Whole-string lowercase equality admits İ versus i + combining dot, and it
+// admits two capitals that only share a lowercase, such as Kelvin sign versus
+// K (CP-213; change_design.md §4). Case-only means each original scalar
+// corresponds to exactly one candidate scalar, and that scalar is a
+// single-scalar case mapping of the other — not a third character both lower to.
+fn is_case_only_spelling(root_name: &str, candidate: &str) -> bool {
+    if root_name == candidate {
+        return false;
+    }
+    let mut root_scalars = root_name.chars();
+    let mut candidate_scalars = candidate.chars();
+    loop {
+        match (root_scalars.next(), candidate_scalars.next()) {
+            (None, None) => return true,
+            (Some(root_scalar), Some(candidate_scalar)) => {
+                if !scalars_match_as_one_case(root_scalar, candidate_scalar) {
+                    return false;
+                }
+            }
+            _ => return false,
+        }
+    }
+}
+
+fn scalars_match_as_one_case(left: char, right: char) -> bool {
+    if left == right {
+        return true;
+    }
+    // Shared lowercase is the old proof. Final sigma's uppercase is capital
+    // sigma while its lowercase is not small sigma, so a pair whose lowercases
+    // differ stays refused (CP-215).
+    match (lowercase_one_scalar(left), lowercase_one_scalar(right)) {
+        (Some(left_lower), Some(right_lower)) if left_lower == right_lower => {
+            one_scalar_maps_to(left.to_lowercase(), right)
+                || one_scalar_maps_to(right.to_lowercase(), left)
+                || one_scalar_maps_to(left.to_uppercase(), right)
+                || one_scalar_maps_to(right.to_uppercase(), left)
+        }
+        _ => false,
+    }
+}
+
+fn one_scalar_maps_to(mut mapped: impl Iterator<Item = char>, target: char) -> bool {
+    mapped.next() == Some(target) && mapped.next().is_none()
+}
+
+fn lowercase_one_scalar(scalar: char) -> Option<char> {
+    let mut lowered = scalar.to_lowercase();
+    let first = lowered.next()?;
+    lowered.next().is_none().then_some(first)
 }
 
 /// Whether `target`, a location inside `root`, is the folder `parent` or one that holds it, where
@@ -805,6 +856,102 @@ mod tests {
             ignores_letter_case(&NativeFilesystem, &temp.make_folder("nozoki-empty/123")),
             None
         );
+    }
+
+    #[test]
+    fn test_combined_case_change_and_normalization_return_stays_outside_without_outside_io() {
+        let temp = TempDir::new();
+        let root_name = "\u{0130}";
+        let candidate = "i\u{0307}";
+        assert_ne!(root_name, candidate);
+        assert_eq!(root_name.to_lowercase(), candidate.to_lowercase());
+        let root = temp.make_folder(root_name);
+        temp.make_link(&format!("{root_name}/self"), format!("../{candidate}"));
+        let filesystem = RecordingFilesystem::new(&root, Some(false), Some(true));
+        let before = snapshot(temp.path());
+
+        assert_eq!(
+            list_with_filesystem(&filesystem, &root, "self"),
+            failed(Condition::Outside),
+        );
+        assert!(filesystem.outside_queries().is_empty());
+        assert_eq!(snapshot(temp.path()), before);
+    }
+
+    #[test]
+    fn test_normalization_contraction_return_stays_outside_without_outside_io() {
+        let temp = TempDir::new();
+        let root_name = "i\u{0307}";
+        let candidate = "\u{0130}";
+        assert_ne!(root_name, candidate);
+        assert_eq!(root_name.to_lowercase(), candidate.to_lowercase());
+        let root = temp.make_folder(root_name);
+        temp.make_link(&format!("{root_name}/self"), format!("../{candidate}"));
+        let filesystem = RecordingFilesystem::new(&root, Some(false), Some(true));
+
+        assert_eq!(
+            list_with_filesystem(&filesystem, &root, "self"),
+            failed(Condition::Outside),
+        );
+        assert!(filesystem.outside_queries().is_empty());
+    }
+
+    // These capitals share a lowercase and are not a case mapping of each other, so the
+    // one-level exception stays closed (CP-213; change_design.md §4). Kelvin, angstrom,
+    // and ohm are canonically the other capital; theta symbol is the compatibility form.
+    #[test]
+    fn test_same_length_normalization_equivalent_return_stays_outside_without_outside_io() {
+        let pairs = [
+            ("\u{212A}", "K"),
+            ("\u{212B}", "\u{00C5}"),
+            ("\u{2126}", "\u{03A9}"),
+            ("\u{03F4}", "\u{0398}"),
+        ];
+        for (root_name, candidate) in pairs {
+            assert_ne!(root_name, candidate);
+            assert_eq!(root_name.chars().count(), candidate.chars().count());
+            assert_eq!(root_name.to_lowercase(), candidate.to_lowercase());
+            let temp = TempDir::new();
+            let root = temp.make_folder(root_name);
+            temp.make_link(&format!("{root_name}/self"), format!("../{candidate}"));
+            let filesystem = RecordingFilesystem::new(&root, Some(false), Some(true));
+            let before = snapshot(temp.path());
+
+            assert_eq!(
+                list_with_filesystem(&filesystem, &root, "self"),
+                failed(Condition::Outside),
+                "{root_name:?} versus {candidate:?}",
+            );
+            assert!(
+                filesystem.outside_queries().is_empty(),
+                "{root_name:?} versus {candidate:?}",
+            );
+            assert_eq!(
+                snapshot(temp.path()),
+                before,
+                "{root_name:?} versus {candidate:?}"
+            );
+        }
+    }
+
+    // U+01C4 and U+01C5 are the uppercase and titlecase of one letter, which is still
+    // another letter case (CP-215), not a normalization difference.
+    #[test]
+    fn test_titlecase_return_to_root_is_cycle_without_outside_io() {
+        let temp = TempDir::new();
+        let root_name = "\u{01C4}";
+        let candidate = "\u{01C5}";
+        assert_ne!(root_name, candidate);
+        assert_eq!(root_name.to_lowercase(), candidate.to_lowercase());
+        let root = temp.make_folder(root_name);
+        temp.make_link(&format!("{root_name}/self"), format!("../{candidate}"));
+        let filesystem = RecordingFilesystem::new(&root, Some(false), Some(true));
+
+        assert_eq!(
+            list_with_filesystem(&filesystem, &root, "self"),
+            failed(Condition::Cycle),
+        );
+        assert!(filesystem.outside_queries().is_empty());
     }
 
     #[test]
