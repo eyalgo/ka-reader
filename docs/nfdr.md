@@ -2,7 +2,7 @@
 
 **Status:** Settled
 **Owner:** Principal Architect
-**Version:** 19 — the close: the owner's cycle-16 answer folded (`docs/trail/architecture/cycle-16.md` § 2.1, decided in the owner's seat by a `companion-self-answer` run at `nozoki@368f127`, its reasoning `docs/trail/architecture/self_answer-19.md`) — QC-6's re-derivation on SDD v20 confirmed as v18 holds it, with one addition to the *verified by*'s layer-1 list and its source: `docs/fdr.md`'s example rows (`:L357-L358`) fix three of the four spellings, not four — the re-entry in both forms the rows fix (`self`, ending `Cycle`; `up`, resolving inside), the multi-level return (`far`) and the volume root (`back`) — and the Unicode-normalization refusal has no example row, resting on R-184's second clause and SDD § 11 R-10, which the list now cites in its place. Fixed in place under this run's own reading of the walk, logged in RN-30: the tree-state clause names the volume-root case as red beside the re-entry, because the walk re-enters lexically on the root's own spelling and reads from there. The obligation, the trace and § 10's QC-6 row do not move. No record written or edited; the index untouched; no `QC` added, renumbered or reused. Nothing is left for the owner: `docs/architecture_open_issues.md` is removed and `Status:` is Settled.
+**Version:** 20 — the close: all three answered items in cycle 17 folded (`docs/trail/architecture/cycle-17.md` §§ 2.1, 3.1, 3.2; reasoning at `docs/trail/architecture/self_answer-20.md` and `self_answer-21.md`). § 9 now records the current XCTest framework departure and its independent toolchain-evidence flip; the Swift 5 language mode, `.strictMemorySafety()` and `.defaultIsolation(MainActor.self)` join the tools-6.2 departure with their exact adoption placement and measured migration costs. The review tail reads test-file additions and keeps the tools-6.2 departures together. No ADR is written or edited: these are consequences of the Swift-packet departure ADR-0016 assigns to NFDR § 9. The newer CONTENT v9 was read and changes no obligation here. No `QC` is added, renumbered or reused; § 10 and the ADR index do not move. Nothing is left for the owner: `docs/architecture_open_issues.md` is removed and `Status:` is Settled.
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · PRD Settled · UXD Settled · DESIGN Settled · CONTENT Settled
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
@@ -1032,11 +1032,15 @@ left with `nozoki-ui` at `nozoki@0aca57e` (RN-22; RN-25).
   owner's seat's answers at `docs/trail/architecture/cycle-14.md` §§ 3.1 – 3.3 — RN-28)*
 - **`nozoki-mac` against the Swift packet, stated once, here** (the reasons are RN-24; the packet
   is `languages/swift/`, and a rule of it not named here is followed as written). *Framework —
-  followed:* the test files on `main` are XCTest (`grep -rl 'import XCTest' nozoki-mac/Tests`
-  lists four, 2026-09-23) and stay, as the packet keeps a product's existing XCTest tests
-  (`testing.md` § One framework); a new test is Swift Testing. Not known: whether the toolchain CI
-  builds with runs Swift Testing — the change that writes the first new test finds out, and a
-  departure is recorded here with the measurement if it cannot. *Test targets — adopted:* named
+  departed from until a CI log on `main` names a toolchain that runs Swift Testing:* new tests use
+  XCTest in the test targets that exist. Five files import XCTest at `nozoki@f46269a`; the fifth is
+  `nozoki-mac/Tests/SurfacesTests/RootItemsViewExpansionTests.swift`, added at `nozoki@a5fc189`.
+  From the first such log onward, new tests use Swift Testing and the existing XCTest files stay,
+  as the packet keeps them (`testing.md` § One framework). This flip is separate from the tools-6.2
+  flip below: Swift Testing ships with the Swift 6 toolchain and Xcode 16, and the current
+  `macos-14` image carries Xcode 16.1 and 16.2 beside its 15.4 default, so a delivery-tier change
+  can select a toolchain the image already holds; the flip still waits on the named log, never the
+  image label (RN-31). *Test targets — adopted:* named
   `<Target><Layer>Tests`, the packet's form (`layout.md` § Naming); `SurfacesTests` and
   `ShellTests` (`nozoki-mac/Package.swift:L34-L35`) predate the packet and are owed it, and which
   layer word each takes is the delivery tier's placement under this table's rows. *Toolchain —
@@ -1059,20 +1063,35 @@ left with `nozoki-ui` at `nozoki@0aca57e` (RN-22; RN-25).
   `companion-self-answer` run raised on this document — RN-26 — and confirmed in the owner's seat
   at `docs/trail/architecture/cycle-13.md` § 2.1 — RN-27)*. *Departed from, as one decision, until CI builds
   `nozoki-mac` on an image carrying a Swift 6.2 or later toolchain:* the `6.2` tools version
-  (`Package.swift:L1` reads `5.9`), the `.binaryTarget` artifact-bundle link (`:L19`, `:L26-L29`
+  (`Package.swift:L1` reads `5.9`); the `.binaryTarget` artifact-bundle link (`:L19`, `:L26-L29`
   link `libnozoki_bridge.a` as a system library with a `-L` linker flag, the route the packet
-  lists second among its alternatives), and `.treatAllWarnings(as:)` on every target (none set).
-  All three need `PackageDescription` 6.2 (`toolchain.md` § Toolchain version, § Linking a C
-  library built by another toolchain; `quality_gates.md` § Types), and the one image this
+  lists second among its alternatives); `.treatAllWarnings(as:)` on every target (none set); the
+  Swift 6 language mode, written as `swiftLanguageModes: [.v6]` for every target (the 5.9 manifest
+  leaves every target in Swift 5 mode); `.strictMemorySafety()` on every Swift target, including
+  `SurfacesTests` and `ShellTests`; and `.defaultIsolation(MainActor.self)` on `Surfaces` and
+  `Nozoki`, but not on `Shell`, `SurfacesTests` or `ShellTests`. The manifest APIs for the three
+  settings need `PackageDescription` 6.2 (`toolchain.md` § Toolchain version; `quality_gates.md`
+  § Types; `conventions.md` concurrency rules), and the one image this
   product's CI runs on, `macos-14` (`ci.yml:L18`), offers Xcode 15.0.1 – 16.2
   with 15.4 the default
   (https://github.com/actions/runner-images/blob/main/images/macos/macos-14-arm64-Readme.md, read
   2026-09-23), while Swift 6.2 was released on 2025-09-15
   (https://www.swift.org/blog/swift-6.2-released/, read 2026-09-23). Which Swift each of those
   Xcodes carries is not cited here — the first CI log that builds `nozoki-mac` prints it, and if
-  it shows a 6.2 or later toolchain the departure's ground is gone and the three are adopted then.
-  Otherwise the change that moves CI to such an image adopts all three together and re-measures
+  it shows a 6.2 or later toolchain the departure's ground is gone and all six are adopted then.
+  Otherwise the change that moves CI to such an image adopts all six together and re-measures
   QC-25's hosted-runner narrowing, taken on `macos-14` (`docs/SDD.md` RN-48), on the new image.
+  The adoption's measured source cost is explicit. Swift 6 mode refuses
+  `nozoki-mac/Sources/Shell/LaunchFlow.swift:L53` (`bridge`, an `any Bridging`, captured in a
+  `@Sendable` closure) and `nozoki-mac/Sources/Shell/ReadRunning.swift:L28` (`deliver`, a
+  `@MainActor (RootListing?) -> Void`, sent across one), plus any site added before the flip. No
+  target carries `StrictConcurrency` meanwhile: without warnings-as-errors its diagnostics cannot
+  fail the Test gate, and CI's unmeasured compiler leaves the setting's required spelling unknown.
+  Strict memory safety requires explicit `unsafe` acknowledgements at the C-pointer uses in
+  `nozoki-mac/Sources/Nozoki/NativeBridge.swift` and the AppKit `unowned(unsafe)` properties in
+  `nozoki-mac/Sources/Surfaces/RootItemsView.swift`. No separate current source failure is named
+  for default isolation: with Swift 5 mode held, the current `Nozoki` target builds with default
+  isolation on `Surfaces` and `Nozoki` (RN-31).
   *Departed from, with the same flip — the packet's dependency gate's `type == "system"`
   clause:* the packet's gate refuses any target whose `type` is `"system"` (`quality_gates.md`
   § The gates — `select(.url != null or .type == "system")`), and `nozoki-mac` links the bridge
@@ -1084,15 +1103,17 @@ left with `nozoki-ui` at `nozoki@0aca57e` (RN-22; RN-25).
   conditions — a non-empty `dependencies` array and a target carrying a `url` (`:L31-L32`) —
   reads the dump with `plutil` rather than `jq`, and refuses a `Package.resolved` at any depth
   under the package (`:L149`), wider than the packet's working-directory test. The clause departs
-  only because the system-library link exists, so it flips with the three above: when the
+  only because the system-library link exists, so it flips with the six above: when the
   artifact-bundle link replaces the system library, no target has `type == "system"` and the
   packet's gate is followed as written *(on the owner's seat's answer at
   `docs/trail/architecture/cycle-11.md` § 3.6 — RN-25)*.
   — *verified by:* `swift test --package-path nozoki-mac` (the runner, every change);
   `checks/no-network.sh` (the Swift half of the dependency gate, every change); review at
   `development-design` on any change to `nozoki-mac/Package.swift` or `.github/workflows/*.yml`
-  against this bullet — the four departures flip together or not at all — a review gate because
-  no command reads which toolchain CI builds with: CI builds `nozoki-mac` from `nozoki@0aca57e`,
+  against this bullet — the seven tools-6.2 departures, including the dependency-gate clause,
+  flip together or not at all — and review at `development-design` on any change that adds a file
+  under `nozoki-mac/Tests/`, against the *Framework* clause — review gates because no command reads
+  which toolchain CI builds with: CI builds `nozoki-mac` from `nozoki@0aca57e`,
   and the review stands until a CI log on `main` names the toolchain; the day one does, the
   toolchain line above is what that log is checked against.
 - **Layers 6–7 are QA-role ATDD work.** No QA seat has written either for this product yet; until
@@ -2939,3 +2960,36 @@ delegation half), QC-18, QC-21, QC-31, QC-33, QC-43, QC-45, QC-50, QC-54, QC-57,
   `crates/nozoki-core/src/fs_reader.rs:L170-L177`, `:L201-L203`, `:L211-L215`, `:L217`,
   `:L256-L262`, `:L269`, `:L309`, `:L370-L796`, `:L412-L578`; `nozoki@46bb275`, `nozoki@88b237f`,
   `nozoki@368f127`)*
+- **RN-31:** *(v20 — the close: the three answered cycle-17 items folded into § 9)* **The fold.**
+  The companion at intake held one overridden choice and two answered downstream findings; copied
+  whole before this fold as `docs/trail/architecture/cycle-17.md`. §§ 3.1 and 3.2 were decided in
+  the owner's seat by `docs/trail/architecture/self_answer-20.md`; § 2.1 was decided there by
+  `self_answer-21.md`. Nothing is left for the owner. **Framework.** The old *followed* clause was
+  false after a fifth XCTest file landed. Its answer makes the present state a departure, fixes the
+  count at five at `nozoki@f46269a`, and gives it its own evidence-based flip: new tests remain
+  XCTest until a CI log on `main` names a toolchain that runs Swift Testing; from that log onward,
+  new tests use Swift Testing and the existing XCTest files stay. The review tail gains changes
+  adding a file under `nozoki-mac/Tests/`, because the previous trigger read only the manifest and
+  workflow and therefore did not read the three changes that wrote XCTest. **Language mode.** The
+  5.9 manifest puts every target in Swift 5 mode, so Swift 6 mode joins the recorded tools-version
+  departure and flips with it, explicitly as `swiftLanguageModes: [.v6]`. No target takes
+  `StrictConcurrency` meanwhile: the measured diagnostics are warnings without the departed
+  warnings-as-errors setting, and the unmeasured CI compiler leaves the spelling unresolved. The
+  migration cost is named at `LaunchFlow.swift:L53` and `ReadRunning.swift:L28`. **The two 6.2
+  settings.** `.strictMemorySafety()` joins every Swift target, including both test targets, and
+  `.defaultIsolation(MainActor.self)` joins `Surfaces` and `Nozoki` only. The strict-memory cost is
+  the C-pointer crossings in `NativeBridge.swift` and AppKit's `unowned(unsafe)` properties in
+  `RootItemsView.swift`; default isolation has no separately measured current-source failure when
+  Swift 5 mode is held. These placements replace the draft that incorrectly put the isolation cost
+  on `ReadRunning.swift`. The tools-6.2 review gate now names all seven departures — the six in the
+  main clause plus the dependency gate — as one flip. **No ADR.** No target steps down alone and no
+  decision reverses an accepted record; ADR-0016 already places this package's Swift-packet
+  departures in NFDR § 9, so the index and all records stand. **What moved beneath this document.**
+  SRS v12, SDD v20, FDR v10, PRD v15, UXD v10 and DESIGN v10 did not move after v19; CONTENT moved
+  v7 → v9, changing the gone-folder and gone-file sentences only. The NFDR cites CONTENT by section
+  and no obligation here fixes either sentence, so no entry moves for it. No `QC` is added,
+  renumbered or reused; § 10 does not move. The companion is removed and `Status:` remains Settled
+  *(re: § 9 `nozoki-mac` bullet; source: `docs/trail/architecture/cycle-17.md` §§ 2.1, 3.1, 3.2;
+  `docs/trail/architecture/self_answer-20.md`; `docs/trail/architecture/self_answer-21.md`;
+  `nozoki-mac/Package.swift:L1-L36`; `docs/adr/0016-physical-unit-set-core-bridge-mac-checks.md`
+  § Consequences; `docs/CONTENT.md` RN-34, RN-35; `nozoki@f46269a`; `nozoki@a5fc189`)*
