@@ -808,6 +808,44 @@ mod tests {
     }
 
     #[test]
+    fn test_combined_case_change_and_normalization_return_stays_outside_without_outside_io() {
+        let temp = TempDir::new();
+        let root_name = "\u{0130}";
+        let candidate = "i\u{0307}";
+        assert_ne!(root_name, candidate);
+        assert_eq!(root_name.to_lowercase(), candidate.to_lowercase());
+        let root = temp.make_folder(root_name);
+        temp.make_link(&format!("{root_name}/self"), format!("../{candidate}"));
+        let filesystem = RecordingFilesystem::new(&root, Some(false), Some(true));
+        let before = snapshot(temp.path());
+
+        assert_eq!(
+            list_with_filesystem(&filesystem, &root, "self"),
+            failed(Condition::Outside),
+        );
+        assert!(filesystem.outside_queries().is_empty());
+        assert_eq!(snapshot(temp.path()), before);
+    }
+
+    #[test]
+    fn test_normalization_contraction_return_stays_outside_without_outside_io() {
+        let temp = TempDir::new();
+        let root_name = "i\u{0307}";
+        let candidate = "\u{0130}";
+        assert_ne!(root_name, candidate);
+        assert_eq!(root_name.to_lowercase(), candidate.to_lowercase());
+        let root = temp.make_folder(root_name);
+        temp.make_link(&format!("{root_name}/self"), format!("../{candidate}"));
+        let filesystem = RecordingFilesystem::new(&root, Some(false), Some(true));
+
+        assert_eq!(
+            list_with_filesystem(&filesystem, &root, "self"),
+            failed(Condition::Outside),
+        );
+        assert!(filesystem.outside_queries().is_empty());
+    }
+
+    #[test]
     fn test_other_case_return_to_root_is_cycle_without_outside_io() {
         let temp = TempDir::new();
         let root = temp.make_folder("nozoki");
