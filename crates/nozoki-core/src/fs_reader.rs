@@ -446,9 +446,11 @@ fn is_admitted_case_folded_return(
             })
 }
 
-// Whole-string lowercase equality admits İ versus i + combining dot
-// (change_spec.md CP-213; change_design.md §4). Case-only means each original
-// scalar corresponds to exactly one candidate scalar under case comparison.
+// Whole-string lowercase equality admits İ versus i + combining dot, and it
+// admits two capitals that only share a lowercase, such as Kelvin sign versus
+// K (CP-213; change_design.md §4). Case-only means each original scalar
+// corresponds to exactly one candidate scalar, and that scalar is a
+// single-scalar case mapping of the other — not a third character both lower to.
 fn is_case_only_spelling(root_name: &str, candidate: &str) -> bool {
     if root_name == candidate {
         return false;
@@ -472,10 +474,22 @@ fn scalars_match_as_one_case(left: char, right: char) -> bool {
     if left == right {
         return true;
     }
+    // Shared lowercase is the old proof. Final sigma's uppercase is capital
+    // sigma while its lowercase is not small sigma, so a pair whose lowercases
+    // differ stays refused (CP-215).
     match (lowercase_one_scalar(left), lowercase_one_scalar(right)) {
-        (Some(left_lower), Some(right_lower)) => left_lower == right_lower,
+        (Some(left_lower), Some(right_lower)) if left_lower == right_lower => {
+            one_scalar_maps_to(left.to_lowercase(), right)
+                || one_scalar_maps_to(right.to_lowercase(), left)
+                || one_scalar_maps_to(left.to_uppercase(), right)
+                || one_scalar_maps_to(right.to_uppercase(), left)
+        }
         _ => false,
     }
+}
+
+fn one_scalar_maps_to(mut mapped: impl Iterator<Item = char>, target: char) -> bool {
+    mapped.next() == Some(target) && mapped.next().is_none()
 }
 
 fn lowercase_one_scalar(scalar: char) -> Option<char> {
