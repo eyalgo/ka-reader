@@ -94,6 +94,39 @@ struct VolumeFacts {
     ignores_letter_case: Option<bool>,
 }
 
+trait Filesystem {
+    fn symlink_metadata(&self, path: &Path) -> io::Result<fs::Metadata>;
+    fn read_link(&self, path: &Path) -> io::Result<PathBuf>;
+    fn mount_point(&self, root: &Path) -> Option<PathBuf>;
+    fn case_fact(&self) -> Option<Option<bool>> {
+        None
+    }
+}
+
+struct NativeFilesystem;
+
+impl Filesystem for NativeFilesystem {
+    fn symlink_metadata(&self, path: &Path) -> io::Result<fs::Metadata> {
+        fs::symlink_metadata(path)
+    }
+    fn read_link(&self, path: &Path) -> io::Result<PathBuf> {
+        fs::read_link(path)
+    }
+    #[cfg(target_os = "macos")]
+    fn mount_point(&self, root: &Path) -> Option<PathBuf> {
+        let filesystem = rustix::fs::statfs(root.as_os_str().as_bytes()).ok()?;
+        let bytes = filesystem.f_mntonname;
+        let end = bytes.iter().position(|byte| *byte == 0)?;
+        Some(PathBuf::from(OsString::from_vec(
+            bytes[..end].iter().map(|byte| *byte as u8).collect(),
+        )))
+    }
+    #[cfg(not(target_os = "macos"))]
+    fn mount_point(&self, _: &Path) -> Option<PathBuf> {
+        None
+    }
+}
+
 /// Why a requested path did not resolve to a location that can be listed. `text` is what a log
 /// line carries: the operating system's own error text, or a fixed phrase. It never names a path.
 struct Blocked {
@@ -167,7 +200,17 @@ struct Resolved {
 /// `fs-reader: entry failed: `. Each carries the operating system's error text or a fixed phrase,
 /// and no path.
 pub fn list(root: &Path, requested: &str) -> ItemState<Vec<Entry>> {
-    match resolve(root, Path::new(requested)).and_then(|at| list_folder(root, &at.below_root)) {
+    list_with_filesystem(&NativeFilesystem, root, requested)
+}
+
+fn list_with_filesystem(
+    filesystem: &impl Filesystem,
+    root: &Path,
+    requested: &str,
+) -> ItemState<Vec<Entry>> {
+    match resolve(filesystem, root, Path::new(requested))
+        .and_then(|at| list_folder(filesystem, root, &at.below_root))
+    {
         Ok(entries) => ItemState::Observed(entries),
         Err(blocked) => {
             log::warn!("fs-reader: list failed: {}", blocked.text);
@@ -229,7 +272,11 @@ fn target_steps_of(target: &Path) -> VecDeque<Step> {
 /// lexical walk, so a link to an ancestor of the root ends `Outside`. One hop count runs across the
 /// whole request, and past `MAX_LINK_HOPS` the answer is `TooManyLinks`, so a hostile tree still
 /// produces a state and never hangs.
-fn resolve(root: &Path, requested: &Path) -> Result<Resolved, Blocked> {
+fn resolve(
+    filesystem: &impl Filesystem,
+    root: &Path,
+    requested: &Path,
+) -> Result<Resolved, Blocked> {
     let mut position = if requested.is_absolute() {
         PathBuf::from("/")
     } else {
@@ -243,14 +290,14 @@ fn resolve(root: &Path, requested: &Path) -> Result<Resolved, Blocked> {
         match step {
             Step::Parent => {
                 if position == root {
-                    volume_facts = volume_facts_for(root);
+                    volume_facts = volume_facts_for(filesystem, root);
                 }
                 position.pop();
                 kind = EntryKind::Folder;
             }
             Step::MustBeFolder => {}
             Step::EndOfLink { parent, .. } => {
-                if position.starts_with(root) && holds(root, &position, &parent)? {
+                if position.starts_with(root) && holds(filesystem, root, &position, &parent)? {
                     return Err(Blocked::cycle());
                 }
             }
@@ -264,8 +311,9 @@ fn resolve(root: &Path, requested: &Path) -> Result<Resolved, Blocked> {
                     continue;
                 }
                 let candidate = position.join(&name);
-                let metadata =
-                    fs::symlink_metadata(&candidate).map_err(|error| Blocked::from(&error))?;
+                let metadata = filesystem
+                    .symlink_metadata(&candidate)
+                    .map_err(|error| Blocked::from(&error))?;
                 if metadata.is_symlink() {
                     if pending.iter().any(
                         |queued| matches!(queued, Step::EndOfLink { link, .. } if *link == candidate),
@@ -276,8 +324,9 @@ fn resolve(root: &Path, requested: &Path) -> Result<Resolved, Blocked> {
                     if links_followed > MAX_LINK_HOPS {
                         return Err(Blocked::too_many_links());
                     }
-                    let target =
-                        fs::read_link(&candidate).map_err(|error| Blocked::from(&error))?;
+                    let target = filesystem
+                        .read_link(&candidate)
+                        .map_err(|error| Blocked::from(&error))?;
                     let parent = position.clone();
                     if target.is_absolute() {
                         position = PathBuf::from("/");
@@ -315,27 +364,13 @@ fn resolve(root: &Path, requested: &Path) -> Result<Resolved, Blocked> {
         .map_err(|_| Blocked::outside())
 }
 
-fn volume_facts_for(root: &Path) -> VolumeFacts {
+fn volume_facts_for(filesystem: &impl Filesystem, root: &Path) -> VolumeFacts {
     VolumeFacts {
-        root_is_volume_root: root_is_volume_root(root),
-        ignores_letter_case: ignores_letter_case(root),
+        root_is_volume_root: filesystem.mount_point(root).map(|mount| mount == root),
+        ignores_letter_case: filesystem
+            .case_fact()
+            .unwrap_or_else(|| ignores_letter_case(root)),
     }
-}
-
-#[cfg(target_os = "macos")]
-fn root_is_volume_root(root: &Path) -> Option<bool> {
-    let filesystem = rustix::fs::statfs(root.as_os_str().as_bytes()).ok()?;
-    let mount_bytes = filesystem.f_mntonname;
-    let end = mount_bytes.iter().position(|byte| *byte == 0)?;
-    let mount = PathBuf::from(OsString::from_vec(
-        mount_bytes[..end].iter().map(|byte| *byte as u8).collect(),
-    ));
-    Some(mount == root)
-}
-
-#[cfg(not(target_os = "macos"))]
-fn root_is_volume_root(_: &Path) -> Option<bool> {
-    None
 }
 
 fn ignores_letter_case(root: &Path) -> Option<bool> {
@@ -405,11 +440,18 @@ fn is_admitted_case_folded_return(
 /// on a volume that ignores letter case, `../A` names the folder `a`, and a link reaching it that way
 /// still reaches the folder that holds it. Every path read here lies inside `root`, and none holds a
 /// link, because a position only ever moves onto a location that `lstat` found was not one.
-fn holds(root: &Path, target: &Path, parent: &Path) -> Result<bool, Blocked> {
+fn holds(
+    filesystem: &impl Filesystem,
+    root: &Path,
+    target: &Path,
+    parent: &Path,
+) -> Result<bool, Blocked> {
     if parent.starts_with(target) {
         return Ok(true);
     }
-    let target = fs::symlink_metadata(target).map_err(|error| Blocked::from(&error))?;
+    let target = filesystem
+        .symlink_metadata(target)
+        .map_err(|error| Blocked::from(&error))?;
     if !target.is_dir() {
         return Ok(false);
     }
@@ -417,7 +459,9 @@ fn holds(root: &Path, target: &Path, parent: &Path) -> Result<bool, Blocked> {
         .ancestors()
         .take_while(|ancestor| ancestor.starts_with(root))
     {
-        let folder = fs::symlink_metadata(folder).map_err(|error| Blocked::from(&error))?;
+        let folder = filesystem
+            .symlink_metadata(folder)
+            .map_err(|error| Blocked::from(&error))?;
         if (folder.dev(), folder.ino()) == (target.dev(), target.ino()) {
             return Ok(true);
         }
@@ -470,7 +514,11 @@ fn order(items: &mut [Listed]) {
 ///
 /// An error on the directory stream itself carries no name to attach, so it fails the whole answer.
 /// An error on one named entry's kind fails that entry, and its siblings stand.
-fn list_folder(root: &Path, below_root: &Path) -> Result<Vec<Entry>, Blocked> {
+fn list_folder(
+    filesystem: &impl Filesystem,
+    root: &Path,
+    below_root: &Path,
+) -> Result<Vec<Entry>, Blocked> {
     let mut items = Vec::new();
     for item in fs::read_dir(root.join(below_root)).map_err(|error| Blocked::from(&error))? {
         let item = item.map_err(|error| Blocked::from(&error))?;
@@ -479,7 +527,7 @@ fn list_folder(root: &Path, below_root: &Path) -> Result<Vec<Entry>, Blocked> {
         let (kind, state) = match item.file_type() {
             Err(error) => failed_entry(&Blocked::from(&error)),
             Ok(file_type) if file_type.is_dir() => (EntryKind::Folder, ItemState::Pending),
-            Ok(file_type) if file_type.is_symlink() => match resolve(root, &path) {
+            Ok(file_type) if file_type.is_symlink() => match resolve(filesystem, root, &path) {
                 Ok(reached) => item_of(reached.kind),
                 Err(blocked) => failed_entry(&blocked),
             },
@@ -517,7 +565,62 @@ fn failed_entry(blocked: &Blocked) -> (EntryKind, ItemState<()>) {
 mod tests {
     use super::*;
     use crate::test_support::TempDir;
+    use std::cell::RefCell;
     use std::os::unix::ffi::OsStringExt;
+
+    struct RecordingFilesystem {
+        root: PathBuf,
+        mount_point: Option<PathBuf>,
+        case_fact: Option<bool>,
+        outside_queries: RefCell<Vec<PathBuf>>,
+    }
+
+    impl RecordingFilesystem {
+        fn new(root: &Path, root_is_volume_root: Option<bool>, case_fact: Option<bool>) -> Self {
+            let mount_point = root_is_volume_root.map(|is_root| {
+                if is_root {
+                    root.to_path_buf()
+                } else {
+                    root.parent().expect("root parent").to_path_buf()
+                }
+            });
+            Self {
+                root: root.to_path_buf(),
+                mount_point,
+                case_fact,
+                outside_queries: RefCell::new(Vec::new()),
+            }
+        }
+
+        fn outside_queries(&self) -> Vec<PathBuf> {
+            self.outside_queries.borrow().clone()
+        }
+
+        fn guard(&self, path: &Path) -> io::Result<()> {
+            if path.starts_with(&self.root) {
+                return Ok(());
+            }
+            self.outside_queries.borrow_mut().push(path.to_path_buf());
+            Err(io::Error::from(io::ErrorKind::PermissionDenied))
+        }
+    }
+
+    impl Filesystem for RecordingFilesystem {
+        fn symlink_metadata(&self, path: &Path) -> io::Result<fs::Metadata> {
+            self.guard(path)?;
+            fs::symlink_metadata(path)
+        }
+        fn read_link(&self, path: &Path) -> io::Result<PathBuf> {
+            self.guard(path)?;
+            fs::read_link(path)
+        }
+        fn mount_point(&self, _: &Path) -> Option<PathBuf> {
+            self.mount_point.clone()
+        }
+        fn case_fact(&self) -> Option<Option<bool>> {
+            Some(self.case_fact)
+        }
+    }
 
     /// The entries of an observed answer, sorted by name, or a panic naming the answer.
     fn entries_of(outcome: ItemState<Vec<Entry>>) -> Vec<Entry> {
