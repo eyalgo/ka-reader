@@ -25,6 +25,7 @@ static INSTALLED: OnceLock<FileLog> = OnceLock::new();
 
 /// The module path the crate's records carry, in the underscore spelling Rust gives the crate.
 const CORE_MODULE: &str = "nozoki_core";
+const STOPPED_OPEN_MODULES: [&str; 2] = ["nozoki_bridge::boundary", "nozoki_bridge::exports"];
 
 /// A `log::Log` that appends admitted records to one file, emptying it when a line would pass the
 /// bound.
@@ -112,7 +113,7 @@ impl Log for FileLog {
     }
 
     fn log(&self, record: &Record<'_>) {
-        if self.enabled(record.metadata()) && comes_from_core(record.module_path()) {
+        if self.enabled(record.metadata()) && is_admitted(record.module_path()) {
             self.append(&self.line_for(record));
         }
     }
@@ -161,6 +162,11 @@ fn comes_from_core(module_path: Option<&str>) -> bool {
     module_path.is_some_and(|module| {
         module == CORE_MODULE || module.starts_with(&format!("{CORE_MODULE}::"))
     })
+}
+
+fn is_admitted(module_path: Option<&str>) -> bool {
+    comes_from_core(module_path)
+        || module_path.is_some_and(|module| STOPPED_OPEN_MODULES.contains(&module))
 }
 
 fn clip_to_char_boundary(text: &str, max_bytes: usize) -> &str {
@@ -278,7 +284,12 @@ mod tests {
             "nozoki_bridge::boundary",
             "nozoki_bridge::exports",
         ] {
-            record(&writer, Level::Warn, module, "admitted stopped opening record");
+            record(
+                &writer,
+                Level::Warn,
+                module,
+                "admitted stopped opening record",
+            );
         }
         for module in [
             "nozoki_bridge::log_install",
