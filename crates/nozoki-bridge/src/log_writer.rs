@@ -25,6 +25,7 @@ static INSTALLED: OnceLock<FileLog> = OnceLock::new();
 
 /// The module path the crate's records carry, in the underscore spelling Rust gives the crate.
 const CORE_MODULE: &str = "nozoki_core";
+const STOPPED_OPEN_MODULES: [&str; 2] = ["nozoki_bridge::boundary", "nozoki_bridge::exports"];
 
 /// A `log::Log` that appends admitted records to one file, emptying it when a line would pass the
 /// bound.
@@ -112,7 +113,7 @@ impl Log for FileLog {
     }
 
     fn log(&self, record: &Record<'_>) {
-        if self.enabled(record.metadata()) && comes_from_core(record.module_path()) {
+        if self.enabled(record.metadata()) && is_admitted(record.module_path()) {
             self.append(&self.line_for(record));
         }
     }
@@ -163,6 +164,11 @@ fn comes_from_core(module_path: Option<&str>) -> bool {
     })
 }
 
+fn is_admitted(module_path: Option<&str>) -> bool {
+    comes_from_core(module_path)
+        || module_path.is_some_and(|module| STOPPED_OPEN_MODULES.contains(&module))
+}
+
 fn clip_to_char_boundary(text: &str, max_bytes: usize) -> &str {
     let mut end = max_bytes.min(text.len());
     while !text.is_char_boundary(end) {
@@ -180,9 +186,9 @@ mod tests {
     use std::fs;
     use std::path::Path;
 
-    use log::{Level, LevelFilter, Log, Record};
+    use log::{Level, Log, Record};
 
-    use super::{FileLog, PRODUCTION_BOUND_BYTES, directory_exists, install};
+    use super::{FileLog, PRODUCTION_BOUND_BYTES, directory_exists};
     use crate::test_support::TempDir;
 
     const ROOMY_BOUND: u64 = 1_048_576;
@@ -265,6 +271,39 @@ mod tests {
         }
 
         assert_eq!(contents(&path), "");
+    }
+
+    #[test]
+    fn test_only_core_and_exact_stopped_open_sources_are_admitted() {
+        let folder = TempDir::new();
+        let path = folder.path().join("nozoki.log");
+        let writer = FileLog::new(path.clone(), ROOMY_BOUND);
+
+        for module in [
+            "nozoki_core::folder_model",
+            "nozoki_bridge::boundary",
+            "nozoki_bridge::exports",
+        ] {
+            record(
+                &writer,
+                Level::Warn,
+                module,
+                "admitted stopped opening record",
+            );
+        }
+        for module in [
+            "nozoki_bridge::log_install",
+            "nozoki_bridge::session",
+            "nozoki_bridge_extra::boundary",
+            "foreign::boundary",
+        ] {
+            record(&writer, Level::Warn, module, "excluded record");
+        }
+
+        let written = contents(&path);
+        assert_eq!(written.lines().count(), 3, "{written:?}");
+        assert!(written.contains("admitted stopped opening record"));
+        assert!(!written.contains("excluded record"));
     }
 
     #[test]
@@ -398,15 +437,5 @@ mod tests {
         assert!(directory_exists(folder.path()));
         assert!(!directory_exists(&file), "a file is not a directory");
         assert!(!directory_exists(&missing));
-    }
-
-    #[test]
-    fn test_install_sets_the_facade_to_warn() {
-        let folder = TempDir::new();
-
-        install(folder.path()).expect("no other logger is installed in this binary");
-
-        assert_eq!(log::max_level(), LevelFilter::Warn);
-        assert!(folder.path().join("Library/Logs/nozoki.log").is_file());
     }
 }

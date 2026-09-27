@@ -178,6 +178,30 @@ fn test_exports_equal_declarations_equal_admitted_set() {
 }
 
 #[test]
+fn test_generated_buffer_prefix_is_bytes_then_len() {
+    let _serial = SERIAL
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    build_library().expect("the static library builds");
+    let header = fs::read_to_string(header_path()).expect("the generated header can be read");
+    let start = header
+        .find("typedef struct NozokiBuffer")
+        .expect("the public buffer is declared");
+    let declaration = &header[start..];
+    let end = declaration
+        .find("} NozokiBuffer;")
+        .expect("the buffer declaration closes");
+    let declaration = &declaration[..end];
+
+    let fields: Vec<&str> = declaration
+        .lines()
+        .map(str::trim)
+        .filter(|line| line.ends_with(';'))
+        .collect();
+    assert_eq!(fields, ["uint8_t * bytes;", "size_t len;"], "{declaration}");
+}
+
+#[test]
 fn test_export_the_header_lacks_fails() {
     let exported = set(&[
         "nozoki_open_folder",

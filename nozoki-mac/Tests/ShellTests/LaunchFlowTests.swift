@@ -136,6 +136,30 @@ final class LaunchFlowTests: XCTestCase {
         }
     }
 
+    func testEveryOrderedObservedFailurePairStaysInOneWindow() throws {
+        for (firstCondition, firstPayload, _) in failureCases {
+            for (secondCondition, secondPayload, secondSentence) in failureCases {
+                let firstURL = URL(fileURLWithPath: "/Users/someone/first-\(firstCondition)")
+                let secondURL = URL(fileURLWithPath: "/Users/someone/second-\(secondCondition)")
+                let (flow, bridge, panel, presenter, _) = makeFlow(answers: [firstURL, secondURL])
+                bridge.openAnswers = [firstPayload, secondPayload]
+
+                flow.run()
+                try startupView(in: presenter).activate(.browse)
+
+                XCTAssertEqual(panel.presentedCount, 2, "\(firstCondition), \(secondCondition)")
+                XCTAssertEqual(bridge.openedLocations, [firstURL, secondURL])
+                XCTAssertEqual(bridge.listedPaths, [])
+                XCTAssertEqual(presenter.createdWindowCount, 1)
+                XCTAssertEqual(
+                    try startupView(in: presenter).drawnText,
+                    [secondURL.path, secondSentence, "Browse…", "Quit"])
+                XCTAssertEqual(bridge.handedOut.sorted(), bridge.freed.sorted())
+                XCTAssertEqual(Set(bridge.freed).count, bridge.freed.count)
+            }
+        }
+    }
+
     func testBrowseFromEveryStartupStateCanReachTheWorkbench() throws {
         let startingStates: [(URL?, Data?)] =
             [(nil, openedAnswer)]
@@ -198,27 +222,56 @@ final class LaunchFlowTests: XCTestCase {
         XCTAssertEqual(presenter.contents.count, 2, "reading is replaced by the workbench")
     }
 
-    func testOpenAndRootReadRunOffMainAndDeliveryRunsOnMain() async throws {
-        let bridge = ThreadRecordingBridge(listAnswers: ["": docsRootAnswer])
+    func testOpenRootAndRepeatedExpansionsReadAndFreeOffMainThenDeliverOnMain() async throws {
+        let guidesAnswer = Data(
+            #"{"state":"observed","entries":[{"name":"guides","path":"docs/guides","kind":"folder","state":"pending"}]}"#
+                .utf8)
+        let bridge = ThreadRecordingBridge(
+            listAnswers: ["": docsRootAnswer, "docs": guidesAnswer, "docs/guides": emptyDocsAnswer])
         let log = EventLog()
         let presenter = FakeWindowPresenter()
+        let runner = DeliveryRecordingReadRunner()
         let delivered = expectation(description: "the workbench was delivered")
         presenter.onPresent = { content in
             if content is WorkbenchView { delivered.fulfill() }
         }
         let flow = LaunchFlow(
             panel: FakePanel(answers: [chosenFolder], log: log), bridge: bridge,
-            glyphs: FakeGlyphSource(), presenter: presenter, reader: OffMainReadRunner())
+            glyphs: FakeGlyphSource(), presenter: presenter, reader: runner)
 
         flow.run()
         await fulfillment(of: [delivered], timeout: 10)
 
+        let root = try workbench(in: presenter).rootItemsView
+        let docsDelivered = expectation(description: "docs was delivered")
+        runner.onDelivery = { docsDelivered.fulfill() }
+        root.outlineView.expandItem(root.outlineView.item(atRow: 0))
+        await fulfillment(of: [docsDelivered], timeout: 10)
+
+        let guidesDelivered = expectation(description: "guides was delivered")
+        runner.onDelivery = { guidesDelivered.fulfill() }
+        root.outlineView.expandItem(root.outlineView.item(atRow: 1))
+        await fulfillment(of: [guidesDelivered], timeout: 10)
+        XCTAssertEqual(
+            try labels(in: root), ["docs", "guides", "This folder has no files.", "a.md"])
+
+        let repeatedDocsDelivered = expectation(description: "docs was delivered again")
+        runner.onDelivery = { repeatedDocsDelivered.fulfill() }
+        root.outlineView.collapseItem(root.outlineView.item(atRow: 0))
+        root.outlineView.expandItem(root.outlineView.item(atRow: 0))
+        await fulfillment(of: [repeatedDocsDelivered], timeout: 10)
+
         XCTAssertEqual(bridge.ranOnMain("open_folder"), [false])
         XCTAssertEqual(bridge.ranOnMain("list_tree:"), [false])
+        XCTAssertEqual(bridge.ranOnMain("list_tree:docs"), [false, false])
+        XCTAssertEqual(bridge.ranOnMain("list_tree:docs/guides"), [false])
         XCTAssertEqual(bridge.ranOnMain("free:open"), [false])
         XCTAssertEqual(bridge.ranOnMain("free:"), [false])
+        XCTAssertEqual(bridge.ranOnMain("free:docs"), [false, false])
+        XCTAssertEqual(bridge.ranOnMain("free:docs/guides"), [false])
+        XCTAssertEqual(runner.deliveriesOnMain, [true, true, true, true])
         XCTAssertTrue(presenter.presentationsOnMain.allSatisfy { $0 })
-        XCTAssertEqual(try labels(in: workbench(in: presenter).rootItemsView), ["docs", "a.md"])
+        XCTAssertEqual(try labels(in: root), ["docs", "guides", "a.md"])
     }
 
     func testInvalidOpenAnswerStopsWithoutClaimingAConditionOrListing() throws {

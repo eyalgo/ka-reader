@@ -11,6 +11,34 @@ use std::path::{Component, Path, PathBuf};
 
 use crate::folder_model::OpenFailure;
 
+/// A private opening failure with the public condition and safe diagnostic detail.
+#[derive(Debug, PartialEq, Eq)]
+pub(crate) struct OpeningFailure {
+    pub(crate) condition: OpenFailure,
+    pub(crate) text: String,
+}
+
+impl OpeningFailure {
+    fn from_error(error: io::Error) -> Self {
+        let condition = match error.kind() {
+            io::ErrorKind::NotFound => OpenFailure::Missing,
+            io::ErrorKind::NotADirectory => OpenFailure::NotAFolder,
+            _ => OpenFailure::Unreadable,
+        };
+        Self {
+            condition,
+            text: error.to_string(),
+        }
+    }
+
+    fn not_a_folder() -> Self {
+        Self {
+            condition: OpenFailure::NotAFolder,
+            text: "the selected path is not a folder".to_string(),
+        }
+    }
+}
+
 trait OpeningFilesystem {
     fn canonicalize(&self, path: &Path) -> io::Result<PathBuf>;
     fn is_directory(&self, path: &Path) -> io::Result<bool>;
@@ -34,34 +62,26 @@ impl OpeningFilesystem for NativeOpeningFilesystem {
 }
 
 /// Observes whether a chosen path is a readable directory without producing its entries.
-pub(crate) fn open_root(path: &Path) -> Result<PathBuf, OpenFailure> {
+pub(crate) fn open_root(path: &Path) -> Result<PathBuf, OpeningFailure> {
     open_root_with_filesystem(&NativeOpeningFilesystem, path)
 }
 
 fn open_root_with_filesystem(
     filesystem: &impl OpeningFilesystem,
     path: &Path,
-) -> Result<PathBuf, OpenFailure> {
+) -> Result<PathBuf, OpeningFailure> {
     let root = filesystem
         .canonicalize(path)
-        .map_err(|error| match error.kind() {
-            io::ErrorKind::NotFound => OpenFailure::Missing,
-            io::ErrorKind::NotADirectory => OpenFailure::NotAFolder,
-            _ => OpenFailure::Unreadable,
-        })?;
+        .map_err(OpeningFailure::from_error)?;
     let is_directory = filesystem
         .is_directory(&root)
-        .map_err(|error| match error.kind() {
-            io::ErrorKind::NotFound => OpenFailure::Missing,
-            io::ErrorKind::NotADirectory => OpenFailure::NotAFolder,
-            _ => OpenFailure::Unreadable,
-        })?;
+        .map_err(OpeningFailure::from_error)?;
     if !is_directory {
-        return Err(OpenFailure::NotAFolder);
+        return Err(OpeningFailure::not_a_folder());
     }
     filesystem
         .read_directory(&root)
-        .map_err(|_| OpenFailure::Unreadable)?;
+        .map_err(OpeningFailure::from_error)?;
     Ok(root)
 }
 
@@ -751,7 +771,8 @@ mod tests {
             ..Default::default()
         };
         assert_eq!(
-            open_root_with_filesystem(&missing, Path::new("chosen")),
+            open_root_with_filesystem(&missing, Path::new("chosen"))
+                .map_err(|failure| failure.condition),
             Err(OpenFailure::Missing)
         );
         assert_eq!(missing.read_calls.get(), 0);
@@ -761,7 +782,8 @@ mod tests {
             ..Default::default()
         };
         assert_eq!(
-            open_root_with_filesystem(&file, Path::new("chosen")),
+            open_root_with_filesystem(&file, Path::new("chosen"))
+                .map_err(|failure| failure.condition),
             Err(OpenFailure::NotAFolder)
         );
         assert_eq!(file.read_calls.get(), 0);
@@ -772,7 +794,8 @@ mod tests {
                 ..Default::default()
             };
             assert_eq!(
-                open_root_with_filesystem(&unreadable, Path::new("chosen")),
+                open_root_with_filesystem(&unreadable, Path::new("chosen"))
+                    .map_err(|failure| failure.condition),
                 Err(OpenFailure::Unreadable),
                 "{kind:?}"
             );

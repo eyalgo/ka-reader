@@ -9,7 +9,7 @@ use std::path::PathBuf;
 
 use serde::Serialize;
 
-use crate::exports::NozokiBuffer;
+use crate::exports::{BufferOrigin, NozokiBuffer};
 use crate::session::{ListAnswerDto, OpenResult, Session};
 
 /// Runs `work` under `catch_unwind` and hands its answer across as an owned buffer of JSON bytes.
@@ -18,14 +18,45 @@ use crate::session::{ListAnswerDto, OpenResult, Session};
 /// serialized. A panic that unwound out of an `extern "C"` function would abort the process, so no
 /// export runs its body outside this wrapper. The workspace sets no `panic = "abort"`, which would
 /// leave `catch_unwind` nothing to catch.
-pub fn guarded<T: Serialize>(work: impl FnOnce() -> T) -> *mut NozokiBuffer {
+pub(crate) fn guarded<T: Serialize>(
+    origin: BufferOrigin,
+    work: impl FnOnce() -> T,
+) -> *mut NozokiBuffer {
     // The session's lock recovers from poisoning, so a panic in `work` leaves nothing half-updated
     // that a later call could observe.
     match panic::catch_unwind(AssertUnwindSafe(work)) {
-        Ok(answer) => {
-            serde_json::to_vec(&answer).map_or(std::ptr::null_mut(), NozokiBuffer::allocate)
+        Ok(answer) => serde_json::to_vec(&answer).map_or_else(
+            |_| stopped_open(origin, "answer serialization failed"),
+            |payload| NozokiBuffer::allocate(payload, origin),
+        ),
+        Err(_) => stopped_open(origin, "boundary panicked"),
+    }
+}
+
+fn stopped_open(origin: BufferOrigin, detail: &str) -> *mut NozokiBuffer {
+    if origin == BufferOrigin::OpenFolder {
+        log::warn!("core-bridge: open_folder stopped: {detail}");
+    }
+    std::ptr::null_mut()
+}
+
+pub(crate) fn is_valid_open_answer(bytes: *mut u8, len: usize) -> bool {
+    // SAFETY: caller supplies a live buffer allocated by this crate before it is freed.
+    let Ok(value) = serde_json::from_slice::<serde_json::Value>(unsafe {
+        std::slice::from_raw_parts(bytes, len)
+    }) else {
+        return false;
+    };
+    match value.get("state").and_then(serde_json::Value::as_str) {
+        Some("opened") => value.as_object().is_some_and(|object| object.len() == 1),
+        Some("failed") => {
+            value.as_object().is_some_and(|object| object.len() == 2)
+                && matches!(
+                    value.get("condition").and_then(serde_json::Value::as_str),
+                    Some("missing" | "not_a_folder" | "unreadable")
+                )
         }
-        Err(_) => std::ptr::null_mut(),
+        _ => false,
     }
 }
 
@@ -106,11 +137,12 @@ mod tests {
     use std::ptr;
 
     use super::{
-        ListPath, decode_list_path, decode_location, guarded, list_entries, open_location,
+        ListPath, decode_list_path, decode_location, guarded, is_valid_open_answer, list_entries,
+        open_location,
     };
-    use crate::exports::{NozokiBuffer, nozoki_free};
+    use crate::exports::{BufferOrigin, NozokiBuffer, install_silent_panic_hook, nozoki_free};
     use crate::session::Session;
-    use crate::test_support::TempDir;
+    use crate::test_support::{TempDir, begin_log_capture, capture_stderr, take_log_records};
 
     fn bytes_of(buffer: *mut NozokiBuffer) -> Vec<u8> {
         assert!(!buffer.is_null(), "a buffer was expected");
@@ -119,15 +151,78 @@ mod tests {
     }
 
     #[test]
-    fn test_panicking_closure_yields_null() {
-        let buffer = guarded(|| -> Vec<String> { panic!("a panic the boundary must catch") });
+    fn test_open_answer_matrix_accepts_only_opened_and_three_known_failures() {
+        let accepted = [
+            br#"{"state":"opened"}"#.as_slice(),
+            br#"{"state":"failed","condition":"missing"}"#.as_slice(),
+            br#"{"state":"failed","condition":"not_a_folder"}"#.as_slice(),
+            br#"{"state":"failed","condition":"unreadable"}"#.as_slice(),
+        ];
+        let rejected = [
+            br#"{"state":"opened","extra":true}"#.as_slice(),
+            br#"{"state":"failed"}"#.as_slice(),
+            br#"{"state":"failed","condition":7}"#.as_slice(),
+            br#"{"state":"failed","condition":"unknown"}"#.as_slice(),
+            br#"{"state":"failed","condition":"missing","extra":true}"#.as_slice(),
+            br#"{"state":"pending"}"#.as_slice(),
+            b"malformed".as_slice(),
+            b"".as_slice(),
+        ];
+
+        for answer in accepted {
+            let mut answer = answer.to_vec();
+            assert!(
+                is_valid_open_answer(answer.as_mut_ptr(), answer.len()),
+                "{answer:?}"
+            );
+        }
+        for answer in rejected {
+            let mut answer = answer.to_vec();
+            assert!(
+                !is_valid_open_answer(answer.as_mut_ptr(), answer.len()),
+                "{answer:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn test_boundary_no_answer_returns_null_and_writes_one_stopped_line() {
+        let _serial = begin_log_capture();
+
+        let buffer = guarded(BufferOrigin::OpenFolder, || -> Vec<String> {
+            panic!("a panic the boundary must catch")
+        });
+        let records = take_log_records();
 
         assert!(buffer.is_null(), "an unwind is NULL and never a buffer");
+        assert_eq!(records.len(), 1, "{records:?}");
+        assert!(records[0].contains("core-bridge"), "{records:?}");
+        assert!(records[0].contains("open_folder"), "{records:?}");
+        assert!(!records[0].ends_with(": "), "{records:?}");
+    }
+
+    #[test]
+    fn test_caught_open_boundary_failures_are_terminal_silent() {
+        let _serial = begin_log_capture();
+        let previous_hook = std::panic::take_hook();
+        install_silent_panic_hook();
+
+        let (buffer, stderr) = capture_stderr(|| {
+            guarded(BufferOrigin::OpenFolder, || -> Vec<String> {
+                panic!("caught boundary panic")
+            })
+        });
+        std::panic::set_hook(previous_hook);
+        let records = take_log_records();
+
+        assert!(buffer.is_null());
+        assert_eq!(stderr, "");
+        assert_eq!(records.len(), 1, "{records:?}");
     }
 
     #[test]
     fn test_normal_closure_yields_its_json_bytes() {
-        let buffer = guarded(|| vec!["a", "b"]);
+        let buffer = guarded(BufferOrigin::ListTree, || vec!["a", "b"]);
 
         let bytes = bytes_of(buffer);
         // SAFETY: made by `guarded`, freed exactly once, never read again.
@@ -146,7 +241,7 @@ mod tests {
 
     #[test]
     fn test_buffer_made_and_freed_once_is_clean() {
-        let buffer = guarded(|| 42_u32);
+        let buffer = guarded(BufferOrigin::ListTree, || 42_u32);
         assert!(!buffer.is_null());
 
         // SAFETY: made by `guarded` and freed exactly once.
