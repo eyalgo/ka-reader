@@ -105,16 +105,9 @@ fn failed_items_emit_one_warn_each_without_a_path_and_others_emit_none() {
         !message.contains(&folder.path().display().to_string()),
         "{message}"
     );
-}
 
-#[test]
-fn failed_open_attempts_emit_one_warn_each_without_paths() {
-    log::set_logger(&CAPTURE).expect("no other logger is installed in this binary");
-    log::set_max_level(LevelFilter::Warn);
-    let folder = TempDir::new();
     let missing = folder.path().join("missing-open-folder");
     let file = folder.write_file("not-a-folder.txt", "private fixture content");
-
     for (path, expected) in [
         (missing.as_path(), OpenFailure::Missing),
         (file.as_path(), OpenFailure::NotAFolder),
@@ -126,32 +119,30 @@ fn failed_open_attempts_emit_one_warn_each_without_paths() {
         assert!(records[0].1.contains("fs-reader"), "{records:?}");
         assert!(records[0].1.contains("open_folder"), "{records:?}");
         assert!(!records[0].1.ends_with(": "), "{records:?}");
-        assert!(!records[0].1.contains(&path.display().to_string()), "{records:?}");
-        assert!(!records[0].1.contains("private fixture content"), "{records:?}");
+        assert!(
+            !records[0].1.contains(&path.display().to_string()),
+            "{records:?}"
+        );
+        assert!(
+            !records[0].1.contains("private fixture content"),
+            "{records:?}"
+        );
     }
-}
-
-#[test]
-fn successful_open_emits_no_open_failure_record() {
-    log::set_logger(&CAPTURE).expect("no other logger is installed in this binary");
-    log::set_max_level(LevelFilter::Warn);
-    let folder = TempDir::new();
-
-    assert!(matches!(open_folder(folder.path()), OpenFolderOutcome::Opened(_)));
-
+    assert!(matches!(
+        open_folder(folder.path()),
+        OpenFolderOutcome::Opened(_)
+    ));
     assert!(take_records().is_empty());
-}
-
-#[test]
-fn repeated_open_failure_adds_one_new_record_per_attempt() {
-    log::set_logger(&CAPTURE).expect("no other logger is installed in this binary");
-    log::set_max_level(LevelFilter::Warn);
-    let folder = TempDir::new();
-    let missing = folder.path().join("missing-open-folder");
 
     for _ in 0..2 {
-        assert_eq!(open_folder(&missing), OpenFolderOutcome::Failed(OpenFailure::Missing));
+        assert_eq!(
+            open_folder(&missing),
+            OpenFolderOutcome::Failed(OpenFailure::Missing)
+        );
     }
-
-    assert_eq!(take_records().len(), 2);
+    assert_eq!(
+        take_records().len(),
+        2,
+        "each attempt adds exactly one record"
+    );
 }

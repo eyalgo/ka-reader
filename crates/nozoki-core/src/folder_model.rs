@@ -59,7 +59,10 @@ pub enum OpenFailure {
 pub fn open_folder(path: impl AsRef<Path>) -> OpenFolderOutcome {
     match fs_reader::open_root(path.as_ref()) {
         Ok(root) => OpenFolderOutcome::Opened(OpenedFolder { root }),
-        Err(failure) => OpenFolderOutcome::Failed(failure),
+        Err(failure) => {
+            log::warn!("fs-reader: open_folder failed: {}", failure.text);
+            OpenFolderOutcome::Failed(failure.condition)
+        }
     }
 }
 
