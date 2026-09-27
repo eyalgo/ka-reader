@@ -134,11 +134,12 @@ mod tests {
     use std::ptr;
 
     use super::{
-        ListPath, decode_list_path, decode_location, guarded, list_entries, open_location,
+        ListPath, decode_list_path, decode_location, guarded, is_valid_open_answer, list_entries,
+        open_location,
     };
-    use crate::exports::{BufferOrigin, NozokiBuffer, nozoki_free};
+    use crate::exports::{BufferOrigin, NozokiBuffer, install_silent_panic_hook, nozoki_free};
     use crate::session::Session;
-    use crate::test_support::TempDir;
+    use crate::test_support::{TempDir, begin_log_capture, capture_stderr, take_log_records};
 
     fn bytes_of(buffer: *mut NozokiBuffer) -> Vec<u8> {
         assert!(!buffer.is_null(), "a buffer was expected");
@@ -147,12 +148,73 @@ mod tests {
     }
 
     #[test]
-    fn test_panicking_closure_yields_null() {
+    fn test_open_answer_matrix_accepts_only_opened_and_three_known_failures() {
+        let accepted = [
+            br#"{"state":"opened"}"#.as_slice(),
+            br#"{"state":"failed","condition":"missing"}"#.as_slice(),
+            br#"{"state":"failed","condition":"not_a_folder"}"#.as_slice(),
+            br#"{"state":"failed","condition":"unreadable"}"#.as_slice(),
+        ];
+        let rejected = [
+            br#"{"state":"opened","extra":true}"#.as_slice(),
+            br#"{"state":"failed"}"#.as_slice(),
+            br#"{"state":"failed","condition":7}"#.as_slice(),
+            br#"{"state":"failed","condition":"unknown"}"#.as_slice(),
+            br#"{"state":"failed","condition":"missing","extra":true}"#.as_slice(),
+            br#"{"state":"pending"}"#.as_slice(),
+            b"malformed".as_slice(),
+            b"".as_slice(),
+        ];
+
+        for answer in accepted {
+            let mut answer = answer.to_vec();
+            assert!(
+                is_valid_open_answer(answer.as_mut_ptr(), answer.len()),
+                "{answer:?}"
+            );
+        }
+        for answer in rejected {
+            let mut answer = answer.to_vec();
+            assert!(
+                !is_valid_open_answer(answer.as_mut_ptr(), answer.len()),
+                "{answer:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn test_boundary_no_answer_returns_null_and_writes_one_stopped_line() {
+        let _serial = begin_log_capture();
+
         let buffer = guarded(BufferOrigin::OpenFolder, || -> Vec<String> {
             panic!("a panic the boundary must catch")
         });
+        let records = take_log_records();
 
         assert!(buffer.is_null(), "an unwind is NULL and never a buffer");
+        assert_eq!(records.len(), 1, "{records:?}");
+        assert!(records[0].contains("core-bridge"), "{records:?}");
+        assert!(records[0].contains("open_folder"), "{records:?}");
+        assert!(!records[0].ends_with(": "), "{records:?}");
+    }
+
+    #[test]
+    fn test_caught_open_boundary_failures_are_terminal_silent() {
+        let _serial = begin_log_capture();
+        let previous_hook = std::panic::take_hook();
+        install_silent_panic_hook();
+
+        let (buffer, stderr) = capture_stderr(|| {
+            guarded(BufferOrigin::OpenFolder, || -> Vec<String> {
+                panic!("caught boundary panic")
+            })
+        });
+        std::panic::set_hook(previous_hook);
+        let records = take_log_records();
+
+        assert!(buffer.is_null());
+        assert_eq!(stderr, "");
+        assert_eq!(records.len(), 1, "{records:?}");
     }
 
     #[test]

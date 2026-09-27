@@ -186,9 +186,9 @@ mod tests {
     use std::fs;
     use std::path::Path;
 
-    use log::{Level, LevelFilter, Log, Record};
+    use log::{Level, Log, Record};
 
-    use super::{FileLog, PRODUCTION_BOUND_BYTES, directory_exists, install};
+    use super::{FileLog, PRODUCTION_BOUND_BYTES, directory_exists};
     use crate::test_support::TempDir;
 
     const ROOMY_BOUND: u64 = 1_048_576;
@@ -437,15 +437,5 @@ mod tests {
         assert!(directory_exists(folder.path()));
         assert!(!directory_exists(&file), "a file is not a directory");
         assert!(!directory_exists(&missing));
-    }
-
-    #[test]
-    fn test_install_sets_the_facade_to_warn() {
-        let folder = TempDir::new();
-
-        install(folder.path()).expect("no other logger is installed in this binary");
-
-        assert_eq!(log::max_level(), LevelFilter::Warn);
-        assert!(folder.path().join("Library/Logs/nozoki.log").is_file());
     }
 }

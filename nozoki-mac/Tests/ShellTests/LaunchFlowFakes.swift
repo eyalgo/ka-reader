@@ -174,3 +174,22 @@ final class ThreadRecordingBridge: Bridging, @unchecked Sendable {
         }
     }
 }
+
+/// Wraps the real queue runner and observes each main-actor delivery immediately before forwarding it.
+@MainActor
+final class DeliveryRecordingReadRunner: ReadRunning {
+    private let runner = OffMainReadRunner()
+    private(set) var deliveriesOnMain: [Bool] = []
+    var onDelivery: (() -> Void)?
+
+    func run<Answer>(
+        _ read: @escaping @Sendable () -> Answer,
+        deliver: @escaping @MainActor (Answer) -> Void
+    ) {
+        runner.run(read) { [weak self] answer in
+            self?.deliveriesOnMain.append(Thread.isMainThread)
+            self?.onDelivery?()
+            deliver(answer)
+        }
+    }
+}

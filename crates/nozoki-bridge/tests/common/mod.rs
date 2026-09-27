@@ -6,12 +6,103 @@
 //! `checks/deps.allow`, and a dependency the tests can do without is not one to review.
 
 use std::fs;
+use std::io::Read;
 use std::os::unix::fs::{PermissionsExt, symlink};
+use std::os::unix::io::FromRawFd;
 use std::path::{Path, PathBuf};
 use std::process;
 use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::{Mutex, MutexGuard, Once};
+
+use log::{Log, Metadata, Record};
 
 static NEXT_FOLDER: AtomicU64 = AtomicU64::new(0);
+static LOG_SERIAL: Mutex<()> = Mutex::new(());
+static INSTALL_CAPTURE: Once = Once::new();
+
+struct CaptureLog {
+    records: Mutex<Vec<String>>,
+}
+
+impl Log for CaptureLog {
+    fn enabled(&self, _metadata: &Metadata<'_>) -> bool {
+        true
+    }
+
+    fn log(&self, record: &Record<'_>) {
+        self.records
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .push(record.args().to_string());
+    }
+
+    fn flush(&self) {}
+}
+
+static CAPTURE_LOG: CaptureLog = CaptureLog {
+    records: Mutex::new(Vec::new()),
+};
+
+/// Owns the process logger until dropped and starts with an empty capture.
+pub fn begin_log_capture() -> MutexGuard<'static, ()> {
+    let serial = LOG_SERIAL
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    INSTALL_CAPTURE.call_once(|| {
+        log::set_logger(&CAPTURE_LOG).expect("the test capture is the process logger");
+        log::set_max_level(log::LevelFilter::Warn);
+    });
+    CAPTURE_LOG
+        .records
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
+        .clear();
+    serial
+}
+
+pub fn take_log_records() -> Vec<String> {
+    std::mem::take(
+        &mut *CAPTURE_LOG
+            .records
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner()),
+    )
+}
+
+/// Redirects the process's standard error for one non-panicking operation and returns its bytes.
+pub fn capture_stderr<T>(work: impl FnOnce() -> T) -> (T, String) {
+    let mut pipe = [0; 2];
+    // SAFETY: `pipe` has room for the two descriptors the operating system writes.
+    assert_eq!(unsafe { libc::pipe(pipe.as_mut_ptr()) }, 0);
+    // SAFETY: duplicating the live standard-error descriptor either returns a descriptor or -1.
+    let saved = unsafe { libc::dup(libc::STDERR_FILENO) };
+    assert!(saved >= 0);
+    // SAFETY: both descriptors are live, and `dup2` makes stderr refer to the pipe writer.
+    assert_eq!(
+        unsafe { libc::dup2(pipe[1], libc::STDERR_FILENO) },
+        libc::STDERR_FILENO
+    );
+    // SAFETY: stderr now owns a duplicate, so this original writer descriptor can close.
+    assert_eq!(unsafe { libc::close(pipe[1]) }, 0);
+
+    let answer = work();
+
+    // SAFETY: flushing all C streams and restoring stderr use live process descriptors.
+    unsafe { libc::fflush(std::ptr::null_mut()) };
+    assert_eq!(
+        unsafe { libc::dup2(saved, libc::STDERR_FILENO) },
+        libc::STDERR_FILENO
+    );
+    // SAFETY: stderr owns the restored duplicate.
+    assert_eq!(unsafe { libc::close(saved) }, 0);
+    // SAFETY: `pipe[0]` is the only live owner of the read descriptor.
+    let mut reader = unsafe { fs::File::from_raw_fd(pipe[0]) };
+    let mut stderr = String::new();
+    reader
+        .read_to_string(&mut stderr)
+        .expect("captured stderr is readable UTF-8");
+    (answer, stderr)
+}
 
 /// A temporary folder under the system temporary directory, removed when dropped. Dropping restores
 /// access to every folder inside it first, so a test that set one to mode `000` cannot leave a tree

@@ -108,9 +108,12 @@ fn failed_items_emit_one_warn_each_without_a_path_and_others_emit_none() {
 
     let missing = folder.path().join("missing-open-folder");
     let file = folder.write_file("not-a-folder.txt", "private fixture content");
+    let unreadable = folder.make_folder("unreadable-open-folder");
+    folder.set_mode("unreadable-open-folder", 0o000);
     for (path, expected) in [
         (missing.as_path(), OpenFailure::Missing),
         (file.as_path(), OpenFailure::NotAFolder),
+        (unreadable.as_path(), OpenFailure::Unreadable),
     ] {
         assert_eq!(open_folder(path), OpenFolderOutcome::Failed(expected));
         let records = take_records();
