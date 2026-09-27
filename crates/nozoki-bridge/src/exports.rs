@@ -112,5 +112,11 @@ static INSTALL_LOG_AT_LOAD: extern "C" fn() = install_log_at_load;
 
 extern "C" fn install_log_at_load() {
     // A panic must not unwind out of an `extern "C"` function, and the log is best effort.
-    std::panic::catch_unwind(install_if_application_bundle).ok();
+    std::panic::catch_unwind(|| install_if_application_bundle(install_silent_panic_hook)).ok();
+}
+
+/// Stops Rust's default hook from rendering a panic that an exported boundary catches. The load
+/// initializer calls this only after the application-bundle guard accepts the host process.
+pub(crate) fn install_silent_panic_hook() {
+    std::panic::set_hook(Box::new(|_| {}));
 }

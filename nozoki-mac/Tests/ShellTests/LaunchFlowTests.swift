@@ -224,7 +224,8 @@ final class LaunchFlowTests: XCTestCase {
 
     func testOpenRootAndRepeatedExpansionsReadAndFreeOffMainThenDeliverOnMain() async throws {
         let guidesAnswer = Data(
-            #"{"state":"observed","entries":[{"name":"guides","path":"docs/guides","kind":"folder","state":"pending"}]}"#.utf8)
+            #"{"state":"observed","entries":[{"name":"guides","path":"docs/guides","kind":"folder","state":"pending"}]}"#
+                .utf8)
         let bridge = ThreadRecordingBridge(
             listAnswers: ["": docsRootAnswer, "docs": guidesAnswer, "docs/guides": emptyDocsAnswer])
         let log = EventLog()

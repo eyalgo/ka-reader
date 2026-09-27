@@ -76,10 +76,10 @@ pub fn home_directory() -> Option<PathBuf> {
     None
 }
 
-/// Installs the writer when the running process is an application bundle's executable and its
-/// container exists. Every other case does nothing, and a failure has nowhere to be reported: this
-/// runs at load, before the shell exists.
-pub fn install_if_application_bundle() {
+/// Prepares the runtime and installs the writer when the running process is an application bundle's
+/// executable and its container exists. Every other case does nothing. `prepare` runs after that
+/// guard accepts the process and before any fallible installation work.
+pub(crate) fn install_if_application_bundle(prepare: impl FnOnce()) {
     let Ok(executable) = std::env::current_exe() else {
         return;
     };
@@ -88,6 +88,7 @@ pub fn install_if_application_bundle() {
     };
     let container = container_path(&home);
     if should_install(&executable, log_writer::directory_exists(&container)) {
+        prepare();
         // A logger already installed by the host is not the bridge's to replace, and continuing is
         // correct. The host's logger is the one place the refusal can be said.
         if let Err(error) = log_writer::install(&container) {

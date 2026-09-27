@@ -193,12 +193,12 @@ fn test_generated_buffer_prefix_is_bytes_then_len() {
         .expect("the buffer declaration closes");
     let declaration = &declaration[..end];
 
-    let bytes = declaration
-        .find("uint8_t *bytes;")
-        .expect("bytes is public");
-    let len = declaration.find("uintptr_t len;").expect("len is public");
-    assert!(bytes < len, "{declaration}");
-    assert!(!declaration[bytes..len].contains("origin"), "{declaration}");
+    let fields: Vec<&str> = declaration
+        .lines()
+        .map(str::trim)
+        .filter(|line| line.ends_with(';'))
+        .collect();
+    assert_eq!(fields, ["uint8_t * bytes;", "size_t len;"], "{declaration}");
 }
 
 #[test]

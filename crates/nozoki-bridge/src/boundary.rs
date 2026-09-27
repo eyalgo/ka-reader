@@ -49,10 +49,13 @@ pub(crate) fn is_valid_open_answer(bytes: *mut u8, len: usize) -> bool {
     };
     match value.get("state").and_then(serde_json::Value::as_str) {
         Some("opened") => value.as_object().is_some_and(|object| object.len() == 1),
-        Some("failed") => matches!(
-            value.get("condition").and_then(serde_json::Value::as_str),
-            Some("missing" | "not_a_folder" | "unreadable")
-        ),
+        Some("failed") => {
+            value.as_object().is_some_and(|object| object.len() == 2)
+                && matches!(
+                    value.get("condition").and_then(serde_json::Value::as_str),
+                    Some("missing" | "not_a_folder" | "unreadable")
+                )
+        }
         _ => false,
     }
 }
@@ -219,7 +222,7 @@ mod tests {
 
     #[test]
     fn test_normal_closure_yields_its_json_bytes() {
-        let buffer = guarded(BufferOrigin::OpenFolder, || vec!["a", "b"]);
+        let buffer = guarded(BufferOrigin::ListTree, || vec!["a", "b"]);
 
         let bytes = bytes_of(buffer);
         // SAFETY: made by `guarded`, freed exactly once, never read again.
@@ -238,7 +241,7 @@ mod tests {
 
     #[test]
     fn test_buffer_made_and_freed_once_is_clean() {
-        let buffer = guarded(BufferOrigin::OpenFolder, || 42_u32);
+        let buffer = guarded(BufferOrigin::ListTree, || 42_u32);
         assert!(!buffer.is_null());
 
         // SAFETY: made by `guarded` and freed exactly once.
