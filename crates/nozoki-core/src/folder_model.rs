@@ -14,6 +14,29 @@ pub struct OpenedFolder {
     root: PathBuf,
 }
 
+#[cfg(test)]
+mod tests {
+    use super::{OpenFailure, OpenFolderOutcome, open_folder};
+    use crate::test_support::TempDir;
+
+    #[test]
+    fn test_open_folder_returns_opened_for_a_readable_plain_folder() {
+        let folder = TempDir::new();
+
+        assert!(matches!(open_folder(folder.path()), OpenFolderOutcome::Opened(_)));
+    }
+
+    #[test]
+    fn test_open_folder_returns_each_closed_failure() {
+        let folder = TempDir::new();
+        let file = folder.write_file("note.txt", "");
+        let missing = folder.path().join("missing");
+
+        assert_eq!(open_folder(missing), OpenFolderOutcome::Failed(OpenFailure::Missing));
+        assert_eq!(open_folder(file), OpenFolderOutcome::Failed(OpenFailure::NotAFolder));
+    }
+}
+
 /// Opens `path` as a folder, rooted at its canonical path.
 ///
 /// Returns `None` when `path` does not resolve to a folder. Whether the folder can be read is not
