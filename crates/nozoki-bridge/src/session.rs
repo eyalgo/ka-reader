@@ -120,7 +120,7 @@ pub enum ListAnswerDto {
 /// # Examples
 ///
 /// ```
-/// use nozoki_bridge::session::Session;
+/// use nozoki_bridge::session::{ListAnswerDto, Session};
 ///
 /// let session = Session::default();
 ///

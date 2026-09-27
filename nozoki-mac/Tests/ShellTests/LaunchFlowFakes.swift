@@ -12,19 +12,19 @@ final class EventLog {
 }
 
 final class FakePanel: FolderChoosing {
-    private let answer: URL?
+    private var answers: [URL?]
     private let log: EventLog
     private(set) var presentedCount = 0
 
-    init(answer: URL?, log: EventLog) {
-        self.answer = answer
+    init(answers: [URL?], log: EventLog) {
+        self.answers = answers
         self.log = log
     }
 
     func chooseFolder() -> URL? {
         presentedCount += 1
         log.record("panel")
-        return answer
+        return answers.isEmpty ? nil : answers.removeFirst()
     }
 }
 
@@ -77,8 +77,10 @@ final class RecordingBridge: Bridging {
 final class FakeWindowPresenter: WindowPresenting {
     private(set) var presented: [RootItemsView] = []
     private(set) var contents: [NSView] = []
+    private(set) var createdWindowCount = 0
 
     func present(_ content: NSView) {
+        if contents.isEmpty { createdWindowCount += 1 }
         contents.append(content)
         if let workbench = content as? WorkbenchView {
             presented.append(workbench.rootItemsView)
