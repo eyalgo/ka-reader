@@ -30,7 +30,7 @@ final class FakePanel: FolderChoosing {
 
 /// A bridge that answers from canned bytes and records every call, buffer and free.
 final class RecordingBridge: Bridging {
-    var openAnswer: Data? = Data(#"{"opened":true}"#.utf8)
+    var openAnswer: Data? = Data(#"{"state":"opened"}"#.utf8)
     var listAnswer: Data? = Data(#"{"state":"observed","entries":[]}"#.utf8)
     /// An answer for one path. A path with no entry here gets `listAnswer`, and an entry holding
     /// `nil` is the bridge's failure value for that path.
@@ -38,7 +38,7 @@ final class RecordingBridge: Bridging {
 
     private let log: EventLog
     private var nextHandle: UInt = 1
-    private(set) var openedLocations: [URL?] = []
+    private(set) var openedLocations: [URL] = []
     private(set) var listedPaths: [String] = []
     private(set) var handedOut: [UInt] = []
     private(set) var freed: [UInt] = []
@@ -47,7 +47,7 @@ final class RecordingBridge: Bridging {
         self.log = log
     }
 
-    func openFolder(location: URL?) -> BridgeBuffer? {
+    func openFolder(location: URL) -> BridgeBuffer? {
         log.record("open_folder")
         openedLocations.append(location)
         return makeBuffer(from: openAnswer)
@@ -78,13 +78,17 @@ final class FakeWindowPresenter: WindowPresenting {
     private(set) var presented: [RootItemsView] = []
     private(set) var contents: [NSView] = []
     private(set) var createdWindowCount = 0
+    private(set) var presentationsOnMain: [Bool] = []
+    var onPresent: ((NSView) -> Void)?
 
     func present(_ content: NSView) {
         if contents.isEmpty { createdWindowCount += 1 }
         contents.append(content)
+        presentationsOnMain.append(Thread.isMainThread)
         if let workbench = content as? WorkbenchView {
             presented.append(workbench.rootItemsView)
         }
+        onPresent?(content)
     }
 }
 
@@ -135,12 +139,17 @@ final class HoldingReadRunner: ReadRunning {
 /// only inside `lock`, and `record` takes the thread reading before it takes the lock.
 final class ThreadRecordingBridge: Bridging, @unchecked Sendable {
     private let lock = NSLock()
+    private let openAnswer: Data
     private let listAnswers: [String: Data]
     private var nextHandle: UInt = 1
     private var pathOfHandle: [UInt: String] = [:]
     private var calls: [(name: String, onMain: Bool)] = []
 
-    init(listAnswers: [String: Data]) {
+    init(
+        openAnswer: Data = Data(#"{"state":"opened"}"#.utf8),
+        listAnswers: [String: Data]
+    ) {
+        self.openAnswer = openAnswer
         self.listAnswers = listAnswers
     }
 
@@ -149,20 +158,15 @@ final class ThreadRecordingBridge: Bridging, @unchecked Sendable {
         lock.withLock { calls.filter { $0.name == name }.map(\.onMain) }
     }
 
-    func openFolder(location: URL?) -> BridgeBuffer? {
+    func openFolder(location: URL) -> BridgeBuffer? {
         record("open_folder")
-        return nil
+        return makeBuffer(from: openAnswer, named: "open")
     }
 
     func listTree(path: String) -> BridgeBuffer? {
         record("list_tree:\(path)")
-        return lock.withLock {
-            guard let payload = listAnswers[path] else { return nil }
-            let handle = nextHandle
-            nextHandle += 1
-            pathOfHandle[handle] = path
-            return BridgeBuffer(payload: payload, handle: handle)
-        }
+        guard let payload = listAnswers[path] else { return nil }
+        return makeBuffer(from: payload, named: path)
     }
 
     func free(_ buffer: BridgeBuffer) {
@@ -173,5 +177,14 @@ final class ThreadRecordingBridge: Bridging, @unchecked Sendable {
     private func record(_ name: String) {
         let onMain = Thread.isMainThread
         lock.withLock { calls.append((name, onMain)) }
+    }
+
+    private func makeBuffer(from payload: Data, named name: String) -> BridgeBuffer {
+        lock.withLock {
+            let handle = nextHandle
+            nextHandle += 1
+            pathOfHandle[handle] = name
+            return BridgeBuffer(payload: payload, handle: handle)
+        }
     }
 }

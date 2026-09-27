@@ -648,10 +648,97 @@ fn failed_entry(blocked: &Blocked) -> (EntryKind, ItemState<()>) {
 mod tests {
     use super::*;
     use crate::test_support::TempDir;
-    use std::cell::RefCell;
+    use std::cell::{Cell, RefCell};
     use std::os::unix::ffi::OsStringExt;
     use std::os::unix::fs::PermissionsExt as _;
     use std::time::SystemTime;
+
+    struct OpeningProbeFilesystem {
+        canonicalize_error: Option<io::ErrorKind>,
+        metadata_error: Option<io::ErrorKind>,
+        is_directory: bool,
+        read_error: Option<io::ErrorKind>,
+        read_calls: Cell<usize>,
+    }
+
+    impl Default for OpeningProbeFilesystem {
+        fn default() -> Self {
+            Self {
+                canonicalize_error: None,
+                metadata_error: None,
+                is_directory: true,
+                read_error: None,
+                read_calls: Cell::new(0),
+            }
+        }
+    }
+
+    impl OpeningFilesystem for OpeningProbeFilesystem {
+        fn canonicalize(&self, _: &Path) -> io::Result<PathBuf> {
+            match self.canonicalize_error {
+                Some(kind) => Err(io::Error::from(kind)),
+                None => Ok(PathBuf::from("/canonical")),
+            }
+        }
+
+        fn is_directory(&self, _: &Path) -> io::Result<bool> {
+            match self.metadata_error {
+                Some(kind) => Err(io::Error::from(kind)),
+                None => Ok(self.is_directory),
+            }
+        }
+
+        fn read_directory(&self, _: &Path) -> io::Result<()> {
+            self.read_calls.set(self.read_calls.get() + 1);
+            match self.read_error {
+                Some(kind) => Err(io::Error::from(kind)),
+                None => Ok(()),
+            }
+        }
+    }
+
+    #[test]
+    fn test_opening_probe_maps_io_without_returning_entries() {
+        let readable = OpeningProbeFilesystem::default();
+        assert_eq!(
+            open_root_with_filesystem(&readable, Path::new("chosen")),
+            Ok(PathBuf::from("/canonical"))
+        );
+        assert_eq!(readable.read_calls.get(), 1);
+
+        let missing = OpeningProbeFilesystem {
+            canonicalize_error: Some(io::ErrorKind::NotFound),
+            ..Default::default()
+        };
+        assert_eq!(
+            open_root_with_filesystem(&missing, Path::new("chosen")),
+            Err(OpenFailure::Missing)
+        );
+        assert_eq!(missing.read_calls.get(), 0);
+
+        let file = OpeningProbeFilesystem {
+            is_directory: false,
+            ..Default::default()
+        };
+        assert_eq!(
+            open_root_with_filesystem(&file, Path::new("chosen")),
+            Err(OpenFailure::NotAFolder)
+        );
+        assert_eq!(file.read_calls.get(), 0);
+
+        for kind in [io::ErrorKind::PermissionDenied, io::ErrorKind::Interrupted] {
+            let unreadable = OpeningProbeFilesystem {
+                read_error: Some(kind),
+                ..Default::default()
+            };
+            assert_eq!(
+                open_root_with_filesystem(&unreadable, Path::new("chosen")),
+                Err(OpenFailure::Unreadable),
+                "{kind:?}"
+            );
+            assert_eq!(unreadable.read_calls.get(), 1, "{kind:?}");
+        }
+    }
 
     struct RecordingFilesystem {
         root: PathBuf,
