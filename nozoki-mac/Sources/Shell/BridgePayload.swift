@@ -4,14 +4,29 @@ import Surfaces
 /// Reads the bridge's JSON payloads. Anything that does not conform reads as the failure value:
 /// not opened, or no listing (`nil`) for the root or for any folder.
 enum BridgePayload {
-    private struct OpenResult: Decodable {
-        let opened: Bool
+    enum OpenResult: Equatable {
+        case opened
+        case failed(OpeningCondition)
     }
 
-    static func decodeOpened(_ buffer: BridgeBuffer?) -> Bool {
-        guard let buffer else { return false }
-        let result = try? JSONDecoder().decode(OpenResult.self, from: buffer.payload)
-        return result?.opened ?? false
+    private struct OpenAnswer: Decodable {
+        let state: State
+        let condition: Condition?
+        enum State: String, Decodable { case opened, failed }
+        enum Condition: String, Decodable { case missing, not_a_folder, unreadable }
+    }
+
+    static func decodeOpen(_ buffer: BridgeBuffer?) -> OpenResult? {
+        guard let buffer,
+              let answer = try? JSONDecoder().decode(OpenAnswer.self, from: buffer.payload)
+        else { return nil }
+        switch (answer.state, answer.condition) {
+        case (.opened, nil): return .opened
+        case (.failed, .missing?): return .failed(.missing)
+        case (.failed, .not_a_folder?): return .failed(.notAFolder)
+        case (.failed, .unreadable?): return .failed(.unreadable)
+        default: return nil
+        }
     }
 
     /// The list answer's wire (design § 3 C). `pending` means nothing was read, so it carries no

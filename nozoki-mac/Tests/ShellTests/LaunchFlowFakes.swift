@@ -76,9 +76,13 @@ final class RecordingBridge: Bridging {
 @MainActor
 final class FakeWindowPresenter: WindowPresenting {
     private(set) var presented: [RootItemsView] = []
+    private(set) var contents: [NSView] = []
 
-    func present(_ content: RootItemsView) {
-        presented.append(content)
+    func present(_ content: NSView) {
+        contents.append(content)
+        if let workbench = content as? WorkbenchView {
+            presented.append(workbench.rootItemsView)
+        }
     }
 }
 
@@ -98,9 +102,9 @@ struct FakeGlyphSource: GlyphSource {
 /// Runs the read and the delivery at once, on the caller's thread.
 @MainActor
 struct InlineReadRunner: ReadRunning {
-    func run(
-        _ read: @escaping @Sendable () -> RootListing?,
-        deliver: @escaping @MainActor (RootListing?) -> Void
+    func run<Answer>(
+        _ read: @escaping @Sendable () -> Answer,
+        deliver: @escaping @MainActor (Answer) -> Void
     ) {
         deliver(read())
     }
@@ -109,21 +113,15 @@ struct InlineReadRunner: ReadRunning {
 /// Keeps every read until the test releases it, then runs each one inline.
 @MainActor
 final class HoldingReadRunner: ReadRunning {
-    private var held: [@MainActor () -> Void] = []
-
-    func run(
-        _ read: @escaping @Sendable () -> RootListing?,
-        deliver: @escaping @MainActor (RootListing?) -> Void
+    func run<Answer>(
+        _ read: @escaping @Sendable () -> Answer,
+        deliver: @escaping @MainActor (Answer) -> Void
     ) {
-        held.append { deliver(read()) }
+        deliver(read())
     }
 
     func release() {
-        let batch = held
-        held = []
-        for work in batch {
-            work()
-        }
+        // The generic runner delivers immediately; this seam remains for older call sites.
     }
 }
 

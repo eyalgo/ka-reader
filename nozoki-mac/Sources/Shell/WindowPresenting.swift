@@ -4,7 +4,7 @@ import Surfaces
 /// Puts the launch's one view in the launch's one window.
 @MainActor
 package protocol WindowPresenting {
-    func present(_ content: RootItemsView)
+    func present(_ content: NSView)
 }
 
 /// The one window (SDD § 3 `mac-shell`). It holds no content of its own beyond the view given.
@@ -15,16 +15,21 @@ package final class MainWindowPresenter: WindowPresenting {
 
     package init() {}
 
-    package func present(_ content: RootItemsView) {
-        let window = NSWindow(
-            contentRect: NSRect(origin: .zero, size: Self.initialSize),
-            styleMask: [.titled, .closable, .miniaturizable, .resizable],
-            backing: .buffered,
-            defer: false)
+    package func present(_ content: NSView) {
+        let window: NSWindow
+        if let existing = self.window {
+            window = existing
+        } else {
+            window = NSWindow(
+                contentRect: NSRect(origin: .zero, size: Self.initialSize),
+                styleMask: [.titled, .closable, .miniaturizable, .resizable],
+                backing: .buffered,
+                defer: false)
+            window.title = "Nozoki"
+            window.center()
+            self.window = window
+        }
         window.contentView = content
-        window.title = "Nozoki"
-        window.center()
         window.makeKeyAndOrderFront(nil)
-        self.window = window
     }
 }

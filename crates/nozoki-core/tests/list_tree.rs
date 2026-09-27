@@ -237,14 +237,15 @@ fn open_folder_on_a_file_or_missing_path_is_not_opened() {
 }
 
 #[test]
-fn open_folder_on_an_unreadable_folder_opens_and_root_list_is_failed() {
+fn open_folder_on_an_unreadable_folder_returns_the_closed_failure() {
     let folder = TempDir::new();
     folder.make_folder("locked");
     folder.set_mode("locked", 0o000);
 
-    let opened = open_folder(folder.path().join("locked")).expect("an unreadable folder opens");
-
-    assert_eq!(list_tree(&opened, ""), failed(Condition::Unreadable));
+    assert_eq!(
+        open_folder(folder.path().join("locked")),
+        OpenFolderOutcome::Failed(nozoki_core::OpenFailure::Unreadable)
+    );
 }
 
 #[test]

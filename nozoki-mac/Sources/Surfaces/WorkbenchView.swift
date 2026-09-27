@@ -6,8 +6,10 @@ package final class WorkbenchView: NSSplitView {
     /// The existing tree is hosted unchanged in the Files sidebar.
     package let filesSidebar = NSScrollView()
     package let readingText = "Select a file to view."
+    package let rootItemsView: RootItemsView
 
     package init(rootItemsView: RootItemsView) {
+        self.rootItemsView = rootItemsView
         super.init(frame: .zero)
         isVertical = true
 
