@@ -268,6 +268,34 @@ mod tests {
     }
 
     #[test]
+    fn test_only_core_and_exact_stopped_open_sources_are_admitted() {
+        let folder = TempDir::new();
+        let path = folder.path().join("nozoki.log");
+        let writer = FileLog::new(path.clone(), ROOMY_BOUND);
+
+        for module in [
+            "nozoki_core::folder_model",
+            "nozoki_bridge::boundary",
+            "nozoki_bridge::exports",
+        ] {
+            record(&writer, Level::Warn, module, "admitted stopped opening record");
+        }
+        for module in [
+            "nozoki_bridge::log_install",
+            "nozoki_bridge::session",
+            "nozoki_bridge_extra::boundary",
+            "foreign::boundary",
+        ] {
+            record(&writer, Level::Warn, module, "excluded record");
+        }
+
+        let written = contents(&path);
+        assert_eq!(written.lines().count(), 3, "{written:?}");
+        assert!(written.contains("admitted stopped opening record"));
+        assert!(!written.contains("excluded record"));
+    }
+
+    #[test]
     fn test_below_warn_writes_nothing() {
         let folder = TempDir::new();
         let path = folder.path().join("nozoki.log");
