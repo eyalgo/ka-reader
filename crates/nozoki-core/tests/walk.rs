@@ -58,7 +58,7 @@ fn walk_from(
 }
 
 fn walk_folder(folder: &Path) -> Option<Walk> {
-    let opened = open_folder(folder)?;
+    let opened = open_folder(folder).expect("the read-only fixture opens");
     let mut calls = 0;
     let mut listed = HashSet::new();
     let root_has_entries = walk_from(&opened, "", &mut listed, &mut calls);

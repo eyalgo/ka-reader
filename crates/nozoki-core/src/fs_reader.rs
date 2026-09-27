@@ -9,6 +9,22 @@ use std::os::unix::ffi::{OsStrExt, OsStringExt};
 use std::os::unix::fs::MetadataExt;
 use std::path::{Component, Path, PathBuf};
 
+use crate::folder_model::OpenFailure;
+
+/// Observes whether a chosen path is a readable directory without producing its entries.
+pub(crate) fn open_root(path: &Path) -> Result<PathBuf, OpenFailure> {
+    let root = path.canonicalize().map_err(|error| match error.kind() {
+        io::ErrorKind::NotFound => OpenFailure::Missing,
+        io::ErrorKind::NotADirectory => OpenFailure::NotAFolder,
+        _ => OpenFailure::Unreadable,
+    })?;
+    if !root.is_dir() {
+        return Err(OpenFailure::NotAFolder);
+    }
+    fs::read_dir(&root).map_err(|_| OpenFailure::Unreadable)?;
+    Ok(root)
+}
+
 /// What a directory entry is once it is resolved. A link lists as the folder or file it reaches.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum EntryKind {

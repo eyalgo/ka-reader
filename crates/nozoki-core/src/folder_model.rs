@@ -14,6 +14,31 @@ pub struct OpenedFolder {
     root: PathBuf,
 }
 
+/// The closed answer to an attempt to open a chosen path.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum OpenFolderOutcome {
+    Opened(OpenedFolder),
+    Failed(OpenFailure),
+}
+
+impl OpenFolderOutcome {
+    /// Returns the opened folder or panics with the same test-facing contract as `Option::expect`.
+    pub fn expect(self, message: &str) -> OpenedFolder {
+        match self {
+            Self::Opened(folder) => folder,
+            Self::Failed(failure) => panic!("{message}: {failure:?}"),
+        }
+    }
+}
+
+/// The observed condition that stopped opening a chosen folder.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum OpenFailure {
+    Missing,
+    NotAFolder,
+    Unreadable,
+}
+
 #[cfg(test)]
 mod tests {
     use super::{OpenFailure, OpenFolderOutcome, open_folder};
@@ -51,9 +76,11 @@ mod tests {
 /// let missing = std::env::temp_dir().join("nozoki-a-folder-that-is-not-there");
 /// assert!(nozoki_core::open_folder(missing).is_none());
 /// ```
-pub fn open_folder(path: impl AsRef<Path>) -> Option<OpenedFolder> {
-    let root = path.as_ref().canonicalize().ok()?;
-    root.is_dir().then_some(OpenedFolder { root })
+pub fn open_folder(path: impl AsRef<Path>) -> OpenFolderOutcome {
+    match fs_reader::open_root(path.as_ref()) {
+        Ok(root) => OpenFolderOutcome::Opened(OpenedFolder { root }),
+        Err(failure) => OpenFolderOutcome::Failed(failure),
+    }
 }
 
 /// Lists the direct entries of `path` inside an opened folder, where `path` is relative to the
