@@ -5,13 +5,36 @@
 use std::path::PathBuf;
 use std::sync::{Mutex, PoisonError};
 
-use nozoki_core::{Condition, EntryKind, ItemState, OpenedFolder, list_tree, open_folder};
+use nozoki_core::{
+    Condition, EntryKind, ItemState, OpenFailure, OpenFolderOutcome, OpenedFolder, list_tree,
+    open_folder,
+};
 use serde::Serialize;
 
 /// What `open_folder` answers across the bridge.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
-pub struct OpenResult {
-    pub opened: bool,
+#[serde(tag = "state", rename_all = "snake_case")]
+pub enum OpenResult {
+    Opened,
+    Failed { condition: OpenFailureDto },
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum OpenFailureDto {
+    Missing,
+    NotAFolder,
+    Unreadable,
+}
+
+impl From<OpenFailure> for OpenFailureDto {
+    fn from(failure: OpenFailure) -> Self {
+        match failure {
+            OpenFailure::Missing => Self::Missing,
+            OpenFailure::NotAFolder => Self::NotAFolder,
+            OpenFailure::Unreadable => Self::Unreadable,
+        }
+    }
 }
 
 /// An entry's kind on the wire: `"folder"` or `"file"`.
@@ -104,7 +127,7 @@ pub enum ListAnswerDto {
 /// # Examples
 ///
 /// ```
-/// use nozoki_bridge::session::Session;
+/// use nozoki_bridge::session::{ListAnswerDto, Session};
 ///
 /// let session = Session::default();
 ///
@@ -113,7 +136,7 @@ pub enum ListAnswerDto {
 ///     serde_json::json!({ "state": "pending" }),
 ///     "nothing is open yet"
 /// );
-/// assert!(!session.open(None).opened, "a cancelled panel opens nothing");
+/// assert_eq!(session.list(""), ListAnswerDto::Pending);
 /// ```
 #[derive(Default)]
 pub struct Session {
@@ -121,15 +144,17 @@ pub struct Session {
 }
 
 impl Session {
-    /// Opens the folder the panel returned. A chosen path that `nozoki-core` opens replaces the
-    /// session whole. A cancel (`None`), or a path that does not open, leaves the session as it was.
-    pub fn open(&self, chosen: Option<PathBuf>) -> OpenResult {
-        let replacement = chosen.and_then(open_folder);
-        let opened = replacement.is_some();
-        if let Some(folder) = replacement {
-            *self.opened.lock().unwrap_or_else(PoisonError::into_inner) = Some(folder);
+    /// Opens one chosen folder. Failed opens leave the held folder unchanged.
+    pub fn open(&self, chosen: PathBuf) -> OpenResult {
+        match open_folder(chosen) {
+            OpenFolderOutcome::Opened(folder) => {
+                *self.opened.lock().unwrap_or_else(PoisonError::into_inner) = Some(folder);
+                OpenResult::Opened
+            }
+            OpenFolderOutcome::Failed(failure) => OpenResult::Failed {
+                condition: failure.into(),
+            },
         }
-        OpenResult { opened }
     }
 
     /// Lists `path` inside the opened folder. Core's item is carried over as it is: `observed`
@@ -195,8 +220,11 @@ mod tests {
     }
 
     fn opened(session: &Session, folder: &TempDir) {
-        let result = session.open(Some(folder.path().to_path_buf()));
-        assert!(result.opened, "the folder must open");
+        let result = session.open(folder.path().to_path_buf());
+        assert!(
+            matches!(result, super::OpenResult::Opened),
+            "the folder must open"
+        );
     }
 
     #[test]
@@ -205,9 +233,9 @@ mod tests {
         folder.write_file("chosen.txt", "");
         let session = Session::default();
 
-        let result = session.open(Some(folder.path().to_path_buf()));
+        let result = session.open(folder.path().to_path_buf());
 
-        assert!(result.opened);
+        assert!(matches!(result, super::OpenResult::Opened));
         assert_eq!(names(&answer(&session, "")), vec!["chosen.txt"]);
     }
 
@@ -226,19 +254,6 @@ mod tests {
     }
 
     #[test]
-    fn test_cancel_returns_not_opened_and_keeps_session() {
-        let folder = TempDir::new();
-        folder.write_file("kept.txt", "");
-        let session = Session::default();
-        opened(&session, &folder);
-
-        let result = session.open(None);
-
-        assert!(!result.opened);
-        assert_eq!(names(&answer(&session, "")), vec!["kept.txt"]);
-    }
-
-    #[test]
     fn test_unopenable_choice_returns_not_opened_and_keeps_session() {
         let folder = TempDir::new();
         folder.write_file("kept.txt", "");
@@ -246,11 +261,11 @@ mod tests {
         let session = Session::default();
         opened(&session, &folder);
 
-        let result = session.open(Some(a_file));
-        let missing = session.open(Some(PathBuf::from("/nonexistent/nozoki/folder")));
+        let result = session.open(a_file);
+        let missing = session.open(PathBuf::from("/nonexistent/nozoki/folder"));
 
-        assert!(!result.opened);
-        assert!(!missing.opened);
+        assert!(matches!(result, super::OpenResult::Failed { .. }));
+        assert!(matches!(missing, super::OpenResult::Failed { .. }));
         assert_eq!(
             names(&answer(&session, "")),
             vec!["kept.txt", "not-a-folder.txt"]
@@ -258,12 +273,14 @@ mod tests {
     }
 
     #[test]
-    fn test_open_result_serializes_as_an_opened_flag() {
+    fn test_open_result_serializes_as_an_exact_tagged_answer() {
         let session = Session::default();
+        let folder = TempDir::new();
 
-        let value = serde_json::to_value(session.open(None)).expect("the result serializes");
+        let value = serde_json::to_value(session.open(folder.path().to_path_buf()))
+            .expect("the result serializes");
 
-        assert_eq!(value, json!({ "opened": false }));
+        assert_eq!(value, json!({ "state": "opened" }));
     }
 
     #[test]

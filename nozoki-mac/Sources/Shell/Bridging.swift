@@ -5,8 +5,8 @@ import Foundation
 /// A `nil` return is the bridge's failure value: a panic was caught or no buffer could be made.
 /// Every non-`nil` buffer is released once with `free`, and a `nil` is never released.
 package protocol Bridging {
-    /// `nozoki_open_folder`. A `nil` `location` is a cancelled panel.
-    func openFolder(location: URL?) -> BridgeBuffer?
+    /// `nozoki_open_folder`. Cancellation is handled before this boundary.
+    func openFolder(location: URL) -> BridgeBuffer?
 
     /// `nozoki_list_tree`. The empty path is the root.
     func listTree(path: String) -> BridgeBuffer?

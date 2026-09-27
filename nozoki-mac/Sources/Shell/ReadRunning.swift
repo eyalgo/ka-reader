@@ -8,9 +8,9 @@ import Surfaces
 /// that made it.
 @MainActor
 package protocol ReadRunning {
-    func run(
-        _ read: @escaping @Sendable () -> RootListing?,
-        deliver: @escaping @MainActor (RootListing?) -> Void)
+    func run<Answer>(
+        _ read: @escaping @Sendable () -> Answer,
+        deliver: @escaping @MainActor (Answer) -> Void)
 }
 
 /// The production runner: the read on a background queue, the delivery on a later main-queue turn.
@@ -18,9 +18,9 @@ package protocol ReadRunning {
 package struct OffMainReadRunner: ReadRunning {
     package nonisolated init() {}
 
-    package func run(
-        _ read: @escaping @Sendable () -> RootListing?,
-        deliver: @escaping @MainActor (RootListing?) -> Void
+    package func run<Answer>(
+        _ read: @escaping @Sendable () -> Answer,
+        deliver: @escaping @MainActor (Answer) -> Void
     ) {
         DispatchQueue.global(qos: .userInitiated).async {
             let listing = read()

@@ -27,8 +27,9 @@ impl NozokiBuffer {
 
 static SESSION: LazyLock<Session> = LazyLock::new(Session::default);
 
-/// Opens the folder the Open panel returned. NULL is a cancel. Answers `{"opened": true|false}`,
-/// or NULL on failure; a non-NULL answer is freed with `nozoki_free`.
+/// Opens the folder the Open panel returned. NULL is rejected. Answers `{"state":"opened"}` or
+/// `{"state":"failed","condition":…}`, or NULL on boundary failure; a non-NULL answer is freed
+/// with `nozoki_free`.
 ///
 /// # Safety
 ///

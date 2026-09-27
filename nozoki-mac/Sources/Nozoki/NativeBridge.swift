@@ -8,10 +8,7 @@ import Shell
 /// Swift value the moment it arrives, and its pointer travels as the buffer's handle until the flow
 /// gives it back to be released.
 struct NativeBridge: Bridging {
-    func openFolder(location: URL?) -> BridgeBuffer? {
-        guard let location else {
-            return adopt(nozoki_open_folder(nil))
-        }
+    func openFolder(location: URL) -> BridgeBuffer? {
         // The file-system representation, because a location's bytes need not be UTF-8: a string
         // round-trip through `path` would not preserve them.
         return location.withUnsafeFileSystemRepresentation { adopt(nozoki_open_folder($0)) }

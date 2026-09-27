@@ -5,7 +5,7 @@ mod folder_model;
 mod fs_reader;
 
 pub use error::Error;
-pub use folder_model::{OpenedFolder, list_tree, open_folder};
+pub use folder_model::{OpenFailure, OpenFolderOutcome, OpenedFolder, list_tree, open_folder};
 pub use fs_reader::{Condition, Entry, EntryKind, ItemState};
 
 // Shared with the integration tests, which reach the same file as `tests/common/mod.rs`.

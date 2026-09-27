@@ -5,7 +5,9 @@ mod common;
 use std::os::unix::net::UnixListener;
 
 use common::TempDir;
-use nozoki_core::{Condition, Entry, EntryKind, ItemState, list_tree, open_folder};
+use nozoki_core::{
+    Condition, Entry, EntryKind, ItemState, OpenFolderOutcome, list_tree, open_folder,
+};
 
 /// The name, kind and state of every entry, in the order the answer carries them. Nothing is
 /// re-sorted here, so a test sees the order CP-168 defines and not one it made up.
@@ -232,19 +234,23 @@ fn open_folder_on_a_file_or_missing_path_is_not_opened() {
     let folder = TempDir::new();
     let file = folder.write_file("a-file", "");
 
-    assert!(open_folder(file).is_none());
-    assert!(open_folder(folder.path().join("missing")).is_none());
+    assert!(matches!(open_folder(file), OpenFolderOutcome::Failed(_)));
+    assert!(matches!(
+        open_folder(folder.path().join("missing")),
+        OpenFolderOutcome::Failed(_)
+    ));
 }
 
 #[test]
-fn open_folder_on_an_unreadable_folder_opens_and_root_list_is_failed() {
+fn open_folder_on_an_unreadable_folder_returns_the_closed_failure() {
     let folder = TempDir::new();
     folder.make_folder("locked");
     folder.set_mode("locked", 0o000);
 
-    let opened = open_folder(folder.path().join("locked")).expect("an unreadable folder opens");
-
-    assert_eq!(list_tree(&opened, ""), failed(Condition::Unreadable));
+    assert_eq!(
+        open_folder(folder.path().join("locked")),
+        OpenFolderOutcome::Failed(nozoki_core::OpenFailure::Unreadable)
+    );
 }
 
 #[test]
