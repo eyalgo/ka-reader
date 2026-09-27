@@ -392,14 +392,13 @@ LAUNCH_FRAMES="1 start
 2 main
 3 -[NSApplication run]
 4 @objc AppDelegate.applicationDidFinishLaunching(_:)
-5 AppDelegate.applicationDidFinishLaunching(_:)
-6 LaunchFlow.run()"
+5 AppDelegate.applicationDidFinishLaunching(_:)"
 
 FULL_FRAMES="$LAUNCH_FRAMES
-7 OpenFolderPanel.chooseFolder()
-8 -[NSSavePanel runModal]
-9 -[NSApplication runModalForWindow:]
-10 _NSTryRunModal"
+6 OpenFolderPanel.chooseFolder()
+7 -[NSSavePanel runModal]
+8 -[NSApplication runModalForWindow:]
+9 _NSTryRunModal"
 
 IDLE_FRAMES="1 start
 2 main
@@ -656,11 +655,11 @@ test_main_thread_under_its_early_label_counts() {
 
 test_frames_out_of_order_do_not_count() {
   new_case out-of-order
-  # The panel's frames hang off a sibling of LaunchFlow.run(), not off it.
+  # The panel's frames hang off a sibling of AppDelegate.applicationDidFinishLaunching(_:), not off it.
   write_report "$STUBS/report.default" "$LAUNCH_FRAMES
-6 OpenFolderPanel.chooseFolder()
-7 -[NSSavePanel runModal]
-8 -[NSApplication runModalForWindow:]"
+5 OpenFolderPanel.chooseFolder()
+6 -[NSSavePanel runModal]
+7 -[NSApplication runModalForWindow:]"
   RENDERER_SH_OBSERVATIONS=3 run_renderer "$APP"
   expect_status 1 || return 1
   expect_sample_calls 3 || return 1
@@ -670,8 +669,8 @@ test_frames_out_of_order_do_not_count() {
 test_generic_modal_alone_does_not_count() {
   new_case generic-modal
   write_report "$STUBS/report.default" "$LAUNCH_FRAMES
-7 -[NSApplication runModalForWindow:]
-8 _NSTryRunModal"
+6 -[NSApplication runModalForWindow:]
+7 _NSTryRunModal"
   RENDERER_SH_OBSERVATIONS=3 run_renderer "$APP"
   expect_status 1 || return 1
   expect_sample_calls 3 || return 1
@@ -693,16 +692,15 @@ test_panel_without_shell_frames_does_not_count() {
 
 test_near_frame_names_do_not_count() {
   new_case near-names
-  # "specialized LaunchFlow.run()" is not LaunchFlow.run(): a frame is its whole symbol, not a part of
-  # one, so a symbol that merely contains a listed name does not advance the match.
+  # "specialized OpenFolderPanel.chooseFolder()" is not OpenFolderPanel.chooseFolder(): a frame is its
+  # whole symbol, not a part of one, so a containing symbol does not advance the match.
   write_report "$STUBS/report.default" "1 start
 2 main
 3 -[NSApplication run]
 4 AppDelegate.applicationDidFinishLaunching(_:)
-5 specialized LaunchFlow.run()
-6 OpenFolderPanel.chooseFolder()
-7 -[NSSavePanel runModal]
-8 -[NSApplication runModalForWindow:]"
+5 specialized OpenFolderPanel.chooseFolder()
+6 -[NSSavePanel runModal]
+7 -[NSApplication runModalForWindow:]"
   RENDERER_SH_OBSERVATIONS=3 run_renderer "$APP"
   expect_status 1 || return 1
   expect_stderr_contains "never observed" || return 1

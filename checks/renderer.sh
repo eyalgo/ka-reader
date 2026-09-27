@@ -47,17 +47,16 @@
 #   not yet up (a sample taken at the launch's first moments, measured on this Mac) — each nested strictly deeper than the one
 #   before and inside its subtree, read from sample's own indentation; its tree characters + | : ! mean
 #   nothing. A frame is its whole symbol, not a part of one. The list holds the shell's own launch
-#   frames and the Open panel's own modal run, and a generic -[NSApplication runModalForWindow:] alone
+#   frame and the Open panel's own modal run, and a generic -[NSApplication runModalForWindow:] alone
 #   is not a match, since any alert shows it. nozoki_open_folder is not in the list: the native shell
 #   calls it only after the panel returns.
 #     AppDelegate.applicationDidFinishLaunching(_:)
-#     LaunchFlow.run()
 #     OpenFolderPanel.chooseFolder()
 #     -[NSSavePanel runModal]
 #     -[NSApplication runModalForWindow:]
 #   Mac reading (CP-145): macOS 26.6.2 (sw_vers -productVersion), a release bundle from
 #   nozoki-mac/assemble.sh launched by open -n -g and sampled while the panel was up. The main thread
-#   showed start, main, -[NSApplication run], the launch-notification frames, then the five frames
+#   showed start, main, -[NSApplication run], the launch-notification frames, then the four frames
 #   above nested in that order, then _NSTryRunModal.
 #   Hosted runner reading: GitHub Actions run 35988399477 on nozoki@37a962d, image macos-14-arm64
 #   20260831.0302.1, macOS 14.8.9. The product's main process was observed at the Open panel, inside
@@ -77,7 +76,6 @@ set -euo pipefail
 die() { echo "renderer.sh: $*" >&2; exit 1; }
 
 FRAME_LIST="AppDelegate.applicationDidFinishLaunching(_:)
-LaunchFlow.run()
 OpenFolderPanel.chooseFolder()
 -[NSSavePanel runModal]
 -[NSApplication runModalForWindow:]

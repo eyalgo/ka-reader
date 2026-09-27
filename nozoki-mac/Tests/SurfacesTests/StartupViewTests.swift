@@ -8,7 +8,8 @@ final class StartupViewTests: XCTestCase {
         let view = StartupView(projection: .empty, onIntent: { _ in })
 
         XCTAssertEqual(view.drawnText, ["Choose a folder to view.", "Browse…", "Quit"])
-        XCTAssertFalse(view.drawnText.contains(where: { $0.contains("read") || $0.contains("file") }))
+        XCTAssertFalse(
+            view.drawnText.contains(where: { $0.contains("read") || $0.contains("file") }))
     }
 
     func testEmptyStartupControlsEmitOnlyTheirNamedIntents() {
@@ -30,10 +31,12 @@ final class StartupViewTests: XCTestCase {
         ]
 
         for (condition, sentence) in cases {
-            let view = StartupView(projection: .failed(path: path, condition: condition), onIntent: { _ in })
+            let view = StartupView(
+                projection: .failed(path: path, condition: condition), onIntent: { _ in })
 
             XCTAssertEqual(view.drawnText, [path, sentence, "Browse…", "Quit"], "\(condition)")
-            XCTAssertFalse(view.drawnText.joined(separator: " ").contains("terminal"), "\(condition)")
+            XCTAssertFalse(
+                view.drawnText.joined(separator: " ").contains("terminal"), "\(condition)")
         }
     }
 
@@ -41,7 +44,8 @@ final class StartupViewTests: XCTestCase {
         let path = "/Users/someone/gone"
         let view = StartupView(projection: .stopped(path: path), onIntent: { _ in })
 
-        XCTAssertEqual(view.drawnText, [path, "Nozoki couldn't open this folder.", "Browse…", "Quit"])
+        XCTAssertEqual(
+            view.drawnText, [path, "Nozoki couldn't open this folder.", "Browse…", "Quit"])
     }
 
     func testReadingDrawsOnlyTheLoadingLineAndNoControl() {

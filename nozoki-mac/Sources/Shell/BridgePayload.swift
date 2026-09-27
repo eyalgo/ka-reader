@@ -13,17 +13,21 @@ enum BridgePayload {
         let state: State
         let condition: Condition?
         enum State: String, Decodable { case opened, failed }
-        enum Condition: String, Decodable { case missing, not_a_folder, unreadable }
+        enum Condition: String, Decodable {
+            case missing
+            case notAFolder = "not_a_folder"
+            case unreadable
+        }
     }
 
     static func decodeOpen(_ buffer: BridgeBuffer?) -> OpenResult? {
         guard let buffer,
-              let answer = try? JSONDecoder().decode(OpenAnswer.self, from: buffer.payload)
+            let answer = try? JSONDecoder().decode(OpenAnswer.self, from: buffer.payload)
         else { return nil }
         switch (answer.state, answer.condition) {
         case (.opened, nil): return .opened
         case (.failed, .missing?): return .failed(.missing)
-        case (.failed, .not_a_folder?): return .failed(.notAFolder)
+        case (.failed, .notAFolder?): return .failed(.notAFolder)
         case (.failed, .unreadable?): return .failed(.unreadable)
         default: return nil
         }

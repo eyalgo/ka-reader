@@ -5,7 +5,10 @@
 use std::path::PathBuf;
 use std::sync::{Mutex, PoisonError};
 
-use nozoki_core::{Condition, EntryKind, ItemState, OpenFailure, OpenFolderOutcome, OpenedFolder, list_tree, open_folder};
+use nozoki_core::{
+    Condition, EntryKind, ItemState, OpenFailure, OpenFolderOutcome, OpenedFolder, list_tree,
+    open_folder,
+};
 use serde::Serialize;
 
 /// What `open_folder` answers across the bridge.
@@ -18,7 +21,11 @@ pub enum OpenResult {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "snake_case")]
-pub enum OpenFailureDto { Missing, NotAFolder, Unreadable }
+pub enum OpenFailureDto {
+    Missing,
+    NotAFolder,
+    Unreadable,
+}
 
 impl From<OpenFailure> for OpenFailureDto {
     fn from(failure: OpenFailure) -> Self {
@@ -144,7 +151,9 @@ impl Session {
                 *self.opened.lock().unwrap_or_else(PoisonError::into_inner) = Some(folder);
                 OpenResult::Opened
             }
-            OpenFolderOutcome::Failed(failure) => OpenResult::Failed { condition: failure.into() },
+            OpenFolderOutcome::Failed(failure) => OpenResult::Failed {
+                condition: failure.into(),
+            },
         }
     }
 
@@ -212,7 +221,10 @@ mod tests {
 
     fn opened(session: &Session, folder: &TempDir) {
         let result = session.open(folder.path().to_path_buf());
-        assert!(matches!(result, super::OpenResult::Opened), "the folder must open");
+        assert!(
+            matches!(result, super::OpenResult::Opened),
+            "the folder must open"
+        );
     }
 
     #[test]
@@ -265,7 +277,8 @@ mod tests {
         let session = Session::default();
         let folder = TempDir::new();
 
-        let value = serde_json::to_value(session.open(folder.path().to_path_buf())).expect("the result serializes");
+        let value = serde_json::to_value(session.open(folder.path().to_path_buf()))
+            .expect("the result serializes");
 
         assert_eq!(value, json!({ "state": "opened" }));
     }

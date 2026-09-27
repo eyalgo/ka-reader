@@ -42,12 +42,16 @@ package final class LaunchFlow {
             return
         }
         presentStartup(.reading)
-        reader.run({ [bridge] in Self.openAndList(location, through: bridge) }) { [weak self] answer in
-            self?.deliver(answer)
-        }
+        reader.run(
+            { [bridge] in Self.openAndList(location, through: bridge) },
+            deliver: { [weak self] answer in
+                self?.deliver(answer)
+            })
     }
 
-    private nonisolated static func openAndList(_ location: URL, through bridge: Bridging) -> LaunchAnswer {
+    private nonisolated static func openAndList(_ location: URL, through bridge: Bridging)
+        -> LaunchAnswer
+    {
         let openBuffer = bridge.openFolder(location: location)
         defer { release(openBuffer, through: bridge) }
         guard let result = BridgePayload.decodeOpen(openBuffer) else {
@@ -61,7 +65,8 @@ package final class LaunchFlow {
 
     private func deliver(_ answer: LaunchAnswer) {
         switch answer {
-        case .failed(let path, let condition): presentStartup(.failed(path: path, condition: condition))
+        case .failed(let path, let condition):
+            presentStartup(.failed(path: path, condition: condition))
         case .stopped(let path): presentStartup(.stopped(path: path))
         case .opened(let root):
             folderOpened = true
@@ -70,12 +75,13 @@ package final class LaunchFlow {
     }
 
     private func presentStartup(_ projection: StartupProjection) {
-        presenter.present(StartupView(projection: projection) { [weak self] intent in
-            switch intent {
-            case .browse: self?.chooseFolder()
-            case .quit: self?.terminate()
-            }
-        })
+        presenter.present(
+            StartupView(projection: projection) { [weak self] intent in
+                switch intent {
+                case .browse: self?.chooseFolder()
+                case .quit: self?.terminate()
+                }
+            })
     }
 
     private func presentWorkbench(_ root: RootListing?) {
@@ -89,7 +95,9 @@ package final class LaunchFlow {
         presenter.present(WorkbenchView(rootItemsView: view))
     }
 
-    private nonisolated static func listing(at path: String, through bridge: Bridging) -> RootListing? {
+    private nonisolated static func listing(at path: String, through bridge: Bridging)
+        -> RootListing?
+    {
         let buffer = bridge.listTree(path: path)
         defer { release(buffer, through: bridge) }
         return BridgePayload.decodeRoot(buffer)

@@ -39,7 +39,7 @@ pub enum ListPath {
     NotUtf8,
 }
 
-/// Decodes the location the Open panel returned. NULL is a cancel and never an empty path. The
+/// Decodes the location the Open panel returned. NULL is rejected and never an empty path. The
 /// bytes are a path as the file system spells it and need not be UTF-8.
 ///
 /// # Safety
@@ -207,7 +207,10 @@ mod tests {
         let folder = TempDir::new();
         folder.write_file("present.txt", "");
         let session = Session::default();
-        assert!(matches!(session.open(folder.path().to_path_buf()), crate::session::OpenResult::Opened));
+        assert!(matches!(
+            session.open(folder.path().to_path_buf()),
+            crate::session::OpenResult::Opened
+        ));
         let path = CString::new(&b"docs/\xff"[..]).expect("no interior NUL");
 
         // SAFETY: `path` is NUL-terminated and outlives both calls.

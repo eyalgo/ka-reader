@@ -5,7 +5,9 @@ mod common;
 use std::os::unix::net::UnixListener;
 
 use common::TempDir;
-use nozoki_core::{Condition, Entry, EntryKind, ItemState, OpenFolderOutcome, list_tree, open_folder};
+use nozoki_core::{
+    Condition, Entry, EntryKind, ItemState, OpenFolderOutcome, list_tree, open_folder,
+};
 
 /// The name, kind and state of every entry, in the order the answer carries them. Nothing is
 /// re-sorted here, so a test sees the order CP-168 defines and not one it made up.
@@ -233,7 +235,10 @@ fn open_folder_on_a_file_or_missing_path_is_not_opened() {
     let file = folder.write_file("a-file", "");
 
     assert!(matches!(open_folder(file), OpenFolderOutcome::Failed(_)));
-    assert!(matches!(open_folder(folder.path().join("missing")), OpenFolderOutcome::Failed(_)));
+    assert!(matches!(
+        open_folder(folder.path().join("missing")),
+        OpenFolderOutcome::Failed(_)
+    ));
 }
 
 #[test]

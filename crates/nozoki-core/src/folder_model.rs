@@ -39,29 +39,6 @@ pub enum OpenFailure {
     Unreadable,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::{OpenFailure, OpenFolderOutcome, open_folder};
-    use crate::test_support::TempDir;
-
-    #[test]
-    fn test_open_folder_returns_opened_for_a_readable_plain_folder() {
-        let folder = TempDir::new();
-
-        assert!(matches!(open_folder(folder.path()), OpenFolderOutcome::Opened(_)));
-    }
-
-    #[test]
-    fn test_open_folder_returns_each_closed_failure() {
-        let folder = TempDir::new();
-        let file = folder.write_file("note.txt", "");
-        let missing = folder.path().join("missing");
-
-        assert_eq!(open_folder(missing), OpenFolderOutcome::Failed(OpenFailure::Missing));
-        assert_eq!(open_folder(file), OpenFolderOutcome::Failed(OpenFailure::NotAFolder));
-    }
-}
-
 /// Opens `path` as a folder, rooted at its canonical path.
 ///
 /// Returns a closed outcome for the chosen path. A readable directory is opened; a missing path,
@@ -101,4 +78,36 @@ pub fn open_folder(path: impl AsRef<Path>) -> OpenFolderOutcome {
 /// ```
 pub fn list_tree(opened: &OpenedFolder, path: &str) -> ItemState<Vec<Entry>> {
     fs_reader::list(&opened.root, path)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{OpenFailure, OpenFolderOutcome, open_folder};
+    use crate::test_support::TempDir;
+
+    #[test]
+    fn test_open_folder_returns_opened_for_a_readable_plain_folder() {
+        let folder = TempDir::new();
+
+        assert!(matches!(
+            open_folder(folder.path()),
+            OpenFolderOutcome::Opened(_)
+        ));
+    }
+
+    #[test]
+    fn test_open_folder_returns_each_closed_failure() {
+        let folder = TempDir::new();
+        let file = folder.write_file("note.txt", "");
+        let missing = folder.path().join("missing");
+
+        assert_eq!(
+            open_folder(missing),
+            OpenFolderOutcome::Failed(OpenFailure::Missing)
+        );
+        assert_eq!(
+            open_folder(file),
+            OpenFolderOutcome::Failed(OpenFailure::NotAFolder)
+        );
+    }
 }

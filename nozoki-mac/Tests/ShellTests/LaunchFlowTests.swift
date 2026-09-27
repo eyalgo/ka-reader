@@ -99,7 +99,8 @@ final class LaunchFlowTests: XCTestCase {
     }
 
     func testQuitFromEveryStartupStateCallsOnlyTheInjectedTerminator() throws {
-        let startupPayloads: [(URL?, Data?)] = [(nil, openedAnswer)]
+        let startupPayloads: [(URL?, Data?)] =
+            [(nil, openedAnswer)]
             + failureCases.map { (chosenFolder, Optional($0.1)) }
             + [(chosenFolder, Data("malformed".utf8))]
 
@@ -136,7 +137,8 @@ final class LaunchFlowTests: XCTestCase {
     }
 
     func testBrowseFromEveryStartupStateCanReachTheWorkbench() throws {
-        let startingStates: [(URL?, Data?)] = [(nil, openedAnswer)]
+        let startingStates: [(URL?, Data?)] =
+            [(nil, openedAnswer)]
             + failureCases.map { (chosenFolder, Optional($0.1)) }
             + [(chosenFolder, Data("malformed".utf8))]
 
@@ -157,7 +159,8 @@ final class LaunchFlowTests: XCTestCase {
     }
 
     func testDismissalAfterObservedOrStoppedFailureReturnsToEmptyWithoutReads() throws {
-        let failurePayloads: [Data?] = failureCases.map { Optional($0.1) }
+        let failurePayloads: [Data?] =
+            failureCases.map { Optional($0.1) }
             + [Data("malformed".utf8)]
 
         for payload in failurePayloads {

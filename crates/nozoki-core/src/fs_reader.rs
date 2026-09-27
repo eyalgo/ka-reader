@@ -11,17 +11,57 @@ use std::path::{Component, Path, PathBuf};
 
 use crate::folder_model::OpenFailure;
 
+trait OpeningFilesystem {
+    fn canonicalize(&self, path: &Path) -> io::Result<PathBuf>;
+    fn is_directory(&self, path: &Path) -> io::Result<bool>;
+    fn read_directory(&self, path: &Path) -> io::Result<()>;
+}
+
+struct NativeOpeningFilesystem;
+
+impl OpeningFilesystem for NativeOpeningFilesystem {
+    fn canonicalize(&self, path: &Path) -> io::Result<PathBuf> {
+        path.canonicalize()
+    }
+
+    fn is_directory(&self, path: &Path) -> io::Result<bool> {
+        Ok(fs::metadata(path)?.is_dir())
+    }
+
+    fn read_directory(&self, path: &Path) -> io::Result<()> {
+        fs::read_dir(path).map(|_| ())
+    }
+}
+
 /// Observes whether a chosen path is a readable directory without producing its entries.
 pub(crate) fn open_root(path: &Path) -> Result<PathBuf, OpenFailure> {
-    let root = path.canonicalize().map_err(|error| match error.kind() {
-        io::ErrorKind::NotFound => OpenFailure::Missing,
-        io::ErrorKind::NotADirectory => OpenFailure::NotAFolder,
-        _ => OpenFailure::Unreadable,
-    })?;
-    if !root.is_dir() {
+    open_root_with_filesystem(&NativeOpeningFilesystem, path)
+}
+
+fn open_root_with_filesystem(
+    filesystem: &impl OpeningFilesystem,
+    path: &Path,
+) -> Result<PathBuf, OpenFailure> {
+    let root = filesystem
+        .canonicalize(path)
+        .map_err(|error| match error.kind() {
+            io::ErrorKind::NotFound => OpenFailure::Missing,
+            io::ErrorKind::NotADirectory => OpenFailure::NotAFolder,
+            _ => OpenFailure::Unreadable,
+        })?;
+    let is_directory = filesystem
+        .is_directory(&root)
+        .map_err(|error| match error.kind() {
+            io::ErrorKind::NotFound => OpenFailure::Missing,
+            io::ErrorKind::NotADirectory => OpenFailure::NotAFolder,
+            _ => OpenFailure::Unreadable,
+        })?;
+    if !is_directory {
         return Err(OpenFailure::NotAFolder);
     }
-    fs::read_dir(&root).map_err(|_| OpenFailure::Unreadable)?;
+    filesystem
+        .read_directory(&root)
+        .map_err(|_| OpenFailure::Unreadable)?;
     Ok(root)
 }
 
