@@ -9,7 +9,7 @@ use std::path::PathBuf;
 
 use serde::Serialize;
 
-use crate::exports::NozokiBuffer;
+use crate::exports::{BufferOrigin, NozokiBuffer};
 use crate::session::{ListAnswerDto, OpenResult, Session};
 
 /// Runs `work` under `catch_unwind` and hands its answer across as an owned buffer of JSON bytes.
@@ -18,14 +18,42 @@ use crate::session::{ListAnswerDto, OpenResult, Session};
 /// serialized. A panic that unwound out of an `extern "C"` function would abort the process, so no
 /// export runs its body outside this wrapper. The workspace sets no `panic = "abort"`, which would
 /// leave `catch_unwind` nothing to catch.
-pub fn guarded<T: Serialize>(work: impl FnOnce() -> T) -> *mut NozokiBuffer {
+pub(crate) fn guarded<T: Serialize>(
+    origin: BufferOrigin,
+    work: impl FnOnce() -> T,
+) -> *mut NozokiBuffer {
     // The session's lock recovers from poisoning, so a panic in `work` leaves nothing half-updated
     // that a later call could observe.
     match panic::catch_unwind(AssertUnwindSafe(work)) {
-        Ok(answer) => {
-            serde_json::to_vec(&answer).map_or(std::ptr::null_mut(), NozokiBuffer::allocate)
-        }
-        Err(_) => std::ptr::null_mut(),
+        Ok(answer) => serde_json::to_vec(&answer).map_or_else(
+            |_| stopped_open(origin, "answer serialization failed"),
+            |payload| NozokiBuffer::allocate(payload, origin),
+        ),
+        Err(_) => stopped_open(origin, "boundary panicked"),
+    }
+}
+
+fn stopped_open(origin: BufferOrigin, detail: &str) -> *mut NozokiBuffer {
+    if origin == BufferOrigin::OpenFolder {
+        log::warn!("core-bridge: open_folder stopped: {detail}");
+    }
+    std::ptr::null_mut()
+}
+
+pub(crate) fn is_valid_open_answer(bytes: *mut u8, len: usize) -> bool {
+    // SAFETY: caller supplies a live buffer allocated by this crate before it is freed.
+    let Ok(value) = serde_json::from_slice::<serde_json::Value>(unsafe {
+        std::slice::from_raw_parts(bytes, len)
+    }) else {
+        return false;
+    };
+    match value.get("state").and_then(serde_json::Value::as_str) {
+        Some("opened") => value.as_object().is_some_and(|object| object.len() == 1),
+        Some("failed") => matches!(
+            value.get("condition").and_then(serde_json::Value::as_str),
+            Some("missing" | "not_a_folder" | "unreadable")
+        ),
+        _ => false,
     }
 }
 
@@ -108,7 +136,7 @@ mod tests {
     use super::{
         ListPath, decode_list_path, decode_location, guarded, list_entries, open_location,
     };
-    use crate::exports::{NozokiBuffer, nozoki_free};
+    use crate::exports::{BufferOrigin, NozokiBuffer, nozoki_free};
     use crate::session::Session;
     use crate::test_support::TempDir;
 
@@ -120,14 +148,16 @@ mod tests {
 
     #[test]
     fn test_panicking_closure_yields_null() {
-        let buffer = guarded(|| -> Vec<String> { panic!("a panic the boundary must catch") });
+        let buffer = guarded(BufferOrigin::OpenFolder, || -> Vec<String> {
+            panic!("a panic the boundary must catch")
+        });
 
         assert!(buffer.is_null(), "an unwind is NULL and never a buffer");
     }
 
     #[test]
     fn test_normal_closure_yields_its_json_bytes() {
-        let buffer = guarded(|| vec!["a", "b"]);
+        let buffer = guarded(BufferOrigin::OpenFolder, || vec!["a", "b"]);
 
         let bytes = bytes_of(buffer);
         // SAFETY: made by `guarded`, freed exactly once, never read again.
@@ -146,7 +176,7 @@ mod tests {
 
     #[test]
     fn test_buffer_made_and_freed_once_is_clean() {
-        let buffer = guarded(|| 42_u32);
+        let buffer = guarded(BufferOrigin::OpenFolder, || 42_u32);
         assert!(!buffer.is_null());
 
         // SAFETY: made by `guarded` and freed exactly once.

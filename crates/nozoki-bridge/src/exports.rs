@@ -16,12 +16,28 @@ pub struct NozokiBuffer {
     pub len: usize,
 }
 
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(crate) enum BufferOrigin {
+    OpenFolder,
+    ListTree,
+}
+
+#[repr(C)]
+struct OwnedBuffer {
+    public: NozokiBuffer,
+    origin: BufferOrigin,
+}
+
 impl NozokiBuffer {
     /// Moves `payload` into a heap buffer and returns the pointer the caller must free once.
-    pub fn allocate(payload: Vec<u8>) -> *mut NozokiBuffer {
+    pub(crate) fn allocate(payload: Vec<u8>, origin: BufferOrigin) -> *mut NozokiBuffer {
         let len = payload.len();
         let bytes = Box::into_raw(payload.into_boxed_slice()).cast::<u8>();
-        Box::into_raw(Box::new(NozokiBuffer { bytes, len }))
+        let owner = Box::new(OwnedBuffer {
+            public: NozokiBuffer { bytes, len },
+            origin,
+        });
+        Box::into_raw(owner).cast::<NozokiBuffer>()
     }
 }
 
@@ -37,7 +53,9 @@ static SESSION: LazyLock<Session> = LazyLock::new(Session::default);
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn nozoki_open_folder(location: *const c_char) -> *mut NozokiBuffer {
     // SAFETY: forwarded from the caller.
-    guarded(|| unsafe { open_location(&SESSION, location) })
+    guarded(BufferOrigin::OpenFolder, || unsafe {
+        open_location(&SESSION, location)
+    })
 }
 
 /// Lists a path relative to the open folder's root; NULL or empty is the root. Answers a JSON
@@ -52,7 +70,9 @@ pub unsafe extern "C" fn nozoki_open_folder(location: *const c_char) -> *mut Noz
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn nozoki_list_tree(path: *const c_char) -> *mut NozokiBuffer {
     // SAFETY: forwarded from the caller.
-    guarded(|| unsafe { list_entries(&SESSION, path) })
+    guarded(BufferOrigin::ListTree, || unsafe {
+        list_entries(&SESSION, path)
+    })
 }
 
 /// Releases a buffer returned by `nozoki_open_folder` or `nozoki_list_tree`. NULL does nothing.
@@ -65,10 +85,20 @@ pub unsafe extern "C" fn nozoki_free(buffer: *mut NozokiBuffer) {
     if buffer.is_null() {
         return;
     }
-    // SAFETY: the caller guarantees `buffer` came from `NozokiBuffer::allocate` and is freed once.
-    let buffer = unsafe { Box::from_raw(buffer) };
+    // SAFETY: `NozokiBuffer` is the first field of `OwnedBuffer`, so this restores the allocation.
+    let buffer = unsafe { Box::from_raw(buffer.cast::<OwnedBuffer>()) };
+    if buffer.origin == BufferOrigin::OpenFolder
+        && !crate::boundary::is_valid_open_answer(buffer.public.bytes, buffer.public.len)
+    {
+        log::warn!("core-bridge: open_folder stopped: invalid returned answer");
+    }
     // SAFETY: `bytes` and `len` are exactly the boxed slice `allocate` leaked.
-    drop(unsafe { Box::from_raw(std::ptr::slice_from_raw_parts_mut(buffer.bytes, buffer.len)) });
+    drop(unsafe {
+        Box::from_raw(std::ptr::slice_from_raw_parts_mut(
+            buffer.public.bytes,
+            buffer.public.len,
+        ))
+    });
 }
 
 /// The load-time initializer: one function pointer in Mach-O's `__DATA,__mod_init_func`, run when
