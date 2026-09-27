@@ -136,6 +136,30 @@ final class LaunchFlowTests: XCTestCase {
         }
     }
 
+    func testEveryOrderedObservedFailurePairStaysInOneWindow() throws {
+        for (firstCondition, firstPayload, _) in failureCases {
+            for (secondCondition, secondPayload, secondSentence) in failureCases {
+                let firstURL = URL(fileURLWithPath: "/Users/someone/first-\(firstCondition)")
+                let secondURL = URL(fileURLWithPath: "/Users/someone/second-\(secondCondition)")
+                let (flow, bridge, panel, presenter, _) = makeFlow(answers: [firstURL, secondURL])
+                bridge.openAnswers = [firstPayload, secondPayload]
+
+                flow.run()
+                try startupView(in: presenter).activate(.browse)
+
+                XCTAssertEqual(panel.presentedCount, 2, "\(firstCondition), \(secondCondition)")
+                XCTAssertEqual(bridge.openedLocations, [firstURL, secondURL])
+                XCTAssertEqual(bridge.listedPaths, [])
+                XCTAssertEqual(presenter.createdWindowCount, 1)
+                XCTAssertEqual(
+                    try startupView(in: presenter).drawnText,
+                    [secondURL.path, secondSentence, "Browse…", "Quit"])
+                XCTAssertEqual(bridge.handedOut.sorted(), bridge.freed.sorted())
+                XCTAssertEqual(Set(bridge.freed).count, bridge.freed.count)
+            }
+        }
+    }
+
     func testBrowseFromEveryStartupStateCanReachTheWorkbench() throws {
         let startingStates: [(URL?, Data?)] =
             [(nil, openedAnswer)]

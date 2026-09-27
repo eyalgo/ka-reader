@@ -31,6 +31,7 @@ final class FakePanel: FolderChoosing {
 /// A bridge that answers from canned bytes and records every call, buffer and free.
 final class RecordingBridge: Bridging {
     var openAnswer: Data? = Data(#"{"state":"opened"}"#.utf8)
+    var openAnswers: [Data?] = []
     var listAnswer: Data? = Data(#"{"state":"observed","entries":[]}"#.utf8)
     /// An answer for one path. A path with no entry here gets `listAnswer`, and an entry holding
     /// `nil` is the bridge's failure value for that path.
@@ -50,7 +51,7 @@ final class RecordingBridge: Bridging {
     func openFolder(location: URL) -> BridgeBuffer? {
         log.record("open_folder")
         openedLocations.append(location)
-        return makeBuffer(from: openAnswer)
+        return makeBuffer(from: openAnswers.isEmpty ? openAnswer : openAnswers.removeFirst())
     }
 
     func listTree(path: String) -> BridgeBuffer? {
@@ -113,21 +114,6 @@ struct InlineReadRunner: ReadRunning {
         deliver: @escaping @MainActor (Answer) -> Void
     ) {
         deliver(read())
-    }
-}
-
-/// Keeps every read until the test releases it, then runs each one inline.
-@MainActor
-final class HoldingReadRunner: ReadRunning {
-    func run<Answer>(
-        _ read: @escaping @Sendable () -> Answer,
-        deliver: @escaping @MainActor (Answer) -> Void
-    ) {
-        deliver(read())
-    }
-
-    func release() {
-        // The generic runner delivers immediately; this seam remains for older call sites.
     }
 }
 
