@@ -186,6 +186,41 @@ mod tests {
     }
 
     #[test]
+    fn test_open_answer_accepts_semantic_json_encodings() {
+        let accepted = [
+            br#" { "state" : "opened" } "#.as_slice(),
+            br#"{"condition":"missing","state":"failed"}"#.as_slice(),
+        ];
+
+        for answer in accepted {
+            let mut answer = answer.to_vec();
+            assert!(
+                is_valid_open_answer(answer.as_mut_ptr(), answer.len()),
+                "{answer:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn test_open_answer_rejects_non_objects_and_invalid_field_shapes() {
+        let rejected = [
+            br#"["opened"]"#.as_slice(),
+            br#"{}"#.as_slice(),
+            br#"{"state":7}"#.as_slice(),
+            br#"{"state":"failed"}"#.as_slice(),
+            br#"{"state":"failed","condition":7}"#.as_slice(),
+        ];
+
+        for answer in rejected {
+            let mut answer = answer.to_vec();
+            assert!(
+                !is_valid_open_answer(answer.as_mut_ptr(), answer.len()),
+                "{answer:?}"
+            );
+        }
+    }
+
+    #[test]
     fn test_boundary_no_answer_returns_null_and_writes_one_stopped_line() {
         let _serial = begin_log_capture();
 
