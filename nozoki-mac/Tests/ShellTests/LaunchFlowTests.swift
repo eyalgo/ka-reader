@@ -19,7 +19,7 @@ final class LaunchFlowTests: XCTestCase {
     private var failureCases: [(OpeningCondition, Data, String)] {
         [
             (
-                .missing, Data(#"{"state":"failed","condition":"missing"}"#.utf8),
+                .missing, Data(#"{"condition":"missing","state":"failed"}"#.utf8),
                 "Nozoki couldn't find this folder."
             ),
             (
@@ -118,7 +118,7 @@ final class LaunchFlowTests: XCTestCase {
         }
     }
 
-    func testEachObservedOpenFailureStaysInTheSameWindowWithoutListing() throws {
+    func testEachObservedOpenFailureAcceptsReversedMemberOrderWithoutListing() throws {
         for (condition, payload, sentence) in failureCases {
             let (flow, bridge, _, presenter, _) = makeFlow(
                 answers: [chosenFolder], open: payload)
@@ -282,9 +282,11 @@ final class LaunchFlowTests: XCTestCase {
             Data("malformed".utf8),
             Data("[]".utf8),
             Data(#"{}"#.utf8),
+            Data(#"{"condition":"missing"}"#.utf8),
             Data(#"{"state":7}"#.utf8),
             Data(#"{"state":"pending"}"#.utf8),
             Data(#"{"state":"opened","extra":true}"#.utf8),
+            Data(#"{"state":"opened","condition":"missing"}"#.utf8),
             Data(#"{"state":"failed"}"#.utf8),
             Data(#"{"state":"failed","condition":7}"#.utf8),
             Data(#"{"state":"failed","condition":"unknown"}"#.utf8),
