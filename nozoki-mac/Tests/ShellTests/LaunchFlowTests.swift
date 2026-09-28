@@ -205,9 +205,10 @@ final class LaunchFlowTests: XCTestCase {
         }
     }
 
-    func testInitialSuccessUsesTheSingleCreatedWindow() throws {
+    func testInitialSuccessAcceptsWhitespaceAndPresentsTheWorkbench() throws {
         let (flow, bridge, _, presenter, log) = makeFlow(
-            answers: [chosenFolder], list: docsRootAnswer)
+            answers: [chosenFolder], open: Data(" { \"state\" : \"opened\" } ".utf8),
+            list: docsRootAnswer)
 
         flow.run()
 
@@ -275,7 +276,20 @@ final class LaunchFlowTests: XCTestCase {
     }
 
     func testInvalidOpenAnswerStopsWithoutClaimingAConditionOrListing() throws {
-        let invalidAnswers: [Data?] = [nil, Data("malformed".utf8)]
+        let invalidAnswers: [Data?] = [
+            nil,
+            Data("".utf8),
+            Data("malformed".utf8),
+            Data("[]".utf8),
+            Data(#"{}"#.utf8),
+            Data(#"{"state":7}"#.utf8),
+            Data(#"{"state":"pending"}"#.utf8),
+            Data(#"{"state":"opened","extra":true}"#.utf8),
+            Data(#"{"state":"failed"}"#.utf8),
+            Data(#"{"state":"failed","condition":7}"#.utf8),
+            Data(#"{"state":"failed","condition":"unknown"}"#.utf8),
+            Data(#"{"state":"failed","condition":"missing","extra":true}"#.utf8),
+        ]
 
         for answer in invalidAnswers {
             let (flow, bridge, _, presenter, _) = makeFlow(
@@ -284,9 +298,12 @@ final class LaunchFlowTests: XCTestCase {
             flow.run()
 
             XCTAssertEqual(bridge.listedPaths, [])
+            XCTAssertFalse(flow.folderOpened)
+            XCTAssertNil(presenter.contents.last as? WorkbenchView)
             XCTAssertEqual(
                 try startupView(in: presenter).drawnText,
                 [chosenFolder.path, "Nozoki couldn't open this folder.", "Browse…", "Quit"])
+            XCTAssertEqual(bridge.handedOut, bridge.freed)
         }
     }
 
