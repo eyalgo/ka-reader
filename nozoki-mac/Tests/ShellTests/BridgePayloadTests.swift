@@ -1,7 +1,7 @@
 import Foundation
-@testable import Shell
 import Surfaces
 import XCTest
+@testable import Shell
 
 final class BridgePayloadTests: XCTestCase {
     private func decode(_ payload: String) -> BridgePayload.OpenResult? {

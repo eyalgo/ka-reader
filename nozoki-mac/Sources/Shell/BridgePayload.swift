@@ -51,7 +51,9 @@ enum BridgePayload {
             case .failed:
                 guard Set(container.allKeys) == [.state, .condition] else {
                     throw DecodingError.dataCorruptedError(
-                        forKey: .state, in: container, debugDescription: "failed has the wrong members")
+                        forKey: .state,
+                        in: container,
+                        debugDescription: "failed has the wrong members")
                 }
                 condition = try container.decode(Condition.self, forKey: .condition)
             }
