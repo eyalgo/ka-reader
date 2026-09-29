@@ -1,6 +1,7 @@
 import Foundation
 import Surfaces
 import XCTest
+
 @testable import Shell
 
 final class BridgePayloadTests: XCTestCase {
@@ -35,21 +36,37 @@ final class BridgePayloadTests: XCTestCase {
     }
 
     func testOpenAnswerAcceptsSemanticJSONEncodings() {
-        XCTAssertEqual(decode(" { \"state\" : \"opened\" } "), .opened)
-        XCTAssertEqual(
-            decode(#"{"condition":"missing","state":"failed"}"#),
-            .failed(.missing))
+        // Mirrors boundary.rs test_open_answer_accepts_semantic_json_encodings byte-for-byte.
+        let accepted: [(String, BridgePayload.OpenResult)] = [
+            (#" { "state" : "opened" } "#, .opened),
+            ("\n{\t\"state\":\t\"opened\"\r\n}\n", .opened),
+            (#"{"condition":"missing","state":"failed"}"#, .failed(.missing)),
+            (#"{"condition":"not_a_folder","state":"failed"}"#, .failed(.notAFolder)),
+            (#"{ "condition" : "unreadable" , "state" : "failed" }"#, .failed(.unreadable)),
+        ]
+
+        for (payload, expected) in accepted {
+            XCTAssertEqual(decode(payload), expected, payload)
+        }
     }
 
     func testOpenAnswerRejectsEveryNamedComplementShape() {
+        // Mirrors boundary.rs test_open_answer_rejects_non_objects_and_invalid_field_shapes.
         let rejected = [
-            "[]",
+            #"[]"#,
+            #"["opened"]"#,
+            #""opened""#,
+            #"null"#,
             #"{}"#,
+            #"{"condition":"missing"}"#,
             #"{"state":7}"#,
+            #"{"state":null}"#,
             #"{"state":"unknown"}"#,
             #"{"state":"opened","condition":"missing"}"#,
             #"{"state":"failed"}"#,
+            #"{"state":"failed","reason":"missing"}"#,
             #"{"state":"failed","condition":7}"#,
+            #"{"state":"failed","condition":null}"#,
             #"{"state":"failed","condition":"unknown"}"#,
         ]
 

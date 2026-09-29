@@ -109,10 +109,10 @@ fn test_freeing_invalid_open_buffer_excludes_folder_secrets_and_terminal_output(
     let folder = TempDir::new();
     let selected_path_secret = folder.make_folder("selected-path-secret");
     let fixture_content_secret = "fixture-content-secret";
-    folder.write_file("fixture.txt", fixture_content_secret);
+    folder.write_file("selected-path-secret/fixture.txt", fixture_content_secret);
     let buffer = open(&selected_path_secret);
     assert!(!buffer.is_null());
-    // SAFETY: this live open-origin allocation has at least the failed answer's first byte.
+    // SAFETY: this live open-origin allocation has at least the opened answer's first byte.
     unsafe { *(*buffer).bytes = b'!' };
 
     // SAFETY: `buffer` came from the export and is freed exactly once.
