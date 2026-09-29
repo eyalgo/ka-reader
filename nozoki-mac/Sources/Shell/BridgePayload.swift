@@ -12,11 +12,55 @@ enum BridgePayload {
     private struct OpenAnswer: Decodable {
         let state: State
         let condition: Condition?
+
         enum State: String, Decodable { case opened, failed }
         enum Condition: String, Decodable {
             case missing
             case notAFolder = "not_a_folder"
             case unreadable
+        }
+
+        private struct Key: CodingKey, Hashable {
+            let stringValue: String
+
+            private init(_ stringValue: String) {
+                self.stringValue = stringValue
+            }
+
+            init?(stringValue: String) {
+                self.stringValue = stringValue
+            }
+
+            let intValue: Int? = nil
+
+            init?(intValue: Int) {
+                return nil
+            }
+
+            static let state = Key("state")
+            static let condition = Key("condition")
+        }
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: Key.self)
+            state = try container.decode(State.self, forKey: .state)
+
+            switch state {
+            case .opened:
+                guard Set(container.allKeys) == [.state] else {
+                    throw DecodingError.dataCorruptedError(
+                        forKey: .state, in: container, debugDescription: "opened has extra members")
+                }
+                condition = nil
+            case .failed:
+                guard Set(container.allKeys) == [.state, .condition] else {
+                    throw DecodingError.dataCorruptedError(
+                        forKey: .state,
+                        in: container,
+                        debugDescription: "failed has the wrong members")
+                }
+                condition = try container.decode(Condition.self, forKey: .condition)
+            }
         }
     }
 

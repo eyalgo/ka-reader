@@ -19,7 +19,7 @@ final class LaunchFlowTests: XCTestCase {
     private var failureCases: [(OpeningCondition, Data, String)] {
         [
             (
-                .missing, Data(#"{"state":"failed","condition":"missing"}"#.utf8),
+                .missing, Data(#"{"condition":"missing","state":"failed"}"#.utf8),
                 "Nozoki couldn't find this folder."
             ),
             (
@@ -30,6 +30,25 @@ final class LaunchFlowTests: XCTestCase {
                 .unreadable, Data(#"{"state":"failed","condition":"unreadable"}"#.utf8),
                 "Nozoki can't read this folder."
             ),
+        ]
+    }
+
+    private var invalidOpenAnswers: [Data?] {
+        [
+            nil,
+            Data("".utf8),
+            Data("malformed".utf8),
+            Data("[]".utf8),
+            Data(#"{}"#.utf8),
+            Data(#"{"condition":"missing"}"#.utf8),
+            Data(#"{"state":7}"#.utf8),
+            Data(#"{"state":"pending"}"#.utf8),
+            Data(#"{"state":"opened","extra":true}"#.utf8),
+            Data(#"{"state":"opened","condition":"missing"}"#.utf8),
+            Data(#"{"state":"failed"}"#.utf8),
+            Data(#"{"state":"failed","condition":7}"#.utf8),
+            Data(#"{"state":"failed","condition":"unknown"}"#.utf8),
+            Data(#"{"state":"failed","condition":"missing","extra":true}"#.utf8),
         ]
     }
 
@@ -118,7 +137,7 @@ final class LaunchFlowTests: XCTestCase {
         }
     }
 
-    func testEachObservedOpenFailureStaysInTheSameWindowWithoutListing() throws {
+    func testEachObservedOpenFailureAcceptsReversedMemberOrderWithoutListing() throws {
         for (condition, payload, sentence) in failureCases {
             let (flow, bridge, _, presenter, _) = makeFlow(
                 answers: [chosenFolder], open: payload)
@@ -205,9 +224,10 @@ final class LaunchFlowTests: XCTestCase {
         }
     }
 
-    func testInitialSuccessUsesTheSingleCreatedWindow() throws {
+    func testInitialSuccessAcceptsWhitespaceAndPresentsTheWorkbench() throws {
         let (flow, bridge, _, presenter, log) = makeFlow(
-            answers: [chosenFolder], list: docsRootAnswer)
+            answers: [chosenFolder], open: Data(" { \"state\" : \"opened\" } ".utf8),
+            list: docsRootAnswer)
 
         flow.run()
 
@@ -275,18 +295,19 @@ final class LaunchFlowTests: XCTestCase {
     }
 
     func testInvalidOpenAnswerStopsWithoutClaimingAConditionOrListing() throws {
-        let invalidAnswers: [Data?] = [nil, Data("malformed".utf8)]
-
-        for answer in invalidAnswers {
+        for answer in invalidOpenAnswers {
             let (flow, bridge, _, presenter, _) = makeFlow(
                 answers: [chosenFolder], open: answer)
 
             flow.run()
 
             XCTAssertEqual(bridge.listedPaths, [])
+            XCTAssertFalse(flow.folderOpened)
+            XCTAssertFalse(presenter.contents.contains { $0 is WorkbenchView })
             XCTAssertEqual(
                 try startupView(in: presenter).drawnText,
                 [chosenFolder.path, "Nozoki couldn't open this folder.", "Browse…", "Quit"])
+            XCTAssertEqual(bridge.handedOut, bridge.freed)
         }
     }
 
@@ -308,11 +329,14 @@ final class LaunchFlowTests: XCTestCase {
         XCTAssertEqual(cancellation.1.handedOut, [])
         XCTAssertEqual(cancellation.1.freed, [])
 
-        for (_, payload, _) in failureCases {
+        for payload in failureCases.map(\.1) + invalidOpenAnswers.compactMap({ $0 }) {
             let (flow, bridge, _, _, log) = makeFlow(answers: [chosenFolder], open: payload)
             flow.run()
-            XCTAssertTrue(Set(log.events.filter { $0 != "panel" }).isSubset(of: namedBridgeCalls))
-            XCTAssertEqual(bridge.freed.sorted(), bridge.handedOut.sorted())
+            let label = String(decoding: payload, as: UTF8.self)
+            XCTAssertTrue(
+                Set(log.events.filter { $0 != "panel" }).isSubset(of: namedBridgeCalls), label)
+            XCTAssertEqual(bridge.handedOut.count, 1, label)
+            XCTAssertEqual(bridge.freed.sorted(), bridge.handedOut.sorted(), label)
         }
 
         let (flow, bridge, _, presenter, log) = makeFlow(

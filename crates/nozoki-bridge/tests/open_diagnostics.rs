@@ -12,7 +12,7 @@ use std::sync::{Mutex, MutexGuard, Once};
 use log::{Log, Metadata, Record};
 use nozoki_bridge::exports::{NozokiBuffer, nozoki_free, nozoki_list_tree, nozoki_open_folder};
 
-use common::TempDir;
+use common::{TempDir, capture_stderr};
 
 static SERIAL: Mutex<()> = Mutex::new(());
 static INSTALL_CAPTURE: Once = Once::new();
@@ -87,10 +87,42 @@ fn test_freeing_invalid_open_buffer_writes_one_stopped_line() {
     unsafe { *(*buffer).bytes = b'!' };
 
     // SAFETY: `buffer` came from the export and is freed exactly once.
-    unsafe { nozoki_free(buffer) };
+    let (_, stderr) = capture_stderr(|| unsafe { nozoki_free(buffer) });
     let records = records();
 
-    assert_eq!(stopped(&records).len(), 1, "{records:?}");
+    assert_eq!(records.len(), 1, "{records:?}");
+    let record = &records[0];
+    assert!(record.contains("core-bridge"), "{records:?}");
+    assert!(record.contains("open_folder"), "{records:?}");
+    assert!(
+        record
+            .split_once("stopped:")
+            .is_some_and(|(_, error)| !error.trim().is_empty()),
+        "{records:?}"
+    );
+    assert_eq!(stderr, "");
+}
+
+#[test]
+fn test_freeing_invalid_open_buffer_excludes_folder_secrets_and_terminal_output() {
+    let _serial = begin_capture();
+    let folder = TempDir::new();
+    let selected_path_secret = folder.make_folder("selected-path-secret");
+    let fixture_content_secret = "fixture-content-secret";
+    folder.write_file("selected-path-secret/fixture.txt", fixture_content_secret);
+    let buffer = open(&selected_path_secret);
+    assert!(!buffer.is_null());
+    // SAFETY: this live open-origin allocation has at least the opened answer's first byte.
+    unsafe { *(*buffer).bytes = b'!' };
+
+    // SAFETY: `buffer` came from the export and is freed exactly once.
+    let (_, stderr) = capture_stderr(|| unsafe { nozoki_free(buffer) });
+    let records = records();
+
+    assert_eq!(records.len(), 1, "{records:?}");
+    assert!(!records[0].contains("selected-path-secret"), "{records:?}");
+    assert!(!records[0].contains(fixture_content_secret), "{records:?}");
+    assert_eq!(stderr, "");
 }
 
 #[test]
