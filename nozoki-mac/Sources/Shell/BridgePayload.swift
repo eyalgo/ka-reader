@@ -23,6 +23,10 @@ enum BridgePayload {
         private struct Key: CodingKey, Hashable {
             let stringValue: String
 
+            private init(_ stringValue: String) {
+                self.stringValue = stringValue
+            }
+
             init?(stringValue: String) {
                 self.stringValue = stringValue
             }
@@ -33,8 +37,8 @@ enum BridgePayload {
                 return nil
             }
 
-            static let state = Key(stringValue: "state")!
-            static let condition = Key(stringValue: "condition")!
+            static let state = Key("state")
+            static let condition = Key("condition")
         }
 
         init(from decoder: Decoder) throws {
