@@ -234,6 +234,39 @@ func click(_ control: NSControl) {
     control.performClick(nil)
 }
 
+/// One press, drag and release delivered to `window` at window coordinates, the way a person drags
+/// (the-window-holds-its-layout change_spec.md CP-262: not a call on any view's API). The drag and
+/// the release are queued before the press is delivered, so a view that tracks a drag in its own
+/// loop finds them there; whatever is still queued afterwards is delivered in turn, so a view that
+/// takes each event as it comes gets them too, and nothing is left for a later test.
+@MainActor
+func dragAsAPersonDoes(in window: NSWindow, from start: NSPoint, by distance: CGFloat) throws {
+    let end = NSPoint(x: start.x + distance, y: start.y)
+    let press = try mouseEvent(.leftMouseDown, at: start, in: window)
+    NSApp.postEvent(try mouseEvent(.leftMouseDragged, at: end, in: window), atStart: false)
+    NSApp.postEvent(try mouseEvent(.leftMouseUp, at: end, in: window), atStart: false)
+
+    window.sendEvent(press)
+    while let queued = NSApp.nextEvent(
+        matching: [.leftMouseDragged, .leftMouseUp], until: .distantPast, inMode: .default,
+        dequeue: true)
+    {
+        window.sendEvent(queued)
+    }
+    layOut(window)
+}
+
+@MainActor
+private func mouseEvent(
+    _ type: NSEvent.EventType, at location: NSPoint, in window: NSWindow
+) throws -> NSEvent {
+    try XCTUnwrap(
+        NSEvent.mouseEvent(
+            with: type, location: location, modifierFlags: [],
+            timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: window.windowNumber,
+            context: nil, eventNumber: 0, clickCount: 1, pressure: type == .leftMouseUp ? 0 : 1))
+}
+
 /// The drawn control titled `title` beneath `root`. It throws when the surface draws none, which
 /// is what "a control that is not drawn cannot be activated" comes to (change_spec.md CP-245).
 @MainActor
