@@ -257,7 +257,7 @@ final class LaunchFlowTests: XCTestCase {
         }
         let flow = LaunchFlow(
             panel: FakePanel(answers: [chosenFolder], log: log), bridge: bridge,
-            glyphs: FakeGlyphSource(), presenter: presenter, reader: runner)
+            glyphs: FakeGlyphSource(), presenter: presenter, reader: runner, terminate: {})
 
         flow.run()
         await fulfillment(of: [delivered], timeout: 10)

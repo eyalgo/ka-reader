@@ -24,7 +24,7 @@ package final class LaunchFlow {
 
     package init(
         panel: FolderChoosing, bridge: Bridging, glyphs: GlyphSource, presenter: WindowPresenting,
-        reader: ReadRunning = OffMainReadRunner(), terminate: @escaping () -> Void = {}
+        reader: ReadRunning = OffMainReadRunner(), terminate: @escaping () -> Void
     ) {
         self.panel = panel
         self.bridge = bridge
