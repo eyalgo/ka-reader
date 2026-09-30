@@ -245,9 +245,17 @@ private func isTextElement(_ element: NSControl) -> Bool {
     return !textField.isEditable
 }
 
+/// Every visible view beneath `root`, a button counted as one view: what AppKit places inside a
+/// button to draw it is the button's drawing, not an element of the surface.
+///
+/// A button, and not every control: an outline view is a control too, and the sidebar's names are
+/// the cells beneath it. What lies inside a button differs by OS: on macOS 14 a visible text field
+/// holding its title, on macOS 26 one private hosting view (change_design.md § 1, cause A).
 @MainActor
 private func visibleDescendants(of root: NSView) -> [NSView] {
-    root.subviews.filter { !$0.isHidden }.flatMap { [$0] + visibleDescendants(of: $0) }
+    root.subviews.filter { !$0.isHidden }.flatMap { view in
+        [view] + (view is NSButton ? [] : visibleDescendants(of: view))
+    }
 }
 
 /// The size `element`'s text needs at its font: a wrapping element's at the width it has, any
