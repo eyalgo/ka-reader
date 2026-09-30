@@ -255,6 +255,20 @@ final class LaunchWindowWorkbenchTests: LaunchWindowTestCase {
         try assertSidebarHoldsTheTree(of: workbench, in: window)
     }
 
+    func testTheReadingHelpersKeepTheOutlinesDisclosureButtonAndCellLabels() throws {
+        let workbench = makeWorkbench(showing: twoEntryRoot)
+        _ = try present(workbench)
+        let outline = workbench.rootItemsView.outlineView
+
+        let buttons = controls(beneath: outline).compactMap { $0 as? NSButton }
+        XCTAssertEqual(buttons.count, 1, "the folder row has one disclosure button")
+        let disclosure = try XCTUnwrap(buttons.first)
+        XCTAssertFalse(disclosure.isHiddenOrHasHiddenAncestor)
+        XCTAssertTrue(drawnElements(beneath: outline).contains { $0 === disclosure })
+        XCTAssertEqual(visibleViews(of: NSButton.self, beneath: outline), [disclosure])
+        XCTAssertEqual(textElements(beneath: outline).map(\.stringValue), ["src", "a.txt"])
+    }
+
     // W2 — Example 2.
     func testReadingPanelStandsBesideTheSidebarAndDrawsOnlyThePrompt() throws {
         let workbench = makeWorkbench(showing: twoEntryRoot)

@@ -18,6 +18,17 @@ let openingContentSize = NSSize(width: 480, height: 640)
 /// Half a point: the slack a frame comparison allows, since layout lands on half-point boundaries.
 private let layoutTolerance: CGFloat = 0.5
 
+/// Creates the shared application object, as the shipped app does before it shows its first
+/// surface (`Sources/Nozoki/main.swift`). Nothing is activated and no run loop is started, so the
+/// process holds the app's launch state and no side effect of one.
+///
+/// Called from a class-level set-up, once per class and before any of its tests: a test's click
+/// then never depends on whether an earlier test created the object (change_design.md § 3 B). The
+/// set-up runs on the main thread, and the isolation is asserted as `main.swift` asserts it.
+func createTheSharedApplication() {
+    MainActor.assumeIsolated { _ = NSApplication.shared }
+}
+
 /// A presenter that forwards to a real `MainWindowPresenter` and keeps each view it was handed, so
 /// a whole launch can run through `LaunchFlow` into the product's own window.
 @MainActor
@@ -45,6 +56,11 @@ struct WindowLaunch {
 @MainActor
 class LaunchWindowTestCase: XCTestCase {
     private var shownWindows: [NSWindow] = []
+
+    override class func setUp() {
+        super.setUp()
+        createTheSharedApplication()
+    }
 
     override func tearDown() async throws {
         for window in shownWindows { window.orderOut(nil) }
@@ -245,9 +261,17 @@ private func isTextElement(_ element: NSControl) -> Bool {
     return !textField.isEditable
 }
 
+/// Every visible view beneath `root`, a button counted as one view: what AppKit places inside a
+/// button to draw it is the button's drawing, not an element of the surface.
+///
+/// A button, and not every control: an outline view is a control too, and the sidebar's names are
+/// the cells beneath it. What lies inside a button differs by OS: on macOS 14 a visible text field
+/// holding its title, on macOS 26 one private hosting view (change_design.md § 1, cause A).
 @MainActor
 private func visibleDescendants(of root: NSView) -> [NSView] {
-    root.subviews.filter { !$0.isHidden }.flatMap { [$0] + visibleDescendants(of: $0) }
+    root.subviews.filter { !$0.isHidden }.flatMap { view in
+        [view] + (view is NSButton ? [] : visibleDescendants(of: view))
+    }
 }
 
 /// The size `element`'s text needs at its font: a wrapping element's at the width it has, any

@@ -18,6 +18,11 @@ final class LaunchFlowTests: XCTestCase {
     private let browseTitle = "Browse…"
     private let quitTitle = "Quit"
 
+    override class func setUp() {
+        super.setUp()
+        createTheSharedApplication()
+    }
+
     private var failureCases: [(OpeningCondition, Data, String)] {
         [
             (

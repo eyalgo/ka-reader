@@ -310,6 +310,34 @@ final class LaunchWindowStartupTests: LaunchWindowTestCase {
         }
     }
 
+    // MARK: - What the reading helpers read (change_design.md § 5, cause A)
+
+    /// A button is one drawn element whatever lies inside it. macOS 14 draws a button's title in a
+    /// visible text field inside it; AppKit here places none, so this test places one by hand.
+    func testAButtonCarryingATextFieldInsideItIsReadAsOneElementWithTheButtonsTitle() throws {
+        let surface = NSView()
+        let button = NSButton(title: Self.browseTitle, target: nil, action: nil)
+        button.frame = NSRect(x: 20, y: 20, width: 160, height: 32)
+        let titleInside = NSTextField(labelWithString: Self.browseTitle)
+        titleInside.frame = button.bounds.insetBy(dx: 8, dy: 6)
+        button.addSubview(titleInside)
+        surface.addSubview(button)
+
+        _ = try present(surface)
+
+        XCTAssertTrue(titleInside.superview === button, "the field is still inside the button")
+        XCTAssertFalse(titleInside.isHiddenOrHasHiddenAncestor, "the field inside is visible")
+        let elements = drawnElements(beneath: surface)
+        XCTAssertEqual(elements.count, 1, "\(elements.map(drawnString))")
+        XCTAssertTrue(elements.first === button, "the one element is the button")
+        XCTAssertEqual(drawnStrings(beneath: surface), [Self.browseTitle])
+        XCTAssertEqual(textElements(beneath: surface).map(\.stringValue), [])
+        XCTAssertEqual(controls(beneath: surface).map(drawnString), [Self.browseTitle])
+        XCTAssertTrue(
+            visibleViews(of: NSTextField.self, beneath: surface).isEmpty,
+            "the field inside the button is not read")
+    }
+
     /// A surface takes the size it is given and asks for none, whatever its path.
     func testEverySurfaceIsExactlyTheContentAreaItWasGiven() throws {
         let projections: [StartupProjection] = [
