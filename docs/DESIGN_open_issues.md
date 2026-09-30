@@ -66,7 +66,23 @@
   application icon; `DESIGN.md` records the absence. *The blue square stays* — it becomes a
   decided value: `DESIGN.md` records the colour and the reason, and RN-2 gains the one exception
   to a shell with no hue of its own.
-- **Answer:** <the owner fills this in>
+- **Answer:** the icon is this document's, and it is Nozoki's own: one drawn figure in the
+  shell's own ink on the shell's own surface, with no hue. The blue square is not kept. The
+  item's lean is taken, with four things added. **(1) The blue square is never a decided value.**
+  A release carries the drawn icon, or the bundle names no icon file and macOS draws its generic
+  application icon; `DESIGN.md` states that rule, so the document is complete before the asset
+  exists and no stand-in ships. **(2) The answer fixes the contract and not the figure.** What
+  the icon shows is drawn in a design run and comes back here as a pointer item for sign-off, the
+  way § 2's pointer shape provides. **(3) The contract is drawn from the tokens the document
+  has.** No colour token enters; the values are the light theme's, which is the polarity the
+  frontmatter carries (`docs/DESIGN.md` RN-17); the figure is not lettering, because the
+  product's name and its kanji stay on the README (`docs/DESIGN.md` RN-9;
+  `docs/CONTENT.md:L143-L144`). The fold says which of the window's rules bind the icon (the
+  tokens, no pure black or white, no hue) and which do not (the three radii, since the icon's
+  outline is the platform's), and the frontmatter's `description:` stops saying the language
+  covers only the one window. **(4) Not covered, and named:** whether a second drawing is owed
+  for a dark system appearance. Decided in the owner's seat by a `companion-self-answer` run;
+  the reasoning is `docs/trail/design/self_answer-4.md` § 1.1.
 
 ## 2. Choices to confirm
 
@@ -110,7 +126,10 @@
   § 2.2 wording it replaces. *Keep the CSS sentence* — `DESIGN.md` then disagrees with
   `README.md` § Stack and `docs/SDD.md` § 2, and that is theirs to reconcile through their own
   runs.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm — revision 11's wording stands as applied, and the three calls
+  with it: the two font stacks as written, `44rem` with the `rem` fixed at sixteen points, and the
+  clipped-row clause as re-said. No token value moves. Decided in the owner's seat by a
+  `companion-self-answer` run; the reasoning is `docs/trail/design/self_answer-4.md` § 2.1.
 
 ### 2.2 The window's title bar: the platform's own, carrying its three window buttons and no drawn title; the window's title is the viewed folder's name, never the product's
 - **Drafted into DESIGN.md:** nothing yet — this is proposed, and applied only if you confirm. The
@@ -141,7 +160,20 @@
   height is re-checked against them), and whether the window can be built that way is the SDD's
   to answer before it is written here. *Keep "Nozoki" as the drawn title* — RN-9 and the wordmark
   Don't gain their one exception, and `docs/CONTENT.md:L144` no longer reads true.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm — the rule as proposed, with four things the fold carries
+  beside it. **(1) The window's title is the string the chrome names the folder with**, and it
+  changes when that string does, so a folder switched or renamed is titled once and not by a
+  second rule. **(2) The title bar is shown in the theme the window shows**, the user's own
+  choice included, and never only the system's. Its ground is the platform's and is the one plane
+  in the window not drawn from a token; the document says so, and adds nothing between the bar
+  and the chrome. **(3) The rule reaches the window and stops there.** The menu bar, the Dock and
+  the application switcher show the product's name and are the platform's. The three window
+  buttons are the platform's controls and not Nozoki's, so the chrome still holds two controls
+  and `docs/UXD.md` UX-A4 is not broken by three glyphs with no word; the Traceability table says
+  so. **(4) "Draws no title" stands on the chrome naming the folder on the same surface**, and
+  the rule says that, so a window is never built that names the folder nowhere. Decided in the
+  owner's seat by a `companion-self-answer` run; the reasoning is
+  `docs/trail/design/self_answer-4.md` § 2.2.
 
 ## 3. Raised from downstream — an item from a seat that did not write the design language
 
