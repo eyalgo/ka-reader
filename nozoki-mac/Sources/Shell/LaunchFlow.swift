@@ -1,16 +1,20 @@
 import AppKit
 import Surfaces
 
+private enum StatusGlyphNames {
+    /// `docs/DESIGN.md` § *Components* "Status messages": `info` leads an empty or pending state,
+    /// `circle-alert` a failure.
+    static let emptyGlyphName = "info"
+
+    static let failureGlyphName = "circle-alert"
+}
+
 /// The main-actor launch controller. It owns panel retries and replaces content in one window.
 @MainActor
 package final class LaunchFlow {
     private static let rootPath = ""
     private static let folderGlyphName = "folder"
     private static let fileGlyphName = "file"
-    /// `docs/DESIGN.md` § *Components* "Status messages": `info` leads an empty or pending state,
-    /// `circle-alert` a failure.
-    private static let emptyGlyphName = "info"
-    private static let failureGlyphName = "circle-alert"
 
     private enum LaunchAnswer {
         case opened(RootListing?)
@@ -29,7 +33,8 @@ package final class LaunchFlow {
     /// Resolved on the first surface that needs them, as the tree's glyphs are, so a missing file
     /// stops the launch where it is first drawn.
     private lazy var statusGlyphs = StatusGlyphs(
-        empty: glyph(named: Self.emptyGlyphName), failure: glyph(named: Self.failureGlyphName))
+        empty: glyph(named: StatusGlyphNames.emptyGlyphName),
+        failure: glyph(named: StatusGlyphNames.failureGlyphName))
 
     package init(
         panel: FolderChoosing, bridge: Bridging, glyphs: GlyphSource, presenter: WindowPresenting,

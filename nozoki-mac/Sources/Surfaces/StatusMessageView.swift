@@ -1,5 +1,14 @@
 import AppKit
 
+private enum StatusMessageLayout {
+    /// `docs/DESIGN.md`'s `{components.icon}`: the size every glyph is drawn at.
+    static let glyphSize: CGFloat = 16
+
+    /// `docs/DESIGN.md`'s `{spacing.sm}`: between the glyph and its text, and between one text
+    /// element and the next.
+    static let spacing: CGFloat = 8
+}
+
 /// One status message (`docs/DESIGN.md` § *Components* "Status messages"): a glyph leading one
 /// column of text, top to bottom. The glyph's top and the column's top are the message's own top,
 /// so the glyph stands on the text's first line
@@ -9,13 +18,6 @@ import AppKit
 /// it: this view holds none of them at a priority of its own.
 @MainActor
 final class StatusMessageView: NSView {
-    /// `docs/DESIGN.md`'s `{components.icon}`: the size every glyph is drawn at.
-    private static let glyphSize: CGFloat = 16
-
-    /// `docs/DESIGN.md`'s `{spacing.sm}`: between the glyph and its text, and between one text
-    /// element and the next.
-    private static let spacing: CGFloat = 8
-
     private let glyphView: NSImageView
 
     /// The glyph leading the message.
@@ -38,18 +40,19 @@ final class StatusMessageView: NSView {
         var constraints = [
             glyphView.leadingAnchor.constraint(equalTo: leadingAnchor),
             glyphView.topAnchor.constraint(equalTo: topAnchor),
-            glyphView.widthAnchor.constraint(equalToConstant: Self.glyphSize),
-            glyphView.heightAnchor.constraint(equalToConstant: Self.glyphSize),
+            glyphView.widthAnchor.constraint(equalToConstant: StatusMessageLayout.glyphSize),
+            glyphView.heightAnchor.constraint(equalToConstant: StatusMessageLayout.glyphSize),
             glyphView.bottomAnchor.constraint(lessThanOrEqualTo: bottomAnchor),
         ]
         var above: NSView?
         for text in texts {
             constraints += [
                 text.leadingAnchor.constraint(
-                    equalTo: glyphView.trailingAnchor, constant: Self.spacing),
+                    equalTo: glyphView.trailingAnchor, constant: StatusMessageLayout.spacing),
                 text.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor),
                 above.map {
-                    text.topAnchor.constraint(equalTo: $0.bottomAnchor, constant: Self.spacing)
+                    text.topAnchor.constraint(
+                        equalTo: $0.bottomAnchor, constant: StatusMessageLayout.spacing)
                 }
                     ?? text.topAnchor.constraint(equalTo: topAnchor),
             ]

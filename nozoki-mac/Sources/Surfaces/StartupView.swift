@@ -22,6 +22,7 @@ package final class StartupView: NSView {
 
     private let onIntent: (StartupIntent) -> Void
 
+    /// Draws the opening projection and sends route activations to the supplied intent sink.
     package init(
         projection: StartupProjection, glyphs: StatusGlyphs,
         onIntent: @escaping (StartupIntent) -> Void

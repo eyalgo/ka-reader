@@ -1,5 +1,9 @@
 import AppKit
 
+/// `docs/DESIGN.md` § *Components* "Status messages": a status message is inset `{spacing.xl}`
+/// from its surface's top-left.
+private let rootMessageInset: CGFloat = 24
+
 /// The answer to one folder read: its entries, the reason it failed, or `nil` when none came.
 package typealias ListTreeAnswer = @MainActor (RootListing?) -> Void
 
@@ -32,10 +36,6 @@ package final class RootItemsView: NSScrollView {
     private let rootLine: NSTextField
     private let rootMessage: StatusMessageView
 
-    /// `docs/DESIGN.md` § *Components* "Status messages": a status message is inset `{spacing.xl}`
-    /// from its surface's top-left.
-    private static let rootMessageInset: CGFloat = 24
-
     /// The one line drawn outside the rows, or nil when none is drawn.
     package private(set) var rootLineText: String?
 
@@ -54,6 +54,7 @@ package final class RootItemsView: NSScrollView {
         (outlineView.item(atRow: row) as? LineItem)?.text
     }
 
+    /// Presents tree rows or a root status using only the images supplied by the owner.
     package init(folderGlyph: NSImage, fileGlyph: NSImage, statusGlyphs: StatusGlyphs) {
         self.folderGlyph = folderGlyph
         self.fileGlyph = fileGlyph
@@ -82,11 +83,11 @@ package final class RootItemsView: NSScrollView {
         // (DESIGN RN-14; the-window-holds-its-layout CP-257).
         addFloatingSubview(rootMessage, for: .vertical)
         NSLayoutConstraint.activate([
-            rootMessage.topAnchor.constraint(equalTo: topAnchor, constant: Self.rootMessageInset),
+            rootMessage.topAnchor.constraint(equalTo: topAnchor, constant: rootMessageInset),
             rootMessage.leadingAnchor.constraint(
-                equalTo: leadingAnchor, constant: Self.rootMessageInset),
+                equalTo: leadingAnchor, constant: rootMessageInset),
             rootMessage.trailingAnchor.constraint(
-                lessThanOrEqualTo: trailingAnchor, constant: -Self.rootMessageInset),
+                lessThanOrEqualTo: trailingAnchor, constant: -rootMessageInset),
         ])
     }
 

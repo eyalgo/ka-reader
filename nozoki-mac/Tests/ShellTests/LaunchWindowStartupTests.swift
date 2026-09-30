@@ -3,6 +3,12 @@ import Shell
 import Surfaces
 import XCTest
 
+/// The room the 1023-`W` path needs in the column beside the status glyph at the opening size:
+/// a path 652 points wide, measured at 336 (the-window-holds-its-layout change_design.md § 5,
+/// S5). M9 measured 480 on the 440-point line of a 480-wide window, and 320 was measured on the
+/// 672-point column before the glyph narrowed it.
+private let measuredRoomForTheWidestPath: CGFloat = 336
+
 /// The launch window around the startup surface: what each projection draws in it. Every test
 /// presents through the product's own presenter and reads the laid-out window (change_spec.md
 /// CP-246).
@@ -18,12 +24,6 @@ final class LaunchWindowStartupTests: LaunchWindowTestCase {
 
     /// A path no layout fits: 16384 points tall at a 440-point line (change_design.md M9).
     private static let pathNoLayoutFits = String(repeating: "\n", count: pathByteLimit)
-
-    /// The room the 1023-`W` path needs in the column beside the status glyph at the opening size:
-    /// a path 652 points wide, measured at 336 (the-window-holds-its-layout change_design.md § 5,
-    /// S5). M9 measured 480 on the 440-point line of a 480-wide window, and 320 was measured on the
-    /// 672-point column before the glyph narrowed it.
-    private static let measuredRoomForTheWidestPath: CGFloat = 336
 
     private static let frameTolerance: CGFloat = 0.5
 
@@ -185,7 +185,7 @@ final class LaunchWindowStartupTests: LaunchWindowTestCase {
         let drawn = try assertTheWholePathIsDrawnAboveItsWholeRoutes(Self.widestMeasuredPath)
 
         XCTAssertGreaterThanOrEqual(
-            frameInWindow(of: drawn.path).height, Self.measuredRoomForTheWidestPath)
+            frameInWindow(of: drawn.path).height, measuredRoomForTheWidestPath)
     }
 
     // S6 — the members of CP-243's domain the rule cannot hold for.

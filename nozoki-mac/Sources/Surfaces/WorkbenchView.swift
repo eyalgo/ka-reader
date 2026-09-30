@@ -1,5 +1,9 @@
 import AppKit
 
+/// `docs/DESIGN.md` § *Elevation & Depth*: the one `{spacing.hairline}` between the sidebar and
+/// the reading panel.
+private let hairlineWidth: CGFloat = 1
+
 /// The one-window composition for an opened folder: two panels side by side, filling the size they
 /// are given. The first is the Files sidebar, which is the tree it was handed and nothing around
 /// it, always `{spacing.sidebar-width}` wide. The second is the reading panel, which takes the rest
@@ -16,16 +20,13 @@ package final class WorkbenchView: NSView {
     /// resize.
     private static let sidebarWidth: CGFloat = 260
 
-    /// `docs/DESIGN.md` § *Elevation & Depth*: the one `{spacing.hairline}` between the sidebar and
-    /// the reading panel.
-    private static let hairlineWidth: CGFloat = 1
-
     /// `docs/DESIGN.md` § *Components* "Status messages": a status message is inset `{spacing.xl}`
     /// from its surface's top-left.
     private static let promptInset: CGFloat = 24
 
     package let rootItemsView: RootItemsView
 
+    /// Places the supplied tree beside the reading prompt, using the supplied empty-state image.
     package init(rootItemsView: RootItemsView, statusGlyphs: StatusGlyphs) {
         self.rootItemsView = rootItemsView
         super.init(frame: .zero)
@@ -45,7 +46,7 @@ package final class WorkbenchView: NSView {
             rootItemsView.bottomAnchor.constraint(equalTo: bottomAnchor),
             rootItemsView.widthAnchor.constraint(equalToConstant: Self.sidebarWidth),
             readingPanel.leadingAnchor.constraint(
-                equalTo: rootItemsView.trailingAnchor, constant: Self.hairlineWidth),
+                equalTo: rootItemsView.trailingAnchor, constant: hairlineWidth),
             readingPanel.trailingAnchor.constraint(equalTo: trailingAnchor),
             readingPanel.topAnchor.constraint(equalTo: topAnchor),
             readingPanel.bottomAnchor.constraint(equalTo: bottomAnchor),
@@ -62,7 +63,7 @@ package final class WorkbenchView: NSView {
     override package func draw(_ dirtyRect: NSRect) {
         NSColor.separatorColor.setFill()
         NSRect(
-            x: rootItemsView.frame.maxX, y: bounds.minY, width: Self.hairlineWidth,
+            x: rootItemsView.frame.maxX, y: bounds.minY, width: hairlineWidth,
             height: bounds.height
         ).fill()
     }
