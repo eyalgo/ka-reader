@@ -1,0 +1,247 @@
+import AppKit
+import Shell
+import Surfaces
+import XCTest
+
+// What every window test reads through (change_design.md § 5, *What a window test reads*).
+//
+// Two constraints shape this file, and neither is recoverable from the code:
+// - Every place is read in the window's coordinates and the content area comes from the window,
+//   never from the presented view being the window's content view, so a test is indifferent to
+//   whether the shell hosts a surface inside a view of its own (change_design.md § 3, *Edges*).
+// - It uses only names `nozoki@04dfab6` has, so a test built on it compiles on that tree and fails
+//   there on an assertion, not on a compile error (change_spec.md CP-248).
+
+/// The content area's size when the product first shows its window (`change_spec.md`, *Terms*).
+let openingContentSize = NSSize(width: 480, height: 640)
+
+/// Half a point: the slack a frame comparison allows, since layout lands on half-point boundaries.
+private let layoutTolerance: CGFloat = 0.5
+
+/// A presenter that forwards to a real `MainWindowPresenter` and keeps each view it was handed, so
+/// a whole launch can run through `LaunchFlow` into the product's own window.
+@MainActor
+final class ForwardingWindowPresenter: WindowPresenting {
+    private let presenter = MainWindowPresenter()
+    private(set) var contents: [NSView] = []
+
+    func present(_ content: NSView) {
+        contents.append(content)
+        presenter.present(content)
+    }
+}
+
+/// A launch wired to the test target's fakes and a real window.
+@MainActor
+struct WindowLaunch {
+    let flow: LaunchFlow
+    let bridge: RecordingBridge
+    let panel: FakePanel
+    let presenter: ForwardingWindowPresenter
+}
+
+/// The base of every test case that puts a view in the product's window. It takes each window it
+/// showed off the screen when the test ends.
+@MainActor
+class LaunchWindowTestCase: XCTestCase {
+    private var shownWindows: [NSWindow] = []
+
+    override func tearDown() async throws {
+        for window in shownWindows { window.orderOut(nil) }
+        shownWindows = []
+        try await super.tearDown()
+    }
+
+    /// Presents `view` through the product's presenting path and returns its laid-out window. With
+    /// no `presenter` it is a new `MainWindowPresenter`, so the view is the first in its window;
+    /// pass one to present over what that presenter already shows.
+    func present(_ view: NSView, through presenter: WindowPresenting? = nil) throws -> NSWindow {
+        // Built here and not as the default value: a default is evaluated off the main actor,
+        // where `MainWindowPresenter.init` cannot be called.
+        (presenter ?? MainWindowPresenter()).present(view)
+        return try laidOutWindow(of: view)
+    }
+
+    /// The window `view` was presented in, laid out. Fails when the view is in no window.
+    func laidOutWindow(of view: NSView) throws -> NSWindow {
+        let window = try XCTUnwrap(view.window, "the view was presented in no window")
+        if !shownWindows.contains(where: { $0 === window }) { shownWindows.append(window) }
+        layOut(window)
+        return window
+    }
+
+    /// A launch through `LaunchFlow` into a real window. The panel answers `answers` in order, and
+    /// the bridge answers as `RecordingBridge` does until a test sets its answers.
+    func makeLaunch(answers: [URL?], terminate: @escaping () -> Void = {}) -> WindowLaunch {
+        let log = EventLog()
+        let bridge = RecordingBridge(log: log)
+        let panel = FakePanel(answers: answers, log: log)
+        let presenter = ForwardingWindowPresenter()
+        let flow = LaunchFlow(
+            panel: panel, bridge: bridge, glyphs: FakeGlyphSource(), presenter: presenter,
+            reader: InlineReadRunner(), terminate: terminate)
+        return WindowLaunch(flow: flow, bridge: bridge, panel: panel, presenter: presenter)
+    }
+}
+
+/// Lays `window` out. Twice, because a wrapping label takes its width on the first pass and its
+/// height on the second.
+@MainActor
+func layOut(_ window: NSWindow) {
+    window.layoutIfNeeded()
+    window.layoutIfNeeded()
+}
+
+/// The window's area beneath its title bar, in the window's coordinates.
+@MainActor
+func contentArea(of window: NSWindow) -> NSRect {
+    window.contentLayoutRect
+}
+
+/// Where `view` is, in its window's coordinates — or in its topmost ancestor's, in no window.
+@MainActor
+func frameInWindow(of view: NSView) -> NSRect {
+    view.convert(view.bounds, to: nil)
+}
+
+/// The visible text elements beneath `root`, top to bottom: every visible, non-editable
+/// `NSTextField` (change_design.md § 3, *Exposes*).
+@MainActor
+func textElements(beneath root: NSView) -> [NSTextField] {
+    drawnElements(beneath: root).compactMap { $0 as? NSTextField }.filter(isTextElement)
+}
+
+/// The visible controls beneath `root`, top to bottom: every visible `NSControl` that is not a
+/// text element.
+@MainActor
+func controls(beneath root: NSView) -> [NSControl] {
+    drawnElements(beneath: root).filter { !isTextElement($0) }
+}
+
+/// Every visible text element and control beneath `root`, top to bottom and then leading first.
+@MainActor
+func drawnElements(beneath root: NSView) -> [NSControl] {
+    visibleDescendants(of: root).compactMap { $0 as? NSControl }.sorted { first, second in
+        let firstFrame = frameInWindow(of: first)
+        let secondFrame = frameInWindow(of: second)
+        if firstFrame.maxY != secondFrame.maxY { return firstFrame.maxY > secondFrame.maxY }
+        return firstFrame.minX < secondFrame.minX
+    }
+}
+
+/// What each drawn element says, top to bottom: a button's title, any other element's text.
+@MainActor
+func drawnStrings(beneath root: NSView) -> [String] {
+    drawnElements(beneath: root).map(drawnString)
+}
+
+/// What `element` says: a button's title, any other element's text.
+@MainActor
+func drawnString(of element: NSControl) -> String {
+    (element as? NSButton)?.title ?? element.stringValue
+}
+
+/// The visible view of `kind` beneath `root`, for a test that asserts there is none.
+@MainActor
+func visibleViews<Kind: NSView>(of kind: Kind.Type, beneath root: NSView) -> [Kind] {
+    visibleDescendants(of: root).compactMap { $0 as? Kind }
+}
+
+/// Why `element` is not *drawn whole* in `window`, or nil when it is (`change_spec.md`, *Terms*):
+/// visible, a non-zero frame, the frame entirely inside the content area, the frame at least as
+/// large as its text needs at its font and width, and none of its text cut off.
+@MainActor
+func wholenessFailure(of element: NSControl, in window: NSWindow) -> String? {
+    let name = "“\(drawnString(of: element))”"
+    guard element.window === window, !element.isHiddenOrHasHiddenAncestor else {
+        return "\(name) is not visible in the window"
+    }
+    let frame = frameInWindow(of: element)
+    guard frame.width > 0, frame.height > 0 else { return "\(name) has the empty frame \(frame)" }
+    let area = contentArea(of: window)
+    guard area.insetBy(dx: -layoutTolerance, dy: -layoutTolerance).contains(frame) else {
+        return "\(name) at \(frame) is not inside the content area \(area)"
+    }
+    let needed = neededSize(of: element)
+    guard
+        frame.width >= needed.width - layoutTolerance,
+        frame.height >= needed.height - layoutTolerance
+    else {
+        return "\(name) is \(frame.size) and its text needs \(needed)"
+    }
+    if let textField = element as? NSTextField, isCutOff(textField) {
+        return "\(name) cuts its text off inside \(frame.size)"
+    }
+    return nil
+}
+
+/// Asserts `element` is drawn whole in `window`, naming what failed.
+@MainActor
+func assertDrawnWhole(
+    _ element: NSControl, in window: NSWindow, file: StaticString = #filePath, line: UInt = #line
+) {
+    if let failure = wholenessFailure(of: element, in: window) {
+        XCTFail(failure, file: file, line: line)
+    }
+}
+
+/// Whether any two of `elements` share any area.
+@MainActor
+func overlappingPairs(among elements: [NSControl]) -> [(String, String)] {
+    var pairs: [(String, String)] = []
+    for (index, first) in elements.enumerated() {
+        for second in elements.dropFirst(index + 1)
+        where frameInWindow(of: first).intersects(frameInWindow(of: second)) {
+            pairs.append((drawnString(of: first), drawnString(of: second)))
+        }
+    }
+    return pairs
+}
+
+/// One activation of a drawn control, performed on the control itself (change_spec.md CP-247).
+@MainActor
+func click(_ control: NSControl) {
+    control.performClick(nil)
+}
+
+/// The workbench's panel holding `element`: the direct subview of `workbench` that is `element` or
+/// an ancestor of it, or nil when `element` is not beneath `workbench`.
+@MainActor
+func panel(of workbench: NSView, containing element: NSView) -> NSView? {
+    var current: NSView? = element
+    while let view = current {
+        if view.superview === workbench { return view }
+        current = view.superview
+    }
+    return nil
+}
+
+@MainActor
+private func isTextElement(_ element: NSControl) -> Bool {
+    guard let textField = element as? NSTextField else { return false }
+    return !textField.isEditable
+}
+
+@MainActor
+private func visibleDescendants(of root: NSView) -> [NSView] {
+    root.subviews.filter { !$0.isHidden }.flatMap { [$0] + visibleDescendants(of: $0) }
+}
+
+/// The size `element`'s text needs at its font: a wrapping element's at the width it has, any
+/// other's on one line. Measured: a label's intrinsic width is what layout gives it and draws whole
+/// (120.5 for the reading prompt), where its cell's own size adds padding (124.3).
+@MainActor
+private func neededSize(of element: NSControl) -> NSSize {
+    guard let cell = element.cell, cell.wraps else { return element.intrinsicContentSize }
+    return cell.cellSize(
+        forBounds: NSRect(
+            x: 0, y: 0, width: element.bounds.width, height: .greatestFiniteMagnitude))
+}
+
+/// Whether AppKit would offer an expansion for `textField`, which it does exactly when the text
+/// does not fit the frame it is drawn in.
+@MainActor
+private func isCutOff(_ textField: NSTextField) -> Bool {
+    guard let cell = textField.cell else { return false }
+    return !cell.expansionFrame(withFrame: textField.bounds, in: textField).isEmpty
+}
