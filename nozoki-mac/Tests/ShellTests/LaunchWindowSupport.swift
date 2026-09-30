@@ -12,8 +12,10 @@ import XCTest
 // - It uses only names `nozoki@04dfab6` has, so a test built on it compiles on that tree and fails
 //   there on an assertion, not on a compile error (change_spec.md CP-248).
 
-/// The content area's size when the product first shows its window (`change_spec.md`, *Terms*).
-let openingContentSize = NSSize(width: 480, height: 640)
+/// The content area's size when the product first shows its window: `docs/DESIGN.md` § *Layout*'s
+/// minimum width of 720, by the height the window has always opened at (the-window-holds-its-layout
+/// change_spec.md CP-252, CP-253).
+let openingContentSize = NSSize(width: 720, height: 640)
 
 /// Half a point: the slack a frame comparison allows, since layout lands on half-point boundaries.
 private let layoutTolerance: CGFloat = 0.5
@@ -49,6 +51,7 @@ struct WindowLaunch {
     let bridge: RecordingBridge
     let panel: FakePanel
     let presenter: ForwardingWindowPresenter
+    let glyphs: FakeGlyphSource
 }
 
 /// The base of every test case that puts a view in the product's window. It takes each window it
@@ -87,16 +90,22 @@ class LaunchWindowTestCase: XCTestCase {
     }
 
     /// A launch through `LaunchFlow` into a real window. The panel answers `answers` in order, and
-    /// the bridge answers as `RecordingBridge` does until a test sets its answers.
-    func makeLaunch(answers: [URL?], terminate: @escaping () -> Void = {}) -> WindowLaunch {
+    /// the bridge answers as `RecordingBridge` does until a test sets its answers. With no `reader`
+    /// every read is answered at once; pass one to hold a read.
+    func makeLaunch(
+        answers: [URL?], reader: ReadRunning? = nil, terminate: @escaping () -> Void = {}
+    ) -> WindowLaunch {
         let log = EventLog()
         let bridge = RecordingBridge(log: log)
         let panel = FakePanel(answers: answers, log: log)
         let presenter = ForwardingWindowPresenter()
+        let glyphs = FakeGlyphSource()
+        // Built here and not as the default value, for the reason `present(_:through:)` gives.
         let flow = LaunchFlow(
-            panel: panel, bridge: bridge, glyphs: FakeGlyphSource(), presenter: presenter,
-            reader: InlineReadRunner(), terminate: terminate)
-        return WindowLaunch(flow: flow, bridge: bridge, panel: panel, presenter: presenter)
+            panel: panel, bridge: bridge, glyphs: glyphs, presenter: presenter,
+            reader: reader ?? InlineReadRunner(), terminate: terminate)
+        return WindowLaunch(
+            flow: flow, bridge: bridge, panel: panel, presenter: presenter, glyphs: glyphs)
     }
 }
 
@@ -127,6 +136,16 @@ func textElements(beneath root: NSView) -> [NSTextField] {
     drawnElements(beneath: root).compactMap { $0 as? NSTextField }.filter(isTextElement)
 }
 
+/// The visible glyphs beneath `root`, top to bottom and then leading first: every visible image
+/// view that cannot be edited and carries no action
+/// (the-window-holds-its-layout change_design.md § 5). A glyph is neither text nor a control, so no
+/// other reader here returns one.
+@MainActor
+func glyphs(beneath root: NSView) -> [NSImageView] {
+    sortedTopToBottom(visibleDescendants(of: root).compactMap { $0 as? NSControl }.filter(isGlyph))
+        .compactMap { $0 as? NSImageView }
+}
+
 /// The visible controls beneath `root`, top to bottom: every visible `NSControl` that is not a
 /// text element.
 @MainActor
@@ -134,10 +153,17 @@ func controls(beneath root: NSView) -> [NSControl] {
     drawnElements(beneath: root).filter { !isTextElement($0) }
 }
 
-/// Every visible text element and control beneath `root`, top to bottom and then leading first.
+/// Every visible text element and control beneath `root`, top to bottom and then leading first. A
+/// glyph is neither, and is read through `glyphs(beneath:)`.
 @MainActor
 func drawnElements(beneath root: NSView) -> [NSControl] {
-    visibleDescendants(of: root).compactMap { $0 as? NSControl }.sorted { first, second in
+    sortedTopToBottom(
+        visibleDescendants(of: root).compactMap { $0 as? NSControl }.filter { !isGlyph($0) })
+}
+
+@MainActor
+private func sortedTopToBottom(_ controls: [NSControl]) -> [NSControl] {
+    controls.sorted { first, second in
         let firstFrame = frameInWindow(of: first)
         let secondFrame = frameInWindow(of: second)
         if firstFrame.maxY != secondFrame.maxY { return firstFrame.maxY > secondFrame.maxY }
@@ -232,6 +258,39 @@ func click(_ control: NSControl) {
     control.performClick(nil)
 }
 
+/// One press, drag and release delivered to `window` at window coordinates, the way a person drags
+/// (the-window-holds-its-layout change_spec.md CP-262: not a call on any view's API). The drag and
+/// the release are queued before the press is delivered, so a view that tracks a drag in its own
+/// loop finds them there; whatever is still queued afterwards is delivered in turn, so a view that
+/// takes each event as it comes gets them too, and nothing is left for a later test.
+@MainActor
+func dragAsAPersonDoes(in window: NSWindow, from start: NSPoint, by distance: CGFloat) throws {
+    let end = NSPoint(x: start.x + distance, y: start.y)
+    let press = try mouseEvent(.leftMouseDown, at: start, in: window)
+    NSApp.postEvent(try mouseEvent(.leftMouseDragged, at: end, in: window), atStart: false)
+    NSApp.postEvent(try mouseEvent(.leftMouseUp, at: end, in: window), atStart: false)
+
+    window.sendEvent(press)
+    while let queued = NSApp.nextEvent(
+        matching: [.leftMouseDragged, .leftMouseUp], until: .distantPast, inMode: .default,
+        dequeue: true)
+    {
+        window.sendEvent(queued)
+    }
+    layOut(window)
+}
+
+@MainActor
+private func mouseEvent(
+    _ type: NSEvent.EventType, at location: NSPoint, in window: NSWindow
+) throws -> NSEvent {
+    try XCTUnwrap(
+        NSEvent.mouseEvent(
+            with: type, location: location, modifierFlags: [],
+            timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: window.windowNumber,
+            context: nil, eventNumber: 0, clickCount: 1, pressure: type == .leftMouseUp ? 0 : 1))
+}
+
 /// The drawn control titled `title` beneath `root`. It throws when the surface draws none, which
 /// is what "a control that is not drawn cannot be activated" comes to (change_spec.md CP-245).
 @MainActor
@@ -253,6 +312,14 @@ func panel(of workbench: NSView, containing element: NSView) -> NSView? {
         current = view.superview
     }
     return nil
+}
+
+/// An image view is a glyph only while nothing can be done with it: one that can be edited or
+/// carries an action is still read as a control, so a test that finds no control still catches it.
+@MainActor
+private func isGlyph(_ element: NSControl) -> Bool {
+    guard let imageView = element as? NSImageView else { return false }
+    return !imageView.isEditable && imageView.action == nil
 }
 
 @MainActor

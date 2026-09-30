@@ -1,7 +1,8 @@
 import AppKit
 
 /// The startup content for a launch that has not reached the workbench: the projection it was
-/// handed, drawn as one column of labels and buttons from the surface's top-left.
+/// handed, drawn as one column from the surface's top-left — a status message led by its glyph,
+/// then the routes, each a borderless button drawn as its title alone.
 ///
 /// The surface takes the size it is given and asks for none. A path taller than the room the
 /// column has gives way — its region stops at that room and the text past it is not drawn — and
@@ -12,7 +13,8 @@ package final class StartupView: NSView {
     private static let browseTitle = "Browse…"
     private static let quitTitle = "Quit"
 
-    /// `docs/DESIGN.md`'s `{spacing.xl}`: how far the column stands in from the surface's edges.
+    /// `docs/DESIGN.md`'s `{spacing.xl}`: how far the column stands in from the surface's edges,
+    /// which is a status message's inset (§ *Components* "Status messages").
     private static let columnInset: CGFloat = 24
 
     /// `docs/DESIGN.md`'s `{spacing.sm}`: the gap between one element of the column and the next.
@@ -20,10 +22,14 @@ package final class StartupView: NSView {
 
     private let onIntent: (StartupIntent) -> Void
 
-    package init(projection: StartupProjection, onIntent: @escaping (StartupIntent) -> Void) {
+    /// Draws the opening projection and sends route activations to the supplied intent sink.
+    package init(
+        projection: StartupProjection, glyphs: StatusGlyphs,
+        onIntent: @escaping (StartupIntent) -> Void
+    ) {
         self.onIntent = onIntent
         super.init(frame: .zero)
-        place(makeColumn(of: makeElements(for: projection)))
+        place(makeColumn(of: makeElements(for: projection, glyphs: glyphs)))
     }
 
     @available(*, unavailable)
@@ -31,19 +37,27 @@ package final class StartupView: NSView {
         preconditionFailure("StartupView is built in code only")
     }
 
-    private func makeElements(for projection: StartupProjection) -> [NSView] {
+    /// The status message, then the routes beneath it. An empty or pending state leads with the
+    /// empty glyph and a failure with the failure glyph (CP-256; § *Components* "Status messages").
+    private func makeElements(for projection: StartupProjection, glyphs: StatusGlyphs) -> [NSView] {
         switch projection {
         case .empty:
-            return [NSTextField(labelWithString: OpeningSentences.empty)] + makeRoutes()
+            return [message(glyphs.empty, OpeningSentences.empty)] + makeRoutes()
         case .reading:
-            return [NSTextField(labelWithString: ConditionSentences.readingFolder)]
+            return [message(glyphs.empty, ConditionSentences.readingFolder)]
         case .failed(let path, let condition):
             let sentence = OpeningSentences.observedFailure(for: condition)
-            return [makePathLabel(path), NSTextField(labelWithString: sentence)] + makeRoutes()
+            return [message(glyphs.failure, sentence, path: path)] + makeRoutes()
         case .stopped(let path):
-            return [makePathLabel(path), NSTextField(labelWithString: OpeningSentences.stopped)]
-                + makeRoutes()
+            return [message(glyphs.failure, OpeningSentences.stopped, path: path)] + makeRoutes()
         }
+    }
+
+    /// A status message: the path above the sentence when there is one, both beside the glyph.
+    private func message(_ glyph: NSImage, _ sentence: String, path: String? = nil) -> NSView {
+        let texts =
+            (path.map { [makePathLabel($0)] } ?? []) + [NSTextField(labelWithString: sentence)]
+        return StatusMessageView(glyph: glyph, texts: texts)
     }
 
     /// The path as one text element holding the string it was handed, wrapping at any character.
@@ -61,12 +75,19 @@ package final class StartupView: NSView {
         return label
     }
 
-    /// The two routes, which are the only way this surface raises an intent.
+    /// The two routes, which are the only way this surface raises an intent. Each is text alone:
+    /// no border, no bezel and no glyph (CP-259; § *Components* "The startup surface").
     private func makeRoutes() -> [NSView] {
         [
-            NSButton(title: Self.browseTitle, target: self, action: #selector(browse)),
-            NSButton(title: Self.quitTitle, target: self, action: #selector(quit)),
+            makeRoute(titled: Self.browseTitle, action: #selector(browse)),
+            makeRoute(titled: Self.quitTitle, action: #selector(quit)),
         ]
+    }
+
+    private func makeRoute(titled title: String, action: Selector) -> NSButton {
+        let route = NSButton(title: title, target: self, action: action)
+        route.isBordered = false
+        return route
     }
 
     @objc private func browse() {

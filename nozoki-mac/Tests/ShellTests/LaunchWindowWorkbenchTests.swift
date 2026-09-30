@@ -8,6 +8,11 @@ import XCTest
 /// the laid-out window (change_spec.md CP-246).
 @MainActor
 final class LaunchWindowWorkbenchTests: LaunchWindowTestCase {
+    /// Distinct images for the two status glyphs, so a test can tell which one was drawn.
+    private let statusGlyphs = StatusGlyphs(
+        empty: NSImage(size: NSSize(width: 3, height: 3)),
+        failure: NSImage(size: NSSize(width: 4, height: 4)))
+
     /// A view whose own layout asks for a height: a label pinned to its top and its bottom, so the
     /// view is as tall as one line of text unless something holds it taller.
     private func makeViewAskingForItsOwnHeight() -> NSView {
@@ -26,7 +31,7 @@ final class LaunchWindowWorkbenchTests: LaunchWindowTestCase {
     // W7 — CP-236 for a surface that is neither of the product's two.
     func testAViewThatAsksForItsOwnHeightDoesNotResizeTheWindow() throws {
         let presenter = MainWindowPresenter()
-        let startup = StartupView(projection: .empty, onIntent: { _ in })
+        let startup = StartupView(projection: .empty, glyphs: statusGlyphs, onIntent: { _ in })
         let window = try present(startup, through: presenter)
         XCTAssertEqual(contentArea(of: window).size, openingContentSize)
 
@@ -106,7 +111,7 @@ final class LaunchWindowWorkbenchTests: LaunchWindowTestCase {
         // its panels are read here too and not only where it is the window's first surface.
         try assertSidebarHoldsTheTree(of: workbench, in: windowAfter)
         try assertReadingPanelStandsBesideTheSidebarAndDrawsOnlyThePrompt(
-            workbench, in: windowAfter)
+            workbench, in: windowAfter, emptyGlyph: launch.glyphs.info)
     }
 
     // W6 — CP-236's third clause.
@@ -147,9 +152,10 @@ final class LaunchWindowWorkbenchTests: LaunchWindowTestCase {
     }
 
     private func makeWorkbench(showing root: RootListing?) -> WorkbenchView {
-        let tree = RootItemsView(folderGlyph: NSImage(), fileGlyph: NSImage())
+        let tree = RootItemsView(
+            folderGlyph: NSImage(), fileGlyph: NSImage(), statusGlyphs: statusGlyphs)
         tree.show(root)
-        return WorkbenchView(rootItemsView: tree)
+        return WorkbenchView(rootItemsView: tree, statusGlyphs: statusGlyphs)
     }
 
     private var twoEntryRoot: RootListing {
@@ -184,9 +190,11 @@ final class LaunchWindowWorkbenchTests: LaunchWindowTestCase {
     }
 
     /// CP-238 and CP-239 in one place, since W2, W3 and W4 each assert the same reading panel.
+    /// `emptyGlyph` is the image the empty glyph was built from: this file's own, unless a launch
+    /// built the workbench from its glyph source.
     private func assertReadingPanelStandsBesideTheSidebarAndDrawsOnlyThePrompt(
-        _ workbench: WorkbenchView, in window: NSWindow, file: StaticString = #filePath,
-        line: UInt = #line
+        _ workbench: WorkbenchView, in window: NSWindow, emptyGlyph: NSImage? = nil,
+        file: StaticString = #filePath, line: UInt = #line
     ) throws {
         let panels = try drawn(workbench)
         let area = contentArea(of: window)
@@ -219,6 +227,13 @@ final class LaunchWindowWorkbenchTests: LaunchWindowTestCase {
             "the reading panel holds the prompt and no other text element or control",
             file: file, line: line)
         XCTAssertEqual(controls(beneath: panels.readingPanel).count, 0, file: file, line: line)
+        let promptGlyphs = glyphs(beneath: panels.readingPanel)
+        XCTAssertEqual(
+            promptGlyphs.count, 1, "the reading panel draws exactly one glyph", file: file,
+            line: line)
+        XCTAssertTrue(
+            promptGlyphs.first?.image === (emptyGlyph ?? statusGlyphs.empty),
+            "the prompt is led by the empty glyph", file: file, line: line)
     }
 
     /// CP-237 for a folder with at least one entry: the sidebar is non-zero wide and as high as

@@ -1,6 +1,16 @@
 import AppKit
 import Surfaces
 
+private enum WindowOpening {
+    /// `docs/DESIGN.md` § *Layout*: "the window's minimum width is 720px". For this window's style
+    /// the content area is as wide as the window, so it is declared as the content minimum.
+    static let minimumContentWidth: CGFloat = 720
+
+    /// The window opens at its minimum width, and at the height it has always opened at: no
+    /// minimum height is declared (change_spec.md CP-253, Gap 1).
+    static let initialSize = NSSize(width: minimumContentWidth, height: 640)
+}
+
 /// Puts the launch's one view in the launch's one window.
 @MainActor
 package protocol WindowPresenting {
@@ -18,8 +28,6 @@ package protocol WindowPresenting {
 /// window that has not moved.
 @MainActor
 package final class MainWindowPresenter: WindowPresenting {
-    private static let initialSize = NSSize(width: 480, height: 640)
-
     // One below the priority AppKit keeps a window's size with. Replacing the content view with
     // the surface, autoresizing it, and restoring the size afterwards each let a surface's own
     // height become the window's (change_design.md M1–M3).
@@ -41,11 +49,14 @@ package final class MainWindowPresenter: WindowPresenting {
 
     private func makeWindow() -> NSWindow {
         let window = NSWindow(
-            contentRect: NSRect(origin: .zero, size: Self.initialSize),
+            contentRect: NSRect(origin: .zero, size: WindowOpening.initialSize),
             styleMask: [.titled, .closable, .miniaturizable, .resizable],
             backing: .buffered,
             defer: false)
         window.title = "Nozoki"
+        // The height keeps whatever minimum the window already has, so no minimum height is added.
+        window.contentMinSize = NSSize(
+            width: WindowOpening.minimumContentWidth, height: window.contentMinSize.height)
         window.contentView = surfaceHost
         window.center()
         return window

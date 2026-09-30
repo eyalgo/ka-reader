@@ -10,6 +10,10 @@ import XCTest
 final class RootItemsViewExpansionTests: XCTestCase {
     private let folderGlyph = NSImage(size: NSSize(width: 1, height: 1))
     private let fileGlyph = NSImage(size: NSSize(width: 2, height: 2))
+    /// Distinct images for the two status glyphs, so a test can tell which one was drawn.
+    private let statusGlyphs = StatusGlyphs(
+        empty: NSImage(size: NSSize(width: 3, height: 3)),
+        failure: NSImage(size: NSSize(width: 4, height: 4)))
     private let readingSentence = "Reading this folder."
     private let noFilesSentence = "This folder has no files."
     private let cantReadSentence = "Nozoki can't read this folder."
@@ -27,7 +31,8 @@ final class RootItemsViewExpansionTests: XCTestCase {
     }
 
     private func makeView(_ entries: [Entry]) -> (view: RootItemsView, log: ReadLog) {
-        let view = RootItemsView(folderGlyph: folderGlyph, fileGlyph: fileGlyph)
+        let view = RootItemsView(
+            folderGlyph: folderGlyph, fileGlyph: fileGlyph, statusGlyphs: statusGlyphs)
         let log = ReadLog()
         view.listTree = { path, answer in log.reads.append(Read(path: path, answer: answer)) }
         view.show(.observed(entries))
@@ -407,7 +412,8 @@ final class RootItemsViewExpansionTests: XCTestCase {
     }
 
     func testExpandingWithNoIntentStillDrawsTheReadingLine() throws {
-        let view = RootItemsView(folderGlyph: folderGlyph, fileGlyph: fileGlyph)
+        let view = RootItemsView(
+            folderGlyph: folderGlyph, fileGlyph: fileGlyph, statusGlyphs: statusGlyphs)
         view.show(.observed([folder("docs")]))
 
         try expand("docs", in: view)

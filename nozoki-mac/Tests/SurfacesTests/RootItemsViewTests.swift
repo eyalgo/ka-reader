@@ -7,9 +7,14 @@ import XCTest
 final class RootItemsViewTests: XCTestCase {
     private let folderGlyph = NSImage(size: NSSize(width: 1, height: 1))
     private let fileGlyph = NSImage(size: NSSize(width: 2, height: 2))
+    /// Distinct images for the two status glyphs, so a test can tell which one was drawn.
+    private let statusGlyphs = StatusGlyphs(
+        empty: NSImage(size: NSSize(width: 3, height: 3)),
+        failure: NSImage(size: NSSize(width: 4, height: 4)))
 
     private func makeView(showing root: RootListing?) -> RootItemsView {
-        let view = RootItemsView(folderGlyph: folderGlyph, fileGlyph: fileGlyph)
+        let view = RootItemsView(
+            folderGlyph: folderGlyph, fileGlyph: fileGlyph, statusGlyphs: statusGlyphs)
         view.show(root)
         return view
     }

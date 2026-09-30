@@ -1,5 +1,9 @@
 import AppKit
 
+/// `docs/DESIGN.md` § *Components* "Status messages": a status message is inset `{spacing.xl}`
+/// from its surface's top-left.
+private let rootMessageInset: CGFloat = 24
+
 /// The answer to one folder read: its entries, the reason it failed, or `nil` when none came.
 package typealias ListTreeAnswer = @MainActor (RootListing?) -> Void
 
@@ -14,7 +18,8 @@ package typealias ListTreeIntent =
 /// read shows its sentence beside its row, as a failed file does. A root with nothing to list, or
 /// one that could not be read, shows one line instead of rows.
 ///
-/// The two glyph images arrive from the caller, because this target never loads a resource and
+/// Its glyph images arrive from the caller — the rows' two and the status messages' two — because
+/// this target never loads a resource and
 /// never reaches the bridge (SM-8, CP-97). The read itself is the owner's: this view hands out the
 /// path to read and takes the answer back through a one-shot sink.
 @MainActor
@@ -25,9 +30,11 @@ package final class RootItemsView: NSScrollView {
 
     private let folderGlyph: NSImage
     private let fileGlyph: NSImage
+    private let statusGlyphs: StatusGlyphs
     private var rows: [Row] = []
     private var isReloading = false
-    private let rootLine = NSTextField(labelWithString: "")
+    private let rootLine: NSTextField
+    private let rootMessage: StatusMessageView
 
     /// The one line drawn outside the rows, or nil when none is drawn.
     package private(set) var rootLineText: String?
@@ -47,9 +54,16 @@ package final class RootItemsView: NSScrollView {
         (outlineView.item(atRow: row) as? LineItem)?.text
     }
 
-    package init(folderGlyph: NSImage, fileGlyph: NSImage) {
+    /// Presents tree rows or a root status using only the images supplied by the owner.
+    package init(folderGlyph: NSImage, fileGlyph: NSImage, statusGlyphs: StatusGlyphs) {
         self.folderGlyph = folderGlyph
         self.fileGlyph = fileGlyph
+        self.statusGlyphs = statusGlyphs
+        // Wrapping, so a sentence wider than the sidebar's column is drawn whole on two lines.
+        let line = NSTextField(wrappingLabelWithString: "")
+        line.isSelectable = false
+        rootLine = line
+        rootMessage = StatusMessageView(glyph: statusGlyphs.empty, texts: [line])
         super.init(frame: .zero)
 
         let column = NSTableColumn(identifier: Self.columnIdentifier)
@@ -61,15 +75,19 @@ package final class RootItemsView: NSScrollView {
         documentView = outlineView
         hasVerticalScroller = true
 
-        rootLine.translatesAutoresizingMaskIntoConstraints = false
-        rootLine.isHidden = true
+        rootMessage.translatesAutoresizingMaskIntoConstraints = false
+        rootMessage.isHidden = true
         // A floating subview, not a plain one: a scroll view tiles its own subviews and leaves a
         // plain one at the frame it was made with, whatever its constraints say (measured: the
-        // line stayed 4 points wide at the top-left; floating, it is centred at its text's width).
-        addFloatingSubview(rootLine, for: .vertical)
+        // line stayed 4 points wide at the top-left). Pinned to the top-left, never the centre
+        // (DESIGN RN-14; the-window-holds-its-layout CP-257).
+        addFloatingSubview(rootMessage, for: .vertical)
         NSLayoutConstraint.activate([
-            rootLine.centerXAnchor.constraint(equalTo: centerXAnchor),
-            rootLine.centerYAnchor.constraint(equalTo: centerYAnchor),
+            rootMessage.topAnchor.constraint(equalTo: topAnchor, constant: rootMessageInset),
+            rootMessage.leadingAnchor.constraint(
+                equalTo: leadingAnchor, constant: rootMessageInset),
+            rootMessage.trailingAnchor.constraint(
+                lessThanOrEqualTo: trailingAnchor, constant: -rootMessageInset),
         ])
     }
 
@@ -89,12 +107,15 @@ package final class RootItemsView: NSScrollView {
         case .observed(let listed)?:
             entries = listed
             rootLineText = listed.isEmpty ? ConditionSentences.emptyRoot : nil
+            rootMessage.glyph = statusGlyphs.empty
         case .failed?:
             rootLineText = ConditionSentences.failedRoot
+            rootMessage.glyph = statusGlyphs.failure
         }
         rows = entries.map { Row($0, parent: nil) }
         rootLine.stringValue = rootLineText ?? ""
-        rootLine.isHidden = rootLineText == nil
+        // The whole message goes, glyph included: a glyph never stands alone.
+        rootMessage.isHidden = rootLineText == nil
         outlineView.reloadData()
     }
 
