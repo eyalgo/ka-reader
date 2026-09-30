@@ -6,7 +6,7 @@
        signal, and the state a finished SDD carries; the open-issues file is gone.
      Locked = ratified as the source of truth. -->
 **Owner:** CTO · CPO · CDO — one run, three seats
-**Version:** 20 — CPO: nothing — no SDD section, slice or companion item altered by this seat.; CTO: § 3 `fs-reader` (containment check); § 4 C-D1 *Violated by*; § 9 TO-6 *costs*; § 11 R-10 *response*; header Version 19; SDD Review Notes RN-71 (new); `docs/SDD_open_issues.md` removed. Companion items added: none.; CDO: § 4 C-E4 (new clause and *Violated by*); SDD Review Notes RN-72 (new); header Version 19, CDO part. No slice altered — § 6 S-1 and S-3 observable halves read, unchanged. Companion items added: none.; CPO: nothing — no SDD section, slice or companion item altered by this seat.; CTO: nothing — no SDD section, slice or companion item altered by this seat.
+**Version:** 21 — CPO: § 6 `open-a-folder` *Traces to* (PRD clause — § UX Notes "The character" added); § 5 step 4 (E-1's sizing — dated re-read, sizing stands); SDD Review Notes RN-73 (new). Companion items added: none.; CTO: § 6 `open-a-folder` *Reached when* (command half — the window's minimum width and the sidebar's fixed width under `swift test`, cited to `docs/DESIGN.md` § *Layout*); SDD Review Notes RN-74 (new). Companion items added: none.; CDO: § 6 `open-a-folder` *Reached when* (observable half — the `docs/DESIGN.md` § *Layout* / § *Components* sentence, cited by section); § 6 `open-a-folder` *Traces to* (UXD clause — § 9 *Design-System Direction* added); SDD Review Notes RN-75 (new); `docs/SDD_open_issues.md` removed, empty of unfolded items, trail copy at `docs/trail/sdd/cycle-16.md`. Companion items added: none.; CPO: nothing — no SDD section, slice or companion item altered by this seat.; CTO: SDD Review Notes RN-74 (one citation — the owner-confirmation of DESIGN's measurements now cited to `docs/DESIGN.md:L929` in place of "per RN-73"). No slice altered — § 6 `open-a-folder` command half read against the CDO's observable half, unchanged. Companion items added: none.
 Version 18 — CPO: nothing — no SDD section, slice or companion item altered by this seat.; CTO: § 4 C-I3 (observable, measured-frames sentence, hosted-runner sentence with the re-cut rule); § 6 `open-a-folder` *Reached when* command half; § 9 TO-7 *costs*; § 10 RC-2 and RC-3 *Still unresolved* (dated parentheses); *Open Questions* (seventh item removed — six remain); SDD Review Notes RN-70 (new); `docs/SDD_open_issues.md` removed, empty of items. Companion items added: none.; CPO: nothing — no SDD section, slice or companion item altered by this seat.
 Version 8 — CTO: § 4 C-I3 (bounded window, first-ask-all-three pass, script-fixed and printed bound with no number here, per-ask live-pid check, uncovered yes→no case, control `no` for the whole window, error-on-any-ask, denial-as-proof clause narrowed to where the control reports the denials allowed with the hosted runner's read denial stated as separating nothing, Violated by extended); § 10 RC-1 Still unresolved (pointer to RN-48); § 11 R-8 shows up as and response; Open Questions (fourth item closed and removed — four remain); SDD Review Notes RN-48 (new). Companion items added: none. docs/SDD_open_issues.md removed, empty of items.
 Version 7 — CTO: § 3 SM-4 (what crosses, and owner cell wording); § 4 C-R7 (the staged grant, set equality against registered commands, asset-scheme keying, named pre-1.0.0 uncovered case, Violated by); § 4 C-I3 (every command the build grants); § 6 S-7 Reached when, command half; SDD Review Notes RN-47 (new). Companion items added: none. docs/SDD_open_issues.md removed, empty of items.
@@ -1128,6 +1128,18 @@ names that no entry did.
   moves is the part § 3 draws behind the bar, which is the CTO's, and the date the bar is first
   met, which is no slice's.* Not too broad — no intermediate result
   inside it changes its direction.
+  *Re-read 2026-09-30, on the owner-seat answer at `docs/trail/sdd/cycle-16.md` § 5.1: the
+  observable half now holds `docs/DESIGN.md` § *Layout* and § *Components* for the surfaces this
+  slice draws — the window's minimum width with the reading panel taking what the sidebar leaves,
+  the status messages top-left and glyph-led, the startup surface's routes as text alone. The
+  sizing stands. Still one bar on one artifact: how the window is drawn is inside "the window
+  drawn", not a second decision beside it — a window that opens with the panel narrower than the
+  sidebar is this bar unmet, the way a window that does not draw is, and redraws no slice. Not too
+  broad, because nothing found while drawing changes the acceptance: the drawing's values are
+  `docs/DESIGN.md`'s (§ *Layout*; its RN-8), fixed there and cited here by section. And no slice
+  is added for it: § 6 holds no slice whose decision is a surface's drawing, and `choose-a-theme`'s
+  decision is own state — its bar is the two themes over surfaces already drawn (E-6, below) — so
+  placing the drawing there would put two answers in one slice, the case this step names. RN-73.*
   **E-6 is not folded into it**, though FR-20 makes both themes a first-release condition: the
   theme is the first thing the tool ever writes, and the slice whose job is to prove the wall is
   kept free of any write at all, so that a red `read-only.sh` on it has one possible cause.
@@ -1310,7 +1322,22 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   sentence, as many times as they repeat it (UX-S4 Empty). They point it at a path that does not
   exist, is not a folder or cannot be read: the same window states what the tool tried to open,
   what it observed and what to do next, carries a way to leave, and nothing is printed where the
-  tool was started (UX-S4 Error, UX-I14). On no surface is there an affordance to edit, create,
+  tool was started (UX-S4 Error, UX-I14). The window this slice draws holds `docs/DESIGN.md`
+  § *Layout* and § *Components* for the surfaces it draws, cited by section and never by value,
+  the way `choose-a-theme` cites § *Colors* (RN-75). The window opens at no less than the minimum
+  width § *Layout* states and cannot be resized below it — the window's own, held by `mac-shell`
+  — and inside it the sidebar stands at the one width § *Layout* fixes, the surface's, with the
+  reading panel taking every remaining point, so the panel is wider than the sidebar in the first
+  window they see. Every status message this slice shows — the reading panel's prompt, the tree's
+  empty-folder and failed-root lines, and the startup surface's message in each of its states —
+  sits at the top-left of its surface at the inset § *Components* "Status messages" states, led
+  by a glyph with the sentence beside it — one glyph for an empty or pending state and another
+  for a failure, both named there — and is never centred (that document's RN-14). The startup
+  surface's two routes are text alone, one to a row, with no glyph and no bordered control
+  (§ *Components* "The startup surface"). The layout this slice holds is the window's minimum and
+  the two panels it draws; the rail's entries, the chrome's two controls and the Git view arrive
+  with the slices *Not in this slice* names, and the words every message carries are
+  `docs/CONTENT.md`'s (C-E4). On no surface is there an affordance to edit, create,
   save or initialise anything, enabled or disabled (UX-I1); closing asks nothing (UX-I5); every
   sentence shown says what the tool did, what it observed and what to do next, and no internal text
   appears (UX-I6). With the network disconnected, all of the above renders identically (UX-I15).
@@ -1323,7 +1350,11 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   staticlib exports `open_folder` and `list_tree` and the release call `nozoki_free`, the header
   declares the same three, and nothing else (C-R7; SM-4); `swift test --package-path nozoki-mac`
   exits 0 with tests that a row is drawn from a
-  projection and from nothing else, and that the shell issues no call SM-4 does not name;
+  projection and from nothing else, that the shell issues no call SM-4 does not name, and that
+  the window declares a minimum content width and the sidebar a fixed width, each the value
+  `docs/DESIGN.md` § *Layout* states and neither restated here — the machine half of the layout
+  bar the observable half holds, so a window that can open with the reading panel narrower than
+  the sidebar goes red in CI and not in a reader's hands (RN-74);
   `checks/view.sh` finds no forbidden symbol in `nozoki-mac/Sources` and neither `WebKit` nor
   `JavaScriptCore` on the executable's link list (C-R7); `.github/workflows/ci.yml` builds
   `Nozoki.app` and runs every script below on every push. `checks/bundle.sh Nozoki.app` prints the
@@ -1345,13 +1376,18 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   (the tree and the `pending` kind), `core-bridge`, `mac-shell`, `surfaces`, `read-only-harness`;
   `SM-1`, `SM-4` (`open_folder`, `list_tree`), `SM-5`, `SM-8`; § 4 C-R1, C-R2, C-R3, C-R6, C-R7,
   C-I1, C-I2, C-I3, C-D1, C-D2. Slices: none — this is the first.
-- **Traces to:** PRD § Key Use Cases 1; § UX Notes "The path" 1, "Failure states"; § Success
+- **Traces to:** PRD § Key Use Cases 1; § UX Notes "The character" — the reading panel as the
+  dominant visual surface, navigation text-first with icons secondary (the clause the window's
+  minimum width and the startup surface's text-alone routes, held in the observable half, answer
+  to; RN-73); § UX Notes "The path" 1, "Failure states"; § Success
   Metrics "Zero required configuration"; § Scope (In) "Run posture", "Platform". SRS: FR-1, FR-2,
   FR-3, FR-4, FR-5, FR-23; NFR-4, NFR-5, NFR-8, NFR-9, NFR-11, NFR-14; DR-1, DR-2, DR-6; C-1, C-2,
   C-11; AC-9, AC-15 (the failure half), AC-24 (the tree and the empty state — the Git view's
   absence is `see-git-status`'s to fill).
   UXD: § 4 *Information Architecture* (one window, one shell; the sidebar beside a dominant
-  reading panel); UX-U3 (one local folder, a repository or not); UX-F1 — the arrival, up to and
+  reading panel); § 9 *Design-System Direction* — the reading panel the dominant visual surface,
+  navigation text-first with icons secondary (the clause the layout and the text-alone routes
+  held in the observable half realize; RN-75); UX-U3 (one local folder, a repository or not); UX-F1 — the arrival, up to and
   not including the first selection; UX-S1 Empty; UX-S2 Empty, Loading and Error; UX-S4 Empty and
   Error — the v1 route out, the in-window rendering; UX-I1, UX-I5, UX-I6, UX-I10, UX-I13, UX-I14,
   UX-I15; UX-A4; § 4 C-E1, C-E3, C-E4, C-E5, C-E7 of this document.
@@ -4067,6 +4103,130 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   halves — read, unchanged; source: `docs/trail/sdd/cycle-15.md` § 5.1; § 3 `fs-reader`; § 4
   C-D1; `docs/CONTENT.md` § *Message patterns* → *Partial*, § *Terminology* "link";
   `docs/UXD.md` UX-S2 Error, UX-I4, UX-I12; `docs/fdr.md` R-34, R-152; RN-71)*.
+- **RN-73:** *(CPO)* *(changed)* The companion's § 5.1 folded on this seat's two fields — raised
+  from downstream by the PM on 2026-09-30, answered in the owner's seat by a
+  `companion-self-answer` run (`docs/trail/sdd/cycle-16.md` § 5.1; reasoning
+  `docs/trail/sdd/self_answer-27.md` § 5.1): `open-a-folder` holds `docs/DESIGN.md` § *Layout* and
+  § *Components* for the surfaces it draws, and no later slice is named. **§ 6 S-1 *Traces to*,
+  the PRD clause** gains `docs/PRD.md` § UX Notes "The character" — "The reading panel is the
+  dominant visual surface; navigation is text-first, icons secondary" (`docs/PRD.md:L198-L199`) —
+  *because* the bar the CDO's half now holds makes a claim the PRD carries, in a section the
+  trace did not name: the window's minimum width is the number the panel's dominance resolves to
+  (`docs/DESIGN.md:L504`; its RN-8 at `:L922`, `:L927`), and the startup surface's routes as text
+  alone are that clause's "text-first" on the one surface this slice draws before a folder is
+  chosen. A bar holding a PRD claim under a trace that does not name it is a gap for the reader
+  this field is written for — the one who cuts seeds from § 6 and carries *Traces to* narrowed to
+  a seed's share (§ 8). The PRD carries no clause for the status messages' glyphs or their
+  placement, and none is owed: § Assumptions leaves "layout measurements and visual styling
+  specifics" downstream and names what it keeps — "the reading panel dominant, text-first
+  navigation, two themes" (`docs/PRD.md:L371-L374`) — so no PRD gap, and no companion item.
+  **§ 5 step 4, E-1's sizing** gains one dated re-read: the sizing stands under the widened bar —
+  one bar on one artifact, the drawing inside "the window drawn" and not a second decision; not
+  too broad, since the values are `docs/DESIGN.md`'s and nothing found while drawing changes the
+  acceptance; and no slice is added, since none in § 6 has a surface's drawing as its decision and
+  `choose-a-theme`'s is own state (E-6). Re-verified before writing, not taken from the answer:
+  `docs/DESIGN.md` at `nozoki@705e6f1` (v13) holds § *Layout* at `:L491` with the 720 minimum at
+  `:L504`, § *Components* "Status messages" left-aligned at the top and "never centred" at
+  `:L716`, and "The startup surface" with its routes as text at `:L725-L729` — the self-answer's
+  line numbers (`:L487-L489`, `:L695-L705`, `:L914`) are DESIGN v10's and have moved, which is
+  one more reason the bar cites sections and never lines; `docs/PRD.md` last moved at `7c89e19`
+  (2026-09-01, v15) and `system/projects/nozoki/agari.md` at `ee561fb` (2026-09-01), neither
+  since RN-67. What does not move, and why: S-1's *Slug*, *Delivers*, *Moves toward* and *Not in
+  this slice* — the answer keeps every fence (RN-37), and how the window is drawn is not a thing a
+  person can newly do; S-6's *Not in this slice* — "any token value — `docs/DESIGN.md`'s" is still
+  true; § 1, § 5 steps 1 and 2, and § 12's PRD boundary — the PRD is unchanged and carries the
+  claim. The observable-half sentence itself is the CDO's (§ 6 *Reached when*, observable) and is
+  named to that seat in this run, not written here; the companion's removal follows that fold,
+  the last the item needs, and the trail copy stands at `docs/trail/sdd/cycle-16.md` (`diff`
+  against `docs/SDD_open_issues.md` printed nothing before this turn's edits). Header `Version:`
+  untouched — the runner stamps it
+  (`skills/product-sdd-runner/.claude/skills/product-sdd/SKILL.md:L3`) *(re: § 5 step 4 E-1; § 6
+  `open-a-folder` *Traces to*, PRD clause; source: `docs/trail/sdd/cycle-16.md` § 5.1;
+  `docs/trail/sdd/self_answer-27.md` § 5.1; `docs/PRD.md:L198-L199`, `:L371-L374`;
+  `docs/DESIGN.md:L491`, `:L504`, `:L716`, `:L725-L729`, `:L922`, `:L927`; RN-37, RN-67)*.
+- **RN-74:** *(CTO)* *(changed)* The companion's § 5.1 read against this seat's lanes
+  (`docs/trail/sdd/cycle-16.md` § 5.1; the CPO's fold is RN-73). One field moves: **§ 6 S-1
+  *Reached when*, the command half** gains, under `swift test --package-path nozoki-mac`, a test
+  that the window declares a minimum content width and the sidebar a fixed width, each the value
+  `docs/DESIGN.md` § *Layout* states — *because* the observable half now holds that section (the
+  CDO's fold, this run), and the two halves check one slice from two sides: a bar a person can
+  see and no script holds is the gap the item came from. The window as sealed opens at 480 and
+  declares no minimum (`nozoki-mac/Sources/Shell/WindowPresenting.swift:L21`, and `grep -n -i
+  'minSize\|contentMinSize\|minimum'` on that file exits 1, at `nozoki@705e6f1`), passed every
+  command S-1 stated, and was found by the PM reading the tree. The two widths are the part of the
+  drawing a test holds cheaply: the shell's test target already builds a window
+  (`nozoki-mac/Tests/ShellTests/LaunchWindowWorkbenchTests.swift:L314`), and the sidebar's width is
+  already the code's copy of DESIGN's token (`nozoki-mac/Sources/Surfaces/WorkbenchView.swift:L13-L14`).
+  The status messages' placement and glyphs and the routes' form stay the observable half's
+  alone — a person's eye is the truer check there, and no script is invented for them. No value
+  is restated: the test carries the number as the code does, and this document cites the section,
+  so a DESIGN revision moves the code and the test and nothing here. What does not move, and
+  why: S-1 *Rests on* — `mac-shell` already owns "the one window" and `surfaces` the drawing
+  (§ 3, both rows), and C-R1 already puts the glyphs in the bundle; § 3 — which part draws is
+  unchanged, only which slice's bar holds the drawing; § 5 steps 3 and 5 and § 7 — no slice is
+  added and no pair changes, S-1 first as before; § 9 and § 11 — no cost is taken and no trigger
+  is named, the values being `docs/DESIGN.md`'s and owner-confirmed there (its RN-8 — "Every
+  measurement confirmed by the owner", `docs/DESIGN.md:L929`);
+  § 12, the SRS boundary — the SRS carries the dominant panel and text-first navigation at
+  § 5.1 *User Interface* (`docs/SRS.md:L394-L397`) as an interface statement traced to the PRD, not
+  as a numbered requirement, so S-1's SRS clause gains no tag and no SRS gap opens; *Open
+  Questions* — nothing resolves downstream. `grep -n -i '720\|minimum width' docs/nfdr.md
+  docs/adr/*.md` finds nothing: no record binds the layout, and none is surfaced — a layout value
+  is DESIGN's, not an architecturally-significant decision. Header `Version:` untouched — the
+  runner stamps it *(re: § 6 `open-a-folder` *Reached when*, command half; source:
+  `docs/trail/sdd/cycle-16.md` § 5.1; `docs/trail/sdd/self_answer-27.md` § 5.1; `docs/DESIGN.md`
+  § *Layout*; `docs/SRS.md:L394-L397`; § 3 `mac-shell`, `surfaces`; § 4 C-R1; RN-73)*.
+- **RN-75:** *(CDO)* *(changed)* The companion's § 5.1 folded on this seat's lane — the item's
+  answer, given in the owner's seat (`docs/trail/sdd/cycle-16.md` § 5.1; reasoning
+  `docs/trail/sdd/self_answer-27.md` § 5.1), lands here. **§ 6 S-1 *Reached when*, the
+  observable half** gains the sentence the answer asks for: the window this slice draws holds
+  `docs/DESIGN.md` § *Layout* and § *Components* for the surfaces it draws — the window's
+  minimum width as the window's own, held by `mac-shell`, and the sidebar's width as the
+  surface's, with the panel wider than the sidebar in the first window a stranger sees; every
+  status message this slice shows top-left, glyph-led and never centred, the reading panel's
+  prompt counted among them as the answer names it; and the startup surface's two routes as
+  text alone, one to a row. Cited by section and never by value, as `choose-a-theme` cites
+  § *Colors*, and never by line: the answer's line numbers were DESIGN v10's and had moved by
+  v13 (RN-73), which is the case the rule exists for. *Because* the bar was one a person could
+  see unmet and no half of § 6 held: re-read at `nozoki@705e6f1`, the sealed window opens 480
+  wide and declares no minimum (`nozoki-mac/Sources/Shell/WindowPresenting.swift:L21`, `:L44-L47`),
+  beside a sidebar held at 260 (`nozoki-mac/Sources/Surfaces/WorkbenchView.swift:L14`,
+  `:L32-L34`) — a panel narrower than the sidebar under a trace to "the sidebar beside a dominant
+  reading panel" (`docs/UXD.md` § 4); the tree's root line is centred
+  (`nozoki-mac/Sources/Surfaces/RootItemsView.swift:L69-L72`); the startup routes are two
+  `NSButton`s and no glyph is drawn on that surface
+  (`nozoki-mac/Sources/Surfaces/StartupView.swift:L65-L70`; `grep -n -i 'NSImage\|symbol'` on
+  it exits 1); and the reading panel's prompt is top-left at the inset but carries no glyph
+  (`WorkbenchView.swift:L46-L53`, which cites DESIGN's RN-14 itself). Each is a departure from
+  `docs/DESIGN.md` § *Layout* (`:L491-L532`) or § *Components* "Status messages" / "The startup
+  surface" (`:L716-L741`) as v13 states them. The sentence is sourced, not invented: every
+  observation it binds is a section of the settled design language, and the glyphs it needs
+  ship — `info.svg` and `circle-alert.svg` are in `third_party/lucide/icons/` and the shell
+  already draws from the bundle through `GlyphSource` (`nozoki-mac/Sources/Shell/GlyphSource.swift:L1-L18`),
+  so C-E7 is met and no UXD gap opens. **§ 6 S-1 *Traces to*, the UXD clause** gains
+  `docs/UXD.md` § 9 *Design-System Direction* — "the reading panel is the dominant visual
+  surface, navigation is text-first with icons secondary" (`docs/UXD.md:L395-L397`) — the UXD
+  clause the widened bar realizes on the first window, which the trace named only through § 4's
+  "dominant reading panel"; the CPO's RN-73 makes the same move for the PRD clause. What does not
+  move, and why: § 4's CDO clause — it still fixes no token value, and the new sentence fixes
+  none either; § 12's UXD boundary — "this document cites the delegate and fixes nothing of its
+  own" is the sentence applied; § 5 step 1's observability — E-1 was observable before and is
+  no more or less so now; every other observable half — none draws a surface this sentence
+  binds before S-1 does, and `choose-a-theme`'s bar is the two themes over surfaces already
+  drawn (E-6), so how a surface is drawn stays S-1's and no sentence is added there; S-6's UXD
+  trace; no § 10 entry — no *Reached when* failed as written, the bar is being stated for the
+  first time. No companion item: the item's two options are both defensible and the owner's seat
+  chose between them on the record, so there is no two-position disagreement left to carry.
+  **The companion is removed**, empty of unfolded items: `diff docs/SDD_open_issues.md
+  docs/trail/sdd/cycle-16.md` printed nothing before the removal, so the trail copy is the file
+  whole. One thing the self-answer opened beside the SDD and this seat owns in another run:
+  `docs/DESIGN_open_issues.md` § 2.1 (CSS-over-markup) — folded by DESIGN v11 (`nozoki@cce8bde`)
+  and the companion gone at v13 (`ls docs/DESIGN_open_issues.md` fails at `705e6f1`), so nothing
+  is owed there. Header `Version:` untouched — the runner stamps it *(re: § 6 `open-a-folder`
+  *Reached when*, observable half; *Traces to*, UXD clause; source: `docs/trail/sdd/cycle-16.md`
+  § 5.1; `docs/trail/sdd/self_answer-27.md` § 5.1; `docs/DESIGN.md` § *Layout*, § *Components*
+  "Status messages", "The startup surface", RN-8, RN-14; `docs/UXD.md` § 4, § 9, UX-A4, UX-S1,
+  UX-S2, UX-S4; § 4 C-E4, C-E7; § 3 `mac-shell`, `surfaces`; RN-37, RN-73, RN-74)*.
 
 ## Open Questions
 

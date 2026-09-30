@@ -1,0 +1,284 @@
+{
+  "change_log": [
+    {
+      "changed_text": "\u00a7 6 `open-a-folder` *Traces to* (PRD clause \u2014 \u00a7 UX Notes \"The character\" added); \u00a7 5 step 4 (E-1's sizing \u2014 dated re-read, sizing stands); SDD Review Notes RN-73 (new). Companion items added: none.",
+      "seat": "cpo"
+    },
+    {
+      "changed_text": "\u00a7 6 `open-a-folder` *Reached when* (command half \u2014 the window's minimum width and the sidebar's fixed width under `swift test`, cited to `docs/DESIGN.md` \u00a7 *Layout*); SDD Review Notes RN-74 (new). Companion items added: none.",
+      "seat": "cto"
+    },
+    {
+      "changed_text": "\u00a7 6 `open-a-folder` *Reached when* (observable half \u2014 the `docs/DESIGN.md` \u00a7 *Layout* / \u00a7 *Components* sentence, cited by section); \u00a7 6 `open-a-folder` *Traces to* (UXD clause \u2014 \u00a7 9 *Design-System Direction* added); SDD Review Notes RN-75 (new); `docs/SDD_open_issues.md` removed, empty of unfolded items, trail copy at `docs/trail/sdd/cycle-16.md`. Companion items added: none.",
+      "seat": "cdo"
+    },
+    {
+      "changed_text": "nothing \u2014 no SDD section, slice or companion item altered by this seat.",
+      "seat": "cpo"
+    },
+    {
+      "changed_text": "SDD Review Notes RN-74 (one citation \u2014 the owner-confirmation of DESIGN's measurements now cited to `docs/DESIGN.md:L929` in place of \"per RN-73\"). No slice altered \u2014 \u00a7 6 `open-a-folder` command half read against the CDO's observable half, unchanged. Companion items added: none.",
+      "seat": "cto"
+    }
+  ],
+  "companion_present_at_intake": true,
+  "companion_retired": false,
+  "consumed_cycle_path": "/Users/eyalgolan/products/nozoki/docs/trail/sdd/cycle-16.md",
+  "core_root": "/Users/eyalgolan/.kensaiapp/pins/20260930T125253Z-46py3p/core",
+  "ended": "seats-close",
+  "ended_at": "2026-09-30T13:55:51.884485+00:00",
+  "ended_detail": null,
+  "instance_root": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource",
+  "interruptions": [],
+  "no_change_rounds": 0,
+  "output_tokens": 0,
+  "output_tokens_under_counted": true,
+  "pending_request": {
+    "cdo": "Edits verified (`git diff --stat -- docs/SDD.md`: 163 insertions, 4 deletions \u2014 six hunks: the CPO's step-4 re-read, *Traces to* PRD clause and RN-73; the CTO's command-half clause and RN-74; and mine \u2014 the observable half at `docs/SDD.md:L1325-L1340`, the UXD trace at `:L1388-L1390`, RN-75 at `:L4178`; nothing else). `git status` shows `D docs/SDD_open_issues.md`. Nothing further depends on another result; closing the turn.\n\n**CDO turn, round 1 \u2014 the fold of `docs/trail/sdd/cycle-16.md` \u00a7 5.1 on this seat's lane, and the companion's removal.**\n\n1. **\u00a7 6 `open-a-folder` *Reached when*, the observable half** (`docs/SDD.md:L1325-L1340`) \u2014 gains the sentence the answer asks for, placed after the UX-S4 Error sentence so it binds every surface the half has already named. The window holds `docs/DESIGN.md` \u00a7 *Layout* and \u00a7 *Components* for the surfaces it draws, cited by section and never by value, the way S-6 cites \u00a7 *Colors* \u2014 and never by line (the answer's lines were v10's; RN-73 showed they had moved). Per the CTO's point: the minimum width is written as the window's own, held by `mac-shell`; the sidebar's width as the surface's, the panel taking the rest and wider than the sidebar in the first window a stranger sees. Every status message this slice shows \u2014 the reading panel's prompt (the fourth place the self-answer named), the tree's two root lines, the startup surface's message in each state \u2014 top-left, glyph-led with the sentence beside it, never centred (DESIGN's RN-14). The routes: text alone, one to a row, no glyph, no bordered control (\u00a7 *Components* \"The startup surface\"). The layout held is the window's minimum and the two panels drawn; the rail's entries, the chrome's controls and the Git view arrive with the slices *Not in this slice* names (RN-37 kept), and the words stay `docs/CONTENT.md`'s (C-E4).\n2. **\u00a7 6 `open-a-folder` *Traces to*, the UXD clause** (`:L1388-L1390`) \u2014 gains `docs/UXD.md` \u00a7 9 *Design-System Direction*, verified against its text at `docs/UXD.md:L395-L397`: \"the reading panel is the dominant visual surface, navigation is text-first with icons secondary\" \u2014 the UXD clause the widened bar realizes, which the trace named only through \u00a7 4's \"dominant reading panel\". The mirror of the CPO's PRD move in RN-73.\n3. **RN-75** (`:L4178`) \u2014 records both, with what was re-verified at `nozoki@705e6f1` rather than taken from the answer: the four departures in the sealed shell (`WindowPresenting.swift:L21`, `:L44-L47`; `WorkbenchView.swift:L14`, `:L32-L34`, `:L46-L53`; `RootItemsView.swift:L69-L72`; `StartupView.swift:L65-L70`, glyph grep exits 1) against DESIGN v13 \u00a7 *Layout* (`:L491-L532`) and \u00a7 *Components* (`:L716-L741`); that the sentence is sourced in a settled document and C-E7 is met (`info.svg`, `circle-alert.svg` in `third_party/lucide/icons/`; `GlyphSource.swift:L1-L18` already draws from the bundle) \u2014 so no UXD gap and no companion item. What does not move: \u00a7 4's CDO clause, \u00a7 12's UXD boundary (the sentence applied), \u00a7 5 step 1, every other observable half, S-6's trace; no \u00a7 10 entry.\n4. **`docs/SDD_open_issues.md` removed** \u2014 `diff` against `docs/trail/sdd/cycle-16.md` exited 0 before the `rm`, so the trail copy is the file whole. No file is the done signal.\n\n**On the CPO's note:** `docs/DESIGN_open_issues.md` \u00a7 2.1 is folded \u2014 DESIGN v11 (`nozoki@cce8bde`) re-said the realisation sentence and the companion is gone at v13 (`ls` fails at `705e6f1`); recorded in RN-75, nothing owed, nothing touched here.\n\nHeader `Version:` untouched \u2014 the runner stamps it. No commit \u2014 the skill's.",
+    "cpo": "Nothing further to read \u2014 my lanes hold against everything the peers wrote in round 1, and the one attribution I questioned turns out true at its source.\n\n**CPO turn, round 2 \u2014 my lanes re-read against the peers' round-1 folds. No edit.**\n\n- **\u00a7 5 step 4, E-1's sizing** (`docs/SDD.md:L1129-L1142`) \u2014 still right against S-1 as now written. The CDO's observable-half sentence (`:L1325-L1340`) binds exactly what my re-read names \u2014 the window's minimum as the window's, the sidebar's width with the panel taking the rest, status messages top-left and glyph-led, routes as text alone. The CTO's command-half test (`:L1337-L1342` in its numbering; the `swift test` clause) holds the two widths from the other side of the same bar \u2014 same artifact, one bar, so \"one bar on one artifact\" stands and the slice is neither resized nor split. No slice added, as both RN-74 and RN-75 also record.\n- **\u00a7 6 `open-a-folder` *Traces to*, PRD clause** \u2014 every observation the CDO's sentence binds is either carried by `docs/PRD.md` \u00a7 UX Notes \"The character\" (`:L198-L199` \u2014 dominance, text-first) or deliberately left downstream by \u00a7 Assumptions (`:L371-L374` \u2014 the glyphs and the inset). Nothing in the widened bar asks the product for something the PRD does not hold; no PRD gap, no companion item. The CDO's mirror move on the UXD clause (\u00a7 9 *Design-System Direction*, RN-75) sits beside mine and contradicts nothing.\n- ***Delivers*, *Moves toward*, *Not in this slice*** \u2014 unchanged; the CDO's sentence keeps my fence in its own words (\"the rail's entries, the chrome's two controls and the Git view arrive with the slices *Not in this slice* names\"). S-6's fence unchanged. \u00a7 1, \u00a7 5 steps 1\u20132, \u00a7 12 PRD boundary \u2014 unchanged; PRD still at `7c89e19`, Agari at `ee561fb`.\n- **The companion** \u2014 removed by the CDO (`git status`: `D docs/SDD_open_issues.md`), trail copy at `docs/trail/sdd/cycle-16.md`; RN-73's \"the companion's removal follows that fold\" is now a statement of what happened.\n\n**One note for the CTO, no recall spent:** RN-74 says the values are \"owner-confirmed there (its RN-8, per RN-73)\". The fact is true \u2014 `docs/DESIGN.md:L929`, \"**Every measurement confirmed by the owner** as drafted (`docs/trail/design/cycle-1.md` \u00a7 2.3)\" \u2014 but RN-73 does not make that claim; it cites RN-8 at `:L922`, `:L927` for the values only. If RN-74 is touched again, \"per `docs/DESIGN.md:L929`\" is the citation that carries it; as written it is a loose pointer to a true fact, not an error in the SDD, and I leave it.\n\nHeader `Version:` untouched \u2014 the runner stamps it (`.../product-sdd/SKILL.md:L3`). No commit \u2014 the skill's.",
+    "cto": "Edits verified (`git diff --stat -- docs/SDD.md`: 164 insertions, 4 deletions \u2014 the three seats' round-1 hunks plus one line in RN-74; `grep -c 'per RN-73'` prints 0). Nothing further depends on another result; closing the turn.\n\n**CTO turn, round 2 \u2014 my lanes re-read against the CDO's round-1 fold and the CPO's note. One citation repaired, nothing else moves.**\n\n- **\u00a7 6 `open-a-folder` *Reached when*, the command half** (`docs/SDD.md:L1341-L1346`) \u2014 holds against the CDO's observable half as now written (`:L1325-L1340`): that sentence binds the minimum width as \"the window's own, held by `mac-shell`\" and the sidebar's width as \"the surface's\", each cited to `docs/DESIGN.md` \u00a7 *Layout*; my clause holds the same two widths by `swift test`, cited to the same section. One bar, two sides, one artifact \u2014 the CPO's step-4 reading of it in round 2 says the same. No edit.\n- **RN-74** (`:L4130-L4177`) \u2014 one line repaired, taking up the CPO's note: \"owner-confirmed there (its RN-8, per RN-73)\" now reads \"(its RN-8 \u2014 'Every measurement confirmed by the owner', `docs/DESIGN.md:L929`)\". Verified at the source before writing: `docs/DESIGN.md:L929` carries that sentence with its trail (`docs/trail/design/cycle-1.md` \u00a7 2.3), and RN-73 cites RN-8 at `:L922`, `:L927` for the values only. RN-74 is this run's own note and uncommitted, so the pointer is fixed in place rather than annotated.\n- ***Rests on*, *Why here in the order*, SRS clause of *Traces to*; \u00a7 2, \u00a7 3, \u00a7 4 CTO clauses, \u00a7 5 steps 3 and 5, \u00a7 7, \u00a7 9, \u00a7 11, \u00a7 12 SRS/downstream boundaries, *Open Questions*** \u2014 unchanged; the CDO's UXD-trace addition (\u00a7 9 *Design-System Direction*, RN-75) and the companion's removal (`git status`: `D docs/SDD_open_issues.md`, trail copy `docs/trail/sdd/cycle-16.md`) touch none of them. No \u00a7 10 entry: no command half is unmeetable as written, no slice is unstartable, and the SRS did not move.\n\nHeader `Version:` untouched \u2014 the runner stamps it. No commit \u2014 the skill's. Companion items added: none. The companion is gone and every unfolded item is folded, so this seat has nothing further."
+  },
+  "product_path": "/Users/eyalgolan/products/nozoki",
+  "project": "nozoki",
+  "provider": "claude",
+  "queue": [],
+  "recall_outstanding": null,
+  "recall_refusals": [],
+  "recalls_spent": [],
+  "resolved_inputs": {
+    "cdo": [
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "present": false
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/doctrine/writing_bar.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/.kensaiapp/pins/20260930T125253Z-46py3p/core/prompts/sdd_conversation_conduct.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/.kensaiapp/pins/20260930T125253Z-46py3p/core/templates/product-templates/sdd_template.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/DESIGN.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/CONTENT.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/design_system",
+        "present": false
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/experience/visual_restrictions.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/experience/visual_direction.md",
+        "present": true
+      }
+    ],
+    "cpo": [
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "present": false
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/doctrine/writing_bar.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/.kensaiapp/pins/20260930T125253Z-46py3p/core/prompts/sdd_conversation_conduct.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/.kensaiapp/pins/20260930T125253Z-46py3p/core/templates/product-templates/sdd_template.md",
+        "present": true
+      }
+    ],
+    "cto": [
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "present": false
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/doctrine/writing_bar.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/.kensaiapp/pins/20260930T125253Z-46py3p/core/prompts/sdd_conversation_conduct.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/.kensaiapp/pins/20260930T125253Z-46py3p/core/templates/product-templates/sdd_template.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/adr",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/nfdr.md",
+        "present": true
+      }
+    ]
+  },
+  "round": 2,
+  "round_opened": "2026-09-30T13:53:26.650554+00:00",
+  "round_start_snapshot": {
+    "recall_outstanding": null,
+    "recalls_spent": [],
+    "standing_move": {
+      "cdo": {
+        "kind": "no_followup",
+        "target": null,
+        "work": null
+      },
+      "cpo": {
+        "kind": "successor",
+        "target": "cdo",
+        "work": "write S-1's observable-half sentence per `docs/trail/sdd/cycle-16.md` \u00a7 5.1's Answer (cite `docs/DESIGN.md` by section, not line \u2014 the answer's line numbers are v10's and have moved), then remove the consumed companion."
+      },
+      "cto": {
+        "kind": "successor",
+        "target": "cdo",
+        "work": "write S-1's observable-half sentence per `docs/trail/sdd/cycle-16.md` \u00a7 5.1 (cite `docs/DESIGN.md` \u00a7 *Layout* and \u00a7 *Components* by section, the minimum width as the window's and the sidebar width as the surface's), then remove the consumed companion."
+      }
+    }
+  },
+  "run": "run-19",
+  "schema_version": 1,
+  "sdd_status": "Settled",
+  "seat_sessions": {
+    "cdo": "24196919-4fe2-4841-9a1b-de61740c37fc",
+    "cpo": "a4865c42-7741-41ad-9858-2f5f7f643807",
+    "cto": "2408929f-2f00-4d59-8fb3-fc66513b27d9"
+  },
+  "seats": {
+    "cdo": "sdd-nozoki-run19-cdo",
+    "cpo": "sdd-nozoki-run19-cpo",
+    "cto": "sdd-nozoki-run19-cto"
+  },
+  "spoke_at": {
+    "cdo": 3,
+    "cpo": 4,
+    "cto": 5
+  },
+  "standing_move": {
+    "cdo": {
+      "kind": "no_followup",
+      "target": null,
+      "work": null
+    },
+    "cpo": {
+      "kind": "no_followup",
+      "target": null,
+      "work": null
+    },
+    "cto": {
+      "kind": "no_followup",
+      "target": null,
+      "work": null
+    }
+  },
+  "turn_log": [
+    {
+      "changed": true,
+      "changed_text": "nothing \u2014 no SDD section, slice or companion item altered by this seat.",
+      "declared": "no_followup",
+      "kind": "ordinary",
+      "no_reply": false,
+      "request_text": "Nothing further to read \u2014 my lanes hold against everything the peers wrote in round 1, and the one attribution I questioned turns out true at its source.\n\n**CPO turn, round 2 \u2014 my lanes re-read against the peers' round-1 folds. No edit.**\n\n- **\u00a7 5 step 4, E-1's sizing** (`docs/SDD.md:L1129-L1142`) \u2014 still right against S-1 as now written. The CDO's observable-half sentence (`:L1325-L1340`) binds exactly what my re-read names \u2014 the window's minimum as the window's, the sidebar's width with the panel taking the rest, status messages top-left and glyph-led, routes as text alone. The CTO's command-half test (`:L1337-L1342` in its numbering; the `swift test` clause) holds the two widths from the other side of the same bar \u2014 same artifact, one bar, so \"one bar on one artifact\" stands and the slice is neither resized nor split. No slice added, as both RN-74 and RN-75 also record.\n- **\u00a7 6 `open-a-folder` *Traces to*, PRD clause** \u2014 every observation the CDO's sentence binds is either carried by `docs/PRD.md` \u00a7 UX Notes \"The character\" (`:L198-L199` \u2014 dominance, text-first) or deliberately left downstream by \u00a7 Assumptions (`:L371-L374` \u2014 the glyphs and the inset). Nothing in the widened bar asks the product for something the PRD does not hold; no PRD gap, no companion item. The CDO's mirror move on the UXD clause (\u00a7 9 *Design-System Direction*, RN-75) sits beside mine and contradicts nothing.\n- ***Delivers*, *Moves toward*, *Not in this slice*** \u2014 unchanged; the CDO's sentence keeps my fence in its own words (\"the rail's entries, the chrome's two controls and the Git view arrive with the slices *Not in this slice* names\"). S-6's fence unchanged. \u00a7 1, \u00a7 5 steps 1\u20132, \u00a7 12 PRD boundary \u2014 unchanged; PRD still at `7c89e19`, Agari at `ee561fb`.\n- **The companion** \u2014 removed by the CDO (`git status`: `D docs/SDD_open_issues.md`), trail copy at `docs/trail/sdd/cycle-16.md`; RN-73's \"the companion's removal follows that fold\" is now a statement of what happened.\n\n**One note for the CTO, no recall spent:** RN-74 says the values are \"owner-confirmed there (its RN-8, per RN-73)\". The fact is true \u2014 `docs/DESIGN.md:L929`, \"**Every measurement confirmed by the owner** as drafted (`docs/trail/design/cycle-1.md` \u00a7 2.3)\" \u2014 but RN-73 does not make that claim; it cites RN-8 at `:L922`, `:L927` for the values only. If RN-74 is touched again, \"per `docs/DESIGN.md:L929`\" is the citation that carries it; as written it is a loose pointer to a true fact, not an error in the SDD, and I leave it.\n\nHeader `Version:` untouched \u2014 the runner stamps it (`.../product-sdd/SKILL.md:L3`). No commit \u2014 the skill's.",
+      "seat": "cpo",
+      "spoke": true
+    },
+    {
+      "changed": true,
+      "changed_text": "SDD Review Notes RN-74 (one citation \u2014 the owner-confirmation of DESIGN's measurements now cited to `docs/DESIGN.md:L929` in place of \"per RN-73\"). No slice altered \u2014 \u00a7 6 `open-a-folder` command half read against the CDO's observable half, unchanged. Companion items added: none.",
+      "declared": "no_followup",
+      "kind": "ordinary",
+      "no_reply": false,
+      "request_text": "Edits verified (`git diff --stat -- docs/SDD.md`: 164 insertions, 4 deletions \u2014 the three seats' round-1 hunks plus one line in RN-74; `grep -c 'per RN-73'` prints 0). Nothing further depends on another result; closing the turn.\n\n**CTO turn, round 2 \u2014 my lanes re-read against the CDO's round-1 fold and the CPO's note. One citation repaired, nothing else moves.**\n\n- **\u00a7 6 `open-a-folder` *Reached when*, the command half** (`docs/SDD.md:L1341-L1346`) \u2014 holds against the CDO's observable half as now written (`:L1325-L1340`): that sentence binds the minimum width as \"the window's own, held by `mac-shell`\" and the sidebar's width as \"the surface's\", each cited to `docs/DESIGN.md` \u00a7 *Layout*; my clause holds the same two widths by `swift test`, cited to the same section. One bar, two sides, one artifact \u2014 the CPO's step-4 reading of it in round 2 says the same. No edit.\n- **RN-74** (`:L4130-L4177`) \u2014 one line repaired, taking up the CPO's note: \"owner-confirmed there (its RN-8, per RN-73)\" now reads \"(its RN-8 \u2014 'Every measurement confirmed by the owner', `docs/DESIGN.md:L929`)\". Verified at the source before writing: `docs/DESIGN.md:L929` carries that sentence with its trail (`docs/trail/design/cycle-1.md` \u00a7 2.3), and RN-73 cites RN-8 at `:L922`, `:L927` for the values only. RN-74 is this run's own note and uncommitted, so the pointer is fixed in place rather than annotated.\n- ***Rests on*, *Why here in the order*, SRS clause of *Traces to*; \u00a7 2, \u00a7 3, \u00a7 4 CTO clauses, \u00a7 5 steps 3 and 5, \u00a7 7, \u00a7 9, \u00a7 11, \u00a7 12 SRS/downstream boundaries, *Open Questions*** \u2014 unchanged; the CDO's UXD-trace addition (\u00a7 9 *Design-System Direction*, RN-75) and the companion's removal (`git status`: `D docs/SDD_open_issues.md`, trail copy `docs/trail/sdd/cycle-16.md`) touch none of them. No \u00a7 10 entry: no command half is unmeetable as written, no slice is unstartable, and the SRS did not move.\n\nHeader `Version:` untouched \u2014 the runner stamps it. No commit \u2014 the skill's. Companion items added: none. The companion is gone and every unfolded item is folded, so this seat has nothing further.",
+      "seat": "cto",
+      "spoke": true
+    }
+  ]
+}
