@@ -136,9 +136,10 @@ func textElements(beneath root: NSView) -> [NSTextField] {
     drawnElements(beneath: root).compactMap { $0 as? NSTextField }.filter(isTextElement)
 }
 
-/// The visible glyphs beneath `root`, top to bottom and then leading first: every visible image view
-/// that cannot be edited and carries no action (the-window-holds-its-layout change_design.md § 5).
-/// A glyph is neither text nor a control, so no other reader here returns one.
+/// The visible glyphs beneath `root`, top to bottom and then leading first: every visible image
+/// view that cannot be edited and carries no action
+/// (the-window-holds-its-layout change_design.md § 5). A glyph is neither text nor a control, so no
+/// other reader here returns one.
 @MainActor
 func glyphs(beneath root: NSView) -> [NSImageView] {
     sortedTopToBottom(visibleDescendants(of: root).compactMap { $0 as? NSControl }.filter(isGlyph))

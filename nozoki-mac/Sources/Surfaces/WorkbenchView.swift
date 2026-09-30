@@ -1,10 +1,10 @@
 import AppKit
 
 /// The one-window composition for an opened folder: two panels side by side, filling the size they
-/// are given. The first is the Files sidebar, which is the tree it was handed and nothing around it,
-/// always `{spacing.sidebar-width}` wide. The second is the reading panel, which takes the rest of
-/// the width and draws one status message, led by the empty glyph, while no file is selected. Between them the workbench draws one
-/// hairline itself.
+/// are given. The first is the Files sidebar, which is the tree it was handed and nothing around
+/// it, always `{spacing.sidebar-width}` wide. The second is the reading panel, which takes the rest
+/// of the width and draws one status message, led by the empty glyph, while no file is selected.
+/// Between them the workbench draws one hairline itself.
 ///
 /// A reader of this view gets its drawn view tree and nothing else (change_spec.md CP-246): its
 /// direct subviews are exactly the two panels, sidebar first.

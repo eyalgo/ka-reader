@@ -4,9 +4,10 @@ import Surfaces
 import XCTest
 
 /// The launch window against `docs/DESIGN.md` § *Layout* and § *Components*: the window's minimum
-/// width, the workbench's two panels, the status messages and the startup surface's routes. Every value expected here is the one DESIGN states, held by the test and
-/// never read from a product constant, so a product value that departs from § *Layout* turns a test
-/// red (change_spec.md CP-262). Every test reaches the product through its presenting path.
+/// width, the workbench's two panels, the status messages and the startup surface's routes. Every
+/// value expected here is the one DESIGN states, held by the test and never read from a product
+/// constant, so a product value that departs from § *Layout* turns a test red (change_spec.md
+/// CP-262). Every test reaches the product through its presenting path.
 @MainActor
 final class LaunchWindowLayoutTests: LaunchWindowTestCase {
     /// `docs/DESIGN.md` § *Layout*: "the window's minimum width is 720px". The window's content
@@ -242,8 +243,8 @@ final class LaunchWindowLayoutTests: LaunchWindowTestCase {
 
     // MARK: - Status messages and routes (CP-256–CP-261)
 
-    /// `docs/DESIGN.md` § *Components* "Status messages": a status message is "inset `{spacing.xl}`"
-    /// (24px), "left-aligned at the top of its surface".
+    /// `docs/DESIGN.md` § *Components* "Status messages": a status message is "inset
+    /// `{spacing.xl}`" (24px), "left-aligned at the top of its surface".
     private static let statusInset: CGFloat = 24
 
     private static let browseTitle = "Browse…"

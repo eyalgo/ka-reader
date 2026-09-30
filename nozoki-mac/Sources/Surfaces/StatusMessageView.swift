@@ -2,7 +2,8 @@ import AppKit
 
 /// One status message (`docs/DESIGN.md` § *Components* "Status messages"): a glyph leading one
 /// column of text, top to bottom. The glyph's top and the column's top are the message's own top,
-/// so the glyph stands on the text's first line (the-window-holds-its-layout change_spec.md CP-258).
+/// so the glyph stands on the text's first line
+/// (the-window-holds-its-layout change_spec.md CP-258).
 ///
 /// The text elements arrive built, so each keeps the wrapping and give-way settings its owner gave
 /// it: this view holds none of them at a priority of its own.
