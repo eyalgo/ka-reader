@@ -20,16 +20,16 @@ final class LaunchWindowLayoutTests: LaunchWindowTestCase {
     /// not resize".
     private static let sidebarWidth: CGFloat = 260
 
-    /// `docs/DESIGN.md` § *Elevation & Depth*: the one `{spacing.hairline}` (1px) between the sidebar
-    /// and the reading panel.
+    /// `docs/DESIGN.md` § *Elevation & Depth*: the one `{spacing.hairline}` (1px) between the
+    /// sidebar and the reading panel.
     private static let hairline: CGFloat = 1
 
     /// How far each drag of the panels' boundary moves the pointer (change_spec.md Example 4).
     private static let dragDistance: CGFloat = 100
 
     /// How far a queued pointer event may land from where it was posted. A queued event's place is
-    /// read back through the screen it is on: measured on a window on a second display, 460 came back
-    /// as 461.98, where the press, which is delivered and not queued, kept its place.
+    /// read back through the screen it is on: measured on a window on a second display, 460 came
+    /// back as 461.98, where the press, which is delivered and not queued, kept its place.
     private static let queuedPointerDrift: CGFloat = 3
 
     private static let readingPrompt = "Select a file to view."
@@ -184,9 +184,9 @@ final class LaunchWindowLayoutTests: LaunchWindowTestCase {
         }
     }
 
-    // What makes L5 mean something: the drag it delivers reaches a view that tracks a drag in its own
-    // loop, so a boundary that could be dragged would be (measured on the fork tree: the same drag
-    // moved its split view's divider to 360 once the sidebar's width constraint was removed).
+    // What makes L5 mean something: the drag it delivers reaches a view that tracks a drag in its
+    // own loop, so a boundary that could be dragged would be (measured on the fork tree: the same
+    // drag moved its split view's divider to 360 once the sidebar's width constraint was removed).
     func testADragReachesAViewThatTracksItInItsOwnLoop() throws {
         let tracker = DragTrackingView()
         let window = try present(tracker)

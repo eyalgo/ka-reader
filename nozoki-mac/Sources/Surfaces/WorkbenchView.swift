@@ -35,10 +35,10 @@ package final class WorkbenchView: NSView {
             addSubview(panel)
         }
 
-        // Two plain panels and no divider: the sidebar "does not resize" (DESIGN § Layout; FDR R-137
-        // puts pane resizing outside the product), so its width is held at required priority and
-        // nothing between the panels takes a press. A split view held the width against a divider
-        // drag only by tying the drag's own priority (the-window-holds-its-layout, CP-254).
+        // Two plain panels and no divider: the sidebar "does not resize" (DESIGN § Layout; FDR
+        // R-137 puts pane resizing outside the product), so its width is held at required priority
+        // and nothing between the panels takes a press. A split view held the width against a
+        // divider drag only by tying the drag's own priority (the-window-holds-its-layout, CP-254).
         NSLayoutConstraint.activate([
             rootItemsView.leadingAnchor.constraint(equalTo: leadingAnchor),
             rootItemsView.topAnchor.constraint(equalTo: topAnchor),
