@@ -9,8 +9,8 @@ import XCTest
 /// red (change_spec.md CP-262). Every test reaches the product through its presenting path.
 @MainActor
 final class LaunchWindowLayoutTests: LaunchWindowTestCase {
-    /// `docs/DESIGN.md` § *Layout*: "the window's minimum width is 720px". The window's content area
-    /// is as wide as the window for its style (change_spec.md § Verified Claims row 2).
+    /// `docs/DESIGN.md` § *Layout*: "the window's minimum width is 720px". The window's content
+    /// area is as wide as the window for its style (change_spec.md § Verified Claims row 2).
     private static let minimumContentWidth: CGFloat = 720
 
     /// The height the window opens at, which this change leaves as it was (change_spec.md Gap 1).
