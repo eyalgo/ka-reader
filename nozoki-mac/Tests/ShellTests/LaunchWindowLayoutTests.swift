@@ -3,6 +3,54 @@ import Shell
 import Surfaces
 import XCTest
 
+private enum LayoutExpectations {
+    /// `docs/DESIGN.md` § *Layout*: "the window's minimum width is 720px". The window's content
+    /// area is as wide as the window for its style (change_spec.md § Verified Claims row 2).
+    static let minimumContentWidth: CGFloat = 720
+
+    /// The height the window opens at, which this change leaves as it was (change_spec.md Gap 1).
+    static let openingContentHeight: CGFloat = 640
+
+    /// `docs/DESIGN.md` § *Layout*: "The sidebar is `{spacing.sidebar-width}` (260px) wide and does
+    /// not resize".
+    static let sidebarWidth: CGFloat = 260
+
+    /// `docs/DESIGN.md` § *Elevation & Depth*: the one `{spacing.hairline}` (1px) between the
+    /// sidebar and the reading panel.
+    static let hairline: CGFloat = 1
+
+    /// How far each drag of the panels' boundary moves the pointer (change_spec.md Example 4).
+    static let dragDistance: CGFloat = 100
+
+    /// How far a queued pointer event may land from where it was posted. A queued event's place is
+    /// read back through the screen it is on: measured on a window on a second display, 460 came
+    /// back as 461.98, where the press, which is delivered and not queued, kept its place.
+    static let queuedPointerDrift: CGFloat = 3
+
+    static let readingPrompt = "Select a file to view."
+
+    static let frameTolerance: CGFloat = 0.5
+
+    static let chosenFolder = URL(
+        fileURLWithPath: "/Users/someone/notes", isDirectory: true)
+
+    static let twoEntryRootAnswer = Data(
+        (#"{"state":"observed","entries":["#
+            + #"{"name":"src","path":"src","kind":"folder","state":"pending"},"#
+            + #"{"name":"a.txt","path":"a.txt","kind":"file","state":"observed"}]}"#).utf8)
+
+    /// `docs/DESIGN.md` § *Components* "Status messages": a status message is "inset
+    /// `{spacing.xl}`" (24px), "left-aligned at the top of its surface".
+    static let statusInset: CGFloat = 24
+
+    static let browseTitle = "Browse…"
+    static let quitTitle = "Quit"
+    static let shortPath = "/Users/someone/gone"
+    /// 1023 bytes, absolute: a relative path would be resolved against the test runner's directory
+    /// on its way through the panel's URL.
+    static let widestPath = "/" + String(repeating: "W", count: 1022)
+}
+
 /// The launch window against `docs/DESIGN.md` § *Layout* and § *Components*: the window's minimum
 /// width, the workbench's two panels, the status messages and the startup surface's routes. Every
 /// value expected here is the one DESIGN states, held by the test and never read from a product
@@ -10,41 +58,6 @@ import XCTest
 /// CP-262). Every test reaches the product through its presenting path.
 @MainActor
 final class LaunchWindowLayoutTests: LaunchWindowTestCase {
-    /// `docs/DESIGN.md` § *Layout*: "the window's minimum width is 720px". The window's content
-    /// area is as wide as the window for its style (change_spec.md § Verified Claims row 2).
-    private static let minimumContentWidth: CGFloat = 720
-
-    /// The height the window opens at, which this change leaves as it was (change_spec.md Gap 1).
-    private static let openingContentHeight: CGFloat = 640
-
-    /// `docs/DESIGN.md` § *Layout*: "The sidebar is `{spacing.sidebar-width}` (260px) wide and does
-    /// not resize".
-    private static let sidebarWidth: CGFloat = 260
-
-    /// `docs/DESIGN.md` § *Elevation & Depth*: the one `{spacing.hairline}` (1px) between the
-    /// sidebar and the reading panel.
-    private static let hairline: CGFloat = 1
-
-    /// How far each drag of the panels' boundary moves the pointer (change_spec.md Example 4).
-    private static let dragDistance: CGFloat = 100
-
-    /// How far a queued pointer event may land from where it was posted. A queued event's place is
-    /// read back through the screen it is on: measured on a window on a second display, 460 came
-    /// back as 461.98, where the press, which is delivered and not queued, kept its place.
-    private static let queuedPointerDrift: CGFloat = 3
-
-    private static let readingPrompt = "Select a file to view."
-
-    private static let frameTolerance: CGFloat = 0.5
-
-    private static let chosenFolder = URL(
-        fileURLWithPath: "/Users/someone/notes", isDirectory: true)
-
-    private static let twoEntryRootAnswer = Data(
-        (#"{"state":"observed","entries":["#
-            + #"{"name":"src","path":"src","kind":"folder","state":"pending"},"#
-            + #"{"name":"a.txt","path":"a.txt","kind":"file","state":"observed"}]}"#).utf8)
-
     /// The smallest content width `window` lets a person resize it to. AppKit keeps a frame minimum
     /// and a content minimum; each is read as a content width and the smaller is the answer, so a
     /// window that declares only one of them is still read by what it declares.
@@ -65,8 +78,8 @@ final class LaunchWindowLayoutTests: LaunchWindowTestCase {
 
     /// A launch that opens a two-entry folder and ends on the workbench.
     private func launchToTheWorkbench() throws -> (workbench: WorkbenchView, window: NSWindow) {
-        let launch = makeLaunch(answers: [Self.chosenFolder])
-        launch.bridge.listAnswer = Self.twoEntryRootAnswer
+        let launch = makeLaunch(answers: [LayoutExpectations.chosenFolder])
+        launch.bridge.listAnswer = LayoutExpectations.twoEntryRootAnswer
         launch.flow.run()
         let workbench = try XCTUnwrap(
             launch.presenter.contents.last as? WorkbenchView,
@@ -78,15 +91,17 @@ final class LaunchWindowLayoutTests: LaunchWindowTestCase {
         _ window: NSWindow, _ label: String, file: StaticString = #filePath, line: UInt = #line
     ) {
         XCTAssertEqual(
-            smallestContentWidth(of: window), Self.minimumContentWidth,
-            accuracy: Self.frameTolerance,
+            smallestContentWidth(of: window), LayoutExpectations.minimumContentWidth,
+            accuracy: LayoutExpectations.frameTolerance,
             "\(label): the smallest content width the window allows", file: file, line: line)
         let opening = contentArea(of: window).size
         XCTAssertGreaterThanOrEqual(
-            opening.width, Self.minimumContentWidth - Self.frameTolerance,
+            opening.width,
+            LayoutExpectations.minimumContentWidth - LayoutExpectations.frameTolerance,
             "\(label): the opening content width", file: file, line: line)
         XCTAssertEqual(
-            opening.height, Self.openingContentHeight, accuracy: Self.frameTolerance,
+            opening.height, LayoutExpectations.openingContentHeight,
+            accuracy: LayoutExpectations.frameTolerance,
             "\(label): the opening content height is today's", file: file, line: line)
     }
 
@@ -95,8 +110,8 @@ final class LaunchWindowLayoutTests: LaunchWindowTestCase {
         let window = try present(NSView())
 
         XCTAssertEqual(
-            smallestContentWidth(of: window), Self.minimumContentWidth,
-            accuracy: Self.frameTolerance)
+            smallestContentWidth(of: window), LayoutExpectations.minimumContentWidth,
+            accuracy: LayoutExpectations.frameTolerance)
     }
 
     // L2 — CP-252, CP-253.
@@ -105,8 +120,11 @@ final class LaunchWindowLayoutTests: LaunchWindowTestCase {
         let opening = contentArea(of: window).size
 
         XCTAssertGreaterThanOrEqual(
-            opening.width, Self.minimumContentWidth - Self.frameTolerance)
-        XCTAssertEqual(opening.height, Self.openingContentHeight, accuracy: Self.frameTolerance)
+            opening.width,
+            LayoutExpectations.minimumContentWidth - LayoutExpectations.frameTolerance)
+        XCTAssertEqual(
+            opening.height, LayoutExpectations.openingContentHeight,
+            accuracy: LayoutExpectations.frameTolerance)
     }
 
     // CP-252, "whichever surface the window shows" — through a whole launch to each surface.
@@ -121,8 +139,10 @@ final class LaunchWindowLayoutTests: LaunchWindowTestCase {
     /// direct subview holding the tree, or holding the reading prompt.
     private func panels(of workbench: WorkbenchView) throws -> (sidebar: NSView, reading: NSView) {
         let prompt = try XCTUnwrap(
-            textElements(beneath: workbench).first { $0.stringValue == Self.readingPrompt },
-            "the workbench draws no “\(Self.readingPrompt)”")
+            textElements(beneath: workbench).first {
+                $0.stringValue == LayoutExpectations.readingPrompt
+            },
+            "the workbench draws no “\(LayoutExpectations.readingPrompt)”")
         return (
             try XCTUnwrap(
                 ShellTests.panel(of: workbench, containing: workbench.rootItemsView.outlineView)),
@@ -142,21 +162,23 @@ final class LaunchWindowLayoutTests: LaunchWindowTestCase {
         let readingFrame = frameInWindow(of: reading)
 
         XCTAssertEqual(
-            sidebarFrame.width, Self.sidebarWidth, accuracy: Self.frameTolerance,
+            sidebarFrame.width, LayoutExpectations.sidebarWidth,
+            accuracy: LayoutExpectations.frameTolerance,
             "\(label): the sidebar's width", file: file, line: line)
         XCTAssertEqual(
-            sidebarFrame.minX, area.minX, accuracy: Self.frameTolerance,
+            sidebarFrame.minX, area.minX, accuracy: LayoutExpectations.frameTolerance,
             "\(label): the sidebar starts at the content area's leading edge", file: file,
             line: line)
         XCTAssertEqual(
-            readingFrame.maxX, area.maxX, accuracy: Self.frameTolerance,
+            readingFrame.maxX, area.maxX, accuracy: LayoutExpectations.frameTolerance,
             "\(label): the reading panel ends at the content area's trailing edge",
             file: file, line: line)
         let gap = readingFrame.minX - sidebarFrame.maxX
         XCTAssertGreaterThanOrEqual(
-            gap, -Self.frameTolerance, "\(label): the panels overlap", file: file, line: line)
+            gap, -LayoutExpectations.frameTolerance, "\(label): the panels overlap", file: file,
+            line: line)
         XCTAssertLessThanOrEqual(
-            gap, Self.hairline + Self.frameTolerance,
+            gap, LayoutExpectations.hairline + LayoutExpectations.frameTolerance,
             "\(label): the gap between the panels is \(gap), wider than one hairline",
             file: file, line: line)
         XCTAssertGreaterThan(
@@ -193,11 +215,12 @@ final class LaunchWindowLayoutTests: LaunchWindowTestCase {
         let window = try present(tracker)
         let start = NSPoint(x: contentArea(of: window).midX, y: contentArea(of: window).midY)
 
-        try dragAsAPersonDoes(in: window, from: start, by: Self.dragDistance)
+        try dragAsAPersonDoes(in: window, from: start, by: LayoutExpectations.dragDistance)
 
         XCTAssertEqual(
-            try XCTUnwrap(tracker.trackedDistance, "the view saw no drag"), Self.dragDistance,
-            accuracy: Self.queuedPointerDrift)
+            try XCTUnwrap(tracker.trackedDistance, "the view saw no drag"),
+            LayoutExpectations.dragDistance,
+            accuracy: LayoutExpectations.queuedPointerDrift)
     }
 
     // L3 — CP-254, CP-255.
@@ -213,11 +236,14 @@ final class LaunchWindowLayoutTests: LaunchWindowTestCase {
         let (workbench, window) = try launchToTheWorkbench()
         let height = contentArea(of: window).height
 
-        for width in [Self.minimumContentWidth, 2 * Self.minimumContentWidth] {
+        for width in [
+            LayoutExpectations.minimumContentWidth, 2 * LayoutExpectations.minimumContentWidth,
+        ] {
             window.setContentSize(NSSize(width: width, height: height))
             layOut(window)
 
-            XCTAssertEqual(contentArea(of: window).width, width, accuracy: Self.frameTolerance)
+            XCTAssertEqual(
+                contentArea(of: window).width, width, accuracy: LayoutExpectations.frameTolerance)
             try assertTheSidebarIsFixedAndThePanelTakesTheRest(
                 of: workbench, in: window, "at a content width of \(width)")
         }
@@ -227,7 +253,7 @@ final class LaunchWindowLayoutTests: LaunchWindowTestCase {
     func testDraggingTheBoundaryBetweenThePanelsLeavesTheSidebarFixed() throws {
         let (workbench, window) = try launchToTheWorkbench()
 
-        for distance in [Self.dragDistance, -Self.dragDistance] {
+        for distance in [LayoutExpectations.dragDistance, -LayoutExpectations.dragDistance] {
             let (sidebar, reading) = try panels(of: workbench)
             let boundary = NSPoint(
                 x: (frameInWindow(of: sidebar).maxX + frameInWindow(of: reading).minX) / 2,
@@ -236,23 +262,13 @@ final class LaunchWindowLayoutTests: LaunchWindowTestCase {
             try dragAsAPersonDoes(in: window, from: boundary, by: distance)
 
             XCTAssertEqual(
-                frameInWindow(of: try panels(of: workbench).sidebar).width, Self.sidebarWidth,
-                accuracy: Self.frameTolerance, "after a drag of \(distance) points")
+                frameInWindow(of: try panels(of: workbench).sidebar).width,
+                LayoutExpectations.sidebarWidth,
+                accuracy: LayoutExpectations.frameTolerance, "after a drag of \(distance) points")
         }
     }
 
     // MARK: - Status messages and routes (CP-256–CP-261)
-
-    /// `docs/DESIGN.md` § *Components* "Status messages": a status message is "inset
-    /// `{spacing.xl}`" (24px), "left-aligned at the top of its surface".
-    private static let statusInset: CGFloat = 24
-
-    private static let browseTitle = "Browse…"
-    private static let quitTitle = "Quit"
-    private static let shortPath = "/Users/someone/gone"
-    /// 1023 bytes, absolute: a relative path would be resolved against the test runner's directory
-    /// on its way through the panel's URL.
-    private static let widestPath = "/" + String(repeating: "W", count: 1022)
 
     /// Which of `docs/DESIGN.md`'s two status glyphs leads a message: `info` for an empty or
     /// pending state, `circle-alert` for a failure.
@@ -290,12 +306,13 @@ final class LaunchWindowLayoutTests: LaunchWindowTestCase {
 
     /// A launch whose panel dismisses at once, or answers `chosenFolder` when `openAnswer` is set.
     private func launchToTheStartupSurface(
-        opening openAnswer: Data?, path: String? = nil, reader: ReadRunning? = nil
+        opening openAnswer: Data?, path: String? = nil, reader: ReadRunning? = nil,
+        terminate: @escaping () -> Void = {}
     ) throws -> (launch: WindowLaunch, surface: StartupView, window: NSWindow) {
         let chosen = openAnswer.map { _ in
-            URL(fileURLWithPath: path ?? Self.shortPath, isDirectory: true)
+            URL(fileURLWithPath: path ?? LayoutExpectations.shortPath, isDirectory: true)
         }
-        let launch = makeLaunch(answers: [chosen, nil], reader: reader)
+        let launch = makeLaunch(answers: [chosen, nil], reader: reader, terminate: terminate)
         launch.bridge.openAnswer = openAnswer
         launch.flow.run()
         let surface = try XCTUnwrap(
@@ -305,9 +322,9 @@ final class LaunchWindowLayoutTests: LaunchWindowTestCase {
 
     /// A launch that opens a folder whose root the bridge answers with `rootAnswer`.
     private func launchToTheWorkbench(
-        root rootAnswer: Data
+        root rootAnswer: Data, terminate: @escaping () -> Void = {}
     ) throws -> (launch: WindowLaunch, workbench: WorkbenchView, window: NSWindow) {
-        let launch = makeLaunch(answers: [Self.chosenFolder])
+        let launch = makeLaunch(answers: [LayoutExpectations.chosenFolder], terminate: terminate)
         launch.bridge.listAnswer = rootAnswer
         launch.flow.run()
         let workbench = try XCTUnwrap(
@@ -323,15 +340,19 @@ final class LaunchWindowLayoutTests: LaunchWindowTestCase {
     }
 
     /// All seven status messages CP-256 lists, the failed one once per observed condition.
-    private func everyStatusMessage() throws -> [DrawnStatusMessage] {
+    private func everyStatusMessage(
+        terminate: @escaping () -> Void = {}
+    ) throws -> [DrawnStatusMessage] {
         var messages: [DrawnStatusMessage] = []
 
-        let reading = try launchToTheWorkbench(root: Self.twoEntryRootAnswer)
+        let reading = try launchToTheWorkbench(
+            root: LayoutExpectations.twoEntryRootAnswer, terminate: terminate)
         messages.append(
             DrawnStatusMessage(
                 name: "the reading prompt", launch: reading.launch, window: reading.window,
                 surface: try panels(of: reading.workbench).reading, glyph: .empty,
-                texts: [Self.readingPrompt], drawsRoutes: false, drawsNoControl: true))
+                texts: [LayoutExpectations.readingPrompt], drawsRoutes: false, drawsNoControl: true)
+        )
 
         let roots: [(String, Data, StatusGlyph, String)] = [
             (
@@ -344,7 +365,7 @@ final class LaunchWindowLayoutTests: LaunchWindowTestCase {
             ),
         ]
         for (name, answer, glyph, sentence) in roots {
-            let root = try launchToTheWorkbench(root: answer)
+            let root = try launchToTheWorkbench(root: answer, terminate: terminate)
             messages.append(
                 DrawnStatusMessage(
                     name: name, launch: root.launch, window: root.window,
@@ -352,7 +373,7 @@ final class LaunchWindowLayoutTests: LaunchWindowTestCase {
                     drawsRoutes: false))
         }
 
-        let dismissed = try launchToTheStartupSurface(opening: nil)
+        let dismissed = try launchToTheStartupSurface(opening: nil, terminate: terminate)
         messages.append(
             DrawnStatusMessage(
                 name: "dismissed", launch: dismissed.launch, window: dismissed.window,
@@ -360,7 +381,8 @@ final class LaunchWindowLayoutTests: LaunchWindowTestCase {
                 drawsRoutes: true))
 
         let held = try launchToTheStartupSurface(
-            opening: Data(#"{"state":"opened"}"#.utf8), reader: HoldingReadRunner())
+            opening: Data(#"{"state":"opened"}"#.utf8), reader: HoldingReadRunner(),
+            terminate: terminate)
         messages.append(
             DrawnStatusMessage(
                 name: "reading", launch: held.launch, window: held.window, surface: held.surface,
@@ -373,20 +395,24 @@ final class LaunchWindowLayoutTests: LaunchWindowTestCase {
             ("unreadable", "Nozoki can't read this folder."),
         ]
         for (condition, sentence) in failures {
-            let failed = try launchToTheStartupSurface(opening: Self.openFailure(condition))
+            let failed = try launchToTheStartupSurface(
+                opening: Self.openFailure(condition), terminate: terminate)
             messages.append(
                 DrawnStatusMessage(
                     name: "failed, \(condition)", launch: failed.launch, window: failed.window,
-                    surface: failed.surface, glyph: .failure, texts: [Self.shortPath, sentence],
+                    surface: failed.surface, glyph: .failure,
+                    texts: [LayoutExpectations.shortPath, sentence],
                     drawsRoutes: true))
         }
 
-        let stopped = try launchToTheStartupSurface(opening: Data("malformed".utf8))
+        let stopped = try launchToTheStartupSurface(
+            opening: Data("malformed".utf8), terminate: terminate)
         messages.append(
             DrawnStatusMessage(
                 name: "stopped", launch: stopped.launch, window: stopped.window,
                 surface: stopped.surface, glyph: .failure,
-                texts: [Self.shortPath, "Nozoki couldn't open this folder."], drawsRoutes: true))
+                texts: [LayoutExpectations.shortPath, "Nozoki couldn't open this folder."],
+                drawsRoutes: true))
         return messages
     }
 
@@ -414,8 +440,8 @@ final class LaunchWindowLayoutTests: LaunchWindowTestCase {
     }
 
     private func spansOverlap(_ first: NSRect, _ second: NSRect) -> Bool {
-        first.minY < second.maxY - Self.frameTolerance
-            && second.minY < first.maxY - Self.frameTolerance
+        first.minY < second.maxY - LayoutExpectations.frameTolerance
+            && second.minY < first.maxY - LayoutExpectations.frameTolerance
     }
 
     /// Every check L6 makes of one message. A message with no glyph is still read for its text's
@@ -438,19 +464,26 @@ final class LaunchWindowLayoutTests: LaunchWindowTestCase {
 
         // Place: the message's top at the inset, and — below — the glyph's leading edge.
         XCTAssertEqual(
-            surfaceFrame.maxY - messageFrame.maxY, Self.statusInset, accuracy: Self.frameTolerance,
+            surfaceFrame.maxY - messageFrame.maxY, LayoutExpectations.statusInset,
+            accuracy: LayoutExpectations.frameTolerance,
             "\(name): the message's top")
         let unstacked = pairsNotStackedTopToBottom(among: texts)
         XCTAssertTrue(unstacked.isEmpty, "\(name): \(unstacked) are not one column")
 
         // Not centred, on either axis.
         XCTAssertGreaterThan(
-            abs(messageFrame.midX - surfaceFrame.midX), Self.frameTolerance,
+            abs(messageFrame.midX - surfaceFrame.midX), LayoutExpectations.frameTolerance,
             "\(name): the message is centred across its surface")
         XCTAssertGreaterThan(
-            abs(messageFrame.midY - surfaceFrame.midY), Self.frameTolerance,
+            abs(messageFrame.midY - surfaceFrame.midY), LayoutExpectations.frameTolerance,
             "\(name): the message is centred down its surface")
-        for text in texts { assertDrawnWhole(text, in: message.window) }
+        for text in texts {
+            assertDrawnWhole(text, in: message.window)
+            XCTAssertEqual(
+                frameInWindow(of: text).minX, textFrames[0].minX,
+                accuracy: LayoutExpectations.frameTolerance,
+                "\(name): the text shares one leading edge")
+        }
 
         // The reading panel and the reading state draw no control (CP-239, CP-244).
         if message.drawsNoControl {
@@ -465,13 +498,14 @@ final class LaunchWindowLayoutTests: LaunchWindowTestCase {
             glyph.image === message.glyph.image(in: message.launch.glyphs),
             "\(name): led by the \(message.glyph) glyph")
         XCTAssertEqual(
-            glyphFrame.minX - surfaceFrame.minX, Self.statusInset, accuracy: Self.frameTolerance,
+            glyphFrame.minX - surfaceFrame.minX, LayoutExpectations.statusInset,
+            accuracy: LayoutExpectations.frameTolerance,
             "\(name): the glyph's leading edge")
 
         // Beside: every text element to the glyph's right, the glyph on the first line.
         for (text, textFrame) in zip(texts, textFrames) {
             XCTAssertGreaterThanOrEqual(
-                textFrame.minX, glyphFrame.maxX - Self.frameTolerance,
+                textFrame.minX, glyphFrame.maxX - LayoutExpectations.frameTolerance,
                 "\(name): “\(text.stringValue)” stands to the glyph's right")
             XCTAssertFalse(
                 textFrame.intersects(glyphFrame),
@@ -489,11 +523,15 @@ final class LaunchWindowLayoutTests: LaunchWindowTestCase {
         XCTAssertGreaterThan(glyphFrame.width, 0, name)
         XCTAssertGreaterThan(glyphFrame.height, 0, name)
         XCTAssertTrue(
-            surfaceFrame.insetBy(dx: -Self.frameTolerance, dy: -Self.frameTolerance)
-                .contains(glyphFrame), "\(name): the glyph lies inside its surface")
+            surfaceFrame.insetBy(
+                dx: -LayoutExpectations.frameTolerance, dy: -LayoutExpectations.frameTolerance
+            )
+            .contains(glyphFrame), "\(name): the glyph lies inside its surface")
         XCTAssertTrue(
-            area.insetBy(dx: -Self.frameTolerance, dy: -Self.frameTolerance)
-                .contains(glyphFrame), "\(name): the glyph lies inside the content area")
+            area.insetBy(
+                dx: -LayoutExpectations.frameTolerance, dy: -LayoutExpectations.frameTolerance
+            )
+            .contains(glyphFrame), "\(name): the glyph lies inside the content area")
     }
 
     // L6 — CP-256, CP-257, CP-258, CP-263.
@@ -514,7 +552,8 @@ final class LaunchWindowLayoutTests: LaunchWindowTestCase {
 
     // CP-258 — the glyph is not a control.
     func testClickingTheGlyphRaisesNothing() throws {
-        forEach(try everyStatusMessage()) { message in
+        var terminations = 0
+        forEach(try everyStatusMessage(terminate: { terminations += 1 })) { message in
             let glyph = try leadingGlyph(of: message)
             let launch = message.launch
             let panelsBefore = launch.panel.presentedCount
@@ -530,20 +569,27 @@ final class LaunchWindowLayoutTests: LaunchWindowTestCase {
                 "\(message.name): nothing is presented")
             XCTAssertEqual(launch.bridge.listedPaths.count, listedBefore, message.name)
             XCTAssertEqual(launch.bridge.openedLocations.count, openedBefore, message.name)
+            XCTAssertEqual(terminations, 0, "\(message.name): the glyph does not quit")
         }
     }
 
     /// The startup messages that draw the two routes.
-    private func routeDrawingMessages() throws -> [DrawnStatusMessage] {
-        try everyStatusMessage().filter(\.drawsRoutes)
+    private func routeDrawingMessages(
+        terminate: @escaping () -> Void = {}
+    ) throws -> [DrawnStatusMessage] {
+        try everyStatusMessage(terminate: terminate).filter(\.drawsRoutes)
     }
 
     private func routes(
         of message: DrawnStatusMessage, file: StaticString = #filePath, line: UInt = #line
     ) throws -> (browse: NSControl, quit: NSControl) {
         (
-            try control(titled: Self.browseTitle, beneath: message.surface, file: file, line: line),
-            try control(titled: Self.quitTitle, beneath: message.surface, file: file, line: line)
+            try control(
+                titled: LayoutExpectations.browseTitle, beneath: message.surface, file: file,
+                line: line),
+            try control(
+                titled: LayoutExpectations.quitTitle, beneath: message.surface, file: file,
+                line: line)
         )
     }
 
@@ -607,12 +653,12 @@ final class LaunchWindowLayoutTests: LaunchWindowTestCase {
             let quitFrame = frameInWindow(of: quit)
 
             XCTAssertLessThanOrEqual(
-                quitFrame.maxY, browseFrame.minY + Self.frameTolerance,
+                quitFrame.maxY, browseFrame.minY + LayoutExpectations.frameTolerance,
                 "\(name): Quit stands on its own line beneath Browse…")
             for (route, frame) in [(browse, browseFrame), (quit, quitFrame)] {
                 let title = drawnString(of: route)
                 XCTAssertLessThanOrEqual(
-                    frame.maxY, messageBottom + Self.frameTolerance,
+                    frame.maxY, messageBottom + LayoutExpectations.frameTolerance,
                     "\(name): “\(title)” stands beneath the whole message")
                 let others =
                     drawnElements(beneath: message.surface).filter { $0 !== route }.map {
@@ -622,14 +668,14 @@ final class LaunchWindowLayoutTests: LaunchWindowTestCase {
                     others.contains { spansOverlap($0, frame) },
                     "\(name): something else shares “\(title)”'s line")
                 XCTAssertGreaterThanOrEqual(
-                    frame.minX, glyphFrame.minX - Self.frameTolerance,
+                    frame.minX, glyphFrame.minX - LayoutExpectations.frameTolerance,
                     "\(name): “\(title)” is left of the glyph")
                 XCTAssertLessThanOrEqual(
-                    frame.minX, textLeading + Self.frameTolerance,
+                    frame.minX, textLeading + LayoutExpectations.frameTolerance,
                     "\(name): “\(title)” is right of the text")
             }
             XCTAssertEqual(
-                browseFrame.minX, quitFrame.minX, accuracy: Self.frameTolerance,
+                browseFrame.minX, quitFrame.minX, accuracy: LayoutExpectations.frameTolerance,
                 "\(name): the routes' leading edges")
         }
     }
@@ -649,14 +695,14 @@ final class LaunchWindowLayoutTests: LaunchWindowTestCase {
                 "\(message.name): Browse… presents the panel once")
         }
         var terminations = 0
-        let launch = makeLaunch(answers: [nil], terminate: { terminations += 1 })
-        launch.flow.run()
-        let dismissed = try XCTUnwrap(launch.presenter.contents.last as? StartupView)
-        _ = try laidOutWindow(of: dismissed)
+        for message in try routeDrawingMessages(terminate: { terminations += 1 }) {
+            let quit = try routes(of: message).quit
+            let before = terminations
 
-        click(try control(titled: Self.quitTitle, beneath: dismissed))
+            click(quit)
 
-        XCTAssertEqual(terminations, 1, "Quit ends the app once")
+            XCTAssertEqual(terminations, before + 1, "\(message.name): Quit ends the app once")
+        }
         let reading = try launchToTheStartupSurface(
             opening: Data(#"{"state":"opened"}"#.utf8), reader: HoldingReadRunner())
         XCTAssertEqual(controls(beneath: reading.surface).count, 0, "reading draws no route")
@@ -665,20 +711,22 @@ final class LaunchWindowLayoutTests: LaunchWindowTestCase {
     // L8 — CP-261's CP-243 clause.
     func testALongPathWrapsInsideTheColumnBesideTheGlyph() throws {
         let failed = try launchToTheStartupSurface(
-            opening: Self.openFailure("missing"), path: Self.widestPath)
+            opening: Self.openFailure("missing"), path: LayoutExpectations.widestPath)
         let glyph = try XCTUnwrap(glyphs(beneath: failed.surface).first, "no glyph")
         let path = try XCTUnwrap(
-            textElements(beneath: failed.surface).first { $0.stringValue == Self.widestPath },
+            textElements(beneath: failed.surface).first {
+                $0.stringValue == LayoutExpectations.widestPath
+            },
             "the surface draws no path")
         let pathFrame = frameInWindow(of: path)
         let (browse, quit) = (
-            try control(titled: Self.browseTitle, beneath: failed.surface),
-            try control(titled: Self.quitTitle, beneath: failed.surface)
+            try control(titled: LayoutExpectations.browseTitle, beneath: failed.surface),
+            try control(titled: LayoutExpectations.quitTitle, beneath: failed.surface)
         )
 
         XCTAssertEqual(contentArea(of: failed.window).size, openingContentSize)
         XCTAssertGreaterThanOrEqual(
-            pathFrame.minX, frameInWindow(of: glyph).maxX - Self.frameTolerance,
+            pathFrame.minX, frameInWindow(of: glyph).maxX - LayoutExpectations.frameTolerance,
             "the path wraps in the column to the glyph's right")
         XCTAssertGreaterThan(
             pathFrame.height, oneLineHeight(of: path), "the path stands on more than one line")
@@ -689,14 +737,15 @@ final class LaunchWindowLayoutTests: LaunchWindowTestCase {
         for route in [browse, quit] {
             assertDrawnWhole(route, in: failed.window)
             XCTAssertLessThanOrEqual(
-                frameInWindow(of: route).maxY, pathFrame.minY + Self.frameTolerance,
+                frameInWindow(of: route).maxY, pathFrame.minY + LayoutExpectations.frameTolerance,
                 "“\(drawnString(of: route))” stands beneath the path")
         }
     }
 
     // CP-256's exception: a root with rows draws no status message, so no status glyph.
     func testAListingWithRowsDrawsNoStatusGlyphInTheSidebar() throws {
-        let (launch, workbench, _) = try launchToTheWorkbench(root: Self.twoEntryRootAnswer)
+        let (launch, workbench, _) = try launchToTheWorkbench(
+            root: LayoutExpectations.twoEntryRootAnswer)
         let statusImages = [launch.glyphs.info, launch.glyphs.circleAlert]
 
         let drawnImages = glyphs(beneath: try sidebar(of: workbench)).compactMap(\.image)
@@ -752,18 +801,19 @@ final class LaunchWindowLayoutTests: LaunchWindowTestCase {
     func testTheSidebarsMessageStaysTopLeftWhenTheWindowIsResized() throws {
         let (_, workbench, window) = try launchToTheWorkbench(
             root: Data(#"{"state":"observed","entries":[]}"#.utf8))
-        window.setContentSize(NSSize(width: 2 * Self.minimumContentWidth, height: 500))
+        window.setContentSize(
+            NSSize(width: 2 * LayoutExpectations.minimumContentWidth, height: 500))
         layOut(window)
         let sidebar = try sidebar(of: workbench)
         let glyph = try XCTUnwrap(glyphs(beneath: sidebar).first, "no glyph")
         let sidebarFrame = frameInWindow(of: sidebar)
 
         XCTAssertEqual(
-            frameInWindow(of: glyph).minX - sidebarFrame.minX, Self.statusInset,
-            accuracy: Self.frameTolerance)
+            frameInWindow(of: glyph).minX - sidebarFrame.minX, LayoutExpectations.statusInset,
+            accuracy: LayoutExpectations.frameTolerance)
         XCTAssertEqual(
-            sidebarFrame.maxY - frameInWindow(of: glyph).maxY, Self.statusInset,
-            accuracy: Self.frameTolerance)
+            sidebarFrame.maxY - frameInWindow(of: glyph).maxY, LayoutExpectations.statusInset,
+            accuracy: LayoutExpectations.frameTolerance)
     }
 
     // The harness keeps an image view that can be edited or carries an action among the controls,
