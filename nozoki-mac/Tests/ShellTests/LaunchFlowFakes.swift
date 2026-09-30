@@ -93,16 +93,37 @@ final class FakeWindowPresenter: WindowPresenting {
     }
 }
 
+/// A distinct image for each glyph the shell asks for by `docs/DESIGN.md`'s name, so a test can
+/// tell which one a surface drew: the tree's two, and the status messages' `info` (empty or
+/// pending) and `circle-alert` (failure).
 struct FakeGlyphSource: GlyphSource {
     let folder = NSImage(size: NSSize(width: 1, height: 1))
     let file = NSImage(size: NSSize(width: 2, height: 2))
+    let info = NSImage(size: NSSize(width: 3, height: 3))
+    let circleAlert = NSImage(size: NSSize(width: 4, height: 4))
 
     func glyph(named name: String) -> NSImage? {
         switch name {
         case "folder": return folder
         case "file": return file
+        case "info": return info
+        case "circle-alert": return circleAlert
         default: return nil
         }
+    }
+}
+
+/// Holds every read it is handed and never delivers one, so a launch stays on what it shows while a
+/// read is out.
+@MainActor
+final class HoldingReadRunner: ReadRunning {
+    private(set) var heldReads = 0
+
+    func run<Answer>(
+        _ read: @escaping @Sendable () -> Answer,
+        deliver: @escaping @MainActor (Answer) -> Void
+    ) {
+        heldReads += 1
     }
 }
 
