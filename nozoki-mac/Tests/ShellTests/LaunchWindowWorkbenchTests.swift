@@ -102,6 +102,11 @@ final class LaunchWindowWorkbenchTests: LaunchWindowTestCase {
         XCTAssertNil(startup.window, "the startup surface it replaced is in no window")
         assertDrawnWhole(
             try textElement(saying: "src", beneath: workbench.rootItemsView), in: windowAfter)
+        // CP-247 names the workbench "presented over a startup surface" as a case of its own, so
+        // its panels are read here too and not only where it is the window's first surface.
+        try assertSidebarHoldsTheTree(of: workbench, in: windowAfter)
+        try assertReadingPanelStandsBesideTheSidebarAndDrawsOnlyThePrompt(
+            workbench, in: windowAfter)
     }
 
     // W6 — CP-236's third clause.
@@ -122,6 +127,10 @@ final class LaunchWindowWorkbenchTests: LaunchWindowTestCase {
         XCTAssertTrue(windowAfter === window, "the next surface is presented in the same window")
         XCTAssertEqual(contentArea(of: windowAfter).size, sizeBefore)
         XCTAssertNil(failed.window, "the startup surface it replaced is in no window")
+        // CP-240 is about the window: nothing of the surface it replaced is still drawn in it.
+        XCTAssertEqual(
+            drawnStrings(beneath: try XCTUnwrap(windowAfter.contentView)),
+            ["Choose a folder to view.", Self.browseTitle, "Quit"])
     }
 
     // MARK: - The workbench's two panels (CP-237, CP-238, CP-239)
@@ -212,24 +221,38 @@ final class LaunchWindowWorkbenchTests: LaunchWindowTestCase {
         XCTAssertEqual(controls(beneath: panels.readingPanel).count, 0, file: file, line: line)
     }
 
+    /// CP-237 for a folder with at least one entry: the sidebar is non-zero wide and as high as
+    /// the content area, the tree is inside it, and the `src` row's name is drawn whole inside it.
+    private func assertSidebarHoldsTheTree(
+        of workbench: WorkbenchView, in window: NSWindow, file: StaticString = #filePath,
+        line: UInt = #line
+    ) throws {
+        let area = contentArea(of: window)
+        let sidebarFrame = frameInWindow(of: try drawn(workbench).sidebar)
+        XCTAssertGreaterThan(sidebarFrame.width, 0, file: file, line: line)
+        XCTAssertEqual(
+            sidebarFrame.height, area.height, accuracy: Self.frameTolerance, file: file, line: line)
+        let treeFrame = frameInWindow(of: workbench.rootItemsView)
+        XCTAssertGreaterThan(treeFrame.width, 0, file: file, line: line)
+        XCTAssertGreaterThan(treeFrame.height, 0, file: file, line: line)
+        XCTAssertTrue(
+            isInside(treeFrame, sidebarFrame), "tree \(treeFrame) in \(sidebarFrame)",
+            file: file, line: line)
+        let firstRowName = try textElement(
+            saying: "src", beneath: workbench.rootItemsView, file: file, line: line)
+        assertDrawnWhole(firstRowName, in: window, file: file, line: line)
+        XCTAssertTrue(
+            isInside(frameInWindow(of: firstRowName), sidebarFrame), file: file, line: line)
+    }
+
     // W1 — Example 1.
     func testWorkbenchDrawsAFilesSidebarAndItsTree() throws {
         let workbench = makeWorkbench(showing: twoEntryRoot)
 
         let window = try present(workbench)
 
-        let area = contentArea(of: window)
-        XCTAssertEqual(area.size, openingContentSize)
-        let sidebarFrame = frameInWindow(of: try drawn(workbench).sidebar)
-        XCTAssertGreaterThan(sidebarFrame.width, 0)
-        XCTAssertEqual(sidebarFrame.height, area.height, accuracy: Self.frameTolerance)
-        let treeFrame = frameInWindow(of: workbench.rootItemsView)
-        XCTAssertGreaterThan(treeFrame.width, 0)
-        XCTAssertGreaterThan(treeFrame.height, 0)
-        XCTAssertTrue(isInside(treeFrame, sidebarFrame), "tree \(treeFrame) in \(sidebarFrame)")
-        let firstRowName = try textElement(saying: "src", beneath: workbench.rootItemsView)
-        assertDrawnWhole(firstRowName, in: window)
-        XCTAssertTrue(isInside(frameInWindow(of: firstRowName), sidebarFrame))
+        XCTAssertEqual(contentArea(of: window).size, openingContentSize)
+        try assertSidebarHoldsTheTree(of: workbench, in: window)
     }
 
     // W2 — Example 2.
@@ -284,6 +307,9 @@ final class LaunchWindowWorkbenchTests: LaunchWindowTestCase {
     func testThePanelsFillAWindowOfAnotherSize() throws {
         let workbench = makeWorkbench(showing: twoEntryRoot)
         let window = try present(workbench)
+        let openingPanels = try drawn(workbench)
+        let openingSidebarWidth = frameInWindow(of: openingPanels.sidebar).width
+        let openingReadingWidth = frameInWindow(of: openingPanels.readingPanel).width
 
         window.setContentSize(NSSize(width: 900, height: 500))
         layOut(window)
@@ -297,6 +323,10 @@ final class LaunchWindowWorkbenchTests: LaunchWindowTestCase {
         XCTAssertEqual(sidebarFrame.height, area.height, accuracy: Self.frameTolerance)
         XCTAssertEqual(readingFrame.height, area.height, accuracy: Self.frameTolerance)
         XCTAssertEqual(readingFrame.maxX, area.maxX, accuracy: Self.frameTolerance)
+        // The workbench states its own division: the sidebar keeps the width it stated and the
+        // reading panel takes the rest (tl_instruction.md Task 4). No number is asserted (Gap 2).
+        XCTAssertEqual(sidebarFrame.width, openingSidebarWidth, accuracy: Self.frameTolerance)
+        XCTAssertGreaterThan(readingFrame.width, openingReadingWidth)
         try assertReadingPanelStandsBesideTheSidebarAndDrawsOnlyThePrompt(workbench, in: window)
     }
 }

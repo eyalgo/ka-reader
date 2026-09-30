@@ -198,6 +198,18 @@ func overlappingPairs(among elements: [NSControl]) -> [(String, String)] {
     return pairs
 }
 
+/// Each adjacent pair of `elements` whose second does not stand wholly beneath its first. A rule
+/// that fixes an order "from top to bottom" (change_spec.md CP-240–CP-242) is not met by two
+/// elements side by side on one line, which sorting them by place would still put in an order.
+@MainActor
+func pairsNotStackedTopToBottom(among elements: [NSControl]) -> [(String, String)] {
+    zip(elements, elements.dropFirst()).compactMap { upper, lower in
+        let isBeneath =
+            frameInWindow(of: lower).maxY <= frameInWindow(of: upper).minY + layoutTolerance
+        return isBeneath ? nil : (drawnString(of: upper), drawnString(of: lower))
+    }
+}
+
 /// One activation of a drawn control, performed on the control itself (change_spec.md CP-247).
 @MainActor
 func click(_ control: NSControl) {
@@ -241,12 +253,32 @@ private func visibleDescendants(of root: NSView) -> [NSView] {
 /// The size `element`'s text needs at its font: a wrapping element's at the width it has, any
 /// other's on one line. Measured: a label's intrinsic width is what layout gives it and draws whole
 /// (120.5 for the reading prompt), where its cell's own size adds padding (124.3).
+///
+/// A wrapping element's height is also measured from the text itself, laid out across the whole of
+/// the element's width, and the taller answer is the one used. The cell alone is not enough: a cell
+/// capped at a number of lines answers with the capped height, so a 300-character path cut off
+/// after its second line read as whole (measured: 32 points against the 80 its text needs).
 @MainActor
 private func neededSize(of element: NSControl) -> NSSize {
     guard let cell = element.cell, cell.wraps else { return element.intrinsicContentSize }
-    return cell.cellSize(
-        forBounds: NSRect(
-            x: 0, y: 0, width: element.bounds.width, height: .greatestFiniteMagnitude))
+    let widestLine = NSSize(width: element.bounds.width, height: .greatestFiniteMagnitude)
+    let cellSize = cell.cellSize(forBounds: NSRect(origin: .zero, size: widestLine))
+    return NSSize(
+        width: cellSize.width,
+        height: max(cellSize.height, uncappedTextHeight(of: element, within: widestLine)))
+}
+
+/// The height `element`'s whole string takes at its font and line-break mode inside `size`, with
+/// no limit on the number of lines. It is a lower bound on what the element needs: the element
+/// draws its text in a little less than its whole width.
+@MainActor
+private func uncappedTextHeight(of element: NSControl, within size: NSSize) -> CGFloat {
+    let paragraph = NSMutableParagraphStyle()
+    paragraph.lineBreakMode = element.lineBreakMode
+    var attributes: [NSAttributedString.Key: Any] = [.paragraphStyle: paragraph]
+    if let font = element.font { attributes[.font] = font }
+    return NSAttributedString(string: element.stringValue, attributes: attributes)
+        .boundingRect(with: size, options: [.usesLineFragmentOrigin, .usesFontLeading]).height
 }
 
 /// Whether AppKit would offer an expansion for `textField`, which it does exactly when the text

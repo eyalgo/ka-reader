@@ -61,6 +61,10 @@ final class LaunchWindowStartupTests: LaunchWindowTestCase {
         }
         let overlaps = overlappingPairs(among: elements)
         XCTAssertTrue(overlaps.isEmpty, "\(overlaps) overlap. \(label)", file: file, line: line)
+        let unstacked = pairsNotStackedTopToBottom(among: elements)
+        XCTAssertTrue(
+            unstacked.isEmpty, "\(unstacked) are not one beneath the other. \(label)",
+            file: file, line: line)
     }
 
     private func drawnFailure(
