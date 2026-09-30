@@ -7,6 +7,10 @@ package final class LaunchFlow {
     private static let rootPath = ""
     private static let folderGlyphName = "folder"
     private static let fileGlyphName = "file"
+    /// `docs/DESIGN.md` § *Components* "Status messages": `info` leads an empty or pending state,
+    /// `circle-alert` a failure.
+    private static let emptyGlyphName = "info"
+    private static let failureGlyphName = "circle-alert"
 
     private enum LaunchAnswer {
         case opened(RootListing?)
@@ -21,6 +25,11 @@ package final class LaunchFlow {
     private let reader: ReadRunning
     private let terminate: () -> Void
     package private(set) var folderOpened = false
+
+    /// Resolved on the first surface that needs them, as the tree's glyphs are, so a missing file
+    /// stops the launch where it is first drawn.
+    private lazy var statusGlyphs = StatusGlyphs(
+        empty: glyph(named: Self.emptyGlyphName), failure: glyph(named: Self.failureGlyphName))
 
     package init(
         panel: FolderChoosing, bridge: Bridging, glyphs: GlyphSource, presenter: WindowPresenting,
@@ -76,7 +85,7 @@ package final class LaunchFlow {
 
     private func presentStartup(_ projection: StartupProjection) {
         presenter.present(
-            StartupView(projection: projection) { [weak self] intent in
+            StartupView(projection: projection, glyphs: statusGlyphs) { [weak self] intent in
                 switch intent {
                 case .browse: self?.chooseFolder()
                 case .quit: self?.terminate()
@@ -87,12 +96,12 @@ package final class LaunchFlow {
     private func presentWorkbench(_ root: RootListing?) {
         let view = RootItemsView(
             folderGlyph: glyph(named: Self.folderGlyphName),
-            fileGlyph: glyph(named: Self.fileGlyphName))
+            fileGlyph: glyph(named: Self.fileGlyphName), statusGlyphs: statusGlyphs)
         view.show(root)
         view.listTree = { [bridge, reader] path, answer in
             reader.run({ Self.listing(at: path, through: bridge) }, deliver: answer)
         }
-        presenter.present(WorkbenchView(rootItemsView: view))
+        presenter.present(WorkbenchView(rootItemsView: view, statusGlyphs: statusGlyphs))
     }
 
     private nonisolated static func listing(at path: String, through bridge: Bridging)

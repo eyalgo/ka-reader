@@ -3,7 +3,7 @@ import AppKit
 /// The one-window composition for an opened folder: two panels side by side, filling the size they
 /// are given. The first is the Files sidebar, which is the tree it was handed and nothing around it,
 /// always `{spacing.sidebar-width}` wide. The second is the reading panel, which takes the rest of
-/// the width and draws one prompt while no file is selected. Between them the workbench draws one
+/// the width and draws one status message, led by the empty glyph, while no file is selected. Between them the workbench draws one
 /// hairline itself.
 ///
 /// A reader of this view gets its drawn view tree and nothing else (change_spec.md CP-246): its
@@ -20,15 +20,16 @@ package final class WorkbenchView: NSView {
     /// the reading panel.
     private static let hairlineWidth: CGFloat = 1
 
-    /// `docs/DESIGN.md`'s `{spacing.xl}`: how far the prompt stands in from its panel's top-left.
+    /// `docs/DESIGN.md` § *Components* "Status messages": a status message is inset `{spacing.xl}`
+    /// from its surface's top-left.
     private static let promptInset: CGFloat = 24
 
     package let rootItemsView: RootItemsView
 
-    package init(rootItemsView: RootItemsView) {
+    package init(rootItemsView: RootItemsView, statusGlyphs: StatusGlyphs) {
         self.rootItemsView = rootItemsView
         super.init(frame: .zero)
-        let readingPanel = Self.makeReadingPanel()
+        let readingPanel = Self.makeReadingPanel(glyph: statusGlyphs.empty)
         for panel in [rootItemsView, readingPanel] {
             panel.translatesAutoresizingMaskIntoConstraints = false
             addSubview(panel)
@@ -66,11 +67,12 @@ package final class WorkbenchView: NSView {
         ).fill()
     }
 
-    /// A plain view holding the prompt at its top-left (`docs/DESIGN.md` RN-14: a status message
-    /// is top-left and never centred).
-    private static func makeReadingPanel() -> NSView {
+    /// A plain view holding the prompt's status message at its top-left (`docs/DESIGN.md` RN-14: a
+    /// status message is top-left and never centred).
+    private static func makeReadingPanel(glyph: NSImage) -> NSView {
         let panel = NSView()
-        let prompt = NSTextField(labelWithString: readingPrompt)
+        let prompt = StatusMessageView(
+            glyph: glyph, texts: [NSTextField(labelWithString: readingPrompt)])
         prompt.translatesAutoresizingMaskIntoConstraints = false
         panel.addSubview(prompt)
         // Nothing ties the prompt to the panel's bottom: with the label as the panel, its one

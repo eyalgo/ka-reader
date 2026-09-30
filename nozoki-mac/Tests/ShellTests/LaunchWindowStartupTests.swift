@@ -19,12 +19,18 @@ final class LaunchWindowStartupTests: LaunchWindowTestCase {
     /// A path no layout fits: 16384 points tall at a 440-point line (change_design.md M9).
     private static let pathNoLayoutFits = String(repeating: "\n", count: pathByteLimit)
 
-    /// The room the 1023-`W` path needs at the opening size's column, 672 points wide (720 less the
-    /// inset each side). M9 measured 480 on the 440-point line of a 480-wide window; the wider
-    /// opening size moves it (the-window-holds-its-layout change_design.md § 5, S5; measured 320).
-    private static let measuredRoomForTheWidestPath: CGFloat = 320
+    /// The room the 1023-`W` path needs in the column beside the status glyph at the opening size: a
+    /// path 652 points wide, measured at 336 (the-window-holds-its-layout change_design.md § 5, S5).
+    /// M9 measured 480 on the 440-point line of a 480-wide window, and 320 was measured on the
+    /// 672-point column before the glyph narrowed it.
+    private static let measuredRoomForTheWidestPath: CGFloat = 336
 
     private static let frameTolerance: CGFloat = 0.5
+
+    /// Distinct images for the two status glyphs, so a test can tell which one was drawn.
+    private let statusGlyphs = StatusGlyphs(
+        empty: NSImage(size: NSSize(width: 3, height: 3)),
+        failure: NSImage(size: NSSize(width: 4, height: 4)))
 
     /// A failed opening's four elements, found by their place: the path first, the routes last.
     private struct DrawnFailure {
@@ -39,16 +45,23 @@ final class LaunchWindowStartupTests: LaunchWindowTestCase {
     private func presentStartup(
         _ projection: StartupProjection, onIntent: @escaping (StartupIntent) -> Void = { _ in }
     ) throws -> (surface: StartupView, window: NSWindow) {
-        let surface = StartupView(projection: projection, onIntent: onIntent)
+        let surface = StartupView(projection: projection, glyphs: statusGlyphs, onIntent: onIntent)
         return (surface, try present(surface))
     }
 
     /// The element list a rule fixes: exactly `strings`, top to bottom, the last `controlCount` of
-    /// them controls and the rest text elements, each drawn whole and none over another.
+    /// them controls and the rest text elements, each drawn whole and none over another — and the
+    /// one glyph leading the message, `glyph` (the-window-holds-its-layout CP-256, CP-261).
     private func assertDraws(
-        exactly strings: [String], controlCount: Int, on surface: NSView, in window: NSWindow,
-        _ label: String = "", file: StaticString = #filePath, line: UInt = #line
+        exactly strings: [String], controlCount: Int, ledBy glyph: NSImage, on surface: NSView,
+        in window: NSWindow, _ label: String = "", file: StaticString = #filePath,
+        line: UInt = #line
     ) {
+        let drawnGlyphs = glyphs(beneath: surface)
+        XCTAssertEqual(drawnGlyphs.count, 1, "one glyph. \(label)", file: file, line: line)
+        XCTAssertTrue(
+            drawnGlyphs.first?.image === glyph, "the message's glyph. \(label)", file: file,
+            line: line)
         let elements = drawnElements(beneath: surface)
         XCTAssertEqual(elements.map(drawnString), strings, label, file: file, line: line)
         XCTAssertEqual(
@@ -124,7 +137,7 @@ final class LaunchWindowStartupTests: LaunchWindowTestCase {
 
         assertDraws(
             exactly: ["Choose a folder to view.", Self.browseTitle, Self.quitTitle],
-            controlCount: 2, on: surface, in: window)
+            controlCount: 2, ledBy: statusGlyphs.empty, on: surface, in: window)
     }
 
     // S2 — Examples 7, 8, 9 (CP-241).
@@ -142,7 +155,8 @@ final class LaunchWindowStartupTests: LaunchWindowTestCase {
 
             assertDraws(
                 exactly: [Self.shortPath, sentence, Self.browseTitle, Self.quitTitle],
-                controlCount: 2, on: surface, in: window, "\(condition)")
+                controlCount: 2, ledBy: statusGlyphs.failure, on: surface, in: window,
+                "\(condition)")
         }
     }
 
@@ -155,7 +169,7 @@ final class LaunchWindowStartupTests: LaunchWindowTestCase {
                 Self.shortPath, "Nozoki couldn't open this folder.", Self.browseTitle,
                 Self.quitTitle,
             ],
-            controlCount: 2, on: surface, in: window)
+            controlCount: 2, ledBy: statusGlyphs.failure, on: surface, in: window)
     }
 
     // S4 — Example 11 (CP-243).
@@ -199,7 +213,9 @@ final class LaunchWindowStartupTests: LaunchWindowTestCase {
     func testReadingDrawsOnlyTheReadingLine() throws {
         let (surface, window) = try presentStartup(.reading)
 
-        assertDraws(exactly: ["Reading this folder."], controlCount: 0, on: surface, in: window)
+        assertDraws(
+            exactly: ["Reading this folder."], controlCount: 0, ledBy: statusGlyphs.empty,
+            on: surface, in: window)
         XCTAssertTrue(visibleViews(of: NSProgressIndicator.self, beneath: surface).isEmpty)
     }
 

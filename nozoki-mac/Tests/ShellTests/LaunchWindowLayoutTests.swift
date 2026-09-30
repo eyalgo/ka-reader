@@ -249,7 +249,9 @@ final class LaunchWindowLayoutTests: LaunchWindowTestCase {
     private static let browseTitle = "Browse…"
     private static let quitTitle = "Quit"
     private static let shortPath = "/Users/someone/gone"
-    private static let widestPath = String(repeating: "W", count: 1023)
+    /// 1023 bytes, absolute: a relative path would be resolved against the test runner's directory
+    /// on its way through the panel's URL.
+    private static let widestPath = "/" + String(repeating: "W", count: 1022)
 
     /// Which of `docs/DESIGN.md`'s two status glyphs leads a message: `info` for an empty or
     /// pending state, `circle-alert` for a failure.
