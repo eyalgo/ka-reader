@@ -68,6 +68,62 @@ final class LaunchWindowWorkbenchTests: LaunchWindowTestCase {
         XCTAssertEqual(frameInWindow(of: second), contentArea(of: window))
     }
 
+    // MARK: - One surface replacing another through a launch (CP-236)
+
+    private static let browseTitle = "Browse…"
+    private static let chosenFolder = URL(
+        fileURLWithPath: "/Users/someone/notes", isDirectory: true)
+
+    private static let twoEntryRootAnswer = Data(
+        (#"{"state":"observed","entries":["#
+            + #"{"name":"src","path":"src","kind":"folder","state":"pending"},"#
+            + #"{"name":"a.txt","path":"a.txt","kind":"file","state":"observed"}]}"#).utf8)
+
+    private static let missingFolderAnswer = Data(
+        #"{"state":"failed","condition":"missing"}"#.utf8)
+
+    // W5 — Example 5 (CP-236; CP-247's "presented over a startup surface").
+    func testTheWindowKeepsItsSizeWhenTheWorkbenchReplacesAStartupSurface() throws {
+        let launch = makeLaunch(answers: [nil, Self.chosenFolder])
+        launch.bridge.listAnswer = Self.twoEntryRootAnswer
+        launch.flow.run()
+        let startup = try XCTUnwrap(launch.presenter.contents.last as? StartupView)
+        let window = try laidOutWindow(of: startup)
+        XCTAssertEqual(contentArea(of: window).size, openingContentSize)
+
+        click(try control(titled: Self.browseTitle, beneath: startup))
+
+        let workbench = try XCTUnwrap(
+            launch.presenter.contents.last as? WorkbenchView,
+            "a readable folder opens the workbench")
+        let windowAfter = try laidOutWindow(of: workbench)
+        XCTAssertTrue(windowAfter === window, "the workbench is presented in the same window")
+        XCTAssertEqual(contentArea(of: windowAfter).size, openingContentSize)
+        XCTAssertNil(startup.window, "the startup surface it replaced is in no window")
+        assertDrawnWhole(
+            try textElement(saying: "src", beneath: workbench.rootItemsView), in: windowAfter)
+    }
+
+    // W6 — CP-236's third clause.
+    func testTheWindowKeepsItsSizeWhenOneStartupSurfaceReplacesAnother() throws {
+        let launch = makeLaunch(answers: [Self.chosenFolder, nil])
+        launch.bridge.openAnswer = Self.missingFolderAnswer
+        launch.flow.run()
+        let failed = try XCTUnwrap(launch.presenter.contents.last as? StartupView)
+        let window = try laidOutWindow(of: failed)
+        let sizeBefore = contentArea(of: window).size
+        XCTAssertEqual(sizeBefore, openingContentSize)
+
+        click(try control(titled: Self.browseTitle, beneath: failed))
+
+        let dismissed = try XCTUnwrap(launch.presenter.contents.last as? StartupView)
+        XCTAssertFalse(dismissed === failed, "the dismissed panel presents another surface")
+        let windowAfter = try laidOutWindow(of: dismissed)
+        XCTAssertTrue(windowAfter === window, "the next surface is presented in the same window")
+        XCTAssertEqual(contentArea(of: windowAfter).size, sizeBefore)
+        XCTAssertNil(failed.window, "the startup surface it replaced is in no window")
+    }
+
     // MARK: - The workbench's two panels (CP-237, CP-238, CP-239)
 
     private static let readingPrompt = "Select a file to view."

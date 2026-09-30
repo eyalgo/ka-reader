@@ -15,6 +15,8 @@ private let emptyDocsAnswer = Data(#"{"state":"observed","entries":[]}"#.utf8)
 final class LaunchFlowTests: XCTestCase {
     private let chosenFolder = URL(fileURLWithPath: "/Users/someone/notes", isDirectory: true)
     private let namedBridgeCalls: Set<String> = ["open_folder", "list_tree", "free"]
+    private let browseTitle = "Browse…"
+    private let quitTitle = "Quit"
 
     private var failureCases: [(OpeningCondition, Data, String)] {
         [
@@ -75,6 +77,20 @@ final class LaunchFlowTests: XCTestCase {
         try XCTUnwrap(presenter.contents.last as? StartupView)
     }
 
+    /// What the presented startup surface draws, top to bottom. The surface is in no window here,
+    /// so it is given the opening size and laid out before its elements' places are read.
+    private func drawnStartup(in presenter: FakeWindowPresenter) throws -> [String] {
+        let surface = try startupView(in: presenter)
+        surface.frame = NSRect(origin: .zero, size: openingContentSize)
+        surface.layoutSubtreeIfNeeded()
+        return drawnStrings(beneath: surface)
+    }
+
+    /// One click on the control of that title drawn by the presented startup surface.
+    private func clickRoute(titled title: String, in presenter: FakeWindowPresenter) throws {
+        click(try control(titled: title, beneath: try startupView(in: presenter)))
+    }
+
     private func workbench(in presenter: FakeWindowPresenter) throws -> WorkbenchView {
         try XCTUnwrap(presenter.contents.last as? WorkbenchView)
     }
@@ -96,7 +112,7 @@ final class LaunchFlowTests: XCTestCase {
         XCTAssertEqual(bridge.openedLocations, [])
         XCTAssertEqual(bridge.listedPaths, [])
         XCTAssertEqual(
-            try startupView(in: presenter).drawnText,
+            try drawnStartup(in: presenter),
             ["Choose a folder to view.", "Browse…", "Quit"])
         XCTAssertEqual(presenter.createdWindowCount, 1)
     }
@@ -106,7 +122,7 @@ final class LaunchFlowTests: XCTestCase {
         flow.run()
 
         for _ in 0..<3 {
-            try startupView(in: presenter).activate(.browse)
+            try clickRoute(titled: browseTitle, in: presenter)
         }
 
         XCTAssertEqual(log.events, ["panel", "panel", "panel", "panel"])
@@ -130,7 +146,7 @@ final class LaunchFlowTests: XCTestCase {
             flow.run()
             let bridgeCallsBeforeQuit = log.events.filter { $0 != "panel" }
 
-            try startupView(in: presenter).activate(.quit)
+            try clickRoute(titled: quitTitle, in: presenter)
 
             XCTAssertEqual(terminations, 1)
             XCTAssertEqual(log.events.filter { $0 != "panel" }, bridgeCallsBeforeQuit)
@@ -147,7 +163,7 @@ final class LaunchFlowTests: XCTestCase {
             XCTAssertEqual(bridge.openedLocations, [chosenFolder], "\(condition)")
             XCTAssertEqual(bridge.listedPaths, [], "\(condition)")
             XCTAssertEqual(
-                try startupView(in: presenter).drawnText,
+                try drawnStartup(in: presenter),
                 [chosenFolder.path, sentence, "Browse…", "Quit"],
                 "\(condition)")
             XCTAssertEqual(presenter.createdWindowCount, 1, "\(condition)")
@@ -164,14 +180,14 @@ final class LaunchFlowTests: XCTestCase {
                 bridge.openAnswers = [firstPayload, secondPayload]
 
                 flow.run()
-                try startupView(in: presenter).activate(.browse)
+                try clickRoute(titled: browseTitle, in: presenter)
 
                 XCTAssertEqual(panel.presentedCount, 2, "\(firstCondition), \(secondCondition)")
                 XCTAssertEqual(bridge.openedLocations, [firstURL, secondURL])
                 XCTAssertEqual(bridge.listedPaths, [])
                 XCTAssertEqual(presenter.createdWindowCount, 1)
                 XCTAssertEqual(
-                    try startupView(in: presenter).drawnText,
+                    try drawnStartup(in: presenter),
                     [secondURL.path, secondSentence, "Browse…", "Quit"])
                 XCTAssertEqual(bridge.handedOut.sorted(), bridge.freed.sorted())
                 XCTAssertEqual(Set(bridge.freed).count, bridge.freed.count)
@@ -191,7 +207,7 @@ final class LaunchFlowTests: XCTestCase {
             flow.run()
             bridge.openAnswer = openedAnswer
 
-            try startupView(in: presenter).activate(.browse)
+            try clickRoute(titled: browseTitle, in: presenter)
 
             XCTAssertEqual(panel.presentedCount, 2)
             XCTAssertEqual(bridge.openedLocations.last, chosenFolder)
@@ -212,13 +228,13 @@ final class LaunchFlowTests: XCTestCase {
             flow.run()
             let openedBeforeDismissal = bridge.openedLocations
 
-            try startupView(in: presenter).activate(.browse)
+            try clickRoute(titled: browseTitle, in: presenter)
 
             XCTAssertEqual(panel.presentedCount, 2)
             XCTAssertEqual(bridge.openedLocations, openedBeforeDismissal)
             XCTAssertEqual(bridge.listedPaths, [])
             XCTAssertEqual(
-                try startupView(in: presenter).drawnText,
+                try drawnStartup(in: presenter),
                 ["Choose a folder to view.", "Browse…", "Quit"])
             XCTAssertEqual(presenter.createdWindowCount, 1)
         }
@@ -305,7 +321,7 @@ final class LaunchFlowTests: XCTestCase {
             XCTAssertFalse(flow.folderOpened)
             XCTAssertFalse(presenter.contents.contains { $0 is WorkbenchView })
             XCTAssertEqual(
-                try startupView(in: presenter).drawnText,
+                try drawnStartup(in: presenter),
                 [chosenFolder.path, "Nozoki couldn't open this folder.", "Browse…", "Quit"])
             XCTAssertEqual(bridge.handedOut, bridge.freed)
         }

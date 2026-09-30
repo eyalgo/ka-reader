@@ -208,17 +208,101 @@ final class LaunchWindowStartupTests: LaunchWindowTestCase {
             var intents: [StartupIntent] = []
             let (surface, _) = try presentStartup(projection) { intents.append($0) }
             XCTAssertEqual(intents, [], "drawing \(projection) raises no intent")
-            let routes = controls(beneath: surface)
-            let browse = try XCTUnwrap(
-                routes.first { drawnString(of: $0) == Self.browseTitle }, "\(projection)")
-            let quit = try XCTUnwrap(
-                routes.first { drawnString(of: $0) == Self.quitTitle }, "\(projection)")
+            let browse = try control(titled: Self.browseTitle, beneath: surface)
+            let quit = try control(titled: Self.quitTitle, beneath: surface)
             XCTAssertTrue(browse.isEnabled && quit.isEnabled, "\(projection)")
 
             click(browse)
             XCTAssertEqual(intents, [.browse], "\(projection)")
             click(quit)
             XCTAssertEqual(intents, [.browse, .quit], "\(projection)")
+        }
+    }
+
+    // MARK: - The routes through a launch (CP-245)
+
+    /// A launch that ends on a surface drawing the routes: what the panel answers first, and what
+    /// the bridge answers the opening with.
+    private struct RouteDrawingLaunch {
+        let name: String
+        let panelAnswer: URL?
+        let openAnswer: Data?
+    }
+
+    private static let chosenFolder = URL(fileURLWithPath: shortPath, isDirectory: true)
+
+    /// Every surface that draws the routes: the dismissed panel, each observed failure, and the
+    /// opening that stopped with no observed condition.
+    private static let routeDrawingLaunches: [RouteDrawingLaunch] = [
+        RouteDrawingLaunch(name: "dismissed", panelAnswer: nil, openAnswer: nil),
+        RouteDrawingLaunch(
+            name: "missing", panelAnswer: chosenFolder,
+            openAnswer: Data(#"{"state":"failed","condition":"missing"}"#.utf8)),
+        RouteDrawingLaunch(
+            name: "not a folder", panelAnswer: chosenFolder,
+            openAnswer: Data(#"{"state":"failed","condition":"not_a_folder"}"#.utf8)),
+        RouteDrawingLaunch(
+            name: "unreadable", panelAnswer: chosenFolder,
+            openAnswer: Data(#"{"state":"failed","condition":"unreadable"}"#.utf8)),
+        RouteDrawingLaunch(
+            name: "stopped", panelAnswer: chosenFolder, openAnswer: Data("malformed".utf8)),
+    ]
+
+    /// Runs `launch` into a real window and returns it with the startup surface it ended on. The
+    /// panel is dismissed on every later presentation, so a click on *Browse…* reads nothing.
+    private func run(
+        _ launch: RouteDrawingLaunch, terminate: @escaping () -> Void = {}
+    ) throws -> (launch: WindowLaunch, surface: StartupView) {
+        let windowLaunch = makeLaunch(answers: [launch.panelAnswer, nil], terminate: terminate)
+        windowLaunch.bridge.openAnswer = launch.openAnswer
+        windowLaunch.flow.run()
+        let surface = try XCTUnwrap(
+            windowLaunch.presenter.contents.last as? StartupView,
+            "\(launch.name) ends on a startup surface")
+        _ = try laidOutWindow(of: surface)
+        return (windowLaunch, surface)
+    }
+
+    /// Every call the bridge has taken so far: a click that makes no bridge call leaves it as is.
+    private func bridgeCallCount(of bridge: RecordingBridge) -> Int {
+        bridge.openedLocations.count + bridge.listedPaths.count + bridge.freed.count
+    }
+
+    // S8 — Examples 13, 14 (CP-245; CP-247's activations "performed on the control itself").
+    func testEveryDrawnRouteIsEnabledAndEachClickDoesExactlyItsIntent() throws {
+        for routeDrawingLaunch in Self.routeDrawingLaunches {
+            let name = routeDrawingLaunch.name
+
+            var terminationsOnBrowse = 0
+            let browsed = try run(routeDrawingLaunch) { terminationsOnBrowse += 1 }
+            let browse = try control(titled: Self.browseTitle, beneath: browsed.surface)
+            XCTAssertTrue(browse.isEnabled, "\(name): Browse… is enabled")
+            XCTAssertTrue(
+                try control(titled: Self.quitTitle, beneath: browsed.surface).isEnabled,
+                "\(name): Quit is enabled")
+            let presentedBeforeBrowse = browsed.launch.panel.presentedCount
+
+            click(browse)
+
+            XCTAssertEqual(
+                browsed.launch.panel.presentedCount, presentedBeforeBrowse + 1,
+                "\(name): one click on Browse… presents the panel exactly once")
+            XCTAssertEqual(terminationsOnBrowse, 0, "\(name): Browse… ends nothing")
+
+            var terminationsOnQuit = 0
+            let quitting = try run(routeDrawingLaunch) { terminationsOnQuit += 1 }
+            let presentedBeforeQuit = quitting.launch.panel.presentedCount
+            let bridgeCallsBeforeQuit = bridgeCallCount(of: quitting.launch.bridge)
+
+            click(try control(titled: Self.quitTitle, beneath: quitting.surface))
+
+            XCTAssertEqual(terminationsOnQuit, 1, "\(name): one click on Quit ends once")
+            XCTAssertEqual(
+                bridgeCallCount(of: quitting.launch.bridge), bridgeCallsBeforeQuit,
+                "\(name): Quit makes no bridge call")
+            XCTAssertEqual(
+                quitting.launch.panel.presentedCount, presentedBeforeQuit,
+                "\(name): Quit presents no panel")
         }
     }
 

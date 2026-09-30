@@ -204,6 +204,17 @@ func click(_ control: NSControl) {
     control.performClick(nil)
 }
 
+/// The drawn control titled `title` beneath `root`. It throws when the surface draws none, which
+/// is what "a control that is not drawn cannot be activated" comes to (change_spec.md CP-245).
+@MainActor
+func control(
+    titled title: String, beneath root: NSView, file: StaticString = #filePath, line: UInt = #line
+) throws -> NSControl {
+    try XCTUnwrap(
+        controls(beneath: root).first { drawnString(of: $0) == title },
+        "the surface draws no control titled “\(title)”", file: file, line: line)
+}
+
 /// The workbench's panel holding `element`: the direct subview of `workbench` that is `element` or
 /// an ancestor of it, or nil when `element` is not beneath `workbench`.
 @MainActor
