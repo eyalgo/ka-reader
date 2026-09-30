@@ -21,159 +21,59 @@
 > seat downstream can find a rule missing that the authoring run had no occasion to write. That item
 > lands in § 3 and is folded by the same run.
 
-> **No `product-design` run opened this companion.** A `companion-self-answer` run answering
-> `docs/SDD_open_issues.md` § 5.1 opened it on 2026-09-30 with one item, § 2.1
-> (`nozoki@a047914`; its report is `docs/trail/sdd/self_answer-27.md`).
+> **Where this round stands.** `DESIGN.md` is at v12. The three answers of the last round are
+> folded and retired whole to `docs/trail/design/cycle-8.md`: the application icon's contract
+> (RN-33), the title bar (RN-32), and revision 11's AppKit wording, confirmed as applied. One
+> item is here, and it is new: the icon's answer named one case it did not cover, and this file
+> raises it. Nothing about it is written into `DESIGN.md`, which reads Draft while this file is
+> on disk.
 >
-> **Where this round stands.** A `product-design` run has taken the file up and found the slot of
-> § 2.1 empty, so it folded no answer and retired no trail cycle. It applied § 2.1 anyway, on the
-> authorization its own rule gives a change in the evidence: the product's own source is an AppKit
-> shell with no web engine (`README.md:L46-L48`; `nozoki-mac/`). `DESIGN.md` is at v11 and reads
-> Draft while this file is on disk; what moved is recorded at its RN-31. § 2.1 is kept as **your
-> sign-off on what was applied**. The same run read the shell's source and found two things the
-> design language does not rule on. They are § 1.1 and § 2.2, and neither is applied: `DESIGN.md`
-> says nothing new about either until you answer.
+> **One thing this file does not ask.** What the icon's figure depicts is drawn in a design run
+> and comes back here as a pointer item, written by that run (`docs/trail/design/cycle-8.md`
+> § 1.1, its second addition). No item stands in for it meanwhile: the contract in `DESIGN.md`
+> is complete without the drawing, and until one exists the rule is that the bundle names no
+> icon file.
 
 ---
 
 ## 1. Open issues
 
-### 1.1 The application ships an icon that no document designs, and the one on disk is a plain blue square — is the icon the design language's, and what is it?
-- **Why it matters:** `docs/DESIGN.md` governs the one window (its frontmatter `description:`), and
-  § Overview now says so: "Nothing the window draws is shipped that the machine does not already
-  have" (`docs/DESIGN.md:L335-L336`). The icon is the one thing of Nozoki's drawn outside that
-  window: in the Dock, in the application switcher, in Finder, and on the disk image a release is
-  offered as (`README.md:L17-L18`). It is also the only place a colour that is Nozoki's own
-  appears, beside a shell whose confirmed signature is that it has none (`docs/DESIGN.md` RN-2;
-  `docs/trail/design/cycle-1.md` § 2.1). Until this is answered the design language has no rule a
-  builder or a release can hold the icon to, and the blue square ships as it is.
-- **What was searched:** `nozoki-mac/icon.icns` (12662 bytes), rendered on 2026-09-30 with
-  `sips -s format png`: one uniform blue field and no figure. It is named as the bundle's icon at
-  `nozoki-mac/Info.plist:L11-L12` and copied into the bundle at `nozoki-mac/assemble.sh:L61`. It
-  was not drawn for this product's shell: `nozoki@15e8790` adds it as "a byte copy of
-  crates/nozoki-app/icons/icon.icns", a file that entered with the earlier host at
-  `nozoki@9cc163d`. No document rules on it:
-  `git grep -n -i -E "icns|app icon|application icon|CFBundleIconFile|bundle's icon" HEAD -- docs/`
-  prints nothing at `nozoki@f287d73`. `docs/trail/design/cycle-1.md` § 2.6 confirms no wordmark, logo or product name
-  *in the shell* and does not speak to the icon. The instance holds no shared mark to derive one
-  from (`system/experience/visual_direction.md` RN-9), and its direction starts every product
-  from "No placeholder asset" (same file, § Overview, line 5).
-- **What each answer moves:** *The icon is this document's* — the next run writes its contract
-  into `DESIGN.md` (what it shows, in which ink, on which ground) and a drawn asset is owed, which
-  this run cannot produce and a design run can. This seat's lean is that one, drawn in the shell's
-  own ink on the shell's own surface with no hue, so that the signature holds outside the window
-  too. *No icon of its own* — the bundle names no icon file and macOS draws its generic
-  application icon; `DESIGN.md` records the absence. *The blue square stays* — it becomes a
-  decided value: `DESIGN.md` records the colour and the reason, and RN-2 gains the one exception
-  to a shell with no hue of its own.
-- **Answer:** the icon is this document's, and it is Nozoki's own: one drawn figure in the
-  shell's own ink on the shell's own surface, with no hue. The blue square is not kept. The
-  item's lean is taken, with four things added. **(1) The blue square is never a decided value.**
-  A release carries the drawn icon, or the bundle names no icon file and macOS draws its generic
-  application icon; `DESIGN.md` states that rule, so the document is complete before the asset
-  exists and no stand-in ships. **(2) The answer fixes the contract and not the figure.** What
-  the icon shows is drawn in a design run and comes back here as a pointer item for sign-off, the
-  way § 2's pointer shape provides. **(3) The contract is drawn from the tokens the document
-  has.** No colour token enters; the values are the light theme's, which is the polarity the
-  frontmatter carries (`docs/DESIGN.md` RN-17); the figure is not lettering, because the
-  product's name and its kanji stay on the README (`docs/DESIGN.md` RN-9;
-  `docs/CONTENT.md:L143-L144`). The fold says which of the window's rules bind the icon (the
-  tokens, no pure black or white, no hue) and which do not (the three radii, since the icon's
-  outline is the platform's), and the frontmatter's `description:` stops saying the language
-  covers only the one window. **(4) Not covered, and named:** whether a second drawing is owed
-  for a dark system appearance. Decided in the owner's seat by a `companion-self-answer` run;
-  the reasoning is `docs/trail/design/self_answer-4.md` § 1.1.
+None.
 
 ## 2. Choices to confirm
 
-### 2.1 § Overview says the language is realised in AppKit views, with no web engine, no markup and no stylesheet — applied at v11 on the evidence, awaiting your sign-off
-- **Drafted into DESIGN.md:** at v11 — § Overview `:L331-L336`, "realised in AppKit views drawn by
-  the product's own Swift package, in one macOS window and one process, with no web engine, no
-  markup and no stylesheet", and the new paragraph *How the values are read* (`:L338-L345`): a
-  `px` is one point; an `em` is its level's own font size; the `rem` is sixteen points, so
-  `{spacing.prose-measure}` is 704; a line height with no unit multiplies its level's font size;
-  a hex colour is an sRGB value; and a token is defined once in the shell's source and read from
-  there. With it: § Typography says each font stack is the token format's name for a platform
-  family and that the shell asks the platform for its system font and its monospaced system font
-  (`:L447-L450`), and its clipped-row clause reads "the row clips at its end, and the text the
-  row holds is the whole name" (`:L484-L485`) where it read "the full name is the row's title";
-  § Layout gives the measure as "44rem — 704 points" (`:L513`); § Elevation & Depth spells out
-  the shadow's numbers (`:L531`); § Components "Icons" says the shell supplies the ink the glyph
-  files leave to `currentColor` (`:L748-L751`); the first Do names "where a surface is drawn" in
-  place of "a stylesheet" (`:L758-L759`); RN-1 and RN-19 are brought to the same fact; RN-31
-  (`:L1261`) records all of it. **No token value moves**: the frontmatter is revision 10's, byte
-  for byte (`diff` of lines 1–296 against `nozoki@da88347`, the v10 commit, prints nothing), and
-  the pinned lint reports the counts it reported at v10.
-- **Grounds:** the sentence v1–v10 carried stood on `docs/proposal.md` § Styling and on
-  `README.md` § Planned stack (`docs/DESIGN.md` RN-1 as it read at v10). The README has no such
-  heading now; its § Stack reads "an AppKit shell in Swift (`nozoki-mac`) over a Rust library …
-  There is no web engine in it" (`README.md:L46-L48`, since `nozoki@61748fe`), and the shell on
-  disk is that package:
-  `grep -rn -i -E 'WebKit|WKWebView|\.css|html' nozoki-mac/Sources nozoki-mac/Package.swift nozoki-mac/assemble.sh`
-  prints nothing (2026-09-30). The product's own source is first in the design language's
-  grounding order, so the sentence follows it without waiting on an answer. Three calls inside
-  the fold are this seat's, and they are what your sign-off covers. **The font stacks stay as
-  written**, because you confirmed the two families in those words
-  (`docs/trail/design/cycle-1.md` § 2.2) and a stack still names its family exactly; the text
-  beside them now says how the shell asks for it. **`44rem` stays as written** and the `rem` is
-  fixed at sixteen points, so the token keeps its value and its length is one number. **"The
-  row's title" is re-said, not dropped**: it was a markup attribute, and what it meant without
-  one is that the row clips in the drawing and keeps the whole name as its text;
-  `docs/CONTENT.md:L487-L490` already holds that clipping a file name costs nothing.
-- **If you override:** *restate the tokens for the native shell* — `fontFamily` becomes the two
-  family names and `prose-measure` becomes `704px`; ten typography levels and one spacing token
-  change their written value and no drawn size moves; RN-31 records the override and the cycle-1
-  § 2.2 wording it replaces. *Keep the CSS sentence* — `DESIGN.md` then disagrees with
-  `README.md` § Stack and `docs/SDD.md` § 2, and that is theirs to reconcile through their own
-  runs.
-- **Confirm or override:** confirm — revision 11's wording stands as applied, and the three calls
-  with it: the two font stacks as written, `44rem` with the `rem` fixed at sixteen points, and the
-  clipped-row clause as re-said. No token value moves. Decided in the owner's seat by a
-  `companion-self-answer` run; the reasoning is `docs/trail/design/self_answer-4.md` § 2.1.
-
-### 2.2 The window's title bar: the platform's own, carrying its three window buttons and no drawn title; the window's title is the viewed folder's name, never the product's
-- **Drafted into DESIGN.md:** nothing yet — this is proposed, and applied only if you confirm. The
-  rule proposed, for § Layout beside the chrome's line (`docs/DESIGN.md:L504`): *the window keeps
-  the platform's own title bar, which carries the platform's three window buttons and draws no
-  title; the chrome is the strip beneath it and is where the folder is named. The window's title
-  — what the system shows in its own window lists — is the viewed folder's name; on the startup
-  surface, where there is no folder, it is the product's name, and it is drawn there no more than
-  anywhere else.*
-- **Grounds:** the design language draws the chrome as "one strip across the top"
-  (`docs/DESIGN.md:L504-L506`) and says nothing of the title bar above it:
-  `git grep -n -i -E "title bar|titlebar|window title|window's title" HEAD -- docs/` at
-  `nozoki@f287d73` prints no rule, only one line of a trail recording what a build showed
-  (`docs/trail/sdd/cycle-8.md:38`, "one window titled "Nozoki""). The shell as built draws a standard titled
-  window and titles it "Nozoki" (`nozoki-mac/Sources/Shell/WindowPresenting.swift:L45`, `:L48`).
-  You confirmed "no wordmark, logo, or product name in the shell"
-  (`docs/trail/design/cycle-1.md` § 2.6; `docs/DESIGN.md:L574-L575`, RN-9), and `docs/CONTENT.md`
-  reads that as "the shell carries no product name at all" (`docs/CONTENT.md:L144`); whether the
-  title bar is the shell is the thing nobody wrote down. The proposal follows § Overview's own
-  order for a case no rule covers (`docs/DESIGN.md:L355-L358`): only what the job puts on the
-  surface, so the folder and not the product; the way macOS draws it, so the platform's title
-  bar and buttons; fewer elements, so the folder is named once, in the chrome, which is the
-  control that names it (`docs/UXD.md` § 4, UX-F5).
-- **If you override:** *draw the folder's name in the title bar* — the folder is named twice, in
-  the bar and in the chrome beneath it. *Make the chrome the title bar* — the window's content
-  runs under a transparent bar and the three window buttons sit at the chrome's left end;
-  § Layout's chrome line changes (the selector starts to the right of the buttons, and the 36px
-  height is re-checked against them), and whether the window can be built that way is the SDD's
-  to answer before it is written here. *Keep "Nozoki" as the drawn title* — RN-9 and the wordmark
-  Don't gain their one exception, and `docs/CONTENT.md:L144` no longer reads true.
-- **Confirm or override:** confirm — the rule as proposed, with four things the fold carries
-  beside it. **(1) The window's title is the string the chrome names the folder with**, and it
-  changes when that string does, so a folder switched or renamed is titled once and not by a
-  second rule. **(2) The title bar is shown in the theme the window shows**, the user's own
-  choice included, and never only the system's. Its ground is the platform's and is the one plane
-  in the window not drawn from a token; the document says so, and adds nothing between the bar
-  and the chrome. **(3) The rule reaches the window and stops there.** The menu bar, the Dock and
-  the application switcher show the product's name and are the platform's. The three window
-  buttons are the platform's controls and not Nozoki's, so the chrome still holds two controls
-  and `docs/UXD.md` UX-A4 is not broken by three glyphs with no word; the Traceability table says
-  so. **(4) "Draws no title" stands on the chrome naming the folder on the same surface**, and
-  the rule says that, so a window is never built that names the folder nowhere. Decided in the
-  owner's seat by a `companion-self-answer` run; the reasoning is
-  `docs/trail/design/self_answer-4.md` § 2.2.
+### 2.1 The application icon is one drawing, shown as it is under every system appearance — no second drawing for dark
+- **Drafted into DESIGN.md:** nothing yet — this is proposed, and applied only if you confirm.
+  The sentence proposed, for § Components "The application icon", in place of its last one
+  ("It is one drawing; whether a second is owed for a dark system appearance is not ruled
+  here"): *the icon is one drawing, at the light values, and it is shown as it is under every
+  system appearance; no second drawing is made for a dark one.*
+- **Grounds:** the answer that made the icon this document's fixed its two values as the light
+  theme's and named this case as not covered (`docs/trail/design/cycle-8.md` § 1.1, its third
+  and fourth additions), so the contract as folded rules one drawing and is silent on a second
+  (`docs/DESIGN.md` § Components "The application icon"; RN-33). The case is real on this
+  platform: Apple's icon tool produces, from one file, an icon for "different appearances
+  (default, dark, and mono)" on macOS
+  (https://developer.apple.com/documentation/xcode/creating-your-app-icon-using-icon-composer,
+  read 2026-09-30). The call is this seat's, and it is a taste call held by one rule of the
+  document: of two treatments that both satisfy it, take the one with fewer elements
+  (`docs/DESIGN.md` § Overview, its last paragraph). One drawing is one asset and two token
+  values to keep in step; two drawings are two assets and four. The icon is also not a themed
+  surface. The window's two themes exist because a reader reads in them (`docs/UXD.md` UX-I9);
+  the icon is looked at for a moment, to tell this application from the others, and one
+  drawing does that in a light Dock and a dark one. **Not checked by this run:** what macOS
+  draws under its dark icon appearance for an application that supplies one drawing only. I
+  don't know. The check that would find out is to assemble the bundle with a drawn icon and
+  look at it in the Dock with the system's icon appearance set to dark.
+- **If you override:** *a second drawing for dark* — the same figure in the dark values of the
+  same two tokens, `{colors.primary}` `#E7E7E4` on `{colors.surface}` `#1B1C1E`
+  (`docs/DESIGN.md` § Colors, "The two themes"). The contract gains that sentence, the design
+  run that draws the figure owes two drawings and the owner signs off both, and the redraw
+  rule covers four values where it covers two. The bundle would also have to carry the icon in
+  a form that holds more than one appearance, and whether it can is the SDD's to answer before
+  the sentence is written here. *Leave it unruled* — the contract keeps its present last
+  sentence, and the first design run to draw the icon decides it for the document.
+- **Confirm or override:** <"confirm", or "override: <what to do instead>">
 
 ## 3. Raised from downstream — an item from a seat that did not write the design language
 

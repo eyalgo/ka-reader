@@ -1,7 +1,7 @@
 ---
 version: alpha
 name: Nozoki
-description: The visual language of Nozoki's one window — the shell, the sidebar, the reading panel, and every state they show — in both themes
+description: The visual language of Nozoki — its one window (the shell, the sidebar, the reading panel, and every state they show) in both themes, and its application icon
 colors:
   # Light-theme values. The dark-theme value of every token is in § Colors, "The two themes".
   primary: "#1E1F22"
@@ -299,7 +299,7 @@ components:
 
 **Status:** Draft
 **Owner:** CDO
-**Version:** 11 — the realisation, read from the product as it now stands *(evidence change — RN-31)*. § Overview says what the language is realised in — AppKit views drawn by the product's own Swift package, in one process, with no web engine, no markup and no stylesheet (`README.md` § Stack; `nozoki-mac/`) — where revisions 1–10 said plain CSS custom properties over the product's own markup, and it gains *How the values are read*: a `px` is one point, an `em` its level's own font size, the `rem` sixteen points, a hex colour an sRGB value, and a token defined once in the shell's source. The sentences that spoke CSS or markup are re-said with it: § Typography's naming of the two families and its clipped-row clause, § Layout's measure, § Elevation & Depth's shadow, § Components "Icons", the first Do, RN-1 and RN-19. No token, colour, type, spacing or radius value moves — the frontmatter is revision 10's, byte for byte — and no component enters or leaves. **This revision folds no owner answer:** the companion's one item (`docs/DESIGN_open_issues.md` § 2.1, opened by a `companion-self-answer` run on 2026-09-30, `nozoki@a047914`) arrived with an empty slot, so no trail cycle is retired; the change is made on the *change in the evidence* authorization, and the item is kept, rewritten as the owner's sign-off on what this revision applied. Two things found reading the product's source are raised beside it and applied nowhere in this document: the window's title bar (the companion's § 2.2) and the application's icon (its § 1.1). `Status:` reads Draft because a companion is on disk, and this document is Settled only when none is. The machine gate on this revision — the same pinned `lint`, run 2026-09-30 — reported 0 errors, 0 warnings and 1 info, `token-summary` with the counts RN-21 records unchanged (20 colours, 10 typography levels, 3 rounding levels, 15 spacing tokens, 46 components); no diagnostic is accepted or routed. (v10: the close: the owner's cycle-7 answer folded (`docs/trail/design/cycle-7.md` § 2.1 — decided in the owner's seat by a `companion-self-answer` run, its reasoning at `docs/trail/design/self_answer-3.md` § 2.1; RN-30). The two sentences that fixed the word *pending* as what a pending state shows — the Do's line, and § Components "Status messages", the line `docs/CONTENT.md` RN-4 actually cites — keep their rule and hand the string to `docs/CONTENT.md`: pending is shown as a word in that document's wording, never as a bar or a spinner. RN-30 is the record of CONTENT RN-4's raise arriving, which no earlier note and no file under `docs/trail/design/` held. No token, colour, type, spacing or radius value moves; no component enters or leaves; the UX-I13 Traceability row stands as written. `docs/DESIGN_open_issues.md` is removed and `Status:` is Settled. The machine gate on this revision — the same pinned `lint`, run 2026-09-25 — reported 0 errors, 0 warnings and 1 info, `token-summary` with the counts RN-21 records unchanged (20 colours, 10 typography levels, 3 rounding levels, 15 spacing tokens, 46 components); no diagnostic is accepted or routed. (v9: the UXD v10 fold, and the header's `Inputs read:` line. `docs/UXD.md` reached v10 after revision 8 was authored (`nozoki@4d7b653`; its RN-30 folds the owner's cycle-7 answer, `docs/trail/uxd/cycle-7.md` § 2.2), and the two phrases revision 8 kept as quotations of § 2 and § 4 *as they read at v9* now read as the UXD does: § Overview's *Density is the folder's* and `{components.path-line}`'s *folder-relative path* (RN-29) — the *upstream UXD change* authorization, not an owner answer. Nothing else moves, by the UXD's own rule that *repository* stays where Git's own state is what the sentence is about. The header gains the **Inputs read:** line `<CORE>/doctrine/governance/unsettled_inputs.md` requires of every revision, which revisions 1–8 did not carry. Read and moving nothing: the layout reference's README at eight images (RN-29), and the product's own source, which holds no visual value. **This revision folds no owner answer:** the companion's one item (`docs/DESIGN_open_issues.md` § 2.1 — the Do's line that names the word *pending*, opened by a `companion-self-answer` run on 2026-09-25) arrived with an empty slot, so no trail cycle is retired and the item stays for the owner; `Status:` reads Draft because a companion is on disk, and this document is Settled only when none is. No token, colour, type, spacing or radius value moves; no component enters or leaves. The machine gate on this revision — the same pinned `lint`, run 2026-09-25 — reported 0 errors, 0 warnings and 1 info, `token-summary` with the counts RN-21 records unchanged (20 colours, 10 typography levels, 3 rounding levels, 15 spacing tokens, 46 components); no diagnostic is accepted or routed. (v8: the close, and the UXD v9 fold. The owner's cycle-6 answer is folded (`docs/trail/design/cycle-6.md` § 2.1 — a self-answer in the owner's seat, its reasoning at `docs/trail/design/self_answer-2.md` § 2.1): the *folder* / *folder selector* rename v7 applied stands as applied, RN-27 records the confirmation, `docs/DESIGN_open_issues.md` is removed and `Status:` is Settled. On the same revision the upstream UXD change since v7 is folded — `docs/UXD.md` v9 (`nozoki@b8010dd`, its RN-29), read on disk and recorded at RN-28: the **startup surface** (UX-S4) gains its empty state and its drawing, and *startup failure* reads *the startup surface's failure*; the **history** is drawn where the UXD now places it — the Git view's `clock` entry, commit rows beneath the changes list, the selected commit's diff in the reading panel — with its **stated end** as one inert muted row; the selector's list follows UX-S7's bound and order, and the current entry's mark is the leading bar this document already draws; an **in-folder image** renders in place and the placeholder covers the two cases that do not; the **branch chip** carries the commit's identifier on a detached HEAD; UX-F2's one-click-target rule is recorded as already held; and the terminal Don't, RN-16 and its Traceability row retire, because UX-S4 renders in the app's window and no surface of this product prints to a terminal. Two kept phrases stand until the UXD folds its own answered item (`docs/UXD_open_issues.md` § 2.2): *Density is the repository's* and *repository-relative path* quote `docs/UXD.md` § 2 and § 4 as they read at v9 (RN-27). No token, colour, type, spacing or radius value moves; no component enters or leaves. The machine gate on this revision — the same pinned `lint`, run 2026-09-01 — reported 0 errors, 0 warnings and 1 info, `token-summary` with the counts RN-21 records unchanged; no diagnostic is accepted or routed. (v7: *(upstream UXD change)* the viewed input and the chrome's control are renamed with the UXD: every place this document said *repository* where it meant the **viewed folder** or named the **selector** now reads *folder* / **folder selector** — § Overview (two sentences), § Layout (the sidebar's width reason and the chrome line), § Elevation & Depth (the menu), § Components "The chrome and its controls" and "The menu", the wordmark Don't, RN-9, RN-10, RN-20 and the UX-F5 Traceability row — and "The menu"'s *by name* is disambiguated to *each shown by its name*. Authorized by `docs/UXD.md` v6 RN-25, which renamed the control with PRD v11's input: the prompt's *upstream UXD change* delta, not an owner answer — the companion's one item (`docs/DESIGN_open_issues.md` § 2.1) is unanswered, so no answer is folded and no trail cycle is retired, and the item stays as the owner's sign-off on what this revision applied (RN-27). `Status:` reads Draft because a companion is on disk, and this document is Settled only when none is. No token, colour, type, spacing or radius value moves. The machine gate on this revision — the same pinned `lint`, run 2026-09-01 — reported 0 errors, 0 warnings and 1 info, `token-summary` with the counts RN-21 records unchanged; no diagnostic is accepted or routed. (v6: nothing about the design language changes: the 30 unpinned `docs/<x>_trail/` citations this document rests on (21 `design_trail/`, 6 `uxd_trail/`, 3 `prd_trail/`) are repaired to `docs/trail/<x>/`, the answer-trails having moved at `nozoki@1e8bf3d` without the citing documents. This document carries no commit-pinned citation, so none is excluded; and the six `uxd_trail/` citations are to the re-authored UXD's trail — the sections they cite exist only there — so the mechanical rule is safe on all six. No token, colour, type, spacing or radius value moves, and the companion is gone again. Authorized by the owner's cycle-5 answer (`docs/trail/design/cycle-5.md` § 2.1). The machine gate on this revision — the same pinned `lint`, run 2026-09-01 — reported 0 errors, 0 warnings and 1 info, `token-summary` with the counts RN-21 records unchanged; no diagnostic is accepted or routed. (v5: the owner's cycle-4 answers folded (`docs/trail/design/cycle-4.md`): `{components.status-message}` states its one exception — the **observed plain folder's Git view** (`docs/UXD.md` UX-I17) carries no message and so holds no instance of the component, while the Git view's reading and fault appearances stay inside it — and the Traceability table gains the UX-I17 row, satisfied by drawing nothing (RN-26). No token, colour, type, spacing or radius value moves; the companion is gone again. (v4: the owner's cycle-3 answers folded (`docs/trail/design/cycle-3.md`): `{components.status-message}` names the **unexplained fault** (`docs/UXD.md` UX-I16) as the second class of every failure state it covers — same treatment, same slot, same route out — and the Traceability table gains the UX-I16 row (RN-25). No token, colour, type, spacing or radius value moves; the companion is gone again. (v3: the owner's cycle-2 answers folded (`docs/trail/design/cycle-2.md`): the no-tooltip Don't is lifted on the owner's v1 decision and a tooltip contract enters — one surface, the status letter, as `{components.tooltip}` drawn from existing tokens (RN-11, RN-23); the status letters' VS Code vocabulary is stated rather than left implicit, with the porcelain collision recorded (RN-24); and the UX-I9 traceability row and RN-10 are repointed at the settled UXD record. No colour, type, spacing or radius value moves; the companion is gone again. (v2: the owner's cycle-1 answers folded — `docs/trail/design/cycle-1.md`.))))))))
+**Version:** 12 — the owner's cycle-8 answers folded (`docs/trail/design/cycle-8.md` — each decided in the owner's seat by a `companion-self-answer` run, its reasoning at `docs/trail/design/self_answer-4.md`; RN-32, RN-33). **The title bar** (§ 2.2 there): the window keeps the platform's own title bar, with the platform's three window buttons and no drawn title; the window's title is the string the chrome names the folder with, and the product's name only on the startup surface; the bar is shown in the theme the window shows, and its ground is the one plane in the window not drawn from a token — § Layout, § Components "The chrome and its controls" and "The startup surface", three Do's, the wordmark Don't, and three Traceability rows. **The application icon** (§ 1.1 there): it is this document's and Nozoki's own — one figure in `{colors.primary}` on `{colors.surface}` at their light values, no hue, no lettering — and a release carries the drawn icon or the bundle names none; what the figure depicts is drawn separately and returns for sign-off — § Overview, § Components "The application icon", one Do and one Don't, and the frontmatter's `description:`, which no longer says the language covers only the window. **Revision 11's AppKit wording** (§ 2.1 there) is confirmed as applied, and nothing in it moves. No token, colour, type, spacing or radius value moves, and no component enters or leaves. One thing the icon's answer named and left uncovered — a second drawing for a dark system appearance — is raised as a fresh item (`docs/DESIGN_open_issues.md` § 2.1) and applied nowhere, so a companion is on disk and `Status:` reads Draft. The machine gate on this revision — the same pinned `lint`, run 2026-09-30 — reported 0 errors, 0 warnings and 1 info, `token-summary` with the counts RN-21 records unchanged (20 colours, 10 typography levels, 3 rounding levels, 15 spacing tokens, 46 components); no diagnostic is accepted or routed. (v11: the realisation, read from the product as it now stands *(evidence change — RN-31)*. § Overview says what the language is realised in — AppKit views drawn by the product's own Swift package, in one process, with no web engine, no markup and no stylesheet (`README.md` § Stack; `nozoki-mac/`) — where revisions 1–10 said plain CSS custom properties over the product's own markup, and it gains *How the values are read*: a `px` is one point, an `em` its level's own font size, the `rem` sixteen points, a hex colour an sRGB value, and a token defined once in the shell's source. The sentences that spoke CSS or markup are re-said with it: § Typography's naming of the two families and its clipped-row clause, § Layout's measure, § Elevation & Depth's shadow, § Components "Icons", the first Do, RN-1 and RN-19. No token, colour, type, spacing or radius value moves — the frontmatter is revision 10's, byte for byte — and no component enters or leaves. **This revision folds no owner answer:** the companion's one item (`docs/DESIGN_open_issues.md` § 2.1, opened by a `companion-self-answer` run on 2026-09-30, `nozoki@a047914`) arrived with an empty slot, so no trail cycle is retired; the change is made on the *change in the evidence* authorization, and the item is kept, rewritten as the owner's sign-off on what this revision applied. Two things found reading the product's source are raised beside it and applied nowhere in this document: the window's title bar (the companion's § 2.2) and the application's icon (its § 1.1). `Status:` reads Draft because a companion is on disk, and this document is Settled only when none is. The machine gate on this revision — the same pinned `lint`, run 2026-09-30 — reported 0 errors, 0 warnings and 1 info, `token-summary` with the counts RN-21 records unchanged (20 colours, 10 typography levels, 3 rounding levels, 15 spacing tokens, 46 components); no diagnostic is accepted or routed. (v10: the close: the owner's cycle-7 answer folded (`docs/trail/design/cycle-7.md` § 2.1 — decided in the owner's seat by a `companion-self-answer` run, its reasoning at `docs/trail/design/self_answer-3.md` § 2.1; RN-30). The two sentences that fixed the word *pending* as what a pending state shows — the Do's line, and § Components "Status messages", the line `docs/CONTENT.md` RN-4 actually cites — keep their rule and hand the string to `docs/CONTENT.md`: pending is shown as a word in that document's wording, never as a bar or a spinner. RN-30 is the record of CONTENT RN-4's raise arriving, which no earlier note and no file under `docs/trail/design/` held. No token, colour, type, spacing or radius value moves; no component enters or leaves; the UX-I13 Traceability row stands as written. `docs/DESIGN_open_issues.md` is removed and `Status:` is Settled. The machine gate on this revision — the same pinned `lint`, run 2026-09-25 — reported 0 errors, 0 warnings and 1 info, `token-summary` with the counts RN-21 records unchanged (20 colours, 10 typography levels, 3 rounding levels, 15 spacing tokens, 46 components); no diagnostic is accepted or routed. (v9: the UXD v10 fold, and the header's `Inputs read:` line. `docs/UXD.md` reached v10 after revision 8 was authored (`nozoki@4d7b653`; its RN-30 folds the owner's cycle-7 answer, `docs/trail/uxd/cycle-7.md` § 2.2), and the two phrases revision 8 kept as quotations of § 2 and § 4 *as they read at v9* now read as the UXD does: § Overview's *Density is the folder's* and `{components.path-line}`'s *folder-relative path* (RN-29) — the *upstream UXD change* authorization, not an owner answer. Nothing else moves, by the UXD's own rule that *repository* stays where Git's own state is what the sentence is about. The header gains the **Inputs read:** line `<CORE>/doctrine/governance/unsettled_inputs.md` requires of every revision, which revisions 1–8 did not carry. Read and moving nothing: the layout reference's README at eight images (RN-29), and the product's own source, which holds no visual value. **This revision folds no owner answer:** the companion's one item (`docs/DESIGN_open_issues.md` § 2.1 — the Do's line that names the word *pending*, opened by a `companion-self-answer` run on 2026-09-25) arrived with an empty slot, so no trail cycle is retired and the item stays for the owner; `Status:` reads Draft because a companion is on disk, and this document is Settled only when none is. No token, colour, type, spacing or radius value moves; no component enters or leaves. The machine gate on this revision — the same pinned `lint`, run 2026-09-25 — reported 0 errors, 0 warnings and 1 info, `token-summary` with the counts RN-21 records unchanged (20 colours, 10 typography levels, 3 rounding levels, 15 spacing tokens, 46 components); no diagnostic is accepted or routed. (v8: the close, and the UXD v9 fold. The owner's cycle-6 answer is folded (`docs/trail/design/cycle-6.md` § 2.1 — a self-answer in the owner's seat, its reasoning at `docs/trail/design/self_answer-2.md` § 2.1): the *folder* / *folder selector* rename v7 applied stands as applied, RN-27 records the confirmation, `docs/DESIGN_open_issues.md` is removed and `Status:` is Settled. On the same revision the upstream UXD change since v7 is folded — `docs/UXD.md` v9 (`nozoki@b8010dd`, its RN-29), read on disk and recorded at RN-28: the **startup surface** (UX-S4) gains its empty state and its drawing, and *startup failure* reads *the startup surface's failure*; the **history** is drawn where the UXD now places it — the Git view's `clock` entry, commit rows beneath the changes list, the selected commit's diff in the reading panel — with its **stated end** as one inert muted row; the selector's list follows UX-S7's bound and order, and the current entry's mark is the leading bar this document already draws; an **in-folder image** renders in place and the placeholder covers the two cases that do not; the **branch chip** carries the commit's identifier on a detached HEAD; UX-F2's one-click-target rule is recorded as already held; and the terminal Don't, RN-16 and its Traceability row retire, because UX-S4 renders in the app's window and no surface of this product prints to a terminal. Two kept phrases stand until the UXD folds its own answered item (`docs/UXD_open_issues.md` § 2.2): *Density is the repository's* and *repository-relative path* quote `docs/UXD.md` § 2 and § 4 as they read at v9 (RN-27). No token, colour, type, spacing or radius value moves; no component enters or leaves. The machine gate on this revision — the same pinned `lint`, run 2026-09-01 — reported 0 errors, 0 warnings and 1 info, `token-summary` with the counts RN-21 records unchanged; no diagnostic is accepted or routed. (v7: *(upstream UXD change)* the viewed input and the chrome's control are renamed with the UXD: every place this document said *repository* where it meant the **viewed folder** or named the **selector** now reads *folder* / **folder selector** — § Overview (two sentences), § Layout (the sidebar's width reason and the chrome line), § Elevation & Depth (the menu), § Components "The chrome and its controls" and "The menu", the wordmark Don't, RN-9, RN-10, RN-20 and the UX-F5 Traceability row — and "The menu"'s *by name* is disambiguated to *each shown by its name*. Authorized by `docs/UXD.md` v6 RN-25, which renamed the control with PRD v11's input: the prompt's *upstream UXD change* delta, not an owner answer — the companion's one item (`docs/DESIGN_open_issues.md` § 2.1) is unanswered, so no answer is folded and no trail cycle is retired, and the item stays as the owner's sign-off on what this revision applied (RN-27). `Status:` reads Draft because a companion is on disk, and this document is Settled only when none is. No token, colour, type, spacing or radius value moves. The machine gate on this revision — the same pinned `lint`, run 2026-09-01 — reported 0 errors, 0 warnings and 1 info, `token-summary` with the counts RN-21 records unchanged; no diagnostic is accepted or routed. (v6: nothing about the design language changes: the 30 unpinned `docs/<x>_trail/` citations this document rests on (21 `design_trail/`, 6 `uxd_trail/`, 3 `prd_trail/`) are repaired to `docs/trail/<x>/`, the answer-trails having moved at `nozoki@1e8bf3d` without the citing documents. This document carries no commit-pinned citation, so none is excluded; and the six `uxd_trail/` citations are to the re-authored UXD's trail — the sections they cite exist only there — so the mechanical rule is safe on all six. No token, colour, type, spacing or radius value moves, and the companion is gone again. Authorized by the owner's cycle-5 answer (`docs/trail/design/cycle-5.md` § 2.1). The machine gate on this revision — the same pinned `lint`, run 2026-09-01 — reported 0 errors, 0 warnings and 1 info, `token-summary` with the counts RN-21 records unchanged; no diagnostic is accepted or routed. (v5: the owner's cycle-4 answers folded (`docs/trail/design/cycle-4.md`): `{components.status-message}` states its one exception — the **observed plain folder's Git view** (`docs/UXD.md` UX-I17) carries no message and so holds no instance of the component, while the Git view's reading and fault appearances stay inside it — and the Traceability table gains the UX-I17 row, satisfied by drawing nothing (RN-26). No token, colour, type, spacing or radius value moves; the companion is gone again. (v4: the owner's cycle-3 answers folded (`docs/trail/design/cycle-3.md`): `{components.status-message}` names the **unexplained fault** (`docs/UXD.md` UX-I16) as the second class of every failure state it covers — same treatment, same slot, same route out — and the Traceability table gains the UX-I16 row (RN-25). No token, colour, type, spacing or radius value moves; the companion is gone again. (v3: the owner's cycle-2 answers folded (`docs/trail/design/cycle-2.md`): the no-tooltip Don't is lifted on the owner's v1 decision and a tooltip contract enters — one surface, the status letter, as `{components.tooltip}` drawn from existing tokens (RN-11, RN-23); the status letters' VS Code vocabulary is stated rather than left implicit, with the porcelain collision recorded (RN-24); and the UX-I9 traceability row and RN-10 are repointed at the settled UXD record. No colour, type, spacing or radius value moves; the companion is gone again. (v2: the owner's cycle-1 answers folded — `docs/trail/design/cycle-1.md`.)))))))))
 **Inputs read:** UXD Settled · PRD Settled · CONTENT Settled · SRS Settled · SDD Settled
 
 > The design language is the visual source of truth: the tokens are normative, the prose says
@@ -333,7 +333,9 @@ product's own Swift package, in one macOS window and one process, with no web en
 and no stylesheet (`README.md` § Stack; `nozoki-mac/`; `docs/SRS.md` C-11; RN-31), and it starts
 from what a stock Mac already draws: the platform's own fonts, its own text sizes, its own flat
 list rows. Nothing the window draws is shipped that the machine does not already have, except
-fourteen vendored line icons (§ Components).
+fourteen vendored line icons (§ Components). One thing of Nozoki's is drawn outside the window,
+the application icon, and it is drawn in the same ink on the same surface (§ Components, "The
+application icon").
 
 **How the values are read.** The token format writes a value the way a stylesheet would, and the
 shell has none, so each unit is fixed here once. A `px` is one point of the window's own
@@ -501,9 +503,20 @@ One window, one shell: **rail · sidebar · reading panel**, left to right, at a
 - **The reading panel** takes every remaining pixel. It is the dominant surface at any window
   size the product allows; the window's minimum width is 720px (48 + 260 + 412 of code), below
   which the panel stops being dominant and the product stops being what the PRD says it is.
-- **The chrome** is one strip across the top, `{spacing.chrome-height}` (36px), on
-  `{colors.canvas}`, carrying the folder selector on the left and the theme control on the
-  right, and nothing between them.
+- **The title bar** is the platform's own, and sits above everything this document draws. It
+  carries the platform's three window buttons and draws no title. The window still has a title —
+  the string the system shows in its own window lists — and it is the string the chrome names
+  the folder with, changing whenever that string does; on the startup surface, where no folder
+  is viewed, it is the product's name, drawn there no more than anywhere else. The bar draws no
+  title *because* the chrome beneath it names the folder on the same surface: a window whose bar
+  draws no title and whose chrome names no folder is a defect. The bar is shown in the theme the
+  window shows — the user's own choice included, never the system's alone — and its ground is
+  the platform's, the one plane in the window that is not drawn from a token. Nothing is drawn
+  between the bar and the chrome. The three buttons are the platform's controls, not Nozoki's
+  (RN-32).
+- **The chrome** is one strip across the top of the window's content, directly beneath the title
+  bar, `{spacing.chrome-height}` (36px), on `{colors.canvas}`, carrying the folder selector on
+  the left and the theme control on the right, and nothing between them.
 
 **Spacing rhythm is a 4px base**: `{spacing.xs}` 4, `{spacing.sm}` 8, `{spacing.md}` 12,
 `{spacing.lg}` 16, `{spacing.xl}` 24. Rows are `{spacing.row}` (24px) tall — every row in the
@@ -573,7 +586,8 @@ theme the user would switch *to*) with the word *Light* or *Dark* beside it. A c
 with a glyph on `{colors.canvas}`; it has no border and no fill until it is open, when it takes
 `{components.control-open}`. Both controls are the whole set: nothing else is ever placed in
 the chrome. The chrome names the folder, not the product — there is no wordmark, no logo,
-and no product name in the shell (RN-9).
+and no product name in the shell (RN-9) — and the title bar above it draws no title for the same
+reason (§ Layout, RN-32).
 
 **The menu.** `{components.menu}` is the floating list under an open control, on
 `{colors.surface}` with the one shadow (§ Elevation & Depth). `{components.menu-item}` rows
@@ -708,7 +722,8 @@ A failure message is followed on the same surface by its route out — the tree 
 selector, or a way back — and where the failure is the startup surface's, the message names what
 to change and the surface carries the way to leave.
 
-**The startup surface.** UX-S4 is one plane of `{colors.surface}` filling the window — no chrome,
+**The startup surface.** UX-S4 is one plane of `{colors.surface}` filling the window beneath the
+platform's title bar (§ Layout) — no chrome,
 no rail, no sidebar, because each of those names or holds a folder's content and there is none
 yet; what loads next is the workbench, not this surface — carrying one `{components.status-message}`
 at its top-left and, beneath it in the same column, its routes as `{components.control}`s: text
@@ -753,10 +768,29 @@ This set is the whole inventory: a surface that needs a fifteenth glyph vendors 
 notice, and never draws it from an icon font or a remote origin. `git-commit-horizontal` marks
 a commit row, `git-merge` a merge commit, `clock` the history entry in the Git view.
 
+**The application icon.** The one thing of Nozoki's that is drawn outside the window: macOS
+shows it in the Dock, the application switcher and Finder, and on the disk image a release is
+offered as. It is Nozoki's own icon: **one drawn figure in `{colors.primary}` on a ground of
+`{colors.surface}`**, both at their light values, which is the polarity the frontmatter carries
+(§ Colors). No other colour appears in it — no hue, and neither pure black nor pure white — so
+the shell's signature holds where the shell is not. The figure is not lettering: no letter, no
+word and no kanji; the product's name and 覗き stay on the README (RN-9). The three radii of
+§ Shapes do not bind it, because the icon's outline is the platform's application-icon shape and
+not one of this document's. What the figure depicts is not fixed here: it is drawn separately
+and recorded in this paragraph once the owner has signed it off, and until then this contract is
+the whole rule. **No stand-in ships.** A release carries the drawn icon, or the bundle names no
+icon file and macOS draws its generic application icon; the uniform blue square at
+`nozoki-mac/icon.icns` is a leftover of an earlier host and is never a decided value. The icon
+is a fixed file, so it is the one place a token's value is copied and not read: when the light
+value of `{colors.primary}` or `{colors.surface}` moves, the icon is redrawn. It is one drawing;
+whether a second is owed for a dark system appearance is not ruled here (RN-33).
+
 ## Do's and Don'ts
 
 - Do read every colour and size from a token, defined once in the shell's source; a literal hex
-  or point value written where a surface is drawn is a second source and a defect.
+  or point value written where a surface is drawn is a second source and a defect. Two things
+  sit outside this rule and nothing else does: the title bar's ground, which is the platform's,
+  and the application icon, a fixed file that is redrawn when either of its two tokens moves.
 - Do give every state distinction a cue that is not a hue — a letter, a word, a bar, a heading —
   and treat the hue as the repeat.
 - Do draw every text token only on the surfaces § Colors specifies it for; a pair outside that
@@ -768,7 +802,11 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
   selector, or a way back to the state before.
 - Do keep every asset inside the installed product: the two families are the platform's, the
   fourteen glyphs are vendored, and a surface renders whole with the network unavailable.
-- Do keep the chrome to two controls and the rail to two entries.
+- Do keep the chrome to two controls and the rail to two entries; the three window buttons in the
+  title bar are the platform's and are not counted.
+- Do keep the platform's own title bar and draw no title in it; title the window with the string
+  the chrome names the folder with, retitle it whenever that string changes, and show the bar in
+  the theme the window shows, the user's own choice included.
 - Do draw the hover fill only on a row that a click acts on, and never on a row that nothing
   acts on; the hover is a promise of an action, and a promise with nothing behind it is a lie.
 - Do show a status letter's word in the tooltip the letter itself raises, and raise a tooltip
@@ -787,7 +825,11 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
   6px, a weight other than 400/600 (500 on the rail label only), or a Git hue for anything that
   is not Git state.
 - Don't put a wordmark, a logo, or the product's name in the shell; the chrome names the
-  folder.
+  folder, and the title bar draws no title. Where macOS itself shows the product's name — the
+  menu bar, the Dock, the application switcher, and the window's title while no folder is
+  viewed — it is the platform's to show, and this rule does not reach it.
+- Don't ship a stand-in application icon: a release carries the drawn icon, or the bundle names
+  no icon file. Don't put a hue, a letter, pure black or pure white in the icon.
 - Don't design a keyboard model, a search field, a resize handle, or a second platform's
   controls; each is outside the product's done.
 
@@ -1321,6 +1363,89 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
   § Components "Icons", § Do's and Don'ts, RN-1, RN-19, `Status:`, `Inputs read:`; source: change
   in the evidence — `README.md` § Stack, `nozoki-mac/`; `docs/SDD.md` § 2, § 12)*
 
+- **RN-32:** *(owner answers — added; the UXD does not speak to the title bar)* **The window keeps
+  the platform's own title bar, which draws no title, and the window's title is the string the
+  chrome names the folder with** — *because* RN-9's confirmed rule, no wordmark, logo or product
+  name in the shell (`docs/trail/design/cycle-1.md` § 2.6), never said whether the title bar is
+  the shell, and the shell as built answers it the wrong way round: a standard titled window
+  titled with the product's name (`nozoki-mac/Sources/Shell/WindowPresenting.swift:L45`, `:L48`).
+  The rule follows § Overview's order for a case no rule covers: only what the job puts on the
+  surface, so the folder and not the product; the way macOS draws it, so the platform's bar and
+  its buttons; fewer elements, so the folder is named once, in the chrome, which is the control
+  that names it (`docs/UXD.md` § 4, UX-F5). Authorized by the owner's cycle-8 answer
+  (`docs/trail/design/cycle-8.md` § 2.2 — decided in the owner's seat by a `companion-self-answer`
+  run, its reasoning at `docs/trail/design/self_answer-4.md` § 2.2), which confirmed the rule as
+  proposed and added four things, each folded. **(1) One string.** The title is the string the
+  chrome shows, so a folder switched or renamed is titled by the chrome's rule and not by a
+  second one. **(2) The theme.** The user may override the theme (`docs/UXD.md` UX-I9), and a
+  bar that followed only the system would sit light above a dark shell; so the bar is shown in
+  the theme the window shows. Its ground is the platform's and comes from no token, which the
+  first Do now states as one of its two exceptions, and nothing is drawn between the bar and the
+  chrome. The platform's ground is not held to *neither theme is ever pure* either: that rule
+  binds what this document draws. **(3) Where the rule stops.** The menu bar, the Dock and the
+  application switcher show the product's name and are the platform's; the three window buttons
+  are the platform's controls, so the chrome still holds two controls and `docs/UXD.md` UX-A4 is
+  not broken by three glyphs with no word — the Traceability row says so. **(4) The dependency.**
+  The bar may draw no title only because the chrome names the folder on the same surface, and
+  § Layout states that ground inside the rule. That the platform can do what the rule asks was
+  measured and not assumed: a window with the shell's own style mask and its title hidden keeps
+  all three buttons and keeps its title string (`docs/trail/design/self_answer-4.md` § Header).
+  **Not ruled on:** what the platform does with its bar in full-screen. **On the same answer
+  round, revision 11's AppKit wording is confirmed as applied** (`docs/trail/design/cycle-8.md`
+  § 2.1): the two font stacks as written, `44rem` with the `rem` at sixteen points, and the
+  clipped-row clause as re-said; nothing in RN-31 moves. One reading is recorded with it:
+  § Typography's and RN-31's *confirmed in those words* means the owner answered "confirm" to an
+  item that carried the two stacks (`docs/trail/design/cycle-1.md` § 2.2), not that the owner
+  wrote them. **Read for this revision and binding nothing.** `docs/UXD.md` v10, `docs/PRD.md`
+  v15, `docs/SRS.md` v12, `docs/CONTENT.md` v9, `docs/SDD.md` v20, `README.md`, `nozoki-mac/` and
+  `third_party/` are unchanged since revision 11: `git diff --stat cce8bde f77b5f8` lists only this
+  document's companion and its self-answer report. The shell as built does not yet hold this
+  rule — it draws "Nozoki" in the bar and never retitles the window
+  (`nozoki-mac/Sources/Shell/WindowPresenting.swift:L48`) — which is a fact about the code and
+  not a value here. No token, colour, type, spacing or radius value moves; no component enters
+  or leaves. *(re: § Layout, § Components "The chrome and its controls", "The startup surface",
+  § Do's and Don'ts, § Traceability; source: owner answers `docs/trail/design/cycle-8.md` § 2.1,
+  § 2.2; `docs/UXD.md` § 4, UX-I9, UX-A4)*
+- **RN-33:** *(owner answer — added; the UXD does not speak to the icon)* **The application icon
+  is this document's, and it is Nozoki's own: one drawn figure in `{colors.primary}` on
+  `{colors.surface}` at their light values, with no hue and no lettering** — *because* the icon is
+  the one thing of Nozoki's drawn outside the window, no document ruled on it, and the one on
+  disk was chosen by nobody: `nozoki-mac/icon.icns` is one uniform blue field, named as the
+  bundle's icon at `nozoki-mac/Info.plist:L11-L12`, and added at `nozoki@15e8790` as a byte copy
+  of an earlier host's file. § Overview's order decides the case: in the Dock and the switcher
+  the job is telling this application from the others, which the platform's generic icon cannot
+  do, so the icon is Nozoki's own; fewer elements shapes it — one figure; and the signature
+  (RN-2) holds outside the window, so it carries no hue. Authorized by the owner's cycle-8 answer
+  (`docs/trail/design/cycle-8.md` § 1.1 — decided in the owner's seat by a `companion-self-answer`
+  run, its reasoning at `docs/trail/design/self_answer-4.md` § 1.1), which took that lean and
+  added four things. **(1) No stand-in.** A release carries the drawn icon or the bundle names no
+  icon file; the blue square is never a decided value, so this document is complete before the
+  asset exists. **(2) The contract, not the figure.** What the figure depicts is an aesthetic
+  call made in the run that draws it; it reaches this document only as a pointer item on the
+  companion that the owner signs off, the fourth authorization the stability rule admits, and
+  § Components records it then. **(3) From the tokens this document has.** No colour token
+  enters. The two values are the light theme's because that is the polarity the frontmatter
+  carries (RN-17). The figure is not lettering because RN-9 keeps the name and the kanji on the
+  README (`docs/CONTENT.md:L143-L144`). Of the window's rules, the tokens, *no pure black or
+  white* and *no hue* bind the icon; the three radii do not, since the icon's outline is the
+  platform's. The frontmatter's `description:` no longer says the language covers only the one
+  window — the only frontmatter line this revision changes, and it is not a token. **(4) Named
+  and not covered:** whether a second drawing is owed for a dark system appearance. The answer
+  left it open, so it is this seat's to propose and the owner's to confirm: it is raised as a
+  fresh item (`docs/DESIGN_open_issues.md` § 2.1) and nothing about it is written into the
+  contract, which rules one drawing. Two things follow from the contract and are written with
+  it: the icon is a fixed file, so it copies two token values where every surface reads them —
+  the first Do's second exception — and it is redrawn when either moves. **Read and binding
+  nothing:** the bundle as built still names the blue square and the build refuses to run
+  without it (`nozoki-mac/Info.plist:L11-L12`; `nozoki-mac/assemble.sh:L37`, `:L61`) — a fact
+  about the code, recorded so nobody reads the file on disk as the decided icon. The machine
+  gate on this revision — the same pinned `lint`, run 2026-09-30 — reported 0 errors, 0 warnings
+  and 1 info, `token-summary` with the counts RN-21 records unchanged (20 colours, 10 typography
+  levels, 3 rounding levels, 15 spacing tokens, 46 components); no diagnostic is accepted or
+  routed. *(re: frontmatter `description:`, § Overview, § Components "The application icon",
+  § Do's and Don'ts, `Status:`; source: owner answer `docs/trail/design/cycle-8.md` § 1.1;
+  `nozoki-mac/icon.icns`; design reason)*
+
 ## Traceability
 
 | UXD constraint | How this document satisfies it |
@@ -1334,9 +1459,9 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
 | § 9 — the Markdown rendered view and the code view are two treatments of one panel: same path line, same position rule, same route out | `{components.path-line}` is the first row of every treatment; the optional switch is one control on that line (§ Components "The reading panel") |
 | § 8 — minimum contrast, no conformance number claimed; DESIGN.md states the floor its tokens hold | § Colors "The contrast floor" states the number and the surfaces it binds; no standard is claimed |
 | UX-A2 — no meaning by hue alone | Letters, headings, bars; the Do's make the cue mandatory and the hue the repeat |
-| UX-A4 — no control by glyph alone | Rail labels beneath glyphs; chrome controls carry a word; status glyphs never stand alone; the status letter's word is a tooltip the letter raises, and no labelled control raises one (§ Components, RN-11, RN-23) |
+| UX-A4 — no control by glyph alone | Rail labels beneath glyphs; chrome controls carry a word; status glyphs never stand alone; the status letter's word is a tooltip the letter raises, and no labelled control raises one (§ Components, RN-11, RN-23); the three window buttons in the title bar are the platform's controls and not this product's, so they are outside the rule (§ Layout, RN-32) |
 | UX-I2 / UX-I3 — no ceremony on update; the user's place survives | No transition, no flash, no notification (§ Do's and Don'ts, RN-11); the hover fill and the tooltip are pointer-driven and never fire on an update (RN-22, RN-23) |
-| UX-I9 — themes; user override; choice remembered | Theme control in the chrome (§ Components, RN-10 — placement added beyond the UXD and owner-confirmed; the UXD records the same home at `docs/UXD.md` § 4 and its RN-22, the owner's answer at `docs/trail/uxd/cycle-2.md` § 1.1) |
+| UX-I9 — themes; user override; choice remembered | Theme control in the chrome (§ Components, RN-10 — placement added beyond the UXD and owner-confirmed; the UXD records the same home at `docs/UXD.md` § 4 and its RN-22, the owner's answer at `docs/trail/uxd/cycle-2.md` § 1.1); the title bar is shown in the theme the window shows, the override included (§ Layout, RN-32) |
 | UX-I12 — links with destination readable; an in-folder image in place; an image outside the folder, or broken inside it, as a stated placeholder | `{components.link-text}` + `{components.link-destination}`; the in-folder image drawn unframed at the prose measure; the other two cases `{components.image-placeholder}` (§ Components "Rendered Markdown", RN-13, RN-28) |
 | UX-I13 — no indicator before the state is observed | Counts and letters drawn only after Git state is read; pending is a word, never a bar (§ Components "Status messages", Do's) |
 | UX-I14 — every failure carries a route out on the same surface | § Components "Status messages": the route follows the message; the Do's require it |
@@ -1344,6 +1469,7 @@ a commit row, `git-merge` a merge commit, `clock` the history entry in the Git v
 | UX-I16 — the unexplained fault shown in the item's own failure slot, scoped, with a route out, no detail control | § Components "Status messages": the second class of the same component, same treatment and same route out (RN-25); UXD RN-24's no-detail-control rule is held by the tooltip's single home (RN-23) and the Don't that binds it |
 | UX-I17 — the observed plain folder's Git view is present and shows nothing: no message, no label, no control, nothing that invites creating a repository; a working state, no route out owed | Satisfied by drawing **nothing**: § Components "Status messages" states this view as the one empty state that holds no instance of `{components.status-message}`, and keeps the pending (UX-I13) and fault (UX-I16) appearances of the same view inside the component (RN-26); no cue is added to the shell (UXD RN-27) |
 | § 4 / RN-16 — the rail leads with the glyph, label beneath; which icons is DESIGN.md's | `folder` / *Files*, `git-branch` / *Git*; 20px glyph over 10px label (§ Components "The rail", RN-12) |
+| § 4 — one window; the viewed folder is identified in the shell chrome | The chrome's folder selector names the folder; the platform's title bar above it draws no title, and the window's title is the same string (§ Layout, § Components "The chrome and its controls", RN-32) |
 | UX-F5 / RN-15 / RN-25 — the folder selector in the chrome, the folder's name as label and control; browse entry; empty before any folder is viewed; one name for the control with the input widened | `{components.control}` + `{components.menu}` with *Browse…* last, named the folder selector (§ Components "The chrome and its controls", "The menu"; RN-27) |
 | UX-S7 / RN-29 — the list's bound and order are the UXD's; how the current entry is marked is this document's | The list's shape is taken from UX-S7 and restated nowhere here; the current entry carries the leading `{colors.primary}` bar, no checkmark glyph (§ Components "The menu", RN-28) |
 | UX-S5 / UX-S6 — diff with staged distinguished in text; history as topology with branch names at tips; the history drawn in the sidebar beneath the changes list, entered from the Git view, with a stated end where it stops short | Diff section headers; `{components.branch-chip}`; ink-only rails and dots; the `clock` entry row, commit rows under their own section header, the stated end one inert muted row (§ Components "Diff", "The history", "The branch chip", RN-28) |
