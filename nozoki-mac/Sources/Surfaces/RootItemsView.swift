@@ -63,7 +63,10 @@ package final class RootItemsView: NSScrollView {
 
         rootLine.translatesAutoresizingMaskIntoConstraints = false
         rootLine.isHidden = true
-        addSubview(rootLine)
+        // A floating subview, not a plain one: a scroll view tiles its own subviews and leaves a
+        // plain one at the frame it was made with, whatever its constraints say (measured: the
+        // line stayed 4 points wide at the top-left; floating, it is centred at its text's width).
+        addFloatingSubview(rootLine, for: .vertical)
         NSLayoutConstraint.activate([
             rootLine.centerXAnchor.constraint(equalTo: centerXAnchor),
             rootLine.centerYAnchor.constraint(equalTo: centerYAnchor),

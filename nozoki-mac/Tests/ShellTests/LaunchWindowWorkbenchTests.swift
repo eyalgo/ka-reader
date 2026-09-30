@@ -137,7 +137,8 @@ final class LaunchWindowWorkbenchTests: LaunchWindowTestCase {
             readingFrame.intersects(sidebarFrame),
             "the reading panel \(readingFrame) overlaps the sidebar \(sidebarFrame)",
             file: file, line: line)
-        XCTAssertTrue(isInside(sidebarFrame, area), "sidebar \(sidebarFrame)", file: file, line: line)
+        XCTAssertTrue(
+            isInside(sidebarFrame, area), "sidebar \(sidebarFrame)", file: file, line: line)
         XCTAssertTrue(
             isInside(readingFrame, area), "reading panel \(readingFrame)", file: file, line: line)
 
