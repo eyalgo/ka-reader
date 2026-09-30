@@ -73,7 +73,22 @@ None.
   a form that holds more than one appearance, and whether it can is the SDD's to answer before
   the sentence is written here. *Leave it unruled* — the contract keeps its present last
   sentence, and the first design run to draw the icon decides it for the document.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm — Nozoki supplies one drawing, at the light values, and makes
+  no second drawing. Three things the fold carries beside it. **(1) The clause "it is shown as
+  it is under every system appearance" is not written.** How the icon is shown under a system
+  icon appearance is the platform's and not this document's to promise: Apple's guidelines say
+  "the system automatically generates variants you don't provide"
+  (https://developer.apple.com/design/human-interface-guidelines/app-icons, § Appearances, read
+  2026-09-30). The sentence says what Nozoki supplies and stops there. **(2) It covers every
+  system icon appearance, not only dark.** The same page names default, dark, clear and tinted;
+  no variant is drawn for any of them. **(3) The contract binds the drawing Nozoki supplies and
+  not the platform's rendering of it.** A variant the system generates or tints is the
+  platform's, as the title bar's ground is (`docs/DESIGN.md` RN-32), so *no hue* and *no pure
+  black or white* are not broken by it, and the redraw rule still covers two values. **Not
+  covered, and named:** what macOS actually draws from an icon the bundle names as a single
+  `.icns` file was not looked at; it is looked at when the drawn icon exists. Decided in the
+  owner's seat by a `companion-self-answer` run; the reasoning is
+  `docs/trail/design/self_answer-5.md` § 2.1.
 
 ## 3. Raised from downstream — an item from a seat that did not write the design language
 
