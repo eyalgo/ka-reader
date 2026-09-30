@@ -12,8 +12,10 @@ import XCTest
 // - It uses only names `nozoki@04dfab6` has, so a test built on it compiles on that tree and fails
 //   there on an assertion, not on a compile error (change_spec.md CP-248).
 
-/// The content area's size when the product first shows its window (`change_spec.md`, *Terms*).
-let openingContentSize = NSSize(width: 480, height: 640)
+/// The content area's size when the product first shows its window: `docs/DESIGN.md` § *Layout*'s
+/// minimum width of 720, by the height the window has always opened at (the-window-holds-its-layout
+/// change_spec.md CP-252, CP-253).
+let openingContentSize = NSSize(width: 720, height: 640)
 
 /// Half a point: the slack a frame comparison allows, since layout lands on half-point boundaries.
 private let layoutTolerance: CGFloat = 0.5

@@ -50,7 +50,8 @@ final class LaunchWindowLayoutTests: LaunchWindowTestCase {
         launch.bridge.listAnswer = Self.twoEntryRootAnswer
         launch.flow.run()
         let workbench = try XCTUnwrap(
-            launch.presenter.contents.last as? WorkbenchView, "a readable folder opens the workbench")
+            launch.presenter.contents.last as? WorkbenchView,
+            "a readable folder opens the workbench")
         return (workbench, try laidOutWindow(of: workbench))
     }
 

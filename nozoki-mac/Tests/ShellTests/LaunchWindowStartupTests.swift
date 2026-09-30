@@ -19,8 +19,10 @@ final class LaunchWindowStartupTests: LaunchWindowTestCase {
     /// A path no layout fits: 16384 points tall at a 440-point line (change_design.md M9).
     private static let pathNoLayoutFits = String(repeating: "\n", count: pathByteLimit)
 
-    /// The room M9 measured the 1023-`W` path to need (change_design.md § 5, S5).
-    private static let measuredRoomForTheWidestPath: CGFloat = 480
+    /// The room the 1023-`W` path needs at the opening size's column, 672 points wide (720 less the
+    /// inset each side). M9 measured 480 on the 440-point line of a 480-wide window; the wider
+    /// opening size moves it (the-window-holds-its-layout change_design.md § 5, S5; measured 320).
+    private static let measuredRoomForTheWidestPath: CGFloat = 320
 
     private static let frameTolerance: CGFloat = 0.5
 
