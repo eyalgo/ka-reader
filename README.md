@@ -10,12 +10,14 @@ command that alters your repository's state.
 
 > **Status: specified, partly built.** What exists now: the Rust library that reads a folder
 > (`crates/nozoki-core`), the C interface over it (`crates/nozoki-bridge`) and the AppKit shell in
-> Swift (`nozoki-mac`). In the app you choose a folder through the system's Open panel and its root
-> entries are listed. Viewing a file, the Git view and live refresh are not built yet. The product
-> is specified in full — what it is (`docs/PRD.md`), what it does (`docs/SRS.md`, `docs/fdr.md`),
-> how it looks and reads (`docs/UXD.md`, `docs/DESIGN.md`, `docs/CONTENT.md`), and how it is built
-> (`docs/SDD.md`, `docs/adr/`, `docs/nfdr.md`). There is no release yet. When there is one, it is a
-> `.dmg` on a GitHub Release for macOS 14 or later, under the MIT licence.
+> Swift (`nozoki-mac`). In the app you choose a folder through the system's Open panel and browse
+> its tree, opening folders as you go, beside a reading panel that is still empty. If you dismiss
+> the panel, or the folder cannot be opened, the window says so and offers *Browse…* and *Quit*.
+> Viewing a file, the Git view and live refresh are not built yet. The product is specified in
+> full — what it is (`docs/PRD.md`), what it does (`docs/SRS.md`, `docs/fdr.md`), how it looks and
+> reads (`docs/UXD.md`, `docs/DESIGN.md`, `docs/CONTENT.md`), and how it is built (`docs/SDD.md`,
+> `docs/adr/`, `docs/nfdr.md`). There is no release yet. When there is one, it is a `.dmg` on a
+> GitHub Release for macOS 14 or later, under the MIT licence.
 >
 > Nozoki is before version 1.0.0. Until 1.0.0, anything in it may change: what it does, how it
 > looks, and how you start it.
