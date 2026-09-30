@@ -275,11 +275,19 @@ final class RootItemsViewTests: XCTestCase {
 
     // ---- Added by development-code-integrity (2026-09-25), derived from the intent it cites ----
 
-    /// The text of every visible label the view draws outside its rows.
+    /// The text of every visible label the view draws outside its rows: every label beneath the
+    /// view that is not beneath its outline view, at whatever depth the view keeps it.
     private func drawnLines(_ view: RootItemsView) -> [String] {
-        view.subviews.compactMap { $0 as? NSTextField }
-            .filter { !$0.isHidden }
+        visibleViewsOutsideTheRows(beneath: view, of: view).compactMap { $0 as? NSTextField }
             .map(\.stringValue)
+    }
+
+    private func visibleViewsOutsideTheRows(beneath parent: NSView, of view: RootItemsView)
+        -> [NSView]
+    {
+        parent.subviews.filter { !$0.isHidden && $0 !== view.outlineView }.flatMap {
+            [$0] + visibleViewsOutsideTheRows(beneath: $0, of: view)
+        }
     }
 
     /// CP-186, CP-187 and CP-188 are about what the window *draws*: exactly one line for an observed

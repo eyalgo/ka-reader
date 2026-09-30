@@ -11,7 +11,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             panel: OpenFolderPanel(),
             bridge: NativeBridge(),
             glyphs: BundleGlyphSource(),
-            presenter: MainWindowPresenter())
+            presenter: MainWindowPresenter(),
+            terminate: { NSApplication.shared.terminate(nil) })
         self.flow = flow
         NSApplication.shared.activate(ignoringOtherApps: true)
         flow.run()
