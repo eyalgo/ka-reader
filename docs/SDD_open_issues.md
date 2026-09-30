@@ -83,7 +83,34 @@ None.
   the glyphs and the text-alone routes, which arrive with the token pairs, and no lean on the
   window's minimum width: that one decides whether the reading panel is dominant in the first
   window a stranger sees, and it is the seats' call.
-- **Answer:** <the owner fills this in>
+- **Answer:** S-1 holds them — the item's first option, for all three places, and no later slice
+  is named. `open-a-folder`'s observable half gains one sentence: the window this slice draws holds
+  `docs/DESIGN.md` § *Layout* and § *Components* for the surfaces it draws — the window's minimum
+  width, and the sidebar's width with the reading panel taking the rest (§ *Layout*); the status
+  message top-left, glyph-led and never centred wherever this slice shows one — the empty reading
+  panel's prompt, the tree's empty-folder and failed-root lines, and the startup surface's message
+  (§ *Components* "Status messages", RN-14); and the startup surface's two routes as text-alone
+  controls, one to a row (§ *Components* "The startup surface") — cited by section and never by
+  value, the way S-6 cites § *Colors* for the contrast floor, and not added to *Traces to*, which
+  carries no DESIGN clause anywhere (S-10 says so of the selector's mark). S-1's *Not in this
+  slice* keeps every fence it has: the rail's Git entry, the chrome's theme control and folder
+  selector, and the Git view arrive with `see-git-status`, `choose-a-theme` and
+  `switch-the-folder` as it already says (RN-37), and the colour token pairs stay
+  `choose-a-theme`'s. S-6's *Not in this slice* does not move. Why S-1 and not a later slice: no
+  slice in § 6 has the window's layout or a surface's component shape as its decision — S-6's
+  decision is that own state lands in the container and its bar is the two themes over surfaces
+  already drawn (§ 5 step 4, E-6), so the glyphs and the text-alone routes cannot arrive "with the
+  token pairs" without widening a slice sized against something else; and S-1 already claims the
+  layout — its *Traces to* carries `docs/UXD.md` § 4, "the sidebar beside a dominant reading
+  panel", which the window as drawn does not meet (a 220-point panel beside a 260-point sidebar at
+  480), so the sentence closes a bar S-1 was already held to rather than adding one. The values
+  stay where they are, `docs/DESIGN.md`'s and owner-confirmed there (its RN-8); a change to one is
+  that document's run, which is why S-1 cites sections. The fold reaches the product through the
+  open station and no new seed: `the-startup-surface`'s condition 4 walks S-1's observable half as
+  written. One thing this answer needs beside the SDD is raised on its own document, not here:
+  `docs/DESIGN.md` § Overview still says the language is realised in CSS over markup, which the
+  shell S-1 draws is not — `docs/DESIGN_open_issues.md` § 2.1 (`nozoki@a047914`). Reasoning:
+  `docs/trail/sdd/self_answer-27.md`.
 
 **How it closes.** `product-sdd` folds it on its next run like every other item in this file, and
 the trail copy and the delete-when-empty behaviour are unchanged.
