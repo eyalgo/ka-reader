@@ -18,6 +18,17 @@ let openingContentSize = NSSize(width: 480, height: 640)
 /// Half a point: the slack a frame comparison allows, since layout lands on half-point boundaries.
 private let layoutTolerance: CGFloat = 0.5
 
+/// Creates the shared application object, as the shipped app does before it shows its first
+/// surface (`Sources/Nozoki/main.swift`). Nothing is activated and no run loop is started, so the
+/// process holds the app's launch state and no side effect of one.
+///
+/// Called from a class-level set-up, once per class and before any of its tests: a test's click
+/// then never depends on whether an earlier test created the object (change_design.md § 3 B). The
+/// set-up runs on the main thread, and the isolation is asserted as `main.swift` asserts it.
+func createTheSharedApplication() {
+    MainActor.assumeIsolated { _ = NSApplication.shared }
+}
+
 /// A presenter that forwards to a real `MainWindowPresenter` and keeps each view it was handed, so
 /// a whole launch can run through `LaunchFlow` into the product's own window.
 @MainActor
@@ -45,6 +56,11 @@ struct WindowLaunch {
 @MainActor
 class LaunchWindowTestCase: XCTestCase {
     private var shownWindows: [NSWindow] = []
+
+    override class func setUp() {
+        super.setUp()
+        createTheSharedApplication()
+    }
 
     override func tearDown() async throws {
         for window in shownWindows { window.orderOut(nil) }
