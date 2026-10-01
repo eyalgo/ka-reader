@@ -1461,7 +1461,7 @@ final class ReadingPanelTests: XCTestCase {
             (.text("", .plain), ["b.txt"], nil),
             (
                 .cannotDisplay(.invalidUTF8), ["b.txt", "b.txt can't be shown as text."],
-                statusGlyphs.failure
+                statusGlyphs.empty
             ),
             (
                 .failed(.missing), ["b.txt", "Nozoki looked for b.txt and didn't find it."],
