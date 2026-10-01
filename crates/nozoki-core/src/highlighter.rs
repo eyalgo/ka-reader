@@ -13,6 +13,18 @@ use tree_sitter_highlight::{Highlight, HighlightConfiguration, HighlightEvent, H
 use crate::language::Language;
 
 /// What a token is drawn as (CP-296). Punctuation, operators and everything else have no class.
+///
+/// # Examples
+///
+/// ```
+/// use nozoki_core::{Language, TokenClass, highlight};
+///
+/// let classes: Vec<TokenClass> = highlight("# note", Language::Python)
+///     .iter()
+///     .map(|span| span.class)
+///     .collect();
+/// assert_eq!(classes, [TokenClass::Comment]);
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TokenClass {
     Keyword,
@@ -23,6 +35,20 @@ pub enum TokenClass {
 }
 
 /// One token: the byte range `[start, end)` of the highlighted text, and its class.
+///
+/// # Examples
+///
+/// ```
+/// use nozoki_core::{Language, TokenClass, highlight};
+///
+/// let text = "count = 42";
+/// let spans = highlight(text, Language::Python);
+/// let number = spans
+///     .iter()
+///     .find(|span| span.class == TokenClass::Number)
+///     .expect("a number literal is spanned");
+/// assert_eq!(&text[number.start..number.end], "42");
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Span {
     pub start: usize,
