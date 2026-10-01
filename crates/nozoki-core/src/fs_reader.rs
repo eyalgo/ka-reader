@@ -1942,14 +1942,90 @@ mod tests {
     }
 
     #[test]
-    fn test_extension_inside_the_floor_set_is_text_without_a_language_claim() {
+    fn test_floor_extension_names_its_language() {
         let temp = TempDir::new();
         temp.write_file("deploy.yml", "name: deploy\n");
 
-        assert!(matches!(
+        assert_eq!(
             read(temp.path(), "deploy.yml"),
-            ItemState::Observed(FileContent::Text { .. })
-        ));
+            ItemState::Observed(FileContent::Text {
+                content: "name: deploy\n".to_string(),
+                language: Language::Yaml,
+            })
+        );
+    }
+
+    /// The floor extensions of CP-290, one row per language.
+    const FLOOR_EXTENSIONS: [(Language, &[&str]); 6] = [
+        (Language::Python, &["py", "pyi", "pyw"]),
+        (Language::Shell, &["sh", "bash", "zsh"]),
+        (Language::JavaScript, &["js", "mjs", "cjs", "jsx"]),
+        (Language::Json, &["json"]),
+        (Language::Yaml, &["yaml", "yml"]),
+        (Language::Toml, &["toml"]),
+    ];
+
+    #[test]
+    fn test_every_floor_extension_names_its_language() {
+        for (language, extensions) in FLOOR_EXTENSIONS {
+            for extension in extensions {
+                for spelling in [extension.to_string(), extension.to_uppercase()] {
+                    let name = format!("file.{spelling}");
+
+                    assert_eq!(language_of(OsStr::new(&name)), language, "{name}");
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn test_floor_extension_ignores_ascii_case() {
+        let mixed_case = [
+            ("x.Py", Language::Python),
+            ("x.BaSh", Language::Shell),
+            ("x.MjS", Language::JavaScript),
+            ("x.JsOn", Language::Json),
+            ("x.YmL", Language::Yaml),
+            ("x.ToMl", Language::Toml),
+            ("Deploy.YmL", Language::Yaml),
+        ];
+
+        for (name, language) in mixed_case {
+            assert_eq!(language_of(OsStr::new(name)), language, "{name}");
+        }
+    }
+
+    #[test]
+    fn test_other_names_are_plain() {
+        let plain = [
+            "README",
+            "notes.txt",
+            "README.md",
+            "notes.MARKDOWN",
+            "guide.MARKDOWN",
+            ".bashrc",
+            ".py",
+            "notes.",
+            "Makefile.py.bak",
+            "main.rs",
+        ];
+
+        for name in plain {
+            assert_eq!(language_of(OsStr::new(name)), Language::Plain, "{name}");
+        }
+    }
+
+    #[test]
+    fn test_non_utf8_extension_is_plain() {
+        let not_utf8_extension = OsStr::from_bytes(b"file.p\xFFy");
+
+        assert_eq!(language_of(not_utf8_extension), Language::Plain);
+    }
+
+    #[test]
+    fn test_language_is_taken_from_the_last_extension() {
+        assert_eq!(language_of(OsStr::new("archive.tar.json")), Language::Json);
+        assert_eq!(language_of(OsStr::new("Makefile.py.bak")), Language::Plain);
     }
 
     #[test]
