@@ -2,7 +2,7 @@
 
 **Status:** Settled
 **Owner:** Principal Architect
-**Version:** 24 — the close: the cycle-21 fold (`docs/trail/architecture/cycle-21.md` §§ 2.1, 2.2; reasoning at `docs/trail/architecture/self_answer-25.md`). Both v23 drafts are confirmed. QC-30 half (2) skips the workspace's own members, and half (1) now reads every workspace member, not three named units, so the two halves split on one test and a crate created under `crates/` falls in neither gap; QC-58's units follow it. ADR-0017 is Accepted, its reversal gate carried by ADR-0004's cheaper precedent and by the record being the only append-only home for its reasoning. No `QC` is added, renumbered or reused. The companion is removed, so `Status:` is Settled.
+**Version:** 25 — the close: the cycle-22 fold (`docs/trail/architecture/cycle-22.md` § 3.1; reasoning at `docs/trail/architecture/self_answer-26.md`). QC-14's first clause regains the qualifier its two sources carry: `checks/` is never a dependency of any *shipped* unit, so a `nozoki-core` test target that compiles harness source conforms, and `checks/structure.sh` does not read a test target's `#[path]` into `checks/` as a dependency. No `QC` is added, renumbered or reused, and § 10 gains no command. The companion is removed, so `Status:` is Settled.
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · PRD Settled · UXD Settled · DESIGN Settled · CONTENT Settled
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
@@ -272,11 +272,15 @@ explicitly and never inferred.
   own", SM-4; § 4 C-I2; § 11 R-13; `arch_defaults.md` § Application Layer; re-derived at v11 —
   RN-22; the *may import* set answered in the owner's seat at
   `docs/trail/architecture/cycle-10.md` § 3.1 — RN-24)*
-- **QC-14:** `checks/` may import `nozoki-core` and is **never a dependency** of `nozoki-core`,
-  `nozoki-bridge` or `nozoki-mac`, and never ships in the bundle.
+- **QC-14:** `checks/` may import `nozoki-core` and is **never a dependency of any shipped
+  unit** — the `nozoki-core` library, the `nozoki-bridge` static library or the `nozoki-mac`
+  executable, each as it ships, and never a test target declared in one of their manifests — and
+  never ships in the bundle.
   — *verified by:* `cargo tree -p nozoki-bridge` names no `checks` crate; `checks/structure.sh`
   (layer 6); `checks/bundle.sh` — nothing of `checks/` under `Contents/` (layer 5) *(traces to:
-  ADR-0010; ADR-0016; SDD § 3 `read-only-harness` "Must not own")*
+  ADR-0010; ADR-0016; SDD § 3 `read-only-harness` "Must not own"; the shipped-unit qualifier
+  restored at v25 from those two sources, answered at `docs/trail/architecture/cycle-22.md`
+  § 3.1 — RN-36)*
 
 ### 1.3 Layer isolation
 
@@ -3246,3 +3250,33 @@ delegation half), QC-18, QC-21, QC-31, QC-33, QC-43, QC-45, QC-50, QC-54, QC-57,
   renumbered or reused *(re: header `Status:`, `Version:`; QC-30; QC-58; ADR-0017; the ADR index;
   source: `docs/trail/architecture/cycle-21.md` §§ 2.1, 2.2;
   `docs/trail/architecture/self_answer-25.md` §§ 2.1, 2.2; `Cargo.toml:L8`)*
+- **RN-36:** *(v25 — the close: the cycle-22 fold, § 3.1 answered)* **The fold.** The companion
+  at intake was opened by the PM, not by a `product-architecture` run, with one item raised from
+  downstream (`nozoki@b15a89a`). It was answered in the owner's seat by a `companion-self-answer`
+  run (`docs/trail/architecture/self_answer-26.md`) and committed at `nozoki@fdaa957`, and was
+  copied whole before this fold as `docs/trail/architecture/cycle-22.md`. Nothing is left
+  unresolved, so the companion is removed and `Status:` is Settled.
+  **§ 3.1 → QC-14.** QC-14 said `checks/` is "never a dependency of `nozoki-core`, `nozoki-bridge`
+  or `nozoki-mac`", with no shipped/unshipped line, and `crates/nozoki-core/tests/walk.rs:L6-L7`
+  compiles `checks/walk.rs` into a `nozoki-core` test target by `#[path]`. The answer reads the
+  entry as its two sources already do — ADR-0016 "never a dependency of a shipped unit"
+  (`docs/adr/0016-physical-unit-set-core-bridge-mac-checks.md:L40-L41`) and SDD § 3
+  `read-only-harness` "Being a dependency of any shipped unit" (`docs/SDD.md:L332`), both re-read
+  for this fold — so QC-14 had dropped the qualifier in transcription, and the entry was the copy.
+  The first clause now says "any shipped unit" and names the three units as the artifacts that
+  ship. The site conforms: Cargo compiles a `tests/` file as its own crate over the library's
+  public API, so the edge runs `checks` → `nozoki-core`, the direction QC-14 allows, and § 9's
+  `checks/structure.sh` scope bullet already keeps `crates/*/tests/` out of every rule of the
+  script, this one included. The trace tag names this note. § 10's QC-9 – QC-14 row needs no new
+  command and does not move.
+  **Not covered, named so it is not read as coverage.** A `#[path]` or `include!` from a unit's
+  shipped source under `src/` into `checks/` would make `checks/` a dependency of a shipped unit
+  and break QC-14. No such site exists — `grep -rn '#\[path\|include!' crates/` finds this test
+  target and two `#[cfg(test)]` sites into `tests/common/` (`crates/nozoki-core/src/lib.rs:L18-L19`,
+  `crates/nozoki-bridge/src/lib.rs:L10-L11`), re-run for this fold — so, per the answer, no rule
+  of `checks/structure.sh` is owed for it until one occurs.
+  **Inputs.** `git log a7e4445..HEAD` over the seven inputs prints nothing, and every input's
+  `Status:` line was re-read and is Settled, so `Inputs read:` stands. No record is written or
+  restatused, and no `QC` is added, renumbered or reused *(re: header `Status:`, `Version:`;
+  QC-14; source: `docs/trail/architecture/cycle-22.md` § 3.1;
+  `docs/trail/architecture/self_answer-26.md` § 3.1; `crates/nozoki-core/tests/walk.rs:L6-L7`)*
