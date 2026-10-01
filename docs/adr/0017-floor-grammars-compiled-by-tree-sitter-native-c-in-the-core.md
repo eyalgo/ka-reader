@@ -1,6 +1,6 @@
 # ADR-0017: The six floor grammars are compiled by tree-sitter — native C built from source into `nozoki-core` on every build
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-10-01
 
 ## Context
@@ -65,8 +65,17 @@ condition for either, so neither is an obligation here.
 
 What undoing it costs: `highlighter` rewritten behind what it owns, with its query files, and the
 engine's names taken off the list in the same change. No seam, no other part and no slice's bar
-moves with it (`docs/SDD.md` § 9 TO-11). That is one part, but it is six languages' worth of
-lexing or a second engine with vendored syntaxes, and that is why this is a record and not a note.
+moves with it (`docs/SDD.md` § 9 TO-11). That is one part's rewrite, six languages' worth of
+lexing or a second engine with vendored syntaxes, and the cost alone would not make this a record.
+Two things do. The log already records the product's other body of native C in the core, libgit2,
+and undoing that one is cheaper: "the installed-`git` adapter behind the port — the seam is already
+drawn for it" (ADR-0004 § Consequences). Leaving this decision out would keep the cheaper case and
+drop the more surprising one. And what a later reader cannot rebuild without this record is the
+reason C parses the adopter's bytes inside the unit whose own source forbids `unsafe`, and why that
+C is compiled from source on every build (§ Context). Without the record, that reasoning lives only
+in the SDD, which is revised in place, and in a dependency review cited pinned to one commit because
+its title goes stale at the next name added (QC-3). Neither is append-only. That is why this is a
+record and not a note.
 
 **What this rests on, and whose it stays.** Three platform facts, none of them this product's. The
 runtime and four of the grammars (Python, Bash, JavaScript, JSON) name
@@ -93,8 +102,9 @@ one part's rewrite for one language, and the risk is followed in the lockfile re
   commit.
 - `docs/SRS.md` FR-8, FR-16, FR-29; DR-6; NFR-16.
 - ADR-0011, ADR-0013, ADR-0016.
-- The owner's confirm that this decision earns a record is pending at
-  `docs/architecture_open_issues.md` § 2.2. The record stays at Proposed until it is answered.
+- `docs/trail/architecture/cycle-21.md` § 2.2 — the owner's seat confirmed that this decision earns
+  a record, with the two grounds for the reversal gate named above (reasoning at
+  `docs/trail/architecture/self_answer-25.md` § 2.2). Accepted on that answer.
 
 ## Binds
 

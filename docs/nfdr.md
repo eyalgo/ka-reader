@@ -1,8 +1,8 @@
 # NFDR — Nozoki 覗き
 
-**Status:** Draft
+**Status:** Settled
 **Owner:** Principal Architect
-**Version:** 23 — the cycle-20 fold: the two answered downstream items folded (`docs/trail/architecture/cycle-20.md` §§ 3.1, 3.2; reasoning at `docs/trail/architecture/self_answer-24.md`). QC-3 records the one-time review at `nozoki@85d9fa7:checks/deps.review.md`, over the 40 names on the list at that commit, and no longer calls it owed. QC-30 half (2) excepts each dependency's build script — the file its manifest's `build` key names, `build.rs` by default — and § 9's `checks/structure.sh` bullet follows it. Two drafts for the owner's confirm: QC-30 half (2) skips the workspace's own members, and ADR-0017 (Proposed) records the tree-sitter grammar engine SDD v23 added as § 9 TO-11, with QC-9 gaining the limit SDD § 3 now states — *no `unsafe`* is about each crate's own Rust source, not the C it links. No `QC` is added, renumbered or reused. The companion stays open with the two drafts, so `Status:` is Draft.
+**Version:** 24 — the close: the cycle-21 fold (`docs/trail/architecture/cycle-21.md` §§ 2.1, 2.2; reasoning at `docs/trail/architecture/self_answer-25.md`). Both v23 drafts are confirmed. QC-30 half (2) skips the workspace's own members, and half (1) now reads every workspace member, not three named units, so the two halves split on one test and a crate created under `crates/` falls in neither gap; QC-58's units follow it. ADR-0017 is Accepted, its reversal gate carried by ADR-0004's cheaper precedent and by the record being the only append-only home for its reasoning. No `QC` is added, renumbered or reused. The companion is removed, so `Status:` is Settled.
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · PRD Settled · UXD Settled · DESIGN Settled · CONTENT Settled
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
@@ -566,8 +566,10 @@ reviewed tag.
   them; the product's own files in its container; and the environment and argument reads of
   the linked dependency tree, each named in `checks/entry-points.allow`. The set covers what the
   shipped process reads, whichever crate holds the line that reads it — an adopter runs one
-  process. It is held in two halves. **(1) The product's own units** — `nozoki-core`,
-  `nozoki-bridge` and `nozoki-mac` — read no argument vector, no environment variable and no
+  process. It is held in two halves. **(1) The product's own units** — every member of the Cargo
+  workspace, whose members are the glob `crates/*` (`Cargo.toml` `members`), so a crate created
+  there is a member with no manifest edit (`nozoki-core` and `nozoki-bridge` today), and
+  `nozoki-mac` — read no argument vector, no environment variable and no
   configuration file, and open no socket. **(2) The linked dependency tree** — every environment or
   argument read in the crates `cargo tree -p nozoki-bridge --target aarch64-apple-darwin -e normal
   --locked` resolves is a named member of the set: one line in `checks/entry-points.allow` per
@@ -578,7 +580,8 @@ reviewed tag.
   by the operating system's own frameworks inside the process. They are the platform's, no
   lockfile names them, and the sandbox (QC-25) is what bounds them.
   — *verified by:* half (1) — `checks/structure.sh` (layer 6): no `std::env::args`,
-  `std::env::var`, socket or config-file read in the product's own crates; `checks/view.sh`
+  `std::env::var`, socket or config-file read in any workspace member's sources, the scope § 9's
+  `checks/structure.sh` bullet states; `checks/view.sh`
   (layer 6): no `CommandLine.arguments`, `ProcessInfo.processInfo.arguments` or
   `ProcessInfo.processInfo.environment` read in `nozoki-mac/Sources` — three names this document
   adds to C-R7's scan to realize C-R3's *Violated by* (RN-22). Half (2) —
@@ -589,9 +592,10 @@ reviewed tag.
   a listed line no longer found, and on any resolved crate whose sources it cannot open — a crate
   it cannot scan is a failure, never a pass. The scan covers the package directory and not `src/`,
   because a crate need not keep its sources there (RN-18). **The workspace's own members** —
-  `nozoki-core` and `nozoki-bridge`, which the command names and which have no registry copy — are
-  half (1)'s, and the scan skips them by their membership in the workspace, never by a list of
-  names; any other crate whose sources it cannot open still fails. **The build script excepted**
+  `nozoki-core` and `nozoki-bridge` today, which the command names and which have no registry
+  copy — are half (1)'s, whose rule reads every member's sources, and the scan skips them by their
+  membership in the workspace, never by a list of names. The two halves split on that one test,
+  so no crate falls between them; any other crate whose sources it cannot open still fails. **The build script excepted**
   is the file the `build` key of that registry copy's `Cargo.toml` names, at the version the lock
   resolves, and `build.rs` at the package root where the manifest sets no key
   (https://doc.rust-lang.org/cargo/reference/manifest.html, § The `build` field); where the key is
@@ -607,7 +611,9 @@ reviewed tag.
   the list format and the measurement behind them are this document's — RN-18; the IPC member
   corrected on the owner's addition at `docs/trail/architecture/cycle-9.md` § 2.3 — RN-23; the
   build-script exception on the owner's seat's answer at `docs/trail/architecture/cycle-20.md`
-  § 3.2, and the workspace skip drafted at v23 for the owner's confirm — RN-34)*
+  § 3.2; the workspace skip drafted at v23 — RN-34 — and confirmed, with half (1) widened to every
+  workspace member, on the owner's seat's answer at `docs/trail/architecture/cycle-21.md` § 2.1 —
+  RN-35)*
 - **QC-31:** Every value entering from outside is validated at the boundary it enters through
   before it reaches the model: a path by the containment check (QC-6), a decoded file by
   `fs-reader`'s text rule — UTF-8 with or without its byte-order mark, or UTF-16 by its mark;
@@ -891,14 +897,15 @@ release-time, is RN-7. What follows exceeds the card.
   — *verified by:* release inspection (`docs/SRS.md` AC-10, AC-14) — a review gate: the walk is a
   stranger's path and is deliberately not automated *(traces to: SDD § 4 C-R4; SRS C-3, C-9; FDR
   R-128 – R-130; ADR-0007)*
-- **QC-58:** The product offers no configuration surface: its own units — the two crates and
+- **QC-58:** The product offers no configuration surface: its own units — every workspace member (QC-30 half (1)) and
   `nozoki-mac` — read no configuration file, no environment variable and no argument, and the only
   input the product requires is the folder chosen in the Open panel. What the linked dependency tree reads from the environment or
   the argument vector is not a surface the product offers: it is the named list QC-30's second
   half holds, and no read enters that list unreviewed.
   — *verified by:* `checks/structure.sh`, `checks/view.sh` and `checks/entry-points.sh`
   (layer 6), the same rules as QC-30; `docs/SRS.md` AC-9 at release *(traces to: SRS NFR-14, FR-1,
-  AC-9; FDR R-2; SDD § 4 C-R3; ADR-0011; the two halves follow QC-30 — `docs/trail/architecture/cycle-5.md` § 3.3, RN-18)*
+  AC-9; FDR R-2; SDD § 4 C-R3; ADR-0011; the two halves follow QC-30 — `docs/trail/architecture/cycle-5.md` § 3.3, RN-18; the units
+  set widened with QC-30's half (1) — RN-35)*
 - **QC-59:** From the first 1.0.0 release the public contract semantic versioning binds is:
   every rule and product decision in `docs/fdr.md` as observable behaviour; the install path
   (QC-57); the readability of an earlier version's own-state (QC-60); and the macOS floor
@@ -3205,3 +3212,37 @@ delegation half), QC-18, QC-21, QC-31, QC-33, QC-43, QC-45, QC-50, QC-54, QC-57,
   `docs/trail/architecture/cycle-20.md` §§ 2.1, 3.1, 3.2;
   `docs/trail/architecture/self_answer-24.md` §§ 3.1, 3.2; `docs/SDD.md` § 3, § 9 TO-11, § 11
   R-14, RN-80 at v23; `nozoki@85d9fa7`, `nozoki@e81a386`)*
+- **RN-35:** *(v24 — the close: the cycle-21 fold, §§ 2.1 and 2.2 confirmed with an addition
+  each)* **The fold.** The companion at intake held the two v23 drafts, both answered in the
+  owner's seat by a `companion-self-answer` run (`docs/trail/architecture/self_answer-25.md`) and
+  committed at `nozoki@e49b34e`; it was copied whole before this fold as
+  `docs/trail/architecture/cycle-21.md`. Nothing is left unresolved, so the companion is removed
+  and `Status:` is Settled.
+  **§ 2.1 → QC-30 and QC-58.** The draft stands: half (2) scans only crates from outside the
+  workspace and skips a member by membership. The addition is folded as written. The workspace's
+  members are a glob, `members = ["crates/*"]` (`Cargo.toml:L8`, re-read for this fold), so a
+  crate created under `crates/` is a member with no manifest edit. Half (2) would skip it, and
+  half (1) named three units, so it fell in neither half. Half (1) now names every workspace member
+  and keeps `nozoki-core` and `nozoki-bridge` as today's examples. Its *verified by* points at the
+  scope § 9's `checks/structure.sh` bullet already gives the script, "the product crates' sources
+  outside `crates/*/tests/`", so that rule does not grow. Neither `checks/structure.sh` nor
+  `checks/entry-points.sh` is on the tree yet (`ls checks/`, this fold), so no script moves. The
+  entry sets each script's scope for the change that lands it, and until then the gate is
+  `development-design` reading the entry, as the header says. One phrase beyond the answer, under
+  the same authority: QC-58 called its units "the two crates and `nozoki-mac`" and says its halves
+  follow QC-30's, so it now reads "every workspace member (QC-30 half (1)) and `nozoki-mac`". Left
+  as it was, it would have named a smaller set than the entry it follows. § 10's two QC-30 rows
+  name no crate and do not move.
+  **§ 2.2 → ADR-0017.** The record is Accepted. Before acceptance, while it was still Proposed, it
+  took the one edit the answer's addition directs: the "record and not a note" sentence in
+  § Consequences now rests on the two grounds the answer names, both from facts the record and the
+  log already held. The first is ADR-0004, which records libgit2 with a cheaper undo
+  (`docs/adr/0004-git-read-through-libgit2-behind-a-port.md:L50-L51`, re-read). The second is that
+  the record is the only append-only home for why C parses the adopter's bytes in the
+  no-`unsafe` core. Its last `## Traces to` bullet now names the answer, not the pending item. The
+  index row follows. QC-9's, QC-26's and QC-30's trace tags already name ADR-0017 and do not move.
+  **Inputs.** `git log d7f31fa..HEAD` over the seven inputs prints nothing, and every input's
+  `Status:` line was re-read and is Settled, so `Inputs read:` stands. No `QC` is added,
+  renumbered or reused *(re: header `Status:`, `Version:`; QC-30; QC-58; ADR-0017; the ADR index;
+  source: `docs/trail/architecture/cycle-21.md` §§ 2.1, 2.2;
+  `docs/trail/architecture/self_answer-25.md` §§ 2.1, 2.2; `Cargo.toml:L8`)*
