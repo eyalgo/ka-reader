@@ -244,9 +244,10 @@ final class ReadingPanelTests: XCTestCase {
     // MARK: - Drawing a floor-language file's spans (CP-311 – CP-316)
 
     /// A code token or the ground, with the two values `docs/DESIGN.md:L409-L428` gives it: light
-    /// then dark, as `0xRRGGBB`.
+    /// then dark, as `0xRRGGBB`. `primary` and `gutter` are the base ink and the line numbers'
+    /// colour (`docs/DESIGN.md:L411`, `:L413`).
     private enum Token {
-        case keyword, string, number, comment, name
+        case keyword, string, number, comment, name, primary, gutter
 
         var values: (light: UInt32, dark: UInt32) {
             switch self {
@@ -255,6 +256,8 @@ final class ReadingPanelTests: XCTestCase {
             case .number: return (0x9A4B00, 0xF0B47A)
             case .comment: return (0x6A6C72, 0x9A9BA0)
             case .name: return (0x0F5A9A, 0x8CC4F5)
+            case .primary: return (0x1E1F22, 0xE7E7E4)
+            case .gutter: return (0x6F7177, 0x8E8F94)
             }
         }
     }
@@ -514,5 +517,42 @@ final class ReadingPanelTests: XCTestCase {
                     "scroll view ground under \(appearance.name)")
             }
         }
+    }
+
+    // MARK: - The code view's tokens (CP-332, CP-333, CP-335)
+
+    func testCodePrimaryTakesItsDesignValueInEachAppearance() {
+        assertSame(
+            srgb(CodeColors.primary, under: aqua), hex(Token.primary.values.light),
+            "primary under aqua")
+        assertSame(
+            srgb(CodeColors.primary, under: darkAqua), hex(Token.primary.values.dark),
+            "primary under darkAqua")
+    }
+
+    func testCodeGutterColourTakesItsDesignValueInEachAppearance() {
+        assertSame(
+            srgb(CodeColors.gutter, under: aqua), hex(Token.gutter.values.light),
+            "gutter under aqua")
+        assertSame(
+            srgb(CodeColors.gutter, under: darkAqua), hex(Token.gutter.values.dark),
+            "gutter under darkAqua")
+    }
+
+    func testCodeTypeIsTheThirteenPointMonospacedSystemFontAtRegularWeight() {
+        XCTAssertEqual(CodeType.font, .monospacedSystemFont(ofSize: 13, weight: .regular))
+        XCTAssertEqual(CodeType.font.pointSize, 13)
+    }
+
+    func testCodeLinePitchIsOnePointFiveFiveTimesTheSize() {
+        XCTAssertEqual(CodeType.linePitch, 20.15, accuracy: 0.0001)
+        XCTAssertEqual(CodeType.linePitch, 1.55 * CodeType.font.pointSize, accuracy: 0.0001)
+        // 1.55 times the font's own line height would be 24.8, which CP-332 rejects.
+        XCTAssertNotEqual(CodeType.linePitch, 24.8, accuracy: 1)
+    }
+
+    func testCodeSpacingCarriesTheSixteenPointInsetAndTheTwentyFourPointGutterBase() {
+        XCTAssertEqual(CodeSpacing.inset, 16)
+        XCTAssertEqual(CodeSpacing.gutterBase, 24)
     }
 }
