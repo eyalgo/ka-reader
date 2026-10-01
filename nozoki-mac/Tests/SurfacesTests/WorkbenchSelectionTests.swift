@@ -86,6 +86,32 @@ final class WorkbenchSelectionTests: XCTestCase {
         workbench.rootItemsView.barPaths()
     }
 
+    private func descendants(of view: NSView) -> [NSView] {
+        view.subviews + view.subviews.flatMap { descendants(of: $0) }
+    }
+
+    /// The text of every visible, non-editable text field of the reading panel, top to bottom.
+    private func panelStrings(_ workbench: WorkbenchView) -> [String] {
+        let panel = workbench.readingPanel
+        panel.layoutSubtreeIfNeeded()
+        return descendants(of: panel)
+            .filter { !$0.isHiddenOrHasHiddenAncestor }
+            .compactMap { $0 as? NSTextField }
+            .filter { !$0.isEditable }
+            .sorted {
+                $0.convert($0.bounds, to: panel).maxY > $1.convert($1.bounds, to: panel).maxY
+            }
+            .map(\.stringValue)
+    }
+
+    // The sentences are string literals here and never read from `ConditionSentences`: a test that
+    // reads the constant proves nothing about the wording (CP-355). Both glyphs are one image in
+    // this fixture, so these tests prove routing, not which glyph was drawn.
+    private let pending = "Reading this file."
+    private let fault =
+        "Nozoki stopped while reading this file and can't tell why. "
+        + "The rest of the folder is still readable — select another file."
+
     func testSelectingAFileRowRaisesSelectFileAndPutsTheBarOnItAlone() throws {
         let (workbench, log) = makeWorkbench()
 
@@ -234,7 +260,7 @@ final class WorkbenchSelectionTests: XCTestCase {
         XCTAssertEqual(log.selects.count, 1, "no selection raised during a reload")
     }
 
-    func testNilAnswerReturnsToThePromptAndClearsTheBar() throws {
+    func testNilAnswerDrawsTheFaultUnderThePathAndKeepsTheBar() throws {
         let (workbench, log) = makeWorkbench()
         try select("a.txt", in: workbench)
         log.selects[0].answer(.text("x", .plain))
@@ -243,7 +269,212 @@ final class WorkbenchSelectionTests: XCTestCase {
         try select("b.txt", in: workbench)
         log.selects[1].answer(nil)
 
+        XCTAssertEqual(shownPath(workbench), "b.txt")
+        XCTAssertEqual(panelStrings(workbench), ["b.txt", fault])
+        XCTAssertEqual(barPaths(workbench), ["b.txt"])
+    }
+
+    // MARK: - Pending and the fault (CP-345 – CP-354)
+
+    func testASelectionAfterAShownFileDrawsOnlyThePendingSentenceAndMovesTheBar() throws {
+        let (workbench, log) = makeWorkbench()
+        try select("a.txt", in: workbench)
+        log.selects[0].answer(.text("hello", .plain))
+
+        try select("b.txt", in: workbench)
+
+        XCTAssertEqual(panelStrings(workbench), [pending])
         XCTAssertNil(shownPath(workbench))
-        XCTAssertEqual(barPaths(workbench), [])
+        XCTAssertEqual(workbench.readingPanel.contentView.string, "")
+        XCTAssertEqual(barPaths(workbench), ["b.txt"])
+    }
+
+    func testSelectingFromTheFreshPromptDrawsThePendingSentence() throws {
+        let (workbench, _) = makeWorkbench()
+        XCTAssertEqual(panelStrings(workbench), ["Select a file to view."])
+
+        try select("README", in: workbench)
+
+        XCTAssertEqual(panelStrings(workbench), [pending])
+    }
+
+    func testPendingDrawsNoPathLineAndNoDigitForAFileNamedWithADigit() throws {
+        let (workbench, _) = makeWorkbench(extra: [entry("v2-notes.txt", .file)])
+
+        try select("v2-notes.txt", in: workbench)
+
+        XCTAssertNil(shownPath(workbench))
+        for string in panelStrings(workbench) {
+            XCTAssertNil(string.rangeOfCharacter(from: .decimalDigits), string)
+        }
+    }
+
+    func testTheVerdictReplacesThePendingSentence() throws {
+        let (workbench, log) = makeWorkbench()
+        try select("b.txt", in: workbench)
+
+        log.selects[0].answer(.text("hello", .plain))
+
+        XCTAssertEqual(shownPath(workbench), "b.txt")
+        XCTAssertEqual(workbench.readingPanel.contentView.string, "hello")
+        XCTAssertFalse(panelStrings(workbench).contains(pending))
+    }
+
+    func testSelectingAfterTheFaultDrawsPendingThenTheNewVerdict() throws {
+        let (workbench, log) = makeWorkbench()
+        try select("b.txt", in: workbench)
+        log.selects[0].answer(nil)
+        XCTAssertEqual(panelStrings(workbench), ["b.txt", fault])
+
+        try select("a.txt", in: workbench)
+
+        XCTAssertEqual(panelStrings(workbench), [pending])
+        XCTAssertNil(shownPath(workbench))
+        log.selects[1].answer(.text("x", .plain))
+        XCTAssertEqual(shownPath(workbench), "a.txt")
+        XCTAssertEqual(workbench.readingPanel.contentView.string, "x")
+    }
+
+    func testTreeStaysEnabledAndExpandsWhilePendingAndAfterTheFault() throws {
+        let (workbench, log) = makeWorkbench()
+        let tree = workbench.rootItemsView
+        try select("b.txt", in: workbench)
+
+        XCTAssertTrue(tree.outlineView.isEnabled)
+        try expandSource(workbench, log)
+        XCTAssertEqual(log.listed.map(\.path), ["src"], "expanding while pending raises listTree")
+
+        log.selects[0].answer(nil)
+        XCTAssertTrue(tree.outlineView.isEnabled)
+        try collapseSource(workbench)
+        try expandSource(workbench, log)
+        XCTAssertEqual(
+            log.listed.map(\.path), ["src", "src"], "expanding after the fault raises listTree")
+    }
+
+    func testASupersededNilNeverDrawsTheFaultOverTheLatestPending() throws {
+        let (workbench, log) = makeWorkbench()
+        try select("a.txt", in: workbench)
+        try select("b.txt", in: workbench)
+
+        log.selects[0].answer(nil)
+
+        XCTAssertEqual(panelStrings(workbench), [pending])
+        XCTAssertNil(shownPath(workbench))
+        XCTAssertEqual(barPaths(workbench), ["b.txt"])
+        log.selects[1].answer(.text("from b", .plain))
+        XCTAssertEqual(shownPath(workbench), "b.txt")
+        XCTAssertEqual(workbench.readingPanel.contentView.string, "from b")
+    }
+
+    func testASupersededVerdictNeverReplacesTheLatestFault() throws {
+        let (workbench, log) = makeWorkbench()
+        try select("a.txt", in: workbench)
+        try select("b.txt", in: workbench)
+
+        log.selects[1].answer(nil)
+        log.selects[0].answer(.text("from a", .plain))
+
+        XCTAssertEqual(panelStrings(workbench), ["b.txt", fault])
+        XCTAssertNotEqual(workbench.readingPanel.contentView.string, "from a")
+        XCTAssertEqual(barPaths(workbench), ["b.txt"])
+    }
+
+    func testSelectingAFolderOrStatusRowWhilePendingReadsNothingAndKeepsThePendingSentence()
+        throws
+    {
+        let (workbench, log) = makeWorkbench()
+        let tree = workbench.rootItemsView
+        try select("b.txt", in: workbench)
+
+        try select("src", in: workbench)
+        tree.outlineView.expandItem(tree.outlineView.item(atRow: try row("src", in: workbench)))
+        let lineRow = try XCTUnwrap(
+            (0..<tree.outlineView.numberOfRows).first { tree.lineText(atRow: $0) != nil },
+            "the unanswered listing draws a status line")
+        tree.outlineView.selectRowIndexes(IndexSet(integer: lineRow), byExtendingSelection: false)
+
+        XCTAssertEqual(log.selects.map(\.path), ["b.txt"], "no second read is asked")
+        XCTAssertEqual(panelStrings(workbench), [pending])
+        log.selects[0].answer(.text("hello", .plain))
+        XCTAssertEqual(shownPath(workbench), "b.txt")
+        XCTAssertEqual(workbench.readingPanel.contentView.string, "hello")
+    }
+
+    func testFolderAndStatusSelectionsLeaveTheFaultAndBarUnchanged() throws {
+        let (workbench, log) = makeWorkbench()
+        let tree = workbench.rootItemsView
+        try select("b.txt", in: workbench)
+        log.selects[0].answer(nil)
+
+        try select("src", in: workbench)
+        XCTAssertEqual(panelStrings(workbench), ["b.txt", fault])
+        XCTAssertEqual(barPaths(workbench), ["b.txt"])
+        tree.outlineView.expandItem(tree.outlineView.item(atRow: try row("src", in: workbench)))
+        let lineRow = try XCTUnwrap(
+            (0..<tree.outlineView.numberOfRows).first { tree.lineText(atRow: $0) != nil })
+        tree.outlineView.selectRowIndexes(IndexSet(integer: lineRow), byExtendingSelection: false)
+
+        XCTAssertEqual(log.selects.map(\.path), ["b.txt"])
+        XCTAssertEqual(panelStrings(workbench), ["b.txt", fault])
+        XCTAssertEqual(barPaths(workbench), ["b.txt"])
+        XCTAssertTrue(tree.outlineView.isEnabled)
+    }
+
+    func testOnlyTheLatestAnswerDrawsForEitherDeliveryOrder() throws {
+        let answers: [(FileVerdict?, [String], String)] = [
+            (nil, ["b.txt", fault], ""),
+            (.text("latest", .plain), ["b.txt"], "latest"),
+            (.cannotDisplay(.invalidUTF8), ["b.txt", "b.txt can't be shown as text."], ""),
+            (.failed(.missing), ["b.txt", "Nozoki looked for b.txt and didn't find it."], ""),
+        ]
+        for (earlier, _, _) in answers {
+            for (latest, strings, content) in answers {
+                for earlierFirst in [true, false] {
+                    let (workbench, log) = makeWorkbench()
+                    try select("a.txt", in: workbench)
+                    try select("b.txt", in: workbench)
+                    if earlierFirst {
+                        log.selects[0].answer(earlier)
+                        XCTAssertEqual(panelStrings(workbench), ["Reading this file."])
+                        XCTAssertEqual(barPaths(workbench), ["b.txt"])
+                        log.selects[1].answer(latest)
+                    } else {
+                        log.selects[1].answer(latest)
+                        log.selects[0].answer(earlier)
+                    }
+                    XCTAssertEqual(panelStrings(workbench), strings)
+                    XCTAssertEqual(workbench.readingPanel.contentView.string, content)
+                    XCTAssertEqual(barPaths(workbench), ["b.txt"])
+                }
+            }
+        }
+    }
+
+    func testPendingAndBarAreVisibleInsideTheReadIntentFromEveryAnsweredState() throws {
+        let earlierAnswers: [FileVerdict?] = [
+            nil, .text("old content", .plain), .cannotDisplay(.invalidUTF8), .failed(.missing),
+        ]
+        for earlier in earlierAnswers {
+            let (workbench, log) = makeWorkbench()
+            try select("a.txt", in: workbench)
+            log.selects[0].answer(earlier)
+            var calls = 0
+            workbench.selectFile = { path, answer in
+                calls += 1
+                XCTAssertEqual(path, "b.txt")
+                XCTAssertEqual(self.panelStrings(workbench), ["Reading this file."])
+                XCTAssertNil(self.shownPath(workbench))
+                XCTAssertEqual(workbench.readingPanel.contentView.string, "")
+                XCTAssertEqual(self.barPaths(workbench), ["b.txt"])
+                answer(.text("inline answer", .plain))
+            }
+
+            try select("b.txt", in: workbench)
+
+            XCTAssertEqual(calls, 1)
+            XCTAssertEqual(panelStrings(workbench), ["b.txt"])
+            XCTAssertEqual(workbench.readingPanel.contentView.string, "inline answer")
+        }
     }
 }

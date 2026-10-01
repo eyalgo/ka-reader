@@ -33,7 +33,8 @@ package final class WorkbenchView: NSView {
 
     package let rootItemsView: RootItemsView
 
-    /// The reading panel: the prompt until a file is selected, then the file's verdict.
+    /// The reading panel: the prompt until a file is selected, then the pending read, then the
+    /// file's verdict, or the fault when the read answers nothing.
     package let readingPanel: ReadingPanelView
 
     /// Set by the view's owner, and called on the main actor once per file selection with the
@@ -72,13 +73,17 @@ package final class WorkbenchView: NSView {
         ])
     }
 
-    /// Moves the bar to `entry`, then asks the owner to read it. The panel shows the verdict under the
-    /// entry's `path` once it comes, if no later selection has been made; a `nil` answer returns the
-    /// panel to its prompt and takes the bar off.
+    /// Moves the bar to `entry`, draws the panel's *reading* state and then asks the owner to read
+    /// it. The panel shows the verdict under the entry's `path` once it comes, if no later selection
+    /// has been made. A `nil` answer draws the *stopped* state for that path and leaves the bar on
+    /// the entry.
     private func select(_ entry: Entry) {
         selectionGeneration += 1
         let generation = selectionGeneration
         rootItemsView.markOpenFile(path: entry.path)
+        // Before the intent is raised, never after: an owner may answer inside that call, and a
+        // *reading* drawn afterwards would overwrite the verdict just drawn.
+        readingPanel.showReading()
         let latch = SelectionLatch()
         selectFile?(entry.path) { [weak self] verdict in
             guard !latch.fired else { return }
@@ -87,8 +92,9 @@ package final class WorkbenchView: NSView {
             if let verdict {
                 self.readingPanel.show(path: entry.path, verdict: verdict)
             } else {
-                self.readingPanel.showNoFile()
-                self.rootItemsView.markOpenFile(path: nil)
+                // The bar stays on the entry, where `markOpenFile` put it: the fault is that
+                // file's, so its row stays marked as the file the panel is about.
+                self.readingPanel.showStopped(path: entry.path)
             }
         }
     }
