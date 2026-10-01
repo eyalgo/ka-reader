@@ -3,8 +3,10 @@ import XCTest
 
 @testable import Surfaces
 
-/// The reading panel's four states (CP-246 – CP-286): no file, text, cannot-display and failed
-/// read. Each is put in the panel as a path and a `FileVerdict`, the value the shell decodes.
+/// The reading panel's six states (CP-246 – CP-286, CP-345 – CP-355): no file, text,
+/// cannot-display, failed read, reading and stopped. The first four are put in the panel as a path
+/// and a `FileVerdict`, the value the shell decodes; *reading* is the read in flight, and *stopped*
+/// is the read that answered nothing.
 @MainActor
 final class ReadingPanelTests: XCTestCase {
     private let statusGlyphs = StatusGlyphs(
@@ -1285,5 +1287,172 @@ final class ReadingPanelTests: XCTestCase {
         XCTAssertEqual(panel.contentView.string, "body\n")
         XCTAssertTrue(
             panel.contentView.isDescendant(of: try XCTUnwrap(gutter(of: panel).superview)))
+    }
+
+    // MARK: - Reading and stopped (CP-345 – CP-351)
+
+    // Every sentence below is a string literal and never read from `ConditionSentences`: a test
+    // that reads the constant proves nothing about the wording (CP-355).
+
+    private func visibleGlyphs(_ panel: NSView) -> [NSImage?] {
+        visible(panel).compactMap { $0 as? NSImageView }.map(\.image)
+    }
+
+    func testReadingDrawsOnlyThePendingSentenceAfterAShownFile() {
+        let panel = makePanel()
+        panel.show(path: "a.txt", verdict: .text("hello", .plain))
+
+        panel.showReading()
+
+        let strings = visibleStrings(panel)
+        XCTAssertEqual(strings, ["Reading this file."])
+        XCTAssertFalse(isShowingContent(panel))
+        XCTAssertEqual(panel.contentView.string, "")
+        let glyphs = visibleGlyphs(panel)
+        XCTAssertTrue(glyphs.count == 1 && glyphs[0] === statusGlyphs.empty, "\(glyphs)")
+        for banned in ["%", "…", "..."] + "0123456789".map(String.init) {
+            XCTAssertFalse(strings.joined().contains(banned), "\(banned) in \(strings)")
+        }
+    }
+
+    func testReadingReplacesEveryEarlierState() {
+        let earlier: [(String, (ReadingPanelView) -> Void)] = [
+            ("fresh", { _ in }),
+            ("cannot display", { $0.show(path: "a.dat", verdict: .cannotDisplay(.invalidUTF8)) }),
+            ("failed read", { $0.show(path: "a.txt", verdict: .failed(.missing)) }),
+            ("stopped", { $0.showStopped(path: "a.txt") }),
+        ]
+        for (name, enter) in earlier {
+            let panel = makePanel()
+            enter(panel)
+
+            panel.showReading()
+
+            XCTAssertEqual(visibleStrings(panel), ["Reading this file."], name)
+        }
+    }
+
+    func testEachVerdictReplacesReading() {
+        let cases: [(FileVerdict, String, Int)] = [
+            (.text("hello", .plain), "a.txt", 1),
+            (.text("", .plain), "empty.txt", 1),
+            (.cannotDisplay(.invalidUTF8), "bin.dat", 2),
+            (.failed(.missing), "ln", 2),
+        ]
+        for (verdict, path, count) in cases {
+            let panel = makePanel()
+            panel.showReading()
+
+            panel.show(path: path, verdict: verdict)
+
+            let strings = visibleStrings(panel)
+            XCTAssertEqual(strings.count, count, "\(path): \(strings)")
+            XCTAssertEqual(strings.first, path)
+            XCTAssertFalse(strings.contains("Reading this file."), "\(path): \(strings)")
+        }
+        let text = makePanel()
+        text.showReading()
+        text.show(path: "a.txt", verdict: .text("hello", .plain))
+        XCTAssertEqual(text.contentView.string, "hello")
+        XCTAssertTrue(isShowingContent(text))
+    }
+
+    func testStoppedDrawsThePathAndTheFaultSentence() {
+        let panel = makePanel()
+        panel.show(path: "a.txt", verdict: .text("hello", .plain))
+
+        panel.showStopped(path: "b.txt")
+
+        XCTAssertEqual(
+            visibleStrings(panel),
+            [
+                "b.txt",
+                "Nozoki stopped while reading this file and can't tell why. "
+                    + "The rest of the folder is still readable — select another file.",
+            ])
+        XCTAssertFalse(isShowingContent(panel))
+        XCTAssertEqual(panel.contentView.string, "")
+        let glyphs = visibleGlyphs(panel)
+        XCTAssertTrue(glyphs.count == 1 && glyphs[0] === statusGlyphs.failure, "\(glyphs)")
+    }
+
+    func testNeitherNewStateDrawsAControlAcceptsADropOrEdits() throws {
+        let states: [(String, (ReadingPanelView) -> Void)] = [
+            ("reading", { $0.showReading() }),
+            ("stopped", { $0.showStopped(path: "f") }),
+        ]
+        for (name, enter) in states {
+            let panel = makePanel()
+            panel.show(path: "a.txt", verdict: .text("x\n", .plain))
+            enter(panel)
+
+            for view in descendants(of: panel) {
+                XCTAssertFalse(view is NSButton, "\(name): \(view)")
+                if let field = view as? NSTextField { XCTAssertFalse(field.isEditable, name) }
+                if let text = view as? NSTextView { XCTAssertFalse(text.isEditable, name) }
+            }
+            let gutter = try gutter(of: panel)
+            let codeView = try XCTUnwrap(gutter.superview)
+            for view in [gutter, codeView] {
+                XCTAssertTrue(view.registeredDraggedTypes.isEmpty, "\(name): \(view)")
+                XCTAssertFalse(view is NSControl, "\(name): \(view)")
+            }
+            XCTAssertFalse(panel.contentView.isEditable, name)
+        }
+    }
+
+    func testEveryVerdictAndNoFileReplaceTheStoppedState() {
+        let entries: [(String, (ReadingPanelView) -> Void)] = [
+            ("text", { $0.show(path: "a.txt", verdict: .text("hello", .plain)) }),
+            ("empty text", { $0.show(path: "a.txt", verdict: .text("", .plain)) }),
+            ("cannot display", { $0.show(path: "a.dat", verdict: .cannotDisplay(.invalidUTF16)) }),
+            ("failed read", { $0.show(path: "a.txt", verdict: .failed(.outside)) }),
+            ("no file", { $0.showNoFile() }),
+        ]
+        for (name, enter) in entries {
+            let panel = makePanel()
+            panel.showStopped(path: "a.txt")
+
+            enter(panel)
+
+            for string in visibleStrings(panel) {
+                XCTAssertFalse(
+                    string.contains("Nozoki stopped while reading this file"),
+                    "\(name): \(string)")
+            }
+        }
+    }
+
+    func testStoppedForASecondPathLeavesOneMessage() {
+        let panel = makePanel()
+        panel.showStopped(path: "a.txt")
+
+        panel.showStopped(path: "b.txt")
+
+        XCTAssertEqual(
+            visibleStrings(panel),
+            [
+                "b.txt",
+                "Nozoki stopped while reading this file and can't tell why. "
+                    + "The rest of the folder is still readable — select another file.",
+            ])
+        XCTAssertEqual(visibleGlyphs(panel).count, 1)
+    }
+
+    func testReadingFollowedByStoppedLeavesOnlyTheFault() {
+        let panel = makePanel()
+        panel.showReading()
+
+        panel.showStopped(path: "b.txt")
+
+        XCTAssertEqual(
+            visibleStrings(panel),
+            [
+                "b.txt",
+                "Nozoki stopped while reading this file and can't tell why. "
+                    + "The rest of the folder is still readable — select another file.",
+            ])
+        let glyphs = visibleGlyphs(panel)
+        XCTAssertTrue(glyphs.count == 1 && glyphs[0] === statusGlyphs.failure, "\(glyphs)")
     }
 }
