@@ -518,11 +518,20 @@ mod tests {
                 .keys()
                 .map(String::as_str)
                 .collect();
-            let expected = if entry["state"] == "failed" { 5 } else { 4 };
+            let expected = match (entry["kind"] == "folder", entry["state"] == "failed") {
+                (true, _) => 4,
+                (false, false) => 5,
+                (false, true) => 6,
+            };
             assert_eq!(
                 keys.len(),
                 expected,
-                "name, path, kind, state and, when failed, condition: {keys:?}"
+                "name, path, kind and state; a file also language; when failed, condition: {keys:?}"
+            );
+            assert_eq!(
+                entry.get("language").is_some(),
+                entry["kind"] == "file",
+                "a file names its language and a folder does not: {keys:?}"
             );
             if let Some(condition) = entry.get("condition") {
                 assert!(
@@ -556,10 +565,11 @@ mod tests {
             .iter()
             .map(|entry| {
                 let keys: Vec<&String> = entry.as_object().expect("an object").keys().collect();
+                let expected = if entry["kind"] == "folder" { 4 } else { 5 };
                 assert_eq!(
                     keys.len(),
-                    4,
-                    "exactly name, path, kind and state: {keys:?}"
+                    expected,
+                    "name, path, kind and state, and a file also its language: {keys:?}"
                 );
                 (
                     entry["name"].as_str().expect("a name").to_string(),
@@ -594,10 +604,74 @@ mod tests {
             json!({
                 "state": "observed",
                 "entries": [
-                    { "name": "main.rs", "path": "src/main.rs", "kind": "file", "state": "observed" }
+                    {
+                        "name": "main.rs",
+                        "path": "src/main.rs",
+                        "kind": "file",
+                        "state": "observed",
+                        "language": "plain"
+                    }
                 ]
             })
         );
+    }
+
+    /// A file entry sends the language its name gives it, in the closed wire set, and a folder
+    /// sends none, even when its name is a floor name. A failed link sends its name's language
+    /// beside its condition.
+    #[test]
+    fn test_list_sends_each_files_language_and_none_for_a_folder() {
+        let folder = TempDir::new();
+        for name in [
+            "app.py",
+            "setup.sh",
+            "index.js",
+            "package.json",
+            "deploy.yml",
+            "Cargo.toml",
+            "notes.txt",
+        ] {
+            folder.write_file(name, "");
+        }
+        folder.make_folder("src");
+        folder.make_link("gone.py", "nowhere");
+        let session = Session::default();
+        opened(&session, &folder);
+
+        let root = answer(&session, "");
+
+        let entries = entries_of(&root);
+        let sent: Vec<(&str, Option<&str>)> = entries
+            .iter()
+            .map(|entry| {
+                (
+                    entry["name"].as_str().expect("a name"),
+                    entry
+                        .get("language")
+                        .map(|language| language.as_str().expect("a string")),
+                )
+            })
+            .collect();
+        assert_eq!(
+            sent,
+            vec![
+                ("src", None),
+                ("app.py", Some("python")),
+                ("Cargo.toml", Some("toml")),
+                ("deploy.yml", Some("yaml")),
+                ("gone.py", Some("python")),
+                ("index.js", Some("javascript")),
+                ("notes.txt", Some("plain")),
+                ("package.json", Some("json")),
+                ("setup.sh", Some("shell")),
+            ]
+        );
+        let gone = entries
+            .iter()
+            .find(|entry| entry["name"] == "gone.py")
+            .expect("the link is listed");
+        assert_eq!(gone["state"], "failed");
+        assert_eq!(gone["condition"], "missing");
     }
 
     #[test]
