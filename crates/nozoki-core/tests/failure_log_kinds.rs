@@ -19,7 +19,7 @@ use std::sync::Mutex;
 
 use common::TempDir;
 use log::{LevelFilter, Log, Metadata, Record};
-use nozoki_core::{Condition, ItemState, list_tree, open_folder};
+use nozoki_core::{Condition, ItemState, list_tree, open_folder, select_file};
 
 struct Capture {
     records: Mutex<Vec<(log::Level, String)>>,
@@ -55,6 +55,7 @@ fn take_records() -> Vec<(log::Level, String)> {
 
 const LIST_PREFIX: &str = "fs-reader: list failed: ";
 const ENTRY_PREFIX: &str = "fs-reader: entry failed: ";
+const READ_PREFIX: &str = "fs-reader: read failed: ";
 
 /// The text after `prefix`, held to the CP-180 bar: non-empty, and no name, no root path and no `/`.
 fn pathless_text<'a>(message: &'a str, prefix: &str, what: &str, root: &str) -> &'a str {
@@ -124,6 +125,7 @@ fn every_failed_shape_emits_one_pathless_warn_and_a_root_one_line_per_failed_ent
     }
 
     listing_the_root_emits_one_entry_line_for_each_failed_entry_and_no_list_line();
+    a_failed_read_emits_one_pathless_warn_line_and_a_shown_or_unshown_file_emits_none();
 }
 
 /// Listing the root, which holds five failed entries, emits five entry lines and no list line.
@@ -148,5 +150,38 @@ fn listing_the_root_emits_one_entry_line_for_each_failed_entry_and_no_list_line(
     for (level, message) in &records {
         assert_eq!(*level, log::Level::Warn);
         pathless_text(message, ENTRY_PREFIX, "a failed entry", &root);
+    }
+}
+
+/// CP-180 for the read: a failed read emits one `warn` line carrying the part, the operation and some
+/// error text, and no path; a text read and a cannot-display read emit nothing.
+fn a_failed_read_emits_one_pathless_warn_line_and_a_shown_or_unshown_file_emits_none() {
+    let folder = TempDir::new();
+    folder.write_file("zq-text", "hello");
+    std::fs::write(folder.path().join("zq-latin1"), [0x63, 0x61, 0x66, 0xE9])
+        .expect("the file can be written");
+    folder.make_folder("zq-folder");
+    let opened = open_folder(folder.path()).expect("a folder opens");
+    let root = folder.path().display().to_string();
+    take_records();
+
+    for failed in ["../zq-x", "zq-gone", "zq-folder"] {
+        assert!(
+            matches!(select_file(&opened, failed), ItemState::Failed(_)),
+            "{failed} must be Failed"
+        );
+        let records = take_records();
+        assert_eq!(records.len(), 1, "{failed}: one record: {records:?}");
+        assert_eq!(records[0].0, log::Level::Warn, "{failed}");
+        pathless_text(&records[0].1, READ_PREFIX, failed, &root);
+    }
+
+    for shown in ["zq-text", "zq-latin1"] {
+        assert!(matches!(
+            select_file(&opened, shown),
+            ItemState::Observed(_)
+        ));
+        let records = take_records();
+        assert!(records.is_empty(), "{shown}: no record: {records:?}");
     }
 }
