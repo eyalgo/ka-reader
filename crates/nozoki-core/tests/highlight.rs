@@ -102,7 +102,7 @@ fn test_python_fixture_has_its_anchor_classes() {
     assert_anchor(&text, &spans, "note", TokenClass::Comment);
     let signature = text.lines().next().expect("the fixture has a first line");
     assert_eq!(signature, "def greet(who):");
-    assert_no_span_on(signature, &highlight(signature, Language::Python), b"():");
+    assert_no_span_on(&text[..signature.len()], &spans, b"():");
 }
 
 #[test]
