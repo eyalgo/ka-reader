@@ -114,7 +114,10 @@ fn test_select_file_answers_every_other_floor_language_with_its_spans() {
     let folder = TempDir::new();
     let session = opened(folder.path());
     for (name, sample, _, _) in cases {
-        folder.write_file(name, &fs::read_to_string(samples.join(sample)).expect("sample"));
+        folder.write_file(
+            name,
+            &fs::read_to_string(samples.join(sample)).expect("sample"),
+        );
     }
 
     for (name, sample, language, wire_name) in cases {

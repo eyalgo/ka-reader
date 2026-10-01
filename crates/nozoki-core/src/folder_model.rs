@@ -3,7 +3,9 @@
 
 use std::path::{Path, PathBuf};
 
-use crate::fs_reader::{self, Entry, FileContent, ItemState};
+use crate::fs_reader::{self, CannotDisplayReason, Entry, FileContent, ItemState};
+use crate::highlighter::{Span, highlight};
+use crate::language::Language;
 
 /// A folder the user chose, held as its canonical path.
 ///
@@ -83,10 +85,45 @@ pub fn list_tree(opened: &OpenedFolder, path: &str) -> ItemState<Vec<Entry>> {
     fs_reader::list(&opened.root, path)
 }
 
+/// What the open file is, as the reading panel needs it: its text with the language it is drawn as
+/// and the spans that language's grammar yields for that text, or the fact that it cannot be shown
+/// as text.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum FileView {
+    /// The decoded content, its language, and exactly `highlight(&content, language)` in its order.
+    /// `spans` is empty for `Plain`, for empty content, and wherever the highlighter yields nothing.
+    Text {
+        content: String,
+        language: Language,
+        spans: Vec<Span>,
+    },
+    /// The file is not text under the text rule, for the reason named.
+    CannotDisplay(CannotDisplayReason),
+}
+
+impl From<FileContent> for FileView {
+    fn from(content: FileContent) -> Self {
+        match content {
+            FileContent::Text { content, language } => {
+                // Spans are taken from the content the answer carries, after any byte-order mark is
+                // gone, so their offsets count the bytes the reader is shown (CP-307).
+                let spans = highlight(&content, language);
+                Self::Text {
+                    content,
+                    language,
+                    spans,
+                }
+            }
+            FileContent::CannotDisplay(reason) => Self::CannotDisplay(reason),
+        }
+    }
+}
+
 /// Reads the file at `path` inside an opened folder, where `path` is relative to the folder's root,
-/// and answers what it is: text, drawn plain, or a file that cannot be shown as text. The answer is
-/// `Observed` with that verdict, or `Failed` with a condition, and never `Pending`. Nothing is
-/// cached, so every call reads again, and the folder is only read, never written.
+/// and answers what it is: its text with its language and spans, or a file that cannot be shown as
+/// text. The answer is `Observed` with that verdict, or `Failed` with a condition, and never
+/// `Pending`. Nothing is cached, so every call reads again, and the folder is only read, never
+/// written.
 ///
 /// # Examples
 ///
@@ -96,8 +133,12 @@ pub fn list_tree(opened: &OpenedFolder, path: &str) -> ItemState<Vec<Entry>> {
 /// let opened = open_folder(std::env::temp_dir()).expect("the temporary folder opens");
 /// assert_eq!(select_file(&opened, ".."), ItemState::Failed(Condition::Outside));
 /// ```
-pub fn select_file(opened: &OpenedFolder, path: &str) -> ItemState<FileContent> {
-    fs_reader::read(&opened.root, path)
+pub fn select_file(opened: &OpenedFolder, path: &str) -> ItemState<FileView> {
+    match fs_reader::read(&opened.root, path) {
+        ItemState::Observed(content) => ItemState::Observed(content.into()),
+        ItemState::Failed(condition) => ItemState::Failed(condition),
+        ItemState::Pending => ItemState::Pending,
+    }
 }
 
 #[cfg(test)]

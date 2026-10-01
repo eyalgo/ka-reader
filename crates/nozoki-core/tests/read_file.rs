@@ -277,8 +277,8 @@ fn test_select_file_text_form_keeps_unchanged_content_and_language() {
 #[test]
 fn test_select_file_spans_equal_the_highlighter_for_each_floor_sample() {
     let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../checks/fixtures/highlight");
-    let samples = open_folder(path.canonicalize().expect("the samples exist"))
-        .expect("the samples open");
+    let samples =
+        open_folder(path.canonicalize().expect("the samples exist")).expect("the samples open");
     let expected = [
         ("sample.py", Language::Python),
         ("sample.sh", Language::Shell),
