@@ -11,6 +11,9 @@ package typealias ListTreeAnswer = @MainActor (RootListing?) -> Void
 package typealias ListTreeIntent =
     @MainActor (_ path: String, _ answer: @escaping ListTreeAnswer) -> Void
 
+/// The one file selection a file row raises: the entry whose row was selected.
+package typealias FileSelected = @MainActor (Entry) -> Void
+
 /// The tree view: one row per entry, in the order given, each with the entry's name beside a glyph
 /// chosen by kind. A folder row can be expanded, and every expansion reads the folder again through
 /// the `listTree` intent. What sits beneath an expanded row follows that read: a line while it is
@@ -43,6 +46,43 @@ package final class RootItemsView: NSScrollView {
     /// It is handed the path the row's entry reports, never its name, and a sink for the answer.
     /// While it is unset an expansion still draws the reading line, and no answer ever comes.
     package var listTree: ListTreeIntent?
+
+    /// Set by the view's owner, and called on the main actor when the user selects a file row.
+    /// Selecting a folder row or a status line raises nothing, and neither does a selection AppKit
+    /// posts while the view is reloading its own rows (CP-285).
+    package var fileSelected: FileSelected?
+
+    /// The path of the open file, whose row alone draws the bar, or nil when none is open. It is a
+    /// path and not a row because every expansion rebuilds a folder's child rows.
+    package private(set) var openFilePath: String?
+
+    /// Moves the bar to the row whose entry's `path` is `path`, or takes it off every row for nil.
+    package func markOpenFile(path: String?) {
+        openFilePath = path
+        for index in 0..<outlineView.numberOfRows {
+            guard
+                let rowView = outlineView.rowView(atRow: index, makeIfNecessary: false)
+                    as? BarRowView
+            else { continue }
+            rowView.drawsBar = barBelongs(on: outlineView.item(atRow: index))
+        }
+    }
+
+    /// The `path` of every row that draws the bar, top to bottom.
+    package func barPaths() -> [String] {
+        (0..<outlineView.numberOfRows).compactMap { index in
+            let rowView = outlineView.rowView(atRow: index, makeIfNecessary: true) as? BarRowView
+            guard rowView?.drawsBar == true else { return nil }
+            return (outlineView.item(atRow: index) as? Row)?.entry.path
+        }
+    }
+
+    private func barBelongs(on item: Any?) -> Bool {
+        guard let row = item as? Row, row.entry.kind == .file, let openFilePath else {
+            return false
+        }
+        return row.entry.path == openFilePath
+    }
 
     /// The entry the row at `row` draws, or nil for a row that is not an entry.
     package func entry(atRow row: Int) -> Entry? {
@@ -116,6 +156,8 @@ package final class RootItemsView: NSScrollView {
         rootLine.stringValue = rootLineText ?? ""
         // The whole message goes, glyph included: a glyph never stands alone.
         rootMessage.isHidden = rootLineText == nil
+        isReloading = true
+        defer { isReloading = false }
         outlineView.reloadData()
     }
 
@@ -264,6 +306,32 @@ package final class RootItemsView: NSScrollView {
     }
 }
 
+/// A tree row that can draw the open file's bar: 2px of `{colors.primary}` down its left edge
+/// (`docs/DESIGN.md` § Elevation & Depth, "Selection is a fill and a bar"). The selection fill is
+/// the table's own.
+private final class BarRowView: NSTableRowView {
+    private static let barWidth: CGFloat = 2
+
+    /// `{colors.primary}`: `#1E1F22` in the light theme, `#E7E7E4` in the dark one (`docs/DESIGN.md`
+    /// § Colors, "The two themes").
+    private static let barColor = NSColor(name: nil) { appearance in
+        appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+            ? NSColor(srgbRed: 0xE7 / 255, green: 0xE7 / 255, blue: 0xE4 / 255, alpha: 1)
+            : NSColor(srgbRed: 0x1E / 255, green: 0x1F / 255, blue: 0x22 / 255, alpha: 1)
+    }
+
+    var drawsBar = false {
+        didSet { needsDisplay = true }
+    }
+
+    override func draw(_ dirtyRect: NSRect) {
+        super.draw(dirtyRect)
+        guard drawsBar else { return }
+        Self.barColor.setFill()
+        NSRect(x: bounds.minX, y: bounds.minY, width: Self.barWidth, height: bounds.height).fill()
+    }
+}
+
 /// A row's cell: the name and glyph every row has, and the label a failed entry's sentence goes in.
 private final class EntryCell: NSTableCellView {
     let conditionLabel = NSTextField(labelWithString: "")
@@ -368,6 +436,25 @@ extension RootItemsView: NSOutlineViewDelegate {
             cell.conditionLabel.isHidden = true
         }
         return cell
+    }
+
+    package func outlineView(_ outlineView: NSOutlineView, rowViewForItem item: Any)
+        -> NSTableRowView?
+    {
+        let rowView = BarRowView()
+        rowView.drawsBar = barBelongs(on: item)
+        return rowView
+    }
+
+    /// A selected file row is raised to the owner. A folder row and a status line raise nothing, and
+    /// so does a selection posted while this view reloads its own rows: that one is AppKit
+    /// restoring or dropping a selection, not the user's.
+    package func outlineViewSelectionDidChange(_ notification: Notification) {
+        guard !isReloading,
+            let row = outlineView.item(atRow: outlineView.selectedRow) as? Row,
+            row.entry.kind == .file
+        else { return }
+        fileSelected?(row.entry)
     }
 
     /// The one hook an expansion passes through. `expandItem(_:)` fires it before the item opens

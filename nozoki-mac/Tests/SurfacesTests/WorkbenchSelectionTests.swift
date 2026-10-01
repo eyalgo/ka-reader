@@ -96,7 +96,8 @@ final class WorkbenchSelectionTests: XCTestCase {
         log.selects[0].answer(.cannotDisplay(.invalidUTF8))
         XCTAssertTrue(tree.outlineView.isEnabled)
         tree.outlineView.expandItem(tree.outlineView.item(atRow: try row("src", in: workbench)))
-        XCTAssertEqual(log.listed.map(\.path), ["src"], "a folder row still expands and raises listTree")
+        XCTAssertEqual(
+            log.listed.map(\.path), ["src"], "a folder row still expands and raises listTree")
         log.listed[0].answer(.observed([entry("lib.rs", .file, path: "src/lib.rs")]))
 
         try select("b.txt", in: workbench)
@@ -167,22 +168,24 @@ final class WorkbenchSelectionTests: XCTestCase {
 
     func testSelectionChangePostedDuringAReloadRaisesNothing() throws {
         let (workbench, log) = makeWorkbench()
-        try select("a.txt", in: workbench)
-        log.selects[0].answer(.text("x", .plain))
         let tree = workbench.rootItemsView
+        try select("b.txt", in: workbench)
+        log.selects[0].answer(.text("x", .plain))
+        XCTAssertEqual(log.selects.count, 1)
+
+        // Expanding the folder above reloads its rows while `b.txt` is selected: the rows under it
+        // move, and AppKit may post a selection change for that.
         tree.outlineView.expandItem(tree.outlineView.item(atRow: try row("src", in: workbench)))
         log.listed[0].answer(.observed([entry("lib.rs", .file, path: "src/lib.rs")]))
-        try select("lib.rs", in: workbench)
-        log.selects[1].answer(.text("y", .plain))
-        XCTAssertEqual(log.selects.count, 2)
+        // Replacing the whole root while a file row is selected reloads every row; the selected
+        // index now holds a different file, which is what a selection posted mid-reload would raise.
+        let selectedIndex = tree.outlineView.selectedRow
+        XCTAssertGreaterThanOrEqual(selectedIndex, 0, "the selection survives the expansion")
+        var replaced = (0..<tree.outlineView.numberOfRows).compactMap { tree.entry(atRow: $0) }
+        replaced[selectedIndex] = entry("z.txt", .file)
+        tree.show(.observed(replaced))
 
-        // Re-reading the folder drops the selected child's row, and AppKit posts a selection change.
-        try collapseSource(workbench)
-        tree.outlineView.expandItem(tree.outlineView.item(atRow: try row("src", in: workbench)))
-        tree.show(
-            .observed([entry("src", .folder), entry("a.txt", .file), entry("b.txt", .file)]))
-
-        XCTAssertEqual(log.selects.count, 2, "no selection raised during a reload")
+        XCTAssertEqual(log.selects.count, 1, "no selection raised during a reload")
     }
 
     func testNilAnswerReturnsToThePromptAndClearsTheBar() throws {

@@ -4,6 +4,19 @@ import AppKit
 /// the reading panel.
 private let hairlineWidth: CGFloat = 1
 
+/// The verdict a file read answered, or `nil` when none came.
+package typealias SelectFileAnswer = @MainActor (FileVerdict?) -> Void
+
+/// The read a selected file asks for: the entry's path and the sink its answer goes to (the shape of
+/// `ListTreeIntent`).
+package typealias SelectFileIntent =
+    @MainActor (_ path: String, _ answer: @escaping SelectFileAnswer) -> Void
+
+/// Makes a sink answer once.
+private final class SelectionLatch {
+    var fired = false
+}
+
 /// The one-window composition for an opened folder: two panels side by side, filling the size they
 /// are given. The first is the Files sidebar, which is the tree it was handed and nothing around
 /// it, always `{spacing.sidebar-width}` wide. The second is the reading panel, which takes the rest
@@ -23,11 +36,20 @@ package final class WorkbenchView: NSView {
     /// The reading panel: the prompt until a file is selected, then the file's verdict.
     package let readingPanel: ReadingPanelView
 
+    /// Set by the view's owner, and called on the main actor once per file selection with the
+    /// entry's `path` and a sink for the verdict. While it is unset a selection still moves the bar,
+    /// and no answer ever comes. Only the latest selection's sink draws anything (CP-278).
+    package var selectFile: SelectFileIntent?
+
+    /// Counts file selections: a sink applies only while its selection is still the latest.
+    private var selectionGeneration = 0
+
     /// Places the supplied tree beside the reading prompt, using the supplied empty-state image.
     package init(rootItemsView: RootItemsView, statusGlyphs: StatusGlyphs) {
         self.rootItemsView = rootItemsView
         readingPanel = ReadingPanelView(statusGlyphs: statusGlyphs)
         super.init(frame: .zero)
+        rootItemsView.fileSelected = { [weak self] entry in self?.select(entry) }
         for panel in [rootItemsView, readingPanel] {
             panel.translatesAutoresizingMaskIntoConstraints = false
             addSubview(panel)
@@ -48,6 +70,27 @@ package final class WorkbenchView: NSView {
             readingPanel.topAnchor.constraint(equalTo: topAnchor),
             readingPanel.bottomAnchor.constraint(equalTo: bottomAnchor),
         ])
+    }
+
+    /// Moves the bar to `entry`, then asks the owner to read it. The panel shows the verdict under the
+    /// entry's `path` once it comes, if no later selection has been made; a `nil` answer returns the
+    /// panel to its prompt and takes the bar off.
+    private func select(_ entry: Entry) {
+        selectionGeneration += 1
+        let generation = selectionGeneration
+        rootItemsView.markOpenFile(path: entry.path)
+        let latch = SelectionLatch()
+        selectFile?(entry.path) { [weak self] verdict in
+            guard !latch.fired else { return }
+            latch.fired = true
+            guard let self, self.selectionGeneration == generation else { return }
+            if let verdict {
+                self.readingPanel.show(path: entry.path, verdict: verdict)
+            } else {
+                self.readingPanel.showNoFile()
+                self.rootItemsView.markOpenFile(path: nil)
+            }
+        }
     }
 
     @available(*, unavailable)
