@@ -111,7 +111,7 @@ final class LaunchFlowSelectionTests: LaunchWindowTestCase {
         XCTAssertEqual(workbench.readingPanel.contentView.string, "from b")
     }
 
-    func testANullBufferGivesThePromptAndNoBar() throws {
+    func testANullBufferDrawsTheFaultAndKeepsTheBar() throws {
         let launch = launch()
         let workbench = try workbench(of: launch)
         launch.bridge.selectAnswers = ["a.txt": text("shown")]
@@ -122,10 +122,32 @@ final class LaunchFlowSelectionTests: LaunchWindowTestCase {
 
         try click("b.txt", in: workbench)
 
-        XCTAssertNil(shownPath(workbench))
+        XCTAssertEqual(shownPath(workbench), "b.txt")
         XCTAssertEqual(
-            visibleStrings(beneath: workbench.readingPanel), ["Select a file to view."])
-        XCTAssertEqual(workbench.rootItemsView.barPaths(), [])
+            visibleStrings(beneath: workbench.readingPanel),
+            [
+                "b.txt",
+                "Nozoki stopped while reading this file and can't tell why. "
+                    + "The rest of the folder is still readable — select another file.",
+            ])
+        XCTAssertEqual(workbench.rootItemsView.barPaths(), ["b.txt"])
+    }
+
+    func testClickingAFileShowsPendingAcrossARealAsynchronousDelivery() throws {
+        let holding = HoldingReadRunner()
+        let launch = launch(reader: holding)
+        holding.release(0)
+        let workbench = try workbench(of: launch)
+        launch.bridge.selectAnswers = ["a.txt": text("from a")]
+
+        try click("a.txt", in: workbench)
+
+        XCTAssertEqual(holding.heldReads, 2, "the open and the file read are held")
+        XCTAssertEqual(
+            visibleStrings(beneath: workbench.readingPanel), ["Reading this file."])
+        holding.release(1)
+        XCTAssertEqual(shownPath(workbench), "a.txt")
+        XCTAssertEqual(workbench.readingPanel.contentView.string, "from a")
     }
 
     func testShowingAMultiLineFileLeavesTheWindowContentSizeUnchanged() throws {
