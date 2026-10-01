@@ -25,7 +25,7 @@
 > `docs/DESIGN_open_issues.md` § 3.1 opened it on 2026-10-01 while reading `docs/UXD.md`.
 > This is an independent finding from that input, rather than the path-line item's answer:
 > § 4 still counts seven reference images while the reference's own inventory names eight
-> (`docs/UXD.md:L108-L113`; `docs/ux_reference/README.md:L3-L19`). This companion carries
+> (`docs/UXD.md:L68-L73`; `docs/ux_reference/README.md:L3-L19`). This companion carries
 > that correction to the UXD's producing run without editing the UXD here.
 
 ---
@@ -38,7 +38,7 @@
   seven-image read as history and record the new inventory beside it, without treating the eighth
   image as approved design input or changing a flow, screen or interaction requirement.
 - **Rationale:** § 4 currently names seven screenshots and three later unannotated images
-  (`docs/UXD.md:L108-L113`). The inventory now names eight and explicitly distinguishes four
+  (`docs/UXD.md:L68-L73`). The inventory now names eight and explicitly distinguishes four
   annotated from four described-only images (`docs/ux_reference/README.md:L3-L19`). Its newest
   image, `vscode-commit-detail-pane.png`, has no read on record, and whether anything else in that
   pane is taken remains open (`docs/ux_reference/README.md:L206-L219`). Reasoning: correct the
