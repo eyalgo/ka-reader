@@ -29,6 +29,10 @@ package final class ReadingPanelView: NSView {
     private var message: StatusMessageView?
     private let scrollView: NSScrollView
 
+    /// Whether the scroll view has been pinned beneath the path line. It is pinned once, by the first
+    /// text with content, and stays pinned: a hidden scroll view takes no part in what is drawn.
+    private var isScrollViewPinned = false
+
     /// The path line: the entry's folder-relative path, in the path type.
     package let pathLine: NSTextField
 
@@ -116,7 +120,7 @@ package final class ReadingPanelView: NSView {
     }
 
     private func showText(_ content: String, language: Language) {
-        // Plain is the only language, and plain is drawn with no colour (CP-275).
+        // Plain is the only language, and plain is drawn with no colour (CP-280).
         switch language {
         case .plain: break
         }
@@ -124,13 +128,16 @@ package final class ReadingPanelView: NSView {
         contentView.font = .monospacedSystemFont(ofSize: Self.contentPointSize, weight: .regular)
         scrollView.isHidden = content.isEmpty
         guard !content.isEmpty else { return }
-        NSLayoutConstraint.activate([
-            scrollView.topAnchor.constraint(
-                equalTo: pathLine.bottomAnchor, constant: Self.gap),
-            scrollView.leadingAnchor.constraint(equalTo: leadingAnchor),
-            scrollView.trailingAnchor.constraint(equalTo: trailingAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: bottomAnchor),
-        ])
+        if !isScrollViewPinned {
+            NSLayoutConstraint.activate([
+                scrollView.topAnchor.constraint(
+                    equalTo: pathLine.bottomAnchor, constant: Self.gap),
+                scrollView.leadingAnchor.constraint(equalTo: leadingAnchor),
+                scrollView.trailingAnchor.constraint(equalTo: trailingAnchor),
+                scrollView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            ])
+            isScrollViewPinned = true
+        }
         contentView.scrollToBeginningOfDocument(nil)
     }
 

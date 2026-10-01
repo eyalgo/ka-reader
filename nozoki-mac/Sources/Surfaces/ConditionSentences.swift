@@ -52,7 +52,10 @@ package enum ConditionSentences {
         case .cycle:
             return "\(name) is a link that loops back on itself, so Nozoki can't read it."
         case .missing:
-            return "\(name) is no longer there."
+            // Not "no longer there": this condition also reaches a link whose target was missing
+            // when its folder was listed, and that sentence would claim the target was once there
+            // (`docs/CONTENT.md` § Message patterns, *Partial*). This one holds for both.
+            return "Nozoki looked for \(name) and didn't find it."
         case .tooManyLinks:
             return "\(name) leads through more links than Nozoki follows."
         }
