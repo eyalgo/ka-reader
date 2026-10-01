@@ -50,7 +50,30 @@ None.
   red `Renderer gate` to the wrong lines of two files and to a frame count the script no longer
   has, while the SDD it traces to says otherwise. No record supersedes and no other entry moves
   either way.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm, with two additions. This was decided in the owner's seat by a
+  `companion-self-answer` run. QC-62 stands as drafted. Every citation in it, the frame count and
+  run 36795836747 were re-read at their sources, and each holds. **(1) § 9 names the wrong
+  closure.** The site measured at `LaunchFlow.swift:L53` (at `nozoki@6e1d79f`) is the `listTree`
+  closure, `{ Self.listing(at: path, through: bridge) }`. At `nozoki@7c7038f` that closure is
+  `:L107`, not `:L60`. `:L60` (the open closure) and `:L111` (the `selectFile` closure) were added
+  after the measurement and fail the same way. So § 9 names all four sites at `nozoki@7c7038f`:
+  Swift 6 mode refuses `LaunchFlow.swift:L60`, `:L107` and `:L111` (each one `bridge`, an
+  `any Bridging`, captured in a `@Sendable` closure), and `ReadRunning.swift:L28`, which stands.
+  Measured 2026-10-01 in a copy of `nozoki-mac` at `nozoki@7c7038f` with Apple Swift 6.4:
+  `swift build --target Shell -Xswiftc -swift-version -Xswiftc 6` fails at exactly those three
+  `LaunchFlow.swift` lines. The original method (tools 5.9, `StrictConcurrency` on `Surfaces` and
+  `Shell`) warns at the same three lines and at `ReadRunning.swift:L28`, each "an error in the
+  Swift 6 language mode". **(2) ADR-0012 is pinned in place, not left as it is.** The draft's
+  reason, that ADR-0012 is Accepted and so is not edited, does not hold. The owner ruled that
+  repairing a citation reverses no decision, and that the repair is made in the ADR's own prose
+  as a pin (`docs/trail/architecture/cycle-3.md` § 3.1, answers (1) and (3)). ADR-0012 already
+  carries seven dated notes under that ruling. Four of its citations carry no pin:
+  `LaunchFlow.swift:L35-L37` in § Decision, and `checks/renderer.sh:L58-L61`, `:L62-L65` and
+  `:L44-L57` in § Consequences. Each is false at `HEAD`, and each reads as cited at
+  `nozoki@ab39502`. So each is pinned to `nozoki@ab39502:` in a dated note made in place. The
+  ADR's citations are pinned rather than re-pointed, because a pin is the form the ruling gives
+  an ADR. QC-62 is where the current lines live. Reasoning:
+  `docs/trail/architecture/self_answer-23.md` § 2.1.
 
 ## 3. Raised from downstream — an item from a seat that did not write these records
 
