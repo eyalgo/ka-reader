@@ -132,6 +132,7 @@ enum BridgePayload {
             static let state = Key(stringValue: "state")
             static let content = Key(stringValue: "content")
             static let language = Key(stringValue: "language")
+            static let spans = Key(stringValue: "spans")
             static let reason = Key(stringValue: "reason")
             static let condition = Key(stringValue: "condition")
         }
@@ -143,12 +144,98 @@ enum BridgePayload {
             case pending
         }
 
+        /// The `language` member's value: `plain` or one of the six floor languages. Any other value
+        /// throws, so `rust` is refused (CP-309).
+        private enum WireLanguage: Decodable {
+            case plain
+            case floor(FloorLanguage)
+
+            init(from decoder: Decoder) throws {
+                let name = try decoder.singleValueContainer().decode(String.self)
+                if name == "plain" {
+                    self = .plain
+                } else if let floor = FloorLanguage(rawValue: name) {
+                    self = .floor(floor)
+                } else {
+                    throw DecodingError.dataCorrupted(
+                        .init(codingPath: decoder.codingPath, debugDescription: "unknown language"))
+                }
+            }
+        }
+
+        /// One span as the wire writes it: exactly `start`, `end` and `class`.
+        private struct WireSpan: Decodable {
+            let span: CodeSpan
+
+            private struct SpanKey: CodingKey {
+                let stringValue: String
+                let intValue: Int? = nil
+
+                init(stringValue: String) {
+                    self.stringValue = stringValue
+                }
+
+                init?(intValue: Int) {
+                    return nil
+                }
+
+                static let start = SpanKey(stringValue: "start")
+                static let end = SpanKey(stringValue: "end")
+                static let tokenClass = SpanKey(stringValue: "class")
+            }
+
+            init(from decoder: Decoder) throws {
+                let container = try decoder.container(keyedBy: SpanKey.self)
+                guard Set(container.allKeys.map(\.stringValue)) == ["start", "end", "class"] else {
+                    throw DecodingError.dataCorrupted(
+                        .init(
+                            codingPath: decoder.codingPath,
+                            debugDescription: "a span has exactly start, end and class"))
+                }
+                span = CodeSpan(
+                    start: try container.decode(Int.self, forKey: .start),
+                    end: try container.decode(Int.self, forKey: .end),
+                    tokenClass: try container.decode(TokenClass.self, forKey: .tokenClass))
+            }
+        }
+
+        /// CP-310 over the content's UTF-8 view: `0 ≤ start < end ≤ byte count`, both offsets on
+        /// Unicode-scalar boundaries (not grapheme boundaries, the core's own), and each span
+        /// starting at or after the end of the one before it. The first failure throws.
+        private static func checkedSpans(
+            _ spans: [CodeSpan], in content: String, container: KeyedDecodingContainer<Key>
+        ) throws -> [CodeSpan] {
+            let bytes = Array(content.utf8)
+            let isScalarBoundary = { (offset: Int) -> Bool in
+                offset == bytes.count || (bytes[offset] & 0b1100_0000) != 0b1000_0000
+            }
+            var previousEnd = 0
+            for span in spans {
+                guard span.start >= previousEnd, span.start < span.end, span.end <= bytes.count,
+                    isScalarBoundary(span.start), isScalarBoundary(span.end)
+                else {
+                    throw DecodingError.dataCorruptedError(
+                        forKey: .spans, in: container,
+                        debugDescription: "a span does not conform to the content")
+                }
+                previousEnd = span.end
+            }
+            return spans
+        }
+
         init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: Key.self)
             let state = try container.decode(StateTag.self, forKey: .state)
+            // The language is read first: it decides whether a spans member is expected (CP-310).
+            let wireLanguage: WireLanguage? =
+                state == .text ? try container.decode(WireLanguage.self, forKey: .language) : nil
             let expected: [String]
             switch state {
-            case .text: expected = ["state", "content", "language"]
+            case .text:
+                switch wireLanguage {
+                case .floor?: expected = ["state", "content", "language", "spans"]
+                default: expected = ["state", "content", "language"]
+                }
             case .cannotDisplay: expected = ["state", "reason"]
             case .failed: expected = ["state", "condition"]
             case .pending: expected = ["state"]
@@ -160,9 +247,17 @@ enum BridgePayload {
             }
             switch state {
             case .text:
-                verdict = .text(
-                    try container.decode(String.self, forKey: .content),
-                    try container.decode(Language.self, forKey: .language))
+                let content = try container.decode(String.self, forKey: .content)
+                switch wireLanguage {
+                case .floor(let floor)?:
+                    let spans = try container.decode([WireSpan].self, forKey: .spans).map(\.span)
+                    verdict = .text(
+                        content,
+                        .floor(
+                            floor, try Self.checkedSpans(spans, in: content, container: container)))
+                default:
+                    verdict = .text(content, .plain)
+                }
             case .cannotDisplay:
                 verdict = .cannotDisplay(
                     try container.decode(CannotDisplayReason.self, forKey: .reason))

@@ -226,12 +226,15 @@ final class BridgePayloadTests: XCTestCase {
         XCTAssertNil(decodeFile(mPayload(spans: #"[{"start":0,"end":5,"class":"operator"}]"#)))
     }
 
+    /// Bytes 7 and 8 are scalar boundaries of M (after `é`, before `日`) and 5 is the start of `é`, so
+    /// the overlap is the only rule this payload breaks. The spec's `[0,10)` then `[5,12)` end inside
+    /// `日` and `本` on M and would be refused by the boundary rule alone.
     func testDecodeFileRefusesOverlappingSpans() {
         XCTAssertNil(
             decodeFile(
                 mPayload(
                     spans:
-                        #"[{"start":0,"end":10,"class":"comment"},{"start":5,"end":12,"class":"comment"}]"#
+                        #"[{"start":0,"end":7,"class":"comment"},{"start":5,"end":8,"class":"comment"}]"#
                 )))
     }
 
@@ -270,9 +273,9 @@ final class BridgePayloadTests: XCTestCase {
             decodeFile(
                 mPayload(
                     spans:
-                        #"[{"start":0,"end":5,"class":"comment"},{"start":5,"end":10,"class":"name"}]"#
+                        #"[{"start":0,"end":5,"class":"comment"},{"start":5,"end":7,"class":"name"}]"#
                 )),
-            .text(fixtureM, .floor(.python, [span(0, 5, .comment), span(5, 10, .name)])))
+            .text(fixtureM, .floor(.python, [span(0, 5, .comment), span(5, 7, .name)])))
     }
 
     func testDecodeFileAcceptsASpanEndingAtTheContentsByteLength() {
