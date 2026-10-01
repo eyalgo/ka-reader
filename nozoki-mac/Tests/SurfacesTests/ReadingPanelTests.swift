@@ -44,16 +44,15 @@ final class ReadingPanelTests: XCTestCase {
         !panel.contentView.isHiddenOrHasHiddenAncestor
     }
 
-    private func matches(_ pattern: String, in text: String) -> Int {
-        // swiftlint:disable:next force_try
-        let expression = try! NSRegularExpression(pattern: pattern)
+    private func matches(_ pattern: String, in text: String) throws -> Int {
+        let expression = try NSRegularExpression(pattern: pattern)
         return expression.numberOfMatches(
             in: text, range: NSRange(text.startIndex..., in: text))
     }
 
-    private func sentenceCount(_ text: String) -> Int {
+    private func sentenceCount(_ text: String) throws -> Int {
         // A sentence ends at a stop followed by a space or the end; the stop in `photo.dat` is not one.
-        matches(#"[.!?](\s|$)"#, in: text)
+        try matches(#"[.!?](\s|$)"#, in: text)
     }
 
     func testTextVerdictShowsPathThenContentInANonEditableView() {
@@ -111,7 +110,7 @@ final class ReadingPanelTests: XCTestCase {
         XCTAssertEqual(panel.contentView.string, "")
     }
 
-    func testCannotDisplayShowsOneSentenceNamingTheFile() {
+    func testCannotDisplayShowsOneSentenceNamingTheFile() throws {
         for reason in [CannotDisplayReason.invalidUTF8, .invalidUTF16] {
             let panel = makePanel()
 
@@ -123,7 +122,7 @@ final class ReadingPanelTests: XCTestCase {
             let sentence = strings.last ?? ""
             XCTAssertTrue(sentence.contains("photo.dat"), sentence)
             XCTAssertTrue(sentence.contains("can't be shown as text"), sentence)
-            XCTAssertEqual(sentenceCount(sentence), 1, sentence)
+            XCTAssertEqual(try sentenceCount(sentence), 1, sentence)
             XCTAssertFalse(isShowingContent(panel), "none of the content is drawn")
             for banned in ["binary", "unsupported", "unreadable", "utf", "encoding", "error"] {
                 XCTAssertFalse(sentence.lowercased().contains(banned), "\(banned): \(sentence)")
@@ -131,7 +130,7 @@ final class ReadingPanelTests: XCTestCase {
         }
     }
 
-    func testFailedReadShowsAStatementForEveryCondition() {
+    func testFailedReadShowsAStatementForEveryCondition() throws {
         XCTAssertEqual(Condition.allCases.count, 6, "the six conditions of fs_reader.rs")
         for condition in Condition.allCases {
             let panel = makePanel()
@@ -143,11 +142,11 @@ final class ReadingPanelTests: XCTestCase {
             XCTAssertEqual(strings.first, "docs/notes.txt")
             let statement = strings.last ?? ""
             XCTAssertFalse(statement.isEmpty, "\(condition)")
-            XCTAssertLessThanOrEqual(sentenceCount(statement), 3, statement)
+            XCTAssertLessThanOrEqual(try sentenceCount(statement), 3, statement)
             XCTAssertTrue(statement.contains("notes.txt"), "\(condition): \(statement)")
             XCTAssertFalse(isShowingContent(panel))
             XCTAssertEqual(
-                matches(
+                try matches(
                     #"\b(sorry|oops|unfortunately|apolog\w*|errno|enoent|eacces)\b"#,
                     in: statement.lowercased()),
                 0, statement)
