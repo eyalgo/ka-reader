@@ -208,39 +208,3 @@ package final class ReadingPanelView: NSView {
         }
     }
 }
-
-/// The five code tokens and the `surface` ground, each with the light and dark values of
-/// `docs/DESIGN.md` § Colors "The two themes". A colour resolves when it is drawn, so an appearance
-/// change recolours the text without the file being selected again (CP-314), the way
-/// `RootItemsView`'s bar colour does.
-private enum CodeColors {
-    static let surface = dynamic(light: 0xFBFBFA, dark: 0x1B1C1E)
-    private static let keyword = dynamic(light: 0x7A2E8F, dark: 0xD0A2E6)
-    private static let string = dynamic(light: 0x1A6B3A, dark: 0x8FD6A4)
-    private static let number = dynamic(light: 0x9A4B00, dark: 0xF0B47A)
-    private static let comment = dynamic(light: 0x6A6C72, dark: 0x9A9BA0)
-    private static let name = dynamic(light: 0x0F5A9A, dark: 0x8CC4F5)
-
-    static func color(for tokenClass: TokenClass) -> NSColor {
-        switch tokenClass {
-        case .keyword: return keyword
-        case .string: return string
-        case .number: return number
-        case .comment: return comment
-        case .name: return name
-        }
-    }
-
-    private static func dynamic(light: UInt32, dark: UInt32) -> NSColor {
-        NSColor(name: nil) { appearance in
-            srgb(appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua ? dark : light)
-        }
-    }
-
-    private static func srgb(_ value: UInt32) -> NSColor {
-        NSColor(
-            srgbRed: CGFloat((value >> 16) & 0xFF) / 255,
-            green: CGFloat((value >> 8) & 0xFF) / 255,
-            blue: CGFloat(value & 0xFF) / 255, alpha: 1)
-    }
-}
