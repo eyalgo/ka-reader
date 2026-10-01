@@ -1455,4 +1455,50 @@ final class ReadingPanelTests: XCTestCase {
         let glyphs = visibleGlyphs(panel)
         XCTAssertTrue(glyphs.count == 1 && glyphs[0] === statusGlyphs.failure, "\(glyphs)")
     }
+
+    func testPendingEndsWithTheExactStatusSentenceOrEmptyTextAndNoOldGlyph() {
+        let cases: [(FileVerdict, [String], NSImage?)] = [
+            (.text("", .plain), ["b.txt"], nil),
+            (
+                .cannotDisplay(.invalidUTF8), ["b.txt", "b.txt can't be shown as text."],
+                statusGlyphs.failure
+            ),
+            (
+                .failed(.missing), ["b.txt", "Nozoki looked for b.txt and didn't find it."],
+                statusGlyphs.failure
+            ),
+        ]
+        for (verdict, strings, glyph) in cases {
+            let panel = makePanel()
+            panel.showReading()
+
+            panel.show(path: "b.txt", verdict: verdict)
+
+            XCTAssertEqual(visibleStrings(panel), strings)
+            XCTAssertFalse(isShowingContent(panel))
+            XCTAssertEqual(panel.contentView.string, "")
+            if let glyph {
+                let shown = visibleGlyphs(panel)
+                XCTAssertTrue(shown.count == 1 && shown[0] === glyph)
+            } else {
+                XCTAssertTrue(visibleGlyphs(panel).isEmpty)
+            }
+        }
+    }
+
+    func testReadingReplacesReadingAndNoFileWhollyReplacesIt() {
+        let panel = makePanel()
+        panel.showReading()
+        panel.showReading()
+
+        XCTAssertEqual(visibleStrings(panel), ["Reading this file."])
+        XCTAssertEqual(visibleGlyphs(panel).count, 1)
+
+        panel.showNoFile()
+
+        XCTAssertEqual(visibleStrings(panel), ["Select a file to view."])
+        XCTAssertFalse(isShowingContent(panel))
+        let glyphs = visibleGlyphs(panel)
+        XCTAssertTrue(glyphs.count == 1 && glyphs[0] === statusGlyphs.empty)
+    }
 }
