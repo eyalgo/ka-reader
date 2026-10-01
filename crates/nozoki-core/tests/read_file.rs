@@ -131,3 +131,128 @@ fn test_link_to_a_file_inside_the_root_reads_the_file_it_reaches() {
         assert_eq!(language, Language::Plain, "{requested}");
     }
 }
+
+/// CP-289 – CP-292: every example name of the spec, selected through `select_file`, with the language
+/// its row names.
+#[test]
+fn test_select_file_names_the_language_of_each_example_name() {
+    let examples = [
+        ("archive.tar.json", Language::Json),
+        ("Makefile.py.bak", Language::Plain),
+        (".bashrc", Language::Plain),
+        (".py", Language::Plain),
+        ("notes.", Language::Plain),
+        ("deploy.yml", Language::Yaml),
+        ("deploy.YML", Language::Yaml),
+        ("Deploy.YmL", Language::Yaml),
+        ("index.js", Language::JavaScript),
+        ("index.mjs", Language::JavaScript),
+        ("index.cjs", Language::JavaScript),
+        ("App.jsx", Language::JavaScript),
+        ("stubs.pyi", Language::Python),
+        ("gui.pyw", Language::Python),
+        ("setup.sh", Language::Shell),
+        ("x.bash", Language::Shell),
+        ("x.zsh", Language::Shell),
+        ("Cargo.toml", Language::Toml),
+        ("package.json", Language::Json),
+        ("ci.yaml", Language::Yaml),
+        ("README.md", Language::Plain),
+        ("guide.MARKDOWN", Language::Plain),
+        ("main.rs", Language::Plain),
+    ];
+    let folder = TempDir::new();
+    for (name, _) in examples {
+        folder.write_file(name, "x\n");
+    }
+    let opened = open(&folder);
+
+    for (name, expected) in examples {
+        let (_, language) = text_of(select_file(&opened, name));
+
+        assert_eq!(language, expected, "{name}");
+    }
+}
+
+/// CP-291: a language is never taken from content, so Python source in `notes.txt` is plain.
+#[test]
+fn test_content_never_chooses_the_language() {
+    let folder = TempDir::new();
+    folder.write_file("notes.txt", "def greet(who):\n    return \"hi\"\n");
+
+    let (_, language) = text_of(select_file(&open(&folder), "notes.txt"));
+
+    assert_eq!(language, Language::Plain);
+}
+
+/// CP-291: a file with no extension is plain whatever its first line names, `env` shebangs included.
+#[test]
+fn test_env_shebang_does_not_choose_a_language() {
+    let folder = TempDir::new();
+    folder.write_file("run", "#!/usr/bin/env python3\nprint(\"hi\")\n");
+
+    let (_, language) = text_of(select_file(&open(&folder), "run"));
+
+    assert_eq!(language, Language::Plain);
+}
+
+/// CP-292: the language comes from the last component of the selected path, so a floor-named file
+/// in a folder is its language and a plain-named file in a floor-named folder is plain.
+#[test]
+fn test_language_comes_from_the_last_path_component() {
+    let folder = TempDir::new();
+    folder.write_file("pkg/tool.py", "print(1)\n");
+    folder.write_file("tool.py/run", "print(1)\n");
+    let opened = open(&folder);
+
+    let (_, nested_python) = text_of(select_file(&opened, "pkg/tool.py"));
+    let (_, plain_in_python_folder) = text_of(select_file(&opened, "tool.py/run"));
+
+    assert_eq!(nested_python, Language::Python);
+    assert_eq!(plain_in_python_folder, Language::Plain);
+}
+
+/// CP-292: the language comes from the name the caller selected, never from a link's target.
+#[test]
+fn test_link_takes_the_language_of_its_own_name() {
+    let python_named = TempDir::new();
+    python_named.write_file("notes.txt", "plain words\n");
+    python_named.make_link("tool.py", "notes.txt");
+    let plain_named = TempDir::new();
+    plain_named.write_file("tool.py", "print(1)\n");
+    plain_named.make_link("notes", "tool.py");
+
+    let (_, from_python_name) = text_of(select_file(&open(&python_named), "tool.py"));
+    let (_, from_plain_name) = text_of(select_file(&open(&plain_named), "notes"));
+
+    assert_eq!(from_python_name, Language::Python);
+    assert_eq!(from_plain_name, Language::Plain);
+}
+
+/// CP-293: naming a language changes nothing else, so a `.py` that is not text carries none.
+#[test]
+fn test_non_text_floor_file_carries_no_language() {
+    let folder = TempDir::new();
+    std::fs::write(folder.path().join("legacy.py"), [0x63, 0x61, 0x66, 0xE9])
+        .expect("the file can be written");
+
+    assert_eq!(
+        select_file(&open(&folder), "legacy.py"),
+        ItemState::Observed(FileContent::CannotDisplay(CannotDisplayReason::InvalidUtf8))
+    );
+}
+
+/// CP-293: a text floor file's content is what it is today, and it carries the language.
+#[test]
+fn test_text_floor_file_content_is_unchanged() {
+    let folder = TempDir::new();
+    folder.write_file("app.py", "print(\"hi\")\n");
+
+    assert_eq!(
+        select_file(&open(&folder), "app.py"),
+        ItemState::Observed(FileContent::Text {
+            content: "print(\"hi\")\n".to_string(),
+            language: Language::Python,
+        })
+    );
+}

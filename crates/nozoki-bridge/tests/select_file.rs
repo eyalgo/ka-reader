@@ -46,6 +46,37 @@ fn test_select_file_answers_text_exactly() {
     );
 }
 
+/// CP-294: the core names this file Python, and the seam still answers `plain`, because the Swift
+/// decoder refuses a language outside its closed set.
+#[test]
+fn test_select_file_answers_plain_for_a_python_file() {
+    let folder = TempDir::new();
+    folder.write_file("app.py", "print(\"hi\")\n");
+
+    assert_eq!(
+        wire(&opened(folder.path()), "app.py"),
+        json!({ "state": "text", "content": "print(\"hi\")\n", "language": "plain" })
+    );
+}
+
+#[test]
+fn test_select_file_answers_plain_for_every_floor_extension() {
+    let folder = TempDir::new();
+    let names = ["x.py", "x.sh", "x.js", "x.json", "x.yaml", "x.toml"];
+    for name in names {
+        folder.write_file(name, "x\n");
+    }
+    let session = opened(folder.path());
+
+    for name in names {
+        assert_eq!(
+            wire(&session, name),
+            json!({ "state": "text", "content": "x\n", "language": "plain" }),
+            "{name}"
+        );
+    }
+}
+
 #[test]
 fn test_select_file_answers_cannot_display_exactly() {
     let folder = TempDir::new();

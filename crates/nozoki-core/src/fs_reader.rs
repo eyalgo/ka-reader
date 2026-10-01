@@ -12,6 +12,7 @@ use std::path::{Component, Path, PathBuf};
 use rustix::fs::OFlags;
 
 use crate::folder_model::OpenFailure;
+use crate::language::Language;
 
 /// A private opening failure with the public condition and safe diagnostic detail.
 #[derive(Debug, PartialEq, Eq)]
@@ -138,12 +139,6 @@ pub enum FileContent {
     Text { content: String, language: Language },
     /// The file is not text under the text rule, for the reason named.
     CannotDisplay(CannotDisplayReason),
-}
-
-/// The language a text file is drawn as. Only `Plain` exists until the floor-language map lands.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Language {
-    Plain,
 }
 
 /// Why a file is not text: the two ways the text rule turns a file away.
@@ -443,11 +438,32 @@ fn decode_utf16(units: &[u8], to_unit: fn([u8; 2]) -> u16) -> Option<String> {
     String::from_utf16(&code_units).ok()
 }
 
+/// The floor languages and the extensions that name them (SDD § 4 C-I5). Compared without ASCII case.
+const EXTENSIONS_BY_LANGUAGE: [(Language, &[&str]); 6] = [
+    (Language::Python, &["py", "pyi", "pyw"]),
+    (Language::Shell, &["sh", "bash", "zsh"]),
+    (Language::JavaScript, &["js", "mjs", "cjs", "jsx"]),
+    (Language::Json, &["json"]),
+    (Language::Yaml, &["yaml", "yml"]),
+    (Language::Toml, &["toml"]),
+];
+
 /// The language a text file is drawn as, from the last extension of its name alone, so content never
-/// reaches it. Every name is `Plain` until the floor-language map (SDD § 4 C-I5) replaces this body
-/// and nothing else.
-fn language_of(_file_name: &OsStr) -> Language {
-    Language::Plain
+/// reaches it. The extension is the text after the name's last `.` when that `.` is neither its first
+/// nor its last character (CP-289). A name without one, an extension that is not UTF-8 and an extension
+/// outside the table are `Plain`; ASCII case is ignored and nothing else is (CP-290, CP-291).
+fn language_of(file_name: &OsStr) -> Language {
+    let Some(extension) = Path::new(file_name).extension().and_then(OsStr::to_str) else {
+        return Language::Plain;
+    };
+    EXTENSIONS_BY_LANGUAGE
+        .iter()
+        .find(|(_, extensions)| {
+            extensions
+                .iter()
+                .any(|known| known.eq_ignore_ascii_case(extension))
+        })
+        .map_or(Language::Plain, |(language, _)| *language)
 }
 
 /// The steps of `path`, in order. A root or prefix component carries no step: an absolute path's
@@ -1947,14 +1963,108 @@ mod tests {
     }
 
     #[test]
-    fn test_extension_inside_the_floor_set_is_text_without_a_language_claim() {
+    fn test_floor_extension_names_its_language() {
         let temp = TempDir::new();
         temp.write_file("deploy.yml", "name: deploy\n");
 
-        assert!(matches!(
+        assert_eq!(
             read(temp.path(), "deploy.yml"),
-            ItemState::Observed(FileContent::Text { .. })
-        ));
+            ItemState::Observed(FileContent::Text {
+                content: "name: deploy\n".to_string(),
+                language: Language::Yaml,
+            })
+        );
+    }
+
+    /// The floor extensions of CP-290, one row per language.
+    const FLOOR_EXTENSIONS: [(Language, &[&str]); 6] = [
+        (Language::Python, &["py", "pyi", "pyw"]),
+        (Language::Shell, &["sh", "bash", "zsh"]),
+        (Language::JavaScript, &["js", "mjs", "cjs", "jsx"]),
+        (Language::Json, &["json"]),
+        (Language::Yaml, &["yaml", "yml"]),
+        (Language::Toml, &["toml"]),
+    ];
+
+    #[test]
+    fn test_every_floor_extension_names_its_language() {
+        for (language, extensions) in FLOOR_EXTENSIONS {
+            for extension in extensions {
+                for spelling in [extension.to_string(), extension.to_uppercase()] {
+                    let name = format!("file.{spelling}");
+
+                    assert_eq!(language_of(OsStr::new(&name)), language, "{name}");
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn test_floor_extension_ignores_ascii_case() {
+        let mixed_case = [
+            ("x.Py", Language::Python),
+            ("x.BaSh", Language::Shell),
+            ("x.MjS", Language::JavaScript),
+            ("x.JsOn", Language::Json),
+            ("x.YmL", Language::Yaml),
+            ("x.ToMl", Language::Toml),
+            ("Deploy.YmL", Language::Yaml),
+        ];
+
+        for (name, language) in mixed_case {
+            assert_eq!(language_of(OsStr::new(name)), language, "{name}");
+        }
+    }
+
+    #[test]
+    fn test_other_names_are_plain() {
+        let plain = [
+            "README",
+            "notes.txt",
+            "README.md",
+            "notes.MARKDOWN",
+            "guide.MARKDOWN",
+            ".bashrc",
+            ".py",
+            "notes.",
+            "Makefile.py.bak",
+            "main.rs",
+        ];
+
+        for name in plain {
+            assert_eq!(language_of(OsStr::new(name)), Language::Plain, "{name}");
+        }
+    }
+
+    #[test]
+    fn test_non_utf8_extension_is_plain() {
+        let not_utf8_extension = OsStr::from_bytes(b"file.p\xFFy");
+
+        assert_eq!(language_of(not_utf8_extension), Language::Plain);
+    }
+
+    #[test]
+    fn test_language_is_taken_from_the_last_extension() {
+        assert_eq!(language_of(OsStr::new("archive.tar.json")), Language::Json);
+        assert_eq!(language_of(OsStr::new("Makefile.py.bak")), Language::Plain);
+    }
+
+    /// CP-290 ignores ASCII case "and nothing else": `ſ` (long s) folds to `S` under Unicode case
+    /// rules, so a Unicode fold would name these shell, and the ASCII fold keeps them plain.
+    #[test]
+    fn test_floor_extension_ignores_no_case_beyond_ascii() {
+        for name in ["x.ſh", "x.baſh", "x.zſh"] {
+            assert_eq!(language_of(OsStr::new(name)), Language::Plain, "{name}");
+        }
+    }
+
+    /// CP-291 makes only a non-UTF-8 *extension* plain: a name whose stem is not UTF-8 still names
+    /// the language of its extension (CP-290).
+    #[test]
+    fn test_non_utf8_stem_with_a_floor_extension_names_its_language() {
+        let not_utf8_stem = OsStr::from_bytes(b"caf\xE9.py");
+
+        assert_eq!(language_of(not_utf8_stem), Language::Python);
     }
 
     #[test]

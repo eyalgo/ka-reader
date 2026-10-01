@@ -130,8 +130,16 @@ pub enum LanguageDto {
 
 impl From<Language> for LanguageDto {
     fn from(language: Language) -> Self {
+        // Every value is named, with no wildcard arm, so widening the wire is a compile error here and
+        // not a silent `plain`: the core names six floor languages, and the seam still says `plain`.
         match language {
-            Language::Plain => Self::Plain,
+            Language::Python
+            | Language::Shell
+            | Language::JavaScript
+            | Language::Json
+            | Language::Yaml
+            | Language::Toml
+            | Language::Plain => Self::Plain,
         }
     }
 }

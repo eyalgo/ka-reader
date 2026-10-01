@@ -16,8 +16,14 @@
 #     `log::Log` (`tracing`, `slog`, `log4rs`, `env_logger`, `fern`, `simplelog` likewise examples).
 
 cargo:
+aho-corasick
 bitflags
+cc
+equivalent
 errno
+find-msvc-tools
+hashbrown
+indexmap
 itoa
 libc
 log
@@ -26,13 +32,27 @@ nozoki-bridge
 nozoki-core
 proc-macro2
 quote
+regex
+regex-automata
+regex-syntax
+rustix
 serde
 serde_core
 serde_derive
 serde_json
+shlex
+streaming-iterator
 syn
 thiserror
 thiserror-impl
+tree-sitter
+tree-sitter-bash
+tree-sitter-highlight
+tree-sitter-javascript
+tree-sitter-json
+tree-sitter-language
+tree-sitter-python
+tree-sitter-toml-ng
+tree-sitter-yaml
 unicode-ident
-rustix
 zmij
