@@ -49,6 +49,6 @@
   drawn, with no space; (b) part of `{spacing.xl}` to the numbers' right, between them and the code,
   with the language saying how much; (c) a gap token of the language's own beside the column.
 - **If a document has to be written:** none. § Components *Code* and the `code-gutter` token.
-- **Answer:** <the owner fills this in>
+- **Answer:** Choose (b). Keep the gutter column at {spacing.xl} plus the width of the digits the current file needs; reserve {spacing.sm} inside that column at its right edge as right padding for {components.code-gutter}. Right-align each number to the start of that padding, with the code beginning at the column's outer right edge. Thus the separation is {spacing.sm}, included in the existing width rather than added to it. Keep {spacing.lg} before the column and the existing code insets. The padding stays with the fixed gutter, outside horizontally scrolling content, so scrolling cannot erase the separation or draw code over the numbers. Apply the same column padding where the diff contract reuses this gutter column for its sign; this changes no diff content or numbering rule. The spacing is the same in both themes and for plain text, highlighted code and raw Markdown. A change in digit count changes the digit allowance, not the padding; empty content invents no number. Fold the padding reference into the code-gutter token and clarify § Components Code and its shared-column Diff consequence. Reasoning: docs/trail/design/self_answer-6.md.
 
 **How it closes.** `product-design` folds it on its next run like any other item here.
