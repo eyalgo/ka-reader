@@ -6,8 +6,8 @@ use std::path::PathBuf;
 use std::sync::{Mutex, PoisonError};
 
 use nozoki_core::{
-    CannotDisplayReason, Condition, EntryKind, FileContent, ItemState, Language, OpenFailure,
-    OpenFolderOutcome, OpenedFolder, list_tree, open_folder, select_file,
+    CannotDisplayReason, Condition, EntryKind, FileView, ItemState, Language, OpenFailure,
+    OpenFolderOutcome, OpenedFolder, Span, TokenClass, list_tree, open_folder, select_file,
 };
 use serde::Serialize;
 
@@ -121,25 +121,75 @@ pub enum ListAnswerDto {
     Pending,
 }
 
-/// A text file's language on the wire: `"plain"`, the one the seam answers for every name.
+/// A text file's language on the wire, one string from the closed set: `"python"`, `"shell"`,
+/// `"javascript"`, `"json"`, `"yaml"`, `"toml"` or `"plain"`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum LanguageDto {
+    Python,
+    Shell,
+    Javascript,
+    Json,
+    Yaml,
+    Toml,
     Plain,
 }
 
 impl From<Language> for LanguageDto {
     fn from(language: Language) -> Self {
-        // Every value is named, with no wildcard arm, so widening the wire is a compile error here and
-        // not a silent `plain`: the core names six floor languages, and the seam still says `plain`.
+        // Every value is named, with no wildcard arm, so a language added to the core is a compile
+        // error here and not a silent `plain`.
         match language {
-            Language::Python
-            | Language::Shell
-            | Language::JavaScript
-            | Language::Json
-            | Language::Yaml
-            | Language::Toml
-            | Language::Plain => Self::Plain,
+            Language::Python => Self::Python,
+            Language::Shell => Self::Shell,
+            Language::JavaScript => Self::Javascript,
+            Language::Json => Self::Json,
+            Language::Yaml => Self::Yaml,
+            Language::Toml => Self::Toml,
+            Language::Plain => Self::Plain,
+        }
+    }
+}
+
+/// A span's class on the wire, one string from the closed set: `"keyword"`, `"string"`,
+/// `"number"`, `"comment"` or `"name"`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum TokenClassDto {
+    Keyword,
+    String,
+    Number,
+    Comment,
+    Name,
+}
+
+impl From<TokenClass> for TokenClassDto {
+    fn from(class: TokenClass) -> Self {
+        match class {
+            TokenClass::Keyword => Self::Keyword,
+            TokenClass::String => Self::String,
+            TokenClass::Number => Self::Number,
+            TokenClass::Comment => Self::Comment,
+            TokenClass::Name => Self::Name,
+        }
+    }
+}
+
+/// One span on the wire: `start` and `end` are UTF-8 byte offsets into the answer's `content`, and
+/// `class` names its token.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+pub struct SpanDto {
+    pub start: usize,
+    pub end: usize,
+    pub class: TokenClassDto,
+}
+
+impl From<Span> for SpanDto {
+    fn from(span: Span) -> Self {
+        Self {
+            start: span.start,
+            end: span.end,
+            class: span.class.into(),
         }
     }
 }
@@ -162,14 +212,18 @@ impl From<CannotDisplayReason> for CannotDisplayReasonDto {
 }
 
 /// What `select_file` answers across the bridge, tagged by `state`: `text` with its decoded
-/// `content` and `language`, `cannot_display` with a `reason`, `failed` with a `condition`, or
-/// `pending` when nothing was read.
+/// `content`, its `language` and, for a floor language, its `spans`; `cannot_display` with a
+/// `reason`; `failed` with a `condition`; or `pending` when nothing was read.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[serde(tag = "state", rename_all = "snake_case")]
 pub enum FileAnswerDto {
     Text {
         content: String,
         language: LanguageDto,
+        /// Present exactly when `language` is a floor language, even as `[]`; a plain answer has
+        /// no such member. Keyed on the language, never on emptiness.
+        #[serde(skip_serializing_if = "Option::is_none")]
+        spans: Option<Vec<SpanDto>>,
     },
     CannotDisplay {
         reason: CannotDisplayReasonDto,
@@ -180,14 +234,27 @@ pub enum FileAnswerDto {
     Pending,
 }
 
-impl From<ItemState<FileContent>> for FileAnswerDto {
-    fn from(state: ItemState<FileContent>) -> Self {
+impl From<ItemState<FileView>> for FileAnswerDto {
+    fn from(state: ItemState<FileView>) -> Self {
         match state {
-            ItemState::Observed(FileContent::Text { content, language }) => Self::Text {
+            ItemState::Observed(FileView::Text {
                 content,
+                language,
+                spans,
+            }) => Self::Text {
+                content,
+                spans: match language {
+                    Language::Plain => None,
+                    Language::Python
+                    | Language::Shell
+                    | Language::JavaScript
+                    | Language::Json
+                    | Language::Yaml
+                    | Language::Toml => Some(spans.into_iter().map(SpanDto::from).collect()),
+                },
                 language: language.into(),
             },
-            ItemState::Observed(FileContent::CannotDisplay(reason)) => Self::CannotDisplay {
+            ItemState::Observed(FileView::CannotDisplay(reason)) => Self::CannotDisplay {
                 reason: reason.into(),
             },
             ItemState::Failed(condition) => Self::Failed {
@@ -274,7 +341,7 @@ impl Session {
     fn select_file_with(
         &self,
         path: &str,
-        read: impl FnOnce(&OpenedFolder, &str) -> ItemState<FileContent>,
+        read: impl FnOnce(&OpenedFolder, &str) -> ItemState<FileView>,
     ) -> FileAnswerDto {
         let folder = self
             .opened
@@ -304,7 +371,7 @@ mod tests {
         use std::sync::mpsc;
         use std::time::Duration;
 
-        use nozoki_core::{CannotDisplayReason, FileContent};
+        use nozoki_core::{CannotDisplayReason, FileView};
 
         let folder = TempDir::new();
         folder.write_file("a.txt", "x");
@@ -320,9 +387,7 @@ mod tests {
                 session.select_file_with("a.txt", |_, _| {
                     parked_tx.send(()).expect("the test is listening");
                     release_rx.recv().expect("the test releases the read");
-                    ItemState::Observed(FileContent::CannotDisplay(
-                        CannotDisplayReason::InvalidUtf8,
-                    ))
+                    ItemState::Observed(FileView::CannotDisplay(CannotDisplayReason::InvalidUtf8))
                 });
             });
             parked_rx

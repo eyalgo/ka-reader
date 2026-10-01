@@ -240,4 +240,279 @@ final class ReadingPanelTests: XCTestCase {
         XCTAssertEqual(visibleStrings(panel), [prompt])
         XCTAssertFalse(isShowingContent(panel))
     }
+
+    // MARK: - Drawing a floor-language file's spans (CP-311 – CP-316)
+
+    /// A code token or the ground, with the two values `docs/DESIGN.md:L409-L428` gives it: light
+    /// then dark, as `0xRRGGBB`.
+    private enum Token {
+        case keyword, string, number, comment, name
+
+        var values: (light: UInt32, dark: UInt32) {
+            switch self {
+            case .keyword: return (0x7A2E8F, 0xD0A2E6)
+            case .string: return (0x1A6B3A, 0x8FD6A4)
+            case .number: return (0x9A4B00, 0xF0B47A)
+            case .comment: return (0x6A6C72, 0x9A9BA0)
+            case .name: return (0x0F5A9A, 0x8CC4F5)
+            }
+        }
+    }
+
+    private static let surfaceValues: (light: UInt32, dark: UInt32) = (0xFBFBFA, 0x1B1C1E)
+
+    private let aqua = NSAppearance(named: .aqua)!
+    private let darkAqua = NSAppearance(named: .darkAqua)!
+
+    /// Fixture M (CP-317): characters 2, 3 and 4 bytes wide, before a span and inside one.
+    private let fixtureM = "# café 日本 🙂\nname = \"é🙂\"\n"
+
+    /// M's two spans in the wire's UTF-8 byte offsets, and the UTF-16 ranges they draw as.
+    private let fixtureMSpans = [
+        CodeSpan(start: 0, end: 19, tokenClass: .comment),
+        CodeSpan(start: 27, end: 35, tokenClass: .string),
+    ]
+    private let fixtureMColoured: [(Range<Int>, Token)] = [(0..<12, .comment), (20..<25, .string)]
+
+    private func hex(_ value: UInt32) -> [CGFloat] {
+        [
+            CGFloat((value >> 16) & 0xFF) / 255, CGFloat((value >> 8) & 0xFF) / 255,
+            CGFloat(value & 0xFF) / 255,
+        ]
+    }
+
+    /// `color` as sRGB red, green and blue, resolved under `appearance`.
+    private func srgb(_ color: NSColor, under appearance: NSAppearance) -> [CGFloat] {
+        var components: [CGFloat] = []
+        appearance.performAsCurrentDrawingAppearance {
+            if let resolved = color.usingColorSpace(.sRGB) {
+                components = [
+                    resolved.redComponent, resolved.greenComponent, resolved.blueComponent,
+                ]
+            }
+        }
+        return components
+    }
+
+    private func assertSame(
+        _ actual: [CGFloat], _ expected: [CGFloat], _ message: String,
+        file: StaticString = #filePath, line: UInt = #line
+    ) {
+        XCTAssertEqual(actual.count, 3, message, file: file, line: line)
+        for (a, e) in zip(actual, expected) {
+            XCTAssertEqual(a, e, accuracy: 0.002, message, file: file, line: line)
+        }
+    }
+
+    /// The panel's text storage, one foreground colour per UTF-16 unit.
+    private func foregrounds(of panel: ReadingPanelView) -> [NSColor?] {
+        guard let storage = panel.contentView.textStorage else { return [] }
+        return (0..<storage.length).map {
+            storage.attribute(.foregroundColor, at: $0, effectiveRange: nil) as? NSColor
+        }
+    }
+
+    /// Every UTF-16 unit of the panel is `.textColor`, except those in `coloured`, which are in their
+    /// token's value for `appearance`. The colours are resolved under the panel's own effective
+    /// appearance after it is set to `appearance`.
+    private func assertDrawn(
+        _ panel: ReadingPanelView, coloured: [(Range<Int>, Token)], under appearance: NSAppearance,
+        file: StaticString = #filePath, line: UInt = #line
+    ) {
+        panel.appearance = appearance
+        let resolvedUnder = panel.contentView.effectiveAppearance
+        let isDark = appearance.name == .darkAqua
+        for (index, color) in foregrounds(of: panel).enumerated() {
+            let drawn = color ?? .textColor
+            let expected: [CGFloat]
+            if let token = coloured.first(where: { $0.0.contains(index) })?.1 {
+                expected = hex(isDark ? token.values.dark : token.values.light)
+            } else {
+                expected = srgb(.textColor, under: resolvedUnder)
+            }
+            assertSame(
+                srgb(drawn, under: resolvedUnder), expected,
+                "unit \(index) under \(appearance.name)",
+                file: file, line: line)
+        }
+    }
+
+    private func floorVerdict(
+        _ content: String, _ language: FloorLanguage, _ spans: [CodeSpan]
+    ) -> FileVerdict {
+        .text(content, .floor(language, spans))
+    }
+
+    func testFixtureMIsDrawnInItsSpanColoursUnderLightAndDark() {
+        let panel = makePanel()
+
+        panel.show(path: "m.py", verdict: floorVerdict(fixtureM, .python, fixtureMSpans))
+
+        XCTAssertEqual(panel.contentView.string, fixtureM)
+        XCTAssertFalse(panel.contentView.isEditable)
+        assertDrawn(panel, coloured: fixtureMColoured, under: aqua)
+        assertDrawn(panel, coloured: fixtureMColoured, under: darkAqua)
+    }
+
+    func testSpanColourCoversExactlyTheCharactersOfEachEncodedWidth() {
+        // One span over a 2-byte, a 3-byte and a 4-byte character: 1, 1 and 2 UTF-16 units.
+        let cases: [(String, CodeSpan, Range<Int>)] = [
+            ("xéy", CodeSpan(start: 1, end: 3, tokenClass: .keyword), 1..<2),
+            ("x日y", CodeSpan(start: 1, end: 4, tokenClass: .keyword), 1..<2),
+            ("x🙂y", CodeSpan(start: 1, end: 5, tokenClass: .keyword), 1..<3),
+        ]
+        for (content, span, units) in cases {
+            let panel = makePanel()
+
+            panel.show(path: "w.py", verdict: floorVerdict(content, .python, [span]))
+
+            assertDrawn(panel, coloured: [(units, .keyword)], under: aqua)
+        }
+    }
+
+    func testPythonSampleIsDrawnWithEachClassInItsToken() {
+        let panel = makePanel()
+        let content = "def greet(who):\n    return \"hi\" + 42  # note\n"
+        let spans = [
+            CodeSpan(start: 0, end: 3, tokenClass: .keyword),
+            CodeSpan(start: 4, end: 9, tokenClass: .name),
+            CodeSpan(start: 20, end: 26, tokenClass: .keyword),
+            CodeSpan(start: 27, end: 31, tokenClass: .string),
+            CodeSpan(start: 34, end: 36, tokenClass: .number),
+            CodeSpan(start: 38, end: 44, tokenClass: .comment),
+        ]
+
+        panel.show(path: "greet.py", verdict: floorVerdict(content, .python, spans))
+
+        XCTAssertEqual(panel.contentView.string, content)
+
+        let coloured: [(Range<Int>, Token)] = [
+            (0..<3, .keyword), (4..<9, .name), (20..<26, .keyword), (27..<31, .string),
+            (34..<36, .number), (38..<44, .comment),
+        ]
+        assertDrawn(panel, coloured: coloured, under: aqua)
+        assertDrawn(panel, coloured: coloured, under: darkAqua)
+    }
+
+    func testFloorLanguageWithNoSpansLooksLikePlain() throws {
+        let panel = makePanel()
+
+        panel.show(path: "x.json", verdict: floorVerdict("{}", .json, []))
+
+        let storage = try XCTUnwrap(panel.contentView.textStorage)
+        var run = NSRange()
+        let attributes = storage.attributes(at: 0, effectiveRange: &run)
+        XCTAssertEqual(run, NSRange(location: 0, length: storage.length), "one attribute run")
+        let foreground = attributes[.foregroundColor] as? NSColor
+        XCTAssertTrue(
+            foreground == nil || foreground == .textColor, "\(String(describing: foreground))")
+    }
+
+    func testNextFileCarriesNoColourFromTheLast() {
+        let python = floorVerdict(
+            "print(\"hi\")\n", .python,
+            [
+                CodeSpan(start: 0, end: 5, tokenClass: .name),
+                CodeSpan(start: 6, end: 10, tokenClass: .string),
+            ])
+        let toml = floorVerdict(
+            "title = \"hi\"\n", .toml,
+            [
+                CodeSpan(start: 0, end: 5, tokenClass: .name),
+                CodeSpan(start: 8, end: 12, tokenClass: .string),
+            ])
+        let panel = makePanel()
+
+        panel.show(path: "app.py", verdict: python)
+        panel.show(path: "notes", verdict: .text("print(\"hi\")\n", .plain))
+        XCTAssertEqual(panel.contentView.string, "print(\"hi\")\n")
+        assertDrawn(panel, coloured: [], under: aqua)
+
+        panel.show(path: "app.py", verdict: python)
+        panel.show(path: "config.toml", verdict: toml)
+        XCTAssertEqual(panel.contentView.string, "title = \"hi\"\n")
+        assertDrawn(panel, coloured: [(0..<5, .name), (8..<12, .string)], under: aqua)
+    }
+
+    func testAdjacentSpansCanSplitACombiningSequenceAndReachTheEnd() throws {
+        let panel = makePanel()
+        let content = "🙂e\u{301}日"
+        let spans = [
+            CodeSpan(start: 4, end: 5, tokenClass: .name),
+            CodeSpan(start: 5, end: 7, tokenClass: .string),
+            CodeSpan(start: 7, end: 10, tokenClass: .keyword),
+        ]
+
+        panel.show(path: "combined.py", verdict: floorVerdict(content, .python, spans))
+
+        XCTAssertEqual(panel.contentView.string, content)
+        let storage = try XCTUnwrap(panel.contentView.textStorage)
+        XCTAssertEqual(storage.length, 5)
+        for appearance in [aqua, darkAqua] {
+            assertDrawn(
+                panel, coloured: [(2..<3, .name), (3..<4, .string), (4..<5, .keyword)],
+                under: appearance)
+        }
+        for index in 0..<storage.length {
+            XCTAssertNil(storage.attribute(.backgroundColor, at: index, effectiveRange: nil))
+        }
+    }
+
+    func testEmptyFloorVerdictClearsPreviousColouredText() throws {
+        let panel = makePanel()
+        panel.show(path: "m.py", verdict: floorVerdict(fixtureM, .python, fixtureMSpans))
+
+        panel.show(path: "empty.py", verdict: floorVerdict("", .python, []))
+
+        XCTAssertEqual(panel.contentView.string, "")
+        XCTAssertEqual(try XCTUnwrap(panel.contentView.textStorage).length, 0)
+        XCTAssertEqual(visibleStrings(panel), ["empty.py"])
+        XCTAssertFalse(panel.contentView.isEditable)
+    }
+
+    func testAppearanceChangeRedrawsInTheOtherValues() {
+        let panel = makePanel()
+        panel.appearance = aqua
+        panel.show(
+            path: "app.py",
+            verdict: floorVerdict(
+                "print(\"hi\")\n", .python,
+                [
+                    CodeSpan(start: 0, end: 5, tokenClass: .name),
+                    CodeSpan(start: 6, end: 10, tokenClass: .string),
+                ]))
+        let coloured: [(Range<Int>, Token)] = [(0..<5, .name), (6..<10, .string)]
+        assertDrawn(panel, coloured: coloured, under: aqua)
+
+        // No `show` between the two: the colours are the other appearance's values.
+        assertDrawn(panel, coloured: coloured, under: darkAqua)
+    }
+
+    func testGroundIsSurfaceForPlainAndFloorVerdictsInBothAppearances() throws {
+        let verdicts: [FileVerdict] = [
+            .text("plain words\n", .plain),
+            floorVerdict(
+                "print(\"hi\")\n", .python, [CodeSpan(start: 0, end: 5, tokenClass: .name)]),
+        ]
+        for verdict in verdicts {
+            let panel = makePanel()
+            panel.show(path: "f", verdict: verdict)
+            let scrollView = try XCTUnwrap(panel.contentView.enclosingScrollView)
+
+            for (appearance, value) in [
+                (aqua, Self.surfaceValues.light), (darkAqua, Self.surfaceValues.dark),
+            ] {
+                panel.appearance = appearance
+                let resolvedUnder = panel.contentView.effectiveAppearance
+                XCTAssertTrue(panel.contentView.drawsBackground)
+                XCTAssertTrue(scrollView.drawsBackground)
+                assertSame(
+                    srgb(panel.contentView.backgroundColor, under: resolvedUnder), hex(value),
+                    "text view ground under \(appearance.name)")
+                assertSame(
+                    srgb(scrollView.backgroundColor, under: resolvedUnder), hex(value),
+                    "scroll view ground under \(appearance.name)")
+            }
+        }
+    }
 }

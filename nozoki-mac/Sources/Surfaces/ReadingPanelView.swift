@@ -1,11 +1,13 @@
 import AppKit
 
 /// The reading panel (`docs/UXD.md` UX-S1, `docs/DESIGN.md` § Components): what the open file
-/// turned out to be, drawn plain under its folder-relative path. It has four states and is in one
-/// of them at a time:
+/// turned out to be, under its folder-relative path. It has four states and is in one of them at a
+/// time:
 ///
 /// - *no file*: the prompt, and nothing else visible;
-/// - *text*: the path line, then the file's text as written in a non-editable view;
+/// - *text*: the path line, then the file's text as written in a non-editable view, on the
+///   `surface` ground: a floor-language file's spans in their code colours and every other
+///   character in the system's text colour, and a plain file's text in that one colour (CP-312);
 /// - *cannot-display*: the path line, then one sentence saying the file can't be shown as text;
 /// - *failed read*: the path line, then one statement of what Nozoki observed.
 ///
@@ -56,6 +58,12 @@ package final class ReadingPanelView: NSView {
         contentView.isRichText = false
         contentView.isSelectable = true
         contentView.font = .monospacedSystemFont(ofSize: Self.contentPointSize, weight: .regular)
+        // The ground is the views' own background, never a `.backgroundColor` text attribute, so a
+        // plain file's text carries none (CP-315).
+        contentView.backgroundColor = CodeColors.surface
+        contentView.drawsBackground = true
+        scrollView.backgroundColor = CodeColors.surface
+        scrollView.drawsBackground = true
         scrollView.hasVerticalScroller = true
         scrollView.hasHorizontalScroller = true
         contentView.isHorizontallyResizable = true
@@ -120,12 +128,10 @@ package final class ReadingPanelView: NSView {
     }
 
     private func showText(_ content: String, language: Language) {
-        // Plain is the only language, and plain is drawn with no colour (CP-280).
-        switch language {
-        case .plain: break
-        }
-        contentView.string = content
-        contentView.font = .monospacedSystemFont(ofSize: Self.contentPointSize, weight: .regular)
+        // One replacement of the whole text storage, so nothing of the previous file's colours, or
+        // the view's typing attributes, reaches this one (CP-313).
+        contentView.textStorage?.setAttributedString(
+            Self.attributedText(content, language: language))
         scrollView.isHidden = content.isEmpty
         guard !content.isEmpty else { return }
         if !isScrollViewPinned {
@@ -161,5 +167,80 @@ package final class ReadingPanelView: NSView {
     private func removeMessage() {
         message?.removeFromSuperview()
         message = nil
+    }
+
+    private static func attributedText(_ content: String, language: Language) -> NSAttributedString
+    {
+        let text = NSMutableAttributedString(
+            string: content,
+            attributes: [
+                .font: NSFont.monospacedSystemFont(ofSize: contentPointSize, weight: .regular),
+                .foregroundColor: NSColor.textColor,
+            ])
+        guard case .floor(_, let spans) = language else { return text }
+        for (span, range) in zip(spans, utf16Ranges(of: spans, in: content)) {
+            text.addAttribute(
+                .foregroundColor, value: CodeColors.color(for: span.tokenClass), range: range)
+        }
+        return text
+    }
+
+    /// The UTF-16 range each span covers. The spans' offsets are UTF-8 bytes (the wire's unit) and
+    /// AppKit counts UTF-16 units, so one forward pass over the content's Unicode scalars adds up
+    /// both widths and maps each offset as the pass reaches it. The spans ascend and fall on scalar
+    /// boundaries (the decoder guarantees it), and a Swift `Character` is a grapheme, not the
+    /// core's boundary.
+    private static func utf16Ranges(of spans: [CodeSpan], in content: String) -> [NSRange] {
+        var scalars = content.unicodeScalars.makeIterator()
+        var bytes = 0
+        var units = 0
+        func unit(atByte target: Int) -> Int {
+            while bytes < target, let scalar = scalars.next() {
+                bytes += UTF8.width(scalar)
+                units += UTF16.width(scalar)
+            }
+            return units
+        }
+        return spans.map { span in
+            let start = unit(atByte: span.start)
+            let end = unit(atByte: span.end)
+            return NSRange(location: start, length: end - start)
+        }
+    }
+}
+
+/// The five code tokens and the `surface` ground, each with the light and dark values of
+/// `docs/DESIGN.md` § Colors "The two themes". A colour resolves when it is drawn, so an appearance
+/// change recolours the text without the file being selected again (CP-314), the way
+/// `RootItemsView`'s bar colour does.
+private enum CodeColors {
+    static let surface = dynamic(light: 0xFBFBFA, dark: 0x1B1C1E)
+    private static let keyword = dynamic(light: 0x7A2E8F, dark: 0xD0A2E6)
+    private static let string = dynamic(light: 0x1A6B3A, dark: 0x8FD6A4)
+    private static let number = dynamic(light: 0x9A4B00, dark: 0xF0B47A)
+    private static let comment = dynamic(light: 0x6A6C72, dark: 0x9A9BA0)
+    private static let name = dynamic(light: 0x0F5A9A, dark: 0x8CC4F5)
+
+    static func color(for tokenClass: TokenClass) -> NSColor {
+        switch tokenClass {
+        case .keyword: return keyword
+        case .string: return string
+        case .number: return number
+        case .comment: return comment
+        case .name: return name
+        }
+    }
+
+    private static func dynamic(light: UInt32, dark: UInt32) -> NSColor {
+        NSColor(name: nil) { appearance in
+            srgb(appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua ? dark : light)
+        }
+    }
+
+    private static func srgb(_ value: UInt32) -> NSColor {
+        NSColor(
+            srgbRed: CGFloat((value >> 16) & 0xFF) / 255,
+            green: CGFloat((value >> 8) & 0xFF) / 255,
+            blue: CGFloat(value & 0xFF) / 255, alpha: 1)
     }
 }
