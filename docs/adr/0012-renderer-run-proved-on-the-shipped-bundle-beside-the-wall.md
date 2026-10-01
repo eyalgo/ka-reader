@@ -36,7 +36,9 @@ main process is observed parked in the Open panel's modal run, inside the shell'
 — the shell's first and only unconditional act, presenting the Open panel at launch
 (`docs/SDD.md` § 4 C-R3) and parked in it until someone answers; `open_folder` is not among those
 frames, because the shell calls it only after the panel returns
-(`nozoki-mac/Sources/Shell/LaunchFlow.swift:L35-L37`) and the gate sends no input *(corrected in
+(`nozoki@ab39502:nozoki-mac/Sources/Shell/LaunchFlow.swift:L35-L37`) and the gate sends no input
+*(pinned in place 2026-10-01 to the commit it was read at — the lines moved under it; the answer at
+`docs/trail/architecture/cycle-19.md` § 2.1)* *(corrected in
 place 2026-09-24 — as accepted this clause read "observed inside `open_folder`'s call", the
 observation the page's `open_folder` made and the native shell does not; `docs/SDD.md` § 4 C-I3
 at v18, RN-70; the answer at `docs/trail/architecture/cycle-12.md` § 3.2)*. The observation is
@@ -117,7 +119,7 @@ into the bridge"; the shell makes no bridge call before the panel returns; the a
 and the script fixes them from the first native bundle. What this record fixes is the gate, its
 two rules — observed from the process and never from a marker; a control that must go red — and
 its place after the wall probe, not the frames. The observation was measured on a Mac
-(`checks/renderer.sh:L58-L61`, macOS 26.6.2) and on a GitHub-hosted runner — GitHub Actions run
+(`nozoki@ab39502:checks/renderer.sh:L58-L61`, macOS 26.6.2) and on a GitHub-hosted runner — GitHub Actions run
 35988399477 on `nozoki@37a962d`, image `macos-14-arm64` 20260831.0302.1, macOS 14.8.9, its
 `checks/renderer.sh` byte-equal to `main`'s — where the product matched the script's five-frame
 list on observation 1 and the control on none of 30; a runner image or macOS whose Open-panel
@@ -130,14 +132,19 @@ last item)", an item SDD v18 closed; the runner reading is cited from the run be
 script's header does not carry it yet; the answer at `docs/trail/architecture/cycle-12.md`
 § 3.1)* *(dated in place 2026-09-24, a second note after the one before it, which stands as
 written and was true of the tree at `nozoki@153f5a1` — from `nozoki@2b83dce`, in the change merged
-at `nozoki@ab39502`, the script's header carries the runner reading (`checks/renderer.sh:L62-L65`:
+at `nozoki@ab39502`, the script's header carries the runner reading (`nozoki@ab39502:checks/renderer.sh:L62-L65`:
 run 35988399477 on `nozoki@37a962d`, image `macos-14-arm64` 20260831.0302.1, macOS 14.8.9, the
 product at the panel on observation 1 of the bound of 30 and the control there in none), so it is
-cited from the header as the Mac reading is (`:L58-L61`), the frame list at `:L44-L57` unmoved; and
+cited from the header as the Mac reading is (`nozoki@ab39502:checks/renderer.sh:L58-L61`), the
+frame list at `nozoki@ab39502:checks/renderer.sh:L44-L57` unmoved; and
 at `nozoki@ab39502` the `Renderer gate` step is `.github/workflows/ci.yml:L46-L47` — the `:L43-L44`
 § Decision's parenthesis gives, dated "from `nozoki@153f5a1`", was true there and moved when
 `View check suite` landed above it (`:L41-L42`); `Bundle probe` is still `:L31-L32`; the answers at
-`docs/trail/architecture/cycle-14.md` §§ 3.4, 3.5)*.
+`docs/trail/architecture/cycle-14.md` §§ 3.4, 3.5)* *(pinned in place 2026-10-01 — the three
+`checks/renderer.sh` citations in this paragraph were unpinned and had moved: from `nozoki@b75348f`
+the header's list holds four frames, so at `HEAD` the list, the Mac reading and the runner reading
+sit one line higher; each is pinned to `nozoki@ab39502`, where all three read as cited; the
+answer at `docs/trail/architecture/cycle-19.md` § 2.1)*.
 
 What undoing it costs: dropping the gate is a CI edit — and a return to the state where the wall's
 green was the only evidence a person could use the bundle. The owner ordered the gate, so a reversal
@@ -212,6 +219,18 @@ answer at `docs/trail/architecture/cycle-12.md` § 3.1)*.
   the owner's ruling at `docs/trail/architecture/cycle-3.md` § 3.1 and in the form of
   `cycle-11.md` § 3.7 and `cycle-12.md` §§ 3.1, 3.2. What it does not touch: § Decision's two rules
   and the gate's place after the wall probe, § Alternatives ruled out, § Binds.
+- `docs/trail/architecture/cycle-19.md` § 2.1 — the owner's seat's answer, given by a
+  `companion-self-answer` run (reasoning `docs/trail/architecture/self_answer-23.md` § 2.1), under
+  which the eighth and ninth dated in-place notes above land with NFDR v22 (RN-33): the four
+  unpinned citations — `nozoki-mac/Sources/Shell/LaunchFlow.swift:L35-L37` in § Decision and
+  `checks/renderer.sh:L44-L57`, `:L58-L61` and `:L62-L65` in § Consequences — pinned to
+  `nozoki@ab39502`, the one commit at which all four read as this record says (`git show
+  ab39502:nozoki-mac/Sources/Shell/LaunchFlow.swift`, `:L35-L37`; `git show
+  ab39502:checks/renderer.sh`, `:L44-L65`). They are pinned, not re-pointed, because the ruling at
+  `docs/trail/architecture/cycle-3.md` § 3.1 gives an ADR a pin and the NFDR a re-point; the
+  current lines live in QC-62. A citation repair, no decision reversed. What it does not touch:
+  § Decision's two rules and the gate's place after the wall probe, § Alternatives ruled out,
+  § Binds, the Status line.
 
 ## Binds
 

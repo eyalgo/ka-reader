@@ -1,8 +1,8 @@
 # NFDR — Nozoki 覗き
 
-**Status:** Draft
+**Status:** Settled
 **Owner:** Principal Architect
-**Version:** 21 — the cycle-18 fold: the one answered item, § 3.1, folded (`docs/trail/architecture/cycle-18.md` § 3.1; reasoning at `docs/trail/architecture/self_answer-22.md`). QC-24 follows SDD v22 C-R7: the export is staged by change, not by slice, and *built* takes C-R7's meaning. QC-2 takes no interim test in place of `read-only.sh`, states C-I3's unit, and names the two cases no check holds; § 10's QC-2 row gains the reviewed half at `development-design`. The unanswered § 2.1 is drafted: QC-62's citations and frame count, and § 9's `LaunchFlow.swift` line, re-pointed and pinned to `nozoki@7c7038f` as SDD v22 C-I3 pins them. No ADR is written or edited; no `QC` is added, renumbered or reused. One item stays for the owner's confirm, so `Status:` is Draft.
+**Version:** 22 — the cycle-19 fold and the close: the one answered item, § 2.1, folded (`docs/trail/architecture/cycle-19.md` § 2.1; reasoning at `docs/trail/architecture/self_answer-23.md` § 2.1). QC-62 stands as v21 drafted it. § 9's Swift 6 migration-cost sentence names the three `LaunchFlow.swift` sites at `nozoki@7c7038f` — `:L60`, `:L107` and `:L111` — beside `ReadRunning.swift:L28`, the measured `:L53` being `:L107` now. ADR-0012's four unpinned citations are pinned in place to `nozoki@ab39502`, under the owner's citation-repair ruling; no ADR is written or superseded, and the index does not move. No `QC` is added, renumbered or reused. Nothing is left open, so the companion is removed and `Status:` is Settled.
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · PRD Settled · UXD Settled · DESIGN Settled · CONTENT Settled
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
@@ -1105,8 +1105,10 @@ left with `nozoki-ui` at `nozoki@0aca57e` (RN-22; RN-25).
   Otherwise the change that moves CI to such an image adopts all six together and re-measures
   QC-25's hosted-runner narrowing, taken on `macos-14` (`docs/SDD.md` RN-48), on the new image.
   The adoption's measured source cost is explicit. Swift 6 mode refuses
-  `nozoki-mac/Sources/Shell/LaunchFlow.swift:L60` at `nozoki@7c7038f` (`bridge`, an `any
-  Bridging`, captured in a `@Sendable` closure; `:L53` when measured — RN-32) and
+  `nozoki-mac/Sources/Shell/LaunchFlow.swift:L60`, `:L107` and `:L111` at `nozoki@7c7038f` (each
+  `bridge`, an `any Bridging`, captured in a `@Sendable` closure — the measured site was the
+  `listTree` closure, `:L53` at `nozoki@6e1d79f` and `:L107` now; `:L60`, the open closure, and
+  `:L111`, the `selectFile` closure, were added after it and fail the same way — RN-33) and
   `nozoki-mac/Sources/Shell/ReadRunning.swift:L28` (`deliver`, a
   `@MainActor (RootListing?) -> Void`, sent across one), plus any site added before the flip. No
   target carries `StrictConcurrency` meanwhile: without warnings-as-errors its diagnostics cannot
@@ -3071,3 +3073,39 @@ delegation half), QC-18, QC-21, QC-31, QC-33, QC-43, QC-45, QC-50, QC-54, QC-57,
   `docs/trail/architecture/cycle-18.md` §§ 2.1, 3.1; `docs/trail/architecture/self_answer-22.md`;
   `docs/SDD.md` § 4 C-R7, C-I3 at v22, RN-76; `docs/trail/sdd/cycle-17.md` §§ 2.1, 5.1;
   `nozoki@7c7038f`, `nozoki@b75348f`, `nozoki@a954a90`)*
+- **RN-33:** *(v22 — the close: the cycle-19 fold, § 2.1 confirmed with two additions)* **The
+  fold.** The companion at intake held one answered choice, § 2.1, decided in the owner's seat by a
+  `companion-self-answer` run (`docs/trail/architecture/self_answer-23.md` § 2.1); it was copied
+  whole before this fold as `docs/trail/architecture/cycle-19.md`. The answer confirms QC-62 as v21
+  drafted it and adds two corrections; with both folded nothing is open, and the companion is
+  removed. **QC-62 does not move.** **§ 9 — addition (1).** RN-32 moved the measured site
+  `LaunchFlow.swift:L53` to `:L60`, and that named a different closure: at `nozoki@6e1d79f`, where
+  the cost was measured, `:L52-L53` is the `listTree` closure, `{ Self.listing(at: path, through:
+  bridge) }`, and at `nozoki@7c7038f` that closure is `:L106-L107`; `:L60` is the closure
+  `chooseFolder()` hands to `openAndList`, and `:L110-L111` the `selectFile` closure, both added
+  after the measurement (read this fold with `git show` at both commits;
+  `nozoki-mac/Sources/Shell/` is byte-equal between `7c7038f` and `HEAD`, `git diff --stat 7c7038f
+  HEAD -- nozoki-mac checks` printing nothing). The sentence now names all three sites and
+  `ReadRunning.swift:L28`, which stands (`:L28`, `MainActor.assumeIsolated { deliver(listing) }`).
+  That all three fail Swift 6 mode is the answer's measurement — Apple Swift 6.4, a copy of
+  `nozoki-mac` at `nozoki@7c7038f`, `swift build --target Shell -Xswiftc -swift-version -Xswiftc 6`
+  failing at exactly those three lines, and the cycle-17 method (tools 5.9, `StrictConcurrency` on
+  `Surfaces` and `Shell`) warning at the three and at `ReadRunning.swift:L28`
+  (`self_answer-23.md` § 2.1) — cited and not re-run by this fold. **ADR-0012 — addition (2).**
+  RN-32's reason for leaving ADR-0012 alone — that it is Accepted — does not hold: the owner's
+  ruling makes a citation repair an edit to an ADR's own prose, as a pin, with no superseding record
+  (`docs/trail/architecture/cycle-3.md` § 3.1, answers (1) and (3)). ADR-0012's four unpinned
+  citations — `nozoki-mac/Sources/Shell/LaunchFlow.swift:L35-L37` in § Decision and
+  `checks/renderer.sh:L44-L57`, `:L58-L61` and `:L62-L65` in § Consequences — are each pinned to
+  `nozoki@ab39502:` in two dated in-place notes and a *Traces to* bullet. Read this fold at
+  `nozoki@ab39502`: `LaunchFlow.swift:L35-L37` is `panel.chooseFolder()` followed by
+  `bridge.openFolder(location:)`, and `checks/renderer.sh` carries § *THE FRAMES* at `:L44`, the
+  five-frame list ending at `:L57`, the Mac reading at `:L58-L61` and the runner reading at
+  `:L62-L65`. The record's Status, decision, alternatives and binding are untouched, so the index
+  does not move. RN-32 stands as the dated account of v21. **What moved beneath this document.**
+  `git log c5f3a59..HEAD` lists only the answer's own commit, `nozoki@cb10c34`; every input's
+  `Status:` line was re-read and is Settled, so `Inputs read:` stands. No `QC` is added,
+  renumbered or reused *(re: header `Status:`, `Version:`; § 9 `nozoki-mac` bullet; ADR-0012
+  § Decision, § Consequences, § Traces to; source: `docs/trail/architecture/cycle-19.md` § 2.1;
+  `docs/trail/architecture/self_answer-23.md` § 2.1; `docs/trail/architecture/cycle-3.md` § 3.1;
+  `nozoki@6e1d79f`, `nozoki@7c7038f`, `nozoki@ab39502`)*
