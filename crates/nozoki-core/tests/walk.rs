@@ -17,12 +17,14 @@
 use std::collections::{BTreeMap, BTreeSet, HashSet};
 use std::path::{Path, PathBuf};
 
-use nozoki_core::{EntryKind, ItemState, OpenedFolder, list_tree, open_folder};
+use nozoki_core::{EntryKind, ItemState, OpenedFolder, list_tree, open_folder, select_file};
+
+/// What a fixture's walk is held to beyond the coverage judge.
+type FixtureCheck = fn(&Walk) -> Result<(), String>;
 
 /// The committed fixtures the no-argument mode walks, each with what it holds that walk to beyond
 /// the coverage judge.
-const FIXTURES: [(&str, fn(&Walk) -> Result<(), String>); 2] =
-    [("plain", check_plain), ("repo", check_repo)];
+const FIXTURES: [(&str, FixtureCheck); 2] = [("plain", check_plain), ("repo", check_repo)];
 
 /// The `list_tree` calls the `plain` fixture takes: its root, three folders and five file entries.
 const PLAIN_LIST_TREE_CALLS: usize = 9;
@@ -52,9 +54,17 @@ struct Walk {
     selected: BTreeMap<String, usize>,
 }
 
+/// Reads the file at `path` and counts the call. This is the one site every `select_file` call goes
+/// through. The answer is dropped: the proof is that the folder is unchanged afterwards, whatever
+/// the file reads as, so no answer stops the walk or reaches stdout.
+fn select_counted(opened: &OpenedFolder, path: &str, selected: &mut BTreeMap<String, usize>) {
+    *selected.entry(path.to_string()).or_insert(0) += 1;
+    select_file(opened, path);
+}
+
 /// Calls `list_tree` on `path`, then on each entry it returns. A folder entry is walked in turn, and
-/// every other entry is listed once and not descended. A failed answer stops nothing: it has no
-/// entries to go on to. No path is listed twice, so folder links that reach each other end.
+/// every other entry is listed once and not descended, then read once with `select_file`. A failed
+/// answer stops nothing: it has no entries to go on to. No path is listed twice, so folder links that reach each other end.
 fn walk_from(
     opened: &OpenedFolder,
     path: &str,
@@ -80,6 +90,7 @@ fn walk_from(
                 if listed.insert(entry.path.clone()) {
                     *calls += 1;
                     list_tree(opened, &entry.path);
+                    select_counted(opened, &entry.path, selected);
                 }
             }
         }
@@ -215,7 +226,7 @@ fn fixture_path(name: &str) -> PathBuf {
 
 /// Walks one committed fixture and holds it to condition (a), that its root lists an entry, to the
 /// judge, which counts whatever file entries the walk listed, and to `extra`.
-fn check_fixture(name: &str, extra: fn(&Walk) -> Result<(), String>) -> Result<(), String> {
+fn check_fixture(name: &str, extra: FixtureCheck) -> Result<(), String> {
     let walk = walk_folder(&fixture_path(name))
         .ok_or_else(|| format!("fixture {name} did not open as a folder"))?;
     if !walk.root_has_entries {
