@@ -1,0 +1,309 @@
+{
+  "change_log": [
+    {
+      "changed_text": "\u00a7 3 SM-4 (what crosses; owner cell); \u00a7 4 C-R7 (export grain \u2014 three sentences, plus what *built* means and why); \u00a7 4 C-I3 (unit-is-the-build sentence, two uncovered cases, five citations re-pointed and pinned, frame count with the second runner reading, *Violated by*); \u00a7 6 `open-a-folder` *Reached when* command half (one citation); \u00a7 6 `follow-the-folder` *Rests on* (held-state clause); \u00a7 10 RC-3 *Still unresolved* (citation pinned, second dated parenthesis); SDD Review Notes RN-76 (new); `docs/SDD_open_issues.md` \u00a7\u00a7 2.1, 5.1, 5.2 removed as folded \u2014 the file lists no item. Companion items added: none.",
+      "seat": "cto"
+    },
+    {
+      "changed_text": "*Open Questions* (seventh item added \u2014 how a collapse and a scroll reach the model across SM-4); \u00a7 6 `follow-the-folder` *Rests on* (pointer to that item); SDD Review Notes RN-77 (new) and RN-76 (one clause, the *Open Questions* sentence). Companion items added: none.",
+      "seat": "cto"
+    },
+    {
+      "changed_text": "\u00a7 6 `follow-the-folder` *Reached when* (observable half \u2014 the setup, the collapsed node, the panel not returning to the top); \u00a7 6 `see-git-status` *Reached when* (observable half \u2014 the scroll before switching back); \u00a7 4 C-E2 (*Violated by* \u2014 one case added); SDD Review Notes RN-78 (new). Companion items added: none.",
+      "seat": "cdo"
+    },
+    {
+      "changed_text": "\u00a7 5 step 4 (E-4 and E-5 \u2014 one dated re-read each, sizing stands); SDD Review Notes RN-79 (new). Companion items added: none.",
+      "seat": "cpo"
+    }
+  ],
+  "companion_present_at_intake": true,
+  "companion_retired": true,
+  "consumed_cycle_path": "/Users/eyalgolan/products/nozoki/docs/trail/sdd/cycle-17.md",
+  "core_root": "/Users/eyalgolan/.kensaiapp/pins/20261001T093611Z-pyzisc/core",
+  "ended": "seats-close",
+  "ended_at": "2026-10-01T10:13:23.948743+00:00",
+  "ended_detail": null,
+  "instance_root": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource",
+  "interruptions": [],
+  "no_change_rounds": 0,
+  "output_tokens": 0,
+  "output_tokens_under_counted": true,
+  "pending_request": {
+    "cdo": "**CDO, round 2.** The CTO's open question answers my request, and I made one repair in my own lane: two observable halves could be passed without doing the thing they protect.\n\n## The CTO's answer\n\nThe seventh *Open Questions* item states the gap, the three forms it could take, and which of them are re-cuts (`docs/SDD.md:L4443-L4459`). That is what I asked for, and I ask for nothing more. It adds no sentence to C-E2, and its closing sentence about C-E2 still reads true after my edit below.\n\n## What I changed, all in my lane\n\n- **\u00a7 6 `follow-the-folder`, observable half.** It read \"with Nozoki open on a folder, they run a script\". Someone who collapsed no node and never scrolled would have met it, and for them a panel reset to the top or a re-opened node shows nothing. Those are the two failures RN-77 names. The half now has them expand some nodes, collapse one again, open a file longer than the panel and scroll partway down it. It adds that the collapsed node stays collapsed and the panel does not return to the top (`docs/SDD.md:L1653-L1659`).\n- **\u00a7 6 `see-git-status`, observable half.** The mode-switch sentence had the same shape, so it now has them scroll before switching back (`docs/SDD.md:L1585-L1586`). I found it while checking RN-78's own claim that no other half had the defect. A search of \u00a7 6 for a reading position, a scroll or an expansion hits only these two slices.\n- **\u00a7 4 C-E2, *Violated by*.** It now also names a refresh that re-opens a node the reader collapsed (`docs/SDD.md:L855-L856`). The headline already bound that case; only the examples grew.\n- **RN-78** records the call, its reason and what did not move.\n\nThe source for all three is the UXD as it stands: \"expanded tree nodes, the open file, the sidebar mode and the reading position survive every refresh; only what actually changed changes\" (`docs/UXD.md:L253-L255`), and UX-F2's \"the open file and their reading position are untouched throughout\" (`docs/UXD.md:L143-L144`). No experience moves and no UXD gap is opened. The halves read the same under each of the CTO's three forms, so they pick none.\n\n## To the CTO\n\nNothing is asked of you. The command half, *Rests on* and *Open Questions* are untouched by me.\n\n## To the CPO\n\nBoth edits are to a *Reached when*, which is what step 4 sizes against. I read each slice as the same one decision as before \u2014 for `follow-the-folder`, \"the reducer keeps the reader's place under churn\" \u2014 but the sizing is yours to say. The run state shows your standing move as `no_followup`, hence the recall below.\n\n## Outside my input set\n\n- I read `docs/trail/sdd/run-20.state.json` again for the standing moves. It shows the CPO and the CTO both at `no_followup`.\n- I launched no builder this turn, so the `--reasoning-effort \"high\"` value had nowhere to go.\n- I committed nothing and left the header `Status:` and `Version:` alone.",
+    "cpo": "The sizing of both slices stands against the sharpened observable halves, and I wrote that into \u00a7 5 step 4 as two dated re-reads, with RN-79 as the reason.\n\n**`see-git-status` (E-4)**\n\nThe half now has the reader scroll partway down before switching back to Files (`docs/SDD.md:L1585-L1586`). That sentence was already in the bar; it is now checkable. It asks nothing of the root finding, which is this slice's one decision (`docs/SDD.md:L1187-L1192`). The re-read is at `docs/SDD.md:L1193-L1199`.\n\n**`follow-the-folder` (E-5)**\n\nThe half now has the reader expand, collapse and scroll before the churn, and adds that the collapsed node stays collapsed and the panel does not return to the top (`docs/SDD.md:L1653-L1659` before my edit). Both additions are failures of the one decision step 4 already names, \"the reducer keeps the reader's place under churn\", made visible. Neither is a second answer. The re-read is at `docs/SDD.md:L1204-L1216`.\n\n**The open collapse-and-scroll question does not split the slice**\n\nI weighed the CTO's *Open Questions* item against step 4's too-broad test, for three reasons:\n\n- The observable half reads the same under each of the three forms (RN-78).\n- Cut out alone, the question is a fragment by step 2: a model told of a collapse or a scroll shows a person nothing until the folder moves.\n- The two forms that cannot stand beside the command half or SM-4's list are each a re-cut that \u00a7 10 records before it is built (*Open Questions*, the collapse-and-scroll item).\n\nThe doubt is recorded in RN-79: the second form would change the command half's acceptance, which step 4 names as a too-broad signal. I read it as a re-cut trigger, not a sizing defect, because no cut of the slice gives that intermediate result a delivery of its own. If such a re-cut is written, step 4 is re-read with it.\n\n**What did not move**\n\n- Both slices' *Slug*, *Delivers*, *Moves toward*, *Not in this slice* and PRD traces stand. The PRD already carries the claim both halves protect (`docs/PRD.md:L224-L225`, `:L246-L248`), and both *Traces to* fields already name those sections.\n- No companion item: nothing here is product intent the PRD lacks, and no two seats disagree.\n- I left the header `Status:` and `Version:` alone.\n\n**To the CDO and the CTO**\n\nNothing is asked of either of you. RN-77's \"no bar moved\" was written before RN-78's edits; RN-79 says so, and I did not touch RN-77.",
+    "cto": "The CDO's point holds, and I recorded it as an open technical question; I did not pick a mechanism. Nothing in \u00a7 3, SM-4's list or any *Reached when* moved.\n\n## To the CDO \u2014 your point, taken up\n\n**The gap is real on the document's own text.**\n- \u00a7 3 gives `folder-model` the tree's expansion and the open `FileView`'s reading position, as the SRS requires (`docs/SRS.md:L427-L432`, DR-2 and DR-3).\n- SM-4 says \"Nothing else crosses in either direction\" (`docs/SDD.md:L415`), and SM-5 carries \"the operations the functions name\" (`docs/SDD.md:L416`).\n- No call on the list is named for a collapse or a scroll. The two built calls that could carry one take a path alone (`crates/nozoki-bridge/src/exports.rs:L72`, `:L89`).\n- So `follow-the-folder`'s `--test watch` also has no operation to set a reading position with. That is a hole on my side of the bar, beyond the jump you named.\n\n**What I wrote.**\n- ***Open Questions*** gains a seventh item. It states the gap and the three forms that are open:\n  1. The place crosses as an argument on a call the list already names. This moves no list.\n  2. The disclosure state and scroll offset stay where AppKit keeps them, with the model's deltas scoped so drawing them moves neither. This leaves `follow-the-folder`'s command half unmet as written.\n  3. A call the list does not name. This moves SM-4's list, C-R7's set and C-I6's nine.\n\n  The second and third are each a re-cut, recorded in \u00a7 10 before it is built. A tenth export built without one fails C-R7's set equality. The item cites C-E2 as binding whichever form is found; I added no sentence to your clause.\n- **\u00a7 6 `follow-the-folder` *Rests on*** gains a pointer to that item, so a seed cut from the slice meets the question where it reads the held state.\n- **RN-77** records the call and its reasons. RN-76's sentence about *Open Questions* is corrected to match.\n\n**Why I did not pick a form.** Choosing takes a build that keeps the place under churn, and none exists: the product keeps all of this state in the shell today. The second form is also the re-cut the self-answer reserves for the owner (`docs/trail/sdd/self_answer-28.md:L248-L253`).\n\n**Why it is not left to a change, unlike the two-reads case.** Ordering two reads needs nothing new to cross SM-4. A collapse and a scroll may need a crossing the closed list does not have, and the list is this document's.\n\n**The sidebar mode** is not in the item, for the reason you gave.\n\n## To the CPO\n\nYour condition for re-reading E-5 is not met: neither `follow-the-folder`'s command half nor SM-4's list moved. The *Rests on* clause you checked gained only the pointer. No recall.\n\n## Not a companion item\n\nNo form changes what the product promises or shows, and no two seats hold different positions. `docs/SDD_open_issues.md` still lists no item."
+  },
+  "product_path": "/Users/eyalgolan/products/nozoki",
+  "project": "nozoki",
+  "queue": [],
+  "recall_outstanding": null,
+  "recall_refusals": [],
+  "recalls_spent": [
+    {
+      "peer": "cdo",
+      "seat": "cpo"
+    }
+  ],
+  "resolved_inputs": {
+    "cdo": [
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "present": false
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/doctrine/writing_bar.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/.kensaiapp/pins/20261001T093611Z-pyzisc/core/prompts/sdd_conversation_conduct.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/.kensaiapp/pins/20261001T093611Z-pyzisc/core/templates/product-templates/sdd_template.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/DESIGN.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/CONTENT.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/design_system",
+        "present": false
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/experience/visual_restrictions.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/experience/visual_direction.md",
+        "present": true
+      }
+    ],
+    "cpo": [
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "present": false
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/doctrine/writing_bar.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/.kensaiapp/pins/20261001T093611Z-pyzisc/core/prompts/sdd_conversation_conduct.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/.kensaiapp/pins/20261001T093611Z-pyzisc/core/templates/product-templates/sdd_template.md",
+        "present": true
+      }
+    ],
+    "cto": [
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "present": false
+      },
+      {
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/doctrine/writing_bar.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/.kensaiapp/pins/20261001T093611Z-pyzisc/core/prompts/sdd_conversation_conduct.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/.kensaiapp/pins/20261001T093611Z-pyzisc/core/templates/product-templates/sdd_template.md",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/adr",
+        "present": true
+      },
+      {
+        "path": "/Users/eyalgolan/products/nozoki/docs/nfdr.md",
+        "present": true
+      }
+    ]
+  },
+  "round": 2,
+  "round_opened": "2026-10-01T10:04:12.871278+00:00",
+  "round_start_snapshot": {
+    "recall_outstanding": null,
+    "recalls_spent": [],
+    "standing_move": {
+      "cdo": {
+        "kind": "successor",
+        "target": "cto",
+        "work": "say how the reader's scroll and a collapse reach the model inside SM-4's closed nine-call list, or name it as a case the fold does not cover (\u00a7 6 `follow-the-folder` *Rests on*; RN-76)"
+      },
+      "cpo": {
+        "kind": "successor",
+        "target": "cto",
+        "work": "fold cycle-17 \u00a7 5.1 into \u00a7 4 C-R7, \u00a7 3 SM-4 and \u00a7 4 C-I3, and \u00a7 5.2's clause into \u00a7 6 `follow-the-folder` *Rests on*; settle \u00a7 2.1's citations and frame count in C-I3 and `open-a-folder`'s command half; retire the resolved items from `docs/SDD_open_issues.md`"
+      },
+      "cto": {
+        "kind": "successor",
+        "target": "cpo",
+        "work": "re-read `follow-the-folder`'s *Rests on* clause (\"from this slice at the latest\") against \u00a7 5 step 4 E-5's sizing and `read-a-file`'s *Not in this slice*, and the C-R7/SM-4 change-grain wording against \u00a7 8's *Delivers* row, then close"
+      }
+    }
+  },
+  "run": "run-20",
+  "schema_version": 2,
+  "sdd_status": "Settled",
+  "seat_providers": {
+    "cdo": "claude",
+    "cpo": "claude",
+    "cto": "claude"
+  },
+  "seat_sessions": {
+    "cdo": "0df463c3-9516-4c61-aee7-843706151b42",
+    "cpo": "8ec49a56-b4be-4c16-a10f-e02006533c8d",
+    "cto": "b40b2f49-8bd2-41e7-82b7-e3230228f2e6"
+  },
+  "seats": {
+    "cdo": "sdd-nozoki-run20-cdo",
+    "cpo": "sdd-nozoki-run20-cpo",
+    "cto": "sdd-nozoki-run20-cto"
+  },
+  "spoke_at": {
+    "cdo": 3,
+    "cpo": 4,
+    "cto": 2
+  },
+  "standing_move": {
+    "cdo": {
+      "kind": "no_followup",
+      "target": null,
+      "work": null
+    },
+    "cpo": {
+      "kind": "no_followup",
+      "target": null,
+      "work": null
+    },
+    "cto": {
+      "kind": "no_followup",
+      "target": null,
+      "work": null
+    }
+  },
+  "turn_log": [
+    {
+      "changed": false,
+      "changed_text": "nothing",
+      "declared": "no_followup",
+      "kind": "ordinary",
+      "no_reply": false,
+      "request_text": "I re-read the CTO's fold against my lanes and changed nothing: the sizing of `follow-the-folder` stands, `read-a-file`'s fence stands, and the change-grain wording reads \u00a7 8 correctly.\n\n**The three checks the CTO asked for**\n\n- **The *Rests on* clause against E-5's sizing.** The clause says the model holds the reader's place \"from this slice at the latest, no earlier slice's *Reached when* asserting that the model holds it\" (`docs/SDD.md:L1680-L1686`). That is timing, not a second bar: the diff of `docs/SDD.md` shows no change to `follow-the-folder`'s *Reached when*. Step 4's sentence for E-5 still names one decision, \"the reducer keeps the reader's place under churn\" (`docs/SDD.md:L1193-L1196`). The model holding that place is the precondition of that decision, so the slice is neither resized nor split.\n- **The clause against `read-a-file`'s *Not in this slice*.** The fence gives \"the open file following the disk, and the file-gone state\" to `follow-the-folder` (`docs/SDD.md:L1484`), which agrees with the clause. I add no fence for the held state. A fence excludes work, and \"at the latest\" permits a change to bring that state into the model earlier (`docs/trail/sdd/cycle-17.md:L172-L173`). A fence would forbid what the answer allows.\n- **C-R7 and SM-4 against \u00a7 8's *Delivers* row.** C-R7 now says \"each share of it is worth something on its own (\u00a7 8, the *Delivers* row)\" (`docs/SDD.md:L606`). The row says \"each share must be worth something on its own, or it is a fragment (\u00a7 5 step 2)\" (`docs/SDD.md:L2123`). The restatement holds for any share that passes step 2, so it claims no value the row does not carry. The wording names \"a change\" as a grain, not a change unit or a route.\n\n**On the CDO's point to the CTO**\n\nThe CDO asks how the reader's scroll and a collapse reach the model inside SM-4's closed list. It names the CTO, not me, and it changes no *Reached when*, so step 4's sizing is untouched as things stand.\n\nIt would reach my lane in one case. If the CTO's answer moves `follow-the-folder`'s command half or SM-4's list, the bar the slice is sized against has moved. That is a \u00a7 10 re-cut on the CTO's ground, and I would need to re-read step 4 against it \u2014 recall me on E-5's sizing if so.\n\n**The companion**\n\n`docs/SDD_open_issues.md` lists no item: each of its five buckets reads \"None.\" (`docs/SDD_open_issues.md:L30-L50`). Nothing in it is mine to fold or raise.",
+      "seat": "cpo",
+      "spoke": true
+    },
+    {
+      "changed": true,
+      "changed_text": "*Open Questions* (seventh item added \u2014 how a collapse and a scroll reach the model across SM-4); \u00a7 6 `follow-the-folder` *Rests on* (pointer to that item); SDD Review Notes RN-77 (new) and RN-76 (one clause, the *Open Questions* sentence). Companion items added: none.",
+      "declared": "no_followup",
+      "kind": "ordinary",
+      "no_reply": false,
+      "request_text": "The CDO's point holds, and I recorded it as an open technical question; I did not pick a mechanism. Nothing in \u00a7 3, SM-4's list or any *Reached when* moved.\n\n## To the CDO \u2014 your point, taken up\n\n**The gap is real on the document's own text.**\n- \u00a7 3 gives `folder-model` the tree's expansion and the open `FileView`'s reading position, as the SRS requires (`docs/SRS.md:L427-L432`, DR-2 and DR-3).\n- SM-4 says \"Nothing else crosses in either direction\" (`docs/SDD.md:L415`), and SM-5 carries \"the operations the functions name\" (`docs/SDD.md:L416`).\n- No call on the list is named for a collapse or a scroll. The two built calls that could carry one take a path alone (`crates/nozoki-bridge/src/exports.rs:L72`, `:L89`).\n- So `follow-the-folder`'s `--test watch` also has no operation to set a reading position with. That is a hole on my side of the bar, beyond the jump you named.\n\n**What I wrote.**\n- ***Open Questions*** gains a seventh item. It states the gap and the three forms that are open:\n  1. The place crosses as an argument on a call the list already names. This moves no list.\n  2. The disclosure state and scroll offset stay where AppKit keeps them, with the model's deltas scoped so drawing them moves neither. This leaves `follow-the-folder`'s command half unmet as written.\n  3. A call the list does not name. This moves SM-4's list, C-R7's set and C-I6's nine.\n\n  The second and third are each a re-cut, recorded in \u00a7 10 before it is built. A tenth export built without one fails C-R7's set equality. The item cites C-E2 as binding whichever form is found; I added no sentence to your clause.\n- **\u00a7 6 `follow-the-folder` *Rests on*** gains a pointer to that item, so a seed cut from the slice meets the question where it reads the held state.\n- **RN-77** records the call and its reasons. RN-76's sentence about *Open Questions* is corrected to match.\n\n**Why I did not pick a form.** Choosing takes a build that keeps the place under churn, and none exists: the product keeps all of this state in the shell today. The second form is also the re-cut the self-answer reserves for the owner (`docs/trail/sdd/self_answer-28.md:L248-L253`).\n\n**Why it is not left to a change, unlike the two-reads case.** Ordering two reads needs nothing new to cross SM-4. A collapse and a scroll may need a crossing the closed list does not have, and the list is this document's.\n\n**The sidebar mode** is not in the item, for the reason you gave.\n\n## To the CPO\n\nYour condition for re-reading E-5 is not met: neither `follow-the-folder`'s command half nor SM-4's list moved. The *Rests on* clause you checked gained only the pointer. No recall.\n\n## Not a companion item\n\nNo form changes what the product promises or shows, and no two seats hold different positions. `docs/SDD_open_issues.md` still lists no item.",
+      "seat": "cto",
+      "spoke": true
+    },
+    {
+      "changed": true,
+      "changed_text": "\u00a7 6 `follow-the-folder` *Reached when* (observable half \u2014 the setup, the collapsed node, the panel not returning to the top); \u00a7 6 `see-git-status` *Reached when* (observable half \u2014 the scroll before switching back); \u00a7 4 C-E2 (*Violated by* \u2014 one case added); SDD Review Notes RN-78 (new). Companion items added: none.",
+      "declared": "no_followup",
+      "kind": "ordinary",
+      "no_reply": false,
+      "request_text": "**CDO, round 2.** The CTO's open question answers my request, and I made one repair in my own lane: two observable halves could be passed without doing the thing they protect.\n\n## The CTO's answer\n\nThe seventh *Open Questions* item states the gap, the three forms it could take, and which of them are re-cuts (`docs/SDD.md:L4443-L4459`). That is what I asked for, and I ask for nothing more. It adds no sentence to C-E2, and its closing sentence about C-E2 still reads true after my edit below.\n\n## What I changed, all in my lane\n\n- **\u00a7 6 `follow-the-folder`, observable half.** It read \"with Nozoki open on a folder, they run a script\". Someone who collapsed no node and never scrolled would have met it, and for them a panel reset to the top or a re-opened node shows nothing. Those are the two failures RN-77 names. The half now has them expand some nodes, collapse one again, open a file longer than the panel and scroll partway down it. It adds that the collapsed node stays collapsed and the panel does not return to the top (`docs/SDD.md:L1653-L1659`).\n- **\u00a7 6 `see-git-status`, observable half.** The mode-switch sentence had the same shape, so it now has them scroll before switching back (`docs/SDD.md:L1585-L1586`). I found it while checking RN-78's own claim that no other half had the defect. A search of \u00a7 6 for a reading position, a scroll or an expansion hits only these two slices.\n- **\u00a7 4 C-E2, *Violated by*.** It now also names a refresh that re-opens a node the reader collapsed (`docs/SDD.md:L855-L856`). The headline already bound that case; only the examples grew.\n- **RN-78** records the call, its reason and what did not move.\n\nThe source for all three is the UXD as it stands: \"expanded tree nodes, the open file, the sidebar mode and the reading position survive every refresh; only what actually changed changes\" (`docs/UXD.md:L253-L255`), and UX-F2's \"the open file and their reading position are untouched throughout\" (`docs/UXD.md:L143-L144`). No experience moves and no UXD gap is opened. The halves read the same under each of the CTO's three forms, so they pick none.\n\n## To the CTO\n\nNothing is asked of you. The command half, *Rests on* and *Open Questions* are untouched by me.\n\n## To the CPO\n\nBoth edits are to a *Reached when*, which is what step 4 sizes against. I read each slice as the same one decision as before \u2014 for `follow-the-folder`, \"the reducer keeps the reader's place under churn\" \u2014 but the sizing is yours to say. The run state shows your standing move as `no_followup`, hence the recall below.\n\n## Outside my input set\n\n- I read `docs/trail/sdd/run-20.state.json` again for the standing moves. It shows the CPO and the CTO both at `no_followup`.\n- I launched no builder this turn, so the `--reasoning-effort \"high\"` value had nowhere to go.\n- I committed nothing and left the header `Status:` and `Version:` alone.",
+      "seat": "cdo",
+      "spoke": true
+    },
+    {
+      "changed": true,
+      "changed_text": "\u00a7 5 step 4 (E-4 and E-5 \u2014 one dated re-read each, sizing stands); SDD Review Notes RN-79 (new). Companion items added: none.",
+      "declared": "no_followup",
+      "kind": "recall",
+      "no_reply": false,
+      "request_text": "The sizing of both slices stands against the sharpened observable halves, and I wrote that into \u00a7 5 step 4 as two dated re-reads, with RN-79 as the reason.\n\n**`see-git-status` (E-4)**\n\nThe half now has the reader scroll partway down before switching back to Files (`docs/SDD.md:L1585-L1586`). That sentence was already in the bar; it is now checkable. It asks nothing of the root finding, which is this slice's one decision (`docs/SDD.md:L1187-L1192`). The re-read is at `docs/SDD.md:L1193-L1199`.\n\n**`follow-the-folder` (E-5)**\n\nThe half now has the reader expand, collapse and scroll before the churn, and adds that the collapsed node stays collapsed and the panel does not return to the top (`docs/SDD.md:L1653-L1659` before my edit). Both additions are failures of the one decision step 4 already names, \"the reducer keeps the reader's place under churn\", made visible. Neither is a second answer. The re-read is at `docs/SDD.md:L1204-L1216`.\n\n**The open collapse-and-scroll question does not split the slice**\n\nI weighed the CTO's *Open Questions* item against step 4's too-broad test, for three reasons:\n\n- The observable half reads the same under each of the three forms (RN-78).\n- Cut out alone, the question is a fragment by step 2: a model told of a collapse or a scroll shows a person nothing until the folder moves.\n- The two forms that cannot stand beside the command half or SM-4's list are each a re-cut that \u00a7 10 records before it is built (*Open Questions*, the collapse-and-scroll item).\n\nThe doubt is recorded in RN-79: the second form would change the command half's acceptance, which step 4 names as a too-broad signal. I read it as a re-cut trigger, not a sizing defect, because no cut of the slice gives that intermediate result a delivery of its own. If such a re-cut is written, step 4 is re-read with it.\n\n**What did not move**\n\n- Both slices' *Slug*, *Delivers*, *Moves toward*, *Not in this slice* and PRD traces stand. The PRD already carries the claim both halves protect (`docs/PRD.md:L224-L225`, `:L246-L248`), and both *Traces to* fields already name those sections.\n- No companion item: nothing here is product intent the PRD lacks, and no two seats disagree.\n- I left the header `Status:` and `Version:` alone.\n\n**To the CDO and the CTO**\n\nNothing is asked of either of you. RN-77's \"no bar moved\" was written before RN-78's edits; RN-79 says so, and I did not touch RN-77.",
+      "seat": "cpo",
+      "spoke": true
+    }
+  ]
+}

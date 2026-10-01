@@ -6,7 +6,7 @@
        signal, and the state a finished SDD carries; the open-issues file is gone.
      Locked = ratified as the source of truth. -->
 **Owner:** CTO · CPO · CDO — one run, three seats
-**Version:** 21 — CPO: § 6 `open-a-folder` *Traces to* (PRD clause — § UX Notes "The character" added); § 5 step 4 (E-1's sizing — dated re-read, sizing stands); SDD Review Notes RN-73 (new). Companion items added: none.; CTO: § 6 `open-a-folder` *Reached when* (command half — the window's minimum width and the sidebar's fixed width under `swift test`, cited to `docs/DESIGN.md` § *Layout*); SDD Review Notes RN-74 (new). Companion items added: none.; CDO: § 6 `open-a-folder` *Reached when* (observable half — the `docs/DESIGN.md` § *Layout* / § *Components* sentence, cited by section); § 6 `open-a-folder` *Traces to* (UXD clause — § 9 *Design-System Direction* added); SDD Review Notes RN-75 (new); `docs/SDD_open_issues.md` removed, empty of unfolded items, trail copy at `docs/trail/sdd/cycle-16.md`. Companion items added: none.; CPO: nothing — no SDD section, slice or companion item altered by this seat.; CTO: SDD Review Notes RN-74 (one citation — the owner-confirmation of DESIGN's measurements now cited to `docs/DESIGN.md:L929` in place of "per RN-73"). No slice altered — § 6 `open-a-folder` command half read against the CDO's observable half, unchanged. Companion items added: none.
+**Version:** 22 — CTO: § 3 SM-4 (what crosses; owner cell); § 4 C-R7 (export grain — three sentences, plus what *built* means and why); § 4 C-I3 (unit-is-the-build sentence, two uncovered cases, five citations re-pointed and pinned, frame count with the second runner reading, *Violated by*); § 6 `open-a-folder` *Reached when* command half (one citation); § 6 `follow-the-folder` *Rests on* (held-state clause); § 10 RC-3 *Still unresolved* (citation pinned, second dated parenthesis); SDD Review Notes RN-76 (new); `docs/SDD_open_issues.md` §§ 2.1, 5.1, 5.2 removed as folded — the file lists no item. Companion items added: none.; CTO: *Open Questions* (seventh item added — how a collapse and a scroll reach the model across SM-4); § 6 `follow-the-folder` *Rests on* (pointer to that item); SDD Review Notes RN-77 (new) and RN-76 (one clause, the *Open Questions* sentence). Companion items added: none.; CDO: § 6 `follow-the-folder` *Reached when* (observable half — the setup, the collapsed node, the panel not returning to the top); § 6 `see-git-status` *Reached when* (observable half — the scroll before switching back); § 4 C-E2 (*Violated by* — one case added); SDD Review Notes RN-78 (new). Companion items added: none.; CPO: § 5 step 4 (E-4 and E-5 — one dated re-read each, sizing stands); SDD Review Notes RN-79 (new). Companion items added: none.
 Version 18 — CPO: nothing — no SDD section, slice or companion item altered by this seat.; CTO: § 4 C-I3 (observable, measured-frames sentence, hosted-runner sentence with the re-cut rule); § 6 `open-a-folder` *Reached when* command half; § 9 TO-7 *costs*; § 10 RC-2 and RC-3 *Still unresolved* (dated parentheses); *Open Questions* (seventh item removed — six remain); SDD Review Notes RN-70 (new); `docs/SDD_open_issues.md` removed, empty of items. Companion items added: none.; CPO: nothing — no SDD section, slice or companion item altered by this seat.
 Version 8 — CTO: § 4 C-I3 (bounded window, first-ask-all-three pass, script-fixed and printed bound with no number here, per-ask live-pid check, uncovered yes→no case, control `no` for the whole window, error-on-any-ask, denial-as-proof clause narrowed to where the control reports the denials allowed with the hosted runner's read denial stated as separating nothing, Violated by extended); § 10 RC-1 Still unresolved (pointer to RN-48); § 11 R-8 shows up as and response; Open Questions (fourth item closed and removed — four remain); SDD Review Notes RN-48 (new). Companion items added: none. docs/SDD_open_issues.md removed, empty of items.
 Version 7 — CTO: § 3 SM-4 (what crosses, and owner cell wording); § 4 C-R7 (the staged grant, set equality against registered commands, asset-scheme keying, named pre-1.0.0 uncovered case, Violated by); § 4 C-I3 (every command the build grants); § 6 S-7 Reached when, command half; SDD Review Notes RN-47 (new). Companion items added: none. docs/SDD_open_issues.md removed, empty of items.
@@ -412,7 +412,7 @@ language because the card declares Shell for the `checks/*.sh` harness by name (
 | `SM-1` `fs-reader` ↔ `folder-model` | Down: a path to list or read. Up: the listing, or the bytes with the text rule applied and the floor language named, or the condition observed — always as data, never a panic | `folder-model` — it states what a read must return; the reader implements it |
 | `SM-2` `git-reader` ↔ `folder-model` | Down: `probe`, and on a root `state`, `status`, `diff`, `walk`. Up: `root` or `plain`; plain-data Git state; or the condition observed. The port is a trait the model owns; the adapter is the only thing that knows libgit2 | `folder-model` — the port is its; a second adapter passes the same contract tests (§ 11 R-1) |
 | `SM-3` `watcher` ↔ `folder-model` | Up only: coalesced change events as paths, the root's `.git` entry among them. The model decides what to re-read | `folder-model` — the event shape is its |
-| `SM-4` `core-bridge` ↔ `mac-shell` | Down (shell → core): calls from this list and no other — `open_folder` (taking the URL the Open panel returned, and no path from any other source), `list_tree`, `select_file`, `open_relative_link`, `set_theme`, `open_diff`, `walk_history`, `switch_folder`, `asset_bytes` — each exported from the build in which a slice lands it and not before, and all nine from `v1.0.0`; and, **beside the list and not on it**, the seam's one release call, `nozoki_free`, exported from the first build on because every call's return needs it and never staged by slice (the owner's confirm, `docs/trail/sdd/cycle-12.md` § 5.1; RN-66). Which of the list a given build exports is stated once, in § 4 C-R7. Up (core → shell): the `model_changed` callback carrying a projection delta, on a thread the shell marshals to its main thread; and each call's return as an owned buffer of plain data — JSON, or flat structs the header declares — freed by `nozoki_free`; the header is generated from the bridge's source and never hand-kept. Nothing else crosses in either direction: the nine calls and `nozoki_free` down, the callback and the returns up. **This seam is where the promise is read, not where it is held**: the wall is the process's entitlements (§ 4 C-R2), and the seam makes visible that the shell reads through the core alone — a builder of the shell who holds only this header has no read, no write and no connection to make, and § 4 C-R7 checks on every build that the shell adds none of its own | `core-bridge` — it exports what its landed slices built, the header is generated from it, and the shell calls what is exported and nothing more |
+| `SM-4` `core-bridge` ↔ `mac-shell` | Down (shell → core): calls from this list and no other — `open_folder` (taking the URL the Open panel returned, and no path from any other source), `list_tree`, `select_file`, `open_relative_link`, `set_theme`, `open_diff`, `walk_history`, `switch_folder`, `asset_bytes` — each exported from the build in which a change of its slice first builds it, and not before, and all nine from `v1.0.0`; and, **beside the list and not on it**, the seam's one release call, `nozoki_free`, exported from the first build on because every call's return needs it and never staged by slice (the owner's confirm, `docs/trail/sdd/cycle-12.md` § 5.1; RN-66). Which of the list a given build exports is stated once, in § 4 C-R7. Up (core → shell): the `model_changed` callback carrying a projection delta, on a thread the shell marshals to its main thread; and each call's return as an owned buffer of plain data — JSON, or flat structs the header declares — freed by `nozoki_free`; the header is generated from the bridge's source and never hand-kept. Nothing else crosses in either direction: the nine calls and `nozoki_free` down, the callback and the returns up. **This seam is where the promise is read, not where it is held**: the wall is the process's entitlements (§ 4 C-R2), and the seam makes visible that the shell reads through the core alone — a builder of the shell who holds only this header has no read, no write and no connection to make, and § 4 C-R7 checks on every build that the shell adds none of its own | `core-bridge` — it exports what its landed changes built, the header is generated from it, and the shell calls what is exported and nothing more |
 | `SM-5` `folder-model` ↔ `core-bridge` | Down: the operations the functions name, as plain Rust calls. Up: projections and deltas. The harness calls this API directly, in-process, with no window (§ 4 C-I3) | `folder-model` — the API and its types are its; the bridge wraps, formats and delegates |
 | `SM-6` `own-state` ↔ `core-bridge` | Down: the theme set, the window frame, and beyond v1 a folder to remember. Up: the state read whole, or the first-run state where it could not be read | `own-state` — the record shape and the read-whole-or-discard-whole rule are its |
 | `SM-7` `markdown-renderer` ↔ `fs-reader`, and `asset_bytes` in `core-bridge` | Rendering asks `fs-reader` whether an image reference is contained; `asset_bytes` asks the same question again on every call. Only a path that passes both is ever read; a node built wrong still reaches no byte outside the folder | `fs-reader` — the check is its and has one implementation; the two callers do not re-implement it |
@@ -594,13 +594,18 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   `URLSession`, `NSURLConnection`, `Process`, `NSWorkspace.open`, `NSSharingService`, `FileManager`
   reads, `Data(contentsOf:)`, `String(contentsOf:)`, `dlopen`, and `Bundle.main` reads outside
   `Contents/Resources`. Every byte a surface shows crossed SM-4. **A build exports to the shell
-  exactly the functions its landed slices built**: `cargo test --locked -p nozoki-bridge --test
+  exactly the functions its landed changes built**: `cargo test --locked -p nozoki-bridge --test
   exports` holds set equality between the C symbols `libnozoki_bridge.a` exports (`nm -gU`, the
   `nozoki_` prefix) and the functions the generated header declares, and holds that set inside
   SM-4's list and `nozoki_free`; it reads the exported set and never a hand-kept copy. From
-  `v1.0.0` the set is SM-4's list whole and `nozoki_free` (§ 6 S-11, C-I6). So a function whose
-  slice has not landed is never exported, and two slices that each export a function apart from
-  one another meet at one set when their changes are joined. **`nozoki_free` is the one export
+  `v1.0.0` the set is SM-4's list whole and `nozoki_free` (§ 6 S-11, C-I6). So a function no
+  landed change has built is never exported, and two slices that each export a function apart from
+  one another meet at one set when their changes are joined. A change has built a function when
+  the bridge function exists and delegates to an operation `folder-model`'s API carries (SM-5).
+  The export follows the change and not the slice, because a slice is built across one or more
+  changes and each share of it is worth something on its own (§ 8, the *Delivers* row): a share
+  that shows something through a function shows nothing until the shell can call that function
+  across SM-4 (answered in the owner's seat, `docs/trail/sdd/cycle-17.md` § 5.1; RN-76). **`nozoki_free` is the one export
   beside the list**, admitted because every call's return is an owned buffer it alone releases
   (SM-4); it is not a command — it never reaches the model over SM-5, so C-I3's "every command the
   build grants" does not name it, and its misuse is § 11 R-13's case. No second plumbing export —
@@ -645,6 +650,13 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   every command the build grants (C-R7) through SM-5 in-process, hashes again, and prints `unchanged` or the
   differing paths — the plain-folder criterion "no `.git` and no entry of any kind has appeared"
   (AC-24) is the same hash; `--kill` sends SIGKILL to the host mid-churn and re-hashes (NFR-4).
+  The unit is the build: a build that exports a command has that command's operation on SM-5, so
+  the walk calls it in that same build, and no test of a slice's own stands in for
+  `read-only.sh`. Two things no check holds: nothing in the build compares the calls the walk
+  makes with the set the build exports, so their match is held by review of the change that
+  exports a command, until a change makes it a check; and a fixture that offers no entry a
+  command can act on exercises nothing for that command — which fixture a command needs is its
+  slice's own bar (§ 6) (`docs/trail/sdd/cycle-17.md` § 5.1; RN-76).
   `checks/no-network.sh` diffs `cargo tree` against `deps.allow`, and fails where
   `nozoki-mac/Package.swift` declares a dependency or a `Package.resolved` exists (C-R6).
   `checks/bundle.sh` reads `codesign -d --entitlements :- Nozoki.app` against the set C-R2's rule
@@ -703,16 +715,19 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   run, inside the shell's launch frames** — the shell's first and only unconditional act,
   presenting the Open panel at launch (C-R3) and parked in it until someone answers. `open_folder`
   is not among those frames: the shell calls it only after the panel returns
-  (`nozoki-mac/Sources/Shell/LaunchFlow.swift:L35-L37`), and the gate sends no input, so an
+  (`nozoki-mac/Sources/Shell/LaunchFlow.swift`, `chooseFolder()` and `openAndList(_:through:)` —
+  `:L54-L60` and `:L69` at `nozoki@7c7038f`), and the gate sends no input, so an
   observation inside that call would need a code path this clause forbids below. The frame list
-  is the script's header's (`checks/renderer.sh:L44-L57`) and is not copied here, the way the
+  is the script's header's (`checks/renderer.sh`, header § *THE FRAMES* — `:L53-L56` at
+  `nozoki@7c7038f`) and is not copied here, the way the
   probe's bound is the script's. This is not the harness driving the views: it is the
   operating system's or the process's own report that the shell ran far enough to present the
   panel. The mechanism measured on one Mac, for the previous renderer, was a thread sample of the
   launched pid showing the command's frames — present exactly where the window drew and absent
   where it did not (`docs/trail/sdd/cycle-8.md` § 5.1, the sample table); the frames the native
   shell shows were measured on the first slice's first built bundle and are recorded in the
-  script's header (`checks/renderer.sh:L53-L61`), and the script fixes which mechanism it reads.
+  script's header (`checks/renderer.sh`, header § *THE FRAMES* — the list at `:L53-L56` and the
+  Mac reading at `:L57-L60`, `nozoki@7c7038f`), and the script fixes which mechanism it reads.
   What it may never read is a marker the product writes for the check, an
   environment variable, or a code path that exists for the gate: the shipped bundle is the
   artifact under test and holds nothing for the test. The gate's negative control is a bundle the
@@ -722,11 +737,16 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   took), which must go red. It runs on every CI build after `checks/bundle.sh` and never instead
   of it: a wall proven on a bundle whose window never draws proved nothing a person could use,
   and a window that draws on a bundle the wall is not proven on is the shape unchosen (§ 5 step
-  4, E-1). The observation was measured on the Mac (`checks/renderer.sh:L58-L61`, macOS 26.6.2)
+  4, E-1). The observation was measured on the Mac (`checks/renderer.sh`, header § *THE FRAMES* —
+  `:L57-L60` at `nozoki@7c7038f`, macOS 26.6.2)
   and on a GitHub-hosted macOS runner (GitHub Actions run 35988399477, image `macos-14-arm64`
   20260831.0302.1, macOS 14.8.9 — inside the C-R5 floor's major): the runner matched the script's
-  five-frame list on observation 1 and its control was not matched on any of 30 — a match of the
-  list the gate reads, not a comparison of full stacks, which only the Mac reading recorded. A
+  frame list on observation 1 and its control was not matched on any of 30 — a match of the
+  list the gate reads, not a comparison of full stacks, which only the Mac reading recorded. The
+  list held five frames at that run (`nozoki@37a962d`) and holds four since `nozoki@b75348f`
+  (2026-09-27), which removed `LaunchFlow.run()` from it; the four-frame list matched on the same
+  runner image at run 36795836747 (`nozoki@702f7c4`, 2026-10-01), again on observation 1 with the
+  control matched on none of 30 (RN-76). A
   runner image or macOS whose Open-panel frames read differently turns the gate red on the next
   build, because the gate runs on every build; that is a re-cut trigger on the gate's mechanism,
   never on the gate.
@@ -738,8 +758,8 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   names a process, a control passed on fewer asks than the window, a bound not printed on a red
   run that ended because the window ran out or on a pass, a failed-ask run that does not name
   what failed, a renderer gate skipped or run without its control, a renderer-gate observation
-  read from anything the product wrote or from a path that exists for the gate, a slice
-  that lands a command the harness does not exercise (a command is a call on SM-4's list, driven
+  read from anything the product wrote or from a path that exists for the gate, a build
+  that exports a command the harness does not exercise (a command is a call on SM-4's list, driven
   through SM-5; `nozoki_free` is the seam's release call and no command — it never reaches the
   model, so this clause does not name it, and its misuse is § 11 R-13's: C-R7, RN-66), a release
   without AC-1 – AC-3 green.
@@ -833,7 +853,7 @@ and no condition here fixes either.
   what actually changed changes; an update arrives with no notification, flash or attention bid;
   and what is shown is the folder's current state or is marked as no longer there — never stale
   content presented as current (UX-I2, UX-I3, UX-I4). *Violated by:* a refresh that collapses a
-  node or resets a scroll position, a toast on change, a vanished file still shown as present, a
+  node, re-opens one the reader collapsed or resets a scroll position, a toast on change, a vanished file still shown as present, a
   manual refresh control.
 - **C-E3.** **A failure is scoped to its item and carries its route out.** A slow or failing read
   degrades only its own presentation and the shell never blocks; a failure or refusal — observed or
@@ -1170,10 +1190,30 @@ names that no entry did.
   answered the other way — the root finding says `plain` — and a Git view that can show a root but
   not stay wordless on a plain folder fails the view-never-lies rule; nor is it a fragment, since a
   plain folder already opens after `open-a-folder`.
+  *Re-read 2026-10-01, on the observable half as RN-78 sharpened it: the half now has the reader
+  scroll partway down the file a changed row opened before they switch back to Files, so that
+  "the open file and their reading position are untouched" is a sentence they can watch fail. The
+  sizing stands. The sentence was in the bar before and is the same sentence made checkable. It
+  asks nothing of the root finding, which is this slice's one decision answered both ways, and no
+  result of the scroll and the switch changes what the Git view shows on a repository or on a
+  plain folder. RN-79.*
 - **E-5 → `follow-the-folder`**, one slice, the filesystem and Git clauses together. Bar: AC-7,
   AC-8, AC-19 and AC-20, and the first latency figures printed. One decision is inside it — the
   reducer keeps the reader's place under churn — and the Git clause is that decision applied to one
   more kind of item, not a second decision.
+  *Re-read 2026-10-01, on the observable half as RN-78 sharpened it and on the question RN-77
+  left open: before the churn starts the half now has the reader expand some nodes, collapse one
+  again and scroll partway down a file longer than the panel, and it adds that the collapsed node
+  stays collapsed and the panel does not return to the top. The sizing stands. It is still one
+  decision: the setup gives the reader a place for the reducer to keep, and the two added
+  observations are that decision's failures made visible, not a second answer. The open question
+  does not make the slice too broad either (*Open Questions*, the collapse-and-scroll item). How
+  a collapse and a scroll reach the model is the form this one decision takes, and the observable
+  half reads the same under each of the three forms listed there. Cut out alone, the question is
+  a fragment by step 2: a model told where the reader is shows a person nothing until the folder
+  moves. Two of the three forms leave the command half or SM-4's list unable to stand as written,
+  and each of those is a re-cut that § 10 records before it is built. A re-cut of that kind moves
+  the bar this slice is sized against, and this step is re-read with it. RN-79.*
 - **E-6 → `choose-a-theme`**, one slice. Bar: AC-11 and AC-13 — both themes present, the choice
   remembered, and the only new file under the tool's own container. Small, and not too narrow: its
   result — that own state lands in the container and nowhere else — is what `switch-the-folder`'s
@@ -1366,7 +1406,7 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   process parked in the Open panel's modal run, inside the shell's launch frames — the panel
   presented — within its window, and its control, `checks/fixtures/idle-shell`, goes red (C-I3;
   re-cut at § 10 RC-2 and RC-3); the frames the gate reads are fixed by the script from this
-  bundle (`checks/renderer.sh:L53-L57`). *The promise
+  bundle (`checks/renderer.sh`, header § *THE FRAMES* — `:L53-L56` at `nozoki@7c7038f`). *The promise
   clause:* `checks/read-only.sh checks/fixtures/plain` and `checks/read-only.sh
   checks/fixtures/repo` each print `unchanged` after `open_folder` and `list_tree` on every entry,
   `.git` hashed where present; `checks/no-network.sh` exits 0; `checks/own-state.sh` finds the
@@ -1562,8 +1602,8 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   alone (UX-A2). The tree carries changed-file markers on exactly the files the Git view lists,
   each with its text cue (UX-S2 Success). They click a changed file's row: the file opens in the
   panel to read, exactly as a tree selection would — one click target, the status letter a label
-  (UX-F2, the first reading). They switch back to Files: the open file and their reading position
-  are untouched (UX-F2). A repository mid-merge, mid-rebase or detached shows that state, presented
+  (UX-F2, the first reading). They scroll partway down it and switch back to Files: the open file
+  and their reading position are untouched — the panel has not returned to the top (UX-F2; RN-78). A repository mid-merge, mid-rebase or detached shows that state, presented
   as the state it is in and never as an error (UX-S3 Error). Git state the tool could not read — a
   lock, an unreadable file — shows on that item what was observed, and the rest of the view stands
   (UX-S3 Error, UX-I10). They open a linked worktree, or a submodule, whose `.git` file names a
@@ -1630,11 +1670,13 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   position kept, a vanished open file said to be gone, and nothing crashing or writing however
   fast the folder moves; a repository appearing at the root mid-session, or leaving it, fills or
   empties the Git view the same way.
-- **Reached when:** *Observable (CDO):* with Nozoki open on a folder, they run a script in a
-  terminal that creates, changes and deletes files for thirty seconds. The tree changes on its own
-  as the disk does, and nothing else moves: the nodes they had expanded stay expanded, the selected
-  file stays selected, the sidebar stays on the mode it was on, and the panel's scroll position does
-  not jump (`docs/UXD.md` UX-I3, UX-F3). No refresh control exists anywhere, and no update
+- **Reached when:** *Observable (CDO):* with Nozoki open on a folder, they expand some nodes,
+  collapse one of them again, open a file longer than the panel and scroll partway down it, and
+  then run a script in a terminal that creates, changes and deletes files for thirty seconds. The
+  tree changes on its own as the disk does, and nothing else moves: the nodes they left expanded
+  stay expanded, the one they collapsed stays collapsed, the selected file stays selected, the
+  sidebar stays on the mode it was on, and the panel's scroll position does not jump — it does
+  not return to the top (`docs/UXD.md` UX-I3, UX-F3; RN-78). No refresh control exists anywhere, and no update
   announces itself — no toast, no flash, no badge (UX-I2). The script changes the open file: its
   content updates in place, the reading position kept. The script deletes it: the panel keeps the
   file's name and states plainly that it is no longer there, and its old content is not shown as
@@ -1657,8 +1699,14 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   p95 in milliseconds over `checks/fixtures/scale-small`, `scale-medium` and `scale-large` on every
   CI build — the first figures, which go to the SRS by revision and are asserted nowhere here
   (C-I4). *The promise clause:* the two `read-only.sh` runs above; `checks/no-network.sh` exits 0.
-- **Rests on:** § 3 `watcher`, `folder-model` (the reducer, keyed by path; the root finding re-run
-  on the `.git` entry), `surfaces` (the file-gone state); `SM-3`, `SM-4` (`model_changed` deltas);
+- **Rests on:** § 3 `watcher`, `folder-model` (the reducer, keyed by path, and beside it the
+  state it keeps the reader's place in — the tree's expansion, the selection, and the open
+  `FileView` with its reading position — which the model holds from this slice at the latest, no
+  earlier slice's *Reached when* asserting that the model holds it
+  (`docs/trail/sdd/cycle-17.md` § 5.2; RN-76), and how a collapse and a scroll reach it across
+  SM-4 is open — *Open Questions*, the collapse-and-scroll item (RN-77); the
+  root finding re-run on the `.git` entry), `surfaces` (the file-gone state); `SM-3`, `SM-4`
+  (`model_changed` deltas);
   § 4 C-I1, C-I3 (`--kill`), C-I4; § 11 R-5, R-6, R-8. Slices: `read-a-file`, `see-git-status`.
 - **Traces to:** PRD § Key Use Cases 3; § Target Users, the driving scenario; § Core Features
   "Live refresh"; § UX Notes "The path" 4, "the view never lies"; § Success Metrics "Refresh
@@ -2389,9 +2437,11 @@ silently misses every reversal made mid-build.>
   content as markup anywhere in the product.
 - **Still unresolved:** The frames `checks/renderer.sh` reads on the native shell, and whether
   they read the same on a hosted runner (*Open Questions*) *(measured — the five frames are the
-  script's header's, `checks/renderer.sh:L53-L61`, and the runner matched that list, run
+  script's header's, `nozoki@153f5a1:checks/renderer.sh:L53-L61`, and the runner matched that list, run
   35988399477; the item is closed and removed from *Open Questions*, and C-I3 carries the reading
-  and the observable's corrected name; noted 2026-09-24, RN-70)*. How TextKit lays out UX-I12's two hard
+  and the observable's corrected name; noted 2026-09-24, RN-70)* *(the list holds four frames
+  since `nozoki@b75348f`, and the runner matched the four, run 36795836747; C-I3 carries both
+  readings; noted 2026-10-01, RN-76)*. How TextKit lays out UX-I12's two hard
   cells, and which engine compiles the six grammars (*Open Questions*). The records and the NFDR
   entries owed above (§ 12). The project card's `Languages:` and test command, and
   `README.md:L46-L51`'s stack and proof sentences — outside this document (RN-59, RN-60) *(the
@@ -4227,6 +4277,218 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   § 5.1; `docs/trail/sdd/self_answer-27.md` § 5.1; `docs/DESIGN.md` § *Layout*, § *Components*
   "Status messages", "The startup surface", RN-8, RN-14; `docs/UXD.md` § 4, § 9, UX-A4, UX-S1,
   UX-S2, UX-S4; § 4 C-E4, C-E7; § 3 `mac-shell`, `surfaces`; RN-37, RN-73, RN-74)*.
+- **RN-76:** *(CTO)* *(changed)* The companion's §§ 5.1, 5.2 and 2.1 folded, all three on this
+  seat's ground, and the companion emptied of items. §§ 5.1 and 5.2 were raised from downstream by
+  the PM on 2026-10-01 and answered in the owner's seat by a `companion-self-answer` run; § 2.1 was
+  raised by that same run with its slot left at the placeholder, and is settled here by this seat.
+  **§ 5.1, the export** — three sentences move as the answer words them, and a fourth that
+  restated one of them moves with it. § 4 C-R7's "exactly the functions its landed slices built"
+  reads *its landed changes built*; C-R7's "a function whose slice has not landed is never
+  exported" reads *a function no landed change has built is never exported*; § 3 SM-4's "exported
+  from the build in which a slice lands it and not before" reads *from the build in which a change
+  of its slice first builds it, and not before*; and SM-4's owner cell, which said "it exports what
+  its landed slices built", reads *its landed changes built* — the answer did not list that cell,
+  and it is C-R7's first sentence said again, so leaving it would have the seam and the condition
+  disagree. C-R7 also gains what *built* means at that grain — the bridge function exists and
+  delegates to an operation `folder-model`'s API carries — and the reason the grain is the change,
+  both from the answer. *Because* a slice yields one or more seeds and each share is "worth
+  something on its own" (§ 8, the *Delivers* row), and no share of `read-a-file` shows a file in
+  the panel without the shell calling `select_file` across SM-4, so an export that waited for the
+  slice whole would make every share but the last a fragment. **§ 5.1, the harness** — § 4 C-I3's
+  headline and its `read-only.sh` sentence stand, and its *Violated by* reads *a build that
+  exports a command the harness does not exercise* where it read "a slice that lands a command
+  the harness does not exercise", so the clause names the unit the headline names. C-I3 gains one
+  sentence saying the unit is the build and no test of a slice's own stands in for
+  `read-only.sh`, and one naming the two things the answer says it does not cover: nothing in the
+  build compares the walk's calls with the export set, so that match is held by review, and a
+  fixture with no entry for a command exercises nothing for it. This seat does not ask for the
+  comparing check here: the answer left that to the fold, a new check on every build is a
+  widening no item raised, and the limit is stated beside the claim so a reader does not take
+  "every command the build grants" for a thing a script holds. **What the product shows today,
+  recorded here and in no condition:** on `main` at `nozoki@7c7038f`,
+  `crates/nozoki-bridge/tests/exports.rs:L17-L22` admits `nozoki_select_file` and
+  `crates/nozoki-core/tests/walk.rs:L1-L6` calls `list_tree` alone, so C-I3 is unmet on that
+  build as it reads, and the walk driving `select_file` closes it. The answer keeps that interval
+  out of § 4, and so does this fold. **§ 5.2** — § 3 stands: the open file, the selection and the
+  expansion are `folder-model`'s. § 6 `follow-the-folder`'s *Rests on* gains one clause on its
+  `folder-model` entry, naming the held state beside the reducer — the tree's expansion, the
+  selection, and the open `FileView` with its reading position — and saying the model holds it
+  from that slice at the latest. *Because* that slice's command half asserts in `nozoki-core`,
+  with no window, "expansion, selection and reading position surviving", which a core test can
+  assert only of state the core holds; and as the field read, a seed cut from the slice would take
+  that state as already in the model, where the product keeps it in the shell
+  (`crates/nozoki-core/src/folder_model.rs:L13-L15`, `:L99-L101`;
+  `nozoki-mac/Sources/Surfaces/WorkbenchView.swift:L78-L93`;
+  `nozoki-mac/Sources/Surfaces/RootItemsView.swift:L55-L57`, all at `nozoki@7c7038f`). The clause
+  adds no bar: the command half is unchanged and already forces the move. One case the answer
+  leaves to the change that moves the state, and this document does not write: which side orders
+  two reads in flight once the model holds the selection. It is one change's design against SM-8
+  and the `surfaces` row as they stand, which § 12's downstream boundary keeps out of here.
+  **§ 2.1** — five citations and one count in this seat's lanes pointed at lines that had moved.
+  § 4 C-I3's `LaunchFlow.swift:L35-L37` now names `chooseFolder()` and `openAndList(_:through:)`
+  at `:L54-L60` and `:L69`; C-I3's three `checks/renderer.sh` citations and
+  `open-a-folder`'s one now name the header's § *THE FRAMES*, with the list at `:L53-L56` and the
+  Mac reading at `:L57-L60`; each carries the commit it was read at, `nozoki@7c7038f`, and the
+  section or function name, so the next edit to either file leaves a locator that still opens.
+  C-I3's "five-frame list" now says the list held five frames when run 35988399477 matched it and
+  holds four since `nozoki@b75348f`, and adds the later reading: run 36795836747 matched the
+  four-frame list on the same image. § 10 RC-3's dated parenthesis of 2026-09-24 keeps its words,
+  gains the commit its citation was read at (`nozoki@153f5a1`), and gains a second dated
+  parenthesis for the four frames — the item listed six places and this is a seventh of the same
+  class, found while folding them. *Because* a locator opens on the sentence it is cited for
+  (`system/doctrine/writing_bar.md` § 1.2, in the instance), and a count a reader checks against
+  the script has to match it. **Why this seat settled § 2.1 with its slot unfilled:** the repair
+  changes no shape, seam, condition, order or bar and nothing the product promises, so it is this
+  seat's call and not the owner's (RN-19's routing rule); the CPO read it the same way in this
+  run and found no product intent in it. The item stands whole, slot unfilled, in the trail copy.
+  Re-verified before writing, not taken from the item: `sed -n 53,60p checks/renderer.sh` prints
+  the four frames and the Mac reading's "then the four frames above"; `git show b75348f --
+  checks/renderer.sh` removes `LaunchFlow.run()` from the header and from `FRAME_LIST`; `git show
+  153f5a1:checks/renderer.sh` holds five frames at lines 53–57 and the Mac reading at 58–61;
+  `gh run view 36795836747 --json headSha,conclusion` → `702f7c4`, `success`, its log's *Set up
+  job* prints `Image: macos-14-arm64`, `Version: 20260831.0302.1` and `14.8.9`, and its *Renderer
+  gate* step prints "observed at the Open panel, inside the shell's launch, on observation 1" and
+  the control "not observed at the Open panel in any of 30 observations"; `git diff --stat
+  702f7c4 HEAD -- checks/renderer.sh checks/fixtures/idle-shell` prints nothing; `git diff --stat
+  fcb7910 HEAD -- checks crates nozoki-mac` prints nothing, so the tree the answers were written
+  against is the tree at `7c7038f`. What does not move, and why: § 2, § 7, § 9 and § 11 — an
+  export's grain restated, a held state named on one field and citations re-pointed change no
+  shape, order, cost or risk, and `follow-the-folder` gains no slice to rest on; § 3's
+  `folder-model` and `surfaces` rows and *What the system holds* — the answer rests on them as
+  written; `read-a-file`'s *Rests on* — it realizes the value `select_file` answers, not the model
+  holding it; C-R7's set equality, the closed list, `nozoki_free` beside it, "all nine from
+  `v1.0.0`" and its uncovered case before `v1.0.0`; § 6 S-2's and S-7's command halves, which read
+  the same under the change grain; RN-70's own citations, which name the commits they were read
+  at, a note being history (RN-55); no § 10 entry — no command half is unmet as written and the
+  SRS did not move; the SRS boundary — no requirement moves; *Open Questions* — this fold adds
+  nothing there, and the one item this run does add is RN-77's. **Downstream, the Principal
+  Architect's, nothing opened by this seat:** `docs/nfdr.md` QC-24 ("before a slice lands it",
+  `:L364-L365`) follows C-R7 and is already raised at `docs/architecture_open_issues.md` § 3.1,
+  whose QC-2 half proposes an interim clause this fold does not take for C-I3; and the "five-frame"
+  wording, beside a `checks/renderer.sh:L58-L61` citation with no commit, stands at
+  `docs/nfdr.md:L468-L470` and
+  `docs/adr/0012-renderer-run-proved-on-the-shipped-bundle-beside-the-wall.md:L120-L122`, each
+  reading run 35988399477 — whether and how either moves is that seat's. **The companion:** its three items are the whole of
+  it, the trail copy stands at `docs/trail/sdd/cycle-17.md` (`diff docs/SDD_open_issues.md
+  docs/trail/sdd/cycle-17.md` printed nothing before this turn's edits), and the file now lists no
+  item; the runner retires a companion that stands empty at the seats' close. Header `Version:`
+  untouched — the runner stamps it *(re: § 3 SM-4; § 4 C-R7, C-I3; § 6 `open-a-folder` *Reached
+  when*, command half; § 6 `follow-the-folder` *Rests on*; § 10 RC-3; source:
+  `docs/trail/sdd/cycle-17.md` §§ 2.1, 5.1, 5.2; `docs/trail/sdd/self_answer-28.md`; § 8;
+  `nozoki@7c7038f`, `nozoki@b75348f`, `nozoki@153f5a1`, `nozoki@37a962d`, `nozoki@702f7c4`; GitHub
+  Actions runs 35988399477 and 36795836747; `docs/architecture_open_issues.md` § 3.1; RN-19,
+  RN-55, RN-66, RN-68, RN-69, RN-70)*.
+- **RN-77:** *(CTO)* *(added)* *Open Questions* gains a seventh item, and § 6
+  `follow-the-folder`'s *Rests on* points at it: how a collapsed tree node and a scroll of the
+  reading panel reach `folder-model`. The CDO found the gap in this run, reading RN-76's clause
+  against its own halves. The finding holds on this document's own text. § 3 gives the model the
+  tree's expansion and the open `FileView`'s reading position, as `docs/SRS.md` DR-2 and DR-3
+  require (`:L427-L432`). SM-4 says of its nine calls "Nothing else crosses in either direction",
+  SM-5 carries "the operations the functions name", and SM-8's intents are "named after SM-4's
+  functions and nothing else". No call on the list is named for a collapse or a scroll, and the
+  two calls built so far that could carry one take a path alone
+  (`crates/nozoki-bridge/src/exports.rs:L72`, `:L89`, at `nozoki@7c7038f`). So a model that is
+  authoritative for a place it was never told sends a delta that, drawn faithfully, re-expands a
+  node the reader collapsed or moves the panel — the jump § 4 C-E2 and `follow-the-folder`'s
+  observable half forbid — and `--test watch` has no operation to set a reading position with.
+  The answer RN-76 folded named one uncovered case, two reads in flight, and not this one
+  (`docs/trail/sdd/cycle-17.md` § 5.2). **Why it is an open question and not a decision made
+  here:** three forms are open and they do not cost the same. An argument on a call the list
+  already names moves no list. Keeping the disclosure state and the scroll offset where AppKit
+  keeps them leaves the slice's command half unmet as written, which is the re-cut the answer's
+  own reasoning reserves for the owner (`docs/trail/sdd/self_answer-28.md` § 5.2, *What was
+  close*). A call the list does not name moves SM-4, C-R7's set and C-I6's nine. Choosing between
+  them takes a build that keeps the place under churn, and no such build exists: the product
+  keeps all of this state in the shell today (RN-76). A form picked here would be a guess written
+  as a seam. So the item states the three forms, which of them are re-cuts, and that a re-cut is
+  recorded in § 10 before it is built. **Why it differs from the two-reads case RN-76 leaves to a
+  change:** ordering two reads needs nothing new to cross SM-4, so it is one change's design
+  inside the seams as drawn; a collapse and a scroll may need a crossing the closed list does not
+  have, and the list is this document's. **Not a companion item:** no form changes what the
+  product promises or shows — FR-27 and UX-I3 hold under each — and no two seats hold different
+  positions; the CDO asked for no mechanism and said its half reads the same under any. The
+  sidebar mode is not in the item: no SM-4 call carries a mode, § 3 does not give it to the model,
+  and the CDO's half holds it. What does not move, and why: § 3's rows, SM-4's list and S-5's
+  *Reached when* — the question is recorded and nothing is redrawn; § 5 step 4's sizing of E-5 —
+  no bar moved, which is the condition the CPO set for re-reading it; § 7 — no edge changes;
+  § 11 R-6 — its trigger and response stand, and the item names the case its response does not
+  reach; no § 10 entry — no command half has been tried and found unmet. Header `Version:`
+  untouched — the runner stamps it *(re: *Open Questions*; § 6 `follow-the-folder` *Rests on*;
+  source: § 3 `folder-model`, SM-4, SM-5, SM-8, *What the system holds*; § 4 C-E2, C-R7, C-I6;
+  `docs/SRS.md` DR-2, DR-3, FR-27; `docs/UXD.md` UX-I3; `docs/trail/sdd/cycle-17.md` § 5.2;
+  `docs/trail/sdd/self_answer-28.md` § 5.2; `crates/nozoki-bridge/src/exports.rs:L72`, `:L89`;
+  RN-76)*.
+- **RN-78:** *(CDO)* *(changed)* § 6 `follow-the-folder`'s observable half now says what the
+  person sets up before the script runs, and § 4 C-E2's *Violated by* names one more case. The
+  half read "with Nozoki open on a folder, they run a script", then "the nodes they had expanded
+  stay expanded" and "the panel's scroll position does not jump". Followed as written, it could
+  be met by someone who collapsed no node and never scrolled, and for that person two failures
+  show nothing: a panel reset to the top of a file already at its top, and a collapsed node
+  re-opened where none was collapsed. Those are the two failures RN-77's open question names — a
+  model that was never told of a collapse or a scroll, drawn faithfully. So the half now has them
+  expand some nodes, collapse one again, open a file longer than the panel and scroll partway
+  down it, and adds that the collapsed node stays collapsed and the panel does not return to the
+  top. C-E2's *Violated by* read "a refresh that collapses a node or resets a scroll position"
+  and now also names a refresh that re-opens a node the reader collapsed. *Because* an observable
+  half is checked by someone who did not build the slice, and a bar they can pass without doing
+  the thing it protects is not a bar. The source is the UXD as it stands and nothing above it:
+  "expanded tree nodes, the open file, the sidebar mode and the reading position survive every
+  refresh; only what actually changed changes" (`docs/UXD.md` UX-I3), and a node re-opened with
+  no change on disk is a change that did not happen. No experience moves and no UXD gap is
+  opened (§ 12, the UXD boundary). The half holds under each of the three forms RN-77's item
+  lists, so it picks none. What does not move, and why: C-E2's headline sentence — it already
+  binds both cases, and only its examples grew; the command half, *Rests on* and *Open
+  Questions* — the CTO's, and the item's closing sentence about C-E2 still reads true; the UXD
+  clause of *Traces to* on both slices — UX-I3, UX-F2 and UX-F3 were already cited. **One more
+  half of the same shape, repaired with it:** § 6 `see-git-status` read "They switch back to
+  Files: the open file and their reading position are untouched", which a file never scrolled
+  passes whatever the switch does. It now has them scroll partway down before switching back, and
+  says the panel has not returned to the top; the source is UX-F2's own sentence, "the open file
+  and their reading position are untouched throughout". The other nine observable halves were
+  searched for a reading position, a scroll or an expansion and hold none (`grep -n "reading
+  position\|scroll\|expanded" docs/SDD.md` over § 6 hits only these two slices' halves and
+  `follow-the-folder`'s own fields). The sizing of the two slices is the CPO's to say (§ 5
+  step 4): this seat reads each as the same one decision as before, and has asked the CPO to
+  confirm it in this run *(re: § 6 `follow-the-folder` and `see-git-status` *Reached when*,
+  observable half; § 4 C-E2 *Violated by*; source: `docs/UXD.md` UX-I3, UX-F2, UX-F3;
+  `docs/SRS.md` FR-27; *Open Questions*, the collapse-and-scroll item; RN-77)*.
+- **RN-79:** *(CPO)* *(added)* § 5 step 4 gains one dated re-read on E-4 and one on E-5, each
+  saying the sizing stands. The CDO sharpened the observable halves of `see-git-status` and
+  `follow-the-folder` in this run (RN-78) and asked this seat to confirm the sizing against them.
+  The size follows the bar (§ 5 step 4), so a bar that moved is re-read, and RN-77's "no bar
+  moved" was written before RN-78's edits. **`see-git-status`:** the half has the reader scroll
+  before switching back to Files. The sentence it sharpens was already in the bar, and it asks
+  nothing of the root finding, the slice's one decision. **`follow-the-folder`:** the half has
+  the reader expand, collapse and scroll before the churn, and adds two observations — the
+  collapsed node stays collapsed, the panel does not return to the top. *Because* both are the
+  failures of the decision step 4 already names for this slice, "the reducer keeps the reader's
+  place under churn", made visible to someone who did not build it; neither is a second answer.
+  **The open question RN-77 recorded was weighed against step 4's too-broad test and does not
+  split the slice.** Three reasons. The observable half reads the same under each of the three
+  forms the item lists (RN-78). The question cut out alone is a fragment by step 2: a model told
+  of a collapse or a scroll shows a person nothing until the folder moves. And the two forms that
+  cannot stand beside the command half or SM-4's list as written are each a re-cut § 10 records
+  before it is built (*Open Questions*, the collapse-and-scroll item), which is where this
+  document handles a mechanism found to contradict a bar — the way E-1's sizing handles a window
+  that does not draw. The doubt, stated: step 4 calls a slice too broad "when a plausible
+  intermediate result could change the slice's direction or its acceptance", and the second form
+  would change the command half's acceptance. This seat reads that as a re-cut trigger and not a
+  sizing defect, because no cut of the slice gives the intermediate result a delivery of its own.
+  Re-verified before writing: the PRD carries the claim both halves protect — "the tree they
+  expanded, the file they have open, the position they are reading stay theirs; only what
+  actually changed changes" (`docs/PRD.md` § UX Notes "the view never lies") and
+  "checking Git never closes what the person is reading" (`docs/PRD.md` § UX Notes "The path" 3)
+  — and both slices' *Traces to* already name those sections, so no PRD clause is added and no
+  PRD gap is opened. What does not move, and why: both slices' *Slug*, *Delivers*, *Moves toward*
+  and *Not in this slice* — the halves add a way to check what *Delivers* already says, and
+  nothing a person can newly do; `read-a-file`'s *Not in this slice* — the held state gains no
+  fence, since the answer RN-76 folded permits a change to bring it into the model earlier
+  (`docs/trail/sdd/cycle-17.md` § 5.2); § 1, § 5 steps 1 and 2, and § 12's PRD boundary — the PRD
+  and the Agari have not moved since RN-73. No companion item: nothing here is product intent the
+  PRD does not carry, and no two seats hold different positions. Header `Version:` untouched —
+  the runner stamps it *(re: § 5 step 4 E-4, E-5; source: § 6 `see-git-status` and
+  `follow-the-folder` *Reached when*, observable half; *Open Questions*, the collapse-and-scroll
+  item; `docs/PRD.md` § UX Notes; `docs/UXD.md` UX-I3, UX-F2; RN-46, RN-76, RN-77, RN-78)*.
 
 ## Open Questions
 
@@ -4269,3 +4531,20 @@ question.>
 - [OPEN: What the reference fixture sizes are (NFR-10) and what FSEvents coalescing latency the
   watcher sees on them. Settled by `checks/latency.sh`'s first figures, which the SRS then folds in
   by revision (`docs/SRS.md` RN-4); no number is written here before that.]
+- [OPEN: How a collapsed tree node and a scroll of the reading panel reach `folder-model`, which
+  § 3 gives the tree's expansion and the open `FileView`'s reading position (`docs/SRS.md` DR-2,
+  DR-3). SM-4's nine calls name neither act: an expansion crosses as `list_tree` and a selection
+  as `select_file`, and no call is named for a collapse or for a scroll. SM-5 carries the
+  operations those functions name and no others, so `follow-the-folder`'s `--test watch` has no
+  operation to set a reading position with. Three forms are open. One: the place crosses as an
+  argument on a call the list already names. Two: the disclosure state and the scroll offset stay
+  where AppKit keeps them, and the model's deltas are scoped so that drawing them moves neither.
+  Three: a call the list does not name. Settled by `follow-the-folder`'s first build keeping the
+  place under `checks/churn.sh`, or by an earlier change that brings the held state into the
+  model. The first form moves no list and is written into SM-4's row when found. The second
+  leaves `follow-the-folder`'s command half unmet as written, and the third moves SM-4's list,
+  § 4 C-R7's set and C-I6's nine; each of those two is a re-cut, recorded in § 10 before it is
+  built, and a tenth export built without one fails C-R7's set equality. Whichever form is found,
+  § 4 C-E2 binds it: a refresh that collapses a node or resets a scroll position violates that
+  condition. *(Added on 2026-10-01, on the CDO's finding in the run that folded
+  `docs/trail/sdd/cycle-17.md` § 5.2; RN-77.)*]
