@@ -2049,6 +2049,24 @@ mod tests {
         assert_eq!(language_of(OsStr::new("Makefile.py.bak")), Language::Plain);
     }
 
+    /// CP-290 ignores ASCII case "and nothing else": `ſ` (long s) folds to `S` under Unicode case
+    /// rules, so a Unicode fold would name these shell, and the ASCII fold keeps them plain.
+    #[test]
+    fn test_floor_extension_ignores_no_case_beyond_ascii() {
+        for name in ["x.ſh", "x.baſh", "x.zſh"] {
+            assert_eq!(language_of(OsStr::new(name)), Language::Plain, "{name}");
+        }
+    }
+
+    /// CP-291 makes only a non-UTF-8 *extension* plain: a name whose stem is not UTF-8 still names
+    /// the language of its extension (CP-290).
+    #[test]
+    fn test_non_utf8_stem_with_a_floor_extension_names_its_language() {
+        let not_utf8_stem = OsStr::from_bytes(b"caf\xE9.py");
+
+        assert_eq!(language_of(not_utf8_stem), Language::Python);
+    }
+
     #[test]
     fn test_utf16_in_either_order_decodes_a_character_outside_the_basic_plane() {
         let temp = TempDir::new();

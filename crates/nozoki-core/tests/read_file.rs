@@ -185,6 +185,33 @@ fn test_content_never_chooses_the_language() {
     assert_eq!(language, Language::Plain);
 }
 
+/// CP-291: a file with no extension is plain whatever its first line names, `env` shebangs included.
+#[test]
+fn test_env_shebang_does_not_choose_a_language() {
+    let folder = TempDir::new();
+    folder.write_file("run", "#!/usr/bin/env python3\nprint(\"hi\")\n");
+
+    let (_, language) = text_of(select_file(&open(&folder), "run"));
+
+    assert_eq!(language, Language::Plain);
+}
+
+/// CP-292: the language comes from the last component of the selected path, so a floor-named file
+/// in a folder is its language and a plain-named file in a floor-named folder is plain.
+#[test]
+fn test_language_comes_from_the_last_path_component() {
+    let folder = TempDir::new();
+    folder.write_file("pkg/tool.py", "print(1)\n");
+    folder.write_file("tool.py/run", "print(1)\n");
+    let opened = open(&folder);
+
+    let (_, nested_python) = text_of(select_file(&opened, "pkg/tool.py"));
+    let (_, plain_in_python_folder) = text_of(select_file(&opened, "tool.py/run"));
+
+    assert_eq!(nested_python, Language::Python);
+    assert_eq!(plain_in_python_folder, Language::Plain);
+}
+
 /// CP-292: the language comes from the name the caller selected, never from a link's target.
 #[test]
 fn test_link_takes_the_language_of_its_own_name() {

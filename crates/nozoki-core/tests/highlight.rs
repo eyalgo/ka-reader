@@ -214,6 +214,90 @@ fn test_json_highlighted_as_yaml_still_answers() {
     highlighted("{\"a\": 1}", Language::Yaml);
 }
 
+/// The plan's Task 6 and DESIGN's five roles (`docs/DESIGN.md:L390-L393`): punctuation and operators
+/// take no class, so no byte of them lies in a span. None of these bytes sits inside a fixture's
+/// string or comment, where it would belong to that token.
+#[test]
+fn test_punctuation_and_operators_take_no_span_in_every_fixture() {
+    let cases = [
+        ("sample.py", Language::Python, &b"():="[..]),
+        ("sample.sh", Language::Shell, &b"[];=-"[..]),
+        ("sample.js", Language::JavaScript, &b"(){};="[..]),
+        ("sample.json", Language::Json, &b"{}:,"[..]),
+        ("sample.yaml", Language::Yaml, &b":"[..]),
+        ("sample.toml", Language::Toml, &b"="[..]),
+    ];
+
+    for (name, language, punctuation) in cases {
+        let text = fixture(name);
+        let spans = highlighted(&text, language);
+
+        assert_no_span_on(&text, &spans, punctuation);
+    }
+}
+
+/// CP-295 for every floor language: each fixture, highlighted twice, gives equal spans.
+#[test]
+fn test_every_fixture_gives_the_same_spans_twice() {
+    let cases = [
+        ("sample.py", Language::Python),
+        ("sample.sh", Language::Shell),
+        ("sample.js", Language::JavaScript),
+        ("sample.json", Language::Json),
+        ("sample.yaml", Language::Yaml),
+        ("sample.toml", Language::Toml),
+    ];
+
+    for (name, language) in cases {
+        let text = fixture(name);
+
+        assert_eq!(
+            highlighted(&text, language),
+            highlighted(&text, language),
+            "{name}"
+        );
+    }
+}
+
+/// CP-298 "nests deeper than any real file", for every language and each bracket kind.
+#[test]
+fn test_deep_nesting_still_answers_in_every_language() {
+    for opener in ["[", "(", "{"] {
+        let text = opener.repeat(10_000);
+        for language in EVERY_LANGUAGE {
+            highlighted(&text, language);
+        }
+    }
+}
+
+/// CP-296 for multi-byte text in every language: span ends stay on character boundaries when
+/// strings and comments hold characters of two, three and four bytes.
+#[test]
+fn test_multibyte_text_keeps_span_ends_on_character_boundaries_in_every_language() {
+    let cases = [
+        ("s = \"héllo ☃ 😀\"  # café ☃\n", Language::Python),
+        ("echo 'héllo ☃ 😀'  # café ☃\n", Language::Shell),
+        (
+            "const s = \"héllo ☃ 😀\"; // café ☃\n",
+            Language::JavaScript,
+        ),
+        ("{\"clé\": \"héllo ☃ 😀\"}\n", Language::Json),
+        ("clé: \"héllo ☃ 😀\"  # café ☃\n", Language::Yaml),
+        ("key = \"héllo ☃ 😀\" # café ☃\n", Language::Toml),
+    ];
+
+    for (text, language) in cases {
+        let spans = highlighted(text, language);
+
+        assert!(
+            spans
+                .iter()
+                .any(|span| !text[span.start..span.end].is_ascii()),
+            "no {language:?} span covers a multi-byte character, so the boundary check proved nothing: {spans:?}"
+        );
+    }
+}
+
 /// CP-298 for every text and every language: each fixture, named as each of the seven languages,
 /// still answers with well-formed spans.
 #[test]
