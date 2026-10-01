@@ -14,23 +14,20 @@ private let hairlineWidth: CGFloat = 1
 /// direct subviews are exactly the two panels, sidebar first.
 @MainActor
 package final class WorkbenchView: NSView {
-    private static let readingPrompt = "Select a file to view."
-
     /// `docs/DESIGN.md` § *Layout*: the sidebar is `{spacing.sidebar-width}` wide and does not
     /// resize.
     private static let sidebarWidth: CGFloat = 260
 
-    /// `docs/DESIGN.md` § *Components* "Status messages": a status message is inset `{spacing.xl}`
-    /// from its surface's top-left.
-    private static let promptInset: CGFloat = 24
-
     package let rootItemsView: RootItemsView
+
+    /// The reading panel: the prompt until a file is selected, then the file's verdict.
+    package let readingPanel: ReadingPanelView
 
     /// Places the supplied tree beside the reading prompt, using the supplied empty-state image.
     package init(rootItemsView: RootItemsView, statusGlyphs: StatusGlyphs) {
         self.rootItemsView = rootItemsView
+        readingPanel = ReadingPanelView(statusGlyphs: statusGlyphs)
         super.init(frame: .zero)
-        let readingPanel = Self.makeReadingPanel(glyph: statusGlyphs.empty)
         for panel in [rootItemsView, readingPanel] {
             panel.translatesAutoresizingMaskIntoConstraints = false
             addSubview(panel)
@@ -66,24 +63,5 @@ package final class WorkbenchView: NSView {
             x: rootItemsView.frame.maxX, y: bounds.minY, width: hairlineWidth,
             height: bounds.height
         ).fill()
-    }
-
-    /// A plain view holding the prompt's status message at its top-left (`docs/DESIGN.md` RN-14: a
-    /// status message is top-left and never centred).
-    private static func makeReadingPanel(glyph: NSImage) -> NSView {
-        let panel = NSView()
-        let prompt = StatusMessageView(
-            glyph: glyph, texts: [NSTextField(labelWithString: readingPrompt)])
-        prompt.translatesAutoresizingMaskIntoConstraints = false
-        panel.addSubview(prompt)
-        // Nothing ties the prompt to the panel's bottom: with the label as the panel, its one
-        // line's height became the window's (change_spec.md § Verified Claims row 1).
-        NSLayoutConstraint.activate([
-            prompt.topAnchor.constraint(equalTo: panel.topAnchor, constant: promptInset),
-            prompt.leadingAnchor.constraint(equalTo: panel.leadingAnchor, constant: promptInset),
-            prompt.trailingAnchor.constraint(
-                lessThanOrEqualTo: panel.trailingAnchor, constant: -promptInset),
-        ])
-        return panel
     }
 }

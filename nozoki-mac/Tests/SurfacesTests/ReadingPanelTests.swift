@@ -44,8 +44,16 @@ final class ReadingPanelTests: XCTestCase {
         !panel.contentView.isHiddenOrHasHiddenAncestor
     }
 
+    private func matches(_ pattern: String, in text: String) -> Int {
+        // swiftlint:disable:next force_try
+        let expression = try! NSRegularExpression(pattern: pattern)
+        return expression.numberOfMatches(
+            in: text, range: NSRange(text.startIndex..., in: text))
+    }
+
     private func sentenceCount(_ text: String) -> Int {
-        text.split(whereSeparator: { ".!?".contains($0) }).count
+        // A sentence ends at a stop followed by a space or the end; the stop in `photo.dat` is not one.
+        matches(#"[.!?](\s|$)"#, in: text)
     }
 
     func testTextVerdictShowsPathThenContentInANonEditableView() {
@@ -60,7 +68,8 @@ final class ReadingPanelTests: XCTestCase {
         XCTAssertTrue(isShowingContent(panel))
         let pathFrame = panel.pathLine.convert(panel.pathLine.bounds, to: panel)
         let contentFrame = panel.contentView.convert(panel.contentView.bounds, to: panel)
-        XCTAssertGreaterThan(pathFrame.minY, contentFrame.minY, "the path line is above the content")
+        XCTAssertGreaterThan(
+            pathFrame.minY, contentFrame.minY, "the path line is above the content")
     }
 
     func testRootFilePathLineIsItsOwnName() {
@@ -84,7 +93,11 @@ final class ReadingPanelTests: XCTestCase {
         var run = NSRange()
         let attributes = storage.attributes(at: 0, effectiveRange: &run)
         XCTAssertEqual(run, NSRange(location: 0, length: storage.length), "one attribute run")
-        for coloured in [NSAttributedString.Key.foregroundColor, .backgroundColor, .link] {
+        // The system's own text colour is the default, not a colouring; anything else is one.
+        let foreground = attributes[.foregroundColor] as? NSColor
+        XCTAssertTrue(
+            foreground == nil || foreground == .textColor, "\(String(describing: foreground))")
+        for coloured in [NSAttributedString.Key.backgroundColor, .link] {
             XCTAssertNil(attributes[coloured], "\(coloured) is not set")
         }
     }
@@ -133,10 +146,11 @@ final class ReadingPanelTests: XCTestCase {
             XCTAssertLessThanOrEqual(sentenceCount(statement), 3, statement)
             XCTAssertTrue(statement.contains("notes.txt"), "\(condition): \(statement)")
             XCTAssertFalse(isShowingContent(panel))
-            for banned in ["sorry", "oops", "unfortunately", "apolog", "errno", "enoent", "eacces"]
-            {
-                XCTAssertFalse(statement.lowercased().contains(banned), "\(banned): \(statement)")
-            }
+            XCTAssertEqual(
+                matches(
+                    #"\b(sorry|oops|unfortunately|apolog\w*|errno|enoent|eacces)\b"#,
+                    in: statement.lowercased()),
+                0, statement)
         }
     }
 

@@ -30,4 +30,31 @@ package enum ConditionSentences {
             return "This link leads through more links than Nozoki follows."
         }
     }
+
+    /// The one sentence drawn beneath the path line of a file that is not text (`docs/CONTENT.md`
+    /// § Terminology: *can't be shown as text*, said of the file). Both reasons read the same: the
+    /// reader is told what Nozoki observed about the file, not how it is encoded.
+    package static func cannotDisplay(fileNamed name: String) -> String {
+        "\(name) can't be shown as text."
+    }
+
+    /// The statement drawn beneath the path line of a file whose read failed with `condition`:
+    /// what Nozoki observed, naming the file, in one sentence (`docs/CONTENT.md` § Message
+    /// patterns, *Error — an observed condition*). The switch has no `default`, so a seventh
+    /// condition fails to compile here instead of drawing nothing.
+    package static func reading(fileNamed name: String, failedWith condition: Condition) -> String {
+        switch condition {
+        case .unreadable, .notAFolder:
+            return "Nozoki can't read \(name)."
+        case .outside:
+            return
+                "\(name) is a link that leads outside the folder you opened, so Nozoki doesn't read it."
+        case .cycle:
+            return "\(name) is a link that loops back on itself, so Nozoki can't read it."
+        case .missing:
+            return "\(name) is no longer there."
+        case .tooManyLinks:
+            return "\(name) leads through more links than Nozoki follows."
+        }
+    }
 }
