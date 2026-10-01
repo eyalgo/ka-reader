@@ -43,7 +43,23 @@ None.
 - **If overridden:** Half (2) goes back to its old words. `checks/entry-points.sh` then either fails
   on the two product crates every time or skips them with no entry allowing it. The entry forbids a
   silent skip of that kind. Only QC-30's half (2) and RN-34's § 2.1 paragraph move. No record moves.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm, with one addition. This was decided in the owner's seat by a
+  `companion-self-answer` run. The draft's ground was re-read and holds:
+  `cargo tree -p nozoki-bridge --target aarch64-apple-darwin -e normal --locked --offline`, run this
+  round, names `nozoki-bridge v0.0.0 (…/crates/nozoki-bridge)` and `nozoki-core v0.0.0
+  (…/crates/nozoki-core)`, and the local Cargo registry holds no `nozoki-*` package. **The
+  addition is a crate that falls between the two halves.** The workspace's members are a glob,
+  `members = ["crates/*"]` (`Cargo.toml:L8`), so any directory created under `crates/` is a member
+  with no manifest edit. Half (2) would skip it by membership. But half (1) names its crates —
+  "`nozoki-core`, `nozoki-bridge` and `nozoki-mac`" — so a third member would be in neither half.
+  The fold should make the two halves split on the same test: the skip in half (2) holds because
+  half (1)'s rule reads every workspace member's sources, not only the two crates it names today.
+  § 9 already scopes `checks/structure.sh` to "the product crates' sources outside
+  `crates/*/tests/`", which is that set. A new member also fails `checks/no-network.sh` until it is
+  added to `checks/deps.allow`, which names both members (`checks/deps.allow:L31-L32`), so its
+  arrival is reviewed at `development-design` (QC-26). That review asks QC-3's transport question,
+  though, not QC-30's, and so it does not close the gap. Reasoning:
+  `docs/trail/architecture/self_answer-25.md` § 2.1.
 
 ### 2.2 The tree-sitter grammar engine earns a record — ADR-0017, written at Proposed
 - **Lands in:** `adr/0017-floor-grammars-compiled-by-tree-sitter-native-c-in-the-core.md`; the
@@ -70,7 +86,27 @@ None.
   QC-30. QC-9's limit stays, tracing to SDD § 3 and § 11 R-14. RN-34 records that the engine failed
   the reversal gate. TO-11 and `checks/deps.review.md` remain the only places the weighing is
   written.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm, with one addition. This was decided in the owner's seat by a
+  `companion-self-answer` run. ADR-0017 is a record, and the fold takes it to Accepted. Every
+  citation in it was re-read at its source and holds: the SDD lines (`docs/SDD.md:L327`,
+  `:L339-L341`, `:L2252-L2265`, `:L2566`, `:L2575-L2576`), the ABI range 13 to 15
+  (`tree-sitter-0.27.0/include/tree_sitter/api.h:L29`, `:L35`; `binding_rust/lib.rs:L780` of the
+  registry copy), each grammar's `repository` field, and the two alternatives in
+  `nozoki@85d9fa7:checks/deps.review.md` § *The engine chosen*. **The addition: the draft carries
+  the reversibility gate on the weaker ground.** "Six languages' worth of lexing" is a real cost,
+  but TO-11 is right that it is one part's rewrite. Two stronger grounds carry the gate. (1) The log
+  already records a body of native C in the core whose undo is cheaper than this one: ADR-0004's
+  undo is "the installed-`git` adapter behind the port — the seam is already drawn for it"
+  (`docs/adr/0004-git-read-through-libgit2-behind-a-port.md:L50-L51`). Leaving ADR-0017 out would
+  record the cheaper case and drop this one. (2) What a later reader cannot recover without the
+  record is *why C reads the adopter's bytes inside the unit whose own source forbids `unsafe`*, and
+  why that C is compiled from source on every build. Without ADR-0017 that reasoning lives only in
+  the SDD, which is revised in place, and in a review file QC-3 cites pinned to one commit because
+  its title goes stale at the next name added. Neither is append-only. The fold should say this in
+  ADR-0017's "that is why this is a record and not a note" sentence, in place of the rewrite cost
+  alone, using facts its own § Context already states. After the fold the record is Accepted, so a
+  later reversal is a superseding record, not a deletion. Reasoning:
+  `docs/trail/architecture/self_answer-25.md` § 2.2.
 
 ## 3. Raised from downstream — an item from a seat that did not write these records
 
