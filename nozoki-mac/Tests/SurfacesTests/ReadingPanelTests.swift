@@ -970,6 +970,57 @@ final class ReadingPanelTests: XCTestCase {
         XCTAssertEqual(clip.bounds.maxX - lastCharacterEnd, 16, accuracy: 0.5)
     }
 
+    // CP-335 applies to the longest row whether it ends the file or precedes another row.
+    func testRightInsetExcludesTheBreakAfterTheLongestRow() throws {
+        let wide = String(repeating: "x", count: 200)
+        for ending in ["\n", "\r\n", "\r", "\u{2028}"] {
+            for tail in ["", "short"] {
+                let codeView = makeCodeView(wide + ending + tail)
+                let textView = codeView.textView
+                let clip = try clipView(of: codeView)
+                try scroll(
+                    codeView, to: NSPoint(x: textView.frame.width - clip.bounds.width, y: 0))
+                let layout = try XCTUnwrap(textView.layoutManager)
+                let container = try XCTUnwrap(textView.textContainer)
+                let lastGlyph = layout.glyphIndexForCharacter(at: (wide as NSString).length - 1)
+                let end =
+                    layout.boundingRect(
+                        forGlyphRange: NSRange(location: lastGlyph, length: 1), in: container
+                    ).maxX + textView.textContainerOrigin.x
+                XCTAssertEqual(clip.bounds.maxX - end, 16, accuracy: 0.5)
+            }
+        }
+    }
+
+    // CP-342: replacing a wide file must discard its horizontal extent as well as its numbers.
+    func testReplacingAWideFileRemovesItsOldHorizontalScrollExtent() throws {
+        let codeView = makeCodeView(String(repeating: "x", count: 200))
+        try scroll(codeView, to: NSPoint(x: 500, y: 0))
+
+        codeView.show(codeText("short\n"))
+        codeView.layoutSubtreeIfNeeded()
+
+        let clip = try clipView(of: codeView)
+        XCTAssertEqual(clip.bounds.origin, .zero)
+        XCTAssertLessThanOrEqual(codeView.textView.frame.width, clip.bounds.width + 0.5)
+        XCTAssertEqual(codeView.textView.string, "short\n")
+        XCTAssertEqual(labelTexts(codeView.gutter), ["1"])
+    }
+
+    // CP-339 numbers exactly the visible rows, including partially visible rows at either edge.
+    func testGutterLabelsExactlyTheRowsIntersectingTheViewport() throws {
+        let codeView = makeCodeView(lines(200))
+        let rows = try layoutRows(of: codeView.textView)
+        for offset in [CGFloat(1), 30, 2310] {
+            try scroll(codeView, to: NSPoint(x: 0, y: offset))
+            let visible = try clipView(of: codeView).bounds
+            let expected = rows.enumerated().compactMap { index, row in
+                row.bottom > visible.minY && row.top < visible.maxY ? String(index + 1) : nil
+            }
+            XCTAssertEqual(labelTexts(codeView.gutter), expected)
+        }
+    }
+
     func testTextStartsAtTheColumnsRightEdgeAndTheGutterStaysPutUnderHorizontalScroll() throws {
         let codeView = makeCodeView(String(repeating: "x", count: 200) + "\nshort\n")
         let textView = codeView.textView
