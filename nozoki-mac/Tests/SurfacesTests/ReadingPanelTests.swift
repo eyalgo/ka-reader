@@ -609,17 +609,20 @@ final class ReadingPanelTests: XCTestCase {
 
     /// Each row of `textView`'s layout: its fragment's top and its baseline, in the text view's
     /// coordinates, the extra fragment after a terminal break left out.
-    private func layoutRows(of textView: NSTextView) throws -> [(top: CGFloat, baseline: CGFloat)] {
+    private func layoutRows(
+        of textView: NSTextView
+    ) throws -> [(top: CGFloat, bottom: CGFloat, baseline: CGFloat)] {
         let layoutManager = try XCTUnwrap(textView.layoutManager)
         let container = try XCTUnwrap(textView.textContainer)
         layoutManager.ensureLayout(for: container)
-        var rows: [(top: CGFloat, baseline: CGFloat)] = []
+        var rows: [(top: CGFloat, bottom: CGFloat, baseline: CGFloat)] = []
         layoutManager.enumerateLineFragments(
             forGlyphRange: NSRange(location: 0, length: layoutManager.numberOfGlyphs)
         ) { rect, _, _, glyphRange, _ in
             let location = layoutManager.location(forGlyphAt: glyphRange.location)
             let origin = textView.textContainerOrigin
-            rows.append((rect.minY + origin.y, rect.minY + location.y + origin.y))
+            rows.append(
+                (rect.minY + origin.y, rect.maxY + origin.y, rect.minY + location.y + origin.y))
         }
         return rows
     }
@@ -847,5 +850,216 @@ final class ReadingPanelTests: XCTestCase {
         scrollView.reflectScrolledClipView(scrollView.contentView)
 
         XCTAssertTrue(gutter.needsDisplay)
+    }
+
+    // MARK: - The code view (CP-313, CP-335, CP-337, CP-339 – CP-343)
+
+    /// A code view of 400 by 300 points showing `text`, laid out. Its scrollers are the overlay
+    /// kind, which take no room, so the insets are measured against the code view's own edges.
+    private func makeCodeView(_ text: String) -> CodeView {
+        let codeView = CodeView()
+        codeView.frame = NSRect(x: 0, y: 0, width: 400, height: 300)
+        codeView.textView.enclosingScrollView?.scrollerStyle = .overlay
+        codeView.show(codeText(text))
+        codeView.layoutSubtreeIfNeeded()
+        return codeView
+    }
+
+    private func clipView(of codeView: CodeView) throws -> NSClipView {
+        try XCTUnwrap(codeView.textView.enclosingScrollView?.contentView)
+    }
+
+    private func scroll(_ codeView: CodeView, to origin: NSPoint) throws {
+        let scrollView = try XCTUnwrap(codeView.textView.enclosingScrollView)
+        scrollView.contentView.scroll(to: origin)
+        scrollView.reflectScrolledClipView(scrollView.contentView)
+        codeView.layoutSubtreeIfNeeded()
+    }
+
+    private func scrollToBottom(_ codeView: CodeView) throws {
+        let clip = try clipView(of: codeView)
+        try scroll(
+            codeView, to: NSPoint(x: 0, y: codeView.textView.frame.height - clip.bounds.height))
+    }
+
+    func testTextViewIsTextKitOneNonEditableSelectableAndPlain() throws {
+        let codeView = makeCodeView("a\n")
+
+        XCTAssertNil(codeView.textView.textLayoutManager, "TextKit 1 from construction")
+        XCTAssertNotNil(codeView.textView.layoutManager)
+        XCTAssertFalse(codeView.textView.isEditable)
+        XCTAssertFalse(codeView.textView.isRichText)
+        XCTAssertTrue(codeView.textView.isSelectable)
+        XCTAssertFalse(
+            try XCTUnwrap(codeView.textView.textContainer).widthTracksTextView, "no wrapping")
+    }
+
+    func testCodeViewGroundIsSurfaceUnderBothAppearances() throws {
+        let codeView = makeCodeView("a\n")
+        let scrollView = try XCTUnwrap(codeView.textView.enclosingScrollView)
+
+        XCTAssertTrue(codeView.textView.drawsBackground)
+        XCTAssertTrue(scrollView.drawsBackground)
+        for (appearance, value) in [
+            (aqua, Self.surfaceValues.light), (darkAqua, Self.surfaceValues.dark),
+        ] {
+            codeView.appearance = appearance
+            let resolvedUnder = codeView.textView.effectiveAppearance
+            assertSame(
+                srgb(codeView.textView.backgroundColor, under: resolvedUnder), hex(value),
+                "text view ground under \(appearance.name)")
+            assertSame(
+                srgb(scrollView.backgroundColor, under: resolvedUnder), hex(value),
+                "scroll view ground under \(appearance.name)")
+            assertSame(
+                srgb(codeView.gutter.ground, under: resolvedUnder), hex(value),
+                "gutter ground under \(appearance.name)")
+        }
+    }
+
+    func testLeftAndTopInsetsAreSixteenWhenScrolledToTheTop() throws {
+        let codeView = makeCodeView(lines(40))
+
+        let columnLeft = codeView.gutter.frame.minX + CodeSpacing.inset
+        XCTAssertEqual(columnLeft - codeView.bounds.minX, 16, accuracy: 0.5)
+        let firstRow = try XCTUnwrap(try layoutRows(of: codeView.textView).first)
+        let firstRowTop = codeView.convert(NSPoint(x: 0, y: firstRow.top), from: codeView.textView)
+            .y
+        XCTAssertEqual(firstRowTop - codeView.bounds.minY, 16, accuracy: 0.5)
+    }
+
+    func testBottomInsetIsSixteenAtTheEndOfAnLFTerminatedFile() throws {
+        try assertBottomInsetIsSixteen(for: lines(40))
+    }
+
+    func testBottomInsetIsSixteenAtTheEndOfAnUnterminatedFile() throws {
+        try assertBottomInsetIsSixteen(for: String(lines(40).dropLast()))
+    }
+
+    private func assertBottomInsetIsSixteen(
+        for text: String, file: StaticString = #filePath, line: UInt = #line
+    ) throws {
+        let codeView = makeCodeView(text)
+
+        try scrollToBottom(codeView)
+
+        let lastRow = try XCTUnwrap(try layoutRows(of: codeView.textView).last)
+        XCTAssertEqual(codeView.gutter.lineCount, 40, file: file, line: line)
+        let lastRowBottom = codeView.convert(
+            NSPoint(x: 0, y: lastRow.bottom), from: codeView.textView
+        ).y
+        XCTAssertEqual(
+            codeView.bounds.maxY - lastRowBottom, 16, accuracy: 0.5,
+            "the last numbered row's bottom", file: file, line: line)
+    }
+
+    func testRightInsetIsSixteenAtTheRightEndOfAWideRow() throws {
+        let codeView = makeCodeView(String(repeating: "x", count: 200))
+        let textView = codeView.textView
+        let clip = try clipView(of: codeView)
+        XCTAssertGreaterThan(
+            textView.frame.width, clip.bounds.width, "the row is wider than the view")
+
+        try scroll(codeView, to: NSPoint(x: textView.frame.width - clip.bounds.width, y: 0))
+
+        let layoutManager = try XCTUnwrap(textView.layoutManager)
+        let container = try XCTUnwrap(textView.textContainer)
+        let lastCharacter = layoutManager.boundingRect(
+            forGlyphRange: NSRange(location: layoutManager.numberOfGlyphs - 1, length: 1),
+            in: container)
+        let lastCharacterEnd = lastCharacter.maxX + textView.textContainerOrigin.x
+        XCTAssertEqual(clip.bounds.maxX - lastCharacterEnd, 16, accuracy: 0.5)
+    }
+
+    func testTextStartsAtTheColumnsRightEdgeAndTheGutterStaysPutUnderHorizontalScroll() throws {
+        let codeView = makeCodeView(String(repeating: "x", count: 200) + "\nshort\n")
+        let textView = codeView.textView
+        let scrollView = try XCTUnwrap(textView.enclosingScrollView)
+        let clip = try clipView(of: codeView)
+        let layoutManager = try XCTUnwrap(textView.layoutManager)
+        let container = try XCTUnwrap(textView.textContainer)
+        let gutterFrame = codeView.gutter.frame
+
+        XCTAssertEqual(scrollView.frame.minX, gutterFrame.maxX, accuracy: 0.5)
+        for row in 0..<2 {
+            let glyph = layoutManager.glyphIndexForCharacter(at: row == 0 ? 0 : 201)
+            let firstCharacter = layoutManager.boundingRect(
+                forGlyphRange: NSRange(location: glyph, length: 1), in: container)
+            XCTAssertEqual(
+                firstCharacter.minX + textView.textContainerOrigin.x - clip.bounds.minX, 0,
+                accuracy: 0.5, "row \(row + 1) starts at the clip view's left edge")
+        }
+
+        try scroll(codeView, to: NSPoint(x: 300, y: 0))
+
+        XCTAssertEqual(codeView.gutter.frame, gutterFrame)
+        XCTAssertEqual(scrollView.frame.minX, codeView.gutter.frame.maxX, accuracy: 0.5)
+    }
+
+    func testNumbersFollowTheirLinesUnderVerticalScroll() throws {
+        let codeView = makeCodeView(lines(200))
+        let rows = try layoutRows(of: codeView.textView)
+
+        for offset in [CGFloat(2300), 2900] {
+            try scroll(codeView, to: NSPoint(x: 0, y: offset))
+
+            let labels = codeView.gutter.labels
+            let label = try XCTUnwrap(labels.first { $0.text == "120" }, "line 120 is visible")
+            let numberBaseline = codeView.convert(label.point, from: codeView.gutter).y
+            let lineBaseline = codeView.convert(
+                NSPoint(x: 0, y: rows[119].baseline), from: codeView.textView
+            ).y
+            XCTAssertEqual(numberBaseline, lineBaseline, accuracy: 0.5, "scrolled to \(offset)")
+            XCTAssertLessThan(labels.count, 30, "only the rows in view are labelled")
+        }
+    }
+
+    func testATenLineFileThenANineLineFileShowsAOneDigitColumn() {
+        let codeView = makeCodeView(lines(10))
+        codeView.show(codeText(lines(9)))
+        codeView.layoutSubtreeIfNeeded()
+
+        XCTAssertEqual(codeView.gutter.lineCount, 9)
+        XCTAssertEqual(codeView.gutter.columnWidth, 24 + digitsWidth(1), accuracy: 0.01)
+        XCTAssertEqual(codeView.gutter.frame.width, codeView.gutter.width, accuracy: 0.5)
+        XCTAssertEqual(labelTexts(codeView.gutter), (1...9).map(String.init))
+    }
+
+    func testShowScrollsBackToTheTopLeft() throws {
+        let wide = (1...100).map { _ in String(repeating: "x", count: 100) + "\n" }.joined()
+        let codeView = makeCodeView(wide)
+        try scroll(codeView, to: NSPoint(x: 250, y: 600))
+        XCTAssertNotEqual(try clipView(of: codeView).bounds.origin, .zero)
+
+        codeView.show(codeText(wide))
+        codeView.layoutSubtreeIfNeeded()
+
+        XCTAssertEqual(try clipView(of: codeView).bounds.origin, .zero)
+    }
+
+    func testCopyingAllTheTextYieldsTheFilesCharactersWithNoNumber() throws {
+        let codeView = makeCodeView("print(\"hi\")\n")
+        let pasteboard = NSPasteboard(name: NSPasteboard.Name("nozoki-test-\(UUID().uuidString)"))
+        defer { pasteboard.releaseGlobally() }
+
+        codeView.textView.selectAll(nil)
+        pasteboard.clearContents()
+        XCTAssertTrue(codeView.textView.writeSelection(to: pasteboard, type: .string))
+
+        XCTAssertEqual(pasteboard.string(forType: .string), "print(\"hi\")\n")
+        XCTAssertEqual(codeView.textView.string, "print(\"hi\")\n")
+    }
+
+    func testCodeViewScrollViewAndTextViewRegisterNoDraggedTypeAndNoPartIsAControl() throws {
+        let codeView = makeCodeView(lines(3))
+        let scrollView = try XCTUnwrap(codeView.textView.enclosingScrollView)
+
+        for view in [codeView, scrollView, codeView.textView] as [NSView] {
+            XCTAssertTrue(view.registeredDraggedTypes.isEmpty, "\(view)")
+        }
+        for view in [codeView] + descendants(of: codeView) {
+            XCTAssertFalse(view is NSControl, "\(view)")
+        }
+        XCTAssertFalse(codeView.textView.isEditable)
     }
 }
