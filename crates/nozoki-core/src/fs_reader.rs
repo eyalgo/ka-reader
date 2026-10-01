@@ -2,12 +2,14 @@
 //! lists that location's direct entries, each with its own state.
 
 use std::collections::VecDeque;
-use std::ffi::OsString;
+use std::ffi::{OsStr, OsString};
 use std::fs;
-use std::io;
+use std::io::{self, Read};
 use std::os::unix::ffi::{OsStrExt, OsStringExt};
-use std::os::unix::fs::MetadataExt;
+use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
 use std::path::{Component, Path, PathBuf};
+
+use rustix::fs::OFlags;
 
 use crate::folder_model::OpenFailure;
 
@@ -129,8 +131,43 @@ pub struct Entry {
     pub state: ItemState<()>,
 }
 
+/// What a selected file turned out to be: its text, or the fact that it cannot be shown as text.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum FileContent {
+    /// The file's decoded characters, whole, with no byte-order mark among them.
+    Text { content: String, language: Language },
+    /// The file is not text under the text rule, for the reason named.
+    CannotDisplay(CannotDisplayReason),
+}
+
+/// The language a text file is drawn as. Only `Plain` exists until the floor-language map lands.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Language {
+    Plain,
+}
+
+/// Why a file is not text: the two ways the text rule turns a file away.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CannotDisplayReason {
+    /// The bytes are not valid UTF-8.
+    InvalidUtf8,
+    /// The bytes begin with a UTF-16 byte-order mark and the rest does not decode as UTF-16.
+    InvalidUtf16,
+}
+
 /// The most symbolic links one requested path may pass through before the answer is `TooManyLinks`.
 const MAX_LINK_HOPS: usize = 32;
+
+/// UTF-8's byte-order mark, which is stripped and is not among a file's characters.
+const UTF8_MARK: [u8; 3] = [0xEF, 0xBB, 0xBF];
+
+/// The marks that name a UTF-16 file's byte order, each stripped before the rest is decoded.
+const UTF16_LITTLE_ENDIAN_MARK: [u8; 2] = [0xFF, 0xFE];
+const UTF16_BIG_ENDIAN_MARK: [u8; 2] = [0xFE, 0xFF];
+
+/// The text a log line carries for something that is not a regular file. The operating system was
+/// never asked, so there is no error text of its own.
+const NOT_A_REGULAR_FILE_TEXT: &str = "the path is not a regular file";
 
 /// The text a log line carries for a path that leaves the opened folder. The operating system was
 /// never asked, so there is no error text of its own.
@@ -238,6 +275,15 @@ impl Blocked {
         }
     }
 
+    /// A folder, or something that is not a regular file once opened: a read has nothing to return.
+    /// It is the set's catch-all, since no condition is added for it.
+    fn not_a_regular_file() -> Self {
+        Self {
+            condition: Condition::Unreadable,
+            text: NOT_A_REGULAR_FILE_TEXT.to_string(),
+        }
+    }
+
     fn too_many_links() -> Self {
         Self {
             condition: Condition::TooManyLinks,
@@ -297,6 +343,111 @@ fn list_with_filesystem(
             ItemState::Failed(blocked.condition)
         }
     }
+}
+
+/// Reads the file at `requested`, a path relative to `root`, and decides its verdict.
+///
+/// The path is resolved by the same containment walk [`list`] uses, so the check has one
+/// implementation. The answer is `Observed` with the file's verdict, or `Failed` with the condition
+/// that stopped it, and it is never `Pending`. A folder, and anything that is not a regular file once
+/// opened, is `Failed(Unreadable)`. One record is logged at `warn` for a failed answer, prefixed
+/// `fs-reader: read failed: `, carrying the operating system's error text or a fixed phrase and no
+/// path. A text or cannot-display answer logs nothing.
+pub(crate) fn read(root: &Path, requested: &str) -> ItemState<FileContent> {
+    read_with_filesystem(&NativeFilesystem, root, requested)
+}
+
+fn read_with_filesystem(
+    filesystem: &impl Filesystem,
+    root: &Path,
+    requested: &str,
+) -> ItemState<FileContent> {
+    let requested = Path::new(requested);
+    let answer = resolve(filesystem, root, requested).and_then(|at| match at.kind {
+        EntryKind::Folder => Err(Blocked::not_a_regular_file()),
+        EntryKind::File => read_bytes(&root.join(at.below_root)).map(|bytes| {
+            decode(
+                bytes,
+                language_of(requested.file_name().unwrap_or_default()),
+            )
+        }),
+    });
+    match answer {
+        Ok(content) => ItemState::Observed(content),
+        Err(blocked) => {
+            log::warn!("fs-reader: read failed: {}", blocked.text);
+            ItemState::Failed(blocked.condition)
+        }
+    }
+}
+
+/// The whole contents of the regular file at `location`.
+///
+/// It is opened for reading only (QC-2). `O_NOFOLLOW` makes a link swapped in after the walk fail
+/// instead of being followed, and `O_NONBLOCK` keeps a FIFO from hanging the open. The handle is then
+/// asked what it is, so a FIFO, a device or a folder is refused before any byte is read. The flags
+/// come from `rustix`, which is already a dependency; `std` opens, so a deep path is not bounded.
+fn read_bytes(location: &Path) -> Result<Vec<u8>, Blocked> {
+    let flags = i32::try_from((OFlags::NOFOLLOW | OFlags::NONBLOCK).bits())
+        .expect("the two open flags are small bits that fit the i32 `custom_flags` takes");
+    let mut file = fs::OpenOptions::new()
+        .read(true)
+        .custom_flags(flags)
+        .open(location)
+        .map_err(|error| Blocked::from(&error))?;
+    let metadata = file.metadata().map_err(|error| Blocked::from(&error))?;
+    if !metadata.is_file() {
+        return Err(Blocked::not_a_regular_file());
+    }
+    let mut bytes = Vec::new();
+    file.read_to_end(&mut bytes)
+        .map_err(|error| Blocked::from(&error))?;
+    Ok(bytes)
+}
+
+/// The text rule. UTF-8, with or without its mark, is text; so is UTF-16 that begins with its mark
+/// and decodes in the order that mark names. Anything else is not text. The decode is strict, never
+/// lossy, so a file that is not text can never come back as text full of U+FFFD.
+fn decode(bytes: Vec<u8>, language: Language) -> FileContent {
+    let (content, reason) = if let Some(units) = bytes.strip_prefix(&UTF16_LITTLE_ENDIAN_MARK) {
+        (
+            decode_utf16(units, u16::from_le_bytes),
+            CannotDisplayReason::InvalidUtf16,
+        )
+    } else if let Some(units) = bytes.strip_prefix(&UTF16_BIG_ENDIAN_MARK) {
+        (
+            decode_utf16(units, u16::from_be_bytes),
+            CannotDisplayReason::InvalidUtf16,
+        )
+    } else {
+        let characters = bytes.strip_prefix(&UTF8_MARK).unwrap_or(&bytes);
+        (
+            std::str::from_utf8(characters).ok().map(str::to_owned),
+            CannotDisplayReason::InvalidUtf8,
+        )
+    };
+    match content {
+        Some(content) => FileContent::Text { content, language },
+        None => FileContent::CannotDisplay(reason),
+    }
+}
+
+/// `units` as UTF-16 in the byte order `to_unit` reads, or `None` for an odd trailing byte or an
+/// unpaired surrogate.
+fn decode_utf16(units: &[u8], to_unit: fn([u8; 2]) -> u16) -> Option<String> {
+    let (pairs, remainder) = units.as_chunks::<2>();
+    if !remainder.is_empty() {
+        return None;
+    }
+    let code_units: Vec<u16> = pairs.iter().map(|pair| to_unit(*pair)).collect();
+    String::from_utf16(&code_units).ok()
+}
+
+/// The language a text file is drawn as, from the last extension of its name alone, so content never
+/// reaches it. Every name is `Plain` until the floor-language map (SDD § 4 C-I5) replaces this body
+/// and nothing else.
+fn language_of(_file_name: &OsStr) -> Language {
+    Language::Plain
 }
 
 /// The steps of `path`, in order. A root or prefix component carries no step: an absolute path's
@@ -1609,5 +1760,340 @@ mod tests {
         ];
 
         assert_eq!(ordered_names(items), ["z-folder", "a-failed", "m-socket"]);
+    }
+
+    const UTF8_MARK_BYTES: [u8; 3] = [0xEF, 0xBB, 0xBF];
+    const UTF16_LITTLE_ENDIAN_MARK_BYTES: [u8; 2] = [0xFF, 0xFE];
+    const UTF16_BIG_ENDIAN_MARK_BYTES: [u8; 2] = [0xFE, 0xFF];
+
+    fn write_bytes(temp: &TempDir, relative: &str, bytes: &[u8]) {
+        fs::write(temp.path().join(relative), bytes).expect("the file can be written");
+    }
+
+    fn text(content: &str) -> ItemState<FileContent> {
+        ItemState::Observed(FileContent::Text {
+            content: content.to_string(),
+            language: Language::Plain,
+        })
+    }
+
+    fn cannot_display(reason: CannotDisplayReason) -> ItemState<FileContent> {
+        ItemState::Observed(FileContent::CannotDisplay(reason))
+    }
+
+    /// The bytes of `text` as UTF-16 code units in the given byte order, with no mark.
+    fn utf16_bytes(text: &str, to_bytes: fn(u16) -> [u8; 2]) -> Vec<u8> {
+        text.encode_utf16().flat_map(to_bytes).collect()
+    }
+
+    #[test]
+    fn test_utf8_with_mark_reads_as_text_without_the_mark() {
+        let temp = TempDir::new();
+        let mut bytes = UTF8_MARK_BYTES.to_vec();
+        bytes.extend_from_slice("héllo".as_bytes());
+        write_bytes(&temp, "note.txt", &bytes);
+
+        assert_eq!(read(temp.path(), "note.txt"), text("héllo"));
+    }
+
+    #[test]
+    fn test_only_the_leading_utf8_mark_is_stripped() {
+        let temp = TempDir::new();
+        let mut bytes = UTF8_MARK_BYTES.to_vec();
+        bytes.extend_from_slice(&UTF8_MARK_BYTES);
+        bytes.push(b'a');
+        write_bytes(&temp, "note.txt", &bytes);
+
+        assert_eq!(read(temp.path(), "note.txt"), text("\u{FEFF}a"));
+    }
+
+    #[test]
+    fn test_utf16_little_endian_mark_reads_as_text() {
+        let temp = TempDir::new();
+        let mut bytes = UTF16_LITTLE_ENDIAN_MARK_BYTES.to_vec();
+        bytes.extend_from_slice(b"h\0i\0");
+        write_bytes(&temp, "note.txt", &bytes);
+
+        assert_eq!(read(temp.path(), "note.txt"), text("hi"));
+    }
+
+    #[test]
+    fn test_utf16_big_endian_mark_reads_as_text() {
+        let temp = TempDir::new();
+        let mut bytes = UTF16_BIG_ENDIAN_MARK_BYTES.to_vec();
+        bytes.extend_from_slice(b"\0h\0i");
+        write_bytes(&temp, "note.txt", &bytes);
+
+        assert_eq!(read(temp.path(), "note.txt"), text("hi"));
+    }
+
+    #[test]
+    fn test_file_holding_only_a_mark_is_empty_text() {
+        let temp = TempDir::new();
+        write_bytes(&temp, "utf8.txt", &UTF8_MARK_BYTES);
+        write_bytes(&temp, "utf16-le.txt", &UTF16_LITTLE_ENDIAN_MARK_BYTES);
+        write_bytes(&temp, "utf16-be.txt", &UTF16_BIG_ENDIAN_MARK_BYTES);
+
+        for name in ["utf8.txt", "utf16-le.txt", "utf16-be.txt"] {
+            assert_eq!(read(temp.path(), name), text(""), "{name}");
+        }
+    }
+
+    #[test]
+    fn test_empty_file_is_empty_text() {
+        let temp = TempDir::new();
+        write_bytes(&temp, "empty", &[]);
+
+        assert_eq!(read(temp.path(), "empty"), text(""));
+    }
+
+    #[test]
+    fn test_invalid_utf8_after_a_mark_is_cannot_display() {
+        let temp = TempDir::new();
+        let mut bytes = UTF8_MARK_BYTES.to_vec();
+        bytes.extend_from_slice(&[0xFF, 0xFF]);
+        write_bytes(&temp, "note.txt", &bytes);
+
+        assert_eq!(
+            read(temp.path(), "note.txt"),
+            cannot_display(CannotDisplayReason::InvalidUtf8)
+        );
+    }
+
+    #[test]
+    fn test_latin1_bytes_are_cannot_display() {
+        let temp = TempDir::new();
+        write_bytes(&temp, "latin1.txt", &[0x63, 0x61, 0x66, 0xE9]);
+
+        assert_eq!(
+            read(temp.path(), "latin1.txt"),
+            cannot_display(CannotDisplayReason::InvalidUtf8)
+        );
+    }
+
+    #[test]
+    fn test_torn_utf8_is_cannot_display() {
+        let temp = TempDir::new();
+        let mut bytes = "price: €5 and then ".as_bytes().to_vec();
+        bytes.extend_from_slice(&[0xE2, 0x82]);
+        write_bytes(&temp, "torn.txt", &bytes);
+
+        assert_eq!(
+            read(temp.path(), "torn.txt"),
+            cannot_display(CannotDisplayReason::InvalidUtf8)
+        );
+    }
+
+    #[test]
+    fn test_utf16_odd_trailing_byte_is_cannot_display() {
+        let temp = TempDir::new();
+        let mut little_endian = UTF16_LITTLE_ENDIAN_MARK_BYTES.to_vec();
+        little_endian.extend_from_slice(b"h\0i");
+        let mut big_endian = UTF16_BIG_ENDIAN_MARK_BYTES.to_vec();
+        big_endian.extend_from_slice(b"\0h\0");
+        write_bytes(&temp, "le.txt", &little_endian);
+        write_bytes(&temp, "be.txt", &big_endian);
+
+        for name in ["le.txt", "be.txt"] {
+            assert_eq!(
+                read(temp.path(), name),
+                cannot_display(CannotDisplayReason::InvalidUtf16),
+                "{name}"
+            );
+        }
+    }
+
+    #[test]
+    fn test_utf16_unpaired_surrogate_is_cannot_display() {
+        let temp = TempDir::new();
+        let unpaired_high = [0x00, 0xD8];
+        let unpaired_low = [0x00, 0xDC];
+        let mut high_then_text = UTF16_LITTLE_ENDIAN_MARK_BYTES.to_vec();
+        high_then_text.extend_from_slice(&unpaired_high);
+        high_then_text.extend_from_slice(b"a\0");
+        let mut lone_low = UTF16_LITTLE_ENDIAN_MARK_BYTES.to_vec();
+        lone_low.extend_from_slice(&unpaired_low);
+        let mut big_endian_high = UTF16_BIG_ENDIAN_MARK_BYTES.to_vec();
+        big_endian_high.extend_from_slice(&[0xD8, 0x00]);
+        write_bytes(&temp, "high.txt", &high_then_text);
+        write_bytes(&temp, "low.txt", &lone_low);
+        write_bytes(&temp, "be-high.txt", &big_endian_high);
+
+        for name in ["high.txt", "low.txt", "be-high.txt"] {
+            assert_eq!(
+                read(temp.path(), name),
+                cannot_display(CannotDisplayReason::InvalidUtf16),
+                "{name}"
+            );
+        }
+    }
+
+    #[test]
+    fn test_several_megabyte_utf8_file_is_read_whole() {
+        let temp = TempDir::new();
+        let source: String = (0..400_000)
+            .map(|number| format!("line {number} — héllo\n"))
+            .collect();
+        assert!(source.len() > 4 * 1024 * 1024);
+        write_bytes(&temp, "big.txt", source.as_bytes());
+
+        let ItemState::Observed(FileContent::Text { content, .. }) = read(temp.path(), "big.txt")
+        else {
+            panic!("a several-megabyte UTF-8 file is text");
+        };
+        assert_eq!(content.len(), source.len());
+        assert!(content.ends_with("line 399999 — héllo\n"));
+        assert!(content == source);
+    }
+
+    #[test]
+    fn test_extension_inside_the_floor_set_is_text_without_a_language_claim() {
+        let temp = TempDir::new();
+        temp.write_file("deploy.yml", "name: deploy\n");
+
+        assert!(matches!(
+            read(temp.path(), "deploy.yml"),
+            ItemState::Observed(FileContent::Text { .. })
+        ));
+    }
+
+    #[test]
+    fn test_utf16_in_either_order_decodes_a_character_outside_the_basic_plane() {
+        let temp = TempDir::new();
+        let mut little_endian = UTF16_LITTLE_ENDIAN_MARK_BYTES.to_vec();
+        little_endian.extend(utf16_bytes("a😀", u16::to_le_bytes));
+        let mut big_endian = UTF16_BIG_ENDIAN_MARK_BYTES.to_vec();
+        big_endian.extend(utf16_bytes("a😀", u16::to_be_bytes));
+        write_bytes(&temp, "le.txt", &little_endian);
+        write_bytes(&temp, "be.txt", &big_endian);
+
+        assert_eq!(read(temp.path(), "le.txt"), text("a😀"));
+        assert_eq!(read(temp.path(), "be.txt"), text("a😀"));
+    }
+
+    #[test]
+    fn test_path_leaving_the_folder_fails_outside_and_touches_nothing_outside() {
+        let temp = TempDir::new();
+        let root = temp.make_folder("root");
+        // The file outside is readable, so a read that left the root would answer Observed.
+        temp.write_file("outside.txt", "secret");
+        temp.make_link("root/escape", "../outside.txt");
+        let filesystem = RecordingFilesystem::new(&root, Some(false), Some(false));
+
+        for requested in ["../outside.txt", "escape"] {
+            assert_eq!(
+                read_with_filesystem(&filesystem, &root, requested),
+                ItemState::Failed(Condition::Outside),
+                "{requested}"
+            );
+        }
+        assert!(filesystem.outside_queries().is_empty());
+    }
+
+    #[test]
+    fn test_folder_path_fails_unreadable() {
+        let temp = TempDir::new();
+        temp.make_folder("src");
+
+        assert_eq!(
+            read(temp.path(), "src"),
+            ItemState::Failed(Condition::Unreadable)
+        );
+        assert_eq!(
+            read(temp.path(), ""),
+            ItemState::Failed(Condition::Unreadable)
+        );
+    }
+
+    #[test]
+    fn test_dangling_link_fails_missing() {
+        let temp = TempDir::new();
+        temp.make_link("dangling", "nowhere");
+
+        assert_eq!(
+            read(temp.path(), "dangling"),
+            ItemState::Failed(Condition::Missing)
+        );
+    }
+
+    #[test]
+    fn test_unreadable_file_fails_unreadable() {
+        let temp = TempDir::new();
+        temp.write_file("locked.txt", "secret");
+        temp.set_mode("locked.txt", 0o000);
+
+        assert_eq!(
+            read(temp.path(), "locked.txt"),
+            ItemState::Failed(Condition::Unreadable)
+        );
+    }
+
+    #[test]
+    fn test_reading_leaves_the_tree_byte_identical() {
+        let temp = TempDir::new();
+        let root = temp.make_folder("root");
+        temp.write_file("outside.txt", "secret");
+        temp.write_file("root/plain.txt", "plain\n");
+        temp.make_folder("root/src");
+        write_bytes(&temp, "root/latin1.txt", &[0x63, 0x61, 0x66, 0xE9]);
+        let mut utf16 = UTF16_LITTLE_ENDIAN_MARK_BYTES.to_vec();
+        utf16.extend_from_slice(b"h\0i\0");
+        write_bytes(&temp, "root/utf16.txt", &utf16);
+        write_bytes(&temp, "root/empty", &[]);
+        temp.make_link("root/dangling", "nowhere");
+        temp.make_link("root/escape", "../outside.txt");
+        // The rest of the shapes the other read tests use: each mark alone, a mark then text, a torn
+        // sequence, an odd UTF-16 byte, an unpaired surrogate, a big-endian file, a name inside the
+        // floor set and a several-megabyte file. A file the operating system refuses is not here: the
+        // snapshot itself reads every file's bytes, so it cannot hold a file nobody may read.
+        write_bytes(&temp, "root/mark8", &UTF8_MARK_BYTES);
+        write_bytes(&temp, "root/mark16le", &UTF16_LITTLE_ENDIAN_MARK_BYTES);
+        write_bytes(&temp, "root/mark16be", &UTF16_BIG_ENDIAN_MARK_BYTES);
+        let mut marked = UTF8_MARK_BYTES.to_vec();
+        marked.extend_from_slice("héllo".as_bytes());
+        write_bytes(&temp, "root/marked.txt", &marked);
+        write_bytes(&temp, "root/torn.txt", &[b'a', 0xE2, 0x82]);
+        let mut odd = UTF16_LITTLE_ENDIAN_MARK_BYTES.to_vec();
+        odd.extend_from_slice(b"h\0i");
+        write_bytes(&temp, "root/odd.txt", &odd);
+        let mut surrogate = UTF16_BIG_ENDIAN_MARK_BYTES.to_vec();
+        surrogate.extend_from_slice(&[0xD8, 0x00]);
+        write_bytes(&temp, "root/surrogate.txt", &surrogate);
+        let mut big_endian = UTF16_BIG_ENDIAN_MARK_BYTES.to_vec();
+        big_endian.extend_from_slice(b"\0h\0i");
+        write_bytes(&temp, "root/be.txt", &big_endian);
+        write_bytes(&temp, "root/deploy.yml", b"key: value\n");
+        write_bytes(
+            &temp,
+            "root/big.txt",
+            "line — héllo\n".repeat(300_000).as_bytes(),
+        );
+        let before = snapshot(temp.path());
+
+        for requested in [
+            "plain.txt",
+            "latin1.txt",
+            "utf16.txt",
+            "empty",
+            "src",
+            "",
+            "dangling",
+            "escape",
+            "../outside.txt",
+            "missing.txt",
+            "mark8",
+            "mark16le",
+            "mark16be",
+            "marked.txt",
+            "torn.txt",
+            "odd.txt",
+            "surrogate.txt",
+            "be.txt",
+            "deploy.yml",
+            "big.txt",
+        ] {
+            let _ = read(&root, requested);
+            assert_eq!(snapshot(temp.path()), before, "{requested}");
+        }
     }
 }

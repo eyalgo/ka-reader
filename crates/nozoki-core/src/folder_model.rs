@@ -3,7 +3,7 @@
 
 use std::path::{Path, PathBuf};
 
-use crate::fs_reader::{self, Entry, ItemState};
+use crate::fs_reader::{self, Entry, FileContent, ItemState};
 
 /// A folder the user chose, held as its canonical path.
 ///
@@ -81,6 +81,23 @@ pub fn open_folder(path: impl AsRef<Path>) -> OpenFolderOutcome {
 /// ```
 pub fn list_tree(opened: &OpenedFolder, path: &str) -> ItemState<Vec<Entry>> {
     fs_reader::list(&opened.root, path)
+}
+
+/// Reads the file at `path` inside an opened folder, where `path` is relative to the folder's root,
+/// and answers what it is: text, drawn plain, or a file that cannot be shown as text. The answer is
+/// `Observed` with that verdict, or `Failed` with a condition, and never `Pending`. Nothing is
+/// cached, so every call reads again, and the folder is only read, never written.
+///
+/// # Examples
+///
+/// ```
+/// use nozoki_core::{Condition, ItemState, open_folder, select_file};
+///
+/// let opened = open_folder(std::env::temp_dir()).expect("the temporary folder opens");
+/// assert_eq!(select_file(&opened, ".."), ItemState::Failed(Condition::Outside));
+/// ```
+pub fn select_file(opened: &OpenedFolder, path: &str) -> ItemState<FileContent> {
+    fs_reader::read(&opened.root, path)
 }
 
 #[cfg(test)]

@@ -106,7 +106,19 @@ package final class LaunchFlow {
         view.listTree = { [bridge, reader] path, answer in
             reader.run({ Self.listing(at: path, through: bridge) }, deliver: answer)
         }
-        presenter.present(WorkbenchView(rootItemsView: view, statusGlyphs: statusGlyphs))
+        let workbench = WorkbenchView(rootItemsView: view, statusGlyphs: statusGlyphs)
+        workbench.selectFile = { [bridge, reader] path, answer in
+            reader.run({ Self.verdict(at: path, through: bridge) }, deliver: answer)
+        }
+        presenter.present(workbench)
+    }
+
+    private nonisolated static func verdict(at path: String, through bridge: Bridging)
+        -> FileVerdict?
+    {
+        let buffer = bridge.selectFile(path: path)
+        defer { release(buffer, through: bridge) }
+        return BridgePayload.decodeFile(buffer)
     }
 
     private nonisolated static func listing(at path: String, through bridge: Bridging)

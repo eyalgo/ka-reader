@@ -1,11 +1,11 @@
-//! The C ABI: the `#[repr(C)]` buffer, the three exports, and the process's one session. Each
+//! The C ABI: the `#[repr(C)]` buffer, the four exports, and the process's one session. Each
 //! export decodes, calls the session, and formats through the wrapper, and does nothing else
 //! (QC-13). The header generator reads this file, so it holds only what the header must declare.
 
 use std::ffi::c_char;
 use std::sync::LazyLock;
 
-use crate::boundary::{guarded, list_entries, open_location};
+use crate::boundary::{guarded, list_entries, open_location, select_entry};
 use crate::log_install::install_if_application_bundle;
 use crate::session::Session;
 
@@ -20,6 +20,7 @@ pub struct NozokiBuffer {
 pub(crate) enum BufferOrigin {
     OpenFolder,
     ListTree,
+    SelectFile,
 }
 
 #[repr(C)]
@@ -75,7 +76,25 @@ pub unsafe extern "C" fn nozoki_list_tree(path: *const c_char) -> *mut NozokiBuf
     })
 }
 
-/// Releases a buffer returned by `nozoki_open_folder` or `nozoki_list_tree`. NULL does nothing.
+/// Reads the file at a path relative to the open folder's root and answers its verdict as a JSON
+/// object tagged by `state`: `{"state":"text","content":…,"language":"plain"}`,
+/// `{"state":"cannot_display","reason":…}`, `{"state":"failed","condition":…}`, or
+/// `{"state":"pending"}` when nothing was read (no folder open, or a NULL, empty or non-UTF-8
+/// path). NULL on failure; a non-NULL answer is freed with `nozoki_free`.
+///
+/// # Safety
+///
+/// `path` is NULL, or a NUL-terminated string valid for the call.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn nozoki_select_file(path: *const c_char) -> *mut NozokiBuffer {
+    // SAFETY: forwarded from the caller.
+    guarded(BufferOrigin::SelectFile, || unsafe {
+        select_entry(&SESSION, path)
+    })
+}
+
+/// Releases a buffer returned by `nozoki_open_folder`, `nozoki_list_tree` or `nozoki_select_file`.
+/// NULL does nothing.
 ///
 /// # Safety
 ///
@@ -102,7 +121,7 @@ pub unsafe extern "C" fn nozoki_free(buffer: *mut NozokiBuffer) {
 }
 
 /// The load-time initializer: one function pointer in Mach-O's `__DATA,__mod_init_func`, run when
-/// the process loads the image. It sits in this file, the same object as the three exports, because
+/// the process loads the image. It sits in this file, the same object as the four exports, because
 /// the linker pulls an archive member only for a symbol it resolves, and an initializer anywhere else
 /// would be dropped silently. No export installs the writer, and no test process does: the guard
 /// answers no unless the process is an application bundle's executable.

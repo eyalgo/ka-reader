@@ -2,7 +2,7 @@
 ///
 /// The set is closed: decoding any other string fails. A condition carries no text and no path. The
 /// sentence a person reads for it lives in `ConditionSentences`, and nowhere else.
-package enum Condition: String, Decodable, Sendable {
+package enum Condition: String, Decodable, Sendable, CaseIterable {
     case unreadable
     case outside
     case cycle

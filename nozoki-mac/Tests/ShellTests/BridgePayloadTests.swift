@@ -74,4 +74,89 @@ final class BridgePayloadTests: XCTestCase {
             XCTAssertNil(decode(payload), payload)
         }
     }
+
+    private func decodeFile(_ payload: String) -> FileVerdict? {
+        BridgePayload.decodeFile(BridgeBuffer(payload: Data(payload.utf8), handle: 1))
+    }
+
+    func testDecodeFileMapsEachOfTheFourWireShapes() {
+        let mapped: [(String, FileVerdict?)] = [
+            (
+                #"{"state":"text","content":"héllo\n","language":"plain"}"#,
+                .text("héllo\n", .plain)
+            ),
+            (
+                #"{"state":"cannot_display","reason":"invalid_utf8"}"#,
+                .cannotDisplay(.invalidUTF8)
+            ),
+            (
+                #"{"state":"cannot_display","reason":"invalid_utf16"}"#,
+                .cannotDisplay(.invalidUTF16)
+            ),
+            (#"{"state":"failed","condition":"outside"}"#, .failed(.outside)),
+            (#"{"state":"failed","condition":"not_a_folder"}"#, .failed(.notAFolder)),
+            (#"{"state":"pending"}"#, nil),
+        ]
+
+        for (payload, expected) in mapped {
+            XCTAssertEqual(decodeFile(payload), expected, payload)
+        }
+    }
+
+    func testDecodeFileAcceptsMembersInAnyOrderAndEmptyContent() {
+        XCTAssertEqual(
+            decodeFile(#"{"language":"plain","content":"","state":"text"}"#), .text("", .plain))
+        XCTAssertEqual(
+            decodeFile(#" { "reason" : "invalid_utf8" , "state" : "cannot_display" } "#),
+            .cannotDisplay(.invalidUTF8))
+    }
+
+    func testDecodeFileRejectsAnExtraMember() {
+        let rejected = [
+            #"{"state":"text","content":"x","language":"plain","extra":1}"#,
+            #"{"state":"cannot_display","reason":"invalid_utf8","extra":1}"#,
+            #"{"state":"failed","condition":"outside","extra":1}"#,
+            #"{"state":"pending","extra":1}"#,
+            #"{"state":"text","content":"x","language":"plain","condition":"outside"}"#,
+        ]
+
+        for payload in rejected {
+            XCTAssertNil(decodeFile(payload), payload)
+        }
+    }
+
+    func testDecodeFileRejectsAMissingMember() {
+        let rejected = [
+            #"{"state":"text","language":"plain"}"#,
+            #"{"state":"text","content":"x"}"#,
+            #"{"state":"cannot_display"}"#,
+            #"{"state":"failed"}"#,
+            #"{"content":"x","language":"plain"}"#,
+            #"{}"#,
+        ]
+
+        for payload in rejected {
+            XCTAssertNil(decodeFile(payload), payload)
+        }
+    }
+
+    func testDecodeFileRejectsAnUnknownStateLanguageReasonOrCondition() {
+        let rejected = [
+            #"{"state":"loading"}"#,
+            #"{"state":"text","content":"x","language":"rust"}"#,
+            #"{"state":"cannot_display","reason":"binary"}"#,
+            #"{"state":"failed","condition":"unknown"}"#,
+        ]
+
+        for payload in rejected {
+            XCTAssertNil(decodeFile(payload), payload)
+        }
+    }
+
+    func testDecodeFileRejectsMalformedJSONAndANullBuffer() {
+        for payload in ["malformed", "", "[]", "null", #""text""#, #"{"state":7}"#] {
+            XCTAssertNil(decodeFile(payload), payload)
+        }
+        XCTAssertNil(BridgePayload.decodeFile(nil))
+    }
 }
