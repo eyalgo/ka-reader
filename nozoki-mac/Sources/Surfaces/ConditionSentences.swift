@@ -12,6 +12,16 @@ package enum ConditionSentences {
     /// The line drawn beneath a folder while its read is out (`docs/CONTENT.md`, *Loading*).
     package static let readingFolder = "Reading this folder."
 
+    /// The sentence the reading panel draws while a selected file's read is out (`docs/CONTENT.md`,
+    /// *Loading*).
+    package static let readingFile = "Reading this file."
+
+    /// The sentence the reading panel draws under the path of a file whose read answered nothing
+    /// (`docs/CONTENT.md` § Message patterns, *Error — an unexplained fault*): no cause, no code.
+    package static let stoppedReadingFile =
+        "Nozoki stopped while reading this file and can't tell why. "
+        + "The rest of the folder is still readable — select another file."
+
     /// The line drawn beneath a folder that was read and holds nothing.
     package static let emptyFolder = emptyRoot
 

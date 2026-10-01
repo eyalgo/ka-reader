@@ -1,7 +1,7 @@
 import AppKit
 
 /// The reading panel (`docs/UXD.md` UX-S1, `docs/DESIGN.md` § Components): what the open file
-/// turned out to be, under its folder-relative path. It has four states and is in one of them at a
+/// turned out to be, under its folder-relative path. It has six states and is in one of them at a
 /// time:
 ///
 /// - *no file*: the prompt, and nothing else visible;
@@ -10,7 +10,10 @@ import AppKit
 ///   colours and every other character in `{colors.primary}`, and a plain file's text in that one
 ///   ink (CP-312, CP-333);
 /// - *cannot-display*: the path line, then one sentence saying the file can't be shown as text;
-/// - *failed read*: the path line, then one statement of what Nozoki observed.
+/// - *failed read*: the path line, then one statement of what Nozoki observed;
+/// - *reading*: one status message saying the file's read is out, and no path line (CP-345);
+/// - *stopped*: the path line, then one status message saying the read stopped without a cause
+///   Nozoki can state (CP-348).
 ///
 /// The panel has no control: nothing in it edits, saves or writes (CP-286). The text sits in a code
 /// view, its gutter and scroll view, pinned to the panel's edges, so the document's size never
@@ -93,6 +96,29 @@ package final class ReadingPanelView: NSView {
         prompt.isHidden = false
     }
 
+    /// Draws the *reading* state: one status message, led by the empty glyph, and nothing of any
+    /// earlier state (CP-345, CP-346).
+    package func showReading() {
+        removeMessage()
+        prompt.isHidden = true
+        pathLine.isHidden = true
+        // Anchored where the prompt stands: with the path line hidden, a message hung from it would
+        // sit one path-line height too low.
+        placeMessage(
+            glyph: statusGlyphs.empty, sentence: ConditionSentences.readingFile,
+            below: topAnchor, gap: Self.inset)
+    }
+
+    /// Draws the *stopped* state under `path`, the entry's folder-relative path: the failed read's
+    /// presentation, with the sentence for a read that answered nothing (CP-348).
+    package func showStopped(path: String) {
+        removeMessage()
+        prompt.isHidden = true
+        pathLine.stringValue = path
+        pathLine.isHidden = false
+        showMessage(glyph: statusGlyphs.failure, sentence: ConditionSentences.stoppedReadingFile)
+    }
+
     /// Draws `verdict` beneath `path`, the entry's folder-relative path.
     package func show(path: String, verdict: FileVerdict) {
         removeMessage()
@@ -134,6 +160,12 @@ package final class ReadingPanelView: NSView {
     }
 
     private func showMessage(glyph: NSImage, sentence: String) {
+        placeMessage(glyph: glyph, sentence: sentence, below: pathLine.bottomAnchor, gap: Self.gap)
+    }
+
+    private func placeMessage(
+        glyph: NSImage, sentence: String, below anchor: NSLayoutYAxisAnchor, gap: CGFloat
+    ) {
         codeView.isHidden = true
         contentView.string = ""
         let label = NSTextField(wrappingLabelWithString: sentence)
@@ -142,7 +174,7 @@ package final class ReadingPanelView: NSView {
         view.translatesAutoresizingMaskIntoConstraints = false
         addSubview(view)
         NSLayoutConstraint.activate([
-            view.topAnchor.constraint(equalTo: pathLine.bottomAnchor, constant: Self.gap),
+            view.topAnchor.constraint(equalTo: anchor, constant: gap),
             view.leadingAnchor.constraint(equalTo: leadingAnchor, constant: Self.inset),
             view.trailingAnchor.constraint(
                 lessThanOrEqualTo: trailingAnchor, constant: -Self.inset),
