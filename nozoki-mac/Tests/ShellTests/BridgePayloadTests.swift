@@ -159,4 +159,135 @@ final class BridgePayloadTests: XCTestCase {
         }
         XCTAssertNil(BridgePayload.decodeFile(nil))
     }
+
+    // MARK: - Spans (CP-309, CP-310)
+
+    /// Fixture M as JSON text: 36 bytes of UTF-8, with characters 2, 3 and 4 bytes wide.
+    private static let fixtureMJSON = ##""# café 日本 🙂\nname = \"é🙂\"\n""##
+    private let fixtureM = "# café 日本 🙂\nname = \"é🙂\"\n"
+
+    private func span(_ start: Int, _ end: Int, _ tokenClass: TokenClass) -> CodeSpan {
+        CodeSpan(start: start, end: end, tokenClass: tokenClass)
+    }
+
+    /// A text answer for `language` whose `spans` member is the given JSON, or absent when `nil`.
+    private func textPayload(
+        content: String = BridgePayloadTests.fixtureMJSON, language: String, spans: String?
+    ) -> String {
+        let tail = spans.map { #","spans":\#($0)"# } ?? ""
+        return #"{"state":"text","content":\#(content),"language":"\#(language)"\#(tail)}"#
+    }
+
+    private func mPayload(spans: String) -> String {
+        textPayload(language: "python", spans: spans)
+    }
+
+    func testDecodeFileReadsFixtureMFromTheBridgesWireFile() throws {
+        // `nozoki-mac/Tests/ShellTests/BridgePayloadTests.swift` → the repository root, four levels up.
+        let root = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent().deletingLastPathComponent()
+            .deletingLastPathComponent().deletingLastPathComponent()
+        let wire = try String(
+            contentsOf: root.appendingPathComponent(
+                "crates/nozoki-bridge/tests/fixtures/m_answer.json"),
+            encoding: .utf8)
+
+        XCTAssertEqual(fixtureM.utf8.count, 36)
+        XCTAssertEqual(
+            decodeFile(wire),
+            .text(fixtureM, .floor(.python, [span(0, 19, .comment), span(27, 35, .string)])))
+    }
+
+    func testDecodeFileRefusesPlainCarryingSpans() {
+        XCTAssertNil(decodeFile(textPayload(language: "plain", spans: "[]")))
+    }
+
+    func testDecodeFileRefusesAFloorLanguageWithNoSpansMember() {
+        XCTAssertNil(decodeFile(textPayload(language: "python", spans: nil)))
+    }
+
+    func testDecodeFileRefusesAnEndBeyondTheContent() {
+        XCTAssertNil(decodeFile(mPayload(spans: #"[{"start":0,"end":37,"class":"comment"}]"#)))
+    }
+
+    func testDecodeFileRefusesAnEndInsideACharacter() {
+        XCTAssertNil(decodeFile(mPayload(spans: #"[{"start":0,"end":18,"class":"comment"}]"#)))
+    }
+
+    func testDecodeFileRefusesAStartInsideACharacter() {
+        XCTAssertNil(decodeFile(mPayload(spans: #"[{"start":16,"end":19,"class":"comment"}]"#)))
+    }
+
+    func testDecodeFileRefusesAnEmptySpan() {
+        XCTAssertNil(decodeFile(mPayload(spans: #"[{"start":5,"end":5,"class":"comment"}]"#)))
+    }
+
+    func testDecodeFileRefusesAnUnknownClass() {
+        XCTAssertNil(decodeFile(mPayload(spans: #"[{"start":0,"end":5,"class":"operator"}]"#)))
+    }
+
+    func testDecodeFileRefusesOverlappingSpans() {
+        XCTAssertNil(
+            decodeFile(
+                mPayload(
+                    spans:
+                        #"[{"start":0,"end":10,"class":"comment"},{"start":5,"end":12,"class":"comment"}]"#
+                )))
+    }
+
+    func testDecodeFileRefusesANegativeStart() {
+        XCTAssertNil(decodeFile(mPayload(spans: #"[{"start":-1,"end":5,"class":"comment"}]"#)))
+    }
+
+    func testDecodeFileRefusesANonIntegerOffset() {
+        XCTAssertNil(decodeFile(mPayload(spans: #"[{"start":0,"end":5.5,"class":"comment"}]"#)))
+    }
+
+    func testDecodeFileRefusesASpanWithAFourthMember() {
+        XCTAssertNil(
+            decodeFile(
+                mPayload(spans: #"[{"start":0,"end":5,"class":"comment","extra":1}]"#)))
+    }
+
+    func testDecodeFileRefusesASpanWithAMissingMember() {
+        XCTAssertNil(decodeFile(mPayload(spans: #"[{"start":0,"end":5}]"#)))
+    }
+
+    func testDecodeFileAcceptsEachOfTheSixNamesWithNoSpans() {
+        let names: [(String, FloorLanguage)] = [
+            ("python", .python), ("shell", .shell), ("javascript", .javascript),
+            ("json", .json), ("yaml", .yaml), ("toml", .toml),
+        ]
+        for (name, language) in names {
+            XCTAssertEqual(
+                decodeFile(textPayload(language: name, spans: "[]")),
+                .text(fixtureM, .floor(language, [])), name)
+        }
+    }
+
+    func testDecodeFileAcceptsAdjacentSpans() {
+        XCTAssertEqual(
+            decodeFile(
+                mPayload(
+                    spans:
+                        #"[{"start":0,"end":5,"class":"comment"},{"start":5,"end":10,"class":"name"}]"#
+                )),
+            .text(fixtureM, .floor(.python, [span(0, 5, .comment), span(5, 10, .name)])))
+    }
+
+    func testDecodeFileAcceptsASpanEndingAtTheContentsByteLength() {
+        XCTAssertEqual(
+            decodeFile(mPayload(spans: #"[{"start":27,"end":36,"class":"string"}]"#)),
+            .text(fixtureM, .floor(.python, [span(27, 36, .string)])))
+    }
+
+    func testDecodeFileAcceptsASpanEndingBetweenABaseLetterAndACombiningMark() {
+        // "e" then U+0301: three bytes, and a scalar boundary at 1 that is not a grapheme boundary.
+        XCTAssertEqual(
+            decodeFile(
+                textPayload(
+                    content: #""e\u0301""#, language: "python",
+                    spans: #"[{"start":0,"end":1,"class":"name"}]"#)),
+            .text("e\u{301}", .floor(.python, [span(0, 1, .name)])))
+    }
 }
