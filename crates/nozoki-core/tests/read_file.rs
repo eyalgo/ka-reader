@@ -2,6 +2,10 @@
 //! text or it cannot be shown as text; a read that cannot happen fails as one of the closed
 //! conditions and returns (CP-267 – CP-277).
 
+#[allow(
+    dead_code,
+    reason = "each test crate uses a subset of the shared helpers"
+)]
 mod common;
 
 use std::path::PathBuf;

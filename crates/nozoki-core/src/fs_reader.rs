@@ -435,11 +435,11 @@ fn decode(bytes: Vec<u8>, language: Language) -> FileContent {
 /// `units` as UTF-16 in the byte order `to_unit` reads, or `None` for an odd trailing byte or an
 /// unpaired surrogate.
 fn decode_utf16(units: &[u8], to_unit: fn([u8; 2]) -> u16) -> Option<String> {
-    let pairs = units.chunks_exact(2);
-    if !pairs.remainder().is_empty() {
+    let (pairs, remainder) = units.as_chunks::<2>();
+    if !remainder.is_empty() {
         return None;
     }
-    let code_units: Vec<u16> = pairs.map(|pair| to_unit([pair[0], pair[1]])).collect();
+    let code_units: Vec<u16> = pairs.iter().map(|pair| to_unit(*pair)).collect();
     String::from_utf16(&code_units).ok()
 }
 
