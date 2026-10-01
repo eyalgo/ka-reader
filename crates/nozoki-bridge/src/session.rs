@@ -101,7 +101,9 @@ impl From<ItemState<()>> for EntryStateDto {
     }
 }
 
-/// One listed entry on the wire: `name`, `path`, `kind` and `state`, and `condition` when failed.
+/// One listed entry on the wire: `name`, `path`, `kind` and `state`, and `condition` when failed,
+/// and `language` on a file entry. The bridge carries core's language over as it is and decides
+/// none: a folder entry has no `language` member.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct EntryDto {
     pub name: String,
@@ -109,6 +111,8 @@ pub struct EntryDto {
     pub kind: KindDto,
     #[serde(flatten)]
     pub state: EntryStateDto,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub language: Option<LanguageDto>,
 }
 
 /// What `list_tree` answers across the bridge, tagged by `state`: `observed` with its entries in
@@ -318,6 +322,7 @@ impl Session {
                         path: entry.path,
                         kind: entry.kind.into(),
                         state: entry.state.into(),
+                        language: entry.language.map(LanguageDto::from),
                     })
                     .collect(),
             },
