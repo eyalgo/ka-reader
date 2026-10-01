@@ -6,7 +6,7 @@
        signal, and the state a finished SDD carries; the open-issues file is gone.
      Locked = ratified as the source of truth. -->
 **Owner:** CTO · CPO · CDO — one run, three seats
-**Version:** 22 — CTO: § 3 SM-4 (what crosses; owner cell); § 4 C-R7 (export grain — three sentences, plus what *built* means and why); § 4 C-I3 (unit-is-the-build sentence, two uncovered cases, five citations re-pointed and pinned, frame count with the second runner reading, *Violated by*); § 6 `open-a-folder` *Reached when* command half (one citation); § 6 `follow-the-folder` *Rests on* (held-state clause); § 10 RC-3 *Still unresolved* (citation pinned, second dated parenthesis); SDD Review Notes RN-76 (new); `docs/SDD_open_issues.md` §§ 2.1, 5.1, 5.2 removed as folded — the file lists no item. Companion items added: none.; CTO: *Open Questions* (seventh item added — how a collapse and a scroll reach the model across SM-4); § 6 `follow-the-folder` *Rests on* (pointer to that item); SDD Review Notes RN-77 (new) and RN-76 (one clause, the *Open Questions* sentence). Companion items added: none.; CDO: § 6 `follow-the-folder` *Reached when* (observable half — the setup, the collapsed node, the panel not returning to the top); § 6 `see-git-status` *Reached when* (observable half — the scroll before switching back); § 4 C-E2 (*Violated by* — one case added); SDD Review Notes RN-78 (new). Companion items added: none.; CPO: § 5 step 4 (E-4 and E-5 — one dated re-read each, sizing stands); SDD Review Notes RN-79 (new). Companion items added: none.
+**Version:** 23 — CTO: *Open Questions* (fourth item removed — six remain); § 3 `highlighter` row and the units paragraph (two sentences); § 6 `read-a-file` *Reached when*, command half; § 9 TO-11 (new); § 10 RC-3 *Still unresolved* (dated parenthesis); § 11 R-14 (new); § 12 the downstream boundary (dated parenthesis); SDD Review Notes RN-80 (new); `docs/SDD_open_issues.md` § 5.1 removed as folded, § 2.1 gains a "Folded so far" line. Companion items added: none.; CDO: § 12 the UXD boundary (version citation v10 → v11 with what v11 moved; dated parenthesis on "stands at v10"; dated parenthesis on the `docs/DESIGN.md` sentence); SDD Review Notes RN-81 (new); `docs/SDD_open_issues.md` § 2.1 removed as folded — the file lists no item. Companion items added: none.
 Version 18 — CPO: nothing — no SDD section, slice or companion item altered by this seat.; CTO: § 4 C-I3 (observable, measured-frames sentence, hosted-runner sentence with the re-cut rule); § 6 `open-a-folder` *Reached when* command half; § 9 TO-7 *costs*; § 10 RC-2 and RC-3 *Still unresolved* (dated parentheses); *Open Questions* (seventh item removed — six remain); SDD Review Notes RN-70 (new); `docs/SDD_open_issues.md` removed, empty of items. Companion items added: none.; CPO: nothing — no SDD section, slice or companion item altered by this seat.
 Version 8 — CTO: § 4 C-I3 (bounded window, first-ask-all-three pass, script-fixed and printed bound with no number here, per-ask live-pid check, uncovered yes→no case, control `no` for the whole window, error-on-any-ask, denial-as-proof clause narrowed to where the control reports the denials allowed with the hosted runner's read denial stated as separating nothing, Violated by extended); § 10 RC-1 Still unresolved (pointer to RN-48); § 11 R-8 shows up as and response; Open Questions (fourth item closed and removed — four remain); SDD Review Notes RN-48 (new). Companion items added: none. docs/SDD_open_issues.md removed, empty of items.
 Version 7 — CTO: § 3 SM-4 (what crosses, and owner cell wording); § 4 C-R7 (the staged grant, set equality against registered commands, asset-scheme keying, named pre-1.0.0 uncovered case, Violated by); § 4 C-I3 (every command the build grants); § 6 S-7 Reached when, command half; SDD Review Notes RN-47 (new). Companion items added: none. docs/SDD_open_issues.md removed, empty of items.
@@ -324,7 +324,7 @@ interpret gives a different answer twice over the same settled text. Leave both 
 | `watcher` | crates/nozoki-core | One FSEvents subscription on the granted folder, the root's `.git` entry included, delivering coalesced change events as paths; nothing else | Reading content. Interpreting a change. Any write |
 | `folder-model` | crates/nozoki-core | The in-memory model of exactly one folder (FR-1): the tree, the selection and expansion, the open file, the Git state where the root finding says `root` and none where it says `plain`; every read held as an item carrying an `ItemState` (§ 4 C-I1); the **reducer** that applies reader results and watcher events and keeps the reader's place (FR-27); **the fill of the open `FileView`** — the model calls `highlighter` for a text file in a floor language and `markdown-renderer` for a Markdown file, on the bytes `fs-reader` returned, and holds a call that fails as that item's `failed(condition)`, never a panic (§ 4 C-I1; `docs/SRS.md` FR-8, FR-30, DR-6; drafted at RN-64, confirmed by the owner at `docs/trail/sdd/cycle-11.md` § 2.4 — RN-65); **replace-whole** — a new folder replaces the model as a value, never mutates it (NFR-12); the projections the surfaces draw; and the plain Rust API the host wraps and the harness calls (SM-5) | I/O of any kind. Any Apple framework. Own state. Drawing |
 | `markdown-renderer` | crates/nozoki-core | Markdown → a **typed document**, from bytes `fs-reader` read: a `MarkdownDocument` (*What the system holds*, below) whose node kinds are a closed set and never markup — heading, paragraph, list, quote, rule, fenced code with its language and `highlighter`'s spans; an image whose reference passes the containment check carrying that folder-relative path, every other image a placeholder node carrying the condition observed; an external link an inert node with its destination readable; a relative link a node carrying its target path; raw HTML in the source a text node (`docs/SRS.md` FR-30, FR-32, NFR-16; `docs/UXD.md` UX-I12) | Any network. Emitting a URL of any scheme. Markup of any kind. Reading the file itself, or an image's bytes. The raw-source view (§ 9 TO-5) |
-| `highlighter` | crates/nozoki-core | Text and a floor language → spans, each a byte range and one of the five token classes `docs/DESIGN.md` § Colors names (keyword, string, number, comment, name), for the reading panel's code treatment and for a fenced block in a `MarkdownDocument`; the six grammars compiled into the library — which grammar engine compiles them is a dependency decision under § 4 C-R6, made in the slice that lands it (*Open Questions*) (FR-8, FR-29; § 4 C-I5) | Reading a file. Naming the language — that is `fs-reader`'s extension map. Drawing. A seventh grammar with no floor language behind it |
+| `highlighter` | crates/nozoki-core | Text and a floor language → spans, each a byte range and one of the five token classes `docs/DESIGN.md` § Colors names (keyword, string, number, comment, name), for the reading panel's code treatment and for a fenced block in a `MarkdownDocument`; the six grammars compiled into the library by **tree-sitter** — its runtime, `tree-sitter-highlight` and one grammar crate for each floor language, built from C into `nozoki-core` at build time, with nozoki's own query files compiled in — a dependency decision under § 4 C-R6, made in a change of `read-a-file` and recorded beside the list it reviews (`checks/deps.review.md` § *The engine chosen*, `nozoki@85d9fa7`; RN-80); what the engine costs is § 9 TO-11 and what could break it is § 11 R-14 (FR-8, FR-29; § 4 C-I5) | Reading a file. Naming the language — that is `fs-reader`'s extension map. Drawing. A seventh grammar with no floor language behind it |
 | `own-state` | crates/nozoki-core | The tool's own remembered state — theme, window frame, and beyond v1 the remembered folders as security-scoped bookmarks with display names and which was viewed last — read whole or discarded whole, written only inside the app's container (FR-21, DR-5) | Anything of the folder's content. The diagnostic log. A path outside the container |
 | `core-bridge` | crates/nozoki-bridge | The C ABI over `folder-model`'s API and the **Rust-side composition root**: the closed function list the shell calls (SM-4), each function a thin wrapper that decodes its arguments, calls `folder-model` and returns plain data as an owned buffer freed by one `nozoki_free`; the `model_changed` callback; `asset_bytes`, returning an image's bytes only for a path the containment check passes (SM-7); the diagnostic log writer's install (§ 4 C-I2); wiring the libgit2 adapter to the Git port. The one unit that holds `unsafe`, with the reason recorded in its manifest and its record (workspace `Cargo.toml`, `[workspace.lints.rust]`) | Read logic — every function delegates and formats. AppKit, or any Apple framework. A window. A path outside the grant. Anything the harness could not exercise through SM-5 |
 | `mac-shell` | nozoki-mac | The `NSApplication`, the one window and the app's **composition root** on the Swift side: it presents the Open panel and holds the grant the panel returns, calls SM-4 and decodes what returns, marshals `model_changed` onto the main thread, hands projections to `surfaces` and turns their intents into SM-4 calls (SM-8); it owns `Info.plist`, `Entitlements.plist` and the bundle's assembly (§ 4 C-R1, C-R2) | Drawing — that is `surfaces`. Read logic. Any I/O of its own — a file read, a network API, a spawned process, `NSWorkspace.open` (§ 4 C-R7). A second window. A terminal line |
@@ -336,7 +336,10 @@ imports no Apple framework and holds no `unsafe`, so the harness links it withou
 `crates/nozoki-bridge` is a Rust static library, the only unit that exports a C ABI and the only
 one that holds `unsafe`; `nozoki-mac` is a Swift package building the app's one executable, the
 only unit that imports AppKit, declaring no package dependency and linking `libnozoki_bridge.a`;
-`checks` is build-time and never shipped. The unit set departs from the one ADR-0009 records
+`checks` is build-time and never shipped. *No `unsafe`* is said of each crate's own Rust source.
+The C that `nozoki-core` links — the grammar engine (`highlighter`'s row) and libgit2
+(`git-reader`'s row) — is compiled in beside that source and is outside the claim (§ 9 TO-2,
+TO-11; § 11 R-14; RN-80). The unit set departs from the one ADR-0009 records
 (`docs/adr/0009-physical-module-set.md`) — `nozoki-app` and `nozoki-ui` leave, `nozoki-bridge` and
 `nozoki-mac` arrive — and the departure is surfaced, not recorded here (§ 10 RC-3; RN-60); the
 `crates/` placement is the owner's ruling for every Rust product in this instance as
@@ -1480,8 +1483,8 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   the text view reports `isEditable` false and registers no drop type, that a keystroke, a paste
   and a drop leave the drawn content unchanged and raise no intent (SM-8), and that the panel is
   named by the file's folder-relative path; `checks/view.sh` passes (C-R7); the six grammars are
-  compiled into `nozoki-core`, and the engine that compiles them is named in `checks/deps.allow`
-  where it is a crate (C-R6; *Open Questions*). *The promise clause:*
+  compiled into `nozoki-core`, and the engine that compiles them (§ 3 `highlighter`) is named in
+  `checks/deps.allow` (C-R6). *The promise clause:*
   `checks/read-only.sh` on both fixtures prints `unchanged` after `select_file` on every entry, the
   non-text ones included; `checks/no-network.sh` and `checks/bundle.sh` exit 0.
 - **Rests on:** § 3 `fs-reader` (the text rule, the extension map), `highlighter`, `folder-model`
@@ -2246,6 +2249,20 @@ been weighed. For each, say what undoing it would take if it turned out wrong.>
   substitution the design expects (§ 11 R-1) at one seam's cost; *costs* nothing insulating the
   filesystem edge, which is Apple's and stable; *undoing it costs* a second port, drawn the day a
   second filesystem is a live case, which nothing inside the terminus makes it.
+- **TO-11:** The six grammars compiled by tree-sitter (§ 3 `highlighter`) — a second body of
+  native C in the product beside libgit2 (TO-2), this one built from source into `nozoki-core` on
+  every build — *buys* no lexing for six languages written and kept in the core, and a bundle
+  that holds the six grammars and no others: what hand-written lexers and `syntect`, the two
+  alternatives the dependency review weighed, would each have cost (`checks/deps.review.md`
+  § *The engine chosen*, `nozoki@85d9fa7`); *costs* a C compile in every build, the names the
+  engine adds to `checks/deps.allow` and the notices those names owe `THIRD_PARTY_NOTICES.md`
+  (C-R6; the names are that list's and no count is kept here), a runtime and six grammars whose
+  releases are followed upstream, and C that parses the folder's bytes inside the unit whose own
+  source holds no `unsafe` (§ 3; § 11 R-14); *undoing it costs* `highlighter` rewritten behind
+  what it owns — text and a floor language in, spans in the five classes out — with its query
+  files, the names taken off the list in the same change (C-R6), and § 3's row re-pointed. No
+  seam, no other part and no slice's bar moves with it: `read-a-file`'s bar reads the spans and
+  the list, and names no engine. The weighing is the record's and is not redone here (RN-80).
 
 ## 10. Re-cut record
 
@@ -2442,7 +2459,10 @@ silently misses every reversal made mid-build.>
   and the observable's corrected name; noted 2026-09-24, RN-70)* *(the list holds four frames
   since `nozoki@b75348f`, and the runner matched the four, run 36795836747; C-I3 carries both
   readings; noted 2026-10-01, RN-76)*. How TextKit lays out UX-I12's two hard
-  cells, and which engine compiles the six grammars (*Open Questions*). The records and the NFDR
+  cells, and which engine compiles the six grammars (*Open Questions*) *(the engine is decided —
+  tree-sitter, in a change of `read-a-file` under C-R6, `checks/deps.review.md` § *The engine
+  chosen*, `nozoki@85d9fa7`; that item is closed and removed from *Open Questions*, § 3
+  `highlighter` names the engine, and the TextKit item stands; noted 2026-10-01, RN-80)*. The records and the NFDR
   entries owed above (§ 12). The project card's `Languages:` and test command, and
   `README.md:L46-L51`'s stack and proof sentences — outside this document (RN-59, RN-60) *(the
   card moved: `Languages: Rust, Swift, Shell` and `swift test --package-path nozoki-mac` in its
@@ -2543,6 +2563,27 @@ A risk with no trigger and no response is an observation.>
   `nozoki_free` alone, the header is generated and never hand-edited, and the bridge's tests run
   under `-Zsanitizer=address` in CI on every build; a crash there is a crash inside the wall
   (NFR-4), and the fix is in one unit.
+- **R-14:** The grammar engine's C faults, or does not return, on a file it is handed.
+  Tree-sitter's runtime, the six generated parsers and the hand-written scanners some of them
+  carry are C compiled into `nozoki-core` (§ 3; § 9 TO-11). What they parse is the folder's bytes:
+  content that may be hostile (DR-6, NFR-16) and, as everyday input, a file another process is
+  still writing, cut off partway through a construct (FR-16; `docs/PRD.md` § Target Users, the
+  driving scenario) — *shows up as* `cargo test --locked -p nozoki-core --test highlight` ending
+  without a result, or not ending; the process ending, or the open file never drawn, under
+  `checks/churn.sh`; `checks/latency.sh`'s file-switch p95 rising across builds on a
+  floor-language fixture; or an adopter's report naming the file; *response* a parse the engine
+  refuses or stops early is not this risk: it comes back as data and is held by `folder-model`'s
+  fill rule, never a panic (§ 3; C-I1). A fault in the C is FR-16 unmet on that file — "None of
+  it crashes the shell, blocks the view, or causes a write" (`docs/SRS.md` FR-16) — and what the
+  design holds then is NFR-4: the crash is inside the one sandboxed process, which can neither
+  write nor connect, so the session is lost and nothing in the folder is (C-R2). The file that
+  did it joins the highlight fixtures; a grammar's or the runtime's version moves only through a
+  lockfile change reviewed as code (C-R6); and the engine stands behind one part, so replacing a
+  grammar or the engine rewrites `highlighter` and moves no seam (§ 9 TO-11). **Not covered, and
+  named so it is not read as coverage:** no condition in § 4 runs the engine's C under a
+  sanitizer — R-13's run is over the bridge's tests — or against a hostile corpus for the six
+  languages, and none bounds how long a parse may take. A slow parse is measured (C-I4) and not
+  bounded; a bound enters with the number the SRS folds in for NFR-1, and not before (RN-80).
 
 ## 12. What this design is not
 
@@ -2603,8 +2644,10 @@ FR-30, FR-31 and FR-32 name no engine, and the two build-cost judgments they del
 here under the native view with the same result (§ 9 TO-5; RN-60).
 
 **The UXD boundary.** This design changes no experience. Every `UX-` entry cited above is cited as
-`docs/UXD.md` v10 (Settled) states it; the C-E conditions restate none of them and bind the slices to
-them by reference. Where the UXD delegates to a document beside or below it — every token value to
+`docs/UXD.md` v11 (Settled) states it; the C-E conditions restate none of them and bind the slices to
+them by reference. This document was cut against v10. v11 moved one entry, UX-U1's expertise
+floor, and nothing above cites UX-U1 (RN-81). Where the UXD delegates to a document beside or
+below it — every token value to
 `docs/DESIGN.md`, every message's wording to `docs/CONTENT.md`, where the diagnostic is kept to the
 SRS (UX-I16) — this document cites the delegate and fixes nothing of its own. A gap in the UXD found
 here is a companion item for the CDO's own UXD run, never a redesign from this document — even by
@@ -2617,12 +2660,22 @@ RC-2, RC-3; `docs/trail/sdd/cycle-9.md` § 1.1, the owner, 2026-09-23) — open 
 and § 9 name no renderer and no CSS, § 9's direction is the platform's own controls and
 appearance, and every `UX-` entry cited in § 4's C-E conditions and § 6's observable halves and
 UXD traces was re-read against § 2 as it now stands and binds an observation or a token, never
-an engine — so the UXD stands at v10 under the view taken. What the exit moves is
+an engine — so the UXD stands at v10 under the view taken *(v10 was the UXD's version on
+2026-09-23; it is v11 since `nozoki@24d652b`, moved by the reader floor the PRD states and not by
+the exit — `docs/UXD.md` RN-31; noted 2026-10-01, RN-81)*. What the exit moves is
 `docs/DESIGN.md`'s, in that document's own run, which may trail this one: its realisation
 sentence (§ Overview, "realised in plain CSS custom properties over the product's own markup"),
 the CSS font-stack syntax its § Typography and frontmatter use to name the platform's two
 families, and RN-1's "every value here is a CSS value and holds in either" — and no token value,
-since every value that document fixes is a number or a colour a native view draws directly. No
+since every value that document fixes is a number or a colour a native view draws directly *(that
+run has happened since this sentence was written: DESIGN v11, `nozoki@cce8bde`, recorded in that
+document's RN-31. In `docs/DESIGN.md` v13 the three stand like this. § Overview reads "realised in
+AppKit views drawn by the product's own Swift package". RN-1 keeps the CSS sentence as what
+"Revisions 1–10 read". The two font stacks stay as written in § Typography and the frontmatter,
+and § Typography now says each stack "is how the token format names a platform family" and that
+the shell "looks up no family by name". No token value moved: the frontmatter differs from the
+one this sentence was written beside in its `description:` line alone. Noted 2026-10-01, RN-81;
+the sentence above is left as it was written)*. No
 C-E condition, no observable half and no *Traces to* UXD clause in § 6 moved for it (RN-53,
 RN-62).
 
@@ -2663,7 +2716,13 @@ raised there rather than from here: C-R7 now admits `nozoki_free` beside SM-4's 
 (`docs/architecture_open_issues.md` § 2.1); and § 3's Swift-frame paragraph now rests on the Swift
 packet, where `docs/nfdr.md` § 9 and ADR-0016 still say none exists and `nozoki-mac`'s departures
 from it are that document's to record (`docs/architecture_open_issues.md` § 3.4) — the Principal
-Architect's, both (RN-66). One defect in the records
+Architect's, both (RN-66) *(both were folded since this sentence was written: QC-24 holds the
+export set inside the list "and `nozoki_free`, the seam's one release call beside the list and
+not on it" — `docs/nfdr.md` QC-24 — and `docs/nfdr.md` § 9 takes `nozoki-mac`'s tooling from the
+Swift packet and states where the package departs from it, with ADR-0016 § Decision corrected in
+place on 2026-09-23; the two items cited stand at `docs/trail/architecture/cycle-10.md` § 2.1 and
+§ 3.4, and `docs/architecture_open_issues.md` holds neither; noted 2026-10-01, RN-80; the
+sentence above is left as it was written)*. One defect in the records
 themselves was found and is reported, not
 repaired from here: 14 citations of the deleted trail across five ADRs, 23 review-note citations
 written against the previous SDD's numbering, and one stale slice reference in `docs/nfdr.md` no
@@ -4489,6 +4548,181 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   the runner stamps it *(re: § 5 step 4 E-4, E-5; source: § 6 `see-git-status` and
   `follow-the-folder` *Reached when*, observable half; *Open Questions*, the collapse-and-scroll
   item; `docs/PRD.md` § UX Notes; `docs/UXD.md` UX-I3, UX-F2; RN-46, RN-76, RN-77, RN-78)*.
+- **RN-80:** *(CTO)* *(changed)* The companion's § 5.1 folded, and this seat's sentence of its
+  § 2.1. § 5.1 was raised from downstream by the PM on 2026-10-01 and answered in the owner's seat
+  by a `companion-self-answer` run: confirmed, with three additions
+  (`docs/trail/sdd/cycle-18.md` § 5.1; reasoning `docs/trail/sdd/self_answer-29.md` § 5.1).
+  § 2.1 was raised by that same run with its slot left at the placeholder.
+  **§ 5.1, the four places the answer names.** *Open Questions*: the fourth item, which grammar
+  engine compiles the six floor grammars, is closed and removed, the way RN-48 and RN-70 closed
+  theirs, and six items remain. § 3 `highlighter`: the clause that left the engine to "the slice
+  that lands it (*Open Questions*)" names tree-sitter — the runtime, `tree-sitter-highlight`, one
+  grammar crate per floor language, built from C into `nozoki-core`, nozoki's own query files
+  compiled in — and cites the record by file, section and commit. § 6 `read-a-file`, the command
+  half: "where it is a crate" and the pointer to *Open Questions* leave, and a pointer to § 3's
+  row arrives. The half names no engine itself, so the row is the one place the engine is named.
+  § 10 RC-3's *Still unresolved*: its words stay and it gains a dated parenthesis, so its pointer
+  does not lead to an item that is gone. No count of names and no version of the engine is
+  written anywhere in this document: the names are `checks/deps.allow`'s and the versions are
+  `Cargo.lock`'s (the answer's addition (b)). *Because* the item said the question would be
+  settled "in `read-a-file` by the dependency review that change carries under C-R6", and it was:
+  the record, the list and the lockfile landed in one commit, and a question the tree has
+  answered is not open.
+  **Three calls the answer left to this seat.** The answer names two things it does not cover —
+  a § 11 risk for a C parser reading a hostile file, and a § 9 row for what the engine costs —
+  and says "whether the fold adds one is the seat's call". (1) **§ 9 TO-11 is added.** § 3 now
+  names an engine that is C built into the core, and § 9 is where this design states what a
+  choice gives up; TO-2 is the row of the same kind for libgit2. The row states the cost and the
+  reversal and cites the record for what was weighed — hand-written lexers and `syntect` — and
+  re-weighs nothing (the answer's addition (c)). (2) **§ 11 R-14 is added.** `docs/SRS.md` FR-16
+  requires that a file changed while it is read or displayed neither "crashes the shell" nor
+  "blocks the view", the engine's C is where either could happen on a floor-language file, and no
+  row named it: R-4 names the platform's image decoder and R-13 the bridge. The CPO's fact in
+  this run bears on the trigger: a file caught mid-write is everyday input in the driving
+  scenario (`docs/PRD.md:L85-L86`, `:L253`), not only a hostile one. The row's response is what
+  the design already holds — an engine error returned as data, the sandbox around a fault, a
+  fixture for the file, the lockfile reviewed as code, one part to replace — and it names what
+  nothing covers. **No check is added**, and this is why: a sanitizer run or a hostile corpus for
+  the engine is a new condition on every build, no item raised one, and the answer cites no
+  failure for either. RN-76 made the same call on C-I3's comparing check. So `read-a-file`'s bar
+  does not move, which is the condition the CPO set in this run for re-reading E-2's sizing.
+  (3) **§ 3's units paragraph gains two sentences** saying that *no `unsafe`* is a claim about
+  each crate's own Rust source, and that the C `nozoki-core` links is outside it. The claim holds
+  on the tree as worded. The sentences are there because the row beside it now names C compiled
+  into that unit, and a limit is stated beside the claim it limits
+  (`system/doctrine/writing_bar.md` § 1.6, in the instance).
+  **§ 2.1, this seat's sentence.** § 12's downstream boundary said two things "are owed" to the
+  enforcement store and that both "are already raised there". Both were folded, and neither
+  pointer opens on its item. The sentence keeps its words and gains a dated parenthesis, the form
+  RC-1, RC-2 and RC-3 took (RN-56, RN-61, RN-66). This seat settles it with the slot unfilled, as
+  RN-76 settled that cycle's § 2.1: the repair changes no shape, seam, condition, order or bar and
+  nothing the product promises, and the CPO read no product call in it in this run. The item's
+  other sentence is in § 12's UXD boundary and is the CDO's. It is not written here, and the item
+  stays in the companion until that seat has handled it.
+  **Re-verified before writing, not taken from the answer or the item**, on `main` at
+  `nozoki@24d652b`. `checks/deps.review.md:L8-L16` is § *The engine chosen* and names the engine
+  and the two alternatives. `git show --stat 85d9fa7` lists `Cargo.lock`, `checks/deps.allow`,
+  `checks/deps.review.md` and `crates/nozoki-core/Cargo.toml`, and `git merge-base --is-ancestor
+  85d9fa7 HEAD` exits 0. `cargo test --locked -p nozoki-core --test highlight` prints `test
+  result: ok. 18 passed; 0 failed`. `bash checks/no-network.sh` prints `ok — 40 cargo names match
+  checks/deps.allow; the Swift package declares 0 dependencies and holds 0 Package.resolved`.
+  `grep -rl 'tree_sitter\|tree-sitter'` over the `.rs`, `.toml` and `.swift` files of `crates`
+  and `nozoki-mac` prints `crates/nozoki-core/Cargo.toml` and
+  `crates/nozoki-core/src/highlighter.rs` and nothing else, so one part imports the engine. `grep
+  -rn unsafe crates/nozoki-core/src` prints nothing, and the workspace `Cargo.toml` sets
+  `unsafe_code = "forbid"`. `crates/nozoki-core/src/highlighter.rs:L183-L189` keeps the spans
+  gathered so far when the engine stops, and passes the engine `None` where it takes a
+  cancellation flag, which is the ground for R-14's "none bounds how long a parse may take".
+  `crates/nozoki-core/tests/highlight.rs:L201`, `:L206` and `:L213` hold a truncated, a deeply
+  nested and a wrong-language case, which the tree carries beyond `read-a-file`'s bar. The
+  registry copies of the Python, Bash, JavaScript, YAML and TOML grammar crates the lockfile
+  resolves each hold a `src/scanner.c`, and the JSON one holds none. `git diff --stat 2026553
+  HEAD -- crates checks Cargo.lock Cargo.toml` prints nothing, so the engine as merged is the
+  engine at `24d652b`. For § 2.1: `docs/nfdr.md:L368-L374` is QC-24 with `nozoki_free` beside
+  the list; `:L923-L932` is § 9 on the Swift packet, and `:L1056` opens the bullet that states
+  where `nozoki-mac` departs from it;
+  `docs/adr/0016-physical-unit-set-core-bridge-mac-checks.md:L45-L49` is the correction dated
+  2026-09-23; `docs/architecture_open_issues.md` reads "None." under § 2 and its § 3 holds §§ 3.1
+  and 3.2 only; and `grep -n "^### " docs/trail/architecture/cycle-10.md` prints § 2.1 at `:L29`
+  and § 3.4 at `:L121`.
+  **One thing the tree shows, recorded here and in no condition.** R-14 says R-13's sanitizer run
+  is over the bridge's tests. That run is a statement of this design and of `docs/nfdr.md` QC-13
+  (`:L254`), and the tree does not carry it yet: `grep -rn -i sanitizer .github checks` over the
+  `.yml` and `.sh` files prints nothing, and `.github/workflows/ci.yml:L26` runs `cargo test
+  --workspace --locked && swift test --package-path nozoki-mac`. It is the delivery tier's,
+  against the NFDR, and no slice's bar in § 6 states it.
+  What does not move, and why: § 2, § 5 steps 3 and 5 and § 7 — an engine named inside one part
+  changes no shape, pair, edge or order; SM-1 – SM-8 — nothing new crosses a seam;
+  § 4 C-R1, C-R6 and C-I5 — the answer re-read them and the tree meets them, and R-14's limits
+  are stated in § 11 and are not conditions; `read-a-file`'s *Rests on* and SRS trace — the
+  slice realizes the same parts and requirements; "third item" in § 5 step 4 E-3, "the third
+  Open Question" in § 6 S-3 and "the second Open Question" in § 6 S-4 — the removed item was the
+  fourth, and the first three keep their order; RC-1's "fourth *Open Questions* item" — it names
+  the item that held that place on 2026-09-19, and a re-cut entry is history; no § 10 entry — no
+  *Reached when* failed and the SRS did not move, and the question resolved downstream as it
+  said it would; § 12's SRS boundary — `docs/SRS.md` stands at v12 and no requirement moves.
+  **Downstream, nothing opened by this seat:** `docs/nfdr.md` QC-3 still calls the one-time
+  review owed and is raised at `docs/architecture_open_issues.md` § 3.1, the Principal
+  Architect's. `checks/deps.review.md:L14` cites this document's lines `:L4521-L4524` for the
+  question, with no commit, and those lines no longer hold it. That file is the delivery tier's.
+  The question as it stood is at `nozoki@24d652b:docs/SDD.md:L4521-L4524`. **The companion:**
+  `diff docs/SDD_open_issues.md docs/trail/sdd/cycle-18.md` printed nothing before this turn's
+  edits. § 5.1 is removed from it as folded, and § 2.1 stays, with a line saying which of its two
+  sentences is done. Header `Version:` untouched — the runner stamps it *(re: *Open Questions*;
+  § 3 `highlighter` and the units paragraph; § 6 `read-a-file` *Reached when*, command half; § 9
+  TO-11; § 10 RC-3; § 11 R-14; § 12 the downstream boundary; source:
+  `docs/trail/sdd/cycle-18.md` §§ 2.1, 5.1; `docs/trail/sdd/self_answer-29.md`;
+  `checks/deps.review.md` § *The engine chosen*; `nozoki@85d9fa7`, `nozoki@2026553`,
+  `nozoki@24d652b`; `docs/SRS.md` FR-8, FR-16, FR-29, NFR-1, NFR-4, NFR-16, DR-6;
+  `docs/PRD.md:L85-L86`, `:L253`; `docs/nfdr.md` QC-3, QC-13, QC-24, § 9; ADR-0016;
+  `docs/trail/architecture/cycle-10.md` §§ 2.1, 3.4; `docs/architecture_open_issues.md` § 3.1;
+  RN-48, RN-56, RN-61, RN-66, RN-70, RN-76)*.
+- **RN-81:** *(CDO)* *(changed)* § 12's UXD boundary is brought to the UXD and the design
+  language as they stand, in three places, and no condition, observable half or trace moved.
+  **The version it cites.** The clause said every `UX-` entry "is cited as `docs/UXD.md` v10
+  (Settled) states it". The UXD is at v11 since `nozoki@24d652b` (its header's `Version:` field),
+  so the clause now reads v11 and says what v11 moved. The reason is the upstream change, which
+  the UXD records in its RN-31: UX-U1's expertise floor now carries the one `docs/PRD.md` § Goals
+  "No learning curve" states. The change reaches no sentence of this document. `git diff 4d7b653
+  24d652b -- docs/UXD.md` has three hunks: the `Version:` line, UX-U1, and RN-31 appended at the
+  end. `grep -n "UX-U[0-9]" docs/SDD.md`, run before this turn's edits, printed two lines,
+  `:L1433` (UX-U3) and `:L1717` (UX-U2), so UX-U1 was cited nowhere. The three line-anchored UXD
+  citations this document carries (`docs/UXD.md:L3`, `:L3-L5`, `:L395-L397`) open on the same
+  lines: the first two hunks replace lines one for one and the third starts at `:L938`.
+  **"The UXD stands at v10 under the view taken."** That sentence is about the renderer exit of
+  2026-09-23 and was true on that day. It keeps its words and gains a dated parenthesis saying the
+  UXD is now at v11 and that the exit did not move it, the form RC-1, RC-2 and RC-3 took (RN-56,
+  RN-61, RN-66).
+  **What the exit moves in `docs/DESIGN.md`.** This is the second sentence of the companion's
+  § 2.1 (`docs/trail/sdd/cycle-18.md` § 2.1, its last paragraph of *Drafted into the SDD*). The
+  clause named three things that document's own run would move and quoted § Overview as "realised
+  in plain CSS custom properties over the product's own markup". That run has happened: DESIGN
+  v11, `nozoki@cce8bde`. The sentence keeps its words and gains a dated parenthesis saying how
+  each of the three stands. The item measured the first and said the other two "were not
+  measured", so all three were read at DESIGN v13 (`nozoki@705e6f1`) before writing. § Overview
+  reads "realised in AppKit views drawn by the product's own Swift package"
+  (`docs/DESIGN.md:L331-L332`). RN-1 says "Revisions 1–10 read *plain CSS custom properties*
+  here … and held that every value was a CSS value" (`:L855-L857`). The two font stacks did not
+  move: the frontmatter still names them (`:L29`, `:L46`), § Typography says each "is how the
+  token format names a platform family" and that the shell "looks up no family by name"
+  (`:L447-L452`), and that document's RN-31 gives the reason, "the owner confirmed the families
+  in those words" (`:L1336-L1337`). So one of the three things the clause expected to move
+  stayed. That call is the design language's, made in its own run as the clause said it would be,
+  and the parenthesis records it without reopening it. "And no token value" held: a `diff` of the
+  frontmatter at `nozoki@269bcf5`, the revision RN-62 read, against the file on disk prints one
+  changed line, `description:`.
+  **Why this seat settled its half of § 2.1 with the slot unfilled.** The parenthesis records
+  what another document now says. It changes no experience, no C-E condition, no observable half
+  and no trace, and nothing the product promises, so it is this seat's call and not the owner's
+  (RN-19's routing rule). The CTO settled the item's first sentence on the same ground (RN-80),
+  and the CPO read no product call in the item in this run.
+  **No § 10 entry, and the doubt.** § 10 lists "the PRD, SRS or UXD changed upstream" among the
+  re-cut triggers, the lane table gives an upstream change to the seat that owns the document,
+  and the UXD is this seat's. RN-62 and RN-69 wrote "the UXD did not change upstream"; that is no
+  longer so. This seat reads the trigger as permission to redraw the cut where an upstream change
+  contradicts it, because § 10 opens "A cut meets a reality that contradicts it, and the
+  contradiction is recorded **before** the cut is redrawn". UX-U1's floor contradicts no slice:
+  no field of § 6 and no C-E condition cites it, so there is no prior assumption to record and
+  nothing to redraw. A reader could hold that every upstream revision earns an entry, to show it
+  was looked at. This note and the clause in § 12 are where that is shown.
+  What does not move, and why: § 4's CDO clause, C-E1 – C-E10 — none cites UX-U1 or a reader's
+  Git knowledge (`grep -n -i "git knowledge\|expertise\|know Git" docs/SDD.md` printed nothing
+  before this turn's edits); § 5 step 1's observability — no entry changed; every § 6 observable
+  half and UXD trace — none cites UX-U1, and the half read closest against the new floor,
+  `see-git-status`'s, states the short status "in Git's own word" as UX-S3 does, which
+  `docs/UXD.md` RN-31 records as an entry that "already assumes this reader"; the rest of § 12's
+  UXD boundary — the gap found, the defect reported and the
+  delegations stand. `git log f5b7843..HEAD -- docs/DESIGN.md docs/CONTENT.md` prints nothing, so
+  the design language and `docs/CONTENT.md` are as this seat last read them, in the run that
+  ended at `nozoki@f5b7843`. No companion item: nothing here is the owner's to settle and no two
+  seats hold different positions. **The companion:** § 2.1 is removed as folded, both sentences
+  now written, and the file lists no item. The item stands whole, slot unfilled, at
+  `docs/trail/sdd/cycle-18.md` § 2.1. Header `Version:` untouched — the runner stamps it *(re:
+  § 12 the UXD boundary; source: `docs/UXD.md` header `Version:`, UX-U1, RN-31; `docs/PRD.md`
+  § Goals "No learning curve"; `docs/DESIGN.md` § Overview, § Typography, RN-1, RN-31;
+  `docs/trail/sdd/cycle-18.md` § 2.1; `nozoki@24d652b`, `nozoki@4d7b653`, `nozoki@cce8bde`,
+  `nozoki@705e6f1`, `nozoki@269bcf5`, `nozoki@f5b7843`; § 10, opening note; RN-19, RN-56, RN-61,
+  RN-62, RN-66, RN-69, RN-80)*.
 
 ## Open Questions
 
@@ -4518,10 +4752,6 @@ question.>
   the layout fixtures at `docs/DESIGN.md`'s prose measure on the floor macOS; the form found is
   written into `surfaces`' row in § 3. *(This item replaced the WKWebView `img-src` origin
   question on 2026-09-23, which § 10 RC-3 made moot; RN-60.)*]
-- [OPEN: Which grammar engine compiles the six floor grammars into `nozoki-core` (§ 3
-  `highlighter`), and what it adds to `checks/deps.allow`. Settled in `read-a-file` by the
-  dependency review that change carries under C-R6; the five token classes and the extension map
-  do not wait on it.]
 - [OPEN: In what form `open_folder`'s argument crosses the bridge so that the grant the Open panel
   conferred is the one the core reads under — the path alone, on the process-wide grant the panel
   confers for the session, or the URL's security-scoped form once `switch-the-folder`'s bookmarks
