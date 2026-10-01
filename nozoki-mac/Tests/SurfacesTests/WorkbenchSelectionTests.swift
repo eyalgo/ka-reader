@@ -24,15 +24,25 @@ final class WorkbenchSelectionTests: XCTestCase {
             state: kind == .folder ? .pending : .observed)
     }
 
-    private func makeWorkbench() -> (WorkbenchView, Log) {
+    /// Distinct from the one image every other row draws, so a test can tell it was drawn.
+    private let fileCodeGlyph = NSImage(size: NSSize(width: 5, height: 5))
+
+    private func pythonEntry(_ name: String) -> Entry {
+        Entry(name: name, path: name, kind: .file, state: .observed, language: .python)
+    }
+
+    private func makeWorkbench(extra: [Entry] = []) -> (WorkbenchView, Log) {
         let glyph = NSImage(size: NSSize(width: 1, height: 1))
         let glyphs = StatusGlyphs(empty: glyph, failure: glyph)
-        let tree = RootItemsView(folderGlyph: glyph, fileGlyph: glyph, statusGlyphs: glyphs)
+        let tree = RootItemsView(
+            folderGlyph: glyph, fileGlyph: glyph, fileCodeGlyph: fileCodeGlyph,
+            statusGlyphs: glyphs)
         tree.show(
-            .observed([
-                entry("src", .folder), entry("README", .file), entry("a.txt", .file),
-                entry("b.txt", .file),
-            ]))
+            .observed(
+                [
+                    entry("src", .folder), entry("README", .file), entry("a.txt", .file),
+                    entry("b.txt", .file),
+                ] + extra))
         let workbench = WorkbenchView(rootItemsView: tree, statusGlyphs: glyphs)
         workbench.frame = NSRect(x: 0, y: 0, width: 800, height: 500)
         let log = Log()
@@ -86,6 +96,42 @@ final class WorkbenchSelectionTests: XCTestCase {
         XCTAssertEqual(barPaths(workbench), ["a.txt"])
         XCTAssertEqual(shownPath(workbench), "a.txt")
         XCTAssertEqual(workbench.readingPanel.contentView.string, "hello")
+    }
+
+    private func rowGlyph(_ name: String, in workbench: WorkbenchView) throws -> NSImage? {
+        let tree = workbench.rootItemsView
+        let made = tree.outlineView.view(
+            atColumn: 0, row: try row(name, in: workbench), makeIfNecessary: true)
+        return (made as? NSTableCellView)?.imageView?.image
+    }
+
+    func testSelectingACannotDisplayPythonRowKeepsItsFileCodeGlyph() throws {
+        let (workbench, log) = makeWorkbench(extra: [pythonEntry("legacy.py")])
+        XCTAssertTrue(try rowGlyph("legacy.py", in: workbench) === fileCodeGlyph)
+
+        try select("legacy.py", in: workbench)
+        log.selects[0].answer(.cannotDisplay(.invalidUTF8))
+
+        XCTAssertEqual(shownPath(workbench), "legacy.py")
+        XCTAssertTrue(
+            try rowGlyph("legacy.py", in: workbench) === fileCodeGlyph,
+            "a row whose file cannot be displayed keeps its glyph")
+    }
+
+    func testOpenFloorLanguageRowKeepsBarSelectionAndNameWithFileCodeGlyph() throws {
+        let (workbench, log) = makeWorkbench(extra: [pythonEntry("app.py")])
+        let tree = workbench.rootItemsView
+        let index = try row("app.py", in: workbench)
+
+        try select("app.py", in: workbench)
+        log.selects[0].answer(.text("print(1)", .floor(.python, [])))
+
+        XCTAssertEqual(barPaths(workbench), ["app.py"])
+        XCTAssertEqual(tree.outlineView.selectedRow, index)
+        let made = tree.outlineView.view(atColumn: 0, row: index, makeIfNecessary: true)
+        let drawn = try XCTUnwrap(made as? NSTableCellView)
+        XCTAssertEqual(drawn.textField?.stringValue, "app.py")
+        XCTAssertTrue(drawn.imageView?.image === fileCodeGlyph)
     }
 
     func testTreeStaysEnabledAfterCannotDisplayAndAfterFailedRead() throws {

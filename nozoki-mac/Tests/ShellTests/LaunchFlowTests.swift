@@ -8,7 +8,7 @@ private let emptyRootAnswer = Data(#"{"state":"observed","entries":[]}"#.utf8)
 private let docsRootAnswer = Data(
     (#"{"state":"observed","entries":["#
         + #"{"name":"docs","path":"docs","kind":"folder","state":"pending"},"#
-        + #"{"name":"a.md","path":"a.md","kind":"file","state":"observed"}]}"#).utf8)
+        + #"{"name":"a.md","path":"a.md","kind":"file","state":"observed","language":"plain"}]}"#).utf8)
 private let emptyDocsAnswer = Data(#"{"state":"observed","entries":[]}"#.utf8)
 
 @MainActor
