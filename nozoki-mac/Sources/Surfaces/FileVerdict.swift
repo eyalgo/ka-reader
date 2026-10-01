@@ -12,12 +12,12 @@ package enum FileVerdict: Equatable, Sendable {
 }
 
 /// The language a text file is drawn as. Only `plain` exists until highlighting lands.
-package enum Language: String, Sendable {
+package enum Language: String, Decodable, Sendable {
     case plain
 }
 
 /// Why a file is not text, as the bridge names it on the wire.
-package enum CannotDisplayReason: String, Sendable {
+package enum CannotDisplayReason: String, Decodable, Sendable {
     case invalidUTF8 = "invalid_utf8"
     case invalidUTF16 = "invalid_utf16"
 }

@@ -107,4 +107,77 @@ enum BridgePayload {
         guard let buffer else { return nil }
         return (try? JSONDecoder().decode(ListAnswer.self, from: buffer.payload))?.listing
     }
+
+    /// The file answer's wire (design § 3 F): one object tagged by `state`, with exactly the
+    /// members the state names. A member that is missing or extra, and a state, language, reason or
+    /// condition outside its closed set, throws. `pending` means nothing was read, so it carries no
+    /// verdict.
+    private struct FileAnswer: Decodable {
+        let verdict: FileVerdict?
+
+        /// Any member name, so a member this shell does not know is seen and refused rather than
+        /// ignored.
+        private struct Key: CodingKey {
+            let stringValue: String
+            let intValue: Int? = nil
+
+            init(stringValue: String) {
+                self.stringValue = stringValue
+            }
+
+            init?(intValue: Int) {
+                return nil
+            }
+
+            static let state = Key(stringValue: "state")
+            static let content = Key(stringValue: "content")
+            static let language = Key(stringValue: "language")
+            static let reason = Key(stringValue: "reason")
+            static let condition = Key(stringValue: "condition")
+        }
+
+        private enum StateTag: String, Decodable {
+            case text
+            case cannotDisplay = "cannot_display"
+            case failed
+            case pending
+        }
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: Key.self)
+            let state = try container.decode(StateTag.self, forKey: .state)
+            let expected: [String]
+            switch state {
+            case .text: expected = ["state", "content", "language"]
+            case .cannotDisplay: expected = ["state", "reason"]
+            case .failed: expected = ["state", "condition"]
+            case .pending: expected = ["state"]
+            }
+            guard Set(container.allKeys.map(\.stringValue)) == Set(expected) else {
+                throw DecodingError.dataCorruptedError(
+                    forKey: .state, in: container,
+                    debugDescription: "\(state.rawValue) has the wrong members")
+            }
+            switch state {
+            case .text:
+                verdict = .text(
+                    try container.decode(String.self, forKey: .content),
+                    try container.decode(Language.self, forKey: .language))
+            case .cannotDisplay:
+                verdict = .cannotDisplay(
+                    try container.decode(CannotDisplayReason.self, forKey: .reason))
+            case .failed:
+                verdict = .failed(try container.decode(Condition.self, forKey: .condition))
+            case .pending:
+                verdict = nil
+            }
+        }
+    }
+
+    /// The verdict a `nozoki_select_file` answer carries, or `nil` for `pending`, a NULL buffer and
+    /// anything that does not conform.
+    static func decodeFile(_ buffer: BridgeBuffer?) -> FileVerdict? {
+        guard let buffer else { return nil }
+        return (try? JSONDecoder().decode(FileAnswer.self, from: buffer.payload))?.verdict
+    }
 }
