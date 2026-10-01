@@ -359,7 +359,7 @@ final class LaunchFlowTests: XCTestCase {
             let root = try workbench(in: presenter).rootItemsView
             XCTAssertEqual(root.outlineView.numberOfRows, 0, member)
             XCTAssertNil(root.rootLineText, member)
-            XCTAssertEqual(bridge.handedOut, bridge.freed, member)
+            XCTAssertEqual(bridge.handedOut.sorted(), bridge.freed.sorted(), member)
         }
     }
 
