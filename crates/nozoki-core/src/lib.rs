@@ -3,6 +3,7 @@
 mod error;
 mod folder_model;
 mod fs_reader;
+mod language;
 
 pub use error::Error;
 pub use folder_model::{
