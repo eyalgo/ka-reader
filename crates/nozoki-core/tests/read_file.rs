@@ -376,25 +376,40 @@ fn test_listing_keeps_floor_language_for_non_text_floor_file() {
 
 /// A-7: the tree and the panel never disagree about a name. For every readable file of the name
 /// table, the language its listing entry carries is the language `select_file` answers.
+///
+/// `Deploy.YmL` is read from a folder of its own: on a case-insensitive volume it is the same file
+/// as `deploy.yml`, and the two cannot share a folder.
 #[test]
 fn test_listing_language_agrees_with_select_file_for_every_readable_name() {
+    const MIXED_CASE_NAME: &str = "Deploy.YmL";
+    let main_names: Vec<&str> = READABLE_NAME_TABLE
+        .into_iter()
+        .filter(|name| *name != MIXED_CASE_NAME)
+        .collect();
     let folder = TempDir::new();
-    for name in READABLE_NAME_TABLE {
+    let mixed_case_folder = TempDir::new();
+    for name in &main_names {
         folder.write_file(name, "");
     }
-    let opened = open(&folder);
-    let ItemState::Observed(entries) = list_tree(&opened, "") else {
-        panic!("the folder lists");
-    };
+    mixed_case_folder.write_file(MIXED_CASE_NAME, "");
 
-    for name in READABLE_NAME_TABLE {
-        let listed = entries
-            .iter()
-            .find(|entry| entry.name == name)
-            .unwrap_or_else(|| panic!("{name} is listed"))
-            .language;
-        let (_, read) = text_of(select_file(&opened, name));
+    for (home, names) in [
+        (&folder, main_names),
+        (&mixed_case_folder, vec![MIXED_CASE_NAME]),
+    ] {
+        let opened = open(home);
+        let ItemState::Observed(entries) = list_tree(&opened, "") else {
+            panic!("the folder lists");
+        };
+        for name in names {
+            let listed = entries
+                .iter()
+                .find(|entry| entry.name == name)
+                .unwrap_or_else(|| panic!("{name} is listed"))
+                .language;
+            let (_, read) = text_of(select_file(&opened, name));
 
-        assert_eq!(listed, Some(read), "{name}");
+            assert_eq!(listed, Some(read), "{name}");
+        }
     }
 }

@@ -124,12 +124,15 @@ pub enum ItemState<T> {
 /// One direct entry of a listed folder.
 ///
 /// A folder is `Pending`, and a file is `Observed`. An entry that failed is always a `File`.
+/// A file carries the language its own name gives it (a link its own name, never its target's), in
+/// every state, and a folder carries none, so `language.is_some() == (kind == File)`.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Entry {
     pub name: String,
     pub path: String,
     pub kind: EntryKind,
     pub state: ItemState<()>,
+    pub language: Option<Language>,
 }
 
 /// What a selected file turned out to be: its text, or the fact that it cannot be shown as text.
@@ -849,12 +852,22 @@ fn list_folder(
                 path: path.to_string_lossy().into_owned(),
                 kind,
                 state,
+                language: language_of_entry(kind, &name),
             },
             raw_name: name,
         });
     }
     order(&mut items);
     Ok(items.into_iter().map(|item| item.entry).collect())
+}
+
+/// The language an entry carries, taken from the raw name the system reported (never the lossy
+/// text, which is not the name a read of the same entry is given): none for a folder.
+fn language_of_entry(kind: EntryKind, raw_name: &OsStr) -> Option<Language> {
+    match kind {
+        EntryKind::Folder => None,
+        EntryKind::File => Some(language_of(raw_name)),
+    }
 }
 
 /// The kind and state an entry has when it is a folder or a file that was read.

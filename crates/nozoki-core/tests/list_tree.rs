@@ -432,15 +432,29 @@ const NAMES_WITH_NO_FLOOR_LANGUAGE: [&str; 12] = [
 ];
 
 /// A-1: a listed file entry carries the language the core gives its name, whatever its state.
+///
+/// `Deploy.YmL` is listed from a folder of its own: on a case-insensitive volume it is the same
+/// file as `deploy.yml`, and the two cannot share a folder.
 #[test]
 fn test_listed_floor_names_carry_their_language() {
     let folder = TempDir::new();
+    let mixed_case_folder = TempDir::new();
     for (name, _) in NAMES_WITH_A_FLOOR_LANGUAGE {
-        folder.write_file(name, "");
+        let home = if name == "Deploy.YmL" {
+            &mixed_case_folder
+        } else {
+            &folder
+        };
+        home.write_file(name, "");
     }
-    let opened = open_folder(folder.path()).expect("a folder opens");
-
-    let listed = languages_by_name(list_tree(&opened, ""));
+    let mut listed = languages_by_name(list_tree(
+        &open_folder(folder.path()).expect("a folder opens"),
+        "",
+    ));
+    listed.extend(languages_by_name(list_tree(
+        &open_folder(mixed_case_folder.path()).expect("a folder opens"),
+        "",
+    )));
 
     for (name, language) in NAMES_WITH_A_FLOOR_LANGUAGE {
         assert_eq!(language_listed(&listed, name), Some(language), "{name}");
