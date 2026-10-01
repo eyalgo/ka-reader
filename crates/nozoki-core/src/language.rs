@@ -1,3 +1,22 @@
+//! The language a text file is drawn as: the six floor languages and `Plain`.
+//!
+//! A value module shared by `fs_reader`, which names a file's language from its name, and
+//! `highlighter`, which tokenises text in it. Neither imports the other, so the type lives here.
+
+/// The language a text file is drawn as: one of the six floor languages, or `Plain` for every
+/// text the floor does not name. There is no Markdown value, and the set is closed, so a `match`
+/// over it names every value and a seventh language is a compile error at each one.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Language {
+    Python,
+    Shell,
+    JavaScript,
+    Json,
+    Yaml,
+    Toml,
+    Plain,
+}
+
 #[cfg(test)]
 mod tests {
     use crate::Language;
@@ -28,7 +47,15 @@ mod tests {
         let names: Vec<&str> = every_value.into_iter().map(named_by_arm).collect();
         assert_eq!(
             names,
-            ["python", "shell", "javascript", "json", "yaml", "toml", "plain"]
+            [
+                "python",
+                "shell",
+                "javascript",
+                "json",
+                "yaml",
+                "toml",
+                "plain"
+            ]
         );
     }
 }

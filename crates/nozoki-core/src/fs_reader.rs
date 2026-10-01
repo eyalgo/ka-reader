@@ -12,6 +12,7 @@ use std::path::{Component, Path, PathBuf};
 use rustix::fs::OFlags;
 
 use crate::folder_model::OpenFailure;
+use crate::language::Language;
 
 /// A private opening failure with the public condition and safe diagnostic detail.
 #[derive(Debug, PartialEq, Eq)]
@@ -138,12 +139,6 @@ pub enum FileContent {
     Text { content: String, language: Language },
     /// The file is not text under the text rule, for the reason named.
     CannotDisplay(CannotDisplayReason),
-}
-
-/// The language a text file is drawn as. Only `Plain` exists until the floor-language map lands.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Language {
-    Plain,
 }
 
 /// Why a file is not text: the two ways the text rule turns a file away.
