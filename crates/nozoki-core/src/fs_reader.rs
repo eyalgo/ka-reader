@@ -2042,6 +2042,32 @@ mod tests {
         write_bytes(&temp, "root/empty", &[]);
         temp.make_link("root/dangling", "nowhere");
         temp.make_link("root/escape", "../outside.txt");
+        // The rest of the shapes the other read tests use: each mark alone, a mark then text, a torn
+        // sequence, an odd UTF-16 byte, an unpaired surrogate, a big-endian file, a name inside the
+        // floor set and a several-megabyte file. A file the operating system refuses is not here: the
+        // snapshot itself reads every file's bytes, so it cannot hold a file nobody may read.
+        write_bytes(&temp, "root/mark8", &UTF8_MARK_BYTES);
+        write_bytes(&temp, "root/mark16le", &UTF16_LITTLE_ENDIAN_MARK_BYTES);
+        write_bytes(&temp, "root/mark16be", &UTF16_BIG_ENDIAN_MARK_BYTES);
+        let mut marked = UTF8_MARK_BYTES.to_vec();
+        marked.extend_from_slice("héllo".as_bytes());
+        write_bytes(&temp, "root/marked.txt", &marked);
+        write_bytes(&temp, "root/torn.txt", &[b'a', 0xE2, 0x82]);
+        let mut odd = UTF16_LITTLE_ENDIAN_MARK_BYTES.to_vec();
+        odd.extend_from_slice(b"h\0i");
+        write_bytes(&temp, "root/odd.txt", &odd);
+        let mut surrogate = UTF16_BIG_ENDIAN_MARK_BYTES.to_vec();
+        surrogate.extend_from_slice(&[0xD8, 0x00]);
+        write_bytes(&temp, "root/surrogate.txt", &surrogate);
+        let mut big_endian = UTF16_BIG_ENDIAN_MARK_BYTES.to_vec();
+        big_endian.extend_from_slice(b"\0h\0i");
+        write_bytes(&temp, "root/be.txt", &big_endian);
+        write_bytes(&temp, "root/deploy.yml", b"key: value\n");
+        write_bytes(
+            &temp,
+            "root/big.txt",
+            "line — héllo\n".repeat(300_000).as_bytes(),
+        );
         let before = snapshot(temp.path());
 
         for requested in [
@@ -2055,6 +2081,16 @@ mod tests {
             "escape",
             "../outside.txt",
             "missing.txt",
+            "mark8",
+            "mark16le",
+            "mark16be",
+            "marked.txt",
+            "torn.txt",
+            "odd.txt",
+            "surrogate.txt",
+            "be.txt",
+            "deploy.yml",
+            "big.txt",
         ] {
             let _ = read(&root, requested);
             assert_eq!(snapshot(temp.path()), before, "{requested}");
