@@ -1,8 +1,8 @@
 # NFDR — Nozoki 覗き
 
-**Status:** Settled
+**Status:** Draft
 **Owner:** Principal Architect
-**Version:** 22 — the cycle-19 fold and the close: the one answered item, § 2.1, folded (`docs/trail/architecture/cycle-19.md` § 2.1; reasoning at `docs/trail/architecture/self_answer-23.md` § 2.1). QC-62 stands as v21 drafted it. § 9's Swift 6 migration-cost sentence names the three `LaunchFlow.swift` sites at `nozoki@7c7038f` — `:L60`, `:L107` and `:L111` — beside `ReadRunning.swift:L28`, the measured `:L53` being `:L107` now. ADR-0012's four unpinned citations are pinned in place to `nozoki@ab39502`, under the owner's citation-repair ruling; no ADR is written or superseded, and the index does not move. No `QC` is added, renumbered or reused. Nothing is left open, so the companion is removed and `Status:` is Settled.
+**Version:** 23 — the cycle-20 fold: the two answered downstream items folded (`docs/trail/architecture/cycle-20.md` §§ 3.1, 3.2; reasoning at `docs/trail/architecture/self_answer-24.md`). QC-3 records the one-time review at `nozoki@85d9fa7:checks/deps.review.md`, over the 40 names on the list at that commit, and no longer calls it owed. QC-30 half (2) excepts each dependency's build script — the file its manifest's `build` key names, `build.rs` by default — and § 9's `checks/structure.sh` bullet follows it. Two drafts for the owner's confirm: QC-30 half (2) skips the workspace's own members, and ADR-0017 (Proposed) records the tree-sitter grammar engine SDD v23 added as § 9 TO-11, with QC-9 gaining the limit SDD § 3 now states — *no `unsafe`* is about each crate's own Rust source, not the C it links. No `QC` is added, renumbered or reused. The companion stays open with the two drafts, so `Status:` is Draft.
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · PRD Settled · UXD Settled · DESIGN Settled · CONTENT Settled
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
@@ -112,14 +112,21 @@ new units while they were unbuilt.
   passed the diff and were never reviewed against the domain. At `nozoki@0aca57e` the list is one
   `cargo:` section of 17 names (`checks/deps.allow:L18` onward); the `pnpm:` section and 201 of
   the 218 cargo names left with the Tauri build at `nozoki@fad4e78`, unreviewed, and none of them
-  is shipped now; the 17 that stayed were among the 218 never reviewed, and no record shows the
-  review — `nozoki@6acfb65` generated the list and read its names against the file's header
+  is shipped now; the 17 that stayed were among the 218 never reviewed, and until
+  `nozoki@85d9fa7` no record showed the review — `nozoki@6acfb65` generated the list and read its names against the file's header
   rules, which is the reading by name this half says cannot answer the question, and
   `nozoki@fad4e78` records only that the tree equals the list *(the count and the commits on the
-  owner's seat's answer at `docs/trail/architecture/cycle-11.md` § 3.2 — RN-25)*. So the
-  one-time review is still owed, over those 17: the change that first realizes this
-  half reviews them once, by the same question, and records that review as code in the same
-  change — after it, every name on the list has passed one review or the other. No command judges
+  owner's seat's answer at `docs/trail/architecture/cycle-11.md` § 3.2 — RN-25)*. **The one-time
+  review is recorded**, at `nozoki@85d9fa7:checks/deps.review.md`, which landed in one commit with
+  `checks/deps.allow` and `Cargo.lock`. At that commit the list is one `cargo:` section of 40
+  names — the 17, the three `nozoki@21589c7` added (`bitflags`, `errno`, `rustix`) and the 20 the
+  grammar engine brings (SDD § 3 `highlighter`) — and the record has one row for each of the 40.
+  Every row reads `cargo tree --offline --locked -e features -i <crate>` and the crate's registry
+  copy at the version the lock resolves, which is this half's question and not a reading by name.
+  The record is cited at that commit because its own title, "every name on `checks/deps.allow`",
+  stops being true at the next name added. Every name on the list has now passed one review or
+  the other, and every later addition is reviewed under this half as before *(the closure on the
+  owner's seat's answer at `docs/trail/architecture/cycle-20.md` § 3.1 — RN-34)*. No command judges
   whether a name is a transport, which is why the second half is a review gate at a named moment
   and says so here *(traces to: SDD § 4 C-R6 — "no shipped unit links a network transport", the
   allowlist change "reviewed in the same change"; § 4 C-I3 — `no-network.sh` failing on a Swift
@@ -207,12 +214,18 @@ explicitly and never inferred.
   re-derived at v11 — RN-22)*
 - **QC-9:** `nozoki-core` **must not import** any Apple framework or a binding to one, any crate
   outside `checks/deps.allow`, or `std::process`, and **holds no `unsafe`** — the workspace forbids
-  it, and only `nozoki-bridge`'s manifest relaxes it.
+  it, and only `nozoki-bridge`'s manifest relaxes it. *No `unsafe`* is said of each crate's own
+  Rust source. The C that `nozoki-core` links — the grammar engine's runtime and six grammars
+  today (SDD § 3 `highlighter`), and libgit2 when `git-reader` links it — is compiled in beside
+  that source and is outside the claim, so this entry does not say the unit runs only
+  memory-safe code. A fault in that C is bounded by the sandbox (QC-25), which this entry does
+  not replace (SDD § 11 R-14).
   — *verified by:* `checks/no-network.sh`; `checks/structure.sh` (layer 6) — the imports, and
   `unsafe` appearing in no crate but `nozoki-bridge`; `cargo build --workspace --locked` under
   `[workspace.lints.rust] unsafe_code = "forbid"`, a build failure on an `unsafe` block in any
-  crate whose manifest does not relax it *(traces to: ADR-0013; ADR-0016; SDD § 3, the units paragraph; § 4 C-R6; `Cargo.toml`
-  `[workspace.lints.rust]`; re-derived at v11 — RN-22)*
+  crate whose manifest does not relax it *(traces to: ADR-0013; ADR-0016; ADR-0017; SDD § 3, the units paragraph; § 4 C-R6; `Cargo.toml`
+  `[workspace.lints.rust]`; re-derived at v11 — RN-22; the limit from SDD § 3's units paragraph
+  and § 11 R-14 as they read at v23 — RN-34)*
 - **QC-10:** `folder-model` may import `fs-reader`, the Git port trait, `watcher`,
   `markdown-renderer` and `highlighter` — the last two to fill the open `FileView`: the model
   calls `highlighter` for a text file in a floor language and `markdown-renderer` for a Markdown
@@ -518,7 +531,7 @@ reviewed tag.
   a Swift dependency declared, or on a `Package.resolved` present; the lockfile diff at
   `development-design` (the change) *(traces to: SDD § 4 C-R6, C-I3; `quality_defaults.md`
   § Dependencies; `languages/rust/toolchain.md` § Adding, pinning and locking a dependency;
-  ADR-0004; ADR-0014; re-derived at v11 — RN-22)*
+  ADR-0004; ADR-0014; ADR-0017; re-derived at v11 — RN-22)*
 - **QC-27:** A dependency with a known critical vulnerability blocks the next release, for as
   long as it takes to fix, replace or remove the dependency. **No remediation window exists** —
   none, not undecided: the support posture promises "no commitment to fix, and no commitment that
@@ -569,19 +582,32 @@ reviewed tag.
   (layer 6): no `CommandLine.arguments`, `ProcessInfo.processInfo.arguments` or
   `ProcessInfo.processInfo.environment` read in `nozoki-mac/Sources` — three names this document
   adds to C-R7's scan to realize C-R3's *Violated by* (RN-22). Half (2) —
-  `checks/entry-points.sh` (layer 6): for every crate the `cargo tree` command above names, a scan
-  of the crate's whole package directory in the Cargo registry — its root `build.rs` excepted —
-  for `env::var`, `env::var_os`, `env::vars`, `env::vars_os`, `env::args` and `env::args_os`,
-  diffed against `checks/entry-points.allow`; non-zero on a read not listed, on a listed line no
-  longer found, and on any resolved crate whose sources it cannot open — a crate it cannot scan
-  is a failure, never a pass. The scan covers the package directory and not `src/`, because a
-  crate need not keep its sources there (RN-18). Review at `development-design` when a change adds
+  `checks/entry-points.sh` (layer 6): for every crate the `cargo tree` command above names from
+  outside the workspace, a scan of the crate's whole package directory in the Cargo registry — its
+  build script excepted — for `env::var`, `env::var_os`, `env::vars`, `env::vars_os`, `env::args`
+  and `env::args_os`, diffed against `checks/entry-points.allow`; non-zero on a read not listed, on
+  a listed line no longer found, and on any resolved crate whose sources it cannot open — a crate
+  it cannot scan is a failure, never a pass. The scan covers the package directory and not `src/`,
+  because a crate need not keep its sources there (RN-18). **The workspace's own members** —
+  `nozoki-core` and `nozoki-bridge`, which the command names and which have no registry copy — are
+  half (1)'s, and the scan skips them by their membership in the workspace, never by a list of
+  names; any other crate whose sources it cannot open still fails. **The build script excepted**
+  is the file the `build` key of that registry copy's `Cargo.toml` names, at the version the lock
+  resolves, and `build.rs` at the package root where the manifest sets no key
+  (https://doc.rust-lang.org/cargo/reference/manifest.html, § The `build` field); where the key is
+  `false`, or the default file is absent, nothing is excepted. A build script runs before the
+  build and is not in the shipped process (§ 9, the `checks/structure.sh` bullet). **Not covered,
+  and named:** a build script that pulls other files in through `mod`, `#[path]` or `include!` has
+  those files scanned, which fails loud and never passes silently; none of the 17 build scripts
+  the lock resolves at `nozoki@85d9fa7` does (RN-34). Review at `development-design` when a change adds
   an entry point — a scanner finds a new read or a new socket, not a new trust assumption *(traces
   to: `quality_defaults.md` § The boundary set; SRS NFR-14, FR-1; FDR R-2; SDD § 4 C-R3 *Violated
-  by*, C-R7; ADR-0013; the two
+  by*, C-R7; ADR-0013; ADR-0017; the two
   halves answered in the owner's seat at `docs/trail/architecture/cycle-5.md` § 3.3; the script,
   the list format and the measurement behind them are this document's — RN-18; the IPC member
-  corrected on the owner's addition at `docs/trail/architecture/cycle-9.md` § 2.3 — RN-23)*
+  corrected on the owner's addition at `docs/trail/architecture/cycle-9.md` § 2.3 — RN-23; the
+  build-script exception on the owner's seat's answer at `docs/trail/architecture/cycle-20.md`
+  § 3.2, and the workspace skip drafted at v23 for the owner's confirm — RN-34)*
 - **QC-31:** Every value entering from outside is validated at the boundary it enters through
   before it reaches the model: a path by the containment check (QC-6), a decoded file by
   `fs-reader`'s text rule — UTF-8 with or without its byte-order mark, or UTF-16 by its mark;
@@ -973,7 +999,7 @@ left with `nozoki-ui` at `nozoki@0aca57e` (RN-22; RN-25).
   Cargo will compile a build script into an executable" and run it
   (https://doc.rust-lang.org/cargo/reference/build-scripts.html, read 2026-09-23), so a build
   script is never in it either — the ground QC-30's second half already takes for a dependency's
-  root `build.rs`. The tree holds one: `crates/nozoki-bridge/build.rs` reads and writes the
+  build script. The tree holds one: `crates/nozoki-bridge/build.rs` reads and writes the
   generated header with `std::fs` (`:L11`, `:L25`, `:L28-L30`) and reads `CARGO_MANIFEST_DIR`
   through `std::env::var` (`:L18`), and the exclusion covers every rule of the script — QC-13's
   `std::fs` rule and QC-30's and QC-58's first half alike (RN-24). The scope binds each rule that names a crate — QC-2's *no
@@ -3109,3 +3135,73 @@ delegation half), QC-18, QC-21, QC-31, QC-33, QC-43, QC-45, QC-50, QC-54, QC-57,
   § Decision, § Consequences, § Traces to; source: `docs/trail/architecture/cycle-19.md` § 2.1;
   `docs/trail/architecture/self_answer-23.md` § 2.1; `docs/trail/architecture/cycle-3.md` § 3.1;
   `nozoki@6e1d79f`, `nozoki@7c7038f`, `nozoki@ab39502`)*
+- **RN-34:** *(v23 — the cycle-20 fold, §§ 3.1 and 3.2 answered; two drafts for the owner's
+  confirm)* **The fold.** The companion at intake held two answered downstream items, §§ 3.1 and
+  3.2, raised by the PM and decided in the owner's seat by a `companion-self-answer` run
+  (`docs/trail/architecture/self_answer-24.md`), and one unanswered choice, § 2.1, raised by that
+  same run; it was copied whole before this fold as `docs/trail/architecture/cycle-20.md`.
+  **§ 3.1 → QC-3.** The tail no longer says the one-time review is owed. Re-verified for this fold,
+  not taken from the answer: `git show --stat 85d9fa7` lists `Cargo.lock`, `checks/deps.allow`,
+  `checks/deps.review.md` and `crates/nozoki-core/Cargo.toml`; at that commit the list's `cargo:`
+  section holds 40 names and the record 40 rows, and `comm -3` of the two name sets prints
+  nothing; `bash checks/no-network.sh` on `HEAD` prints "ok — 40 cargo names match
+  checks/deps.allow". The answer's three additions are folded as written: the record is cited
+  pinned to `nozoki@85d9fa7`, because its title goes stale at the next added name; the dated
+  clause "At `nozoki@0aca57e` the list is one `cargo:` section of 17 names" stays as history, with
+  the current count beside it; and RN-25 is left as written, its "still owed" being the dated
+  account of v14 that this note closes, as RN-18 left RN-4's, RN-7's and RN-16's dated mentions. One word beyond the
+  answer, under the same authority: the dated clause's "no record shows the review" becomes "until
+  `nozoki@85d9fa7` no record showed the review", because in the present tense it is now false.
+  **§ 3.2 → QC-30 half (2) and § 9.** The exception names the package's build script — the file the
+  `build` key of the registry copy's `Cargo.toml` names, `build.rs` at the root by default — per
+  Cargo's manifest reference (https://doc.rust-lang.org/cargo/reference/manifest.html, § The
+  `build` field), and excepts nothing where the key is `false` or the default file is absent.
+  Re-measured for this fold over the 32 registry crates `cargo tree -p nozoki-bridge --target
+  aarch64-apple-darwin -e normal --locked --offline` resolves: 17 name a script (`tree-sitter` →
+  `binding_rust/build.rs`; the six grammars → `bindings/rust/build.rs`; ten → `build.rs`), 14 set
+  `false`, and `streaming-iterator` sets no key and has no root `build.rs`. A grep of the 17
+  scripts for `mod …;`, `#[path` and `include!` prints nothing, which is the ground for the entry's
+  *Not covered* sentence. `Cargo.lock` is unchanged between `nozoki@85d9fa7` and `HEAD` (`git diff
+  --stat 85d9fa7 HEAD -- Cargo.lock` prints nothing). § 9's bullet changes "a dependency's root
+  `build.rs`" to "a dependency's build script", as the answer's addition (2) directs; its own
+  "outside each crate's `build.rs`", about the product's crates, is not in the answer and stands.
+  RN-24's mention is dated history and stays. The § 10 row carries no exception and does not move
+  (the answer's addition (3)).
+  **§ 2.1 → QC-30 half (2), drafted.** No owner answer stands behind this yet. The command half
+  (2) names also names `nozoki-bridge v0.0.0 (…/crates/nozoki-bridge)` and `nozoki-core v0.0.0
+  (…/crates/nozoki-core)` — re-run for this fold — and neither has a registry copy, so a script
+  written to the entry's words failed every build before reading a dependency. Half (1) already
+  holds both crates by name. The entry now scans only crates from outside the workspace and skips
+  members by membership, not by a name list, which keeps every other unopenable crate a failure.
+  This is the reading the entry's own "**(2) The linked dependency tree**" gives, but it changes
+  what the check does, so it is drafted and put to the owner: `docs/architecture_open_issues.md`
+  § 2.1.
+  **What moved beneath this document, and ADR-0017.** `git log cc351c8..HEAD` over the seven inputs
+  lists SDD v23 (`nozoki@e81a386`) and UXD v11 (`nozoki@24d652b`). UXD v11 moved UX-U1, the reader
+  floor; `grep -n 'UX-U1' docs/nfdr.md` printed nothing before this note was written, so nothing
+  here moves for it. SDD v23 names the grammar engine — tree-sitter, its runtime,
+  `tree-sitter-highlight` and one grammar crate per floor language, built from C into `nozoki-core`
+  (`docs/SDD.md:L327`) — and adds § 9 TO-11 (`:L2252-L2265`), § 11 R-14 (`:L2566`) and two
+  sentences to § 3's units paragraph (`:L339-L341`). TO-11 is a § 9 trade-off, one of the three
+  surfaces a record is found on, so it was walked through the gates. It is surprising without its
+  context — a core whose own source forbids `unsafe` parses the folder's bytes in C — and it was a
+  real trade-off, with hand-written lexers and `syntect` weighed and ruled out
+  (`nozoki@85d9fa7:checks/deps.review.md` § *The engine chosen*). Whether it is hard enough to
+  reverse is the one gate two architects could read differently: TO-11 says undoing it rewrites
+  one part and moves no seam, which is the argument for no record, and the rewrite is six
+  grammars' worth of lexing or a second engine's vendored syntaxes, which is the argument for one.
+  ADR-0017 is written at **Proposed** and the call is put to the owner at
+  `docs/architecture_open_issues.md` § 2.2. It binds QC-9, QC-26 and QC-30, whose trace tags now
+  name it. **QC-9** gains the limit SDD § 3 now states beside the same claim — *no `unsafe`* is
+  said of each crate's own Rust source, and the C the core links is outside it — with the sandbox
+  named as what bounds a fault there (SDD § 11 R-14). `grep -c -E '^name = "(git2|libgit2-sys)"'
+  Cargo.lock` prints `0`, so the entry says libgit2 is linked "when `git-reader` links it", not
+  now. That limit traces to SDD § 3 and stands whether or not ADR-0017 is confirmed. R-14 adds no
+  check, and none is added here: its *Not covered* — no sanitizer run and no hostile corpus for the
+  engine, no bound on a parse — is the SDD's, stated there, and an entry here would be a
+  requirement with no upstream sentence. Every input's `Status:` line was re-read and is Settled,
+  so `Inputs read:` stands. No `QC` is added, renumbered or reused *(re: header `Status:`,
+  `Version:`; QC-3; QC-9; QC-26; QC-30; § 9 `checks/structure.sh` bullet; ADR-0017; source:
+  `docs/trail/architecture/cycle-20.md` §§ 2.1, 3.1, 3.2;
+  `docs/trail/architecture/self_answer-24.md` §§ 3.1, 3.2; `docs/SDD.md` § 3, § 9 TO-11, § 11
+  R-14, RN-80 at v23; `nozoki@85d9fa7`, `nozoki@e81a386`)*
