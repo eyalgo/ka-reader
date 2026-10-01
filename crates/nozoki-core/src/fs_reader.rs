@@ -438,11 +438,32 @@ fn decode_utf16(units: &[u8], to_unit: fn([u8; 2]) -> u16) -> Option<String> {
     String::from_utf16(&code_units).ok()
 }
 
+/// The floor languages and the extensions that name them (SDD § 4 C-I5). Compared without ASCII case.
+const EXTENSIONS_BY_LANGUAGE: [(Language, &[&str]); 6] = [
+    (Language::Python, &["py", "pyi", "pyw"]),
+    (Language::Shell, &["sh", "bash", "zsh"]),
+    (Language::JavaScript, &["js", "mjs", "cjs", "jsx"]),
+    (Language::Json, &["json"]),
+    (Language::Yaml, &["yaml", "yml"]),
+    (Language::Toml, &["toml"]),
+];
+
 /// The language a text file is drawn as, from the last extension of its name alone, so content never
-/// reaches it. Every name is `Plain` until the floor-language map (SDD § 4 C-I5) replaces this body
-/// and nothing else.
-fn language_of(_file_name: &OsStr) -> Language {
-    Language::Plain
+/// reaches it. The extension is the text after the name's last `.` when that `.` is neither its first
+/// nor its last character (CP-289). A name without one, an extension that is not UTF-8 and an extension
+/// outside the table are `Plain`; ASCII case is ignored and nothing else is (CP-290, CP-291).
+fn language_of(file_name: &OsStr) -> Language {
+    let Some(extension) = Path::new(file_name).extension().and_then(OsStr::to_str) else {
+        return Language::Plain;
+    };
+    EXTENSIONS_BY_LANGUAGE
+        .iter()
+        .find(|(_, extensions)| {
+            extensions
+                .iter()
+                .any(|known| known.eq_ignore_ascii_case(extension))
+        })
+        .map_or(Language::Plain, |(language, _)| *language)
 }
 
 /// The steps of `path`, in order. A root or prefix component carries no step: an absolute path's
