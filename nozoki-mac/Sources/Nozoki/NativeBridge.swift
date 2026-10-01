@@ -2,7 +2,7 @@ import CNozokiBridge
 import Foundation
 import Shell
 
-/// The one C-backed bridge: `Shell`'s protocol over the three exported functions.
+/// The one C-backed bridge: `Shell`'s protocol over the four exported functions.
 ///
 /// It is the only type in the package that sees the C struct. A returned buffer is copied into a
 /// Swift value the moment it arrives, and its pointer travels as the buffer's handle until the flow
@@ -16,6 +16,10 @@ struct NativeBridge: Bridging {
 
     func listTree(path: String) -> BridgeBuffer? {
         path.withCString { adopt(nozoki_list_tree($0)) }
+    }
+
+    func selectFile(path: String) -> BridgeBuffer? {
+        path.withCString { adopt(nozoki_select_file($0)) }
     }
 
     func free(_ buffer: BridgeBuffer) {

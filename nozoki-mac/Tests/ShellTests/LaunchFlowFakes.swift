@@ -36,11 +36,16 @@ final class RecordingBridge: Bridging {
     /// An answer for one path. A path with no entry here gets `listAnswer`, and an entry holding
     /// `nil` is the bridge's failure value for that path.
     var listAnswers: [String: Data?] = [:]
+    /// The answer for a file read. A path with no entry in `selectAnswers` gets `selectAnswer`, and
+    /// an entry holding `nil` is the bridge's failure value for that path.
+    var selectAnswer: Data? = Data(#"{"state":"pending"}"#.utf8)
+    var selectAnswers: [String: Data?] = [:]
 
     private let log: EventLog
     private var nextHandle: UInt = 1
     private(set) var openedLocations: [URL] = []
     private(set) var listedPaths: [String] = []
+    private(set) var selectedPaths: [String] = []
     private(set) var handedOut: [UInt] = []
     private(set) var freed: [UInt] = []
 
@@ -58,6 +63,12 @@ final class RecordingBridge: Bridging {
         log.record("list_tree")
         listedPaths.append(path)
         return makeBuffer(from: listAnswers[path] ?? listAnswer)
+    }
+
+    func selectFile(path: String) -> BridgeBuffer? {
+        log.record("select_file")
+        selectedPaths.append(path)
+        return makeBuffer(from: selectAnswers[path] ?? selectAnswer)
     }
 
     func free(_ buffer: BridgeBuffer) {
@@ -148,16 +159,19 @@ final class ThreadRecordingBridge: Bridging, @unchecked Sendable {
     private let lock = NSLock()
     private let openAnswer: Data
     private let listAnswers: [String: Data]
+    private let selectAnswers: [String: Data]
     private var nextHandle: UInt = 1
     private var pathOfHandle: [UInt: String] = [:]
     private var calls: [(name: String, onMain: Bool)] = []
 
     init(
         openAnswer: Data = Data(#"{"state":"opened"}"#.utf8),
-        listAnswers: [String: Data]
+        listAnswers: [String: Data],
+        selectAnswers: [String: Data] = [:]
     ) {
         self.openAnswer = openAnswer
         self.listAnswers = listAnswers
+        self.selectAnswers = selectAnswers
     }
 
     /// Whether the named call ran on the main thread, for every call of that name.
@@ -174,6 +188,12 @@ final class ThreadRecordingBridge: Bridging, @unchecked Sendable {
         record("list_tree:\(path)")
         guard let payload = listAnswers[path] else { return nil }
         return makeBuffer(from: payload, named: path)
+    }
+
+    func selectFile(path: String) -> BridgeBuffer? {
+        record("select_file:\(path)")
+        guard let payload = selectAnswers[path] else { return nil }
+        return makeBuffer(from: payload, named: "select:\(path)")
     }
 
     func free(_ buffer: BridgeBuffer) {
