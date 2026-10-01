@@ -15,6 +15,7 @@ package final class LaunchFlow {
     private static let rootPath = ""
     private static let folderGlyphName = "folder"
     private static let fileGlyphName = "file"
+    private static let fileCodeGlyphName = "file-code"
 
     private enum LaunchAnswer {
         case opened(RootListing?)
@@ -101,7 +102,8 @@ package final class LaunchFlow {
     private func presentWorkbench(_ root: RootListing?) {
         let view = RootItemsView(
             folderGlyph: glyph(named: Self.folderGlyphName),
-            fileGlyph: glyph(named: Self.fileGlyphName), statusGlyphs: statusGlyphs)
+            fileGlyph: glyph(named: Self.fileGlyphName),
+            fileCodeGlyph: glyph(named: Self.fileCodeGlyphName), statusGlyphs: statusGlyphs)
         view.show(root)
         view.listTree = { [bridge, reader] path, answer in
             reader.run({ Self.listing(at: path, through: bridge) }, deliver: answer)

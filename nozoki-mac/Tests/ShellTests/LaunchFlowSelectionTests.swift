@@ -20,7 +20,8 @@ final class LaunchFlowSelectionTests: LaunchWindowTestCase {
 
     private static let srcAnswer = Data(
         (#"{"state":"observed","entries":["#
-            + #"{"name":"lib.rs","path":"src/lib.rs","kind":"file","state":"observed","language":"plain"}]}"#).utf8)
+            + #"{"name":"lib.rs","path":"src/lib.rs","kind":"file","state":"observed","language":"plain"}]}"#)
+            .utf8)
 
     private func text(_ content: String) -> Data {
         let escaped = content.replacingOccurrences(of: "\n", with: "\\n")

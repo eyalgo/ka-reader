@@ -82,7 +82,8 @@ final class LaunchWindowWorkbenchTests: LaunchWindowTestCase {
     private static let twoEntryRootAnswer = Data(
         (#"{"state":"observed","entries":["#
             + #"{"name":"src","path":"src","kind":"folder","state":"pending"},"#
-            + #"{"name":"a.txt","path":"a.txt","kind":"file","state":"observed","language":"plain"}]}"#).utf8)
+            + #"{"name":"a.txt","path":"a.txt","kind":"file","state":"observed","language":"plain"}]}"#)
+            .utf8)
 
     private static let codeAndPlainRootAnswer = Data(
         (#"{"state":"observed","entries":["#

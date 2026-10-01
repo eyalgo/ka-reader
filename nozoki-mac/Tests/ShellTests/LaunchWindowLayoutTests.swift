@@ -37,7 +37,8 @@ private enum LayoutExpectations {
     static let twoEntryRootAnswer = Data(
         (#"{"state":"observed","entries":["#
             + #"{"name":"src","path":"src","kind":"folder","state":"pending"},"#
-            + #"{"name":"a.txt","path":"a.txt","kind":"file","state":"observed","language":"plain"}]}"#).utf8)
+            + #"{"name":"a.txt","path":"a.txt","kind":"file","state":"observed","language":"plain"}]}"#)
+            .utf8)
 
     /// `docs/DESIGN.md` § *Components* "Status messages": a status message is "inset
     /// `{spacing.xl}`" (24px), "left-aligned at the top of its surface".

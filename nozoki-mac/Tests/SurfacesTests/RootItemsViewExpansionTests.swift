@@ -420,7 +420,8 @@ final class RootItemsViewExpansionTests: XCTestCase {
         try deliver(
             log, 0,
             .observed([
-                Entry(name: "lib.py", path: "src/lib.py", kind: .file, state: .observed,
+                Entry(
+                    name: "lib.py", path: "src/lib.py", kind: .file, state: .observed,
                     language: .python),
                 file("notes.txt", path: "src/notes.txt"),
             ]))
