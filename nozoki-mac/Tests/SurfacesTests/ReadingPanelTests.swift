@@ -286,7 +286,9 @@ final class ReadingPanelTests: XCTestCase {
         var components: [CGFloat] = []
         appearance.performAsCurrentDrawingAppearance {
             if let resolved = color.usingColorSpace(.sRGB) {
-                components = [resolved.redComponent, resolved.greenComponent, resolved.blueComponent]
+                components = [
+                    resolved.redComponent, resolved.greenComponent, resolved.blueComponent,
+                ]
             }
         }
         return components
@@ -329,7 +331,8 @@ final class ReadingPanelTests: XCTestCase {
                 expected = srgb(.textColor, under: resolvedUnder)
             }
             assertSame(
-                srgb(drawn, under: resolvedUnder), expected, "unit \(index) under \(appearance.name)",
+                srgb(drawn, under: resolvedUnder), expected,
+                "unit \(index) under \(appearance.name)",
                 file: file, line: line)
         }
     }
@@ -381,6 +384,8 @@ final class ReadingPanelTests: XCTestCase {
 
         panel.show(path: "greet.py", verdict: floorVerdict(content, .python, spans))
 
+        XCTAssertEqual(panel.contentView.string, content)
+
         let coloured: [(Range<Int>, Token)] = [
             (0..<3, .keyword), (4..<9, .name), (20..<26, .keyword), (27..<31, .string),
             (34..<36, .number), (38..<44, .comment),
@@ -420,11 +425,49 @@ final class ReadingPanelTests: XCTestCase {
 
         panel.show(path: "app.py", verdict: python)
         panel.show(path: "notes", verdict: .text("print(\"hi\")\n", .plain))
+        XCTAssertEqual(panel.contentView.string, "print(\"hi\")\n")
         assertDrawn(panel, coloured: [], under: aqua)
 
         panel.show(path: "app.py", verdict: python)
         panel.show(path: "config.toml", verdict: toml)
+        XCTAssertEqual(panel.contentView.string, "title = \"hi\"\n")
         assertDrawn(panel, coloured: [(0..<5, .name), (8..<12, .string)], under: aqua)
+    }
+
+    func testAdjacentSpansCanSplitACombiningSequenceAndReachTheEnd() throws {
+        let panel = makePanel()
+        let content = "🙂e\u{301}日"
+        let spans = [
+            CodeSpan(start: 4, end: 5, tokenClass: .name),
+            CodeSpan(start: 5, end: 7, tokenClass: .string),
+            CodeSpan(start: 7, end: 10, tokenClass: .keyword),
+        ]
+
+        panel.show(path: "combined.py", verdict: floorVerdict(content, .python, spans))
+
+        XCTAssertEqual(panel.contentView.string, content)
+        let storage = try XCTUnwrap(panel.contentView.textStorage)
+        XCTAssertEqual(storage.length, 5)
+        for appearance in [aqua, darkAqua] {
+            assertDrawn(
+                panel, coloured: [(2..<3, .name), (3..<4, .string), (4..<5, .keyword)],
+                under: appearance)
+        }
+        for index in 0..<storage.length {
+            XCTAssertNil(storage.attribute(.backgroundColor, at: index, effectiveRange: nil))
+        }
+    }
+
+    func testEmptyFloorVerdictClearsPreviousColouredText() throws {
+        let panel = makePanel()
+        panel.show(path: "m.py", verdict: floorVerdict(fixtureM, .python, fixtureMSpans))
+
+        panel.show(path: "empty.py", verdict: floorVerdict("", .python, []))
+
+        XCTAssertEqual(panel.contentView.string, "")
+        XCTAssertEqual(try XCTUnwrap(panel.contentView.textStorage).length, 0)
+        XCTAssertEqual(visibleStrings(panel), ["empty.py"])
+        XCTAssertFalse(panel.contentView.isEditable)
     }
 
     func testAppearanceChangeRedrawsInTheOtherValues() {
@@ -448,7 +491,8 @@ final class ReadingPanelTests: XCTestCase {
     func testGroundIsSurfaceForPlainAndFloorVerdictsInBothAppearances() throws {
         let verdicts: [FileVerdict] = [
             .text("plain words\n", .plain),
-            floorVerdict("print(\"hi\")\n", .python, [CodeSpan(start: 0, end: 5, tokenClass: .name)]),
+            floorVerdict(
+                "print(\"hi\")\n", .python, [CodeSpan(start: 0, end: 5, tokenClass: .name)]),
         ]
         for verdict in verdicts {
             let panel = makePanel()

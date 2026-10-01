@@ -222,6 +222,72 @@ final class BridgePayloadTests: XCTestCase {
         XCTAssertNil(decodeFile(mPayload(spans: #"[{"start":5,"end":5,"class":"comment"}]"#)))
     }
 
+    func testDecodeFileRefusesAReversedSpan() {
+        XCTAssertNil(decodeFile(mPayload(spans: #"[{"start":7,"end":5,"class":"name"}]"#)))
+    }
+
+    func testDecodeFileRefusesDisjointSpansInReverseOrder() {
+        XCTAssertNil(
+            decodeFile(
+                mPayload(
+                    spans:
+                        #"[{"start":27,"end":35,"class":"string"},{"start":0,"end":19,"class":"comment"}]"#
+                )))
+    }
+
+    func testDecodeFileRefusesTheWholeAnswerWhenALaterSpanIsInvalid() {
+        XCTAssertNil(
+            decodeFile(
+                mPayload(
+                    spans:
+                        #"[{"start":0,"end":19,"class":"comment"},{"start":27,"end":37,"class":"string"}]"#
+                )))
+    }
+
+    func testDecodeFileRefusesMalformedSpanLists() {
+        for spans in ["null", "{}", "true", "[null]", "[7]", "[{}]"] {
+            XCTAssertNil(decodeFile(mPayload(spans: spans)), spans)
+        }
+    }
+
+    func testDecodeFileRefusesOffsetsThatAreNotIntegers() {
+        for value in ["true", "null", #""5""#, "5.5", "9223372036854775808"] {
+            XCTAssertNil(
+                decodeFile(mPayload(spans: #"[{"start":\#(value),"end":19,"class":"comment"}]"#)),
+                "start: \(value)")
+            XCTAssertNil(
+                decodeFile(mPayload(spans: #"[{"start":0,"end":\#(value),"class":"comment"}]"#)),
+                "end: \(value)")
+        }
+    }
+
+    func testDecodeFileRefusesAnUnknownLanguageEvenWithSpans() {
+        XCTAssertNil(decodeFile(textPayload(language: "rust", spans: "[]")))
+    }
+
+    func testDecodeFileAcceptsEveryTokenClass() {
+        let classes: [(String, TokenClass)] = [
+            ("keyword", .keyword), ("string", .string), ("number", .number),
+            ("comment", .comment), ("name", .name),
+        ]
+        for (name, tokenClass) in classes {
+            XCTAssertEqual(
+                decodeFile(mPayload(spans: #"[{"start":0,"end":5,"class":"\#(name)"}]"#)),
+                .text(fixtureM, .floor(.python, [span(0, 5, tokenClass)])), name)
+        }
+    }
+
+    func testDecodeFileAcceptsEmptyFloorContentOnlyWithNoSpans() {
+        XCTAssertEqual(
+            decodeFile(textPayload(content: #""""#, language: "python", spans: "[]")),
+            .text("", .floor(.python, [])))
+        XCTAssertNil(
+            decodeFile(
+                textPayload(
+                    content: #""""#, language: "python",
+                    spans: #"[{"start":0,"end":1,"class":"name"}]"#)))
+    }
+
     func testDecodeFileRefusesAnUnknownClass() {
         XCTAssertNil(decodeFile(mPayload(spans: #"[{"start":0,"end":5,"class":"operator"}]"#)))
     }
