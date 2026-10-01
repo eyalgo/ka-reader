@@ -187,7 +187,7 @@ impl From<ItemState<FileContent>> for FileAnswerDto {
                 content,
                 language: language.into(),
             },
-            ItemState::Observed(FileContent::CannotDisplay(reason)) => Self::CannotDisplay {
+            ItemState::Observed(FileView::CannotDisplay(reason)) => Self::CannotDisplay {
                 reason: reason.into(),
             },
             ItemState::Failed(condition) => Self::Failed {
@@ -304,7 +304,7 @@ mod tests {
         use std::sync::mpsc;
         use std::time::Duration;
 
-        use nozoki_core::{CannotDisplayReason, FileContent};
+        use nozoki_core::{CannotDisplayReason, FileView};
 
         let folder = TempDir::new();
         folder.write_file("a.txt", "x");
@@ -320,7 +320,7 @@ mod tests {
                 session.select_file_with("a.txt", |_, _| {
                     parked_tx.send(()).expect("the test is listening");
                     release_rx.recv().expect("the test releases the read");
-                    ItemState::Observed(FileContent::CannotDisplay(
+                    ItemState::Observed(FileView::CannotDisplay(
                         CannotDisplayReason::InvalidUtf8,
                     ))
                 });

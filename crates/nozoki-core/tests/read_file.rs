@@ -13,8 +13,8 @@ use std::process::Command;
 
 use common::TempDir;
 use nozoki_core::{
-    CannotDisplayReason, Condition, FileContent, ItemState, Language, OpenedFolder, open_folder,
-    select_file,
+    CannotDisplayReason, Condition, FileView, ItemState, Language, OpenedFolder, Span, TokenClass,
+    highlight, open_folder, select_file,
 };
 
 fn open(folder: &TempDir) -> OpenedFolder {
@@ -28,9 +28,11 @@ fn fixtures() -> OpenedFolder {
 }
 
 /// The content and language of an observed text answer, or a panic naming the answer.
-fn text_of(answer: ItemState<FileContent>) -> (String, Language) {
+fn text_of(answer: ItemState<FileView>) -> (String, Language) {
     match answer {
-        ItemState::Observed(FileContent::Text { content, language }) => (content, language),
+        ItemState::Observed(FileView::Text {
+            content, language, ..
+        }) => (content, language),
         other => panic!("expected observed text, got {other:?}"),
     }
 }
@@ -76,7 +78,7 @@ fn test_empty_fixture_reads_as_text() {
 fn test_latin1_fixture_is_cannot_display() {
     assert_eq!(
         select_file(&fixtures(), "latin1.txt"),
-        ItemState::Observed(FileContent::CannotDisplay(CannotDisplayReason::InvalidUtf8))
+        ItemState::Observed(FileView::CannotDisplay(CannotDisplayReason::InvalidUtf8))
     );
 }
 
@@ -84,7 +86,7 @@ fn test_latin1_fixture_is_cannot_display() {
 fn test_torn_fixture_is_cannot_display() {
     assert_eq!(
         select_file(&fixtures(), "torn-utf8.txt"),
-        ItemState::Observed(FileContent::CannotDisplay(CannotDisplayReason::InvalidUtf8))
+        ItemState::Observed(FileView::CannotDisplay(CannotDisplayReason::InvalidUtf8))
     );
 }
 
@@ -238,21 +240,71 @@ fn test_non_text_floor_file_carries_no_language() {
 
     assert_eq!(
         select_file(&open(&folder), "legacy.py"),
-        ItemState::Observed(FileContent::CannotDisplay(CannotDisplayReason::InvalidUtf8))
+        ItemState::Observed(FileView::CannotDisplay(CannotDisplayReason::InvalidUtf8))
     );
 }
 
-/// CP-293: a text floor file's content is what it is today, and it carries the language.
+/// CP-293, CP-306: a text floor file keeps its content and language, and now also carries the
+/// spans the highlighter yields for that content.
 #[test]
-fn test_text_floor_file_content_is_unchanged() {
+fn test_select_file_text_form_keeps_unchanged_content_and_language() {
     let folder = TempDir::new();
     folder.write_file("app.py", "print(\"hi\")\n");
 
     assert_eq!(
         select_file(&open(&folder), "app.py"),
-        ItemState::Observed(FileContent::Text {
+        ItemState::Observed(FileView::Text {
             content: "print(\"hi\")\n".to_string(),
             language: Language::Python,
+            spans: vec![
+                Span {
+                    start: 0,
+                    end: 5,
+                    class: TokenClass::Name
+                },
+                Span {
+                    start: 6,
+                    end: 10,
+                    class: TokenClass::String
+                },
+            ],
         })
     );
+}
+
+/// CP-305, CP-306: for each committed highlight sample the text form carries exactly the spans the
+/// highlighter yields for the content and language the answer carries; plain text carries none.
+#[test]
+fn test_select_file_spans_equal_the_highlighter_for_each_floor_sample() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../checks/fixtures/highlight");
+    let samples = open_folder(path.canonicalize().expect("the samples exist"))
+        .expect("the samples open");
+    let expected = [
+        ("sample.py", Language::Python),
+        ("sample.sh", Language::Shell),
+        ("sample.js", Language::JavaScript),
+        ("sample.json", Language::Json),
+        ("sample.yaml", Language::Yaml),
+        ("sample.toml", Language::Toml),
+        ("plain.txt", Language::Plain),
+    ];
+
+    for (name, expected_language) in expected {
+        let ItemState::Observed(FileView::Text {
+            content,
+            language,
+            spans,
+        }) = select_file(&samples, name)
+        else {
+            panic!("{name} is not observed text");
+        };
+
+        assert_eq!(language, expected_language, "{name}");
+        assert_eq!(spans, highlight(&content, language), "{name}");
+        if language == Language::Plain {
+            assert!(spans.is_empty(), "{name} carries no spans");
+        } else {
+            assert!(!spans.is_empty(), "{name} carries spans");
+        }
+    }
 }
