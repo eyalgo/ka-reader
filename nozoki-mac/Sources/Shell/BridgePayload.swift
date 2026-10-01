@@ -234,7 +234,7 @@ enum BridgePayload {
             case .text:
                 switch wireLanguage {
                 case .floor?: expected = ["state", "content", "language", "spans"]
-                default: expected = ["state", "content", "language"]
+                case .plain?, nil: expected = ["state", "content", "language"]
                 }
             case .cannotDisplay: expected = ["state", "reason"]
             case .failed: expected = ["state", "condition"]
@@ -255,7 +255,7 @@ enum BridgePayload {
                         content,
                         .floor(
                             floor, try Self.checkedSpans(spans, in: content, container: container)))
-                default:
+                case .plain?, nil:
                     verdict = .text(content, .plain)
                 }
             case .cannotDisplay:

@@ -169,7 +169,8 @@ package final class ReadingPanelView: NSView {
         message = nil
     }
 
-    private static func attributedText(_ content: String, language: Language) -> NSAttributedString {
+    private static func attributedText(_ content: String, language: Language) -> NSAttributedString
+    {
         let text = NSMutableAttributedString(
             string: content,
             attributes: [
