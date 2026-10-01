@@ -2,12 +2,14 @@
 //! lists that location's direct entries, each with its own state.
 
 use std::collections::VecDeque;
-use std::ffi::OsString;
+use std::ffi::{OsStr, OsString};
 use std::fs;
-use std::io;
+use std::io::{self, Read};
 use std::os::unix::ffi::{OsStrExt, OsStringExt};
-use std::os::unix::fs::MetadataExt;
+use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
 use std::path::{Component, Path, PathBuf};
+
+use rustix::fs::OFlags;
 
 use crate::folder_model::OpenFailure;
 
@@ -156,6 +158,17 @@ pub enum CannotDisplayReason {
 /// The most symbolic links one requested path may pass through before the answer is `TooManyLinks`.
 const MAX_LINK_HOPS: usize = 32;
 
+/// UTF-8's byte-order mark, which is stripped and is not among a file's characters.
+const UTF8_MARK: [u8; 3] = [0xEF, 0xBB, 0xBF];
+
+/// The marks that name a UTF-16 file's byte order, each stripped before the rest is decoded.
+const UTF16_LITTLE_ENDIAN_MARK: [u8; 2] = [0xFF, 0xFE];
+const UTF16_BIG_ENDIAN_MARK: [u8; 2] = [0xFE, 0xFF];
+
+/// The text a log line carries for something that is not a regular file. The operating system was
+/// never asked, so there is no error text of its own.
+const NOT_A_REGULAR_FILE_TEXT: &str = "the path is not a regular file";
+
 /// The text a log line carries for a path that leaves the opened folder. The operating system was
 /// never asked, so there is no error text of its own.
 const OUTSIDE_TEXT: &str = "the path leaves the opened folder";
@@ -262,6 +275,15 @@ impl Blocked {
         }
     }
 
+    /// A folder, or something that is not a regular file once opened: a read has nothing to return.
+    /// It is the set's catch-all, since no condition is added for it.
+    fn not_a_regular_file() -> Self {
+        Self {
+            condition: Condition::Unreadable,
+            text: NOT_A_REGULAR_FILE_TEXT.to_string(),
+        }
+    }
+
     fn too_many_links() -> Self {
         Self {
             condition: Condition::TooManyLinks,
@@ -324,16 +346,108 @@ fn list_with_filesystem(
 }
 
 /// Reads the file at `requested`, a path relative to `root`, and decides its verdict.
+///
+/// The path is resolved by the same containment walk [`list`] uses, so the check has one
+/// implementation. The answer is `Observed` with the file's verdict, or `Failed` with the condition
+/// that stopped it, and it is never `Pending`. A folder, and anything that is not a regular file once
+/// opened, is `Failed(Unreadable)`. One record is logged at `warn` for a failed answer, prefixed
+/// `fs-reader: read failed: `, carrying the operating system's error text or a fixed phrase and no
+/// path. A text or cannot-display answer logs nothing.
 pub(crate) fn read(root: &Path, requested: &str) -> ItemState<FileContent> {
     read_with_filesystem(&NativeFilesystem, root, requested)
 }
 
 fn read_with_filesystem(
-    _filesystem: &impl Filesystem,
-    _root: &Path,
-    _requested: &str,
+    filesystem: &impl Filesystem,
+    root: &Path,
+    requested: &str,
 ) -> ItemState<FileContent> {
-    ItemState::Pending
+    let requested = Path::new(requested);
+    let answer = resolve(filesystem, root, requested).and_then(|at| match at.kind {
+        EntryKind::Folder => Err(Blocked::not_a_regular_file()),
+        EntryKind::File => read_bytes(&root.join(at.below_root)).map(|bytes| {
+            decode(
+                bytes,
+                language_of(requested.file_name().unwrap_or_default()),
+            )
+        }),
+    });
+    match answer {
+        Ok(content) => ItemState::Observed(content),
+        Err(blocked) => {
+            log::warn!("fs-reader: read failed: {}", blocked.text);
+            ItemState::Failed(blocked.condition)
+        }
+    }
+}
+
+/// The whole contents of the regular file at `location`.
+///
+/// It is opened for reading only (QC-2). `O_NOFOLLOW` makes a link swapped in after the walk fail
+/// instead of being followed, and `O_NONBLOCK` keeps a FIFO from hanging the open. The handle is then
+/// asked what it is, so a FIFO, a device or a folder is refused before any byte is read. The flags
+/// come from `rustix`, which is already a dependency; `std` opens, so a deep path is not bounded.
+fn read_bytes(location: &Path) -> Result<Vec<u8>, Blocked> {
+    let flags = i32::try_from((OFlags::NOFOLLOW | OFlags::NONBLOCK).bits())
+        .expect("the two open flags are small bits that fit the i32 `custom_flags` takes");
+    let mut file = fs::OpenOptions::new()
+        .read(true)
+        .custom_flags(flags)
+        .open(location)
+        .map_err(|error| Blocked::from(&error))?;
+    let metadata = file.metadata().map_err(|error| Blocked::from(&error))?;
+    if !metadata.is_file() {
+        return Err(Blocked::not_a_regular_file());
+    }
+    let mut bytes = Vec::new();
+    file.read_to_end(&mut bytes)
+        .map_err(|error| Blocked::from(&error))?;
+    Ok(bytes)
+}
+
+/// The text rule. UTF-8, with or without its mark, is text; so is UTF-16 that begins with its mark
+/// and decodes in the order that mark names. Anything else is not text. The decode is strict, never
+/// lossy, so a file that is not text can never come back as text full of U+FFFD.
+fn decode(bytes: Vec<u8>, language: Language) -> FileContent {
+    let (content, reason) = if let Some(units) = bytes.strip_prefix(&UTF16_LITTLE_ENDIAN_MARK) {
+        (
+            decode_utf16(units, u16::from_le_bytes),
+            CannotDisplayReason::InvalidUtf16,
+        )
+    } else if let Some(units) = bytes.strip_prefix(&UTF16_BIG_ENDIAN_MARK) {
+        (
+            decode_utf16(units, u16::from_be_bytes),
+            CannotDisplayReason::InvalidUtf16,
+        )
+    } else {
+        let characters = bytes.strip_prefix(&UTF8_MARK).unwrap_or(&bytes);
+        (
+            std::str::from_utf8(characters).ok().map(str::to_owned),
+            CannotDisplayReason::InvalidUtf8,
+        )
+    };
+    match content {
+        Some(content) => FileContent::Text { content, language },
+        None => FileContent::CannotDisplay(reason),
+    }
+}
+
+/// `units` as UTF-16 in the byte order `to_unit` reads, or `None` for an odd trailing byte or an
+/// unpaired surrogate.
+fn decode_utf16(units: &[u8], to_unit: fn([u8; 2]) -> u16) -> Option<String> {
+    let pairs = units.chunks_exact(2);
+    if !pairs.remainder().is_empty() {
+        return None;
+    }
+    let code_units: Vec<u16> = pairs.map(|pair| to_unit([pair[0], pair[1]])).collect();
+    String::from_utf16(&code_units).ok()
+}
+
+/// The language a text file is drawn as, from the last extension of its name alone, so content never
+/// reaches it. Every name is `Plain` until the floor-language map (SDD § 4 C-I5) replaces this body
+/// and nothing else.
+fn language_of(_file_name: &OsStr) -> Language {
+    Language::Plain
 }
 
 /// The steps of `path`, in order. A root or prefix component carries no step: an absolute path's
