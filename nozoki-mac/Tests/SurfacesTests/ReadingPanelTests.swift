@@ -92,10 +92,11 @@ final class ReadingPanelTests: XCTestCase {
         var run = NSRange()
         let attributes = storage.attributes(at: 0, effectiveRange: &run)
         XCTAssertEqual(run, NSRange(location: 0, length: storage.length), "one attribute run")
-        // The system's own text colour is the default, not a colouring; anything else is one.
-        let foreground = attributes[.foregroundColor] as? NSColor
-        XCTAssertTrue(
-            foreground == nil || foreground == .textColor, "\(String(describing: foreground))")
+        // The base ink is `{colors.primary}`, the one ink of a file with no spans (CP-333).
+        let foreground = try XCTUnwrap(attributes[.foregroundColor] as? NSColor)
+        assertSame(
+            srgb(foreground, under: aqua), hex(Token.primary.values.light),
+            "the one run's ink is {colors.primary} (CP-333)")
         for coloured in [NSAttributedString.Key.backgroundColor, .link] {
             XCTAssertNil(attributes[coloured], "\(coloured) is not set")
         }
@@ -244,9 +245,10 @@ final class ReadingPanelTests: XCTestCase {
     // MARK: - Drawing a floor-language file's spans (CP-311 – CP-316)
 
     /// A code token or the ground, with the two values `docs/DESIGN.md:L409-L428` gives it: light
-    /// then dark, as `0xRRGGBB`.
+    /// then dark, as `0xRRGGBB`. `primary` and `gutter` are the base ink and the line numbers'
+    /// colour (`docs/DESIGN.md:L411`, `:L413`).
     private enum Token {
-        case keyword, string, number, comment, name
+        case keyword, string, number, comment, name, primary, gutter
 
         var values: (light: UInt32, dark: UInt32) {
             switch self {
@@ -255,6 +257,8 @@ final class ReadingPanelTests: XCTestCase {
             case .number: return (0x9A4B00, 0xF0B47A)
             case .comment: return (0x6A6C72, 0x9A9BA0)
             case .name: return (0x0F5A9A, 0x8CC4F5)
+            case .primary: return (0x1E1F22, 0xE7E7E4)
+            case .gutter: return (0x6F7177, 0x8E8F94)
             }
         }
     }
@@ -312,7 +316,7 @@ final class ReadingPanelTests: XCTestCase {
         }
     }
 
-    /// Every UTF-16 unit of the panel is `.textColor`, except those in `coloured`, which are in their
+    /// Every UTF-16 unit of the panel is `{colors.primary}`, except those in `coloured`, which are in their
     /// token's value for `appearance`. The colours are resolved under the panel's own effective
     /// appearance after it is set to `appearance`.
     private func assertDrawn(
@@ -324,12 +328,9 @@ final class ReadingPanelTests: XCTestCase {
         let isDark = appearance.name == .darkAqua
         for (index, color) in foregrounds(of: panel).enumerated() {
             let drawn = color ?? .textColor
-            let expected: [CGFloat]
-            if let token = coloured.first(where: { $0.0.contains(index) })?.1 {
-                expected = hex(isDark ? token.values.dark : token.values.light)
-            } else {
-                expected = srgb(.textColor, under: resolvedUnder)
-            }
+            // A unit in no span is `{colors.primary}` (CP-333).
+            let token = coloured.first(where: { $0.0.contains(index) })?.1 ?? .primary
+            let expected = hex(isDark ? token.values.dark : token.values.light)
             assertSame(
                 srgb(drawn, under: resolvedUnder), expected,
                 "unit \(index) under \(appearance.name)",
@@ -403,9 +404,10 @@ final class ReadingPanelTests: XCTestCase {
         var run = NSRange()
         let attributes = storage.attributes(at: 0, effectiveRange: &run)
         XCTAssertEqual(run, NSRange(location: 0, length: storage.length), "one attribute run")
-        let foreground = attributes[.foregroundColor] as? NSColor
-        XCTAssertTrue(
-            foreground == nil || foreground == .textColor, "\(String(describing: foreground))")
+        let foreground = try XCTUnwrap(attributes[.foregroundColor] as? NSColor)
+        assertSame(
+            srgb(foreground, under: aqua), hex(Token.primary.values.light),
+            "a floor language with no spans is {colors.primary} (CP-333)")
     }
 
     func testNextFileCarriesNoColourFromTheLast() {
@@ -514,5 +516,774 @@ final class ReadingPanelTests: XCTestCase {
                     "scroll view ground under \(appearance.name)")
             }
         }
+    }
+
+    // MARK: - The code view's tokens (CP-332, CP-333, CP-335)
+
+    func testCodePrimaryTakesItsDesignValueInEachAppearance() {
+        assertSame(
+            srgb(CodeColors.primary, under: aqua), hex(Token.primary.values.light),
+            "primary under aqua")
+        assertSame(
+            srgb(CodeColors.primary, under: darkAqua), hex(Token.primary.values.dark),
+            "primary under darkAqua")
+    }
+
+    func testCodeGutterColourTakesItsDesignValueInEachAppearance() {
+        assertSame(
+            srgb(CodeColors.gutter, under: aqua), hex(Token.gutter.values.light),
+            "gutter under aqua")
+        assertSame(
+            srgb(CodeColors.gutter, under: darkAqua), hex(Token.gutter.values.dark),
+            "gutter under darkAqua")
+    }
+
+    func testCodeTypeIsTheThirteenPointMonospacedSystemFontAtRegularWeight() {
+        XCTAssertEqual(CodeType.font, .monospacedSystemFont(ofSize: 13, weight: .regular))
+        XCTAssertEqual(CodeType.font.pointSize, 13)
+    }
+
+    func testCodeLinePitchIsOnePointFiveFiveTimesTheSize() {
+        XCTAssertEqual(CodeType.linePitch, 20.15, accuracy: 0.0001)
+        XCTAssertEqual(CodeType.linePitch, 1.55 * CodeType.font.pointSize, accuracy: 0.0001)
+        // 1.55 times the font's own line height would be 24.8, which CP-332 rejects.
+        XCTAssertNotEqual(CodeType.linePitch, 24.8, accuracy: 1)
+    }
+
+    func testCodeSpacingCarriesTheSixteenPointInsetAndTheTwentyFourPointGutterBase() {
+        XCTAssertEqual(CodeSpacing.inset, 16)
+        XCTAssertEqual(CodeSpacing.gutterBase, 24)
+    }
+
+    // MARK: - The line-number gutter (CP-336 – CP-338, CP-341)
+
+    /// `text` in the code font on the code pitch: every row's height fixed at `CodeType.linePitch`.
+    private func codeText(_ text: String) -> NSAttributedString {
+        let pitch = NSMutableParagraphStyle()
+        pitch.minimumLineHeight = CodeType.linePitch
+        pitch.maximumLineHeight = CodeType.linePitch
+        return NSAttributedString(
+            string: text,
+            attributes: [
+                .font: CodeType.font, .paragraphStyle: pitch,
+                .foregroundColor: CodeColors.primary,
+            ])
+    }
+
+    /// A TextKit 1 text view over `text`, not wrapping, as the code view builds its own.
+    private func makeTextView(_ text: String) -> NSTextView {
+        let storage = NSTextStorage(attributedString: codeText(text))
+        let layoutManager = NSLayoutManager()
+        storage.addLayoutManager(layoutManager)
+        let container = NSTextContainer(
+            size: NSSize(
+                width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude))
+        container.widthTracksTextView = false
+        layoutManager.addTextContainer(container)
+        let textView = NSTextView(
+            frame: NSRect(x: 0, y: 0, width: 600, height: 400), textContainer: container)
+        textView.isEditable = false
+        return textView
+    }
+
+    /// A gutter over a text view of `text`, its frame tall enough to show every row.
+    private func makeGutter(
+        _ text: String
+    ) -> (gutter: CodeGutterView, textView: NSTextView) {
+        let textView = makeTextView(text)
+        let gutter = CodeGutterView(textView: textView)
+        gutter.frame = NSRect(x: 0, y: 0, width: gutter.width, height: 4000)
+        return (gutter, textView)
+    }
+
+    private func lines(_ count: Int) -> String {
+        (1...count).map { "line \($0)\n" }.joined()
+    }
+
+    /// The width of `count` digits in the code font, measured from the font.
+    private func digitsWidth(_ count: Int) -> CGFloat {
+        (String(repeating: "0", count: count) as NSString)
+            .size(withAttributes: [.font: CodeType.font]).width
+    }
+
+    /// Each row of `textView`'s layout: its fragment's top and its baseline, in the text view's
+    /// coordinates, the extra fragment after a terminal break left out.
+    private func layoutRows(
+        of textView: NSTextView
+    ) throws -> [(top: CGFloat, bottom: CGFloat, baseline: CGFloat)] {
+        let layoutManager = try XCTUnwrap(textView.layoutManager)
+        let container = try XCTUnwrap(textView.textContainer)
+        layoutManager.ensureLayout(for: container)
+        var rows: [(top: CGFloat, bottom: CGFloat, baseline: CGFloat)] = []
+        layoutManager.enumerateLineFragments(
+            forGlyphRange: NSRange(location: 0, length: layoutManager.numberOfGlyphs)
+        ) { rect, _, _, glyphRange, _ in
+            let location = layoutManager.location(forGlyphAt: glyphRange.location)
+            let origin = textView.textContainerOrigin
+            rows.append(
+                (rect.minY + origin.y, rect.maxY + origin.y, rect.minY + location.y + origin.y))
+        }
+        return rows
+    }
+
+    private func labelTexts(_ gutter: CodeGutterView) -> [String] {
+        gutter.labels.map(\.text)
+    }
+
+    func testGutterNumbersAnLFTerminatedFileOneAndTwo() {
+        let (gutter, _) = makeGutter("a\nb\n")
+
+        XCTAssertEqual(gutter.lineCount, 2)
+        XCTAssertEqual(
+            labelTexts(gutter), ["1", "2"], "the break that ends the file begins no line")
+    }
+
+    func testGutterNumbersAnUnterminatedFileOneAndTwo() {
+        let (gutter, _) = makeGutter("a\nb")
+
+        XCTAssertEqual(gutter.lineCount, 2)
+        XCTAssertEqual(labelTexts(gutter), ["1", "2"])
+    }
+
+    func testGutterCountsCRLFAsOneBreak() {
+        let (gutter, _) = makeGutter("a\r\nb\r\n")
+
+        XCTAssertEqual(labelTexts(gutter), ["1", "2"])
+    }
+
+    func testGutterNumbersTheEmptySecondRow() throws {
+        let (gutter, _) = makeGutter("a\n\n")
+
+        XCTAssertEqual(labelTexts(gutter), ["1", "2"])
+        let labels = gutter.labels
+        XCTAssertEqual(labels[1].point.y - labels[0].point.y, CodeType.linePitch, accuracy: 0.5)
+    }
+
+    /// A row holding only its break has no glyph of its own for the layout to measure, and the layout
+    /// reports its break at the fragment's bottom. Its number still sits on the grid its neighbours'
+    /// baselines make: one pitch from each.
+    func testAnEmptyRowsNumberKeepsTheBaselineGridOfTheRowsAroundIt() throws {
+        let (gutter, textView) = makeGutter("a\n\n\nb\n")
+
+        XCTAssertEqual(labelTexts(gutter), ["1", "2", "3", "4"])
+        let baselines = gutter.labels.map(\.point.y)
+        for (before, after) in zip(baselines, baselines.dropFirst()) {
+            XCTAssertEqual(after - before, CodeType.linePitch, accuracy: 0.5)
+        }
+        let firstRowBaseline = try XCTUnwrap(try layoutRows(of: textView).first?.baseline)
+        XCTAssertEqual(baselines[0], firstRowBaseline, accuracy: 0.5)
+    }
+
+    func testGutterNumbersALoneLFAsOneLine() {
+        let (gutter, _) = makeGutter("\n")
+
+        XCTAssertEqual(gutter.lineCount, 1)
+        XCTAssertEqual(labelTexts(gutter), ["1"])
+    }
+
+    func testGutterNumbersEveryRowTheLayoutDrawsWhateverBrokeIt() {
+        for text in ["a\rb", "a\u{2028}b"] {
+            let (gutter, _) = makeGutter(text)
+
+            XCTAssertEqual(labelTexts(gutter), ["1", "2"], "\(Array(text.unicodeScalars))")
+        }
+    }
+
+    func testGutterOfEmptyTextHasNoLabelAndAOneDigitColumn() {
+        let (gutter, _) = makeGutter("")
+
+        XCTAssertEqual(gutter.lineCount, 0)
+        XCTAssertTrue(gutter.labels.isEmpty)
+        XCTAssertEqual(gutter.columnWidth, 24 + digitsWidth(1), accuracy: 0.01)
+    }
+
+    func testColumnWidthIsTwentyFourPlusTheDigitsTheFileNeeds() {
+        for (count, digits) in [(9, 1), (10, 2), (100, 3)] {
+            let (gutter, _) = makeGutter(lines(count))
+
+            XCTAssertEqual(gutter.lineCount, count)
+            XCTAssertEqual(
+                gutter.columnWidth, 24 + digitsWidth(digits), accuracy: 0.01,
+                "\(count) lines")
+        }
+    }
+
+    func testGutterWidthIsTheInsetPlusTheColumn() {
+        let (gutter, _) = makeGutter(lines(10))
+
+        XCTAssertEqual(gutter.width, CodeSpacing.inset + gutter.columnWidth, accuracy: 0.0001)
+    }
+
+    func testEveryNumberEndsAtTheColumnsRightEdge() throws {
+        let (gutter, _) = makeGutter(lines(10))
+
+        let nine = try XCTUnwrap(gutter.labels.first { $0.text == "9" })
+        let ten = try XCTUnwrap(gutter.labels.first { $0.text == "10" })
+        XCTAssertEqual(nine.point.x, ten.point.x, accuracy: 0.0001)
+        XCTAssertEqual(ten.point.x, gutter.width, accuracy: 0.0001)
+    }
+
+    func testEachNumberSitsOnItsRowsBaseline() throws {
+        let (gutter, textView) = makeGutter(lines(5))
+
+        let rows = try layoutRows(of: textView)
+        XCTAssertEqual(rows.count, 5)
+        XCTAssertEqual(gutter.labels.count, 5)
+        for (row, label) in zip(rows, gutter.labels) {
+            XCTAssertEqual(label.point.y, row.baseline, accuracy: 0.5, label.text)
+            XCTAssertGreaterThan(
+                label.point.y - row.top, 10,
+                "\(label.text) is on the baseline, not the fragment's top")
+        }
+    }
+
+    func testReloadRecomputesCountColumnAndWidthAfterATextChange() throws {
+        let (gutter, textView) = makeGutter(lines(10))
+        let widthWithTwoDigits = gutter.width
+        XCTAssertEqual(gutter.lineCount, 10)
+
+        textView.textStorage?.setAttributedString(codeText(lines(9)))
+        gutter.reload()
+
+        XCTAssertEqual(gutter.lineCount, 9)
+        XCTAssertEqual(gutter.columnWidth, 24 + digitsWidth(1), accuracy: 0.01)
+        XCTAssertLessThan(gutter.width, widthWithTwoDigits)
+        XCTAssertFalse(labelTexts(gutter).contains("10"))
+        XCTAssertEqual(labelTexts(gutter).last, "9")
+    }
+
+    func testLabelsAreDecimalDigitsOnlyInTheCodeFontAndGutterColour() throws {
+        let (gutter, _) = makeGutter(lines(12))
+
+        XCTAssertEqual(labelTexts(gutter), (1...12).map(String.init))
+        for label in gutter.labels {
+            XCTAssertTrue(label.text.allSatisfy(\.isASCII) && label.text.allSatisfy(\.isNumber))
+            XCTAssertEqual(label.attributes[.font] as? NSFont, CodeType.font)
+            let colour = try XCTUnwrap(label.attributes[.foregroundColor] as? NSColor)
+            assertSame(
+                srgb(colour, under: aqua), hex(Token.gutter.values.light), "\(label.text) light")
+            assertSame(
+                srgb(colour, under: darkAqua), hex(Token.gutter.values.dark), "\(label.text) dark")
+        }
+    }
+
+    func testGroundIsSurfaceAndBothColoursFollowAnAppearanceChangeWithoutReload() throws {
+        let (gutter, _) = makeGutter("a\n")
+
+        for (appearance, ground, ink) in [
+            (aqua, Self.surfaceValues.light, Token.gutter.values.light),
+            (darkAqua, Self.surfaceValues.dark, Token.gutter.values.dark),
+        ] {
+            gutter.appearance = appearance
+            let resolvedUnder = gutter.effectiveAppearance
+            assertSame(
+                srgb(gutter.ground, under: resolvedUnder), hex(ground),
+                "ground under \(appearance.name)")
+            let colour = try XCTUnwrap(
+                gutter.labels.first?.attributes[.foregroundColor] as? NSColor)
+            assertSame(
+                srgb(colour, under: resolvedUnder), hex(ink), "label under \(appearance.name)")
+        }
+    }
+
+    /// `labels` says where a number is drawn, and `draw(_:)` is the one that has to agree: the ink of
+    /// a digit 1, which has no descender, ends on the label's baseline and at the column's right edge.
+    func testTheDrawnNumberStandsOnItsLabelsBaselineAtTheRightEdge() throws {
+        let (gutter, _) = makeGutter("1\n")
+        gutter.appearance = aqua
+        gutter.frame = NSRect(x: 0, y: 0, width: gutter.width, height: 40)
+        let label = try XCTUnwrap(gutter.labels.first)
+        let rep = try XCTUnwrap(gutter.bitmapImageRepForCachingDisplay(in: gutter.bounds))
+        gutter.cacheDisplay(in: gutter.bounds, to: rep)
+        let scale = CGFloat(rep.pixelsHigh) / gutter.bounds.height
+
+        // The bitmap's last column is rounded up from a fractional width and is never drawn.
+        let drawnColumns = Int((gutter.bounds.width * scale).rounded(.down))
+        // Ink is any pixel unlike the ground, which is what the top-left corner is.
+        let ground = try XCTUnwrap(rep.colorAt(x: 0, y: 0)?.usingColorSpace(.sRGB))
+        var inkRows: [Int] = []
+        var inkColumns: [Int] = []
+        for row in 0..<rep.pixelsHigh {
+            for column in 0..<drawnColumns {
+                guard let pixel = rep.colorAt(x: column, y: row)?.usingColorSpace(.sRGB),
+                    abs(pixel.redComponent - ground.redComponent) > 0.15
+                else { continue }
+                inkRows.append(row)
+                inkColumns.append(column)
+            }
+        }
+        let lowestInk = try XCTUnwrap(inkRows.max())
+        let rightmostInk = try XCTUnwrap(inkColumns.max())
+        // The row's bottom edge is one pixel below its last inked row.
+        XCTAssertEqual(CGFloat(lowestInk + 1) / scale, label.point.y, accuracy: 1)
+        XCTAssertEqual(CGFloat(rightmostInk + 1) / scale, label.point.x, accuracy: 2)
+    }
+
+    func testGutterHasNoSubviewIsNoControlAndRegistersNoDraggedType() {
+        let (gutter, _) = makeGutter(lines(3))
+
+        XCTAssertTrue(gutter.subviews.isEmpty)
+        XCTAssertFalse(gutter is NSControl)
+        XCTAssertTrue(gutter.registeredDraggedTypes.isEmpty)
+    }
+
+    /// The clip view's bounds change when the text scrolls; the gutter redraws, because every
+    /// number's place on the screen moved.
+    func testGutterRedisplaysWhenTheClipViewScrolls() throws {
+        let textView = makeTextView(lines(100))
+        textView.setFrameSize(NSSize(width: 600, height: 2100))
+        let scrollView = NSScrollView(frame: NSRect(x: 0, y: 0, width: 400, height: 200))
+        scrollView.documentView = textView
+        let gutter = CodeGutterView(textView: textView)
+        gutter.frame = NSRect(x: 0, y: 0, width: gutter.width, height: 200)
+        // A view outside a window never reads as needing display, so both sit in one.
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 600, height: 200), styleMask: [.titled],
+            backing: .buffered, defer: true)
+        window.isReleasedWhenClosed = false
+        window.contentView?.addSubview(scrollView)
+        window.contentView?.addSubview(gutter)
+        gutter.needsDisplay = false
+
+        scrollView.contentView.scroll(to: NSPoint(x: 0, y: 400))
+        scrollView.reflectScrolledClipView(scrollView.contentView)
+
+        XCTAssertTrue(gutter.needsDisplay)
+    }
+
+    // MARK: - The code view (CP-313, CP-335, CP-337, CP-339 – CP-343)
+
+    /// A code view of 400 by 300 points showing `text`, laid out. Its scrollers are the overlay
+    /// kind, which take no room, so the insets are measured against the code view's own edges.
+    private func makeCodeView(_ text: String) -> CodeView {
+        let codeView = CodeView()
+        codeView.frame = NSRect(x: 0, y: 0, width: 400, height: 300)
+        codeView.textView.enclosingScrollView?.scrollerStyle = .overlay
+        codeView.show(codeText(text))
+        codeView.layoutSubtreeIfNeeded()
+        return codeView
+    }
+
+    private func clipView(of codeView: CodeView) throws -> NSClipView {
+        try XCTUnwrap(codeView.textView.enclosingScrollView?.contentView)
+    }
+
+    private func scroll(_ codeView: CodeView, to origin: NSPoint) throws {
+        let scrollView = try XCTUnwrap(codeView.textView.enclosingScrollView)
+        scrollView.contentView.scroll(to: origin)
+        scrollView.reflectScrolledClipView(scrollView.contentView)
+        codeView.layoutSubtreeIfNeeded()
+    }
+
+    private func scrollToBottom(_ codeView: CodeView) throws {
+        let clip = try clipView(of: codeView)
+        try scroll(
+            codeView, to: NSPoint(x: 0, y: codeView.textView.frame.height - clip.bounds.height))
+    }
+
+    func testTextViewIsTextKitOneNonEditableSelectableAndPlain() throws {
+        let codeView = makeCodeView("a\n")
+
+        XCTAssertNil(codeView.textView.textLayoutManager, "TextKit 1 from construction")
+        XCTAssertNotNil(codeView.textView.layoutManager)
+        XCTAssertFalse(codeView.textView.isEditable)
+        XCTAssertFalse(codeView.textView.isRichText)
+        XCTAssertTrue(codeView.textView.isSelectable)
+        XCTAssertFalse(
+            try XCTUnwrap(codeView.textView.textContainer).widthTracksTextView, "no wrapping")
+    }
+
+    func testCodeViewGroundIsSurfaceUnderBothAppearances() throws {
+        let codeView = makeCodeView("a\n")
+        let scrollView = try XCTUnwrap(codeView.textView.enclosingScrollView)
+
+        XCTAssertTrue(codeView.textView.drawsBackground)
+        XCTAssertTrue(scrollView.drawsBackground)
+        for (appearance, value) in [
+            (aqua, Self.surfaceValues.light), (darkAqua, Self.surfaceValues.dark),
+        ] {
+            codeView.appearance = appearance
+            let resolvedUnder = codeView.textView.effectiveAppearance
+            assertSame(
+                srgb(codeView.textView.backgroundColor, under: resolvedUnder), hex(value),
+                "text view ground under \(appearance.name)")
+            assertSame(
+                srgb(scrollView.backgroundColor, under: resolvedUnder), hex(value),
+                "scroll view ground under \(appearance.name)")
+            assertSame(
+                srgb(codeView.gutter.ground, under: resolvedUnder), hex(value),
+                "gutter ground under \(appearance.name)")
+        }
+    }
+
+    func testLeftAndTopInsetsAreSixteenWhenScrolledToTheTop() throws {
+        let codeView = makeCodeView(lines(40))
+
+        let columnLeft = codeView.gutter.frame.minX + CodeSpacing.inset
+        XCTAssertEqual(columnLeft - codeView.bounds.minX, 16, accuracy: 0.5)
+        let firstRow = try XCTUnwrap(try layoutRows(of: codeView.textView).first)
+        let firstRowTop = codeView.convert(NSPoint(x: 0, y: firstRow.top), from: codeView.textView)
+            .y
+        XCTAssertEqual(firstRowTop - codeView.bounds.minY, 16, accuracy: 0.5)
+    }
+
+    func testBottomInsetIsSixteenAtTheEndOfAnLFTerminatedFile() throws {
+        try assertBottomInsetIsSixteen(for: lines(40))
+    }
+
+    func testBottomInsetIsSixteenAtTheEndOfAnUnterminatedFile() throws {
+        try assertBottomInsetIsSixteen(for: String(lines(40).dropLast()))
+    }
+
+    private func assertBottomInsetIsSixteen(
+        for text: String, file: StaticString = #filePath, line: UInt = #line
+    ) throws {
+        let codeView = makeCodeView(text)
+
+        try scrollToBottom(codeView)
+
+        let lastRow = try XCTUnwrap(try layoutRows(of: codeView.textView).last)
+        XCTAssertEqual(codeView.gutter.lineCount, 40, file: file, line: line)
+        let lastRowBottom = codeView.convert(
+            NSPoint(x: 0, y: lastRow.bottom), from: codeView.textView
+        ).y
+        XCTAssertEqual(
+            codeView.bounds.maxY - lastRowBottom, 16, accuracy: 0.5,
+            "the last numbered row's bottom", file: file, line: line)
+    }
+
+    func testRightInsetIsSixteenAtTheRightEndOfAWideRow() throws {
+        let codeView = makeCodeView(String(repeating: "x", count: 200))
+        let textView = codeView.textView
+        let clip = try clipView(of: codeView)
+        XCTAssertGreaterThan(
+            textView.frame.width, clip.bounds.width, "the row is wider than the view")
+
+        try scroll(codeView, to: NSPoint(x: textView.frame.width - clip.bounds.width, y: 0))
+
+        let layoutManager = try XCTUnwrap(textView.layoutManager)
+        let container = try XCTUnwrap(textView.textContainer)
+        let lastCharacter = layoutManager.boundingRect(
+            forGlyphRange: NSRange(location: layoutManager.numberOfGlyphs - 1, length: 1),
+            in: container)
+        let lastCharacterEnd = lastCharacter.maxX + textView.textContainerOrigin.x
+        XCTAssertEqual(clip.bounds.maxX - lastCharacterEnd, 16, accuracy: 0.5)
+    }
+
+    // CP-335 applies to the longest row whether it ends the file or precedes another row.
+    func testRightInsetExcludesTheBreakAfterTheLongestRow() throws {
+        let wide = String(repeating: "x", count: 200)
+        for ending in ["\n", "\r\n", "\r", "\u{2028}"] {
+            for tail in ["", "short"] {
+                let codeView = makeCodeView(wide + ending + tail)
+                let textView = codeView.textView
+                let clip = try clipView(of: codeView)
+                try scroll(
+                    codeView, to: NSPoint(x: textView.frame.width - clip.bounds.width, y: 0))
+                let layout = try XCTUnwrap(textView.layoutManager)
+                let container = try XCTUnwrap(textView.textContainer)
+                let lastGlyph = layout.glyphIndexForCharacter(at: (wide as NSString).length - 1)
+                let end =
+                    layout.boundingRect(
+                        forGlyphRange: NSRange(location: lastGlyph, length: 1), in: container
+                    ).maxX + textView.textContainerOrigin.x
+                XCTAssertEqual(clip.bounds.maxX - end, 16, accuracy: 0.5)
+            }
+        }
+    }
+
+    // CP-342: replacing a wide file must discard its horizontal extent as well as its numbers.
+    func testReplacingAWideFileRemovesItsOldHorizontalScrollExtent() throws {
+        let codeView = makeCodeView(String(repeating: "x", count: 200))
+        try scroll(codeView, to: NSPoint(x: 500, y: 0))
+
+        codeView.show(codeText("short\n"))
+        codeView.layoutSubtreeIfNeeded()
+
+        let clip = try clipView(of: codeView)
+        XCTAssertEqual(clip.bounds.origin, .zero)
+        XCTAssertLessThanOrEqual(codeView.textView.frame.width, clip.bounds.width + 0.5)
+        XCTAssertEqual(codeView.textView.string, "short\n")
+        XCTAssertEqual(labelTexts(codeView.gutter), ["1"])
+    }
+
+    // CP-339 numbers exactly the visible rows, including partially visible rows at either edge.
+    func testGutterLabelsExactlyTheRowsIntersectingTheViewport() throws {
+        let codeView = makeCodeView(lines(200))
+        let rows = try layoutRows(of: codeView.textView)
+        for offset in [CGFloat(1), 30, 2310] {
+            try scroll(codeView, to: NSPoint(x: 0, y: offset))
+            let visible = try clipView(of: codeView).bounds
+            let expected = rows.enumerated().compactMap { index, row in
+                row.bottom > visible.minY && row.top < visible.maxY ? String(index + 1) : nil
+            }
+            XCTAssertEqual(labelTexts(codeView.gutter), expected)
+        }
+    }
+
+    func testTextStartsAtTheColumnsRightEdgeAndTheGutterStaysPutUnderHorizontalScroll() throws {
+        let codeView = makeCodeView(String(repeating: "x", count: 200) + "\nshort\n")
+        let textView = codeView.textView
+        let scrollView = try XCTUnwrap(textView.enclosingScrollView)
+        let clip = try clipView(of: codeView)
+        let layoutManager = try XCTUnwrap(textView.layoutManager)
+        let container = try XCTUnwrap(textView.textContainer)
+        let gutterFrame = codeView.gutter.frame
+
+        XCTAssertEqual(scrollView.frame.minX, gutterFrame.maxX, accuracy: 0.5)
+        for row in 0..<2 {
+            let glyph = layoutManager.glyphIndexForCharacter(at: row == 0 ? 0 : 201)
+            let firstCharacter = layoutManager.boundingRect(
+                forGlyphRange: NSRange(location: glyph, length: 1), in: container)
+            XCTAssertEqual(
+                firstCharacter.minX + textView.textContainerOrigin.x - clip.bounds.minX, 0,
+                accuracy: 0.5, "row \(row + 1) starts at the clip view's left edge")
+        }
+
+        try scroll(codeView, to: NSPoint(x: 300, y: 0))
+
+        XCTAssertEqual(codeView.gutter.frame, gutterFrame)
+        XCTAssertEqual(scrollView.frame.minX, codeView.gutter.frame.maxX, accuracy: 0.5)
+    }
+
+    func testNumbersFollowTheirLinesUnderVerticalScroll() throws {
+        let codeView = makeCodeView(lines(200))
+        let rows = try layoutRows(of: codeView.textView)
+
+        for offset in [CGFloat(2300), 2350] {
+            try scroll(codeView, to: NSPoint(x: 0, y: offset))
+
+            let labels = codeView.gutter.labels
+            let clipOrigin = try clipView(of: codeView).bounds.origin
+            let label = try XCTUnwrap(
+                labels.first { $0.text == "120" },
+                "line 120 is visible: clip \(clipOrigin), text \(codeView.textView.frame), gutter \(codeView.gutter.frame), labels \(labels.map(\.text))"
+            )
+            let numberBaseline = codeView.convert(label.point, from: codeView.gutter).y
+            let lineBaseline = codeView.convert(
+                NSPoint(x: 0, y: rows[119].baseline), from: codeView.textView
+            ).y
+            XCTAssertEqual(numberBaseline, lineBaseline, accuracy: 0.5, "scrolled to \(offset)")
+            XCTAssertLessThan(labels.count, 30, "only the rows in view are labelled")
+        }
+    }
+
+    func testATenLineFileThenANineLineFileShowsAOneDigitColumn() {
+        let codeView = makeCodeView(lines(10))
+        codeView.show(codeText(lines(9)))
+        codeView.layoutSubtreeIfNeeded()
+
+        XCTAssertEqual(codeView.gutter.lineCount, 9)
+        XCTAssertEqual(codeView.gutter.columnWidth, 24 + digitsWidth(1), accuracy: 0.01)
+        XCTAssertEqual(codeView.gutter.frame.width, codeView.gutter.width, accuracy: 0.5)
+        XCTAssertEqual(labelTexts(codeView.gutter), (1...9).map(String.init))
+    }
+
+    func testShowScrollsBackToTheTopLeft() throws {
+        let wide = (1...100).map { _ in String(repeating: "x", count: 100) + "\n" }.joined()
+        let codeView = makeCodeView(wide)
+        try scroll(codeView, to: NSPoint(x: 250, y: 600))
+        XCTAssertNotEqual(try clipView(of: codeView).bounds.origin, .zero)
+
+        codeView.show(codeText(wide))
+        codeView.layoutSubtreeIfNeeded()
+
+        XCTAssertEqual(try clipView(of: codeView).bounds.origin, .zero)
+    }
+
+    func testCopyingAllTheTextYieldsTheFilesCharactersWithNoNumber() throws {
+        let codeView = makeCodeView("print(\"hi\")\n")
+        let pasteboard = NSPasteboard(name: NSPasteboard.Name("nozoki-test-\(UUID().uuidString)"))
+        defer { pasteboard.releaseGlobally() }
+
+        codeView.textView.setSelectedRange(
+            NSRange(location: 0, length: (codeView.textView.string as NSString).length))
+        pasteboard.clearContents()
+        XCTAssertTrue(
+            codeView.textView.writeSelection(
+                to: pasteboard, types: codeView.textView.writablePasteboardTypes))
+
+        XCTAssertEqual(pasteboard.string(forType: .string), "print(\"hi\")\n")
+        XCTAssertEqual(codeView.textView.string, "print(\"hi\")\n")
+    }
+
+    func testCodeViewScrollViewAndTextViewRegisterNoDraggedTypeAndNoPartIsAControl() throws {
+        let codeView = makeCodeView(lines(3))
+        let scrollView = try XCTUnwrap(codeView.textView.enclosingScrollView)
+
+        for view in [codeView, scrollView, codeView.textView] as [NSView] {
+            XCTAssertTrue(view.registeredDraggedTypes.isEmpty, "\(view)")
+        }
+        for view in [codeView, scrollView, codeView.textView, codeView.gutter] as [NSView] {
+            XCTAssertFalse(view is NSControl, "\(view)")
+        }
+        XCTAssertFalse(codeView.textView.isEditable)
+    }
+
+    // MARK: - The panel draws through the code view (CP-331, CP-333, CP-343)
+
+    /// The gutter the panel's code view carries, found by walking the panel.
+    private func gutter(of panel: ReadingPanelView) throws -> CodeGutterView {
+        // Labels are for the rows the gutter's frame shows, so the panel is laid out first.
+        panel.layoutSubtreeIfNeeded()
+        return try XCTUnwrap(descendants(of: panel).compactMap { $0 as? CodeGutterView }.first)
+    }
+
+    func testNotesTxtIsDrawnInTheCodeTypePrimaryInkOnSurfaceUnderEachAppearance() throws {
+        let panel = makePanel()
+        panel.show(path: "notes.txt", verdict: .text("hello\n", .plain))
+        let scrollView = try XCTUnwrap(panel.contentView.enclosingScrollView)
+        let gutter = try gutter(of: panel)
+
+        for (appearance, ink, ground, number) in [
+            (aqua, Token.primary.values.light, Self.surfaceValues.light, Token.gutter.values.light),
+            (
+                darkAqua, Token.primary.values.dark, Self.surfaceValues.dark,
+                Token.gutter.values.dark
+            ),
+        ] {
+            panel.appearance = appearance
+            let resolvedUnder = panel.contentView.effectiveAppearance
+            for (index, colour) in foregrounds(of: panel).enumerated() {
+                let storage = try XCTUnwrap(panel.contentView.textStorage)
+                XCTAssertEqual(
+                    storage.attribute(.font, at: index, effectiveRange: nil) as? NSFont,
+                    CodeType.font, "unit \(index) font")
+                assertSame(
+                    srgb(try XCTUnwrap(colour), under: resolvedUnder), hex(ink),
+                    "unit \(index) ink under \(appearance.name) (CP-333)")
+            }
+            assertSame(
+                srgb(panel.contentView.backgroundColor, under: resolvedUnder), hex(ground),
+                "text view ground under \(appearance.name)")
+            assertSame(
+                srgb(scrollView.backgroundColor, under: resolvedUnder), hex(ground),
+                "scroll view ground under \(appearance.name)")
+            assertSame(
+                srgb(gutter.ground, under: gutter.effectiveAppearance), hex(ground),
+                "gutter ground under \(appearance.name)")
+            XCTAssertEqual(labelTexts(gutter), ["1"])
+            let label = try XCTUnwrap(gutter.labels.first)
+            XCTAssertEqual(label.attributes[.font] as? NSFont, CodeType.font)
+            assertSame(
+                srgb(
+                    try XCTUnwrap(label.attributes[.foregroundColor] as? NSColor),
+                    under: gutter.effectiveAppearance),
+                hex(number), "gutter label under \(appearance.name)")
+        }
+    }
+
+    func testMarkdownSourceTakesTheCodeViewWithOneInkAndNumberedLines() throws {
+        let panel = makePanel()
+        let source = "# Title\n\n**bold** and [a link](https://example.com)\n"
+
+        panel.show(path: "README.md", verdict: .text(source, .plain))
+
+        let ink = Set(
+            try foregrounds(of: panel).map { colour -> [CGFloat] in
+                srgb(try XCTUnwrap(colour), under: aqua)
+            }.map { $0.map { "\($0)" }.joined(separator: ",") })
+        XCTAssertEqual(ink.count, 1, "one ink")
+        assertSame(
+            srgb(try XCTUnwrap(foregrounds(of: panel).first ?? nil), under: aqua),
+            hex(Token.primary.values.light), "the one ink is {colors.primary} (CP-333)")
+        let gutter = try gutter(of: panel)
+        XCTAssertEqual(gutter.lineCount, 3)
+        XCTAssertEqual(labelTexts(gutter), ["1", "2", "3"])
+    }
+
+    func testLinesAreTwentyPointOneFivePitchNotSixteen() throws {
+        let panel = makePanel()
+        panel.show(path: "three.txt", verdict: .text("one\ntwo\nthree\n", .plain))
+
+        let rows = try layoutRows(of: panel.contentView)
+
+        XCTAssertEqual(rows.count, 3)
+        let pitch = rows[1].baseline - rows[0].baseline
+        XCTAssertEqual(pitch, 20.15, accuracy: 0.5)
+        XCTAssertNotEqual(pitch, 16, accuracy: 1)
+    }
+
+    func testCodeViewAndGutterAreHiddenForEveryStateWithNoText() throws {
+        let numbered = FileVerdict.text("a\nb\n", .plain)
+        let cases: [(String, (ReadingPanelView) -> Void)] = [
+            ("empty text", { $0.show(path: "e", verdict: .text("", .plain)) }),
+            (
+                "empty floor verdict",
+                { $0.show(path: "e", verdict: self.floorVerdict("", .json, [])) }
+            ),
+            ("cannot display", { $0.show(path: "e", verdict: .cannotDisplay(.invalidUTF16)) }),
+            ("failed", { $0.show(path: "e", verdict: .failed(.outside)) }),
+            ("no file after a numbered file", { $0.showNoFile() }),
+            (
+                "empty verdict after a numbered file",
+                { $0.show(path: "e", verdict: .text("", .plain)) }
+            ),
+        ]
+        for (name, enter) in cases {
+            let panel = makePanel()
+            panel.show(path: "n", verdict: numbered)
+            XCTAssertFalse(try gutter(of: panel).isHiddenOrHasHiddenAncestor, "numbered first")
+            enter(panel)
+            XCTAssertTrue(try gutter(of: panel).isHiddenOrHasHiddenAncestor, name)
+            XCTAssertTrue(panel.contentView.isHiddenOrHasHiddenAncestor, name)
+        }
+        for (name, enter) in cases {
+            let panel = makePanel()
+            enter(panel)
+            XCTAssertTrue(try gutter(of: panel).isHiddenOrHasHiddenAncestor, "fresh \(name)")
+        }
+    }
+
+    func testAnAppearanceChangeRecoloursInkGutterAndGroundWithoutSelectingAgain() throws {
+        let panel = makePanel()
+        panel.appearance = aqua
+        panel.show(
+            path: "app.py",
+            verdict: floorVerdict(
+                "print(\"hi\")\n", .python, [CodeSpan(start: 0, end: 5, tokenClass: .name)]))
+        let gutter = try gutter(of: panel)
+
+        panel.appearance = darkAqua
+
+        let resolvedUnder = gutter.effectiveAppearance
+        let storage = try XCTUnwrap(panel.contentView.textStorage)
+        let ink = try XCTUnwrap(
+            storage.attribute(.foregroundColor, at: 7, effectiveRange: nil) as? NSColor)
+        assertSame(srgb(ink, under: resolvedUnder), hex(Token.primary.values.dark), "ink")
+        let label = try XCTUnwrap(
+            gutter.labels.first?.attributes[.foregroundColor] as? NSColor)
+        assertSame(srgb(label, under: resolvedUnder), hex(Token.gutter.values.dark), "label")
+        assertSame(
+            srgb(gutter.ground, under: resolvedUnder), hex(Self.surfaceValues.dark), "ground")
+    }
+
+    func testNoStateOfThePanelRegistersADraggedTypeOrDrawsAControl() throws {
+        let verdicts: [FileVerdict?] = [
+            nil, .text("x\n", .plain), .text("", .plain), .cannotDisplay(.invalidUTF16),
+            .failed(.outside),
+        ]
+        for verdict in verdicts {
+            let panel = makePanel()
+            if let verdict { panel.show(path: "f", verdict: verdict) } else { panel.showNoFile() }
+            let gutter = try gutter(of: panel)
+            let codeView = try XCTUnwrap(gutter.superview)
+
+            for view in [gutter, codeView] {
+                XCTAssertTrue(view.registeredDraggedTypes.isEmpty, "\(view)")
+                XCTAssertFalse(view is NSControl, "\(view)")
+            }
+            XCTAssertFalse(panel.contentView.isEditable)
+        }
+    }
+
+    func testContentViewStillAnswersItsEnclosingScrollViewAndHoldsTheFilesText() throws {
+        let panel = makePanel()
+        panel.show(path: "a.txt", verdict: .text("body\n", .plain))
+
+        XCTAssertNotNil(panel.contentView.enclosingScrollView)
+        XCTAssertEqual(panel.contentView.string, "body\n")
+        XCTAssertTrue(
+            panel.contentView.isDescendant(of: try XCTUnwrap(gutter(of: panel).superview)))
     }
 }
