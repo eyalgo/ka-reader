@@ -6,7 +6,7 @@ use std::os::unix::net::UnixListener;
 
 use common::TempDir;
 use nozoki_core::{
-    Condition, Entry, EntryKind, ItemState, OpenFolderOutcome, list_tree, open_folder,
+    Condition, Entry, EntryKind, ItemState, Language, OpenFolderOutcome, list_tree, open_folder,
 };
 
 /// The name, kind and state of every entry, in the order the answer carries them. Nothing is
@@ -361,4 +361,165 @@ fn a_path_that_leaves_and_reenters_the_root_lexically_lists_inside() {
         src,
         "a link with an absolute target"
     );
+}
+
+/// The language every entry of an observed listing carries, by name. A file always carries one and
+/// a folder never does, so the pairing of kind and language is asserted on every entry on the way.
+fn languages_by_name(listing: ItemState<Vec<Entry>>) -> Vec<(String, Option<Language>)> {
+    let ItemState::Observed(entries) = listing else {
+        panic!("expected an Observed answer, got {listing:?}");
+    };
+    entries
+        .into_iter()
+        .map(|entry| {
+            assert_eq!(
+                entry.language.is_some(),
+                entry.kind == EntryKind::File,
+                "a file carries a language and a folder carries none: {entry:?}"
+            );
+            (entry.name, entry.language)
+        })
+        .collect()
+}
+
+/// The language the listing carries for `name`, or a panic naming the names that were there.
+fn language_listed(listed: &[(String, Option<Language>)], name: &str) -> Option<Language> {
+    listed
+        .iter()
+        .find(|(listed_name, _)| listed_name == name)
+        .unwrap_or_else(|| panic!("no entry called {name}: {listed:?}"))
+        .1
+}
+
+/// Every name the table sends to a language other than plain, with that language: the six floor
+/// names, their alternate extensions, mixed case, and the last extension of a dotted name.
+const NAMES_WITH_A_FLOOR_LANGUAGE: [(&str, Language); 18] = [
+    ("setup.sh", Language::Shell),
+    ("app.py", Language::Python),
+    ("index.js", Language::JavaScript),
+    ("package.json", Language::Json),
+    ("deploy.yml", Language::Yaml),
+    ("Cargo.toml", Language::Toml),
+    ("stubs.pyi", Language::Python),
+    ("gui.pyw", Language::Python),
+    ("x.bash", Language::Shell),
+    ("x.zsh", Language::Shell),
+    ("index.mjs", Language::JavaScript),
+    ("index.cjs", Language::JavaScript),
+    ("App.jsx", Language::JavaScript),
+    ("ci.yaml", Language::Yaml),
+    ("Deploy.YmL", Language::Yaml),
+    ("RUN.SH", Language::Shell),
+    ("x.Py", Language::Python),
+    ("archive.tar.json", Language::Json),
+];
+
+/// Every file name the table sends to plain: outside the set, no extension, Markdown, a name whose
+/// last extension is not a floor one, and an extension the case rule does not reach.
+const NAMES_WITH_NO_FLOOR_LANGUAGE: [&str; 12] = [
+    "notes.txt",
+    "main.rs",
+    "README",
+    "Makefile",
+    ".bashrc",
+    ".py",
+    "notes.",
+    "README.md",
+    "guide.markdown",
+    "notes.MARKDOWN",
+    "x.ſh",
+    "Makefile.py.bak",
+];
+
+/// A-1: a listed file entry carries the language the core gives its name, whatever its state.
+///
+/// `Deploy.YmL` is listed from a folder of its own: on a case-insensitive volume it is the same
+/// file as `deploy.yml`, and the two cannot share a folder.
+#[test]
+fn test_listed_floor_names_carry_their_language() {
+    let folder = TempDir::new();
+    let mixed_case_folder = TempDir::new();
+    for (name, _) in NAMES_WITH_A_FLOOR_LANGUAGE {
+        let home = if name == "Deploy.YmL" {
+            &mixed_case_folder
+        } else {
+            &folder
+        };
+        home.write_file(name, "");
+    }
+    let mut listed = languages_by_name(list_tree(
+        &open_folder(folder.path()).expect("a folder opens"),
+        "",
+    ));
+    listed.extend(languages_by_name(list_tree(
+        &open_folder(mixed_case_folder.path()).expect("a folder opens"),
+        "",
+    )));
+
+    for (name, language) in NAMES_WITH_A_FLOOR_LANGUAGE {
+        assert_eq!(language_listed(&listed, name), Some(language), "{name}");
+    }
+}
+
+/// A-3: any other file name, Markdown included, is plain, and plain is a language of its own.
+#[test]
+fn test_listed_other_names_carry_plain() {
+    let folder = TempDir::new();
+    for name in NAMES_WITH_NO_FLOOR_LANGUAGE {
+        folder.write_file(name, "");
+    }
+    let opened = open_folder(folder.path()).expect("a folder opens");
+
+    let listed = languages_by_name(list_tree(&opened, ""));
+
+    for name in NAMES_WITH_NO_FLOOR_LANGUAGE {
+        assert_eq!(
+            language_listed(&listed, name),
+            Some(Language::Plain),
+            "{name}"
+        );
+    }
+}
+
+/// A-1: a folder carries no language, even when its name is a floor name.
+#[test]
+fn test_listed_folder_named_like_code_carries_no_language() {
+    let folder = TempDir::new();
+    folder.make_folder("scripts.py");
+    folder.write_file("app.py", "");
+    let opened = open_folder(folder.path()).expect("a folder opens");
+
+    let listed = languages_by_name(list_tree(&opened, ""));
+
+    assert_eq!(language_listed(&listed, "scripts.py"), None);
+    assert_eq!(language_listed(&listed, "app.py"), Some(Language::Python));
+}
+
+/// A-5: the name decides, never the content. A shebang does not make a file shell, and prose does
+/// not stop a `.py` being Python.
+#[test]
+fn test_shebang_file_carries_plain_and_prose_py_carries_python() {
+    let folder = TempDir::new();
+    folder.write_file("run", "#!/usr/bin/env python3\nprint('hi')\n");
+    folder.write_file("tool.py", "this is only prose\n");
+    let opened = open_folder(folder.path()).expect("a folder opens");
+
+    let listed = languages_by_name(list_tree(&opened, ""));
+
+    assert_eq!(language_listed(&listed, "run"), Some(Language::Plain));
+    assert_eq!(language_listed(&listed, "tool.py"), Some(Language::Python));
+}
+
+/// A-1: a nested listing follows the same rule as the root's.
+#[test]
+fn test_nested_listing_uses_the_same_rule() {
+    let folder = TempDir::new();
+    folder.write_file("src/lib.py", "");
+    folder.write_file("src/notes.txt", "");
+    let opened = open_folder(folder.path()).expect("a folder opens");
+
+    let listed = languages_by_name(list_tree(&opened, "src"));
+
+    assert_eq!(language_listed(&listed, "lib.py"), Some(Language::Python));
+    assert_eq!(language_listed(&listed, "notes.txt"), Some(Language::Plain));
 }

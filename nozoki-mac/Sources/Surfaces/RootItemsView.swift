@@ -33,6 +33,7 @@ package final class RootItemsView: NSScrollView {
 
     private let folderGlyph: NSImage
     private let fileGlyph: NSImage
+    private let fileCodeGlyph: NSImage
     private let statusGlyphs: StatusGlyphs
     private var rows: [Row] = []
     private var isReloading = false
@@ -95,9 +96,13 @@ package final class RootItemsView: NSScrollView {
     }
 
     /// Presents tree rows or a root status using only the images supplied by the owner.
-    package init(folderGlyph: NSImage, fileGlyph: NSImage, statusGlyphs: StatusGlyphs) {
+    package init(
+        folderGlyph: NSImage, fileGlyph: NSImage, fileCodeGlyph: NSImage,
+        statusGlyphs: StatusGlyphs
+    ) {
         self.folderGlyph = folderGlyph
         self.fileGlyph = fileGlyph
+        self.fileCodeGlyph = fileCodeGlyph
         self.statusGlyphs = statusGlyphs
         // Wrapping, so a sentence wider than the sidebar's column is drawn whole on two lines.
         let line = NSTextField(wrappingLabelWithString: "")
@@ -168,10 +173,12 @@ package final class RootItemsView: NSScrollView {
     private static let glyphSize: CGFloat = 16
     private static let glyphSpacing: CGFloat = 6
 
-    private func glyph(for kind: EntryKind) -> NSImage {
-        switch kind {
+    /// A folder draws the folder image, whatever its name; a file with a floor language draws the
+    /// file-code image and any other file the file image. State plays no part.
+    private func glyph(for entry: Entry) -> NSImage {
+        switch entry.kind {
         case .folder: return folderGlyph
-        case .file: return fileGlyph
+        case .file: return entry.language == nil ? fileGlyph : fileCodeGlyph
         }
     }
 
@@ -426,7 +433,7 @@ extension RootItemsView: NSOutlineViewDelegate {
             outlineView.makeView(withIdentifier: Self.cellIdentifier, owner: self)
             as? EntryCell ?? makeCell()
         cell.textField?.stringValue = row.entry.name
-        cell.imageView?.image = glyph(for: row.entry.kind)
+        cell.imageView?.image = glyph(for: row.entry)
         // Every row sets the sentence, so a reused cell never carries a stale one.
         if let sentence = conditionSentence(for: row) {
             cell.conditionLabel.stringValue = sentence

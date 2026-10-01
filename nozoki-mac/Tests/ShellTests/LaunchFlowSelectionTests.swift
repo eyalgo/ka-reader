@@ -13,14 +13,15 @@ final class LaunchFlowSelectionTests: LaunchWindowTestCase {
     private static let rootAnswer = Data(
         (#"{"state":"observed","entries":["#
             + #"{"name":"src","path":"src","kind":"folder","state":"pending"},"#
-            + #"{"name":"a.txt","path":"a.txt","kind":"file","state":"observed"},"#
-            + #"{"name":"b.txt","path":"b.txt","kind":"file","state":"observed"},"#
-            + #"{"name":"ln","path":"ln","kind":"file","state":"failed","condition":"missing"}]}"#)
+            + #"{"name":"a.txt","path":"a.txt","kind":"file","state":"observed","language":"plain"},"#
+            + #"{"name":"b.txt","path":"b.txt","kind":"file","state":"observed","language":"plain"},"#
+            + #"{"name":"ln","path":"ln","kind":"file","state":"failed","condition":"missing","language":"plain"}]}"#)
             .utf8)
 
     private static let srcAnswer = Data(
         (#"{"state":"observed","entries":["#
-            + #"{"name":"lib.rs","path":"src/lib.rs","kind":"file","state":"observed"}]}"#).utf8)
+            + #"{"name":"lib.rs","path":"src/lib.rs","kind":"file","state":"observed","language":"plain"}]}"#)
+            .utf8)
 
     private func text(_ content: String) -> Data {
         let escaped = content.replacingOccurrences(of: "\n", with: "\\n")

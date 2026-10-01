@@ -11,10 +11,10 @@ final class GlyphDecodeTests: XCTestCase {
             .deletingLastPathComponent()
     }
 
-    /// The tree's two glyphs and the status messages' two (`docs/DESIGN.md` § Components "Status
+    /// The tree's three glyphs and the status messages' two (`docs/DESIGN.md` § Components "Status
     /// messages"): each vendored file the bundle hands the shell decodes to an image.
     func testVendoredFolderAndFileGlyphsDecode() throws {
-        for name in ["folder", "file", "info", "circle-alert"] {
+        for name in ["folder", "file", "file-code", "info", "circle-alert"] {
             let source =
                 repositoryRoot
                 .appendingPathComponent("third_party/lucide/icons/\(name).svg")

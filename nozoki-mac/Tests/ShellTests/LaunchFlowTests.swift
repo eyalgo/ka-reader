@@ -8,7 +8,8 @@ private let emptyRootAnswer = Data(#"{"state":"observed","entries":[]}"#.utf8)
 private let docsRootAnswer = Data(
     (#"{"state":"observed","entries":["#
         + #"{"name":"docs","path":"docs","kind":"folder","state":"pending"},"#
-        + #"{"name":"a.md","path":"a.md","kind":"file","state":"observed"}]}"#).utf8)
+        + #"{"name":"a.md","path":"a.md","kind":"file","state":"observed","language":"plain"}]}"#)
+        .utf8)
 private let emptyDocsAnswer = Data(#"{"state":"observed","entries":[]}"#.utf8)
 
 @MainActor
@@ -341,6 +342,25 @@ final class LaunchFlowTests: XCTestCase {
         let root = try workbench(in: presenter).rootItemsView
         XCTAssertEqual(root.outlineView.numberOfRows, 0)
         XCTAssertNil(root.rootLineText)
+    }
+
+    func testInvalidFileLanguageRefusesTheWholeRootListing() throws {
+        for member in ["", #", "language":"rust""#, #", "language":7"#, #", "language":null"#] {
+            let wire =
+                #"{"state":"observed","entries":["#
+                + #"{"name":"src","path":"src","kind":"folder","state":"pending"},"#
+                + #"{"name":"app.py","path":"app.py","kind":"file","state":"observed""#
+                + member + "}]}"
+            let (flow, bridge, _, presenter, _) = makeFlow(
+                answers: [chosenFolder], list: Data(wire.utf8))
+
+            flow.run()
+
+            let root = try workbench(in: presenter).rootItemsView
+            XCTAssertEqual(root.outlineView.numberOfRows, 0, member)
+            XCTAssertNil(root.rootLineText, member)
+            XCTAssertEqual(bridge.handedOut.sorted(), bridge.freed.sorted(), member)
+        }
     }
 
     func testLaunchUsesOnlyNamedExportsAndFreesEveryNonNilBufferOnce() throws {

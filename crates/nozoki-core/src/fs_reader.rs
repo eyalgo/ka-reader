@@ -124,12 +124,15 @@ pub enum ItemState<T> {
 /// One direct entry of a listed folder.
 ///
 /// A folder is `Pending`, and a file is `Observed`. An entry that failed is always a `File`.
+/// A file carries the language its own name gives it (a link its own name, never its target's), in
+/// every state, and a folder carries none, so `language.is_some() == (kind == File)`.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Entry {
     pub name: String,
     pub path: String,
     pub kind: EntryKind,
     pub state: ItemState<()>,
+    pub language: Option<Language>,
 }
 
 /// What a selected file turned out to be: its text, or the fact that it cannot be shown as text.
@@ -849,12 +852,22 @@ fn list_folder(
                 path: path.to_string_lossy().into_owned(),
                 kind,
                 state,
+                language: language_of_entry(kind, &name),
             },
             raw_name: name,
         });
     }
     order(&mut items);
     Ok(items.into_iter().map(|item| item.entry).collect())
+}
+
+/// The language an entry carries, taken from the raw name the system reported (never the lossy
+/// text, which is not the name a read of the same entry is given): none for a folder.
+fn language_of_entry(kind: EntryKind, raw_name: &OsStr) -> Option<Language> {
+    match kind {
+        EntryKind::Folder => None,
+        EntryKind::File => Some(language_of(raw_name)),
+    }
 }
 
 /// The kind and state an entry has when it is a folder or a file that was read.
@@ -1052,12 +1065,19 @@ mod tests {
         listed(outcome).into_iter().map(|triple| triple.0).collect()
     }
 
-    fn entry(name: &str, path: &str, kind: EntryKind, state: ItemState<()>) -> Entry {
+    fn entry(
+        name: &str,
+        path: &str,
+        kind: EntryKind,
+        state: ItemState<()>,
+        language: Option<Language>,
+    ) -> Entry {
         Entry {
             name: name.to_string(),
             path: path.to_string(),
             kind,
             state,
+            language,
         }
     }
 
@@ -1578,18 +1598,53 @@ mod tests {
         assert_eq!(
             entries_of(list(temp.path(), "")),
             [
-                entry(".env", ".env", EntryKind::File, ItemState::Observed(())),
-                entry(".git", ".git", EntryKind::Folder, ItemState::Pending),
+                entry(
+                    ".env",
+                    ".env",
+                    EntryKind::File,
+                    ItemState::Observed(()),
+                    Some(Language::Plain)
+                ),
+                entry(".git", ".git", EntryKind::Folder, ItemState::Pending, None),
                 entry(
                     "file.txt",
                     "file.txt",
                     EntryKind::File,
-                    ItemState::Observed(())
+                    ItemState::Observed(()),
+                    Some(Language::Plain)
                 ),
-                entry("folder", "folder", EntryKind::Folder, ItemState::Pending),
-                entry("link", "link", EntryKind::Folder, ItemState::Pending),
+                entry(
+                    "folder",
+                    "folder",
+                    EntryKind::Folder,
+                    ItemState::Pending,
+                    None
+                ),
+                entry("link", "link", EntryKind::Folder, ItemState::Pending, None),
             ]
         );
+    }
+
+    /// A-2: the language comes from the raw name the system reported, so a name that is not UTF-8
+    /// still lists as a file carrying the language `language_of` gives it, and a folder carries none.
+    /// The volume may refuse such a name (macOS does), so the rule is also asserted on the raw name
+    /// directly, which is the one place `list_folder` reads it.
+    #[test]
+    fn test_listed_non_utf8_extension_carries_plain() {
+        let raw_name = OsStr::from_bytes(b"file.p\xFFy");
+
+        assert_eq!(
+            language_of_entry(EntryKind::File, raw_name),
+            Some(Language::Plain)
+        );
+        assert_eq!(language_of_entry(EntryKind::Folder, raw_name), None);
+
+        let temp = TempDir::new();
+        if fs::write(temp.path().join(raw_name), "").is_ok() {
+            let listed = entries_of(list(temp.path(), ""));
+            assert_eq!(listed.len(), 1);
+            assert_eq!(listed[0].language, Some(Language::Plain));
+        }
     }
 
     #[test]
@@ -1684,9 +1739,10 @@ mod tests {
             EntryKind::Folder => ItemState::Pending,
             EntryKind::File => ItemState::Observed(()),
         };
+        let language = (kind == EntryKind::File).then_some(Language::Plain);
         Listed {
             raw_name: OsString::from_vec(raw_name.to_vec()),
-            entry: entry(name, name, kind, state),
+            entry: entry(name, name, kind, state, language),
         }
     }
 
@@ -1767,6 +1823,7 @@ mod tests {
                 "a-failed",
                 EntryKind::File,
                 ItemState::Failed(Condition::Missing),
+                Some(Language::Plain),
             ),
         };
         let items = vec![

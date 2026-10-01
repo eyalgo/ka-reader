@@ -82,7 +82,15 @@ final class LaunchWindowWorkbenchTests: LaunchWindowTestCase {
     private static let twoEntryRootAnswer = Data(
         (#"{"state":"observed","entries":["#
             + #"{"name":"src","path":"src","kind":"folder","state":"pending"},"#
-            + #"{"name":"a.txt","path":"a.txt","kind":"file","state":"observed"}]}"#).utf8)
+            + #"{"name":"a.txt","path":"a.txt","kind":"file","state":"observed","language":"plain"}]}"#)
+            .utf8)
+
+    private static let codeAndPlainRootAnswer = Data(
+        (#"{"state":"observed","entries":["#
+            + #"{"name":"app.py","path":"app.py","kind":"file","state":"observed","#
+            + #""language":"python"},"#
+            + #"{"name":"notes.txt","path":"notes.txt","kind":"file","state":"observed","#
+            + #""language":"plain"}]}"#).utf8)
 
     private static let missingFolderAnswer = Data(
         #"{"state":"failed","condition":"missing"}"#.utf8)
@@ -112,6 +120,28 @@ final class LaunchWindowWorkbenchTests: LaunchWindowTestCase {
         try assertSidebarHoldsTheTree(of: workbench, in: windowAfter)
         try assertReadingPanelStandsBesideTheSidebarAndDrawsOnlyThePrompt(
             workbench, in: windowAfter, emptyGlyph: launch.glyphs.info)
+    }
+
+    // D-2 — a launch hands the tree the `file-code` image its glyph source resolves (CP-318).
+    func testLaunchPassesTheFileCodeImageThroughToTheTree() throws {
+        let launch = makeLaunch(answers: [nil, Self.chosenFolder])
+        launch.bridge.listAnswer = Self.codeAndPlainRootAnswer
+        launch.flow.run()
+        let startup = try XCTUnwrap(launch.presenter.contents.last as? StartupView)
+        _ = try laidOutWindow(of: startup)
+
+        click(try control(titled: Self.browseTitle, beneath: startup))
+
+        let workbench = try XCTUnwrap(launch.presenter.contents.last as? WorkbenchView)
+        let tree = workbench.rootItemsView.outlineView
+        XCTAssertEqual(tree.numberOfRows, 2)
+        let images = try (0..<2).map { row in
+            try XCTUnwrap(
+                (tree.view(atColumn: 0, row: row, makeIfNecessary: true) as? NSTableCellView)?
+                    .imageView?.image)
+        }
+        XCTAssertTrue(images[0] === launch.glyphs.fileCode, "app.py draws the file-code image")
+        XCTAssertTrue(images[1] === launch.glyphs.file, "notes.txt draws the file image")
     }
 
     // W6 — CP-236's third clause.
@@ -153,7 +183,8 @@ final class LaunchWindowWorkbenchTests: LaunchWindowTestCase {
 
     private func makeWorkbench(showing root: RootListing?) -> WorkbenchView {
         let tree = RootItemsView(
-            folderGlyph: NSImage(), fileGlyph: NSImage(), statusGlyphs: statusGlyphs)
+            folderGlyph: NSImage(), fileGlyph: NSImage(), fileCodeGlyph: NSImage(),
+            statusGlyphs: statusGlyphs)
         tree.show(root)
         return WorkbenchView(rootItemsView: tree, statusGlyphs: statusGlyphs)
     }

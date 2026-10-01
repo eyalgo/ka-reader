@@ -7,6 +7,7 @@ import XCTest
 final class RootItemsViewTests: XCTestCase {
     private let folderGlyph = NSImage(size: NSSize(width: 1, height: 1))
     private let fileGlyph = NSImage(size: NSSize(width: 2, height: 2))
+    private let fileCodeGlyph = NSImage(size: NSSize(width: 5, height: 5))
     /// Distinct images for the two status glyphs, so a test can tell which one was drawn.
     private let statusGlyphs = StatusGlyphs(
         empty: NSImage(size: NSSize(width: 3, height: 3)),
@@ -14,7 +15,8 @@ final class RootItemsViewTests: XCTestCase {
 
     private func makeView(showing root: RootListing?) -> RootItemsView {
         let view = RootItemsView(
-            folderGlyph: folderGlyph, fileGlyph: fileGlyph, statusGlyphs: statusGlyphs)
+            folderGlyph: folderGlyph, fileGlyph: fileGlyph, fileCodeGlyph: fileCodeGlyph,
+            statusGlyphs: statusGlyphs)
         view.show(root)
         return view
     }
@@ -37,8 +39,20 @@ final class RootItemsViewTests: XCTestCase {
         return label.stringValue
     }
 
-    private func entry(_ name: String, _ kind: EntryKind, _ state: EntryState) -> Entry {
-        Entry(name: name, path: name, kind: kind, state: state)
+    private func entry(
+        _ name: String, _ kind: EntryKind, _ state: EntryState, language: FloorLanguage? = nil
+    ) -> Entry {
+        Entry(name: name, path: name, kind: kind, state: state, language: language)
+    }
+
+    /// The images the rows draw, top to bottom.
+    private func drawnGlyphs(_ view: RootItemsView) throws -> [NSImage?] {
+        try (0..<view.outlineView.numberOfRows).map { try cell(view, row: $0).imageView?.image }
+    }
+
+    /// How many image views a row's cell holds: the glyph leading it is the only one.
+    private func imageViewCount(_ cell: NSTableCellView) -> Int {
+        cell.subviews.filter { $0 is NSImageView }.count
     }
 
     private var plainProjection: [Entry] {
@@ -231,16 +245,174 @@ final class RootItemsViewTests: XCTestCase {
     func testKindDecodesFromTheTwoWireStrings() throws {
         let wire =
             #"[{"name":"a","path":"a","kind":"folder","state":"pending"},"#
-            + #"{"name":"b","path":"b","kind":"file","state":"observed"}]"#
+            + #"{"name":"b","path":"b","kind":"file","state":"observed","language":"plain"}]"#
 
         let entries = try JSONDecoder().decode([Entry].self, from: Data(wire.utf8))
 
         XCTAssertEqual(entries.map(\.kind), [.folder, .file])
     }
 
+    func testEntryDecodesEachOfTheSevenLanguageNames() throws {
+        let names = ["plain", "python", "shell", "javascript", "json", "yaml", "toml"]
+        let wire =
+            "["
+            + names.map {
+                #"{"name":"f","path":"f","kind":"file","state":"observed","language":"\#($0)"}"#
+            }.joined(separator: ",") + "]"
+
+        let entries = try JSONDecoder().decode([Entry].self, from: Data(wire.utf8))
+
+        XCTAssertEqual(
+            entries.map(\.language),
+            [nil, .python, .shell, .javascript, .json, .yaml, .toml])
+    }
+
+    func testEntryRefusesAFileEntryWithoutALanguageMember() {
+        let wire = #"{"name":"a","path":"a","kind":"file","state":"observed"}"#
+
+        XCTAssertThrowsError(try JSONDecoder().decode(Entry.self, from: Data(wire.utf8)))
+    }
+
+    func testEntryRefusesAFileEntryWithAnUnknownLanguage() {
+        for language in [#""rust""#, #""markdown""#, "7", "null"] {
+            let wire =
+                #"{"name":"a","path":"a","kind":"file","state":"observed","language":"#
+                + language + "}"
+
+            XCTAssertThrowsError(
+                try JSONDecoder().decode(Entry.self, from: Data(wire.utf8)), language)
+        }
+    }
+
+    func testFolderEntryDecodesWithNoLanguageMember() throws {
+        let wire = #"{"name":"src","path":"src","kind":"folder","state":"pending"}"#
+
+        let decoded = try JSONDecoder().decode(Entry.self, from: Data(wire.utf8))
+
+        XCTAssertEqual(decoded.kind, .folder)
+        XCTAssertNil(decoded.language)
+    }
+
+    func testFolderEntryIgnoresAnyLanguageMember() throws {
+        for language in [#""python""#, #""rust""#, "7", "null", "{}"] {
+            let wire =
+                #"{"name":"scripts.py","path":"scripts.py","kind":"folder","state":"pending","language":"#
+                + language + "}"
+
+            let decoded = try JSONDecoder().decode(Entry.self, from: Data(wire.utf8))
+
+            XCTAssertNil(decoded.language, language)
+            let view = makeView(showing: [decoded])
+            XCTAssertTrue(try cell(view, row: 0).imageView?.image === folderGlyph, language)
+        }
+    }
+
+    func testFileRowUsesTheSuppliedLanguageWithoutClassifyingItsNameAgain() throws {
+        let view = makeView(showing: [
+            entry("notes.txt", .file, .observed, language: .python),
+            entry("app.py", .file, .observed),
+        ])
+
+        XCTAssertTrue(try cell(view, row: 0).imageView?.image === fileCodeGlyph)
+        XCTAssertTrue(try cell(view, row: 1).imageView?.image === fileGlyph)
+    }
+
+    func testPlainFileRowDrawsFileInEveryState() throws {
+        let view = makeView(showing: [
+            entry("a.txt", .file, .pending),
+            entry("b.txt", .file, .observed),
+            entry("gone", .file, .failed(.missing)),
+        ])
+
+        for row in 0..<3 {
+            XCTAssertTrue(try cell(view, row: row).imageView?.image === fileGlyph, "\(row)")
+            XCTAssertEqual(imageViewCount(try cell(view, row: row)), 1)
+        }
+        XCTAssertEqual(
+            try conditionText(cell(view, row: 2)), "This link leads to something that isn't there.")
+    }
+
+    func testFileRowWithAFloorLanguageDrawsTheFileCodeGlyph() throws {
+        let view = makeView(showing: [entry("app.py", .file, .observed, language: .python)])
+
+        XCTAssertTrue(try cell(view, row: 0).imageView?.image === fileCodeGlyph)
+        XCTAssertEqual(imageViewCount(try cell(view, row: 0)), 1)
+    }
+
+    func testPlainFileRowDrawsTheFileGlyph() throws {
+        let view = makeView(showing: [entry("notes.txt", .file, .observed)])
+
+        XCTAssertTrue(try cell(view, row: 0).imageView?.image === fileGlyph)
+        XCTAssertEqual(imageViewCount(try cell(view, row: 0)), 1)
+    }
+
+    func testFolderRowDrawsTheFolderGlyphEvenWhenBuiltWithALanguage() throws {
+        let view = makeView(showing: [entry("scripts.py", .folder, .pending, language: .python)])
+
+        XCTAssertTrue(try cell(view, row: 0).imageView?.image === folderGlyph)
+    }
+
+    func testFileRowDrawsFileCodeInEveryState() throws {
+        let view = makeView(showing: [
+            entry("a.py", .file, .pending, language: .python),
+            entry("b.py", .file, .observed, language: .python),
+            entry("gone.py", .file, .failed(.missing), language: .python),
+        ])
+
+        for row in 0..<3 {
+            XCTAssertTrue(try cell(view, row: row).imageView?.image === fileCodeGlyph, "\(row)")
+        }
+        XCTAssertEqual(
+            try conditionText(cell(view, row: 2)), "This link leads to something that isn't there.")
+    }
+
+    /// The listing the bridge's own test proves it sends for the name table
+    /// (`crates/nozoki-bridge/tests/fixtures/list_tree_name_table.json`), drawn here.
+    func testTreeDrawnFromTheBridgesListingWireFileLeadsEachRowWithTheRightGlyph() throws {
+        // `nozoki-mac/Tests/SurfacesTests/RootItemsViewTests.swift` → the repository root.
+        let root = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent().deletingLastPathComponent()
+            .deletingLastPathComponent().deletingLastPathComponent()
+        let wire = try Data(
+            contentsOf: root.appendingPathComponent(
+                "crates/nozoki-bridge/tests/fixtures/list_tree_name_table.json"))
+        struct Listing: Decodable { let entries: [Entry] }
+        let entries = try JSONDecoder().decode(Listing.self, from: wire).entries
+        let view = makeView(showing: entries)
+
+        let withFileCode: Set<String> = [
+            "app.py", "stubs.pyi", "gui.pyw", "x.Py", "setup.sh", "x.bash", "x.zsh", "RUN.SH",
+            "index.js", "index.mjs", "index.cjs", "App.jsx", "package.json", "archive.tar.json",
+            "deploy.yml", "ci.yaml", "Build.YmL", "Cargo.toml", "gone.py",
+        ]
+        let withFile: Set<String> = [
+            "notes.txt", "main.rs", "README", "Makefile", ".bashrc", ".py", "notes.",
+            "README.md", "guide.markdown", "notes.MARKDOWN", "Makefile.py.bak", "x.ſh",
+        ]
+        XCTAssertEqual(view.outlineView.numberOfRows, entries.count)
+        XCTAssertEqual(withFileCode.count + withFile.count + 1, entries.count)
+        var seen: Set<String> = []
+        for row in 0..<entries.count {
+            let drawn = try cell(view, row: row)
+            let name = try XCTUnwrap(drawn.textField?.stringValue)
+            let image = drawn.imageView?.image
+            seen.insert(name)
+            if name == "scripts.py" {
+                XCTAssertTrue(image === folderGlyph, name)
+            } else if withFileCode.contains(name) {
+                XCTAssertTrue(image === fileCodeGlyph, name)
+            } else {
+                XCTAssertTrue(withFile.contains(name), "\(name) is not in the name table")
+                XCTAssertTrue(image === fileGlyph, name)
+            }
+        }
+        XCTAssertEqual(seen, withFileCode.union(withFile).union(["scripts.py"]))
+    }
+
     func testUnknownKindFailsToDecode() {
         for kind in ["socket", "symlink"] {
-            let wire = #"[{"name":"a","path":"a","kind":"\#(kind)","state":"observed"}]"#
+            let wire =
+                #"[{"name":"a","path":"a","kind":"\#(kind)","state":"observed","language":"plain"}]"#
 
             XCTAssertThrowsError(
                 try JSONDecoder().decode([Entry].self, from: Data(wire.utf8)), kind)
@@ -249,8 +421,8 @@ final class RootItemsViewTests: XCTestCase {
 
     func testUnknownStateOrConditionFailsToDecode() {
         let wires = [
-            #"{"name":"a","path":"a","kind":"file","state":"stopped"}"#,
-            #"{"name":"a","path":"a","kind":"file","state":"failed","condition":"gone"}"#,
+            #"{"name":"a","path":"a","kind":"file","state":"stopped","language":"plain"}"#,
+            #"{"name":"a","path":"a","kind":"file","state":"failed","condition":"gone","language":"plain"}"#,
         ]
 
         for wire in wires {
@@ -261,9 +433,9 @@ final class RootItemsViewTests: XCTestCase {
     func testEntryStateDecodesFromTheWireWithItsCondition() throws {
         let wire =
             #"[{"name":"a","path":"a","kind":"folder","state":"pending"},"#
-            + #"{"name":"b","path":"b","kind":"file","state":"observed"},"#
-            + #"{"name":"c","path":"c","kind":"file","state":"failed","condition":"not_a_folder"},"#
-            + #"{"name":"d","path":"d","kind":"file","state":"failed","condition":"too_many_links"}]"#
+            + #"{"name":"b","path":"b","kind":"file","state":"observed","language":"plain"},"#
+            + #"{"name":"c","path":"c","kind":"file","state":"failed","condition":"not_a_folder","language":"plain"},"#
+            + #"{"name":"d","path":"d","kind":"file","state":"failed","condition":"too_many_links","language":"plain"}]"#
 
         let entries = try JSONDecoder().decode([Entry].self, from: Data(wire.utf8))
 
@@ -273,7 +445,7 @@ final class RootItemsViewTests: XCTestCase {
     }
 
     func testAFailedEntryWithoutAConditionFailsToDecode() {
-        let wire = #"{"name":"a","path":"a","kind":"file","state":"failed"}"#
+        let wire = #"{"name":"a","path":"a","kind":"file","state":"failed","language":"plain"}"#
 
         XCTAssertThrowsError(try JSONDecoder().decode(Entry.self, from: Data(wire.utf8)))
     }

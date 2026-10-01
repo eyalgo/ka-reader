@@ -10,6 +10,7 @@ import XCTest
 final class RootItemsViewExpansionTests: XCTestCase {
     private let folderGlyph = NSImage(size: NSSize(width: 1, height: 1))
     private let fileGlyph = NSImage(size: NSSize(width: 2, height: 2))
+    private let fileCodeGlyph = NSImage(size: NSSize(width: 5, height: 5))
     /// Distinct images for the two status glyphs, so a test can tell which one was drawn.
     private let statusGlyphs = StatusGlyphs(
         empty: NSImage(size: NSSize(width: 3, height: 3)),
@@ -32,7 +33,8 @@ final class RootItemsViewExpansionTests: XCTestCase {
 
     private func makeView(_ entries: [Entry]) -> (view: RootItemsView, log: ReadLog) {
         let view = RootItemsView(
-            folderGlyph: folderGlyph, fileGlyph: fileGlyph, statusGlyphs: statusGlyphs)
+            folderGlyph: folderGlyph, fileGlyph: fileGlyph, fileCodeGlyph: fileCodeGlyph,
+            statusGlyphs: statusGlyphs)
         let log = ReadLog()
         view.listTree = { path, answer in log.reads.append(Read(path: path, answer: answer)) }
         view.show(.observed(entries))
@@ -411,9 +413,28 @@ final class RootItemsViewExpansionTests: XCTestCase {
         XCTAssertTrue(try cell(view, row: 3).imageView?.image === fileGlyph, "gone")
     }
 
+    func testExpandedFolderDrawsFileCodeAndFileGlyphsAtTheNestedDepth() throws {
+        let (view, log) = makeView([folder("src")])
+        try expand("src", in: view)
+
+        try deliver(
+            log, 0,
+            .observed([
+                Entry(
+                    name: "lib.py", path: "src/lib.py", kind: .file, state: .observed,
+                    language: .python),
+                file("notes.txt", path: "src/notes.txt"),
+            ]))
+
+        XCTAssertEqual(rowLabels(view), ["src", "lib.py", "notes.txt"])
+        XCTAssertTrue(try cell(view, row: 1).imageView?.image === fileCodeGlyph, "lib.py")
+        XCTAssertTrue(try cell(view, row: 2).imageView?.image === fileGlyph, "notes.txt")
+    }
+
     func testExpandingWithNoIntentStillDrawsTheReadingLine() throws {
         let view = RootItemsView(
-            folderGlyph: folderGlyph, fileGlyph: fileGlyph, statusGlyphs: statusGlyphs)
+            folderGlyph: folderGlyph, fileGlyph: fileGlyph, fileCodeGlyph: fileCodeGlyph,
+            statusGlyphs: statusGlyphs)
         view.show(.observed([folder("docs")]))
 
         try expand("docs", in: view)
