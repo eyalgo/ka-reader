@@ -153,6 +153,48 @@ final class ReadingPanelTests: XCTestCase {
         }
     }
 
+    /// CP-282 with `docs/CONTENT.md` § Message patterns *Partial*: `.missing` reaches the panel for a
+    /// link whose target was missing when its folder was listed (`change_spec.md` § Examples, the
+    /// link row that already failed on listing), and *no longer there* would claim the target was once
+    /// there. The statement says what Nozoki observed, which holds for that link and for a file gone
+    /// since the listing alike.
+    func testMissingStatementDoesNotClaimTheFileWasOnceThere() {
+        let panel = makePanel()
+
+        panel.show(path: "docs/ln", verdict: .failed(.missing))
+
+        let statement = visibleStrings(panel).last ?? ""
+        XCTAssertTrue(statement.contains("ln"), statement)
+        XCTAssertFalse(statement.lowercased().contains("no longer"), statement)
+    }
+
+    /// CP-283: selecting another file replaces what the panel shows, whatever it showed before — a
+    /// statement or a sentence never outlives its file, and content never shows under another path.
+    func testEachVerdictReplacesWhatThePanelShowedBefore() {
+        let panel = makePanel()
+
+        panel.show(path: "a.txt", verdict: .failed(.unreadable))
+        panel.show(path: "b.txt", verdict: .text("body", .plain))
+        XCTAssertEqual(visibleStrings(panel), ["b.txt"])
+        XCTAssertTrue(isShowingContent(panel))
+        XCTAssertEqual(panel.contentView.string, "body")
+
+        panel.show(path: "c.dat", verdict: .cannotDisplay(.invalidUTF8))
+        var strings = visibleStrings(panel)
+        XCTAssertEqual(strings.count, 2, "\(strings)")
+        XCTAssertEqual(strings.first, "c.dat")
+        XCTAssertFalse(isShowingContent(panel), "b.txt's content is gone")
+
+        panel.show(path: "d.txt", verdict: .failed(.outside))
+        strings = visibleStrings(panel)
+        XCTAssertEqual(strings.count, 2, "\(strings)")
+        XCTAssertEqual(strings.first, "d.txt")
+        XCTAssertFalse(strings.last?.contains("c.dat") ?? true, "\(strings)")
+
+        panel.show(path: "e", verdict: .text("", .plain))
+        XCTAssertEqual(visibleStrings(panel), ["e"])
+    }
+
     func testFailedReadsAreLedByTheFailureGlyphAndCannotDisplayByTheEmptyOne() {
         let failed = makePanel()
         let cannotDisplay = makePanel()

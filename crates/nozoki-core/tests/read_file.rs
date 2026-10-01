@@ -113,3 +113,21 @@ fn test_fifo_inside_the_root_fails_unreadable_and_returns() {
         ItemState::Failed(Condition::Unreadable)
     );
 }
+
+/// CP-270: a link row lists as the file it reaches, so selecting a link whose target is a file inside
+/// the opened folder answers that file's verdict, through the link's own name or a link to a folder.
+#[test]
+fn test_link_to_a_file_inside_the_root_reads_the_file_it_reaches() {
+    let folder = TempDir::new();
+    folder.write_file("src/lib.rs", "pub fn x() {}\n");
+    folder.make_link("lib-link", "src/lib.rs");
+    folder.make_link("src-link", "src");
+    let opened = open(&folder);
+
+    for requested in ["lib-link", "src-link/lib.rs"] {
+        let (content, language) = text_of(select_file(&opened, requested));
+
+        assert_eq!(content, "pub fn x() {}\n", "{requested}");
+        assert_eq!(language, Language::Plain, "{requested}");
+    }
+}
