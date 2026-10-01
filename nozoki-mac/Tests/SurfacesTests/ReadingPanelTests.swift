@@ -92,10 +92,11 @@ final class ReadingPanelTests: XCTestCase {
         var run = NSRange()
         let attributes = storage.attributes(at: 0, effectiveRange: &run)
         XCTAssertEqual(run, NSRange(location: 0, length: storage.length), "one attribute run")
-        // The system's own text colour is the default, not a colouring; anything else is one.
-        let foreground = attributes[.foregroundColor] as? NSColor
-        XCTAssertTrue(
-            foreground == nil || foreground == .textColor, "\(String(describing: foreground))")
+        // The base ink is `{colors.primary}`, the one ink of a file with no spans (CP-333).
+        let foreground = try XCTUnwrap(attributes[.foregroundColor] as? NSColor)
+        assertSame(
+            srgb(foreground, under: aqua), hex(Token.primary.values.light),
+            "the one run's ink is {colors.primary} (CP-333)")
         for coloured in [NSAttributedString.Key.backgroundColor, .link] {
             XCTAssertNil(attributes[coloured], "\(coloured) is not set")
         }
@@ -315,7 +316,7 @@ final class ReadingPanelTests: XCTestCase {
         }
     }
 
-    /// Every UTF-16 unit of the panel is `.textColor`, except those in `coloured`, which are in their
+    /// Every UTF-16 unit of the panel is `{colors.primary}`, except those in `coloured`, which are in their
     /// token's value for `appearance`. The colours are resolved under the panel's own effective
     /// appearance after it is set to `appearance`.
     private func assertDrawn(
@@ -327,12 +328,9 @@ final class ReadingPanelTests: XCTestCase {
         let isDark = appearance.name == .darkAqua
         for (index, color) in foregrounds(of: panel).enumerated() {
             let drawn = color ?? .textColor
-            let expected: [CGFloat]
-            if let token = coloured.first(where: { $0.0.contains(index) })?.1 {
-                expected = hex(isDark ? token.values.dark : token.values.light)
-            } else {
-                expected = srgb(.textColor, under: resolvedUnder)
-            }
+            // A unit in no span is `{colors.primary}` (CP-333).
+            let token = coloured.first(where: { $0.0.contains(index) })?.1 ?? .primary
+            let expected = hex(isDark ? token.values.dark : token.values.light)
             assertSame(
                 srgb(drawn, under: resolvedUnder), expected,
                 "unit \(index) under \(appearance.name)",
@@ -406,9 +404,10 @@ final class ReadingPanelTests: XCTestCase {
         var run = NSRange()
         let attributes = storage.attributes(at: 0, effectiveRange: &run)
         XCTAssertEqual(run, NSRange(location: 0, length: storage.length), "one attribute run")
-        let foreground = attributes[.foregroundColor] as? NSColor
-        XCTAssertTrue(
-            foreground == nil || foreground == .textColor, "\(String(describing: foreground))")
+        let foreground = try XCTUnwrap(attributes[.foregroundColor] as? NSColor)
+        assertSame(
+            srgb(foreground, under: aqua), hex(Token.primary.values.light),
+            "a floor language with no spans is {colors.primary} (CP-333)")
     }
 
     func testNextFileCarriesNoColourFromTheLast() {
@@ -1068,5 +1067,160 @@ final class ReadingPanelTests: XCTestCase {
             XCTAssertFalse(view is NSControl, "\(view)")
         }
         XCTAssertFalse(codeView.textView.isEditable)
+    }
+
+    // MARK: - The panel draws through the code view (CP-331, CP-333, CP-343)
+
+    /// The gutter the panel's code view carries, found by walking the panel.
+    private func gutter(of panel: ReadingPanelView) throws -> CodeGutterView {
+        try XCTUnwrap(descendants(of: panel).compactMap { $0 as? CodeGutterView }.first)
+    }
+
+    func testNotesTxtIsDrawnInTheCodeTypePrimaryInkOnSurfaceUnderEachAppearance() throws {
+        let panel = makePanel()
+        panel.show(path: "notes.txt", verdict: .text("hello\n", .plain))
+        let scrollView = try XCTUnwrap(panel.contentView.enclosingScrollView)
+        let gutter = try gutter(of: panel)
+
+        for (appearance, ink, ground, number) in [
+            (aqua, Token.primary.values.light, Self.surfaceValues.light, Token.gutter.values.light),
+            (darkAqua, Token.primary.values.dark, Self.surfaceValues.dark, Token.gutter.values.dark),
+        ] {
+            panel.appearance = appearance
+            let resolvedUnder = panel.contentView.effectiveAppearance
+            for (index, colour) in foregrounds(of: panel).enumerated() {
+                let storage = try XCTUnwrap(panel.contentView.textStorage)
+                XCTAssertEqual(
+                    storage.attribute(.font, at: index, effectiveRange: nil) as? NSFont,
+                    CodeType.font, "unit \(index) font")
+                assertSame(
+                    srgb(try XCTUnwrap(colour), under: resolvedUnder), hex(ink),
+                    "unit \(index) ink under \(appearance.name) (CP-333)")
+            }
+            assertSame(
+                srgb(panel.contentView.backgroundColor, under: resolvedUnder), hex(ground),
+                "text view ground under \(appearance.name)")
+            assertSame(
+                srgb(scrollView.backgroundColor, under: resolvedUnder), hex(ground),
+                "scroll view ground under \(appearance.name)")
+            assertSame(
+                srgb(gutter.ground, under: gutter.effectiveAppearance), hex(ground),
+                "gutter ground under \(appearance.name)")
+            XCTAssertEqual(labelTexts(gutter), ["1"])
+            let label = try XCTUnwrap(gutter.labels.first)
+            XCTAssertEqual(label.attributes[.font] as? NSFont, CodeType.font)
+            assertSame(
+                srgb(
+                    try XCTUnwrap(label.attributes[.foregroundColor] as? NSColor),
+                    under: gutter.effectiveAppearance),
+                hex(number), "gutter label under \(appearance.name)")
+        }
+    }
+
+    func testMarkdownSourceTakesTheCodeViewWithOneInkAndNumberedLines() throws {
+        let panel = makePanel()
+        let source = "# Title\n\n**bold** and [a link](https://example.com)\n"
+
+        panel.show(path: "README.md", verdict: .text(source, .plain))
+
+        let ink = Set(
+            try foregrounds(of: panel).map { colour -> [CGFloat] in
+                srgb(try XCTUnwrap(colour), under: aqua)
+            }.map { $0.map { "\($0)" }.joined(separator: ",") })
+        XCTAssertEqual(ink.count, 1, "one ink")
+        assertSame(
+            srgb(try XCTUnwrap(foregrounds(of: panel).first ?? nil), under: aqua),
+            hex(Token.primary.values.light), "the one ink is {colors.primary} (CP-333)")
+        let gutter = try gutter(of: panel)
+        XCTAssertEqual(gutter.lineCount, 3)
+        XCTAssertEqual(labelTexts(gutter), ["1", "2", "3"])
+    }
+
+    func testLinesAreTwentyPointOneFivePitchNotSixteen() throws {
+        let panel = makePanel()
+        panel.show(path: "three.txt", verdict: .text("one\ntwo\nthree\n", .plain))
+
+        let rows = try layoutRows(of: panel.contentView)
+
+        XCTAssertEqual(rows.count, 3)
+        let pitch = rows[1].baseline - rows[0].baseline
+        XCTAssertEqual(pitch, 20.15, accuracy: 0.5)
+        XCTAssertNotEqual(pitch, 16, accuracy: 1)
+    }
+
+    func testCodeViewAndGutterAreHiddenForEveryStateWithNoText() throws {
+        let numbered = FileVerdict.text("a\nb\n", .plain)
+        let cases: [(String, (ReadingPanelView) -> Void)] = [
+            ("empty text", { $0.show(path: "e", verdict: .text("", .plain)) }),
+            ("empty floor verdict", { $0.show(path: "e", verdict: self.floorVerdict("", .json, [])) }),
+            ("cannot display", { $0.show(path: "e", verdict: .cannotDisplay(.invalidUTF16)) }),
+            ("failed", { $0.show(path: "e", verdict: .failed(.outside)) }),
+            ("no file after a numbered file", { $0.showNoFile() }),
+            ("empty verdict after a numbered file", { $0.show(path: "e", verdict: .text("", .plain)) }),
+        ]
+        for (name, enter) in cases {
+            let panel = makePanel()
+            panel.show(path: "n", verdict: numbered)
+            XCTAssertFalse(try gutter(of: panel).isHiddenOrHasHiddenAncestor, "numbered first")
+            enter(panel)
+            XCTAssertTrue(try gutter(of: panel).isHiddenOrHasHiddenAncestor, name)
+            XCTAssertTrue(panel.contentView.isHiddenOrHasHiddenAncestor, name)
+        }
+        for (name, enter) in cases {
+            let panel = makePanel()
+            enter(panel)
+            XCTAssertTrue(try gutter(of: panel).isHiddenOrHasHiddenAncestor, "fresh \(name)")
+        }
+    }
+
+    func testAnAppearanceChangeRecoloursInkGutterAndGroundWithoutSelectingAgain() throws {
+        let panel = makePanel()
+        panel.appearance = aqua
+        panel.show(
+            path: "app.py",
+            verdict: floorVerdict(
+                "print(\"hi\")\n", .python, [CodeSpan(start: 0, end: 5, tokenClass: .name)]))
+        let gutter = try gutter(of: panel)
+
+        panel.appearance = darkAqua
+
+        let resolvedUnder = gutter.effectiveAppearance
+        let storage = try XCTUnwrap(panel.contentView.textStorage)
+        let ink = try XCTUnwrap(
+            storage.attribute(.foregroundColor, at: 7, effectiveRange: nil) as? NSColor)
+        assertSame(srgb(ink, under: resolvedUnder), hex(Token.primary.values.dark), "ink")
+        let label = try XCTUnwrap(
+            gutter.labels.first?.attributes[.foregroundColor] as? NSColor)
+        assertSame(srgb(label, under: resolvedUnder), hex(Token.gutter.values.dark), "label")
+        assertSame(
+            srgb(gutter.ground, under: resolvedUnder), hex(Self.surfaceValues.dark), "ground")
+    }
+
+    func testNoStateOfThePanelRegistersADraggedTypeOrDrawsAControl() throws {
+        let verdicts: [FileVerdict?] = [
+            nil, .text("x\n", .plain), .text("", .plain), .cannotDisplay(.invalidUTF16),
+            .failed(.outside),
+        ]
+        for verdict in verdicts {
+            let panel = makePanel()
+            if let verdict { panel.show(path: "f", verdict: verdict) } else { panel.showNoFile() }
+            let gutter = try gutter(of: panel)
+            let codeView = try XCTUnwrap(gutter.superview)
+
+            for view in [gutter, codeView] {
+                XCTAssertTrue(view.registeredDraggedTypes.isEmpty, "\(view)")
+                XCTAssertFalse(view is NSControl, "\(view)")
+            }
+            XCTAssertFalse(panel.contentView.isEditable)
+        }
+    }
+
+    func testContentViewStillAnswersItsEnclosingScrollViewAndHoldsTheFilesText() throws {
+        let panel = makePanel()
+        panel.show(path: "a.txt", verdict: .text("body\n", .plain))
+
+        XCTAssertNotNil(panel.contentView.enclosingScrollView)
+        XCTAssertEqual(panel.contentView.string, "body\n")
+        XCTAssertTrue(panel.contentView.isDescendant(of: try XCTUnwrap(gutter(of: panel).superview)))
     }
 }
