@@ -596,3 +596,36 @@ fn test_unresolved_link_lists_as_failed_file_with_its_names_language() {
     assert_failed(gone, Condition::Missing);
     assert_eq!(gone.language, Some(Language::Python));
 }
+
+#[test]
+fn test_failed_links_keep_their_names_language_beyond_missing_targets() {
+    let folder = TempDir::new();
+    folder.make_link("cycle.py", "cycle.py");
+    folder.make_link("outside.sh", "../outside");
+    folder.make_link("plain", "plain");
+
+    let root = observed(list_tree(&open(&folder), ""));
+
+    for (name, condition, language) in [
+        ("cycle.py", Condition::Cycle, Language::Python),
+        ("outside.sh", Condition::Outside, Language::Shell),
+        ("plain", Condition::Cycle, Language::Plain),
+    ] {
+        let entry = named(&root, name);
+        assert_failed(entry, condition);
+        assert_eq!(entry.language, Some(language), "{name}");
+    }
+}
+
+#[test]
+fn test_link_named_like_code_to_a_folder_carries_no_language() {
+    let folder = TempDir::new();
+    folder.make_folder("src");
+    folder.make_link("scripts.py", "src");
+
+    let root = observed(list_tree(&open(&folder), ""));
+
+    let linked_folder = named(&root, "scripts.py");
+    assert_folder(linked_folder);
+    assert_eq!(linked_folder.language, None);
+}

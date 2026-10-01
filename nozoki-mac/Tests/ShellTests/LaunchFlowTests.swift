@@ -344,6 +344,25 @@ final class LaunchFlowTests: XCTestCase {
         XCTAssertNil(root.rootLineText)
     }
 
+    func testInvalidFileLanguageRefusesTheWholeRootListing() throws {
+        for member in ["", #", "language":"rust""#, #", "language":7"#, #", "language":null"#] {
+            let wire =
+                #"{"state":"observed","entries":["#
+                + #"{"name":"src","path":"src","kind":"folder","state":"pending"},"#
+                + #"{"name":"app.py","path":"app.py","kind":"file","state":"observed""#
+                + member + "}]}"
+            let (flow, bridge, _, presenter, _) = makeFlow(
+                answers: [chosenFolder], list: Data(wire.utf8))
+
+            flow.run()
+
+            let root = try workbench(in: presenter).rootItemsView
+            XCTAssertEqual(root.outlineView.numberOfRows, 0, member)
+            XCTAssertNil(root.rootLineText, member)
+            XCTAssertEqual(bridge.handedOut, bridge.freed, member)
+        }
+    }
+
     func testLaunchUsesOnlyNamedExportsAndFreesEveryNonNilBufferOnce() throws {
         let cancellation = makeFlow(answers: [nil])
         cancellation.0.run()

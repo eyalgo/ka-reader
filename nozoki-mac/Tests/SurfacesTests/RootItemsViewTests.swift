@@ -293,6 +293,45 @@ final class RootItemsViewTests: XCTestCase {
         XCTAssertNil(decoded.language)
     }
 
+    func testFolderEntryIgnoresAnyLanguageMember() throws {
+        for language in [#""python""#, #""rust""#, "7", "null", "{}"] {
+            let wire =
+                #"{"name":"scripts.py","path":"scripts.py","kind":"folder","state":"pending","language":"#
+                + language + "}"
+
+            let decoded = try JSONDecoder().decode(Entry.self, from: Data(wire.utf8))
+
+            XCTAssertNil(decoded.language, language)
+            let view = makeView(showing: [decoded])
+            XCTAssertTrue(try cell(view, row: 0).imageView?.image === folderGlyph, language)
+        }
+    }
+
+    func testFileRowUsesTheSuppliedLanguageWithoutClassifyingItsNameAgain() throws {
+        let view = makeView(showing: [
+            entry("notes.txt", .file, .observed, language: .python),
+            entry("app.py", .file, .observed),
+        ])
+
+        XCTAssertTrue(try cell(view, row: 0).imageView?.image === fileCodeGlyph)
+        XCTAssertTrue(try cell(view, row: 1).imageView?.image === fileGlyph)
+    }
+
+    func testPlainFileRowDrawsFileInEveryState() throws {
+        let view = makeView(showing: [
+            entry("a.txt", .file, .pending),
+            entry("b.txt", .file, .observed),
+            entry("gone", .file, .failed(.missing)),
+        ])
+
+        for row in 0..<3 {
+            XCTAssertTrue(try cell(view, row: row).imageView?.image === fileGlyph, "\(row)")
+            XCTAssertEqual(imageViewCount(try cell(view, row: row)), 1)
+        }
+        XCTAssertEqual(
+            try conditionText(cell(view, row: 2)), "This link leads to something that isn't there.")
+    }
+
     func testFileRowWithAFloorLanguageDrawsTheFileCodeGlyph() throws {
         let view = makeView(showing: [entry("app.py", .file, .observed, language: .python)])
 
@@ -372,7 +411,8 @@ final class RootItemsViewTests: XCTestCase {
 
     func testUnknownKindFailsToDecode() {
         for kind in ["socket", "symlink"] {
-            let wire = #"[{"name":"a","path":"a","kind":"\#(kind)","state":"observed"}]"#
+            let wire =
+                #"[{"name":"a","path":"a","kind":"\#(kind)","state":"observed","language":"plain"}]"#
 
             XCTAssertThrowsError(
                 try JSONDecoder().decode([Entry].self, from: Data(wire.utf8)), kind)
