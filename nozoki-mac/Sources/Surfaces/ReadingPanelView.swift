@@ -6,13 +6,15 @@ import AppKit
 ///
 /// - *no file*: the prompt, and nothing else visible;
 /// - *text*: the path line, then the file's text as written in a non-editable view, on the
-///   `surface` ground: a floor-language file's spans in their code colours and every other
-///   character in the system's text colour, and a plain file's text in that one colour (CP-312);
+///   `surface` ground, beside a line-number gutter: a floor-language file's spans in their code
+///   colours and every other character in `{colors.primary}`, and a plain file's text in that one
+///   ink (CP-312, CP-333);
 /// - *cannot-display*: the path line, then one sentence saying the file can't be shown as text;
 /// - *failed read*: the path line, then one statement of what Nozoki observed.
 ///
-/// The panel has no control: nothing in it edits, saves or writes (CP-286). The text sits in a
-/// scroll view pinned to the panel's edges, so the document's size never reaches the window.
+/// The panel has no control: nothing in it edits, saves or writes (CP-286). The text sits in a code
+/// view, its gutter and scroll view, pinned to the panel's edges, so the document's size never
+/// reaches the window.
 @MainActor
 package final class ReadingPanelView: NSView {
     private static let readingPrompt = "Select a file to view."
@@ -24,16 +26,16 @@ package final class ReadingPanelView: NSView {
     /// `docs/DESIGN.md` `{spacing.sm}`: between the path line and what is beneath it.
     private static let gap: CGFloat = 8
 
-    private static let contentPointSize: CGFloat = 13
+    private static let pathPointSize: CGFloat = 13
 
     private let statusGlyphs: StatusGlyphs
     private let prompt: StatusMessageView
     private var message: StatusMessageView?
-    private let scrollView: NSScrollView
+    private let codeView: CodeView
 
-    /// Whether the scroll view has been pinned beneath the path line. It is pinned once, by the first
-    /// text with content, and stays pinned: a hidden scroll view takes no part in what is drawn.
-    private var isScrollViewPinned = false
+    /// Whether the code view has been pinned beneath the path line. It is pinned once, by the first
+    /// text with content, and stays pinned: a hidden code view takes no part in what is drawn.
+    private var isCodeViewPinned = false
 
     /// The path line: the entry's folder-relative path, in the path type.
     package let pathLine: NSTextField
@@ -48,32 +50,16 @@ package final class ReadingPanelView: NSView {
             texts: [NSTextField(labelWithString: Self.readingPrompt)])
 
         pathLine = NSTextField(labelWithString: "")
-        pathLine.font = .monospacedSystemFont(ofSize: Self.contentPointSize, weight: .regular)
+        pathLine.font = .monospacedSystemFont(ofSize: Self.pathPointSize, weight: .regular)
         pathLine.lineBreakMode = .byTruncatingMiddle
         pathLine.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
 
-        scrollView = NSTextView.scrollableTextView()
-        contentView = scrollView.documentView as? NSTextView ?? NSTextView()
-        contentView.isEditable = false
-        contentView.isRichText = false
-        contentView.isSelectable = true
-        contentView.font = .monospacedSystemFont(ofSize: Self.contentPointSize, weight: .regular)
-        // The ground is the views' own background, never a `.backgroundColor` text attribute, so a
-        // plain file's text carries none (CP-315).
-        contentView.backgroundColor = CodeColors.surface
-        contentView.drawsBackground = true
-        scrollView.backgroundColor = CodeColors.surface
-        scrollView.drawsBackground = true
-        scrollView.hasVerticalScroller = true
-        scrollView.hasHorizontalScroller = true
-        contentView.isHorizontallyResizable = true
-        contentView.textContainer?.widthTracksTextView = false
-        contentView.textContainer?.containerSize = NSSize(
-            width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
+        codeView = CodeView()
+        contentView = codeView.textView
 
         super.init(frame: .zero)
 
-        for view in [prompt, pathLine, scrollView] {
+        for view in [prompt, pathLine, codeView] {
             view.translatesAutoresizingMaskIntoConstraints = false
             addSubview(view)
         }
@@ -89,6 +75,7 @@ package final class ReadingPanelView: NSView {
             pathLine.trailingAnchor.constraint(
                 lessThanOrEqualTo: trailingAnchor, constant: -Self.inset),
         ])
+        codeView.isHidden = true
         showNoFile()
     }
 
@@ -101,7 +88,7 @@ package final class ReadingPanelView: NSView {
     package func showNoFile() {
         removeMessage()
         pathLine.isHidden = true
-        scrollView.isHidden = true
+        codeView.isHidden = true
         contentView.string = ""
         prompt.isHidden = false
     }
@@ -129,26 +116,25 @@ package final class ReadingPanelView: NSView {
 
     private func showText(_ content: String, language: Language) {
         // One replacement of the whole text storage, so nothing of the previous file's colours, or
-        // the view's typing attributes, reaches this one (CP-313).
-        contentView.textStorage?.setAttributedString(
-            Self.attributedText(content, language: language))
-        scrollView.isHidden = content.isEmpty
+        // the view's typing attributes, reaches this one (CP-313). The code view also rebuilds its
+        // gutter and scrolls to the top-left.
+        codeView.show(Self.attributedText(content, language: language))
+        codeView.isHidden = content.isEmpty
         guard !content.isEmpty else { return }
-        if !isScrollViewPinned {
+        if !isCodeViewPinned {
             NSLayoutConstraint.activate([
-                scrollView.topAnchor.constraint(
+                codeView.topAnchor.constraint(
                     equalTo: pathLine.bottomAnchor, constant: Self.gap),
-                scrollView.leadingAnchor.constraint(equalTo: leadingAnchor),
-                scrollView.trailingAnchor.constraint(equalTo: trailingAnchor),
-                scrollView.bottomAnchor.constraint(equalTo: bottomAnchor),
+                codeView.leadingAnchor.constraint(equalTo: leadingAnchor),
+                codeView.trailingAnchor.constraint(equalTo: trailingAnchor),
+                codeView.bottomAnchor.constraint(equalTo: bottomAnchor),
             ])
-            isScrollViewPinned = true
+            isCodeViewPinned = true
         }
-        contentView.scrollToBeginningOfDocument(nil)
     }
 
     private func showMessage(glyph: NSImage, sentence: String) {
-        scrollView.isHidden = true
+        codeView.isHidden = true
         contentView.string = ""
         let label = NSTextField(wrappingLabelWithString: sentence)
         label.isSelectable = false
@@ -171,11 +157,17 @@ package final class ReadingPanelView: NSView {
 
     private static func attributedText(_ content: String, language: Language) -> NSAttributedString
     {
+        // Every row is `CodeType.linePitch` tall, fixed: `lineHeightMultiple` would multiply the
+        // font's own 16-point line height, giving 24.8 (CP-332).
+        let pitch = NSMutableParagraphStyle()
+        pitch.minimumLineHeight = CodeType.linePitch
+        pitch.maximumLineHeight = CodeType.linePitch
         let text = NSMutableAttributedString(
             string: content,
             attributes: [
-                .font: NSFont.monospacedSystemFont(ofSize: contentPointSize, weight: .regular),
-                .foregroundColor: NSColor.textColor,
+                .font: CodeType.font,
+                .paragraphStyle: pitch,
+                .foregroundColor: CodeColors.primary,
             ])
         guard case .floor(_, let spans) = language else { return text }
         for (span, range) in zip(spans, utf16Ranges(of: spans, in: content)) {

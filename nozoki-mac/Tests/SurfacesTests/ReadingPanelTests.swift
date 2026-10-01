@@ -1073,7 +1073,9 @@ final class ReadingPanelTests: XCTestCase {
 
     /// The gutter the panel's code view carries, found by walking the panel.
     private func gutter(of panel: ReadingPanelView) throws -> CodeGutterView {
-        try XCTUnwrap(descendants(of: panel).compactMap { $0 as? CodeGutterView }.first)
+        // Labels are for the rows the gutter's frame shows, so the panel is laid out first.
+        panel.layoutSubtreeIfNeeded()
+        return try XCTUnwrap(descendants(of: panel).compactMap { $0 as? CodeGutterView }.first)
     }
 
     func testNotesTxtIsDrawnInTheCodeTypePrimaryInkOnSurfaceUnderEachAppearance() throws {
@@ -1084,7 +1086,10 @@ final class ReadingPanelTests: XCTestCase {
 
         for (appearance, ink, ground, number) in [
             (aqua, Token.primary.values.light, Self.surfaceValues.light, Token.gutter.values.light),
-            (darkAqua, Token.primary.values.dark, Self.surfaceValues.dark, Token.gutter.values.dark),
+            (
+                darkAqua, Token.primary.values.dark, Self.surfaceValues.dark,
+                Token.gutter.values.dark
+            ),
         ] {
             panel.appearance = appearance
             let resolvedUnder = panel.contentView.effectiveAppearance
@@ -1152,11 +1157,17 @@ final class ReadingPanelTests: XCTestCase {
         let numbered = FileVerdict.text("a\nb\n", .plain)
         let cases: [(String, (ReadingPanelView) -> Void)] = [
             ("empty text", { $0.show(path: "e", verdict: .text("", .plain)) }),
-            ("empty floor verdict", { $0.show(path: "e", verdict: self.floorVerdict("", .json, [])) }),
+            (
+                "empty floor verdict",
+                { $0.show(path: "e", verdict: self.floorVerdict("", .json, [])) }
+            ),
             ("cannot display", { $0.show(path: "e", verdict: .cannotDisplay(.invalidUTF16)) }),
             ("failed", { $0.show(path: "e", verdict: .failed(.outside)) }),
             ("no file after a numbered file", { $0.showNoFile() }),
-            ("empty verdict after a numbered file", { $0.show(path: "e", verdict: .text("", .plain)) }),
+            (
+                "empty verdict after a numbered file",
+                { $0.show(path: "e", verdict: .text("", .plain)) }
+            ),
         ]
         for (name, enter) in cases {
             let panel = makePanel()
@@ -1221,6 +1232,7 @@ final class ReadingPanelTests: XCTestCase {
 
         XCTAssertNotNil(panel.contentView.enclosingScrollView)
         XCTAssertEqual(panel.contentView.string, "body\n")
-        XCTAssertTrue(panel.contentView.isDescendant(of: try XCTUnwrap(gutter(of: panel).superview)))
+        XCTAssertTrue(
+            panel.contentView.isDescendant(of: try XCTUnwrap(gutter(of: panel).superview)))
     }
 }
