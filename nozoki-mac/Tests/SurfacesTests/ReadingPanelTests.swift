@@ -555,4 +555,237 @@ final class ReadingPanelTests: XCTestCase {
         XCTAssertEqual(CodeSpacing.inset, 16)
         XCTAssertEqual(CodeSpacing.gutterBase, 24)
     }
+
+    // MARK: - The line-number gutter (CP-336 – CP-338, CP-341)
+
+    /// `text` in the code font on the code pitch: every row's height fixed at `CodeType.linePitch`.
+    private func codeText(_ text: String) -> NSAttributedString {
+        let pitch = NSMutableParagraphStyle()
+        pitch.minimumLineHeight = CodeType.linePitch
+        pitch.maximumLineHeight = CodeType.linePitch
+        return NSAttributedString(
+            string: text,
+            attributes: [
+                .font: CodeType.font, .paragraphStyle: pitch,
+                .foregroundColor: CodeColors.primary,
+            ])
+    }
+
+    /// A TextKit 1 text view over `text`, not wrapping, as the code view builds its own.
+    private func makeTextView(_ text: String) -> NSTextView {
+        let storage = NSTextStorage(attributedString: codeText(text))
+        let layoutManager = NSLayoutManager()
+        storage.addLayoutManager(layoutManager)
+        let container = NSTextContainer(
+            size: NSSize(
+                width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude))
+        container.widthTracksTextView = false
+        layoutManager.addTextContainer(container)
+        let textView = NSTextView(
+            frame: NSRect(x: 0, y: 0, width: 600, height: 400), textContainer: container)
+        textView.isEditable = false
+        return textView
+    }
+
+    /// A gutter over a text view of `text`, its frame tall enough to show every row.
+    private func makeGutter(
+        _ text: String
+    ) -> (gutter: CodeGutterView, textView: NSTextView) {
+        let textView = makeTextView(text)
+        let gutter = CodeGutterView(textView: textView)
+        gutter.frame = NSRect(x: 0, y: 0, width: gutter.width, height: 4000)
+        return (gutter, textView)
+    }
+
+    private func lines(_ count: Int) -> String {
+        (1...count).map { "line \($0)\n" }.joined()
+    }
+
+    /// The width of `count` digits in the code font, measured from the font.
+    private func digitsWidth(_ count: Int) -> CGFloat {
+        (String(repeating: "0", count: count) as NSString)
+            .size(withAttributes: [.font: CodeType.font]).width
+    }
+
+    /// Each row of `textView`'s layout: its fragment's top and its baseline, in the text view's
+    /// coordinates, the extra fragment after a terminal break left out.
+    private func layoutRows(of textView: NSTextView) throws -> [(top: CGFloat, baseline: CGFloat)] {
+        let layoutManager = try XCTUnwrap(textView.layoutManager)
+        let container = try XCTUnwrap(textView.textContainer)
+        layoutManager.ensureLayout(for: container)
+        var rows: [(top: CGFloat, baseline: CGFloat)] = []
+        layoutManager.enumerateLineFragments(
+            forGlyphRange: NSRange(location: 0, length: layoutManager.numberOfGlyphs)
+        ) { rect, _, _, glyphRange, _ in
+            let location = layoutManager.location(forGlyphAt: glyphRange.location)
+            let origin = textView.textContainerOrigin
+            rows.append((rect.minY + origin.y, rect.minY + location.y + origin.y))
+        }
+        return rows
+    }
+
+    private func labelTexts(_ gutter: CodeGutterView) -> [String] {
+        gutter.labels.map(\.text)
+    }
+
+    func testGutterNumbersAnLFTerminatedFileOneAndTwo() {
+        let (gutter, _) = makeGutter("a\nb\n")
+
+        XCTAssertEqual(gutter.lineCount, 2)
+        XCTAssertEqual(labelTexts(gutter), ["1", "2"], "the break that ends the file begins no line")
+    }
+
+    func testGutterNumbersAnUnterminatedFileOneAndTwo() {
+        let (gutter, _) = makeGutter("a\nb")
+
+        XCTAssertEqual(gutter.lineCount, 2)
+        XCTAssertEqual(labelTexts(gutter), ["1", "2"])
+    }
+
+    func testGutterCountsCRLFAsOneBreak() {
+        let (gutter, _) = makeGutter("a\r\nb\r\n")
+
+        XCTAssertEqual(labelTexts(gutter), ["1", "2"])
+    }
+
+    func testGutterNumbersTheEmptySecondRow() throws {
+        let (gutter, _) = makeGutter("a\n\n")
+
+        XCTAssertEqual(labelTexts(gutter), ["1", "2"])
+        let labels = gutter.labels
+        XCTAssertEqual(labels[1].point.y - labels[0].point.y, CodeType.linePitch, accuracy: 0.5)
+    }
+
+    func testGutterNumbersALoneLFAsOneLine() {
+        let (gutter, _) = makeGutter("\n")
+
+        XCTAssertEqual(gutter.lineCount, 1)
+        XCTAssertEqual(labelTexts(gutter), ["1"])
+    }
+
+    func testGutterNumbersEveryRowTheLayoutDrawsWhateverBrokeIt() {
+        for text in ["a\rb", "a\u{2028}b"] {
+            let (gutter, _) = makeGutter(text)
+
+            XCTAssertEqual(labelTexts(gutter), ["1", "2"], "\(Array(text.unicodeScalars))")
+        }
+    }
+
+    func testGutterOfEmptyTextHasNoLabelAndAOneDigitColumn() {
+        let (gutter, _) = makeGutter("")
+
+        XCTAssertEqual(gutter.lineCount, 0)
+        XCTAssertTrue(gutter.labels.isEmpty)
+        XCTAssertEqual(gutter.columnWidth, 24 + digitsWidth(1), accuracy: 0.01)
+    }
+
+    func testColumnWidthIsTwentyFourPlusTheDigitsTheFileNeeds() {
+        for (count, digits) in [(9, 1), (10, 2), (100, 3)] {
+            let (gutter, _) = makeGutter(lines(count))
+
+            XCTAssertEqual(gutter.lineCount, count)
+            XCTAssertEqual(
+                gutter.columnWidth, 24 + digitsWidth(digits), accuracy: 0.01,
+                "\(count) lines")
+        }
+    }
+
+    func testGutterWidthIsTheInsetPlusTheColumn() {
+        let (gutter, _) = makeGutter(lines(10))
+
+        XCTAssertEqual(gutter.width, CodeSpacing.inset + gutter.columnWidth, accuracy: 0.0001)
+    }
+
+    func testEveryNumberEndsAtTheColumnsRightEdge() throws {
+        let (gutter, _) = makeGutter(lines(10))
+
+        let nine = try XCTUnwrap(gutter.labels.first { $0.text == "9" })
+        let ten = try XCTUnwrap(gutter.labels.first { $0.text == "10" })
+        XCTAssertEqual(nine.point.x, ten.point.x, accuracy: 0.0001)
+        XCTAssertEqual(ten.point.x, gutter.width, accuracy: 0.0001)
+    }
+
+    func testEachNumberSitsOnItsRowsBaseline() throws {
+        let (gutter, textView) = makeGutter(lines(5))
+
+        let rows = try layoutRows(of: textView)
+        XCTAssertEqual(rows.count, 5)
+        XCTAssertEqual(gutter.labels.count, 5)
+        for (row, label) in zip(rows, gutter.labels) {
+            XCTAssertEqual(label.point.y, row.baseline, accuracy: 0.5, label.text)
+            XCTAssertGreaterThan(
+                label.point.y - row.top, 10, "\(label.text) is on the baseline, not the fragment's top")
+        }
+    }
+
+    func testReloadRecomputesCountColumnAndWidthAfterATextChange() throws {
+        let (gutter, textView) = makeGutter(lines(10))
+        let widthWithTwoDigits = gutter.width
+        XCTAssertEqual(gutter.lineCount, 10)
+
+        textView.textStorage?.setAttributedString(codeText(lines(9)))
+        gutter.reload()
+
+        XCTAssertEqual(gutter.lineCount, 9)
+        XCTAssertEqual(gutter.columnWidth, 24 + digitsWidth(1), accuracy: 0.01)
+        XCTAssertLessThan(gutter.width, widthWithTwoDigits)
+        XCTAssertFalse(labelTexts(gutter).contains("10"))
+        XCTAssertEqual(labelTexts(gutter).last, "9")
+    }
+
+    func testLabelsAreDecimalDigitsOnlyInTheCodeFontAndGutterColour() throws {
+        let (gutter, _) = makeGutter(lines(12))
+
+        XCTAssertEqual(labelTexts(gutter), (1...12).map(String.init))
+        for label in gutter.labels {
+            XCTAssertTrue(label.text.allSatisfy(\.isASCII) && label.text.allSatisfy(\.isNumber))
+            XCTAssertEqual(label.attributes[.font] as? NSFont, CodeType.font)
+            let colour = try XCTUnwrap(label.attributes[.foregroundColor] as? NSColor)
+            assertSame(
+                srgb(colour, under: aqua), hex(Token.gutter.values.light), "\(label.text) light")
+            assertSame(
+                srgb(colour, under: darkAqua), hex(Token.gutter.values.dark), "\(label.text) dark")
+        }
+    }
+
+    func testGroundIsSurfaceAndBothColoursFollowAnAppearanceChangeWithoutReload() throws {
+        let (gutter, _) = makeGutter("a\n")
+
+        for (appearance, ground, ink) in [
+            (aqua, Self.surfaceValues.light, Token.gutter.values.light),
+            (darkAqua, Self.surfaceValues.dark, Token.gutter.values.dark),
+        ] {
+            gutter.appearance = appearance
+            let resolvedUnder = gutter.effectiveAppearance
+            assertSame(
+                srgb(gutter.ground, under: resolvedUnder), hex(ground),
+                "ground under \(appearance.name)")
+            let colour = try XCTUnwrap(gutter.labels.first?.attributes[.foregroundColor] as? NSColor)
+            assertSame(srgb(colour, under: resolvedUnder), hex(ink), "label under \(appearance.name)")
+        }
+    }
+
+    func testGutterHasNoSubviewIsNoControlAndRegistersNoDraggedType() {
+        let (gutter, _) = makeGutter(lines(3))
+
+        XCTAssertTrue(gutter.subviews.isEmpty)
+        XCTAssertFalse(gutter is NSControl)
+        XCTAssertTrue(gutter.registeredDraggedTypes.isEmpty)
+    }
+
+    /// The clip view's bounds change when the text scrolls; the gutter redraws, because every
+    /// number's place on the screen moved.
+    func testGutterRedisplaysWhenTheClipViewScrolls() throws {
+        let textView = makeTextView(lines(100))
+        let scrollView = NSScrollView(frame: NSRect(x: 0, y: 0, width: 400, height: 200))
+        scrollView.documentView = textView
+        let gutter = CodeGutterView(textView: textView)
+        gutter.frame = NSRect(x: 0, y: 0, width: gutter.width, height: 200)
+        gutter.needsDisplay = false
+
+        scrollView.contentView.scroll(to: NSPoint(x: 0, y: 400))
+        scrollView.reflectScrolledClipView(scrollView.contentView)
+
+        XCTAssertTrue(gutter.needsDisplay)
+    }
 }
