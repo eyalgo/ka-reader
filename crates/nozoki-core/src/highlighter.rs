@@ -146,7 +146,9 @@ fn configuration(
     name: &str,
     query: &str,
 ) -> Option<HighlightConfiguration> {
-    let mut configuration = HighlightConfiguration::new(grammar, name, query, "", "").ok()?;
+    let mut configuration = HighlightConfiguration::new(grammar, name, query, "", "")
+        .inspect_err(|error| log::warn!("highlighter: {name} query refused: {error}"))
+        .ok()?;
     let capture_names = CAPTURE_CLASSES.map(|(capture_name, _)| capture_name);
     configuration.configure(&capture_names);
     Some(configuration)
@@ -160,7 +162,10 @@ fn spans_of(text: &str, configuration: &HighlightConfiguration) -> Vec<Span> {
     let mut highlighter = Highlighter::new();
     let events = match highlighter.highlight(configuration, text.as_bytes(), None, None, |_| None) {
         Ok(events) => events,
-        Err(_) => return Vec::new(),
+        Err(error) => {
+            log::warn!("highlighter: engine refused to start: {error}");
+            return Vec::new();
+        }
     };
 
     let mut open_classes: Vec<TokenClass> = Vec::new();
@@ -189,7 +194,10 @@ fn spans_of(text: &str, configuration: &HighlightConfiguration) -> Vec<Span> {
                     });
                 }
             }
-            Err(_) => return spans,
+            Err(error) => {
+                log::warn!("highlighter: engine stopped early, keeping the spans so far: {error}");
+                return spans;
+            }
         }
     }
     spans
