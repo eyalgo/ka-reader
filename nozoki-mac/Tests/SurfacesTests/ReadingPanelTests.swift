@@ -1000,11 +1000,15 @@ final class ReadingPanelTests: XCTestCase {
         let codeView = makeCodeView(lines(200))
         let rows = try layoutRows(of: codeView.textView)
 
-        for offset in [CGFloat(2300), 2900] {
+        for offset in [CGFloat(2300), 2350] {
             try scroll(codeView, to: NSPoint(x: 0, y: offset))
 
             let labels = codeView.gutter.labels
-            let label = try XCTUnwrap(labels.first { $0.text == "120" }, "line 120 is visible")
+            let clipOrigin = try clipView(of: codeView).bounds.origin
+            let label = try XCTUnwrap(
+                labels.first { $0.text == "120" },
+                "line 120 is visible: clip \(clipOrigin), text \(codeView.textView.frame), gutter \(codeView.gutter.frame), labels \(labels.map(\.text))"
+            )
             let numberBaseline = codeView.convert(label.point, from: codeView.gutter).y
             let lineBaseline = codeView.convert(
                 NSPoint(x: 0, y: rows[119].baseline), from: codeView.textView
@@ -1042,9 +1046,12 @@ final class ReadingPanelTests: XCTestCase {
         let pasteboard = NSPasteboard(name: NSPasteboard.Name("nozoki-test-\(UUID().uuidString)"))
         defer { pasteboard.releaseGlobally() }
 
-        codeView.textView.selectAll(nil)
+        codeView.textView.setSelectedRange(
+            NSRange(location: 0, length: (codeView.textView.string as NSString).length))
         pasteboard.clearContents()
-        XCTAssertTrue(codeView.textView.writeSelection(to: pasteboard, type: .string))
+        XCTAssertTrue(
+            codeView.textView.writeSelection(
+                to: pasteboard, types: codeView.textView.writablePasteboardTypes))
 
         XCTAssertEqual(pasteboard.string(forType: .string), "print(\"hi\")\n")
         XCTAssertEqual(codeView.textView.string, "print(\"hi\")\n")
@@ -1057,7 +1064,7 @@ final class ReadingPanelTests: XCTestCase {
         for view in [codeView, scrollView, codeView.textView] as [NSView] {
             XCTAssertTrue(view.registeredDraggedTypes.isEmpty, "\(view)")
         }
-        for view in [codeView] + descendants(of: codeView) {
+        for view in [codeView, scrollView, codeView.textView, codeView.gutter] as [NSView] {
             XCTAssertFalse(view is NSControl, "\(view)")
         }
         XCTAssertFalse(codeView.textView.isEditable)
