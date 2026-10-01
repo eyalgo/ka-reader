@@ -10,7 +10,7 @@ use std::path::PathBuf;
 use serde::Serialize;
 
 use crate::exports::{BufferOrigin, NozokiBuffer};
-use crate::session::{ListAnswerDto, OpenResult, Session};
+use crate::session::{FileAnswerDto, ListAnswerDto, OpenResult, Session};
 
 /// Runs `work` under `catch_unwind` and hands its answer across as an owned buffer of JSON bytes.
 ///
@@ -125,6 +125,20 @@ pub unsafe fn list_entries(session: &Session, path: *const c_char) -> ListAnswer
         ListPath::Root => session.list(""),
         ListPath::Under(relative) => session.list(&relative),
         ListPath::NotUtf8 => ListAnswerDto::Pending,
+    }
+}
+
+/// Reads `path` in `session`. NULL, an empty path and bytes that are not UTF-8 name no file, so
+/// nothing is read and the answer is `{"state":"pending"}`.
+///
+/// # Safety
+///
+/// As `decode_list_path`.
+pub unsafe fn select_entry(session: &Session, path: *const c_char) -> FileAnswerDto {
+    // SAFETY: forwarded from the caller.
+    match unsafe { decode_list_path(path) } {
+        ListPath::Under(relative) => session.select_file(&relative),
+        ListPath::Root | ListPath::NotUtf8 => FileAnswerDto::Pending,
     }
 }
 

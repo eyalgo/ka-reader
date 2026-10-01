@@ -6,8 +6,8 @@ use std::path::PathBuf;
 use std::sync::{Mutex, PoisonError};
 
 use nozoki_core::{
-    Condition, EntryKind, ItemState, OpenFailure, OpenFolderOutcome, OpenedFolder, list_tree,
-    open_folder,
+    CannotDisplayReason, Condition, EntryKind, FileContent, ItemState, Language, OpenFailure,
+    OpenFolderOutcome, OpenedFolder, list_tree, open_folder, select_file,
 };
 use serde::Serialize;
 
@@ -121,6 +121,75 @@ pub enum ListAnswerDto {
     Pending,
 }
 
+/// A text file's language on the wire: `"plain"`, the one the seam answers for every name.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum LanguageDto {
+    Plain,
+}
+
+impl From<Language> for LanguageDto {
+    fn from(language: Language) -> Self {
+        match language {
+            Language::Plain => Self::Plain,
+        }
+    }
+}
+
+/// Why a file cannot be shown as text, on the wire: `"invalid_utf8"` or `"invalid_utf16"`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum CannotDisplayReasonDto {
+    InvalidUtf8,
+    InvalidUtf16,
+}
+
+impl From<CannotDisplayReason> for CannotDisplayReasonDto {
+    fn from(reason: CannotDisplayReason) -> Self {
+        match reason {
+            CannotDisplayReason::InvalidUtf8 => Self::InvalidUtf8,
+            CannotDisplayReason::InvalidUtf16 => Self::InvalidUtf16,
+        }
+    }
+}
+
+/// What `select_file` answers across the bridge, tagged by `state`: `text` with its decoded
+/// `content` and `language`, `cannot_display` with a `reason`, `failed` with a `condition`, or
+/// `pending` when nothing was read.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(tag = "state", rename_all = "snake_case")]
+pub enum FileAnswerDto {
+    Text {
+        content: String,
+        language: LanguageDto,
+    },
+    CannotDisplay {
+        reason: CannotDisplayReasonDto,
+    },
+    Failed {
+        condition: ConditionDto,
+    },
+    Pending,
+}
+
+impl From<ItemState<FileContent>> for FileAnswerDto {
+    fn from(state: ItemState<FileContent>) -> Self {
+        match state {
+            ItemState::Observed(FileContent::Text { content, language }) => Self::Text {
+                content,
+                language: language.into(),
+            },
+            ItemState::Observed(FileContent::CannotDisplay(reason)) => Self::CannotDisplay {
+                reason: reason.into(),
+            },
+            ItemState::Failed(condition) => Self::Failed {
+                condition: condition.into(),
+            },
+            ItemState::Pending => Self::Pending,
+        }
+    }
+}
+
 /// The session: at most one opened folder, starting empty, replaced whole by a successful open.
 /// The bridge holds exactly one for the life of the process.
 ///
@@ -185,6 +254,29 @@ impl Session {
     }
 }
 
+impl Session {
+    /// Reads the file at `path` inside the opened folder and answers its verdict. No folder open
+    /// is `pending`, because nothing was read.
+    pub fn select_file(&self, path: &str) -> FileAnswerDto {
+        self.select_file_with(path, select_file)
+    }
+
+    /// `select_file` with the read passed in. The opened folder is cloned under the lock and the
+    /// read runs after it is released, so a long read never stalls a listing behind it (CP-283).
+    fn select_file_with(
+        &self,
+        path: &str,
+        read: impl FnOnce(&OpenedFolder, &str) -> ItemState<FileContent>,
+    ) -> FileAnswerDto {
+        let folder = self
+            .opened
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .clone();
+        folder.map_or(FileAnswerDto::Pending, |folder| read(&folder, path).into())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     //! Layer 1: the session over temporary folders. The panel belongs to the shell, so every open
@@ -214,8 +306,9 @@ mod tests {
         let (release_tx, release_rx) = mpsc::channel::<()>();
         let (listed_tx, listed_rx) = mpsc::channel::<()>();
 
+        let session = &session;
         std::thread::scope(|scope| {
-            scope.spawn(|| {
+            scope.spawn(move || {
                 session.select_file_with("a.txt", |_, _| {
                     parked_tx.send(()).expect("the test is listening");
                     release_rx.recv().expect("the test releases the read");
@@ -227,7 +320,7 @@ mod tests {
             parked_rx
                 .recv_timeout(Duration::from_secs(10))
                 .expect("the read parked");
-            scope.spawn(|| {
+            scope.spawn(move || {
                 session.list("");
                 listed_tx.send(()).expect("the test is listening");
             });
