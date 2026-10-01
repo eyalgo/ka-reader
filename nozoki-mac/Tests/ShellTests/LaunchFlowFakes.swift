@@ -130,11 +130,20 @@ struct FakeGlyphSource: GlyphSource {
 final class HoldingReadRunner: ReadRunning {
     private(set) var heldReads = 0
 
+    /// Each held read, ready to run and deliver. A test releases them in any order.
+    private var held: [@MainActor () -> Void] = []
+
     func run<Answer>(
         _ read: @escaping @Sendable () -> Answer,
         deliver: @escaping @MainActor (Answer) -> Void
     ) {
         heldReads += 1
+        held.append { deliver(read()) }
+    }
+
+    /// Runs the `index`th held read and delivers its answer.
+    func release(_ index: Int) {
+        held[index]()
     }
 }
 
