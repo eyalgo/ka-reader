@@ -1,8 +1,8 @@
 # NFDR — Nozoki 覗き
 
-**Status:** Settled
+**Status:** Draft
 **Owner:** Principal Architect
-**Version:** 20 — the close: all three answered items in cycle 17 folded (`docs/trail/architecture/cycle-17.md` §§ 2.1, 3.1, 3.2; reasoning at `docs/trail/architecture/self_answer-20.md` and `self_answer-21.md`). § 9 now records the current XCTest framework departure and its independent toolchain-evidence flip; the Swift 5 language mode, `.strictMemorySafety()` and `.defaultIsolation(MainActor.self)` join the tools-6.2 departure with their exact adoption placement and measured migration costs. The review tail reads test-file additions and keeps the tools-6.2 departures together. No ADR is written or edited: these are consequences of the Swift-packet departure ADR-0016 assigns to NFDR § 9. The newer CONTENT v9 was read and changes no obligation here. No `QC` is added, renumbered or reused; § 10 and the ADR index do not move. Nothing is left for the owner: `docs/architecture_open_issues.md` is removed and `Status:` is Settled.
+**Version:** 21 — the cycle-18 fold: the one answered item, § 3.1, folded (`docs/trail/architecture/cycle-18.md` § 3.1; reasoning at `docs/trail/architecture/self_answer-22.md`). QC-24 follows SDD v22 C-R7: the export is staged by change, not by slice, and *built* takes C-R7's meaning. QC-2 takes no interim test in place of `read-only.sh`, states C-I3's unit, and names the two cases no check holds; § 10's QC-2 row gains the reviewed half at `development-design`. The unanswered § 2.1 is drafted: QC-62's citations and frame count, and § 9's `LaunchFlow.swift` line, re-pointed and pinned to `nozoki@7c7038f` as SDD v22 C-I3 pins them. No ADR is written or edited; no `QC` is added, renumbered or reused. One item stays for the owner's confirm, so `Status:` is Draft.
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · PRD Settled · UXD Settled · DESIGN Settled · CONTENT Settled
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
@@ -80,10 +80,20 @@ new units while they were unbuilt.
   `nozoki_free` is the seam's release call and no command, it never reaches the model (C-I3, C-R7
   at v16) — `.git` hashed where present (test
   layer 3); structural check (layer 6):
-  `checks/structure.sh` rule *no write API in `nozoki-core` outside `own-state`* *(traces to:
+  `checks/structure.sh` rule *no write API in `nozoki-core` outside `own-state`*. The unit is the
+  build: a build that exports a command has that command's operation on `SM-5`, so the walk calls
+  it in that same build, and no test of a slice's own stands in for `read-only.sh`. **Not covered,
+  and named so it is not read as coverage:** nothing in the build compares the calls the walk makes
+  with the set the build exports, so their match is held by review of the change that exports a
+  command, at `development-design` — the moment QC-3's reviewed half is held at — until a change
+  makes it a check; no command does today, which is why that half is a review gate and says so
+  here. And a fixture that offers no entry a command can act on exercises nothing for that command;
+  which fixture a command needs is its slice's own bar (`docs/SDD.md` § 6) *(traces to:
   SRS NFR-5, NFR-6, C-2; SDD § 4 C-I3; ADR-0013; ADR-0011; the tail's IPC wording corrected on the
   owner's addition at `docs/trail/architecture/cycle-9.md` § 2.3 — RN-23; the command carve-out on
-  the owner's addition at `docs/trail/architecture/cycle-10.md` § 2.1 — RN-24)*
+  the owner's addition at `docs/trail/architecture/cycle-10.md` § 2.1 — RN-24; the unit, the two
+  uncovered cases and the reviewed half from SDD § 4 C-I3 and C-R7 as they read at v22, on the
+  owner's seat's answer at `docs/trail/architecture/cycle-18.md` § 3.1 — RN-32)*
 - **QC-3:** No shipped unit links a network transport: libgit2 is built without its HTTPS and SSH
   transports, and every crate and package the bundle contains is named in `checks/deps.allow`.
   — *verified by:* two halves, and the entry holds only with both. **(1) The tree equals the
@@ -355,14 +365,16 @@ reviewed tag.
   ADR-0015; the two-state form this entry carried through v10 was answered in the
   owner's seat at `docs/trail/architecture/cycle-5.md` § 3.2 — RN-18 — and is history; re-derived
   at v11 — RN-22)*
-- **QC-24:** A build exports to the shell exactly the functions its landed slices built — set
+- **QC-24:** A build exports to the shell exactly the functions its landed changes built — set
   equality between the C symbols `libnozoki_bridge.a` exports (`nm -gU`, the `nozoki_` prefix) and
   the functions the generated header declares — and that set is always inside the closed list
   `docs/SDD.md` § 3 `SM-4` names — `open_folder`, `list_tree`, `select_file`, `open_relative_link`,
   `set_theme`, `open_diff`, `walk_history`, `switch_folder`, `asset_bytes` — and `nozoki_free`,
   the seam's one release call beside the list and not on it, exported from the first build on
   because every call's return is an owned buffer it alone frees. No listed function is exported
-  before a slice lands it, and from `v1.0.0` the set is that list whole and `nozoki_free`. No
+  before a landed change has built it — a change has built a function when the bridge function
+  exists and delegates to an operation `folder-model`'s API carries (`SM-5`) — and from `v1.0.0`
+  the set is that list whole and `nozoki_free`. No
   second plumbing export — a registration call for `model_changed`, or any other — is admitted:
   one is raised on C-R7 and `SM-4` by the slice that needs it, and not before. The header is generated
   from the bridge's source and never hand-kept; the test reads the exported set and never a
@@ -374,7 +386,9 @@ reviewed tag.
   things: set equality between the exported symbols and the header's declarations, and that set
   inside the list above and `nozoki_free`. From `v1.0.0` the whole list and `nozoki_free` are held
   by QC-59's pin, which reads `SM-4`'s function list and `nozoki_free` as the bridge exports them
-  *(traces to: SDD § 3 SM-4; § 4 C-R7 as it reads at v16;
+  *(traces to: SDD § 3 SM-4; § 4 C-R7 as it reads at v22 — the export staged by change and not by
+  slice, and what *built* means, on the owner's seat's answer at
+  `docs/trail/architecture/cycle-18.md` § 3.1 — RN-32;
   § 4 C-I6; § 11 R-12; § SDD Review Notes RN-47, RN-60, RN-66; ADR-0013; ADR-0016, whose units table names `nozoki_free` apart from the list; QC-59; the staged form answered in the owner's seat at
   `docs/trail/architecture/cycle-6.md` § 3.1 — RN-19 — carried from the capability file to the
   export set at v11 — RN-22; `nozoki_free` beside the list confirmed with additions in the owner's
@@ -442,7 +456,8 @@ reviewed tag.
   observed **parked in the Open panel's modal run, inside the shell's launch frames** — the
   shell's first and only unconditional act, presenting the Open panel at launch (C-R3) and parked
   in it until someone answers; `open_folder` is not among those frames, because the shell calls it
-  only after the panel returns (`nozoki-mac/Sources/Shell/LaunchFlow.swift:L35-L37`) and the gate
+  only after the panel returns (`nozoki-mac/Sources/Shell/LaunchFlow.swift`, `chooseFolder()` and
+  `openAndList(_:through:)` — `:L54-L60` and `:L69` at `nozoki@7c7038f`) and the gate
   sends no input — within a bounded window, and the observation is the operating system's or the
   process's own report: never a marker the product writes for the check, never an environment
   variable, never a code path that exists for the gate. The gate's negative control —
@@ -462,20 +477,26 @@ reviewed tag.
   when `View check suite` landed above it at `:L41-L42`), after `Bundle probe` (`:L31-L32`,
   unmoved) — the script fixes the mechanism it reads and the bound, and prints the bound the way
   `checks/bundle.sh` does; the
-  frame list is the script's header's (`checks/renderer.sh:L44-L57`), cited and not copied here,
+  frame list is the script's header's (`checks/renderer.sh`, header § *THE FRAMES* — the list at
+  `:L53-L56` at `nozoki@7c7038f`), cited and not copied here,
   the way C-I3 cites it, so the next re-measurement moves one file. The frames were re-measured
   on the first slice's first native bundle: on a Mac, recorded in the script's header
-  (`checks/renderer.sh:L58-L61`, macOS 26.6.2), and on a GitHub-hosted runner — GitHub Actions
-  run 35988399477 on `nozoki@37a962d`, image `macos-14-arm64` 20260831.0302.1, macOS 14.8.9,
-  whose `checks/renderer.sh` is byte-equal to `main`'s — where the product matched the five-frame
-  list on observation 1 and the control on none of 30, recorded in the script's header from
-  `nozoki@2b83dce` (`checks/renderer.sh:L62-L65`) and cited from there as the Mac reading is
+  (`checks/renderer.sh`, header § *THE FRAMES* — `:L57-L60` at `nozoki@7c7038f`, macOS 26.6.2),
+  and on a GitHub-hosted runner — GitHub Actions run 35988399477 on `nozoki@37a962d`, image
+  `macos-14-arm64` 20260831.0302.1, macOS 14.8.9 — where the product matched the five-frame list
+  the script carried at that commit on observation 1 and the control on none of 30, recorded in
+  the script's header from `nozoki@2b83dce` (`:L61-L64` at `nozoki@7c7038f`) and cited from there
+  as the Mac reading is. The list has held four frames since `nozoki@b75348f`, which removed
+  `LaunchFlow.run()` from it; the four-frame list matched on the same runner image at run
+  36795836747 (`nozoki@702f7c4`), again on observation 1 with the control matched on none of 30
+  (`docs/SDD.md` § 4 C-I3 at v22; SDD RN-76) *(the citations and the frame count re-pointed and
+  pinned at v21 — RN-32)*
   *(through v16 cited from the run, the header not carrying the reading yet — true at
   `nozoki@153f5a1`; this cite and the step's lines on the owner's seat's answers at
   `docs/trail/architecture/cycle-14.md` §§ 3.4, 3.5 — RN-28)*. Not covered, and named so it is not
   read as coverage: a thread sample shows the shell in the panel's modal run, not that the panel
   is on screen — S-1's
-  observable half (SDD RN-70) *(traces to: SDD § 4 C-I3 at v18 — "The shell's run is proved on
+  observable half (SDD RN-70) *(traces to: SDD § 4 C-I3 at v22 — "The shell's run is proved on
   the shipped bundle, beside the wall", its observable, its two readings, its re-cut rule and its
   *Violated by*; § 4 C-R3; § 3 `read-only-harness`; § 5 step 4 E-1; § 6 S-1, command half; § 10
   RC-2, RC-3; § SDD Review Notes RN-52, RN-60, RN-61, RN-70; the owner's ruling at
@@ -485,7 +506,9 @@ reviewed tag.
   precedes; added at v10 — RN-21; the owner's addition confirmed at
   `docs/trail/architecture/cycle-8.md` § 2.1, and the mechanism and the control re-derived at v11
   — RN-22; the observable, the tree's state and the two readings at v15 — RN-26; the header's
-  runner reading and the step's lines at v17 — RN-28)*
+  runner reading and the step's lines at v17 — RN-28; the citations, the frame count and the
+  second runner reading re-pointed to C-I3 at v22, raised at `docs/trail/architecture/cycle-18.md`
+  § 2.1 — RN-32)*
 - **QC-26:** Every dependency is deliberate: `Cargo.lock` is committed and CI builds with
   `cargo build --locked`; `nozoki-mac/Package.swift` declares no dependency and no
   `Package.resolved` exists — the view brings nothing to the tree; and a lockfile diff that adds a
@@ -1082,8 +1105,9 @@ left with `nozoki-ui` at `nozoki@0aca57e` (RN-22; RN-25).
   Otherwise the change that moves CI to such an image adopts all six together and re-measures
   QC-25's hosted-runner narrowing, taken on `macos-14` (`docs/SDD.md` RN-48), on the new image.
   The adoption's measured source cost is explicit. Swift 6 mode refuses
-  `nozoki-mac/Sources/Shell/LaunchFlow.swift:L53` (`bridge`, an `any Bridging`, captured in a
-  `@Sendable` closure) and `nozoki-mac/Sources/Shell/ReadRunning.swift:L28` (`deliver`, a
+  `nozoki-mac/Sources/Shell/LaunchFlow.swift:L60` at `nozoki@7c7038f` (`bridge`, an `any
+  Bridging`, captured in a `@Sendable` closure; `:L53` when measured — RN-32) and
+  `nozoki-mac/Sources/Shell/ReadRunning.swift:L28` (`deliver`, a
   `@MainActor (RootListing?) -> Void`, sent across one), plus any site added before the flip. No
   target carries `StrictConcurrency` meanwhile: without warnings-as-errors its diagnostics cannot
   fail the Test gate, and CI's unmeasured compiler leaves the setting's required spelling unknown.
@@ -1135,7 +1159,7 @@ owner's seat's answer at `docs/trail/architecture/cycle-14.md` § 3.1 — RN-28)
 | QC | Check | Command / layer | Runs over | Gated at |
 |---|---|---|---|---|
 | QC-1 | the shell holds no I/O of its own | `checks/view.sh` (suite `test_view.sh`); `checks/no-network.sh` (suite `test_no_network.sh`) | the tree | CI build |
-| QC-2 | no write under the folder | `checks/read-only.sh <fixture>` (suite `test_read_only.sh`); `checks/structure.sh` | the tree | CI build; release |
+| QC-2 | no write under the folder; the walk's calls against the export set | `checks/read-only.sh <fixture>` (suite `test_read_only.sh`); `checks/structure.sh`; the walk's calls read against the build's export set, reviewed in the change that exports a command | the tree; the change | CI build; release; `development-design` |
 | QC-3 | no network transport — the tree equals the list; the list holds no transport | `checks/no-network.sh` (suite `test_no_network.sh`); the allowlist diff reviewed against the entry's domain, in the resolved features, at `development-design` | the tree; the change | CI build; `development-design` |
 | QC-4 | ItemState on every read | `cargo test --locked -p nozoki-core` (layer 1); `swift test --package-path nozoki-mac` (layer 4) | the change | `development-implementation` |
 | QC-5 | root finding | `cargo test --locked -p nozoki-core --test root_finding` | the change | `development-implementation` |
@@ -2993,3 +3017,57 @@ delegation half), QC-18, QC-21, QC-31, QC-33, QC-43, QC-45, QC-50, QC-54, QC-57,
   `docs/trail/architecture/self_answer-20.md`; `docs/trail/architecture/self_answer-21.md`;
   `nozoki-mac/Package.swift:L1-L36`; `docs/adr/0016-physical-unit-set-core-bridge-mac-checks.md`
   § Consequences; `docs/CONTENT.md` RN-34, RN-35; `nozoki@f46269a`; `nozoki@a5fc189`)*
+- **RN-32:** *(v21 — the cycle-18 fold, § 3.1 answered; § 2.1 drafted for the owner's confirm)*
+  **The fold.** The companion at intake held one answered downstream item, § 3.1, decided in the
+  owner's seat by `docs/trail/architecture/self_answer-22.md`, and one unanswered choice, § 2.1,
+  raised by that same run; it was copied whole before this fold as
+  `docs/trail/architecture/cycle-18.md`. **§ 3.1 → QC-24.** C-R7 at SDD v22 reads "A build exports
+  to the shell exactly the functions its landed changes built" and "A change has built a function
+  when the bridge function exists and delegates to an operation `folder-model`'s API carries
+  (SM-5)" (`docs/SDD.md:L596-L604`). QC-24's two slice-grain sentences now read by change, and the
+  entry carries that meaning of *built*. Set equality, the closed list, `nozoki_free`, "from
+  `v1.0.0`", the no-second-export clause and the pre-`v1.0.0` uncovered case stand as written.
+  **§ 3.1 → QC-2.** The item proposed naming `cargo test --locked -p nozoki-bridge --test
+  select_file` in place of `read-only.sh` until the walk drives `select_file`; the answer overrode
+  that, because C-I3 at v22 reads "The unit is the build … no test of a slice's own stands in for
+  `read-only.sh`" (`docs/SDD.md:L653-L655`). The tail's "after every command the build exports"
+  already said so and stands. QC-2 gains the unit and C-I3's two uncovered cases
+  (`docs/SDD.md:L655-L659`), named as QC-24's pre-`v1.0.0` case is, so they are not read as
+  coverage. The first — the walk's calls against the export set — is held by review of the change
+  that exports a command; the gate is `development-design`, where this document already holds
+  QC-3's reviewed half, and § 10's QC-2 row gains it. The records say nothing about the interval
+  while a build exports a command its walk does not drive, as the SDD says nothing: that is a
+  violation in the build, closed when the walk drives the command, not a false sentence here.
+  **§ 2.1 → QC-62 and § 9, drafted.** No owner answer stands behind this; a new upstream sentence
+  does. C-I3 at v22 re-points and pins the same citations QC-62 carries (`docs/SDD.md:L717-L748`),
+  and QC-62 traces to C-I3. Read at `nozoki@a954a90`, whose code under these paths is byte-equal
+  to `nozoki@7c7038f` (`git diff --quiet 7c7038f HEAD --` over `LaunchFlow.swift`,
+  `ReadRunning.swift` and `checks/renderer.sh`): `LaunchFlow.swift:L35-L37` is the lazy
+  `statusGlyphs` property, `chooseFolder()`'s panel wait and hand-off are `:L54-L60`, and
+  `bridge.openFolder` is `:L69`; `checks/renderer.sh`'s frame list is `:L53-L56` and holds four
+  frames, its Mac reading `:L57-L60`, its runner reading `:L61-L64`; `nozoki@b75348f` removed
+  `LaunchFlow.run()` from the list. QC-62 cites each at `nozoki@7c7038f`, as C-I3 does, says the
+  five-frame match was the list the script carried at `nozoki@37a962d`, and carries C-I3's second
+  runner reading (run 36795836747), cited to the SDD and not re-measured here. § 9's Swift 6
+  migration-cost sentence moves `LaunchFlow.swift:L53` to `:L60`; `ReadRunning.swift:L28` still
+  names `deliver` and stands. Earlier Review Notes that cite the old lines are dated accounts and
+  stand as history. Whether this re-pointing is taken is the owner's: § 2.1 of
+  `docs/architecture_open_issues.md` asks it. **No record.** ADR-0013's Context reads "each
+  exported from the build in which a slice lands it"
+  (`docs/adr/0013-sandboxed-single-process-read-pipeline.md:L46-L47`). It is not superseded: the
+  staging grain is cheap to reverse before `v1.0.0`, so it fails the first gate, and the decision
+  the record makes — one process, one closed seam — does not move with it. A reader who meets the
+  slice wording there finds here where it moved. ADR-0012 carries QC-62's old citations and is
+  Accepted, so it is not edited; QC-62 is where the current lines live. The index does not move.
+  **What moved beneath this document.** `git log 9228dce..HEAD` over the seven inputs lists SDD
+  v21 and v22 and DESIGN v11 to v13. SDD v21 moved § 6 `open-a-folder` and § 5 E-1, and DESIGN
+  v11 to v13 moved the realisation in AppKit, the title bar and the application icon; no entry here
+  cites the window's widths, the title bar or the icon (`grep -n -i 'minimum width\|title
+  bar\|application icon' docs/nfdr.md` printed nothing before this note was written), so none
+  moves for them. SDD v22's SM-4,
+  C-R7 and C-I3 moves are the ones folded above. Every input's `Status:` line was re-read and is
+  Settled, so `Inputs read:` stands. No `QC` is added, renumbered or reused *(re: header `Status:`,
+  `Version:`; QC-2; QC-24; QC-62; § 9 `nozoki-mac` bullet; § 10 QC-2 row; source:
+  `docs/trail/architecture/cycle-18.md` §§ 2.1, 3.1; `docs/trail/architecture/self_answer-22.md`;
+  `docs/SDD.md` § 4 C-R7, C-I3 at v22, RN-76; `docs/trail/sdd/cycle-17.md` §§ 2.1, 5.1;
+  `nozoki@7c7038f`, `nozoki@b75348f`, `nozoki@a954a90`)*
