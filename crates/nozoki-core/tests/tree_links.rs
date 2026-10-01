@@ -6,7 +6,9 @@
 mod common;
 
 use common::TempDir;
-use nozoki_core::{Condition, Entry, EntryKind, ItemState, OpenedFolder, list_tree, open_folder};
+use nozoki_core::{
+    Condition, Entry, EntryKind, ItemState, Language, OpenedFolder, list_tree, open_folder,
+};
 
 fn open(folder: &TempDir) -> OpenedFolder {
     open_folder(folder.path()).expect("a folder opens")
@@ -556,4 +558,41 @@ fn a_path_the_caller_spells_past_a_chain_of_links_to_a_file_keeps_not_a_folder()
             "{requested}"
         );
     }
+}
+
+/// A-4: a link takes the language of its own name, not of the file it reaches.
+#[test]
+fn test_link_takes_the_language_of_its_own_name_when_listed() {
+    let python_named = TempDir::new();
+    python_named.write_file("notes.txt", "");
+    python_named.make_link("tool.py", "notes.txt");
+    let plain_named = TempDir::new();
+    plain_named.write_file("tool.py", "");
+    plain_named.make_link("notes", "tool.py");
+
+    let from_python_name = observed(list_tree(&open(&python_named), ""));
+    let from_plain_name = observed(list_tree(&open(&plain_named), ""));
+
+    assert_eq!(
+        named(&from_python_name, "tool.py").language,
+        Some(Language::Python)
+    );
+    assert_eq!(
+        named(&from_plain_name, "notes").language,
+        Some(Language::Plain)
+    );
+}
+
+/// A-4: an unresolved link is a failed file, and it still carries the language its name gives.
+#[test]
+fn test_unresolved_link_lists_as_failed_file_with_its_names_language() {
+    let folder = TempDir::new();
+    folder.make_link("gone.py", "nowhere");
+    let opened = open(&folder);
+
+    let root = observed(list_tree(&opened, ""));
+
+    let gone = named(&root, "gone.py");
+    assert_failed(gone, Condition::Missing);
+    assert_eq!(gone.language, Some(Language::Python));
 }

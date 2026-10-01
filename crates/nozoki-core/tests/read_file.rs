@@ -14,7 +14,7 @@ use std::process::Command;
 use common::TempDir;
 use nozoki_core::{
     CannotDisplayReason, Condition, FileView, ItemState, Language, OpenedFolder, Span, TokenClass,
-    highlight, open_folder, select_file,
+    highlight, list_tree, open_folder, select_file,
 };
 
 fn open(folder: &TempDir) -> OpenedFolder {
@@ -306,5 +306,95 @@ fn test_select_file_spans_equal_the_highlighter_for_each_floor_sample() {
         } else {
             assert!(!spans.is_empty(), "{name} carries spans");
         }
+    }
+}
+
+/// Every readable file name of the name table, for the two cases that set a listing beside a read.
+const READABLE_NAME_TABLE: [&str; 30] = [
+    "setup.sh",
+    "app.py",
+    "index.js",
+    "package.json",
+    "deploy.yml",
+    "Cargo.toml",
+    "stubs.pyi",
+    "gui.pyw",
+    "x.bash",
+    "x.zsh",
+    "index.mjs",
+    "index.cjs",
+    "App.jsx",
+    "ci.yaml",
+    "Deploy.YmL",
+    "RUN.SH",
+    "x.Py",
+    "archive.tar.json",
+    "notes.txt",
+    "main.rs",
+    "README",
+    "Makefile",
+    ".bashrc",
+    ".py",
+    "notes.",
+    "README.md",
+    "guide.markdown",
+    "notes.MARKDOWN",
+    "x.ſh",
+    "Makefile.py.bak",
+];
+
+/// A-6: a floor file that is not text lists with its name's language before and after a read of
+/// it, though the read answers cannot-display and carries no language of its own.
+#[test]
+fn test_listing_keeps_floor_language_for_non_text_floor_file() {
+    let folder = TempDir::new();
+    std::fs::write(folder.path().join("legacy.py"), [0x63, 0x61, 0x66, 0xE9])
+        .expect("the file can be written");
+    let opened = open(&folder);
+    let language_listed = || {
+        let ItemState::Observed(entries) = list_tree(&opened, "") else {
+            panic!("the folder lists");
+        };
+        entries
+            .into_iter()
+            .find(|entry| entry.name == "legacy.py")
+            .expect("legacy.py is listed")
+            .language
+    };
+
+    let before = language_listed();
+    let read = select_file(&opened, "legacy.py");
+    let after = language_listed();
+
+    assert_eq!(
+        read,
+        ItemState::Observed(FileView::CannotDisplay(CannotDisplayReason::InvalidUtf8))
+    );
+    assert_eq!(before, Some(Language::Python), "before the read");
+    assert_eq!(after, Some(Language::Python), "after the read");
+}
+
+/// A-7: the tree and the panel never disagree about a name. For every readable file of the name
+/// table, the language its listing entry carries is the language `select_file` answers.
+#[test]
+fn test_listing_language_agrees_with_select_file_for_every_readable_name() {
+    let folder = TempDir::new();
+    for name in READABLE_NAME_TABLE {
+        folder.write_file(name, "");
+    }
+    let opened = open(&folder);
+    let ItemState::Observed(entries) = list_tree(&opened, "") else {
+        panic!("the folder lists");
+    };
+
+    for name in READABLE_NAME_TABLE {
+        let listed = entries
+            .iter()
+            .find(|entry| entry.name == name)
+            .unwrap_or_else(|| panic!("{name} is listed"))
+            .language;
+        let (_, read) = text_of(select_file(&opened, name));
+
+        assert_eq!(listed, Some(read), "{name}");
     }
 }
