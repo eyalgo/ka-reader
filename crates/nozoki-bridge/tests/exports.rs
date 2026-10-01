@@ -13,8 +13,13 @@ use std::sync::Mutex;
 
 /// The rule, written here on purpose: the export and declared sets come from the library and the
 /// header, and never from a list kept in this test. A name joins this array with the change that lands
-/// the function (SM-4's file chooser, for one, is not here yet).
-const ADMITTED: [&str; 3] = ["nozoki_open_folder", "nozoki_list_tree", "nozoki_free"];
+/// the function (SM-4's diff opener, for one, is not here yet).
+const ADMITTED: [&str; 4] = [
+    "nozoki_open_folder",
+    "nozoki_list_tree",
+    "nozoki_select_file",
+    "nozoki_free",
+];
 
 /// The nested builds and the header they rewrite are one shared resource.
 static SERIAL: Mutex<()> = Mutex::new(());
@@ -241,8 +246,9 @@ fn test_unlanded_sm4_name_exported_and_declared_fails() {
     let both = set(&[
         "nozoki_open_folder",
         "nozoki_list_tree",
-        "nozoki_free",
         "nozoki_select_file",
+        "nozoki_free",
+        "nozoki_open_diff",
     ]);
 
     let found = findings(&both, &both, &ADMITTED);
@@ -250,7 +256,7 @@ fn test_unlanded_sm4_name_exported_and_declared_fails() {
     assert!(
         found
             .iter()
-            .any(|finding| finding == "nozoki_select_file is not admitted"),
+            .any(|finding| finding == "nozoki_open_diff is not admitted"),
         "{found:?}"
     );
 }

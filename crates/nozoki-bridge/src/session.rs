@@ -199,6 +199,44 @@ mod tests {
     use super::Session;
     use crate::test_support::TempDir;
 
+    #[test]
+    fn test_a_read_in_progress_does_not_hold_the_session_lock() {
+        use std::sync::mpsc;
+        use std::time::Duration;
+
+        use nozoki_core::{CannotDisplayReason, FileContent};
+
+        let folder = TempDir::new();
+        folder.write_file("a.txt", "x");
+        let session = Session::default();
+        opened(&session, &folder);
+        let (parked_tx, parked_rx) = mpsc::channel::<()>();
+        let (release_tx, release_rx) = mpsc::channel::<()>();
+        let (listed_tx, listed_rx) = mpsc::channel::<()>();
+
+        std::thread::scope(|scope| {
+            scope.spawn(|| {
+                session.select_file_with("a.txt", |_, _| {
+                    parked_tx.send(()).expect("the test is listening");
+                    release_rx.recv().expect("the test releases the read");
+                    ItemState::Observed(FileContent::CannotDisplay(
+                        CannotDisplayReason::InvalidUtf8,
+                    ))
+                });
+            });
+            parked_rx
+                .recv_timeout(Duration::from_secs(10))
+                .expect("the read parked");
+            scope.spawn(|| {
+                session.list("");
+                listed_tx.send(()).expect("the test is listening");
+            });
+            let listed = listed_rx.recv_timeout(Duration::from_secs(10));
+            release_tx.send(()).expect("the read is parked");
+            assert!(listed.is_ok(), "list completed while a read was parked");
+        });
+    }
+
     /// The answer to `path` as the JSON the shell reads.
     fn answer(session: &Session, path: &str) -> Value {
         serde_json::to_value(session.list(path)).expect("the answer serializes")

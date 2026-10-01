@@ -138,7 +138,7 @@ mod tests {
 
     use super::{
         ListPath, decode_list_path, decode_location, guarded, is_valid_open_answer, list_entries,
-        open_location,
+        open_location, select_entry,
     };
     use crate::exports::{BufferOrigin, NozokiBuffer, install_silent_panic_hook, nozoki_free};
     use crate::session::Session;
@@ -148,6 +148,32 @@ mod tests {
         assert!(!buffer.is_null(), "a buffer was expected");
         // SAFETY: the pointer came from `guarded` a moment ago and has not been freed.
         unsafe { std::slice::from_raw_parts((*buffer).bytes, (*buffer).len).to_vec() }
+    }
+
+    #[test]
+    fn test_null_empty_and_non_utf8_paths_read_nothing_and_answer_pending() {
+        let folder = TempDir::new();
+        folder.write_file("a.txt", "text");
+        let session = Session::default();
+        session.open(folder.path().to_path_buf());
+        let empty = CString::new("").expect("no NUL");
+        let non_utf8 = CString::new(vec![0x61, 0xFF, 0x62]).expect("no NUL");
+
+        // SAFETY: each pointer is NULL or a live NUL-terminated string for the call.
+        let answers = unsafe {
+            [
+                select_entry(&session, ptr::null()),
+                select_entry(&session, empty.as_ptr()),
+                select_entry(&session, non_utf8.as_ptr()),
+            ]
+        };
+
+        for answer in answers {
+            assert_eq!(
+                serde_json::to_value(answer).expect("serializes"),
+                serde_json::json!({ "state": "pending" })
+            );
+        }
     }
 
     #[test]
