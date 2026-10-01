@@ -632,7 +632,8 @@ final class ReadingPanelTests: XCTestCase {
         let (gutter, _) = makeGutter("a\nb\n")
 
         XCTAssertEqual(gutter.lineCount, 2)
-        XCTAssertEqual(labelTexts(gutter), ["1", "2"], "the break that ends the file begins no line")
+        XCTAssertEqual(
+            labelTexts(gutter), ["1", "2"], "the break that ends the file begins no line")
     }
 
     func testGutterNumbersAnUnterminatedFileOneAndTwo() {
@@ -654,6 +655,21 @@ final class ReadingPanelTests: XCTestCase {
         XCTAssertEqual(labelTexts(gutter), ["1", "2"])
         let labels = gutter.labels
         XCTAssertEqual(labels[1].point.y - labels[0].point.y, CodeType.linePitch, accuracy: 0.5)
+    }
+
+    /// A row holding only its break has no glyph of its own for the layout to measure, and the layout
+    /// reports its break at the fragment's bottom. Its number still sits on the grid its neighbours'
+    /// baselines make: one pitch from each.
+    func testAnEmptyRowsNumberKeepsTheBaselineGridOfTheRowsAroundIt() throws {
+        let (gutter, textView) = makeGutter("a\n\n\nb\n")
+
+        XCTAssertEqual(labelTexts(gutter), ["1", "2", "3", "4"])
+        let baselines = gutter.labels.map(\.point.y)
+        for (before, after) in zip(baselines, baselines.dropFirst()) {
+            XCTAssertEqual(after - before, CodeType.linePitch, accuracy: 0.5)
+        }
+        let firstRowBaseline = try XCTUnwrap(try layoutRows(of: textView).first?.baseline)
+        XCTAssertEqual(baselines[0], firstRowBaseline, accuracy: 0.5)
     }
 
     func testGutterNumbersALoneLFAsOneLine() {
@@ -714,7 +730,8 @@ final class ReadingPanelTests: XCTestCase {
         for (row, label) in zip(rows, gutter.labels) {
             XCTAssertEqual(label.point.y, row.baseline, accuracy: 0.5, label.text)
             XCTAssertGreaterThan(
-                label.point.y - row.top, 10, "\(label.text) is on the baseline, not the fragment's top")
+                label.point.y - row.top, 10,
+                "\(label.text) is on the baseline, not the fragment's top")
         }
     }
 
@@ -760,9 +777,44 @@ final class ReadingPanelTests: XCTestCase {
             assertSame(
                 srgb(gutter.ground, under: resolvedUnder), hex(ground),
                 "ground under \(appearance.name)")
-            let colour = try XCTUnwrap(gutter.labels.first?.attributes[.foregroundColor] as? NSColor)
-            assertSame(srgb(colour, under: resolvedUnder), hex(ink), "label under \(appearance.name)")
+            let colour = try XCTUnwrap(
+                gutter.labels.first?.attributes[.foregroundColor] as? NSColor)
+            assertSame(
+                srgb(colour, under: resolvedUnder), hex(ink), "label under \(appearance.name)")
         }
+    }
+
+    /// `labels` says where a number is drawn, and `draw(_:)` is the one that has to agree: the ink of
+    /// a digit 1, which has no descender, ends on the label's baseline and at the column's right edge.
+    func testTheDrawnNumberStandsOnItsLabelsBaselineAtTheRightEdge() throws {
+        let (gutter, _) = makeGutter("1\n")
+        gutter.appearance = aqua
+        gutter.frame = NSRect(x: 0, y: 0, width: gutter.width, height: 40)
+        let label = try XCTUnwrap(gutter.labels.first)
+        let rep = try XCTUnwrap(gutter.bitmapImageRepForCachingDisplay(in: gutter.bounds))
+        gutter.cacheDisplay(in: gutter.bounds, to: rep)
+        let scale = CGFloat(rep.pixelsHigh) / gutter.bounds.height
+
+        // The bitmap's last column is rounded up from a fractional width and is never drawn.
+        let drawnColumns = Int((gutter.bounds.width * scale).rounded(.down))
+        // Ink is any pixel unlike the ground, which is what the top-left corner is.
+        let ground = try XCTUnwrap(rep.colorAt(x: 0, y: 0)?.usingColorSpace(.sRGB))
+        var inkRows: [Int] = []
+        var inkColumns: [Int] = []
+        for row in 0..<rep.pixelsHigh {
+            for column in 0..<drawnColumns {
+                guard let pixel = rep.colorAt(x: column, y: row)?.usingColorSpace(.sRGB),
+                    abs(pixel.redComponent - ground.redComponent) > 0.15
+                else { continue }
+                inkRows.append(row)
+                inkColumns.append(column)
+            }
+        }
+        let lowestInk = try XCTUnwrap(inkRows.max())
+        let rightmostInk = try XCTUnwrap(inkColumns.max())
+        // The row's bottom edge is one pixel below its last inked row.
+        XCTAssertEqual(CGFloat(lowestInk + 1) / scale, label.point.y, accuracy: 1)
+        XCTAssertEqual(CGFloat(rightmostInk + 1) / scale, label.point.x, accuracy: 2)
     }
 
     func testGutterHasNoSubviewIsNoControlAndRegistersNoDraggedType() {
@@ -777,10 +829,18 @@ final class ReadingPanelTests: XCTestCase {
     /// number's place on the screen moved.
     func testGutterRedisplaysWhenTheClipViewScrolls() throws {
         let textView = makeTextView(lines(100))
+        textView.setFrameSize(NSSize(width: 600, height: 2100))
         let scrollView = NSScrollView(frame: NSRect(x: 0, y: 0, width: 400, height: 200))
         scrollView.documentView = textView
         let gutter = CodeGutterView(textView: textView)
         gutter.frame = NSRect(x: 0, y: 0, width: gutter.width, height: 200)
+        // A view outside a window never reads as needing display, so both sit in one.
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 600, height: 200), styleMask: [.titled],
+            backing: .buffered, defer: true)
+        window.isReleasedWhenClosed = false
+        window.contentView?.addSubview(scrollView)
+        window.contentView?.addSubview(gutter)
         gutter.needsDisplay = false
 
         scrollView.contentView.scroll(to: NSPoint(x: 0, y: 400))
