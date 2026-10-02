@@ -76,6 +76,9 @@ test_owner_exemption_is_exact_and_clause_specific
 test_libc_filesystem_floor_is_rejected
 test_non_filesystem_forms_pass
 test_complete_clean_tree_passes
+test_raw_grouped_imports_are_scanned
+test_distinct_clauses_on_one_line_are_reported
+test_suite_checks_origin_after_selected_case
 "
 
 # --- helpers ---
@@ -892,6 +895,66 @@ test_complete_clean_tree_passes() {
   case "$STDOUT" in
     *" $EXPECT_FILES Rust files in $EXPECT_CRATE_COUNT crates "*"nothing found"*) ;;
     *) fail "expected the counts $EXPECT_FILES files and $EXPECT_CRATE_COUNT crates and 'nothing found'. stdout: $STDOUT" || return 1 ;;
+  esac
+}
+
+# CP-385 applies the grouped-use domains in CP-387/389/390 to comments and strings too.
+test_raw_grouped_imports_are_scanned() {
+  new_root raw-grouped || return 1
+  plant "$R" "$CORE_FILE" '// use std::{process};
+/* use std::{fs}; */
+const APPLE: &str = "use some::{objc2};";
+const FILE_CALL: &str = r#"use libc::{open};"#;
+/* use std::{
+    process,
+}; */
+const FILES: &str = r#"use std::{
+    fs,
+};"#;'
+  first_line="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  for offset in 0 5; do
+    expect_finding "crates/$CORE_FILE" "$((first_line + offset))" QC-9 || return 1
+    expect_finding "crates/$CORE_FILE" "$((first_line + offset))" QC-36 || return 1
+  done
+  for offset in 1 3 8; do
+    expect_finding "crates/$CORE_FILE" "$((first_line + offset))" QC-15 || return 1
+  done
+  expect_finding "crates/$CORE_FILE" "$((first_line + 2))" QC-9 || return 1
+}
+
+# Design A reports each clause once per file/line, even when clauses share QC-9.
+test_distinct_clauses_on_one_line_are_reported() {
+  new_root distinct-clauses || return 1
+  plant "$R" "$CORE_FILE" 'use objc2::runtime; fn f() { unsafe {} unsafe {} std::process::exit(0); std::fs::read("x"); }'
+  run_structure "$R"
+  expect_status 1 || return 1
+  [ "$(count_findings "crates/$CORE_FILE" "$PLANT_LINE" QC-9)" -eq 3 ] \
+    || fail "expected Apple, unsafe and process QC-9 clauses separately: $STDERR" || return 1
+  [ "$(count_findings "crates/$CORE_FILE" "$PLANT_LINE" QC-36)" -eq 1 ] \
+    || fail "expected one process QC-36 clause: $STDERR" || return 1
+  [ "$(count_findings "crates/$CORE_FILE" "$PLANT_LINE" QC-15)" -eq 1 ] \
+    || fail "expected one filesystem QC-15 clause: $STDERR" || return 1
+  expect_stderr_contains 'Apple framework' || return 1
+  expect_stderr_contains '`unsafe`' || return 1
+  expect_stderr_contains 'std::process named in nozoki-core' || return 1
+}
+
+# CP-393 and design B require the status comparison after the last case, including selection.
+# The negative control dirties only a disposable origin, never this suite's real origin.
+test_suite_checks_origin_after_selected_case() {
+  new_root origin-control || return 1
+  mkdir -p "$R/checks/tests" || return 1
+  cp "$ROOT/checks/tests/test_structure.sh" "$R/checks/tests/test_structure.sh" || return 1
+  git -C "$R" init -q || return 1
+  printf '\ntouch %q\n' "$R/unexpected" >> "$R/checks/structure.sh"
+  selected="$(NOZOKI_TEST_ONLY=test_clean_copy_passes "$R/checks/tests/test_structure.sh" 2>&1)"
+  selected_status=$?
+  [ "$selected_status" -ne 0 ] || fail "suite passed after the selected case dirtied its origin: $selected" || return 1
+  case "$selected" in
+    *'FAIL test_originating_tree_is_unchanged'*) ;;
+    *) fail "origin change was not named: $selected" || return 1 ;;
   esac
 }
 
