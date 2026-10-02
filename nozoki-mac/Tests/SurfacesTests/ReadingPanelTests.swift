@@ -1745,10 +1745,10 @@ final class ReadingPanelTests: XCTestCase {
 
     func testPathRowAndHairlineFollowPanelWidth() throws {
         let long = "█" + String(repeating: "-", count: 150) + "█"
-        for width in [CGFloat(900), 600] {
-            for appearance in [aqua, darkAqua] {
-                for state in lineStates {
-                    let panel = makeLinePanel(state, under: appearance)
+        for appearance in [aqua, darkAqua] {
+            for state in lineStates {
+                let panel = makeLinePanel(state, under: appearance)
+                for width in [CGFloat(900), 600] {
                     panel.frame.size.width = width
                     panel.layoutSubtreeIfNeeded()
                     let name = "\(state.name) under \(appearance.name), \(width) wide"
@@ -1764,8 +1764,10 @@ final class ReadingPanelTests: XCTestCase {
                         drawn, x: width - 4, y: 24.5, is: value(of: .line, under: appearance),
                         "\(name): the hairline drawn to the right edge (CP-363)")
                 }
-                let panel = makeLinePanel(lineStates[0], under: appearance)
-                panel.show(path: long, verdict: .text("x\n", .plain))
+            }
+            let panel = makeLinePanel(lineStates[0], under: appearance)
+            panel.show(path: long, verdict: .text("x\n", .plain))
+            for width in [CGFloat(900), 600] {
                 panel.frame.size.width = width
                 panel.layoutSubtreeIfNeeded()
                 let extent = try XCTUnwrap(
@@ -1861,6 +1863,14 @@ final class ReadingPanelTests: XCTestCase {
             ]).width
             XCTAssertLessThan(extent.maxX - extent.minX, fullWidth, "\(name): shortened (CP-361)")
             XCTAssertEqual(panel.pathLine.stringValue, long, "\(name): the path itself is whole")
+            let firstColumn = Int(extent.minX * drawn.scale)
+            let head = try XCTUnwrap(
+                drawn.ink(
+                    from: 0, to: 24, ground: ground,
+                    onlyColumns: firstColumn..<(firstColumn + 2)))
+            XCTAssertGreaterThan(
+                head.maxY - head.minY, 8,
+                "\(name): the line starts on the head, not an ellipsis (CP-361)")
             // The last drawn glyph is the tail's block: ink as tall as a block over its last columns.
             let lastColumn = Int(extent.maxX * drawn.scale) - 1
             let tail = try XCTUnwrap(
@@ -2093,6 +2103,9 @@ final class ReadingPanelTests: XCTestCase {
                 backing: .buffered, defer: true)
             window.isReleasedWhenClosed = false
             window.contentView = panel
+            window.makeKey()
+            defer { window.close() }
+            XCTAssertTrue(window.isKeyWindow, "\(name): input reaches a key window")
             panel.layoutSubtreeIfNeeded()
             let responder = window.firstResponder
             let shownBefore = visibleStrings(panel)
