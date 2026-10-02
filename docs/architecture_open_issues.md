@@ -48,7 +48,12 @@ None.
   an accepted record, which is append-only, so they do not move.
 - **If overridden:** the clause goes back to its v25 pointer, or takes whatever pin you name.
   Nothing is gated on it, so no obligation moves and no record supersedes.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm. Re-measured at HEAD `nozoki@7ef2386`: `ci.yml` is unchanged since
+  `nozoki@463acb9` (`git diff --stat 463acb9 HEAD -- .github/workflows/ci.yml` prints nothing), so the
+  pin holds. There `:L26` is `swift test --package-path nozoki-mac`, `:L35` is `run: nozoki-mac/assemble.sh`,
+  `:L28-L32` are the two Structure steps, and `grep -n 'swift --version' .github/workflows/ci.yml` prints
+  nothing. Pinning to `nozoki@463acb9` rather than keeping `:L29` pinned to `nozoki@0aca57e` matches the pin
+  § 9's `checks/tests/` bullet already carries. Reasoning: `docs/trail/architecture/self_answer-28.md` § 2.1.
 
 ## 3. Raised from downstream — an item from a seat that did not write these records
 
