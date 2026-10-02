@@ -1205,7 +1205,6 @@ final class ReadingPanelTests: XCTestCase {
         return ("a.py", floorVerdict(content, .python, spans))
     }
 
-    /// How a failure message names the file kind a test is running.
     private func kindName(highlighted: Bool) -> String { highlighted ? "highlighted" : "plain" }
 
     private func codeView(of panel: ReadingPanelView) throws -> CodeView {
