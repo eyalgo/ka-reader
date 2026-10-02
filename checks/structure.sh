@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Version: 1.0.0 — first version: the Rust source scan over crates/ — QC-9's unsafe and Apple-framework clauses
+# Version: 1.0.0 — first version: the Rust source scan over crates/ — QC-9's unsafe, Apple-framework and process clauses, QC-36's Rust half, QC-15's two filesystem owners
 #
 # checks/structure.sh — proves the Rust source holds the unit and import rules.
 #
@@ -53,6 +53,24 @@
 #                         at `std` or `::std`, the tree read across lines and nested, the finding at
 #                         the member's own line. In nozoki-core the same occurrence is also a QC-9
 #                         finding, on the same line. Source: QC-36's Rust half, QC-9's process clause.
+#     QC-15  filesystem   In every crate except in the two owner files, crates/nozoki-core/src/
+#                         fs_reader.rs and crates/nozoki-bridge/src/log_writer.rs (matched by the exact
+#                         path, so the same basename anywhere else is not exempt, and the exemption is
+#                         for this clause only). The module `fs` in a path rooted at `std` or `rustix`,
+#                         so `std::fs`, `std::os::<platform>::fs` and `rustix::fs`, whitespace or
+#                         newlines around `::` changing nothing; and a segment or member `fs` in a
+#                         `use` tree rooted at `std`, `::std` or `rustix`, read across lines and nested,
+#                         the finding at the member's own line. A crate other than those two owns no
+#                         filesystem primitive. `include_str!` and `include_bytes!` are compile-time
+#                         inclusions and are not in the domain. The domain is widened to the C
+#                         binding's flat file calls, because libc is on checks/deps.allow and a core file
+#                         could otherwise reach `libc::open` unseen: a `libc::` path to, or a `use libc`
+#                         tree member naming, one of open, openat, creat, fopen, fdopen, freopen,
+#                         opendir, fdopendir, readdir, stat, lstat, fstat, fstatat, access, faccessat,
+#                         mkdir, mkdirat, rmdir, unlink, unlinkat, rename, renameat, truncate,
+#                         ftruncate, readlink, readlinkat, symlink, link, chmod, fchmod, chown,
+#                         realpath. The fd-generic read, write and close are not named: by name they
+#                         cannot be told from socket or pipe I/O. Source: QC-15's filesystem owners.
 #     QC-9   unsafe       The token `unsafe`, in every use (block, fn, impl, extern, #[unsafe(…)]), in
 #                         every crate except nozoki-bridge. Source: QC-9's "unsafe appearing in no
 #                         crate but nozoki-bridge".
@@ -64,6 +82,14 @@
 #   here. Until then its gate is the design review. Not held: QC-2's write rule; QC-7; QC-10 – QC-12;
 #   QC-13's imports; QC-14; QC-15's other owners and its socket clause; QC-17's Rust half; QC-20;
 #   QC-30's and QC-58's first half; QC-61; § 9's layer-5 placement rule.
+#
+# GAPS THE RULES ABOVE DO NOT CLOSE
+#   Named so that none is read as coverage. The scan reads source text of the files in scope, so it
+#   does not see: `std` reached through an alias (`use std as s;`, `extern crate std as s;`); a
+#   `Path` method that touches the filesystem (exists, metadata, read_dir, canonicalize), which names
+#   no filesystem module; a crate-level build.rs that emits `cargo:rustc-link-lib=framework=…`, because
+#   build.rs is outside every rule; source that is generated or pulled in by `include!`, or a
+#   `#[cfg(test)]` module whose body sits in the excluded tests/ directory. A review catches these.
 
 set -euo pipefail
 
@@ -133,6 +159,14 @@ function add_process(ln) {
   if (is_core) note(ln, "QC-9", "std::process named in nozoki-core")
 }
 
+function add_fs(ln, form) {
+  if (!exempt) note(ln, "QC-15", "filesystem primitive `" form "` outside its owner file")
+}
+
+function is_libc_file_call(w) {
+  return index(LIBC, " " w " ") > 0
+}
+
 function is_apple(w) {
   if (w ~ /^objc2_/) return 1
   return index(APPLE, " " w " ") > 0
@@ -157,20 +191,26 @@ function is_root(t, k,    p, pp) {
 function use_segment(parent, first, w, atstart, ln) {
   if (atstart && is_apple(w)) add_apple(ln, w)
   if (first == "std" && w == "process" && parent != "") add_process(ln)
+  if ((first == "std" || first == "rustix") && w == "fs" && parent != "") add_fs(ln, first "::..::fs")
+  if (first == "libc" && parent == "libc" && is_libc_file_call(w)) add_fs(ln, "libc::" w)
 }
 
 # What a segment after the first of a path means, wherever the path is written: $1 is the path's first
-# segment, $2 the segment, $3 its line.
-function chain_segment(first, seg, ln) {
+# segment, $2 the segment, $3 how many segments follow the first up to it, $4 its line.
+function chain_segment(first, seg, depth, ln) {
   if (first == "std" && seg == "process") add_process(ln)
+  if ((first == "std" || first == "rustix") && seg == "fs") add_fs(ln, first "::..::fs")
+  if (first == "libc" && depth == 1 && is_libc_file_call(seg)) add_fs(ln, "libc::" seg)
 }
 
-function scan_chain(t, l, k,    first, j) {
+function scan_chain(t, l, k,    first, j, depth) {
   first = t[k]
   j = k + 1
+  depth = 1
   while (t[j] == "::" && is_word_token(t[j + 1])) {
-    chain_segment(first, t[j + 1], l[j + 1])
+    chain_segment(first, t[j + 1], depth, l[j + 1])
     j += 2
+    depth++
   }
 }
 
@@ -214,6 +254,7 @@ function scan_stream(t, l, n,    k) {
 }
 
 BEGIN {
+  LIBC = " open openat creat fopen fdopen freopen opendir fdopendir readdir stat lstat fstat fstatat access faccessat mkdir mkdirat rmdir unlink unlinkat rename renameat truncate ftruncate readlink readlinkat symlink link chmod fchmod chown realpath "
   APPLE = " objc objc2 objc_foundation objc_id block block2 dispatch dispatch2 cocoa cocoa_foundation core_foundation core_foundation_sys core_graphics core_graphics_types core_text core_services security_framework security_framework_sys system_configuration system_configuration_sys fsevent fsevent_sys io_kit_sys metal "
 }
 
@@ -316,13 +357,17 @@ else
     crate_name="${crate_name%%/*}"
     is_core=0
     is_bridge=0
+    exempt=0
     [ "$crate_name" = "nozoki-core" ] && is_core=1
     [ "$crate_name" = "nozoki-bridge" ] && is_bridge=1
+    case "$relative" in
+      crates/nozoki-core/src/fs_reader.rs | crates/nozoki-bridge/src/log_writer.rs) exempt=1 ;;
+    esac
     if [ ! -r "$product_root/$relative" ]; then
       echo "cannot read $relative" >> "$work/causes"
       continue
     fi
-    LC_ALL=C awk -v rel="$relative" -v is_core="$is_core" -v is_bridge="$is_bridge" \
+    LC_ALL=C awk -v rel="$relative" -v is_core="$is_core" -v is_bridge="$is_bridge" -v exempt="$exempt" \
       -f "$work/scan.awk" "$product_root/$relative" >> "$work/findings" \
       || echo "the scan could not read $relative" >> "$work/causes"
   done < "$work/files"

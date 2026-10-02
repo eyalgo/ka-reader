@@ -839,7 +839,7 @@ use libc::{
     $call,
 };
 fn spaced_$call() { libc :: $call(); }"
-    for offset in 0 1 2 3 6 7; do
+    for offset in 0 1 2 3 6 8; do
       expected_lines="$expected_lines $((PLANT_LINE + offset))"
     done
   done
