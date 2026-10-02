@@ -2095,6 +2095,16 @@ final class ReadingPanelTests: XCTestCase {
         ) {}
     }
 
+    private final class KeyRecipient: NSResponder {
+        var characters: [String] = []
+
+        override var acceptsFirstResponder: Bool { true }
+
+        override func keyDown(with event: NSEvent) {
+            characters.append(event.characters ?? "")
+        }
+    }
+
     func testPathDrawingIgnoresClicksDragsDropsAndKeysWithoutMovingFocus() throws {
         try eachLineState { state, appearance, panel in
             let name = "\(state.name) under \(appearance.name)"
@@ -2103,9 +2113,9 @@ final class ReadingPanelTests: XCTestCase {
                 backing: .buffered, defer: true)
             window.isReleasedWhenClosed = false
             window.contentView = panel
-            window.makeKey()
             defer { window.close() }
-            XCTAssertTrue(window.isKeyWindow, "\(name): input reaches a key window")
+            let keyRecipient = KeyRecipient()
+            XCTAssertTrue(window.makeFirstResponder(keyRecipient), name)
             panel.layoutSubtreeIfNeeded()
             let responder = window.firstResponder
             let shownBefore = visibleStrings(panel)
@@ -2150,6 +2160,7 @@ final class ReadingPanelTests: XCTestCase {
                     "\(name): no drop is delivered at the \(place)")
             }
             window.sendEvent(try keyDown(in: window))
+            XCTAssertEqual(keyRecipient.characters, ["a"], "\(name): the key was delivered")
 
             XCTAssertTrue(
                 window.firstResponder === responder, "\(name): focus did not move (CP-367)")
