@@ -47,4 +47,4 @@
 - **If overridden:** State the grounds for a different inventory or annotation count in § 4 and
   its current-reference note. A changed count alone changes no experience requirement; historical
   RN-13 stays a record of its original read.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm
