@@ -93,8 +93,6 @@
 
 set -euo pipefail
 
-die() { echo "structure.sh: $*" >&2; exit 1; }
-
 product_root="$(cd "$(dirname "$0")/.." && pwd -P)"
 crates_dir="$product_root/crates"
 
