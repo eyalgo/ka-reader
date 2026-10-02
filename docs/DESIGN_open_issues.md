@@ -48,6 +48,6 @@
   24-point rows in the language may be read the same way, and the answer may name them too.
 - **If a document has to be written:** none. § Components *The reading panel*, or the
   `{components.path-line}` contract.
-- **Answer:** <the owner fills this in>
+- **Answer:** Centre the single path-text line vertically in its own `{components.path-line}` row, using `{typography.path}`'s line height: the space above and below the line box is equal. The hairline sits beneath the row and is outside the centring calculation. This is the path-line treatment in both themes and in code, rendered Markdown, raw source and diff, wherever the existing reading-panel rule shows a path; it also applies above empty text, cannot-display and failed-read or fault outcomes. A long path remains one line and keeps the same vertical placement when clipped. Fold this into § Components “The reading panel”; the row's height, type and horizontal inset continue to come from their existing tokens. Reasoning: `docs/trail/design/self_answer-8.md` § 3.1.
 
 **How it closes.** `product-design` folds it on its next run like any other item here.
