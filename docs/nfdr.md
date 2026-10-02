@@ -1,8 +1,8 @@
 # NFDR — Nozoki 覗き
 
-**Status:** Draft
+**Status:** Settled
 **Owner:** Principal Architect
-**Version:** 26 — the cycle-23 fold (`docs/trail/architecture/cycle-23.md` §§ 3.1 – 3.4; reasoning at `docs/trail/architecture/self_answer-27.md`). A command's executability is tied to each rule it holds, not to its script's arrival, and § 10's *Gated at* is read the same way; § 9 counts seven harness suites, each cited pinned to a commit, and § 10 points at § 9 for the count; § 9's `checks/structure.sh` bullet names the two `#[cfg(test)]` `#[path]` sites and scopes a module by the file that holds its body; § 10's rows naming `checks/structure.sh` name its suite. Drafted for the owner's confirm: § 9's `nozoki-mac` bullet re-cites the `ci.yml` steps that moved (`docs/architecture_open_issues.md` § 2.1). § 9's layer-4 row reads SDD v24's one `surfaces` exception. No `QC` is added, renumbered or reused. The companion stands, so `Status:` is Draft.
+**Version:** 27 — the close: the cycle-24 fold (`docs/trail/architecture/cycle-24.md` § 2.1; reasoning at `docs/trail/architecture/self_answer-28.md`). The v26 draft is confirmed: § 9's `nozoki-mac` bullet cites the build step `ci.yml:L35` and the *no `swift --version` step* range `:L22-L35`, both pinned to `nozoki@463acb9`, with the whole-file grep beside them. What changed is the clause's provenance, not its content. No record is written or restatused, and no `QC` is added, renumbered or reused. Nothing is left open, so the companion is removed and `Status:` is Settled.
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · PRD Settled · UXD Settled · DESIGN Settled · CONTENT Settled
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
@@ -1141,7 +1141,8 @@ left with `nozoki-ui` at `nozoki@0aca57e` (RN-22; RN-25).
   layer word each takes is the delivery tier's placement under this table's rows. *Toolchain —
   not yet measured:* from `nozoki@0aca57e` CI builds `nozoki-mac` in two steps —
   `.github/workflows/ci.yml:L26` runs `swift test --package-path nozoki-mac` in `Test gate`, and
-  `:L35` runs `nozoki-mac/assemble.sh`, both at `nozoki@463acb9` *(drafted at v26 — RN-37: through
+  `:L35` runs `nozoki-mac/assemble.sh`, both at `nozoki@463acb9` *(drafted at v26 — RN-37 — and
+  confirmed in the owner's seat at `docs/trail/architecture/cycle-24.md` § 2.1 — RN-38: through
   v25 the build step was cited `:L29` with no commit named, true at `nozoki@0aca57e`, and it
   moved six lines down when `Structure check` and `Structure check suite` landed at `:L28-L32`)*
   *(through v13 this clause read that CI did not build it,
@@ -1157,7 +1158,8 @@ left with `nozoki-ui` at `nozoki@0aca57e` (RN-22; RN-25).
   together, because `macos-14` is a label whose default Xcode can move under the same name and a
   later reader must tell a re-measurement from a contradiction. `ci.yml` has no `swift --version`
   step (`:L22-L35` at `nozoki@463acb9`, and `grep -n 'swift --version' .github/workflows/ci.yml`
-  prints nothing over the whole file — drafted at v26, RN-37); whether to add one is the delivery tier's *(through v14 this clause read that
+  prints nothing over the whole file — drafted at v26, RN-37, and confirmed at
+  `docs/trail/architecture/cycle-24.md` § 2.1, RN-38); whether to add one is the delivery tier's *(through v14 this clause read that
   no CI run on `main` had built it, true at `origin/main` = `a4ab8e6`; drafted at v15 on the item a
   `companion-self-answer` run raised on this document — RN-26 — and confirmed in the owner's seat
   at `docs/trail/architecture/cycle-13.md` § 2.1 — RN-27)*. *Departed from, as one decision, until CI builds
@@ -3399,3 +3401,27 @@ delegation half), QC-18, QC-21, QC-31, QC-33, QC-43, QC-45, QC-50, QC-54, QC-57,
   `docs/trail/architecture/cycle-23.md` §§ 2.1, 3.1 – 3.4;
   `docs/trail/architecture/self_answer-27.md` §§ 3.1 – 3.4; `docs/SDD.md` v24 § 3 `surfaces`, § 4
   C-I1, RN-82; `checks/structure.sh:L35-L102`; `.github/workflows/ci.yml` at `nozoki@463acb9`)*
+- **RN-38:** *(v27 — the close: the cycle-24 fold, § 2.1 confirmed)* **The fold.** The companion
+  at intake held one choice, § 2.1, which this document's v26 fold had drafted (RN-37). It was
+  confirmed in the owner's seat by a `companion-self-answer` run
+  (`docs/trail/architecture/self_answer-28.md` § 2.1) and committed at `nozoki@a3d0e1e`, then
+  copied whole before this fold as `docs/trail/architecture/cycle-24.md`. That trail file is now
+  where RN-37's pointer to `docs/architecture_open_issues.md` § 2.1 reads, because the companion
+  is removed. **§ 2.1 → § 9's `nozoki-mac` bullet.** The clause stands as v26 drafted it. Its
+  two *drafted at v26* markers now also name the confirmation, in the form the same bullet's
+  v15 correction takes (RN-27). This fold re-measured the answer's facts at HEAD
+  `nozoki@a3d0e1e` instead of taking them from it. `git diff --stat 463acb9 HEAD --
+  .github/workflows/ci.yml` prints nothing, so the pin reads today's file. In that file `:L26` is
+  `cargo test --workspace --locked && swift test --package-path nozoki-mac`, `:L28-L32` are
+  `Structure check` and `Structure check suite`, and `:L35` is `run: nozoki-mac/assemble.sh`.
+  `grep -n 'swift --version' .github/workflows/ci.yml` prints nothing and exits 1. At
+  `nozoki@0aca57e`, `:L29` is `run: nozoki-mac/assemble.sh`, so the dated history the clause keeps
+  is true. `nozoki@463acb9` is a merge commit on `main`, so the pin stays reachable. ADR-0012's
+  unpinned `ci.yml` citation does not move: a line pointer is no change of decision
+  (`self_answer-28.md` § 2.1, check 3). **What moved beneath this document.** `git log
+  7ef2386..HEAD` lists only the answer's own commit, `nozoki@a3d0e1e`. Every input's `Status:`
+  line was re-read and is Settled, so `Inputs read:` stands. No record is written or restatused,
+  the index does not move, and no `QC` is added, renumbered or reused *(re: header `Status:`,
+  `Version:`; § 9 `nozoki-mac` bullet; source: `docs/trail/architecture/cycle-24.md` § 2.1;
+  `docs/trail/architecture/self_answer-28.md` § 2.1; `.github/workflows/ci.yml` at
+  `nozoki@463acb9`, `nozoki@0aca57e` and `nozoki@a3d0e1e`)*
