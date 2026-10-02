@@ -987,6 +987,15 @@ if [ "$ran" -eq 0 ]; then
   exit 1
 fi
 
+# Design B requires this after the last case, even when selection skipped the named case.
+if result="$(test_originating_tree_is_unchanged 2>&1)"; then
+  :
+else
+  echo "FAIL test_originating_tree_is_unchanged"
+  [ -z "$result" ] || echo "$result"
+  failed=$((failed + 1))
+fi
+
 if [ "$failed" -ne 0 ]; then
   echo "test_structure.sh: $failed case(s) failed" >&2
   exit 1

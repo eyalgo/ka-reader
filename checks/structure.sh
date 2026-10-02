@@ -146,8 +146,8 @@ function emit_at(kind,    c) {
   else { put(c, ln, kind); i++ }
 }
 
-function note(ln, qc, what,    key) {
-  key = ln SUBSEP qc
+function note(ln, qc, clause, what,    key) {
+  key = ln SUBSEP qc SUBSEP clause
   if (!(key in found)) {
     found[key] = what
     if (ln > maxline) maxline = ln
@@ -155,20 +155,20 @@ function note(ln, qc, what,    key) {
 }
 
 function add_unsafe(ln) {
-  if (!is_bridge) note(ln, "QC-9", "`unsafe` outside nozoki-bridge")
+  if (!is_bridge) note(ln, "QC-9", "unsafe", "`unsafe` outside nozoki-bridge")
 }
 
 function add_apple(ln, form) {
-  if (is_core) note(ln, "QC-9", "Apple framework or binding `" form "` in nozoki-core")
+  if (is_core) note(ln, "QC-9", "apple", "Apple framework or binding `" form "` in nozoki-core")
 }
 
 function add_process(ln) {
-  note(ln, "QC-36", "std::process named — no shipped crate spawns a process")
-  if (is_core) note(ln, "QC-9", "std::process named in nozoki-core")
+  note(ln, "QC-36", "process", "std::process named — no shipped crate spawns a process")
+  if (is_core) note(ln, "QC-9", "process", "std::process named in nozoki-core")
 }
 
 function add_fs(ln, form) {
-  if (!exempt) note(ln, "QC-15", "filesystem primitive `" form "` outside its owner file")
+  if (!exempt) note(ln, "QC-15", "filesystem", "filesystem primitive `" form "` outside its owner file")
 }
 
 function is_libc_file_call(w) {
@@ -246,7 +246,6 @@ function scan_use_trees(t, l, n,    k, m, sp, cur, atstart, skip, w, parent, p, 
       use_segment(parent, first, w, atstart, l[m])
       atstart = 0
     }
-    k = m
   }
 }
 
@@ -325,12 +324,16 @@ END {
   for (k = 1; k <= nt; k++) if (tkind[k] == "k") { nc++; ct[nc] = tk[k]; cl[nc] = tl[k] }
   scan_stream(tk, tl, nt)
   scan_stream(ct, cl, nc)
+  scan_use_trees(tk, tl, nt)
   scan_use_trees(ct, cl, nc)
   split("QC-9 QC-15 QC-36", order, " ")
+  split("apple unsafe process filesystem", clauses, " ")
   for (ln = 1; ln <= maxline; ln++)
     for (q = 1; q <= 3; q++) {
-      key = ln SUBSEP order[q]
-      if (key in found) print rel ":" ln ": " order[q] ": " found[key]
+      for (clause = 1; clause <= 4; clause++) {
+        key = ln SUBSEP order[q] SUBSEP clauses[clause]
+        if (key in found) print rel ":" ln ": " order[q] ": " found[key]
+      }
     }
 }
 AWK
