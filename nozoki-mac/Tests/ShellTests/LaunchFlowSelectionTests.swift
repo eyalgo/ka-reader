@@ -168,6 +168,40 @@ final class LaunchFlowSelectionTests: LaunchWindowTestCase {
         XCTAssertEqual(window.frame.size, frameBefore)
     }
 
+    /// FDR R-11, "Closing the product asks nothing", with a file shown. The product has no main menu,
+    /// so closing its window is how it is quit (the delegate turns the last window's close into
+    /// termination, outside every test target). The close is driven through the close button's
+    /// action, `performClose(_:)`, because `close()` skips the should-close question this test
+    /// exists to ask (https://developer.apple.com/documentation/appkit/nswindow/close()).
+    /// `terminate(_:)` is never called: in the test process it would act on the runner.
+    func testClosingTheProductWithAFileShownAsksNothing() throws {
+        let launch = launch()
+        let workbench = try workbench(of: launch)
+        let window = try laidOutWindow(of: workbench)
+        launch.bridge.selectAnswers = ["a.txt": text("from a\n")]
+        try click("a.txt", in: workbench)
+        layOut(window)
+        XCTAssertEqual(workbench.readingPanel.contentView.string, "from a\n", "a file is shown")
+        // The presenter does not set it, and a window released on close would be freed under the
+        // test's own references.
+        window.isReleasedWhenClosed = false
+        XCTAssertFalse(window.isDocumentEdited, "the window is not marked edited")
+        XCTAssertNil(window.attachedSheet, "no sheet is attached before the close")
+        XCTAssertTrue(
+            NSDocumentController.shared.documents.isEmpty, "the product holds no document")
+        XCTAssertTrue(window.isVisible, "the window is visible before the close")
+        let visibleBefore = Set(NSApp.windows.filter(\.isVisible).map(ObjectIdentifier.init))
+
+        window.performClose(nil)
+
+        XCTAssertFalse(window.isVisible, "the window is closed")
+        XCTAssertNil(window.attachedSheet, "no sheet is attached after the close")
+        XCTAssertNil(NSApp.modalWindow, "the application has no modal window")
+        // An alert, a save panel or a confirmation would each be a window that was not there before.
+        let visibleAfter = Set(NSApp.windows.filter(\.isVisible).map(ObjectIdentifier.init))
+        XCTAssertTrue(visibleAfter.subtracting(visibleBefore).isEmpty, "no new window is visible")
+    }
+
     private func visibleStrings(beneath view: NSView) -> [String] {
         textElements(beneath: view).map(\.stringValue)
     }
