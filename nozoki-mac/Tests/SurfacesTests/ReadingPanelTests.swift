@@ -2770,4 +2770,180 @@ final class ReadingPanelTests: XCTestCase {
 
         assertNothingChanged(since: before, in: shown)
     }
+
+    // MARK: - The text's right-click menu offers no editing entry (R-49, CP-377 – CP-382)
+
+    /// Every title CP-378 names, which the stock text menu carries today (change_spec.md
+    /// Verified Claim 3). The list is the floor a title check can reach; CP-377's rule is the
+    /// action check in `assertOnlyCopyIsOffered`.
+    private let editingTitles = [
+        "Cut", "Paste", "Paste and Match Style", "Font", "Show Fonts", "Show Colors",
+        "Show Writing Tools", "Summarize", "Spelling and Grammar", "Show Spelling and Grammar",
+        "Check Document Now", "Check Spelling While Typing", "Check Grammar With Spelling",
+        "Correct Spelling Automatically", "Substitutions", "Show Substitutions", "Smart Copy/Paste",
+        "Smart Quotes", "Smart Dashes", "Smart Links", "Data Detectors", "Text Replacement",
+    ]
+
+    /// A right-click as the design's probe made it: no window, location (5, 5)
+    /// (change_design.md Architect Review Notes, *Probe disagreement*).
+    private func rightClick() throws -> NSEvent {
+        try XCTUnwrap(
+            NSEvent.mouseEvent(
+                with: .rightMouseDown, location: NSPoint(x: 5, y: 5), modifierFlags: [],
+                timestamp: 0, windowNumber: 0, context: nil, eventNumber: 0, clickCount: 1,
+                pressure: 1))
+    }
+
+    /// The menu a right-click on the text of a shown file gets, with `selection` selected when
+    /// given. Nil would fail the caller's assertions, so it is unwrapped here.
+    private func textMenu(
+        showing path: String, _ verdict: FileVerdict, selecting selection: NSRange? = nil
+    ) throws -> NSMenu {
+        let panel = makePanel()
+        panel.show(path: path, verdict: verdict)
+        if let selection { panel.contentView.setSelectedRange(selection) }
+        return try XCTUnwrap(panel.contentView.menu(for: try rightClick()))
+    }
+
+    /// Every entry of `menu` at every depth, separators included.
+    private func entries(of menu: NSMenu) -> [NSMenuItem] {
+        menu.items.flatMap { [$0] + ($0.submenu.map(entries(of:)) ?? []) }
+    }
+
+    /// The titles of the entries of `menu` at every depth, separators left out.
+    private func titles(of menu: NSMenu) -> [String] {
+        entries(of: menu).filter { !$0.isSeparatorItem }.map(\.title)
+    }
+
+    /// Presence, never enablement: an enabled and a disabled editing entry fail alike
+    /// (change_design.md § 5, T1).
+    private func assertCopyAndNoEditingEntry(
+        _ menu: NSMenu, file: StaticString = #filePath, line: UInt = #line
+    ) {
+        let present = titles(of: menu)
+        XCTAssertEqual(
+            present.filter { editingTitles.contains($0) }, [], "editing entries in \(present)",
+            file: file, line: line)
+        XCTAssertTrue(
+            entries(of: menu).contains {
+                $0.title == "Copy" && $0.action == #selector(NSText.copy(_:))
+            }, "Copy is offered in \(present)", file: file, line: line)
+    }
+
+    /// No separator first or last, and none beside another, in `menu` and in each submenu.
+    private func separatorFaults(in menu: NSMenu) -> [String] {
+        var faults: [String] = []
+        for (index, item) in menu.items.enumerated() {
+            if item.isSeparatorItem {
+                if index == 0 { faults.append("first in \"\(menu.title)\"") }
+                if index == menu.items.count - 1 { faults.append("last in \"\(menu.title)\"") }
+                if index > 0, menu.items[index - 1].isSeparatorItem {
+                    faults.append("beside another in \"\(menu.title)\"")
+                }
+            }
+            if let submenu = item.submenu { faults += separatorFaults(in: submenu) }
+        }
+        return faults
+    }
+
+    func testPlainTextMenuOffersCopyAndNoEditingEntryWithoutSelection() throws {
+        let menu = try textMenu(showing: "src/lib.rs", .text("fn main() {}\n", .plain))
+
+        assertCopyAndNoEditingEntry(menu)
+    }
+
+    func testSelectedTextMenuOffersCopyAndNoEditingEntry() throws {
+        let menu = try textMenu(
+            showing: "src/lib.rs", .text("fn main() {}\n", .plain),
+            selecting: NSRange(location: 0, length: 2))
+
+        assertCopyAndNoEditingEntry(menu)
+    }
+
+    func testHighlightedPythonMenuOffersCopyAndNoEditingEntry() throws {
+        let menu = try textMenu(showing: "m.py", floorVerdict(fixtureM, .python, fixtureMSpans))
+
+        assertCopyAndNoEditingEntry(menu)
+    }
+
+    func testMarkdownSourceMenuOffersCopyAndNoEditingEntry() throws {
+        let menu = try textMenu(showing: "README.md", .text("# Title\n\nbody\n", .plain))
+
+        assertCopyAndNoEditingEntry(menu)
+    }
+
+    func testTextMenuHoldsExactlyOneCopyItemWithTheCopyAction() throws {
+        let menu = try textMenu(showing: "src/lib.rs", .text("fn main() {}\n", .plain))
+
+        let actions = entries(of: menu).compactMap(\.action)
+        XCTAssertEqual(actions, [#selector(NSText.copy(_:))], "every action at every depth")
+        XCTAssertEqual(entries(of: menu).count, 1, "nothing else at any depth, separators included")
+    }
+
+    func testTextMenuDisablesDisplayTimeAdditions() throws {
+        let menu = try textMenu(showing: "src/lib.rs", .text("fn main() {}\n", .plain))
+
+        XCTAssertFalse(menu.allowsContextMenuPlugIns, "no contextual-menu plug-in entries")
+        if #available(macOS 15.2, *) {
+            XCTAssertFalse(menu.automaticallyInsertsWritingToolsItems, "no Writing Tools entries")
+        }
+    }
+
+    func testMenuCopyPreservesSelectedCharactersAndShownText() throws {
+        let panel = makePanel()
+        panel.show(path: "src/lib.rs", verdict: .text("fn main() {}\n", .plain))
+        panel.contentView.setSelectedRange(NSRange(location: 0, length: 2))
+        let menu = try XCTUnwrap(panel.contentView.menu(for: try rightClick()))
+        let copy = try XCTUnwrap(entries(of: menu).first { $0.title == "Copy" })
+        XCTAssertEqual(copy.action, #selector(NSText.copy(_:)))
+        // A pasteboard of this test's own, never the general one: that is the owner's clipboard.
+        let pasteboard = NSPasteboard(name: NSPasteboard.Name("nozoki-test-\(UUID().uuidString)"))
+        defer { pasteboard.releaseGlobally() }
+
+        pasteboard.clearContents()
+        XCTAssertTrue(
+            panel.contentView.writeSelection(
+                to: pasteboard, types: panel.contentView.writablePasteboardTypes))
+
+        XCTAssertEqual(pasteboard.string(forType: .string), "fn")
+        XCTAssertEqual(panel.contentView.string, "fn main() {}\n")
+    }
+
+    func testTextMenuAddsNoTitleToTheMatchingStockMenu() throws {
+        let content = "fn main() {}\n"
+        let selection = NSRange(location: 0, length: 2)
+        let menu = try textMenu(
+            showing: "src/lib.rs", .text(content, .plain), selecting: selection)
+        // The stock view is built the way `CodeView` builds its text view: TextKit 1, not
+        // editable, not rich text, selectable. The stock menu is read at run time, so the test
+        // holds on a machine whose non-editing entries differ (change_design.md § 5, T9).
+        let storage = NSTextStorage()
+        let layoutManager = NSLayoutManager()
+        storage.addLayoutManager(layoutManager)
+        let container = NSTextContainer(size: NSSize(width: 600, height: 400))
+        layoutManager.addTextContainer(container)
+        let stock = NSTextView(
+            frame: NSRect(x: 0, y: 0, width: 600, height: 400), textContainer: container)
+        stock.isEditable = false
+        stock.isRichText = false
+        stock.isSelectable = true
+        stock.string = content
+        stock.setSelectedRange(selection)
+        let stockMenu = try XCTUnwrap(stock.menu(for: try rightClick()))
+
+        let stockTitles = Set(titles(of: stockMenu))
+        let added = titles(of: menu).filter { !stockTitles.contains($0) }
+        XCTAssertEqual(added, [], "titles the stock menu does not carry")
+    }
+
+    func testTextMenuHasNoEmptySeparatorGroupWithOrWithoutSelection() throws {
+        let content = "fn main() {}\n"
+        let unselected = try textMenu(showing: "src/lib.rs", .text(content, .plain))
+        let selected = try textMenu(
+            showing: "src/lib.rs", .text(content, .plain),
+            selecting: NSRange(location: 0, length: 2))
+
+        XCTAssertEqual(separatorFaults(in: unselected), [], "no selection")
+        XCTAssertEqual(separatorFaults(in: selected), [], "`fn` selected")
+    }
 }
