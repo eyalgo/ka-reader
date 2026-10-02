@@ -26,10 +26,22 @@ package final class ReadingPanelView: NSView {
     /// from its surface's top-left.
     private static let inset: CGFloat = 24
 
-    /// `docs/DESIGN.md` `{spacing.sm}`: between the path line and what is beneath it.
+    /// Between the path line's hairline and what is beneath it. `docs/DESIGN.md` prescribes no value
+    /// for this separation, so CP-364 keeps the 8 points the panel already drew, now measured from the
+    /// hairline's bottom edge.
     private static let gap: CGFloat = 8
 
-    private static let pathPointSize: CGFloat = 13
+    /// `docs/DESIGN.md` `{typography.path}`: the monospaced system font at 12 points, regular weight.
+    private static let pathPointSize: CGFloat = 12
+
+    /// `docs/DESIGN.md` `{spacing.lg}`: the path text's distance from the panel's left and right
+    /// edges, measured to the drawn text (CP-361).
+    private static let pathInset: CGFloat = 16
+
+    /// `docs/DESIGN.md` `{spacing.row}` and `{spacing.hairline}`: the path line's row, and the
+    /// hairline directly beneath it (CP-360, CP-363).
+    private static let rowHeight: CGFloat = 24
+    private static let hairlineHeight: CGFloat = 1
 
     private let statusGlyphs: StatusGlyphs
     private let prompt: StatusMessageView
@@ -43,6 +55,11 @@ package final class ReadingPanelView: NSView {
     /// The path line: the entry's folder-relative path, in the path type.
     package let pathLine: NSTextField
 
+    /// The path line's row and the hairline beneath it. Drawing only; shown exactly when the path
+    /// line is.
+    let pathRow = PathLineRowView()
+    let pathHairline = PathLineHairlineView()
+
     /// The text view holding a text file's content. It is never editable.
     package let contentView: NSTextView
 
@@ -54,6 +71,7 @@ package final class ReadingPanelView: NSView {
 
         pathLine = NSTextField(labelWithString: "")
         pathLine.font = .monospacedSystemFont(ofSize: Self.pathPointSize, weight: .regular)
+        pathLine.textColor = CodeColors.inkMuted
         pathLine.lineBreakMode = .byTruncatingMiddle
         pathLine.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
 
@@ -62,10 +80,12 @@ package final class ReadingPanelView: NSView {
 
         super.init(frame: .zero)
 
-        for view in [prompt, pathLine, codeView] {
+        for view in [prompt, pathRow, pathHairline, codeView] {
             view.translatesAutoresizingMaskIntoConstraints = false
             addSubview(view)
         }
+        pathLine.translatesAutoresizingMaskIntoConstraints = false
+        pathRow.addSubview(pathLine)
         // Nothing ties the prompt or the path line to the panel's bottom: with the label as the
         // panel, its one line's height became the window's (change_spec.md § Verified Claims).
         NSLayoutConstraint.activate([
@@ -73,13 +93,42 @@ package final class ReadingPanelView: NSView {
             prompt.leadingAnchor.constraint(equalTo: leadingAnchor, constant: Self.inset),
             prompt.trailingAnchor.constraint(
                 lessThanOrEqualTo: trailingAnchor, constant: -Self.inset),
-            pathLine.topAnchor.constraint(equalTo: topAnchor, constant: Self.inset),
-            pathLine.leadingAnchor.constraint(equalTo: leadingAnchor, constant: Self.inset),
+            pathRow.topAnchor.constraint(equalTo: topAnchor),
+            pathRow.leadingAnchor.constraint(equalTo: leadingAnchor),
+            pathRow.trailingAnchor.constraint(equalTo: trailingAnchor),
+            pathRow.heightAnchor.constraint(equalToConstant: Self.rowHeight),
+            pathHairline.topAnchor.constraint(equalTo: pathRow.bottomAnchor),
+            pathHairline.leadingAnchor.constraint(equalTo: leadingAnchor),
+            pathHairline.trailingAnchor.constraint(equalTo: trailingAnchor),
+            pathHairline.heightAnchor.constraint(equalToConstant: Self.hairlineHeight),
+            // A label draws its text inside its own frame, not at the frame's edge, so the field
+            // starts that much short of the 16 and the drawn text begins at it. The right limit is
+            // the frame's own edge: the text stays inside it.
+            pathLine.leadingAnchor.constraint(
+                equalTo: pathRow.leadingAnchor,
+                constant: Self.pathInset - Self.textOffset(of: pathLine)),
             pathLine.trailingAnchor.constraint(
-                lessThanOrEqualTo: trailingAnchor, constant: -Self.inset),
+                lessThanOrEqualTo: pathRow.trailingAnchor, constant: -Self.pathInset),
+            pathLine.centerYAnchor.constraint(equalTo: pathRow.centerYAnchor),
         ])
         codeView.isHidden = true
         showNoFile()
+    }
+
+    /// How far in from its frame's left edge a label draws its text.
+    private static func textOffset(of label: NSTextField) -> CGFloat {
+        label.cell?.drawingRect(forBounds: NSRect(x: 0, y: 0, width: 100, height: rowHeight)).minX
+            ?? 0
+    }
+
+    /// The path row and the hairline show and hide together, and with the path line they hold: one
+    /// switch, so a state added later cannot show one without the others (CP-363).
+    private var isPathLineShown: Bool {
+        get { !pathRow.isHidden }
+        set {
+            pathRow.isHidden = !newValue
+            pathHairline.isHidden = !newValue
+        }
     }
 
     @available(*, unavailable)
@@ -90,7 +139,7 @@ package final class ReadingPanelView: NSView {
     /// Returns the panel to its no-file state: the prompt, and nothing else visible.
     package func showNoFile() {
         removeMessage()
-        pathLine.isHidden = true
+        isPathLineShown = false
         codeView.isHidden = true
         contentView.string = ""
         prompt.isHidden = false
@@ -101,9 +150,9 @@ package final class ReadingPanelView: NSView {
     package func showReading() {
         removeMessage()
         prompt.isHidden = true
-        pathLine.isHidden = true
-        // Anchored where the prompt stands: with the path line hidden, a message hung from it would
-        // sit one path-line height too low.
+        isPathLineShown = false
+        // Anchored where the prompt stands: with the path line hidden, a message hung from the
+        // hairline would sit a row and a hairline too low.
         placeMessage(
             glyph: statusGlyphs.empty, sentence: ConditionSentences.readingFile,
             below: topAnchor, gap: Self.inset)
@@ -115,7 +164,7 @@ package final class ReadingPanelView: NSView {
         removeMessage()
         prompt.isHidden = true
         pathLine.stringValue = path
-        pathLine.isHidden = false
+        isPathLineShown = true
         showMessage(glyph: statusGlyphs.failure, sentence: ConditionSentences.stoppedReadingFile)
     }
 
@@ -124,7 +173,7 @@ package final class ReadingPanelView: NSView {
         removeMessage()
         prompt.isHidden = true
         pathLine.stringValue = path
-        pathLine.isHidden = false
+        isPathLineShown = true
         let name = path.split(separator: "/").last.map(String.init) ?? path
         switch verdict {
         case .text(let content, let language):
@@ -150,7 +199,7 @@ package final class ReadingPanelView: NSView {
         if !isCodeViewPinned {
             NSLayoutConstraint.activate([
                 codeView.topAnchor.constraint(
-                    equalTo: pathLine.bottomAnchor, constant: Self.gap),
+                    equalTo: pathHairline.bottomAnchor, constant: Self.gap),
                 codeView.leadingAnchor.constraint(equalTo: leadingAnchor),
                 codeView.trailingAnchor.constraint(equalTo: trailingAnchor),
                 codeView.bottomAnchor.constraint(equalTo: bottomAnchor),
@@ -160,7 +209,8 @@ package final class ReadingPanelView: NSView {
     }
 
     private func showMessage(glyph: NSImage, sentence: String) {
-        placeMessage(glyph: glyph, sentence: sentence, below: pathLine.bottomAnchor, gap: Self.gap)
+        placeMessage(
+            glyph: glyph, sentence: sentence, below: pathHairline.bottomAnchor, gap: Self.gap)
     }
 
     private func placeMessage(

@@ -1642,12 +1642,12 @@ final class ReadingPanelTests: XCTestCase {
 
         /// Where ink lies among the rows from `top` to `bottom` points: pixels unlike `ground`.
         func ink(
-            from top: CGFloat, to bottom: CGFloat, ground: [CGFloat], columns: Range<Int>? = nil
+            from top: CGFloat, to bottom: CGFloat, ground: [CGFloat], onlyColumns: Range<Int>? = nil
         ) -> (minX: CGFloat, maxX: CGFloat, minY: CGFloat, maxY: CGFloat)? {
             var columns: [Int] = []
             var rows: [Int] = []
             // The bitmap's last column is rounded up from a fractional width and is never drawn.
-            let drawnColumns = columns ?? (0..<Int((width * scale).rounded(.down)))
+            let drawnColumns = onlyColumns ?? (0..<Int((width * scale).rounded(.down)))
             for row in Int(top * scale)..<Int(bottom * scale) {
                 for column in drawnColumns {
                     guard let pixel = rep.colorAt(x: column, y: row)?.usingColorSpace(.sRGB),
@@ -1865,7 +1865,8 @@ final class ReadingPanelTests: XCTestCase {
             let lastColumn = Int(extent.maxX * drawn.scale) - 1
             let tail = try XCTUnwrap(
                 drawn.ink(
-                    from: 0, to: 24, ground: ground, columns: (lastColumn - 1)..<(lastColumn + 1)))
+                    from: 0, to: 24, ground: ground,
+                    onlyColumns: (lastColumn - 1)..<(lastColumn + 1)))
             XCTAssertGreaterThan(
                 tail.maxY - tail.minY, 8,
                 "\(name): the line ends on the tail, so its middle was shortened (CP-361)")
@@ -2054,16 +2055,6 @@ final class ReadingPanelTests: XCTestCase {
                 charactersIgnoringModifiers: "a", isARepeat: false, keyCode: 0))
     }
 
-    /// A destination `view` would answer a drag with: any of the three negotiation and delivery
-    /// messages (`NSDraggingDestination`).
-    private func draggingSelectors() -> [Selector] {
-        [
-            #selector(NSDraggingDestination.draggingEntered(_:)),
-            #selector(NSDraggingDestination.prepareForDragOperation(_:)),
-            #selector(NSDraggingDestination.performDragOperation(_:)),
-        ]
-    }
-
     func testPathDrawingIgnoresClicksDragsDropsAndKeysWithoutMovingFocus() throws {
         try eachLineState { state, appearance, panel in
             let name = "\(state.name) under \(appearance.name)"
@@ -2111,15 +2102,12 @@ final class ReadingPanelTests: XCTestCase {
                     XCTAssertFalse(text.isEditable, "\(name): \(text)")
                 }
             }
-            // Not controls, no first responder, no dragged type: AppKit offers a drag to a view only
-            // when it registered one, and a plain view answers none of the drag messages.
+            // Not controls, no first responder, no dragged type: AppKit offers a drag, and delivers a
+            // drop, only to a view that registered a type, and none of these did.
             for view in [panel.pathRow, panel.pathHairline] as [NSView] {
                 XCTAssertFalse(view is NSControl, "\(name): \(view)")
                 XCTAssertFalse(view.acceptsFirstResponder, "\(name): \(view)")
                 XCTAssertTrue(view.registeredDraggedTypes.isEmpty, "\(name): \(view)")
-                for selector in draggingSelectors() {
-                    XCTAssertFalse(view.responds(to: selector), "\(name): \(view) \(selector)")
-                }
             }
             XCTAssertTrue(panel.pathLine.registeredDraggedTypes.isEmpty, name)
             XCTAssertFalse(panel.pathLine.isEditable, name)
