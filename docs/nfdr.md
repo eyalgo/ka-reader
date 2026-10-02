@@ -1,8 +1,8 @@
 # NFDR — Nozoki 覗き
 
-**Status:** Settled
+**Status:** Draft
 **Owner:** Principal Architect
-**Version:** 25 — the close: the cycle-22 fold (`docs/trail/architecture/cycle-22.md` § 3.1; reasoning at `docs/trail/architecture/self_answer-26.md`). QC-14's first clause regains the qualifier its two sources carry: `checks/` is never a dependency of any *shipped* unit, so a `nozoki-core` test target that compiles harness source conforms, and `checks/structure.sh` does not read a test target's `#[path]` into `checks/` as a dependency. No `QC` is added, renumbered or reused, and § 10 gains no command. The companion is removed, so `Status:` is Settled.
+**Version:** 26 — the cycle-23 fold (`docs/trail/architecture/cycle-23.md` §§ 3.1 – 3.4; reasoning at `docs/trail/architecture/self_answer-27.md`). A command's executability is tied to each rule it holds, not to its script's arrival, and § 10's *Gated at* is read the same way; § 9 counts seven harness suites, each cited pinned to a commit, and § 10 points at § 9 for the count; § 9's `checks/structure.sh` bullet names the two `#[cfg(test)]` `#[path]` sites and scopes a module by the file that holds its body; § 10's rows naming `checks/structure.sh` name its suite. Drafted for the owner's confirm: § 9's `nozoki-mac` bullet re-cites the `ci.yml` steps that moved (`docs/architecture_open_issues.md` § 2.1). § 9's layer-4 row reads SDD v24's one `surfaces` exception. No `QC` is added, renumbered or reused. The companion stands, so `Status:` is Draft.
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · PRD Settled · UXD Settled · DESIGN Settled · CONTENT Settled
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
@@ -33,8 +33,15 @@
 > the organisation that publishes this product, which is not in this repository; every such entry
 > states the rule in full here, so the trace is provenance and never a dependency. Every command
 > named below is one the SDD names, or one this document names as its own realization and says so
-> in § NFDR Review Notes. Not every one exists yet: each becomes executable in the change that
-> lands its script, and until then the gate is `development-design` reading the entry.
+> in § NFDR Review Notes. Executability is per rule, not per script: a rule a command names
+> becomes executable in the change that adds that rule to the command, and until then its gate is
+> `development-design` reading the entry. A script not yet in the tree is the case where no rule
+> has been added. Which rules a script holds is stated in the script's own header and is cited,
+> never copied here — for `checks/structure.sh`, *THE SCAN TABLE* and *WHAT IS NOT HELD*
+> (`checks/structure.sh:L35-L93` at `nozoki@463acb9`) — so the next rule added moves one file
+> *(through v25 this sentence tied executability to the script's landing, which read every rule
+> § 10 assigns to `checks/structure.sh` as gated once the script landed holding four of them; on
+> the owner's seat's answer at `docs/trail/architecture/cycle-23.md` § 3.1 — RN-37)*.
 
 ---
 
@@ -980,7 +987,7 @@ left with `nozoki-ui` at `nozoki@0aca57e` (RN-22; RN-25).
 | 1 — Unit | The reducer, `ItemState` transitions, the containment check, the text rule, extension recognition, the log line shape; on the Swift side, a projection decoded from an `SM-4` buffer | `cargo test --locked` (`#[cfg(test)]` beside the module); `swift test --package-path nozoki-mac` | inside each `nozoki-core` / `nozoki-bridge` module; `nozoki-mac/Tests/` |
 | 2 — Integration | `fs-reader` and `git-reader` against real fixture folders and repositories; the Markdown pipeline against `hostile.md`; `highlighter` against one fixture per floor language; the bridge's export set against its generated header; `asset_bytes` against the containment check; the bridge under the address sanitizer | `cargo test --locked -p nozoki-core --test git_state`, `--test root_finding`, `--test markdown`, `--test highlight`, `--test watch`; `cargo test --locked -p nozoki-bridge --test exports`, `--test asset_bytes` | `crates/nozoki-core/tests/`, `crates/nozoki-bridge/tests/`, over `checks/fixtures/` |
 | 3 — Application | `SM-4`'s function list driven in-process through `SM-5`, bypassing the shell; the whole-model switch | `checks/read-only.sh`; `cargo test --locked -p nozoki-core --test switch` | `checks/`, `crates/nozoki-core/tests/` |
-| 4 — UI | A view is drawn from a projection and from nothing else, and the shell issues no call `SM-4` does not name: nothing drawn from `pending` but the entry's name, its glyph and CONTENT's *Loading* sentence, no marker before `observed`, the Git view empty on `plain`, the failure slot and its route, the text view `isEditable` false and registering no drop type, a *resolved* image drawn from `asset_bytes`' bytes and a placeholder from none, staged told from unstaged by text, both themes | `swift test --package-path nozoki-mac` — the tests on `main` XCTest, which the Swift packet keeps; a new test Swift Testing (the bullet below) | `nozoki-mac/Tests/` |
+| 4 — UI | A view is drawn from a projection and from nothing else — read with the one exception `docs/SDD.md` § 3's `surfaces` row names, that an intent the surface raised has not been answered yet, under that row's four bounds; the gap is no `ItemState`, and the reading adds no test (`docs/SDD.md` RN-82, v24; RN-37) — and the shell issues no call `SM-4` does not name: nothing drawn from `pending` but the entry's name, its glyph and CONTENT's *Loading* sentence, no marker before `observed`, the Git view empty on `plain`, the failure slot and its route, the text view `isEditable` false and registering no drop type, a *resolved* image drawn from `asset_bytes`' bytes and a placeholder from none, staged told from unstaged by text, both themes | `swift test --package-path nozoki-mac` — the tests on `main` XCTest, which the Swift packet keeps; a new test Swift Testing (the bullet below) | `nozoki-mac/Tests/` |
 | 5 — End-to-end | The built bundle: entitlements and sandbox, the shell's run under them, own-state after a session, churn and kill, latency figures; from `v1.0.0` the priced contract against its major's pin; the timed release walk | `checks/bundle.sh`, `checks/renderer.sh` with `checks/fixtures/idle-shell`, `checks/own-state.sh`, `checks/churn.sh`, `checks/latency.sh`, `checks/read-only.sh --kill`, `checks/contract.sh <tag>`; `docs/SRS.md` AC-10 as a manual timed walk | `checks/` |
 | 6 — Architecture | § 1.2's graph, § 1.3's I/O ownership, § 3's reach rules, the linked tree's environment and argument reads against their reviewed list (QC-30), the shell's forbidden set and link list (QC-34), and this section's layer-5 placement (no `CARGO_BIN_EXE_` reference under `crates/*/tests/`) | `checks/structure.sh` (Rust, grep rules over shipped sources — its scope is the bullet below); `checks/entry-points.sh` (the resolved dependency tree); `checks/view.sh` (Swift: the source scan over `nozoki-mac/Sources` and `otool -L` on the built executable) | `checks/` |
 | 7 — Specification | The SRS's acceptance criteria as scenarios through the real entry point | the SDD's per-slice command bars and the AC walk at release, until a QA seat writes the layer | `checks/` |
@@ -1020,30 +1027,56 @@ left with `nozoki-ui` at `nozoki@0aca57e` (RN-22; RN-25).
   script alike — and a test target may do what those rules forbid shipped code: build a fixture,
   read a config file, take an argument, install a capturing logger. **One rule reads exactly that
   path on purpose and is unchanged:** no `CARGO_BIN_EXE_` reference under `crates/*/tests/` (the
-  layer-5 bullet above). **What the scope does not do, named so none of it is read as coverage:**
-  a `#[cfg(test)]` module inside `src/` stays inside every rule; any later `benches/` or
-  `examples/` is not excluded, until one occurs; and two escapes are review catches at
-  `development-design` and not grep rules, because the tree holds no such site to shape one
-  against — shipped code that pulls a file from `tests/` in through a `#[path]` attribute
-  (RN-19), and Rust a build script generates into `OUT_DIR` that a shipped file pulls in with
-  `include!`, which ships and which no scan of sources reads (`grep -rn OUT_DIR crates/` prints
-  nothing, 2026-09-23; RN-24). **`checks/view.sh` has the same scope on the Swift
+  layer-5 bullet above). **A module is judged by the file that holds its body**, so the scope is
+  by file path: a declaring file under `src/` is read like any file there, and a body loaded
+  through `#[path]` from a file under `crates/*/tests/` is outside every rule, as that file is. A
+  `#[cfg(test)]` module whose body is written inside a file under `src/` stays inside every rule —
+  `checks/tests/test_structure.sh`'s `test_inline_test_module_is_scanned` holds that case, and it
+  fails closed. The ground is this bullet's own: a `#[cfg(test)]` item is compiled only "when
+  compiling the test harness" (https://doc.rust-lang.org/reference/conditional-compilation.html,
+  re-read 2026-10-03), so its body never enters the process an adopter runs, and it is out for the
+  reason `tests/` is out. The tree holds two such sites, `crates/nozoki-core/src/lib.rs:L18-L24`
+  and `crates/nozoki-bridge/src/lib.rs:L10-L16`, each `#[path = "../tests/common/mod.rs"]` on a
+  `#[cfg(test)]` `mod test_support`; both bodies import `std::fs` and `std::process`
+  (`crates/nozoki-core/tests/common/mod.rs:L8`, `:L11`; `crates/nozoki-bridge/tests/common/mod.rs:L8`,
+  `:L13`), so a reading by module would fail the tree as built — a QC-36 finding in both crates
+  and a QC-15 finding outside the two filesystem owners, the overreach RN-19 removed when it
+  scoped QC-61. **What the scope does not do, named so none of it is read as coverage:** any later
+  `benches/` or `examples/` is not excluded, until one occurs; and two escapes are review catches
+  at `development-design` and not grep rules, because the tree holds no *shipped* site to shape
+  one against — shipped code that pulls a file from `tests/` in through a `#[path]` attribute,
+  which is the attribute above on a module without the `#[cfg(test)]` gate, whose body would then
+  ship and no scan would read (RN-19). The file reading above and this escape rest on each other:
+  the reading is safe only while the module stays gated, and the script's own header names the
+  gap (`checks/structure.sh:L101-L102` at `nozoki@463acb9`) *(through v25 this sentence said the
+  tree held no such site, true of shipped code and silent on the two test-only ones; on the
+  owner's seat's answers at `docs/trail/architecture/cycle-23.md` §§ 3.3, 3.4 — RN-37)*. The
+  second escape is Rust source a build script generates into `OUT_DIR` and a shipped file pulls
+  in with `include!`, which ships and which no scan of sources reads (`grep -rn OUT_DIR crates/`
+  prints nothing, 2026-09-23; RN-24). **`checks/view.sh` has the same scope on the Swift
   side:** it scans `nozoki-mac/Sources`, the path C-R7 names, and `nozoki-mac/Tests/` is outside
   its scan — a test may build an attributed string or read a fixture file that a surface may not.
 - **The harness's own suites, `checks/tests/`, run as CI steps — stated once, here.** Each
   `checks/<name>.sh` script with a suite `checks/tests/test_<name>.sh` beside it is proved by that
   suite to read what its entry says it reads, and the suite runs as its own CI step on every
   build, the way `Bundle probe suite` runs `checks/tests/test_bundle.sh`
-  (`.github/workflows/ci.yml:L35-L36`) — a script whose suite runs nowhere is ADR-0012's rule
-  broken one level down: a gate that cannot go red has not run. A script that lands with a suite
-  lands the suite's CI step in the same change. Six suites are in the tree (`ls checks/tests`:
+  (`.github/workflows/ci.yml:L41-L42` at `nozoki@463acb9`) — a script whose suite runs nowhere
+  is ADR-0012's rule broken one level down: a gate that cannot go red has not run. A script that lands with a suite
+  lands the suite's CI step in the same change. Seven suites are in the tree (`ls checks/tests`:
   `test_bundle.sh`, `test_no_network.sh`, `test_own_state.sh`, `test_read_only.sh`,
-  `test_renderer.sh`, `test_view.sh`) and all six are on steps from `nozoki@ab39502`, each the
-  whole `run` of its own step (`.github/workflows/ci.yml:L35-L36` `test_bundle.sh`; `:L41-L42`
-  `test_view.sh`; `:L52-L53` `test_renderer.sh`; `:L61-L62` `test_read_only.sh`; `:L67-L68`
-  `test_no_network.sh`; `:L70-L71` `test_own_state.sh`); the test command (`ci.yml:L26`) runs
-  none of them. The count is dated: a seventh suite is a re-measurement of this sentence and not
-  a contradiction of it, and it lands its step in the same change by the rule above. *History,
+  `test_renderer.sh`, `test_structure.sh`, `test_view.sh`) and all seven are on steps at
+  `nozoki@463acb9`, each the whole `run` of its own step (`.github/workflows/ci.yml` at
+  `nozoki@463acb9`: `:L31-L32` `test_structure.sh`; `:L41-L42` `test_bundle.sh`; `:L47-L48`
+  `test_view.sh`; `:L58-L59` `test_renderer.sh`; `:L67-L68` `test_read_only.sh`; `:L73-L74`
+  `test_no_network.sh`; `:L76-L77` `test_own_state.sh`); the test command (`ci.yml:L26`) runs
+  none of them. The count and the lines are dated and pinned: an eighth suite, or a step inserted
+  above these, is a re-measurement of this sentence and not a contradiction of it, and a new suite
+  lands its step in the same change by the rule above. This sentence is the count's one home —
+  § 10 points here and does not repeat it *(through v25 it counted six, on steps from
+  `nozoki@ab39502`, at `:L35-L36`, `:L41-L42`, `:L52-L53`, `:L61-L62`, `:L67-L68` and `:L70-L71`
+  with no commit named — true at `nozoki@ab39502`, and moved six lines down when `Structure check`
+  and `Structure check suite` landed at `:L28-L32`; on the owner's seat's answer at
+  `docs/trail/architecture/cycle-23.md` § 3.2 — RN-37)*. *History,
   and the rule it kept:* at `nozoki@153f5a1` one suite was on a step, `test_bundle.sh`, and
   `test_renderer.sh` failed one case, `test_header_names_the_runner_reading`, the test of a task
   that change deferred; the ordering rule then in force — that suite's step lands with the change
@@ -1072,7 +1105,9 @@ left with `nozoki-ui` at `nozoki@0aca57e` (RN-22; RN-25).
   — RN-28)*. § 10 names each script's suite beside it.
   — *verified by:* `for s in checks/tests/*.sh; do grep -q "$s" .github/workflows/ci.yml || echo
   "$s"; done` over the tree, which prints the suites on no step — nothing at `nozoki@ab39502`,
-  re-run this fold — read at `development-design` on any change under `checks/` or to
+  re-run that fold, and nothing at `nozoki@b083f99`, re-run for v26, whose `ci.yml` and
+  `checks/` are `nozoki@463acb9`'s (`git diff --stat 463acb9 b083f99` over both prints nothing) —
+  read at `development-design` on any change under `checks/` or to
   `.github/workflows/ci.yml` — a review gate, argued: no script in the tree runs that comparison
   (`ls checks/*.sh` at `nozoki@ab39502`: `bundle.sh`, `no-network.sh`, `own-state.sh`,
   `read-only.sh`, `renderer.sh`, `view.sh`), and that absence is the gate's only ground. What is
@@ -1106,7 +1141,10 @@ left with `nozoki-ui` at `nozoki@0aca57e` (RN-22; RN-25).
   layer word each takes is the delivery tier's placement under this table's rows. *Toolchain —
   not yet measured:* from `nozoki@0aca57e` CI builds `nozoki-mac` in two steps —
   `.github/workflows/ci.yml:L26` runs `swift test --package-path nozoki-mac` in `Test gate`, and
-  `:L29` runs `nozoki-mac/assemble.sh` *(through v13 this clause read that CI did not build it,
+  `:L35` runs `nozoki-mac/assemble.sh`, both at `nozoki@463acb9` *(drafted at v26 — RN-37: through
+  v25 the build step was cited `:L29` with no commit named, true at `nozoki@0aca57e`, and it
+  moved six lines down when `Structure check` and `Structure check suite` landed at `:L28-L32`)*
+  *(through v13 this clause read that CI did not build it,
   true of `ci.yml` at `nozoki@99e2bac`; corrected on the owner's seat's answer at
   `docs/trail/architecture/cycle-11.md` § 3.4 — RN-25)* — but the toolchain version CI builds
   it with, which the packet has this document record where no `.swift-version` pin exists, and
@@ -1118,7 +1156,8 @@ left with `nozoki-ui` at `nozoki@0aca57e` (RN-22; RN-25).
   the toolchain, recording then the Swift version, the run id and the runner image's version
   together, because `macos-14` is a label whose default Xcode can move under the same name and a
   later reader must tell a re-measurement from a contradiction. `ci.yml` has no `swift --version`
-  step (`:L22-L29`); whether to add one is the delivery tier's *(through v14 this clause read that
+  step (`:L22-L35` at `nozoki@463acb9`, and `grep -n 'swift --version' .github/workflows/ci.yml`
+  prints nothing over the whole file — drafted at v26, RN-37); whether to add one is the delivery tier's *(through v14 this clause read that
   no CI run on `main` had built it, true at `origin/main` = `a4ab8e6`; drafted at v15 on the item a
   `companion-self-answer` run raised on this document — RN-26 — and confirmed in the owner's seat
   at `docs/trail/architecture/cycle-13.md` § 2.1 — RN-27)*. *Departed from, as one decision, until CI builds
@@ -1192,25 +1231,33 @@ is right and this row is stale.
 Where a row names a `checks/<name>.sh` script that has a suite under `checks/tests/`, the suite is
 named beside it as `(suite test_<name>.sh)`: the suite proves the script reads what the row says it
 reads, and runs as its own CI step on every build — § 9's `checks/tests/` bullet is the rule, and
-all six suites are on steps from `nozoki@ab39502` (added at v15 — RN-26; the count at v17, on the
-owner's seat's answer at `docs/trail/architecture/cycle-14.md` § 3.1 — RN-28).
+the one place the suites are counted (added at v15 — RN-26; the count at v17, on the owner's
+seat's answer at `docs/trail/architecture/cycle-14.md` § 3.1 — RN-28; through v25 this preamble
+repeated the count, and the copy went stale with § 9's — RN-37). The suite tag means the suite
+proves what its script holds; it does not reach a rule the script does not hold.
+
+*Gated at* reads by the header's rule, per rule: a row's `CI build` holds for the rules its command
+already holds, and `development-design` reading the entry is the gate for the rest. Which rules a
+script holds is its own header's to state — for `checks/structure.sh`, *THE SCAN TABLE* and *WHAT
+IS NOT HELD* (`checks/structure.sh:L35-L93` at `nozoki@463acb9`) — and no row here copies it
+*(on the owner's seat's answer at `docs/trail/architecture/cycle-23.md` § 3.1 — RN-37)*.
 
 | QC | Check | Command / layer | Runs over | Gated at |
 |---|---|---|---|---|
 | QC-1 | the shell holds no I/O of its own | `checks/view.sh` (suite `test_view.sh`); `checks/no-network.sh` (suite `test_no_network.sh`) | the tree | CI build |
-| QC-2 | no write under the folder; the walk's calls against the export set | `checks/read-only.sh <fixture>` (suite `test_read_only.sh`); `checks/structure.sh`; the walk's calls read against the build's export set, reviewed in the change that exports a command | the tree; the change | CI build; release; `development-design` |
+| QC-2 | no write under the folder; the walk's calls against the export set | `checks/read-only.sh <fixture>` (suite `test_read_only.sh`); `checks/structure.sh` (suite `test_structure.sh`); the walk's calls read against the build's export set, reviewed in the change that exports a command | the tree; the change | CI build; release; `development-design` |
 | QC-3 | no network transport — the tree equals the list; the list holds no transport | `checks/no-network.sh` (suite `test_no_network.sh`); the allowlist diff reviewed against the entry's domain, in the resolved features, at `development-design` | the tree; the change | CI build; `development-design` |
 | QC-4 | ItemState on every read | `cargo test --locked -p nozoki-core` (layer 1); `swift test --package-path nozoki-mac` (layer 4) | the change | `development-implementation` |
 | QC-5 | root finding | `cargo test --locked -p nozoki-core --test root_finding` | the change | `development-implementation` |
 | QC-6 | containment check | `cargo test --locked -p nozoki-core --test markdown`; `cargo test --locked -p nozoki-bridge --test asset_bytes` | the change | `development-implementation` |
-| QC-7 | no mutating Git call, no spawn | `checks/read-only.sh` (suite `test_read_only.sh`); `checks/structure.sh` | the tree | CI build |
+| QC-7 | no mutating Git call, no spawn | `checks/read-only.sh` (suite `test_read_only.sh`); `checks/structure.sh` (suite `test_structure.sh`) | the tree | CI build |
 | QC-8 | `nozoki-mac` imports and dependencies | `checks/view.sh` (suite `test_view.sh`); `checks/no-network.sh` (suite `test_no_network.sh`); `swift test --package-path nozoki-mac` | the tree | CI build |
-| QC-9 – QC-12, QC-14 | `nozoki-core` / `checks/` imports; no `unsafe` outside the bridge | `checks/structure.sh`; `checks/no-network.sh` (suite `test_no_network.sh`); `cargo tree -p nozoki-bridge`; `cargo build --workspace --locked` | the tree | CI build |
-| QC-13 | `nozoki-bridge` imports; the export set; the ABI under the sanitizer | `checks/structure.sh`; `cargo test --locked -p nozoki-bridge --test exports`; the bridge's tests under `-Zsanitizer=address` | the tree | CI build |
-| QC-15, QC-17 | I/O ownership; the two composition roots | `checks/structure.sh`; `checks/view.sh` (suite `test_view.sh`) | the tree | CI build |
+| QC-9 – QC-12, QC-14 | `nozoki-core` / `checks/` imports; no `unsafe` outside the bridge | `checks/structure.sh` (suite `test_structure.sh`); `checks/no-network.sh` (suite `test_no_network.sh`); `cargo tree -p nozoki-bridge`; `cargo build --workspace --locked` | the tree | CI build |
+| QC-13 | `nozoki-bridge` imports; the export set; the ABI under the sanitizer | `checks/structure.sh` (suite `test_structure.sh`); `cargo test --locked -p nozoki-bridge --test exports`; the bridge's tests under `-Zsanitizer=address` | the tree | CI build |
+| QC-15, QC-17 | I/O ownership; the two composition roots | `checks/structure.sh` (suite `test_structure.sh`); `checks/view.sh` (suite `test_view.sh`) | the tree | CI build |
 | QC-16 | writes only in the container | `checks/own-state.sh` (suite `test_own_state.sh`) | the tree | CI build; release |
 | QC-19 | folder replace-whole | `cargo test --locked -p nozoki-core --test switch`; `git diff --stat … -- nozoki-mac` | the change | `development-implementation` |
-| QC-20 | own-state isolation | `checks/structure.sh` | the tree | CI build |
+| QC-20 | own-state isolation | `checks/structure.sh` (suite `test_structure.sh`) | the tree | CI build |
 | QC-22 | the hostile fixture as a `MarkdownDocument` | `cargo test --locked -p nozoki-core --test markdown` | the change | `development-implementation` |
 | QC-23 | no web engine | `checks/view.sh` (suite `test_view.sh`); `checks/no-network.sh` (suite `test_no_network.sh`) | the tree | CI build |
 | QC-24 | the export set equals the header, inside `SM-4`'s list and `nozoki_free` | `cargo test --locked -p nozoki-bridge --test exports` | the tree | CI build |
@@ -1220,12 +1267,12 @@ owner's seat's answer at `docs/trail/architecture/cycle-14.md` § 3.1 — RN-28)
 | QC-27 | critical vulnerability | `cargo audit` (every advisory; `--ignore <RUSTSEC-id>` with its reason) | the tree | release |
 | QC-28 | no secret; no signing identity | `gitleaks git`; `gh secret list --repo kensaiapp/nozoki`; `codesign -dv Nozoki.app` | the tree; the release | CI build; release |
 | QC-29 | artifact = tag build | `shasum -a 256 -c SHA256SUMS` against a rebuild | the release | release |
-| QC-30, QC-58 | no other entry point; no configuration — the product's own units | `checks/structure.sh`; `checks/view.sh` (suite `test_view.sh`) | the tree | CI build |
+| QC-30, QC-58 | no other entry point; no configuration — the product's own units | `checks/structure.sh` (suite `test_structure.sh`); `checks/view.sh` (suite `test_view.sh`) | the tree | CI build |
 | QC-30, QC-58 | the linked tree's environment and argument reads, against the reviewed list | `checks/entry-points.sh` against `checks/entry-points.allow` | the tree | CI build |
 | QC-32 | empty egress set | AC-3 network monitor; `checks/no-network.sh` (suite `test_no_network.sh`) | the release; the tree | release; CI build |
 | QC-34 | the shell's reach | `checks/view.sh` (suite `test_view.sh`); `checks/no-network.sh` (suite `test_no_network.sh`) | the tree | CI build |
 | QC-35 | the product's reach | `checks/own-state.sh` (suite `test_own_state.sh`); `checks/read-only.sh` (suite `test_read_only.sh`) | the tree | CI build |
-| QC-36 | no spawned process | `checks/structure.sh`; `checks/view.sh` (suite `test_view.sh`) | the tree | CI build |
+| QC-36 | no spawned process | `checks/structure.sh` (suite `test_structure.sh`); `checks/view.sh` (suite `test_view.sh`) | the tree | CI build |
 | QC-37 | `asset_bytes` and the decoder | `cargo test --locked -p nozoki-bridge --test asset_bytes`; `swift test --package-path nozoki-mac` | the change | `development-implementation` |
 | QC-38 | own-state fields | `checks/own-state.sh` (suite `test_own_state.sh`) | the tree | CI build |
 | QC-39, QC-52 | log shape and location | `cargo test --locked -p nozoki-bridge` (layer 1); `checks/own-state.sh` (suite `test_own_state.sh`) | the change; the tree | `development-implementation`; CI build |
@@ -1242,7 +1289,7 @@ owner's seat's answer at `docs/trail/architecture/cycle-14.md` § 3.1 — RN-28)
 | QC-56 | macOS floor in the bundle | `/usr/libexec/PlistBuddy -c 'Print :LSMinimumSystemVersion' …` | the release | release |
 | QC-59 | priced contract against its major's pin | `checks/contract.sh <tag>` | the release | release, from `v1.0.0` |
 | QC-60 | own-state read across versions | `checks/own-state.sh --from <previous-tag>` (suite `test_own_state.sh`) | the release | release |
-| QC-61 | logging facade and its implementation | `checks/no-network.sh` (suite `test_no_network.sh`); `checks/structure.sh` | the tree | CI build |
+| QC-61 | logging facade and its implementation | `checks/no-network.sh` (suite `test_no_network.sh`); `checks/structure.sh` (suite `test_structure.sh`) | the tree | CI build |
 
 Entries with no row are review gates, each arguing its downgrade in its own tail: QC-13 (the
 delegation half), QC-18, QC-21, QC-31, QC-33, QC-43, QC-45, QC-50, QC-54, QC-57, and QC-59's behaviour member.
@@ -3280,3 +3327,75 @@ delegation half), QC-18, QC-21, QC-31, QC-33, QC-43, QC-45, QC-50, QC-54, QC-57,
   restatused, and no `QC` is added, renumbered or reused *(re: header `Status:`, `Version:`;
   QC-14; source: `docs/trail/architecture/cycle-22.md` § 3.1;
   `docs/trail/architecture/self_answer-26.md` § 3.1; `crates/nozoki-core/tests/walk.rs:L6-L7`)*
+- **RN-37:** *(v26 — the cycle-23 fold, §§ 3.1 – 3.4 answered; one draft for the owner's
+  confirm)* **The fold.** The companion at intake was opened by the PM, not by a
+  `product-architecture` run, with four items raised from downstream after `checks/structure.sh`
+  and its suite landed (`nozoki@463acb9`, opened at `nozoki@c308b2f`). All four were answered in the
+  owner's seat by a `companion-self-answer` run (`docs/trail/architecture/self_answer-27.md`), which
+  also raised one unanswered choice, § 2.1; the companion was committed at `nozoki@b083f99` and
+  copied whole before this fold as `docs/trail/architecture/cycle-23.md`. § 2.1 stays open, so the
+  companion is rewritten with it alone and `Status:` is Draft. Every fact below was re-measured at
+  `nozoki@b083f99`, not taken from the answers; `git diff --stat 463acb9 b083f99 --
+  .github/workflows/ci.yml checks crates` prints nothing, so the pins to `nozoki@463acb9` hold.
+  **§ 3.1 → the header and § 10.** Executability is tied to each rule, not to its script: a rule a
+  command names becomes executable in the change that adds it to the command. Which rules
+  `checks/structure.sh` holds is cited from its header (*THE SCAN TABLE* at `:L35`, *WHAT IS NOT
+  HELD* at `:L86-L93`) and not copied, the shape QC-62 already takes for `checks/renderer.sh`'s
+  frame list, because a copied list goes stale at the next rule added and that change touches no
+  NFDR. The answer's addition is folded into § 10's preamble as one sentence: a row's `CI build`
+  holds only for the rules its command already holds, and `development-design` is the gate for the
+  rest. No row is edited one by one for this. QC-20's row is the plainest case, since the script
+  is its only command and the script does not hold QC-20.
+  **§ 3.2 → § 9's `checks/tests/` bullet and § 10.** `ls checks/tests` lists seven `test_*.sh`,
+  and the bullet's own loop over `ci.yml` prints nothing, so all seven are on steps. The count is
+  now seven, and every step is cited pinned to `nozoki@463acb9` at the lines the answer gives,
+  re-read with `cat -n .github/workflows/ci.yml`. The bullet's opening citation of
+  `Bundle probe suite` moves from `:L35-L36`, which at HEAD is `nozoki-mac/assemble.sh`, to
+  `:L41-L42` under the same pin. § 10's preamble points at § 9 for the count and no longer repeats
+  it: the count went stale in two places because it was written in two. `(suite
+  test_structure.sh)` is added to the nine § 10 rows that name `checks/structure.sh`, all nine
+  the item lists, because § 10's rule is per script. The preamble says the tag does not reach a
+  rule the script does not hold, which keeps § 3.1's line.
+  **§§ 3.3 and 3.4 → § 9's `checks/structure.sh` bullet, decided together.** A module declared in
+  `src/` is judged by the file that holds its body, so the scope stays by file path. A body loaded
+  through `#[path]` from `crates/*/tests/` is outside every rule, and an inline `#[cfg(test)]`
+  module under `src/` stays inside every rule, which `test_inline_test_module_is_scanned` holds
+  (`checks/tests/test_structure.sh:L761`). The two test-only sites are named
+  (`crates/nozoki-core/src/lib.rs:L18-L24`, `crates/nozoki-bridge/src/lib.rs:L10-L16`, both
+  re-read), and so are their bodies' `std::fs` and `std::process` imports, which a reading by
+  module would turn into QC-36 and QC-15 findings on the tree as built. The escape's reason now
+  says the tree holds no *shipped* site. The escape stays a review catch at `development-design`,
+  and no grep rule is owed until a shipped site appears, by RN-19's own terms. The bullet states
+  that the two answers rest on each other, and cites the script's header for the gap
+  (`checks/structure.sh:L101-L102`).
+  **§ 2.1 → § 9's `nozoki-mac` bullet, drafted.** No owner answer stands behind this yet. Two
+  pointers in the *Toolchain* clause moved with the same six-line shift. `:L29` named
+  `nozoki-mac/assemble.sh` and at HEAD is `run: checks/structure.sh`. The step is now cited `:L35`
+  at `nozoki@463acb9`. The *no `swift --version` step* range `:L22-L29` is now `:L22-L35` under the
+  same pin, with the whole-file grep beside it, which prints nothing. The draft is put to the owner
+  at `docs/architecture_open_issues.md` § 2.1. If overridden, the clause keeps a pointer to the
+  wrong step; nothing is gated on it.
+  **What moved beneath this document.** `git log 3bbc6ce..HEAD` over the seven inputs lists SDD
+  v24 (`nozoki@542dc1c`), UXD v12 (`nozoki@5b3040e`) and three DESIGN folds (`nozoki@51148f9`,
+  `nozoki@d234b57`, `nozoki@cec2b7d`). UXD v12 corrects its layout-reference inventory and "changes
+  no experience requirement" (`docs/SDD.md:L2673`, § 12, citing `docs/UXD.md` RN-32). The DESIGN folds
+  are a gutter padding, a pending path line and the path text's placement. None is named by any
+  entry here: `grep -n -i 'gutter\|path line\|path text\|layout-reference' docs/nfdr.md` matched
+  nothing above the Review Notes, so nothing moves for them. SDD v24 names one exception on § 3's
+  `surfaces` row: a surface may draw that an intent it raised has not been answered yet. It also
+  says `stopped` is established in two places, the model and `mac-shell` at SM-4's return
+  (`docs/SDD.md` § 3, § 4 C-I1, C-E1, RN-82, RN-83). § 9's layer-4 row said "a view is drawn from a
+  projection and from nothing else", the phrase SDD § 6 `open-a-folder` now reads with that
+  exception, so the row points at the exception and says, as the SDD does, that the reading adds
+  no test. QC-4 and QC-51 do not move. The gap carries no marker, no count and no "nothing
+  changed", so QC-4's clause holds. QC-4 speaks of reads the model holds. QC-51's layer-4 check
+  renders a `stopped` projection whichever side established it. QC-13 already has every bridge
+  function catch a panic and return a failure value. What the SDD records about the tree's
+  handling of a no-verdict answer is read against C-E3, the CDO's, and no entry here is written on
+  it. Every input's `Status:` line was re-read and is Settled, so `Inputs read:` stands. No record
+  is written or restatused, and no `QC` is added, renumbered or reused *(re: header `Status:`,
+  `Version:`, the executability sentence; § 9 the layer-4 row, the `checks/structure.sh`,
+  `checks/tests/` and `nozoki-mac` bullets; § 10 preamble and nine rows; source:
+  `docs/trail/architecture/cycle-23.md` §§ 2.1, 3.1 – 3.4;
+  `docs/trail/architecture/self_answer-27.md` §§ 3.1 – 3.4; `docs/SDD.md` v24 § 3 `surfaces`, § 4
+  C-I1, RN-82; `checks/structure.sh:L35-L102`; `.github/workflows/ci.yml` at `nozoki@463acb9`)*
