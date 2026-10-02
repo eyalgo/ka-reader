@@ -58,6 +58,13 @@ test_every_apple_floor_form_is_rejected
 test_core_foundation_extern_is_rejected
 test_apple_scope_and_near_names
 test_apple_member_after_comment_punctuation_is_rejected
+test_case_3_core_process_names_both_rules
+test_case_6_bridge_process_names_only_qc36
+test_process_grouped_imports_use_the_member_line
+test_raw_process_text_is_scanned
+test_nested_source_paths_are_scanned
+test_every_file_reports_in_one_run
+test_process_spellings_and_near_names
 "
 
 # --- helpers ---
@@ -517,6 +524,139 @@ test_apple_member_after_comment_punctuation_is_rejected() {
   run_structure "$R"
   expect_status 1 || return 1
   expect_finding "crates/$CORE_FILE" "$member_line" QC-9
+}
+
+# --- the cases of Task 3: the process-module boundary ---
+
+# How many stderr lines of a run carry the identifier $1 anywhere.
+count_identifier() {
+  printf '%s\n' "$STDERR" | grep -c ": $1: "
+}
+
+test_case_3_core_process_names_both_rules() {
+  new_root case3 || return 1
+  plant "$R" "$CORE_FILE" 'use std::process::Command;'
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_finding "crates/$CORE_FILE" "$PLANT_LINE" QC-9 || return 1
+  expect_finding "crates/$CORE_FILE" "$PLANT_LINE" QC-36 || return 1
+  [ "$(printf '%s\n' "$STDERR" | grep -c ': QC-')" -eq 2 ] \
+    || fail "expected exactly the QC-9 and QC-36 lines. stderr: $STDERR" || return 1
+}
+
+test_case_6_bridge_process_names_only_qc36() {
+  new_root case6 || return 1
+  plant "$R" "$BRIDGE_FILE" 'fn run() { std::process::Command::new("git").spawn(); }'
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_finding "crates/$BRIDGE_FILE" "$PLANT_LINE" QC-36 || return 1
+  [ "$(count_identifier QC-9)" -eq 0 ] || fail "the bridge's process text is no QC-9 breach. stderr: $STDERR" || return 1
+}
+
+# A member of a grouped import is reported at the member's own line, however the tree is laid out.
+test_process_grouped_imports_use_the_member_line() {
+  new_root grouped-process || return 1
+  member_lines=""
+  plant "$R" "$BRIDGE_FILE" 'use std::{io, process};'
+  member_lines="$member_lines $PLANT_LINE"
+  plant "$R" "$BRIDGE_FILE" 'use std::{
+    io,
+    process,
+};'
+  member_lines="$member_lines $((PLANT_LINE + 2))"
+  plant "$R" "$BRIDGE_FILE" 'use std::{
+    io,
+    process::{
+        self,
+        Command,
+    },
+};'
+  member_lines="$member_lines $((PLANT_LINE + 2))"
+  plant "$R" "$BRIDGE_FILE" 'use ::std::{io, process};'
+  member_lines="$member_lines $PLANT_LINE"
+  plant "$R" "$BRIDGE_FILE" 'use ::std::{
+    fmt,
+    process,
+};'
+  member_lines="$member_lines $((PLANT_LINE + 2))"
+  run_structure "$R"
+  expect_status 1 || return 1
+  for member_line in $member_lines; do
+    expect_finding "crates/$BRIDGE_FILE" "$member_line" QC-36 || return 1
+  done
+  # Only the member lines are findings: the lines around them name nothing.
+  [ "$(count_identifier QC-36)" -eq 5 ] || fail "expected one finding per import, 5 in all. stderr: $STDERR" || return 1
+}
+
+test_raw_process_text_is_scanned() {
+  new_root raw-process || return 1
+  plant "$R" "nozoki-core/src/lib.rs" '/// never calls std::process'
+  doc_line="$PLANT_LINE"
+  plant "$R" "nozoki-core/src/lib.rs" 'const NOTE: &str = "std::process";'
+  string_line="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  for text_line in "$doc_line" "$string_line"; do
+    expect_finding "crates/nozoki-core/src/lib.rs" "$text_line" QC-9 || return 1
+    expect_finding "crates/nozoki-core/src/lib.rs" "$text_line" QC-36 || return 1
+  done
+}
+
+# src/tests/ and src/build.rs are in scope, so the rule reaches them.
+test_nested_source_paths_are_scanned() {
+  new_root nested-process || return 1
+  for nested_file in nozoki-core/src/tests/x.rs nozoki-core/src/build.rs; do
+    plant "$R" "$nested_file" 'use std::process::Command;'
+  done
+  run_structure "$R"
+  expect_status 1 || return 1
+  for nested_file in nozoki-core/src/tests/x.rs nozoki-core/src/build.rs; do
+    expect_finding "crates/$nested_file" 1 QC-36 || return 1
+    expect_finding "crates/$nested_file" 1 QC-9 || return 1
+  done
+}
+
+test_every_file_reports_in_one_run() {
+  new_root every-file || return 1
+  plant "$R" "$CORE_FILE" 'fn f() { unsafe {} }'
+  unsafe_line="$PLANT_LINE"
+  plant "$R" "$BRIDGE_FILE" 'use std::process::Command;'
+  process_line="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_finding "crates/$CORE_FILE" "$unsafe_line" QC-9 || return 1
+  expect_finding "crates/$BRIDGE_FILE" "$process_line" QC-36 || return 1
+}
+
+# Whitespace and newlines around the separators change no meaning; comment punctuation inside a
+# grouped import hides nothing; a near name names no module.
+test_process_spellings_and_near_names() {
+  new_root process-spellings || return 1
+  spelled_lines=""
+  plant "$R" "$BRIDGE_FILE" 'fn a() { std :: process :: exit(0); }'
+  spelled_lines="$spelled_lines $PLANT_LINE"
+  plant "$R" "$BRIDGE_FILE" 'fn b() { std
+    ::
+    process::exit(0); }'
+  spelled_lines="$spelled_lines $((PLANT_LINE + 2))"
+  plant "$R" "$BRIDGE_FILE" 'use std::{
+    io, // a stray } and ; end nothing
+    /* nor does this } ; one */ process,
+};'
+  spelled_lines="$spelled_lines $((PLANT_LINE + 2))"
+  run_structure "$R"
+  expect_status 1 || return 1
+  for spelled_line in $spelled_lines; do
+    expect_finding "crates/$BRIDGE_FILE" "$spelled_line" QC-36 || return 1
+  done
+  new_root process-near || return 1
+  plant "$R" "$BRIDGE_FILE" 'use std::process_info;'
+  plant "$R" "$BRIDGE_FILE" 'fn c() { mystd::process::exit(0); crate::process::run(); let process = 1; let _ = process; }'
+  plant "$R" "$BRIDGE_FILE" 'use some::{first, process};'
+  plant "$R" "$BRIDGE_FILE" 'fn std_process() {}'
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
 }
 
 # --- runner ---
