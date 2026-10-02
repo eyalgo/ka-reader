@@ -594,6 +594,12 @@ final class ReadingPanelTests: XCTestCase {
         XCTAssertEqual(CodeSpacing.gutterBase, 24)
     }
 
+    /// The gutter column's right-hand padding is `{spacing.sm}` (`docs/DESIGN.md` § Components
+    /// *Code*): 8 points, lying inside the column's width (CP-368).
+    func testGutterPaddingIsEightPoints() {
+        XCTAssertEqual(CodeSpacing.gutterPadding, 8)
+    }
+
     // MARK: - The line-number gutter (CP-336 – CP-338, CP-341)
 
     /// `text` in the code font on the code pitch: every row's height fixed at `CodeType.linePitch`.
