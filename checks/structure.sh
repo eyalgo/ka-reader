@@ -47,6 +47,12 @@
 #                         security_framework_sys, system_configuration, system_configuration_sys,
 #                         fsevent, fsevent_sys, io_kit_sys, metal. A name in a comment or a string is
 #                         read as the path it spells. Source: QC-9's imports clause.
+#     QC-36  process      In every crate: the path `std::process` — whitespace or newlines around `::`
+#     QC-9   (in core)    change nothing, and the segment after it is the whole word, so `process_info`
+#                         is not `process` — and a segment or member `process` in a `use` tree rooted
+#                         at `std` or `::std`, the tree read across lines and nested, the finding at
+#                         the member's own line. In nozoki-core the same occurrence is also a QC-9
+#                         finding, on the same line. Source: QC-36's Rust half, QC-9's process clause.
 #     QC-9   unsafe       The token `unsafe`, in every use (block, fn, impl, extern, #[unsafe(…)]), in
 #                         every crate except nozoki-bridge. Source: QC-9's "unsafe appearing in no
 #                         crate but nozoki-bridge".
@@ -122,6 +128,11 @@ function add_apple(ln, form) {
   if (is_core) note(ln, "QC-9", "Apple framework or binding `" form "` in nozoki-core")
 }
 
+function add_process(ln) {
+  note(ln, "QC-36", "std::process named — no shipped crate spawns a process")
+  if (is_core) note(ln, "QC-9", "std::process named in nozoki-core")
+}
+
 function is_apple(w) {
   if (w ~ /^objc2_/) return 1
   return index(APPLE, " " w " ") > 0
@@ -145,6 +156,22 @@ function is_root(t, k,    p, pp) {
 # the segment, $4 whether it starts a path or a member of the tree, $5 its line.
 function use_segment(parent, first, w, atstart, ln) {
   if (atstart && is_apple(w)) add_apple(ln, w)
+  if (first == "std" && w == "process" && parent != "") add_process(ln)
+}
+
+# What a segment after the first of a path means, wherever the path is written: $1 is the path's first
+# segment, $2 the segment, $3 its line.
+function chain_segment(first, seg, ln) {
+  if (first == "std" && seg == "process") add_process(ln)
+}
+
+function scan_chain(t, l, k,    first, j) {
+  first = t[k]
+  j = k + 1
+  while (t[j] == "::" && is_word_token(t[j + 1])) {
+    chain_segment(first, t[j + 1], l[j + 1])
+    j += 2
+  }
 }
 
 # Each `use` item runs from `use` to the `;` at brace depth zero, read across lines. The tree is walked
@@ -179,7 +206,10 @@ function scan_stream(t, l, n,    k) {
     if (t[k] == "unsafe") add_unsafe(l[k])
     if (t[k] == "kind" && t[k + 1] == "=" && t[k + 2] == "\"" && t[k + 3] == "framework" && t[k + 4] == "\"") add_apple(l[k], "kind = \"framework\"")
     if (t[k] == "extern" && t[k + 1] == "crate" && is_apple(t[k + 2])) add_apple(l[k + 2], t[k + 2])
-    if (is_word_token(t[k]) && t[k + 1] == "::" && is_root(t, k) && is_apple(t[k])) add_apple(l[k], t[k])
+    if (is_word_token(t[k]) && t[k + 1] == "::" && is_root(t, k)) {
+      if (is_apple(t[k])) add_apple(l[k], t[k])
+      scan_chain(t, l, k)
+    }
   }
 }
 
