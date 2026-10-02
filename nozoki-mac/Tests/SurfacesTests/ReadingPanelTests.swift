@@ -594,6 +594,12 @@ final class ReadingPanelTests: XCTestCase {
         XCTAssertEqual(CodeSpacing.gutterBase, 24)
     }
 
+    /// The gutter column's right-hand padding is `{spacing.sm}` (`docs/DESIGN.md` § Components
+    /// *Code*): 8 points, lying inside the column's width (CP-368).
+    func testGutterPaddingIsEightPoints() {
+        XCTAssertEqual(CodeSpacing.gutterPadding, 8)
+    }
+
     // MARK: - The line-number gutter (CP-336 – CP-338, CP-341)
 
     /// `text` in the code font on the code pitch: every row's height fixed at `CodeType.linePitch`.
@@ -753,13 +759,14 @@ final class ReadingPanelTests: XCTestCase {
         XCTAssertEqual(gutter.width, CodeSpacing.inset + gutter.columnWidth, accuracy: 0.0001)
     }
 
-    func testEveryNumberEndsAtTheColumnsRightEdge() throws {
+    func testEveryNumberEndsEightPointsInsideTheColumnsRightEdge() throws {
         let (gutter, _) = makeGutter(lines(10))
 
         let nine = try XCTUnwrap(gutter.labels.first { $0.text == "9" })
         let ten = try XCTUnwrap(gutter.labels.first { $0.text == "10" })
         XCTAssertEqual(nine.point.x, ten.point.x, accuracy: 0.0001)
-        XCTAssertEqual(ten.point.x, gutter.width, accuracy: 0.0001)
+        XCTAssertEqual(
+            ten.point.x, gutter.width - CodeSpacing.gutterPadding, accuracy: 0.0001)
     }
 
     func testEachNumberSitsOnItsRowsBaseline() throws {
@@ -1157,6 +1164,385 @@ final class ReadingPanelTests: XCTestCase {
             XCTAssertFalse(view is NSControl, "\(view)")
         }
         XCTAssertFalse(codeView.textView.isEditable)
+    }
+
+    // MARK: - The gutter's right-hand padding (CP-368 – CP-376)
+
+    /// `{spacing.sm}`, written out here so that these tests assert 8 points and not the token's own
+    /// value; `testGutterPaddingIsEightPoints` pins the token to it.
+    private let padding: CGFloat = 8
+
+    /// A file of `count` lines as the panel is shown one: plain text, or a Python file whose every
+    /// line carries a keyword span and a string span.
+    private func fileOfLines(
+        highlighted: Bool, lines count: Int
+    ) -> (path: String, verdict: FileVerdict) {
+        guard highlighted else { return ("notes.txt", .text(lines(count), .plain)) }
+        // `def f = "s"` and its break are 12 bytes: the keyword is bytes 0..<3, the string 8..<11.
+        let content = String(repeating: "def f = \"s\"\n", count: count)
+        let spans = (0..<count).flatMap { index in
+            [
+                CodeSpan(start: index * 12, end: index * 12 + 3, tokenClass: .keyword),
+                CodeSpan(start: index * 12 + 8, end: index * 12 + 11, tokenClass: .string),
+            ]
+        }
+        return ("a.py", floorVerdict(content, .python, spans))
+    }
+
+    /// Ten lines, the first of them 200 characters of a block glyph that inks densely, so that text
+    /// drawn over a number or into the band would show as ink there. The highlighted file's first
+    /// line carries a keyword span, a string span and a number span, each of whole 3-byte glyphs.
+    private func fileWithAWideFirstLine(
+        highlighted: Bool
+    ) -> (path: String, verdict: FileVerdict) {
+        let content = String(repeating: "█", count: 200) + "\n" + lines(9)
+        guard highlighted else { return ("notes.txt", .text(content, .plain)) }
+        let spans = [
+            CodeSpan(start: 0, end: 3, tokenClass: .keyword),
+            CodeSpan(start: 3, end: 9, tokenClass: .string),
+            CodeSpan(start: 597, end: 600, tokenClass: .number),
+        ]
+        return ("a.py", floorVerdict(content, .python, spans))
+    }
+
+    private func kindName(highlighted: Bool) -> String { highlighted ? "highlighted" : "plain" }
+
+    private func codeView(of panel: ReadingPanelView) throws -> CodeView {
+        try XCTUnwrap(gutter(of: panel).superview as? CodeView)
+    }
+
+    /// Where the gutter's edge, its numbers' right ends and each shown line's first character stand,
+    /// in the code view's coordinates.
+    private struct GutterGeometry {
+        let columnWidth: CGFloat
+        let width: CGFloat
+        let frame: NSRect
+        let numberEnds: [NSPoint]
+        let lineStarts: [CGFloat]
+    }
+
+    private func geometry(of codeView: CodeView) throws -> GutterGeometry {
+        codeView.layoutSubtreeIfNeeded()
+        let gutter = codeView.gutter
+        let textView = codeView.textView
+        let layoutManager = try XCTUnwrap(textView.layoutManager)
+        let container = try XCTUnwrap(textView.textContainer)
+        let numberEnds = gutter.labels.map { codeView.convert($0.point, from: gutter) }
+        let text = textView.string as NSString
+        var lineStarts: [CGFloat] = []
+        var index = 0
+        while index < text.length, lineStarts.count < numberEnds.count {
+            let glyph = layoutManager.glyphIndexForCharacter(at: index)
+            let firstCharacter = layoutManager.boundingRect(
+                forGlyphRange: NSRange(location: glyph, length: 1), in: container)
+            lineStarts.append(
+                codeView.convert(
+                    NSPoint(x: firstCharacter.minX + textView.textContainerOrigin.x, y: 0),
+                    from: textView
+                ).x)
+            index = NSMaxRange(text.lineRange(for: NSRange(location: index, length: 0)))
+        }
+        return GutterGeometry(
+            columnWidth: gutter.columnWidth, width: gutter.width, frame: gutter.frame,
+            numberEnds: numberEnds, lineStarts: lineStarts)
+    }
+
+    /// Every number ends 8 points inside the gutter's right edge, and every line starts at that edge,
+    /// 8 points after its number (CP-368, CP-372). The frame's edge is the layout's, snapped to the
+    /// pixel grid, so it is read to half a point; the gutter's own width is read exactly.
+    private func assertPaddedAndSeparated(
+        _ geometry: GutterGeometry, _ context: String,
+        file: StaticString = #filePath, line: UInt = #line
+    ) {
+        XCTAssertFalse(geometry.numberEnds.isEmpty, context, file: file, line: line)
+        XCTAssertEqual(
+            geometry.lineStarts.count, geometry.numberEnds.count, context, file: file, line: line)
+        for (end, start) in zip(geometry.numberEnds, geometry.lineStarts) {
+            XCTAssertEqual(
+                end.x, geometry.width - padding, accuracy: 0.01, "number end, \(context)",
+                file: file, line: line)
+            XCTAssertEqual(
+                end.x, geometry.frame.maxX - padding, accuracy: 0.5, "number to edge, \(context)",
+                file: file, line: line)
+            XCTAssertEqual(
+                start, geometry.frame.maxX, accuracy: 0.5, "line start, \(context)",
+                file: file, line: line)
+            XCTAssertEqual(
+                start, end.x + padding, accuracy: 0.5, "number to line, \(context)",
+                file: file, line: line)
+        }
+    }
+
+    private func assertSameGeometry(
+        _ actual: GutterGeometry, _ expected: GutterGeometry, _ context: String,
+        file: StaticString = #filePath, line: UInt = #line
+    ) {
+        XCTAssertEqual(actual.frame, expected.frame, context, file: file, line: line)
+        XCTAssertEqual(
+            actual.columnWidth, expected.columnWidth, accuracy: 0.0001, context,
+            file: file, line: line)
+        XCTAssertEqual(actual.numberEnds, expected.numberEnds, context, file: file, line: line)
+        XCTAssertEqual(actual.lineStarts, expected.lineStarts, context, file: file, line: line)
+    }
+
+    /// A render of a view, read for ink as the drawn-number test reads one: a pixel whose red
+    /// component differs from the ground's by more than 0.15, the ground being the top-left pixel.
+    private struct InkRender {
+        let rep: NSBitmapImageRep
+        let scale: CGFloat
+        let ground: NSColor
+
+        func isInk(column: Int, row: Int) -> Bool {
+            guard let pixel = rep.colorAt(x: column, y: row)?.usingColorSpace(.sRGB) else {
+                return false
+            }
+            return abs(pixel.redComponent - ground.redComponent) > 0.15
+        }
+
+        /// The first pixel column that starts at or after `x` points.
+        func column(atOrAfter x: CGFloat) -> Int { Int((x * scale).rounded(.up)) }
+
+        /// The pixel columns wholly left of `x` points. The bitmap's last column is rounded up from
+        /// a fractional width and is never drawn, so a range that reaches the view's right edge ends
+        /// here.
+        func columns(endingAt x: CGFloat) -> Int { Int((x * scale).rounded(.down)) }
+
+        func hasInk(columns: Range<Int>) -> Bool {
+            for row in 0..<rep.pixelsHigh {
+                for column in columns where isInk(column: column, row: row) { return true }
+            }
+            return false
+        }
+
+        func inkedPixels(columns: Range<Int>) -> Set<[Int]> {
+            var inked: Set<[Int]> = []
+            for row in 0..<rep.pixelsHigh {
+                for column in columns where isInk(column: column, row: row) {
+                    inked.insert([column, row])
+                }
+            }
+            return inked
+        }
+    }
+
+    private func render(_ view: NSView) throws -> InkRender {
+        let rep = try XCTUnwrap(view.bitmapImageRepForCachingDisplay(in: view.bounds))
+        view.cacheDisplay(in: view.bounds, to: rep)
+        let ground = try XCTUnwrap(rep.colorAt(x: 0, y: 0)?.usingColorSpace(.sRGB))
+        return InkRender(
+            rep: rep, scale: CGFloat(rep.pixelsHigh) / view.bounds.height, ground: ground)
+    }
+
+    /// The drawn pixel columns of the band: from the first column at or after the numbers' right end
+    /// to the last drawn column of a gutter `gutterWidth` points wide.
+    private func band(of render: InkRender, gutterWidth: CGFloat) -> Range<Int> {
+        render.column(atOrAfter: gutterWidth - padding)..<render.columns(endingAt: gutterWidth)
+    }
+
+    /// The column of 100 lines holds no digit in the 8 points that end it, under each appearance
+    /// (CP-369).
+    func testGutterPaddingContainsOnlyGroundUnderBothAppearances() throws {
+        for appearance in [aqua, darkAqua] {
+            let (gutter, _) = makeGutter(lines(100))
+            gutter.appearance = appearance
+            gutter.frame = NSRect(x: 0, y: 0, width: gutter.width, height: 2200)
+            let context = "100 lines under \(appearance.name)"
+            XCTAssertTrue(gutter.labels.contains { $0.text == "100" }, "100 is shown, \(context)")
+
+            let rendered = try render(gutter)
+
+            let band = band(of: rendered, gutterWidth: gutter.width)
+            XCTAssertFalse(band.isEmpty, "the band has drawn columns, \(context)")
+            XCTAssertTrue(
+                rendered.inkedPixels(columns: band).isEmpty, "the band is ground, \(context)")
+            XCTAssertTrue(
+                rendered.hasInk(columns: 0..<band.lowerBound),
+                "the digits are drawn left of the band, \(context)")
+        }
+    }
+
+    func testEveryNumberKeepsItsPaddingAcrossOneTwoAndThreeDigitColumns() {
+        for (count, digits) in [(9, 1), (10, 2), (100, 3)] {
+            for appearance in [aqua, darkAqua] {
+                let (gutter, _) = makeGutter(lines(count))
+                gutter.appearance = appearance
+                let context = "\(count) lines under \(appearance.name)"
+
+                XCTAssertEqual(
+                    gutter.columnWidth, 24 + digitsWidth(digits), accuracy: 0.01, context)
+                XCTAssertEqual(gutter.width, 16 + gutter.columnWidth, accuracy: 0.0001, context)
+                let labels = gutter.labels
+                XCTAssertEqual(labels.count, count, context)
+                for label in labels {
+                    XCTAssertEqual(
+                        label.point.x, gutter.width - padding, accuracy: 0.0001,
+                        "\(label.text), \(context)")
+                }
+                if count == 100 {
+                    XCTAssertTrue(
+                        ["9", "99", "100"].allSatisfy { shown in
+                            labels.contains { $0.text == shown }
+                        }, "9, 99 and 100 are shown together, \(context)")
+                }
+            }
+        }
+    }
+
+    /// A 10-line file replaced by a 9-line one, and that one by a 10-line one, through the panel's
+    /// code view (CP-371).
+    func testReplacingTheFileChangesOnlyTheDigitAllowance() throws {
+        let allowance = digitsWidth(2) - digitsWidth(1)
+        for highlighted in [false, true] {
+            for appearance in [aqua, darkAqua] {
+                let kind = kindName(highlighted: highlighted)
+                let context = "\(kind) under \(appearance.name)"
+                let panel = makePanel()
+                panel.appearance = appearance
+                var widths: [CGFloat] = []
+                for count in [10, 9, 10] {
+                    let file = fileOfLines(highlighted: highlighted, lines: count)
+                    panel.show(path: file.path, verdict: file.verdict)
+                    let gutter = try gutter(of: panel)
+                    widths.append(gutter.width)
+
+                    XCTAssertEqual(gutter.lineCount, count, "\(count) lines, \(context)")
+                    XCTAssertEqual(
+                        gutter.frame.width, gutter.width, accuracy: 0.5,
+                        "\(count) lines, frame, \(context)")
+                    XCTAssertEqual(gutter.labels.count, count, "\(count) lines, \(context)")
+                    for label in gutter.labels {
+                        XCTAssertEqual(
+                            label.point.x, gutter.width - padding, accuracy: 0.0001,
+                            "\(label.text) of \(count) lines, \(context)")
+                    }
+                }
+                XCTAssertEqual(widths[0] - widths[1], allowance, accuracy: 0.01, context)
+                XCTAssertEqual(widths[2] - widths[1], allowance, accuracy: 0.01, context)
+            }
+        }
+    }
+
+    func testEachLinesCodeStartsEightPointsAfterItsNumber() throws {
+        for highlighted in [false, true] {
+            for appearance in [aqua, darkAqua] {
+                let kind = kindName(highlighted: highlighted)
+                let panel = makePanel()
+                panel.appearance = appearance
+                let file = fileOfLines(highlighted: highlighted, lines: 10)
+                panel.show(path: file.path, verdict: file.verdict)
+
+                let geometry = try geometry(of: codeView(of: panel))
+
+                XCTAssertEqual(geometry.numberEnds.count, 10)
+                assertPaddedAndSeparated(geometry, "\(kind) under \(appearance.name)")
+            }
+        }
+    }
+
+    /// The text scrolled 300 points aside leaves the gutter, its numbers and the band where they
+    /// were, and draws nothing over them (CP-373); scrolled back, each line starts at the edge
+    /// again (CP-372).
+    func testHorizontalScrollLeavesNumbersAndPaddingFixedAndClipsTheCode() throws {
+        for highlighted in [false, true] {
+            for appearance in [aqua, darkAqua] {
+                let kind = kindName(highlighted: highlighted)
+                let context = "\(kind) under \(appearance.name)"
+                let panel = makePanel()
+                panel.appearance = appearance
+                let file = fileWithAWideFirstLine(highlighted: highlighted)
+                panel.show(path: file.path, verdict: file.verdict)
+                let codeView = try codeView(of: panel)
+                let scrollView = try XCTUnwrap(codeView.textView.enclosingScrollView)
+                let gutter = codeView.gutter
+                let before = try geometry(of: codeView)
+                assertPaddedAndSeparated(before, "at the left end, \(context)")
+                let renderedBefore = try render(codeView)
+                let gutterColumns = 0..<renderedBefore.columns(endingAt: gutter.frame.maxX)
+                let codeEnd = renderedBefore.columns(endingAt: codeView.bounds.width)
+                let codeColumns = renderedBefore.column(atOrAfter: gutter.frame.maxX)..<codeEnd
+                let band = band(of: renderedBefore, gutterWidth: gutter.frame.maxX)
+                let gutterInkBefore = renderedBefore.inkedPixels(columns: gutterColumns)
+
+                XCTAssertFalse(band.isEmpty, "the band has drawn columns, \(context)")
+                XCTAssertTrue(
+                    renderedBefore.inkedPixels(columns: band).isEmpty,
+                    "the band is ground before the scroll, \(context)")
+                XCTAssertFalse(gutterInkBefore.isEmpty, "the numbers are drawn, \(context)")
+                XCTAssertTrue(
+                    renderedBefore.hasInk(columns: codeColumns),
+                    "the code is drawn before the scroll, \(context)")
+
+                try scroll(codeView, to: NSPoint(x: 300, y: 0))
+
+                XCTAssertEqual(
+                    try clipView(of: codeView).bounds.minX, 300, accuracy: 0.5,
+                    "the clip view reached the position, \(context)")
+                let scrolled = try geometry(of: codeView)
+                XCTAssertEqual(scrolled.frame, before.frame, context)
+                XCTAssertEqual(scrolled.numberEnds, before.numberEnds, context)
+                XCTAssertEqual(scrollView.frame.minX, gutter.frame.maxX, accuracy: 0.5, context)
+                let renderedAfter = try render(codeView)
+                XCTAssertTrue(
+                    renderedAfter.inkedPixels(columns: band).isEmpty,
+                    "the band is ground after the scroll, \(context)")
+                XCTAssertEqual(
+                    renderedAfter.inkedPixels(columns: gutterColumns), gutterInkBefore,
+                    "the numbers' ink is where it was, \(context)")
+                XCTAssertTrue(
+                    renderedAfter.hasInk(columns: codeColumns),
+                    "the code is drawn after the scroll, \(context)")
+
+                try scroll(codeView, to: .zero)
+
+                assertPaddedAndSeparated(try geometry(of: codeView), "back at the left, \(context)")
+            }
+        }
+    }
+
+    func testHighlightedAndPlainFilesHaveTheSameGutterGeometry() throws {
+        for appearance in [aqua, darkAqua] {
+            var shown: [GutterGeometry] = []
+            for highlighted in [true, false] {
+                let kind = kindName(highlighted: highlighted)
+                let panel = makePanel()
+                panel.appearance = appearance
+                let file = fileOfLines(highlighted: highlighted, lines: 12)
+                panel.show(path: file.path, verdict: file.verdict)
+
+                let geometry = try geometry(of: codeView(of: panel))
+
+                XCTAssertEqual(geometry.numberEnds.count, 12)
+                XCTAssertEqual(
+                    geometry.columnWidth, 24 + digitsWidth(2), accuracy: 0.01,
+                    "\(kind) under \(appearance.name)")
+                assertPaddedAndSeparated(geometry, "\(kind) under \(appearance.name)")
+                shown.append(geometry)
+            }
+            assertSameGeometry(shown[0], shown[1], "highlighted and plain under \(appearance.name)")
+        }
+    }
+
+    /// The appearance changes while the file stays shown, in each direction (CP-374).
+    func testAppearanceChangesMoveNeitherNumbersNorCode() throws {
+        for highlighted in [false, true] {
+            for (from, to) in [(aqua, darkAqua), (darkAqua, aqua)] {
+                let kind = kindName(highlighted: highlighted)
+                let context = "\(kind), \(from.name) to \(to.name)"
+                let panel = makePanel()
+                panel.appearance = from
+                let file = fileOfLines(highlighted: highlighted, lines: 10)
+                panel.show(path: file.path, verdict: file.verdict)
+                let codeView = try codeView(of: panel)
+                let before = try geometry(of: codeView)
+
+                panel.appearance = to
+                panel.layoutSubtreeIfNeeded()
+
+                let after = try geometry(of: codeView)
+                assertSameGeometry(after, before, context)
+                assertPaddedAndSeparated(after, context)
+            }
+        }
     }
 
     // MARK: - The panel draws through the code view (CP-331, CP-333, CP-343)

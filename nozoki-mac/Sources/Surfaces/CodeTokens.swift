@@ -54,9 +54,12 @@ enum CodeType {
     static let linePitch = pitchMultiple * pointSize
 }
 
-/// The code view's two spacing values: `{spacing.lg}` around the text and the gutter's left margin,
-/// and `{spacing.xl}` as the gutter column's base width before its digits.
+/// The code view's three spacing values: `{spacing.lg}` around the text and the gutter's left
+/// margin, `{spacing.xl}` as the gutter column's base width before its digits, and `{spacing.sm}`
+/// as the padding at the column's right edge. The padding lies inside the column's width: it adds
+/// nothing to it.
 enum CodeSpacing {
     static let inset: CGFloat = 16
     static let gutterBase: CGFloat = 24
+    static let gutterPadding: CGFloat = 8
 }

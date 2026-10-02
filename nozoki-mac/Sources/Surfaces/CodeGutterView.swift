@@ -42,8 +42,14 @@ final class CodeGutterView: NSView {
     private(set) var columnWidth: CGFloat = 0
 
     /// The gutter's whole width: its left margin, then the column. The column's right edge is the
-    /// gutter's right edge.
+    /// gutter's right edge. The numbers end `CodeSpacing.gutterPadding` inside that edge, and the
+    /// band between their right end and the edge, which lies within this width, holds only the
+    /// ground (CP-368, CP-369).
     var width: CGFloat { CodeSpacing.inset + columnWidth }
+
+    /// Where every number ends: the right-hand padding inside the gutter's right edge. One value,
+    /// shared by every label whatever its own digit count (CP-368).
+    private var numberRightEnd: CGFloat { width - CodeSpacing.gutterPadding }
 
     /// What is filled across the gutter's bounds before the numbers.
     var ground: NSColor { CodeColors.surface }
@@ -55,6 +61,7 @@ final class CodeGutterView: NSView {
         let scrollOffset = clipView?.bounds.minY ?? 0
         let visibleHeight = min(bounds.height, clipView?.bounds.height ?? bounds.height)
         let containerTop = textView.textContainerOrigin.y
+        let rightEnd = numberRightEnd
         let attributes: [NSAttributedString.Key: Any] = [
             .font: CodeType.font, .foregroundColor: CodeColors.gutter,
         ]
@@ -64,7 +71,7 @@ final class CodeGutterView: NSView {
             guard bottom > 0, top < visibleHeight else { return nil }
             return Label(
                 text: String(index + 1),
-                point: NSPoint(x: width, y: containerTop + row.baseline - scrollOffset),
+                point: NSPoint(x: rightEnd, y: containerTop + row.baseline - scrollOffset),
                 attributes: attributes)
         }
     }
