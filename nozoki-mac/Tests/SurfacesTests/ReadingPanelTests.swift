@@ -1205,6 +1205,9 @@ final class ReadingPanelTests: XCTestCase {
         return ("a.py", floorVerdict(content, .python, spans))
     }
 
+    /// How a failure message names the file kind a test is running.
+    private func kindName(highlighted: Bool) -> String { highlighted ? "highlighted" : "plain" }
+
     private func codeView(of panel: ReadingPanelView) throws -> CodeView {
         try XCTUnwrap(gutter(of: panel).superview as? CodeView)
     }
@@ -1392,7 +1395,7 @@ final class ReadingPanelTests: XCTestCase {
         let allowance = digitsWidth(2) - digitsWidth(1)
         for highlighted in [false, true] {
             for appearance in [aqua, darkAqua] {
-                let kind = highlighted ? "highlighted" : "plain"
+                let kind = kindName(highlighted: highlighted)
                 let context = "\(kind) under \(appearance.name)"
                 let panel = makePanel()
                 panel.appearance = appearance
@@ -1423,7 +1426,7 @@ final class ReadingPanelTests: XCTestCase {
     func testEachLinesCodeStartsEightPointsAfterItsNumber() throws {
         for highlighted in [false, true] {
             for appearance in [aqua, darkAqua] {
-                let kind = highlighted ? "highlighted" : "plain"
+                let kind = kindName(highlighted: highlighted)
                 let panel = makePanel()
                 panel.appearance = appearance
                 let file = fileOfLines(highlighted: highlighted, lines: 10)
@@ -1443,7 +1446,7 @@ final class ReadingPanelTests: XCTestCase {
     func testHorizontalScrollLeavesNumbersAndPaddingFixedAndClipsTheCode() throws {
         for highlighted in [false, true] {
             for appearance in [aqua, darkAqua] {
-                let kind = highlighted ? "highlighted" : "plain"
+                let kind = kindName(highlighted: highlighted)
                 let context = "\(kind) under \(appearance.name)"
                 let panel = makePanel()
                 panel.appearance = appearance
@@ -1501,7 +1504,7 @@ final class ReadingPanelTests: XCTestCase {
         for appearance in [aqua, darkAqua] {
             var shown: [GutterGeometry] = []
             for highlighted in [true, false] {
-                let kind = highlighted ? "highlighted" : "plain"
+                let kind = kindName(highlighted: highlighted)
                 let panel = makePanel()
                 panel.appearance = appearance
                 let file = fileOfLines(highlighted: highlighted, lines: 12)
@@ -1524,7 +1527,7 @@ final class ReadingPanelTests: XCTestCase {
     func testAppearanceChangesMoveNeitherNumbersNorCode() throws {
         for highlighted in [false, true] {
             for (from, to) in [(aqua, darkAqua), (darkAqua, aqua)] {
-                let kind = highlighted ? "highlighted" : "plain"
+                let kind = kindName(highlighted: highlighted)
                 let context = "\(kind), \(from.name) to \(to.name)"
                 let panel = makePanel()
                 panel.appearance = from
