@@ -25,6 +25,12 @@ jobs:
       - name: Test gate
         run: cargo test --workspace --locked && swift test --package-path nozoki-mac
 
+      - name: Structure check
+        run: checks/structure.sh
+
+      - name: Structure check suite
+        run: checks/tests/test_structure.sh
+
       - name: Build Nozoki.app
         run: nozoki-mac/assemble.sh
 
