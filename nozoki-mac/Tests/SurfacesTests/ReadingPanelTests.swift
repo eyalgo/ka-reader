@@ -2055,6 +2055,36 @@ final class ReadingPanelTests: XCTestCase {
                 charactersIgnoringModifiers: "a", isARepeat: false, keyCode: 0))
     }
 
+    /// A drag session the test hands to a view the way AppKit would: a bare, file-less pasteboard and
+    /// a location in the window.
+    private final class StubDragInfo: NSObject, NSDraggingInfo {
+        let window: NSWindow
+        let location: NSPoint
+        init(window: NSWindow, location: NSPoint) {
+            self.window = window
+            self.location = location
+        }
+        var draggingDestinationWindow: NSWindow? { window }
+        var draggingSourceOperationMask: NSDragOperation { .copy }
+        var draggingLocation: NSPoint { location }
+        var draggedImageLocation: NSPoint { location }
+        var draggedImage: NSImage? { nil }
+        var draggingPasteboard: NSPasteboard { NSPasteboard(name: .drag) }
+        var draggingSource: Any? { nil }
+        var draggingSequenceNumber: Int { 1 }
+        var draggingFormation: NSDraggingFormation = .default
+        var animatesToDestination: Bool = false
+        var numberOfValidItemsForDrop: Int = 1
+        var springLoadingHighlight: NSSpringLoadingHighlight { .none }
+        func slideDraggedImage(to screenPoint: NSPoint) {}
+        func resetSpringLoading() {}
+        func enumerateDraggingItems(
+            options enumOpts: NSDraggingItemEnumerationOptions, for view: NSView?,
+            classes classArray: [AnyClass], searchOptions: [NSPasteboard.ReadingOptionKey: Any],
+            using block: (NSDraggingItem, Int, UnsafeMutablePointer<ObjCBool>) -> Void
+        ) {}
+    }
+
     func testPathDrawingIgnoresClicksDragsDropsAndKeysWithoutMovingFocus() throws {
         try eachLineState { state, appearance, panel in
             let name = "\(state.name) under \(appearance.name)"
@@ -2087,6 +2117,24 @@ final class ReadingPanelTests: XCTestCase {
                 for type in [NSEvent.EventType.leftMouseDown, .leftMouseDragged, .leftMouseUp] {
                     window.sendEvent(try mouse(type, at: point, in: window))
                 }
+                // A drop at this point. AppKit offers a drag, and delivers its drop, to the nearest
+                // view at or above the hit view that registered a dragged type; none of them did, so
+                // nothing is offered. The hit view's own answers to the negotiation and the
+                // delivery refuse as well (its default prepare answer is true, so it is not asserted).
+                let hit = try XCTUnwrap(panel.hitTest(panel.convert(point, from: nil)))
+                var receiver: NSView? = hit
+                while let candidate = receiver {
+                    XCTAssertTrue(
+                        candidate.registeredDraggedTypes.isEmpty,
+                        "\(name): \(candidate) takes no drop at the \(place) (CP-367)")
+                    receiver = candidate.superview
+                }
+                let drag = StubDragInfo(window: window, location: point)
+                XCTAssertEqual(
+                    hit.draggingEntered(drag), [], "\(name): no drag is accepted at the \(place)")
+                XCTAssertFalse(
+                    hit.performDragOperation(drag),
+                    "\(name): no drop is delivered at the \(place)")
             }
             window.sendEvent(try keyDown(in: window))
 
