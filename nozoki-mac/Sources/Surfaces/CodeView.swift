@@ -116,9 +116,46 @@ final class CodeView: NSView {
     }
 }
 
+// The actions the reading panel's text menu offers: Copy and nothing else (R-49, CP-377 – CP-379).
+// A keep-list rather than a strike-list, so an entry a later macOS adds is out by construction
+// (change_design.md § 4). The selector is compile-time: `NSSelectorFromString` is a refused token
+// (`checks/view.sh`, family F10).
+private let keptTextMenuActions: [Selector] = [#selector(NSText.copy(_:))]
+
+/// A new menu holding copies of the top-level entries of `menu` whose action the panel keeps, or
+/// nil when none is. A submenu's own entry carries `submenuAction:`, which is not kept, so no
+/// submenu is entered; `menu` is left whole, whether or not AppKit shares it between calls.
+///
+/// The menu also refuses what AppKit adds only when it shows a menu as a context menu: plug-in
+/// entries and, from macOS 15.2, Writing Tools entries (`NSMenu.h`, "if used as a context menu").
+func keptTextMenu(from menu: NSMenu) -> NSMenu? {
+    let kept = menu.items.filter { item in
+        item.action.map(keptTextMenuActions.contains) ?? false
+    }
+    guard !kept.isEmpty else { return nil }
+    let filtered = NSMenu(title: menu.title)
+    for item in kept {
+        guard let copy = item.copy() as? NSMenuItem else {
+            preconditionFailure("NSMenuItem.copy() answers an NSMenuItem")
+        }
+        filtered.addItem(copy)
+    }
+    filtered.allowsContextMenuPlugIns = false
+    if #available(macOS 15.2, *) {
+        filtered.automaticallyInsertsWritingToolsItems = false
+    }
+    return filtered
+}
+
 /// A text view that starts its text at the container's left edge and ends its height at the last
 /// numbered row.
 private final class CodeTextView: NSTextView {
+    /// The stock menu, cut down to Copy. `showContextMenuForSelection:` reaches this hook too, so
+    /// the keyboard and Accessibility paths get the same menu.
+    override func menu(for event: NSEvent) -> NSMenu? {
+        super.menu(for: event).flatMap(keptTextMenu(from:))
+    }
+
     /// The horizontal inset is all on the right: each line's first character starts at the scroll
     /// view's left edge, which is the number column's right edge (CP-337).
     override var textContainerOrigin: NSPoint {
