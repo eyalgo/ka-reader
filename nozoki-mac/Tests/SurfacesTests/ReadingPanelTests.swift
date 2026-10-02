@@ -248,9 +248,10 @@ final class ReadingPanelTests: XCTestCase {
 
     /// A code token or the ground, with the two values `docs/DESIGN.md:L409-L428` gives it: light
     /// then dark, as `0xRRGGBB`. `primary` and `gutter` are the base ink and the line numbers'
-    /// colour (`docs/DESIGN.md:L411`, `:L413`).
+    /// colour (`docs/DESIGN.md:L411`, `:L413`). `inkMuted` and `line` are the path line's ink and
+    /// hairline (`docs/DESIGN.md:L413`, `:L418`).
     private enum Token {
-        case keyword, string, number, comment, name, primary, gutter
+        case keyword, string, number, comment, name, primary, gutter, inkMuted, line
 
         var values: (light: UInt32, dark: UInt32) {
             switch self {
@@ -261,6 +262,8 @@ final class ReadingPanelTests: XCTestCase {
             case .name: return (0x0F5A9A, 0x8CC4F5)
             case .primary: return (0x1E1F22, 0xE7E7E4)
             case .gutter: return (0x6F7177, 0x8E8F94)
+            case .inkMuted: return (0x5B5D63, 0xABACB0)
+            case .line: return (0xD8D8D4, 0x3B3C41)
             }
         }
     }
@@ -298,6 +301,15 @@ final class ReadingPanelTests: XCTestCase {
             }
         }
         return components
+    }
+
+    /// `color`'s alpha, resolved under `appearance`.
+    private func alpha(_ color: NSColor, under appearance: NSAppearance) -> CGFloat {
+        var alpha: CGFloat = -1
+        appearance.performAsCurrentDrawingAppearance {
+            alpha = color.usingColorSpace(.sRGB)?.alphaComponent ?? -1
+        }
+        return alpha
     }
 
     private func assertSame(
@@ -538,6 +550,31 @@ final class ReadingPanelTests: XCTestCase {
         assertSame(
             srgb(CodeColors.gutter, under: darkAqua), hex(Token.gutter.values.dark),
             "gutter under darkAqua")
+    }
+
+    // MARK: - The path line's tokens (CP-357, CP-363)
+
+    func testPathMutedInkTakesItsDesignValueInEachAppearance() {
+        for (appearance, value) in [
+            (aqua, Token.inkMuted.values.light), (darkAqua, Token.inkMuted.values.dark),
+        ] {
+            assertSame(
+                srgb(CodeColors.inkMuted, under: appearance), hex(value),
+                "ink-muted under \(appearance.name) (CP-357)")
+            XCTAssertEqual(
+                alpha(CodeColors.inkMuted, under: appearance), 1, "ink-muted is opaque")
+        }
+    }
+
+    func testPathHairlineTakesItsDesignValueInEachAppearance() {
+        for (appearance, value) in [
+            (aqua, Token.line.values.light), (darkAqua, Token.line.values.dark),
+        ] {
+            assertSame(
+                srgb(CodeColors.line, under: appearance), hex(value),
+                "line under \(appearance.name) (CP-363)")
+            XCTAssertEqual(alpha(CodeColors.line, under: appearance), 1, "line is opaque")
+        }
     }
 
     func testCodeTypeIsTheThirteenPointMonospacedSystemFontAtRegularWeight() {
@@ -1500,5 +1537,666 @@ final class ReadingPanelTests: XCTestCase {
         XCTAssertFalse(isShowingContent(panel))
         let glyphs = visibleGlyphs(panel)
         XCTAssertTrue(glyphs.count == 1 && glyphs[0] === statusGlyphs.empty)
+    }
+
+    // MARK: - The path line's row and hairline (CP-356 – CP-367)
+
+    /// What lies beneath the path line's hairline in a state that shows the line.
+    private enum Beneath {
+        case content, nothing, message
+    }
+
+    /// One state of the reading panel in which the path line is shown, and how to put the panel in it.
+    private struct LineState {
+        let name: String
+        let beneath: Beneath
+        let enter: (ReadingPanelView) -> Void
+    }
+
+    /// A path whose first character, `█`, inks from its pen position, so the first drawn ink is where
+    /// the text begins; the rest is an ordinary folder-relative path with a descender and an ascender.
+    private let linePath = "█pg/lib.rs"
+
+    /// The line's states: text with content, empty text, both cannot-display reasons, a failed read
+    /// for every `Condition`, and stopped (`change_design.md` § 5, "The line's states").
+    private var lineStates: [LineState] {
+        let path = linePath
+        var states = [
+            LineState(
+                name: "text", beneath: .content,
+                enter: { $0.show(path: path, verdict: .text("fn main() {}\n", .plain)) }),
+            LineState(
+                name: "empty text", beneath: .nothing,
+                enter: { $0.show(path: path, verdict: .text("", .plain)) }),
+            LineState(
+                name: "stopped", beneath: .message, enter: { $0.showStopped(path: path) }),
+        ]
+        for reason in [CannotDisplayReason.invalidUTF8, .invalidUTF16] {
+            states.append(
+                LineState(
+                    name: "cannot display \(reason)", beneath: .message,
+                    enter: { $0.show(path: path, verdict: .cannotDisplay(reason)) }))
+        }
+        for condition in Condition.allCases {
+            states.append(
+                LineState(
+                    name: "failed \(condition)", beneath: .message,
+                    enter: { $0.show(path: path, verdict: .failed(condition)) }))
+        }
+        return states
+    }
+
+    /// A 600 by 400 panel under `appearance`, put in `state` and laid out.
+    private func makeLinePanel(
+        _ state: LineState, under appearance: NSAppearance, width: CGFloat = 600
+    ) -> ReadingPanelView {
+        let panel = ReadingPanelView(statusGlyphs: statusGlyphs)
+        panel.appearance = appearance
+        panel.frame = NSRect(x: 0, y: 0, width: width, height: 400)
+        state.enter(panel)
+        panel.layoutSubtreeIfNeeded()
+        return panel
+    }
+
+    private func eachLineState(
+        _ check: (LineState, NSAppearance, ReadingPanelView) throws -> Void
+    ) rethrows {
+        for state in lineStates {
+            for appearance in [aqua, darkAqua] {
+                try check(state, appearance, makeLinePanel(state, under: appearance))
+            }
+        }
+    }
+
+    private func surface(under appearance: NSAppearance) -> UInt32 {
+        appearance.name == .darkAqua ? Self.surfaceValues.dark : Self.surfaceValues.light
+    }
+
+    private func value(of token: Token, under appearance: NSAppearance) -> UInt32 {
+        appearance.name == .darkAqua ? token.values.dark : token.values.light
+    }
+
+    /// Distance of `frame`'s top below `panel`'s top. The panel is unflipped (`change_design.md` § 5).
+    private func topDown(_ frame: NSRect, in panel: NSView) -> CGFloat {
+        panel.bounds.maxY - frame.maxY
+    }
+
+    private func frame(of view: NSView, in panel: NSView) -> NSRect {
+        view.convert(view.bounds, to: panel)
+    }
+
+    /// The panel as drawn: a bitmap whose rows run top-down, with the points-to-pixels scale.
+    private struct Capture {
+        let rep: NSBitmapImageRep
+        let scale: CGFloat
+        let width: CGFloat
+
+        /// The sRGB colour of the pixel at `x` points from the left and `y` points below the top.
+        func colour(x: CGFloat, y: CGFloat) -> [CGFloat] {
+            guard
+                let pixel = rep.colorAt(x: Int(x * scale), y: Int(y * scale))?.usingColorSpace(
+                    .sRGB)
+            else { return [] }
+            return [pixel.redComponent, pixel.greenComponent, pixel.blueComponent]
+        }
+
+        /// Where ink lies among the rows from `top` to `bottom` points: pixels unlike `ground`.
+        func ink(
+            from top: CGFloat, to bottom: CGFloat, ground: [CGFloat], onlyColumns: Range<Int>? = nil
+        ) -> (minX: CGFloat, maxX: CGFloat, minY: CGFloat, maxY: CGFloat)? {
+            var columns: [Int] = []
+            var rows: [Int] = []
+            // The bitmap's last column is rounded up from a fractional width and is never drawn.
+            let drawnColumns = onlyColumns ?? (0..<Int((width * scale).rounded(.down)))
+            for row in Int(top * scale)..<Int(bottom * scale) {
+                for column in drawnColumns {
+                    guard let pixel = rep.colorAt(x: column, y: row)?.usingColorSpace(.sRGB),
+                        [pixel.redComponent, pixel.greenComponent, pixel.blueComponent]
+                            .enumerated().contains(where: {
+                                abs($0.element - ground[$0.offset]) > 0.15
+                            })
+                    else { continue }
+                    columns.append(column)
+                    rows.append(row)
+                }
+            }
+            guard let minColumn = columns.min(), let maxColumn = columns.max(),
+                let minRow = rows.min(), let maxRow = rows.max()
+            else { return nil }
+            return (
+                CGFloat(minColumn) / scale, CGFloat(maxColumn + 1) / scale,
+                CGFloat(minRow) / scale, CGFloat(maxRow + 1) / scale
+            )
+        }
+    }
+
+    private func capture(_ panel: NSView) throws -> Capture {
+        let rep = try XCTUnwrap(panel.bitmapImageRepForCachingDisplay(in: panel.bounds))
+        panel.cacheDisplay(in: panel.bounds, to: rep)
+        return Capture(
+            rep: rep, scale: CGFloat(rep.pixelsWide) / panel.bounds.width, width: panel.bounds.width
+        )
+    }
+
+    private func assertPixel(
+        _ capture: Capture, x: CGFloat, y: CGFloat, is expected: UInt32, _ message: String,
+        file: StaticString = #filePath, line: UInt = #line
+    ) {
+        let actual = capture.colour(x: x, y: y)
+        XCTAssertEqual(actual.count, 3, message, file: file, line: line)
+        for (a, e) in zip(actual, hex(expected)) {
+            // A pixel is 8 bits through a colour-space conversion: far finer than any two tokens apart.
+            XCTAssertEqual(a, e, accuracy: 0.02, message, file: file, line: line)
+        }
+    }
+
+    private func visibleMessages(_ panel: NSView) -> [StatusMessageView] {
+        visible(panel).compactMap { $0 as? StatusMessageView }
+    }
+
+    private func glyphMinX(of message: StatusMessageView, in panel: NSView) throws -> CGFloat {
+        let glyph = try XCTUnwrap(descendants(of: message).compactMap { $0 as? NSImageView }.first)
+        return frame(of: glyph, in: panel).minX
+    }
+
+    private func isShown(_ panel: ReadingPanelView) -> Bool {
+        !panel.pathLine.isHiddenOrHasHiddenAncestor
+    }
+
+    func testPathLineUsesTwelvePointRegularMonospacedTypeAndMutedInk() throws {
+        try eachLineState { state, appearance, panel in
+            let name = "\(state.name) under \(appearance.name)"
+            XCTAssertEqual(
+                panel.pathLine.font, .monospacedSystemFont(ofSize: 12, weight: .regular),
+                "\(name): type (CP-356)")
+            XCTAssertEqual(panel.pathLine.font?.pointSize, 12, name)
+            let ink = try XCTUnwrap(panel.pathLine.textColor)
+            assertSame(
+                srgb(ink, under: panel.pathLine.effectiveAppearance),
+                hex(value(of: .inkMuted, under: appearance)), "\(name): ink (CP-357)")
+            // The first character's block is solid ink, so its middle is the text colour as drawn.
+            let drawn = try capture(panel)
+            assertPixel(
+                drawn, x: 16 + 2, y: 12, is: value(of: .inkMuted, under: appearance),
+                "\(name): the drawn text's colour (CP-357)")
+        }
+    }
+
+    func testPathRowIsTwentyFourPointsAtThePanelTopOnSurface() throws {
+        try eachLineState { state, appearance, panel in
+            let name = "\(state.name) under \(appearance.name)"
+            let row = panel.pathRow.frame
+            XCTAssertTrue(panel.pathRow.superview === panel, name)
+            XCTAssertEqual(row.minX, 0, accuracy: 0.001, name)
+            XCTAssertEqual(row.width, panel.bounds.width, accuracy: 0.001, name)
+            XCTAssertEqual(row.height, 24, accuracy: 0.001, "\(name): row height (CP-360)")
+            XCTAssertEqual(topDown(row, in: panel), 0, accuracy: 0.001, "\(name): row top (CP-360)")
+            assertSame(
+                srgb(panel.pathRow.ground, under: panel.pathRow.effectiveAppearance),
+                hex(surface(under: appearance)), "\(name): the row's ground (CP-358)")
+            let drawn = try capture(panel)
+            for x in [CGFloat(2), 300, 596] {
+                assertPixel(
+                    drawn, x: x, y: 12, is: surface(under: appearance),
+                    "\(name): the row drawn on surface at x \(x) (CP-358)")
+            }
+        }
+    }
+
+    func testPathRowAndHairlineFollowPanelWidth() throws {
+        let long = "█" + String(repeating: "-", count: 150) + "█"
+        for appearance in [aqua, darkAqua] {
+            for state in lineStates {
+                let panel = makeLinePanel(state, under: appearance)
+                for width in [CGFloat(900), 600] {
+                    panel.frame.size.width = width
+                    panel.layoutSubtreeIfNeeded()
+                    let name = "\(state.name) under \(appearance.name), \(width) wide"
+                    XCTAssertEqual(panel.pathRow.frame.minX, 0, accuracy: 0.001, name)
+                    XCTAssertEqual(panel.pathRow.frame.width, width, accuracy: 0.001, name)
+                    XCTAssertEqual(panel.pathHairline.frame.minX, 0, accuracy: 0.001, name)
+                    XCTAssertEqual(panel.pathHairline.frame.width, width, accuracy: 0.001, name)
+                    let drawn = try capture(panel)
+                    assertPixel(
+                        drawn, x: width - 4, y: 12, is: surface(under: appearance),
+                        "\(name): the row drawn to the right edge (CP-358)")
+                    assertPixel(
+                        drawn, x: width - 4, y: 24.5, is: value(of: .line, under: appearance),
+                        "\(name): the hairline drawn to the right edge (CP-363)")
+                }
+            }
+            let panel = makeLinePanel(lineStates[0], under: appearance)
+            panel.show(path: long, verdict: .text("x\n", .plain))
+            for width in [CGFloat(900), 600] {
+                panel.frame.size.width = width
+                panel.layoutSubtreeIfNeeded()
+                let extent = try XCTUnwrap(
+                    try capture(panel).ink(
+                        from: 0, to: 24, ground: hex(surface(under: appearance))))
+                let pixel = 1 / (try capture(panel)).scale
+                XCTAssertEqual(
+                    extent.minX, 16, accuracy: pixel + 0.001, "left limit at \(width) wide (CP-361)"
+                )
+                XCTAssertLessThanOrEqual(
+                    extent.maxX, width - 16 + 0.001, "right limit at \(width) wide (CP-361)")
+            }
+        }
+    }
+
+    func testPathHairlineIsOnePointDirectlyBelowTheRow() throws {
+        try eachLineState { state, appearance, panel in
+            let name = "\(state.name) under \(appearance.name)"
+            let hairline = panel.pathHairline.frame
+            XCTAssertTrue(panel.pathHairline.superview === panel, name)
+            XCTAssertEqual(hairline.height, 1, accuracy: 0.001, "\(name): thickness (CP-363)")
+            XCTAssertEqual(
+                topDown(hairline, in: panel), 24, accuracy: 0.001, "\(name): top, 24 down (CP-363)")
+            XCTAssertEqual(
+                hairline.maxY, panel.pathRow.frame.minY, accuracy: 0.001,
+                "\(name): its top is the row's bottom (CP-363)")
+            XCTAssertEqual(hairline.minX, 0, accuracy: 0.001, name)
+            XCTAssertEqual(hairline.width, panel.bounds.width, accuracy: 0.001, name)
+            assertSame(
+                srgb(panel.pathHairline.color, under: panel.pathHairline.effectiveAppearance),
+                hex(value(of: .line, under: appearance)), "\(name): the hairline's colour (CP-363)")
+            let drawn = try capture(panel)
+            for x in [CGFloat(2), 300, 596] {
+                assertPixel(
+                    drawn, x: x, y: 24.5, is: value(of: .line, under: appearance),
+                    "\(name): the hairline drawn at x \(x) (CP-363)")
+            }
+        }
+    }
+
+    func testPathTextStaysWhollyInsideItsRow() throws {
+        try eachLineState { state, appearance, panel in
+            let name = "\(state.name) under \(appearance.name)"
+            let label = frame(of: panel.pathLine, in: panel)
+            XCTAssertTrue(
+                panel.pathRow.frame.contains(label), "\(name): the label \(label) lies in the row")
+            let drawn = try capture(panel)
+            let extent = try XCTUnwrap(
+                drawn.ink(from: 0, to: 24, ground: hex(surface(under: appearance))), name)
+            let pixel = 1 / drawn.scale
+            XCTAssertGreaterThanOrEqual(
+                extent.minY, pixel, "\(name): no ink clipped at the top (CP-362)")
+            XCTAssertLessThanOrEqual(
+                extent.maxY, 24 - pixel, "\(name): no ink clipped at the bottom (CP-362)")
+            for x in stride(from: CGFloat(1), to: 600, by: 7) {
+                assertPixel(
+                    drawn, x: x, y: 24.5, is: value(of: .line, under: appearance),
+                    "\(name): no ink on the hairline at x \(x) (CP-362)")
+            }
+        }
+    }
+
+    func testPathTextBeginsSixteenPointsFromThePanelEdge() throws {
+        try eachLineState { state, appearance, panel in
+            let name = "\(state.name) under \(appearance.name)"
+            let drawn = try capture(panel)
+            let extent = try XCTUnwrap(
+                drawn.ink(from: 0, to: 24, ground: hex(surface(under: appearance))), name)
+            XCTAssertEqual(
+                extent.minX, 16, accuracy: 1 / drawn.scale + 0.001,
+                "\(name): the first ink column (CP-361)")
+        }
+    }
+
+    func testLongPathTruncatesInTheMiddleInsideBothInsets() throws {
+        // A block at each end: the head and the tail each end on a tall glyph, where a tail
+        // truncation would end on the low dots of an ellipsis.
+        let long = "█" + String(repeating: "-", count: 100) + "█"
+        for appearance in [aqua, darkAqua] {
+            let panel = makeLinePanel(lineStates[0], under: appearance, width: 300)
+            panel.show(path: long, verdict: .text("x\n", .plain))
+            panel.layoutSubtreeIfNeeded()
+            let name = "under \(appearance.name)"
+
+            let drawn = try capture(panel)
+            let ground = hex(surface(under: appearance))
+            let extent = try XCTUnwrap(drawn.ink(from: 0, to: 24, ground: ground), name)
+            XCTAssertEqual(
+                extent.minX, 16, accuracy: 1 / drawn.scale + 0.001, "\(name): left (CP-361)")
+            XCTAssertLessThanOrEqual(extent.maxX, 300 - 16 + 0.001, "\(name): right limit (CP-361)")
+            let fullWidth = (long as NSString).size(withAttributes: [
+                .font: panel.pathLine.font as Any
+            ]).width
+            XCTAssertLessThan(extent.maxX - extent.minX, fullWidth, "\(name): shortened (CP-361)")
+            XCTAssertEqual(panel.pathLine.stringValue, long, "\(name): the path itself is whole")
+            let firstColumn = Int(extent.minX * drawn.scale)
+            let head = try XCTUnwrap(
+                drawn.ink(
+                    from: 0, to: 24, ground: ground,
+                    onlyColumns: firstColumn..<(firstColumn + 2)))
+            XCTAssertGreaterThan(
+                head.maxY - head.minY, 8,
+                "\(name): the line starts on the head, not an ellipsis (CP-361)")
+            // The last drawn glyph is the tail's block: ink as tall as a block over its last columns.
+            let lastColumn = Int(extent.maxX * drawn.scale) - 1
+            let tail = try XCTUnwrap(
+                drawn.ink(
+                    from: 0, to: 24, ground: ground,
+                    onlyColumns: (lastColumn - 1)..<(lastColumn + 1)))
+            XCTAssertGreaterThan(
+                tail.maxY - tail.minY, 8,
+                "\(name): the line ends on the tail, so its middle was shortened (CP-361)")
+        }
+    }
+
+    func testContentAndMessagesBeginEightPointsBelowTheHairline() throws {
+        try eachLineState { state, appearance, panel in
+            let name = "\(state.name) under \(appearance.name)"
+            let hairline = panel.pathHairline.frame
+            switch state.beneath {
+            case .content:
+                let codeView = try XCTUnwrap(
+                    descendants(of: panel).first {
+                        $0 is CodeView && !$0.isHiddenOrHasHiddenAncestor
+                    })
+                let top = topDown(frame(of: codeView, in: panel), in: panel)
+                XCTAssertEqual(top, 33, accuracy: 0.001, "\(name): the code view's top (CP-364)")
+                XCTAssertEqual(
+                    top - topDown(hairline, in: panel) - hairline.height, 8, accuracy: 0.001, name)
+                XCTAssertLessThanOrEqual(
+                    frame(of: codeView, in: panel).maxY, hairline.minY,
+                    "\(name): no overlap (CP-364)")
+            case .message:
+                let messages = visibleMessages(panel)
+                XCTAssertEqual(messages.count, 1, name)
+                let message = try XCTUnwrap(messages.first)
+                let box = frame(of: message, in: panel)
+                XCTAssertEqual(
+                    topDown(box, in: panel), 33, accuracy: 0.001,
+                    "\(name): the message's top, 8 below the hairline (CP-364)")
+                XCTAssertLessThanOrEqual(box.maxY, hairline.minY, "\(name): no overlap (CP-364)")
+                XCTAssertEqual(
+                    try glyphMinX(of: message, in: panel), 24, accuracy: 0.001,
+                    "\(name): the glyph's left edge (CP-365)")
+            case .nothing:
+                XCTAssertTrue(visibleMessages(panel).isEmpty, name)
+                XCTAssertFalse(isShowingContent(panel), name)
+            }
+        }
+    }
+
+    func testNoFileAndPendingKeepTheirTwentyFourPointInsetsWithoutAPathRow() throws {
+        for appearance in [aqua, darkAqua] {
+            let states: [(String, (ReadingPanelView) -> Void)] = [
+                ("no file", { $0.showNoFile() }),
+                ("pending", { $0.showReading() }),
+                (
+                    "no file after a shown file",
+                    {
+                        $0.show(path: self.linePath, verdict: .text("x\n", .plain))
+                        $0.showNoFile()
+                    }
+                ),
+                (
+                    "pending after a shown file",
+                    {
+                        $0.show(path: self.linePath, verdict: .failed(.missing))
+                        $0.showReading()
+                    }
+                ),
+            ]
+            for (name, enter) in states {
+                let panel = ReadingPanelView(statusGlyphs: statusGlyphs)
+                panel.appearance = appearance
+                panel.frame = NSRect(x: 0, y: 0, width: 600, height: 400)
+                enter(panel)
+                panel.layoutSubtreeIfNeeded()
+                let label = "\(name) under \(appearance.name)"
+
+                for hidden in [panel.pathLine, panel.pathRow, panel.pathHairline] as [NSView] {
+                    XCTAssertTrue(
+                        hidden.isHiddenOrHasHiddenAncestor, "\(label): \(hidden) (CP-363)")
+                }
+                let message = try XCTUnwrap(visibleMessages(panel).first, label)
+                XCTAssertEqual(visibleMessages(panel).count, 1, label)
+                XCTAssertEqual(
+                    topDown(frame(of: message, in: panel), in: panel), 24, accuracy: 0.001,
+                    "\(label): top inset (CP-366)")
+                XCTAssertEqual(
+                    try glyphMinX(of: message, in: panel), 24, accuracy: 0.001,
+                    "\(label): left inset (CP-366)")
+            }
+        }
+    }
+
+    func testPathDrawingShowsAndHidesTogetherAcrossStateChanges() throws {
+        let path = linePath
+        let steps: [(String, Bool, (ReadingPanelView) -> Void)] = [
+            ("text", true, { $0.show(path: path, verdict: .text("body\n", .plain)) }),
+            ("reading", false, { $0.showReading() }),
+            ("stopped", true, { $0.showStopped(path: path) }),
+            ("no file", false, { $0.showNoFile() }),
+            (
+                "cannot display", true,
+                { $0.show(path: path, verdict: .cannotDisplay(.invalidUTF8)) }
+            ),
+            ("reading again", false, { $0.showReading() }),
+            ("failed", true, { $0.show(path: path, verdict: .failed(.unreadable)) }),
+            ("text again", true, { $0.show(path: path, verdict: .text("again\n", .plain)) }),
+            ("empty text", true, { $0.show(path: path, verdict: .text("", .plain)) }),
+        ]
+        for appearance in [aqua, darkAqua] {
+            let panel = ReadingPanelView(statusGlyphs: statusGlyphs)
+            panel.appearance = appearance
+            panel.frame = NSRect(x: 0, y: 0, width: 600, height: 400)
+            for (name, shown, enter) in steps {
+                enter(panel)
+                panel.layoutSubtreeIfNeeded()
+                let label = "\(name) under \(appearance.name)"
+
+                for view in [panel.pathLine, panel.pathRow, panel.pathHairline] as [NSView] {
+                    XCTAssertEqual(
+                        !view.isHiddenOrHasHiddenAncestor, shown, "\(label): \(view) (CP-363)")
+                }
+                switch name {
+                case "text", "text again":
+                    XCTAssertTrue(isShowingContent(panel), label)
+                    XCTAssertTrue(visibleMessages(panel).isEmpty, "\(label): no stale message")
+                    let codeView = try XCTUnwrap(
+                        descendants(of: panel).first {
+                            $0 is CodeView && !$0.isHiddenOrHasHiddenAncestor
+                        })
+                    XCTAssertEqual(
+                        topDown(frame(of: codeView, in: panel), in: panel), 33, accuracy: 0.001,
+                        "\(label): the content, back after a hidden state, hangs at 33 (CP-364)")
+                case "empty text":
+                    XCTAssertFalse(isShowingContent(panel), "\(label): no stale content")
+                    XCTAssertTrue(visibleMessages(panel).isEmpty, "\(label): no stale message")
+                default:
+                    XCTAssertFalse(isShowingContent(panel), "\(label): no stale content")
+                    XCTAssertEqual(visibleMessages(panel).count, 1, label)
+                }
+            }
+        }
+    }
+
+    func testPathDrawingRecoloursWhenAppearanceChangesWithoutReselection() throws {
+        for state in lineStates {
+            let panel = makeLinePanel(state, under: aqua)
+            // aqua, darkAqua, then aqua again: both directions, with no `show` between them.
+            for appearance in [aqua, darkAqua, aqua] {
+                panel.appearance = appearance
+                let name = "\(state.name) under \(appearance.name)"
+                let ink = try XCTUnwrap(panel.pathLine.textColor)
+                assertSame(
+                    srgb(ink, under: panel.pathLine.effectiveAppearance),
+                    hex(value(of: .inkMuted, under: appearance)), "\(name): text colour (CP-359)")
+                assertSame(
+                    srgb(panel.pathRow.ground, under: panel.pathRow.effectiveAppearance),
+                    hex(surface(under: appearance)), "\(name): row ground (CP-359)")
+                assertSame(
+                    srgb(panel.pathHairline.color, under: panel.pathHairline.effectiveAppearance),
+                    hex(value(of: .line, under: appearance)), "\(name): hairline colour (CP-359)")
+                let drawn = try capture(panel)
+                assertPixel(
+                    drawn, x: 16 + 2, y: 12, is: value(of: .inkMuted, under: appearance),
+                    "\(name): the drawn text (CP-359)")
+                assertPixel(
+                    drawn, x: 596, y: 12, is: surface(under: appearance),
+                    "\(name): the drawn row (CP-359)")
+                assertPixel(
+                    drawn, x: 300, y: 24.5, is: value(of: .line, under: appearance),
+                    "\(name): the drawn hairline (CP-359)")
+            }
+        }
+    }
+
+    // MARK: Input lands on nothing (CP-367)
+
+    private func mouse(
+        _ type: NSEvent.EventType, at point: NSPoint, in window: NSWindow
+    ) throws -> NSEvent {
+        try XCTUnwrap(
+            NSEvent.mouseEvent(
+                with: type, location: point, modifierFlags: [], timestamp: 0,
+                windowNumber: window.windowNumber, context: nil, eventNumber: 0, clickCount: 1,
+                pressure: 1))
+    }
+
+    private func keyDown(in window: NSWindow) throws -> NSEvent {
+        try XCTUnwrap(
+            NSEvent.keyEvent(
+                with: .keyDown, location: .zero, modifierFlags: [], timestamp: 0,
+                windowNumber: window.windowNumber, context: nil, characters: "a",
+                charactersIgnoringModifiers: "a", isARepeat: false, keyCode: 0))
+    }
+
+    /// A drag session the test hands to a view the way AppKit would: a bare, file-less pasteboard and
+    /// a location in the window.
+    private final class StubDragInfo: NSObject, NSDraggingInfo {
+        let window: NSWindow
+        let location: NSPoint
+        init(window: NSWindow, location: NSPoint) {
+            self.window = window
+            self.location = location
+        }
+        var draggingDestinationWindow: NSWindow? { window }
+        var draggingSourceOperationMask: NSDragOperation { .copy }
+        var draggingLocation: NSPoint { location }
+        var draggedImageLocation: NSPoint { location }
+        var draggedImage: NSImage? { nil }
+        var draggingPasteboard: NSPasteboard { NSPasteboard(name: .drag) }
+        var draggingSource: Any? { nil }
+        var draggingSequenceNumber: Int { 1 }
+        var draggingFormation: NSDraggingFormation = .default
+        var animatesToDestination: Bool = false
+        var numberOfValidItemsForDrop: Int = 1
+        var springLoadingHighlight: NSSpringLoadingHighlight { .none }
+        func slideDraggedImage(to screenPoint: NSPoint) {}
+        func resetSpringLoading() {}
+        func enumerateDraggingItems(
+            options enumOpts: NSDraggingItemEnumerationOptions, for view: NSView?,
+            classes classArray: [AnyClass], searchOptions: [NSPasteboard.ReadingOptionKey: Any],
+            using block: (NSDraggingItem, Int, UnsafeMutablePointer<ObjCBool>) -> Void
+        ) {}
+    }
+
+    private final class KeyRecipient: NSResponder {
+        var characters: [String] = []
+
+        override var acceptsFirstResponder: Bool { true }
+
+        override func keyDown(with event: NSEvent) {
+            characters.append(event.characters ?? "")
+        }
+    }
+
+    func testPathDrawingIgnoresClicksDragsDropsAndKeysWithoutMovingFocus() throws {
+        try eachLineState { state, appearance, panel in
+            let name = "\(state.name) under \(appearance.name)"
+            let window = NSWindow(
+                contentRect: NSRect(x: 0, y: 0, width: 600, height: 400), styleMask: [.titled],
+                backing: .buffered, defer: true)
+            window.isReleasedWhenClosed = false
+            window.contentView = panel
+            defer { window.close() }
+            let keyRecipient = KeyRecipient()
+            XCTAssertTrue(window.makeFirstResponder(keyRecipient), name)
+            panel.layoutSubtreeIfNeeded()
+            let responder = window.firstResponder
+            let shownBefore = visibleStrings(panel)
+            let pathBefore = panel.pathLine.stringValue
+
+            // The label, a blank point of the row's ground, and the hairline, in the window's
+            // coordinates (the panel fills the window's content, unflipped).
+            let label = panel.pathLine.convert(
+                NSPoint(x: panel.pathLine.bounds.midX, y: panel.pathLine.bounds.midY), to: nil)
+            let ground = panel.convert(
+                NSPoint(x: panel.bounds.maxX - 6, y: panel.pathRow.frame.midY), to: nil)
+            let hairline = panel.convert(
+                NSPoint(x: panel.bounds.midX, y: panel.pathHairline.frame.midY), to: nil)
+            for (place, point) in [
+                ("label", label), ("row ground", ground), ("hairline", hairline),
+            ] {
+                XCTAssertTrue(
+                    panel.hitTest(panel.convert(point, from: nil)).map {
+                        $0 === panel.pathLine || $0 === panel.pathRow || $0 === panel.pathHairline
+                    } ?? false,
+                    "\(name): the \(place) point lands on the path drawing")
+                for type in [NSEvent.EventType.leftMouseDown, .leftMouseDragged, .leftMouseUp] {
+                    window.sendEvent(try mouse(type, at: point, in: window))
+                }
+                // A drop at this point. AppKit offers a drag, and delivers its drop, to the nearest
+                // view at or above the hit view that registered a dragged type; none of them did, so
+                // nothing is offered. The hit view's own answers to the negotiation and the
+                // delivery refuse as well (its default prepare answer is true, so it is not asserted).
+                let hit = try XCTUnwrap(panel.hitTest(panel.convert(point, from: nil)))
+                var receiver: NSView? = hit
+                while let candidate = receiver {
+                    XCTAssertTrue(
+                        candidate.registeredDraggedTypes.isEmpty,
+                        "\(name): \(candidate) takes no drop at the \(place) (CP-367)")
+                    receiver = candidate.superview
+                }
+                let drag = StubDragInfo(window: window, location: point)
+                XCTAssertEqual(
+                    hit.draggingEntered(drag), [], "\(name): no drag is accepted at the \(place)")
+                XCTAssertFalse(
+                    hit.performDragOperation(drag),
+                    "\(name): no drop is delivered at the \(place)")
+            }
+            window.sendEvent(try keyDown(in: window))
+            XCTAssertEqual(keyRecipient.characters, ["a"], "\(name): the key was delivered")
+
+            XCTAssertTrue(
+                window.firstResponder === responder, "\(name): focus did not move (CP-367)")
+            XCTAssertEqual(panel.pathLine.stringValue, pathBefore, name)
+            XCTAssertEqual(visibleStrings(panel), shownBefore, name)
+            for view in descendants(of: panel) {
+                if let field = view as? NSTextField {
+                    XCTAssertFalse(field.isEditable, "\(name): \(field)")
+                }
+                if let text = view as? NSTextView {
+                    XCTAssertFalse(text.isEditable, "\(name): \(text)")
+                }
+            }
+            // Not controls, no first responder, no dragged type: AppKit offers a drag, and delivers a
+            // drop, only to a view that registered a type, and none of these did.
+            for view in [panel.pathRow, panel.pathHairline] as [NSView] {
+                XCTAssertFalse(view is NSControl, "\(name): \(view)")
+                XCTAssertFalse(view.acceptsFirstResponder, "\(name): \(view)")
+                XCTAssertTrue(view.registeredDraggedTypes.isEmpty, "\(name): \(view)")
+            }
+            XCTAssertTrue(panel.pathLine.registeredDraggedTypes.isEmpty, name)
+            XCTAssertFalse(panel.pathLine.isEditable, name)
+            XCTAssertFalse(panel.pathLine.isSelectable, name)
+            XCTAssertFalse(panel.pathLine.acceptsFirstResponder, name)
+        }
+    }
+
+    func testReplacingNestedPathWithRootPathKeepsTheFolderRelativeText() {
+        let panel = makePanel()
+
+        panel.show(path: "src/lib.rs", verdict: .text("fn main() {}\n", .plain))
+        XCTAssertEqual(panel.pathLine.stringValue, "src/lib.rs")
+        panel.show(path: "README", verdict: .text("hello\n", .plain))
+
+        XCTAssertEqual(panel.pathLine.stringValue, "README")
+        XCTAssertFalse(panel.pathLine.stringValue.hasPrefix("/"))
+        XCTAssertFalse(panel.pathLine.stringValue.hasPrefix("./"))
     }
 }

@@ -1,14 +1,16 @@
 import AppKit
 
-/// The code view's colours: the five code tokens, the `surface` ground, the base ink `primary` and
-/// the line numbers' `gutter` colour, each with the light and dark values of `docs/DESIGN.md`
-/// § Colors "The two themes". A colour resolves when it is drawn, so an appearance change recolours
-/// the text without the file being selected again (CP-314), the way `RootItemsView`'s bar colour
-/// does.
+/// The reading panel's colours: for the code view, the five code tokens, the `surface` ground, the
+/// base ink `primary` and the line numbers' `gutter` colour, and for the path line, `inkMuted` and
+/// the `line` hairline, each with the light and dark values of `docs/DESIGN.md` § Colors "The two
+/// themes". A colour resolves when it is drawn, so an appearance change recolours the text without
+/// the file being selected again (CP-314, CP-359), the way `RootItemsView`'s bar colour does.
 enum CodeColors {
     static let surface = dynamic(light: 0xFBFBFA, dark: 0x1B1C1E)
     static let primary = dynamic(light: 0x1E1F22, dark: 0xE7E7E4)
     static let gutter = dynamic(light: 0x6F7177, dark: 0x8E8F94)
+    static let inkMuted = dynamic(light: 0x5B5D63, dark: 0xABACB0)
+    static let line = dynamic(light: 0xD8D8D4, dark: 0x3B3C41)
     private static let keyword = dynamic(light: 0x7A2E8F, dark: 0xD0A2E6)
     private static let string = dynamic(light: 0x1A6B3A, dark: 0x8FD6A4)
     private static let number = dynamic(light: 0x9A4B00, dark: 0xF0B47A)
