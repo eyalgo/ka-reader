@@ -183,7 +183,7 @@ final class LaunchFlowSelectionTests: LaunchWindowTestCase {
         layOut(window)
         XCTAssertEqual(workbench.readingPanel.contentView.string, "from a\n", "a file is shown")
         // The presenter does not set it, and a window released on close would be freed under the
-        // test's own references.
+        // test's own references (change_design.md § 4, *Close test*; `WindowPresenting.swift`).
         window.isReleasedWhenClosed = false
         XCTAssertFalse(window.isDocumentEdited, "the window is not marked edited")
         XCTAssertNil(window.attachedSheet, "no sheet is attached before the close")
@@ -197,7 +197,8 @@ final class LaunchFlowSelectionTests: LaunchWindowTestCase {
         XCTAssertFalse(window.isVisible, "the window is closed")
         XCTAssertNil(window.attachedSheet, "no sheet is attached after the close")
         XCTAssertNil(NSApp.modalWindow, "the application has no modal window")
-        // An alert, a save panel or a confirmation would each be a window that was not there before.
+        // An alert, a save panel or a confirmation would each be a window that was not there
+        // before (change_design.md § 3, *LaunchFlowSelectionTests*).
         let visibleAfter = Set(NSApp.windows.filter(\.isVisible).map(ObjectIdentifier.init))
         XCTAssertTrue(visibleAfter.subtracting(visibleBefore).isEmpty, "no new window is visible")
     }

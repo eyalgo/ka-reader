@@ -2652,7 +2652,8 @@ final class ReadingPanelTests: XCTestCase {
 
         let shown = ShownFile(window: window, panel: workbench.readingPanel, intents: intents)
         // Asserted before anything is driven: a key sent while something else holds focus, or at
-        // a view that was never ready, would pass without testing the text view.
+        // a view that was never ready, would pass without testing the text view
+        // (change_design.md § 3, *What the shared fixture holds*).
         XCTAssertTrue(window.makeFirstResponder(shown.textView), "the text view takes focus")
         XCTAssertTrue(window.firstResponder === shown.textView, "the text view is first responder")
         XCTAssertFalse(shown.textView.isEditable, "the shown file's text view is not editable")
@@ -2689,7 +2690,8 @@ final class ReadingPanelTests: XCTestCase {
         let shown = makeShownFile()
         defer { shown.window.close() }
         // A pasteboard of this test's own, never the general one: that is the owner's clipboard,
-        // and an empty one would let the test pass having pasted nothing.
+        // and an empty one would let the test pass having pasted nothing (change_design.md § 4,
+        // *Paste test*).
         let pasteboard = NSPasteboard(name: NSPasteboard.Name("nozoki.tests.\(UUID().uuidString)"))
         defer { pasteboard.releaseGlobally() }
         let pasted = "PASTED INTO THE PANEL"
@@ -2701,7 +2703,7 @@ final class ReadingPanelTests: XCTestCase {
         let before = Drawn(shown.panel)
 
         // The answer is not asserted: what the text view returns for a refused paste is its own
-        // detail, and what the test owns is that nothing was written.
+        // detail, and what the test owns is that nothing was written (change_spec.md I-3).
         _ = shown.textView.readSelection(from: pasteboard)
 
         assertNothingChanged(since: before, in: shown)
@@ -2723,7 +2725,8 @@ final class ReadingPanelTests: XCTestCase {
 
         // A point over the text view, in the window's coordinates. The hit view is asserted to be
         // the text view or one of its descendants: a drop at any other point would walk another
-        // chain of views and pass without testing this one.
+        // chain of views and pass without testing this one (change_design.md § 3, *Not editable,
+        // takes no drop*).
         let point = textView.convert(
             NSPoint(x: textView.bounds.midX, y: textView.bounds.midY), to: nil)
         let hit = try XCTUnwrap(contentView.hitTest(frameView.convert(point, from: nil)))
@@ -2731,7 +2734,9 @@ final class ReadingPanelTests: XCTestCase {
             hit === textView || hit.isDescendant(of: textView), "the point is over the text")
 
         // AppKit offers a drag, and delivers its drop, to the nearest view at or above the hit view
-        // that registered a dragged type, so the walk goes up to the window's content view.
+        // that registered a dragged type, so the walk goes up to the window's content view: the
+        // ground `testPathDrawingIgnoresClicksDragsDropsAndKeysWithoutMovingFocus` states for the
+        // path drawing (CP-367).
         var receiver: NSView? = hit
         var reachedContentView = false
         while let candidate = receiver, !reachedContentView {
