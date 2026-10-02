@@ -2452,21 +2452,27 @@ final class ReadingPanelTests: XCTestCase {
                 charactersIgnoringModifiers: "a", isARepeat: false, keyCode: 0))
     }
 
-    /// A drag session the test hands to a view the way AppKit would: a bare, file-less pasteboard and
-    /// a location in the window.
+    /// A drag session the test hands to a view the way AppKit would: a pasteboard and a location in
+    /// the window. The pasteboard is the system's drag pasteboard unless the test hands one of its
+    /// own, which a test whose verdict depends on what is dropped must do.
     private final class StubDragInfo: NSObject, NSDraggingInfo {
         let window: NSWindow
         let location: NSPoint
-        init(window: NSWindow, location: NSPoint) {
+        let pasteboard: NSPasteboard
+        init(
+            window: NSWindow, location: NSPoint,
+            pasteboard: NSPasteboard = NSPasteboard(name: .drag)
+        ) {
             self.window = window
             self.location = location
+            self.pasteboard = pasteboard
         }
         var draggingDestinationWindow: NSWindow? { window }
         var draggingSourceOperationMask: NSDragOperation { .copy }
         var draggingLocation: NSPoint { location }
         var draggedImageLocation: NSPoint { location }
         var draggedImage: NSImage? { nil }
-        var draggingPasteboard: NSPasteboard { NSPasteboard(name: .drag) }
+        var draggingPasteboard: NSPasteboard { pasteboard }
         var draggingSource: Any? { nil }
         var draggingSequenceNumber: Int { 1 }
         var draggingFormation: NSDraggingFormation = .default
@@ -2746,7 +2752,19 @@ final class ReadingPanelTests: XCTestCase {
         }
         XCTAssertTrue(reachedContentView, "the walk reached the window's content view")
 
-        let drag = StubDragInfo(window: window, location: point)
+        // The drop carries text from a pasteboard of this test's own, never the system's drag
+        // pasteboard: that one is shared, so what it happened to hold would decide whether a text
+        // view that wrongly took the drop changed anything (the Swift packet's testing.md, "a test
+        // that shares state gets its own state").
+        let pasteboard = NSPasteboard(name: NSPasteboard.Name("nozoki.tests.\(UUID().uuidString)"))
+        defer { pasteboard.releaseGlobally() }
+        let dropped = "DROPPED ON THE PANEL"
+        pasteboard.clearContents()
+        XCTAssertTrue(pasteboard.setString(dropped, forType: .string))
+        XCTAssertEqual(pasteboard.string(forType: .string), dropped, "the drag holds the text")
+        XCTAssertFalse(textView.string.contains(dropped), "the file does not hold the text")
+
+        let drag = StubDragInfo(window: window, location: point, pasteboard: pasteboard)
         XCTAssertEqual(hit.draggingEntered(drag), [], "no drag is accepted over the text")
         XCTAssertFalse(hit.performDragOperation(drag), "no drop is delivered over the text")
 
