@@ -4,20 +4,21 @@
 # checks/tests/test_structure.sh — the tests of checks/structure.sh.
 #
 # WHY THIS EXISTS
-#   checks/structure.sh is the proof that the Rust source holds the unit and import rules, so a bug in
-#   it is a rule nobody is watching. These cases run the real script — never a copy of its rules. The
-#   script derives the product root from its own location, so every case copies the real script and
-#   a copy of crates/ into a fresh temporary root and plants a breach there by appending: the copy is
-#   the one tree a case may write to, and the tree this suite started in is only read.
-#   The technique is the one checks/tests/test_view.sh uses, which is the shell packet's technique
-#   minus its runner: this product has no Python, so the runner is this file (docs/nfdr.md § 9).
+#   checks/structure.sh is the proof that the Rust source holds the unit and import rules, so a
+#   bug in it is a rule nobody is watching. These cases run the real script — never a copy of its
+#   rules. The script derives the product root from its own location, so every case copies the
+#   real script and a copy of crates/ into a fresh temporary root and plants a breach there by
+#   appending: the copy is the one tree a case may write to, and the tree this suite started in
+#   is only read. The technique is the one checks/tests/test_view.sh uses, which is the shell
+#   packet's technique minus its runner: this product has no Python, so the runner is this file
+#   (docs/nfdr.md § 9).
 #
 # USAGE
 #   checks/tests/test_structure.sh
 #   NOZOKI_TEST_ONLY=<case> runs one case, and a name no case carries fails the run rather than
 #   running nothing.
-#   Only crates/ and the script are copied: the script reads nothing else, so a whole-tree copy would
-#   carry target/ build output and prove nothing more.
+#   Only crates/ and the script are copied: the script reads nothing else, so a whole-tree copy
+#   would carry target/ build output and prove nothing more.
 #
 # WHY NO `set -e`
 #   A case that fails must not end the run before the remaining cases report. Each case returns its
@@ -84,8 +85,8 @@ fail() {
   return 1
 }
 
-# A fresh product root holding a copy of crates/ and the real script, copied now — never a copy kept
-# beside this file. Sets R to its path.
+# A fresh product root holding a copy of crates/ and the real script, copied now — never a copy
+# kept beside this file. Sets R to its path.
 new_root() {
   R="$WORK/$1"
   mkdir -p "$R/checks" || return 1
@@ -413,7 +414,8 @@ test_originating_tree_is_unchanged() {
 
 # --- the cases of Task 2: the Apple-framework boundary ---
 
-# The floor of QC-9's Apple clause: every one of these is refused in nozoki-core in every form below.
+# The floor of QC-9's Apple clause: every one of these is refused in nozoki-core in every form
+# below.
 APPLE_FLOOR="objc objc2 objc2_foundation objc2_app_kit objc2_core_foundation objc_foundation objc_id block block2 dispatch dispatch2 cocoa cocoa_foundation core_foundation core_foundation_sys core_graphics core_graphics_types core_text core_services security_framework security_framework_sys system_configuration system_configuration_sys fsevent fsevent_sys io_kit_sys metal"
 
 test_case_1_core_apple_import_is_rejected() {
@@ -451,8 +453,8 @@ test_apple_framework_attribute_is_rejected() {
   expect_stderr_empty || return 1
 }
 
-# Every name of the floor, as a path, an absolute path, an extern crate, a use root and a use member —
-# on one line, across lines and nested.
+# Every name of the floor, as a path, an absolute path, an extern crate, a use root and a use
+# member — on one line, across lines and nested.
 test_every_apple_floor_form_is_rejected() {
   new_root floor || return 1
   expected_lines=""
@@ -521,8 +523,8 @@ test_apple_scope_and_near_names() {
   expect_finding "crates/$CORE_FILE" "$string_line" QC-9 || return 1
 }
 
-# A comment inside a grouped import may hold `}` and `;`. They are text, not structure: the real member
-# after them still ends in the clause's breach, and the comment's own text stays scanned.
+# A comment inside a grouped import may hold `}` and `;`. They are text, not structure: the real
+# member after them still ends in the clause's breach, and the comment's own text stays scanned.
 test_apple_member_after_comment_punctuation_is_rejected() {
   new_root apple-comment-punctuation || return 1
   plant "$R" "$CORE_FILE" 'use some::{
@@ -671,8 +673,8 @@ test_process_spellings_and_near_names() {
 
 # --- the cases of Task 4: filesystem ownership and the complete suite ---
 
-# The libc calls QC-15 refuses outside an owner. fd-generic read, write and close are not among them:
-# by name they cannot be told from socket or pipe I/O.
+# The libc calls QC-15 refuses outside an owner. fd-generic read, write and close are not among
+# them: by name they cannot be told from socket or pipe I/O.
 LIBC_FILE_CALLS="open openat creat fopen fdopen freopen opendir fdopendir readdir stat lstat fstat fstatat access faccessat mkdir mkdirat rmdir unlink unlinkat rename renameat truncate ftruncate readlink readlinkat symlink link chmod fchmod chown realpath"
 
 CORE_OWNER="nozoki-core/src/fs_reader.rs"
