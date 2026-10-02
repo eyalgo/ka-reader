@@ -65,6 +65,16 @@ test_raw_process_text_is_scanned
 test_nested_source_paths_are_scanned
 test_every_file_reports_in_one_run
 test_process_spellings_and_near_names
+test_case_5_core_non_owner_filesystem_is_rejected
+test_case_7_crate_tests_are_excluded
+test_filesystem_grouped_imports_use_the_member_line
+test_bridge_non_owner_filesystem_is_rejected
+test_inline_test_module_is_scanned
+test_every_filesystem_module_and_third_crate_is_checked
+test_owner_exemption_is_exact_and_clause_specific
+test_libc_filesystem_floor_is_rejected
+test_non_filesystem_forms_pass
+test_complete_clean_tree_passes
 "
 
 # --- helpers ---
@@ -657,6 +667,230 @@ test_process_spellings_and_near_names() {
   run_structure "$R"
   expect_status 0 || return 1
   expect_stderr_empty || return 1
+}
+
+# --- the cases of Task 4: filesystem ownership and the complete suite ---
+
+# The libc calls QC-15 refuses outside an owner. fd-generic read, write and close are not among them:
+# by name they cannot be told from socket or pipe I/O.
+LIBC_FILE_CALLS="open openat creat fopen fdopen freopen opendir fdopendir readdir stat lstat fstat fstatat access faccessat mkdir mkdirat rmdir unlink unlinkat rename renameat truncate ftruncate readlink readlinkat symlink link chmod fchmod chown realpath"
+
+CORE_OWNER="nozoki-core/src/fs_reader.rs"
+BRIDGE_OWNER="nozoki-bridge/src/log_writer.rs"
+
+test_case_5_core_non_owner_filesystem_is_rejected() {
+  new_root case5 || return 1
+  plant "$R" "$CORE_FILE" 'fn f() { let _ = std::fs::read("x"); }'
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_finding "crates/$CORE_FILE" "$PLANT_LINE" QC-15
+}
+
+# Cases 1, 2, 3 and 5 together, where the scan does not look.
+test_case_7_crate_tests_are_excluded() {
+  new_root case7 || return 1
+  plant "$R" "nozoki-core/tests/planted.rs" 'use objc2::runtime::AnyObject;
+fn f() { unsafe {} }
+use std::process::Command;
+fn g() { let _ = std::fs::read("x"); }'
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+}
+
+test_filesystem_grouped_imports_use_the_member_line() {
+  new_root grouped-fs || return 1
+  member_lines=""
+  plant "$R" "$CORE_FILE" 'use std::{fs, io};'
+  member_lines="$member_lines $PLANT_LINE"
+  plant "$R" "$CORE_FILE" 'use std::{
+    io,
+    fs,
+};'
+  member_lines="$member_lines $((PLANT_LINE + 2))"
+  plant "$R" "$CORE_FILE" 'use std::{io::{self, Read}, fs::{self, File}};'
+  member_lines="$member_lines $PLANT_LINE"
+  plant "$R" "$CORE_FILE" 'use std::{
+    io::{
+        self,
+        Read,
+    },
+    fs::{
+        self,
+        File,
+    },
+};'
+  member_lines="$member_lines $((PLANT_LINE + 5))"
+  plant "$R" "$CORE_FILE" 'use ::std::{io, fs};'
+  member_lines="$member_lines $PLANT_LINE"
+  plant "$R" "$CORE_FILE" 'use rustix::{fd, fs};'
+  member_lines="$member_lines $PLANT_LINE"
+  plant "$R" "$CORE_FILE" 'use rustix::{
+    fd,
+    fs,
+};'
+  member_lines="$member_lines $((PLANT_LINE + 2))"
+  plant "$R" "$CORE_FILE" 'use std::{
+    io, // a stray } and ; end nothing
+    /* nor does this } ; one */ fs,
+};'
+  member_lines="$member_lines $((PLANT_LINE + 2))"
+  run_structure "$R"
+  expect_status 1 || return 1
+  for member_line in $member_lines; do
+    expect_finding "crates/$CORE_FILE" "$member_line" QC-15 || return 1
+  done
+  [ "$(count_identifier QC-15)" -eq 8 ] || fail "expected one finding per import, 8 in all. stderr: $STDERR" || return 1
+}
+
+# The bridge's one owner is log_writer.rs, so every other bridge file owns no filesystem primitive.
+test_bridge_non_owner_filesystem_is_rejected() {
+  new_root bridge-fs || return 1
+  plant "$R" "$BRIDGE_FILE" 'fn f() { let _ = std::fs::read("x"); }'
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_finding "crates/$BRIDGE_FILE" "$PLANT_LINE" QC-15
+}
+
+# A #[cfg(test)] module in src/ is read like the rest of its file.
+test_inline_test_module_is_scanned() {
+  new_root inline-tests || return 1
+  plant "$R" "$CORE_FILE" '#[cfg(test)]
+mod tests {
+    #[test]
+    fn writes() { let _ = std::fs::write("x", "y"); }
+}'
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_finding "crates/$CORE_FILE" "$((PLANT_LINE + 3))" QC-15
+}
+
+test_every_filesystem_module_and_third_crate_is_checked() {
+  new_root fs-modules || return 1
+  module_lines=""
+  for module in 'std::fs' 'std::os::unix::fs' 'std::os::macos::fs' 'std::os::linux::fs' 'rustix::fs' 'std :: fs' 'std::os::unix :: fs'; do
+    plant "$R" "$CORE_FILE" "fn f() { let _ = $module::read; }"
+    module_lines="$module_lines $PLANT_LINE"
+  done
+  plant "$R" "$CORE_FILE" 'fn g() { std
+    ::
+    fs::read("x"); }'
+  module_lines="$module_lines $((PLANT_LINE + 2))"
+  run_structure "$R"
+  expect_status 1 || return 1
+  for module_line in $module_lines; do
+    expect_finding "crates/$CORE_FILE" "$module_line" QC-15 || return 1
+  done
+  new_root third-crate-fs || return 1
+  plant "$R" "nozoki-extra/src/lib.rs" 'fn f() { let _ = std::fs::read("x"); }'
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_finding "crates/nozoki-extra/src/lib.rs" "$PLANT_LINE" QC-15
+}
+
+# Exactly two files are exempt, only from QC-15: the same basenames anywhere else are not, and the
+# other rules still apply inside an owner.
+test_owner_exemption_is_exact_and_clause_specific() {
+  new_root owners || return 1
+  plant "$R" "$CORE_OWNER" 'fn f() { let _ = std::fs::write("x", "y"); let _ = std::os::unix::fs::symlink("a", "b"); let _ = rustix::fs::stat("x"); let _ = libc::open; }'
+  plant "$R" "$BRIDGE_OWNER" 'fn f() { let _ = std::fs::write("x", "y"); let _ = libc::unlink; }'
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+  new_root owners-elsewhere || return 1
+  elsewhere="nozoki-core/src/sub/fs_reader.rs nozoki-bridge/src/fs_reader.rs nozoki-core/src/log_writer.rs nozoki-bridge/src/sub/log_writer.rs nozoki-extra/src/fs_reader.rs nozoki-extra/src/log_writer.rs"
+  for elsewhere_file in $elsewhere; do
+    plant "$R" "$elsewhere_file" 'fn f() { let _ = std::fs::write("x", "y"); }'
+  done
+  run_structure "$R"
+  expect_status 1 || return 1
+  for elsewhere_file in $elsewhere; do
+    expect_finding "crates/$elsewhere_file" 1 QC-15 || return 1
+  done
+  new_root owners-other-rules || return 1
+  plant "$R" "$CORE_OWNER" 'fn f() { unsafe {} }'
+  core_unsafe_line="$PLANT_LINE"
+  plant "$R" "$CORE_OWNER" 'use std::process::Command;'
+  core_process_line="$PLANT_LINE"
+  plant "$R" "$CORE_OWNER" 'use objc2::runtime::AnyObject;'
+  core_apple_line="$PLANT_LINE"
+  plant "$R" "$BRIDGE_OWNER" 'use std::process::Command;'
+  bridge_process_line="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_finding "crates/$CORE_OWNER" "$core_unsafe_line" QC-9 || return 1
+  expect_finding "crates/$CORE_OWNER" "$core_process_line" QC-36 || return 1
+  expect_finding "crates/$CORE_OWNER" "$core_apple_line" QC-9 || return 1
+  expect_finding "crates/$BRIDGE_OWNER" "$bridge_process_line" QC-36 || return 1
+  [ "$(count_identifier QC-15)" -eq 0 ] || fail "an owner is exempt from QC-15 and nothing else. stderr: $STDERR" || return 1
+}
+
+# Every refused libc call, as a path, an absolute path and a use member, outside the owners.
+test_libc_filesystem_floor_is_rejected() {
+  new_root libc-floor || return 1
+  expected_lines=""
+  for call in $LIBC_FILE_CALLS; do
+    plant "$R" "$CORE_FILE" "fn path_$call() { libc::$call(); }
+fn absolute_$call() { ::libc::$call(); }
+use libc::$call;
+use libc::{c_char, $call};
+use libc::{
+    c_int,
+    $call,
+};
+fn spaced_$call() { libc :: $call(); }"
+    for offset in 0 1 2 3 6 7; do
+      expected_lines="$expected_lines $((PLANT_LINE + offset))"
+    done
+  done
+  run_structure "$R"
+  expect_status 1 || return 1
+  for expected_line in $expected_lines; do
+    expect_finding "crates/$CORE_FILE" "$expected_line" QC-15 || fail "libc call at line $expected_line not refused" || return 1
+  done
+  new_root libc-open || return 1
+  plant "$R" "$CORE_FILE" 'fn f() { let _ = unsafe_free(libc::open("x", 0)); }'
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_finding "crates/$CORE_FILE" "$PLANT_LINE" QC-15
+}
+
+# What the rule leaves alone, so that it is read as no coverage of it: compile-time inclusions, the
+# bridge's password-database calls, fd-generic libc calls, Path methods and near names.
+test_non_filesystem_forms_pass() {
+  new_root non-fs || return 1
+  plant "$R" "$CORE_FILE" 'const A: &str = include_str!("a.txt"); const B: &[u8] = include_bytes!("b.bin");'
+  plant "$R" "$BRIDGE_FILE" 'fn f() { let mut p: libc::passwd = zeroed(); libc::getpwuid_r(libc::getuid(), &mut p, buf, n, out); let _ = libc::ERANGE; let _: *const libc::c_char; }'
+  plant "$R" "$BRIDGE_FILE" 'fn g() { libc::read(fd, b, n); libc::write(fd, b, n); libc::close(fd); }'
+  plant "$R" "$BRIDGE_FILE" 'use libc::{read, write, close, c_char, getpwuid_r};'
+  plant "$R" "$CORE_FILE" 'fn h(path: &std::path::Path) -> bool { path.exists() || path.metadata().is_ok() || path.read_dir().is_ok() }'
+  plant "$R" "$CORE_FILE" 'use std::path::Path; use std::{io, path::PathBuf};'
+  plant "$R" "$CORE_FILE" 'use fs_extra::dir; use std::fsx; use mystd::fs::read; use crate::fs::read; use some::{first, fs};'
+  plant "$R" "$CORE_FILE" 'fn i() { let fs = 1; let _ = fs + 1; libc::openx(); libc::stat_t(); mylibc::open(); rustix::fsx::read(); crate::libc::open(); }'
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+}
+
+# S1 over the whole checker: the copy holds every form the clean tree is said to hold, and passes.
+test_complete_clean_tree_passes() {
+  new_root complete-clean || return 1
+  grep -q 'unsafe' "$R"/crates/nozoki-bridge/src/*.rs || fail "the copy no longer holds the bridge's unsafe" || return 1
+  grep -q 'std::fs' "$R/crates/$CORE_OWNER" || fail "the copy no longer holds the core owner's filesystem module" || return 1
+  grep -q 'std::fs' "$R/crates/$BRIDGE_OWNER" || fail "the copy no longer holds the bridge owner's filesystem module" || return 1
+  grep -q 'include_str!' "$R/crates/nozoki-core/src/highlighter.rs" || fail "the copy no longer holds highlighter.rs's include_str!" || return 1
+  grep -q 'libc::getpwuid_r' "$R/crates/nozoki-bridge/src/log_install.rs" || fail "the copy no longer holds log_install.rs's getpwuid_r" || return 1
+  [ -d "$R/crates/nozoki-core/tests" ] || fail "the copy no longer holds the excluded tests/ files" || return 1
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+  lines="$(printf '%s\n' "$STDOUT" | wc -l | tr -d ' ')"
+  [ "$lines" -eq 1 ] || fail "expected one stdout line on a pass, got $lines: $STDOUT" || return 1
+  expected_counts "$R"
+  case "$STDOUT" in
+    *" $EXPECT_FILES Rust files in $EXPECT_CRATE_COUNT crates "*"nothing found"*) ;;
+    *) fail "expected the counts $EXPECT_FILES files and $EXPECT_CRATE_COUNT crates and 'nothing found'. stdout: $STDOUT" || return 1 ;;
+  esac
 }
 
 # --- runner ---
