@@ -2709,4 +2709,41 @@ final class ReadingPanelTests: XCTestCase {
         XCTAssertFalse(
             shown.textView.validateMenuItem(pasteItem), "the text view refuses paste at validation")
     }
+
+    func testAShownFilesTextViewIsNotEditableAndNothingUpToTheWindowTakesADrop() throws {
+        let shown = makeShownFile()
+        defer { shown.window.close() }
+        let window = shown.window
+        let contentView = try XCTUnwrap(window.contentView)
+        let frameView = try XCTUnwrap(contentView.superview)
+        let textView = shown.textView
+        XCTAssertFalse(textView.isEditable)
+        let before = Drawn(shown.panel)
+
+        // A point over the text view, in the window's coordinates. The hit view is asserted to be
+        // the text view or one of its descendants: a drop at any other point would walk another
+        // chain of views and pass without testing this one.
+        let point = textView.convert(
+            NSPoint(x: textView.bounds.midX, y: textView.bounds.midY), to: nil)
+        let hit = try XCTUnwrap(contentView.hitTest(frameView.convert(point, from: nil)))
+        XCTAssertTrue(
+            hit === textView || hit.isDescendant(of: textView), "the point is over the text")
+
+        // AppKit offers a drag, and delivers its drop, to the nearest view at or above the hit view
+        // that registered a dragged type, so the walk goes up to the window's content view.
+        var receiver: NSView? = hit
+        var reachedContentView = false
+        while let candidate = receiver, !reachedContentView {
+            XCTAssertTrue(candidate.registeredDraggedTypes.isEmpty, "\(candidate) takes no drop")
+            reachedContentView = candidate === contentView
+            receiver = candidate.superview
+        }
+        XCTAssertTrue(reachedContentView, "the walk reached the window's content view")
+
+        let drag = StubDragInfo(window: window, location: point)
+        XCTAssertEqual(hit.draggingEntered(drag), [], "no drag is accepted over the text")
+        XCTAssertFalse(hit.performDragOperation(drag), "no drop is delivered over the text")
+
+        assertNothingChanged(since: before, in: shown)
+    }
 }
