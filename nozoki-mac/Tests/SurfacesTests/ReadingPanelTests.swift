@@ -833,8 +833,9 @@ final class ReadingPanelTests: XCTestCase {
     }
 
     /// `labels` says where a number is drawn, and `draw(_:)` is the one that has to agree: the ink of
-    /// a digit 1, which has no descender, ends on the label's baseline and at the column's right edge.
-    func testTheDrawnNumberStandsOnItsLabelsBaselineAtTheRightEdge() throws {
+    /// a digit 1, which has no descender, ends on the label's baseline and at the label's x, which is
+    /// `{spacing.sm}` (8 points) inside the column's right edge.
+    func testTheDrawnNumberStandsOnItsLabelsBaselineEightPointsInsideTheRightEdge() throws {
         let (gutter, _) = makeGutter("1\n")
         gutter.appearance = aqua
         gutter.frame = NSRect(x: 0, y: 0, width: gutter.width, height: 40)
