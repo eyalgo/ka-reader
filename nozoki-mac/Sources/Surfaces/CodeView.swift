@@ -116,9 +116,10 @@ final class CodeView: NSView {
     }
 }
 
-/// The actions the reading panel's text menu offers: Copy and nothing else (R-49, CP-377 – CP-379).
-/// A keep-list rather than a strike-list, so an entry a later macOS adds is out by construction.
-/// The selector is compile-time: `NSSelectorFromString` is a refused token (`checks/view.sh`).
+// The actions the reading panel's text menu offers: Copy and nothing else (R-49, CP-377 – CP-379).
+// A keep-list rather than a strike-list, so an entry a later macOS adds is out by construction
+// (change_design.md § 4). The selector is compile-time: `NSSelectorFromString` is a refused token
+// (`checks/view.sh`, family F10).
 private let keptTextMenuActions: [Selector] = [#selector(NSText.copy(_:))]
 
 /// A new menu holding copies of the top-level entries of `menu` whose action the panel keeps, or
@@ -134,10 +135,11 @@ func keptTextMenu(from menu: NSMenu) -> NSMenu? {
     guard !kept.isEmpty else { return nil }
     let filtered = NSMenu(title: menu.title)
     for item in kept {
-        guard let copy = item.copy() as? NSMenuItem else { continue }
+        guard let copy = item.copy() as? NSMenuItem else {
+            preconditionFailure("NSMenuItem.copy() answers an NSMenuItem")
+        }
         filtered.addItem(copy)
     }
-    guard !filtered.items.isEmpty else { return nil }
     filtered.allowsContextMenuPlugIns = false
     if #available(macOS 15.2, *) {
         filtered.automaticallyInsertsWritingToolsItems = false
