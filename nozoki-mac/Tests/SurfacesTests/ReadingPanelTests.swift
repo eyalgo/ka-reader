@@ -2683,4 +2683,30 @@ final class ReadingPanelTests: XCTestCase {
 
         assertNothingChanged(since: before, in: shown)
     }
+
+    func testAPasteIntoAShownFileChangesNothingAndRaisesNoIntent() {
+        let shown = makeShownFile()
+        defer { shown.window.close() }
+        // A pasteboard of this test's own, never the general one: that is the owner's clipboard,
+        // and an empty one would let the test pass having pasted nothing.
+        let pasteboard = NSPasteboard(name: NSPasteboard.Name("nozoki.tests.\(UUID().uuidString)"))
+        defer { pasteboard.releaseGlobally() }
+        let pasted = "PASTED INTO THE PANEL"
+        pasteboard.clearContents()
+        XCTAssertTrue(pasteboard.setString(pasted, forType: .string))
+        XCTAssertEqual(
+            pasteboard.string(forType: .string), pasted, "the pasteboard holds the paste")
+        XCTAssertFalse(shown.textView.string.contains(pasted), "the file does not hold the paste")
+        let before = Drawn(shown.panel)
+
+        // The answer is not asserted: what the text view returns for a refused paste is its own
+        // detail, and what the test owns is that nothing was written.
+        _ = shown.textView.readSelection(from: pasteboard)
+
+        assertNothingChanged(since: before, in: shown)
+        let pasteItem = NSMenuItem(
+            title: "Paste", action: #selector(NSText.paste(_:)), keyEquivalent: "")
+        XCTAssertFalse(
+            shown.textView.validateMenuItem(pasteItem), "the text view refuses paste at validation")
+    }
 }
