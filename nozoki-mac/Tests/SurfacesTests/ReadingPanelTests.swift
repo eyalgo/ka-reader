@@ -2946,4 +2946,74 @@ final class ReadingPanelTests: XCTestCase {
         XCTAssertEqual(separatorFaults(in: unselected), [], "no selection")
         XCTAssertEqual(separatorFaults(in: selected), [], "`fn` selected")
     }
+
+    // The filter, driven with menus the tests build (change_design.md § 5, T5 and T7).
+
+    private func menuItem(_ title: String, _ action: Selector?) -> NSMenuItem {
+        NSMenuItem(title: title, action: action, keyEquivalent: "")
+    }
+
+    func testTextMenuRejectsUnlistedEditingActionsAndKeepsInputWhole() throws {
+        let transformations = NSMenu(title: "Transformations")
+        transformations.addItem(
+            menuItem("Make Upper Case", #selector(NSResponder.uppercaseWord(_:))))
+        let transformationsItem = menuItem("Transformations", nil)
+        transformationsItem.submenu = transformations
+        let input = NSMenu(title: "")
+        input.addItem(menuItem("Copy", #selector(NSText.copy(_:))))
+        input.addItem(.separator())
+        // A title no macOS offers: the rule is the action, not a list of today's titles.
+        input.addItem(menuItem("Shout Louder", #selector(NSResponder.lowercaseWord(_:))))
+        input.addItem(transformationsItem)
+
+        let kept = try XCTUnwrap(keptTextMenu(from: input))
+
+        XCTAssertEqual(kept.items.map(\.title), ["Copy"])
+        XCTAssertEqual(kept.items.map(\.action), [#selector(NSText.copy(_:))])
+        XCTAssertEqual(input.items.count, 4, "the input keeps all its entries")
+        XCTAssertEqual(input.items[3].submenu?.items.map(\.title), ["Make Upper Case"])
+    }
+
+    func testMenuWithNoKeptActionReturnsNoMenu() {
+        let editingOnly = NSMenu(title: "")
+        editingOnly.addItem(menuItem("Cut", #selector(NSText.cut(_:))))
+        editingOnly.addItem(menuItem("Paste", #selector(NSText.paste(_:))))
+
+        XCTAssertNil(keptTextMenu(from: editingOnly))
+        XCTAssertNil(keptTextMenu(from: NSMenu(title: "")), "an empty menu keeps nothing either")
+    }
+
+    func testMenuUsesActionsRatherThanLocalizedTitles() throws {
+        let input = NSMenu(title: "")
+        input.addItem(menuItem("Kopieren", #selector(NSText.copy(_:))))
+        input.addItem(menuItem("Copy", #selector(NSText.paste(_:))))
+
+        let kept = try XCTUnwrap(keptTextMenu(from: input))
+
+        XCTAssertEqual(kept.items.map(\.title), ["Kopieren"], "a localized Copy stays")
+        XCTAssertEqual(kept.items.map(\.action), [#selector(NSText.copy(_:))])
+    }
+
+    func testKeptMenuItemIsAnIndependentCopyWithItsStockProperties() throws {
+        let target = NSObject()
+        let original = NSMenuItem(
+            title: "Copy", action: #selector(NSText.copy(_:)), keyEquivalent: "c")
+        original.target = target
+        original.isEnabled = false
+        let input = NSMenu(title: "")
+        input.addItem(original)
+
+        let kept = try XCTUnwrap(keptTextMenu(from: input)).items[0]
+
+        XCTAssertFalse(kept === original, "not the input's own item")
+        XCTAssertEqual(kept.title, "Copy")
+        XCTAssertTrue(kept.target === target)
+        XCTAssertEqual(kept.action, #selector(NSText.copy(_:)))
+        XCTAssertEqual(kept.keyEquivalent, "c")
+        XCTAssertFalse(kept.isEnabled)
+        kept.title = "Changed"
+        kept.isEnabled = true
+        XCTAssertEqual(original.title, "Copy")
+        XCTAssertFalse(original.isEnabled)
+    }
 }
