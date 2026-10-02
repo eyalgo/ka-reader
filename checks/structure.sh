@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Version: 1.0.0 — first version: the Rust source scan over crates/ — QC-9's unsafe clause
+# Version: 1.0.0 — first version: the Rust source scan over crates/ — QC-9's unsafe and Apple-framework clauses
 #
 # checks/structure.sh — proves the Rust source holds the unit and import rules.
 #
@@ -34,6 +34,19 @@
 # THE SCAN TABLE
 #   A token is an identifier matched whole: a word character ([A-Za-z0-9_]) on either side means no
 #   match, so `unsafe_code` is not `unsafe`. "QC-n" is docs/nfdr.md.
+#     QC-9   Apple        In nozoki-core only. The list of forms is a floor: this script may refuse more
+#            framework    forms, never fewer. The attribute form `kind = "framework"`, with any
+#                         whitespace (a newline included) around `=`. Each name below, in any of: a path
+#                         root (`X::`, with no word character and no `::` before it — an absolute
+#                         `::X::` counts, a `crate::X::` or `.X::<T>` does not), the crate of an
+#                         `extern crate X`, or the first segment or a member of a `use` tree, the tree
+#                         read across lines and nested. The names: objc, objc2, any objc2_*,
+#                         objc_foundation, objc_id, block, block2, dispatch, dispatch2, cocoa,
+#                         cocoa_foundation, core_foundation, core_foundation_sys, core_graphics,
+#                         core_graphics_types, core_text, core_services, security_framework,
+#                         security_framework_sys, system_configuration, system_configuration_sys,
+#                         fsevent, fsevent_sys, io_kit_sys, metal. A name in a comment or a string is
+#                         read as the path it spells. Source: QC-9's imports clause.
 #     QC-9   unsafe       The token `unsafe`, in every use (block, fn, impl, extern, #[unsafe(…)]), in
 #                         every crate except nozoki-bridge. Source: QC-9's "unsafe appearing in no
 #                         crate but nozoki-bridge".
@@ -105,10 +118,73 @@ function add_unsafe(ln) {
   if (!is_bridge) note(ln, "QC-9", "`unsafe` outside nozoki-bridge")
 }
 
+function add_apple(ln, form) {
+  if (is_core) note(ln, "QC-9", "Apple framework or binding `" form "` in nozoki-core")
+}
+
+function is_apple(w) {
+  if (w ~ /^objc2_/) return 1
+  return index(APPLE, " " w " ") > 0
+}
+
+function is_word_token(w) {
+  return w ~ /^[A-Za-z0-9_]/
+}
+
+# A path starts here: no `.` before it (a method's turbofish) and no `::` before it unless that `::`
+# is itself at the head of the path, as in `::X::`, so `crate::X::` and `a::b::X::` do not start at X.
+function is_root(t, k,    p, pp) {
+  p = (k > 1) ? t[k - 1] : ""
+  if (p == ".") return 0
+  if (p != "::") return 1
+  pp = (k > 2) ? t[k - 2] : ""
+  return !is_word_token(pp)
+}
+
+# What a segment of a `use` tree means: $1 is the path before it, $2 the first segment of its path, $3
+# the segment, $4 whether it starts a path or a member of the tree, $5 its line.
+function use_segment(parent, first, w, atstart, ln) {
+  if (atstart && is_apple(w)) add_apple(ln, w)
+}
+
+# Each `use` item runs from `use` to the `;` at brace depth zero, read across lines. The tree is walked
+# with a stack of the paths before each `{`; `cur` is the path of the member being read.
+function scan_use_trees(t, l, n,    k, m, sp, cur, atstart, skip, w, parent, p, first) {
+  for (k = 1; k <= n; k++) {
+    if (t[k] != "use") continue
+    sp = 0; base[0] = ""; cur = ""; atstart = 1; skip = 0
+    for (m = k + 1; m <= n; m++) {
+      w = t[m]
+      if (w == ";" && sp == 0) break
+      if (w == "::") continue
+      if (w == "{") { sp++; base[sp] = cur; atstart = 1; continue }
+      if (w == "}") { if (sp > 0) { cur = base[sp]; sp-- }; atstart = 0; continue }
+      if (w == ",") { cur = base[sp]; atstart = 1; continue }
+      if (w == "as") { skip = 1; continue }
+      if (!is_word_token(w)) continue
+      if (skip) { skip = 0; continue }
+      parent = cur
+      cur = (cur == "") ? w : cur "::" w
+      p = index(cur, "::")
+      first = (p > 0) ? substr(cur, 1, p - 1) : cur
+      use_segment(parent, first, w, atstart, l[m])
+      atstart = 0
+    }
+    k = m
+  }
+}
+
 function scan_stream(t, l, n,    k) {
   for (k = 1; k <= n; k++) {
     if (t[k] == "unsafe") add_unsafe(l[k])
+    if (t[k] == "kind" && t[k + 1] == "=" && t[k + 2] == "\"" && t[k + 3] == "framework" && t[k + 4] == "\"") add_apple(l[k], "kind = \"framework\"")
+    if (t[k] == "extern" && t[k + 1] == "crate" && is_apple(t[k + 2])) add_apple(l[k + 2], t[k + 2])
+    if (is_word_token(t[k]) && t[k + 1] == "::" && is_root(t, k) && is_apple(t[k])) add_apple(l[k], t[k])
   }
+}
+
+BEGIN {
+  APPLE = " objc objc2 objc_foundation objc_id block block2 dispatch dispatch2 cocoa cocoa_foundation core_foundation core_foundation_sys core_graphics core_graphics_types core_text core_services security_framework security_framework_sys system_configuration system_configuration_sys fsevent fsevent_sys io_kit_sys metal "
 }
 
 {
@@ -169,6 +245,7 @@ END {
   for (k = 1; k <= nt; k++) if (tkind[k] == "k") { nc++; ct[nc] = tk[k]; cl[nc] = tl[k] }
   scan_stream(tk, tl, nt)
   scan_stream(ct, cl, nc)
+  scan_use_trees(ct, cl, nc)
   split("QC-9 QC-15 QC-36", order, " ")
   for (ln = 1; ln <= maxline; ln++)
     for (q = 1; q <= 3; q++) {
@@ -207,13 +284,15 @@ else
     file_count=$((file_count + 1))
     crate_name="${relative#crates/}"
     crate_name="${crate_name%%/*}"
+    is_core=0
     is_bridge=0
+    [ "$crate_name" = "nozoki-core" ] && is_core=1
     [ "$crate_name" = "nozoki-bridge" ] && is_bridge=1
     if [ ! -r "$product_root/$relative" ]; then
       echo "cannot read $relative" >> "$work/causes"
       continue
     fi
-    LC_ALL=C awk -v rel="$relative" -v is_bridge="$is_bridge" \
+    LC_ALL=C awk -v rel="$relative" -v is_core="$is_core" -v is_bridge="$is_bridge" \
       -f "$work/scan.awk" "$product_root/$relative" >> "$work/findings" \
       || echo "the scan could not read $relative" >> "$work/causes"
   done < "$work/files"

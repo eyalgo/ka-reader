@@ -57,6 +57,7 @@ test_apple_framework_attribute_is_rejected
 test_every_apple_floor_form_is_rejected
 test_core_foundation_extern_is_rejected
 test_apple_scope_and_near_names
+test_apple_member_after_comment_punctuation_is_rejected
 "
 
 # --- helpers ---
@@ -501,6 +502,21 @@ test_apple_scope_and_near_names() {
   expect_status 1 || return 1
   expect_finding "crates/$CORE_FILE" "$comment_line" QC-9 || return 1
   expect_finding "crates/$CORE_FILE" "$string_line" QC-9 || return 1
+}
+
+# A comment inside a grouped import may hold `}` and `;`. They are text, not structure: the real member
+# after them still ends in the clause's breach, and the comment's own text stays scanned.
+test_apple_member_after_comment_punctuation_is_rejected() {
+  new_root apple-comment-punctuation || return 1
+  plant "$R" "$CORE_FILE" 'use some::{
+    first, // a stray } and ; end nothing
+    /* so does this } ; one */ objc2,
+    last,
+};'
+  member_line=$((PLANT_LINE + 2))
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_finding "crates/$CORE_FILE" "$member_line" QC-9
 }
 
 # --- runner ---
