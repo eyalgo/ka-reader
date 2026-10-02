@@ -833,8 +833,9 @@ final class ReadingPanelTests: XCTestCase {
     }
 
     /// `labels` says where a number is drawn, and `draw(_:)` is the one that has to agree: the ink of
-    /// a digit 1, which has no descender, ends on the label's baseline and at the column's right edge.
-    func testTheDrawnNumberStandsOnItsLabelsBaselineAtTheRightEdge() throws {
+    /// a digit 1, which has no descender, ends on the label's baseline and at the label's x, which is
+    /// `{spacing.sm}` (8 points) inside the column's right edge.
+    func testTheDrawnNumberStandsOnItsLabelsBaselineEightPointsInsideTheRightEdge() throws {
         let (gutter, _) = makeGutter("1\n")
         gutter.appearance = aqua
         gutter.frame = NSRect(x: 0, y: 0, width: gutter.width, height: 40)
@@ -2451,21 +2452,27 @@ final class ReadingPanelTests: XCTestCase {
                 charactersIgnoringModifiers: "a", isARepeat: false, keyCode: 0))
     }
 
-    /// A drag session the test hands to a view the way AppKit would: a bare, file-less pasteboard and
-    /// a location in the window.
+    /// A drag session the test hands to a view the way AppKit would: a pasteboard and a location in
+    /// the window. The pasteboard is the system's drag pasteboard unless the test hands one of its
+    /// own, which a test whose verdict depends on what is dropped must do.
     private final class StubDragInfo: NSObject, NSDraggingInfo {
         let window: NSWindow
         let location: NSPoint
-        init(window: NSWindow, location: NSPoint) {
+        let pasteboard: NSPasteboard
+        init(
+            window: NSWindow, location: NSPoint,
+            pasteboard: NSPasteboard = NSPasteboard(name: .drag)
+        ) {
             self.window = window
             self.location = location
+            self.pasteboard = pasteboard
         }
         var draggingDestinationWindow: NSWindow? { window }
         var draggingSourceOperationMask: NSDragOperation { .copy }
         var draggingLocation: NSPoint { location }
         var draggedImageLocation: NSPoint { location }
         var draggedImage: NSImage? { nil }
-        var draggingPasteboard: NSPasteboard { NSPasteboard(name: .drag) }
+        var draggingPasteboard: NSPasteboard { pasteboard }
         var draggingSource: Any? { nil }
         var draggingSequenceNumber: Int { 1 }
         var draggingFormation: NSDraggingFormation = .default
@@ -2584,5 +2591,183 @@ final class ReadingPanelTests: XCTestCase {
         XCTAssertEqual(panel.pathLine.stringValue, "README")
         XCTAssertFalse(panel.pathLine.stringValue.hasPrefix("/"))
         XCTAssertFalse(panel.pathLine.stringValue.hasPrefix("./"))
+    }
+
+    // MARK: - The panel cannot write (R-48, R-49)
+
+    /// What a test counts to know no intent was raised: the workbench's file selection and the
+    /// tree's folder listing.
+    @MainActor
+    private final class IntentCounts {
+        var selectFile = 0
+        var listTree = 0
+    }
+
+    /// A file shown in the reading panel of a workbench hosted in a window, with its text view the
+    /// first responder and both intents counted from zero.
+    @MainActor
+    private struct ShownFile {
+        let window: NSWindow
+        let panel: ReadingPanelView
+        let intents: IntentCounts
+
+        var textView: NSTextView { panel.contentView }
+    }
+
+    /// What the panel draws, read before and after a drive: the text, its attributes (a write
+    /// that only restyled the text would leave the string alone) and the path line.
+    @MainActor
+    private struct Drawn {
+        let text: String
+        let attributedText: NSAttributedString
+        let path: String
+
+        init(_ panel: ReadingPanelView) {
+            text = panel.contentView.string
+            attributedText = panel.contentView.attributedString()
+            path = panel.pathLine.stringValue
+        }
+    }
+
+    /// The tree lists `a.txt` so that a keystroke `a` which landed on the tree, and not on the
+    /// text view, would select it and raise `selectFile`: "no intent" then has something to catch.
+    private func makeShownFile() -> ShownFile {
+        let glyph = NSImage(size: NSSize(width: 1, height: 1))
+        let glyphs = StatusGlyphs(empty: glyph, failure: glyph)
+        let tree = RootItemsView(
+            folderGlyph: glyph, fileGlyph: glyph, fileCodeGlyph: glyph, statusGlyphs: glyphs)
+        tree.show(
+            .observed([
+                Entry(name: "a.txt", path: "a.txt", kind: .file, state: .observed),
+                Entry(name: "b.txt", path: "b.txt", kind: .file, state: .observed),
+            ]))
+        let workbench = WorkbenchView(rootItemsView: tree, statusGlyphs: glyphs)
+        let intents = IntentCounts()
+        workbench.selectFile = { _, _ in intents.selectFile += 1 }
+        tree.listTree = { _, _ in intents.listTree += 1 }
+
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 800, height: 500), styleMask: [.titled],
+            backing: .buffered, defer: true)
+        window.isReleasedWhenClosed = false
+        window.contentView = workbench
+        workbench.readingPanel.show(
+            path: "notes.txt", verdict: .text("first line\nsecond line\nthird line\n", .plain))
+        window.layoutIfNeeded()
+        window.layoutIfNeeded()
+
+        let shown = ShownFile(window: window, panel: workbench.readingPanel, intents: intents)
+        // Asserted before anything is driven: a key sent while something else holds focus, or at
+        // a view that was never ready, would pass without testing the text view
+        // (change_design.md § 3, *What the shared fixture holds*).
+        XCTAssertTrue(window.makeFirstResponder(shown.textView), "the text view takes focus")
+        XCTAssertTrue(window.firstResponder === shown.textView, "the text view is first responder")
+        XCTAssertFalse(shown.textView.isEditable, "the shown file's text view is not editable")
+        XCTAssertEqual(intents.selectFile, 0, "no selection was raised by setting up")
+        XCTAssertEqual(intents.listTree, 0, "no listing was raised by setting up")
+        return shown
+    }
+
+    private func assertNothingChanged(
+        since before: Drawn, in shown: ShownFile, file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        let after = Drawn(shown.panel)
+        XCTAssertEqual(after.text, before.text, "the text", file: file, line: line)
+        XCTAssertEqual(
+            after.attributedText, before.attributedText, "the attributed text", file: file,
+            line: line)
+        XCTAssertEqual(after.path, before.path, "the path line", file: file, line: line)
+        XCTAssertEqual(shown.intents.selectFile, 0, "selectFile raised", file: file, line: line)
+        XCTAssertEqual(shown.intents.listTree, 0, "listTree raised", file: file, line: line)
+    }
+
+    func testAKeystrokeIntoAShownFileChangesNothingAndRaisesNoIntent() throws {
+        let shown = makeShownFile()
+        defer { shown.window.close() }
+        let before = Drawn(shown.panel)
+
+        shown.window.sendEvent(try keyDown(in: shown.window))
+
+        assertNothingChanged(since: before, in: shown)
+    }
+
+    func testAPasteIntoAShownFileChangesNothingAndRaisesNoIntent() {
+        let shown = makeShownFile()
+        defer { shown.window.close() }
+        // A pasteboard of this test's own, never the general one: that is the owner's clipboard,
+        // and an empty one would let the test pass having pasted nothing (change_design.md § 4,
+        // *Paste test*).
+        let pasteboard = NSPasteboard(name: NSPasteboard.Name("nozoki.tests.\(UUID().uuidString)"))
+        defer { pasteboard.releaseGlobally() }
+        let pasted = "PASTED INTO THE PANEL"
+        pasteboard.clearContents()
+        XCTAssertTrue(pasteboard.setString(pasted, forType: .string))
+        XCTAssertEqual(
+            pasteboard.string(forType: .string), pasted, "the pasteboard holds the paste")
+        XCTAssertFalse(shown.textView.string.contains(pasted), "the file does not hold the paste")
+        let before = Drawn(shown.panel)
+
+        // The answer is not asserted: what the text view returns for a refused paste is its own
+        // detail, and what the test owns is that nothing was written (change_spec.md I-3).
+        _ = shown.textView.readSelection(from: pasteboard)
+
+        assertNothingChanged(since: before, in: shown)
+        let pasteItem = NSMenuItem(
+            title: "Paste", action: #selector(NSText.paste(_:)), keyEquivalent: "")
+        XCTAssertFalse(
+            shown.textView.validateMenuItem(pasteItem), "the text view refuses paste at validation")
+    }
+
+    func testAShownFilesTextViewIsNotEditableAndNothingUpToTheWindowTakesADrop() throws {
+        let shown = makeShownFile()
+        defer { shown.window.close() }
+        let window = shown.window
+        let contentView = try XCTUnwrap(window.contentView)
+        let frameView = try XCTUnwrap(contentView.superview)
+        let textView = shown.textView
+        XCTAssertFalse(textView.isEditable)
+        let before = Drawn(shown.panel)
+
+        // A point over the text view, in the window's coordinates. The hit view is asserted to be
+        // the text view or one of its descendants: a drop at any other point would walk another
+        // chain of views and pass without testing this one (change_design.md § 3, *Not editable,
+        // takes no drop*).
+        let point = textView.convert(
+            NSPoint(x: textView.bounds.midX, y: textView.bounds.midY), to: nil)
+        let hit = try XCTUnwrap(contentView.hitTest(frameView.convert(point, from: nil)))
+        XCTAssertTrue(
+            hit === textView || hit.isDescendant(of: textView), "the point is over the text")
+
+        // AppKit offers a drag, and delivers its drop, to the nearest view at or above the hit view
+        // that registered a dragged type, so the walk goes up to the window's content view: the
+        // ground `testPathDrawingIgnoresClicksDragsDropsAndKeysWithoutMovingFocus` states for the
+        // path drawing (CP-367).
+        var receiver: NSView? = hit
+        var reachedContentView = false
+        while let candidate = receiver, !reachedContentView {
+            XCTAssertTrue(candidate.registeredDraggedTypes.isEmpty, "\(candidate) takes no drop")
+            reachedContentView = candidate === contentView
+            receiver = candidate.superview
+        }
+        XCTAssertTrue(reachedContentView, "the walk reached the window's content view")
+
+        // The drop carries text from a pasteboard of this test's own, never the system's drag
+        // pasteboard: that one is shared, so what it happened to hold would decide whether a text
+        // view that wrongly took the drop changed anything (the Swift packet's testing.md, "a test
+        // that shares state gets its own state").
+        let pasteboard = NSPasteboard(name: NSPasteboard.Name("nozoki.tests.\(UUID().uuidString)"))
+        defer { pasteboard.releaseGlobally() }
+        let dropped = "DROPPED ON THE PANEL"
+        pasteboard.clearContents()
+        XCTAssertTrue(pasteboard.setString(dropped, forType: .string))
+        XCTAssertEqual(pasteboard.string(forType: .string), dropped, "the drag holds the text")
+        XCTAssertFalse(textView.string.contains(dropped), "the file does not hold the text")
+
+        let drag = StubDragInfo(window: window, location: point, pasteboard: pasteboard)
+        XCTAssertEqual(hit.draggingEntered(drag), [], "no drag is accepted over the text")
+        XCTAssertFalse(hit.performDragOperation(drag), "no drop is delivered over the text")
+
+        assertNothingChanged(since: before, in: shown)
     }
 }
