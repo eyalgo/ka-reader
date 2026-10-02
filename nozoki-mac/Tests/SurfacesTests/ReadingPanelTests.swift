@@ -2974,6 +2974,25 @@ final class ReadingPanelTests: XCTestCase {
         XCTAssertEqual(input.items[3].submenu?.items.map(\.title), ["Make Upper Case"])
     }
 
+    func testNestedCopyIsNotPromotedIntoTheTextMenu() throws {
+        let submenu = NSMenu(title: "Nested")
+        submenu.addItem(menuItem("Nested Copy", #selector(NSText.copy(_:))))
+        let parent = menuItem("Nested", nil)
+        parent.submenu = submenu
+        let input = NSMenu(title: "")
+        input.addItem(parent)
+
+        XCTAssertNil(keptTextMenu(from: input), "only top-level Copy entries may survive")
+
+        input.addItem(menuItem("Top-level Copy", #selector(NSText.copy(_:))))
+        let kept = try XCTUnwrap(keptTextMenu(from: input))
+
+        XCTAssertEqual(titles(of: kept), ["Top-level Copy"])
+        XCTAssertEqual(submenu.items.map(\.title), ["Nested Copy"])
+        XCTAssertTrue(input.items[0] === parent)
+        XCTAssertTrue(parent.submenu === submenu)
+    }
+
     func testMenuWithNoKeptActionReturnsNoMenu() {
         let editingOnly = NSMenu(title: "")
         editingOnly.addItem(menuItem("Cut", #selector(NSText.cut(_:))))
