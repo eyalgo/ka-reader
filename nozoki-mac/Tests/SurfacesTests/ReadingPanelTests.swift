@@ -248,9 +248,10 @@ final class ReadingPanelTests: XCTestCase {
 
     /// A code token or the ground, with the two values `docs/DESIGN.md:L409-L428` gives it: light
     /// then dark, as `0xRRGGBB`. `primary` and `gutter` are the base ink and the line numbers'
-    /// colour (`docs/DESIGN.md:L411`, `:L413`).
+    /// colour (`docs/DESIGN.md:L411`, `:L413`). `inkMuted` and `line` are the path line's ink and
+    /// hairline (`docs/DESIGN.md:L413`, `:L418`).
     private enum Token {
-        case keyword, string, number, comment, name, primary, gutter
+        case keyword, string, number, comment, name, primary, gutter, inkMuted, line
 
         var values: (light: UInt32, dark: UInt32) {
             switch self {
@@ -261,6 +262,8 @@ final class ReadingPanelTests: XCTestCase {
             case .name: return (0x0F5A9A, 0x8CC4F5)
             case .primary: return (0x1E1F22, 0xE7E7E4)
             case .gutter: return (0x6F7177, 0x8E8F94)
+            case .inkMuted: return (0x5B5D63, 0xABACB0)
+            case .line: return (0xD8D8D4, 0x3B3C41)
             }
         }
     }
@@ -298,6 +301,15 @@ final class ReadingPanelTests: XCTestCase {
             }
         }
         return components
+    }
+
+    /// `color`'s alpha, resolved under `appearance`.
+    private func alpha(_ color: NSColor, under appearance: NSAppearance) -> CGFloat {
+        var alpha: CGFloat = -1
+        appearance.performAsCurrentDrawingAppearance {
+            alpha = color.usingColorSpace(.sRGB)?.alphaComponent ?? -1
+        }
+        return alpha
     }
 
     private func assertSame(
@@ -538,6 +550,31 @@ final class ReadingPanelTests: XCTestCase {
         assertSame(
             srgb(CodeColors.gutter, under: darkAqua), hex(Token.gutter.values.dark),
             "gutter under darkAqua")
+    }
+
+    // MARK: - The path line's tokens (CP-357, CP-363)
+
+    func testPathMutedInkTakesItsDesignValueInEachAppearance() {
+        for (appearance, value) in [
+            (aqua, Token.inkMuted.values.light), (darkAqua, Token.inkMuted.values.dark),
+        ] {
+            assertSame(
+                srgb(CodeColors.inkMuted, under: appearance), hex(value),
+                "ink-muted under \(appearance.name) (CP-357)")
+            XCTAssertEqual(
+                alpha(CodeColors.inkMuted, under: appearance), 1, "ink-muted is opaque")
+        }
+    }
+
+    func testPathHairlineTakesItsDesignValueInEachAppearance() {
+        for (appearance, value) in [
+            (aqua, Token.line.values.light), (darkAqua, Token.line.values.dark),
+        ] {
+            assertSame(
+                srgb(CodeColors.line, under: appearance), hex(value),
+                "line under \(appearance.name) (CP-363)")
+            XCTAssertEqual(alpha(CodeColors.line, under: appearance), 1, "line is opaque")
+        }
     }
 
     func testCodeTypeIsTheThirteenPointMonospacedSystemFontAtRegularWeight() {
