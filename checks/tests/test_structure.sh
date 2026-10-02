@@ -52,6 +52,11 @@ test_all_findings_are_ordered_and_distinct
 test_script_location_selects_the_root
 test_suite_selects_one_named_case
 test_originating_tree_is_unchanged
+test_case_1_core_apple_import_is_rejected
+test_apple_framework_attribute_is_rejected
+test_every_apple_floor_form_is_rejected
+test_core_foundation_extern_is_rejected
+test_apple_scope_and_near_names
 "
 
 # --- helpers ---
@@ -386,6 +391,116 @@ test_originating_tree_is_unchanged() {
   status_after="$(git -C "$ROOT" status --porcelain 2>&1)"
   [ "$status_after" = "$ORIGIN_STATUS_BEFORE" ] \
     || fail "git status --porcelain changed during the run. before: $ORIGIN_STATUS_BEFORE after: $status_after" || return 1
+}
+
+# --- the cases of Task 2: the Apple-framework boundary ---
+
+# The floor of QC-9's Apple clause: every one of these is refused in nozoki-core in every form below.
+APPLE_FLOOR="objc objc2 objc2_foundation objc2_app_kit objc2_core_foundation objc_foundation objc_id block block2 dispatch dispatch2 cocoa cocoa_foundation core_foundation core_foundation_sys core_graphics core_graphics_types core_text core_services security_framework security_framework_sys system_configuration system_configuration_sys fsevent fsevent_sys io_kit_sys metal"
+
+test_case_1_core_apple_import_is_rejected() {
+  new_root case1 || return 1
+  plant "$R" "$CORE_FILE" 'use objc2::runtime::AnyObject;'
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_finding "crates/$CORE_FILE" "$PLANT_LINE" QC-9
+}
+
+test_apple_framework_attribute_is_rejected() {
+  new_root attribute || return 1
+  attribute_lines=""
+  plant "$R" "$CORE_FILE" '#[link(name = "CoreServices", kind = "framework")]'
+  attribute_lines="$attribute_lines $PLANT_LINE"
+  plant "$R" "$CORE_FILE" '#[link(name = "A", kind="framework")]'
+  attribute_lines="$attribute_lines $PLANT_LINE"
+  plant "$R" "$CORE_FILE" '#[link(name = "B", kind   =   "framework")]'
+  attribute_lines="$attribute_lines $PLANT_LINE"
+  plant "$R" "$CORE_FILE" '#[link(name = "C",
+    kind
+      =
+        "framework")]'
+  attribute_lines="$attribute_lines $((PLANT_LINE + 1))"
+  run_structure "$R"
+  expect_status 1 || return 1
+  for attribute_line in $attribute_lines; do
+    expect_finding "crates/$CORE_FILE" "$attribute_line" QC-9 || return 1
+  done
+  # A link kind that is not a framework is no breach.
+  new_root attribute-static || return 1
+  plant "$R" "$CORE_FILE" '#[link(name = "z", kind = "static")]'
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+}
+
+# Every name of the floor, as a path, an absolute path, an extern crate, a use root and a use member —
+# on one line, across lines and nested.
+test_every_apple_floor_form_is_rejected() {
+  new_root floor || return 1
+  expected_lines=""
+  for name in $APPLE_FLOOR; do
+    plant "$R" "$CORE_FILE" "fn path_$name() { $name::go(); }
+fn absolute_$name() { ::$name::go(); }
+extern crate $name;
+use $name::item;
+use $name;
+use std::{io, $name};
+use some::{
+    first,
+    $name,
+};
+use ::{a::{b, $name::c}};
+fn spaced_$name() { $name :: go(); }
+fn broken_$name() { $name
+    ::
+    go(); }"
+    for offset in 0 1 2 3 4 5 8 10 11 12; do
+      expected_lines="$expected_lines $((PLANT_LINE + offset)):$name"
+    done
+  done
+  run_structure "$R"
+  expect_status 1 || return 1
+  for expected in $expected_lines; do
+    expect_finding "crates/$CORE_FILE" "${expected%%:*}" QC-9 || fail "name ${expected#*:} at line ${expected%%:*} not refused" || return 1
+  done
+}
+
+test_core_foundation_extern_is_rejected() {
+  new_root extern-crate || return 1
+  plant "$R" "$CORE_FILE" 'extern crate core_foundation;'
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_finding "crates/$CORE_FILE" "$PLANT_LINE" QC-9
+}
+
+# The clause is the core's alone and names whole identifiers; a core comment or string that names a
+# forbidden form is a breach like the rest of its text.
+test_apple_scope_and_near_names() {
+  new_root apple-elsewhere || return 1
+  plant "$R" "$BRIDGE_FILE" 'use objc2::runtime::AnyObject;'
+  plant "$R" "$BRIDGE_FILE" 'extern crate core_foundation;'
+  plant "$R" "nozoki-extra/src/lib.rs" 'use block2::RcBlock;'
+  plant "$R" "nozoki-extra/src/lib.rs" '#[link(name = "CoreServices", kind = "framework")]'
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+  new_root apple-near || return 1
+  plant "$R" "$CORE_FILE" 'fn blocker() { let dispatcher = 1; let metallic = dispatcher; let _ = metallic; }'
+  plant "$R" "$CORE_FILE" 'use my_objc2::thing; use objc22::thing; use metal_gear::thing; use cocoa_beans::thing;'
+  plant "$R" "$CORE_FILE" 'fn h() { crate::dispatch::run(); self::block::run(); queue.block::<u8>(); }'
+  plant "$R" "$CORE_FILE" 'mod dispatch { pub fn run() {} }'
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+  new_root apple-raw || return 1
+  plant "$R" "$CORE_FILE" '// bridges objc2::runtime::AnyObject to the shell'
+  comment_line="$PLANT_LINE"
+  plant "$R" "$CORE_FILE" 'const NOTE: &str = "core_foundation::base::CFRelease";'
+  string_line="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_finding "crates/$CORE_FILE" "$comment_line" QC-9 || return 1
+  expect_finding "crates/$CORE_FILE" "$string_line" QC-9 || return 1
 }
 
 # --- runner ---
