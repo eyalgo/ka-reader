@@ -2585,4 +2585,102 @@ final class ReadingPanelTests: XCTestCase {
         XCTAssertFalse(panel.pathLine.stringValue.hasPrefix("/"))
         XCTAssertFalse(panel.pathLine.stringValue.hasPrefix("./"))
     }
+
+    // MARK: - The panel cannot write (R-48, R-49)
+
+    /// What a test counts to know no intent was raised: the workbench's file selection and the
+    /// tree's folder listing.
+    @MainActor
+    private final class IntentCounts {
+        var selectFile = 0
+        var listTree = 0
+    }
+
+    /// A file shown in the reading panel of a workbench hosted in a window, with its text view the
+    /// first responder and both intents counted from zero.
+    @MainActor
+    private struct ShownFile {
+        let window: NSWindow
+        let panel: ReadingPanelView
+        let intents: IntentCounts
+
+        var textView: NSTextView { panel.contentView }
+    }
+
+    /// What the panel draws, read before and after a drive: the text, its attributes (a write
+    /// that only restyled the text would leave the string alone) and the path line.
+    @MainActor
+    private struct Drawn {
+        let text: String
+        let attributedText: NSAttributedString
+        let path: String
+
+        init(_ panel: ReadingPanelView) {
+            text = panel.contentView.string
+            attributedText = panel.contentView.attributedString()
+            path = panel.pathLine.stringValue
+        }
+    }
+
+    /// The tree lists `a.txt` so that a keystroke `a` which landed on the tree, and not on the
+    /// text view, would select it and raise `selectFile`: "no intent" then has something to catch.
+    private func makeShownFile() -> ShownFile {
+        let glyph = NSImage(size: NSSize(width: 1, height: 1))
+        let glyphs = StatusGlyphs(empty: glyph, failure: glyph)
+        let tree = RootItemsView(
+            folderGlyph: glyph, fileGlyph: glyph, fileCodeGlyph: glyph, statusGlyphs: glyphs)
+        tree.show(
+            .observed([
+                Entry(name: "a.txt", path: "a.txt", kind: .file, state: .observed),
+                Entry(name: "b.txt", path: "b.txt", kind: .file, state: .observed),
+            ]))
+        let workbench = WorkbenchView(rootItemsView: tree, statusGlyphs: glyphs)
+        let intents = IntentCounts()
+        workbench.selectFile = { _, _ in intents.selectFile += 1 }
+        tree.listTree = { _, _ in intents.listTree += 1 }
+
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 800, height: 500), styleMask: [.titled],
+            backing: .buffered, defer: true)
+        window.isReleasedWhenClosed = false
+        window.contentView = workbench
+        workbench.readingPanel.show(
+            path: "notes.txt", verdict: .text("first line\nsecond line\nthird line\n", .plain))
+        window.layoutIfNeeded()
+        window.layoutIfNeeded()
+
+        let shown = ShownFile(window: window, panel: workbench.readingPanel, intents: intents)
+        // Asserted before anything is driven: a key sent while something else holds focus, or at
+        // a view that was never ready, would pass without testing the text view.
+        XCTAssertTrue(window.makeFirstResponder(shown.textView), "the text view takes focus")
+        XCTAssertTrue(window.firstResponder === shown.textView, "the text view is first responder")
+        XCTAssertFalse(shown.textView.isEditable, "the shown file's text view is not editable")
+        XCTAssertEqual(intents.selectFile, 0, "no selection was raised by setting up")
+        XCTAssertEqual(intents.listTree, 0, "no listing was raised by setting up")
+        return shown
+    }
+
+    private func assertNothingChanged(
+        since before: Drawn, in shown: ShownFile, file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        let after = Drawn(shown.panel)
+        XCTAssertEqual(after.text, before.text, "the text", file: file, line: line)
+        XCTAssertEqual(
+            after.attributedText, before.attributedText, "the attributed text", file: file,
+            line: line)
+        XCTAssertEqual(after.path, before.path, "the path line", file: file, line: line)
+        XCTAssertEqual(shown.intents.selectFile, 0, "selectFile raised", file: file, line: line)
+        XCTAssertEqual(shown.intents.listTree, 0, "listTree raised", file: file, line: line)
+    }
+
+    func testAKeystrokeIntoAShownFileChangesNothingAndRaisesNoIntent() throws {
+        let shown = makeShownFile()
+        defer { shown.window.close() }
+        let before = Drawn(shown.panel)
+
+        shown.window.sendEvent(try keyDown(in: shown.window))
+
+        assertNothingChanged(since: before, in: shown)
+    }
 }
