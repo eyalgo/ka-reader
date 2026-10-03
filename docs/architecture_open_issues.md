@@ -53,6 +53,17 @@ None.
   The likely fold: name both kinds in the list, and keep "never a path past the folder and never a link
   followed out of it".
 - **If a document has to be written:** none. QC-15's statement in `nfdr.md`.
-- **Answer:** <the owner fills this in>
+- **Answer:** answered — QC-15's `git-reader` list names both kinds, and its bound does not move.
+  The list becomes: the folder's own metadata; its `.git` entry's metadata without following a
+  link; an entry inside a `.git` folder; a `.git` file's own content; the metadata, and a link's
+  own text, at each position inside the folder along the spelled path to the Git directory and to
+  the common directory; and the content of the `commondir` file in a Git directory that lies inside
+  the folder — "never a path past the folder and never a link followed out of it" stays as written.
+  Both kinds are measured inside that bound at `nozoki@6a0725c` (`libgit2.rs:L200` skips every
+  position outside; `:L138-L142` refuses an outside location; `:L276-L279` opens `commondir` with
+  `O_NOFOLLOW`). The tail's list of `Path`-method reads gains `:L163`, re-pinned at that commit.
+  ADR-0018 does not move: its list is scoped to `probe`, which still makes only those four reads,
+  and it hands the `commondir` case to `state()`. Reasoning:
+  `docs/trail/architecture/self_answer-37.md` § 3.1.
 
 **How it closes.** `product-architecture` folds it on its next run like any other item here.
