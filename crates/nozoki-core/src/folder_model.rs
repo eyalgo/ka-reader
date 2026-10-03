@@ -3,7 +3,7 @@
 
 use std::path::{Path, PathBuf};
 
-use crate::fs_reader::{self, CannotDisplayReason, Entry, FileContent, ItemState};
+use crate::fs_reader::{self, CannotDisplayReason, Entry, FileContent, ItemState, OpenFailure};
 use crate::highlighter::{Span, highlight};
 use crate::language::Language;
 
@@ -31,14 +31,6 @@ impl OpenFolderOutcome {
             Self::Failed(failure) => panic!("{message}: {failure:?}"),
         }
     }
-}
-
-/// The observed condition that stopped opening a chosen folder.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum OpenFailure {
-    Missing,
-    NotAFolder,
-    Unreadable,
 }
 
 /// Opens `path` as a folder, rooted at its canonical path.

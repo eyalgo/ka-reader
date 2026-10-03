@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.2.0 — fs_reader owns OpenFailure; structure.sh holds QC-11's fs-reader clause
 # Version: 1.1.0 — nozoki structure.sh holds the unit graph — QC-10/11/13/14/17/61 scanner and planted-break cases
 # Version: 1.0.0 — first version: the Rust source scan over crates/ — QC-9's unsafe, Apple-framework and process clauses, QC-36's Rust half, QC-15's two filesystem owners
 #
@@ -89,16 +90,17 @@
 #                         "unsafe appearing in no crate but nozoki-bridge".
 #     QC-10  unit edge    In nozoki-core, a file of the unit `folder_model` (crates/nozoki-core/
 #     QC-11  (CP-417,     src/folder_model.rs, or any file under src/folder_model/) that imports
-#            CP-418)      `own_state`, or names the libgit2 binding, is a QC-10 finding. A file of
-#                         `fs_reader` or of `highlighter` (the same shapes) that imports a
+#            CP-418,      `own_state`, or names the libgit2 binding, is a QC-10 finding. A file of
+#            CP-435)      `fs_reader` or of `highlighter` (the same shapes) that imports a
 #                         forbidden unit, or names the libgit2 binding, is a QC-11 finding. A
 #                         unit is its module and the units are folder_model, fs_reader,
 #                         highlighter, own_state, git_reader, watcher and markdown_renderer;
 #                         every other file of the core (lib.rs, language.rs, error.rs) belongs
 #                         to no unit, is never a subject, and importing it is never an edge.
-#                         Forbidden for fs_reader: own_state, git_reader, watcher,
-#                         markdown_renderer, highlighter. Forbidden for highlighter: folder_model,
-#                         own_state, git_reader, watcher, markdown_renderer, fs_reader. A file
+#                         Forbidden for fs_reader: folder_model, own_state, git_reader,
+#                         watcher, markdown_renderer, highlighter. Forbidden for highlighter:
+#                         folder_model, own_state, git_reader, watcher, markdown_renderer,
+#                         fs_reader. A file
 #                         imports a unit when its text holds, read across lines with whitespace
 #                         around `::` changing nothing: a path whose segment after a leading
 #                         `crate`, or a leading run of `super`, is the unit; a `use` tree that
@@ -154,11 +156,6 @@
 #   that adds it here. Until then its gate is the design review. Not held: QC-2's write rule;
 #   QC-7; QC-12; QC-15's other owners and its socket clause; QC-20; QC-30's and QC-58's first
 #   half; § 9's layer-5 placement rule. And these parts of rules the table above holds in part:
-#     - QC-11's `fs-reader` must not import `folder-model`. Not held: a file of fs_reader
-#       importing folder_model raises no finding, because
-#       crates/nozoki-core/src/fs_reader.rs:L14 (`use crate::folder_model::OpenFailure;`) is
-#       that edge today and holding the clause would fail the real tree. The clause rides the
-#       change that removes the edge. highlighter importing folder_model IS held.
 #     - QC-10's `git-reader`-adapter clause.
 #     - QC-11's clauses whose subject is `git-reader`, `watcher` or `markdown-renderer`, and its
 #       "only `git-reader` imports the libgit2 binding" outside the three units' files.
@@ -288,7 +285,7 @@ function unit_of(w,    p, rest, q) {
 
 function forbidden_edge(u) {
   if (subj == "folder_model") return u == "own_state"
-  if (subj == "fs_reader") return index(" own_state git_reader watcher markdown_renderer highlighter ", " " u " ") > 0
+  if (subj == "fs_reader") return index(" folder_model own_state git_reader watcher markdown_renderer highlighter ", " " u " ") > 0
   if (subj == "highlighter") return index(" folder_model own_state git_reader watcher markdown_renderer fs_reader ", " " u " ") > 0
   return 0
 }

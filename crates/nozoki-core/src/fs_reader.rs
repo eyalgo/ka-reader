@@ -11,8 +11,15 @@ use std::path::{Component, Path, PathBuf};
 
 use rustix::fs::OFlags;
 
-use crate::folder_model::OpenFailure;
 use crate::language::Language;
+
+/// The observed condition that stopped opening a chosen folder.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum OpenFailure {
+    Missing,
+    NotAFolder,
+    Unreadable,
+}
 
 /// A private opening failure with the public condition and safe diagnostic detail.
 #[derive(Debug, PartialEq, Eq)]
