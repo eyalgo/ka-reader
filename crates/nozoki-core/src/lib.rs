@@ -3,6 +3,7 @@
 mod error;
 mod folder_model;
 mod fs_reader;
+mod git_reader;
 mod highlighter;
 mod language;
 
@@ -11,6 +12,7 @@ pub use folder_model::{
     FileView, OpenFolderOutcome, OpenedFolder, list_tree, open_folder, select_file,
 };
 pub use fs_reader::{CannotDisplayReason, Condition, Entry, EntryKind, ItemState, OpenFailure};
+pub use git_reader::{GitPort, Libgit2, ProbeCondition, RootFinding};
 pub use highlighter::{Span, TokenClass, highlight};
 pub use language::Language;
 

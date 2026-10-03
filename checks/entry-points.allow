@@ -26,6 +26,9 @@
 #   - that no read of the shipped process is accepted without that being said in its text.
 # The script never judges a text beyond its being non-empty.
 
+git2 | env::var | src/build.rs only: a doc-comment example (`env::var("HOME")` at `:L31`, inside a `no_run` doctest for `RemoteCallbacks`); documentation, so the shipped process reads nothing. libgit2's own C reads of HOME and the XDG variables are not an `env::` name and are not held here (see the change design's "Reads outside the folder")
+libz-sys | env::var | zng/cc.rs only: the zlib-ng source build's `CARGO_CFG_TARGET_OS`, `CARGO_CFG_TARGET_ARCH`, `CARGO_CFG_TARGET_FEATURE` and `TARGET` reads, which `build.rs` compiles only under the `zlib-ng-no-cmake-experimental-community-maintained` feature (`build.rs:L175-L186`); the lock resolves only `libc` for libz-sys, so the file is not compiled and the shipped process reads nothing
+libz-sys | env::var_os | zng/cc.rs only: `OUT_DIR` at `:L105`, read by the same zlib-ng source build, behind the same feature the lock does not resolve; a build-script input and not part of the shipped process
 quote | env::var_os | README.md only: a build.rs usage example in the documentation (`env::var_os("OUT_DIR")`); not compiled, so the shipped process reads nothing
 syn | env::args | src/file.rs only: a doc comment's example program (`env::args()`); documentation, so the shipped process reads nothing
 syn | env::var | tests/repo/mod.rs only: syn's own test helper reads ABORT_AFTER_FAILURE and RUST_MIN_STACK; a test, not part of the library, so the shipped process reads nothing

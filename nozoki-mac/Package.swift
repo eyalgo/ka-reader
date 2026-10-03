@@ -30,6 +30,11 @@ let package = Package(
                 // What `cargo rustc -p nozoki-bridge --lib -- --print native-static-libs` prints,
                 // less what every link already carries (System, c, m).
                 .linkedLibrary("iconv"),
+                // The libgit2 that nozoki-core links needs zlib and the Security framework; the
+                // measured list above also names CoreFoundation, which the link carries once named.
+                .linkedLibrary("z"),
+                .linkedFramework("Security"),
+                .linkedFramework("CoreFoundation"),
             ]),
         .testTarget(name: "SurfacesTests", dependencies: ["Surfaces"]),
         .testTarget(name: "ShellTests", dependencies: ["Shell", "Surfaces"]),

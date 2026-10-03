@@ -1,15 +1,28 @@
 //! Test support shared by every test in `nozoki-core`: a temporary folder built from `std` alone.
 //!
-//! `tempfile` is not used because it would add a package name to `Cargo.lock`, and QC-26 lets this
-//! change add exactly one (`rfd`). A helper shared between test files lives in `tests/common/mod.rs`
-//! and not `tests/common.rs`, which would become a test crate of its own that reports zero tests
+//! `tempfile` is not used because it would add a package name to `Cargo.lock`, which QC-26 holds to
+//! a reviewed list (`docs/nfdr.md` QC-26), and `std` already covers what a test needs. A helper
+//! shared between test files lives in `tests/common/mod.rs` and not `tests/common.rs`, which would
+//! become a test crate of its own that reports zero tests
 //! (`<CORE>/doctrine/engineering/languages/rust/testing.md`, "Helpers shared between those files").
 
+use std::collections::BTreeMap;
 use std::fs;
 use std::os::unix::fs::{PermissionsExt, symlink};
 use std::path::{Path, PathBuf};
-use std::process;
+use std::process::{self, Command};
 use std::sync::atomic::{AtomicU64, Ordering};
+
+/// One entry of a [`Snapshot`], recorded without following a link.
+#[derive(Debug, PartialEq, Eq)]
+pub enum SnapshotEntry {
+    Folder,
+    File(Vec<u8>),
+    Link(PathBuf),
+}
+
+/// Every entry under a temporary root, keyed by its path relative to that root.
+pub type Snapshot = BTreeMap<PathBuf, SnapshotEntry>;
 
 static NEXT_FOLDER: AtomicU64 = AtomicU64::new(0);
 
@@ -67,6 +80,39 @@ impl TempDir {
         symlink(target, &path).expect("the symlink can be created");
     }
 
+    /// Copies the committed fixture folder `checks/fixtures/<scene>` to `<root>/<scene>`, keeping
+    /// every symlink as a symlink, and returns the copy's path.
+    pub fn copy_fixture(&self, scene: &str) -> PathBuf {
+        let source = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("../../checks/fixtures")
+            .join(scene);
+        let destination = self.root.join(scene);
+        copy_keeping_links(&source, &destination);
+        destination
+    }
+
+    /// Unpacks `checks/fixtures/<archive>` with `tar` into `<root>/<into>`, which must exist.
+    pub fn unpack_fixture_archive(&self, archive: &str, into: &str) {
+        let archive_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("../../checks/fixtures")
+            .join(archive);
+        let status = Command::new("tar")
+            .arg("-xf")
+            .arg(&archive_path)
+            .arg("-C")
+            .arg(self.root.join(into))
+            .status()
+            .expect("tar runs");
+        assert!(status.success(), "tar unpacked {archive}");
+    }
+
+    /// Records every entry under the root by kind, bytes and link target, following no link.
+    pub fn snapshot(&self) -> Snapshot {
+        let mut entries = Snapshot::new();
+        record(&self.root, &self.root, &mut entries);
+        entries
+    }
+
     pub fn set_mode(&self, relative: &str, mode: u32) {
         let path = self.root.join(relative);
         fs::set_permissions(&path, fs::Permissions::from_mode(mode)).expect("the mode can be set");
@@ -96,5 +142,42 @@ fn restore_access(folder: &Path) {
     };
     for entry in entries.flatten() {
         restore_access(&entry.path());
+    }
+}
+
+fn copy_keeping_links(source: &Path, destination: &Path) {
+    let metadata = fs::symlink_metadata(source).expect("the source can be looked at");
+    if metadata.is_symlink() {
+        let target = fs::read_link(source).expect("the link can be read");
+        symlink(target, destination).expect("the symlink can be copied");
+    } else if metadata.is_dir() {
+        fs::create_dir(destination).expect("the folder can be created");
+        for entry in fs::read_dir(source).expect("the folder can be listed") {
+            let entry = entry.expect("the entry can be read");
+            copy_keeping_links(&entry.path(), &destination.join(entry.file_name()));
+        }
+    } else {
+        fs::copy(source, destination).expect("the file can be copied");
+    }
+}
+
+fn record(root: &Path, folder: &Path, entries: &mut Snapshot) {
+    for entry in fs::read_dir(folder).expect("the folder can be listed") {
+        let path = entry.expect("the entry can be read").path();
+        let relative = path
+            .strip_prefix(root)
+            .expect("the entry sits under the root")
+            .to_path_buf();
+        let metadata = fs::symlink_metadata(&path).expect("the entry can be looked at");
+        if metadata.is_symlink() {
+            let target = fs::read_link(&path).expect("the link can be read");
+            entries.insert(relative, SnapshotEntry::Link(target));
+        } else if metadata.is_dir() {
+            entries.insert(relative, SnapshotEntry::Folder);
+            record(root, &path, entries);
+        } else {
+            let bytes = fs::read(&path).expect("the file can be read");
+            entries.insert(relative, SnapshotEntry::File(bytes));
+        }
     }
 }
