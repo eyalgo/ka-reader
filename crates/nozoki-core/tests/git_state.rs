@@ -555,6 +555,46 @@ fn test_staged_rename_carries_from_and_new_path() {
     );
 }
 
+/// CP-516's "staged and changed again since appears in both lists, once in each", for a staged
+/// rename: the changed entry is the file as it now stands, at the path it was renamed to (CP-514),
+/// and never the path it left, which is in neither the index nor the working tree.
+#[test]
+fn test_staged_rename_changed_again_is_changed_at_the_new_path() {
+    let (scene, root) = committed_files_repository();
+    git(&root, &["mv", "a.txt", "renamed.txt"]);
+    fs::write(root.join("renamed.txt"), "changed after the rename\n").expect("the file is written");
+
+    let answers = read(&scene, &root);
+
+    assert_lists(
+        &answers,
+        vec![entry(
+            "renamed.txt",
+            StatusCategory::Renamed {
+                from: "a.txt".to_string(),
+            },
+        )],
+        vec![entry("renamed.txt", StatusCategory::Modified)],
+    );
+
+    let (scene, root) = committed_files_repository();
+    git(&root, &["mv", "b.txt", "renamed.txt"]);
+    fs::remove_file(root.join("renamed.txt")).expect("the file is removed");
+
+    let answers = read(&scene, &root);
+
+    assert_lists(
+        &answers,
+        vec![entry(
+            "renamed.txt",
+            StatusCategory::Renamed {
+                from: "b.txt".to_string(),
+            },
+        )],
+        vec![entry("renamed.txt", StatusCategory::Deleted)],
+    );
+}
+
 #[test]
 fn test_ignored_file_and_empty_untracked_folder_are_absent() {
     let (scene, root) = new_repository();
@@ -738,6 +778,31 @@ fn test_commondir_outside_answers_outside() {
     let common = scene.path().join("common-outside");
     scene.write_file("S/.wt/commondir", &format!("{}\n", common.display()));
 
+    assert_eq!(
+        read(&scene, &root).failure(),
+        &GitReadCondition::GitDirectoryOutside(common)
+    );
+}
+
+/// The bound reads a `gitdir:` or `commondir` value by libgit2's own rule, so what it verifies is
+/// what libgit2 opens: libgit2 takes each value as a C string, which ends at the first NUL byte
+/// (`read_gitfile` and `lookup_commondir` in the vendored libgit2 1.9.7). Here what follows the NUL
+/// would lead back inside, while the location libgit2 would open lies outside and is not there.
+#[test]
+fn test_value_ends_at_a_nul_byte_as_libgit2_reads_it() {
+    let (scene, root) = relocated_repository("../nowhere\0/../S/.realgit", ".realgit");
+    assert_eq!(
+        read(&scene, &root).failure(),
+        &GitReadCondition::GitDirectoryOutside(scene.path().join("nowhere"))
+    );
+
+    let (scene, root) = git_file_scene("gitdir: .wt\n");
+    scene.write_file("S/.wt/HEAD", "ref: refs/heads/main\n");
+    let common = scene.path().join("common-outside");
+    scene.write_file(
+        "S/.wt/commondir",
+        &format!("{}\0/../S/.wt\n", common.display()),
+    );
     assert_eq!(
         read(&scene, &root).failure(),
         &GitReadCondition::GitDirectoryOutside(common)
