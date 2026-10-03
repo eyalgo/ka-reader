@@ -16,9 +16,12 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use common::{Snapshot, TempDir};
+use std::cell::Cell;
+
 use nozoki_core::{
-    BranchElement, GitPort, GitReadCondition, HeadState, RepositoryState, StatusCategory,
-    StatusEntry, StatusLists,
+    BranchElement, FolderKind, FolderModel, GitCondition, GitPort, GitReadCondition, HeadState,
+    ItemState, ProbeCondition, RepositoryState, RootFinding, StatusCategory, StatusEntry,
+    StatusLists, open_folder, read_git,
 };
 
 /// The only place the adapter is named, so a second adapter runs the same cases.
@@ -825,4 +828,150 @@ fn test_core_worktree_elsewhere_answers_err_from_both_calls() {
         answers.status
     );
     assert_pathless(answers.failure());
+}
+
+/// A port that answers what it was given and counts how often `probe` and `state` were asked, so
+/// the reducer cases reach the model with no adapter.
+struct Double {
+    finding: RootFinding,
+    head: Result<HeadState, GitReadCondition>,
+    probes: Cell<usize>,
+    states: Cell<usize>,
+}
+
+impl Double {
+    fn new(finding: RootFinding, head: Result<HeadState, GitReadCondition>) -> Self {
+        Self {
+            finding,
+            head,
+            probes: Cell::new(0),
+            states: Cell::new(0),
+        }
+    }
+}
+
+impl GitPort for Double {
+    fn probe(&self, _folder: &Path) -> RootFinding {
+        self.probes.set(self.probes.get() + 1);
+        self.finding.clone()
+    }
+
+    fn state(&self, _root: &Path) -> Result<HeadState, GitReadCondition> {
+        self.states.set(self.states.get() + 1);
+        self.head.clone()
+    }
+
+    fn status(&self, _root: &Path) -> Result<StatusLists, GitReadCondition> {
+        panic!("the reducer step never asks status");
+    }
+}
+
+fn main_head() -> HeadState {
+    HeadState {
+        branch: on_branch("main"),
+        state: RepositoryState::Normal,
+    }
+}
+
+/// A model over a root of files only, so every tree item is `Observed` before the fold.
+fn model_over_files() -> (TempDir, FolderModel) {
+    let scene = TempDir::new();
+    scene.write_file("a.txt", "a");
+    scene.write_file("b.txt", "b");
+    let opened = open_folder(scene.path()).expect("the scene opens");
+    (scene, FolderModel::new(opened))
+}
+
+/// The fold of an outside failure leaves the tree and the folder as they were, and the item carries
+/// exactly the path the port named.
+#[test]
+fn test_outside_failure_keeps_tree_and_folder_untouched() {
+    let (_scene, model) = model_over_files();
+    let outside = PathBuf::from("/nowhere-near/the-folder/.git");
+    let double = Double::new(
+        RootFinding::Root,
+        Err(GitReadCondition::GitDirectoryOutside(outside.clone())),
+    );
+    let tree_before = model.tree().clone();
+    let folder_before = model.folder().clone();
+    assert!(matches!(tree_before, ItemState::Observed(_)));
+
+    let folded = read_git(model, &double);
+
+    assert_eq!(
+        folded.kind(),
+        &ItemState::Failed(GitCondition::Read(GitReadCondition::GitDirectoryOutside(
+            outside.clone()
+        )))
+    );
+    let text = format!("{:?}", folded.kind());
+    assert!(text.contains(outside.to_str().expect("the path is UTF-8")));
+    assert_eq!(
+        text.matches('/').count(),
+        outside.to_str().expect("the path is UTF-8").matches('/').count(),
+        "no other path appears in {text}"
+    );
+    assert_eq!(folded.tree(), &tree_before);
+    assert_eq!(folded.folder(), &folder_before);
+}
+
+#[test]
+fn test_root_with_state_is_observed_root() {
+    let (_scene, model) = model_over_files();
+    let double = Double::new(RootFinding::Root, Ok(main_head()));
+
+    let folded = read_git(model, &double);
+
+    match folded.kind() {
+        ItemState::Observed(FolderKind::Root(git)) => assert_eq!(git.head(), &main_head()),
+        other => panic!("expected an observed root, got {other:?}"),
+    }
+    assert_eq!(double.states.get(), 1);
+}
+
+#[test]
+fn test_plain_is_observed_plain_and_never_asks_state() {
+    let (_scene, model) = model_over_files();
+    let double = Double::new(RootFinding::Plain, Ok(main_head()));
+
+    let folded = read_git(model, &double);
+
+    assert_eq!(folded.kind(), &ItemState::Observed(FolderKind::Plain));
+    assert_eq!(double.states.get(), 0);
+}
+
+#[test]
+fn test_probe_failure_is_failed_probe_and_never_asks_state() {
+    let (_scene, model) = model_over_files();
+    let double = Double::new(
+        RootFinding::Failed(ProbeCondition::GitFileUnreadable),
+        Ok(main_head()),
+    );
+
+    let folded = read_git(model, &double);
+
+    assert_eq!(
+        folded.kind(),
+        &ItemState::Failed(GitCondition::Probe(ProbeCondition::GitFileUnreadable))
+    );
+    assert_eq!(double.states.get(), 0);
+}
+
+#[test]
+fn test_new_model_git_item_is_pending() {
+    let (_scene, model) = model_over_files();
+
+    assert_eq!(model.kind(), &ItemState::Pending);
+}
+
+#[test]
+fn test_read_git_asks_again_whatever_the_item_held() {
+    let (_scene, model) = model_over_files();
+    let double = Double::new(RootFinding::Plain, Ok(main_head()));
+
+    let once = read_git(model, &double);
+    let twice = read_git(once, &double);
+
+    assert_eq!(double.probes.get(), 2);
+    assert_eq!(twice.kind(), &ItemState::Observed(FolderKind::Plain));
 }
