@@ -85,6 +85,7 @@ test_folder_model_own_state_is_rejected
 test_highlighter_forbidden_units_are_rejected
 test_fs_reader_forbidden_units_are_rejected
 test_root_reexport_reaches_the_unit
+test_fs_reader_imports_folder_model_is_rejected
 test_bridge_unlisted_crate_by_use_is_rejected
 test_bridge_unlisted_crate_as_path_root_is_rejected
 test_bridge_apple_binding_is_rejected
@@ -1198,15 +1199,15 @@ test_fs_reader_forbidden_units_are_rejected() {
     highlighter::highlight(); }'
   split_line=$((PLANT_LINE + 1))
   plant "$R" "$FS_FILE" 'use crate::folder_model::FileView; fn r(_: crate::FileView) {}'
-  unheld_line="$PLANT_LINE"
+  folder_model_line="$PLANT_LINE"
   run_structure "$R"
   expect_status 1 || return 1
   for hit_line in $hit_lines "$split_line"; do
     expect_finding "crates/$FS_FILE" "$hit_line" QC-11 || return 1
   done
   expect_finding_naming "crates/$FS_FILE" "$split_line" QC-11 "highlighter" || return 1
-  expect_count "crates/$FS_FILE" "$unheld_line" QC-11 0 || return 1
-  expect_count "crates/$FS_FILE" 14 QC-11 0 || return 1
+  expect_count "crates/$FS_FILE" "$folder_model_line" QC-11 1 || return 1
+  expect_finding_naming "crates/$FS_FILE" "$folder_model_line" QC-11 "folder_model" || return 1
 }
 
 # CP-430 row 5.
@@ -1243,11 +1244,46 @@ test_root_reexport_reaches_the_unit() {
     expect_finding_naming "crates/$HL_FILE" "$hit_line" QC-11 "fs_reader" || return 1
   done
   expect_count "crates/$HL_FILE" "$clean_line" QC-11 0 || return 1
-  new_root reexport-unheld || return 1
+  new_root reexport-folder-model || return 1
   plant "$R" "$FS_FILE" 'fn q(_: crate::FileView) {}'
+  reexport_line="$PLANT_LINE"
   run_structure "$R"
-  expect_status 0 || return 1
-  expect_stderr_empty || return 1
+  expect_status 1 || return 1
+  expect_count "crates/$FS_FILE" "$reexport_line" QC-11 1 || return 1
+  expect_finding_naming "crates/$FS_FILE" "$reexport_line" QC-11 "folder_model" || return 1
+}
+
+# CP-439: fs_reader no longer imports folder_model, so the clause is held. Every CP-416 form is
+# planted, and the two reader-owned names that reach the type the move re-homed stay clean.
+test_fs_reader_imports_folder_model_is_rejected() {
+  new_root fs-reader-folder-model || return 1
+  plant "$R" "$FS_FILE" 'use crate::folder_model::OpenFailure;'
+  direct_line="$PLANT_LINE"
+  plant "$R" "nozoki-core/src/fs_reader/extra.rs" 'use crate::folder_model::OpenFailure;'
+  extra_line="$PLANT_LINE"
+  plant "$R" "$FS_FILE" 'fn s() { super::super::folder_model::open_folder(); }'
+  super_line="$PLANT_LINE"
+  plant "$R" "$FS_FILE" 'use crate::{
+    language::Language,
+    folder_model::{
+        FileView,
+    },
+};'
+  nested_line=$((PLANT_LINE + 3))
+  plant "$R" "$FS_FILE" 'fn s(_: crate::OpenFailure) {}'
+  reader_name_line="$PLANT_LINE"
+  plant "$R" "$CORE_FILE" 'use crate::fs_reader::OpenFailure;'
+  model_line="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  for hit_line in "$direct_line" "$super_line" "$nested_line"; do
+    expect_count "crates/$FS_FILE" "$hit_line" QC-11 1 || return 1
+    expect_finding_naming "crates/$FS_FILE" "$hit_line" QC-11 "folder_model" || return 1
+  done
+  expect_count "crates/nozoki-core/src/fs_reader/extra.rs" "$extra_line" QC-11 1 || return 1
+  expect_finding_naming "crates/nozoki-core/src/fs_reader/extra.rs" "$extra_line" QC-11 "folder_model" || return 1
+  expect_count "crates/$FS_FILE" "$reader_name_line" QC-11 0 || return 1
+  expect_count "crates/$CORE_FILE" "$model_line" QC-10 0 || return 1
 }
 
 # CP-430 row 6.
