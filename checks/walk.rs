@@ -2,22 +2,28 @@
 //!
 //! Folder mode, taken when the first argument is an absolute path: open that folder, then call
 //! `list_tree` on its root and on every entry it returns, descending only into folders, and call
-//! `select_file` once on each file entry a `list_tree` answer returns. It prints the number of
-//! `list_tree` calls it made, never anything a `select_file` answer carries, and exits 0 once the
-//! walk is complete, or non-zero when the folder did not open.
+//! `select_file` once on each file entry a `list_tree` answer returns. Then it asks the Git port
+//! three things of the folder's canonical path: `probe` on it, and, only where `probe` says `Root`,
+//! `state` and `status` once each. The answers are dropped and none stops the walk. It prints the
+//! number of `list_tree` calls it made, never anything a `select_file` or a Git answer carries, and
+//! exits 0 once the walk is complete, or non-zero when the folder did not open.
 //!
 //! No-argument mode, taken for any other argument too (a libtest filter is not a folder): walk the
 //! committed fixtures, and exit 0 when both walks complete, each root lists at least one entry, and
 //! every file entry a walk listed got exactly one `select_file` call and no other path got one. The
 //! judge that decides this runs first on hand-built tallies it must refuse.
 //!
-//! It installs no logger, writes nothing, starts no process and reads no environment variable.
-//! Its only input is its argument list.
+//! Its own source installs no logger, writes nothing, starts no process and reads no environment
+//! variable, and its only input is its argument list. That is a claim about this file: the Git
+//! adapter's libgit2 reads `HOME` and the XDG variables in-process (`checks/entry-points.allow`).
 
 use std::collections::{BTreeMap, BTreeSet, HashSet};
 use std::path::{Path, PathBuf};
 
-use nozoki_core::{EntryKind, ItemState, OpenedFolder, list_tree, open_folder, select_file};
+use nozoki_core::{
+    EntryKind, GitPort, ItemState, Libgit2, OpenedFolder, RootFinding, list_tree, open_folder,
+    select_file,
+};
 
 /// What a fixture's walk is held to beyond the coverage judge.
 type FixtureCheck = fn(&Walk) -> Result<(), String>;
@@ -96,6 +102,17 @@ fn walk_from(
         }
     }
     !entries.is_empty()
+}
+
+/// Asks the Git port about `root`: `probe`, and only on `Root` `state` and `status` once each. The
+/// answers are dropped, because the proof is that the folder is unchanged afterwards, `.git/index`
+/// included. `root` is canonical, as the adapter compares it against the locations it verifies.
+fn call_git_port(root: &Path) {
+    let port: &dyn GitPort = &Libgit2;
+    if port.probe(root) == RootFinding::Root {
+        let _ = port.state(root);
+        let _ = port.status(root);
+    }
 }
 
 fn walk_folder(folder: &Path) -> Option<Walk> {
@@ -274,8 +291,12 @@ pub(crate) fn run() -> Result<(), String> {
     let argument = std::env::args().nth(1);
     match argument.filter(|argument| argument.starts_with('/')) {
         Some(folder) => {
-            let walk = walk_folder(Path::new(&folder))
+            let canonical = Path::new(&folder)
+                .canonicalize()
+                .map_err(|_| format!("{folder} did not open as a folder"))?;
+            let walk = walk_folder(&canonical)
                 .ok_or_else(|| format!("{folder} did not open as a folder"))?;
+            call_git_port(&canonical);
             println!("{}", walk.calls);
             Ok(())
         }

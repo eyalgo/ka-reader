@@ -121,11 +121,15 @@ pub enum Condition {
 }
 
 /// Where an item stands: not read yet, read, or failed to read for a named reason.
+///
+/// Only the failure arm takes a second type parameter, so a read whose failure must carry more than
+/// [`Condition`] can (the Git item, whose failure may hold the Git directory's path) is an item too.
+/// `C` defaults to [`Condition`], so `ItemState<T>` keeps meaning what it always meant.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ItemState<T> {
+pub enum ItemState<T, C = Condition> {
     Pending,
     Observed(T),
-    Failed(Condition),
+    Failed(C),
 }
 
 /// One direct entry of a listed folder.

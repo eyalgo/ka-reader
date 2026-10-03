@@ -9,10 +9,14 @@ mod language;
 
 pub use error::Error;
 pub use folder_model::{
-    FileView, OpenFolderOutcome, OpenedFolder, list_tree, open_folder, select_file,
+    FileView, FolderKind, FolderModel, GitCondition, GitState, OpenFolderOutcome, OpenedFolder,
+    list_tree, open_folder, read_git, select_file,
 };
 pub use fs_reader::{CannotDisplayReason, Condition, Entry, EntryKind, ItemState, OpenFailure};
-pub use git_reader::{GitPort, Libgit2, ProbeCondition, RootFinding};
+pub use git_reader::{
+    BranchElement, GitPort, GitReadCondition, HeadState, Libgit2, ProbeCondition, RepositoryState,
+    RootFinding, StatusCategory, StatusEntry, StatusLists,
+};
 pub use highlighter::{Span, TokenClass, highlight};
 pub use language::Language;
 

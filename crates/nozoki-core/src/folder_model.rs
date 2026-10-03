@@ -4,6 +4,7 @@
 use std::path::{Path, PathBuf};
 
 use crate::fs_reader::{self, CannotDisplayReason, Entry, FileContent, ItemState, OpenFailure};
+use crate::git_reader::{GitPort, GitReadCondition, HeadState, ProbeCondition, RootFinding};
 use crate::highlighter::{Span, highlight};
 use crate::language::Language;
 
@@ -131,6 +132,159 @@ pub fn select_file(opened: &OpenedFolder, path: &str) -> ItemState<FileView> {
         ItemState::Failed(condition) => ItemState::Failed(condition),
         ItemState::Pending => ItemState::Pending,
     }
+}
+
+/// What an opened folder is to Git: the top level of a repository, with what is known of it, or a
+/// plain folder that holds no Git state.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum FolderKind {
+    Root(GitState),
+    Plain,
+}
+
+/// What the model holds of a repository's top level, built from the port's `state()` answer. Only
+/// where HEAD stands so far: `status()` is not folded in yet.
+///
+/// # Examples
+///
+/// ```
+/// use nozoki_core::{FolderKind, FolderModel, GitPort, ItemState, read_git, open_folder};
+/// # use nozoki_core::{GitReadCondition, HeadState, RootFinding, StatusLists};
+/// # use std::path::Path;
+/// # struct Plain;
+/// # impl GitPort for Plain {
+/// #     fn probe(&self, _: &Path) -> RootFinding { RootFinding::Plain }
+/// #     fn state(&self, _: &Path) -> Result<HeadState, GitReadCondition> { Err(GitReadCondition::NotARoot) }
+/// #     fn status(&self, _: &Path) -> Result<StatusLists, GitReadCondition> { Err(GitReadCondition::NotARoot) }
+/// # }
+///
+/// let opened = open_folder(std::env::temp_dir()).expect("the temporary folder opens");
+/// let model = read_git(FolderModel::new(opened), &Plain);
+/// assert_eq!(model.kind(), &ItemState::Observed(FolderKind::Plain));
+/// ```
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct GitState {
+    head: HeadState,
+}
+
+impl GitState {
+    /// Where HEAD stands and what the repository is in the middle of.
+    pub fn head(&self) -> &HeadState {
+        &self.head
+    }
+}
+
+/// Why the Git item failed: the port's own condition, unchanged, and the operation that met it.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum GitCondition {
+    Probe(ProbeCondition),
+    Read(GitReadCondition),
+}
+
+impl GitCondition {
+    /// The operation that failed and a fixed phrase for the condition. It is chosen from the
+    /// variant and never formatted from a payload, so the log line cannot hold a path.
+    fn log_text(&self) -> (&'static str, &'static str) {
+        match self {
+            Self::Probe(ProbeCondition::FolderUnavailable) => {
+                ("probe", "the folder is unavailable")
+            }
+            Self::Probe(ProbeCondition::GitDirectoryUnreadable) => {
+                ("probe", "the Git directory is unreadable")
+            }
+            Self::Probe(ProbeCondition::GitEntryNotDirectory) => {
+                ("probe", "the Git entry is not a directory")
+            }
+            Self::Probe(ProbeCondition::GitFileUnreadable) => {
+                ("probe", "the Git file is unreadable")
+            }
+            Self::Probe(ProbeCondition::RepositoryReadFailed) => {
+                ("probe", "the repository could not be read")
+            }
+            Self::Read(GitReadCondition::GitDirectoryOutside(_)) => {
+                ("state", "the Git directory is outside the folder")
+            }
+            Self::Read(GitReadCondition::NotARoot) => ("state", "the folder is not a root"),
+            Self::Read(GitReadCondition::GitDirectoryMissing) => {
+                ("state", "the Git directory is missing")
+            }
+            Self::Read(GitReadCondition::GitDirectoryUnreadable) => {
+                ("state", "the Git directory is unreadable")
+            }
+            Self::Read(GitReadCondition::NotARepository) => ("state", "no repository was found"),
+            Self::Read(GitReadCondition::RepositoryReadFailed) => {
+                ("state", "the repository could not be read")
+            }
+        }
+    }
+}
+
+/// An opened folder with what has been read of it: the root listing and the Git item.
+///
+/// A value: [`read_git`] consumes one and returns the next, so a caller that keeps one replaces it
+/// whole.
+///
+/// # Examples
+///
+/// ```
+/// use nozoki_core::{FolderModel, ItemState, open_folder};
+///
+/// let opened = open_folder(std::env::temp_dir()).expect("the temporary folder opens");
+/// let model = FolderModel::new(opened);
+/// assert_eq!(model.kind(), &ItemState::Pending);
+/// ```
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FolderModel {
+    folder: OpenedFolder,
+    tree: ItemState<Vec<Entry>>,
+    kind: ItemState<FolderKind, GitCondition>,
+}
+
+impl FolderModel {
+    /// Holds `opened` with its root listing as [`list_tree`] answers it, and the Git item `Pending`.
+    pub fn new(opened: OpenedFolder) -> Self {
+        let tree = list_tree(&opened, "");
+        Self {
+            folder: opened,
+            tree,
+            kind: ItemState::Pending,
+        }
+    }
+
+    pub fn folder(&self) -> &OpenedFolder {
+        &self.folder
+    }
+
+    pub fn tree(&self) -> &ItemState<Vec<Entry>> {
+        &self.tree
+    }
+
+    /// The Git item: `Pending` until [`read_git`] folds an answer in.
+    pub fn kind(&self) -> &ItemState<FolderKind, GitCondition> {
+        &self.kind
+    }
+}
+
+/// Asks `port` about the model's folder and returns the model with only the Git item replaced.
+///
+/// `probe` is asked every call, whatever the item held, and `state` only where `probe` says `Root`.
+/// An item that becomes failed emits one `warn` record naming `git-reader`, the operation and a
+/// fixed phrase, and never a path.
+pub fn read_git(model: FolderModel, port: &dyn GitPort) -> FolderModel {
+    let root = model.folder.root.as_path();
+    let kind = match port.probe(root) {
+        RootFinding::Root => match port.state(root) {
+            Ok(head) => ItemState::Observed(FolderKind::Root(GitState { head })),
+            Err(condition) => ItemState::Failed(GitCondition::Read(condition)),
+        },
+        RootFinding::Plain => ItemState::Observed(FolderKind::Plain),
+        RootFinding::Failed(condition) => ItemState::Failed(GitCondition::Probe(condition)),
+    };
+    if let ItemState::Failed(condition) = &kind {
+        let (operation, phrase) = condition.log_text();
+        log::warn!("git-reader: {operation} failed: {phrase}; the folder stays open without it");
+    }
+    FolderModel { kind, ..model }
 }
 
 #[cfg(test)]
