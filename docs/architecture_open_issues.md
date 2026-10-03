@@ -51,7 +51,14 @@ None.
 - **If overridden:** QC-5 goes back to its v33 text. It then reads as though the bound has no check,
   out of step with QC-15, which names the same merge. A later change that touches `probe` could treat
   the three cases as optional, when they are the check. No record moves either way.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm, with one addition. QC-5's tail should say what the
+  missing-directory case does not reach. It goes red for a `probe` whose attempt to follow the
+  pointer changes the answer. A `probe` that tries the pointer, swallows the failed open and still
+  answers `Root` passes it, because the case asserts only the answer, that it holds no path, and
+  that the scene is unchanged (`crates/nozoki-core/tests/root_finding.rs:L24-L37`, `:L65-L68`).
+  That half of the read bound is QC-15's review at `development-design` ("which read the adapter
+  makes inside its owner file"), and the tail should point there. Reasoning:
+  `docs/trail/architecture/self_answer-36.md` § 2.1.
 
 ## 3. Raised from downstream — an item from a seat that did not write these records
 
