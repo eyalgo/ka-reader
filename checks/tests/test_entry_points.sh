@@ -88,6 +88,11 @@ test_non_source_files_and_raw_text_are_scanned
 test_list_fields_are_trimmed_and_text_may_contain_a_separator
 test_malformed_lines_do_not_hide_other_findings
 test_findings_are_distinct_and_deterministic
+test_metadata_text_cannot_change_membership
+test_metadata_requires_membership_array
+test_linked_file_is_scanned
+test_dangling_link_is_unreadable
+test_fifo_is_unreadable
 test_suite_selects_one_case
 test_suite_rejects_unknown_case
 test_suite_reports_each_failed_case
@@ -176,6 +181,7 @@ case "\$1" in
     [ ! -e "\$here/meta.fail" ] || { echo "cargo: stubbed metadata failure" >&2; exit 101; }
     [ ! -e "\$here/meta.garbage" ] || { echo "this is not json"; exit 0; }
     [ ! -e "\$here/meta.array" ] || { echo "[1]"; exit 0; }
+    [ ! -e "\$here/meta.json" ] || { cat "\$here/meta.json"; exit 0; }
     if [ -e "\$here/meta.sed" ]; then "\$real" "\$@" | sed -f "\$here/meta.sed"; else exec "\$real" "\$@"; fi
     ;;
   *) exec "\$real" "\$@" ;;
@@ -953,6 +959,79 @@ test_findings_are_distinct_and_deterministic() {
   esac
   kinds="$(printf '%s\n' "$STDERR" | awk '{ print $2 }')"
   [ "$kinds" = "$(printf '%s\n' "$kinds" | LC_ALL=C sort)" ] || fail "findings are not ordered by kind. stderr: $STDERR"
+}
+
+# CP-400/401: package metadata is data; text in it cannot make an external crate a member.
+test_metadata_text_cannot_change_membership() {
+  new_case
+  external="$CASE/external"
+  mkdir -p "$external"
+  printf '[package]\nname = "extcrate"\nversion = "0.0.1"\n' > "$external/Cargo.toml"
+  plant_file "$external" read.rs 'env::var_os("X")'
+  printf 'extcrate v0.0.1\n' > "$STUB/tree.extra"
+  cp "$WORK/real-metadata.json" "$STUB/meta.json"
+  member_id="$(plutil -extract workspace_members.0 raw "$WORK/real-metadata.json")"
+  package="{\"name\":\"extcrate\",\"version\":\"0.0.1\",\"id\":\"external\",\"manifest_path\":\"$external/Cargo.toml\",\"metadata\":{\"note\":\"\"}}"
+  plutil -insert packages.0 -json "$package" "$STUB/meta.json" || return 1
+  note="$(printf '\n      "id" => "%s"\nend' "$member_id")"
+  plutil -replace packages.0.metadata.note -string "$note" "$STUB/meta.json" || return 1
+
+  run_scan
+
+  expect_nonzero_status || return 1
+  expect_finding unlisted extcrate env::var_os || return 1
+  expect_stderr_contains 'read.rs'
+}
+
+# CP-400 and design A: absent membership is unreadable metadata, not an empty membership set.
+test_metadata_requires_membership_array() {
+  new_case
+  cp "$WORK/real-metadata.json" "$STUB/meta.json"
+  plutil -remove workspace_members "$STUB/meta.json" || return 1
+
+  run_scan
+
+  expect_resolution_failure
+}
+
+# CP-401 and design A read every non-directory entry, including a link to readable bytes.
+test_linked_file_is_scanned() {
+  new_case
+  plant_copy itoa || return 1
+  plant_file "$CASE" linked-bytes 'env::vars_os()'
+  ln -s "$CASE/linked-bytes" "$PLANT_DIR/linked.rs"
+
+  run_scan
+
+  expect_nonzero_status || return 1
+  expect_finding unlisted itoa env::vars_os || return 1
+  expect_stderr_contains 'linked.rs'
+}
+
+# CP-407(c): a link with no readable target is unreadable, never silently omitted.
+test_dangling_link_is_unreadable() {
+  new_case
+  plant_copy itoa || return 1
+  ln -s "$CASE/absent" "$PLANT_DIR/dangling.rs"
+
+  run_scan
+
+  expect_nonzero_status || return 1
+  expect_finding unreadable itoa || return 1
+  expect_stderr_contains 'dangling.rs'
+}
+
+# CP-407(c): a stream is not a readable package file; refuse it without waiting for a writer.
+test_fifo_is_unreadable() {
+  new_case
+  plant_copy itoa || return 1
+  mkfifo "$PLANT_DIR/stream"
+
+  run_scan
+
+  expect_nonzero_status || return 1
+  expect_finding unreadable itoa || return 1
+  expect_stderr_contains 'stream'
 }
 
 # --- cases: the suite itself ---
