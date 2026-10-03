@@ -19,6 +19,9 @@ pub enum SnapshotEntry {
     Folder,
     File(Vec<u8>),
     Link(PathBuf),
+    /// An entry that is neither a link, a folder nor a regular file (a FIFO, a socket, a device),
+    /// recorded by kind alone: opening a FIFO with no writer blocks forever.
+    Other,
 }
 
 /// Every entry under a temporary root, keyed by its path relative to that root.
@@ -106,7 +109,8 @@ impl TempDir {
         assert!(status.success(), "tar unpacked {archive}");
     }
 
-    /// Records every entry under the root by kind, bytes and link target, following no link.
+    /// Records every entry under the root by kind, bytes and link target, following no link and
+    /// opening nothing that is not a regular file.
     pub fn snapshot(&self) -> Snapshot {
         let mut entries = Snapshot::new();
         record(&self.root, &self.root, &mut entries);
@@ -175,9 +179,11 @@ fn record(root: &Path, folder: &Path, entries: &mut Snapshot) {
         } else if metadata.is_dir() {
             entries.insert(relative, SnapshotEntry::Folder);
             record(root, &path, entries);
-        } else {
+        } else if metadata.is_file() {
             let bytes = fs::read(&path).expect("the file can be read");
             entries.insert(relative, SnapshotEntry::File(bytes));
+        } else {
+            entries.insert(relative, SnapshotEntry::Other);
         }
     }
 }

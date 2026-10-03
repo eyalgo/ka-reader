@@ -53,7 +53,8 @@ pub trait GitPort {
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum RootFinding {
-    /// The folder is the top level of a repository whose working tree it is.
+    /// The folder is the top level of a repository whose working tree it is, or its `.git` is a file
+    /// holding a `gitdir:` line, whose target the probe does not check.
     Root,
     /// The folder was looked at and is not such a top level.
     Plain,
@@ -78,8 +79,11 @@ pub enum ProbeCondition {
     FolderUnavailable,
     /// `.git` is a folder the operating system refuses to let the probe look inside.
     GitDirectoryUnreadable,
-    /// `.git` is a file or a link, not a folder. The answer for this shape is provisional.
+    /// `.git` is a symbolic link, which the probe does not follow, or an entry that is neither a
+    /// file nor a folder.
     GitEntryNotDirectory,
+    /// `.git` is a regular file whose content the probe could not read.
+    GitFileUnreadable,
     /// Git refused a `.git` folder the probe could look inside, for a reason other than "not a
     /// repository".
     RepositoryReadFailed,
