@@ -1,12 +1,13 @@
 # SDD — nozoki
 
-**Status:** Draft
+**Status:** Settled
 <!-- Draft = open issues or choices to confirm remain (open-issues file present).
      Settled = nothing left for the owner to answer and no open technical question — the done
        signal, and the state a finished SDD carries; the open-issues file is gone.
      Locked = ratified as the source of truth. -->
 **Owner:** CTO · CPO · CDO — one run, three seats
-**Version:** 28 — CTO: § 3 *What the system holds*, `GitState` (the model defines the type and builds it from what the port returns, from `state` alone at `nozoki@87f6a48`; the hand-off to "the change that adds `state`" removed); § 3 SM-2 (the types `probe`, `state` and `status` answer are defined in `git-reader`; the rule kept for a type a later method brings); § 6 `see-git-status` *Reached when*, command half (the double's reason restated, the tree's items "as they were" in place of "every tree item `observed`", and where the adapter's refusal is exercised); SDD Review Notes RN-44 (corrected in place) and RN-88 (new); four answered companion items folded and dropped, trail copy at `docs/trail/sdd/cycle-23.md`; `docs/SDD_open_issues.md` stays on disk with § 2.1 unanswered, so `Status:` moves from Settled to Draft. No slice's *Delivers*, edge or order altered. Companion items added: none.
+**Version:** 29 — CTO: § 4 C-I1 (a failed read "changes no other item", in place of "`observed` on its siblings"; each sibling holds the state its own read gave it, all four `Item<T>` states named; one sentence naming the failed re-read of an expanded folder as not decided there); § 6 `follow-the-folder` *Reached when*, command half (the same rule, without "as they were before the read"); SDD Review Notes RN-44 (parenthesis corrected in place) and RN-89 (new); *Open Questions* (one item added — eight stand); the one answered companion item folded, trail copy at `docs/trail/sdd/cycle-24.md`; `docs/SDD_open_issues.md` removed, empty of items, so `Status:` moves from Draft to Settled. No slice's *Delivers*, edge or order altered. Companion items added: none.
+Version 28 — CTO: § 3 *What the system holds*, `GitState` (the model defines the type and builds it from what the port returns, from `state` alone at `nozoki@87f6a48`; the hand-off to "the change that adds `state`" removed); § 3 SM-2 (the types `probe`, `state` and `status` answer are defined in `git-reader`; the rule kept for a type a later method brings); § 6 `see-git-status` *Reached when*, command half (the double's reason restated, the tree's items "as they were" in place of "every tree item `observed`", and where the adapter's refusal is exercised); SDD Review Notes RN-44 (corrected in place) and RN-88 (new); four answered companion items folded and dropped, trail copy at `docs/trail/sdd/cycle-23.md`; `docs/SDD_open_issues.md` stays on disk with § 2.1 unanswered, so `Status:` moves from Settled to Draft. No slice's *Delivers*, edge or order altered. Companion items added: none.
 Version 27 — CTO: § 3 `core-bridge` row (*Owns*: the config search-path switch — four `set_search_path` calls before the libgit2 adapter is wired, failing closed, once per process, with the uncovered case named); § 3 `git-reader` row (what the reader sees with the machine-level config off: the global ignore file not applied, a repository not owned by the user a `failed` Git item); § 3 the *Four physical units* paragraph and SM-2 (the libgit2 import rule's one exception); § 4 C-R6 (every `git2` manifest line with default features off, and *Violated by*); § 4 C-I3 (the bridge test and what it does not reach, a third thing no check holds, and *Violated by*); § 4 C-D3 (one uncovered case named); § 6 `see-git-status` *Reached when*, command half (the same exception); § 11 R-16 (new); *Open Questions* (second item extended, one item added — seven stand); SDD Review Notes RN-87 (new); `docs/SDD_open_issues.md` removed, empty of items, trail copy at `docs/trail/sdd/cycle-22.md`. No slice's *Delivers*, edge or order altered. Companion items added: none.
 Version 26 — CTO: § 3 `git-reader` row (libgit2 "built with its `https` and `ssh` features off"); § 3 `read-only-harness` row (*Owns* cell re-measured and re-pinned at `nozoki@814a369`: the four root-finding scenes and their archives move to on-disk, nine fixture folders, `see-git-status` leaves the slice-owed list); § 3 SM-2 (the trait and the types that cross are defined in `git-reader`, `folder-model` keeps the contract) and *What the system holds*, `GitState` (one sentence); § 4 C-R5 (one garbled sentence repaired); § 4 C-R6 (the transport claim restated at the shipped executable, with its evidence, its bounds and *Violated by*); § 4 C-I3 (the `nm` read named, and *Violated by*); § 11 R-15 (new); SDD Review Notes RN-85 and RN-86 (new); `docs/SDD_open_issues.md` removed, empty of items, trail copy at `docs/trail/sdd/cycle-21.md`. No slice altered. Companion items added: none.
 Version 25 — CPO: nothing — no SDD section, slice or companion item altered by this seat.; CTO: § 3 `read-only-harness` row (*Owns* cell: pinned enumeration at `nozoki@7a125b4`, on-disk/slice-owed split, `entry-points.sh`+`entry-points.allow`, `walk.rs`, `sandbox_probe.rs`, `deps.review.md`, `tests/`, `repo.git.tar`, `highlight`, `text`, `history`, `scale-*`, `hostile.md`); SDD Review Notes RN-84 (new); `docs/SDD_open_issues.md` removed, empty of items. No slices altered. Companion items added: none.; CPO: nothing — no SDD section, slice or companion item altered by this seat.
@@ -684,8 +685,12 @@ the UXD binds on every surface, is the CDO's clause and follows them.
 
 - **C-I1.** Every read is an `Item` with an `ItemState` (§ 3), and a failure is a state, not an
   exception: a failure to read one file, one entry or one part of Git state yields `failed` or
-  `stopped` on that item and `observed` on its siblings, and the next successful read of the same
-  item replaces it without ceremony (NFR-3; `docs/UXD.md` UX-I10, UX-I16). `stopped` is
+  `stopped` on that item and changes no other item, and the next successful read of the same
+  item replaces it without ceremony (NFR-3; `docs/UXD.md` UX-I10, UX-I16). Each sibling of that
+  item holds the state its own read gave it: `observed`, `pending`, `failed` or `stopped`. The
+  entries already listed under an expanded folder are not that folder's siblings, and what a
+  failed re-read of the folder does to them is not decided by this condition (*Open Questions*,
+  the failed-re-read item; RN-89). `stopped` is
   established in two places (§ 3, *What the system holds*): by the model, on an item it holds;
   and by `mac-shell` at SM-4's return, where a call's answer is read, when that return carries no
   verdict — the bridge's failure value after a panic it caught at the boundary, or a buffer that
@@ -1792,7 +1797,8 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   modify and delete including the displayed file, Git operations mid-flight, and `git init` at a
   plain root followed by its removal — with no panic, the model's final snapshot equal to a fresh
   open of the fixture, and expansion, selection and reading position surviving; an unreadable entry
-  yields `failed` on that item and `observed` on its siblings; `checks/read-only.sh` against the
+  yields `failed` on that item and the failure changes no other item — each sibling holds the
+  state its own read gave it (C-I1; RN-89); `checks/read-only.sh` against the
   churn's own final state as baseline prints `unchanged`; `checks/read-only.sh --kill` — SIGKILL to
   the host mid-churn — prints `unchanged` (NFR-4); `checks/structure.sh` finds the FSEvents
   subscription in `watcher` alone; `checks/latency.sh` exits 0 and prints file-switch and refresh
@@ -3330,11 +3336,12 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   exercised nothing for it: when this note was written the `linked-worktree` and `submodule`
   fixtures ran only through `root_finding`. A bar with one half checks one side of the slice. The
   double is how the reducer case reaches the model with no adapter behind it, and the check is
-  the reducer's (C-I1: a failure is a state, its siblings `observed`), not the port's — R-3's
+  the reducer's (C-I1: a failure is a state, and it changes no other item), not the port's — R-3's
   *shows up as* stays the port's observation on a built bundle. *(Corrected in place on
   2026-10-04. This note said every tree item is `observed`, and gave as the double's reason that
   the fixtures could not produce the failure in-process; RN-88 quotes what it said and records
-  why it moved.)* Found while confirming RN-43 at run 4, round 2, and
+  why it moved.)* *(Corrected in place a second time on 2026-10-04. The parenthesis quoting C-I1
+  read "a failure is a state, its siblings `observed`"; RN-89 records why it moved.)* Found while confirming RN-43 at run 4, round 2, and
   fixed in place (`<CORE>/doctrine/governance/found_while_walking.md`, clause 1). No part, seam,
   slice, edge or place in the order moves *(re: § 6 S-4 *Reached when*, command half; source:
   § 11 R-3; § 3 `Item<T>`; § 4 C-I1, C-I3, C-R2; RN-43)*.
@@ -5309,6 +5316,70 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   from Settled to Draft *(re: § 3 `GitState`, SM-2; § 6 `see-git-status` *Reached when*, command
   half; RN-44; source: `docs/trail/sdd/cycle-23.md` §§ 5.1 – 5.4;
   `docs/trail/sdd/self_answer-35.md`; `nozoki@87f6a48`; `docs/SRS.md` NFR-3)*.
+- **RN-89:** *(CTO)* *(changed)* § 4 C-I1 and `follow-the-folder`'s command half stop saying that
+  a failed read leaves "`observed` on its siblings". Both now state the rule: the failure changes
+  that item and no other item. RN-44's parenthesis, which quoted C-I1, follows it. *Because* the
+  companion's one item, § 2.1, was answered "confirm — with three additions" by a
+  `companion-self-answer` run in the CTO's seat on 2026-10-04 (`docs/trail/sdd/cycle-24.md`
+  § 2.1, committed at `nozoki@9c9ee29`; reasoning `docs/trail/sdd/self_answer-36.md` § 2.1). The
+  item carries `Seat: cto`, so no owner's answer stands behind this note. No part, seam, slice's
+  *Delivers*, edge or place in the order moves.
+  **What each sentence said, and what it says now.** The prior text is in this file's history at
+  `nozoki@9c9ee29`.
+  (1) § 4 C-I1 said a failed read "yields `failed` or `stopped` on that item and `observed` on
+  its siblings" (`docs/SDD.md:L686-L687` at that commit). A folder entry not yet expanded is
+  `pending`, so no folder holding a folder met the wording. C-I1 now says the failed read
+  "changes no other item", and that each sibling holds the state its own read gave it. It names
+  all four states § 3 `Item<T>` gives — `observed`, `pending`, `failed`, `stopped` — as the
+  answer's first addition asks: C-I1 itself puts `stopped` on an item, and three named states
+  would read as a closed list.
+  (2) `follow-the-folder`'s command half said "an unreadable entry yields `failed` on that item
+  and `observed` on its siblings" (`docs/SDD.md:L1794-L1795` at that commit). It now says the
+  failure changes no other item, and each sibling holds the state its own read gave it. It does
+  not say the siblings stand "as they were before the read", which is `see-git-status`'s
+  wording. The answer's second addition gives the reason: `checks/churn.sh` runs while the
+  failed read is in flight, so a sibling changes for its own reasons, and a clause copied from
+  `see-git-status` would fail a correct model.
+  (3) RN-44's parenthesis said "C-I1: a failure is a state, its siblings `observed`"
+  (`docs/SDD.md:L3333` at that commit). It is corrected in place and carries a dated note saying
+  so, as the answer directs.
+  **One case the answer names and does not decide.** When a folder that is already expanded
+  fails on a re-read, the entries listed under it are not its siblings. The answer's third
+  addition leaves what happens to them to `follow-the-folder`'s design. C-I1 says so in one
+  sentence. **A call of this seat's:** the question is also written into *Open Questions* as
+  an eighth item, because that section is where this document records a technical question a
+  slice settles, and a reader of C-I1 alone would not learn where the answer lands.
+  **Left as written, on the answer's own reading.** `see-git-status`'s sentence lists three
+  states as cases of "as they were", and the code it is checked against has three
+  (`crates/nozoki-core/src/fs_reader.rs:L129-L133`). The diff slice's clause "the file's tree
+  entry still `observed`" names one listed file. C-I1's *Violated by* list is unchanged. RN-88's
+  paragraph "Still standing, and not folded" is a dated note about the state before this fold
+  and stays as written; this note is where that item closes.
+  **Read for this fold, at `nozoki@9c9ee29`.** `git diff --stat bc76311 HEAD -- crates checks`
+  prints nothing, so the code is what the answer read. `crates/nozoki-core/src/fs_reader.rs:L853`
+  reads `Ok(file_type) if file_type.is_dir() => (EntryKind::Folder, ItemState::Pending)`.
+  `docs/SRS.md:L297-L299` (NFR-3) reads "degrades only that item's view". No test was run:
+  the fold changes no code, and `--test watch` does not exist yet.
+  **Known limits, stated beside the claims.** This fold read the header, § 3 *What the system
+  holds*, § 4 C-I1 and C-I2, § 6 `see-git-status`'s command half and `follow-the-folder` whole,
+  RN-44, RN-88 and *Open Questions* of this document, and searched the rest for "siblings". §§ 1,
+  2, 5, 7 to 12 and the other review notes were not re-read line by line, so a sentence there
+  that carries the old meaning in other words was not seen. Of the inputs, the status lines of
+  `docs/PRD.md`, `docs/SRS.md` and `docs/UXD.md` were read, with NFR-3 and UX-I10's line; the
+  answer moves no requirement, surface or product statement. `ItemState` in the code has three
+  arms and no `stopped` (`fs_reader.rs:L129-L133`); C-I1 names four states because § 3 gives
+  four, and when the model first holds `stopped` is not something this fold decides.
+  **Downstream, not this document's to change.** `docs/nfdr.md` QC-47's *verified by* repeats
+  the old wording (`docs/nfdr.md:L1009-L1010`). The change is carried as
+  `docs/architecture_open_issues.md` § 2.1, appended at `nozoki@f0789a6`, for the Principal
+  Architect's records to fold. Until then the NFDR's clause differs from the condition it
+  traces to, and § 4's statement is the one that holds.
+  **The companion:** `diff docs/SDD_open_issues.md docs/trail/sdd/cycle-24.md` printed nothing
+  before this fold's first edit, and the companion matched `nozoki@9c9ee29`. Its one item is
+  folded and nothing is unresolved, so `docs/SDD_open_issues.md` is removed and `Status:` moves
+  from Draft to Settled *(re: § 4 C-I1; § 6 `follow-the-folder` *Reached when*, command half;
+  RN-44; *Open Questions*; source: `docs/trail/sdd/cycle-24.md` § 2.1;
+  `docs/trail/sdd/self_answer-36.md` § 2.1; `nozoki@9c9ee29`; `docs/SRS.md` NFR-3)*.
 
 ## Open Questions
 
@@ -5382,3 +5453,12 @@ question.>
   condition under which a repository's Git state is not shown, which a reader sees; where it is
   the form found, it is written into `git-reader`'s row and § 11 R-16 before it is built.
   *(Added on 2026-10-03; RN-87.)*]
+- [OPEN: What a failed re-read of a folder that is already expanded does to the entries listed
+  under it: whether they stay as last read, go, or are held under the failed folder. Those
+  entries are not the folder's siblings, so § 4 C-I1's rule that a failed read changes no other
+  item does not answer it, and § 3 leaves the model's layout to the developer. Settled in
+  `follow-the-folder`, by the reducer's design and a `--test watch` case that fails the re-read
+  of an expanded folder; the form found is written into § 4 C-I1. Whichever form is found,
+  `docs/SRS.md` NFR-3 binds it: the failure "degrades only that item's view".
+  *(Added on 2026-10-04, from the third addition to the answer at `docs/trail/sdd/cycle-24.md`
+  § 2.1; RN-89.)*]
