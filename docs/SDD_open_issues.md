@@ -80,7 +80,19 @@ None.
   the condition it cites says "`observed`". No part, seam, slice, edge or place in the order moves
   either way. `docs/nfdr.md:L1009-L1010` repeats the wording and re-derives from whichever the SDD
   holds.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm — with three additions. (1) Both sentences state the rule and
+  not a list of states: a failed read changes that item and no other item. Where C-I1 names the
+  states a sibling may hold, it names all four that § 3 `Item<T>` gives — `observed`, `pending`,
+  `failed`, `stopped` — because C-I1 itself puts `stopped` on an item, and three named states would
+  read as a closed list. (2) S-5's clause says "the failure changes no other item", and does not say
+  the siblings stand "as they were before the read": under `checks/churn.sh` a sibling moves for
+  its own reasons while the failed read is in flight, so each sibling holds the state its own read
+  gave it. (3) What a failed re-read of an expanded folder does to the entries already listed under
+  it is not decided here; those entries are not its siblings, and it is `follow-the-folder`'s
+  design. RN-44's parenthesis follows C-I1, corrected in place with a review note recording what it
+  said. `docs/nfdr.md` QC-47 repeats the wording; that change is carried as
+  `docs/architecture_open_issues.md` § 2.1 (`nozoki@f0789a6`) and is not the SDD's to make.
+  Reasoning: `docs/trail/sdd/self_answer-36.md` § 2.1.
 
 ## 3. Cut calls to confirm — where the slicing could reasonably have gone another way
 
