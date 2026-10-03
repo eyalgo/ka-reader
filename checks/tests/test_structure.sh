@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.2.0 — structure.sh holds the boundary reads; fs_reader test body moves to tests/unit
 # Version: 1.1.0 — fs_reader owns OpenFailure; structure.sh holds QC-11's fs-reader clause
 # Version: 1.0.0 — first version: drives the real checks/structure.sh over copies of the real crates/ with breaches planted
 #
@@ -13,6 +14,11 @@
 #   is only read. The technique is the one checks/tests/test_view.sh uses, which is the shell
 #   packet's technique minus its runner: this product has no Python, so the runner is this file
 #   (docs/nfdr.md § 9).
+#
+# WHAT IT ASSERTS
+#   The identifiers on the findings the cases expect: QC-2, QC-9, QC-10, QC-11, QC-13, QC-14,
+#   QC-15, QC-17, QC-30, QC-36, QC-58 and QC-61, and layer-5, the placement rule that has no QC
+#   number. Every identifier a case asserts is named in this block.
 #
 # USAGE
 #   checks/tests/test_structure.sh
@@ -98,6 +104,23 @@ test_set_boxed_logger_outside_the_bridge_is_rejected
 test_required_inputs_are_read
 test_allowed_unit_edges_pass
 test_test_targets_into_checks_pass
+test_core_write_api_is_rejected
+test_write_api_members_are_rejected
+test_read_only_and_non_write_forms_pass
+test_env_reads_are_rejected
+test_env_near_names_pass
+test_config_reads_are_rejected
+test_config_near_names_pass
+test_sockets_are_rejected
+test_socket_near_names_pass
+test_boundary_members_in_comments_and_strings_are_rejected
+test_bin_exe_under_tests_is_rejected
+test_bin_exe_outside_tests_passes
+test_boundary_breaches_under_tests_pass
+test_unreadable_test_file_fails
+test_new_findings_join_one_report
+test_build_script_reads_stay_excluded
+test_test_only_crate_does_not_change_shipped_counts
 "
 
 # --- helpers ---
@@ -336,6 +359,7 @@ test_empty_scope_fails() {
   # Files that exist but are all out of scope read nothing either.
   new_root only-excluded || return 1
   rm -rf "$R"/crates/*/src
+  find "$R"/crates/*/tests -type f -name '*.rs' | grep -q . || fail "the only-excluded root holds no Rust test file, so the case would pass for want of one" || return 1
   run_structure "$R"
   expect_status 1 || return 1
   expect_stderr_contains "no Rust source was read" || return 1
@@ -832,10 +856,16 @@ test_every_filesystem_module_and_third_crate_is_checked() {
 test_owner_exemption_is_exact_and_clause_specific() {
   new_root owners || return 1
   plant "$R" "$CORE_OWNER" 'fn f() { let _ = std::fs::write("x", "y"); let _ = std::os::unix::fs::symlink("a", "b"); let _ = rustix::fs::stat("x"); let _ = libc::open; }'
+  core_owner_line="$PLANT_LINE"
   plant "$R" "$BRIDGE_OWNER" 'fn f() { let _ = std::fs::write("x", "y"); let _ = libc::unlink; }'
   run_structure "$R"
-  expect_status 0 || return 1
-  expect_stderr_empty || return 1
+  # QC-2 binds nozoki-core with no exemption, so the core owner's write is one QC-2 finding. The
+  # owner exemption is QC-15's alone: no QC-15 there, and the bridge owner (outside QC-2) is clean.
+  expect_status 1 || return 1
+  expect_count "crates/$CORE_OWNER" "$core_owner_line" QC-2 1 || return 1
+  expect_count "crates/$CORE_OWNER" "$core_owner_line" QC-15 0 || return 1
+  [ "$(stderr_lines_with "crates/$BRIDGE_OWNER:")" -eq 0 ] || fail "the bridge owner is outside QC-2 and exempt from QC-15: $STDERR" || return 1
+  [ "$(printf '%s\n' "$STDERR" | grep -c .)" -eq 1 ] || fail "expected the one QC-2 finding and nothing else: $STDERR" || return 1
   new_root owners-elsewhere || return 1
   elsewhere="nozoki-core/src/sub/fs_reader.rs nozoki-bridge/src/fs_reader.rs nozoki-core/src/log_writer.rs nozoki-bridge/src/sub/log_writer.rs nozoki-extra/src/fs_reader.rs nozoki-extra/src/log_writer.rs"
   for elsewhere_file in $elsewhere; do
@@ -920,6 +950,10 @@ test_complete_clean_tree_passes() {
   grep -q 'include_str!' "$R/crates/nozoki-core/src/highlighter.rs" || fail "the copy no longer holds highlighter.rs's include_str!" || return 1
   grep -q 'libc::getpwuid_r' "$R/crates/nozoki-bridge/src/log_install.rs" || fail "the copy no longer holds log_install.rs's getpwuid_r" || return 1
   [ -d "$R/crates/nozoki-core/tests" ] || fail "the copy no longer holds the excluded tests/ files" || return 1
+  grep -q '\.read(true)' "$R/crates/$CORE_OWNER" || fail "the copy no longer holds the core owner's read-only open" || return 1
+  grep -q 'std::env::current_exe' "$R/crates/nozoki-bridge/src/log_install.rs" || fail "the copy no longer holds log_install.rs's current_exe" || return 1
+  grep -q 'std::env::temp_dir' "$R/crates/$BRIDGE_OWNER" || fail "the copy no longer holds log_writer.rs's temp_dir" || return 1
+  find "$R"/crates/*/tests -type f -name '*.rs' | grep -q . || fail "the copy holds no Rust test file under crates/*/tests/" || return 1
   run_structure "$R"
   expect_status 0 || return 1
   expect_stderr_empty || return 1
@@ -1701,6 +1735,490 @@ text = "checks"'
   run_structure "$R"
   expect_status 0 || return 1
   expect_stderr_empty || return 1
+}
+
+# --- the cases of the boundary reads: QC-2, QC-30 and QC-58, QC-15's socket clause, layer-5 ---
+
+# Intent: tl_instruction.md Task 2, W1–W6 / E1–E2 / S1–S2 member contracts.
+WRITE_FS_MEMBERS="write copy rename create_dir create_dir_all remove_file remove_dir remove_dir_all hard_link soft_link symlink symlink_file symlink_dir mkfifo mkdir mkdirat unlink unlinkat renameat renameat_with symlinkat link linkat mknodat ftruncate"
+WRITE_FLAGS="write append create create_new truncate"
+WRITE_OFLAGS="WRONLY RDWR CREATE TRUNC APPEND"
+WRITE_LIBC_FLAGS="O_WRONLY O_RDWR O_CREAT O_TRUNC O_APPEND"
+WRITE_LIBC_CALLS="creat mkdir mkdirat mkfifo mkfifoat mknod mknodat rmdir unlink unlinkat remove rename renameat renamex_np renameatx_np symlink symlinkat link linkat truncate ftruncate"
+ENV_MEMBERS="args args_os var var_os vars vars_os"
+ENV_LIBC_MEMBERS="getenv environ _NSGetEnviron _NSGetArgv _NSGetArgc"
+SOCKET_LIBC_CALLS="socket socketpair connect bind listen accept accept4"
+
+CORE_TESTS_FILE="nozoki-core/tests/planted.rs"
+BIN_EXE_TEXT='let exe = env!("CARGO_BIN_EXE_nozoki");'
+
+# The lines (set by plant_line) the case's plants landed on, each to be asserted below.
+PLANTED_LINES=""
+
+# plant_line <root> <file> <text> [<offset>]: plants the text and records the line of interest,
+# which is the plant's first line plus the offset (default 0).
+plant_line() {
+  plant "$1" "$2" "$3"
+  PLANTED_LINES="$PLANTED_LINES $((PLANT_LINE + ${4:-0}))"
+}
+
+# expect_each <path> <identifier>...: every recorded line holds exactly one finding of each
+# identifier.
+expect_each() {
+  each_path="$1"
+  shift
+  for each_line in $PLANTED_LINES; do
+    for each_id in "$@"; do
+      expect_count "$each_path" "$each_line" "$each_id" 1 || return 1
+    done
+  done
+}
+
+test_core_write_api_is_rejected() {
+  new_root core-write || return 1
+  plant "$R" "$CORE_FILE" 'fn f() { let _ = std::fs::write("x", "y"); }'
+  core_line="$PLANT_LINE"
+  plant "$R" "$BRIDGE_FILE" 'fn f() { let _ = std::fs::write("x", "y"); }'
+  bridge_line="$PLANT_LINE"
+  plant "$R" "nozoki-extra/src/lib.rs" 'fn f() { let _ = std::fs::write("x", "y"); }'
+  extra_line="$PLANT_LINE"
+  plant "$R" "nozoki-core/src/own_state.rs" 'fn f() { let _ = std::fs::write("x", "y"); }'
+  own_state_line="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_count "crates/$CORE_FILE" "$core_line" QC-2 1 || return 1
+  expect_count "crates/$CORE_FILE" "$core_line" QC-15 1 || return 1
+  expect_count "crates/$BRIDGE_FILE" "$bridge_line" QC-2 0 || return 1
+  expect_count "crates/$BRIDGE_FILE" "$bridge_line" QC-15 1 || return 1
+  expect_count "crates/nozoki-extra/src/lib.rs" "$extra_line" QC-2 0 || return 1
+  expect_count "crates/nozoki-core/src/own_state.rs" "$own_state_line" QC-2 1 || return 1
+}
+
+test_write_api_members_are_rejected() {
+  new_root write-members || return 1
+  PLANTED_LINES=""
+  for member in $WRITE_FS_MEMBERS; do
+    plant_line "$R" "$CORE_OWNER" "fn std_$member() { let _ = std::fs::$member; }"
+    plant_line "$R" "$CORE_OWNER" "fn rustix_$member() { let _ = rustix::fs::$member; }"
+    plant_line "$R" "$CORE_OWNER" "fn bare_$member() { let _ = fs::$member; }"
+    plant_line "$R" "$CORE_OWNER" "use std::fs::{File, $member};"
+  done
+  plant_line "$R" "$CORE_OWNER" 'fn unix_symlink() { let _ = std::os::unix::fs::symlink("a", "b"); }'
+  plant_line "$R" "$CORE_OWNER" 'use std::os::unix::fs::{symlink};'
+  plant_line "$R" "$CORE_OWNER" 'fn file_create() { let _ = std::fs::File::create("x"); }'
+  plant_line "$R" "$CORE_OWNER" 'fn file_create_new() { let _ = File::create_new("x"); }'
+  plant_line "$R" "$CORE_OWNER" 'use std::fs::File::create;'
+  plant_line "$R" "$CORE_OWNER" 'use std::fs::File::{create_new};'
+  plant_line "$R" "$CORE_OWNER" 'fn dir_builder() { let _ = std::fs::DirBuilder::new(); }'
+  plant_line "$R" "$CORE_OWNER" 'use std::fs::DirBuilder;'
+  for flag in $WRITE_FLAGS; do
+    plant_line "$R" "$CORE_OWNER" "fn flag_$flag() { let _ = fs::OpenOptions::new().$flag(true); }"
+    plant_line "$R" "$CORE_OWNER" "fn spaced_$flag() { let _ = fs::OpenOptions::new().$flag( true ); }"
+  done
+  plant_line "$R" "$CORE_OWNER" 'fn split_flag() { let _ = o
+    .write(
+        true
+    ); }' 1
+  for constant in $WRITE_OFLAGS; do
+    plant_line "$R" "$CORE_OWNER" "fn oflags_$constant() { let _ = OFlags::$constant; }"
+    plant_line "$R" "$CORE_OWNER" "fn rustix_oflags_$constant() { let _ = rustix::fs::OFlags::$constant; }"
+    plant_line "$R" "$CORE_OWNER" "use rustix::{fs::{OFlags::{
+        $constant,
+    }}};" 1
+  done
+  for constant in $WRITE_LIBC_FLAGS; do
+    plant_line "$R" "$CORE_OWNER" "fn libc_$constant() { let _ = libc::$constant; }"
+    plant_line "$R" "$CORE_OWNER" "use libc::{c_int, $constant};"
+  done
+  for call in $WRITE_LIBC_CALLS; do
+    plant_line "$R" "$CORE_OWNER" "fn libc_call_$call() { let _ = libc::$call; }"
+    plant_line "$R" "$CORE_OWNER" "use libc::{c_int, $call};"
+  done
+  plant_line "$R" "$CORE_OWNER" 'fn split_path() { std
+    ::
+    fs::write("x", "y"); }' 2
+  plant_line "$R" "$CORE_OWNER" 'use std::{
+    io,
+    fs::{
+        self,
+        write,
+    },
+};' 4
+  plant_line "$R" "$CORE_OWNER" 'use libc::{
+    c_int,
+    unlink,
+};' 2
+  plant_line "$R" "$CORE_OWNER" 'use rustix::fs::{
+    OFlags,
+    OFlags::{WRONLY},
+};' 2
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_each "crates/$CORE_OWNER" QC-2 || fail "a write form was not refused exactly once" || return 1
+}
+
+test_read_only_and_non_write_forms_pass() {
+  new_root read-only || return 1
+  plant "$R" "$CORE_OWNER" 'fn a() { let _ = fs::OpenOptions::new().read(true).custom_flags(flags).open(p); }
+fn b() { let _ = OFlags::NOFOLLOW | OFlags::NONBLOCK; }
+fn c() { let _ = File::open(p); let _ = fs::read(p); let _ = fs::metadata(p); }
+fn d() { let _ = libc::open(p, 0); libc::write(fd, b, n); }
+use std::io::Write;
+fn e() { write!(s, "x"); writeln!(s); w.write_all(b); }'
+  # CP-447 and Task 2 W4: only literal true asserts write access.
+  for flag in $WRITE_FLAGS; do
+    plant "$R" "$CORE_OWNER" "fn disabled_$flag() { let _ = o.$flag(false); }"
+    plant "$R" "$CORE_OWNER" "fn variable_$flag() { let _ = o.$flag(enabled); }"
+  done
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+}
+
+test_env_reads_are_rejected() {
+  new_root env-reads || return 1
+  PLANTED_LINES=""
+  plant_line "$R" "$CORE_FILE" 'fn a() { let _ = std::env::args(); }'
+  plant_line "$R" "$CORE_FILE" 'fn b() { let _ = std::env::var("X"); }'
+  plant_line "$R" "$CORE_FILE" 'fn c() { let _ = std
+    ::
+    env::var("X"); }' 2
+  for member in $ENV_MEMBERS; do
+    plant_line "$R" "$CORE_FILE" "fn bare_$member() { let _ = env::$member; }"
+    plant_line "$R" "$CORE_FILE" "fn abs_$member() { let _ = ::std::env::$member; }"
+    plant_line "$R" "$CORE_FILE" "use std::{env::{
+        $member,
+    }};" 1
+  done
+  for member in $ENV_LIBC_MEMBERS; do
+    plant_line "$R" "$CORE_FILE" "fn libc_$member() { let _ = libc::$member; }"
+    plant_line "$R" "$CORE_FILE" "use {libc::{
+        $member,
+    }};" 1
+  done
+  plant_line "$R" "$CORE_FILE" 'use libc::{
+    c_int,
+    getenv,
+};' 2
+  plant_line "$R" "$CORE_FILE" 'use std::{
+    io,
+    env::{
+        self,
+        var_os,
+    },
+};' 4
+  plant "$R" "$CORE_OWNER" 'fn owner_env() { let _ = std::env::var("X"); }'
+  owner_line="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_each "crates/$CORE_FILE" QC-30 QC-58 || return 1
+  expect_count "crates/$CORE_OWNER" "$owner_line" QC-30 1 || return 1
+  expect_count "crates/$CORE_OWNER" "$owner_line" QC-58 1 || return 1
+  new_root env-bridge || return 1
+  PLANTED_LINES=""
+  plant_line "$R" "$BRIDGE_FILE" 'use std::{io, env::{self, var}};'
+  plant_line "$R" "$BRIDGE_FILE" 'fn args_in_bridge() { let _ = std::env::args(); }'
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_each "crates/$BRIDGE_FILE" QC-30 QC-58 || return 1
+  plant "$R" "$BRIDGE_OWNER" 'fn owner_env() { let _ = std::env::var_os("X"); }'
+  run_structure "$R"
+  expect_count "crates/$BRIDGE_OWNER" "$PLANT_LINE" QC-30 1 || return 1
+  expect_count "crates/$BRIDGE_OWNER" "$PLANT_LINE" QC-58 1 || return 1
+  new_root env-third || return 1
+  plant "$R" "nozoki-extra/src/lib.rs" 'fn f() { let _ = std::env::args_os(); }'
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_count "crates/nozoki-extra/src/lib.rs" "$PLANT_LINE" QC-30 1 || return 1
+  expect_count "crates/nozoki-extra/src/lib.rs" "$PLANT_LINE" QC-58 1 || return 1
+}
+
+test_env_near_names_pass() {
+  new_root env-near || return 1
+  for near_file in "$CORE_FILE" "$BRIDGE_FILE"; do
+    plant "$R" "$near_file" 'fn near() { let _ = std::env::current_exe(); let _ = std::env::current_dir(); let _ = std::env::temp_dir(); let _ = std::env::home_dir(); }
+/// see std::env::temp_dir()
+const V: &str = env!("CARGO_PKG_VERSION");
+const W: Option<&str> = option_env!("X");'
+  done
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+}
+
+test_config_reads_are_rejected() {
+  new_root config-reads || return 1
+  plant "$R" "$CORE_OWNER" 'fn f() { let _ = std::fs::read_to_string("/Users/a/.config/nozoki/settings.toml"); }'
+  owner_line="$PLANT_LINE"
+  PLANTED_LINES=""
+  plant_line "$R" "$BRIDGE_FILE" 'const C1_PATH: &str = "/home/u/.config/nozoki";'
+  plant_line "$R" "$BRIDGE_FILE" 'const C1_END: &str = "/home/u/.config";'
+  plant_line "$R" "$BRIDGE_FILE" 'const C2: &str = "Library/Preferences/nozoki.plist";'
+  plant_line "$R" "$BRIDGE_FILE" 'const C3: &str = "/etc/nozoki.conf";'
+  plant_line "$R" "$BRIDGE_FILE" 'fn c4a() { let _ = config_dir(); }'
+  plant_line "$R" "$BRIDGE_FILE" 'fn c4b() { let _ = config_local_dir(); }'
+  plant_line "$R" "$BRIDGE_FILE" 'fn c4c() { let _ = preference_dir(); }'
+  plant_line "$R" "$BRIDGE_FILE" 'use dotenv::dotenv;'
+  plant_line "$R" "$BRIDGE_FILE" 'use dotenvy::dotenv;'
+  plant_line "$R" "$BRIDGE_FILE" 'use confy::load;'
+  plant_line "$R" "$BRIDGE_FILE" 'use figment::Figment;'
+  plant_line "$R" "$BRIDGE_FILE" 'fn c5() { let _ = dotenvy::dotenv(); }'
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_count "crates/$CORE_OWNER" "$owner_line" QC-30 1 || return 1
+  expect_count "crates/$CORE_OWNER" "$owner_line" QC-58 1 || return 1
+  expect_count "crates/$CORE_OWNER" "$owner_line" QC-15 0 || return 1
+  expect_each "crates/$BRIDGE_FILE" QC-30 QC-58 || return 1
+}
+
+test_config_near_names_pass() {
+  new_root config-near || return 1
+  plant "$R" "$BRIDGE_FILE" 'fn a() { let config = 1; let _ = config + 1; }
+fn b(s: &S) -> u8 { s.config }
+fn c() { let _ = Config::default(); }
+const D: &str = ".configure";
+const E: &str = "config.rs";
+fn g() { let _ = libc::getpwuid_r; }'
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+}
+
+test_sockets_are_rejected() {
+  new_root sockets || return 1
+  PLANTED_LINES=""
+  plant_line "$R" "$CORE_FILE" 'fn f() { let _ = std::net::TcpStream::connect("127.0.0.1:1"); }'
+  plant_line "$R" "$CORE_FILE" 'fn g() { let _ = std
+    ::
+    net::TcpListener::bind("a"); }' 2
+  plant_line "$R" "$CORE_FILE" 'use std::{io, os::unix::{net::UnixListener}};'
+  plant_line "$R" "$CORE_FILE" 'fn r() { let _ = rustix::net::socket; }'
+  plant_line "$R" "$CORE_FILE" 'use std::os::unix::net::UnixStream;'
+  plant_line "$R" "$CORE_FILE" 'use std::{
+    io,
+    net,
+};' 2
+  for call in $SOCKET_LIBC_CALLS; do
+    plant_line "$R" "$CORE_FILE" "fn libc_$call() { let _ = libc::$call; }"
+    plant_line "$R" "$CORE_FILE" "use libc::{c_int, $call};"
+  done
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_each "crates/$CORE_FILE" QC-15 QC-30 || return 1
+  for socket_line in $PLANTED_LINES; do
+    expect_count "crates/$CORE_FILE" "$socket_line" QC-58 0 || return 1
+  done
+  new_root sockets-bridge || return 1
+  PLANTED_LINES=""
+  plant_line "$R" "$BRIDGE_FILE" 'use std::os::unix::net::UnixStream;'
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_each "crates/$BRIDGE_FILE" QC-15 QC-30 || return 1
+  new_root sockets-owners || return 1
+  plant "$R" "$CORE_OWNER" 'fn f() { let _ = std::net::TcpStream::connect("a"); }'
+  core_owner_line="$PLANT_LINE"
+  plant "$R" "$BRIDGE_OWNER" 'fn f() { let _ = std::net::TcpStream::connect("a"); }'
+  bridge_owner_line="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  for owner_case in "$CORE_OWNER $core_owner_line" "$BRIDGE_OWNER $bridge_owner_line"; do
+    owner_path="${owner_case% *}"
+    owner_at="${owner_case#* }"
+    expect_count "crates/$owner_path" "$owner_at" QC-15 1 || return 1
+    expect_count "crates/$owner_path" "$owner_at" QC-30 1 || return 1
+  done
+}
+
+test_socket_near_names_pass() {
+  new_root socket-near || return 1
+  plant "$R" "$CORE_FILE" 'fn a() { let net = 1; let _ = net + 1; }
+fn b() { crate::net::x(); }
+mod net {}
+const N: &str = "network";
+fn internet() {}'
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+}
+
+# A write, an environment read, a configuration path and a socket are breaches in a comment or a
+# string exactly as in code, and a nested `use` written in a comment counts.
+test_boundary_members_in_comments_and_strings_are_rejected() {
+  new_root boundary-raw || return 1
+  PLANTED_LINES=""
+  plant_line "$R" "$CORE_FILE" '// std::fs::write is not called here'
+  plant_line "$R" "$CORE_FILE" 'const W: &str = "std::fs::write";'
+  plant_line "$R" "$CORE_FILE" '// use std::{fs::{write}};'
+  plant_line "$R" "$CORE_FILE" '/* .append(true) */'
+  plant_line "$R" "$CORE_FILE" 'const RAW_WRITE: &str = r##"use std::{fs::{write}};"##;'
+  expect_qc2="$PLANTED_LINES"
+  PLANTED_LINES=""
+  plant_line "$R" "$CORE_FILE" 'const E: &str = "std::env::var";'
+  plant_line "$R" "$CORE_FILE" '// use std::{io, env::{var}};'
+  plant_line "$R" "$CORE_FILE" 'const C: &str = r#"/home/x/.config/y"#;'
+  plant_line "$R" "$CORE_FILE" '/* Library/Preferences */'
+  plant_line "$R" "$CORE_FILE" 'const RAW_ENV: &str = r##"use std::{env::{var}};"##;'
+  expect_env="$PLANTED_LINES"
+  PLANTED_LINES=""
+  plant_line "$R" "$CORE_FILE" '/* std::net::TcpStream */'
+  plant_line "$R" "$CORE_FILE" 'const S: &str = "use std::{os::unix::{net}};";'
+  plant_line "$R" "$CORE_FILE" 'const RAW_SOCKET: &str = r##"use std::{os::unix::{net}};"##;'
+  expect_socket="$PLANTED_LINES"
+  run_structure "$R"
+  expect_status 1 || return 1
+  PLANTED_LINES="$expect_qc2"
+  expect_each "crates/$CORE_FILE" QC-2 || return 1
+  PLANTED_LINES="$expect_env"
+  expect_each "crates/$CORE_FILE" QC-30 QC-58 || return 1
+  PLANTED_LINES="$expect_socket"
+  expect_each "crates/$CORE_FILE" QC-15 QC-30 || return 1
+}
+
+test_bin_exe_under_tests_is_rejected() {
+  new_root bin-exe || return 1
+  plant "$R" "$CORE_TESTS_FILE" "$BIN_EXE_TEXT"
+  core_line="$PLANT_LINE"
+  plant "$R" "nozoki-bridge/tests/common/sub/deep.rs" "$BIN_EXE_TEXT"
+  deep_line="$PLANT_LINE"
+  plant "$R" "nozoki-extra/tests/t.rs" '// CARGO_BIN_EXE_x'
+  comment_line="$PLANT_LINE"
+  plant "$R" "nozoki-extra/tests/t.rs" 'let s = format!("CARGO_BIN_EXE_{}", n);'
+  string_line="$PLANT_LINE"
+  plant "$R" "nozoki-extra/tests/t.rs" 'let a = "CARGO_BIN_EXE_a"; let b = "CARGO_BIN_EXE_b";'
+  twice_line="$PLANT_LINE"
+  plant "$R" "nozoki-extra/tests/t.rs" 'let m = "MY_CARGO_BIN_EXE_X";'
+  embedded_line="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_count "crates/$CORE_TESTS_FILE" "$core_line" layer-5 1 || return 1
+  expect_count "crates/nozoki-bridge/tests/common/sub/deep.rs" "$deep_line" layer-5 1 || return 1
+  for extra_line in "$comment_line" "$string_line" "$twice_line" "$embedded_line"; do
+    expect_count "crates/nozoki-extra/tests/t.rs" "$extra_line" layer-5 1 || return 1
+  done
+}
+
+test_bin_exe_outside_tests_passes() {
+  new_root bin-exe-outside || return 1
+  plant "$R" "$CORE_FILE" "$BIN_EXE_TEXT"
+  plant "$R" "nozoki-core/src/tests/x.rs" "$BIN_EXE_TEXT"
+  plant "$R" "nozoki-core/build.rs" "$BIN_EXE_TEXT"
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+}
+
+# No rule but layer-5 reads crates/<c>/tests/: each breach alone, then every one together.
+test_boundary_breaches_under_tests_pass() {
+  breach_number=0
+  for breach in \
+    'fn f() { let _ = std::fs::write("x", "y"); }' \
+    'fn f() { let _ = std::env::args(); }' \
+    'fn f() { let _ = std::env::var("X"); }' \
+    'fn f() { let _ = std::fs::read_to_string("/Users/a/.config/nozoki/settings.toml"); }' \
+    'fn f() { let _ = std::net::TcpStream::connect("127.0.0.1:1"); }'; do
+    breach_number=$((breach_number + 1))
+    new_root "breach-under-tests-$breach_number" || return 1
+    plant "$R" "$CORE_TESTS_FILE" "$breach"
+    run_structure "$R"
+    expect_status 0 || return 1
+    expect_stderr_empty || return 1
+  done
+  new_root breach-under-tests-all || return 1
+  plant "$R" "$CORE_TESTS_FILE" 'fn f() { unsafe {} }
+fn g() { let _ = std::fs::write("x", "y"); let _ = std::env::var("X"); let _ = std::net::TcpStream::connect("a"); }'
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+}
+
+# A test file the scan cannot read fails the run naming it, after every other file was read.
+test_unreadable_test_file_fails() {
+  new_root unreadable-test || return 1
+  plant "$R" "$CORE_TESTS_FILE" 'fn f() {}'
+  victim="crates/$CORE_TESTS_FILE"
+  plant "$R" "$CORE_FILE" 'fn g() { unsafe {} }'
+  shipped_line="$PLANT_LINE"
+  chmod 000 "$R/$victim"
+  if [ -r "$R/$victim" ]; then
+    chmod 644 "$R/$victim"
+    fail "this account can read a mode-000 file, so the case cannot make a file unreadable" || return 1
+  fi
+  run_structure "$R"
+  chmod 644 "$R/$victim"
+  expect_status 1 || return 1
+  expect_stderr_contains "structure.sh: cannot read $victim" || return 1
+  expect_finding "crates/$CORE_FILE" "$shipped_line" QC-9 || return 1
+}
+
+test_new_findings_join_one_report() {
+  new_root one-report || return 1
+  plant "$R" "$CORE_FILE" 'fn f() { let _ = std::fs::write("x", "y"); }'
+  write_line="$PLANT_LINE"
+  plant "$R" "$CORE_TESTS_FILE" "$BIN_EXE_TEXT"
+  tests_line="$PLANT_LINE"
+  # Findings of one file come out in numeric line order: lines 2 and 10 sort the other way as text.
+  plant "$R" "nozoki-extra/tests/t.rs" 'fn filler_1() {}'
+  plant "$R" "nozoki-extra/tests/t.rs" '// CARGO_BIN_EXE_a'
+  for filler in 3 4 5 6 7 8 9; do
+    plant "$R" "nozoki-extra/tests/t.rs" "fn filler_$filler() {}"
+  done
+  plant "$R" "nozoki-extra/tests/t.rs" '// CARGO_BIN_EXE_b'
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_count "crates/$CORE_FILE" "$write_line" QC-2 1 || return 1
+  expect_count "crates/$CORE_TESTS_FILE" "$tests_line" layer-5 1 || return 1
+  expect_before "crates/$CORE_FILE:" "crates/$CORE_TESTS_FILE:" || return 1
+  extra_order="$(printf '%s\n' "$STDERR" | grep ': layer-5: ' | grep 'nozoki-extra' | cut -d: -f1,2)"
+  [ "$extra_order" = "crates/nozoki-extra/tests/t.rs:2
+crates/nozoki-extra/tests/t.rs:10" ] || fail "layer-5 findings out of numeric line order: $extra_order" || return 1
+  new_root one-line-clauses || return 1
+  plant "$R" "$CORE_FILE" 'fn f() { let _ = std::env::var("X"); let _ = std::net::TcpStream::connect("a"); }'
+  env_socket_line="$PLANT_LINE"
+  plant "$R" "$CORE_FILE" 'fn g() { let _ = std::fs::read("x"); let _ = std::net::TcpStream::connect("a"); }'
+  fs_socket_line="$PLANT_LINE"
+  plant "$R" "$CORE_FILE" 'fn h() { let _ = std::env::var("A"); let _ = std::env::var("B"); let _ = std::env::args(); let _ = "/home/u/.config/x"; }'
+  repeated_line="$PLANT_LINE"
+  plant "$R" "$CORE_FILE" 'fn k() { let _ = std::fs::write("a", "b"); let _ = std::fs::remove_file("c"); }'
+  writes_line="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_count "crates/$CORE_FILE" "$env_socket_line" QC-30 1 || return 1
+  expect_count "crates/$CORE_FILE" "$env_socket_line" QC-58 1 || return 1
+  expect_count "crates/$CORE_FILE" "$env_socket_line" QC-15 1 || return 1
+  expect_count "crates/$CORE_FILE" "$fs_socket_line" QC-15 2 || return 1
+  expect_count "crates/$CORE_FILE" "$repeated_line" QC-30 1 || return 1
+  expect_count "crates/$CORE_FILE" "$repeated_line" QC-58 1 || return 1
+  expect_count "crates/$CORE_FILE" "$writes_line" QC-2 1 || return 1
+}
+
+test_build_script_reads_stay_excluded() {
+  new_root build-script || return 1
+  plant "$R" "nozoki-core/build.rs" 'fn main() {
+    let _ = std::env::var("X");
+    let _ = std::env::args();
+    let _ = std::fs::write("x", "y");
+    let _ = std::net::TcpStream::connect("a");
+}'
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+}
+
+test_test_only_crate_does_not_change_shipped_counts() {
+  new_root test-only-crate || return 1
+  plant "$R" "nozoki-testonly/tests/t.rs" 'fn f() {}'
+  [ -f "$R/crates/nozoki-testonly/tests/t.rs" ] || fail "the test-only crate was not planted" || return 1
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+  expected_counts "$R"
+  case "$STDOUT" in
+    *" $EXPECT_FILES Rust files in $EXPECT_CRATE_COUNT crates "*"nothing found"*) ;;
+    *) fail "expected the shipped counts $EXPECT_FILES files and $EXPECT_CRATE_COUNT crates only. stdout: $STDOUT" || return 1 ;;
+  esac
+  case "$EXPECT_CRATES" in
+    *nozoki-testonly*) fail "the test-only crate was counted as a shipped crate" || return 1 ;;
+  esac
 }
 
 # --- runner ---
