@@ -7,10 +7,9 @@
 #   The units may import only what docs/nfdr.md § 1.2 lets them, and a reviewer cannot keep
 #   watching a tree for a name that does not belong in a file. This script reads it off the
 #   source, on every run of CI. It reads text, never the compiler's view of it, so it needs no
-#   toolchain and no build. Every rule matches the raw text of a file — code, string literals
-#   and comments alike, with no comment blanked — because a forbidden name in a comment is cheap
-#   to remove and a scan that excused it would have to be right about where a comment ends. The
-#   cost is a false positive when a comment names a forbidden form, and that fails closed.
+#   toolchain and no build. The scan table states each rule's text scope. Closed-name source
+#   rules include comments and strings: a forbidden name in a comment is cheap to remove. The
+#   bridge crate set reads code only, and manifest rules read TOML keys and values.
 #
 # USAGE
 #   checks/structure.sh
@@ -562,25 +561,37 @@ AWK
 # --- the re-export program: which items nozoki-core's lib.rs re-exports from which unit ---
 
 cat > "$work/reexport.awk" <<'AWK'
-# Prints ` <item>:<module>` for every item a `pub use <module>::…;` of lib.rs puts at the crate
-# root, where <module> is a unit. A renamed item is the name after `as`; `self` and a glob name no
-# item.
+# CP-416 requires the originating unit even when one root re-export groups several units.
 { text = $0; sub(/\/\/.*/, "", text); all = all " " text }
 
-function statement(stmt,    n, w, i, x, nxt, module, exported) {
+function export_member(path, alias,    n, parts, first, exported) {
+  n = split(path, parts, "::")
+  first = 1
+  while (parts[first] == "crate" || parts[first] == "self") first++
+  if (first > n || index(UNITS, " " parts[first] " ") == 0) return
+  exported = (alias != "") ? alias : parts[n]
+  if (exported == "self") exported = parts[n - 1]
+  if (exported ~ /^[A-Za-z_][A-Za-z0-9_]*$/) printf " %s:%s", exported, parts[first]
+}
+
+function statement(stmt,    n, w, i, x, depth, parents, path, alias) {
   gsub(/[{},]/, " & ", stmt)
   gsub(/::/, " :: ", stmt)
   n = split(stmt, w, " ")
-  module = ""
-  for (i = 1; i <= n; i++) {
+  depth = 0; parents[0] = ""; path = ""; alias = ""
+  for (i = 1; i <= n + 1; i++) {
     x = w[i]
-    if (x == "::" || x == "{" || x == "}" || x == "," || x == "crate" || x == "self") continue
-    if (module == "") { module = x; continue }
-    nxt = w[i + 1]
-    if (nxt == "as") { exported = w[i + 2]; i += 2 }
-    else if (nxt == "::" || nxt == "{") continue
-    else exported = x
-    if (exported ~ /^[A-Za-z_][A-Za-z0-9_]*$/ && index(UNITS, " " module " ") > 0) printf " %s:%s", exported, module
+    if (x == "::") continue
+    if (x == "{") { parents[++depth] = path; path = ""; continue }
+    if (x == "," || x == "}" || i > n) {
+      if (path != "") export_member(path, alias)
+      path = ""; alias = ""
+      if (x == "}" && depth > 0) depth--
+      continue
+    }
+    if (x == "as") { alias = w[++i]; continue }
+    if (path == "") path = parents[depth]
+    path = (path == "") ? x : path "::" x
   }
 }
 
@@ -628,18 +639,38 @@ function skip_line() {
   if (ch() == "\n") adv()
 }
 
-# Reads a basic or literal string, single- or multi-line, into SV.
-function parse_string(    q, c, s, triple) {
+function unicode_escape(digits,    value, i, digit) {
+  value = 0
+  for (i = 0; i < digits; i++) {
+    digit = index("0123456789abcdef", tolower(ch())) - 1
+    if (digit < 0) return ""
+    value = value * 16 + digit
+    adv()
+  }
+  if (value < 128) return sprintf("%c", value)
+  if (value < 2048) return sprintf("%c%c", 192 + int(value / 64), 128 + value % 64)
+  if (value < 65536) return sprintf("%c%c%c", 224 + int(value / 4096), 128 + int(value / 64) % 64, 128 + value % 64)
+  return sprintf("%c%c%c%c", 240 + int(value / 262144), 128 + int(value / 4096) % 64, 128 + int(value / 64) % 64, 128 + value % 64)
+}
+
+# CP-424 uses TOML values, not their spelling: https://toml.io/en/v1.0.0#string.
+function parse_string(    q, c, s, triple, quotes, digits) {
   q = ch()
   triple = (substr(L[cl], cc, 3) == q q q)
   adv()
   if (triple) { adv(); adv() }
+  if (triple && ch() == "\n") adv()
   s = ""
   while (1) {
     c = ch()
     if (c == "") break
     if (triple) {
-      if (substr(L[cl], cc, 3) == q q q) { adv(); adv(); adv(); break }
+      if (substr(L[cl], cc, 3) == q q q) {
+        quotes = 0
+        while (ch() == q) { quotes++; adv() }
+        while (quotes > 3) { s = s q; quotes-- }
+        break
+      }
       if (c == "\n") { s = s "\n"; adv(); continue }
     } else {
       if (c == "\n") break
@@ -648,7 +679,21 @@ function parse_string(    q, c, s, triple) {
     if (q == "\"" && c == "\\") {
       adv()
       c = ch()
-      if (c == "\n" || c == "") continue
+      if (triple && c ~ /^[ \t\r\n]$/) {
+        while (ch() ~ /^[ \t\r\n]$/) adv()
+        continue
+      }
+      if (c == "u" || c == "U") {
+        digits = (c == "u") ? 4 : 8
+        adv()
+        s = s unicode_escape(digits)
+        continue
+      }
+      if (c == "b") c = sprintf("%c", 8)
+      else if (c == "t") c = "\t"
+      else if (c == "n") c = "\n"
+      else if (c == "f") c = sprintf("%c", 12)
+      else if (c == "r") c = "\r"
     }
     s = s c
     adv()
@@ -804,7 +849,7 @@ function parse_statement(    c, kstr, kn, kline) {
 
 BEGIN { SEP = "\034" }
 
-{ N++; L[N] = $0 }
+{ sub(/\r$/, ""); N++; L[N] = $0 }
 
 END {
   cl = 1; cc = 1; table = ""
