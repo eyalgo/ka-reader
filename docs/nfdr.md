@@ -1,8 +1,8 @@
 # NFDR — Nozoki 覗き
 
-**Status:** Draft
+**Status:** Settled
 **Owner:** Principal Architect
-**Version:** 34 — the cycle-31 fold (`docs/trail/architecture/cycle-31.md` § 3.1; reasoning at `docs/trail/architecture/self_answer-35.md` § 3.1), confirmed with three additions. QC-15's *verified by* names the scan's three exact-path owner files, the adapter's among them, at `nozoki@48308ff`, names the two suite cases that hold the exemption to the exact path, keeps the `Path`-method gap for every crate, and narrows review at `development-design` to the two parts of the `git-reader` bound the script does not hold. QC-5's *verified by* is drafted to state its three named cases as written and passing at the same merge, for the owner to confirm (companion § 2.1). No record moves, no `QC` is added, renumbered or reused, and § 10 does not move. One item awaits the owner, so `Status:` is Draft (RN-45).
+**Version:** 35 — the close: the cycle-32 fold (`docs/trail/architecture/cycle-32.md` § 2.1; reasoning at `docs/trail/architecture/self_answer-36.md` § 2.1), confirmed with one addition. QC-5's *verified by* keeps its v34 draft, its three named cases written and passing at `nozoki@48308ff`. It now also says what the missing-directory case does not reach: a `probe` that tries the pointer, swallows the failed open and still answers `Root`. That half of the read bound goes to QC-15's review at `development-design`. No record moves, no `QC` is added, renumbered or reused, and § 10 does not move. Nothing is left for the owner, so the companion is removed and `Status:` is Settled (RN-46).
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · PRD Settled · UXD Settled · DESIGN Settled · CONTENT Settled
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
@@ -197,14 +197,24 @@ new units while they were unbuilt.
   (`crates/nozoki-core/tests/root_finding.rs:L175`, `:L185`, `:L196`). The adapter answers a `.git`
   regular file through `probe_git_file` (`crates/nozoki-core/src/git_reader/libgit2.rs:L46`,
   `:L58`), and CI runs the target under `cargo test --workspace --locked`
-  (`.github/workflows/ci.yml:L26`) *(through v33 this tail said none of the three was written at
+  (`.github/workflows/ci.yml:L26`). The missing-directory case does not hold the whole read bound.
+  It goes red for a `probe` whose attempt to follow the pointer changes the answer. A `probe` that
+  tries the pointer, swallows the failed open and still answers `Root` passes it, because the case
+  asserts only the answer, that the answer holds no path, and that the scene is unchanged
+  (`crates/nozoki-core/tests/root_finding.rs:L24-L37`, `:L65-L68`), and a swallowed open changes
+  none of the three. No command can see the attempt. Seeing it would take a trace of every open
+  `probe` makes, and this target has none. That half of the bound is held by QC-15's review at
+  `development-design`, which judges which read the adapter makes inside its owner file
+  *(through v33 this tail said none of the three was written at
   `nozoki@8edec4f`, where the `linked-worktree` and `submodule` cases asserted an unchanged scene
   and no outcome and the adapter answered a `.git` file with a provisional condition, and that all
   three would go red until the change replacing that arm landed. It landed at `nozoki@48308ff`.
-  Drafted for the owner's confirmation at `docs/architecture_open_issues.md` § 2.1 — RN-45)* *(traces
-  to: ADR-0018; SRS FR-33, FR-34, AC-24, AC-25; FDR R-15, R-21, R-101; SDD § 11 R-3; the `.git`-file
-  answer, the read bound and the three cases on the owner's seat's answer at
-  `docs/trail/architecture/cycle-29.md` § 3.1 — RN-43)*
+  Drafted at v34 and confirmed at `docs/trail/architecture/cycle-32.md` § 2.1 — RN-45, RN-46)*
+  *(traces to: ADR-0018; QC-15; SRS FR-33, FR-34, AC-24, AC-25; FDR R-15, R-21, R-101; SDD § 11 R-3;
+  the `.git`-file answer, the read bound and the three cases on the owner's seat's answer at
+  `docs/trail/architecture/cycle-29.md` § 3.1 — RN-43; the cases as written and passing, and what the
+  missing-directory case does not reach, on the owner's seat's answer at
+  `docs/trail/architecture/cycle-32.md` § 2.1 — RN-46)*
 - **QC-6:** Every path derived from content or from outside — a tree entry, a symlink target, a
   Markdown image reference, a relative link, an `asset_bytes` call — passes `fs-reader`'s
   containment check before any open, and the check is the walk `docs/SDD.md` § 3 `fs-reader`
@@ -4057,3 +4067,36 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   One item awaits the owner, so `Status:` is Draft *(re: header `Status:`, `Version:`; QC-5;
   QC-15; source: `docs/trail/architecture/cycle-31.md` § 3.1; `docs/trail/architecture/self_answer-35.md`
   §§ 3.1, 2.1; `checks/`, `crates/` and `.github/` at `nozoki@cd88d52`)*
+- **RN-46:** *(v35 — the close: the cycle-32 fold, § 2.1 confirmed with one addition)* **The
+  fold.** The companion at intake held one item, § 2.1, which the v34 run drafted into QC-5's
+  *verified by*. It was answered in the owner's seat (`docs/trail/architecture/self_answer-36.md`
+  § 2.1) and committed at `nozoki@899be3d`. The companion was then copied whole, before this fold, as
+  `docs/trail/architecture/cycle-32.md`. **§ 2.1 → QC-5.** The v34 draft stands as written: the
+  three named cases, the adapter's `.git`-file arm, CI's command and the dated parenthetical. The
+  parenthetical's pointer moves from the companion, which this run removes, to the trail cycle that
+  keeps it. The one addition is folded as answered. The tail now says the missing-directory case
+  goes red for a `probe` whose attempt to follow the pointer changes the answer. It also says the
+  case passes a `probe` that tries the pointer, swallows the failed open and still answers `Root`,
+  and it points that half of the read bound at QC-15's review at `development-design`. QC-15's tail
+  already names that review ("which read the adapter makes inside its owner file"). QC-15 joins
+  QC-5's traces so the pointer can be followed back. **What this run adds beyond the answer:** the
+  new review half argues its downgrade in its own tail. The case observes only the answer, the
+  answer's text and a snapshot of the scene. A swallowed open changes none of the three, and the
+  target records no trace of the opens `probe` makes (`root_finding.rs` names none), so no command
+  in it can see the attempt (`principal_architect_create_architecture.md` § *Every constraint is
+  traced, and named-verifiable*). **Re-measured at HEAD `nozoki@899be3d`, not taken from the
+  answer.** `cargo test --locked -p nozoki-core --test root_finding` prints "37 passed; 0 failed",
+  and the three QC-5 cases are among them. `git diff --stat 48308ff HEAD -- checks crates nozoki-mac
+  .github Cargo.toml Cargo.lock` prints nothing. The lines cited read as quoted: `root_finding.rs:L24`
+  (`assert_clean`, the path and scene assertions through `:L30`), `:L33-L37`
+  (`probe_leaving_the_scene_unchanged`), `:L65-L68` (`probe_git_file`), `:L175`, `:L185`, `:L196`.
+  **What moved beneath this document:** nothing. `git log 1d81e12..HEAD -- docs/SRS.md docs/SDD.md
+  docs/fdr.md docs/PRD.md docs/UXD.md docs/DESIGN.md docs/CONTENT.md` prints nothing, and every
+  input's `Status:` line was re-read and is Settled, so `Inputs read:` stands. **Not weighed here, and
+  named.** QC-5 now has a review half at `development-design` beside its row in § 10. It joins the
+  QC-11, QC-15 and QC-17 halves that RN-45 named as missing from § 10's list of entries with no row,
+  and it is left off that list for the same reason: the question is about the whole list, not about
+  this fold. No `QC` is added, renumbered or reused, no record is written or restatused, and the index
+  does not move. Nothing is left for the owner, so the companion is removed and `Status:` is Settled
+  *(re: header `Status:`, `Version:`; QC-5; source: `docs/trail/architecture/cycle-32.md` § 2.1;
+  `docs/trail/architecture/self_answer-36.md` § 2.1; `crates/` at `nozoki@899be3d`)*
