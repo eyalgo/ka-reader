@@ -40,7 +40,7 @@ test_crate_not_in_the_allowlist_fails
 test_allowlist_entry_not_in_the_tree_fails
 test_pnpm_section_is_refused_as_malformed
 test_verdict_is_unchanged_on_an_x64_machine
-test_no_transport_or_libgit2_crate
+test_binding_has_no_https_or_ssh_transport
 test_log_is_the_only_logging_facade
 test_swapped_log_writer_fails
 test_comments_and_blank_lines_are_ignored
@@ -202,20 +202,38 @@ test_verdict_is_unchanged_on_an_x64_machine() {
   esac
 }
 
-# CP-51, the runnable half: no libgit2 binding and none of the named TLS or SSH transport crates, in
-# the core's own tree and in the allowlist. The domain closure past these names is a review gate.
-test_no_transport_or_libgit2_crate() {
+# CP-485, CP-490 (the runnable half of CP-51's successor): the libgit2 binding is admitted, with its HTTPS
+# and SSH features off and libgit2 vendored, and none of the named TLS or SSH transport crates is in the
+# core's tree or the allowlist. The domain closure past these names is a review gate (checks/deps.review.md).
+# An inverse tree that cannot be read is a failure, never evidence that no feature resolved.
+test_binding_has_no_https_or_ssh_transport() {
   # An absent allowlist names nothing, which would pass every check below for the wrong reason.
   [ -f "$ALLOWLIST" ] || fail "checks/deps.allow does not exist" || return 1
   core_tree="$("$REAL_CARGO" tree -p nozoki-core --locked --offline --prefix none 2>&1)" \
     || fail "cargo tree on nozoki-core failed: $core_tree" || return 1
-  for name in git2 libgit2-sys openssl-sys native-tls rustls libssh2-sys; do
+  for name in openssl-sys native-tls rustls libssh2-sys; do
     if printf '%s\n' "$core_tree" | grep -q "^$name "; then
       fail "the nozoki-core tree holds $name" || return 1
     fi
     if file_has_line "$name" "$ALLOWLIST"; then
       fail "checks/deps.allow names $name" || return 1
     fi
+  done
+
+  for target in aarch64-apple-darwin x86_64-apple-darwin; do
+    for crate in git2 libgit2-sys; do
+      inverse="$("$REAL_CARGO" tree --locked --offline --target "$target" -e features -i "$crate" 2>&1)" \
+        || fail "the $crate inverse feature tree on $target is unreadable: $inverse" || return 1
+      if printf '%s\n' "$inverse" | grep -Eq 'feature "(https|ssh)"'; then
+        fail "$crate resolves an https or ssh feature on $target: $inverse" || return 1
+      fi
+    done
+    inverse="$("$REAL_CARGO" tree --locked --offline --target "$target" -e features -i git2 2>&1)"
+    printf '%s\n' "$inverse" | grep -q 'feature "vendored-libgit2"' \
+      || fail "git2 does not resolve vendored-libgit2 on $target: $inverse" || return 1
+    inverse="$("$REAL_CARGO" tree --locked --offline --target "$target" -e features -i libgit2-sys 2>&1)"
+    printf '%s\n' "$inverse" | grep -q 'feature "vendored"' \
+      || fail "libgit2-sys does not resolve vendored on $target: $inverse" || return 1
   done
 }
 
