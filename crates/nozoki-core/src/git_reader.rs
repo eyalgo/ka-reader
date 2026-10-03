@@ -17,7 +17,7 @@ pub use libgit2::Libgit2;
 /// ```
 /// use std::path::Path;
 ///
-/// use nozoki_core::{GitPort, RootFinding};
+/// use nozoki_core::{GitPort, GitReadCondition, HeadState, RootFinding, StatusLists};
 ///
 /// struct NeverARepository;
 ///
@@ -25,10 +25,22 @@ pub use libgit2::Libgit2;
 ///     fn probe(&self, _folder: &Path) -> RootFinding {
 ///         RootFinding::Plain
 ///     }
+///
+///     fn state(&self, _root: &Path) -> Result<HeadState, GitReadCondition> {
+///         Err(GitReadCondition::NotARoot)
+///     }
+///
+///     fn status(&self, _root: &Path) -> Result<StatusLists, GitReadCondition> {
+///         Err(GitReadCondition::NotARoot)
+///     }
 /// }
 ///
 /// let port: &dyn GitPort = &NeverARepository;
 /// assert_eq!(port.probe(Path::new("/any/folder")), RootFinding::Plain);
+/// assert_eq!(
+///     port.state(Path::new("/any/folder")),
+///     Err(GitReadCondition::NotARoot)
+/// );
 /// ```
 pub trait GitPort {
     /// Answers whether `folder` is a repository's top level. Never changes anything on disk.

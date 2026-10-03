@@ -160,8 +160,9 @@ fn no_ceilings() -> [&'static OsStr; 0] {
 #[cfg(test)]
 mod tests {
     use std::io::{self, Read};
+    use std::path::{Path, PathBuf};
 
-    use super::names_a_git_directory;
+    use super::{Inspected, lies_inside, names_a_git_directory, spell_location};
 
     /// Hands out at most one byte per read, and fails the first read with `Interrupted`.
     struct Trickle<'a> {
@@ -260,5 +261,61 @@ mod tests {
         assert!(version.vendored(), "libgit2 is the copy compiled in");
         assert!(!version.https(), "HTTPS is off");
         assert!(!version.ssh(), "SSH is off");
+    }
+
+    /// No position on the way is a link, so the walk is spelling alone.
+    fn no_links(_position: &Path) -> Inspected {
+        Inspected::NotALink
+    }
+
+    fn spelled(root: &str, base: &str, value: &str) -> PathBuf {
+        spell_location(
+            Path::new(root),
+            Path::new(base),
+            Path::new(value),
+            &no_links,
+        )
+        .expect("a walk over no links never stops")
+    }
+
+    #[test]
+    fn test_parent_escape_lands_beside_the_folder() {
+        let landed = spelled("/a/S", "/a/S", "../nowhere/.git");
+
+        assert_eq!(landed, Path::new("/a/nowhere/.git"));
+        assert!(!lies_inside(Path::new("/a/S"), &landed));
+    }
+
+    #[test]
+    fn test_absolute_value_replaces_the_position() {
+        assert_eq!(spelled("/a/S", "/a/S", "/x/../y"), Path::new("/y"));
+    }
+
+    #[test]
+    fn test_dot_dot_back_inside_stays_inside() {
+        let landed = spelled("/a/S", "/a/S", "sub/../.realgit");
+
+        assert_eq!(landed, Path::new("/a/S/.realgit"));
+        assert!(lies_inside(Path::new("/a/S"), &landed));
+    }
+
+    #[test]
+    fn test_reentry_on_the_folders_own_spelled_name_is_inside() {
+        let landed = spelled("/a/S", "/a/S", "../S/.realgit");
+
+        assert_eq!(landed, Path::new("/a/S/.realgit"));
+        assert!(lies_inside(Path::new("/a/S"), &landed));
+    }
+
+    #[test]
+    fn test_dot_dot_at_filesystem_root_stays_at_root() {
+        assert_eq!(spelled("/a/S", "/", "../../x"), Path::new("/x"));
+    }
+
+    #[test]
+    fn test_sibling_with_shared_prefix_is_not_inside() {
+        assert!(!lies_inside(Path::new("/a/S"), Path::new("/a/Sx")));
+        assert!(!lies_inside(Path::new("/a/S"), Path::new("/a/Sx/.git")));
+        assert!(lies_inside(Path::new("/a/S"), Path::new("/a/S/.git")));
     }
 }
