@@ -1,0 +1,31 @@
+# checks/entry-points.allow — the reviewed list of every environment or argument read in the crates the
+# shipped bridge links from outside the workspace.
+#
+# The ONLY list checks/entry-points.sh compares against (NFDR QC-30, half 2). The script finds the reads;
+# this file says which are accepted and what each changes. See the script's header for what it reads and
+# what it does not hold.
+#
+# One line per read:   <crate> | <name> | <what the read changes in the shipped process>
+#   <crate>  the crate's name, no version: a read in either of two resolved versions is one line.
+#   <name>   one of env::var, env::var_os, env::vars, env::vars_os, env::args, env::args_os, written in full.
+#   text     non-empty; it may itself contain `|`. It says what the read changes in the process that ships,
+#            and says so plainly when the occurrence is documentation or test code that never runs there.
+# Blank lines and lines whose first non-blank character is `#` are ignored. Fields are trimmed.
+#
+# A line is MALFORMED, and fails the run naming its number, when it lacks its crate, its name or its text,
+# names something other than the six, or repeats the crate and name of an earlier line. A malformed line
+# takes no part in the comparison. The list must hold at least one line.
+#
+# The comparison fails in both directions: a read with no line here is unlisted, and a line whose read the
+# scan no longer finds is stale. A change that moves Cargo.lock edits this file in the same commit
+# (NFDR QC-30, QC-26), so the list cannot go stale unnoticed.
+#
+# What review of THIS file checks, past what the script can (NFDR QC-30, CP-405):
+#   - that each text is true: read the actual occurrence at the version the lock resolves, and say what it
+#     changes, including "nothing" for a doc comment, a README or a test helper;
+#   - that no read of the shipped process is accepted without that being said in its text.
+# The script never judges a text beyond its being non-empty.
+
+quote | env::var_os | README.md only: a build.rs usage example in the documentation (`env::var_os("OUT_DIR")`); not compiled, so the shipped process reads nothing
+syn | env::args | src/file.rs only: a doc comment's example program (`env::args()`); documentation, so the shipped process reads nothing
+syn | env::var | tests/repo/mod.rs only: syn's own test helper reads ABORT_AFTER_FAILURE and RUST_MIN_STACK; a test, not part of the library, so the shipped process reads nothing

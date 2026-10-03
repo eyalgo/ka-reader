@@ -31,6 +31,12 @@ jobs:
       - name: Structure check suite
         run: checks/tests/test_structure.sh
 
+      - name: Entry-points check
+        run: checks/entry-points.sh
+
+      - name: Entry-points check suite
+        run: checks/tests/test_entry_points.sh
+
       - name: Build Nozoki.app
         run: nozoki-mac/assemble.sh
 
