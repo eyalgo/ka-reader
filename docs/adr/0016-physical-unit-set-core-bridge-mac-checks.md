@@ -1,6 +1,6 @@
 # ADR-0016: The physical unit set — `nozoki-core` a Rust library with no `unsafe` and no Apple framework; `nozoki-bridge` a Rust static library, the only unit that exports the C ABI and the only one that holds `unsafe`; `nozoki-mac` a Swift package with no dependency, the only unit that imports AppKit; `checks/` outside the bundle
 
-**Status:** Accepted — supersedes ADR-0009
+**Status:** Superseded by ADR-0020
 **Date:** 2026-09-23
 
 ## Context

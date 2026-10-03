@@ -1,8 +1,8 @@
 # NFDR — Nozoki 覗き
 
-**Status:** Draft
+**Status:** Settled
 **Owner:** Principal Architect
-**Version:** 32 — the cycle-29 fold (`docs/trail/architecture/cycle-29.md` §§ 3.1 – 3.5; reasoning at `docs/trail/architecture/self_answer-33.md`), and a re-derivation against `docs/SDD.md` v26 and v27, which moved beneath this document after v31. Three records are written. ADR-0018 supersedes ADR-0005: a `.git` file answers `root`, and `probe` reads only inside the folder. ADR-0019 supersedes ADR-0004: the port's trait is `git-reader`'s, and the transport claim is made of the shipped executable. ADR-0020, Proposed, supersedes ADR-0016 on acceptance with the one exception to the libgit2 import rule that SDD v27 states. Entries moved: QC-3 (the claim at the executable, the manifest clause, a third verification half); QC-5 (the `.git`-file answer, the read bound, three cases); QC-6 and QC-35 (the paths a repository's own config names, uncovered; QC-35 re-derived against the switch, and its tail saying no listed check observes a read); QC-9 (libgit2 is linked); QC-10 (the types that cross SM-2); QC-11 (SM-2's reading, and the import exception); QC-13 and QC-17 (the config search-path switch); QC-15 (`git-reader`'s bounded reads and what holds them); QC-30 (a C `getenv` as a read of half (2), drafted for the owner's confirm); § 10's QC-3, QC-15/QC-17, QC-30 and QC-35 rows; and every remaining trace to ADR-0004 or ADR-0005. No `QC` is added, renumbered or reused. Two items await the owner in `docs/architecture_open_issues.md`, so `Status:` is Draft (RN-43).
+**Version:** 33 — the close: the cycle-30 fold (`docs/trail/architecture/cycle-30.md` §§ 2.1, 2.2; reasoning at `docs/trail/architecture/self_answer-34.md`), both items confirmed with an addition. ADR-0020 is Accepted and supersedes ADR-0016, carrying in its own text the unit set's grounds, consequences, undo cost and dependencies that it had only pointed at, so the record in force stands alone; ADR-0016's Status line is the only line of it that changes. Every entry trace that named ADR-0016 names ADR-0020 — § 1's opening, QC-8 – QC-17, QC-20, QC-24, QC-35, QC-61 and QC-63 — and ", Proposed" is dropped wherever ADR-0020 was named. QC-30 is confirmed: a C environment read is a member of half (2), read through `getenv`, `environ` or `_NSGetEnviron`, and the (crate, name) limit is named as not covered, with its review gate; § 10's QC-30 row and the list of entries with no row follow. No `QC` is added, renumbered or reused. Nothing is left for the owner, so the companion is removed and `Status:` is Settled (RN-44).
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · PRD Settled · UXD Settled · DESIGN Settled · CONTENT Settled
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
@@ -47,14 +47,15 @@
 
 ## 1. Structural integrity
 
-The physical module set is ADR-0016's, which supersedes ADR-0009 (the owner's confirm,
+The physical module set is ADR-0020's, which supersedes ADR-0016 (confirmed in the owner's seat at
+`docs/trail/architecture/cycle-30.md` § 2.1 — RN-44), which superseded ADR-0009 (the owner's confirm,
 `docs/trail/architecture/cycle-9.md` § 2.3); this section is re-derived from `docs/SDD.md` § 3 as
 it reads at v14 under that document's own rule that the § 4 statement wins (RN-22, RN-23): `nozoki-core` (`crates/nozoki-core`, Rust library — `fs-reader`, `git-reader` with the
 Git port, `watcher`, `folder-model`, `own-state`, `markdown-renderer`, `highlighter`),
 `nozoki-bridge` (`crates/nozoki-bridge`, Rust static library — `core-bridge`: the C ABI and the
 Rust-side composition root), `nozoki-mac` (a Swift package — `mac-shell`, `surfaces`), and
 `checks/` (build-time, not shipped). Part names are the SDD's (`docs/SDD.md` § 3); the Rust module
-spelling of each is the developer's. **The tree holds ADR-0016's four units and nothing else**
+spelling of each is the developer's. **The tree holds ADR-0020's four units and nothing else**
 *(corrected in place at v14 — RN-25, on the owner's seat's answer at
 `docs/trail/architecture/cycle-11.md` § 3.1; through v12 this paragraph read the tree as holding
 the previous shape alone, and at v13 as holding both shapes until the Tauri build's removal)*:
@@ -264,7 +265,7 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   and `otool -L` on the built executable naming neither `WebKit` nor `JavaScriptCore`;
   `checks/no-network.sh` — no Swift dependency, no `Package.resolved`; `swift test --package-path
   nozoki-mac` — the shell issues no call `SM-4` does not name (SDD § 6 S-1) *(traces to:
-  ADR-0013; ADR-0014; ADR-0016; SDD § 3 `mac-shell` and `surfaces` "Must not own", SM-8; § 4 C-R6, C-R7;
+  ADR-0013; ADR-0014; ADR-0020; SDD § 3 `mac-shell` and `surfaces` "Must not own", SM-8; § 4 C-R6, C-R7;
   re-derived at v11 — RN-22)*
 - **QC-9:** `nozoki-core` **must not import** any Apple framework or a binding to one, any crate
   outside `checks/deps.allow`, or `std::process`, and **holds no `unsafe`** — the workspace forbids
@@ -277,7 +278,7 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   — *verified by:* `checks/no-network.sh`; `checks/structure.sh` (layer 6) — the imports, and
   `unsafe` appearing in no crate but `nozoki-bridge`; `cargo build --workspace --locked` under
   `[workspace.lints.rust] unsafe_code = "forbid"`, a build failure on an `unsafe` block in any
-  crate whose manifest does not relax it *(traces to: ADR-0013; ADR-0016; ADR-0017; SDD § 3, the units paragraph; § 4 C-R6; `Cargo.toml`
+  crate whose manifest does not relax it *(traces to: ADR-0013; ADR-0020; ADR-0017; SDD § 3, the units paragraph; § 4 C-R6; `Cargo.toml`
   `[workspace.lints.rust]`; re-derived at v11 — RN-22; the limit from SDD § 3's units paragraph
   and § 11 R-14 as they read at v23 — RN-34; libgit2 stated as linked, which it has been since
   `nozoki@126ef75` (`crates/nozoki-core/Cargo.toml:L9`) — RN-43)*
@@ -291,7 +292,7 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   adapter, or `own-state`. The model's "I/O of any kind" holds through the edge: the renderer's
   containment call reaches the filesystem through `fs-reader` over `SM-7`, never through the
   model.
-  — *verified by:* `checks/structure.sh` (layer 6) *(traces to: ADR-0019; ADR-0016; SDD § 3 SM-2 at v26
+  — *verified by:* `checks/structure.sh` (layer 6) *(traces to: ADR-0019; ADR-0020; SDD § 3 SM-2 at v26
   — "the model imports the trait and those types, and never the adapter" — added on the owner's
   seat's answer at `docs/trail/architecture/cycle-29.md` § 3.2, RN-43; SDD § 3
   `folder-model` "Owns" and "Must not own" as they read at v14, and the units paragraph's edge
@@ -309,7 +310,7 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   `development-design`: the script does not hold the import rule outside the three units' files it
   reads (`checks/structure.sh:L249-L250` at `nozoki@8edec4f`), and changing it for the exception is
   the design of the change that builds the switch (SDD RN-87) *(traces to: ADR-0019; ADR-0015;
-  ADR-0016; ADR-0020, Proposed; SDD § 3, the units paragraph at v27 — the exception, RN-87; SDD § 3, the units paragraph's stated edges as it reads at v14 — the two into `fs-reader` and
+  ADR-0020; SDD § 3, the units paragraph at v27 — the exception, RN-87; SDD § 3, the units paragraph's stated edges as it reads at v14 — the two into `fs-reader` and
   `highlighter`; the model's edge into the two runs the other way and is QC-10's — the
   `markdown-renderer` and `highlighter` rows; re-derived at v11 — RN-22; the third edge placed at
   v12 — RN-23; SDD § 3 SM-1's owner cell, read on the owner's seat's answer at
@@ -346,8 +347,10 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   asks whether a value module holds anything a part's *Owns* cell in SDD § 3 names *(traces to:
   § 1.2's lead rule, "never inferred"; SDD § 3, the parts table and the units paragraph, which
   name the core's parts and no module beside them, and "the physical layout is the developer's"
-  (`docs/SDD.md:L433`), which leaves a module of no part to this section — ADR-0016 hands the
-  module boundaries to § 1.2 (`docs/adr/0016-physical-unit-set-core-bridge-mac-checks.md:L83-L84`);
+  (`docs/SDD.md:L433`), which leaves a module of no part to this section — ADR-0020 hands the
+  module boundaries to § 1.2
+  (`docs/adr/0020-physical-unit-set-the-bridge-switches-off-libgit2-machine-config-reads.md:L140-L142`,
+  carried from ADR-0016 at v33 — RN-44);
   SDD SM-1 (`docs/SDD.md:L415`), across which `Language` passes from `fs-reader`, which names it
   (`:L322`), to `highlighter`, which must not (`:L327`), two parts the units paragraph gives no
   edge between (`:L347-L349`) — so no part holds `Language` without an edge the SDD does not
@@ -358,7 +361,7 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
 - **QC-12:** `own-state` **must not import** `fs-reader`, `git-reader`, `watcher`, `folder-model`
   or `markdown-renderer`; it reads and writes only inside the app's container.
   — *verified by:* `checks/structure.sh` (layer 6); `checks/own-state.sh` (layer 5) *(traces to:
-  ADR-0016; SDD § 3 `own-state`; § 4 C-D2)*
+  ADR-0020; SDD § 3 `own-state`; § 4 C-D2)*
 - **QC-13:** `nozoki-bridge` may import `nozoki-core`, the standard library and the crates
   `checks/deps.allow` names — the whole allowed set, in the form QC-9 bounds `nozoki-core` with,
   and never a hand-kept list of names, which goes false at the bridge's next reviewed dependency.
@@ -377,7 +380,7 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   import rule is the part that is; the allowlist admits a crate to the workspace and not to a
   purpose, so a listed parser or grammar engine imported to put read logic in the bridge is that
   review's catch, and QC-11 keeps the libgit2 binding out by name but for the search-path switch
-  and its test (QC-17) *(traces to: ADR-0014; ADR-0016; ADR-0020, Proposed; SDD § 3 `core-bridge`
+  and its test (QC-17) *(traces to: ADR-0014; ADR-0020; SDD § 3 `core-bridge`
   "Owns" and "Must not own" as they read at v27 — the switch, RN-87, re-derived at v32, RN-43 —
   SM-4; § 4 C-I2; § 11 R-13; `arch_defaults.md` § Application Layer; re-derived at v11 —
   RN-22; the *may import* set answered in the owner's seat at
@@ -388,7 +391,7 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   never ships in the bundle.
   — *verified by:* `cargo tree -p nozoki-bridge` names no `checks` crate; `checks/structure.sh`
   (layer 6); `checks/bundle.sh` — nothing of `checks/` under `Contents/` (layer 5) *(traces to:
-  ADR-0010; ADR-0016; SDD § 3 `read-only-harness` "Must not own"; the shipped-unit qualifier
+  ADR-0010; ADR-0020; SDD § 3 `read-only-harness` "Must not own"; the shipped-unit qualifier
   restored at v25 from those two sources, answered at `docs/trail/architecture/cycle-22.md`
   § 3.1 — RN-36)*
 
@@ -413,7 +416,7 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   `std::fs` read anywhere else in `git-reader` is a finding. Until the change that adds it, and for
   a `Path`-method read after it, the bound is review at `development-design`, which judges each
   `git-reader` read outside libgit2 against the clause above. `checks/view.sh` (layer 6): no I/O
-  primitive in `nozoki-mac/Sources` at all *(traces to: ADR-0013; ADR-0016; ADR-0018; SDD § 3 parts
+  primitive in `nozoki-mac/Sources` at all *(traces to: ADR-0013; ADR-0020; ADR-0018; SDD § 3 parts
   table, and the `git-reader` row's *Must not own*, "A file outside Git's own on-disk layout"; § 4
   C-R7; the bounded reads and their gate on the owner's seat's answer at
   `docs/trail/architecture/cycle-29.md` § 3.3 — RN-43)*
@@ -421,7 +424,7 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   log, both inside `~/Library/Containers/com.kensaiapp.nozoki/`.
   — *verified by:* `checks/own-state.sh` — after a session every changed file under `$HOME` is
   under the container and none under the fixture (layer 5) *(traces to: SDD § 4 C-D2, C-I2; SRS
-  FR-21, AC-13; ADR-0013; ADR-0016 — the trace its § Binds names, added at v12 — RN-23)*
+  FR-21, AC-13; ADR-0013; ADR-0020 — the trace its § Binds names, added at v12 against ADR-0016 — RN-23 — and carried to ADR-0020 at v33, RN-44)*
 - **QC-17:** Two composition roots, one per language, and each is the single place its runtime is
   touched: `nozoki-bridge` is the Rust-side root — the only place the libgit2 adapter is wired to
   the Git port, the only place the log writer is installed, and the only place libgit2's four
@@ -445,7 +448,7 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   bridge that wires it with no switch run before it, or with no test of the switch, violates this
   entry; until that change the gate is `development-design`. A libgit2 release that adds a fifth
   level is not caught by a test naming four, and the lockfile change reviewed as code (QC-26) is
-  the only gate for it *(traces to: ADR-0014; ADR-0016; ADR-0020, Proposed; SDD § 3 `core-bridge`
+  the only gate for it *(traces to: ADR-0014; ADR-0020; SDD § 3 `core-bridge`
   as it reads at v27, `mac-shell`, SM-8; § 4 C-I3 at v27 — the bridge test and what it does not
   reach; SDD RN-87; `arch_defaults.md` § Composition Root; re-derived at v11 — RN-22; the switch
   re-derived at v32 — RN-43)*
@@ -471,7 +474,7 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
 - **QC-20:** Swapping `own-state`'s storage format touches `own-state` only; no other unit reads
   the container.
   — *verified by:* `checks/structure.sh` (layer 6): the container path appears only in `own-state`
-  and the bridge's log writer *(traces to: SDD § 3 SM-6; ADR-0016)*
+  and the bridge's log writer *(traces to: SDD § 3 SM-6; ADR-0020)*
 - **QC-21:** No swap invariant is held for the platform or for the view technology. The platform
   is not replaceable inside the terminus. The view technology was replaced **once, before any
   public release** — from the system WKWebView to AppKit in Swift, on the owner's ruling
@@ -548,7 +551,7 @@ reviewed tag.
   *(traces to: SDD § 3 SM-4; § 4 C-R7 as it reads at v22 — the export staged by change and not by
   slice, and what *built* means, on the owner's seat's answer at
   `docs/trail/architecture/cycle-18.md` § 3.1 — RN-32;
-  § 4 C-I6; § 11 R-12; § SDD Review Notes RN-47, RN-60, RN-66; ADR-0013; ADR-0016, whose units table names `nozoki_free` apart from the list; QC-59; the staged form answered in the owner's seat at
+  § 4 C-I6; § 11 R-12; § SDD Review Notes RN-47, RN-60, RN-66; ADR-0013; ADR-0020, whose units table names `nozoki_free` apart from the list; QC-59; the staged form answered in the owner's seat at
   `docs/trail/architecture/cycle-6.md` § 3.1 — RN-19 — carried from the capability file to the
   export set at v11 — RN-22; `nozoki_free` beside the list confirmed with additions in the owner's
   seat at `docs/trail/architecture/cycle-10.md` § 2.1 — RN-24)*
@@ -726,10 +729,13 @@ reviewed tag.
   by the operating system's own frameworks inside the process. They are the platform's, no
   lockfile names them, and the sandbox (QC-25) is what bounds them. Nor a path the repository's own
   config names, which libgit2 follows with no containment check; QC-35 names it as uncovered (SDD
-  § 11 R-16). **A C `getenv` in a linked crate is a read of half (2)**, and is named on the list as
-  a Rust read is *(drafted at v32 for the owner's confirm — RN-43)*. At `nozoki@8edec4f`, two of
-  the 37 crates the command resolves carry `getenv` in C: `libgit2-sys`, in ten files, and
-  `libz-sys`, in one. The reads a repository open reaches are libgit2's `APP_SANDBOX_CONTAINER_ID`,
+  § 11 R-16). **A C environment read in a linked crate is a read of half (2)** — a `getenv`, or a
+  read of the process's environment array through `environ` or `_NSGetEnviron` — and is named on the
+  list as a Rust read is *(drafted at v32 — RN-43; confirmed at v33, with the environment array
+  added — RN-44)*. At `nozoki@8edec4f`, and unchanged at `nozoki@2f15e2c`, two of the 37 crates the
+  command resolves carry `getenv` in C: `libgit2-sys`, in ten files, and `libz-sys`, in one; and one
+  of them, `libgit2-sys`, reads `environ`, in one file. The reads a repository open reaches are
+  libgit2's `APP_SANDBOX_CONTAINER_ID`,
   `HOME` and `XDG_CONFIG_HOME`, read when the library initialises whatever its search paths
   (`libgit2/src/libgit2/sysdir.c:L347`, `:L357`, `:L402-L405`, `:L458-L459`), and `SUDO_UID`, read
   by an open's ownership check only when the effective user is root
@@ -739,7 +745,12 @@ reviewed tag.
   transport, a spawned process — or in `src/cli`, which the build does not compile. `libz-sys`'s
   one site is in its vendored zlib-ng (`src/zlib-ng/arch/arm/arm_features.c:L36`), which this build
   does not compile: `build.rs:L15-L22` builds zlib-ng only under a zlib-ng feature, the lock
-  resolves only `libc` for `libz-sys`, and the build links the system `libz`.
+  resolves only `libc` for `libz-sys`, and the build links the system `libz`. libgit2's `environ`
+  read is in `src/util/unix/process.c`, where macOS defines the name as `(*_NSGetEnviron())`
+  (`:L21-L23`), read to build a child's environment (`:L113`, `:L128`). The file is compiled
+  (`build.rs:L208`), and `git_process_new`, its entry, is called in `libgit2/src` only from
+  `transports/ssh_exec.c`, a remote the port never makes, so the read is dormant in the shipped
+  process.
   — *verified by:* half (1) — `checks/structure.sh` (layer 6): no `std::env::args`,
   `std::env::var`, socket or config-file read in any workspace member's sources, the scope § 9's
   `checks/structure.sh` bullet states; `checks/view.sh`
@@ -758,10 +769,21 @@ reviewed tag.
   membership in the workspace, never by a list of names. The two halves split on that one test,
   so no crate falls between them; any other crate whose sources it cannot open still fails. The
   scan also reads each such crate's C and C++ sources for `getenv`, which matches libgit2's
-  `git__getenv` too, against the same list — a rule this document adds to the script (RN-43,
-  drafted for the owner's confirm). Until the change that adds it, a C read's gate is review of the
-  lockfile diff at `development-design`, reading this entry, and the script's header names a C
-  `getenv` among what it does not hold (`checks/entry-points.sh:L66`). **The build script excepted**
+  `git__getenv` too, and for `environ` and `_NSGetEnviron` as whole words, against the same list —
+  a rule this document adds to the script (RN-43; the two array names at RN-44). The change that
+  adds it also admits the three C names to the list's name field, which accepts only the six Rust
+  names today (`checks/entry-points.allow:L10`, `:L16`). Until that change, a C read's gate is review
+  of the lockfile diff at `development-design`, reading this entry, and the script's header names a
+  C `getenv` among what it does not hold (`checks/entry-points.sh:L66`). **Not covered by the scan,
+  and named:** a read is the pair (crate, name) (`checks/entry-points.sh:L55`), so once
+  `libgit2-sys | getenv` is listed, a new C `getenv` inside `libgit2-sys` matches the listed pair
+  and passes — a new variable after a libgit2 bump, or a site that moves from uncompiled code into
+  the compiled set. `libz-sys`'s line behaves the same way if a feature change compiles its
+  zlib-ng. No command can tell a new read inside a listed pair from the reads already reviewed, so
+  this case is a review gate: the lockfile change reviewed as code (QC-26), with each listed line's
+  text re-read against the new sources, as the list's own header requires
+  (`checks/entry-points.allow:L20-L21`, `:L23-L26`). Rust reads have the same granularity; the case
+  is named for C because `libgit2-sys`'s line covers reads the shipped process makes. **The build script excepted**
   is the file the `build` key of that registry copy's `Cargo.toml` names, at the version the lock
   resolves, and `build.rs` at the package root where the manifest sets no key
   (https://doc.rust-lang.org/cargo/reference/manifest.html, § The `build` field); where the key is
@@ -780,7 +802,9 @@ reviewed tag.
   § 3.2; the workspace skip drafted at v23 — RN-34 — and confirmed, with half (1) widened to every
   workspace member, on the owner's seat's answer at `docs/trail/architecture/cycle-21.md` § 2.1 —
   RN-35; the C `getenv` half drafted at v32 on the item raised at
-  `docs/trail/architecture/cycle-29.md` § 2.2, for the owner's confirm — RN-43)*
+  `docs/trail/architecture/cycle-29.md` § 2.2 — RN-43 — and confirmed in the owner's seat at
+  `docs/trail/architecture/cycle-30.md` § 2.2, with the environment array and the (crate, name)
+  limit added — RN-44)*
 - **QC-31:** Every value entering from outside is validated at the boundary it enters through
   before it reaches the model: a path by the containment check (QC-6), a decoded file by
   `fs-reader`'s text rule — UTF-8 with or without its byte-order mark, or UTF-16 by its mark;
@@ -850,7 +874,7 @@ import nothing forbidden and still read a path it was never granted.
   observes a read outside the grant: the reads half rests on the wall and on the switch's
   configuration, not on an observation, and this tail says so *(traces to: FDR R-101, R-102; SDD
   § 3 `core-bridge` and `git-reader` at v27; § 4 C-D1, C-D2, C-D3, C-I3 at v27; § 11 R-16;
-  § *Open Questions*, second and last items; ADR-0011; ADR-0020, Proposed; re-derived against SDD
+  § *Open Questions*, second and last items; ADR-0011; ADR-0020; re-derived against SDD
   v27, with the tail's observes-no-read sentence, at v32 — RN-43)*
 - **QC-36:** No unit spawns a process: no `std::process` in any shipped crate, and no `Process`
   in `nozoki-mac/Sources`.
@@ -1024,7 +1048,7 @@ binds the *process*, and asserts no number of its own.
   in the process an adopter runs *(traces to:
   `languages/rust/errors_logging.md` v1.1.0 § Logging, § Which facade — the packet requires the
   binary to select an implementation and this document to record the facade, and fixes no default;
-  SDD § 4 C-I2; SRS NFR-11; FDR PD-32; QC-17, QC-30, QC-39, QC-52, QC-58; ADR-0016 § Decision;
+  SDD § 4 C-I2; SRS NFR-11; FDR PD-32; QC-17, QC-30, QC-39, QC-52, QC-58; ADR-0020 § Decision;
   answered in the owner's seat at `docs/trail/architecture/cycle-2.md` § 1.1 — RN-15; the check's
   scope answered in the owner's seat at `docs/trail/architecture/cycle-6.md` § 3.2 — RN-19)*
 - **QC-53:** No internal text reaches any surface: no stack trace, no error code, no library name,
@@ -1475,7 +1499,7 @@ IS NOT HELD* (`checks/structure.sh:L35-L93` at `nozoki@463acb9`) — and no row 
 | QC-28 | no secret; no signing identity | `gitleaks git`; `gh secret list --repo kensaiapp/nozoki`; `codesign -dv Nozoki.app` | the tree; the release | CI build; release |
 | QC-29 | artifact = tag build | `shasum -a 256 -c SHA256SUMS` against a rebuild | the release | release |
 | QC-30, QC-58 | no other entry point; no configuration — the product's own units | `checks/structure.sh` (suite `test_structure.sh`); `checks/view.sh` (suite `test_view.sh`) | the tree | CI build |
-| QC-30, QC-58 | the linked tree's environment and argument reads — Rust names, and a C `getenv` (drafted at v32) — against the reviewed list | `checks/entry-points.sh` (suite `test_entry_points.sh`) against `checks/entry-points.allow` | the tree | CI build |
+| QC-30, QC-58 | the linked tree's environment and argument reads — Rust names, and C `getenv`, `environ` and `_NSGetEnviron` — against the reviewed list | `checks/entry-points.sh` (suite `test_entry_points.sh`) against `checks/entry-points.allow` | the tree | CI build |
 | QC-32 | empty egress set | AC-3 network monitor; `checks/no-network.sh` (suite `test_no_network.sh`) | the release; the tree | release; CI build |
 | QC-34 | the shell's reach | `checks/view.sh` (suite `test_view.sh`); `checks/no-network.sh` (suite `test_no_network.sh`) | the tree | CI build |
 | QC-35 | the product's reach — writes observed; the machine-level config reads switched off | `checks/own-state.sh` (suite `test_own_state.sh`); `checks/read-only.sh` (suite `test_read_only.sh`); `cargo test --locked -p nozoki-bridge` — the four search paths read back empty (QC-17) | the tree | CI build |
@@ -1499,7 +1523,7 @@ IS NOT HELD* (`checks/structure.sh:L35-L93` at `nozoki@463acb9`) — and no row 
 | QC-61 | logging facade and its implementation | `checks/no-network.sh` (suite `test_no_network.sh`); `checks/structure.sh` (suite `test_structure.sh`) | the tree | CI build |
 
 Entries with no row are review gates, each arguing its downgrade in its own tail: QC-13 (the
-delegation half), QC-63 (the types-and-values half), QC-18, QC-21, QC-31, QC-33, QC-43, QC-45, QC-50, QC-54, QC-57, and QC-59's behaviour member.
+delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a listed crate and name), QC-18, QC-21, QC-31, QC-33, QC-43, QC-45, QC-50, QC-54, QC-57, and QC-59's behaviour member.
 
 ---
 
@@ -3901,4 +3925,66 @@ delegation half), QC-63 (the types-and-values half), QC-18, QC-21, QC-31, QC-33,
   rows; ADR-0018, ADR-0019, ADR-0020; source: `docs/trail/architecture/cycle-29.md`;
   `docs/trail/architecture/self_answer-33.md`; `docs/SDD.md` v26 and v27, RN-85, RN-87;
   `docs/trail/sdd/self_answer-34.md` § 2.1; `crates/` and `checks/` at `nozoki@8edec4f`; the
+  registry copies of `libgit2-sys 0.18.8+1.9.7`, `libz-sys 1.1.29` and `git2 0.21.0`)*
+- **RN-44:** *(v33 — the close: the cycle-30 fold, §§ 2.1 and 2.2 confirmed, each with an
+  addition)* **The fold.** The companion at intake was the one v32 wrote, with two § 2 items. A
+  `companion-self-answer` run confirmed both in the owner's seat, each with an addition
+  (`docs/trail/architecture/self_answer-34.md`). The answers were committed at `nozoki@2f15e2c`, and
+  the companion was copied whole before this fold as `docs/trail/architecture/cycle-30.md`.
+  **§ 2.1 → ADR-0020 Accepted, ADR-0016 superseded.** A superseding record is the mechanic, on the
+  test RN-24 drew: a correction in place is allowed only where the record's observable, its units
+  table, its alternatives and its binds have not moved, and here three of them move. ADR-0016's
+  Status line now reads `Superseded by ADR-0020`, and nothing else in it is edited. The answer's
+  addition is folded before acceptance, while ADR-0020 was still Proposed and this run's to revise.
+  ADR-0020 now states the grounds for the `crates/` placement and the Swift frame itself, where it
+  had written "as ADR-0016 records". It carries ADR-0016's consequences beside its own: the harness
+  without a window, `unsafe` in one unit with one review, a forbidden import as a build failure, two
+  toolchains, a C ABI kept honest under the address sanitizer, and the Swift package's departures
+  recorded in § 9. It also carries ADR-0016's undo cost, its *rests on* paragraph and its *drawn
+  on* line for `arch_defaults.md` § Composition Root, and it marks its two carried crate readings
+  as reconstructed, as ADR-0016 did. That follows ADR-0019's precedent, which restated ADR-0004's
+  consequences whole. **Pointers re-pointed.** Every entry trace that named ADR-0016 now names
+  ADR-0020: § 1's opening, QC-8, QC-9, QC-10, QC-11, QC-12, QC-13, QC-14, QC-15, QC-16, QC-17, QC-20,
+  QC-24, QC-35, QC-61 and QC-63. QC-63's pointer moves from ADR-0016's undo-cost lines to
+  ADR-0020's (`:L140-L142`), the same sentence carried. ", Proposed" is dropped wherever ADR-0020 was
+  named, as RN-43 did for ADR-0004 → ADR-0019. Dated notes keep the numbers they were written with.
+  **What this run adds beyond the answer:** ADR-0020's `## Binds` reads every entry that now traces
+  to it, so it adds QC-24, QC-61 and QC-63 to the list the draft carried. QC-63 is the case RN-41
+  named: it traced to ADR-0016 while ADR-0016's accepted `## Binds` could not list it. With a
+  record that is still revisable, the pair can be made navigable both ways, so it is.
+  ADR-0019 § Decision still says the exception "is drafted as its own record, ADR-0020". That was
+  true when ADR-0019 was accepted, and ADR-0019 is not edited. **§ 2.2 → QC-30, § 10.** The draft
+  stands: a C environment read is a member of half (2), held by `checks/entry-points.sh`, and not a
+  review-only gate, because a command can check it and a class-2 downgrade must be argued
+  (`principal_architect_create_architecture.md` § *Every constraint is traced, and named-verifiable*). The answer notes that the
+  draft's rationale cited the NFDR preamble for that rule. The preamble does not state it, so this
+  note cites the prompt. The addition's two cases are folded. (1) The C rule reads `environ` and
+  `_NSGetEnviron` beside `getenv`. libgit2's `src/util/unix/process.c` reads the environment array
+  to build a child's environment, the file is compiled, and its entry is reached only from the SSH
+  exec transport, so the read is dormant, and its list line will say so. Of the 37 crates, only
+  `libgit2-sys` matches. (2) The scan's unit is the pair (crate, name), so a new C read inside a
+  listed crate passes. QC-30 names that as not covered, and its gate is the lockfile change
+  reviewed as code (QC-26) with the list's text re-read, which the list's header already requires.
+  The entry argues why no command can check it, and § 10's list of entries with no row names it
+  beside QC-13's and QC-63's review halves. **What this run adds beyond the answer:** the list's
+  name field accepts only the six Rust names (`checks/entry-points.allow:L10`, `:L16`), so the
+  change that adds the C rule also widens that field. QC-30 says so, so that the delivery session
+  does not find it out by a malformed-line failure. **Re-measured at HEAD `nozoki@2f15e2c`, not
+  taken from the answers.** `git log 8edec4f..HEAD -- docs/SRS.md docs/SDD.md docs/fdr.md
+  docs/PRD.md docs/UXD.md docs/DESIGN.md docs/CONTENT.md crates checks nozoki-mac .github Cargo.toml
+  Cargo.lock` prints nothing. `cargo tree -p nozoki-bridge --target aarch64-apple-darwin -e normal
+  --locked` resolves 37 crates. A grep of the `.c`, `.h`, `.cc` and `.cpp` files in their registry
+  copies finds `getenv` in `libgit2-sys` (10 files) and `libz-sys` (1), and whole-word `environ` or
+  `_NSGetEnviron` in `libgit2-sys` (1) alone. The lines cited read as quoted: `process.c:L21-L23`,
+  `:L113`, `:L128`; `build.rs:L208`; `grep -rln git_process_new libgit2/src` names only
+  `process.h`, the two `process.c` files and `transports/ssh_exec.c`; `sysdir.c:L347`, `:L357`,
+  `:L402-L405`, `:L458-L459`, `:L559-L560`; `fs_path.c:L2030-L2033`; `entry-points.sh:L55`, `:L66`;
+  `entry-points.allow:L10`, `:L16`, `:L20-L21`, `:L23-L26`; `Cargo.toml:L8`, `:L11`, `:L16`;
+  `crates/nozoki-bridge/Cargo.toml:L11-L15`. **What moved beneath this document:** nothing. Every
+  input's `Status:` line was re-read and is Settled, so `Inputs read:` stands. No `QC` is added,
+  renumbered or reused. Nothing is left for the owner, so the companion is removed and `Status:` is
+  Settled *(re: header `Status:`, `Version:`; § 1's opening; QC-30; the traces of QC-8 – QC-17,
+  QC-20, QC-24, QC-35, QC-61, QC-63; § 10's QC-30 row and its list of entries with no row; ADR-0016's
+  Status line; ADR-0020; the index; source: `docs/trail/architecture/cycle-30.md` §§ 2.1, 2.2;
+  `docs/trail/architecture/self_answer-34.md`; `checks/` and `Cargo.toml` at `nozoki@2f15e2c`; the
   registry copies of `libgit2-sys 0.18.8+1.9.7`, `libz-sys 1.1.29` and `git2 0.21.0`)*
