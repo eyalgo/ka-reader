@@ -1,8 +1,8 @@
 # NFDR — Nozoki 覗き
 
-**Status:** Draft
+**Status:** Settled
 **Owner:** Principal Architect
-**Version:** 29 — the cycle-26 fold (`docs/trail/architecture/cycle-26.md` § 3.1; reasoning at `docs/trail/architecture/self_answer-30.md`). QC-11's text does not move; its trace records the reading of SDD SM-1 the answer fixed — a type that crosses SM-1 is defined where `fs-reader` may import it, never in `folder-model` — and that `checks/structure.sh` holds the `fs-reader` → `folder-model` clause from the change that moves `OpenFailure`. One entry is drafted for the owner's confirm, QC-63 in § 1.2, with its § 10 row and a pointer in § 1.2's lead: a module of `nozoki-core` that is no SDD part is a value module, any part may import it, and it imports no part (companion § 2.1). QC-63 is the one new ID; no `QC` is renumbered or reused, and no record is written or restatused. § 2.1 stays open, so the companion is rewritten and `Status:` is Draft.
+**Version:** 30 — the close: the cycle-27 fold (`docs/trail/architecture/cycle-27.md` § 2.1; reasoning at `docs/trail/architecture/self_answer-31.md` § 2.1). QC-63 is confirmed in the owner's seat with one addition: its *types and values only* half had no verification, and it is now review at `development-design`, in the form QC-13 takes for its delegation half, so § 10's closing list names it beside QC-13's. QC-63's trace drops "the reading is this document's" for the ground the answer gave: SDD § 3 leaves the physical layout to the developer (`docs/SDD.md:L433`), and `Language` crosses SM-1 between two parts the SDD gives no edge, so no part holds it without an SDD change. The obligation does not move, and neither does § 10's QC-63 row. No `QC` is added, renumbered or reused, and no record is written or restatused. Nothing is left for the owner; the companion is removed and `Status:` is Settled.
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · PRD Settled · UXD Settled · DESIGN Settled · CONTENT Settled
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
@@ -207,7 +207,7 @@ new units while they were unbuilt.
 
 One graph, both halves stated. "May import" is the whole allowed set; "must not import" is stated
 explicitly and never inferred. A module of `nozoki-core` that is no part is QC-63's, and importing
-one is not an edge of this graph *(drafted at v29 for the owner's confirm — RN-40)*.
+one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 — RN-41)*.
 
 - **QC-8:** `nozoki-mac` may import AppKit and Foundation — the platform's own — and its own
   modules, and it links `libnozoki_bridge.a` through the generated header. It **must not** declare
@@ -278,11 +278,22 @@ one is not an edge of this graph *(drafted at v29 for the owner's confirm — RN
   unit, `lib.rs` aside, and imports a unit is a finding — a rule this document adds to the script
   (RN-40); until the change that adds it, its gate is `development-design` reading this entry, by
   the header's rule. The no-I/O half is QC-15's scan, which already reads every Rust I/O primitive
-  against its owner *(traces to: § 1.2's lead rule, "never inferred"; SDD § 3, the parts table and
-  the units paragraph, which name the core's parts and no module beside them — so the reading is
-  this document's, drafted at v29 for the owner's confirm — RN-40; raised at
+  against its owner. The types-and-values half is review at `development-design`, in the form
+  QC-13 takes for its delegation half: what counts as behaviour is not greppable. A value module
+  can hold a part's behaviour while importing no part and doing no I/O — `fs-reader`'s extension
+  map moved into `language` as a method on `Language` passes both machine halves — so the review
+  asks whether a value module holds anything a part's *Owns* cell in SDD § 3 names *(traces to:
+  § 1.2's lead rule, "never inferred"; SDD § 3, the parts table and the units paragraph, which
+  name the core's parts and no module beside them, and "the physical layout is the developer's"
+  (`docs/SDD.md:L433`), which leaves a module of no part to this section — ADR-0016 hands the
+  module boundaries to § 1.2 (`docs/adr/0016-physical-unit-set-core-bridge-mac-checks.md:L83-L84`);
+  SDD SM-1 (`docs/SDD.md:L415`), across which `Language` passes from `fs-reader`, which names it
+  (`:L322`), to `highlighter`, which must not (`:L327`), two parts the units paragraph gives no
+  edge between (`:L347-L349`) — so no part holds `Language` without an edge the SDD does not
+  state; drafted at v29 — RN-40; confirmed in the owner's seat at
+  `docs/trail/architecture/cycle-27.md` § 2.1, the review half added there — RN-41; raised at
   `docs/trail/architecture/self_answer-30.md` § Raised on this document; `arch_defaults.md`
-  § Dependency Graph Rules; ADR-0016)*
+  § Dependency Graph Rules)*
 - **QC-12:** `own-state` **must not import** `fs-reader`, `git-reader`, `watcher`, `folder-model`
   or `markdown-renderer`; it reads and writes only inside the app's container.
   — *verified by:* `checks/structure.sh` (layer 6); `checks/own-state.sh` (layer 5) *(traces to:
@@ -1343,7 +1354,7 @@ IS NOT HELD* (`checks/structure.sh:L35-L93` at `nozoki@463acb9`) — and no row 
 | QC-61 | logging facade and its implementation | `checks/no-network.sh` (suite `test_no_network.sh`); `checks/structure.sh` (suite `test_structure.sh`) | the tree | CI build |
 
 Entries with no row are review gates, each arguing its downgrade in its own tail: QC-13 (the
-delegation half), QC-18, QC-21, QC-31, QC-33, QC-43, QC-45, QC-50, QC-54, QC-57, and QC-59's behaviour member.
+delegation half), QC-63 (the types-and-values half), QC-18, QC-21, QC-31, QC-33, QC-43, QC-45, QC-50, QC-54, QC-57, and QC-59's behaviour member.
 
 ---
 
@@ -3567,3 +3578,50 @@ delegation half), QC-18, QC-21, QC-31, QC-33, QC-43, QC-45, QC-50, QC-54, QC-57,
   QC-63; § 10 QC-63 row; source: `docs/trail/architecture/cycle-26.md` §§ 2.1, 3.1;
   `docs/trail/architecture/self_answer-30.md`; `crates/nozoki-core/src/` and
   `checks/structure.sh` at `nozoki@803b599`; `docs/SDD.md` § 3)*
+- **RN-41:** *(v30 — the close: the cycle-27 fold, § 2.1 confirmed with an addition)* **The fold.**
+  The companion at intake held one item, § 2.1, the QC-63 draft RN-40 wrote for the owner's
+  confirm. A `companion-self-answer` run answered it in the owner's seat
+  (`docs/trail/architecture/self_answer-31.md` § 2.1), committed at `nozoki@61295fb`, and copied
+  whole before this fold as `docs/trail/architecture/cycle-27.md`. The verdict is *confirm, with
+  one addition*, and it also corrects one reason. **The addition → QC-63's *verified by:* and
+  § 10's closing list.** "Holds types and values only" had no verification, and this document's
+  preamble says an entry with no nameable verification is not yet an entry. No scan reaches it:
+  `fs-reader`'s extension map (`docs/SDD.md:L322`), which `highlighter` must not own (`:L327`),
+  moved into `language` as a method on `Language` would import no part and do no I/O, so it
+  would pass the new `checks/structure.sh` rule and QC-15 while taking owned behaviour out of its
+  part. The half is now review at `development-design`, in the form QC-13 takes for its
+  delegation half, and the review asks whether a value module holds anything a part's *Owns* cell
+  in SDD § 3 names. The tail argues its downgrade in its own words, and § 10's closing list names
+  "QC-63 (the types-and-values half)" beside "QC-13 (the delegation half)". QC-63's § 10 row is
+  the machine half and stays as v29 wrote it. **The reason corrected → QC-63's trace.** RN-40 said
+  the draft was "a derivation an SDD reader could make another way: move `language` into a part,
+  and name the import the move needs". At this document's altitude that reading is not open.
+  `Language` crosses SM-1 upward, "the floor language named" (`docs/SDD.md:L415`), and QC-11's
+  trace, from cycle 26, keeps a type that crosses SM-1 out of `folder-model`. `fs-reader` names
+  the language and `highlighter` consumes it, and the units paragraph states exactly two edges
+  among the readers, neither between those two (`:L347-L349`). So placing `Language` in a part
+  needs an edge the SDD does not state, and stating one would be a change to SDD § 3, the CTO's.
+  The positive ground is also the SDD's: "the physical layout is the developer's" (`:L433`), and
+  ADR-0016 hands the module boundaries to § 1.2
+  (`docs/adr/0016-physical-unit-set-core-bridge-mac-checks.md:L83-L84`). The trace now cites that
+  ground in place of "so the reading is this document's". RN-40 is a dated note and stands as it
+  was written; this note is the correction. QC-63's obligation does not move. **One pointer runs one
+  way, and stays that way.** QC-63 traces to ADR-0016, and ADR-0016's `## Binds` reads "QC-8 –
+  QC-17, QC-20" and does not name QC-63. ADR-0016 is Accepted, so this run does not edit it. A
+  superseding record written only to add one ID to a list would record no decision, and the
+  module boundaries ADR-0016 fixes have not moved. The trace cites the record's own hand-off to
+  § 1.2, so a reader can get from QC-63 to the record and back through § 1.2. **Re-measured at
+  HEAD `nozoki@61295fb`, not taken from the answer.** `git diff --stat 803b599 HEAD -- crates
+  checks .github` prints nothing. The only crate-relative lines in `language.rs` and `error.rs`
+  are `language.rs:L43` `use crate::Language;` and `error.rs:L26` `use super::Error;`, both in
+  test modules and both naming their own type. `lib.rs:L9-L15` re-exports from all five modules.
+  The SDD lines the trace cites read as quoted at `:L322`, `:L327`, `:L347-L349`, `:L415` and
+  `:L433`. **What moved beneath this document.** `git log a3caabd..HEAD -- docs/SRS.md docs/SDD.md
+  docs/fdr.md docs/PRD.md docs/UXD.md docs/DESIGN.md docs/CONTENT.md crates checks` prints
+  nothing. Every input's `Status:` line was re-read and is Settled, so `Inputs read:` stands. No
+  `QC` is added, renumbered or reused, no record is written or restatused, and the index does not
+  move. Nothing is left for the owner, so the companion is removed and `Status:` is Settled
+  *(re: header `Status:`, `Version:`; § 1.2 lead; QC-63; § 10 closing list; source:
+  `docs/trail/architecture/cycle-27.md` § 2.1; `docs/trail/architecture/self_answer-31.md` § 2.1;
+  `crates/nozoki-core/src/` at `nozoki@61295fb`; `docs/SDD.md` § 3;
+  `docs/adr/0016-physical-unit-set-core-bridge-mac-checks.md`)*
