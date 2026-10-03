@@ -46,7 +46,40 @@ None.
 
 ## 2. Choices to confirm — a best-effort answer was drafted; confirm or override
 
-None.
+### 2.1 § 4 C-I1 and S-5's command half say a failed read leaves "`observed` on its siblings"; a sibling not yet read is `pending`
+
+> **No `product-sdd` run wrote this item.** The `companion-self-answer` run answering this file
+> raised it on 2026-10-04, under `<CORE>/prompts/decide_companion_answers.md` § *The items are not
+> the whole of what a document is owed*, which covers the document being answered. It came from
+> answering § 5.4: the wording § 5.4 corrects in S-4 and RN-44 is quoted from C-I1, and C-I1 and
+> S-5 still carry it. The sentence at the head of this file, "Its four items are in § 5", was
+> written before this item was added. The slot below is left at its placeholder: the reasoning is
+> that run's, and the decision belongs to the next round. Reasoning:
+> `docs/trail/sdd/self_answer-35.md`, § *Raised on this document*.
+
+- **Raised by:** `companion-self-answer`, answering this file in the CTO's seat — 2026-10-04
+- **Seat:** cto
+- **Drafted into the SDD:** Nothing has been written into the SDD. As it stands, § 4 C-I1 reads "a
+  failure to read one file, one entry or one part of Git state yields `failed` or `stopped` on that
+  item and `observed` on its siblings" (`docs/SDD.md:L682-L683`), and S-5's *Command* reads "an
+  unreadable entry yields `failed` on that item and `observed` on its siblings"
+  (`docs/SDD.md:L1783-L1784`). The draft change: both say the failure is held on that item and its
+  siblings stand as they were — `observed` where read, `pending` where not yet read, `failed` where
+  an earlier read failed. RN-44's parenthesis, which quotes C-I1, follows.
+- **Rationale:** The wording cannot be met by any folder that holds a folder. `list_tree` reports a
+  folder it has not expanded as `Pending` (`crates/nozoki-core/src/fs_reader.rs:L137`, `:L853`), so
+  a failed entry beside an unexpanded folder has a sibling that is not `observed`. § 5.4 of this
+  file records the same defect met in S-4: the reducer case had to choose a tree of files only. S-5
+  has not been built, and its `--test watch` case would meet it again. The requirement C-I1 cites
+  says what the draft says: `docs/SRS.md` NFR-3, "degrades only that item's view"
+  (`docs/SRS.md:L297-L298`). The doubt: a reader may take "`observed` on its siblings" as shorthand
+  for "its siblings are untouched", and then nothing is false. It is raised because S-5's clause is
+  a command bar, and a bar is read literally by the change that has to pass it.
+- **If overridden:** C-I1 and S-5 keep their wording, and § 5.4's fold leaves S-4 saying "as they
+  were" where the condition it cites says "`observed`". No part, seam, slice, edge or place in the
+  order moves either way. `docs/nfdr.md:L1010` repeats the wording and re-derives from whichever
+  the SDD holds.
+- **Confirm or override:** <"confirm", or "override: <what to do instead>">
 
 ## 3. Cut calls to confirm — where the slicing could reasonably have gone another way
 
@@ -74,7 +107,15 @@ None.
   `state` and `status`. The likely fold: state that the model builds `GitState` from the port's answers
   and defines it in `folder-model`.
 - **If a document has to be written:** none. The § 3 entity in `SDD.md`.
-- **Answer:** <the owner fills this in>
+- **Answer:** Take the likely fold, with one bound. § 3 `GitState` states the choice as made:
+  `GitState` is a type `folder-model` defines and builds from what the port returns, and the port
+  never returns it. The hand-off to "the change that adds `state`" goes. The bound: do not say the
+  model builds it from `state` and `status` both. At `nozoki@6a0725c` the model asks `state` alone
+  and `GitState` holds the port's `HeadState` and nothing else
+  (`crates/nozoki-core/src/folder_model.rs:L166-L168`, `:L273-L278`); the changed and staged entries
+  the entity lists are the design, and no landed change puts them in the model yet. The rest of the
+  entity stands as written. Answered in the CTO's seat by an unattended run; reasoning in
+  `docs/trail/sdd/self_answer-35.md`.
 
 ### 5.2 SM-2 leaves where the crossing types live to "the design of the change that adds it"; they live in `git-reader`
 - **Raised by:** PM — 2026-10-04
@@ -89,7 +130,15 @@ None.
   (`crates/nozoki-core/src/git_reader.rs:L74-L194`). The likely fold: say that the types `state` and
   `status` answer are defined in `git-reader`.
 - **If a document has to be written:** none. SM-2's row in `SDD.md`.
-- **Answer:** <the owner fills this in>
+- **Answer:** Take the likely fold, and keep the rule. SM-2's row says where the types that cross
+  today live: every type `probe`, `state` and `status` answer is defined in `git-reader`, beside the
+  trait (`crates/nozoki-core/src/git_reader.rs:L74-L263`), which is also what the row's own earlier
+  sentence, "with the plain-data types that cross beside it", already says. The rule itself stays
+  as written for a type a later method brings: never in `folder-model`, and its home is the design
+  of the change that adds it. The row is not asked to choose a home for the types of `diff` and
+  `walk`. Neither method exists, the item cites no type of theirs, and a choice written before the
+  types exist is not until it occurs. Answered in the CTO's seat by an unattended run; reasoning in
+  `docs/trail/sdd/self_answer-35.md`.
 
 ### 5.3 S-4 and RN-44 say the reducer case needs a double because `linked-worktree` reads fine in-process; the adapter now refuses it there
 - **Raised by:** PM — 2026-10-04
@@ -108,7 +157,22 @@ None.
   The double is still how the reducer case reaches the model with no adapter. The likely fold: give
   that as the reason, and say the in-process adapter now refuses the fixture by spelling.
 - **If a document has to be written:** none. S-4 and RN-44 in `SDD.md`.
-- **Answer:** <the owner fills this in>
+- **Answer:** Take the likely fold, with three additions. S-4's *Command* gives the double's real
+  reason: the reducer case reaches the model with no adapter behind it, because what it checks is the
+  reducer's (C-I1) and not the port's. The clause "injected because … the `linked-worktree` fixture
+  reads fine there" goes. One: RN-44 carries three false clauses, not two. "The failure R-3 names
+  exists only under the bundle's grant (C-R2)" is false for the same reason as the two the item
+  quotes, and is corrected with them. Two: the fold says where the in-process refusal is exercised.
+  The `git_state` suite runs the `linked-worktree` and `submodule` fixtures through the adapter, and
+  both `state` and `status` answer the outside condition, because the adapter locates the Git
+  directory and the common directory by spelling before libgit2 opens anything
+  (`crates/nozoki-core/src/git_reader/libgit2.rs:L79-L81`;
+  `crates/nozoki-core/tests/git_state.rs:L714-L725`; `cargo test --locked -p nozoki-core --test
+  git_state`: 36 passed, re-run 2026-10-04 at `nozoki@22e36c3`). Three: the fold claims nothing
+  about the bundle. A refusal by spelling shows nothing about the sandbox, so § 11 R-3 and *Open
+  Questions*' second item stand as written. RN-44 is corrected where it stands, and a new review
+  note records what it said. Answered in the CTO's seat by an unattended run; reasoning in
+  `docs/trail/sdd/self_answer-35.md`.
 
 ### 5.4 S-4 and RN-44 say "every tree item `observed`"; a tree holding an unexpanded folder holds it `Pending`
 - **Raised by:** PM — 2026-10-04
@@ -123,7 +187,18 @@ None.
   and asserting the tree is unchanged by the fold. The likely fold: say the failed Git read leaves every
   tree item as it was — `observed`, or `pending` for a folder not yet expanded.
 - **If a document has to be written:** none. S-4 and RN-44 in `SDD.md`.
-- **Answer:** <the owner fills this in>
+- **Answer:** Take the likely fold, stated as the rule it comes from. In S-4's *Command* and in
+  RN-44's first sentence, "every tree item `observed`" becomes: the failed Git read changes the Git
+  item and nothing else, so the tree and every item in it stand as they were before the read. A
+  file stays `observed`, a folder not yet expanded stays `pending`, and an entry that had failed
+  stays `failed`. The item's wording names the first two; the third is the same rule and is added so
+  the bar does not read as "no tree item may be `failed`". It rests on the fold itself, which
+  replaces the Git item alone (`crates/nozoki-core/src/folder_model.rs:L273-L288`), and on what the
+  case asserts, that the tree is equal before and after
+  (`crates/nozoki-core/tests/git_state.rs:L952-L985`). RN-44's parenthesis quoting C-I1, "its
+  siblings `observed`", is not reworded here: it quotes a § 4 condition that has the same defect,
+  and that is § 2.1 of this file. Answered in the CTO's seat by an unattended run; reasoning in
+  `docs/trail/sdd/self_answer-35.md`.
 
 **How it closes.** `product-sdd` folds it on its next run like every other item in this file, and
 the trail copy and the delete-when-empty behaviour are unchanged.
