@@ -10,8 +10,11 @@
 # (NFDR QC-26); the comparison fails in both directions, so the list cannot go stale.
 #
 # What review of THIS file checks, past what the script can (NFDR QC-3, QC-61):
-#   - no libgit2 binding, and no crate whose purpose is a TLS or SSH transport (`openssl-sys`,
-#     `native-tls`, `rustls`, `libssh2-sys` are examples of that domain, not its membership);
+#   - the libgit2 binding (`git2`, `libgit2-sys`) resolves with its HTTPS and SSH features off and
+#     libgit2 vendored: `checks/tests/test_no_network.sh` reads both inverse feature trees, and the
+#     transport verdict for every name on this list is `checks/deps.review.md`'s (NFDR QC-3);
+#   - no crate whose purpose is a TLS or SSH transport (`openssl-sys`, `native-tls`, `rustls`,
+#     `libssh2-sys` are examples of that domain, not its membership);
 #   - `log` is the one logging facade, with no second facade and no third-party implementation of
 #     `log::Log` (`tracing`, `slog`, `log4rs`, `env_logger`, `fern`, `simplelog` likewise examples).
 
@@ -22,14 +25,19 @@ cc
 equivalent
 errno
 find-msvc-tools
+git2
 hashbrown
 indexmap
 itoa
+jobserver
 libc
+libgit2-sys
+libz-sys
 log
 memchr
 nozoki-bridge
 nozoki-core
+pkg-config
 proc-macro2
 quote
 regex
@@ -55,4 +63,5 @@ tree-sitter-python
 tree-sitter-toml-ng
 tree-sitter-yaml
 unicode-ident
+vcpkg
 zmij
