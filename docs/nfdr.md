@@ -2,7 +2,7 @@
 
 **Status:** Settled
 **Owner:** Principal Architect
-**Version:** 27 — the close: the cycle-24 fold (`docs/trail/architecture/cycle-24.md` § 2.1; reasoning at `docs/trail/architecture/self_answer-28.md`). The v26 draft is confirmed: § 9's `nozoki-mac` bullet cites the build step `ci.yml:L35` and the *no `swift --version` step* range `:L22-L35`, both pinned to `nozoki@463acb9`, with the whole-file grep beside them. What changed is the clause's provenance, not its content. No record is written or restatused, and no `QC` is added, renumbered or reused. Nothing is left open, so the companion is removed and `Status:` is Settled.
+**Version:** 28 — the close: the cycle-25 fold (`docs/trail/architecture/cycle-25.md` § 3.1; reasoning at `docs/trail/architecture/self_answer-29.md`). § 10's QC-30 / QC-58 linked-tree row names its suite, `test_entry_points.sh`; § 9's `checks/tests/` bullet counts eight suites on steps, re-pinned to `nozoki@b158052`, and records where each suite stands on the hosted runner — the five that joined at `nozoki@ab39502` read green in run 36034875098, found while folding; the structure and entry-points pairs have no reading yet. No record is written or restatused, and no `QC` is added, renumbered or reused. Nothing is left open, so the companion is removed and `Status:` is Settled.
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · PRD Settled · UXD Settled · DESIGN Settled · CONTENT Settled
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
@@ -1062,21 +1062,25 @@ left with `nozoki-ui` at `nozoki@0aca57e` (RN-22; RN-25).
   build, the way `Bundle probe suite` runs `checks/tests/test_bundle.sh`
   (`.github/workflows/ci.yml:L41-L42` at `nozoki@463acb9`) — a script whose suite runs nowhere
   is ADR-0012's rule broken one level down: a gate that cannot go red has not run. A script that lands with a suite
-  lands the suite's CI step in the same change. Seven suites are in the tree (`ls checks/tests`:
-  `test_bundle.sh`, `test_no_network.sh`, `test_own_state.sh`, `test_read_only.sh`,
-  `test_renderer.sh`, `test_structure.sh`, `test_view.sh`) and all seven are on steps at
-  `nozoki@463acb9`, each the whole `run` of its own step (`.github/workflows/ci.yml` at
-  `nozoki@463acb9`: `:L31-L32` `test_structure.sh`; `:L41-L42` `test_bundle.sh`; `:L47-L48`
-  `test_view.sh`; `:L58-L59` `test_renderer.sh`; `:L67-L68` `test_read_only.sh`; `:L73-L74`
-  `test_no_network.sh`; `:L76-L77` `test_own_state.sh`); the test command (`ci.yml:L26`) runs
-  none of them. The count and the lines are dated and pinned: an eighth suite, or a step inserted
+  lands the suite's CI step in the same change. Eight suites are in the tree (`ls checks/tests`:
+  `test_bundle.sh`, `test_entry_points.sh`, `test_no_network.sh`, `test_own_state.sh`,
+  `test_read_only.sh`, `test_renderer.sh`, `test_structure.sh`, `test_view.sh`) and all eight are
+  on steps at `nozoki@b158052`, each the whole `run` of its own step (`.github/workflows/ci.yml` at
+  `nozoki@b158052`: `:L31-L32` `test_structure.sh`; `:L37-L38` `test_entry_points.sh`;
+  `:L47-L48` `test_bundle.sh`; `:L53-L54` `test_view.sh`; `:L64-L65` `test_renderer.sh`;
+  `:L73-L74` `test_read_only.sh`; `:L79-L80` `test_no_network.sh`; `:L82-L83`
+  `test_own_state.sh`); the test command (`ci.yml:L26`) runs none of them. The count and the lines are dated and pinned: an eighth suite, or a step inserted
   above these, is a re-measurement of this sentence and not a contradiction of it, and a new suite
   lands its step in the same change by the rule above. This sentence is the count's one home —
   § 10 points here and does not repeat it *(through v25 it counted six, on steps from
   `nozoki@ab39502`, at `:L35-L36`, `:L41-L42`, `:L52-L53`, `:L61-L62`, `:L67-L68` and `:L70-L71`
   with no commit named — true at `nozoki@ab39502`, and moved six lines down when `Structure check`
   and `Structure check suite` landed at `:L28-L32`; on the owner's seat's answer at
-  `docs/trail/architecture/cycle-23.md` § 3.2 — RN-37)*. *History,
+  `docs/trail/architecture/cycle-23.md` § 3.2 — RN-37; through v27 it counted seven, on steps at
+  `nozoki@463acb9` — `:L31-L32`, `:L41-L42`, `:L47-L48`, `:L58-L59`, `:L67-L68`, `:L73-L74` and
+  `:L76-L77` — true at that pin, and re-measured to eight when `test_entry_points.sh` landed with
+  its step at `nozoki@b158052`; on the owner's seat's answer at
+  `docs/trail/architecture/cycle-25.md` § 3.1 — RN-39)*. *History,
   and the rule it kept:* at `nozoki@153f5a1` one suite was on a step, `test_bundle.sh`, and
   `test_renderer.sh` failed one case, `test_header_names_the_runner_reading`, the test of a task
   that change deferred; the ordering rule then in force — that suite's step lands with the change
@@ -1102,11 +1106,28 @@ left with `nozoki-ui` at `nozoki@0aca57e` (RN-22; RN-25).
   their reading, and this bullet records it *(through v16 this bullet read one of six on a step
   and the five joining "as each is green on the hosted runner" — a precondition only the join
   could meet; on the owner's seat's answers at `docs/trail/architecture/cycle-14.md` §§ 3.1, 3.2
-  — RN-28)*. § 10 names each script's suite beside it.
+  — RN-28)*. Where they stand at v28 (2026-10-03, at `nozoki@6dae2ca`, whose `ci.yml` and
+  `checks/` are `nozoki@b158052`'s): **the five have their reading, green.** The first push to
+  carry them, `nozoki@c79270f`, ran as GitHub Actions run 36034875098 (push to `main`,
+  2026-09-24T17:31:13Z, `success`), and `View check suite`, `Renderer gate suite`, `Read-only
+  suite`, `No-network suite` and `Own state suite` each read `success` in it, as does `Bundle
+  probe suite` (`gh run view 36034875098 --repo kensaiapp/nozoki --json jobs`); the run before
+  it, 35988399477 on `nozoki@37a962d`, does not carry `nozoki@ab39502`. **The four steps that joined
+  after have none.** `Structure check` and `Structure check suite` landed at `nozoki@463acb9`, and
+  `Entry-points check` and `Entry-points check suite` at `nozoki@b158052`. `origin/main` is
+  `d234b57`, `git merge-base --is-ancestor <commit> origin/main` exits 1 for both commits, and
+  the newest run, 36958237363 on `nozoki@d234b57` (2026-10-02T03:00:44Z, `success`), lists none
+  of the four steps. All four are fatal — the grep above still prints nothing — and the first
+  push that carries each pair is its reading, which this bullet records *(added at v28: the
+  entry-points pair on the owner's seat's answer at `docs/trail/architecture/cycle-25.md` § 3.1,
+  the five's reading and the structure pair found while folding it — RN-39)*. § 10 names each
+  script's suite beside it.
   — *verified by:* `for s in checks/tests/*.sh; do grep -q "$s" .github/workflows/ci.yml || echo
   "$s"; done` over the tree, which prints the suites on no step — nothing at `nozoki@ab39502`,
   re-run that fold, and nothing at `nozoki@b083f99`, re-run for v26, whose `ci.yml` and
-  `checks/` are `nozoki@463acb9`'s (`git diff --stat 463acb9 b083f99` over both prints nothing) —
+  `checks/` are `nozoki@463acb9`'s (`git diff --stat 463acb9 b083f99` over both prints nothing),
+  and nothing at `nozoki@6dae2ca`, re-run for v28, whose `ci.yml` and `checks/` are
+  `nozoki@b158052`'s (`git diff --stat b158052 6dae2ca` over both prints nothing) —
   read at `development-design` on any change under `checks/` or to
   `.github/workflows/ci.yml` — a review gate, argued: no script in the tree runs that comparison
   (`ls checks/*.sh` at `nozoki@ab39502`: `bundle.sh`, `no-network.sh`, `own-state.sh`,
@@ -1270,7 +1291,7 @@ IS NOT HELD* (`checks/structure.sh:L35-L93` at `nozoki@463acb9`) — and no row 
 | QC-28 | no secret; no signing identity | `gitleaks git`; `gh secret list --repo kensaiapp/nozoki`; `codesign -dv Nozoki.app` | the tree; the release | CI build; release |
 | QC-29 | artifact = tag build | `shasum -a 256 -c SHA256SUMS` against a rebuild | the release | release |
 | QC-30, QC-58 | no other entry point; no configuration — the product's own units | `checks/structure.sh` (suite `test_structure.sh`); `checks/view.sh` (suite `test_view.sh`) | the tree | CI build |
-| QC-30, QC-58 | the linked tree's environment and argument reads, against the reviewed list | `checks/entry-points.sh` against `checks/entry-points.allow` | the tree | CI build |
+| QC-30, QC-58 | the linked tree's environment and argument reads, against the reviewed list | `checks/entry-points.sh` (suite `test_entry_points.sh`) against `checks/entry-points.allow` | the tree | CI build |
 | QC-32 | empty egress set | AC-3 network monitor; `checks/no-network.sh` (suite `test_no_network.sh`) | the release; the tree | release; CI build |
 | QC-34 | the shell's reach | `checks/view.sh` (suite `test_view.sh`); `checks/no-network.sh` (suite `test_no_network.sh`) | the tree | CI build |
 | QC-35 | the product's reach | `checks/own-state.sh` (suite `test_own_state.sh`); `checks/read-only.sh` (suite `test_read_only.sh`) | the tree | CI build |
@@ -3425,3 +3446,49 @@ delegation half), QC-18, QC-21, QC-31, QC-33, QC-43, QC-45, QC-50, QC-54, QC-57,
   `Version:`; § 9 `nozoki-mac` bullet; source: `docs/trail/architecture/cycle-24.md` § 2.1;
   `docs/trail/architecture/self_answer-28.md` § 2.1; `.github/workflows/ci.yml` at
   `nozoki@463acb9`, `nozoki@0aca57e` and `nozoki@a3d0e1e`)*
+- **RN-39:** *(v28 — the close: the cycle-25 fold, § 3.1 answered)* **The fold.** The companion
+  at intake held one item, § 3.1, raised from downstream by the PM on 2026-10-03 after
+  `checks/entry-points.sh`, `checks/entry-points.allow` and `checks/tests/test_entry_points.sh`
+  landed at `nozoki@b158052`. It was answered in the owner's seat by a `companion-self-answer` run
+  (`docs/trail/architecture/self_answer-29.md` § 3.1), committed at `nozoki@6dae2ca`, and copied
+  whole before this fold as `docs/trail/architecture/cycle-25.md`. Both halves are corrections:
+  § 10's own rule and § 9's own pinned count read false against the tree. **§ 3.1 (a) → § 10's
+  QC-30 / QC-58 linked-tree row** gains `(suite test_entry_points.sh)`, as § 10's preamble
+  requires of a row naming a script that has a suite. The suite drives the real script against
+  the allow list (`checks/tests/test_entry_points.sh:L8-L17`), so the tag stays inside what the
+  script holds. **§ 3.1 (b) → § 9's `checks/tests/` bullet** counts eight suites, re-pinned to
+  `nozoki@b158052`, and the seven-suite sentence moves into the bullet's dated history beside the
+  v25 six. The verified-by tail gains this fold's re-run. **Re-measured at HEAD `nozoki@6dae2ca`,
+  not taken from the answer.** `git diff --stat b158052 HEAD -- .github/workflows/ci.yml checks/`
+  prints nothing. `ls checks/tests` lists eight `test_*.sh`. `ci.yml`'s `run:` lines `:L32`,
+  `:L38`, `:L48`, `:L54`, `:L65`, `:L74`, `:L80` and `:L83` are the eight suites, with each
+  step's `name:` on the line above. The bullet's loop prints nothing, and
+  `grep -nE 'continue-on-error|^[[:space:]]+if:' .github/workflows/ci.yml` exits 1. **The
+  hosted-runner record — the answer's addition, and one correction beyond it.** The answer asked
+  the fold to write the entry-points pair's state the way the bullet wrote it for the five
+  earlier suites. Writing it beside that paragraph showed the paragraph stale. It recorded the
+  five as not yet run at `nozoki@c26d47c`, and promised that the first push carrying them would
+  be their reading and that this bullet would record it. That push happened and was never
+  recorded: `git merge-base --is-ancestor ab39502 c79270f` exits 0, the same test against
+  `37a962d` exits 1, and run 36034875098 on `nozoki@c79270f` reads `success` on every suite step.
+  The 2026-09-24 paragraph stays as dated history, and the v28 sentence after it records the
+  reading. The same measurement shows `Structure check` and `Structure check suite`, which landed
+  at `nozoki@463acb9`, also unread: `git merge-base --is-ancestor 463acb9 origin/main` exits 1,
+  and run 36958237363 on `nozoki@d234b57` lists neither step. So the sentence names the four
+  pending steps, not two. This goes beyond the answer's words. It applies the bullet's own rule,
+  "this bullet records it", and makes no new decision: nothing is moved, quieted or reclassified.
+  Two failed runs since, 36761379052 and 36769305658, failed at `Test gate`, not at a suite step,
+  so they change no suite's reading. **What moved beneath this document.** `git log
+  f8fb6d8..HEAD` lists the entry-points change merged at `nozoki@b158052`, the PM's two companion
+  openings, and SDD v25 (`nozoki@0670083`). SDD v25 moves only § 3's `read-only-harness` *Owns*
+  cell (SDD RN-84). This document cites that row for its *Must not own* cell in § 1, and by name
+  in two trace tags, one in § 2 and one in § 9. None of the three moves: the *Must not own* cell
+  is unchanged, and the row still holds every script those tags name. SDD RN-84 names § 9's count and § 10's row as owed here, which is
+  this fold. Every input's `Status:` line was re-read and is Settled, so `Inputs read:` stands.
+  No record is written or restatused, the index does not move, and no `QC` is added, renumbered
+  or reused. § 9's tail ground, `ls checks/*.sh` at `nozoki@ab39502`, stays true at its pin and
+  is not re-pinned *(re: header `Status:`, `Version:`; § 9 `checks/tests/` bullet; § 10 QC-30 /
+  QC-58 linked-tree row; source: `docs/trail/architecture/cycle-25.md` § 3.1;
+  `docs/trail/architecture/self_answer-29.md` § 3.1; `.github/workflows/ci.yml` at
+  `nozoki@b158052` and `nozoki@6dae2ca`; GitHub Actions runs 36034875098, 35988399477 and
+  36958237363; `docs/SDD.md` v25 RN-84)*
