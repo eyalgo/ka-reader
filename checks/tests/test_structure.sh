@@ -1211,6 +1211,20 @@ test_fs_reader_forbidden_units_are_rejected() {
 
 # CP-430 row 5.
 test_root_reexport_reaches_the_unit() {
+  new_root reexport-root-group || return 1
+  plant "$R" "nozoki-core/src/lib.rs" 'pub use crate::{
+    highlighter::{Span as LocalSpan},
+    fs_reader::{Entry as GroupedEntry, Condition as GroupedCondition},
+};'
+  plant "$R" "$HL_FILE" 'fn grouped(_: crate::GroupedEntry, _: crate::GroupedCondition) {}'
+  grouped_line="$PLANT_LINE"
+  plant "$R" "$HL_FILE" 'fn local(_: crate::LocalSpan) {}'
+  local_line="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_finding_naming "crates/$HL_FILE" "$grouped_line" QC-11 "fs_reader" || return 1
+  expect_count "crates/$HL_FILE" "$grouped_line" QC-11 1 || return 1
+  expect_count "crates/$HL_FILE" "$local_line" QC-11 0 || return 1
   new_root reexport || return 1
   plant "$R" "nozoki-core/src/lib.rs" 'pub use fs_reader::{NewThing, Entry as Renamed};'
   plant "$R" "$HL_FILE" 'fn f(_: crate::Entry) {}'
@@ -1310,6 +1324,15 @@ test_bridge_apple_binding_is_rejected() {
 
 # CP-430 row 9. A dependency named checks, in every form TOML lets a manifest write the key.
 test_manifest_depends_on_checks_by_name() {
+  new_root manifest-name-escapes || return 1
+  plant "$R" "$BRIDGE_MANIFEST" '"\u0063hecks" = "1"'
+  escaped_key_line="$PLANT_LINE"
+  plant "$R" "$BRIDGE_MANIFEST" 'renamed = { package = "chec\U0000006Bs" }'
+  escaped_value_line="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_finding "crates/$BRIDGE_MANIFEST" "$escaped_key_line" QC-14 || return 1
+  expect_finding "crates/$BRIDGE_MANIFEST" "$escaped_value_line" QC-14 || return 1
   new_root manifest-name-core || return 1
   plant "$R" "$CORE_MANIFEST" '[dependencies.checks]
 version = "0.1"'
@@ -1363,6 +1386,12 @@ checks = { path = "../../checks" }
 # CP-430 row 10. A dependency whose path lies at or under checks/, resolved lexically from the
 # manifest's own directory.
 test_manifest_dependency_path_under_checks() {
+  new_root manifest-path-escapes || return 1
+  plant "$R" "$BRIDGE_MANIFEST" 'escaped = { "pa\u0074h" = "../../\u0063hecks/walker" }'
+  escaped_path_line="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_finding "crates/$BRIDGE_MANIFEST" "$escaped_path_line" QC-14 || return 1
   new_root manifest-path || return 1
   physical_root="$(cd "$R" && pwd -P)"
   hit_lines=""
@@ -1421,6 +1450,23 @@ use crate::fs_reader::B;'
 
 # CP-430 row 11. The library target, as it ships, may not live under checks/.
 test_manifest_lib_path_under_checks() {
+  new_root lib-path-multiline || return 1
+  plant "$R" "$CORE_MANIFEST" '[lib]
+path = """
+../../chec\
+    ks/lib.rs"""'
+  multiline_path_line=$((PLANT_LINE + 1))
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_finding "crates/$CORE_MANIFEST" "$multiline_path_line" QC-14 || return 1
+  new_root lib-path-literal-multiline || return 1
+  plant "$R" "$CORE_MANIFEST" "[lib]
+path = '''
+../../checks/lib.rs'''"
+  literal_path_line=$((PLANT_LINE + 1))
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_finding "crates/$CORE_MANIFEST" "$literal_path_line" QC-14 || return 1
   new_root lib-path || return 1
   plant "$R" "$CORE_MANIFEST" '[lib]
 path = "../../checks/lib.rs"'
