@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.4.0 — structure.sh holds the value modules — QC-63 scan and its proof
 # Version: 1.3.0 — structure.sh holds the boundary reads; fs_reader test body moves to tests/unit
 # Version: 1.2.0 — fs_reader owns OpenFailure; structure.sh holds QC-11's fs-reader clause
 # Version: 1.1.0 — nozoki structure.sh holds the unit graph — QC-10/11/13/14/17/61 scanner and planted-break cases
@@ -105,7 +106,8 @@
 #                         unit is its module and the units are folder_model, fs_reader,
 #                         highlighter, own_state, git_reader, watcher and markdown_renderer;
 #                         every other file of the core (lib.rs, language.rs, error.rs) belongs
-#                         to no unit, is never a subject, and importing it is never an edge.
+#                         to no unit, is never a subject of QC-10 or QC-11 (QC-63 below reads the
+#                         files of no unit), and importing it is never an edge.
 #                         Forbidden for fs_reader: folder_model, own_state, git_reader,
 #                         watcher, markdown_renderer, highlighter. Forbidden for highlighter:
 #                         folder_model, own_state, git_reader, watcher, markdown_renderer,
@@ -121,6 +123,30 @@
 #                         `libgit2_sys`, a floor: this script may refuse more names, never fewer,
 #                         read in the forms the Apple floor is read in. One finding per distinct
 #                         (file, line, rule, target). Source: QC-10's and QC-11's must-not lists.
+#     QC-63  value        In nozoki-core, a file of no unit (CP-470): a file of the shipped scope
+#            module       under crates/nozoki-core/src/ whose first component under src/, matched
+#            (CP-470 -    as an exact file or directory name and never as a prefix, is none of the
+#            CP-474)      seven units. The domain is stated by class and not by a list, so a file
+#                         added later is in it with no edit here: src/paths.rs, src/language/x.rs,
+#                         src/highlighter_ext.rs, src/tests/x.rs, and a lib.rs anywhere but
+#                         src/lib.rs. lib.rs aside: crates/nozoki-core/src/lib.rs is the one
+#                         exemption, matched by its exact path, so src/x/lib.rs and src/lib/x.rs
+#                         are in the domain. Not in it: any file of a unit (a unit with no file
+#                         today included), crates/nozoki-core/tests/, build.rs, a nozoki-core file
+#                         outside src/, and every file of nozoki-bridge. Such a file that imports a
+#                         unit is a QC-63 finding, `value module imports <unit>`. The target set
+#                         is the seven units and the import forms are QC-10's and QC-11's, above:
+#                         a path whose segment after a leading `crate` or run of `super` is a
+#                         unit, a `use` tree reaching one, either form naming an item lib.rs
+#                         re-exports from a unit's module, read from lib.rs on every run, across
+#                         lines, with whitespace around `::` changing nothing. A comment or a
+#                         string counts; `self::<unit>`, `nozoki_core::<unit>`, a bare name, and a
+#                         path to a file of no unit are not imports. One finding per distinct
+#                         (file, line, unit): a line naming two units gives two, a line naming one
+#                         unit twice gives one, at the line holding the unit's name. A file of a
+#                         unit is judged by QC-10 and QC-11 alone and never draws this finding; a
+#                         file of no unit never draws a QC-10 or QC-11 one. libgit2 names are not
+#                         a QC-63 target. Source: QC-63's verified by.
 #     QC-13  crate set    In every file under crates/nozoki-bridge/, a crate named in code that
 #            (CP-421,     is not `std`, `core` or `alloc`, and not a name under the `cargo:`
 #            CP-422)      section of checks/deps.allow (read on every run, a `-` in a listed name
@@ -223,6 +249,8 @@
 #     - QC-11's clauses whose subject is `git-reader`, `watcher` or `markdown-renderer`, and its
 #       "only `git-reader` imports the libgit2 binding" outside the three units' files.
 #     - QC-17's adapter-constructor clause.
+#     - QC-63's types-and-values half: whether a value module holds anything a part's Owns cell
+#       names. No script rule approximates it; its gate is review at development-design.
 #
 # GAPS THE RULES ABOVE DO NOT CLOSE
 #   Named so that none is read as coverage. The scan reads source text of the files in scope,
@@ -231,8 +259,8 @@
 #   read_dir, canonicalize), which names no filesystem module; a crate-level build.rs that
 #   emits `cargo:rustc-link-lib=framework=…`, because build.rs is outside every rule; source
 #   that is generated or pulled in by `include!`, or a `#[cfg(test)]` module whose body sits in
-#   the excluded tests/ directory. And, for the unit-graph rules: an edge reached through a glob
-#   import (`use crate::*;`, `use log::*;`); an edge through `#[path]`, `include!` or
+#   the excluded tests/ directory. And, for the unit-graph rules, QC-63 among them: an edge reached
+#   through a glob import (`use crate::*;`, `use log::*;`); an edge through `#[path]`, `include!` or
 #   macro-generated source; a crate reached through a dependency renamed in a manifest
 #   (`foo = { package = "x" }`), where QC-13 reads only the in-code name; a crate whose name
 #   begins with an uppercase letter; a dependency inherited from the workspace manifest
@@ -402,8 +430,12 @@ function subject_qc() {
 }
 
 function add_unit(ln, w,    u) {
-  if (subj == "") return
   u = unit_of(w)
+  if (value_module) {
+    if (u != "") note(ln, "QC-63", 1, u, "value module imports " u)
+    return
+  }
+  if (subj == "") return
   if (u == "" || u == subj) return
   if (forbidden_edge(u)) note(ln, subject_qc(), 1, u, subj " imports " u)
 }
@@ -1114,6 +1146,7 @@ else
     exempt=0
     in_bridge_src=0
     subject_unit=""
+    value_module=0
     [ "$crate_name" = "nozoki-core" ] && is_core=1
     [ "$crate_name" = "nozoki-bridge" ] && is_bridge=1
     case "$relative" in
@@ -1134,6 +1167,17 @@ else
         case "$module_name" in
           folder_model | fs_reader | highlighter) subject_unit="$module_name" ;;
         esac
+        # A file of no unit: its module is none of the units the awk pass is given (the same
+        # full set, so a unit with no subject rule today stays out), however it is spelled.
+        case "$unit_names" in
+          *" $module_name "*) ;;
+          *) value_module=1 ;;
+        esac
+        # The one exemption is the exact path of the crate root, never the module name `lib`, so
+        # src/lib/x.rs and src/x/lib.rs stay in the domain.
+        if [ "$relative" = "crates/nozoki-core/src/lib.rs" ]; then
+          value_module=0
+        fi
         ;;
     esac
     if [ ! -r "$product_root/$relative" ]; then
@@ -1141,7 +1185,8 @@ else
       continue
     fi
     LC_ALL=C awk -v rel="$relative" -v is_core="$is_core" -v is_bridge="$is_bridge" -v exempt="$exempt" \
-      -v subj="$subject_unit" -v in_src="$in_bridge_src" -v have_allow="$have_allow" \
+      -v subj="$subject_unit" -v value_module="$value_module" \
+      -v in_src="$in_bridge_src" -v have_allow="$have_allow" \
       -v ALLOWED="$allowed" -v BMODS="$bridge_mods" -v REEXPORT="$reexports" -v UNITS="$unit_names" \
       -f "$work/scan.awk" "$product_root/$relative" >> "$work/findings" \
       || echo "the scan could not read $relative" >> "$work/causes"
