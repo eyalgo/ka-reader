@@ -648,17 +648,22 @@ fn test_state_on_a_plain_folder_answers_not_a_root() {
     let answers = read(&scene, &root);
 
     assert_eq!(answers.failure(), &GitReadCondition::NotARoot);
+    assert_pathless(answers.failure());
 }
 
 #[test]
 fn test_git_entry_that_is_a_link_or_has_no_value_answers_not_a_root() {
     let (scene, root) = git_file_scene("gitdir:   \n");
-    assert_eq!(read(&scene, &root).failure(), &GitReadCondition::NotARoot);
+    let answers = read(&scene, &root);
+    assert_eq!(answers.failure(), &GitReadCondition::NotARoot);
+    assert_pathless(answers.failure());
 
     let scene = TempDir::new();
     let root = scene.make_folder("S");
     scene.make_link("S/.git", "elsewhere");
-    assert_eq!(read(&scene, &root).failure(), &GitReadCondition::NotARoot);
+    let answers = read(&scene, &root);
+    assert_eq!(answers.failure(), &GitReadCondition::NotARoot);
+    assert_pathless(answers.failure());
 }
 
 // --- the read bound ---------------------------------------------------------------------------
