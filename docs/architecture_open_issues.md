@@ -54,7 +54,24 @@ None.
   is still Proposed, ADR-0016 takes the dated correction, and the switch's *why* lives only in SDD
   RN-87. The NFDR moves in neither case, except that QC-11, QC-13, QC-17 and QC-35 drop or re-point
   their ADR-0020 trace.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm, with one addition. A superseding record is the right mechanic,
+  and the log's own test says so: an accepted record is corrected in place only where "the record's
+  observable, its units table, its alternatives and its binds have not moved" (`nfdr.md` RN-24,
+  `:L2689-L2690`). Here the `nozoki-bridge` row's last column, the alternatives (four added) and the
+  binds (QC-35 added) all move. Accept ADR-0020, and mark ADR-0016 `Superseded by ADR-0020`. The
+  addition: before ADR-0020 is accepted, it carries in its own text what it now only points at, so
+  the record in force stands alone once ADR-0016 is history, as ADR-0019 carried ADR-0004's. That
+  is the grounds for the `crates/` placement and the Swift frame, which it gives only "as ADR-0016
+  records" (`adr/0020-…:L51-L52`); ADR-0016's own Easier and Harder (the harness without a window,
+  `unsafe` in one unit with one review, a forbidden import as a build failure, two toolchains, a C
+  ABI kept honest under the address sanitizer, the Swift package's departures recorded in `nfdr.md`
+  § 9); its undo cost (a workspace edit, and the boundaries `nfdr.md` § 1.2 binds); its *rests on*
+  (Cargo's workspace and lint table, Swift Package Manager, and the `Cargo.toml` line that makes the
+  bridge the one `unsafe` unit); and its "drawn on" line for `arch_defaults.md` § Composition Root.
+  The fold then re-points every NFDR trace that names ADR-0016, § 1's opening paragraph included,
+  to ADR-0020, and drops ", Proposed" wherever ADR-0020 is named, as RN-43 did for ADR-0004 →
+  ADR-0019. Dated notes keep the numbers they were written with. Reasoning:
+  `docs/trail/architecture/self_answer-34.md` § 2.1.
 
 ### 2.2 QC-30's boundary set misses the C environment reads libgit2 brings, and the run drafted them as a member of half (2), checked by `checks/entry-points.sh` reading `getenv` in C sources, rather than a review-only gate
 
@@ -88,7 +105,23 @@ None.
   reads as its present members, and § 10's row loses its parenthesis. With "override: name nothing",
   QC-30 goes back to calling "exact" a set missing reads the shipped process makes once libgit2
   initialises. Either way QC-9's correction stands.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm, with one addition. A C environment read is a member of half
+  (2), held by `checks/entry-points.sh`, as drafted. The scan already reads each crate's whole
+  package directory, so a review-only gate would be a class-2 downgrade with no argument behind it.
+  That rule is `principal_architect_create_architecture.md:L138-L141`, not the NFDR preamble the
+  rationale cites. The addition is two cases the draft does not reach. (1) `getenv` is not the only
+  C environment read in the set. libgit2's `src/util/unix/process.c` reads `environ`, as
+  `_NSGetEnviron` on macOS (`:L21-L23`, `:L113`, `:L128`). The file is compiled (`libgit2-sys`
+  `build.rs:L208`) and is reached only from `transports/ssh_exec.c`, a remote the port never makes.
+  The rule the draft adds to the script reads `environ` and `_NSGetEnviron` beside `getenv`. Across
+  the 37 crates only `libgit2-sys` matches, so the list gains one line whose text says the read is
+  dormant. (2) The scan's unit is the pair (crate, name) (`checks/entry-points.sh:L55`). Once
+  `libgit2-sys | getenv` is listed, a new C read inside that crate passes the scan: a new variable
+  after a libgit2 bump, or a site that moves into the compiled set. `libz-sys`'s line behaves the same
+  way if a feature flip compiles zlib-ng. QC-30 names this as not covered. Its gate is the lockfile
+  change reviewed as code (QC-26), with the list's text re-read against the new sources, as the
+  list's own header already requires (`checks/entry-points.allow:L20-L21`). Reasoning:
+  `docs/trail/architecture/self_answer-34.md` § 2.2.
 
 ## 3. Raised from downstream — an item from a seat that did not write these records
 
