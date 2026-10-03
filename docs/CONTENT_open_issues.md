@@ -55,6 +55,17 @@ None.
   forward were seen: a seventh whole sentence in Git's word, or a decision by the definition set that
   *am* is shown another way. If the call moves R-162's list, that is the FDR's seat's to fold.
 - **If a document has to be written:** none. § *The Git view's short status* in `CONTENT.md`.
-- **Answer:** <the owner fills this in>
+- **Answer:** Add a seventh whole sentence, in Git's own word for the state. The Git view's short
+  status for a repository in the middle of applying a mailbox reads *"An am session is in progress
+  in this repository."* It is one whole sentence like the other six, never the six with the operation
+  substituted in, and § *The Git view's short status* counts seven states and seven whole sentences.
+  Git's word for this state is *am session* (`wt-status.c`, `show_am_in_progress`: "You are in the
+  middle of an am session.", read 2026-10-04), and the reading bar admits a word Git itself uses for
+  the state in hand. This is `docs/fdr.md` R-162's rule applied, not a change to it: the rule names
+  *any state but normal* in Git's own word, and its list is the owner's examples under that rule
+  (`docs/fdr.md:L141`; RN-22). So `docs/fdr.md` takes no change from this item, and showing *am*
+  "another way" would need an override of R-162 that nobody has asked for. Where an am session and a
+  detached HEAD hold at once, the session is the one named, as R-165 settles for a rebase. Reasoning:
+  `docs/trail/content/self_answer-7.md`.
 
 **How it closes.** `product-content` folds it on its next run exactly as it folds §§ 1–2.
