@@ -2,7 +2,7 @@
 
 **Status:** Settled
 **Owner:** Principal Architect
-**Version:** 30 — the close: the cycle-27 fold (`docs/trail/architecture/cycle-27.md` § 2.1; reasoning at `docs/trail/architecture/self_answer-31.md` § 2.1). QC-63 is confirmed in the owner's seat with one addition: its *types and values only* half had no verification, and it is now review at `development-design`, in the form QC-13 takes for its delegation half, so § 10's closing list names it beside QC-13's. QC-63's trace drops "the reading is this document's" for the ground the answer gave: SDD § 3 leaves the physical layout to the developer (`docs/SDD.md:L433`), and `Language` crosses SM-1 between two parts the SDD gives no edge, so no part holds it without an SDD change. The obligation does not move, and neither does § 10's QC-63 row. No `QC` is added, renumbered or reused, and no record is written or restatused. Nothing is left for the owner; the companion is removed and `Status:` is Settled.
+**Version:** 31 — the close: the cycle-28 fold (`docs/trail/architecture/cycle-28.md` § 3.1; reasoning at `docs/trail/architecture/self_answer-32.md` § 3.1). § 9's `checks/structure.sh` scope bullet counts three `#[cfg(test)]` `#[path]` sites, not two: `fs_reader`'s test module now loads its body from `crates/nozoki-core/tests/unit/` (`crates/nozoki-core/src/fs_reader.rs:L894-L896`). The sentence about `std::fs` and `std::process` stays about the two `test_support` bodies, because the third body imports neither. The findings a reading by module would raise are re-measured rather than extended: QC-2, QC-9, QC-15 and QC-36 in `nozoki-core`, QC-15 and QC-36 in `nozoki-bridge`. The count, the lines and the findings are pinned to `nozoki@456098c` with the command that prints the sites. No obligation moves, no `QC` is added, renumbered or reused, and no record is written or restatused. Nothing is left for the owner; the companion is removed and `Status:` is Settled.
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · PRD Settled · UXD Settled · DESIGN Settled · CONTENT Settled
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
@@ -1073,13 +1073,25 @@ left with `nozoki-ui` at `nozoki@0aca57e` (RN-22; RN-25).
   fails closed. The ground is this bullet's own: a `#[cfg(test)]` item is compiled only "when
   compiling the test harness" (https://doc.rust-lang.org/reference/conditional-compilation.html,
   re-read 2026-10-03), so its body never enters the process an adopter runs, and it is out for the
-  reason `tests/` is out. The tree holds two such sites, `crates/nozoki-core/src/lib.rs:L18-L24`
-  and `crates/nozoki-bridge/src/lib.rs:L10-L16`, each `#[path = "../tests/common/mod.rs"]` on a
-  `#[cfg(test)]` `mod test_support`; both bodies import `std::fs` and `std::process`
-  (`crates/nozoki-core/tests/common/mod.rs:L8`, `:L11`; `crates/nozoki-bridge/tests/common/mod.rs:L8`,
-  `:L13`), so a reading by module would fail the tree as built — a QC-36 finding in both crates
-  and a QC-15 finding outside the two filesystem owners, the overreach RN-19 removed when it
-  scoped QC-61. **What the scope does not do, named so none of it is read as coverage:** any later
+  reason `tests/` is out. The tree holds three such sites at `nozoki@456098c`, and
+  `grep -rn '#\[path' crates/*/src` prints exactly those three. Two are
+  `#[path = "../tests/common/mod.rs"]` on a `#[cfg(test)]` `mod test_support`, at
+  `crates/nozoki-core/src/lib.rs:L18-L24` and `crates/nozoki-bridge/src/lib.rs:L10-L16`; both of
+  those bodies import `std::fs` and `std::process` (`crates/nozoki-core/tests/common/mod.rs:L8`,
+  `:L11`; `crates/nozoki-bridge/tests/common/mod.rs:L8`, `:L13`). The third is
+  `#[path = "../tests/unit/fs_reader.rs"]` on `fs_reader`'s `#[cfg(test)]` `mod tests`, at
+  `crates/nozoki-core/src/fs_reader.rs:L894-L896`. Its body imports no `std::process`, and its
+  fixture writes (`crates/nozoki-core/tests/unit/fs_reader.rs:L753`, `:L953`) sit in `fs-reader`,
+  a filesystem owner QC-15 exempts. A reading by module would fail the tree as built: with each
+  body placed where such a reading judges it, `checks/structure.sh` v1.3.0 at `nozoki@456098c`
+  raises QC-2, QC-9, QC-15 and QC-36 in `nozoki-core` and QC-15 and QC-36 in `nozoki-bridge` —
+  the overreach RN-19 removed when it scoped QC-61. The count, the lines and the findings are
+  dated and pinned: a fourth site, or a rule the script gains, is a re-measurement of this
+  sentence and not a contradiction of it *(through v30 this sentence counted two sites and named
+  QC-36 and QC-15 alone. The third site arrived at `nozoki@04ad072` and the script's QC-2 rule at
+  `nozoki@e7f151e`, both merged at `nozoki@73c408e`; QC-9's process clause has been in the script
+  since its v1.0.0 (`checks/structure.sh:L5`), so QC-9 was missing from the list since v26. On
+  the owner's seat's answer at `docs/trail/architecture/cycle-28.md` § 3.1 — RN-42)*. **What the scope does not do, named so none of it is read as coverage:** any later
   `benches/` or `examples/` is not excluded, until one occurs; and two escapes are review catches
   at `development-design` and not grep rules, because the tree holds no *shipped* site to shape
   one against — shipped code that pulls a file from `tests/` in through a `#[path]` attribute,
@@ -3625,3 +3637,42 @@ delegation half), QC-63 (the types-and-values half), QC-18, QC-21, QC-31, QC-33,
   `docs/trail/architecture/cycle-27.md` § 2.1; `docs/trail/architecture/self_answer-31.md` § 2.1;
   `crates/nozoki-core/src/` at `nozoki@61295fb`; `docs/SDD.md` § 3;
   `docs/adr/0016-physical-unit-set-core-bridge-mac-checks.md`)*
+- **RN-42:** *(v31 — the close: the cycle-28 fold, § 3.1 answered)* **The fold.** The companion
+  at intake was opened by the PM, not by a `product-architecture` run, with one item raised from
+  downstream after `fs_reader`'s test body moved under `crates/nozoki-core/tests/unit/`
+  (`nozoki@73c408e`, opened at `nozoki@7a8f61d`). A `companion-self-answer` run answered it in the
+  owner's seat (`docs/trail/architecture/self_answer-32.md` § 3.1), committed at `nozoki@456098c`,
+  and copied whole before this fold as `docs/trail/architecture/cycle-28.md`. The verdict is
+  *confirmed with addition*. **§ 3.1 → § 9's `checks/structure.sh` scope bullet.** The bullet named
+  two `#[cfg(test)]` `#[path]` sites, and the tree holds three. The third,
+  `crates/nozoki-core/src/fs_reader.rs:L894-L896`, is named beside the two `test_support` sites.
+  The answer's three additions are folded with it. (1) The sentence that both bodies import
+  `std::fs` and `std::process` stays about the two `test_support` bodies and is not widened: the
+  third body imports no `std::process`, and its filesystem use sits in `fs-reader`, a file QC-15
+  exempts. (2) The findings list is re-measured, not extended by one name. The script gained its
+  QC-2 rule at `nozoki@e7f151e`, in the same merge as the body move, so the core's `test_support`
+  body raises QC-2 too, and QC-9, whose process clause the script has carried since v1.0.0, was
+  missing from the list since v26. (3) The count, the lines and the findings are pinned to a
+  commit and the command that prints the sites, `grep -rn '#\[path' crates/*/src`, the form § 9's
+  `checks/tests/` bullet already takes for its suite count. The bullet's dated tail records what
+  it said through v30. RN-36's "two `#[cfg(test)]` sites" is a dated fold note and stands as
+  written. **Re-measured at HEAD `nozoki@456098c`, not taken from the answer.** `git diff --stat
+  7a8f61d HEAD -- crates checks .github nozoki-mac` prints nothing, so the answer's measurement at
+  `nozoki@7a8f61d` is a measurement of this tree. `grep -rn '#\[path' crates/*/src` prints
+  exactly the three sites. The third body's first lines carry no `std::process` import
+  (`crates/nozoki-core/tests/unit/fs_reader.rs:L1-L6`), and `:L753` and `:L953` are `fs::write`
+  calls. On a throwaway clone, the unmodified `checks/structure.sh` printed `12 Rust files in 2
+  crates read — nothing found`. Each `tests/common/mod.rs` body was then copied into its crate's
+  `src/`, and the `fs_reader` test body was appended to `fs_reader.rs` so the owner exemption still
+  applied to it. The same script then reported QC-2 (nine lines), QC-9 (one), QC-15 (two) and
+  QC-36 (one) in `nozoki-core`, and QC-15 (three) and QC-36 (one) in `nozoki-bridge`. The escape
+  sentence still holds, because all three sites carry `#[cfg(test)]`. No record names these sites
+  (`grep -rnE '#\[path|tests/unit|tests/common|test_support' docs/adr` prints nothing). **What
+  moved beneath this document.** `git log 0b62d5f..HEAD -- docs/SRS.md docs/SDD.md docs/fdr.md
+  docs/PRD.md docs/UXD.md docs/DESIGN.md docs/CONTENT.md docs/adr` prints nothing. Every input's
+  `Status:` line was re-read and is Settled, so `Inputs read:` stands. No `QC` is added,
+  renumbered or reused, no record is written or restatused, and the index does not move. Nothing
+  is left for the owner, so the companion is removed and `Status:` is Settled *(re: header
+  `Status:`, `Version:`; § 9 `checks/structure.sh` scope bullet; source:
+  `docs/trail/architecture/cycle-28.md` § 3.1; `docs/trail/architecture/self_answer-32.md` § 3.1;
+  `crates/` and `checks/structure.sh` at `nozoki@456098c`)*
