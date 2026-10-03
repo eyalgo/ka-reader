@@ -1,8 +1,8 @@
 # NFDR — Nozoki 覗き
 
-**Status:** Settled
+**Status:** Draft
 **Owner:** Principal Architect
-**Version:** 33 — the close: the cycle-30 fold (`docs/trail/architecture/cycle-30.md` §§ 2.1, 2.2; reasoning at `docs/trail/architecture/self_answer-34.md`), both items confirmed with an addition. ADR-0020 is Accepted and supersedes ADR-0016, carrying in its own text the unit set's grounds, consequences, undo cost and dependencies that it had only pointed at, so the record in force stands alone; ADR-0016's Status line is the only line of it that changes. Every entry trace that named ADR-0016 names ADR-0020 — § 1's opening, QC-8 – QC-17, QC-20, QC-24, QC-35, QC-61 and QC-63 — and ", Proposed" is dropped wherever ADR-0020 was named. QC-30 is confirmed: a C environment read is a member of half (2), read through `getenv`, `environ` or `_NSGetEnviron`, and the (crate, name) limit is named as not covered, with its review gate; § 10's QC-30 row and the list of entries with no row follow. No `QC` is added, renumbered or reused. Nothing is left for the owner, so the companion is removed and `Status:` is Settled (RN-44).
+**Version:** 34 — the cycle-31 fold (`docs/trail/architecture/cycle-31.md` § 3.1; reasoning at `docs/trail/architecture/self_answer-35.md` § 3.1), confirmed with three additions. QC-15's *verified by* names the scan's three exact-path owner files, the adapter's among them, at `nozoki@48308ff`, names the two suite cases that hold the exemption to the exact path, keeps the `Path`-method gap for every crate, and narrows review at `development-design` to the two parts of the `git-reader` bound the script does not hold. QC-5's *verified by* is drafted to state its three named cases as written and passing at the same merge, for the owner to confirm (companion § 2.1). No record moves, no `QC` is added, renumbered or reused, and § 10 does not move. One item awaits the owner, so `Status:` is Draft (RN-45).
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · PRD Settled · UXD Settled · DESIGN Settled · CONTENT Settled
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
@@ -191,11 +191,17 @@ new units while they were unbuilt.
   inside-a-repository, parent-of-two, linked-worktree and submodule fixtures (layer 2), with three
   cases this entry names: `linked-worktree` answers `Root`, `submodule` answers `Root`, and a scene
   whose `.git` file names a Git directory that does not exist answers `Root` — the case that goes
-  red if `probe` ever follows the pointer, so the read bound has a check. None of the three is
-  written at `nozoki@8edec4f`: the `linked-worktree` and `submodule` cases assert an unchanged scene
-  and no outcome (`crates/nozoki-core/tests/root_finding.rs:L158-L169`), and the adapter answers a
-  `.git` file with a provisional condition (`crates/nozoki-core/src/git_reader/libgit2.rs:L38-L40`).
-  All three go red when they are written, until the change that replaces that arm lands *(traces
+  red if `probe` ever follows the pointer, so the read bound has a check. All three are written
+  and pass at `nozoki@48308ff`: `test_linked_worktree_answers_root`, `test_submodule_answers_root`
+  and `test_git_file_naming_a_missing_git_directory_answers_root`
+  (`crates/nozoki-core/tests/root_finding.rs:L175`, `:L185`, `:L196`). The adapter answers a `.git`
+  regular file through `probe_git_file` (`crates/nozoki-core/src/git_reader/libgit2.rs:L46`,
+  `:L58`), and CI runs the target under `cargo test --workspace --locked`
+  (`.github/workflows/ci.yml:L26`) *(through v33 this tail said none of the three was written at
+  `nozoki@8edec4f`, where the `linked-worktree` and `submodule` cases asserted an unchanged scene
+  and no outcome and the adapter answered a `.git` file with a provisional condition, and that all
+  three would go red until the change replacing that arm landed. It landed at `nozoki@48308ff`.
+  Drafted for the owner's confirmation at `docs/architecture_open_issues.md` § 2.1 — RN-45)* *(traces
   to: ADR-0018; SRS FR-33, FR-34, AC-24, AC-25; FDR R-15, R-21, R-101; SDD § 11 R-3; the `.git`-file
   answer, the read bound and the three cases on the owner's seat's answer at
   `docs/trail/architecture/cycle-29.md` § 3.1 — RN-43)*
@@ -406,20 +412,33 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   are `mac-shell`'s, in `nozoki-mac`; drawing is `surfaces`', in `nozoki-mac`, which holds no I/O
   of its own; **no unit owns a socket and no unit spawns a process.**
   — *verified by:* `checks/structure.sh` (layer 6): each Rust I/O primitive appears only in its
-  owner. That scan does not reach `git-reader`'s bound. Its filesystem clause exempts two owner
-  files by exact path, `fs_reader.rs` and `log_writer.rs` (`checks/structure.sh:L76-L78` at
-  `nozoki@8edec4f`), it names QC-15's other owners as not held (`:L247`), and it does not see a
-  `Path` method that touches the filesystem (`:L257-L258`), which is how the adapter reads
-  (`crates/nozoki-core/src/git_reader/libgit2.rs:L31`, `:L35`, `:L63`). The rule that adds the
-  adapter's file, `crates/nozoki-core/src/git_reader/libgit2.rs`, to the clause's owner files by
-  exact path is this document's realization (RN-43): with it the adapter may name `std::fs`, and a
-  `std::fs` read anywhere else in `git-reader` is a finding. Until the change that adds it, and for
-  a `Path`-method read after it, the bound is review at `development-design`, which judges each
-  `git-reader` read outside libgit2 against the clause above. `checks/view.sh` (layer 6): no I/O
+  owner. Its filesystem clause exempts three owner files by exact path: `fs_reader.rs`,
+  `log_writer.rs` and `git-reader`'s adapter, `crates/nozoki-core/src/git_reader/libgit2.rs`
+  (`checks/structure.sh:L77-L80`, the exempting `case` at `:L1161`, at `nozoki@48308ff`). The
+  adapter may name `std::fs`, and a `std::fs` read anywhere else in `git-reader` is a finding. The
+  suite holds the exemption to the exact path. `test_exemption_is_exact_for_the_adapter_name`
+  plants a `std::fs` write under the adapter's file name at six other paths and requires a QC-15
+  finding at each, and `test_git_owner_write_is_still_one_qc2_finding` holds that the exemption
+  lifts this clause only (`checks/tests/test_structure.sh:L961`, `:L931`). The scan does not see a
+  `Path` method that touches the filesystem, in any crate, because such a method names no
+  filesystem module (`checks/structure.sh:L266-L267`, *GAPS THE RULES ABOVE DO NOT CLOSE*). Two
+  parts of the `git-reader` bound are therefore not held by the script (`:L253-L256`). The first is
+  which read the adapter makes inside its owner file: the script admits every filesystem form
+  there, so it cannot tell a read inside the folder from one past it. The second is `git-reader`'s
+  `Path`-method reads, which is how the adapter reads the folder and the `.git` entry
+  (`crates/nozoki-core/src/git_reader/libgit2.rs:L38`, `:L42`, `:L136`; the `.git` file's open is
+  at `:L62` and its handle's `metadata()` at `:L69`). For those two parts only, the bound is review
+  at `development-design`, which judges each against the clause above *(through v33 this tail
+  exempted two owner files at `nozoki@8edec4f`, named QC-15's other owners as not held, and held
+  the adapter's file as a rule still to come, with review as the whole bound until it came. The
+  change that adds it merged at `nozoki@48308ff`. On the owner's seat's answer at
+  `docs/trail/architecture/cycle-31.md` § 3.1 — RN-45)*. `checks/view.sh` (layer 6): no I/O
   primitive in `nozoki-mac/Sources` at all *(traces to: ADR-0013; ADR-0020; ADR-0018; SDD § 3 parts
   table, and the `git-reader` row's *Must not own*, "A file outside Git's own on-disk layout"; § 4
   C-R7; the bounded reads and their gate on the owner's seat's answer at
-  `docs/trail/architecture/cycle-29.md` § 3.3 — RN-43)*
+  `docs/trail/architecture/cycle-29.md` § 3.3 — RN-43; the three owner files, the suite's two
+  cases and the narrowed gate on the owner's seat's answer at
+  `docs/trail/architecture/cycle-31.md` § 3.1 — RN-45)*
 - **QC-16:** The only writes the product performs are `own-state`'s and the bridge's diagnostic
   log, both inside `~/Library/Containers/com.kensaiapp.nozoki/`.
   — *verified by:* `checks/own-state.sh` — after a session every changed file under `$HOME` is
@@ -3988,3 +4007,53 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   Status line; ADR-0020; the index; source: `docs/trail/architecture/cycle-30.md` §§ 2.1, 2.2;
   `docs/trail/architecture/self_answer-34.md`; `checks/` and `Cargo.toml` at `nozoki@2f15e2c`; the
   registry copies of `libgit2-sys 0.18.8+1.9.7`, `libz-sys 1.1.29` and `git2 0.21.0`)*
+- **RN-45:** *(v34 — the cycle-31 fold, § 3.1 confirmed with three additions; § 2.1 drafted for
+  the owner)* **The fold.** The companion at intake was opened by the PM, not by a
+  `product-architecture` run, with one item raised from downstream: `checks/structure.sh` holds the
+  `git-reader` adapter's file as a third QC-15 filesystem owner (`nozoki@48308ff`), and QC-15's
+  *verified by* still described the script as it stood before. A `companion-self-answer` run
+  answered it in the owner's seat (`docs/trail/architecture/self_answer-35.md` § 3.1) and raised a
+  § 2 item on QC-5, whose slot it left for the next round. The answer was committed at
+  `nozoki@cd88d52`, and the companion was copied whole before this fold as
+  `docs/trail/architecture/cycle-31.md`. **§ 3.1 → QC-15.** The tail names the three exact-path
+  owner files and the exempting `case`, pinned at `nozoki@48308ff`. It drops "names QC-15's other
+  owners as not held" and the rule still to come, which RN-43 named as this document's realization
+  and which has now landed. That is the header's own rule: a rule becomes executable in the change
+  that adds it to the command. The three additions are folded as answered. (1) The tail names the
+  two suite cases that hold the exemption to the exact path and to this clause only. (2) The
+  `Path`-method gap stays, for every crate, re-pinned to the script's *GAPS* (`:L266-L267`), and
+  only the `development-design` gate narrows, to the two parts the script lists as unheld
+  (`:L253-L256`). (3) No record moves. ADR-0018 binds QC-15, and its citations are pinned at
+  `nozoki@8edec4f`, where they still read as quoted: its decision did not change, and its
+  realization landed. **What this run adds beyond the answer:** the tail argues its class-2 half in
+  the script's own reasons. The script admits every filesystem form inside an owner file, and a
+  `Path` method names no filesystem module, so a source scan cannot tell a read inside the folder
+  from one past it (`:L253-L256`, `:L266-L267`). The answer named the two parts and did not argue
+  them, and a class-2 tail must (`principal_architect_create_architecture.md` § *Every constraint is
+  traced, and named-verifiable*). **§ 2.1 of the companion → QC-5, drafted, for the owner.** The
+  self-answer run raised it with a proposal and no draft in the records. This run drafts it, as
+  RN-43 did with the § 2 items that run raised, and leaves the slot for the owner. QC-5's tail
+  states the three named cases as written and passing at `nozoki@48308ff`, cites the adapter's
+  `.git`-file arm and CI's command, and keeps the old "none written / go red until" sentences as a
+  dated parenthetical. § 10's QC-5 row does not move: it names the same command. ADR-0018 does not
+  move either. Its § Consequences already says the missing-directory case goes red if `probe`
+  follows the pointer. **Re-measured at HEAD `nozoki@cd88d52`, not taken from the answers.** `git
+  diff --stat 48308ff HEAD -- checks crates nozoki-mac .github Cargo.toml Cargo.lock` prints
+  nothing, so a pin at the merge is a pin on this tree. `bash checks/structure.sh` prints "14 Rust
+  files in 2 crates read — nothing found" and exits 0. `bash checks/tests/test_structure.sh` exits 0
+  with 88 `ok` lines, the two cases named above among them. `cargo test --locked -p nozoki-core
+  --test root_finding` prints "37 passed; 0 failed", the three QC-5 cases among them. The lines
+  cited read as quoted: `structure.sh:L77-L80`, `:L1161`, `:L253-L256`, `:L266-L267`;
+  `test_structure.sh:L931`, `:L961`; `libgit2.rs:L38`, `:L42`, `:L46`, `:L58`, `:L62`, `:L69`,
+  `:L136`; `root_finding.rs:L175`, `:L185`, `:L196`; `ci.yml:L26`. **What moved beneath this
+  document.** `git log 1d81e12..HEAD -- docs/SRS.md docs/SDD.md docs/fdr.md docs/PRD.md docs/UXD.md
+  docs/DESIGN.md docs/CONTENT.md` prints nothing. Every input's `Status:` line was re-read and is
+  Settled, so `Inputs read:` stands. **Not weighed here, and named.** § 10's list of entries with
+  no row names three entries' review halves (QC-13, QC-63, QC-30). It does not name the review
+  halves of QC-11, QC-15 or QC-17, though each tail has one at `development-design`, and each of
+  those entries does have a row. Whether the list is of entries with no row or of every review half
+  is a question about the whole list, not about this fold, so the list does not move. No `QC` is
+  added, renumbered or reused, and no record is written or restatused, so the index does not move.
+  One item awaits the owner, so `Status:` is Draft *(re: header `Status:`, `Version:`; QC-5;
+  QC-15; source: `docs/trail/architecture/cycle-31.md` § 3.1; `docs/trail/architecture/self_answer-35.md`
+  §§ 3.1, 2.1; `checks/`, `crates/` and `.github/` at `nozoki@cd88d52`)*
