@@ -31,7 +31,71 @@ None.
 
 ## 2. Choices to confirm — the Principal Architect drafted a best-effort answer; confirm or override
 
-None.
+### 2.1 QC-35 says nothing is read outside the grant, while libgit2's repository open reads the global and system Git config; until the SDD answers, QC-35 names those reads as an uncovered case
+
+> **No `product-architecture` run wrote this item.** A `companion-self-answer` run raised it on
+> 2026-10-03 while answering § 3.5 in the owner's seat. It is the half of § 3.5 that run could answer
+> here: what the NFDR states in the meantime. § 3.5's other half — where libgit2's search path may
+> be switched off, or whether the reads are accepted instead — is the SDD's, and is raised at
+> `docs/SDD_open_issues.md` § 2.1 (`nozoki@4f028c7`). That is all § 3.5 is now left asking, though
+> its heading still names the whole question. The slot below is the next round's.
+
+- **Lands in:** `nfdr.md` QC-35, and § 10's QC-35 row
+- **Drafted into the records:** Nothing yet — this run writes no record. Proposed: QC-35's tail
+  gains a named uncovered case. libgit2's repository open reads the global level — under the App
+  Sandbox from the password entry's home, which is the user's real home — and the system level at
+  `/etc` (`libgit2/src/libgit2/repository.c:L997`, `:L1318`, `:L1330`; `sysdir.c:L282`,
+  `:L356-L359`, in the `libgit2-sys 0.18.8+1.9.7` registry copy). In the harness's in-process cases
+  these are real reads. Under the sandbox, whether the open survives their refusal has not been run.
+  Where the reads are switched off is raised at `docs/SDD_open_issues.md` § 2.1, and until that
+  folds, this entry does not hold for a repository open. The tail also says what holds the reads
+  half today: `checks/own-state.sh` and `checks/read-only.sh` observe writes, and neither observes a
+  read, so the sandbox (QC-25) is the reads half's only bound.
+- **Rationale:** A fact in QC-35 is now false of landed code, and the delivery tier reads the entry
+  as fixed while the change that exports `probe` is designed. The structural fix is the SDD's and
+  cannot land here first. What can land here is the record saying, at the entry a reader opens, that
+  the promise has a known hole and where its repair is decided. Sources: `docs/fdr.md` R-101;
+  `docs/SDD.md` C-D1 (`:L852-L857`); `crates/nozoki-core/src/git_reader/libgit2.rs:L52`.
+- **If overridden:** QC-35 stays unqualified until the SDD's answer re-derives into it. A change
+  that exports `probe` in that window reads a promise the open does not keep, and only § 3.5's trail
+  copy says otherwise.
+- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+
+### 2.2 Two NFDR statements went false when `git-reader` linked libgit2: QC-30's boundary set misses libgit2's C environment reads and its config-file reads, and QC-9 still says "when `git-reader` links it"
+
+> **No `product-architecture` run wrote this item.** A `companion-self-answer` run raised it on
+> 2026-10-03. It read libgit2's source to answer § 3.5, read QC-30 and QC-9 beside it, and found
+> both stating something `nozoki@126ef75` made false. No item asked about either. The slot below is
+> the next round's.
+
+- **Lands in:** `nfdr.md` QC-30 and QC-9
+- **Drafted into the records:** Nothing yet — this run writes no record. Proposed:
+  1. **QC-30.** The entry says the set is "exactly" what it lists, including "the environment and
+     argument reads of the linked dependency tree, each named in `checks/entry-points.allow`", and
+     that it "covers what the shipped process reads, whichever crate holds the line". libgit2's C
+     reads `APP_SANDBOX_CONTAINER_ID`, `HOME` and `XDG_CONFIG_HOME` when the library initialises
+     (`libgit2/src/libgit2/sysdir.c:L347`, `:L357`, `:L402-L405`, all guessed at init, `:L458-L459`),
+     and none is named. The scan cannot name them: `checks/entry-points.sh` lists "a C `getenv`"
+     among what it does not see (`:L66`), and `checks/entry-points.allow`'s `git2` line says those
+     reads "are not held here" (`:L29`). Listing them in the allowlist would not work either,
+     because the script fails on a listed line it no longer finds. So QC-30's *Not covered* names a C
+     `getenv` in a linked crate, with these three reads as its present members and review of the
+     lockfile diff at `development-design` as their gate. The git config files libgit2 opens are the
+     other read the set does not name. They are § 2.1's and `docs/SDD_open_issues.md` § 2.1's, and
+     QC-30 points there rather than listing them. One more C `getenv` is in the tree, in libz-sys's
+     vendored zlib-ng (`src/zlib-ng/arch/arm/arm_features.c:L36`, `QEMU_EMULATING`). libz-sys came in
+     only through libgit2-sys. Whether that file is compiled into this build was not established, and
+     the fold measures it before naming it.
+  2. **QC-9.** "and libgit2 when `git-reader` links it" becomes "and libgit2, which `git-reader`
+     links". `crates/nozoki-core/Cargo.toml:L9` has named `git2` with `vendored-libgit2` since
+     `nozoki@126ef75`.
+- **Rationale:** Both meet the strongest ground for reopening a settled document: a fact in it is
+  now false, by measurement. The libgit2 reads are dormant in the shipped process today, since no
+  bridge function reaches `git-reader` (`docs/SDD.md` RN-85). But QC-30's half (2) is stated of the
+  crates the tree resolves, and `git2` is among them.
+- **If overridden:** QC-30 goes on calling "exact" a set that is missing three reads the shipped
+  process makes once libgit2 initialises, and QC-9 reads as if libgit2 were not yet linked.
+- **Confirm or override:** <"confirm", or "override: <what to do instead>">
 
 ## 3. Raised from downstream — an item from a seat that did not write these records
 
@@ -56,7 +120,19 @@ None.
   a condition at `probe` with R-3 and R-21 moved to match. It also states what `probe` may read to answer
   `root` for a `.git` file without following it past the grant (`docs/fdr.md` R-101).
 - **If a document has to be written:** none. ADR-0005, or a record superseding it.
-- **Answer:** <the owner fills this in>
+- **Answer:** answered — `probe` answers `root` for a `.git` file, and `state()` reports where the Git
+  directory lies: `docs/SDD.md` § 11 R-3's reading, which `docs/fdr.md` R-15 and R-21 already follow.
+  `probe` reads the opened folder's own metadata, the `.git` entry's metadata without following a
+  link, and, for a `.git` file, that file's own content — all inside the folder. It never opens the
+  Git directory the file names. A `.git` file whose content is a `gitdir:` line answers `root`; any
+  other content answers `plain`, as a `.git` folder that is not a repository does; a `.git` file the
+  operating system will not let `probe` read is a condition; a `.git` that is a link is not followed
+  and keeps a condition. A condition at `probe` is ruled out, because naming the Git directory as R-21
+  requires would carry a path above the folder, which ADR-0005 and QC-5 forbid. The fold is a new
+  record superseding ADR-0005, and QC-5's verification gains `root_finding` cases asserting `Root` for
+  `linked-worktree` and `submodule`, and `Root` for a `.git` file naming a Git directory that does not
+  exist — the case that goes red if `probe` follows the pointer. Reasoning:
+  `docs/trail/architecture/self_answer-33.md` § 3.1.
 
 ### 3.2 QC-11's trace and ADR-0004 place the Git port's types in the model; the tree holds them in `git-reader`
 - **Raised by:** PM — 2026-10-03
@@ -75,7 +151,16 @@ None.
   QC-11's trace reads SM-2 the way it now reads SM-1 — the model owns the contract and the reader holds
   the types — and ADR-0004's sentence says the same.
 - **If a document has to be written:** none.
-- **Answer:** <the owner fills this in>
+- **Answer:** confirmed with addition — QC-11's trace reads SM-2 as `docs/SDD.md` v26 states it
+  (`docs/SDD.md:L417`, RN-85): `folder-model` states what the port must answer, `git-reader` defines
+  the trait and the plain-data types that cross beside it, and a type that crosses SM-2 is never
+  defined in `folder-model` — it is defined in `git-reader` or in a value module (QC-63). Two
+  additions. QC-10's may-import set names "the Git port trait" alone and is the whole allowed set, so
+  it gains "and the types that cross SM-2 beside it" — SM-2's "the model imports the trait and those
+  types, and never the adapter". And ADR-0004's "the Git port owned by the folder model" is corrected
+  by the one new record that supersedes ADR-0004 for § 3.4, stating both halves — the model owns the
+  contract, `git-reader` defines the trait — and not by a second record. Reasoning:
+  `docs/trail/architecture/self_answer-33.md` § 3.2.
 
 ### 3.3 QC-15 gives `git-reader` Git reads "through libgit2"; the adapter also reads the folder's and `.git`'s metadata itself
 - **Raised by:** PM — 2026-10-03
@@ -92,7 +177,18 @@ None.
   `git-reader` clause names these bounded metadata reads of the folder, its `.git` entry and that
   entry's `HEAD` beside the libgit2 reads.
 - **If a document has to be written:** none.
-- **Answer:** <the owner fills this in>
+- **Answer:** confirmed with addition — QC-15's `git-reader` clause names its bounded reads beside
+  the libgit2 reads: the opened folder's own metadata, its `.git` entry's metadata without following
+  a link, the metadata of `HEAD` inside a `.git` folder
+  (`crates/nozoki-core/src/git_reader/libgit2.rs:L31`, `:L35`, `:L63`), and, after § 3.1's fold, a
+  `.git` file's own content — every one inside the opened folder, none past it. One addition to the
+  verification. `checks/structure.sh` does not pass because `git-reader` is an owner: its filesystem
+  clause exempts two files only, `fs_reader.rs` and `log_writer.rs` (`checks/structure.sh:L76-L78`),
+  it lists "QC-15's other owners" as not held (`:L247`), and the adapter's reads are `Path` methods
+  the scan does not see (`:L258`). QC-15's tail says so, holds the bound at `development-design`, and
+  names as this document's realization the rule that adds the adapter's file to the clause's owner
+  files by exact path. Decided together with § 3.1. Reasoning:
+  `docs/trail/architecture/self_answer-33.md` § 3.3.
 
 ### 3.4 QC-3 and ADR-0004 say no shipped unit links a network transport; the vendored libgit2 compiles `git://` and `http://` unconditionally
 - **Raised by:** PM — 2026-10-03
@@ -116,7 +212,20 @@ None.
   verification on the shipped executable. Either way the verification map gains that row.
 - **If a document has to be written:** a superseding ADR for ADR-0004's transport sentence, if the fold
   changes it.
-- **Answer:** <the owner fills this in>
+- **Answer:** answered — QC-3 follows `docs/SDD.md` § 4 C-R6 as v26 states it
+  (`docs/SDD.md:L598-L629`; RN-85), which took the item's second fold with the first fold's facts
+  beside it. The claim is made of the shipped executable: `Nozoki.app/Contents/MacOS/Nozoki` links no
+  network transport. What the build holds: libgit2 vendored with its `https` and `ssh` features off,
+  so no TLS backend and no libssh2. What it does not hold: the transports and streams are compiled
+  whatever the features, and `git://`, `http://` and `https://` are registered with no guard.
+  QC-3's verification gains a third half: the `nm` read of the release executable in
+  `checks/view.sh`, red on a defined `git_smart_subtransport_*` symbol, on an undefined `connect`,
+  `socket` or `getaddrinfo`, and where `nm` is missing, fails or prints nothing. The build that
+  first exports a function reaching `git-reader` owes it; until then its gate is
+  `development-design`, under this document's header rule. § 10's QC-3 row gains it. A red read is
+  SDD § 11 R-15's, and stating the claim lower is the owner's call under `docs/fdr.md` PD-27.
+  ADR-0004's transport sentence is corrected by a new record superseding ADR-0004, which also
+  carries § 3.2's port sentence. Reasoning: `docs/trail/architecture/self_answer-33.md` § 3.4.
 
 ### 3.5 QC-35 says the product reads nothing outside the grant; libgit2's repository open loads the global, XDG and system Git config, and no unit may turn that off
 - **Raised by:** PM — 2026-10-03
@@ -137,6 +246,14 @@ None.
   override is allowed to live, or state that the open is proved to answer under the grant with those
   reads refused, and add the check that shows it.
 - **If a document has to be written:** none.
-- **Answer:** <the owner fills this in>
+- **Answer:** raised upstream — carried at `docs/SDD_open_issues.md` § 2.1 (`nozoki@4f028c7`). Where
+  libgit2's configuration search path may be switched off is a change to `docs/SDD.md` § 3: the
+  units paragraph ("Only `git-reader` imports the libgit2 binding", `:L347`; `nozoki-core` "holds no
+  `unsafe`", `:L336`) and the `core-bridge` row (`:L330`). Accepting the reads instead would lower
+  `docs/fdr.md` R-101. Neither is the NFDR's to decide, and QC-9, QC-11, QC-13, QC-17 and QC-35
+  re-derive from whichever the SDD states. The item there proposes the bridge, as the Rust-side
+  composition root, emptying the four levels' search paths before the adapter is wired. The NFDR's
+  own half — QC-35 naming these reads as an uncovered case until the SDD answers — moved to § 2.1 of
+  this file. Reasoning: `docs/trail/architecture/self_answer-33.md` § 3.5.
 
 **How it closes.** `product-architecture` folds it on its next run like any other item here.
