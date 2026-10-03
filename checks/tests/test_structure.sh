@@ -1269,7 +1269,7 @@ test_fs_reader_imports_folder_model_is_rejected() {
         FileView,
     },
 };'
-  nested_line=$((PLANT_LINE + 3))
+  nested_line=$((PLANT_LINE + 2))
   plant "$R" "$FS_FILE" 'fn s(_: crate::OpenFailure) {}'
   reader_name_line="$PLANT_LINE"
   plant "$R" "$CORE_FILE" 'use crate::fs_reader::OpenFailure;'
