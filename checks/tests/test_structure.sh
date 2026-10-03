@@ -1761,7 +1761,8 @@ plant_line() {
   PLANTED_LINES="$PLANTED_LINES $((PLANT_LINE + ${4:-0}))"
 }
 
-# expect_each <path> <identifier>...: every recorded line holds exactly one finding of each identifier.
+# expect_each <path> <identifier>...: every recorded line holds exactly one finding of each
+# identifier.
 expect_each() {
   each_path="$1"
   shift
@@ -1891,7 +1892,7 @@ test_env_reads_are_rejected() {
         var_os,
     },
 };' 4
-  plant_line "$R" "$CORE_OWNER" 'fn owner_env() { let _ = std::env::var("X"); }'
+  plant "$R" "$CORE_OWNER" 'fn owner_env() { let _ = std::env::var("X"); }'
   owner_line="$PLANT_LINE"
   run_structure "$R"
   expect_status 1 || return 1

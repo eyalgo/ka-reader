@@ -19,19 +19,27 @@
 #   own directory, as checks/view.sh derives it, so a copy placed at <root>/checks/structure.sh
 #   reads <root>.
 #   A finding is one line on stderr — `<path relative to the root>:<line>: <QC-n>: <what>` — one
-#   per distinct (clause, file, line), in path order and then line order. A pass is exit 0,
-#   empty stderr and one stdout line: the count of files and crates read, and that nothing was
-#   found. Every other ending is exit 1, and the script reads every file before it gives a
-#   verdict, so one run reports every finding. It never passes having read nothing: no file in
-#   scope exits 1 with `no Rust source was read` on stderr, and a file in scope that cannot be
-#   read exits 1 naming the file.
+#   per distinct (clause, file, line), in path order and then line order. The layer-5 rule has no
+#   QC number, and its finding is `<path>:<line>: layer-5: <what>`. A pass is exit 0, empty stderr
+#   and one stdout line: the count of files and crates read, and that nothing was found. Both
+#   counts are of the shipped scope below, so a file read only by layer-5 is in neither. Every
+#   other ending is exit 1, and the script reads every file before it gives a verdict, so one run
+#   reports every finding. It never passes having read nothing: no file in scope exits 1 with
+#   `no Rust source was read` on stderr, and a file in scope that cannot be read exits 1 naming
+#   the file.
 #
 # WHAT IS READ
 #   Every regular *.rs file at any depth under crates/<c>/, where <c> is any directory directly
 #   under crates/, with or without a manifest: a crate added later is read with no edit here.
 #   <c> is the crate name in every rule below. Two exclusions, both judged on the path relative
 #   to crates/<c>/: a file whose first component is `tests`, and the file `build.rs` at that
-#   level. src/tests/x.rs and src/build.rs are read.
+#   level. src/tests/x.rs and src/build.rs are read. What is left is the shipped scope, which
+#   every rule below reads except layer-5.
+#   The files under crates/<c>/tests/ (every regular *.rs at any depth) are read by the layer-5
+#   rule alone and by no other. They are counted in neither the files nor the crates of the pass
+#   line, and they never satisfy the guard against reading nothing: a run whose shipped scope is
+#   empty exits 1 with `no Rust source was read` even when tests/ files exist. One that cannot be
+#   read exits 1 with `structure.sh: cannot read <path>` after every other file was read.
 #   Three more files are REQUIRED inputs: checks/deps.allow, crates/nozoki-core/Cargo.toml and
 #   crates/nozoki-bridge/Cargo.toml. One that is absent or cannot be read exits 1 with
 #   `structure.sh: cannot read <path>` on stderr, and every other file is still read before the
@@ -148,14 +156,68 @@
 #                         `set_boxed_logger`, or a `use` tree rooted at `log` naming either,
 #                         aliased or not. Two findings on that line, one QC-17 and one QC-61. A
 #                         comment or a string counts. Source: QC-17's and QC-61's verified-by.
+#     QC-2   write API    In nozoki-core only, every file of the shipped scope, no file exempt:
+#            (CP-445,     crates/nozoki-core/src/fs_reader.rs is read too, because its owner
+#            CP-446,      exemption is QC-15's filesystem clause alone, and a file added later for
+#            CP-447)      own-state is not exempt before it exists. Comments and strings count.
+#                         The floor is `std::fs::write`; the members are a floor this script may
+#                         refuse more than, never fewer. A member is read in a path or as a member
+#                         of a `use` tree, across lines and nested, the finding at the member's own
+#                         line, and the segment before `fs` or `File` is whatever precedes it.
+#                         (W1) directly after `fs`: write, copy, rename, create_dir,
+#                         create_dir_all, remove_file, remove_dir, remove_dir_all, hard_link,
+#                         soft_link, symlink, symlink_file, symlink_dir, mkfifo, mkdir, mkdirat,
+#                         unlink, unlinkat, renameat, renameat_with, symlinkat, link, linkat,
+#                         mknodat, ftruncate. (W2) `create` or `create_new` directly after `File`.
+#                         (W3) the word `DirBuilder`. (W4) a builder flag literally set to true:
+#                         `.` then write, append, create, create_new or truncate, then `(true)`,
+#                         any whitespace. (W5) WRONLY, RDWR, CREATE, TRUNC or APPEND after
+#                         `OFlags`, and O_WRONLY, O_RDWR, O_CREAT, O_TRUNC or O_APPEND as a
+#                         `libc` path or `use libc` member. (W6) as a `libc` path or `use libc`
+#                         member: creat, mkdir, mkdirat, mkfifo, mkfifoat, mknod, mknodat, rmdir,
+#                         unlink, unlinkat, remove, rename, renameat, renamex_np, renameatx_np,
+#                         symlink, symlinkat, link, linkat, truncate, ftruncate. Outside it:
+#                         `File::open`, `.read(true)`, `OFlags::NOFOLLOW` and `NONBLOCK`,
+#                         `libc::open` and `openat`, `libc::write`, `std::io::Write`, `write!`,
+#                         `writeln!`, `.write_all`. One QC-2 finding per line. Source: QC-2.
+#     QC-30  argument,    In every crate, every file of the shipped scope, no file exempt, comments
+#     QC-58  environment  and strings counting. Two findings on the line, one QC-30 and one QC-58,
+#            and          each one clause however many members the line holds. (E1) `args`,
+#            configura-   `args_os`, `var`, `var_os`, `vars` or `vars_os` directly after `env`, in
+#            tion         a path or a `use` tree member, whatever precedes `env`. (E2) `getenv`,
+#            (CP-448 -    `environ`, `_NSGetEnviron`, `_NSGetArgv` or `_NSGetArgc` as a `libc`
+#            CP-451)      path or `use libc` member. A configuration location is read in the
+#                         line's raw text, so a string's punctuation counts as written: (C1)
+#                         `.config/` or `.config"`; (C2) `Library/Preferences`; (C3) `/etc/`;
+#                         (C4) the words config_dir, config_local_dir and preference_dir; (C5) the
+#                         path or `use` roots dotenv, dotenvy, confy and figment. Outside it:
+#                         current_exe, current_dir, temp_dir, home_dir, `env!`, `option_env!`, a
+#                         local named `config`, `libc::getpwuid_r`. Source: QC-30's and QC-58's
+#                         argument, environment and configuration clauses.
+#     QC-15  socket       In every crate, every file of the shipped scope, and both filesystem
+#     QC-30  (CP-452)     owner files, because the owner exemption above is the filesystem clause's
+#                         alone. A QC-15 finding of this clause and the line's one QC-30 finding,
+#                         never a QC-58 one. A line holding a non-owner filesystem module and a
+#                         socket gets two QC-15 findings, one per clause. (S1) the module `net` in
+#                         a path or `use` tree rooted at `std`, `::std` or `rustix`, whitespace or
+#                         newlines around `::` changing nothing, the finding at the `net` line; it
+#                         refuses `std::net::IpAddr` too, and a local `net`, `crate::net` and
+#                         `mod net` are not rooted there. (S2) socket, socketpair, connect, bind,
+#                         listen, accept or accept4 as a `libc` path or `use libc` member. Comments
+#                         and strings count. Source: QC-15's socket clause.
+#     layer-5 CARGO_BIN_EXE_  (CP-453 - CP-455) In every regular *.rs file at any depth under
+#            placement    crates/<c>/tests/, for every crate and no other file: each line whose
+#                         raw text holds `CARGO_BIN_EXE_` anywhere, in code, a comment or a string,
+#                         is one `layer-5` finding. The same text in src/, in src/tests/ or in
+#                         build.rs is not one. No other rule reads these files. Source: § 9's
+#                         layer-5 placement rule.
 #
 # WHAT IS NOT HELD
 #   This version holds only the rules in the table above. Every other rule docs/nfdr.md names
 #   for checks/structure.sh is NOT held here, and the NFDR's header sentence that each script's
 #   rules become executable with the script is read as: a rule is executable from the change
-#   that adds it here. Until then its gate is the design review. Not held: QC-2's write rule;
-#   QC-7; QC-12; QC-15's other owners and its socket clause; QC-20; QC-30's and QC-58's first
-#   half; § 9's layer-5 placement rule. And these parts of rules the table above holds in part:
+#   that adds it here. Until then its gate is the design review. Not held: QC-7; QC-12;
+#   QC-15's other owners; QC-20. And these parts of rules the table above holds in part:
 #     - QC-10's `git-reader`-adapter clause.
 #     - QC-11's clauses whose subject is `git-reader`, `watcher` or `markdown-renderer`, and its
 #       "only `git-reader` imports the libgit2 binding" outside the three units' files.
@@ -176,6 +238,17 @@
 #   (`x.workspace = true`) whose workspace entry points into checks/; a git dependency into this
 #   repository; a symlink into checks/; code a build script generates and the library
 #   `include!`s from OUT_DIR. A review catches these.
+#   And, for the boundary-read rules: `std::env::temp_dir` (it returns TMPDIR) and
+#   `std::env::home_dir` (it returns HOME), which are environment reads this script does not
+#   refuse; an environment read through a glob import (`use std::env::*;` and then a bare
+#   `var(…)`); a write, a socket or an environment read through a crate other than `std`, `rustix`
+#   and `libc` — in the bridge QC-13 names an unlisted crate, and in nozoki-core only QC-3's
+#   allowlist stands; an open whose write access sits in a variable or a numeric constant
+#   (`.write(w)`, `custom_flags(1)`, `libc::open(p, flags)`), and the fd-generic `libc::write`; a
+#   configuration location no member names, or one assembled at run time from parts; a
+#   `CARGO_BIN_EXE_` name assembled by a macro (`concat!`); and a `#[path]` that loads a tests/
+#   file into shipped source, which only the `#[cfg(test)]` on its declaration keeps out of the
+#   binary.
 
 set -euo pipefail
 
@@ -250,6 +323,39 @@ function add_process(ln) {
 
 function add_fs(ln, form) {
   if (!exempt) note(ln, "QC-15", 1, "", "filesystem primitive `" form "` outside its owner file")
+}
+
+function in_set(set, w) {
+  return index(set, " " w " ") > 0
+}
+
+# The last segment of a `::`-joined path: the segment directly before a member of a `use` tree.
+function last_seg(path,    p, q) {
+  p = path
+  while ((q = index(p, "::")) > 0) p = substr(p, q + 2)
+  return p
+}
+
+function add_write(ln, form) {
+  if (is_core) note(ln, "QC-2", 1, "", "write API `" form "` in nozoki-core")
+}
+
+# An argument, environment or configuration-file read: one QC-30 and one QC-58 finding on the line,
+# each a single clause however many members the line holds.
+function add_config_read(ln, what) {
+  note(ln, "QC-30", 1, "", what " — no shipped crate reads its arguments, its environment or a configuration file")
+  note(ln, "QC-58", 1, "", what " — the product has no configuration surface")
+}
+
+# Opening a socket: a QC-15 finding of its own clause (the filesystem owners are exempt from the
+# filesystem clause only) and the line's one QC-30 finding, never a QC-58 one.
+function add_socket(ln, form) {
+  note(ln, "QC-15", 2, "", "socket `" form "` — no unit owns a socket")
+  note(ln, "QC-30", 1, "", "socket `" form "` — no shipped crate reads its arguments, its environment or a configuration file")
+}
+
+function is_config_root(w) {
+  return w == "dotenv" || w == "dotenvy" || w == "confy" || w == "figment"
 }
 
 function is_libc_file_call(w) {
@@ -340,6 +446,27 @@ function is_root(t, k,    p, pp) {
   return !is_word_token(pp)
 }
 
+# The boundary-read rules keyed on the segment directly before the member, in a path or in a `use`
+# tree: `fs`, `File` and `OFlags` for QC-2.
+function use_member_rules(before, w, ln) {
+  if (before == "fs" && in_set(W1, w)) add_write(ln, "fs::" w)
+  if (before == "File" && (w == "create" || w == "create_new")) add_write(ln, "File::" w)
+  if (before == "OFlags" && in_set(W5_OFLAGS, w)) add_write(ln, "OFlags::" w)
+  if (before == "env" && in_set(E1, w)) add_config_read(ln, "environment read `env::" w "`")
+}
+
+# The module `net` under a root of `std` or `rustix`, as a path segment or a `use` member.
+function net_module(first, w, ln) {
+  if ((first == "std" || first == "rustix") && w == "net") add_socket(ln, first "::..::net")
+}
+
+# The `libc::` members, as a path (`libc::X`) or a member of a `use libc` tree.
+function libc_member_rules(w, ln) {
+  if (in_set(W5_LIBC, w) || in_set(W6, w)) add_write(ln, "libc::" w)
+  if (in_set(E2, w)) add_config_read(ln, "environment read `libc::" w "`")
+  if (in_set(S2, w)) add_socket(ln, "libc::" w)
+}
+
 # What a segment of a `use` tree means: $1 is the path before it, $2 the first segment of its
 # path, $3 the segment, $4 whether it starts a path or a member of the tree, $5 its line.
 function use_segment(parent, first, w, atstart, ln) {
@@ -348,26 +475,34 @@ function use_segment(parent, first, w, atstart, ln) {
   if (first == "std" && w == "process" && parent != "") add_process(ln)
   if ((first == "std" || first == "rustix") && w == "fs" && parent != "") add_fs(ln, first "::..::fs")
   if (first == "libc" && parent == "libc" && is_libc_file_call(w)) add_fs(ln, "libc::" w)
+  if (parent != "") { use_member_rules(last_seg(parent), w, ln); net_module(first, w, ln) }
+  if (first == "libc" && parent == "libc") libc_member_rules(w, ln)
   if (first == "log" && parent != "" && is_logger(w)) add_logger(ln, w)
   if (is_crate_or_super(parent)) add_unit(ln, w)
+  if (atstart && parent == "" && is_config_root(w)) add_config_read(ln, "configuration loader `" w "`")
   if (stream_code && parent == "" && atstart) crate_position(w, ln, 0)
 }
 
 # What a segment after the first of a path means, wherever the path is written: $1 is the path's
 # first segment, $2 the segment, $3 how many segments follow the first up to it, $4 its line.
-function chain_segment(first, seg, depth, ln) {
+function chain_segment(first, seg, depth, ln, prev) {
   if (first == "std" && seg == "process") add_process(ln)
   if ((first == "std" || first == "rustix") && seg == "fs") add_fs(ln, first "::..::fs")
   if (first == "libc" && depth == 1 && is_libc_file_call(seg)) add_fs(ln, "libc::" seg)
   if (first == "log" && depth == 1 && is_logger(seg)) add_logger(ln, seg)
+  use_member_rules(prev, seg, ln)
+  net_module(first, seg, ln)
+  if (first == "libc" && depth == 1) libc_member_rules(seg, ln)
 }
 
-function scan_chain(t, l, k,    first, j, depth) {
+function scan_chain(t, l, k,    first, j, depth, prev) {
   first = t[k]
+  prev = first
   j = k + 1
   depth = 1
   while (t[j] == "::" && is_word_token(t[j + 1])) {
-    chain_segment(first, t[j + 1], depth, l[j + 1])
+    chain_segment(first, t[j + 1], depth, l[j + 1], prev)
+    prev = t[j + 1]
     j += 2
     depth++
   }
@@ -454,11 +589,23 @@ function collect_bindings(t, n,    k, m, sp, w, want_alias) {
   }
 }
 
+# The rules read off the physical line, before the tokenizer splits a string's `/` and `.` apart: a
+# configuration location is its text as written, comments and strings included.
+function raw_line_rules(text, ln) {
+  if (index(text, ".config/") > 0 || index(text, ".config\"") > 0) add_config_read(ln, "configuration path `.config`")
+  if (index(text, "Library/Preferences") > 0) add_config_read(ln, "configuration path `Library/Preferences`")
+  if (index(text, "/etc/") > 0) add_config_read(ln, "configuration path `/etc/`")
+}
+
 function scan_stream(t, l, n,    k) {
   for (k = 1; k <= n; k++) {
     if (t[k] == "unsafe") add_unsafe(l[k])
+    if (t[k] == "DirBuilder") add_write(l[k], "DirBuilder")
+    if (t[k] == "config_dir" || t[k] == "config_local_dir" || t[k] == "preference_dir") add_config_read(l[k], "configuration locator `" t[k] "`")
+    if (t[k] == "." && in_set(W4, t[k + 1]) && t[k + 2] == "(" && t[k + 3] == "true" && t[k + 4] == ")") add_write(l[k + 1], "." t[k + 1] "(true)")
     if (t[k] == "kind" && t[k + 1] == "=" && t[k + 2] == "\"" && t[k + 3] == "framework" && t[k + 4] == "\"") add_apple(l[k], "kind = \"framework\"")
     if (t[k] == "extern" && t[k + 1] == "crate") {
+      if (is_config_root(t[k + 2])) add_config_read(l[k + 2], "configuration loader `" t[k + 2] "`")
       if (is_apple(t[k + 2])) add_apple(l[k + 2], t[k + 2])
       if (is_git2(t[k + 2])) add_git2(l[k + 2], t[k + 2])
       if (stream_code) crate_position(t[k + 2], l[k + 2], 0)
@@ -467,6 +614,7 @@ function scan_stream(t, l, n,    k) {
     if (is_word_token(t[k]) && t[k + 1] == "::" && is_root(t, k)) {
       if (is_apple(t[k])) add_apple(l[k], t[k])
       if (is_git2(t[k])) add_git2(l[k], t[k])
+      if (is_config_root(t[k])) add_config_read(l[k], "configuration loader `" t[k] "`")
       if (stream_code && is_word_token(t[k + 2]) && !(k in inuse)) crate_position(t[k], l[k], 1)
       scan_chain(t, l, k)
     }
@@ -476,14 +624,29 @@ function scan_stream(t, l, n,    k) {
 BEGIN {
   LIBC = " open openat creat fopen fdopen freopen opendir fdopendir readdir stat lstat fstat fstatat access faccessat mkdir mkdirat rmdir unlink unlinkat rename renameat truncate ftruncate readlink readlinkat symlink link chmod fchmod chown realpath "
   APPLE = " objc objc2 objc_foundation objc_id block block2 dispatch dispatch2 cocoa cocoa_foundation core_foundation core_foundation_sys core_graphics core_graphics_types core_text core_services security_framework security_framework_sys system_configuration system_configuration_sys fsevent fsevent_sys io_kit_sys metal "
+  W1 = " write copy rename create_dir create_dir_all remove_file remove_dir remove_dir_all hard_link soft_link symlink symlink_file symlink_dir mkfifo mkdir mkdirat unlink unlinkat renameat renameat_with symlinkat link linkat mknodat ftruncate "
+  W4 = " write append create create_new truncate "
+  W5_OFLAGS = " WRONLY RDWR CREATE TRUNC APPEND "
+  W5_LIBC = " O_WRONLY O_RDWR O_CREAT O_TRUNC O_APPEND "
+  W6 = " creat mkdir mkdirat mkfifo mkfifoat mknod mknodat rmdir unlink unlinkat remove rename renameat renamex_np renameatx_np symlink symlinkat link linkat truncate ftruncate "
+  E1 = " args args_os var var_os vars vars_os "
+  S2 = " socket socketpair connect bind listen accept accept4 "
+  E2 = " getenv environ _NSGetEnviron _NSGetArgv _NSGetArgc "
   PRIMITIVES = " bool char str i8 i16 i32 i64 i128 isize u8 u16 u32 u64 u128 usize f32 f64 "
   TOOLS = " clippy rustdoc rustfmt "
+}
+
+layer5 {
+  # A file under crates/<c>/tests/ is read for this one rule, as raw text, line by line.
+  if (index($0, "CARGO_BIN_EXE_") > 0) bin_exe[NR] = 1
+  next
 }
 
 {
   ln = NR
   line = $0
   len = length(line)
+  raw_line_rules(line, ln)
   i = 1
   while (i <= len) {
     c = substr(line, i, 1)
@@ -534,6 +697,13 @@ BEGIN {
 }
 
 END {
+  if (layer5) {
+    # The sort reads the third field as a number, so layer-5 carries its own layer number, 5, which
+    # no QC number is ever read as.
+    for (key in bin_exe)
+      printf "%s\t%d\t5\t1\t\t%s:%d: layer-5: `CARGO_BIN_EXE_` under crates/<c>/tests/ — a test reaches a binary by name only in the layer-5 harness\n", rel, key, rel, key
+    exit
+  }
   nc = 0
   for (k = 1; k <= nt; k++) if (tkind[k] == "k") { nc++; ct[nc] = tk[k]; cl[nc] = tl[k] }
   if (phase == "mods") {
@@ -903,7 +1073,8 @@ if [ -d "$crates_dir" ]; then
     find "$crate_dir" -type f -name '*.rs' 2> /dev/null | while IFS= read -r rust_file; do
       within_crate="${rust_file#"$crate_dir"/}"
       case "$within_crate" in
-        tests/* | build.rs) continue ;;
+        tests/*) printf '%s\n' "crates/$crate_name/$within_crate" >> "$work/test_files"; continue ;;
+        build.rs) continue ;;
       esac
       printf '%s\n' "crates/$crate_name/$within_crate"
     done
@@ -911,6 +1082,9 @@ if [ -d "$crates_dir" ]; then
 else
   : > "$work/files"
 fi
+# The second list: every regular Rust file under a crate-level tests/, which only layer-5 reads.
+: >> "$work/test_files"
+LC_ALL=C sort -o "$work/test_files" "$work/test_files"
 
 # The modules any file of the bridge declares with `mod`, collected across the run before any file
 # is judged: a path rooted at one is a local module, not a crate.
@@ -972,6 +1146,21 @@ else
       || echo "the scan could not read $relative" >> "$work/causes"
   done < "$work/files"
 fi
+
+# --- the test files: layer-5 ---
+# Read by the layer-5 rule alone, counted in neither the files nor the crates of the pass line, and
+# never a reason the run has read something: the guard above is on the shipped scope. One that
+# cannot be read is named, after every other file was read.
+
+while IFS= read -r relative; do
+  [ -n "$relative" ] || continue
+  if [ ! -r "$product_root/$relative" ]; then
+    echo "cannot read $relative" >> "$work/causes"
+    continue
+  fi
+  LC_ALL=C awk -v rel="$relative" -v layer5=1 -f "$work/scan.awk" "$product_root/$relative" >> "$work/findings" \
+    || echo "the scan could not read $relative" >> "$work/causes"
+done < "$work/test_files"
 
 # --- the shipped manifests: QC-14 ---
 
