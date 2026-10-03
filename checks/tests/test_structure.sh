@@ -79,6 +79,7 @@ test_complete_clean_tree_passes
 test_raw_grouped_imports_are_scanned
 test_distinct_clauses_on_one_line_are_reported
 test_suite_checks_origin_after_selected_case
+test_listed_bridge_crates_pass
 "
 
 # --- helpers ---
@@ -956,6 +957,35 @@ test_suite_checks_origin_after_selected_case() {
     *'FAIL test_originating_tree_is_unchanged'*) ;;
     *) fail "origin change was not named: $selected" || return 1 ;;
   esac
+}
+
+# CP-430 row 16: the bridge may name every crate checks/deps.allow lists, a hyphenated name read
+# with `_`, and the list is read on every run. The first three assertions prove the copy carries the
+# inputs the unit-graph scan requires, so a missing copied list fails here instead of being
+# created by the append below.
+test_listed_bridge_crates_pass() {
+  new_root listed-crates || return 1
+  for required in checks/deps.allow crates/nozoki-core/Cargo.toml crates/nozoki-bridge/Cargo.toml; do
+    [ -r "$R/$required" ] || fail "the copy carries no readable $required" || return 1
+  done
+  cmp -s "$ROOT/checks/deps.allow" "$R/checks/deps.allow" \
+    || fail "the copy's checks/deps.allow differs from the originating tree's" || return 1
+  printf '\n# a comment between entries\n\nzzz-listed\n' >> "$R/checks/deps.allow"
+  plant "$R" "nozoki-bridge/src/boundary.rs" 'mod sibling_module;'
+  plant "$R" "$BRIDGE_FILE" 'use serde_json::Value; use tree_sitter::Parser; use zzz_listed::Thing;'
+  plant "$R" "$BRIDGE_FILE" 'use serde_json::Value as Json; use serde_json::{self, Map};'
+  plant "$R" "$BRIDGE_FILE" 'use std::collections::hash_map as hm; fn a() { hm::Entry::<u8, u8>::default; }'
+  plant "$R" "$BRIDGE_FILE" 'fn c() -> core::ffi::c_int { alloc::vec::Vec::<u8>::new(); 0 }'
+  plant "$R" "$BRIDGE_FILE" 'use std::ptr; fn n() { ptr::null::<u8>(); }'
+  plant "$R" "$BRIDGE_FILE" 'fn m() { log_writer::FileLog::open(); sibling_module::go(); }'
+  plant "$R" "$BRIDGE_FILE" 'fn u() { usize::MAX; Self::new(); self::helper(); super::x(); Session::new(); }'
+  plant "$R" "$BRIDGE_FILE" '#[allow(clippy::x)] #[rustfmt::skip] fn t() {}'
+  plant "$R" "$BRIDGE_FILE" '// tokio::spawn'
+  plant "$R" "$BRIDGE_FILE" 'const T: &str = "reqwest::get";'
+  plant "$R" "nozoki-extra/src/lib.rs" 'use objc2::runtime::AnyObject;'
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
 }
 
 # --- runner ---
