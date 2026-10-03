@@ -17,8 +17,8 @@
 #   checks/tests/test_structure.sh
 #   NOZOKI_TEST_ONLY=<case> runs one case, and a name no case carries fails the run rather than
 #   running nothing.
-#   Only crates/ and the script are copied: the script reads nothing else, so a whole-tree copy
-#   would carry target/ build output and prove nothing more.
+#   Only crates/, checks/deps.allow and the script are copied: the script reads nothing else, so a
+#   whole-tree copy would carry target/ build output and prove nothing more.
 #
 # WHY NO `set -e`
 #   A case that fails must not end the run before the remaining cases report. Each case returns its
@@ -89,12 +89,13 @@ fail() {
   return 1
 }
 
-# A fresh product root holding a copy of crates/ and the real script, copied now — never a copy
-# kept beside this file. Sets R to its path.
+# A fresh product root holding a copy of crates/ (the two manifests included), checks/deps.allow
+# and the real script, copied now — never a copy kept beside this file. Sets R to its path.
 new_root() {
   R="$WORK/$1"
   mkdir -p "$R/checks" || return 1
   cp -R "$ROOT/crates" "$R/crates" || return 1
+  cp "$ROOT/checks/deps.allow" "$R/checks/deps.allow" || return 1
   cp "$STRUCTURE_SH" "$R/checks/structure.sh" || return 1
   chmod +x "$R/checks/structure.sh"
 }
