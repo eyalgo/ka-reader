@@ -54,6 +54,22 @@ None.
   RN-36's "two `#[cfg(test)]` sites" (`docs/nfdr.md:L3384`) is a dated revision note and is left as
   written.
 - **If a document has to be written:** none. The § 9 bullet in `nfdr.md`.
-- **Answer:** <the owner fills this in>
+- **Answer:** confirmed with addition — fold as drafted, with three things the fold states with it.
+  (1) Name three sites, adding `crates/nozoki-core/src/fs_reader.rs:L894-L896` (`#[cfg(test)]`
+  `#[path = "../tests/unit/fs_reader.rs"]` `mod tests;`). The third body does not share the other
+  two's imports: it holds no `std::process`, and its filesystem use sits in `fs-reader`, QC-15's
+  owner. So "both bodies import `std::fs` and `std::process`" stays a sentence about the two
+  `test_support` sites and is not widened to all three. (2) Re-measure the findings list rather than
+  adding one name to it. `checks/structure.sh` gained its QC-2 rule at `nozoki@e7f151e`, in the same
+  merge (`nozoki@73c408e`) that moved the `fs_reader` body. So a reading by module now raises QC-2
+  from the core's `test_support` body too (`crates/nozoki-core/tests/common/mod.rs:L9`, `:L33`,
+  `:L47`, `:L55`, `:L57`, `:L65`, `:L81`), and not only from the third body
+  (`crates/nozoki-core/tests/unit/fs_reader.rs:L753`, `:L953`). Measured at `nozoki@7a8f61d` by
+  placing each body where a module reading judges it and running the script: QC-2, QC-9, QC-15 and
+  QC-36 in `nozoki-core`, and QC-15 and QC-36 in `nozoki-bridge`. (3) Pin the count to the fold's
+  commit and name its command, `grep -rn '#\[path' crates/*/src`, which prints exactly the three
+  `src/` sites at `nozoki@7a8f61d`. The next site is then a re-measurement and not a false sentence,
+  which is the form § 9's `checks/tests/` bullet already takes for its suite count. RN-36 stays as
+  written. Reasoning: `docs/trail/architecture/self_answer-32.md` § 3.1.
 
 **How it closes.** `product-architecture` folds it on its next run like any other item here.
