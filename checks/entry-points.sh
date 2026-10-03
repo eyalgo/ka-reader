@@ -1,26 +1,27 @@
 #!/usr/bin/env bash
-# Version: 1.0.0 — first version: the reads of the linked dependency tree's environment and arguments, diffed against the reviewed checks/entry-points.allow
+# Version: 1.0.0 — first version: the reads of the linked dependency tree's environment and
+# arguments, diffed against the reviewed checks/entry-points.allow
 #
-# checks/entry-points.sh — proves every environment or argument read in the linked dependency tree is a
-# named, reviewed member of the boundary set.
+# checks/entry-points.sh — proves every environment or argument read in the linked dependency tree
+# is a named, reviewed member of the boundary set.
 #
 # WHY THIS EXISTS
-#   The product promises it reads nothing from its surroundings beyond what it was given (docs/fdr.md R-2;
-#   NFDR QC-30). The crates the bridge links are code nobody here wrote, and one that reads the
-#   environment or its arguments changes what the shipped process does. This script finds those reads in
-#   every crate the bridge resolves from outside the workspace and compares them, by crate and name, with
-#   checks/entry-points.allow, the one list a reviewer has read. A read the list does not hold fails; so
-#   does a line the scan no longer finds, so the list cannot go stale unnoticed. A crate whose files cannot
-#   be read fails too, because a scan that skips it passes it silently.
-#   The script only diffs. Whether a listed read is acceptable, and whether its explanation is true, is a
-#   person's call at the review of the list; the script checks the explanation is not empty and no more.
+#   The product promises it reads nothing from its surroundings beyond what it was given
+#   (docs/fdr.md R-2; NFDR QC-30). The crates the bridge links are code nobody here wrote, and one
+#   that reads the environment or its arguments changes what the shipped process does. This script
+#   finds those reads in every crate the bridge resolves from outside the workspace and compares
+#   them, by crate and name, with checks/entry-points.allow, the one list a reviewer has read. A
+#   read the list does not hold fails; so does a line the scan no longer finds, so the list cannot
+#   go stale unnoticed. A crate whose files cannot be read fails too, because a scan that skips it
+#   passes it silently. The script only diffs. Whether a listed read is acceptable, and whether its
+#   explanation is true, is a person's call at the review of the list; the script checks the
+#   explanation is not empty and no more.
 #
 # USAGE
-#   checks/entry-points.sh
-#   Takes no argument and reads the product root it sits in. Exit 0 with empty stderr and one stdout line
-#   counting the crates scanned, the workspace members skipped and the reads matched. Otherwise exit 1 and
-#   one finding per line on stderr, each prefixed `entry-points.sh: ` and in one of four shapes, in this
-#   order (by kind, crate, name, line):
+#   checks/entry-points.sh Takes no argument and reads the product root it sits in. Exit 0 with
+#   empty stderr and one stdout line counting the crates scanned, the workspace members skipped and
+#   the reads matched. Otherwise exit 1 and one finding per line on stderr, each prefixed
+#   `entry-points.sh: ` and in one of four shapes, in this order (by kind, crate, name, line):
 #     malformed: line <n>: <which fault of the list line>
 #     stale: <crate> <name>
 #     unlisted: <crate> <name> <file, relative to the package directory>
@@ -31,29 +32,32 @@
 #
 # THE TWO SEAMS
 #   `cargo` is found through PATH, so a test can stand a stub in for it. ENTRY_POINTS_ALLOW_FILE
-#   overrides the list's path, which defaults to checks/entry-points.allow under the product root. No other
-#   environment variable changes what is read: none names a registry, a crate or a skip.
+#   overrides the list's path, which defaults to checks/entry-points.allow under the product root.
+#   No other environment variable changes what is read: none names a registry, a crate or a skip.
 #
 # THE CRATE SET
-#   The packages `cargo tree -p nozoki-bridge --target aarch64-apple-darwin -e normal --locked` prints (the
-#   command QC-30 fixes), with presentation flags only. `nozoki-bridge` here is the set's root and no skip.
-#   Each is joined by name and version to a package of
-#   `cargo metadata --format-version 1 --locked --filter-platform aarch64-apple-darwin`. A package whose id
-#   is one of the metadata's workspace_members is skipped: membership is the test, and no crate name is a
-#   skip. Every other package is scanned in the directory holding its manifest, whatever its source. A
-#   package that joins to none or to several is unreadable, and is never skipped. The metadata is read with
-#   plutil, which ships with macOS and reads JSON; plutil absent or failing ends the run.
+#   The packages `cargo tree -p nozoki-bridge --target aarch64-apple-darwin -e normal --locked`
+#   prints (the command QC-30 fixes), with presentation flags only. `nozoki-bridge` here is the
+#   set's root and no skip. Each is joined by name and version to a package of
+#   `cargo metadata --format-version 1 --locked --filter-platform aarch64-apple-darwin`. A package
+#   whose id is one of the metadata's workspace_members is skipped: membership is the test, and no
+#   crate name is a skip. Every other package is scanned in the directory holding its manifest,
+#   whatever its source. A package that joins to none or to several is unreadable, and is never
+#   skipped. The metadata is read with plutil, which ships with macOS and reads JSON; plutil absent
+#   or failing ends the run.
 #
 # WHAT IS READ
-#   Every file under a scanned crate's package directory, at any depth and whatever its extension, in its
-#   raw text: a read counts in code, in a comment, in a string and in prose. A read is one of the six names
-#   env::var, env::var_os, env::vars, env::vars_os, env::args and env::args_os, matched as a whole word
-#   after `env::`, with no boundary before `env`, so `myenv::var` counts. A name listed inside
+#   Every file under a scanned crate's package directory, at any depth and whatever its extension,
+#   in its raw text: a read counts in code, in a comment, in a string and in prose. A read is one of
+#   the six names env::var, env::var_os, env::vars, env::vars_os, env::args and env::args_os,
+#   matched as a whole word after `env::`, with no boundary before `env`, so `myenv::var` counts. A
+#   name listed inside
 #   `env::{ ... }` is a read of that name, across line breaks. A read is the pair (crate, name); two
-#   resolved versions of one crate share their reads. One file is excepted and is not opened: the crate's
-#   build script, which is the `build` key of the [package] table of that package's own Cargo.toml (a
-#   string names the file, `false` excepts nothing, no key means build.rs at the package root if it
-#   exists, and a key in any other form excepts nothing). Files that script pulls in are read.
+#   resolved versions of one crate share their reads. One file is excepted and is not opened: the
+#   crate's build script, which is the `build` key of the [package] table of that package's own
+#   Cargo.toml (a string names the file, `false` excepts nothing, no key means build.rs at the
+#   package root if it exists, and a key in any other form excepts nothing). Files that script pulls
+#   in are read.
 #
 # WHAT IS NOT HELD
 #   Named so that none is read as coverage:
@@ -64,8 +68,8 @@
 #     - the reads the operating system's frameworks make inside the process.
 #
 # THE LIST
-#   checks/entry-points.allow, one line per read: `<crate> | <name> | <what the read changes>`. See the
-#   list's own header for the line format, the malformed rule and what a reviewer checks.
+#   checks/entry-points.allow, one line per read: `<crate> | <name> | <what the read changes>`. See
+#   the list's own header for the line format, the malformed rule and what a reviewer checks.
 #
 # `set -e` is on, so every grep that may match nothing carries `|| true`, and a guard follows it.
 
@@ -97,8 +101,8 @@ report_unreadable() {
 
 [ -f "$allow_file" ] || die "the reviewed list is missing: $allow_file"
 
-# Lines to the well-formed pairs and the malformed findings. A malformed line takes no part in the diff, and
-# a repeat is judged against the earlier well-formed lines, which stand.
+# Lines to the well-formed pairs and the malformed findings. A malformed line takes no part in the
+# diff, and a repeat is judged against the earlier well-formed lines, which stand.
 awk -v names="$SIX_NAMES" -v tab="$TAB" -v good="$work/list.pairs" -v bad="$findings" -v count="$work/list.entries" '
   function trim(text) { gsub(/^[[:space:]]+|[[:space:]]+$/, "", text); return text }
   BEGIN {
@@ -142,7 +146,8 @@ awk -v names="$SIX_NAMES" -v tab="$TAB" -v good="$work/list.pairs" -v bad="$find
 
 command -v plutil > /dev/null 2>&1 || unresolved "plutil is not on PATH, so the metadata cannot be read"
 
-# The tree is printed as `<name> v<version> ...`; a repeat, and Cargo's `(*)` marker, collapse to one line.
+# The tree is printed as `<name> v<version> ...`; a repeat, and Cargo's `(*)` marker, collapse to
+# one line.
 status=0
 (cd "$root" && cargo tree -p nozoki-bridge --target aarch64-apple-darwin -e normal --locked --prefix none --format '{p}') \
   > "$work/tree.out" 2> "$work/tree.err" || status=$?
@@ -158,8 +163,8 @@ plutil -p "$work/metadata.json" > "$work/metadata.txt" 2> "$work/plutil.err" \
   || unresolved "plutil could not read the metadata: $(head -n 1 "$work/plutil.err")"
 [ "$(head -n 1 "$work/metadata.txt")" = "{" ] || unresolved "the metadata is not a JSON object"
 
-# plutil prints the object with its keys sorted, one per line, indented by depth: a package's own keys sit at
-# six spaces, a workspace member at four.
+# plutil prints the object with its keys sorted, one per line, indented by depth: a package's own
+# keys sit at six spaces, a workspace member at four.
 awk -v tab="$TAB" -v packages="$work/packages.tsv" -v members="$work/members.txt" '
   function unquote(text) { sub(/^[^=]*=> "/, "", text); sub(/"$/, "", text); return text }
   function flush() { if (name != "") print name tab version tab id tab manifest >> packages; name = ""; version = ""; id = ""; manifest = "" }
@@ -174,8 +179,8 @@ awk -v tab="$TAB" -v packages="$work/packages.tsv" -v members="$work/members.txt
   END { flush() }
 ' "$work/metadata.txt"
 
-# Each set member to its package: M a workspace member, S a package to scan, X one that joins to none or to
-# several. Membership is decided on the package id, before any directory is opened.
+# Each set member to its package: M a workspace member, S a package to scan, X one that joins to
+# none or to several. Membership is decided on the package id, before any directory is opened.
 awk -v tab="$TAB" -v members="$work/members.txt" -v packages="$work/packages.tsv" '
   FILENAME == members { member[$0] = 1; next }
   FILENAME == packages {
@@ -194,8 +199,9 @@ awk -v tab="$TAB" -v members="$work/members.txt" -v packages="$work/packages.tsv
 
 # --- the scan ---
 
-# The build script of the package whose manifest is $1, as the package directory-relative path, or nothing.
-# Read from the [package] table of that copy; a key in any form but a string or `false` excepts nothing.
+# The build script of the package whose manifest is $1, as the package directory-relative path, or
+# nothing. Read from the [package] table of that copy; a key in any form but a string or `false`
+# excepts nothing.
 build_script_of() {
   awk -v tab="$TAB" '
     /^[[:space:]]*\[/ { in_package = ($0 ~ /^[[:space:]]*\[package\][[:space:]]*(#.*)?$/); next }
@@ -248,7 +254,8 @@ scan_crate() {
   done < "$work/files.nul" > "$work/readable.nul"
   [ -s "$work/readable.nul" ] || return 0
 
-  # One grep process over the whole directory. A name is read whole after `env::`; a group opener, or an
+  # One grep process over the whole directory. A name is read whole after `env::`; a group opener,
+  # or an
   # `env::` that ends a line, sends its file to the second pass below.
   grep_status=0
   xargs -0 grep -a -o -H -E 'env::([A-Za-z0-9_]+|[[:space:]]*\{)|env::[[:space:]]*$' < "$work/readable.nul" \

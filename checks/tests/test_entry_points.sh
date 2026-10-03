@@ -1,30 +1,34 @@
 #!/usr/bin/env bash
-# Version: 1.0.0 — first version: drives the real checks/entry-points.sh with every read, list and resolution fault planted in a temporary copy
+# Version: 1.0.0 — first version: drives the real checks/entry-points.sh with every read, list and
+# resolution fault planted in a temporary copy
 #
-# checks/tests/test_entry_points.sh — the tests of checks/entry-points.sh and checks/entry-points.allow.
+# checks/tests/test_entry_points.sh — the tests of checks/entry-points.sh and
+# checks/entry-points.allow.
 #
 # WHY THIS EXISTS
 #   checks/entry-points.sh is the review gate on the environment and argument reads of the linked
-#   dependency tree (NFDR QC-30, half 2). A scan that cannot go red is a gate that has not run, so each
-#   failure it names is planted here and the script is shown to catch it, and the clean tree is shown to
-#   pass. The cases run the real script, never a copy of its logic, through its two seams: `cargo` found
-#   on PATH, and ENTRY_POINTS_ALLOW_FILE. A stub `cargo` runs the real one and edits its output, so the
-#   suite never lists the tree's crates by hand; it plants only into copies of `itoa` and `quote`, under
-#   one temporary work directory, and writes nothing under the product root or under a registry package
-#   directory. The last case proves that.
-#   The runner is this file: the product has no Python (docs/nfdr.md § 9 names its toolchains), which is
-#   why the shell packet's pytest runner is not used here — the same reason test_no_network.sh gives.
+#   dependency tree (NFDR QC-30, half 2). A scan that cannot go red is a gate that has not run, so
+#   each failure it names is planted here and the script is shown to catch it, and the clean tree is
+#   shown to pass. The cases run the real script, never a copy of its logic, through its two seams:
+#   `cargo` found on PATH, and ENTRY_POINTS_ALLOW_FILE. A stub `cargo` runs the real one and edits
+#   its output, so the suite never lists the tree's crates by hand; it plants only into copies of
+#   `itoa` and `quote`, under one temporary work directory, and writes nothing under the product
+#   root or under a registry package directory. The last case proves that. The runner is this file:
+#   the product has no Python (docs/nfdr.md § 9 names its toolchains), which is why the shell
+#   packet's pytest runner is not used here — the same reason test_no_network.sh gives.
 #
 # USAGE
 #   checks/tests/test_entry_points.sh
-#     NOZOKI_TEST_ONLY=<case> [<case> ...] runs the named cases. A name that is no case fails the run.
+#     NOZOKI_TEST_ONLY=<case> [<case> ...] runs the named cases. A name that is no case fails the
+#     run.
 #
 # CASE NAMES
-#   `test_case_<n>_` is a row of CP-410's table; `test_c<n>_` is a further case of change_design.md § 5.
+#   `test_case_<n>_` is a row of CP-410's table; `test_c<n>_` is a further case of change_design.md
+#   § 5.
 #
 # WHY NO `set -e`
-#   A case that fails must not end the run before the remaining cases report. Each case returns its own
-#   status and the runner counts them.
+#   A case that fails must not end the run before the remaining cases report. Each case returns its
+#   own status and the runner counts them.
 
 set -uo pipefail
 
@@ -136,8 +140,8 @@ scanned_package_dirs() {
   metadata_packages "$WORK/real-metadata.json" | awk -F '\t' '$3 !~ /^path\+/ { print $4 }' | sed 's#/Cargo.toml$##' | LC_ALL=C sort -u
 }
 
-# What the suite must leave unchanged (CP-409): the product's git status, and a path|size|mtime listing of
-# every scanned package directory, written to $1.status and $1.packages.
+# What the suite must leave unchanged (CP-409): the product's git status, and a path|size|mtime
+# listing of every scanned package directory, written to $1.status and $1.packages.
 snapshot_inputs() {
   git -C "$ROOT" status --porcelain > "$1.status" 2>&1
   : > "$1.packages"
@@ -188,7 +192,8 @@ run_scan() {
   STDERR="$(cat "$CASE/stderr")"
 }
 
-# Copies crate $1's real package directory into the case, writable, and points the stub's metadata at it.
+# Copies crate $1's real package directory into the case, writable, and points the stub's metadata
+# at it.
 plant_copy() {
   source_dir="$(package_dir "$1")"
   [ -d "$source_dir" ] || fail "no package directory for $1 in the real metadata" || return 1
@@ -295,8 +300,8 @@ expect_resolution_failure() {
 
 # --- cases: CP-410's table ---
 
-# CP-406, CP-410 row 1, C1: the real tree and the real list pass. The members cause no finding, stderr is
-# empty, and stdout is the one counting line.
+# CP-406, CP-410 row 1, C1: the real tree and the real list pass. The members cause no finding,
+# stderr is empty, and stdout is the one counting line.
 test_case_1_clean_tree_passes() {
   new_case
   LIST="$REAL_LIST"
@@ -374,7 +379,8 @@ test_case_8_vars_os_is_distinct() { plant_one_name_and_expect_it_alone env::vars
 test_case_9_args_is_distinct() { plant_one_name_and_expect_it_alone env::args; }
 test_case_10_args_os_is_distinct() { plant_one_name_and_expect_it_alone env::args_os; }
 
-# CP-410 rows 11 – 13, CP-404: a line lacking a part is malformed, and the finding gives its list line number.
+# CP-410 rows 11 – 13, CP-404: a line lacking a part is malformed, and the finding gives its list
+# line number.
 test_case_11_missing_crate_is_malformed() {
   new_case
   append_list_line ' | env::var | a line with no crate'
@@ -647,8 +653,8 @@ test_c17_repeated_occurrences_share_one_entry() {
 
 # --- cases: the edges of the script's contract ---
 
-# change_design.md § 3 A: metadata that cannot be read is a resolution failure, whether the JSON is bad, the
-# reader fails, or the reader is absent.
+# change_design.md § 3 A: metadata that cannot be read is a resolution failure, whether the JSON is
+# bad, the reader fails, or the reader is absent.
 test_unreadable_metadata_is_fatal() {
   new_case
   : > "$STUB/meta.garbage"
@@ -696,7 +702,8 @@ test_empty_tree_is_fatal() {
   expect_resolution_failure
 }
 
-# A tree entry with no metadata package is unreadable, never skipped, and the other findings still come.
+# A tree entry with no metadata package is unreadable, never skipped, and the other findings still
+# come.
 test_unresolved_package_is_unreadable() {
   new_case
   printf 'ghost v1.2.3\n' > "$STUB/tree.extra"
@@ -725,8 +732,8 @@ test_ambiguous_package_is_unreadable() {
   expect_stderr_contains "2 packages of that name and version"
 }
 
-# A non-member package outside any registry is scanned: membership controls the skip, not its source or the
-# way its directory is spelled.
+# A non-member package outside any registry is scanned: membership controls the skip, not its source
+# or the way its directory is spelled.
 test_external_source_directory_is_scanned() {
   new_case
   external="$CASE/external/extcrate"
@@ -743,8 +750,8 @@ test_external_source_directory_is_scanned() {
   expect_stderr_contains "src/lib.rs"
 }
 
-# Two resolved versions of one name share their reads and one list line; a line is stale only when neither
-# version holds the read.
+# Two resolved versions of one name share their reads and one list line; a line is stale only when
+# neither version holds the read.
 test_resolved_versions_share_one_reviewed_pair() {
   new_case
   second="$CASE/itoa-second"
@@ -797,7 +804,8 @@ test_tree_repeats_do_not_duplicate_findings() {
   [ "$STDOUT" = "$baseline_stdout" ] || fail "repeated tree lines changed the counts: '$baseline_stdout' against '$STDOUT'"
 }
 
-# An explicit nested build path is the only exception: a sibling file and a root build.rs are scanned.
+# An explicit nested build path is the only exception: a sibling file and a root build.rs are
+# scanned.
 test_nested_build_script_alone_is_excepted() {
   new_case
   plant_copy itoa || return 1
@@ -816,7 +824,8 @@ test_nested_build_script_alone_is_excepted() {
   fi
 }
 
-# With no build key and no root build.rs, nothing is excepted: a build.rs deeper down is an ordinary file.
+# With no build key and no root build.rs, nothing is excepted: a build.rs deeper down is an ordinary
+# file.
 test_missing_default_build_script_excepts_nothing() {
   new_case
   plant_copy itoa || return 1
@@ -829,7 +838,8 @@ test_missing_default_build_script_excepts_nothing() {
   expect_finding unlisted itoa env::var
 }
 
-# A build key in a form the script does not recognise excepts nothing, and does not fall back to the default.
+# A build key in a form the script does not recognise excepts nothing, and does not fall back to the
+# default.
 test_unrecognised_build_key_excepts_nothing() {
   new_case
   plant_copy itoa || return 1
@@ -856,8 +866,8 @@ test_unreadable_excepted_build_script_is_not_read() {
   expect_empty_stderr
 }
 
-# CP-401, CP-402: every file counts at any depth, and a read counts in a comment, a string or prose. There is
-# no boundary before `env`, so `myenv::var` counts.
+# CP-401, CP-402: every file counts at any depth, and a read counts in a comment, a string or prose.
+# There is no boundary before `env`, so `myenv::var` counts.
 test_non_source_files_and_raw_text_are_scanned() {
   new_case
   plant_copy itoa || return 1
@@ -875,7 +885,8 @@ test_non_source_files_and_raw_text_are_scanned() {
   expect_finding unlisted itoa env::var
 }
 
-# CP-403: whitespace and comments around fields are ignored, and a `|` inside the explanation changes nothing.
+# CP-403: whitespace and comments around fields are ignored, and a `|` inside the explanation
+# changes nothing.
 test_list_fields_are_trimmed_and_text_may_contain_a_separator() {
   new_case
   awk '
@@ -896,8 +907,8 @@ test_list_fields_are_trimmed_and_text_may_contain_a_separator() {
   expect_empty_stderr
 }
 
-# A malformed line is a finding and takes no part in the diff: its pair is still unlisted, and the other
-# findings are still reached.
+# A malformed line is a finding and takes no part in the diff: its pair is still unlisted, and the
+# other findings are still reached.
 test_malformed_lines_do_not_hide_other_findings() {
   new_case
   plant_copy itoa || return 1
@@ -913,12 +924,13 @@ test_malformed_lines_do_not_hide_other_findings() {
   expect_finding stale tokio env::var_os
 }
 
-# One line per read and per fault, the same stderr on every run on one tree, ordered by kind, and an unlisted
-# read names the first file in path order.
+# One line per read and per fault, the same stderr on every run on one tree, ordered by kind, and an
+# unlisted read names the first file in path order.
 test_findings_are_distinct_and_deterministic() {
   new_case
-  # The file system lists a directory in name order, which would hide a missing sort. A `find` that answers
-  # in reverse order puts the later file first, so only the script's own ordering names the earlier one.
+  # The file system lists a directory in name order, which would hide a missing sort. A `find` that
+  # answers in reverse order puts the later file first, so only the script's own ordering names the
+  # earlier one.
   printf '#!/usr/bin/env bash\nset -o pipefail\n"%s" "$@" | LC_ALL=C sort -z -r\n' "$(command -v find)" > "$STUB/find"
   chmod +x "$STUB/find"
   plant_copy itoa || return 1
@@ -970,8 +982,8 @@ test_suite_rejects_unknown_case() {
   esac
 }
 
-# CP-411: a full run goes on past a failed case and names every failed case. The product copy holds a script
-# that always fails, so both cases below must fail.
+# CP-411: a full run goes on past a failed case and names every failed case. The product copy holds
+# a script that always fails, so both cases below must fail.
 test_suite_reports_each_failed_case() {
   new_case
   copy="$CASE/product-copy"
@@ -997,9 +1009,9 @@ test_suite_reports_each_failed_case() {
   esac
 }
 
-# CP-409: the product's status and every scanned package directory are what they were. This case is last, so in
-# a full run it compares against the state before the first case; it also runs the cases that write and change
-# permissions as a selected run and compares around that.
+# CP-409: the product's status and every scanned package directory are what they were. This case is
+# last, so in a full run it compares against the state before the first case; it also runs the cases
+# that write and change permissions as a selected run and compares around that.
 test_suite_leaves_original_inputs_unchanged() {
   snapshot_inputs "$WORK/now"
   cmp -s "$WORK/baseline.status" "$WORK/now.status" || fail "the product's git status changed since the run began" || return 1
@@ -1035,8 +1047,8 @@ for wanted in $selected; do
   esac
 done
 
-# The real metadata, read once: it says where each crate's package directory is, and it is never the script's
-# input. The state the suite must leave unchanged is recorded before the first case.
+# The real metadata, read once: it says where each crate's package directory is, and it is never the
+# script's input. The state the suite must leave unchanged is recorded before the first case.
 (cd "$ROOT" && "$REAL_CARGO" metadata --format-version 1 --locked --filter-platform aarch64-apple-darwin) > "$WORK/real-metadata.json" 2> "$WORK/real-metadata.err" \
   || { echo "test_entry_points.sh: cargo metadata failed: $(cat "$WORK/real-metadata.err")" >&2; exit 1; }
 snapshot_inputs "$WORK/baseline"
