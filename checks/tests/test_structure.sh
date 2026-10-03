@@ -80,6 +80,22 @@ test_raw_grouped_imports_are_scanned
 test_distinct_clauses_on_one_line_are_reported
 test_suite_checks_origin_after_selected_case
 test_listed_bridge_crates_pass
+test_folder_model_libgit2_binding_is_rejected
+test_folder_model_own_state_is_rejected
+test_highlighter_forbidden_units_are_rejected
+test_fs_reader_forbidden_units_are_rejected
+test_root_reexport_reaches_the_unit
+test_bridge_unlisted_crate_by_use_is_rejected
+test_bridge_unlisted_crate_as_path_root_is_rejected
+test_bridge_apple_binding_is_rejected
+test_manifest_depends_on_checks_by_name
+test_manifest_dependency_path_under_checks
+test_manifest_lib_path_under_checks
+test_set_logger_outside_the_bridge_is_rejected
+test_set_boxed_logger_outside_the_bridge_is_rejected
+test_required_inputs_are_read
+test_allowed_unit_edges_pass
+test_test_targets_into_checks_pass
 "
 
 # --- helpers ---
@@ -503,12 +519,19 @@ test_core_foundation_extern_is_rejected() {
 test_apple_scope_and_near_names() {
   new_root apple-elsewhere || return 1
   plant "$R" "$BRIDGE_FILE" 'use objc2::runtime::AnyObject;'
+  objc_line="$PLANT_LINE"
   plant "$R" "$BRIDGE_FILE" 'extern crate core_foundation;'
+  foundation_line="$PLANT_LINE"
   plant "$R" "nozoki-extra/src/lib.rs" 'use block2::RcBlock;'
   plant "$R" "nozoki-extra/src/lib.rs" '#[link(name = "CoreServices", kind = "framework")]'
   run_structure "$R"
-  expect_status 0 || return 1
-  expect_stderr_empty || return 1
+  # QC-13 refuses an Apple name in the bridge. What this case still proves is that it is no QC-9
+  # finding, and that a third crate raises nothing.
+  expect_status 1 || return 1
+  expect_finding "crates/$BRIDGE_FILE" "$objc_line" QC-13 || return 1
+  expect_finding "crates/$BRIDGE_FILE" "$foundation_line" QC-13 || return 1
+  expect_no_finding_for ": QC-9: " || return 1
+  expect_no_finding_for "nozoki-extra" || return 1
   new_root apple-near || return 1
   plant "$R" "$CORE_FILE" 'fn blocker() { let dispatcher = 1; let metallic = dispatcher; let _ = metallic; }'
   plant "$R" "$CORE_FILE" 'use my_objc2::thing; use objc22::thing; use metal_gear::thing; use cocoa_beans::thing;'
@@ -669,11 +692,18 @@ test_process_spellings_and_near_names() {
   new_root process-near || return 1
   plant "$R" "$BRIDGE_FILE" 'use std::process_info;'
   plant "$R" "$BRIDGE_FILE" 'fn c() { mystd::process::exit(0); crate::process::run(); let process = 1; let _ = process; }'
+  mystd_line="$PLANT_LINE"
   plant "$R" "$BRIDGE_FILE" 'use some::{first, process};'
+  some_line="$PLANT_LINE"
   plant "$R" "$BRIDGE_FILE" 'fn std_process() {}'
   run_structure "$R"
-  expect_status 0 || return 1
-  expect_stderr_empty || return 1
+  # QC-13 refuses the two unlisted crates. What this case still proves is that no near-name of
+  # std::process is a QC-36 finding: the two QC-13 lines are all that is reported.
+  expect_status 1 || return 1
+  expect_finding_naming "crates/$BRIDGE_FILE" "$mystd_line" QC-13 "mystd" || return 1
+  expect_finding_naming "crates/$BRIDGE_FILE" "$some_line" QC-13 "some" || return 1
+  [ "$(printf '%s\n' "$STDERR" | grep -c .)" -eq 2 ] || fail "expected exactly the two QC-13 lines: $STDERR" || return 1
+  expect_no_finding_for ": QC-36: " || return 1
 }
 
 # --- the cases of Task 4: filesystem ownership and the complete suite ---
@@ -975,6 +1005,7 @@ test_listed_bridge_crates_pass() {
   plant "$R" "nozoki-bridge/src/boundary.rs" 'mod sibling_module;'
   plant "$R" "$BRIDGE_FILE" 'use serde_json::Value; use tree_sitter::Parser; use zzz_listed::Thing;'
   plant "$R" "$BRIDGE_FILE" 'use serde_json::Value as Json; use serde_json::{self, Map};'
+  plant "$R" "$BRIDGE_FILE" 'use zzz_listed::Thing as Alias; fn al() { Alias::x(); }'
   plant "$R" "$BRIDGE_FILE" 'use std::collections::hash_map as hm; fn a() { hm::Entry::<u8, u8>::default; }'
   plant "$R" "$BRIDGE_FILE" 'fn c() -> core::ffi::c_int { alloc::vec::Vec::<u8>::new(); 0 }'
   plant "$R" "$BRIDGE_FILE" 'use std::ptr; fn n() { ptr::null::<u8>(); }'
@@ -984,6 +1015,596 @@ test_listed_bridge_crates_pass() {
   plant "$R" "$BRIDGE_FILE" '// tokio::spawn'
   plant "$R" "$BRIDGE_FILE" 'const T: &str = "reqwest::get";'
   plant "$R" "nozoki-extra/src/lib.rs" 'use objc2::runtime::AnyObject;'
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+}
+
+# --- the cases of the unit-graph change: unit edges, the bridge's import set, the shipped manifests
+# and the logger clause ---
+
+HL_FILE="nozoki-core/src/highlighter.rs"
+FS_FILE="nozoki-core/src/fs_reader.rs"
+LANG_FILE="nozoki-core/src/language.rs"
+CORE_MANIFEST="nozoki-core/Cargo.toml"
+BRIDGE_MANIFEST="nozoki-bridge/Cargo.toml"
+
+# A finding line `<path>:<line>: <QC-n>: <what>` whose <what> carries the text $4.
+expect_finding_naming() {
+  found=0
+  while IFS= read -r stderr_line; do
+    case "$stderr_line" in
+      "$1:$2: $3: "*"$4"*) found=1 ;;
+    esac
+  done <<< "$STDERR"
+  [ "$found" -eq 1 ] || fail "expected a finding $1:$2: $3 naming $4 on stderr. stderr: $STDERR"
+}
+
+expect_count() {
+  actual="$(count_findings "$1" "$2" "$3")"
+  [ "$actual" -eq "$4" ] || fail "expected $4 finding(s) $1:$2: $3, got $actual. stderr: $STDERR"
+}
+
+# The first stderr line starting with $1 comes before the first one starting with $2.
+expect_before() {
+  case "$STDERR" in
+    *"$1"*) ;;
+    *) fail "no stderr line starts with $1. stderr: $STDERR" || return 1 ;;
+  esac
+  case "$STDERR" in
+    *"$2"*) ;;
+    *) fail "no stderr line starts with $2. stderr: $STDERR" || return 1 ;;
+  esac
+  head_one="${STDERR%%"$1"*}"
+  head_two="${STDERR%%"$2"*}"
+  [ "${#head_one}" -lt "${#head_two}" ] || fail "expected $1 before $2. stderr: $STDERR"
+}
+
+# The number of stderr lines that carry the text $1.
+stderr_lines_with() {
+  with_count=0
+  while IFS= read -r stderr_line; do
+    case "$stderr_line" in
+      *"$1"*) with_count=$((with_count + 1)) ;;
+    esac
+  done <<< "$STDERR"
+  printf '%s' "$with_count"
+}
+
+# Plants one `use crate::<unit>::Item;` per unit named in $3 into file $2 of root $1, and sets
+# UNIT_LINES to the lines they landed on.
+plant_each_unit() {
+  UNIT_LINES=""
+  for unit in $3; do
+    plant "$1" "$2" "use crate::$unit::Item;"
+    UNIT_LINES="$UNIT_LINES $PLANT_LINE"
+  done
+}
+
+# Removes a file of the copy $R. The path is guarded so an empty one cannot widen the removal.
+remove_input() {
+  rm -f -- "${R:?}/${1:?}"
+}
+
+# CP-430 row 1.
+test_folder_model_libgit2_binding_is_rejected() {
+  new_root git2-binding || return 1
+  hit_lines=""
+  for form in \
+    'use git2::Repository;' \
+    'fn g() { ::git2::Oid::zero(); }' \
+    'extern crate libgit2_sys;' \
+    '// git2::Repository::open' \
+    'use {libgit2_sys::Oid, std::io};' \
+    'use some::{git2, other};' \
+    'use git2
+    ::Odb;'; do
+    plant "$R" "$CORE_FILE" "$form"
+    hit_lines="$hit_lines $PLANT_LINE"
+  done
+  plant "$R" "$CORE_FILE" 'use git2_extra::Thing; use mygit2::Other; fn git2x() { libgit2_sysx::f(); }'
+  near_line="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  for hit_line in $hit_lines; do
+    expect_finding_naming "crates/$CORE_FILE" "$hit_line" QC-10 "libgit2 binding" || return 1
+  done
+  expect_count "crates/$CORE_FILE" "$near_line" QC-10 0 || return 1
+}
+
+# CP-430 row 2.
+test_folder_model_own_state_is_rejected() {
+  new_root own-state || return 1
+  plant "$R" "$CORE_FILE" 'use crate::own_state::Theme;'
+  direct_line="$PLANT_LINE"
+  plant "$R" "$CORE_FILE" 'use crate::{
+    language::Language,
+    own_state::{
+        Theme,
+    },
+};'
+  nested_line=$((PLANT_LINE + 2))
+  plant "$R" "$CORE_FILE" 'fn s() { super::super::own_state::theme(); }'
+  super_line="$PLANT_LINE"
+  plant "$R" "$CORE_FILE" 'use super::own_state;'
+  use_super_line="$PLANT_LINE"
+  plant "$R" "$CORE_FILE" 'fn n() { self::own_state::x(); nozoki_core::own_state::y(); let own_state = 1; let _ = own_state; }'
+  none_line="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  for hit_line in "$direct_line" "$nested_line" "$super_line" "$use_super_line"; do
+    expect_finding_naming "crates/$CORE_FILE" "$hit_line" QC-10 "own_state" || return 1
+  done
+  expect_count "crates/$CORE_FILE" "$none_line" QC-10 0 || return 1
+}
+
+# CP-430 row 3.
+test_highlighter_forbidden_units_are_rejected() {
+  new_root highlighter-units || return 1
+  hit_lines=""
+  for form in \
+    'use crate::fs_reader::Entry;' \
+    'use crate::{fs_reader::Entry, highlighter::highlight};' \
+    '// see crate::fs_reader::Entry' \
+    'use crate::watcher::Event;' \
+    'use crate::folder_model::FileView;' \
+    'fn s() { super::fs_reader::list(); }' \
+    'use git2::Oid;' \
+    'use super::super::{folder_model::Thing};'; do
+    plant "$R" "$HL_FILE" "$form"
+    hit_lines="$hit_lines $PLANT_LINE"
+  done
+  plant_each_unit "$R" "$HL_FILE" "own_state git_reader markdown_renderer"
+  hit_lines="$hit_lines $UNIT_LINES"
+  plant "$R" "$HL_FILE" 'use crate::{fs_reader::Entry, watcher::Event};'
+  two_line="$PLANT_LINE"
+  plant "$R" "$HL_FILE" 'fn d() { crate::fs_reader::a(); crate::fs_reader::b(); }'
+  duplicate_line="$PLANT_LINE"
+  plant "$R" "nozoki-core/src/highlighter/extra.rs" 'use crate::fs_reader::Entry;'
+  extra_line="$PLANT_LINE"
+  plant "$R" "nozoki-core/src/highlighter/deep/more.rs" 'use crate::folder_model::Thing;'
+  deep_line="$PLANT_LINE"
+  plant "$R" "nozoki-core/src/highlighter_ext.rs" 'use crate::fs_reader::Entry;'
+  run_structure "$R"
+  expect_status 1 || return 1
+  for hit_line in $hit_lines; do
+    expect_finding "crates/$HL_FILE" "$hit_line" QC-11 || return 1
+  done
+  expect_count "crates/$HL_FILE" "$two_line" QC-11 2 || return 1
+  expect_count "crates/$HL_FILE" "$duplicate_line" QC-11 1 || return 1
+  expect_finding_naming "crates/$HL_FILE" "$two_line" QC-11 "fs_reader" || return 1
+  expect_finding_naming "crates/$HL_FILE" "$two_line" QC-11 "watcher" || return 1
+  expect_finding "crates/nozoki-core/src/highlighter/extra.rs" "$extra_line" QC-11 || return 1
+  expect_finding "crates/nozoki-core/src/highlighter/deep/more.rs" "$deep_line" QC-11 || return 1
+  expect_no_finding_for "highlighter_ext.rs" || return 1
+}
+
+# CP-430 row 4.
+test_fs_reader_forbidden_units_are_rejected() {
+  new_root fs-reader-units || return 1
+  hit_lines=""
+  for form in \
+    'use crate::highlighter::Span;' \
+    'extern crate libgit2_sys;' \
+    'fn q() { super::super::highlighter::x(); }' \
+    'use git2::Oid;' \
+    'fn t(_: crate::Span) {}'; do
+    plant "$R" "$FS_FILE" "$form"
+    hit_lines="$hit_lines $PLANT_LINE"
+  done
+  plant_each_unit "$R" "$FS_FILE" "own_state git_reader watcher markdown_renderer"
+  hit_lines="$hit_lines $UNIT_LINES"
+  plant "$R" "$FS_FILE" 'fn p() { crate ::
+    highlighter::highlight(); }'
+  split_line=$((PLANT_LINE + 1))
+  plant "$R" "$FS_FILE" 'use crate::folder_model::FileView; fn r(_: crate::FileView) {}'
+  unheld_line="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  for hit_line in $hit_lines "$split_line"; do
+    expect_finding "crates/$FS_FILE" "$hit_line" QC-11 || return 1
+  done
+  expect_finding_naming "crates/$FS_FILE" "$split_line" QC-11 "highlighter" || return 1
+  expect_count "crates/$FS_FILE" "$unheld_line" QC-11 0 || return 1
+  expect_count "crates/$FS_FILE" 14 QC-11 0 || return 1
+}
+
+# CP-430 row 5.
+test_root_reexport_reaches_the_unit() {
+  new_root reexport || return 1
+  plant "$R" "nozoki-core/src/lib.rs" 'pub use fs_reader::{NewThing, Entry as Renamed};'
+  plant "$R" "$HL_FILE" 'fn f(_: crate::Entry) {}'
+  entry_line="$PLANT_LINE"
+  plant "$R" "$HL_FILE" 'use crate::{Condition, language::Language};'
+  group_line="$PLANT_LINE"
+  plant "$R" "$HL_FILE" 'fn g(_: crate::Renamed) {}'
+  renamed_line="$PLANT_LINE"
+  plant "$R" "$HL_FILE" 'fn h(_: crate::NewThing) {}'
+  new_line="$PLANT_LINE"
+  plant "$R" "$HL_FILE" 'fn l(_: crate::Language, _: crate::Error) { let _: Entry; }'
+  clean_line="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  for hit_line in "$entry_line" "$group_line" "$renamed_line" "$new_line"; do
+    expect_finding_naming "crates/$HL_FILE" "$hit_line" QC-11 "fs_reader" || return 1
+  done
+  expect_count "crates/$HL_FILE" "$clean_line" QC-11 0 || return 1
+  new_root reexport-unheld || return 1
+  plant "$R" "$FS_FILE" 'fn q(_: crate::FileView) {}'
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+}
+
+# CP-430 row 6.
+test_bridge_unlisted_crate_by_use_is_rejected() {
+  new_root bridge-use || return 1
+  plant "$R" "$BRIDGE_FILE" 'use tokio::net::TcpStream;'
+  tokio_line="$PLANT_LINE"
+  plant "$R" "$BRIDGE_FILE" 'use {tokio_util::codec, std::io};'
+  group_line="$PLANT_LINE"
+  plant "$R" "$BRIDGE_FILE" 'extern crate mio as rt;'
+  extern_line="$PLANT_LINE"
+  plant "$R" "$BRIDGE_FILE" 'use hyper::net as netmod; fn z() { netmod::x(); }'
+  alias_line="$PLANT_LINE"
+  plant "$R" "$BRIDGE_FILE" 'use {
+    std::fmt,
+    axum::Router,
+};'
+  multiline_line=$((PLANT_LINE + 2))
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_finding_naming "crates/$BRIDGE_FILE" "$tokio_line" QC-13 "tokio" || return 1
+  expect_finding_naming "crates/$BRIDGE_FILE" "$group_line" QC-13 "tokio_util" || return 1
+  expect_finding_naming "crates/$BRIDGE_FILE" "$extern_line" QC-13 "mio" || return 1
+  expect_finding_naming "crates/$BRIDGE_FILE" "$alias_line" QC-13 "hyper" || return 1
+  expect_finding_naming "crates/$BRIDGE_FILE" "$multiline_line" QC-13 "axum" || return 1
+  expect_count "crates/$BRIDGE_FILE" "$extern_line" QC-13 1 || return 1
+  case "$STDERR" in
+    *'`rt`'*) fail "the extern crate finding names its alias: $STDERR" || return 1 ;;
+  esac
+  expect_count "crates/$BRIDGE_FILE" "$alias_line" QC-13 1 || return 1
+}
+
+# CP-430 row 7.
+test_bridge_unlisted_crate_as_path_root_is_rejected() {
+  new_root bridge-root || return 1
+  plant "$R" "$BRIDGE_FILE" 'fn r(u: &str) { let _ = reqwest::get(u); }'
+  reqwest_line="$PLANT_LINE"
+  plant "$R" "$BRIDGE_FILE" 'fn h() { ::hyper::body::Bytes::new(); }'
+  hyper_line="$PLANT_LINE"
+  plant "$R" "$BRIDGE_FILE" 'fn t() { let x = tower
+    ::
+    layer(); let _ = x; }'
+  tower_line="$PLANT_LINE"
+  plant "$R" "$BRIDGE_FILE" 'fn m() { s.parse::<u8>(); std::io::stdin(); core::mem::size_of::<u8>(); x.unlisted::<u8>(); std::unlisted_mod::f(); a.b::<c>(); }'
+  clean_line="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_finding_naming "crates/$BRIDGE_FILE" "$reqwest_line" QC-13 "reqwest" || return 1
+  expect_finding_naming "crates/$BRIDGE_FILE" "$hyper_line" QC-13 "hyper" || return 1
+  expect_finding_naming "crates/$BRIDGE_FILE" "$tower_line" QC-13 "tower" || return 1
+  expect_count "crates/$BRIDGE_FILE" "$clean_line" QC-13 0 || return 1
+}
+
+# CP-430 row 8.
+test_bridge_apple_binding_is_rejected() {
+  new_root bridge-apple || return 1
+  plant "$R" "$BRIDGE_FILE" 'use objc2::runtime::AnyObject;'
+  use_line="$PLANT_LINE"
+  plant "$R" "$BRIDGE_FILE" '#[link(name = "Foundation", kind = "framework")]'
+  attribute_line="$PLANT_LINE"
+  plant "$R" "$BRIDGE_FILE" '// objc2_app_kit::NSWindow'
+  comment_line="$PLANT_LINE"
+  plant "$R" "$BRIDGE_FILE" 'fn o() { objc2::a(); objc2::b(); }'
+  repeat_line="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_count "crates/$BRIDGE_FILE" "$use_line" QC-13 2 || return 1
+  expect_count "crates/$BRIDGE_FILE" "$attribute_line" QC-13 1 || return 1
+  expect_count "crates/$BRIDGE_FILE" "$comment_line" QC-13 1 || return 1
+  expect_count "crates/$BRIDGE_FILE" "$repeat_line" QC-13 2 || return 1
+  expect_finding_naming "crates/$BRIDGE_FILE" "$use_line" QC-13 "objc2" || return 1
+  expect_no_finding_for ": QC-9: " || return 1
+}
+
+# CP-430 row 9. A dependency named checks, in every form TOML lets a manifest write the key.
+test_manifest_depends_on_checks_by_name() {
+  new_root manifest-name-core || return 1
+  plant "$R" "$CORE_MANIFEST" '[dependencies.checks]
+version = "0.1"'
+  header_line="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_finding "crates/$CORE_MANIFEST" "$header_line" QC-14 || return 1
+  new_root manifest-name-bridge || return 1
+  plant "$R" "$BRIDGE_MANIFEST" 'harness = { version = "0.1", package = "checks" }'
+  package_line="$PLANT_LINE"
+  plant "$R" "$BRIDGE_MANIFEST" '"checks" = "0.1"'
+  quoted_line="$PLANT_LINE"
+  plant "$R" "$BRIDGE_MANIFEST" 'checks . version = "0.1"'
+  dotted_line="$PLANT_LINE"
+  plant "$R" "$BRIDGE_MANIFEST" 'other.package = "checks"'
+  dotted_package_line="$PLANT_LINE"
+  plant "$R" "$BRIDGE_MANIFEST" "nested = { inner = 1, package = 'checks' }"
+  nested_line="$PLANT_LINE"
+  plant "$R" "$BRIDGE_MANIFEST" '[dependencies.renamed]
+package = "checks"'
+  header_package_line=$((PLANT_LINE + 1))
+  run_structure "$R"
+  expect_status 1 || return 1
+  for hit_line in "$package_line" "$quoted_line" "$dotted_line" "$dotted_package_line" "$nested_line" "$header_package_line"; do
+    expect_finding "crates/$BRIDGE_MANIFEST" "$hit_line" QC-14 || return 1
+  done
+  expect_finding_naming "crates/$BRIDGE_MANIFEST" "$package_line" QC-14 "nozoki-bridge" || return 1
+  new_root manifest-name-nested || return 1
+  plant "$R" "$CORE_MANIFEST" "[target.'cfg(unix)']
+dependencies = { checks = { version = \"1\" } }"
+  inline_line=$((PLANT_LINE + 1))
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_finding "crates/$CORE_MANIFEST" "$inline_line" QC-14 || return 1
+  new_root manifest-name-decoys || return 1
+  plant "$R" "$BRIDGE_MANIFEST" 'note = { version = "1", features = ["checks = 1", "[dependencies.checks]", "package = \"checks\""] }'
+  plant "$R" "$BRIDGE_MANIFEST" 'doc = """
+checks = { path = "../../checks" }
+[dependencies.checks]
+"""'
+  plant "$R" "$BRIDGE_MANIFEST" 'list = [
+  "path = '"'"'../../checks'"'"'",
+  "checks = 1",
+]'
+  plant "$R" "$BRIDGE_MANIFEST" '# checks = { path = "../../checks" }'
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+}
+
+# CP-430 row 10. A dependency whose path lies at or under checks/, resolved lexically from the
+# manifest's own directory.
+test_manifest_dependency_path_under_checks() {
+  new_root manifest-path || return 1
+  physical_root="$(cd "$R" && pwd -P)"
+  hit_lines=""
+  plant "$R" "$BRIDGE_MANIFEST" 'walker = { path = "../../checks/walker" }'
+  walker_line="$PLANT_LINE"
+  plant "$R" "$BRIDGE_MANIFEST" 'dotted.path = "../../checks/d"'
+  hit_lines="$hit_lines $PLANT_LINE"
+  plant "$R" "$BRIDGE_MANIFEST" "\"quoted\" = { \"path\" = '../../checks/q' }"
+  hit_lines="$hit_lines $PLANT_LINE"
+  plant "$R" "$BRIDGE_MANIFEST" 'lexical = { path = "../../crates/../checks/x" }'
+  hit_lines="$hit_lines $PLANT_LINE"
+  plant "$R" "$BRIDGE_MANIFEST" 'trailing = { path = "../../checks/" }'
+  hit_lines="$hit_lines $PLANT_LINE"
+  plant "$R" "$BRIDGE_MANIFEST" 'dots = { path = "./../../checks/./y" }'
+  hit_lines="$hit_lines $PLANT_LINE"
+  plant "$R" "$CORE_MANIFEST" "[target.'cfg(unix)'.dependencies]
+x = { path = \"../../checks\" }"
+  target_line=$((PLANT_LINE + 1))
+  plant "$R" "$CORE_MANIFEST" "[dependencies.probe]
+path = \"$physical_root/checks/probe\""
+  absolute_line=$((PLANT_LINE + 1))
+  plant "$R" "$HL_FILE" 'use crate::fs_reader::Entry;'
+  highlighter_line="$PLANT_LINE"
+  plant "$R" "nozoki-core/src/highlighter/zz.rs" '// one
+use crate::fs_reader::A;
+// 3
+// 4
+// 5
+// 6
+// 7
+// 8
+// 9
+use crate::fs_reader::B;'
+  second_line=$((PLANT_LINE + 1))
+  tenth_line=$((PLANT_LINE + 9))
+  run_structure "$R"
+  expect_status 1 || return 1
+  for hit_line in "$walker_line" $hit_lines; do
+    expect_finding "crates/$BRIDGE_MANIFEST" "$hit_line" QC-14 || return 1
+  done
+  expect_finding "crates/$CORE_MANIFEST" "$target_line" QC-14 || return 1
+  expect_finding "crates/$CORE_MANIFEST" "$absolute_line" QC-14 || return 1
+  expect_finding "crates/$HL_FILE" "$highlighter_line" QC-11 || return 1
+  expect_before "crates/$BRIDGE_MANIFEST:$walker_line: " "crates/$CORE_MANIFEST:$target_line: " || return 1
+  expect_before "crates/$CORE_MANIFEST:$absolute_line: " "crates/$HL_FILE:$highlighter_line: " || return 1
+  expect_before "crates/nozoki-core/src/highlighter/zz.rs:$second_line: " "crates/nozoki-core/src/highlighter/zz.rs:$tenth_line: " || return 1
+}
+
+# CP-430 row 11. The library target, as it ships, may not live under checks/.
+test_manifest_lib_path_under_checks() {
+  new_root lib-path || return 1
+  plant "$R" "$CORE_MANIFEST" '[lib]
+path = "../../checks/lib.rs"'
+  path_line=$((PLANT_LINE + 1))
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_finding "crates/$CORE_MANIFEST" "$path_line" QC-14 || return 1
+  new_root lib-path-quoted || return 1
+  plant "$R" "$CORE_MANIFEST" "[lib]
+\"path\" = '../../checks/lib.rs'"
+  quoted_line=$((PLANT_LINE + 1))
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_finding "crates/$CORE_MANIFEST" "$quoted_line" QC-14 || return 1
+  new_root lib-path-string || return 1
+  plant "$R" "$CORE_MANIFEST" '[lib]
+description = """
+path = "../../checks/fake.rs"
+"""
+path = "../../checks/lib.rs"'
+  real_line=$((PLANT_LINE + 4))
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_finding "crates/$CORE_MANIFEST" "$real_line" QC-14 || return 1
+  [ "$(stderr_lines_with ': QC-14: ')" -eq 1 ] || fail "a multi-line string manufactured an assignment: $STDERR" || return 1
+  new_root lib-path-clean || return 1
+  plant "$R" "$CORE_MANIFEST" '[lib]
+name = "x"
+path = "../../src/lib.rs"'
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+}
+
+# CP-430 row 12.
+test_set_logger_outside_the_bridge_is_rejected() {
+  new_root set-logger || return 1
+  hit_lines=""
+  plant "$R" "$CORE_FILE" 'fn i() { log::set_logger(&WRITER); }'
+  hit_lines="$hit_lines $CORE_FILE:$PLANT_LINE"
+  plant "$R" "$LANG_FILE" 'use log::set_logger as install;'
+  hit_lines="$hit_lines $LANG_FILE:$PLANT_LINE"
+  plant "$R" "$CORE_FILE" 'fn j() { ::log :: set_logger(&W); }'
+  hit_lines="$hit_lines $CORE_FILE:$PLANT_LINE"
+  plant "$R" "nozoki-core/examples/x.rs" 'log::set_logger(&W);'
+  hit_lines="$hit_lines nozoki-core/examples/x.rs:$PLANT_LINE"
+  plant "$R" "$CORE_FILE" 'use log::{info, set_logger};'
+  hit_lines="$hit_lines $CORE_FILE:$PLANT_LINE"
+  plant "$R" "$CORE_FILE" 'use log::{
+    warn,
+    set_logger,
+};'
+  hit_lines="$hit_lines $CORE_FILE:$((PLANT_LINE + 2))"
+  plant "$R" "nozoki-bridge/src_old/y.rs" 'fn y() { log::set_logger(&W); }'
+  hit_lines="$hit_lines nozoki-bridge/src_old/y.rs:$PLANT_LINE"
+  plant "$R" "$CORE_FILE" 'fn k() { log::set_logger_racy(&W); mylog::set_logger(&W); ulog :: set_logger(&W); }'
+  near_line="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  for hit in $hit_lines; do
+    expect_count "crates/${hit%:*}" "${hit##*:}" QC-17 1 || return 1
+    expect_count "crates/${hit%:*}" "${hit##*:}" QC-61 1 || return 1
+  done
+  expect_count "crates/$CORE_FILE" "$near_line" QC-17 0 || return 1
+  expect_count "crates/$CORE_FILE" "$near_line" QC-61 0 || return 1
+}
+
+# CP-430 row 13.
+test_set_boxed_logger_outside_the_bridge_is_rejected() {
+  new_root set-boxed-logger || return 1
+  hit_lines=""
+  plant "$R" "$FS_FILE" 'fn b() { log::set_boxed_logger(Box::new(W)); }'
+  hit_lines="$hit_lines $FS_FILE:$PLANT_LINE"
+  plant "$R" "$HL_FILE" '// log::set_boxed_logger'
+  hit_lines="$hit_lines $HL_FILE:$PLANT_LINE"
+  plant "$R" "$HL_FILE" 'const S: &str = "log::set_boxed_logger";'
+  hit_lines="$hit_lines $HL_FILE:$PLANT_LINE"
+  plant "$R" "nozoki-bridge/examples/x.rs" 'log::set_boxed_logger(Box::new(W));'
+  hit_lines="$hit_lines nozoki-bridge/examples/x.rs:$PLANT_LINE"
+  plant "$R" "$FS_FILE" 'use log::set_boxed_logger as boxed;'
+  hit_lines="$hit_lines $FS_FILE:$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  for hit in $hit_lines; do
+    expect_count "crates/${hit%:*}" "${hit##*:}" QC-17 1 || return 1
+    expect_count "crates/${hit%:*}" "${hit##*:}" QC-61 1 || return 1
+  done
+  new_root set-boxed-logger-clean || return 1
+  plant "$R" "nozoki-bridge/src/inner/deep.rs" 'fn i() { log::set_boxed_logger(Box::new(W)); }
+use log::set_logger as install;'
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+}
+
+# CP-430 row 14. Each required input, absent or unreadable, is named once, and every other file is
+# still read before the verdict.
+test_required_inputs_are_read() {
+  missing_index=0
+  for required in checks/deps.allow crates/nozoki-core/Cargo.toml crates/nozoki-bridge/Cargo.toml; do
+    missing_index=$((missing_index + 1))
+    new_root "required-missing-$missing_index" || return 1
+    remove_input "$required"
+    run_structure "$R"
+    expect_status 1 || return 1
+    expect_stderr_contains "$required" || return 1
+    [ "$(stderr_lines_with "$required")" -eq 1 ] || fail "expected $required named once: $STDERR" || return 1
+  done
+  new_root required-unreadable || return 1
+  chmod 000 "$R/checks/deps.allow"
+  if [ -r "$R/checks/deps.allow" ]; then
+    chmod 644 "$R/checks/deps.allow"
+    fail "this account can read a mode-000 file, so the case cannot make a file unreadable" || return 1
+  fi
+  plant "$R" "$CORE_FILE" 'fn u() { unsafe {} }'
+  unsafe_line="$PLANT_LINE"
+  run_structure "$R"
+  chmod 644 "$R/checks/deps.allow"
+  expect_status 1 || return 1
+  expect_stderr_contains "checks/deps.allow" || return 1
+  expect_finding "crates/$CORE_FILE" "$unsafe_line" QC-9 || return 1
+  new_root required-unreadable-manifest || return 1
+  chmod 000 "$R/crates/$BRIDGE_MANIFEST"
+  if [ -r "$R/crates/$BRIDGE_MANIFEST" ]; then
+    chmod 644 "$R/crates/$BRIDGE_MANIFEST"
+    fail "this account can read a mode-000 file, so the case cannot make a file unreadable" || return 1
+  fi
+  run_structure "$R"
+  chmod 644 "$R/crates/$BRIDGE_MANIFEST"
+  expect_status 1 || return 1
+  [ "$(stderr_lines_with "crates/$BRIDGE_MANIFEST")" -eq 1 ] || fail "expected the manifest named once: $STDERR" || return 1
+  new_root required-all-missing || return 1
+  for required in checks/deps.allow "crates/$CORE_MANIFEST" "crates/$BRIDGE_MANIFEST"; do
+    remove_input "$required"
+  done
+  plant "$R" "$CORE_FILE" 'fn u() { unsafe {} }'
+  unsafe_line="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_finding "crates/$CORE_FILE" "$unsafe_line" QC-9 || return 1
+  for required in checks/deps.allow "crates/$CORE_MANIFEST" "crates/$BRIDGE_MANIFEST"; do
+    [ "$(stderr_lines_with "$required")" -eq 1 ] || fail "expected $required named once: $STDERR" || return 1
+  done
+}
+
+# CP-430 row 15 (clean).
+test_allowed_unit_edges_pass() {
+  new_root allowed-edges || return 1
+  plant "$R" "$CORE_FILE" 'use crate::{fs_reader::Entry, highlighter::Span};'
+  plant "$R" "$CORE_FILE" 'use crate::watcher::Event;'
+  plant "$R" "$CORE_FILE" 'use crate::markdown_renderer::render;'
+  plant "$R" "$CORE_FILE" 'use self::fs_reader::Entry;'
+  plant "$R" "$CORE_FILE" 'use crate::fs_reader; use crate::highlighter;'
+  plant "$R" "$FS_FILE" 'use crate::language::Language;'
+  plant "$R" "$HL_FILE" 'use crate::language::Language;'
+  plant "$R" "$HL_FILE" '//! see nozoki_core::Entry and nozoki_core::folder_model::FileView'
+  plant "$R" "$HL_FILE" 'fn near() { let fs_reader = 1; let _ = fs_reader; self::watcher::x(); }'
+  plant "$R" "$LANG_FILE" 'use crate::folder_model::OpenFailure;'
+  plant "$R" "nozoki-core/src/error.rs" 'use crate::highlighter::Span; use crate::fs_reader::Entry;'
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+}
+
+# CP-430 row 17 (clean).
+test_test_targets_into_checks_pass() {
+  new_root test-targets || return 1
+  plant "$R" "$CORE_MANIFEST" "[dev-dependencies]
+checks = { path = \"../../checks\" }
+[build-dependencies]
+harness = { path = \"../../checks\" }
+[target.'cfg(unix)'.dev-dependencies]
+walker = { path = \"../../checks/walker\" }
+[target.'cfg(unix)'.build-dependencies]
+builder = { path = \"../../checks/builder\" }
+[[test]]
+name = \"probe\"
+path = \"../../checks/probe.rs\"
+[[bench]]
+name = \"b\"
+path = \"../../checks/b.rs\"
+[[example]]
+name = \"e\"
+path = \"../../checks/e.rs\"
+[[bin]]
+name = \"n\"
+path = \"../../checks/n.rs\"
+# a comment naming ../../checks/walk.rs"
+  plant "$R" "$BRIDGE_MANIFEST" 'near = { path = "../../checksum" }
+round = { path = "../../checks/../crates/nozoki-core" }
+decoy = { version = "1", features = ["path = \"../../checks\"", "../../checks/x"] }
+text = "checks"'
   run_structure "$R"
   expect_status 0 || return 1
   expect_stderr_empty || return 1
