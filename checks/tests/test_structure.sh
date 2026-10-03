@@ -1278,10 +1278,12 @@ test_fs_reader_imports_folder_model_is_rejected() {
   expect_status 1 || return 1
   for hit_line in "$direct_line" "$super_line" "$nested_line"; do
     expect_count "crates/$FS_FILE" "$hit_line" QC-11 1 || return 1
-    expect_finding_naming "crates/$FS_FILE" "$hit_line" QC-11 "folder_model" || return 1
+    printf '%s\n' "$STDERR" | grep -Fx "crates/$FS_FILE:$hit_line: QC-11: fs_reader imports folder_model" > /dev/null ||
+      fail "expected the complete QC-11 finding at crates/$FS_FILE:$hit_line. stderr: $STDERR" || return 1
   done
   expect_count "crates/nozoki-core/src/fs_reader/extra.rs" "$extra_line" QC-11 1 || return 1
-  expect_finding_naming "crates/nozoki-core/src/fs_reader/extra.rs" "$extra_line" QC-11 "folder_model" || return 1
+  printf '%s\n' "$STDERR" | grep -Fx "crates/nozoki-core/src/fs_reader/extra.rs:$extra_line: QC-11: fs_reader imports folder_model" > /dev/null ||
+    fail "expected the complete QC-11 finding in fs_reader/extra.rs. stderr: $STDERR" || return 1
   expect_count "crates/$FS_FILE" "$reader_name_line" QC-11 0 || return 1
   expect_count "crates/$CORE_FILE" "$model_line" QC-10 0 || return 1
 }
