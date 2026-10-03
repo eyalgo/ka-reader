@@ -200,8 +200,11 @@ fn test_symbolic_git_entry_leaves_the_scene_unchanged() {
 #[test]
 fn test_invalid_git_config_reports_observed_failure() {
     let (scene, repository) = repository_scene();
-    fs::write(repository.join(".git/config"), "[core\n\tbare = = nonsense\n")
-        .expect("the config can be written");
+    fs::write(
+        repository.join(".git/config"),
+        "[core\n\tbare = = nonsense\n",
+    )
+    .expect("the config can be written");
 
     assert_eq!(
         probe_leaving_the_scene_unchanged(&scene, &repository),

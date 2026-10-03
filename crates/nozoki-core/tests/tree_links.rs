@@ -3,6 +3,10 @@
 //! conditions when it cannot be resolved (CP-171 – CP-177). A link whose target runs through a file
 //! is Missing, and a path the caller spells through a file stays NotAFolder (CP-193, CP-194).
 
+#[allow(
+    dead_code,
+    reason = "each test crate uses a subset of the shared helpers"
+)]
 mod common;
 
 use common::TempDir;

@@ -1,5 +1,9 @@
 //! Layer 2: the SM-5 API (`open_folder`, `list_tree`) over temporary folders.
 
+#[allow(
+    dead_code,
+    reason = "each test crate uses a subset of the shared helpers"
+)]
 mod common;
 
 use std::os::unix::net::UnixListener;
