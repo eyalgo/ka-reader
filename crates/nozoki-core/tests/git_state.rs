@@ -908,7 +908,11 @@ fn test_outside_failure_keeps_tree_and_folder_untouched() {
     assert!(text.contains(outside.to_str().expect("the path is UTF-8")));
     assert_eq!(
         text.matches('/').count(),
-        outside.to_str().expect("the path is UTF-8").matches('/').count(),
+        outside
+            .to_str()
+            .expect("the path is UTF-8")
+            .matches('/')
+            .count(),
         "no other path appears in {text}"
     );
     assert_eq!(folded.tree(), &tree_before);
