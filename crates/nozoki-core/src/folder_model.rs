@@ -282,7 +282,7 @@ pub fn read_git(model: FolderModel, port: &dyn GitPort) -> FolderModel {
     };
     if let ItemState::Failed(condition) = &kind {
         let (operation, phrase) = condition.log_text();
-        log::warn!("git-reader: {operation} failed: {phrase}");
+        log::warn!("git-reader: {operation} failed: {phrase}; the folder stays open without it");
     }
     FolderModel { kind, ..model }
 }
