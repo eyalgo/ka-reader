@@ -77,7 +77,29 @@ None.
   bound", the record states what the script already does, and the route around the graph stays
   open, with no name for it. Either way the next fold rewrites or withdraws QC-63, its § 10 row and
   the lead's pointer; QC-63 is new at v29, so no record and no other entry traces to it yet.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm, with one addition. This was decided in the owner's seat by a
+  `companion-self-answer` run, not by the owner. QC-63 stands as v29 drafted it, and it is true of
+  the tree at `nozoki@a3caabd`, whose `crates/` and `checks/` are `nozoki@803b599`'s:
+  `language.rs:L30-L39` is one enum and `error.rs:L4-L9` a variantless enum that only `lib.rs:L9`
+  re-exports, and their only crate-relative lines, `language.rs:L43` and `error.rs:L26`, sit in test
+  modules and name their own type. **The addition.** "Holds types and values only" has no check, and
+  by this document's preamble an obligation with no nameable verification is not yet an entry. The
+  scan cannot reach it. SDD § 3 gives the extension map that names a language to `fs-reader`
+  (`docs/SDD.md:L322`) and denies it to `highlighter` ("Naming the language", `:L327`). Moved into
+  `language.rs` as a `Language` method, that map imports no part and does no I/O, so it passes the
+  new rule and QC-15 while taking owned behaviour out of its part. QC-63's *verified by* names review
+  at `development-design` for that half, in QC-13's form for its delegation half — what counts as
+  logic is not greppable — and the review asks whether the module holds anything a part's *Owns*
+  cell in SDD § 3 names. § 10's closing list of review gates names "QC-63 (the types-and-values
+  half)" beside "QC-13 (the delegation half)". **One reason corrected, and nothing in the entry moves
+  for it.** The rationale says both readings of the tree are open, and RN-40 says an SDD reader could
+  derive it another way. At this document's altitude they are not open. `Language` crosses SM-1
+  upward, "the floor language named" (`docs/SDD.md:L415`), so cycle 26's reading keeps it out of
+  `folder-model`. `fs-reader` names it and `highlighter` consumes it, and the units paragraph states
+  exactly two edges among the readers (`:L347-L349`). So placing it in any part needs an edge the SDD
+  does not state, which would be the CTO's change and not this document's. And SDD § 3 leaves the
+  physical layout to the developer (`:L433`). QC-63's trace cites `:L433` and SM-1 as that ground.
+  Reasoning: `docs/trail/architecture/self_answer-31.md` § 2.1.
 
 ## 3. Raised from downstream — an item from a seat that did not write these records
 
