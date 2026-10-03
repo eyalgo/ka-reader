@@ -559,7 +559,7 @@ END {
 }
 AWK
 
-# --- the re-export program: which items crates/nozoki-core/src/lib.rs re-exports from which unit ---
+# --- the re-export program: which items nozoki-core's lib.rs re-exports from which unit ---
 
 cat > "$work/reexport.awk" <<'AWK'
 # Prints ` <item>:<module>` for every item a `pub use <module>::…;` of lib.rs puts at the crate
