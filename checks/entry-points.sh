@@ -159,25 +159,31 @@ status=0
 (cd "$root" && cargo metadata --format-version 1 --locked --filter-platform aarch64-apple-darwin) \
   > "$work/metadata.json" 2> "$work/metadata.err" || status=$?
 [ "$status" -eq 0 ] || unresolved "cargo metadata exited $status: $(head -n 1 "$work/metadata.err")"
-plutil -p "$work/metadata.json" > "$work/metadata.txt" 2> "$work/plutil.err" \
+plutil -convert json -o "$work/metadata.checked.json" "$work/metadata.json" 2> "$work/plutil.err" \
   || unresolved "plutil could not read the metadata: $(head -n 1 "$work/plutil.err")"
-[ "$(head -n 1 "$work/metadata.txt")" = "{" ] || unresolved "the metadata is not a JSON object"
+[ "$(head -c 1 "$work/metadata.checked.json")" = "{" ] || unresolved "the metadata is not a JSON object"
 
-# plutil prints the object with its keys sorted, one per line, indented by depth: a package's own
-# keys sit at six spaces, a workspace member at four.
-awk -v tab="$TAB" -v packages="$work/packages.tsv" -v members="$work/members.txt" '
-  function unquote(text) { sub(/^[^=]*=> "/, "", text); sub(/"$/, "", text); return text }
-  function flush() { if (name != "") print name tab version tab id tab manifest >> packages; name = ""; version = ""; id = ""; manifest = "" }
-  BEGIN { printf "" > packages; printf "" > members }
-  /^  "[a-z_]+" => / { flush(); section = $0; sub(/^  "/, "", section); sub(/".*/, "", section); next }
-  section == "packages" && /^    [0-9]+ => \{$/ { flush(); next }
-  section == "packages" && /^      "name" => "/ { name = unquote($0) }
-  section == "packages" && /^      "version" => "/ { version = unquote($0) }
-  section == "packages" && /^      "id" => "/ { id = unquote($0) }
-  section == "packages" && /^      "manifest_path" => "/ { manifest = unquote($0) }
-  section == "workspace_members" && /^    [0-9]+ => "/ { print unquote($0) >> members }
-  END { flush() }
-' "$work/metadata.txt"
+# plutil -help calls -p "not for machine parsing": a multiline metadata string can impersonate
+# a field in that display. Typed key-path reads keep CP-400 membership tied to the actual id.
+metadata_value() {
+  plutil -extract "$1" raw -expect "$2" "$work/metadata.checked.json" 2> "$work/plutil.err" \
+    || unresolved "cannot read metadata $1 as $2: $(head -n 1 "$work/plutil.err")"
+}
+
+package_count="$(metadata_value packages array)"
+member_count="$(metadata_value workspace_members array)"
+: > "$work/packages.tsv"
+: > "$work/members.txt"
+for ((index = 0; index < package_count; index++)); do
+  name="$(metadata_value "packages.$index.name" string)"
+  version="$(metadata_value "packages.$index.version" string)"
+  id="$(metadata_value "packages.$index.id" string)"
+  manifest="$(metadata_value "packages.$index.manifest_path" string)"
+  printf '%s\t%s\t%s\t%s\n' "$name" "$version" "$id" "$manifest" >> "$work/packages.tsv"
+done
+for ((index = 0; index < member_count; index++)); do
+  metadata_value "workspace_members.$index" string >> "$work/members.txt"
+done
 
 # Each set member to its package: M a workspace member, S a package to scan, X one that joins to
 # none or to several. Membership is decided on the package id, before any directory is opened.
@@ -223,7 +229,7 @@ scan_crate() {
   manifest="$2"
   dir="$(dirname "$manifest")"
 
-  if ! find "$dir" -type f -print0 > "$work/files.nul" 2> "$work/find.err"; then
+  if ! find "$dir" ! -type d -print0 > "$work/files.nul" 2> "$work/find.err"; then
     report_unreadable "$crate" "cannot open its package directory $dir"
     return 0
   fi
@@ -246,7 +252,9 @@ scan_crate() {
   # A file that cannot be opened is a finding. The excepted build script is not opened at all.
   while IFS= read -r -d '' file; do
     [ "$file" != "$excepted" ] || continue
-    if { : < "$file"; } 2> /dev/null; then
+    # CP-401 includes links. CP-407(c) refuses dangling links and non-file streams; opening a
+    # FIFO to discover that it is not readable would wait indefinitely for a writer.
+    if [ -f "$file" ] && { : < "$file"; } 2> /dev/null; then
       printf '%s\0' "$file"
     else
       report_unreadable "$crate" "cannot read ${file#"$dir"/}"
