@@ -73,16 +73,19 @@
 #                         across lines and nested, the finding at the member's own line. In
 #                         nozoki-core the same occurrence is also a QC-9 finding, on the same
 #                         line. Source: QC-36's Rust half, QC-9's process clause.
-#     QC-15  filesystem   In every crate except in the two owner files,
-#                         crates/nozoki-core/src/fs_reader.rs and
-#                         crates/nozoki-bridge/src/log_writer.rs (matched by the exact path,
-#                         so the same basename anywhere else is not exempt, and the exemption
-#                         is for this clause only). The module `fs` in a path rooted at `std`
+#     QC-15  filesystem   In every crate except in the three owner files,
+#                         crates/nozoki-core/src/fs_reader.rs,
+#                         crates/nozoki-bridge/src/log_writer.rs and
+#                         crates/nozoki-core/src/git_reader/libgit2.rs, the git-reader
+#                         adapter, which reads a `.git` regular file's own bytes (matched by
+#                         the exact path, so the same basename anywhere else, and the rest of
+#                         git-reader, is not exempt, and the exemption is for this clause
+#                         only). The module `fs` in a path rooted at `std`
 #                         or `rustix`, so `std::fs`, `std::os::<platform>::fs` and
 #                         `rustix::fs`, whitespace or newlines around `::` changing nothing;
 #                         and a segment or member `fs` in a `use` tree rooted at `std`,
 #                         `::std` or `rustix`, read across lines and nested, the finding at
-#                         the member's own line. A crate other than those two owns no
+#                         the member's own line. A crate other than those three owns no
 #                         filesystem primitive. `include_str!` and `include_bytes!` are
 #                         compile-time inclusions and are not in the domain. The domain is
 #                         widened to the C binding's flat file calls, because libc is on
@@ -244,8 +247,12 @@
 #   for checks/structure.sh is NOT held here, and the NFDR's header sentence that each script's
 #   rules become executable with the script is read as: a rule is executable from the change
 #   that adds it here. Until then its gate is the design review. Not held: QC-7; QC-12;
-#   QC-15's other owners; QC-20. And these parts of rules the table above holds in part:
+#   QC-20. And these parts of rules the table above holds in part:
 #     - QC-10's `git-reader`-adapter clause.
+#     - QC-15's filesystem owners, in two parts: which read the adapter makes inside its owner
+#       file (every filesystem form there is admitted), and `git-reader`'s `Path`-method reads
+#       (`Path::metadata`, `symlink_metadata`, which name no `fs` module). Review at
+#       development-design holds both.
 #     - QC-11's clauses whose subject is `git-reader`, `watcher` or `markdown-renderer`, and its
 #       "only `git-reader` imports the libgit2 binding" outside the three units' files.
 #     - QC-17's adapter-constructor clause.
@@ -1150,7 +1157,7 @@ else
     [ "$crate_name" = "nozoki-core" ] && is_core=1
     [ "$crate_name" = "nozoki-bridge" ] && is_bridge=1
     case "$relative" in
-      crates/nozoki-core/src/fs_reader.rs | crates/nozoki-bridge/src/log_writer.rs) exempt=1 ;;
+      crates/nozoki-core/src/fs_reader.rs | crates/nozoki-bridge/src/log_writer.rs | crates/nozoki-core/src/git_reader/libgit2.rs) exempt=1 ;;
     esac
     case "$relative" in
       crates/nozoki-bridge/src/*) in_bridge_src=1 ;;
