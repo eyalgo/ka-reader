@@ -1,6 +1,6 @@
 # ADR-0005: The root finding lives behind the Git port, and a plain folder is a model with no Git state
 
-**Status:** Accepted
+**Status:** Superseded by ADR-0018
 **Date:** 2026-09-01
 
 ## Context

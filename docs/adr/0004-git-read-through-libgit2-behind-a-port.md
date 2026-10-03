@@ -1,6 +1,6 @@
 # ADR-0004: Git state is read through libgit2 behind a port; the installed git is the standing substitute and is not built until it is needed
 
-**Status:** Accepted
+**Status:** Superseded by ADR-0019
 **Date:** 2026-09-01
 
 ## Context
