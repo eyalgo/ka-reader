@@ -8,9 +8,9 @@ mod language;
 
 pub use error::Error;
 pub use folder_model::{
-    FileView, OpenFailure, OpenFolderOutcome, OpenedFolder, list_tree, open_folder, select_file,
+    FileView, OpenFolderOutcome, OpenedFolder, list_tree, open_folder, select_file,
 };
-pub use fs_reader::{CannotDisplayReason, Condition, Entry, EntryKind, ItemState};
+pub use fs_reader::{CannotDisplayReason, Condition, Entry, EntryKind, ItemState, OpenFailure};
 pub use highlighter::{Span, TokenClass, highlight};
 pub use language::Language;
 
