@@ -1,8 +1,9 @@
 # NFDR — Nozoki 覗き
 
-**Status:** Settled
+**Status:** Draft
 **Owner:** Principal Architect
-**Version:** 35 — the close: the cycle-32 fold (`docs/trail/architecture/cycle-32.md` § 2.1; reasoning at `docs/trail/architecture/self_answer-36.md` § 2.1), confirmed with one addition. QC-5's *verified by* keeps its v34 draft, its three named cases written and passing at `nozoki@48308ff`. It now also says what the missing-directory case does not reach: a `probe` that tries the pointer, swallows the failed open and still answers `Root`. That half of the read bound goes to QC-15's review at `development-design`. No record moves, no `QC` is added, renumbered or reused, and § 10 does not move. Nothing is left for the owner, so the companion is removed and `Status:` is Settled (RN-46).
+**Version:** 36 — QC-47's *verified by* follows SDD v29's § 4 C-I1 and S-5's command half: an unreadable entry yields `failed` on that item and the failure changes no other item, each sibling holding the state its own read gave it, in place of "`observed` on its siblings". The tail now also says it does not hold what a failed re-read of an expanded folder does to the entries under it, which the SDD leaves open. Companion § 2.1, which drafted the same change and waited on the SDD, closes on that upstream sentence. § 3.1, QC-15's list of `git-reader`'s reads outside libgit2, stays for the owner, so the companion remains and `Status:` is Draft. No record moves, no `QC` is added, renumbered or reused, and § 10 does not move (RN-47).
+Version 35 — 35 — the close: the cycle-32 fold (`docs/trail/architecture/cycle-32.md` § 2.1; reasoning at `docs/trail/architecture/self_answer-36.md` § 2.1), confirmed with one addition. QC-5's *verified by* keeps its v34 draft, its three named cases written and passing at `nozoki@48308ff`. It now also says what the missing-directory case does not reach: a `probe` that tries the pointer, swallows the failed open and still answers `Root`. That half of the read bound goes to QC-15's review at `development-design`. No record moves, no `QC` is added, renumbered or reused, and § 10 does not move. Nothing is left for the owner, so the companion is removed and `Status:` is Settled (RN-46).
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · PRD Settled · UXD Settled · DESIGN Settled · CONTENT Settled
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
@@ -1007,8 +1008,14 @@ binds the *process*, and asserts no number of its own.
 - **QC-47:** A failure to read one file, one tree entry or one part of Git state degrades only
   that item, and the next successful read of the same item replaces it without ceremony.
   — *verified by:* `cargo test --locked -p nozoki-core --test watch` — an unreadable fixture entry yields
-  `failed` on that item and `observed` on its siblings (layer 2); `swift test --package-path
-  nozoki-mac` (layer 4): the failure slot renders and the rest of the surface stands *(traces to: SRS NFR-3; SDD § 4 C-I1, C-E3;
+  `failed` on that item and the failure changes no other item: each sibling holds the state its
+  own read gave it, `observed`, `pending`, `failed` or `stopped` (layer 2); `swift test --package-path
+  nozoki-mac` (layer 4): the failure slot renders and the rest of the surface stands. What a failed
+  re-read of a folder already expanded does to the entries listed under it is not held here: those
+  entries are not the folder's siblings, and SDD § 4 C-I1 leaves the form to S-5's design (SDD
+  *Open Questions*, the failed-re-read item), so this entry gains a clause when C-I1 states it
+  *(traces to: SRS NFR-3; SDD § 4 C-I1, C-E3; § 6 S-5 *Reached when*, command half — the sibling
+  clause as both read at SDD v29, RN-89, in place of "`observed` on its siblings" — RN-47;
   FDR R-83, R-85)*
 - **QC-48:** Under scripted concurrent change — create, modify and delete including the displayed
   file, with Git operations mid-flight, and `git init` at a plain root then its removal — the host
@@ -4100,3 +4107,52 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   does not move. Nothing is left for the owner, so the companion is removed and `Status:` is Settled
   *(re: header `Status:`, `Version:`; QC-5; source: `docs/trail/architecture/cycle-32.md` § 2.1;
   `docs/trail/architecture/self_answer-36.md` § 2.1; `crates/` at `nozoki@899be3d`)*
+- **RN-47:** *(v36 — a re-derivation on a new upstream sentence; nothing folded from the owner)*
+  **Intake.** The companion on disk held two items, and neither answer slot was filled: § 2.1
+  (QC-47's sibling wording, appended at `nozoki@f0789a6` by a `companion-self-answer` run in the
+  CTO's seat) and § 3.1 (QC-15's list, raised by the PM at `nozoki@df55117`). No `product-architecture`
+  run wrote either. With no slot filled, nothing is consumed and no trail cycle is written. **What
+  moved beneath this document.** `git log 4a91621..HEAD -- docs/SRS.md docs/SDD.md docs/fdr.md
+  docs/PRD.md docs/UXD.md docs/DESIGN.md docs/CONTENT.md` names five commits: the SDD's cycle-23 and
+  cycle-24 folds (v28, v29) with their answer commits, and CONTENT v10. **SDD v29 → QC-47.** § 4 C-I1
+  now says a failed read "changes no other item", and that each sibling "holds the state its own read
+  gave it: `observed`, `pending`, `failed` or `stopped`" (`docs/SDD.md:L686-L690`). S-5's command half
+  says the same (`:L1799-L1801`). QC-47's *verified by* repeated the old wording, "`observed` on its
+  siblings", which a folder holding a folder cannot meet: a folder entry not yet read is `Pending`
+  (`crates/nozoki-core/src/fs_reader.rs:L853` at `nozoki@77c91fc`). QC-47 traces to C-I1, so the
+  tail is re-derived from the sentence as it now reads. This is a new upstream sentence, which is a
+  fresh authorization for a settled entry (`principal_architect_create_architecture.md` § *Two
+  lifecycles*). QC-47's statement, "degrades only that item", does not move, and neither does NFR-3,
+  "degrades only that item's view" (`docs/SRS.md:L297-L298`). S-5's command half joins the trace,
+  because the *verified by* names its test. **What this run adds beyond the sentence:** one clause.
+  C-I1 says what a failed re-read of an already expanded folder does to the entries listed under it
+  is not decided there, and the SDD's *Open Questions* carry it to S-5's design (`:L5456-L5463`).
+  QC-47 now says it does not hold that case, so that a delivery reader does not take "changes no
+  other item" to settle it. The entry decides nothing about it. **Companion § 2.1 closes, unanswered.**
+  It asked the owner to confirm the same change, and it waited on `product-sdd`'s fold. Its "If
+  overridden" branch kept the old wording knowing it would then differ from C-I1. With the SDD
+  folded, two architects reading C-I1 at v29 derive the same tail, so what is left is a derivation
+  and not a choice (`principal_architect_create_architecture.md` § *When upstream is silent*, the
+  test between cases 2 and 3). The item is dropped. Its text is the companion at `nozoki@f0789a6`,
+  and its reasoning is `docs/trail/sdd/self_answer-36.md` § 2.1. No owner's words were in it, so no
+  trail cycle keeps it. **The rest of SDD v28 and v29, weighed and left as written.** SM-2 now places
+  every type that `probe`, `state` and `status` answer in `git-reader`, and `GitState` is a type
+  `folder-model` builds and the port never returns (`docs/SDD.md:L422`, `:L481-L486`). QC-10's
+  may-import set and QC-11's SM-2 reading, both traced to SM-2 at v26, still read true, because
+  `GitState` does not cross the seam. `see-git-status`'s command half now gives a different reason
+  for the reducer double, and says where the adapter's refusal by spelling is exercised
+  (`:L1729-L1739`). That half adds no command, and no entry here quotes the reason it replaces
+  (`grep` over this file for "reads fine there", "no sandbox grant" and "every tree item" prints
+  nothing). CONTENT v10's seventh short-status sentence is cited by no entry. Every input's
+  `Status:` line was re-read and is Settled, so `Inputs read:` stands. **Left for the owner:**
+  companion § 3.1. QC-15's bounded list was set on the owner's seat's answer
+  (`docs/trail/architecture/cycle-29.md` § 3.3 — RN-43), and the SDD sentence that names the
+  adapter locating "the Git directory and the common directory by spelling" (`docs/SDD.md:L1737`)
+  states what the adapter does, not a read bound. Widening the list, or narrowing the reads, is a
+  call on the read-only promise's bound, and no answer authorizes either yet. The PM's code
+  citations were not re-measured by this run. **Not run.** No test: QC-47's command needs
+  `--test watch`, which does not exist at `nozoki@77c91fc` (`ls crates/nozoki-core/tests/`). No `QC`
+  is added, renumbered or reused, no record is written or restatused, the index and § 10 do not
+  move. A companion stays on disk, so `Status:` moves from Settled to Draft *(re: header `Status:`,
+  `Version:`; QC-47; source: `docs/SDD.md` v29 § 4 C-I1, § 6 S-5, RN-89; `docs/trail/sdd/cycle-24.md`
+  § 2.1; `docs/architecture_open_issues.md` § 2.1 at `nozoki@f0789a6`)*

@@ -16,11 +16,10 @@
 > them find gaps the authoring run could not. § 3 is where such a seat says so, against both records
 > — an ADR's binding and an NFDR obligation reach the same file.
 
-> **No `product-architecture` run wrote this file.** The PM opened it on 2026-10-04 from the records'
-> own companion template. `git-reader`'s adapter now reads a root's Git state (`state` and `status`,
-> `nozoki@6a0725c`). Before libgit2 opens anything, it reads two kinds of file outside libgit2 that
-> QC-15's list of permitted reads does not name. The records are Settled, and with no companion on disk
-> a `product-architecture` re-run reads them as done and has nothing to act on. Its one item is in § 3.
+> **What this file holds now.** The PM opened it on 2026-10-04 with § 3.1. A `companion-self-answer`
+> run appended § 2.1 the same day. The `product-architecture` run that wrote NFDR v36 closed § 2.1
+> unanswered: SDD v29 now states the change it drafted, so QC-47 was re-derived from the SDD and no
+> choice was left (`nfdr.md` RN-47). § 3.1 is carried below exactly as the PM raised it.
 
 ---
 
@@ -30,35 +29,7 @@ None.
 
 ## 2. Choices to confirm — the Principal Architect drafted a best-effort answer; confirm or override
 
-### 2.1 QC-47's *verified by* says an unreadable entry leaves "`observed` on its siblings"; a sibling not yet read is `pending`
-
-> **No `product-architecture` run raised this item.** A `companion-self-answer` run answering
-> `docs/SDD_open_issues.md` § 2.1 in the CTO's seat appended it on 2026-10-04, under
-> `<CORE>/prompts/decide_companion_answers.md` § *The items are not the whole of what a document is
-> owed*. That run confirmed the same correction in the SDD's § 4 C-I1 and in `follow-the-folder`'s
-> command half, which QC-47 repeats; the SDD takes it on `product-sdd`'s next fold. The draft below
-> is that run's and nothing has been written into `nfdr.md`. Reasoning:
-> `docs/trail/sdd/self_answer-36.md` § 2.1 and § *Companions opened*.
-
-- **Lands in:** `nfdr.md` QC-47
-- **Drafted into the records:** Nothing has been written into the records. As it stands, QC-47's
-  *verified by* reads "an unreadable fixture entry yields `failed` on that item and `observed` on its
-  siblings (layer 2)" (`docs/nfdr.md:L1009-L1010`). The draft change: the unreadable entry yields
-  `failed` on that item and the failure changes no other item — each sibling holds the state its own
-  read gave it. QC-47's statement, "degrades only that item", stays as written.
-- **Rationale:** The wording cannot be met by a folder that holds a folder. `list_tree` reports a
-  folder it has not expanded as `Pending` (`crates/nozoki-core/src/fs_reader.rs:L853`, at
-  `nozoki@bc76311`), so an unreadable entry beside an unexpanded folder has a sibling that is not
-  `observed`. The SDD says the same in its own § 3: `pending` is "a folder entry not yet read"
-  (`docs/SDD.md:L456-L457`). QC-47's statement already says what the draft says, and so does the
-  requirement it traces to, "degrades only that item's view" (`docs/SRS.md:L297-L298`). Only the
-  *verified by* clause, which a change reads literally, carries the defect. `--test watch` is not
-  built yet, so nothing fails today. The doubt: "`observed` on its siblings" may be read as shorthand
-  for "its siblings are untouched", and then nothing is false.
-- **If overridden:** QC-47 keeps its wording. Once `product-sdd` folds `docs/SDD_open_issues.md`
-  § 2.1, the NFDR's clause then differs from the SDD condition it traces to (§ 4 C-I1). No ADR
-  supersedes and no other obligation moves either way.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+None.
 
 ## 3. Raised from downstream — an item from a seat that did not write these records
 
