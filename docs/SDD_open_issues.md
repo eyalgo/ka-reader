@@ -74,7 +74,17 @@ None.
   likely fold: re-measure the cell at the current commit and move the four scenes, each with its archive,
   into the on-disk inventory.
 - **If a document has to be written:** none. The § 3 row in `SDD.md`.
-- **Answer:** <the owner fills this in>
+- **Answer:** Yes, as the item's likely fold reads, with three additions. `inside-a-repo`,
+  `parent-of-two`, `linked-worktree` and `submodule` leave *Owed by a slice* and join *On disk*, each
+  with its `<name>.git.tar` archive, which `crates/nozoki-core/tests/root_finding.rs:L49` unpacks into
+  a scene of its own. The additions: (1) the cell is re-pinned to the commit the fold is made on, and
+  the fold measures the tree itself (`git ls-tree --name-only HEAD checks/`, `ls checks/fixtures`)
+  and does not take this list, because a file can land between this answer and the fold; (2) the
+  on-disk fixture-folder count moves from five to nine with the four; (3) `see-git-status` leaves the
+  slice-owed list, since those four were all it owed this row by name. Nothing else in the cell moves:
+  the six other paths that changed under `checks/` since the pin are edits to files the row already
+  names (`git diff --name-status 7a125b4 136b227 -- checks/`). Answered in the owner's seat by an
+  unattended run; the reasoning is `docs/trail/sdd/self_answer-33.md` § 5.1.
 
 ### 5.2 SM-2 says the port is a trait the model owns; the trait and its outcome types live in `git-reader`
 - **Raised by:** PM — 2026-10-03
@@ -93,7 +103,23 @@ None.
   return; the reader implements it"). `docs/adr/0004-git-read-through-libgit2-behind-a-port.md` § Decision's
   "the Git port owned by the folder model" is the records' to match, raised on their companion.
 - **If a document has to be written:** none. SM-2's row in `SDD.md`.
-- **Answer:** <the owner fills this in>
+- **Answer:** Yes, as the item's likely fold reads, with two additions. `folder-model` stays the
+  owner of SM-2's contract: it states what the port must answer, and a second adapter passes the same
+  contract tests (§ 11 R-1). The trait and the plain-data types that cross the seam are defined in
+  `git-reader`. So "The port is a trait the model owns" and the owner cell's "the port is its" are
+  reworded to say that, in the form SM-1's owner cell already has. § 3's `git-reader` row already
+  agrees ("Owns: The **Git port** … and its one adapter") and does not move. Addition one: the row or
+  its review note gives the reason. § 3's units paragraph has the readers import neither the model
+  nor one another, and an adapter cannot implement a trait the model defines without importing the
+  model. Addition two, for the changes that add `state`, `status`, `diff` and `walk`: a type that
+  crosses SM-2 is never defined in `folder-model`. It is defined in `git-reader`, or in a module of
+  `nozoki-core` that is no part; which of the two is that change's design. The model imports the
+  trait and those types, and never the adapter. Whether the model's `GitState` (*What the system
+  holds*) is the port's type or is built from it is also that change's design, and SM-2 should not
+  read as though the port returns a type the model defines. ADR-0004's sentence is the records' and
+  is already raised at `docs/architecture_open_issues.md` § 3.2; nothing is raised from here.
+  Answered in the owner's seat by an unattended run; the reasoning is
+  `docs/trail/sdd/self_answer-33.md` § 5.2.
 
 ### 5.3 C-R6 says no shipped unit links a network transport; the vendored libgit2 compiles its `git://` and `http://` transports unconditionally
 - **Raised by:** PM — 2026-10-03
@@ -115,5 +141,36 @@ None.
   and never called. Or it names the link evidence that would prove no transport reaches the shipped
   executable, and where that evidence is checked. `docs/fdr.md` PD-27 and `docs/nfdr.md` QC-3 trace here.
 - **If a document has to be written:** none. § 4 C-R6 and the `git-reader` row in `SDD.md`.
-- **Answer:** <the owner fills this in>
+- **Answer:** The second fold: C-R6 keeps the claim, says at which level it holds, and names the
+  evidence. Nothing is relaxed. Three statements replace "libgit2 is built without its HTTPS and SSH
+  transports; no shipped unit links a network transport".
+  (1) *What the build holds.* libgit2 is vendored and built with its `https` and `ssh` features off:
+  no TLS backend and no libssh2 is compiled or linked. The evidence already runs on every build: the
+  tree names no TLS or SSH crate, and the inline test in `crates/nozoki-core/src/git_reader/libgit2.rs`
+  asserts `git2::Version` reports HTTPS off and SSH off.
+  (2) *What the build does not hold, stated as a fact.* The vendored libgit2 compiles its transports
+  and its socket stream whatever the features, and registers `git://`, `http://` and `https://` with
+  no guard (`libgit2-sys 0.18.8+1.9.7`, `build.rs:L152-L156`; `libgit2/src/libgit2/transport.c:L33-L35`).
+  So C-R6 claims nothing about the library, or about `nozoki-core` as a unit.
+  (3) *What is claimed.* The shipped executable, `Nozoki.app/Contents/MacOS/Nozoki`, links no network
+  transport. The harness reads it on every build, on the release executable: `nm` finds no defined
+  `git_smart_subtransport_*` symbol and no undefined import of `connect`, `socket` or `getaddrinfo`.
+  The check rides a script that already reads that executable (`checks/view.sh` reads it with
+  `otool -L`), with a suite case that turns it red, and § 4 C-I3 names it. No new script is asked for.
+  *Violated by* changes with it: "a transport-bearing build of libgit2" becomes a libgit2 built with
+  its `https` or `ssh` feature on, or a shipped executable that defines a libgit2 transport symbol or
+  imports one of the three socket calls. The `git-reader` row's "linked without its HTTPS and SSH
+  transports" becomes "built with its `https` and `ssh` features off".
+  Three bounds the fold states. The import half is read on the release executable only: a debug
+  executable imports all three through Rust's standard library with no libgit2 in it. The three names
+  are a floor, and a framework API that reaches the network is C-R7's scan's. The wall that holds
+  NFR-8 stays C-R2's; this is the second line behind it.
+  One thing this answer did not measure: whether a release executable passes once a bridge export
+  reaches `git-reader`. `checks/deps.review.md`'s `libgit2-sys` row records a scratch binary calling
+  only `Repository::open_ext` that passes both halves. If the check turns red when a Git command is
+  exported, that is a re-cut recorded in § 10 before anything is built on it, and stating the claim
+  lower instead is the owner's call, because `docs/fdr.md` PD-27 carries it as a product decision.
+  `docs/nfdr.md` QC-3 and ADR-0004 are the records' and are already raised at
+  `docs/architecture_open_issues.md` § 3.4; nothing is raised from here. Answered in the owner's seat
+  by an unattended run; the reasoning is `docs/trail/sdd/self_answer-33.md` § 5.3.
 
