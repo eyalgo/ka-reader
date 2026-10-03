@@ -17,8 +17,8 @@
 #
 # WHAT IT ASSERTS
 #   The identifiers on the findings the cases expect: QC-2, QC-9, QC-10, QC-11, QC-13, QC-14,
-#   QC-15, QC-17, QC-30, QC-36, QC-58 and QC-61, and layer-5, the placement rule that has no QC
-#   number. Every identifier a case asserts is named in this block.
+#   QC-15, QC-17, QC-30, QC-36, QC-58, QC-61 and QC-63, and layer-5, the placement rule that has no
+#   QC number. Every identifier a case asserts is named in this block.
 #
 # USAGE
 #   checks/tests/test_structure.sh
@@ -121,6 +121,16 @@ test_unreadable_test_file_fails
 test_new_findings_join_one_report
 test_build_script_reads_stay_excluded
 test_test_only_crate_does_not_change_shipped_counts
+test_value_module_language_imports_a_unit_is_rejected
+test_value_module_error_imports_a_unit_is_rejected
+test_value_module_findings_count_per_unit
+test_value_module_import_forms_are_rejected
+test_value_module_reexports_are_read_on_every_run
+test_value_module_domain_is_a_class
+test_value_module_non_imports_pass
+test_value_module_rule_spares_units_and_lib_rs
+test_unit_file_draws_no_value_module_finding
+test_value_module_findings_join_one_report
 "
 
 # --- helpers ---
@@ -1201,6 +1211,7 @@ test_highlighter_forbidden_units_are_rejected() {
   plant "$R" "nozoki-core/src/highlighter/deep/more.rs" 'use crate::folder_model::Thing;'
   deep_line="$PLANT_LINE"
   plant "$R" "nozoki-core/src/highlighter_ext.rs" 'use crate::fs_reader::Entry;'
+  ext_line="$PLANT_LINE"
   run_structure "$R"
   expect_status 1 || return 1
   for hit_line in $hit_lines; do
@@ -1212,7 +1223,9 @@ test_highlighter_forbidden_units_are_rejected() {
   expect_finding_naming "crates/$HL_FILE" "$two_line" QC-11 "watcher" || return 1
   expect_finding "crates/nozoki-core/src/highlighter/extra.rs" "$extra_line" QC-11 || return 1
   expect_finding "crates/nozoki-core/src/highlighter/deep/more.rs" "$deep_line" QC-11 || return 1
-  expect_no_finding_for "highlighter_ext.rs" || return 1
+  # A prefix-named file is no unit's file: no QC-10/QC-11 there, and the value-module rule reports it.
+  expect_no_unit_rule "crates/nozoki-core/src/highlighter_ext.rs" "$ext_line" || return 1
+  expect_qc63_once "crates/nozoki-core/src/highlighter_ext.rs" "$ext_line" "fs_reader" || return 1
 }
 
 # CP-430 row 4.
@@ -1697,8 +1710,6 @@ test_allowed_unit_edges_pass() {
   plant "$R" "$HL_FILE" 'use crate::language::Language;'
   plant "$R" "$HL_FILE" '//! see nozoki_core::Entry and nozoki_core::folder_model::FileView'
   plant "$R" "$HL_FILE" 'fn near() { let fs_reader = 1; let _ = fs_reader; self::watcher::x(); }'
-  plant "$R" "$LANG_FILE" 'use crate::folder_model::OpenFailure;'
-  plant "$R" "nozoki-core/src/error.rs" 'use crate::highlighter::Span; use crate::fs_reader::Entry;'
   run_structure "$R"
   expect_status 0 || return 1
   expect_stderr_empty || return 1
@@ -2219,6 +2230,210 @@ test_test_only_crate_does_not_change_shipped_counts() {
   case "$EXPECT_CRATES" in
     *nozoki-testonly*) fail "the test-only crate was counted as a shipped crate" || return 1 ;;
   esac
+}
+
+# --- QC-63: a file of no unit imports no unit ---
+
+VALUE_ERROR_FILE="nozoki-core/src/error.rs"
+
+# No QC-10 and no QC-11 finding at path $1, line $2.
+expect_no_unit_rule() {
+  expect_count "$1" "$2" QC-10 0 || return 1
+  expect_count "$1" "$2" QC-11 0
+}
+
+# Exactly one QC-63 finding at path $1, line $2, naming the unit $3, and no QC-10/QC-11 there.
+expect_qc63_once() {
+  expect_count "$1" "$2" QC-63 1 || return 1
+  expect_finding_naming "$1" "$2" QC-63 "value module imports $3" || return 1
+  expect_no_unit_rule "$1" "$2"
+}
+
+# CP-479 row 1.
+test_value_module_language_imports_a_unit_is_rejected() {
+  new_root value-module-language || return 1
+  plant "$R" "$LANG_FILE" 'use crate::fs_reader::FsReader;'
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_qc63_once "crates/$LANG_FILE" "$PLANT_LINE" "fs_reader" || return 1
+}
+
+# CP-479 row 2.
+test_value_module_error_imports_a_unit_is_rejected() {
+  new_root value-module-error || return 1
+  plant "$R" "$VALUE_ERROR_FILE" 'use crate::fs_reader::FsReader;'
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_qc63_once "crates/$VALUE_ERROR_FILE" "$PLANT_LINE" "fs_reader" || return 1
+}
+
+# CP-472, CP-481: one finding per (file, line, unit), across the scanner's two passes.
+test_value_module_findings_count_per_unit() {
+  new_root value-module-count || return 1
+  plant "$R" "$VALUE_ERROR_FILE" 'use crate::highlighter::Span; use crate::fs_reader::Entry;'
+  two_line="$PLANT_LINE"
+  plant "$R" "$LANG_FILE" 'fn d() { crate::fs_reader::a(); crate::fs_reader::b(); }'
+  repeated_line="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_count "crates/$VALUE_ERROR_FILE" "$two_line" QC-63 2 || return 1
+  expect_finding_naming "crates/$VALUE_ERROR_FILE" "$two_line" QC-63 "value module imports highlighter" || return 1
+  expect_finding_naming "crates/$VALUE_ERROR_FILE" "$two_line" QC-63 "value module imports fs_reader" || return 1
+  expect_no_unit_rule "crates/$VALUE_ERROR_FILE" "$two_line" || return 1
+  expect_qc63_once "crates/$LANG_FILE" "$repeated_line" "fs_reader" || return 1
+}
+
+# CP-471, CP-472: every import form the unit-graph scan reads, on its own line.
+test_value_module_import_forms_are_rejected() {
+  new_root value-module-forms || return 1
+  error_path="crates/$VALUE_ERROR_FILE"
+  lang_path="crates/$LANG_FILE"
+  plant "$R" "$LANG_FILE" 'mod t { use super::super::folder_model::FileView; }'
+  super_line="$PLANT_LINE"
+  plant "$R" "nozoki-core/src/paths.rs" 'use crate::Entry;'
+  reexport_line="$PLANT_LINE"
+  plant "$R" "$VALUE_ERROR_FILE" 'use crate::{
+    fs_reader::Entry,
+    highlighter::Span,
+};'
+  tree_start="$PLANT_LINE"
+  plant "$R" "$LANG_FILE" 'fn w() { crate :: watcher :: x(); }'
+  spaced_line="$PLANT_LINE"
+  plant "$R" "$VALUE_ERROR_FILE" '// crate::own_state'
+  comment_line="$PLANT_LINE"
+  plant "$R" "$VALUE_ERROR_FILE" 'const S: &str = "crate::markdown_renderer";'
+  string_line="$PLANT_LINE"
+  plant "$R" "$LANG_FILE" 'mod g { use super::super::{folder_model::FileView}; }'
+  grouped_super_line="$PLANT_LINE"
+  plant "$R" "$VALUE_ERROR_FILE" 'fn h() { crate
+    ::
+    fs_reader
+    ::
+    Entry(); }'
+  newline_line=$((PLANT_LINE + 2))
+  plant "$R" "$LANG_FILE" 'use crate::git_reader::State;'
+  no_file_line="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_qc63_once "$lang_path" "$super_line" "folder_model" || return 1
+  expect_qc63_once "crates/nozoki-core/src/paths.rs" "$reexport_line" "fs_reader" || return 1
+  expect_qc63_once "$error_path" $((tree_start + 1)) "fs_reader" || return 1
+  expect_qc63_once "$error_path" $((tree_start + 2)) "highlighter" || return 1
+  expect_count "$error_path" "$tree_start" QC-63 0 || return 1
+  expect_qc63_once "$lang_path" "$spaced_line" "watcher" || return 1
+  expect_qc63_once "$error_path" "$comment_line" "own_state" || return 1
+  expect_qc63_once "$error_path" "$string_line" "markdown_renderer" || return 1
+  expect_qc63_once "$lang_path" "$grouped_super_line" "folder_model" || return 1
+  expect_qc63_once "$error_path" "$newline_line" "fs_reader" || return 1
+  expect_qc63_once "$lang_path" "$no_file_line" "git_reader" || return 1
+}
+
+# CP-471: lib.rs is read on every run, so a re-export that changes target changes the finding.
+test_value_module_reexports_are_read_on_every_run() {
+  new_root value-module-live-reexport || return 1
+  lib_rs="$R/crates/nozoki-core/src/lib.rs"
+  paths_path="crates/nozoki-core/src/paths.rs"
+  plant "$R" "nozoki-core/src/lib.rs" 'pub use crate::fs_reader::Entry as ValueBoundaryProbe;'
+  plant "$R" "nozoki-core/src/paths.rs" 'use crate::ValueBoundaryProbe;'
+  probe_line="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_qc63_once "$paths_path" "$probe_line" "fs_reader" || return 1
+  expect_stderr_has_no_line_starting "crates/nozoki-core/src/lib.rs:" || return 1
+  grep -v -F 'as ValueBoundaryProbe' "$lib_rs" > "$WORK/lib.rs.next" || return 1
+  cp "$WORK/lib.rs.next" "$lib_rs" || return 1
+  plant "$R" "nozoki-core/src/lib.rs" 'pub use crate::highlighter::Span as ValueBoundaryProbe;'
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_qc63_once "$paths_path" "$probe_line" "highlighter" || return 1
+  expect_count "$paths_path" "$probe_line" QC-63 1 || return 1
+  case "$STDERR" in
+    *"value module imports fs_reader"*) fail "the replaced re-export still drew a finding naming fs_reader. stderr: $STDERR" || return 1 ;;
+  esac
+  expect_stderr_has_no_line_starting "crates/nozoki-core/src/lib.rs:" || return 1
+}
+
+# No stderr line starts with the text $1.
+expect_stderr_has_no_line_starting() {
+  while IFS= read -r stderr_line; do
+    case "$stderr_line" in
+      "$1"*) fail "expected no stderr line starting $1. stderr: $STDERR" || return 1 ;;
+    esac
+  done <<< "$STDERR"
+}
+
+# CP-470: the domain is a class of paths, not a list of today's files.
+test_value_module_domain_is_a_class() {
+  new_root value-module-domain || return 1
+  for member in language/x.rs tests/x.rs x/lib.rs lib/x.rs; do
+    plant "$R" "nozoki-core/src/$member" 'use crate::fs_reader::Entry;'
+  done
+  run_structure "$R"
+  expect_status 1 || return 1
+  for member in language/x.rs tests/x.rs x/lib.rs lib/x.rs; do
+    expect_qc63_once "crates/nozoki-core/src/$member" 1 "fs_reader" || return 1
+  done
+}
+
+# CP-471's exclusions and CP-473: a clean case.
+test_value_module_non_imports_pass() {
+  new_root value-module-non-imports || return 1
+  plant "$R" "$VALUE_ERROR_FILE" 'use crate::language::Language;'
+  plant "$R" "$VALUE_ERROR_FILE" '// see fs_reader and nozoki_core::fs_reader'
+  plant "$R" "$VALUE_ERROR_FILE" 'fn e() -> Option<crate::Error> { None }'
+  plant "$R" "$LANG_FILE" 'use self::fs_reader::Entry;'
+  plant "$R" "$LANG_FILE" 'fn n() { let fs_reader = 1; let _ = fs_reader; }'
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+}
+
+# CP-480 (a) and (c), CP-473, CP-474: a clean case. Every unit, in file and directory form, and every
+# file outside the domain, may name a unit.
+test_value_module_rule_spares_units_and_lib_rs() {
+  new_root value-module-spared || return 1
+  plant "$R" "$FS_FILE" 'use crate::language::Language;'
+  plant "$R" "nozoki-core/src/lib.rs" 'pub use crate::fs_reader::Entry;'
+  for unit in own_state git_reader watcher markdown_renderer; do
+    plant "$R" "nozoki-core/src/$unit.rs" 'use crate::fs_reader::Entry;'
+    plant "$R" "nozoki-core/src/$unit/x.rs" 'use crate::fs_reader::Entry;'
+  done
+  plant "$R" "nozoki-core/tests/common/mod.rs" 'use crate::fs_reader::Entry;'
+  plant "$R" "nozoki-core/examples/x.rs" 'use crate::fs_reader::Entry;'
+  plant "$R" "nozoki-core/build.rs" 'use crate::fs_reader::Entry;'
+  plant "$R" "nozoki-bridge/src/x.rs" 'use crate::fs_reader::Entry;'
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+}
+
+# CP-474: a file of a unit is judged by QC-10/QC-11 alone.
+test_unit_file_draws_no_value_module_finding() {
+  new_root unit-file-no-qc63 || return 1
+  plant "$R" "$HL_FILE" 'use crate::folder_model::FileView;'
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_count "crates/$HL_FILE" "$PLANT_LINE" QC-11 1 || return 1
+  expect_finding_naming "crates/$HL_FILE" "$PLANT_LINE" QC-11 "highlighter imports folder_model" || return 1
+  case "$STDERR" in
+    *QC-63*) fail "expected no QC-63 finding for a file of a unit. stderr: $STDERR" || return 1 ;;
+  esac
+}
+
+# CP-472: the QC-63 findings join the one report, in the order every finding is sorted in.
+test_value_module_findings_join_one_report() {
+  new_root value-module-report || return 1
+  plant "$R" "$VALUE_ERROR_FILE" 'use std::fs; use crate::fs_reader::Entry;'
+  error_line="$PLANT_LINE"
+  plant "$R" "$CORE_FILE" 'fn f() { unsafe {} }'
+  unsafe_line="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_finding "crates/$VALUE_ERROR_FILE" "$error_line" QC-15 || return 1
+  expect_qc63_once "crates/$VALUE_ERROR_FILE" "$error_line" "fs_reader" || return 1
+  expect_finding "crates/$CORE_FILE" "$unsafe_line" QC-9 || return 1
+  expect_before "crates/$VALUE_ERROR_FILE:$error_line: QC-15: " "crates/$VALUE_ERROR_FILE:$error_line: QC-63: " || return 1
+  expect_before "crates/$VALUE_ERROR_FILE:$error_line: QC-63: " "crates/$CORE_FILE:$unsafe_line: " || return 1
 }
 
 # --- runner ---
