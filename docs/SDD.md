@@ -1,12 +1,13 @@
 # SDD — nozoki
 
-**Status:** Draft
+**Status:** Settled
 <!-- Draft = open issues or choices to confirm remain (open-issues file present).
      Settled = nothing left for the owner to answer and no open technical question — the done
        signal, and the state a finished SDD carries; the open-issues file is gone.
      Locked = ratified as the source of truth. -->
 **Owner:** CTO · CPO · CDO — one run, three seats
-**Version:** 26 — CTO: § 3 `git-reader` row (libgit2 "built with its `https` and `ssh` features off"); § 3 `read-only-harness` row (*Owns* cell re-measured and re-pinned at `nozoki@814a369`: the four root-finding scenes and their archives move to on-disk, nine fixture folders, `see-git-status` leaves the slice-owed list); § 3 SM-2 (the trait and the types that cross are defined in `git-reader`, `folder-model` keeps the contract) and *What the system holds*, `GitState` (one sentence); § 4 C-R5 (one garbled sentence repaired); § 4 C-R6 (the transport claim restated at the shipped executable, with its evidence, its bounds and *Violated by*); § 4 C-I3 (the `nm` read named, and *Violated by*); § 11 R-15 (new); SDD Review Notes RN-85 and RN-86 (new); `docs/SDD_open_issues.md` removed, empty of items, trail copy at `docs/trail/sdd/cycle-21.md`. No slice altered. Companion items added: none.
+**Version:** 27 — CTO: § 3 `core-bridge` row (*Owns*: the config search-path switch — four `set_search_path` calls before the libgit2 adapter is wired, failing closed, once per process, with the uncovered case named); § 3 `git-reader` row (what the reader sees with the machine-level config off: the global ignore file not applied, a repository not owned by the user a `failed` Git item); § 3 the *Four physical units* paragraph and SM-2 (the libgit2 import rule's one exception); § 4 C-R6 (every `git2` manifest line with default features off, and *Violated by*); § 4 C-I3 (the bridge test and what it does not reach, a third thing no check holds, and *Violated by*); § 4 C-D3 (one uncovered case named); § 6 `see-git-status` *Reached when*, command half (the same exception); § 11 R-16 (new); *Open Questions* (second item extended, one item added — seven stand); SDD Review Notes RN-87 (new); `docs/SDD_open_issues.md` removed, empty of items, trail copy at `docs/trail/sdd/cycle-22.md`. No slice's *Delivers*, edge or order altered. Companion items added: none.
+Version 26 — CTO: § 3 `git-reader` row (libgit2 "built with its `https` and `ssh` features off"); § 3 `read-only-harness` row (*Owns* cell re-measured and re-pinned at `nozoki@814a369`: the four root-finding scenes and their archives move to on-disk, nine fixture folders, `see-git-status` leaves the slice-owed list); § 3 SM-2 (the trait and the types that cross are defined in `git-reader`, `folder-model` keeps the contract) and *What the system holds*, `GitState` (one sentence); § 4 C-R5 (one garbled sentence repaired); § 4 C-R6 (the transport claim restated at the shipped executable, with its evidence, its bounds and *Violated by*); § 4 C-I3 (the `nm` read named, and *Violated by*); § 11 R-15 (new); SDD Review Notes RN-85 and RN-86 (new); `docs/SDD_open_issues.md` removed, empty of items, trail copy at `docs/trail/sdd/cycle-21.md`. No slice altered. Companion items added: none.
 Version 25 — CPO: nothing — no SDD section, slice or companion item altered by this seat.; CTO: § 3 `read-only-harness` row (*Owns* cell: pinned enumeration at `nozoki@7a125b4`, on-disk/slice-owed split, `entry-points.sh`+`entry-points.allow`, `walk.rs`, `sandbox_probe.rs`, `deps.review.md`, `tests/`, `repo.git.tar`, `highlight`, `text`, `history`, `scale-*`, `hostile.md`); SDD Review Notes RN-84 (new); `docs/SDD_open_issues.md` removed, empty of items. No slices altered. Companion items added: none.; CPO: nothing — no SDD section, slice or companion item altered by this seat.
 Version 18 — CPO: nothing — no SDD section, slice or companion item altered by this seat.; CTO: § 4 C-I3 (observable, measured-frames sentence, hosted-runner sentence with the re-cut rule); § 6 `open-a-folder` *Reached when* command half; § 9 TO-7 *costs*; § 10 RC-2 and RC-3 *Still unresolved* (dated parentheses); *Open Questions* (seventh item removed — six remain); SDD Review Notes RN-70 (new); `docs/SDD_open_issues.md` removed, empty of items. Companion items added: none.; CPO: nothing — no SDD section, slice or companion item altered by this seat.
 Version 8 — CTO: § 4 C-I3 (bounded window, first-ask-all-three pass, script-fixed and printed bound with no number here, per-ask live-pid check, uncovered yes→no case, control `no` for the whole window, error-on-any-ask, denial-as-proof clause narrowed to where the control reports the denials allowed with the hosted runner's read denial stated as separating nothing, Violated by extended); § 10 RC-1 Still unresolved (pointer to RN-48); § 11 R-8 shows up as and response; Open Questions (fourth item closed and removed — four remain); SDD Review Notes RN-48 (new). Companion items added: none. docs/SDD_open_issues.md removed, empty of items.
@@ -321,13 +322,13 @@ interpret gives a different answer twice over the same settled text. Leave both 
 | Part | Lives in | Owns | Must not own |
 |---|---|---|---|
 | `fs-reader` | crates/nozoki-core | Listing a folder's entries and reading a file's bytes, each returning its outcome as data (bytes, or the condition observed); the text rule — bytes decode as UTF-8, with or without a byte-order mark, or begin with a UTF-16 byte-order mark and decode as UTF-16, and the file is text; otherwise it is *cannot-display-as-text* (`docs/SRS.md` FR-10) — no encoding is detected from content, no third encoding is admitted, one undecodable sequence makes the file not text, and an empty file is text (the owner's value, RN-41); the extension map that names a floor language or *plain* (FR-29; the set is § 4 C-I5); the **containment check** — after percent-decoding, the path is walked position by position from the granted folder: at every position *inside* the grant the canonical form is taken, symlinks resolved, and the walk goes on from it; at a position *outside* the grant nothing is read — no `lstat`, no `realpath` — and names are compared as spelled, the walk re-entering the grant only on the folder's own name met from its parent position: as spelled, or in another letter case where the folder is not the root of its volume and that volume ignores letter case, both read from the folder itself — never two names the volume keeps apart, and as spelled wherever it cannot be sure; a walk that ends inside the grant is contained and one that does not is refused — run before any open, for every path derived from content or from outside. Three spellings are refused as outside although they may lead in, because proving it would take a read outside the grant (§ 4 C-D1): a path that leaves by more than one level and returns in another case, a Unicode-normalization difference (§ 11 R-10), and a granted folder that is the root of its volume (the owner's answer, `docs/trail/sdd/cycle-15.md` § 5.1; RN-71) | Any write. Git, in any form. Watching. Markdown. Deciding what a change means |
-| `git-reader` | crates/nozoki-core | The **Git port** — `probe(folder)` answering `root` or `plain` with discovery disabled and never a path above the folder (FR-33); on a root only, `state()` (branch or detached identifier, the short status word), `status()` (changed and staged entries), `diff(kind, path)` and `walk(tips, window)` (beyond v1) — every method read-only and returning plain data — and its one adapter, libgit2 built with its `https` and `ssh` features off (§ 4 C-R6). The installed-`git` adapter, run with `--no-optional-locks`, is the port's standing substitute and is not built ahead of the risk that needs it (§ 11 R-1) | Any mutating call — checkout, index write, ref update, lock file. Spawning a process. The model. A file outside Git's own on-disk layout |
+| `git-reader` | crates/nozoki-core | The **Git port** — `probe(folder)` answering `root` or `plain` with discovery disabled and never a path above the folder (FR-33); on a root only, `state()` (branch or detached identifier, the short status word), `status()` (changed and staged entries), `diff(kind, path)` and `walk(tips, window)` (beyond v1) — every method read-only and returning plain data — and its one adapter, libgit2 built with its `https` and `ssh` features off (§ 4 C-R6). The installed-`git` adapter, run with `--no-optional-locks`, is the port's standing substitute and is not built ahead of the risk that needs it (§ 11 R-1). **With the machine-level config off** (the `core-bridge` row's switch) the reader sees two things differently from `git status` in a terminal. The user's global ignore file is not applied, so a file it hides there is listed here as untracked (`libgit2-sys 0.18.8+1.9.7`, `libgit2/src/libgit2/attrcache.c:L345`: the fallback is found through the same search path). And a repository the current user does not own fails to open, because the `safe.directory` entry that would allow it is read from those levels (`repository.c:L629-L634`, `:L1172-L1173`); it is a `failed` Git item. Both follow from `docs/fdr.md` R-101 as it stands — "The product reads nothing outside the viewed folder except its own data location on the machine" (`docs/fdr.md:L188`) — and honouring either means a read outside the grant, which is the owner's to allow (`docs/trail/sdd/cycle-22.md` § 2.1; RN-87) | Any mutating call — checkout, index write, ref update, lock file. Spawning a process. The model. A file outside Git's own on-disk layout |
 | `watcher` | crates/nozoki-core | One FSEvents subscription on the granted folder, the root's `.git` entry included, delivering coalesced change events as paths; nothing else | Reading content. Interpreting a change. Any write |
 | `folder-model` | crates/nozoki-core | The in-memory model of exactly one folder (FR-1): the tree, the selection and expansion, the open file, the Git state where the root finding says `root` and none where it says `plain`; every read held as an item carrying an `ItemState` (§ 4 C-I1); the **reducer** that applies reader results and watcher events and keeps the reader's place (FR-27); **the fill of the open `FileView`** — the model calls `highlighter` for a text file in a floor language and `markdown-renderer` for a Markdown file, on the bytes `fs-reader` returned, and holds a call that fails as that item's `failed(condition)`, never a panic (§ 4 C-I1; `docs/SRS.md` FR-8, FR-30, DR-6; drafted at RN-64, confirmed by the owner at `docs/trail/sdd/cycle-11.md` § 2.4 — RN-65); **replace-whole** — a new folder replaces the model as a value, never mutates it (NFR-12); the projections the surfaces draw; and the plain Rust API the host wraps and the harness calls (SM-5) | I/O of any kind. Any Apple framework. Own state. Drawing |
 | `markdown-renderer` | crates/nozoki-core | Markdown → a **typed document**, from bytes `fs-reader` read: a `MarkdownDocument` (*What the system holds*, below) whose node kinds are a closed set and never markup — heading, paragraph, list, quote, rule, fenced code with its language and `highlighter`'s spans; an image whose reference passes the containment check carrying that folder-relative path, every other image a placeholder node carrying the condition observed; an external link an inert node with its destination readable; a relative link a node carrying its target path; raw HTML in the source a text node (`docs/SRS.md` FR-30, FR-32, NFR-16; `docs/UXD.md` UX-I12) | Any network. Emitting a URL of any scheme. Markup of any kind. Reading the file itself, or an image's bytes. The raw-source view (§ 9 TO-5) |
 | `highlighter` | crates/nozoki-core | Text and a floor language → spans, each a byte range and one of the five token classes `docs/DESIGN.md` § Colors names (keyword, string, number, comment, name), for the reading panel's code treatment and for a fenced block in a `MarkdownDocument`; the six grammars compiled into the library by **tree-sitter** — its runtime, `tree-sitter-highlight` and one grammar crate for each floor language, built from C into `nozoki-core` at build time, with nozoki's own query files compiled in — a dependency decision under § 4 C-R6, made in a change of `read-a-file` and recorded beside the list it reviews (`checks/deps.review.md` § *The engine chosen*, `nozoki@85d9fa7`; RN-80); what the engine costs is § 9 TO-11 and what could break it is § 11 R-14 (FR-8, FR-29; § 4 C-I5) | Reading a file. Naming the language — that is `fs-reader`'s extension map. Drawing. A seventh grammar with no floor language behind it |
 | `own-state` | crates/nozoki-core | The tool's own remembered state — theme, window frame, and beyond v1 the remembered folders as security-scoped bookmarks with display names and which was viewed last — read whole or discarded whole, written only inside the app's container (FR-21, DR-5) | Anything of the folder's content. The diagnostic log. A path outside the container |
-| `core-bridge` | crates/nozoki-bridge | The C ABI over `folder-model`'s API and the **Rust-side composition root**: the closed function list the shell calls (SM-4), each function a thin wrapper that decodes its arguments, calls `folder-model` and returns plain data as an owned buffer freed by one `nozoki_free`; the `model_changed` callback; `asset_bytes`, returning an image's bytes only for a path the containment check passes (SM-7); the diagnostic log writer's install (§ 4 C-I2); wiring the libgit2 adapter to the Git port. The one unit that holds `unsafe`, with the reason recorded in its manifest and its record (workspace `Cargo.toml`, `[workspace.lints.rust]`) | Read logic — every function delegates and formats. AppKit, or any Apple framework. A window. A path outside the grant. Anything the harness could not exercise through SM-5 |
+| `core-bridge` | crates/nozoki-bridge | The C ABI over `folder-model`'s API and the **Rust-side composition root**: the closed function list the shell calls (SM-4), each function a thin wrapper that decodes its arguments, calls `folder-model` and returns plain data as an owned buffer freed by one `nozoki_free`; the `model_changed` callback; `asset_bytes`, returning an image's bytes only for a path the containment check passes (SM-7); the diagnostic log writer's install (§ 4 C-I2); wiring the libgit2 adapter to the Git port; and, before that wiring and before any thread can reach libgit2, **the config search-path switch**: four calls to `git2::opts::set_search_path`, one for each of the system, global, XDG and programdata levels, each setting that level's search path to empty, so that a repository open adds none of the four machine-level config files, which lie outside the granted folder (§ 4 C-D1; in `libgit2-sys 0.18.8+1.9.7`, the version `Cargo.lock:L122-L123` resolves, `libgit2/src/libgit2/repository.c:L1316-L1338` adds the four levels and `sysdir.c:L559-L560` returns before any file is touched where a level's search path is empty). The switch fails closed: each call returns a `Result` (`git2-0.21.0/src/opts.rs:L23`), and if any of the four fails the adapter is not wired and the Git item is `failed`, so a repository is never opened with the reads on. The switch runs once per process, and a second arrival at the composition root repeats nothing. The bridge names the libgit2 binding in those calls and their test and nowhere else, and its manifest's `git2` line turns default features off (§ 4 C-R6). **Not covered by the switch:** a path the repository's own config names — `include.path`, `core.excludesfile`, `core.attributesfile` — which libgit2 follows and which passes no containment check (§ 11 R-16) (answered in the CTO's seat, `docs/trail/sdd/cycle-22.md` § 2.1; RN-87). The one unit that holds `unsafe`, with the reason recorded in its manifest and its record (workspace `Cargo.toml`, `[workspace.lints.rust]`) | Read logic — every function delegates and formats. AppKit, or any Apple framework. A window. A path outside the grant. Anything the harness could not exercise through SM-5 |
 | `mac-shell` | nozoki-mac | The `NSApplication`, the one window and the app's **composition root** on the Swift side: it presents the Open panel and holds the grant the panel returns, calls SM-4 and decodes what returns, marshals `model_changed` onto the main thread, hands projections to `surfaces` and turns their intents into SM-4 calls (SM-8); it owns `Info.plist`, `Entitlements.plist` and the bundle's assembly (§ 4 C-R1, C-R2) | Drawing — that is `surfaces`. Read logic. Any I/O of its own — a file read, a network API, a spawned process, `NSWorkspace.open` (§ 4 C-R7). A second window. A terminal line |
 | `surfaces` | nozoki-mac | The shell's views as the UXD draws them: the rail, the tree (`NSOutlineView`), the reading panel and its treatments — code, rendered Markdown laid out from a `MarkdownDocument` by TextKit, and beyond v1 the diff — the Git view (and beyond v1 the history beneath its changes list), the chrome with the identity element and the theme control (`docs/UXD.md` § 4, § 6); the theme tokens as values; the message catalogue. It draws projections and draws no state the bridge did not send, with **one exception: that an intent it raised has not been answered yet**. That is the one state the bridge cannot send — a call's answer is its return (SM-4), so until the call returns the bridge has said nothing — and the one thing the shell observes first-hand. Four bounds hold it. **One:** it is the gap of the surface's own ask and says nothing about the folder. It begins when the surface raises an intent across SM-8 and ends on that intent's answer, and it carries the pending sentence alone — no marker, no count, no content and no progress figure (`docs/UXD.md` UX-I13; the sentence is `docs/CONTENT.md` § *Message patterns* → *Loading*'s). **Two:** every answer ends it, whether the answer is a projection or carries no verdict, and no timer starts it, advances it or ends it (§ 4 C-E1; `docs/CONTENT.md` § *Message patterns* → *Error*, "A stopped read is never dressed as a pending one"). **Three:** only an intent the reader's own act raised opens it. A change that arrives unasked opens none, so from `follow-the-folder` on a refresh never draws pending over content being read (§ 4 C-E2). **Four:** `pending` as an `ItemState` stays the model's and still crosses the bridge — `kind` before the root finding answers, and a folder entry not yet read — and a surface originates neither. The gap is not held state: it lasts from one ask to its answer, and the open file, the selection and the expansion stay `folder-model`'s. Two cases the exception does not cover: a read that never returns leaves the pending sentence standing, with the tree the route out; and which side orders two asks in flight is the design of the change that moves the selection into the model (RN-76). (Answered in the owner's seat, `docs/trail/sdd/cycle-19.md` § 5.1; RN-82) | The bridge — a surface never calls SM-4; it hands `mac-shell` an intent (SM-8). Filesystem, network or process capability of any kind. A URL built from content and handed to any framework. An HTML import. A message not in the catalogue. A dialog, a toast, a notification |
 | `read-only-harness` | checks | The scripts, their lists and helpers, the fixtures and the suites that prove the promises on every build and every release. The enumeration is measured at `nozoki@814a369` (2026-10-03) and pinned to it, as `docs/nfdr.md` § 9 pins its suite count: a file landing in `checks/` after that commit is a re-measurement of this cell and not a contradiction of it, and it owes this row an item. **On disk at that commit:** `read-only.sh` with `walk.rs`, the in-process driver it runs — compiled into a `nozoki-core` test target by `crates/nozoki-core/tests/walk.rs:L6`'s `#[path]`, never into the library; `no-network.sh`; `bundle.sh` with `sandbox_probe.rs`, which it compiles with `rustc` at run time into its temporary directory because no shell can call `sandbox_check` (`checks/bundle.sh:L321-L322`; § 4 C-I3); `renderer.sh`; `view.sh`; `own-state.sh`; `structure.sh`; `entry-points.sh` with `entry-points.allow`, the reviewed list it diffs the linked tree's environment and argument reads against — the check `docs/nfdr.md` QC-30 half (2) places in this unit; `deps.allow` with `deps.review.md`, the review recorded beside the list it reviews (`highlighter`'s row); `tests/`, one `test_<name>.sh` suite for each of the eight scripts above, each the whole `run` of its own CI step; and nine fixture folders — `plain`, a plain folder; `repo`, a repository, with `repo.git.tar`, the `.git` the suites unpack into it; `inside-a-repo`, `parent-of-two`, `linked-worktree` and `submodule`, the four root-finding scenes, each with its `<name>.git.tar`, the `.git` entries `crates/nozoki-core/tests/root_finding.rs:L49` unpacks into a scene of its own; `highlight` and `text`, the corpora `nozoki-core`'s `highlight.rs` and `read_file.rs` tests read; and `idle-shell`, the renderer gate's control bundle (§ 4 C-I3). **Owed by a slice and not on disk at that commit:** `churn.sh` and `latency.sh` with `fixtures/scale-small`, `scale-medium` and `scale-large` (`follow-the-folder`; § 4 C-I4); `fixtures/hostile.md`, the hostile Markdown corpus (`read-markdown`); `fixtures/history` (`read-the-history`); and, from `promise-one-point-zero`, `contract.sh` with the pin `contract/<major>` it reads (§ 4 C-I6) | Being a dependency of any shipped unit. Driving the AppKit views. Shipping in the bundle |
@@ -344,7 +345,9 @@ TO-11; § 11 R-14; RN-80). The unit set departs from the one ADR-0009 records
 (`docs/adr/0009-physical-module-set.md`) — `nozoki-app` and `nozoki-ui` leave, `nozoki-bridge` and
 `nozoki-mac` arrive — and the departure is surfaced, not recorded here (§ 10 RC-3; RN-60); the
 `crates/` placement is the owner's ruling for every Rust product in this instance as
-`docs/nfdr.md` § 9 carries it (RN-4). Only `git-reader` imports the libgit2 binding; only
+`docs/nfdr.md` § 9 carries it (RN-4). Only `git-reader` imports the libgit2 binding, with one
+exception: `core-bridge` names it in the composition root's search-path switch and that switch's
+test, and nowhere else (the `core-bridge` row; RN-87). `nozoki-core` still holds no `unsafe`. Only
 `own-state` and the bridge's log writer write anything; the readers, the watcher, the highlighter
 and the renderer import neither the model nor one another, with two stated edges —
 `markdown-renderer` calls `fs-reader`'s containment check, and `highlighter` for a fenced block.
@@ -414,7 +417,7 @@ language because the card declares Shell for the `checks/*.sh` harness by name (
 | Seam | What crosses | Owner of the contract |
 |---|---|---|
 | `SM-1` `fs-reader` ↔ `folder-model` | Down: a path to list or read. Up: the listing, or the bytes with the text rule applied and the floor language named, or the condition observed — always as data, never a panic | `folder-model` — it states what a read must return; the reader implements it |
-| `SM-2` `git-reader` ↔ `folder-model` | Down: `probe`, and on a root `state`, `status`, `diff`, `walk`. Up: `root` or `plain`; plain-data Git state; or the condition observed. The port is a trait defined in `git-reader`, with the plain-data types that cross beside it; the adapter is the only thing that knows libgit2. A type that crosses this seam is never defined in `folder-model`: it is defined in `git-reader`, or in a module of `nozoki-core` that is no part, and which of the two is the design of the change that adds it. The model imports the trait and those types, and never the adapter | `folder-model` — it states what the port must answer; `git-reader` defines the trait and implements it, because the readers import nothing from the model (the *Four physical units* paragraph above) and an adapter cannot implement a trait the model defines without importing the model; a second adapter passes the same contract tests (§ 11 R-1) (answered in the owner's seat, `docs/trail/sdd/cycle-21.md` § 5.2; RN-85) |
+| `SM-2` `git-reader` ↔ `folder-model` | Down: `probe`, and on a root `state`, `status`, `diff`, `walk`. Up: `root` or `plain`; plain-data Git state; or the condition observed. The port is a trait defined in `git-reader`, with the plain-data types that cross beside it; the adapter is the only thing that knows libgit2, with the one exception the *Four physical units* paragraph states: `core-bridge`'s search-path switch (RN-87). A type that crosses this seam is never defined in `folder-model`: it is defined in `git-reader`, or in a module of `nozoki-core` that is no part, and which of the two is the design of the change that adds it. The model imports the trait and those types, and never the adapter | `folder-model` — it states what the port must answer; `git-reader` defines the trait and implements it, because the readers import nothing from the model (the *Four physical units* paragraph above) and an adapter cannot implement a trait the model defines without importing the model; a second adapter passes the same contract tests (§ 11 R-1) (answered in the owner's seat, `docs/trail/sdd/cycle-21.md` § 5.2; RN-85) |
 | `SM-3` `watcher` ↔ `folder-model` | Up only: coalesced change events as paths, the root's `.git` entry among them. The model decides what to re-read | `folder-model` — the event shape is its |
 | `SM-4` `core-bridge` ↔ `mac-shell` | Down (shell → core): calls from this list and no other — `open_folder` (taking the URL the Open panel returned, and no path from any other source), `list_tree`, `select_file`, `open_relative_link`, `set_theme`, `open_diff`, `walk_history`, `switch_folder`, `asset_bytes` — each exported from the build in which a change of its slice first builds it, and not before, and all nine from `v1.0.0`; and, **beside the list and not on it**, the seam's one release call, `nozoki_free`, exported from the first build on because every call's return needs it and never staged by slice (the owner's confirm, `docs/trail/sdd/cycle-12.md` § 5.1; RN-66). Which of the list a given build exports is stated once, in § 4 C-R7. Up (core → shell): the `model_changed` callback carrying a projection delta, on a thread the shell marshals to its main thread; and each call's return as an owned buffer of plain data — JSON, or flat structs the header declares — freed by `nozoki_free`; the header is generated from the bridge's source and never hand-kept. Nothing else crosses in either direction: the nine calls and `nozoki_free` down, the callback and the returns up. **This seam is where the promise is read, not where it is held**: the wall is the process's entitlements (§ 4 C-R2), and the seam makes visible that the shell reads through the core alone — a builder of the shell who holds only this header has no read, no write and no connection to make, and § 4 C-R7 checks on every build that the shell adds none of its own | `core-bridge` — it exports what its landed changes built, the header is generated from it, and the shell calls what is exported and nothing more |
 | `SM-5` `folder-model` ↔ `core-bridge` | Down: the operations the functions name, as plain Rust calls. Up: projections and deltas. The harness calls this API directly, in-process, with no window (§ 4 C-I3) | `folder-model` — the API and its types are its; the bridge wraps, formats and delegates |
@@ -622,10 +625,18 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   `docs/trail/sdd/self_answer-33.md` § 5.3 and not re-run for this revision). The three names
   are a floor: a framework API that reaches the network is C-R7's scan's to find. And the wall
   that holds NFR-8 is C-R2's; this read is the second line behind it. What follows a red read
-  is § 11 R-15 (answered in the owner's seat, `docs/trail/sdd/cycle-21.md` § 5.3; RN-85). Each
+  is § 11 R-15 (answered in the owner's seat, `docs/trail/sdd/cycle-21.md` § 5.3; RN-85). Every
+  manifest that names `git2` turns its default features off, as
+  `crates/nozoki-core/Cargo.toml:L9` does. `crates/nozoki-bridge/Cargo.toml` names no `git2` at
+  `nozoki@f471a9e` and gains its line with the search-path switch (§ 3, the `core-bridge` row).
+  A line with defaults on would turn HTTPS and SSH on for both crates: "When a dependency is
+  used by multiple packages, Cargo will use the union of all features enabled on that
+  dependency when building it"
+  (https://doc.rust-lang.org/cargo/reference/features.html#feature-unification) (RN-87). Each
   dependency's licence rides into `THIRD_PARTY_NOTICES.md` (C-5). *Violated by:* a dependency
   added without an allowlist line, a lockfile not committed, a Swift package dependency, a
-  libgit2 built with its `https` or `ssh` feature on, a shipped executable that defines a
+  libgit2 built with its `https` or `ssh` feature on, a manifest whose `git2` line leaves
+  default features on, a shipped executable that defines a
   libgit2 transport symbol or imports `connect`, `socket` or `getaddrinfo`.
 - **C-R7.** **The shell holds no I/O of its own, and reaches the core through the exported list
   alone.** `nozoki-mac` reads no file, opens no connection, spawns no process, hands no URL to
@@ -702,7 +713,12 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   makes with the set the build exports, so their match is held by review of the change that
   exports a command, until a change makes it a check; and a fixture that offers no entry a
   command can act on exercises nothing for that command — which fixture a command needs is its
-  slice's own bar (§ 6) (`docs/trail/sdd/cycle-17.md` § 5.1; RN-76).
+  slice's own bar (§ 6) (`docs/trail/sdd/cycle-17.md` § 5.1; RN-76). A third thing no check
+  holds, from the config search-path switch (§ 3, the `core-bridge` row): `nozoki-core`'s
+  in-process Git suites run without the bridge, and so with the machine-level config reads on.
+  An answer there can differ from the bundle's on a machine with a global ignore file. How those
+  suites are isolated is the design of the change that builds the switch
+  (`docs/trail/sdd/cycle-22.md` § 2.1; RN-87).
   `checks/no-network.sh` diffs `cargo tree` against `deps.allow`, and fails where
   `nozoki-mac/Package.swift` declares a dependency or a `Package.resolved` exists (C-R6).
   `checks/view.sh` carries C-R6's transport read beside its link check: `nm` on the release
@@ -712,6 +728,14 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   than the build that first exports a function reaching `git-reader`; until that build the
   claim is stated and not proved, and no bridge function names `git-reader`
   (`docs/trail/sdd/cycle-21.md` § 5.3; RN-85).
+  A `nozoki-bridge` test asserts that the search path of each of the four machine config levels
+  — system, global, XDG, programdata — is empty once the composition root has run (§ 3, the
+  `core-bridge` row). The test proves the four paths are empty and observes no read: the step
+  from an empty path to no file touched is `sysdir.c:L559-L560` in the registry copy of
+  `libgit2-sys 0.18.8+1.9.7`, read and not run. The switch and its test are not in the tree at
+  `nozoki@f471a9e`. They land in the change that wires the libgit2 adapter in the bridge, so no
+  build opens a repository through the bridge with the reads on
+  (`docs/trail/sdd/cycle-22.md` § 2.1; RN-87).
   `checks/bundle.sh` reads `codesign -d --entitlements :- Nozoki.app` against the set C-R2's rule
   admits, as the script's expected set records it — set equality, the expected set widened only
   by a change reviewed against the rule (drafted on the companion's § 2.3, RN-61) — then launches the
@@ -816,7 +840,8 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   through SM-5; `nozoki_free` is the seam's release call and no command — it never reaches the
   model, so this clause does not name it, and its misuse is § 11 R-13's: C-R7, RN-66), a build that
   exports a function reaching `git-reader` with no transport read of its release executable
-  (C-R6), a release
+  (C-R6), a bridge that wires the libgit2 adapter with no search-path switch run before it or
+  with no test of that switch (§ 3), a release
   without AC-1 – AC-3 green.
 - **C-I4.** **A performance number is measured, never asserted.** `checks/latency.sh` prints
   file-switch and refresh p95 in milliseconds over reference fixtures on every CI build, so the
@@ -879,7 +904,9 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   (RN-8). *Violated by:* an HTML or attributed-string import from content anywhere in
   `nozoki-mac`; a node kind outside `MarkdownDocument`'s set; an image decoded from bytes
   `asset_bytes` did not return; a path opened without the check; a `file:` or `http(s):` URL
-  built from content and handed to any framework.
+  built from content and handed to any framework. **Not covered, and named so it is not read as
+  coverage:** a path the repository's own config names, which libgit2 follows without this check
+  (§ 11 R-16; RN-87).
 - **C-D4.** `OwnState` holds the theme, the window frame, and beyond v1 the remembered folders
   (bookmark, display name, last-viewed mark, at most ten) — and nothing else (DR-5, UX-S7). It is
   read whole or discarded whole: a version that meets own state it cannot read opens as on first
@@ -1696,7 +1723,8 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   `observed` (C-I1; RN-44); `checks/read-only.sh checks/fixtures/repo` with `.git/index` in the hash
   prints `unchanged` after `probe`, `state` and `status` — no optional-lock refresh (TO-2);
   `checks/structure.sh` finds no `std::process` in any shipped crate and the libgit2 import in
-  `git-reader` alone. *The promise clause:* `checks/read-only.sh` on all six fixtures prints
+  `git-reader` alone, with the one exception § 3 states: `core-bridge` names the binding in the
+  composition root's search-path switch and its test, and nowhere else (RN-87). *The promise clause:* `checks/read-only.sh` on all six fixtures prints
   `unchanged`; `checks/no-network.sh` exits 0.
 - **Rests on:** § 3 `git-reader` (the port, `probe`, `state`, `status`), `folder-model` (`kind`
   resolved; `GitState`; the tree's markers), `surfaces` (the rail's Git entry, the Git view);
@@ -2654,6 +2682,22 @@ A risk with no trigger and no response is an observation.>
   Changing the build so that the claim holds is this document's to draw. Stating the claim
   lower is not: `docs/fdr.md` PD-27 carries it as a product decision — "Nothing the product
   ships carries a network transport" — and lowering it is the owner's call (RN-85).
+- **R-16:** A repository's own config names a path outside the granted folder, and libgit2 opens
+  it. The search-path switch (§ 3, the `core-bridge` row) stops the four machine levels and
+  nothing else. From the repository's config libgit2 follows `include.path`
+  (`libgit2-sys 0.18.8+1.9.7`, `libgit2/src/libgit2/config_file.c:L564`), `core.excludesfile`
+  (`ignore.c:L362-L364`) and `core.attributesfile` (`attr.c:L413`), and none passes
+  `fs-reader`'s containment check. That config is content: whoever wrote the folder wrote it
+  (§ 4 C-D3). This sits beside R-3, which is the other way Git's own layout points outside the
+  grant — *shows up as* a read of the named path wherever nothing refuses it, which is the
+  in-process harness, on a fixture repository whose `.git/config` carries one of the three keys
+  with a path outside the fixture. No such fixture is in the tree at `nozoki@f471a9e`. In the
+  shipped bundle the sandbox refuses the read, and whether the open or the status read survives
+  that refusal has not been run; *response* in the bundle the wall is C-R2's and it is the only
+  bound, so no byte outside the grant is read there. In the harness nothing bounds it. The read
+  is named as uncovered beside the two claims it falls under (§ 3, the `core-bridge` row; § 4
+  C-D3), and how it is closed is the last item of *Open Questions*. Until that item is settled
+  this is a stated limit of § 4 C-D1 outside the sandbox, not a held property (RN-87).
 
 ## 12. What this design is not
 
@@ -5079,6 +5123,88 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   under `<CORE>/doctrine/governance/found_while_walking.md` § *The rule*, clause 1;
   `docs/trail/sdd/self_answer-33.md` § *Weighed and not raised* had recorded the slip and left
   it, because that run may not edit this document *(re: § 4 C-R5)*.
+- **RN-87:** *(CTO)* *(changed)* The rule that only `git-reader` imports the libgit2 binding gains
+  one exception, and `core-bridge` gains the config search-path switch. A `companion-self-answer`
+  run raised the item on 2026-10-03 while answering `docs/architecture_open_issues.md` § 3.5,
+  which the PM raised after `git-reader` landed, and a second such run answered it in the CTO's
+  seat the same day: "confirm, with six additions the fold carries"
+  (`docs/trail/sdd/cycle-22.md` § 2.1; reasoning `docs/trail/sdd/self_answer-34.md` § 2.1). The
+  item carries `Seat: cto`, so no owner's answer stands behind this note. § 4 C-D1 and
+  `docs/fdr.md` R-101 stand as written, and no slice's *Delivers*, edge or order moves.
+  **What was wrong.** A libgit2 repository open adds the global, XDG, system and programdata
+  config levels, and under the App Sandbox takes the global level's home from the password
+  entry. Those files lie outside the granted folder and the container, and C-D1's *Violated by*
+  names any read there. The one call that stops them, `git2::opts::set_search_path`, is an
+  `unsafe fn`. `nozoki-core` holds no `unsafe` and only `git-reader` could name the binding, so
+  no unit could make the call.
+  **Read for this fold, at the sources the item and the answer cite.** In the registry copy of
+  `libgit2-sys 0.18.8+1.9.7` under `libgit2/src/libgit2/`: `repository.c:L997-L999` (the open
+  takes a config snapshot, and an error other than not-found leaves the open),
+  `:L1316-L1338` (the four levels are added), `:L629-L634` and `:L1172-L1173` (ownership is
+  validated on open and `safe.directory` is read from the global config), `sysdir.c:L282`
+  (`/etc`), `:L347-L359` (`APP_SANDBOX_CONTAINER_ID` read, and the home taken from the password
+  entry when it is set), `:L458-L459` (every level is guessed at init), `:L559-L560` (an empty
+  search path leaves before any file is touched), `config_file.c:L117-L123` (an unreadable
+  config file is treated as absent), `:L564` (`parse_include`), `config.c:L143-L147`,
+  `ignore.c:L362-L364`, `attr.c:L413`, `attrcache.c:L345`. In `git2-0.21.0/src/opts.rs`:
+  `:L20-L23` (`set_search_path` is `unsafe`, for global state with no thread safety, and returns
+  a `Result`), `:L27` (it initialises the library first), `:L63` (`get_search_path`, which a
+  test can read the four levels back with). In the tree at `nozoki@f471a9e`:
+  `crates/nozoki-core/Cargo.toml:L9` (`default-features = false`);
+  `crates/nozoki-core/src/git_reader/libgit2.rs:L52` (`Repository::open_ext`) and `:L56` (any
+  other open error is a failed probe); `grep -rn 'git2\|git_reader\|GitPort' crates/nozoki-bridge/src
+  crates/nozoki-bridge/Cargo.toml` prints nothing; `grep -rn unsafe crates/nozoki-core/src`
+  prints nothing. Each line says what the item and the answer say it says. Nothing was run:
+  no build, no test and no bundle launch belongs to this fold.
+  **Where each of the answer's parts landed.** The three proposed edits: § 3's `core-bridge`
+  row (*Owns*), the *Four physical units* paragraph, and § 4 C-I3 with *Open Questions*' second
+  item. The six additions: (1) the row does not say "and no other" — the paths the repository's
+  own config names are stated as not covered there, and § 11 R-16 is new; (2) fail closed and
+  once, in the row; (3) the bridge manifest's default features, in the row and in § 4 C-R6 with
+  its *Violated by*; (4) the import rule's other statements — § 6 `see-git-status`'s command
+  clause, as the answer names it; (5) what the reader sees, in `git-reader`'s row; (6) what the
+  evidence does not reach, in C-I3.
+  **Five calls the answer left to this seat.** (a) **SM-2 takes the exception too.** Addition 4
+  says every statement of the rule moves together and names two. SM-2's "the adapter is the only
+  thing that knows libgit2" is a third, and the answer's own reasoning reads it as the meaning
+  of the rule (`docs/trail/sdd/self_answer-34.md` § 2.1, *The other readings, weighed*). A
+  search of this document for `imports the libgit2`, `libgit2 import` and `only thing that knows
+  libgit2` finds those three and no other. (b) **§ 4 C-D3 names the uncovered case.** C-D3 says
+  every path derived from content passes the containment check, and a path in the repository's
+  config is one that does not. The answer asks for the case to be named at the row and in § 11;
+  C-D3 gains one sentence because a limit is stated beside the claim it limits
+  (`system/doctrine/writing_bar.md` § 1.6, in the instance repository). C-D3's rule is not
+  changed. (c) **When the switch lands.** The answer does not say. C-I3 says: in the change that
+  wires the libgit2 adapter in the bridge, which is the first moment a repository can be opened
+  through the bridge. (d) **How R-16 is closed is an Open Question and not a companion item.**
+  The answer leaves it undecided and gives it to no one. It is a technical question that a
+  build settles, so it stands in *Open Questions* with the two forms open. One of the two would
+  change what a reader sees, and the item says that form is written into this document before it
+  is built. (e) **The Cargo sentence is quoted from Cargo's own page.** The answer states that
+  feature unification was its own knowledge and not re-read; C-R6 quotes the page's sentence,
+  fetched for this fold.
+  **Known limits, stated beside the claims.** No reading shows the open surviving the sandbox,
+  with or without the switch; *Open Questions*' second item carries it. The bridge test proves
+  four empty paths and observes no read. `nozoki-core`'s in-process Git suites run with the
+  reads on. libgit2 still reads `HOME`, `XDG_CONFIG_HOME` and `APP_SANDBOX_CONTAINER_ID` from
+  the environment at init (`sysdir.c:L347`, `:L357`, `:L402`); those reads open no file and are
+  raised against the NFDR's boundary set at `docs/architecture_open_issues.md` § 2.2. A libgit2
+  release that adds a fifth config level is not caught by a test naming four; the lockfile
+  change reviewed as code (C-R6) is the only gate. `checks/structure.sh` does not hold the
+  import rule outside three units' files today (its header, `:L249-L250`), and changing the
+  script for the exception is the design of the change that builds the switch.
+  **Downstream, nothing opened by this seat.** `docs/nfdr.md` QC-9, QC-11, QC-13, QC-17 and
+  QC-35 re-derive from this document, and `docs/architecture_open_issues.md` §§ 2.1 and 2.2
+  already hold the NFDR open for it. `docs/fdr.md` R-153's "an ignored file" reads, after this
+  fold, as a file the folder's own rules ignore; that is the FDR seat's to carry and is not
+  raised from here (`docs/trail/sdd/self_answer-34.md` § 2.1, *Downstream*).
+  **The companion:** `diff docs/SDD_open_issues.md docs/trail/sdd/cycle-22.md` printed nothing
+  before this fold's first edit, and the companion matched `nozoki@f471a9e`. Its one item is
+  folded and nothing else stands, so `docs/SDD_open_issues.md` is removed and `Status:` returns
+  to Settled *(re: § 3 `core-bridge`, `git-reader`, the units paragraph, SM-2; § 4 C-R6, C-I3,
+  C-D3; § 6 `see-git-status`; § 11 R-16; Open Questions; source: `docs/trail/sdd/cycle-22.md`
+  § 2.1; `docs/trail/sdd/self_answer-34.md`; `nozoki@f471a9e`; `docs/fdr.md` R-101;
+  `docs/SRS.md` NFR-7, DR-6)*.
 
 ## Open Questions
 
@@ -5101,7 +5227,12 @@ question.>
 - [OPEN: Whether libgit2 opens a repository correctly under a read-only user-selected grant with
   discovery disabled, for a plain `.git` folder and for a `.git` file naming a gitdir inside the
   grant. Settled by the first Git slice's `root_finding` and `git_state` fixtures running green
-  on the built bundle; a failure is R-1 firing early.]
+  on the built bundle; a failure is R-1 firing early. The same run shows the open answering
+  `root` with the four machine-level config reads switched off (§ 3, the `core-bridge` row).
+  Before the switch, a `stat` of a config path refused with anything but `ENOENT` or `ENOTDIR`
+  is an error (`libgit2-sys 0.18.8+1.9.7`, `libgit2/src/libgit2/config.c:L143-L147`) and a
+  failed config snapshot fails the open (`repository.c:L997-L999`); whether the sandbox's
+  refusal took that path was never run. *(Extended on 2026-10-03; RN-87.)*]
 - [OPEN: How TextKit lays out UX-I12's two hard cells — an image or its placeholder box in the
   flow of the prose, and fenced code on its own surface inside prose: `NSTextAttachment` and
   `NSTextBlock`, or a custom layout fragment. Settled by `read-markdown`'s first build rendering
@@ -5134,3 +5265,16 @@ question.>
   § 4 C-E2 binds it: a refresh that collapses a node or resets a scroll position violates that
   condition. *(Added on 2026-10-01, on the CDO's finding in the run that folded
   `docs/trail/sdd/cycle-17.md` § 5.2; RN-77.)*]
+- [OPEN: How a path the repository's own config names is kept from being read outside the grant
+  (§ 11 R-16). libgit2 follows `include.path`, `core.excludesfile` and `core.attributesfile`
+  with no containment check, and the search-path switch does not reach them. Two forms are open.
+  One: a libgit2 setting that stops the three being followed; the answer that named the case
+  found none and states that it did not look for long (`docs/trail/sdd/self_answer-34.md`
+  § 2.1, the first addition). Two: the adapter reads the repository's config through
+  `fs-reader`'s check first and answers `failed` for a repository whose config carries one of
+  the three with a path outside the folder. Settled in `see-git-status`, no later than the build
+  that first exports a function reaching `git-reader`, by a fixture repository whose config
+  names an outside path and a case showing that path is not read. The second form adds a
+  condition under which a repository's Git state is not shown, which a reader sees; where it is
+  the form found, it is written into `git-reader`'s row and § 11 R-16 before it is built.
+  *(Added on 2026-10-03; RN-87.)*]
