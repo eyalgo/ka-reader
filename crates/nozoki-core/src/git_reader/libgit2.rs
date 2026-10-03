@@ -43,8 +43,13 @@ impl GitPort for Libgit2 {
     }
 }
 
+/// libgit2 is asked about the `.git` entry the look found and nothing else: told neither to append
+/// `.git` nor to search, it cannot take the opened folder itself, or a folder above it, as the Git
+/// directory when that entry is not one (`tests/root_finding.rs`,
+/// `test_git_directory_opened_directly_holding_a_git_folder_answers_plain`).
 fn open_repository(folder: &Path) -> RootFinding {
-    match Repository::open_ext(folder, RepositoryOpenFlags::NO_SEARCH, no_ceilings()) {
+    let flags = RepositoryOpenFlags::NO_SEARCH | RepositoryOpenFlags::NO_DOTGIT;
+    match Repository::open_ext(folder.join(GIT_ENTRY), flags, no_ceilings()) {
         Ok(repository) if is_top_level(&repository) => RootFinding::Root,
         Ok(_) => RootFinding::Plain,
         Err(error) if error.code() == ErrorCode::NotFound => look_inside_git_directory(folder),
