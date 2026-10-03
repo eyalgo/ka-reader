@@ -114,7 +114,7 @@ fn verified_locations(root: &Path) -> Result<Locations, GitReadCondition> {
     };
     let common_directory = match read_spelling_file(&git_directory.join(COMMON_DIRECTORY_FILE)) {
         Ok(content) => {
-            let value = trim_end_c_space(&content);
+            let value = up_to_nul(trim_end_c_space(&content));
             locate_inside(root, &git_directory, Path::new(OsStr::from_bytes(value)))?
         }
         Err(error) if error.kind() == io::ErrorKind::NotFound => git_directory.clone(),
@@ -238,7 +238,7 @@ fn queue_steps(value: &Path, position: &mut PathBuf, pending: &mut VecDeque<Opti
 
 /// The value a `.git` file names, parsed by libgit2's own rule (`read_gitfile` in the vendored
 /// libgit2 1.9.7): the file's end is trimmed, it must be longer than `gitdir:` and begin with it, and
-/// the value is what follows once leading whitespace is skipped.
+/// the value is what follows once leading whitespace is skipped, up to the first NUL byte.
 fn gitdir_value(file: &Path) -> Result<Vec<u8>, GitReadCondition> {
     let content = read_spelling_file(file).map_err(|_| GitReadCondition::GitDirectoryUnreadable)?;
     let trimmed = trim_end_c_space(&content);
@@ -250,7 +250,16 @@ fn gitdir_value(file: &Path) -> Result<Vec<u8>, GitReadCondition> {
         .iter()
         .position(|byte| !is_c_space(*byte))
         .unwrap_or(after_prefix.len());
-    Ok(after_prefix[start..].to_vec())
+    Ok(up_to_nul(&after_prefix[start..]).to_vec())
+}
+
+/// What libgit2 reads of a value it holds as a C string: the bytes before the first NUL, so the bound
+/// verifies the location libgit2 opens and not one spelled by bytes libgit2 never sees.
+fn up_to_nul(bytes: &[u8]) -> &[u8] {
+    bytes
+        .iter()
+        .position(|byte| *byte == 0)
+        .map_or(bytes, |end| &bytes[..end])
 }
 
 fn trim_end_c_space(bytes: &[u8]) -> &[u8] {
@@ -352,10 +361,9 @@ fn status_lists(repository: &Repository) -> Result<StatusLists, GitReadCondition
     };
     for found in statuses.iter() {
         let status = found.status();
-        let path = spelled_lossily(found.path_bytes());
         if status.contains(Status::CONFLICTED) {
             lists.changed.push(StatusEntry {
-                path,
+                path: spelled_lossily(found.path_bytes()),
                 category: StatusCategory::InConflict,
             });
             continue;
@@ -364,7 +372,10 @@ fn status_lists(repository: &Repository) -> Result<StatusLists, GitReadCondition
             lists.staged.push(category);
         }
         if let Some(category) = changed_category(status) {
-            lists.changed.push(StatusEntry { path, category });
+            lists.changed.push(StatusEntry {
+                path: changed_path(&found),
+                category,
+            });
         }
     }
     Ok(lists)
@@ -388,6 +399,15 @@ fn staged_category(found: &git2::StatusEntry<'_>) -> Option<StatusEntry> {
         return None;
     };
     Some(StatusEntry { path, category })
+}
+
+/// The path a changed entry is at: the index side of the index-to-working-tree delta. For a staged
+/// rename that is the path renamed to, where `path_bytes()` names the path it left.
+fn changed_path(found: &git2::StatusEntry<'_>) -> String {
+    found
+        .index_to_workdir()
+        .and_then(|delta| delta.old_file().path_bytes().map(spelled_lossily))
+        .unwrap_or_else(|| spelled_lossily(found.path_bytes()))
 }
 
 fn changed_category(status: Status) -> Option<StatusCategory> {
