@@ -74,8 +74,7 @@ fn test_opening_probe_maps_io_without_returning_entries() {
         ..Default::default()
     };
     assert_eq!(
-        open_root_with_filesystem(&file, Path::new("chosen"))
-            .map_err(|failure| failure.condition),
+        open_root_with_filesystem(&file, Path::new("chosen")).map_err(|failure| failure.condition),
         Err(OpenFailure::NotAFolder)
     );
     assert_eq!(file.read_calls.get(), 0);
@@ -291,8 +290,7 @@ fn test_volume_root_fact_is_conservative() {
         Some(false),
     );
     assert_eq!(
-        volume_facts_for(&RecordingFilesystem::new(&root, None, None), &root)
-            .root_is_volume_root,
+        volume_facts_for(&RecordingFilesystem::new(&root, None, None), &root).root_is_volume_root,
         None,
     );
 }
