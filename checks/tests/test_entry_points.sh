@@ -171,6 +171,7 @@ case "\$1" in
   metadata)
     [ ! -e "\$here/meta.fail" ] || { echo "cargo: stubbed metadata failure" >&2; exit 101; }
     [ ! -e "\$here/meta.garbage" ] || { echo "this is not json"; exit 0; }
+    [ ! -e "\$here/meta.array" ] || { echo "[1]"; exit 0; }
     if [ -e "\$here/meta.sed" ]; then "\$real" "\$@" | sed -f "\$here/meta.sed"; else exec "\$real" "\$@"; fi
     ;;
   *) exec "\$real" "\$@" ;;
@@ -381,8 +382,7 @@ test_case_11_missing_crate_is_malformed() {
   run_scan
 
   expect_nonzero_status || return 1
-  expect_stderr_contains "malformed: line $APPENDED_LINE:" || return 1
-  expect_stderr_contains "crate"
+  expect_stderr_contains "malformed: line $APPENDED_LINE: lacks its crate"
 }
 
 test_case_12_missing_name_is_malformed() {
@@ -392,8 +392,7 @@ test_case_12_missing_name_is_malformed() {
   run_scan
 
   expect_nonzero_status || return 1
-  expect_stderr_contains "malformed: line $APPENDED_LINE:" || return 1
-  expect_stderr_contains "name"
+  expect_stderr_contains "malformed: line $APPENDED_LINE: lacks its name"
 }
 
 test_case_13_missing_explanation_is_malformed() {
@@ -403,8 +402,7 @@ test_case_13_missing_explanation_is_malformed() {
   run_scan
 
   expect_nonzero_status || return 1
-  expect_stderr_contains "malformed: line $APPENDED_LINE:" || return 1
-  expect_stderr_contains "what-it-changes"
+  expect_stderr_contains "malformed: line $APPENDED_LINE: lacks its what-it-changes text"
 }
 
 # CP-410 row 14, CP-402: a grouped import is a read of each name it lists.
@@ -580,7 +578,8 @@ test_c12_tree_resolution_failure_is_fatal() {
 
   run_scan
 
-  expect_resolution_failure
+  expect_resolution_failure || return 1
+  expect_stderr_contains "cargo tree exited"
 }
 
 # C13: a failed metadata command is the same.
@@ -590,7 +589,8 @@ test_c13_metadata_resolution_failure_is_fatal() {
 
   run_scan
 
-  expect_resolution_failure
+  expect_resolution_failure || return 1
+  expect_stderr_contains "cargo metadata exited"
 }
 
 # C14: a member added to the tree and to workspace_members, with no package directory, is skipped by
@@ -616,7 +616,7 @@ test_c15_comments_only_list_fails() {
   run_scan
 
   expect_nonzero_status || return 1
-  expect_stderr_contains "$LIST"
+  expect_stderr_contains "the reviewed list holds no entry line: $LIST"
 }
 
 # C16: a list path that does not exist fails, naming it.
@@ -627,7 +627,7 @@ test_c16_missing_list_fails() {
   run_scan
 
   expect_nonzero_status || return 1
-  expect_stderr_contains "$LIST"
+  expect_stderr_contains "the reviewed list is missing: $LIST"
 }
 
 # C17: the same read in two files of one crate is one read, covered by one line.
@@ -654,12 +654,20 @@ test_unreadable_metadata_is_fatal() {
   : > "$STUB/meta.garbage"
   run_scan
   expect_resolution_failure || return 1
+  expect_stderr_contains "plutil could not read the metadata" || return 1
+
+  new_case
+  : > "$STUB/meta.array"
+  run_scan
+  expect_resolution_failure || return 1
+  expect_stderr_contains "not a JSON object" || return 1
 
   new_case
   printf '#!/bin/sh\necho "plutil: stubbed failure" >&2\nexit 1\n' > "$STUB/plutil"
   chmod +x "$STUB/plutil"
   run_scan
   expect_resolution_failure || return 1
+  expect_stderr_contains "plutil could not read the metadata" || return 1
 
   new_case
   tools="$CASE/tools-without-plutil"
@@ -675,7 +683,7 @@ test_unreadable_metadata_is_fatal() {
   STDOUT="$(cat "$CASE/stdout")"
   STDERR="$(cat "$CASE/stderr")"
   expect_resolution_failure || return 1
-  expect_stderr_contains "plutil"
+  expect_stderr_contains "plutil is not on PATH"
 }
 
 # change_design.md § 3 A: an empty crate set is a resolution failure and never an empty pass.
@@ -699,6 +707,7 @@ test_unresolved_package_is_unreadable() {
 
   expect_nonzero_status || return 1
   expect_finding unreadable ghost || return 1
+  expect_stderr_contains "no package of that name and version" || return 1
   expect_finding unlisted itoa env::var
 }
 
@@ -712,7 +721,8 @@ test_ambiguous_package_is_unreadable() {
   run_scan
 
   expect_nonzero_status || return 1
-  expect_finding unreadable itoa
+  expect_finding unreadable itoa || return 1
+  expect_stderr_contains "2 packages of that name and version"
 }
 
 # A non-member package outside any registry is scanned: membership controls the skip, not its source or the
@@ -907,6 +917,10 @@ test_malformed_lines_do_not_hide_other_findings() {
 # read names the first file in path order.
 test_findings_are_distinct_and_deterministic() {
   new_case
+  # The file system lists a directory in name order, which would hide a missing sort. A `find` that answers
+  # in reverse order puts the later file first, so only the script's own ordering names the earlier one.
+  printf '#!/usr/bin/env bash\nset -o pipefail\n"%s" "$@" | LC_ALL=C sort -z -r\n' "$(command -v find)" > "$STUB/find"
+  chmod +x "$STUB/find"
   plant_copy itoa || return 1
   plant_file "$PLANT_DIR" src/z_last.rs 'fn z() { let _ = std::env::var("X"); }'
   plant_file "$PLANT_DIR" src/a_first.rs 'fn a() { let _ = std::env::var("X"); }'
