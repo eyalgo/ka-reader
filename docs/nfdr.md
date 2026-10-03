@@ -1,9 +1,8 @@
 # NFDR — Nozoki 覗き
 
-**Status:** Draft
+**Status:** Settled
 **Owner:** Principal Architect
-**Version:** 36 — QC-47's *verified by* follows SDD v29's § 4 C-I1 and S-5's command half: an unreadable entry yields `failed` on that item and the failure changes no other item, each sibling holding the state its own read gave it, in place of "`observed` on its siblings". The tail now also says it does not hold what a failed re-read of an expanded folder does to the entries under it, which the SDD leaves open. Companion § 2.1, which drafted the same change and waited on the SDD, closes on that upstream sentence. § 3.1, QC-15's list of `git-reader`'s reads outside libgit2, stays for the owner, so the companion remains and `Status:` is Draft. No record moves, no `QC` is added, renumbered or reused, and § 10 does not move (RN-47).
-Version 35 — 35 — the close: the cycle-32 fold (`docs/trail/architecture/cycle-32.md` § 2.1; reasoning at `docs/trail/architecture/self_answer-36.md` § 2.1), confirmed with one addition. QC-5's *verified by* keeps its v34 draft, its three named cases written and passing at `nozoki@48308ff`. It now also says what the missing-directory case does not reach: a `probe` that tries the pointer, swallows the failed open and still answers `Root`. That half of the read bound goes to QC-15's review at `development-design`. No record moves, no `QC` is added, renumbered or reused, and § 10 does not move. Nothing is left for the owner, so the companion is removed and `Status:` is Settled (RN-46).
+**Version:** 37 — the close: the cycle-33 fold (`docs/trail/architecture/cycle-33.md` § 3.1; reasoning at `docs/trail/architecture/self_answer-37.md` § 3.1), answered. QC-15's list of `git-reader`'s reads outside libgit2 names the two kinds the adapter makes and the list left out: the metadata, and a link's own text, at each position inside the folder along the spelled path to the Git directory and to the common directory, and the content of the `commondir` file in a Git directory that lies inside the folder. Its bound, "never a path past the folder and never a link followed out of it", does not move. The tail's `Path`-method locators are re-pinned at `nozoki@6a0725c`. No record moves, no `QC` is added, renumbered or reused, and § 10 does not move. Nothing is left for the owner, so the companion is removed and `Status:` is Settled (RN-48).
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · PRD Settled · UXD Settled · DESIGN Settled · CONTENT Settled
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
@@ -416,9 +415,12 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
 
 - **QC-15:** I/O ownership is fixed: folder reads are `fs-reader`'s (bytes, listings) and
   `git-reader`'s (Git's on-disk state through libgit2, and, outside libgit2, reads bounded to the
-  opened folder: the folder's own metadata, its `.git` entry's metadata without following a link,
-  an entry inside a `.git` folder, and a `.git` file's own content — never a path past the folder
-  and never a link followed out of it); change notifications are `watcher`'s
+  opened folder: the folder's own metadata; its `.git` entry's metadata without following a link;
+  an entry inside a `.git` folder; a `.git` file's own content; the metadata, and a link's own
+  text, at each position inside the folder along the spelled path to the Git directory and to the
+  common directory; and the content of the `commondir` file in a Git directory that lies inside
+  the folder — never a path past the folder and never a link followed out of it); change
+  notifications are `watcher`'s
   (FSEvents); the diagnostic log writer is `nozoki-bridge`'s; the Open panel and the one window
   are `mac-shell`'s, in `nozoki-mac`; drawing is `surfaces`', in `nozoki-mac`, which holds no I/O
   of its own; **no unit owns a socket and no unit spawns a process.**
@@ -436,9 +438,12 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   parts of the `git-reader` bound are therefore not held by the script (`:L253-L256`). The first is
   which read the adapter makes inside its owner file: the script admits every filesystem form
   there, so it cannot tell a read inside the folder from one past it. The second is `git-reader`'s
-  `Path`-method reads, which is how the adapter reads the folder and the `.git` entry
-  (`crates/nozoki-core/src/git_reader/libgit2.rs:L38`, `:L42`, `:L136`; the `.git` file's open is
-  at `:L62` and its handle's `metadata()` at `:L69`). For those two parts only, the bound is review
+  `Path`-method reads, which is how the adapter reads the folder, the `.git` entry and each
+  position along a spelled path (`crates/nozoki-core/src/git_reader/libgit2.rs:L54`, `:L58`,
+  `:L103`, `:L163`, `:L513`, at `nozoki@6a0725c`; the `.git` file's open is at `:L439` and its
+  handle's `metadata()` at `:L446`) *(through v36 these locators were pinned at `nozoki@48308ff`,
+  as `:L38`, `:L42`, `:L136`, `:L62` and `:L69`, before `state()` and the walk landed — RN-48)*.
+  For those two parts only, the bound is review
   at `development-design`, which judges each against the clause above *(through v33 this tail
   exempted two owner files at `nozoki@8edec4f`, named QC-15's other owners as not held, and held
   the adapter's file as a rule still to come, with review as the whole bound until it came. The
@@ -449,7 +454,9 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   C-R7; the bounded reads and their gate on the owner's seat's answer at
   `docs/trail/architecture/cycle-29.md` § 3.3 — RN-43; the three owner files, the suite's two
   cases and the narrowed gate on the owner's seat's answer at
-  `docs/trail/architecture/cycle-31.md` § 3.1 — RN-45)*
+  `docs/trail/architecture/cycle-31.md` § 3.1 — RN-45; the walk's reads and the `commondir` read
+  named in the list, and the `Path`-method locators re-pinned at `nozoki@6a0725c`, on the owner's
+  seat's answer at `docs/trail/architecture/cycle-33.md` § 3.1 — RN-48)*
 - **QC-16:** The only writes the product performs are `own-state`'s and the bridge's diagnostic
   log, both inside `~/Library/Containers/com.kensaiapp.nozoki/`.
   — *verified by:* `checks/own-state.sh` — after a session every changed file under `$HOME` is
@@ -4156,3 +4163,53 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   move. A companion stays on disk, so `Status:` moves from Settled to Draft *(re: header `Status:`,
   `Version:`; QC-47; source: `docs/SDD.md` v29 § 4 C-I1, § 6 S-5, RN-89; `docs/trail/sdd/cycle-24.md`
   § 2.1; `docs/architecture_open_issues.md` § 2.1 at `nozoki@f0789a6`)*
+- **RN-48:** *(v37 — the close: the cycle-33 fold, § 3.1 answered)* **The fold.** The companion
+  at intake held one item, § 3.1, which the PM raised against QC-15's list of `git-reader`'s reads
+  outside libgit2. It was answered in the owner's seat (`docs/trail/architecture/self_answer-37.md`
+  § 3.1) and committed at `nozoki@46c7ab0`. The companion was then copied whole, before this fold, as
+  `docs/trail/architecture/cycle-33.md`. **§ 3.1 → QC-15.** The list names the two kinds the adapter
+  makes and the list left out, in the answer's words: the metadata, and a link's own text, at each
+  position inside the folder along the spelled path to the Git directory and to the common
+  directory; and the content of the `commondir` file in a Git directory that lies inside the folder.
+  The list's items are now separated by semicolons, because the new item carries commas of its own.
+  The bound, "never a path past the folder and never a link followed out of it", stays as written.
+  The answer corrects a list that read as complete. It does not widen the read-only promise, and
+  QC-35 does not move. **Re-measured at HEAD `nozoki@46c7ab0`, not taken from the answer.** `git diff
+  --stat 6a0725c HEAD -- crates checks nozoki-mac .github Cargo.toml Cargo.lock` prints nothing, so
+  every citation at `6a0725c` reads at HEAD. The lines read as quoted: `libgit2.rs:L102-L127`
+  (`verified_locations`), `:L115` (the `commondir` read), `:L138-L142` (an outside location
+  refused), `:L162-L172` (`inspect_on_disk`: `symlink_metadata` at `:L163`, `read_link` at `:L166`),
+  `:L200-L202` (no position outside the folder, and not the folder itself, is inspected), and
+  `:L275-L291` (`read_spelling_file`, opened with `O_NOFOLLOW` at `:L276-L279`). `bash
+  checks/structure.sh` prints "14 Rust files in 2 crates read — nothing found" and exits 0. `bash
+  checks/tests/test_structure.sh` exits 0 with 88 `ok` lines, and QC-15's two cases are among them.
+  **What this run adds beyond the answer.** (1) The answer adds `:L163` to the tail's list of
+  `Path`-method reads, "re-pinned at that commit". The list's old locators were pinned at
+  `nozoki@48308ff`, and `libgit2.rs` has since moved (`git diff --stat 48308ff 6a0725c` shows 448
+  lines added there). A list re-pinned at `6a0725c` with only `:L163` added would leave the old
+  numbers on lines they no longer name. So every locator is re-pinned, read off the file at
+  `6a0725c`: `:L38` → `:L54`, `:L42` → `:L58`, `:L136` → `:L513`, the `.git` file's open `:L62` →
+  `:L439`, and its handle's `metadata()` `:L69` → `:L446`. `:L103` joins the list as well. It is
+  `verified_locations`' `symlink_metadata` on the `.git` entry, a read of a kind the list already
+  names, made on `state()`'s path. It was not in the file at `48308ff`, and the answer counts it
+  among the reads already covered (`self_answer-37.md` § 3.1). The old pins stay in the tail as a
+  dated parenthetical, so a reader holding a `48308ff` citation can follow it. (2) The header carried
+  a second version line, `Version 35 — 35 — …`, left there by the v36 run. No earlier revision kept
+  one (`git show 5a1e13f~1:docs/nfdr.md`), so it was a defect and is removed. Its text is held in the
+  v36 commit, `nozoki@5a1e13f`. **Weighed and left as written.** ADR-0018's four-kind list is scoped to
+  `probe` (`docs/adr/0018-root-finding-answers-root-for-a-git-file-and-reads-only-inside-the-folder.md:L55-L58`),
+  which still makes only those four reads, and the record gives the `commondir` case to `state()`
+  (`:L97-L99`). So it stays true, and no record supersedes it. QC-5's copy of the same list is
+  scoped to `probe` too (QC-5, "`probe` reads only inside the opened folder"), and it does not move.
+  The answer names a case it leaves uncovered: a folder already walked is swapped for a link before the
+  `commondir` open, or before libgit2's own open. That case adds no clause here. The read-only promise
+  holds there through the App Sandbox wall (ADR-0011), and the adapter's half is already QC-15's review
+  at `development-design` ("which read the adapter makes inside its owner file"). **What moved beneath
+  this document:** nothing. `git log 5a1e13f..HEAD -- docs/SRS.md docs/SDD.md docs/fdr.md docs/PRD.md
+  docs/UXD.md docs/DESIGN.md docs/CONTENT.md` prints nothing, and every input's `Status:` line was
+  re-read and is Settled, so `Inputs read:` stands. No `QC` is added, renumbered or reused, and no
+  record is written or restatused, so the index does not move. § 10's QC-15 row names
+  `checks/structure.sh`, whose rules did not change, so the row does not move either. Nothing is left
+  for the owner, so the companion is removed and `Status:` is Settled *(re: header `Status:`,
+  `Version:`; QC-15; source: `docs/trail/architecture/cycle-33.md` § 3.1;
+  `docs/trail/architecture/self_answer-37.md` § 3.1; `crates/` and `checks/` at `nozoki@6a0725c`)*
