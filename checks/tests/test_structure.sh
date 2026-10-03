@@ -1738,7 +1738,7 @@ text = "checks"'
 
 # --- the cases of the boundary reads: QC-2, QC-30 and QC-58, QC-15's socket clause, layer-5 ---
 
-# The members each rule holds, as the script's scan table states them.
+# Intent: tl_instruction.md Task 2, W1–W6 / E1–E2 / S1–S2 member contracts.
 WRITE_FS_MEMBERS="write copy rename create_dir create_dir_all remove_file remove_dir remove_dir_all hard_link soft_link symlink symlink_file symlink_dir mkfifo mkdir mkdirat unlink unlinkat renameat renameat_with symlinkat link linkat mknodat ftruncate"
 WRITE_FLAGS="write append create create_new truncate"
 WRITE_OFLAGS="WRONLY RDWR CREATE TRUNC APPEND"
@@ -1821,6 +1821,9 @@ test_write_api_members_are_rejected() {
   for constant in $WRITE_OFLAGS; do
     plant_line "$R" "$CORE_OWNER" "fn oflags_$constant() { let _ = OFlags::$constant; }"
     plant_line "$R" "$CORE_OWNER" "fn rustix_oflags_$constant() { let _ = rustix::fs::OFlags::$constant; }"
+    plant_line "$R" "$CORE_OWNER" "use rustix::{fs::{OFlags::{
+        $constant,
+    }}};" 1
   done
   for constant in $WRITE_LIBC_FLAGS; do
     plant_line "$R" "$CORE_OWNER" "fn libc_$constant() { let _ = libc::$constant; }"
@@ -1861,6 +1864,11 @@ fn c() { let _ = File::open(p); let _ = fs::read(p); let _ = fs::metadata(p); }
 fn d() { let _ = libc::open(p, 0); libc::write(fd, b, n); }
 use std::io::Write;
 fn e() { write!(s, "x"); writeln!(s); w.write_all(b); }'
+  # CP-447 and Task 2 W4: only literal true asserts write access.
+  for flag in $WRITE_FLAGS; do
+    plant "$R" "$CORE_OWNER" "fn disabled_$flag() { let _ = o.$flag(false); }"
+    plant "$R" "$CORE_OWNER" "fn variable_$flag() { let _ = o.$flag(enabled); }"
+  done
   run_structure "$R"
   expect_status 0 || return 1
   expect_stderr_empty || return 1
@@ -1877,9 +1885,15 @@ test_env_reads_are_rejected() {
   for member in $ENV_MEMBERS; do
     plant_line "$R" "$CORE_FILE" "fn bare_$member() { let _ = env::$member; }"
     plant_line "$R" "$CORE_FILE" "fn abs_$member() { let _ = ::std::env::$member; }"
+    plant_line "$R" "$CORE_FILE" "use std::{env::{
+        $member,
+    }};" 1
   done
   for member in $ENV_LIBC_MEMBERS; do
     plant_line "$R" "$CORE_FILE" "fn libc_$member() { let _ = libc::$member; }"
+    plant_line "$R" "$CORE_FILE" "use {libc::{
+        $member,
+    }};" 1
   done
   plant_line "$R" "$CORE_FILE" 'use libc::{
     c_int,
@@ -2035,16 +2049,19 @@ test_boundary_members_in_comments_and_strings_are_rejected() {
   plant_line "$R" "$CORE_FILE" 'const W: &str = "std::fs::write";'
   plant_line "$R" "$CORE_FILE" '// use std::{fs::{write}};'
   plant_line "$R" "$CORE_FILE" '/* .append(true) */'
+  plant_line "$R" "$CORE_FILE" 'const RAW_WRITE: &str = r##"use std::{fs::{write}};"##;'
   expect_qc2="$PLANTED_LINES"
   PLANTED_LINES=""
   plant_line "$R" "$CORE_FILE" 'const E: &str = "std::env::var";'
   plant_line "$R" "$CORE_FILE" '// use std::{io, env::{var}};'
   plant_line "$R" "$CORE_FILE" 'const C: &str = r#"/home/x/.config/y"#;'
   plant_line "$R" "$CORE_FILE" '/* Library/Preferences */'
+  plant_line "$R" "$CORE_FILE" 'const RAW_ENV: &str = r##"use std::{env::{var}};"##;'
   expect_env="$PLANTED_LINES"
   PLANTED_LINES=""
   plant_line "$R" "$CORE_FILE" '/* std::net::TcpStream */'
   plant_line "$R" "$CORE_FILE" 'const S: &str = "use std::{os::unix::{net}};";'
+  plant_line "$R" "$CORE_FILE" 'const RAW_SOCKET: &str = r##"use std::{os::unix::{net}};"##;'
   expect_socket="$PLANTED_LINES"
   run_structure "$R"
   expect_status 1 || return 1
