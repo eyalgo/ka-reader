@@ -196,6 +196,63 @@ mod tests {
         assert!(!names_a_git_directory(reader(b"gitdir")).expect("the read succeeds"));
     }
 
+    /// Hands out one byte per read, failing every read once with `Interrupted` before it does, and
+    /// at the end fails with `end` where it is given instead of reporting the end of the bytes.
+    struct Stutter<'a> {
+        remaining: &'a [u8],
+        interrupt_next: bool,
+        end: Option<io::ErrorKind>,
+    }
+
+    impl<'a> Stutter<'a> {
+        fn new(remaining: &'a [u8], end: Option<io::ErrorKind>) -> Self {
+            Self {
+                remaining,
+                interrupt_next: true,
+                end,
+            }
+        }
+    }
+
+    impl Read for Stutter<'_> {
+        fn read(&mut self, buffer: &mut [u8]) -> io::Result<usize> {
+            if self.interrupt_next {
+                self.interrupt_next = false;
+                return Err(io::ErrorKind::Interrupted.into());
+            }
+            self.interrupt_next = true;
+            let Some((first, rest)) = self.remaining.split_first() else {
+                return self.end.map_or(Ok(0), |kind| Err(kind.into()));
+            };
+            buffer[0] = *first;
+            self.remaining = rest;
+            Ok(1)
+        }
+    }
+
+    /// An interrupt is retried wherever it lands, after the prefix as much as inside it.
+    #[test]
+    fn test_gitdir_test_retries_an_interrupt_before_every_read() {
+        let answer = |bytes| names_a_git_directory(Stutter::new(bytes, None));
+
+        assert!(answer(b"gitdir:   \n\t a").expect("every interrupt is retried"));
+        assert!(!answer(b"gitdir:   \n\t ").expect("every interrupt is retried"));
+    }
+
+    /// A read that fails for any reason but an interrupt is a failure and never an answer, inside
+    /// the prefix or after it, so the probe can answer `GitFileUnreadable` and not `Plain`.
+    #[test]
+    fn test_gitdir_test_reports_a_read_failure_and_never_answers() {
+        for bytes in [&b"gitd"[..], b"gitdir:", b"gitdir:  \n"] {
+            let outcome = names_a_git_directory(Stutter::new(bytes, Some(io::ErrorKind::Other)));
+            assert_eq!(
+                outcome.map_err(|error| error.kind()),
+                Err(io::ErrorKind::Other),
+                "{bytes:?}"
+            );
+        }
+    }
+
     #[test]
     fn test_linked_library_is_vendored_without_https_or_ssh() {
         let version = git2::Version::get();

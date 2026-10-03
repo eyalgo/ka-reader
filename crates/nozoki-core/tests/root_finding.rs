@@ -300,6 +300,24 @@ fn test_gitdir_followed_only_by_each_whitespace_byte_answers_plain() {
     }
 }
 
+/// The set is closed at six: a byte beside a member, a control byte, and the two bytes a Unicode or
+/// Latin-1 reading of a byte calls whitespace (NEL, no-break space) are not whitespace, so each one
+/// alone after the prefix is a `gitdir:` line. The answer does not vary with a locale.
+#[test]
+fn test_gitdir_followed_by_a_byte_outside_the_whitespace_set_answers_root() {
+    for outside in [
+        0x00_u8, 0x08, 0x0E, 0x1C, 0x1F, 0x21, 0x7F, 0x85, 0xA0, 0xFF,
+    ] {
+        let mut contents = b"gitdir:".to_vec();
+        contents.push(outside);
+        assert_eq!(
+            probe_git_file(&contents),
+            RootFinding::Root,
+            "followed by {outside:#04x}"
+        );
+    }
+}
+
 #[test]
 fn test_byte_order_mark_before_the_prefix_answers_plain() {
     assert_eq!(
