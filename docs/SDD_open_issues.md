@@ -119,7 +119,41 @@ None.
 
   Downstream, NFDR QC-9, QC-11, QC-13, QC-17 and QC-35 re-derive from whichever reading is taken.
   `docs/architecture_open_issues.md` § 2.1 holds the NFDR open meanwhile.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm, with six additions the fold carries. The reading is taken:
+  C-D1 and `docs/fdr.md` R-101 stand as written, and `core-bridge`, the Rust-side composition root,
+  empties the system, global, XDG and programdata search paths before the libgit2 adapter is wired.
+  1. **The clause does not say "and no other".** The switch stops the four machine levels. It does
+     not stop a path the repository's own config names: libgit2 follows `include.path`
+     (`libgit2/src/libgit2/config_file.c:L564`), `core.excludesfile` (`ignore.c:L362-L364`) and
+     `core.attributesfile` (`attr.c:L413`), and none passes `fs-reader`'s containment check. The
+     fold names these as an uncovered case where it writes edit 1 and as a risk in § 11 beside
+     R-3. In the bundle the sandbox is their only bound; in the in-process harness nothing bounds
+     them. Closing it is not decided here.
+  2. **It fails closed, and runs once.** `set_search_path` returns a `Result`
+     (`git2-0.21.0/src/opts.rs:L23`). If any of the four calls fails, the adapter is not wired and
+     the Git item is `failed`; a repository is never opened with the reads on. The four calls run
+     once per process, and a second arrival at the composition root repeats nothing.
+  3. **The bridge's manifest names the binding with its default features off**, as
+     `crates/nozoki-core/Cargo.toml:L9` does. A `git2` line with defaults on would turn HTTPS and
+     SSH on for the whole build through feature unification, against § 4 C-R6.
+  4. **Every statement of the import rule moves together.** Edit 2 names `SDD.md:L347`. The same
+     rule is § 6 S-4's command clause, "the libgit2 import in `git-reader` alone" (`:L1698`), and
+     it takes the same one exception: the bridge names the binding in the composition root's
+     search-path call and its test, and nowhere else.
+  5. **What the reader sees changes in two places, and the fold says so in `git-reader`'s row.**
+     With the global and XDG levels off, the user's global ignore file is not applied
+     (`attrcache.c:L345`), so a file it hides from `git status` is listed here as untracked.
+     And a repository not owned by the current user fails to open, because the `safe.directory`
+     entry that would allow it is read from those same levels (`repository.c:L629-L634`,
+     `:L1172-L1173`); it is a `failed` Git item. Both follow from R-101 as it stands. Honouring
+     either would mean reading outside the grant, which is the owner's to allow.
+  6. **§ 4 C-I3 names what the evidence does not reach.** The bridge test proves the four paths
+     are empty; it observes no read. `nozoki-core`'s in-process Git suites run with the reads on,
+     so an answer there can differ from the bundle's on a machine with a global ignore file. This
+     joins C-I3's "things no check holds". How those suites are isolated is the design of the
+     change that builds the switch.
+
+  The reasoning is `docs/trail/sdd/self_answer-34.md` § 2.1.
 
 ## 3. Cut calls to confirm — where the slicing could reasonably have gone another way
 
