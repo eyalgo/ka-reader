@@ -125,6 +125,19 @@ fn test_git_directory_opened_directly_answers_plain() {
     );
 }
 
+/// CP-493's `.git` opened directly, holding a `.git` folder of its own: Git, told not to search,
+/// takes the opened folder itself as the Git directory, whose working tree is the folder above.
+#[test]
+fn test_git_directory_opened_directly_holding_a_git_folder_answers_plain() {
+    let (scene, repository) = repository_scene();
+    scene.make_folder("repo/.git/.git");
+
+    assert_eq!(
+        probe_leaving_the_scene_unchanged(&scene, &repository.join(".git")),
+        RootFinding::Plain
+    );
+}
+
 #[test]
 fn test_unreadable_git_directory_reports_condition() {
     let (scene, repository) = repository_scene();
@@ -188,13 +201,55 @@ fn test_empty_git_directory_inside_repository_does_not_discover_parent() {
     );
 }
 
+/// The link points at real Git metadata elsewhere in the root, so the scene is one a probe that
+/// followed it could read and change; a dangling link would prove nothing about that.
 #[test]
 fn test_symbolic_git_entry_leaves_the_scene_unchanged() {
-    let (scene, _) = repository_scene();
+    let (scene, repository) = repository_scene();
     let folder = scene.copy_fixture("plain");
-    scene.make_link("plain/.git", "repo/.git");
+    scene.make_link("plain/.git", "../repo/.git");
+    assert_eq!(
+        folder
+            .join(".git")
+            .canonicalize()
+            .expect("the link resolves"),
+        repository.join(".git"),
+        "the link points at the repository's Git metadata"
+    );
 
     probe_leaving_the_scene_unchanged(&scene, &folder);
+}
+
+/// A `.git` folder that can be read and holds a `HEAD` but not a repository's layout is CP-493's
+/// readable non-repository: `Plain`, not the unreadable condition.
+#[test]
+fn test_readable_git_directory_that_is_not_a_repository_answers_plain() {
+    let scene = TempDir::new();
+    let folder = scene.copy_fixture("plain");
+    scene.write_file("plain/.git/HEAD", "ref: refs/heads/main\n");
+
+    assert_eq!(
+        probe_leaving_the_scene_unchanged(&scene, &folder),
+        RootFinding::Plain
+    );
+}
+
+/// The folder can be looked at but not searched, so its `.git` entry cannot be: a condition, never
+/// `Plain`, although a repository sits behind it.
+#[test]
+fn test_folder_that_cannot_be_searched_reports_condition() {
+    let (scene, repository) = repository_scene();
+    let before = scene.snapshot();
+    scene.set_mode("repo", 0o000);
+
+    let outcome = port().probe(&repository);
+    scene.set_mode("repo", 0o755);
+
+    assert_eq!(
+        outcome,
+        RootFinding::Failed(ProbeCondition::FolderUnavailable)
+    );
+    assert_clean(&outcome, &before, &scene);
 }
 
 #[test]
