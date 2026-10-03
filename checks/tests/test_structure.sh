@@ -81,6 +81,10 @@ test_bridge_non_owner_filesystem_is_rejected
 test_inline_test_module_is_scanned
 test_every_filesystem_module_and_third_crate_is_checked
 test_owner_exemption_is_exact_and_clause_specific
+test_git_owner_filesystem_forms_give_no_qc15_finding
+test_git_owner_write_is_still_one_qc2_finding
+test_git_owner_other_rules_still_bind
+test_exemption_is_exact_for_the_adapter_name
 test_libc_filesystem_floor_is_rejected
 test_non_filesystem_forms_pass
 test_complete_clean_tree_passes
@@ -751,6 +755,7 @@ LIBC_FILE_CALLS="open openat creat fopen fdopen freopen opendir fdopendir readdi
 
 CORE_OWNER="nozoki-core/src/fs_reader.rs"
 BRIDGE_OWNER="nozoki-bridge/src/log_writer.rs"
+GIT_OWNER="nozoki-core/src/git_reader/libgit2.rs"
 
 test_case_5_core_non_owner_filesystem_is_rejected() {
   new_root case5 || return 1
@@ -862,21 +867,25 @@ test_every_filesystem_module_and_third_crate_is_checked() {
   expect_finding "crates/nozoki-extra/src/lib.rs" "$PLANT_LINE" QC-15
 }
 
-# Exactly two files are exempt, only from QC-15: the same basenames anywhere else are not, and the
+# Exactly three files are exempt, only from QC-15: the same basenames anywhere else are not, and the
 # other rules still apply inside an owner.
 test_owner_exemption_is_exact_and_clause_specific() {
   new_root owners || return 1
   plant "$R" "$CORE_OWNER" 'fn f() { let _ = std::fs::write("x", "y"); let _ = std::os::unix::fs::symlink("a", "b"); let _ = rustix::fs::stat("x"); let _ = libc::open; }'
   core_owner_line="$PLANT_LINE"
   plant "$R" "$BRIDGE_OWNER" 'fn f() { let _ = std::fs::write("x", "y"); let _ = libc::unlink; }'
+  plant "$R" "$GIT_OWNER" 'fn f() { let _ = std::fs::write("x", "y"); let _ = std::os::unix::fs::symlink("a", "b"); let _ = rustix::fs::stat("x"); let _ = libc::open; }'
+  git_owner_line="$PLANT_LINE"
   run_structure "$R"
-  # QC-2 binds nozoki-core with no exemption, so the core owner's write is one QC-2 finding. The
+  # QC-2 binds nozoki-core with no exemption, so each core owner's write is one QC-2 finding. The
   # owner exemption is QC-15's alone: no QC-15 there, and the bridge owner (outside QC-2) is clean.
   expect_status 1 || return 1
   expect_count "crates/$CORE_OWNER" "$core_owner_line" QC-2 1 || return 1
   expect_count "crates/$CORE_OWNER" "$core_owner_line" QC-15 0 || return 1
+  expect_count "crates/$GIT_OWNER" "$git_owner_line" QC-2 1 || return 1
+  expect_count "crates/$GIT_OWNER" "$git_owner_line" QC-15 0 || return 1
   [ "$(stderr_lines_with "crates/$BRIDGE_OWNER:")" -eq 0 ] || fail "the bridge owner is outside QC-2 and exempt from QC-15: $STDERR" || return 1
-  [ "$(printf '%s\n' "$STDERR" | grep -c .)" -eq 1 ] || fail "expected the one QC-2 finding and nothing else: $STDERR" || return 1
+  [ "$(printf '%s\n' "$STDERR" | grep -c .)" -eq 2 ] || fail "expected the two QC-2 findings, one per core owner, and nothing else: $STDERR" || return 1
   new_root owners-elsewhere || return 1
   elsewhere="nozoki-core/src/sub/fs_reader.rs nozoki-bridge/src/fs_reader.rs nozoki-core/src/log_writer.rs nozoki-bridge/src/sub/log_writer.rs nozoki-extra/src/fs_reader.rs nozoki-extra/src/log_writer.rs"
   for elsewhere_file in $elsewhere; do
@@ -903,6 +912,61 @@ test_owner_exemption_is_exact_and_clause_specific() {
   expect_finding "crates/$CORE_OWNER" "$core_apple_line" QC-9 || return 1
   expect_finding "crates/$BRIDGE_OWNER" "$bridge_process_line" QC-36 || return 1
   [ "$(count_identifier QC-15)" -eq 0 ] || fail "an owner is exempt from QC-15 and nothing else. stderr: $STDERR" || return 1
+}
+
+# The adapter's file is the third QC-15 filesystem owner: every filesystem form the clause names is
+# no finding there. This is the case that goes red while the owner list holds two files.
+test_git_owner_filesystem_forms_give_no_qc15_finding() {
+  new_root git-owner-forms || return 1
+  plant "$R" "$GIT_OWNER" 'fn f() { let _ = std::fs::read("x"); }'
+  plant "$R" "$GIT_OWNER" 'fn g() { let _ = std::os::unix::fs::symlink("a", "b"); }'
+  plant "$R" "$GIT_OWNER" 'fn h() { let _ = rustix::fs::stat("x"); }'
+  plant "$R" "$GIT_OWNER" 'fn i() { let _ = libc::open; }'
+  run_structure "$R"
+  [ "$(count_identifier QC-15)" -eq 0 ] || fail "the adapter owner is exempt from QC-15, so none of its reads is a finding. stderr: $STDERR" || return 1
+}
+
+# The exemption covers QC-15 alone: a write in the adapter owner is still one QC-2 finding.
+test_git_owner_write_is_still_one_qc2_finding() {
+  new_root git-owner-write || return 1
+  plant "$R" "$GIT_OWNER" 'fn f() { let _ = std::fs::write("x", "y"); }'
+  git_write_line="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_count "crates/$GIT_OWNER" "$git_write_line" QC-2 1 || return 1
+  expect_count "crates/$GIT_OWNER" "$git_write_line" QC-15 0 || return 1
+  [ "$(printf '%s\n' "$STDERR" | grep -c .)" -eq 1 ] || fail "expected the one QC-2 finding and nothing else: $STDERR" || return 1
+}
+
+# The other rules still bind inside the adapter owner.
+test_git_owner_other_rules_still_bind() {
+  new_root git-owner-other-rules || return 1
+  plant "$R" "$GIT_OWNER" 'fn f() { unsafe {} }'
+  git_unsafe_line="$PLANT_LINE"
+  plant "$R" "$GIT_OWNER" 'use std::process::Command;'
+  git_process_line="$PLANT_LINE"
+  plant "$R" "$GIT_OWNER" 'use objc2::runtime::AnyObject;'
+  git_apple_line="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_finding "crates/$GIT_OWNER" "$git_unsafe_line" QC-9 || return 1
+  expect_finding "crates/$GIT_OWNER" "$git_process_line" QC-36 || return 1
+  expect_finding "crates/$GIT_OWNER" "$git_apple_line" QC-9 || return 1
+  [ "$(count_identifier QC-15)" -eq 0 ] || fail "the owner is exempt from QC-15 and nothing else. stderr: $STDERR" || return 1
+}
+
+# The match is by exact path: the rest of git-reader, and the adapter's name anywhere else, is not
+# exempt.
+test_exemption_is_exact_for_the_adapter_name() {
+  new_root git-owner-elsewhere || return 1
+  adapter_elsewhere="nozoki-core/src/git_reader.rs nozoki-core/src/libgit2.rs nozoki-core/src/git_reader/sub/libgit2.rs nozoki-core/src/sub/git_reader/libgit2.rs nozoki-bridge/src/git_reader/libgit2.rs nozoki-extra/src/git_reader/libgit2.rs"
+  for adapter_file in $adapter_elsewhere; do
+    plant "$R" "$adapter_file" 'fn f() { let _ = std::fs::write("x", "y"); }'
+    adapter_plant_line="$PLANT_LINE"
+    run_structure "$R"
+    expect_status 1 || return 1
+    expect_finding "crates/$adapter_file" "$adapter_plant_line" QC-15 || return 1
+  done
 }
 
 # Every refused libc call, as a path, an absolute path and a use member, outside the owners.
