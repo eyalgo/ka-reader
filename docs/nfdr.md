@@ -1,8 +1,8 @@
 # NFDR — Nozoki 覗き
 
-**Status:** Settled
+**Status:** Draft
 **Owner:** Principal Architect
-**Version:** 28 — the close: the cycle-25 fold (`docs/trail/architecture/cycle-25.md` § 3.1; reasoning at `docs/trail/architecture/self_answer-29.md`). § 10's QC-30 / QC-58 linked-tree row names its suite, `test_entry_points.sh`; § 9's `checks/tests/` bullet counts eight suites on steps, re-pinned to `nozoki@b158052`, and records where each suite stands on the hosted runner — the five that joined at `nozoki@ab39502` read green in run 36034875098, found while folding; the structure and entry-points pairs have no reading yet. No record is written or restatused, and no `QC` is added, renumbered or reused. Nothing is left open, so the companion is removed and `Status:` is Settled.
+**Version:** 29 — the cycle-26 fold (`docs/trail/architecture/cycle-26.md` § 3.1; reasoning at `docs/trail/architecture/self_answer-30.md`). QC-11's text does not move; its trace records the reading of SDD SM-1 the answer fixed — a type that crosses SM-1 is defined where `fs-reader` may import it, never in `folder-model` — and that `checks/structure.sh` holds the `fs-reader` → `folder-model` clause from the change that moves `OpenFailure`. One entry is drafted for the owner's confirm, QC-63 in § 1.2, with its § 10 row and a pointer in § 1.2's lead: a module of `nozoki-core` that is no SDD part is a value module, any part may import it, and it imports no part (companion § 2.1). QC-63 is the one new ID; no `QC` is renumbered or reused, and no record is written or restatused. § 2.1 stays open, so the companion is rewritten and `Status:` is Draft.
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · PRD Settled · UXD Settled · DESIGN Settled · CONTENT Settled
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
@@ -206,7 +206,8 @@ new units while they were unbuilt.
 ### 1.2 Forbidden imports
 
 One graph, both halves stated. "May import" is the whole allowed set; "must not import" is stated
-explicitly and never inferred.
+explicitly and never inferred. A module of `nozoki-core` that is no part is QC-63's, and importing
+one is not an edge of this graph *(drafted at v29 for the owner's confirm — RN-40)*.
 
 - **QC-8:** `nozoki-mac` may import AppKit and Foundation — the platform's own — and its own
   modules, and it links `libnozoki_bridge.a` through the generated header. It **must not** declare
@@ -255,7 +256,33 @@ explicitly and never inferred.
   — *verified by:* `checks/structure.sh` (layer 6) *(traces to: ADR-0004; ADR-0015; ADR-0016; SDD § 3, the units paragraph's stated edges as it reads at v14 — the two into `fs-reader` and
   `highlighter`; the model's edge into the two runs the other way and is QC-10's — the
   `markdown-renderer` and `highlighter` rows; re-derived at v11 — RN-22; the third edge placed at
-  v12 — RN-23)*
+  v12 — RN-23; SDD § 3 SM-1's owner cell, read on the owner's seat's answer at
+  `docs/trail/architecture/cycle-26.md` § 3.1 — the model *states* what a read must return and
+  does not hold the types, unlike SM-2's port, so a type that crosses SM-1 is defined where
+  `fs-reader` may import it and never in `folder-model`; `OpenFailure`, defined at
+  `crates/nozoki-core/src/folder_model.rs:L38` and imported at `fs_reader.rs:L14` at
+  `nozoki@803b599`, is the one type that does not, and moves to `fs-reader` by a
+  behaviour-preserving change that keeps `nozoki_core::OpenFailure`; `checks/structure.sh` holds
+  the `fs-reader` → `folder-model` clause from that change, and until it the clause's gate is
+  `development-design` — RN-40)*
+- **QC-63:** A module of `nozoki-core` that is no SDD part is a **value module**: it holds types
+  and values only — shared between parts, or exposed through the crate's public surface — holds no
+  I/O (QC-15), and **imports no part**. Any part may import a value module, and that import is not
+  an edge of this graph: QC-10's and QC-11's sets neither name it nor need to. A module that would
+  have to import a part to hold its type is not a value module; the type moves into a part, under
+  QC-10 and QC-11, so no forbidden edge can route through a module the graph does not see.
+  `lib.rs` is the crate's re-export surface: it declares the modules and re-exports from them,
+  holds no implementation, and is neither a part nor a value module. At `nozoki@803b599` the
+  value modules are `language` and `error`, and neither imports a part.
+  — *verified by:* `checks/structure.sh` (layer 6): a file of `nozoki-core` that belongs to no
+  unit, `lib.rs` aside, and imports a unit is a finding — a rule this document adds to the script
+  (RN-40); until the change that adds it, its gate is `development-design` reading this entry, by
+  the header's rule. The no-I/O half is QC-15's scan, which already reads every Rust I/O primitive
+  against its owner *(traces to: § 1.2's lead rule, "never inferred"; SDD § 3, the parts table and
+  the units paragraph, which name the core's parts and no module beside them — so the reading is
+  this document's, drafted at v29 for the owner's confirm — RN-40; raised at
+  `docs/trail/architecture/self_answer-30.md` § Raised on this document; `arch_defaults.md`
+  § Dependency Graph Rules; ADR-0016)*
 - **QC-12:** `own-state` **must not import** `fs-reader`, `git-reader`, `watcher`, `folder-model`
   or `markdown-renderer`; it reads and writes only inside the app's container.
   — *verified by:* `checks/structure.sh` (layer 6); `checks/own-state.sh` (layer 5) *(traces to:
@@ -1276,6 +1303,7 @@ IS NOT HELD* (`checks/structure.sh:L35-L93` at `nozoki@463acb9`) — and no row 
 | QC-7 | no mutating Git call, no spawn | `checks/read-only.sh` (suite `test_read_only.sh`); `checks/structure.sh` (suite `test_structure.sh`) | the tree | CI build |
 | QC-8 | `nozoki-mac` imports and dependencies | `checks/view.sh` (suite `test_view.sh`); `checks/no-network.sh` (suite `test_no_network.sh`); `swift test --package-path nozoki-mac` | the tree | CI build |
 | QC-9 – QC-12, QC-14 | `nozoki-core` / `checks/` imports; no `unsafe` outside the bridge | `checks/structure.sh` (suite `test_structure.sh`); `checks/no-network.sh` (suite `test_no_network.sh`); `cargo tree -p nozoki-bridge`; `cargo build --workspace --locked` | the tree | CI build |
+| QC-63 | a module of no part in `nozoki-core` imports no part | `checks/structure.sh` (suite `test_structure.sh`) | the tree | CI build |
 | QC-13 | `nozoki-bridge` imports; the export set; the ABI under the sanitizer | `checks/structure.sh` (suite `test_structure.sh`); `cargo test --locked -p nozoki-bridge --test exports`; the bridge's tests under `-Zsanitizer=address` | the tree | CI build |
 | QC-15, QC-17 | I/O ownership; the two composition roots | `checks/structure.sh` (suite `test_structure.sh`); `checks/view.sh` (suite `test_view.sh`) | the tree | CI build |
 | QC-16 | writes only in the container | `checks/own-state.sh` (suite `test_own_state.sh`) | the tree | CI build; release |
@@ -3492,3 +3520,50 @@ delegation half), QC-18, QC-21, QC-31, QC-33, QC-43, QC-45, QC-50, QC-54, QC-57,
   `docs/trail/architecture/self_answer-29.md` § 3.1; `.github/workflows/ci.yml` at
   `nozoki@b158052` and `nozoki@6dae2ca`; GitHub Actions runs 36034875098, 35988399477 and
   36958237363; `docs/SDD.md` v25 RN-84)*
+- **RN-40:** *(v29 — the cycle-26 fold, § 3.1 answered; one draft for the owner's confirm)*
+  **How the companion came to exist.** As at RN-26 and RN-39, no `product-architecture` run opened
+  it. The NFDR was Settled at v28 with no companion on disk. The PM opened it on 2026-10-03
+  (`nozoki@bf9b90c`) after `checks/structure.sh` gained the unit-graph rules (`nozoki@8c3ab40`),
+  with one item raised from downstream, § 3.1. A `companion-self-answer` run answered § 3.1 in the
+  owner's seat and appended § 2.1 in the bucket *Choices to confirm*, with its slot empty
+  (`nozoki@803b599`; its reasoning, `docs/trail/architecture/self_answer-30.md`). As answered, the
+  companion is `docs/trail/architecture/cycle-26.md`. **§ 3.1 → QC-11's trace.** The answer is
+  reading (a): QC-11 stands as written and the `fs-reader` → `folder-model` edge goes. QC-11's
+  text and QC-10's "neither imports the model" do not move. The trace now records the reading of
+  SDD SM-1 the answer fixed, and where the clause is held from. The answer's ground was re-read
+  at `nozoki@803b599`, not taken from it. `docs/SDD.md:L415` gives SM-1's owner as the model,
+  which "states what a read must return"; `:L416` says SM-2's port "is a trait the model owns";
+  `:L347-L348` is the units paragraph QC-11 transcribes. `fs_reader.rs:L14` is
+  `use crate::folder_model::OpenFailure;`, `folder_model.rs:L38` defines the type, and
+  `folder_model.rs:L6` imports the other SM-1 types from `fs_reader`, which QC-10 allows.
+  `lib.rs:L10-L12` re-exports `OpenFailure` from `folder_model`, and
+  `crates/nozoki-bridge/src/session.rs:L9` imports it as `nozoki_core::OpenFailure`, so a move
+  that keeps the re-export leaves the bridge alone. `checks/structure.sh` *WHAT IS NOT HELD*
+  names the clause and its site, and that stays true until the move lands. No SDD change is owed:
+  SM-1 already says what is true under (a), and that judgment is the answer's. **§ 2.1 → QC-63,
+  drafted.** The item was raised by the self-answer run, not asked of it, so no answer authorizes
+  it. This run drafts it into the records the way RN-26 drafted the item that run raised, and it
+  stays in the companion for the owner's confirm. Re-measured at `nozoki@803b599`:
+  `folder_model.rs:L8`, `fs_reader.rs:L15` and `highlighter.rs:L13` each import `crate::language`.
+  No allowed set in § 1.2 names it, and the only permission is `checks/structure.sh`'s carve-out
+  for lib.rs, language.rs and error.rs, which "belong to no unit, are never a subject, and
+  importing it is never an edge". `language.rs` and `error.rs` import no part: their one
+  crate-relative line each, `language.rs:L43` `use crate::Language;` and `error.rs:L26`
+  `use super::Error;`, is inside a test module and names their own type. So the draft is true of
+  the tree today, and the one rule it adds to `checks/structure.sh` would raise nothing on it. The
+  draft goes one step beyond the item's wording. It names `lib.rs` as neither a part nor a value
+  module, because `lib.rs:L9-L15` re-exports from every module and would fail the rule otherwise.
+  It also states the no-I/O half as QC-15's, whose scan already reads every Rust I/O primitive
+  against its owner, so no second check is invented for it. The ground is that SDD § 3 names the
+  core's parts and no module beside them, and "never inferred" in § 1.2's lead. So this is a
+  derivation an SDD reader could make another way: move `language` into a part, and name the
+  import the move needs. That is why it is a confirm and not a settled entry. **What moved beneath
+  this document.** `git diff --stat e2b74bb 803b599` lists `checks/structure.sh`,
+  `checks/tests/test_structure.sh`, the companion and the self-answer report, and nothing under
+  `crates/`, `.github/` or the upstream documents. `ls checks/tests` still lists eight suites, so
+  § 9's count stands. Every input's `Status:` line was re-read and is Settled, so `Inputs read:`
+  stands. QC-63 is the one new ID. No `QC` is renumbered or reused, no record is written or
+  restatused, and the index does not move *(re: header `Status:`, `Version:`; § 1.2 lead; QC-11;
+  QC-63; § 10 QC-63 row; source: `docs/trail/architecture/cycle-26.md` §§ 2.1, 3.1;
+  `docs/trail/architecture/self_answer-30.md`; `crates/nozoki-core/src/` and
+  `checks/structure.sh` at `nozoki@803b599`; `docs/SDD.md` § 3)*
