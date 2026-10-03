@@ -37,7 +37,21 @@
   The same listing holds three more files the row does not name: `walk.rs`, `sandbox_probe.rs` and
   `deps.review.md`.
 - **If a document has to be written:** none. § 3's `read-only-harness` row.
-- **Answer:** <the owner fills this in>
+- **Answer:** Yes — the row names them. `entry-points.sh` with `entry-points.allow`, the reviewed
+  list it diffs against, in the form the row already uses for `deps.allow`: the check the NFDR's
+  QC-30 half (2) places in this unit (`docs/nfdr.md:L599-L604`, `:L992`). The three helpers go in
+  the same listing, each beside the script that uses it: `walk.rs`, the in-process driver
+  `read-only.sh` runs, compiled into a `nozoki-core` test target by
+  `crates/nozoki-core/tests/walk.rs:L6`'s `#[path]` and never into the library; `sandbox_probe.rs`,
+  which `bundle.sh` compiles with `rustc` at run time (`checks/bundle.sh:L321-L322`); and
+  `deps.review.md`, the review recorded beside `deps.allow` that the `highlighter` row already
+  cites. And `tests/`, the per-script suites the NFDR § 10 tags `(suite test_<name>.sh)` — eight at
+  `nozoki@b158052`. Two bounds on the fold. The enumeration is dated and pinned to the commit it was
+  measured at, as `docs/nfdr.md` § 9 does for its suite count, so the next file to land in `checks/`
+  is a re-measurement and not a contradiction. And the row tells what is on disk from what a slice
+  still delivers, as it already does for `contract.sh`: `churn.sh`, `latency.sh` and five of the
+  eight fixture folders it names are not on disk at `b158052`, while `fixtures/highlight` and
+  `fixtures/text` are on disk and unnamed. Reasoning: `docs/trail/sdd/self_answer-32.md` § 5.1.
 
 **How it closes.** `product-sdd` folds it on its next run like every other item in this file, and
 the trail copy and the delete-when-empty behaviour are unchanged.
