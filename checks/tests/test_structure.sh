@@ -1366,6 +1366,14 @@ test_manifest_dependency_path_under_checks() {
   new_root manifest-path || return 1
   physical_root="$(cd "$R" && pwd -P)"
   hit_lines=""
+  # Pad the bridge manifest, so its findings sit on later lines than the core manifest's: only a
+  # path-first order puts the bridge manifest's first.
+  filler=""
+  for filler_index in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30; do
+    filler="$filler# filler $filler_index
+"
+  done
+  plant "$R" "$BRIDGE_MANIFEST" "$filler"
   plant "$R" "$BRIDGE_MANIFEST" 'walker = { path = "../../checks/walker" }'
   walker_line="$PLANT_LINE"
   plant "$R" "$BRIDGE_MANIFEST" 'dotted.path = "../../checks/d"'
