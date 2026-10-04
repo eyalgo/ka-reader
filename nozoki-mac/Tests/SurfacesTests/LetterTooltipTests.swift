@@ -79,7 +79,9 @@ final class LetterTooltipTests: XCTestCase {
         var components: [CGFloat] = []
         appearance.performAsCurrentDrawingAppearance {
             if let resolved = color.usingColorSpace(.sRGB) {
-                components = [resolved.redComponent, resolved.greenComponent, resolved.blueComponent]
+                components = [
+                    resolved.redComponent, resolved.greenComponent, resolved.blueComponent,
+                ]
             }
         }
         return try XCTUnwrap(components.isEmpty ? nil : components, "colour did not resolve")
@@ -155,14 +157,16 @@ final class LetterTooltipTests: XCTestCase {
 
     func test_movingWithinOneLetterNeitherRestartsTheRestNorMovesTheTooltip() throws {
         try PointerDelivery.move(to: onFirst, in: host)
-        try PointerDelivery.move(to: NSPoint(x: first.frame.minX + 1, y: first.frame.minY + 1), in: host)
+        try PointerDelivery.move(
+            to: NSPoint(x: first.frame.minX + 1, y: first.frame.minY + 1), in: host)
 
         XCTAssertEqual(rest.requests.count, 1, "no new rest")
         XCTAssertFalse(rest.requests[0].cancelled)
 
         rest.fireLast()
         let frame = try XCTUnwrap(tooltip.shownView).frame
-        try PointerDelivery.move(to: NSPoint(x: first.frame.maxX - 1, y: first.frame.maxY - 1), in: host)
+        try PointerDelivery.move(
+            to: NSPoint(x: first.frame.maxX - 1, y: first.frame.maxY - 1), in: host)
 
         XCTAssertEqual(rest.requests.count, 1)
         XCTAssertEqual(try XCTUnwrap(tooltip.shownView).frame, frame)
@@ -254,7 +258,8 @@ final class LetterTooltipTests: XCTestCase {
         let view = try XCTUnwrap(tooltip.shownView)
 
         XCTAssertEqual(view.frame.maxX, first.frame.maxX, accuracy: 0.001)
-        XCTAssertLessThanOrEqual(view.frame.maxY, first.frame.minY + 0.001, "wholly below (host is not flipped)")
+        XCTAssertLessThanOrEqual(
+            view.frame.maxY, first.frame.minY + 0.001, "wholly below (host is not flipped)")
     }
 
     func test_itIsTheHostsLastSubview() throws {
@@ -287,15 +292,19 @@ final class LetterTooltipTests: XCTestCase {
             var ground: [CGFloat] = []
             var hairline: [CGFloat] = []
             appearance.performAsCurrentDrawingAppearance {
-                ground = view.layer?.backgroundColor.flatMap { NSColor(cgColor: $0) }
+                ground =
+                    view.layer?.backgroundColor.flatMap { NSColor(cgColor: $0) }
                     .flatMap { $0.usingColorSpace(.sRGB) }
                     .map { [$0.redComponent, $0.greenComponent, $0.blueComponent] } ?? []
-                hairline = view.layer?.borderColor.flatMap { NSColor(cgColor: $0) }
+                hairline =
+                    view.layer?.borderColor.flatMap { NSColor(cgColor: $0) }
                     .flatMap { $0.usingColorSpace(.sRGB) }
                     .map { [$0.redComponent, $0.greenComponent, $0.blueComponent] } ?? []
             }
             assertColours(ground, hex(values[0]), "\(name.rawValue) ground")
-            assertColours(try srgb(XCTUnwrap(view.label.textColor), under: appearance), hex(values[1]), "\(name.rawValue) ink")
+            assertColours(
+                try srgb(XCTUnwrap(view.label.textColor), under: appearance), hex(values[1]),
+                "\(name.rawValue) ink")
             assertColours(hairline, hex(values[2]), "\(name.rawValue) hairline")
             XCTAssertEqual(view.layer?.borderWidth, 1)
             tooltip.dismiss()

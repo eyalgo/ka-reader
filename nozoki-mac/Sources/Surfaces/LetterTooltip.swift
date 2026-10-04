@@ -23,7 +23,9 @@ package struct TooltipRest {
 
     package init(
         schedule:
-            @escaping @MainActor (_ interval: TimeInterval, _ action: @escaping @MainActor () -> Void)
+            @escaping @MainActor (
+                _ interval: TimeInterval, _ action: @escaping @MainActor () -> Void
+            )
             -> Cancel
     ) {
         self.schedule = schedule

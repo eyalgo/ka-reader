@@ -33,7 +33,8 @@ enum PointerDelivery {
     }
 
     private static func ownerAndWindow(of host: NSView) throws -> (NSResponder, NSWindow) {
-        let area = try XCTUnwrap(trackingArea(of: host), "the host carries no tooltip tracking area")
+        let area = try XCTUnwrap(
+            trackingArea(of: host), "the host carries no tooltip tracking area")
         let owner = try XCTUnwrap(area.owner as? NSResponder)
         let window = try XCTUnwrap(host.window, "the host is in no window")
         return (owner, window)
