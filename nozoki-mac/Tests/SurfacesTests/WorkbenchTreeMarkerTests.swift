@@ -233,6 +233,9 @@ final class WorkbenchTreeMarkerTests: XCTestCase {
                 try selectInTree("b.txt", in: fixture)
                 XCTAssertEqual(fixture.log.selects.map(\.path), ["b.txt"], name)
                 XCTAssertEqual(strings(of: fixture.tree), baseline, name)
+                fixture.log.selects[0].answer(.text("hello", .plain))
+                XCTAssertEqual(fixture.workbench.readingPanel.pathLine.stringValue, "b.txt", name)
+                XCTAssertEqual(fixture.workbench.readingPanel.contentView.string, "hello", name)
             }
         }
 
