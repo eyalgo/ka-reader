@@ -47,6 +47,14 @@ None.
   2026-10-04 at that commit: `nozoki-mac/assemble.sh` exits 0, `nm` on the release executable holds
   `_nozoki_read_git`, and `checks/view.sh` exits 0 ("carries no Git transport — nothing found"). The
   SDD's own sentence (§ 4 C-I3) is raised on `docs/SDD_open_issues.md` § 5.1; QC-3 re-derives from it.
+  *(The rest of this field was added on 2026-10-04 by the `companion-self-answer` run that answered
+  `docs/SDD_open_issues.md` § 5.2. No `product-architecture` run and no PM run wrote it; the
+  reasoning is `docs/trail/sdd/self_answer-40.md`.)* QC-3 also quotes § 11 R-15's response: "A red
+  read is SDD § 11 R-15's — a re-cut recorded before anything is built on that export"
+  (`docs/nfdr.md:L170-L171`). The answer at `docs/SDD_open_issues.md` § 5.2 asks the SDD to restate
+  R-15's *shows up as* and *response*, because from `nozoki@129586e` the Git view is built on that
+  export. So that clause of QC-3 re-derives from R-15 as the SDD reads after `product-sdd` folds
+  § 5.2, and not before: until that fold QC-3 quotes R-15 as R-15 reads.
 - **If a document has to be written:** none. QC-3's sentence in `nfdr.md`.
 - **Answer:** <the owner fills this in>
 
