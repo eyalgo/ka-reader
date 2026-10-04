@@ -40,12 +40,16 @@ final class RecordingBridge: Bridging {
     /// an entry holding `nil` is the bridge's failure value for that path.
     var selectAnswer: Data? = Data(#"{"state":"pending"}"#.utf8)
     var selectAnswers: [String: Data?] = [:]
+    /// The answer for the Git read: `pending`, until a test sets it. `nil` is the bridge's failure
+    /// value.
+    var gitAnswer: Data? = Data(#"{"state":"pending"}"#.utf8)
 
-    private let log: EventLog
+    let log: EventLog
     private var nextHandle: UInt = 1
     private(set) var openedLocations: [URL] = []
     private(set) var listedPaths: [String] = []
     private(set) var selectedPaths: [String] = []
+    private(set) var gitReadCount = 0
     private(set) var handedOut: [UInt] = []
     private(set) var freed: [UInt] = []
 
@@ -69,6 +73,12 @@ final class RecordingBridge: Bridging {
         log.record("select_file")
         selectedPaths.append(path)
         return makeBuffer(from: selectAnswers[path] ?? selectAnswer)
+    }
+
+    func readGit() -> BridgeBuffer? {
+        log.record("read_git")
+        gitReadCount += 1
+        return makeBuffer(from: gitAnswer)
     }
 
     func free(_ buffer: BridgeBuffer) {
@@ -173,6 +183,7 @@ final class ThreadRecordingBridge: Bridging, @unchecked Sendable {
     private let openAnswer: Data
     private let listAnswers: [String: Data]
     private let selectAnswers: [String: Data]
+    private let gitAnswer: Data?
     private var nextHandle: UInt = 1
     private var pathOfHandle: [UInt: String] = [:]
     private var calls: [(name: String, onMain: Bool)] = []
@@ -180,11 +191,13 @@ final class ThreadRecordingBridge: Bridging, @unchecked Sendable {
     init(
         openAnswer: Data = Data(#"{"state":"opened"}"#.utf8),
         listAnswers: [String: Data],
-        selectAnswers: [String: Data] = [:]
+        selectAnswers: [String: Data] = [:],
+        gitAnswer: Data? = nil
     ) {
         self.openAnswer = openAnswer
         self.listAnswers = listAnswers
         self.selectAnswers = selectAnswers
+        self.gitAnswer = gitAnswer
     }
 
     /// Whether the named call ran on the main thread, for every call of that name.
@@ -207,6 +220,12 @@ final class ThreadRecordingBridge: Bridging, @unchecked Sendable {
         record("select_file:\(path)")
         guard let payload = selectAnswers[path] else { return nil }
         return makeBuffer(from: payload, named: "select:\(path)")
+    }
+
+    func readGit() -> BridgeBuffer? {
+        record("read_git")
+        guard let gitAnswer else { return nil }
+        return makeBuffer(from: gitAnswer, named: "git")
     }
 
     func free(_ buffer: BridgeBuffer) {
