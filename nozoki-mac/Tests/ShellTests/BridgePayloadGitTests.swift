@@ -135,6 +135,26 @@ final class BridgePayloadGitTests: XCTestCase {
         }
     }
 
+    // CP-561: a member holding a value of the wrong JSON type does not conform either.
+    func test_aMemberOfTheWrongTypeIsStopped() {
+        let rejected = [
+            #"[{"state":"pending"}]"#,
+            #"{"state":1}"#,
+            #"{"state":"observed","kind":"root","branch":"main","repository_state":"normal","staged":[],"changed":[]}"#,
+            root(branch: #"{"kind":"branch","name":null}"#),
+            root(branch: #"{"kind":"detached","commit":7}"#),
+            root(staged: "{}"),
+            root(changed: #"["a.txt"]"#),
+            root(staged: #"[{"path":5,"category":"added"}]"#),
+            root(staged: #"[{"path":"a","category":"renamed","from":null}]"#),
+            #"{"state":"failed","condition":"git_directory_outside","git_directory":null}"#,
+            #"{"state":"failed","condition":null}"#,
+        ]
+        for payload in rejected {
+            XCTAssertEqual(decode(payload), .stopped, payload)
+        }
+    }
+
     func test_anExtraMemberAtEachLevelIsStopped() {
         let rejected = [
             #"{"state":"pending","extra":1}"#,

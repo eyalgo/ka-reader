@@ -95,6 +95,24 @@ final class RailSwitchTests: XCTestCase {
         XCTAssertEqual(fixture.chosen.entries, [.git, .files])
     }
 
+    // CP-549: an entry is chosen by a press on its word or its glyph, as a window delivers it.
+    func test_aClickAsAWindowDeliversItOnAnEntrysWordOrGlyphRaisesItsChoice() throws {
+        let fixture = makeRail(active: .files)
+        let entries = entryViews(fixture.rail)
+
+        let gitWord = try XCTUnwrap(labels(of: entries[1]).first)
+        XCTAssertTrue(
+            try ClickDelivery.clickMiddle(of: gitWord) === gitWord, "the press lands on the word")
+        XCTAssertEqual(fixture.chosen.entries, [.git], "a press on the word Git")
+
+        fixture.rail.active = .git
+        let filesGlyph = try XCTUnwrap(images(of: entries[0]).first)
+        XCTAssertTrue(
+            try ClickDelivery.clickMiddle(of: filesGlyph) === filesGlyph,
+            "the press lands on the glyph")
+        XCTAssertEqual(fixture.chosen.entries, [.git, .files], "a press on the Files glyph")
+    }
+
     func test_clickingTheActiveEntryRaisesNothing() throws {
         let fixture = makeRail(active: .files)
         try click(entryViews(fixture.rail)[0], in: fixture)

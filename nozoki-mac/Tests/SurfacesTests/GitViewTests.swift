@@ -275,6 +275,35 @@ final class GitViewTests: XCTestCase {
         XCTAssertEqual(fixture.activated.paths, ["READ.md", "b.txt"])
     }
 
+    // CP-564: a row is one click target, wherever on it the press lands, as a window delivers it.
+    func test_aClickAsAWindowDeliversItOnARowsPathItsLetterOrItsGroundActivatesThatRow() throws {
+        let fixture = makeView(
+            showing: repository(
+                changed: [
+                    entry("a.txt", .modified), entry("b.txt", .added), entry("c.txt", .deleted),
+                ]))
+        let rows = rowViews(fixture.view)
+        let path = try XCTUnwrap(
+            rows[0].subviews.compactMap { $0 as? NSTextField }
+                .first { $0.identifier?.rawValue == "gitRowPath" })
+
+        let letter = try letterField(of: rows[1])
+
+        XCTAssertTrue(
+            try ClickDelivery.clickMiddle(of: path) === path, "the press lands on the path")
+        XCTAssertEqual(fixture.activated.paths, ["a.txt"], "a press on the path")
+
+        XCTAssertTrue(
+            try ClickDelivery.clickMiddle(of: letter) === letter, "the press lands on the letter")
+        XCTAssertEqual(fixture.activated.paths, ["a.txt", "b.txt"], "a press on the letter")
+
+        try ClickDelivery.click(
+            at: NSPoint(x: rows[2].bounds.midX, y: rows[2].bounds.midY), in: rows[2])
+        XCTAssertEqual(
+            fixture.activated.paths, ["a.txt", "b.txt", "c.txt"], "a press on the row's ground")
+        XCTAssertEqual(fixture.view.barPaths(), ["c.txt"])
+    }
+
     func test_clickingAHeadingOrTheStatusMessageRaisesNothing() throws {
         let fixture = makeView(showing: repository(changed: [entry("b.txt", .modified)]))
         let heading = shown(descendants(of: fixture.view)).compactMap { $0 as? NSTextField }

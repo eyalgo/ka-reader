@@ -198,6 +198,30 @@ final class WorkbenchGitTests: XCTestCase {
         XCTAssertEqual(fixture.workbench.rail.active, .files)
     }
 
+    // CP-549, CP-563, CP-564: the switch and a row, pressed where a person presses them and
+    // delivered as a window delivers a click, rather than raised on the view's own API.
+    func test_aClickAsAWindowDeliversItOnTheGitWordThenARowsPathShowsGitAndOpensTheFile() throws {
+        let fixture = makeFixture()
+        func field(_ text: String, beneath view: NSView) throws -> NSTextField {
+            try XCTUnwrap(
+                shown(descendants(of: view)).compactMap { $0 as? NSTextField }
+                    .first { $0.stringValue == text },
+                "no element showing \(text)")
+        }
+
+        try ClickDelivery.clickMiddle(of: try field("Git", beneath: fixture.workbench.rail))
+        XCTAssertTrue(gitIsShown(fixture.workbench), "the press on Git showed the Git view")
+        XCTAssertEqual(fixture.log.gitAsks.count, 1)
+
+        fixture.log.gitAsks[0].answer(repository(changed: [gitEntry("b.txt")]))
+        try ClickDelivery.clickMiddle(of: try field("b.txt", beneath: fixture.workbench.gitView))
+        XCTAssertEqual(fixture.log.selects.map(\.path), ["b.txt"], "the press on the row's path")
+        XCTAssertEqual(fixture.workbench.gitView.barPaths(), ["b.txt"])
+
+        try ClickDelivery.clickMiddle(of: try field("Files", beneath: fixture.workbench.rail))
+        XCTAssertTrue(treeIsShown(fixture.workbench), "the press on Files showed the tree")
+    }
+
     // MARK: (c): the one ask
 
     func test_showingGitBeforeAnyAnswerDrawsPendingAndRaisesReadGitOnce() {
