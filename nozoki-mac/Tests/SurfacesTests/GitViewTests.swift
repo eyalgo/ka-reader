@@ -85,12 +85,12 @@ final class GitViewTests: XCTestCase {
         shown(descendants(of: view)).compactMap { $0 as? NSImageView }
     }
 
-    private func click(_ point: NSPoint, in fixture: Fixture) {
+    private func click(_ point: NSPoint, in fixture: Fixture) throws {
         let event = NSEvent.mouseEvent(
             with: .leftMouseDown, location: fixture.view.convert(point, to: nil),
             modifierFlags: [], timestamp: 0, windowNumber: fixture.window.windowNumber,
             context: nil, eventNumber: 0, clickCount: 1, pressure: 1)
-        fixture.view.mouseDown(with: XCTUnwrap(event, "no event"))
+        fixture.view.mouseDown(with: try XCTUnwrap(event, "no event"))
     }
 
     private func centre(of view: NSView, in container: NSView) -> NSPoint {
@@ -161,7 +161,7 @@ final class GitViewTests: XCTestCase {
         let rows = rowViews(fixture.view)
         XCTAssertEqual(rows.count, 2)
 
-        click(centre(of: rows[1], in: fixture.view), in: fixture)
+        try click(centre(of: rows[1], in: fixture.view), in: fixture)
 
         XCTAssertEqual(rows.map(\.drawsBar), [false, true])
         XCTAssertEqual(fixture.view.barPaths(), ["x.txt"])
@@ -267,32 +267,32 @@ final class GitViewTests: XCTestCase {
                 staged: [entry("READ.md", .renamed)], changed: [entry("b.txt", .modified)]))
         let rows = rowViews(fixture.view)
 
-        click(centre(of: rows[0], in: fixture.view), in: fixture)
+        try click(centre(of: rows[0], in: fixture.view), in: fixture)
         XCTAssertEqual(fixture.activated.paths, ["READ.md"])
 
         let letter = try letterField(of: rows[1])
-        click(centre(of: letter, in: fixture.view), in: fixture)
+        try click(centre(of: letter, in: fixture.view), in: fixture)
         XCTAssertEqual(fixture.activated.paths, ["READ.md", "b.txt"])
     }
 
-    func test_clickingAHeadingOrTheStatusMessageRaisesNothing() {
+    func test_clickingAHeadingOrTheStatusMessageRaisesNothing() throws {
         let fixture = makeView(showing: repository(changed: [entry("b.txt", .modified)]))
         let heading = shown(descendants(of: fixture.view)).compactMap { $0 as? NSTextField }
             .first { $0.stringValue == "Changes" }
 
-        click(centre(of: heading!, in: fixture.view), in: fixture)
+        try click(centre(of: heading!, in: fixture.view), in: fixture)
 
         XCTAssertTrue(fixture.activated.paths.isEmpty)
         XCTAssertTrue(fixture.view.barPaths().isEmpty)
     }
 
-    func test_theClickedRowCarriesTheBarAndClearingTheSelectionRemovesIt() {
+    func test_theClickedRowCarriesTheBarAndClearingTheSelectionRemovesIt() throws {
         let fixture = makeView(
             showing: repository(changed: [entry("a.txt", .modified), entry("b.txt", .added)]))
         let rows = rowViews(fixture.view)
         XCTAssertTrue(rows.allSatisfy { !$0.drawsBar })
 
-        click(centre(of: rows[1], in: fixture.view), in: fixture)
+        try click(centre(of: rows[1], in: fixture.view), in: fixture)
         XCTAssertEqual(rows.map(\.drawsBar), [false, true])
         XCTAssertEqual(fixture.view.barPaths(), ["b.txt"])
 
