@@ -129,7 +129,7 @@ was read at
     still true on `main`. The answer asks the fold for wording that is true before and after the
     change merges.
   - § 7 places `first-public-release` after `follow-the-folder`, as "the owner's decided
-    ordering" (`:L2278-L2280`). So no public release ships with the join in the shell.
+    ordering" (`:L2280-L2282`). So no public release ships with the join in the shell.
 
   **On the failure paths.**
   - *Empty:* a repository answer with empty lists marks nothing. A folder where Git was never
