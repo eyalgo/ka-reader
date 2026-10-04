@@ -117,7 +117,16 @@ package final class LaunchFlow {
         workbench.selectFile = { [bridge, reader] path, answer in
             reader.run({ Self.verdict(at: path, through: bridge) }, deliver: answer)
         }
+        workbench.readGit = { [bridge, reader] answer in
+            reader.run({ Self.gitItem(through: bridge) }, deliver: answer)
+        }
         presenter.present(workbench)
+    }
+
+    private nonisolated static func gitItem(through bridge: Bridging) -> GitItem {
+        let buffer = bridge.readGit()
+        defer { release(buffer, through: bridge) }
+        return BridgePayload.decodeGit(buffer)
     }
 
     private nonisolated static func verdict(at path: String, through bridge: Bridging)

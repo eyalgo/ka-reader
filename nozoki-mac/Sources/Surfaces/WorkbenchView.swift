@@ -159,20 +159,20 @@ package final class WorkbenchView: NSView {
     private func selectFromTree(_ entry: Entry) {
         openGitPath = nil
         gitView.clearSelection()
-        open(path: entry.path) { [rootItemsView] in rootItemsView.markOpenFile(path: entry.path) }
+        readFile(at: entry.path) { [rootItemsView] in rootItemsView.markOpenFile(path: entry.path) }
     }
 
     /// A Git row's activation: the same select path a tree selection takes. The tree is hidden
     /// while it happens, so it is shown the open file when Files is next shown.
     private func selectFromGit(_ path: String) {
         openGitPath = path
-        open(path: path) {}
+        readFile(at: path) {}
     }
 
     /// Runs `markBar`, draws the panel's *reading* state and then asks the owner to read `path`. The
     /// panel shows the verdict under `path` once it comes, if no later selection has been made. A
     /// `nil` answer draws the *stopped* state for that path and leaves the bar where it is.
-    private func open(path: String, markBar: () -> Void) {
+    private func readFile(at path: String, markBar: () -> Void) {
         selectionGeneration += 1
         let generation = selectionGeneration
         markBar()
