@@ -14,10 +14,11 @@ use std::sync::Mutex;
 /// The rule, written here on purpose: the export and declared sets come from the library and the
 /// header, and never from a list kept in this test. A name joins this array with the change that lands
 /// the function (SM-4's diff opener, for one, is not here yet).
-const ADMITTED: [&str; 4] = [
+const ADMITTED: [&str; 5] = [
     "nozoki_open_folder",
     "nozoki_list_tree",
     "nozoki_select_file",
+    "nozoki_read_git",
     "nozoki_free",
 ];
 
@@ -204,6 +205,20 @@ fn test_generated_buffer_prefix_is_bytes_then_len() {
         .filter(|line| line.ends_with(';'))
         .collect();
     assert_eq!(fields, ["uint8_t * bytes;", "size_t len;"], "{declaration}");
+}
+
+#[test]
+fn test_generated_header_declares_read_git_with_no_argument() {
+    let _serial = SERIAL
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    build_library().expect("the static library builds");
+    let header = fs::read_to_string(header_path()).expect("the generated header can be read");
+
+    assert!(
+        header.contains("NozokiBuffer * nozoki_read_git(void);"),
+        "{header}"
+    );
 }
 
 #[test]
