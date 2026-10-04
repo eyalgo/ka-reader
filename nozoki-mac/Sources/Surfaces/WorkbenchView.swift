@@ -152,6 +152,8 @@ package final class WorkbenchView: NSView {
             guard !latch.fired else { return }
             latch.fired = true
             self?.gitView.show(item)
+            // The tree's markers come from this one item and from nothing else (CP-581).
+            self?.rootItemsView.showMarkers(TreeMarkers(item))
         }
     }
 

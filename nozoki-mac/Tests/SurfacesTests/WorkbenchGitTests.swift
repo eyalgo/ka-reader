@@ -473,10 +473,11 @@ final class WorkbenchGitTests: XCTestCase {
                 changed: [gitEntry("b.txt"), gitEntry("A.txt", .deleted)]))
         choose(.files, in: fixture)
 
-        // Top to bottom, then left to right: each name, then the letter after it on its row.
+        // As `strings(of:)` orders them, the tree's last row first: each name, then the letter after
+        // it on its row.
         XCTAssertEqual(
             strings(of: fixture.workbench.rootItemsView),
-            ["src", "A.txt", "D", "a.txt", "A", "b.txt", "M"],
+            ["b.txt", "M", "a.txt", "A", "A.txt", "D", "src"],
             "a.txt A, b.txt M, A.txt D, and nothing on src")
     }
 
