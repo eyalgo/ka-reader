@@ -12,15 +12,20 @@ import AppKit
 @MainActor
 package final class RowHover: NSResponder {
     private weak var host: NSView?
+    private let keyWindow: KeyWindowSource
     private let rowAt: @MainActor (NSPoint) -> BarRowView?
 
     private var pointer: NSPoint?
     private weak var flaggedRow: BarRowView?
 
     /// `rowAt` answers the `BarRowView` of the clickable row at a point in host coordinates, or nil
-    /// for anything else.
-    init(host: NSView, rowAt: @escaping @MainActor (NSPoint) -> BarRowView?) {
+    /// for anything else. `keyWindow` answers whether the host's window is the key window.
+    init(
+        host: NSView, keyWindow: KeyWindowSource,
+        rowAt: @escaping @MainActor (NSPoint) -> BarRowView?
+    ) {
         self.host = host
+        self.keyWindow = keyWindow
         self.rowAt = rowAt
         super.init()
         host.addTrackingArea(

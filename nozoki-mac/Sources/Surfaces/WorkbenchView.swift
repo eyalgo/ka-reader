@@ -80,11 +80,11 @@ package final class WorkbenchView: NSView {
     /// beside them, using the supplied empty-state image and the rail's two glyphs.
     package init(
         rootItemsView: RootItemsView, statusGlyphs: StatusGlyphs, railFolderGlyph: NSImage,
-        railGitGlyph: NSImage
+        railGitGlyph: NSImage, keyWindow: KeyWindowSource = .live
     ) {
         self.rootItemsView = rootItemsView
         rail = RailSwitchView(folderGlyph: railFolderGlyph, gitGlyph: railGitGlyph)
-        gitView = GitView(statusGlyphs: statusGlyphs)
+        gitView = GitView(statusGlyphs: statusGlyphs, keyWindow: keyWindow)
         readingPanel = ReadingPanelView(statusGlyphs: statusGlyphs)
         super.init(frame: .zero)
         rootItemsView.fileSelected = { [weak self] entry in self?.selectFromTree(entry) }

@@ -20,25 +20,28 @@ final class RootItemsViewMarkerTests: XCTestCase {
         let view: RootItemsView
         let window: NSWindow
         let rest: TooltipRestDouble
+        let key: KeyWindowDouble
         var reads: [String] = []
         var selected: [Entry] = []
 
-        init(view: RootItemsView, window: NSWindow, rest: TooltipRestDouble) {
+        init(view: RootItemsView, window: NSWindow, rest: TooltipRestDouble, key: KeyWindowDouble) {
             self.view = view
             self.window = window
             self.rest = rest
+            self.key = key
         }
     }
 
     private func makeFixture(_ entries: [Entry], listings: [String: [Entry]] = [:]) -> Fixture {
         let rest = TooltipRestDouble()
+        let key = KeyWindowDouble()
         let view = RootItemsView(
             folderGlyph: folderGlyph, fileGlyph: fileGlyph, fileCodeGlyph: fileCodeGlyph,
-            statusGlyphs: statusGlyphs, tooltipRest: rest.rest)
+            statusGlyphs: statusGlyphs, tooltipRest: rest.rest, keyWindow: key.source)
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 260, height: 200), styleMask: [.borderless],
             backing: .buffered, defer: true)
-        let fixture = Fixture(view: view, window: window, rest: rest)
+        let fixture = Fixture(view: view, window: window, rest: rest, key: key)
         view.listTree = { path, answer in
             fixture.reads.append(path)
             answer(listings[path].map { .observed($0) })

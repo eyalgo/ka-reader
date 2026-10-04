@@ -13,15 +13,17 @@ final class RootItemsViewHoverTests: XCTestCase {
         let view: RootItemsView
         let window: NSWindow
         let rest: TooltipRestDouble
+        let key: KeyWindowDouble
         /// Folder reads still owed an answer, when the fixture holds answers back.
         var answers: [ListTreeAnswer] = []
         var selected: [Entry] = []
         var reads: [String] = []
 
-        init(view: RootItemsView, window: NSWindow, rest: TooltipRestDouble) {
+        init(view: RootItemsView, window: NSWindow, rest: TooltipRestDouble, key: KeyWindowDouble) {
             self.view = view
             self.window = window
             self.rest = rest
+            self.key = key
         }
     }
 
@@ -31,13 +33,15 @@ final class RootItemsViewHoverTests: XCTestCase {
         _ entries: [Entry], listings: [String: RootListing] = [:], holdAnswers: Bool = false
     ) -> Fixture {
         let rest = TooltipRestDouble()
+        let key = KeyWindowDouble()
         let view = RootItemsView(
             folderGlyph: glyph, fileGlyph: glyph, fileCodeGlyph: glyph,
-            statusGlyphs: StatusGlyphs(empty: glyph, failure: glyph), tooltipRest: rest.rest)
+            statusGlyphs: StatusGlyphs(empty: glyph, failure: glyph), tooltipRest: rest.rest,
+            keyWindow: key.source)
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 260, height: 200), styleMask: [.borderless],
             backing: .buffered, defer: true)
-        let fixture = Fixture(view: view, window: window, rest: rest)
+        let fixture = Fixture(view: view, window: window, rest: rest, key: key)
         view.listTree = { path, answer in
             fixture.reads.append(path)
             if holdAnswers {

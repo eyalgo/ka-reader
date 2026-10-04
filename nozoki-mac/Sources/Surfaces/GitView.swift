@@ -35,17 +35,18 @@ package final class GitView: NSView {
 
     private let statusGlyphs: StatusGlyphs
     private let tooltipRest: TooltipRest
+    private let keyWindow: KeyWindowSource
 
     /// The tooltip a status letter raises on pointer rest (CP-586). A lazy property because it is
     /// bound to this view, which an initialiser cannot name before it is built.
     package private(set) lazy var letterTooltip = LetterTooltip(
-        host: self, rest: tooltipRest,
+        host: self, rest: tooltipRest, keyWindow: keyWindow,
         letterAt: { [weak self] point in self?.letter(at: point) })
 
     /// Flags the row under the pointer so it draws its hover fill (CP-599). Lazy for the same
     /// reason as the tooltip.
     private lazy var rowHover = RowHover(
-        host: self,
+        host: self, keyWindow: keyWindow,
         rowAt: { [weak self] point in
             guard let self, let index = self.rowIndex(at: point) else { return nil }
             return self.rows[index].view
@@ -58,9 +59,13 @@ package final class GitView: NSView {
     /// Set by the view's owner, and called once per click on a row.
     package var rowActivated: GitRowActivated?
 
-    package init(statusGlyphs: StatusGlyphs, tooltipRest: TooltipRest = .live) {
+    package init(
+        statusGlyphs: StatusGlyphs, tooltipRest: TooltipRest = .live,
+        keyWindow: KeyWindowSource = .live
+    ) {
         self.statusGlyphs = statusGlyphs
         self.tooltipRest = tooltipRest
+        self.keyWindow = keyWindow
         super.init(frame: .zero)
         let document = FlippedView()
         document.translatesAutoresizingMaskIntoConstraints = false

@@ -14,6 +14,7 @@ final class LetterTooltipTests: XCTestCase {
     private var second: NSView!
     private var below: PressCounter!
     private var rest: TooltipRestDouble!
+    private var key: KeyWindowDouble!
     private var tooltip: LetterTooltip!
 
     /// A view under the letters that counts the presses that reach it.
@@ -36,7 +37,9 @@ final class LetterTooltipTests: XCTestCase {
         host.addSubview(first)
         host.addSubview(second)
         rest = TooltipRestDouble()
-        tooltip = LetterTooltip(host: host, rest: rest.rest) { [unowned self] point in
+        key = KeyWindowDouble()
+        tooltip = LetterTooltip(host: host, rest: rest.rest, keyWindow: key.source) {
+            [unowned self] point in
             if first.frame.contains(point) {
                 return LetterUnderPointer(letter: first, text: "a.txt \u{2014} modified")
             }

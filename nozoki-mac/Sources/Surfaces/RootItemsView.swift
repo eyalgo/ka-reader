@@ -42,19 +42,21 @@ package final class RootItemsView: NSScrollView {
     private let rootLine: NSTextField
     private let rootMessage: StatusMessageView
     private let tooltipRest: TooltipRest
+    private let keyWindow: KeyWindowSource
 
     /// The tooltip a status letter raises on pointer rest, over the tree's letters (CP-586). A lazy
     /// property because it is bound to this view, which an initialiser cannot name before it is
     /// built; `init` reads it once so the tracking area is installed from the start.
     package private(set) lazy var letterTooltip = LetterTooltip(
-        host: self, rest: tooltipRest,
+        host: self, rest: tooltipRest, keyWindow: keyWindow,
         letterAt: { [weak self] point in self?.letter(at: point) })
 
     /// Flags the entry row under the pointer so it draws its hover fill (CP-599). Lazy for the
     /// same reason as the tooltip; `init` reads it once so the tracking area is installed from the
     /// start.
     private lazy var rowHover = RowHover(
-        host: self, rowAt: { [weak self] point in self?.entryRowView(at: point) })
+        host: self, keyWindow: keyWindow,
+        rowAt: { [weak self] point in self?.entryRowView(at: point) })
 
     /// The one line drawn outside the rows, or nil when none is drawn.
     package private(set) var rootLineText: String?
@@ -167,9 +169,11 @@ package final class RootItemsView: NSScrollView {
     /// Presents tree rows or a root status using only the images supplied by the owner.
     package init(
         folderGlyph: NSImage, fileGlyph: NSImage, fileCodeGlyph: NSImage,
-        statusGlyphs: StatusGlyphs, tooltipRest: TooltipRest = .live
+        statusGlyphs: StatusGlyphs, tooltipRest: TooltipRest = .live,
+        keyWindow: KeyWindowSource = .live
     ) {
         self.tooltipRest = tooltipRest
+        self.keyWindow = keyWindow
         self.folderGlyph = folderGlyph
         self.fileGlyph = fileGlyph
         self.fileCodeGlyph = fileCodeGlyph

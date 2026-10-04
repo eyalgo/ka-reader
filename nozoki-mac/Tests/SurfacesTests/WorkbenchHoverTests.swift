@@ -11,6 +11,7 @@ final class WorkbenchHoverTests: XCTestCase {
         let workbench: WorkbenchView
         let window: NSWindow
         let log: Log
+        let key: KeyWindowDouble
     }
 
     @MainActor
@@ -23,9 +24,10 @@ final class WorkbenchHoverTests: XCTestCase {
     private func makeFixture(treeRest: TooltipRest = .live) -> Fixture {
         let glyph = NSImage(size: NSSize(width: 1, height: 1))
         let glyphs = StatusGlyphs(empty: glyph, failure: glyph)
+        let key = KeyWindowDouble()
         let tree = RootItemsView(
             folderGlyph: glyph, fileGlyph: glyph, fileCodeGlyph: glyph, statusGlyphs: glyphs,
-            tooltipRest: treeRest)
+            tooltipRest: treeRest, keyWindow: key.source)
         tree.show(
             .observed([
                 Entry(name: "src", path: "src", kind: .folder, state: .pending),
@@ -34,7 +36,8 @@ final class WorkbenchHoverTests: XCTestCase {
                 Entry(name: "lib", path: "lib", kind: .folder, state: .pending),
             ]))
         let workbench = WorkbenchView(
-            rootItemsView: tree, statusGlyphs: glyphs, railFolderGlyph: glyph, railGitGlyph: glyph)
+            rootItemsView: tree, statusGlyphs: glyphs, railFolderGlyph: glyph, railGitGlyph: glyph,
+            keyWindow: key.source)
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 800, height: 500), styleMask: [.borderless],
             backing: .buffered, defer: true)
@@ -44,7 +47,7 @@ final class WorkbenchHoverTests: XCTestCase {
         workbench.readGit = { answer in log.gitAsks.append(answer) }
         tree.listTree = { path, _ in log.listed.append(path) }
         workbench.layoutSubtreeIfNeeded()
-        return Fixture(workbench: workbench, window: window, log: log)
+        return Fixture(workbench: workbench, window: window, log: log, key: key)
     }
 
     private func descendants(of view: NSView) -> [NSView] {

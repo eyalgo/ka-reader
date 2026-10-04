@@ -118,6 +118,7 @@ package final class LetterTooltip: NSResponder {
 
     private weak var host: NSView?
     private let rest: TooltipRest
+    private let keyWindow: KeyWindowSource
     private let letterAt: @MainActor (NSPoint) -> LetterUnderPointer?
 
     private var pointer: NSPoint?
@@ -132,12 +133,14 @@ package final class LetterTooltip: NSResponder {
     package var shownView: NSView? { shown }
 
     /// `letterAt` answers which shown letter lies at a point in host coordinates, or nil.
+    /// `keyWindow` answers whether the host's window is the key window.
     package init(
-        host: NSView, rest: TooltipRest,
+        host: NSView, rest: TooltipRest, keyWindow: KeyWindowSource,
         letterAt: @escaping @MainActor (NSPoint) -> LetterUnderPointer?
     ) {
         self.host = host
         self.rest = rest
+        self.keyWindow = keyWindow
         self.letterAt = letterAt
         super.init()
         host.addTrackingArea(

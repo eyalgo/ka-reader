@@ -195,6 +195,7 @@ final class RowHoverUnitTests: XCTestCase {
     private var upper: BarRowView!
     private var lower: BarRowView!
     private var hover: RowHover!
+    private var key: KeyWindowDouble!
     /// What the lookup consults; a test empties or reorders it to move rows from under the pointer.
     private var lookupRows: [BarRowView] = []
 
@@ -214,7 +215,8 @@ final class RowHoverUnitTests: XCTestCase {
         host.addSubview(upper)
         host.addSubview(lower)
         lookupRows = [upper, lower]
-        hover = RowHover(host: host) { [unowned self] point in
+        key = KeyWindowDouble()
+        hover = RowHover(host: host, keyWindow: key.source) { [unowned self] point in
             lookupRows.first { $0.frame.contains(point) }
         }
     }
@@ -284,7 +286,7 @@ final class RowHoverUnitTests: XCTestCase {
 
     func test_hover_area_options_equal_the_tooltip_areas_options() throws {
         let rest = TooltipRestDouble()
-        let tooltip = LetterTooltip(host: host, rest: rest.rest) { _ in nil }
+        let tooltip = LetterTooltip(host: host, rest: rest.rest, keyWindow: key.source) { _ in nil }
         let hoverArea = try XCTUnwrap(PointerDelivery.hoverTrackingArea(of: host))
         let tooltipArea = try XCTUnwrap(PointerDelivery.trackingArea(of: host))
         XCTAssertEqual(hoverArea.options, tooltipArea.options)

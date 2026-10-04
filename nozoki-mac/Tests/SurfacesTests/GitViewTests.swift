@@ -20,6 +20,7 @@ final class GitViewTests: XCTestCase {
         let window: NSWindow
         var activated: Box
         let rest: TooltipRestDouble
+        let key: KeyWindowDouble
     }
 
     @MainActor
@@ -30,7 +31,8 @@ final class GitViewTests: XCTestCase {
     private func makeView(showing item: GitItem) -> Fixture {
         let glyphs = StatusGlyphs(empty: emptyGlyph, failure: failureGlyph)
         let rest = TooltipRestDouble()
-        let view = GitView(statusGlyphs: glyphs, tooltipRest: rest.rest)
+        let key = KeyWindowDouble()
+        let view = GitView(statusGlyphs: glyphs, tooltipRest: rest.rest, keyWindow: key.source)
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 260, height: 500), styleMask: [.borderless],
             backing: .buffered, defer: true)
@@ -39,7 +41,7 @@ final class GitViewTests: XCTestCase {
         view.rowActivated = { box.paths.append($0) }
         view.show(item)
         view.layoutSubtreeIfNeeded()
-        return Fixture(view: view, window: window, activated: box, rest: rest)
+        return Fixture(view: view, window: window, activated: box, rest: rest, key: key)
     }
 
     private func repository(
