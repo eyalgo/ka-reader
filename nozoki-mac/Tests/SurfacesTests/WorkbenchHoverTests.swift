@@ -20,16 +20,18 @@ final class WorkbenchHoverTests: XCTestCase {
         var gitAsks: [GitAnswer] = []
     }
 
-    private func makeFixture() -> Fixture {
+    private func makeFixture(treeRest: TooltipRest = .live) -> Fixture {
         let glyph = NSImage(size: NSSize(width: 1, height: 1))
         let glyphs = StatusGlyphs(empty: glyph, failure: glyph)
         let tree = RootItemsView(
-            folderGlyph: glyph, fileGlyph: glyph, fileCodeGlyph: glyph, statusGlyphs: glyphs)
+            folderGlyph: glyph, fileGlyph: glyph, fileCodeGlyph: glyph, statusGlyphs: glyphs,
+            tooltipRest: treeRest)
         tree.show(
             .observed([
                 Entry(name: "src", path: "src", kind: .folder, state: .pending),
                 Entry(name: "a.txt", path: "a.txt", kind: .file, state: .observed),
                 Entry(name: "b.txt", path: "b.txt", kind: .file, state: .observed),
+                Entry(name: "lib", path: "lib", kind: .folder, state: .pending),
             ]))
         let workbench = WorkbenchView(
             rootItemsView: tree, statusGlyphs: glyphs, railFolderGlyph: glyph, railGitGlyph: glyph)
@@ -80,6 +82,30 @@ final class WorkbenchHoverTests: XCTestCase {
         return NSPoint(x: frame.minX + 40, y: frame.midY)
     }
 
+    private func treeLetter(ofPath path: String, in fixture: Fixture) throws -> NSPoint {
+        let tree = fixture.workbench.rootItemsView
+        let index = try XCTUnwrap(
+            (0..<tree.outlineView.numberOfRows).first { tree.entry(atRow: $0)?.path == path })
+        let cell = try XCTUnwrap(
+            tree.outlineView.view(atColumn: 0, row: index, makeIfNecessary: true))
+        cell.layoutSubtreeIfNeeded()
+        let letter = try XCTUnwrap(
+            cell.subviews.compactMap { $0 as? NSTextField }
+                .first { $0.identifier?.rawValue == "treeRowLetter" && !$0.isHidden },
+            "\(path) shows no letter")
+        return tree.convert(NSPoint(x: letter.bounds.midX, y: letter.bounds.midY), from: letter)
+    }
+
+    private func gitLetter(ofRow index: Int, in fixture: Fixture) throws -> NSPoint {
+        let git = fixture.workbench.gitView
+        let rows = descendants(of: git).compactMap { $0 as? BarRowView }
+            .sorted { $0.convert($0.bounds, to: git).midY > $1.convert($1.bounds, to: git).midY }
+        let letter = try XCTUnwrap(
+            rows[index].subviews.compactMap { $0 as? NSTextField }
+                .first { $0.identifier?.rawValue == "gitRowLetter" })
+        return git.convert(NSPoint(x: letter.bounds.midX, y: letter.bounds.midY), from: letter)
+    }
+
     func test_hover_only_tree_and_git_view_carry_a_hover_tracking_area() throws {
         let fixture = makeFixture()
         showGit(in: fixture)
@@ -115,26 +141,51 @@ final class WorkbenchHoverTests: XCTestCase {
     }
 
     func test_hover_moving_resting_and_leaving_acts_on_nothing() throws {
-        let fixture = makeFixture()
+        let rest = TooltipRestDouble()
+        let fixture = makeFixture(treeRest: rest.rest)
         let tree = fixture.workbench.rootItemsView
-        for index in [0, 1, 2] {
+        // The Git answer gives the tree its letters (a.txt and b.txt carry `M`), so the pointer has
+        // a letter to rest on in both views. `src` is expanded, so a collapse would show; `lib`
+        // stays collapsed, so an expansion would.
+        showGit(in: fixture)
+        choose(.files, in: fixture)
+        tree.outlineView.expandItem(tree.outlineView.item(atRow: 0))
+        fixture.workbench.layoutSubtreeIfNeeded()
+        let src = tree.outlineView.item(atRow: 0)
+        let lib = try XCTUnwrap(
+            (0..<tree.outlineView.numberOfRows).first { tree.entry(atRow: $0)?.path == "lib" }
+                .map { tree.outlineView.item(atRow: $0) })
+        XCTAssertTrue(tree.outlineView.isItemExpanded(src))
+        let listedBefore = fixture.log.listed
+
+        for index in 0..<tree.outlineView.numberOfRows {
             try PointerDelivery.enter(at: treePoint(ofRow: index, in: fixture), in: tree)
             try PointerDelivery.move(to: treePoint(ofRow: index, in: fixture), in: tree)
         }
-        try PointerDelivery.leave(at: treePoint(ofRow: 2, in: fixture), in: tree)
+        for path in ["a.txt", "b.txt"] {
+            try PointerDelivery.move(to: treeLetter(ofPath: path, in: fixture), in: tree)
+            rest.fireLast()
+            XCTAssertNotNil(tree.letterTooltip.shownView, "the pointer rested on \(path)'s letter")
+        }
+        try PointerDelivery.leave(at: treeLetter(ofPath: "b.txt", in: fixture), in: tree)
 
-        showGit(in: fixture)
+        choose(.git, in: fixture)
         let git = fixture.workbench.gitView
         for index in [0, 1] {
             try PointerDelivery.enter(at: gitPoint(ofRow: index, in: fixture), in: git)
             try PointerDelivery.move(to: gitPoint(ofRow: index, in: fixture), in: git)
+            // The Git view's rest is the live one: the pointer stays still past it.
+            try PointerDelivery.move(to: gitLetter(ofRow: index, in: fixture), in: git)
+            RunLoop.main.run(until: Date().addingTimeInterval(LetterTooltip.restInterval + 0.3))
+            XCTAssertNotNil(git.letterTooltip.shownView, "the pointer rested on Git row \(index)")
         }
         try PointerDelivery.leave(at: gitPoint(ofRow: 1, in: fixture), in: git)
 
         XCTAssertEqual(fixture.log.selects, [], "no file selection, no Git-row activation")
-        XCTAssertEqual(fixture.log.listed, [], "no listTree, no expansion")
+        XCTAssertEqual(fixture.log.listed, listedBefore, "no listTree")
         XCTAssertEqual(tree.outlineView.selectedRow, -1)
-        XCTAssertFalse(tree.outlineView.isItemExpanded(tree.outlineView.item(atRow: 0)))
+        XCTAssertTrue(tree.outlineView.isItemExpanded(src), "no collapse")
+        XCTAssertFalse(tree.outlineView.isItemExpanded(lib), "no expansion")
         XCTAssertEqual(git.barPaths(), [])
     }
 }

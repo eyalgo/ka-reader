@@ -98,6 +98,15 @@ final class RootItemsViewHoverTests: XCTestCase {
             .flatMap { view.entry(atRow: $0)?.path }
     }
 
+    /// Every row of the outline, entry or line, whose drawn row view shows the hover fill.
+    /// `hoverPaths()` names entry rows only, so it cannot see a line row drawing the fill (CP-601).
+    private func filledRows(_ view: RootItemsView) -> [Int] {
+        (0..<view.outlineView.numberOfRows).filter { index in
+            (view.outlineView.rowView(atRow: index, makeIfNecessary: false) as? BarRowView)?
+                .showsHover == true
+        }
+    }
+
     private func cell(_ view: RootItemsView, path: String) throws -> NSTableCellView {
         let made = view.outlineView.view(
             atColumn: 0, row: try row(of: path, in: view), makeIfNecessary: true)
@@ -164,6 +173,7 @@ final class RootItemsViewHoverTests: XCTestCase {
         XCTAssertNotNil(reading.view.lineText(atRow: readingRow))
         try PointerDelivery.move(to: point(ofRow: readingRow, in: reading.view), in: reading.view)
         XCTAssertEqual(reading.view.hoverPaths(), [], "the reading line")
+        XCTAssertEqual(filledRows(reading.view), [], "the reading line's own row")
 
         // The empty-folder line.
         let empty = makeFixture([folder("docs"), file("z.txt")], listings: ["docs": .observed([])])
@@ -172,6 +182,7 @@ final class RootItemsViewHoverTests: XCTestCase {
         XCTAssertNotNil(empty.view.lineText(atRow: emptyRow))
         try PointerDelivery.move(to: point(ofRow: emptyRow, in: empty.view), in: empty.view)
         XCTAssertEqual(empty.view.hoverPaths(), [], "the empty-folder line")
+        XCTAssertEqual(filledRows(empty.view), [], "the empty-folder line's own row")
 
         // The empty root's and the failed root's message, and the space below the last row.
         let root = makeFixture([file("a.txt")])
@@ -358,12 +369,15 @@ final class RootItemsViewHoverTests: XCTestCase {
             try PointerDelivery.move(to: pointer, in: view)
             XCTAssertNotNil(view.lineText(atRow: 1))
             XCTAssertEqual(view.hoverPaths(), [], "the reading line")
+            XCTAssertEqual(filledRows(view), [], "the reading line's own row")
 
             try XCTUnwrap(fixture.answers.first)(answer)
             view.layoutSubtreeIfNeeded()
 
             let now = entryPath(at: pointer, in: view)
             XCTAssertEqual(view.hoverPaths(), now.map { [$0] } ?? [], "\(answer)")
+            // Where a line now lies under the pointer, its row shows no fill either.
+            XCTAssertEqual(filledRows(view).count, now == nil ? 0 : 1, "\(answer), any row")
             if case .observed(let entries) = answer, !entries.isEmpty {
                 XCTAssertEqual(now, "src/c.txt")
             }
