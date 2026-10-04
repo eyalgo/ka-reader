@@ -77,7 +77,22 @@ None.
   item does not ask to move them. The likely fold: the join is on `main` from `nozoki@67d103d`, in the
   shell, under the `surfaces` row's four bounds.
 - **If a document has to be written:** none. One sentence of `GitState` in `SDD.md`.
-- **Answer:** <the owner fills this in>
+- **Answer:** Replace that one sentence, and move nothing else. In place of "The join that produces
+  it is built in the shell, at a commit that is not on `main`", `GitState` says that the join that
+  produces the marker is in the shell (`nozoki-mac/Sources/Surfaces/TreeMarkers.swift`) and on
+  `main` from `nozoki@67d103d`, the merge that landed it, under the `surfaces` row's four bounds.
+  The fold words it. Measured 2026-10-04 at `nozoki@c79b26c`: `git merge-base --is-ancestor 6c49d5c
+  67d103d` exits 0 and the same test against `67d103d^1` exits 1, so `67d103d` is the commit that
+  brought the join to `main`; `git diff --stat 6c49d5c main --
+  nozoki-mac/Sources/Surfaces/TreeMarkers.swift` prints nothing, so the file on `main` is the one
+  built at `nozoki@6c49d5c`. Four things keep their words. The sentence before it is pinned to
+  `nozoki@b640345` and is true of that commit. The `surfaces` row's clause is pinned the same way
+  and says of itself that it reads the same whether or not the commit merges. `FolderModel`'s
+  `TreeEntry` marker and the marker among the things in no landed change are statements about the
+  model, and `git grep -n marker main -- crates/nozoki-core/src/folder_model.rs` still prints
+  nothing. § 10 RC-5's *Observed reality* is a dated record of what was read at `nozoki@b640345`.
+  Answered in the CTO's seat by an unattended run; the reasoning is
+  `docs/trail/sdd/self_answer-42.md`.
 
 ### 5.2 No slice delivers `docs/fdr.md` R-38's status-letter expansion, and two surfaces now draw the letters
 - **Raised by:** PM — 2026-10-04
@@ -98,7 +113,48 @@ None.
   expansion, and whether `see-git-status` is reached without it.
 - **If a document has to be written:** none. A slice's *Delivers* and *Reached when* in § 6, and
   R-38's trace target in § 4.
-- **Answer:** <the owner fills this in>
+- **Answer:** `see-git-status` delivers the expansion, and that slice is not reached without it. No
+  new slice is cut, and no slice's order or edge moves.
+  **Why that slice.** The owner put the tooltip in v1 (`docs/DESIGN.md:L990-L992`: "i think that
+  tooltips should be included in v1", "recorded as a v1 decision"). The v1 cut ends at
+  `follow-the-folder` (`docs/SDD.md:L1908`), and `see-git-status` is the slice that first draws the
+  letters, in the tree and in the Git view (`docs/SDD.md:L1765-L1768`). The rest is reasoning.
+  Nothing technical places the expansion later: the row's name and its status category already
+  reach `surfaces` in the projections it draws, the six words are `docs/CONTENT.md`'s
+  (`:L422-L426`) and go in the catalogue `surfaces` owns, and no part, seam or SM-4 call is added.
+  A slice of its own would deliver a tooltip with no letter to rest on.
+  **What the fold writes**, each in its own seat's words:
+  (1) § 4 C-E8 gains one sentence: a status letter's expansion is raised by the letter and by
+  nothing else, drawn as `docs/DESIGN.md` § Components "The tooltip" draws it, in the words
+  `docs/CONTENT.md` § Terminology gives. The SDD said this before it was re-authored
+  (`nozoki@70a879a:docs/SDD.md:L439-L441`, § 4 C-E6: "a status letter's expansion is raised by the
+  letter, as the tooltip, and nowhere else"), and `docs/fdr.md:L93` R-38 still traces to it.
+  (2) § 6 S-4 *Delivers* gains that resting the pointer on a status letter shows the row's name and
+  the letter's meaning in words.
+  (3) § 6 S-4 *Reached when*, observable half: resting the pointer on a letter, in the tree and in
+  the Git view, shows the name and then the word; the row stays one click target; nothing else
+  raises a tooltip.
+  (4) § 6 S-4 *Reached when*, command half: a `swift test` case in `nozoki-mac` holds that each of
+  the six status categories gives the word `docs/CONTENT.md` states, and that the text is the name
+  and then the word. Whether a test also drives the pointer rest is the design of the change.
+  (5) § 6 S-4 *Rests on*: `surfaces` gains the letter's tooltip.
+  **Whose columns.** (2) is the CPO's column and (1) and (3) are the CDO's (`docs/SDD.md:L96-L123`).
+  This answer decides nothing there that the owner's v1 decision, R-38, `docs/CONTENT.md` and
+  `docs/DESIGN.md` have not already settled. A call the fold finds in those columns that they do
+  not settle goes back to this file under that seat's `Seat:`.
+  **What waits for `follow-the-folder`.** The tooltip "leaves the moment the pointer leaves the
+  letter or a refresh changes the row's state" (`docs/DESIGN.md:L651-L652`). In `see-git-status`
+  the Git view shows the state read when the folder opened (`docs/SDD.md:L1829-L1830`), so the
+  refresh half is first observable in `follow-the-folder`, and that slice's observable half is
+  where it is stated.
+  **No § 10 entry.** None of that section's four triggers holds (`docs/SDD.md:L2452-L2454`): S-4's
+  *Reached when* can be met as written, and the PRD, the SRS and the UXD did not move. This is an
+  omission restored, and a review note records it.
+  **Where the product stands.** At `nozoki@c79b26c` both surfaces draw the letters and raise
+  nothing (`nozoki-mac/Sources/Surfaces/GitView.swift:L24`, `RootItemsView.swift:L236`), so on this
+  ground `see-git-status` is not reached on `main`. What that means for the work in flight is the
+  PM's. Answered in the CTO's seat by an unattended run; the reasoning, the failure paths and what
+  would have tipped it are `docs/trail/sdd/self_answer-42.md`.
 
 **How it closes.** `product-sdd` folds these on its next run like every other item in this file, and
 the trail copy and the delete-when-empty behaviour are unchanged.
