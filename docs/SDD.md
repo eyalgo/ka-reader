@@ -6,7 +6,8 @@
        signal, and the state a finished SDD carries; the open-issues file is gone.
      Locked = ratified as the source of truth. -->
 **Owner:** CTO · CPO · CDO — one run, three seats
-**Version:** 34 — CTO: § 3, the `surfaces` row (one bounded clause: for `see-git-status` alone the tree's marker join and the Git lists' row order stand in `surfaces`, under four bounds, ending when `follow-the-folder` is reached; the row's one exception stays one); § 3 *What the system holds*, `GitState` (`folder-model` owns the lists' row order, with one implementation in the core; where the order and the marker join are computed meanwhile); § 6 `see-git-status` *Rests on* (the tree's markers and the lists' row order move from `folder-model` to `surfaces` for that slice); § 6 `follow-the-folder` *Rests on* (the debt) and *Reached when*, command half (a model case, and a `grep` that is red while either file remains in the shell); § 10 RC-5 (new, the CTO's ground); SDD Review Notes RN-94 (new); the two answered companion items folded, trail copy at `docs/trail/sdd/cycle-29.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. No slice's *Delivers*, observable half, edge or order altered. Companion items added: none.
+**Version:** 35 — CTO, one run, with the two answered companion items folded: § 3 *What the system holds*, `GitState` (one sentence: the tree's marker join is in the shell and on `main` from `nozoki@67d103d`, under the `surfaces` row's four bounds; nothing else in § 3 moved); § 4 C-E8 (one sentence and two *Violated by* cases: a status letter's expansion is raised by the letter and by nothing else — the CDO's clause, settled by `docs/DESIGN.md` and `docs/CONTENT.md`); § 6 `see-git-status` *Delivers* (the pointer resting on a status letter shows the row's name and the letter's meaning — the CPO's field, settled by the owner's v1 decision), *Reached when*, observable half (the tooltip in the tree and in the Git view) and command half (a `swift test` case over the six status categories), and *Rests on* (`surfaces` gains the tooltip); § 6 `follow-the-folder` *Reached when*, observable half (the tooltip leaves when a refresh changes the row's state); SDD Review Notes RN-95 (new); trail copy at `docs/trail/sdd/cycle-30.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. No § 10 entry, no § 7 edge, no slice order, no part and no seam altered. Companion items added: none.
+Version 34 — CTO: § 3, the `surfaces` row (one bounded clause: for `see-git-status` alone the tree's marker join and the Git lists' row order stand in `surfaces`, under four bounds, ending when `follow-the-folder` is reached; the row's one exception stays one); § 3 *What the system holds*, `GitState` (`folder-model` owns the lists' row order, with one implementation in the core; where the order and the marker join are computed meanwhile); § 6 `see-git-status` *Rests on* (the tree's markers and the lists' row order move from `folder-model` to `surfaces` for that slice); § 6 `follow-the-folder` *Rests on* (the debt) and *Reached when*, command half (a model case, and a `grep` that is red while either file remains in the shell); § 10 RC-5 (new, the CTO's ground); SDD Review Notes RN-94 (new); the two answered companion items folded, trail copy at `docs/trail/sdd/cycle-29.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. No slice's *Delivers*, observable half, edge or order altered. Companion items added: none.
 Version 33 — CTO: § 4 C-I3 (the transport-read sentences: the claim is proved for each executable the read has met, which is two; the second links the `nozoki_read_git` export, from `nozoki@129586e`, and passed; where the read ran, and that no hosted runner has read that build); § 4 C-R6 (the three defined symbols the pattern does not match are pinned to the second executable); § 11 R-15 (the false sentence replaced by the measurement; the risk kept, with the three changes that make it real; *shows up as* is a red read on any release build; *response* holds the change whose build turns the read red until the re-cut is recorded); SDD Review Notes RN-93 (new); the two answered companion items folded, trail copy at `docs/trail/sdd/cycle-28.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. No slice's *Delivers*, *Reached when*, edge or order altered. Companion items added: none.
 Version 32 — CTO: *Open Questions* (the config-named-path item's bound is "before the slice is reached" alone: the clause naming the build in which `mac-shell` first calls `nozoki_read_git` is removed, the review that holds the bound is the one of the change after which `see-git-status`'s *Reached when* is claimed whole, what a reader can meet in the builds between is stated, and a second dated note follows the first — eight stand); § 11 R-16 (the same bound, and the same builds between); § 10 RC-4 *Still unresolved* (a second dated parenthesis, the first one's words kept); SDD Review Notes RN-92 (new); the one answered companion item folded, trail copy at `docs/trail/sdd/cycle-27.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. No slice's *Delivers*, *Reached when*, edge or order altered. Companion items added: none.
 Version 31 — CTO: § 3 *What the system holds*, `GitState` (the model holds `HeadState` and `StatusLists` from one read; what a failed half does; what is still only the design); § 4 C-R6 (the bridge manifest's `git2` line as landed; three defined symbols named beside "The three names are a floor"); § 4 C-I3 (the core suites and the walk run with the machine-level reads on and nothing isolates them; the `nm` transport read as landed, with the one executable it is proved for; the switch and its test as landed); § 10 RC-4 *Still unresolved* (a dated parenthesis, its words kept); § 11 R-15 (the measurement, and *shows up as* naming the build that links the export) and R-16 (fixture sentence re-pinned, the item named by what it is, its new bound); *Open Questions* (the config-named-path item's bound moves to the build in which `mac-shell` first calls `nozoki_read_git`, with a dated note — eight stand); SDD Review Notes RN-91 (new); the four answered companion items folded, trail copy at `docs/trail/sdd/cycle-26.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. No slice's *Delivers*, *Reached when*, edge or order altered. Companion items added: none.
@@ -500,7 +501,9 @@ section already says arguments start over.>
   order has one implementation, in the core. At `nozoki@b640345` the core orders neither list
   (`crates/nozoki-core/src/git_reader.rs:L121`, "no order is promised"), and the shell orders
   them. The tree's changed marker is still in no change landed on `main` at that commit. The
-  join that produces it is built in the shell, at a commit that is not on `main`. § 3's
+  join that produces it is in the shell (`nozoki-mac/Sources/Surfaces/TreeMarkers.swift`) and
+  on `main` from `nozoki@67d103d`, the merge that landed it, under the four bounds § 3's
+  `surfaces` row states (`docs/trail/sdd/cycle-30.md` § 5.1; RN-95). § 3's
   `surfaces` row names both files and bounds both placements, and both move into the model no
   later than `follow-the-folder` (§ 6 S-5). This document names who computes the order. It
   states no order rule.
@@ -1070,9 +1073,13 @@ and no condition here fixes either.
   sits beside a text label or has a text form the surface shows; the contrast floor is the number
   `docs/DESIGN.md` § *Colors* states, and no surface falls below it. All of it sits inside UX-A1's
   stated posture — mouse-driven, no keyboard model, no assistive-technology promise — and no surface
-  claims beyond it (UX-A1, UX-A2, UX-A4, UX-I8). *Violated by:* a staged/unstaged distinction told
-  by colour only, an unlabelled icon, a shortcut a surface advertises, a conformance a surface
-  claims.
+  claims beyond it (UX-A1, UX-A2, UX-A4, UX-I8). **A status letter's expansion is raised by the
+  letter and by nothing else**: it is drawn as `docs/DESIGN.md` § Components, "The tooltip",
+  draws it, in the words `docs/CONTENT.md` § Accessibility of text gives, and no other element
+  raises a tooltip (`docs/trail/sdd/cycle-30.md` § 5.2; RN-95). *Violated by:* a staged/unstaged
+  distinction told by colour only, an unlabelled icon, a shortcut a surface advertises, a
+  conformance a surface claims, a status letter drawn with nothing that expands it, a tooltip
+  raised by anything that is not a status letter.
 - **C-E9.** **Two themes, equal, from the platform, remembered.** Dark and light are both
   first-class and equally maintained; the initial theme follows the platform's appearance, light
   where no signal can be read; the reader's override is remembered in the tool's own state and
@@ -1751,7 +1758,9 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
 - **Delivers:** After this, a developer can switch the sidebar to Git and — where the opened
   folder is itself a repository's root — see the branch, the changed files, the staged files and
   the short status, with changed files marked in the tree, a mid-merge, mid-rebase or detached
-  repository shown as the state it is in, and a changed file's row opening that file to read;
+  repository shown as the state it is in, a changed file's row opening that file to read, and
+  the pointer resting on a status letter showing the row's name and the letter's meaning in
+  words (RN-95);
   where the folder is not a repository's root — a plain folder, a folder inside a repository, a
   folder holding repositories — the Git view is present and shows nothing and the tree carries no
   markers.
@@ -1764,7 +1773,11 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   stated "nothing changed" where the tree and index are clean, and no count (UX-S3 Success, Empty);
   each file's state is a letter or word beside it, with colour repeating it and never carrying it
   alone (UX-A2). The tree carries changed-file markers on exactly the files the Git view lists,
-  each with its text cue (UX-S2 Success). They click a changed file's row: the file opens in the
+  each with its text cue (UX-S2 Success). They rest the pointer on a status letter, in the tree
+  and then in the Git view: a tooltip shows the row's name and then the letter's meaning in
+  words; the row stays one click target, and nothing else in the product raises a tooltip
+  (`docs/DESIGN.md` § Components, "The tooltip"; `docs/CONTENT.md` § Accessibility of text; § 4
+  C-E8; RN-95). They click a changed file's row: the file opens in the
   panel to read, exactly as a tree selection would — one click target, the status letter a label
   (UX-F2, the first reading). They scroll partway down it and switch back to Files: the open file
   and their reading position are untouched — the panel has not returned to the top (UX-F2; RN-78). A repository mid-merge, mid-rebase or detached shows that state, presented
@@ -1807,12 +1820,16 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   prints `unchanged` after `probe`, `state` and `status` — no optional-lock refresh (TO-2);
   `checks/structure.sh` finds no `std::process` in any shipped crate and the libgit2 import in
   `git-reader` alone, with the one exception § 3 states: `core-bridge` names the binding in the
-  composition root's search-path switch and its test, and nowhere else (RN-87). *The promise clause:* `checks/read-only.sh` on all six fixtures prints
+  composition root's search-path switch and its test, and nowhere else (RN-87); `swift test
+  --package-path nozoki-mac` passes with a case holding that each of the six status categories
+  gives the word `docs/CONTENT.md` § Accessibility of text states for it, and that the tooltip's
+  text is the row's name and then that word (RN-95). *The promise clause:* `checks/read-only.sh` on all six fixtures prints
   `unchanged`; `checks/no-network.sh` exits 0.
 - **Rests on:** § 3 `git-reader` (the port, `probe`, `state`, `status`), `folder-model` (`kind`
   resolved; `GitState`), `surfaces` (the rail's Git entry, the Git view, and in this slice the
   tree's markers and the Git lists' row order, under the bounds § 3's `surfaces` row states;
-  § 10 RC-5, RN-94); `SM-2`, `SM-4` (`read_git`; § 10 RC-4); § 4 C-R6, C-I1; § 9 TO-2, TO-10; § 11 R-1,
+  § 10 RC-5, RN-94; and the status letter's tooltip, its six words in the message catalogue;
+  RN-95); `SM-2`, `SM-4` (`read_git`; § 10 RC-4); § 4 C-R6, C-I1; § 9 TO-2, TO-10; § 11 R-1,
   R-3. Slices: `open-a-folder`, `read-a-file`.
 - **Traces to:** PRD § Key Use Cases 2 and 4; § Core Features "A Git view", "Git is read only when
   the folder opened is itself the root of a Git repository", "A file tree with changed-file
@@ -1855,7 +1872,9 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   file's name and states plainly that it is no longer there, and its old content is not shown as
   current (UX-S1 Error, UX-I4). The script stages, commits and checks out branches: the Git view
   and the tree's markers follow, each marker appearing only once the new state has been read
-  (UX-S2 Loading, UX-I13). The script runs `git init` at a plain folder's root: the Git view fills
+  (UX-S2 Loading, UX-I13). They rest the pointer on a status letter until its tooltip shows, and
+  the script changes that row's state: the tooltip leaves at the refresh (`docs/DESIGN.md`
+  § Components, "The tooltip"; RN-95). The script runs `git init` at a plain folder's root: the Git view fills
   and markers appear; it removes `.git`: the view empties and the markers go — without ceremony,
   their place untouched (UX-I17). Throughout, the window never blanks, blocks or closes; an entry
   made unreadable mid-run is marked with what was observed and the rest of the tree stands (UX-S2
@@ -5973,6 +5992,110 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   `surfaces`, `GitState`; § 6 `see-git-status`, `follow-the-folder`; § 10 RC-5; source:
   `docs/trail/sdd/cycle-29.md` §§ 5.1, 5.2; `docs/trail/sdd/self_answer-41.md`;
   `nozoki@b640345`)*.
+- **RN-95:** *(CTO; the CPO's and the CDO's columns named below)* *(changed)* `see-git-status`
+  delivers the status letter's expansion and is not reached without it, and `GitState` says
+  the tree's marker join is on `main`. The companion's two items are folded. The PM opened
+  that companion on 2026-10-04, and an unattended run answered both in the CTO's seat
+  (`docs/trail/sdd/cycle-30.md` §§ 5.1, 5.2; reasoning `docs/trail/sdd/self_answer-42.md`).
+  **What moved, each named.** (1) § 3 *What the system holds*, `GitState`: the sentence "The
+  join that produces it is built in the shell, at a commit that is not on `main`" is replaced
+  by one saying the join is in the shell and on `main` from `nozoki@67d103d`, under the
+  `surfaces` row's four bounds. (2) § 4 C-E8: one sentence is added before *Violated by*,
+  and *Violated by* gains two cases. (3) § 6 S-4 *Delivers*: "and a changed file's row opening
+  that file to read" becomes "a changed file's row opening that file to read, and the pointer
+  resting on a status letter showing the row's name and the letter's meaning in words". (4)
+  § 6 S-4 *Reached when*, observable half: one sentence is added before "They click a changed
+  file's row". (5) § 6 S-4 *Reached when*, command half: one `swift test` clause is added
+  before *The promise clause*. (6) § 6 S-4 *Rests on*: the `surfaces` parenthesis gains the
+  tooltip and its six words in the message catalogue. (7) § 6 S-5 *Reached when*, observable
+  half: one sentence is added before "The script runs `git init`".
+  **Whose columns, and what settled each.** (1), (5) and (6) are the CTO's. (3) is the CPO's
+  field. It is settled by the owner's decision that the tooltip is in v1
+  (`docs/DESIGN.md` § DESIGN Review Notes, `:L990-L992`: "i think that tooltips should be
+  included in v1", recorded "as a v1 decision rather than a one-off exception") and by
+  `docs/fdr.md` R-38. (2), (4) and (7) are the CDO's clauses. They are settled by
+  `docs/DESIGN.md` § Components, "The tooltip" (`:L644-L656`), which gives the tooltip one
+  home, "a status letter, wherever one is drawn — the tree and the Git view", has it carry
+  "the file's name and the letter's word, in that order", and has it leave "the moment the
+  pointer leaves the letter or a refresh changes the row's state"; and by `docs/CONTENT.md`
+  § Accessibility of text (`:L423-L433`), which gives the six words. This run found no call
+  in either seat's column that those documents leave open, so no item is raised for the CPO
+  or the CDO.
+  **Why this slice. This is reasoning, and it is the answer's.** `see-git-status` is the
+  slice that first draws the letters, in the tree and in the Git view. The row's name and
+  its status category already reach `surfaces` in the projections it draws
+  (`nozoki-mac/Sources/Surfaces/GitItem.swift:L54-L62`, the six categories), the words go in
+  the catalogue `surfaces` owns, and no part, seam or SM-4 call is added, so § 7 gains no
+  edge. A slice of its own would deliver a tooltip with no letter to rest on. The refresh half
+  is stated in `follow-the-folder` because in `see-git-status` the Git view shows the state
+  read when the folder opened, and no refresh changes a row there.
+  **An omission restored, and no § 10 entry.** This document carried the clause before it
+  was re-authored (`nozoki@70a879a:docs/SDD.md:L436-L439`, § 4 C-E6: "a status letter's
+  expansion is raised by the letter, as the tooltip, and nowhere else"), and `docs/fdr.md`
+  R-38 (`:L93`) traces to "SDD § 4 C-E8", which now carries it again. None of § 10's four
+  triggers holds: S-4's *Reached when* could be met as written, no slice became a fragment, a
+  slice can still be started, and the PRD, the SRS and the UXD did not change.
+  **Where this fold departs from the answer's words.** Three departures. The answer has C-E8
+  cite "`docs/CONTENT.md` § Terminology"; the six words stand under § Accessibility of text
+  (`docs/CONTENT.md:L411`, the heading; `:L423-L426`), so both C-E8 and S-4 cite that section.
+  The answer's command half says "a `swift test` case in `nozoki-mac`"; the fold writes the
+  command as this document types it elsewhere, `swift test --package-path nozoki-mac`. The
+  answer names five edits and a sentence for `follow-the-folder`'s observable half "where it
+  is stated"; that sentence was not yet stated there, and this fold writes it as (7).
+  **Read and measured for this fold, at `nozoki@6dc3cdf`.** `git status --short` printed
+  nothing before the fold's first write, so the companion's answers were committed
+  (`nozoki@6dc3cdf`). `git merge-base --is-ancestor 6c49d5c 67d103d` exits 0 and the same
+  test against `67d103d^1` exits 1. `git diff --stat 6c49d5c main --
+  nozoki-mac/Sources/Surfaces/TreeMarkers.swift` prints nothing. `git grep -n marker main --
+  crates/nozoki-core/src/folder_model.rs` prints nothing. `grep -c -i tooltip` printed 0 for
+  this document, `docs/UXD.md` and `docs/SRS.md` before the fold. `grep -rn -i tooltip
+  nozoki-mac/Sources` prints two lines, both comments saying none is raised
+  (`GitView.swift:L24`, `RailSwitchView.swift:L35`).
+  **Known limits, stated beside the claims.** This fold built nothing and ran no test. At
+  `nozoki@6dc3cdf` both surfaces draw the letters and raise no tooltip, so on this bar
+  `see-git-status` is not reached on `main`; what that means for work in flight is the PM's.
+  The command half's case holds the words and their order. Whether a test also drives the
+  pointer rest, the 500ms delay and the tooltip's leaving is the design of the change, and
+  until one does, those three are held by the observable half alone. No requirement in
+  `docs/SRS.md` and no entry in `docs/UXD.md` names the expansion: S-4's SRS and UXD traces
+  are unchanged, and the expansion traces to the owner's v1 decision, `docs/fdr.md` R-38,
+  `docs/DESIGN.md` and `docs/CONTENT.md`, three documents outside the three this document's
+  `Inputs read:` line names. They were opened at the lines cited here and were not read
+  whole; each is Settled at its status line. A row name longer than the sidebar is wide is
+  not covered: `docs/DESIGN.md` says "one line, never wrapped" and states nothing of what is
+  cut. Of this document the fold read the header, *Who holds what*, § 3 *What the system
+  holds*, § 4 C-E3 to C-E10, § 5 step 1's E-4, § 6 S-4 and S-5, § 10's opening note, RN-93's
+  tail, RN-94 and *Open Questions*, and searched the rest for `status letter` and `tooltip`.
+  The other sections were not re-read, so a sentence there that speaks of the expansion in
+  other words was not seen. The PRD, the SRS and the UXD were read at their status lines,
+  each Settled, and searched for `status letter` and `tooltip`; their bodies were not read.
+  The project's Agari, its two doctrine files and the instance's writing bar were read
+  whole. `docs/nfdr.md` was searched and `docs/adr/` was not opened.
+  **What does not move.** The sentence before the replaced one is pinned to `nozoki@b640345`
+  and is true of that commit. The `surfaces` row's clause is pinned the same way and says of
+  itself that it reads the same whether or not the commit merges. `FolderModel`'s `TreeEntry`
+  marker and the marker among the things in no landed change are statements about the model.
+  § 10 RC-5's *Observed reality* is a dated record. § 5 step 1's E-4 keeps its words: it is
+  the entry the slice was cut from, the answer names § 6 alone, and S-4's *Delivers* is where
+  the addition is authorized. § 4 C-E3 and C-E6 keep their words: a status letter is not a
+  fault, and a plain folder draws no letter, so nothing raises a tooltip there. S-4's "one
+  click target, the status letter a label" stands, because the tooltip is raised by pointer
+  rest and not by a click.
+  **Found on the same walk, and not fixed.** RN-93's finding stands: the `**Owner:**` line
+  and *Who holds what, inside one run* carry an earlier template's wording, and this fold
+  did not read the document whole either. `docs/fdr.md` R-38 says "the file's name" where
+  `docs/CONTENT.md` now names "the row — the file or the folder"; this document says "the
+  row's name", and R-38's wording is the Principal PM's.
+  **Downstream, not this document's to change.** `grep -n -i tooltip docs/nfdr.md` prints
+  nothing, so `docs/nfdr.md` restates neither C-E8's new sentence nor S-4's new command
+  clause. It is the Principal Architect's, and this fold opened no item on that seat's
+  companion.
+  **The companion:** `diff docs/SDD_open_issues.md docs/trail/sdd/cycle-30.md` printed
+  nothing before this fold's first edit to this document. Its two items are folded and
+  nothing is unresolved, so `docs/SDD_open_issues.md` is removed and `Status:` stays Settled
+  *(re: § 3 `GitState`; § 4 C-E8; § 6 `see-git-status`, `follow-the-folder`; source:
+  `docs/trail/sdd/cycle-30.md` §§ 5.1, 5.2; `docs/trail/sdd/self_answer-42.md`;
+  `nozoki@6dc3cdf`)*.
 
 ## Open Questions
 
