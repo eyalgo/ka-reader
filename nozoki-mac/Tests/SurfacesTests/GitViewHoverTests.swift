@@ -211,7 +211,8 @@ final class GitViewHoverTests: XCTestCase {
         XCTAssertEqual(view.hoverPaths(), ["b.txt"], "no longer drawn as selected")
     }
 
-    func test_hover_s4_click_then_pointer_over_no_row_clicked_row_shows_selection_fill_and_bar_no_other_row_either()
+    func
+        test_hover_s4_click_then_pointer_over_no_row_clicked_row_shows_selection_fill_and_bar_no_other_row_either()
         throws
     {
         let fixture = makeFixture(showing: repository(changed: [entry("a.txt"), entry("b.txt")]))

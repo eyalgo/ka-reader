@@ -121,7 +121,8 @@ final class RowHoverTests: XCTestCase {
             let name = appearance.rawValue
             let last = (rep.pixelsWide - 1, rep.pixelsHigh - 1)
             try assertColour(
-                rep, atX: rep.pixelsWide / 2, y: rep.pixelsHigh / 2, equals: fill, "centre, \(name)")
+                rep, atX: rep.pixelsWide / 2, y: rep.pixelsHigh / 2, equals: fill, "centre, \(name)"
+            )
             try assertColour(rep, atX: last.0, y: 0, equals: fill, "top-right, \(name)")
             try assertColour(rep, atX: last.0, y: last.1, equals: fill, "bottom-right, \(name)")
             try assertColour(rep, atX: 0, y: rep.pixelsHigh / 2, equals: bar, "left edge, \(name)")

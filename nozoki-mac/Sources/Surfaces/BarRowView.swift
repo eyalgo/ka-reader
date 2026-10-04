@@ -1,8 +1,9 @@
 import AppKit
 
-/// A row that can draw the open file's bar: 2px of `{colors.primary}` down its left edge
-/// (`docs/DESIGN.md` § Elevation & Depth, "Selection is a fill and a bar"). The selection fill is
-/// the table's own. The tree and the Git view draw one bar through this view.
+/// A row that can draw a bar: 2px of `{colors.primary}` down its left edge (`docs/DESIGN.md`
+/// § Elevation & Depth, "Selection is a fill and a bar"). The tree's selection fill is the table's
+/// own, and its open file's row draws the bar alone. The Git view's selected row stands in no
+/// table, so it draws `{colors.selection}` itself, under the bar, from one state (`drawsSelection`).
 final class BarRowView: NSTableRowView {
     private static let barWidth: CGFloat = 2
 
@@ -21,7 +22,29 @@ final class BarRowView: NSTableRowView {
             : NSColor(srgbRed: 0xEB / 255, green: 0xEB / 255, blue: 0xE8 / 255, alpha: 1)
     }
 
-    var drawsBar = false {
+    /// `{colors.selection}`: `#E2E3DF` in the light theme, `#34363B` in the dark one
+    /// (`docs/DESIGN.md:L420`).
+    private static let selectionColor = NSColor(name: nil) { appearance in
+        appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+            ? NSColor(srgbRed: 0x34 / 255, green: 0x36 / 255, blue: 0x3B / 255, alpha: 1)
+            : NSColor(srgbRed: 0xE2 / 255, green: 0xE3 / 255, blue: 0xDF / 255, alpha: 1)
+    }
+
+    /// The bar was asked for on its own, as the tree's open-file row does.
+    private var barRequested = false
+
+    /// The row draws the bar: asked for on its own, or because the row is drawn as selected.
+    var drawsBar: Bool {
+        get { barRequested || drawsSelection }
+        set {
+            barRequested = newValue
+            needsDisplay = true
+        }
+    }
+
+    /// The selected drawing: the selection fill edge to edge with the bar over it. It is one
+    /// state, so no row shows one without the other, and the hover fill never shows over it.
+    var drawsSelection = false {
         didSet { needsDisplay = true }
     }
 
@@ -37,7 +60,10 @@ final class BarRowView: NSTableRowView {
 
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
-        if showsHover {
+        if drawsSelection {
+            Self.selectionColor.setFill()
+            bounds.fill()
+        } else if showsHover {
             Self.hoverColor.setFill()
             bounds.fill()
         }
