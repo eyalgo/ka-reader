@@ -10,7 +10,7 @@ use std::io::Read;
 use std::os::unix::fs::{PermissionsExt, symlink};
 use std::os::unix::io::FromRawFd;
 use std::path::{Path, PathBuf};
-use std::process;
+use std::process::{self, Command};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Mutex, MutexGuard, Once};
 
@@ -148,6 +148,40 @@ impl TempDir {
         symlink(target, self.root.join(relative)).expect("the symlink can be created");
     }
 
+    /// Copies the committed fixture folder `checks/fixtures/<scene>` to `<root>/<scene>`, keeping
+    /// every symlink as a symlink, and returns the copy's path.
+    pub fn copy_fixture(&self, scene: &str) -> PathBuf {
+        let source = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("../../checks/fixtures")
+            .join(scene);
+        let destination = self.root.join(scene);
+        copy_keeping_links(&source, &destination);
+        destination
+    }
+
+    /// Unpacks `checks/fixtures/<archive>` with `tar` into `<root>/<into>`, which must exist.
+    pub fn unpack_fixture_archive(&self, archive: &str, into: &str) {
+        let archive_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("../../checks/fixtures")
+            .join(archive);
+        let status = Command::new("tar")
+            .arg("-xf")
+            .arg(&archive_path)
+            .arg("-C")
+            .arg(self.root.join(into))
+            .status()
+            .expect("tar runs");
+        assert!(status.success(), "tar unpacked {archive}");
+    }
+
+    /// A copy of the `repo` fixture with its `.git` unpacked from `repo.git.tar`: a repository whose
+    /// one commit is on `main` and whose tree is clean. Returns the repository's path.
+    pub fn repository_copy(&self) -> PathBuf {
+        let repository = self.copy_fixture("repo");
+        self.unpack_fixture_archive("repo.git.tar", "repo");
+        repository
+    }
+
     pub fn set_mode(&self, relative: &str, mode: u32) {
         let path = self.root.join(relative);
         fs::set_permissions(&path, fs::Permissions::from_mode(mode)).expect("the mode can be set");
@@ -161,6 +195,60 @@ impl Drop for TempDir {
         // hide the failure being reported. A folder left behind is the operating system's to reap.
         fs::remove_dir_all(&self.root).ok();
     }
+}
+
+fn copy_keeping_links(source: &Path, destination: &Path) {
+    let metadata = fs::symlink_metadata(source).expect("the source can be looked at");
+    if metadata.is_symlink() {
+        let target = fs::read_link(source).expect("the link can be read");
+        symlink(target, destination).expect("the symlink can be copied");
+    } else if metadata.is_dir() {
+        fs::create_dir(destination).expect("the folder can be created");
+        for entry in fs::read_dir(source).expect("the folder can be listed") {
+            let entry = entry.expect("the entry can be read");
+            copy_keeping_links(&entry.path(), &destination.join(entry.file_name()));
+        }
+    } else {
+        fs::copy(source, destination).expect("the file can be copied");
+    }
+}
+
+/// A `git` invocation in `dir` that reads no machine-level configuration and runs no hook, so a
+/// scene built with it is the same on every machine.
+fn git_command(dir: &Path, args: &[&str]) -> Command {
+    let mut command = Command::new("git");
+    command
+        .arg("-C")
+        .arg(dir)
+        .args([
+            "-c",
+            "core.hooksPath=/dev/null",
+            "-c",
+            "commit.gpgsign=false",
+            "-c",
+            "advice.detachedHead=false",
+        ])
+        .args(args)
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
+        .env("GIT_AUTHOR_NAME", "Scene")
+        .env("GIT_AUTHOR_EMAIL", "scene@example.invalid")
+        .env("GIT_COMMITTER_NAME", "Scene")
+        .env("GIT_COMMITTER_EMAIL", "scene@example.invalid")
+        .env("GIT_EDITOR", "true");
+    command
+}
+
+/// Runs `git args…` in `dir` through [`git_command`] and asserts it succeeded.
+pub fn git(dir: &Path, args: &[&str]) {
+    let output = git_command(dir, args)
+        .output()
+        .expect("the git command line runs");
+    assert!(
+        output.status.success(),
+        "git {args:?} failed: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
 }
 
 fn restore_access(folder: &Path) {

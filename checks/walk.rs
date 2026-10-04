@@ -2,11 +2,11 @@
 //!
 //! Folder mode, taken when the first argument is an absolute path: open that folder, then call
 //! `list_tree` on its root and on every entry it returns, descending only into folders, and call
-//! `select_file` once on each file entry a `list_tree` answer returns. Then it asks the Git port
-//! three things of the folder's canonical path: `probe` on it, and, only where `probe` says `Root`,
-//! `state` and `status` once each. The answers are dropped and none stops the walk. It prints the
-//! number of `list_tree` calls it made, never anything a `select_file` or a Git answer carries, and
-//! exits 0 once the walk is complete, or non-zero when the folder did not open.
+//! `select_file` once on each file entry a `list_tree` answer returns. Then it calls `read_git` once
+//! on a model of the folder, through the libgit2 adapter, which asks the Git port `probe`, and, only
+//! where `probe` says `Root`, `state` and `status`. The answer is dropped and none stops the walk.
+//! It prints the number of `list_tree` calls it made, never anything a `select_file` or a Git answer
+//! carries, and exits 0 once the walk is complete, or non-zero when the folder did not open.
 //!
 //! No-argument mode, taken for any other argument too (a libtest filter is not a folder): walk the
 //! committed fixtures, and exit 0 when both walks complete, each root lists at least one entry, and
@@ -21,7 +21,7 @@ use std::collections::{BTreeMap, BTreeSet, HashSet};
 use std::path::{Path, PathBuf};
 
 use nozoki_core::{
-    EntryKind, GitPort, ItemState, Libgit2, OpenedFolder, RootFinding, list_tree, open_folder,
+    EntryKind, FolderModel, ItemState, Libgit2, OpenedFolder, list_tree, open_folder, read_git,
     select_file,
 };
 
@@ -102,17 +102,6 @@ fn walk_from(
         }
     }
     !entries.is_empty()
-}
-
-/// Asks the Git port about `root`: `probe`, and only on `Root` `state` and `status` once each. The
-/// answers are dropped, because the proof is that the folder is unchanged afterwards, `.git/index`
-/// included. `root` is canonical, as the adapter compares it against the locations it verifies.
-fn call_git_port(root: &Path) {
-    let port: &dyn GitPort = &Libgit2;
-    if port.probe(root) == RootFinding::Root {
-        let _ = port.state(root);
-        let _ = port.status(root);
-    }
 }
 
 fn walk_folder(folder: &Path) -> Option<Walk> {
@@ -296,7 +285,11 @@ pub(crate) fn run() -> Result<(), String> {
                 .map_err(|_| format!("{folder} did not open as a folder"))?;
             let walk = walk_folder(&canonical)
                 .ok_or_else(|| format!("{folder} did not open as a folder"))?;
-            call_git_port(&canonical);
+            // The answer is dropped: the proof is that the folder is unchanged afterwards, `.git/index`
+            // included. `canonical` is canonical, as the adapter compares it against the locations it
+            // verifies.
+            let opened = open_folder(&canonical).expect("the folder that was just walked opens");
+            let _ = read_git(FolderModel::new(opened), &Libgit2);
             println!("{}", walk.calls);
             Ok(())
         }

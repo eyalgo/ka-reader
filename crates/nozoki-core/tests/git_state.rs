@@ -895,22 +895,34 @@ fn test_core_worktree_elsewhere_answers_err_from_both_calls() {
     assert_pathless(answers.failure());
 }
 
-/// A port that answers what it was given and counts how often `probe` and `state` were asked, so
-/// the reducer cases reach the model with no adapter.
+/// A port that answers what it was given and counts how often `probe`, `state` and `status` were
+/// asked, so the reducer cases reach the model with no adapter.
 struct Double {
     finding: RootFinding,
     head: Result<HeadState, GitReadCondition>,
+    lists: Result<StatusLists, GitReadCondition>,
     probes: Cell<usize>,
     states: Cell<usize>,
+    statuses: Cell<usize>,
 }
 
 impl Double {
     fn new(finding: RootFinding, head: Result<HeadState, GitReadCondition>) -> Self {
+        Self::with_status(finding, head, Ok(standing_lists()))
+    }
+
+    fn with_status(
+        finding: RootFinding,
+        head: Result<HeadState, GitReadCondition>,
+        lists: Result<StatusLists, GitReadCondition>,
+    ) -> Self {
         Self {
             finding,
             head,
+            lists,
             probes: Cell::new(0),
             states: Cell::new(0),
+            statuses: Cell::new(0),
         }
     }
 }
@@ -927,7 +939,34 @@ impl GitPort for Double {
     }
 
     fn status(&self, _root: &Path) -> Result<StatusLists, GitReadCondition> {
-        panic!("the reducer step never asks status");
+        self.statuses.set(self.statuses.get() + 1);
+        self.lists.clone()
+    }
+}
+
+/// Lists whose order is not the alphabetical one, so a fold that sorted them would show.
+fn standing_lists() -> StatusLists {
+    StatusLists {
+        staged: vec![
+            StatusEntry {
+                path: "src/new.txt".to_string(),
+                category: StatusCategory::Added,
+            },
+            StatusEntry {
+                path: "a.txt".to_string(),
+                category: StatusCategory::Deleted,
+            },
+        ],
+        changed: vec![
+            StatusEntry {
+                path: "z.txt".to_string(),
+                category: StatusCategory::Untracked,
+            },
+            StatusEntry {
+                path: "b.txt".to_string(),
+                category: StatusCategory::Modified,
+            },
+        ],
     }
 }
 
@@ -992,10 +1031,49 @@ fn test_root_with_state_is_observed_root() {
     let folded = read_git(model, &double);
 
     match folded.kind() {
-        ItemState::Observed(FolderKind::Root(git)) => assert_eq!(git.head(), &main_head()),
+        ItemState::Observed(FolderKind::Root(git)) => {
+            assert_eq!(git.head(), &main_head());
+            assert_eq!(git.status(), &standing_lists());
+        }
         other => panic!("expected an observed root, got {other:?}"),
     }
     assert_eq!(double.states.get(), 1);
+    assert_eq!(double.statuses.get(), 1);
+}
+
+#[test]
+fn test_state_ok_and_status_failing_is_a_failed_item() {
+    let (_scene, model) = model_over_files();
+    let double = Double::with_status(
+        RootFinding::Root,
+        Ok(main_head()),
+        Err(GitReadCondition::RepositoryReadFailed),
+    );
+    let tree_before = model.tree().clone();
+    let folder_before = model.folder().clone();
+
+    let folded = read_git(model, &double);
+
+    assert_eq!(
+        folded.kind(),
+        &ItemState::Failed(GitCondition::Read(GitReadCondition::RepositoryReadFailed))
+    );
+    assert_eq!(folded.tree(), &tree_before);
+    assert_eq!(folded.folder(), &folder_before);
+}
+
+#[test]
+fn test_state_failing_never_asks_status() {
+    let (_scene, model) = model_over_files();
+    let double = Double::new(RootFinding::Root, Err(GitReadCondition::NotARepository));
+
+    let folded = read_git(model, &double);
+
+    assert_eq!(
+        folded.kind(),
+        &ItemState::Failed(GitCondition::Read(GitReadCondition::NotARepository))
+    );
+    assert_eq!(double.statuses.get(), 0);
 }
 
 #[test]
@@ -1007,6 +1085,17 @@ fn test_plain_is_observed_plain_and_never_asks_state() {
 
     assert_eq!(folded.kind(), &ItemState::Observed(FolderKind::Plain));
     assert_eq!(double.states.get(), 0);
+}
+
+#[test]
+fn test_read_git_on_plain_asks_neither_state_nor_status() {
+    let (_scene, model) = model_over_files();
+    let double = Double::new(RootFinding::Plain, Ok(main_head()));
+
+    let _ = read_git(model, &double);
+
+    assert_eq!(double.states.get(), 0);
+    assert_eq!(double.statuses.get(), 0);
 }
 
 #[test]
@@ -1024,6 +1113,20 @@ fn test_probe_failure_is_failed_probe_and_never_asks_state() {
         &ItemState::Failed(GitCondition::Probe(ProbeCondition::GitFileUnreadable))
     );
     assert_eq!(double.states.get(), 0);
+}
+
+#[test]
+fn test_read_git_on_a_probe_failure_asks_neither_state_nor_status() {
+    let (_scene, model) = model_over_files();
+    let double = Double::new(
+        RootFinding::Failed(ProbeCondition::GitFileUnreadable),
+        Ok(main_head()),
+    );
+
+    let _ = read_git(model, &double);
+
+    assert_eq!(double.states.get(), 0);
+    assert_eq!(double.statuses.get(), 0);
 }
 
 #[test]

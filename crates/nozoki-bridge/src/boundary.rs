@@ -34,8 +34,10 @@ pub(crate) fn guarded<T: Serialize>(
 }
 
 fn stopped_open(origin: BufferOrigin, detail: &str) -> *mut NozokiBuffer {
-    if origin == BufferOrigin::OpenFolder {
-        log::warn!("core-bridge: open_folder stopped: {detail}");
+    match origin {
+        BufferOrigin::OpenFolder => log::warn!("core-bridge: open_folder stopped: {detail}"),
+        BufferOrigin::ReadGit => log::warn!("core-bridge: read_git stopped: {detail}"),
+        BufferOrigin::ListTree | BufferOrigin::SelectFile => {}
     }
     std::ptr::null_mut()
 }
@@ -288,6 +290,24 @@ mod tests {
         assert_eq!(records.len(), 1, "{records:?}");
         assert!(records[0].contains("core-bridge"), "{records:?}");
         assert!(records[0].contains("open_folder"), "{records:?}");
+        assert!(!records[0].ends_with(": "), "{records:?}");
+    }
+
+    #[test]
+    fn test_a_panic_under_the_read_git_origin_returns_null_and_writes_one_read_git_stopped_line() {
+        let _serial = begin_log_capture();
+
+        let buffer = guarded(BufferOrigin::ReadGit, || -> Vec<String> {
+            panic!("a panic the boundary must catch")
+        });
+        let records = take_log_records();
+
+        assert!(buffer.is_null(), "an unwind is NULL and never a buffer");
+        assert_eq!(records.len(), 1, "{records:?}");
+        assert!(
+            records[0].starts_with("core-bridge: read_git stopped"),
+            "{records:?}"
+        );
         assert!(!records[0].ends_with(": "), "{records:?}");
     }
 

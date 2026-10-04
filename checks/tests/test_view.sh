@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.1.0 — the bridge serves Git — libgit2 machine-config switch, read_git export, Git item wire, nm transport read in view.sh
 # Version: 1.0.0 — first version: drives the real checks/view.sh over synthetic product roots and the real tree
 #
 # checks/tests/test_view.sh — the tests of checks/view.sh.
@@ -54,6 +55,15 @@ test_no_swift_source_fails
 test_missing_executable_fails
 test_otool_absent_or_failing
 test_pass_line_on_stdout_findings_on_stderr
+test_defined_git_smart_subtransport_symbol_is_red
+test_undefined_connect_import_is_red
+test_undefined_socket_import_is_red
+test_undefined_getaddrinfo_import_is_red
+test_nm_absent_from_path_is_red_naming_its_cause
+test_nm_exiting_non_zero_is_red_naming_its_cause
+test_nm_printing_nothing_is_red_naming_its_cause
+test_a_clean_symbol_list_passes
+test_both_reads_run_before_the_verdict
 "
 
 # --- helpers ---
@@ -100,6 +110,23 @@ make_otool() {
   chmod +x "$1/otool"
 }
 
+# A stand-in `nm` in directory $1. $2 is the text it prints, in `nm`'s own shape: a defined symbol is
+# `<address> <type letter> <name>`, an undefined one is the type letter U and the name.
+make_nm() {
+  mkdir -p "$1"
+  {
+    echo '#!/bin/sh'
+    echo "cat << 'NM_STUB'"
+    printf '%s\n' "$2"
+    echo 'NM_STUB'
+  } > "$1/nm"
+  chmod +x "$1/nm"
+}
+
+CLEAN_SYMBOLS="0000000100003f00 T _main
+                 U _malloc
+                 U _write"
+
 CLEAN_LINKS="/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1351.0.0)
 /System/Library/Frameworks/AppKit.framework/Versions/C/AppKit (compatibility version 45.0.0, current version 2600.0.0)"
 
@@ -107,6 +134,7 @@ CLEAN_LINKS="/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current ve
 run_view() {
   stubs="${2:-$WORK/otool-clean}"
   [ -d "$stubs" ] || make_otool "$stubs" "$CLEAN_LINKS"
+  [ -x "$stubs/nm" ] || make_nm "$stubs" "$CLEAN_SYMBOLS"
   PATH="$stubs:$PATH" "$1/checks/view.sh" > "$WORK/stdout" 2> "$WORK/stderr"
   STATUS=$?
   STDOUT="$(cat "$WORK/stdout")"
@@ -531,6 +559,107 @@ test_pass_line_on_stdout_findings_on_stderr() {
   expect_status 1 || return 1
   expect_finding Sources/Shell/R.swift 2 FileManager || return 1
   [ -z "$STDOUT" ] || fail "expected no stdout on a red run, got: $STDOUT"
+}
+
+# A run with the stand-in `nm` printing $2, beside the clean `otool`. Each call gets a stub folder of
+# its own, named by $3.
+run_view_with_symbols() {
+  symbols_root="$(new_root "sym-$3")"
+  make_otool "$WORK/stubs-$3" "$CLEAN_LINKS"
+  make_nm "$WORK/stubs-$3" "$2"
+  run_view "$symbols_root" "$WORK/stubs-$3"
+}
+
+# A defined symbol of the libgit2 smart transport is the Git network transport linked in (QC-3 (3)).
+test_defined_git_smart_subtransport_symbol_is_red() {
+  run_view_with_symbols x "$CLEAN_SYMBOLS
+0000000100004000 T _git_smart_subtransport_http" subtransport
+  expect_status 1 || return 1
+  expect_stderr_contains "git_smart_subtransport_http" || return 1
+  expect_stdout_lacks "nothing found" || return 1
+}
+
+# An undefined import of a network call is a finding, from a list with no defined subtransport symbol.
+test_undefined_connect_import_is_red() {
+  run_view_with_symbols x "$CLEAN_SYMBOLS
+                 U _connect" connect
+  expect_status 1 || return 1
+  expect_stderr_contains "connect" || return 1
+  expect_stderr_lacks "git_smart_subtransport" || return 1
+}
+
+test_undefined_socket_import_is_red() {
+  run_view_with_symbols x "$CLEAN_SYMBOLS
+                 U _socket" socket
+  expect_status 1 || return 1
+  expect_stderr_contains "socket" || return 1
+  expect_stderr_lacks "git_smart_subtransport" || return 1
+}
+
+test_undefined_getaddrinfo_import_is_red() {
+  run_view_with_symbols x "$CLEAN_SYMBOLS
+                 U _getaddrinfo" getaddrinfo
+  expect_status 1 || return 1
+  expect_stderr_contains "getaddrinfo" || return 1
+  expect_stderr_lacks "git_smart_subtransport" || return 1
+}
+
+test_nm_absent_from_path_is_red_naming_its_cause() {
+  absent_root="$(new_root nm-absent)"
+  tools_without_otool "$WORK/no-nm-bin"
+  make_otool "$WORK/no-nm-bin" "$CLEAN_LINKS"
+  run_view_with_path "$absent_root" "$WORK/no-nm-bin"
+  expect_status 1 || return 1
+  expect_stderr_contains "nm not found" || return 1
+  expect_stdout_lacks "nothing found" || return 1
+}
+
+test_nm_exiting_non_zero_is_red_naming_its_cause() {
+  failing_root="$(new_root nm-exit1)"
+  make_otool "$WORK/stubs-nm-exit1" "$CLEAN_LINKS"
+  printf '#!/bin/sh\necho "nm: error" >&2\nexit 1\n' > "$WORK/stubs-nm-exit1/nm"
+  chmod +x "$WORK/stubs-nm-exit1/nm"
+  run_view "$failing_root" "$WORK/stubs-nm-exit1"
+  expect_status 1 || return 1
+  expect_stderr_contains "nm failed" || return 1
+  expect_stdout_lacks "nothing found" || return 1
+}
+
+test_nm_printing_nothing_is_red_naming_its_cause() {
+  silent_root="$(new_root nm-silent)"
+  make_otool "$WORK/stubs-nm-silent" "$CLEAN_LINKS"
+  printf '#!/bin/sh\nexit 0\n' > "$WORK/stubs-nm-silent/nm"
+  chmod +x "$WORK/stubs-nm-silent/nm"
+  run_view "$silent_root" "$WORK/stubs-nm-silent"
+  expect_status 1 || return 1
+  expect_stderr_contains "no symbol" || return 1
+  expect_stdout_lacks "nothing found" || return 1
+}
+
+test_a_clean_symbol_list_passes() {
+  run_view_with_symbols x "$CLEAN_SYMBOLS" clean
+  expect_status 0 || return 1
+  [ -z "$STDERR" ] || fail "expected empty stderr on a clean list, got: $STDERR"
+  # A name that only contains a refused one is not that call, and a defined symbol of the same name as
+  # a refused import (an executable may define its own) is not an import.
+  run_view_with_symbols x "$CLEAN_SYMBOLS
+                 U _connectx_like
+                 U _sockets
+0000000100004100 T _socket" near
+  expect_status 0 || return 1
+}
+
+# Both reads always run before the verdict, so one run reports the link finding and the transport one.
+test_both_reads_run_before_the_verdict() {
+  both_reads_root="$(new_root both-reads)"
+  make_otool "$WORK/stubs-both-reads" "/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1351.0.0)
+/System/Library/Frameworks/WebKit.framework/Versions/A/WebKit (compatibility version 1.0.0, current version 619.1.15)"
+  make_nm "$WORK/stubs-both-reads" "$CLEAN_SYMBOLS
+0000000100004000 T _git_smart_subtransport_http"
+  run_view "$both_reads_root" "$WORK/stubs-both-reads"
+  expect_status 1 || return 1
+  expect_stderr_contains "link: /System/Library/Frameworks/WebKit.framework/Versions/A/WebKit" || return 1
+  expect_stderr_contains "git_smart_subtransport_http" || return 1
 }
 
 # --- runner ---

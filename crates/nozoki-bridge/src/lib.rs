@@ -4,6 +4,7 @@ pub mod boundary;
 pub mod exports;
 pub mod log_install;
 pub mod log_writer;
+pub mod machine_config;
 pub mod session;
 
 // Shared with the unit tests. It lives under `tests/common/` so `src/` holds no filesystem code but the log module's.
