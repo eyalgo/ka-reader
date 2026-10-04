@@ -6,7 +6,8 @@
        signal, and the state a finished SDD carries; the open-issues file is gone.
      Locked = ratified as the source of truth. -->
 **Owner:** CTO · CPO · CDO — one run, three seats
-**Version:** 36 — CTO, one run, with the one answered companion item folded: § 3, the `surfaces` row (one reading clause: what the pointer is over is the shell's own observation of the pointer and no state of the folder, the row's hover fill and the status letter's tooltip are drawn from it, and the row's one exception stays one); § 6 `open-a-folder` *Reached when*, observable half (the tree row's hover fill — the CDO's clause, settled by `docs/DESIGN.md` § *Components*, "Rows") and command half (four `swift test` cases, and the "from a projection" clause read with the new § 3 clause), and *Rests on* (`surfaces` gains the fill); § 6 `see-git-status` *Reached when*, observable half (the Git view's file row's hover fill, with the tooltip over it) and command half (six `swift test` cases), and *Rests on* (`surfaces` gains the fill); SDD Review Notes RN-96 (new); trail copy at `docs/trail/sdd/cycle-31.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. No *Delivers*, no slice added, no § 10 entry, no § 7 edge, no slice order, no part and no seam altered. Companion items added: none.
+**Version:** 37 — CTO, one run, with the one answered companion item folded: § 6 `see-git-status` *Reached when*, observable half (the clicked Git-view file row is drawn selected, with the selection fill and the left bar — the CDO's clause, settled by `docs/DESIGN.md` § *Components*, "Rows") and command half (one `swift test` case added, seven in place of six: after a click, with the pointer over no row, the clicked row shows the selection fill and the bar and no other row shows either), and *Rests on* (`surfaces` gains the Git view's selected row's fill); SDD Review Notes RN-97 (new); trail copy at `docs/trail/sdd/cycle-32.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. No *Delivers*, no slice added, no § 10 entry, no § 7 edge, no slice order, no part and no seam altered. Companion items added: none.
+Version 36 — CTO, one run, with the one answered companion item folded: § 3, the `surfaces` row (one reading clause: what the pointer is over is the shell's own observation of the pointer and no state of the folder, the row's hover fill and the status letter's tooltip are drawn from it, and the row's one exception stays one); § 6 `open-a-folder` *Reached when*, observable half (the tree row's hover fill — the CDO's clause, settled by `docs/DESIGN.md` § *Components*, "Rows") and command half (four `swift test` cases, and the "from a projection" clause read with the new § 3 clause), and *Rests on* (`surfaces` gains the fill); § 6 `see-git-status` *Reached when*, observable half (the Git view's file row's hover fill, with the tooltip over it) and command half (six `swift test` cases), and *Rests on* (`surfaces` gains the fill); SDD Review Notes RN-96 (new); trail copy at `docs/trail/sdd/cycle-31.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. No *Delivers*, no slice added, no § 10 entry, no § 7 edge, no slice order, no part and no seam altered. Companion items added: none.
 Version 35 — CTO, one run, with the two answered companion items folded: § 3 *What the system holds*, `GitState` (one sentence: the tree's marker join is in the shell and on `main` from `nozoki@67d103d`, under the `surfaces` row's four bounds; nothing else in § 3 moved); § 4 C-E8 (one sentence and two *Violated by* cases: a status letter's expansion is raised by the letter and by nothing else — the CDO's clause, settled by `docs/DESIGN.md` and `docs/CONTENT.md`); § 6 `see-git-status` *Delivers* (the pointer resting on a status letter shows the row's name and the letter's meaning — the CPO's field, settled by the owner's v1 decision), *Reached when*, observable half (the tooltip in the tree and in the Git view) and command half (a `swift test` case over the six status categories), and *Rests on* (`surfaces` gains the tooltip); § 6 `follow-the-folder` *Reached when*, observable half (the tooltip leaves when a refresh changes the row's state); SDD Review Notes RN-95 (new); trail copy at `docs/trail/sdd/cycle-30.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. No § 10 entry, no § 7 edge, no slice order, no part and no seam altered. Companion items added: none.
 Version 34 — CTO: § 3, the `surfaces` row (one bounded clause: for `see-git-status` alone the tree's marker join and the Git lists' row order stand in `surfaces`, under four bounds, ending when `follow-the-folder` is reached; the row's one exception stays one); § 3 *What the system holds*, `GitState` (`folder-model` owns the lists' row order, with one implementation in the core; where the order and the marker join are computed meanwhile); § 6 `see-git-status` *Rests on* (the tree's markers and the lists' row order move from `folder-model` to `surfaces` for that slice); § 6 `follow-the-folder` *Rests on* (the debt) and *Reached when*, command half (a model case, and a `grep` that is red while either file remains in the shell); § 10 RC-5 (new, the CTO's ground); SDD Review Notes RN-94 (new); the two answered companion items folded, trail copy at `docs/trail/sdd/cycle-29.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. No slice's *Delivers*, observable half, edge or order altered. Companion items added: none.
 Version 33 — CTO: § 4 C-I3 (the transport-read sentences: the claim is proved for each executable the read has met, which is two; the second links the `nozoki_read_git` export, from `nozoki@129586e`, and passed; where the read ran, and that no hosted runner has read that build); § 4 C-R6 (the three defined symbols the pattern does not match are pinned to the second executable); § 11 R-15 (the false sentence replaced by the measurement; the risk kept, with the three changes that make it real; *shows up as* is a red read on any release build; *response* holds the change whose build turns the read red until the re-cut is recorded); SDD Review Notes RN-93 (new); the two answered companion items folded, trail copy at `docs/trail/sdd/cycle-28.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. No slice's *Delivers*, *Reached when*, edge or order altered. Companion items added: none.
@@ -1795,7 +1796,9 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   message never show it. The status letter's tooltip sits over the row's fill, as § *Components*,
   "The tooltip", states (RN-96). They click a changed file's row: the file opens in the
   panel to read, exactly as a tree selection would — one click target, the status letter a label
-  (UX-F2, the first reading). They scroll partway down it and switch back to Files: the open file
+  (UX-F2, the first reading). The row they clicked is drawn as `docs/DESIGN.md` § *Components*,
+  "Rows", draws the selected row: with the selection fill and the left bar. The bar is the cue
+  that survives without colour (`docs/UXD.md` UX-A2; RN-97). They scroll partway down it and switch back to Files: the open file
   and their reading position are untouched — the panel has not returned to the top (UX-F2; RN-78). A repository mid-merge, mid-rebase or detached shows that state, presented
   as the state it is in and never as an error (UX-S3 Error). Git state the tool could not read — a
   lock, an unreadable file — shows on that item what was observed, and the rest of the view stands
@@ -1839,9 +1842,12 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   composition root's search-path switch and its test, and nowhere else (RN-87); `swift test
   --package-path nozoki-mac` passes with a case holding that each of the six status categories
   gives the word `docs/CONTENT.md` § Accessibility of text states for it, and that the tooltip's
-  text is the row's name and then that word (RN-95); the same run holds six cases for the hover
-  fill in the Git view: a file row shows the fill while the pointer is over it and loses it when
-  the pointer leaves; a status message never shows it; a section header never shows it; the
+  text is the row's name and then that word (RN-95); the same run holds seven cases for the Git
+  view's file row, six for the hover fill and one for the selected row's drawing: a file row
+  shows the fill while the pointer is over it and loses it when
+  the pointer leaves; a status message never shows it; a section header never shows it; after a
+  click on a file row, with the pointer over no row, the clicked row shows the selection fill and
+  the bar, and no other row shows either (RN-97); the
   selected row under the pointer keeps its selection fill and its bar; after a scroll moves rows
   under a pointer that has not moved, the fill is on the row now under the pointer and on no
   other; and the row still shows the fill while the tooltip is raised (RN-96). *The promise clause:* `checks/read-only.sh` on all six fixtures prints
@@ -1850,7 +1856,8 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   resolved; `GitState`), `surfaces` (the rail's Git entry, the Git view, and in this slice the
   tree's markers and the Git lists' row order, under the bounds § 3's `surfaces` row states;
   § 10 RC-5, RN-94; the status letter's tooltip, its six words in the message catalogue;
-  RN-95; and the Git view's file row's hover fill; RN-96); `SM-2`, `SM-4` (`read_git`; § 10 RC-4); § 4 C-R6, C-I1; § 9 TO-2, TO-10; § 11 R-1,
+  RN-95; the Git view's file row's hover fill; RN-96; and the Git view's selected row's
+  fill; RN-97); `SM-2`, `SM-4` (`read_git`; § 10 RC-4); § 4 C-R6, C-I1; § 9 TO-2, TO-10; § 11 R-1,
   R-3. Slices: `open-a-folder`, `read-a-file`.
 - **Traces to:** PRD § Key Use Cases 2 and 4; § Core Features "A Git view", "Git is read only when
   the folder opened is itself the root of a Git repository", "A file tree with changed-file
@@ -6219,6 +6226,100 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   unresolved, so `docs/SDD_open_issues.md` is removed and `Status:` stays Settled
   *(re: § 3 `surfaces`; § 6 `open-a-folder`, `see-git-status`; source:
   `docs/trail/sdd/cycle-31.md` § 5.1; `docs/trail/sdd/self_answer-43.md`; `nozoki@f16d940`)*.
+- **RN-97:** *(CTO; the CDO's clause named below)* *(changed)* `see-git-status` holds the Git
+  view's selected file row's drawing in its bar: the selection fill and the left bar. The
+  companion's one item is folded. The PM opened that companion on 2026-10-04, and an unattended
+  run answered it in the CTO's seat (`docs/trail/sdd/cycle-32.md` § 5.1; reasoning
+  `docs/trail/sdd/self_answer-44.md`).
+  **What moved, each named.** (1) § 6 S-4 *Reached when*, observable half: two sentences are
+  added after "They click a changed file's row", saying the clicked row is drawn as
+  `docs/DESIGN.md` draws the selected row and that the bar is the cue that survives without
+  colour. (2) § 6 S-4 *Reached when*, command half: one `swift test` case is added before the
+  case "the selected row under the pointer keeps its selection fill and its bar", and the
+  count reads seven cases, six for the hover fill and one for the selected row's drawing.
+  (3) § 6 S-4 *Rests on*: the `surfaces` parenthesis gains the Git view's selected row's fill.
+  **Whose columns, and what settled each.** (2) and (3) are the CTO's. (1) is the CDO's clause.
+  It is settled by `docs/DESIGN.md`, which is Settled at its status line (`:L301`). § *Components*,
+  "Rows" (`:L613-L619`) says "`{components.tree-row}` is every list row in the product: the
+  file tree, the Git view's changed and staged files, the history view's commits, and menu
+  items" and "The selected row is `{components.tree-row-selected}` with the left bar". The same
+  paragraph (`:L634-L635`) says "The selected row keeps `{colors.selection}` and its bar under
+  the pointer". § *Shapes* (`:L574-L577`) says "The bar is the cue that survives without colour
+  (`docs/UXD.md` UX-A2)". The sentences in (1) cite the section and state no value. No item is
+  raised for the CDO. No field of the CPO's moved.
+  **One reading this rests on. It is reasoning.** § *Shapes* also says "The selected tree row
+  is `{colors.selection}` edge to edge" (`:L574`). Read alone, that sentence limits the fill to
+  the tree. This fold reads it with "Rows", which names the Git view's file rows as the same
+  component and gives the selected row the fill. If the CDO states in `docs/DESIGN.md` that the
+  fill is the tree's alone, sentence (1) and the case in (2) lose their ground, and S-4's bar
+  returns to the bar alone.
+  **Why this slice, and no slice of its own. This is reasoning, and it is the answer's.** The
+  Git view's file row is first drawn and first clickable in `see-git-status`, the placement
+  RN-95 and RN-96 gave a row's drawing. § 5 step 4 says "§ 6 holds no slice whose decision is a
+  surface's drawing", so a later slice holding the fill alone is excluded.
+  **Why no *Delivers* moved.** *Delivers* states what a developer can do after the slice. The
+  fill shows which row is open and adds nothing they can do, the reason RN-96 gave for the hover
+  fill.
+  **No § 10 entry.** None of § 10's four triggers holds: the bar can be met as written, no slice
+  became a fragment, a slice can still be started, and the PRD, the SRS and the UXD did not
+  change. S-1 and S-2 keep their words.
+  **Where this fold departs from the answer's words.** Two departures. The answer adds "One
+  sentence" to the observable half; the fold writes two, so that the drawing and the cue each
+  have a sentence of their own. The answer does not say how the command half's count reads
+  after the added case; the fold writes "seven cases for the Git view's file row, six for the
+  hover fill and one for the selected row's drawing", because the added case holds a selection
+  fill and no hover fill.
+  **One correction to the item's own text.** The item cites `docs/DESIGN.md` at `:L612-L618` and
+  `:L624-L625`. `docs/DESIGN.md` moved to v18 at `nozoki@6cf1014` after the item was written.
+  The quoted words are at `:L613-L619` and `:L634-L635`, where this fold opened them. The trail
+  copy keeps the item as it was written.
+  **Read and measured for this fold, at `nozoki@29239bc`.** `git status --short` printed nothing
+  before the fold's first write, so the companion's answer was committed. The Git view's
+  selection sets `drawsBar` on one row and nothing else
+  (`nozoki-mac/Sources/Surfaces/GitView.swift:L190-L194`). `grep -rn isSelected
+  nozoki-mac/Sources` prints one line, `BarRowView.swift:36`, which reads the flag and marks no
+  Git-view row selected. The shell's test for the existing selected-row case holds the bar and
+  that the row's image is the same with the pointer over the row as with the pointer elsewhere
+  (`nozoki-mac/Tests/SurfacesTests/GitViewHoverTests.swift:L178-L194`); it asserts no fill, so
+  it passes with the bar alone. `git tag` prints nothing, so no release has shipped without the
+  fill. `grep -n -i 'hover\|selection fill' docs/nfdr.md docs/fdr.md` prints nothing.
+  **Known limits, stated beside the claims.** This fold built nothing and ran no test. At
+  `nozoki@29239bc` the Git view's selected row draws the bar alone, so on this bar
+  `see-git-status` is not reached on `main`; what that means for work in flight is the PM's. No
+  requirement in `docs/SRS.md` and no entry in `docs/UXD.md` names the Git view's selected row:
+  FR-7 is about the tree (`docs/SRS.md:L144-L145`), and UX-A2 asks that "the selected file"
+  carry "a cue that survives without" colour (`docs/UXD.md:L375-L377`). S-4's SRS and UXD traces
+  are unchanged, and the fill traces to `docs/DESIGN.md` alone, a document outside the three
+  this document's `Inputs read:` line names. Four cases are named and not decided here.
+  (a) Whether a Git-view row is drawn selected when its file was opened from the tree: the
+  shell clears the Git view's selection on a tree selection
+  (`nozoki-mac/Sources/Surfaces/WorkbenchView.swift:L161-L165`), and `docs/DESIGN.md` does not
+  say. (b) Which row is drawn selected when one file has a row in both lists: sentence (1) says
+  "the row they clicked", which is what the shell draws. (c) What the selected row's fill does
+  in a window that is not the key window. (d) What a refresh does to a selected row that leaves
+  or moves in the list, which is `follow-the-folder`'s; § 4 C-E2 holds "the open file" through
+  every refresh and does not name the Git view's selected row. (a) to (c) are the CDO's, in
+  `docs/DESIGN.md`, and no sentence written by this fold turns on any of the four. Of this
+  document the fold read the header, *Who holds what*, § 4 C-E2, § 5 step 4's E-1 sentence,
+  § 6 S-4 and RN-96, and searched the rest for `selection fill`, `selected row` and `selected
+  file row`. The other sections were not re-read, so a sentence there that speaks of the Git
+  view's selected row in other words was not seen. The PRD, the SRS and the UXD were read at
+  their status lines, each Settled, and searched for `selected` and `selection`; their bodies
+  were not read. `docs/DESIGN.md` was read at `:L570-L578` and `:L610-L636`. The project's
+  Agari, its two doctrine files, the instance's domain doctrine and its writing bar were read
+  whole. `docs/nfdr.md` and `docs/fdr.md` were searched and not read. `docs/adr/` was listed
+  and not opened.
+  **Found on the same walk, and not fixed.** RN-93's finding stands: the `**Owner:**` line and
+  *Who holds what, inside one run* carry an earlier template's wording.
+  **Downstream, not this document's to change.** `docs/nfdr.md` and `docs/fdr.md` restate
+  neither the hover cases nor the added case, by the search above. Whether either takes the
+  fill is the Principal Architect's and the Principal PM's, and this fold opened no item on
+  either seat's companion.
+  **The companion:** `diff docs/SDD_open_issues.md docs/trail/sdd/cycle-32.md` printed nothing
+  before this fold's first edit to this document. Its one item is folded and nothing is
+  unresolved, so `docs/SDD_open_issues.md` is removed and `Status:` stays Settled
+  *(re: § 6 `see-git-status`; source: `docs/trail/sdd/cycle-32.md` § 5.1;
+  `docs/trail/sdd/self_answer-44.md`; `nozoki@29239bc`)*.
 
 ## Open Questions
 
