@@ -6,7 +6,8 @@
        signal, and the state a finished SDD carries; the open-issues file is gone.
      Locked = ratified as the source of truth. -->
 **Owner:** CTO · CPO · CDO — one run, three seats
-**Version:** 29 — CTO: § 4 C-I1 (a failed read "changes no other item", in place of "`observed` on its siblings"; each sibling holds the state its own read gave it, all four `Item<T>` states named; one sentence naming the failed re-read of an expanded folder as not decided there); § 6 `follow-the-folder` *Reached when*, command half (the same rule, without "as they were before the read"); SDD Review Notes RN-44 (parenthesis corrected in place) and RN-89 (new); *Open Questions* (one item added — eight stand); the one answered companion item folded, trail copy at `docs/trail/sdd/cycle-24.md`; `docs/SDD_open_issues.md` removed, empty of items, so `Status:` moves from Draft to Settled. No slice's *Delivers*, edge or order altered. Companion items added: none.
+**Version:** 30 — CTO: § 3 SM-4 (the list gains `read_git`, exported as `nozoki_read_git`, with what it takes and answers; the list is ten, "all ten from `v1.0.0`"); § 6 `see-git-status` *Rests on* ("`SM-4` (`read_git`)" in place of "`SM-4` (`model_changed` carrying Git state)"); § 6 `promise-one-point-zero` *Reached when*, command half ("SM-4's ten functions"); § 10 RC-4 (new, the CTO's ground); *Open Questions* (the collapse-and-scroll item's counts — eight stand); SDD Review Notes RN-90 (new); the one answered companion item folded, trail copy at `docs/trail/sdd/cycle-25.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. § 4 C-R7 and C-I6 keep their words. No slice's *Delivers*, edge or order altered. Companion items added: none.
+Version 29 — CTO: § 4 C-I1 (a failed read "changes no other item", in place of "`observed` on its siblings"; each sibling holds the state its own read gave it, all four `Item<T>` states named; one sentence naming the failed re-read of an expanded folder as not decided there); § 6 `follow-the-folder` *Reached when*, command half (the same rule, without "as they were before the read"); SDD Review Notes RN-44 (parenthesis corrected in place) and RN-89 (new); *Open Questions* (one item added — eight stand); the one answered companion item folded, trail copy at `docs/trail/sdd/cycle-24.md`; `docs/SDD_open_issues.md` removed, empty of items, so `Status:` moves from Draft to Settled. No slice's *Delivers*, edge or order altered. Companion items added: none.
 Version 28 — CTO: § 3 *What the system holds*, `GitState` (the model defines the type and builds it from what the port returns, from `state` alone at `nozoki@87f6a48`; the hand-off to "the change that adds `state`" removed); § 3 SM-2 (the types `probe`, `state` and `status` answer are defined in `git-reader`; the rule kept for a type a later method brings); § 6 `see-git-status` *Reached when*, command half (the double's reason restated, the tree's items "as they were" in place of "every tree item `observed`", and where the adapter's refusal is exercised); SDD Review Notes RN-44 (corrected in place) and RN-88 (new); four answered companion items folded and dropped, trail copy at `docs/trail/sdd/cycle-23.md`; `docs/SDD_open_issues.md` stays on disk with § 2.1 unanswered, so `Status:` moves from Settled to Draft. No slice's *Delivers*, edge or order altered. Companion items added: none.
 Version 27 — CTO: § 3 `core-bridge` row (*Owns*: the config search-path switch — four `set_search_path` calls before the libgit2 adapter is wired, failing closed, once per process, with the uncovered case named); § 3 `git-reader` row (what the reader sees with the machine-level config off: the global ignore file not applied, a repository not owned by the user a `failed` Git item); § 3 the *Four physical units* paragraph and SM-2 (the libgit2 import rule's one exception); § 4 C-R6 (every `git2` manifest line with default features off, and *Violated by*); § 4 C-I3 (the bridge test and what it does not reach, a third thing no check holds, and *Violated by*); § 4 C-D3 (one uncovered case named); § 6 `see-git-status` *Reached when*, command half (the same exception); § 11 R-16 (new); *Open Questions* (second item extended, one item added — seven stand); SDD Review Notes RN-87 (new); `docs/SDD_open_issues.md` removed, empty of items, trail copy at `docs/trail/sdd/cycle-22.md`. No slice's *Delivers*, edge or order altered. Companion items added: none.
 Version 26 — CTO: § 3 `git-reader` row (libgit2 "built with its `https` and `ssh` features off"); § 3 `read-only-harness` row (*Owns* cell re-measured and re-pinned at `nozoki@814a369`: the four root-finding scenes and their archives move to on-disk, nine fixture folders, `see-git-status` leaves the slice-owed list); § 3 SM-2 (the trait and the types that cross are defined in `git-reader`, `folder-model` keeps the contract) and *What the system holds*, `GitState` (one sentence); § 4 C-R5 (one garbled sentence repaired); § 4 C-R6 (the transport claim restated at the shipped executable, with its evidence, its bounds and *Violated by*); § 4 C-I3 (the `nm` read named, and *Violated by*); § 11 R-15 (new); SDD Review Notes RN-85 and RN-86 (new); `docs/SDD_open_issues.md` removed, empty of items, trail copy at `docs/trail/sdd/cycle-21.md`. No slice altered. Companion items added: none.
@@ -421,7 +422,7 @@ language because the card declares Shell for the `checks/*.sh` harness by name (
 | `SM-1` `fs-reader` ↔ `folder-model` | Down: a path to list or read. Up: the listing, or the bytes with the text rule applied and the floor language named, or the condition observed — always as data, never a panic | `folder-model` — it states what a read must return; the reader implements it |
 | `SM-2` `git-reader` ↔ `folder-model` | Down: `probe`, and on a root `state`, `status`, `diff`, `walk`. Up: `root` or `plain`; plain-data Git state; or the condition observed. The port is a trait defined in `git-reader`, with the plain-data types that cross beside it; the adapter is the only thing that knows libgit2, with the one exception the *Four physical units* paragraph states: `core-bridge`'s search-path switch (RN-87). Every type `probe`, `state` and `status` answer is defined in `git-reader`, beside the trait (`crates/nozoki-core/src/git_reader.rs:L74-L263`, at `nozoki@87f6a48`; RN-88). A type that crosses this seam is never defined in `folder-model`. A type a later method brings is defined in `git-reader`, or in a module of `nozoki-core` that is no part, and which of the two is the design of the change that adds it. The model imports the trait and those types, and never the adapter | `folder-model` — it states what the port must answer; `git-reader` defines the trait and implements it, because the readers import nothing from the model (the *Four physical units* paragraph above) and an adapter cannot implement a trait the model defines without importing the model; a second adapter passes the same contract tests (§ 11 R-1) (answered in the owner's seat, `docs/trail/sdd/cycle-21.md` § 5.2; RN-85) |
 | `SM-3` `watcher` ↔ `folder-model` | Up only: coalesced change events as paths, the root's `.git` entry among them. The model decides what to re-read | `folder-model` — the event shape is its |
-| `SM-4` `core-bridge` ↔ `mac-shell` | Down (shell → core): calls from this list and no other — `open_folder` (taking the URL the Open panel returned, and no path from any other source), `list_tree`, `select_file`, `open_relative_link`, `set_theme`, `open_diff`, `walk_history`, `switch_folder`, `asset_bytes` — each exported from the build in which a change of its slice first builds it, and not before, and all nine from `v1.0.0`; and, **beside the list and not on it**, the seam's one release call, `nozoki_free`, exported from the first build on because every call's return needs it and never staged by slice (the owner's confirm, `docs/trail/sdd/cycle-12.md` § 5.1; RN-66). Which of the list a given build exports is stated once, in § 4 C-R7. Up (core → shell): the `model_changed` callback carrying a projection delta, on a thread the shell marshals to its main thread; and each call's return as an owned buffer of plain data — JSON, or flat structs the header declares — freed by `nozoki_free`; the header is generated from the bridge's source and never hand-kept. Nothing else crosses in either direction: the nine calls and `nozoki_free` down, the callback and the returns up. **This seam is where the promise is read, not where it is held**: the wall is the process's entitlements (§ 4 C-R2), and the seam makes visible that the shell reads through the core alone — a builder of the shell who holds only this header has no read, no write and no connection to make, and § 4 C-R7 checks on every build that the shell adds none of its own | `core-bridge` — it exports what its landed changes built, the header is generated from it, and the shell calls what is exported and nothing more |
+| `SM-4` `core-bridge` ↔ `mac-shell` | Down (shell → core): calls from this list and no other — `open_folder` (taking the URL the Open panel returned, and no path from any other source), `list_tree`, `select_file`, `open_relative_link`, `read_git` (exported as `nozoki_read_git`; it takes no argument and returns the open folder's Git item — `root` with the Git state, `plain`, `failed` with its condition, or `pending` where no folder is open and so nothing was read; § 10 RC-4, RN-90), `set_theme`, `open_diff`, `walk_history`, `switch_folder`, `asset_bytes` — each exported from the build in which a change of its slice first builds it, and not before, and all ten from `v1.0.0`; and, **beside the list and not on it**, the seam's one release call, `nozoki_free`, exported from the first build on because every call's return needs it and never staged by slice (the owner's confirm, `docs/trail/sdd/cycle-12.md` § 5.1; RN-66). Which of the list a given build exports is stated once, in § 4 C-R7. Up (core → shell): the `model_changed` callback carrying a projection delta, on a thread the shell marshals to its main thread; and each call's return as an owned buffer of plain data — JSON, or flat structs the header declares — freed by `nozoki_free`; the header is generated from the bridge's source and never hand-kept. Nothing else crosses in either direction: the ten calls and `nozoki_free` down, the callback and the returns up. **This seam is where the promise is read, not where it is held**: the wall is the process's entitlements (§ 4 C-R2), and the seam makes visible that the shell reads through the core alone — a builder of the shell who holds only this header has no read, no write and no connection to make, and § 4 C-R7 checks on every build that the shell adds none of its own | `core-bridge` — it exports what its landed changes built, the header is generated from it, and the shell calls what is exported and nothing more |
 | `SM-5` `folder-model` ↔ `core-bridge` | Down: the operations the functions name, as plain Rust calls. Up: projections and deltas. The harness calls this API directly, in-process, with no window (§ 4 C-I3) | `folder-model` — the API and its types are its; the bridge wraps, formats and delegates |
 | `SM-6` `own-state` ↔ `core-bridge` | Down: the theme set, the window frame, and beyond v1 a folder to remember. Up: the state read whole, or the first-run state where it could not be read | `own-state` — the record shape and the read-whole-or-discard-whole rule are its |
 | `SM-7` `markdown-renderer` ↔ `fs-reader`, and `asset_bytes` in `core-bridge` | Rendering asks `fs-reader` whether an image reference is contained; `asset_bytes` asks the same question again on every call. Only a path that passes both is ever read; a node built wrong still reaches no byte outside the folder | `fs-reader` — the check is its and has one implementation; the two callers do not re-implement it |
@@ -1744,7 +1745,7 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   `unchanged`; `checks/no-network.sh` exits 0.
 - **Rests on:** § 3 `git-reader` (the port, `probe`, `state`, `status`), `folder-model` (`kind`
   resolved; `GitState`; the tree's markers), `surfaces` (the rail's Git entry, the Git view);
-  `SM-2`, `SM-4` (`model_changed` carrying Git state); § 4 C-R6, C-I1; § 9 TO-2, TO-10; § 11 R-1,
+  `SM-2`, `SM-4` (`read_git`; § 10 RC-4); § 4 C-R6, C-I1; § 9 TO-2, TO-10; § 11 R-1,
   R-3. Slices: `open-a-folder`, `read-a-file`.
 - **Traces to:** PRD § Key Use Cases 2 and 4; § Core Features "A Git view", "Git is read only when
   the folder opened is itself the root of a Git repository", "A file tree with changed-file
@@ -2146,7 +2147,7 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   `first-public-release`'s half passes again on the downloaded bundle, with two differences —
   `checks/bundle.sh` now against C-R2's three entries, and that half's closing check inverted: the
   version is 1.0.0, not below it; `checks/contract/1` exists, written from this bundle and this
-  build's `libnozoki_bridge.a` — the floor `14.0`, the two asset names, SM-4's nine functions and
+  build's `libnozoki_bridge.a` — the floor `14.0`, the two asset names, SM-4's ten functions and
   `nozoki_free` — and `checks/contract.sh v1.0.0` passes against it (C-I6); `checks/own-state.sh --from
   <previous-tag>` passes — a container
   written by the previous release is opened by this build with no write outside the container, and
@@ -2574,6 +2575,63 @@ silently misses every reversal made mid-build.>
   `crates/nozoki-core` and `crates/nozoki-bridge`, and no web engine, and they keep the `checks/`
   proof sentence word for word, `nozoki@61748fe`; the sentences this clause cites stand at
   `nozoki@a4ab8e6:README.md:L46-L51`; noted 2026-09-24, RN-68)*.
+
+### RC-4 — 2026-10-04 — SM-4's closed list gains `read_git`, the call `see-git-status` shows Git state through
+
+The seat whose ground moved is the CTO's: what could not be met is `see-git-status`'s observable
+half, and what failed is not that half but the seam under it (§ 3 SM-4; § 4 C-R7).
+
+- **Prior assumption:** SM-4's nine calls were everything the shell would ever ask of the core,
+  and Git state would reach the shell on the `model_changed` callback: `see-git-status`'s *Rests
+  on* read "`SM-4` (`model_changed` carrying Git state)". C-R7 admitted no registration call for
+  that callback until a slice raised one, and no slice had.
+- **Observed reality:** No call on the list as written can bring the open folder's Git item to
+  the shell without changing an answer the shipped shell already decodes
+  (`docs/trail/sdd/cycle-25.md` § 5.1, raised by the PM). Read at `nozoki@ca915a4`: the export
+  test admits `nozoki_open_folder`, `nozoki_list_tree`, `nozoki_select_file` and `nozoki_free`
+  (`crates/nozoki-bridge/tests/exports.rs:L17-L22`); `grep -rn model_changed crates
+  nozoki-mac/Sources` prints nothing, so no registration call exists; the bridge's own check
+  holds an `opened` answer to one member (`crates/nozoki-bridge/src/boundary.rs:L51`) and the
+  shell's decoder rejects an `opened` answer with any member besides `state`
+  (`nozoki-mac/Sources/Shell/BridgePayload.swift:L49-L53`), so `open_folder`'s return cannot
+  carry it; and § 4 C-I1 keeps `list_tree` and `select_file` answering as they do whatever the
+  Git item holds. `folder-model` already carries the operation
+  (`crates/nozoki-core/src/folder_model.rs:L273`, `read_git`), and no export reaches it.
+- **Retained:** § 2's shape. SM-4's closed-list rule, its owner, its staging by slice, and
+  `nozoki_free` beside the list and not on it. Everything SM-4 says crosses upward, the
+  `model_changed` callback included. C-R7 word for word, its sentence on the registration call
+  included: that call is still raised by the slice that needs it, which is `follow-the-folder`
+  (§ 6 S-5 *Rests on*, "`model_changed` deltas"), and not before. C-I6 word for word; it reads
+  the list by reference. Every slice, slug, *Delivers*, § 7 edge and the order. No existing
+  call's answer changes.
+- **Changed:** SM-4's list is ten: `read_git`, exported as `nozoki_read_git`, joins it between
+  `open_relative_link` and `set_theme`, staged by slice like the rest. It takes no argument and
+  returns the open folder's Git item as an owned buffer freed by `nozoki_free`: `root` with the
+  Git state, `plain`, `failed` with its condition, or `pending` where no folder is open — what
+  `list_tree` answers in that case (`crates/nozoki-bridge/src/session.rs:L308-L315`). It is on
+  the list and not beside it because it reaches the model over SM-5, so it is a command, and
+  `checks/read-only.sh` calls it in the build that exports it (§ 4 C-I3). The counts follow:
+  SM-4's row ("all ten", "the ten calls"), § 6 S-11's pin ("SM-4's ten functions"), and the
+  collapse-and-scroll item in *Open Questions*. `see-git-status`'s *Rests on* reads "`SM-4`
+  (`read_git`)". **This entry moves a § 3 seam's list, so the decision log is owed a record on
+  that ground:** ADR-0013 quotes the nine names and "all nine from `v1.0.0`"
+  (`docs/adr/0013-sandboxed-single-process-read-pipeline.md:L44-L47`). `docs/nfdr.md` names
+  SM-4's list (`docs/nfdr.md:L75`) and is re-derived from § 3 and § 4 as they now read. Both
+  are the Principal Architect's; this document records nothing there (§ 12).
+- **Stopped:** Carrying the Git item on `open_folder`'s return. Admitting the `model_changed`
+  registration call for a slice with nothing to push: `see-git-status` shows "the state read
+  when the folder opened" (§ 6 S-4 *Not in this slice*), and a callback adds a function pointer,
+  a context lifetime and a second thread to the one unit that holds `unsafe` (§ 11 R-13).
+- **Still unresolved:** When the model reads Git state — at open or on the first ask — and
+  whether an ask on a `failed` item reads again: the design of the change that builds the call,
+  bounded by S-4's fence, under which an `observed` item is not re-read in this slice. Which
+  side orders two asks in flight (§ 3, the `surfaces` row; RN-76). Whether the Git view's
+  reading state is drawn from the call's answer or under the `surfaces` row's exception: the
+  design of the change that builds the view, bound by § 4 C-E1. And three things this document
+  already ties to the first export that reaches `git-reader`, which `nozoki_read_git` is: the
+  search-path switch and its test (§ 4 C-I3), the `nm` transport read in `checks/view.sh` with
+  its suite case (§ 4 C-R6, C-I3; § 11 R-15), and the config-named-path item in *Open
+  Questions* (§ 11 R-16).
 
 ## 11. Technical risks
 
@@ -5380,6 +5438,64 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   from Draft to Settled *(re: § 4 C-I1; § 6 `follow-the-folder` *Reached when*, command half;
   RN-44; *Open Questions*; source: `docs/trail/sdd/cycle-24.md` § 2.1;
   `docs/trail/sdd/self_answer-36.md` § 2.1; `nozoki@9c9ee29`; `docs/SRS.md` NFR-3)*.
+- **RN-90:** *(CTO)* *(changed)* SM-4's list gains a tenth call, `read_git`, and § 10 gains RC-4.
+  The companion's one item is folded: raised from downstream by the PM and answered in the CTO's
+  seat (`docs/trail/sdd/cycle-25.md` § 5.1; reasoning `docs/trail/sdd/self_answer-37.md`). The
+  owner chose the route — amend this document first — over carrying the item on `open_folder`'s
+  return or holding the delivery back (same item, *The route the owner chose*).
+  **What the answer decides.** A Git-named call on SM-4's list, `read_git`, exported as
+  `nozoki_read_git`, and not the `model_changed` registration call. *Because* `see-git-status`
+  has nothing to push: its fence says the Git view shows "the state read when the folder
+  opened", so a pull call whose answer is its return is the shape the three landed calls already
+  have (`crates/nozoki-bridge/src/exports.rs:L55`, `:L73`, `:L90`), and it is a command, so the
+  harness walks it (§ 4 C-I3). A registration call is no command, and admitting it here would
+  build `follow-the-folder`'s delivery ahead of that slice, against C-R7's "by the slice that
+  needs it, and not before".
+  **What moved, each named.** (1) § 3 SM-4: `read_git` joins the list with what it takes and
+  answers; "all nine from `v1.0.0`" reads "all ten", and "the nine calls" reads "the ten calls".
+  (2) § 6 `see-git-status` *Rests on*: "`SM-4` (`read_git`; § 10 RC-4)" in place of "`SM-4`
+  (`model_changed` carrying Git state)". (3) § 6 `promise-one-point-zero`'s command half:
+  "SM-4's ten functions" in place of "nine". (4) *Open Questions*, the collapse-and-scroll item:
+  "SM-4's ten calls", "C-I6's ten" and "an eleventh call", with a dated note. (5) § 10 RC-4,
+  new, in the CTO's seat: that item already said a call the list does not name "is a re-cut,
+  recorded in § 10 before it is built", and this is the first.
+  **Left as written.** § 4 C-R7 and C-I6 read SM-4's list by reference and keep every word. The
+  `core-bridge` row's "the `model_changed` callback", SM-4's upward half and `follow-the-folder`'s
+  *Rests on* stand: the callback is that slice's. § 10 RC-3's "`asset_bytes` its ninth function"
+  and the review notes that say "nine" (RN-66, RN-77 among them) are dated records, true when
+  written, and are not corrected. No slice's *Delivers*, *Reached when*, § 7 edge or order moves.
+  **A call of this seat's:** `read_git` sits between `open_relative_link` and `set_theme`, where
+  the list's order by slice puts `see-git-status`'s call. The order of the names binds nothing:
+  C-R7 holds a set.
+  **Not decided by the answer, and not here.** RC-4's *Still unresolved* lists the four: when the
+  model reads Git state and whether a `failed` item is asked again; which side orders two asks in
+  flight; where the Git view's reading state is drawn from; and the three things already tied to
+  the first export reaching `git-reader`.
+  **Read for this fold, at `nozoki@ca915a4`.** The sites RC-4 cites were opened and each reads as
+  cited. `grep -rn model_changed crates nozoki-mac/Sources` printed nothing. No test was run: the
+  fold changes no code.
+  **Known limits, stated beside the claims.** This fold read the header, the `core-bridge`,
+  `mac-shell`, `surfaces` and `read-only-harness` rows and the seams table of § 3, § 4 C-R7 and
+  C-I1, § 6 S-4, S-5 and S-11, § 10, § 11 R-13 to R-16, § 12's downstream boundary and *Open
+  Questions*; it read § 4 C-I3 and C-I6, RN-66, RN-77 and RN-89 in part, where they name SM-4,
+  the exports or `git-reader`; and it searched the rest for "nine", "ninth", "tenth",
+  "model_changed", "read_git" and "registration". §§ 1, 2, 5, 7 to 9 and the other review notes
+  were not re-read line by line, so a sentence there that counts the list in other words was not
+  seen. Of the inputs, the status lines of `docs/PRD.md`, `docs/SRS.md` and `docs/UXD.md` were
+  read and their bodies were not: the answer moves no requirement, surface or product statement.
+  `docs/nfdr.md` and the decision log were searched for "nine" and SM-4's list, and read only
+  where the search landed.
+  **Downstream, not this document's to change.** ADR-0013 quotes the nine names and "all nine
+  from `v1.0.0`" (`docs/adr/0013-sandboxed-single-process-read-pipeline.md:L44-L47`), and
+  `docs/nfdr.md` names SM-4's list (`docs/nfdr.md:L75`). Both are the Principal Architect's to
+  bring into line, and this fold raised no item on that seat's companion. Until they move, § 3's
+  list is the one that holds (§ 4, opening note).
+  **The companion:** `diff docs/SDD_open_issues.md docs/trail/sdd/cycle-25.md` printed nothing
+  before this fold's first edit, and the companion matched `nozoki@ca915a4`. Its one item is
+  folded and nothing is unresolved, so `docs/SDD_open_issues.md` is removed and `Status:` stays
+  Settled *(re: § 3 SM-4; § 6 `see-git-status` *Rests on*; § 6 `promise-one-point-zero` *Reached
+  when*, command half; § 10 RC-4; *Open Questions*; source: `docs/trail/sdd/cycle-25.md` § 5.1;
+  `docs/trail/sdd/self_answer-37.md`; `nozoki@ca915a4`)*.
 
 ## Open Questions
 
@@ -5425,7 +5541,7 @@ question.>
   by revision (`docs/SRS.md` RN-4); no number is written here before that.]
 - [OPEN: How a collapsed tree node and a scroll of the reading panel reach `folder-model`, which
   § 3 gives the tree's expansion and the open `FileView`'s reading position (`docs/SRS.md` DR-2,
-  DR-3). SM-4's nine calls name neither act: an expansion crosses as `list_tree` and a selection
+  DR-3). SM-4's ten calls name neither act: an expansion crosses as `list_tree` and a selection
   as `select_file`, and no call is named for a collapse or for a scroll. SM-5 carries the
   operations those functions name and no others, so `follow-the-folder`'s `--test watch` has no
   operation to set a reading position with. Three forms are open. One: the place crosses as an
@@ -5435,11 +5551,12 @@ question.>
   place under `checks/churn.sh`, or by an earlier change that brings the held state into the
   model. The first form moves no list and is written into SM-4's row when found. The second
   leaves `follow-the-folder`'s command half unmet as written, and the third moves SM-4's list,
-  § 4 C-R7's set and C-I6's nine; each of those two is a re-cut, recorded in § 10 before it is
-  built, and a tenth export built without one fails C-R7's set equality. Whichever form is found,
+  § 4 C-R7's set and C-I6's ten; each of those two is a re-cut, recorded in § 10 before it is
+  built, and an eleventh call built without one fails C-R7's set equality. Whichever form is found,
   § 4 C-E2 binds it: a refresh that collapses a node or resets a scroll position violates that
   condition. *(Added on 2026-10-01, on the CDO's finding in the run that folded
-  `docs/trail/sdd/cycle-17.md` § 5.2; RN-77.)*]
+  `docs/trail/sdd/cycle-17.md` § 5.2; RN-77.)* *(The counts read nine, nine and "a tenth export"
+  until 2026-10-04, when SM-4's list gained `read_git`; § 10 RC-4, RN-90.)*]
 - [OPEN: How a path the repository's own config names is kept from being read outside the grant
   (§ 11 R-16). libgit2 follows `include.path`, `core.excludesfile` and `core.attributesfile`
   with no containment check, and the search-path switch does not reach them. Two forms are open.
