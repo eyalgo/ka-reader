@@ -37,6 +37,7 @@ package final class RootItemsView: NSScrollView {
     private let statusGlyphs: StatusGlyphs
     private var rows: [Row] = []
     private var isReloading = false
+    private var isShowingOpenFile = false
     private let rootLine: NSTextField
     private let rootMessage: StatusMessageView
 
@@ -66,6 +67,25 @@ package final class RootItemsView: NSScrollView {
                     as? BarRowView
             else { continue }
             rowView.drawsBar = barBelongs(on: outlineView.item(atRow: index))
+        }
+    }
+
+    /// Shows a file opened from outside the tree (a Git row) as the open file: the bar moves to
+    /// `path`, and the row of that path is selected if the tree as left shows it. A path under a
+    /// collapsed folder, or `nil`, selects no row and lets go of the one that was. It raises no
+    /// `fileSelected`, expands no folder and moves no scroll offset (CP-565, CP-550).
+    package func showOpenFile(path: String?) {
+        markOpenFile(path: path)
+        isShowingOpenFile = true
+        defer { isShowingOpenFile = false }
+        let shown = (0..<outlineView.numberOfRows).first { index in
+            guard let row = outlineView.item(atRow: index) as? Row else { return false }
+            return row.entry.kind == .file && row.entry.path == path
+        }
+        if let shown {
+            outlineView.selectRowIndexes(IndexSet(integer: shown), byExtendingSelection: false)
+        } else {
+            outlineView.deselectAll(nil)
         }
     }
 
@@ -313,32 +333,6 @@ package final class RootItemsView: NSScrollView {
     }
 }
 
-/// A tree row that can draw the open file's bar: 2px of `{colors.primary}` down its left edge
-/// (`docs/DESIGN.md` § Elevation & Depth, "Selection is a fill and a bar"). The selection fill is
-/// the table's own.
-private final class BarRowView: NSTableRowView {
-    private static let barWidth: CGFloat = 2
-
-    /// `{colors.primary}`: `#1E1F22` in the light theme, `#E7E7E4` in the dark one (`docs/DESIGN.md`
-    /// § Colors, "The two themes").
-    private static let barColor = NSColor(name: nil) { appearance in
-        appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
-            ? NSColor(srgbRed: 0xE7 / 255, green: 0xE7 / 255, blue: 0xE4 / 255, alpha: 1)
-            : NSColor(srgbRed: 0x1E / 255, green: 0x1F / 255, blue: 0x22 / 255, alpha: 1)
-    }
-
-    var drawsBar = false {
-        didSet { needsDisplay = true }
-    }
-
-    override func draw(_ dirtyRect: NSRect) {
-        super.draw(dirtyRect)
-        guard drawsBar else { return }
-        Self.barColor.setFill()
-        NSRect(x: bounds.minX, y: bounds.minY, width: Self.barWidth, height: bounds.height).fill()
-    }
-}
-
 /// A row's cell: the name and glyph every row has, and the label a failed entry's sentence goes in.
 private final class EntryCell: NSTableCellView {
     let conditionLabel = NSTextField(labelWithString: "")
@@ -454,10 +448,10 @@ extension RootItemsView: NSOutlineViewDelegate {
     }
 
     /// A selected file row is raised to the owner. A folder row and a status line raise nothing, and
-    /// so does a selection posted while this view reloads its own rows: that one is AppKit
-    /// restoring or dropping a selection, not the user's.
+    /// so does a selection posted while this view reloads its own rows, or shows the open file: that
+    /// one is AppKit restoring or dropping a selection, or the owner's, not the user's.
     package func outlineViewSelectionDidChange(_ notification: Notification) {
-        guard !isReloading,
+        guard !isReloading, !isShowingOpenFile,
             let row = outlineView.item(atRow: outlineView.selectedRow) as? Row,
             row.entry.kind == .file
         else { return }

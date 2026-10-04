@@ -40,12 +40,16 @@ final class RecordingBridge: Bridging {
     /// an entry holding `nil` is the bridge's failure value for that path.
     var selectAnswer: Data? = Data(#"{"state":"pending"}"#.utf8)
     var selectAnswers: [String: Data?] = [:]
+    /// The answer for the Git read: `pending`, until a test sets it. `nil` is the bridge's failure
+    /// value.
+    var gitAnswer: Data? = Data(#"{"state":"pending"}"#.utf8)
 
-    private let log: EventLog
+    let log: EventLog
     private var nextHandle: UInt = 1
     private(set) var openedLocations: [URL] = []
     private(set) var listedPaths: [String] = []
     private(set) var selectedPaths: [String] = []
+    private(set) var gitReadCount = 0
     private(set) var handedOut: [UInt] = []
     private(set) var freed: [UInt] = []
 
@@ -69,6 +73,12 @@ final class RecordingBridge: Bridging {
         log.record("select_file")
         selectedPaths.append(path)
         return makeBuffer(from: selectAnswers[path] ?? selectAnswer)
+    }
+
+    func readGit() -> BridgeBuffer? {
+        log.record("read_git")
+        gitReadCount += 1
+        return makeBuffer(from: gitAnswer)
     }
 
     func free(_ buffer: BridgeBuffer) {
@@ -105,14 +115,15 @@ final class FakeWindowPresenter: WindowPresenting {
 }
 
 /// A distinct image for each glyph the shell asks for by `docs/DESIGN.md`'s name, so a test can
-/// tell which one a surface drew: the tree's three (`folder`, `file` and `file-code`), and the status messages' `info` (empty or
-/// pending) and `circle-alert` (failure).
+/// tell which one a surface drew: the tree's three (`folder`, `file` and `file-code`), the status messages' `info` (empty or
+/// pending) and `circle-alert` (failure), and the rail's second glyph, `git-branch`.
 struct FakeGlyphSource: GlyphSource {
     let folder = NSImage(size: NSSize(width: 1, height: 1))
     let file = NSImage(size: NSSize(width: 2, height: 2))
     let info = NSImage(size: NSSize(width: 3, height: 3))
     let circleAlert = NSImage(size: NSSize(width: 4, height: 4))
     let fileCode = NSImage(size: NSSize(width: 5, height: 5))
+    let gitBranch = NSImage(size: NSSize(width: 6, height: 6))
 
     func glyph(named name: String) -> NSImage? {
         switch name {
@@ -121,6 +132,7 @@ struct FakeGlyphSource: GlyphSource {
         case "file-code": return fileCode
         case "info": return info
         case "circle-alert": return circleAlert
+        case "git-branch": return gitBranch
         default: return nil
         }
     }
@@ -171,6 +183,7 @@ final class ThreadRecordingBridge: Bridging, @unchecked Sendable {
     private let openAnswer: Data
     private let listAnswers: [String: Data]
     private let selectAnswers: [String: Data]
+    private let gitAnswer: Data?
     private var nextHandle: UInt = 1
     private var pathOfHandle: [UInt: String] = [:]
     private var calls: [(name: String, onMain: Bool)] = []
@@ -178,11 +191,13 @@ final class ThreadRecordingBridge: Bridging, @unchecked Sendable {
     init(
         openAnswer: Data = Data(#"{"state":"opened"}"#.utf8),
         listAnswers: [String: Data],
-        selectAnswers: [String: Data] = [:]
+        selectAnswers: [String: Data] = [:],
+        gitAnswer: Data? = nil
     ) {
         self.openAnswer = openAnswer
         self.listAnswers = listAnswers
         self.selectAnswers = selectAnswers
+        self.gitAnswer = gitAnswer
     }
 
     /// Whether the named call ran on the main thread, for every call of that name.
@@ -205,6 +220,12 @@ final class ThreadRecordingBridge: Bridging, @unchecked Sendable {
         record("select_file:\(path)")
         guard let payload = selectAnswers[path] else { return nil }
         return makeBuffer(from: payload, named: "select:\(path)")
+    }
+
+    func readGit() -> BridgeBuffer? {
+        record("read_git")
+        guard let gitAnswer else { return nil }
+        return makeBuffer(from: gitAnswer, named: "git")
     }
 
     func free(_ buffer: BridgeBuffer) {

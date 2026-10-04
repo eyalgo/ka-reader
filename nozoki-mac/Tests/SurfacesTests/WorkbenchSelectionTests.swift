@@ -43,7 +43,8 @@ final class WorkbenchSelectionTests: XCTestCase {
                     entry("src", .folder), entry("README", .file), entry("a.txt", .file),
                     entry("b.txt", .file),
                 ] + extra))
-        let workbench = WorkbenchView(rootItemsView: tree, statusGlyphs: glyphs)
+        let workbench = WorkbenchView(
+            rootItemsView: tree, statusGlyphs: glyphs, railFolderGlyph: glyph, railGitGlyph: glyph)
         workbench.frame = NSRect(x: 0, y: 0, width: 800, height: 500)
         let log = Log()
         workbench.selectFile = { path, answer in

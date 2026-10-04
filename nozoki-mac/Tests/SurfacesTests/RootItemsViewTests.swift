@@ -486,4 +486,149 @@ final class RootItemsViewTests: XCTestCase {
         reused.show(.observed([entry("a.txt", .file, .observed)]))
         XCTAssertEqual(drawnLines(reused), [], "a line drawn earlier is taken down")
     }
+
+    // MARK: - Showing a file opened from outside the tree (CP-565, CP-550)
+
+    /// A tree of `src/` (collapsed, holding `x.txt`) and two files, hosted in a window short enough
+    /// that it scrolls, with every `list_tree` answered at once and every `fileSelected` recorded.
+    private struct OpenFileFixture {
+        let view: RootItemsView
+        let window: NSWindow
+        let selected: SelectedLog
+        let reads: ReadCount
+    }
+
+    private final class SelectedLog {
+        var paths: [String] = []
+    }
+
+    private final class ReadCount {
+        var count = 0
+    }
+
+    private func makeOpenFileFixture() -> OpenFileFixture {
+        let view = RootItemsView(
+            folderGlyph: folderGlyph, fileGlyph: fileGlyph, fileCodeGlyph: fileCodeGlyph,
+            statusGlyphs: statusGlyphs)
+        let selected = SelectedLog()
+        let reads = ReadCount()
+        view.fileSelected = { selected.paths.append($0.path) }
+        view.listTree = { _, answer in
+            reads.count += 1
+            answer(
+                .observed([
+                    Entry(name: "x.txt", path: "src/x.txt", kind: .file, state: .observed)
+                ]))
+        }
+        let files = (0..<40).map { entry(String(format: "f%02d.txt", $0), .file, .observed) }
+        view.show(.observed([entry("src", .folder, .pending)] + files))
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 260, height: 200), styleMask: [.borderless],
+            backing: .buffered, defer: true)
+        window.contentView = view
+        view.layoutSubtreeIfNeeded()
+        return OpenFileFixture(view: view, window: window, selected: selected, reads: reads)
+    }
+
+    private func rowIndex(of path: String, in view: RootItemsView) -> Int? {
+        (0..<view.outlineView.numberOfRows).first { view.entry(atRow: $0)?.path == path }
+    }
+
+    private func expandedPaths(_ view: RootItemsView) -> [String] {
+        (0..<view.outlineView.numberOfRows).compactMap { row in
+            let item = view.outlineView.item(atRow: row)
+            return view.outlineView.isItemExpanded(item) ? view.entry(atRow: row)?.path : nil
+        }
+    }
+
+    private func scrollOffset(_ view: RootItemsView) -> NSPoint {
+        view.contentView.bounds.origin
+    }
+
+    func test_theOpenFileOperationSelectsTheRowOfAPathTheTreeShows() throws {
+        let fixture = makeOpenFileFixture()
+        let row = try XCTUnwrap(rowIndex(of: "f03.txt", in: fixture.view))
+
+        fixture.view.showOpenFile(path: "f03.txt")
+
+        XCTAssertEqual(fixture.view.outlineView.selectedRowIndexes, IndexSet(integer: row))
+        XCTAssertEqual(fixture.view.openFilePath, "f03.txt")
+        XCTAssertEqual(fixture.view.barPaths(), ["f03.txt"])
+
+        fixture.view.showOpenFile(path: "f05.txt")
+        let next = try XCTUnwrap(rowIndex(of: "f05.txt", in: fixture.view))
+        XCTAssertEqual(
+            fixture.view.outlineView.selectedRowIndexes, IndexSet(integer: next),
+            "the earlier row is no longer selected")
+    }
+
+    func test_itSelectsNoRowForAPathUnderACollapsedFolder() throws {
+        let fixture = makeOpenFileFixture()
+        let src = try XCTUnwrap(rowIndex(of: "src", in: fixture.view))
+        fixture.view.outlineView.expandItem(fixture.view.outlineView.item(atRow: src))
+        fixture.view.showOpenFile(path: "src/x.txt")
+        XCTAssertEqual(fixture.view.outlineView.selectedRowIndexes.count, 1)
+
+        fixture.view.outlineView.collapseItem(fixture.view.outlineView.item(atRow: src))
+        fixture.view.showOpenFile(path: "f01.txt")
+        XCTAssertEqual(fixture.view.outlineView.selectedRowIndexes.count, 1)
+        fixture.view.showOpenFile(path: "src/x.txt")
+
+        XCTAssertTrue(
+            fixture.view.outlineView.selectedRowIndexes.isEmpty,
+            "the row the tree does not show is not selected, and the earlier one is let go")
+        XCTAssertEqual(fixture.view.openFilePath, "src/x.txt")
+        XCTAssertNil(rowIndex(of: "src/x.txt", in: fixture.view))
+    }
+
+    func test_itRaisesNoFileSelected() throws {
+        let fixture = makeOpenFileFixture()
+        let src = try XCTUnwrap(rowIndex(of: "src", in: fixture.view))
+        fixture.view.outlineView.expandItem(fixture.view.outlineView.item(atRow: src))
+
+        fixture.view.showOpenFile(path: "f03.txt")
+        fixture.view.showOpenFile(path: "src/x.txt")
+        fixture.view.outlineView.collapseItem(fixture.view.outlineView.item(atRow: src))
+        fixture.view.showOpenFile(path: "src/x.txt")
+        fixture.view.showOpenFile(path: nil)
+
+        XCTAssertEqual(fixture.selected.paths, [])
+    }
+
+    func test_itExpandsAndCollapsesNoFolder() throws {
+        let fixture = makeOpenFileFixture()
+        let before = expandedPaths(fixture.view)
+
+        fixture.view.showOpenFile(path: "src/x.txt")
+        fixture.view.showOpenFile(path: "f03.txt")
+
+        XCTAssertEqual(expandedPaths(fixture.view), before)
+        XCTAssertEqual(fixture.reads.count, 0, "and no folder was read")
+        XCTAssertEqual(fixture.view.outlineView.numberOfRows, 41)
+
+        let src = try XCTUnwrap(rowIndex(of: "src", in: fixture.view))
+        fixture.view.outlineView.expandItem(fixture.view.outlineView.item(atRow: src))
+        let opened = expandedPaths(fixture.view)
+        fixture.view.showOpenFile(path: "f10.txt")
+        XCTAssertEqual(expandedPaths(fixture.view), opened, "an open folder stays open")
+    }
+
+    func test_itDoesNotMoveTheScrollOffset() throws {
+        let fixture = makeOpenFileFixture()
+        fixture.view.contentView.scroll(to: NSPoint(x: 0, y: 40))
+        fixture.view.reflectScrolledClipView(fixture.view.contentView)
+        let before = scrollOffset(fixture.view)
+        let visible = fixture.view.outlineView.rows(in: fixture.view.contentView.bounds)
+        let inView = try XCTUnwrap(fixture.view.entry(atRow: visible.location + 2)?.path)
+        XCTAssertGreaterThan(before.y, 0, "the fixture scrolls")
+
+        fixture.view.showOpenFile(path: inView)
+        XCTAssertEqual(scrollOffset(fixture.view), before, "a row in view is selected in place")
+
+        fixture.view.showOpenFile(path: "f39.txt")
+        XCTAssertEqual(scrollOffset(fixture.view), before, "a row out of view is not scrolled to")
+        XCTAssertEqual(
+            fixture.view.outlineView.selectedRowIndexes,
+            IndexSet(integer: try XCTUnwrap(rowIndex(of: "f39.txt", in: fixture.view))))
+    }
 }

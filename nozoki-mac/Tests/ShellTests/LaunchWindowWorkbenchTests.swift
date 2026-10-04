@@ -176,6 +176,7 @@ final class LaunchWindowWorkbenchTests: LaunchWindowTestCase {
     /// The workbench's two panels and the prompt, each found from the drawn view tree: a panel is
     /// the workbench's direct subview that holds the element (change_design.md § 3, *Exposes*).
     private struct DrawnWorkbench {
+        let rail: NSView
         let sidebar: NSView
         let readingPanel: NSView
         let prompt: NSTextField
@@ -186,7 +187,9 @@ final class LaunchWindowWorkbenchTests: LaunchWindowTestCase {
             folderGlyph: NSImage(), fileGlyph: NSImage(), fileCodeGlyph: NSImage(),
             statusGlyphs: statusGlyphs)
         tree.show(root)
-        return WorkbenchView(rootItemsView: tree, statusGlyphs: statusGlyphs)
+        return WorkbenchView(
+            rootItemsView: tree, statusGlyphs: statusGlyphs, railFolderGlyph: NSImage(),
+            railGitGlyph: NSImage())
     }
 
     private var twoEntryRoot: RootListing {
@@ -201,6 +204,7 @@ final class LaunchWindowWorkbenchTests: LaunchWindowTestCase {
             textElements(beneath: workbench).first { $0.stringValue == Self.readingPrompt },
             "the workbench draws no “\(Self.readingPrompt)”")
         return DrawnWorkbench(
+            rail: try XCTUnwrap(ShellTests.panel(of: workbench, containing: workbench.rail)),
             sidebar: try XCTUnwrap(
                 ShellTests.panel(of: workbench, containing: workbench.rootItemsView.outlineView)),
             readingPanel: try XCTUnwrap(ShellTests.panel(of: workbench, containing: prompt)),
@@ -350,18 +354,30 @@ final class LaunchWindowWorkbenchTests: LaunchWindowTestCase {
         try assertReadingPanelStandsBesideTheSidebarAndDrawsOnlyThePrompt(workbench, in: window)
     }
 
-    func testTheWorkbenchIsExactlyItsTwoPanelsWithTheTreeItWasHandedAsTheSidebar() throws {
+    func testTheWorkbenchIsExactlyTheRailTheSidebarAndTheReadingPanelWithTheTreeInTheSidebar()
+        throws
+    {
         let workbench = makeWorkbench(showing: twoEntryRoot)
 
         _ = try present(workbench)
 
         let panels = try drawn(workbench)
-        XCTAssertEqual(workbench.subviews.count, 2)
-        XCTAssertTrue(workbench.subviews.first === panels.sidebar, "the sidebar comes first")
-        XCTAssertTrue(workbench.subviews.last === panels.readingPanel)
+        XCTAssertEqual(workbench.subviews.count, 3)
+        XCTAssertTrue(workbench.subviews[0] === panels.rail, "the rail comes first")
+        XCTAssertTrue(workbench.subviews[1] === panels.sidebar, "then the sidebar")
+        XCTAssertTrue(workbench.subviews[2] === panels.readingPanel, "then the reading panel")
         XCTAssertTrue(
-            panels.sidebar === workbench.rootItemsView,
-            "the sidebar is the tree it was handed, in no second scrolling view")
+            workbench.rootItemsView.isDescendant(of: panels.sidebar),
+            "the sidebar holds the tree it was handed")
+        XCTAssertTrue(
+            workbench.rootItemsView.outlineView.enclosingScrollView === workbench.rootItemsView,
+            "the tree's nearest scrolling ancestor is itself")
+        var ancestor = workbench.rootItemsView.superview
+        while let view = ancestor, view !== workbench {
+            XCTAssertFalse(
+                view is NSScrollView, "the tree is not wrapped in a second scrolling view")
+            ancestor = view.superview
+        }
     }
 
     func testThePanelsFillAWindowOfAnotherSize() throws {
@@ -376,10 +392,12 @@ final class LaunchWindowWorkbenchTests: LaunchWindowTestCase {
 
         let area = contentArea(of: window)
         let panels = try drawn(workbench)
+        let railFrame = frameInWindow(of: panels.rail)
         let sidebarFrame = frameInWindow(of: panels.sidebar)
         let readingFrame = frameInWindow(of: panels.readingPanel)
         XCTAssertEqual(area.size, NSSize(width: 900, height: 500))
-        XCTAssertEqual(sidebarFrame.minX, area.minX, accuracy: Self.frameTolerance)
+        XCTAssertEqual(railFrame.minX, area.minX, accuracy: Self.frameTolerance)
+        XCTAssertEqual(sidebarFrame.minX, railFrame.maxX, accuracy: Self.frameTolerance)
         XCTAssertEqual(sidebarFrame.height, area.height, accuracy: Self.frameTolerance)
         XCTAssertEqual(readingFrame.height, area.height, accuracy: Self.frameTolerance)
         XCTAssertEqual(readingFrame.maxX, area.maxX, accuracy: Self.frameTolerance)
