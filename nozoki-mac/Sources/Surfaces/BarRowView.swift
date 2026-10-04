@@ -65,6 +65,12 @@ final class BarRowView: NSTableRowView {
         pointerIsOver && !drawsBar && !(isSelected && selectionOutranksHover)
     }
 
+    /// Always the style an unselected row has. A cell's controls read this to choose their ink, and
+    /// the platform answers a selected, emphasized row with a different one, so selection or key
+    /// status would re-ink the row (CP-632). `NSTableRowView.h` names it as the property to override
+    /// beside custom selection drawing.
+    override var interiorBackgroundStyle: NSView.BackgroundStyle { .normal }
+
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
         if drawsSelection {
