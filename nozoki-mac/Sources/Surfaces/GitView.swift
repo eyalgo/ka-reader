@@ -101,7 +101,10 @@ package final class GitView: NSView {
     /// element and every message are on none (CP-587, CP-588). The text is built from that row's
     /// own printed path and category, so a path listed twice gives each row its own word (CP-594).
     private func letter(at point: NSPoint) -> LetterUnderPointer? {
-        guard let row = rows.first(where: { $0.letter.bounds.contains($0.letter.convert(point, from: self)) })
+        guard
+            let row = rows.first(where: {
+                $0.letter.bounds.contains($0.letter.convert(point, from: self))
+            })
         else { return nil }
         return LetterUnderPointer(
             letter: row.letter,

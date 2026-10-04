@@ -360,7 +360,8 @@ final class GitViewTests: XCTestCase {
     }
 
     /// The letter field of the row that prints `path`, found as the path field's sibling.
-    private func letterField(_ fixture: Fixture, _ path: String, nth: Int = 0) throws -> NSTextField {
+    private func letterField(_ fixture: Fixture, _ path: String, nth: Int = 0) throws -> NSTextField
+    {
         let paths = descendants(of: fixture.view).compactMap { $0 as? NSTextField }
             .filter { $0.identifier?.rawValue == "gitRowPath" && $0.stringValue == path }
         let row = try XCTUnwrap(paths[nth].superview)
@@ -401,7 +402,10 @@ final class GitViewTests: XCTestCase {
     func test_nothingButALetterRaisesIt() throws {
         let items: [(String, GitItem)] = [
             ("a merge", repository(state: .merge, changed: [entry("b.txt", .modified)])),
-            ("lists", repository(staged: [entry("a.txt", .added)], changed: [entry("b.txt", .modified)])),
+            (
+                "lists",
+                repository(staged: [entry("a.txt", .added)], changed: [entry("b.txt", .modified)])
+            ),
             ("clean", repository()),
             ("pending", .pending),
             ("a failure", .failed(.condition(.notARepository))),
@@ -422,7 +426,9 @@ final class GitViewTests: XCTestCase {
             // The space between a row's path and its letter.
             for field in letterFields(fixture) {
                 let gap = NSPoint(
-                    x: fixture.view.convert(NSPoint(x: field.bounds.minX - 3, y: field.bounds.midY), from: field).x,
+                    x: fixture.view.convert(
+                        NSPoint(x: field.bounds.minX - 3, y: field.bounds.midY), from: field
+                    ).x,
                     y: centre(of: field, in: fixture).y)
                 try rest(at: gap, in: fixture)
                 XCTAssertNil(fixture.view.letterTooltip.shownView, "\(what): the gap")
