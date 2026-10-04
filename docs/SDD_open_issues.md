@@ -80,7 +80,42 @@ None.
   pointer in that sentence as the shell's second first-hand observation, under the same bounds, so the
   exception above it stays the only one.
 - **If a document has to be written:** none. A change in `SDD.md` § 3, written by `product-sdd`.
-- **Answer:** <the owner fills this in>
+- **Answer:** Take the fold the item names, with three additions. Decided in the CTO's seat by an
+  unattended run.
+  **The fold.** In § 3's `surfaces` row, the clause "Read with the exception, and not a second one"
+  names the window's key status beside the pointer. Whether the window is the key window is the
+  shell's own observation of the window and is no state of the folder. The clickable row's hover
+  fill and the status letter's tooltip are drawn from the pointer and from it together
+  (`docs/DESIGN.md` § *Components*, "Rows" and "The tooltip"). The same bounds hold it. It is asked
+  each time the row or letter under the pointer is resolved and at the two moments the window stops
+  being and becomes the key window, and it is held across no redraw. It raises no intent across
+  SM-8. It says nothing about the folder. A surface that is in no window reads as not key and draws
+  neither. The observation stays inside `surfaces` and crosses no seam, so SM-8 does not move and
+  the exception above the clause stays the only one. The clause does not call it a "second
+  first-hand observation": the row already calls the pending gap "the one thing the shell observes
+  first-hand", and RN-96 reads that sentence as one about state.
+  **Addition one.** § 6 S-1 *Reached when*, command half, repeats the § 3 clause as its "second
+  reading clause" (`docs/SDD.md:L1569-L1571`). It gains the key status in the same words and still
+  adds no test for itself.
+  **Addition two.** The hover sentences in S-1's and S-4's observable halves
+  (`docs/SDD.md:L1547-L1550`, `:L1794-L1797`) and the hover cases in their command halves
+  (`:L1577-L1581`, `:L1845-L1853`) say a row shows the fill while the pointer is over it, with no
+  condition. Each is stated for a window that is the key window. The observable sentences are the
+  CDO's clauses and `docs/DESIGN.md:L640-L645` and `:L690-L700` settle them, so no call is left for
+  that seat.
+  **Addition three.** Each of the two command halves gains three cases the shell's suites already
+  hold at `nozoki@6f92b29`: when the window stops being the key window the fill leaves under a
+  still pointer; while it is not key, no row shows the fill, whatever the pointer does and whatever
+  rows move under it; when it becomes key again the fill is on the row under the pointer as the
+  rows stand then. S-4 gains one more: a raised tooltip leaves when the window stops being key and
+  returns only after a fresh rest.
+  **What does not move.** No *Delivers*, no seam, no part's *Must not own*, no § 10 entry. The
+  commit row and the menu item take nothing: neither is built, and the item cites no site for
+  either.
+  **One correction to the item's text.** Its `docs/DESIGN.md` line numbers were written before that
+  document moved to v19. "Rows" states the rule at `:L640-L645`, and "The tooltip" at `:L690-L700`.
+  Reasoning, the failure paths walked, and what this run did not read:
+  `docs/trail/sdd/self_answer-45.md`.
 
 **How it closes.** `product-sdd` folds it on its next run like every other item in this file, and
 the trail copy and the delete-when-empty behaviour are unchanged.
