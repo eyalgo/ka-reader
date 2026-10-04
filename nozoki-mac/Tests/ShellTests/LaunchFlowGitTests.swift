@@ -106,6 +106,44 @@ final class LaunchFlowGitTests: LaunchWindowTestCase {
         XCTAssertTrue(workbench.gitView.isHiddenOrHasHiddenAncestor)
     }
 
+    /// The status letters the tree draws: the text elements the tree's rows carry as `treeRowLetter`.
+    private func treeLetters(in workbench: WorkbenchView) -> [String] {
+        textElements(beneath: workbench.rootItemsView)
+            .filter { $0.identifier?.rawValue == "treeRowLetter" }.map(\.stringValue)
+    }
+
+    func test_aMissingReadGitBufferMarksNoTreeRow() throws {
+        let launch = launch(git: nil)
+        let workbench = try workbench(of: launch)
+
+        choose(.git, in: workbench)
+        choose(.files, in: workbench)
+
+        XCTAssertEqual(launch.bridge.gitReadCount, 1, "the read was delivered")
+        XCTAssertTrue(
+            textElements(beneath: workbench.rootItemsView).map(\.stringValue).contains("a.txt"),
+            "the tree is drawn")
+        XCTAssertEqual(treeLetters(in: workbench), [])
+    }
+
+    func test_aNonConformingReadGitAnswerMarksNoTreeRow() throws {
+        let nonConforming = Data(
+            (#"{"state":"observed","kind":"root","branch":{"kind":"branch","name":"main"},"#
+                + #""repository_state":"normal","staged":[],"#
+                + #""changed":[{"path":"a.txt","category":"copied"}]}"#).utf8)
+        let launch = launch(git: nonConforming)
+        let workbench = try workbench(of: launch)
+
+        choose(.git, in: workbench)
+        choose(.files, in: workbench)
+
+        XCTAssertEqual(launch.bridge.gitReadCount, 1, "the read was delivered")
+        XCTAssertTrue(
+            textElements(beneath: workbench.rootItemsView).map(\.stringValue).contains("a.txt"),
+            "the tree is drawn")
+        XCTAssertEqual(treeLetters(in: workbench), [])
+    }
+
     func test_switchingBackToGitCallsNothing() throws {
         let launch = launch(git: Self.repositoryAnswer)
         let workbench = try workbench(of: launch)

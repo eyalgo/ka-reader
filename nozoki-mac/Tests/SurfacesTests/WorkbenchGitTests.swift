@@ -5,7 +5,7 @@ import XCTest
 
 /// The workbench as rail · sidebar · reading panel: the Files/Git switch, the Git view in the
 /// sidebar, the one `readGit` ask, a Git row opening a file, and what a switch leaves alone
-/// (CP-547 to CP-550, CP-562 to CP-565, CP-568). Every sentence is a string literal here and never
+/// (CP-547 to CP-550, CP-562 to CP-565; CP-573 for the tree's markers). Every sentence is a string literal here and never
 /// read from `GitSentences`.
 @MainActor
 final class WorkbenchGitTests: XCTestCase {
@@ -464,7 +464,7 @@ final class WorkbenchGitTests: XCTestCase {
         }
     }
 
-    func test_aRepositoryAnswerWithChangesPutsNoLetterOnAnyTreeRow() throws {
+    func test_aRepositoryAnswerWithChangesMarksTheListedTreeRows() throws {
         let fixture = makeFixture()
         choose(.git, in: fixture)
         fixture.log.gitAsks[0].answer(
@@ -473,13 +473,12 @@ final class WorkbenchGitTests: XCTestCase {
                 changed: [gitEntry("b.txt"), gitEntry("A.txt", .deleted)]))
         choose(.files, in: fixture)
 
-        let tree = fixture.workbench.rootItemsView
-        let drawn = strings(of: tree)
-        XCTAssertEqual(Set(drawn), ["src", "A.txt", "a.txt", "b.txt"])
-        XCTAssertEqual(drawn.count, 4)
-        for letter in ["A", "U", "M", "D", "C", "R"] {
-            XCTAssertFalse(drawn.contains(letter), letter)
-        }
+        // As `strings(of:)` orders them, the tree's last row first: each name, then the letter after
+        // it on its row.
+        XCTAssertEqual(
+            strings(of: fixture.workbench.rootItemsView),
+            ["b.txt", "M", "a.txt", "A", "A.txt", "D", "src"],
+            "a.txt A, b.txt M, A.txt D, and nothing on src")
     }
 
     func test_aPlainAnswerLeavesNoGitWordOutsideTheViewExceptTheSwitchLabel() {

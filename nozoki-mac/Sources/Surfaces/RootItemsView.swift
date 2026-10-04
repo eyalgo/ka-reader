@@ -38,6 +38,7 @@ package final class RootItemsView: NSScrollView {
     private var rows: [Row] = []
     private var isReloading = false
     private var isShowingOpenFile = false
+    private var markers = TreeMarkers.none
     private let rootLine: NSTextField
     private let rootMessage: StatusMessageView
 
@@ -87,6 +88,20 @@ package final class RootItemsView: NSScrollView {
         } else {
             outlineView.deselectAll(nil)
         }
+    }
+
+    /// Replaces the markers the view holds: every entry row drawn now, and every row drawn after,
+    /// carries the letter `markers` gives its path (CP-575). Only the drawn rows' cells are drawn
+    /// again, inside the reload guard: a whole-outline `reloadData()` would ask the data source for
+    /// every item again, and expansion relies on the identity of `Row` (CP-285 precedent at
+    /// `reload(_:)`). Expansion, scroll offset, selection and the bar are left as they were.
+    package func showMarkers(_ markers: TreeMarkers) {
+        self.markers = markers
+        isReloading = true
+        defer { isReloading = false }
+        outlineView.reloadData(
+            forRowIndexes: IndexSet(0..<outlineView.numberOfRows),
+            columnIndexes: IndexSet(integer: 0))
     }
 
     /// The `path` of every row that draws the bar, top to bottom.
@@ -190,6 +205,7 @@ package final class RootItemsView: NSScrollView {
     private static let cellIdentifier = NSUserInterfaceItemIdentifier("entryCell")
     private static let lineCellIdentifier = NSUserInterfaceItemIdentifier("lineCell")
     private static let conditionIdentifier = NSUserInterfaceItemIdentifier("entryCondition")
+    private static let letterIdentifier = NSUserInterfaceItemIdentifier("treeRowLetter")
     private static let glyphSize: CGFloat = 16
     private static let glyphSpacing: CGFloat = 6
 
@@ -215,9 +231,18 @@ package final class RootItemsView: NSScrollView {
         conditionLabel.translatesAutoresizingMaskIntoConstraints = false
         conditionLabel.textColor = .secondaryLabelColor
         conditionLabel.isHidden = true
+        // The status letter: a label, never a second click target (CP-578), no hue (CP-576).
+        let letterLabel = cell.letterLabel
+        letterLabel.identifier = Self.letterIdentifier
+        letterLabel.translatesAutoresizingMaskIntoConstraints = false
+        letterLabel.isSelectable = false
+        letterLabel.setContentHuggingPriority(.required, for: .horizontal)
+        letterLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
+        letterLabel.isHidden = true
         cell.addSubview(imageView)
         cell.addSubview(textField)
         cell.addSubview(conditionLabel)
+        cell.addSubview(letterLabel)
         cell.imageView = imageView
         cell.textField = textField
 
@@ -231,8 +256,11 @@ package final class RootItemsView: NSScrollView {
             textField.centerYAnchor.constraint(equalTo: cell.centerYAnchor),
             conditionLabel.leadingAnchor.constraint(
                 equalTo: textField.trailingAnchor, constant: Self.glyphSpacing),
-            conditionLabel.trailingAnchor.constraint(lessThanOrEqualTo: cell.trailingAnchor),
+            conditionLabel.trailingAnchor.constraint(
+                lessThanOrEqualTo: letterLabel.leadingAnchor, constant: -Self.glyphSpacing),
             conditionLabel.centerYAnchor.constraint(equalTo: cell.centerYAnchor),
+            letterLabel.trailingAnchor.constraint(equalTo: cell.trailingAnchor),
+            letterLabel.centerYAnchor.constraint(equalTo: cell.centerYAnchor),
         ])
         return cell
     }
@@ -333,9 +361,11 @@ package final class RootItemsView: NSScrollView {
     }
 }
 
-/// A row's cell: the name and glyph every row has, and the label a failed entry's sentence goes in.
+/// A row's cell: the name and glyph every row has, the label a failed entry's sentence goes in, and
+/// the label a listed row's status letter goes in.
 private final class EntryCell: NSTableCellView {
     let conditionLabel = NSTextField(labelWithString: "")
+    let letterLabel = NSTextField(labelWithString: "")
 }
 
 /// Where a folder row's read stands. A file row stays *unread*.
@@ -435,6 +465,14 @@ extension RootItemsView: NSOutlineViewDelegate {
         } else {
             cell.conditionLabel.stringValue = ""
             cell.conditionLabel.isHidden = true
+        }
+        // Likewise the letter: every row sets or clears it.
+        if let category = markers.category(forRowPath: row.entry.path) {
+            cell.letterLabel.stringValue = GitSentences.letter(for: category)
+            cell.letterLabel.isHidden = false
+        } else {
+            cell.letterLabel.stringValue = ""
+            cell.letterLabel.isHidden = true
         }
         return cell
     }
