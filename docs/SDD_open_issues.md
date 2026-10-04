@@ -74,7 +74,48 @@ None.
   A narrower override keeps the named limit and drops only the proposed refusal. No slice, edge
   or part moves under either. On a confirm, the refusal is written into § 3's `git-reader` row
   beside the config check, and a case for it joins the proof R-16 lists.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm — the limit stays named and the refusal is built, with five
+  additions. The first replaces one clause of the draft.
+  (1) **The refusal answers a condition of its own, not the config condition.** R-16's draft
+  says "with the condition above". That condition reports that the repository's config names a
+  path, and it carries a key. An alternates file is not config and has no key, so the message
+  would be false. That is the ground on which the config refusal was given its own condition
+  (`docs/trail/sdd/cycle-34.md` § 5.1). The alternates refusal says what was observed: the
+  repository's object store names a location outside the folder. It carries the entry as the
+  alternates file spells it, and the log line holds no path. It crosses SM-2, SM-4 and SM-8 as
+  the config condition does. § 6 S-4's observable half gains one passage for it, in the Git
+  view's failure slot, and the message's words are `docs/CONTENT.md`'s.
+  (2) **Where the check runs, and what it reads.** It runs wherever the config check runs: on
+  the probe, and before the open behind `state()` and `status()`. `git-reader` makes the read,
+  with the spelling walk and the size bound the config check uses. It reads
+  `objects/info/alternates` under the common directory. A link at `objects`, `info` or
+  `alternates` whose spelling leaves the folder is refused without a read, so a linked `objects`
+  directory that leads out is refused here. It then reads the `info/alternates` file of each
+  alternate that spells inside the folder, because an inside alternate can name an outside one.
+  libgit2 follows that chain to a depth of five
+  (`libgit2-sys-0.18.8+1.9.7/libgit2/src/libgit2/odb.c:L27`, `:L770`, `:L800`). A chain deeper
+  than five, a file over the size bound, or a link chain over the walk's bound is refused.
+  (3) **The spellings follow libgit2's own rule** (`odb.c:L789-L802`). An empty line and a line
+  beginning `#` are skipped. An entry beginning `.` is spelled from the objects directory that
+  holds the file. An absolute entry is taken as written. Any other entry libgit2 hands to the
+  operating system as written, which resolves it against the process's working directory and not
+  against the folder, so it is refused as outside. Any one entry that spells outside refuses the
+  repository.
+  (4) **The cases that are not a refusal.** No alternates file, or one holding only empty lines
+  and comments, passes. An entry that spells inside the folder with nothing there passes, because
+  libgit2 skips it (`odb.c:L697-L700`). An alternates file the adapter cannot read answers the
+  existing condition for an unreadable Git directory.
+  (5) **Submodules, the proof, and what stays uncovered.** The verification of each submodule
+  repository before the status read gains this check beside its two. The proof is one fixture
+  whose alternates file names an objects directory outside the fixture, and one case showing that
+  directory is not read. It is owed before `see-git-status` is reached, with R-16's other cases,
+  and until it exists the read stays a stated limit. Two things stay uncovered and R-16's *Not
+  covered* names both: the check and libgit2's read are two reads, so an alternates file
+  rewritten between them is followed unchecked; and a link elsewhere inside the Git directory
+  that leads out, such as a linked `HEAD`, `index` or `refs`, was not checked in the source.
+  On the fold, the refusal is written into § 3's `git-reader` row beside the config check, and
+  § 4 C-D3's second *Not covered* sentence names the refusal in place of "covered by nothing
+  outside the sandbox". The reasoning is `docs/trail/sdd/self_answer-47.md`.
 
 ## 3. Cut calls to confirm — where the slicing could reasonably have gone another way
 
