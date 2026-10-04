@@ -54,6 +54,7 @@ fn take_records() -> Vec<(log::Level, String)> {
 
 struct Double {
     head: Result<HeadState, GitReadCondition>,
+    lists: Result<StatusLists, GitReadCondition>,
 }
 
 impl GitPort for Double {
@@ -66,10 +67,25 @@ impl GitPort for Double {
     }
 
     fn status(&self, _root: &Path) -> Result<StatusLists, GitReadCondition> {
-        panic!("the reducer step never asks status");
+        self.lists.clone()
     }
 }
 
+fn clean_lists() -> StatusLists {
+    StatusLists {
+        staged: vec![],
+        changed: vec![],
+    }
+}
+
+fn standing_head() -> HeadState {
+    HeadState {
+        branch: BranchElement::Branch("main".to_string()),
+        state: RepositoryState::Normal,
+    }
+}
+
+/// `log` has one global logger per process, so both cases run in one test, in this order.
 #[test]
 fn test_failed_git_item_logs_one_warn_without_the_path() {
     log::set_logger(&CAPTURE).expect("no other logger is installed in this binary");
@@ -83,9 +99,11 @@ fn test_failed_git_item_logs_one_warn_without_the_path() {
             branch: BranchElement::Branch("main".to_string()),
             state: RepositoryState::Normal,
         }),
+        lists: Ok(clean_lists()),
     };
     let failing = Double {
         head: Err(GitReadCondition::GitDirectoryOutside(outside.clone())),
+        lists: Ok(clean_lists()),
     };
 
     let _ = read_git(FolderModel::new(opened.clone()), &standing);
@@ -105,4 +123,28 @@ fn test_failed_git_item_logs_one_warn_without_the_path() {
         !text.contains(outside.to_str().expect("the path is UTF-8")),
         "the record holds the path: {text}"
     );
+
+    status_failure_logs_one_warn_naming_git_reader_and_status();
+}
+
+/// Run inside the one test above: a status failure names `status` and not `state`.
+fn status_failure_logs_one_warn_naming_git_reader_and_status() {
+    let scene = TempDir::new();
+    scene.write_file("a.txt", "a");
+    let opened = open_folder(scene.path()).expect("the scene opens");
+    let failing = Double {
+        head: Ok(standing_head()),
+        lists: Err(GitReadCondition::RepositoryReadFailed),
+    };
+
+    let _ = read_git(FolderModel::new(opened), &failing);
+
+    let records = take_records();
+    assert_eq!(records.len(), 1, "one record: {records:?}");
+    let (level, text) = &records[0];
+    assert_eq!(*level, log::Level::Warn);
+    assert!(text.contains("git-reader"), "{text}");
+    assert!(text.contains("status"), "{text}");
+    assert!(!text.contains("state"), "{text}");
+    assert!(!text.contains('/'), "the record holds a path: {text}");
 }
