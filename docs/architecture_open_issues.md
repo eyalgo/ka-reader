@@ -108,6 +108,9 @@ None.
   (`docs/adr/0021-sandboxed-single-process-read-pipeline-git-state-pulled-by-read-git.md:L176`), but
   the item is § 2.2. The fold that accepts the record should point that line at this item's trail
   copy, § 2.2. Reasoning: `docs/trail/architecture/self_answer-39.md` § 2.2.
+  **Confirmed by the owner, 2026-10-04,** in an interactive session, after the fold that would have
+  accepted ADR-0021 stopped because only a self-answer stood behind it: accept ADR-0021 as
+  superseding ADR-0013, with the addition above.
 
 ## 3. Raised from downstream — an item from a seat that did not write these records
 
