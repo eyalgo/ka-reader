@@ -37,6 +37,8 @@ final class RootItemsViewSelectionTests: XCTestCase {
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 260, height: 200), styleMask: [.borderless],
             backing: .buffered, defer: true)
+        // sRGB, so a rendered row reads back in the space its tokens are written in.
+        window.colorSpace = .sRGB
         view.listTree = { path, answer in answer(listings[path]) }
         view.show(.observed(entries))
         view.showMarkers(markers)
@@ -117,11 +119,21 @@ final class RootItemsViewSelectionTests: XCTestCase {
         return try XCTUnwrap(rep.representation(using: .png, properties: [:]))
     }
 
+    /// Reads one pixel of `rep` and compares it to `hex` per channel, within 1.5/255, at alpha 1.
+    /// The rep must be an sRGB one, which the fixture's window colour space makes it: a rep that
+    /// carries the display's own space reads the very same drawn pixel `#28292D` for the bar's
+    /// `#1E1F22` once its colour is converted, which is a reading error and not a drawn one
+    /// (measured 2026-10-04, `window.colorSpace` the display's `Color LCD`: the raw channels were
+    /// the tokens exactly and `usingColorSpace(.sRGB)` moved them). With the rep's space asserted,
+    /// its channels are the sRGB values, so no conversion is applied to them.
     private func assertColour(
         _ rep: NSBitmapImageRep, atX x: Int, y: Int, equals hex: UInt32, _ context: String,
         file: StaticString = #filePath, line: UInt = #line
     ) throws {
-        let colour = try XCTUnwrap(rep.colorAt(x: x, y: y)?.usingColorSpace(.sRGB))
+        XCTAssertEqual(
+            rep.colorSpace, NSColorSpace.sRGB, "the rep is sRGB, \(context)", file: file,
+            line: line)
+        let colour = try XCTUnwrap(rep.colorAt(x: x, y: y))
         let expected = [
             CGFloat((hex >> 16) & 0xFF), CGFloat((hex >> 8) & 0xFF), CGFloat(hex & 0xFF),
         ].map { $0 / 255 }
