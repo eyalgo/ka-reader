@@ -580,6 +580,9 @@ extension RootItemsView: NSOutlineViewDelegate {
     {
         let rowView = BarRowView()
         rowView.drawsSelection = isOpenFileRow(item)
+        // A folder row or a status line a click has selected is not drawn as selected, so the
+        // table's selection must not hide its hover. A file row keeps the default (CP-635).
+        rowView.selectionOutranksHover = (item as? Row)?.entry.kind == .file
         return rowView
     }
 
