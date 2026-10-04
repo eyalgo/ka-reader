@@ -27,7 +27,11 @@ fn test_the_switch_against_the_real_libgit2() {
     // Step 1: after the first arrival, all four search paths read empty.
     assert_eq!(arrive_in_process(), SwitchOutcome::Off);
     for level in LEVELS {
-        assert_eq!(search_path(level), "", "{level:?} reads empty after the switch");
+        assert_eq!(
+            search_path(level),
+            "",
+            "{level:?} reads empty after the switch"
+        );
     }
 
     // Step 2: a second arrival repeats nothing. One level is set to a sentinel, the process arrives
