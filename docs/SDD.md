@@ -6,7 +6,8 @@
        signal, and the state a finished SDD carries; the open-issues file is gone.
      Locked = ratified as the source of truth. -->
 **Owner:** CTO · CPO · CDO — one run, three seats
-**Version:** 33 — CTO: § 4 C-I3 (the transport-read sentences: the claim is proved for each executable the read has met, which is two; the second links the `nozoki_read_git` export, from `nozoki@129586e`, and passed; where the read ran, and that no hosted runner has read that build); § 4 C-R6 (the three defined symbols the pattern does not match are pinned to the second executable); § 11 R-15 (the false sentence replaced by the measurement; the risk kept, with the three changes that make it real; *shows up as* is a red read on any release build; *response* holds the change whose build turns the read red until the re-cut is recorded); SDD Review Notes RN-93 (new); the two answered companion items folded, trail copy at `docs/trail/sdd/cycle-28.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. No slice's *Delivers*, *Reached when*, edge or order altered. Companion items added: none.
+**Version:** 34 — CTO: § 3, the `surfaces` row (one bounded clause: for `see-git-status` alone the tree's marker join and the Git lists' row order stand in `surfaces`, under four bounds, ending when `follow-the-folder` is reached; the row's one exception stays one); § 3 *What the system holds*, `GitState` (`folder-model` owns the lists' row order, with one implementation in the core; where the order and the marker join are computed meanwhile); § 6 `see-git-status` *Rests on* (the tree's markers and the lists' row order move from `folder-model` to `surfaces` for that slice); § 6 `follow-the-folder` *Rests on* (the debt) and *Reached when*, command half (a model case, and a `grep` that is red while either file remains in the shell); § 10 RC-5 (new, the CTO's ground); SDD Review Notes RN-94 (new); the two answered companion items folded, trail copy at `docs/trail/sdd/cycle-29.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. No slice's *Delivers*, observable half, edge or order altered. Companion items added: none.
+Version 33 — CTO: § 4 C-I3 (the transport-read sentences: the claim is proved for each executable the read has met, which is two; the second links the `nozoki_read_git` export, from `nozoki@129586e`, and passed; where the read ran, and that no hosted runner has read that build); § 4 C-R6 (the three defined symbols the pattern does not match are pinned to the second executable); § 11 R-15 (the false sentence replaced by the measurement; the risk kept, with the three changes that make it real; *shows up as* is a red read on any release build; *response* holds the change whose build turns the read red until the re-cut is recorded); SDD Review Notes RN-93 (new); the two answered companion items folded, trail copy at `docs/trail/sdd/cycle-28.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. No slice's *Delivers*, *Reached when*, edge or order altered. Companion items added: none.
 Version 32 — CTO: *Open Questions* (the config-named-path item's bound is "before the slice is reached" alone: the clause naming the build in which `mac-shell` first calls `nozoki_read_git` is removed, the review that holds the bound is the one of the change after which `see-git-status`'s *Reached when* is claimed whole, what a reader can meet in the builds between is stated, and a second dated note follows the first — eight stand); § 11 R-16 (the same bound, and the same builds between); § 10 RC-4 *Still unresolved* (a second dated parenthesis, the first one's words kept); SDD Review Notes RN-92 (new); the one answered companion item folded, trail copy at `docs/trail/sdd/cycle-27.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. No slice's *Delivers*, *Reached when*, edge or order altered. Companion items added: none.
 Version 31 — CTO: § 3 *What the system holds*, `GitState` (the model holds `HeadState` and `StatusLists` from one read; what a failed half does; what is still only the design); § 4 C-R6 (the bridge manifest's `git2` line as landed; three defined symbols named beside "The three names are a floor"); § 4 C-I3 (the core suites and the walk run with the machine-level reads on and nothing isolates them; the `nm` transport read as landed, with the one executable it is proved for; the switch and its test as landed); § 10 RC-4 *Still unresolved* (a dated parenthesis, its words kept); § 11 R-15 (the measurement, and *shows up as* naming the build that links the export) and R-16 (fixture sentence re-pinned, the item named by what it is, its new bound); *Open Questions* (the config-named-path item's bound moves to the build in which `mac-shell` first calls `nozoki_read_git`, with a dated note — eight stand); SDD Review Notes RN-91 (new); the four answered companion items folded, trail copy at `docs/trail/sdd/cycle-26.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. No slice's *Delivers*, *Reached when*, edge or order altered. Companion items added: none.
 Version 30 — CTO: § 3 SM-4 (the list gains `read_git`, exported as `nozoki_read_git`, with what it takes and answers; the list is ten, "all ten from `v1.0.0`"); § 6 `see-git-status` *Rests on* ("`SM-4` (`read_git`)" in place of "`SM-4` (`model_changed` carrying Git state)"); § 6 `promise-one-point-zero` *Reached when*, command half ("SM-4's ten functions"); § 10 RC-4 (new, the CTO's ground); *Open Questions* (the collapse-and-scroll item's counts — eight stand); SDD Review Notes RN-90 (new); the one answered companion item folded, trail copy at `docs/trail/sdd/cycle-25.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. § 4 C-R7 and C-I6 keep their words. No slice's *Delivers*, edge or order altered. Companion items added: none.
@@ -336,7 +337,7 @@ interpret gives a different answer twice over the same settled text. Leave both 
 | `own-state` | crates/nozoki-core | The tool's own remembered state — theme, window frame, and beyond v1 the remembered folders as security-scoped bookmarks with display names and which was viewed last — read whole or discarded whole, written only inside the app's container (FR-21, DR-5) | Anything of the folder's content. The diagnostic log. A path outside the container |
 | `core-bridge` | crates/nozoki-bridge | The C ABI over `folder-model`'s API and the **Rust-side composition root**: the closed function list the shell calls (SM-4), each function a thin wrapper that decodes its arguments, calls `folder-model` and returns plain data as an owned buffer freed by one `nozoki_free`; the `model_changed` callback; `asset_bytes`, returning an image's bytes only for a path the containment check passes (SM-7); the diagnostic log writer's install (§ 4 C-I2); wiring the libgit2 adapter to the Git port; and, before that wiring and before any thread can reach libgit2, **the config search-path switch**: four calls to `git2::opts::set_search_path`, one for each of the system, global, XDG and programdata levels, each setting that level's search path to empty, so that a repository open adds none of the four machine-level config files, which lie outside the granted folder (§ 4 C-D1; in `libgit2-sys 0.18.8+1.9.7`, the version `Cargo.lock:L122-L123` resolves, `libgit2/src/libgit2/repository.c:L1316-L1338` adds the four levels and `sysdir.c:L559-L560` returns before any file is touched where a level's search path is empty). The switch fails closed: each call returns a `Result` (`git2-0.21.0/src/opts.rs:L23`), and if any of the four fails the adapter is not wired and the Git item is `failed`, so a repository is never opened with the reads on. The switch runs once per process, and a second arrival at the composition root repeats nothing. The bridge names the libgit2 binding in those calls and their test and nowhere else, and its manifest's `git2` line turns default features off (§ 4 C-R6). **Not covered by the switch:** a path the repository's own config names — `include.path`, `core.excludesfile`, `core.attributesfile` — which libgit2 follows and which passes no containment check (§ 11 R-16) (answered in the CTO's seat, `docs/trail/sdd/cycle-22.md` § 2.1; RN-87). The one unit that holds `unsafe`, with the reason recorded in its manifest and its record (workspace `Cargo.toml`, `[workspace.lints.rust]`) | Read logic — every function delegates and formats. AppKit, or any Apple framework. A window. A path outside the grant. Anything the harness could not exercise through SM-5 |
 | `mac-shell` | nozoki-mac | The `NSApplication`, the one window and the app's **composition root** on the Swift side: it presents the Open panel and holds the grant the panel returns, calls SM-4 and decodes what returns, marshals `model_changed` onto the main thread, hands projections to `surfaces` and turns their intents into SM-4 calls (SM-8); it owns `Info.plist`, `Entitlements.plist` and the bundle's assembly (§ 4 C-R1, C-R2) | Drawing — that is `surfaces`. Read logic. Any I/O of its own — a file read, a network API, a spawned process, `NSWorkspace.open` (§ 4 C-R7). A second window. A terminal line |
-| `surfaces` | nozoki-mac | The shell's views as the UXD draws them: the rail, the tree (`NSOutlineView`), the reading panel and its treatments — code, rendered Markdown laid out from a `MarkdownDocument` by TextKit, and beyond v1 the diff — the Git view (and beyond v1 the history beneath its changes list), the chrome with the identity element and the theme control (`docs/UXD.md` § 4, § 6); the theme tokens as values; the message catalogue. It draws projections and draws no state the bridge did not send, with **one exception: that an intent it raised has not been answered yet**. That is the one state the bridge cannot send — a call's answer is its return (SM-4), so until the call returns the bridge has said nothing — and the one thing the shell observes first-hand. Four bounds hold it. **One:** it is the gap of the surface's own ask and says nothing about the folder. It begins when the surface raises an intent across SM-8 and ends on that intent's answer, and it carries the pending sentence alone — no marker, no count, no content and no progress figure (`docs/UXD.md` UX-I13; the sentence is `docs/CONTENT.md` § *Message patterns* → *Loading*'s). **Two:** every answer ends it, whether the answer is a projection or carries no verdict, and no timer starts it, advances it or ends it (§ 4 C-E1; `docs/CONTENT.md` § *Message patterns* → *Error*, "A stopped read is never dressed as a pending one"). **Three:** only an intent the reader's own act raised opens it. A change that arrives unasked opens none, so from `follow-the-folder` on a refresh never draws pending over content being read (§ 4 C-E2). **Four:** `pending` as an `ItemState` stays the model's and still crosses the bridge — `kind` before the root finding answers, and a folder entry not yet read — and a surface originates neither. The gap is not held state: it lasts from one ask to its answer, and the open file, the selection and the expansion stay `folder-model`'s. Two cases the exception does not cover: a read that never returns leaves the pending sentence standing, with the tree the route out; and which side orders two asks in flight is the design of the change that moves the selection into the model (RN-76). (Answered in the owner's seat, `docs/trail/sdd/cycle-19.md` § 5.1; RN-82) | The bridge — a surface never calls SM-4; it hands `mac-shell` an intent (SM-8). Filesystem, network or process capability of any kind. A URL built from content and handed to any framework. An HTML import. A message not in the catalogue. A dialog, a toast, a notification |
+| `surfaces` | nozoki-mac | The shell's views as the UXD draws them: the rail, the tree (`NSOutlineView`), the reading panel and its treatments — code, rendered Markdown laid out from a `MarkdownDocument` by TextKit, and beyond v1 the diff — the Git view (and beyond v1 the history beneath its changes list), the chrome with the identity element and the theme control (`docs/UXD.md` § 4, § 6); the theme tokens as values; the message catalogue. It draws projections and draws no state the bridge did not send, with **one exception: that an intent it raised has not been answered yet**. That is the one state the bridge cannot send — a call's answer is its return (SM-4), so until the call returns the bridge has said nothing — and the one thing the shell observes first-hand. Four bounds hold it. **One:** it is the gap of the surface's own ask and says nothing about the folder. It begins when the surface raises an intent across SM-8 and ends on that intent's answer, and it carries the pending sentence alone — no marker, no count, no content and no progress figure (`docs/UXD.md` UX-I13; the sentence is `docs/CONTENT.md` § *Message patterns* → *Loading*'s). **Two:** every answer ends it, whether the answer is a projection or carries no verdict, and no timer starts it, advances it or ends it (§ 4 C-E1; `docs/CONTENT.md` § *Message patterns* → *Error*, "A stopped read is never dressed as a pending one"). **Three:** only an intent the reader's own act raised opens it. A change that arrives unasked opens none, so from `follow-the-folder` on a refresh never draws pending over content being read (§ 4 C-E2). **Four:** `pending` as an `ItemState` stays the model's and still crosses the bridge — `kind` before the root finding answers, and a folder entry not yet read — and a surface originates neither. The gap is not held state: it lasts from one ask to its answer, and the open file, the selection and the expansion stay `folder-model`'s. Two cases the exception does not cover: a read that never returns leaves the pending sentence standing, with the tree the route out; and which side orders two asks in flight is the design of the change that moves the selection into the model (RN-76). (Answered in the owner's seat, `docs/trail/sdd/cycle-19.md` § 5.1; RN-82) **Held here for `see-git-status` alone, and not a second exception:** two pieces of projection logic that `folder-model` owns stand in this part until `follow-the-folder` is reached (*What the system holds*, `FolderModel` and `GitState`). The first is the join of the Git item onto the tree's row paths, which decides which row carries which status letter (`nozoki-mac/Sources/Surfaces/TreeMarkers.swift`, built at `nozoki@6c49d5c`; that commit is not an ancestor of `main` at `nozoki@b640345`, and this clause reads the same whether or not it merges). The second is the order of the Git lists' rows (`nozoki-mac/Sources/Surfaces/GitRowOrder.swift`, on `main` since `nozoki@d65eec4`). Four bounds hold both. **One:** each derives only from projections the bridge sent, the Git item and the tree listings, so the exception above stays the only one. **Two:** the join marks a row only from an `observed` repository answer (§ 4 C-I1, C-E1). **Three:** neither raises an ask, and neither holds a path it did not receive in a projection (SM-8). **Four:** both end when `follow-the-folder` is reached. The marker and the order move into `folder-model`, the two files leave the shell, and that slice's command half is red while either remains (§ 6 S-5). The order needs no new seam, so a change that opens `crates/` may move it earlier. The marker waits for the `model_changed` delta (§ 10 RC-4, RC-5). A re-cut of `follow-the-folder` owes this clause a new end. (Answered in the CTO's seat, `docs/trail/sdd/cycle-29.md` §§ 5.1, 5.2; RN-94) | The bridge — a surface never calls SM-4; it hands `mac-shell` an intent (SM-8). Filesystem, network or process capability of any kind. A URL built from content and handed to any framework. An HTML import. A message not in the catalogue. A dialog, a toast, a notification |
 | `read-only-harness` | checks | The scripts, their lists and helpers, the fixtures and the suites that prove the promises on every build and every release. The enumeration is measured at `nozoki@814a369` (2026-10-03) and pinned to it, as `docs/nfdr.md` § 9 pins its suite count: a file landing in `checks/` after that commit is a re-measurement of this cell and not a contradiction of it, and it owes this row an item. **On disk at that commit:** `read-only.sh` with `walk.rs`, the in-process driver it runs — compiled into a `nozoki-core` test target by `crates/nozoki-core/tests/walk.rs:L6`'s `#[path]`, never into the library; `no-network.sh`; `bundle.sh` with `sandbox_probe.rs`, which it compiles with `rustc` at run time into its temporary directory because no shell can call `sandbox_check` (`checks/bundle.sh:L321-L322`; § 4 C-I3); `renderer.sh`; `view.sh`; `own-state.sh`; `structure.sh`; `entry-points.sh` with `entry-points.allow`, the reviewed list it diffs the linked tree's environment and argument reads against — the check `docs/nfdr.md` QC-30 half (2) places in this unit; `deps.allow` with `deps.review.md`, the review recorded beside the list it reviews (`highlighter`'s row); `tests/`, one `test_<name>.sh` suite for each of the eight scripts above, each the whole `run` of its own CI step; and nine fixture folders — `plain`, a plain folder; `repo`, a repository, with `repo.git.tar`, the `.git` the suites unpack into it; `inside-a-repo`, `parent-of-two`, `linked-worktree` and `submodule`, the four root-finding scenes, each with its `<name>.git.tar`, the `.git` entries `crates/nozoki-core/tests/root_finding.rs:L49` unpacks into a scene of its own; `highlight` and `text`, the corpora `nozoki-core`'s `highlight.rs` and `read_file.rs` tests read; and `idle-shell`, the renderer gate's control bundle (§ 4 C-I3). **Owed by a slice and not on disk at that commit:** `churn.sh` and `latency.sh` with `fixtures/scale-small`, `scale-medium` and `scale-large` (`follow-the-folder`; § 4 C-I4); `fixtures/hostile.md`, the hostile Markdown corpus (`read-markdown`); `fixtures/history` (`read-the-history`); and, from `promise-one-point-zero`, `contract.sh` with the pin `contract/<major>` it reads (§ 4 C-I6) | Being a dependency of any shipped unit. Driving the AppKit views. Shipping in the bundle |
 
 **Four physical units carry the eleven parts.** `crates/nozoki-core` is a Rust library that
@@ -493,7 +494,16 @@ section already says arguments start over.>
   lists are still the design and are in no landed change: the history window and the `Diff`,
   both beyond v1, and the tree's changed marker, which the `FolderModel` entity above gives
   `TreeEntry` (`grep -n marker crates/nozoki-core/src/folder_model.rs` prints nothing at that
-  commit) (`docs/trail/sdd/cycle-26.md` § 5.1; RN-91).
+  commit) (`docs/trail/sdd/cycle-26.md` § 5.1; RN-91). **Two things the design gives the model
+  are computed in the shell meanwhile** (`docs/trail/sdd/cycle-29.md` §§ 5.1, 5.2; RN-94). The
+  model holds the changed list and the staged list in the order their rows are drawn, and that
+  order has one implementation, in the core. At `nozoki@b640345` the core orders neither list
+  (`crates/nozoki-core/src/git_reader.rs:L121`, "no order is promised"), and the shell orders
+  them. The tree's changed marker is still in no change landed on `main` at that commit. The
+  join that produces it is built in the shell, at a commit that is not on `main`. § 3's
+  `surfaces` row names both files and bounds both placements, and both move into the model no
+  later than `follow-the-folder` (§ 6 S-5). This document names who computes the order. It
+  states no order rule.
 - **`OwnState`** — what the tool remembers between sessions (DR-5): the theme, the window frame,
   and beyond v1 up to ten remembered folders as security-scoped bookmarks with display names and
   which was viewed last (`docs/UXD.md` UX-S7). Nothing personal, nothing of any folder's content;
@@ -1800,8 +1810,9 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   composition root's search-path switch and its test, and nowhere else (RN-87). *The promise clause:* `checks/read-only.sh` on all six fixtures prints
   `unchanged`; `checks/no-network.sh` exits 0.
 - **Rests on:** § 3 `git-reader` (the port, `probe`, `state`, `status`), `folder-model` (`kind`
-  resolved; `GitState`; the tree's markers), `surfaces` (the rail's Git entry, the Git view);
-  `SM-2`, `SM-4` (`read_git`; § 10 RC-4); § 4 C-R6, C-I1; § 9 TO-2, TO-10; § 11 R-1,
+  resolved; `GitState`), `surfaces` (the rail's Git entry, the Git view, and in this slice the
+  tree's markers and the Git lists' row order, under the bounds § 3's `surfaces` row states;
+  § 10 RC-5, RN-94); `SM-2`, `SM-4` (`read_git`; § 10 RC-4); § 4 C-R6, C-I1; § 9 TO-2, TO-10; § 11 R-1,
   R-3. Slices: `open-a-folder`, `read-a-file`.
 - **Traces to:** PRD § Key Use Cases 2 and 4; § Core Features "A Git view", "Git is read only when
   the folder opened is itself the root of a Git repository", "A file tree with changed-file
@@ -1853,7 +1864,11 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   --test watch` passes while `checks/churn.sh <fixture> 30` runs — thirty seconds of create,
   modify and delete including the displayed file, Git operations mid-flight, and `git init` at a
   plain root followed by its removal — with no panic, the model's final snapshot equal to a fresh
-  open of the fixture, and expansion, selection and reading position surviving; an unreadable entry
+  open of the fixture, and expansion, selection and reading position surviving; the same suite
+  holds a case in which a file's Git status changes mid-run, and the model's snapshot then
+  carries the changed marker on that file's `TreeEntry` and both Git lists in row order;
+  `grep -rn 'TreeMarkers\|GitRowOrder' nozoki-mac/Sources` prints nothing, because the join and
+  the order have left the shell (§ 3, the `surfaces` row; § 10 RC-5; RN-94); an unreadable entry
   yields `failed` on that item and the failure changes no other item — each sibling holds the
   state its own read gave it (C-I1; RN-89); `checks/read-only.sh` against the
   churn's own final state as baseline prints `unchanged`; `checks/read-only.sh --kill` — SIGKILL to
@@ -1868,8 +1883,11 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   earlier slice's *Reached when* asserting that the model holds it
   (`docs/trail/sdd/cycle-17.md` § 5.2; RN-76), and how a collapse and a scroll reach it across
   SM-4 is open — *Open Questions*, the collapse-and-scroll item (RN-77); the
-  root finding re-run on the `.git` entry), `surfaces` (the file-gone state); `SM-3`, `SM-4`
-  (`model_changed` deltas);
+  root finding re-run on the `.git` entry; and, from this slice at the latest, the changed
+  marker on `TreeEntry` and the two Git lists held in row order, which `surfaces` holds until
+  this slice is reached — § 3, the `surfaces` row; § 10 RC-5; RN-94), `surfaces` (the file-gone
+  state); `SM-3`, `SM-4` (`model_changed` deltas, which bring the marker to a row already
+  drawn);
   § 4 C-I1, C-I3 (`--kill`), C-I4; § 11 R-5, R-6, R-8. Slices: `read-a-file`, `see-git-status`.
 - **Traces to:** PRD § Key Use Cases 3; § Target Users, the driving scenario; § Core Features
   "Live refresh"; § UX Notes "The path" 4, "the view never lies"; § Success Metrics "Refresh
@@ -2700,6 +2718,53 @@ half, and what failed is not that half but the seam under it (§ 3 SM-4; § 4 C-
   build inside the slice bounds it. The parenthesis before this one is a dated record and its
   last bound is no longer the current one (*Open Questions*, the config-named-path item; § 11
   R-16). `docs/trail/sdd/cycle-27.md` § 5.1; RN-92.)*
+
+### RC-5 — 2026-10-04 — the tree's marker join and the Git lists' row order stand in `surfaces` until `follow-the-folder`
+
+The seat whose ground moved is the CTO's: what the build contradicts is `see-git-status`'s
+*Rests on*, and under it § 3's placement of two pieces of projection logic. The slice's
+*Delivers* and both halves of its *Reached when* keep their words.
+
+- **Prior assumption:** `see-git-status`'s *Rests on* read "`folder-model` (`kind` resolved;
+  `GitState`; the tree's markers)", so the model's `TreeEntry` would carry the changed marker
+  in that slice. No sentence of § 3 named the part that orders the Git lists' rows.
+- **Observed reality:** Read at `nozoki@b640345`. `grep -n marker
+  crates/nozoki-core/src/folder_model.rs` prints nothing. `grep -rn model_changed crates
+  nozoki-mac/Sources` prints nothing, and RC-4 holds that registration back to
+  `follow-the-folder`. The join of the Git item onto the tree's rows was built in the shell
+  (`git show 6c49d5c:nozoki-mac/Sources/Surfaces/TreeMarkers.swift` prints 68 lines; `git
+  merge-base --is-ancestor 6c49d5c HEAD` fails, so it is not on `main`). The Git lists' order
+  is computed in the shell on `main` (`nozoki-mac/Sources/Surfaces/GitRowOrder.swift`, since
+  `nozoki@d65eec4`), and the core promises none
+  (`crates/nozoki-core/src/git_reader.rs:L121`). The reasoning that follows is this seat's
+  and is not a measurement. The Git item reaches the shell as `read_git`'s answer, after the
+  tree's rows may already be drawn from `list_tree`'s answer. For the core to mark a drawn row
+  in this slice, SM-4 would need a second `list_tree` ask or a changed `read_git` answer, and
+  `follow-the-folder`'s delta would then replace that crossing. Raised from downstream by the
+  owner and answered in this seat (`docs/trail/sdd/cycle-29.md` §§ 5.1, 5.2).
+- **Retained:** § 2's shape. Every seam row, word for word. `folder-model` as the owner of the
+  marker and of the lists' order: `FolderModel`'s sentence giving `TreeEntry` the changed
+  marker stands. The `surfaces` row's one exception stays one. Every slice, slug, *Delivers*,
+  § 7 edge and the order. `see-git-status`'s *Reached when*, both halves.
+- **Changed:** `see-git-status`'s *Rests on* places the tree's markers and the Git lists' row
+  order in `surfaces` for that slice. § 3's `surfaces` row states the placement, its four
+  bounds and its end. § 3 `GitState` names the model as the owner of the lists' order and says
+  where both are computed meanwhile. `follow-the-folder`'s *Rests on* carries the debt, and
+  its command half gains a model case and a `grep` that is red while either file remains in
+  the shell. No seam row and no § 2 row moves, so the rule in this section's opening note owes
+  the decision log no superseding record on that ground. Whether a dated placement earns a
+  record of its own is the Principal Architect's (§ 12).
+- **Stopped:** Building the marker in the core inside `see-git-status` over a crossing that
+  `follow-the-folder` would replace.
+- **Still unresolved:** Whether the two implementations of the order ever sort the same names
+  differently. `fs-reader` compares Rust `to_lowercase()` forms
+  (`crates/nozoki-core/src/fs_reader.rs:L818-L832`) and `GitRowOrder` compares Swift
+  `lowercased()` scalars (`GitRowOrder.swift:L13-L20`). Nobody has run one list of names with
+  non-ASCII letter case through both. That run would settle it, and a difference found there
+  is raised on this document's companion, because the bound's end would then be too late.
+  Whether the
+  `model_changed` delta can carry the marker is the design of `follow-the-folder`. Where it
+  cannot, that slice's new command clause stays red and the question returns here as a re-cut.
 
 ## 11. Technical risks
 
@@ -5825,6 +5890,89 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   folded and nothing is unresolved, so `docs/SDD_open_issues.md` is removed and `Status:` stays
   Settled *(re: § 4 C-R6, C-I3; § 11 R-15; source: `docs/trail/sdd/cycle-28.md` §§ 5.1, 5.2;
   `docs/trail/sdd/self_answer-40.md`; `nozoki@cc3a63f`)*.
+- **RN-94:** *(CTO)* *(changed)* `folder-model` stays the owner of the tree's changed marker
+  and is named the owner of the Git lists' row order. For `see-git-status` alone both stand in
+  `surfaces`, under four bounds and an end in `follow-the-folder`, and § 10 gains RC-5. The
+  companion's two items are folded. The owner opened that companion on 2026-10-04 with no
+  lean recorded, and an unattended run answered both in the CTO's seat
+  (`docs/trail/sdd/cycle-29.md` §§ 5.1, 5.2; reasoning `docs/trail/sdd/self_answer-41.md`).
+  **What moved, each named.** (1) § 3, the `surfaces` row, *Owns*: one clause is added after
+  the exception, beginning "Held here for `see-git-status` alone". The row's earlier words
+  stand. (2) § 3 *What the system holds*, `GitState`: eight sentences are added after RN-91's.
+  `FolderModel`'s sentence stands, and so does "the tree's changed marker" among the things in
+  no landed change. (3) § 6 S-4 *Rests on*: "`folder-model` (`kind` resolved; `GitState`; the
+  tree's markers), `surfaces` (the rail's Git entry, the Git view)" becomes "`folder-model`
+  (`kind` resolved; `GitState`), `surfaces` (the rail's Git entry, the Git view, and in this
+  slice the tree's markers and the Git lists' row order, …)". (4) § 6 S-5 *Rests on*: the
+  `folder-model` parenthesis gains the marker and the ordered lists, and "`model_changed`
+  deltas" gains "which bring the marker to a row already drawn". (5) § 6 S-5 *Reached when*,
+  the command half: one clause is added between "reading position surviving" and "an
+  unreadable entry", a model case and a `grep`. The observable half is the CDO's and keeps
+  its words. (6) § 10 RC-5, new.
+  **Why, in short.** This is reasoning, and it is the answer's. A row's status letter and a
+  list's order are projections, and § 3 gives "the projections the surfaces draw" to
+  `folder-model`. Logic in the shell is out of the harness's reach, because the harness calls
+  the model with no window (SM-5), and S-5's command half compares the model's snapshot. The
+  join still stands in the shell for this slice because no path from the core reaches a row
+  already drawn until `model_changed` is registered, which RC-4 holds back to
+  `follow-the-folder`. § 7 places `first-public-release` after `follow-the-folder`, so no
+  public release carries either file in the shell. The full argument, the failure paths and
+  what would have tipped it the other way are in `docs/trail/sdd/self_answer-41.md`.
+  **Where this fold departs from the answer's words.** The answer lets the fold word each of
+  its eight points differently. Five departures. The answer puts "the order has one
+  implementation, in the core" in the `folder-model` row or beside it; the fold puts it in
+  `GitState` and leaves that row's cell as it was. The answer says the order rule "is the
+  FDR's and the sealed spec's"; the answering run's own search of `docs/fdr.md` found no rule
+  for the Git lists (`docs/trail/sdd/self_answer-41.md:L219-L221`), so `GitState` says only
+  that this document states no order rule. The answer gives the red clause as "for example
+  that `nozoki-mac/Sources` holds no `TreeMarkers`"; the fold writes the `grep` as typed and
+  names both files. The fold adds the sentence that a re-cut of `follow-the-folder` owes the
+  clause a new end, which the answering run listed as not covered (`:L147-L148`). And RC-5's
+  *Still unresolved* sends a measured difference between the two orders to this document's
+  companion; the answering run said it would then have asked for the move in the next change
+  that opens `crates/`, and when a move is made is the PM's.
+  **Read and measured for this fold, at `nozoki@b640345`.** `git status --short` printed
+  nothing before the fold's first write, so the companion's answers were committed.
+  `git show 6c49d5c:nozoki-mac/Sources/Surfaces/TreeMarkers.swift` prints the 68-line join,
+  and `git merge-base --is-ancestor 6c49d5c HEAD` fails. `git merge-base --is-ancestor d65eec4
+  HEAD` succeeds, and `nozoki-mac/Sources/Surfaces/GitRowOrder.swift:L1-L20` reads as RC-5
+  cites it. `grep -rn model_changed crates nozoki-mac/Sources` and `grep -n marker
+  crates/nozoki-core/src/folder_model.rs` each print nothing.
+  `crates/nozoki-core/src/git_reader.rs:L121`, `crates/nozoki-core/src/fs_reader.rs:L818-L832`
+  and `crates/nozoki-bridge/src/session.rs:L279-L280` read as the answering run quotes them.
+  **Known limits, stated beside the claims.** This fold built nothing and ran no test. The
+  `grep` in S-5's command half finds the two files by name. A join or an order rebuilt in the
+  shell under another name passes it, and only the model case beside it and review catch
+  that. No file states which script runs the `grep`; that is the design of the change that
+  makes the move. Of this document the fold read the header's first lines, *Who holds what*,
+  § 2 and § 3 whole, § 4 C-I1 and C-E1, § 6 S-4 and S-5, § 7, § 10's opening note and RC-4,
+  RN-93 and *Open Questions*, and searched the rest for `marker`, `row order`, `GitRowOrder`,
+  `TreeMarkers` and `order key`. The other sections were not re-read, so a sentence there
+  that gives the marker or the order an owner in other words was not seen. Of the inputs, the
+  status lines of `docs/PRD.md`, `docs/SRS.md` and `docs/UXD.md` were read, each Settled, and
+  their bodies were not: neither answer moves a requirement, a surface or a product
+  statement. The project's Agari, its two doctrine files and the instance's writing bar were
+  read whole. `docs/nfdr.md`, `docs/fdr.md` and `docs/adr/` were searched and not read.
+  **What does not move.** § 4 C-I1 and C-E1 keep their words, and the join meets both: it
+  marks only from a repository answer (`TreeMarkers.swift:L16-L24`, at `nozoki@6c49d5c`). No
+  § 11 risk is added. A placement with a named owner and a named end is a debt on a slice, and
+  § 11's rule asks a risk for a trigger and a response. No *Open Questions* item is added or
+  changed. The record of the change that landed `GitRowOrder` is not this document's and is
+  not touched.
+  **Found on the same walk, and not fixed.** RN-93's finding stands: the `**Owner:**` line
+  and *Who holds what, inside one run* carry an earlier template's wording, and this fold did
+  not read the document whole either.
+  **Downstream, not this document's to change.** `docs/nfdr.md` QC-48 restates S-5's command
+  half without the new clause (`docs/nfdr.md:L1090-L1094`). `docs/nfdr.md`'s layer-4 row reads
+  the `surfaces` row "with the one exception" (`docs/nfdr.md:L1291`), which is still true.
+  Both are the Principal Architect's, and this fold opened no item on that seat's companion.
+  Until QC-48 is re-derived it differs from S-5's command half.
+  **The companion:** `diff docs/SDD_open_issues.md docs/trail/sdd/cycle-29.md` printed nothing
+  before this fold's first edit to this document. Its two items are folded and nothing is
+  unresolved, so `docs/SDD_open_issues.md` is removed and `Status:` stays Settled *(re: § 3
+  `surfaces`, `GitState`; § 6 `see-git-status`, `follow-the-folder`; § 10 RC-5; source:
+  `docs/trail/sdd/cycle-29.md` §§ 5.1, 5.2; `docs/trail/sdd/self_answer-41.md`;
+  `nozoki@b640345`)*.
 
 ## Open Questions
 
