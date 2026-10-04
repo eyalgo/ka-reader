@@ -19,23 +19,26 @@ final class RootItemsViewMarkerTests: XCTestCase {
     private final class Fixture {
         let view: RootItemsView
         let window: NSWindow
+        let rest: TooltipRestDouble
         var reads: [String] = []
         var selected: [Entry] = []
 
-        init(view: RootItemsView, window: NSWindow) {
+        init(view: RootItemsView, window: NSWindow, rest: TooltipRestDouble) {
             self.view = view
             self.window = window
+            self.rest = rest
         }
     }
 
     private func makeFixture(_ entries: [Entry], listings: [String: [Entry]] = [:]) -> Fixture {
+        let rest = TooltipRestDouble()
         let view = RootItemsView(
             folderGlyph: folderGlyph, fileGlyph: fileGlyph, fileCodeGlyph: fileCodeGlyph,
-            statusGlyphs: statusGlyphs)
+            statusGlyphs: statusGlyphs, tooltipRest: rest.rest)
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 260, height: 200), styleMask: [.borderless],
             backing: .buffered, defer: true)
-        let fixture = Fixture(view: view, window: window)
+        let fixture = Fixture(view: view, window: window, rest: rest)
         view.listTree = { path, answer in
             fixture.reads.append(path)
             answer(listings[path].map { .observed($0) })
@@ -225,13 +228,21 @@ final class RootItemsViewMarkerTests: XCTestCase {
         fixture.view.showMarkers(markers(changed: [("b.txt", .modified)]))
         let field = try letterField(cell(fixture.view, path: "b.txt"))
         XCTAssertEqual(field.stringValue, "M")
+        let entry = try XCTUnwrap(fixture.view.entry(atRow: try row(of: "b.txt", in: fixture.view)))
+
+        // Once with no tooltip showing, once with it showing (CP-595).
+        try ClickDelivery.clickMiddle(of: field)
+        XCTAssertEqual(fixture.selected, [entry])
+        fixture.view.outlineView.deselectAll(nil)
+        fixture.selected = []
+        try rest(on: field, in: fixture)
+        XCTAssertEqual(fixture.view.letterTooltip.shownText, "b.txt \u{2014} modified")
 
         try ClickDelivery.clickMiddle(of: field)
 
-        XCTAssertEqual(
-            fixture.selected,
-            [try XCTUnwrap(fixture.view.entry(atRow: try row(of: "b.txt", in: fixture.view)))])
-        XCTAssertNil(field.toolTip, "this change adds nothing on pointer rest")
+        XCTAssertEqual(fixture.selected, [entry])
+        XCTAssertNil(field.toolTip)
+        assertNoAppKitToolTip(in: fixture.view)
     }
 
     func test_theLetterCanBeNeitherEditedNorSelected() throws {
@@ -280,5 +291,183 @@ final class RootItemsViewMarkerTests: XCTestCase {
 
         XCTAssertEqual(try letter(fixture.view, path: "b.txt"), "M")
         XCTAssertNil(try letter(fixture.view, path: "top.txt"))
+    }
+
+    // MARK: The letter's tooltip (CP-586 to CP-595)
+
+    private func centre(of view: NSView, in host: NSView) -> NSPoint {
+        host.convert(NSPoint(x: view.bounds.midX, y: view.bounds.midY), from: view)
+    }
+
+    /// The pointer moves onto `view` and the rest fires, as it does when the pointer stays.
+    private func rest(on view: NSView, in fixture: Fixture) throws {
+        let before = fixture.rest.requests.count
+        try PointerDelivery.move(to: centre(of: view, in: fixture.view), in: fixture.view)
+        for index in before..<fixture.rest.requests.count { fixture.rest.fire(index) }
+    }
+
+    private func assertNoAppKitToolTip(
+        in view: NSView, file: StaticString = #filePath, line: UInt = #line
+    ) {
+        XCTAssertNil(view.toolTip, file: file, line: line)
+        for sub in view.subviews { assertNoAppKitToolTip(in: sub, file: file, line: line) }
+    }
+
+    func test_restingOnTheLetterShowsTheTooltipOnlyAfterTheRest() throws {
+        let fixture = makeFixture([file("b.txt"), file("top.txt")])
+        fixture.view.showMarkers(markers(changed: [("b.txt", .modified)]))
+        let cell = try cell(fixture.view, path: "b.txt")
+        let field = try letterField(cell)
+
+        try PointerDelivery.move(to: centre(of: field, in: fixture.view), in: fixture.view)
+        XCTAssertNil(fixture.view.letterTooltip.shownView, "nothing before the rest")
+        XCTAssertEqual(fixture.rest.requests.map(\.interval), [0.5])
+
+        fixture.rest.fireLast()
+
+        let name = try XCTUnwrap(cell.textField?.stringValue)
+        XCTAssertEqual(fixture.view.letterTooltip.shownText, name + " \u{2014} modified")
+        XCTAssertEqual(name, "b.txt")
+    }
+
+    func test_movingFromTheLetterOntoTheNameRemovesItAtOnce() throws {
+        let fixture = makeFixture([file("b.txt")])
+        fixture.view.showMarkers(markers(changed: [("b.txt", .modified)]))
+        let cell = try cell(fixture.view, path: "b.txt")
+        try rest(on: try letterField(cell), in: fixture)
+        XCTAssertNotNil(fixture.view.letterTooltip.shownView)
+
+        try PointerDelivery.move(
+            to: centre(of: try XCTUnwrap(cell.textField), in: fixture.view), in: fixture.view)
+
+        XCTAssertNil(fixture.view.letterTooltip.shownView)
+    }
+
+    func test_nothingElseOnARowRaisesIt() throws {
+        let fixture = makeFixture([file("b.txt"), file("top.txt")])
+        fixture.view.showMarkers(markers(changed: [("b.txt", .modified)]))
+        let marked = try cell(fixture.view, path: "b.txt")
+        let unmarked = try cell(fixture.view, path: "top.txt")
+        let name = try XCTUnwrap(marked.textField)
+        let letter = try letterField(marked)
+        let gap = NSPoint(
+            x: fixture.view.convert(NSPoint(x: name.frame.maxX, y: 0), from: marked).x
+                + (letter.frame.minX - name.frame.maxX) / 2,
+            y: centre(of: letter, in: fixture.view).y)
+        let points = [
+            ("the name", centre(of: name, in: fixture.view)),
+            ("the glyph", centre(of: try XCTUnwrap(marked.imageView), in: fixture.view)),
+            ("the space between the name and the letter", gap),
+            ("a row with no letter", centre(of: try XCTUnwrap(unmarked.textField), in: fixture.view)),
+            ("where a row with no letter would draw one", centre(of: try letterField(unmarked), in: fixture.view)),
+        ]
+
+        for (what, point) in points {
+            let before = fixture.rest.requests.count
+            try PointerDelivery.move(to: point, in: fixture.view)
+            for index in before..<fixture.rest.requests.count { fixture.rest.fire(index) }
+            XCTAssertNil(fixture.view.letterTooltip.shownView, what)
+        }
+    }
+
+    func test_eachOfTheSixCategoriesGivesItsWord() throws {
+        let words: [(String, GitStatusCategory, String)] = [
+            ("a.txt", .added, "added"), ("m.txt", .modified, "modified"),
+            ("d.txt", .deleted, "deleted"), ("r.txt", .renamed, "renamed"),
+            ("u.txt", .untracked, "untracked"), ("c.txt", .inConflict, "conflict"),
+        ]
+        let fixture = makeFixture(words.map { file($0.0) })
+        fixture.view.showMarkers(markers(changed: words.map { ($0.0, $0.1) }))
+
+        for (path, _, word) in words {
+            try rest(on: try letterField(cell(fixture.view, path: path)), in: fixture)
+            XCTAssertEqual(fixture.view.letterTooltip.shownText, "\(path) \u{2014} \(word)")
+        }
+    }
+
+    func test_aSubmoduleFolderRowGivesModified() throws {
+        let fixture = makeFixture([folder("sub")])
+        fixture.view.showMarkers(markers(changed: [("sub", .modified)]))
+
+        try rest(on: try letterField(cell(fixture.view, path: "sub")), in: fixture)
+
+        XCTAssertEqual(fixture.view.letterTooltip.shownText, "sub \u{2014} modified")
+    }
+
+    func test_aNestedRepositoryFolderRowGivesUntrackedAndItsChildrenRaiseNone() throws {
+        let fixture = makeFixture([folder("inner")], listings: ["inner": [file("inner/x.txt")]])
+        fixture.view.showMarkers(markers(changed: [("inner/", .untracked)]))
+        try rest(on: try letterField(cell(fixture.view, path: "inner")), in: fixture)
+        XCTAssertEqual(fixture.view.letterTooltip.shownText, "inner \u{2014} untracked")
+
+        fixture.view.outlineView.expandItem(fixture.view.outlineView.item(atRow: 0))
+        fixture.view.layoutSubtreeIfNeeded()
+        let child = try cell(fixture.view, path: "inner/x.txt")
+        XCTAssertNil(try letter(fixture.view, path: "inner/x.txt"))
+        let before = fixture.rest.requests.count
+        for view in [try XCTUnwrap(child.textField), try letterField(child)] {
+            try PointerDelivery.move(to: centre(of: view, in: fixture.view), in: fixture.view)
+        }
+
+        XCTAssertEqual(fixture.rest.requests.count, before, "no rest is asked for on a child")
+        XCTAssertNil(fixture.view.letterTooltip.shownView)
+    }
+
+    func test_aPathInBothListsGivesTheChangedListsWord() throws {
+        let fixture = makeFixture([file("a.txt")])
+        fixture.view.showMarkers(
+            TreeMarkers(
+                .repository(
+                    GitRepository(
+                        branch: .named("main"), state: .normal,
+                        staged: [GitEntry(path: "a.txt", category: .added)],
+                        changed: [GitEntry(path: "a.txt", category: .modified)]))))
+        XCTAssertEqual(try letter(fixture.view, path: "a.txt"), "M")
+
+        try rest(on: try letterField(cell(fixture.view, path: "a.txt")), in: fixture)
+
+        XCTAssertEqual(fixture.view.letterTooltip.shownText, "a.txt \u{2014} modified")
+    }
+
+    func test_oneClickOnAFolderRowsLetterDoesWhatAClickOnItsNameDoes() throws {
+        func click(letterNotName: Bool) throws -> (selected: [Entry], reads: [String]) {
+            let fixture = makeFixture([folder("sub")], listings: ["sub": [file("sub/x.txt")]])
+            fixture.view.showMarkers(markers(changed: [("sub", .modified)]))
+            let cell = try cell(fixture.view, path: "sub")
+            try ClickDelivery.clickMiddle(
+                of: letterNotName ? try letterField(cell) : try XCTUnwrap(cell.textField))
+            return (fixture.selected, fixture.reads)
+        }
+
+        let onLetter = try click(letterNotName: true)
+        let onName = try click(letterNotName: false)
+
+        XCTAssertEqual(onLetter.selected, onName.selected)
+        XCTAssertEqual(onLetter.reads, onName.reads)
+    }
+
+    func test_scrollingShowAndShowMarkersEachRemoveAShownTooltip() throws {
+        let entries = (0..<30).map { file(String(format: "f%02d.txt", $0)) }
+        let fixture = makeFixture(entries)
+        let marked = markers(changed: [("f00.txt", .modified)])
+        func showTooltip() throws {
+            fixture.view.showMarkers(marked)
+            fixture.view.contentView.scroll(to: .zero)
+            fixture.view.reflectScrolledClipView(fixture.view.contentView)
+            try rest(on: try letterField(cell(fixture.view, path: "f00.txt")), in: fixture)
+            XCTAssertNotNil(fixture.view.letterTooltip.shownView)
+        }
+
+        try showTooltip()
+        fixture.view.contentView.scroll(to: NSPoint(x: 0, y: 40))
+        XCTAssertNil(fixture.view.letterTooltip.shownView, "scrolling")
+
+        try showTooltip()
+        fixture.view.show(.observed(entries))
+        XCTAssertNil(fixture.view.letterTooltip.shownView, "show(_:)")
+
+        try showTooltip()
+        fixture.view.showMarkers(marked)
+        XCTAssertNil(fixture.view.letterTooltip.shownView, "showMarkers(_:)")
     }
 }
