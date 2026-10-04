@@ -105,14 +105,15 @@ final class FakeWindowPresenter: WindowPresenting {
 }
 
 /// A distinct image for each glyph the shell asks for by `docs/DESIGN.md`'s name, so a test can
-/// tell which one a surface drew: the tree's three (`folder`, `file` and `file-code`), and the status messages' `info` (empty or
-/// pending) and `circle-alert` (failure).
+/// tell which one a surface drew: the tree's three (`folder`, `file` and `file-code`), the status messages' `info` (empty or
+/// pending) and `circle-alert` (failure), and the rail's second glyph, `git-branch`.
 struct FakeGlyphSource: GlyphSource {
     let folder = NSImage(size: NSSize(width: 1, height: 1))
     let file = NSImage(size: NSSize(width: 2, height: 2))
     let info = NSImage(size: NSSize(width: 3, height: 3))
     let circleAlert = NSImage(size: NSSize(width: 4, height: 4))
     let fileCode = NSImage(size: NSSize(width: 5, height: 5))
+    let gitBranch = NSImage(size: NSSize(width: 6, height: 6))
 
     func glyph(named name: String) -> NSImage? {
         switch name {
@@ -121,6 +122,7 @@ struct FakeGlyphSource: GlyphSource {
         case "file-code": return fileCode
         case "info": return info
         case "circle-alert": return circleAlert
+        case "git-branch": return gitBranch
         default: return nil
         }
     }

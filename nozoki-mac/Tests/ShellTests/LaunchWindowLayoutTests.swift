@@ -138,13 +138,16 @@ final class LaunchWindowLayoutTests: LaunchWindowTestCase {
 
     /// The workbench's two panels, each found from the drawn view tree: a panel is the workbench's
     /// direct subview holding the tree, or holding the reading prompt.
-    private func panels(of workbench: WorkbenchView) throws -> (sidebar: NSView, reading: NSView) {
+    private func panels(of workbench: WorkbenchView) throws -> (
+        rail: NSView, sidebar: NSView, reading: NSView
+    ) {
         let prompt = try XCTUnwrap(
             textElements(beneath: workbench).first {
                 $0.stringValue == LayoutExpectations.readingPrompt
             },
             "the workbench draws no “\(LayoutExpectations.readingPrompt)”")
         return (
+            try XCTUnwrap(ShellTests.panel(of: workbench, containing: workbench.rail)),
             try XCTUnwrap(
                 ShellTests.panel(of: workbench, containing: workbench.rootItemsView.outlineView)),
             try XCTUnwrap(ShellTests.panel(of: workbench, containing: prompt))
@@ -158,7 +161,8 @@ final class LaunchWindowLayoutTests: LaunchWindowTestCase {
         file: StaticString = #filePath, line: UInt = #line
     ) throws {
         let area = contentArea(of: window)
-        let (sidebar, reading) = try panels(of: workbench)
+        let (rail, sidebar, reading) = try panels(of: workbench)
+        let railFrame = frameInWindow(of: rail)
         let sidebarFrame = frameInWindow(of: sidebar)
         let readingFrame = frameInWindow(of: reading)
 
@@ -167,9 +171,12 @@ final class LaunchWindowLayoutTests: LaunchWindowTestCase {
             accuracy: LayoutExpectations.frameTolerance,
             "\(label): the sidebar's width", file: file, line: line)
         XCTAssertEqual(
-            sidebarFrame.minX, area.minX, accuracy: LayoutExpectations.frameTolerance,
-            "\(label): the sidebar starts at the content area's leading edge", file: file,
+            railFrame.minX, area.minX, accuracy: LayoutExpectations.frameTolerance,
+            "\(label): the rail starts at the content area's leading edge", file: file,
             line: line)
+        XCTAssertEqual(
+            sidebarFrame.minX, railFrame.maxX, accuracy: LayoutExpectations.frameTolerance,
+            "\(label): the sidebar starts where the rail ends", file: file, line: line)
         XCTAssertEqual(
             readingFrame.maxX, area.maxX, accuracy: LayoutExpectations.frameTolerance,
             "\(label): the reading panel ends at the content area's trailing edge",
@@ -255,7 +262,7 @@ final class LaunchWindowLayoutTests: LaunchWindowTestCase {
         let (workbench, window) = try launchToTheWorkbench()
 
         for distance in [LayoutExpectations.dragDistance, -LayoutExpectations.dragDistance] {
-            let (sidebar, reading) = try panels(of: workbench)
+            let (_, sidebar, reading) = try panels(of: workbench)
             let boundary = NSPoint(
                 x: (frameInWindow(of: sidebar).maxX + frameInWindow(of: reading).minX) / 2,
                 y: contentArea(of: window).midY)

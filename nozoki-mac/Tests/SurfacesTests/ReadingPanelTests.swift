@@ -2641,7 +2641,8 @@ final class ReadingPanelTests: XCTestCase {
                 Entry(name: "a.txt", path: "a.txt", kind: .file, state: .observed),
                 Entry(name: "b.txt", path: "b.txt", kind: .file, state: .observed),
             ]))
-        let workbench = WorkbenchView(rootItemsView: tree, statusGlyphs: glyphs)
+        let workbench = WorkbenchView(
+            rootItemsView: tree, statusGlyphs: glyphs, railFolderGlyph: glyph, railGitGlyph: glyph)
         let intents = IntentCounts()
         workbench.selectFile = { _, _ in intents.selectFile += 1 }
         tree.listTree = { _, _ in intents.listTree += 1 }
