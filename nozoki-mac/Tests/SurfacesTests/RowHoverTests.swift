@@ -120,3 +120,110 @@ final class RowHoverTests: XCTestCase {
         }
     }
 }
+
+/// The hover unit (CP-602 to CP-605): a plain host with two `BarRowView`s and a lookup over them.
+@MainActor
+final class RowHoverUnitTests: XCTestCase {
+    private var window: NSWindow!
+    private var host: NSView!
+    private var upper: BarRowView!
+    private var lower: BarRowView!
+    private var hover: RowHover!
+    /// What the lookup consults; a test empties or reorders it to move rows from under the pointer.
+    private var lookupRows: [BarRowView] = []
+
+    private let upperPoint = NSPoint(x: 50, y: 60)
+    private let lowerPoint = NSPoint(x: 50, y: 20)
+    private let nowhere = NSPoint(x: 50, y: 90)
+
+    override func setUp() {
+        super.setUp()
+        window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 200, height: 100), styleMask: [.titled],
+            backing: .buffered, defer: false)
+        host = NSView(frame: NSRect(x: 0, y: 0, width: 200, height: 100))
+        window.contentView?.addSubview(host)
+        upper = BarRowView(frame: NSRect(x: 0, y: 40, width: 200, height: 40))
+        lower = BarRowView(frame: NSRect(x: 0, y: 0, width: 200, height: 40))
+        host.addSubview(upper)
+        host.addSubview(lower)
+        lookupRows = [upper, lower]
+        hover = RowHover(host: host) { [unowned self] point in
+            lookupRows.first { $0.frame.contains(point) }
+        }
+    }
+
+    private func flagged() -> [BarRowView] {
+        [upper, lower].filter(\.pointerIsOver)
+    }
+
+    func test_hover_moving_onto_a_row_flags_it() throws {
+        try PointerDelivery.move(to: upperPoint, in: host)
+        XCTAssertTrue(flagged().elementsEqual([upper]))
+    }
+
+    func test_hover_moving_to_the_other_row_moves_the_flag() throws {
+        try PointerDelivery.move(to: upperPoint, in: host)
+        try PointerDelivery.move(to: lowerPoint, in: host)
+        XCTAssertTrue(flagged().elementsEqual([lower]))
+    }
+
+    func test_hover_moving_onto_nothing_clears_the_flag() throws {
+        try PointerDelivery.move(to: upperPoint, in: host)
+        try PointerDelivery.move(to: nowhere, in: host)
+        XCTAssertTrue(flagged().isEmpty)
+    }
+
+    func test_hover_exit_clears_the_flag_in_the_same_turn() throws {
+        try PointerDelivery.move(to: upperPoint, in: host)
+        try PointerDelivery.leave(at: upperPoint, in: host)
+        XCTAssertTrue(flagged().isEmpty)
+    }
+
+    func test_hover_entering_again_after_exit_flags_the_row() throws {
+        try PointerDelivery.enter(at: upperPoint, in: host)
+        try PointerDelivery.leave(at: upperPoint, in: host)
+        try PointerDelivery.enter(at: upperPoint, in: host)
+        XCTAssertTrue(flagged().elementsEqual([upper]))
+    }
+
+    func test_hover_refresh_after_rows_trade_places_flags_the_row_now_there() throws {
+        try PointerDelivery.move(to: upperPoint, in: host)
+        let upperFrame = upper.frame
+        upper.frame = lower.frame
+        lower.frame = upperFrame
+        hover.refresh()
+        XCTAssertTrue(flagged().elementsEqual([lower]))
+    }
+
+    func test_hover_refresh_never_depends_on_the_row_flagged_before() throws {
+        try PointerDelivery.move(to: upperPoint, in: host)
+        lookupRows = [lower]
+        hover.refresh()
+        XCTAssertTrue(flagged().isEmpty)
+    }
+
+    func test_hover_refresh_before_any_pointer_event_flags_nothing() {
+        hover.refresh()
+        XCTAssertTrue(flagged().isEmpty)
+    }
+
+    func test_hover_forget_clears_and_later_refresh_flags_nothing() throws {
+        try PointerDelivery.move(to: upperPoint, in: host)
+        hover.forget()
+        XCTAssertTrue(flagged().isEmpty)
+        hover.refresh()
+        XCTAssertTrue(flagged().isEmpty)
+    }
+
+    func test_hover_area_options_equal_the_tooltip_areas_options() throws {
+        let rest = TooltipRestDouble()
+        let tooltip = LetterTooltip(host: host, rest: rest.rest) { _ in nil }
+        let hoverArea = try XCTUnwrap(PointerDelivery.hoverTrackingArea(of: host))
+        let tooltipArea = try XCTUnwrap(PointerDelivery.trackingArea(of: host))
+        XCTAssertEqual(hoverArea.options, tooltipArea.options)
+        XCTAssertTrue(hoverArea.options.contains(.activeInKeyWindow))
+        XCTAssertTrue(tooltipArea.options.contains(.activeInKeyWindow))
+        withExtendedLifetime(tooltip) {}
+    }
+}
