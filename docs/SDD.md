@@ -6,7 +6,8 @@
        signal, and the state a finished SDD carries; the open-issues file is gone.
      Locked = ratified as the source of truth. -->
 **Owner:** CTO · CPO · CDO — one run, three seats
-**Version:** 32 — CTO: *Open Questions* (the config-named-path item's bound is "before the slice is reached" alone: the clause naming the build in which `mac-shell` first calls `nozoki_read_git` is removed, the review that holds the bound is the one of the change after which `see-git-status`'s *Reached when* is claimed whole, what a reader can meet in the builds between is stated, and a second dated note follows the first — eight stand); § 11 R-16 (the same bound, and the same builds between); § 10 RC-4 *Still unresolved* (a second dated parenthesis, the first one's words kept); SDD Review Notes RN-92 (new); the one answered companion item folded, trail copy at `docs/trail/sdd/cycle-27.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. No slice's *Delivers*, *Reached when*, edge or order altered. Companion items added: none.
+**Version:** 33 — CTO: § 4 C-I3 (the transport-read sentences: the claim is proved for each executable the read has met, which is two; the second links the `nozoki_read_git` export, from `nozoki@129586e`, and passed; where the read ran, and that no hosted runner has read that build); § 4 C-R6 (the three defined symbols the pattern does not match are pinned to the second executable); § 11 R-15 (the false sentence replaced by the measurement; the risk kept, with the three changes that make it real; *shows up as* is a red read on any release build; *response* holds the change whose build turns the read red until the re-cut is recorded); SDD Review Notes RN-93 (new); the two answered companion items folded, trail copy at `docs/trail/sdd/cycle-28.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. No slice's *Delivers*, *Reached when*, edge or order altered. Companion items added: none.
+Version 32 — CTO: *Open Questions* (the config-named-path item's bound is "before the slice is reached" alone: the clause naming the build in which `mac-shell` first calls `nozoki_read_git` is removed, the review that holds the bound is the one of the change after which `see-git-status`'s *Reached when* is claimed whole, what a reader can meet in the builds between is stated, and a second dated note follows the first — eight stand); § 11 R-16 (the same bound, and the same builds between); § 10 RC-4 *Still unresolved* (a second dated parenthesis, the first one's words kept); SDD Review Notes RN-92 (new); the one answered companion item folded, trail copy at `docs/trail/sdd/cycle-27.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. No slice's *Delivers*, *Reached when*, edge or order altered. Companion items added: none.
 Version 31 — CTO: § 3 *What the system holds*, `GitState` (the model holds `HeadState` and `StatusLists` from one read; what a failed half does; what is still only the design); § 4 C-R6 (the bridge manifest's `git2` line as landed; three defined symbols named beside "The three names are a floor"); § 4 C-I3 (the core suites and the walk run with the machine-level reads on and nothing isolates them; the `nm` transport read as landed, with the one executable it is proved for; the switch and its test as landed); § 10 RC-4 *Still unresolved* (a dated parenthesis, its words kept); § 11 R-15 (the measurement, and *shows up as* naming the build that links the export) and R-16 (fixture sentence re-pinned, the item named by what it is, its new bound); *Open Questions* (the config-named-path item's bound moves to the build in which `mac-shell` first calls `nozoki_read_git`, with a dated note — eight stand); SDD Review Notes RN-91 (new); the four answered companion items folded, trail copy at `docs/trail/sdd/cycle-26.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. No slice's *Delivers*, *Reached when*, edge or order altered. Companion items added: none.
 Version 30 — CTO: § 3 SM-4 (the list gains `read_git`, exported as `nozoki_read_git`, with what it takes and answers; the list is ten, "all ten from `v1.0.0`"); § 6 `see-git-status` *Rests on* ("`SM-4` (`read_git`)" in place of "`SM-4` (`model_changed` carrying Git state)"); § 6 `promise-one-point-zero` *Reached when*, command half ("SM-4's ten functions"); § 10 RC-4 (new, the CTO's ground); *Open Questions* (the collapse-and-scroll item's counts — eight stand); SDD Review Notes RN-90 (new); the one answered companion item folded, trail copy at `docs/trail/sdd/cycle-25.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. § 4 C-R7 and C-I6 keep their words. No slice's *Delivers*, edge or order altered. Companion items added: none.
 Version 29 — CTO: § 4 C-I1 (a failed read "changes no other item", in place of "`observed` on its siblings"; each sibling holds the state its own read gave it, all four `Item<T>` states named; one sentence naming the failed re-read of an expanded folder as not decided there); § 6 `follow-the-folder` *Reached when*, command half (the same rule, without "as they were before the read"); SDD Review Notes RN-44 (parenthesis corrected in place) and RN-89 (new); *Open Questions* (one item added — eight stand); the one answered companion item folded, trail copy at `docs/trail/sdd/cycle-24.md`; `docs/SDD_open_issues.md` removed, empty of items, so `Status:` moves from Draft to Settled. No slice's *Delivers*, edge or order altered. Companion items added: none.
@@ -641,9 +642,12 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   pattern also does not match three symbols the release executable defines:
   `_git_socket_stream_global_init`, `_git_stream_registry_global_init` and
   `_git_transport_ssh_libssh2_global_init` (`nm` on the executable C-I3's transport-read
-  sentences name, re-read on 2026-10-04). That executable imports none of `connect`, `socket`
+  sentences name as the second the read has met, the one that links the `nozoki_read_git`
+  export; re-read on 2026-10-04 for version 33, where each of the three prints as a local
+  defined symbol, `t`). That executable imports none of `connect`, `socket`
   or `getaddrinfo`. What the three functions do was not read, no network call behind them is
-  cited, and the pattern is not widened for them (`docs/trail/sdd/cycle-26.md` § 5.3; RN-91). And the wall
+  cited, and the pattern is not widened for them (`docs/trail/sdd/cycle-26.md` § 5.3; RN-91;
+  `docs/trail/sdd/cycle-28.md` § 5.1, RN-93). And the wall
   that holds NFR-8 is C-R2's; this read is the second line behind it. What follows a red read
   is § 11 R-15 (answered in the owner's seat, `docs/trail/sdd/cycle-21.md` § 5.3; RN-85). Every
   manifest that names `git2` turns its default features off, as
@@ -761,19 +765,33 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   executable, red on a defined libgit2 transport symbol or on an import of `connect`, `socket`
   or `getaddrinfo`, and red where `nm` is missing, fails or prints no symbol. The read is in
   the script from the build at `nozoki@392177d` (`checks/view.sh:L379-L404`), with its suite
-  cases (`checks/tests/test_view.sh:L58-L64`). The claim is proved for one executable: the
+  cases (`checks/tests/test_view.sh:L58-L64`). The claim is proved for each executable the
+  read has met, and for no later one until the read meets it. It has met two. The first is the
   release bundle built at `nozoki@0aab3e7`, on which `checks/view.sh` exited 0
-  (`docs/trail/sdd/self_answer-38.md:L26-L27`; the script was not re-run for this revision).
-  `nm` on that executable, re-read for this revision, prints `_git_repository_open_ext` and
-  `_git_status_list_new` among 781 defined `_git_` symbols
-  (`awk 'NF==3 && $2!="U" && $3 ~ /^_git_/'` over the `nm` output, counted), no
-  `git_smart_subtransport_` symbol, and no undefined `_connect`, `_socket` or `_getaddrinfo`.
-  So the read has met an executable that links libgit2's open and status code. It has not met
-  one that links the `nozoki_read_git` export: the same `nm` output holds no
-  `_nozoki_read_git`, and no Swift source calls it. The read runs on every build, so it meets
-  that executable in the build where `mac-shell` first calls the export, with nothing further
-  owed. A red read there is § 11 R-15
-  (`docs/trail/sdd/cycle-21.md` § 5.3, RN-85; `docs/trail/sdd/cycle-26.md` § 5.3, RN-91).
+  (`docs/trail/sdd/self_answer-38.md:L26-L27`). `nm` on that executable, read on 2026-10-04
+  for version 31, printed `_git_repository_open_ext` and `_git_status_list_new` among 781
+  defined `_git_` symbols (`awk 'NF==3 && $2!="U" && $3 ~ /^_git_/'` over the `nm` output,
+  counted), no `git_smart_subtransport_` symbol, and no undefined `_connect`, `_socket` or
+  `_getaddrinfo`. It held no `_nozoki_read_git`, and no Swift source called the export then
+  (RN-91). That executable is no longer on disk and was not re-read for version 33. The second
+  is the first executable that links the `nozoki_read_git` export. From `nozoki@129586e` the
+  shell calls it (`nozoki-mac/Sources/Nozoki/NativeBridge.swift:L26`). The measurement was
+  made at `nozoki@cfcbedf`, whose tree outside `docs/` is the tree at `nozoki@129586e`
+  (`git diff --quiet 129586e cfcbedf -- . ':!docs'` exits 0): `nozoki-mac/assemble.sh` exited
+  0, and `checks/view.sh` exited 0 on the bundle it built, printing "38 Swift files scanned"
+  and "links no WebKit or JavaScriptCore and carries no Git transport — nothing found"
+  (`docs/trail/sdd/self_answer-40.md:L25-L43`). `nm` on that executable, re-read for version
+  33, prints `T _nozoki_read_git`, `_git_repository_open_ext` and `_git_status_list_new`, 781
+  defined `_git_` symbols by the same `awk` command, no `git_smart_subtransport_` symbol, and
+  no undefined `_connect`, `_socket` or `_getaddrinfo`. So the read has met the executable
+  that links the export, and it passed. Both reads ran on the owner's machine. No hosted
+  runner has read the second build: `git status -sb` prints `main...origin/main [ahead 216]`
+  at `nozoki@cc3a63f`, `gh run list --commit 129586e` prints nothing, and the newest run
+  `gh run list` shows is dated 2026-10-02. CI runs the same script after `assemble.sh` on
+  every push (`.github/workflows/ci.yml:L41`, `:L51`). A red read on any later build is
+  § 11 R-15
+  (`docs/trail/sdd/cycle-21.md` § 5.3, RN-85; `docs/trail/sdd/cycle-26.md` § 5.3, RN-91;
+  `docs/trail/sdd/cycle-28.md` § 5.1, RN-93).
   A `nozoki-bridge` test asserts that the search path of each of the four machine config levels
   — system, global, XDG, programdata — is empty once the composition root has run (§ 3, the
   `core-bridge` row). The test proves the four paths are empty and observes no read: the step
@@ -2798,17 +2816,27 @@ A risk with no trigger and no response is an observation.>
 - **R-15:** The shipped executable links libgit2's transport code once a bridge export reaches
   `git-reader`. The vendored library compiles its transports whatever the features (§ 4 C-R6),
   and whether the link drops them from an executable that calls into libgit2 has been measured
-  on this product on one build. The release executable built at `nozoki@0aab3e7` defines
-  libgit2's open and status code and passes both halves of the read (§ 4 C-I3, the
-  transport-read sentences, which carry the measurement). That executable does not link the
-  `nozoki_read_git` export, which no Swift source calls, so the build that links the export
-  has not been read and this risk is not closed. The earlier measurement on record is a
+  on this product on two builds. The release executable built at `nozoki@0aab3e7` defined
+  libgit2's open and status code without the `nozoki_read_git` export, and passed both halves
+  of the read. The release executable built from the tree at `nozoki@129586e` is the first
+  that links the export, and it passes both halves (§ 4 C-I3, the transport-read sentences,
+  which carry both measurements). So the build that links the export has been read. Both
+  passes are local ones: the read ran on the owner's machine, and no hosted runner has run it
+  on a build that links the export (§ 4 C-I3). This risk is kept, and it is not closed. One
+  passing build answers whether the link drops the transports from an executable that links
+  the export. It does not remove what the pass depends on: this version of `libgit2-sys`,
+  this release link, and the libgit2 code the product calls today, which is the open and the
+  status read. The history window and the `Diff` are in no landed change (§ 3, `GitState`).
+  The read on every build is what holds the risk. The earlier measurement on record is a
   scratch binary calling `Repository::open_ext` alone, which passed both halves of the read
-  (`checks/deps.review.md`, the `libgit2-sys` row) (`docs/trail/sdd/cycle-26.md` § 5.3; RN-91) —
-  *shows up as* C-R6's `nm` read turning red on the first release build whose executable links
-  a Git export, which is the build in which `mac-shell` first calls `nozoki_read_git`: a
-  defined `git_smart_subtransport_*` symbol, or an import of `connect`, `socket` or
-  `getaddrinfo`; *response* a re-cut recorded in § 10 before anything is built on that export.
+  (`checks/deps.review.md`, the `libgit2-sys` row) (`docs/trail/sdd/cycle-26.md` § 5.3, RN-91;
+  `docs/trail/sdd/cycle-28.md` § 5.2, RN-93) —
+  *shows up as* C-R6's `nm` read turning red on any release build: a defined
+  `git_smart_subtransport_*` symbol, or an import of `connect`, `socket` or `getaddrinfo`.
+  Three changes can make it real: a `libgit2-sys` version change, a change to how the release
+  executable is built or linked, and a change that calls libgit2 code beyond the open and the
+  status read; *response* the change whose build turns the read red does not land until a
+  re-cut is recorded in § 10.
   Changing the build so that the claim holds is this document's to draw. Stating the claim
   lower is not: `docs/fdr.md` PD-27 carries it as a product decision — "Nothing the product
   ships carries a network transport" — and lowering it is the owner's call (RN-85).
@@ -5716,6 +5744,87 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   Settled *(re: *Open Questions*, the config-named-path item; § 10 RC-4 *Still unresolved*;
   § 11 R-16; source: `docs/trail/sdd/cycle-27.md` § 5.1; `docs/trail/sdd/self_answer-39.md`;
   `nozoki@b780d58`)*.
+- **RN-93:** *(CTO)* *(changed)* Two statements that the `nm` transport read had not met an
+  executable linking the `nozoki_read_git` export are replaced by the measurement, and § 11
+  R-15 is kept. The companion's two items are folded: raised from downstream by the PM after
+  the shell began calling the export at `nozoki@129586e`, and answered in the CTO's seat by an
+  unattended run (`docs/trail/sdd/cycle-28.md` §§ 5.1, 5.2; reasoning
+  `docs/trail/sdd/self_answer-40.md`). Each is a dated correction. Neither is a § 10 re-cut: no
+  slice's *Reached when*, *Delivers*, § 7 edge or order moves, and § 2's shape and § 3's seams
+  keep their words.
+  **What moved, each named.** (1) § 4 C-I3, the transport-read sentences (5.1): "It has not met
+  one that links the `nozoki_read_git` export: the same `nm` output holds no
+  `_nozoki_read_git`, and no Swift source calls it" and "The read runs on every build, so it
+  meets that executable in the build where `mac-shell` first calls the export, with nothing
+  further owed" are removed. In their place: the second executable the read has met, its
+  figures, and where the read ran. "The claim is proved for one executable" becomes "for each
+  executable the read has met, and for no later one until the read meets it" (5.1, addition
+  4). The first executable's figures stay, in the past tense, as a dated earlier measurement.
+  (2) § 4 C-R6 (5.1, addition 3): the three defined symbols the pattern does not match are
+  pinned to the second executable. (3) § 11 R-15 (5.2): "That executable does not link the
+  `nozoki_read_git` export, which no Swift source calls, so the build that links the export
+  has not been read and this risk is not closed" is removed. In its place: the build has been
+  read and passes, the passes are local, and the risk is kept with the three things the pass
+  depends on. *Shows up as* named "the first release build whose executable links a Git
+  export"; it now names a red read on any release build. *Response* read "a re-cut recorded
+  in § 10 before anything is built on that export"; it now holds the change whose build turns
+  the read red until the re-cut is recorded. R-15's last two sentences keep their words.
+  **Why R-15 is kept.** This is reasoning, and it is the answer's. § 11's rule is "A risk with no
+  trigger and no response is an observation", and R-15 still has both. The pass rests on the linker leaving out code the
+  vendored library compiles whatever the features (§ 4 C-R6), and three later changes can
+  move that: the `libgit2-sys` version, the release link, and the libgit2 code the product
+  calls. Whether a risk stays listed changes no claim the product makes, so it is this seat's
+  call. Lowering the claim itself stays the owner's (`docs/fdr.md` PD-27, as R-15 quotes it).
+  **Where this fold departs from the answer's words.** The answer gives the response as "the
+  change whose build turns the read red does not land until the re-cut is recorded in § 10"
+  and allows the fold its own wording; the fold keeps that substance. The answer says
+  "`see-git-status` is not reached yet". This fold did not check that slice's state and R-15
+  does not carry the sentence; it carries what § 3 `GitState` states, that the history window
+  and the `Diff` are in no landed change. The answer measured `main` 214 commits ahead of
+  `origin/main`; this fold measured 216 at `nozoki@cc3a63f` and C-I3 states 216.
+  **Read and measured for this fold, at `nozoki@cc3a63f`.**
+  `git diff --quiet 129586e cfcbedf -- . ':!docs'` and the same against `HEAD` each exit 0.
+  `nozoki-mac/Sources/Nozoki/NativeBridge.swift:L26` reads `adopt(nozoki_read_git())`.
+  `.github/workflows/ci.yml:L41` runs `nozoki-mac/assemble.sh` and `:L51` runs
+  `checks/view.sh`. On `target/release/bundle/macos/Nozoki.app/Contents/MacOS/Nozoki` as it
+  stood on disk, modified 2026-10-04 15:02: the `nm` figures C-I3 and C-R6 now carry, and
+  `checks/view.sh`, which exited 0 printing the line C-I3 quotes. `gh run list --commit
+  129586e` printed nothing, and the newest run `gh run list` printed is dated 2026-10-02.
+  **Known limits, stated beside the claims.** This fold built nothing. That the executable on
+  disk is the one the answering run built from the tree at `nozoki@129586e` rests on that
+  run's report (`docs/trail/sdd/self_answer-40.md:L30-L34`) and on the file's time.
+  `checks/tests/test_view.sh` was not run, by the answering run or by this fold. The read has
+  run on no hosted runner. Of this document the fold read the header, *Who holds what*, § 3
+  `GitState`'s closing sentences, § 4 C-R6 and C-I3, § 10 RC-4 *Still unresolved*, § 11 R-14's
+  tail to R-16, RN-91, RN-92 and *Open Questions*, and searched the rest for
+  `nozoki_read_git`, "no Swift source", "has not met", "has not been read", "not closed", "one
+  executable" and "on one build". The other sections were not re-read, so a sentence there
+  that states either claim in other words was not seen. Of the inputs, the status lines of
+  `docs/PRD.md`, `docs/SRS.md` and `docs/UXD.md` were read, each Settled, and their bodies were
+  not: neither answer moves a requirement, a surface or a product statement. `docs/nfdr.md`
+  was read at its status line, and the decision log was not opened.
+  **What does not move.** § 10 RC-4 *Still unresolved* ties the `nm` read to the first export
+  that reaches `git-reader` and says nothing of the calling build. *Open Questions*'
+  config-named-path item and § 11 R-16 speak of the builds from the first in which the shell
+  calls the export, which is still true now that the build exists. RN-91's and RN-92's
+  sentences on the calling build are dated records and are not corrected.
+  **Found on the same walk, and not fixed.** This document's `**Owner:**` line and its *Who
+  holds what, inside one run* section carry the wording of an earlier template. The current
+  one (`<CORE>/templates/product-templates/sdd_template.md` § *Who decides what*, version
+  5.1.0) words the same split as one CTO run with the CPO's and the CDO's calls decided
+  through the companion. The table's rows and seats are the same in both. Later notes cite
+  the section by its present name, and this fold did not read the document whole, so the
+  rewording is left for a run that does, on an item that bounds it.
+  **Downstream, not this document's to change.** `docs/nfdr.md` QC-3 repeats C-I3's removed
+  sentences and quotes R-15's former response (`docs/nfdr.md:L164-L167`, `:L170-L171`, as
+  `docs/architecture_open_issues.md` § 3.1 cites them). That item is open on the Principal
+  Architect's companion, and its second half is owed from this fold on. Until that seat's
+  records fold it, QC-3 differs from this document, and § 4's opening note says which wins.
+  **The companion:** `diff docs/SDD_open_issues.md docs/trail/sdd/cycle-28.md` printed nothing
+  before this fold's first edit, and the companion matched `nozoki@cc3a63f`. Its two items are
+  folded and nothing is unresolved, so `docs/SDD_open_issues.md` is removed and `Status:` stays
+  Settled *(re: § 4 C-R6, C-I3; § 11 R-15; source: `docs/trail/sdd/cycle-28.md` §§ 5.1, 5.2;
+  `docs/trail/sdd/self_answer-40.md`; `nozoki@cc3a63f`)*.
 
 ## Open Questions
 
