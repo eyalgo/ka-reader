@@ -6,7 +6,8 @@
        signal, and the state a finished SDD carries; the open-issues file is gone.
      Locked = ratified as the source of truth. -->
 **Owner:** CTO · CPO · CDO — one run, three seats
-**Version:** 37 — CTO, one run, with the one answered companion item folded: § 6 `see-git-status` *Reached when*, observable half (the clicked Git-view file row is drawn selected, with the selection fill and the left bar — the CDO's clause, settled by `docs/DESIGN.md` § *Components*, "Rows") and command half (one `swift test` case added, seven in place of six: after a click, with the pointer over no row, the clicked row shows the selection fill and the bar and no other row shows either), and *Rests on* (`surfaces` gains the Git view's selected row's fill); SDD Review Notes RN-97 (new); trail copy at `docs/trail/sdd/cycle-32.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. No *Delivers*, no slice added, no § 10 entry, no § 7 edge, no slice order, no part and no seam altered. Companion items added: none.
+**Version:** 38 — CTO, one run, with the one answered companion item folded: § 3, the `surfaces` row (the reading clause names the window's key status beside the pointer: it is the shell's own observation of the window and no state of the folder, the hover fill and the tooltip are drawn from the two together, the same bounds hold it, and the row's one exception stays one); § 6 `open-a-folder` *Reached when*, observable half (the hover sentence stated for the key window, and one sentence for a window that is not — the CDO's clause, settled by `docs/DESIGN.md` § *Components*, "Rows") and command half (the second reading clause names the window, and three `swift test` cases added, seven in place of four); § 6 `see-git-status` *Reached when*, observable half (the same, and one sentence on the tooltip — settled by § *Components*, "The tooltip") and command half (four `swift test` cases added, eleven in place of seven); SDD Review Notes RN-98 (new); trail copy at `docs/trail/sdd/cycle-33.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. No *Delivers*, no *Rests on*, no slice added, no § 10 entry, no § 7 edge, no slice order, no part's *Must not own* and no seam altered. Companion items added: none.
+Version 37 — CTO, one run, with the one answered companion item folded: § 6 `see-git-status` *Reached when*, observable half (the clicked Git-view file row is drawn selected, with the selection fill and the left bar — the CDO's clause, settled by `docs/DESIGN.md` § *Components*, "Rows") and command half (one `swift test` case added, seven in place of six: after a click, with the pointer over no row, the clicked row shows the selection fill and the bar and no other row shows either), and *Rests on* (`surfaces` gains the Git view's selected row's fill); SDD Review Notes RN-97 (new); trail copy at `docs/trail/sdd/cycle-32.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. No *Delivers*, no slice added, no § 10 entry, no § 7 edge, no slice order, no part and no seam altered. Companion items added: none.
 Version 36 — CTO, one run, with the one answered companion item folded: § 3, the `surfaces` row (one reading clause: what the pointer is over is the shell's own observation of the pointer and no state of the folder, the row's hover fill and the status letter's tooltip are drawn from it, and the row's one exception stays one); § 6 `open-a-folder` *Reached when*, observable half (the tree row's hover fill — the CDO's clause, settled by `docs/DESIGN.md` § *Components*, "Rows") and command half (four `swift test` cases, and the "from a projection" clause read with the new § 3 clause), and *Rests on* (`surfaces` gains the fill); § 6 `see-git-status` *Reached when*, observable half (the Git view's file row's hover fill, with the tooltip over it) and command half (six `swift test` cases), and *Rests on* (`surfaces` gains the fill); SDD Review Notes RN-96 (new); trail copy at `docs/trail/sdd/cycle-31.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. No *Delivers*, no slice added, no § 10 entry, no § 7 edge, no slice order, no part and no seam altered. Companion items added: none.
 Version 35 — CTO, one run, with the two answered companion items folded: § 3 *What the system holds*, `GitState` (one sentence: the tree's marker join is in the shell and on `main` from `nozoki@67d103d`, under the `surfaces` row's four bounds; nothing else in § 3 moved); § 4 C-E8 (one sentence and two *Violated by* cases: a status letter's expansion is raised by the letter and by nothing else — the CDO's clause, settled by `docs/DESIGN.md` and `docs/CONTENT.md`); § 6 `see-git-status` *Delivers* (the pointer resting on a status letter shows the row's name and the letter's meaning — the CPO's field, settled by the owner's v1 decision), *Reached when*, observable half (the tooltip in the tree and in the Git view) and command half (a `swift test` case over the six status categories), and *Rests on* (`surfaces` gains the tooltip); § 6 `follow-the-folder` *Reached when*, observable half (the tooltip leaves when a refresh changes the row's state); SDD Review Notes RN-95 (new); trail copy at `docs/trail/sdd/cycle-30.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. No § 10 entry, no § 7 edge, no slice order, no part and no seam altered. Companion items added: none.
 Version 34 — CTO: § 3, the `surfaces` row (one bounded clause: for `see-git-status` alone the tree's marker join and the Git lists' row order stand in `surfaces`, under four bounds, ending when `follow-the-folder` is reached; the row's one exception stays one); § 3 *What the system holds*, `GitState` (`folder-model` owns the lists' row order, with one implementation in the core; where the order and the marker join are computed meanwhile); § 6 `see-git-status` *Rests on* (the tree's markers and the lists' row order move from `folder-model` to `surfaces` for that slice); § 6 `follow-the-folder` *Rests on* (the debt) and *Reached when*, command half (a model case, and a `grep` that is red while either file remains in the shell); § 10 RC-5 (new, the CTO's ground); SDD Review Notes RN-94 (new); the two answered companion items folded, trail copy at `docs/trail/sdd/cycle-29.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. No slice's *Delivers*, observable half, edge or order altered. Companion items added: none.
@@ -340,7 +341,7 @@ interpret gives a different answer twice over the same settled text. Leave both 
 | `own-state` | crates/nozoki-core | The tool's own remembered state — theme, window frame, and beyond v1 the remembered folders as security-scoped bookmarks with display names and which was viewed last — read whole or discarded whole, written only inside the app's container (FR-21, DR-5) | Anything of the folder's content. The diagnostic log. A path outside the container |
 | `core-bridge` | crates/nozoki-bridge | The C ABI over `folder-model`'s API and the **Rust-side composition root**: the closed function list the shell calls (SM-4), each function a thin wrapper that decodes its arguments, calls `folder-model` and returns plain data as an owned buffer freed by one `nozoki_free`; the `model_changed` callback; `asset_bytes`, returning an image's bytes only for a path the containment check passes (SM-7); the diagnostic log writer's install (§ 4 C-I2); wiring the libgit2 adapter to the Git port; and, before that wiring and before any thread can reach libgit2, **the config search-path switch**: four calls to `git2::opts::set_search_path`, one for each of the system, global, XDG and programdata levels, each setting that level's search path to empty, so that a repository open adds none of the four machine-level config files, which lie outside the granted folder (§ 4 C-D1; in `libgit2-sys 0.18.8+1.9.7`, the version `Cargo.lock:L122-L123` resolves, `libgit2/src/libgit2/repository.c:L1316-L1338` adds the four levels and `sysdir.c:L559-L560` returns before any file is touched where a level's search path is empty). The switch fails closed: each call returns a `Result` (`git2-0.21.0/src/opts.rs:L23`), and if any of the four fails the adapter is not wired and the Git item is `failed`, so a repository is never opened with the reads on. The switch runs once per process, and a second arrival at the composition root repeats nothing. The bridge names the libgit2 binding in those calls and their test and nowhere else, and its manifest's `git2` line turns default features off (§ 4 C-R6). **Not covered by the switch:** a path the repository's own config names — `include.path`, `core.excludesfile`, `core.attributesfile` — which libgit2 follows and which passes no containment check (§ 11 R-16) (answered in the CTO's seat, `docs/trail/sdd/cycle-22.md` § 2.1; RN-87). The one unit that holds `unsafe`, with the reason recorded in its manifest and its record (workspace `Cargo.toml`, `[workspace.lints.rust]`) | Read logic — every function delegates and formats. AppKit, or any Apple framework. A window. A path outside the grant. Anything the harness could not exercise through SM-5 |
 | `mac-shell` | nozoki-mac | The `NSApplication`, the one window and the app's **composition root** on the Swift side: it presents the Open panel and holds the grant the panel returns, calls SM-4 and decodes what returns, marshals `model_changed` onto the main thread, hands projections to `surfaces` and turns their intents into SM-4 calls (SM-8); it owns `Info.plist`, `Entitlements.plist` and the bundle's assembly (§ 4 C-R1, C-R2) | Drawing — that is `surfaces`. Read logic. Any I/O of its own — a file read, a network API, a spawned process, `NSWorkspace.open` (§ 4 C-R7). A second window. A terminal line |
-| `surfaces` | nozoki-mac | The shell's views as the UXD draws them: the rail, the tree (`NSOutlineView`), the reading panel and its treatments — code, rendered Markdown laid out from a `MarkdownDocument` by TextKit, and beyond v1 the diff — the Git view (and beyond v1 the history beneath its changes list), the chrome with the identity element and the theme control (`docs/UXD.md` § 4, § 6); the theme tokens as values; the message catalogue. It draws projections and draws no state the bridge did not send, with **one exception: that an intent it raised has not been answered yet**. That is the one state the bridge cannot send — a call's answer is its return (SM-4), so until the call returns the bridge has said nothing — and the one thing the shell observes first-hand. Four bounds hold it. **One:** it is the gap of the surface's own ask and says nothing about the folder. It begins when the surface raises an intent across SM-8 and ends on that intent's answer, and it carries the pending sentence alone — no marker, no count, no content and no progress figure (`docs/UXD.md` UX-I13; the sentence is `docs/CONTENT.md` § *Message patterns* → *Loading*'s). **Two:** every answer ends it, whether the answer is a projection or carries no verdict, and no timer starts it, advances it or ends it (§ 4 C-E1; `docs/CONTENT.md` § *Message patterns* → *Error*, "A stopped read is never dressed as a pending one"). **Three:** only an intent the reader's own act raised opens it. A change that arrives unasked opens none, so from `follow-the-folder` on a refresh never draws pending over content being read (§ 4 C-E2). **Four:** `pending` as an `ItemState` stays the model's and still crosses the bridge — `kind` before the root finding answers, and a folder entry not yet read — and a surface originates neither. The gap is not held state: it lasts from one ask to its answer, and the open file, the selection and the expansion stay `folder-model`'s. Two cases the exception does not cover: a read that never returns leaves the pending sentence standing, with the tree the route out; and which side orders two asks in flight is the design of the change that moves the selection into the model (RN-76). (Answered in the owner's seat, `docs/trail/sdd/cycle-19.md` § 5.1; RN-82) **Read with the exception, and not a second one:** what the pointer is over is the shell's own observation of the pointer and is no state of the folder. The clickable row's hover fill and the status letter's tooltip are drawn from it (`docs/DESIGN.md` § *Components*, "Rows" and "The tooltip"). It is not held across a redraw, it raises no intent across SM-8, and it says nothing about the folder, so the exception above stays the only one. (Answered in the CTO's seat, `docs/trail/sdd/cycle-31.md` § 5.1; RN-96) **Held here for `see-git-status` alone, and not a second exception:** two pieces of projection logic that `folder-model` owns stand in this part until `follow-the-folder` is reached (*What the system holds*, `FolderModel` and `GitState`). The first is the join of the Git item onto the tree's row paths, which decides which row carries which status letter (`nozoki-mac/Sources/Surfaces/TreeMarkers.swift`, built at `nozoki@6c49d5c`; that commit is not an ancestor of `main` at `nozoki@b640345`, and this clause reads the same whether or not it merges). The second is the order of the Git lists' rows (`nozoki-mac/Sources/Surfaces/GitRowOrder.swift`, on `main` since `nozoki@d65eec4`). Four bounds hold both. **One:** each derives only from projections the bridge sent, the Git item and the tree listings, so the exception above stays the only one. **Two:** the join marks a row only from an `observed` repository answer (§ 4 C-I1, C-E1). **Three:** neither raises an ask, and neither holds a path it did not receive in a projection (SM-8). **Four:** both end when `follow-the-folder` is reached. The marker and the order move into `folder-model`, the two files leave the shell, and that slice's command half is red while either remains (§ 6 S-5). The order needs no new seam, so a change that opens `crates/` may move it earlier. The marker waits for the `model_changed` delta (§ 10 RC-4, RC-5). A re-cut of `follow-the-folder` owes this clause a new end. (Answered in the CTO's seat, `docs/trail/sdd/cycle-29.md` §§ 5.1, 5.2; RN-94) | The bridge — a surface never calls SM-4; it hands `mac-shell` an intent (SM-8). Filesystem, network or process capability of any kind. A URL built from content and handed to any framework. An HTML import. A message not in the catalogue. A dialog, a toast, a notification |
+| `surfaces` | nozoki-mac | The shell's views as the UXD draws them: the rail, the tree (`NSOutlineView`), the reading panel and its treatments — code, rendered Markdown laid out from a `MarkdownDocument` by TextKit, and beyond v1 the diff — the Git view (and beyond v1 the history beneath its changes list), the chrome with the identity element and the theme control (`docs/UXD.md` § 4, § 6); the theme tokens as values; the message catalogue. It draws projections and draws no state the bridge did not send, with **one exception: that an intent it raised has not been answered yet**. That is the one state the bridge cannot send — a call's answer is its return (SM-4), so until the call returns the bridge has said nothing — and the one thing the shell observes first-hand. Four bounds hold it. **One:** it is the gap of the surface's own ask and says nothing about the folder. It begins when the surface raises an intent across SM-8 and ends on that intent's answer, and it carries the pending sentence alone — no marker, no count, no content and no progress figure (`docs/UXD.md` UX-I13; the sentence is `docs/CONTENT.md` § *Message patterns* → *Loading*'s). **Two:** every answer ends it, whether the answer is a projection or carries no verdict, and no timer starts it, advances it or ends it (§ 4 C-E1; `docs/CONTENT.md` § *Message patterns* → *Error*, "A stopped read is never dressed as a pending one"). **Three:** only an intent the reader's own act raised opens it. A change that arrives unasked opens none, so from `follow-the-folder` on a refresh never draws pending over content being read (§ 4 C-E2). **Four:** `pending` as an `ItemState` stays the model's and still crosses the bridge — `kind` before the root finding answers, and a folder entry not yet read — and a surface originates neither. The gap is not held state: it lasts from one ask to its answer, and the open file, the selection and the expansion stay `folder-model`'s. Two cases the exception does not cover: a read that never returns leaves the pending sentence standing, with the tree the route out; and which side orders two asks in flight is the design of the change that moves the selection into the model (RN-76). (Answered in the owner's seat, `docs/trail/sdd/cycle-19.md` § 5.1; RN-82) **Read with the exception, and not a second one:** what the pointer is over is the shell's own observation of the pointer and is no state of the folder. Whether the window is the key window is the shell's own observation of the window and is no state of the folder. The clickable row's hover fill and the status letter's tooltip are drawn from the pointer and the key status together, and neither is drawn while the window is not the key window (`docs/DESIGN.md` § *Components*, "Rows" and "The tooltip"). What the pointer is over is not held across a redraw, it raises no intent across SM-8, and it says nothing about the folder, so the exception above stays the only one. The same bounds hold the key status. It is asked each time the row or the letter under the pointer is resolved, and at the two moments the window stops being and becomes the key window. It is held across no redraw. It raises no intent across SM-8 and says nothing about the folder. A surface that is in no window reads as not key and draws neither the fill nor the tooltip. The observation stays inside `surfaces` and crosses no seam. Not decided by this clause: which window is the key window while the Open panel or a menu is up, which is the platform's answer. (Answered in the CTO's seat: the pointer, `docs/trail/sdd/cycle-31.md` § 5.1, RN-96; the key status, `docs/trail/sdd/cycle-33.md` § 5.1, RN-98) **Held here for `see-git-status` alone, and not a second exception:** two pieces of projection logic that `folder-model` owns stand in this part until `follow-the-folder` is reached (*What the system holds*, `FolderModel` and `GitState`). The first is the join of the Git item onto the tree's row paths, which decides which row carries which status letter (`nozoki-mac/Sources/Surfaces/TreeMarkers.swift`, built at `nozoki@6c49d5c`; that commit is not an ancestor of `main` at `nozoki@b640345`, and this clause reads the same whether or not it merges). The second is the order of the Git lists' rows (`nozoki-mac/Sources/Surfaces/GitRowOrder.swift`, on `main` since `nozoki@d65eec4`). Four bounds hold both. **One:** each derives only from projections the bridge sent, the Git item and the tree listings, so the exception above stays the only one. **Two:** the join marks a row only from an `observed` repository answer (§ 4 C-I1, C-E1). **Three:** neither raises an ask, and neither holds a path it did not receive in a projection (SM-8). **Four:** both end when `follow-the-folder` is reached. The marker and the order move into `folder-model`, the two files leave the shell, and that slice's command half is red while either remains (§ 6 S-5). The order needs no new seam, so a change that opens `crates/` may move it earlier. The marker waits for the `model_changed` delta (§ 10 RC-4, RC-5). A re-cut of `follow-the-folder` owes this clause a new end. (Answered in the CTO's seat, `docs/trail/sdd/cycle-29.md` §§ 5.1, 5.2; RN-94) | The bridge — a surface never calls SM-4; it hands `mac-shell` an intent (SM-8). Filesystem, network or process capability of any kind. A URL built from content and handed to any framework. An HTML import. A message not in the catalogue. A dialog, a toast, a notification |
 | `read-only-harness` | checks | The scripts, their lists and helpers, the fixtures and the suites that prove the promises on every build and every release. The enumeration is measured at `nozoki@814a369` (2026-10-03) and pinned to it, as `docs/nfdr.md` § 9 pins its suite count: a file landing in `checks/` after that commit is a re-measurement of this cell and not a contradiction of it, and it owes this row an item. **On disk at that commit:** `read-only.sh` with `walk.rs`, the in-process driver it runs — compiled into a `nozoki-core` test target by `crates/nozoki-core/tests/walk.rs:L6`'s `#[path]`, never into the library; `no-network.sh`; `bundle.sh` with `sandbox_probe.rs`, which it compiles with `rustc` at run time into its temporary directory because no shell can call `sandbox_check` (`checks/bundle.sh:L321-L322`; § 4 C-I3); `renderer.sh`; `view.sh`; `own-state.sh`; `structure.sh`; `entry-points.sh` with `entry-points.allow`, the reviewed list it diffs the linked tree's environment and argument reads against — the check `docs/nfdr.md` QC-30 half (2) places in this unit; `deps.allow` with `deps.review.md`, the review recorded beside the list it reviews (`highlighter`'s row); `tests/`, one `test_<name>.sh` suite for each of the eight scripts above, each the whole `run` of its own CI step; and nine fixture folders — `plain`, a plain folder; `repo`, a repository, with `repo.git.tar`, the `.git` the suites unpack into it; `inside-a-repo`, `parent-of-two`, `linked-worktree` and `submodule`, the four root-finding scenes, each with its `<name>.git.tar`, the `.git` entries `crates/nozoki-core/tests/root_finding.rs:L49` unpacks into a scene of its own; `highlight` and `text`, the corpora `nozoki-core`'s `highlight.rs` and `read_file.rs` tests read; and `idle-shell`, the renderer gate's control bundle (§ 4 C-I3). **Owed by a slice and not on disk at that commit:** `churn.sh` and `latency.sh` with `fixtures/scale-small`, `scale-medium` and `scale-large` (`follow-the-folder`; § 4 C-I4); `fixtures/hostile.md`, the hostile Markdown corpus (`read-markdown`); `fixtures/history` (`read-the-history`); and, from `promise-one-point-zero`, `contract.sh` with the pin `contract/<major>` it reads (§ 4 C-I6) | Being a dependency of any shipped unit. Driving the AppKit views. Shipping in the bundle |
 
 **Four physical units carry the eleven parts.** `crates/nozoki-core` is a Rust library that
@@ -1544,8 +1545,10 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   by a glyph with the sentence beside it — one glyph for an empty or pending state and another
   for a failure, both named there — and is never centred (that document's RN-14). The startup
   surface's two routes are text alone, one to a row, with no glyph and no bordered control
-  (§ *Components* "The startup surface"). While the pointer is over a tree row that a click acts
-  on, that row and no other shows the fill § *Components* "Rows" draws. A row nothing acts on, a
+  (§ *Components* "The startup surface"). While the window is the key window and the pointer is
+  over a tree row that a click acts on, that row and no other shows the fill § *Components*
+  "Rows" draws. While the window is not the key window, no row shows it, as the same paragraph
+  states (RN-98). A row nothing acts on, a
   status message among them, never shows it. The selected row keeps its selection and its bar
   under the pointer (RN-96). The layout this slice holds is the window's minimum and
   the two panels it draws; the rail's entries, the chrome's two controls and the Git view arrive
@@ -1566,19 +1569,24 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   projection and from nothing else — read with the one exception § 3's `surfaces` row names: the
   tree's pending line beneath a folder row whose listing has been asked for and not yet answered
   is the surface's own ask and no projection; this is a reading clause and adds no test (RN-82);
-  and read with the same row's clause on the pointer: what the pointer is over is the shell's own
-  observation and no projection, which is a second reading clause and adds no test for itself
-  (RN-96) —
+  and read with the same row's clause on the pointer and the window: what the pointer is over,
+  and whether the window is the key window, are the shell's own observations and no projection,
+  which is a second reading clause and adds no test for itself (RN-96, RN-98) —
   that the shell issues no call SM-4 does not name, and that
   the window declares a minimum content width and the sidebar a fixed width, each the value
   `docs/DESIGN.md` § *Layout* states and neither restated here — the machine half of the layout
   bar the observable half holds, so a window that can open with the reading panel narrower than
   the sidebar goes red in CI and not in a reader's hands (RN-74); the same `swift test` run holds
-  four cases for the hover fill: a tree row a click acts on shows the fill while the pointer is
+  seven cases for the hover fill. Four are stated for a window that is the key window: a tree
+  row a click acts on shows the fill while the pointer is
   over it and loses it when the pointer leaves; a row nothing acts on never shows it; the
   selected row under the pointer keeps its selection fill and its bar; and after a scroll, an
   expansion or a collapse moves rows under a pointer that has not moved, the fill is on the row
-  now under the pointer and on no other (RN-96);
+  now under the pointer and on no other (RN-96). Three hold the key window: when the window
+  stops being the key window, the fill leaves under a pointer that has not moved; while the
+  window is not the key window, no row shows the fill, whatever the pointer moves over and
+  whatever a scroll or an expansion moves under it; and when the window becomes the key window
+  again, the fill is on the row under the pointer as the rows stand then (RN-98);
   `checks/view.sh` finds no forbidden symbol in `nozoki-mac/Sources` and neither `WebKit` nor
   `JavaScriptCore` on the executable's link list (C-R7); `.github/workflows/ci.yml` builds
   `Nozoki.app` and runs every script below on every push. `checks/bundle.sh Nozoki.app` prints the
@@ -1791,8 +1799,12 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   and then in the Git view: a tooltip shows the row's name and then the letter's meaning in
   words; the row stays one click target, and nothing else in the product raises a tooltip
   (`docs/DESIGN.md` § Components, "The tooltip"; `docs/CONTENT.md` § Accessibility of text; § 4
-  C-E8; RN-95). While the pointer is over a file row in the Git view, that row and no other
-  shows the fill `docs/DESIGN.md` § *Components*, "Rows", draws. A section header and a status
+  C-E8; RN-95). While the window is the key window and the pointer is over a file row in the
+  Git view, that row and no other
+  shows the fill `docs/DESIGN.md` § *Components*, "Rows", draws. While the window is not the key
+  window, no row shows it. A raised tooltip leaves at the moment the window stops being the key
+  window, and it returns only after a fresh rest on the letter once the window is the key window
+  again, as § *Components*, "The tooltip", states (RN-98). A section header and a status
   message never show it. The status letter's tooltip sits over the row's fill, as § *Components*,
   "The tooltip", states (RN-96). They click a changed file's row: the file opens in the
   panel to read, exactly as a tree selection would — one click target, the status letter a label
@@ -1842,15 +1854,22 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   composition root's search-path switch and its test, and nowhere else (RN-87); `swift test
   --package-path nozoki-mac` passes with a case holding that each of the six status categories
   gives the word `docs/CONTENT.md` § Accessibility of text states for it, and that the tooltip's
-  text is the row's name and then that word (RN-95); the same run holds seven cases for the Git
-  view's file row, six for the hover fill and one for the selected row's drawing: a file row
+  text is the row's name and then that word (RN-95); the same run holds eleven cases for the Git
+  view's file row, six for the hover fill, one for the selected row's drawing and four for the
+  key window. The first seven are stated for a window that is the key window: a file row
   shows the fill while the pointer is over it and loses it when
   the pointer leaves; a status message never shows it; a section header never shows it; after a
   click on a file row, with the pointer over no row, the clicked row shows the selection fill and
   the bar, and no other row shows either (RN-97); the
   selected row under the pointer keeps its selection fill and its bar; after a scroll moves rows
   under a pointer that has not moved, the fill is on the row now under the pointer and on no
-  other; and the row still shows the fill while the tooltip is raised (RN-96). *The promise clause:* `checks/read-only.sh` on all six fixtures prints
+  other; and the row still shows the fill while the tooltip is raised (RN-96). The four for the
+  key window: when the window stops being the key window, the fill leaves under a pointer that
+  has not moved; while the window is not the key window, no row shows the fill, whatever the
+  pointer moves over and whatever rows an answer arriving then puts under it; when the window
+  becomes the key window again, the fill is on the row under the pointer as the rows stand then;
+  and a raised tooltip leaves when the window stops being the key window and returns only after
+  a fresh rest on the letter (RN-98). *The promise clause:* `checks/read-only.sh` on all six fixtures prints
   `unchanged`; `checks/no-network.sh` exits 0.
 - **Rests on:** § 3 `git-reader` (the port, `probe`, `state`, `status`), `folder-model` (`kind`
   resolved; `GitState`), `surfaces` (the rail's Git entry, the Git view, and in this slice the
@@ -6320,6 +6339,127 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   unresolved, so `docs/SDD_open_issues.md` is removed and `Status:` stays Settled
   *(re: § 6 `see-git-status`; source: `docs/trail/sdd/cycle-32.md` § 5.1;
   `docs/trail/sdd/self_answer-44.md`; `nozoki@29239bc`)*.
+- **RN-98:** *(CTO; the CDO's clauses named below)* *(changed)* § 3's `surfaces` row names the
+  window's key status beside the pointer as what the hover fill and the tooltip are drawn from,
+  and `open-a-folder` and `see-git-status` hold the key window in their bars. The companion's
+  one item is folded. The PM opened that companion on 2026-10-04, and an unattended run answered
+  it in the CTO's seat (`docs/trail/sdd/cycle-33.md` § 5.1; reasoning
+  `docs/trail/sdd/self_answer-45.md`).
+  **What moved, each named.** (1) § 3, the `surfaces` row, the clause "Read with the exception,
+  and not a second one": one sentence naming the key status is added after the pointer's, the
+  sentence on what the fill and the tooltip are drawn from names both, and seven sentences
+  follow the pointer's bounds, giving the key status the same bounds and naming one case the
+  clause does not decide. (2) § 6 S-1 *Reached when*, observable half: the hover sentence is
+  stated for the key window, and one sentence is added for a window that is not. (3) § 6 S-1
+  *Reached when*, command half: the second reading clause names the window beside the pointer,
+  and the hover cases read seven, the four in place stated for the key window and three added.
+  (4) § 6 S-4 *Reached when*, observable half: the hover sentence is stated for the key window,
+  and two sentences are added, one for the fill and one for the tooltip. (5) § 6 S-4 *Reached
+  when*, command half: the count reads eleven cases, the seven in place stated for the key
+  window and four added.
+  **Whose columns, and what settled each.** (1), (3) and (5) are the CTO's. (2) and (4) are the
+  CDO's clauses. They are settled by `docs/DESIGN.md`, which is Settled at its status line
+  (`:L301`). § *Components*, "Rows" (`:L640-L643`) says "The fill is drawn only while the window
+  is the key window", that when the window stops being the key window "a fill already shown
+  leaves at that moment, under a still pointer", and that when it becomes the key window again
+  "the fill is drawn on the row under the pointer at that moment, read against the rows as they
+  stand then". § *Components*, "The tooltip" (`:L689-L691`, `:L698-L700`) says the tooltip leaves
+  the moment "the window stops being the key window", that "It is not restored when the window
+  becomes the key window again", and that "It is raised again only by a fresh 500ms rest on the
+  letter". This fold found no call those lines leave open for the sentences it wrote, so no item
+  is raised for the CDO. No field of the CPO's moved.
+  **Why the clause gives neither observation a number. This is reasoning, and it is the
+  answer's.** The item calls the key status the shell's "second first-hand observation". The
+  row already says the pending gap is "the one thing the shell observes first-hand", and RN-96
+  reads that sentence as a statement about the folder's state. A count of first-hand
+  observations in the clause would make that sentence read false. The clause says what each
+  observation is of, the pointer and the window, and that neither is a state of the folder.
+  **No seam moved.** The three surfaces that hold a key-window source default it to the live
+  one themselves (`nozoki-mac/Sources/Surfaces/GitView.swift:L64`, `RootItemsView.swift:L173`,
+  `WorkbenchView.swift:L83`), so nothing is handed down SM-8. Asking a window whether it is the
+  key window is no filesystem, network or process capability, so the row's *Must not own* cell
+  keeps its words. `mac-shell` still owns the one window, and `surfaces` reads one fact about
+  it.
+  **No *Delivers* and no *Rests on* moved.** The key window adds nothing a developer can do,
+  the reason RN-96 gave for the fill. Both slices' *Rests on* already name the fill and the
+  tooltip in `surfaces`.
+  **No § 10 entry.** None of § 10's four triggers holds: both bars can be met as written, no
+  slice became a fragment, a slice can still be started, and the PRD, the SRS and the UXD did
+  not change.
+  **The commit row and the menu item take no change.** `docs/DESIGN.md:L643-L645` gives both
+  the same rule. Neither surface is built and the item cites no site for either, the ground
+  RN-96 stated.
+  **Where this fold departs from the answer's words.** Four departures. (a) The answer leaves
+  the pointer's bounds sentence as written. The fold opens it with "What the pointer is over"
+  in place of "It", because a sentence about the window now stands before it and "It" would
+  read as either. The sentence states what it stated. (b) The answer says each hover sentence
+  "is stated for a window that is the key window". The fold does that and also writes, in each
+  observable half, what a window that is not the key window shows, in the words of
+  `docs/DESIGN.md` cited above. Without it the three added command cases would hold a
+  behaviour neither observable half names. (c) The answer gives each slice the case "no row
+  shows the fill, whatever the pointer does and whatever rows move under it". S-1's reads
+  "whatever a scroll or an expansion moves under it", which is what the tree's suite holds
+  (`nozoki-mac/Tests/SurfacesTests/RootItemsViewHoverTests.swift:L484-L498`). S-4's reads
+  "whatever rows an answer arriving then puts under it", which is what the Git view's suite
+  holds (`GitViewHoverTests.swift:L463-L479`). The Git view's scroll case asserts only after
+  the window is the key window again (`:L481-L499`). (d) The clause names one case it does not
+  decide, which window is the key window while the Open panel or a menu is up. The answer's
+  reasoning names it as not covered, and the answer's text does not.
+  **Two earlier notes, their words kept.** RN-96 lists "what the fill does when the window
+  stops being the key window with the pointer still over a row" among things the design
+  language does not state. RN-97 lists as (c) "What the selected row's fill does in a window
+  that is not the key window". Both were true when written. `docs/DESIGN.md` now states the
+  first at `:L640-L645` and the second at `:L645-L651`: "The selected row looks the same whether
+  or not the window is the key window". The second is outside this item, and this fold adds no
+  sentence and no case for the selected row.
+  **One correction to the item's own text.** The item cites `docs/DESIGN.md` at `:L635-L640`
+  and `:L681-L685`. That document moved to v19 at `nozoki@6f92b29` after the item was written.
+  The rule for the fill is at `:L640-L645` and the tooltip's at `:L689-L700`, where this fold
+  opened them. The trail copy keeps the item as it was written.
+  **Read and measured for this fold, at `nozoki@6a300e1`.** `git status --short` printed
+  nothing before the fold's first write, and `git log -1 -- docs/SDD_open_issues.md` names
+  `6a300e1`, so the companion's answer was committed. The live source asks the host's window
+  (`nozoki-mac/Sources/Surfaces/KeyWindowSource.swift:L50-L51`), and a host in no window answers
+  not key by the same line. `RowHover` asks the key status at each resolve and at each pointer
+  event and keeps no copy of it (`RowHover.swift:L52`, `:L81`), and clears the fill and reads
+  the pointer again at the two moments (`:L69-L78`). `LetterTooltip` dismisses when the window
+  stops being the key window, shows nothing when it becomes key, and asks again when a rest
+  fires (`LetterTooltip.swift:L176-L191`, `:L214`). The added cases are held by
+  `RootItemsViewHoverTests.swift:L443`, `:L468`, `:L484` and `:L500` for the tree, and by
+  `GitViewHoverTests.swift:L403`, `:L419`, `:L444` and `:L463` for the Git view. `swift test
+  --package-path nozoki-mac --filter 'RootItemsViewHoverTests|GitViewHoverTests'` executed 50
+  tests with 0 failures, 24 of them in `RootItemsViewHoverTests`. `grep -n -i 'key window\|key
+  status'` prints nothing for `docs/SRS.md`, `docs/UXD.md`, `docs/PRD.md`, `docs/nfdr.md`,
+  `docs/fdr.md` and `docs/CONTENT.md`.
+  **Known limits, stated beside the claims.** Every key-window case runs against a double. The
+  source's own header says "a test passes a double that flips on demand, because the test
+  windows never become key" (`KeyWindowSource.swift:L6`). So no test in those suites reaches the
+  live answer or the observer of the window's two notifications (`:L50-L55`, `:L62-L86`), and a
+  window that is the key window on a reader's screen is checked by the observable halves alone.
+  The run above is two suites on one machine, and it is no claim that either slice is reached:
+  the full gate was not run and no bundle was built. No requirement in `docs/SRS.md` and no
+  entry in `docs/UXD.md` names the key window. Both slices' SRS and UXD traces are unchanged,
+  and the rule traces to `docs/DESIGN.md` alone, a document outside the three this document's
+  `Inputs read:` line names. Of this document the fold read the header, *Who holds what*, § 3's
+  parts table from `watcher` to `read-only-harness`, § 6 S-1 and S-4 whole, RN-96 and RN-97,
+  and searched the rest for `hover`, `tooltip`, `the pointer`, `key window` and `key status`.
+  The other sections were not re-read, so a sentence there that speaks of the window's key
+  status in other words was not seen. The PRD, the SRS and the UXD were read at their status
+  lines, each Settled, and searched; their bodies were not read. `docs/DESIGN.md` was read at
+  `:L622-L705`. The project's Agari, its two doctrine files, the instance's domain doctrine and
+  its writing bar were read whole. `docs/nfdr.md` and `docs/fdr.md` were searched and not read.
+  `docs/adr/` was listed and not opened. No `docs/definition_brief.md` is on disk.
+  **Found on the same walk, and not fixed.** RN-93's finding stands: the `**Owner:**` line and
+  *Who holds what, inside one run* carry an earlier template's wording.
+  **Downstream, not this document's to change.** `docs/nfdr.md` and `docs/fdr.md` restate
+  neither the clause nor the hover cases, by the search above. Whether either takes the key
+  window is the Principal Architect's and the Principal PM's, and this fold opened no item on
+  either seat's companion.
+  **The companion:** `diff docs/SDD_open_issues.md docs/trail/sdd/cycle-33.md` printed nothing
+  before this fold's first edit to this document. Its one item is folded and nothing is
+  unresolved, so `docs/SDD_open_issues.md` is removed and `Status:` stays Settled
+  *(re: § 3 `surfaces`; § 6 `open-a-folder`, `see-git-status`; source:
+  `docs/trail/sdd/cycle-33.md` § 5.1; `docs/trail/sdd/self_answer-45.md`; `nozoki@6a300e1`)*.
 
 ## Open Questions
 
