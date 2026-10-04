@@ -615,14 +615,14 @@ final class RootItemsViewTests: XCTestCase {
 
     func test_itDoesNotMoveTheScrollOffset() throws {
         let fixture = makeOpenFileFixture()
-        let target = try XCTUnwrap(rowIndex(of: "f12.txt", in: fixture.view))
-        let visibleRows = fixture.view.outlineView.rows(in: fixture.view.contentView.bounds)
-        XCTAssertTrue(visibleRows.contains(target), "the fixture's row is in view")
         fixture.view.contentView.scroll(to: NSPoint(x: 0, y: 40))
         fixture.view.reflectScrolledClipView(fixture.view.contentView)
         let before = scrollOffset(fixture.view)
+        let visible = fixture.view.outlineView.rows(in: fixture.view.contentView.bounds)
+        let inView = try XCTUnwrap(fixture.view.entry(atRow: visible.location + 2)?.path)
+        XCTAssertGreaterThan(before.y, 0, "the fixture scrolls")
 
-        fixture.view.showOpenFile(path: "f12.txt")
+        fixture.view.showOpenFile(path: inView)
         XCTAssertEqual(scrollOffset(fixture.view), before, "a row in view is selected in place")
 
         fixture.view.showOpenFile(path: "f39.txt")
