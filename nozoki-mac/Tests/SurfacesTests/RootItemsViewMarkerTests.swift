@@ -358,8 +358,14 @@ final class RootItemsViewMarkerTests: XCTestCase {
             ("the name", centre(of: name, in: fixture.view)),
             ("the glyph", centre(of: try XCTUnwrap(marked.imageView), in: fixture.view)),
             ("the space between the name and the letter", gap),
-            ("a row with no letter", centre(of: try XCTUnwrap(unmarked.textField), in: fixture.view)),
-            ("where a row with no letter would draw one", centre(of: try letterField(unmarked), in: fixture.view)),
+            (
+                "a row with no letter",
+                centre(of: try XCTUnwrap(unmarked.textField), in: fixture.view)
+            ),
+            (
+                "where a row with no letter would draw one",
+                centre(of: try letterField(unmarked), in: fixture.view)
+            ),
         ]
 
         for (what, point) in points {
