@@ -60,7 +60,17 @@ None.
   control does by default, which would let the tree and the Git view differ. The likely fold: one
   sentence in § Components "Rows" beside the key-window rule.
 - **If a document has to be written:** none. A sentence in `DESIGN.md`, written by `product-design`.
-- **Answer:** <the owner fills this in>
+- **Answer:** The selected row looks the same whether or not the window is the key window: the
+  `{colors.selection}` fill edge to edge and the `{colors.primary}` bar. That holds in the tree, the
+  Git view and on every other selected list row. Nothing dims and nothing is taken away, so a change
+  of key window changes nothing on that row. The key-window rule (RN-40) covers what the pointer
+  raises: the hover fill and the tooltip. A selected row reports which item is open, and that has not
+  changed when the window stops being key. The UXD's motion dial is "only what actually changed
+  changes" (`docs/UXD.md:L42`). The platform's inactive-window look is not followed. It would let the
+  tree and the Git view differ, and it would draw the tree's selection in a colour that is not a
+  token. Fold: one sentence in § Components "Rows" beside the key-window rule, which closes RN-40's
+  *named and not covered*. Decided together with § 3.3. Reasoning:
+  `docs/trail/design/self_answer-11.md` § 3.1.
 
 ### 3.2 Whether a Git-view file row is drawn selected when its file was opened from the tree
 - **Raised by:** PM — 2026-10-04
@@ -78,7 +88,14 @@ None.
   row of the open file is drawn selected in whichever view lists it. The likely fold: one clause in
   § Components "Rows".
 - **If a document has to be written:** none. A clause in `DESIGN.md`, written by `product-design`.
-- **Answer:** <the owner fills this in>
+- **Answer:** The Git view's selected row is the row the reader last activated there. A file
+  opened any other way, including from the tree, leaves the Git view with no selected row, even
+  where that file has a row in the list. This is what the shell draws
+  (`nozoki-mac/Sources/Surfaces/WorkbenchView.swift:L160-L165`). A Git-view row opens the file's
+  diff wherever one exists (`docs/UXD.md` UX-F2). Drawing that row as selected for a file opened from
+  the tree would say its diff is open when the file is. When one file has a row under both
+  *Changes* and *Staged*, the selected row is the one the reader clicked. Fold: one clause in
+  § Components "Rows". Reasoning: `docs/trail/design/self_answer-11.md` § 3.2.
 
 ### 3.3 What the status letter's tooltip sits over on the selected row, which never takes the hover fill
 - **Raised by:** PM — 2026-10-04
@@ -96,6 +113,14 @@ None.
   is what the shell draws; or the selected row raises no tooltip. The likely fold: the tooltip's
   sentence names the selection fill beside the hover fill.
 - **If a document has to be written:** none. A clause in `DESIGN.md`, written by `product-design`.
-- **Answer:** <the owner fills this in>
+- **Answer:** "Its row's fill" means whichever fill the row shows: `{colors.hover}` on a row under
+  the pointer, or `{colors.selection}` on the selected row, which never takes the hover. The selected
+  row raises the tooltip like any other row, and the tooltip sits over its selection fill. This is
+  what the shell draws. The tooltip still leaves the moment the window stops being the key window,
+  on every row. On a hovered row that is the moment the fill leaves. The selected row keeps its fill
+  and bar (§ 3.1), and the tooltip leaves anyway, because the pointer raises the tooltip and does not
+  raise the selection. Fold: the tooltip's stacking sentence names the selection fill beside the
+  hover fill, and its leaving sentence says it holds on every row instead of resting on the fill
+  leaving. Decided together with § 3.1. Reasoning: `docs/trail/design/self_answer-11.md` § 3.3.
 
 **How it closes.** `product-design` folds it on its next run like any other item here.
