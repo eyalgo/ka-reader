@@ -2,7 +2,7 @@
 
 **Status:** Settled
 **Owner:** Principal Architect
-**Version:** 39 — the close: the cycle-35 fold (`docs/trail/architecture/cycle-35.md` § 2.1, § 2.2; reasoning at `docs/trail/architecture/self_answer-39.md`), both items confirmed — § 2.1 in the owner's seat, § 2.2 in the owner's seat and then by the owner, 2026-10-04 (`nozoki@bb75290`). ADR-0021 is Accepted and supersedes ADR-0013; ADR-0013's Status line is the only line of that record that changes. ADR-0021's trace to the companion now points at the trail copy's § 2.2, the owner's addition, and its `## Binds` gains QC-36, which traced to ADR-0013 and was not listed there. Every entry trace that named ADR-0013 now names ADR-0021: QC-1, QC-2, QC-8, QC-9, QC-15, QC-16, QC-24, QC-30, QC-32, QC-34 and QC-36. QC-11's exception tail, drafted at v38, is confirmed as written. Nothing moved beneath this document since v38. No `QC` is added, renumbered or reused. Nothing is left for the owner, so the companion is removed and `Status:` is Settled (RN-50).
+**Version:** 40 — the close: a re-derivation on `docs/SDD.md` v32, which moved the config-named-path item's bound (SDD RN-92, `docs/trail/sdd/cycle-27.md` § 5.1). QC-6 and QC-35 now state the bound as the SDD states it — settled in `see-git-status` before the slice is reached, no build inside the slice bounding it — in place of "no later than the build in which `mac-shell` first calls `nozoki_read_git`", each with a dated note keeping the old words; QC-6 also names the review that holds the bound and what the builds between hold, and both traces are re-pinned to SDD v32. The companion's one item, § 2.1 (`nozoki@250fc6e:docs/architecture_open_issues.md`), proposed exactly this and carried no answer; the SDD's fold is the authorization, so the item is closed by derivation and not by an owner's answer, and no trail cycle is written. Nothing else moved beneath this document since v39. No `QC` is added, renumbered or reused, no record is written or restatused, and § 10 does not move. Nothing is left for the owner, so the companion is removed and `Status:` is Settled (RN-51).
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · PRD Settled · UXD Settled · DESIGN Settled · CONTENT Settled
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
@@ -245,10 +245,16 @@ new units while they were unbuilt.
   is not read as coverage:** a path the repository's own config names — `include.path`,
   `core.excludesfile`, `core.attributesfile` — which libgit2 follows with no containment check. In
   the bundle the sandbox (QC-25) is its only bound, in the in-process harness nothing bounds it,
-  and how it is closed is SDD *Open Questions*' config-named-path item, settled no later than the
-  build in which `mac-shell` first calls `nozoki_read_git` (SDD § 4 C-D3; § 11 R-16 as it reads at
-  v31 — RN-49; through v37 this pointer read "*Open Questions*' last item", which stopped naming
-  this item at SDD v29).
+  and how it is closed is SDD *Open Questions*' config-named-path item, settled in
+  `see-git-status` before the slice is reached, with no build inside the slice bounding it. The
+  bound is held by review of the change after which `see-git-status`'s *Reached when* is claimed
+  whole: where the item's fixture and its case are missing at that review, the slice is not
+  reached. From the first build in which `mac-shell` calls `nozoki_read_git` until the item is
+  settled, the bundle opens a reader's own repositories with this read unsettled (SDD § 4 C-D3;
+  § 11 R-16 and *Open Questions*' config-named-path item as they read at v32 — RN-51; through v39
+  the bound read "no later than the build in which `mac-shell` first calls `nozoki_read_git`",
+  from SDD v31 — RN-49; through v37 this pointer read "*Open Questions*' last item", which stopped
+  naming this item at SDD v29).
   — *verified by:* unit tests on the check (layer 1, beside the module —
   `crates/nozoki-core/src/fs_reader.rs` `mod tests`): `..` leaving the grant and a symlink out end
   `Outside`; the four spellings the definition turns on — three fixed by `docs/fdr.md`'s example
@@ -275,7 +281,7 @@ new units while they were unbuilt.
   ADR-0011; SDD § 3 `fs-reader` at v20, SM-7; § 4 C-D1, C-D3 — its uncovered case at v27, RN-43; § 9 TO-6; § 11 R-10, R-16; SRS FR-32,
   NFR-16; FDR R-34, R-59, R-62, R-183, R-184; the owner's answer at `docs/trail/sdd/cycle-15.md`
   § 5.1; the `asset_bytes` half moved to the bridge's crate at v12 — RN-23; re-derived on SDD v20 —
-  RN-29)*
+  RN-29; the config-named-path item's bound re-derived on SDD v32 (SDD RN-92) — RN-51)*
 - **QC-7:** `git-reader` makes no mutating call — no checkout, index write, ref update or lock
   file — and spawns no process; every port method is read-only.
   — *verified by:* `checks/read-only.sh` on the Git fixtures with `.git/index` hashed (layer 3);
@@ -936,10 +942,12 @@ import nothing forbidden and still read a path it was never granted.
   (QC-17). **Not covered, and named so none is read as coverage:** (1) a path the repository's own
   config names — `include.path`, `core.excludesfile`, `core.attributesfile` — which libgit2 follows
   with no containment check (QC-6; SDD § 11 R-16), its closing being SDD *Open Questions*'
-  config-named-path item, settled no later than the build in which `mac-shell` first calls
-  `nozoki_read_git`; (2) `nozoki-core`'s in-process Git suites and the read-only walk, which call
-  libgit2 without the bridge and so with the machine-level reads on — the walk calls `read_git`
-  with the libgit2 adapter and no switch (`checks/walk.rs:L292`) — so `checks/read-only.sh`'s
+  config-named-path item, settled in `see-git-status` before the slice is reached, with no build
+  inside the slice bounding it *(through v39 this bound read "no later than the build in which
+  `mac-shell` first calls `nozoki_read_git`" — RN-51)*; (2) `nozoki-core`'s in-process Git suites
+  and the read-only walk, which call libgit2 without the bridge and so with the machine-level
+  reads on — the walk calls `read_git` with the libgit2 adapter and no switch
+  (`checks/walk.rs:L292`) — so `checks/read-only.sh`'s
   `unchanged` on a Git fixture is shown for libgit2 as the harness configures it, and no check runs
   the hash with the reads off; isolating them is the CTO's call, raised by the first measured
   difference between the two configurations; (3) libgit2's environment reads at init, which open no file and are
@@ -953,8 +961,10 @@ import nothing forbidden and still read a path it was never granted.
   configuration, not on an observation, and this tail says so *(traces to: FDR R-101, R-102; SDD
   § 3 `core-bridge` and `git-reader` at v27; § 4 C-D1, C-D2, C-D3, C-I3 at v27; § 11 R-16;
   § *Open Questions*, second and config-named-path items; ADR-0011; ADR-0020; re-derived against
-  SDD v27, with the tail's observes-no-read sentence, at v32 — RN-43; (1)'s bound and (2)'s walk
-  from SDD § 4 C-I3 and § 11 R-16 as they read at v31 (SDD RN-91) — RN-49)*
+  SDD v27, with the tail's observes-no-read sentence, at v32 — RN-43; (2)'s walk from SDD § 4 C-I3
+  as it reads at v31 (SDD RN-91) — RN-49; (1)'s bound from SDD § 11 R-16 at v31 (SDD RN-91) —
+  RN-49, and re-derived from § 11 R-16 and *Open Questions*' config-named-path item as they read
+  at v32 (SDD RN-92) — RN-51)*
 - **QC-36:** No unit spawns a process: no `std::process` in any shipped crate, and no `Process`
   in `nozoki-mac/Sources`.
   — *verified by:* `checks/structure.sh` (layer 6); `checks/view.sh` (layer 6) *(traces to: SDD
@@ -4376,3 +4386,47 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   ADR-0021; the index; source: `docs/trail/architecture/cycle-35.md` § 2.1, § 2.2;
   `docs/trail/architecture/self_answer-39.md`, `self_answer-40.md`; `nozoki@bb75290`; the tree at
   `nozoki@16f1ce1`)*
+- **RN-51:** *(v40 — the close: a re-derivation on SDD v32)* **Intake.** The companion on disk had
+  one item, § 2.1, opened at `nozoki@250fc6e` by a `companion-self-answer` run in the CTO's seat
+  while it answered the SDD's companion, not by a `product-architecture` run
+  (`nozoki@250fc6e:docs/architecture_open_issues.md` § 2.1; reasoning
+  `docs/trail/sdd/self_answer-39.md`). It proposed that QC-6 and QC-35 state the config-named-path
+  item's bound as the SDD's *Open Questions* item would state it after the SDD's fold, with a stated
+  doubt: the change was owed only once `product-sdd` had folded, and the item was to stay open if
+  the SDD still stated the old bound. Its slot was not filled, so the companion is not consumed and
+  no trail cycle is written. **What moved beneath this document.** `docs/SDD.md` v31 → v32, Settled
+  (`nozoki@19a76bc`, SDD RN-92, `docs/trail/sdd/cycle-27.md` § 5.1): the item's bound is "before the
+  slice is reached" alone, the clause naming the build in which `mac-shell` first calls
+  `nozoki_read_git` is removed, the bound is held by review of the change after which
+  `see-git-status`'s *Reached when* is claimed whole, and § 11 R-16 states what the builds between
+  hold. The § 2.1 doubt is resolved: the SDD now states the new bound. **Why this is a derivation,
+  not a choice.** The new SDD sentence is the fresh authorization a settled entry needs, and the SDD
+  outranks this document. Its § 4 opening note gives the direction, "downstream is rebuilt from
+  upstream, never the reverse", and two architects reading SDD v32 would write the same bound. The
+  item's own *If overridden* names no defensible alternative: keeping the old bound would make this
+  document refuse a build the SDD no longer refuses. So the item is closed by this re-derivation and
+  not by an owner's answer. Where the owner reads it otherwise, the cost is one revert of this
+  run's commit. **QC-6.** The uncovered case states the bound as the SDD does, names the review that
+  holds it and the slice's not being reached where the fixture and its case are missing, and states
+  that the builds between open a reader's repositories with this read unsettled. The pin moves from
+  "§ 11 R-16 as it reads at v31" to R-16 and the *Open Questions* item at v32. A dated note keeps the
+  old bound, and the v37 note stays. The trace tail gains the v32 re-derivation. **QC-35.** Uncovered
+  case (1) states the same bound with a dated note keeping the old words. The trace tail splits RN-49's
+  pin: (2)'s walk stays on C-I3 at v31, and (1)'s bound is re-derived on v32. **What does not move.**
+  QC-3's sentence that the `nm` read "meets that executable in the build where `mac-shell` first
+  calls the export" stays. It is about the transport read and SDD § 11 R-15, which SDD RN-92 names
+  as unmoved. § 10 does not move: its QC-6 and QC-35 rows carry no bound. No record is written or
+  restatused. No ADR states the bound: `grep -n 'first calls' docs/adr/*.md` prints nothing.
+  ADR-0020's "How that is closed is the SDD's last *Open Question*" (`:L130`) is not a stale pointer:
+  the record's `## Traces to` pins `docs/SDD.md` at v27, where the item was the last, and the SDD
+  added the item after it at `nozoki@77c91fc`. **Re-measured at HEAD `nozoki@19a76bc`.** `git log
+  d2dd1f2..HEAD -- docs/SRS.md docs/fdr.md docs/PRD.md docs/UXD.md docs/DESIGN.md docs/CONTENT.md
+  crates checks nozoki-mac .github Cargo.toml Cargo.lock` prints nothing. `git diff d2dd1f2..HEAD --
+  docs/SDD.md` is the v32 fold alone, read whole. `grep -rn 'nozoki_read_git\|read_git\|readGit'
+  nozoki-mac/Sources` prints nothing. Every input's `Status:` line was re-read and is Settled, so
+  `Inputs read:` stands. **Known limits.** This run read the SDD's v32 diff whole and the SRS and
+  FDR at their status lines; their bodies did not move after v39, which derived from them. It built
+  nothing and ran no test: it changes no code. **The companion.** Nothing is left for the owner, so
+  it is removed and `Status:` is Settled *(re: header `Status:`, `Version:`; QC-6; QC-35; source:
+  `docs/SDD.md` v32, SDD RN-92; `docs/trail/sdd/cycle-27.md` § 5.1;
+  `nozoki@250fc6e:docs/architecture_open_issues.md` § 2.1; the tree at `nozoki@19a76bc`)*
