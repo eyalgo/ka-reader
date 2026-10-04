@@ -58,6 +58,23 @@ None.
   word is the half that carries its one job. The likely fold: a sentence in § Components "The tooltip"
   for each edge — where it goes instead, or what is cut and what is kept.
 - **If a document has to be written:** none. A sentence in `DESIGN.md`, written by `product-design`.
-- **Answer:** <the owner fills this in>
+- **Answer:** Answered in the owner's seat by a `companion-self-answer` run, CDO posture. Each edge
+  gets one rule, and the two rules work independently, so a letter on the last visible row with a
+  long name takes both. **Bottom:** the tooltip goes below the letter, as now, unless the visible
+  part of the surface drawing the letter ends less than the tooltip's height below it. Then it goes
+  above the letter, its bottom edge on the letter's top edge, still right-aligned to the letter. If
+  neither side has room (a surface shorter than the row plus a tooltip on each side), it stays below
+  and is cut there. **Left:** the right edge stays on the letter's right edge, so the tooltip still
+  never runs past the sidebar. It is never wider than the space from the visible left edge of its
+  surface to the letter's right edge. The line is right-aligned inside the tooltip, so when it is too
+  long, the start of the name is cut at the tooltip's left edge, with no ellipsis. The joining mark
+  and the letter's word always stay whole. The word is the half that does the tooltip's one job
+  (`docs/CONTENT.md` § Accessibility of text, "A single letter is not a word"). The row clips the
+  name at its end (`docs/DESIGN.md` § Typography), so the end of the name is the part the reader
+  has not yet seen. The tooltip's position is decided when it appears and does not change while it
+  is shown, which matches its no-transition rule. § Typography's "the row clips at its end" governs
+  rows; the fold should say that the tooltip is the one place where a name loses its start. No
+  token is added or changed. The reasoning and failure-path checks are in
+  `docs/trail/design/self_answer-9.md` § 3.1.
 
 **How it closes.** `product-design` folds it on its next run like any other item here.
