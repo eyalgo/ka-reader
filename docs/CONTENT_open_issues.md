@@ -56,6 +56,6 @@ None.
   line in § Accessibility of text or § Terminology that covers a listed folder — whether the six words
   apply to it as written, or which words a folder takes.
 - **If a document has to be written:** none. A line in `CONTENT.md`, written by `product-content`.
-- **Answer:** <the owner fills this in>
+- **Answer:** Take it. The six words cover a folder row as written, and a folder takes no word of its own: a submodule whose commit moved is **M** and reads *modified*, and a repository nested in the folder you opened is **U** and reads *untracked*. Resting on the letter names the row, which is the folder, and then the word, and it speaks of that folder alone and never of anything beneath it (the product marks only the listed row: `nozoki-mac/Tests/SurfacesTests/TreeMarkersTests.swift:L69-L77`). The fold: § Grammar and mechanics' single-letter bullet and § Accessibility of text's letters bullet read "beside a changed file or a listed folder"; § Terminology keeps *changed* for a file and its Notes cell says a folder row's letter is worded by the six and a folder is not called *changed*. **A**, **D**, **R** and **C** on a folder row are not stated until a site shows one. Reasoning: `docs/trail/content/self_answer-8.md`.
 
 **How it closes.** `product-content` folds it on its next run exactly as it folds §§ 1–2.
