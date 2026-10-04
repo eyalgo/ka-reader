@@ -239,11 +239,40 @@ final class WorkbenchTreeMarkerTests: XCTestCase {
             }
         }
 
+        // (i) A repository with changes, Git never shown: the answer is held ready, so any ask the
+        // workbench made outside the Git view's first showing would mark the tree.
         let neverShown = makeFixture()
+        let readyAnswer = firstExample
+        neverShown.workbench.readGit = { [log = neverShown.log] answer in
+            log.gitAsks.append(answer)
+            answer(readyAnswer)
+        }
         let baseline = strings(of: neverShown.tree)
+        choose(.files, in: neverShown)
+        try selectInTree("b.txt", in: neverShown)
         XCTAssertTrue(neverShown.log.gitAsks.isEmpty, "Git is never shown, so it is never asked")
         XCTAssertEqual(strings(of: neverShown.tree), baseline)
         XCTAssertTrue(try letters(in: neverShown.tree).isEmpty)
+    }
+
+    /// The tree takes the one answer the Git view keeps, behind the same latch, so the two cannot
+    /// disagree whichever answer comes first.
+    func test_onlyTheFirstAnswerReachesTheTree() throws {
+        let plainFirst = makeFixture()
+        choose(.git, in: plainFirst)
+        plainFirst.log.gitAsks[0](.plain)
+        plainFirst.log.gitAsks[0](firstExample)
+        choose(.files, in: plainFirst)
+        XCTAssertTrue(try letters(in: plainFirst.tree).isEmpty, "a later repository answer")
+
+        let repositoryFirst = makeFixture()
+        choose(.git, in: repositoryFirst)
+        repositoryFirst.log.gitAsks[0](firstExample)
+        repositoryFirst.log.gitAsks[0](.plain)
+        choose(.files, in: repositoryFirst)
+        XCTAssertEqual(
+            try letters(in: repositoryFirst.tree),
+            ["d.txt": "U", "moved.txt": "R", "sub": "M", "inner": "U"], "a later plain answer")
     }
 
     func test_aPlainAnswerMarksNoRow() throws {

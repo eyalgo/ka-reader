@@ -123,4 +123,12 @@ final class TreeMarkersTests: XCTestCase {
         let markers = repository(changed: [entry("a.txt", .added), entry("a.txt", .deleted)])
         XCTAssertEqual(markers.category(forRowPath: "a.txt"), .added)
     }
+
+    /// CP-577 orders the lists before anything else: wherever the changed list lists the row, by
+    /// either spelling CP-574 allows, its entry gives the letter, even over an exact staged entry.
+    func test_theChangedListsTrailingSlashEntryBeatsTheStagedListsExactEntry() {
+        let markers = repository(
+            changed: [entry("inner/", .untracked)], staged: [entry("inner", .added)])
+        XCTAssertEqual(markers.category(forRowPath: "inner"), .untracked)
+    }
 }

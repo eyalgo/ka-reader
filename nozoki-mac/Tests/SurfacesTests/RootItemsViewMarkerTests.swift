@@ -233,4 +233,52 @@ final class RootItemsViewMarkerTests: XCTestCase {
             [try XCTUnwrap(fixture.view.entry(atRow: try row(of: "b.txt", in: fixture.view)))])
         XCTAssertNil(field.toolTip, "this change adds nothing on pointer rest")
     }
+
+    func test_theLetterCanBeNeitherEditedNorSelected() throws {
+        let fixture = makeFixture([file("b.txt")])
+        fixture.view.showMarkers(markers(changed: [("b.txt", .modified)]))
+
+        let field = try letterField(cell(fixture.view, path: "b.txt"))
+
+        XCTAssertFalse(field.isEditable)
+        XCTAssertFalse(field.isSelectable)
+    }
+
+    /// The tree's letter takes the Git view's treatment: whatever colour the Git view's letter is
+    /// drawn in, the tree's is drawn in too, so the two views never differ in hue (CP-576).
+    func test_theLetterTakesTheGitViewsTreatment() throws {
+        let fixture = makeFixture([file("b.txt")])
+        fixture.view.showMarkers(markers(changed: [("b.txt", .modified)]))
+        let treeLetter = try letterField(cell(fixture.view, path: "b.txt"))
+
+        let gitView = GitView(
+            statusGlyphs: StatusGlyphs(
+                empty: NSImage(size: NSSize(width: 3, height: 3)),
+                failure: NSImage(size: NSSize(width: 4, height: 4))))
+        gitView.show(
+            .repository(
+                GitRepository(
+                    branch: .named("main"), state: .normal, staged: [],
+                    changed: [GitEntry(path: "b.txt", category: .modified)])))
+        func descendants(of view: NSView) -> [NSView] {
+            view.subviews + view.subviews.flatMap { descendants(of: $0) }
+        }
+        let gitLetter = try XCTUnwrap(
+            descendants(of: gitView).compactMap { $0 as? NSTextField }
+                .first { $0.identifier?.rawValue == "gitRowLetter" },
+            "the Git view drew no letter")
+
+        XCTAssertEqual(treeLetter.stringValue, gitLetter.stringValue)
+        XCTAssertEqual(treeLetter.textColor, gitLetter.textColor)
+    }
+
+    func test_showingANewRootKeepsTheHeldMarkers() throws {
+        let fixture = makeFixture([file("b.txt"), file("top.txt")])
+        fixture.view.showMarkers(markers(changed: [("b.txt", .modified)]))
+
+        fixture.view.show(.observed([file("b.txt"), file("top.txt")]))
+
+        XCTAssertEqual(try letter(fixture.view, path: "b.txt"), "M")
+        XCTAssertNil(try letter(fixture.view, path: "top.txt"))
+    }
 }
