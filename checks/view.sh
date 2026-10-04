@@ -8,7 +8,7 @@
 #   no socket, spawns no process, embeds no web engine and shows no alert of its own (SDD C-R7; NFDR
 #   QC-8, QC-15, QC-17, QC-30, QC-34, QC-51, QC-58). A reviewer cannot keep watching for that, so this
 #   script reads it off the tree and off the built executable, on every run of CI.
-#   Two checks run, and both always run before the verdict, so one run reports every finding:
+#   Three checks run, and all always run before the verdict, so one run reports every finding:
 #     1. The source scan, over every *.swift file under nozoki-mac/Sources at any depth and nothing
 #        under nozoki-mac/Tests. Comments are blanked in place, so a name in a comment is not a use and
 #        every finding names the true line. String contents stay in the text and are scanned: a string
@@ -17,18 +17,26 @@
 #     2. The link check: `otool -L` on target/release/bundle/macos/Nozoki.app/Contents/MacOS/Nozoki. An
 #        install name is a finding when one of its path components is WebKit.framework or
 #        JavaScriptCore.framework, wherever that framework lives.
+#     3. The transport read: `nm` on the same executable. A defined symbol whose name begins
+#        git_smart_subtransport_ is a finding (libgit2's network transport is linked in), and so is an
+#        undefined import of connect, socket or getaddrinfo (the executable reaches for the network).
+#        A leading underscore, which Mach-O adds to a C name, is not part of the name. Source: NFDR
+#        QC-3 (3), SDD § 4 C-R6 and C-I3; it is owed by the build that first exports a command reaching
+#        git-reader, which is the one that exports nozoki_read_git.
 #   It never passes having read nothing: no .swift file, a missing or unreadable executable, no otool,
-#   an otool that fails, and an otool that prints no install name (every executable links libSystem, so
-#   an empty list is a read of nothing) are each a failure that names its cause.
+#   an otool that fails, an otool that prints no install name (every executable links libSystem, so
+#   an empty list is a read of nothing), no nm, an nm that fails, and an nm that prints no symbol are
+#   each a failure that names its cause.
 #
 # USAGE
 #   checks/view.sh
 #   No argument, and no environment variable: the product root is the parent of this script's own
-#   directory, as checks/own-state.sh derives it. `otool` is found through PATH, so a test can stand in
-#   for it; that is the one seam.
-#   A finding is one line on stderr — `<path relative to the root>:<line>: <refused name>`, or
-#   `link: <install name>`. A pass is exit 0 and one stdout line: the count of Swift files, the
-#   executable's path, and that nothing was found. Every other ending is exit 1, its cause on stderr.
+#   directory, as checks/own-state.sh derives it. `otool` and `nm` are found through PATH, so a test can
+#   stand in for them; those are the seams.
+#   A finding is one line on stderr — `<path relative to the root>:<line>: <refused name>`,
+#   `link: <install name>`, or `transport: defined <symbol>` / `transport: undefined import <symbol>`.
+#   A pass is exit 0 and one stdout line: the count of Swift files, the executable's path, and that
+#   nothing was found. Every other ending is exit 1, its cause on stderr.
 #
 # THE SCAN TABLE
 #   A token is an identifier matched whole: a word character on either side means no match, so
@@ -362,6 +370,41 @@ else
   fi
 fi
 
+# --- the transport read ---
+
+# Only where the executable was readable: a missing one is already a cause above, and naming it a
+# second time says nothing new.
+if [ -f "$executable" ] && [ -r "$executable" ]; then
+  if ! command -v nm > /dev/null 2>&1; then
+    echo "nm not found on PATH — the transport read cannot run" >> "$work/causes"
+  else
+    nm_status=0
+    nm "$executable" > "$work/nm.out" 2> "$work/nm.err" || nm_status=$?
+    if [ "$nm_status" -ne 0 ]; then
+      echo "nm failed on $executable (exit $nm_status): $(cat "$work/nm.err")" >> "$work/causes"
+    else
+      # An nm line is `<address> <type letter> <name>` for a defined symbol and `<type letter> <name>`
+      # for an undefined one (type U). Any other line — a fat binary's per-architecture header, a blank
+      # — is no symbol, so a list of nothing else counts zero.
+      LC_ALL=C awk -v count_file="$work/nm.count" '
+        {
+          if (NF == 3 && $1 ~ /^[0-9A-Fa-f]+$/ && $2 ~ /^[A-Za-z?-]$/) { type = $2; name = $3 }
+          else if (NF == 2 && $1 ~ /^[A-Za-z?-]$/) { type = $1; name = $2 }
+          else next
+          symbols++
+          sub(/^_/, "", name)
+          if (type == "U") {
+            if (name == "connect" || name == "socket" || name == "getaddrinfo") print "transport: undefined import " name
+          } else if (name ~ /^git_smart_subtransport_/) print "transport: defined " name
+        }
+        END { print symbols + 0 > count_file }
+      ' "$work/nm.out" >> "$work/findings"
+      [ "$(cat "$work/nm.count")" -gt 0 ] \
+        || echo "nm printed no symbol for $executable — the transport read read nothing" >> "$work/causes"
+    fi
+  fi
+fi
+
 # --- the verdict ---
 
 if [ -s "$work/findings" ] || [ -s "$work/causes" ]; then
@@ -372,4 +415,4 @@ if [ -s "$work/findings" ] || [ -s "$work/causes" ]; then
   exit 1
 fi
 
-echo "view.sh: $swift_count Swift files scanned under nozoki-mac/Sources, $executable links no WebKit or JavaScriptCore — nothing found"
+echo "view.sh: $swift_count Swift files scanned under nozoki-mac/Sources, $executable links no WebKit or JavaScriptCore and carries no Git transport — nothing found"
