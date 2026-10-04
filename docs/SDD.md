@@ -6,7 +6,8 @@
        signal, and the state a finished SDD carries; the open-issues file is gone.
      Locked = ratified as the source of truth. -->
 **Owner:** CTO · CPO · CDO — one run, three seats
-**Version:** 31 — CTO: § 3 *What the system holds*, `GitState` (the model holds `HeadState` and `StatusLists` from one read; what a failed half does; what is still only the design); § 4 C-R6 (the bridge manifest's `git2` line as landed; three defined symbols named beside "The three names are a floor"); § 4 C-I3 (the core suites and the walk run with the machine-level reads on and nothing isolates them; the `nm` transport read as landed, with the one executable it is proved for; the switch and its test as landed); § 10 RC-4 *Still unresolved* (a dated parenthesis, its words kept); § 11 R-15 (the measurement, and *shows up as* naming the build that links the export) and R-16 (fixture sentence re-pinned, the item named by what it is, its new bound); *Open Questions* (the config-named-path item's bound moves to the build in which `mac-shell` first calls `nozoki_read_git`, with a dated note — eight stand); SDD Review Notes RN-91 (new); the four answered companion items folded, trail copy at `docs/trail/sdd/cycle-26.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. No slice's *Delivers*, *Reached when*, edge or order altered. Companion items added: none.
+**Version:** 32 — CTO: *Open Questions* (the config-named-path item's bound is "before the slice is reached" alone: the clause naming the build in which `mac-shell` first calls `nozoki_read_git` is removed, the review that holds the bound is the one of the change after which `see-git-status`'s *Reached when* is claimed whole, what a reader can meet in the builds between is stated, and a second dated note follows the first — eight stand); § 11 R-16 (the same bound, and the same builds between); § 10 RC-4 *Still unresolved* (a second dated parenthesis, the first one's words kept); SDD Review Notes RN-92 (new); the one answered companion item folded, trail copy at `docs/trail/sdd/cycle-27.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. No slice's *Delivers*, *Reached when*, edge or order altered. Companion items added: none.
+Version 31 — CTO: § 3 *What the system holds*, `GitState` (the model holds `HeadState` and `StatusLists` from one read; what a failed half does; what is still only the design); § 4 C-R6 (the bridge manifest's `git2` line as landed; three defined symbols named beside "The three names are a floor"); § 4 C-I3 (the core suites and the walk run with the machine-level reads on and nothing isolates them; the `nm` transport read as landed, with the one executable it is proved for; the switch and its test as landed); § 10 RC-4 *Still unresolved* (a dated parenthesis, its words kept); § 11 R-15 (the measurement, and *shows up as* naming the build that links the export) and R-16 (fixture sentence re-pinned, the item named by what it is, its new bound); *Open Questions* (the config-named-path item's bound moves to the build in which `mac-shell` first calls `nozoki_read_git`, with a dated note — eight stand); SDD Review Notes RN-91 (new); the four answered companion items folded, trail copy at `docs/trail/sdd/cycle-26.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. No slice's *Delivers*, *Reached when*, edge or order altered. Companion items added: none.
 Version 30 — CTO: § 3 SM-4 (the list gains `read_git`, exported as `nozoki_read_git`, with what it takes and answers; the list is ten, "all ten from `v1.0.0`"); § 6 `see-git-status` *Rests on* ("`SM-4` (`read_git`)" in place of "`SM-4` (`model_changed` carrying Git state)"); § 6 `promise-one-point-zero` *Reached when*, command half ("SM-4's ten functions"); § 10 RC-4 (new, the CTO's ground); *Open Questions* (the collapse-and-scroll item's counts — eight stand); SDD Review Notes RN-90 (new); the one answered companion item folded, trail copy at `docs/trail/sdd/cycle-25.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. § 4 C-R7 and C-I6 keep their words. No slice's *Delivers*, edge or order altered. Companion items added: none.
 Version 29 — CTO: § 4 C-I1 (a failed read "changes no other item", in place of "`observed` on its siblings"; each sibling holds the state its own read gave it, all four `Item<T>` states named; one sentence naming the failed re-read of an expanded folder as not decided there); § 6 `follow-the-folder` *Reached when*, command half (the same rule, without "as they were before the read"); SDD Review Notes RN-44 (parenthesis corrected in place) and RN-89 (new); *Open Questions* (one item added — eight stand); the one answered companion item folded, trail copy at `docs/trail/sdd/cycle-24.md`; `docs/SDD_open_issues.md` removed, empty of items, so `Status:` moves from Draft to Settled. No slice's *Delivers*, edge or order altered. Companion items added: none.
 Version 28 — CTO: § 3 *What the system holds*, `GitState` (the model defines the type and builds it from what the port returns, from `state` alone at `nozoki@87f6a48`; the hand-off to "the change that adds `state`" removed); § 3 SM-2 (the types `probe`, `state` and `status` answer are defined in `git-reader`; the rule kept for a type a later method brings); § 6 `see-git-status` *Reached when*, command half (the double's reason restated, the tree's items "as they were" in place of "every tree item `observed`", and where the adapter's refusal is exercised); SDD Review Notes RN-44 (corrected in place) and RN-88 (new); four answered companion items folded and dropped, trail copy at `docs/trail/sdd/cycle-23.md`; `docs/SDD_open_issues.md` stays on disk with § 2.1 unanswered, so `Status:` moves from Settled to Draft. No slice's *Delivers*, edge or order altered. Companion items added: none.
@@ -2675,7 +2676,12 @@ half, and what failed is not that half but the seam under it (§ 3 SM-4; § 4 C-
   landed there, and so did the `nm` read (§ 4 C-I3). The config-named-path item did not: its
   bound passed unmet, and the item is now settled no later than the build in which `mac-shell`
   first calls `nozoki_read_git` (*Open Questions*, the config-named-path item; § 11 R-16). The
-  other two questions stand. `docs/trail/sdd/cycle-26.md` § 5.3, § 5.4; RN-91.)*
+  other two questions stand. `docs/trail/sdd/cycle-26.md` § 5.3, § 5.4; RN-91.)* *(Later on
+  2026-10-04 that bound moved a second time, before the build it named had landed: the
+  config-named-path item is settled in `see-git-status` before the slice is reached, and no
+  build inside the slice bounds it. The parenthesis before this one is a dated record and its
+  last bound is no longer the current one (*Open Questions*, the config-named-path item; § 11
+  R-16). `docs/trail/sdd/cycle-27.md` § 5.1; RN-92.)*
 
 ## 11. Technical risks
 
@@ -2823,9 +2829,15 @@ A risk with no trigger and no response is an observation.>
   bound, so no byte outside the grant is read there. In the harness nothing bounds it. The read
   is named as uncovered beside the two claims it falls under (§ 3, the `core-bridge` row; § 4
   C-D3), and how it is closed is the config-named-path item of *Open Questions*, which is
-  settled no later than the build in which `mac-shell` first calls `nozoki_read_git`. Until
+  settled in `see-git-status` before the slice is reached. No build inside the slice bounds
+  it. From the first build in which `mac-shell` calls `nozoki_read_git` until that item is
+  settled, the bundle opens a reader's own repositories with this read unsettled. In those
+  builds the sandbox is the only bound, and a repository whose config names an outside path
+  shows a failed Git item if libgit2's open or status read does not survive the refusal (§ 6
+  S-4 *Reached when*, observable half, "Git state the tool could not read"). Until
   that item is settled this is a stated limit of § 4 C-D1 outside the sandbox, not a held
-  property (RN-87; `docs/trail/sdd/cycle-26.md` § 5.4, RN-91).
+  property (RN-87; `docs/trail/sdd/cycle-26.md` § 5.4, RN-91; `docs/trail/sdd/cycle-27.md`
+  § 5.1, RN-92).
 
 ## 12. What this design is not
 
@@ -5625,6 +5637,85 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   Settled *(re: § 3 `GitState`; § 4 C-R6, C-I3; § 10 RC-4 *Still unresolved*; § 11 R-15, R-16;
   *Open Questions*; source: `docs/trail/sdd/cycle-26.md` §§ 5.1 to 5.4;
   `docs/trail/sdd/self_answer-38.md`; `nozoki@a7834f4`)*.
+- **RN-92:** *(CTO)* *(changed)* The config-named-path item's bound moves a second time, and
+  this time no build is named in its place. The companion's one item is folded: raised from
+  downstream by the PM and answered in the CTO's seat by an unattended run
+  (`docs/trail/sdd/cycle-27.md` § 5.1; reasoning `docs/trail/sdd/self_answer-39.md`). It is a
+  dated correction and not a § 10 re-cut: no slice's *Reached when*, *Delivers*, § 7 edge or
+  order moves, and § 2's shape and § 3's seams keep their words.
+  **Who authorized it.** The item records that the owner chose on 2026-10-04 to move the
+  bound, over settling the item in or before the build that first calls the export and over
+  waiving the bound at that build's review (`docs/trail/sdd/cycle-27.md` § 5.1, *The route the
+  owner chose*). This fold did not see the owner's words. It rests on the PM's record of them
+  in that item and in the commit that opened the companion (`nozoki@78e823a`).
+  **What moved, each named.** (1) *Open Questions*, the config-named-path item: the clause "no
+  later than the build in which `mac-shell` first calls `nozoki_read_git`, which is the first
+  build whose release executable links that export, and in every case" is removed, and the
+  bound is "before the slice is reached" alone. "It is held by review of the change that makes
+  the shell call the export" is removed. In its place: the bound is held by review of the
+  change after which `see-git-status`'s *Reached when* is claimed whole, and a slice claimed
+  without the fixture and its case is not reached. The item gains what a reader can meet in
+  the builds between, and a second dated note after the first. (2) § 11 R-16: the same bound,
+  and the same builds between. (3) § 10 RC-4 *Still unresolved*: the first parenthesis keeps
+  its words and a second dated parenthesis follows it.
+  **Why no later build is named.** This is reasoning, and it is the answer's. This document
+  can name a build only by what it does. The two builds it named for this item were the one
+  that first exports a function reaching `git-reader`, which landed at `nozoki@392177d` with
+  the item open, and the one in which the shell first calls the export, which the owner chose
+  not to hold to it. A third named build is a third bound of the same kind. "Before the slice
+  is reached" cannot pass unmet while the slice is called reached, so nothing has to notice a
+  missed build.
+  **A call of this seat's: the bound stays held by review, not by a command.** The answer
+  names a stronger form and leaves it to this fold: adding the fixture and its case to § 6 S-4
+  *Reached when*, command half (`docs/trail/sdd/self_answer-39.md:L83-L87`). This fold does
+  not take it. Which of the two forms closes the item is still open, and the case's command
+  and its expected result differ by form, so a command written now would be written before the
+  thing it checks is designed. § 10 also admits a change to a *Reached when* on four triggers,
+  and none holds here. When a form is found, the change that builds it writes its case, and
+  whether that case joins S-4's command half is decided then, as a § 10 entry.
+  **What the builds between hold, stated beside the claim.** R-16 already said the read is "a
+  stated limit of § 4 C-D1 outside the sandbox, not a held property". That sentence keeps its
+  words. What changes is how long it applies: from the first build in which the shell calls
+  the export until the item is settled, and no longer only until that first build. In those
+  builds the sandbox is the only bound, and whether libgit2's open or status read survives
+  its refusal has not been run by any fold, this one included.
+  **What does not move.** Which of the two forms closes the item; what settles it; the rule
+  that the second form is written into `git-reader`'s row and § 11 R-16 before it is built;
+  § 4 C-I3's and § 11 R-15's sentences naming the build in which the shell first calls the
+  export, which are about the `nm` transport read and a different risk. RN-91's sentence
+  naming the second bound, and RC-4's first parenthesis, are dated records and are not
+  corrected.
+  **Read and measured for this fold, at `nozoki@b780d58`.**
+  `grep -rn 'nozoki_read_git\|read_git\|readGit' nozoki-mac/Sources` printed nothing, and so
+  did `grep -rn 'include.path\|excludesfile\|attributesfile' checks/fixtures`.
+  `grep -n -E 'no later than|before the slice is reached|held by review' docs/SDD.md` was run
+  before the first edit. Outside the three places above it printed three lines, and none
+  states this item's bound: § 4 C-I3 and RN-76 on the walk's match with the export set, and
+  RN-85 on the build that owes the `nm` read.
+  **Known limits, stated beside the claims.** This fold built nothing and ran no test and no
+  `checks/` script: it changes no code. Of this document it read the header, *Who holds what*,
+  § 6 S-4, the head of § 10 and RC-4, § 11 R-14's tail to R-16, RN-89's tail to RN-91 and *Open
+  Questions*, and searched the rest with the grep above and for `nozoki_read_git`. §§ 1 to 5,
+  7 to 9 and 12 and the other review notes were not re-read, so a sentence there that states
+  the old bound in other words was not seen. Of the inputs, the status lines of `docs/PRD.md`,
+  `docs/SRS.md` and `docs/UXD.md` were read, each Settled, and their bodies were not: the
+  answer moves no requirement, surface or product statement. `docs/nfdr.md` was read at its
+  header and at the two entries named next, and the decision log was not opened.
+  `<CORE>/templates/product-templates/sdd_template.md` was not re-read against this document.
+  **Downstream, not this document's to change.** `docs/nfdr.md` QC-6 and QC-35 state the bound
+  this fold removes, as "settled no later than the build in which `mac-shell` first calls
+  `nozoki_read_git`" (`docs/nfdr.md:L248-L249`, `:L938-L940`, read at `nozoki@b780d58`). The
+  change is carried as `docs/architecture_open_issues.md` § 2.1, opened at `nozoki@250fc6e`,
+  for the Principal Architect's records to fold. Until then the two entries differ from this
+  document. The NFDR derives this bound from this document and does not set it, so the bound
+  stated here is the current one; § 4's opening note states that direction for the two stores,
+  "downstream is rebuilt from upstream, never the reverse".
+  **The companion:** `diff docs/SDD_open_issues.md docs/trail/sdd/cycle-27.md` printed nothing
+  before this fold's first edit, and the companion matched `nozoki@b780d58`. Its one item is
+  folded and nothing is unresolved, so `docs/SDD_open_issues.md` is removed and `Status:` stays
+  Settled *(re: *Open Questions*, the config-named-path item; § 10 RC-4 *Still unresolved*;
+  § 11 R-16; source: `docs/trail/sdd/cycle-27.md` § 5.1; `docs/trail/sdd/self_answer-39.md`;
+  `nozoki@b780d58`)*.
 
 ## Open Questions
 
@@ -5693,12 +5784,19 @@ question.>
   found none and states that it did not look for long (`docs/trail/sdd/self_answer-34.md`
   § 2.1, the first addition). Two: the adapter reads the repository's config through
   `fs-reader`'s check first and answers `failed` for a repository whose config carries one of
-  the three with a path outside the folder. Settled in `see-git-status`, no later than the build
-  in which `mac-shell` first calls `nozoki_read_git`, which is the first build whose release
-  executable links that export, and in every case before the slice is reached. It is settled
+  the three with a path outside the folder. Settled in `see-git-status`, before the slice is
+  reached. No build inside the slice bounds it. It is settled
   by a fixture repository whose config names an outside path and a case showing that path is
-  not read. No check enforces this bound. It is held by review of the change that makes the
-  shell call the export. The second form adds a
+  not read. No check enforces this bound. It is held by review of the change after which
+  `see-git-status`'s *Reached when* is claimed whole: where the fixture and its case are
+  missing at that review, the slice is not reached. There is no later build of the slice than
+  the one that reaches it, so this bound has nowhere later to move to. From the first build in
+  which `mac-shell` calls `nozoki_read_git` until this item is settled, the bundle opens a
+  reader's own repositories with the item open. In those builds the sandbox is the only bound
+  (§ 4 C-R2; § 11 R-16), and whether libgit2's open or status read survives the sandbox's
+  refusal has not been run. Where it does not survive, a repository whose config names an
+  outside path shows a failed Git item, the state § 6 S-4's observable half draws for Git
+  state the tool could not read. The second form adds a
   condition under which a repository's Git state is not shown, which a reader sees; where it is
   the form found, it is written into `git-reader`'s row and § 11 R-16 before it is built.
   *(Added on 2026-10-03; RN-87.)* *(The bound read "no later than the build that first exports
@@ -5707,7 +5805,15 @@ question.>
   opens no repository: the Git item is read on the first ask
   (`crates/nozoki-bridge/src/exports.rs:L102-L103`), and
   `grep -rn 'nozoki_read_git\|read_git' nozoki-mac/Sources` prints nothing at `nozoki@a7834f4`.
-  `docs/trail/sdd/cycle-26.md` § 5.4; RN-91.)*]
+  `docs/trail/sdd/cycle-26.md` § 5.4; RN-91.)* *(The bound read "no later than the build in
+  which `mac-shell` first calls `nozoki_read_git`, which is the first build whose release
+  executable links that export, and in every case before the slice is reached", held "by
+  review of the change that makes the shell call the export", until later on 2026-10-04. The
+  owner then chose to move it, and the first half was removed. The note before this one is a
+  dated record: its sentence "Until the shell calls the export the bundle opens no repository"
+  describes the tree at `nozoki@a7834f4`, and stops describing it at the first build in which
+  the shell calls the export. At `nozoki@b780d58` the same grep still prints nothing.
+  `docs/trail/sdd/cycle-27.md` § 5.1; RN-92.)*]
 - [OPEN: What a failed re-read of a folder that is already expanded does to the entries listed
   under it: whether they stay as last read, go, or are held under the failed folder. Those
   entries are not the folder's siblings, so § 4 C-I1's rule that a failed read changes no other
