@@ -1450,4 +1450,340 @@ mod tests {
             );
         }
     }
+
+    /// Task 6: the session's Git answer over wirings of the test's own making: a port double, or the
+    /// switch's run with an erring setter.
+    mod git_session {
+        use std::path::{Path, PathBuf};
+        use std::sync::atomic::{AtomicUsize, Ordering};
+        use std::sync::mpsc::{Receiver, Sender, channel};
+        use std::sync::{Arc, Mutex};
+        use std::time::Duration;
+
+        use nozoki_core::{
+            BranchElement, GitPort, GitReadCondition, HeadState, RepositoryState, RootFinding,
+            StatusLists,
+        };
+        use serde_json::{Value, json};
+
+        use crate::machine_config::{Level, SetterFailure, SwitchGuard};
+        use crate::session::{Session, Wiring, arrive_wiring};
+        use crate::test_support::{TempDir, begin_log_capture, take_log_records};
+
+        type SharedPort = Arc<dyn GitPort + Send + Sync>;
+
+        /// A port double that counts each operation and answers a root whose branch is named for the
+        /// folder it was asked about, so an answer says which folder it was read for.
+        struct Counting {
+            probes: AtomicUsize,
+            states: AtomicUsize,
+            statuses: AtomicUsize,
+            state_failure: Option<GitReadCondition>,
+            status_failure: Option<GitReadCondition>,
+            /// When set, the first `state` call tells `parked` and waits for `release`.
+            gate: Option<Gate>,
+        }
+
+        struct Gate {
+            parked: Mutex<Sender<()>>,
+            release: Mutex<Receiver<()>>,
+            used: AtomicUsize,
+        }
+
+        impl Counting {
+            fn new() -> Self {
+                Self {
+                    probes: AtomicUsize::new(0),
+                    states: AtomicUsize::new(0),
+                    statuses: AtomicUsize::new(0),
+                    state_failure: None,
+                    status_failure: None,
+                    gate: None,
+                }
+            }
+
+            fn counts(&self) -> (usize, usize, usize) {
+                (
+                    self.probes.load(Ordering::SeqCst),
+                    self.states.load(Ordering::SeqCst),
+                    self.statuses.load(Ordering::SeqCst),
+                )
+            }
+        }
+
+        impl GitPort for Counting {
+            fn probe(&self, _folder: &Path) -> RootFinding {
+                self.probes.fetch_add(1, Ordering::SeqCst);
+                RootFinding::Root
+            }
+
+            fn state(&self, root: &Path) -> Result<HeadState, GitReadCondition> {
+                self.states.fetch_add(1, Ordering::SeqCst);
+                if let Some(gate) = &self.gate
+                    && gate.used.fetch_add(1, Ordering::SeqCst) == 0
+                {
+                    gate.parked
+                        .lock()
+                        .expect("the gate lock")
+                        .send(())
+                        .expect("the test is listening");
+                    gate.release
+                        .lock()
+                        .expect("the gate lock")
+                        .recv_timeout(Duration::from_secs(10))
+                        .expect("the test releases the read");
+                }
+                if let Some(condition) = &self.state_failure {
+                    return Err(condition.clone());
+                }
+                Ok(HeadState {
+                    branch: BranchElement::Branch(
+                        root.file_name()
+                            .expect("a folder name")
+                            .to_string_lossy()
+                            .into_owned(),
+                    ),
+                    state: RepositoryState::Normal,
+                })
+            }
+
+            fn status(&self, _root: &Path) -> Result<StatusLists, GitReadCondition> {
+                self.statuses.fetch_add(1, Ordering::SeqCst);
+                match &self.status_failure {
+                    Some(condition) => Err(condition.clone()),
+                    None => Ok(StatusLists {
+                        staged: Vec::new(),
+                        changed: Vec::new(),
+                    }),
+                }
+            }
+        }
+
+        fn session_over(port: &Arc<Counting>) -> Session {
+            let shared: SharedPort = port.clone();
+            Session::with_wiring(Box::new(move || Wiring::Wired(shared.clone())))
+        }
+
+        /// A session wired by the switch's own run over an erring setter, and the count of setter calls.
+        fn erring_session() -> (Session, Arc<AtomicUsize>) {
+            let calls = Arc::new(AtomicUsize::new(0));
+            let counted = calls.clone();
+            let guard = SwitchGuard::new(move |level: Level| {
+                counted.fetch_add(1, Ordering::SeqCst);
+                if level == Level::Xdg {
+                    Err(SetterFailure)
+                } else {
+                    Ok(())
+                }
+            });
+            let session = Session::with_wiring(Box::new(move || {
+                arrive_wiring(guard.arrive(), || Arc::new(Counting::new()))
+            }));
+            (session, calls)
+        }
+
+        fn open(session: &Session, folder: &Path) {
+            let result = session.open(folder.to_path_buf());
+            assert!(
+                matches!(result, crate::session::OpenResult::Opened),
+                "the folder must open"
+            );
+        }
+
+        fn git_item(session: &Session) -> Value {
+            serde_json::to_value(session.read_git()).expect("the answer serializes")
+        }
+
+        fn switch_failed() -> Value {
+            json!({ "state": "failed", "condition": "machine_config_not_switched_off" })
+        }
+
+        #[test]
+        fn test_erring_setter_session_answers_machine_config_not_switched_off() {
+            let scene = TempDir::new();
+            let repository = scene.repository_copy();
+            let (session, _calls) = erring_session();
+            open(&session, &repository);
+
+            assert_eq!(git_item(&session), switch_failed());
+        }
+
+        #[test]
+        fn test_erring_setter_session_stays_failed_after_a_second_folder_opens() {
+            let scene = TempDir::new();
+            let repository = scene.repository_copy();
+            let second = TempDir::new();
+            let (session, calls) = erring_session();
+            open(&session, &repository);
+            assert_eq!(git_item(&session), switch_failed());
+            let calls_after_first = calls.load(Ordering::SeqCst);
+            assert_eq!(calls_after_first, 3, "system, global, then the erring XDG");
+
+            open(&session, second.path());
+
+            assert_eq!(git_item(&session), switch_failed());
+            assert_eq!(calls.load(Ordering::SeqCst), calls_after_first, "no retry");
+        }
+
+        #[test]
+        fn test_erring_setter_and_real_wired_sessions_answer_list_and_select_file_equally() {
+            let scene = TempDir::new();
+            let repository = scene.repository_copy();
+            let (erring, _calls) = erring_session();
+            let real = Session::default();
+            open(&erring, &repository);
+            open(&real, &repository);
+
+            let listed = |session: &Session| {
+                serde_json::to_value(session.list("")).expect("the answer serializes")
+            };
+            let selected = |session: &Session| {
+                serde_json::to_value(session.select_file("README.md"))
+                    .expect("the answer serializes")
+            };
+
+            assert_eq!(git_item(&erring), switch_failed());
+            assert_eq!(listed(&erring), listed(&real));
+            assert_eq!(selected(&erring), selected(&real));
+            assert_eq!(listed(&real)["state"], "observed");
+            assert_eq!(selected(&real)["state"], "text");
+        }
+
+        #[test]
+        fn test_status_failure_answers_failed_with_the_status_condition_never_a_root() {
+            let mut port = Counting::new();
+            port.status_failure = Some(GitReadCondition::NotARepository);
+            let port = Arc::new(port);
+            let session = session_over(&port);
+            let folder = TempDir::new();
+            open(&session, folder.path());
+
+            assert_eq!(
+                git_item(&session),
+                json!({ "state": "failed", "condition": "not_a_repository" })
+            );
+        }
+
+        #[test]
+        fn test_two_asks_on_one_open_read_once() {
+            let port = Arc::new(Counting::new());
+            let session = session_over(&port);
+            let folder = TempDir::new();
+            open(&session, folder.path());
+
+            let first = git_item(&session);
+            let second = git_item(&session);
+
+            assert_eq!(first, second);
+            assert_eq!(first["state"], "observed");
+            assert_eq!(port.counts(), (1, 1, 1));
+        }
+
+        #[test]
+        fn test_a_new_open_of_the_same_folder_reads_again() {
+            let port = Arc::new(Counting::new());
+            let session = session_over(&port);
+            let folder = TempDir::new();
+            open(&session, folder.path());
+            git_item(&session);
+
+            open(&session, folder.path());
+            git_item(&session);
+
+            assert_eq!(port.counts(), (2, 2, 2));
+        }
+
+        #[test]
+        fn test_failed_item_is_answered_without_a_second_read() {
+            let mut port = Counting::new();
+            port.state_failure = Some(GitReadCondition::GitDirectoryMissing);
+            let port = Arc::new(port);
+            let session = session_over(&port);
+            let folder = TempDir::new();
+            open(&session, folder.path());
+
+            let first = git_item(&session);
+            let second = git_item(&session);
+
+            assert_eq!(
+                first,
+                json!({ "state": "failed", "condition": "git_directory_missing" })
+            );
+            assert_eq!(second, first);
+            assert_eq!(
+                port.counts(),
+                (1, 1, 0),
+                "the failed item makes no port call"
+            );
+        }
+
+        #[test]
+        fn test_a_parked_ask_does_not_answer_a_later_folders_item() {
+            let (parked_tx, parked_rx) = channel::<()>();
+            let (release_tx, release_rx) = channel::<()>();
+            let mut port = Counting::new();
+            port.gate = Some(Gate {
+                parked: Mutex::new(parked_tx),
+                release: Mutex::new(release_rx),
+                used: AtomicUsize::new(0),
+            });
+            let port = Arc::new(port);
+            let session = session_over(&port);
+            let folder_a = TempDir::new();
+            let folder_b = TempDir::new();
+            open(&session, folder_a.path());
+            let name_of = |folder: &TempDir| -> String {
+                let canonical: PathBuf = folder.path().canonicalize().expect("canonical");
+                canonical
+                    .file_name()
+                    .expect("a name")
+                    .to_string_lossy()
+                    .into_owned()
+            };
+
+            let session_ref = &session;
+            let parked_answer = std::thread::scope(|scope| {
+                let ask = scope.spawn(move || git_item(session_ref));
+                parked_rx
+                    .recv_timeout(Duration::from_secs(10))
+                    .expect("the first read parked");
+                open(session_ref, folder_b.path());
+                release_tx.send(()).expect("the read is parked");
+                ask.join().expect("the ask finishes")
+            });
+
+            assert_ne!(
+                parked_answer["branch"]["name"],
+                json!(name_of(&folder_a)),
+                "folder A's item is not answered after B opened"
+            );
+            let next = git_item(&session);
+            assert_eq!(next["branch"]["name"], json!(name_of(&folder_b)));
+        }
+
+        #[test]
+        fn test_a_switch_failure_emits_one_warn_and_a_repeat_ask_emits_none() {
+            let serial = begin_log_capture();
+            let folder = TempDir::new();
+            let (session, _calls) = erring_session();
+
+            open(&session, folder.path());
+            let after_arrival = take_log_records();
+            git_item(&session);
+            git_item(&session);
+            let after_asks = take_log_records();
+            drop(serial);
+
+            assert_eq!(after_arrival.len(), 1, "{after_arrival:?}");
+            assert!(
+                after_arrival[0].contains("core-bridge"),
+                "{after_arrival:?}"
+            );
+            assert!(
+                after_arrival[0].contains("search-path switch"),
+                "{after_arrival:?}"
+            );
+            assert!(after_asks.is_empty(), "an ask logs nothing: {after_asks:?}");
+        }
+    }
 }

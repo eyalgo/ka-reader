@@ -5,6 +5,7 @@
 
 use git2::ConfigLevel;
 use nozoki_bridge::machine_config::{SwitchOutcome, arrive_in_process};
+use nozoki_bridge::session::{OpenResult, Session};
 
 const LEVELS: [ConfigLevel; 4] = [
     ConfigLevel::System,
@@ -40,5 +41,13 @@ fn test_the_switch_against_the_real_libgit2() {
     unsafe { git2::opts::set_search_path(ConfigLevel::Global, SENTINEL) }
         .expect("the sentinel is set");
     assert_eq!(arrive_in_process(), SwitchOutcome::Off);
+    assert_eq!(search_path(ConfigLevel::Global), SENTINEL);
+
+    // Step 3: a second folder opened through a production-wired session is a second arrival, and
+    // it repeats nothing: the level still reads the sentinel (CP-533).
+    let session = Session::default();
+    let folder = std::env::temp_dir();
+    assert!(matches!(session.open(folder), OpenResult::Opened));
+    session.read_git();
     assert_eq!(search_path(ConfigLevel::Global), SENTINEL);
 }
