@@ -5,7 +5,7 @@
 
 use git2::ConfigLevel;
 use nozoki_bridge::machine_config::{SwitchOutcome, arrive_in_process};
-use nozoki_bridge::session::{OpenResult, Session};
+use nozoki_bridge::session::{GitAnswerDto, OpenResult, Session};
 
 const LEVELS: [ConfigLevel; 4] = [
     ConfigLevel::System,
@@ -23,17 +23,41 @@ fn search_path(level: ConfigLevel) -> String {
     path.into_string().expect("the search path is UTF-8")
 }
 
+/// Opens `folder` through `session` and asks its Git item, which must be read through a wired port.
+fn open_and_read(session: &Session, folder: std::path::PathBuf) {
+    assert!(matches!(session.open(folder), OpenResult::Opened));
+    assert!(
+        matches!(session.read_git(), GitAnswerDto::Observed(_)),
+        "a production-wired session reads through the adapter"
+    );
+}
+
 #[test]
 fn test_the_switch_against_the_real_libgit2() {
-    // Step 1: after the first arrival, all four search paths read empty.
-    assert_eq!(arrive_in_process(), SwitchOutcome::Off);
+    // Step 0: before any arrival, libgit2's global level names a place (the home folder), so the
+    // step below can only read it empty if the arrival emptied it.
+    assert_ne!(
+        search_path(ConfigLevel::Global),
+        "",
+        "the global level starts non-empty"
+    );
+
+    // Step 1: the first arrival is the production session's open, as the shell makes it (CP-531:
+    // the composition root runs before any Git read). After it, all four search paths read empty.
+    let session = Session::default();
+    open_and_read(&session, std::env::temp_dir());
     for level in LEVELS {
         assert_eq!(
             search_path(level),
             "",
-            "{level:?} reads empty after the switch"
+            "{level:?} reads empty after the composition root ran"
         );
     }
+    assert_eq!(
+        arrive_in_process(),
+        SwitchOutcome::Off,
+        "the session's arrival was the process's switch"
+    );
 
     // Step 2: a second arrival repeats nothing. One level is set to a sentinel, the process arrives
     // again, and that level still reads the sentinel.
@@ -43,11 +67,8 @@ fn test_the_switch_against_the_real_libgit2() {
     assert_eq!(arrive_in_process(), SwitchOutcome::Off);
     assert_eq!(search_path(ConfigLevel::Global), SENTINEL);
 
-    // Step 3: a second folder opened through a production-wired session is a second arrival, and
+    // Step 3: a second folder opened through the production-wired session is a second arrival, and
     // it repeats nothing: the level still reads the sentinel (CP-533).
-    let session = Session::default();
-    let folder = std::env::temp_dir();
-    assert!(matches!(session.open(folder), OpenResult::Opened));
-    session.read_git();
+    open_and_read(&session, std::env::temp_dir());
     assert_eq!(search_path(ConfigLevel::Global), SENTINEL);
 }

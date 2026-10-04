@@ -1772,11 +1772,72 @@ mod tests {
                     .expect("the answer serializes")
             };
 
+            // CP-542: "whatever state the Git item is in". The real session is answered while its
+            // item is pending, then again once it is observed, and the erring one while failed.
+            let pending = (listed(&real), selected(&real));
+            assert_eq!(git_item(&real)["state"], "observed");
+            let observed = (listed(&real), selected(&real));
             assert_eq!(git_item(&erring), switch_failed());
-            assert_eq!(listed(&erring), listed(&real));
-            assert_eq!(selected(&erring), selected(&real));
-            assert_eq!(listed(&real)["state"], "observed");
-            assert_eq!(selected(&real)["state"], "text");
+            let failed = (listed(&erring), selected(&erring));
+
+            assert_eq!(
+                observed, pending,
+                "reading the Git item changed no other answer"
+            );
+            assert_eq!(
+                failed, observed,
+                "a failed Git item changes no other answer"
+            );
+            assert_eq!(observed.0["state"], "observed");
+            assert_eq!(observed.1["state"], "text");
+        }
+
+        /// A port double whose first `probe` panics and whose later ones answer `plain`.
+        struct PanicsOnce {
+            probes: AtomicUsize,
+        }
+
+        impl GitPort for PanicsOnce {
+            fn probe(&self, _folder: &Path) -> RootFinding {
+                if self.probes.fetch_add(1, Ordering::SeqCst) == 0 {
+                    panic!("the first read panics");
+                }
+                RootFinding::Plain
+            }
+
+            fn state(&self, _root: &Path) -> Result<HeadState, GitReadCondition> {
+                Err(GitReadCondition::NotARoot)
+            }
+
+            fn status(&self, _root: &Path) -> Result<StatusLists, GitReadCondition> {
+                Err(GitReadCondition::NotARoot)
+            }
+        }
+
+        /// Design (b1): "a read that panicked was never stored, so the item is still `pending` and
+        /// the next ask reads". The panic is the boundary's to catch; the session must not be left
+        /// holding a read that never finished.
+        #[test]
+        fn test_a_read_that_panicked_leaves_the_item_pending_and_the_next_ask_reads() {
+            let port = Arc::new(PanicsOnce {
+                probes: AtomicUsize::new(0),
+            });
+            let shared: SharedPort = port.clone();
+            let session = Session::with_wiring(Box::new(move || Wiring::Wired(shared.clone())));
+            let folder = TempDir::new();
+            open(&session, folder.path());
+
+            let first =
+                std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| session.read_git()));
+            let next = git_item(&session);
+
+            assert!(first.is_err(), "the first read panicked");
+            assert_eq!(next, json!({ "state": "observed", "kind": "plain" }));
+            assert_eq!(
+                port.probes.load(Ordering::SeqCst),
+                2,
+                "the next ask read again"
+            );
         }
 
         #[test]
