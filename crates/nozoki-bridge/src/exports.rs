@@ -1,4 +1,4 @@
-//! The C ABI: the `#[repr(C)]` buffer, the four exports, and the process's one session. Each
+//! The C ABI: the `#[repr(C)]` buffer, the five exports, and the process's one session. Each
 //! export decodes, calls the session, and formats through the wrapper, and does nothing else
 //! (QC-13). The header generator reads this file, so it holds only what the header must declare.
 
@@ -21,6 +21,7 @@ pub(crate) enum BufferOrigin {
     OpenFolder,
     ListTree,
     SelectFile,
+    ReadGit,
 }
 
 #[repr(C)]
@@ -94,8 +95,19 @@ pub unsafe extern "C" fn nozoki_select_file(path: *const c_char) -> *mut NozokiB
     })
 }
 
-/// Releases a buffer returned by `nozoki_open_folder`, `nozoki_list_tree` or `nozoki_select_file`.
-/// NULL does nothing.
+/// Answers the open folder's Git item as a JSON object tagged by `state`: `{"state":"pending"}` with
+/// no folder open or nothing read; `{"state":"observed","kind":"plain"}`;
+/// `{"state":"observed","kind":"root","branch":…,"repository_state":…,"staged":[…],"changed":[…]}`;
+/// or `{"state":"failed","condition":…}`, with `"git_directory"` only beside
+/// `git_directory_outside`. The item is read on the first ask after each successful open and held
+/// until the next one. NULL on failure; a non-NULL answer is freed with `nozoki_free`.
+#[unsafe(no_mangle)]
+pub extern "C" fn nozoki_read_git() -> *mut NozokiBuffer {
+    guarded(BufferOrigin::ReadGit, || SESSION.read_git())
+}
+
+/// Releases a buffer returned by `nozoki_open_folder`, `nozoki_list_tree`, `nozoki_select_file` or
+/// `nozoki_read_git`. NULL does nothing.
 ///
 /// # Safety
 ///

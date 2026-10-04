@@ -34,8 +34,10 @@ pub(crate) fn guarded<T: Serialize>(
 }
 
 fn stopped_open(origin: BufferOrigin, detail: &str) -> *mut NozokiBuffer {
-    if origin == BufferOrigin::OpenFolder {
-        log::warn!("core-bridge: open_folder stopped: {detail}");
+    match origin {
+        BufferOrigin::OpenFolder => log::warn!("core-bridge: open_folder stopped: {detail}"),
+        BufferOrigin::ReadGit => log::warn!("core-bridge: read_git stopped: {detail}"),
+        BufferOrigin::ListTree | BufferOrigin::SelectFile => {}
     }
     std::ptr::null_mut()
 }

@@ -5,8 +5,7 @@ use nozoki_bridge::exports::{nozoki_free, nozoki_read_git};
 
 #[test]
 fn test_exported_read_git_before_any_open_answers_exactly_pending() {
-    // SAFETY: `nozoki_read_git` takes no argument.
-    let buffer = unsafe { nozoki_read_git() };
+    let buffer = nozoki_read_git();
     assert!(!buffer.is_null(), "an answer, never NULL");
 
     // SAFETY: the buffer was returned a moment ago and has not been freed.

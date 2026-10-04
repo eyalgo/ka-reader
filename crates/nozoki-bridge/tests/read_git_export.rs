@@ -37,8 +37,7 @@ fn open(folder: &Path) {
 }
 
 fn read_git() -> Value {
-    // SAFETY: `nozoki_read_git` takes no argument.
-    take_json(unsafe { nozoki_read_git() })
+    take_json(nozoki_read_git())
 }
 
 #[test]
@@ -75,8 +74,7 @@ fn test_the_buffer_from_read_git_is_freed_by_nozoki_free() {
     let scene = TempDir::new();
     open(&scene.copy_fixture("plain"));
 
-    // SAFETY: `nozoki_read_git` takes no argument.
-    let buffer = unsafe { nozoki_read_git() };
+    let buffer = nozoki_read_git();
     assert!(!buffer.is_null());
     // SAFETY: the buffer was returned a moment ago and has not been freed.
     let length = unsafe { (*buffer).len };
