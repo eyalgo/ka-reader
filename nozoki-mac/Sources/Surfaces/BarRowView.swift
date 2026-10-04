@@ -30,7 +30,7 @@ final class BarRowView: NSTableRowView {
             : NSColor(srgbRed: 0xE2 / 255, green: 0xE3 / 255, blue: 0xDF / 255, alpha: 1)
     }
 
-    /// The bar was asked for on its own, as the tree's open-file row does.
+    /// The bar was asked for on its own, as the rail's active entry does.
     private var barRequested = false
 
     /// The row draws the bar: asked for on its own, or because the row is drawn as selected.
