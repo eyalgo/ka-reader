@@ -54,7 +54,13 @@ None.
   `see-git-status`", the tail names that slice's bar as where the rule lands. The gate is still
   review until the script holds it, and nothing else moves. Adding the rule to `checks/structure.sh`
   now is a change to the script and goes through the delivery tier, not this record.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm. The draft is right, and it is right over the second override for a
+  reason the item does not state. "Until a change adds it, by the header's rule" stays true however
+  many changes land without the rule. Naming a delivery unit as the rule's source is the form that went
+  false at v37, when the named change landed without it. Re-measured at `nozoki@566558b`: the
+  script's *WHAT IS NOT HELD* still names the clause (`checks/structure.sh:L257-L258`), only the probe
+  change touched the script after `8edec4f`, and `grep -rln git2 crates/nozoki-bridge` prints the
+  three files the tail names. Reasoning: `docs/trail/architecture/self_answer-39.md` § 2.1.
 
 ### 2.2 ADR-0013 names SM-4's list as nine, and SDD v30 makes it ten with `read_git`; the run drafted a superseding record, ADR-0021, rather than a correction in place
 
@@ -87,7 +93,21 @@ None.
   still Proposed, ADR-0013 takes the dated correction, and the pull call's *why* lives only in SDD
   § 10 RC-4 and RN-90. QC-24's list of ten does not move in any case. Only its ADR-0021 trace drops
   or is re-pointed.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm, with one addition. A superseding record is the right form, and the
+  log's own practice settles it rather than leaving a three-way guess. This log corrects in place, with
+  a dated note, a fact, a pointer or a description that the record's rule does not rest on, even
+  inside § Decision (`docs/adr/0012-renderer-run-proved-on-the-shipped-bundle-beside-the-wall.md:L41-L57`,
+  where the record says what it fixes is "the gate, its two rules", `:L119-L120`;
+  `docs/adr/0016-physical-unit-set-core-bridge-mac-checks.md:L45-L49`, a reason clause). It
+  supersedes when the rule a later change is held to moves, which is what happened when ADR-0020
+  superseded ADR-0016. The closed list is that kind of rule: what may cross the seam, and what C-I6's
+  pin holds from `v1.0.0`. The nine names and "all nine from `v1.0.0`" are that rule in ADR-0013's
+  § Decision (`docs/adr/0013-sandboxed-single-process-read-pipeline.md:L44-L47`), and no other record
+  counts the list. **The addition:** ADR-0021's *Traces to* cites this item as
+  "`docs/architecture_open_issues.md` § 2.1"
+  (`docs/adr/0021-sandboxed-single-process-read-pipeline-git-state-pulled-by-read-git.md:L176`), but
+  the item is § 2.2. The fold that accepts the record should point that line at this item's trail
+  copy, § 2.2. Reasoning: `docs/trail/architecture/self_answer-39.md` § 2.2.
 
 ## 3. Raised from downstream — an item from a seat that did not write these records
 
