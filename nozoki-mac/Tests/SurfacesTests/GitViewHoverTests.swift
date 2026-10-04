@@ -118,6 +118,22 @@ final class GitViewHoverTests: XCTestCase {
         return try XCTUnwrap(rep.representation(using: .png, properties: [:]))
     }
 
+    /// The middle of the status letter of the row for `path`.
+    private func letterCentre(ofRow path: String, in view: GitView) throws -> NSPoint {
+        let letter = try XCTUnwrap(
+            rowView(path, in: view).subviews.compactMap { $0 as? NSTextField }
+                .first { $0.identifier?.rawValue == "gitRowLetter" })
+        return centre(of: letter, in: view)
+    }
+
+    /// The middle of the heading that reads `text`.
+    private func headingCentre(_ text: String, in view: GitView) throws -> NSPoint {
+        let heading = try XCTUnwrap(
+            descendants(of: view).compactMap { $0 as? NSTextField }
+                .first { $0.stringValue == text }, "no heading \(text)")
+        return centre(of: heading, in: view)
+    }
+
     private func scrollView(of view: GitView) throws -> NSScrollView {
         try XCTUnwrap(descendants(of: view).compactMap { $0 as? NSScrollView }.first)
     }
@@ -182,15 +198,103 @@ final class GitViewHoverTests: XCTestCase {
         XCTAssertEqual(view.barPaths(), ["b.txt"])
         try PointerDelivery.move(to: try point(ofRow: "a.txt", in: view), in: view)
         let elsewhere = try rowImage("b.txt", in: view)
+        XCTAssertEqual(view.selectionFillPaths(), ["b.txt"], "with the pointer elsewhere")
 
         try PointerDelivery.move(to: try point(ofRow: "b.txt", in: view), in: view)
 
         XCTAssertEqual(view.hoverPaths(), [])
         XCTAssertEqual(view.barPaths(), ["b.txt"])
+        XCTAssertEqual(view.selectionFillPaths(), ["b.txt"], "with the pointer under it")
         XCTAssertEqual(try rowImage("b.txt", in: view), elsewhere)
 
         view.clearSelection()
         XCTAssertEqual(view.hoverPaths(), ["b.txt"], "no longer drawn as selected")
+    }
+
+    func test_hover_s4_click_then_pointer_over_no_row_clicked_row_shows_selection_fill_and_bar_no_other_row_either()
+        throws
+    {
+        let fixture = makeFixture(showing: repository(changed: [entry("a.txt"), entry("b.txt")]))
+        let view = fixture.view
+        try click(at: try point(ofRow: "b.txt", in: view), in: fixture)
+
+        try PointerDelivery.move(to: try headingCentre("Changes", in: view), in: view)
+
+        XCTAssertEqual(view.selectionFillPaths(), ["b.txt"])
+        XCTAssertEqual(view.barPaths(), ["b.txt"])
+        let other = try rowView("a.txt", in: view)
+        XCTAssertFalse(other.drawsSelection)
+        XCTAssertFalse(other.drawsBar)
+    }
+
+    func test_hover_s4_click_on_a_letter_draws_the_same_selected_row_and_activates_once() throws {
+        let fixture = makeFixture(showing: repository(changed: [entry("a.txt"), entry("b.txt")]))
+        let view = fixture.view
+
+        try click(at: try letterCentre(ofRow: "b.txt", in: view), in: fixture)
+
+        XCTAssertEqual(view.selectionFillPaths(), ["b.txt"])
+        XCTAssertEqual(view.barPaths(), ["b.txt"])
+        XCTAssertEqual(fixture.activated.paths, ["b.txt"])
+    }
+
+    func test_hover_s4_clicking_another_row_moves_fill_and_bar_to_it_in_the_same_turn() throws {
+        let fixture = makeFixture(showing: repository(changed: [entry("a.txt"), entry("b.txt")]))
+        let view = fixture.view
+        try click(at: try point(ofRow: "b.txt", in: view), in: fixture)
+
+        try click(at: try point(ofRow: "a.txt", in: view), in: fixture)
+
+        XCTAssertEqual(view.selectionFillPaths(), ["a.txt"])
+        XCTAssertEqual(view.barPaths(), ["a.txt"])
+    }
+
+    func test_hover_s4_clicking_the_selected_row_again_leaves_exactly_one_row_selected() throws {
+        let fixture = makeFixture(showing: repository(changed: [entry("a.txt"), entry("b.txt")]))
+        let view = fixture.view
+        let onB = try point(ofRow: "b.txt", in: view)
+        try click(at: onB, in: fixture)
+
+        try click(at: onB, in: fixture)
+
+        XCTAssertEqual(view.selectionFillPaths(), ["b.txt"])
+        XCTAssertEqual(view.barPaths(), ["b.txt"])
+    }
+
+    func test_hover_s4_a_path_listed_twice_draws_only_the_clicked_row_as_selected() throws {
+        let fixture = makeFixture(
+            showing: repository(staged: [entry("s.txt", .added)], changed: [entry("s.txt")]))
+        let view = fixture.view
+        let rows = rowViews(view)
+        XCTAssertEqual(rows.count, 2)
+
+        try click(at: centre(of: rows[1], in: view), in: fixture)
+
+        XCTAssertEqual(rows.map(\.drawsSelection), [false, true], "Staged, then Changes")
+        XCTAssertEqual(rows.map(\.drawsBar), [false, true])
+        XCTAssertEqual(view.selectionFillPaths(), ["s.txt"])
+    }
+
+    func test_hover_s4_selected_row_keeps_fill_and_bar_wherever_the_pointer_is() throws {
+        let fixture = makeFixture(showing: repository(changed: [entry("a.txt"), entry("b.txt")]))
+        let view = fixture.view
+        try click(at: try point(ofRow: "b.txt", in: view), in: fixture)
+        let steps: [(String, NSPoint, [String])] = [
+            ("on b.txt", try point(ofRow: "b.txt", in: view), []),
+            ("on a.txt", try point(ofRow: "a.txt", in: view), ["a.txt"]),
+            ("on the Changes heading", try headingCentre("Changes", in: view), []),
+        ]
+
+        for (what, pointer, hover) in steps {
+            try PointerDelivery.move(to: pointer, in: view)
+            XCTAssertEqual(view.selectionFillPaths(), ["b.txt"], what)
+            XCTAssertEqual(view.barPaths(), ["b.txt"], what)
+            XCTAssertEqual(view.hoverPaths(), hover, what)
+        }
+        try PointerDelivery.leave(at: try point(ofRow: "b.txt", in: view), in: view)
+        XCTAssertEqual(view.selectionFillPaths(), ["b.txt"], "after leaving")
+        XCTAssertEqual(view.barPaths(), ["b.txt"], "after leaving")
+        XCTAssertEqual(view.hoverPaths(), [], "after leaving")
     }
 
     func test_hover_s4_scroll_moves_rows_under_still_pointer_fill_follows() throws {

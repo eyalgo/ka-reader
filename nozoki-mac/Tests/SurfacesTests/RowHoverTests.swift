@@ -108,6 +108,69 @@ final class RowHoverTests: XCTestCase {
         }
     }
 
+    // MARK: the selected drawing (the Git view's selected row)
+
+    func test_selected_drawing_renders_the_selection_fill_and_the_bar_light_and_dark() throws {
+        let row = makeRow()
+        row.drawsSelection = true
+        for (appearance, fill, bar) in [
+            (NSAppearance.Name.aqua, UInt32(0xE2E3DF), UInt32(0x1E1F22)),
+            (.darkAqua, 0x34363B, 0xE7E7E4),
+        ] {
+            let rep = try render(row, as: appearance)
+            let name = appearance.rawValue
+            let last = (rep.pixelsWide - 1, rep.pixelsHigh - 1)
+            try assertColour(
+                rep, atX: rep.pixelsWide / 2, y: rep.pixelsHigh / 2, equals: fill, "centre, \(name)")
+            try assertColour(rep, atX: last.0, y: 0, equals: fill, "top-right, \(name)")
+            try assertColour(rep, atX: last.0, y: last.1, equals: fill, "bottom-right, \(name)")
+            try assertColour(rep, atX: 0, y: rep.pixelsHigh / 2, equals: bar, "left edge, \(name)")
+        }
+    }
+
+    func test_selected_drawing_shows_no_hover_even_while_the_pointer_is_over_the_row() {
+        let row = makeRow()
+        row.drawsSelection = true
+        row.pointerIsOver = true
+        XCTAssertFalse(row.showsHover)
+    }
+
+    func test_selected_drawing_is_the_same_with_and_without_the_pointer_over_the_row() throws {
+        for appearance in [NSAppearance.Name.aqua, .darkAqua] {
+            let away = makeRow()
+            away.drawsSelection = true
+            let over = makeRow()
+            over.drawsSelection = true
+            over.pointerIsOver = true
+            XCTAssertEqual(
+                try pixels(render(over, as: appearance)), try pixels(render(away, as: appearance)),
+                appearance.rawValue)
+        }
+    }
+
+    func test_a_row_with_only_the_bar_shows_no_selection_fill() throws {
+        for appearance in [NSAppearance.Name.aqua, .darkAqua] {
+            let row = makeRow()
+            row.drawsBar = true
+            XCTAssertFalse(row.drawsSelection)
+            let rep = try render(row, as: appearance)
+            let centre = try XCTUnwrap(rep.colorAt(x: rep.pixelsWide / 2, y: rep.pixelsHigh / 2))
+            XCTAssertEqual(centre.alphaComponent, 0, accuracy: 0.001, appearance.rawValue)
+        }
+    }
+
+    func test_the_selected_state_is_the_fill_and_the_bar_together_and_ends_with_both() {
+        let row = makeRow()
+        XCTAssertFalse(row.drawsBar)
+        row.drawsSelection = true
+        XCTAssertTrue(row.drawsBar, "the bar comes with the fill")
+        row.drawsBar = false
+        XCTAssertTrue(row.drawsBar, "nothing takes the bar off a selected row but ending the state")
+        row.drawsSelection = false
+        XCTAssertFalse(row.drawsBar, "the bar leaves with the fill")
+        XCTAssertFalse(row.drawsSelection)
+    }
+
     func test_hover_fill_goes_when_row_gains_bar_under_the_flag() throws {
         for appearance in [NSAppearance.Name.aqua, .darkAqua] {
             let flagged = makeRow()

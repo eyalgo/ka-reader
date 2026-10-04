@@ -540,13 +540,16 @@ final class WorkbenchGitTests: XCTestCase {
         fixture.log.gitAsks[0].answer(repository(changed: [gitEntry("b.txt")]))
         try clickGitRow(0, in: fixture)
         XCTAssertEqual(fixture.workbench.gitView.barPaths(), ["b.txt"])
+        XCTAssertEqual(fixture.workbench.gitView.selectionFillPaths(), ["b.txt"])
 
         choose(.files, in: fixture)
         try selectInTree("a.txt", in: fixture.workbench)
 
         XCTAssertEqual(fixture.workbench.gitView.barPaths(), [])
+        XCTAssertEqual(fixture.workbench.gitView.selectionFillPaths(), [])
         choose(.git, in: fixture)
         XCTAssertEqual(fixture.workbench.gitView.barPaths(), [])
+        XCTAssertEqual(fixture.workbench.gitView.selectionFillPaths(), [])
         XCTAssertEqual(fixture.workbench.rootItemsView.barPaths(), ["a.txt"])
     }
 

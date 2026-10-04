@@ -326,10 +326,26 @@ final class GitViewTests: XCTestCase {
         try click(centre(of: rows[1], in: fixture.view), in: fixture)
         XCTAssertEqual(rows.map(\.drawsBar), [false, true])
         XCTAssertEqual(fixture.view.barPaths(), ["b.txt"])
+        XCTAssertEqual(fixture.view.selectionFillPaths(), ["b.txt"])
 
         fixture.view.clearSelection()
         XCTAssertTrue(rows.allSatisfy { !$0.drawsBar })
         XCTAssertTrue(fixture.view.barPaths().isEmpty)
+        XCTAssertEqual(fixture.view.selectionFillPaths(), [])
+    }
+
+    func test_drawingTheRowsAgainTakesTheSelectionFillAndTheBarOffTogether() throws {
+        let item = repository(changed: [entry("a.txt", .modified), entry("b.txt", .added)])
+        let fixture = makeView(showing: item)
+        let rows = rowViews(fixture.view)
+        try click(centre(of: rows[1], in: fixture.view), in: fixture)
+        XCTAssertEqual(fixture.view.selectionFillPaths(), ["b.txt"])
+
+        fixture.view.show(item)
+
+        XCTAssertEqual(fixture.view.selectionFillPaths(), [])
+        XCTAssertEqual(fixture.view.barPaths(), [])
+        XCTAssertTrue(rowViews(fixture.view).allSatisfy { !$0.drawsSelection && !$0.drawsBar })
     }
 
     func test_noElementOfTheViewHasATooltip() throws {
