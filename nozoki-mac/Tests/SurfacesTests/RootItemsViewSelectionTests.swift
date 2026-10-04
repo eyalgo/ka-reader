@@ -89,6 +89,21 @@ final class RootItemsViewSelectionTests: XCTestCase {
         return index
     }
 
+    /// Markers that put the modified letter `M` on `path`.
+    private func modified(_ path: String) -> TreeMarkers {
+        TreeMarkers(
+            .repository(
+                GitRepository(
+                    branch: .named("main"), state: .normal, staged: [],
+                    changed: [GitEntry(path: path, category: .modified)])))
+    }
+
+    /// The middle of the row at `index`, in the tree view's coordinates.
+    private func point(ofRow index: Int, in view: RootItemsView) -> NSPoint {
+        let rect = view.outlineView.rect(ofRow: index)
+        return view.convert(NSPoint(x: rect.minX + 40, y: rect.midY), from: view.outlineView)
+    }
+
     private func expand(_ path: String, in view: RootItemsView) throws {
         view.outlineView.expandItem(view.outlineView.item(atRow: try row(of: path, in: view)))
         view.layoutSubtreeIfNeeded()
@@ -192,13 +207,16 @@ final class RootItemsViewSelectionTests: XCTestCase {
     // MARK: key status changes nothing (CP-630)
 
     func test_key_change_changes_nothing_on_the_selected_row() throws {
-        let fixture = makeFixture([file("a.txt"), file("b.txt")])
+        // `b.txt` carries a letter, so the image holds the name, the glyph and the letter.
+        let fixture = makeFixture([file("a.txt"), file("b.txt")], markers: modified("b.txt"))
         fixture.view.showOpenFile(path: "b.txt")
         for theme in [NSAppearance.Name.aqua, .darkAqua] {
             fixture.key.becomeKey()
             let before = try image(fixture, path: "b.txt", theme: theme, emphasized: true)
+            // Not key as the sampling case is: the double stops, and the row view is not
+            // emphasized, the state the platform reads for its inactive look (CP-639).
             fixture.key.stopBeingKey()
-            let whileNotKey = try image(fixture, path: "b.txt", theme: theme, emphasized: true)
+            let whileNotKey = try image(fixture, path: "b.txt", theme: theme, emphasized: false)
             fixture.key.becomeKey()
             let after = try image(fixture, path: "b.txt", theme: theme, emphasized: true)
             XCTAssertEqual(whileNotKey, before, "while not key, \(theme.rawValue)")
@@ -210,9 +228,17 @@ final class RootItemsViewSelectionTests: XCTestCase {
 
     func test_fill_and_bar_belong_to_exactly_the_open_row() throws {
         let fixture = makeFixture([file("a.txt"), file("b.txt")])
-        fixture.view.showOpenFile(path: "b.txt")
-        XCTAssertEqual(fixture.view.selectionFillPaths(), ["b.txt"])
-        XCTAssertEqual(fixture.view.barPaths(), ["b.txt"])
+        let view = fixture.view
+        view.showOpenFile(path: "b.txt")
+
+        // Key window; the pointer crosses a row and then leaves every row (Example 1).
+        let aRow = try row(of: "a.txt", in: view)
+        try PointerDelivery.move(to: point(ofRow: aRow, in: view), in: view)
+        try PointerDelivery.leave(at: point(ofRow: aRow, in: view), in: view)
+
+        XCTAssertEqual(view.selectionFillPaths(), ["b.txt"])
+        XCTAssertEqual(view.barPaths(), ["b.txt"])
+        XCTAssertEqual(view.hoverPaths(), [])
     }
 
     func test_clicked_folder_row_draws_no_selection_while_file_open() throws {
@@ -273,15 +299,20 @@ final class RootItemsViewSelectionTests: XCTestCase {
     }
 
     func test_no_file_open_draws_no_selection_whatever_row_is_selected() throws {
-        let fixture = makeTree()
-        let view = fixture.view
-        let unselected = try image(fixture, path: "src")
+        // A folder row and a file row: with nothing open, a selected file row is not the open
+        // file's row either (CP-629).
+        for path in ["src", "b.txt"] {
+            let fixture = makeTree()
+            let view = fixture.view
+            let unselected = try image(fixture, path: path)
 
-        try select("src", in: view)
+            try select(path, in: view)
 
-        XCTAssertEqual(view.selectionFillPaths(), [])
-        XCTAssertEqual(view.barPaths(), [])
-        XCTAssertEqual(try image(fixture, path: "src"), unselected)
+            XCTAssertEqual(view.outlineView.selectedRow, try row(of: path, in: view), path)
+            XCTAssertEqual(view.selectionFillPaths(), [], path)
+            XCTAssertEqual(view.barPaths(), [], path)
+            XCTAssertEqual(try image(fixture, path: path), unselected, path)
+        }
     }
 
     func test_collapsing_the_open_files_folder_removes_fill_and_expanding_restores_it() throws {
@@ -347,12 +378,7 @@ final class RootItemsViewSelectionTests: XCTestCase {
     }
 
     func test_selection_and_emphasis_leave_the_rows_ink_unchanged() throws {
-        let markers = TreeMarkers(
-            .repository(
-                GitRepository(
-                    branch: .named("main"), state: .normal, staged: [],
-                    changed: [GitEntry(path: "b.txt", category: .modified)])))
-        let fixture = makeFixture([file("a.txt"), file("b.txt")], markers: markers)
+        let fixture = makeFixture([file("a.txt"), file("b.txt")], markers: modified("b.txt"))
         var unselected: [String: Ink] = [:]
         for theme in [NSAppearance.Name.aqua, .darkAqua] {
             for emphasized in [true, false] {
