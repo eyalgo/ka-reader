@@ -79,7 +79,47 @@ None.
   the slice that owns the Git view's file row, or S-4's case read as the bar kept and no hover fill,
   with the fill left to a later slice that names it.
 - **If a document has to be written:** none. A change in `SDD.md` § 6, written by `product-sdd`.
-- **Answer:** <the owner fills this in>
+- **Answer:** The Git view's selection fill goes into `see-git-status` (S-4), in *Reached when* and
+  *Rests on* alone. This is the first of the two folds the item offers, without its *Delivers*
+  half. Decided in the CTO's seat by an unattended `companion-self-answer` run.
+  **Observable half (the CDO's clause, settled by `docs/DESIGN.md`).** One sentence is added after
+  "They click a changed file's row: the file opens in the panel to read": the row they clicked is
+  drawn as `docs/DESIGN.md` § *Components*, "Rows", draws the selected row, with the selection fill
+  and the left bar, and the bar is the cue that survives without colour (`docs/UXD.md` UX-A2). The
+  sentence cites the section and states no value, the way S-1 cites § *Layout*.
+  **Command half.** The case "the selected row under the pointer keeps its selection fill and its
+  bar" stands as written. One case is added before it: after a click on a file row, with the
+  pointer over no row, the clicked row shows the selection fill and the bar, and no other row
+  shows either.
+  **Rests on.** The `surfaces` parenthesis gains the Git view's selected row's fill.
+  **What does not move.** *Delivers* keeps its words: the fill shows which row is open and adds
+  nothing a developer can do, the reason RN-96 gave for the hover fill. No slice is added: § 5
+  step 4 says "§ 6 holds no slice whose decision is a surface's drawing" (`docs/SDD.md:L1329`).
+  § 10 gains no entry: the bar can be met as written. S-1 keeps its words.
+  **Why not the second fold.** Reading S-4's case as "the bar kept and no hover fill" makes this
+  document say less than `docs/DESIGN.md`, which is Settled and gives every list row, "the Git
+  view's changed and staged files" among them, `{components.tree-row-selected}` "with the left
+  bar" when selected (`:L613-L619` at `nozoki@6cf1014`). It also leaves the fill to a later slice
+  whose only decision is a drawing, which step 4 excludes.
+  **What the fold states as a known limit.** On this bar `see-git-status` is not reached on `main`
+  at `nozoki@6cf1014`: the Git view's selection sets the bar and nothing else
+  (`nozoki-mac/Sources/Surfaces/GitView.swift:L190-L194`), and the shell's test for the existing
+  case holds the row's image unchanged under the pointer, which passes with the bar alone
+  (`nozoki-mac/Tests/SurfacesTests/GitViewHoverTests.swift:L178-L194`). What that means for work
+  in flight is the PM's.
+  **Named and not covered.** Four cases, none decided here. (1) Whether a Git-view row is drawn
+  selected when its file was opened from the tree: the shell clears the Git view's selection on a
+  tree selection (`nozoki-mac/Sources/Surfaces/WorkbenchView.swift:L161-L165`), and
+  `docs/DESIGN.md` does not say. (2) Which row is drawn selected when one file has a row in both
+  lists; the answer's "the clicked row" is the reading the shell already draws. (3) What the
+  selected row's fill does in a window that is not the key window, which `docs/DESIGN.md` RN-40
+  names as not covered. (4) What a refresh does to a selected row that leaves or moves in the
+  list, which is `follow-the-folder`'s and is bound by § 4 C-E2. Cases (1) to (3) are the CDO's,
+  in `docs/DESIGN.md`.
+  **One correction to this item's own text, reported and not edited.** `docs/DESIGN.md` moved to
+  v18 at `nozoki@6cf1014` after the item was written: the lines it cites as `:L612-L618` are now
+  `:L613-L619`, and `:L624-L625` are now `:L634-L635`. The quoted words stand.
+  Reasoning: `docs/trail/sdd/self_answer-44.md` § 5.1.
 
 **How it closes.** `product-sdd` folds it on its next run like every other item in this file, and
 the trail copy and the delete-when-empty behaviour are unchanged.
