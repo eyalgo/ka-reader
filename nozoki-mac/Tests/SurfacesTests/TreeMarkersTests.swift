@@ -13,7 +13,8 @@ final class TreeMarkersTests: XCTestCase {
     ) -> TreeMarkers {
         TreeMarkers(
             .repository(
-                GitRepository(branch: .named("main"), state: .normal, staged: staged, changed: changed)
+                GitRepository(
+                    branch: .named("main"), state: .normal, staged: staged, changed: changed)
             ))
     }
 
@@ -107,10 +108,14 @@ final class TreeMarkersTests: XCTestCase {
     }
 
     func test_anExactEntryBeatsATrailingSlashEntryInOneList() {
-        let slashFirst = repository(changed: [entry("inner/", .untracked), entry("inner", .modified)])
+        let slashFirst = repository(changed: [
+            entry("inner/", .untracked), entry("inner", .modified),
+        ])
         XCTAssertEqual(slashFirst.category(forRowPath: "inner"), .modified)
 
-        let exactFirst = repository(changed: [entry("inner", .modified), entry("inner/", .untracked)])
+        let exactFirst = repository(changed: [
+            entry("inner", .modified), entry("inner/", .untracked),
+        ])
         XCTAssertEqual(exactFirst.category(forRowPath: "inner"), .modified)
     }
 
