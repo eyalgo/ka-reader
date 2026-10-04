@@ -141,6 +141,34 @@ final class RowHoverTests: XCTestCase {
         }
     }
 
+    // MARK: the row's interior background style (selection never re-inks a row, CP-632)
+
+    func test_interior_background_style_is_equal_across_selection_and_emphasis() {
+        var styles: [NSView.BackgroundStyle] = []
+        for isSelected in [false, true] {
+            for isEmphasized in [false, true] {
+                let row = makeRow()
+                row.isSelected = isSelected
+                row.isEmphasized = isEmphasized
+                styles.append(row.interiorBackgroundStyle)
+            }
+        }
+        XCTAssertEqual(Set(styles.map(\.rawValue)).count, 1, "styles: \(styles.map(\.rawValue))")
+    }
+
+    func test_interior_background_style_is_the_unselected_value() {
+        let unselected = makeRow()
+        unselected.isSelected = false
+        unselected.isEmphasized = false
+        let selected = makeRow()
+        selected.isSelected = true
+        selected.isEmphasized = true
+        XCTAssertEqual(selected.interiorBackgroundStyle, unselected.interiorBackgroundStyle)
+        // The platform's own unselected, non-emphasized row, so the pin is not compared with itself.
+        let platformUnselected = NSTableRowView()
+        XCTAssertEqual(selected.interiorBackgroundStyle, platformUnselected.interiorBackgroundStyle)
+    }
+
     // MARK: the selected drawing (the Git view's selected row)
 
     func test_selected_drawing_renders_the_selection_fill_and_the_bar_light_and_dark() throws {
