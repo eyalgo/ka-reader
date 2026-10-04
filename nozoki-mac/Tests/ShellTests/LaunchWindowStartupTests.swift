@@ -140,6 +140,30 @@ final class LaunchWindowStartupTests: LaunchWindowTestCase {
             controlCount: 2, ledBy: statusGlyphs.empty, on: surface, in: window)
     }
 
+    // CP-551: the startup surface carries no Files/Git switch. The launch is a whole one, the Open
+    // panel cancelled, and what it ends on is read, not a surface built by hand.
+    func test_aCancelledOpenPanelDrawsTheStartupSurfaceWithNoFilesOrGitElement() throws {
+        let launch = makeLaunch(answers: [nil])
+
+        launch.flow.run()
+
+        let surface = try XCTUnwrap(
+            launch.presenter.contents.last as? StartupView, "the launch ends on the startup surface"
+        )
+        _ = try laidOutWindow(of: surface)
+        XCTAssertFalse(launch.presenter.contents.contains { $0 is WorkbenchView })
+        let words =
+            drawnStrings(beneath: surface) + textElements(beneath: surface).map(\.stringValue)
+        XCTAssertEqual(
+            Set(words), ["Choose a folder to view.", Self.browseTitle, Self.quitTitle])
+        for word in words {
+            XCTAssertNotEqual(word, "Files")
+            XCTAssertNotEqual(word, "Git")
+            XCTAssertFalse(word.localizedCaseInsensitiveContains("git"), word)
+        }
+        XCTAssertEqual(controls(beneath: surface).count, 2, "Browse and Quit, and no switch entry")
+    }
+
     // S2 — Examples 7, 8, 9 (CP-241).
     func testFailedOpeningDrawsPathSentenceAndRoutesForEachCondition() throws {
         let sentences: [OpeningCondition: String] = [
