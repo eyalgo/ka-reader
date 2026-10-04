@@ -6,8 +6,10 @@ use std::path::PathBuf;
 use std::sync::{Mutex, PoisonError};
 
 use nozoki_core::{
-    CannotDisplayReason, Condition, EntryKind, FileView, ItemState, Language, OpenFailure,
-    OpenFolderOutcome, OpenedFolder, Span, TokenClass, list_tree, open_folder, select_file,
+    BranchElement, CannotDisplayReason, Condition, EntryKind, FileView, FolderKind, GitCondition,
+    GitReadCondition, ItemState, Language, OpenFailure, OpenFolderOutcome, OpenedFolder,
+    ProbeCondition, RepositoryState, Span, StatusCategory, StatusEntry, TokenClass, list_tree,
+    open_folder, select_file,
 };
 use serde::Serialize;
 
@@ -265,6 +267,220 @@ impl From<ItemState<FileView>> for FileAnswerDto {
                 condition: condition.into(),
             },
             ItemState::Pending => Self::Pending,
+        }
+    }
+}
+
+/// The Git item on the wire, tagged by `state` and holding exactly the members its state names:
+/// `pending` and nothing else; `observed` with its `kind`; or `failed` with a `condition`, plus
+/// `git_directory` only beside `git_directory_outside`. The bridge carries the core's item and
+/// decides nothing: no count, wording or sort key crosses (CP-543).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(tag = "state", rename_all = "snake_case")]
+pub enum GitAnswerDto {
+    Pending,
+    Observed(ObservedGitDto),
+    Failed {
+        condition: GitConditionDto,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        git_directory: Option<String>,
+    },
+}
+
+/// What an observed Git item is: a plain folder, or a repository's top level with its four parts.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(tag = "kind", rename_all = "snake_case")]
+pub enum ObservedGitDto {
+    Plain,
+    Root {
+        branch: BranchDto,
+        repository_state: RepositoryStateDto,
+        staged: Vec<GitEntryDto>,
+        changed: Vec<GitEntryDto>,
+    },
+}
+
+/// The branch element on the wire: a branch's short name, or a detached HEAD's full identifier.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(tag = "kind", rename_all = "snake_case")]
+pub enum BranchDto {
+    Branch { name: String },
+    Detached { commit: String },
+}
+
+/// A repository state on the wire, one string from the closed set: `"normal"`, `"merge"`,
+/// `"rebase"`, `"cherry_pick"`, `"revert"`, `"bisect"`, `"am"` or `"detached_head"`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum RepositoryStateDto {
+    Normal,
+    Merge,
+    Rebase,
+    CherryPick,
+    Revert,
+    Bisect,
+    Am,
+    DetachedHead,
+}
+
+/// A status category on the wire, one string from the closed set: `"added"`, `"modified"`,
+/// `"deleted"`, `"renamed"`, `"untracked"` or `"in_conflict"`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum StatusCategoryDto {
+    Added,
+    Modified,
+    Deleted,
+    Renamed,
+    Untracked,
+    InConflict,
+}
+
+/// One listed entry: `path` and `category`, and `from` only where the category is `renamed`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct GitEntryDto {
+    pub path: String,
+    pub category: StatusCategoryDto,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub from: Option<String>,
+}
+
+/// A failed Git item's condition on the wire, one string from the closed set of twelve. The five
+/// probe conditions carry a `probe_` prefix, because two share names with read conditions.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum GitConditionDto {
+    ProbeFolderUnavailable,
+    ProbeGitDirectoryUnreadable,
+    ProbeGitEntryNotDirectory,
+    ProbeGitFileUnreadable,
+    ProbeRepositoryReadFailed,
+    GitDirectoryOutside,
+    NotARoot,
+    GitDirectoryMissing,
+    GitDirectoryUnreadable,
+    NotARepository,
+    RepositoryReadFailed,
+    MachineConfigNotSwitchedOff,
+}
+
+impl From<RepositoryState> for RepositoryStateDto {
+    fn from(state: RepositoryState) -> Self {
+        // Every state is named, with no wildcard arm, so a state the core adds is a compile error
+        // here and never silently merged.
+        match state {
+            RepositoryState::Normal => Self::Normal,
+            RepositoryState::Merge => Self::Merge,
+            RepositoryState::Rebase => Self::Rebase,
+            RepositoryState::CherryPick => Self::CherryPick,
+            RepositoryState::Revert => Self::Revert,
+            RepositoryState::Bisect => Self::Bisect,
+            RepositoryState::Am => Self::Am,
+            RepositoryState::DetachedHead => Self::DetachedHead,
+        }
+    }
+}
+
+impl From<BranchElement> for BranchDto {
+    fn from(branch: BranchElement) -> Self {
+        match branch {
+            BranchElement::Branch(name) => Self::Branch { name },
+            BranchElement::Detached(commit) => Self::Detached { commit },
+        }
+    }
+}
+
+impl From<StatusEntry> for GitEntryDto {
+    fn from(entry: StatusEntry) -> Self {
+        let (category, from) = match entry.category {
+            StatusCategory::Added => (StatusCategoryDto::Added, None),
+            StatusCategory::Modified => (StatusCategoryDto::Modified, None),
+            StatusCategory::Deleted => (StatusCategoryDto::Deleted, None),
+            StatusCategory::Renamed { from } => (StatusCategoryDto::Renamed, Some(from)),
+            StatusCategory::Untracked => (StatusCategoryDto::Untracked, None),
+            StatusCategory::InConflict => (StatusCategoryDto::InConflict, None),
+        };
+        Self {
+            path: entry.path,
+            category,
+            from,
+        }
+    }
+}
+
+impl From<ProbeCondition> for GitConditionDto {
+    fn from(condition: ProbeCondition) -> Self {
+        match condition {
+            ProbeCondition::FolderUnavailable => Self::ProbeFolderUnavailable,
+            ProbeCondition::GitDirectoryUnreadable => Self::ProbeGitDirectoryUnreadable,
+            ProbeCondition::GitEntryNotDirectory => Self::ProbeGitEntryNotDirectory,
+            ProbeCondition::GitFileUnreadable => Self::ProbeGitFileUnreadable,
+            ProbeCondition::RepositoryReadFailed => Self::ProbeRepositoryReadFailed,
+        }
+    }
+}
+
+impl GitAnswerDto {
+    /// The answer when the machine-level config could not be switched off. It has no core item, and it
+    /// holds no path and no library text.
+    pub fn machine_config_not_switched_off() -> Self {
+        Self::Failed {
+            condition: GitConditionDto::MachineConfigNotSwitchedOff,
+            git_directory: None,
+        }
+    }
+
+    fn failed(condition: GitConditionDto) -> Self {
+        Self::Failed {
+            condition,
+            git_directory: None,
+        }
+    }
+}
+
+impl From<&ItemState<FolderKind, GitCondition>> for GitAnswerDto {
+    fn from(item: &ItemState<FolderKind, GitCondition>) -> Self {
+        match item {
+            ItemState::Pending => Self::Pending,
+            ItemState::Observed(FolderKind::Plain) => Self::Observed(ObservedGitDto::Plain),
+            ItemState::Observed(FolderKind::Root(git)) => Self::Observed(ObservedGitDto::Root {
+                branch: git.head().branch.clone().into(),
+                repository_state: git.head().state.into(),
+                staged: git
+                    .status()
+                    .staged
+                    .iter()
+                    .cloned()
+                    .map(Into::into)
+                    .collect(),
+                changed: git
+                    .status()
+                    .changed
+                    .iter()
+                    .cloned()
+                    .map(Into::into)
+                    .collect(),
+            }),
+            ItemState::Failed(GitCondition::Probe(condition)) => Self::failed((*condition).into()),
+            ItemState::Failed(GitCondition::Read(condition)) => match condition {
+                GitReadCondition::GitDirectoryOutside(path) => Self::Failed {
+                    // Lossy, as the core spells every other path: serde's `PathBuf` impl fails on a
+                    // non-UTF-8 path and would turn the whole answer into NULL.
+                    condition: GitConditionDto::GitDirectoryOutside,
+                    git_directory: Some(path.to_string_lossy().into_owned()),
+                },
+                GitReadCondition::NotARoot => Self::failed(GitConditionDto::NotARoot),
+                GitReadCondition::GitDirectoryMissing => {
+                    Self::failed(GitConditionDto::GitDirectoryMissing)
+                }
+                GitReadCondition::GitDirectoryUnreadable => {
+                    Self::failed(GitConditionDto::GitDirectoryUnreadable)
+                }
+                GitReadCondition::NotARepository => Self::failed(GitConditionDto::NotARepository),
+                GitReadCondition::RepositoryReadFailed => {
+                    Self::failed(GitConditionDto::RepositoryReadFailed)
+                }
+            },
         }
     }
 }
@@ -1032,9 +1248,7 @@ mod tests {
 
             let wires: Vec<Value> = states
                 .iter()
-                .map(|(state, _)| {
-                    wire(&Scripted::root_in(state.clone()))["repository_state"].clone()
-                })
+                .map(|(state, _)| wire(&Scripted::root_in(*state))["repository_state"].clone())
                 .collect();
 
             let expected: Vec<Value> = states.iter().map(|(_, text)| json!(text)).collect();
