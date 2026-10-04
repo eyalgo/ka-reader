@@ -280,7 +280,7 @@ final class GitViewTests: XCTestCase {
         let heading = shown(descendants(of: fixture.view)).compactMap { $0 as? NSTextField }
             .first { $0.stringValue == "Changes" }
 
-        try click(centre(of: heading!, in: fixture.view), in: fixture)
+        try click(centre(of: try XCTUnwrap(heading), in: fixture.view), in: fixture)
 
         XCTAssertTrue(fixture.activated.paths.isEmpty)
         XCTAssertTrue(fixture.view.barPaths().isEmpty)
