@@ -1,7 +1,11 @@
-//! Layer 3: the Git item across the session, with the production wiring. The real libgit2 adapter
+//! Layer 3: the Git item across the session, with the production wiring. The real adapter
 //! is reached only through `Session::default()`, never named here (QC-50). Every scene is a copy of
 //! a committed fixture, built and changed with an isolated `git`.
 
+#[allow(
+    dead_code,
+    reason = "each test crate uses a subset of the shared helpers"
+)]
 mod common;
 
 use std::path::PathBuf;

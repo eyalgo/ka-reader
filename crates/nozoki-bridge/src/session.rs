@@ -3,15 +3,18 @@
 //! location comes in as a plain `Option<PathBuf>`, so none of this needs a window or a runtime.
 
 use std::path::PathBuf;
-use std::sync::{Mutex, PoisonError};
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Mutex, MutexGuard, PoisonError};
 
 use nozoki_core::{
-    BranchElement, CannotDisplayReason, Condition, EntryKind, FileView, FolderKind, GitCondition,
-    GitReadCondition, ItemState, Language, OpenFailure, OpenFolderOutcome, OpenedFolder,
-    ProbeCondition, RepositoryState, Span, StatusCategory, StatusEntry, TokenClass, list_tree,
-    open_folder, select_file,
+    BranchElement, CannotDisplayReason, Condition, EntryKind, FileView, FolderKind, FolderModel,
+    GitCondition, GitPort, GitReadCondition, ItemState, Language, Libgit2, OpenFailure,
+    OpenFolderOutcome, OpenedFolder, ProbeCondition, RepositoryState, Span, StatusCategory,
+    StatusEntry, TokenClass, list_tree, open_folder, read_git, select_file,
 };
 use serde::Serialize;
+
+use crate::machine_config::{SwitchOutcome, arrive_in_process};
 
 /// What `open_folder` answers across the bridge.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -485,6 +488,63 @@ impl From<&ItemState<FolderKind, GitCondition>> for GitAnswerDto {
     }
 }
 
+/// What one arrival at the composition root yields: the Git port to read through, or the fact that
+/// the machine-level config could not be switched off, so no port exists in this process.
+#[derive(Clone)]
+pub enum Wiring {
+    Wired(Arc<dyn GitPort + Send + Sync>),
+    SwitchFailed,
+}
+
+/// One arrival at the composition root, made on each successful open.
+type Arrival = Box<dyn Fn() -> Wiring + Send + Sync>;
+
+/// The wiring a switch outcome allows: `port` is called, to make the adapter, only behind
+/// [`SwitchOutcome::Off`]. A failed switch makes no port.
+pub(crate) fn arrive_wiring(
+    outcome: SwitchOutcome,
+    port: impl FnOnce() -> Arc<dyn GitPort + Send + Sync>,
+) -> Wiring {
+    match outcome {
+        SwitchOutcome::Off => Wiring::Wired(port()),
+        SwitchOutcome::Failed => Wiring::SwitchFailed,
+    }
+}
+
+/// The production arrival: runs the process's switch and, once it is off, hands out the libgit2
+/// adapter. The only place in shipped source that constructs or names the adapter (QC-17).
+fn production_arrival() -> Wiring {
+    arrive_wiring(arrive_in_process(), || Arc::new(Libgit2))
+}
+
+/// An opened folder as a model, with the wiring of the arrival its open made and a token naming that
+/// open, so a read answers only for the open it was made for.
+struct Held {
+    model: FolderModel,
+    wiring: Wiring,
+    open: u64,
+}
+
+#[derive(Default)]
+struct State {
+    held: Option<Held>,
+    opens: u64,
+}
+
+impl State {
+    /// What the session holds of the Git item right now, with no read.
+    fn answer(&self) -> GitAnswerDto {
+        match &self.held {
+            None => GitAnswerDto::Pending,
+            Some(Held {
+                wiring: Wiring::SwitchFailed,
+                ..
+            }) => GitAnswerDto::machine_config_not_switched_off(),
+            Some(held) => GitAnswerDto::from(held.model.kind()),
+        }
+    }
+}
+
 /// The session: at most one opened folder, starting empty, replaced whole by a successful open.
 /// The bridge holds exactly one for the life of the process.
 ///
@@ -502,17 +562,55 @@ impl From<&ItemState<FolderKind, GitCondition>> for GitAnswerDto {
 /// );
 /// assert_eq!(session.list(""), ListAnswerDto::Pending);
 /// ```
-#[derive(Default)]
 pub struct Session {
-    opened: Mutex<Option<OpenedFolder>>,
+    state: Mutex<State>,
+    arrive: Arrival,
+    switch_failure_logged: AtomicBool,
+}
+
+impl Default for Session {
+    /// The production session: each open arrives at the process's switch.
+    fn default() -> Self {
+        Self::with_wiring(Box::new(production_arrival))
+    }
 }
 
 impl Session {
-    /// Opens one chosen folder. Failed opens leave the held folder unchanged.
+    /// A session whose opens arrive through `arrive`, in place of the production switch.
+    pub fn with_wiring(arrive: Box<dyn Fn() -> Wiring + Send + Sync>) -> Self {
+        Self {
+            state: Mutex::new(State::default()),
+            arrive,
+            switch_failure_logged: AtomicBool::new(false),
+        }
+    }
+
+    fn lock(&self) -> MutexGuard<'_, State> {
+        self.state.lock().unwrap_or_else(PoisonError::into_inner)
+    }
+
+    /// Opens one chosen folder. A successful open replaces the held model whole and makes one
+    /// arrival at the composition root; a failed open touches neither.
     pub fn open(&self, chosen: PathBuf) -> OpenResult {
         match open_folder(chosen) {
             OpenFolderOutcome::Opened(folder) => {
-                *self.opened.lock().unwrap_or_else(PoisonError::into_inner) = Some(folder);
+                let wiring = (self.arrive)();
+                if matches!(wiring, Wiring::SwitchFailed)
+                    && !self.switch_failure_logged.swap(true, Ordering::SeqCst)
+                {
+                    log::warn!(
+                        "core-bridge: search-path switch failed: the machine-level config could not be switched off; the Git item stays failed"
+                    );
+                }
+                let model = FolderModel::new(folder);
+                let mut state = self.lock();
+                state.opens += 1;
+                let open = state.opens;
+                state.held = Some(Held {
+                    model,
+                    wiring,
+                    open,
+                });
                 OpenResult::Opened
             }
             OpenFolderOutcome::Failed(failure) => OpenResult::Failed {
@@ -525,11 +623,11 @@ impl Session {
     /// with the entries, or `failed` with its condition. No folder open is `pending`, because
     /// nothing was read.
     pub fn list(&self, path: &str) -> ListAnswerDto {
-        let guard = self.opened.lock().unwrap_or_else(PoisonError::into_inner);
-        let Some(folder) = guard.as_ref() else {
+        let guard = self.lock();
+        let Some(held) = guard.held.as_ref() else {
             return ListAnswerDto::Pending;
         };
-        match list_tree(folder, path) {
+        match list_tree(held.model.folder(), path) {
             ItemState::Observed(entries) => ListAnswerDto::Observed {
                 entries: entries
                     .into_iter()
@@ -548,6 +646,35 @@ impl Session {
             ItemState::Pending => ListAnswerDto::Pending,
         }
     }
+
+    /// Answers the open folder's Git item. No folder open is `pending`. A failed switch answers its
+    /// own condition and the model is never asked. An item held as `pending` is read, outside the
+    /// lock, and stored and answered only if its folder is still the open one; an item already
+    /// `observed` or `failed` is answered with no read.
+    pub fn read_git(&self) -> GitAnswerDto {
+        let (model, port, open) = {
+            let state = self.lock();
+            let Some(held) = state.held.as_ref() else {
+                return GitAnswerDto::Pending;
+            };
+            let Wiring::Wired(port) = &held.wiring else {
+                return state.answer();
+            };
+            if !matches!(held.model.kind(), ItemState::Pending) {
+                return state.answer();
+            }
+            (held.model.clone(), Arc::clone(port), held.open)
+        };
+        let read = read_git(model, port.as_ref());
+        let mut state = self.lock();
+        if let Some(held) = state.held.as_mut()
+            && held.open == open
+            && matches!(held.model.kind(), ItemState::Pending)
+        {
+            held.model = read;
+        }
+        state.answer()
+    }
 }
 
 impl Session {
@@ -565,10 +692,10 @@ impl Session {
         read: impl FnOnce(&OpenedFolder, &str) -> ItemState<FileView>,
     ) -> FileAnswerDto {
         let folder = self
-            .opened
             .lock()
-            .unwrap_or_else(PoisonError::into_inner)
-            .clone();
+            .held
+            .as_ref()
+            .map(|held| held.model.folder().clone());
         folder.map_or(FileAnswerDto::Pending, |folder| read(&folder, path).into())
     }
 }
@@ -1600,6 +1727,7 @@ mod tests {
 
         #[test]
         fn test_erring_setter_session_answers_machine_config_not_switched_off() {
+            let _serial = begin_log_capture();
             let scene = TempDir::new();
             let repository = scene.repository_copy();
             let (session, _calls) = erring_session();
@@ -1610,6 +1738,7 @@ mod tests {
 
         #[test]
         fn test_erring_setter_session_stays_failed_after_a_second_folder_opens() {
+            let _serial = begin_log_capture();
             let scene = TempDir::new();
             let repository = scene.repository_copy();
             let second = TempDir::new();
@@ -1627,6 +1756,7 @@ mod tests {
 
         #[test]
         fn test_erring_setter_and_real_wired_sessions_answer_list_and_select_file_equally() {
+            let _serial = begin_log_capture();
             let scene = TempDir::new();
             let repository = scene.repository_copy();
             let (erring, _calls) = erring_session();
@@ -1763,22 +1893,26 @@ mod tests {
 
         #[test]
         fn test_a_switch_failure_emits_one_warn_and_a_repeat_ask_emits_none() {
+            // The capture is process-wide, and the cases that read through a failing double warn
+            // under `git-reader`; this case counts only the switch's own line.
             let serial = begin_log_capture();
             let folder = TempDir::new();
             let (session, _calls) = erring_session();
+            let switch_lines = |records: Vec<String>| -> Vec<String> {
+                records
+                    .into_iter()
+                    .filter(|record| record.contains("core-bridge"))
+                    .collect()
+            };
 
             open(&session, folder.path());
-            let after_arrival = take_log_records();
+            let after_arrival = switch_lines(take_log_records());
             git_item(&session);
             git_item(&session);
-            let after_asks = take_log_records();
+            let after_asks = switch_lines(take_log_records());
             drop(serial);
 
             assert_eq!(after_arrival.len(), 1, "{after_arrival:?}");
-            assert!(
-                after_arrival[0].contains("core-bridge"),
-                "{after_arrival:?}"
-            );
             assert!(
                 after_arrival[0].contains("search-path switch"),
                 "{after_arrival:?}"
