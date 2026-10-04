@@ -1,9 +1,9 @@
 import AppKit
 
 /// A row that can draw a bar: 2px of `{colors.primary}` down its left edge (`docs/DESIGN.md`
-/// § Elevation & Depth, "Selection is a fill and a bar"). The tree's selection fill is the table's
-/// own, and its open file's row draws the bar alone. The Git view's selected row stands in no
-/// table, so it draws `{colors.selection}` itself, under the bar, from one state (`drawsSelection`).
+/// § Elevation & Depth, "Selection is a fill and a bar"). A selected row draws `{colors.selection}`
+/// itself, under the bar, from one state (`drawsSelection`): the Git view's selected row does, and so
+/// does the tree's open-file row. The table's own selection drawing is not used.
 final class BarRowView: NSTableRowView {
     private static let barWidth: CGFloat = 2
 
@@ -53,10 +53,17 @@ final class BarRowView: NSTableRowView {
         didSet { needsDisplay = true }
     }
 
-    /// The fill shows: the pointer is over the row, and the row is neither drawn as selected nor
-    /// draws the bar. Read when the row is drawn, so a selection or a bar that arrives under a
-    /// still pointer redraws correctly with no pointer event.
-    var showsHover: Bool { pointerIsOver && !isSelected && !drawsBar }
+    /// The table's selection outranks the hover fill on this row: while `isSelected`, no hover shows.
+    /// On by default. The tree turns it off for a folder row and a status line, which a click can
+    /// select without drawing them as selected, so a clicked folder row still takes hover.
+    var selectionOutranksHover = true
+
+    /// The fill shows: the pointer is over the row, the row draws no bar, and it is not selected
+    /// where selection outranks hover. Read when the row is drawn, so a selection or a bar that
+    /// arrives under a still pointer redraws correctly with no pointer event.
+    var showsHover: Bool {
+        pointerIsOver && !drawsBar && !(isSelected && selectionOutranksHover)
+    }
 
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
