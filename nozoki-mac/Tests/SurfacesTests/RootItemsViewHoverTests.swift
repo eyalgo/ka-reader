@@ -534,6 +534,8 @@ final class RootItemsViewHoverTests: XCTestCase {
         let fixture = makeFixture([file("a.txt"), file("b.txt")])
         let view = fixture.view
         view.showOpenFile(path: "b.txt")
+        let selectedRow = try row(of: "b.txt", in: view)
+        XCTAssertEqual(view.outlineView.selectedRow, selectedRow)
         try PointerDelivery.move(to: try point(ofPath: "a.txt", in: view), in: view)
         fixture.key.stopBeingKey()
 
@@ -542,6 +544,9 @@ final class RootItemsViewHoverTests: XCTestCase {
 
         XCTAssertEqual(view.hoverPaths(), [])
         XCTAssertEqual(view.barPaths(), ["b.txt"])
+        // The tree's selected drawing is the table's selection and the bar (`BarRowView`), so both
+        // halves stay: the row is still the table's selected row.
+        XCTAssertEqual(view.outlineView.selectedRow, selectedRow, "still the selected row")
     }
 
     func test_hover_s1_window_becomes_key_with_pointer_outside_the_host_fills_nothing() throws {
