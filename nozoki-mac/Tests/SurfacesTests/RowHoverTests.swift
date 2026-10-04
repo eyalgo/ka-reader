@@ -294,4 +294,77 @@ final class RowHoverUnitTests: XCTestCase {
         XCTAssertTrue(tooltipArea.options.contains(.activeInKeyWindow))
         withExtendedLifetime(tooltip) {}
     }
+
+    // MARK: the key window (CP-619 to CP-621)
+
+    func test_hover_while_not_key_refresh_and_a_pointer_event_flag_nothing() throws {
+        try PointerDelivery.move(to: upperPoint, in: host)
+        XCTAssertTrue(flagged().elementsEqual([upper]))
+        key.stopBeingKey()
+        XCTAssertTrue(flagged().isEmpty, "stopping being key is the pointer leaving")
+
+        hover.refresh()
+        XCTAssertTrue(flagged().isEmpty, "refresh")
+        try PointerDelivery.move(to: lowerPoint, in: host)
+        XCTAssertTrue(flagged().isEmpty, "a pointer event")
+        try PointerDelivery.enter(at: upperPoint, in: host)
+        XCTAssertTrue(flagged().isEmpty, "an entry")
+    }
+
+    func test_hover_while_not_key_nothing_is_kept_for_a_later_refresh() throws {
+        key.stopBeingKey()
+        try PointerDelivery.move(to: upperPoint, in: host)
+        key.pointer = nil
+        key.becomeKey()
+        hover.refresh()
+        XCTAssertTrue(flagged().isEmpty)
+    }
+
+    func test_hover_becoming_key_with_the_read_point_on_upper_flags_upper() throws {
+        try PointerDelivery.move(to: lowerPoint, in: host)
+        key.stopBeingKey()
+
+        key.pointer = upperPoint
+        key.becomeKey()
+
+        XCTAssertTrue(flagged().elementsEqual([upper]))
+    }
+
+    func test_hover_becoming_key_reads_the_rows_as_they_stand_then() throws {
+        try PointerDelivery.move(to: upperPoint, in: host)
+        key.stopBeingKey()
+        lookupRows = [lower]
+
+        key.pointer = upperPoint
+        key.becomeKey()
+
+        XCTAssertTrue(flagged().isEmpty)
+    }
+
+    func test_hover_becoming_key_with_no_answer_from_the_source_flags_nothing() throws {
+        try PointerDelivery.move(to: upperPoint, in: host)
+        key.stopBeingKey()
+
+        key.pointer = nil
+        key.becomeKey()
+
+        XCTAssertTrue(flagged().isEmpty)
+    }
+
+    func test_hover_becoming_key_with_the_read_point_outside_the_host_or_the_host_hidden() throws {
+        try PointerDelivery.move(to: upperPoint, in: host)
+        key.stopBeingKey()
+        lookupRows = [upper, lower]
+        upper.frame = NSRect(x: 0, y: 40, width: 400, height: 200)
+
+        key.pointer = NSPoint(x: 300, y: 100)
+        key.becomeKey()
+        XCTAssertTrue(flagged().isEmpty, "outside the host")
+
+        key.stopBeingKey()
+        host.isHidden = true
+        key.pointer = upperPoint
+        key.becomeKey()
+        XCTAssertTrue(flagged().isEmpty, "a hidden host")
+    }
 }

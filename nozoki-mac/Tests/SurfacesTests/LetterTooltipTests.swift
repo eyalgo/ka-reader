@@ -370,4 +370,80 @@ final class LetterTooltipTests: XCTestCase {
         }
         walk(host)
     }
+
+    // MARK: the key window (CP-622, CP-623)
+
+    func test_tooltip_window_stops_being_key_dismisses_a_shown_tooltip() throws {
+        try restAndShow(on: onFirst)
+        XCTAssertEqual(tooltipViews().count, 1)
+
+        key.stopBeingKey()
+
+        XCTAssertEqual(tooltipViews().count, 0)
+        XCTAssertNil(tooltip.shownView)
+    }
+
+    func test_tooltip_window_stops_being_key_cancels_a_pending_rest() throws {
+        try PointerDelivery.move(to: onFirst, in: host)
+        XCTAssertEqual(rest.requests.count, 1)
+
+        key.stopBeingKey()
+
+        XCTAssertTrue(rest.requests[0].cancelled)
+        rest.fire(0)
+        XCTAssertEqual(tooltipViews().count, 0)
+    }
+
+    func test_tooltip_while_not_key_a_pointer_event_on_a_letter_requests_no_rest() throws {
+        key.stopBeingKey()
+
+        try PointerDelivery.move(to: onFirst, in: host)
+        try PointerDelivery.enter(at: onSecond, in: host)
+
+        XCTAssertEqual(rest.requests.count, 0)
+        XCTAssertEqual(tooltipViews().count, 0)
+    }
+
+    func test_tooltip_a_rest_that_fires_while_not_key_shows_nothing() throws {
+        try PointerDelivery.move(to: onFirst, in: host)
+        key.stopBeingKey()
+        key.pointer = nil
+
+        rest.fire(0)
+
+        XCTAssertEqual(tooltipViews().count, 0)
+    }
+
+    func test_tooltip_becoming_key_with_the_read_point_on_a_letter_requests_one_fresh_rest() throws
+    {
+        try restAndShow(on: onFirst)
+        key.stopBeingKey()
+
+        key.pointer = onSecond
+        key.becomeKey()
+
+        XCTAssertEqual(tooltipViews().count, 0)
+        XCTAssertEqual(rest.requests.count, 2)
+        XCTAssertEqual(try XCTUnwrap(rest.requests.last).interval, LetterTooltip.restInterval)
+        rest.fireLast()
+        XCTAssertEqual(tooltipViews().count, 1)
+    }
+
+    func test_tooltip_becoming_key_with_the_read_point_on_no_letter_requests_none() throws {
+        try PointerDelivery.move(to: onFirst, in: host)
+        key.stopBeingKey()
+        let requests = rest.requests.count
+
+        key.pointer = onNothing
+        key.becomeKey()
+        key.stopBeingKey()
+        key.pointer = nil
+        key.becomeKey()
+        key.stopBeingKey()
+        key.pointer = NSPoint(x: onFirst.x + 1000, y: onFirst.y)
+        key.becomeKey()
+
+        XCTAssertEqual(rest.requests.count, requests)
+        XCTAssertEqual(tooltipViews().count, 0)
+    }
 }
