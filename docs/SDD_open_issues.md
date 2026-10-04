@@ -98,7 +98,47 @@ None.
     beside it, or holding the delivery back until the shell's Git view is built.
 - **If a document has to be written:** none. SM-4's row (§ 3) and C-R7 (§ 4) in `SDD.md`, and
   S-4's *Rests on* if the call chosen is not the `model_changed` registration.
-- **Answer:** <the owner fills this in>
+- **Answer:** Admit a Git-named call on SM-4's list: `read_git`, exported as `nozoki_read_git`. Do
+  not admit the `model_changed` registration call here. Answered in the CTO's seat.
+  - **What the call is.** It takes no argument and returns the open folder's Git item as an owned
+    buffer of plain data, freed by `nozoki_free`, like every other call on the list. The answer is
+    one of: `root` with the Git state, `plain`, `failed` with its condition, or `pending` when
+    nothing was read (no folder open), which is what `list_tree` already answers in that case
+    (`crates/nozoki-bridge/src/session.rs:L309`). A panic caught at the boundary answers NULL, and
+    the shell establishes `stopped` from it as it does for every call (§ 4 C-I1). No existing call's
+    answer changes.
+  - **Why on the list and not beside it.** It reaches the model over SM-5, so it is a command.
+    `nozoki_free` stands beside the list because it never reaches the model (§ 4 C-R7). As a
+    command, `checks/read-only.sh` calls it in the build that exports it (§ 4 C-I3).
+  - **Why not the registration call.** `see-git-status` shows "the state read when the folder
+    opened" (§ 6 S-4, *Not in this slice*), so nothing in it arrives unasked. A callback would add
+    a function pointer, a context lifetime and a second thread to the one unit that holds `unsafe`
+    (§ 11 R-13), for a slice with nothing to push. `follow-the-folder` is the slice that needs it
+    (§ 6 S-5, *Rests on*: "`model_changed` deltas"), and C-R7's sentence stands: that slice raises
+    it, and not before.
+  - **What the fold changes.** SM-4's list gains `read_git`, staged by slice like the rest, and the
+    list is ten. Every count follows: SM-4's row ("all nine", "the nine calls"), § 6 S-11's pin
+    ("SM-4's nine functions"), and the collapse-and-scroll item in *Open Questions* ("SM-4's nine
+    calls", "C-I6's nine", "a tenth export"). C-R7 reads the list by reference and keeps its words.
+    S-4's *Rests on* reads "`SM-4` (`read_git`)" in place of "`SM-4` (`model_changed` carrying Git
+    state)". § 10 gains a re-cut entry in the CTO's seat, because *Open Questions* already says a
+    call the list does not name "moves SM-4's list, § 4 C-R7's set and C-I6's nine" and is "a
+    re-cut, recorded in § 10 before it is built" (`docs/SDD.md:L5437-L5439`). The entry cites the
+    product's own files and not the journey.
+  - **What the export brings with it.** `nozoki_read_git` is the first exported function that
+    reaches `git-reader`. Three things § 4 and *Open Questions* already tie to that build land in
+    it or before it: the search-path switch and its test (§ 4 C-I3), the `nm` transport read in
+    `checks/view.sh` with its suite case (§ 4 C-I3, C-R6), and the settling of the config-named
+    path question (*Open Questions*, the § 11 R-16 item).
+  - **Not covered by this answer.** (1) When the model reads Git state, at open or on the first
+    ask, and whether an ask on a `failed` item reads again, are the design of the change that
+    builds the call. S-4's fence bounds it: an `observed` item is not re-read in this slice.
+    (2) Which side orders two asks in flight stays where § 3's `surfaces` row leaves it (RN-76).
+    (3) Whether the Git view's reading state is drawn from the answer or under the `surfaces`
+    row's exception is the design of the change that builds the view, bound by § 4 C-E1. (4)
+    `docs/nfdr.md` names SM-4's list (`docs/nfdr.md:L75`) and is re-derived after the fold, not
+    before.
+  - Reasoning: `docs/trail/sdd/self_answer-37.md`.
 
 **How it closes.** `product-sdd` folds it on its next run like every other item in this file, and
 the trail copy and the delete-when-empty behaviour are unchanged.
