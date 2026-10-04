@@ -560,7 +560,8 @@ final class WorkbenchGitTests: XCTestCase {
         fixture.log.gitAsks[0].answer(
             repository(staged: [gitEntry("a.txt", .added)], changed: [gitEntry("b.txt")]))
         fixture.workbench.layoutSubtreeIfNeeded()
-        XCTAssertEqual(fixture.workbench.readingPanel.pathLine.stringValue, "b.txt", "a file is open")
+        XCTAssertEqual(
+            fixture.workbench.readingPanel.pathLine.stringValue, "b.txt", "a file is open")
         XCTAssertEqual(fixture.workbench.readingPanel.contentView.string, "hello")
 
         let everything = [fixture.workbench] + descendants(of: fixture.workbench)

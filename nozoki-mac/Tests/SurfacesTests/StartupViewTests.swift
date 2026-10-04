@@ -12,7 +12,8 @@ final class StartupViewTests: XCTestCase {
     func test_noElementOfTheStartupViewHasATooltip() {
         let glyph = NSImage(size: NSSize(width: 1, height: 1))
         let view = StartupView(
-            projection: .empty, glyphs: StatusGlyphs(empty: glyph, failure: glyph), onIntent: { _ in })
+            projection: .empty, glyphs: StatusGlyphs(empty: glyph, failure: glyph),
+            onIntent: { _ in })
         view.layoutSubtreeIfNeeded()
 
         func walk(_ view: NSView) {
