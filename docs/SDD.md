@@ -6,7 +6,8 @@
        signal, and the state a finished SDD carries; the open-issues file is gone.
      Locked = ratified as the source of truth. -->
 **Owner:** CTO · CPO · CDO — one run, three seats
-**Version:** 30 — CTO: § 3 SM-4 (the list gains `read_git`, exported as `nozoki_read_git`, with what it takes and answers; the list is ten, "all ten from `v1.0.0`"); § 6 `see-git-status` *Rests on* ("`SM-4` (`read_git`)" in place of "`SM-4` (`model_changed` carrying Git state)"); § 6 `promise-one-point-zero` *Reached when*, command half ("SM-4's ten functions"); § 10 RC-4 (new, the CTO's ground); *Open Questions* (the collapse-and-scroll item's counts — eight stand); SDD Review Notes RN-90 (new); the one answered companion item folded, trail copy at `docs/trail/sdd/cycle-25.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. § 4 C-R7 and C-I6 keep their words. No slice's *Delivers*, edge or order altered. Companion items added: none.
+**Version:** 31 — CTO: § 3 *What the system holds*, `GitState` (the model holds `HeadState` and `StatusLists` from one read; what a failed half does; what is still only the design); § 4 C-R6 (the bridge manifest's `git2` line as landed; three defined symbols named beside "The three names are a floor"); § 4 C-I3 (the core suites and the walk run with the machine-level reads on and nothing isolates them; the `nm` transport read as landed, with the one executable it is proved for; the switch and its test as landed); § 10 RC-4 *Still unresolved* (a dated parenthesis, its words kept); § 11 R-15 (the measurement, and *shows up as* naming the build that links the export) and R-16 (fixture sentence re-pinned, the item named by what it is, its new bound); *Open Questions* (the config-named-path item's bound moves to the build in which `mac-shell` first calls `nozoki_read_git`, with a dated note — eight stand); SDD Review Notes RN-91 (new); the four answered companion items folded, trail copy at `docs/trail/sdd/cycle-26.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. No slice's *Delivers*, *Reached when*, edge or order altered. Companion items added: none.
+Version 30 — CTO: § 3 SM-4 (the list gains `read_git`, exported as `nozoki_read_git`, with what it takes and answers; the list is ten, "all ten from `v1.0.0`"); § 6 `see-git-status` *Rests on* ("`SM-4` (`read_git`)" in place of "`SM-4` (`model_changed` carrying Git state)"); § 6 `promise-one-point-zero` *Reached when*, command half ("SM-4's ten functions"); § 10 RC-4 (new, the CTO's ground); *Open Questions* (the collapse-and-scroll item's counts — eight stand); SDD Review Notes RN-90 (new); the one answered companion item folded, trail copy at `docs/trail/sdd/cycle-25.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. § 4 C-R7 and C-I6 keep their words. No slice's *Delivers*, edge or order altered. Companion items added: none.
 Version 29 — CTO: § 4 C-I1 (a failed read "changes no other item", in place of "`observed` on its siblings"; each sibling holds the state its own read gave it, all four `Item<T>` states named; one sentence naming the failed re-read of an expanded folder as not decided there); § 6 `follow-the-folder` *Reached when*, command half (the same rule, without "as they were before the read"); SDD Review Notes RN-44 (parenthesis corrected in place) and RN-89 (new); *Open Questions* (one item added — eight stand); the one answered companion item folded, trail copy at `docs/trail/sdd/cycle-24.md`; `docs/SDD_open_issues.md` removed, empty of items, so `Status:` moves from Draft to Settled. No slice's *Delivers*, edge or order altered. Companion items added: none.
 Version 28 — CTO: § 3 *What the system holds*, `GitState` (the model defines the type and builds it from what the port returns, from `state` alone at `nozoki@87f6a48`; the hand-off to "the change that adds `state`" removed); § 3 SM-2 (the types `probe`, `state` and `status` answer are defined in `git-reader`; the rule kept for a type a later method brings); § 6 `see-git-status` *Reached when*, command half (the double's reason restated, the tree's items "as they were" in place of "every tree item `observed`", and where the adapter's refusal is exercised); SDD Review Notes RN-44 (corrected in place) and RN-88 (new); four answered companion items folded and dropped, trail copy at `docs/trail/sdd/cycle-23.md`; `docs/SDD_open_issues.md` stays on disk with § 2.1 unanswered, so `Status:` moves from Settled to Draft. No slice's *Delivers*, edge or order altered. Companion items added: none.
 Version 27 — CTO: § 3 `core-bridge` row (*Owns*: the config search-path switch — four `set_search_path` calls before the libgit2 adapter is wired, failing closed, once per process, with the uncovered case named); § 3 `git-reader` row (what the reader sees with the machine-level config off: the global ignore file not applied, a repository not owned by the user a `failed` Git item); § 3 the *Four physical units* paragraph and SM-2 (the libgit2 import rule's one exception); § 4 C-R6 (every `git2` manifest line with default features off, and *Violated by*); § 4 C-I3 (the bridge test and what it does not reach, a third thing no check holds, and *Violated by*); § 4 C-D3 (one uncovered case named); § 6 `see-git-status` *Reached when*, command half (the same exception); § 11 R-16 (new); *Open Questions* (second item extended, one item added — seven stand); SDD Review Notes RN-87 (new); `docs/SDD_open_issues.md` removed, empty of items, trail copy at `docs/trail/sdd/cycle-22.md`. No slice's *Delivers*, edge or order altered. Companion items added: none.
@@ -481,10 +482,16 @@ section already says arguments start over.>
   date, parents and branch membership, against a chosen tip set — and a `Diff` (path, staged or
   unstaged, hunks). Derived by read-only means, never persisted. The model holds it. `GitState`
   is a type `folder-model` defines and builds from what the port returns, and the port never
-  returns it (`crates/nozoki-core/src/folder_model.rs:L166`, `:L273-L288`, at `nozoki@87f6a48`;
-  SM-2; RN-85, RN-88). At that commit the model builds it from the port's `state` answer alone
-  and it holds the port's `HeadState` and nothing else (`:L166-L168`); the changed and staged
-  entries this entity lists are the design, and no landed change puts them in the model.
+  returns it (SM-2; RN-85, RN-88). The model holds the port's `HeadState` and its `StatusLists`
+  (`crates/nozoki-core/src/folder_model.rs:L169-L172`, at `nozoki@a7834f4`). It builds both from
+  one read, which asks `state` and then `status` (`:L300-L306`). `status` is asked only if
+  `state` succeeded. A failure of either makes the whole Git item `failed`, with the condition
+  of the operation that failed, so the model never holds a `GitState` with one of the two
+  missing (`:L267-L273`); this is § 4 C-I1 applied to the one Git item. Three things this entity
+  lists are still the design and are in no landed change: the history window and the `Diff`,
+  both beyond v1, and the tree's changed marker, which the `FolderModel` entity above gives
+  `TreeEntry` (`grep -n marker crates/nozoki-core/src/folder_model.rs` prints nothing at that
+  commit) (`docs/trail/sdd/cycle-26.md` § 5.1; RN-91).
 - **`OwnState`** — what the tool remembers between sessions (DR-5): the theme, the window frame,
   and beyond v1 up to ten remembered folders as security-scoped bookmarks with display names and
   which was viewed last (`docs/UXD.md` UX-S7). Nothing personal, nothing of any folder's content;
@@ -629,12 +636,19 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   half is read on the release executable only: a debug executable imports all three calls
   through Rust's standard library with no libgit2 in it (measured at
   `docs/trail/sdd/self_answer-33.md` § 5.3 and not re-run for this revision). The three names
-  are a floor: a framework API that reaches the network is C-R7's scan's to find. And the wall
+  are a floor: a framework API that reaches the network is C-R7's scan's to find. The read's
+  pattern also does not match three symbols the release executable defines:
+  `_git_socket_stream_global_init`, `_git_stream_registry_global_init` and
+  `_git_transport_ssh_libssh2_global_init` (`nm` on the executable C-I3's transport-read
+  sentences name, re-read on 2026-10-04). That executable imports none of `connect`, `socket`
+  or `getaddrinfo`. What the three functions do was not read, no network call behind them is
+  cited, and the pattern is not widened for them (`docs/trail/sdd/cycle-26.md` § 5.3; RN-91). And the wall
   that holds NFR-8 is C-R2's; this read is the second line behind it. What follows a red read
   is § 11 R-15 (answered in the owner's seat, `docs/trail/sdd/cycle-21.md` § 5.3; RN-85). Every
   manifest that names `git2` turns its default features off, as
-  `crates/nozoki-core/Cargo.toml:L9` does. `crates/nozoki-bridge/Cargo.toml` names no `git2` at
-  `nozoki@f471a9e` and gains its line with the search-path switch (§ 3, the `core-bridge` row).
+  `crates/nozoki-core/Cargo.toml:L9` does. `crates/nozoki-bridge/Cargo.toml:L23` names `git2`
+  with default features off, from the change that built the search-path switch (§ 3, the
+  `core-bridge` row; landed at `nozoki@392177d`, read at `nozoki@a7834f4`; RN-91).
   A line with defaults on would turn HTTPS and SSH on for both crates: "When a dependency is
   used by multiple packages, Cargo will use the union of all features enabled on that
   dependency when building it"
@@ -726,26 +740,49 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   slice's own bar (§ 6) (`docs/trail/sdd/cycle-17.md` § 5.1; RN-76). A third thing no check
   holds, from the config search-path switch (§ 3, the `core-bridge` row): `nozoki-core`'s
   in-process Git suites run without the bridge, and so with the machine-level config reads on.
-  An answer there can differ from the bundle's on a machine with a global ignore file. How those
-  suites are isolated is the design of the change that builds the switch
-  (`docs/trail/sdd/cycle-22.md` § 2.1; RN-87).
+  An answer there can differ from the bundle's on a machine with a global ignore file. The
+  change that built the switch isolated nothing (`nozoki@392177d`). Those suites still run with
+  the reads on: `grep -rn 'set_search_path\|search_path' crates/nozoki-core checks` prints
+  nothing at `nozoki@a7834f4`. The read-only walk is a third caller with the reads on:
+  `checks/walk.rs:L292` calls `read_git` with the libgit2 adapter and no switch. So
+  `checks/read-only.sh`'s `unchanged` on a Git fixture is shown for libgit2 as the harness
+  configures it. The bundle configures it differently, and no check runs the hash with the
+  reads off. The answers the bundle serves are proved in the bridge's suite, after the switch
+  has run: `crates/nozoki-bridge/tests/git_item.rs` reads through the production-wired session
+  (`:L1-L2`) and `tests/read_git_export.rs` through the exported call (`:L1`). Isolating the
+  core suites and the walk is not designed here. It is the CTO's call, and it is raised by the
+  first measured difference: a suite answer or a `read-only.sh` hash that differs between the
+  two configurations. None is cited at this revision
+  (`docs/trail/sdd/cycle-22.md` § 2.1, RN-87; `docs/trail/sdd/cycle-26.md` § 5.2, RN-91).
   `checks/no-network.sh` diffs `cargo tree` against `deps.allow`, and fails where
   `nozoki-mac/Package.swift` declares a dependency or a `Package.resolved` exists (C-R6).
   `checks/view.sh` carries C-R6's transport read beside its link check: `nm` on the release
   executable, red on a defined libgit2 transport symbol or on an import of `connect`, `socket`
-  or `getaddrinfo`, and red where `nm` is missing, fails or prints no symbol. The read is not
-  in the script at `nozoki@814a369`. `see-git-status` owes it, with its suite case, no later
-  than the build that first exports a function reaching `git-reader`; until that build the
-  claim is stated and not proved, and no bridge function names `git-reader`
-  (`docs/trail/sdd/cycle-21.md` § 5.3; RN-85).
+  or `getaddrinfo`, and red where `nm` is missing, fails or prints no symbol. The read is in
+  the script from the build at `nozoki@392177d` (`checks/view.sh:L379-L404`), with its suite
+  cases (`checks/tests/test_view.sh:L58-L64`). The claim is proved for one executable: the
+  release bundle built at `nozoki@0aab3e7`, on which `checks/view.sh` exited 0
+  (`docs/trail/sdd/self_answer-38.md:L26-L27`; the script was not re-run for this revision).
+  `nm` on that executable, re-read for this revision, prints `_git_repository_open_ext` and
+  `_git_status_list_new` among 781 defined `_git_` symbols
+  (`awk 'NF==3 && $2!="U" && $3 ~ /^_git_/'` over the `nm` output, counted), no
+  `git_smart_subtransport_` symbol, and no undefined `_connect`, `_socket` or `_getaddrinfo`.
+  So the read has met an executable that links libgit2's open and status code. It has not met
+  one that links the `nozoki_read_git` export: the same `nm` output holds no
+  `_nozoki_read_git`, and no Swift source calls it. The read runs on every build, so it meets
+  that executable in the build where `mac-shell` first calls the export, with nothing further
+  owed. A red read there is § 11 R-15
+  (`docs/trail/sdd/cycle-21.md` § 5.3, RN-85; `docs/trail/sdd/cycle-26.md` § 5.3, RN-91).
   A `nozoki-bridge` test asserts that the search path of each of the four machine config levels
   — system, global, XDG, programdata — is empty once the composition root has run (§ 3, the
   `core-bridge` row). The test proves the four paths are empty and observes no read: the step
   from an empty path to no file touched is `sysdir.c:L559-L560` in the registry copy of
-  `libgit2-sys 0.18.8+1.9.7`, read and not run. The switch and its test are not in the tree at
-  `nozoki@f471a9e`. They land in the change that wires the libgit2 adapter in the bridge, so no
-  build opens a repository through the bridge with the reads on
-  (`docs/trail/sdd/cycle-22.md` § 2.1; RN-87).
+  `libgit2-sys 0.18.8+1.9.7`, read and not run. The switch and its test are in the tree from
+  the change that wired the libgit2 adapter in the bridge (`nozoki@392177d`):
+  `crates/nozoki-bridge/src/machine_config.rs`, and the read-back case at
+  `crates/nozoki-bridge/tests/search_path.rs:L36`. So no build opens a repository through the
+  bridge with the reads on
+  (`docs/trail/sdd/cycle-22.md` § 2.1, RN-87; `docs/trail/sdd/cycle-26.md` § 5.2, RN-91).
   `checks/bundle.sh` reads `codesign -d --entitlements :- Nozoki.app` against the set C-R2's rule
   admits, as the script's expected set records it — set equality, the expected set widened only
   by a change reviewed against the rule (drafted on the companion's § 2.3, RN-61) — then launches the
@@ -2631,7 +2668,14 @@ half, and what failed is not that half but the seam under it (§ 3 SM-4; § 4 C-
   already ties to the first export that reaches `git-reader`, which `nozoki_read_git` is: the
   search-path switch and its test (§ 4 C-I3), the `nm` transport read in `checks/view.sh` with
   its suite case (§ 4 C-R6, C-I3; § 11 R-15), and the config-named-path item in *Open
-  Questions* (§ 11 R-16).
+  Questions* (§ 11 R-16). *(On 2026-10-04 the build that exports `nozoki_read_git` landed, at
+  `nozoki@392177d`. It settled the first question: the Git item is read on the first ask after
+  each successful open, and an `observed` or `failed` item is answered with no second read
+  (`crates/nozoki-bridge/src/session.rs:L650-L653`). The search-path switch and its test
+  landed there, and so did the `nm` read (§ 4 C-I3). The config-named-path item did not: its
+  bound passed unmet, and the item is now settled no later than the build in which `mac-shell`
+  first calls `nozoki_read_git` (*Open Questions*, the config-named-path item; § 11 R-16). The
+  other two questions stand. `docs/trail/sdd/cycle-26.md` § 5.3, § 5.4; RN-91.)*
 
 ## 11. Technical risks
 
@@ -2747,12 +2791,17 @@ A risk with no trigger and no response is an observation.>
   bounded; a bound enters with the number the SRS folds in for NFR-1, and not before (RN-80).
 - **R-15:** The shipped executable links libgit2's transport code once a bridge export reaches
   `git-reader`. The vendored library compiles its transports whatever the features (§ 4 C-R6),
-  and whether the link drops them from an executable that calls into libgit2 has not been
-  measured on this product. The one measurement on record is a scratch binary calling
-  `Repository::open_ext` alone, which passed both halves of the read (`checks/deps.review.md`,
-  the `libgit2-sys` row), and at `nozoki@814a369` no bridge function names `git-reader` —
-  *shows up as* C-R6's `nm` read turning red on the first release build after a Git command is
-  exported: a defined `git_smart_subtransport_*` symbol, or an import of `connect`, `socket` or
+  and whether the link drops them from an executable that calls into libgit2 has been measured
+  on this product on one build. The release executable built at `nozoki@0aab3e7` defines
+  libgit2's open and status code and passes both halves of the read (§ 4 C-I3, the
+  transport-read sentences, which carry the measurement). That executable does not link the
+  `nozoki_read_git` export, which no Swift source calls, so the build that links the export
+  has not been read and this risk is not closed. The earlier measurement on record is a
+  scratch binary calling `Repository::open_ext` alone, which passed both halves of the read
+  (`checks/deps.review.md`, the `libgit2-sys` row) (`docs/trail/sdd/cycle-26.md` § 5.3; RN-91) —
+  *shows up as* C-R6's `nm` read turning red on the first release build whose executable links
+  a Git export, which is the build in which `mac-shell` first calls `nozoki_read_git`: a
+  defined `git_smart_subtransport_*` symbol, or an import of `connect`, `socket` or
   `getaddrinfo`; *response* a re-cut recorded in § 10 before anything is built on that export.
   Changing the build so that the claim holds is this document's to draw. Stating the claim
   lower is not: `docs/fdr.md` PD-27 carries it as a product decision — "Nothing the product
@@ -2766,13 +2815,17 @@ A risk with no trigger and no response is an observation.>
   (§ 4 C-D3). This sits beside R-3, which is the other way Git's own layout points outside the
   grant — *shows up as* a read of the named path wherever nothing refuses it, which is the
   in-process harness, on a fixture repository whose `.git/config` carries one of the three keys
-  with a path outside the fixture. No such fixture is in the tree at `nozoki@f471a9e`. In the
+  with a path outside the fixture. No such fixture is in the tree:
+  `grep -rn 'include.path\|excludesfile\|attributesfile' checks/fixtures` prints nothing at
+  `nozoki@a7834f4`. In the
   shipped bundle the sandbox refuses the read, and whether the open or the status read survives
   that refusal has not been run; *response* in the bundle the wall is C-R2's and it is the only
   bound, so no byte outside the grant is read there. In the harness nothing bounds it. The read
   is named as uncovered beside the two claims it falls under (§ 3, the `core-bridge` row; § 4
-  C-D3), and how it is closed is the last item of *Open Questions*. Until that item is settled
-  this is a stated limit of § 4 C-D1 outside the sandbox, not a held property (RN-87).
+  C-D3), and how it is closed is the config-named-path item of *Open Questions*, which is
+  settled no later than the build in which `mac-shell` first calls `nozoki_read_git`. Until
+  that item is settled this is a stated limit of § 4 C-D1 outside the sandbox, not a held
+  property (RN-87; `docs/trail/sdd/cycle-26.md` § 5.4, RN-91).
 
 ## 12. What this design is not
 
@@ -5496,6 +5549,82 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   Settled *(re: § 3 SM-4; § 6 `see-git-status` *Rests on*; § 6 `promise-one-point-zero` *Reached
   when*, command half; § 10 RC-4; *Open Questions*; source: `docs/trail/sdd/cycle-25.md` § 5.1;
   `docs/trail/sdd/self_answer-37.md`; `nozoki@ca915a4`)*.
+- **RN-91:** *(CTO)* *(changed)* Four statements that were true of the tree before the bridge
+  served Git are corrected to the tree as it stands, and one bound that passed unmet is moved.
+  The companion's four items are folded: raised from downstream by the PM after the build at
+  `nozoki@392177d`, and answered in the CTO's seat by an unattended run
+  (`docs/trail/sdd/cycle-26.md` §§ 5.1 to 5.4; reasoning `docs/trail/sdd/self_answer-38.md`).
+  Each is a dated correction. None is a § 10 re-cut: no slice's *Reached when*, *Delivers*,
+  § 7 edge or order moves, and § 2's shape and § 3's seams keep their words.
+  **What moved, each named.** (1) § 3 `GitState` (5.1): the model holds the port's `HeadState`
+  and its `StatusLists`, built from one read. The sentence "the changed and staged entries this
+  entity lists are the design, and no landed change puts them in the model" is removed. The
+  entity gains what a failed half does, and which of its listed things are still only the
+  design. (2) § 4 C-I3, the third thing no check holds (5.2): "How those suites are isolated is
+  the design of the change that builds the switch" is removed. In its place: that change
+  isolated nothing, the walk is a third caller with the reads on, where the bundle's answers
+  are proved, and what raises the isolation. (3) § 4 C-I3, the transport read (5.3): "The read
+  is not in the script at `nozoki@814a369`", "until that build the claim is stated and not
+  proved" and "no bridge function names `git-reader`" are removed. In their place: where the
+  read is, and the one executable the claim is proved for. (4) § 4 C-I3 and C-R6 (5.2,
+  addition (c)): the switch, its test and the bridge manifest's `git2` line are stated as in
+  the tree. (5) § 4 C-R6 (5.3, addition (c)): three defined symbols the read's pattern does not
+  match are named beside "The three names are a floor". (6) § 11 R-15 (5.3, addition (b)): "has
+  not been measured on this product" is replaced by the measurement, and *shows up as* names
+  the build that links the export. R-15 stays open. (7) § 10 RC-4 *Still unresolved* (5.3,
+  addition (d)): its words stay and it gains a dated parenthesis, the form RC-2's and RC-3's
+  took. (8) *Open Questions*, the config-named-path item, and § 11 R-16 (5.4): the bound is the
+  build in which `mac-shell` first calls `nozoki_read_git`, with a dated note that the first
+  bound passed unmet. R-16's fixture sentence is re-pinned.
+  **Why the bound moved to that build.** The first bound was taken to be the moment a
+  repository is first opened through the bridge. The build showed two moments: the export
+  exists, and nothing calls it. The first build in which the shell calls the export is the
+  first in which a reader's repository reaches libgit2 in the bundle. Which of the two forms
+  closes R-16 is not chosen by the answer and is not chosen here.
+  **Where this fold departs from the answer's words.** The answer to 5.3 gives 731 defined
+  `_git_` symbols and states no method. This fold counted 781 on the same executable, with the
+  command C-I3 now carries, so C-I3 states 781 with its method and not 731. The findings the
+  answer rests on are the same under either count: both named symbols are present, no
+  `git_smart_subtransport_` symbol is, and none of the three imports is. The answers pin
+  `nozoki@0aab3e7`; the fold pins what it re-read at `nozoki@a7834f4`, the commit it was made
+  on. `git diff --stat 0aab3e7 a7834f4` names `docs/SDD_open_issues.md` and
+  `docs/trail/sdd/self_answer-38.md` and no other file.
+  **Found on the same walk, and fixed.** § 11 R-16 named its item "the last item of *Open
+  Questions*". It stopped being the last when RN-89 added the failed-re-read item. R-16 and
+  RC-4's parenthesis name it "the config-named-path item".
+  **Read and measured for this fold, at `nozoki@a7834f4`.** Opened, and each reads as cited:
+  `crates/nozoki-core/src/folder_model.rs:L164-L182` and `:L262-L310`; `checks/walk.rs:L288-L294`;
+  `checks/view.sh:L376-L406`; `checks/tests/test_view.sh:L56-L65`;
+  `crates/nozoki-bridge/Cargo.toml:L20-L24`; `crates/nozoki-bridge/tests/search_path.rs:L30-L48`;
+  `crates/nozoki-bridge/src/exports.rs:L98-L106`; `crates/nozoki-bridge/src/session.rs:L646-L654`;
+  the first lines of `tests/git_item.rs` and `tests/read_git_export.rs`. The four greps this
+  note's sections quote were run and printed nothing. `nm` was run on
+  `target/release/bundle/macos/Nozoki.app/Contents/MacOS/Nozoki` as it stood on disk, modified
+  2026-10-04 08:20.
+  **Known limits, stated beside the claims.** This fold built nothing and ran no test and no
+  `checks/` script. That the executable on disk is the one the answering run built at
+  `nozoki@0aab3e7` rests on that run's report (`docs/trail/sdd/self_answer-38.md:L26-L30`) and
+  on the file's time, and was not otherwise shown. `checks/view.sh` exiting 0 on it, and
+  `cargo test --locked -p nozoki-bridge --test search_path` passing, are that run's
+  measurements (`:L24-L27`). Of this document, the fold read the header, § 3's `GitState`,
+  § 4 C-R6 and C-I1 to C-I3, § 10 RC-4, § 11 R-15 and R-16, RN-90 and *Open Questions*, and
+  searched the rest for `f471a9e`, "not in the tree", "not in the script" and "last item of".
+  §§ 1, 2, 5 to 9 and the other review notes were not re-read, so a sentence there that states
+  one of these landed things as still to come was not seen. Of the inputs, the status lines of
+  `docs/PRD.md`, `docs/SRS.md` and `docs/UXD.md` were read and their bodies were not: no answer
+  moves a requirement, a surface or a product statement. `docs/nfdr.md` was read at its status
+  line, and the decision log was not opened.
+  **Downstream, not this document's to change.** `docs/nfdr.md` restates § 4's conditions, and
+  where an entry repeats one of the sentences removed here it is the Principal Architect's to
+  re-derive (§ 4, opening note). This fold did not search for such an entry and raised no item
+  on that seat's companion; `docs/architecture_open_issues.md` was already on disk at
+  `nozoki@0aab3e7` and was not read.
+  **The companion:** `diff docs/SDD_open_issues.md docs/trail/sdd/cycle-26.md` printed nothing
+  before this fold's first edit, and the companion matched `nozoki@a7834f4`. Its four items are
+  folded and nothing is unresolved, so `docs/SDD_open_issues.md` is removed and `Status:` stays
+  Settled *(re: § 3 `GitState`; § 4 C-R6, C-I3; § 10 RC-4 *Still unresolved*; § 11 R-15, R-16;
+  *Open Questions*; source: `docs/trail/sdd/cycle-26.md` §§ 5.1 to 5.4;
+  `docs/trail/sdd/self_answer-38.md`; `nozoki@a7834f4`)*.
 
 ## Open Questions
 
@@ -5565,11 +5694,20 @@ question.>
   § 2.1, the first addition). Two: the adapter reads the repository's config through
   `fs-reader`'s check first and answers `failed` for a repository whose config carries one of
   the three with a path outside the folder. Settled in `see-git-status`, no later than the build
-  that first exports a function reaching `git-reader`, by a fixture repository whose config
-  names an outside path and a case showing that path is not read. The second form adds a
+  in which `mac-shell` first calls `nozoki_read_git`, which is the first build whose release
+  executable links that export, and in every case before the slice is reached. It is settled
+  by a fixture repository whose config names an outside path and a case showing that path is
+  not read. No check enforces this bound. It is held by review of the change that makes the
+  shell call the export. The second form adds a
   condition under which a repository's Git state is not shown, which a reader sees; where it is
   the form found, it is written into `git-reader`'s row and § 11 R-16 before it is built.
-  *(Added on 2026-10-03; RN-87.)*]
+  *(Added on 2026-10-03; RN-87.)* *(The bound read "no later than the build that first exports
+  a function reaching `git-reader`" until 2026-10-04. That build landed at `nozoki@392177d`
+  with the item unsettled and neither form chosen. Until the shell calls the export the bundle
+  opens no repository: the Git item is read on the first ask
+  (`crates/nozoki-bridge/src/exports.rs:L102-L103`), and
+  `grep -rn 'nozoki_read_git\|read_git' nozoki-mac/Sources` prints nothing at `nozoki@a7834f4`.
+  `docs/trail/sdd/cycle-26.md` § 5.4; RN-91.)*]
 - [OPEN: What a failed re-read of a folder that is already expanded does to the entries listed
   under it: whether they stay as last read, go, or are held under the failed folder. Those
   entries are not the folder's siblings, so § 4 C-I1's rule that a failed read changes no other
