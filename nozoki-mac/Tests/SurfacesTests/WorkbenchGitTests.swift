@@ -412,6 +412,17 @@ final class WorkbenchGitTests: XCTestCase {
             "the tree's own selection, then the Git row's file; the switch to Files read none")
     }
 
+    func test_file_opened_from_git_view_is_the_trees_selected_row_when_files_shown() throws {
+        let fixture = makeFixture()
+        choose(.git, in: fixture)
+        fixture.log.gitAsks[0].answer(repository(changed: [gitEntry("b.txt")]))
+
+        try clickGitRow(0, in: fixture)
+        choose(.files, in: fixture)
+
+        XCTAssertEqual(fixture.workbench.rootItemsView.selectionFillPaths(), ["b.txt"])
+    }
+
     func test_theSameWithTheFolderExpandedSelectsTheRowAndRaisesNoFileSelected() throws {
         let fixture = makeFixture()
         let tree = fixture.workbench.rootItemsView
