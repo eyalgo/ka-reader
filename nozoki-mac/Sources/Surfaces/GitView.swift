@@ -21,16 +21,26 @@ private enum GitViewLayout {
 /// one failure message.
 ///
 /// A click anywhere on a row raises `rowActivated` with its path, and the clicked row carries the
-/// bar. The letter is a label and the view raises no tooltip. A view that has been shown nothing is
-/// pending.
+/// bar. A status letter raises a tooltip when the pointer rests on it, and nothing else in the view
+/// does (CP-586, CP-597). A view that has been shown nothing is pending.
 @MainActor
 package final class GitView: NSView {
     private struct DrawnRow {
-        let path: String
+        let entry: GitEntry
         let view: BarRowView
+        let letter: NSTextField
+
+        var path: String { entry.path }
     }
 
     private let statusGlyphs: StatusGlyphs
+    private let tooltipRest: TooltipRest
+
+    /// The tooltip a status letter raises on pointer rest (CP-586). A lazy property because it is
+    /// bound to this view, which an initialiser cannot name before it is built.
+    package private(set) lazy var letterTooltip = LetterTooltip(
+        host: self, rest: tooltipRest,
+        letterAt: { [weak self] point in self?.letter(at: point) })
     private let scrollView = NSScrollView()
     private let stack = NSStackView()
     private var rows: [DrawnRow] = []
@@ -39,8 +49,9 @@ package final class GitView: NSView {
     /// Set by the view's owner, and called once per click on a row.
     package var rowActivated: GitRowActivated?
 
-    package init(statusGlyphs: StatusGlyphs) {
+    package init(statusGlyphs: StatusGlyphs, tooltipRest: TooltipRest = .live) {
         self.statusGlyphs = statusGlyphs
+        self.tooltipRest = tooltipRest
         super.init(frame: .zero)
         let document = FlippedView()
         document.translatesAutoresizingMaskIntoConstraints = false
@@ -55,6 +66,11 @@ package final class GitView: NSView {
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(scrollView)
         let clip = scrollView.contentView
+        // A letter can leave a resting pointer by the list scrolling under it.
+        clip.postsBoundsChangedNotifications = true
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(listScrolled), name: NSView.boundsDidChangeNotification,
+            object: clip)
         NSLayoutConstraint.activate([
             scrollView.leadingAnchor.constraint(equalTo: leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: trailingAnchor),
@@ -76,8 +92,25 @@ package final class GitView: NSView {
         preconditionFailure("GitView is built in code only")
     }
 
+    @objc private func listScrolled(_ notification: Notification) {
+        letterTooltip.dismiss()
+    }
+
+    /// The row letter at `point` (in this view's coordinates) with the text it raises, or nil when
+    /// the point is on no letter: a heading, a count, a path, the space beside it, the branch
+    /// element and every message are on none (CP-587, CP-588). The text is built from that row's
+    /// own printed path and category, so a path listed twice gives each row its own word (CP-594).
+    private func letter(at point: NSPoint) -> LetterUnderPointer? {
+        guard let row = rows.first(where: { $0.letter.bounds.contains($0.letter.convert(point, from: self)) })
+        else { return nil }
+        return LetterUnderPointer(
+            letter: row.letter,
+            text: GitSentences.letterTooltip(name: row.entry.path, category: row.entry.category))
+    }
+
     /// Replaces what is drawn with `item`, and drops the selection.
     package func show(_ item: GitItem) {
+        letterTooltip.dismiss()
         for view in stack.arrangedSubviews {
             stack.removeArrangedSubview(view)
             view.removeFromSuperview()
@@ -153,8 +186,8 @@ package final class GitView: NSView {
         guard !entries.isEmpty else { return }
         pin(makeHeading(heading, count: entries.count))
         for entry in GitRowOrder.ordered(entries) {
-            let row = makeRow(entry)
-            rows.append(DrawnRow(path: entry.path, view: row))
+            let (row, letter) = makeRow(entry)
+            rows.append(DrawnRow(entry: entry, view: row, letter: letter))
             pin(row)
         }
     }
@@ -214,7 +247,7 @@ package final class GitView: NSView {
         return holder
     }
 
-    private func makeRow(_ entry: GitEntry) -> BarRowView {
+    private func makeRow(_ entry: GitEntry) -> (BarRowView, NSTextField) {
         let row = BarRowView()
         let path = NSTextField(labelWithString: entry.path)
         path.identifier = NSUserInterfaceItemIdentifier("gitRowPath")
@@ -238,7 +271,7 @@ package final class GitView: NSView {
             path.trailingAnchor.constraint(
                 lessThanOrEqualTo: letter.leadingAnchor, constant: -GitViewLayout.gap),
         ])
-        return row
+        return (row, letter)
     }
 }
 
