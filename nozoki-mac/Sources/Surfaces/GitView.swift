@@ -41,6 +41,15 @@ package final class GitView: NSView {
     package private(set) lazy var letterTooltip = LetterTooltip(
         host: self, rest: tooltipRest,
         letterAt: { [weak self] point in self?.letter(at: point) })
+
+    /// Flags the row under the pointer so it draws its hover fill (CP-599). Lazy for the same
+    /// reason as the tooltip.
+    private lazy var rowHover = RowHover(
+        host: self,
+        rowAt: { [weak self] point in
+            guard let self, let index = self.rowIndex(at: point) else { return nil }
+            return self.rows[index].view
+        })
     private let scrollView = NSScrollView()
     private let stack = NSStackView()
     private var rows: [DrawnRow] = []
@@ -85,6 +94,7 @@ package final class GitView: NSView {
             stack.bottomAnchor.constraint(equalTo: document.bottomAnchor),
         ])
         show(.pending)
+        _ = rowHover
     }
 
     @available(*, unavailable)
@@ -94,6 +104,13 @@ package final class GitView: NSView {
 
     @objc private func listScrolled(_ notification: Notification) {
         letterTooltip.dismiss()
+        rowHover.refresh()
+    }
+
+    /// A hidden view gets no exit event, so it lets go of the pointer and its fill itself (CP-602).
+    override package func viewDidHide() {
+        super.viewDidHide()
+        rowHover.forget()
     }
 
     /// The row letter at `point` (in this view's coordinates) with the text it raises, or nil when
@@ -132,6 +149,10 @@ package final class GitView: NSView {
         case .stopped:
             add(message: GitSentences.fault, glyph: statusGlyphs.failure)
         }
+        // Auto Layout places the rows, so they have no frames until the view is laid out; the row
+        // under a still pointer is found against the frames they are about to have.
+        layoutSubtreeIfNeeded()
+        rowHover.refresh()
     }
 
     /// Takes the bar off every row.
@@ -148,15 +169,22 @@ package final class GitView: NSView {
     /// A click on a row, or on its letter, activates that row. Nothing else in the view acts on a
     /// click: a heading and a status message are not rows (`docs/DESIGN.md` § Rows).
     override package func mouseDown(with event: NSEvent) {
-        let point = convert(event.locationInWindow, from: nil)
-        guard
-            let index = rows.firstIndex(where: {
-                $0.view.convert($0.view.bounds, to: self).contains(point)
-            })
-        else { return }
+        guard let index = rowIndex(at: convert(event.locationInWindow, from: nil)) else { return }
         selectedIndex = index
         applySelection()
         rowActivated?(rows[index].path)
+    }
+
+    /// The index of the row a click at `point` (in this view's coordinates) acts on, or nil for a
+    /// heading, a message and the space between. The hover reads the same answer, so it lands
+    /// exactly where a click acts (CP-600, CP-609).
+    private func rowIndex(at point: NSPoint) -> Int? {
+        rows.firstIndex { $0.view.convert($0.view.bounds, to: self).contains(point) }
+    }
+
+    /// The `path` of every drawn row that shows the hover fill, top to bottom.
+    package func hoverPaths() -> [String] {
+        rows.filter(\.view.showsHover).map(\.path)
     }
 
     private func applySelection() {

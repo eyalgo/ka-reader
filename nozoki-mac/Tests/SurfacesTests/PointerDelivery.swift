@@ -11,20 +11,23 @@ import XCTest
 enum PointerDelivery {
     /// The pointer moves to `point`, in `host`'s own coordinates.
     static func move(to point: NSPoint, in host: NSView) throws {
-        let (owner, window) = try ownerAndWindow(of: host)
-        owner.mouseMoved(with: try mouseEvent(.mouseMoved, at: point, in: host, window: window))
+        let (owners, window) = try ownersAndWindow(of: host)
+        let event = try mouseEvent(.mouseMoved, at: point, in: host, window: window)
+        for owner in owners { owner.mouseMoved(with: event) }
     }
 
     /// The pointer enters the host at `point`.
     static func enter(at point: NSPoint, in host: NSView) throws {
-        let (owner, window) = try ownerAndWindow(of: host)
-        owner.mouseEntered(with: try crossing(.mouseEntered, at: point, in: host, window: window))
+        let (owners, window) = try ownersAndWindow(of: host)
+        let event = try crossing(.mouseEntered, at: point, in: host, window: window)
+        for owner in owners { owner.mouseEntered(with: event) }
     }
 
     /// The pointer leaves the host at `point`.
     static func leave(at point: NSPoint, in host: NSView) throws {
-        let (owner, window) = try ownerAndWindow(of: host)
-        owner.mouseExited(with: try crossing(.mouseExited, at: point, in: host, window: window))
+        let (owners, window) = try ownersAndWindow(of: host)
+        let event = try crossing(.mouseExited, at: point, in: host, window: window)
+        for owner in owners { owner.mouseExited(with: event) }
     }
 
     /// The tracking area the tooltip installed on `host`, for tests that read its options.
@@ -32,12 +35,23 @@ enum PointerDelivery {
         host.trackingAreas.first { $0.owner is LetterTooltip }
     }
 
-    private static func ownerAndWindow(of host: NSView) throws -> (NSResponder, NSWindow) {
-        let area = try XCTUnwrap(
-            trackingArea(of: host), "the host carries no tooltip tracking area")
-        let owner = try XCTUnwrap(area.owner as? NSResponder)
+    /// The tracking area the hover unit installed on `host`, for tests that read its options.
+    static func hoverTrackingArea(of host: NSView) -> NSTrackingArea? {
+        host.trackingAreas.first { $0.owner is RowHover }
+    }
+
+    /// Every owner on the host that is a tooltip or a hover unit, the way a window hands an event
+    /// to every tracking area under the pointer. An owner AppKit installed itself (a scroll view's)
+    /// is not one of them.
+    private static func ownersAndWindow(of host: NSView) throws -> ([NSResponder], NSWindow) {
+        let owners = host.trackingAreas.compactMap { area -> NSResponder? in
+            guard area.owner is LetterTooltip || area.owner is RowHover else { return nil }
+            return area.owner as? NSResponder
+        }
+        let found = try XCTUnwrap(
+            owners.isEmpty ? nil : owners, "the host carries no tooltip or hover tracking area")
         let window = try XCTUnwrap(host.window, "the host is in no window")
-        return (owner, window)
+        return (found, window)
     }
 
     private static func mouseEvent(

@@ -50,6 +50,12 @@ package final class RootItemsView: NSScrollView {
         host: self, rest: tooltipRest,
         letterAt: { [weak self] point in self?.letter(at: point) })
 
+    /// Flags the entry row under the pointer so it draws its hover fill (CP-599). Lazy for the
+    /// same reason as the tooltip; `init` reads it once so the tracking area is installed from the
+    /// start.
+    private lazy var rowHover = RowHover(
+        host: self, rowAt: { [weak self] point in self?.entryRowView(at: point) })
+
     /// The one line drawn outside the rows, or nil when none is drawn.
     package private(set) var rootLineText: String?
 
@@ -111,6 +117,7 @@ package final class RootItemsView: NSScrollView {
         outlineView.reloadData(
             forRowIndexes: IndexSet(0..<outlineView.numberOfRows),
             columnIndexes: IndexSet(integer: 0))
+        rowHover.refresh()
     }
 
     /// The `path` of every row that draws the bar, top to bottom.
@@ -120,6 +127,24 @@ package final class RootItemsView: NSScrollView {
             guard rowView?.drawsBar == true else { return nil }
             return (outlineView.item(atRow: index) as? Row)?.entry.path
         }
+    }
+
+    /// The `path` of every entry row that shows the hover fill, top to bottom.
+    package func hoverPaths() -> [String] {
+        (0..<outlineView.numberOfRows).compactMap { index in
+            let rowView = outlineView.rowView(atRow: index, makeIfNecessary: true) as? BarRowView
+            guard rowView?.showsHover == true else { return nil }
+            return (outlineView.item(atRow: index) as? Row)?.entry.path
+        }
+    }
+
+    /// The row view of the entry row at `point` (in this view's coordinates), or nil for a line
+    /// item, the root's message and the space below the last row (CP-600, CP-601). The row comes
+    /// from the outline's own geometry, so the answer never waits on a layout pass.
+    private func entryRowView(at point: NSPoint) -> BarRowView? {
+        let index = outlineView.row(at: outlineView.convert(point, from: self))
+        guard index >= 0, outlineView.item(atRow: index) is Row else { return nil }
+        return outlineView.rowView(atRow: index, makeIfNecessary: true) as? BarRowView
     }
 
     private func barBelongs(on item: Any?) -> Bool {
@@ -186,10 +211,18 @@ package final class RootItemsView: NSScrollView {
             self, selector: #selector(treeScrolled), name: NSView.boundsDidChangeNotification,
             object: contentView)
         _ = letterTooltip
+        _ = rowHover
     }
 
     @objc private func treeScrolled(_ notification: Notification) {
         letterTooltip.dismiss()
+        rowHover.refresh()
+    }
+
+    /// A hidden tree gets no exit event, so it lets go of the pointer and its fill itself (CP-602).
+    override package func viewDidHide() {
+        super.viewDidHide()
+        rowHover.forget()
     }
 
     /// The shown letter at `point` (in this view's coordinates), with the text it raises, or nil
@@ -241,6 +274,7 @@ package final class RootItemsView: NSScrollView {
         isReloading = true
         defer { isReloading = false }
         outlineView.reloadData()
+        rowHover.refresh()
     }
 
     private static let columnIdentifier = NSUserInterfaceItemIdentifier("entry")
@@ -402,6 +436,7 @@ package final class RootItemsView: NSScrollView {
         isReloading = true
         defer { isReloading = false }
         outlineView.reloadItem(row, reloadChildren: true)
+        rowHover.refresh()
     }
 }
 
@@ -546,5 +581,23 @@ extension RootItemsView: NSOutlineViewDelegate {
     package func outlineViewItemWillExpand(_ notification: Notification) {
         guard !isReloading, let row = notification.userInfo?["NSObject"] as? Row else { return }
         beginRead(of: row)
+    }
+
+    /// Rows were inserted beneath the expanded row, so the rows below it moved (CP-604).
+    package func outlineViewItemDidExpand(_ notification: Notification) {
+        rowHover.refresh()
+    }
+
+    /// AppKit makes a row's view again after some changes (measured: an expansion replaces the view
+    /// the notification above had just flagged), and a new view starts unflagged.
+    package func outlineView(
+        _ outlineView: NSOutlineView, didAdd rowView: NSTableRowView, forRow row: Int
+    ) {
+        rowHover.refresh()
+    }
+
+    /// Rows beneath the collapsed row went, so the rows below it moved (CP-604).
+    package func outlineViewItemDidCollapse(_ notification: Notification) {
+        rowHover.refresh()
     }
 }
