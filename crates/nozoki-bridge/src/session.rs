@@ -8,13 +8,13 @@ use std::sync::{Arc, Mutex, MutexGuard, PoisonError};
 
 use nozoki_core::{
     BranchElement, CannotDisplayReason, Condition, EntryKind, FileView, FolderKind, FolderModel,
-    GitCondition, GitPort, GitReadCondition, ItemState, Language, Libgit2, OpenFailure,
-    OpenFolderOutcome, OpenedFolder, ProbeCondition, RepositoryState, Span, StatusCategory,
-    StatusEntry, TokenClass, list_tree, open_folder, read_git, select_file,
+    GitCondition, GitPort, GitReadCondition, ItemState, Language, OpenFailure, OpenFolderOutcome,
+    OpenedFolder, ProbeCondition, RepositoryState, Span, StatusCategory, StatusEntry, TokenClass,
+    list_tree, open_folder, read_git, select_file,
 };
 use serde::Serialize;
 
-use crate::machine_config::{SwitchOutcome, arrive_in_process};
+use crate::machine_config::{SwitchOutcome, arrive_in_process, production_port};
 
 /// What `open_folder` answers across the bridge.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -511,10 +511,10 @@ pub(crate) fn arrive_wiring(
     }
 }
 
-/// The production arrival: runs the process's switch and, once it is off, hands out the libgit2
-/// adapter. The only place in shipped source that constructs or names the adapter (QC-17).
+/// The production arrival: runs the process's switch and, once it is off, hands out the production
+/// port (QC-17).
 fn production_arrival() -> Wiring {
-    arrive_wiring(arrive_in_process(), || Arc::new(Libgit2))
+    arrive_wiring(arrive_in_process(), production_port)
 }
 
 /// An opened folder as a model, with the wiring of the arrival its open made and a token naming that

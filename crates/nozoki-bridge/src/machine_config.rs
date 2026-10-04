@@ -6,7 +6,9 @@
 //! bridge source that names `git2` (QC-11; CP-534).
 
 use std::fmt;
-use std::sync::OnceLock;
+use std::sync::{Arc, OnceLock};
+
+use nozoki_core::{GitPort, Libgit2};
 
 /// The four machine-level config levels, named by the bridge. This module alone maps them to the
 /// libgit2 binding's own type.
@@ -128,6 +130,13 @@ static PROCESS: SwitchGuard<LibgitSetter> = SwitchGuard::new(empty_in_libgit2);
 /// call returns that outcome and sets nothing.
 pub fn arrive_in_process() -> SwitchOutcome {
     PROCESS.arrive()
+}
+
+/// The production Git port, the libgit2 adapter. It is made here, beside the switch, because this is
+/// the one module whose source may name the binding (CP-534), and only the session's production
+/// arrival calls it, behind an `Off` outcome (QC-17).
+pub fn production_port() -> Arc<dyn GitPort + Send + Sync> {
+    Arc::new(Libgit2)
 }
 
 #[cfg(test)]
