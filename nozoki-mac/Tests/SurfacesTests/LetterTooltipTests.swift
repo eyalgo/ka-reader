@@ -28,11 +28,11 @@ final class LetterTooltipTests: XCTestCase {
             contentRect: NSRect(x: 0, y: 0, width: 400, height: 300), styleMask: [.titled],
             backing: .buffered, defer: false)
         host = NSView(frame: NSRect(x: 0, y: 0, width: 400, height: 300))
-        window.contentView = host
+        window.contentView?.addSubview(host)
         below = PressCounter(frame: host.bounds)
         host.addSubview(below)
-        first = NSView(frame: NSRect(x: 40, y: 200, width: 12, height: 16))
-        second = NSView(frame: NSRect(x: 100, y: 200, width: 12, height: 16))
+        first = NSView(frame: NSRect(x: 200, y: 200, width: 12, height: 16))
+        second = NSView(frame: NSRect(x: 300, y: 200, width: 12, height: 16))
         host.addSubview(first)
         host.addSubview(second)
         rest = TooltipRestDouble()
@@ -295,7 +295,7 @@ final class LetterTooltipTests: XCTestCase {
                     .map { [$0.redComponent, $0.greenComponent, $0.blueComponent] } ?? []
             }
             assertColours(ground, hex(values[0]), "\(name.rawValue) ground")
-            assertColours(try srgb(view.label.textColor, under: appearance), hex(values[1]), "\(name.rawValue) ink")
+            assertColours(try srgb(XCTUnwrap(view.label.textColor), under: appearance), hex(values[1]), "\(name.rawValue) ink")
             assertColours(hairline, hex(values[2]), "\(name.rawValue) hairline")
             XCTAssertEqual(view.layer?.borderWidth, 1)
             tooltip.dismiss()
