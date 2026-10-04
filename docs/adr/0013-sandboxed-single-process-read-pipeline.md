@@ -1,6 +1,6 @@
 # ADR-0013: Nozoki is a sandboxed single-process read pipeline — one process under the App Sandbox, a Rust core reached across one closed C-ABI seam, and its promise held by the process's own entitlements
 
-**Status:** Accepted — supersedes ADR-0001
+**Status:** Superseded by ADR-0021
 **Date:** 2026-09-23
 
 ## Context

@@ -1,6 +1,6 @@
 # ADR-0021: Nozoki is a sandboxed single-process read pipeline — one process under the App Sandbox, a Rust core reached across one closed C-ABI seam of ten calls, Git state pulled by `read_git` and not pushed, and its promise held by the process's own entitlements
 
-**Status:** Proposed — supersedes ADR-0013 on acceptance
+**Status:** Accepted — supersedes ADR-0013
 **Date:** 2026-10-04
 
 ## Context
@@ -173,10 +173,12 @@ convention, and the wall is the operating system's.
   ADR-0001 is the record ADR-0013 superseded.
 - ADR-0011 (the wall this shape rests on), ADR-0012 (the gate that proves the shell ran beside it),
   ADR-0014 (the view), ADR-0019 (the port), ADR-0020 (the units).
-- `docs/architecture_open_issues.md` § 2.1, as this run wrote it — the confirm that decides between
-  this record, a correction in place, and no record.
+- `docs/trail/architecture/cycle-35.md` § 2.2 — the choice between this record, a correction in
+  place, and no record, confirmed in the owner's seat (`docs/trail/architecture/self_answer-39.md`
+  § 2.2) and by the owner, 2026-10-04 (`nozoki@bb75290`): a superseding record, because the closed
+  list is the rule a later change is held to, and not a fact the rule does not rest on.
 - Inputs read for this record: SDD Settled v31 · SRS Settled v12 · FDR Settled v10.
 
 ## Binds
 
-QC-1, QC-2, QC-8, QC-9, QC-15, QC-16, QC-24, QC-30, QC-32, QC-34.
+QC-1, QC-2, QC-8, QC-9, QC-15, QC-16, QC-24, QC-30, QC-32, QC-34, QC-36.

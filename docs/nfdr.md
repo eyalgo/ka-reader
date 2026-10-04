@@ -1,8 +1,8 @@
 # NFDR — Nozoki 覗き
 
-**Status:** Draft
+**Status:** Settled
 **Owner:** Principal Architect
-**Version:** 38 — the cycle-34 fold (`docs/trail/architecture/cycle-34.md` § 3.1, § 3.2; reasoning at `docs/trail/architecture/self_answer-38.md`), both answered, with a re-derivation on SDD v30 and v31, which moved beneath this document after v37. QC-3's `nm` read and QC-17's search-path switch are stated as landed at `nozoki@392177d`, each held by the check its tail now names; QC-3 carries C-R6's three defined symbols beside its floor, and QC-17 names the tests that hold its fail-closed and once-per-process halves. QC-24's list is ten, `read_git` added (SDD § 10 RC-4). QC-6's and QC-35's pointer names SDD *Open Questions*' config-named-path item and its new bound, and QC-35's second uncovered case gains the read-only walk. QC-11's exception tail is drafted for the owner (companion § 2.1). ADR-0021 is proposed over ADR-0013 (companion § 2.2). § 10's QC-15/QC-17 row follows. No `QC` is added, renumbered or reused. A companion stays on disk, so `Status:` is Draft (RN-49).
+**Version:** 39 — the close: the cycle-35 fold (`docs/trail/architecture/cycle-35.md` § 2.1, § 2.2; reasoning at `docs/trail/architecture/self_answer-39.md`), both items confirmed — § 2.1 in the owner's seat, § 2.2 in the owner's seat and then by the owner, 2026-10-04 (`nozoki@bb75290`). ADR-0021 is Accepted and supersedes ADR-0013; ADR-0013's Status line is the only line of that record that changes. ADR-0021's trace to the companion now points at the trail copy's § 2.2, the owner's addition, and its `## Binds` gains QC-36, which traced to ADR-0013 and was not listed there. Every entry trace that named ADR-0013 now names ADR-0021: QC-1, QC-2, QC-8, QC-9, QC-15, QC-16, QC-24, QC-30, QC-32, QC-34 and QC-36. QC-11's exception tail, drafted at v38, is confirmed as written. Nothing moved beneath this document since v38. No `QC` is added, renumbered or reused. Nothing is left for the owner, so the companion is removed and `Status:` is Settled (RN-50).
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · PRD Settled · UXD Settled · DESIGN Settled · CONTENT Settled
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
@@ -78,7 +78,7 @@ new units while they were unbuilt.
   a source scan and a link check on every build, not a process boundary.
   — *verified by:* `checks/view.sh` (test layer 6) over `nozoki-mac/Sources` and the built
   executable (QC-34); the bridge's export set (QC-24); `checks/no-network.sh` *(traces to:
-  ADR-0013; ADR-0014; SDD § 3
+  ADR-0021; ADR-0014; SDD § 3
   SM-4; § 4 C-R7; re-derived at v11 — RN-22; `nozoki_free` named at v13 on the owner's addition at
   `docs/trail/architecture/cycle-10.md` § 2.1 — RN-24)*
 - **QC-2:** No code path in any shipped unit opens a file under the granted folder for writing,
@@ -97,7 +97,7 @@ new units while they were unbuilt.
   makes it a check; no command does today, which is why that half is a review gate and says so
   here. And a fixture that offers no entry a command can act on exercises nothing for that command;
   which fixture a command needs is its slice's own bar (`docs/SDD.md` § 6) *(traces to:
-  SRS NFR-5, NFR-6, C-2; SDD § 4 C-I3; ADR-0013; ADR-0011; the tail's IPC wording corrected on the
+  SRS NFR-5, NFR-6, C-2; SDD § 4 C-I3; ADR-0021; ADR-0011; the tail's IPC wording corrected on the
   owner's addition at `docs/trail/architecture/cycle-9.md` § 2.3 — RN-23; the command carve-out on
   the owner's addition at `docs/trail/architecture/cycle-10.md` § 2.1 — RN-24; the unit, the two
   uncovered cases and the reviewed half from SDD § 4 C-I3 and C-R7 as they read at v22, on the
@@ -297,7 +297,7 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   and `otool -L` on the built executable naming neither `WebKit` nor `JavaScriptCore`;
   `checks/no-network.sh` — no Swift dependency, no `Package.resolved`; `swift test --package-path
   nozoki-mac` — the shell issues no call `SM-4` does not name (SDD § 6 S-1) *(traces to:
-  ADR-0013; ADR-0014; ADR-0020; SDD § 3 `mac-shell` and `surfaces` "Must not own", SM-8; § 4 C-R6, C-R7;
+  ADR-0021; ADR-0014; ADR-0020; SDD § 3 `mac-shell` and `surfaces` "Must not own", SM-8; § 4 C-R6, C-R7;
   re-derived at v11 — RN-22)*
 - **QC-9:** `nozoki-core` **must not import** any Apple framework or a binding to one, any crate
   outside `checks/deps.allow`, or `std::process`, and **holds no `unsafe`** — the workspace forbids
@@ -310,7 +310,7 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   — *verified by:* `checks/no-network.sh`; `checks/structure.sh` (layer 6) — the imports, and
   `unsafe` appearing in no crate but `nozoki-bridge`; `cargo build --workspace --locked` under
   `[workspace.lints.rust] unsafe_code = "forbid"`, a build failure on an `unsafe` block in any
-  crate whose manifest does not relax it *(traces to: ADR-0013; ADR-0020; ADR-0017; SDD § 3, the units paragraph; § 4 C-R6; `Cargo.toml`
+  crate whose manifest does not relax it *(traces to: ADR-0021; ADR-0020; ADR-0017; SDD § 3, the units paragraph; § 4 C-R6; `Cargo.toml`
   `[workspace.lints.rust]`; re-derived at v11 — RN-22; the limit from SDD § 3's units paragraph
   and § 11 R-14 as they read at v23 — RN-34; libgit2 stated as linked, which it has been since
   `nozoki@126ef75` (`crates/nozoki-core/Cargo.toml:L9`) — RN-43)*
@@ -344,8 +344,8 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   (`nozoki@392177d`) did not add the rule to the script, so the bound stays review until a change
   adds it, by the header's rule. At that commit the bridge files that name `git2` are
   `crates/nozoki-bridge/src/machine_config.rs`, `crates/nozoki-bridge/tests/search_path.rs` and the
-  manifest, which is the exception's bound exactly *(drafted at v38 for the owner's confirm —
-  RN-49; through v37 this tail pinned the script at `:L249-L250` at `nozoki@8edec4f` and named
+  manifest, which is the exception's bound exactly *(drafted at v38 — RN-49; confirmed in the
+  owner's seat at `docs/trail/architecture/cycle-35.md` § 2.1 — RN-50; through v37 this tail pinned the script at `:L249-L250` at `nozoki@8edec4f` and named
   changing it for the exception as the design of the change that builds the switch, SDD
   RN-87)* *(traces to: ADR-0019; ADR-0015;
   ADR-0020; SDD § 3, the units paragraph at v27 — the exception, RN-87; SDD § 3, the units paragraph's stated edges as it reads at v14 — the two into `fs-reader` and
@@ -471,7 +471,7 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   the adapter's file as a rule still to come, with review as the whole bound until it came. The
   change that adds it merged at `nozoki@48308ff`. On the owner's seat's answer at
   `docs/trail/architecture/cycle-31.md` § 3.1 — RN-45)*. `checks/view.sh` (layer 6): no I/O
-  primitive in `nozoki-mac/Sources` at all *(traces to: ADR-0013; ADR-0020; ADR-0018; SDD § 3 parts
+  primitive in `nozoki-mac/Sources` at all *(traces to: ADR-0021; ADR-0020; ADR-0018; SDD § 3 parts
   table, and the `git-reader` row's *Must not own*, "A file outside Git's own on-disk layout"; § 4
   C-R7; the bounded reads and their gate on the owner's seat's answer at
   `docs/trail/architecture/cycle-29.md` § 3.3 — RN-43; the three owner files, the suite's two
@@ -483,7 +483,7 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   log, both inside `~/Library/Containers/com.kensaiapp.nozoki/`.
   — *verified by:* `checks/own-state.sh` — after a session every changed file under `$HOME` is
   under the container and none under the fixture (layer 5) *(traces to: SDD § 4 C-D2, C-I2; SRS
-  FR-21, AC-13; ADR-0013; ADR-0020 — the trace its § Binds names, added at v12 against ADR-0016 — RN-23 — and carried to ADR-0020 at v33, RN-44)*
+  FR-21, AC-13; ADR-0021; ADR-0020 — the trace its § Binds names, added at v12 against ADR-0016 — RN-23 — and carried to ADR-0020 at v33, RN-44)*
 - **QC-17:** Two composition roots, one per language, and each is the single place its runtime is
   touched: `nozoki-bridge` is the Rust-side root — the only place the libgit2 adapter is wired to
   the Git port, the only place the log writer is installed, and the only place libgit2's four
@@ -623,8 +623,8 @@ reviewed tag.
   RN-90) — RN-49; § 4 C-R7 as it reads at v22 — the export staged by change and not by
   slice, and what *built* means, on the owner's seat's answer at
   `docs/trail/architecture/cycle-18.md` § 3.1 — RN-32;
-  § 4 C-I6; § 11 R-12; § SDD Review Notes RN-47, RN-60, RN-66; ADR-0013; ADR-0021, proposed over
-  ADR-0013 — RN-49; ADR-0020, whose units table names `nozoki_free` apart from the list; QC-59; the staged form answered in the owner's seat at
+  § 4 C-I6; § 11 R-12; § SDD Review Notes RN-47, RN-60, RN-66; ADR-0021 — RN-49, accepted over
+  ADR-0013 at v39 — RN-50; ADR-0020, whose units table names `nozoki_free` apart from the list; QC-59; the staged form answered in the owner's seat at
   `docs/trail/architecture/cycle-6.md` § 3.1 — RN-19 — carried from the capability file to the
   export set at v11 — RN-22; `nozoki_free` beside the list confirmed with additions in the owner's
   seat at `docs/trail/architecture/cycle-10.md` § 2.1 — RN-24)*
@@ -867,7 +867,7 @@ reviewed tag.
   the lock resolves at `nozoki@85d9fa7` does (RN-34). Review at `development-design` when a change adds
   an entry point — a scanner finds a new read or a new socket, not a new trust assumption *(traces
   to: `quality_defaults.md` § The boundary set; SRS NFR-14, FR-1; FDR R-2; SDD § 4 C-R3 *Violated
-  by*, C-R7; ADR-0013; ADR-0017; the two
+  by*, C-R7; ADR-0021; ADR-0017; the two
   halves answered in the owner's seat at `docs/trail/architecture/cycle-5.md` § 3.3; the script,
   the list format and the measurement behind them are this document's — RN-18; the IPC member
   corrected on the owner's addition at `docs/trail/architecture/cycle-9.md` § 2.3 — RN-23; the
@@ -891,7 +891,7 @@ reviewed tag.
   — *verified by:* network monitoring across a full session shows zero outbound traffic
   (`docs/SRS.md` AC-3, the release); `checks/no-network.sh` (the tree); the absent network
   entitlement (QC-25) *(traces to: SRS NFR-7, NFR-8, AC-3; `quality_defaults.md` § The boundary
-  set; ADR-0013; ADR-0011)*
+  set; ADR-0021; ADR-0011)*
 
 ## 3. Authentication & access control
 
@@ -927,7 +927,7 @@ import nothing forbidden and still read a path it was never granted.
   an API the scan does not name is a violation, caught at `development-design` and added to the
   header in the same change. QC-1's and QC-23's pointers at the scan follow this tail and carry
   no list of their own; `checks/no-network.sh` *(traces to: SDD § 4 C-R7 — the forbidden set and
-  its *Violated by*; § 3 SM-4; ADR-0013; `quality_defaults.md` § Capability; re-derived at v11 —
+  its *Violated by*; § 3 SM-4; ADR-0021; `quality_defaults.md` § Capability; re-derived at v11 —
   RN-22; the header as the list and C-R7's set as the floor at v15, on the owner's seat's answer
   at `docs/trail/architecture/cycle-12.md` § 3.4 — RN-26)*
 - **QC-35:** The product reads nothing outside the granted folder and its own container, and
@@ -958,7 +958,7 @@ import nothing forbidden and still read a path it was never granted.
 - **QC-36:** No unit spawns a process: no `std::process` in any shipped crate, and no `Process`
   in `nozoki-mac/Sources`.
   — *verified by:* `checks/structure.sh` (layer 6); `checks/view.sh` (layer 6) *(traces to: SDD
-  § 3 `git-reader` "Must not own", `mac-shell` "Must not own"; § 4 C-R7; ADR-0019; ADR-0013; re-derived at v11 — RN-22)*
+  § 3 `git-reader` "Must not own", `mac-shell` "Must not own"; § 4 C-R7; ADR-0019; ADR-0021; re-derived at v11 — RN-22)*
 - **QC-37:** `asset_bytes` returns bytes read-only, only for a path the containment check passes
   and only for the four bitmap formats `docs/SDD.md` § 4 C-D3 names — PNG, JPEG, GIF and WebP —
   and refuses any other request; the shell decodes an image from bytes `asset_bytes` returned and
@@ -4332,3 +4332,47 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   source: `docs/trail/architecture/cycle-34.md` § 3.1, § 3.2; `docs/trail/architecture/self_answer-38.md`;
   `docs/SDD.md` v30 § 3 SM-4, § 10 RC-4, RN-90, and v31 § 4 C-R6, C-I3, § 11 R-16, RN-91; the tree
   at `nozoki@2aed844`)*
+- **RN-50:** *(v39 — the close: the cycle-35 fold, § 2.1 and § 2.2 confirmed)* **The fold.** The
+  companion at intake was the one v38 wrote, with two § 2 items. A `companion-self-answer` run
+  confirmed both in the owner's seat, § 2.2 with one addition (`docs/trail/architecture/self_answer-39.md`),
+  and the answers were committed at `nozoki@98e35f8`. A `product-architecture` run then stopped short
+  of accepting ADR-0021 with only a self-answer behind it, and the owner confirmed § 2.2, the addition
+  kept, in an interactive session (`nozoki@bb75290`). A second self-answer run found nothing left to
+  decide (`docs/trail/architecture/self_answer-40.md`, `nozoki@16f1ce1`). The companion was copied
+  whole, before this fold, as `docs/trail/architecture/cycle-35.md`. **§ 2.2 → ADR-0021 Accepted,
+  ADR-0013 superseded.** A superseding record is the mechanic, on the line the answer draws from the
+  log's own practice: a fact, a pointer or a description the record's rule does not rest on is
+  corrected in place with a dated note, and a moved rule is superseded. SM-4's closed list, and what
+  C-I6's pin holds from `v1.0.0`, is that kind of rule. ADR-0013's Status line now reads `Superseded by
+  ADR-0021`, and nothing else in it is edited. The addition is folded before acceptance, while ADR-0021
+  was still Proposed and this run's to revise: its trace to the companion read "§ 2.1, as this run
+  wrote it" and now points at `docs/trail/architecture/cycle-35.md` § 2.2, the file that keeps the
+  item once the companion is gone. **Pointers re-pointed.** Every entry trace that named ADR-0013 now
+  names ADR-0021: QC-1, QC-2, QC-8, QC-9, QC-15, QC-16, QC-24, QC-30, QC-32, QC-34 and QC-36. QC-24's
+  "ADR-0021, proposed over ADR-0013 — RN-49" now reads as accepted at v39. Dated notes keep the
+  numbers they were written with. **What this run adds beyond the answer:** ADR-0021's `## Binds`
+  reads every entry that now traces to it, so it adds QC-36 to the ten the draft carried from
+  ADR-0013's `## Binds`. QC-36 traced to ADR-0013 (re-derived at v11, RN-22), and ADR-0013's accepted
+  `## Binds` did not list it. With a record that is still revisable, the pair is made navigable both
+  ways, as RN-44 did for ADR-0020. **§ 2.1 → QC-11.** The v38 draft stands as written: the
+  exception's bound is review at `development-design` until a change adds the rule to
+  `checks/structure.sh`. The answer's reason is that the form names no delivery unit as the rule's
+  source, and that form is the one that went false at v37. The tail's "drafted at v38 for the owner's
+  confirm" now reads as drafted and confirmed, pointing at the trail cycle. **Re-measured at HEAD
+  `nozoki@16f1ce1`, not taken from the answers.** `git log 566558b..HEAD -- docs/SRS.md docs/SDD.md
+  docs/fdr.md docs/PRD.md docs/UXD.md docs/DESIGN.md docs/CONTENT.md crates checks nozoki-mac
+  .github Cargo.toml Cargo.lock` prints nothing. `checks/structure.sh:L257-L258` still names QC-11's
+  libgit2 clause under *WHAT IS NOT HELD*, and `grep -rln git2 crates/nozoki-bridge` prints the
+  manifest, `src/machine_config.rs` and `tests/search_path.rs`, the three files the tail names.
+  `crates/nozoki-bridge/src/exports.rs:L105` is `nozoki_read_git`, the export test admits it
+  (`crates/nozoki-bridge/tests/exports.rs:L17-L23`), and `grep -rn nozoki_read_git nozoki-mac` prints
+  nothing. This run executed `cargo test --locked -p nozoki-bridge` (every target `ok`; `exports` 11
+  of 11, `search_path` 1 of 1) and `bash checks/structure.sh` (exit 0, "15 Rust files in 2 crates
+  read — nothing found"). **What moved beneath this document:** nothing. Every input's `Status:`
+  line was re-read and is Settled, so `Inputs read:` stands. No `QC` is added, renumbered or reused.
+  § 10 does not move: no row names a record. Nothing is left for the owner, so the companion is
+  removed and `Status:` is Settled *(re: header `Status:`, `Version:`; QC-11; the traces of QC-1,
+  QC-2, QC-8, QC-9, QC-15, QC-16, QC-24, QC-30, QC-32, QC-34, QC-36; ADR-0013's Status line;
+  ADR-0021; the index; source: `docs/trail/architecture/cycle-35.md` § 2.1, § 2.2;
+  `docs/trail/architecture/self_answer-39.md`, `self_answer-40.md`; `nozoki@bb75290`; the tree at
+  `nozoki@16f1ce1`)*
