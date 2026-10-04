@@ -798,4 +798,442 @@ mod tests {
             );
         }
     }
+
+    /// Task 5: the Git item's wire, mapped from the core's item. The model is built through the core's
+    /// public API (`open_folder`, then `read_git` over a port double), because `GitState` has no
+    /// public constructor.
+    mod git_wire {
+        use std::collections::BTreeSet;
+        use std::ffi::OsStr;
+        use std::os::unix::ffi::OsStrExt;
+        use std::path::{Path, PathBuf};
+
+        use nozoki_core::{
+            BranchElement, FolderModel, GitPort, GitReadCondition, HeadState, OpenFolderOutcome,
+            ProbeCondition, RepositoryState, RootFinding, StatusCategory, StatusEntry, StatusLists,
+            open_folder, read_git,
+        };
+        use serde_json::{Value, json};
+
+        use crate::session::GitAnswerDto;
+        use crate::test_support::TempDir;
+
+        /// A port double that answers what it was given, for every folder.
+        struct Scripted {
+            probe: RootFinding,
+            state: Result<HeadState, GitReadCondition>,
+            status: Result<StatusLists, GitReadCondition>,
+        }
+
+        impl Scripted {
+            fn root(head: HeadState, status: StatusLists) -> Self {
+                Self {
+                    probe: RootFinding::Root,
+                    state: Ok(head),
+                    status: Ok(status),
+                }
+            }
+
+            fn root_in(state: RepositoryState) -> Self {
+                Self::root(
+                    HeadState {
+                        branch: BranchElement::Branch("main".to_string()),
+                        state,
+                    },
+                    StatusLists {
+                        staged: Vec::new(),
+                        changed: Vec::new(),
+                    },
+                )
+            }
+
+            fn root_changed(changed: Vec<StatusEntry>) -> Self {
+                Self::root(
+                    HeadState {
+                        branch: BranchElement::Branch("main".to_string()),
+                        state: RepositoryState::Normal,
+                    },
+                    StatusLists {
+                        staged: Vec::new(),
+                        changed,
+                    },
+                )
+            }
+        }
+
+        impl GitPort for Scripted {
+            fn probe(&self, _folder: &Path) -> RootFinding {
+                self.probe.clone()
+            }
+
+            fn state(&self, _root: &Path) -> Result<HeadState, GitReadCondition> {
+                self.state.clone()
+            }
+
+            fn status(&self, _root: &Path) -> Result<StatusLists, GitReadCondition> {
+                self.status.clone()
+            }
+        }
+
+        fn opened_model() -> FolderModel {
+            let folder = TempDir::new();
+            let OpenFolderOutcome::Opened(opened) = open_folder(folder.path()) else {
+                panic!("the temporary folder opens");
+            };
+            FolderModel::new(opened)
+        }
+
+        /// The wire of the item `port` makes the model hold.
+        fn wire(port: &Scripted) -> Value {
+            let model = read_git(opened_model(), port);
+            serde_json::to_value(GitAnswerDto::from(model.kind())).expect("the answer serializes")
+        }
+
+        fn members(value: &Value) -> Vec<String> {
+            let mut names: Vec<String> = value
+                .as_object()
+                .expect("an object")
+                .keys()
+                .cloned()
+                .collect();
+            names.sort();
+            names
+        }
+
+        fn entry(path: &str, category: StatusCategory) -> StatusEntry {
+            StatusEntry {
+                path: path.to_string(),
+                category,
+            }
+        }
+
+        #[test]
+        fn test_pending_item_is_exactly_state_pending() {
+            let model = opened_model();
+
+            let value = serde_json::to_value(GitAnswerDto::from(model.kind()))
+                .expect("the answer serializes");
+
+            assert_eq!(value, json!({ "state": "pending" }));
+        }
+
+        #[test]
+        fn test_observed_plain_is_exactly_state_and_kind() {
+            let value = wire(&Scripted {
+                probe: RootFinding::Plain,
+                state: Err(GitReadCondition::NotARoot),
+                status: Err(GitReadCondition::NotARoot),
+            });
+
+            assert_eq!(value, json!({ "state": "observed", "kind": "plain" }));
+        }
+
+        #[test]
+        fn test_observed_root_holds_exactly_the_six_named_members() {
+            let value = wire(&Scripted::root_in(RepositoryState::Normal));
+
+            assert_eq!(
+                members(&value),
+                vec![
+                    "branch",
+                    "changed",
+                    "kind",
+                    "repository_state",
+                    "staged",
+                    "state"
+                ]
+            );
+            assert_eq!(value["state"], "observed");
+            assert_eq!(value["kind"], "root");
+            assert_eq!(value["staged"], json!([]));
+            assert_eq!(value["changed"], json!([]));
+        }
+
+        #[test]
+        fn test_every_entry_holds_exactly_path_and_category_except_renamed() {
+            let value = wire(&Scripted::root(
+                HeadState {
+                    branch: BranchElement::Branch("main".to_string()),
+                    state: RepositoryState::Normal,
+                },
+                StatusLists {
+                    staged: vec![
+                        entry("a", StatusCategory::Added),
+                        entry(
+                            "b",
+                            StatusCategory::Renamed {
+                                from: "old-b".to_string(),
+                            },
+                        ),
+                    ],
+                    changed: vec![
+                        entry("c", StatusCategory::Modified),
+                        entry("d", StatusCategory::Deleted),
+                        entry("e", StatusCategory::Untracked),
+                        entry("f", StatusCategory::InConflict),
+                    ],
+                },
+            ));
+
+            let staged = value["staged"].as_array().expect("a staged list");
+            let changed = value["changed"].as_array().expect("a changed list");
+            assert_eq!(members(&staged[0]), vec!["category", "path"]);
+            assert_eq!(members(&staged[1]), vec!["category", "from", "path"]);
+            assert_eq!(
+                staged[1],
+                json!({ "path": "b", "category": "renamed", "from": "old-b" })
+            );
+            for entry in changed {
+                assert_eq!(members(entry), vec!["category", "path"], "{entry}");
+            }
+        }
+
+        #[test]
+        fn test_three_changed_files_cross_as_three_entries_in_the_core_order() {
+            let value = wire(&Scripted::root_changed(vec![
+                entry("zeta.txt", StatusCategory::Modified),
+                entry("alpha.txt", StatusCategory::Modified),
+                entry("mid.txt", StatusCategory::Untracked),
+            ]));
+
+            let paths: Vec<&str> = value["changed"]
+                .as_array()
+                .expect("a changed list")
+                .iter()
+                .map(|entry| entry["path"].as_str().expect("a path"))
+                .collect();
+            assert_eq!(paths, vec!["zeta.txt", "alpha.txt", "mid.txt"]);
+            assert_eq!(
+                members(&value),
+                vec![
+                    "branch",
+                    "changed",
+                    "kind",
+                    "repository_state",
+                    "staged",
+                    "state"
+                ],
+                "no count member and no sort key"
+            );
+        }
+
+        #[test]
+        fn test_each_of_the_eight_repository_states_has_its_own_wire_value() {
+            let states = [
+                (RepositoryState::Normal, "normal"),
+                (RepositoryState::Merge, "merge"),
+                (RepositoryState::Rebase, "rebase"),
+                (RepositoryState::CherryPick, "cherry_pick"),
+                (RepositoryState::Revert, "revert"),
+                (RepositoryState::Bisect, "bisect"),
+                (RepositoryState::Am, "am"),
+                (RepositoryState::DetachedHead, "detached_head"),
+            ];
+
+            let wires: Vec<Value> = states
+                .iter()
+                .map(|(state, _)| {
+                    wire(&Scripted::root_in(state.clone()))["repository_state"].clone()
+                })
+                .collect();
+
+            let expected: Vec<Value> = states.iter().map(|(_, text)| json!(text)).collect();
+            assert_eq!(wires, expected);
+            let distinct: BTreeSet<String> = wires.iter().map(Value::to_string).collect();
+            assert_eq!(distinct.len(), 8);
+        }
+
+        #[test]
+        fn test_each_of_the_six_categories_has_its_own_wire_value() {
+            let categories = [
+                (StatusCategory::Added, "added"),
+                (StatusCategory::Modified, "modified"),
+                (StatusCategory::Deleted, "deleted"),
+                (
+                    StatusCategory::Renamed {
+                        from: "was".to_string(),
+                    },
+                    "renamed",
+                ),
+                (StatusCategory::Untracked, "untracked"),
+                (StatusCategory::InConflict, "in_conflict"),
+            ];
+
+            let wires: Vec<Value> = categories
+                .iter()
+                .map(|(category, _)| {
+                    wire(&Scripted::root_changed(vec![entry("p", category.clone())]))["changed"][0]
+                        ["category"]
+                        .clone()
+                })
+                .collect();
+
+            let expected: Vec<Value> = categories.iter().map(|(_, text)| json!(text)).collect();
+            assert_eq!(wires, expected);
+            let distinct: BTreeSet<String> = wires.iter().map(Value::to_string).collect();
+            assert_eq!(distinct.len(), 6);
+        }
+
+        fn probe_failure(condition: ProbeCondition) -> Scripted {
+            Scripted {
+                probe: RootFinding::Failed(condition),
+                state: Err(GitReadCondition::NotARoot),
+                status: Err(GitReadCondition::NotARoot),
+            }
+        }
+
+        fn read_failure(condition: GitReadCondition) -> Scripted {
+            Scripted {
+                probe: RootFinding::Root,
+                state: Err(condition),
+                status: Err(GitReadCondition::NotARoot),
+            }
+        }
+
+        #[test]
+        fn test_each_of_the_eleven_core_conditions_and_the_switch_failure_have_twelve_distinct_wire_values()
+         {
+            let mut answers: Vec<(Value, &str)> = vec![
+                (
+                    wire(&probe_failure(ProbeCondition::FolderUnavailable)),
+                    "probe_folder_unavailable",
+                ),
+                (
+                    wire(&probe_failure(ProbeCondition::GitDirectoryUnreadable)),
+                    "probe_git_directory_unreadable",
+                ),
+                (
+                    wire(&probe_failure(ProbeCondition::GitEntryNotDirectory)),
+                    "probe_git_entry_not_directory",
+                ),
+                (
+                    wire(&probe_failure(ProbeCondition::GitFileUnreadable)),
+                    "probe_git_file_unreadable",
+                ),
+                (
+                    wire(&probe_failure(ProbeCondition::RepositoryReadFailed)),
+                    "probe_repository_read_failed",
+                ),
+                (
+                    wire(&read_failure(GitReadCondition::GitDirectoryOutside(
+                        PathBuf::from("/elsewhere/.git"),
+                    ))),
+                    "git_directory_outside",
+                ),
+                (
+                    wire(&read_failure(GitReadCondition::NotARoot)),
+                    "not_a_root",
+                ),
+                (
+                    wire(&read_failure(GitReadCondition::GitDirectoryMissing)),
+                    "git_directory_missing",
+                ),
+                (
+                    wire(&read_failure(GitReadCondition::GitDirectoryUnreadable)),
+                    "git_directory_unreadable",
+                ),
+                (
+                    wire(&read_failure(GitReadCondition::NotARepository)),
+                    "not_a_repository",
+                ),
+                (
+                    wire(&read_failure(GitReadCondition::RepositoryReadFailed)),
+                    "repository_read_failed",
+                ),
+            ];
+            answers.push((
+                serde_json::to_value(GitAnswerDto::machine_config_not_switched_off())
+                    .expect("the answer serializes"),
+                "machine_config_not_switched_off",
+            ));
+
+            for (answer, condition) in &answers {
+                assert_eq!(answer["state"], "failed", "{answer}");
+                assert_eq!(answer["condition"], *condition, "{answer}");
+            }
+            let distinct: BTreeSet<String> = answers
+                .iter()
+                .map(|(answer, _)| answer["condition"].to_string())
+                .collect();
+            assert_eq!(distinct.len(), 12);
+        }
+
+        #[test]
+        fn test_git_directory_member_appears_only_for_git_directory_outside() {
+            let outside = wire(&read_failure(GitReadCondition::GitDirectoryOutside(
+                PathBuf::from("/elsewhere/.git"),
+            )));
+            let others = [
+                wire(&probe_failure(ProbeCondition::FolderUnavailable)),
+                wire(&read_failure(GitReadCondition::NotARoot)),
+                wire(&read_failure(GitReadCondition::RepositoryReadFailed)),
+                serde_json::to_value(GitAnswerDto::machine_config_not_switched_off())
+                    .expect("the answer serializes"),
+            ];
+
+            assert_eq!(
+                outside,
+                json!({
+                    "state": "failed",
+                    "condition": "git_directory_outside",
+                    "git_directory": "/elsewhere/.git"
+                })
+            );
+            for other in others {
+                assert_eq!(members(&other), vec!["condition", "state"], "{other}");
+            }
+        }
+
+        #[test]
+        fn test_branch_and_detached_identifier_spell_as_the_core_reads_them() {
+            let commit = "62290d82ec30f74dbffb792140ea647be14eb18c";
+            let on_branch = wire(&Scripted::root_in(RepositoryState::Normal));
+            let detached = wire(&Scripted::root(
+                HeadState {
+                    branch: BranchElement::Detached(commit.to_string()),
+                    state: RepositoryState::DetachedHead,
+                },
+                StatusLists {
+                    staged: Vec::new(),
+                    changed: Vec::new(),
+                },
+            ));
+
+            assert_eq!(
+                on_branch["branch"],
+                json!({ "kind": "branch", "name": "main" })
+            );
+            assert_eq!(
+                detached["branch"],
+                json!({ "kind": "detached", "commit": commit })
+            );
+            assert_eq!(commit.len(), 40);
+        }
+
+        #[test]
+        fn test_non_utf8_git_directory_is_a_non_null_answer_with_the_lossy_spelling() {
+            let path = PathBuf::from(OsStr::from_bytes(b"/elsewhere/\xff/.git"));
+            let model = read_git(
+                opened_model(),
+                &read_failure(GitReadCondition::GitDirectoryOutside(path)),
+            );
+
+            let value = serde_json::to_value(GitAnswerDto::from(model.kind()))
+                .expect("a non-UTF-8 path still serializes");
+
+            assert_eq!(value["state"], "failed");
+            assert_eq!(value["git_directory"], "/elsewhere/\u{fffd}/.git");
+        }
+
+        #[test]
+        fn test_switch_failure_carries_no_path_and_no_library_text() {
+            let value = serde_json::to_value(GitAnswerDto::machine_config_not_switched_off())
+                .expect("the answer serializes");
+
+            assert_eq!(
+                value,
+                json!({ "state": "failed", "condition": "machine_config_not_switched_off" })
+            );
+        }
+    }
 }
