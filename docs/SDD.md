@@ -1,12 +1,13 @@
 # SDD — nozoki
 
-**Status:** Draft
+**Status:** Settled
 <!-- Draft = open issues or choices to confirm remain (open-issues file present).
      Settled = nothing left for the owner to answer and no open technical question — the done
        signal, and the state a finished SDD carries; the open-issues file is gone.
      Locked = ratified as the source of truth. -->
 **Owner:** CTO · CPO · CDO — one run, three seats
-**Version:** 39 — CTO, one run, with four answered companion items folded (`docs/trail/sdd/cycle-34.md` §§ 5.1 – 5.4), all four the CTO's: § 3, the `git-reader` row (*Owns* gains the config check run before libgit2 opens anything, the reads that check makes inside the folder, the condition a refusal answers, and the verification of each submodule repository before the status read; *Must not own* gains one exception, a config file inside the folder that the repository's config includes); § 3, the `core-bridge` row (*Not covered by the switch* names § 11 R-16's domain by its rule and stops listing three keys); § 4 C-D3 (the *Not covered* sentence follows, and names a second read, the alternates file, in a draft); § 6 `see-git-status` *Reached when*, observable half (one sentence for a repository whose config names an outside path — the CDO's clause, settled by `docs/UXD.md` § 6 and UX-S3 Error) and *Rests on* (§ 11 R-16 added); § 11 R-16 (rewritten: the domain as a rule, its five members pinned to the libgit2 version, the refusal and its condition, the submodule rule, what is not covered, and the alternates file in a draft); *Open Questions*, the config-named-path item (the second form is the form found, and `git-reader` is the part that reads); SDD Review Notes RN-99 (new); trail copy at `docs/trail/sdd/cycle-34.md`. One companion item is unanswered and stays (§ 2.1, the alternates file), so `docs/SDD_open_issues.md` stays and `Status:` reads Draft. No *Delivers*, no slice added, no § 10 entry, no § 7 edge, no slice order and no seam altered. Companion items added: none.
+**Version:** 40 — CTO, one run, with the one answered companion item folded (`docs/trail/sdd/cycle-35.md` § 2.1), the CTO's: § 3, the `git-reader` row (*Owns* gains the alternates check run beside the config check, what it reads, the spellings it refuses, the condition a refusal answers, and a third check on each submodule repository; *Must not own* gains a second exception, the `info/alternates` file of an alternate object directory inside the folder); § 4 C-D3 (the second *Not covered* sentence names the refusal in place of "covered by nothing outside the sandbox"); § 6 `see-git-status` *Reached when*, observable half (one passage for a repository whose object store names a location outside the folder — the CDO's clause, settled by `docs/UXD.md` § 6 and UX-S3 Error) and *Rests on* (RN-100 beside RN-99); § 11 R-16 ("A third way out" is confirmed and rewritten with the answer's five additions, the proof gains one fixture and one case, and *Not covered* names two more limits); *Open Questions*, the config-named-path item (the alternates case joins the proof under the same bound); SDD Review Notes RN-100 (new); trail copy at `docs/trail/sdd/cycle-35.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` returns to Settled. No *Delivers*, no slice added, no § 10 entry, no § 7 edge, no slice order and no seam altered. Companion items added: none.
+Version 39 — CTO, one run, with four answered companion items folded (`docs/trail/sdd/cycle-34.md` §§ 5.1 – 5.4), all four the CTO's: § 3, the `git-reader` row (*Owns* gains the config check run before libgit2 opens anything, the reads that check makes inside the folder, the condition a refusal answers, and the verification of each submodule repository before the status read; *Must not own* gains one exception, a config file inside the folder that the repository's config includes); § 3, the `core-bridge` row (*Not covered by the switch* names § 11 R-16's domain by its rule and stops listing three keys); § 4 C-D3 (the *Not covered* sentence follows, and names a second read, the alternates file, in a draft); § 6 `see-git-status` *Reached when*, observable half (one sentence for a repository whose config names an outside path — the CDO's clause, settled by `docs/UXD.md` § 6 and UX-S3 Error) and *Rests on* (§ 11 R-16 added); § 11 R-16 (rewritten: the domain as a rule, its five members pinned to the libgit2 version, the refusal and its condition, the submodule rule, what is not covered, and the alternates file in a draft); *Open Questions*, the config-named-path item (the second form is the form found, and `git-reader` is the part that reads); SDD Review Notes RN-99 (new); trail copy at `docs/trail/sdd/cycle-34.md`. One companion item is unanswered and stays (§ 2.1, the alternates file), so `docs/SDD_open_issues.md` stays and `Status:` reads Draft. No *Delivers*, no slice added, no § 10 entry, no § 7 edge, no slice order and no seam altered. Companion items added: none.
 Version 38 — CTO, one run, with the one answered companion item folded: § 3, the `surfaces` row (the reading clause names the window's key status beside the pointer: it is the shell's own observation of the window and no state of the folder, the hover fill and the tooltip are drawn from the two together, the same bounds hold it, and the row's one exception stays one); § 6 `open-a-folder` *Reached when*, observable half (the hover sentence stated for the key window, and one sentence for a window that is not — the CDO's clause, settled by `docs/DESIGN.md` § *Components*, "Rows") and command half (the second reading clause names the window, and three `swift test` cases added, seven in place of four); § 6 `see-git-status` *Reached when*, observable half (the same, and one sentence on the tooltip — settled by § *Components*, "The tooltip") and command half (four `swift test` cases added, eleven in place of seven); SDD Review Notes RN-98 (new); trail copy at `docs/trail/sdd/cycle-33.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. No *Delivers*, no *Rests on*, no slice added, no § 10 entry, no § 7 edge, no slice order, no part's *Must not own* and no seam altered. Companion items added: none.
 Version 37 — CTO, one run, with the one answered companion item folded: § 6 `see-git-status` *Reached when*, observable half (the clicked Git-view file row is drawn selected, with the selection fill and the left bar — the CDO's clause, settled by `docs/DESIGN.md` § *Components*, "Rows") and command half (one `swift test` case added, seven in place of six: after a click, with the pointer over no row, the clicked row shows the selection fill and the bar and no other row shows either), and *Rests on* (`surfaces` gains the Git view's selected row's fill); SDD Review Notes RN-97 (new); trail copy at `docs/trail/sdd/cycle-32.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. No *Delivers*, no slice added, no § 10 entry, no § 7 edge, no slice order, no part and no seam altered. Companion items added: none.
 Version 36 — CTO, one run, with the one answered companion item folded: § 3, the `surfaces` row (one reading clause: what the pointer is over is the shell's own observation of the pointer and no state of the folder, the row's hover fill and the status letter's tooltip are drawn from it, and the row's one exception stays one); § 6 `open-a-folder` *Reached when*, observable half (the tree row's hover fill — the CDO's clause, settled by `docs/DESIGN.md` § *Components*, "Rows") and command half (four `swift test` cases, and the "from a projection" clause read with the new § 3 clause), and *Rests on* (`surfaces` gains the fill); § 6 `see-git-status` *Reached when*, observable half (the Git view's file row's hover fill, with the tooltip over it) and command half (six `swift test` cases), and *Rests on* (`surfaces` gains the fill); SDD Review Notes RN-96 (new); trail copy at `docs/trail/sdd/cycle-31.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. No *Delivers*, no slice added, no § 10 entry, no § 7 edge, no slice order, no part and no seam altered. Companion items added: none.
@@ -334,7 +335,7 @@ interpret gives a different answer twice over the same settled text. Leave both 
 | Part | Lives in | Owns | Must not own |
 |---|---|---|---|
 | `fs-reader` | crates/nozoki-core | Listing a folder's entries and reading a file's bytes, each returning its outcome as data (bytes, or the condition observed); the text rule — bytes decode as UTF-8, with or without a byte-order mark, or begin with a UTF-16 byte-order mark and decode as UTF-16, and the file is text; otherwise it is *cannot-display-as-text* (`docs/SRS.md` FR-10) — no encoding is detected from content, no third encoding is admitted, one undecodable sequence makes the file not text, and an empty file is text (the owner's value, RN-41); the extension map that names a floor language or *plain* (FR-29; the set is § 4 C-I5); the **containment check** — after percent-decoding, the path is walked position by position from the granted folder: at every position *inside* the grant the canonical form is taken, symlinks resolved, and the walk goes on from it; at a position *outside* the grant nothing is read — no `lstat`, no `realpath` — and names are compared as spelled, the walk re-entering the grant only on the folder's own name met from its parent position: as spelled, or in another letter case where the folder is not the root of its volume and that volume ignores letter case, both read from the folder itself — never two names the volume keeps apart, and as spelled wherever it cannot be sure; a walk that ends inside the grant is contained and one that does not is refused — run before any open, for every path derived from content or from outside. Three spellings are refused as outside although they may lead in, because proving it would take a read outside the grant (§ 4 C-D1): a path that leaves by more than one level and returns in another case, a Unicode-normalization difference (§ 11 R-10), and a granted folder that is the root of its volume (the owner's answer, `docs/trail/sdd/cycle-15.md` § 5.1; RN-71) | Any write. Git, in any form. Watching. Markdown. Deciding what a change means |
-| `git-reader` | crates/nozoki-core | The **Git port** — `probe(folder)` answering `root` or `plain` with discovery disabled and never a path above the folder (FR-33); on a root only, `state()` (branch or detached identifier, the short status word), `status()` (changed and staged entries), `diff(kind, path)` and `walk(tips, window)` (beyond v1) — every method read-only and returning plain data — and its one adapter, libgit2 built with its `https` and `ssh` features off (§ 4 C-R6). The installed-`git` adapter, run with `--no-optional-locks`, is the port's standing substitute and is not built ahead of the risk that needs it (§ 11 R-1). **With the machine-level config off** (the `core-bridge` row's switch) the reader sees two things differently from `git status` in a terminal. The user's global ignore file is not applied, so a file it hides there is listed here as untracked (`libgit2-sys 0.18.8+1.9.7`, `libgit2/src/libgit2/attrcache.c:L345`: the fallback is found through the same search path). And a repository the current user does not own fails to open, because the `safe.directory` entry that would allow it is read from those levels (`repository.c:L629-L634`, `:L1172-L1173`); it is a `failed` Git item. Both follow from `docs/fdr.md` R-101 as it stands — "The product reads nothing outside the viewed folder except its own data location on the machine" (`docs/fdr.md:L188`) — and honouring either means a read outside the grant, which is the owner's to allow (`docs/trail/sdd/cycle-22.md` § 2.1; RN-87). **The config check, run before libgit2 opens anything** (§ 11 R-16; RN-99). Before the probe's open, and before the open behind `state()` and `status()`, the adapter reads every config file libgit2 would load for the repository: the repository's `config` in the common directory; `config.worktree` in the Git directory, where `extensions.worktreeConfig` is set; and every file one of those includes whose path spells to a location inside the folder, the working tree included, to libgit2's own include depth of ten. It refuses the repository where any of them names a path outside the folder under a key in § 11 R-16's domain. `git-reader` makes these reads itself, with the spelling walk it already locates the Git directory by; the walk follows `fs-reader`'s containment rule and reads nothing at a position outside the folder. Each file is read only for those keys, and under a size bound. A file over the bound, an include depth over ten, or a link chain over the walk's bound is refused. Nothing the check reads reaches the model, the bridge or the log. The refusal answers a condition of its own, on the probe and on both reads: the repository's config names a path outside the folder. It carries the key and the path as the config spells them, as the condition for an outside Git directory carries its path (§ 11 R-3), and the log line still holds no path. It is not the read-failed condition, which reports a read that was tried, because here none is tried. A config the adapter cannot read answers the existing condition for an unreadable Git directory. A config it cannot parse to the end as Git's syntax answers the existing read-failed condition, because it cannot prove what libgit2 would follow. **Before the status read, the adapter verifies each submodule repository that read can open**: each gitlink entry of the index whose folder holds a `.git` entry, and each one nested under it, to a stated depth. Two checks run on each, both against the opened folder: its Git directory and its common directory are located by spelling (§ 11 R-3), and its config is checked as above. Where a submodule fails either, `status()` answers the condition observed, and a depth past the bound is refused. Status is never run with that submodule left out, because the list would then read as whole (`docs/trail/sdd/cycle-34.md` §§ 5.1 – 5.4; RN-99) | Any mutating call — checkout, index write, ref update, lock file. Spawning a process. The model. A file outside Git's own on-disk layout, other than a config file inside the folder that the repository's config includes (RN-99) |
+| `git-reader` | crates/nozoki-core | The **Git port** — `probe(folder)` answering `root` or `plain` with discovery disabled and never a path above the folder (FR-33); on a root only, `state()` (branch or detached identifier, the short status word), `status()` (changed and staged entries), `diff(kind, path)` and `walk(tips, window)` (beyond v1) — every method read-only and returning plain data — and its one adapter, libgit2 built with its `https` and `ssh` features off (§ 4 C-R6). The installed-`git` adapter, run with `--no-optional-locks`, is the port's standing substitute and is not built ahead of the risk that needs it (§ 11 R-1). **With the machine-level config off** (the `core-bridge` row's switch) the reader sees two things differently from `git status` in a terminal. The user's global ignore file is not applied, so a file it hides there is listed here as untracked (`libgit2-sys 0.18.8+1.9.7`, `libgit2/src/libgit2/attrcache.c:L345`: the fallback is found through the same search path). And a repository the current user does not own fails to open, because the `safe.directory` entry that would allow it is read from those levels (`repository.c:L629-L634`, `:L1172-L1173`); it is a `failed` Git item. Both follow from `docs/fdr.md` R-101 as it stands — "The product reads nothing outside the viewed folder except its own data location on the machine" (`docs/fdr.md:L188`) — and honouring either means a read outside the grant, which is the owner's to allow (`docs/trail/sdd/cycle-22.md` § 2.1; RN-87). **The config check, run before libgit2 opens anything** (§ 11 R-16; RN-99). Before the probe's open, and before the open behind `state()` and `status()`, the adapter reads every config file libgit2 would load for the repository: the repository's `config` in the common directory; `config.worktree` in the Git directory, where `extensions.worktreeConfig` is set; and every file one of those includes whose path spells to a location inside the folder, the working tree included, to libgit2's own include depth of ten. It refuses the repository where any of them names a path outside the folder under a key in § 11 R-16's domain. `git-reader` makes these reads itself, with the spelling walk it already locates the Git directory by; the walk follows `fs-reader`'s containment rule and reads nothing at a position outside the folder. Each file is read only for those keys, and under a size bound. A file over the bound, an include depth over ten, or a link chain over the walk's bound is refused. Nothing the check reads reaches the model, the bridge or the log. The refusal answers a condition of its own, on the probe and on both reads: the repository's config names a path outside the folder. It carries the key and the path as the config spells them, as the condition for an outside Git directory carries its path (§ 11 R-3), and the log line still holds no path. It is not the read-failed condition, which reports a read that was tried, because here none is tried. A config the adapter cannot read answers the existing condition for an unreadable Git directory. A config it cannot parse to the end as Git's syntax answers the existing read-failed condition, because it cannot prove what libgit2 would follow. **The alternates check, run where the config check runs** (§ 11 R-16; RN-100). On the probe, and before the open behind `state()` and `status()`, the adapter reads `objects/info/alternates` under the common directory and refuses the repository where any entry spells to a location outside the folder. `git-reader` makes this read itself, with the same spelling walk and the same size bound as the config check. A link at `objects`, `info` or `alternates` whose spelling leaves the folder is refused without a read. The adapter then reads the `info/alternates` file of each alternate that spells inside the folder, because an inside alternate can name an outside one, to libgit2's own depth of five. A chain deeper than five, a file over the size bound, or a link chain over the walk's bound is refused. The entry spellings are § 11 R-16's. Nothing the check reads reaches the model, the bridge or the log. The refusal answers a condition of its own, and not the config condition: the repository's object store names a location outside the folder. It carries the entry as the alternates file spells it, and the log line holds no path. No alternates file, a file holding only empty lines and comments, and an entry that spells inside the folder with nothing there all pass. An alternates file the adapter cannot read answers the existing condition for an unreadable Git directory (`docs/trail/sdd/cycle-35.md` § 2.1; RN-100). **Before the status read, the adapter verifies each submodule repository that read can open**: each gitlink entry of the index whose folder holds a `.git` entry, and each one nested under it, to a stated depth. Three checks run on each, all against the opened folder: its Git directory and its common directory are located by spelling (§ 11 R-3), its config is checked as above, and its alternates file is checked as above (RN-100). Where a submodule fails any of them, `status()` answers the condition observed, and a depth past the bound is refused. Status is never run with that submodule left out, because the list would then read as whole (`docs/trail/sdd/cycle-34.md` §§ 5.1 – 5.4; RN-99) | Any mutating call — checkout, index write, ref update, lock file. Spawning a process. The model. A file outside Git's own on-disk layout, other than a config file inside the folder that the repository's config includes (RN-99), and the `info/alternates` file of an alternate object directory inside the folder (RN-100) |
 | `watcher` | crates/nozoki-core | One FSEvents subscription on the granted folder, the root's `.git` entry included, delivering coalesced change events as paths; nothing else | Reading content. Interpreting a change. Any write |
 | `folder-model` | crates/nozoki-core | The in-memory model of exactly one folder (FR-1): the tree, the selection and expansion, the open file, the Git state where the root finding says `root` and none where it says `plain`; every read held as an item carrying an `ItemState` (§ 4 C-I1); the **reducer** that applies reader results and watcher events and keeps the reader's place (FR-27); **the fill of the open `FileView`** — the model calls `highlighter` for a text file in a floor language and `markdown-renderer` for a Markdown file, on the bytes `fs-reader` returned, and holds a call that fails as that item's `failed(condition)`, never a panic (§ 4 C-I1; `docs/SRS.md` FR-8, FR-30, DR-6; drafted at RN-64, confirmed by the owner at `docs/trail/sdd/cycle-11.md` § 2.4 — RN-65); **replace-whole** — a new folder replaces the model as a value, never mutates it (NFR-12); the projections the surfaces draw; and the plain Rust API the host wraps and the harness calls (SM-5) | I/O of any kind. Any Apple framework. Own state. Drawing |
 | `markdown-renderer` | crates/nozoki-core | Markdown → a **typed document**, from bytes `fs-reader` read: a `MarkdownDocument` (*What the system holds*, below) whose node kinds are a closed set and never markup — heading, paragraph, list, quote, rule, fenced code with its language and `highlighter`'s spans; an image whose reference passes the containment check carrying that folder-relative path, every other image a placeholder node carrying the condition observed; an external link an inert node with its destination readable; a relative link a node carrying its target path; raw HTML in the source a text node (`docs/SRS.md` FR-30, FR-32, NFR-16; `docs/UXD.md` UX-I12) | Any network. Emitting a URL of any scheme. Markup of any kind. Reading the file itself, or an image's bytes. The raw-source view (§ 9 TO-5) |
@@ -991,9 +992,11 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   is not read as coverage:** a path libgit2 takes from a config file it loads for the
   repository. Such a path never passes `fs-reader`'s check. `git-reader` refuses the repository
   before libgit2 opens anything, under the rule and within the limits § 11 R-16 states (RN-87;
-  `docs/trail/sdd/cycle-34.md` § 5.3; RN-99). A second read is covered by nothing outside the
-  sandbox: a location the repository's `objects/info/alternates` file names, which libgit2 adds
-  as an object store with no containment check (§ 11 R-16; a draft, RN-99).
+  `docs/trail/sdd/cycle-34.md` § 5.3; RN-99). A second read never passes that check either: a
+  location the repository's `objects/info/alternates` file names, which libgit2 adds as an
+  object store with no containment check. `git-reader` refuses a repository whose alternates
+  file names a location outside the folder, before libgit2 opens anything, within the limits
+  § 11 R-16 states (`docs/trail/sdd/cycle-35.md` § 2.1; RN-100).
 - **C-D4.** `OwnState` holds the theme, the window frame, and beyond v1 the remembered folders
   (bookmark, display name, last-viewed mark, at most ten) — and nothing else (DR-5, UX-S7). It is
   read whole or discarded whole: a version that meets own state it cannot read opens as on first
@@ -1831,7 +1834,14 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   slot and never as nothing, whether the refusal met the root finding or a later read, and the
   tree and the panel work exactly as before, which is the route out. The message's words are
   `docs/CONTENT.md`'s (§ 11 R-16; `docs/UXD.md` § 6, UX-S3 Error, UX-I10, UX-I14, UX-I17;
-  RN-99). They open a plain folder, a
+  RN-99). They open a repository whose object store names a location outside the folder, in its
+  `objects/info/alternates` file: the Git view's item shows what was observed — that the
+  repository's object store names a location outside the folder they opened, with the entry as
+  the alternates file spells it — and that this folder's Git state is therefore not read. It is
+  shown in the Git view's failure slot and never as nothing, whether the refusal met the root
+  finding or a later read, and the tree and the panel work exactly as before, which is the
+  route out. The message's words are `docs/CONTENT.md`'s (§ 11 R-16; `docs/UXD.md` § 6, UX-S3
+  Error, UX-I10, UX-I14, UX-I17; RN-100). They open a plain folder, a
   folder inside a repository, or a folder holding repositories: the Git view is present and shows
   nothing at all — no message, no label,
   no control, nothing offering to create a repository — the tree carries no markers, and the
@@ -1890,7 +1900,7 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   § 10 RC-5, RN-94; the status letter's tooltip, its six words in the message catalogue;
   RN-95; the Git view's file row's hover fill; RN-96; and the Git view's selected row's
   fill; RN-97); `SM-2`, `SM-4` (`read_git`; § 10 RC-4); § 4 C-R6, C-I1; § 9 TO-2, TO-10; § 11 R-1,
-  R-3, R-16 (the check before the open; RN-99). Slices: `open-a-folder`, `read-a-file`.
+  R-3, R-16 (the checks before the open; RN-99, RN-100). Slices: `open-a-folder`, `read-a-file`.
 - **Traces to:** PRD § Key Use Cases 2 and 4; § Core Features "A Git view", "Git is read only when
   the folder opened is itself the root of a Git repository", "A file tree with changed-file
   markers"; § UX Notes "The path" 3, "the view never lies"; § Out of Scope "Creating or
@@ -3053,30 +3063,89 @@ A risk with no trigger and no response is an observation.>
   path, and a status read that does not read it. Until that case exists the submodule half is a
   stated limit and not a held property. The submodule rule rests on which opens libgit2 makes
   during status (`diff_generate.c:L668-L671`, `:L881-L882`; `submodule.c:L1270`, `:L1878-L1884`,
-  `:L1658`), and those lines were read and not run. Both cases are owed before `see-git-status`
-  is reached, which is the bound *Open Questions* sets.
+  `:L1658`), and those lines were read and not run. A third case holds the alternates check
+  ("A third way out", below). All three cases are owed before `see-git-status` is reached, which
+  is the bound *Open Questions* sets.
   **Not covered, and named so it is not read as coverage.** The check and libgit2's open are
   two reads. A config rewritten between them is followed by libgit2 unchecked. In the bundle
-  the sandbox still refuses that read (§ 4 C-R2). In the harness nothing does.
-  **A third way out, named in a draft.** A repository's `objects/info/alternates` file names
+  the sandbox still refuses that read (§ 4 C-R2). In the harness nothing does. The alternates
+  check and libgit2's read of the alternates file are two reads in the same way, and an
+  alternates file rewritten between them is followed unchecked, under the same two bounds. A
+  link elsewhere inside the Git directory that leads out of the folder, such as a linked
+  `HEAD`, `index` or `refs`, is covered by no check in this document. How libgit2 opens those
+  files was not read in the source, so whether it follows such a link is not known here. In the
+  bundle the sandbox refuses a read outside the folder (§ 4 C-R2) (`docs/trail/sdd/cycle-35.md`
+  § 2.1; RN-100).
+  **A third way out: the alternates file.** A repository's `objects/info/alternates` file names
   object directories, and libgit2 adds each as an object store with no containment check
-  (`libgit2/src/libgit2/odb.c:L761-L803`; an entry beginning `.` is joined to the objects
-  directory at `:L794-L797`, and any other entry is taken as written). It is not a config key,
-  so the rule above does not reach it. The drafted response is that the check before the open
-  refuses a repository whose alternates file names a location outside the folder, with the
-  condition above. That response is a draft the CTO has not yet confirmed, and nothing builds
-  it until it is (RN-99). Until a case holds it, this read is a stated limit: in the bundle the
-  sandbox refuses it, and in the harness nothing does. The source was read and not run, and no
-  fixture carries an alternates file.
-  **Until the check is built.** No build inside the slice bounds the config-named read before
-  the check lands. From the first build in which `mac-shell` calls `nozoki_read_git` until then,
+  (`libgit2/src/libgit2/odb.c:L761-L808`). It is not a config key, so the rule above does not
+  reach it. The adapter refuses a repository whose alternates file names a location outside the
+  folder (§ 3, the `git-reader` row). The response was drafted at v39 and confirmed in the
+  CTO's seat, with five additions (`docs/trail/sdd/cycle-35.md` § 2.1; RN-100).
+  *The condition.* The refusal answers a condition of its own: the repository's object store
+  names a location outside the folder. It is not the config condition, which reports that the
+  config names a path and carries a key. An alternates file is not config and has no key, so
+  that message would name a cause the adapter did not observe. The condition carries the entry
+  as the alternates file spells it, and the log line holds no path. It crosses SM-2, SM-4 and
+  SM-8 as the config condition does. The probe answers a failed root finding with this cause,
+  and the reads answer a `failed` Git item (§ 6 S-4 *Reached when*, observable half).
+  *Where the check runs, and what it reads.* It runs where the config check runs: on the
+  probe, and before the open behind `state()` and `status()`. libgit2 opens the object store on
+  first use and not during the open, by the answer's reading of `repository.c:L1535-L1573`,
+  which this fold did not open. The check is placed with the config check all the same, so
+  that one check runs in one place. It reads `objects/info/alternates` under the common
+  directory. A link at `objects`, `info` or `alternates` whose spelling leaves the folder is
+  refused without a read, so a linked `objects` directory that leads out is refused here. The
+  check then reads the `info/alternates` file of each alternate that spells inside the folder,
+  because libgit2 loads each added object directory's own alternates file (`odb.c:L758`,
+  `:L800`). libgit2 stops at a depth of five (`odb.c:L27`, `:L770`). A chain deeper than five,
+  a file over the size bound, or a link chain over the walk's bound is refused.
+  *The spellings follow libgit2's own rule* (`odb.c:L789-L802`). An empty line and a line
+  beginning `#` are skipped (`:L790-L791`). An entry beginning `.` is spelled from the objects
+  directory that holds the file (`:L794-L798`). An absolute entry is taken as written. Any
+  other entry libgit2 passes on as written (`:L800`), so the operating system resolves it
+  against the process's working directory and not against the folder, and it is refused as
+  outside. Any one entry that spells outside refuses the repository.
+  *What is not a refusal.* No alternates file passes (`odb.c:L776-L779`). A file holding only
+  empty lines and comments passes. An entry that spells inside the folder with nothing there
+  passes, because libgit2 skips an alternate it cannot `stat` (`odb.c:L697-L700`). An alternates
+  file the adapter cannot read answers the existing condition for an unreadable Git directory.
+  *What the refusal costs a reader.* A clone made with `git clone --shared`, or with
+  `--reference` from a repository on the same machine, keeps an alternates file that names the
+  source repository's objects (`https://git-scm.com/docs/git-clone`, the `--shared` and
+  `--reference` options, read through a fetch on 2026-10-04). Where the source lies outside the
+  opened folder, that clone shows a failed Git item with the cause, while `git status` in a
+  terminal works. This follows from `docs/fdr.md` R-101 as it stands (`docs/fdr.md:L188`), as
+  the two differences § 3's `git-reader` row names do: showing that clone's status means
+  reading objects outside the folder. Leaving the read unrefused would not show the status
+  either. In the bundle the sandbox denies the `stat`, libgit2 then skips the alternate with no
+  error (`odb.c:L697-L700`), and a status read that needs an object held there has nothing that
+  names the cause. That sequence is read from the source and was not run.
+  *Submodules.* Each submodule repository has an object store of its own, so the verification
+  before the status read gains this check beside its two (§ 3, the `git-reader` row). Whether
+  the status read opens a submodule's object store was not read in the source. The check runs
+  on each submodule whichever is the case, because it reads only inside the folder.
+  *The proof.* One fixture whose alternates file names an objects directory outside the
+  fixture, and one case showing that directory is not read. No fixture carries an alternates
+  file: `grep -rl alternates checks crates` printed nothing at `nozoki@3b6754d`. The source was
+  read and not run. Until the case exists this read is a stated limit and not a held property:
+  in the bundle the sandbox refuses it, and in the harness nothing does.
+  *Not reached, and no change made.* The `GIT_ALTERNATE_OBJECT_DIRECTORIES` environment
+  variable also names object directories. The answer's reasoning reads libgit2 as consulting it
+  only for a repository opened from the environment, and the adapter as never opening that way
+  (`docs/trail/sdd/self_answer-47.md`, "The environment path"). This fold opened the adapter's
+  open, which passes `NO_SEARCH` and no environment flag
+  (`crates/nozoki-core/src/git_reader/libgit2.rs:L81`, at `nozoki@3b6754d`), and did not open
+  the libgit2 lines.
+  **Until the checks are built.** No build inside the slice bounds the config-named read before
+  the check lands, and the same holds for the alternates read. From the first build in which `mac-shell` calls `nozoki_read_git` until then,
   the bundle opens a reader's own repositories with the sandbox as the only bound, and a
   repository whose config names an outside path shows a failed Git item if libgit2's open or
   status read does not survive the refusal (§ 6 S-4 *Reached when*, observable half, "Git state
   the tool could not read"). Until the fixture and its case exist this is a stated limit of
   § 4 C-D1 outside the sandbox, not a held property (RN-87; `docs/trail/sdd/cycle-26.md` § 5.4,
   RN-91; `docs/trail/sdd/cycle-27.md` § 5.1, RN-92; `docs/trail/sdd/cycle-34.md` §§ 5.1 – 5.4,
-  RN-99).
+  RN-99; `docs/trail/sdd/cycle-35.md` § 2.1, RN-100).
 
 ## 12. What this design is not
 
@@ -6644,6 +6713,97 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   *(re: § 3 `git-reader`, `core-bridge`; § 4 C-D3; § 6 `see-git-status`; § 11 R-16; *Open
   Questions*; source: `docs/trail/sdd/cycle-34.md` §§ 5.1 – 5.4;
   `docs/trail/sdd/self_answer-46.md`; `nozoki@d7c3d92`)*.
+- **RN-100:** *(CTO; the CDO's clause named below)* *(changed)* The alternates refusal that
+  RN-99 drafted is confirmed, and `git-reader` checks a repository's alternates file before
+  libgit2 opens anything. One companion item is folded. It was raised by the run that wrote
+  v39, in the CTO's seat, and an unattended run answered it in that seat: confirm, with five
+  additions (`docs/trail/sdd/cycle-35.md` § 2.1; reasoning `docs/trail/sdd/self_answer-47.md`).
+  **What moved, each named.** (1) § 3, the `git-reader` row, *Owns*: the alternates check,
+  where it runs, what it reads, its bounds, the condition a refusal answers, and the cases that
+  pass. The submodule verification reads "Three checks" where it read "Two checks", and "any of
+  them" where it read "either". (2) The same row, *Must not own*: a second exception, the
+  `info/alternates` file of an alternate object directory inside the folder. (3) § 4 C-D3, the
+  second *Not covered* sentence: it names the refusal where it read "covered by nothing outside
+  the sandbox". (4) § 6 S-4 *Reached when*, observable half: one passage for a repository whose
+  object store names an outside location. (5) § 6 S-4 *Rests on*: RN-100 beside RN-99. (6) § 11
+  R-16: "A third way out" is rewritten as a confirmed response, the proof paragraph counts
+  three cases, *Not covered* names two more limits, and the last paragraph's heading reads
+  "checks". (7) *Open Questions*, the config-named-path item: the alternates case joins the
+  proof under the same bound, with a dated note. (8) The header: `Status:` reads Settled.
+  **Whose columns, and what settled each.** (1) to (3) and (5) to (8) are the CTO's. (4) is the
+  CDO's clause. It is settled by `docs/UXD.md`, which is Settled at its status line, on the
+  ground RN-99 gives for the config passage: § 6 puts every observed condition in the cell's
+  failure slot with a route out on the same surface (`docs/UXD.md:L226-L231`), and UX-S3's
+  Error cell says the item "shows what the tool observed" (`:L241`). The new passage has the
+  form of the config passage and differs only in what was observed. The message's words are
+  `docs/CONTENT.md`'s, under its rule that anything outside the folder is said one way
+  (`docs/CONTENT.md:L331-L337`). No item is raised for the CDO. No field of the CPO's moved.
+  **Why no item is raised for the CPO.** The refusal shows a failed Git item for a clone that
+  borrows objects from a repository outside the folder, where `git status` in a terminal works
+  (§ 11 R-16, "What the refusal costs a reader"). `docs/SRS.md` FR-12 asks the Git view to
+  present a repository's state (`docs/SRS.md:L204-L207`). The answer reads the refusal as
+  consistent with it, and this fold agrees for one reason: `docs/fdr.md` R-101 says "The
+  product reads nothing outside the viewed folder except its own data location on the machine"
+  (`docs/fdr.md:L188`), so no design inside the settled documents shows that clone's status.
+  The choice this document had was between a failed item that names its cause and one that
+  does not. A reader who wants that status shown is asking for R-101 to move, which is the
+  owner's call and not a trade-off this design takes. This is reasoning, and it is held as an
+  argument.
+  **Where this fold goes beyond the answer's words.** Three places. (a) The answer names no
+  change to *Must not own*. The check reads the alternates file of an inside alternate, and
+  that file is outside this repository's own layout, so the row's exception is stated, as
+  `docs/trail/sdd/cycle-34.md` § 5.2 stated one for an included config file. (b) The answer says
+  § 6 S-4's observable half "gains one passage". The command half is not changed, on RN-99's
+  ground (c): the case is stated in § 11 R-16 and in *Open Questions*, whose bound is that the
+  slice is not reached without it. (c) § 11 R-16 states what the refusal costs a reader. The
+  answer's reasoning states it and the answer does not. It is a limit of the claim, and it
+  stands beside the claim.
+  **No seam moved, and no § 10 entry.** The check is inside `git-reader`, behind SM-2. The new
+  condition crosses SM-2, SM-4 and SM-8 as a failed item's condition does, and no function
+  joins SM-4's list. None of § 10's four triggers holds: S-4's bar can be met as written, no
+  slice became a fragment, a slice can still be started, and the PRD, the SRS and the UXD did
+  not change. **No *Delivers* moved.** The refusal adds a state the Git view can show, which
+  the observable half names.
+  **Read and measured for this fold, at `nozoki@3b6754d`.** `git status --short` printed
+  nothing before the fold's first write, and `git log -1 -- docs/SDD_open_issues.md` names
+  `3b6754d`, so the companion's answer was committed. `diff docs/SDD_open_issues.md
+  docs/trail/sdd/cycle-35.md` printed nothing before this fold's first edit to this document.
+  These libgit2 lines were opened in this run, at `libgit2-sys 0.18.8+1.9.7`, and say what
+  R-16 cites them for: `libgit2/src/libgit2/odb.c:L23-L28`, `:L694-L701` and `:L756-L808`. In
+  the product, `crates/nozoki-core/src/git_reader/libgit2.rs:L76-L130` holds the open and the
+  location of the Git directory and the common directory, and nothing below them;
+  `crates/nozoki-core/src/git_reader.rs:L180-L212` holds the closed condition set, with no
+  alternates condition in it. `ls checks/fixtures` lists no alternates fixture.
+  **Known limits, stated beside the claims.** Nothing was run: no test, no build, no fixture.
+  Every libgit2 claim is a reading of the source. The `repository.c`, `object.c` and `status.c`
+  lines the answer's reasoning cites were not opened in this run, and R-16 says so where it
+  carries one. Git's documentation was read through a fetch that returns a summary, and not as
+  the page's own text. Of this document the fold read the header, § 3 whole, § 4 C-I6 to C-D4,
+  § 6 S-4 whole, § 11 R-15 and R-16, RN-99 and *Open Questions* whole, and searched the rest
+  for `alternates`. The other sections were not re-read, so a sentence there that bears on the
+  alternates file in other words was not seen. The PRD, the SRS and the UXD were read at their
+  status lines, each Settled; the SRS was also read at `:L198-L210`, the UXD at `:L225-L241`
+  and `:L315-L334`, `docs/CONTENT.md` at `:L58-L64` and `:L326-L344`, `docs/fdr.md` at
+  `:L186-L189`, and `docs/nfdr.md` at `:L1-L12` and `:L453-L462`. The project's Agari, its two
+  doctrine files, the instance's domain doctrine and its writing bar were read whole.
+  `docs/adr/` was listed and not opened. No `docs/definition_brief.md` is on disk.
+  **Found on the same walk, and not fixed.** RN-99's two findings stand: § 11 R-10's "one
+  implementation" beside the adapter's own spelling walk, and the `**Owner:**` line and *Who
+  holds what, inside one run* carrying an earlier template's wording. The link inside the Git
+  directory that leads out is named in § 11 R-16 as covered by no check. No seat is asked to
+  close it by this fold, and the sandbox is its only bound until one does.
+  **Downstream, not this document's to change.** `docs/nfdr.md` is Settled at version 41, and
+  its header says it was re-derived on this document's v33 (`docs/nfdr.md:L3-L5`). QC-15's list
+  of the reads `git-reader` makes outside libgit2 names no config file and no alternates file
+  (`docs/nfdr.md:L455-L461`). Re-deriving it from this version is the Principal Architect's,
+  and this fold opened no item on that seat's companion. The decision to refuse by an adapter
+  check, for config and for alternates, is surfaced here and in § 11 R-16 for that seat to
+  record. `docs/SRS.md` and `docs/fdr.md` do not move. The new condition's message is published
+  text, and its words are the Content Editor's under `docs/CONTENT.md`'s standing rule.
+  **The companion:** item 2.1 is folded and dropped, nothing is left in the file, and it is
+  removed in the commit that carries this fold
+  *(re: § 3 `git-reader`; § 4 C-D3; § 6 `see-git-status`; § 11 R-16; *Open Questions*; source:
+  `docs/trail/sdd/cycle-35.md` § 2.1; `docs/trail/sdd/self_answer-47.md`; `nozoki@3b6754d`)*.
 
 ## Open Questions
 
@@ -6721,7 +6881,10 @@ question.>
   by a fixture repository whose config names an outside path and a case showing that path is
   not read, and, for the submodule half, by a second case: a repository whose submodule's
   config, or whose submodule's `.git` file, names an outside path, and a status read that does
-  not read it (§ 11 R-16). No check enforces this bound. It is held by review of the change after which
+  not read it (§ 11 R-16). The same bound holds a third case, for the alternates file, which
+  is not config and which § 11 R-16 refuses beside it: a fixture whose
+  `objects/info/alternates` file names an objects directory outside the fixture, and a case
+  showing that directory is not read. No check enforces this bound. It is held by review of the change after which
   `see-git-status`'s *Reached when* is claimed whole: where the fixture and its case are
   missing at that review, the slice is not reached. There is no later build of the slice than
   the one that reaches it, so this bound has nowhere later to move to. From the first build in
@@ -6736,7 +6899,9 @@ question.>
   half draws it.
   *(Added on 2026-10-03; RN-87.)* *(Until 2026-10-04 this item named three keys, held both
   forms open, and said the adapter reads the config "through `fs-reader`'s check" without
-  naming the part. `docs/trail/sdd/cycle-34.md` §§ 5.1 – 5.4; RN-99.)* *(The bound read "no later than the build that first exports
+  naming the part. `docs/trail/sdd/cycle-34.md` §§ 5.1 – 5.4; RN-99.)* *(The alternates case
+  joined the proof on 2026-10-04, when the refusal drafted at v39 was confirmed.
+  `docs/trail/sdd/cycle-35.md` § 2.1; RN-100.)* *(The bound read "no later than the build that first exports
   a function reaching `git-reader`" until 2026-10-04. That build landed at `nozoki@392177d`
   with the item unsettled and neither form chosen. Until the shell calls the export the bundle
   opens no repository: the Git item is read on the first ask
