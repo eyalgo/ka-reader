@@ -395,8 +395,10 @@ package final class RootItemsView: NSScrollView {
 
     /// Draws `row` and what is beneath it again. Reloading an item that is already expanded posts
     /// the expansion notification a second time (measured), and that one is not an expansion the
-    /// user or a caller asked for, so it must not start another read.
+    /// user or a caller asked for, so it must not start another read. The rows below `row` move, so a
+    /// letter can leave a resting pointer here as it does on a scroll, and a shown tooltip leaves too.
     private func reload(_ row: Row) {
+        letterTooltip.dismiss()
         isReloading = true
         defer { isReloading = false }
         outlineView.reloadItem(row, reloadChildren: true)
