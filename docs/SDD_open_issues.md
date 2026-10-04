@@ -98,7 +98,37 @@ None.
   `change_design.md` § *Records this change makes false* (`:L190-L216`). If `folder-model` owns it,
   the SDD stands, the change goes back to design with the `crates/` bar lifted, and that design owes
   the seam ARN 1 says this slice lacks. The owner recorded no lean and asked the SDD's seat to decide.
-- **Answer:** <the owner fills this in>
+- **Answer:** `folder-model` owns the tree's changed-file marker. That stays the design. For
+  `see-git-status` only, the join the change built stands in `surfaces`, as a placement the SDD
+  states and bounds, and it ends in `follow-the-folder`. This is the code-integrity report's
+  ruling 1 in its time-bounded form. Ruling 2 is not taken: the change does not go back to design
+  and the `crates/` bar is not lifted for it. Answered in the CTO's seat by an unattended run. The
+  fold writes five things, and may word each differently:
+  1. **§ 3, the `surfaces` row, *Owns*.** One bounded clause. In `see-git-status` the row also
+     holds the join of the Git item onto the tree's row paths. Four bounds: it derives only from
+     projections the bridge sent (the Git item and the tree listings); it marks only from an
+     `observed` repository answer (§ 4 C-I1, C-E1); it raises no ask and holds no path it did not
+     receive in a projection (SM-8); and it ends when `follow-the-folder` is reached, where the
+     join moves into `folder-model` and is deleted from the shell. It is a dated placement of
+     projection logic. It is not a second exception to "draws no state the bridge did not send":
+     the row's one exception stays one.
+  2. **§ 3 *What the system holds*.** `FolderModel`'s sentence (`docs/SDD.md:L447`) stands:
+     `TreeEntry` carries the changed marker. `GitState`'s sentence (`:L492-L496`) keeps the marker
+     among the things the model holds in no landed change, and adds where the join is built
+     meanwhile. Word it so it is true before and after the change merges: at the time of this
+     answer `TreeMarkers.swift` is at `nozoki@6c49d5c` on the change's branch and is not on `main`.
+  3. **§ 6 S-4 *Rests on*.** `folder-model` (`kind` resolved; `GitState`), `surfaces` (the rail's
+     Git entry, the Git view, and in this slice the tree's markers, under the § 3 bound).
+  4. **§ 6 S-5, the CTO's halves.** *Rests on* gains the debt: from `follow-the-folder` the
+     model's `TreeEntry` carries the marker and the `model_changed` delta brings it. The command
+     half gains a clause that goes red while the shell still joins, for example that
+     `nozoki-mac/Sources` holds no `TreeMarkers`, and that the model's final snapshot carries the
+     markers. Without this the bound in (1) has no end a build can check.
+  5. **§ 10.** One re-cut entry on the CTO's ground: S-4's *Rests on* assumed the model's
+     `TreeEntry` would carry the marker in `see-git-status`, and no call or callback of that
+     slice can bring a marker to a row already drawn.
+
+  Reasoning, and what it does not cover: `docs/trail/sdd/self_answer-41.md`.
 
 ### 5.2 The Git view's row order, `GitRowOrder`, already landed in `surfaces` on the same reading. Is it in place?
 - **Raised by:** Owner — 2026-10-04, from the same code-integrity stop
@@ -118,7 +148,27 @@ None.
   (`crates/nozoki-core/src/fs_reader.rs:L818-L832`).
 - **If a document has to be written:** none. A sentence in § 3 naming the owner of the Git list's
   row order, or a § 11 risk or later slice that moves it into the core.
-- **Answer:** <the owner fills this in>
+- **Answer:** No, by the same reading as § 5.1. The order of the Git lists' rows is part of the
+  projection, so `folder-model` owns it. `GitRowOrder` is a landed misplacement that stands in
+  `surfaces` under the same bound as the marker join, and it leaves the shell no later than
+  `follow-the-folder`. Answered in the CTO's seat by an unattended run, after § 5.1 and together
+  with it. The fold writes three things, and may word each differently:
+  1. **§ 3 names the owner.** In *What the system holds*, `GitState`: the model holds its two
+     lists in the order their rows are drawn. In the `folder-model` row or beside it: the order
+     has one implementation, in the core. The SDD names the owner and does not restate the order
+     rule, which is the FDR's and the sealed spec's.
+  2. **The § 3 `surfaces` clause § 5.1 asks for covers this too.** One clause, two things held
+     for `see-git-status`: the marker join and the Git lists' row order
+     (`nozoki-mac/Sources/Surfaces/GitRowOrder.swift`, on `main` since `nozoki@d65eec4`). Same
+     four bounds, same end.
+  3. **§ 6 S-5, the CTO's halves, carry it with the marker.** The core sends the lists in row
+     order and the shell draws them in the order they arrive. The clause that goes red names
+     `GitRowOrder` beside `TreeMarkers`.
+
+  The move needs no new seam, so a change that opens `crates/` may make it earlier.
+  `follow-the-folder` is the latest point, not the scheduled one, and when it is scheduled is the
+  PM's. No § 11 risk is added. The sealed change's record is not touched. Reasoning, and the one
+  thing this run could not measure: `docs/trail/sdd/self_answer-41.md`.
 
 **How it closes.** `product-sdd` folds these on its next run like every other item in this file, and
 the trail copy and the delete-when-empty behaviour are unchanged.
