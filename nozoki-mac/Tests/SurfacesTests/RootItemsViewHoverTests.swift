@@ -544,9 +544,58 @@ final class RootItemsViewHoverTests: XCTestCase {
 
         XCTAssertEqual(view.hoverPaths(), [])
         XCTAssertEqual(view.barPaths(), ["b.txt"])
-        // The tree's selected drawing is the table's selection and the bar (`BarRowView`), so both
-        // halves stay: the row is still the table's selected row.
+        // The tree draws its selected row from `drawsSelection` (the fill and the bar), and the row
+        // is still the table's selected row.
         XCTAssertEqual(view.outlineView.selectedRow, selectedRow, "still the selected row")
+    }
+
+    // MARK: the selected row and the pointer (CP-634, CP-635)
+
+    func test_selected_open_row_shows_no_hover_with_pointer_moving() throws {
+        let fixture = makeFixture([file("a.txt"), file("b.txt")])
+        let view = fixture.view
+        view.showOpenFile(path: "b.txt")
+        let atRest = try rowImage(view, path: "b.txt")
+
+        try PointerDelivery.move(to: try point(ofPath: "b.txt", in: view), in: view)
+        XCTAssertEqual(try rowImage(view, path: "b.txt"), atRest, "pointer on b.txt")
+        XCTAssertFalse(view.hoverPaths().contains("b.txt"))
+
+        try PointerDelivery.move(to: try point(ofPath: "a.txt", in: view), in: view)
+        XCTAssertEqual(try rowImage(view, path: "b.txt"), atRest, "pointer on a.txt")
+        XCTAssertEqual(view.hoverPaths(), ["a.txt"], "a.txt shows hover while the pointer is on it")
+
+        try PointerDelivery.leave(at: try point(ofPath: "a.txt", in: view), in: view)
+        XCTAssertEqual(try rowImage(view, path: "b.txt"), atRest, "pointer gone")
+        XCTAssertEqual(view.hoverPaths(), [])
+    }
+
+    func test_clicked_folder_row_takes_hover() throws {
+        let fixture = makeFixture([folder("src"), file("a.txt"), file("b.txt")])
+        let view = fixture.view
+        view.showOpenFile(path: "b.txt")
+        view.outlineView.selectRowIndexes(
+            IndexSet(integer: try row(of: "src", in: view)), byExtendingSelection: false)
+
+        try PointerDelivery.move(to: try point(ofPath: "src", in: view), in: view)
+
+        XCTAssertEqual(view.hoverPaths(), ["src"])
+    }
+
+    func test_clicked_status_line_never_takes_hover() throws {
+        let fixture = makeFixture(
+            [folder("src"), file("b.txt")], listings: ["src": .observed([])])
+        let view = fixture.view
+        try expand("src", in: view)
+        view.showOpenFile(path: "b.txt")
+        let lineRow = try XCTUnwrap(
+            (0..<view.outlineView.numberOfRows).first { view.lineText(atRow: $0) != nil })
+        view.outlineView.selectRowIndexes(IndexSet(integer: lineRow), byExtendingSelection: false)
+
+        try PointerDelivery.move(to: point(ofRow: lineRow, in: view), in: view)
+
+        XCTAssertEqual(filledRows(view), [])
+        XCTAssertEqual(view.hoverPaths(), [])
     }
 
     func test_hover_s1_window_becomes_key_with_pointer_outside_the_host_fills_nothing() throws {
