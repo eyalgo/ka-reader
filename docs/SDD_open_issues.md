@@ -99,7 +99,38 @@ None.
 - **If a document has to be written:** none. In `SDD.md`, the *Open Questions* item, § 11 R-16 and
   § 10 RC-4's parenthesis. After the fold, the Principal Architect updates QC-6 and QC-35 in
   `docs/nfdr.md`.
-- **Answer:** <the owner fills this in>
+- **Answer:** Move it. The new bound is the half the item already carries: the config-named-path
+  item is settled in `see-git-status` before the slice is reached, and no build inside the slice
+  bounds it any longer. Answered in the CTO's seat by an unattended run, on the route the owner
+  chose on 2026-10-04.
+  - **What comes out.** The clause "no later than the build in which `mac-shell` first calls
+    `nozoki_read_git`, which is the first build whose release executable links that export, and in
+    every case" in *Open Questions*; the matching clause in § 11 R-16; and "It is held by review of
+    the change that makes the shell call the export". § 10 RC-4's parenthesis is a dated record, so
+    its words stay and it gains a second dated sentence saying the bound moved again.
+  - **Why no later build is named in its place.** A third named build would be a third deadline
+    that can pass unmet, and the first two both did. "Before the slice is reached" cannot pass
+    unmet without the slice staying unreached, so it is the last bound there is. If the fixture and
+    its case are missing when the slice's *Reached when* is claimed, the slice is not reached. The
+    bound does not move a third time.
+  - **Who holds it.** Still no check. It is held by review of the change after which
+    `see-git-status`'s *Reached when* is claimed whole. The item says so in those words.
+  - **What the item must now say about the meantime.** From the first build in which the shell
+    calls the export until the item is settled, the bundle opens a reader's own repositories with
+    the item open. R-16's response stands for those builds: the sandbox is the only bound (§ 4
+    C-R2), and whether libgit2's open or status read survives its refusal has not been run. A
+    repository whose config names an outside path may therefore show a failed Git item, which
+    S-4's observable half already draws. The 2026-10-04 note "Until the shell calls the export the
+    bundle opens no repository" stays as a dated record and gains a dated sentence after it, so it
+    is not read as the current state.
+  - **What does not move.** Which of the two forms closes the item, what settles it (the fixture
+    and its case), and the rule that the second form is written into `git-reader`'s row and § 11
+    R-16 before it is built. No slice's *Reached when*, *Delivers*, § 7 edge or order moves, so
+    this is a dated correction and not a § 10 re-cut.
+  - **The NFDR.** QC-6 and QC-35 are carried at `docs/architecture_open_issues.md` § 2.1
+    (`nozoki@250fc6e`), for the Principal Architect. Nothing is asked of the SDD there.
+
+  Reasoning: `docs/trail/sdd/self_answer-39.md`.
 
 **How it closes.** `product-sdd` folds it on its next run like every other item in this file, and
 the trail copy and the delete-when-empty behaviour are unchanged.
