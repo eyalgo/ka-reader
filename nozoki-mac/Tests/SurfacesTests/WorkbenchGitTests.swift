@@ -132,7 +132,8 @@ final class WorkbenchGitTests: XCTestCase {
 
     /// The Git view's rows, top to bottom.
     private func gitRows(_ workbench: WorkbenchView) -> [BarRowView] {
-        shown(descendants(of: workbench.gitView)).compactMap { $0 as? BarRowView }
+        workbench.layoutSubtreeIfNeeded()
+        return shown(descendants(of: workbench.gitView)).compactMap { $0 as? BarRowView }
             .sorted {
                 $0.convert($0.bounds, to: workbench.gitView).midY
                     > $1.convert($1.bounds, to: workbench.gitView).midY
@@ -418,7 +419,7 @@ final class WorkbenchGitTests: XCTestCase {
 
     func test_everyFailureIsShownAndTheTreeStillSelectsThroughFiles() throws {
         let failures: [GitItem] =
-            [.failed(.gitDirectoryOutside("/elsewhere/.git/worktrees/wt")), .stopped]
+            [.failed(.gitDirectoryOutside(gitDirectory: "/elsewhere/.git/worktrees/wt")), .stopped]
             + GitCondition.allCases.map { .failed(.condition($0)) }
 
         for failure in failures {

@@ -16,6 +16,8 @@ package final class LaunchFlow {
     private static let folderGlyphName = "folder"
     private static let fileGlyphName = "file"
     private static let fileCodeGlyphName = "file-code"
+    /// `docs/DESIGN.md` § *Components* "The rail": `folder` over *Files*, `git-branch` over *Git*.
+    private static let gitBranchGlyphName = "git-branch"
 
     private enum LaunchAnswer {
         case opened(RootListing?)
@@ -108,7 +110,10 @@ package final class LaunchFlow {
         view.listTree = { [bridge, reader] path, answer in
             reader.run({ Self.listing(at: path, through: bridge) }, deliver: answer)
         }
-        let workbench = WorkbenchView(rootItemsView: view, statusGlyphs: statusGlyphs)
+        let workbench = WorkbenchView(
+            rootItemsView: view, statusGlyphs: statusGlyphs,
+            railFolderGlyph: glyph(named: Self.folderGlyphName),
+            railGitGlyph: glyph(named: Self.gitBranchGlyphName))
         workbench.selectFile = { [bridge, reader] path, answer in
             reader.run({ Self.verdict(at: path, through: bridge) }, deliver: answer)
         }

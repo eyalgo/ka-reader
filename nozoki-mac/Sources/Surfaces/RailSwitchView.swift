@@ -18,6 +18,14 @@ private enum RailLayout {
     /// `docs/DESIGN.md` `{typography.rail-label}`: 10 points at weight 500.
     static let labelPointSize: CGFloat = 10
     static let gap: CGFloat = 2
+
+    /// `{colors.rail}`: `#EAEAE7` in the light theme, `#2A2B2F` in the dark one (`docs/DESIGN.md`
+    /// § Colors, "The two themes").
+    static let ground = NSColor(name: nil) { appearance in
+        appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+            ? NSColor(srgbRed: 0x2A / 255, green: 0x2B / 255, blue: 0x2F / 255, alpha: 1)
+            : NSColor(srgbRed: 0xEA / 255, green: 0xEA / 255, blue: 0xE7 / 255, alpha: 1)
+    }
 }
 
 /// The Files/Git switch (`docs/DESIGN.md` § *Components*, "The rail"): two entries, each a glyph over
@@ -87,6 +95,11 @@ package final class RailSwitchView: NSView {
             entry.kind != active
         else { return }
         entryChosen?(entry.kind)
+    }
+
+    override package func draw(_ dirtyRect: NSRect) {
+        RailLayout.ground.setFill()
+        bounds.fill()
     }
 
     private func applyActive() {
