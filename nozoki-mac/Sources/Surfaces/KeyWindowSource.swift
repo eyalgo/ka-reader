@@ -34,6 +34,17 @@ package struct KeyWindowSource {
         self.pointer = pointer
     }
 
+    /// Where the pointer is now, when it is a point the host can act on: the source has an answer,
+    /// the host is not hidden, and the point lies inside the host's visible rect. A row scrolled out
+    /// of the clip still has a frame in the host's coordinates, so the bound is the host's, not the
+    /// rows'.
+    @MainActor func pointerInVisibleHost(_ host: NSView) -> NSPoint? {
+        guard !host.isHiddenOrHasHiddenAncestor, let point = pointer(host),
+            host.visibleRect.contains(point)
+        else { return nil }
+        return point
+    }
+
     /// The window's own answers. The pointer is the window's `mouseLocationOutsideOfEventStream`,
     /// converted into the host's coordinates.
     package static let live = KeyWindowSource(

@@ -17,6 +17,7 @@ package final class RowHover: NSResponder {
 
     private var pointer: NSPoint?
     private weak var flaggedRow: BarRowView?
+    private var keyObservation: AnyObject?
 
     /// `rowAt` answers the `BarRowView` of the clickable row at a point in host coordinates, or nil
     /// for anything else. `keyWindow` answers whether the host's window is the key window.
@@ -33,6 +34,12 @@ package final class RowHover: NSResponder {
                 rect: .zero,
                 options: [.mouseMoved, .mouseEnteredAndExited, .activeInKeyWindow, .inVisibleRect],
                 owner: self, userInfo: nil))
+        // Losing key status is the pointer leaving; gaining it is the pointer entering where the
+        // source reads it.
+        keyObservation = keyWindow.observe(
+            host,
+            { [weak self] in self?.windowStoppedBeingKey() },
+            { [weak self] in self?.windowBecameKey() })
     }
 
     required init?(coder: NSCoder) { nil }
@@ -42,7 +49,9 @@ package final class RowHover: NSResponder {
     func refresh() {
         flaggedRow?.pointerIsOver = false
         flaggedRow = nil
-        guard let pointer, let row = rowAt(pointer) else { return }
+        guard let host, keyWindow.isKey(host), let pointer, let row = rowAt(pointer) else {
+            return
+        }
         row.pointerIsOver = true
         flaggedRow = row
     }
@@ -57,8 +66,19 @@ package final class RowHover: NSResponder {
     override package func mouseEntered(with event: NSEvent) { pointerMoved(event) }
     override package func mouseExited(with event: NSEvent) { forget() }
 
-    private func pointerMoved(_ event: NSEvent) {
+    private func windowStoppedBeingKey() {
+        pointer = nil
+        refresh()
+    }
+
+    private func windowBecameKey() {
         guard let host else { return }
+        pointer = keyWindow.pointerInVisibleHost(host)
+        refresh()
+    }
+
+    private func pointerMoved(_ event: NSEvent) {
+        guard let host, keyWindow.isKey(host) else { return }
         pointer = host.convert(event.locationInWindow, from: nil)
         refresh()
     }
