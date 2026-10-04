@@ -574,4 +574,26 @@ final class WorkbenchGitTests: XCTestCase {
             fixture.workbench.rail.trackingAreas.contains { $0.owner is LetterTooltip },
             "the rail holds no LetterTooltip")
     }
+
+    /// CP-588 closed by its domain, not by a list: the product's own tooltip is raised only through
+    /// a `LetterTooltip`'s tracking area, so every view of the composed workbench is read for one,
+    /// and only the two surfaces that draw letters may carry it (`change_design.md` § 5, the rail
+    /// row: "Only the two letter-drawing surfaces hold a `LetterTooltip`").
+    func test_onlyTheTreeAndTheGitViewHoldALetterTooltip() throws {
+        let fixture = makeFixture()
+        try selectInTree("b.txt", in: fixture.workbench)
+        fixture.log.selects[0].answer(.text("hello", .plain))
+        choose(.git, in: fixture)
+        fixture.log.gitAsks[0].answer(
+            repository(staged: [gitEntry("a.txt", .added)], changed: [gitEntry("b.txt")]))
+        fixture.workbench.layoutSubtreeIfNeeded()
+
+        let hosts = ([fixture.workbench] + descendants(of: fixture.workbench)).filter {
+            $0.trackingAreas.contains { $0.owner is LetterTooltip }
+        }
+
+        XCTAssertEqual(hosts.count, 2)
+        XCTAssertTrue(hosts.contains { $0 === fixture.workbench.rootItemsView }, "the tree")
+        XCTAssertTrue(hosts.contains { $0 === fixture.workbench.gitView }, "the Git view")
+    }
 }

@@ -476,4 +476,44 @@ final class RootItemsViewMarkerTests: XCTestCase {
         fixture.view.showMarkers(marked)
         XCTAssertNil(fixture.view.letterTooltip.shownView, "showMarkers(_:)")
     }
+
+    /// CP-590 in the tree itself, not only on a bare host: below the letter, its right edge on the
+    /// letter's right edge, and over everything the tree draws. Read in window coordinates, so the
+    /// tree's own nesting of scroll view, clip view, outline and cell is what is proved.
+    func test_inTheTreeItSitsBelowTheLetterWithItsRightEdgeOnTheLetters() throws {
+        let fixture = makeFixture([file("b.txt"), file("top.txt")])
+        fixture.view.showMarkers(markers(changed: [("b.txt", .modified)]))
+        let letter = try letterField(cell(fixture.view, path: "b.txt"))
+
+        try rest(on: letter, in: fixture)
+
+        let tooltip = try XCTUnwrap(fixture.view.letterTooltip.shownView)
+        let letterFrame = letter.convert(letter.bounds, to: nil)
+        let tooltipFrame = tooltip.convert(tooltip.bounds, to: nil)
+        XCTAssertEqual(tooltipFrame.maxX, letterFrame.maxX, accuracy: 0.001)
+        XCTAssertLessThanOrEqual(
+            tooltipFrame.maxY, letterFrame.minY + 0.001, "wholly below the letter")
+        XCTAssertTrue(fixture.view.subviews.last === tooltip, "over everything the tree draws")
+    }
+
+    /// CP-589, as `change_design.md` Architect Review Notes item 5 reads it: a tooltip never outlives
+    /// the letter it was raised from. A folder's listing that arrives after the pointer has come to
+    /// rest on a letter below it moves that letter from under the pointer, as a scroll does.
+    func test_aFolderListingArrivingAboveARestingLetterRemovesItsTooltip() throws {
+        let fixture = makeFixture([folder("src"), file("b.txt")])
+        var answers: [ListTreeAnswer] = []
+        fixture.view.listTree = { _, answer in answers.append(answer) }
+        fixture.view.showMarkers(markers(changed: [("b.txt", .modified)]))
+        fixture.view.outlineView.expandItem(fixture.view.outlineView.item(atRow: 0))
+        fixture.view.layoutSubtreeIfNeeded()
+        try rest(on: try letterField(cell(fixture.view, path: "b.txt")), in: fixture)
+        XCTAssertEqual(fixture.view.letterTooltip.shownText, "b.txt \u{2014} modified")
+        let rowBefore = try row(of: "b.txt", in: fixture.view)
+
+        try XCTUnwrap(answers.first)(.observed([file("src/c.txt"), file("src/d.txt")]))
+        fixture.view.layoutSubtreeIfNeeded()
+
+        XCTAssertGreaterThan(try row(of: "b.txt", in: fixture.view), rowBefore, "the letter moved")
+        XCTAssertNil(fixture.view.letterTooltip.shownView, "and its tooltip left with it")
+    }
 }

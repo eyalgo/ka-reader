@@ -505,4 +505,23 @@ final class GitViewTests: XCTestCase {
         fixture.view.show(repository(changed: entries))
         XCTAssertNil(fixture.view.letterTooltip.shownView, "show(_:)")
     }
+
+    /// CP-590 in the Git view itself, not only on a bare host: below the letter, its right edge on
+    /// the letter's right edge, and over everything the view draws. Read in window coordinates, so
+    /// the view's own nesting of scroll view, stack and row is what is proved.
+    func test_inTheGitViewItSitsBelowTheLetterWithItsRightEdgeOnTheLetters() throws {
+        let fixture = makeView(
+            showing: repository(changed: [entry("b.txt", .modified), entry("c.txt", .deleted)]))
+        let letter = try letterField(fixture, "b.txt")
+
+        try rest(on: letter, in: fixture)
+
+        let tooltip = try XCTUnwrap(fixture.view.letterTooltip.shownView)
+        let letterFrame = letter.convert(letter.bounds, to: nil)
+        let tooltipFrame = tooltip.convert(tooltip.bounds, to: nil)
+        XCTAssertEqual(tooltipFrame.maxX, letterFrame.maxX, accuracy: 0.001)
+        XCTAssertLessThanOrEqual(
+            tooltipFrame.maxY, letterFrame.minY + 0.001, "wholly below the letter")
+        XCTAssertTrue(fixture.view.subviews.last === tooltip, "over everything the view draws")
+    }
 }
