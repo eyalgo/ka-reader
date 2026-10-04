@@ -92,4 +92,31 @@ package enum GitSentences {
         case .renamed: return "R"
         }
     }
+
+    /// The word a status letter stands for (`docs/CONTENT.md:L423-L426`, `U` and `C` at
+    /// `:L434-L436`): lower case, no punctuation. `C` is conflict, not Git porcelain's copied.
+    package static func word(for category: GitStatusCategory) -> String {
+        switch category {
+        case .added: return "added"
+        case .modified: return "modified"
+        case .deleted: return "deleted"
+        case .renamed: return "renamed"
+        case .untracked: return "untracked"
+        case .inConflict: return "conflict"
+        }
+    }
+
+    /// The tooltip a status letter raises: the row's name exactly as the row prints it, a space, an
+    /// em dash and a space, then the letter's word. Placed as `change_text.md` writes it, six whole
+    /// strings with one placeholder each, so none is assembled from a fragment of Nozoki's prose.
+    package static func letterTooltip(name: String, category: GitStatusCategory) -> String {
+        switch category {
+        case .added: return "\(name) \u{2014} added"
+        case .modified: return "\(name) \u{2014} modified"
+        case .deleted: return "\(name) \u{2014} deleted"
+        case .renamed: return "\(name) \u{2014} renamed"
+        case .untracked: return "\(name) \u{2014} untracked"
+        case .inConflict: return "\(name) \u{2014} conflict"
+        }
+    }
 }

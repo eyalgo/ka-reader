@@ -19,6 +19,7 @@ final class GitViewTests: XCTestCase {
         let view: GitView
         let window: NSWindow
         var activated: Box
+        let rest: TooltipRestDouble
     }
 
     @MainActor
@@ -28,7 +29,8 @@ final class GitViewTests: XCTestCase {
 
     private func makeView(showing item: GitItem) -> Fixture {
         let glyphs = StatusGlyphs(empty: emptyGlyph, failure: failureGlyph)
-        let view = GitView(statusGlyphs: glyphs)
+        let rest = TooltipRestDouble()
+        let view = GitView(statusGlyphs: glyphs, tooltipRest: rest.rest)
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 260, height: 500), styleMask: [.borderless],
             backing: .buffered, defer: true)
@@ -37,7 +39,7 @@ final class GitViewTests: XCTestCase {
         view.rowActivated = { box.paths.append($0) }
         view.show(item)
         view.layoutSubtreeIfNeeded()
-        return Fixture(view: view, window: window, activated: box)
+        return Fixture(view: view, window: window, activated: box, rest: rest)
     }
 
     private func repository(
@@ -330,13 +332,196 @@ final class GitViewTests: XCTestCase {
         XCTAssertTrue(fixture.view.barPaths().isEmpty)
     }
 
-    func test_noElementOfTheViewHasATooltip() {
+    func test_noElementOfTheViewHasATooltip() throws {
         let fixture = makeView(
             showing: repository(
                 staged: [entry("a.txt", .added)], changed: [entry("b.txt", .modified)]))
 
+        // Only a letter raises one (CP-597); no element carries an AppKit tooltip.
+        try rest(on: try letterField(fixture, "a.txt"), in: fixture)
+        XCTAssertEqual(fixture.view.letterTooltip.shownText, "a.txt \u{2014} added")
+
         XCTAssertNil(fixture.view.toolTip)
         XCTAssertTrue(descendants(of: fixture.view).allSatisfy { $0.toolTip == nil })
-        XCTAssertTrue(fixture.view.toolTip == nil)
+    }
+
+    // MARK: The letter's tooltip (CP-586 to CP-595)
+
+    private func letterFields(_ fixture: Fixture) -> [NSTextField] {
+        descendants(of: fixture.view).compactMap { $0 as? NSTextField }
+            .filter { $0.identifier?.rawValue == "gitRowLetter" }
+    }
+
+    private func pathField(_ fixture: Fixture, _ path: String) throws -> NSTextField {
+        try XCTUnwrap(
+            descendants(of: fixture.view).compactMap { $0 as? NSTextField }
+                .first { $0.identifier?.rawValue == "gitRowPath" && $0.stringValue == path },
+            "no row prints \(path)")
+    }
+
+    /// The letter field of the row that prints `path`, found as the path field's sibling.
+    private func letterField(_ fixture: Fixture, _ path: String, nth: Int = 0) throws -> NSTextField
+    {
+        let paths = descendants(of: fixture.view).compactMap { $0 as? NSTextField }
+            .filter { $0.identifier?.rawValue == "gitRowPath" && $0.stringValue == path }
+        let row = try XCTUnwrap(paths[nth].superview)
+        return try XCTUnwrap(
+            row.subviews.compactMap { $0 as? NSTextField }
+                .first { $0.identifier?.rawValue == "gitRowLetter" })
+    }
+
+    private func centre(of view: NSView, in fixture: Fixture) -> NSPoint {
+        fixture.view.convert(NSPoint(x: view.bounds.midX, y: view.bounds.midY), from: view)
+    }
+
+    private func rest(on view: NSView, in fixture: Fixture) throws {
+        try rest(at: centre(of: view, in: fixture), in: fixture)
+    }
+
+    private func rest(at point: NSPoint, in fixture: Fixture) throws {
+        let before = fixture.rest.requests.count
+        try PointerDelivery.move(to: point, in: fixture.view)
+        for index in before..<fixture.rest.requests.count { fixture.rest.fire(index) }
+    }
+
+    func test_restingOnEachRowsLetterShowsThatRowsText() throws {
+        let fixture = makeView(
+            showing: repository(
+                staged: [entry("a.txt", .added)],
+                changed: [entry("b.txt", .modified), entry("c.txt", .deleted)]))
+
+        for (path, text) in [
+            ("a.txt", "a.txt \u{2014} added"), ("b.txt", "b.txt \u{2014} modified"),
+            ("c.txt", "c.txt \u{2014} deleted"),
+        ] {
+            try rest(on: try letterField(fixture, path), in: fixture)
+            XCTAssertEqual(fixture.view.letterTooltip.shownText, text)
+        }
+    }
+
+    func test_nothingButALetterRaisesIt() throws {
+        let items: [(String, GitItem)] = [
+            ("a merge", repository(state: .merge, changed: [entry("b.txt", .modified)])),
+            (
+                "lists",
+                repository(staged: [entry("a.txt", .added)], changed: [entry("b.txt", .modified)])
+            ),
+            ("clean", repository()),
+            ("pending", .pending),
+            ("a failure", .failed(.condition(.notARepository))),
+            ("stopped", .stopped),
+        ]
+        for (what, item) in items {
+            let fixture = makeView(showing: item)
+            // Every label that is not a letter, and every glyph.
+            let targets = descendants(of: fixture.view).filter {
+                !$0.isHiddenOrHasHiddenAncestor && !($0 is NSStackView) && !($0 is NSScroller)
+                    && $0.identifier?.rawValue != "gitRowLetter"
+                    && ($0 is NSTextField || $0 is NSImageView)
+            }
+            for target in targets {
+                try rest(on: target, in: fixture)
+                XCTAssertNil(fixture.view.letterTooltip.shownView, what)
+            }
+            // The space between a row's path and its letter.
+            for field in letterFields(fixture) {
+                let gap = NSPoint(
+                    x: fixture.view.convert(
+                        NSPoint(x: field.bounds.minX - 3, y: field.bounds.midY), from: field
+                    ).x,
+                    y: centre(of: field, in: fixture).y)
+                try rest(at: gap, in: fixture)
+                XCTAssertNil(fixture.view.letterTooltip.shownView, "\(what): the gap")
+            }
+        }
+    }
+
+    func test_aChangesRowGivesItsPrintedPathAndWord() throws {
+        let fixture = makeView(showing: repository(changed: [entry("src/c.txt", .modified)]))
+
+        try rest(on: try letterField(fixture, "src/c.txt"), in: fixture)
+
+        XCTAssertEqual(fixture.view.letterTooltip.shownText, "src/c.txt \u{2014} modified")
+    }
+
+    func test_eachOfTheSixCategoriesGivesItsWord() throws {
+        let words: [(String, GitStatusCategory, String)] = [
+            ("a.txt", .added, "added"), ("m.txt", .modified, "modified"),
+            ("d.txt", .deleted, "deleted"), ("r.txt", .renamed, "renamed"),
+            ("u.txt", .untracked, "untracked"), ("c.txt", .inConflict, "conflict"),
+        ]
+        let fixture = makeView(showing: repository(changed: words.map { entry($0.0, $0.1) }))
+
+        for (path, _, word) in words {
+            try rest(on: try letterField(fixture, path), in: fixture)
+            XCTAssertEqual(fixture.view.letterTooltip.shownText, "\(path) \u{2014} \(word)")
+        }
+    }
+
+    func test_aNestedRepositoryRowGivesItsPrintedPathAndUntracked() throws {
+        let fixture = makeView(showing: repository(changed: [entry("inner/", .untracked)]))
+
+        try rest(on: try letterField(fixture, "inner/"), in: fixture)
+
+        XCTAssertEqual(fixture.view.letterTooltip.shownText, "inner/ \u{2014} untracked")
+    }
+
+    func test_aPathUnderBothListsGivesADifferentWordOnEachRow() throws {
+        let fixture = makeView(
+            showing: repository(
+                staged: [entry("a.txt", .added)], changed: [entry("a.txt", .modified)]))
+
+        try rest(on: try letterField(fixture, "a.txt", nth: 0), in: fixture)
+        XCTAssertEqual(fixture.view.letterTooltip.shownText, "a.txt \u{2014} added")
+        try rest(on: try letterField(fixture, "a.txt", nth: 1), in: fixture)
+        XCTAssertEqual(fixture.view.letterTooltip.shownText, "a.txt \u{2014} modified")
+    }
+
+    func test_clickingALetterWhileTheTooltipShowsRaisesRowActivatedOnce() throws {
+        let fixture = makeView(showing: repository(changed: [entry("b.txt", .modified)]))
+        let letter = try letterField(fixture, "b.txt")
+        try rest(on: letter, in: fixture)
+        XCTAssertNotNil(fixture.view.letterTooltip.shownView)
+
+        try ClickDelivery.clickMiddle(of: letter)
+
+        XCTAssertEqual(fixture.activated.paths, ["b.txt"])
+    }
+
+    func test_showAndAScrollEachRemoveAShownTooltip() throws {
+        let entries = (0..<40).map { entry(String(format: "f%02d.txt", $0), .modified) }
+        let fixture = makeView(showing: repository(changed: entries))
+        let scroll = try XCTUnwrap(
+            descendants(of: fixture.view).compactMap { $0 as? NSScrollView }.first)
+        try rest(on: try letterField(fixture, "f00.txt"), in: fixture)
+        XCTAssertNotNil(fixture.view.letterTooltip.shownView)
+
+        scroll.contentView.scroll(to: NSPoint(x: 0, y: 60))
+        XCTAssertNil(fixture.view.letterTooltip.shownView, "a scroll")
+
+        scroll.contentView.scroll(to: .zero)
+        try rest(on: try letterField(fixture, "f00.txt"), in: fixture)
+        XCTAssertNotNil(fixture.view.letterTooltip.shownView)
+        fixture.view.show(repository(changed: entries))
+        XCTAssertNil(fixture.view.letterTooltip.shownView, "show(_:)")
+    }
+
+    /// CP-590 in the Git view itself, not only on a bare host: below the letter, its right edge on
+    /// the letter's right edge, and over everything the view draws. Read in window coordinates, so
+    /// the view's own nesting of scroll view, stack and row is what is proved.
+    func test_inTheGitViewItSitsBelowTheLetterWithItsRightEdgeOnTheLetters() throws {
+        let fixture = makeView(
+            showing: repository(changed: [entry("b.txt", .modified), entry("c.txt", .deleted)]))
+        let letter = try letterField(fixture, "b.txt")
+
+        try rest(on: letter, in: fixture)
+
+        let tooltip = try XCTUnwrap(fixture.view.letterTooltip.shownView)
+        let letterFrame = letter.convert(letter.bounds, to: nil)
+        let tooltipFrame = tooltip.convert(tooltip.bounds, to: nil)
+        XCTAssertEqual(tooltipFrame.maxX, letterFrame.maxX, accuracy: 0.001)
+        XCTAssertLessThanOrEqual(
+            tooltipFrame.maxY, letterFrame.minY + 0.001, "wholly below the letter")
+        XCTAssertTrue(fixture.view.subviews.last === tooltip, "over everything the view draws")
     }
 }

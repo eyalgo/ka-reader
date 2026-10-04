@@ -167,4 +167,49 @@ final class GitSentencesTests: XCTestCase {
                 .machineConfigNotSwitchedOff,
             ])
     }
+
+    // MARK: The status letter's tooltip (CP-591, CP-592)
+
+    /// The six words, each a literal here (`docs/CONTENT.md:L423-L426`, `U` and `C` at `:L434-L436`).
+    private let wordOfEachCategory: [(GitStatusCategory, String)] = [
+        (.added, "added"), (.modified, "modified"), (.deleted, "deleted"),
+        (.renamed, "renamed"), (.untracked, "untracked"), (.inConflict, "conflict"),
+    ]
+
+    func test_eachCategoryGivesItsWord() {
+        for (category, word) in wordOfEachCategory {
+            XCTAssertEqual(GitSentences.word(for: category), word)
+        }
+        XCTAssertEqual(wordOfEachCategory.count, GitStatusCategory.allCases.count)
+    }
+
+    func test_theTooltipIsTheNameThenTheJoiningThenTheWord() {
+        // The joining is a space, U+2014, a space (`change_text.md`).
+        for (category, word) in wordOfEachCategory {
+            XCTAssertEqual(
+                GitSentences.letterTooltip(name: "b.txt", category: category),
+                "b.txt \u{2014} " + word)
+        }
+    }
+
+    func test_aNonAsciiNameComesBackByteForByte() {
+        XCTAssertEqual(
+            GitSentences.letterTooltip(name: "caf\u{e9}.txt", category: .modified),
+            "caf\u{e9}.txt \u{2014} modified")
+    }
+
+    func test_aPathWithASlashComesBackByteForByte() {
+        XCTAssertEqual(
+            GitSentences.letterTooltip(name: "src/c.txt", category: .modified),
+            "src/c.txt \u{2014} modified")
+    }
+
+    func test_uIsUntrackedAndCIsConflict() {
+        XCTAssertEqual(
+            GitSentences.letterTooltip(name: "n", category: .untracked), "n \u{2014} untracked")
+        XCTAssertEqual(
+            GitSentences.letterTooltip(name: "n", category: .inConflict), "n \u{2014} conflict")
+        XCTAssertNotEqual(
+            GitSentences.word(for: .untracked), GitSentences.word(for: .inConflict))
+    }
 }
