@@ -275,4 +275,181 @@ enum BridgePayload {
         guard let buffer else { return nil }
         return (try? JSONDecoder().decode(FileAnswer.self, from: buffer.payload))?.verdict
     }
+
+    /// One object's members, any name, so a member this shell does not know is seen and refused
+    /// rather than ignored; each Git object checks its own set with `requireMembers`.
+    private struct WireKey: CodingKey {
+        let stringValue: String
+        let intValue: Int? = nil
+
+        init(stringValue: String) {
+            self.stringValue = stringValue
+        }
+
+        init?(intValue: Int) {
+            return nil
+        }
+    }
+
+    /// Throws unless the object holds exactly `expected`, no more and no fewer.
+    private static func requireMembers(
+        _ expected: Set<String>, in container: KeyedDecodingContainer<WireKey>
+    ) throws {
+        guard Set(container.allKeys.map(\.stringValue)) == expected else {
+            throw DecodingError.dataCorrupted(
+                .init(codingPath: container.codingPath, debugDescription: "the wrong members"))
+        }
+    }
+
+    /// A member whose value is one string of a closed set; any other string throws.
+    private static func closed<Value: RawRepresentable>(
+        _ type: Value.Type, in container: KeyedDecodingContainer<WireKey>, key: String
+    ) throws -> Value where Value.RawValue == String {
+        let name = try container.decode(String.self, forKey: WireKey(stringValue: key))
+        guard let value = Value(rawValue: name) else {
+            throw DecodingError.dataCorrupted(
+                .init(codingPath: container.codingPath, debugDescription: "\(key) is not known"))
+        }
+        return value
+    }
+
+    /// One listed entry as the wire writes it: `path` and `category`, and `from` exactly where the
+    /// category is `renamed`. `from` is checked and then dropped (spec Gap 4).
+    private struct WireGitEntry: Decodable {
+        let entry: GitEntry
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: WireKey.self)
+            let category = try BridgePayload.closed(
+                GitStatusCategory.self, in: container, key: "category")
+            try BridgePayload.requireMembers(
+                category == .renamed ? ["path", "category", "from"] : ["path", "category"],
+                in: container)
+            if category == .renamed {
+                _ = try container.decode(String.self, forKey: WireKey(stringValue: "from"))
+            }
+            entry = GitEntry(
+                path: try container.decode(String.self, forKey: WireKey(stringValue: "path")),
+                category: category)
+        }
+    }
+
+    /// The branch element: a branch's short name, or a detached HEAD's full identifier.
+    private struct WireGitBranch: Decodable {
+        let branch: GitBranch
+
+        private enum Kind: String, Decodable { case branch, detached }
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: WireKey.self)
+            switch try container.decode(Kind.self, forKey: WireKey(stringValue: "kind")) {
+            case .branch:
+                try BridgePayload.requireMembers(["kind", "name"], in: container)
+                branch = .named(
+                    try container.decode(String.self, forKey: WireKey(stringValue: "name")))
+            case .detached:
+                try BridgePayload.requireMembers(["kind", "commit"], in: container)
+                branch = .detached(
+                    commit: try container.decode(
+                        String.self, forKey: WireKey(stringValue: "commit")))
+            }
+        }
+    }
+
+    /// The Git answer's wire: one object tagged by `state`, with exactly the members the state
+    /// names, at every level. A member missing or extra, and a tag or value outside its closed
+    /// set, throws, so the decoder never keeps part of a bad answer.
+    private struct GitAnswer: Decodable {
+        let item: GitItem
+
+        private enum StateTag: String, Decodable { case pending, observed, failed }
+        private enum Kind: String, Decodable { case plain, root }
+
+        /// The condition member's value: the eleven pathless conditions, or the one beside a path.
+        private enum WireCondition: Decodable {
+            case gitDirectoryOutside
+            case condition(GitCondition)
+
+            init(from decoder: Decoder) throws {
+                let name = try decoder.singleValueContainer().decode(String.self)
+                if name == "git_directory_outside" {
+                    self = .gitDirectoryOutside
+                } else if let condition = GitCondition(rawValue: name) {
+                    self = .condition(condition)
+                } else {
+                    throw DecodingError.dataCorrupted(
+                        .init(codingPath: decoder.codingPath, debugDescription: "unknown condition")
+                    )
+                }
+            }
+        }
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: WireKey.self)
+            let state = try container.decode(StateTag.self, forKey: WireKey(stringValue: "state"))
+            switch state {
+            case .pending:
+                try BridgePayload.requireMembers(["state"], in: container)
+                item = .pending
+            case .observed:
+                item = try Self.observed(container)
+            case .failed:
+                item = try Self.failed(container)
+            }
+        }
+
+        private static func observed(
+            _ container: KeyedDecodingContainer<WireKey>
+        ) throws -> GitItem {
+            switch try container.decode(Kind.self, forKey: WireKey(stringValue: "kind")) {
+            case .plain:
+                try BridgePayload.requireMembers(["state", "kind"], in: container)
+                return .plain
+            case .root:
+                try BridgePayload.requireMembers(
+                    ["state", "kind", "branch", "repository_state", "staged", "changed"],
+                    in: container)
+                return .repository(
+                    GitRepository(
+                        branch: try container.decode(
+                            WireGitBranch.self, forKey: WireKey(stringValue: "branch")
+                        ).branch,
+                        state: try BridgePayload.closed(
+                            RepositoryState.self, in: container, key: "repository_state"),
+                        staged: try container.decode(
+                            [WireGitEntry].self, forKey: WireKey(stringValue: "staged")
+                        ).map(\.entry),
+                        changed: try container.decode(
+                            [WireGitEntry].self, forKey: WireKey(stringValue: "changed")
+                        ).map(\.entry)))
+            }
+        }
+
+        private static func failed(_ container: KeyedDecodingContainer<WireKey>) throws -> GitItem {
+            let condition = try container.decode(
+                WireCondition.self, forKey: WireKey(stringValue: "condition"))
+            switch condition {
+            case .gitDirectoryOutside:
+                try BridgePayload.requireMembers(
+                    ["state", "condition", "git_directory"], in: container)
+                return .failed(
+                    .gitDirectoryOutside(
+                        gitDirectory: try container.decode(
+                            String.self, forKey: WireKey(stringValue: "git_directory"))))
+            case .condition(let condition):
+                try BridgePayload.requireMembers(["state", "condition"], in: container)
+                return .failed(.condition(condition))
+            }
+        }
+    }
+
+    /// The Git item a `nozoki_read_git` answer carries. Not optional: `pending` is an answer here
+    /// and stays distinct from a NULL buffer and from anything that does not conform, both of which
+    /// are `stopped` (CP-553 against CP-561).
+    static func decodeGit(_ buffer: BridgeBuffer?) -> GitItem {
+        guard let buffer,
+            let answer = try? JSONDecoder().decode(GitAnswer.self, from: buffer.payload)
+        else { return .stopped }
+        return answer.item
+    }
 }
