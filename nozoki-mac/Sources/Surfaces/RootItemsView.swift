@@ -41,6 +41,14 @@ package final class RootItemsView: NSScrollView {
     private var markers = TreeMarkers.none
     private let rootLine: NSTextField
     private let rootMessage: StatusMessageView
+    private let tooltipRest: TooltipRest
+
+    /// The tooltip a status letter raises on pointer rest, over the tree's letters (CP-586). A lazy
+    /// property because it is bound to this view, which an initialiser cannot name before it is
+    /// built; `init` reads it once so the tracking area is installed from the start.
+    package private(set) lazy var letterTooltip = LetterTooltip(
+        host: self, rest: tooltipRest,
+        letterAt: { [weak self] point in self?.letter(at: point) })
 
     /// The one line drawn outside the rows, or nil when none is drawn.
     package private(set) var rootLineText: String?
@@ -96,6 +104,7 @@ package final class RootItemsView: NSScrollView {
     /// every item again, and expansion relies on the identity of `Row` (CP-285 precedent at
     /// `reload(_:)`). Expansion, scroll offset, selection and the bar are left as they were.
     package func showMarkers(_ markers: TreeMarkers) {
+        letterTooltip.dismiss()
         self.markers = markers
         isReloading = true
         defer { isReloading = false }
@@ -133,8 +142,9 @@ package final class RootItemsView: NSScrollView {
     /// Presents tree rows or a root status using only the images supplied by the owner.
     package init(
         folderGlyph: NSImage, fileGlyph: NSImage, fileCodeGlyph: NSImage,
-        statusGlyphs: StatusGlyphs
+        statusGlyphs: StatusGlyphs, tooltipRest: TooltipRest = .live
     ) {
+        self.tooltipRest = tooltipRest
         self.folderGlyph = folderGlyph
         self.fileGlyph = fileGlyph
         self.fileCodeGlyph = fileCodeGlyph
@@ -169,6 +179,37 @@ package final class RootItemsView: NSScrollView {
             rootMessage.trailingAnchor.constraint(
                 lessThanOrEqualTo: trailingAnchor, constant: -rootMessageInset),
         ])
+
+        // A letter can leave a resting pointer by the tree scrolling under it.
+        contentView.postsBoundsChangedNotifications = true
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(treeScrolled), name: NSView.boundsDidChangeNotification,
+            object: contentView)
+        _ = letterTooltip
+    }
+
+    @objc private func treeScrolled(_ notification: Notification) {
+        letterTooltip.dismiss()
+    }
+
+    /// The shown letter at `point` (in this view's coordinates), with the text it raises, or nil
+    /// when the point is on no letter. A point lies on a letter only inside a shown letter field's
+    /// own frame: the name, the glyph, the condition sentence, the space between them, an unmarked
+    /// row and a line item are on none (CP-587, CP-588). The category is read now, from the same
+    /// call the letter is drawn from, so the word never disagrees with the letter (CP-594).
+    private func letter(at point: NSPoint) -> LetterUnderPointer? {
+        let inOutline = outlineView.convert(point, from: self)
+        let index = outlineView.row(at: inOutline)
+        guard index >= 0, let row = outlineView.item(atRow: index) as? Row,
+            let cell = outlineView.view(atColumn: 0, row: index, makeIfNecessary: false)
+                as? EntryCell,
+            !cell.letterLabel.isHidden,
+            cell.letterLabel.frame.contains(cell.convert(inOutline, from: outlineView)),
+            let category = markers.category(forRowPath: row.entry.path)
+        else { return nil }
+        return LetterUnderPointer(
+            letter: cell.letterLabel,
+            text: GitSentences.letterTooltip(name: row.entry.name, category: category))
     }
 
     @available(*, unavailable)
@@ -180,6 +221,7 @@ package final class RootItemsView: NSScrollView {
     /// root is empty or could not be read, or nothing when there is no answer (`nil`). Every row is
     /// replaced, so an answer still owed to an earlier row is ignored when it arrives.
     package func show(_ root: RootListing?) {
+        letterTooltip.dismiss()
         var entries: [Entry] = []
         switch root {
         case nil:
