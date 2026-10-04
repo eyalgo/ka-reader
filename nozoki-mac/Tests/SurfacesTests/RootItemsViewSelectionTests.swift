@@ -313,4 +313,63 @@ final class RootItemsViewSelectionTests: XCTestCase {
         XCTAssertEqual(view.barPaths(), ["b.txt"])
         XCTAssertEqual(try image(fixture, path: "a.txt"), unselected)
     }
+
+    // MARK: ink (CP-632)
+
+    /// What a row's ink resolves to: the cell's background style, and each of the name's and the
+    /// letter's text colour and the background style its own cell resolves.
+    private struct Ink: Equatable {
+        let cellBackgroundStyle: NSView.BackgroundStyle
+        let nameColour: NSColor?
+        let nameBackgroundStyle: NSView.BackgroundStyle?
+        let letterColour: NSColor?
+        let letterBackgroundStyle: NSView.BackgroundStyle?
+    }
+
+    private func ink(
+        _ fixture: Fixture, path: String, theme: NSAppearance.Name, emphasized: Bool
+    ) throws -> Ink {
+        fixture.window.appearance = NSAppearance(named: theme)
+        let index = try row(of: path, in: fixture.view)
+        try rowView(atRow: index, in: fixture.view).isEmphasized = emphasized
+        let made = fixture.view.outlineView.view(atColumn: 0, row: index, makeIfNecessary: true)
+        let cell = try XCTUnwrap(made as? NSTableCellView)
+        cell.layoutSubtreeIfNeeded()
+        let name = try XCTUnwrap(cell.textField)
+        let letter = try XCTUnwrap(
+            cell.subviews.compactMap { $0 as? NSTextField }
+                .first { $0.identifier?.rawValue == "treeRowLetter" },
+            "the cell has no treeRowLetter field")
+        return Ink(
+            cellBackgroundStyle: cell.backgroundStyle,
+            nameColour: name.textColor, nameBackgroundStyle: name.cell?.backgroundStyle,
+            letterColour: letter.textColor, letterBackgroundStyle: letter.cell?.backgroundStyle)
+    }
+
+    func test_selection_and_emphasis_leave_the_rows_ink_unchanged() throws {
+        let markers = TreeMarkers(
+            .repository(
+                GitRepository(
+                    branch: .named("main"), state: .normal, staged: [],
+                    changed: [GitEntry(path: "b.txt", category: .modified)])))
+        let fixture = makeFixture([file("a.txt"), file("b.txt")], markers: markers)
+        var unselected: [String: Ink] = [:]
+        for theme in [NSAppearance.Name.aqua, .darkAqua] {
+            for emphasized in [true, false] {
+                unselected["\(theme.rawValue)\(emphasized)"] = try ink(
+                    fixture, path: "b.txt", theme: theme, emphasized: emphasized)
+            }
+        }
+
+        fixture.view.showOpenFile(path: "b.txt")
+
+        for theme in [NSAppearance.Name.aqua, .darkAqua] {
+            for emphasized in [true, false] {
+                XCTAssertEqual(
+                    try ink(fixture, path: "b.txt", theme: theme, emphasized: emphasized),
+                    unselected["\(theme.rawValue)\(emphasized)"],
+                    "ink, \(theme.rawValue), emphasized \(emphasized)")
+            }
+        }
+    }
 }
