@@ -13,15 +13,17 @@ final class RootItemsViewHoverTests: XCTestCase {
         let view: RootItemsView
         let window: NSWindow
         let rest: TooltipRestDouble
+        let key: KeyWindowDouble
         /// Folder reads still owed an answer, when the fixture holds answers back.
         var answers: [ListTreeAnswer] = []
         var selected: [Entry] = []
         var reads: [String] = []
 
-        init(view: RootItemsView, window: NSWindow, rest: TooltipRestDouble) {
+        init(view: RootItemsView, window: NSWindow, rest: TooltipRestDouble, key: KeyWindowDouble) {
             self.view = view
             self.window = window
             self.rest = rest
+            self.key = key
         }
     }
 
@@ -31,13 +33,15 @@ final class RootItemsViewHoverTests: XCTestCase {
         _ entries: [Entry], listings: [String: RootListing] = [:], holdAnswers: Bool = false
     ) -> Fixture {
         let rest = TooltipRestDouble()
+        let key = KeyWindowDouble()
         let view = RootItemsView(
             folderGlyph: glyph, fileGlyph: glyph, fileCodeGlyph: glyph,
-            statusGlyphs: StatusGlyphs(empty: glyph, failure: glyph), tooltipRest: rest.rest)
+            statusGlyphs: StatusGlyphs(empty: glyph, failure: glyph), tooltipRest: rest.rest,
+            keyWindow: key.source)
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 260, height: 200), styleMask: [.borderless],
             backing: .buffered, defer: true)
-        let fixture = Fixture(view: view, window: window, rest: rest)
+        let fixture = Fixture(view: view, window: window, rest: rest, key: key)
         view.listTree = { path, answer in
             fixture.reads.append(path)
             if holdAnswers {
@@ -424,5 +428,147 @@ final class RootItemsViewHoverTests: XCTestCase {
         view.isHidden = false
 
         XCTAssertEqual(view.hoverPaths(), [])
+    }
+
+    // MARK: the key window (CP-619 to CP-623)
+
+    private func labelled() throws -> (Fixture, NSPoint) {
+        let fixture = makeFixture([file("a.txt"), file("b.txt"), file("c.txt")])
+        fixture.view.showMarkers(markers([("a.txt", .modified)]))
+        let letter = centre(
+            of: try letterField(cell(fixture.view, path: "a.txt")), in: fixture.view)
+        return (fixture, letter)
+    }
+
+    func test_hover_s1_window_stops_being_key_under_still_pointer_the_fill_leaves() throws {
+        let fixture = makeFixture([file("a.txt"), file("b.txt")])
+        let view = fixture.view
+        try PointerDelivery.move(to: try point(ofPath: "b.txt", in: view), in: view)
+        XCTAssertEqual(view.hoverPaths(), ["b.txt"])
+
+        fixture.key.stopBeingKey()
+
+        XCTAssertEqual(view.hoverPaths(), [])
+    }
+
+    func test_hover_s1_window_stops_being_key_with_a_rest_pending_cancels_it() throws {
+        let (fixture, letter) = try labelled()
+        try PointerDelivery.move(to: letter, in: fixture.view)
+        XCTAssertEqual(fixture.rest.requests.count, 1)
+
+        fixture.key.stopBeingKey()
+
+        XCTAssertTrue(fixture.rest.requests[0].cancelled)
+        fixture.rest.fire(0)
+        XCTAssertNil(fixture.view.letterTooltip.shownView)
+        try PointerDelivery.move(to: letter, in: fixture.view)
+        XCTAssertEqual(fixture.rest.requests.count, 1, "no rest while the window is not key")
+    }
+
+    func test_hover_s1_while_not_key_moving_over_rows_and_letters_fills_nothing_and_rests_nowhere()
+        throws
+    {
+        let (fixture, letter) = try labelled()
+        let view = fixture.view
+        fixture.key.stopBeingKey()
+
+        for pointer in [
+            try point(ofPath: "b.txt", in: view), letter, try point(ofPath: "c.txt", in: view),
+        ] {
+            try PointerDelivery.move(to: pointer, in: view)
+            XCTAssertEqual(view.hoverPaths(), [])
+        }
+        XCTAssertEqual(fixture.rest.requests.count, 0)
+    }
+
+    func test_hover_s1_rows_moving_under_a_still_pointer_while_not_key_fill_nothing() throws {
+        let fixture = makeFixture(
+            [folder("src")] + files(40), listings: ["src": .observed([file("src/c.txt")])])
+        let view = fixture.view
+        try PointerDelivery.move(to: try point(ofRow: 3, in: view), in: view)
+        XCTAssertEqual(view.hoverPaths(), ["f02.txt"])
+        fixture.key.stopBeingKey()
+
+        scroll(view, to: 60)
+        XCTAssertEqual(view.hoverPaths(), [], "after the scroll")
+        scroll(view, to: 0)
+        try expand("src", in: view)
+
+        XCTAssertEqual(view.hoverPaths(), [], "after the expansion")
+    }
+
+    func test_hover_s1_window_becomes_key_with_pointer_on_another_row_fills_that_row() throws {
+        let fixture = makeFixture([file("a.txt"), file("b.txt"), file("c.txt")])
+        let view = fixture.view
+        try PointerDelivery.move(to: try point(ofPath: "a.txt", in: view), in: view)
+        fixture.key.stopBeingKey()
+
+        fixture.key.pointer = try point(ofPath: "c.txt", in: view)
+        fixture.key.becomeKey()
+
+        XCTAssertEqual(view.hoverPaths(), ["c.txt"])
+    }
+
+    func test_hover_s1_window_becomes_key_with_pointer_on_a_letter_waits_for_a_fresh_rest() throws {
+        let (fixture, letter) = try labelled()
+        try PointerDelivery.move(to: letter, in: fixture.view)
+        fixture.rest.fireLast()
+        XCTAssertNotNil(fixture.view.letterTooltip.shownView)
+        fixture.key.stopBeingKey()
+        XCTAssertNil(fixture.view.letterTooltip.shownView)
+
+        fixture.key.pointer = letter
+        fixture.key.becomeKey()
+
+        XCTAssertNil(fixture.view.letterTooltip.shownView)
+        XCTAssertEqual(fixture.rest.requests.count, 2)
+        XCTAssertEqual(
+            try XCTUnwrap(fixture.rest.requests.last).interval, LetterTooltip.restInterval)
+        fixture.rest.fireLast()
+        XCTAssertNotNil(fixture.view.letterTooltip.shownView)
+    }
+
+    func test_hover_s1_window_becomes_key_with_pointer_on_the_selected_row_keeps_its_drawing()
+        throws
+    {
+        let fixture = makeFixture([file("a.txt"), file("b.txt")])
+        let view = fixture.view
+        view.showOpenFile(path: "b.txt")
+        let selectedRow = try row(of: "b.txt", in: view)
+        XCTAssertEqual(view.outlineView.selectedRow, selectedRow)
+        try PointerDelivery.move(to: try point(ofPath: "a.txt", in: view), in: view)
+        fixture.key.stopBeingKey()
+
+        fixture.key.pointer = try point(ofPath: "b.txt", in: view)
+        fixture.key.becomeKey()
+
+        XCTAssertEqual(view.hoverPaths(), [])
+        XCTAssertEqual(view.barPaths(), ["b.txt"])
+        // The tree's selected drawing is the table's selection and the bar (`BarRowView`), so both
+        // halves stay: the row is still the table's selected row.
+        XCTAssertEqual(view.outlineView.selectedRow, selectedRow, "still the selected row")
+    }
+
+    func test_hover_s1_window_becomes_key_with_pointer_outside_the_host_fills_nothing() throws {
+        let fixture = makeFixture(files(40))
+        let view = fixture.view
+        try PointerDelivery.move(to: try point(ofRow: 3, in: view), in: view)
+        scroll(view, to: 100)
+        let above = NSPoint(x: 40, y: view.bounds.maxY + 12)
+        XCTAssertNotNil(entryPath(at: above, in: view), "a row's frame lies above the view")
+        let beside = NSPoint(x: view.bounds.maxX + 30, y: 60)
+        let lastRow = view.outlineView.rect(ofRow: 39)
+        let below = view.convert(NSPoint(x: 40, y: lastRow.maxY + 30), from: view.outlineView)
+        let requests = fixture.rest.requests.count
+
+        for (what, outside) in [("beside", beside), ("above", above), ("below", below)] {
+            try PointerDelivery.move(to: try point(ofRow: 5, in: view), in: view)
+            XCTAssertEqual(view.hoverPaths().count, 1, what)
+            fixture.key.stopBeingKey()
+            fixture.key.pointer = outside
+            fixture.key.becomeKey()
+            XCTAssertEqual(view.hoverPaths(), [], what)
+        }
+        XCTAssertEqual(fixture.rest.requests.count, requests, "no rest")
     }
 }

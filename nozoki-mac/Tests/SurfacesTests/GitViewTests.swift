@@ -20,6 +20,7 @@ final class GitViewTests: XCTestCase {
         let window: NSWindow
         var activated: Box
         let rest: TooltipRestDouble
+        let key: KeyWindowDouble
     }
 
     @MainActor
@@ -30,7 +31,8 @@ final class GitViewTests: XCTestCase {
     private func makeView(showing item: GitItem) -> Fixture {
         let glyphs = StatusGlyphs(empty: emptyGlyph, failure: failureGlyph)
         let rest = TooltipRestDouble()
-        let view = GitView(statusGlyphs: glyphs, tooltipRest: rest.rest)
+        let key = KeyWindowDouble()
+        let view = GitView(statusGlyphs: glyphs, tooltipRest: rest.rest, keyWindow: key.source)
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 260, height: 500), styleMask: [.borderless],
             backing: .buffered, defer: true)
@@ -39,7 +41,7 @@ final class GitViewTests: XCTestCase {
         view.rowActivated = { box.paths.append($0) }
         view.show(item)
         view.layoutSubtreeIfNeeded()
-        return Fixture(view: view, window: window, activated: box, rest: rest)
+        return Fixture(view: view, window: window, activated: box, rest: rest, key: key)
     }
 
     private func repository(
@@ -326,10 +328,26 @@ final class GitViewTests: XCTestCase {
         try click(centre(of: rows[1], in: fixture.view), in: fixture)
         XCTAssertEqual(rows.map(\.drawsBar), [false, true])
         XCTAssertEqual(fixture.view.barPaths(), ["b.txt"])
+        XCTAssertEqual(fixture.view.selectionFillPaths(), ["b.txt"])
 
         fixture.view.clearSelection()
         XCTAssertTrue(rows.allSatisfy { !$0.drawsBar })
         XCTAssertTrue(fixture.view.barPaths().isEmpty)
+        XCTAssertEqual(fixture.view.selectionFillPaths(), [])
+    }
+
+    func test_drawingTheRowsAgainTakesTheSelectionFillAndTheBarOffTogether() throws {
+        let item = repository(changed: [entry("a.txt", .modified), entry("b.txt", .added)])
+        let fixture = makeView(showing: item)
+        let rows = rowViews(fixture.view)
+        try click(centre(of: rows[1], in: fixture.view), in: fixture)
+        XCTAssertEqual(fixture.view.selectionFillPaths(), ["b.txt"])
+
+        fixture.view.show(item)
+
+        XCTAssertEqual(fixture.view.selectionFillPaths(), [])
+        XCTAssertEqual(fixture.view.barPaths(), [])
+        XCTAssertTrue(rowViews(fixture.view).allSatisfy { !$0.drawsSelection && !$0.drawsBar })
     }
 
     func test_noElementOfTheViewHasATooltip() throws {

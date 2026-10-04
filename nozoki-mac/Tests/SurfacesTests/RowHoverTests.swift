@@ -108,6 +108,70 @@ final class RowHoverTests: XCTestCase {
         }
     }
 
+    // MARK: the selected drawing (the Git view's selected row)
+
+    func test_selected_drawing_renders_the_selection_fill_and_the_bar_light_and_dark() throws {
+        let row = makeRow()
+        row.drawsSelection = true
+        for (appearance, fill, bar) in [
+            (NSAppearance.Name.aqua, UInt32(0xE2E3DF), UInt32(0x1E1F22)),
+            (.darkAqua, 0x34363B, 0xE7E7E4),
+        ] {
+            let rep = try render(row, as: appearance)
+            let name = appearance.rawValue
+            let last = (rep.pixelsWide - 1, rep.pixelsHigh - 1)
+            try assertColour(
+                rep, atX: rep.pixelsWide / 2, y: rep.pixelsHigh / 2, equals: fill, "centre, \(name)"
+            )
+            try assertColour(rep, atX: last.0, y: 0, equals: fill, "top-right, \(name)")
+            try assertColour(rep, atX: last.0, y: last.1, equals: fill, "bottom-right, \(name)")
+            try assertColour(rep, atX: 0, y: rep.pixelsHigh / 2, equals: bar, "left edge, \(name)")
+        }
+    }
+
+    func test_selected_drawing_shows_no_hover_even_while_the_pointer_is_over_the_row() {
+        let row = makeRow()
+        row.drawsSelection = true
+        row.pointerIsOver = true
+        XCTAssertFalse(row.showsHover)
+    }
+
+    func test_selected_drawing_is_the_same_with_and_without_the_pointer_over_the_row() throws {
+        for appearance in [NSAppearance.Name.aqua, .darkAqua] {
+            let away = makeRow()
+            away.drawsSelection = true
+            let over = makeRow()
+            over.drawsSelection = true
+            over.pointerIsOver = true
+            XCTAssertEqual(
+                try pixels(render(over, as: appearance)), try pixels(render(away, as: appearance)),
+                appearance.rawValue)
+        }
+    }
+
+    func test_a_row_with_only_the_bar_shows_no_selection_fill() throws {
+        for appearance in [NSAppearance.Name.aqua, .darkAqua] {
+            let row = makeRow()
+            row.drawsBar = true
+            XCTAssertFalse(row.drawsSelection)
+            let rep = try render(row, as: appearance)
+            let centre = try XCTUnwrap(rep.colorAt(x: rep.pixelsWide / 2, y: rep.pixelsHigh / 2))
+            XCTAssertEqual(centre.alphaComponent, 0, accuracy: 0.001, appearance.rawValue)
+        }
+    }
+
+    func test_the_selected_state_is_the_fill_and_the_bar_together_and_ends_with_both() {
+        let row = makeRow()
+        XCTAssertFalse(row.drawsBar)
+        row.drawsSelection = true
+        XCTAssertTrue(row.drawsBar, "the bar comes with the fill")
+        row.drawsBar = false
+        XCTAssertTrue(row.drawsBar, "nothing takes the bar off a selected row but ending the state")
+        row.drawsSelection = false
+        XCTAssertFalse(row.drawsBar, "the bar leaves with the fill")
+        XCTAssertFalse(row.drawsSelection)
+    }
+
     func test_hover_fill_goes_when_row_gains_bar_under_the_flag() throws {
         for appearance in [NSAppearance.Name.aqua, .darkAqua] {
             let flagged = makeRow()
@@ -131,6 +195,7 @@ final class RowHoverUnitTests: XCTestCase {
     private var upper: BarRowView!
     private var lower: BarRowView!
     private var hover: RowHover!
+    private var key: KeyWindowDouble!
     /// What the lookup consults; a test empties or reorders it to move rows from under the pointer.
     private var lookupRows: [BarRowView] = []
 
@@ -150,7 +215,8 @@ final class RowHoverUnitTests: XCTestCase {
         host.addSubview(upper)
         host.addSubview(lower)
         lookupRows = [upper, lower]
-        hover = RowHover(host: host) { [unowned self] point in
+        key = KeyWindowDouble()
+        hover = RowHover(host: host, keyWindow: key.source) { [unowned self] point in
             lookupRows.first { $0.frame.contains(point) }
         }
     }
@@ -220,12 +286,85 @@ final class RowHoverUnitTests: XCTestCase {
 
     func test_hover_area_options_equal_the_tooltip_areas_options() throws {
         let rest = TooltipRestDouble()
-        let tooltip = LetterTooltip(host: host, rest: rest.rest) { _ in nil }
+        let tooltip = LetterTooltip(host: host, rest: rest.rest, keyWindow: key.source) { _ in nil }
         let hoverArea = try XCTUnwrap(PointerDelivery.hoverTrackingArea(of: host))
         let tooltipArea = try XCTUnwrap(PointerDelivery.trackingArea(of: host))
         XCTAssertEqual(hoverArea.options, tooltipArea.options)
         XCTAssertTrue(hoverArea.options.contains(.activeInKeyWindow))
         XCTAssertTrue(tooltipArea.options.contains(.activeInKeyWindow))
         withExtendedLifetime(tooltip) {}
+    }
+
+    // MARK: the key window (CP-619 to CP-621)
+
+    func test_hover_while_not_key_refresh_and_a_pointer_event_flag_nothing() throws {
+        try PointerDelivery.move(to: upperPoint, in: host)
+        XCTAssertTrue(flagged().elementsEqual([upper]))
+        key.stopBeingKey()
+        XCTAssertTrue(flagged().isEmpty, "stopping being key is the pointer leaving")
+
+        hover.refresh()
+        XCTAssertTrue(flagged().isEmpty, "refresh")
+        try PointerDelivery.move(to: lowerPoint, in: host)
+        XCTAssertTrue(flagged().isEmpty, "a pointer event")
+        try PointerDelivery.enter(at: upperPoint, in: host)
+        XCTAssertTrue(flagged().isEmpty, "an entry")
+    }
+
+    func test_hover_while_not_key_nothing_is_kept_for_a_later_refresh() throws {
+        key.stopBeingKey()
+        try PointerDelivery.move(to: upperPoint, in: host)
+        key.pointer = nil
+        key.becomeKey()
+        hover.refresh()
+        XCTAssertTrue(flagged().isEmpty)
+    }
+
+    func test_hover_becoming_key_with_the_read_point_on_upper_flags_upper() throws {
+        try PointerDelivery.move(to: lowerPoint, in: host)
+        key.stopBeingKey()
+
+        key.pointer = upperPoint
+        key.becomeKey()
+
+        XCTAssertTrue(flagged().elementsEqual([upper]))
+    }
+
+    func test_hover_becoming_key_reads_the_rows_as_they_stand_then() throws {
+        try PointerDelivery.move(to: upperPoint, in: host)
+        key.stopBeingKey()
+        lookupRows = [lower]
+
+        key.pointer = upperPoint
+        key.becomeKey()
+
+        XCTAssertTrue(flagged().isEmpty)
+    }
+
+    func test_hover_becoming_key_with_no_answer_from_the_source_flags_nothing() throws {
+        try PointerDelivery.move(to: upperPoint, in: host)
+        key.stopBeingKey()
+
+        key.pointer = nil
+        key.becomeKey()
+
+        XCTAssertTrue(flagged().isEmpty)
+    }
+
+    func test_hover_becoming_key_with_the_read_point_outside_the_host_or_the_host_hidden() throws {
+        try PointerDelivery.move(to: upperPoint, in: host)
+        key.stopBeingKey()
+        lookupRows = [upper, lower]
+        upper.frame = NSRect(x: 0, y: 40, width: 400, height: 200)
+
+        key.pointer = NSPoint(x: 300, y: 100)
+        key.becomeKey()
+        XCTAssertTrue(flagged().isEmpty, "outside the host")
+
+        key.stopBeingKey()
+        host.isHidden = true
+        key.pointer = upperPoint
+        key.becomeKey()
+        XCTAssertTrue(flagged().isEmpty, "a hidden host")
     }
 }

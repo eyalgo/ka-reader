@@ -20,8 +20,8 @@ private enum GitViewLayout {
 /// under its heading and count, its rows in `GitRowOrder`'s order. *Failed* and *stopped* are each
 /// one failure message.
 ///
-/// A click anywhere on a row raises `rowActivated` with its path, and the clicked row carries the
-/// bar. A status letter raises a tooltip when the pointer rests on it, and nothing else in the view
+/// A click anywhere on a row raises `rowActivated` with its path, and the clicked row is drawn as
+/// selected: the selection fill and the bar. A status letter raises a tooltip when the pointer rests on it, and nothing else in the view
 /// does (CP-586, CP-597). A view that has been shown nothing is pending.
 @MainActor
 package final class GitView: NSView {
@@ -35,17 +35,18 @@ package final class GitView: NSView {
 
     private let statusGlyphs: StatusGlyphs
     private let tooltipRest: TooltipRest
+    private let keyWindow: KeyWindowSource
 
     /// The tooltip a status letter raises on pointer rest (CP-586). A lazy property because it is
     /// bound to this view, which an initialiser cannot name before it is built.
     package private(set) lazy var letterTooltip = LetterTooltip(
-        host: self, rest: tooltipRest,
+        host: self, rest: tooltipRest, keyWindow: keyWindow,
         letterAt: { [weak self] point in self?.letter(at: point) })
 
     /// Flags the row under the pointer so it draws its hover fill (CP-599). Lazy for the same
     /// reason as the tooltip.
     private lazy var rowHover = RowHover(
-        host: self,
+        host: self, keyWindow: keyWindow,
         rowAt: { [weak self] point in
             guard let self, let index = self.rowIndex(at: point) else { return nil }
             return self.rows[index].view
@@ -58,9 +59,13 @@ package final class GitView: NSView {
     /// Set by the view's owner, and called once per click on a row.
     package var rowActivated: GitRowActivated?
 
-    package init(statusGlyphs: StatusGlyphs, tooltipRest: TooltipRest = .live) {
+    package init(
+        statusGlyphs: StatusGlyphs, tooltipRest: TooltipRest = .live,
+        keyWindow: KeyWindowSource = .live
+    ) {
         self.statusGlyphs = statusGlyphs
         self.tooltipRest = tooltipRest
+        self.keyWindow = keyWindow
         super.init(frame: .zero)
         let document = FlippedView()
         document.translatesAutoresizingMaskIntoConstraints = false
@@ -155,7 +160,7 @@ package final class GitView: NSView {
         rowHover.refresh()
     }
 
-    /// Takes the bar off every row.
+    /// Takes the selected drawing, the fill and the bar, off every row.
     package func clearSelection() {
         selectedIndex = nil
         applySelection()
@@ -164,6 +169,11 @@ package final class GitView: NSView {
     /// The `path` of every row that draws the bar, top to bottom.
     package func barPaths() -> [String] {
         rows.filter(\.view.drawsBar).map(\.path)
+    }
+
+    /// The `path` of every row that draws the selection fill, top to bottom.
+    package func selectionFillPaths() -> [String] {
+        rows.filter(\.view.drawsSelection).map(\.path)
     }
 
     /// A click on a row, or on its letter, activates that row. Nothing else in the view acts on a
@@ -189,7 +199,7 @@ package final class GitView: NSView {
 
     private func applySelection() {
         for (index, row) in rows.enumerated() {
-            row.view.drawsBar = index == selectedIndex
+            row.view.drawsSelection = index == selectedIndex
         }
     }
 

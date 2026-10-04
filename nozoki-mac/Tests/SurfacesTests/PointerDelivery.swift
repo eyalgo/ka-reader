@@ -75,6 +75,52 @@ enum PointerDelivery {
     }
 }
 
+/// A `KeyWindowSource` that starts key, flips on demand and fires the matching moment, because the
+/// test windows never become key. The test sets the point the pointer reads as; it is in the
+/// coordinates of whichever host asks, so a case sets it for the host it drives.
+@MainActor
+final class KeyWindowDouble {
+    private final class Subscription {}
+
+    private struct Observer {
+        weak var subscription: AnyObject?
+        let stoppedBeingKey: KeyWindowSource.Moment
+        let becameKey: KeyWindowSource.Moment
+    }
+
+    private(set) var isKey = true
+    var pointer: NSPoint?
+    private var observers: [Observer] = []
+
+    var source: KeyWindowSource {
+        KeyWindowSource(
+            isKey: { [self] _ in isKey },
+            observe: { [self] _, stoppedBeingKey, becameKey in
+                let subscription = Subscription()
+                observers.append(
+                    Observer(
+                        subscription: subscription, stoppedBeingKey: stoppedBeingKey,
+                        becameKey: becameKey))
+                return subscription
+            },
+            pointer: { [self] _ in pointer })
+    }
+
+    /// The window stops being key: the state flips, then the moment is delivered.
+    func stopBeingKey() {
+        guard isKey else { return }
+        isKey = false
+        for observer in observers where observer.subscription != nil { observer.stoppedBeingKey() }
+    }
+
+    /// The window becomes key: the state flips, then the moment is delivered.
+    func becomeKey() {
+        guard !isKey else { return }
+        isKey = true
+        for observer in observers where observer.subscription != nil { observer.becameKey() }
+    }
+}
+
 /// A `TooltipRest` that records what it was asked for and fires on demand, because the test
 /// windows run no run loop. A cancelled rest stays on the list: firing it is how a test proves a
 /// cancelled rest shows nothing.

@@ -11,6 +11,7 @@ final class WorkbenchHoverTests: XCTestCase {
         let workbench: WorkbenchView
         let window: NSWindow
         let log: Log
+        let key: KeyWindowDouble
     }
 
     @MainActor
@@ -23,9 +24,10 @@ final class WorkbenchHoverTests: XCTestCase {
     private func makeFixture(treeRest: TooltipRest = .live) -> Fixture {
         let glyph = NSImage(size: NSSize(width: 1, height: 1))
         let glyphs = StatusGlyphs(empty: glyph, failure: glyph)
+        let key = KeyWindowDouble()
         let tree = RootItemsView(
             folderGlyph: glyph, fileGlyph: glyph, fileCodeGlyph: glyph, statusGlyphs: glyphs,
-            tooltipRest: treeRest)
+            tooltipRest: treeRest, keyWindow: key.source)
         tree.show(
             .observed([
                 Entry(name: "src", path: "src", kind: .folder, state: .pending),
@@ -34,7 +36,8 @@ final class WorkbenchHoverTests: XCTestCase {
                 Entry(name: "lib", path: "lib", kind: .folder, state: .pending),
             ]))
         let workbench = WorkbenchView(
-            rootItemsView: tree, statusGlyphs: glyphs, railFolderGlyph: glyph, railGitGlyph: glyph)
+            rootItemsView: tree, statusGlyphs: glyphs, railFolderGlyph: glyph, railGitGlyph: glyph,
+            keyWindow: key.source)
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 800, height: 500), styleMask: [.borderless],
             backing: .buffered, defer: true)
@@ -44,7 +47,7 @@ final class WorkbenchHoverTests: XCTestCase {
         workbench.readGit = { answer in log.gitAsks.append(answer) }
         tree.listTree = { path, _ in log.listed.append(path) }
         workbench.layoutSubtreeIfNeeded()
-        return Fixture(workbench: workbench, window: window, log: log)
+        return Fixture(workbench: workbench, window: window, log: log, key: key)
     }
 
     private func descendants(of view: NSView) -> [NSView] {
@@ -162,12 +165,16 @@ final class WorkbenchHoverTests: XCTestCase {
             try PointerDelivery.enter(at: treePoint(ofRow: index, in: fixture), in: tree)
             try PointerDelivery.move(to: treePoint(ofRow: index, in: fixture), in: tree)
         }
+        fixture.key.stopBeingKey()
+        fixture.key.becomeKey()
         for path in ["a.txt", "b.txt"] {
             try PointerDelivery.move(to: treeLetter(ofPath: path, in: fixture), in: tree)
             rest.fireLast()
             XCTAssertNotNil(tree.letterTooltip.shownView, "the pointer rested on \(path)'s letter")
         }
         try PointerDelivery.leave(at: treeLetter(ofPath: "b.txt", in: fixture), in: tree)
+        fixture.key.stopBeingKey()
+        fixture.key.becomeKey()
 
         choose(.git, in: fixture)
         let git = fixture.workbench.gitView
@@ -178,6 +185,9 @@ final class WorkbenchHoverTests: XCTestCase {
             try PointerDelivery.move(to: gitLetter(ofRow: index, in: fixture), in: git)
             RunLoop.main.run(until: Date().addingTimeInterval(LetterTooltip.restInterval + 0.3))
             XCTAssertNotNil(git.letterTooltip.shownView, "the pointer rested on Git row \(index)")
+            fixture.key.stopBeingKey()
+            XCTAssertNil(git.letterTooltip.shownView, "the window stopped being key")
+            fixture.key.becomeKey()
         }
         try PointerDelivery.leave(at: gitPoint(ofRow: 1, in: fixture), in: git)
 
@@ -187,5 +197,41 @@ final class WorkbenchHoverTests: XCTestCase {
         XCTAssertTrue(tree.outlineView.isItemExpanded(src), "no collapse")
         XCTAssertFalse(tree.outlineView.isItemExpanded(lib), "no expansion")
         XCTAssertEqual(git.barPaths(), [])
+        XCTAssertEqual(git.selectionFillPaths(), [])
+    }
+
+    func test_hover_key_window_stops_and_starts_with_git_shown_the_hidden_tree_acts_on_nothing()
+        throws
+    {
+        let rest = TooltipRestDouble()
+        let fixture = makeFixture(treeRest: rest.rest)
+        let tree = fixture.workbench.rootItemsView
+        showGit(in: fixture)
+        try PointerDelivery.move(to: gitPoint(ofRow: 0, in: fixture), in: fixture.workbench.gitView)
+        XCTAssertEqual(fixture.workbench.gitView.hoverPaths().count, 1)
+
+        fixture.key.stopBeingKey()
+        fixture.key.pointer = treePoint(ofRow: 2, in: fixture)
+        fixture.key.becomeKey()
+
+        XCTAssertEqual(tree.hoverPaths(), [], "the hidden tree flags no row")
+        XCTAssertEqual(rest.requests.count, 0, "and requests no rest")
+        choose(.files, in: fixture)
+        XCTAssertEqual(tree.hoverPaths(), [], "no tree row fills on switching to Files")
+    }
+
+    func test_hover_a_rail_switch_while_not_key_fills_no_row_in_either_view() throws {
+        let fixture = makeFixture()
+        showGit(in: fixture)
+        let tree = fixture.workbench.rootItemsView
+        let git = fixture.workbench.gitView
+        try PointerDelivery.move(to: gitPoint(ofRow: 0, in: fixture), in: git)
+        fixture.key.stopBeingKey()
+
+        choose(.files, in: fixture)
+        XCTAssertEqual(tree.hoverPaths(), [], "the tree")
+        choose(.git, in: fixture)
+        XCTAssertEqual(git.hoverPaths(), [], "the Git view")
+        XCTAssertEqual(git.selectionFillPaths(), [])
     }
 }

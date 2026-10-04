@@ -118,6 +118,7 @@ package final class LetterTooltip: NSResponder {
 
     private weak var host: NSView?
     private let rest: TooltipRest
+    private let keyWindow: KeyWindowSource
     private let letterAt: @MainActor (NSPoint) -> LetterUnderPointer?
 
     private var pointer: NSPoint?
@@ -125,6 +126,7 @@ package final class LetterTooltip: NSResponder {
     private var cancelPending: TooltipRest.Cancel?
     private var shownLetter: NSView?
     private var shown: LetterTooltipView?
+    private var keyObservation: AnyObject?
 
     /// The text of the tooltip showing now, for tests.
     package var shownText: String? { shown?.label.stringValue }
@@ -132,12 +134,14 @@ package final class LetterTooltip: NSResponder {
     package var shownView: NSView? { shown }
 
     /// `letterAt` answers which shown letter lies at a point in host coordinates, or nil.
+    /// `keyWindow` answers whether the host's window is the key window.
     package init(
-        host: NSView, rest: TooltipRest,
+        host: NSView, rest: TooltipRest, keyWindow: KeyWindowSource,
         letterAt: @escaping @MainActor (NSPoint) -> LetterUnderPointer?
     ) {
         self.host = host
         self.rest = rest
+        self.keyWindow = keyWindow
         self.letterAt = letterAt
         super.init()
         host.addTrackingArea(
@@ -145,6 +149,10 @@ package final class LetterTooltip: NSResponder {
                 rect: .zero,
                 options: [.mouseMoved, .mouseEnteredAndExited, .activeInKeyWindow, .inVisibleRect],
                 owner: self, userInfo: nil))
+        keyObservation = keyWindow.observe(
+            host,
+            { [weak self] in self?.windowStoppedBeingKey() },
+            { [weak self] in self?.windowBecameKey() })
     }
 
     required init?(coder: NSCoder) { nil }
@@ -164,9 +172,30 @@ package final class LetterTooltip: NSResponder {
     override package func mouseEntered(with event: NSEvent) { pointerMoved(event) }
     override package func mouseExited(with event: NSEvent) { dismiss() }
 
-    private func pointerMoved(_ event: NSEvent) {
+    /// Losing key status is the pointer leaving: whatever is shown or pending goes at once.
+    private func windowStoppedBeingKey() {
+        pointer = nil
+        dismiss()
+    }
+
+    /// Gaining key status shows nothing; it is the pointer entering where the source reads it, so a
+    /// letter there starts a fresh rest.
+    private func windowBecameKey() {
         guard let host else { return }
-        let point = host.convert(event.locationInWindow, from: nil)
+        dismiss()
+        guard let point = keyWindow.pointerInVisibleHost(host) else {
+            pointer = nil
+            return
+        }
+        pointerRests(at: point)
+    }
+
+    private func pointerMoved(_ event: NSEvent) {
+        guard let host, keyWindow.isKey(host) else { return }
+        pointerRests(at: host.convert(event.locationInWindow, from: nil))
+    }
+
+    private func pointerRests(at point: NSPoint) {
         pointer = point
         guard let under = letterAt(point) else {
             dismiss()
@@ -182,7 +211,9 @@ package final class LetterTooltip: NSResponder {
     }
 
     private func restFired(on letter: NSView) {
-        guard letter === pendingLetter, let host, let pointer else { return }
+        guard letter === pendingLetter, let host, keyWindow.isKey(host), let pointer else {
+            return
+        }
         cancelPending = nil
         pendingLetter = nil
         guard let under = letterAt(pointer), under.letter === letter else { return }
