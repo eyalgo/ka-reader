@@ -69,7 +69,9 @@ final class RowHoverTests: XCTestCase {
     func test_hover_fill_renders_light_and_dark_values() throws {
         let row = makeRow()
         row.pointerIsOver = true
-        for (appearance, hex) in [(NSAppearance.Name.aqua, UInt32(0xEBEBE8)), (.darkAqua, 0x2C2D31)] {
+        for (appearance, hex) in [
+            (NSAppearance.Name.aqua, UInt32(0xEBEBE8)), (.darkAqua, 0x2C2D31),
+        ] {
             let rep = try render(row, as: appearance)
             let last = (rep.pixelsWide - 1, rep.pixelsHigh - 1)
             let name = appearance.rawValue

@@ -195,7 +195,8 @@ final class GitViewHoverTests: XCTestCase {
 
     func test_hover_s4_scroll_moves_rows_under_still_pointer_fill_follows() throws {
         let many = (0..<30).map { entry(String(format: "c%02d.txt", $0)) }
-        let fixture = makeFixture(showing: repository(staged: [entry("s.txt", .added)], changed: many))
+        let fixture = makeFixture(
+            showing: repository(staged: [entry("s.txt", .added)], changed: many))
         let view = fixture.view
         let pointer = try point(ofRow: "s.txt", in: view)
         try PointerDelivery.move(to: pointer, in: view)

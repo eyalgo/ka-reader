@@ -45,7 +45,8 @@ package final class GitView: NSView {
     /// Flags the row under the pointer so it draws its hover fill (CP-599). Lazy for the same
     /// reason as the tooltip.
     private lazy var rowHover = RowHover(
-        host: self, rowAt: { [weak self] point in
+        host: self,
+        rowAt: { [weak self] point in
             guard let self, let index = self.rowIndex(at: point) else { return nil }
             return self.rows[index].view
         })

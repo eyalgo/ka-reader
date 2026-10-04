@@ -383,7 +383,8 @@ final class RootItemsViewHoverTests: XCTestCase {
         XCTAssertEqual(view.hoverPaths(), ["y.txt"])
     }
 
-    func test_hover_click_on_hovered_unselected_row_selects_once_and_gives_way_to_selection() throws {
+    func test_hover_click_on_hovered_unselected_row_selects_once_and_gives_way_to_selection() throws
+    {
         let fixture = makeFixture([file("a.txt"), file("b.txt")])
         let view = fixture.view
         let pointer = try point(ofPath: "b.txt", in: view)
