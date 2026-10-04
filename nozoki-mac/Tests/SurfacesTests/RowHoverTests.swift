@@ -55,6 +55,39 @@ final class RowHoverTests: XCTestCase {
         XCTAssertFalse(row.showsHover)
     }
 
+    // MARK: the per-row hover-rule choice (the tree's folder rows and status lines turn it off)
+
+    func test_hover_choice_defaults_to_selection_outranks_hover() {
+        XCTAssertTrue(makeRow().selectionOutranksHover)
+    }
+
+    func test_hover_choice_off_shows_hover_on_selected_row() throws {
+        let row = makeRow()
+        row.selectionOutranksHover = false
+        row.isSelected = true
+        row.pointerIsOver = true
+        XCTAssertTrue(row.showsHover)
+        let rep = try render(row)
+        try assertColour(
+            rep, atX: rep.pixelsWide / 2, y: rep.pixelsHigh / 2, equals: 0xEBEBE8,
+            "centre of a selected row with the choice off")
+    }
+
+    func test_hover_choice_default_shows_no_hover_on_selected_row() {
+        let row = makeRow()
+        row.isSelected = true
+        row.pointerIsOver = true
+        XCTAssertFalse(row.showsHover)
+    }
+
+    func test_hover_choice_off_still_hides_hover_on_barred_row() {
+        let row = makeRow()
+        row.selectionOutranksHover = false
+        row.drawsBar = true
+        row.pointerIsOver = true
+        XCTAssertFalse(row.showsHover)
+    }
+
     func test_hover_not_shown_while_row_draws_bar() {
         let row = makeRow()
         row.pointerIsOver = true
