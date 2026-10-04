@@ -74,7 +74,52 @@ None.
   alone. The likely fold: the fill placed in the *Delivers* and *Reached when* of the slice that owns
   each row it covers, or in one slice of its own, before the release the Agari closes on.
 - **If a document has to be written:** none. A change in `SDD.md` § 6, written by `product-sdd`.
-- **Answer:** <the owner fills this in>
+- **Answer:** The hover fill goes into the two slices whose rows are built: `open-a-folder` for the
+  tree row and `see-git-status` for the Git view's file row. It gets no slice of its own, no
+  *Delivers* changes, and the commit row and the menu item take no change yet. The fold, part by
+  part:
+  1. **No new slice.** § 5 step 4 already says § 6 holds no slice whose decision is a surface's
+     drawing (the E-1 re-read, RN-73). A slice that delivers a fill alone would be too narrow by
+     that step's own test, because its result changes nothing that happens next.
+  2. **§ 6 S-1 *Reached when*, observable half (the CDO's clause).** S-1 already holds
+     `docs/DESIGN.md` § *Components* for the surfaces it draws, and "Rows" is in that section, so
+     the tree row's fill is inside this bar today and the built shell does not meet it. Add one
+     sentence that names it. While the pointer is over a tree row that a click acts on, that row
+     and no other shows the fill § *Components* "Rows" draws. A row nothing acts on, a status
+     message among them, never shows it. The selected row keeps its selection and its bar under
+     the pointer. Cite the section and never the value.
+  3. **§ 6 S-4 *Reached when*, observable half (the CDO's clause).** Add the same sentence for a
+     file row in the Git view. A section header and a status message never show the fill. The
+     status letter's tooltip sits over the row's fill, as § *Components* "The tooltip" states.
+  4. **§ 6 S-1 and S-4 *Reached when*, command half (the CTO's).** `swift test --package-path
+     nozoki-mac` gains these cases in S-1. A tree row a click acts on shows the fill while the
+     pointer is over it and loses it when the pointer leaves. A row nothing acts on never shows
+     it. The selected row under the pointer keeps its selection fill and its bar. After a scroll,
+     an expansion or a collapse moves rows under a pointer that has not moved, the fill is on the
+     row now under the pointer and on no other. S-4 gains the same cases for a Git-view file row,
+     a case that a section header never shows the fill, and a case that the row still shows it
+     while the tooltip is raised.
+  5. **§ 6 S-1 and S-4 *Rests on* (the CTO's).** The `surfaces` parenthesis gains the row's hover
+     fill. No part, seam, `SM-4` call or `SM-8` intent is added, so § 7 gains no edge and
+     `--test exports` does not move.
+  6. **§ 3, the `surfaces` row (the CTO's).** Add one reading clause. What the pointer is over is
+     the shell's own observation of the pointer and is no state of the folder. The hover fill and
+     the status letter's tooltip are drawn from it. It is not held across a redraw, it raises no
+     intent, and it says nothing about the folder, so the row's one exception stays one. S-1's
+     command clause "a row is drawn from a projection and from nothing else" is read with this
+     clause and gains no test for it.
+  7. **What does not move.** No *Delivers*, no slice order, and no § 10 entry. The fill lets a
+     developer do nothing they could not do before, and none of § 10's triggers holds.
+     `first-public-release` and `promise-one-point-zero` walk the earlier slices' observable
+     halves, so the fill is inside both release bars with no edit to either.
+  8. **The commit row and the menu item: not until each occurs.** The item cites no site for
+     either. `read-the-history` and `switch-the-folder` are not built, and no row of theirs exists
+     to draw a fill on.
+  9. **The other seats' columns.** Parts 2 and 3 restate what `docs/DESIGN.md` § *Components*
+     "Rows" and § *Do's and Don'ts* already settle. Where the fold finds a call in the CDO's
+     clauses that those sections leave open, it sends the call back as an item with `Seat: cdo`.
+
+  Reasoning: `docs/trail/sdd/self_answer-43.md`.
 
 **How it closes.** `product-sdd` folds it on its next run like every other item in this file, and
 the trail copy and the delete-when-empty behaviour are unchanged.
