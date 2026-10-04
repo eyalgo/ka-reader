@@ -2,7 +2,7 @@
 
 **Status:** Settled
 **Owner:** Principal Architect
-**Version:** 40 — the close: a re-derivation on `docs/SDD.md` v32, which moved the config-named-path item's bound (SDD RN-92, `docs/trail/sdd/cycle-27.md` § 5.1). QC-6 and QC-35 now state the bound as the SDD states it — settled in `see-git-status` before the slice is reached, no build inside the slice bounding it — in place of "no later than the build in which `mac-shell` first calls `nozoki_read_git`", each with a dated note keeping the old words; QC-6 also names the review that holds the bound and what the builds between hold, and both traces are re-pinned to SDD v32. The companion's one item, § 2.1 (`nozoki@250fc6e:docs/architecture_open_issues.md`), proposed exactly this and carried no answer; the SDD's fold is the authorization, so the item is closed by derivation and not by an owner's answer, and no trail cycle is written. Nothing else moved beneath this document since v39. No `QC` is added, renumbered or reused, no record is written or restatused, and § 10 does not move. Nothing is left for the owner, so the companion is removed and `Status:` is Settled (RN-51).
+**Version:** 41 — the close: a re-derivation on `docs/SDD.md` v33, which states the `nm` transport read as measured on the first executable that links the `nozoki_read_git` export and keeps § 11 R-15 with a new *shows up as* and *response* (SDD RN-93, `docs/trail/sdd/cycle-28.md` §§ 5.1, 5.2). QC-3's half (3) now states the two executables the read has met, that the second links the export and passed, that no hosted runner has read it, and R-15's response as the SDD states it, each with a dated note keeping the old words; the three defined symbols are pinned to the second executable, and the trace gains SDD v33. § 9's Swift-packet bullet cites the test targets at `nozoki-mac/Package.swift:L39-L40` at `nozoki@827aad4`, and RN-24's echo pins its `:L34-L35` to `nozoki@a4ab8e6`. The companion's two items, both raised by the PM in § 3 (`nozoki@f3aa266:docs/architecture_open_issues.md`), carried no answer: § 3.1 closes on the SDD's fold, and § 3.2 is a locator re-pin this seat decided under RN-38's convention, so no trail cycle is written. No `QC` is added, renumbered or reused, no record is written or restatused, and § 10 does not move. Nothing is left for the owner, so the companion is removed and `Status:` is Settled (RN-52).
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · PRD Settled · UXD Settled · DESIGN Settled · CONTENT Settled
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
@@ -153,22 +153,31 @@ new units while they were unbuilt.
   release executable only, because a debug executable imports all three names through Rust's
   standard library with no libgit2 in it. The three names are a floor: a framework API that reaches
   the network is C-R7's scan's to find (QC-34), and the wall behind all three halves is QC-25.
-  Beside that floor, the pattern does not match three symbols the release executable defines —
+  Beside that floor, the pattern does not match three symbols the release executable that links the
+  `nozoki_read_git` export defines, each a local defined symbol (`t`) —
   `_git_socket_stream_global_init`, `_git_stream_registry_global_init` and
   `_git_transport_ssh_libssh2_global_init`. What they do was not read, no network call behind them
   is cited, and the pattern is not widened for them. The read is in the script from the build at
   `nozoki@392177d` (`checks/view.sh:L379-L404`), with its suite cases in
   `checks/tests/test_view.sh:L58-L64` — the four symbol reds at `:L58-L61`, the three cause reds at
   `:L62-L64` — and CI runs both on every push after `nozoki-mac/assemble.sh`
-  (`.github/workflows/ci.yml:L41`, `:L51`, `:L54`). This half's gate is that script. The read has
-  met an executable that links libgit2's open and status code. It has not met one that links the
-  `nozoki_read_git` export (`crates/nozoki-bridge/src/exports.rs:L105`), which no Swift source
-  calls. The read runs on every build, so it meets that executable in the build where `mac-shell`
-  first calls the export, with nothing further owed *(through v37 this tail said the read was not
+  (`.github/workflows/ci.yml:L41`, `:L51`, `:L54`). This half's gate is that script. The read is
+  proved for each executable it has met, and for no later one until it meets it. It has met two,
+  both on the owner's machine. The first links libgit2's open and status code and not the
+  `nozoki_read_git` export (`crates/nozoki-bridge/src/exports.rs:L105`). The second is the first
+  that links the export, which the shell calls from `nozoki@129586e`
+  (`nozoki-mac/Sources/Nozoki/NativeBridge.swift:L26`): `nm` prints `T _nozoki_read_git`, no
+  `git_smart_subtransport_` symbol and no undefined `_connect`, `_socket` or `_getaddrinfo`, and
+  `checks/view.sh` exits 0. No hosted runner has read a build that links the export *(through v40
+  this tail said the read had not met an executable that links the export, which no Swift source
+  called, and would meet one in the build where `mac-shell` first calls it; that build landed at
+  `nozoki@129586e` and passed — RN-52)* *(through v37 this tail said the read was not
   in the script at `nozoki@8edec4f`, that no bridge function reached `git-reader` at that commit,
   and that its gate was `development-design` until the build that first exported one; that build
-  landed at `nozoki@392177d` — RN-49)*. A red read is SDD § 11 R-15's — a re-cut recorded before anything is built on that
-  export — and stating the claim lower is the owner's call under FDR PD-27. The manifest clause is
+  landed at `nozoki@392177d` — RN-49)*. A red read on any release build is SDD § 11 R-15's: the
+  change whose build turns the read red does not land until a re-cut is recorded in SDD § 10
+  *(through v40 the response read "a re-cut recorded before anything is built on that export" —
+  RN-52)*. Stating the claim lower is the owner's call under FDR PD-27. The manifest clause is
   held by `checks/tests/test_no_network.sh`'s `test_binding_has_no_https_or_ssh_transport`
   (`:L210-L235`), red where `git2` or `libgit2-sys` resolves an `https` or `ssh` feature on either
   macOS target it reads *(traces to: SDD § 4 C-R6 as it reads at v27 — the claim at the shipped
@@ -179,7 +188,9 @@ new units while they were unbuilt.
   half added on the owner's seat's answer at `docs/trail/architecture/cycle-29.md` § 3.4, the
   manifest clause from SDD v27 — RN-43; the read as landed, what it has met, and the three defined
   symbols beside the floor from SDD § 4 C-R6 and C-I3 as they read at v31 (SDD RN-91), on the
-  owner's seat's answer at `docs/trail/architecture/cycle-34.md` § 3.1 — RN-49)*
+  owner's seat's answer at `docs/trail/architecture/cycle-34.md` § 3.1 — RN-49; the two executables
+  the read has met, the three symbols pinned to the second, and R-15's *shows up as* and *response*
+  re-derived from SDD § 4 C-R6, C-I3 and § 11 R-15 as they read at v33 (SDD RN-93) — RN-52)*
 - **QC-4:** Every read the model holds is an item carrying an `ItemState` — `pending`, `observed`,
   `failed(condition)` or `stopped` — and no surface draws a marker, a count or a "nothing changed"
   from an item that is not `observed`.
@@ -1460,7 +1471,9 @@ left with `nozoki-ui` at `nozoki@0aca57e` (RN-22; RN-25).
   can select a toolchain the image already holds; the flip still waits on the named log, never the
   image label (RN-31). *Test targets — adopted:* named
   `<Target><Layer>Tests`, the packet's form (`layout.md` § Naming); `SurfacesTests` and
-  `ShellTests` (`nozoki-mac/Package.swift:L34-L35`) predate the packet and are owed it, and which
+  `ShellTests` (`nozoki-mac/Package.swift:L39-L40` at `nozoki@827aad4`) predate the packet and are
+  owed it *(through v40 cited `:L34-L35` with no commit named, true at `nozoki@a4ab8e6`; the lines
+  moved five down when `nozoki@827aad4` added the libgit2 link lines above them — RN-52)*, and which
   layer word each takes is the delivery tier's placement under this table's rows. *Toolchain —
   not yet measured:* from `nozoki@0aca57e` CI builds `nozoki-mac` in two steps —
   `.github/workflows/ci.yml:L26` runs `swift test --package-path nozoki-mac` in `Test gate`, and
@@ -2790,7 +2803,8 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   re-measurement because the hosted-runner narrowing was taken on `macos-14` (SDD RN-48), and a
   new image is that measurement's stale case. *(4) Test-target names — adopted.* `<Target><Layer>Tests`
   (`layout.md` § Naming) needs no toolchain; `SurfacesTests` and `ShellTests`
-  (`nozoki-mac/Package.swift:L34-L35`) predate the packet, nothing in the records grounds them, and
+  (`nozoki-mac/Package.swift:L34-L35` at `nozoki@a4ab8e6`, pinned at v41 — RN-52) predate the
+  packet, nothing in the records grounds them, and
   a packet outranks the code's own habits (`languages/README.md` § Precedence). Which layer word
   each takes is the delivery tier's placement under § 9's rows, not this document's. *Also owed by
   the packet, and recorded:* the toolchain version CI builds `nozoki-mac` with, where no
@@ -4430,3 +4444,57 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   it is removed and `Status:` is Settled *(re: header `Status:`, `Version:`; QC-6; QC-35; source:
   `docs/SDD.md` v32, SDD RN-92; `docs/trail/sdd/cycle-27.md` § 5.1;
   `nozoki@250fc6e:docs/architecture_open_issues.md` § 2.1; the tree at `nozoki@19a76bc`)*
+- **RN-52:** *(v41 — the close: a re-derivation on SDD v33)* **Intake.** The companion on disk had
+  no `product-architecture` run behind it: the PM opened it on 2026-10-04 with two § 3 items
+  (`nozoki@cfcbedf`), and a `companion-self-answer` run answering `docs/SDD_open_issues.md` § 5.2
+  added to § 3.1 (`nozoki@f3aa266`). Neither **Answer** slot was filled, so the companion is not
+  consumed and no trail cycle is written. It was clean in git at intake. **What moved beneath this
+  document.** `docs/SDD.md` v32 → v33, Settled (`nozoki@c120c95`, SDD RN-93,
+  `docs/trail/sdd/cycle-28.md` §§ 5.1, 5.2): § 4 C-I3 states that the `nm` read has met two
+  executables, the second the first that links `nozoki_read_git`, from `nozoki@129586e`, and that it
+  passed; § 4 C-R6 pins its three unmatched defined symbols to that executable; § 11 R-15 is kept,
+  its *shows up as* a red read on any release build, its *response* that the change whose build turns
+  the read red does not land until a re-cut is recorded in § 10. Nothing else among the inputs moved:
+  `git diff --stat 60a618f HEAD -- docs ':!docs/trail'` lists `docs/SDD.md` and the companion
+  alone. **§ 3.1 — closed by derivation.** QC-3 repeated the two C-I3 sentences SDD v33 removed and
+  quoted R-15's former response. The new SDD sentences are the fresh authorization a settled entry
+  needs, and the SDD outranks this document. The owner's seat's answer behind the old wording
+  (`docs/trail/architecture/cycle-34.md` § 3.1) told QC-3 to "State what the read has met, as SDD
+  § 4 C-I3 does", so following C-I3 as it now reads carries that answer forward and does not
+  override it. Two architects reading SDD v33 would write the same tail. This is RN-47's and RN-51's
+  form. **§ 3.2 — a locator re-pin, decided in this seat.** The § 9 bullet and RN-24's item (4)
+  cited `nozoki-mac/Package.swift:L34-L35` with no commit. That was true when v13 wrote it: at
+  `nozoki@a4ab8e6` the two `.testTarget` lines are `:L34-L35`. `nozoki@827aad4` added five link lines
+  above them (`.linkedLibrary("z")`, two frameworks, a two-line comment), so at HEAD they are
+  `:L39-L40`. No obligation's words change, and no product promise moves. The item offered two
+  folds; this run takes both, each where it fits. The live § 9 bullet cites `:L39-L40` at
+  `nozoki@827aad4` with a dated note, which is RN-38's convention (confirmed in the owner's seat at
+  `docs/trail/architecture/cycle-24.md` § 2.1). RN-24 is a v13 record, so it keeps `:L34-L35` and
+  gains the commit it was read at. A seat decided this, not the owner. Where the owner reads either
+  item otherwise, the cost is one revert of this run's commit. **What does not move.** QC-3's other
+  two halves, its statement and its § 10 row, which names `checks/view.sh` and carries no
+  measurement. No record is written, restatused or superseded. ADR-0019's *Consequences*
+  (`docs/adr/0019-git-read-through-libgit2-behind-a-port-the-executable-links-no-transport.md:L88-L93`)
+  says the link "is not measured" and gives R-15's former response; its `## Traces to` pins
+  `docs/SDD.md` at v27, where both were true, and its decision — libgit2 behind the port, no
+  transport linked — is unchanged by a passing read, so it is history and not a reversal. ADR-0021's
+  "No Swift source calls it" (`:L162-L165`) is pinned to the tree at `nozoki@2aed844`. QC-6, QC-35
+  and § 11 R-16 speak of the builds from the first in which the shell calls the export, which SDD
+  RN-93 names as still true. **Re-measured for this run at HEAD `nozoki@c120c95`.** `git diff --quiet
+  129586e HEAD -- . ':!docs'` exits 0. `nozoki-mac/Sources/Nozoki/NativeBridge.swift:L26` reads
+  `adopt(nozoki_read_git())`; `crates/nozoki-bridge/src/exports.rs:L105` defines it. On
+  `target/release/bundle/macos/Nozoki.app/Contents/MacOS/Nozoki`, modified 2026-10-04 15:02, `nm`
+  prints `T _nozoki_read_git`, 781 defined `_git_` symbols by QC-3's `awk` count, no
+  `git_smart_subtransport_` symbol, no undefined `_connect`, `_socket` or `_getaddrinfo`, and the
+  three symbols each as `t`. `bash checks/view.sh` exits 0 printing "38 Swift files scanned … carries
+  no Git transport — nothing found". `bash checks/structure.sh` exits 0. The code that landed since
+  v40 is 27 files under `nozoki-mac`'s existing `Nozoki`, `Shell` and `Surfaces` targets and their
+  tests; no target, package or dependency was added. Every input's `Status:` line was re-read and is
+  Settled, so `Inputs read:` stands. **Known limits.** This run read SDD v33's diff whole, the
+  sections QC-3 traces to, and the other inputs at their status lines; their bodies did not move
+  after v40, which derived from them. It built nothing and ran no test suite: whether the executable
+  on disk is the one built from the tree at `nozoki@129586e` rests on SDD RN-93 and the file's
+  time. **The companion.** Nothing is left for the owner, so it is removed and `Status:` is Settled
+  *(re: header `Status:`, `Version:`; QC-3; § 9, the Swift-packet bullet; RN-24; source:
+  `docs/SDD.md` v33, SDD RN-93; `docs/trail/sdd/cycle-28.md` §§ 5.1, 5.2;
+  `nozoki@f3aa266:docs/architecture_open_issues.md` §§ 3.1, 3.2; the tree at `nozoki@c120c95`)*
