@@ -58,7 +58,17 @@ None.
   fold: one sentence in § Components "Rows" for that moment, and the same for "The tooltip" where the
   answer moves it.
 - **If a document has to be written:** none. A sentence in `DESIGN.md`, written by `product-design`.
-- **Answer:** <the owner fills this in>
+- **Answer:** The fill leaves. A row's hover fill is drawn only while the window is the key window:
+  when the window stops being the key window, the fill leaves at that moment under a still pointer,
+  in place and with no transition, and a status letter's tooltip raised over that row leaves at the
+  same moment — so "The tooltip"'s stacking never shows a tooltip without its row's fill. When the
+  window becomes the key window again, the fill is drawn on the row under the pointer at that
+  moment, read against the rows as they stand then; the tooltip is not restored, and is raised again
+  only by a fresh 500ms rest on the letter, counted from that moment. The rule holds for every row
+  that takes a hover fill — tree rows, Git-view file rows, commit rows and menu items — and changes
+  nothing for the selected row, since selection outranks hover. The fold states it in § Components
+  "Rows" and "The tooltip", and in the two other places that state when the fill is drawn: § Colors'
+  `{colors.hover}` line and the hover Do. Reasoning: `docs/trail/design/self_answer-10.md` § 3.1.
 
 ### 3.2 Whether the row of an entry that cannot be read is a row "that selection or opening acts on"
 - **Raised by:** PM — 2026-10-04
@@ -75,6 +85,17 @@ None.
   (`:L6193-L6199`) names the question the CDO's. The likely fold: one clause in § Components "Rows"
   saying whether those rows take the fill.
 - **If a document has to be written:** none. A clause in `DESIGN.md`, written by `product-design`.
-- **Answer:** <the owner fills this in>
+- **Answer:** Yes — confirmed as the shell draws it. A file row whose file cannot be read and a
+  folder row whose listing failed are rows that selection or opening acts on, and both take the
+  fill. Whether a row takes the fill is decided by what a click on it does, never by the state of
+  its entry's read: a click on that file row selects it and the reading panel states what was
+  observed under the file's path, and a click on that folder row selects it and expanding it reads
+  the folder again. The words a failed entry carries beside its name are part of its row and lie
+  under the fill; they make the row no status message and no inert row — the status message for an
+  unreadable entry that § Components "Status messages" lists is the statement of what was observed,
+  not the entry's row. What stays inert is unchanged: the line drawn beneath an expanded folder
+  while its read is out or when it holds nothing is a status message, not the folder's row, and
+  never takes the fill. The fold is one clause in § Components "Rows", beside its list of clickable
+  rows. Reasoning: `docs/trail/design/self_answer-10.md` § 3.2.
 
 **How it closes.** `product-design` folds it on its next run like any other item here.
