@@ -125,6 +125,20 @@ final class WorkbenchSelectionTests: XCTestCase {
         XCTAssertEqual(workbench.readingPanel.contentView.string, "hello")
     }
 
+    func test_clicking_a_file_through_the_workbench_selects_fill_and_bar_on_it() throws {
+        let (workbench, log) = makeWorkbench()
+        let tree = workbench.rootItemsView
+
+        try select("b.txt", in: workbench)
+        log.selects[0].answer(.text("hello", .plain))
+
+        XCTAssertEqual(tree.selectionFillPaths(), ["b.txt"])
+        try select("src", in: workbench)
+        XCTAssertEqual(log.selects.count, 1, "a folder row raises no file selection")
+        XCTAssertEqual(shownPath(workbench), "b.txt")
+        XCTAssertEqual(tree.selectionFillPaths(), ["b.txt"])
+    }
+
     private func rowGlyph(_ name: String, in workbench: WorkbenchView) throws -> NSImage? {
         let tree = workbench.rootItemsView
         let made = tree.outlineView.view(

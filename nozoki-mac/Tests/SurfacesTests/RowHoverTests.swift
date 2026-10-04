@@ -55,6 +55,39 @@ final class RowHoverTests: XCTestCase {
         XCTAssertFalse(row.showsHover)
     }
 
+    // MARK: the per-row hover-rule choice (the tree's folder rows and status lines turn it off)
+
+    func test_hover_choice_defaults_to_selection_outranks_hover() {
+        XCTAssertTrue(makeRow().selectionOutranksHover)
+    }
+
+    func test_hover_choice_off_shows_hover_on_selected_row() throws {
+        let row = makeRow()
+        row.selectionOutranksHover = false
+        row.isSelected = true
+        row.pointerIsOver = true
+        XCTAssertTrue(row.showsHover)
+        let rep = try render(row)
+        try assertColour(
+            rep, atX: rep.pixelsWide / 2, y: rep.pixelsHigh / 2, equals: 0xEBEBE8,
+            "centre of a selected row with the choice off")
+    }
+
+    func test_hover_choice_default_shows_no_hover_on_selected_row() {
+        let row = makeRow()
+        row.isSelected = true
+        row.pointerIsOver = true
+        XCTAssertFalse(row.showsHover)
+    }
+
+    func test_hover_choice_off_still_hides_hover_on_barred_row() {
+        let row = makeRow()
+        row.selectionOutranksHover = false
+        row.drawsBar = true
+        row.pointerIsOver = true
+        XCTAssertFalse(row.showsHover)
+    }
+
     func test_hover_not_shown_while_row_draws_bar() {
         let row = makeRow()
         row.pointerIsOver = true
@@ -106,6 +139,34 @@ final class RowHoverTests: XCTestCase {
                 try pixels(render(barredOff, as: appearance)),
                 "barred row, \(appearance.rawValue)")
         }
+    }
+
+    // MARK: the row's interior background style (selection never re-inks a row, CP-632)
+
+    func test_interior_background_style_is_equal_across_selection_and_emphasis() {
+        var styles: [NSView.BackgroundStyle] = []
+        for isSelected in [false, true] {
+            for isEmphasized in [false, true] {
+                let row = makeRow()
+                row.isSelected = isSelected
+                row.isEmphasized = isEmphasized
+                styles.append(row.interiorBackgroundStyle)
+            }
+        }
+        XCTAssertEqual(Set(styles.map(\.rawValue)).count, 1, "styles: \(styles.map(\.rawValue))")
+    }
+
+    func test_interior_background_style_is_the_unselected_value() {
+        let unselected = makeRow()
+        unselected.isSelected = false
+        unselected.isEmphasized = false
+        let selected = makeRow()
+        selected.isSelected = true
+        selected.isEmphasized = true
+        XCTAssertEqual(selected.interiorBackgroundStyle, unselected.interiorBackgroundStyle)
+        // The platform's own unselected, non-emphasized row, so the pin is not compared with itself.
+        let platformUnselected = NSTableRowView()
+        XCTAssertEqual(selected.interiorBackgroundStyle, platformUnselected.interiorBackgroundStyle)
     }
 
     // MARK: the selected drawing (the Git view's selected row)

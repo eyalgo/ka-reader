@@ -71,11 +71,13 @@ package final class RootItemsView: NSScrollView {
     /// posts while the view is reloading its own rows (CP-285).
     package var fileSelected: FileSelected?
 
-    /// The path of the open file, whose row alone draws the bar, or nil when none is open. It is a
-    /// path and not a row because every expansion rebuilds a folder's child rows.
+    /// The path of the open file, whose row alone draws the selection fill and the bar, or nil when
+    /// none is open. It is a path and not a row because every expansion rebuilds a folder's child
+    /// rows.
     package private(set) var openFilePath: String?
 
-    /// Moves the bar to the row whose entry's `path` is `path`, or takes it off every row for nil.
+    /// Moves the selected drawing (the fill and the bar) to the row whose entry's `path` is `path`,
+    /// or takes it off every row for nil.
     package func markOpenFile(path: String?) {
         openFilePath = path
         for index in 0..<outlineView.numberOfRows {
@@ -83,12 +85,12 @@ package final class RootItemsView: NSScrollView {
                 let rowView = outlineView.rowView(atRow: index, makeIfNecessary: false)
                     as? BarRowView
             else { continue }
-            rowView.drawsBar = barBelongs(on: outlineView.item(atRow: index))
+            rowView.drawsSelection = isOpenFileRow(outlineView.item(atRow: index))
         }
     }
 
-    /// Shows a file opened from outside the tree (a Git row) as the open file: the bar moves to
-    /// `path`, and the row of that path is selected if the tree as left shows it. A path under a
+    /// Shows a file opened from outside the tree (a Git row) as the open file: the selected drawing
+    /// moves to `path`, and the row of that path is selected if the tree as left shows it. A path under a
     /// collapsed folder, or `nil`, selects no row and lets go of the one that was. It raises no
     /// `fileSelected`, expands no folder and moves no scroll offset (CP-565, CP-550).
     package func showOpenFile(path: String?) {
@@ -122,6 +124,15 @@ package final class RootItemsView: NSScrollView {
         rowHover.refresh()
     }
 
+    /// The `path` of every row that draws the selection fill, top to bottom.
+    package func selectionFillPaths() -> [String] {
+        (0..<outlineView.numberOfRows).compactMap { index in
+            let rowView = outlineView.rowView(atRow: index, makeIfNecessary: true) as? BarRowView
+            guard rowView?.drawsSelection == true else { return nil }
+            return (outlineView.item(atRow: index) as? Row)?.entry.path
+        }
+    }
+
     /// The `path` of every row that draws the bar, top to bottom.
     package func barPaths() -> [String] {
         (0..<outlineView.numberOfRows).compactMap { index in
@@ -149,7 +160,7 @@ package final class RootItemsView: NSScrollView {
         return outlineView.rowView(atRow: index, makeIfNecessary: true) as? BarRowView
     }
 
-    private func barBelongs(on item: Any?) -> Bool {
+    private func isOpenFileRow(_ item: Any?) -> Bool {
         guard let row = item as? Row, row.entry.kind == .file, let openFilePath else {
             return false
         }
@@ -189,6 +200,10 @@ package final class RootItemsView: NSScrollView {
         outlineView.addTableColumn(column)
         outlineView.outlineTableColumn = column
         outlineView.headerView = nil
+        // The row views draw the selection themselves, from `drawsSelection`. The platform draws a
+        // row's selection only while this style is not none, and a `drawSelection(in:)` override
+        // alone is not enough: it is not called under the source-list style (`NSTableRowView.h`).
+        outlineView.selectionHighlightStyle = .none
         outlineView.dataSource = self
         outlineView.delegate = self
         documentView = outlineView
@@ -564,7 +579,10 @@ extension RootItemsView: NSOutlineViewDelegate {
         -> NSTableRowView?
     {
         let rowView = BarRowView()
-        rowView.drawsBar = barBelongs(on: item)
+        rowView.drawsSelection = isOpenFileRow(item)
+        // A folder row or a status line a click has selected is not drawn as selected, so the
+        // table's selection must not hide its hover. A file row keeps the default (CP-635).
+        rowView.selectionOutranksHover = (item as? Row)?.entry.kind == .file
         return rowView
     }
 
