@@ -549,4 +549,28 @@ final class WorkbenchGitTests: XCTestCase {
         XCTAssertEqual(fixture.workbench.gitView.barPaths(), [])
         XCTAssertEqual(fixture.workbench.rootItemsView.barPaths(), ["a.txt"])
     }
+
+    // MARK: Nothing else raises a tooltip (CP-588)
+
+    func test_noElementOfTheComposedWorkbenchRaisesATooltipExceptALetter() throws {
+        let fixture = makeFixture()
+        try selectInTree("b.txt", in: fixture.workbench)
+        fixture.log.selects[0].answer(.text("hello", .plain))
+        choose(.git, in: fixture)
+        fixture.log.gitAsks[0].answer(
+            repository(staged: [gitEntry("a.txt", .added)], changed: [gitEntry("b.txt")]))
+        fixture.workbench.layoutSubtreeIfNeeded()
+        XCTAssertEqual(fixture.workbench.readingPanel.pathLine.stringValue, "b.txt", "a file is open")
+        XCTAssertEqual(fixture.workbench.readingPanel.contentView.string, "hello")
+
+        let everything = [fixture.workbench] + descendants(of: fixture.workbench)
+
+        XCTAssertTrue(everything.allSatisfy { $0.toolTip == nil }, "no AppKit tooltip anywhere")
+        XCTAssertTrue(
+            shown(everything).allSatisfy { !($0 is LetterTooltipView) },
+            "no tooltip view is drawn while no letter is rested on")
+        XCTAssertFalse(
+            fixture.workbench.rail.trackingAreas.contains { $0.owner is LetterTooltip },
+            "the rail holds no LetterTooltip")
+    }
 }
