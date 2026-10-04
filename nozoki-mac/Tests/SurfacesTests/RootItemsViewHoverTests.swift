@@ -189,9 +189,11 @@ final class RootItemsViewHoverTests: XCTestCase {
         let below = makeFixture([file("a.txt"), file("b.txt")])
         try PointerDelivery.move(to: try point(ofPath: "b.txt", in: below.view), in: below.view)
         XCTAssertEqual(below.view.hoverPaths(), ["b.txt"])
-        try PointerDelivery.move(to: NSPoint(x: 40, y: 10), in: below.view)
-        XCTAssertEqual(
-            entryPath(at: NSPoint(x: 40, y: 10), in: below.view), nil, "the point is below the rows")
+        let lastRow = below.view.outlineView.rect(ofRow: 1)
+        let underneath = below.view.convert(
+            NSPoint(x: 40, y: lastRow.maxY + 30), from: below.view.outlineView)
+        XCTAssertNil(entryPath(at: underneath, in: below.view), "the point is below the rows")
+        try PointerDelivery.move(to: underneath, in: below.view)
         XCTAssertEqual(below.view.hoverPaths(), [], "the space below the last row")
     }
 
