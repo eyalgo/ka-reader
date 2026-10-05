@@ -13,9 +13,10 @@ use git2::{
 };
 use rustix::fs::OFlags;
 
+use super::config_scan::{self, ConfigReference, Placement, ReferenceKind};
 use super::{
-    BranchElement, GitPort, GitReadCondition, HeadState, ProbeCondition, RepositoryState,
-    RootFinding, StatusCategory, StatusEntry, StatusLists,
+    BranchElement, ConfigNamedPath, GitPort, GitReadCondition, HeadState, ProbeCondition,
+    RepositoryState, RootFinding, StatusCategory, StatusEntry, StatusLists,
 };
 
 const GIT_ENTRY: &str = ".git";
@@ -23,6 +24,11 @@ const GIT_HEAD: &str = "HEAD";
 const HEAD_REFERENCE: &str = "HEAD";
 const BRANCH_REFERENCE_PREFIX: &str = "refs/heads/";
 const COMMON_DIRECTORY_FILE: &str = "commondir";
+const CONFIG_FILE: &str = "config";
+const WORKTREE_CONFIG_FILE: &str = "config.worktree";
+const SUBMODULE_CONFIG_FILE: &str = ".gitmodules";
+/// The mode an index entry holds for a submodule's commit.
+const GITLINK_MODE: u32 = 0o160_000;
 /// The most links one spelled location may pass through, as `fs-reader` bounds a requested path.
 const MAX_LINK_HOPS: usize = 32;
 /// The most bytes of a `.git` or `commondir` file the bound holds: a path longer than this names
@@ -33,6 +39,20 @@ const GIT_FILE_PREFIX: &[u8] = b"gitdir:";
 /// How many bytes are read at a time while looking for the first byte after the prefix that is not
 /// whitespace: the file is read only as far as that byte, so no size is ever held.
 const GIT_FILE_CHUNK: usize = 512;
+
+/// The two depths the config check stops at. Both are named so a unit test can drive a small bound.
+struct Bounds {
+    /// A config file this deep through includes, counting the repository's own `config` as 0, is
+    /// refused as libgit2 refuses it (`MAX_INCLUDE_DEPTH` in `config_file.c`).
+    include_depth: usize,
+    /// A submodule nested this deep, counting the repository's own as 0, is refused.
+    submodule_depth: usize,
+}
+
+const BOUNDS: Bounds = Bounds {
+    include_depth: 10,
+    submodule_depth: 10,
+};
 
 /// The port's one adapter, linked against the libgit2 compiled into the crate.
 ///
@@ -58,7 +78,7 @@ impl GitPort for Libgit2 {
         match folder.join(GIT_ENTRY).symlink_metadata() {
             Err(error) if error.kind() == io::ErrorKind::NotFound => RootFinding::Plain,
             Err(_) => RootFinding::Failed(ProbeCondition::FolderUnavailable),
-            Ok(metadata) if metadata.is_dir() => open_repository(folder),
+            Ok(metadata) if metadata.is_dir() => probe_git_folder(folder),
             Ok(metadata) if metadata.is_file() => probe_git_file(&folder.join(GIT_ENTRY)),
             Ok(_) => RootFinding::Failed(ProbeCondition::GitEntryNotDirectory),
         }
@@ -69,23 +89,33 @@ impl GitPort for Libgit2 {
     }
 
     fn status(&self, root: &Path) -> Result<StatusLists, GitReadCondition> {
-        status_lists(&open_verified(root)?)
+        let repository = open_verified(root)?;
+        verify_submodules(root, &repository, root, 0, &BOUNDS)?;
+        status_lists(&repository)
     }
 }
 
 /// Locates the Git directory and the common directory by spelling, refuses either one outside the
-/// folder, opens libgit2 on `root` only then, and requires what libgit2 opened to be what was
-/// verified. Both calls share this one helper, so they refuse alike.
+/// folder, checks the config for a path outside the folder, opens libgit2 on `root` only then, and
+/// requires what libgit2 opened to be what was verified. Both calls share this one helper, so they
+/// refuse alike.
 fn open_verified(root: &Path) -> Result<Repository, GitReadCondition> {
-    let locations = verified_locations(root)?;
-    let repository = Repository::open_ext(root, RepositoryOpenFlags::NO_SEARCH, no_ceilings())
+    let locations = verified_locations(root, root)?;
+    check_config(root, &locations, &BOUNDS)?;
+    open_at(root, &locations)
+}
+
+/// Opens libgit2 on `folder` without searching, and requires what it opened to be the verified
+/// `locations` and `folder` as its working tree.
+fn open_at(folder: &Path, locations: &Locations) -> Result<Repository, GitReadCondition> {
+    let repository = Repository::open_ext(folder, RepositoryOpenFlags::NO_SEARCH, no_ceilings())
         .map_err(|error| match error.code() {
             ErrorCode::NotFound => GitReadCondition::NotARepository,
             _ => GitReadCondition::RepositoryReadFailed,
         })?;
     let opened_what_was_verified = repository.path() == locations.git_directory
         && repository.commondir() == locations.common_directory
-        && repository.workdir() == Some(root);
+        && repository.workdir() == Some(folder);
     if opened_what_was_verified {
         Ok(repository)
     } else {
@@ -99,31 +129,40 @@ struct Locations {
     common_directory: PathBuf,
 }
 
-fn verified_locations(root: &Path) -> Result<Locations, GitReadCondition> {
-    let git_directory = match root.join(GIT_ENTRY).symlink_metadata() {
+/// Locates the Git directory of `folder`'s `.git` entry and its common directory, both required to
+/// lie inside `grant`, the folder the user opened. For the top level `folder` is `grant`; for a
+/// submodule it is the submodule's folder.
+fn verified_locations(grant: &Path, folder: &Path) -> Result<Locations, GitReadCondition> {
+    let git_directory = match folder.join(GIT_ENTRY).symlink_metadata() {
         Err(error) if error.kind() == io::ErrorKind::NotFound => {
             return Err(GitReadCondition::NotARoot);
         }
         Err(_) => return Err(GitReadCondition::GitDirectoryUnreadable),
-        Ok(metadata) if metadata.is_dir() => root.join(GIT_ENTRY),
+        Ok(metadata) if metadata.is_dir() => folder.join(GIT_ENTRY),
         Ok(metadata) if metadata.is_file() => {
-            let value = gitdir_value(&root.join(GIT_ENTRY))?;
-            locate_inside(root, root, Path::new(OsStr::from_bytes(&value)))?
+            let value = gitdir_value(&folder.join(GIT_ENTRY))?;
+            locate_inside(grant, folder, Path::new(OsStr::from_bytes(&value)))?
         }
         Ok(_) => return Err(GitReadCondition::NotARoot),
     };
-    let common_directory = match read_spelling_file(&git_directory.join(COMMON_DIRECTORY_FILE)) {
-        Ok(content) => {
-            let value = up_to_nul(trim_end_c_space(&content));
-            locate_inside(root, &git_directory, Path::new(OsStr::from_bytes(value)))?
-        }
-        Err(error) if error.kind() == io::ErrorKind::NotFound => git_directory.clone(),
-        Err(_) => return Err(GitReadCondition::GitDirectoryUnreadable),
-    };
+    let common_directory = common_directory_of(grant, &git_directory)?;
     Ok(Locations {
         git_directory,
         common_directory,
     })
+}
+
+/// The common directory of `git_directory`: itself, or what its `commondir` file spells, which must
+/// lie inside `grant` and be there.
+fn common_directory_of(grant: &Path, git_directory: &Path) -> Result<PathBuf, GitReadCondition> {
+    match read_spelling_file(&git_directory.join(COMMON_DIRECTORY_FILE)) {
+        Ok(content) => {
+            let value = up_to_nul(trim_end_c_space(&content));
+            locate_inside(grant, git_directory, Path::new(OsStr::from_bytes(value)))
+        }
+        Err(error) if error.kind() == io::ErrorKind::NotFound => Ok(git_directory.to_path_buf()),
+        Err(_) => Err(GitReadCondition::GitDirectoryUnreadable),
+    }
 }
 
 /// Spells `value` from `base`, and answers the location only when it lies inside `root` and is
@@ -139,6 +178,199 @@ fn locate_inside(root: &Path, base: &Path, value: &Path) -> Result<PathBuf, GitR
         Ok(location)
     } else {
         Err(GitReadCondition::GitDirectoryOutside(location))
+    }
+}
+
+/// Reads the repository's config, and every file it includes that spells inside the folder, with
+/// the scanner (never with libgit2, whose open follows an include wherever it points), and refuses
+/// the first key libgit2 would follow to a path outside the folder. A file is read only after its
+/// location has spelled inside, so a path outside is never opened.
+///
+/// The files are the `config` in the common directory and, where a file sets
+/// `extensions.worktreeConfig`, the `config.worktree` in the Git directory.
+fn check_config(
+    grant: &Path,
+    locations: &Locations,
+    bounds: &Bounds,
+) -> Result<(), GitReadCondition> {
+    check_config_file(
+        grant,
+        locations,
+        locations.common_directory.join(CONFIG_FILE),
+        ConfigPurpose::Repository,
+        bounds,
+    )
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum ConfigPurpose {
+    Repository,
+    Submodules,
+}
+
+fn check_config_file(
+    grant: &Path,
+    locations: &Locations,
+    file: PathBuf,
+    purpose: ConfigPurpose,
+    bounds: &Bounds,
+) -> Result<(), GitReadCondition> {
+    let mut pending = VecDeque::from([(file, 0)]);
+    let mut worktree_config_queued = false;
+    while let Some((file, depth)) = pending.pop_front() {
+        let content = match read_spelling_file(&file) {
+            Ok(content) => content,
+            Err(error) if error.kind() == io::ErrorKind::NotFound => continue,
+            Err(_) => return Err(GitReadCondition::GitDirectoryUnreadable),
+        };
+        if depth >= bounds.include_depth {
+            return Err(GitReadCondition::RepositoryReadFailed);
+        }
+        let scan =
+            config_scan::scan(&content).map_err(|_| GitReadCondition::RepositoryReadFailed)?;
+        if purpose == ConfigPurpose::Repository && scan.worktree_config && !worktree_config_queued {
+            worktree_config_queued = true;
+            pending.push_back((locations.git_directory.join(WORKTREE_CONFIG_FILE), 0));
+        }
+        for reference in &scan.references {
+            // libgit2's submodule.c reads submodule fields from this config; only includes
+            // follow paths. Repository options in .gitmodules do not configure the repository.
+            if purpose == ConfigPurpose::Submodules && reference.kind != ReferenceKind::Include {
+                continue;
+            }
+            if let Some(included) = follow(grant, locations, &file, reference)? {
+                pending.push_back((included, depth + 1));
+            }
+        }
+    }
+    Ok(())
+}
+
+/// Spells what one refused key names. A path outside the folder refuses; an include that spells
+/// inside is answered so its file is read next; anything else that spells inside, or is not there,
+/// is left to the open.
+fn follow(
+    grant: &Path,
+    locations: &Locations,
+    file: &Path,
+    reference: &ConfigReference,
+) -> Result<Option<PathBuf>, GitReadCondition> {
+    let refusal = || {
+        GitReadCondition::ConfigNamesOutside(ConfigNamedPath {
+            key: reference.key.clone(),
+            path: spelled_lossily(&reference.value),
+        })
+    };
+    let base = match reference.placement {
+        Placement::Outside => return Err(refusal()),
+        Placement::FromTheFile => file.parent().unwrap_or(file),
+        Placement::FromTheGitDirectory => &locations.git_directory,
+    };
+    let value = Path::new(OsStr::from_bytes(&reference.value));
+    let location = match spell_location(grant, base, value, &inspect_on_disk) {
+        Ok(location) => location,
+        Err(WalkStop::Missing) => return Ok(None),
+        Err(WalkStop::Unreadable) => return Err(GitReadCondition::GitDirectoryUnreadable),
+        Err(WalkStop::TooManyLinks) => return Err(GitReadCondition::RepositoryReadFailed),
+    };
+    if !lies_inside(grant, &location) {
+        return Err(refusal());
+    }
+    Ok((reference.kind == ReferenceKind::Include).then_some(location))
+}
+
+/// Verifies every submodule the index names, before `statuses()` opens any of them: each one's Git
+/// directory and common directory are located inside `grant`, its config is checked, and only then
+/// is it opened, for the gitlinks it holds in turn. The first failure is the answer.
+fn verify_submodules(
+    grant: &Path,
+    repository: &Repository,
+    folder: &Path,
+    depth: usize,
+    bounds: &Bounds,
+) -> Result<(), GitReadCondition> {
+    // libgit2 1.9.7 submodule.c:2243-2260 opens .gitmodules with the config reader,
+    // which follows includes before the submodule fields are filtered.
+    check_config_file(
+        grant,
+        &Locations {
+            git_directory: repository.path().to_path_buf(),
+            common_directory: repository.commondir().to_path_buf(),
+        },
+        folder.join(SUBMODULE_CONFIG_FILE),
+        ConfigPurpose::Submodules,
+        bounds,
+    )?;
+    let index = repository
+        .index()
+        .map_err(|_| GitReadCondition::RepositoryReadFailed)?;
+    for entry in index.iter().filter(|entry| entry.mode == GITLINK_MODE) {
+        let relative = Path::new(OsStr::from_bytes(&entry.path));
+        let submodule_folder = match spell_location(grant, folder, relative, &inspect_on_disk) {
+            Ok(location) => location,
+            Err(WalkStop::Missing) => continue,
+            Err(WalkStop::Unreadable) => return Err(GitReadCondition::GitDirectoryUnreadable),
+            Err(WalkStop::TooManyLinks) => return Err(GitReadCondition::RepositoryReadFailed),
+        };
+        if !lies_inside(grant, &submodule_folder) {
+            return Err(GitReadCondition::GitDirectoryOutside(submodule_folder));
+        }
+        match submodule_folder.join(GIT_ENTRY).symlink_metadata() {
+            Err(error) if error.kind() == io::ErrorKind::NotFound => continue,
+            Err(_) => return Err(GitReadCondition::GitDirectoryUnreadable),
+            Ok(_) => {}
+        }
+        if depth + 1 > bounds.submodule_depth {
+            return Err(GitReadCondition::RepositoryReadFailed);
+        }
+        let locations =
+            verified_locations(grant, &submodule_folder).map_err(|condition| match condition {
+                GitReadCondition::NotARoot => GitReadCondition::RepositoryReadFailed,
+                other => other,
+            })?;
+        check_config(grant, &locations, bounds)?;
+        let submodule = match open_at(&submodule_folder, &locations) {
+            Ok(submodule) => submodule,
+            Err(GitReadCondition::NotARepository) => continue,
+            Err(other) => return Err(other),
+        };
+        verify_submodules(grant, &submodule, &submodule_folder, depth + 1, bounds)?;
+    }
+    Ok(())
+}
+
+/// The probe over a `.git` folder: the common directory is located by the same spelling the reads
+/// use, and the config is checked, before libgit2 opens anything. A common directory outside the
+/// folder opens nothing and answers `Root`, as a `.git` file's target does, so `state()` refuses it.
+fn probe_git_folder(folder: &Path) -> RootFinding {
+    let git_directory = folder.join(GIT_ENTRY);
+    let common_directory = match common_directory_of(folder, &git_directory) {
+        Ok(common_directory) => common_directory,
+        Err(GitReadCondition::GitDirectoryOutside(_)) => return RootFinding::Root,
+        Err(condition) => return RootFinding::Failed(probe_condition(condition)),
+    };
+    let locations = Locations {
+        git_directory,
+        common_directory,
+    };
+    match check_config(folder, &locations, &BOUNDS) {
+        Ok(()) => open_repository(folder),
+        Err(condition) => RootFinding::Failed(probe_condition(condition)),
+    }
+}
+
+/// What the probe answers for a condition the shared steps found. A location that is missing is
+/// unreadable to the probe, which has no condition for a missing one.
+fn probe_condition(condition: GitReadCondition) -> ProbeCondition {
+    match condition {
+        GitReadCondition::ConfigNamesOutside(named) => ProbeCondition::ConfigNamesOutside(named),
+        GitReadCondition::GitDirectoryUnreadable | GitReadCondition::GitDirectoryMissing => {
+            ProbeCondition::GitDirectoryUnreadable
+        }
+        GitReadCondition::GitDirectoryOutside(_)
+        | GitReadCondition::NotARoot
+        | GitReadCondition::NotARepository
+        | GitReadCondition::RepositoryReadFailed => ProbeCondition::RepositoryReadFailed,
     }
 }
 
@@ -535,164 +767,5 @@ fn no_ceilings() -> [&'static OsStr; 0] {
 }
 
 #[cfg(test)]
-mod tests {
-    use std::io::{self, Read};
-    use std::path::{Path, PathBuf};
-
-    use super::{Inspected, lies_inside, names_a_git_directory, spell_location};
-
-    /// Hands out at most one byte per read, and fails the first read with `Interrupted`.
-    struct Trickle<'a> {
-        remaining: &'a [u8],
-        interrupted: bool,
-    }
-
-    impl Read for Trickle<'_> {
-        fn read(&mut self, buffer: &mut [u8]) -> io::Result<usize> {
-            if !self.interrupted {
-                self.interrupted = true;
-                return Err(io::ErrorKind::Interrupted.into());
-            }
-            let Some((first, rest)) = self.remaining.split_first() else {
-                return Ok(0);
-            };
-            buffer[0] = *first;
-            self.remaining = rest;
-            Ok(1)
-        }
-    }
-
-    #[test]
-    fn test_gitdir_test_survives_short_and_interrupted_reads() {
-        let reader = |bytes| Trickle {
-            remaining: bytes,
-            interrupted: false,
-        };
-
-        assert!(names_a_git_directory(reader(b"gitdir: ../a\n")).expect("the read succeeds"));
-        assert!(!names_a_git_directory(reader(b"gitdir: \x0B\n")).expect("the read succeeds"));
-        assert!(!names_a_git_directory(reader(b"gitdir")).expect("the read succeeds"));
-    }
-
-    /// Hands out one byte per read, failing every read once with `Interrupted` before it does, and
-    /// at the end fails with `end` where it is given instead of reporting the end of the bytes.
-    struct Stutter<'a> {
-        remaining: &'a [u8],
-        interrupt_next: bool,
-        end: Option<io::ErrorKind>,
-    }
-
-    impl<'a> Stutter<'a> {
-        fn new(remaining: &'a [u8], end: Option<io::ErrorKind>) -> Self {
-            Self {
-                remaining,
-                interrupt_next: true,
-                end,
-            }
-        }
-    }
-
-    impl Read for Stutter<'_> {
-        fn read(&mut self, buffer: &mut [u8]) -> io::Result<usize> {
-            if self.interrupt_next {
-                self.interrupt_next = false;
-                return Err(io::ErrorKind::Interrupted.into());
-            }
-            self.interrupt_next = true;
-            let Some((first, rest)) = self.remaining.split_first() else {
-                return self.end.map_or(Ok(0), |kind| Err(kind.into()));
-            };
-            buffer[0] = *first;
-            self.remaining = rest;
-            Ok(1)
-        }
-    }
-
-    /// An interrupt is retried wherever it lands, after the prefix as much as inside it.
-    #[test]
-    fn test_gitdir_test_retries_an_interrupt_before_every_read() {
-        let answer = |bytes| names_a_git_directory(Stutter::new(bytes, None));
-
-        assert!(answer(b"gitdir:   \n\t a").expect("every interrupt is retried"));
-        assert!(!answer(b"gitdir:   \n\t ").expect("every interrupt is retried"));
-    }
-
-    /// A read that fails for any reason but an interrupt is a failure and never an answer, inside
-    /// the prefix or after it, so the probe can answer `GitFileUnreadable` and not `Plain`.
-    #[test]
-    fn test_gitdir_test_reports_a_read_failure_and_never_answers() {
-        for bytes in [&b"gitd"[..], b"gitdir:", b"gitdir:  \n"] {
-            let outcome = names_a_git_directory(Stutter::new(bytes, Some(io::ErrorKind::Other)));
-            assert_eq!(
-                outcome.map_err(|error| error.kind()),
-                Err(io::ErrorKind::Other),
-                "{bytes:?}"
-            );
-        }
-    }
-
-    #[test]
-    fn test_linked_library_is_vendored_without_https_or_ssh() {
-        let version = git2::Version::get();
-
-        assert!(version.vendored(), "libgit2 is the copy compiled in");
-        assert!(!version.https(), "HTTPS is off");
-        assert!(!version.ssh(), "SSH is off");
-    }
-
-    /// No position on the way is a link, so the walk is spelling alone.
-    fn no_links(_position: &Path) -> Inspected {
-        Inspected::NotALink
-    }
-
-    fn spelled(root: &str, base: &str, value: &str) -> PathBuf {
-        spell_location(
-            Path::new(root),
-            Path::new(base),
-            Path::new(value),
-            &no_links,
-        )
-        .expect("a walk over no links never stops")
-    }
-
-    #[test]
-    fn test_parent_escape_lands_beside_the_folder() {
-        let landed = spelled("/a/S", "/a/S", "../nowhere/.git");
-
-        assert_eq!(landed, Path::new("/a/nowhere/.git"));
-        assert!(!lies_inside(Path::new("/a/S"), &landed));
-    }
-
-    #[test]
-    fn test_absolute_value_replaces_the_position() {
-        assert_eq!(spelled("/a/S", "/a/S", "/x/../y"), Path::new("/y"));
-    }
-
-    #[test]
-    fn test_dot_dot_back_inside_stays_inside() {
-        let landed = spelled("/a/S", "/a/S", "sub/../.realgit");
-
-        assert_eq!(landed, Path::new("/a/S/.realgit"));
-        assert!(lies_inside(Path::new("/a/S"), &landed));
-    }
-
-    #[test]
-    fn test_reentry_on_the_folders_own_spelled_name_is_inside() {
-        let landed = spelled("/a/S", "/a/S", "../S/.realgit");
-
-        assert_eq!(landed, Path::new("/a/S/.realgit"));
-        assert!(lies_inside(Path::new("/a/S"), &landed));
-    }
-
-    #[test]
-    fn test_dot_dot_at_filesystem_root_stays_at_root() {
-        assert_eq!(spelled("/a/S", "/", "../../x"), Path::new("/x"));
-    }
-
-    #[test]
-    fn test_sibling_with_shared_prefix_is_not_inside() {
-        assert!(!lies_inside(Path::new("/a/S"), Path::new("/a/Sx")));
-        assert!(!lies_inside(Path::new("/a/S"), Path::new("/a/Sx/.git")));
-        assert!(lies_inside(Path::new("/a/S"), Path::new("/a/S/.git")));
-    }
-}
+#[path = "../../tests/unit/libgit2.rs"]
+mod tests;

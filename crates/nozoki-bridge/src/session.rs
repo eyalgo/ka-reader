@@ -7,10 +7,10 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, MutexGuard, PoisonError};
 
 use nozoki_core::{
-    BranchElement, CannotDisplayReason, Condition, EntryKind, FileView, FolderKind, FolderModel,
-    GitCondition, GitPort, GitReadCondition, ItemState, Language, OpenFailure, OpenFolderOutcome,
-    OpenedFolder, ProbeCondition, RepositoryState, Span, StatusCategory, StatusEntry, TokenClass,
-    list_tree, open_folder, read_git, select_file,
+    BranchElement, CannotDisplayReason, Condition, ConfigNamedPath, EntryKind, FileView,
+    FolderKind, FolderModel, GitCondition, GitPort, GitReadCondition, ItemState, Language,
+    OpenFailure, OpenFolderOutcome, OpenedFolder, ProbeCondition, RepositoryState, Span,
+    StatusCategory, StatusEntry, TokenClass, list_tree, open_folder, read_git, select_file,
 };
 use serde::Serialize;
 
@@ -276,8 +276,9 @@ impl From<ItemState<FileView>> for FileAnswerDto {
 
 /// The Git item on the wire, tagged by `state` and holding exactly the members its state names:
 /// `pending` and nothing else; `observed` with its `kind`; or `failed` with a `condition`, plus
-/// `git_directory` only beside `git_directory_outside`. The bridge carries the core's item and
-/// decides nothing: no count, wording or sort key crosses (CP-543).
+/// `git_directory` only beside `git_directory_outside`, and `key` and `path` only beside
+/// `config_names_outside`. The bridge carries the core's item and decides nothing: no count,
+/// wording or sort key crosses (CP-543).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[serde(tag = "state", rename_all = "snake_case")]
 pub enum GitAnswerDto {
@@ -287,6 +288,10 @@ pub enum GitAnswerDto {
         condition: GitConditionDto,
         #[serde(skip_serializing_if = "Option::is_none")]
         git_directory: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        key: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        path: Option<String>,
     },
 }
 
@@ -348,8 +353,10 @@ pub struct GitEntryDto {
     pub from: Option<String>,
 }
 
-/// A failed Git item's condition on the wire, one string from the closed set of twelve. The five
-/// probe conditions carry a `probe_` prefix, because two share names with read conditions.
+/// A failed Git item's condition on the wire, one string from the closed set of thirteen. Five of
+/// the probe's conditions carry a `probe_` prefix, because two share names with read conditions.
+/// The config condition is one value for the probe and the reads: one message whichever operation
+/// met it.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum GitConditionDto {
@@ -365,6 +372,7 @@ pub enum GitConditionDto {
     NotARepository,
     RepositoryReadFailed,
     MachineConfigNotSwitchedOff,
+    ConfigNamesOutside,
 }
 
 impl From<RepositoryState> for RepositoryStateDto {
@@ -411,14 +419,15 @@ impl From<StatusEntry> for GitEntryDto {
     }
 }
 
-impl From<ProbeCondition> for GitConditionDto {
-    fn from(condition: ProbeCondition) -> Self {
+impl From<&ProbeCondition> for GitConditionDto {
+    fn from(condition: &ProbeCondition) -> Self {
         match condition {
             ProbeCondition::FolderUnavailable => Self::ProbeFolderUnavailable,
             ProbeCondition::GitDirectoryUnreadable => Self::ProbeGitDirectoryUnreadable,
             ProbeCondition::GitEntryNotDirectory => Self::ProbeGitEntryNotDirectory,
             ProbeCondition::GitFileUnreadable => Self::ProbeGitFileUnreadable,
             ProbeCondition::RepositoryReadFailed => Self::ProbeRepositoryReadFailed,
+            ProbeCondition::ConfigNamesOutside(_) => Self::ConfigNamesOutside,
         }
     }
 }
@@ -427,16 +436,26 @@ impl GitAnswerDto {
     /// The answer when the machine-level config could not be switched off. It has no core item, and it
     /// holds no path and no library text.
     pub fn machine_config_not_switched_off() -> Self {
-        Self::Failed {
-            condition: GitConditionDto::MachineConfigNotSwitchedOff,
-            git_directory: None,
-        }
+        Self::failed(GitConditionDto::MachineConfigNotSwitchedOff)
     }
 
     fn failed(condition: GitConditionDto) -> Self {
         Self::Failed {
             condition,
             git_directory: None,
+            key: None,
+            path: None,
+        }
+    }
+
+    /// The config condition's answer, whichever operation met it. The core has already spelled the
+    /// key and the path lossily, so both cross as the strings the core holds.
+    fn config_names_outside(named: &ConfigNamedPath) -> Self {
+        Self::Failed {
+            condition: GitConditionDto::ConfigNamesOutside,
+            git_directory: None,
+            key: Some(named.key.clone()),
+            path: Some(named.path.clone()),
         }
     }
 }
@@ -464,13 +483,18 @@ impl From<&ItemState<FolderKind, GitCondition>> for GitAnswerDto {
                     .map(Into::into)
                     .collect(),
             }),
-            ItemState::Failed(GitCondition::Probe(condition)) => Self::failed((*condition).into()),
+            ItemState::Failed(GitCondition::Probe(ProbeCondition::ConfigNamesOutside(named))) => {
+                Self::config_names_outside(named)
+            }
+            ItemState::Failed(GitCondition::Probe(condition)) => Self::failed(condition.into()),
             ItemState::Failed(GitCondition::Read(condition)) => match condition {
                 GitReadCondition::GitDirectoryOutside(path) => Self::Failed {
                     // Lossy, as the core spells every other path: serde's `PathBuf` impl fails on a
                     // non-UTF-8 path and would turn the whole answer into NULL.
                     condition: GitConditionDto::GitDirectoryOutside,
                     git_directory: Some(path.to_string_lossy().into_owned()),
+                    key: None,
+                    path: None,
                 },
                 GitReadCondition::NotARoot => Self::failed(GitConditionDto::NotARoot),
                 GitReadCondition::GitDirectoryMissing => {
@@ -483,6 +507,7 @@ impl From<&ItemState<FolderKind, GitCondition>> for GitAnswerDto {
                 GitReadCondition::RepositoryReadFailed => {
                     Self::failed(GitConditionDto::RepositoryReadFailed)
                 }
+                GitReadCondition::ConfigNamesOutside(named) => Self::config_names_outside(named),
             },
         }
     }
@@ -1152,9 +1177,9 @@ mod tests {
         use std::path::{Path, PathBuf};
 
         use nozoki_core::{
-            BranchElement, FolderModel, GitPort, GitReadCondition, HeadState, OpenFolderOutcome,
-            ProbeCondition, RepositoryState, RootFinding, StatusCategory, StatusEntry, StatusLists,
-            open_folder, read_git,
+            BranchElement, ConfigNamedPath, FolderModel, GitPort, GitReadCondition, HeadState,
+            OpenFolderOutcome, ProbeCondition, RepositoryState, RootFinding, StatusCategory,
+            StatusEntry, StatusLists, open_folder, read_git,
         };
         use serde_json::{Value, json};
 
@@ -1432,8 +1457,7 @@ mod tests {
         }
 
         #[test]
-        fn test_each_of_the_eleven_core_conditions_and_the_switch_failure_have_twelve_distinct_wire_values()
-         {
+        fn test_each_of_the_conditions_and_the_switch_failure_have_thirteen_distinct_wire_values() {
             let mut answers: Vec<(Value, &str)> = vec![
                 (
                     wire(&probe_failure(ProbeCondition::FolderUnavailable)),
@@ -1481,7 +1505,19 @@ mod tests {
                     wire(&read_failure(GitReadCondition::RepositoryReadFailed)),
                     "repository_read_failed",
                 ),
+                (
+                    wire(&read_failure(GitReadCondition::ConfigNamesOutside(
+                        named_config_path(),
+                    ))),
+                    "config_names_outside",
+                ),
             ];
+            // The probe's variant and the read's variant are one wire value.
+            let probe_variant = wire(&probe_failure(ProbeCondition::ConfigNamesOutside(
+                named_config_path(),
+            )));
+            assert_eq!(probe_variant["condition"], "config_names_outside");
+            assert_eq!(probe_variant, answers[answers.len() - 1].0);
             answers.push((
                 serde_json::to_value(GitAnswerDto::machine_config_not_switched_off())
                     .expect("the answer serializes"),
@@ -1496,7 +1532,40 @@ mod tests {
                 .iter()
                 .map(|(answer, _)| answer["condition"].to_string())
                 .collect();
-            assert_eq!(distinct.len(), 12);
+            assert_eq!(distinct.len(), 13);
+        }
+
+        fn named_config_path() -> ConfigNamedPath {
+            ConfigNamedPath {
+                key: "include.path".to_string(),
+                path: "../../elsewhere/extra".to_string(),
+            }
+        }
+
+        #[test]
+        fn test_the_config_condition_serializes_exactly_its_four_members() {
+            let non_utf8_path = OsStr::from_bytes(b"/outside/\xff.list");
+            let named = ConfigNamedPath {
+                key: "core.excludesfile".to_string(),
+                path: non_utf8_path.to_string_lossy().into_owned(),
+            };
+            let from_read = wire(&read_failure(GitReadCondition::ConfigNamesOutside(
+                named.clone(),
+            )));
+            let from_probe = wire(&probe_failure(ProbeCondition::ConfigNamesOutside(named)));
+
+            let expected = json!({
+                "state": "failed",
+                "condition": "config_names_outside",
+                "key": "core.excludesfile",
+                "path": "/outside/\u{fffd}.list"
+            });
+            assert_eq!(from_read, expected);
+            assert_eq!(from_probe, expected);
+            assert_eq!(
+                members(&from_read),
+                vec!["condition", "key", "path", "state"]
+            );
         }
 
         #[test]

@@ -11,7 +11,7 @@ use std::sync::mpsc;
 use std::time::Duration;
 
 use common::{Snapshot, TempDir};
-use nozoki_core::{GitPort, ProbeCondition, RootFinding};
+use nozoki_core::{ConfigNamedPath, GitPort, ProbeCondition, RootFinding};
 
 /// The only place the adapter is named, so a second adapter runs the same cases.
 fn port() -> &'static dyn GitPort {
@@ -19,11 +19,16 @@ fn port() -> &'static dyn GitPort {
     &Libgit2
 }
 
-/// CP-491: an answer holds no path, so its text holds no separator; and CP-496: the whole
-/// temporary root is what it was before the probe.
+/// CP-491: an answer holds no path, so its text holds no separator, except the config condition,
+/// which carries the key and the value its config spells and whose own cases assert that payload;
+/// and CP-496: the whole temporary root is what it was before the probe.
 fn assert_clean(outcome: &RootFinding, before: &Snapshot, scene: &TempDir) {
+    let carries_the_configs_words = matches!(
+        outcome,
+        RootFinding::Failed(ProbeCondition::ConfigNamesOutside(_))
+    );
     assert!(
-        !format!("{outcome:?}").contains('/'),
+        carries_the_configs_words || !format!("{outcome:?}").contains('/'),
         "the answer {outcome:?} holds a path"
     );
     assert_eq!(&scene.snapshot(), before, "the probe changed the scene");
@@ -509,8 +514,11 @@ fn test_bare_config_at_folder_root_answers_plain() {
     );
 }
 
+/// A `core.worktree` that spells outside the folder is refused before the open, with the config
+/// condition (SDD § 11 R-16, *The spellings*): it is spelled from the Git directory, so
+/// `../../elsewhere` from `.git/` lies beside the folder.
 #[test]
-fn test_worktree_elsewhere_answers_plain() {
+fn test_worktree_elsewhere_answers_the_config_condition() {
     let (scene, repository) = repository_scene();
     scene.make_folder("elsewhere");
     rewrite_config(
@@ -521,7 +529,10 @@ fn test_worktree_elsewhere_answers_plain() {
 
     assert_eq!(
         probe_leaving_the_scene_unchanged(&scene, &repository),
-        RootFinding::Plain
+        RootFinding::Failed(ProbeCondition::ConfigNamesOutside(ConfigNamedPath {
+            key: "core.worktree".to_string(),
+            path: "../../elsewhere".to_string(),
+        }))
     );
 }
 

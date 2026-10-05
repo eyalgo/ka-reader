@@ -10,8 +10,10 @@ final class GitSentencesTests: XCTestCase {
 
     /// Every failure the catalogue words, with a path that holds no digit.
     private var everyFailure: [GitFailure] {
-        [.gitDirectoryOutside(gitDirectory: "/elsewhere/.git/worktrees/wt")]
-            + GitCondition.allCases.map { .condition($0) }
+        [
+            .gitDirectoryOutside(gitDirectory: "/elsewhere/.git/worktrees/wt"),
+            .configNamesOutside(key: "include.path", path: "../../outside.config"),
+        ] + GitCondition.allCases.map { .condition($0) }
     }
 
     /// Every sentence the catalogue can put in front of a person, the switch labels, headings and
@@ -153,6 +155,55 @@ final class GitSentencesTests: XCTestCase {
             XCTAssertEqual(
                 GitSentences.failure(.condition(condition)), expected[condition],
                 condition.rawValue)
+        }
+    }
+
+    /// `change_text.md`'s string for a repository config that names a path outside the folder: the
+    /// key and the path, each unchanged and unquoted, between the words around them.
+    private func configSentence(key: String, path: String) -> String {
+        "Nozoki found \(key) set to \(path), outside the folder you opened, so it doesn't read the "
+            + "folder's Git status. The file tree and the reading panel are unaffected."
+    }
+
+    func test_theConfigNamesOutsideCaseDrawsChangeTextsSentenceCharacterForCharacter() {
+        XCTAssertEqual(
+            GitSentences.failure(
+                .configNamesOutside(key: "core.excludesfile", path: "/Users/you/shared/ignore")),
+            "Nozoki found core.excludesfile set to /Users/you/shared/ignore, outside the folder you "
+                + "opened, so it doesn't read the folder's Git status. "
+                + "The file tree and the reading panel are unaffected.")
+    }
+
+    func test_theConfigSentencePlacesTheKeyAndThePathUnchangedAndUnquoted() {
+        let cases = [
+            (key: "include.path", path: "../../outside.config"),
+            (key: "includeIf.gitdir:~/work/.path", path: "~/.gitignore_global"),
+            (key: "core.attributesfile", path: "/Users/you/shared/attributes"),
+            (key: "core.worktree", path: "/elsewhere/\u{FFFD}/tree"),
+        ]
+
+        for (key, path) in cases {
+            let sentence = GitSentences.failure(.configNamesOutside(key: key, path: path))
+
+            XCTAssertEqual(sentence, configSentence(key: key, path: path), key)
+            XCTAssertFalse(sentence.contains("\"\(key)\""), sentence)
+            XCTAssertFalse(sentence.contains("\"\(path)\""), sentence)
+            let wordsAround =
+                sentence.replacingOccurrences(of: key, with: "")
+                .replacingOccurrences(of: path, with: "")
+            XCTAssertFalse(wordsAround.localizedCaseInsensitiveContains("config"), sentence)
+        }
+    }
+
+    func test_theConfigSentenceIsNeitherTheFaultNorAnyOtherFailureSentence() {
+        let config = GitSentences.failure(.configNamesOutside(key: "include.path", path: "a"))
+        let others =
+            [GitFailure.gitDirectoryOutside(gitDirectory: "a")]
+            + GitCondition.allCases.map { GitFailure.condition($0) }
+
+        XCTAssertNotEqual(config, GitSentences.fault)
+        for other in others {
+            XCTAssertNotEqual(config, GitSentences.failure(other))
         }
     }
 
