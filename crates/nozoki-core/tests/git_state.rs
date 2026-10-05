@@ -1576,7 +1576,7 @@ fn test_an_inside_gitmodules_include_keeps_the_status_answer() {
         .expect("the scene's status is readable");
     scene.write_file(
         "submodule-config-names-outside/.git/modules-extra",
-        "[unrelated]\n\tvalue = benign\n",
+        "[core]\n\tattributesfile = ../outside\n[extensions]\n\tworktreeConfig = true\n",
     );
     append_to_gitmodules(&root, "\n[include]\n\tpath = .git/modules-extra\n");
     let after = port()

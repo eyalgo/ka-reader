@@ -26,6 +26,7 @@ const BRANCH_REFERENCE_PREFIX: &str = "refs/heads/";
 const COMMON_DIRECTORY_FILE: &str = "commondir";
 const CONFIG_FILE: &str = "config";
 const WORKTREE_CONFIG_FILE: &str = "config.worktree";
+const SUBMODULE_CONFIG_FILE: &str = ".gitmodules";
 /// The mode an index entry holds for a submodule's commit.
 const GITLINK_MODE: u32 = 0o160_000;
 /// The most links one spelled location may pass through, as `fs-reader` bounds a requested path.
@@ -192,7 +193,29 @@ fn check_config(
     locations: &Locations,
     bounds: &Bounds,
 ) -> Result<(), GitReadCondition> {
-    let mut pending = VecDeque::from([(locations.common_directory.join(CONFIG_FILE), 0)]);
+    check_config_file(
+        grant,
+        locations,
+        locations.common_directory.join(CONFIG_FILE),
+        ConfigPurpose::Repository,
+        bounds,
+    )
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum ConfigPurpose {
+    Repository,
+    Submodules,
+}
+
+fn check_config_file(
+    grant: &Path,
+    locations: &Locations,
+    file: PathBuf,
+    purpose: ConfigPurpose,
+    bounds: &Bounds,
+) -> Result<(), GitReadCondition> {
+    let mut pending = VecDeque::from([(file, 0)]);
     let mut worktree_config_queued = false;
     while let Some((file, depth)) = pending.pop_front() {
         let content = match read_spelling_file(&file) {
@@ -205,11 +228,16 @@ fn check_config(
         }
         let scan =
             config_scan::scan(&content).map_err(|_| GitReadCondition::RepositoryReadFailed)?;
-        if scan.worktree_config && !worktree_config_queued {
+        if purpose == ConfigPurpose::Repository && scan.worktree_config && !worktree_config_queued {
             worktree_config_queued = true;
             pending.push_back((locations.git_directory.join(WORKTREE_CONFIG_FILE), 0));
         }
         for reference in &scan.references {
+            // libgit2's submodule.c reads submodule fields from this config; only includes
+            // follow paths. Repository options in .gitmodules do not configure the repository.
+            if purpose == ConfigPurpose::Submodules && reference.kind != ReferenceKind::Include {
+                continue;
+            }
             if let Some(included) = follow(grant, locations, &file, reference)? {
                 pending.push_back((included, depth + 1));
             }
@@ -261,6 +289,18 @@ fn verify_submodules(
     depth: usize,
     bounds: &Bounds,
 ) -> Result<(), GitReadCondition> {
+    // libgit2 1.9.7 submodule.c:2243-2260 opens .gitmodules with the config reader,
+    // which follows includes before the submodule fields are filtered.
+    check_config_file(
+        grant,
+        &Locations {
+            git_directory: repository.path().to_path_buf(),
+            common_directory: repository.commondir().to_path_buf(),
+        },
+        folder.join(SUBMODULE_CONFIG_FILE),
+        ConfigPurpose::Submodules,
+        bounds,
+    )?;
     let index = repository
         .index()
         .map_err(|_| GitReadCondition::RepositoryReadFailed)?;
