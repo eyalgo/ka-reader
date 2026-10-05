@@ -1498,3 +1498,143 @@ fn test_a_missing_commondir_is_unreadable_to_the_probe_and_missing_to_the_reads(
         &GitReadCondition::GitDirectoryMissing
     );
 }
+
+/// The existing submodule scene, with only the hostile include removed from its own config.
+fn submodule_repository_without_outside_config() -> (TempDir, PathBuf) {
+    let scene = TempDir::new();
+    let root = scene.copy_fixture("submodule-config-names-outside");
+    scene.unpack_fixture_archive(
+        "submodule-config-names-outside.git.tar",
+        "submodule-config-names-outside",
+    );
+    let config = root.join(".git/modules/submodule/config");
+    let original = fs::read_to_string(&config).expect("the submodule config is read");
+    fs::write(
+        &config,
+        original.split("[include]").next().expect("base config"),
+    )
+    .expect("the submodule's own config names no outside include");
+    (scene, root)
+}
+
+fn append_to_gitmodules(root: &Path, text: &str) {
+    use std::io::Write;
+    let mut file = fs::OpenOptions::new()
+        .append(true)
+        .create(true)
+        .open(root.join(".gitmodules"))
+        .expect("the modules config opens");
+    file.write_all(text.as_bytes())
+        .expect("the modules config is written");
+}
+
+/// CP-658 and SDD R-16 include every config libgit2 loads for the repository.
+#[test]
+fn test_no_status_read_opens_an_outside_include_from_gitmodules() {
+    let (scene, root) = submodule_repository_without_outside_config();
+    append_to_gitmodules(&root, "\n[include]\n\tpath = ../outside.config\n");
+
+    assert!(
+        !fifo_opener_seen_during_the_three_calls(&root, &scene.path().join("outside.config")),
+        "status opened the outside path named by .gitmodules"
+    );
+}
+
+#[test]
+fn test_gitmodules_outside_include_answers_its_condition_and_preserves_the_scene() {
+    for nested in [false, true] {
+        let (scene, root) = submodule_repository_without_outside_config();
+        let owner = if nested {
+            root.join("submodule")
+        } else {
+            root.clone()
+        };
+        let outside = scene.path().join("outside.config");
+        append_to_gitmodules(
+            &owner,
+            &format!("\n[include]\n\tpath = {}\n", outside.display()),
+        );
+        let before = scene.snapshot();
+
+        assert!(port().state(&root).is_ok());
+        assert_eq!(
+            port().status(&root),
+            Err(GitReadCondition::ConfigNamesOutside(config_named(
+                "include.path",
+                &outside.display().to_string()
+            )))
+        );
+        assert_eq!(scene.snapshot(), before);
+    }
+}
+
+#[test]
+fn test_an_inside_gitmodules_include_keeps_the_status_answer() {
+    let (scene, root) = submodule_repository_without_outside_config();
+    let before = port()
+        .status(&root)
+        .expect("the scene's status is readable");
+    scene.write_file(
+        "submodule-config-names-outside/.git/modules-extra",
+        "[unrelated]\n\tvalue = benign\n",
+    );
+    append_to_gitmodules(&root, "\n[include]\n\tpath = .git/modules-extra\n");
+    let after = port()
+        .status(&root)
+        .expect("the inside include leaves status readable");
+
+    assert_eq!(after.staged, before.staged);
+    assert!(
+        after
+            .changed
+            .iter()
+            .all(|entry| entry.path == ".gitmodules")
+    );
+}
+
+/// Task 5 bounds every config read, including an inside include, before libgit2 opens it.
+#[test]
+fn test_an_oversize_config_or_include_is_unreadable_on_every_call() {
+    for included in [false, true] {
+        let (_scene, root) = repository_with_a_secret();
+        let large = vec![b' '; (1 << 20) + 1];
+        if included {
+            fs::write(root.join(".git/large"), &large).expect("the include is written");
+            append_to_config(&root, "[include]\n\tpath = large\n");
+        } else {
+            fs::write(root.join(".git/config"), &large).expect("the config is written");
+        }
+        assert_eq!(
+            port().probe(&root),
+            RootFinding::Failed(ProbeCondition::GitDirectoryUnreadable)
+        );
+        assert_eq!(
+            port().state(&root),
+            Err(GitReadCondition::GitDirectoryUnreadable)
+        );
+        assert_eq!(
+            port().status(&root),
+            Err(GitReadCondition::GitDirectoryUnreadable)
+        );
+    }
+}
+
+/// CP-658: a path that looks inside but follows a link outside must be refused as written.
+#[test]
+fn test_an_include_link_to_outside_is_refused_without_opening_its_target() {
+    let (scene, root) = repository_with_a_secret();
+    scene.make_link("S/.git/linked", "../../outside.config");
+    append_to_config(&root, "[include]\n\tpath = linked\n");
+
+    assert!(!fifo_opener_seen_during_the_three_calls(
+        &root,
+        &scene.path().join("outside.config")
+    ));
+    assert_eq!(
+        port().state(&root),
+        Err(GitReadCondition::ConfigNamesOutside(config_named(
+            "include.path",
+            "linked"
+        )))
+    );
+}
