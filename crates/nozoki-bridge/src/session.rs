@@ -1538,13 +1538,13 @@ mod tests {
         fn named_config_path() -> ConfigNamedPath {
             ConfigNamedPath {
                 key: "include.path".to_string(),
-                path: "../../outside.config".to_string(),
+                path: "../../elsewhere/extra".to_string(),
             }
         }
 
         #[test]
         fn test_the_config_condition_serializes_exactly_its_four_members() {
-            let non_utf8_path = OsStr::from_bytes(b"/outside/\xff.config");
+            let non_utf8_path = OsStr::from_bytes(b"/outside/\xff.list");
             let named = ConfigNamedPath {
                 key: "core.excludesfile".to_string(),
                 path: non_utf8_path.to_string_lossy().into_owned(),
@@ -1558,7 +1558,7 @@ mod tests {
                 "state": "failed",
                 "condition": "config_names_outside",
                 "key": "core.excludesfile",
-                "path": "/outside/\u{fffd}.config"
+                "path": "/outside/\u{fffd}.list"
             });
             assert_eq!(from_read, expected);
             assert_eq!(from_probe, expected);

@@ -1406,3 +1406,78 @@ fn test_failure_paths_of_the_check() {
         Err(GitReadCondition::RepositoryReadFailed)
     );
 }
+
+/// `extensions.worktreeConfig` makes `config.worktree` a config file of the repository, so the
+/// check reads it too, in the Git directory, and a refused key in it refuses all three calls.
+#[test]
+fn test_the_worktree_config_is_read_where_the_extension_is_set() {
+    let (scene, root) = repository_with_a_secret();
+    let outside = scene.path().join("outside-ignore");
+    append_to_config(&root, "[extensions]\n\tworktreeConfig = true\n");
+    scene.write_file(
+        "S/.git/config.worktree",
+        &format!("[core]\n\texcludesfile = {}\n", outside.display()),
+    );
+    let named = config_named("core.excludesfile", &outside.display().to_string());
+
+    assert_eq!(
+        port().probe(&root),
+        RootFinding::Failed(ProbeCondition::ConfigNamesOutside(named.clone()))
+    );
+    assert_eq!(
+        read(&scene, &root).failure(),
+        &GitReadCondition::ConfigNamesOutside(named)
+    );
+}
+
+/// Without the extension libgit2 never loads `config.worktree`, so the check does not read it.
+#[test]
+fn test_the_worktree_config_is_not_read_without_the_extension() {
+    let (scene, root) = repository_with_a_secret();
+    let outside = scene.path().join("outside-ignore");
+    scene.write_file(
+        "S/.git/config.worktree",
+        &format!("[core]\n\texcludesfile = {}\n", outside.display()),
+    );
+
+    let answers = read(&scene, &root);
+
+    assert_head(&answers, on_branch("main"), RepositoryState::Normal);
+}
+
+/// An absent file is no refusal: an include whose file is not there, and an excludes file inside
+/// the folder with nothing at it, are skipped as libgit2 skips them.
+#[test]
+fn test_an_absent_inside_file_is_no_refusal() {
+    let (scene, root) = repository_with_a_secret();
+    append_to_config(
+        &root,
+        &format!(
+            "[include]\n\tpath = {}\n[core]\n\texcludesfile = {}\n",
+            root.join(".git/not-there.config").display(),
+            root.join(".git/not-there-either").display()
+        ),
+    );
+
+    let answers = read(&scene, &root);
+
+    assert_head(&answers, on_branch("main"), RepositoryState::Normal);
+}
+
+/// A value beginning `~/` is outside whatever the machine's home is, and is never expanded: the
+/// refusal carries the value as written, and nothing under a home folder is read.
+#[test]
+fn test_a_home_spelled_value_is_refused_as_written() {
+    let (scene, root) = repository_with_a_secret();
+    append_to_config(&root, "[include]\n\tpath = ~/nozoki-never-read.config\n");
+
+    let answers = read(&scene, &root);
+
+    assert_eq!(
+        answers.failure(),
+        &GitReadCondition::ConfigNamesOutside(config_named(
+            "include.path",
+            "~/nozoki-never-read.config"
+        ))
+    );
+}

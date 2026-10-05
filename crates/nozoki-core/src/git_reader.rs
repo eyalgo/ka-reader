@@ -227,7 +227,7 @@ pub enum GitReadCondition {
 ///
 /// let named = ConfigNamedPath {
 ///     key: "include.path".to_string(),
-///     path: "../../outside.config".to_string(),
+///     path: "../../elsewhere/extra".to_string(),
 /// };
 /// assert_eq!(named.key, "include.path");
 /// ```
