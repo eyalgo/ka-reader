@@ -29,6 +29,22 @@ pub type Snapshot = BTreeMap<PathBuf, SnapshotEntry>;
 
 static NEXT_FOLDER: AtomicU64 = AtomicU64::new(0);
 
+/// What follows a scene's name in the file name of its archive under `checks/fixtures/`.
+const ARCHIVE_SUFFIX: &str = ".git.tar";
+
+/// One path an archive creates when it is unpacked, relative to the folder it is unpacked into.
+struct ArchiveMember {
+    path: PathBuf,
+    is_folder: bool,
+}
+
+impl ArchiveMember {
+    /// Whether unpacking creates `relative`: it is this member, or it lies under this member's folder.
+    fn creates(&self, relative: &Path) -> bool {
+        relative == self.path || (self.is_folder && relative.starts_with(&self.path))
+    }
+}
+
 /// A temporary folder under the system temporary directory, removed when dropped.
 ///
 /// Its path is canonical, so a test can hand it to code that compares against a canonical root.
@@ -85,12 +101,19 @@ impl TempDir {
 
     /// Copies the committed fixture folder `checks/fixtures/<scene>` to `<root>/<scene>`, keeping
     /// every symlink as a symlink, and returns the copy's path.
+    ///
+    /// The copy leaves out every path that unpacking `<scene>.git.tar` into the fixture folder
+    /// would create, which is where `checks/read-only.sh` unpacks it: a walk leaves those entries
+    /// in the folder, and a test then lays the scene down itself with
+    /// [`TempDir::unpack_fixture_archive`], so the copy holds the committed files and nothing a run
+    /// left behind. A fixture with no archive copies whole.
     pub fn copy_fixture(&self, scene: &str) -> PathBuf {
-        let source = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("../../checks/fixtures")
-            .join(scene);
+        let fixtures = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../checks/fixtures");
+        let source = fixtures.join(scene);
         let destination = self.root.join(scene);
-        copy_keeping_links(&source, &destination);
+        let archive_members =
+            list_archive_members(&fixtures.join(format!("{scene}{ARCHIVE_SUFFIX}")));
+        copy_keeping_links(&source, &destination, Path::new(""), &archive_members);
         destination
     }
 
@@ -149,7 +172,40 @@ fn restore_access(folder: &Path) {
     }
 }
 
-fn copy_keeping_links(source: &Path, destination: &Path) {
+/// The members `tar -tf` lists for `archive`, or none when the scene has no archive.
+fn list_archive_members(archive: &Path) -> Vec<ArchiveMember> {
+    if !archive.exists() {
+        return Vec::new();
+    }
+    let listing = Command::new("tar")
+        .arg("-tf")
+        .arg(archive)
+        .output()
+        .expect("tar runs");
+    assert!(listing.status.success(), "tar listed {}", archive.display());
+    String::from_utf8_lossy(&listing.stdout)
+        .lines()
+        .map(|line| {
+            let trimmed = line.strip_prefix("./").unwrap_or(line);
+            ArchiveMember {
+                path: PathBuf::from(trimmed.trim_end_matches('/')),
+                is_folder: trimmed.ends_with('/'),
+            }
+        })
+        .collect()
+}
+
+/// Copies `source` to `destination`, skipping every path (`relative`, from the scene's root) that
+/// `left_out` creates.
+fn copy_keeping_links(
+    source: &Path,
+    destination: &Path,
+    relative: &Path,
+    left_out: &[ArchiveMember],
+) {
+    if left_out.iter().any(|member| member.creates(relative)) {
+        return;
+    }
     let metadata = fs::symlink_metadata(source).expect("the source can be looked at");
     if metadata.is_symlink() {
         let target = fs::read_link(source).expect("the link can be read");
@@ -158,7 +214,12 @@ fn copy_keeping_links(source: &Path, destination: &Path) {
         fs::create_dir(destination).expect("the folder can be created");
         for entry in fs::read_dir(source).expect("the folder can be listed") {
             let entry = entry.expect("the entry can be read");
-            copy_keeping_links(&entry.path(), &destination.join(entry.file_name()));
+            copy_keeping_links(
+                &entry.path(),
+                &destination.join(entry.file_name()),
+                &relative.join(entry.file_name()),
+                left_out,
+            );
         }
     } else {
         fs::copy(source, destination).expect("the file can be copied");
