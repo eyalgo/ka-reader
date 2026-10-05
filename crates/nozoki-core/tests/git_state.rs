@@ -1481,3 +1481,20 @@ fn test_a_home_spelled_value_is_refused_as_written() {
         ))
     );
 }
+
+/// A `commondir` that names a location inside the folder with nothing there: the probe, which has no
+/// condition for a missing location, answers the unreadable one; the reads answer the missing one.
+#[test]
+fn test_a_missing_commondir_is_unreadable_to_the_probe_and_missing_to_the_reads() {
+    let (scene, root) = repository_with_a_secret();
+    scene.write_file("S/.git/commondir", "nothing-here\n");
+
+    assert_eq!(
+        port().probe(&root),
+        RootFinding::Failed(ProbeCondition::GitDirectoryUnreadable)
+    );
+    assert_eq!(
+        read(&scene, &root).failure(),
+        &GitReadCondition::GitDirectoryMissing
+    );
+}
