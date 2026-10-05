@@ -539,7 +539,10 @@ mod tests {
     use std::io::{self, Read};
     use std::path::{Path, PathBuf};
 
-    use super::{Inspected, lies_inside, names_a_git_directory, spell_location};
+    use super::{
+        Bounds, GitReadCondition, Inspected, Locations, MAX_LINK_HOPS, check_config, lies_inside,
+        names_a_git_directory, spell_location, verify_submodules,
+    };
 
     /// Hands out at most one byte per read, and fails the first read with `Interrupted`.
     struct Trickle<'a> {
@@ -694,5 +697,210 @@ mod tests {
         assert!(!lies_inside(Path::new("/a/S"), Path::new("/a/Sx")));
         assert!(!lies_inside(Path::new("/a/S"), Path::new("/a/Sx/.git")));
         assert!(lies_inside(Path::new("/a/S"), Path::new("/a/S/.git")));
+    }
+
+    /// A folder of the unit tests' own, removed when it goes out of scope. Canonical, so the
+    /// spelling the checks judge is the one the folder has.
+    struct Scratch(PathBuf);
+
+    impl Scratch {
+        fn new(name: &str) -> Self {
+            let path =
+                std::env::temp_dir().join(format!("nozoki-libgit2-{}-{name}", std::process::id()));
+            let _ = std::fs::remove_dir_all(&path);
+            std::fs::create_dir_all(&path).expect("the scratch folder is made");
+            Self(path.canonicalize().expect("the scratch folder resolves"))
+        }
+
+        fn write(&self, relative: &str, text: &str) {
+            let path = self.0.join(relative);
+            std::fs::create_dir_all(path.parent().expect("a file has a parent"))
+                .expect("the folder is made");
+            std::fs::write(path, text).expect("the file is written");
+        }
+
+        fn locations(&self) -> Locations {
+            Locations {
+                git_directory: self.0.join(".git"),
+                common_directory: self.0.join(".git"),
+            }
+        }
+    }
+
+    impl Drop for Scratch {
+        fn drop(&mut self) {
+            let _ = std::fs::remove_dir_all(&self.0);
+        }
+    }
+
+    fn bounds(include_depth: usize, submodule_depth: usize) -> Bounds {
+        Bounds {
+            include_depth,
+            submodule_depth,
+        }
+    }
+
+    /// `.git/config` includes `f1`, which includes `f2`, which includes `f3`, which holds no
+    /// include. The config is depth 0 and each include one deeper, as libgit2 counts.
+    fn chain_of_includes(name: &str) -> Scratch {
+        let scratch = Scratch::new(name);
+        scratch.write(".git/config", "[include]\n\tpath = f1\n");
+        scratch.write(".git/f1", "[include]\n\tpath = f2\n");
+        scratch.write(".git/f2", "[include]\n\tpath = f3\n");
+        scratch.write(".git/f3", "[user]\n\tname = Someone\n");
+        scratch
+    }
+
+    #[test]
+    fn test_an_include_chain_to_the_bound_is_read_and_one_over_it_is_refused() {
+        let scratch = chain_of_includes("depth");
+
+        assert_eq!(
+            check_config(&scratch.0, &scratch.locations(), &bounds(4, 10)),
+            Ok(())
+        );
+        assert_eq!(
+            check_config(&scratch.0, &scratch.locations(), &bounds(3, 10)),
+            Err(GitReadCondition::RepositoryReadFailed)
+        );
+    }
+
+    #[test]
+    fn test_an_absent_include_at_the_bound_is_no_refusal() {
+        let scratch = chain_of_includes("absent-at-bound");
+        std::fs::remove_file(scratch.0.join(".git/f3")).expect("the file goes");
+
+        assert_eq!(
+            check_config(&scratch.0, &scratch.locations(), &bounds(3, 10)),
+            Ok(())
+        );
+    }
+
+    #[test]
+    fn test_an_include_cycle_is_refused_at_the_bound() {
+        let scratch = Scratch::new("cycle");
+        scratch.write(".git/config", "[include]\n\tpath = config\n");
+
+        assert_eq!(
+            check_config(&scratch.0, &scratch.locations(), &bounds(10, 10)),
+            Err(GitReadCondition::RepositoryReadFailed)
+        );
+    }
+
+    #[test]
+    fn test_a_link_chain_over_the_hop_bound_at_an_includes_spelling_is_refused() {
+        let scratch = Scratch::new("links");
+        scratch.write(".git/config", "[include]\n\tpath = l0\n");
+        let hops = MAX_LINK_HOPS + 8;
+        for number in 0..hops {
+            std::os::unix::fs::symlink(
+                format!("l{}", number + 1),
+                scratch.0.join(format!(".git/l{number}")),
+            )
+            .expect("the link is made");
+        }
+        scratch.write(&format!(".git/l{hops}"), "[user]\n\tname = Someone\n");
+
+        assert_eq!(
+            check_config(&scratch.0, &scratch.locations(), &bounds(10, 10)),
+            Err(GitReadCondition::RepositoryReadFailed)
+        );
+    }
+
+    #[test]
+    fn test_a_config_that_includes_the_git_directory_itself_is_unreadable() {
+        let scratch = Scratch::new("directory");
+        scratch.write(".git/config", "[include]\n\tpath =\n");
+
+        assert_eq!(
+            check_config(&scratch.0, &scratch.locations(), &bounds(10, 10)),
+            Err(GitReadCondition::GitDirectoryUnreadable)
+        );
+    }
+
+    #[test]
+    fn test_a_link_at_the_config_itself_is_unreadable_and_a_fifo_never_blocks() {
+        let scratch = Scratch::new("config-link");
+        scratch.write(".git/real", "[user]\n\tname = Someone\n");
+        std::os::unix::fs::symlink("real", scratch.0.join(".git/config"))
+            .expect("the link is made");
+        assert_eq!(
+            check_config(&scratch.0, &scratch.locations(), &bounds(10, 10)),
+            Err(GitReadCondition::GitDirectoryUnreadable)
+        );
+
+        let fifo = Scratch::new("config-fifo");
+        std::fs::create_dir_all(fifo.0.join(".git")).expect("the folder is made");
+        let status = std::process::Command::new("mkfifo")
+            .arg(fifo.0.join(".git/config"))
+            .status()
+            .expect("mkfifo runs");
+        assert!(status.success());
+        assert_eq!(
+            check_config(&fifo.0, &fifo.locations(), &bounds(10, 10)),
+            Err(GitReadCondition::GitDirectoryUnreadable)
+        );
+    }
+
+    #[test]
+    fn test_a_missing_config_is_no_refusal() {
+        let scratch = Scratch::new("no-config");
+        std::fs::create_dir_all(scratch.0.join(".git")).expect("the folder is made");
+
+        assert_eq!(
+            check_config(&scratch.0, &scratch.locations(), &bounds(10, 10)),
+            Ok(())
+        );
+    }
+
+    /// A repository at `root` whose index holds one gitlink, `sub`, and a repository of its own at
+    /// `root/sub`.
+    fn repository_with_one_submodule(name: &str) -> (Scratch, git2::Repository) {
+        let scratch = Scratch::new(name);
+        let repository = git2::Repository::init(&scratch.0).expect("the repository is made");
+        git2::Repository::init(scratch.0.join("sub")).expect("the submodule is made");
+        let mut index = repository.index().expect("the index opens");
+        let gitlink = git2::IndexEntry {
+            ctime: git2::IndexTime::new(0, 0),
+            mtime: git2::IndexTime::new(0, 0),
+            dev: 0,
+            ino: 0,
+            mode: 0o160_000,
+            uid: 0,
+            gid: 0,
+            file_size: 0,
+            id: git2::Oid::from_bytes(&[1; 20]).expect("an id"),
+            flags: 0,
+            flags_extended: 0,
+            path: b"sub".to_vec(),
+        };
+        index.add(&gitlink).expect("the gitlink is added");
+        index.write().expect("the index is written");
+        (scratch, repository)
+    }
+
+    #[test]
+    fn test_submodule_nesting_to_the_bound_is_verified_and_one_over_it_is_refused() {
+        let (scratch, repository) = repository_with_one_submodule("nesting");
+
+        assert_eq!(
+            verify_submodules(&scratch.0, &repository, &scratch.0, 0, &bounds(10, 1)),
+            Ok(())
+        );
+        assert_eq!(
+            verify_submodules(&scratch.0, &repository, &scratch.0, 0, &bounds(10, 0)),
+            Err(GitReadCondition::RepositoryReadFailed)
+        );
+    }
+
+    #[test]
+    fn test_a_gitlink_whose_folder_holds_no_git_entry_is_skipped() {
+        let (scratch, repository) = repository_with_one_submodule("no-entry");
+        std::fs::remove_dir_all(scratch.0.join("sub/.git")).expect("the entry goes");
+
+        assert_eq!(
+            verify_submodules(&scratch.0, &repository, &scratch.0, 0, &bounds(10, 0)),
+            Ok(())
+        );
     }
 }

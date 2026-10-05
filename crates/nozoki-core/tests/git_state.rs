@@ -14,14 +14,16 @@ use std::fs;
 use std::os::unix::ffi::OsStrExt;
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use std::sync::mpsc;
+use std::time::{Duration, Instant};
 
 use common::{Snapshot, TempDir};
 use std::cell::Cell;
 
 use nozoki_core::{
-    BranchElement, FolderKind, FolderModel, GitCondition, GitPort, GitReadCondition, HeadState,
-    ItemState, ProbeCondition, RepositoryState, RootFinding, StatusCategory, StatusEntry,
-    StatusLists, open_folder, read_git,
+    BranchElement, ConfigNamedPath, FolderKind, FolderModel, GitCondition, GitPort,
+    GitReadCondition, HeadState, ItemState, ProbeCondition, RepositoryState, RootFinding,
+    StatusCategory, StatusEntry, StatusLists, open_folder, read_git,
 };
 
 /// The only place the adapter is named, so a second adapter runs the same cases.
@@ -214,7 +216,9 @@ fn detached_at(id: String) -> BranchElement {
     BranchElement::Detached(id)
 }
 
-/// CP-521: a failure other than the outside one holds no path, so its text holds no separator.
+/// CP-521: a failure other than the outside one and the config one holds no path, so its text holds
+/// no separator. The config one carries the key and the value its config spells, and holds a
+/// separator whenever that value does.
 fn assert_pathless(condition: &GitReadCondition) {
     assert!(
         !format!("{condition:?}").contains('/'),
@@ -867,7 +871,9 @@ fn test_missing_empty_and_unreadable_inside_directory() {
     assert_pathless(answers.failure());
 }
 
-/// What libgit2 would open is not what the bound verified, so neither call answers a state.
+/// What libgit2 would open is not what the bound verified, so neither call answers a state. A
+/// `core.worktree` that spells outside the folder is the config condition, refused before the open
+/// (SDD § 11 R-16, *The spellings*: it is spelled from the Git directory).
 #[test]
 fn test_core_worktree_elsewhere_answers_err_from_both_calls() {
     let (scene, repository) = fixture_repository();
@@ -882,17 +888,13 @@ fn test_core_worktree_elsewhere_answers_err_from_both_calls() {
 
     let answers = read(&scene, &repository);
 
-    assert!(
-        answers.state.is_err(),
-        "state() answered {:?}",
-        answers.state
+    assert_eq!(
+        answers.failure(),
+        &GitReadCondition::ConfigNamesOutside(ConfigNamedPath {
+            key: "core.worktree".to_string(),
+            path: "../../elsewhere".to_string(),
+        })
     );
-    assert!(
-        answers.status.is_err(),
-        "status() answered {:?}",
-        answers.status
-    );
-    assert_pathless(answers.failure());
 }
 
 /// A port that answers what it was given and counts how often `probe`, `state` and `status` were
@@ -1146,4 +1148,261 @@ fn test_read_git_asks_again_whatever_the_item_held() {
 
     assert_eq!(double.probes.get(), 2);
     assert_eq!(twice.kind(), &ItemState::Observed(FolderKind::Plain));
+}
+
+// --- the config check (R-16) ------------------------------------------------------------------
+
+/// Runs `probe`, `state` and `status` on a thread over `folder` while this thread polls the write
+/// end of the FIFO at `fifo` with a non-blocking open, which succeeds only once a reader holds the
+/// FIFO. Returns whether any opener was seen, after all three calls returned. A build that reads
+/// the path the config names opens the FIFO and blocks until this poll lets it through.
+fn fifo_opener_seen_during_the_three_calls(folder: &Path, fifo: &Path) -> bool {
+    use rustix::fs::{Mode, OFlags, open};
+
+    let status = Command::new("mkfifo")
+        .arg(fifo)
+        .status()
+        .expect("mkfifo runs");
+    assert!(status.success(), "mkfifo made the FIFO");
+    let (sender, receiver) = mpsc::channel();
+    let watched = folder.to_path_buf();
+    std::thread::spawn(move || {
+        let _ = port().probe(&watched);
+        let _ = port().state(&watched);
+        let _ = port().status(&watched);
+        sender.send(()).ok();
+    });
+    let deadline = Instant::now() + Duration::from_secs(10);
+    let mut opener_seen = false;
+    loop {
+        if receiver.try_recv().is_ok() {
+            return opener_seen;
+        }
+        assert!(
+            Instant::now() < deadline,
+            "the three calls did not return in ten seconds"
+        );
+        if open(
+            fifo.as_os_str().as_bytes(),
+            OFlags::WRONLY | OFlags::NONBLOCK,
+            Mode::empty(),
+        )
+        .is_ok()
+        {
+            opener_seen = true;
+        }
+        std::thread::sleep(Duration::from_millis(1));
+    }
+}
+
+/// CP-655 to CP-657, through the libgit2 adapter and no port double: the repository's `config`
+/// names `../../outside.config` from `.git/`, which is beside the copy, and the FIFO there is what
+/// a read of that path would open.
+#[test]
+fn test_no_answer_reads_the_path_the_config_names_outside() {
+    let scene = TempDir::new();
+    let folder = scene.copy_fixture("config-names-outside");
+    scene.unpack_fixture_archive("config-names-outside.git.tar", "config-names-outside");
+
+    let opener_seen =
+        fifo_opener_seen_during_the_three_calls(&folder, &scene.path().join("outside.config"));
+
+    assert!(
+        !opener_seen,
+        "a call opened the path the config names outside the folder"
+    );
+}
+
+/// The same watch over a superproject whose submodule's own config includes the outside path.
+#[test]
+fn test_no_status_read_opens_what_a_submodules_config_includes_outside() {
+    let scene = TempDir::new();
+    let folder = scene.copy_fixture("submodule-config-names-outside");
+    scene.unpack_fixture_archive(
+        "submodule-config-names-outside.git.tar",
+        "submodule-config-names-outside",
+    );
+
+    let opener_seen =
+        fifo_opener_seen_during_the_three_calls(&folder, &scene.path().join("outside.config"));
+
+    assert!(
+        !opener_seen,
+        "a call opened the path the submodule's config names outside the folder"
+    );
+}
+
+fn config_named(key: &str, path: &str) -> ConfigNamedPath {
+    ConfigNamedPath {
+        key: key.to_string(),
+        path: path.to_string(),
+    }
+}
+
+/// `S` holds one commit of `a.txt` and an untracked `secret.txt`.
+fn repository_with_a_secret() -> (TempDir, PathBuf) {
+    let (scene, root) = new_repository();
+    fs::write(root.join("a.txt"), "a\n").expect("the file is written");
+    commit_all(&root, "first");
+    fs::write(root.join("secret.txt"), "secret\n").expect("the file is written");
+    (scene, root)
+}
+
+/// Appends `text` to the repository's own `config`.
+fn append_to_config(root: &Path, text: &str) {
+    use std::io::Write;
+
+    let mut config = fs::OpenOptions::new()
+        .append(true)
+        .open(root.join(".git/config"))
+        .expect("the config opens");
+    config
+        .write_all(text.as_bytes())
+        .expect("the config can be written");
+}
+
+#[test]
+fn test_the_excludesfile_pointing_outside_refuses_with_the_config_condition() {
+    let (scene, root) = repository_with_a_secret();
+    let outside = scene.write_file("outside-ignore", "secret.txt\n");
+    let value = outside.display().to_string();
+    git(&root, &["config", "core.excludesfile", &value]);
+    let before = scene.snapshot();
+
+    let probed = port().probe(&root);
+    let answers = read_against(&before, &scene, &root);
+
+    let named = config_named("core.excludesfile", &value);
+    assert_eq!(
+        probed,
+        RootFinding::Failed(ProbeCondition::ConfigNamesOutside(named.clone()))
+    );
+    assert_eq!(
+        answers.failure(),
+        &GitReadCondition::ConfigNamesOutside(named)
+    );
+    assert_eq!(&scene.snapshot(), &before, "the probe changed the scene");
+}
+
+#[test]
+fn test_an_inside_include_is_followed_to_an_outside_path() {
+    let (scene, root) = repository_with_a_secret();
+    let outside = scene.path().join("outside.config");
+    let inner = scene.write_file(
+        "S/inner.config",
+        &format!("[include]\n\tpath = {}\n", outside.display()),
+    );
+    append_to_config(&root, &format!("[include]\n\tpath = {}\n", inner.display()));
+
+    let answers = read(&scene, &root);
+
+    assert_eq!(
+        answers.failure(),
+        &GitReadCondition::ConfigNamesOutside(config_named(
+            "include.path",
+            &outside.display().to_string()
+        ))
+    );
+}
+
+#[test]
+fn test_an_inside_excludesfile_answers_the_lists_with_the_file_applied() {
+    let (scene, root) = repository_with_a_secret();
+    let listing = scene.write_file("S/.git/ignore-list", "secret.txt\n");
+    git(
+        &root,
+        &[
+            "config",
+            "core.excludesfile",
+            &listing.display().to_string(),
+        ],
+    );
+
+    let answers = read(&scene, &root);
+
+    assert_lists(&answers, vec![], vec![]);
+}
+
+#[test]
+fn test_an_inside_include_with_no_refused_key_answers_as_without_it() {
+    let (scene, root) = repository_with_a_secret();
+    let inner = scene.write_file("S/.git/inner.config", "[user]\n\tname = Someone\n");
+    append_to_config(&root, &format!("[include]\n\tpath = {}\n", inner.display()));
+
+    let answers = read(&scene, &root);
+
+    assert_head(&answers, on_branch("main"), RepositoryState::Normal);
+    assert_lists(
+        &answers,
+        vec![],
+        vec![entry("secret.txt", StatusCategory::Untracked)],
+    );
+}
+
+#[test]
+fn test_a_submodule_with_an_outside_git_directory_fails_status_only() {
+    let scene = TempDir::new();
+    let origin = scene.make_folder("origin");
+    git(&origin, &["init", "-q", "-b", "main"]);
+    fs::write(origin.join("o.txt"), "o\n").expect("the file is written");
+    commit_all(&origin, "origin");
+    let root = scene.make_folder("S");
+    git(&root, &["init", "-q", "-b", "main"]);
+    git(
+        &root,
+        &[
+            "-c",
+            "protocol.file.allow=always",
+            "submodule",
+            "add",
+            "-q",
+            &origin.display().to_string(),
+            "sub",
+        ],
+    );
+    commit_all(&root, "with a submodule");
+    let outside = scene.make_folder("outside-modules");
+    fs::rename(root.join(".git/modules/sub"), outside.join("sub")).expect("the directory moves");
+    scene.write_file("S/sub/.git", "gitdir: ../../outside-modules/sub\n");
+
+    let state = port().state(&root);
+    let status = port().status(&root);
+
+    assert!(state.is_ok(), "state() answered {state:?}");
+    assert_eq!(
+        status,
+        Err(GitReadCondition::GitDirectoryOutside(
+            scene.path().join("outside-modules/sub")
+        ))
+    );
+}
+
+#[test]
+fn test_failure_paths_of_the_check() {
+    let (scene, root) = repository_with_a_secret();
+    scene.set_mode("S/.git/config", 0o000);
+    let probed = port().probe(&root);
+    let state = port().state(&root);
+    let status = port().status(&root);
+    scene.set_mode("S/.git/config", 0o644);
+    assert_eq!(
+        probed,
+        RootFinding::Failed(ProbeCondition::GitDirectoryUnreadable)
+    );
+    assert_eq!(state, Err(GitReadCondition::GitDirectoryUnreadable));
+    assert_eq!(status, Err(GitReadCondition::GitDirectoryUnreadable));
+
+    append_to_config(&root, "[unterminated\n");
+    assert_eq!(
+        port().probe(&root),
+        RootFinding::Failed(ProbeCondition::RepositoryReadFailed)
+    );
+    assert_eq!(
+        port().state(&root),
+        Err(GitReadCondition::RepositoryReadFailed)
+    );
+    assert_eq!(
+        port().status(&root),
+        Err(GitReadCondition::RepositoryReadFailed)
+    );
 }

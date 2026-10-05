@@ -3,6 +3,7 @@
 
 use std::path::{Path, PathBuf};
 
+mod config_scan;
 mod libgit2;
 
 pub use libgit2::Libgit2;
