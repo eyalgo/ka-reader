@@ -365,15 +365,19 @@ enum BridgePayload {
         private enum StateTag: String, Decodable { case pending, observed, failed }
         private enum Kind: String, Decodable { case plain, root }
 
-        /// The condition member's value: the eleven pathless conditions, or the one beside a path.
+        /// The condition member's value: the eleven conditions that carry no text, or one of the two
+        /// that come beside theirs.
         private enum WireCondition: Decodable {
             case gitDirectoryOutside
+            case configNamesOutside
             case condition(GitCondition)
 
             init(from decoder: Decoder) throws {
                 let name = try decoder.singleValueContainer().decode(String.self)
                 if name == "git_directory_outside" {
                     self = .gitDirectoryOutside
+                } else if name == "config_names_outside" {
+                    self = .configNamesOutside
                 } else if let condition = GitCondition(rawValue: name) {
                     self = .condition(condition)
                 } else {
@@ -436,6 +440,15 @@ enum BridgePayload {
                     .gitDirectoryOutside(
                         gitDirectory: try container.decode(
                             String.self, forKey: WireKey(stringValue: "git_directory"))))
+            case .configNamesOutside:
+                try BridgePayload.requireMembers(
+                    ["state", "condition", "key", "path"], in: container)
+                return .failed(
+                    .configNamesOutside(
+                        key: try container.decode(String.self, forKey: WireKey(stringValue: "key")),
+                        path: try container.decode(
+                            String.self, forKey: WireKey(stringValue: "path"))
+                    ))
             case .condition(let condition):
                 try BridgePayload.requireMembers(["state", "condition"], in: container)
                 return .failed(.condition(condition))

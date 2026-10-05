@@ -50,6 +50,11 @@ package enum GitSentences {
                 "This repository's Git directory is at \(gitDirectory), outside the folder you "
                 + "opened, so Nozoki doesn't read its Git status. "
                 + "The file tree and the reading panel are unaffected."
+        case .configNamesOutside(let key, let path):
+            return
+                "Nozoki found \(key) set to \(path), outside the folder you opened, so it doesn't "
+                + "read the folder's Git status. "
+                + "The file tree and the reading panel are unaffected."
         case .condition(let condition):
             return sentence(for: condition)
         }
