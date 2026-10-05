@@ -202,6 +202,7 @@ impl GitCondition {
             Self::Probe(ProbeCondition::GitEntryNotDirectory) => "the Git entry is not a directory",
             Self::Probe(ProbeCondition::GitFileUnreadable) => "the Git file is unreadable",
             Self::Probe(ProbeCondition::RepositoryReadFailed) => "the repository could not be read",
+            Self::Probe(ProbeCondition::ConfigNamesOutside(_)) => CONFIG_NAMES_OUTSIDE_PHRASE,
             Self::Read(GitReadCondition::GitDirectoryOutside(_)) => {
                 "the Git directory is outside the folder"
             }
@@ -214,9 +215,14 @@ impl GitCondition {
             Self::Read(GitReadCondition::RepositoryReadFailed) => {
                 "the repository could not be read"
             }
+            Self::Read(GitReadCondition::ConfigNamesOutside(_)) => CONFIG_NAMES_OUTSIDE_PHRASE,
         }
     }
 }
+
+/// The one phrase for a config that names a path outside the folder, whichever operation met it. It
+/// carries neither the key nor the path the condition holds.
+const CONFIG_NAMES_OUTSIDE_PHRASE: &str = "the config names a path outside the folder";
 
 /// An opened folder with what has been read of it: the root listing and the Git item.
 ///

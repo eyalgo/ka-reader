@@ -177,8 +177,9 @@ pub enum StatusCategory {
     InConflict,
 }
 
-/// Why a read of a root's Git state failed, drawn from a closed set. Only the outside case carries a
-/// path, and that path is where the Git directory lies, spelled from the root's own files.
+/// Why a read of a root's Git state failed, drawn from a closed set. Two cases carry text: the
+/// outside case carries the path where the Git directory lies, spelled from the root's own files,
+/// and the config case carries the key and the value its config spells.
 ///
 /// # Examples
 ///
@@ -206,10 +207,38 @@ pub enum GitReadCondition {
     NotARepository,
     /// libgit2 refused, the read failed partway, or what libgit2 opened is not what was verified.
     RepositoryReadFailed,
+    /// The repository's own config names a path outside the folder, in a key libgit2 would follow.
+    /// Nothing at that path was read.
+    ConfigNamesOutside(ConfigNamedPath),
 }
 
-/// The answer to a probe. It holds no path and no text, so it cannot reveal a location above the
-/// opened folder.
+/// The key a repository's config spells and the value it gives it, as the config writes them, when
+/// the value names a path outside the folder. Each is spelled lossily from the config's bytes, as
+/// [`StatusEntry`]'s path is.
+///
+/// The key is the section, the subsection where there is one, and the name, joined by `.`. The
+/// path is the value as written, before any spelling.
+///
+/// # Examples
+///
+/// ```
+/// use nozoki_core::ConfigNamedPath;
+///
+/// let named = ConfigNamedPath {
+///     key: "include.path".to_string(),
+///     path: "../../outside.config".to_string(),
+/// };
+/// assert_eq!(named.key, "include.path");
+/// ```
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ConfigNamedPath {
+    pub key: String,
+    pub path: String,
+}
+
+/// The answer to a probe. It holds no path and no text except in one variant: a refused config
+/// carries the key and the value the config spells, which are the repository's own words about a
+/// place outside the folder, and the probe reads nothing at that place.
 ///
 /// # Examples
 ///
@@ -245,7 +274,7 @@ pub enum RootFinding {
 /// let condition = ProbeCondition::GitEntryNotDirectory;
 /// assert_ne!(condition, ProbeCondition::FolderUnavailable);
 /// ```
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ProbeCondition {
     /// The opened folder, or its `.git` entry, could not be looked at for a reason other than the
     /// entry's absence. A folder that is missing or is not a folder is this.
@@ -260,4 +289,7 @@ pub enum ProbeCondition {
     /// Git refused a `.git` folder the probe could look inside, for a reason other than "not a
     /// repository".
     RepositoryReadFailed,
+    /// The repository's own config names a path outside the folder, in a key libgit2 would follow.
+    /// The probe opened nothing and read nothing at that path.
+    ConfigNamesOutside(ConfigNamedPath),
 }
