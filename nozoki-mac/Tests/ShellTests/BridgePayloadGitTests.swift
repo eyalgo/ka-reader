@@ -64,7 +64,7 @@ final class BridgePayloadGitTests: XCTestCase {
                     branch: .detached(commit: commit), state: .rebase, staged: [], changed: [])))
     }
 
-    func test_eachOfTheTwelveConditionsDecodesAndGitDirectoryOutsideKeepsItsPath() {
+    func test_eachOfTheThirteenConditionsDecodesAndTheTwoWithTextKeepTheirOwn() {
         for condition in GitCondition.allCases {
             XCTAssertEqual(
                 decode(#"{"state":"failed","condition":"\#(condition.rawValue)"}"#),
@@ -75,7 +75,59 @@ final class BridgePayloadGitTests: XCTestCase {
                 #"{"state":"failed","condition":"git_directory_outside","git_directory":"/elsewhere/.git"}"#
             ),
             .failed(.gitDirectoryOutside(gitDirectory: "/elsewhere/.git")))
-        XCTAssertEqual(GitCondition.allCases.count + 1, 12)
+        XCTAssertEqual(
+            decode(
+                #"{"state":"failed","condition":"config_names_outside","key":"include.path","path":"../../outside.config"}"#
+            ),
+            .failed(.configNamesOutside(key: "include.path", path: "../../outside.config")))
+        XCTAssertEqual(GitCondition.allCases.count + 2, 13)
+    }
+
+    func test_configNamesOutsideDecodesWithExactlyItsFourMembers() {
+        XCTAssertEqual(
+            decode(
+                #"{"state":"failed","condition":"config_names_outside","key":"core.excludesfile","path":"/Users/you/shared/ignore"}"#
+            ),
+            .failed(.configNamesOutside(key: "core.excludesfile", path: "/Users/you/shared/ignore"))
+        )
+        XCTAssertEqual(
+            decode(
+                #"{"path":"~/.gitignore_global","key":"includeIf.gitdir:~/work/.path","condition":"config_names_outside","state":"failed"}"#
+            ),
+            .failed(
+                .configNamesOutside(
+                    key: "includeIf.gitdir:~/work/.path", path: "~/.gitignore_global")),
+            "the members are read by name, in any order")
+    }
+
+    func test_configNamesOutsideWithAMissingOrExtraMemberIsRefused() {
+        let rejected = [
+            #"{"state":"failed","condition":"config_names_outside"}"#,
+            #"{"state":"failed","condition":"config_names_outside","key":"include.path"}"#,
+            #"{"state":"failed","condition":"config_names_outside","path":"/x"}"#,
+            #"{"state":"failed","condition":"config_names_outside","key":"include.path","path":"/x","extra":1}"#,
+            #"{"state":"failed","condition":"config_names_outside","key":"include.path","path":"/x","git_directory":"/y"}"#,
+            #"{"state":"failed","condition":"config_names_outside","key":null,"path":"/x"}"#,
+            #"{"state":"failed","condition":"config_names_outside","key":"include.path","path":7}"#,
+        ]
+        for payload in rejected {
+            XCTAssertEqual(decode(payload), .stopped, payload)
+        }
+    }
+
+    func test_aKeyAndAPathBesideAnotherConditionAreStopped() {
+        for condition in GitCondition.allCases {
+            XCTAssertEqual(
+                decode(
+                    #"{"state":"failed","condition":"\#(condition.rawValue)","key":"include.path","path":"/x"}"#
+                ),
+                .stopped, condition.rawValue)
+        }
+        XCTAssertEqual(
+            decode(
+                #"{"state":"failed","condition":"git_directory_outside","git_directory":"/x","key":"include.path","path":"/y"}"#
+            ),
+            .stopped)
     }
 
     func test_everyRepositoryStateDecodes() {
