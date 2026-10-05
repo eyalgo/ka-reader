@@ -128,17 +128,18 @@
 #                         read in the forms the Apple floor is read in. One finding per distinct
 #                         (file, line, rule, target). Source: QC-10's and QC-11's must-not lists.
 #     QC-11  libgit2      In every file of the shipped scope in any crate (CP-647 - CP-651): the
-#            binding      libgit2 binding, read in the forms the Apple floor is read in, is a QC-11
-#            (CP-647 -    finding at its line, `<what>` naming the binding. Only `git-reader` imports
-#            CP-651)      the binding, with one exception, so two exemptions: every file of the
-#                         `git_reader` unit (crates/nozoki-core/src/git_reader.rs and every file
-#                         under src/git_reader/), and crates/nozoki-bridge/src/machine_config.rs,
+#            binding      libgit2 binding, read in the forms the Apple floor is read in, is a
+#            (CP-647 -    QC-11 finding at its line, `<what>` naming the binding. Only `git-reader`
+#            CP-651)      imports the binding, with one exception, so two exemptions: every file of
+#                         the `git_reader` unit (crates/nozoki-core/src/git_reader.rs and every
+#                         file under src/git_reader/), and
+#                         crates/nozoki-bridge/src/machine_config.rs,
 #                         the composition root's search-path switch. The switch's test lies under
 #                         tests/, outside the shipped scope. A line that draws a QC-10 or QC-11
 #                         finding above draws no second one: a folder_model file stays QC-10 alone,
-#                         and an fs_reader or highlighter file draws its one QC-11 line. No other rule
-#                         is added by this clause. Source: QC-11's "only git-reader imports the
-#                         libgit2 binding".
+#                         and an fs_reader or highlighter file draws its one QC-11 line. This clause
+#                         adds no other rule. Source: QC-11's "only git-reader imports the libgit2
+#                         binding".
 #     QC-63  value        In nozoki-core, a file of no unit (CP-470): a file of the shipped scope
 #            module       under crates/nozoki-core/src/ whose first component under src/, matched
 #            (CP-470 -    as an exact file or directory name and never as a prefix, is none of the
