@@ -1152,9 +1152,9 @@ mod tests {
         use std::path::{Path, PathBuf};
 
         use nozoki_core::{
-            BranchElement, FolderModel, GitPort, GitReadCondition, HeadState, OpenFolderOutcome,
-            ProbeCondition, RepositoryState, RootFinding, StatusCategory, StatusEntry, StatusLists,
-            open_folder, read_git,
+            BranchElement, ConfigNamedPath, FolderModel, GitPort, GitReadCondition, HeadState,
+            OpenFolderOutcome, ProbeCondition, RepositoryState, RootFinding, StatusCategory,
+            StatusEntry, StatusLists, open_folder, read_git,
         };
         use serde_json::{Value, json};
 
@@ -1432,8 +1432,7 @@ mod tests {
         }
 
         #[test]
-        fn test_each_of_the_eleven_core_conditions_and_the_switch_failure_have_twelve_distinct_wire_values()
-         {
+        fn test_each_of_the_conditions_and_the_switch_failure_have_thirteen_distinct_wire_values() {
             let mut answers: Vec<(Value, &str)> = vec![
                 (
                     wire(&probe_failure(ProbeCondition::FolderUnavailable)),
@@ -1481,7 +1480,19 @@ mod tests {
                     wire(&read_failure(GitReadCondition::RepositoryReadFailed)),
                     "repository_read_failed",
                 ),
+                (
+                    wire(&read_failure(GitReadCondition::ConfigNamesOutside(
+                        named_config_path(),
+                    ))),
+                    "config_names_outside",
+                ),
             ];
+            // The probe's variant and the read's variant are one wire value.
+            let probe_variant = wire(&probe_failure(ProbeCondition::ConfigNamesOutside(
+                named_config_path(),
+            )));
+            assert_eq!(probe_variant["condition"], "config_names_outside");
+            assert_eq!(probe_variant, answers[answers.len() - 1].0);
             answers.push((
                 serde_json::to_value(GitAnswerDto::machine_config_not_switched_off())
                     .expect("the answer serializes"),
@@ -1496,7 +1507,40 @@ mod tests {
                 .iter()
                 .map(|(answer, _)| answer["condition"].to_string())
                 .collect();
-            assert_eq!(distinct.len(), 12);
+            assert_eq!(distinct.len(), 13);
+        }
+
+        fn named_config_path() -> ConfigNamedPath {
+            ConfigNamedPath {
+                key: "include.path".to_string(),
+                path: "../../outside.config".to_string(),
+            }
+        }
+
+        #[test]
+        fn test_the_config_condition_serializes_exactly_its_four_members() {
+            let non_utf8_path = OsStr::from_bytes(b"/outside/\xff.config");
+            let named = ConfigNamedPath {
+                key: "core.excludesfile".to_string(),
+                path: non_utf8_path.to_string_lossy().into_owned(),
+            };
+            let from_read = wire(&read_failure(GitReadCondition::ConfigNamesOutside(
+                named.clone(),
+            )));
+            let from_probe = wire(&probe_failure(ProbeCondition::ConfigNamesOutside(named)));
+
+            let expected = json!({
+                "state": "failed",
+                "condition": "config_names_outside",
+                "key": "core.excludesfile",
+                "path": "/outside/\u{fffd}.config"
+            });
+            assert_eq!(from_read, expected);
+            assert_eq!(from_probe, expected);
+            assert_eq!(
+                members(&from_read),
+                vec!["condition", "key", "path", "state"]
+            );
         }
 
         #[test]

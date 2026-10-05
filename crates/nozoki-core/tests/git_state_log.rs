@@ -16,8 +16,8 @@ use std::sync::Mutex;
 use common::TempDir;
 use log::{LevelFilter, Log, Metadata, Record};
 use nozoki_core::{
-    BranchElement, FolderModel, GitPort, GitReadCondition, HeadState, RepositoryState, RootFinding,
-    StatusLists, open_folder, read_git,
+    BranchElement, ConfigNamedPath, FolderModel, GitPort, GitReadCondition, HeadState,
+    ProbeCondition, RepositoryState, RootFinding, StatusLists, open_folder, read_git,
 };
 
 struct Capture {
@@ -53,13 +53,14 @@ fn take_records() -> Vec<(log::Level, String)> {
 }
 
 struct Double {
+    probe: RootFinding,
     head: Result<HeadState, GitReadCondition>,
     lists: Result<StatusLists, GitReadCondition>,
 }
 
 impl GitPort for Double {
     fn probe(&self, _folder: &Path) -> RootFinding {
-        RootFinding::Root
+        self.probe.clone()
     }
 
     fn state(&self, _root: &Path) -> Result<HeadState, GitReadCondition> {
@@ -95,6 +96,7 @@ fn test_failed_git_item_logs_one_warn_without_the_path() {
     let opened = open_folder(scene.path()).expect("the scene opens");
     let outside = PathBuf::from("/nowhere-near/the-folder/.git");
     let standing = Double {
+        probe: RootFinding::Root,
         head: Ok(HeadState {
             branch: BranchElement::Branch("main".to_string()),
             state: RepositoryState::Normal,
@@ -102,6 +104,7 @@ fn test_failed_git_item_logs_one_warn_without_the_path() {
         lists: Ok(clean_lists()),
     };
     let failing = Double {
+        probe: RootFinding::Root,
         head: Err(GitReadCondition::GitDirectoryOutside(outside.clone())),
         lists: Ok(clean_lists()),
     };
@@ -125,6 +128,7 @@ fn test_failed_git_item_logs_one_warn_without_the_path() {
     );
 
     status_failure_logs_one_warn_naming_git_reader_and_status();
+    test_failed_git_item_with_the_config_condition_logs_one_warn_without_the_path();
 }
 
 /// Run inside the one test above: a status failure names `status` and not `state`.
@@ -133,6 +137,7 @@ fn status_failure_logs_one_warn_naming_git_reader_and_status() {
     scene.write_file("a.txt", "a");
     let opened = open_folder(scene.path()).expect("the scene opens");
     let failing = Double {
+        probe: RootFinding::Root,
         head: Ok(standing_head()),
         lists: Err(GitReadCondition::RepositoryReadFailed),
     };
@@ -147,4 +152,55 @@ fn status_failure_logs_one_warn_naming_git_reader_and_status() {
     assert!(text.contains("status"), "{text}");
     assert!(!text.contains("state"), "{text}");
     assert!(!text.contains('/'), "the record holds a path: {text}");
+}
+
+/// The phrase the config condition is logged under, under both the probe's arm and the read's.
+const CONFIG_PHRASE: &str = "the config names a path outside the folder";
+
+/// Run inside the one test above: the config condition, met by the probe and by the state read,
+/// logs one `warn` naming `git-reader`, the operation and the fixed phrase, and never the key or
+/// the path it carries.
+fn test_failed_git_item_with_the_config_condition_logs_one_warn_without_the_path() {
+    let named = ConfigNamedPath {
+        key: "include.path".to_string(),
+        path: "../../outside.config".to_string(),
+    };
+    let met_by_the_probe = Double {
+        probe: RootFinding::Failed(ProbeCondition::ConfigNamesOutside(named.clone())),
+        head: Ok(standing_head()),
+        lists: Ok(clean_lists()),
+    };
+    let met_by_the_state_read = Double {
+        probe: RootFinding::Root,
+        head: Err(GitReadCondition::ConfigNamesOutside(named.clone())),
+        lists: Ok(clean_lists()),
+    };
+
+    for (double, operation) in [
+        (met_by_the_probe, "probe"),
+        (met_by_the_state_read, "state"),
+    ] {
+        let scene = TempDir::new();
+        scene.write_file("a.txt", "a");
+        let opened = open_folder(scene.path()).expect("the scene opens");
+
+        let _ = read_git(FolderModel::new(opened), &double);
+
+        let records = take_records();
+        assert_eq!(records.len(), 1, "one record: {records:?}");
+        let (level, text) = &records[0];
+        assert_eq!(*level, log::Level::Warn);
+        assert!(text.contains("git-reader"), "{text}");
+        assert!(text.contains(operation), "{operation}: {text}");
+        assert!(text.contains(CONFIG_PHRASE), "{text}");
+        assert!(!text.contains('/'), "the record holds a path: {text}");
+        assert!(
+            !text.contains(&named.key),
+            "the record holds the key: {text}"
+        );
+        assert!(
+            !text.contains(&named.path),
+            "the record holds the path: {text}"
+        );
+    }
 }
