@@ -127,6 +127,18 @@
 #                         `libgit2_sys`, a floor: this script may refuse more names, never fewer,
 #                         read in the forms the Apple floor is read in. One finding per distinct
 #                         (file, line, rule, target). Source: QC-10's and QC-11's must-not lists.
+#     QC-11  libgit2      In every file of the shipped scope in any crate (CP-647 - CP-651): the
+#            binding      libgit2 binding, read in the forms the Apple floor is read in, is a QC-11
+#            (CP-647 -    finding at its line, `<what>` naming the binding. Only `git-reader` imports
+#            CP-651)      the binding, with one exception, so two exemptions: every file of the
+#                         `git_reader` unit (crates/nozoki-core/src/git_reader.rs and every file
+#                         under src/git_reader/), and crates/nozoki-bridge/src/machine_config.rs,
+#                         the composition root's search-path switch. The switch's test lies under
+#                         tests/, outside the shipped scope. A line that draws a QC-10 or QC-11
+#                         finding above draws no second one: a folder_model file stays QC-10 alone,
+#                         and an fs_reader or highlighter file draws its one QC-11 line. No other rule
+#                         is added by this clause. Source: QC-11's "only git-reader imports the
+#                         libgit2 binding".
 #     QC-63  value        In nozoki-core, a file of no unit (CP-470): a file of the shipped scope
 #            module       under crates/nozoki-core/src/ whose first component under src/, matched
 #            (CP-470 -    as an exact file or directory name and never as a prefix, is none of the
@@ -254,8 +266,7 @@
 #       file (every filesystem form there is admitted), and `git-reader`'s `Path`-method reads
 #       (`Path::metadata`, `symlink_metadata`, which name no `fs` module). Review at
 #       development-design holds both.
-#     - QC-11's clauses whose subject is `git-reader`, `watcher` or `markdown-renderer`, and its
-#       "only `git-reader` imports the libgit2 binding" outside the three units' files.
+#     - QC-11's clauses whose subject is `git-reader`, `watcher` or `markdown-renderer`.
 #     - QC-17's adapter-constructor clause.
 #     - QC-63's types-and-values half: whether a value module holds anything a part's Owns cell
 #       names. No script rule approximates it; its gate is review at development-design.
@@ -449,8 +460,12 @@ function add_unit(ln, w,    u) {
 }
 
 function add_git2(ln, w) {
-  if (subj == "") return
-  note(ln, subject_qc(), 2, w, subj " names the libgit2 binding `" w "`")
+  if (subj != "") {
+    note(ln, subject_qc(), 2, w, subj " names the libgit2 binding `" w "`")
+    return
+  }
+  if (git_exempt) return
+  note(ln, "QC-11", 2, w, "the libgit2 binding `" w "` named outside git-reader")
 }
 
 function add_logger(ln, w) {
@@ -1152,6 +1167,7 @@ else
     is_core=0
     is_bridge=0
     exempt=0
+    git_exempt=0
     in_bridge_src=0
     subject_unit=""
     value_module=0
@@ -1162,6 +1178,11 @@ else
     esac
     case "$relative" in
       crates/nozoki-bridge/src/*) in_bridge_src=1 ;;
+    esac
+    # The two files that may name the libgit2 binding: every file of the git_reader unit, and the
+    # composition root's search-path switch.
+    case "$relative" in
+      crates/nozoki-core/src/git_reader.rs | crates/nozoki-core/src/git_reader/* | crates/nozoki-bridge/src/machine_config.rs) git_exempt=1 ;;
     esac
     # The subject unit is the module by exact file or directory component, never a prefix.
     case "$relative" in
@@ -1192,7 +1213,7 @@ else
       echo "cannot read $relative" >> "$work/causes"
       continue
     fi
-    LC_ALL=C awk -v rel="$relative" -v is_core="$is_core" -v is_bridge="$is_bridge" -v exempt="$exempt" \
+    LC_ALL=C awk -v rel="$relative" -v is_core="$is_core" -v is_bridge="$is_bridge" -v exempt="$exempt" -v git_exempt="$git_exempt" \
       -v subj="$subject_unit" -v value_module="$value_module" \
       -v in_src="$in_bridge_src" -v have_allow="$have_allow" \
       -v ALLOWED="$allowed" -v BMODS="$bridge_mods" -v REEXPORT="$reexports" -v UNITS="$unit_names" \
