@@ -137,6 +137,12 @@ test_value_module_non_imports_pass
 test_value_module_rule_spares_units_and_lib_rs
 test_unit_file_draws_no_value_module_finding
 test_value_module_findings_join_one_report
+test_git2_in_a_bridge_src_file_is_refused
+test_git2_in_nozoki_core_lib_rs_is_refused
+test_git2_in_machine_config_rs_is_allowed
+test_git2_under_git_reader_is_allowed
+test_folder_model_git2_stays_qc10_alone
+test_fs_reader_git2_draws_one_qc11_line
 "
 
 # --- helpers ---
@@ -2500,6 +2506,67 @@ test_value_module_findings_join_one_report() {
   expect_finding "crates/$CORE_FILE" "$unsafe_line" QC-9 || return 1
   expect_before "crates/$VALUE_ERROR_FILE:$error_line: QC-15: " "crates/$VALUE_ERROR_FILE:$error_line: QC-63: " || return 1
   expect_before "crates/$VALUE_ERROR_FILE:$error_line: QC-63: " "crates/$CORE_FILE:$unsafe_line: " || return 1
+}
+
+# --- the cases of QC-11's only-git-reader clause (CP-647 to CP-651) ---
+
+# CP-647, CP-650: a bridge src file other than the switch's file naming the binding is refused. The
+# libgit2 floor's subject was empty for a file no rule maps, so this drew nothing before the clause.
+test_git2_in_a_bridge_src_file_is_refused() {
+  new_root git2-bridge-src || return 1
+  plant "$R" "$BRIDGE_FILE" 'fn g() { git2::Repository::open("."); }'
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_finding_naming "crates/$BRIDGE_FILE" "$PLANT_LINE" QC-11 "git2" || return 1
+}
+
+# CP-647, CP-650: a core file of no unit (lib.rs is one) is refused the same way.
+test_git2_in_nozoki_core_lib_rs_is_refused() {
+  new_root git2-core-lib || return 1
+  plant "$R" "nozoki-core/src/lib.rs" 'use git2 as _x;'
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_finding_naming "crates/nozoki-core/src/lib.rs" "$PLANT_LINE" QC-11 "git2" || return 1
+}
+
+# CP-647's first exemption: core-bridge's search-path switch, the one file of the bridge that names it.
+test_git2_in_machine_config_rs_is_allowed() {
+  new_root git2-machine-config || return 1
+  plant "$R" "nozoki-bridge/src/machine_config.rs" 'use git2 as _x;'
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+}
+
+# CP-647's second exemption: every file of the git_reader unit, its own file and the ones beneath it.
+test_git2_under_git_reader_is_allowed() {
+  new_root git2-git-reader || return 1
+  plant "$R" "nozoki-core/src/git_reader.rs" 'use git2 as _x;'
+  plant "$R" "nozoki-core/src/git_reader/config_scan.rs" 'use git2 as _x;'
+  plant "$R" "nozoki-core/src/git_reader/deep/more.rs" 'use libgit2_sys as _y;'
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+}
+
+# CP-648: a folder_model file keeps the one QC-10 finding it drew before, and the clause adds no QC-11 beside it.
+test_folder_model_git2_stays_qc10_alone() {
+  new_root git2-folder-model || return 1
+  plant "$R" "$CORE_FILE" 'use git2 as _x;'
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_count "crates/$CORE_FILE" "$PLANT_LINE" QC-10 1 || return 1
+  expect_count "crates/$CORE_FILE" "$PLANT_LINE" QC-11 0 || return 1
+}
+
+# CP-648: an fs_reader file draws one QC-11 line, because the clause and the unit's own rule share a key.
+test_fs_reader_git2_draws_one_qc11_line() {
+  new_root git2-fs-reader || return 1
+  plant "$R" "$FS_FILE" 'use git2 as _x;'
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_count "crates/$FS_FILE" "$PLANT_LINE" QC-11 1 || return 1
+  expect_count "crates/$FS_FILE" "$PLANT_LINE" QC-10 0 || return 1
 }
 
 # --- runner ---
