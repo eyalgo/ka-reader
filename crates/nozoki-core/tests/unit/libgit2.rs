@@ -3,9 +3,10 @@ use std::path::{Path, PathBuf};
 
 use crate::test_support::TempDir;
 
+use super::alternates_scan::{self, EntryClass};
 use super::{
-    Bounds, GitReadCondition, Inspected, Locations, MAX_LINK_HOPS, check_config, lies_inside,
-    names_a_git_directory, spell_location, verify_submodules,
+    Bounds, GitReadCondition, Inspected, Locations, MAX_LINK_HOPS, check_alternates, check_config,
+    lies_inside, names_a_git_directory, spell_location, verify_submodules,
 };
 
 /// Hands out at most one byte per read, and fails the first read with `Interrupted`.
@@ -163,10 +164,22 @@ fn test_sibling_with_shared_prefix_is_not_inside() {
     assert!(lies_inside(Path::new("/a/S"), Path::new("/a/S/.git")));
 }
 
+/// The alternates levels the shipped bound reads, for the cases that drive the other two bounds.
+const ALTERNATES_LEVELS: usize = 5;
+
 fn bounds(include_depth: usize, submodule_depth: usize) -> Bounds {
     Bounds {
         include_depth,
         submodule_depth,
+        alternates_depth: ALTERNATES_LEVELS,
+    }
+}
+
+fn alternates_bounds(alternates_depth: usize) -> Bounds {
+    Bounds {
+        include_depth: 10,
+        submodule_depth: 10,
+        alternates_depth,
     }
 }
 
@@ -329,4 +342,139 @@ fn test_a_gitlink_whose_folder_holds_no_git_entry_is_skipped() {
         verify_submodules(&root, &repository, &root, 0, &bounds(10, 0)),
         Ok(())
     );
+}
+
+// --- the alternates check ---------------------------------------------------------------------
+
+/// Every entry the line rule keeps from `bytes`, as its value spelled lossily and its class.
+fn entries(bytes: &[u8]) -> Vec<(String, EntryClass)> {
+    alternates_scan::scan(bytes)
+        .into_iter()
+        .map(|entry| {
+            (
+                String::from_utf8_lossy(&entry.value).into_owned(),
+                entry.class,
+            )
+        })
+        .collect()
+}
+
+fn values(bytes: &[u8]) -> Vec<String> {
+    entries(bytes).into_iter().map(|(value, _)| value).collect()
+}
+
+#[test]
+fn test_cr_lf_and_crlf_split_lines_alike() {
+    assert_eq!(values(b"a\rb\nc\r\nd"), ["a", "b", "c", "d"]);
+    assert_eq!(values(b"a\r\n\r\nb\n"), ["a", "b"]);
+}
+
+#[test]
+fn test_an_empty_line_and_a_hash_line_are_skipped() {
+    assert_eq!(values(b"\n\n# one\n#two\n/kept\n\n#\n"), ["/kept"]);
+    assert_eq!(
+        values(b"/a#b\n"),
+        ["/a#b"],
+        "a hash past the first byte is part of the entry"
+    );
+    assert!(values(b"").is_empty());
+    assert!(values(b"# only\r\n\r\n").is_empty());
+}
+
+#[test]
+fn test_a_leading_space_puts_the_entry_in_the_outside_class() {
+    assert_eq!(
+        entries(b" /abs\n./rel \n"),
+        [
+            (" /abs".to_string(), EntryClass::Outside),
+            ("./rel ".to_string(), EntryClass::FromTheObjectDirectory),
+        ],
+        "nothing is trimmed: a leading space changes the class, a trailing one stays in the value"
+    );
+}
+
+#[test]
+fn test_bytes_after_a_nul_are_not_read() {
+    assert_eq!(values(b"/a\0/b\n/c\n"), ["/a"]);
+    assert!(values(b"\0/a\n").is_empty());
+}
+
+#[test]
+fn test_an_entry_beginning_dot_one_beginning_slash_and_any_other_each_fall_in_their_class() {
+    assert_eq!(
+        entries(b"./x\n../x\n.hidden\n/x\nx/y\n~/x\n"),
+        [
+            ("./x".to_string(), EntryClass::FromTheObjectDirectory),
+            ("../x".to_string(), EntryClass::FromTheObjectDirectory),
+            (".hidden".to_string(), EntryClass::FromTheObjectDirectory),
+            ("/x".to_string(), EntryClass::Absolute),
+            ("x/y".to_string(), EntryClass::Outside),
+            ("~/x".to_string(), EntryClass::Outside),
+        ]
+    );
+}
+
+/// The repository's own alternates file names `chain/l1`, whose file names `chain/l2`, and so on to
+/// `chain/l<last>`, each by its absolute spelling inside the folder. `last` has no alternates file.
+fn chain_of_alternates(last: usize) -> (TempDir, PathBuf, Locations) {
+    let (scene, root, locations) = folder_with_a_git_directory();
+    let entry = |number: usize| format!("{}\n", root.join(format!("chain/l{number}")).display());
+    scene.write_file("S/.git/objects/info/alternates", &entry(1));
+    for number in 1..last {
+        scene.write_file(
+            &format!("S/chain/l{number}/info/alternates"),
+            &entry(number + 1),
+        );
+    }
+    scene.make_folder(&format!("S/chain/l{last}"));
+    (scene, root, locations)
+}
+
+#[test]
+fn test_a_link_chain_over_the_walks_bound_at_the_objects_position_answers_read_failed() {
+    let (scene, root, locations) = folder_with_a_git_directory();
+    let hops = MAX_LINK_HOPS + 8;
+    for number in 0..hops {
+        scene.make_link(&format!("S/.git/l{number}"), format!("l{}", number + 1));
+    }
+    scene.make_folder(&format!("S/.git/l{hops}"));
+    scene.make_link("S/.git/objects", "l0");
+
+    assert_eq!(
+        check_alternates(&root, &locations, &bounds(10, 10)),
+        Err(GitReadCondition::RepositoryReadFailed)
+    );
+}
+
+#[test]
+fn test_a_chain_to_the_level_bound_is_read_and_one_past_it_with_a_file_is_refused() {
+    let (scene, root, locations) = chain_of_alternates(3);
+
+    assert_eq!(
+        check_alternates(&root, &locations, &alternates_bounds(2)),
+        Ok(()),
+        "level 3 is one past the bound and holds no file"
+    );
+    scene.write_file("S/chain/l3/info/alternates", "# the end\n");
+    assert_eq!(
+        check_alternates(&root, &locations, &alternates_bounds(2)),
+        Err(GitReadCondition::RepositoryReadFailed),
+        "level 3 is one past the bound and holds a file"
+    );
+    assert_eq!(
+        check_alternates(&root, &locations, &alternates_bounds(3)),
+        Ok(()),
+        "at the bound a file is read, and this one names nothing"
+    );
+}
+
+#[test]
+fn test_an_inside_cycle_is_no_refusal() {
+    let (scene, root, locations) = folder_with_a_git_directory();
+    let entry = |name: &str| format!("{}\n", root.join(name).display());
+    scene.write_file("S/.git/objects/info/alternates", &entry("a"));
+    scene.write_file("S/a/info/alternates", &entry("b"));
+    scene.write_file("S/b/info/alternates", &entry("a"));
+
+    assert_eq!(check_alternates(&root, &locations, &bounds(10, 10)), Ok(()));
 }

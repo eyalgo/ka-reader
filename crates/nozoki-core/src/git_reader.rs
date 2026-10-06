@@ -3,6 +3,7 @@
 
 use std::path::{Path, PathBuf};
 
+mod alternates_scan;
 mod config_scan;
 mod libgit2;
 
@@ -178,9 +179,10 @@ pub enum StatusCategory {
     InConflict,
 }
 
-/// Why a read of a root's Git state failed, drawn from a closed set. Two cases carry text: the
+/// Why a read of a root's Git state failed, drawn from a closed set. Three cases carry text: the
 /// outside case carries the path where the Git directory lies, spelled from the root's own files,
-/// and the config case carries the key and the value its config spells.
+/// the config case carries the key and the value its config spells, and the object store case
+/// carries the entry or the link location its alternates spell.
 ///
 /// # Examples
 ///
@@ -211,6 +213,12 @@ pub enum GitReadCondition {
     /// The repository's own config names a path outside the folder, in a key libgit2 would follow.
     /// Nothing at that path was read.
     ConfigNamesOutside(ConfigNamedPath),
+    /// The repository's object store names a location outside the folder: an entry of an alternates
+    /// file, or a link at `objects`, `info` or `alternates`. The string is the entry as the file
+    /// spells it or, for a link, the location its spelling reaches, spelled lossily from its bytes
+    /// as [`ConfigNamedPath`]'s path is, and never resolved, quoted or trimmed. Nothing at that
+    /// location was read.
+    ObjectStoreNamesOutside(String),
 }
 
 /// The key a repository's config spells and the value it gives it, as the config writes them, when
@@ -237,9 +245,10 @@ pub struct ConfigNamedPath {
     pub path: String,
 }
 
-/// The answer to a probe. It holds no path and no text except in one variant: a refused config
-/// carries the key and the value the config spells, which are the repository's own words about a
-/// place outside the folder, and the probe reads nothing at that place.
+/// The answer to a probe. It holds no path and no text except in two variants: a refused config
+/// carries the key and the value the config spells, and a refused object store carries the entry or
+/// link location it spells. Both are the repository's own words about a place outside the folder,
+/// and the probe reads nothing at that place.
 ///
 /// # Examples
 ///
@@ -293,4 +302,8 @@ pub enum ProbeCondition {
     /// The repository's own config names a path outside the folder, in a key libgit2 would follow.
     /// The probe opened nothing and read nothing at that path.
     ConfigNamesOutside(ConfigNamedPath),
+    /// The repository's object store names a location outside the folder, by the value the string
+    /// holds, as [`GitReadCondition::ObjectStoreNamesOutside`] carries it. The probe opened nothing
+    /// and read nothing at that location.
+    ObjectStoreNamesOutside(String),
 }

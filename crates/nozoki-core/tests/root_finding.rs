@@ -19,16 +19,19 @@ fn port() -> &'static dyn GitPort {
     &Libgit2
 }
 
-/// CP-491: an answer holds no path, so its text holds no separator, except the config condition,
-/// which carries the key and the value its config spells and whose own cases assert that payload;
-/// and CP-496: the whole temporary root is what it was before the probe.
+/// CP-491: an answer holds no path, so its text holds no separator, except the config condition and
+/// the object store condition, which carry the value their repository's own file spells and whose
+/// own cases assert that payload; and CP-496: the whole temporary root is what it was before the
+/// probe.
 fn assert_clean(outcome: &RootFinding, before: &Snapshot, scene: &TempDir) {
-    let carries_the_configs_words = matches!(
+    let carries_the_repositorys_words = matches!(
         outcome,
-        RootFinding::Failed(ProbeCondition::ConfigNamesOutside(_))
+        RootFinding::Failed(
+            ProbeCondition::ConfigNamesOutside(_) | ProbeCondition::ObjectStoreNamesOutside(_)
+        )
     );
     assert!(
-        carries_the_configs_words || !format!("{outcome:?}").contains('/'),
+        carries_the_repositorys_words || !format!("{outcome:?}").contains('/'),
         "the answer {outcome:?} holds a path"
     );
     assert_eq!(&scene.snapshot(), before, "the probe changed the scene");

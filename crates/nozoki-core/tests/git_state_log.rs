@@ -129,6 +129,7 @@ fn test_failed_git_item_logs_one_warn_without_the_path() {
 
     status_failure_logs_one_warn_naming_git_reader_and_status();
     test_failed_git_item_with_the_config_condition_logs_one_warn_without_the_path();
+    test_failed_git_item_with_the_alternates_condition_logs_one_warn_without_the_path_or_entry();
 }
 
 /// Run inside the one test above: a status failure names `status` and not `state`.
@@ -202,5 +203,48 @@ fn test_failed_git_item_with_the_config_condition_logs_one_warn_without_the_path
             !text.contains(&named.path),
             "the record holds the path: {text}"
         );
+    }
+}
+
+/// The phrase the alternates condition is logged under, under both the probe's arm and the read's.
+const ALTERNATES_PHRASE: &str = "the object store names a location outside the folder";
+
+/// Run inside the one test above: the alternates condition, met by the probe and by the state read,
+/// logs one `warn` naming `git-reader`, the operation and the fixed phrase, never the entry it
+/// carries, and a phrase other than the config one (E17).
+fn test_failed_git_item_with_the_alternates_condition_logs_one_warn_without_the_path_or_entry() {
+    let entry = "../../../elsewhere/objects".to_string();
+    let met_by_the_probe = Double {
+        probe: RootFinding::Failed(ProbeCondition::ObjectStoreNamesOutside(entry.clone())),
+        head: Ok(standing_head()),
+        lists: Ok(clean_lists()),
+    };
+    let met_by_the_state_read = Double {
+        probe: RootFinding::Root,
+        head: Err(GitReadCondition::ObjectStoreNamesOutside(entry.clone())),
+        lists: Ok(clean_lists()),
+    };
+
+    assert_ne!(ALTERNATES_PHRASE, CONFIG_PHRASE);
+    for (double, operation) in [
+        (met_by_the_probe, "probe"),
+        (met_by_the_state_read, "state"),
+    ] {
+        let scene = TempDir::new();
+        scene.write_file("a.txt", "a");
+        let opened = open_folder(scene.path()).expect("the scene opens");
+
+        let _ = read_git(FolderModel::new(opened), &double);
+
+        let records = take_records();
+        assert_eq!(records.len(), 1, "one record: {records:?}");
+        let (level, text) = &records[0];
+        assert_eq!(*level, log::Level::Warn);
+        assert!(text.contains("git-reader"), "{text}");
+        assert!(text.contains(operation), "{operation}: {text}");
+        assert!(text.contains(ALTERNATES_PHRASE), "{text}");
+        assert!(!text.contains(CONFIG_PHRASE), "{text}");
+        assert!(!text.contains('/'), "the record holds a path: {text}");
+        assert!(!text.contains(&entry), "the record holds the entry: {text}");
     }
 }
