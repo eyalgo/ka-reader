@@ -57,7 +57,18 @@ None.
   NFDR traces to it go with it. No entry's obligation moves, because each derives from SDD v42 and
   not from the record. If you judge the decision itself wrong, it is the CTO's lane, and the route
   is an item on `docs/SDD_open_issues.md`, not an edit here.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm, with one addition. Accept ADR-0022 as it stands, with two
+  sentences of its *Decision* scoped to what `docs/SDD.md` v42 says before the status moves.
+  ADR-0022 is still Proposed, so this costs nothing now, and an accepted record can never be edited.
+  (a) ADR-0022 `:L52`, "An `includeIf` path refuses whatever its condition", should cover only an
+  `includeIf` path that spells outside the folder or is in a form the adapter does not locate.
+  That is how SDD § 11 R-16 scopes it (`docs/SDD.md:L3163-L3165`), and an inside `includeIf` is
+  followed. (b) ADR-0022 `:L55-L56`, "never the read-failed condition", should cover a refusal of a value.
+  The sentence should also say that a file the check cannot read answers the existing condition
+  for an unreadable Git directory, and that a config it cannot parse to the end answers the
+  read-failed condition. SDD § 3's `git-reader` row and § 11 R-16 (`docs/SDD.md:L3114-L3116`) state both.
+  Neither change moves a decision, an alternative or an NFDR obligation. Reasoning:
+  `docs/trail/architecture/self_answer-42.md`.
 
 ## 3. Raised from downstream — an item from a seat that did not write these records
 
