@@ -64,7 +64,7 @@ final class BridgePayloadGitTests: XCTestCase {
                     branch: .detached(commit: commit), state: .rebase, staged: [], changed: [])))
     }
 
-    func test_eachOfTheThirteenConditionsDecodesAndTheTwoWithTextKeepTheirOwn() {
+    func test_eachOfTheFourteenConditionsDecodesAndTheThreeWithTextKeepTheirOwn() {
         for condition in GitCondition.allCases {
             XCTAssertEqual(
                 decode(#"{"state":"failed","condition":"\#(condition.rawValue)"}"#),
@@ -80,7 +80,12 @@ final class BridgePayloadGitTests: XCTestCase {
                 #"{"state":"failed","condition":"config_names_outside","key":"include.path","path":"../../outside.config"}"#
             ),
             .failed(.configNamesOutside(key: "include.path", path: "../../outside.config")))
-        XCTAssertEqual(GitCondition.allCases.count + 2, 13)
+        XCTAssertEqual(
+            decode(
+                #"{"state":"failed","condition":"object_store_names_outside","path":"../../../elsewhere/objects"}"#
+            ),
+            .failed(.objectStoreNamesOutside(path: "../../../elsewhere/objects")))
+        XCTAssertEqual(GitCondition.allCases.count + 3, 14)
     }
 
     func test_configNamesOutsideDecodesWithExactlyItsFourMembers() {
@@ -113,6 +118,52 @@ final class BridgePayloadGitTests: XCTestCase {
         for payload in rejected {
             XCTAssertEqual(decode(payload), .stopped, payload)
         }
+    }
+
+    func test_theAlternatesWireObjectDecodesToTheFailureWithItsValue() {
+        for path in ["/Volumes/cache/objects", "../../../elsewhere/objects", "relative/objects"] {
+            XCTAssertEqual(
+                decode(
+                    #"{"state":"failed","condition":"object_store_names_outside","path":"\#(path)"}"#
+                ),
+                .failed(.objectStoreNamesOutside(path: path)), path)
+        }
+        XCTAssertEqual(
+            decode(
+                #"{"path":"/x","condition":"object_store_names_outside","state":"failed"}"#),
+            .failed(.objectStoreNamesOutside(path: "/x")),
+            "the members are read by name, in any order")
+    }
+
+    func test_aMissingPathDecodesAsStopped() {
+        for payload in [
+            #"{"state":"failed","condition":"object_store_names_outside"}"#,
+            #"{"state":"failed","condition":"object_store_names_outside","path":null}"#,
+            #"{"state":"failed","condition":"object_store_names_outside","path":7}"#,
+        ] {
+            XCTAssertEqual(decode(payload), .stopped, payload)
+        }
+    }
+
+    func test_anExtraKeyMemberDecodesAsStopped() {
+        XCTAssertEqual(
+            decode(
+                #"{"state":"failed","condition":"object_store_names_outside","path":"/x","key":"include.path"}"#
+            ),
+            .stopped)
+        XCTAssertEqual(
+            decode(
+                #"{"state":"failed","condition":"object_store_names_outside","path":"/x","extra":1}"#
+            ),
+            .stopped)
+    }
+
+    func test_anExtraGitDirectoryMemberDecodesAsStopped() {
+        XCTAssertEqual(
+            decode(
+                #"{"state":"failed","condition":"object_store_names_outside","path":"/x","git_directory":"/y"}"#
+            ),
+            .stopped)
     }
 
     func test_aKeyAndAPathBesideAnotherConditionAreStopped() {
