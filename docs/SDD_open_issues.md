@@ -84,7 +84,38 @@ None.
   folder, or name the two unlocated forms apart. The words stay `docs/CONTENT.md`'s.
 - **If a document has to be written:** none. A change in `SDD.md` § 11 R-16 and § 6 S-4, written by
   `product-sdd`. The CDO's clause in § 6 follows it, settled by `docs/UXD.md` § 6.
-- **Answer:** <the owner fills this in>
+- **Answer:** The condition states what the adapter observed, and for a value the check refuses
+  without locating, it does not say *outside*. Every value refused today stays refused.
+  The adapter makes two observations under this condition. For a value it spells from a base, it
+  observes that the path spells to a location outside the folder. That statement stands, and so
+  does its sentence, because `docs/CONTENT.md:L331-L337` fixes how anything that leads outside the
+  folder is said. For two forms it locates nothing: a value beginning `~/` under any member key,
+  and a relative `core.excludesfile` or `core.attributesfile`
+  (`crates/nozoki-core/src/git_reader/config_scan.rs:L26-L28`, `:L175-L186`). There it observes
+  the form alone: the config names a path the adapter does not locate. § 11 R-16 *The refusal and
+  its condition* states both. The condition carries which of the two was observed, beside the key
+  and the path as the config spells them, on the probe, on both reads and for a submodule's
+  config, and it crosses SM-2, SM-4 and SM-8 with them. Whether that is a field on the one
+  condition or a second condition is the design of the change that builds it. *The spellings*
+  reads "A value beginning `~/` is refused without being located" in place of "is outside", and
+  gives the reason: libgit2 expands such a value from the home directory (`libgit2-sys
+  0.18.8+1.9.7`, `libgit2/src/libgit2/config_file.c:L526-L527`, `attrcache.c:L338-L339`), and
+  `git-reader` reads no home directory. Locating the value was not taken. It needs a home
+  directory, the crate's own source reads none
+  (`grep -rn 'env::var\|HOME' crates/nozoki-core/src` prints only the `~/` prefix at
+  `config_scan.rs:L61` and `:L178`), and which directory libgit2 takes as home inside the
+  sandboxed bundle was not read. § 6 S-4 *Reached when*, observable half, gains the second
+  observation beside the first; that clause is the CDO's and follows from `docs/UXD.md` UX-S3's
+  Error cell (`:L241`). The refusal is also stated in § 3's `git-reader` row
+  (`docs/SDD.md:L338`), § 3's `core-bridge` row (`:L344`) and *Open Questions* (`:L6871-L6873`),
+  and each follows. § 4 C-E4's precedent does not reach these two forms. It lets the outside
+  sentence stand for three spellings because telling them from a true outside takes a read
+  outside the grant (`:L1051-L1060`), and these two are told apart by the scanner with no read.
+  **A stated limit until a change lands:** at `nozoki@fc14574` the shipped sentence says "outside
+  the folder you opened" for both forms
+  (`nozoki-mac/Sources/Surfaces/GitSentences.swift:L53-L57`), and R-16 names that beside the
+  claim. The second sentence's words are `docs/CONTENT.md`'s (`:L62`). Decided together with
+  answer 5.3. Reasoning: `docs/trail/sdd/self_answer-48.md` § 5.1.
 
 ### 5.2 The `read-only-harness` row counts nine fixture folders, and `checks/fixtures/` now holds eleven
 - **Raised by:** PM — 2026-10-05
@@ -99,7 +130,28 @@ None.
   superproject whose submodule's config does the same. The likely fold: the row re-measured at a
   current commit, with the two R-16 fixtures named beside the four root-finding scenes.
 - **If a document has to be written:** none. A change in `SDD.md` § 3, written by `product-sdd`.
-- **Answer:** <the owner fills this in>
+- **Answer:** The row is re-measured and re-pinned at a current commit. `ls checks/fixtures` at
+  `nozoki@d3f9e6a` lists eleven folders. The two the row does not count are
+  `config-names-outside` and `submodule-config-names-outside`, each with its `<name>.git.tar`.
+  They are § 11 R-16's fixtures, and `crates/nozoki-core/tests/git_state.rs` unpacks them
+  (`:L1204-L1205`, `:L1220-L1224`), not `root_finding.rs`. The row names them beside the four
+  root-finding scenes and says which suite reads them.
+  `git diff --name-status 814a369 d3f9e6a -- checks` shows four added paths, the two folders'
+  `README.md` files and the two archives, and no other added file, so nothing else joins the
+  enumeration. The row's line citations are re-read at the new pin: at `nozoki@d3f9e6a` the
+  scenes' unpack is at `root_finding.rs:L57`, and `:L49` unpacks `repo.git.tar`.
+  **One addition, from the same landing.** § 11 R-16 still says "No such fixture is in the tree"
+  (`docs/SDD.md:L3013-L3015`), that all three cases are owed (`:L3058-L3068`) and that no build
+  bounds the config-named read before the check lands (`:L3140-L3148`), and *Open Questions*
+  says "What stays open is the proof" (`:L6878`). Two of the three cases now exist:
+  `test_no_answer_reads_the_path_the_config_names_outside` (`git_state.rs:L1202`) and
+  `test_no_status_read_opens_what_a_submodules_config_includes_outside` (`:L1218`).
+  `cargo test --locked -p nozoki-core --test git_state` printed `ok` for both at
+  `nozoki@d3f9e6a`. The alternates case is still owed:
+  `grep -rl alternates checks crates nozoki-mac/Sources` prints nothing. The fold re-reads those
+  four places against the tree and states what is held and what is owed. Whether the *Open
+  Questions* item closes is the fold's reading of that item's own bound. Reasoning:
+  `docs/trail/sdd/self_answer-48.md` § 5.2.
 
 ### 5.3 R-16's spelling sentence gives every relative value the directory of its file, and only the include keys take it
 - **Raised by:** PM — 2026-10-05
@@ -117,7 +169,27 @@ None.
   sentence names the include keys, and two sentences beside it give `core.worktree` its Git-directory
   base and the excludes and attributes files their outside-by-rule placement.
 - **If a document has to be written:** none. A change in `SDD.md` § 11 R-16, written by `product-sdd`.
-- **Answer:** <the owner fills this in>
+- **Answer:** The sentence names the keys it is true of, and two sentences beside it give the
+  other three keys their own base. A relative `include.path` or `includeIf.<condition>.path`
+  value is spelled from the directory of the file that carries it (`libgit2-sys 0.18.8+1.9.7`,
+  `libgit2/src/libgit2/config_file.c:L573-L578`; a conditional include reaches the same function
+  at `:L755`). A relative `core.worktree` value is spelled from the Git directory
+  (`repository.c:L436-L437`). A relative `core.excludesfile` or `core.attributesfile` value has
+  no base: libgit2 keeps it as written (`attrcache.c:L341-L342`) and loads the excludes file
+  with a null base (`ignore.c:L362-L368`). The adapter refuses it without locating it, in the
+  words answer 5.1 fixes. The adapter already spells all five keys this way
+  (`crates/nozoki-core/src/git_reader/config_scan.rs:L175-L186`, `libgit2.rs:L264-L268`), so no
+  code moves. **One case the section does not state, and now states.** libgit2 expands `~/` for
+  the include keys and for the excludes and attributes files. It does not for `core.worktree`,
+  where it joins the value to the Git directory like any other relative value
+  (`repository.c:L436-L437`, `libgit2/src/util/fs_path.c:L387-L391`). The adapter refuses `~/`
+  under all five keys (`config_scan.rs:L178`). For `core.worktree` that refuses a value libgit2
+  would have resolved under the Git directory, and the refusal is kept. The repository would not
+  have opened as the folder's own either way, because the adapter requires the opened working
+  tree to be the folder (`libgit2.rs:L116-L123`), and the config condition names the key where
+  the conditions that open answers name none. § 3's `git-reader` row needs no edit for this
+  item: `grep -n 'spelled from the directory' docs/SDD.md` prints `:L3030` and nothing in the
+  row. Decided together with answer 5.1. Reasoning: `docs/trail/sdd/self_answer-48.md` § 5.3.
 
 ### 5.4 C-I3's six-fixture walk restores four scene fixtures as scenes other than the ones they name
 - **Raised by:** PM — 2026-10-05
@@ -142,4 +214,47 @@ None.
   on either side of that choice.
 - **If a document has to be written:** none. A change in `SDD.md` § 4 C-I3, or § 6 S-4's bar, written
   by `product-sdd`.
-- **Answer:** <the owner fills this in>
+- **Answer:** Three of the four scenes leave the walk, and the fourth stays under the name of
+  what the walk builds. § 6 S-4's promise clause reads: `checks/read-only.sh` prints `unchanged`
+  on `plain`, on `repo`, and on `submodule`, which the script's restore builds as a superproject
+  with its submodule's Git directory inside the folder. The clause names `inside-a-repo`,
+  `parent-of-two` and `linked-worktree` as proved by the suites and not by the walk. The script,
+  its restore contract and the archives do not change.
+  **What the restore builds.** Measured by unpacking each archive into a copy of its fixture in
+  a temporary folder, as `checks/read-only.sh:L73-L76` does. `inside-a-repo` has a `.git` folder
+  at its root and is a repository's root. `submodule` has a `.git` folder, `.gitmodules` and
+  `submodule/.git`, and is the superproject. `linked-worktree` has no `.git` at its root.
+  `parent-of-two` has none either, and its two repositories sit one folder further down. None of
+  the four is the scene it names.
+  **Why three leave.** The walk hashes the fixture folder and nothing above it
+  (`checks/read-only.sh:L17-L20`, `:L84`). `inside-a-repo` and `linked-worktree` are defined by a
+  Git directory outside the opened folder, so a hash of the folder cannot show that nothing was
+  written there. The suites snapshot the whole scene root: `crates/nozoki-core/tests/root_finding.rs:L38-L43`
+  around the probe (`:L104-L121` for `inside-a-repo` and `parent-of-two`), and
+  `crates/nozoki-core/tests/git_state.rs:L146-L155` around `state` and `status` (`:L719-L738`
+  for `linked-worktree` and `submodule`). On `inside-a-repo` and `parent-of-two` the probe
+  answers plain, and the walk's `read_git` asks nothing after a plain answer
+  (`checks/walk.rs:L5-L7`), so those runs add nothing to the run on `plain`.
+  **Why `submodule` stays.** As restored it is the one fixture where the status read meets a
+  submodule. Its index holds the gitlink `submodule`, `submodule/.git` reads
+  `gitdir: ../.git/modules/submodule`, and `git status --porcelain` on the copy printed
+  ` M submodule`. § 11 R-16 puts submodule repositories in the domain, and the hash covers both
+  Git directories because both lie inside the folder.
+  **§ 4 C-I3 gains a rule** beside "which fixture a command needs is its slice's own bar": a
+  walk fixture is a folder the script's in-place restore builds whole, and a scene whose Git
+  directory lies outside the opened folder is not one. § 3's `read-only-harness` row says, where
+  it lists the four scene archives, that they are laid out for a scene's root and not for the
+  fixture folder.
+  **The two other routes.** Building each scene in the script was not taken. The `inside-a-repo`
+  and `submodule` archives both carry `.git/` at their root (`tar -tf`), so unpacked at the
+  fixtures' parent they collide, and avoiding that means a second scene builder beside
+  `crates/nozoki-core/tests/common/mod.rs:L121-L133`. Leaving the walk as it is was not taken
+  either: it keeps runs whose fixture name says a scene the run does not walk.
+  **Not held, and named.** The walk drops the Git answer (`checks/walk.rs:L288-L292`), so no
+  case asserts that `read_git` answers root with a status on the restored `submodule`. That it
+  does is read from the layout and from `git status`, and was not run through the adapter. CI
+  runs the walk on `plain` and `repo` alone (`.github/workflows/ci.yml:L68`, `:L71`). § 4 C-I3
+  proves the promises on every build, so the `submodule` run belongs in CI beside those two, and
+  S-4 names both limits beside the clause until a change closes them. Whether the changed clause
+  is a § 10 entry is the fold's reading of the template's own rule. Reasoning:
+  `docs/trail/sdd/self_answer-48.md` § 5.4.
