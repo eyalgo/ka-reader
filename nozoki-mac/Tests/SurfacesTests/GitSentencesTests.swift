@@ -13,6 +13,7 @@ final class GitSentencesTests: XCTestCase {
         [
             .gitDirectoryOutside(gitDirectory: "/elsewhere/.git/worktrees/wt"),
             .configNamesOutside(key: "include.path", path: "../../outside.config"),
+            .configNotLocated(key: "include.path", path: "~/x.config"),
             .objectStoreNamesOutside(path: "../../../elsewhere/objects"),
         ] + GitCondition.allCases.map { .condition($0) }
     }
@@ -193,6 +194,62 @@ final class GitSentencesTests: XCTestCase {
                 sentence.replacingOccurrences(of: key, with: "")
                 .replacingOccurrences(of: path, with: "")
             XCTAssertFalse(wordsAround.localizedCaseInsensitiveContains("config"), sentence)
+        }
+    }
+
+    /// `change_text.md`'s message for a config key set to a value Nozoki does not locate: the key
+    /// and the path, each unchanged and unquoted, between the words around them.
+    private func notLocatedMessage(key: String, path: String) -> String {
+        "Nozoki found \(key) set to \(path) and doesn't work out where that path leads, so it "
+            + "doesn't read the folder's Git status. "
+            + "The file tree and the reading panel are unaffected."
+    }
+
+    func test_theConfigNotLocatedCaseDrawsChangeTextsMessageCharacterForCharacter() {
+        let cases = [
+            (key: "include.path", path: "~/x.config"),
+            (key: "core.excludesfile", path: "ignore-rel"),
+            (key: "core.attributesfile", path: "/x"),
+        ]
+
+        for (key, path) in cases {
+            let message = GitSentences.failure(.configNotLocated(key: key, path: path))
+
+            XCTAssertEqual(message, notLocatedMessage(key: key, path: path), key)
+            XCTAssertFalse(message.contains("\"\(key)\""), message)
+            XCTAssertFalse(message.contains("\"\(path)\""), message)
+        }
+        XCTAssertEqual(
+            GitSentences.failure(.configNotLocated(key: "core.excludesfile", path: "ignore-rel")),
+            "Nozoki found core.excludesfile set to ignore-rel and doesn't work out where that "
+                + "path leads, so it doesn't read the folder's Git status. "
+                + "The file tree and the reading panel are unaffected.")
+    }
+
+    func test_theConfigNotLocatedMessageNeverSaysOutsideOrAForbiddenWord() {
+        let message = GitSentences.failure(.configNotLocated(key: "include.path", path: "a"))
+        let forbidden = [
+            "outside", "invalid", "unsupported", "illegal", "malformed", "refused", "!",
+        ]
+
+        for word in forbidden {
+            XCTAssertFalse(message.localizedCaseInsensitiveContains(word), "\(word): \(message)")
+        }
+    }
+
+    func test_theNotLocatedMessageDiffersFromEveryOtherFailureSentenceAndTheFault() {
+        let message = GitSentences.failure(.configNotLocated(key: "include.path", path: "a"))
+        let others =
+            [
+                GitFailure.gitDirectoryOutside(gitDirectory: "a"),
+                .configNamesOutside(key: "include.path", path: "a"),
+                .objectStoreNamesOutside(path: "a"),
+            ] + GitCondition.allCases.map { GitFailure.condition($0) }
+
+        XCTAssertNotEqual(message, GitSentences.fault)
+        XCTAssertNotEqual(message, GitSentences.pending)
+        for other in others {
+            XCTAssertNotEqual(message, GitSentences.failure(other))
         }
     }
 
