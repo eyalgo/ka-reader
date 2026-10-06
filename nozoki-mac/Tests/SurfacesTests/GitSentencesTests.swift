@@ -13,6 +13,7 @@ final class GitSentencesTests: XCTestCase {
         [
             .gitDirectoryOutside(gitDirectory: "/elsewhere/.git/worktrees/wt"),
             .configNamesOutside(key: "include.path", path: "../../outside.config"),
+            .objectStoreNamesOutside(path: "../../../elsewhere/objects"),
         ] + GitCondition.allCases.map { .condition($0) }
     }
 
@@ -204,6 +205,44 @@ final class GitSentencesTests: XCTestCase {
         XCTAssertNotEqual(config, GitSentences.fault)
         for other in others {
             XCTAssertNotEqual(config, GitSentences.failure(other))
+        }
+    }
+
+    /// `change_text.md`'s string for an object store that names a location outside the folder: the
+    /// value, unchanged and unquoted, between the words around it.
+    private func alternatesSentence(path: String) -> String {
+        "Nozoki found a Git object store that names \(path), outside the folder you opened, so "
+            + "Nozoki doesn't read the folder's Git status. "
+            + "The file tree and the reading panel are unaffected."
+    }
+
+    func test_theAlternatesFailureReadsAsChangeTextWritesIt() {
+        XCTAssertEqual(
+            GitSentences.failure(.objectStoreNamesOutside(path: "/Users/you/src/app/.git/objects")),
+            "Nozoki found a Git object store that names /Users/you/src/app/.git/objects, outside "
+                + "the folder you opened, so Nozoki doesn't read the folder's Git status. "
+                + "The file tree and the reading panel are unaffected.")
+
+        for path in ["/Users/you/src/app/.git/objects", "../../../elsewhere/objects", "relative/objects"] {
+            let sentence = GitSentences.failure(.objectStoreNamesOutside(path: path))
+
+            XCTAssertEqual(sentence, alternatesSentence(path: path), path)
+            XCTAssertFalse(sentence.contains("\"\(path)\""), sentence)
+            XCTAssertFalse(sentence.contains("'\(path)'"), sentence)
+        }
+    }
+
+    func test_theAlternatesSentenceIsDistinctFromEveryOtherFailureSentence() {
+        let alternates = GitSentences.failure(.objectStoreNamesOutside(path: "a"))
+        let others =
+            [
+                GitFailure.gitDirectoryOutside(gitDirectory: "a"),
+                .configNamesOutside(key: "include.path", path: "a"),
+            ] + GitCondition.allCases.map { GitFailure.condition($0) }
+
+        XCTAssertNotEqual(alternates, GitSentences.fault)
+        for other in others {
+            XCTAssertNotEqual(alternates, GitSentences.failure(other))
         }
     }
 

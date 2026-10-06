@@ -454,7 +454,10 @@ final class WorkbenchGitTests: XCTestCase {
 
     func test_everyFailureIsShownAndTheTreeStillSelectsThroughFiles() throws {
         let failures: [GitItem] =
-            [.failed(.gitDirectoryOutside(gitDirectory: "/elsewhere/.git/worktrees/wt")), .stopped]
+            [
+                .failed(.gitDirectoryOutside(gitDirectory: "/elsewhere/.git/worktrees/wt")),
+                .failed(.objectStoreNamesOutside(path: "../../../elsewhere/objects")), .stopped,
+            ]
             + GitCondition.allCases.map { .failed(.condition($0)) }
 
         for failure in failures {

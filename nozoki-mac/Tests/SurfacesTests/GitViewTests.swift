@@ -230,6 +230,23 @@ final class GitViewTests: XCTestCase {
         XCTAssertEqual(visibleImageViews(fixture.view).map(\.image), [failureGlyph])
     }
 
+    func test_theAlternatesFailureDrawsOneMessageAndNothingElse() {
+        let fixture = makeView(
+            showing: .failed(.objectStoreNamesOutside(path: "../../../elsewhere/objects")))
+
+        XCTAssertEqual(
+            strings(fixture.view),
+            [
+                "Nozoki found a Git object store that names ../../../elsewhere/objects, outside "
+                    + "the folder you opened, so Nozoki doesn't read the folder's Git status. "
+                    + "The file tree and the reading panel are unaffected."
+            ])
+        XCTAssertNotEqual(strings(fixture.view), [GitSentences.pending])
+        XCTAssertTrue(rowViews(fixture.view).isEmpty)
+        XCTAssertTrue(shown(descendants(of: fixture.view)).allSatisfy { !($0 is NSButton) })
+        XCTAssertEqual(visibleImageViews(fixture.view).map(\.image), [failureGlyph])
+    }
+
     func test_machineConfigNotSwitchedOffDrawsTheFault() {
         let fixture = makeView(showing: .failed(.condition(.machineConfigNotSwitchedOff)))
 
@@ -254,7 +271,10 @@ final class GitViewTests: XCTestCase {
 
     func test_aFailureOrStoppedDrawsNoHeadingRowOrShortStatus() {
         let failures: [GitItem] =
-            [.stopped, .failed(.gitDirectoryOutside(gitDirectory: "/e"))]
+            [
+                .stopped, .failed(.gitDirectoryOutside(gitDirectory: "/e")),
+                .failed(.objectStoreNamesOutside(path: "/e")),
+            ]
             + GitCondition.allCases.map { .failed(.condition($0)) }
 
         for item in failures {
