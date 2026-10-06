@@ -1,6 +1,6 @@
 # SDD — nozoki
 
-**Status:** Settled
+**Status:** Draft
 <!-- Draft = open issues or choices to confirm remain (open-issues file present).
      Settled = nothing left for the owner to answer and no open technical question — the done
        signal, and the state a finished SDD carries; the open-issues file is gone.
