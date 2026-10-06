@@ -88,7 +88,36 @@ None.
   way cycle-38 § 5.1 treated the alternates check.
 - **If a document has to be written:** none. A change in `SDD.md` § 6 S-4 and § 11 R-16, written
   by `product-sdd`.
-- **Answer:** <the owner fills this in>
+- **Answer:** Confirmed, with two additions. Both passages are re-measured at a current commit, and
+  each known-defect sentence is replaced by what is built, the way cycle-38 § 5.1 treated the
+  alternates check. *Measured in this run* at `nozoki@d7f79c7`, whose tree outside `docs/` is
+  `nozoki@c25201a`'s (`git diff --stat c25201a HEAD -- . ':!docs'` prints nothing): the adapter
+  answers `ConfigNotLocated` for a value in either not-located form
+  (`crates/nozoki-core/src/git_reader/libgit2.rs:L274`; the two forms at
+  `crates/nozoki-core/src/git_reader/config_scan.rs:L178`, `:L182`), on the probe (`libgit2.rs:L486`),
+  on both reads and for a submodule's config; the wire value is `config_not_located`
+  (`crates/nozoki-bridge/src/session.rs:L362`, `:L378`, asserted at `:L1576`); the shell decodes it
+  (`nozoki-mac/Sources/Shell/BridgePayload.swift:L383-L384`) and draws "Nozoki found {key} set to
+  {path} and doesn't work out where that path leads, so it doesn't read the folder's Git status. The
+  file tree and the reading panel are unaffected." (`nozoki-mac/Sources/Surfaces/GitSentences.swift:L58-L62`);
+  the outside sentence is unchanged (`:L53-L57`). `cargo test --workspace --locked` printed 511
+  passed, 0 failed; `swift test --package-path nozoki-mac` printed 136 tests, 0 failures.
+  *Addition one — the passages name the cases that hold it*, as RN-103's *The proof* names the
+  alternates case: `test_a_tilde_slash_value_is_refused_as_not_located_on_all_three_calls`
+  (`crates/nozoki-core/tests/git_state.rs:L1534`), `test_a_relative_excludesfile_is_refused_as_not_located`
+  (`:L1556`), `test_a_tilde_slash_value_in_a_submodules_config_is_not_located_on_status_alone`
+  (`:L1543`), the log case, one `warn` and no path
+  (`crates/nozoki-core/tests/git_state_log.rs:L214`), and the shell's sentence case
+  (`nozoki-mac/Tests/SurfacesTests/GitSentencesTests.swift:L222-L226`). A passage that says
+  "built" in this document carries its case.
+  *Addition two — the fold stops at the five keys named first.* The sixth key's not-located form, a
+  `.gitmodules` section path beginning `/`, which R-16 says "answers this second observation"
+  (`docs/SDD.md:L3116-L3118`), is not built: at `nozoki@c25201a` the adapter still skips every key
+  of `.gitmodules` but the include keys (`libgit2.rs:L247-L248`), so the `.gitmodules` known defect
+  (`:L3290-L3296`), § 4 C-D3's sentence on it (`:L1017-L1018`) and § 6 S-4's (`:L1903-L1906`) stand
+  as they are. The CDO's clause in § 6 S-4 does not move: the second-observation sentence was
+  settled by `docs/UXD.md` UX-S3 Error and `docs/CONTENT.md:L62` at RN-101, and only the
+  build-state sentence after it changes. Reasoning: `docs/trail/sdd/self_answer-51.md` § 5.1.
 
 ### 5.2 R-16 leaves open whether the config condition's observation is a field or a second condition, and it is a second condition
 - **Raised by:** PM — 2026-10-07
@@ -108,4 +137,18 @@ None.
   sentence is left as it stands.
 - **If a document has to be written:** none. A change in `SDD.md` § 11 R-16, written by
   `product-sdd`.
-- **Answer:** <the owner fills this in>
+- **Answer:** Confirmed. It is a second condition, at every seam the sentence names.
+  `ConfigNotLocated(ConfigNamedPath)` is its own variant of `GitReadCondition`
+  (`crates/nozoki-core/src/git_reader.rs:L221`) and of `ProbeCondition` (`:L314`), beside
+  `ConfigNamesOutside`; on the wire it is its own value, `config_not_located`
+  (`crates/nozoki-bridge/src/session.rs:L378`, under `rename_all = "snake_case"` at `:L362`), with
+  the same members as `config_names_outside` (`:L280`); the shell decodes it as its own case
+  (`nozoki-mac/Sources/Shell/BridgePayload.swift:L383-L384`); the model gives it its own phrase
+  (`crates/nozoki-core/src/folder_model.rs:L237`). No function joined SM-4:
+  `git diff 218e250 c25201a -- crates/nozoki-bridge` adds no export, so RN-101's "no seam moved"
+  still holds with the fact a condition rather than a field. The sentence at `docs/SDD.md:L3120-L3121`
+  states that, pinned at a current commit, with its old words in the fold's dated note. The
+  alternates sentence (`:L3378-L3380`) stays as it stands: `GitReadCondition` has no not-located
+  variant for the object store (`git_reader.rs:L227` is `ObjectStoreNamesOutside(String)` alone,
+  and `ProbeCondition`'s at `:L318`). RN-101's copy of the sentence (`:L7227-L7228`) is a record
+  of v41 and does not move. Reasoning: `docs/trail/sdd/self_answer-51.md` § 5.2.
