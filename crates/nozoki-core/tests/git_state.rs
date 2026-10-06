@@ -1614,22 +1614,11 @@ fn test_the_other_not_located_forms_and_the_key_text_rule() {
         &root,
         &format!("[includeIf \"gitdir:~/work/\"]\n\tpath = {value}\n"),
     );
-    let probed = port().probe(&root);
-    let RootFinding::Failed(ProbeCondition::ConfigNamesOutside(named)) = probed else {
-        panic!("the outside absolute value is refused as outside, not as not located: {probed:?}");
-    };
-    assert_eq!(named.path, value);
-    assert!(
-        named.key.to_lowercase().starts_with("includeif.") && named.key.ends_with(".path"),
-        "the key carries the `~/` the config spells it with: {named:?}"
-    );
-    assert_eq!(
-        port().state(&root),
-        Err(GitReadCondition::ConfigNamesOutside(named.clone()))
-    );
-    assert_eq!(
-        port().status(&root),
-        Err(GitReadCondition::ConfigNamesOutside(named))
+    assert_failed_on_all_three(
+        &scene,
+        &root,
+        ProbeCondition::ConfigNamesOutside(config_named("includeIf.gitdir:~/work/.path", &value)),
+        GitReadCondition::ConfigNamesOutside(config_named("includeIf.gitdir:~/work/.path", &value)),
     );
 }
 
