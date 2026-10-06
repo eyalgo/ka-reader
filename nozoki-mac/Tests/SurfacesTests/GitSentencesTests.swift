@@ -223,7 +223,9 @@ final class GitSentencesTests: XCTestCase {
                 + "the folder you opened, so Nozoki doesn't read the folder's Git status. "
                 + "The file tree and the reading panel are unaffected.")
 
-        for path in ["/Users/you/src/app/.git/objects", "../../../elsewhere/objects", "relative/objects"] {
+        for path in [
+            "/Users/you/src/app/.git/objects", "../../../elsewhere/objects", "relative/objects",
+        ] {
             let sentence = GitSentences.failure(.objectStoreNamesOutside(path: path))
 
             XCTAssertEqual(sentence, alternatesSentence(path: path), path)
