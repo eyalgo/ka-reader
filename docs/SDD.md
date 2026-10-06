@@ -6,7 +6,8 @@
        signal, and the state a finished SDD carries; the open-issues file is gone.
      Locked = ratified as the source of truth. -->
 **Owner:** CTO — writes every part; the CPO and the CDO decide the parts the lane table names, through `SDD_open_issues.md` items carrying their `Seat:`
-**Version:** 43 — CTO, one run, with three answered companion items folded (`docs/trail/sdd/cycle-38.md` §§ 5.1 – 5.3), all three the CTO's, raised by the PM after the alternates check was built: § 3, the `git-reader` row (the alternates refusal's condition states which of two things the adapter observed, and does not say *outside* for an entry it refuses without locating; the one condition built at `nozoki@66f428d` is named as a known defect) and the `read-only-harness` row (re-measured and re-pinned at `nozoki@5331b85`: twelve fixture folders, `alternates-names-outside` named as § 11 R-16's third fixture with what its tracked folder holds and the suite that unpacks it); § 4 C-D3 (the *Not covered* passage names the second observation); § 6 `see-git-status` *Reached when*, observable half (a second alternates passage, for an entry the tool refuses without locating — the CDO's clause, settled by `docs/UXD.md` UX-S3 Error and `docs/CONTENT.md`'s rule on what a message says — and the shipped sentence as a known defect) and *Rests on* (RN-103); § 11 R-16 (*The proof, and what no case holds yet* names the alternates case as in the tree; under "A third way out": *The condition* states the two observations, which entries answer each, the first refused entry carried, and the known defect; *The spellings* says where an entry beginning with neither `.` nor `/` leads under libgit2 and under Git, that the adapter locates neither, and why locating it was not taken; *What is not a refusal* and *What the refusal costs a reader* each gain one sentence; *The proof* names the fixture, the case, what it watches and what it does not, and the suite run; *Until the checks are built* states both checks before the open as built, the past in the past tense, and the one read the sandbox still bounds alone); *Open Questions*, the config-named-path item (four cases with one owed, open on the `.gitmodules` case alone, and a dated note); SDD Review Notes RN-103 (new); trail copy at `docs/trail/sdd/cycle-38.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. No *Delivers*, no slice added, no § 10 entry, no § 7 edge, no slice order, no part's *Must not own* and no seam altered. Companion items added: none.
+**Version:** 44 — CTO, one run, with two answered companion items folded (`docs/trail/sdd/cycle-39.md` §§ 5.1 – 5.2), both the CTO's, raised by the PM after the config condition's second observation was built: § 6 `see-git-status` *Reached when*, observable half (the build-state sentence after the second config passage: the shipped sentence for a value the tool does not locate, quoted and pinned at `nozoki@fadff58`, with the shell's case that holds it; the CDO's own sentence before it does not move) and *Rests on* (RN-104); § 11 R-16, *The refusal and its condition* (the sentence that left the field-or-condition split to the building change states a second condition at SM-2, SM-4 and SM-8, with the locator at each seam; the paragraph headed *A known defect, until a change lands* is replaced by *Built, and the cases that hold it*, which pins the build, quotes the sentence, names the five cases, records both test runs, and scopes itself to the five keys named first); SDD Review Notes RN-104 (new); trail copy at `docs/trail/sdd/cycle-39.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. Every sentence whose claim changed keeps its old words in a dated note beside it. The alternates condition's field-or-condition sentence and its known defect at `nozoki@66f428d` stand, and so do the three `.gitmodules` known-defect passages. No *Delivers*, no slice added, no § 10 entry, no § 7 edge, no slice order, no part's *Must not own* and no seam altered. Companion items added: none.
+Version 43 — CTO, one run, with three answered companion items folded (`docs/trail/sdd/cycle-38.md` §§ 5.1 – 5.3), all three the CTO's, raised by the PM after the alternates check was built: § 3, the `git-reader` row (the alternates refusal's condition states which of two things the adapter observed, and does not say *outside* for an entry it refuses without locating; the one condition built at `nozoki@66f428d` is named as a known defect) and the `read-only-harness` row (re-measured and re-pinned at `nozoki@5331b85`: twelve fixture folders, `alternates-names-outside` named as § 11 R-16's third fixture with what its tracked folder holds and the suite that unpacks it); § 4 C-D3 (the *Not covered* passage names the second observation); § 6 `see-git-status` *Reached when*, observable half (a second alternates passage, for an entry the tool refuses without locating — the CDO's clause, settled by `docs/UXD.md` UX-S3 Error and `docs/CONTENT.md`'s rule on what a message says — and the shipped sentence as a known defect) and *Rests on* (RN-103); § 11 R-16 (*The proof, and what no case holds yet* names the alternates case as in the tree; under "A third way out": *The condition* states the two observations, which entries answer each, the first refused entry carried, and the known defect; *The spellings* says where an entry beginning with neither `.` nor `/` leads under libgit2 and under Git, that the adapter locates neither, and why locating it was not taken; *What is not a refusal* and *What the refusal costs a reader* each gain one sentence; *The proof* names the fixture, the case, what it watches and what it does not, and the suite run; *Until the checks are built* states both checks before the open as built, the past in the past tense, and the one read the sandbox still bounds alone); *Open Questions*, the config-named-path item (four cases with one owed, open on the `.gitmodules` case alone, and a dated note); SDD Review Notes RN-103 (new); trail copy at `docs/trail/sdd/cycle-38.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. No *Delivers*, no slice added, no § 10 entry, no § 7 edge, no slice order, no part's *Must not own* and no seam altered. Companion items added: none.
 Version 42 — CTO, one run, with the one answered companion item folded (`docs/trail/sdd/cycle-37.md` § 2.1), the CTO's, raised by the Principal Architect's run and answered in the CTO's seat: § 3, the `git-reader` row (*Owns* gains the `.gitmodules` check, run after the open and before the status read: the files it reads, the include keys and each submodule section's path it reads them for, the refusals and the conditions they answer, the rule that the status read reports each gitlink from the repository at that gitlink's own path, and what is not built; *Must not own* gains a third exception, `.gitmodules` and the files it includes inside the folder) and the `core-bridge` row (one sentence: `.gitmodules` is checked after the open); § 4 C-D3 (the same sentence, in its *Not covered* passage); § 6 `see-git-status` *Reached when*, observable half (one passage, three cases: a path `.gitmodules` names outside the folder, a section's path the tool refuses without locating, and a section that gives a submodule path another location — the CDO's clause, settled by `docs/UXD.md` § 6 and UX-S3 Error and by `docs/CONTENT.md`'s rule on what a message says) and *Rests on*; § 11 R-16 (the domain measures six members where it measured five; two new paragraphs, *The sixth member* and *The status read and the submodule map*, the second carrying the answering run's measurement; the `~/` sentences scoped to the five keys named first; *The proof* names three cases in the tree and a fourth owed; two refusals stated as a known defect until a change lands, and an unreadable `.gitmodules` named as a limit); *Open Questions*, the config-named-path item (four cases with two owed, and the two things the change that builds the refusal settles); SDD Review Notes RN-102 (new); trail copy at `docs/trail/sdd/cycle-37.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` reads Settled where the run before stamped it Draft. No *Delivers*, no slice added, no § 10 entry, no § 7 edge, no slice order and no seam altered. Companion items added: none.
 Version 41 — CTO, one run, with four answered companion items folded (`docs/trail/sdd/cycle-36.md` §§ 5.1 – 5.4), all four the CTO's, raised by the PM after the config check was built: § 3, the `git-reader` row (the config refusal's condition states which of two things the adapter observed, and does not say *outside* for a value it refuses without locating) and the `core-bridge` row (the same, in its *Not covered* sentence); § 3, the `read-only-harness` row (re-measured and re-pinned at `nozoki@2d7692c`: eleven fixture folders, § 11 R-16's two fixtures named with the suite that reads them, and the four scene archives named as laid out for a scene's root); § 4 C-I3 (a rule for what a walk fixture is, and how "every fixture" in a promise clause reads); § 6 `see-git-status` *Reached when*, observable half (a second passage for a config value the tool refuses without locating — the CDO's clause, settled by `docs/UXD.md` UX-S3 Error and `docs/CONTENT.md`'s rule on what a message says) and command half (the promise clause names `plain`, `repo` and `submodule`, names three scenes as proved by the suites and not by the walk, and states two limits); § 11 R-16 (*shows up as* names the two fixtures now in the tree; *The refusal and its condition* states the two observations, why two forms are not located, why § 4 C-E4's precedent does not reach them, and the shipped sentence as a known defect; *The spellings* gives each key its own base and states the `core.worktree` case; *The proof* and *Until the checks are built* state what is held and what is owed); *Open Questions*, the config-named-path item (two of three cases are in the tree, and the item stays open on the alternates case); the `**Owner:**` line and the section now headed *Who decides what* (the current template's wording, with every row's seat unchanged); SDD Review Notes RN-101 (new); trail copy at `docs/trail/sdd/cycle-36.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. No *Delivers*, no slice added, no § 10 entry, no § 7 edge, no slice order, no part's *Must not own* and no seam altered. Companion items added: none.
 Version 40 — CTO, one run, with the one answered companion item folded (`docs/trail/sdd/cycle-35.md` § 2.1), the CTO's: § 3, the `git-reader` row (*Owns* gains the alternates check run beside the config check, what it reads, the spellings it refuses, the condition a refusal answers, and a third check on each submodule repository; *Must not own* gains a second exception, the `info/alternates` file of an alternate object directory inside the folder); § 4 C-D3 (the second *Not covered* sentence names the refusal in place of "covered by nothing outside the sandbox"); § 6 `see-git-status` *Reached when*, observable half (one passage for a repository whose object store names a location outside the folder — the CDO's clause, settled by `docs/UXD.md` § 6 and UX-S3 Error) and *Rests on* (RN-100 beside RN-99); § 11 R-16 ("A third way out" is confirmed and rewritten with the answer's five additions, the proof gains one fixture and one case, and *Not covered* names two more limits); *Open Questions*, the config-named-path item (the alternates case joins the proof under the same bound); SDD Review Notes RN-100 (new); trail copy at `docs/trail/sdd/cycle-35.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` returns to Settled. No *Delivers*, no slice added, no § 10 entry, no § 7 edge, no slice order and no seam altered. Companion items added: none.
@@ -1867,10 +1868,19 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   Git view's failure
   slot and never as nothing, whether the refusal met the root finding or a later read, and the
   tree and the panel work exactly as before, which is the route out. The message's words are
-  `docs/CONTENT.md`'s. At `nozoki@fc14574` the shipped sentence says "outside the folder you
-  opened" for both observations, which § 11 R-16 names as a known defect until a change lands
-  (§ 11 R-16; `docs/UXD.md` § 6, UX-S3 Error, UX-I10, UX-I14, UX-I17;
-  RN-99, RN-101). They open a repository whose object store names a location outside the folder, in its
+  `docs/CONTENT.md`'s. At `nozoki@fadff58` the shipped sentence for the second observation is
+  "Nozoki found {key} set to {path} and doesn't work out where that path leads, so it doesn't
+  read the folder's Git status. The file tree and the reading panel are unaffected."
+  (`nozoki-mac/Sources/Surfaces/GitSentences.swift:L58-L62`), held by the shell's case
+  `test_theConfigNotLocatedCaseDrawsChangeTextsMessageCharacterForCharacter`
+  (`nozoki-mac/Tests/SurfacesTests/GitSentencesTests.swift:L208`; the literal at `:L222-L226`),
+  and the outside sentence stands for the first observation (`GitSentences.swift:L53-L57`)
+  (§ 11 R-16, *The refusal and its condition*, *Built, and the cases that hold it*;
+  `docs/UXD.md` § 6, UX-S3 Error, UX-I10, UX-I14, UX-I17;
+  RN-99, RN-101, RN-104). *(Until 2026-10-07 this sentence said that at `nozoki@fc14574` the
+  shipped sentence said "outside the folder you opened" for both observations, which § 11 R-16
+  named as a known defect until a change landed. `docs/trail/sdd/cycle-39.md` § 5.1;
+  RN-104.)* They open a repository whose object store names a location outside the folder, in its
   `objects/info/alternates` file: the Git view's item shows what was observed — that the
   repository's object store names a location outside the folder they opened, with the entry as
   the alternates file spells it — and that this folder's Git state is therefore not read. They
@@ -1977,7 +1987,7 @@ public at 1.0.0 or later (`system/projects/nozoki/agari.md`).
   RN-95; the Git view's file row's hover fill; RN-96; and the Git view's selected row's
   fill; RN-97); `SM-2`, `SM-4` (`read_git`; § 10 RC-4); § 4 C-R6, C-I1; § 9 TO-2, TO-10; § 11 R-1,
   R-3, R-16 (the checks before the open, and the `.gitmodules` check before the status read;
-  RN-99, RN-100, RN-102, RN-103). Slices: `open-a-folder`, `read-a-file`.
+  RN-99, RN-100, RN-102, RN-103, RN-104). Slices: `open-a-folder`, `read-a-file`.
 - **Traces to:** PRD § Key Use Cases 2 and 4; § Core Features "A Git view", "Git is read only when
   the folder opened is itself the root of a Git repository", "A file tree with changed-file
   markers"; § UX Notes "The path" 3, "the view never lies"; § Out of Scope "Creating or
@@ -3117,8 +3127,19 @@ A risk with no trigger and no response is an observation.>
   member*, below). *(Until 2026-10-06 the first of the two forms read "a value beginning `~/`
   under any member key", when the members were five. RN-102.)* The condition carries which of the two was observed, beside
   the key and the path as the config spells them, on the probe, on both reads and for a
-  submodule's config, and it crosses SM-2, SM-4 and SM-8 with them. Whether that is a field on
-  the one condition or a second condition is the design of the change that builds it. Every
+  submodule's config, and it crosses SM-2, SM-4 and SM-8 with them. It is a second condition,
+  at each of those seams, at `nozoki@fadff58`: `ConfigNotLocated(ConfigNamedPath)` is a
+  variant of its own on `GitReadCondition` and on `ProbeCondition`, beside `ConfigNamesOutside`
+  (`crates/nozoki-core/src/git_reader.rs:L221`, `:L314`); on the wire it is its own value,
+  `config_not_located`, under `rename_all = "snake_case"`, carrying the same members as
+  `config_names_outside` (`crates/nozoki-bridge/src/session.rs:L362`, `:L378`, `:L280`;
+  asserted as that string at `:L1576`); the shell decodes it as a case of its own
+  (`nozoki-mac/Sources/Shell/BridgePayload.swift:L383-L384`); and the model gives it a phrase
+  of its own (`crates/nozoki-core/src/folder_model.rs:L237`). No function joined SM-4 for it:
+  `git diff 218e250 c25201a -- crates/nozoki-bridge` adds no export, so RN-101's "no seam
+  moved" holds, with the fact a condition rather than a field. *(Until 2026-10-07 this sentence
+  read "Whether that is a field on the one condition or a second condition is the design of the
+  change that builds it." `docs/trail/sdd/cycle-39.md` § 5.2; RN-104.)* Every
   value refused at version 40 of this document stays refused. It is not the read-failed
   condition, because no
   read is tried. The probe answers a failed root finding with the same cause, and the reads
@@ -3141,13 +3162,38 @@ A risk with no trigger and no response is an observation.>
   for three spellings that may lead in, because telling them from a true outside takes a read
   outside the grant. These two forms are told apart by the scanner with no read
   (`config_scan.rs:L175-L186`).
-  *A known defect, until a change lands.* At `nozoki@fc14574` the adapter answers one condition
-  for both observations (`crates/nozoki-core/src/git_reader/libgit2.rs:L258-L265`, `:L276-L278`),
-  and the shipped sentence says "outside the folder you opened" for both
-  (`nozoki-mac/Sources/Surfaces/GitSentences.swift:L53-L57`). For a `~/` value that expands
-  into the opened folder that sentence is false. The refusal itself holds. The second
-  sentence's words are `docs/CONTENT.md`'s, under its rule that "A message says what Nozoki
-  observed" (`docs/CONTENT.md:L62`).
+  *Built, and the cases that hold it.* At `nozoki@fadff58`, whose tree outside `docs/` is
+  `nozoki@c25201a`'s (`git diff --stat c25201a fadff58 -- . ':!docs'` prints nothing), the
+  adapter answers `ConfigNotLocated` for a value in either of the two not-located forms
+  (`crates/nozoki-core/src/git_reader/libgit2.rs:L274`; the two forms at
+  `crates/nozoki-core/src/git_reader/config_scan.rs:L178`, `:L182`), on the probe
+  (`libgit2.rs:L486`), on both reads and for a submodule's config, and keeps
+  `ConfigNamesOutside` for a value that spells outside. The shipped sentence for it is "Nozoki
+  found {key} set to {path} and doesn't work out where that path leads, so it doesn't read the
+  folder's Git status. The file tree and the reading panel are unaffected."
+  (`nozoki-mac/Sources/Surfaces/GitSentences.swift:L58-L62`); `grep -i -c outside` over those
+  lines prints `0`, and the outside sentence is unchanged (`:L53-L57`). Its words are
+  `docs/CONTENT.md`'s, under its rule that "A message says what Nozoki observed"
+  (`docs/CONTENT.md:L62`). The cases:
+  `test_a_tilde_slash_value_is_refused_as_not_located_on_all_three_calls`
+  (`crates/nozoki-core/tests/git_state.rs:L1534`),
+  `test_a_tilde_slash_value_in_a_submodules_config_is_not_located_on_status_alone` (`:L1543`),
+  `test_a_relative_excludesfile_is_refused_as_not_located` (`:L1556`), the log case
+  `test_failed_git_item_with_the_not_located_condition_logs_one_warn_without_the_path` — one
+  `warn` and no path (`crates/nozoki-core/tests/git_state_log.rs:L214`) — and the shell's
+  `test_theConfigNotLocatedCaseDrawsChangeTextsMessageCharacterForCharacter`
+  (`nozoki-mac/Tests/SurfacesTests/GitSentencesTests.swift:L208`). `cargo test --workspace
+  --locked` printed 511 passed and 0 failed, and `swift test --package-path nozoki-mac`
+  printed 136 tests with 0 failures, both in the fold that wrote this paragraph and in the run
+  that answered the item (`docs/trail/sdd/cycle-39.md` § 5.1). The cases run the adapter and
+  the shell's sentences in-process; no case runs either on the built bundle. This paragraph
+  holds for the five keys named first: the sixth key's not-located form, a `.gitmodules`
+  section path beginning `/`, is not built (*The sixth member*, below), and the adapter still
+  skips every key of `.gitmodules` but the include keys (`libgit2.rs:L247-L248`). *(Until
+  2026-10-07 this paragraph was headed "A known defect, until a change lands" and said that at
+  `nozoki@fc14574` the adapter answered one condition for both observations and the shipped
+  sentence said "outside the folder you opened" for both, which for a `~/` value that expands
+  into the opened folder was false. `docs/trail/sdd/cycle-39.md` § 5.1; RN-104.)*
   **The spellings.** Each member key has its own base, measured at `libgit2-sys 0.18.8+1.9.7`.
   This paragraph gives the base of the five keys named first, and *The sixth member*, below,
   gives the sixth key's.
@@ -7551,6 +7597,84 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   *(re: § 3 `git-reader`, `read-only-harness`; § 4 C-D3; § 6 `see-git-status`; § 11 R-16; *Open
   Questions*; the header; source: `docs/trail/sdd/cycle-38.md` §§ 5.1 – 5.3;
   `docs/trail/sdd/self_answer-50.md`; `nozoki@66f428d`; `nozoki@5331b85`)*.
+- **RN-104:** *(CTO; the CDO's clause named below)* *(changed)* The config condition's second
+  observation is built as a second condition, and this document stops calling it a known
+  defect. Two companion items are folded. The PM opened the companion on 2026-10-07
+  (`nozoki@d7f79c7`) from this document's companion template, while this document was Settled
+  with no companion on disk, after the change that builds the observation merged to `main`
+  (`nozoki@c25201a`). An unattended run answered both items in the CTO's seat
+  (`nozoki@fadff58`): 5.1 confirmed with two additions, 5.2 confirmed
+  (`docs/trail/sdd/cycle-39.md` §§ 5.1 – 5.2; reasoning `docs/trail/sdd/self_answer-51.md`).
+  **What moved, each named.** (1) § 6 S-4 *Reached when*, observable half: the build-state
+  sentence after the second config passage quotes the shipped sentence for a value the tool
+  does not locate, names the shell's case that holds it, and says the outside sentence stands
+  for the first observation; the known-defect sentence is kept in a dated note. (2) § 6 S-4
+  *Rests on*: RN-104. (3) § 11 R-16, *The refusal and its condition*: the sentence that left
+  the field-or-condition split to the building change states a second condition at SM-2, SM-4
+  and SM-8, with the locator at each seam, and that no function joined SM-4 for it; the
+  paragraph headed *A known defect, until a change lands* is replaced by *Built, and the cases
+  that hold it*, which pins the build, quotes the sentence, names the five cases, records both
+  test runs, and scopes itself to the five keys named first. Each keeps its old words in a
+  dated note beside it. (4) The header: `Version:` reads 44 and `Status:` stays Settled.
+  **What does not move, and why.** The alternates condition's matching sentence under "A third
+  way out" (*The condition*) and its known defect at `nozoki@66f428d` stand: `GitReadCondition`
+  has one object-store variant, `ObjectStoreNamesOutside(String)`
+  (`crates/nozoki-core/src/git_reader.rs:L227`; `ProbeCondition`'s at `:L318`), so for that
+  condition the split is still the building change's. The three `.gitmodules` known-defect
+  passages (§ 4 C-D3; § 6 S-4; § 11 R-16, *The sixth member*) stand: at `nozoki@c25201a` the
+  adapter skips every key of `.gitmodules` but the include keys (`libgit2.rs:L247-L248`), so the
+  sixth key's not-located form answers nothing yet. § 3's `git-reader` row already states the
+  second observation with no known-defect sentence for it (RN-101) and takes no change. RN-101's
+  own copy of the field-or-condition sentence (*No seam moved*) is a record of v41 and keeps its
+  words. The pins elsewhere in R-16 at `nozoki@fc14574` (*The spellings*; *Until the checks are
+  built*) describe what was in the tree at that commit and are not re-pinned.
+  **Whose columns.** Both items carry `Seat: cto`, and every edit but one is in the CTO's
+  columns (§ 11, *Rests on*, the header). The one is inside the observable half of § 6 S-4
+  *Reached when*, the CDO's clause — and the CDO's sentence there does not move: RN-101 settled
+  the second-observation sentence from `docs/UXD.md` UX-S3 Error — "that item shows what the
+  tool observed" (`docs/UXD.md:L241`) — and `docs/CONTENT.md`'s rule that "A message says what
+  Nozoki observed, never why it happened" (`docs/CONTENT.md:L62`); what changes is the
+  build-state sentence after it, the CTO's statement of what the tree holds. No cdo item is
+  raised. No field of the CPO's moved: a refusal that stays a refusal changes no scope, so no
+  cpo item is raised — that is reasoning, not a citation.
+  **Where the fold goes beyond the answers' words, each named.** (a) The replaced R-16
+  paragraph states that the cases run in-process and none runs on the built bundle, which the
+  answers do not say and *Until the checks are built* already says of the config cases. (b) It
+  records this fold's own test runs beside the answering run's. (c) The S-4 sentence and the
+  R-16 paragraph name the Swift test function enclosing the literal the answer cites
+  (`GitSentencesTests.swift:L208`), which this fold opened. Nothing else in the document moved.
+  **Measured in this fold, at `nozoki@fadff58`.** `git status --short` printed nothing before
+  the first write. `git diff --stat c25201a fadff58 -- . ':!docs'` printed nothing, so outside
+  `docs/` the tree is `nozoki@c25201a`'s, and every code locator here is written against that
+  tree. `cargo test --manifest-path Cargo.toml --workspace --locked` printed 511 passed, 0
+  failed, 0 ignored, summed over its `test result` lines; `swift test --package-path nozoki-mac`
+  printed "Executed 136 tests, with 0 failures". `git diff 218e250 c25201a --
+  crates/nozoki-bridge` touches `src/session.rs` alone and adds no line carrying `no_mangle`,
+  `extern "C"` or `pub extern`. The adapter, the scanner, the two condition types, the wire
+  enum and its test, the model's phrase, the shell's decode, the two Git sentences, the four
+  Rust cases' names and the Swift case were opened at the lines cited.
+  **Known limits of this fold.** `docs/SDD.md` was read at the header, § 3's `git-reader` row,
+  § 4 C-D3, § 6 S-4 *Reached when* and *Rests on*, § 11 R-16 at *The refusal and its
+  condition*, *The spellings*, *The proof, and what no case holds yet*, the `.gitmodules` known
+  defect, "A third way out" *The condition* and *Until the checks are built*, RN-101's *No seam
+  moved*, RN-103, the *Open Questions* config-named-path item, and every line
+  `grep -n 'fc14574\|known defect\|one condition for both\|field or a second condition'`
+  prints; it was not re-read whole, so a sentence elsewhere that states the config defect in
+  other words was not seen. `docs/PRD.md`, `docs/SRS.md` and `docs/UXD.md` were read at their
+  `Status:` lines, the UXD at `:L241` and `docs/CONTENT.md` at `:L62`. Downstream,
+  `docs/nfdr.md` was read at `:L270-L285` and `:L4804-L4810` and ADR-0022 at `:L45-L52`. The
+  Rust cases' bodies past the lines cited were not read. No bundle was built. The `cargo test`
+  call was prefixed with a `cd` to a temporary directory, so the shell's working directory left
+  the instance root and was returned before the first write, against the skill's rule that no
+  step leaves it.
+  **Downstream, not this document's to change.** `docs/nfdr.md:L275` and ADR-0022 (`:L49-L50`)
+  already state the not-located refusal as the rule, and neither states the config defect as
+  current; `docs/nfdr.md:L4808` names "SDD v43's known defect at `nozoki@66f428d`", the
+  alternates one, which still holds. Both records are the Principal Architect's.
+  **The companion:** items 5.1 – 5.2 are folded and dropped, nothing is left in the file, and it
+  is removed in the commit that carries this fold
+  *(re: § 6 `see-git-status`; § 11 R-16; the header; source: `docs/trail/sdd/cycle-39.md`
+  §§ 5.1 – 5.2; `docs/trail/sdd/self_answer-51.md`; `nozoki@c25201a`; `nozoki@fadff58`)*.
 
 ## Open Questions
 
