@@ -86,7 +86,42 @@ None.
   *Open Questions* item left open on its `.gitmodules` case alone.
 - **If a document has to be written:** none. A change in `SDD.md` § 11 and *Open Questions*,
   written by `product-sdd`.
-- **Answer:** <the owner fills this in>
+- **Answer:** Take the fold, at six passages and not four. The alternates check and its case are
+  in the tree, so every sentence of § 11 R-16 and of the *Open Questions* item that says they are
+  not built, or still owed, is re-measured at the commit the fold reads. The *Open Questions* item
+  stays open on its `.gitmodules` case alone.
+  *Measured in this run*, at `nozoki@2309ba5`, whose tree outside `docs/` is `nozoki@66f428d`'s:
+  `git diff --stat 66f428d HEAD` lists the two companion files and nothing else.
+  `check_alternates` is defined at `crates/nozoki-core/src/git_reader/libgit2.rs:L303`. It is
+  called at `:L114`, before `open_at` in the helper behind `state()` and `status()`; at `:L449`, on
+  each submodule; and at `:L475`, on the probe. The fixture is
+  `checks/fixtures/alternates-names-outside` with `alternates-names-outside.git.tar`, whose
+  `.git/objects/info/alternates` holds the one line `../../../elsewhere/objects`. The case that
+  meets *The proof*'s bar is `test_the_outside_object_directory_is_never_read_on_the_three_calls`
+  (`crates/nozoki-core/tests/git_state.rs:L1733`). `cargo test --workspace --locked` printed 499
+  passed and 0 failed.
+  *The two passages the item does not list.* *Until the checks are built*: "For the alternates
+  read the sandbox is still the only bound in the bundle … not a held property"
+  (`docs/SDD.md:L3414-L3417`). *Open Questions*: "of its four cases two are still owed … So this
+  item stays open on the alternates case and the `.gitmodules` case" (`:L7448-L7454`).
+  *Three things the re-measured passages state*, so the read is not described as held further
+  than it is. (1) What the case watches. It makes a FIFO at the outside object directory's
+  `info/alternates` and asserts that none of the three calls opened it (`git_state.rs:L1715-L1726`,
+  `:L1742-L1746`). It watches that one file. It does not watch a `stat` of the directory, which is
+  the first thing libgit2 does to an alternate (`libgit2-sys 0.18.8+1.9.7`,
+  `libgit2/src/libgit2/odb.c:L697`). That no `stat` is made rests on the order in the code, where
+  the check runs before the open (`libgit2.rs:L112-L115`), and not on the case. (2) The case runs
+  the adapter in-process, and no case runs the check on the built bundle. The alternates read is a
+  held property in the harness, and on the bundle the check has not been run. (3) The past stays
+  stated, in the past tense, as *Until the checks are built* states it for the config-named read:
+  from the first build in which `mac-shell` calls `nozoki_read_git` until the tree at
+  `nozoki@66f428d`, the sandbox was the only bound on the alternates read in the bundle, and
+  nothing bounded it in the harness.
+  *What is left.* The sandbox is the only bound on one read, the repository the submodule map
+  opens outside the folder. The fourth case stays owed: `ls checks/fixtures` lists no fixture for
+  it. § 3's `git-reader` row, § 4 C-D3 and § 6 S-4 state the alternates check without saying it is
+  unbuilt, and they take no change from this item. Answer 5.3 changes what the condition says for
+  one kind of entry and moves nothing here. Reasoning: `docs/trail/sdd/self_answer-50.md` § 5.1.
 
 ### 5.2 The `read-only-harness` row counts eleven fixture folders, and `checks/fixtures/` now holds twelve
 - **Raised by:** PM — 2026-10-06
@@ -101,7 +136,23 @@ None.
   `git_state.rs` unpacks it and `root_finding.rs` does not. The likely fold: the row re-measured at
   a current commit, with the alternates fixture named beside the two config fixtures.
 - **If a document has to be written:** none. A change in `SDD.md` § 3, written by `product-sdd`.
-- **Answer:** <the owner fills this in>
+- **Answer:** Take the fold. The row's count reads twelve, its pin moves to the commit the fold
+  measures at, and `alternates-names-outside` is named beside the two config fixtures as § 11
+  R-16's third, with the suite that reads it. Nothing else in the cell moves.
+  *Measured in this run*, at `nozoki@2309ba5`. `ls -d checks/fixtures/*/` lists twelve folders,
+  and the one the row does not name is `alternates-names-outside`, with
+  `alternates-names-outside.git.tar` beside it. `git diff --stat 2d7692c HEAD -- checks` lists two
+  files, that archive and `checks/fixtures/alternates-names-outside/README.md`. So the scripts,
+  their lists and helpers, the eight suites under `checks/tests/` and the other eleven folders
+  stand as the row states them. `crates/nozoki-core/tests/git_state.rs` unpacks the archive
+  (`:L1736-L1739`, `:L1753-L1756`), and `grep -c alternates
+  crates/nozoki-core/tests/root_finding.rs` prints 0.
+  *One sentence the row gains for this fixture.* The tracked folder holds a `README.md` and
+  nothing else, and the repository is in the archive: `git ls-files checks/fixtures | grep
+  alternates` prints those two paths. The row says so, as it says what each scene archive holds.
+  The sentence in § 11 R-16 that names "Two such fixtures" (`docs/SDD.md:L3081-L3084`) counts
+  fixtures whose config carries a member key. The alternates fixture is not one of those, and
+  that sentence takes no change. Reasoning: `docs/trail/sdd/self_answer-50.md` § 5.2.
 
 ### 5.3 The alternates condition says *outside* for an entry the adapter does not locate, which the config condition does not
 - **Raised by:** PM — 2026-10-06
@@ -131,4 +182,62 @@ None.
   here and not for a relative excludes file.
 - **If a document has to be written:** none. A change in `SDD.md` § 3, § 6 S-4 and § 11 R-16,
   written by `product-sdd`; the sentence itself is then `docs/CONTENT.md`'s.
-- **Answer:** <the owner fills this in>
+- **Answer:** The alternates condition gains the config condition's second observation. For an
+  entry that begins with neither `.` nor `/`, the adapter observes the form alone: the
+  repository's object store names a location the adapter does not locate. For that entry the
+  condition does not say *outside*. Every entry refused today stays refused.
+  *Why not the other fold.* R-16 cannot state why *outside* is observed for this entry, because
+  it is not observed. The adapter classes the entry by its first byte and reads nothing
+  (`crates/nozoki-core/src/git_reader/alternates_scan.rs:L43-L48`), and it refuses the entry
+  before spelling any location (`crates/nozoki-core/src/git_reader/libgit2.rs:L350-L352`). Where
+  such an entry leads depends on who reads it. libgit2 passes it on as written (`libgit2-sys
+  0.18.8+1.9.7`, `libgit2/src/libgit2/odb.c:L800`), so the operating system resolves it against
+  the process's working directory, and `git-reader` reads no working directory: `grep -rn
+  'current_dir\|getcwd\|set_current_dir' crates nozoki-mac/Sources` prints three lines, all under
+  `tests/`. Git reads the same entry from the object directory that holds the file. Its
+  documentation says relative paths are "relative to the object database"
+  (`https://git-scm.com/docs/gitrepository-layout`, `objects/info/alternates`), and under git
+  2.54.0 an entry `store` was read from `.git/objects/store`
+  (`docs/trail/sdd/self_answer-50.md` § 5.3, *The measurement*). So the entry has two places it
+  can lead, the adapter locates neither, and the place Git reads lay inside the folder in that
+  measurement. § 4 C-E4's precedent does not reach this entry, for the reason R-16 gives for the
+  two config forms (`docs/SDD.md:L3128-L3131`): the scanner tells it apart with no read.
+  *Locating the entry was not taken.* Spelling it from the working directory follows libgit2 and
+  makes the answer depend on what launched the process. Spelling it from the object directory
+  follows Git and checks a place libgit2 does not read. Under either, a pass lets libgit2 `stat`
+  a place the adapter did not check. The refusal stays.
+  *What each part says.* § 11 R-16, "A third way out": *The condition* states the two
+  observations, and *The spellings* says such an entry "is refused without being located" in
+  place of "is refused as outside". The first observation stands for an entry spelled from the
+  object directory, for an absolute entry, and for a link at `objects`, `info` or `alternates`.
+  The adapter spells each of those to a location and finds it outside the folder
+  (`libgit2.rs:L354-L357`, `:L388-L392`). The condition carries which of the two was observed,
+  beside the entry as the file spells it, on the probe, on both reads and for a submodule, and it
+  crosses SM-2, SM-4 and SM-8 with them. Whether that is a field on the one condition or a second
+  condition is the design of the change that builds it. § 3's `git-reader` row and § 4 C-D3
+  follow. § 6 S-4 *Reached when*, observable half, gains the second observation beside the first.
+  That clause is the CDO's, and it follows from `docs/UXD.md` UX-S3's Error cell, "that item shows
+  what the tool observed" (`:L241`), as the config passage did.
+  *Four cases the answer reaches.* (1) The form is every entry whose first byte is neither `.` nor
+  `/`. A leading space or a leading `~` puts an entry in it, because nothing is trimmed and
+  nothing is expanded (`alternates_scan.rs:L24-L27`; `odb.c:L789-L800`). (2) Such an entry is
+  refused whether or not anything is there. *What is not a refusal* lets pass an entry "that
+  spells inside the folder with nothing there" (`docs/SDD.md:L3374-L3375`), and that sentence does
+  not reach an entry the adapter does not locate. (3) Where a file holds entries of both kinds,
+  the condition carries the first refused entry met, in the order the check reads, with that
+  entry's observation (`libgit2.rs:L292-L297`). (4) *What the refusal costs a reader* gains one
+  case: a repository whose alternates file carries such an entry shows a failed Git item where
+  `git status` in a terminal works, because Git reads the entry from the object directory.
+  **A known defect, until a change lands.** At `nozoki@66f428d` the adapter answers one condition
+  for both observations (`crates/nozoki-core/src/git_reader.rs:L216-L221`;
+  `alternates_scan.rs:L12-L14`). The case for `relative/objects` asserts that condition
+  (`crates/nozoki-core/tests/git_state.rs:L1781-L1788`). The shipped sentence says "outside the
+  folder you opened" for it (`nozoki-mac/Sources/Surfaces/GitSentences.swift:L58-L62`), and the
+  model's phrase says "the object store names a location outside the folder"
+  (`crates/nozoki-core/src/folder_model.rs:L235-L236`). For an entry that leads into the opened
+  folder those words are false. The refusal itself holds. R-16 names this beside the claim, as it
+  does for the config sentence. The second sentence's words are `docs/CONTENT.md`'s, under its
+  rule that "A message says what Nozoki observed" (`:L62`).
+  This item is raised from downstream and asks the SDD for a form it does not state. It is taken
+  because the item cites where the form occurs in the product. Reasoning:
+  `docs/trail/sdd/self_answer-50.md` § 5.3.
