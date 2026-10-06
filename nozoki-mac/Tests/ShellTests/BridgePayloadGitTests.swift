@@ -64,7 +64,7 @@ final class BridgePayloadGitTests: XCTestCase {
                     branch: .detached(commit: commit), state: .rebase, staged: [], changed: [])))
     }
 
-    func test_eachOfTheFourteenConditionsDecodesAndTheThreeWithTextKeepTheirOwn() {
+    func test_eachOfTheFifteenConditionsDecodesAndTheFourWithTextKeepTheirOwn() {
         for condition in GitCondition.allCases {
             XCTAssertEqual(
                 decode(#"{"state":"failed","condition":"\#(condition.rawValue)"}"#),
@@ -85,7 +85,36 @@ final class BridgePayloadGitTests: XCTestCase {
                 #"{"state":"failed","condition":"object_store_names_outside","path":"../../../elsewhere/objects"}"#
             ),
             .failed(.objectStoreNamesOutside(path: "../../../elsewhere/objects")))
-        XCTAssertEqual(GitCondition.allCases.count + 3, 14)
+        XCTAssertEqual(
+            decode(
+                #"{"state":"failed","condition":"config_not_located","key":"core.excludesfile","path":"ignore-rel"}"#
+            ),
+            .failed(.configNotLocated(key: "core.excludesfile", path: "ignore-rel")))
+        XCTAssertEqual(GitCondition.allCases.count + 4, 15)
+    }
+
+    func test_configNotLocatedWithAMissingOrExtraMemberIsRefused() {
+        let rejected = [
+            #"{"state":"failed","condition":"config_not_located"}"#,
+            #"{"state":"failed","condition":"config_not_located","key":"include.path"}"#,
+            #"{"state":"failed","condition":"config_not_located","path":"~/x"}"#,
+            #"{"state":"failed","condition":"config_not_located","key":"include.path","path":"~/x","extra":1}"#,
+            #"{"state":"failed","condition":"config_not_located","key":"include.path","path":"~/x","git_directory":"/y"}"#,
+            #"{"state":"failed","condition":"config_not_located","key":null,"path":"~/x"}"#,
+            #"{"state":"failed","condition":"config_not_located","key":"include.path","path":7}"#,
+        ]
+        for payload in rejected {
+            XCTAssertEqual(decode(payload), .stopped, payload)
+        }
+    }
+
+    func test_aKeyAndPathUnderAConditionNamingNeitherObservationIsRefused() {
+        for payload in [
+            #"{"state":"failed","condition":"config_refused","key":"include.path","path":"~/x"}"#,
+            #"{"state":"failed","condition":"not_a_root","key":"include.path","path":"~/x"}"#,
+        ] {
+            XCTAssertEqual(decode(payload), .stopped, payload)
+        }
     }
 
     func test_configNamesOutsideDecodesWithExactlyItsFourMembers() {
