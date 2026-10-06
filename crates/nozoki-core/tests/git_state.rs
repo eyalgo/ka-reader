@@ -1638,3 +1638,416 @@ fn test_an_include_link_to_outside_is_refused_without_opening_its_target() {
         )))
     );
 }
+
+// --- the alternates check (R-16, the third way out) -------------------------------------------
+
+/// The repository's own alternates file, which `git init` leaves no file at.
+const ALTERNATES: &str = "S/.git/objects/info/alternates";
+
+/// What each of the three calls answers when `entry` is refused, whatever the repository is.
+fn assert_object_store_refused(scene: &TempDir, root: &Path, entry: &str) {
+    let before = scene.snapshot();
+    let condition = GitReadCondition::ObjectStoreNamesOutside(entry.to_string());
+
+    assert_eq!(
+        port().probe(root),
+        RootFinding::Failed(ProbeCondition::ObjectStoreNamesOutside(entry.to_string()))
+    );
+    assert_eq!(port().state(root), Err(condition.clone()));
+    assert_eq!(port().status(root), Err(condition));
+    assert_eq!(&scene.snapshot(), &before, "a call changed the scene");
+}
+
+/// What each of the three calls answers when the alternates check refuses nothing: a repository
+/// the way it answered before the check existed.
+fn assert_answers_as_without_an_alternates_file(scene: &TempDir, root: &Path) {
+    let before = scene.snapshot();
+
+    assert_eq!(port().probe(root), RootFinding::Root);
+    let answers = read_against(&before, scene, root);
+    assert_head(&answers, on_branch("main"), RepositoryState::Normal);
+    assert_lists(
+        &answers,
+        vec![],
+        vec![entry("secret.txt", StatusCategory::Untracked)],
+    );
+}
+
+/// Each of the three calls answers `probe` and `read`.
+fn assert_failed_on_all_three(root: &Path, probe: ProbeCondition, read: GitReadCondition) {
+    assert_eq!(port().probe(root), RootFinding::Failed(probe));
+    assert_eq!(port().state(root), Err(read.clone()));
+    assert_eq!(port().status(root), Err(read));
+}
+
+/// A folder named `outside-store` beside the repository's folder, holding an `objects/info`, and its
+/// absolute spelling.
+fn outside_store(scene: &TempDir) -> String {
+    scene.make_folder("outside-store/objects/info");
+    scene
+        .path()
+        .join("outside-store/objects")
+        .display()
+        .to_string()
+}
+
+/// CP-677 and E19, through the libgit2 adapter and no port double: the archive's alternates file
+/// names `../../../elsewhere/objects` from `.git/objects/`, which is beside the copy, and the FIFO
+/// at that directory's `info/alternates` is what a load of that object directory would open. This
+/// case names no new variant, so it is the one shown red on the tree before the check (CP-678).
+#[test]
+fn test_the_outside_object_directory_is_never_read_on_the_three_calls() {
+    let scene = TempDir::new();
+    let folder = scene.copy_fixture("alternates-names-outside");
+    scene.unpack_fixture_archive(
+        "alternates-names-outside.git.tar",
+        "alternates-names-outside",
+    );
+    scene.make_folder("elsewhere/objects/info");
+
+    let opener_seen = fifo_opener_seen_during_the_three_calls(
+        &folder,
+        &scene.path().join("elsewhere/objects/info/alternates"),
+    );
+
+    assert!(
+        !opener_seen,
+        "a call opened the object directory the alternates file names outside the folder"
+    );
+}
+
+#[test]
+fn test_the_three_calls_answer_the_alternates_condition_for_the_fixture() {
+    let scene = TempDir::new();
+    let folder = scene.copy_fixture("alternates-names-outside");
+    scene.unpack_fixture_archive(
+        "alternates-names-outside.git.tar",
+        "alternates-names-outside",
+    );
+
+    assert_object_store_refused(&scene, &folder, "../../../elsewhere/objects");
+}
+
+/// E1.
+#[test]
+fn test_an_absolute_entry_is_refused_and_carried_as_written() {
+    let (scene, root) = repository_with_a_secret();
+    let outside = outside_store(&scene);
+    scene.write_file(ALTERNATES, &format!("{outside}\n"));
+
+    assert_object_store_refused(&scene, &root, &outside);
+}
+
+/// E2: the entry is carried as the file spells it, and never as the path it resolves to.
+#[test]
+fn test_a_comment_and_a_blank_line_are_skipped_then_a_dotdot_entry_is_refused_as_spelled() {
+    let (scene, root) = repository_with_a_secret();
+    scene.make_folder("outside-store/objects");
+    scene.write_file(ALTERNATES, "# shared\n\n../../../outside-store/objects\n");
+
+    assert_object_store_refused(&scene, &root, "../../../outside-store/objects");
+}
+
+/// E3.
+#[test]
+fn test_a_bare_relative_entry_is_refused_as_outside_and_carried_as_written() {
+    let (scene, root) = repository_with_a_secret();
+    scene.write_file(ALTERNATES, "relative/objects\n");
+
+    assert_object_store_refused(&scene, &root, "relative/objects");
+}
+
+/// E4: an alternate inside the folder is read, and its own file's outside entry is the refusal.
+#[test]
+fn test_an_inside_alternate_whose_own_file_names_an_outside_path_is_refused_with_that_path() {
+    let (scene, root) = repository_with_a_secret();
+    let outside = outside_store(&scene);
+    scene.write_file(ALTERNATES, "./vendor-store\n");
+    scene.write_file(
+        "S/.git/objects/vendor-store/info/alternates",
+        &format!("{outside}\n"),
+    );
+
+    assert_object_store_refused(&scene, &root, &outside);
+}
+
+/// E5: the check walks level by level, so the repository's own entry is met before a level-one
+/// file's, whichever line it stands on.
+#[test]
+fn test_the_repositorys_own_file_is_met_before_a_level_one_file() {
+    let (scene, root) = repository_with_a_secret();
+    scene.write_file(ALTERNATES, "./vendor-store\n/own-outside/objects\n");
+    scene.write_file(
+        "S/.git/objects/vendor-store/info/alternates",
+        "/level-one-outside/objects\n",
+    );
+
+    assert_object_store_refused(&scene, &root, "/own-outside/objects");
+}
+
+/// E6.
+#[test]
+fn test_no_alternates_file_and_a_file_of_only_comments_and_blank_lines_answer_as_today() {
+    let (scene, root) = repository_with_a_secret();
+    assert_answers_as_without_an_alternates_file(&scene, &root);
+
+    scene.write_file(ALTERNATES, "# shared\r\n\r\n# nothing else\r\n\r\n");
+    assert_answers_as_without_an_alternates_file(&scene, &root);
+}
+
+/// E7.
+#[test]
+fn test_an_inside_entry_with_nothing_there_answers_as_today() {
+    let (scene, root) = repository_with_a_secret();
+    scene.write_file(ALTERNATES, "./missing\n");
+
+    assert_answers_as_without_an_alternates_file(&scene, &root);
+}
+
+/// An alternates chain of `levels` inside alternates, `.git/chain/l1` to `.git/chain/l<levels>`, the last
+/// holding no alternates file, and a level past it, `.git/chain/l<levels + 1>`, with none either.
+fn repository_with_a_chain_of(levels: usize) -> (TempDir, PathBuf) {
+    let (scene, root) = repository_with_a_secret();
+    let entry =
+        |number: usize| format!("{}\n", root.join(format!(".git/chain/l{number}")).display());
+    scene.write_file(ALTERNATES, &entry(1));
+    for number in 1..=levels {
+        scene.write_file(
+            &format!("S/.git/chain/l{number}/info/alternates"),
+            &entry(number + 1),
+        );
+    }
+    scene.make_folder(&format!("S/.git/chain/l{}", levels + 1));
+    (scene, root)
+}
+
+/// E8.
+#[test]
+fn test_a_chain_to_level_five_whose_level_six_alternate_has_no_file_is_not_a_refusal() {
+    let (scene, root) = repository_with_a_chain_of(5);
+
+    assert_answers_as_without_an_alternates_file(&scene, &root);
+}
+
+/// E9.
+#[test]
+fn test_a_level_six_alternate_with_an_alternates_file_answers_read_failed_on_all_three() {
+    let (scene, root) = repository_with_a_chain_of(5);
+    scene.write_file("S/.git/chain/l6/info/alternates", "# deeper\n");
+
+    assert_failed_on_all_three(
+        &root,
+        ProbeCondition::RepositoryReadFailed,
+        GitReadCondition::RepositoryReadFailed,
+    );
+}
+
+/// The architect's level-6 note: a spelling that leaves the folder is the too-deep answer, and
+/// nothing past it is read.
+#[test]
+fn test_a_level_six_file_whose_spelling_leaves_the_folder_answers_read_failed_and_reads_nothing_past_it()
+ {
+    let (scene, root) = repository_with_a_chain_of(5);
+    scene.make_folder("outside-info");
+    scene.make_link("S/.git/chain/l6/info", scene.path().join("outside-info"));
+
+    assert_failed_on_all_three(
+        &root,
+        ProbeCondition::RepositoryReadFailed,
+        GitReadCondition::RepositoryReadFailed,
+    );
+    assert!(!fifo_opener_seen_during_the_three_calls(
+        &root,
+        &scene.path().join("outside-info/alternates")
+    ));
+}
+
+/// E10: `objects` is a link to a directory beside the scene. The refusal carries the link's own
+/// spelled location, and nothing under that directory is opened.
+#[test]
+fn test_a_link_at_objects_leaving_the_folder_is_refused_carrying_the_links_location_and_nothing_is_read_under_it()
+ {
+    let (scene, root) = repository_with_a_secret();
+    fs::rename(
+        root.join(".git/objects"),
+        scene.path().join("cache-objects"),
+    )
+    .expect("the object directory moves");
+    let cache = scene.path().join("cache-objects");
+    scene.make_link("S/.git/objects", &cache);
+
+    assert_object_store_refused(&scene, &root, &cache.display().to_string());
+    assert!(!fifo_opener_seen_during_the_three_calls(
+        &root,
+        &cache.join("info/alternates")
+    ));
+}
+
+/// CP-667's second position: a link at `info`.
+#[test]
+fn test_a_link_at_info_leaving_the_folder_is_refused_carrying_the_links_location() {
+    let (scene, root) = repository_with_a_secret();
+    fs::rename(
+        root.join(".git/objects/info"),
+        scene.path().join("outside-info"),
+    )
+    .expect("the info directory moves");
+    let outside = scene.path().join("outside-info");
+    scene.make_link("S/.git/objects/info", &outside);
+
+    assert_object_store_refused(&scene, &root, &outside.display().to_string());
+    assert!(!fifo_opener_seen_during_the_three_calls(
+        &root,
+        &outside.join("alternates")
+    ));
+}
+
+/// E11: a link at `alternates` to a file inside the folder is followed, and its entries are spelled
+/// from the object directory and not from where the link or its target stands.
+#[test]
+fn test_a_link_at_alternates_inside_the_folder_is_followed_and_its_entry_is_spelled_from_the_object_directory()
+ {
+    let (scene, root) = repository_with_a_secret();
+    scene.write_file("S/.git/objects/alternates-target", "./x\n");
+    scene.make_link(ALTERNATES, "../alternates-target");
+    assert_answers_as_without_an_alternates_file(&scene, &root);
+
+    scene.write_file("S/.git/objects/alternates-target", "../../../../beside\n");
+    assert_object_store_refused(&scene, &root, "../../../../beside");
+}
+
+/// E12.
+#[test]
+fn test_an_oversize_alternates_file_answers_unreadable_on_all_three() {
+    let (scene, root) = repository_with_a_secret();
+    fs::write(
+        root.join(".git/objects/info/alternates"),
+        vec![b'#'; (1 << 20) + 1],
+    )
+    .expect("the file is written");
+
+    assert_failed_on_all_three(
+        &root,
+        ProbeCondition::GitDirectoryUnreadable,
+        GitReadCondition::GitDirectoryUnreadable,
+    );
+    drop(scene);
+}
+
+/// E14 and CP-669: a file the operating system will not let the check read, the repository's own
+/// and a level-one alternate's.
+#[test]
+fn test_an_unreadable_alternates_file_answers_unreadable_for_the_repositorys_own_and_for_a_level_one_alternate()
+ {
+    let (scene, root) = repository_with_a_secret();
+    scene.write_file(ALTERNATES, "# own\n");
+    scene.set_mode(ALTERNATES, 0o000);
+    let own = (
+        port().probe(&root),
+        port().state(&root),
+        port().status(&root),
+    );
+    scene.set_mode(ALTERNATES, 0o644);
+    assert_eq!(
+        own,
+        (
+            RootFinding::Failed(ProbeCondition::GitDirectoryUnreadable),
+            Err(GitReadCondition::GitDirectoryUnreadable),
+            Err(GitReadCondition::GitDirectoryUnreadable),
+        )
+    );
+
+    scene.write_file(ALTERNATES, "./vendor-store\n");
+    scene.write_file("S/.git/objects/vendor-store/info/alternates", "# nested\n");
+    scene.set_mode("S/.git/objects/vendor-store/info/alternates", 0o000);
+    let nested = (
+        port().probe(&root),
+        port().state(&root),
+        port().status(&root),
+    );
+    scene.set_mode("S/.git/objects/vendor-store/info/alternates", 0o644);
+    assert_eq!(
+        nested,
+        (
+            RootFinding::Failed(ProbeCondition::GitDirectoryUnreadable),
+            Err(GitReadCondition::GitDirectoryUnreadable),
+            Err(GitReadCondition::GitDirectoryUnreadable),
+        )
+    );
+}
+
+/// E15: a submodule's alternates file naming an outside directory fails the status read alone, as a
+/// submodule's outside Git directory does, and the outside directory is never opened on the way.
+#[test]
+fn test_a_submodules_outside_alternates_entry_fails_status_alone() {
+    let scene = TempDir::new();
+    let origin = scene.make_folder("origin");
+    git(&origin, &["init", "-q", "-b", "main"]);
+    fs::write(origin.join("o.txt"), "o\n").expect("the file is written");
+    commit_all(&origin, "origin");
+    let root = scene.make_folder("S");
+    git(&root, &["init", "-q", "-b", "main"]);
+    git(
+        &root,
+        &[
+            "-c",
+            "protocol.file.allow=always",
+            "submodule",
+            "add",
+            "-q",
+            &origin.display().to_string(),
+            "sub",
+        ],
+    );
+    commit_all(&root, "with a submodule");
+    let outside = outside_store(&scene);
+    scene.write_file(
+        "S/.git/modules/sub/objects/info/alternates",
+        &format!("{outside}\n"),
+    );
+
+    assert_eq!(port().probe(&root), RootFinding::Root);
+    assert!(port().state(&root).is_ok());
+    assert_eq!(
+        port().status(&root),
+        Err(GitReadCondition::ObjectStoreNamesOutside(outside))
+    );
+    assert!(!fifo_opener_seen_during_the_three_calls(
+        &root,
+        &scene.path().join("outside-store/objects/info/alternates")
+    ));
+}
+
+/// E16: both checks refuse, and the config check, which runs first, is the answer.
+#[test]
+fn test_a_config_and_an_alternates_refusal_together_answer_the_config_condition_on_all_three() {
+    let (scene, root) = repository_with_a_secret();
+    append_to_config(&root, "[core]\n\texcludesfile = /outside/ignore\n");
+    let outside = outside_store(&scene);
+    scene.write_file(ALTERNATES, &format!("{outside}\n"));
+
+    assert_failed_on_all_three(
+        &root,
+        ProbeCondition::ConfigNamesOutside(config_named("core.excludesfile", "/outside/ignore")),
+        GitReadCondition::ConfigNamesOutside(config_named("core.excludesfile", "/outside/ignore")),
+    );
+}
+
+/// Architect note (a): a root whose `.git` is a file is probed without opening what it names, so the
+/// probe answers `Root` and `state()` is the first call to answer the condition.
+#[test]
+fn test_a_git_file_root_probes_as_root_and_state_answers_the_condition() {
+    let (scene, root) = relocated_repository("relocated", "relocated");
+    let outside = outside_store(&scene);
+    scene.write_file(
+        "S/relocated/objects/info/alternates",
+        &format!("{outside}\n"),
+    );
+    let before = scene.snapshot();
+
+    assert_eq!(port().probe(&root), RootFinding::Root);
+    let condition = GitReadCondition::ObjectStoreNamesOutside(outside);
+    assert_eq!(port().state(&root), Err(condition.clone()));
+    assert_eq!(port().status(&root), Err(condition));
+    assert_eq!(&scene.snapshot(), &before, "a call changed the scene");
+}
