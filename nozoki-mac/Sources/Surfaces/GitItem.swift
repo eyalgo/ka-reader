@@ -72,13 +72,16 @@ package struct GitEntry: Equatable, Sendable {
     }
 }
 
-/// The thirteen conditions a failed answer names: the two that carry text, and the other eleven.
+/// The fourteen conditions a failed answer names: the three that carry text, and the other eleven.
 package enum GitFailure: Equatable, Sendable {
     /// The Git directory lies outside the opened folder, at `gitDirectory` as the answer spells it.
     case gitDirectoryOutside(gitDirectory: String)
     /// The repository's own Git config sets `key` to `path`, a path outside the opened folder, both
     /// as the answer spells them.
     case configNamesOutside(key: String, path: String)
+    /// A Git object store the repository names, by an alternates entry or a link, lies outside the
+    /// opened folder, at `path` as the answer spells it.
+    case objectStoreNamesOutside(path: String)
     case condition(GitCondition)
 }
 
