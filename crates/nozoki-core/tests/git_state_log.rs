@@ -246,7 +246,10 @@ fn test_failed_git_item_with_the_not_located_condition_logs_one_warn_without_the
         assert!(!text.contains(CONFIG_PHRASE), "{text}");
         assert!(!text.to_lowercase().contains("outside"), "{text}");
         assert!(!text.contains('/'), "the record holds a path: {text}");
-        assert!(!text.contains(&named.key), "the record holds the key: {text}");
+        assert!(
+            !text.contains(&named.key),
+            "the record holds the key: {text}"
+        );
         assert!(
             !text.contains(&named.path),
             "the record holds the path: {text}"

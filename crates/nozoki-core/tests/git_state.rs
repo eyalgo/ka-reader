@@ -1582,10 +1582,7 @@ fn test_a_value_spelled_outside_is_refused_as_outside() {
     );
 
     let (scene, root) = submodule_repository_without_outside_config();
-    append_to_the_submodules_config(
-        &root,
-        "\n[include]\n\tpath = ../../../../outside.config\n",
-    );
+    append_to_the_submodules_config(&root, "\n[include]\n\tpath = ../../../../outside.config\n");
     assert_refused_on_status_alone(
         &scene,
         &root,
@@ -1630,7 +1627,10 @@ fn test_the_other_not_located_forms_and_the_key_text_rule() {
         port().state(&root),
         Err(GitReadCondition::ConfigNamesOutside(named.clone()))
     );
-    assert_eq!(port().status(&root), Err(GitReadCondition::ConfigNamesOutside(named)));
+    assert_eq!(
+        port().status(&root),
+        Err(GitReadCondition::ConfigNamesOutside(named))
+    );
 }
 
 /// A `.gitmodules` include is read by `status()` alone and is followed like any config's.

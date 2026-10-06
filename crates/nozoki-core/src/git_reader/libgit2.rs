@@ -256,7 +256,8 @@ fn check_config_file(
     Ok(())
 }
 
-/// Spells what one refused key names. A path outside the folder refuses; an include that spells
+/// Spells what one refused key names. A value the reader does not locate refuses as not located, and
+/// a path that spells outside the folder refuses as outside; an include that spells
 /// inside is answered so its file is read next; anything else that spells inside, or is not there,
 /// is left to the open.
 fn follow(
@@ -265,14 +266,12 @@ fn follow(
     file: &Path,
     reference: &ConfigReference,
 ) -> Result<Option<PathBuf>, GitReadCondition> {
-    let refusal = || {
-        GitReadCondition::ConfigNamesOutside(ConfigNamedPath {
-            key: reference.key.clone(),
-            path: spelled_lossily(&reference.value),
-        })
+    let named = || ConfigNamedPath {
+        key: reference.key.clone(),
+        path: spelled_lossily(&reference.value),
     };
     let base = match reference.placement {
-        Placement::Outside => return Err(refusal()),
+        Placement::NotLocated => return Err(GitReadCondition::ConfigNotLocated(named())),
         Placement::FromTheFile => file.parent().unwrap_or(file),
         Placement::FromTheGitDirectory => &locations.git_directory,
     };
@@ -284,7 +283,7 @@ fn follow(
         Err(WalkStop::TooManyLinks) => return Err(GitReadCondition::RepositoryReadFailed),
     };
     if !lies_inside(grant, &location) {
-        return Err(refusal());
+        return Err(GitReadCondition::ConfigNamesOutside(named()));
     }
     Ok((reference.kind == ReferenceKind::Include).then_some(location))
 }
@@ -484,6 +483,7 @@ fn probe_git_folder(folder: &Path) -> RootFinding {
 fn probe_condition(condition: GitReadCondition) -> ProbeCondition {
     match condition {
         GitReadCondition::ConfigNamesOutside(named) => ProbeCondition::ConfigNamesOutside(named),
+        GitReadCondition::ConfigNotLocated(named) => ProbeCondition::ConfigNotLocated(named),
         GitReadCondition::ObjectStoreNamesOutside(entry) => {
             ProbeCondition::ObjectStoreNamesOutside(entry)
         }

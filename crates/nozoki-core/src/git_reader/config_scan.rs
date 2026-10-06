@@ -23,9 +23,9 @@ pub(super) enum ReferenceKind {
 /// Where a value is spelled from, which is what decides whether it can lie inside the folder.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(super) enum Placement {
-    /// Outside by rule: a value beginning `~/` (never expanded), or a relative excludes or
+    /// Not located by rule: a value beginning `~/` (never expanded), or a relative excludes or
     /// attributes file, which libgit2 hands on with no base.
-    Outside,
+    NotLocated,
     /// Spelled from the directory of the file that carries the value.
     FromTheFile,
     /// Spelled from the Git directory (`core.worktree`).
