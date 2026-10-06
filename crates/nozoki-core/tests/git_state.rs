@@ -1929,6 +1929,71 @@ fn test_a_link_at_info_leaving_the_folder_is_refused_carrying_the_links_location
     assert_no_opener_and_scene_unchanged(&scene, &root, &outside.join("alternates"));
 }
 
+/// CP-667's third position: a link at `alternates` whose spelling leaves the folder is refused
+/// carrying the location the link reaches, and the file there is never opened.
+#[test]
+fn test_a_link_at_alternates_leaving_the_folder_is_refused_carrying_the_links_location_and_nothing_is_read_there()
+ {
+    let (scene, root) = repository_with_a_secret();
+    let outside = scene.path().join("outside-alternates");
+    scene.make_link(ALTERNATES, &outside);
+
+    assert_object_store_refused(&scene, &root, &outside.display().to_string());
+    assert_no_opener_and_scene_unchanged(&scene, &root, &outside);
+}
+
+/// CP-667 for an inside alternate, not only the repository: a link at a level-one alternate's
+/// `info` whose spelling leaves the folder is refused carrying the location the link reaches.
+#[test]
+fn test_a_link_at_an_inside_alternates_info_leaving_the_folder_is_refused_carrying_the_links_location()
+ {
+    let (scene, root) = repository_with_a_secret();
+    scene.make_folder("S/.git/objects/vendor-store");
+    let outside = scene.make_folder("outside-info");
+    scene.make_link("S/.git/objects/vendor-store/info", &outside);
+    scene.write_file(ALTERNATES, "./vendor-store\n");
+
+    assert_object_store_refused(&scene, &root, &outside.display().to_string());
+    assert_no_opener_and_scene_unchanged(&scene, &root, &outside.join("alternates"));
+}
+
+/// CP-665 and CP-671: an entry that begins `.` but reaches outside through a link inside the folder
+/// spells outside, so it is refused as the file spells it, and the object directory the link
+/// reaches is never opened.
+#[test]
+fn test_an_entry_reaching_outside_through_an_inside_link_is_refused_as_spelled_and_nothing_is_read_there()
+ {
+    let (scene, root) = repository_with_a_secret();
+    let outside = PathBuf::from(outside_store(&scene));
+    scene.make_link("S/.git/objects/vendor-link", &outside);
+    scene.write_file(ALTERNATES, "./vendor-link\n");
+
+    assert_object_store_refused(&scene, &root, "./vendor-link");
+    assert_no_opener_and_scene_unchanged(&scene, &root, &outside.join("info/alternates"));
+}
+
+/// The design's spelling base (Architect Review Notes (b)): an entry beginning `.` is spelled from
+/// the object directory as the walk resolved it, which is where the operating system takes `..`
+/// from when libgit2 joins the entry onto its own path. Here `objects` is a link to a folder one
+/// level nearer the root than `.git/objects`, so `../../` leaves the folder from where the link
+/// leads, and would stay inside if spelled from `.git/objects` as written.
+#[test]
+fn test_a_dot_entry_is_spelled_from_where_an_inside_objects_link_leads_and_not_from_its_lexical_path()
+ {
+    let (scene, root) = repository_with_a_secret();
+    fs::rename(root.join(".git/objects"), root.join("object-store"))
+        .expect("the object directory moves");
+    scene.make_link("S/.git/objects", "../object-store");
+    let outside = PathBuf::from(outside_store(&scene));
+    scene.write_file(
+        "S/object-store/info/alternates",
+        "../../outside-store/objects\n",
+    );
+
+    assert_object_store_refused(&scene, &root, "../../outside-store/objects");
+    assert_no_opener_and_scene_unchanged(&scene, &root, &outside.join("info/alternates"));
+}
+
 /// E11: a link at `alternates` to a file inside the folder is followed, and its entries are spelled
 /// from the object directory and not from where the link or its target stands.
 #[test]
