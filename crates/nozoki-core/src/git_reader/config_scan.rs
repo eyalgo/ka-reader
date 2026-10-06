@@ -175,11 +175,11 @@ fn reference_kind(canonical: &str) -> Option<ReferenceKind> {
 fn placement_of(kind: ReferenceKind, value: &[u8]) -> Placement {
     let relative = value.first().is_some_and(|first| *first != b'/');
     match kind {
-        _ if value.starts_with(HOME_PREFIX) => Placement::Outside,
+        _ if value.starts_with(HOME_PREFIX) => Placement::NotLocated,
         ReferenceKind::Include => Placement::FromTheFile,
         ReferenceKind::Worktree => Placement::FromTheGitDirectory,
         ReferenceKind::ExcludesFile | ReferenceKind::AttributesFile if relative => {
-            Placement::Outside
+            Placement::NotLocated
         }
         ReferenceKind::ExcludesFile | ReferenceKind::AttributesFile => Placement::FromTheFile,
     }
@@ -524,14 +524,14 @@ mod tests {
     }
 
     #[test]
-    fn test_a_value_beginning_tilde_slash_is_outside_for_any_key() {
+    fn test_a_value_beginning_tilde_slash_is_not_located_for_any_key() {
         for text in [
             "[include]\n\tpath = ~/x\n",
             "[core]\n\tworktree = ~/x\n",
             "[core]\n\texcludesfile = ~/x\n",
             "[core]\n\tattributesfile = ~/x\n",
         ] {
-            assert_eq!(one(text).3, Placement::Outside, "{text:?}");
+            assert_eq!(one(text).3, Placement::NotLocated, "{text:?}");
         }
         assert_eq!(
             one("[include]\n\tpath = ~x\n").3,
@@ -541,14 +541,14 @@ mod tests {
     }
 
     #[test]
-    fn test_a_relative_excludesfile_or_attributesfile_is_outside_and_an_absolute_one_is_not() {
+    fn test_a_relative_excludesfile_or_attributesfile_is_not_located_and_an_absolute_one_is_not() {
         assert_eq!(
             one("[core]\n\texcludesfile = rel/x\n").3,
-            Placement::Outside
+            Placement::NotLocated
         );
         assert_eq!(
             one("[core]\n\tattributesfile = rel/x\n").3,
-            Placement::Outside
+            Placement::NotLocated
         );
         assert_eq!(
             one("[core]\n\texcludesfile = /abs/x\n").3,
