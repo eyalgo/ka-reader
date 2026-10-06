@@ -366,10 +366,11 @@ enum BridgePayload {
         private enum Kind: String, Decodable { case plain, root }
 
         /// The condition member's value: the eleven conditions that carry no text, or one of the
-        /// three that come beside theirs.
+        /// four that come beside theirs.
         private enum WireCondition: Decodable {
             case gitDirectoryOutside
             case configNamesOutside
+            case configNotLocated
             case objectStoreNamesOutside
             case condition(GitCondition)
 
@@ -379,6 +380,8 @@ enum BridgePayload {
                     self = .gitDirectoryOutside
                 } else if name == "config_names_outside" {
                     self = .configNamesOutside
+                } else if name == "config_not_located" {
+                    self = .configNotLocated
                 } else if name == "object_store_names_outside" {
                     self = .objectStoreNamesOutside
                 } else if let condition = GitCondition(rawValue: name) {
@@ -448,6 +451,15 @@ enum BridgePayload {
                     ["state", "condition", "key", "path"], in: container)
                 return .failed(
                     .configNamesOutside(
+                        key: try container.decode(String.self, forKey: WireKey(stringValue: "key")),
+                        path: try container.decode(
+                            String.self, forKey: WireKey(stringValue: "path"))
+                    ))
+            case .configNotLocated:
+                try BridgePayload.requireMembers(
+                    ["state", "condition", "key", "path"], in: container)
+                return .failed(
+                    .configNotLocated(
                         key: try container.decode(String.self, forKey: WireKey(stringValue: "key")),
                         path: try container.decode(
                             String.self, forKey: WireKey(stringValue: "path"))
