@@ -276,8 +276,8 @@ impl From<ItemState<FileView>> for FileAnswerDto {
 
 /// The Git item on the wire, tagged by `state` and holding exactly the members its state names:
 /// `pending` and nothing else; `observed` with its `kind`; or `failed` with a `condition`, plus
-/// `git_directory` only beside `git_directory_outside`, and `key` and `path` only beside
-/// `config_names_outside`. The bridge carries the core's item and decides nothing: no count,
+/// `git_directory` only beside `git_directory_outside`, `key` and `path` beside
+/// `config_names_outside`, and `path` alone beside `object_store_names_outside`. The bridge carries the core's item and decides nothing: no count,
 /// wording or sort key crosses (CP-543).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[serde(tag = "state", rename_all = "snake_case")]
@@ -353,10 +353,10 @@ pub struct GitEntryDto {
     pub from: Option<String>,
 }
 
-/// A failed Git item's condition on the wire, one string from the closed set of thirteen. Five of
+/// A failed Git item's condition on the wire, one string from the closed set of fourteen. Five of
 /// the probe's conditions carry a `probe_` prefix, because two share names with read conditions.
-/// The config condition is one value for the probe and the reads: one message whichever operation
-/// met it.
+/// The config condition and the object store condition are each one value for the probe and the
+/// reads: one message whichever operation met it.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum GitConditionDto {
@@ -373,6 +373,7 @@ pub enum GitConditionDto {
     RepositoryReadFailed,
     MachineConfigNotSwitchedOff,
     ConfigNamesOutside,
+    ObjectStoreNamesOutside,
 }
 
 impl From<RepositoryState> for RepositoryStateDto {
@@ -428,6 +429,7 @@ impl From<&ProbeCondition> for GitConditionDto {
             ProbeCondition::GitFileUnreadable => Self::ProbeGitFileUnreadable,
             ProbeCondition::RepositoryReadFailed => Self::ProbeRepositoryReadFailed,
             ProbeCondition::ConfigNamesOutside(_) => Self::ConfigNamesOutside,
+            ProbeCondition::ObjectStoreNamesOutside(_) => Self::ObjectStoreNamesOutside,
         }
     }
 }
@@ -458,6 +460,17 @@ impl GitAnswerDto {
             path: Some(named.path.clone()),
         }
     }
+
+    /// The object store condition's answer, whichever operation met it. The core has already spelled
+    /// the value lossily, so it crosses as the string the core holds, in `path` alone.
+    fn object_store_names_outside(value: &str) -> Self {
+        Self::Failed {
+            condition: GitConditionDto::ObjectStoreNamesOutside,
+            git_directory: None,
+            key: None,
+            path: Some(value.to_string()),
+        }
+    }
 }
 
 impl From<&ItemState<FolderKind, GitCondition>> for GitAnswerDto {
@@ -486,6 +499,9 @@ impl From<&ItemState<FolderKind, GitCondition>> for GitAnswerDto {
             ItemState::Failed(GitCondition::Probe(ProbeCondition::ConfigNamesOutside(named))) => {
                 Self::config_names_outside(named)
             }
+            ItemState::Failed(GitCondition::Probe(ProbeCondition::ObjectStoreNamesOutside(
+                value,
+            ))) => Self::object_store_names_outside(value),
             ItemState::Failed(GitCondition::Probe(condition)) => Self::failed(condition.into()),
             ItemState::Failed(GitCondition::Read(condition)) => match condition {
                 GitReadCondition::GitDirectoryOutside(path) => Self::Failed {
@@ -508,6 +524,9 @@ impl From<&ItemState<FolderKind, GitCondition>> for GitAnswerDto {
                     Self::failed(GitConditionDto::RepositoryReadFailed)
                 }
                 GitReadCondition::ConfigNamesOutside(named) => Self::config_names_outside(named),
+                GitReadCondition::ObjectStoreNamesOutside(value) => {
+                    Self::object_store_names_outside(value)
+                }
             },
         }
     }

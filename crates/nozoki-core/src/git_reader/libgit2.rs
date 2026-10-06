@@ -1,6 +1,6 @@
 //! The libgit2 adapter of the Git port. Every Git read and the binding itself live in this file.
 
-use std::collections::VecDeque;
+use std::collections::{HashSet, VecDeque};
 use std::ffi::{OsStr, OsString};
 use std::io::{self, Read};
 use std::os::unix::ffi::OsStrExt;
@@ -13,6 +13,7 @@ use git2::{
 };
 use rustix::fs::OFlags;
 
+use super::alternates_scan::{self, AlternateEntry, EntryClass};
 use super::config_scan::{self, ConfigReference, Placement, ReferenceKind};
 use super::{
     BranchElement, ConfigNamedPath, GitPort, GitReadCondition, HeadState, ProbeCondition,
@@ -27,6 +28,9 @@ const COMMON_DIRECTORY_FILE: &str = "commondir";
 const CONFIG_FILE: &str = "config";
 const WORKTREE_CONFIG_FILE: &str = "config.worktree";
 const SUBMODULE_CONFIG_FILE: &str = ".gitmodules";
+const OBJECTS_DIRECTORY: &str = "objects";
+const INFO_DIRECTORY: &str = "info";
+const ALTERNATES_FILE: &str = "alternates";
 /// The mode an index entry holds for a submodule's commit.
 const GITLINK_MODE: u32 = 0o160_000;
 /// The most links one spelled location may pass through, as `fs-reader` bounds a requested path.
@@ -40,18 +44,23 @@ const GIT_FILE_PREFIX: &[u8] = b"gitdir:";
 /// whitespace: the file is read only as far as that byte, so no size is ever held.
 const GIT_FILE_CHUNK: usize = 512;
 
-/// The two depths the config check stops at. Both are named so a unit test can drive a small bound.
+/// The three depths the checks stop at. Each is named so a unit test can drive a small bound.
 struct Bounds {
     /// A config file this deep through includes, counting the repository's own `config` as 0, is
     /// refused as libgit2 refuses it (`MAX_INCLUDE_DEPTH` in `config_file.c`).
     include_depth: usize,
     /// A submodule nested this deep, counting the repository's own as 0, is refused.
     submodule_depth: usize,
+    /// An alternates file is read this many levels down, counting the repository's own as 0, and
+    /// an alternate one level past it that holds an alternates file at all is refused, as libgit2
+    /// refuses a chain deeper than `GIT_ALTERNATES_MAX_DEPTH` in `odb.c`.
+    alternates_depth: usize,
 }
 
 const BOUNDS: Bounds = Bounds {
     include_depth: 10,
     submodule_depth: 10,
+    alternates_depth: 5,
 };
 
 /// The port's one adapter, linked against the libgit2 compiled into the crate.
@@ -102,6 +111,7 @@ impl GitPort for Libgit2 {
 fn open_verified(root: &Path) -> Result<Repository, GitReadCondition> {
     let locations = verified_locations(root, root)?;
     check_config(root, &locations, &BOUNDS)?;
+    check_alternates(root, &locations, &BOUNDS)?;
     open_at(root, &locations)
 }
 
@@ -279,6 +289,113 @@ fn follow(
     Ok((reference.kind == ReferenceKind::Include).then_some(location))
 }
 
+/// The alternates check, run where the config check runs. It reads `objects/info/alternates` under
+/// the common directory, and the same file of each alternate that spells inside the folder, level
+/// by level and top to bottom, so the first outside value met is the one carried. It refuses any
+/// entry, or any link at `objects`, `info` or `alternates`, that spells outside the folder, and
+/// reads nothing there. An alternate already reached is not read again, as libgit2 adds an object
+/// directory once.
+///
+/// Files are read down to `bounds.alternates_depth`, counting the repository's own as level 0. An
+/// alternate one level past it is not read, and is refused as too deep when it holds an alternates
+/// file at all, as libgit2 reads none there. A spelling that leaves the folder at that level is
+/// refused the same way, since nothing was observed being read.
+fn check_alternates(
+    grant: &Path,
+    locations: &Locations,
+    bounds: &Bounds,
+) -> Result<(), GitReadCondition> {
+    let Some(objects) = spell_step(grant, &locations.common_directory, OBJECTS_DIRECTORY)? else {
+        return Ok(());
+    };
+    let mut reached = HashSet::from([objects.clone()]);
+    let mut pending = VecDeque::from([(objects, 0)]);
+    while let Some((objects, level)) = pending.pop_front() {
+        let file = alternates_file_of(grant, &objects);
+        if level > bounds.alternates_depth {
+            return match file {
+                Ok(None) => continue,
+                Ok(Some(_)) | Err(GitReadCondition::ObjectStoreNamesOutside(_)) => {
+                    Err(GitReadCondition::RepositoryReadFailed)
+                }
+                Err(other) => Err(other),
+            };
+        }
+        let Some(file) = file? else {
+            continue;
+        };
+        let Some(content) = read_alternates(&file)? else {
+            continue;
+        };
+        for entry in alternates_scan::scan(&content) {
+            if let Some(alternate) = spell_entry(grant, &objects, &entry)?
+                && reached.insert(alternate.clone())
+            {
+                pending.push_back((alternate, level + 1));
+            }
+        }
+    }
+    Ok(())
+}
+
+/// Where one alternates entry lies, spelled from `objects`, the object directory that holds the
+/// file. An entry that lies outside the folder is refused as the file spells it, and so is one that
+/// counts as outside by its class. `None` when the entry spells inside and nothing is there.
+fn spell_entry(
+    grant: &Path,
+    objects: &Path,
+    entry: &AlternateEntry,
+) -> Result<Option<PathBuf>, GitReadCondition> {
+    let refusal = || GitReadCondition::ObjectStoreNamesOutside(spelled_lossily(&entry.value));
+    if entry.class == EntryClass::Outside {
+        return Err(refusal());
+    }
+    let value = Path::new(OsStr::from_bytes(&entry.value));
+    match spell_location(grant, objects, value, &inspect_on_disk) {
+        Ok(location) if lies_inside(grant, &location) => Ok(Some(location)),
+        Ok(_) => Err(refusal()),
+        Err(WalkStop::Missing) => Ok(None),
+        Err(WalkStop::Unreadable) => Err(GitReadCondition::GitDirectoryUnreadable),
+        Err(WalkStop::TooManyLinks) => Err(GitReadCondition::RepositoryReadFailed),
+    }
+}
+
+/// The bytes of an alternates file, bounded as every file the check reads is. A file that is not there
+/// is no file; one the check cannot read, that is too large or that is not a regular file is
+/// unreadable.
+fn read_alternates(file: &Path) -> Result<Option<Vec<u8>>, GitReadCondition> {
+    match read_spelling_file(file) {
+        Ok(content) => Ok(Some(content)),
+        Err(error) if error.kind() == io::ErrorKind::NotFound => Ok(None),
+        Err(_) => Err(GitReadCondition::GitDirectoryUnreadable),
+    }
+}
+
+/// The location of `info/alternates` under an object directory, spelled one position at a time.
+/// `None` when a position is not there, so there is no file.
+fn alternates_file_of(grant: &Path, objects: &Path) -> Result<Option<PathBuf>, GitReadCondition> {
+    let Some(info) = spell_step(grant, objects, INFO_DIRECTORY)? else {
+        return Ok(None);
+    };
+    spell_step(grant, &info, ALTERNATES_FILE)
+}
+
+/// Spells `name` from `base` by the same walk every position of the object store takes, and answers
+/// the location only when it lies inside the folder. A location outside is refused carrying that
+/// location, which is a link's own spelling reached and never a path under it. `None` when the
+/// position is not there.
+fn spell_step(grant: &Path, base: &Path, name: &str) -> Result<Option<PathBuf>, GitReadCondition> {
+    match spell_location(grant, base, Path::new(name), &inspect_on_disk) {
+        Ok(location) if lies_inside(grant, &location) => Ok(Some(location)),
+        Ok(location) => Err(GitReadCondition::ObjectStoreNamesOutside(spelled_lossily(
+            location.as_os_str().as_bytes(),
+        ))),
+        Err(WalkStop::Missing) => Ok(None),
+        Err(WalkStop::Unreadable) => Err(GitReadCondition::GitDirectoryUnreadable),
+        Err(WalkStop::TooManyLinks) => Err(GitReadCondition::RepositoryReadFailed),
+    }
+}
+
 /// Verifies every submodule the index names, before `statuses()` opens any of them: each one's Git
 /// directory and common directory are located inside `grant`, its config is checked, and only then
 /// is it opened, for the gitlinks it holds in turn. The first failure is the answer.
@@ -329,6 +446,7 @@ fn verify_submodules(
                 other => other,
             })?;
         check_config(grant, &locations, bounds)?;
+        check_alternates(grant, &locations, bounds)?;
         let submodule = match open_at(&submodule_folder, &locations) {
             Ok(submodule) => submodule,
             Err(GitReadCondition::NotARepository) => continue,
@@ -353,7 +471,9 @@ fn probe_git_folder(folder: &Path) -> RootFinding {
         git_directory,
         common_directory,
     };
-    match check_config(folder, &locations, &BOUNDS) {
+    match check_config(folder, &locations, &BOUNDS)
+        .and_then(|()| check_alternates(folder, &locations, &BOUNDS))
+    {
         Ok(()) => open_repository(folder),
         Err(condition) => RootFinding::Failed(probe_condition(condition)),
     }
@@ -364,6 +484,9 @@ fn probe_git_folder(folder: &Path) -> RootFinding {
 fn probe_condition(condition: GitReadCondition) -> ProbeCondition {
     match condition {
         GitReadCondition::ConfigNamesOutside(named) => ProbeCondition::ConfigNamesOutside(named),
+        GitReadCondition::ObjectStoreNamesOutside(entry) => {
+            ProbeCondition::ObjectStoreNamesOutside(entry)
+        }
         GitReadCondition::GitDirectoryUnreadable | GitReadCondition::GitDirectoryMissing => {
             ProbeCondition::GitDirectoryUnreadable
         }
