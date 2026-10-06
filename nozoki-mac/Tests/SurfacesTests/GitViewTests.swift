@@ -247,6 +247,23 @@ final class GitViewTests: XCTestCase {
         XCTAssertEqual(visibleImageViews(fixture.view).map(\.image), [failureGlyph])
     }
 
+    func test_theConfigNotLocatedFailureDrawsOneMessageAndNothingElse() {
+        let fixture = makeView(
+            showing: .failed(.configNotLocated(key: "core.excludesfile", path: "ignore-rel")))
+
+        XCTAssertEqual(
+            strings(fixture.view),
+            [
+                "Nozoki found core.excludesfile set to ignore-rel and doesn't work out where that "
+                    + "path leads, so it doesn't read the folder's Git status. "
+                    + "The file tree and the reading panel are unaffected."
+            ])
+        XCTAssertNotEqual(strings(fixture.view), [GitSentences.pending])
+        XCTAssertTrue(rowViews(fixture.view).isEmpty)
+        XCTAssertTrue(shown(descendants(of: fixture.view)).allSatisfy { !($0 is NSButton) })
+        XCTAssertEqual(visibleImageViews(fixture.view).map(\.image), [failureGlyph])
+    }
+
     func test_machineConfigNotSwitchedOffDrawsTheFault() {
         let fixture = makeView(showing: .failed(.condition(.machineConfigNotSwitchedOff)))
 

@@ -211,8 +211,14 @@ pub enum GitReadCondition {
     /// libgit2 refused, the read failed partway, or what libgit2 opened is not what was verified.
     RepositoryReadFailed,
     /// The repository's own config names a path outside the folder, in a key libgit2 would follow.
-    /// Nothing at that path was read.
+    /// The path is outside by its own spelling, or through a link met inside the folder. Nothing at
+    /// that path was read.
     ConfigNamesOutside(ConfigNamedPath),
+    /// The repository's own config sets a key libgit2 would follow to a value the reader does not
+    /// locate: one beginning `~/`, which is never expanded, or a relative excludes or attributes
+    /// file, which libgit2 hands on with no base. Nothing at that path was read, and where the
+    /// value leads is not observed.
+    ConfigNotLocated(ConfigNamedPath),
     /// The repository's object store names a location outside the folder: an entry of an alternates
     /// file, or a link at `objects`, `info` or `alternates`. The string is the entry as the file
     /// spells it or, for a link, the location its spelling reaches, spelled lossily from its bytes
@@ -222,8 +228,8 @@ pub enum GitReadCondition {
 }
 
 /// The key a repository's config spells and the value it gives it, as the config writes them, when
-/// the value names a path outside the folder. Each is spelled lossily from the config's bytes, as
-/// [`StatusEntry`]'s path is.
+/// the value is refused: it names a path outside the folder, or the reader does not locate it. Each
+/// is spelled lossily from the config's bytes, as [`StatusEntry`]'s path is.
 ///
 /// The key is the section, the subsection where there is one, and the name, joined by `.`. The
 /// path is the value as written, before any spelling.
@@ -245,10 +251,10 @@ pub struct ConfigNamedPath {
     pub path: String,
 }
 
-/// The answer to a probe. It holds no path and no text except in two variants: a refused config
-/// carries the key and the value the config spells, and a refused object store carries the entry or
-/// link location it spells. Both are the repository's own words about a place outside the folder,
-/// and the probe reads nothing at that place.
+/// The answer to a probe. It holds no path and no text except in three variants: a refused config,
+/// of either observation, carries the key and the value the config spells, and a refused object
+/// store carries the entry or link location it spells. Each is the repository's own words about a
+/// place the probe does not read.
 ///
 /// # Examples
 ///
@@ -302,6 +308,10 @@ pub enum ProbeCondition {
     /// The repository's own config names a path outside the folder, in a key libgit2 would follow.
     /// The probe opened nothing and read nothing at that path.
     ConfigNamesOutside(ConfigNamedPath),
+    /// The repository's own config sets a key libgit2 would follow to a value the probe does not
+    /// locate, as [`GitReadCondition::ConfigNotLocated`] carries it. The probe opened nothing and
+    /// read nothing at that path.
+    ConfigNotLocated(ConfigNamedPath),
     /// The repository's object store names a location outside the folder, by the value the string
     /// holds, as [`GitReadCondition::ObjectStoreNamesOutside`] carries it. The probe opened nothing
     /// and read nothing at that location.

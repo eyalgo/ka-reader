@@ -1474,8 +1474,8 @@ fn test_an_absent_inside_file_is_no_refusal() {
     assert_head(&answers, on_branch("main"), RepositoryState::Normal);
 }
 
-/// A value beginning `~/` is outside whatever the machine's home is, and is never expanded: the
-/// refusal carries the value as written, and nothing under a home folder is read.
+/// A value beginning `~/` is never expanded and never located: the refusal carries the value as
+/// written, as not located, and nothing under a home folder is read.
 #[test]
 fn test_a_home_spelled_value_is_refused_as_written() {
     let (scene, root) = repository_with_a_secret();
@@ -1485,10 +1485,262 @@ fn test_a_home_spelled_value_is_refused_as_written() {
 
     assert_eq!(
         answers.failure(),
-        &GitReadCondition::ConfigNamesOutside(config_named(
+        &GitReadCondition::ConfigNotLocated(config_named(
             "include.path",
             "~/nozoki-never-read.config"
         ))
+    );
+}
+
+/// What the repository's own config answers on all three calls for `text`, as not located.
+fn assert_not_located_in_the_repositorys_config(text: &str, key: &str, value: &str) {
+    let (scene, root) = repository_with_a_secret();
+    append_to_config(&root, text);
+
+    assert_failed_on_all_three(
+        &scene,
+        &root,
+        ProbeCondition::ConfigNotLocated(config_named(key, value)),
+        GitReadCondition::ConfigNotLocated(config_named(key, value)),
+    );
+}
+
+/// Appends `text` to a verified submodule's own config.
+fn append_to_the_submodules_config(root: &Path, text: &str) {
+    use std::io::Write;
+
+    let mut config = fs::OpenOptions::new()
+        .append(true)
+        .open(root.join(".git/modules/submodule/config"))
+        .expect("the submodule config opens");
+    config
+        .write_all(text.as_bytes())
+        .expect("the submodule config can be written");
+}
+
+/// A verified submodule's config answers on `status()` alone: `probe` finds the root and `state()`
+/// reads.
+fn assert_refused_on_status_alone(scene: &TempDir, root: &Path, read: GitReadCondition) {
+    let before = scene.snapshot();
+
+    assert_eq!(port().probe(root), RootFinding::Root);
+    assert!(port().state(root).is_ok());
+    assert_eq!(port().status(root), Err(read));
+    assert_eq!(&scene.snapshot(), &before, "a call changed the scene");
+}
+
+/// CP-694 (a): a `~/` value is not located, and the observation is the value's, not the key's.
+#[test]
+fn test_a_tilde_slash_value_is_refused_as_not_located_on_all_three_calls() {
+    assert_not_located_in_the_repositorys_config(
+        "[include]\n\tpath = ~/x.config\n",
+        "include.path",
+        "~/x.config",
+    );
+}
+
+#[test]
+fn test_a_tilde_slash_value_in_a_submodules_config_is_not_located_on_status_alone() {
+    let (scene, root) = submodule_repository_without_outside_config();
+    append_to_the_submodules_config(&root, "\n[include]\n\tpath = ~/x.config\n");
+
+    assert_refused_on_status_alone(
+        &scene,
+        &root,
+        GitReadCondition::ConfigNotLocated(config_named("include.path", "~/x.config")),
+    );
+}
+
+/// CP-694 (b): a relative excludes file is handed on with no base, so it is not located.
+#[test]
+fn test_a_relative_excludesfile_is_refused_as_not_located() {
+    assert_not_located_in_the_repositorys_config(
+        "[core]\n\texcludesfile = ignore-rel\n",
+        "core.excludesfile",
+        "ignore-rel",
+    );
+
+    let (scene, root) = submodule_repository_without_outside_config();
+    append_to_the_submodules_config(&root, "\n[core]\n\texcludesfile = ignore-rel\n");
+    assert_refused_on_status_alone(
+        &scene,
+        &root,
+        GitReadCondition::ConfigNotLocated(config_named("core.excludesfile", "ignore-rel")),
+    );
+}
+
+/// CP-694 (c): a value that spells a location beside the folder is outside, not unlocated.
+#[test]
+fn test_a_value_spelled_outside_is_refused_as_outside() {
+    let (scene, root) = repository_with_a_secret();
+    append_to_config(&root, "[include]\n\tpath = ../../outside.config\n");
+    assert_failed_on_all_three(
+        &scene,
+        &root,
+        ProbeCondition::ConfigNamesOutside(config_named("include.path", "../../outside.config")),
+        GitReadCondition::ConfigNamesOutside(config_named("include.path", "../../outside.config")),
+    );
+
+    let (scene, root) = submodule_repository_without_outside_config();
+    append_to_the_submodules_config(&root, "\n[include]\n\tpath = ../../../../outside.config\n");
+    assert_refused_on_status_alone(
+        &scene,
+        &root,
+        GitReadCondition::ConfigNamesOutside(config_named(
+            "include.path",
+            "../../../../outside.config",
+        )),
+    );
+}
+
+/// The other not-located forms, and the rule that the key's own text never decides the observation.
+#[test]
+fn test_the_other_not_located_forms_and_the_key_text_rule() {
+    assert_not_located_in_the_repositorys_config(
+        "[core]\n\tattributesfile = ../attrs\n",
+        "core.attributesfile",
+        "../attrs",
+    );
+    assert_not_located_in_the_repositorys_config(
+        "[core]\n\tworktree = ~/w\n",
+        "core.worktree",
+        "~/w",
+    );
+
+    let (scene, root) = repository_with_a_secret();
+    let outside = scene.path().join("outside.config");
+    let value = outside.display().to_string();
+    append_to_config(
+        &root,
+        &format!("[includeIf \"gitdir:~/work/\"]\n\tpath = {value}\n"),
+    );
+    assert_failed_on_all_three(
+        &scene,
+        &root,
+        ProbeCondition::ConfigNamesOutside(config_named("includeIf.gitdir:~/work/.path", &value)),
+        GitReadCondition::ConfigNamesOutside(config_named("includeIf.gitdir:~/work/.path", &value)),
+    );
+}
+
+/// CP-684 (a): a value beginning `~/` is not located under any of the five keys. The cases above
+/// hold `include.path` and `core.worktree`; this one holds the other three. The `includeIf`
+/// condition names no `~/`, so only the value can decide.
+#[test]
+fn test_a_tilde_slash_value_under_the_other_three_keys_is_not_located_on_all_three_calls() {
+    assert_not_located_in_the_repositorys_config(
+        "[includeIf \"gitdir:/nowhere/\"]\n\tpath = ~/when.config\n",
+        "includeIf.gitdir:/nowhere/.path",
+        "~/when.config",
+    );
+    assert_not_located_in_the_repositorys_config(
+        "[core]\n\texcludesfile = ~/ignore\n",
+        "core.excludesfile",
+        "~/ignore",
+    );
+    assert_not_located_in_the_repositorys_config(
+        "[core]\n\tattributesfile = ~/attrs\n",
+        "core.attributesfile",
+        "~/attrs",
+    );
+}
+
+/// A `.gitmodules` include is read by `status()` alone and is followed like any config's.
+#[test]
+fn test_a_tilde_slash_include_in_gitmodules_is_not_located_on_status_alone() {
+    let (scene, root) = submodule_repository_without_outside_config();
+    append_to_gitmodules(&root, "\n[include]\n\tpath = ~/mods.config\n");
+
+    assert_refused_on_status_alone(
+        &scene,
+        &root,
+        GitReadCondition::ConfigNotLocated(config_named("include.path", "~/mods.config")),
+    );
+}
+
+/// CP-686: with two refused values in one config, each answer carries one value's key, path and
+/// observation, never one value's key and path under the other's observation. No order is pinned.
+#[test]
+fn test_two_refused_values_in_one_config_carry_one_values_key_path_and_observation() {
+    let (scene, root) = repository_with_a_secret();
+    let outside = scene.path().join("outside.config");
+    let outside_value = outside.display().to_string();
+    append_to_config(
+        &root,
+        &format!("[include]\n\tpath = {outside_value}\n[core]\n\texcludesfile = ignore-rel\n"),
+    );
+    let outside_read =
+        GitReadCondition::ConfigNamesOutside(config_named("include.path", &outside_value));
+    let not_located_read =
+        GitReadCondition::ConfigNotLocated(config_named("core.excludesfile", "ignore-rel"));
+
+    let state = port().state(&root).expect_err("the config is refused");
+    assert!(
+        state == outside_read || state == not_located_read,
+        "{state:?}"
+    );
+    assert_eq!(port().status(&root), Err(state.clone()));
+    let probe = match state {
+        GitReadCondition::ConfigNamesOutside(named) => ProbeCondition::ConfigNamesOutside(named),
+        GitReadCondition::ConfigNotLocated(named) => ProbeCondition::ConfigNotLocated(named),
+        other => panic!("{other:?}"),
+    };
+    assert_eq!(port().probe(&root), RootFinding::Failed(probe));
+}
+
+/// CP-683 and CP-684: a file the repository's config includes, spelled inside the folder, is a
+/// source of the config refusal, so a not-located value in it is answered as not located, with its
+/// own key and value, on all three calls.
+#[test]
+fn test_a_not_located_value_in_an_inside_include_is_not_located_on_all_three_calls() {
+    let (scene, root) = repository_with_a_secret();
+    let inner = scene.write_file(
+        "S/inner.config",
+        "[include]\n\tpath = ~/inner-home.config\n",
+    );
+    append_to_config(&root, &format!("[include]\n\tpath = {}\n", inner.display()));
+
+    assert_failed_on_all_three(
+        &scene,
+        &root,
+        ProbeCondition::ConfigNotLocated(config_named("include.path", "~/inner-home.config")),
+        GitReadCondition::ConfigNotLocated(config_named("include.path", "~/inner-home.config")),
+    );
+}
+
+/// CP-683 and CP-684: `config.worktree`, where `extensions.worktreeConfig` is set, is a source of
+/// the config refusal, so a relative attributes file in it is answered as not located on all three
+/// calls.
+#[test]
+fn test_a_not_located_value_in_the_worktree_config_is_not_located_on_all_three_calls() {
+    let (scene, root) = repository_with_a_secret();
+    append_to_config(&root, "[extensions]\n\tworktreeConfig = true\n");
+    scene.write_file(
+        "S/.git/config.worktree",
+        "[core]\n\tattributesfile = attrs-rel\n",
+    );
+
+    assert_failed_on_all_three(
+        &scene,
+        &root,
+        ProbeCondition::ConfigNotLocated(config_named("core.attributesfile", "attrs-rel")),
+        GitReadCondition::ConfigNotLocated(config_named("core.attributesfile", "attrs-rel")),
+    );
+}
+
+/// CP-683 and CP-687: a verified submodule's own `.gitmodules` is checked by `status()` alone, and a
+/// `~/` include in it is not located.
+#[test]
+fn test_a_tilde_slash_include_in_a_submodules_gitmodules_is_not_located_on_status_alone() {
+    let (scene, root) = submodule_repository_without_outside_config();
+    append_to_gitmodules(
+        &root.join("submodule"),
+        "\n[include]\n\tpath = ~/nested-mods.config\n",
+    );
+
+    assert_refused_on_status_alone(
+        &scene,
+        &root,
+        GitReadCondition::ConfigNotLocated(config_named("include.path", "~/nested-mods.config")),
     );
 }
 

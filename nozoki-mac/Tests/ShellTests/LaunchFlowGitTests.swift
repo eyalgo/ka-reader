@@ -89,6 +89,45 @@ final class LaunchFlowGitTests: LaunchWindowTestCase {
         XCTAssertTrue(strings(in: workbench).contains("a.txt"), "\(strings(in: workbench))")
     }
 
+    /// CP-695: wire bytes to the drawn failure slot for the two config observations. The shell hands
+    /// the answer down with all three members and decides nothing about it (CP-688).
+    func test_aNotLocatedConfigAnswerDrawsItsMessageAndAnOutsideOneKeepsItsSentence() throws {
+        let notLocated = Data(
+            (#"{"state":"failed","condition":"config_not_located","#
+                + #""key":"core.excludesfile","path":"ignore-rel"}"#).utf8)
+        let launch = launch(git: notLocated)
+        let workbench = try workbench(of: launch)
+
+        choose(.git, in: workbench)
+
+        let drawn = strings(in: workbench)
+        XCTAssertEqual(
+            drawn,
+            [
+                "Nozoki found core.excludesfile set to ignore-rel and doesn't work out where that "
+                    + "path leads, so it doesn't read the folder's Git status. "
+                    + "The file tree and the reading panel are unaffected."
+            ])
+        XCTAssertTrue(drawn[0].contains("core.excludesfile") && drawn[0].contains("ignore-rel"))
+        XCTAssertEqual(drawn[0].lowercased().components(separatedBy: "outside").count - 1, 0)
+
+        let outside = Data(
+            (#"{"state":"failed","condition":"config_names_outside","#
+                + #""key":"core.excludesfile","path":"ignore-rel"}"#).utf8)
+        let outsideLaunch = self.launch(git: outside)
+        let outsideWorkbench = try self.workbench(of: outsideLaunch)
+
+        choose(.git, in: outsideWorkbench)
+
+        XCTAssertEqual(
+            strings(in: outsideWorkbench),
+            [
+                "Nozoki found core.excludesfile set to ignore-rel, outside the folder you opened, "
+                    + "so it doesn't read the folder's Git status. "
+                    + "The file tree and the reading panel are unaffected."
+            ])
+    }
+
     func test_aNullReadGitDrawsTheFaultAndTheTreeStaysReachable() throws {
         let launch = launch(git: nil)
         let workbench = try workbench(of: launch)

@@ -203,6 +203,7 @@ impl GitCondition {
             Self::Probe(ProbeCondition::GitFileUnreadable) => "the Git file is unreadable",
             Self::Probe(ProbeCondition::RepositoryReadFailed) => "the repository could not be read",
             Self::Probe(ProbeCondition::ConfigNamesOutside(_)) => CONFIG_NAMES_OUTSIDE_PHRASE,
+            Self::Probe(ProbeCondition::ConfigNotLocated(_)) => CONFIG_NOT_LOCATED_PHRASE,
             Self::Probe(ProbeCondition::ObjectStoreNamesOutside(_)) => {
                 OBJECT_STORE_NAMES_OUTSIDE_PHRASE
             }
@@ -219,6 +220,7 @@ impl GitCondition {
                 "the repository could not be read"
             }
             Self::Read(GitReadCondition::ConfigNamesOutside(_)) => CONFIG_NAMES_OUTSIDE_PHRASE,
+            Self::Read(GitReadCondition::ConfigNotLocated(_)) => CONFIG_NOT_LOCATED_PHRASE,
             Self::Read(GitReadCondition::ObjectStoreNamesOutside(_)) => {
                 OBJECT_STORE_NAMES_OUTSIDE_PHRASE
             }
@@ -229,6 +231,10 @@ impl GitCondition {
 /// The one phrase for a config that names a path outside the folder, whichever operation met it. It
 /// carries neither the key nor the path the condition holds.
 const CONFIG_NAMES_OUTSIDE_PHRASE: &str = "the config names a path outside the folder";
+
+/// The one phrase for a config that sets a key to a value the reader does not locate, whichever
+/// operation met it. It carries neither the key nor the path the condition holds.
+const CONFIG_NOT_LOCATED_PHRASE: &str = "the config names a path the reader does not locate";
 
 /// The one phrase for an object store that names a location outside the folder, whichever operation
 /// met it. It carries neither the entry nor the location the condition holds.
