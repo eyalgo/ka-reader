@@ -1,6 +1,6 @@
 # ADR-0022: `git-reader` refuses a repository whose Git config, `.gitmodules` or alternates file names a location outside the folder — by a check of its own, read inside the folder before libgit2 reads what that file names
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-10-06
 
 ## Context
@@ -49,12 +49,16 @@ nothing at a position outside the folder (`docs/SDD.md` § 3, the `git-reader` r
   folder refuses. A value in a form the adapter does not locate refuses as *not located*, not as
   *outside*: a value beginning `~/` under the five keys named first, a relative
   `core.excludesfile` or `core.attributesfile`, and a `.gitmodules` section path beginning `/`.
-  An `includeIf` path refuses whatever its condition, and the condition is not evaluated. Where a
-  `.gitmodules` section would make the status read open, or report, another location for a path
-  that read looks up, the read is refused.
-- **Each refusal is a condition of its own that states what was observed.** It is never the
-  read-failed condition, because no read was tried. The Git item is `failed` with it, the tree and
-  the panel stand, and the log line holds no path.
+  An `includeIf` path that spells outside the folder, or is in a form the adapter does not locate,
+  refuses whatever its condition, and the condition is not evaluated. One that spells inside the
+  folder is followed, as an inside include is. Where a `.gitmodules` section would make the status
+  read open, or report, another location for a path that read looks up, the read is refused.
+- **Each refusal is a condition of its own that states what was observed.** A refusal of a value
+  is never the read-failed condition, because no read of what the value names was tried. The Git
+  item is `failed` with it, the tree and the panel stand, and the log line holds no path. The
+  check's own reads answer the conditions that already exist: a file the check cannot read answers
+  the condition for an unreadable Git directory, and a config it cannot parse to the end as Git's
+  syntax answers the read-failed condition, because it cannot prove what libgit2 would follow.
 - **The domain is pinned to one libgit2 version.** A `libgit2-sys` version change re-measures it in
   the lockfile review `docs/SDD.md` § 4 C-R6 already requires.
 
@@ -150,6 +154,11 @@ where the domain is re-measured, and a member it misses is a read this check doe
   `crates/nozoki-core/tests/git_state.rs`, read at `nozoki@076eac2` at the lines cited above.
 - `libgit2-sys 0.18.8+1.9.7` — the lines cited are the SDD's, read there and not re-read for this
   record.
+- `docs/trail/architecture/cycle-37.md` § 2.1 — the acceptance, confirmed in the owner's seat with
+  one addition (`docs/trail/architecture/self_answer-42.md`): the `includeIf` sentence and the
+  read-failed sentence of *Decision* scoped, while the record was still Proposed, to what
+  `docs/SDD.md` v42 says (§ 3, the `git-reader` row; § 11 R-16, `:L3114-L3116` and
+  `:L3163-L3165`).
 - Inputs read for this record: SDD Settled v42 · SRS Settled v12 · FDR Settled v10.
 
 ## Binds

@@ -1,8 +1,8 @@
 # NFDR — Nozoki 覗き
 
-**Status:** Draft
+**Status:** Settled
 **Owner:** Principal Architect
-**Version:** 42 — the cycle-36 fold, and a re-derivation on `docs/SDD.md` v42 (SDD RN-94 – RN-102). The owner's seat's two answers fold as given: QC-11's tail names `checks/structure.sh` as holding the libgit2-binding clause across the shipped scope, with review kept for the switch inside `machine_config.rs` and its one test (`docs/trail/architecture/cycle-36.md` § 3.1); QC-15's list gains the config check's reads, the walk along each value, each verified submodule's reads and, now that SDD v42 owns it, `.gitmodules` (§ 3.2). § 2.1, unanswered, closes by derivation: QC-6, QC-30 and QC-35 state § 11 R-16's domain as a rule of six members that `git-reader` refuses by a check of its own, and name what is stated and not built. QC-35's tail names the four FIFO cases. QC-2 reads every walk fixture, with the three scenes the suites prove. QC-48 and § 9's layer-4 row carry SDD RC-5's dated placement and its end. QC-17's two dead `session.rs` locators are re-pinned. **ADR-0022 is written, Proposed** — the refusal by an adapter check — and its acceptance is put to the owner, so the companion stays and `Status:` is Draft. No `QC` is added, renumbered or reused, and no accepted record is edited (RN-53).
+**Version:** 43 — the close: the cycle-37 fold. The owner's seat confirmed ADR-0022 with one addition (`docs/trail/architecture/cycle-37.md` § 2.1). Two sentences of the record's *Decision* are scoped to `docs/SDD.md` v42 while it was still Proposed: the `includeIf` refusal covers a path that spells outside the folder or is in a form the adapter does not locate, and the read-failed sentence covers a refusal of a value, with the check's unreadable and unparseable files answering the conditions that already exist. The record is then Accepted. The four traces that marked it Proposed (QC-6, QC-15, QC-30, QC-35) now name it plainly. No obligation moves, no `QC` is added, renumbered or reused, and no accepted record is edited. Nothing is left for the owner, so the companion is removed and `Status:` is Settled — RN-54
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · PRD Settled · UXD Settled · DESIGN Settled · CONTENT Settled
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
@@ -317,7 +317,7 @@ new units while they were unbuilt.
   --test markdown` — the `..` and symlink-out fixtures yield a placeholder node — and `cargo test
   --locked -p nozoki-bridge --test asset_bytes` — `asset_bytes` refuses them, tested in the bridge's
   crate where § 3 places the function (SDD § 6 S-3 at v14, RN-64) (layer 2). What `git-reader`'s
-  check holds is QC-35's to verify *(traces to: ADR-0015; ADR-0022 (Proposed);
+  check holds is QC-35's to verify *(traces to: ADR-0015; ADR-0022;
   ADR-0011; SDD § 3 `fs-reader` at v20, SM-7; § 4 C-D1, C-D3 — its uncovered case at v27, RN-43; § 9 TO-6; § 11 R-10, R-16; SRS FR-32,
   NFR-16; FDR R-34, R-59, R-62, R-183, R-184; the owner's answer at `docs/trail/sdd/cycle-15.md`
   § 5.1; the `asset_bytes` half moved to the bridge's crate at v12 — RN-23; re-derived on SDD v20 —
@@ -550,8 +550,8 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   and submodule reads, and the walk along each value, on the owner's seat's answer at
   `docs/trail/architecture/cycle-36.md` § 3.2; `.gitmodules` named once SDD v42's `git-reader` row
   owns it, SDD RN-102 — RN-53)*. `checks/view.sh` (layer 6): no I/O
-  primitive in `nozoki-mac/Sources` at all *(traces to: ADR-0021; ADR-0020; ADR-0018; ADR-0022
-  (Proposed); SDD § 3 parts table, and the `git-reader` row's *Must not own*, "A file outside Git's
+  primitive in `nozoki-mac/Sources` at all *(traces to: ADR-0021; ADR-0020; ADR-0018; ADR-0022;
+  SDD § 3 parts table, and the `git-reader` row's *Must not own*, "A file outside Git's
   own on-disk layout", with its three exceptions as it reads at v42 (SDD RN-99, RN-100, RN-102); § 4
   C-R7; the bounded reads and their gate on the owner's seat's answer at
   `docs/trail/architecture/cycle-29.md` § 3.3 — RN-43; the three owner files, the suite's two
@@ -953,7 +953,7 @@ reviewed tag.
   the lock resolves at `nozoki@85d9fa7` does (RN-34). Review at `development-design` when a change adds
   an entry point — a scanner finds a new read or a new socket, not a new trust assumption *(traces
   to: `quality_defaults.md` § The boundary set; SRS NFR-14, FR-1; FDR R-2; SDD § 4 C-R3 *Violated
-  by*, C-R7; ADR-0021; ADR-0017; ADR-0022 (Proposed); the two
+  by*, C-R7; ADR-0021; ADR-0017; ADR-0022; the two
   halves answered in the owner's seat at `docs/trail/architecture/cycle-5.md` § 3.3; the script,
   the list format and the measurement behind them are this document's — RN-18; the IPC member
   corrected on the owner's addition at `docs/trail/architecture/cycle-9.md` § 2.3 — RN-23; the
@@ -1055,7 +1055,7 @@ import nothing forbidden and still read a path it was never granted.
   the product's reach: no command observes a read outside the grant in general, the reads half
   rests on the wall, the switch's configuration and `git-reader`'s check, and this tail says so
   *(through v41 this sentence said no command observes such a read at all — RN-53)* *(traces to:
-  FDR R-101, R-102; ADR-0022 (Proposed); SDD
+  FDR R-101, R-102; ADR-0022; SDD
   § 3 `core-bridge` and `git-reader` at v27; § 4 C-D1, C-D2, C-D3, C-I3 at v27; § 11 R-16;
   § *Open Questions*, second and config-named-path items; ADR-0011; ADR-0020; re-derived against
   SDD v27, with the tail's observes-no-read sentence, at v32 — RN-43; (2)'s walk from SDD § 4 C-I3
@@ -4680,3 +4680,42 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   QC-2, QC-35 and QC-47 – QC-48 rows; ADR-0022 and the index; source: `docs/SDD.md` v42, SDD RN-94 –
   RN-102, § 10 RC-5; `docs/trail/architecture/cycle-36.md` §§ 2.1, 3.1, 3.2;
   `docs/trail/architecture/self_answer-41.md`; the tree at `nozoki@076eac2`)*
+- **RN-54:** *(v43 — the close: the cycle-37 fold, § 2.1 confirmed with one addition)* **Intake.**
+  The companion on disk was the one v42 wrote, with one § 2 item and nothing in §§ 1 or 3. A
+  `companion-self-answer` run confirmed it in the owner's seat, with one addition, and the answer
+  was committed at `nozoki@78276ed` (reasoning `docs/trail/architecture/self_answer-42.md`). The
+  file was clean in git at intake and its slot was filled, so it is consumed. It was copied whole
+  to `docs/trail/architecture/cycle-37.md` before this fold's first edit. **Whose answer this is.**
+  The `companion-self-answer` skill takes the owner's seat on a companion, and the fold is this
+  skill's. ADR-0020 was accepted on such an answer alone (RN-44). ADR-0021 was not: one run stopped
+  short and the owner confirmed it in an interactive session (RN-50). That stop was one run's call,
+  and no rule was written from it. The answer's own *whose seat* check reasons that accepting the
+  record binds only the log's consistency with the settled SDD. This run folds it on that ground,
+  and the owner can reverse the fold with one revert. **§ 2.1 → ADR-0022 Accepted.** The addition
+  is folded first, while the record was still Proposed and this run's to revise. Two sentences of
+  its *Decision* went past `docs/SDD.md` v42 and now say what the SDD says. (a) The `includeIf`
+  refusal covers a path that spells outside the folder or is in a form the adapter does not locate,
+  and an inside one is followed (§ 11 R-16, `docs/SDD.md:L3163-L3165`; the `git-reader` row follows
+  every inside include). (b) "Never the read-failed condition" covers a refusal of a value. The same
+  bullet now says that a file the check cannot read answers the condition for an unreadable Git
+  directory, and that a config it cannot parse to the end answers the read-failed condition, because
+  it cannot prove what libgit2 would follow (§ 3, the `git-reader` row; § 11 R-16,
+  `docs/SDD.md:L3114-L3116`). The record's `## Traces to` gains the trail cycle, the form ADR-0021
+  took (RN-50). Nothing else in the record moves. Its eight alternatives, its *Consequences* and
+  its `## Binds` stand as written, and it supersedes nothing (RN-53). Its Status is then Accepted,
+  and the index follows. **Traces re-read.** QC-6, QC-15, QC-30 and QC-35 traced to "ADR-0022
+  (Proposed)". The marker is dropped, as RN-44 dropped ", Proposed" for ADR-0020. No entry states
+  either scoped sentence (`grep -n -i 'includeIf\|read-failed'` over §§ 1 – 10 prints nothing), so
+  no obligation moves. **Measured for this run at `nozoki@78276ed`.** `git status --porcelain`
+  printed nothing at intake. `git diff --quiet 076eac2 HEAD -- . ':!docs'` exits 0, so the code
+  facts the record pins to `nozoki@076eac2` still hold at HEAD. `git diff --stat 58a7a2b HEAD --
+  docs ':!docs/trail'` lists the companion alone, and every input's `Status:` line was re-read as
+  Settled, so `Inputs read:` stands. **Known limits.** This run ran no suite and no script, and
+  re-read no libgit2 source. The self-answer re-read libgit2's option list, and this fold relies on
+  that reading. **What does not move.** No `QC` is added, renumbered or reused. § 10 does not move:
+  no row names a record. No accepted record is edited, written over or restatused. **The
+  companion.** Nothing is left for the owner, so the companion is removed and `Status:` is Settled
+  *(re: header `Status:`, `Version:`; the traces of QC-6, QC-15, QC-30, QC-35; ADR-0022 and the
+  index; source: `docs/trail/architecture/cycle-37.md` § 2.1;
+  `docs/trail/architecture/self_answer-42.md`; `nozoki@78276ed`; `docs/SDD.md` v42 at the lines
+  cited)*
