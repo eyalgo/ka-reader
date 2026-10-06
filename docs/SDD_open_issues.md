@@ -84,7 +84,57 @@ None.
   product must not take. If `.gitmodules` already counts as part of "Git's own on-disk layout", the
   row still owes one sentence saying so. The files it includes are not part of that layout, and
   RN-99's exception does not cover them.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm, with one clause of the draft replaced and two additions.
+  **Taken as drafted.** § 3's `git-reader` row owns the `.gitmodules` read under *Owns*, in the
+  working tree of the repository and of each submodule the adapter verifies. The row excepts
+  `.gitmodules` and the files it includes inside the folder under *Must not own*, as a third
+  exception. § 11 R-16 names `.gitmodules` among the config files its rule reaches. The read runs
+  before the status read and on no other call, with the config check's walk, size bound and
+  include depth. libgit2 reads the working-tree file alone, inside the status read
+  (`libgit2-sys 0.18.8+1.9.7`, `libgit2/src/libgit2/submodule.c:L665`, `:L2252-L2255`).
+  **The clause replaced: "the check reading only its include keys".** `.gitmodules` carries a
+  second path libgit2 takes during the status read, so R-16's own rule reaches it and the measured
+  members are six. The sixth is `submodule.<name>.path`, and for a section with no `path` key the
+  section's name, which libgit2 keeps as the path (`submodule.c:L1953`, `:L2091`). libgit2 refuses
+  only `.` and `..` components in it (`:L479-L498`, `:L2204`; `libgit2/src/util/fs_path.h:L650-L652`).
+  It looks at that location under the working tree for every section (`:L691`, `:L2228-L2231`),
+  and the operating system follows a link on the way. The row and R-16 state this response. Before
+  the status read the adapter spells that path, for every section of a `.gitmodules` it reads,
+  from the working tree that holds the file. A path that spells to a location outside the folder
+  refuses under the config condition, with the key and the path as the file spells them. A value
+  beginning `/` is refused without being located, because libgit2 joins it under the working tree
+  (`libgit2/src/util/str.c:L778`, `:L830`) and the adapter's walk reads it as absolute.
+  **Addition one: the status read reports each gitlink from the repository at that gitlink's own
+  path, and opens no repository the adapter has not verified.** libgit2 keys its submodule map by
+  section name and looks a gitlink up by its path in the same map (`submodule.c:L2211`, `:L346`;
+  `diff_generate.c:L771`). Where a section's name is a gitlink's path and the section's path is
+  another location, libgit2 opens the repository at that other location and reports it in the
+  gitlink's place (`submodule.c:L1884`, `:L1647-L1665`). Measured through the adapter at
+  `nozoki@bd382c8`: with `[submodule "sub"] path = link/x`, `link` a link to a directory outside
+  the folder and a repository at `x` there, `status()` listed `sub` as modified, and with nothing
+  at `x` it listed no `sub`. With `path = evil` and a second repository at `evil` inside the
+  folder, `status()` listed `sub` as modified where `git status --porcelain` printed only
+  `?? evil/`. The adapter verifies the gitlink's own path and neither of those locations. So the
+  adapter refuses the status read where a section would make libgit2 open or report another
+  location for a path that read looks up. Which paths the read looks up beyond the index's
+  gitlinks is measured by the change that builds this: a working-tree folder that holds a `.git`
+  entry and has no gitlink was read in the source and not run (`diff_generate.c:L668`, `:L1157`;
+  `submodule.c:L1270`). This refusal needs a condition of its own, because neither observation of
+  the config condition is true of a path that spells inside the folder. Its observable half is
+  the CDO's clause.
+  **Addition two: not built, and stated so.** The adapter skips every key of `.gitmodules` but
+  the include keys (`crates/nozoki-core/src/git_reader/libgit2.rs:L235-L240` at `nozoki@bd382c8`)
+  and verifies the index's gitlink paths alone (`:L307-L338`). R-16 carries both gaps as a known
+  defect until a change lands. In the bundle the sandbox is the only bound on the outside open
+  (§ 4 C-R2), and that was not run. In the harness nothing bounds it. The proof is one fixture and
+  one case, owed under the bound *Open Questions* sets for the alternates case: a section named
+  for a gitlink's path whose path leads through a link out of the fixture, and a status read that
+  opens nothing there. Three limits are named as not covered. A `.gitmodules` rewritten between
+  the check and libgit2's read is followed unchecked, under R-16's two existing bounds. A
+  `.gitmodules` the adapter cannot read answers the unreadable-Git-directory condition as built
+  (`libgit2.rs:L221-L225`), though the file is not in the Git directory. § 4 C-D3's "before
+  libgit2 opens anything" does not hold for this check, which runs after the open and before the
+  status read. Reasoning, the measurement and its commands: `docs/trail/sdd/self_answer-49.md`.
 
 ## 3. Cut calls to confirm — where the slicing could reasonably have gone another way
 
