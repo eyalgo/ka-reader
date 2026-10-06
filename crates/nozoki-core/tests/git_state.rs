@@ -1157,13 +1157,23 @@ fn test_read_git_asks_again_whatever_the_item_held() {
 /// FIFO. Returns whether any opener was seen, after all three calls returned. A build that reads
 /// the path the config names opens the FIFO and blocks until this poll lets it through.
 fn fifo_opener_seen_during_the_three_calls(folder: &Path, fifo: &Path) -> bool {
-    use rustix::fs::{Mode, OFlags, open};
+    make_fifo(fifo);
+    opener_seen_during_the_three_calls(folder, fifo)
+}
 
+/// Makes a FIFO at `fifo`, whose parent folder exists.
+fn make_fifo(fifo: &Path) {
     let status = Command::new("mkfifo")
         .arg(fifo)
         .status()
         .expect("mkfifo runs");
     assert!(status.success(), "mkfifo made the FIFO");
+}
+
+/// [`fifo_opener_seen_during_the_three_calls`] over a FIFO that already exists.
+fn opener_seen_during_the_three_calls(folder: &Path, fifo: &Path) -> bool {
+    use rustix::fs::{Mode, OFlags, open};
+
     let (sender, receiver) = mpsc::channel();
     let watched = folder.to_path_buf();
     std::thread::spawn(move || {
@@ -1673,11 +1683,19 @@ fn assert_answers_as_without_an_alternates_file(scene: &TempDir, root: &Path) {
     );
 }
 
-/// Each of the three calls answers `probe` and `read`.
-fn assert_failed_on_all_three(root: &Path, probe: ProbeCondition, read: GitReadCondition) {
+/// Each of the three calls answers `probe` and `read`, and none changes the scene.
+fn assert_failed_on_all_three(
+    scene: &TempDir,
+    root: &Path,
+    probe: ProbeCondition,
+    read: GitReadCondition,
+) {
+    let before = scene.snapshot();
+
     assert_eq!(port().probe(root), RootFinding::Failed(probe));
     assert_eq!(port().state(root), Err(read.clone()));
     assert_eq!(port().status(root), Err(read));
+    assert_eq!(&scene.snapshot(), &before, "a call changed the scene");
 }
 
 /// A folder named `outside-store` beside the repository's folder, holding an `objects/info`, and its
@@ -1689,6 +1707,22 @@ fn outside_store(scene: &TempDir) -> String {
         .join("outside-store/objects")
         .display()
         .to_string()
+}
+
+/// Makes a FIFO at `fifo`, runs the three calls over `folder` while it is watched, and holds that no
+/// call opened it and that none changed the scene, which a snapshot taken once the FIFO stands
+/// compares before and after.
+fn assert_no_opener_and_scene_unchanged(scene: &TempDir, folder: &Path, fifo: &Path) {
+    make_fifo(fifo);
+    let before = scene.snapshot();
+
+    let opener_seen = opener_seen_during_the_three_calls(folder, fifo);
+
+    assert!(
+        !opener_seen,
+        "a call opened the object directory the alternates check must not read"
+    );
+    assert_eq!(&scene.snapshot(), &before, "a call changed the scene");
 }
 
 /// CP-677 and E19, through the libgit2 adapter and no port double: the archive's alternates file
@@ -1705,14 +1739,10 @@ fn test_the_outside_object_directory_is_never_read_on_the_three_calls() {
     );
     scene.make_folder("elsewhere/objects/info");
 
-    let opener_seen = fifo_opener_seen_during_the_three_calls(
+    assert_no_opener_and_scene_unchanged(
+        &scene,
         &folder,
         &scene.path().join("elsewhere/objects/info/alternates"),
-    );
-
-    assert!(
-        !opener_seen,
-        "a call opened the object directory the alternates file names outside the folder"
     );
 }
 
@@ -1836,6 +1866,7 @@ fn test_a_level_six_alternate_with_an_alternates_file_answers_read_failed_on_all
     scene.write_file("S/.git/chain/l6/info/alternates", "# deeper\n");
 
     assert_failed_on_all_three(
+        &scene,
         &root,
         ProbeCondition::RepositoryReadFailed,
         GitReadCondition::RepositoryReadFailed,
@@ -1852,14 +1883,16 @@ fn test_a_level_six_file_whose_spelling_leaves_the_folder_answers_read_failed_an
     scene.make_link("S/.git/chain/l6/info", scene.path().join("outside-info"));
 
     assert_failed_on_all_three(
+        &scene,
         &root,
         ProbeCondition::RepositoryReadFailed,
         GitReadCondition::RepositoryReadFailed,
     );
-    assert!(!fifo_opener_seen_during_the_three_calls(
+    assert_no_opener_and_scene_unchanged(
+        &scene,
         &root,
-        &scene.path().join("outside-info/alternates")
-    ));
+        &scene.path().join("outside-info/alternates"),
+    );
 }
 
 /// E10: `objects` is a link to a directory beside the scene. The refusal carries the link's own
@@ -1877,10 +1910,7 @@ fn test_a_link_at_objects_leaving_the_folder_is_refused_carrying_the_links_locat
     scene.make_link("S/.git/objects", &cache);
 
     assert_object_store_refused(&scene, &root, &cache.display().to_string());
-    assert!(!fifo_opener_seen_during_the_three_calls(
-        &root,
-        &cache.join("info/alternates")
-    ));
+    assert_no_opener_and_scene_unchanged(&scene, &root, &cache.join("info/alternates"));
 }
 
 /// CP-667's second position: a link at `info`.
@@ -1896,10 +1926,7 @@ fn test_a_link_at_info_leaving_the_folder_is_refused_carrying_the_links_location
     scene.make_link("S/.git/objects/info", &outside);
 
     assert_object_store_refused(&scene, &root, &outside.display().to_string());
-    assert!(!fifo_opener_seen_during_the_three_calls(
-        &root,
-        &outside.join("alternates")
-    ));
+    assert_no_opener_and_scene_unchanged(&scene, &root, &outside.join("alternates"));
 }
 
 /// E11: a link at `alternates` to a file inside the folder is followed, and its entries are spelled
@@ -1927,6 +1954,7 @@ fn test_an_oversize_alternates_file_answers_unreadable_on_all_three() {
     .expect("the file is written");
 
     assert_failed_on_all_three(
+        &scene,
         &root,
         ProbeCondition::GitDirectoryUnreadable,
         GitReadCondition::GitDirectoryUnreadable,
@@ -1941,6 +1969,7 @@ fn test_an_unreadable_alternates_file_answers_unreadable_for_the_repositorys_own
  {
     let (scene, root) = repository_with_a_secret();
     scene.write_file(ALTERNATES, "# own\n");
+    let before_own = scene.snapshot();
     scene.set_mode(ALTERNATES, 0o000);
     let own = (
         port().probe(&root),
@@ -1948,6 +1977,7 @@ fn test_an_unreadable_alternates_file_answers_unreadable_for_the_repositorys_own
         port().status(&root),
     );
     scene.set_mode(ALTERNATES, 0o644);
+    assert_eq!(&scene.snapshot(), &before_own, "a call changed the scene");
     assert_eq!(
         own,
         (
@@ -1959,6 +1989,7 @@ fn test_an_unreadable_alternates_file_answers_unreadable_for_the_repositorys_own
 
     scene.write_file(ALTERNATES, "./vendor-store\n");
     scene.write_file("S/.git/objects/vendor-store/info/alternates", "# nested\n");
+    let before_nested = scene.snapshot();
     scene.set_mode("S/.git/objects/vendor-store/info/alternates", 0o000);
     let nested = (
         port().probe(&root),
@@ -1966,6 +1997,11 @@ fn test_an_unreadable_alternates_file_answers_unreadable_for_the_repositorys_own
         port().status(&root),
     );
     scene.set_mode("S/.git/objects/vendor-store/info/alternates", 0o644);
+    assert_eq!(
+        &scene.snapshot(),
+        &before_nested,
+        "a call changed the scene"
+    );
     assert_eq!(
         nested,
         (
@@ -2006,16 +2042,19 @@ fn test_a_submodules_outside_alternates_entry_fails_status_alone() {
         &format!("{outside}\n"),
     );
 
+    let fifo = scene.path().join("outside-store/objects/info/alternates");
+    make_fifo(&fifo);
+    let before = scene.snapshot();
+
     assert_eq!(port().probe(&root), RootFinding::Root);
     assert!(port().state(&root).is_ok());
     assert_eq!(
         port().status(&root),
         Err(GitReadCondition::ObjectStoreNamesOutside(outside))
     );
-    assert!(!fifo_opener_seen_during_the_three_calls(
-        &root,
-        &scene.path().join("outside-store/objects/info/alternates")
-    ));
+    assert_eq!(&scene.snapshot(), &before, "a call changed the scene");
+    assert!(!opener_seen_during_the_three_calls(&root, &fifo));
+    assert_eq!(&scene.snapshot(), &before, "a call changed the scene");
 }
 
 /// E16: both checks refuse, and the config check, which runs first, is the answer.
@@ -2027,6 +2066,7 @@ fn test_a_config_and_an_alternates_refusal_together_answer_the_config_condition_
     scene.write_file(ALTERNATES, &format!("{outside}\n"));
 
     assert_failed_on_all_three(
+        &scene,
         &root,
         ProbeCondition::ConfigNamesOutside(config_named("core.excludesfile", "/outside/ignore")),
         GitReadCondition::ConfigNamesOutside(config_named("core.excludesfile", "/outside/ignore")),
