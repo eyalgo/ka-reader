@@ -1622,6 +1622,28 @@ fn test_the_other_not_located_forms_and_the_key_text_rule() {
     );
 }
 
+/// CP-684 (a): a value beginning `~/` is not located under any of the five keys. The cases above
+/// hold `include.path` and `core.worktree`; this one holds the other three. The `includeIf`
+/// condition names no `~/`, so only the value can decide.
+#[test]
+fn test_a_tilde_slash_value_under_the_other_three_keys_is_not_located_on_all_three_calls() {
+    assert_not_located_in_the_repositorys_config(
+        "[includeIf \"gitdir:/nowhere/\"]\n\tpath = ~/when.config\n",
+        "includeIf.gitdir:/nowhere/.path",
+        "~/when.config",
+    );
+    assert_not_located_in_the_repositorys_config(
+        "[core]\n\texcludesfile = ~/ignore\n",
+        "core.excludesfile",
+        "~/ignore",
+    );
+    assert_not_located_in_the_repositorys_config(
+        "[core]\n\tattributesfile = ~/attrs\n",
+        "core.attributesfile",
+        "~/attrs",
+    );
+}
+
 /// A `.gitmodules` include is read by `status()` alone and is followed like any config's.
 #[test]
 fn test_a_tilde_slash_include_in_gitmodules_is_not_located_on_status_alone() {
@@ -1663,6 +1685,63 @@ fn test_two_refused_values_in_one_config_carry_one_values_key_path_and_observati
         other => panic!("{other:?}"),
     };
     assert_eq!(port().probe(&root), RootFinding::Failed(probe));
+}
+
+/// CP-683 and CP-684: a file the repository's config includes, spelled inside the folder, is a
+/// source of the config refusal, so a not-located value in it is answered as not located, with its
+/// own key and value, on all three calls.
+#[test]
+fn test_a_not_located_value_in_an_inside_include_is_not_located_on_all_three_calls() {
+    let (scene, root) = repository_with_a_secret();
+    let inner = scene.write_file(
+        "S/inner.config",
+        "[include]\n\tpath = ~/inner-home.config\n",
+    );
+    append_to_config(&root, &format!("[include]\n\tpath = {}\n", inner.display()));
+
+    assert_failed_on_all_three(
+        &scene,
+        &root,
+        ProbeCondition::ConfigNotLocated(config_named("include.path", "~/inner-home.config")),
+        GitReadCondition::ConfigNotLocated(config_named("include.path", "~/inner-home.config")),
+    );
+}
+
+/// CP-683 and CP-684: `config.worktree`, where `extensions.worktreeConfig` is set, is a source of
+/// the config refusal, so a relative attributes file in it is answered as not located on all three
+/// calls.
+#[test]
+fn test_a_not_located_value_in_the_worktree_config_is_not_located_on_all_three_calls() {
+    let (scene, root) = repository_with_a_secret();
+    append_to_config(&root, "[extensions]\n\tworktreeConfig = true\n");
+    scene.write_file(
+        "S/.git/config.worktree",
+        "[core]\n\tattributesfile = attrs-rel\n",
+    );
+
+    assert_failed_on_all_three(
+        &scene,
+        &root,
+        ProbeCondition::ConfigNotLocated(config_named("core.attributesfile", "attrs-rel")),
+        GitReadCondition::ConfigNotLocated(config_named("core.attributesfile", "attrs-rel")),
+    );
+}
+
+/// CP-683 and CP-687: a verified submodule's own `.gitmodules` is checked by `status()` alone, and a
+/// `~/` include in it is not located.
+#[test]
+fn test_a_tilde_slash_include_in_a_submodules_gitmodules_is_not_located_on_status_alone() {
+    let (scene, root) = submodule_repository_without_outside_config();
+    append_to_gitmodules(
+        &root.join("submodule"),
+        "\n[include]\n\tpath = ~/nested-mods.config\n",
+    );
+
+    assert_refused_on_status_alone(
+        &scene,
+        &root,
+        GitReadCondition::ConfigNotLocated(config_named("include.path", "~/nested-mods.config")),
+    );
 }
 
 /// A `commondir` that names a location inside the folder with nothing there: the probe, which has no

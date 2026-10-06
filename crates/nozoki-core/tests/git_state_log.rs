@@ -207,9 +207,10 @@ fn test_failed_git_item_with_the_config_condition_logs_one_warn_without_the_path
     }
 }
 
-/// Run inside the one test above: the not-located condition, met by the probe and by the state
-/// read, logs one `warn` naming `git-reader` and the operation under a fixed phrase that says
-/// nothing of *outside*, holds no key and no path, and is not the config-outside phrase.
+/// Run inside the one test above: the not-located condition, met by the probe, by the state read
+/// and by the status read, logs one `warn` naming `git-reader` and the operation under a fixed
+/// phrase that says nothing of *outside*, holds no key and no path, and is not the config-outside
+/// phrase.
 fn test_failed_git_item_with_the_not_located_condition_logs_one_warn_without_the_path() {
     let named = ConfigNamedPath {
         key: "core.excludesfile".to_string(),
@@ -225,10 +226,17 @@ fn test_failed_git_item_with_the_not_located_condition_logs_one_warn_without_the
         head: Err(GitReadCondition::ConfigNotLocated(named.clone())),
         lists: Ok(clean_lists()),
     };
+    // A verified submodule's not-located value is met by the status read alone (CP-687).
+    let met_by_the_status_read = Double {
+        probe: RootFinding::Root,
+        head: Ok(standing_head()),
+        lists: Err(GitReadCondition::ConfigNotLocated(named.clone())),
+    };
 
     for (double, operation) in [
         (met_by_the_probe, "probe"),
         (met_by_the_state_read, "state"),
+        (met_by_the_status_read, "status"),
     ] {
         let scene = TempDir::new();
         scene.write_file("a.txt", "a");
