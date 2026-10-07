@@ -420,7 +420,7 @@ final class GitSentencesTests: XCTestCase {
         }
     }
 
-    func test_submoduleElsewhereMessageHasNoOutsideInAnyCaseNoForbiddenWordNoBangAndDiffersFromEveryOtherFailureMessage() {
+    func test_submoduleElsewhereMessageHasNoOutsideNoBangAndDiffersFromEveryOther() {
         let message = GitSentences.failure(.submoduleElsewhere(name: "a", path: "b"))
         let others =
             [
@@ -442,7 +442,7 @@ final class GitSentencesTests: XCTestCase {
         }
     }
 
-    func test_gitmodulesUnreadableMessageIsChangeTextsDoesNotSayTheGitDirectoryCouldNotBeReadAndDiffersFromUnreadableGitDirectoryAndEveryOther() {
+    func test_gitmodulesUnreadableMessageIsChangeTextsAndIsNotTheGitDirectorySentence() {
         let message = GitSentences.failure(.condition(.gitmodulesUnreadable))
         let unreadableGitDirectory = GitSentences.failure(.condition(.gitDirectoryUnreadable))
         let others =
@@ -453,7 +453,8 @@ final class GitSentencesTests: XCTestCase {
                 .objectStoreNamesOutside(path: "a"),
                 .objectStoreNotLocated(path: "a"),
                 .submoduleElsewhere(name: "a", path: "b"),
-            ] + GitCondition.allCases.filter { $0 != .gitmodulesUnreadable }
+            ]
+            + GitCondition.allCases.filter { $0 != .gitmodulesUnreadable }
             .map { GitFailure.condition($0) }
 
         XCTAssertEqual(message, gitmodulesUnreadableMessage)

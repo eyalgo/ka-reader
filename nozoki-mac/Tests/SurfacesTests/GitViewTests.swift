@@ -281,7 +281,8 @@ final class GitViewTests: XCTestCase {
     }
 
     func test_theSubmoduleElsewhereFailureDrawsOneMessageAndNothingElse() {
-        let fixture = makeView(showing: .failed(.submoduleElsewhere(name: "submodule", path: "evil")))
+        let fixture = makeView(
+            showing: .failed(.submoduleElsewhere(name: "submodule", path: "evil")))
 
         XCTAssertEqual(
             strings(fixture.view),
