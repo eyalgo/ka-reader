@@ -17,7 +17,8 @@ use common::TempDir;
 use log::{LevelFilter, Log, Metadata, Record};
 use nozoki_core::{
     BranchElement, ConfigNamedPath, FolderModel, GitPort, GitReadCondition, HeadState,
-    ProbeCondition, RepositoryState, RootFinding, StatusLists, open_folder, read_git,
+    ProbeCondition, RepositoryState, RootFinding, StatusLists, SubmoduleNamedPath, open_folder,
+    read_git,
 };
 
 struct Capture {
@@ -133,6 +134,7 @@ fn test_failed_git_item_logs_one_warn_without_the_path() {
     test_failed_git_item_with_the_alternates_condition_logs_one_warn_without_the_path_or_entry();
     test_failed_git_item_with_the_object_store_not_located_condition_logs_one_warn_without_the_entry(
     );
+    test_failed_git_item_with_the_gitmodules_conditions_logs_one_warn_each_without_a_name_or_path();
 }
 
 /// Run inside the one test above: a status failure names `status` and not `state`.
@@ -369,5 +371,71 @@ fn test_failed_git_item_with_the_object_store_not_located_condition_logs_one_war
         assert!(!text.to_lowercase().contains("outside"), "{text}");
         assert!(!text.contains('/'), "the record holds a path: {text}");
         assert!(!text.contains(&entry), "the record holds the entry: {text}");
+    }
+}
+
+/// The phrase the submodule-map condition is logged under.
+const SUBMODULE_ELSEWHERE_PHRASE: &str =
+    "a .gitmodules section names another location for a looked-up path";
+
+/// The phrase the unreadable `.gitmodules` is logged under.
+const GITMODULES_UNREADABLE_PHRASE: &str = "a .gitmodules could not be read";
+
+/// Run inside the one test above: each new condition, met by the status read through a `Double`,
+/// logs one `warn` naming `git-reader`, the operation and its own fixed phrase, holding no `/`,
+/// no name and no path. The submodule-map phrase says nothing of *outside*, and each new phrase
+/// differs from every other phrase this file names (CP-728).
+fn test_failed_git_item_with_the_gitmodules_conditions_logs_one_warn_each_without_a_name_or_path() {
+    let name = "vendor-lib".to_string();
+    let path = "evil-place".to_string();
+    let elsewhere = GitReadCondition::SubmoduleElsewhere(SubmoduleNamedPath {
+        name: name.clone(),
+        path: path.clone(),
+    });
+    let others = [
+        CONFIG_PHRASE,
+        NOT_LOCATED_PHRASE,
+        ALTERNATES_PHRASE,
+        OBJECT_STORE_NOT_LOCATED_PHRASE,
+    ];
+    assert_ne!(SUBMODULE_ELSEWHERE_PHRASE, GITMODULES_UNREADABLE_PHRASE);
+    assert!(
+        !SUBMODULE_ELSEWHERE_PHRASE
+            .to_lowercase()
+            .contains("outside")
+    );
+    for other in others {
+        assert_ne!(SUBMODULE_ELSEWHERE_PHRASE, other);
+        assert_ne!(GITMODULES_UNREADABLE_PHRASE, other);
+    }
+
+    for (condition, phrase) in [
+        (elsewhere, SUBMODULE_ELSEWHERE_PHRASE),
+        (
+            GitReadCondition::GitmodulesUnreadable,
+            GITMODULES_UNREADABLE_PHRASE,
+        ),
+    ] {
+        let met_by_the_status_read = Double {
+            probe: RootFinding::Root,
+            head: Ok(standing_head()),
+            lists: Err(condition),
+        };
+        let scene = TempDir::new();
+        scene.write_file("a.txt", "a");
+        let opened = open_folder(scene.path()).expect("the scene opens");
+
+        let _ = read_git(FolderModel::new(opened), &met_by_the_status_read);
+
+        let records = take_records();
+        assert_eq!(records.len(), 1, "one record: {records:?}");
+        let (level, text) = &records[0];
+        assert_eq!(*level, log::Level::Warn);
+        assert!(text.contains("git-reader"), "{text}");
+        assert!(text.contains("status"), "{text}");
+        assert!(text.contains(phrase), "{text}");
+        assert!(!text.contains('/'), "the record holds a path: {text}");
+        assert!(!text.contains(&name), "the record holds the name: {text}");
+        assert!(!text.contains(&path), "the record holds the path: {text}");
     }
 }

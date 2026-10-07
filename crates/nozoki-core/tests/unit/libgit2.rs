@@ -4,9 +4,11 @@ use std::path::{Path, PathBuf};
 use crate::test_support::TempDir;
 
 use super::alternates_scan::{self, EntryClass};
+use super::config_scan::{self, SubmoduleSection};
 use super::{
     Bounds, GitReadCondition, Inspected, Locations, MAX_LINK_HOPS, check_alternates, check_config,
-    lies_inside, names_a_git_directory, spell_location, verify_submodules,
+    check_section, inspect_for_section, lies_inside, names_a_git_directory, spell_location,
+    verify_submodules,
 };
 
 /// Hands out at most one byte per read, and fails the first read with `Interrupted`.
@@ -477,4 +479,92 @@ fn test_an_inside_cycle_is_no_refusal() {
     scene.write_file("S/b/info/alternates", &entry("a"));
 
     assert_eq!(check_alternates(&root, &locations, &bounds(10, 10)), Ok(()));
+}
+
+// --- the `.gitmodules` section paths ----------------------------------------------------------
+
+/// The one section `text` holds.
+fn section_of(text: &str) -> SubmoduleSection {
+    config_scan::scan(text.as_bytes())
+        .expect("the text parses")
+        .sections
+        .remove(0)
+}
+
+fn looked_up(names: &[&str]) -> std::collections::HashSet<Vec<u8>> {
+    names.iter().map(|name| name.as_bytes().to_vec()).collect()
+}
+
+#[test]
+fn test_section_path_through_an_absent_position_reaches_a_location_by_spelling_inside_and_past_the_folder()
+ {
+    let scene = TempDir::new();
+    let root = scene.make_folder("S");
+
+    let inside = spell_location(&root, &root, Path::new("absent/x"), &inspect_for_section)
+        .expect("an absent position does not stop a section path");
+    let past = spell_location(
+        &root,
+        &root,
+        Path::new("absent/../../past"),
+        &inspect_for_section,
+    )
+    .expect("an absent position does not stop a section path");
+
+    assert_eq!(inside, root.join("absent/x"));
+    assert!(lies_inside(&root, &inside));
+    assert_eq!(past, scene.path().join("past"));
+    assert!(!lies_inside(&root, &past));
+}
+
+#[test]
+fn test_section_path_through_a_position_whose_lstat_is_refused_reaches_a_location_by_spelling() {
+    use std::os::unix::fs::PermissionsExt;
+
+    let scene = TempDir::new();
+    let root = scene.make_folder("S");
+    let locked = scene.make_folder("S/locked");
+    std::fs::set_permissions(&locked, std::fs::Permissions::from_mode(0o000))
+        .expect("the mode is set");
+
+    let reached = spell_location(&root, &root, Path::new("locked/x/y"), &inspect_for_section);
+
+    std::fs::set_permissions(&locked, std::fs::Permissions::from_mode(0o755))
+        .expect("the mode is restored");
+    assert_eq!(
+        reached.expect("a refused lstat does not stop a section path"),
+        root.join("locked/x/y")
+    );
+}
+
+#[test]
+fn test_section_path_link_loop_answers_repository_read_failed() {
+    let scene = TempDir::new();
+    let root = scene.make_folder("S");
+    std::os::unix::fs::symlink("b", root.join("a")).expect("the link is made");
+    std::os::unix::fs::symlink("a", root.join("b")).expect("the link is made");
+    let section = section_of("[submodule \"x\"]\n\tpath = a/x\n");
+
+    assert_eq!(
+        check_section(&root, &root, &looked_up(&[]), &section),
+        Err(GitReadCondition::RepositoryReadFailed)
+    );
+}
+
+#[test]
+fn test_section_path_through_an_inside_link_is_resolved_before_the_comparison() {
+    let scene = TempDir::new();
+    let root = scene.make_folder("S");
+    std::os::unix::fs::symlink("sub", root.join("alias")).expect("the link is made");
+    let through_the_link = section_of("[submodule \"sub\"]\n\tpath = alias\n");
+    let elsewhere = section_of("[submodule \"sub\"]\n\tpath = other\n");
+
+    assert_eq!(
+        check_section(&root, &root, &looked_up(&["sub"]), &through_the_link),
+        Ok(())
+    );
+    assert!(matches!(
+        check_section(&root, &root, &looked_up(&["sub"]), &elsewhere),
+        Err(GitReadCondition::SubmoduleElsewhere(_))
+    ));
 }

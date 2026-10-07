@@ -23,7 +23,7 @@ use std::cell::Cell;
 use nozoki_core::{
     BranchElement, ConfigNamedPath, FolderKind, FolderModel, GitCondition, GitPort,
     GitReadCondition, HeadState, ItemState, ProbeCondition, RepositoryState, RootFinding,
-    StatusCategory, StatusEntry, StatusLists, open_folder, read_git,
+    StatusCategory, StatusEntry, StatusLists, SubmoduleNamedPath, open_folder, read_git,
 };
 
 /// The only place the adapter is named, so a second adapter runs the same cases.
@@ -2526,4 +2526,442 @@ fn test_a_git_file_root_probes_as_root_and_state_answers_the_condition() {
     assert_eq!(port().state(&root), Err(condition.clone()));
     assert_eq!(port().status(&root), Err(condition));
     assert_eq!(&scene.snapshot(), &before, "a call changed the scene");
+}
+
+// --- the `.gitmodules` section paths (CP-715 to CP-736) ----------------------------------------
+
+/// One level whose `.gitmodules` the check decides: the repository's own, or a verified
+/// submodule's (CP-731).
+struct Level {
+    scene: TempDir,
+    root: PathBuf,
+    /// The folder whose `.gitmodules` the case writes.
+    owner: PathBuf,
+    /// A path the level's index holds as a gitlink.
+    looked_up: &'static str,
+    /// What leaves the owner's folder to the scene's own folder, as a prefix.
+    up: &'static str,
+}
+
+fn level(nested: bool) -> Level {
+    let (scene, root) = submodule_repository_without_outside_config();
+    if !nested {
+        return Level {
+            scene,
+            owner: root.clone(),
+            root,
+            looked_up: "submodule",
+            up: "../",
+        };
+    }
+    let owner = root.join("submodule");
+    let id = head_id(&owner);
+    git(
+        &owner,
+        &[
+            "update-index",
+            "--add",
+            "--cacheinfo",
+            &format!("160000,{id},inner"),
+        ],
+    );
+    Level {
+        scene,
+        root,
+        owner,
+        looked_up: "inner",
+        up: "../../",
+    }
+}
+
+fn submodule_elsewhere(name: &str, path: &str) -> GitReadCondition {
+    GitReadCondition::SubmoduleElsewhere(SubmoduleNamedPath {
+        name: name.to_string(),
+        path: path.to_string(),
+    })
+}
+
+/// A committed repository at `dir`.
+fn committed_repository_at(dir: &Path) {
+    fs::create_dir_all(dir).expect("the folder is made");
+    git(dir, &["init", "-q", "-b", "main"]);
+    fs::write(dir.join("a.txt"), "a\n").expect("the file is written");
+    commit_all(dir, "first");
+}
+
+/// A repository on `main` with one commit and an uninitialised gitlink `sub`, the folder `sub`
+/// absent.
+fn repository_with_a_gitlink() -> (TempDir, PathBuf) {
+    let (scene, root) = new_repository();
+    fs::write(root.join("a.txt"), "a\n").expect("the file is written");
+    commit_all(&root, "first");
+    let id = head_id(&root);
+    git(
+        &root,
+        &[
+            "update-index",
+            "--add",
+            "--cacheinfo",
+            &format!("160000,{id},sub"),
+        ],
+    );
+    (scene, root)
+}
+
+fn relative_to_scene(scene: &TempDir, path: &Path) -> String {
+    path.strip_prefix(scene.path())
+        .expect("the path is in the scene")
+        .to_str()
+        .expect("UTF-8")
+        .to_string()
+}
+
+#[test]
+fn test_section_path_outside_the_folder_is_refused_config_names_outside() {
+    for nested in [false, true] {
+        let level = level(nested);
+        let value = format!("{}outside-x", level.up);
+        append_to_gitmodules(
+            &level.owner,
+            &format!("\n[submodule \"x\"]\n\tpath = {value}\n"),
+        );
+
+        assert_refused_on_status_alone(
+            &level.scene,
+            &level.root,
+            GitReadCondition::ConfigNamesOutside(config_named("submodule.x.path", &value)),
+        );
+    }
+}
+
+#[test]
+fn test_section_path_beginning_slash_is_refused_config_not_located() {
+    for nested in [false, true] {
+        let level = level(nested);
+        append_to_gitmodules(&level.owner, "\n[submodule \"x\"]\n\tpath = /abs/x\n");
+
+        assert_refused_on_status_alone(
+            &level.scene,
+            &level.root,
+            GitReadCondition::ConfigNotLocated(config_named("submodule.x.path", "/abs/x")),
+        );
+    }
+}
+
+/// CP-731 (c): the name is one the level's index holds, the path leads to another repository.
+#[test]
+fn test_submodule_section_for_a_looked_up_name_with_another_path_is_refused() {
+    for nested in [false, true] {
+        let level = level(nested);
+        committed_repository_at(&level.owner.join("evil"));
+        append_to_gitmodules(
+            &level.owner,
+            &format!("\n[submodule \"{}\"]\n\tpath = evil\n", level.looked_up),
+        );
+
+        assert_refused_on_status_alone(
+            &level.scene,
+            &level.root,
+            submodule_elsewhere(level.looked_up, "evil"),
+        );
+    }
+}
+
+/// CP-732: the section's path leads through a link inside the folder to an outside `x`, where a
+/// FIFO sits at the file a read of that repository would open.
+#[test]
+fn test_section_leading_through_a_link_to_an_outside_x_opens_nothing_outside() {
+    let scene = TempDir::new();
+    let folder = scene.copy_fixture("gitmodules-names-outside");
+    scene.unpack_fixture_archive(
+        "gitmodules-names-outside.git.tar",
+        "gitmodules-names-outside",
+    );
+    let outside_git = scene.make_folder("elsewhere/x/.git");
+    fs::write(outside_git.join("HEAD"), "ref: refs/heads/main\n").expect("HEAD is written");
+    let fifo = outside_git.join("config");
+    make_fifo(&fifo);
+
+    let opener_seen = opener_seen_during_the_three_calls(&folder, &fifo);
+
+    assert!(!opener_seen, "a call opened the outside x");
+    assert_eq!(port().probe(&folder), RootFinding::Root);
+    assert!(port().state(&folder).is_ok());
+    assert_eq!(
+        port().status(&folder),
+        Err(GitReadCondition::ConfigNamesOutside(config_named(
+            "submodule.sub.path",
+            "link/x"
+        )))
+    );
+}
+
+/// CP-716: the check does not depend on the index naming the section.
+#[test]
+fn test_gitmodules_with_no_gitlink_in_the_index_is_still_refused() {
+    let (scene, root) = repository_with_a_secret();
+    append_to_gitmodules(&root, "[submodule \"x\"]\n\tpath = ../outside-x\n");
+
+    assert_refused_on_status_alone(
+        &scene,
+        &root,
+        GitReadCondition::ConfigNamesOutside(config_named("submodule.x.path", "../outside-x")),
+    );
+}
+
+/// CP-718: the folder's own absolute path begins `/`, so it is not located.
+#[test]
+fn test_path_set_to_the_folders_own_absolute_path_is_not_located() {
+    let (scene, root) = repository_with_a_secret();
+    let own = root.display().to_string();
+    append_to_gitmodules(&root, &format!("[submodule \"x\"]\n\tpath = {own}\n"));
+
+    assert_refused_on_status_alone(
+        &scene,
+        &root,
+        GitReadCondition::ConfigNotLocated(config_named("submodule.x.path", &own)),
+    );
+}
+
+/// CP-718 and CP-724: `~/lib` spells inside the folder, and no looked-up name is in play.
+#[test]
+fn test_tilde_path_on_a_section_that_is_no_looked_up_name_answers_the_lists() {
+    let (scene, root) = repository_with_a_secret();
+    append_to_gitmodules(&root, "[submodule \"x\"]\n\tpath = ~/lib\n");
+    let before = scene.snapshot();
+
+    assert!(port().status(&root).is_ok());
+    assert_eq!(scene.snapshot(), before);
+}
+
+/// CP-725: a section with no `path` key is decided on its name, and the key is the section word.
+#[test]
+fn test_name_only_section_naming_a_path_outside_is_refused_with_the_section_word_as_key() {
+    let (scene, root) = repository_with_a_secret();
+    append_to_gitmodules(&root, "[submodule \"../outside-n\"]\n");
+
+    assert_refused_on_status_alone(
+        &scene,
+        &root,
+        GitReadCondition::ConfigNamesOutside(config_named("submodule", "../outside-n")),
+    );
+}
+
+/// Gap 4: whatever lies at the other location, or nothing, it is another location.
+#[test]
+fn test_path_nothing_here_is_refused_submodule_elsewhere() {
+    let level = level(false);
+    append_to_gitmodules(
+        &level.owner,
+        "\n[submodule \"submodule\"]\n\tpath = nothing-here\n",
+    );
+
+    assert_refused_on_status_alone(
+        &level.scene,
+        &level.root,
+        submodule_elsewhere("submodule", "nothing-here"),
+    );
+}
+
+#[test]
+fn test_uninitialised_gitlink_with_another_path_is_refused_submodule_elsewhere() {
+    let (scene, root) = repository_with_a_gitlink();
+    append_to_gitmodules(&root, "[submodule \"sub\"]\n\tpath = evil\n");
+
+    assert_refused_on_status_alone(&scene, &root, submodule_elsewhere("sub", "evil"));
+}
+
+/// CP-724: the same location, however it is written, answers the lists.
+#[test]
+fn test_path_equal_to_the_name_with_no_path_key_or_through_an_inside_link_answers_the_lists() {
+    for modules in [
+        "[submodule \"sub\"]\n\tpath = sub\n",
+        "[submodule \"sub\"]\n",
+        "[submodule \"sub\"]\n\tpath = alias\n",
+    ] {
+        let (scene, root) = repository_with_a_gitlink();
+        scene.make_link("S/alias", "sub");
+        append_to_gitmodules(&root, modules);
+        let before = scene.snapshot();
+
+        assert!(port().status(&root).is_ok(), "{modules}");
+        assert_eq!(scene.snapshot(), before);
+    }
+}
+
+/// CP-716: only `path` is read.
+#[test]
+fn test_url_key_with_own_path_answers_the_lists() {
+    let (scene, root) = repository_with_a_gitlink();
+    append_to_gitmodules(
+        &root,
+        "[submodule \"sub\"]\n\turl = /elsewhere\n\tpath = sub\n",
+    );
+    let before = scene.snapshot();
+
+    assert!(port().status(&root).is_ok());
+    assert_eq!(scene.snapshot(), before);
+}
+
+/// CP-723, as `:L1663`: two refused sections give one condition with one section's own values.
+#[test]
+fn test_two_refused_sections_give_one_condition_with_one_sections_own_values() {
+    let (scene, root) = repository_with_a_secret();
+    append_to_gitmodules(
+        &root,
+        "[submodule \"a\"]\n\tpath = /abs/x\n[submodule \"b\"]\n\tpath = ../outside-x\n",
+    );
+    let not_located =
+        GitReadCondition::ConfigNotLocated(config_named("submodule.a.path", "/abs/x"));
+    let outside =
+        GitReadCondition::ConfigNamesOutside(config_named("submodule.b.path", "../outside-x"));
+    let before = scene.snapshot();
+
+    let answer = port().status(&root).expect_err("a section is refused");
+
+    assert!(answer == not_located || answer == outside, "{answer:?}");
+    assert_eq!(scene.snapshot(), before);
+}
+
+#[test]
+fn test_refused_include_and_refused_section_give_one_answer_with_one_values_own_values() {
+    let (scene, root) = repository_with_a_secret();
+    let outside = scene.path().join("outside.config");
+    let outside_value = outside.display().to_string();
+    append_to_gitmodules(
+        &root,
+        &format!("[include]\n\tpath = {outside_value}\n[submodule \"x\"]\n\tpath = /abs/x\n"),
+    );
+    let by_include =
+        GitReadCondition::ConfigNamesOutside(config_named("include.path", &outside_value));
+    let by_section = GitReadCondition::ConfigNotLocated(config_named("submodule.x.path", "/abs/x"));
+
+    let answer = port().status(&root).expect_err("a value is refused");
+
+    assert!(answer == by_include || answer == by_section, "{answer:?}");
+}
+
+/// CP-721: a `.gitmodules` the check cannot read, at either level.
+#[test]
+fn test_unreadable_gitmodules_answers_gitmodules_unreadable() {
+    for kind in ["mode", "link", "directory", "oversize"] {
+        for nested in [false, true] {
+            let level = level(nested);
+            let file = level.owner.join(".gitmodules");
+            let relative = relative_to_scene(&level.scene, &file);
+            let _ = fs::remove_file(&file);
+            match kind {
+                "mode" => fs::write(&file, "# nothing\n").expect("the file is written"),
+                "link" => std::os::unix::fs::symlink("README.md", &file).expect("the link is made"),
+                "directory" => fs::create_dir(&file).expect("the folder is made"),
+                _ => fs::write(&file, vec![b'#'; (1 << 20) + 1]).expect("the file is written"),
+            }
+            let before = level.scene.snapshot();
+            if kind == "mode" {
+                level.scene.set_mode(&relative, 0o000);
+            }
+
+            assert_eq!(
+                port().probe(&level.root),
+                RootFinding::Root,
+                "{kind} {nested}"
+            );
+            assert!(port().state(&level.root).is_ok(), "{kind} {nested}");
+            assert_eq!(
+                port().status(&level.root),
+                Err(GitReadCondition::GitmodulesUnreadable),
+                "{kind} {nested}"
+            );
+
+            if kind == "mode" {
+                level.scene.set_mode(&relative, 0o644);
+            }
+            assert_eq!(level.scene.snapshot(), before, "{kind} {nested}");
+        }
+    }
+}
+
+/// Gap 7: an included file keeps the Git-directory condition.
+#[test]
+fn test_unreadable_included_file_keeps_git_directory_unreadable() {
+    for nested in [false, true] {
+        let level = level(nested);
+        fs::write(level.owner.join(".gitmodules"), "[include]\n\tpath = inc\n")
+            .expect("the file is written");
+        let included = level.owner.join("inc");
+        fs::write(&included, "[core]\n").expect("the file is written");
+        let relative = relative_to_scene(&level.scene, &included);
+        let before = level.scene.snapshot();
+        level.scene.set_mode(&relative, 0o000);
+
+        assert_eq!(port().probe(&level.root), RootFinding::Root);
+        assert!(port().state(&level.root).is_ok());
+        assert_eq!(
+            port().status(&level.root),
+            Err(GitReadCondition::GitDirectoryUnreadable)
+        );
+
+        level.scene.set_mode(&relative, 0o644);
+        assert_eq!(level.scene.snapshot(), before);
+    }
+}
+
+/// CP-720's held finding: the measurement (`measurement.md`) found no kind looked up beyond the
+/// index's gitlinks, so a working-tree folder holding `.git` with no gitlink, named by a section
+/// whose path is another repository, answers the lists and opens nothing there.
+#[test]
+fn test_looked_up_kinds_the_measurement_found_are_refused() {
+    let (scene, root) = repository_with_a_secret();
+    committed_repository_at(&root.join("other"));
+    let elsewhere = root.join("elsewhere");
+    committed_repository_at(&elsewhere);
+    let fifo = elsewhere.join(".git/config");
+    fs::remove_file(&fifo).expect("the config goes");
+    make_fifo(&fifo);
+    append_to_gitmodules(&root, "[submodule \"other\"]\n\tpath = elsewhere\n");
+
+    let opener_seen = opener_seen_during_the_three_calls(&root, &fifo);
+
+    assert!(!opener_seen, "a call opened the other location");
+    assert!(port().status(&root).is_ok());
+    drop(scene);
+}
+
+#[test]
+fn test_state_ok_and_status_submodule_elsewhere_is_a_failed_item() {
+    let (_scene, model) = model_over_files();
+    let condition = submodule_elsewhere("submodule", "evil");
+    let double = Double::with_status(RootFinding::Root, Ok(main_head()), Err(condition.clone()));
+    let tree_before = model.tree().clone();
+    let folder_before = model.folder().clone();
+
+    let folded = read_git(model, &double);
+
+    assert_eq!(
+        folded.kind(),
+        &ItemState::Failed(GitCondition::Read(condition))
+    );
+    assert_eq!(folded.tree(), &tree_before);
+    assert_eq!(folded.folder(), &folder_before);
+}
+
+#[test]
+fn test_state_ok_and_status_gitmodules_unreadable_is_a_failed_item() {
+    let (_scene, model) = model_over_files();
+    let double = Double::with_status(
+        RootFinding::Root,
+        Ok(main_head()),
+        Err(GitReadCondition::GitmodulesUnreadable),
+    );
+    let tree_before = model.tree().clone();
+    let folder_before = model.folder().clone();
+
+    let folded = read_git(model, &double);
+
+    assert_eq!(
+        folded.kind(),
+        &ItemState::Failed(GitCondition::Read(GitReadCondition::GitmodulesUnreadable))
+    );
+    assert_eq!(folded.tree(), &tree_before);
+    assert_eq!(folded.folder(), &folder_before);
 }
