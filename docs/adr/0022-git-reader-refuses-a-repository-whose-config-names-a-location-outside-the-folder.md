@@ -1,6 +1,6 @@
 # ADR-0022: `git-reader` refuses a repository whose Git config, `.gitmodules` or alternates file names a location outside the folder — by a check of its own, read inside the folder before libgit2 reads what that file names
 
-**Status:** Accepted
+**Status:** Superseded by ADR-0023
 **Date:** 2026-10-06
 
 ## Context
