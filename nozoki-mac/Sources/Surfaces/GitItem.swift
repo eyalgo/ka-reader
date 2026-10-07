@@ -72,7 +72,7 @@ package struct GitEntry: Equatable, Sendable {
     }
 }
 
-/// The sixteen conditions a failed answer names: the five that carry text, and the other eleven.
+/// The eighteen conditions a failed answer names: the six that carry text, and the other twelve.
 package enum GitFailure: Equatable, Sendable {
     /// The Git directory lies outside the opened folder, at `gitDirectory` as the answer spells it.
     case gitDirectoryOutside(gitDirectory: String)
@@ -90,10 +90,14 @@ package enum GitFailure: Equatable, Sendable {
     /// `path` as the answer spells it. Where `path` leads is not observed, so the case says nothing
     /// of outside.
     case objectStoreNotLocated(path: String)
+    /// A `.gitmodules` section named `name` gives the submodule there the path `path`, which leads
+    /// somewhere else inside the opened folder, both as the answer spells them. Where `path` leads is
+    /// not observed, so the case says nothing of outside.
+    case submoduleElsewhere(name: String, path: String)
     case condition(GitCondition)
 }
 
-/// The eleven conditions a failed answer names without a path, each raw value the wire's own string.
+/// The twelve conditions a failed answer names without a path, each raw value the wire's own string.
 package enum GitCondition: String, CaseIterable, Sendable {
     case probeFolderUnavailable = "probe_folder_unavailable"
     case probeGitDirectoryUnreadable = "probe_git_directory_unreadable"
@@ -106,4 +110,6 @@ package enum GitCondition: String, CaseIterable, Sendable {
     case notARepository = "not_a_repository"
     case repositoryReadFailed = "repository_read_failed"
     case machineConfigNotSwitchedOff = "machine_config_not_switched_off"
+    /// A `.gitmodules` the check reads could not be read.
+    case gitmodulesUnreadable = "gitmodules_unreadable"
 }
