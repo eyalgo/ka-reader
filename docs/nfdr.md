@@ -2,7 +2,7 @@
 
 **Status:** Settled
 **Owner:** Principal Architect
-**Version:** 45 — the close: the cycle-39 fold. The `.gitmodules` section-path refusals and the refusal on the submodule map are built (`nozoki@772c63b`), an unreadable `.gitmodules` answers a condition of its own, and `docs/SDD.md` v46 says so (SDD RN-106). On the owner's seat's answer at `docs/trail/architecture/cycle-39.md` § 3.1, QC-6 and QC-35 stop naming the two refusals as unbuilt, lose the closing pointer to the SDD *Open Questions* item v46 removed, and keep only what the check cannot refuse; QC-6 names the looked-up set beside the six members; QC-35's tail names a sixth FIFO case at 120 passed; QC-30 loses its "yet". Per § 3.2, ADR-0023 supersedes ADR-0022, whose Status line alone changes, and QC-6, QC-15, QC-30 and QC-35 trace to it. No `QC` is added, renumbered or reused. Nothing is left for the owner, so the companion is removed and `Status:` is Settled — RN-56
+**Version:** 46 — the close: the cycle-40 fold. The two limits QC-2 stated beside the `submodule` walk fixture are closed at `nozoki@b12e48c`, and `docs/SDD.md` v47 says so (SDD RN-107). On the owner's seat's answer at `docs/trail/architecture/cycle-40.md` § 3.1, QC-2's *verified by* tail names the CI step `Read-only, submodule` and the `read_git` case at `git_state.rs:L787`, names that case as a layer-2 no-write proof on the restored `submodule`, bounds the CI half to the step being in the workflow with its hosted result unread, keeps the sentence that the walk drops the Git answer, and moves its trace from SDD v42 to § 6 S-4 at v47; the old words are in a dated note. No `QC` is added, renumbered or reused, § 10 does not move, and no record is written or restatused. Nothing is left for the owner, so the companion is removed and `Status:` is Settled — RN-57
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · PRD Settled · UXD Settled · DESIGN Settled · CONTENT Settled
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
@@ -104,19 +104,36 @@ new units while they were unbuilt.
   and they are proved by `cargo test --locked -p nozoki-core --test root_finding` and
   `--test git_state` (layer 2), which snapshot each scene's whole root around the calls
   (`crates/nozoki-core/tests/root_finding.rs:L38-L43`; `crates/nozoki-core/tests/git_state.rs:L146-L155`).
-  `plain`, `repo` and `submodule` are walk fixtures, and two limits stand beside `submodule` until a
-  change closes them: the walk drops the Git answer (`checks/walk.rs:L288-L292`), so no case
-  asserts what `read_git` answers on it; and CI runs the walk on `plain` and `repo` alone
+  `plain`, `repo` and `submodule` are walk fixtures, and CI walks all three: the step `Read-only,
+  submodule` runs `checks/read-only.sh checks/fixtures/submodule` beside the `plain` and `repo`
+  steps (`.github/workflows/ci.yml:L73-L74` at `nozoki@b12e48c`), where "on every build" puts it.
+  That half is bounded by what can be read: the step is in the workflow, and its result on the
+  hosted runner is unread, because `b12e48c` is on no remote branch and `origin/main` is at
+  `nozoki@799c3d6` — so this tail says the step is in the workflow and does not say it is green.
+  The walk drops the Git answer (`checks/walk.rs:L288-L292`), which is why a case and not the walk
+  holds it: in `--test git_state` (layer 2), the case at `crates/nozoki-core/tests/git_state.rs:L787`
+  builds `submodule` as the script's in-place restore builds it, in a disposable scene of its own,
+  and asserts `read_git`'s whole answer there — `root`, HEAD on `main` in the normal state, staged
+  empty, and changed = {`submodule` modified, `README.md` untracked}. The same case is a layer-2
+  no-write proof on the restored `submodule` beside the walk's: `read_git_over` snapshots the whole
+  scene before and after the call and asserts the two are equal (`:L730-L738`). `:L771` asserts the
+  scene the restore lays down, and `:L802`, `:L815` and `:L828` the three layouts in which the
+  answer moves *(through v45 the tail read: "two limits stand beside `submodule` until a change
+  closes them: the walk drops the Git answer (`checks/walk.rs:L288-L292`), so no case asserts what
+  `read_git` answers on it; and CI runs the walk on `plain` and `repo` alone
   (`.github/workflows/ci.yml:L68`, `:L71` at `nozoki@076eac2`), so the `submodule` run is made by
-  hand until it joins them, where "on every build" puts it *(through v41 this tail read "on every
-  fixture" — RN-53)* *(traces to:
+  hand until it joins them, where 'on every build' puts it", and its trace read "the walk fixture,
+  the three scenes the suites prove and the two limits from SDD § 4 C-I3 and § 6 S-4, command half,
+  as they read at v42 (SDD RN-101)"; both limits are closed at `nozoki@b12e48c` — RN-57)* *(through
+  v41 this tail read "on every fixture" — RN-53)* *(traces to:
   SRS NFR-5, NFR-6, C-2; SDD § 4 C-I3; ADR-0021; ADR-0011; the tail's IPC wording corrected on the
   owner's addition at `docs/trail/architecture/cycle-9.md` § 2.3 — RN-23; the command carve-out on
   the owner's addition at `docs/trail/architecture/cycle-10.md` § 2.1 — RN-24; the unit, the two
   uncovered cases and the reviewed half from SDD § 4 C-I3 and C-R7 as they read at v22, on the
-  owner's seat's answer at `docs/trail/architecture/cycle-18.md` § 3.1 — RN-32; the walk fixture,
-  the three scenes the suites prove and the two limits from SDD § 4 C-I3 and § 6 S-4, command half,
-  as they read at v42 (SDD RN-101) — RN-53)*
+  owner's seat's answer at `docs/trail/architecture/cycle-18.md` § 3.1 — RN-32; the walk fixture
+  and the three scenes the suites prove (RN-53), the CI step, the `read_git` case and its no-write
+  proof from SDD § 6 S-4, command half, as it reads at v47 (SDD RN-107), on the owner's seat's
+  answer at `docs/trail/architecture/cycle-40.md` § 3.1 — RN-57)*
 - **QC-3:** The shipped executable, `Nozoki.app/Contents/MacOS/Nozoki`, links no network
   transport, and every crate and package the bundle contains is named in `checks/deps.allow`. The
   claim is made of the executable and of nothing smaller. *What the build holds:* libgit2 is
@@ -4934,3 +4951,64 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   the index; source: `docs/trail/architecture/cycle-39.md` §§ 3.1, 3.2;
   `docs/trail/architecture/self_answer-44.md`; `docs/SDD.md` v46, SDD RN-106; the tree at
   `nozoki@772c63b`, measured at `nozoki@d90814b`)*
+- **RN-57:** *(v46 — the close: the cycle-40 fold, § 3.1 answered)* **Intake.** The companion on
+  disk had one § 3 item and nothing in §§ 1 or 2. No `product-architecture` run wrote it. The PM
+  opened it on 2026-10-07 (`nozoki@258b472`), after the change that runs the `submodule` walk every
+  build merged to `main` (`nozoki@b12e48c`), because QC-2's tail still stated two limits beside the
+  `submodule` walk fixture that the change had closed. A `companion-self-answer` run answered it in
+  the owner's seat, confirmed with four additions (`nozoki@201498e`; reasoning
+  `docs/trail/architecture/self_answer-45.md`). The file was clean in git at intake and its one slot
+  was filled, so it is consumed. It was copied whole to `docs/trail/architecture/cycle-40.md` before
+  this fold's first edit, and `cmp` found the two identical. **Whose answer this is.** The fold rests
+  on the ground RN-54 to RN-56 rest on: the answer binds only the records' consistency with the tree
+  and with the settled SDD, which states the substance (SDD RN-107), and the owner can reverse the
+  fold with one revert. **What moved beneath this document.** `docs/SDD.md` v46 → v47, Settled
+  (`nozoki@c1032b5`, SDD RN-107). `git diff 275e179 HEAD -- docs/SDD.md` touches the header, § 3's
+  `read-only-harness` row, § 6 S-4's promise clause and *Rests on*, and RN-107, and each was read.
+  `git diff --stat 275e179 HEAD -- docs ':!docs/trail'` lists the SDD and the companion alone. Every
+  input's `Status:` line was re-read as Settled, so `Inputs read:` stands. **§ 3.1 → QC-2, as
+  answered, with the four additions.** The fresh authorization is SDD v47 § 6 S-4, command half, the
+  promise clause, which reads both limits as closed at `nozoki@b12e48c`. QC-2's tail now names the
+  CI step `Read-only, submodule` (`.github/workflows/ci.yml:L73-L74`) and the case
+  `crates/nozoki-core/tests/git_state.rs:L787`, and it keeps the old words in a dated note. (1) The
+  tail names the case as a layer-2 no-write proof on the restored `submodule` as well as the answer
+  it asserts, because `read_git_over` snapshots the whole scene before and after the call
+  (`:L730-L738`). (2) The CI half is bounded. The step is in the workflow, and its result on the
+  hosted runner is unread: `git branch -r --contains b12e48c` prints nothing, and `origin/main` is at
+  `nozoki@799c3d6`. The tail says this and does not say the step is green. (3) The sentence that the
+  walk drops the Git answer (`checks/walk.rs:L288-L292`) stays, as the reason the case and not the
+  walk holds the answer. (4) The trace moves from SDD § 4 C-I3 and § 6 S-4, command half, as they
+  read at v42 (SDD RN-101) to § 6 S-4 at v47 (SDD RN-107), and the v42 reading is in the dated note.
+  The head of QC-2's trace still names SDD § 4 C-I3, which v47 did not move. **Where the fold goes
+  beyond the answer's words, each named.** (a) The tail names `:L771`, `:L802`, `:L815` and `:L828`,
+  the scene case and the three layouts in which the answer moves. The item named them and the answer
+  did not; SDD v47 names all four. (b) The tail states what the `:L787` case asserts — `root`, HEAD on
+  `main` in the normal state, staged empty, and changed = {`submodule` modified, `README.md`
+  untracked} — as the item and SDD v47 state it, so a reader does not have to open the test to learn
+  what "the whole answer" means. **What does not move**, as the answer directs. § 10's QC-2 row reads
+  "on every walk fixture", which is still true. § 9's suite count is pinned at `nozoki@b158052`, and
+  its own sentence makes an inserted step a re-measurement. The export-set clause stands. No ADR is
+  written, edited or restatused, and the index does not move. No `QC` is added, renumbered or reused.
+  **No candidate record.** Running the `submodule` walk in CI and asserting `read_git`'s answer in a
+  case are verification moves, not decisions. Undoing either is cheap, and neither involved a real
+  trade-off, so neither earns a record. **Measured for this run at `nozoki@201498e`.** `git status
+  --porcelain` printed nothing at intake. `git diff --stat b12e48c HEAD -- . ':!docs'` printed
+  nothing, so every code locator here is written against `nozoki@b12e48c`. At that commit,
+  `ci.yml:L73-L74` holds the `Read-only, submodule` step, and `git_state.rs` holds `read_git_over` at
+  `:L730-L738` with its snapshot at `:L731` and `:L736`, the scene case at `:L771`, the answer case at
+  `:L787` with its assertion at `:L792-L798`, and the three layout cases at `:L802`, `:L815` and
+  `:L828`. `walk.rs:L288-L292` still drops the answer. The locators QC-2 already carried were
+  re-read at HEAD: `git_state.rs:L146-L155` and `root_finding.rs:L38-L43` still snapshot the scene
+  around the calls, and `checks/read-only.sh` is unchanged since `nozoki@076eac2`. On a disposable
+  copy (`git archive HEAD`, unpacked under `/private/tmp`, the suite run by `--manifest-path`),
+  `checks/read-only.sh` printed `unchanged` on `plain`, `repo` and `submodule`. In the same copy,
+  `cargo test --locked -p nozoki-core --test git_state submodule` printed `test result: ok. 17 passed;
+  0 failed`, and the cases at `:L771`, `:L787`, `:L802` and `:L815` printed `ok`. The filter does
+  not reach `:L828`, whose name does not carry `submodule`; run by its own name, it printed `test
+  result: ok. 1 passed; 0 failed`. **Known limits.** This run read the SDD's diff since `275e179`
+  whole, and the other inputs at their status lines. It ran three walks and two filtered runs of one
+  suite. It ran no other `checks/*.sh` script, built no bundle, ran no `swift test`, and
+  read no hosted CI run. **The companion.** Nothing is left for the owner, so the companion is removed
+  and `Status:` is Settled *(re: header `Version:`; QC-2; source:
+  `docs/trail/architecture/cycle-40.md` § 3.1; `docs/trail/architecture/self_answer-45.md`;
+  `docs/SDD.md` v47, SDD RN-107; the tree at `nozoki@b12e48c`, measured at `nozoki@201498e`)*
