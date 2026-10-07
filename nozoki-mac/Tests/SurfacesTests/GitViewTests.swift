@@ -247,6 +247,22 @@ final class GitViewTests: XCTestCase {
         XCTAssertEqual(visibleImageViews(fixture.view).map(\.image), [failureGlyph])
     }
 
+    func test_theObjectStoreNotLocatedFailureDrawsOneMessageAndNothingElse() {
+        let fixture = makeView(showing: .failed(.objectStoreNotLocated(path: "relative/objects")))
+
+        XCTAssertEqual(
+            strings(fixture.view),
+            [
+                "Nozoki found a Git object store that names relative/objects. "
+                    + "Nozoki doesn't work out where that path leads, so it doesn't read the "
+                    + "folder's Git status. The file tree and the reading panel are unaffected."
+            ])
+        XCTAssertNotEqual(strings(fixture.view), [GitSentences.pending])
+        XCTAssertTrue(rowViews(fixture.view).isEmpty)
+        XCTAssertTrue(shown(descendants(of: fixture.view)).allSatisfy { !($0 is NSButton) })
+        XCTAssertEqual(visibleImageViews(fixture.view).map(\.image), [failureGlyph])
+    }
+
     func test_theConfigNotLocatedFailureDrawsOneMessageAndNothingElse() {
         let fixture = makeView(
             showing: .failed(.configNotLocated(key: "core.excludesfile", path: "ignore-rel")))
@@ -291,6 +307,7 @@ final class GitViewTests: XCTestCase {
             [
                 .stopped, .failed(.gitDirectoryOutside(gitDirectory: "/e")),
                 .failed(.objectStoreNamesOutside(path: "/e")),
+                .failed(.objectStoreNotLocated(path: "/e")),
             ]
             + GitCondition.allCases.map { .failed(.condition($0)) }
 

@@ -15,6 +15,7 @@ final class GitSentencesTests: XCTestCase {
             .configNamesOutside(key: "include.path", path: "../../outside.config"),
             .configNotLocated(key: "include.path", path: "~/x.config"),
             .objectStoreNamesOutside(path: "../../../elsewhere/objects"),
+            .objectStoreNotLocated(path: "relative/objects"),
         ] + GitCondition.allCases.map { .condition($0) }
     }
 
@@ -244,6 +245,7 @@ final class GitSentencesTests: XCTestCase {
                 GitFailure.gitDirectoryOutside(gitDirectory: "a"),
                 .configNamesOutside(key: "include.path", path: "a"),
                 .objectStoreNamesOutside(path: "a"),
+                .objectStoreNotLocated(path: "a"),
             ] + GitCondition.allCases.map { GitFailure.condition($0) }
 
         XCTAssertNotEqual(message, GitSentences.fault)
@@ -297,11 +299,68 @@ final class GitSentencesTests: XCTestCase {
             [
                 GitFailure.gitDirectoryOutside(gitDirectory: "a"),
                 .configNamesOutside(key: "include.path", path: "a"),
+                .configNotLocated(key: "include.path", path: "a"),
+                .objectStoreNotLocated(path: "a"),
             ] + GitCondition.allCases.map { GitFailure.condition($0) }
 
         XCTAssertNotEqual(alternates, GitSentences.fault)
         for other in others {
             XCTAssertNotEqual(alternates, GitSentences.failure(other))
+        }
+    }
+
+    /// `change_text.md`'s message for an alternates entry the reader does not locate: the entry,
+    /// unchanged and unquoted, between the words around it. Three sentences, because a joined clause
+    /// would make the object store the subject of "doesn't work out".
+    private func objectStoreNotLocatedMessage(path: String) -> String {
+        "Nozoki found a Git object store that names \(path). "
+            + "Nozoki doesn't work out where that path leads, so it doesn't read the folder's "
+            + "Git status. The file tree and the reading panel are unaffected."
+    }
+
+    func test_theObjectStoreNotLocatedMessageReadsAsChangeTextWritesIt() {
+        XCTAssertEqual(
+            GitSentences.failure(.objectStoreNotLocated(path: "relative/objects")),
+            "Nozoki found a Git object store that names relative/objects. "
+                + "Nozoki doesn't work out where that path leads, so it doesn't read the "
+                + "folder's Git status. The file tree and the reading panel are unaffected.")
+
+        // A value beginning `/` still draws this message (CP-707): the case, not the path, decides.
+        for path in ["relative/objects", " /abs/objects", "~/objects", "/x"] {
+            let message = GitSentences.failure(.objectStoreNotLocated(path: path))
+
+            XCTAssertEqual(message, objectStoreNotLocatedMessage(path: path), path)
+            XCTAssertFalse(message.contains("\"\(path)\""), message)
+            XCTAssertFalse(message.contains("'\(path)'"), message)
+        }
+    }
+
+    func test_theObjectStoreNotLocatedMessageNeverSaysOutsideOrAForbiddenWord() {
+        let message = GitSentences.failure(.objectStoreNotLocated(path: "a"))
+        let forbidden = [
+            "outside", "invalid", "unsupported", "illegal", "malformed", "refused", "!",
+        ]
+
+        for word in forbidden {
+            XCTAssertFalse(message.localizedCaseInsensitiveContains(word), "\(word): \(message)")
+        }
+    }
+
+    func test_theObjectStoreNotLocatedMessageDiffersFromEveryOtherSentence() {
+        let message = GitSentences.failure(.objectStoreNotLocated(path: "a"))
+        let others =
+            [
+                GitFailure.gitDirectoryOutside(gitDirectory: "a"),
+                .configNamesOutside(key: "include.path", path: "a"),
+                .configNotLocated(key: "include.path", path: "a"),
+                .objectStoreNamesOutside(path: "a"),
+            ] + GitCondition.allCases.map { GitFailure.condition($0) }
+
+        XCTAssertNotEqual(message, GitSentences.fault)
+        XCTAssertNotEqual(message, GitSentences.pending)
+        XCTAssertNotEqual(message, GitSentences.clean)
+        for other in others {
+            XCTAssertNotEqual(message, GitSentences.failure(other))
         }
     }
 
