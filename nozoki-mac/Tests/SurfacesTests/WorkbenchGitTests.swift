@@ -472,6 +472,12 @@ final class WorkbenchGitTests: XCTestCase {
             XCTAssertTrue(gitRows(fixture.workbench).isEmpty, "\(failure)")
             XCTAssertEqual(strings(of: fixture.workbench.rail), ["Files", "Git"], "\(failure)")
 
+            // CP-729: both switch entries stay enabled over a failure, the Git entry as well as Files.
+            choose(.files, in: fixture)
+            XCTAssertTrue(treeIsShown(fixture.workbench), "\(failure)")
+            choose(.git, in: fixture)
+            XCTAssertTrue(gitIsShown(fixture.workbench), "\(failure)")
+            XCTAssertFalse(treeIsShown(fixture.workbench), "\(failure)")
             choose(.files, in: fixture)
             XCTAssertTrue(treeIsShown(fixture.workbench), "\(failure)")
             try selectInTree("a.txt", in: fixture.workbench)
