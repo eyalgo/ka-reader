@@ -20,7 +20,7 @@ fn port() -> &'static dyn GitPort {
 }
 
 /// CP-491: an answer holds no path, so its text holds no separator, except the config conditions and
-/// the object store condition, which carry the value their repository's own file spells and whose
+/// the object store conditions, which carry the value their repository's own file spells and whose
 /// own cases assert that payload; and CP-496: the whole temporary root is what it was before the
 /// probe.
 fn assert_clean(outcome: &RootFinding, before: &Snapshot, scene: &TempDir) {
@@ -30,6 +30,7 @@ fn assert_clean(outcome: &RootFinding, before: &Snapshot, scene: &TempDir) {
             ProbeCondition::ConfigNamesOutside(_)
                 | ProbeCondition::ConfigNotLocated(_)
                 | ProbeCondition::ObjectStoreNamesOutside(_)
+                | ProbeCondition::ObjectStoreNotLocated(_)
         )
     );
     assert!(

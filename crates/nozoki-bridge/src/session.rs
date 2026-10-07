@@ -1492,7 +1492,7 @@ mod tests {
         }
 
         #[test]
-        fn test_each_of_the_conditions_and_the_switch_failure_have_fifteen_distinct_wire_values() {
+        fn test_each_of_the_conditions_and_the_switch_failure_have_sixteen_distinct_wire_values() {
             let mut answers: Vec<(Value, &str)> = vec![
                 (
                     wire(&probe_failure(ProbeCondition::FolderUnavailable)),
@@ -1558,23 +1558,37 @@ mod tests {
                     ))),
                     "config_not_located",
                 ),
+                (
+                    wire(&read_failure(GitReadCondition::ObjectStoreNotLocated(
+                        "relative/objects".to_string(),
+                    ))),
+                    "object_store_not_located",
+                ),
             ];
             // The probe's variant and the read's variant are one wire value.
             let probe_variant = wire(&probe_failure(ProbeCondition::ConfigNamesOutside(
                 named_config_path(),
             )));
             assert_eq!(probe_variant["condition"], "config_names_outside");
-            assert_eq!(probe_variant, answers[answers.len() - 3].0);
+            assert_eq!(probe_variant, answers[answers.len() - 4].0);
             let probe_alternates = wire(&probe_failure(ProbeCondition::ObjectStoreNamesOutside(
                 "../../../elsewhere/objects".to_string(),
             )));
             assert_eq!(probe_alternates["condition"], "object_store_names_outside");
-            assert_eq!(probe_alternates, answers[answers.len() - 2].0);
+            assert_eq!(probe_alternates, answers[answers.len() - 3].0);
             let probe_not_located = wire(&probe_failure(ProbeCondition::ConfigNotLocated(
                 named_config_path(),
             )));
             assert_eq!(probe_not_located["condition"], "config_not_located");
-            assert_eq!(probe_not_located, answers[answers.len() - 1].0);
+            assert_eq!(probe_not_located, answers[answers.len() - 2].0);
+            let probe_object_store_not_located = wire(&probe_failure(
+                ProbeCondition::ObjectStoreNotLocated("relative/objects".to_string()),
+            ));
+            assert_eq!(
+                probe_object_store_not_located["condition"],
+                "object_store_not_located"
+            );
+            assert_eq!(probe_object_store_not_located, answers[answers.len() - 1].0);
             answers.push((
                 serde_json::to_value(GitAnswerDto::machine_config_not_switched_off())
                     .expect("the answer serializes"),
@@ -1589,7 +1603,7 @@ mod tests {
                 .iter()
                 .map(|(answer, _)| answer["condition"].to_string())
                 .collect();
-            assert_eq!(distinct.len(), 15);
+            assert_eq!(distinct.len(), 16);
         }
 
         fn named_config_path() -> ConfigNamedPath {
@@ -1666,6 +1680,26 @@ mod tests {
                 "state": "failed",
                 "condition": "object_store_names_outside",
                 "path": "/outside/\u{fffd}/objects"
+            });
+            assert_eq!(from_read, expected);
+            assert_eq!(from_probe, expected);
+            assert_eq!(members(&from_read), vec!["condition", "path", "state"]);
+        }
+
+        #[test]
+        fn test_the_object_store_not_located_condition_serializes_exactly_condition_path_and_state()
+        {
+            let non_utf8_entry = OsStr::from_bytes(b"relative/\xff/objects");
+            let value = non_utf8_entry.to_string_lossy().into_owned();
+            let from_read = wire(&read_failure(GitReadCondition::ObjectStoreNotLocated(
+                value.clone(),
+            )));
+            let from_probe = wire(&probe_failure(ProbeCondition::ObjectStoreNotLocated(value)));
+
+            let expected = json!({
+                "state": "failed",
+                "condition": "object_store_not_located",
+                "path": "relative/\u{fffd}/objects"
             });
             assert_eq!(from_read, expected);
             assert_eq!(from_probe, expected);

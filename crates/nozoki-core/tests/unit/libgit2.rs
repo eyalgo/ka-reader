@@ -382,11 +382,11 @@ fn test_an_empty_line_and_a_hash_line_are_skipped() {
 }
 
 #[test]
-fn test_a_leading_space_puts_the_entry_in_the_outside_class() {
+fn test_a_leading_space_puts_the_entry_in_the_not_located_class() {
     assert_eq!(
         entries(b" /abs\n./rel \n"),
         [
-            (" /abs".to_string(), EntryClass::Outside),
+            (" /abs".to_string(), EntryClass::NotLocated),
             ("./rel ".to_string(), EntryClass::FromTheObjectDirectory),
         ],
         "nothing is trimmed: a leading space changes the class, a trailing one stays in the value"
@@ -408,8 +408,8 @@ fn test_an_entry_beginning_dot_one_beginning_slash_and_any_other_each_fall_in_th
             ("../x".to_string(), EntryClass::FromTheObjectDirectory),
             (".hidden".to_string(), EntryClass::FromTheObjectDirectory),
             ("/x".to_string(), EntryClass::Absolute),
-            ("x/y".to_string(), EntryClass::Outside),
-            ("~/x".to_string(), EntryClass::Outside),
+            ("x/y".to_string(), EntryClass::NotLocated),
+            ("~/x".to_string(), EntryClass::NotLocated),
         ]
     );
 }
