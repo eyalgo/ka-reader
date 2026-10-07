@@ -1,0 +1,6 @@
+# The two members of submodule.git.tar that unpack outside `.git`, so that git's own view of
+# checks/fixtures agrees with a restore made in place (checks/read-only.sh). The restored `.git`
+# needs no line: git never lists a folder named `.git`. checks/own-state.sh still names anything
+# else in these folders, because it walks ignored entries too.
+/submodule/.gitmodules
+/submodule/submodule/
