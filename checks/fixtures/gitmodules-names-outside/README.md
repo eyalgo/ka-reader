@@ -1,0 +1,1 @@
+# gitmodules-names-outside
