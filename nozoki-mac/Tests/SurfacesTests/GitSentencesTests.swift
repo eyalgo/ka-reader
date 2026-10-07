@@ -232,7 +232,7 @@ final class GitSentencesTests: XCTestCase {
     func test_theConfigNotLocatedMessageNeverSaysOutsideOrAForbiddenWord() {
         let message = GitSentences.failure(.configNotLocated(key: "include.path", path: "a"))
         let forbidden = [
-            "outside", "invalid", "unsupported", "illegal", "malformed", "refused", "!",
+            "outside", "invalid", "unsupported", "illegal", "malformed", "refused", "rejected", "!",
         ]
 
         for word in forbidden {
@@ -340,7 +340,7 @@ final class GitSentencesTests: XCTestCase {
     func test_theObjectStoreNotLocatedMessageNeverSaysOutsideOrAForbiddenWord() {
         let message = GitSentences.failure(.objectStoreNotLocated(path: "a"))
         let forbidden = [
-            "outside", "invalid", "unsupported", "illegal", "malformed", "refused", "!",
+            "outside", "invalid", "unsupported", "illegal", "malformed", "refused", "rejected", "!",
         ]
 
         for word in forbidden {
