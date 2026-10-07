@@ -72,7 +72,7 @@ package struct GitEntry: Equatable, Sendable {
     }
 }
 
-/// The fifteen conditions a failed answer names: the four that carry text, and the other eleven.
+/// The sixteen conditions a failed answer names: the five that carry text, and the other eleven.
 package enum GitFailure: Equatable, Sendable {
     /// The Git directory lies outside the opened folder, at `gitDirectory` as the answer spells it.
     case gitDirectoryOutside(gitDirectory: String)
@@ -86,6 +86,10 @@ package enum GitFailure: Equatable, Sendable {
     /// A Git object store the repository names, by an alternates entry or a link, lies outside the
     /// opened folder, at `path` as the answer spells it.
     case objectStoreNamesOutside(path: String)
+    /// A Git object store the repository names holds an alternates entry Nozoki does not locate, at
+    /// `path` as the answer spells it. Where `path` leads is not observed, so the case says nothing
+    /// of outside.
+    case objectStoreNotLocated(path: String)
     case condition(GitCondition)
 }
 
