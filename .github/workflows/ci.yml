@@ -70,6 +70,9 @@ jobs:
       - name: Read-only, repository
         run: checks/read-only.sh checks/fixtures/repo
 
+      - name: Read-only, submodule
+        run: checks/read-only.sh checks/fixtures/submodule
+
       - name: Read-only suite
         run: checks/tests/test_read_only.sh
 
