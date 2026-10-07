@@ -151,6 +151,8 @@ pub(super) fn scan(bytes: &[u8]) -> Result<ConfigScan, ConfigParseFailure> {
 struct Section {
     canonical: String,
     written: String,
+    /// The header's section word as written, before any quoted subsection.
+    base: String,
     /// The subsection's bytes, unescaped, when the header is the quoted form.
     subsection: Option<Vec<u8>>,
 }
@@ -160,16 +162,11 @@ impl Section {
     /// section.
     fn submodule_record(&self) -> Option<SubmoduleSection> {
         let (word, written_name, stored_name) = match &self.subsection {
-            Some(subsection) => {
-                let word = self
-                    .written
-                    .strip_suffix(&format!(".{}", String::from_utf8_lossy(subsection)))?;
-                (
-                    word,
-                    String::from_utf8_lossy(subsection).into_owned(),
-                    subsection.clone(),
-                )
-            }
+            Some(subsection) => (
+                self.base.as_str(),
+                String::from_utf8_lossy(subsection).into_owned(),
+                subsection.clone(),
+            ),
             None => {
                 let (word, name) = self.written.split_once('.')?;
                 (
@@ -317,6 +314,7 @@ fn parse_section_header(line: &[u8]) -> Result<(Section, usize), ConfigParseFail
             let canonical = written.to_ascii_lowercase();
             let section = Section {
                 canonical,
+                base: written.clone(),
                 written,
                 subsection: None,
             };
@@ -377,6 +375,7 @@ fn parse_subsection_header(
         Section {
             canonical: format!("{}.{spelled}", base.to_ascii_lowercase()),
             written: format!("{base}.{spelled}"),
+            base: base.to_string(),
             subsection: Some(subsection),
         },
         cursor + 2,
