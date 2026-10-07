@@ -278,8 +278,8 @@ impl From<ItemState<FileView>> for FileAnswerDto {
 /// `pending` and nothing else; `observed` with its `kind`; or `failed` with a `condition`, plus
 /// `git_directory` only beside `git_directory_outside`, `key` and `path` beside
 /// `config_names_outside` and `config_not_located`, and `path` alone beside
-/// `object_store_names_outside`. The bridge carries the core's item and decides nothing: no count,
-/// wording or sort key crosses (CP-543).
+/// `object_store_names_outside` and `object_store_not_located`. The bridge carries the core's item
+/// and decides nothing: no count, wording or sort key crosses (CP-543).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[serde(tag = "state", rename_all = "snake_case")]
 pub enum GitAnswerDto {
@@ -354,10 +354,10 @@ pub struct GitEntryDto {
     pub from: Option<String>,
 }
 
-/// A failed Git item's condition on the wire, one string from the closed set of fifteen. Five of
+/// A failed Git item's condition on the wire, one string from the closed set of sixteen. Five of
 /// the probe's conditions carry a `probe_` prefix, because two share names with read conditions.
-/// The two config conditions and the object store condition are each one value for the probe and
-/// the reads: one message whichever operation met it.
+/// The two config conditions and the two object store conditions are each one value for the probe
+/// and the reads: one message whichever operation met it.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum GitConditionDto {
@@ -376,6 +376,7 @@ pub enum GitConditionDto {
     ConfigNamesOutside,
     ObjectStoreNamesOutside,
     ConfigNotLocated,
+    ObjectStoreNotLocated,
 }
 
 impl From<RepositoryState> for RepositoryStateDto {
@@ -433,6 +434,7 @@ impl From<&ProbeCondition> for GitConditionDto {
             ProbeCondition::ConfigNamesOutside(_) => Self::ConfigNamesOutside,
             ProbeCondition::ConfigNotLocated(_) => Self::ConfigNotLocated,
             ProbeCondition::ObjectStoreNamesOutside(_) => Self::ObjectStoreNamesOutside,
+            ProbeCondition::ObjectStoreNotLocated(_) => Self::ObjectStoreNotLocated,
         }
     }
 }
@@ -473,11 +475,20 @@ impl GitAnswerDto {
         }
     }
 
-    /// The object store condition's answer, whichever operation met it. The core has already spelled
-    /// the value lossily, so it crosses as the string the core holds, in `path` alone.
+    /// The outside object store condition's answer, whichever operation met it. The core has already
+    /// spelled the value lossily, so it crosses as the string the core holds, in `path` alone.
     fn object_store_names_outside(value: &str) -> Self {
+        Self::object_store_refused(GitConditionDto::ObjectStoreNamesOutside, value)
+    }
+
+    /// The not-located object store condition's answer: the same members, under its own condition.
+    fn object_store_not_located(value: &str) -> Self {
+        Self::object_store_refused(GitConditionDto::ObjectStoreNotLocated, value)
+    }
+
+    fn object_store_refused(condition: GitConditionDto, value: &str) -> Self {
         Self::Failed {
-            condition: GitConditionDto::ObjectStoreNamesOutside,
+            condition,
             git_directory: None,
             key: None,
             path: Some(value.to_string()),
@@ -517,6 +528,9 @@ impl From<&ItemState<FolderKind, GitCondition>> for GitAnswerDto {
             ItemState::Failed(GitCondition::Probe(ProbeCondition::ObjectStoreNamesOutside(
                 value,
             ))) => Self::object_store_names_outside(value),
+            ItemState::Failed(GitCondition::Probe(ProbeCondition::ObjectStoreNotLocated(
+                value,
+            ))) => Self::object_store_not_located(value),
             ItemState::Failed(GitCondition::Probe(condition)) => Self::failed(condition.into()),
             ItemState::Failed(GitCondition::Read(condition)) => match condition {
                 GitReadCondition::GitDirectoryOutside(path) => Self::Failed {
@@ -542,6 +556,9 @@ impl From<&ItemState<FolderKind, GitCondition>> for GitAnswerDto {
                 GitReadCondition::ConfigNotLocated(named) => Self::config_not_located(named),
                 GitReadCondition::ObjectStoreNamesOutside(value) => {
                     Self::object_store_names_outside(value)
+                }
+                GitReadCondition::ObjectStoreNotLocated(value) => {
+                    Self::object_store_not_located(value)
                 }
             },
         }
@@ -1218,7 +1235,7 @@ mod tests {
         };
         use serde_json::{Value, json};
 
-        use crate::session::GitAnswerDto;
+        use crate::session::{GitAnswerDto, GitConditionDto};
         use crate::test_support::TempDir;
 
         /// A port double that answers what it was given, for every folder.
@@ -1492,7 +1509,7 @@ mod tests {
         }
 
         #[test]
-        fn test_each_of_the_conditions_and_the_switch_failure_have_fifteen_distinct_wire_values() {
+        fn test_each_of_the_conditions_and_the_switch_failure_have_sixteen_distinct_wire_values() {
             let mut answers: Vec<(Value, &str)> = vec![
                 (
                     wire(&probe_failure(ProbeCondition::FolderUnavailable)),
@@ -1558,23 +1575,37 @@ mod tests {
                     ))),
                     "config_not_located",
                 ),
+                (
+                    wire(&read_failure(GitReadCondition::ObjectStoreNotLocated(
+                        "relative/objects".to_string(),
+                    ))),
+                    "object_store_not_located",
+                ),
             ];
             // The probe's variant and the read's variant are one wire value.
             let probe_variant = wire(&probe_failure(ProbeCondition::ConfigNamesOutside(
                 named_config_path(),
             )));
             assert_eq!(probe_variant["condition"], "config_names_outside");
-            assert_eq!(probe_variant, answers[answers.len() - 3].0);
+            assert_eq!(probe_variant, answers[answers.len() - 4].0);
             let probe_alternates = wire(&probe_failure(ProbeCondition::ObjectStoreNamesOutside(
                 "../../../elsewhere/objects".to_string(),
             )));
             assert_eq!(probe_alternates["condition"], "object_store_names_outside");
-            assert_eq!(probe_alternates, answers[answers.len() - 2].0);
+            assert_eq!(probe_alternates, answers[answers.len() - 3].0);
             let probe_not_located = wire(&probe_failure(ProbeCondition::ConfigNotLocated(
                 named_config_path(),
             )));
             assert_eq!(probe_not_located["condition"], "config_not_located");
-            assert_eq!(probe_not_located, answers[answers.len() - 1].0);
+            assert_eq!(probe_not_located, answers[answers.len() - 2].0);
+            let probe_object_store_not_located = wire(&probe_failure(
+                ProbeCondition::ObjectStoreNotLocated("relative/objects".to_string()),
+            ));
+            assert_eq!(
+                probe_object_store_not_located["condition"],
+                "object_store_not_located"
+            );
+            assert_eq!(probe_object_store_not_located, answers[answers.len() - 1].0);
             answers.push((
                 serde_json::to_value(GitAnswerDto::machine_config_not_switched_off())
                     .expect("the answer serializes"),
@@ -1589,7 +1620,7 @@ mod tests {
                 .iter()
                 .map(|(answer, _)| answer["condition"].to_string())
                 .collect();
-            assert_eq!(distinct.len(), 15);
+            assert_eq!(distinct.len(), 16);
         }
 
         fn named_config_path() -> ConfigNamedPath {
@@ -1666,6 +1697,36 @@ mod tests {
                 "state": "failed",
                 "condition": "object_store_names_outside",
                 "path": "/outside/\u{fffd}/objects"
+            });
+            assert_eq!(from_read, expected);
+            assert_eq!(from_probe, expected);
+            assert_eq!(members(&from_read), vec!["condition", "path", "state"]);
+        }
+
+        #[test]
+        fn test_the_object_store_not_located_condition_serializes_exactly_condition_path_and_state()
+        {
+            let non_utf8_entry = OsStr::from_bytes(b"relative/\xff/objects");
+            let value = non_utf8_entry.to_string_lossy().into_owned();
+            let from_read = wire(&read_failure(GitReadCondition::ObjectStoreNotLocated(
+                value.clone(),
+            )));
+            let from_probe = wire(&probe_failure(ProbeCondition::ObjectStoreNotLocated(
+                value.clone(),
+            )));
+            // The condition's own conversion, which no answer reaches through the probe's arm.
+            assert_eq!(
+                serde_json::to_value(GitConditionDto::from(
+                    &ProbeCondition::ObjectStoreNotLocated(value)
+                ))
+                .expect("the condition serializes"),
+                json!("object_store_not_located")
+            );
+
+            let expected = json!({
+                "state": "failed",
+                "condition": "object_store_not_located",
+                "path": "relative/\u{fffd}/objects"
             });
             assert_eq!(from_read, expected);
             assert_eq!(from_probe, expected);

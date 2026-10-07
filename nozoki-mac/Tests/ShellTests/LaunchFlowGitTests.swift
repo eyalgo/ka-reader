@@ -128,6 +128,45 @@ final class LaunchFlowGitTests: LaunchWindowTestCase {
             ])
     }
 
+    /// CP-711: wire bytes to the drawn failure slot for the two alternates observations. The shell
+    /// hands the answer down with its one member and decides nothing about it.
+    func test_aNotLocatedObjectStoreAnswerDrawsItsMessageAndAnOutsideOneKeepsItsSentence() throws {
+        let notLocated = Data(
+            (#"{"state":"failed","condition":"object_store_not_located","#
+                + #""path":"relative/objects"}"#).utf8)
+        let launch = launch(git: notLocated)
+        let workbench = try workbench(of: launch)
+
+        choose(.git, in: workbench)
+
+        let drawn = strings(in: workbench)
+        XCTAssertEqual(
+            drawn,
+            [
+                "Nozoki found a Git object store that names relative/objects. "
+                    + "Nozoki doesn't work out where that path leads, so it doesn't read the "
+                    + "folder's Git status. The file tree and the reading panel are unaffected."
+            ])
+        XCTAssertTrue(drawn[0].contains("relative/objects"))
+        XCTAssertEqual(drawn[0].lowercased().components(separatedBy: "outside").count - 1, 0)
+
+        let outside = Data(
+            (#"{"state":"failed","condition":"object_store_names_outside","#
+                + #""path":"relative/objects"}"#).utf8)
+        let outsideLaunch = self.launch(git: outside)
+        let outsideWorkbench = try self.workbench(of: outsideLaunch)
+
+        choose(.git, in: outsideWorkbench)
+
+        XCTAssertEqual(
+            strings(in: outsideWorkbench),
+            [
+                "Nozoki found a Git object store that names relative/objects, outside the folder "
+                    + "you opened, so Nozoki doesn't read the folder's Git status. "
+                    + "The file tree and the reading panel are unaffected."
+            ])
+    }
+
     func test_aNullReadGitDrawsTheFaultAndTheTreeStaysReachable() throws {
         let launch = launch(git: nil)
         let workbench = try workbench(of: launch)

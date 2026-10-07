@@ -457,6 +457,7 @@ final class WorkbenchGitTests: XCTestCase {
             [
                 .failed(.gitDirectoryOutside(gitDirectory: "/elsewhere/.git/worktrees/wt")),
                 .failed(.objectStoreNamesOutside(path: "../../../elsewhere/objects")),
+                .failed(.objectStoreNotLocated(path: "relative/objects")),
                 .failed(.configNotLocated(key: "core.excludesfile", path: "ignore-rel")), .stopped,
             ]
             + GitCondition.allCases.map { .failed(.condition($0)) }

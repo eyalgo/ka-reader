@@ -290,9 +290,10 @@ fn follow(
 
 /// The alternates check, run where the config check runs. It reads `objects/info/alternates` under
 /// the common directory, and the same file of each alternate that spells inside the folder, level
-/// by level and top to bottom, so the first outside value met is the one carried. It refuses any
-/// entry, or any link at `objects`, `info` or `alternates`, that spells outside the folder, and
-/// reads nothing there. An alternate already reached is not read again, as libgit2 adds an object
+/// by level and top to bottom, so the first refused value met is the one carried. It refuses any
+/// entry that begins with neither `.` nor `/` as not located, and any entry, or any link at
+/// `objects`, `info` or `alternates`, that spells outside the folder as outside, and reads nothing
+/// there. An alternate already reached is not read again, as libgit2 adds an object
 /// directory once.
 ///
 /// Files are read down to `bounds.alternates_depth`, counting the repository's own as level 0. An
@@ -338,21 +339,25 @@ fn check_alternates(
 }
 
 /// Where one alternates entry lies, spelled from `objects`, the object directory that holds the
-/// file. An entry that lies outside the folder is refused as the file spells it, and so is one that
-/// counts as outside by its class. `None` when the entry spells inside and nothing is there.
+/// file. An entry that begins with neither `.` nor `/` is refused as not located, as the file spells
+/// it, before anything is spelled. An entry whose spelling lies outside the folder is refused as
+/// outside, as the file spells it. `None` when the entry spells inside and nothing is there.
 fn spell_entry(
     grant: &Path,
     objects: &Path,
     entry: &AlternateEntry,
 ) -> Result<Option<PathBuf>, GitReadCondition> {
-    let refusal = || GitReadCondition::ObjectStoreNamesOutside(spelled_lossily(&entry.value));
-    if entry.class == EntryClass::Outside {
-        return Err(refusal());
+    if entry.class == EntryClass::NotLocated {
+        return Err(GitReadCondition::ObjectStoreNotLocated(spelled_lossily(
+            &entry.value,
+        )));
     }
     let value = Path::new(OsStr::from_bytes(&entry.value));
     match spell_location(grant, objects, value, &inspect_on_disk) {
         Ok(location) if lies_inside(grant, &location) => Ok(Some(location)),
-        Ok(_) => Err(refusal()),
+        Ok(_) => Err(GitReadCondition::ObjectStoreNamesOutside(spelled_lossily(
+            &entry.value,
+        ))),
         Err(WalkStop::Missing) => Ok(None),
         Err(WalkStop::Unreadable) => Err(GitReadCondition::GitDirectoryUnreadable),
         Err(WalkStop::TooManyLinks) => Err(GitReadCondition::RepositoryReadFailed),
@@ -486,6 +491,9 @@ fn probe_condition(condition: GitReadCondition) -> ProbeCondition {
         GitReadCondition::ConfigNotLocated(named) => ProbeCondition::ConfigNotLocated(named),
         GitReadCondition::ObjectStoreNamesOutside(entry) => {
             ProbeCondition::ObjectStoreNamesOutside(entry)
+        }
+        GitReadCondition::ObjectStoreNotLocated(entry) => {
+            ProbeCondition::ObjectStoreNotLocated(entry)
         }
         GitReadCondition::GitDirectoryUnreadable | GitReadCondition::GitDirectoryMissing => {
             ProbeCondition::GitDirectoryUnreadable

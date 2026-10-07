@@ -1920,6 +1920,16 @@ fn assert_object_store_refused(scene: &TempDir, root: &Path, entry: &str) {
     assert_eq!(&scene.snapshot(), &before, "a call changed the scene");
 }
 
+/// What each of the three calls answers when `entry` is refused without being located.
+fn assert_object_store_not_located(scene: &TempDir, root: &Path, entry: &str) {
+    assert_failed_on_all_three(
+        scene,
+        root,
+        ProbeCondition::ObjectStoreNotLocated(entry.to_string()),
+        GitReadCondition::ObjectStoreNotLocated(entry.to_string()),
+    );
+}
+
 /// What each of the three calls answers when the alternates check refuses nothing: a repository
 /// the way it answered before the check existed.
 fn assert_answers_as_without_an_alternates_file(scene: &TempDir, root: &Path) {
@@ -2030,13 +2040,69 @@ fn test_a_comment_and_a_blank_line_are_skipped_then_a_dotdot_entry_is_refused_as
     assert_object_store_refused(&scene, &root, "../../../outside-store/objects");
 }
 
-/// E3.
+/// E3: an entry beginning with neither `.` nor `/` is refused without being located, and carried as
+/// written (CP-709 a, scene 1).
 #[test]
-fn test_a_bare_relative_entry_is_refused_as_outside_and_carried_as_written() {
+fn test_a_bare_relative_entry_is_refused_as_not_located_and_carried_as_written() {
     let (scene, root) = repository_with_a_secret();
     scene.write_file(ALTERNATES, "relative/objects\n");
 
-    assert_object_store_refused(&scene, &root, "relative/objects");
+    assert_object_store_not_located(&scene, &root, "relative/objects");
+}
+
+/// A table of entries that begin with neither `.` nor `/`: each is refused as not located on all
+/// three calls and carried as written, whatever its spelling and whatever stands at the place it
+/// spells (CP-702, CP-709). Each row is the entry refused, the text of the repository's own
+/// alternates file, and what else the scene holds.
+#[test]
+fn test_every_entry_beginning_with_neither_dot_nor_slash_is_refused_as_not_located_as_written() {
+    type Setup = fn(&TempDir);
+    let rows: [(&str, &str, Setup); 4] = [
+        (" /abs/objects", " /abs/objects\n", |_| {}),
+        ("~/objects", "~/objects\n", |_| {}),
+        ("relative/objects", "relative/objects\n", |scene| {
+            scene.make_folder("S/.git/objects/relative/objects");
+        }),
+        ("relative/objects", "./vendor-store\n", |scene| {
+            scene.write_file(
+                "S/.git/objects/vendor-store/info/alternates",
+                "relative/objects\n",
+            );
+        }),
+    ];
+    for (entry, own_file, setup) in rows {
+        let (scene, root) = repository_with_a_secret();
+        scene.write_file(ALTERNATES, own_file);
+        setup(&scene);
+
+        assert_object_store_not_located(&scene, &root, entry);
+    }
+}
+
+/// CP-702: the first refusal met is the one answered, whichever observation it is. A not-located
+/// entry met first answers not-located and an outside one met first answers outside.
+#[test]
+fn test_the_first_refusal_met_decides_the_condition_and_the_value() {
+    let (scene, root) = repository_with_a_secret();
+    scene.write_file(ALTERNATES, "relative/objects\n/own-outside/objects\n");
+    assert_object_store_not_located(&scene, &root, "relative/objects");
+
+    scene.write_file(ALTERNATES, "/own-outside/objects\nrelative/objects\n");
+    assert_object_store_refused(&scene, &root, "/own-outside/objects");
+}
+
+/// The repository's own outside entry is met before a level-one file's not-located one, and the
+/// outside observation is the answer.
+#[test]
+fn test_an_own_outside_entry_is_met_before_a_level_one_not_located_entry() {
+    let (scene, root) = repository_with_a_secret();
+    scene.write_file(ALTERNATES, "./vendor-store\n/own-outside/objects\n");
+    scene.write_file(
+        "S/.git/objects/vendor-store/info/alternates",
+        "relative/objects\n",
+    );
+
+    assert_object_store_refused(&scene, &root, "/own-outside/objects");
 }
 
 /// E4: an alternate inside the folder is read, and its own file's outside entry is the refusal.
@@ -2329,10 +2395,9 @@ fn test_an_unreadable_alternates_file_answers_unreadable_for_the_repositorys_own
     );
 }
 
-/// E15: a submodule's alternates file naming an outside directory fails the status read alone, as a
-/// submodule's outside Git directory does, and the outside directory is never opened on the way.
-#[test]
-fn test_a_submodules_outside_alternates_entry_fails_status_alone() {
+/// A repository `S` holding one committed submodule `sub`, whose own Git directory is
+/// `S/.git/modules/sub`.
+fn repository_with_a_submodule() -> (TempDir, PathBuf) {
     let scene = TempDir::new();
     let origin = scene.make_folder("origin");
     git(&origin, &["init", "-q", "-b", "main"]);
@@ -2353,6 +2418,14 @@ fn test_a_submodules_outside_alternates_entry_fails_status_alone() {
         ],
     );
     commit_all(&root, "with a submodule");
+    (scene, root)
+}
+
+/// E15: a submodule's alternates file naming an outside directory fails the status read alone, as a
+/// submodule's outside Git directory does, and the outside directory is never opened on the way.
+#[test]
+fn test_a_submodules_outside_alternates_entry_fails_status_alone() {
+    let (scene, root) = repository_with_a_submodule();
     let outside = outside_store(&scene);
     scene.write_file(
         "S/.git/modules/sub/objects/info/alternates",
@@ -2371,6 +2444,52 @@ fn test_a_submodules_outside_alternates_entry_fails_status_alone() {
     );
     assert_eq!(&scene.snapshot(), &before, "a call changed the scene");
     assert!(!opener_seen_during_the_three_calls(&root, &fifo));
+    assert_eq!(&scene.snapshot(), &before, "a call changed the scene");
+}
+
+/// A verified submodule's alternates entry that begins with neither `.` nor `/` fails the status
+/// read alone, as not located and carried as written, and the scene is unchanged (CP-709 a, scene 2).
+#[test]
+fn test_a_submodules_not_located_alternates_entry_fails_status_alone() {
+    let (scene, root) = repository_with_a_submodule();
+    scene.write_file(
+        "S/.git/modules/sub/objects/info/alternates",
+        "relative/objects\n",
+    );
+    let before = scene.snapshot();
+
+    assert_eq!(port().probe(&root), RootFinding::Root);
+    assert!(port().state(&root).is_ok());
+    assert_eq!(
+        port().status(&root),
+        Err(GitReadCondition::ObjectStoreNotLocated(
+            "relative/objects".to_string()
+        ))
+    );
+    assert_eq!(&scene.snapshot(), &before, "a call changed the scene");
+}
+
+/// A verified submodule's alternates entry that spells outside by its dots fails the status read
+/// alone as outside, and is carried as written (CP-709 b, scene 2): from the submodule's object
+/// directory, five `..` leave `S`.
+#[test]
+fn test_a_submodules_dotted_outside_alternates_entry_fails_status_alone() {
+    let (scene, root) = repository_with_a_submodule();
+    scene.make_folder("outside-store/objects");
+    scene.write_file(
+        "S/.git/modules/sub/objects/info/alternates",
+        "../../../../../outside-store/objects\n",
+    );
+    let before = scene.snapshot();
+
+    assert_eq!(port().probe(&root), RootFinding::Root);
+    assert!(port().state(&root).is_ok());
+    assert_eq!(
+        port().status(&root),
+        Err(GitReadCondition::ObjectStoreNamesOutside(
+            "../../../../../outside-store/objects".to_string()
+        ))
+    );
     assert_eq!(&scene.snapshot(), &before, "a call changed the scene");
 }
 
