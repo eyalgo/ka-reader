@@ -97,7 +97,49 @@ None.
   (`:L3165`).
 - **If a document has to be written:** none. A change in `SDD.md` § 3, § 6 S-4 and § 11 R-16,
   written by `product-sdd`.
-- **Answer:** <the owner fills this in>
+- **Answer:** Confirmed, with two additions. The three passages are re-measured at a current
+  commit, and each known-defect sentence is replaced by what is built, in the form of *Built, and
+  the cases that hold it* (`docs/SDD.md:L3165`), with the old words kept in a dated note beside it.
+  *Measured in this run* at `nozoki@a6add8f`, whose tree outside `docs/` is `nozoki@0909fe0`'s
+  (`git diff --stat 0909fe0 HEAD -- . ':!docs'` prints nothing; `git merge-base --is-ancestor
+  0909fe0 HEAD` exits 0): the adapter answers `ObjectStoreNotLocated` for an entry whose class is
+  not-located, before anything is spelled (`crates/nozoki-core/src/git_reader/libgit2.rs:L350-L353`),
+  and `ObjectStoreNamesOutside` for an entry spelled outside (`:L358-L360`) and for a link at
+  `objects`, `info` or `alternates` that leaves the folder (`:L394-L396`); the probe maps it
+  (`:L495-L496`); the model's phrase is "the object store names a location the reader does not
+  locate" (`crates/nozoki-core/src/folder_model.rs:L252-L253`); the wire value is
+  `object_store_not_located` (`crates/nozoki-bridge/src/session.rs:L379`, asserted at `:L1582` and
+  `:L1707-L1728`); the shell decodes it (`nozoki-mac/Sources/Shell/BridgePayload.swift:L388-L389`)
+  and draws the sentence the item quotes (`nozoki-mac/Sources/Surfaces/GitSentences.swift:L68-L72`;
+  `grep -i -c outside` over those lines prints `0`); the outside sentence is unchanged
+  (`:L63-L67`). `cargo test --workspace --locked` printed 517 passed, 0 failed, summed over its
+  `test result` lines; `swift test --package-path nozoki-mac` printed "Executed 140 tests, with 0
+  failures". Both ran in this run. *Addition one — the passages name the cases that hold it*, as
+  RN-104's *Built, and the cases that hold it* names the config cases:
+  `test_a_bare_relative_entry_is_refused_as_not_located_and_carried_as_written`
+  (`crates/nozoki-core/tests/git_state.rs:L2046`),
+  `test_every_entry_beginning_with_neither_dot_nor_slash_is_refused_as_not_located_as_written`
+  (`:L2058`), `test_an_own_outside_entry_is_met_before_a_level_one_not_located_entry` (`:L2097`),
+  `test_a_submodules_not_located_alternates_entry_fails_status_alone` (`:L2453`), the log case
+  `test_failed_git_item_with_the_object_store_not_located_condition_logs_one_warn_without_the_entry`
+  (`crates/nozoki-core/tests/git_state_log.rs:L325`), the shell's decode case
+  (`nozoki-mac/Tests/ShellTests/BridgePayloadGitTests.swift:L95-L97`) and its sentence cases
+  `test_theObjectStoreNotLocatedMessageReadsAsChangeTextWritesIt` and
+  `test_theObjectStoreNotLocatedMessageNeverSaysOutsideOrAForbiddenWord`
+  (`nozoki-mac/Tests/SurfacesTests/GitSentencesTests.swift:L321`, `:L338`). *Addition two — the
+  re-measurement reaches *The condition*'s own locators, not only the known-defect sentences.* The
+  change moved the lines R-16 *The condition* cites against `nozoki@66f428d`
+  (`git diff --stat c25201a 0909fe0 -- . ':!docs'` lists `libgit2.rs` and `alternates_scan.rs`
+  among seventeen files): the not-located refusal is at `libgit2.rs:L350-L353`, the spelled-outside
+  arm at `:L358-L360`, the link arm at `:L394-L396`, the class rule at
+  `alternates_scan.rs:L44-L50`, and the first-refused-entry rule at `libgit2.rs:L291-L297`. What
+  each names is unchanged. The fold stops there: the three `.gitmodules` known-defect passages
+  (`docs/SDD.md:L1018-L1019`, `:L1915`, `:L3336`) stand, because the station's diff touches no
+  `.gitmodules` check (`libgit2.rs:L247-L248` still skips every key but the include keys); the
+  config condition's *Built* paragraph (`:L3165`) stands; and the CDO's sentence in § 6 S-4
+  (`:L1887-L1892`) does not move — RN-103 settled it from `docs/UXD.md` UX-S3 Error
+  (`docs/UXD.md:L241`) and `docs/CONTENT.md:L62`, and only the build-state sentence after it
+  (`:L1895-L1898`) changes. Reasoning: `docs/trail/sdd/self_answer-52.md` § 5.1.
 
 ### 5.2 R-16 leaves open whether the alternates condition's observation is a field or a second condition, and it is a second condition
 - **Raised by:** PM — 2026-10-07
@@ -118,4 +160,21 @@ None.
   built, at SM-2, SM-4 and SM-8, with the locator at each seam.
 - **If a document has to be written:** none. A change in `SDD.md` § 11 R-16, written by
   `product-sdd`.
-- **Answer:** <the owner fills this in>
+- **Answer:** Confirmed. It is a second condition, at every seam the sentence names, at
+  `nozoki@a6add8f`, whose tree outside `docs/` is `nozoki@0909fe0`'s. `ObjectStoreNotLocated(String)`
+  is its own variant of `GitReadCondition` (`crates/nozoki-core/src/git_reader.rs:L233`) and of
+  `ProbeCondition` (`:L328`), beside `ObjectStoreNamesOutside` (`:L227`, `:L324`); on the wire it is
+  its own value, `object_store_not_located` (`crates/nozoki-bridge/src/session.rs:L379`, under
+  `rename_all = "snake_case"` at `:L362`), carrying the same members as
+  `object_store_names_outside` through the one constructor both use (`:L480-L486`); the shell
+  decodes it as a case of its own (`nozoki-mac/Sources/Shell/BridgePayload.swift:L388-L389`;
+  `GitFailure.objectStoreNotLocated(path:)` at `nozoki-mac/Sources/Surfaces/GitItem.swift:L92`);
+  the model gives it a phrase of its own (`crates/nozoki-core/src/folder_model.rs:L252-L253`). No
+  function joined SM-4: `git diff c25201a 0909fe0 -- crates/nozoki-bridge` touches `src/session.rs`
+  alone and adds no line carrying `no_mangle`, `extern "C"` or `pub extern`, so *The condition*'s
+  "crosses SM-2, SM-4 and SM-8 as the config condition does" holds, with the fact a condition
+  rather than a field. The sentence at `docs/SDD.md:L3424-L3426` states that, pinned at a current
+  commit, in the form *The refusal and its condition* took for the config condition
+  (`:L3130-L3141`), with its old words in the fold's dated note. RN-103's and RN-104's copies of
+  the sentence (`:L7527`, `:L7619-L7623`) are records of v43 and v44 and do not move. Reasoning:
+  `docs/trail/sdd/self_answer-52.md` § 5.2.
