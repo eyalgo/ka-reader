@@ -16,6 +16,7 @@ final class GitSentencesTests: XCTestCase {
             .configNotLocated(key: "include.path", path: "~/x.config"),
             .objectStoreNamesOutside(path: "../../../elsewhere/objects"),
             .objectStoreNotLocated(path: "relative/objects"),
+            .submoduleElsewhere(name: "submodule", path: "evil"),
         ] + GitCondition.allCases.map { .condition($0) }
     }
 
@@ -151,6 +152,7 @@ final class GitSentencesTests: XCTestCase {
             .notARoot: GitSentences.fault,
             .repositoryReadFailed: GitSentences.fault,
             .machineConfigNotSwitchedOff: GitSentences.fault,
+            .gitmodulesUnreadable: gitmodulesUnreadableMessage,
         ]
 
         XCTAssertEqual(expected.count, GitCondition.allCases.count)
@@ -359,6 +361,108 @@ final class GitSentencesTests: XCTestCase {
         XCTAssertNotEqual(message, GitSentences.fault)
         XCTAssertNotEqual(message, GitSentences.pending)
         XCTAssertNotEqual(message, GitSentences.clean)
+        for other in others {
+            XCTAssertNotEqual(message, GitSentences.failure(other))
+        }
+    }
+
+    // MARK: The `.gitmodules` messages (CP-721, CP-729, CP-730, CP-733)
+
+    /// `change_text.md`'s message for a section whose path leads somewhere else: the name and the
+    /// path, each unchanged and unquoted, between the words around them.
+    private func submoduleElsewhereMessage(name: String, path: String) -> String {
+        "Nozoki found that a .gitmodules gives the submodule at \(name) the path \(path), which "
+            + "leads somewhere else, so it doesn't read the folder's Git status. "
+            + "The file tree and the reading panel are unaffected."
+    }
+
+    /// `change_text.md`'s message for a `.gitmodules` Nozoki couldn't read. It names no file.
+    private let gitmodulesUnreadableMessage =
+        "Nozoki couldn't read how a repository in the folder you opened names and places its "
+        + "submodules, so it doesn't read the folder's Git status. "
+        + "The file tree and the reading panel are unaffected."
+
+    private let forbiddenInTheGitmodulesMessages = [
+        "outside", "invalid", "unsupported", "illegal", "malformed", "refused", "!",
+        "repo ", "symlink", "config", "settings", "error", "failed",
+    ]
+
+    func test_configSentencesCarryASubmodulePathKeyAndPathCharacterForCharacter() {
+        for path in ["../outside-x", "/abs/x"] {
+            XCTAssertEqual(
+                GitSentences.failure(.configNamesOutside(key: "submodule.x.path", path: path)),
+                configSentence(key: "submodule.x.path", path: path), path)
+            XCTAssertEqual(
+                GitSentences.failure(.configNotLocated(key: "submodule.x.path", path: path)),
+                notLocatedMessage(key: "submodule.x.path", path: path), path)
+        }
+    }
+
+    func test_submoduleElsewhereMessageIsChangeTextsWithNameAndPathUnquotedAndUnchanged() {
+        XCTAssertEqual(
+            GitSentences.failure(.submoduleElsewhere(name: "submodule", path: "evil")),
+            "Nozoki found that a .gitmodules gives the submodule at submodule the path evil, "
+                + "which leads somewhere else, so it doesn't read the folder's Git status. "
+                + "The file tree and the reading panel are unaffected.")
+
+        let cases = [
+            (name: "submodule", path: "evil"), (name: "vendor/lib", path: "nothing-here"),
+            (name: "x", path: "~/lib"), (name: "Sub", path: "sub"),
+            (name: "\u{FFFD}", path: "a/\u{FFFD}"),
+        ]
+        for (name, path) in cases {
+            let message = GitSentences.failure(.submoduleElsewhere(name: name, path: path))
+
+            XCTAssertEqual(message, submoduleElsewhereMessage(name: name, path: path), name)
+            XCTAssertFalse(message.contains("\"\(name)\""), message)
+            XCTAssertFalse(message.contains("\"\(path)\""), message)
+            XCTAssertFalse(message.contains("'\(path)'"), message)
+        }
+    }
+
+    func test_submoduleElsewhereMessageHasNoOutsideInAnyCaseNoForbiddenWordNoBangAndDiffersFromEveryOtherFailureMessage() {
+        let message = GitSentences.failure(.submoduleElsewhere(name: "a", path: "b"))
+        let others =
+            [
+                GitFailure.gitDirectoryOutside(gitDirectory: "a"),
+                .configNamesOutside(key: "include.path", path: "a"),
+                .configNotLocated(key: "include.path", path: "a"),
+                .objectStoreNamesOutside(path: "a"),
+                .objectStoreNotLocated(path: "a"),
+            ] + GitCondition.allCases.map { GitFailure.condition($0) }
+
+        for word in forbiddenInTheGitmodulesMessages {
+            XCTAssertFalse(message.localizedCaseInsensitiveContains(word), "\(word): \(message)")
+        }
+        XCTAssertNotEqual(message, GitSentences.fault)
+        XCTAssertNotEqual(message, GitSentences.pending)
+        XCTAssertNotEqual(message, GitSentences.clean)
+        for other in others {
+            XCTAssertNotEqual(message, GitSentences.failure(other))
+        }
+    }
+
+    func test_gitmodulesUnreadableMessageIsChangeTextsDoesNotSayTheGitDirectoryCouldNotBeReadAndDiffersFromUnreadableGitDirectoryAndEveryOther() {
+        let message = GitSentences.failure(.condition(.gitmodulesUnreadable))
+        let unreadableGitDirectory = GitSentences.failure(.condition(.gitDirectoryUnreadable))
+        let others =
+            [
+                GitFailure.gitDirectoryOutside(gitDirectory: "a"),
+                .configNamesOutside(key: "include.path", path: "a"),
+                .configNotLocated(key: "include.path", path: "a"),
+                .objectStoreNamesOutside(path: "a"),
+                .objectStoreNotLocated(path: "a"),
+                .submoduleElsewhere(name: "a", path: "b"),
+            ] + GitCondition.allCases.filter { $0 != .gitmodulesUnreadable }
+            .map { GitFailure.condition($0) }
+
+        XCTAssertEqual(message, gitmodulesUnreadableMessage)
+        XCTAssertFalse(message.localizedCaseInsensitiveContains("git directory"), message)
+        for word in forbiddenInTheGitmodulesMessages {
+            XCTAssertFalse(message.localizedCaseInsensitiveContains(word), "\(word): \(message)")
+        }
+        XCTAssertNotEqual(message, unreadableGitDirectory)
+        XCTAssertNotEqual(message, GitSentences.fault)
         for other in others {
             XCTAssertNotEqual(message, GitSentences.failure(other))
         }
