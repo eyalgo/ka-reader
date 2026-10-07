@@ -27,6 +27,11 @@ package enum GitSentences {
         "Nozoki can't read the Git directory in the folder you opened, so it can't show the "
         + "folder's Git status. The file tree and the reading panel are unaffected."
 
+    private static let gitmodulesUnreadable =
+        "Nozoki couldn't read how a repository in the folder you opened names and places its "
+        + "submodules, so it doesn't read the folder's Git status. "
+        + "The file tree and the reading panel are unaffected."
+
     /// The short status for a repository state, or nil for `normal`, which the lists decide.
     package static func statusSentence(for state: RepositoryState) -> String? {
         switch state {
@@ -70,6 +75,11 @@ package enum GitSentences {
                 "Nozoki found a Git object store that names \(path). "
                 + "Nozoki doesn't work out where that path leads, so it doesn't read the "
                 + "folder's Git status. The file tree and the reading panel are unaffected."
+        case .submoduleElsewhere(let name, let path):
+            return
+                "Nozoki found that a .gitmodules gives the submodule at \(name) the path \(path), "
+                + "which leads somewhere else, so it doesn't read the folder's Git status. "
+                + "The file tree and the reading panel are unaffected."
         case .condition(let condition):
             return sentence(for: condition)
         }
@@ -95,6 +105,8 @@ package enum GitSentences {
             return
                 "Nozoki looked in the Git directory in the folder you opened and found no "
                 + "repository there. The file tree and the reading panel are unaffected."
+        case .gitmodulesUnreadable:
+            return gitmodulesUnreadable
         case .probeRepositoryReadFailed, .notARoot, .repositoryReadFailed,
             .machineConfigNotSwitchedOff:
             return fault

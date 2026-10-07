@@ -95,7 +95,7 @@ final class BridgePayloadGitTests: XCTestCase {
                 #"{"state":"failed","condition":"object_store_not_located","path":"relative/objects"}"#
             ),
             .failed(.objectStoreNotLocated(path: "relative/objects")))
-        XCTAssertEqual(GitCondition.allCases.count + 5, 16)
+        XCTAssertEqual(GitCondition.allCases.count + 6, 18)
     }
 
     func test_configNotLocatedWithAMissingOrExtraMemberIsRefused() {
@@ -250,6 +250,45 @@ final class BridgePayloadGitTests: XCTestCase {
                 #"{"state":"failed","condition":"git_directory_outside","git_directory":"/x","key":"include.path","path":"/y"}"#
             ),
             .stopped)
+    }
+
+    func test_submoduleElsewhereWithNameAndPathDecodesToFailedSubmoduleElsewhere() {
+        XCTAssertEqual(
+            decode(
+                #"{"state":"failed","condition":"submodule_elsewhere","name":"submodule","path":"evil"}"#
+            ),
+            .failed(.submoduleElsewhere(name: "submodule", path: "evil")))
+    }
+
+    /// CP-726: the member set is exactly state, condition, name and path.
+    func test_submoduleElsewhereMissingNameOrPathOrWithAnExtraKeyOrGitDirectoryDecodesToStopped() {
+        let rejected = [
+            #"{"state":"failed","condition":"submodule_elsewhere","path":"evil"}"#,
+            #"{"state":"failed","condition":"submodule_elsewhere","name":"submodule"}"#,
+            #"{"state":"failed","condition":"submodule_elsewhere"}"#,
+            #"{"state":"failed","condition":"submodule_elsewhere","name":"submodule","path":"evil","key":"submodule.x.path"}"#,
+            #"{"state":"failed","condition":"submodule_elsewhere","name":"submodule","path":"evil","git_directory":"/y"}"#,
+            #"{"state":"failed","condition":"submodule_elsewhere","name":"submodule","path":"evil","extra":1}"#,
+        ]
+        for payload in rejected {
+            XCTAssertEqual(decode(payload), .stopped, payload)
+        }
+    }
+
+    /// A `name` member beside any other condition is an extra member, so the answer is `stopped`.
+    func test_aNameMemberBesideAnotherConditionIsStopped() {
+        for condition in GitCondition.allCases {
+            XCTAssertEqual(
+                decode(
+                    #"{"state":"failed","condition":"\#(condition.rawValue)","name":"submodule"}"#),
+                .stopped, condition.rawValue)
+        }
+    }
+
+    func test_gitmodulesUnreadableDecodesWithNoOtherMember() {
+        XCTAssertEqual(
+            decode(#"{"state":"failed","condition":"gitmodules_unreadable"}"#),
+            .failed(.condition(.gitmodulesUnreadable)))
     }
 
     func test_everyRepositoryStateDecodes() {

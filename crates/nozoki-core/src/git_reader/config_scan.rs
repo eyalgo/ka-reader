@@ -44,10 +44,35 @@ pub(super) struct ConfigReference {
     pub placement: Placement,
 }
 
+/// One `path` entry under a `[submodule]` header.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(super) struct SectionPath {
+    /// The key as the file writes it, `submodule.<name>.path` in the file's own spelling.
+    pub key: String,
+    /// The value as parsed, as [`ConfigReference::value`] is.
+    pub value: Vec<u8>,
+}
+
+/// One `[submodule]` header occurrence, whether or not it holds a `path` entry.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(super) struct SubmoduleSection {
+    /// The section word as the file writes it: `submodule`, `Submodule`.
+    pub word: String,
+    /// The name as libgit2 stores it, as bytes: a quoted subsection unescaped and in its case, or
+    /// the legacy dotted form's name lowercased. libgit2's map is keyed by these bytes.
+    pub stored_name: Vec<u8>,
+    /// The name as the file writes it, spelled lossily.
+    pub written_name: String,
+    /// Each `path` entry under this header, in file order.
+    pub paths: Vec<SectionPath>,
+}
+
 /// What one config file holds that the check needs.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(super) struct ConfigScan {
     pub references: Vec<ConfigReference>,
+    /// Every `[submodule]` header the file holds, in file order.
+    pub sections: Vec<SubmoduleSection>,
     /// Whether this file sets `extensions.worktreeconfig` to a true value, so `config.worktree`
     /// is read beside it.
     pub worktree_config: bool,
@@ -61,11 +86,14 @@ const BYTE_ORDER_MARK: &[u8] = b"\xEF\xBB\xBF";
 const HOME_PREFIX: &[u8] = b"~/";
 const MIN_CONDITIONAL_KEY_LENGTH: usize = "includeif.".len() + ".path".len();
 const WORKTREE_CONFIG_KEY: &str = "extensions.worktreeconfig";
+const SUBMODULE_SECTION: &str = "submodule";
+const SUBMODULE_PATH_KEY: &str = "path";
 
 /// Scans one config file's bytes.
 pub(super) fn scan(bytes: &[u8]) -> Result<ConfigScan, ConfigParseFailure> {
     let mut scan = ConfigScan {
         references: Vec::new(),
+        sections: Vec::new(),
         worktree_config: false,
     };
     if bytes.first().is_none_or(|first| *first == 0) {
@@ -97,6 +125,9 @@ pub(super) fn scan(bytes: &[u8]) -> Result<ConfigScan, ConfigParseFailure> {
             match first {
                 b'[' => {
                     let (header, consumed) = parse_section_header(trimmed)?;
+                    if let Some(record) = header.submodule_record() {
+                        scan.sections.push(record);
+                    }
                     section = Some(header);
                     rest = &trimmed[consumed..];
                     if trim_start_space(rest).is_empty() {
@@ -120,6 +151,39 @@ pub(super) fn scan(bytes: &[u8]) -> Result<ConfigScan, ConfigParseFailure> {
 struct Section {
     canonical: String,
     written: String,
+    /// The header's section word as written, before any quoted subsection.
+    base: String,
+    /// The subsection's bytes, unescaped, when the header is the quoted form.
+    subsection: Option<Vec<u8>>,
+}
+
+impl Section {
+    /// The record a `[submodule "name"]` or `[submodule.name]` header starts, `None` for any other
+    /// section.
+    fn submodule_record(&self) -> Option<SubmoduleSection> {
+        let (word, written_name, stored_name) = match &self.subsection {
+            Some(subsection) => (
+                self.base.as_str(),
+                String::from_utf8_lossy(subsection).into_owned(),
+                subsection.clone(),
+            ),
+            None => {
+                let (word, name) = self.written.split_once('.')?;
+                (
+                    word,
+                    name.to_string(),
+                    name.to_ascii_lowercase().into_bytes(),
+                )
+            }
+        };
+        word.eq_ignore_ascii_case(SUBMODULE_SECTION)
+            .then(|| SubmoduleSection {
+                word: word.to_string(),
+                stored_name,
+                written_name,
+                paths: Vec::new(),
+            })
+    }
 }
 
 struct Variable {
@@ -129,6 +193,15 @@ struct Variable {
 
 fn record(scan: &mut ConfigScan, section: Option<&Section>, variable: Variable) {
     let name_lowered = variable.name.to_ascii_lowercase();
+    if let Some(section) = section.filter(|section| section.submodule_record().is_some())
+        && name_lowered == SUBMODULE_PATH_KEY
+        && let Some(record) = scan.sections.last_mut()
+    {
+        record.paths.push(SectionPath {
+            key: format!("{}.{}", section.written, variable.name),
+            value: variable.value.clone().unwrap_or_default(),
+        });
+    }
     let (canonical, written) = match section {
         Some(section) => (
             format!("{}.{name_lowered}", section.canonical),
@@ -239,7 +312,13 @@ fn parse_section_header(line: &[u8]) -> Result<(Section, usize), ConfigParseFail
         written.push(char::from(byte));
         if line.get(position) == Some(&b']') {
             let canonical = written.to_ascii_lowercase();
-            return Ok((Section { canonical, written }, position + 1));
+            let section = Section {
+                canonical,
+                base: written.clone(),
+                written,
+                subsection: None,
+            };
+            return Ok((section, position + 1));
         }
     }
 }
@@ -291,11 +370,13 @@ fn parse_subsection_header(
     if at(cursor) != b'"' || at(cursor + 1) != b']' {
         return Err(ConfigParseFailure);
     }
-    let subsection = String::from_utf8_lossy(&subsection).into_owned();
+    let spelled = String::from_utf8_lossy(&subsection).into_owned();
     Ok((
         Section {
-            canonical: format!("{}.{subsection}", base.to_ascii_lowercase()),
-            written: format!("{base}.{subsection}"),
+            canonical: format!("{}.{spelled}", base.to_ascii_lowercase()),
+            written: format!("{base}.{spelled}"),
+            base: base.to_string(),
+            subsection: Some(subsection),
         },
         cursor + 2,
     ))
@@ -406,7 +487,7 @@ fn parse_variable(
 
 #[cfg(test)]
 mod tests {
-    use super::{ConfigParseFailure, Placement, ReferenceKind, scan};
+    use super::{ConfigParseFailure, Placement, ReferenceKind, SubmoduleSection, scan};
 
     /// The references of `text`, as `(key, value, kind, placement)` with the value spelled lossily.
     fn references(text: &str) -> Vec<(String, String, ReferenceKind, Placement)> {
@@ -619,6 +700,141 @@ mod tests {
                 "{text:?}"
             );
         }
+    }
+
+    /// The `[submodule]` sections of `text`.
+    fn sections(text: &str) -> Vec<SubmoduleSection> {
+        scan(text.as_bytes()).expect("the text parses").sections
+    }
+
+    /// A section's `path` entries as `(key, value)`.
+    fn path_entries(section: &SubmoduleSection) -> Vec<(&str, &[u8])> {
+        section
+            .paths
+            .iter()
+            .map(|path| (path.key.as_str(), path.value.as_slice()))
+            .collect()
+    }
+
+    #[test]
+    fn test_one_record_per_submodule_header_in_file_order() {
+        let found = sections("[submodule \"a\"]\n\tpath = x\n[submodule \"b\"]\n\tpath = y\n");
+        let names: Vec<_> = found
+            .iter()
+            .map(|found| found.written_name.as_str())
+            .collect();
+        assert_eq!(names, ["a", "b"]);
+        assert_eq!(
+            path_entries(&found[0]),
+            [("submodule.a.path", b"x".as_slice())]
+        );
+        assert_eq!(
+            path_entries(&found[1]),
+            [("submodule.b.path", b"y".as_slice())]
+        );
+    }
+
+    #[test]
+    fn test_section_word_and_written_name_are_as_written() {
+        let found = sections("[Submodule \"MixedCase\"]\n\tPath = x\n");
+        assert_eq!(found.len(), 1);
+        assert_eq!(found[0].word, "Submodule");
+        assert_eq!(found[0].written_name, "MixedCase");
+        assert_eq!(
+            path_entries(&found[0]),
+            [("Submodule.MixedCase.Path", b"x".as_slice())]
+        );
+    }
+
+    #[test]
+    fn test_stored_name_keeps_quoted_subsection_case_and_unescapes_quotes() {
+        let found = sections("[submodule \"A\\\"b\"]\n\tpath = x\n");
+        assert_eq!(found[0].stored_name, b"A\"b");
+        assert_eq!(found[0].written_name, "A\"b");
+    }
+
+    #[test]
+    fn test_legacy_dotted_header_stores_lowercased_name() {
+        let found = sections("[submodule.X]\n\tpath = y\n");
+        assert_eq!(found.len(), 1);
+        assert_eq!(found[0].word, "submodule");
+        assert_eq!(found[0].stored_name, b"x");
+        assert_eq!(found[0].written_name, "X");
+        assert_eq!(
+            path_entries(&found[0]),
+            [("submodule.X.path", b"y".as_slice())]
+        );
+    }
+
+    #[test]
+    fn test_header_only_section_has_empty_path_list() {
+        let found = sections("[submodule \"only\"]\n\turl = /somewhere\n");
+        assert_eq!(found.len(), 1);
+        assert_eq!(found[0].written_name, "only");
+        assert!(found[0].paths.is_empty());
+    }
+
+    #[test]
+    fn test_two_path_entries_under_one_header_are_both_kept_in_order() {
+        let found = sections("[submodule \"a\"]\n\tpath = one\n\tpath = two\n");
+        assert_eq!(found.len(), 1);
+        let values: Vec<_> = found[0]
+            .paths
+            .iter()
+            .map(|entry| entry.value.as_slice())
+            .collect();
+        assert_eq!(values, [b"one".as_slice(), b"two".as_slice()]);
+    }
+
+    #[test]
+    fn test_path_without_equals_is_an_empty_value() {
+        let found = sections("[submodule \"a\"]\n\tpath\n");
+        assert_eq!(
+            path_entries(&found[0]),
+            [("submodule.a.path", b"".as_slice())]
+        );
+    }
+
+    #[test]
+    fn test_non_utf8_subsection_keeps_bytes_as_stored_name_and_is_lossy_in_written_name() {
+        let mut text = b"[submodule \"a".to_vec();
+        text.extend_from_slice(&[0xFF, 0xFE]);
+        text.extend_from_slice(b"b\"]\n\tpath = x\n");
+        let found = scan(&text).expect("parses").sections;
+        assert_eq!(found.len(), 1);
+        assert_eq!(found[0].stored_name, [b'a', 0xFF, 0xFE, b'b']);
+        assert_eq!(found[0].written_name, "a\u{FFFD}\u{FFFD}b");
+    }
+
+    #[test]
+    fn test_submodule_section_beside_include_leaves_references_as_before() {
+        let scanned =
+            scan(b"[include]\n\tpath = inc\n[submodule \"a\"]\n\tpath = x\n").expect("parses");
+        assert_eq!(scanned.references.len(), 1);
+        assert_eq!(scanned.references[0].key, "include.path");
+        assert_eq!(scanned.sections.len(), 1);
+    }
+
+    /// Design § 3 A1: a record holds each `path` entry *under that header*, so a `path` under a
+    /// later header of another section stays out of it.
+    #[test]
+    fn test_a_path_under_a_later_other_header_does_not_join_the_submodule_record() {
+        let found = sections(
+            "[submodule \"a\"]\n\tpath = x\n[include]\n\tpath = inc\n[core]\n\tpath = z\n",
+        );
+        assert_eq!(found.len(), 1);
+        assert_eq!(
+            path_entries(&found[0]),
+            [("submodule.a.path", b"x".as_slice())]
+        );
+    }
+
+    #[test]
+    fn test_unparsable_header_is_still_a_parse_failure() {
+        assert_eq!(
+            scan(b"[submodule \"a]\n\tpath = x\n").err(),
+            Some(ConfigParseFailure)
+        );
     }
 
     #[test]

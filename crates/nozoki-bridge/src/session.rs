@@ -10,7 +10,8 @@ use nozoki_core::{
     BranchElement, CannotDisplayReason, Condition, ConfigNamedPath, EntryKind, FileView,
     FolderKind, FolderModel, GitCondition, GitPort, GitReadCondition, ItemState, Language,
     OpenFailure, OpenFolderOutcome, OpenedFolder, ProbeCondition, RepositoryState, Span,
-    StatusCategory, StatusEntry, TokenClass, list_tree, open_folder, read_git, select_file,
+    StatusCategory, StatusEntry, SubmoduleNamedPath, TokenClass, list_tree, open_folder, read_git,
+    select_file,
 };
 use serde::Serialize;
 
@@ -278,7 +279,8 @@ impl From<ItemState<FileView>> for FileAnswerDto {
 /// `pending` and nothing else; `observed` with its `kind`; or `failed` with a `condition`, plus
 /// `git_directory` only beside `git_directory_outside`, `key` and `path` beside
 /// `config_names_outside` and `config_not_located`, and `path` alone beside
-/// `object_store_names_outside` and `object_store_not_located`. The bridge carries the core's item
+/// `object_store_names_outside` and `object_store_not_located`, and `name` and `path` beside
+/// `submodule_elsewhere` alone. The bridge carries the core's item
 /// and decides nothing: no count, wording or sort key crosses (CP-543).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[serde(tag = "state", rename_all = "snake_case")]
@@ -291,6 +293,8 @@ pub enum GitAnswerDto {
         git_directory: Option<String>,
         #[serde(skip_serializing_if = "Option::is_none")]
         key: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        name: Option<String>,
         #[serde(skip_serializing_if = "Option::is_none")]
         path: Option<String>,
     },
@@ -354,7 +358,7 @@ pub struct GitEntryDto {
     pub from: Option<String>,
 }
 
-/// A failed Git item's condition on the wire, one string from the closed set of sixteen. Five of
+/// A failed Git item's condition on the wire, one string from the closed set of eighteen. Five of
 /// the probe's conditions carry a `probe_` prefix, because two share names with read conditions.
 /// The two config conditions and the two object store conditions are each one value for the probe
 /// and the reads: one message whichever operation met it.
@@ -377,6 +381,8 @@ pub enum GitConditionDto {
     ObjectStoreNamesOutside,
     ConfigNotLocated,
     ObjectStoreNotLocated,
+    SubmoduleElsewhere,
+    GitmodulesUnreadable,
 }
 
 impl From<RepositoryState> for RepositoryStateDto {
@@ -451,6 +457,7 @@ impl GitAnswerDto {
             condition,
             git_directory: None,
             key: None,
+            name: None,
             path: None,
         }
     }
@@ -471,6 +478,19 @@ impl GitAnswerDto {
             condition,
             git_directory: None,
             key: Some(named.key.clone()),
+            name: None,
+            path: Some(named.path.clone()),
+        }
+    }
+
+    /// The submodule-map condition's answer: the section's name beside its path, as the core spelled
+    /// them. It is the one answer that carries a `name`.
+    fn submodule_elsewhere(named: &SubmoduleNamedPath) -> Self {
+        Self::Failed {
+            condition: GitConditionDto::SubmoduleElsewhere,
+            git_directory: None,
+            key: None,
+            name: Some(named.name.clone()),
             path: Some(named.path.clone()),
         }
     }
@@ -491,6 +511,7 @@ impl GitAnswerDto {
             condition,
             git_directory: None,
             key: None,
+            name: None,
             path: Some(value.to_string()),
         }
     }
@@ -539,6 +560,7 @@ impl From<&ItemState<FolderKind, GitCondition>> for GitAnswerDto {
                     condition: GitConditionDto::GitDirectoryOutside,
                     git_directory: Some(path.to_string_lossy().into_owned()),
                     key: None,
+                    name: None,
                     path: None,
                 },
                 GitReadCondition::NotARoot => Self::failed(GitConditionDto::NotARoot),
@@ -559,6 +581,10 @@ impl From<&ItemState<FolderKind, GitCondition>> for GitAnswerDto {
                 }
                 GitReadCondition::ObjectStoreNotLocated(value) => {
                     Self::object_store_not_located(value)
+                }
+                GitReadCondition::SubmoduleElsewhere(named) => Self::submodule_elsewhere(named),
+                GitReadCondition::GitmodulesUnreadable => {
+                    Self::failed(GitConditionDto::GitmodulesUnreadable)
                 }
             },
         }
@@ -1231,7 +1257,7 @@ mod tests {
         use nozoki_core::{
             BranchElement, ConfigNamedPath, FolderModel, GitPort, GitReadCondition, HeadState,
             OpenFolderOutcome, ProbeCondition, RepositoryState, RootFinding, StatusCategory,
-            StatusEntry, StatusLists, open_folder, read_git,
+            StatusEntry, StatusLists, SubmoduleNamedPath, open_folder, read_git,
         };
         use serde_json::{Value, json};
 
@@ -1509,7 +1535,7 @@ mod tests {
         }
 
         #[test]
-        fn test_each_of_the_conditions_and_the_switch_failure_have_sixteen_distinct_wire_values() {
+        fn test_each_of_the_conditions_and_the_switch_failure_have_eighteen_distinct_wire_values() {
             let mut answers: Vec<(Value, &str)> = vec![
                 (
                     wire(&probe_failure(ProbeCondition::FolderUnavailable)),
@@ -1581,23 +1607,36 @@ mod tests {
                     ))),
                     "object_store_not_located",
                 ),
+                (
+                    wire(&read_failure(GitReadCondition::SubmoduleElsewhere(
+                        SubmoduleNamedPath {
+                            name: "submodule".to_string(),
+                            path: "evil".to_string(),
+                        },
+                    ))),
+                    "submodule_elsewhere",
+                ),
+                (
+                    wire(&read_failure(GitReadCondition::GitmodulesUnreadable)),
+                    "gitmodules_unreadable",
+                ),
             ];
             // The probe's variant and the read's variant are one wire value.
             let probe_variant = wire(&probe_failure(ProbeCondition::ConfigNamesOutside(
                 named_config_path(),
             )));
             assert_eq!(probe_variant["condition"], "config_names_outside");
-            assert_eq!(probe_variant, answers[answers.len() - 4].0);
+            assert_eq!(probe_variant, answers[answers.len() - 6].0);
             let probe_alternates = wire(&probe_failure(ProbeCondition::ObjectStoreNamesOutside(
                 "../../../elsewhere/objects".to_string(),
             )));
             assert_eq!(probe_alternates["condition"], "object_store_names_outside");
-            assert_eq!(probe_alternates, answers[answers.len() - 3].0);
+            assert_eq!(probe_alternates, answers[answers.len() - 5].0);
             let probe_not_located = wire(&probe_failure(ProbeCondition::ConfigNotLocated(
                 named_config_path(),
             )));
             assert_eq!(probe_not_located["condition"], "config_not_located");
-            assert_eq!(probe_not_located, answers[answers.len() - 2].0);
+            assert_eq!(probe_not_located, answers[answers.len() - 4].0);
             let probe_object_store_not_located = wire(&probe_failure(
                 ProbeCondition::ObjectStoreNotLocated("relative/objects".to_string()),
             ));
@@ -1605,7 +1644,7 @@ mod tests {
                 probe_object_store_not_located["condition"],
                 "object_store_not_located"
             );
-            assert_eq!(probe_object_store_not_located, answers[answers.len() - 1].0);
+            assert_eq!(probe_object_store_not_located, answers[answers.len() - 3].0);
             answers.push((
                 serde_json::to_value(GitAnswerDto::machine_config_not_switched_off())
                     .expect("the answer serializes"),
@@ -1620,7 +1659,7 @@ mod tests {
                 .iter()
                 .map(|(answer, _)| answer["condition"].to_string())
                 .collect();
-            assert_eq!(distinct.len(), 16);
+            assert_eq!(distinct.len(), 18);
         }
 
         fn named_config_path() -> ConfigNamedPath {
@@ -1731,6 +1770,72 @@ mod tests {
             assert_eq!(from_read, expected);
             assert_eq!(from_probe, expected);
             assert_eq!(members(&from_read), vec!["condition", "path", "state"]);
+        }
+
+        #[test]
+        fn test_submodule_elsewhere_serializes_exactly_condition_name_path_state() {
+            let non_utf8_name = OsStr::from_bytes(b"vendor-\xff");
+            let name = non_utf8_name.to_string_lossy().into_owned();
+            let answer = wire(&read_failure(GitReadCondition::SubmoduleElsewhere(
+                SubmoduleNamedPath {
+                    name,
+                    path: "~/lib".to_string(),
+                },
+            )));
+
+            assert_eq!(
+                answer,
+                json!({
+                    "state": "failed",
+                    "condition": "submodule_elsewhere",
+                    "name": "vendor-\u{fffd}",
+                    "path": "~/lib"
+                })
+            );
+            assert_eq!(members(&answer), vec!["condition", "name", "path", "state"]);
+        }
+
+        #[test]
+        fn test_gitmodules_unreadable_serializes_exactly_condition_and_state() {
+            let answer = wire(&read_failure(GitReadCondition::GitmodulesUnreadable));
+
+            assert_eq!(
+                answer,
+                json!({ "state": "failed", "condition": "gitmodules_unreadable" })
+            );
+            assert_eq!(members(&answer), vec!["condition", "state"]);
+        }
+
+        #[test]
+        fn test_no_other_condition_carries_a_name_member() {
+            let named = ConfigNamedPath {
+                key: "submodule.x.path".to_string(),
+                path: "../outside-x".to_string(),
+            };
+            let answers = [
+                wire(&probe_failure(ProbeCondition::FolderUnavailable)),
+                wire(&read_failure(GitReadCondition::NotARoot)),
+                wire(&read_failure(GitReadCondition::GitDirectoryOutside(
+                    PathBuf::from("/elsewhere/.git"),
+                ))),
+                wire(&read_failure(GitReadCondition::ConfigNamesOutside(
+                    named.clone(),
+                ))),
+                wire(&read_failure(GitReadCondition::ConfigNotLocated(named))),
+                wire(&read_failure(GitReadCondition::ObjectStoreNamesOutside(
+                    "../objects".to_string(),
+                ))),
+                wire(&read_failure(GitReadCondition::ObjectStoreNotLocated(
+                    "objects".to_string(),
+                ))),
+                wire(&read_failure(GitReadCondition::GitmodulesUnreadable)),
+                serde_json::to_value(GitAnswerDto::machine_config_not_switched_off())
+                    .expect("the answer serializes"),
+            ];
+
+            for answer in answers {
+                assert!(!members(&answer).contains(&"name".to_string()), "{answer}");
+            }
         }
 
         #[test]

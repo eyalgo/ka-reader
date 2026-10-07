@@ -280,6 +280,37 @@ final class GitViewTests: XCTestCase {
         XCTAssertEqual(visibleImageViews(fixture.view).map(\.image), [failureGlyph])
     }
 
+    func test_theSubmoduleElsewhereFailureDrawsOneMessageAndNothingElse() {
+        let fixture = makeView(
+            showing: .failed(.submoduleElsewhere(name: "submodule", path: "evil")))
+
+        XCTAssertEqual(
+            strings(fixture.view),
+            [
+                "Nozoki found that a .gitmodules gives the submodule at submodule the path evil, "
+                    + "which leads somewhere else, so it doesn't read the folder's Git status. "
+                    + "The file tree and the reading panel are unaffected."
+            ])
+        XCTAssertTrue(rowViews(fixture.view).isEmpty)
+        XCTAssertTrue(shown(descendants(of: fixture.view)).allSatisfy { !($0 is NSButton) })
+        XCTAssertEqual(visibleImageViews(fixture.view).map(\.image), [failureGlyph])
+    }
+
+    func test_theGitmodulesUnreadableFailureDrawsOneMessageAndNothingElse() {
+        let fixture = makeView(showing: .failed(.condition(.gitmodulesUnreadable)))
+
+        XCTAssertEqual(
+            strings(fixture.view),
+            [
+                "Nozoki couldn't read how a repository in the folder you opened names and places "
+                    + "its submodules, so it doesn't read the folder's Git status. "
+                    + "The file tree and the reading panel are unaffected."
+            ])
+        XCTAssertTrue(rowViews(fixture.view).isEmpty)
+        XCTAssertTrue(shown(descendants(of: fixture.view)).allSatisfy { !($0 is NSButton) })
+        XCTAssertEqual(visibleImageViews(fixture.view).map(\.image), [failureGlyph])
+    }
+
     func test_machineConfigNotSwitchedOffDrawsTheFault() {
         let fixture = makeView(showing: .failed(.condition(.machineConfigNotSwitchedOff)))
 
@@ -308,6 +339,7 @@ final class GitViewTests: XCTestCase {
                 .stopped, .failed(.gitDirectoryOutside(gitDirectory: "/e")),
                 .failed(.objectStoreNamesOutside(path: "/e")),
                 .failed(.objectStoreNotLocated(path: "/e")),
+                .failed(.submoduleElsewhere(name: "e", path: "f")),
             ]
             + GitCondition.allCases.map { .failed(.condition($0)) }
 

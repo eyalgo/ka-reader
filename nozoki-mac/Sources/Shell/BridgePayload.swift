@@ -365,14 +365,15 @@ enum BridgePayload {
         private enum StateTag: String, Decodable { case pending, observed, failed }
         private enum Kind: String, Decodable { case plain, root }
 
-        /// The condition member's value: the eleven conditions that carry no text, or one of the
-        /// five that come beside theirs.
+        /// The condition member's value: the twelve conditions that carry no text, or one of the
+        /// six that come beside theirs.
         private enum WireCondition: Decodable {
             case gitDirectoryOutside
             case configNamesOutside
             case configNotLocated
             case objectStoreNamesOutside
             case objectStoreNotLocated
+            case submoduleElsewhere
             case condition(GitCondition)
 
             init(from decoder: Decoder) throws {
@@ -387,6 +388,8 @@ enum BridgePayload {
                     self = .objectStoreNamesOutside
                 } else if name == "object_store_not_located" {
                     self = .objectStoreNotLocated
+                } else if name == "submodule_elsewhere" {
+                    self = .submoduleElsewhere
                 } else if let condition = GitCondition(rawValue: name) {
                     self = .condition(condition)
                 } else {
@@ -479,6 +482,16 @@ enum BridgePayload {
                     .objectStoreNotLocated(
                         path: try container.decode(
                             String.self, forKey: WireKey(stringValue: "path"))))
+            case .submoduleElsewhere:
+                try BridgePayload.requireMembers(
+                    ["state", "condition", "name", "path"], in: container)
+                return .failed(
+                    .submoduleElsewhere(
+                        name: try container.decode(
+                            String.self, forKey: WireKey(stringValue: "name")),
+                        path: try container.decode(
+                            String.self, forKey: WireKey(stringValue: "path"))
+                    ))
             case .condition(let condition):
                 try BridgePayload.requireMembers(["state", "condition"], in: container)
                 return .failed(.condition(condition))

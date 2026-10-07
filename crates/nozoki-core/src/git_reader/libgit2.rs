@@ -14,10 +14,10 @@ use git2::{
 use rustix::fs::OFlags;
 
 use super::alternates_scan::{self, AlternateEntry, EntryClass};
-use super::config_scan::{self, ConfigReference, Placement, ReferenceKind};
+use super::config_scan::{self, ConfigReference, Placement, ReferenceKind, SubmoduleSection};
 use super::{
     BranchElement, ConfigNamedPath, GitPort, GitReadCondition, HeadState, ProbeCondition,
-    RepositoryState, RootFinding, StatusCategory, StatusEntry, StatusLists,
+    RepositoryState, RootFinding, StatusCategory, StatusEntry, StatusLists, SubmoduleNamedPath,
 };
 
 const GIT_ENTRY: &str = ".git";
@@ -212,17 +212,28 @@ fn check_config(
     )
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
-enum ConfigPurpose {
+/// What a config walk is for. The `.gitmodules` walk of one level also decides each section it meets
+/// against that level's scope.
+#[derive(Clone, Copy)]
+enum ConfigPurpose<'a> {
     Repository,
-    Submodules,
+    Submodules(SectionScope<'a>),
+}
+
+/// What one level's `.gitmodules` sections are decided against: the level's working tree, where
+/// every section's value is spelled from, and the paths its index holds as gitlinks, which are the
+/// names the status read looks up (`measurement.md`: nothing beyond them was measured as looked up).
+#[derive(Clone, Copy)]
+struct SectionScope<'a> {
+    working_tree: &'a Path,
+    looked_up: &'a HashSet<Vec<u8>>,
 }
 
 fn check_config_file(
     grant: &Path,
     locations: &Locations,
     file: PathBuf,
-    purpose: ConfigPurpose,
+    purpose: ConfigPurpose<'_>,
     bounds: &Bounds,
 ) -> Result<(), GitReadCondition> {
     let mut pending = VecDeque::from([(file, 0)]);
@@ -231,29 +242,155 @@ fn check_config_file(
         let content = match read_spelling_file(&file) {
             Ok(content) => content,
             Err(error) if error.kind() == io::ErrorKind::NotFound => continue,
-            Err(_) => return Err(GitReadCondition::GitDirectoryUnreadable),
+            Err(_) => return Err(unreadable_config_file(purpose, depth)),
         };
         if depth >= bounds.include_depth {
             return Err(GitReadCondition::RepositoryReadFailed);
         }
         let scan =
             config_scan::scan(&content).map_err(|_| GitReadCondition::RepositoryReadFailed)?;
-        if purpose == ConfigPurpose::Repository && scan.worktree_config && !worktree_config_queued {
+        if matches!(purpose, ConfigPurpose::Repository)
+            && scan.worktree_config
+            && !worktree_config_queued
+        {
             worktree_config_queued = true;
             pending.push_back((locations.git_directory.join(WORKTREE_CONFIG_FILE), 0));
         }
         for reference in &scan.references {
-            // libgit2's submodule.c reads submodule fields from this config; only includes
-            // follow paths. Repository options in .gitmodules do not configure the repository.
-            if purpose == ConfigPurpose::Submodules && reference.kind != ReferenceKind::Include {
+            // Only an include key follows a path to a file. A submodule section's own `path` is
+            // decided below, and repository options in .gitmodules do not configure the repository.
+            if matches!(purpose, ConfigPurpose::Submodules(_))
+                && reference.kind != ReferenceKind::Include
+            {
                 continue;
             }
             if let Some(included) = follow(grant, locations, &file, reference)? {
                 pending.push_back((included, depth + 1));
             }
         }
+        if let ConfigPurpose::Submodules(scope) = purpose {
+            for section in &scan.sections {
+                check_section(grant, scope.working_tree, scope.looked_up, section)?;
+            }
+        }
     }
     Ok(())
+}
+
+/// The answer for a config file the walk could not read. The `.gitmodules` of a level is the walk's
+/// depth 0, and it answers its own condition. A file it includes, and every file of the repository
+/// walk, answers the unreadable Git directory.
+fn unreadable_config_file(purpose: ConfigPurpose<'_>, depth: usize) -> GitReadCondition {
+    match purpose {
+        ConfigPurpose::Submodules(_) if depth == 0 => GitReadCondition::GitmodulesUnreadable,
+        ConfigPurpose::Submodules(_) | ConfigPurpose::Repository => {
+            GitReadCondition::GitDirectoryUnreadable
+        }
+    }
+}
+
+/// Decides one `[submodule]` section: every `path` entry it holds, or its name where it holds none.
+/// A value is spelled from the level's `working_tree`, never from the directory of the file that
+/// holds it.
+fn check_section(
+    grant: &Path,
+    working_tree: &Path,
+    looked_up: &HashSet<Vec<u8>>,
+    section: &SubmoduleSection,
+) -> Result<(), GitReadCondition> {
+    if section.paths.is_empty() {
+        return check_section_value(
+            grant,
+            working_tree,
+            looked_up,
+            section,
+            &section.word,
+            &section.stored_name,
+            &section.written_name,
+        );
+    }
+    for entry in &section.paths {
+        check_section_value(
+            grant,
+            working_tree,
+            looked_up,
+            section,
+            &entry.key,
+            &entry.value,
+            &spelled_lossily(&entry.value),
+        )?;
+    }
+    Ok(())
+}
+
+/// Decides one value of a section, in this order: a value beginning `/` is not located and nothing
+/// is spelled; a value that spells outside the folder is outside; a section named for a path the
+/// status read looks up, whose value spells to another location than that path's own, is a
+/// submodule elsewhere. Two locations are the same only when the two spelled paths are equal.
+fn check_section_value(
+    grant: &Path,
+    working_tree: &Path,
+    looked_up: &HashSet<Vec<u8>>,
+    section: &SubmoduleSection,
+    key: &str,
+    value: &[u8],
+    written: &str,
+) -> Result<(), GitReadCondition> {
+    let named = || ConfigNamedPath {
+        key: key.to_string(),
+        path: written.to_string(),
+    };
+    if value.first() == Some(&b'/') {
+        return Err(GitReadCondition::ConfigNotLocated(named()));
+    }
+    let location = spell_section_path(grant, working_tree, value)?;
+    if !lies_inside(grant, &location) {
+        return Err(GitReadCondition::ConfigNamesOutside(named()));
+    }
+    if looked_up.contains(&section.stored_name)
+        && spell_section_path(grant, working_tree, &section.stored_name)? != location
+    {
+        return Err(GitReadCondition::SubmoduleElsewhere(SubmoduleNamedPath {
+            name: section.written_name.clone(),
+            path: written.to_string(),
+        }));
+    }
+    Ok(())
+}
+
+/// Spells `value` from the level's working tree by the section walk, which reaches a location
+/// whatever lies on the way. A link chain over the bound and a link whose text cannot be read are
+/// the walk's own two stops, answered as `follow` answers them.
+fn spell_section_path(
+    grant: &Path,
+    working_tree: &Path,
+    value: &[u8],
+) -> Result<PathBuf, GitReadCondition> {
+    spell_location(
+        grant,
+        working_tree,
+        Path::new(OsStr::from_bytes(value)),
+        &inspect_for_section,
+    )
+    .map_err(|stop| match stop {
+        WalkStop::Missing => GitReadCondition::GitDirectoryMissing,
+        WalkStop::Unreadable => GitReadCondition::GitDirectoryUnreadable,
+        WalkStop::TooManyLinks => GitReadCondition::RepositoryReadFailed,
+    })
+}
+
+/// What the walk learns about a position of a section's path. A position that is not there, or
+/// whose metadata cannot be read, is not a link, so the walk goes on past it by spelling and reads
+/// nothing more there: every value reaches a location.
+fn inspect_for_section(position: &Path) -> Inspected {
+    match position.symlink_metadata() {
+        Err(_) => Inspected::NotALink,
+        Ok(metadata) if metadata.file_type().is_symlink() => match std::fs::read_link(position) {
+            Ok(text) => Inspected::Link(text),
+            Err(_) => Inspected::Unreadable,
+        },
+        Ok(_) => Inspected::NotALink,
+    }
 }
 
 /// Spells what one refused key names. A value the reader does not locate refuses as not located, and
@@ -410,6 +547,14 @@ fn verify_submodules(
     depth: usize,
     bounds: &Bounds,
 ) -> Result<(), GitReadCondition> {
+    let index = repository
+        .index()
+        .map_err(|_| GitReadCondition::RepositoryReadFailed)?;
+    let looked_up: HashSet<Vec<u8>> = index
+        .iter()
+        .filter(|entry| entry.mode == GITLINK_MODE)
+        .map(|entry| entry.path)
+        .collect();
     // libgit2 1.9.7 submodule.c:2243-2260 opens .gitmodules with the config reader,
     // which follows includes before the submodule fields are filtered.
     check_config_file(
@@ -419,12 +564,12 @@ fn verify_submodules(
             common_directory: repository.commondir().to_path_buf(),
         },
         folder.join(SUBMODULE_CONFIG_FILE),
-        ConfigPurpose::Submodules,
+        ConfigPurpose::Submodules(SectionScope {
+            working_tree: folder,
+            looked_up: &looked_up,
+        }),
         bounds,
     )?;
-    let index = repository
-        .index()
-        .map_err(|_| GitReadCondition::RepositoryReadFailed)?;
     for entry in index.iter().filter(|entry| entry.mode == GITLINK_MODE) {
         let relative = Path::new(OsStr::from_bytes(&entry.path));
         let submodule_folder = match spell_location(grant, folder, relative, &inspect_on_disk) {
@@ -501,7 +646,9 @@ fn probe_condition(condition: GitReadCondition) -> ProbeCondition {
         GitReadCondition::GitDirectoryOutside(_)
         | GitReadCondition::NotARoot
         | GitReadCondition::NotARepository
-        | GitReadCondition::RepositoryReadFailed => ProbeCondition::RepositoryReadFailed,
+        | GitReadCondition::RepositoryReadFailed
+        | GitReadCondition::SubmoduleElsewhere(_)
+        | GitReadCondition::GitmodulesUnreadable => ProbeCondition::RepositoryReadFailed,
     }
 }
 

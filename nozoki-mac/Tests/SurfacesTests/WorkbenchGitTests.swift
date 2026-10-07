@@ -458,7 +458,8 @@ final class WorkbenchGitTests: XCTestCase {
                 .failed(.gitDirectoryOutside(gitDirectory: "/elsewhere/.git/worktrees/wt")),
                 .failed(.objectStoreNamesOutside(path: "../../../elsewhere/objects")),
                 .failed(.objectStoreNotLocated(path: "relative/objects")),
-                .failed(.configNotLocated(key: "core.excludesfile", path: "ignore-rel")), .stopped,
+                .failed(.configNotLocated(key: "core.excludesfile", path: "ignore-rel")),
+                .failed(.submoduleElsewhere(name: "submodule", path: "evil")), .stopped,
             ]
             + GitCondition.allCases.map { .failed(.condition($0)) }
 
@@ -471,6 +472,12 @@ final class WorkbenchGitTests: XCTestCase {
             XCTAssertTrue(gitRows(fixture.workbench).isEmpty, "\(failure)")
             XCTAssertEqual(strings(of: fixture.workbench.rail), ["Files", "Git"], "\(failure)")
 
+            // CP-729: both switch entries stay enabled over a failure, the Git entry as well as Files.
+            choose(.files, in: fixture)
+            XCTAssertTrue(treeIsShown(fixture.workbench), "\(failure)")
+            choose(.git, in: fixture)
+            XCTAssertTrue(gitIsShown(fixture.workbench), "\(failure)")
+            XCTAssertFalse(treeIsShown(fixture.workbench), "\(failure)")
             choose(.files, in: fixture)
             XCTAssertTrue(treeIsShown(fixture.workbench), "\(failure)")
             try selectInTree("a.txt", in: fixture.workbench)

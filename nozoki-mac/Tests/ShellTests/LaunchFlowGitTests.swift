@@ -167,6 +167,47 @@ final class LaunchFlowGitTests: LaunchWindowTestCase {
             ])
     }
 
+    /// CP-733: wire bytes to the drawn failure slot for a section whose path leads elsewhere.
+    func test_aSubmoduleElsewhereWireAnswerIsDrawnAsTheMessageCarryingBothValuesWithNoOutside()
+        throws
+    {
+        let answer = Data(
+            (#"{"state":"failed","condition":"submodule_elsewhere","#
+                + #""name":"submodule","path":"evil"}"#).utf8)
+        let launch = launch(git: answer)
+        let workbench = try workbench(of: launch)
+
+        choose(.git, in: workbench)
+
+        let drawn = strings(in: workbench)
+        XCTAssertEqual(
+            drawn,
+            [
+                "Nozoki found that a .gitmodules gives the submodule at submodule the path evil, "
+                    + "which leads somewhere else, so it doesn't read the folder's Git status. "
+                    + "The file tree and the reading panel are unaffected."
+            ])
+        XCTAssertEqual(drawn[0].lowercased().components(separatedBy: "outside").count - 1, 0)
+    }
+
+    /// CP-726: an answer short of a member is not drawn as a message; it draws the fault sentence.
+    func test_aSubmoduleElsewhereAnswerMissingNameOrPathDrawsTheFaultSentence() throws {
+        let missing = [
+            #"{"state":"failed","condition":"submodule_elsewhere","path":"evil"}"#,
+            #"{"state":"failed","condition":"submodule_elsewhere","name":"submodule"}"#,
+        ]
+        for payload in missing {
+            let launch = launch(git: Data(payload.utf8))
+            let workbench = try workbench(of: launch)
+
+            choose(.git, in: workbench)
+
+            XCTAssertTrue(
+                strings(in: workbench).contains(Self.faultSentence),
+                "\(payload): \(strings(in: workbench))")
+        }
+    }
+
     func test_aNullReadGitDrawsTheFaultAndTheTreeStaysReachable() throws {
         let launch = launch(git: nil)
         let workbench = try workbench(of: launch)
