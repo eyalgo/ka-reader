@@ -10,8 +10,9 @@ pub(super) enum EntryClass {
     /// Begins with `/`: taken as written.
     Absolute,
     /// Any other entry, which the operating system would resolve against the process's working
-    /// directory and never against the folder, so it counts as outside whatever it names.
-    Outside,
+    /// directory and never against the folder, so the reader refuses it without locating it,
+    /// whatever it names.
+    NotLocated,
 }
 
 /// One entry of an alternates file, as written.
@@ -23,7 +24,7 @@ pub(super) struct AlternateEntry {
 
 /// The entries `bytes` holds, in file order. Only the bytes before the first NUL count, lines end at
 /// a CR or an LF, an empty line is no line, and a line whose first byte is `#` is skipped. Nothing is
-/// trimmed, so a leading space puts an entry in the outside class (`odb.c`, `load_alternates`, and
+/// trimmed, so a leading space puts an entry in the not-located class (`odb.c`, `load_alternates`, and
 /// `git__strtok` in `util.c`).
 pub(super) fn scan(bytes: &[u8]) -> Vec<AlternateEntry> {
     let counted = bytes
@@ -44,6 +45,6 @@ fn class_of(entry: &[u8]) -> EntryClass {
     match entry.first() {
         Some(b'.') => EntryClass::FromTheObjectDirectory,
         Some(b'/') => EntryClass::Absolute,
-        _ => EntryClass::Outside,
+        _ => EntryClass::NotLocated,
     }
 }

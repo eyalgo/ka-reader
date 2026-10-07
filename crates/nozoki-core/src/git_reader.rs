@@ -179,10 +179,10 @@ pub enum StatusCategory {
     InConflict,
 }
 
-/// Why a read of a root's Git state failed, drawn from a closed set. Three cases carry text: the
+/// Why a read of a root's Git state failed, drawn from a closed set. Five cases carry text: the
 /// outside case carries the path where the Git directory lies, spelled from the root's own files,
-/// the config case carries the key and the value its config spells, and the object store case
-/// carries the entry or the link location its alternates spell.
+/// the two config cases carry the key and the value its config spells, and the two object store
+/// cases carry the entry or the link location its alternates spell.
 ///
 /// # Examples
 ///
@@ -220,11 +220,17 @@ pub enum GitReadCondition {
     /// value leads is not observed.
     ConfigNotLocated(ConfigNamedPath),
     /// The repository's object store names a location outside the folder: an entry of an alternates
-    /// file, or a link at `objects`, `info` or `alternates`. The string is the entry as the file
-    /// spells it or, for a link, the location its spelling reaches, spelled lossily from its bytes
-    /// as [`ConfigNamedPath`]'s path is, and never resolved, quoted or trimmed. Nothing at that
-    /// location was read.
+    /// file that spells outside, or a link at `objects`, `info` or `alternates`. The string is the
+    /// entry as the file spells it or, for a link, the location its spelling reaches, spelled
+    /// lossily from its bytes as [`ConfigNamedPath`]'s path is, and never resolved, quoted or
+    /// trimmed. Nothing at that location was read.
     ObjectStoreNamesOutside(String),
+    /// An entry of an alternates file begins with neither `.` nor `/`, which the reader refuses
+    /// without spelling or locating it: the operating system would resolve it against the process's
+    /// working directory and never against the folder. The string is the entry as the file spells
+    /// it, as [`GitReadCondition::ObjectStoreNamesOutside`]'s is. Nothing at that location was
+    /// read, and where the entry leads is not observed.
+    ObjectStoreNotLocated(String),
 }
 
 /// The key a repository's config spells and the value it gives it, as the config writes them, when
@@ -316,4 +322,8 @@ pub enum ProbeCondition {
     /// holds, as [`GitReadCondition::ObjectStoreNamesOutside`] carries it. The probe opened nothing
     /// and read nothing at that location.
     ObjectStoreNamesOutside(String),
+    /// The repository's object store holds an alternates entry the probe does not locate, by the
+    /// value the string holds, as [`GitReadCondition::ObjectStoreNotLocated`] carries it. The probe
+    /// opened nothing and read nothing at that location.
+    ObjectStoreNotLocated(String),
 }

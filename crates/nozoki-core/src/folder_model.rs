@@ -207,6 +207,9 @@ impl GitCondition {
             Self::Probe(ProbeCondition::ObjectStoreNamesOutside(_)) => {
                 OBJECT_STORE_NAMES_OUTSIDE_PHRASE
             }
+            Self::Probe(ProbeCondition::ObjectStoreNotLocated(_)) => {
+                OBJECT_STORE_NOT_LOCATED_PHRASE
+            }
             Self::Read(GitReadCondition::GitDirectoryOutside(_)) => {
                 "the Git directory is outside the folder"
             }
@@ -224,6 +227,9 @@ impl GitCondition {
             Self::Read(GitReadCondition::ObjectStoreNamesOutside(_)) => {
                 OBJECT_STORE_NAMES_OUTSIDE_PHRASE
             }
+            Self::Read(GitReadCondition::ObjectStoreNotLocated(_)) => {
+                OBJECT_STORE_NOT_LOCATED_PHRASE
+            }
         }
     }
 }
@@ -240,6 +246,11 @@ const CONFIG_NOT_LOCATED_PHRASE: &str = "the config names a path the reader does
 /// met it. It carries neither the entry nor the location the condition holds.
 const OBJECT_STORE_NAMES_OUTSIDE_PHRASE: &str =
     "the object store names a location outside the folder";
+
+/// The one phrase for an object store that names a location the reader does not locate, whichever
+/// operation met it. It carries neither the entry nor the location the condition holds.
+const OBJECT_STORE_NOT_LOCATED_PHRASE: &str =
+    "the object store names a location the reader does not locate";
 
 /// An opened folder with what has been read of it: the root listing and the Git item.
 ///
