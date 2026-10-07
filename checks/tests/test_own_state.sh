@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.1.0 — the submodule walk runs every build — restore cases, read_git case, CI step
 # Version: 1.0.0 — first version: drives the real checks/own-state.sh against the committed fixtures
 #
 # checks/tests/test_own_state.sh — the tests of checks/own-state.sh.
@@ -8,7 +9,8 @@
 #   a proof nobody is checking. These cases run the real script against the committed fixtures. The
 #   log condition is exercised by pointing HOME at a temporary directory. The fixture conditions are
 #   exercised by putting a stray file into a fixture, removed again by the trap, and by adding or
-#   removing repo's restored `.git` (its prior state is put back).
+#   removing repo's restored `.git` (its prior state is put back), and by unpacking submodule's
+#   archive in place the way checks/read-only.sh does (its three restored entries are put back too).
 #
 # USAGE
 #   checks/tests/test_own_state.sh   (from anywhere; it finds the product root itself)
@@ -29,6 +31,7 @@ OUT=""
 STATUS=0
 WORK=""
 GIT_WAS_PRESENT=0
+SUBMODULE_WAS_RESTORED=0
 
 CASES="
 test_all_conditions_hold
@@ -40,6 +43,9 @@ test_modified_tracked_file_fails_condition_three_only
 test_restored_git_is_not_extra
 test_unrestored_git_is_not_extra
 test_runs_from_anywhere_in_the_repo
+test_restored_submodule_is_not_extra
+test_stray_in_restored_submodule_fails_condition_two
+test_stray_under_restored_submodule_folder_fails_condition_two
 "
 
 # --- helpers ---
@@ -67,6 +73,17 @@ restore_git() {
   tar -xf "$FIXTURES/repo.git.tar" -C "$FIXTURES/repo"
 }
 
+# Unpacks submodule's archive into the fixture in place — the restore checks/read-only.sh makes.
+restore_submodule() {
+  remove_submodule_restore
+  tar -xf "$FIXTURES/submodule.git.tar" -C "$FIXTURES/submodule"
+}
+
+# The restore's three entries; the folder's committed README.md stays.
+remove_submodule_restore() {
+  rm -rf "$FIXTURES/submodule/.git" "$FIXTURES/submodule/.gitmodules" "$FIXTURES/submodule/submodule"
+}
+
 expect_status() {
   [ "$STATUS" -eq "$1" ] || fail "expected exit $1, got $STATUS. output: $OUT"
 }
@@ -79,6 +96,13 @@ expect_nonzero_status() {
 expect_line_with() {
   printf '%s\n' "$OUT" | grep -F -- "$1" | grep -F -q -- "$2" \
     || fail "expected one line carrying [$1] and [$2]. output: $OUT"
+}
+
+expect_output_has() {
+  case "$OUT" in
+    *"$1"*) return 0 ;;
+  esac
+  fail "the output lacks [$1]. output: $OUT"
 }
 
 expect_output_lacks() {
@@ -185,6 +209,38 @@ test_runs_from_anywhere_in_the_repo() {
   expect_status 0
 }
 
+test_restored_submodule_is_not_extra() {
+  home="$(home_with_log submodule-restored)"
+  restore_submodule
+
+  run_own_state "$home"
+
+  expect_status 0 || return 1
+  expect_output_has "own state holds"
+}
+
+test_stray_in_restored_submodule_fails_condition_two() {
+  home="$(home_with_log submodule-stray)"
+  restore_submodule
+  : > "$FIXTURES/submodule/x.log"
+
+  run_own_state "$home"
+
+  expect_nonzero_status || return 1
+  expect_line_with "condition 2" "submodule/x.log"
+}
+
+test_stray_under_restored_submodule_folder_fails_condition_two() {
+  home="$(home_with_log submodule-folder-stray)"
+  restore_submodule
+  : > "$FIXTURES/submodule/submodule/stray.txt"
+
+  run_own_state "$home"
+
+  expect_nonzero_status || return 1
+  expect_line_with "condition 2" "submodule/submodule/stray.txt"
+}
+
 # --- the runner ---
 
 for tool in git tar; do
@@ -196,12 +252,17 @@ done
 
 WORK="$(mktemp -d)"
 [ -e "$FIXTURES/repo/.git" ] && GIT_WAS_PRESENT=1
+[ -e "$FIXTURES/submodule/.git" ] && SUBMODULE_WAS_RESTORED=1
 cleanup() {
-  rm -f "$FIXTURES/plain/x.log" "$FIXTURES/plain/x.tmp"
+  rm -f "$FIXTURES/plain/x.log" "$FIXTURES/plain/x.tmp" "$FIXTURES/submodule/x.log"
   [ ! -f "$WORK/readme.saved" ] || cp "$WORK/readme.saved" "$FIXTURES/plain/readme.txt"
   rm -rf "$FIXTURES/repo/.git"
   if [ "$GIT_WAS_PRESENT" -eq 1 ]; then
     tar -xf "$FIXTURES/repo.git.tar" -C "$FIXTURES/repo"
+  fi
+  remove_submodule_restore
+  if [ "$SUBMODULE_WAS_RESTORED" -eq 1 ]; then
+    tar -xf "$FIXTURES/submodule.git.tar" -C "$FIXTURES/submodule"
   fi
   rm -rf "$WORK"
 }
@@ -219,7 +280,7 @@ for case_name in $CASES; do
     failed=$((failed + 1))
   fi
   # A stray file belongs to its case alone.
-  rm -f "$FIXTURES/plain/x.log" "$FIXTURES/plain/x.tmp"
+  rm -f "$FIXTURES/plain/x.log" "$FIXTURES/plain/x.tmp" "$FIXTURES/submodule/x.log" "$FIXTURES/submodule/submodule/stray.txt"
 done
 
 echo "$((total - failed)) of $total passed"

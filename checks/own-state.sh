@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.1.0 — the submodule walk runs every build — restore cases, read_git case, CI step
 # Version: 1.0.0 — first version: proves a launch left nothing behind but the log
 #
 # checks/own-state.sh — three conditions on the machine after the app has run. Exits 0 only when all
@@ -13,9 +14,10 @@
 #   1. A file exists at $HOME/Library/Containers/com.kensaiapp.nozoki/Data/Library/Logs/nozoki.log.
 #      That path is checked and no other; nothing is launched.
 #   2. Every folder directly under checks/fixtures/ holds exactly what git commits there, plus the
-#      folders those paths imply, plus `.git` and the archive's listing when a `<fixture>.git.tar`
-#      sits beside it. Anything else — ignored files included — is named. The actual set is found by
-#      walking without following links. A `.git` that has not been restored is missing, not extra.
+#      folders those paths imply, plus `.git` and the archive's listing — and the folders that
+#      listing implies — when a `<fixture>.git.tar` sits beside it. Anything else — ignored files
+#      included — is named. The actual set is found by walking without following links. A `.git`
+#      that has not been restored is missing, not extra.
 #   3. `git status --porcelain checks/fixtures` prints nothing.
 #
 # USAGE
@@ -37,6 +39,18 @@ trap cleanup EXIT
 
 failed=0
 
+# Every folder the paths listed in file $1 imply: "a/b/c" implies "a" and "a/b".
+implied_folders() {
+  awk '{
+    count = split($0, parts, "/")
+    prefix = ""
+    for (index_ = 1; index_ < count; index_++) {
+      prefix = prefix (index_ > 1 ? "/" : "") parts[index_]
+      print prefix
+    }
+  }' "$1"
+}
+
 # The expected set of fixture $1, one path per line relative to checks/fixtures/, sorted.
 expected_set() {
   name="$1"
@@ -44,19 +58,14 @@ expected_set() {
     | sed "s|^$FIXTURES_REL/||" > "$work/tracked"
   {
     cat "$work/tracked"
-    # Every folder a tracked path implies: "a/b/c" implies "a" and "a/b".
-    awk '{
-      count = split($0, parts, "/")
-      prefix = ""
-      for (index_ = 1; index_ < count; index_++) {
-        prefix = prefix (index_ > 1 ? "/" : "") parts[index_]
-        print prefix
-      }
-    }' "$work/tracked"
+    implied_folders "$work/tracked"
     archive="$ROOT/$FIXTURES_REL/$name.git.tar"
     if [ -f "$archive" ]; then
       echo "$name/.git"
-      tar -tf "$archive" | sed -e 's|/$||' -e "s|^|$name/|"
+      tar -tf "$archive" | sed -e 's|/$||' -e "s|^|$name/|" > "$work/archived"
+      cat "$work/archived"
+      # tar -tf lists no member for a folder the archive only implies, e.g. submodule/submodule.
+      implied_folders "$work/archived"
     fi
   } | LC_ALL=C sort -u
 }

@@ -713,6 +713,131 @@ fn test_git_entry_that_is_a_link_or_has_no_value_answers_not_a_root() {
     assert_pathless(answers.failure());
 }
 
+// --- the restored `submodule` fixture (CP-741 to CP-743) --------------------------------------
+
+/// The `submodule` fixture as `checks/read-only.sh` restores it: the committed folder copied into a
+/// scene of its own, with `submodule.git.tar` unpacked into that copy. The copy then holds
+/// `README.md`, `.git`, `.gitmodules` and `submodule/.git`, and `submodule/.git` reads
+/// `gitdir: ../.git/modules/submodule`.
+fn restored_submodule_scene() -> (TempDir, PathBuf) {
+    let scene = TempDir::new();
+    let folder = scene.copy_fixture("submodule");
+    scene.unpack_fixture_archive("submodule.git.tar", "submodule");
+    (scene, folder)
+}
+
+/// `read_git` over a model of `folder`, with the scene checked to be what it was before the call.
+fn read_git_over(scene: &TempDir, folder: &Path) -> FolderModel {
+    let before = scene.snapshot();
+    let model = FolderModel::new(open_folder(folder).expect("the folder opens"));
+
+    let folded = read_git(model, port());
+
+    assert_eq!(&scene.snapshot(), &before, "a read changed the scene");
+    folded
+}
+
+/// The folder is a root whose HEAD is on `main` in the normal state and whose staged list is empty;
+/// returns the changed list as a set.
+fn changed_of_a_normal_root_on_main(folded: &FolderModel) -> Vec<StatusEntry> {
+    match folded.kind() {
+        ItemState::Observed(FolderKind::Root(git)) => {
+            assert_eq!(git.head(), &main_head());
+            assert!(git.status().staged.is_empty(), "staged is empty");
+            sorted(git.status().changed.clone())
+        }
+        other => panic!("expected an observed root, got {other:?}"),
+    }
+}
+
+/// The names directly under `folder`, sorted.
+fn entry_names(folder: &Path) -> Vec<String> {
+    let mut names: Vec<String> = fs::read_dir(folder)
+        .expect("the folder lists")
+        .map(|found| {
+            found
+                .expect("the entry reads")
+                .file_name()
+                .to_string_lossy()
+                .into_owned()
+        })
+        .collect();
+    names.sort();
+    names
+}
+
+/// CP-741: the scene is the restore `checks/read-only.sh` makes, and nothing else.
+#[test]
+fn test_restored_submodule_scene_holds_what_the_restore_lays_down() {
+    let (_scene, folder) = restored_submodule_scene();
+
+    assert_eq!(
+        entry_names(&folder),
+        [".git", ".gitmodules", "README.md", "submodule"]
+    );
+    assert_eq!(entry_names(&folder.join("submodule")), [".git"]);
+    let git_file =
+        fs::read_to_string(folder.join("submodule/.git")).expect("the submodule's .git file reads");
+    assert_eq!(git_file.trim_end(), "gitdir: ../.git/modules/submodule");
+}
+
+/// CP-742: the answer is the whole of it. `README.md` is listed untracked in every layout below, so
+/// only the exact list can tell the layouts apart.
+#[test]
+fn test_read_git_on_the_restored_submodule_answers_root_with_its_status() {
+    let (scene, folder) = restored_submodule_scene();
+
+    let folded = read_git_over(&scene, &folder);
+
+    assert_eq!(
+        changed_of_a_normal_root_on_main(&folded),
+        sorted(vec![
+            entry("README.md", StatusCategory::Untracked),
+            entry("submodule", StatusCategory::Modified),
+        ])
+    );
+}
+
+#[test]
+fn test_read_git_on_the_restored_submodule_checked_out_lists_no_submodule_entry() {
+    let (scene, folder) = restored_submodule_scene();
+    git(&folder.join("submodule"), &["checkout", "-q", "--", "."]);
+
+    let folded = read_git_over(&scene, &folder);
+
+    assert_eq!(
+        changed_of_a_normal_root_on_main(&folded),
+        vec![entry("README.md", StatusCategory::Untracked)]
+    );
+}
+
+#[test]
+fn test_read_git_on_the_restored_submodule_without_its_git_file_lists_no_submodule_entry() {
+    let (scene, folder) = restored_submodule_scene();
+    fs::remove_file(folder.join("submodule/.git")).expect("the submodule's .git file is removed");
+
+    let folded = read_git_over(&scene, &folder);
+
+    assert_eq!(
+        changed_of_a_normal_root_on_main(&folded),
+        vec![entry("README.md", StatusCategory::Untracked)]
+    );
+}
+
+#[test]
+fn test_read_git_with_the_archive_unpacked_above_the_folder_is_a_failed_outside_item() {
+    let (scene, folder) = archived_scene("submodule");
+
+    let folded = read_git_over(&scene, &folder);
+
+    assert_eq!(
+        folded.kind(),
+        &ItemState::Failed(GitCondition::Read(GitReadCondition::GitDirectoryOutside(
+            scene.path().join(".git/modules/submodule")
+        )))
+    );
+}
+
 // --- the read bound ---------------------------------------------------------------------------
 
 #[test]
