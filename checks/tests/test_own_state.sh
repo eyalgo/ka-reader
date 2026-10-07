@@ -279,7 +279,7 @@ for case_name in $CASES; do
     failed=$((failed + 1))
   fi
   # A stray file belongs to its case alone.
-  rm -f "$FIXTURES/plain/x.log" "$FIXTURES/plain/x.tmp" "$FIXTURES/submodule/x.log"
+  rm -f "$FIXTURES/plain/x.log" "$FIXTURES/plain/x.tmp" "$FIXTURES/submodule/x.log" "$FIXTURES/submodule/submodule/stray.txt"
 done
 
 echo "$((total - failed)) of $total passed"

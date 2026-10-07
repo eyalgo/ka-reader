@@ -750,6 +750,37 @@ fn changed_of_a_normal_root_on_main(folded: &FolderModel) -> Vec<StatusEntry> {
     }
 }
 
+/// The names directly under `folder`, sorted.
+fn entry_names(folder: &Path) -> Vec<String> {
+    let mut names: Vec<String> = fs::read_dir(folder)
+        .expect("the folder lists")
+        .map(|found| {
+            found
+                .expect("the entry reads")
+                .file_name()
+                .to_string_lossy()
+                .into_owned()
+        })
+        .collect();
+    names.sort();
+    names
+}
+
+/// CP-741: the scene is the restore `checks/read-only.sh` makes, and nothing else.
+#[test]
+fn test_restored_submodule_scene_holds_what_the_restore_lays_down() {
+    let (_scene, folder) = restored_submodule_scene();
+
+    assert_eq!(
+        entry_names(&folder),
+        [".git", ".gitmodules", "README.md", "submodule"]
+    );
+    assert_eq!(entry_names(&folder.join("submodule")), [".git"]);
+    let git_file =
+        fs::read_to_string(folder.join("submodule/.git")).expect("the submodule's .git file reads");
+    assert_eq!(git_file.trim_end(), "gitdir: ../.git/modules/submodule");
+}
+
 /// CP-742: the answer is the whole of it. `README.md` is listed untracked in every layout below, so
 /// only the exact list can tell the layouts apart.
 #[test]
