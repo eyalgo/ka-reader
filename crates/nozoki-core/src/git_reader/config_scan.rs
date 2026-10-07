@@ -815,6 +815,20 @@ mod tests {
         assert_eq!(scanned.sections.len(), 1);
     }
 
+    /// Design § 3 A1: a record holds each `path` entry *under that header*, so a `path` under a
+    /// later header of another section stays out of it.
+    #[test]
+    fn test_a_path_under_a_later_other_header_does_not_join_the_submodule_record() {
+        let found = sections(
+            "[submodule \"a\"]\n\tpath = x\n[include]\n\tpath = inc\n[core]\n\tpath = z\n",
+        );
+        assert_eq!(found.len(), 1);
+        assert_eq!(
+            path_entries(&found[0]),
+            [("submodule.a.path", b"x".as_slice())]
+        );
+    }
+
     #[test]
     fn test_unparsable_header_is_still_a_parse_failure() {
         assert_eq!(

@@ -2667,8 +2667,15 @@ fn test_submodule_section_for_a_looked_up_name_with_another_path_is_refused() {
     }
 }
 
-/// CP-732: the section's path leads through a link inside the folder to an outside `x`, where a
-/// FIFO sits at the file a read of that repository would open.
+/// CP-732: the section's path leads through a link inside the folder to an outside `x`. The scene
+/// is one in which the status read would open that `x` were the check absent, so "nothing there is
+/// opened" is observed and not given:
+/// - the gitlink's folder `sub` is there, empty, as an uninitialised submodule's is (spec scene
+///   S11). With no folder at `sub` libgit2 reports the gitlink deleted and looks up no submodule.
+///   Git keeps no empty folder, so the case makes it rather than the fixture;
+/// - the outside `x` is a real repository with a FIFO at its `config`, the file the open reads
+///   (`measurement.md`, positive control S0). A `.git` holding only `HEAD` is no repository to
+///   libgit2, and is never opened.
 #[test]
 fn test_section_leading_through_a_link_to_an_outside_x_opens_nothing_outside() {
     let scene = TempDir::new();
@@ -2677,9 +2684,11 @@ fn test_section_leading_through_a_link_to_an_outside_x_opens_nothing_outside() {
         "gitmodules-names-outside.git.tar",
         "gitmodules-names-outside",
     );
-    let outside_git = scene.make_folder("elsewhere/x/.git");
-    fs::write(outside_git.join("HEAD"), "ref: refs/heads/main\n").expect("HEAD is written");
-    let fifo = outside_git.join("config");
+    fs::create_dir(folder.join("sub")).expect("the gitlink's folder is made");
+    let outside_x = scene.path().join("elsewhere/x");
+    committed_repository_at(&outside_x);
+    let fifo = outside_x.join(".git/config");
+    fs::remove_file(&fifo).expect("the config goes");
     make_fifo(&fifo);
 
     let opener_seen = opener_seen_during_the_three_calls(&folder, &fifo);
@@ -2839,6 +2848,101 @@ fn test_refused_include_and_refused_section_give_one_answer_with_one_values_own_
     let answer = port().status(&root).expect_err("a value is refused");
 
     assert!(answer == by_include || answer == by_section, "{answer:?}");
+}
+
+/// CP-723 for a section named for a looked-up path: rules 1 and 2 come before rule 3, so its path
+/// beginning `/` is not located and its path spelling outside is outside, never the submodule-map
+/// condition.
+#[test]
+fn test_a_looked_up_names_section_meets_the_first_refusal_in_cp723s_order() {
+    for nested in [false, true] {
+        let slash = level(nested);
+        let key = format!("submodule.{}.path", slash.looked_up);
+        append_to_gitmodules(
+            &slash.owner,
+            &format!("\n[submodule \"{}\"]\n\tpath = /abs/x\n", slash.looked_up),
+        );
+        assert_refused_on_status_alone(
+            &slash.scene,
+            &slash.root,
+            GitReadCondition::ConfigNotLocated(config_named(&key, "/abs/x")),
+        );
+
+        let outside = level(nested);
+        let value = format!("{}outside-x", outside.up);
+        append_to_gitmodules(
+            &outside.owner,
+            &format!(
+                "\n[submodule \"{}\"]\n\tpath = {value}\n",
+                outside.looked_up
+            ),
+        );
+        assert_refused_on_status_alone(
+            &outside.scene,
+            &outside.root,
+            GitReadCondition::ConfigNamesOutside(config_named(&key, &value)),
+        );
+    }
+}
+
+/// CP-716 and the spec's Gap 1: a section in a file `.gitmodules` includes is decided as one in
+/// `.gitmodules` itself, and its path is spelled from the level's working tree, never from the folder
+/// of the file that holds it. The include sits under `dir/`: `<up>y` spelled from the level's working
+/// tree leaves the folder, while spelled from `dir/` it would stay inside.
+#[test]
+fn test_a_section_in_an_included_file_is_decided_and_spelled_from_the_levels_working_tree() {
+    let include_holding = |owner: &Path, section: &str| {
+        fs::create_dir_all(owner.join("dir")).expect("the folder is made");
+        fs::write(owner.join("dir/inc"), section).expect("the included file is written");
+        append_to_gitmodules(owner, "\n[include]\n\tpath = dir/inc\n");
+    };
+    for nested in [false, true] {
+        let refused = level(nested);
+        committed_repository_at(&refused.owner.join("evil"));
+        include_holding(
+            &refused.owner,
+            &format!("[submodule \"{}\"]\n\tpath = evil\n", refused.looked_up),
+        );
+        assert_refused_on_status_alone(
+            &refused.scene,
+            &refused.root,
+            submodule_elsewhere(refused.looked_up, "evil"),
+        );
+
+        let own = level(nested);
+        include_holding(
+            &own.owner,
+            &format!("[submodule \"{0}\"]\n\tpath = {0}\n", own.looked_up),
+        );
+        let before = own.scene.snapshot();
+        assert!(port().status(&own.root).is_ok(), "nested {nested}");
+        assert_eq!(own.scene.snapshot(), before);
+
+        let from_the_tree = level(nested);
+        let value = format!("{}y", from_the_tree.up);
+        include_holding(
+            &from_the_tree.owner,
+            &format!("[submodule \"x\"]\n\tpath = {value}\n"),
+        );
+        assert_refused_on_status_alone(
+            &from_the_tree.scene,
+            &from_the_tree.root,
+            GitReadCondition::ConfigNamesOutside(config_named("submodule.x.path", &value)),
+        );
+    }
+}
+
+/// CP-716: a verified submodule's section is spelled from the submodule's own working tree, so a
+/// path that leaves the submodule and stays inside the folder is inside. Spelled from the
+/// repository's working tree, the same value would leave the folder.
+#[test]
+fn test_a_verified_submodules_section_is_spelled_from_its_own_working_tree() {
+    let nested = level(true);
+    append_to_gitmodules(&nested.owner, "\n[submodule \"x\"]\n\tpath = ../y\n");
+    let before = nested.scene.snapshot();
+
+    assert!(port().status(&nested.root).is_ok());
+    assert_eq!(nested.scene.snapshot(), before);
 }
 
 /// CP-721: a `.gitmodules` the check cannot read, at either level.

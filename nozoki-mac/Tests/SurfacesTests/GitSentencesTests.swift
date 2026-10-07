@@ -383,7 +383,7 @@ final class GitSentencesTests: XCTestCase {
         + "The file tree and the reading panel are unaffected."
 
     private let forbiddenInTheGitmodulesMessages = [
-        "outside", "invalid", "unsupported", "illegal", "malformed", "refused", "!",
+        "outside", "invalid", "unsupported", "illegal", "malformed", "refused", "rejected", "!",
         "repo ", "symlink", "config", "settings", "error", "failed",
     ]
 
