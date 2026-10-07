@@ -179,10 +179,11 @@ pub enum StatusCategory {
     InConflict,
 }
 
-/// Why a read of a root's Git state failed, drawn from a closed set. Five cases carry text: the
+/// Why a read of a root's Git state failed, drawn from a closed set. Six cases carry text: the
 /// outside case carries the path where the Git directory lies, spelled from the root's own files,
-/// the two config cases carry the key and the value its config spells, and the two object store
-/// cases carry the entry or the link location its alternates spell.
+/// the two config cases carry the key and the value its config spells, the two object store cases
+/// carry the entry or the link location its alternates spell, and the submodule case carries the
+/// name and the path a `.gitmodules` section spells.
 ///
 /// # Examples
 ///
@@ -231,6 +232,35 @@ pub enum GitReadCondition {
     /// it, as [`GitReadCondition::ObjectStoreNamesOutside`]'s is. Nothing at that location was
     /// read, and where the entry leads is not observed.
     ObjectStoreNotLocated(String),
+    /// A `.gitmodules` section is named for a path the status read looks up, and its `path` leads
+    /// to another location inside the folder. Nothing at either location was read.
+    SubmoduleElsewhere(SubmoduleNamedPath),
+    /// A `.gitmodules` the check reads cannot be read: the read is not permitted, it is a link, it
+    /// is not a regular file, or it is over the size the check reads. An included file that cannot
+    /// be read answers [`GitReadCondition::GitDirectoryUnreadable`] instead.
+    GitmodulesUnreadable,
+}
+
+/// The name and the path a `.gitmodules` section spells, as the file writes them, when the
+/// section's path leads somewhere other than the name's own location. Each is spelled lossily from
+/// the file's bytes, as [`ConfigNamedPath`]'s path is, and never resolved, quoted or trimmed. For a
+/// section with no `path` entry the path is the written name.
+///
+/// # Examples
+///
+/// ```
+/// use nozoki_core::SubmoduleNamedPath;
+///
+/// let named = SubmoduleNamedPath {
+///     name: "vendor/lib".to_string(),
+///     path: "evil".to_string(),
+/// };
+/// assert_eq!(named.name, "vendor/lib");
+/// ```
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SubmoduleNamedPath {
+    pub name: String,
+    pub path: String,
 }
 
 /// The key a repository's config spells and the value it gives it, as the config writes them, when

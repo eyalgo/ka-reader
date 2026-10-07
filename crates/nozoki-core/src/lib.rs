@@ -15,7 +15,7 @@ pub use folder_model::{
 pub use fs_reader::{CannotDisplayReason, Condition, Entry, EntryKind, ItemState, OpenFailure};
 pub use git_reader::{
     BranchElement, ConfigNamedPath, GitPort, GitReadCondition, HeadState, Libgit2, ProbeCondition,
-    RepositoryState, RootFinding, StatusCategory, StatusEntry, StatusLists,
+    RepositoryState, RootFinding, StatusCategory, StatusEntry, StatusLists, SubmoduleNamedPath,
 };
 pub use highlighter::{Span, TokenClass, highlight};
 pub use language::Language;

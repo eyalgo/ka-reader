@@ -230,6 +230,8 @@ impl GitCondition {
             Self::Read(GitReadCondition::ObjectStoreNotLocated(_)) => {
                 OBJECT_STORE_NOT_LOCATED_PHRASE
             }
+            Self::Read(GitReadCondition::SubmoduleElsewhere(_)) => SUBMODULE_ELSEWHERE_PHRASE,
+            Self::Read(GitReadCondition::GitmodulesUnreadable) => GITMODULES_UNREADABLE_PHRASE,
         }
     }
 }
@@ -251,6 +253,14 @@ const OBJECT_STORE_NAMES_OUTSIDE_PHRASE: &str =
 /// operation met it. It carries neither the entry nor the location the condition holds.
 const OBJECT_STORE_NOT_LOCATED_PHRASE: &str =
     "the object store names a location the reader does not locate";
+
+/// The one phrase for a `.gitmodules` section that names another location for a looked-up path. It
+/// carries neither the name nor the path the condition holds.
+const SUBMODULE_ELSEWHERE_PHRASE: &str =
+    "a .gitmodules section names another location for a looked-up path";
+
+/// The one phrase for a `.gitmodules` the check could not read.
+const GITMODULES_UNREADABLE_PHRASE: &str = "a .gitmodules could not be read";
 
 /// An opened folder with what has been read of it: the root listing and the Git item.
 ///
