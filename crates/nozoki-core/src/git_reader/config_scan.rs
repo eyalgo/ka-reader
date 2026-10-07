@@ -621,6 +621,124 @@ mod tests {
         }
     }
 
+    /// The `[submodule]` sections of `text`, as `(word, stored name, written name, path entries)`.
+    fn sections(text: &str) -> Vec<(String, Vec<u8>, String, Vec<(String, Vec<u8>)>)> {
+        scan(text.as_bytes())
+            .expect("the text parses")
+            .sections
+            .into_iter()
+            .map(|section| {
+                (
+                    section.word,
+                    section.stored_name,
+                    section.written_name,
+                    section
+                        .paths
+                        .into_iter()
+                        .map(|path| (path.key, path.value))
+                        .collect(),
+                )
+            })
+            .collect()
+    }
+
+    #[test]
+    fn test_one_record_per_submodule_header_in_file_order() {
+        let found = sections("[submodule \"a\"]\n\tpath = x\n[submodule \"b\"]\n\tpath = y\n");
+        let names: Vec<_> = found.iter().map(|found| found.2.as_str()).collect();
+        assert_eq!(names, ["a", "b"]);
+        assert_eq!(
+            found[0].3,
+            [("submodule.a.path".to_string(), b"x".to_vec())]
+        );
+        assert_eq!(
+            found[1].3,
+            [("submodule.b.path".to_string(), b"y".to_vec())]
+        );
+    }
+
+    #[test]
+    fn test_section_word_and_written_name_are_as_written() {
+        let found = sections("[Submodule \"MixedCase\"]\n\tPath = x\n");
+        assert_eq!(found.len(), 1);
+        assert_eq!(found[0].0, "Submodule");
+        assert_eq!(found[0].2, "MixedCase");
+        assert_eq!(
+            found[0].3,
+            [("Submodule.MixedCase.Path".to_string(), b"x".to_vec())]
+        );
+    }
+
+    #[test]
+    fn test_stored_name_keeps_quoted_subsection_case_and_unescapes_quotes() {
+        let found = sections("[submodule \"A\\\"b\"]\n\tpath = x\n");
+        assert_eq!(found[0].1, b"A\"b");
+        assert_eq!(found[0].2, "A\"b");
+    }
+
+    #[test]
+    fn test_legacy_dotted_header_stores_lowercased_name() {
+        let found = sections("[submodule.X]\n\tpath = y\n");
+        assert_eq!(found.len(), 1);
+        assert_eq!(found[0].0, "submodule");
+        assert_eq!(found[0].1, b"x");
+        assert_eq!(found[0].2, "X");
+        assert_eq!(
+            found[0].3,
+            [("submodule.X.path".to_string(), b"y".to_vec())]
+        );
+    }
+
+    #[test]
+    fn test_header_only_section_has_empty_path_list() {
+        let found = sections("[submodule \"only\"]\n\turl = /somewhere\n");
+        assert_eq!(found.len(), 1);
+        assert_eq!(found[0].2, "only");
+        assert!(found[0].3.is_empty());
+    }
+
+    #[test]
+    fn test_two_path_entries_under_one_header_are_both_kept_in_order() {
+        let found = sections("[submodule \"a\"]\n\tpath = one\n\tpath = two\n");
+        assert_eq!(found.len(), 1);
+        let values: Vec<_> = found[0].3.iter().map(|entry| entry.1.as_slice()).collect();
+        assert_eq!(values, [b"one".as_slice(), b"two".as_slice()]);
+    }
+
+    #[test]
+    fn test_path_without_equals_is_an_empty_value() {
+        let found = sections("[submodule \"a\"]\n\tpath\n");
+        assert_eq!(found[0].3, [("submodule.a.path".to_string(), Vec::new())]);
+    }
+
+    #[test]
+    fn test_non_utf8_subsection_keeps_bytes_as_stored_name_and_is_lossy_in_written_name() {
+        let mut text = b"[submodule \"a".to_vec();
+        text.extend_from_slice(&[0xFF, 0xFE]);
+        text.extend_from_slice(b"b\"]\n\tpath = x\n");
+        let found = scan(&text).expect("parses").sections;
+        assert_eq!(found.len(), 1);
+        assert_eq!(found[0].stored_name, [b'a', 0xFF, 0xFE, b'b']);
+        assert_eq!(found[0].written_name, "a\u{FFFD}\u{FFFD}b");
+    }
+
+    #[test]
+    fn test_submodule_section_beside_include_leaves_references_as_before() {
+        let scanned =
+            scan(b"[include]\n\tpath = inc\n[submodule \"a\"]\n\tpath = x\n").expect("parses");
+        assert_eq!(scanned.references.len(), 1);
+        assert_eq!(scanned.references[0].key, "include.path");
+        assert_eq!(scanned.sections.len(), 1);
+    }
+
+    #[test]
+    fn test_unparsable_header_is_still_a_parse_failure() {
+        assert_eq!(
+            scan(b"[submodule \"a]\n\tpath = x\n").err(),
+            Some(ConfigParseFailure)
+        );
+    }
+
     #[test]
     fn test_the_worktree_config_extension_is_noticed_as_git_reads_a_boolean() {
         let set = |text: &str| scan(text.as_bytes()).expect("parses").worktree_config;
