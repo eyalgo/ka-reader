@@ -95,7 +95,7 @@ final class BridgePayloadGitTests: XCTestCase {
                 #"{"state":"failed","condition":"object_store_not_located","path":"relative/objects"}"#
             ),
             .failed(.objectStoreNotLocated(path: "relative/objects")))
-        XCTAssertEqual(GitCondition.allCases.count + 5, 17)
+        XCTAssertEqual(GitCondition.allCases.count + 6, 18)
     }
 
     func test_configNotLocatedWithAMissingOrExtraMemberIsRefused() {
