@@ -64,7 +64,7 @@ final class BridgePayloadGitTests: XCTestCase {
                     branch: .detached(commit: commit), state: .rebase, staged: [], changed: [])))
     }
 
-    func test_eachOfTheFifteenConditionsDecodesAndTheFourWithTextKeepTheirOwn() {
+    func test_eachOfTheSixteenConditionsDecodesAndTheFiveWithTextKeepTheirOwn() {
         for condition in GitCondition.allCases {
             XCTAssertEqual(
                 decode(#"{"state":"failed","condition":"\#(condition.rawValue)"}"#),
@@ -90,7 +90,12 @@ final class BridgePayloadGitTests: XCTestCase {
                 #"{"state":"failed","condition":"config_not_located","key":"core.excludesfile","path":"ignore-rel"}"#
             ),
             .failed(.configNotLocated(key: "core.excludesfile", path: "ignore-rel")))
-        XCTAssertEqual(GitCondition.allCases.count + 4, 15)
+        XCTAssertEqual(
+            decode(
+                #"{"state":"failed","condition":"object_store_not_located","path":"relative/objects"}"#
+            ),
+            .failed(.objectStoreNotLocated(path: "relative/objects")))
+        XCTAssertEqual(GitCondition.allCases.count + 5, 16)
     }
 
     func test_configNotLocatedWithAMissingOrExtraMemberIsRefused() {
@@ -162,6 +167,43 @@ final class BridgePayloadGitTests: XCTestCase {
                 #"{"path":"/x","condition":"object_store_names_outside","state":"failed"}"#),
             .failed(.objectStoreNamesOutside(path: "/x")),
             "the members are read by name, in any order")
+    }
+
+    func test_theObjectStoreNotLocatedWireObjectDecodesToTheFailureWithItsValue() {
+        for path in ["relative/objects", " /abs/objects", "~/objects", "/x"] {
+            XCTAssertEqual(
+                decode(
+                    #"{"state":"failed","condition":"object_store_not_located","path":"\#(path)"}"#
+                ),
+                .failed(.objectStoreNotLocated(path: path)), path)
+        }
+        XCTAssertEqual(
+            decode(#"{"path":"/x","condition":"object_store_not_located","state":"failed"}"#),
+            .failed(.objectStoreNotLocated(path: "/x")),
+            "the members are read by name, in any order")
+    }
+
+    func test_objectStoreNotLocatedWithAMissingOrExtraMemberDecodesAsStopped() {
+        let rejected = [
+            #"{"state":"failed","condition":"object_store_not_located"}"#,
+            #"{"state":"failed","condition":"object_store_not_located","path":null}"#,
+            #"{"state":"failed","condition":"object_store_not_located","path":7}"#,
+            #"{"state":"failed","condition":"object_store_not_located","path":"/x","key":"include.path"}"#,
+            #"{"state":"failed","condition":"object_store_not_located","path":"/x","git_directory":"/y"}"#,
+            #"{"state":"failed","condition":"object_store_not_located","path":"/x","extra":1}"#,
+        ]
+        for payload in rejected {
+            XCTAssertEqual(decode(payload), .stopped, payload)
+        }
+    }
+
+    func test_aPathUnderAConditionNamingNeitherObservationDecodesAsStopped() {
+        for payload in [
+            #"{"state":"failed","condition":"object_store_refused","path":"relative/objects"}"#,
+            #"{"state":"failed","condition":"not_a_root","path":"relative/objects"}"#,
+        ] {
+            XCTAssertEqual(decode(payload), .stopped, payload)
+        }
     }
 
     func test_aMissingPathDecodesAsStopped() {
