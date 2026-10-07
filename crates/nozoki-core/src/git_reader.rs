@@ -257,10 +257,10 @@ pub struct ConfigNamedPath {
     pub path: String,
 }
 
-/// The answer to a probe. It holds no path and no text except in three variants: a refused config,
+/// The answer to a probe. It holds no path and no text except in four variants: a refused config,
 /// of either observation, carries the key and the value the config spells, and a refused object
-/// store carries the entry or link location it spells. Each is the repository's own words about a
-/// place the probe does not read.
+/// store, of either observation, carries the entry it spells or, for a link, the location its
+/// spelling reaches. Each is the repository's own words about a place the probe does not read.
 ///
 /// # Examples
 ///
