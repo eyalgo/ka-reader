@@ -149,7 +149,8 @@ gets, and how much of the reader's attention KA-Reader is entitled to take.
 - **Abbreviations.** None are coined. *Git* is capitalised as the name of the system and lowercase
   only inside a literal command (`git init`). *Markdown* is capitalised. *KA-Reader* is capitalised
   in prose; the lowercase `ka-reader` appears only as a repository or package identifier, which is a
-  name and not a word. The name never appears in the running product (`docs/DESIGN.md` § Components: the shell carries no product name at all).
+  name and not a word. The product's name is never written in kanji, and never appears in the
+  running product (`docs/DESIGN.md` § Components: the shell carries no product name at all).
 - **A single-letter code is never the whole of a statement.** Git's status letters are shown
   beside a changed file or a listed folder (`docs/DESIGN.md` § Components, "Status letters");
   every place they appear is covered by § Accessibility of text, which states what has to name

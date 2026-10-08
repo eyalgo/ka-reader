@@ -67,5 +67,6 @@ are outside what KA-Reader is built to become.
 
 ## Name
 
-*KA-Reader* was called *Nozoki* (覗き — *"to peek / peer in"*) until 2026-10-08. The tool is
-the same: it lets you look into a folder, but never reach in and change it.
+*KA-Reader* was called *Nozoki* (覗き — *"to peek / peer in"*) until 2026-10-08.
+The tool is the same: it lets you look into a folder,
+but never reach in and change it.
