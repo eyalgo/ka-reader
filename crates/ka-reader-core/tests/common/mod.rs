@@ -140,6 +140,37 @@ impl TempDir {
         entries
     }
 
+    /// Panics with `message` when the folder no longer matches `before`, naming each path that was
+    /// added, removed or changed rather than printing both snapshots: those carry every `.git`
+    /// file's bytes, and a CI log cut off after the first of them never shows what differed.
+    pub fn assert_unchanged_since(&self, before: &Snapshot, message: &str) {
+        let after = self.snapshot();
+        if &after == before {
+            return;
+        }
+        let mut differences = Vec::new();
+        for (path, entry) in before {
+            match after.get(path) {
+                None => {
+                    differences.push(format!("removed {} ({})", path.display(), describe(entry)))
+                }
+                Some(now) if now != entry => differences.push(format!(
+                    "changed {} ({} -> {})",
+                    path.display(),
+                    describe(entry),
+                    describe(now)
+                )),
+                Some(_) => {}
+            }
+        }
+        for (path, entry) in &after {
+            if !before.contains_key(path) {
+                differences.push(format!("added {} ({})", path.display(), describe(entry)));
+            }
+        }
+        panic!("{message}:\n  {}", differences.join("\n  "));
+    }
+
     pub fn set_mode(&self, relative: &str, mode: u32) {
         let path = self.root.join(relative);
         fs::set_permissions(&path, fs::Permissions::from_mode(mode)).expect("the mode can be set");
@@ -223,6 +254,23 @@ fn copy_keeping_links(
         }
     } else {
         fs::copy(source, destination).expect("the file can be copied");
+    }
+}
+
+/// A [`SnapshotEntry`] in a few words: a file by its length, and by its text when it is short.
+fn describe(entry: &SnapshotEntry) -> String {
+    match entry {
+        SnapshotEntry::Folder => "folder".to_string(),
+        SnapshotEntry::Link(target) => format!("link to {}", target.display()),
+        SnapshotEntry::Other => "other".to_string(),
+        SnapshotEntry::File(bytes) if bytes.len() <= 120 => {
+            format!(
+                "file, {} bytes: {:?}",
+                bytes.len(),
+                String::from_utf8_lossy(bytes)
+            )
+        }
+        SnapshotEntry::File(bytes) => format!("file, {} bytes", bytes.len()),
     }
 }
 

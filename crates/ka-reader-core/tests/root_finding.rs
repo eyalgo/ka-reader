@@ -37,7 +37,7 @@ fn assert_clean(outcome: &RootFinding, before: &Snapshot, scene: &TempDir) {
         carries_the_repositorys_words || !format!("{outcome:?}").contains('/'),
         "the answer {outcome:?} holds a path"
     );
-    assert_eq!(&scene.snapshot(), before, "the probe changed the scene");
+    scene.assert_unchanged_since(before, "the probe changed the scene");
 }
 
 /// Probes `folder` and returns the answer, after checking the two contracts every case shares.
