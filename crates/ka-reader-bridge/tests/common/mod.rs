@@ -213,8 +213,8 @@ fn copy_keeping_links(source: &Path, destination: &Path) {
     }
 }
 
-/// A `git` invocation in `dir` that reads no machine-level configuration and runs no hook, so a
-/// scene built with it is the same on every machine.
+/// A `git` invocation in `dir` that reads no machine-level configuration, runs no hook and starts
+/// no background maintenance, so a scene built with it is the same on every machine.
 fn git_command(dir: &Path, args: &[&str]) -> Command {
     let mut command = Command::new("git");
     command
@@ -227,6 +227,13 @@ fn git_command(dir: &Path, args: &[&str]) -> Command {
             "commit.gpgsign=false",
             "-c",
             "advice.detachedHead=false",
+            // A command that writes starts `git maintenance run --auto`, detached by default, and
+            // its `objects/maintenance.lock` can come and go after the command returns: a scene
+            // then changes under a test that holds it must not.
+            "-c",
+            "maintenance.auto=false",
+            "-c",
+            "gc.auto=0",
         ])
         .args(args)
         .env("GIT_CONFIG_GLOBAL", "/dev/null")
