@@ -14,7 +14,9 @@ use std::path::Path;
 use std::sync::Mutex;
 
 use common::TempDir;
-use ka_reader_bridge::exports::{KAReaderBuffer, ka_reader_free, ka_reader_open_folder, ka_reader_read_git};
+use ka_reader_bridge::exports::{
+    KAReaderBuffer, ka_reader_free, ka_reader_open_folder, ka_reader_read_git,
+};
 use serde_json::{Value, json};
 
 static ONE_AT_A_TIME: Mutex<()> = Mutex::new(());

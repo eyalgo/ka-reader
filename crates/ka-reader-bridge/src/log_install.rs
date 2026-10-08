@@ -142,7 +142,10 @@ mod tests {
 
     #[test]
     fn test_app_path_not_under_contents_macos_does_not_install() {
-        assert!(!should_install(Path::new("/x/KA-Reader.app/KAReader"), true));
+        assert!(!should_install(
+            Path::new("/x/KA-Reader.app/KAReader"),
+            true
+        ));
     }
 
     #[test]

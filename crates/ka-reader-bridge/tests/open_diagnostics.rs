@@ -9,8 +9,10 @@ mod common;
 use std::ffi::CString;
 use std::sync::{Mutex, MutexGuard, Once};
 
+use ka_reader_bridge::exports::{
+    KAReaderBuffer, ka_reader_free, ka_reader_list_tree, ka_reader_open_folder,
+};
 use log::{Log, Metadata, Record};
-use ka_reader_bridge::exports::{KAReaderBuffer, ka_reader_free, ka_reader_list_tree, ka_reader_open_folder};
 
 use common::{TempDir, capture_stderr};
 

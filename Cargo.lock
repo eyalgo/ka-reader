@@ -113,6 +113,36 @@ dependencies = [
 ]
 
 [[package]]
+name = "ka-reader-bridge"
+version = "0.0.0"
+dependencies = [
+ "git2",
+ "ka-reader-core",
+ "libc",
+ "log",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "ka-reader-core"
+version = "0.0.0"
+dependencies = [
+ "git2",
+ "log",
+ "rustix",
+ "thiserror",
+ "tree-sitter",
+ "tree-sitter-bash",
+ "tree-sitter-highlight",
+ "tree-sitter-javascript",
+ "tree-sitter-json",
+ "tree-sitter-python",
+ "tree-sitter-toml-ng",
+ "tree-sitter-yaml",
+]
+
+[[package]]
 name = "libc"
 version = "0.2.189"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -159,36 +189,6 @@ name = "memchr"
 version = "2.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf8baf1c55e62ffcace7a9f06f4bd9cd3f0c4beb022d3b367256b91b87513d98"
-
-[[package]]
-name = "ka-reader-bridge"
-version = "0.0.0"
-dependencies = [
- "git2",
- "libc",
- "log",
- "ka-reader-core",
- "serde",
- "serde_json",
-]
-
-[[package]]
-name = "ka-reader-core"
-version = "0.0.0"
-dependencies = [
- "git2",
- "log",
- "rustix",
- "thiserror",
- "tree-sitter",
- "tree-sitter-bash",
- "tree-sitter-highlight",
- "tree-sitter-javascript",
- "tree-sitter-json",
- "tree-sitter-python",
- "tree-sitter-toml-ng",
- "tree-sitter-yaml",
-]
 
 [[package]]
 name = "pkg-config"
