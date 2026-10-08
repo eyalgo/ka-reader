@@ -24,7 +24,7 @@
 - **Verdict:** confirmed with addition
 - **Why:** The PM's lean holds, and it holds for the reason given. `checks/no-network.sh` proves
   that the tree equals the list and cannot fail on the thing QC-3 states. I measured the item's own
-  case at `nozoki@9b36a42`: the script exits 0 with `tokio` (`checks/deps.allow:L204`) and
+  case at `ka-reader@9b36a42`: the script exits 0 with `tokio` (`checks/deps.allow:L204`) and
   `crypto-common` (`:L51`) on the list. Naming QC-26's same-change review as the second half makes
   QC-3 point at what `docs/SDD.md` § 4 C-R6 already says: the allowlist change "is reviewed in the
   same change", and "no shipped unit links a network transport". So this re-derives QC-3 from its
@@ -35,7 +35,7 @@
   "deliberate". That review, pointed at unchanged, would admit a transport that was added on
   purpose. So QC-3's second half says the review judges each added name against QC-3's domain, in
   the features the lockfile resolves. A name alone cannot answer that. `cargo tree --offline
-  --locked -e features -i tokio` at `nozoki@9b36a42` resolves `bytes, default, fs, io-util, rt,
+  --locked -e features -i tokio` at `ka-reader@9b36a42` resolves `bytes, default, fs, io-util, rt,
   rt-multi-thread, sync` and no `net`, so `tokio` links no socket today, and the name says nothing
   either way. QC-3's own first clause — libgit2 without its HTTPS and SSH transports — is purely a
   feature condition. C-R6 names "a transport-bearing build of libgit2" as a violation, and the name
@@ -67,7 +67,7 @@
   on every ask. I came close to a new record over the control, since the control got stricter. It
   still "fails", so I did not; had the ADR fixed a one-ask read in its § Decision, I would have
   written one. **Addition one: QC-25 is re-derived now, not "maybe".** The item hedged on whether
-  QC-25 was owed a change once the SDD folded § 5.1. The SDD has folded it (v8, RN-48, `nozoki@9b36a42`),
+  QC-25 was owed a change once the SDD folded § 5.1. The SDD has folded it (v8, RN-48, `ka-reader@9b36a42`),
   and under the SDD's own rule the § 4 statement wins and the NFDR entry is re-derived. QC-25's
   *verified by* takes these sentences from C-I3 at v8:
   - one ask inside a bounded window, with the pass on the first ask where all three hold;
@@ -127,4 +127,4 @@ None this run.
 
 ## Launchers owed
 
-- **`adr/` and `nfdr.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/skill/launcher.sh product-architecture nozoki`
+- **`adr/` and `nfdr.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/skill/launcher.sh product-architecture ka-reader`

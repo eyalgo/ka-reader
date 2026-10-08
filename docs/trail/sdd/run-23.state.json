@@ -5,7 +5,7 @@
       "seat": "cpo"
     },
     {
-      "changed_text": "\u00a7 3 `read-only-harness` row (*Owns* cell: pinned enumeration at `nozoki@7a125b4`, on-disk/slice-owed split, `entry-points.sh`+`entry-points.allow`, `walk.rs`, `sandbox_probe.rs`, `deps.review.md`, `tests/`, `repo.git.tar`, `highlight`, `text`, `history`, `scale-*`, `hostile.md`); SDD Review Notes RN-84 (new); `docs/SDD_open_issues.md` removed, empty of items. No slices altered. Companion items added: none.",
+      "changed_text": "\u00a7 3 `read-only-harness` row (*Owns* cell: pinned enumeration at `ka-reader@7a125b4`, on-disk/slice-owed split, `entry-points.sh`+`entry-points.allow`, `walk.rs`, `sandbox_probe.rs`, `deps.review.md`, `tests/`, `repo.git.tar`, `highlight`, `text`, `history`, `scale-*`, `hostile.md`); SDD Review Notes RN-84 (new); `docs/SDD_open_issues.md` removed, empty of items. No slices altered. Companion items added: none.",
       "seat": "cto"
     },
     {
@@ -15,7 +15,7 @@
   ],
   "companion_present_at_intake": true,
   "companion_retired": false,
-  "consumed_cycle_path": "/Users/eyalgolan/products/nozoki/docs/trail/sdd/cycle-20.md",
+  "consumed_cycle_path": "/Users/eyalgolan/products/ka-reader/docs/trail/sdd/cycle-20.md",
   "core_root": "/Users/eyalgolan/.kensaiapp/pins/20261003T013547Z-jbolux/core",
   "ended": "seats-close",
   "ended_at": "2026-10-03T02:08:21.267398+00:00",
@@ -26,12 +26,12 @@
   "output_tokens": 0,
   "output_tokens_under_counted": true,
   "pending_request": {
-    "cdo": "No CDO edit is needed for the harness enumeration: the affected slices retain concrete observations for Markdown rendering, Git states, refresh stability and history, grounded in the UXD ([SDD.md:L1544\u2013L1559](/Users/eyalgolan/products/nozoki/docs/SDD.md:1544), [L1620\u2013L1647](/Users/eyalgolan/products/nozoki/docs/SDD.md:1620), [L1699\u2013L1716](/Users/eyalgolan/products/nozoki/docs/SDD.md:1699), [L1930\u2013L1945](/Users/eyalgolan/products/nozoki/docs/SDD.md:1930); [UXD.md:L138\u2013L199](/Users/eyalgolan/products/nozoki/docs/UXD.md:138), [L239\u2013L244](/Users/eyalgolan/products/nozoki/docs/UXD.md:239), [L291\u2013L324](/Users/eyalgolan/products/nozoki/docs/UXD.md:291)).\n\nOne upstream change merits acknowledgment: DESIGN now centres the path text vertically within its row; the SDD already delegates component treatment to DESIGN, so this requires no copied placement rule or re-cut ([DESIGN.md:L664\u2013L671](/Users/eyalgolan/products/nozoki/docs/DESIGN.md:664); [SDD.md:L1388\u2013L1390](/Users/eyalgolan/products/nozoki/docs/SDD.md:1388), [L2674\u2013L2677](/Users/eyalgolan/products/nozoki/docs/SDD.md:2674)).\n\nThe comparison against HEAD returned `UNCHANGED` for the CDO experience conditions, step-1 observability, all slice fields and UXD boundary; the companion existence check returned `False` (`python3` comparison output).",
+    "cdo": "No CDO edit is needed for the harness enumeration: the affected slices retain concrete observations for Markdown rendering, Git states, refresh stability and history, grounded in the UXD ([SDD.md:L1544\u2013L1559](/Users/eyalgolan/products/ka-reader/docs/SDD.md:1544), [L1620\u2013L1647](/Users/eyalgolan/products/ka-reader/docs/SDD.md:1620), [L1699\u2013L1716](/Users/eyalgolan/products/ka-reader/docs/SDD.md:1699), [L1930\u2013L1945](/Users/eyalgolan/products/ka-reader/docs/SDD.md:1930); [UXD.md:L138\u2013L199](/Users/eyalgolan/products/ka-reader/docs/UXD.md:138), [L239\u2013L244](/Users/eyalgolan/products/ka-reader/docs/UXD.md:239), [L291\u2013L324](/Users/eyalgolan/products/ka-reader/docs/UXD.md:291)).\n\nOne upstream change merits acknowledgment: DESIGN now centres the path text vertically within its row; the SDD already delegates component treatment to DESIGN, so this requires no copied placement rule or re-cut ([DESIGN.md:L664\u2013L671](/Users/eyalgolan/products/ka-reader/docs/DESIGN.md:664); [SDD.md:L1388\u2013L1390](/Users/eyalgolan/products/ka-reader/docs/SDD.md:1388), [L2674\u2013L2677](/Users/eyalgolan/products/ka-reader/docs/SDD.md:2674)).\n\nThe comparison against HEAD returned `UNCHANGED` for the CDO experience conditions, step-1 observability, all slice fields and UXD boundary; the companion existence check returned `False` (`python3` comparison output).",
     "cpo": "Verified from the tree, not from the turn messages:\n\n- **The fold touched only the CTO's lane.** `git -C \u2026 diff -U0 -- docs/SDD.md | grep '^@@'` prints two hunks: `@@ -332 +332 @@` (\u00a7 3's `read-only-harness` row) and `@@ -4872,0 +4873,74 @@` (RN-84, appended under *SDD Review Notes*). No hunk falls in \u00a7 1 (`:L137-L194`), \u00a7 5 steps 1/2/4, any \u00a7 6 slice, or \u00a7 12 \u2014 my lanes are byte-for-byte what Version 24 carried.\n- **Every slice slug the new row cites is a slug \u00a7 6 declares.** The row at `:L332` names `follow-the-folder`, `promise-one-point-zero`, `read-markdown`, `read-the-history` and `see-git-status`; \u00a7 6 declares each (`docs/SDD.md:L1692`, `:L2036`, `:L1539`, `:L1924`, `:L1612`). The row's other backticked names (`repo`, `plain`, `scale-large`, `idle-shell`, \u2026) are fixtures and units, not slugs. So the CTO's cross-references into my naming resolve, and no slug of mine is misnamed or invented.\n- **The companion is gone.** `ls docs/SDD_open_issues.md` \u2192 `No such file or directory`; `git status` shows `D docs/SDD_open_issues.md`. Nothing is left open for the owner, and nothing was raised that lands in my lane.\n- The CDO's DESIGN note (path text centred in its row) is the CDO's \u00a7 4 experience-conditions lane and the UXD boundary; it names no PRD scope and no slice value, so it is not mine to take up.\n\nNo call of mine this turn is one the upstream documents did not settle, so no review note carries my seat tag and I add no companion item. `Status:` and `Version:` are the runner's.",
-    "cto": "My turn is worked. Here is where it stands.\n\n**The successor work the CPO named is done, in my lane, from measurement rather than from the Answer's text.** \u00a7 3's `read-only-harness` row (`docs/SDD.md:L332`) now enumerates everything `checks/` holds \u2014 `entry-points.sh` with `entry-points.allow` cited to `docs/nfdr.md` QC-30 half (2); `walk.rs`, `sandbox_probe.rs` and `deps.review.md` each beside the script that uses it; `tests/` as one suite per on-disk script, each its own CI step \u2014 pinned to `nozoki@7a125b4`, and split into *on disk at that commit* / *owed by a slice*, naming the slice that owes each. Slug, *Lives in* and *Must not own* are untouched, so the parts table keeps the shape the skeleton launcher reads (row still four cells, eleven parts).\n\n**Verified before writing, at HEAD `7a125b4`:** `git ls-tree`, `ls checks/fixtures`, `ls checks/tests`, the three absent scripts, the eight `test_*.sh` CI steps (`ci.yml:L32,38,48,54,65,74,80,83`), `walk.rs:L1`, `tests/walk.rs:L6`, `bundle.sh:L321-L322`, `deps.review.md:L3`, QC-30's trace (`nfdr.md:L618-L620`). `git diff --stat b158052 HEAD -- checks/` and `\u2026 4a31865 HEAD \u2026` both print nothing, so the item's commit, the answer's commit and the pin are one tree for this unit.\n\n**Three calls beyond the Answer, all inside this row and recorded in RN-84:** `repo.git.tar` named with `repo` (the suites unpack it there, `test_own_state.sh:L67`); `fixtures/history` and `fixtures/scale-*` added as slice-owed, since `read-the-history`'s and `follow-the-folder`'s command halves cite them and the row named neither; the hostile corpus named as the file `fixtures/hostile.md`, the form `read-markdown`'s bar cites.\n\n**What does not move:** \u00a7 2, \u00a7 5, \u00a7 7, SM-1\u2013SM-8, \u00a7 4 C-I3/C-I4, every \u00a7 6 bar and SRS trace, no \u00a7 10 entry. Downstream re-measurement of `docs/nfdr.md` \u00a7 9/\u00a7 10 is the Principal Architect's; the self-answer records `docs/architecture_open_issues.md` \u00a7 3.1 already carries it, so I opened nothing.\n\n**Companion:** `docs/SDD_open_issues.md` was identical to `docs/trail/sdd/cycle-20.md`; its one item is folded and nothing else stands, so the file is removed. `Status:` and `Version:` left for the runner. Working tree: `M docs/SDD.md`, `D docs/SDD_open_issues.md`; not committed \u2014 the commit is the skill's.\n\nOne note for the record on my own conduct: my first tree measurement used `cd \u2026 && git \u2026`; `commit_format.md` forbids `cd` for git, and every git call after it used `git -C`."
+    "cto": "My turn is worked. Here is where it stands.\n\n**The successor work the CPO named is done, in my lane, from measurement rather than from the Answer's text.** \u00a7 3's `read-only-harness` row (`docs/SDD.md:L332`) now enumerates everything `checks/` holds \u2014 `entry-points.sh` with `entry-points.allow` cited to `docs/nfdr.md` QC-30 half (2); `walk.rs`, `sandbox_probe.rs` and `deps.review.md` each beside the script that uses it; `tests/` as one suite per on-disk script, each its own CI step \u2014 pinned to `ka-reader@7a125b4`, and split into *on disk at that commit* / *owed by a slice*, naming the slice that owes each. Slug, *Lives in* and *Must not own* are untouched, so the parts table keeps the shape the skeleton launcher reads (row still four cells, eleven parts).\n\n**Verified before writing, at HEAD `7a125b4`:** `git ls-tree`, `ls checks/fixtures`, `ls checks/tests`, the three absent scripts, the eight `test_*.sh` CI steps (`ci.yml:L32,38,48,54,65,74,80,83`), `walk.rs:L1`, `tests/walk.rs:L6`, `bundle.sh:L321-L322`, `deps.review.md:L3`, QC-30's trace (`nfdr.md:L618-L620`). `git diff --stat b158052 HEAD -- checks/` and `\u2026 4a31865 HEAD \u2026` both print nothing, so the item's commit, the answer's commit and the pin are one tree for this unit.\n\n**Three calls beyond the Answer, all inside this row and recorded in RN-84:** `repo.git.tar` named with `repo` (the suites unpack it there, `test_own_state.sh:L67`); `fixtures/history` and `fixtures/scale-*` added as slice-owed, since `read-the-history`'s and `follow-the-folder`'s command halves cite them and the row named neither; the hostile corpus named as the file `fixtures/hostile.md`, the form `read-markdown`'s bar cites.\n\n**What does not move:** \u00a7 2, \u00a7 5, \u00a7 7, SM-1\u2013SM-8, \u00a7 4 C-I3/C-I4, every \u00a7 6 bar and SRS trace, no \u00a7 10 entry. Downstream re-measurement of `docs/nfdr.md` \u00a7 9/\u00a7 10 is the Principal Architect's; the self-answer records `docs/architecture_open_issues.md` \u00a7 3.1 already carries it, so I opened nothing.\n\n**Companion:** `docs/SDD_open_issues.md` was identical to `docs/trail/sdd/cycle-20.md`; its one item is folded and nothing else stands, so the file is removed. `Status:` and `Version:` left for the runner. Working tree: `M docs/SDD.md`, `D docs/SDD_open_issues.md`; not committed \u2014 the commit is the skill's.\n\nOne note for the record on my own conduct: my first tree measurement used `cd \u2026 && git \u2026`; `commit_format.md` forbids `cd` for git, and every git call after it used `git -C`."
   },
-  "product_path": "/Users/eyalgolan/products/nozoki",
-  "project": "nozoki",
+  "product_path": "/Users/eyalgolan/products/ka-reader",
+  "project": "ka-reader",
   "queue": [],
   "recall_outstanding": null,
   "recall_refusals": [],
@@ -39,31 +39,31 @@
   "resolved_inputs": {
     "cdo": [
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/SRS.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/UXD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/PRD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/agari.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ka-reader_doctrine.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ai_responsibility.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/definition_brief.md",
         "present": false
       },
       {
@@ -79,15 +79,15 @@
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/DESIGN.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/DESIGN.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/CONTENT.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/CONTENT.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/design_system",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/design_system",
         "present": false
       },
       {
@@ -101,31 +101,31 @@
     ],
     "cpo": [
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/SRS.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/UXD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/PRD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/agari.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ka-reader_doctrine.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ai_responsibility.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/definition_brief.md",
         "present": false
       },
       {
@@ -143,31 +143,31 @@
     ],
     "cto": [
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/SRS.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/UXD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/PRD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/agari.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ka-reader_doctrine.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ai_responsibility.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/definition_brief.md",
         "present": false
       },
       {
@@ -183,11 +183,11 @@
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/adr",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/adr",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/nfdr.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/nfdr.md",
         "present": true
       }
     ]
@@ -229,9 +229,9 @@
     "cto": "1090db56-1e14-410e-b61d-8a9e2aeb317b"
   },
   "seats": {
-    "cdo": "sdd-nozoki-run23-cdo",
-    "cpo": "sdd-nozoki-run23-cpo",
-    "cto": "sdd-nozoki-run23-cto"
+    "cdo": "sdd-ka-reader-run23-cdo",
+    "cpo": "sdd-ka-reader-run23-cpo",
+    "cto": "sdd-ka-reader-run23-cto"
   },
   "spoke_at": {
     "cdo": 2,

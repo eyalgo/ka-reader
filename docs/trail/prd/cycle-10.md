@@ -1,4 +1,4 @@
-# PRD open issues — Nozoki 覗き
+# PRD open issues — KA-Reader
 
 > Companion to `PRD.md`. The CPO authored the PRD non-interactively; this file holds what it could
 > not settle from the inputs. **Answer inline** — fill each **Answer** / **Confirm-or-override**
@@ -29,14 +29,14 @@ None.
 
 ### 2.1 The product sentence: a folder viewer that lights up Git, not a repository viewer that degrades
 
-- **Drafted into the PRD:** § Blurb and § Purpose now say Nozoki is *a read-only viewer for a
+- **Drafted into the PRD:** § Blurb and § Purpose now say KA-Reader is *a read-only viewer for a
   local folder* that, *when the folder is a Git repository*, also shows what has changed — *a
   folder viewer that lights up Git when it finds it, not a repository viewer that refuses
   everything else*. The Problem Statement, Why This and Target Users keep their repository-shaped
   wording: the pain and the driving scenario are still Git working trees under change; only the
   input widened.
 - **Rationale:** it is the framing your own directive was recorded in (the answering commit,
-  `nozoki@86903c2`, says the sentence changes *from a Git repository viewer to a folder viewer
+  `ka-reader@86903c2`, says the sentence changes *from a Git repository viewer to a folder viewer
   that lights up Git when it finds one*), and it is the honest one: a plain folder is a fully
   working state, so calling it a *degraded* repository would make the README's first line
   describe the exception as the product's failure. The alternative — *a repository viewer that
@@ -60,7 +60,7 @@ None.
   create a repository. The changed-file markers in the tree are absent. How the disabled view is
   drawn is left to the UXD, as the station's guardrail requires.
 - **Rationale:** your word was *disabled*, and a thing can only be disabled if it is present; a
-  view that vanishes would leave a Git user wondering whether Nozoki failed to find their
+  view that vanishes would leave a Git user wondering whether KA-Reader failed to find their
   repository. Present-and-saying-why is also what the PRD's *view never lies* rule asks: the state
   is shown, with its reason. The alternative — the Git view not offered at all in a plain folder,
   the sidebar showing Files only — is simpler to draw and is the override if you meant that.
@@ -70,7 +70,7 @@ None.
   anything. simple."*
   **The grounds are a contrast the owner supplied** (VS Code screenshot, 2026-08-26 22:43, a folder
   named `voxnote-project` with no repository). VS Code fills that empty state with an explanation
-  and two offers — *Initialize Repository* and *Publish to GitHub*. **Both are writes, and Nozoki
+  and two offers — *Initialize Repository* and *Publish to GitHub*. **Both are writes, and KA-Reader
   can never offer either**, so the surface that VS Code uses to sell a next step has no next step
   here. With nothing truthful to offer, the view says nothing rather than explaining its own
   emptiness.
@@ -78,7 +78,7 @@ None.
   right that the changed-file markers in the tree are absent. What is overridden is the explanatory
   sentence: there is no message. The CDO draws an empty view at `uxd-plain-folder`.
   *Raised and answered during the walk, recorded so it is not re-opened as a defect:* an empty view
-  cannot, on its own, tell a Git user "this folder has no repository" apart from "Nozoki failed to
+  cannot, on its own, tell a Git user "this folder has no repository" apart from "KA-Reader failed to
   read it". The owner chose the simpler surface knowing that. If the fault case ever needs to be
   told apart, that is the unexplained-fault class the UXD already owns (UX-I16), not a message in
   this state.
@@ -93,7 +93,7 @@ None.
   failure rather than adding a feature: the tree, the reading and the live refresh already work;
   what changes is that the window opens. Deferring it would have v1 build the refusal and a later
   release remove it. **One consequence for you to note, not answer here:** the project's Agari
-  (`system/projects/nozoki/agari.md`) describes the terminus as *point it at a local repository*;
+  (`system/projects/ka-reader/agari.md`) describes the terminus as *point it at a local repository*;
   once this is confirmed it wants the same widening through its own skill, `project-agari` — a
   separate run, outside this station.
 - **Confirm or override:** Confirm. The plain folder is **inside v1**, not beyond it. Scope (In)
@@ -101,7 +101,7 @@ None.
   case, and Out of Scope no longer lists a non-repository as a failure. Time-to-first-success stays
   measured against a Git repository.
   **On the Agari consequence the item flagged:** the owner did not defer it. They directed that a
-  CPO be invoked to widen `system/projects/nozoki/agari.md` *while this PRD round is still open*,
+  CPO be invoked to widen `system/projects/ka-reader/agari.md` *while this PRD round is still open*,
   rather than waiting for the PRD to settle. That is a separate run against a separate repository
   and file, and it does not touch `PRD.md` or this companion.
 
@@ -111,7 +111,7 @@ None.
   the root of a Git repository. A folder inside a repository, and a folder that contains
   repositories, both open as plain folders.* § Out of Scope carries the exclusion.
 - **Rationale:** no input mentions either case, and the product cannot stay silent on them — Git
-  itself finds a repository from any folder beneath its root, so without a rule Nozoki would open
+  itself finds a repository from any folder beneath its root, so without a rule KA-Reader would open
   `src/` of a repository with a Git view reporting changes in files the tree does not show, and a
   folder of ten repositories with a Git view for none or one. *The tree and the Git view always
   describe the same folder* is the smallest rule that keeps the view from lying. The override

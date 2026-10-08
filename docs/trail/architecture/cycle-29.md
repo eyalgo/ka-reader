@@ -1,4 +1,4 @@
-# Architecture open issues — Nozoki
+# Architecture open issues — KA-Reader
 
 > Companion to `adr/` and `nfdr.md`. The Principal Architect authored both records
 > non-interactively; this file holds what the run could not settle from its inputs — the SRS, the SDD
@@ -18,7 +18,7 @@
 
 > **No `product-architecture` run wrote this file.** The PM opened it on 2026-10-03 from the records'
 > own companion template. `git-reader` now exists in the tree, binding libgit2 behind the Git port
-> (`crates/nozoki-core/src/git_reader.rs`, `crates/nozoki-core/src/git_reader/libgit2.rs`, `nozoki@126ef75`).
+> (`crates/ka-reader-core/src/git_reader.rs`, `crates/ka-reader-core/src/git_reader/libgit2.rs`, `ka-reader@126ef75`).
 > Five statements of the records no longer match what landed, or leave open a choice the code had to
 > make provisionally. The records are Settled, and with no companion on disk a `product-architecture` re-run
 > reads them as done and has nothing to act on. Its five items are in § 3.
@@ -37,7 +37,7 @@ None.
 > 2026-10-03 while answering § 3.5 in the owner's seat. It is the half of § 3.5 that run could answer
 > here: what the NFDR states in the meantime. § 3.5's other half — where libgit2's search path may
 > be switched off, or whether the reads are accepted instead — is the SDD's, and is raised at
-> `docs/SDD_open_issues.md` § 2.1 (`nozoki@4f028c7`). That is all § 3.5 is now left asking, though
+> `docs/SDD_open_issues.md` § 2.1 (`ka-reader@4f028c7`). That is all § 3.5 is now left asking, though
 > its heading still names the whole question. The slot below is the next round's.
 
 - **Lands in:** `nfdr.md` QC-35, and § 10's QC-35 row
@@ -55,7 +55,7 @@ None.
   as fixed while the change that exports `probe` is designed. The structural fix is the SDD's and
   cannot land here first. What can land here is the record saying, at the entry a reader opens, that
   the promise has a known hole and where its repair is decided. Sources: `docs/fdr.md` R-101;
-  `docs/SDD.md` C-D1 (`:L852-L857`); `crates/nozoki-core/src/git_reader/libgit2.rs:L52`.
+  `docs/SDD.md` C-D1 (`:L852-L857`); `crates/ka-reader-core/src/git_reader/libgit2.rs:L52`.
 - **If overridden:** QC-35 stays unqualified until the SDD's answer re-derives into it. A change
   that exports `probe` in that window reads a promise the open does not keep, and only § 3.5's trail
   copy says otherwise.
@@ -65,7 +65,7 @@ None.
 
 > **No `product-architecture` run wrote this item.** A `companion-self-answer` run raised it on
 > 2026-10-03. It read libgit2's source to answer § 3.5, read QC-30 and QC-9 beside it, and found
-> both stating something `nozoki@126ef75` made false. No item asked about either. The slot below is
+> both stating something `ka-reader@126ef75` made false. No item asked about either. The slot below is
 > the next round's.
 
 - **Lands in:** `nfdr.md` QC-30 and QC-9
@@ -87,8 +87,8 @@ None.
      only through libgit2-sys. Whether that file is compiled into this build was not established, and
      the fold measures it before naming it.
   2. **QC-9.** "and libgit2 when `git-reader` links it" becomes "and libgit2, which `git-reader`
-     links". `crates/nozoki-core/Cargo.toml:L9` has named `git2` with `vendored-libgit2` since
-     `nozoki@126ef75`.
+     links". `crates/ka-reader-core/Cargo.toml:L9` has named `git2` with `vendored-libgit2` since
+     `ka-reader@126ef75`.
 - **Rationale:** Both meet the strongest ground for reopening a settled document: a fact in it is
   now false, by measurement. The libgit2 reads are dormant in the shipped process today, since no
   bridge function reaches `git-reader` (`docs/SDD.md` RN-85). But QC-30's half (2) is stated of the
@@ -102,7 +102,7 @@ None.
 ### 3.1 ADR-0005 does not say what `probe` answers for a `.git` file, and the adapter answers it provisionally
 - **Raised by:** PM — 2026-10-03
 - **Which record:** `adr/0005-root-finding-behind-the-git-port.md`
-- **Tracked by:** `nozoki · nemawashi · 2026-10-02_git-says-what-changed`
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-02_git-says-what-changed`
 - **What it blocks:** the Git-state work for a linked worktree and a submodule. It cannot replace the
   provisional answer until the record states the real one.
 - **Where it shows:** ADR-0005 § Decision gives `probe` two answers, `root` or `plain`
@@ -113,9 +113,9 @@ None.
   submodule's folder as roots, and R-21 places the failure at the Git-state read. The adapter in the tree
   answers neither: a `.git` entry that is not a folder returns
   `RootFinding::Failed(ProbeCondition::GitEntryNotDirectory)`
-  (`crates/nozoki-core/src/git_reader/libgit2.rs:L39`). That arm is a placeholder the code had to return,
+  (`crates/ka-reader-core/src/git_reader/libgit2.rs:L39`). That arm is a placeholder the code had to return,
   set while the choice was left with this record. The `linked-worktree` and `submodule` cases in
-  `crates/nozoki-core/tests/root_finding.rs` assert no outcome for it. The likely fold: ADR-0005 states
+  `crates/ka-reader-core/tests/root_finding.rs` assert no outcome for it. The likely fold: ADR-0005 states
   the `.git`-file outcome — R-3's reading (`root`, then `state()` reports where the Git directory lies), or
   a condition at `probe` with R-3 and R-21 moved to match. It also states what `probe` may read to answer
   `root` for a `.git` file without following it past the grant (`docs/fdr.md` R-101).
@@ -137,15 +137,15 @@ None.
 ### 3.2 QC-11's trace and ADR-0004 place the Git port's types in the model; the tree holds them in `git-reader`
 - **Raised by:** PM — 2026-10-03
 - **Which record:** `nfdr.md` QC-11's trace; `adr/0004-git-read-through-libgit2-behind-a-port.md` § Decision
-- **Tracked by:** `nozoki · nemawashi · 2026-10-02_git-says-what-changed`
-- **What it blocks:** nothing fails: `checks/structure.sh` exits 0 at `nozoki@126ef75`. The trace is
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-02_git-says-what-changed`
+- **What it blocks:** nothing fails: `checks/structure.sh` exits 0 at `ka-reader@126ef75`. The trace is
   what a later change reads to decide where the port's next methods and types go, and it points the
   other way from the tree.
 - **Where it shows:** QC-11's trace says SM-1's model "does not hold the types, unlike SM-2's port"
   (`docs/nfdr.md:L260-L261`). ADR-0004 says "the Git port owned by the folder model"
   (`docs/adr/0004-git-read-through-libgit2-behind-a-port.md:L22`). In the tree, `pub trait GitPort` is at
-  `crates/nozoki-core/src/git_reader.rs:L33`, beside `RootFinding` and `ProbeCondition`, and
-  `crates/nozoki-core/src/folder_model.rs` names none of them. A trait the model held would need a
+  `crates/ka-reader-core/src/git_reader.rs:L33`, beside `RootFinding` and `ProbeCondition`, and
+  `crates/ka-reader-core/src/folder_model.rs` names none of them. A trait the model held would need a
   `git-reader` → `folder-model` import, which QC-11 forbids. That is why it lives where it does. The
   same point is raised against `docs/SDD.md` SM-2 on `docs/SDD_open_issues.md` § 5.2. The likely fold:
   QC-11's trace reads SM-2 the way it now reads SM-1 — the model owns the contract and the reader holds
@@ -165,14 +165,14 @@ None.
 ### 3.3 QC-15 gives `git-reader` Git reads "through libgit2"; the adapter also reads the folder's and `.git`'s metadata itself
 - **Raised by:** PM — 2026-10-03
 - **Which record:** `nfdr.md` QC-15
-- **Tracked by:** `nozoki · nemawashi · 2026-10-02_git-says-what-changed`
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-02_git-says-what-changed`
 - **What it blocks:** nothing fails: `checks/structure.sh` exits 0, because `git-reader` is an I/O owner.
   The entry's description is what review reads to judge a later read in `git-reader`. It describes less
   than the unit does.
 - **Where it shows:** QC-15 says folder reads are `git-reader`'s for "Git's on-disk state through libgit2"
   (`docs/nfdr.md:L332-L334`). The adapter reads with `std::fs` before libgit2 is asked: the opened
   folder's metadata, its `.git` entry's metadata without following a link, and `.git/HEAD`'s
-  (`crates/nozoki-core/src/git_reader/libgit2.rs:L31`, `:L35`, `:L63`). Those reads are how `probe` keeps
+  (`crates/ka-reader-core/src/git_reader/libgit2.rs:L31`, `:L35`, `:L63`). Those reads are how `probe` keeps
   discovery off and answers a missing or unreadable `.git` as data. The likely fold: QC-15's
   `git-reader` clause names these bounded metadata reads of the folder, its `.git` entry and that
   entry's `HEAD` beside the libgit2 reads.
@@ -180,7 +180,7 @@ None.
 - **Answer:** confirmed with addition — QC-15's `git-reader` clause names its bounded reads beside
   the libgit2 reads: the opened folder's own metadata, its `.git` entry's metadata without following
   a link, the metadata of `HEAD` inside a `.git` folder
-  (`crates/nozoki-core/src/git_reader/libgit2.rs:L31`, `:L35`, `:L63`), and, after § 3.1's fold, a
+  (`crates/ka-reader-core/src/git_reader/libgit2.rs:L31`, `:L35`, `:L63`), and, after § 3.1's fold, a
   `.git` file's own content — every one inside the opened folder, none past it. One addition to the
   verification. `checks/structure.sh` does not pass because `git-reader` is an owner: its filesystem
   clause exempts two files only, `fs_reader.rs` and `log_writer.rs` (`checks/structure.sh:L76-L78`),
@@ -193,18 +193,18 @@ None.
 ### 3.4 QC-3 and ADR-0004 say no shipped unit links a network transport; the vendored libgit2 compiles `git://` and `http://` unconditionally
 - **Raised by:** PM — 2026-10-03
 - **Which record:** `nfdr.md` QC-3; `adr/0004-git-read-through-libgit2-behind-a-port.md` § Decision
-- **Tracked by:** `nozoki · nemawashi · 2026-10-02_git-says-what-changed`
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-02_git-says-what-changed`
 - **What it blocks:** QC-3's two halves verify the tree against the list and judge each listed name
   "in the features the lockfile resolves" (`docs/nfdr.md:L104-L117`). Neither half sees a transport that
   no feature turns off. The bridge's static library now carries libgit2 (the
-  `nozoki-mac/Package.swift` link entries landed for it at `nozoki@126ef75`), so the claim reaches
+  `ka-reader-mac/Package.swift` link entries landed for it at `ka-reader@126ef75`), so the claim reaches
   the shipped executable, and nothing checks it there.
 - **Where it shows:** `libgit2-sys 0.18.8+1.9.7`, the version the lock resolves, compiles
   `libgit2/src/libgit2/transports` whatever its features (`build.rs:L152-L155` in the registry copy).
   Its transport table registers `git://` and `http://` with no `#ifdef` (`libgit2/src/libgit2/transport.c:L33-L34`).
-  HTTPS and SSH are off as QC-3's first clause says: `cargo tree --locked -p nozoki-core --prefix none |
+  HTTPS and SSH are off as QC-3's first clause says: `cargo tree --locked -p ka-reader-core --prefix none |
   grep -Ei 'openssl|native-tls|rustls|libssh2|schannel|security-framework'` prints nothing at
-  `nozoki@126ef75`. `checks/deps.review.md`'s `libgit2-sys` row records the exception and the link
+  `ka-reader@126ef75`. `checks/deps.review.md`'s `libgit2-sys` row records the exception and the link
   evidence the bundle owes. The same point is raised against `docs/SDD.md` § 4 C-R6 on
   `docs/SDD_open_issues.md` § 5.3. ADR-0004's correction would be a new record, since an accepted ADR is
   superseded, not edited. The likely fold is one of two. QC-3 states what the build holds (no TLS and no
@@ -214,7 +214,7 @@ None.
   changes it.
 - **Answer:** answered — QC-3 follows `docs/SDD.md` § 4 C-R6 as v26 states it
   (`docs/SDD.md:L598-L629`; RN-85), which took the item's second fold with the first fold's facts
-  beside it. The claim is made of the shipped executable: `Nozoki.app/Contents/MacOS/Nozoki` links no
+  beside it. The claim is made of the shipped executable: `KA-Reader.app/Contents/MacOS/KAReader` links no
   network transport. What the build holds: libgit2 vendored with its `https` and `ssh` features off,
   so no TLS backend and no libssh2. What it does not hold: the transports and streams are compiled
   whatever the features, and `git://`, `http://` and `https://` are registered with no guard.
@@ -230,25 +230,25 @@ None.
 ### 3.5 QC-35 says the product reads nothing outside the grant; libgit2's repository open loads the global, XDG and system Git config, and no unit may turn that off
 - **Raised by:** PM — 2026-10-03
 - **Which record:** `nfdr.md` QC-35, with QC-9, QC-11 and QC-13
-- **Tracked by:** `nozoki · nemawashi · 2026-10-02_git-says-what-changed`
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-02_git-says-what-changed`
 - **What it blocks:** the Git commands' export through the bridge, the first point where `probe` runs
   inside the sandboxed app. `docs/SDD.md`'s Open Questions, second item, settles there.
 - **Where it shows:** the adapter opens the repository with `Repository::open_ext`
-  (`crates/nozoki-core/src/git_reader/libgit2.rs:L52`). In the vendored libgit2 that open takes a config
+  (`crates/ka-reader-core/src/git_reader/libgit2.rs:L52`). In the vendored libgit2 that open takes a config
   snapshot (`libgit2/src/libgit2/repository.c:L997`), which loads the global and system levels
   (`:L1318`, `:L1330`): reads of the user's home and of system paths, outside the granted folder and
   the container that QC-35 bounds (`docs/nfdr.md:L718-L719`; `docs/fdr.md` R-101). In the unit's
   in-process cases those reads are unconfined. Under the sandbox they are refused, and whether the open
   survives the refusal has not been run. The one switch that stops them, `git2::opts::set_search_path`,
-  is an `unsafe fn` (`git2-0.21.0/src/opts.rs:L23`). `nozoki-core` holds no `unsafe` (QC-9). The bridge,
+  is an `unsafe fn` (`git2-0.21.0/src/opts.rs:L23`). `ka-reader-core` holds no `unsafe` (QC-9). The bridge,
   which may, does not import the binding — QC-11 gives that to `git-reader` alone. So the rules as
   written leave no unit that may make the call. The likely fold: the records say where the search-path
   override is allowed to live, or state that the open is proved to answer under the grant with those
   reads refused, and add the check that shows it.
 - **If a document has to be written:** none.
-- **Answer:** raised upstream — carried at `docs/SDD_open_issues.md` § 2.1 (`nozoki@4f028c7`). Where
+- **Answer:** raised upstream — carried at `docs/SDD_open_issues.md` § 2.1 (`ka-reader@4f028c7`). Where
   libgit2's configuration search path may be switched off is a change to `docs/SDD.md` § 3: the
-  units paragraph ("Only `git-reader` imports the libgit2 binding", `:L347`; `nozoki-core` "holds no
+  units paragraph ("Only `git-reader` imports the libgit2 binding", `:L347`; `ka-reader-core` "holds no
   `unsafe`", `:L336`) and the `core-bridge` row (`:L330`). Accepting the reads instead would lower
   `docs/fdr.md` R-101. Neither is the NFDR's to decide, and QC-9, QC-11, QC-13, QC-17 and QC-35
   re-derive from whichever the SDD states. The item there proposes the bridge, as the Rust-side

@@ -3,7 +3,7 @@ version: "1.1.0"
 ---
 <!-- The version above is template-file metadata; it is not copied into the instantiated document. -->
 
-# SDD conversation — nozoki, run run-23
+# SDD conversation — ka-reader, run run-23
 
 > The record of one `product-sdd` run: three seats — CTO, CPO, CDO — working one document together,
 > and a runner that starts them, gives the turns and counts the rounds.
@@ -23,9 +23,9 @@ version: "1.1.0"
 
 - **Round:** 2
 - **Seats, and the names they answer to:**
-  - CTO — `sdd-nozoki-run23-cto`
-  - CPO — `sdd-nozoki-run23-cpo`
-  - CDO — `sdd-nozoki-run23-cdo`
+  - CTO — `sdd-ka-reader-run23-cto`
+  - CPO — `sdd-ka-reader-run23-cpo`
+  - CDO — `sdd-ka-reader-run23-cdo`
 - **Standing declared move:** CTO `no_followup` · CPO `no_followup` · CDO `no_followup`
 - **Recall outstanding:** none
 - **Recalls spent:** none
@@ -43,14 +43,14 @@ version: "1.1.0"
 
 | Seat | Spoke | Changed | Declared |
 |---|---|---|---|
-| CTO | yes | § 3 `read-only-harness` row (*Owns* cell: pinned enumeration at `nozoki@7a125b4`, on-disk/slice-owed split, `entry-points.sh`+`entry-points.allow`, `walk.rs`, `sandbox_probe.rs`, `deps.review.md`, `tests/`, `repo.git.tar`, `highlight`, `text`, `history`, `scale-*`, `hostile.md`); SDD Review Notes RN-84 (new); `docs/SDD_open_issues.md` removed, empty of items. No slices altered. Companion items added: none. | no_followup |
+| CTO | yes | § 3 `read-only-harness` row (*Owns* cell: pinned enumeration at `ka-reader@7a125b4`, on-disk/slice-owed split, `entry-points.sh`+`entry-points.allow`, `walk.rs`, `sandbox_probe.rs`, `deps.review.md`, `tests/`, `repo.git.tar`, `highlight`, `text`, `history`, `scale-*`, `hostile.md`); SDD Review Notes RN-84 (new); `docs/SDD_open_issues.md` removed, empty of items. No slices altered. Companion items added: none. | no_followup |
 | CPO | yes | nothing — no SDD section, slice or companion item altered by this seat. | successor CTO — fold `docs/SDD_open_issues.md` § 5.1 into § 3's `read-only-harness` row (`docs/SDD.md:L332`) as the Answer slot states it: name `entry-points.sh` with `entry-points.allow` (NFDR QC-30 half (2)), `walk.rs`, `sandbox_probe.rs`, `deps.review.md` and `tests/`, pin the enumeration to the commit measured, and mark which named scripts and fixtures are slice-owed rather than on disk; then remove the item and, if nothing else stands, the companion file. |
 | CDO | yes | nothing | no_followup |
 
 ### What this round settled
 
 CPO: nothing — no SDD section, slice or companion item altered by this seat.
-CTO: § 3 `read-only-harness` row (*Owns* cell: pinned enumeration at `nozoki@7a125b4`, on-disk/slice-owed split, `entry-points.sh`+`entry-points.allow`, `walk.rs`, `sandbox_probe.rs`, `deps.review.md`, `tests/`, `repo.git.tar`, `highlight`, `text`, `history`, `scale-*`, `hostile.md`); SDD Review Notes RN-84 (new); `docs/SDD_open_issues.md` removed, empty of items. No slices altered. Companion items added: none.
+CTO: § 3 `read-only-harness` row (*Owns* cell: pinned enumeration at `ka-reader@7a125b4`, on-disk/slice-owed split, `entry-points.sh`+`entry-points.allow`, `walk.rs`, `sandbox_probe.rs`, `deps.review.md`, `tests/`, `repo.git.tar`, `highlight`, `text`, `history`, `scale-*`, `hostile.md`); SDD Review Notes RN-84 (new); `docs/SDD_open_issues.md` removed, empty of items. No slices altered. Companion items added: none.
 
 ### What was disagreed, and who held what
 

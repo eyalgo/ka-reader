@@ -1,4 +1,4 @@
-# SDD open issues — nozoki
+# SDD open issues — ka-reader
 
 > Companion to `SDD.md`. Three seats — the CTO, the CPO and the CDO — authored the SDD
 > non-interactively in one run; this file holds what that run could not settle from its inputs (the
@@ -29,11 +29,11 @@
 ### 1.1 Do the owner's answers to the previous SDD bind this run?
 - **Raised by:** CPO
 - **Why it matters:** The previous SDD (v4, Settled) and its whole trail were deleted on purpose
-  immediately before this run, by `nozoki@9c91359` — "round 1: the SDD, its trail and its
+  immediately before this run, by `ka-reader@9c91359` — "round 1: the SDD, its trail and its
   conversation are deleted for a fresh re-author" — whose body states the reason: "This is round 1
-  of four in kensaiapp-dev's product-planning station prove-on-nozoki-over-four-rounds. The SDD is
+  of four in kensaiapp-dev's product-planning station prove-on-ka-reader-over-four-rounds. The SDD is
   re-authored from the settled upstream set by chain-definition … The measurement is of kensaiapp's
-  machinery; this product is the case it runs on." Nothing is lost: the parent `nozoki@70a879a`
+  machinery; this product is the case it runs on." Nothing is lost: the parent `ka-reader@70a879a`
   holds that SDD and its three answered companions (`git show 70a879a:docs/trail/sdd/cycle-1.md`,
   `cycle-2.md`, `cycle-3.md`), and `cycle-1.md` is byte-identical there to the `1e8bf3d` copy the
   UXD's RN-29 citations will be pinned to by the CDO's own repair (`git diff --quiet 1e8bf3d
@@ -309,7 +309,7 @@ here. It is a defect, and it is fixed in the SDD rather than asked about.>
   at the end. The drafted cut is this seat's product call (RN-17); the other is defensible.
 - **Keep or re-cut:** **keep** — and on firmer ground than the appetite this item offers: you have
   already decided it, and the drafted cut is your decision.
-  At `docs/trail/sdd/cycle-1.md` § 3.3 (`nozoki@70a879a`) the same question was put — the first
+  At `docs/trail/sdd/cycle-1.md` § 3.3 (`ka-reader@70a879a`) the same question was put — the first
   public release as soon as reading works, or after the full v1 cut — and the answer was *"Re-cut —
   take the alternative. 'let's go with v1.' The first public release waits for the **full v1 cut**
   the PRD names, so the first thing a stranger meets is the product `docs/PRD.md` calls v1, not a
@@ -355,13 +355,13 @@ position you pick; what stays here until you pick is both.>
   with only the four `Lives in` paths to read, the launcher made all four bare directories: the two
   crates this design names got no `Cargo.toml` and no `src/`, a third crate named by nothing here
   got a full one, the workspace excluded both real crates, and the TypeScript frame landed at the
-  product root rather than in `nozoki-ui`. The card's own gate —
-  `cargo test --workspace --locked && (cd nozoki-ui && pnpm exec vitest run)` — compiles nothing
+  product root rather than in `ka-reader-ui`. The card's own gate —
+  `cargo test --workspace --locked && (cd ka-reader-ui && pnpm exec vitest run)` — compiles nothing
   this design names and enters a directory holding one `.gitkeep`. **Nothing is wrong with this
   document.** What changed is what it is measured against.
 - **What the re-cut owes, per row or per section:** one units table under the parts table, with
   exactly four rows — the four distinct values already in `Lives in`:
-  `crates/nozoki-core`, `crates/nozoki-app`, `nozoki-ui`, `checks`. Each needs its Language and its
+  `crates/ka-reader-core`, `crates/ka-reader-app`, `ka-reader-ui`, `checks`. Each needs its Language and its
   Kind, read off the card's `Languages: Rust, TypeScript, Shell` and off each language's layout
   packet. Nothing else in § 3 is owed anything.
 - **What it may leave alone:** **the parts table itself, entirely.** All nine rows, all nine slugs
@@ -375,9 +375,9 @@ position you pick; what stays here until you pick is both.>
 
   | Unit | Language | Kind |
   |---|---|---|
-  | `crates/nozoki-core` | `Rust` | `crate` |
-  | `crates/nozoki-app` | `Rust` | `crate` |
-  | `nozoki-ui` | `TypeScript` | `package` |
+  | `crates/ka-reader-core` | `Rust` | `crate` |
+  | `crates/ka-reader-app` | `Rust` | `crate` |
+  | `ka-reader-ui` | `TypeScript` | `package` |
   | `checks` | `Shell` | `directory` |
 
   Where each value comes from:
@@ -387,14 +387,14 @@ position you pick; what stays here until you pick is both.>
     (`<CORE>/doctrine/engineering/languages/rust/layout.md` § *A multi-crate product*), which is why
     this item finds the parts table owes nothing. Both rows get the Rust frame — a `Cargo.toml` and
     a `src/` — which is exactly what the measured run did not create for either of them.
-  - **`nozoki-ui` — TypeScript, `package`.** The card names TypeScript; the unit is a `package`
+  - **`ka-reader-ui` — TypeScript, `package`.** The card names TypeScript; the unit is a `package`
     because what has to be created is a `package.json` and its config. **This row is the one that
     fixes the measured misplacement**, and the template says so in its own words: *"Where a
     language's frame lands is this table's to say."* The packet's tree is written for a product at
     the repository root — `index.html`, `package.json`, `vite.config.ts` at the top
     (`languages/typescript/layout.md` § *The tree*) — and here that frame lands **inside
-    `nozoki-ui/`**, which is also where the card's own test command goes to find it
-    (`cd nozoki-ui && pnpm exec vitest run`).
+    `ka-reader-ui/`**, which is also where the card's own test command goes to find it
+    (`cd ka-reader-ui && pnpm exec vitest run`).
   - **`checks` — Shell, `directory`.** Shell because the card declares it, and declares it for this
     unit specifically: its own comment reads *"plus the `checks/*.sh` harness the NFDR names"*.
     Writing `none` would leave the card's third language attached to no unit at all and tell a
@@ -426,8 +426,8 @@ position you pick; what stays here until you pick is both.>
 > next round's.
 
 - **Raised by:** `companion-self-answer`, answering this file — 2026-09-03
-- **Tracked by:** none. nozoki has no active 根回し Nemawashi seed and no open 宿場 Shukuba station
-  (`system/projects/nozoki/journey/`, 2026-09-03); this was found while reading the log as an input
+- **Tracked by:** none. ka-reader has no active 根回し Nemawashi seed and no open 宿場 Shukuba station
+  (`system/projects/ka-reader/journey/`, 2026-09-03); this was found while reading the log as an input
   to the items above, not while cutting work from this document.
 - **What it blocks:** no slice is uncuttable and no § 8 field is unfillable. What is missing is a
   **Review Note**. RN-32 records that five of the UXD's RN-29 citations died with the trail and
@@ -437,9 +437,9 @@ position you pick; what stays here until you pick is both.>
 - **Where it shows:** § 12, *The downstream boundary*, which rests on the log — "the record is
   cited rather than re-surfaced" (RN-1) — without noting that the log's citations back into this
   document no longer resolve; and § SDD Review Notes, which carries RN-32 for the UXD and nothing
-  for the records. Measured 2026-09-03 against `nozoki@c3eb937`: **14** citations of
+  for the records. Measured 2026-09-03 against `ka-reader@c3eb937`: **14** citations of
   `docs/trail/sdd/cycle-1.md` across ADR-0002, ADR-0003, ADR-0006, ADR-0007 and ADR-0008, dead
-  since `nozoki@9c91359`; **23** citations of this document's review notes by number across
+  since `ka-reader@9c91359`; **23** citations of this document's review notes by number across
   ADR-0001 – ADR-0008, all written against the deleted numbering, of which RN-24 and RN-25 have no
   note at all here and the eight that resolve now carry notes on other subjects (ADR-0002's RN-7,
   ADR-0004's RN-8 and ADR-0007's RN-17 checked one by one); and **1** in `docs/nfdr.md:385`,
@@ -447,7 +447,7 @@ position you pick; what stays here until you pick is both.>
 - **If a document has to be written:** none, and **the repair is not this document's** — § 12 fixes
   that a defect found here is reported, never repaired from here. It is already routed:
   `docs/architecture_open_issues.md` § 3.1 carries it to the Principal Architect, opened at
-  `nozoki@20b9a94`. What this document owes is one Review Note in RN-32's own shape, recording what
+  `ka-reader@20b9a94`. What this document owes is one Review Note in RN-32's own shape, recording what
   was found, that it was reported rather than repaired, and where it went.
 - **Answer:** **Write the Review Note, as this item scopes it — and two things it does not
   scope.** The note is the **CTO's**, `*(added)*`, because the boundary it corrects is the CTO's by
@@ -456,9 +456,9 @@ position you pick; what stays here until you pick is both.>
   is what this item measured: 14 dead citations of `docs/trail/sdd/cycle-1.md` across ADR-0002,
   ADR-0003, ADR-0006, ADR-0007 and ADR-0008; the review-note citations across ADR-0001 – ADR-0008
   written against the deleted numbering; `docs/nfdr.md:385`'s `SDD § 6 S-4`; that the file stands at
-  `nozoki@70a879a` and the repair is the records' own, not this document's (§ 12); and where it went
-  — `docs/architecture_open_issues.md` § 3.1, opened at `nozoki@20b9a94`. Re-measured against
-  `nozoki@59287c9`, 2026-09-03: the 14 and the `nfdr.md:385` line are unchanged, and the ADR
+  `ka-reader@70a879a` and the repair is the records' own, not this document's (§ 12); and where it went
+  — `docs/architecture_open_issues.md` § 3.1, opened at `ka-reader@20b9a94`. Re-measured against
+  `ka-reader@59287c9`, 2026-09-03: the 14 and the `nfdr.md:385` line are unchanged, and the ADR
   citations still name RN-24 and RN-25, which this document does not have.
 
   **(1) The § 12 sentence goes with it, or the note fixes half the defect.** RN-32 is not a note
@@ -474,7 +474,7 @@ position you pick; what stays here until you pick is both.>
   **(2) Number it after RN-33 — never into the 20–29 gap.** This document's notes run RN-1 – RN-19
   and RN-30 – RN-33; 20 – 29 are empty. They are also exactly where the dead citations point:
   ADR-0007 and ADR-0008 cite `SDD Review Notes RN-25` in three places between them, and ADR-0005
-  cites RN-24 in two (measured 2026-09-03 against `nozoki@59287c9`). A note dropped into that gap turns a citation that visibly fails into one that silently
+  cites RN-24 in two (measured 2026-09-03 against `ka-reader@59287c9`). A note dropped into that gap turns a citation that visibly fails into one that silently
   resolves to the wrong subject, which is worse than the defect being recorded — RN-32's own
   finding, that a broken pointer at least announces itself, run in reverse. So the note is RN-34,
   and the gap stays empty until the records are repaired. The two rounds are otherwise independent

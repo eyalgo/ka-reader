@@ -1,4 +1,4 @@
-# CONTENT open issues — Nozoki 覗き
+# CONTENT open issues — KA-Reader
 
 > Companion to `CONTENT.md`. The Content Editor authored the verbal language non-interactively;
 > this file holds the calls it made and wants your sign-off on — each with the reason behind it,
@@ -35,14 +35,14 @@
   item asked for it.
 - **What this document says:** **12** citations of the form `docs/<x>_trail/…` (`docs/content_trail/`, `docs/prd_trail/`).
 - **What is true:** none of those folders exists. The retired cycles live at `docs/trail/<x>/`, moved
-  by `nozoki@1e8bf3d` ("the six answer-trails move under `docs/trail/`"), which did not update the
+  by `ka-reader@1e8bf3d` ("the six answer-trails move under `docs/trail/`"), which did not update the
   documents citing them. Every one is a pointer a cold reader follows and finds nothing, and these are
   mostly **authorization** pointers — the owner answer a Review Note rests on cannot be opened to
   check it.
 - **Drafted:** each `docs/<x>_trail/` becomes `docs/trail/<x>/`. Nothing the document says changes;
   only where it points. A pointer repair, not a revision — so this round need not reopen anything else.
 - **One exception, and it is not hypothetical.** A citation pinned to a commit — the form
-  `nozoki@<sha>:docs/<x>_trail/…` — must be left exactly as it is: it resolves at a commit where that
+  `ka-reader@<sha>:docs/<x>_trail/…` — must be left exactly as it is: it resolves at a commit where that
   path did exist (verified — `git show 1d5c553:docs/uxd_trail/cycle-1.md` returns the file), so
   rewriting it breaks a citation that currently works. This document carries **0** of those;
   `docs/UXD.md` carries 4. A sweep that does not exclude the pinned form is wrong.
@@ -76,17 +76,17 @@
 
 - **What this document says:** RN-15 rules that this document "quotes and cites only files a reader
   who has cloned this repository can open", and that "a pointer a reader cannot follow is worse than
-  no pointer". RN-24 then cites `system/projects/nozoki/agari.md` for the wording of the product's
+  no pointer". RN-24 then cites `system/projects/ka-reader/agari.md` for the wording of the product's
   defining read-only promise.
 - **What is true:** that file is not in this repository. It lives in the kensaiapp-opensource
-  instance repo — verified 2026-09-01, absent from `nozoki` and present at
-  `kensaiapp-opensource/system/projects/nozoki/agari.md`. It is the only `system/` pointer in the
+  instance repo — verified 2026-09-01, absent from `ka-reader` and present at
+  `kensaiapp-opensource/system/projects/ka-reader/agari.md`. It is the only `system/` pointer in the
   document, so this is the one place the rule is broken, not a pattern.
 - **Why it is worth the round:** the citation authorizes the wording of the promise the whole product
   rests on, and the reader who cannot open it is exactly the reader RN-15 was written for — a
   stranger who cloned the public repository and has nobody to ask. The round is already open for
   § 2.1, so this costs no cycle of its own.
-- **Drafted:** apply RN-15 as it stands — state the Agari's ground in Nozoki's own words inside RN-24
+- **Drafted:** apply RN-15 as it stands — state the Agari's ground in KA-Reader's own words inside RN-24
   and drop the pointer, which is what RN-15 already prescribes for a limit inherited from the
   publishing organisation. The alternative is to narrow RN-15 to admit a named instance-repo
   citation; that moves a rule rather than a note, which is why this is asked rather than done.

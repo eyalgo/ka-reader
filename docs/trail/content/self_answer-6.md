@@ -15,7 +15,7 @@ through the v8 fold unanswered. §§ 1 and 3 read "None.". This run answered § 
 
 ## Items worked
 
-### 2.1 — The reading panel's sentence for a file that is gone says it left the folder, which Nozoki did not observe
+### 2.1 — The reading panel's sentence for a file that is gone says it left the folder, which KA-Reader did not observe
 
 - **Bucket:** 2. Choices to confirm
 - **Verdict:** confirmed with addition
@@ -30,16 +30,16 @@ through the v8 fold unanswered. §§ 1 and 3 read "None.". This run answered § 
   document's wording. What the product does in this state, keeping the file's name and not showing
   the old content as current, is UX-S1's (`docs/UXD.md:L236`), and it does not move.
 
-  *The draft's argument (check 2).* The argument holds, and for the reason it gives. Nozoki
+  *The draft's argument (check 2).* The argument holds, and for the reason it gives. KA-Reader
   observes that nothing is at the open file's path. A rename or a move inside the folder leaves the
-  file in the folder under another name, so *"no longer in the folder"* claims something Nozoki
+  file in the folder under another name, so *"no longer in the folder"* claims something KA-Reader
   never read. That breaks § Voice's first row (`:L62`, *"never states something it has not read"*),
   and the break is in the document's own example. The draft's citations hold at their lines:
   `docs/UXD.md:L236` (*"states plainly that it is no longer there"*), `docs/SDD.md:L1604` (the same
   words), and `docs/fdr.md:L162` (R-81, *"explicitly marked as no longer there"*). Its cost claim
-  also holds: `grep -rn "no longer" nozoki-mac crates` finds only a doc comment in
-  `crates/nozoki-core/tests/failure_log_kinds.rs:6`. The product ships no sentence for this state
-  yet (`nozoki-mac/Sources/Surfaces/ConditionSentences.swift` holds only the tree's sentences), so
+  also holds: `grep -rn "no longer" ka-reader-mac crates` finds only a doc comment in
+  `crates/ka-reader-core/tests/failure_log_kinds.rs:6`. The product ships no sentence for this state
+  yet (`ka-reader-mac/Sources/Surfaces/ConditionSentences.swift` holds only the tree's sentences), so
   the change costs no string.
 
   *The addition.* The draft misses a second ground in the same sentence. *The folder* on its own can
@@ -71,7 +71,7 @@ through the v8 fold unanswered. §§ 1 and 3 read "None.". This run answered § 
     the panel showed is no longer there. This is RN-34's reading of a folder row reached through a
     link, applied to a file.
   - *Refused:* a file that is still there but can no longer be read is UX-S1's *unreadable* cell.
-    It takes *"Nozoki can't read …"* and not this sentence.
+    It takes *"KA-Reader can't read …"* and not this sentence.
 
   *What was noticed and not raised.* § Traceability's UX-S1 row cites § Error for this sentence.
   But the sentence carries only the middle part of the observed-condition formula (`:L248-L251`).
@@ -79,7 +79,7 @@ through the v8 fold unanswered. §§ 1 and 3 read "None.". This run answered § 
   formula allows where the way on is already on screen. I considered raising this and did not,
   because no reader of the document is misled by it.
 
-  *What would have tipped it.* I would have overridden to a different wording if Nozoki could tell a
+  *What would have tipped it.* I would have overridden to a different wording if KA-Reader could tell a
   rename from a delete. It cannot, so the sentence can say only what it read. A wording that names
   a cause, like *deleted* or *moved*, is what § Voice's *Urgent* row already rejects.
 
@@ -97,4 +97,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/CONTENT.md`** — `<CORE>/launchers/skill/launcher.sh product-content nozoki`
+- **`docs/CONTENT.md`** — `<CORE>/launchers/skill/launcher.sh product-content ka-reader`

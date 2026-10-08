@@ -18,9 +18,9 @@ sections were not read, so a sentence there that speaks of the Git view's select
 words was not seen. `docs/DESIGN.md` was read at `:L556-L645`, at its tokens `:L161-L173`, and at
 RN-39 and RN-40 (`:L1662-L1710`). `docs/UXD.md`, `docs/SRS.md` and `docs/PRD.md` were searched for
 `selected` and `selection` and read at the lines that search printed. The shell was read at
-`nozoki-mac/Sources/Surfaces/BarRowView.swift` whole, `GitView.swift:L36-L60` and `:L150-L270`,
-`WorkbenchView.swift:L150-L168` and `nozoki-mac/Tests/SurfacesTests/GitViewHoverTests.swift:L170-L196`,
-all at `nozoki@6cf1014`.
+`ka-reader-mac/Sources/Surfaces/BarRowView.swift` whole, `GitView.swift:L36-L60` and `:L150-L270`,
+`WorkbenchView.swift:L150-L168` and `ka-reader-mac/Tests/SurfacesTests/GitViewHoverTests.swift:L170-L196`,
+all at `ka-reader@6cf1014`.
 
 ## Items worked
 
@@ -44,11 +44,11 @@ all at `nozoki@6cf1014`.
   **Is it a widening with no occurrence?** No. The item sits under *Raised from downstream* and
   asks the SDD to state a drawing no slice states, which is a widening. It cites the site: the Git
   view's selection sets `drawsBar` and nothing else
-  (`nozoki-mac/Sources/Surfaces/GitView.swift:L190-L194`). That is a path and line where the form
+  (`ka-reader-mac/Sources/Surfaces/GitView.swift:L190-L194`). That is a path and line where the form
   is present in the product as it stands, so the form is taken.
 
-  **The item's framing holds (check 2).** Each fact it gives was re-measured at `nozoki@6cf1014`.
-  `grep -rn isSelected nozoki-mac/Sources` prints one line, `BarRowView.swift:36`, which reads the
+  **The item's framing holds (check 2).** Each fact it gives was re-measured at `ka-reader@6cf1014`.
+  `grep -rn isSelected ka-reader-mac/Sources` prints one line, `BarRowView.swift:36`, which reads the
   flag and marks no Git-view row selected. `docs/SDD.md:L1844-L1845` holds the case "the selected
   row under the pointer keeps its selection fill and its bar". S-4's observable half names no
   selected row at all; the only observable sentence about a selected row is S-2's, and it is about
@@ -100,7 +100,7 @@ all at `nozoki@6cf1014`.
   - *Refused.* Nothing in this drawing can be refused.
 
   Two more cases are named and not covered. The shell clears the Git view's selection when a file
-  is selected from the tree (`nozoki-mac/Sources/Surfaces/WorkbenchView.swift:L161-L165`), so a
+  is selected from the tree (`ka-reader-mac/Sources/Surfaces/WorkbenchView.swift:L161-L165`), so a
   Git-view row is drawn selected only after a click in the Git view; `docs/DESIGN.md` does not
   say whether that is the rule. And `docs/DESIGN.md` RN-40 already names as not covered what the
   selected row's fill and bar do in a window that is not the key window (`:L1706-L1708`). Both are
@@ -108,11 +108,11 @@ all at `nozoki@6cf1014`.
   a false fact, an unseen upstream change or a contradiction between two settled documents, and
   the answer turns on none of them.
 
-  **What the built shell shows.** At `nozoki@6cf1014` the Git view's selected row draws the bar
+  **What the built shell shows.** At `ka-reader@6cf1014` the Git view's selected row draws the bar
   alone. The shell's test for the existing S-4 case is named
   `test_hover_s4_selected_row_under_pointer_keeps_selected_drawing_and_bar` and asserts that the
   row's image is the same with the pointer over it as with the pointer elsewhere
-  (`nozoki-mac/Tests/SurfacesTests/GitViewHoverTests.swift:L178-L194`). That passes with no fill
+  (`ka-reader-mac/Tests/SurfacesTests/GitViewHoverTests.swift:L178-L194`). That passes with no fill
   drawn, so the case as the SDD words it is held by a test that does not check a fill. The added
   case closes that: it asserts the fill with the pointer away. On this bar `see-git-status` is not
   reached on `main`, and what that means for work in flight is the PM's.
@@ -135,8 +135,8 @@ None this run.
 ## Skipped
 
 - **5.1 — the item's `docs/DESIGN.md` line numbers** — the item's supporting text is stale by
-  line, reported and not edited. `docs/DESIGN.md` moved to v18 at `nozoki@6cf1014` after the item
-  was written at `nozoki@7c1acad`. The lines the item cites as `:L612-L618` are now `:L613-L619`,
+  line, reported and not edited. `docs/DESIGN.md` moved to v18 at `ka-reader@6cf1014` after the item
+  was written at `ka-reader@7c1acad`. The lines the item cites as `:L612-L618` are now `:L613-L619`,
   and `:L624-L625` are now `:L634-L635`. The quoted words stand, and the item was answered. The
   correction is `product-sdd`'s to carry into the fold.
 
@@ -146,4 +146,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/SDD.md`** — `<CORE>/launchers/skill/launcher.sh product-sdd nozoki`
+- **`docs/SDD.md`** — `<CORE>/launchers/skill/launcher.sh product-sdd ka-reader`

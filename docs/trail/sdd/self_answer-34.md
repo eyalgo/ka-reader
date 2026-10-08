@@ -39,8 +39,8 @@ R-15 (`:L2616-L2656`), and *Open Questions* (`:L5083-L5136`). The rest was searc
 § 5, § 6's other slices, §§ 7–10, § 12 and the review notes outside those hits were not read line
 by line**, so a sentence there that bears on this item and uses none of those words was not seen.
 Outside the SDD: `docs/fdr.md` R-97 to R-104 (`:L184-L191`), R-66 and R-153 (`:L90`, `:L137`);
-`docs/architecture_open_issues.md` §§ 2.1, 2.2 and 3.5; `crates/nozoki-core/Cargo.toml:L9`;
-`crates/nozoki-bridge/Cargo.toml`; `crates/nozoki-core/src/git_reader/libgit2.rs:L40-L58`;
+`docs/architecture_open_issues.md` §§ 2.1, 2.2 and 3.5; `crates/ka-reader-core/Cargo.toml:L9`;
+`crates/ka-reader-bridge/Cargo.toml`; `crates/ka-reader-core/src/git_reader/libgit2.rs:L40-L58`;
 `checks/structure.sh:L100-L106`. `docs/SRS.md`, `docs/PRD.md` and `docs/UXD.md` were searched for
 the ignore, untracked and config words and not otherwise opened, because the answer moves no
 requirement and no surface.
@@ -63,8 +63,8 @@ requirement and no surface.
 
   **Why the proposal holds, for the reason it gives.** Each fact in its rationale was re-read at
   the source (the header above lists them) and each stands. The rules do leave no unit that may
-  make the call: `nozoki-core` holds no `unsafe` (`SDD.md:L336`; `grep -rn unsafe
-  crates/nozoki-core/src` prints nothing), and only `git-reader` may import the binding (`:L347`).
+  make the call: `ka-reader-core` holds no `unsafe` (`SDD.md:L336`; `grep -rn unsafe
+  crates/ka-reader-core/src` prints nothing), and only `git-reader` may import the binding (`:L347`).
   The bridge is the right unit. It is already the Rust-side composition root, the one unit that
   holds `unsafe`, and the place the adapter is wired (`:L330`). It already runs process setup
   before first use: the diagnostic log writer's install is in the same *Owns* cell. That precedent
@@ -98,8 +98,8 @@ requirement and no surface.
      `failed`, so a repository is never opened with the reads on. The call mutates global state
      with no thread safety (`opts.rs:L20-L22`), so it runs once per process.
   3. *Default features off in the bridge's manifest.* The bridge has no `git2` line today
-     (`crates/nozoki-bridge/Cargo.toml`). The core's line turns default features off
-     (`crates/nozoki-core/Cargo.toml:L9`). Cargo unifies features across a build, so a bridge line
+     (`crates/ka-reader-bridge/Cargo.toml`). The core's line turns default features off
+     (`crates/ka-reader-core/Cargo.toml:L9`). Cargo unifies features across a build, so a bridge line
      with defaults on would turn on HTTPS and SSH for both crates, against § 4 C-R6
      (`SDD.md:L604-L629`). That cargo unifies features is this run's knowledge of the tool and was
      not re-read at a source; `checks/no-network.sh` reads the inverse feature trees
@@ -116,12 +116,12 @@ requirement and no surface.
      current user does not own fails to open: ownership is validated on open
      (`repository.c:L1172-L1173`), and the `safe.directory` entry that would allow it is read from
      the four levels now empty (`:L629-L634`, `:L2164-L2167`). The adapter maps any open error but
-     not-found to a failed probe (`crates/nozoki-core/src/git_reader/libgit2.rs:L56`). Both follow
+     not-found to a failed probe (`crates/ka-reader-core/src/git_reader/libgit2.rs:L56`). Both follow
      from R-101 as it stands. Honouring either means reading outside the grant, which is the
      owner's to allow and is not proposed.
   6. *What the evidence does not reach.* The proposed bridge test asserts the four search paths
      are empty. It observes no read; the step from "empty" to "no file touched" is
-     `sysdir.c:L559-L560`, read and not run. `nozoki-core`'s own Git suites run without the bridge
+     `sysdir.c:L559-L560`, read and not run. `ka-reader-core`'s own Git suites run without the bridge
      and so with the reads on, and with addition 5 that is more than the proposal's "a fault of
      the test environment": an answer there can differ from the bundle's on a machine with a
      global ignore file. C-I3 already keeps a list of "things no check holds" (`SDD.md:L701`), and
@@ -162,4 +162,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/SDD.md`** — `<CORE>/launchers/skill/launcher.sh product-sdd nozoki`
+- **`docs/SDD.md`** — `<CORE>/launchers/skill/launcher.sh product-sdd ka-reader`

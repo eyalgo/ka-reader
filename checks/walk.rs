@@ -20,7 +20,7 @@
 use std::collections::{BTreeMap, BTreeSet, HashSet};
 use std::path::{Path, PathBuf};
 
-use nozoki_core::{
+use ka_reader_core::{
     EntryKind, FolderModel, ItemState, Libgit2, OpenedFolder, list_tree, open_folder, read_git,
     select_file,
 };

@@ -18,7 +18,7 @@
 #
 # USAGE
 #   checks/tests/test_no_network.sh
-#     NOZOKI_TEST_ONLY=<case> runs one case.
+#     KA_READER_TEST_ONLY=<case> runs one case.
 #
 # WHY NO `set -e`
 #   A case that fails must not end the run before the remaining cases report. Each case returns its own
@@ -210,11 +210,11 @@ test_verdict_is_unchanged_on_an_x64_machine() {
 test_binding_has_no_https_or_ssh_transport() {
   # An absent allowlist names nothing, which would pass every check below for the wrong reason.
   [ -f "$ALLOWLIST" ] || fail "checks/deps.allow does not exist" || return 1
-  core_tree="$("$REAL_CARGO" tree -p nozoki-core --locked --offline --prefix none 2>&1)" \
-    || fail "cargo tree on nozoki-core failed: $core_tree" || return 1
+  core_tree="$("$REAL_CARGO" tree -p ka-reader-core --locked --offline --prefix none 2>&1)" \
+    || fail "cargo tree on ka-reader-core failed: $core_tree" || return 1
   for name in openssl-sys native-tls rustls libssh2-sys; do
     if printf '%s\n' "$core_tree" | grep -q "^$name "; then
-      fail "the nozoki-core tree holds $name" || return 1
+      fail "the ka-reader-core tree holds $name" || return 1
     fi
     if file_has_line "$name" "$ALLOWLIST"; then
       fail "checks/deps.allow names $name" || return 1
@@ -287,7 +287,7 @@ test_declared_dependency_fails() {
   expect_output_contains "$WORK/pkg-clean/Package.swift"
 }
 
-# CP-127 names `nozoki-mac/Package.swift`. Under an override the case above names the override's, so this
+# CP-127 names `ka-reader-mac/Package.swift`. Under an override the case above names the override's, so this
 # one runs with no override and holds the default wording.
 test_declared_dependency_names_the_default_manifest() {
   clean_swift_stubs "$WORK/stubs-dep-default"
@@ -297,9 +297,9 @@ test_declared_dependency_names_the_default_manifest() {
   STATUS=$?
 
   expect_nonzero_status || return 1
-  expect_output_contains "nozoki-mac/Package.swift" || return 1
+  expect_output_contains "ka-reader-mac/Package.swift" || return 1
   case "$OUT" in
-    *"$ROOT/nozoki-mac/Package.swift"*) fail "the default manifest is named by an absolute path. output: $OUT" ;;
+    *"$ROOT/ka-reader-mac/Package.swift"*) fail "the default manifest is named by an absolute path. output: $OUT" ;;
   esac
 }
 
@@ -435,15 +435,15 @@ trap cleanup EXIT
 
 # The manifest dumps the `swift` stubs answer with, and the package directory a case points the script at.
 mkdir -p "$WORK/pkg-clean"
-echo '{"dependencies":[],"targets":[{"name":"Nozoki","type":"executable"}]}' > "$WORK/dump-clean.json"
-echo '{"dependencies":[{"sourceControl":[{"identity":"left-pad","location":{"remote":[{"urlString":"https://example.invalid/left-pad.git"}]}}]}],"targets":[{"name":"Nozoki","type":"executable"}]}' > "$WORK/dump-dependency.json"
-echo '{"dependencies":[],"targets":[{"name":"Nozoki","type":"executable"},{"name":"Blob","type":"binary","url":"https://example.invalid/Blob.zip"}]}' > "$WORK/dump-remote-binary.json"
-echo '{"dependencies":[],"targets":[{"name":"Nozoki","type":"executable"},{"name":"Blob","type":"binary","path":"Blob.artifactbundle"}]}' > "$WORK/dump-local-binary.json"
-echo '{"dependencies":[],"targets":[{"name":"Nozoki","type":"executable"},{"name":"Blob","type":"binary","path":"Blob.artifactbundle","url":null}]}' > "$WORK/dump-local-binary-null-url.json"
+echo '{"dependencies":[],"targets":[{"name":"KAReader","type":"executable"}]}' > "$WORK/dump-clean.json"
+echo '{"dependencies":[{"sourceControl":[{"identity":"left-pad","location":{"remote":[{"urlString":"https://example.invalid/left-pad.git"}]}}]}],"targets":[{"name":"KAReader","type":"executable"}]}' > "$WORK/dump-dependency.json"
+echo '{"dependencies":[],"targets":[{"name":"KAReader","type":"executable"},{"name":"Blob","type":"binary","url":"https://example.invalid/Blob.zip"}]}' > "$WORK/dump-remote-binary.json"
+echo '{"dependencies":[],"targets":[{"name":"KAReader","type":"executable"},{"name":"Blob","type":"binary","path":"Blob.artifactbundle"}]}' > "$WORK/dump-local-binary.json"
+echo '{"dependencies":[],"targets":[{"name":"KAReader","type":"executable"},{"name":"Blob","type":"binary","path":"Blob.artifactbundle","url":null}]}' > "$WORK/dump-local-binary-null-url.json"
 
 failed=0
 for case_name in $CASES; do
-  if [ -n "${NOZOKI_TEST_ONLY:-}" ] && [ "$case_name" != "$NOZOKI_TEST_ONLY" ]; then
+  if [ -n "${KA_READER_TEST_ONLY:-}" ] && [ "$case_name" != "$KA_READER_TEST_ONLY" ]; then
     continue
   fi
   if result="$("$case_name" 2>&1)"; then

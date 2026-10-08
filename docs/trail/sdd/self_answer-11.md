@@ -7,7 +7,7 @@
 - **Decided by:** `decide_companion_answers.md` v1.3.0
 - **Date:** 2026-09-19
 - **Sources re-read:** None. The answer rests on the SDD, the NFDR and the product tree at
-  `nozoki@422f6d1`, all in this repository. It rests on no claim about Tauri's capability or
+  `ka-reader@422f6d1`, all in this repository. It rests on no claim about Tauri's capability or
   protocol mechanics. Where the asset scheme is granted is left to S-3, which is where the third
   *Open Question* already settles it.
 
@@ -32,8 +32,8 @@
   `v1.0.0`. So "exactly SM-4's command list" in C-R7 (`L486-L488`) is the sentence the slices
   contradict, and no build before the last slice could meet it. Measured: the tree grants
   `allow-open-folder` and `allow-list-tree` and nothing else
-  (`crates/nozoki-app/capabilities/main.json:L5`). Its config test holds set equality against those
-  two (`crates/nozoki-app/tests/config.rs:L231-L234`).
+  (`crates/ka-reader-app/capabilities/main.json:L5`). Its config test holds set equality against those
+  two (`crates/ka-reader-app/tests/config.rs:L231-L234`).
 
   *The PM's doubt resolves into the lean.* The alternative was that "exactly the whole list" was
   meant only for 1.0.0. At 1.0.0 the two readings give the same list, because S-11 and C-I6 already
@@ -91,4 +91,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/SDD.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-sdd/launcher.sh nozoki`
+- **`docs/SDD.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-sdd/launcher.sh ka-reader`

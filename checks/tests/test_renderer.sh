@@ -14,11 +14,11 @@
 #
 # USAGE
 #   checks/tests/test_renderer.sh
-#   The real-bundle cases launch target/release/bundle/macos/Nozoki.app and samples it, so run
-#   nozoki-mac/assemble.sh first and run this in a logged-in GUI session; they also build and sign the
+#   The real-bundle cases launch target/release/bundle/macos/KA-Reader.app and samples it, so run
+#   ka-reader-mac/assemble.sh first and run this in a logged-in GUI session; they also build and sign the
 #   real control with the real swiftc and codesign. A bundle that is absent FAILS those cases with a stated message and never skips it: a skip would let CI conclude green having
 #   proved nothing.
-#   NOZOKI_TEST_ONLY=<case> runs one case.
+#   KA_READER_TEST_ONLY=<case> runs one case.
 #
 # WHY NO `set -e`
 #   A case that fails must not end the run before the remaining cases report. Each case returns its
@@ -28,7 +28,7 @@ set -uo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 RENDERER_SH="$ROOT/checks/renderer.sh"
-REAL_APP="$ROOT/target/release/bundle/macos/Nozoki.app"
+REAL_APP="$ROOT/target/release/bundle/macos/KA-Reader.app"
 
 STDOUT=""
 STDERR=""
@@ -99,15 +99,15 @@ stop_all_spawned() {
 # A synthetic application bundle: an Info.plist naming the executable, and an executable that records
 # any direct run, so a launch that bypasses `open` is seen.
 new_app() {
-  app_dir="$WORK/$1/app/Nozoki.app"
+  app_dir="$WORK/$1/app/KA-Reader.app"
   mkdir -p "$app_dir/Contents/MacOS"
   cat > "$app_dir/Contents/Info.plist" << 'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0"><dict><key>CFBundleExecutable</key><string>Nozoki</string></dict></plist>
+<plist version="1.0"><dict><key>CFBundleExecutable</key><string>KAReader</string></dict></plist>
 PLIST
-  printf '#!/bin/sh\necho direct > "%s/direct_exec"\n' "$WORK/$1" > "$app_dir/Contents/MacOS/Nozoki"
-  chmod +x "$app_dir/Contents/MacOS/Nozoki"
+  printf '#!/bin/sh\necho direct > "%s/direct_exec"\n' "$WORK/$1" > "$app_dir/Contents/MacOS/KAReader"
+  chmod +x "$app_dir/Contents/MacOS/KAReader"
   printf '%s' "$app_dir"
 }
 
@@ -285,7 +285,7 @@ new_case() {
   STUBS="$(make_stubs "c$CASE_COUNTER-$1")"
   APP="$(new_app "c$CASE_COUNTER-$1")"
   APP="$(cd "$APP" && pwd -P)"
-  APP_EXE="$APP/Contents/MacOS/Nozoki"
+  APP_EXE="$APP/Contents/MacOS/KAReader"
 }
 
 # A process that outlives the script under test, listed by the ps stand-in under path $1 with the
@@ -358,7 +358,7 @@ expect_sample_calls() {
 
 # One frame line at level $1 with symbol $2, drawn with tree mark $3 (default +).
 frame_line() {
-  printf '    %s%*s867 %s  (in Nozoki) + 100  [0x100c05644]\n' "${3:-+}" $((2 * $1 - 1)) '' "$2"
+  printf '    %s%*s867 %s  (in KAReader) + 100  [0x100c05644]\n' "${3:-+}" $((2 * $1 - 1)) '' "$2"
 }
 
 # Frames from stdin, one "<level> <symbol>" per line.
@@ -372,8 +372,8 @@ frames_from_stdin() {
 # thread's header, and $4 its frames.
 write_report() {
   {
-    echo "Analysis of sampling Nozoki (pid 4242) every 1 millisecond"
-    echo "Process:         Nozoki [4242]"
+    echo "Analysis of sampling KAReader (pid 4242) every 1 millisecond"
+    echo "Process:         KAReader [4242]"
     echo ""
     echo "Call graph:"
     echo "    867 Thread_1${MAIN_HEADER:-   DispatchQueue_1: com.apple.main-thread  (serial)}"
@@ -439,7 +439,7 @@ tools_without_swiftc() {
 # --- cases ---
 
 test_real_bundle_passes() {
-  [ -d "$REAL_APP" ] || fail "no bundle at $REAL_APP — run nozoki-mac/assemble.sh first (a missing bundle fails, never skips)" || return 1
+  [ -d "$REAL_APP" ] || fail "no bundle at $REAL_APP — run ka-reader-mac/assemble.sh first (a missing bundle fails, never skips)" || return 1
   real_dir="$WORK/real"
   mkdir -p "$real_dir"
   "$RENDERER_SH" "$REAL_APP" > "$real_dir/stdout" 2> "$real_dir/stderr"
@@ -467,7 +467,7 @@ test_not_an_app_launches_nothing() {
   rm -f "$APP_EXE"
   run_renderer "$APP"
   expect_status 1 || return 1
-  expect_stderr_contains "Contents/MacOS/Nozoki" || return 1
+  expect_stderr_contains "Contents/MacOS/KAReader" || return 1
   expect_no_open_call || return 1
   # A path that is not a .app at all.
   mkdir -p "$CASE_DIR/plain-folder"
@@ -822,7 +822,7 @@ test_header_names_frames_and_the_mac_reading() {
   done <<< "$frame_list"
   [ "$count" -ge 2 ] || fail "the frame list holds $count frame(s); it must hold the shell's launch frames and the panel's" || return 1
   case "$frame_list" in
-    *nozoki_open_folder*) fail "nozoki_open_folder is in the frame list" || return 1 ;;
+    *ka_reader_open_folder*) fail "ka_reader_open_folder is in the frame list" || return 1 ;;
   esac
   printf '%s\n' "$header" | grep -Eq 'macOS [0-9]+\.[0-9]+' \
     || fail "the header names no macOS version for the Mac reading" || return 1
@@ -870,7 +870,7 @@ bound_of() {
 }
 
 test_real_bundle_passes_with_its_control() {
-  [ -d "$REAL_APP" ] || fail "no bundle at $REAL_APP — run nozoki-mac/assemble.sh first (a missing bundle fails, never skips)" || return 1
+  [ -d "$REAL_APP" ] || fail "no bundle at $REAL_APP — run ka-reader-mac/assemble.sh first (a missing bundle fails, never skips)" || return 1
   real_dir="$WORK/real-control"
   mkdir -p "$real_dir"
   "$RENDERER_SH" "$REAL_APP" > "$real_dir/stdout" 2> "$real_dir/stderr"
@@ -1066,7 +1066,7 @@ test_nothing_written_under_fixtures() {
 }
 
 test_no_checks_file_matches_a_bundle_file() {
-  [ -d "$REAL_APP" ] || fail "no bundle at $REAL_APP — run nozoki-mac/assemble.sh first (a missing bundle fails, never skips)" || return 1
+  [ -d "$REAL_APP" ] || fail "no bundle at $REAL_APP — run ka-reader-mac/assemble.sh first (a missing bundle fails, never skips)" || return 1
   bundle_hashes="$(find "$REAL_APP/Contents" -type f -exec shasum -a 256 {} + | awk '{ print $1 }' | LC_ALL=C sort -u)"
   [ -n "$bundle_hashes" ] || fail "the bundle holds no file" || return 1
   tracked="$(git -C "$ROOT" ls-files checks)"
@@ -1095,7 +1095,7 @@ trap cleanup EXIT
 
 failed=0
 for case_name in $CASES; do
-  if [ -n "${NOZOKI_TEST_ONLY:-}" ] && [ "$case_name" != "$NOZOKI_TEST_ONLY" ]; then
+  if [ -n "${KA_READER_TEST_ONLY:-}" ] && [ "$case_name" != "$KA_READER_TEST_ONLY" ]; then
     continue
   fi
   if result="$("$case_name" 2>&1)"; then

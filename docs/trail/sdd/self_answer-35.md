@@ -11,8 +11,8 @@ the `product-sdd` run that folds the answers.
 - **Decided by:** `decide_companion_answers.md` v1.3.0
 - **Date:** 2026-10-04
 - **Sources re-read:** None. No answer rests on a source outside this repository. Every answer rests
-  on the product's own tree, read at `nozoki@22e36c3`. `git diff --stat 6a0725c HEAD -- crates
-  checks` prints nothing, so the code is what the items measured at `nozoki@6a0725c`.
+  on the product's own tree, read at `ka-reader@22e36c3`. `git diff --stat 6a0725c HEAD -- crates
+  checks` prints nothing, so the code is what the items measured at `ka-reader@6a0725c`.
 
 **What this run read.** The companion whole. Of `docs/SDD.md` (5,280 lines): the header and version
 lines (`:L1-L60`), § 3 whole (`:L308-L489`), § 4 C-I1 (`:L681-L692`), § 6 S-4 whole
@@ -25,14 +25,14 @@ other slices, §§ 7–10, § 12 and the review notes outside those hits were no
 The prompt asks for the document whole; this run did not do that, and a sentence in those sections
 that bears on an item and uses none of those words was not seen.
 
-Outside the SDD: `crates/nozoki-core/src/git_reader.rs` (`:L36-L74`, `:L185-L263` and its list of
+Outside the SDD: `crates/ka-reader-core/src/git_reader.rs` (`:L36-L74`, `:L185-L263` and its list of
 public items), `src/git_reader/libgit2.rs:L60-L145`, `src/folder_model.rs:L150-L200` and
 `:L268-L290`, `src/fs_reader.rs:L120-L140` and its `Pending` hits, `src/lib.rs`'s module list,
 `tests/git_state.rs:L700-L730` and `:L900-L1010`; `docs/SRS.md:L297-L299`;
 `docs/adr/0018-…md:L88-L102`; `docs/architecture_open_issues.md` whole. `docs/nfdr.md`, `docs/fdr.md`,
 `docs/SRS.md`, `docs/UXD.md`, `docs/CONTENT.md` and `docs/adr/` were searched for the same phrases
 and not otherwise opened, because no answer moves a requirement or a surface. `docs/PRD.md` was not
-opened. One command was run: `cargo test --locked -p nozoki-core --test git_state`, which printed
+opened. One command was run: `cargo test --locked -p ka-reader-core --test git_state`, which printed
 "test result: ok. 36 passed; 0 failed".
 
 **All four items sit under § 5, *Raised from downstream*.** Each carries a "likely fold", which is a
@@ -53,7 +53,7 @@ an item's reach would have widened the document is § 5.2, and the answer says s
   this document's § 3. The answer binds only what the SDD says about a type that already exists. No
   ground this run can name is hidden from it.
 
-  **Why the fold holds.** `pub struct GitState` is at `crates/nozoki-core/src/folder_model.rs:L166`.
+  **Why the fold holds.** `pub struct GitState` is at `crates/ka-reader-core/src/folder_model.rs:L166`.
   The port's trait returns `HeadState` and `StatusLists` and never `GitState`
   (`src/git_reader.rs:L46-L58`). The sentence the SDD carries, "whether it is the type the port
   returns or one the model builds … is the design of the change that adds `state`"
@@ -93,10 +93,10 @@ an item's reach would have widened the document is § 5.2, and the answer says s
   nothing outside it.
 
   **Why the fold holds.** Every public type the port answers is in
-  `crates/nozoki-core/src/git_reader.rs`: `HeadState` (`:L74`), `BranchElement` (`:L90`),
+  `crates/ka-reader-core/src/git_reader.rs`: `HeadState` (`:L74`), `BranchElement` (`:L90`),
   `RepositoryState` (`:L110`), `StatusLists` (`:L132`), `StatusEntry` (`:L151`), `StatusCategory`
   (`:L168`), `GitReadCondition` (`:L194`), `RootFinding` (`:L228`) and `ProbeCondition` (`:L249`).
-  `nozoki-core`'s modules that are no part, `error.rs` and `language.rs` (`src/lib.rs:L3-L8`), hold
+  `ka-reader-core`'s modules that are no part, `error.rs` and `language.rs` (`src/lib.rs:L3-L8`), hold
   none of them.
 
   **The addition, and what the answer declines.** The item's "What it blocks" says a later method,
@@ -131,7 +131,7 @@ an item's reach would have widened the document is § 5.2, and the answer says s
   under no sandbox grant and the `linked-worktree` fixture reads fine there"
   (`docs/SDD.md:L1720-L1721`). In the tree the fixture does not read fine in-process.
   `open_verified` calls `verified_locations` before `Repository::open_ext`
-  (`crates/nozoki-core/src/git_reader/libgit2.rs:L79-L81`), and `locate_inside` answers
+  (`crates/ka-reader-core/src/git_reader/libgit2.rs:L79-L81`), and `locate_inside` answers
   `GitDirectoryOutside` for a location outside the folder "whether or not anything is there"
   (`:L129-L142`). `test_linked_worktree_and_submodule_answer_outside_from_both_calls`
   (`tests/git_state.rs:L714-L725`) asserts it for both fixtures, and the suite passes: 36 passed,
@@ -178,7 +178,7 @@ an item's reach would have widened the document is § 5.2, and the answer says s
 
   **Why the fold holds.** S-4 and RN-44 ask for "every tree item `observed`"
   (`docs/SDD.md:L1722-L1723`, `:L3315`). A folder not yet expanded is `Pending`
-  (`crates/nozoki-core/src/fs_reader.rs:L137`, `:L853`), so the bar fails on any tree that holds a
+  (`crates/ka-reader-core/src/fs_reader.rs:L137`, `:L853`), so the bar fails on any tree that holds a
   folder, whatever the Git read did. The case passes by using files only (`model_over_files`,
   `tests/git_state.rs:L941-L948`) and asserting `folded.tree() == tree_before` (`:L983`).
 
@@ -219,7 +219,7 @@ placeholders, and the invocation listed none.
   on that item and `observed` on its siblings" (`docs/SDD.md:L682-L683`), and S-5 reads "an
   unreadable entry yields `failed` on that item and `observed` on its siblings"
   (`:L1783-L1784`). A folder not yet expanded is `Pending`
-  (`crates/nozoki-core/src/fs_reader.rs:L137`, `:L853`), so neither can be met by a folder that
+  (`crates/ka-reader-core/src/fs_reader.rs:L137`, `:L853`), so neither can be met by a folder that
   holds a folder. This is the defect § 5.4 records in S-4, at its source. S-5 is not built, and its
   `--test watch` case would meet it as S-4's case did. The requirement C-I1 cites says what the
   draft says: NFR-3, "degrades only that item's view" (`docs/SRS.md:L297-L298`).
@@ -238,4 +238,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/SDD.md`** — `<CORE>/launchers/skill/launcher.sh product-sdd nozoki`
+- **`docs/SDD.md`** — `<CORE>/launchers/skill/launcher.sh product-sdd ka-reader`

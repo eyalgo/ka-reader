@@ -25,7 +25,7 @@ set -uo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 OWN_STATE_SH="$ROOT/checks/own-state.sh"
 FIXTURES="$ROOT/checks/fixtures"
-LOG_SUFFIX="Library/Containers/com.kensaiapp.nozoki/Data/Library/Logs/nozoki.log"
+LOG_SUFFIX="Library/Containers/com.kensaiapp.ka-reader/Data/Library/Logs/ka-reader.log"
 
 OUT=""
 STATUS=0
@@ -132,8 +132,8 @@ test_missing_log_names_the_path() {
 
 test_a_log_at_any_other_path_does_not_count() {
   mkdir -p "$WORK/elsewhere/Library/Logs"
-  : > "$WORK/elsewhere/Library/Logs/nozoki.log"
-  : > "$WORK/elsewhere/nozoki.log"
+  : > "$WORK/elsewhere/Library/Logs/ka-reader.log"
+  : > "$WORK/elsewhere/ka-reader.log"
 
   run_own_state "$WORK/elsewhere"
 
@@ -204,7 +204,7 @@ test_unrestored_git_is_not_extra() {
 test_runs_from_anywhere_in_the_repo() {
   home="$(home_with_log anywhere)"
 
-  run_own_state "$home" "$ROOT/crates/nozoki-core"
+  run_own_state "$home" "$ROOT/crates/ka-reader-core"
 
   expect_status 0
 }

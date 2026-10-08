@@ -88,7 +88,7 @@
   at v6 and had no companion. So after the SDD folds, `product-fdr` would have found nothing to act
   on, PD-29 would never move, and neither would QC-21. The draft's plan depended on a fold that
   nothing would trigger. This run opened `docs/fdr_open_issues.md` with one item for PD-29
-  (`nozoki@f5cddef`). The item proposes a sentence that is true now, without naming the
+  (`ka-reader@f5cddef`). The item proposes a sentence that is true now, without naming the
   replacement, so it can fold before the SDD settles.
   **What would have tipped me.** I would have overridden if a delivery change could reach QC-21
   before the SDD moves. The slice order rules that out.
@@ -112,6 +112,6 @@ None this run. Both items carried a slot at its placeholder, and no item is addr
 
 ## Launchers owed
 
-- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture nozoki`
-- **`docs/SDD.md`** — `<CORE>/launchers/product-sdd/launcher.sh nozoki`
-- **`docs/fdr.md`** — `<CORE>/launchers/skill/launcher.sh product-fdr nozoki`
+- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture ka-reader`
+- **`docs/SDD.md`** — `<CORE>/launchers/product-sdd/launcher.sh ka-reader`
+- **`docs/fdr.md`** — `<CORE>/launchers/skill/launcher.sh product-fdr ka-reader`

@@ -1,4 +1,4 @@
-# SDD open issues — Nozoki
+# SDD open issues — KA-Reader
 
 > Companion to `SDD.md`. The CTO wrote the SDD; this file holds what that run could not settle from
 > its inputs (the PRD, the SRS, the UXD, and any context or constraints), and the calls that are the
@@ -33,8 +33,8 @@
 
 
 > **No `product-sdd` run wrote this file.** The PM opened it on 2026-10-04 from the SDD's own companion
-> template. The shell's marker join is now on `main` (`nozoki@6c49d5c` is an ancestor of `main` at
-> `nozoki@67d103d`), and one sentence of § 3 *What the system holds* says it is not. The status-letter
+> template. The shell's marker join is now on `main` (`ka-reader@6c49d5c` is an ancestor of `main` at
+> `ka-reader@67d103d`), and one sentence of § 3 *What the system holds* says it is not. The status-letter
 > expansion `docs/fdr.md` R-38 requires is delivered by no slice, and two surfaces now draw the letters
 > it expands. The SDD is Settled, and with no companion on disk a `product-sdd` re-run reads it as done
 > and has nothing to act on. Its two items are in § 5.
@@ -64,40 +64,40 @@ None.
 ### 5.1 § 3 `GitState` says the marker join is built at a commit not on `main`; that commit is now on `main`
 - **Raised by:** PM — 2026-10-04
 - **Seat:** cto
-- **Tracked by:** `nozoki · nemawashi · 2026-10-02_git-says-what-changed`
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-02_git-says-what-changed`
 - **What it blocks:** nothing fails. A reader of `GitState` learns the shell's join is off `main`, and
   it is on it.
 - **Where it shows:** § 3 *What the system holds*, `GitState` (`docs/SDD.md:L502-L503`): "The join that
   produces it is built in the shell, at a commit that is not on `main`." Measured 2026-10-04:
   `git merge-base --is-ancestor 6c49d5c main` exits 0, and `git ls-tree main --name-only
-  nozoki-mac/Sources/Surfaces/` lists `TreeMarkers.swift`, at `nozoki@67d103d`. The sentence before it
-  is pinned to `nozoki@b640345` and stays true; the `surfaces` row's clause (`:L340`) already "reads the
+  ka-reader-mac/Sources/Surfaces/` lists `TreeMarkers.swift`, at `ka-reader@67d103d`. The sentence before it
+  is pinned to `ka-reader@b640345` and stays true; the `surfaces` row's clause (`:L340`) already "reads the
   same whether or not it merges". `FolderModel`'s `TreeEntry` marker (`:L448`) and the marker among the
   things "in no landed change" (`:L494-L496`) are RN-94's deliberate model-side statements, and this
-  item does not ask to move them. The likely fold: the join is on `main` from `nozoki@67d103d`, in the
+  item does not ask to move them. The likely fold: the join is on `main` from `ka-reader@67d103d`, in the
   shell, under the `surfaces` row's four bounds.
 - **If a document has to be written:** none. One sentence of `GitState` in `SDD.md`.
 - **Answer:** Replace that one sentence, and move nothing else. In place of "The join that produces
   it is built in the shell, at a commit that is not on `main`", `GitState` says that the join that
-  produces the marker is in the shell (`nozoki-mac/Sources/Surfaces/TreeMarkers.swift`) and on
-  `main` from `nozoki@67d103d`, the merge that landed it, under the `surfaces` row's four bounds.
-  The fold words it. Measured 2026-10-04 at `nozoki@c79b26c`: `git merge-base --is-ancestor 6c49d5c
+  produces the marker is in the shell (`ka-reader-mac/Sources/Surfaces/TreeMarkers.swift`) and on
+  `main` from `ka-reader@67d103d`, the merge that landed it, under the `surfaces` row's four bounds.
+  The fold words it. Measured 2026-10-04 at `ka-reader@c79b26c`: `git merge-base --is-ancestor 6c49d5c
   67d103d` exits 0 and the same test against `67d103d^1` exits 1, so `67d103d` is the commit that
   brought the join to `main`; `git diff --stat 6c49d5c main --
-  nozoki-mac/Sources/Surfaces/TreeMarkers.swift` prints nothing, so the file on `main` is the one
-  built at `nozoki@6c49d5c`. Four things keep their words. The sentence before it is pinned to
-  `nozoki@b640345` and is true of that commit. The `surfaces` row's clause is pinned the same way
+  ka-reader-mac/Sources/Surfaces/TreeMarkers.swift` prints nothing, so the file on `main` is the one
+  built at `ka-reader@6c49d5c`. Four things keep their words. The sentence before it is pinned to
+  `ka-reader@b640345` and is true of that commit. The `surfaces` row's clause is pinned the same way
   and says of itself that it reads the same whether or not the commit merges. `FolderModel`'s
   `TreeEntry` marker and the marker among the things in no landed change are statements about the
-  model, and `git grep -n marker main -- crates/nozoki-core/src/folder_model.rs` still prints
-  nothing. § 10 RC-5's *Observed reality* is a dated record of what was read at `nozoki@b640345`.
+  model, and `git grep -n marker main -- crates/ka-reader-core/src/folder_model.rs` still prints
+  nothing. § 10 RC-5's *Observed reality* is a dated record of what was read at `ka-reader@b640345`.
   Answered in the CTO's seat by an unattended run; the reasoning is
   `docs/trail/sdd/self_answer-42.md`.
 
 ### 5.2 No slice delivers `docs/fdr.md` R-38's status-letter expansion, and two surfaces now draw the letters
 - **Raised by:** PM — 2026-10-04
 - **Seat:** cto
-- **Tracked by:** `nozoki · nemawashi · 2026-10-02_git-says-what-changed`
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-02_git-says-what-changed`
 - **What it blocks:** no seed can be cut for the expansion, because no slice in § 6 names it; and
   `see-git-status`'s letters ship with nothing that expands them.
 - **Where it shows:** `docs/fdr.md:L93` R-38: "Resting the pointer on a status letter shows the file's
@@ -107,9 +107,9 @@ None.
   `docs/CONTENT.md:L145-L147` says "A single-letter code is never the whole of a statement", and
   `:L422-L428` gives the expansion's two words and leaves how it is drawn to `docs/DESIGN.md`
   § Components, "The tooltip". In the product the Git view's rows draw the six letters with "no
-  tooltip" (`nozoki-mac/Sources/Surfaces/GitView.swift:L24`), and the tree's rows now draw the same
-  letters (`nozoki-mac/Sources/Surfaces/RootItemsView.swift:L208`, `:L236`); `grep -rn -i toolTip
-  nozoki-mac/Sources`, comments aside, prints nothing. The call is which slice delivers the
+  tooltip" (`ka-reader-mac/Sources/Surfaces/GitView.swift:L24`), and the tree's rows now draw the same
+  letters (`ka-reader-mac/Sources/Surfaces/RootItemsView.swift:L208`, `:L236`); `grep -rn -i toolTip
+  ka-reader-mac/Sources`, comments aside, prints nothing. The call is which slice delivers the
   expansion, and whether `see-git-status` is reached without it.
 - **If a document has to be written:** none. A slice's *Delivers* and *Reached when* in § 6, and
   R-38's trace target in § 4.
@@ -127,14 +127,14 @@ None.
   (1) § 4 C-E8 gains one sentence: a status letter's expansion is raised by the letter and by
   nothing else, drawn as `docs/DESIGN.md` § Components "The tooltip" draws it, in the words
   `docs/CONTENT.md` § Terminology gives. The SDD said this before it was re-authored
-  (`nozoki@70a879a:docs/SDD.md:L439-L441`, § 4 C-E6: "a status letter's expansion is raised by the
+  (`ka-reader@70a879a:docs/SDD.md:L439-L441`, § 4 C-E6: "a status letter's expansion is raised by the
   letter, as the tooltip, and nowhere else"), and `docs/fdr.md:L93` R-38 still traces to it.
   (2) § 6 S-4 *Delivers* gains that resting the pointer on a status letter shows the row's name and
   the letter's meaning in words.
   (3) § 6 S-4 *Reached when*, observable half: resting the pointer on a letter, in the tree and in
   the Git view, shows the name and then the word; the row stays one click target; nothing else
   raises a tooltip.
-  (4) § 6 S-4 *Reached when*, command half: a `swift test` case in `nozoki-mac` holds that each of
+  (4) § 6 S-4 *Reached when*, command half: a `swift test` case in `ka-reader-mac` holds that each of
   the six status categories gives the word `docs/CONTENT.md` states, and that the text is the name
   and then the word. Whether a test also drives the pointer rest is the design of the change.
   (5) § 6 S-4 *Rests on*: `surfaces` gains the letter's tooltip.
@@ -150,8 +150,8 @@ None.
   **No § 10 entry.** None of that section's four triggers holds (`docs/SDD.md:L2452-L2454`): S-4's
   *Reached when* can be met as written, and the PRD, the SRS and the UXD did not move. This is an
   omission restored, and a review note records it.
-  **Where the product stands.** At `nozoki@c79b26c` both surfaces draw the letters and raise
-  nothing (`nozoki-mac/Sources/Surfaces/GitView.swift:L24`, `RootItemsView.swift:L236`), so on this
+  **Where the product stands.** At `ka-reader@c79b26c` both surfaces draw the letters and raise
+  nothing (`ka-reader-mac/Sources/Surfaces/GitView.swift:L24`, `RootItemsView.swift:L236`), so on this
   ground `see-git-status` is not reached on `main`. What that means for the work in flight is the
   PM's. Answered in the CTO's seat by an unattended run; the reasoning, the failure paths and what
   would have tipped it are `docs/trail/sdd/self_answer-42.md`.

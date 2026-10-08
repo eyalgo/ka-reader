@@ -27,7 +27,7 @@
   ],
   "companion_present_at_intake": true,
   "companion_retired": false,
-  "consumed_cycle_path": "/Users/eyalgolan/products/nozoki/docs/trail/sdd/cycle-8.md",
+  "consumed_cycle_path": "/Users/eyalgolan/products/ka-reader/docs/trail/sdd/cycle-8.md",
   "core_root": "/Users/eyalgolan/.kensaiapp/pins/20260923T063052Z-ppa1f0/core",
   "ended": "seats-close",
   "ended_at": "2026-09-23T10:01:24.338007+00:00",
@@ -74,12 +74,12 @@
   "output_tokens": 0,
   "output_tokens_under_counted": true,
   "pending_request": {
-    "cdo": "## CDO \u2014 round 2\n\nEverything I hold is on disk as I left it, and both peers' round-2 edits touched no lane of mine \u2014 verified rather than assumed:\n\n- Review notes stand in order **52 \u00b7 53 \u00b7 54 \u00b7 55** (`docs/SDD.md:L2940`, `:L3018`, `:L3046`, `:L3067`); RN-53 (CDO) is unchanged.\n- S-1's observable half still opens on the named artifact \u2014 \"takes the `Nozoki.app` CI built\u2026\" (`docs/SDD.md:L1127`) \u2014 and \u00a7 12's UXD clause still carries \"open no UXD gap\" (`:L2216`).\n- The companion's \u00a7 1.1 now carries the three positions in one item \u2014 CTO (`docs/SDD_open_issues.md:L74`), CDO (`:L81`), CPO (`:L138`) \u2014 all (a), and the **Answer** slot is the owner's.\n- The CTO's re-pointed \u00a7 2 row 4 cites `docs/DESIGN.md` \u00a7 Overview / RN-1 for the realisation sentence and keeps `docs/UXD.md` \u00a7 9 for assets shipping with the tool (`docs/SDD.md:L241`) \u2014 which is what the UXD actually says, so the row and my RN-53 no longer disagree about what the UXD claims.\n\n**To the CTO** \u2014 nothing owed. Your row's \"what survives re-expression is the CDO's finding, not this row's (RN-53)\" is the right split: the row prices the runner-up, RN-53 says what the design keeps and loses, and neither restates the other.\n\n**To the CPO** \u2014 nothing owed. Your \"the fixed constant is the PRD's Markdown-rendered-by-default and UX-I12's cells, never a lighter Markdown\" is the sentence my position rests on too; it is written once, in your RN-54, and I point at it rather than copying it.\n\nI write nothing this turn: the same position written twice would be two homes for one call. My lanes hold no open work \u2014 \u00a7 4's CDO clause is untouched by the renderer question, every \u00a7 6 observable half and UXD trace stands, \u00a7 12's UXD boundary records that no UXD gap opened \u2014 and nothing in them moves until the owner answers \u00a7 1.1. When that answer comes, what it may move on my side is `docs/DESIGN.md`'s realisation sentence, in that document's own run, not in this one.",
+    "cdo": "## CDO \u2014 round 2\n\nEverything I hold is on disk as I left it, and both peers' round-2 edits touched no lane of mine \u2014 verified rather than assumed:\n\n- Review notes stand in order **52 \u00b7 53 \u00b7 54 \u00b7 55** (`docs/SDD.md:L2940`, `:L3018`, `:L3046`, `:L3067`); RN-53 (CDO) is unchanged.\n- S-1's observable half still opens on the named artifact \u2014 \"takes the `KA-Reader.app` CI built\u2026\" (`docs/SDD.md:L1127`) \u2014 and \u00a7 12's UXD clause still carries \"open no UXD gap\" (`:L2216`).\n- The companion's \u00a7 1.1 now carries the three positions in one item \u2014 CTO (`docs/SDD_open_issues.md:L74`), CDO (`:L81`), CPO (`:L138`) \u2014 all (a), and the **Answer** slot is the owner's.\n- The CTO's re-pointed \u00a7 2 row 4 cites `docs/DESIGN.md` \u00a7 Overview / RN-1 for the realisation sentence and keeps `docs/UXD.md` \u00a7 9 for assets shipping with the tool (`docs/SDD.md:L241`) \u2014 which is what the UXD actually says, so the row and my RN-53 no longer disagree about what the UXD claims.\n\n**To the CTO** \u2014 nothing owed. Your row's \"what survives re-expression is the CDO's finding, not this row's (RN-53)\" is the right split: the row prices the runner-up, RN-53 says what the design keeps and loses, and neither restates the other.\n\n**To the CPO** \u2014 nothing owed. Your \"the fixed constant is the PRD's Markdown-rendered-by-default and UX-I12's cells, never a lighter Markdown\" is the sentence my position rests on too; it is written once, in your RN-54, and I point at it rather than copying it.\n\nI write nothing this turn: the same position written twice would be two homes for one call. My lanes hold no open work \u2014 \u00a7 4's CDO clause is untouched by the renderer question, every \u00a7 6 observable half and UXD trace stands, \u00a7 12's UXD boundary records that no UXD gap opened \u2014 and nothing in them moves until the owner answers \u00a7 1.1. When that answer comes, what it may move on my side is `docs/DESIGN.md`'s realisation sentence, in that document's own run, not in this one.",
     "cpo": "Round 2 \u2014 my edits are verified on disk (the cited PRD grep is empty, exit 1; `README.md:L48-L49` reads as the CDO described), so this turn is the reply.\n\n**What I wrote this turn.**\n\n- **Companion \u00a7 1.1 \u2014 the CPO's position: (a), and the cut does not move with it.** Four sourced points from the value seat: nothing the product promises names a renderer (`docs/PRD.md` \u00a7 Dependencies / Integrations names the filesystem and Git alone; no PRD section names WKWebView, Tauri or CSS; the Agari's three conditions name none), so no exit opens a PRD gap; what (a) costs in product terms is a date, not a surface \u2014 every slice rests on `open-a-folder` (\u00a7 7), so the first public release moves later, not smaller, and the eleven slices, slugs, *Delivers*, fences and PRD traces stand because step 1 made them from behaviour, never the boxes; (b) and (c) fail the same product test whatever the probe reports \u2014 the promise is what a stranger can *show* on the entitlements file, and one naming `com.apple.nsurlsessiond` is a promise the code keeps, which answer 1 ruled out; (e) is not an exit, because the Agari's third condition cannot be reached on a radar open since 2019. Two costs of (a) this seat owns are named: `README.md:L48-L49` moves with the README, and the release date moves out.\n- **\u00a7 12, the PRD boundary** \u2014 one sentence: \u00a7 1.1 opens no PRD gap; the PRD stays at v15 under every exit.\n- **RN-54** (CPO, added) \u2014 the reasoning, plus what I deliberately did *not* write: the one sizing to re-check under (a) is `read-markdown`'s (its decision becomes part structure, part layout in a single-process view; it stays its own slice for step 4's reason), and that re-check waits for \u00a7 2's redraw \u2014 a sentence sized against a shape the owner has not chosen is designing ahead of the call.\n\n**To the CTO** \u2014 nothing owed to me; RC-2 records the E-1 exception exactly as I meant it. One thing for your row, already surfaced by the CDO and which I second: \u00a7 2 row 4's \"Wrong when\" cites `docs/UXD.md` \u00a7 9 for \"CSS tokens over the product's own markup\"; that sentence is `docs/DESIGN.md` \u00a7 Overview's. And the fixed constant this seat weighs against whichever native technology you re-weigh: the PRD's Markdown-rendered-by-default feature and UX-I12's cells are the bar, so the re-weighing is priced against those, not against a lighter Markdown.\n\n**To the CDO** \u2014 agreed on both: RC-2 is the CTO's and rightly so, and the README stack sentence is mine only if the owner takes (a); nothing to do this run.\n\nThe three seats now hold one position on \u00a7 1.1 \u2014 (a) \u2014 and the call is the owner's; \u00a7 4 has no disagreement to carry. I have nothing further in my lanes until the owner answers.",
     "cto": "Nothing further is needed from the tree: the order is fixed by the two edits, and everything this turn owed is on disk.\n\n## CTO \u2014 round 2\n\n**The CDO's successor work is done, and it was right.** `docs/UXD.md` \u00a7 9 names a direction, a token-pair rule and \"every asset ships with the tool \u2014 fonts, icons, images\" \u2014 neither *CSS* nor *markup* (checked: `grep -i \"custom propert\\|own markup\\|CSS\" docs/UXD.md` returns nothing). The sentence is `docs/DESIGN.md`'s \u2014 \"plain CSS custom properties over the product's own markup on a macOS window\" (`docs/DESIGN.md:L12-L13`, \u00a7 Overview) and its RN-1 (`:L778-L785`), which itself cites UXD \u00a7 9 as the *direction* it realises. Re-pointed in the two places both mine: **\u00a7 2 row 4's *Wrong when*** now cites `DESIGN.md` for the realisation, UXD \u00a7 9 for assets shipping with the tool, `third_party/lucide/` for the icons, and points at RN-53 for what survives re-expression rather than restating it; **RN-2** keeps its reasoning and gains one parenthesis naming the correction. **RN-55** records why it matters now: the owner's \u00a7 1.1 call is priced against exactly that sentence. RN-55 sits after RN-54 (I first placed it above and moved it; order verified 52 \u00b7 53 \u00b7 54 \u00b7 55).\n\n**To the CPO** \u2014 the fixed constant you name is the one I will re-weigh against if the owner takes (a): the PRD's Markdown-rendered-by-default feature and UX-I12's cells, never a lighter Markdown; noted, and nothing to write for it until \u00a7 2 is redrawn on the owner's answer. **To the CDO** \u2014 the artifact you named into S-1's observable half is the one both gates run on; the two halves now check one bundle from two sides, which is what the template asks of the field.\n\nThe three seats hold one position on \u00a7 1.1 \u2014 (a) \u2014 the call is the owner's, and nothing in my lanes moves until it is answered."
   },
-  "product_path": "/Users/eyalgolan/products/nozoki",
-  "project": "nozoki",
+  "product_path": "/Users/eyalgolan/products/ka-reader",
+  "project": "ka-reader",
   "provider": "claude",
   "queue": [],
   "recall_outstanding": null,
@@ -88,31 +88,31 @@
   "resolved_inputs": {
     "cdo": [
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/SRS.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/UXD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/PRD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/agari.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ka-reader_doctrine.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ai_responsibility.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/definition_brief.md",
         "present": false
       },
       {
@@ -128,15 +128,15 @@
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/DESIGN.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/DESIGN.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/CONTENT.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/CONTENT.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/design_system",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/design_system",
         "present": false
       },
       {
@@ -150,31 +150,31 @@
     ],
     "cpo": [
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/SRS.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/UXD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/PRD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/agari.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ka-reader_doctrine.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ai_responsibility.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/definition_brief.md",
         "present": false
       },
       {
@@ -192,31 +192,31 @@
     ],
     "cto": [
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/SRS.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/UXD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/PRD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/agari.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ka-reader_doctrine.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ai_responsibility.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/definition_brief.md",
         "present": false
       },
       {
@@ -232,11 +232,11 @@
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/adr",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/adr",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/nfdr.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/nfdr.md",
         "present": true
       }
     ]
@@ -273,9 +273,9 @@
     "cto": "712d90bd-fdf0-4585-94ad-5a2900802451"
   },
   "seats": {
-    "cdo": "sdd-nozoki-run10-cdo",
-    "cpo": "sdd-nozoki-run10-cpo",
-    "cto": "sdd-nozoki-run10-cto"
+    "cdo": "sdd-ka-reader-run10-cdo",
+    "cpo": "sdd-ka-reader-run10-cpo",
+    "cto": "sdd-ka-reader-run10-cto"
   },
   "spoke_at": {
     "cdo": 6,
@@ -326,7 +326,7 @@
       "declared": "no_followup",
       "kind": "ordinary",
       "no_reply": false,
-      "request_text": "## CDO \u2014 round 2\n\nEverything I hold is on disk as I left it, and both peers' round-2 edits touched no lane of mine \u2014 verified rather than assumed:\n\n- Review notes stand in order **52 \u00b7 53 \u00b7 54 \u00b7 55** (`docs/SDD.md:L2940`, `:L3018`, `:L3046`, `:L3067`); RN-53 (CDO) is unchanged.\n- S-1's observable half still opens on the named artifact \u2014 \"takes the `Nozoki.app` CI built\u2026\" (`docs/SDD.md:L1127`) \u2014 and \u00a7 12's UXD clause still carries \"open no UXD gap\" (`:L2216`).\n- The companion's \u00a7 1.1 now carries the three positions in one item \u2014 CTO (`docs/SDD_open_issues.md:L74`), CDO (`:L81`), CPO (`:L138`) \u2014 all (a), and the **Answer** slot is the owner's.\n- The CTO's re-pointed \u00a7 2 row 4 cites `docs/DESIGN.md` \u00a7 Overview / RN-1 for the realisation sentence and keeps `docs/UXD.md` \u00a7 9 for assets shipping with the tool (`docs/SDD.md:L241`) \u2014 which is what the UXD actually says, so the row and my RN-53 no longer disagree about what the UXD claims.\n\n**To the CTO** \u2014 nothing owed. Your row's \"what survives re-expression is the CDO's finding, not this row's (RN-53)\" is the right split: the row prices the runner-up, RN-53 says what the design keeps and loses, and neither restates the other.\n\n**To the CPO** \u2014 nothing owed. Your \"the fixed constant is the PRD's Markdown-rendered-by-default and UX-I12's cells, never a lighter Markdown\" is the sentence my position rests on too; it is written once, in your RN-54, and I point at it rather than copying it.\n\nI write nothing this turn: the same position written twice would be two homes for one call. My lanes hold no open work \u2014 \u00a7 4's CDO clause is untouched by the renderer question, every \u00a7 6 observable half and UXD trace stands, \u00a7 12's UXD boundary records that no UXD gap opened \u2014 and nothing in them moves until the owner answers \u00a7 1.1. When that answer comes, what it may move on my side is `docs/DESIGN.md`'s realisation sentence, in that document's own run, not in this one.",
+      "request_text": "## CDO \u2014 round 2\n\nEverything I hold is on disk as I left it, and both peers' round-2 edits touched no lane of mine \u2014 verified rather than assumed:\n\n- Review notes stand in order **52 \u00b7 53 \u00b7 54 \u00b7 55** (`docs/SDD.md:L2940`, `:L3018`, `:L3046`, `:L3067`); RN-53 (CDO) is unchanged.\n- S-1's observable half still opens on the named artifact \u2014 \"takes the `KA-Reader.app` CI built\u2026\" (`docs/SDD.md:L1127`) \u2014 and \u00a7 12's UXD clause still carries \"open no UXD gap\" (`:L2216`).\n- The companion's \u00a7 1.1 now carries the three positions in one item \u2014 CTO (`docs/SDD_open_issues.md:L74`), CDO (`:L81`), CPO (`:L138`) \u2014 all (a), and the **Answer** slot is the owner's.\n- The CTO's re-pointed \u00a7 2 row 4 cites `docs/DESIGN.md` \u00a7 Overview / RN-1 for the realisation sentence and keeps `docs/UXD.md` \u00a7 9 for assets shipping with the tool (`docs/SDD.md:L241`) \u2014 which is what the UXD actually says, so the row and my RN-53 no longer disagree about what the UXD claims.\n\n**To the CTO** \u2014 nothing owed. Your row's \"what survives re-expression is the CDO's finding, not this row's (RN-53)\" is the right split: the row prices the runner-up, RN-53 says what the design keeps and loses, and neither restates the other.\n\n**To the CPO** \u2014 nothing owed. Your \"the fixed constant is the PRD's Markdown-rendered-by-default and UX-I12's cells, never a lighter Markdown\" is the sentence my position rests on too; it is written once, in your RN-54, and I point at it rather than copying it.\n\nI write nothing this turn: the same position written twice would be two homes for one call. My lanes hold no open work \u2014 \u00a7 4's CDO clause is untouched by the renderer question, every \u00a7 6 observable half and UXD trace stands, \u00a7 12's UXD boundary records that no UXD gap opened \u2014 and nothing in them moves until the owner answers \u00a7 1.1. When that answer comes, what it may move on my side is `docs/DESIGN.md`'s realisation sentence, in that document's own run, not in this one.",
       "seat": "cdo",
       "spoke": true
     }

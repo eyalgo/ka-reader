@@ -1,4 +1,4 @@
-# DESIGN open issues — Nozoki
+# DESIGN open issues — KA-Reader
 
 > Companion to `DESIGN.md`. The CDO authored the design language non-interactively; this file
 > holds the calls it made and wants your sign-off on — each with the reason behind it, and what
@@ -32,7 +32,7 @@
 
 ### 3.1 The code gutter does not say how much space separates its numbers from the code
 - **Raised by:** PM — 2026-10-01
-- **Tracked by:** `nozoki · nemawashi · 2026-10-01_a-file-reads-in-the-panel`
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-01_a-file-reads-in-the-panel`
 - **What it blocks:** nothing is blocked; the code view is built. What is missing is the rule that
   says whether it is built right. As built, the line numbers end exactly where the code begins, with
   no space between them. That may be what the language means, or it may leave the numbers pressed
@@ -43,8 +43,8 @@
   So the language fixes the column's width but not where inside it the numbers sit beyond
   "right-aligned", and it names no space between the column and the code. The literal reading is
   what the app draws now: each number's right end is the gutter's right edge
-  (`nozoki-mac/Sources/Surfaces/CodeGutterView.swift:L46`, `:L67`, `:L144`), and the code's scroll
-  view begins at that same edge (`nozoki-mac/Sources/Surfaces/CodeView.swift:L88`), so the 24 points
+  (`ka-reader-mac/Sources/Surfaces/CodeGutterView.swift:L46`, `:L67`, `:L144`), and the code's scroll
+  view begins at that same edge (`ka-reader-mac/Sources/Surfaces/CodeView.swift:L88`), so the 24 points
   of `{spacing.xl}` all lie to the numbers' left. Three readings are open: (a) the literal one, as
   drawn, with no space; (b) part of `{spacing.xl}` to the numbers' right, between them and the code,
   with the language saying how much; (c) a gap token of the language's own beside the column.

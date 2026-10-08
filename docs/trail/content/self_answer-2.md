@@ -17,9 +17,9 @@
   RN-15 does not move, and the pointer still goes — but what replaces it is a citation, not a
   restatement.
 
-  **The defect verifies.** `system/projects/nozoki/agari.md` is absent from this repository (there is
+  **The defect verifies.** `system/projects/ka-reader/agari.md` is absent from this repository (there is
   no `system/` directory in it at all) and present at
-  `kensaiapp-opensource/system/projects/nozoki/agari.md` — checked 2026-09-01. Every other file
+  `kensaiapp-opensource/system/projects/ka-reader/agari.md` — checked 2026-09-01. Every other file
   `docs/CONTENT.md` cites resolves inside the repository: of the twelve distinct backticked paths in
   the file, eleven are present and this is the one that is not. (A thirteenth backticked filename, the
   bare `DESIGN.md` in § Voice's scope note, names the design language rather than pointing at a path,
@@ -27,7 +27,7 @@
   says"*, `system/doctrine/writing_bar.md` § 1.2 *How a document reads*.) So the item is right that
   this is one place, not a pattern.
 
-  **Why the drafted remedy fails.** It says to "state the Agari's ground in Nozoki's own words" —
+  **Why the drafted remedy fails.** It says to "state the Agari's ground in KA-Reader's own words" —
   which is a paraphrase of the product's defining guarantee, and the house bar forbids exactly that:
   *"A commitment is quoted, never paraphrased. Where a document here carries a commitment another
   document owns — a guarantee, a licence term, a limit, a support period — it quotes that document's
@@ -42,7 +42,7 @@
   the same wider input, inside this repository: *"browsing a folder's files — and, when that folder is
   a Git repository, inspecting its Git status — in which nothing can be changed"*. It is not a
   substitute of convenience — the Agari itself defers to it for that sentence: *"the product sentence
-  is the PRD's, `docs/PRD.md` § Purpose"* (`system/projects/nozoki/agari.md:L16-17`). The outside
+  is the PRD's, `docs/PRD.md` § Purpose"* (`system/projects/ka-reader/agari.md:L16-17`). The outside
   pointer was pointing at a document that points back inside this repository, so citing the PRD
   reaches the source rather than the summary, which is the direction the bar already runs in — *"A
   summary held in one of our own documents is never the citable source for what it summarizes"*
@@ -95,4 +95,4 @@ document's own slot rather than raised elsewhere.
 
 ## Launchers owed
 
-- **`docs/CONTENT.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-content/launcher.sh nozoki`
+- **`docs/CONTENT.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-content/launcher.sh ka-reader`

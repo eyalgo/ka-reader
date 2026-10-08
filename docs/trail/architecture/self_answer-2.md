@@ -2,7 +2,7 @@
 
 ## Header
 
-- **Companion:** /Users/eyalgolan/products/nozoki/docs/architecture_open_issues.md
+- **Companion:** /Users/eyalgolan/products/ka-reader/docs/architecture_open_issues.md
 - **Document:** `adr/` and `nfdr.md` (`docs/adr/`, `docs/nfdr.md`)
 - **Decided by:** `decide_companion_answers.md` v1.0.0
 - **Date:** 2026-09-01
@@ -23,8 +23,8 @@
   companion removed — so `docs/fdr_open_issues.md`, which RN-2 names as a live path, does not
   exist, and a note corrected to "thirteen items open" would be false again on the day it landed
   (check 4, *stale* and *absent*). The answer is therefore a note that stays true whatever the
-  FDR does next: what v1 read, pinned to a commit — Draft at v1, thirteen items, `nozoki@a50718a`
-  — and where the FDR stands as of this fold, Settled at v3 (`nozoki@3325469`), with the rounds
+  FDR does next: what v1 read, pinned to a commit — Draft at v1, thirteen items, `ka-reader@a50718a`
+  — and where the FDR stands as of this fold, Settled at v3 (`ka-reader@3325469`), with the rounds
   at `docs/trail/fdr/cycle-1.md` and `cycle-2.md`; the `Inputs read:` header line carries the
   present status, which is the one form `<CORE>/doctrine/governance/unsettled_inputs.md` fixes
   and the producing run re-derives anyway. RN-2's two other sentences are read the same way:
@@ -92,4 +92,4 @@ None this run.
 
 ## Launchers owed
 
-- **`adr/` and `nfdr.md`** — `<CORE>/launchers/product-architecture/launcher.sh nozoki`
+- **`adr/` and `nfdr.md`** — `<CORE>/launchers/product-architecture/launcher.sh ka-reader`

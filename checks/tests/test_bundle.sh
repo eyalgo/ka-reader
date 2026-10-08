@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Version: 1.2.0 — the Tauri build leaves — native bundle assembled, bundle.sh and no-network.sh read it, CI builds it, boundaries and README pinned
 # Version: 1.1.0 — the probe waits, bounded, for the sandbox report, and its control holds for the whole window; plutil read only on exit 0
-# Version: 1.0.0 — first version: drives the real checks/bundle.sh against the built Nozoki.app
+# Version: 1.0.0 — first version: drives the real checks/bundle.sh against the built KA-Reader.app
 #
 # checks/tests/test_bundle.sh — the tests of checks/bundle.sh.
 #
@@ -14,8 +14,8 @@
 #   is this file (`docs/nfdr.md` § 9 names the product's toolchains).
 #
 # USAGE
-#   NOZOKI_APP=<path-to-Nozoki.app> checks/tests/test_bundle.sh
-#     NOZOKI_APP defaults to target/release/bundle/macos/Nozoki.app under the product root.
+#   KA_READER_APP=<path-to-KA-Reader.app> checks/tests/test_bundle.sh
+#     KA_READER_APP defaults to target/release/bundle/macos/KA-Reader.app under the product root.
 #   A bundle that is absent FAILS the suite with a stated message and runs no case: a skip would
 #   let CI conclude green having proved nothing.
 #
@@ -27,7 +27,7 @@ set -uo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 BUNDLE_SH="$ROOT/checks/bundle.sh"
-APP="${NOZOKI_APP:-$ROOT/target/release/bundle/macos/Nozoki.app}"
+APP="${KA_READER_APP:-$ROOT/target/release/bundle/macos/KA-Reader.app}"
 
 APP_SANDBOX_KEY="com.apple.security.app-sandbox"
 USER_SELECTED_READ_ONLY_KEY="com.apple.security.files.user-selected.read-only"
@@ -217,21 +217,21 @@ expect_not_sandboxed_condition_line_unchanged() {
 
 # A copy of the built bundle in $WORK, re-signed ad hoc with the entitlements in file $2.
 resigned_copy() {
-  copy="$WORK/$1/Nozoki.app"
+  copy="$WORK/$1/KA-Reader.app"
   mkdir -p "$WORK/$1"
   cp -R "$APP" "$copy"
   codesign --force --sign - --entitlements "$2" "$copy" > /dev/null 2>&1 || return 1
   printf '%s' "$copy"
 }
 
-# A stand-in for `nozoki-sandbox-probe`, placed ahead of the real one on PATH. $2 is the sandboxed
+# A stand-in for `ka-reader-sandbox-probe`, placed ahead of the real one on PATH. $2 is the sandboxed
 # line, $3 the out-of-grant read line, $4 the outbound connection line — each the value the real probe
 # would print, so one condition at a time can be made to fail without an unsandboxed bundle.
 probe_stub() {
-  make_stub "$1" nozoki-sandbox-probe "printf 'sandboxed: %s\nout-of-grant-read: %s\noutbound-connection: %s\n' $2 $3 $4"
+  make_stub "$1" ka-reader-sandbox-probe "printf 'sandboxed: %s\nout-of-grant-read: %s\noutbound-connection: %s\n' $2 $3 $4"
 }
 
-# A stand-in for `nozoki-sandbox-probe` whose answer depends on how many times it has been called —
+# A stand-in for `ka-reader-sandbox-probe` whose answer depends on how many times it has been called —
 # for proving the ordinary-path and negative-control loops, which ask more than once. $1 is a fresh
 # directory the caller owns; the remaining arguments are the answers, one per ask, each either a
 # three-value report (`sandboxed out-of-grant-read outbound-connection`, space-separated, one call's
@@ -244,7 +244,7 @@ sequenced_probe_stub() {
   mkdir -p "$dir"
   printf '%s\n' "$@" > "$dir/answers"
   echo 0 > "$dir/count"
-  cat > "$dir/nozoki-sandbox-probe" << STUB
+  cat > "$dir/ka-reader-sandbox-probe" << STUB
 #!/bin/sh
 n=\$(( \$(cat "$dir/count") + 1 ))
 echo "\$n" > "$dir/count"
@@ -253,13 +253,13 @@ line_no=\$n
 [ "\$line_no" -le "\$total" ] || line_no="\$total"
 answer=\$(sed -n "\${line_no}p" "$dir/answers")
 if [ "\$answer" = FAIL ]; then
-  echo "nozoki-sandbox-probe: sandbox_check returned an error" >&2
+  echo "ka-reader-sandbox-probe: sandbox_check returned an error" >&2
   exit 1
 fi
 set -- \$answer
 printf 'sandboxed: %s\nout-of-grant-read: %s\noutbound-connection: %s\n' "\$1" "\$2" "\$3"
 STUB
-  chmod +x "$dir/nozoki-sandbox-probe"
+  chmod +x "$dir/ka-reader-sandbox-probe"
 }
 
 # The number of times a sequenced probe stub (above) was called.
@@ -284,7 +284,7 @@ write_entitlements() {
 # The real probe, compiled once per case that needs it, into $WORK/probe-bin.
 compile_probe() {
   mkdir -p "$WORK/probe-bin"
-  rustc --edition 2021 -O -o "$WORK/probe-bin/nozoki-sandbox-probe" "$PROBE_SOURCE" > "$WORK/probe-build.log" 2>&1 \
+  rustc --edition 2021 -O -o "$WORK/probe-bin/ka-reader-sandbox-probe" "$PROBE_SOURCE" > "$WORK/probe-build.log" 2>&1 \
     || fail "the probe source did not compile: $(cat "$WORK/probe-build.log" 2> /dev/null)"
 }
 
@@ -512,7 +512,7 @@ test_not_sandboxed_fails() {
 test_probe_fails_on_a_pid_that_does_not_exist() {
   compile_probe || return 1
 
-  OUT="$("$WORK/probe-bin/nozoki-sandbox-probe" 99999999 2>&1)"
+  OUT="$("$WORK/probe-bin/ka-reader-sandbox-probe" 99999999 2>&1)"
   STATUS=$?
 
   expect_nonzero_status || return 1
@@ -603,7 +603,7 @@ test_only_the_launched_pid_is_signalled() {
   copy="$(valid_copy bystander)" || fail "could not re-sign the copy" || return 1
   executable="$(bundle_executable_of "$copy")"
   mkdir -p "$WORK/stubs-bystander"
-  make_stub "$WORK/stubs-bystander" nozoki-sandbox-probe "\"$executable\" > /dev/null 2>&1 &
+  make_stub "$WORK/stubs-bystander" ka-reader-sandbox-probe "\"$executable\" > /dev/null 2>&1 &
 echo \$! > \"$WORK/bystander-pid\"
 printf 'sandboxed: yes\nout-of-grant-read: denied\noutbound-connection: denied\n'"
 
@@ -677,7 +677,7 @@ test_negative_control_probe_failure_fails() {
   write_entitlements "$WORK/empty-failure.plist"
   copy="$(resigned_copy control-failure "$WORK/empty-failure.plist")" || fail "could not re-sign the copy" || return 1
   mkdir -p "$WORK/stubs-control-failure"
-  make_stub "$WORK/stubs-control-failure" nozoki-sandbox-probe 'echo "nozoki-sandbox-probe: sandbox_check returned an error" >&2; exit 1'
+  make_stub "$WORK/stubs-control-failure" ka-reader-sandbox-probe 'echo "ka-reader-sandbox-probe: sandbox_check returned an error" >&2; exit 1'
 
   run_bundle_sh_with_stubs "$WORK/stubs-control-failure" --negative-control "$copy"
 
@@ -693,7 +693,7 @@ test_negative_control_unreadable_report_fails() {
   write_entitlements "$WORK/empty-unreadable.plist"
   copy="$(resigned_copy control-unreadable "$WORK/empty-unreadable.plist")" || fail "could not re-sign the copy" || return 1
   mkdir -p "$WORK/stubs-control-unreadable"
-  make_stub "$WORK/stubs-control-unreadable" nozoki-sandbox-probe "printf 'garbled\n'"
+  make_stub "$WORK/stubs-control-unreadable" ka-reader-sandbox-probe "printf 'garbled\n'"
 
   run_bundle_sh_with_stubs "$WORK/stubs-control-unreadable" --negative-control "$copy"
 
@@ -724,7 +724,7 @@ test_negative_control_reported_sandboxed_fails_the_suite() {
   mkdir -p "$WORK/stubs-control-sandboxed"
   probe_stub "$WORK/stubs-control-sandboxed" yes denied denied
 
-  nested="$(PATH="$WORK/stubs-control-sandboxed:$PATH" NOZOKI_TEST_ONLY="$CONTROL_CASE" bash "$0" 2>&1)"
+  nested="$(PATH="$WORK/stubs-control-sandboxed:$PATH" KA_READER_TEST_ONLY="$CONTROL_CASE" bash "$0" 2>&1)"
   nested_status=$?
 
   [ "$nested_status" -ne 0 ] || fail "the suite exited 0 with the control reported sandboxed. output: $nested" || return 1
@@ -736,7 +736,7 @@ test_negative_control_reported_sandboxed_fails_the_suite() {
 
 # A run in which the control did not run is a failure, not a skip — recorded by the runner.
 test_absent_control_fails_the_suite() {
-  nested="$(NOZOKI_TEST_ONLY=test_missing_key_fails bash "$0" 2>&1)"
+  nested="$(KA_READER_TEST_ONLY=test_missing_key_fails bash "$0" 2>&1)"
   nested_status=$?
 
   [ "$nested_status" -ne 0 ] || fail "the suite exited 0 although the negative control did not run. output: $nested" || return 1
@@ -938,7 +938,7 @@ exit 0
 # D1-12 (CP-118 a): a Mach-O binary is an executable whatever its mode. Only the magic can refuse it.
 test_mach_o_without_execute_bit_fails() {
   copy="$(valid_copy mach-o)" || fail "could not re-sign the copy" || return 1
-  cp "$copy/Contents/MacOS/Nozoki" "$copy/Contents/Resources/bin"
+  cp "$copy/Contents/MacOS/KAReader" "$copy/Contents/Resources/bin"
   chmod 644 "$copy/Contents/Resources/bin"
 
   run_unlaunched "$copy" mach-o
@@ -1365,7 +1365,7 @@ test_marker_in_the_environment_does_not_pass() {
   mkdir -p "$WORK/stubs-marker"
   probe_stub "$WORK/stubs-marker" no allowed allowed
 
-  OUT="$(env "$LEGACY_MARKER=com.kensaiapp.nozoki" BUNDLE_SH_PROBE_TICKS=2 PATH="$WORK/stubs-marker:$PATH" "$BUNDLE_SH" "$APP" 2>&1)"
+  OUT="$(env "$LEGACY_MARKER=com.kensaiapp.ka-reader" BUNDLE_SH_PROBE_TICKS=2 PATH="$WORK/stubs-marker:$PATH" "$BUNDLE_SH" "$APP" 2>&1)"
   STATUS=$?
 
   expect_nonzero_status || return 1
@@ -1381,7 +1381,7 @@ test_marker_is_absent_from_the_tree() {
 # A container directory the bundle's identifier names is not evidence of a sandbox (CP-41). HOME is
 # redirected so the directory is created in the scratch area, never in the real ~/Library.
 test_existing_container_is_not_evidence() {
-  mkdir -p "$WORK/stubs-container" "$WORK/home/Library/Containers/com.kensaiapp.nozoki"
+  mkdir -p "$WORK/stubs-container" "$WORK/home/Library/Containers/com.kensaiapp.ka-reader"
   probe_stub "$WORK/stubs-container" no allowed allowed
 
   OUT="$(HOME="$WORK/home" BUNDLE_SH_PROBE_TICKS=2 PATH="$WORK/stubs-container:$PATH" "$BUNDLE_SH" "$APP" 2>&1)"
@@ -1396,7 +1396,7 @@ test_existing_container_is_not_evidence() {
 # pass or as a denial (CP-43).
 test_unresolvable_symbol_fails() {
   mkdir -p "$WORK/stubs-unresolvable"
-  make_stub "$WORK/stubs-unresolvable" nozoki-sandbox-probe 'echo "nozoki-sandbox-probe: sandbox_check cannot be resolved" >&2; exit 2'
+  make_stub "$WORK/stubs-unresolvable" ka-reader-sandbox-probe 'echo "ka-reader-sandbox-probe: sandbox_check cannot be resolved" >&2; exit 2'
 
   run_bundle_sh_with_stubs "$WORK/stubs-unresolvable" "$APP"
 
@@ -1409,7 +1409,7 @@ test_unresolvable_symbol_fails() {
 
 test_probe_error_fails() {
   mkdir -p "$WORK/stubs-error"
-  make_stub "$WORK/stubs-error" nozoki-sandbox-probe 'echo "nozoki-sandbox-probe: sandbox_check returned an error" >&2; exit 1'
+  make_stub "$WORK/stubs-error" ka-reader-sandbox-probe 'echo "ka-reader-sandbox-probe: sandbox_check returned an error" >&2; exit 1'
 
   run_bundle_sh_with_stubs "$WORK/stubs-error" "$APP"
 
@@ -1427,7 +1427,7 @@ test_unreadable_report_is_asked_past() {
   dir="$WORK/stubs-unreadable-then-yes"
   mkdir -p "$dir"
   echo 0 > "$dir/count"
-  make_stub "$dir" nozoki-sandbox-probe "n=\$(( \$(cat \"$dir/count\") + 1 )); echo \"\$n\" > \"$dir/count\"
+  make_stub "$dir" ka-reader-sandbox-probe "n=\$(( \$(cat \"$dir/count\") + 1 )); echo \"\$n\" > \"$dir/count\"
 if [ \"\$n\" -eq 1 ]; then printf 'garbled\\n'; else printf 'sandboxed: yes\\nout-of-grant-read: denied\\noutbound-connection: denied\\n'; fi"
 
   run_bundle_sh_with_stubs "$dir" "$APP"
@@ -1459,7 +1459,7 @@ test_probe_failure_mid_window_ends_the_run() {
 test_probe_reports_an_unsandboxed_pid_as_unsandboxed() {
   compile_probe || return 1
 
-  OUT="$("$WORK/probe-bin/nozoki-sandbox-probe" "$$" 2>&1)"
+  OUT="$("$WORK/probe-bin/ka-reader-sandbox-probe" "$$" 2>&1)"
   STATUS=$?
 
   [ "$STATUS" -eq 0 ] || fail "expected the probe to exit 0 on an unsandboxed pid, got $STATUS. output: $OUT" || return 1
@@ -1467,10 +1467,10 @@ test_probe_reports_an_unsandboxed_pid_as_unsandboxed() {
 }
 
 test_nonexistent_path_fails() {
-  run_bundle_sh /nonexistent/Nozoki.app
+  run_bundle_sh /nonexistent/KA-Reader.app
 
   expect_nonzero_status || return 1
-  expect_output_contains "not found: /nonexistent/Nozoki.app"
+  expect_output_contains "not found: /nonexistent/KA-Reader.app"
 }
 
 test_plain_directory_fails() {
@@ -1519,12 +1519,12 @@ PLIST
 test_absent_bundle_fails_the_suite() {
   # The suite is run as its own subject: with the bundle absent it must exit non-zero, say why, and
   # run no case (a case that ran would print an "ok" or "FAIL" line).
-  nested="$(NOZOKI_APP=/nonexistent/Nozoki.app bash "$0" 2>&1)"
+  nested="$(KA_READER_APP=/nonexistent/KA-Reader.app bash "$0" 2>&1)"
   nested_status=$?
 
   [ "$nested_status" -ne 0 ] || fail "the suite exited 0 with no bundle to test" || return 1
   case "$nested" in
-    *"the bundle under test is absent: /nonexistent/Nozoki.app"*) ;;
+    *"the bundle under test is absent: /nonexistent/KA-Reader.app"*) ;;
     *) fail "no stated message. output: $nested" || return 1 ;;
   esac
   case "$nested" in
@@ -1536,7 +1536,7 @@ test_temporaries_removed() {
   # Run one re-signing case in a nested suite, learn where its temporary directory was, and look
   # for it after that suite has exited.
   log="$WORK/nested-workdir.log"
-  NOZOKI_TEST_ONLY=test_missing_key_fails NOZOKI_TEST_WORKDIR_LOG="$log" bash "$0" > /dev/null 2>&1
+  KA_READER_TEST_ONLY=test_missing_key_fails KA_READER_TEST_WORKDIR_LOG="$log" bash "$0" > /dev/null 2>&1
 
   nested_work="$(cat "$log" 2> /dev/null || true)"
   [ -n "$nested_work" ] || fail "the nested suite recorded no temporary directory" || return 1
@@ -1546,12 +1546,12 @@ test_temporaries_removed() {
 # --- the runner ---
 
 if [ ! -d "$APP" ]; then
-  echo "test_bundle.sh: the bundle under test is absent: $APP — build it first (the bundle command), or set NOZOKI_APP" >&2
+  echo "test_bundle.sh: the bundle under test is absent: $APP — build it first (the bundle command), or set KA_READER_APP" >&2
   exit 1
 fi
 
 WORK="$(mktemp -d)"
-[ -z "${NOZOKI_TEST_WORKDIR_LOG:-}" ] || printf '%s' "$WORK" > "$NOZOKI_TEST_WORKDIR_LOG"
+[ -z "${KA_READER_TEST_WORKDIR_LOG:-}" ] || printf '%s' "$WORK" > "$KA_READER_TEST_WORKDIR_LOG"
 cleanup() {
   # Instances a case started on purpose are stopped by pid, never by pattern.
   if [ -f "$WORK/started-pids" ]; then
@@ -1566,7 +1566,7 @@ trap cleanup EXIT
 failed=0
 ran=""
 for case_name in $CASES; do
-  if [ -n "${NOZOKI_TEST_ONLY:-}" ] && [ "$case_name" != "$NOZOKI_TEST_ONLY" ]; then
+  if [ -n "${KA_READER_TEST_ONLY:-}" ] && [ "$case_name" != "$KA_READER_TEST_ONLY" ]; then
     continue
   fi
   ran="$ran $case_name"

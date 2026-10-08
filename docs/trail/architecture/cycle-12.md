@@ -1,4 +1,4 @@
-# Architecture open issues — Nozoki
+# Architecture open issues — KA-Reader
 
 > Companion to `adr/` and `nfdr.md`. The Principal Architect authored both records
 > non-interactively; this file holds what the run could not settle from its inputs — the SRS, the SDD
@@ -19,7 +19,7 @@
 > **No `product-architecture` run opened this companion. The PM opened it on 2026-09-24.**
 > `nfdr.md` is Settled at v14 and the records had no companion on disk, so a `product-architecture`
 > re-run would read them as done and find nothing to act on. The companion holds five items,
-> §§ 3.1 – 3.5. Each one comes from measuring the tree on `main` at `nozoki@153f5a1` against these
+> §§ 3.1 – 3.5. Each one comes from measuring the tree on `main` at `ka-reader@153f5a1` against these
 > records, after `checks/view.sh`, `checks/renderer.sh` and `checks/fixtures/idle-shell` landed.
 > §§ 3.1 – 3.4 each state a fact the records hold that is now false. § 3.5 is something the records
 > never state, found through a suite that is red on `main`.
@@ -34,13 +34,13 @@
 > `main`, not raised by any item. It sits in this bucket because the run holds a lean, and its slot
 > is the next round's.
 
-### 2.1 § 9 says no CI run on `main` has built `nozoki-mac`. Run 35968105480 on `main` did, and its log names no Swift toolchain
-- **Lands in:** `nfdr.md` § 9, the `nozoki-mac` bullet's *Toolchain — not yet measured* clause, and
+### 2.1 § 9 says no CI run on `main` has built `ka-reader-mac`. Run 35968105480 on `main` did, and its log names no Swift toolchain
+- **Lands in:** `nfdr.md` § 9, the `ka-reader-mac` bullet's *Toolchain — not yet measured* clause, and
   that bullet's *verified by* tail
 - **Drafted into the records:** Nothing. No producing run wrote this; the run that raised it writes no
   record. The change it proposes: the clause records GitHub Actions run 35968105480 on
-  `nozoki@c461b29`. That is the first run on `main` whose `Test gate` ran `swift test --package-path
-  nozoki-mac` (`c461b29:.github/workflows/ci.yml:L25-L26`), and it succeeded. Its image was
+  `ka-reader@c461b29`. That is the first run on `main` whose `Test gate` ran `swift test --package-path
+  ka-reader-mac` (`c461b29:.github/workflows/ci.yml:L25-L26`), and it succeeded. Its image was
   `macos-14-arm64` 20260831.0302.1, on macOS 14.8.9, and its log prints no Swift version: the one
   `swift-version` line is a build file name, `Write swift-version-76B232A4806BA581.txt`. So, by the
   bullet's own rule ("if the first log names none, this line stays *not yet measured* and says it
@@ -55,7 +55,7 @@
   review gate still stands until a log names the toolchain, and the four departures still flip
   together. Whether to add a `swift --version` step to `ci.yml` is the delivery tier's; the bullet
   already notes there is none (`:L22-L29`).
-- **If overridden:** The clause keeps reading as if no `main` run had built `nozoki-mac`. A reviewer
+- **If overridden:** The clause keeps reading as if no `main` run had built `ka-reader-mac`. A reviewer
   checking a CI change against it would wait for a first run that has already happened, and would
   not know its log was silent on the toolchain.
 - **Confirm or override:** <"confirm", or "override: <what to do instead>">
@@ -65,7 +65,7 @@
 ### 3.1 QC-62 says the renderer gate and its control are not in the tree, and that the gate is red until the native shell lands. Both are in the tree, and the gate passes
 - **Raised by:** PM — 2026-09-24
 - **Which record:** `nfdr.md` QC-62, the rule's red-by-construction sentence and the *verified by* tail
-- **Tracked by:** `nozoki · nemawashi · 2026-09-15_open-a-folder`
+- **Tracked by:** `ka-reader · nemawashi · 2026-09-15_open-a-folder`
 - **What it blocks:** Nothing gates on it. A reader of QC-62 is told the gate cannot run yet, and the
   gate runs on every CI build.
 - **Where it shows:**
@@ -73,21 +73,21 @@
   - `nfdr.md:L422-L424`: "Neither the script nor the control is in the tree yet (`ls checks/`,
     2026-09-23)".
   - `:L425`: the hosted runner's reading is named as not covered.
-  - At `nozoki@153f5a1`, `ls checks checks/fixtures` lists `renderer.sh` and `idle-shell`, and
+  - At `ka-reader@153f5a1`, `ls checks checks/fixtures` lists `renderer.sh` and `idle-shell`, and
     `.github/workflows/ci.yml:L43-L44` runs the gate as `Renderer gate`.
   - The Mac reading is in `checks/renderer.sh:L58-L61`: macOS 26.6.2, the five frames of
     `:L53-L57`.
-  - The hosted runner's reading is CI run 35988399477 on `nozoki@37a962d`. Its `renderer.sh` is
+  - The hosted runner's reading is CI run 35988399477 on `ka-reader@37a962d`. Its `renderer.sh` is
     byte-equal to `main`'s: `git diff --stat 37a962d 153f5a1` lists no `renderer.sh`. The run's
     image was `macos-14-arm64` 20260831.0302.1. It printed "the main process was observed at the
     Open panel, inside the shell's launch, on observation 1", and it printed the control "was not
     observed at the Open panel in any of 30 observations — the expected red".
 - **If a document has to be written:** None. **The PM's lean:** a dated in-place correction. It says
-  the script and control have been in the tree since `nozoki@153f5a1` and run in `Renderer gate`, and
+  the script and control have been in the tree since `ka-reader@153f5a1` and run in `Renderer gate`, and
   that the frames were measured on a Mac (the script's header) and on a hosted runner (run
   35988399477). The not-covered clause closes. The red-by-construction sentence becomes history.
 - **Answer:** confirmed with addition. QC-62 takes a dated in-place correction. `checks/renderer.sh`
-  and `checks/fixtures/idle-shell` have been in the tree since `nozoki@153f5a1`. They run on every CI
+  and `checks/fixtures/idle-shell` have been in the tree since `ka-reader@153f5a1`. They run on every CI
   build as `Renderer gate` (`.github/workflows/ci.yml:L43-L44`), after `Bundle probe`. The frames
   were measured on a Mac (`checks/renderer.sh:L53-L61`, macOS 26.6.2). They were also measured on a
   GitHub-hosted runner: run 35988399477, image `macos-14-arm64` 20260831.0302.1, macOS 14.8.9. There
@@ -114,19 +114,19 @@
 - **Raised by:** PM — 2026-09-24
 - **Which record:** `nfdr.md` QC-62, the rule; `adr/0012-renderer-run-proved-on-the-shipped-bundle-beside-the-wall.md`
   § Decision and § Consequences
-- **Tracked by:** `nozoki · nemawashi · 2026-09-15_open-a-folder`
+- **Tracked by:** `ka-reader · nemawashi · 2026-09-15_open-a-folder`
 - **What it blocks:** Nothing gates on it. The records describe an observation the gate does not
   make, and a gate built to their letter would look for a bridge frame that is never there while
   the panel is up.
 - **Where it shows:**
   - `nfdr.md:L407` and `adr/0012-…md:L35` say "observed inside `open_folder`'s call".
   - `adr/0012-…md:L97-L98` says "a process-level read of the shell's call into the bridge".
-  - `nozoki-mac/Sources/Shell/LaunchFlow.swift:L35-L37` calls `panel.chooseFolder()` first and
+  - `ka-reader-mac/Sources/Shell/LaunchFlow.swift:L35-L37` calls `panel.chooseFolder()` first and
     `bridge.openFolder(location:)` after it returns.
   - The gate reads a thread sample of the launched main thread. Its frame list
     (`checks/renderer.sh:L44-L57`) is `AppDelegate.applicationDidFinishLaunching(_:)`,
     `LaunchFlow.run()`, `OpenFolderPanel.chooseFolder()`, `-[NSSavePanel runModal]` and
-    `-[NSApplication runModalForWindow:]`. The header says `nozoki_open_folder` is not in the list
+    `-[NSApplication runModalForWindow:]`. The header says `ka_reader_open_folder` is not in the list
     because the shell calls it only after the panel returns.
 - **If a document has to be written:** None. **The PM's lean:** the observable reads "parked in the
   Open panel's modal run, inside the shell's launch frames", which is the shell's first and only
@@ -147,22 +147,22 @@
   wall probe, and the record already says the frames are not what it fixes. Decided together with
   § 3.1. The reasoning is in `docs/trail/architecture/self_answer-15.md` § 3.2.
 
-### 3.3 QC-51's *verified by* says there is no modal presentation in `nozoki-mac/Sources`, and the Open panel's is there
+### 3.3 QC-51's *verified by* says there is no modal presentation in `ka-reader-mac/Sources`, and the Open panel's is there
 - **Raised by:** PM — 2026-09-24
 - **Which record:** `nfdr.md` QC-51, *verified by*
-- **Tracked by:** `nozoki · nemawashi · 2026-09-15_open-a-folder`
+- **Tracked by:** `ka-reader · nemawashi · 2026-09-15_open-a-folder`
 - **What it blocks:** Nothing gates on it. Read as written, the check contradicts C-R3, which
   requires the panel at launch.
-- **Where it shows:** `nfdr.md:L686-L688` says "no modal presentation in `nozoki-mac/Sources`".
-  `nozoki-mac/Sources/Shell/OpenFolderPanel.swift:L14` holds `panel.runModal()`. `checks/view.sh`
+- **Where it shows:** `nfdr.md:L686-L688` says "no modal presentation in `ka-reader-mac/Sources`".
+  `ka-reader-mac/Sources/Shell/OpenFolderPanel.swift:L14` holds `panel.runModal()`. `checks/view.sh`
   admits exactly that one: "the one no-argument `.runModal()` of the Open panel's own file (F13)"
   (`checks/view.sh:L116`).
 - **If a document has to be written:** None. **The PM's lean:** "no modal presentation other than
   the Open panel's own presentation, which C-R3 requires".
 - **Answer:** confirmed with addition. QC-51's *verified by* reads: `checks/view.sh` finds no
-  `NSAlert`, no user-notification API, and no modal presentation in `nozoki-mac/Sources` other than
+  `NSAlert`, no user-notification API, and no modal presentation in `ka-reader-mac/Sources` other than
   the Open panel's own presentation, which C-R3 requires. That is exactly one `.runModal()` with no
-  argument, in `nozoki-mac/Sources/Shell/OpenFolderPanel.swift`. **Addition.** The exception is
+  argument, in `ka-reader-mac/Sources/Shell/OpenFolderPanel.swift`. **Addition.** The exception is
   stated as that bound (one call, in that file, with no argument), not only as "the Open panel's
   presentation", because that is what the scan admits (`checks/view.sh:L80-L86`, F13). A looser
   wording would read a second panel, a sheet, or a modal elsewhere in `Shell/` as admitted, and each
@@ -173,7 +173,7 @@
 ### 3.4 QC-34's *verified by* gives its forbidden set as the whole scan, and `checks/view.sh` scans thirteen families
 - **Raised by:** PM — 2026-09-24
 - **Which record:** `nfdr.md` QC-34, *verified by*, and QC-1 and QC-23, which point at the same scan
-- **Tracked by:** `nozoki · nemawashi · 2026-09-15_open-a-folder`
+- **Tracked by:** `ka-reader · nemawashi · 2026-09-15_open-a-folder`
 - **What it blocks:** Nothing gates on it. A reader takes QC-34's list as what the scan refuses. The
   scan refuses more, and the list is not where to find out what.
 - **Where it shows:**
@@ -200,7 +200,7 @@
 ### 3.5 No record says where the harness's own suites run, and one is red on `main` while every gate is green
 - **Raised by:** PM — 2026-09-24
 - **Which record:** `nfdr.md` § 10, the verification map
-- **Tracked by:** `nozoki · nemawashi · 2026-09-15_open-a-folder`
+- **Tracked by:** `ka-reader · nemawashi · 2026-09-15_open-a-folder`
 - **What it blocks:** The suites under `checks/tests/` are what prove each `checks/*.sh` script
   reads what its entry says it reads. Only one of the six runs on any gate, so a script can regress
   unseen.
@@ -210,8 +210,8 @@
   - `grep -n 'checks/tests' docs/nfdr.md docs/SDD.md` prints nothing.
   - CI runs one suite, `test_bundle.sh`, as `Bundle probe suite` (`.github/workflows/ci.yml:L34-L36`).
   - The project's test command is `cargo test --workspace --locked && swift test --package-path
-    nozoki-mac`, which runs none of them.
-  - On `main` at `nozoki@153f5a1`, `checks/tests/test_renderer.sh` prints `FAIL
+    ka-reader-mac`, which runs none of them.
+  - On `main` at `ka-reader@153f5a1`, `checks/tests/test_renderer.sh` prints `FAIL
     test_header_names_the_runner_reading` and `1 case(s) failed`. CI run 35988399477, on a tree
     whose `renderer.sh` is byte-equal to `main`'s, is green.
 - **If a document has to be written:** None. **The PM's lean:** § 10 states where each
@@ -232,7 +232,7 @@
   failing case. The other five suites join as soon as each is green on the runner. (2) Whether each
   of the six can run on the hosted runner is not known until it is tried there. A suite that cannot
   is recorded in § 9 with the measurement and runs as a named release step on the Mac instead; it is
-  never left silent. (3) The one ground this run could not see is the cost. `kensaiapp/nozoki` is a
+  never left silent. (3) The one ground this run could not see is the cost. `kensaiapp/ka-reader` is a
   private repository (`gh repo view`, 2026-09-24), so each added macOS step spends the account's
   included minutes, and past them it costs $0.062 a minute
   (https://docs.github.com/en/billing/concepts/product-billing/github-actions, read 2026-09-24). If

@@ -3,7 +3,7 @@
 ## Header
 
 - **Companion:** `docs/architecture_open_issues.md`
-- **Document:** `docs/adr/` and `docs/nfdr.md` (NFDR v15, Draft, at `nozoki@8d6f4c6`)
+- **Document:** `docs/adr/` and `docs/nfdr.md` (NFDR v15, Draft, at `ka-reader@8d6f4c6`)
 - **Decided by:** `decide_companion_answers.md` v1.3.0
 - **Date:** 2026-09-24
 - **Sources re-read:**
@@ -11,7 +11,7 @@
     `completed`, `success`, branch `main`, event `push`, `headSha` `c461b29ec27e…`.
   - The same run's log (`gh run view 35968105480 --log`, 646 lines). Runner image header:
     `Image: macos-14-arm64`, `Version: 20260831.0302.1`, operating system `macOS 14.8.9` (`23J631`).
-    `Test gate` ran `cargo test --workspace --locked && swift test --package-path nozoki-mac`.
+    `Test gate` ran `cargo test --workspace --locked && swift test --package-path ka-reader-mac`.
     `grep -iE 'swift-?version|Apple Swift|swiftlang|toolchain'` finds only two lines, both
     `Write swift-version-76B232A4806BA581.txt`, a build file's name. No line names a Swift version.
   - `gh run list --branch main --workflow CI --limit 15`: five runs on `main`. The newest is
@@ -30,7 +30,7 @@ the last pushed commit, which is `c461b29`.
 
 ## Items worked
 
-### 2.1 — § 9 says no CI run on `main` has built `nozoki-mac`. Run 35968105480 on `main` did, and its log names no Swift version
+### 2.1 — § 9 says no CI run on `main` has built `ka-reader-mac`. Run 35968105480 on `main` did, and its log names no Swift version
 
 - **Bucket:** 2. Choices to confirm — the Principal Architect drafted a best-effort answer; confirm or override
 - **Verdict:** confirmed with addition
@@ -77,4 +77,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture nozoki`
+- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture ka-reader`

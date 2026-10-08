@@ -1,4 +1,4 @@
-# Architecture open issues — Nozoki
+# Architecture open issues — KA-Reader
 
 > Companion to `adr/` and `nfdr.md`. The Principal Architect authored both records
 > non-interactively; this file holds what the run could not settle from its inputs — the SRS, the SDD
@@ -33,23 +33,23 @@ None.
 > **No `product-architecture` run wrote this section or its item.** A `companion-self-answer` run
 > added it on 2026-10-01 while answering § 3.1 (`docs/trail/architecture/self_answer-22.md`,
 > § Raised on this document). It was found by reading QC-62 and § 9 against the files they cite at
-> `nozoki@f5b7843`, after the SDD re-pointed the same citations in its own C-I3 at v22. No item
+> `ka-reader@f5b7843`, after the SDD re-pointed the same citations in its own C-I3 at v22. No item
 > raised it. It sits in this bucket because the run holds a lean, and its slot is the next round's.
 
 ### 2.1 QC-62's citations into `LaunchFlow.swift` and `checks/renderer.sh` point at lines that moved, its "five-frame list" is four frames, and § 9's `LaunchFlow.swift:L53` has moved too
-- **Lands in:** `nfdr.md` QC-62 (its body and its *verified by*) and § 9, the `nozoki-mac` bullet's
+- **Lands in:** `nfdr.md` QC-62 (its body and its *verified by*) and § 9, the `ka-reader-mac` bullet's
   Swift 6 migration-cost sentence. No ADR.
 - **Drafted into the records:** Nothing. No producing run wrote this, and the run that raised it
   writes no record. The change it proposes is to re-point each citation and pin it to a commit, the
-  way `docs/SDD.md` § 4 C-I3 now pins the same ones (`at nozoki@7c7038f`). Measured at
-  `nozoki@f5b7843`: (1) QC-62's `LaunchFlow.swift:L35-L37` → `:L54-L60`, where `chooseFolder()` waits on
+  way `docs/SDD.md` § 4 C-I3 now pins the same ones (`at ka-reader@7c7038f`). Measured at
+  `ka-reader@f5b7843`: (1) QC-62's `LaunchFlow.swift:L35-L37` → `:L54-L60`, where `chooseFolder()` waits on
   the panel before it hands `openAndList(_:through:)` to the reader, and `:L69`, the `bridge.openFolder`
   call. These are the lines C-I3 cites. (2) The frame list `checks/renderer.sh:L44-L57`
   → header § *THE FRAMES*, the list at `:L53-L56`. (3) The Mac reading `:L58-L61` → `:L57-L60`.
   (4) The hosted-runner reading `:L62-L65` → `:L61-L64`. (5) "matched the five-frame list" → the run
   matched the five-frame list the script carried then, and the list has been four frames since
-  `nozoki@b75348f`, the last commit to touch `checks/renderer.sh`. The run's "byte-equal to `main`'s"
-  is true of `main` at `nozoki@37a962d` and has not been true of `main` since `b75348f`.
+  `ka-reader@b75348f`, the last commit to touch `checks/renderer.sh`. The run's "byte-equal to `main`'s"
+  is true of `main` at `ka-reader@37a962d` and has not been true of `main` since `b75348f`.
   (6) § 9's `LaunchFlow.swift:L53` (`bridge` captured in a `@Sendable` closure) → `:L60`. The same
   sentence's `ReadRunning.swift:L28` still names `deliver` and stands.
 - **Rationale:** Each of these is a fact in the NFDR that is now false. A cold reader following
@@ -69,13 +69,13 @@ None.
 ### 3.1 QC-2's verification and QC-24's staging read false while `read-a-file` is built across several changes
 - **Raised by:** PM — 2026-10-01
 - **Which record:** `nfdr.md` QC-2 (*verified by*) and QC-24
-- **Tracked by:** `nozoki · nemawashi · 2026-10-01_a-file-reads-in-the-panel`
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-01_a-file-reads-in-the-panel`
 - **What it blocks:** nothing is blocked; two obligations state a verification and a staging rule the
   build does not meet today, so § 10's map reads as covering a command it does not exercise.
 - **Where it shows:** QC-2 says `checks/read-only.sh <fixture>` prints `unchanged` "after every command
-  the build exports"; `nozoki_select_file` is exported now, and the walk the script drives calls
-  `list_tree` alone (`crates/nozoki-core/tests/walk.rs:L1-L6`). Until the walk drives `select_file`,
-  QC-2 should name what holds the read: `cargo test --locked -p nozoki-bridge --test select_file` keeps
+  the build exports"; `ka_reader_select_file` is exported now, and the walk the script drives calls
+  `list_tree` alone (`crates/ka-reader-core/tests/walk.rs:L1-L6`). Until the walk drives `select_file`,
+  QC-2 should name what holds the read: `cargo test --locked -p ka-reader-bridge --test select_file` keeps
   `checks/fixtures/text/` byte-identical. QC-24 says "No listed function is exported before a slice
   lands it", and `select_file` is exported while § 6 S-2's highlighter and read-only bars are not yet
   met; it should follow whichever reading `docs/SDD_open_issues.md` § 5.1 settles for C-R7 — exported
@@ -88,10 +88,10 @@ None.
   built" reads *exactly the functions its landed changes built*. "No listed function is exported
   before a slice lands it" reads *no listed function is exported before a landed change has built
   it*. The entry carries C-R7's meaning of *built*: the bridge function exists and delegates to an
-  operation `folder-model`'s API carries (SM-5). Set equality, the closed list, `nozoki_free`, "from
+  operation `folder-model`'s API carries (SM-5). Set equality, the closed list, `ka_reader_free`, "from
   `v1.0.0`", the no-second-export clause and the pre-1.0.0 uncovered case stand as written. The
   trace reads C-R7 at v22.
-  **QC-2.** It takes no interim cover. `cargo test --locked -p nozoki-bridge --test select_file` is
+  **QC-2.** It takes no interim cover. `cargo test --locked -p ka-reader-bridge --test select_file` is
   not named in place of `checks/read-only.sh`, because C-I3 now says the unit is the build and that no
   test of a slice's own stands in for `read-only.sh`. The tail's "after every command the build
   exports" already reads that way and stands. QC-2 gains the two cases C-I3 now names as held by no
@@ -102,8 +102,8 @@ None.
   **§ 10.** The QC-2 row gains that reviewed half: the walk's calls against the export set, reviewed
   in the change that exports a command, gated at `development-design` as QC-3's reviewed half is.
   The QC-24 row does not move.
-  On builds that export `select_file`, QC-2 is unmet: `crates/nozoki-bridge/tests/exports.rs:L20`
-  admits it, and `crates/nozoki-core/tests/walk.rs:L1-L6` calls `list_tree` alone. That is the
+  On builds that export `select_file`, QC-2 is unmet: `crates/ka-reader-bridge/tests/exports.rs:L20`
+  admits it, and `crates/ka-reader-core/tests/walk.rs:L1-L6` calls `list_tree` alone. That is the
   build's violation, not the record's, and it closes when the walk drives `select_file`. Like the
   SDD, the records say nothing about the interval.
   ADR-0013's Context sentence "exported from the build in which a slice lands it" is not

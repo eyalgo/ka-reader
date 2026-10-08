@@ -11,7 +11,7 @@ seat. It is for the owner, who reads it to learn what was decided and why, and f
 - **Decided by:** `decide_companion_answers.md` v1.3.0
 - **Date:** 2026-10-03
 - **Sources re-read:** None. The answer rests on this repository's documents and tree at
-  `nozoki@4a31865`, and on no source outside it.
+  `ka-reader@4a31865`, and on no source outside it.
 
 ## Items worked
 
@@ -33,16 +33,16 @@ seat. It is for the owner, who reads it to learn what was decided and why, and f
   `fixtures/`, and each hit was read. It was not read line by line. Of the inputs, `docs/nfdr.md`
   QC-30 half (2) (`:L595-L606`), § 9's suite count (`:L1063-L1075`), § 10's linked-tree rows
   (`:L1270-L1276`) and the `#[path]` note (`:L3309-L3310`) were read. The tree was read at
-  `nozoki@4a31865`: `git ls-tree HEAD checks/`, `ls checks/fixtures`, `ls checks/tests`,
+  `ka-reader@4a31865`: `git ls-tree HEAD checks/`, `ls checks/fixtures`, `ls checks/tests`,
   `checks/read-only.sh:L1-L30`, `checks/bundle.sh:L40`, `:L321-L322`, `checks/walk.rs:L1-L12`,
   `checks/sandbox_probe.rs:L1-L8`, `checks/deps.review.md:L1-L6`, `checks/entry-points.sh:L1-L30`,
-  `crates/nozoki-core/tests/walk.rs:L6`, and `.github/workflows/ci.yml`'s `checks/` steps. The
+  `crates/ka-reader-core/tests/walk.rs:L6`, and `.github/workflows/ci.yml`'s `checks/` steps. The
   PRD, the SRS, the UXD and the FDR were not opened: the answer names files in an ownership row
   and moves no requirement.
 
   **The widening rule, first.** The item sits under the heading carrying *Raised from downstream*.
   Whether naming a file the row does not name is a widening or a correction, the item cites its
-  occurrence: `git ls-tree --name-only HEAD checks/` at `nozoki@4a31865` lists `entry-points.sh`,
+  occurrence: `git ls-tree --name-only HEAD checks/` at `ka-reader@4a31865` lists `entry-points.sh`,
   `entry-points.allow`, `walk.rs`, `sandbox_probe.rs`, `deps.review.md`, `fixtures`, `tests` and
   `.gitkeep` beside the scripts the row names, and `docs/nfdr.md:L992` places `entry-points.sh` in
   layer 6 with `structure.sh` and `view.sh`, both of which the row names. Occurrence cited, so the
@@ -75,7 +75,7 @@ seat. It is for the owner, who reads it to learn what was decided and why, and f
     (`docs/nfdr.md:L1273`). The condition the pair proves is the NFDR's, QC-30 half (2), and the
     row cites it there, as the SDD already cites `docs/nfdr.md` QC-56 from § 4 (`docs/SDD.md:L591`).
   - `walk.rs`: `checks/walk.rs:L1` says it is "the in-process walk `checks/read-only.sh`
-    consumes", and `crates/nozoki-core/tests/walk.rs:L6` compiles it into a `nozoki-core` test
+    consumes", and `crates/ka-reader-core/tests/walk.rs:L6` compiles it into a `ka-reader-core` test
     target by `#[path]`. Named with that route, because the row's *Must not own* is "being a
     dependency of any shipped unit" and a test target is not shipped; `docs/nfdr.md:L3309-L3310`
     reads it the same way. `checks/read-only.sh:L9` names the shim and not the source, which is
@@ -105,7 +105,7 @@ seat. It is for the owner, who reads it to learn what was decided and why, and f
     the other planned names rather than inventing a form.
 
   **Check 4: the failure paths.**
-  - *Absent.* Three scripts the row names are not on disk at `nozoki@4a31865`: `churn.sh` and
+  - *Absent.* Three scripts the row names are not on disk at `ka-reader@4a31865`: `churn.sh` and
     `latency.sh` (`ls checks/churn.sh checks/latency.sh` → no such file; § 6 `follow-the-folder`'s
     bar at `:L1717-L1724` and C-I4 at `:L786` are where they are owed) and `contract.sh`, which
     the row already marks. Five of the eight fixture folders the row names are not on disk either:
@@ -113,7 +113,7 @@ seat. It is for the owner, who reads it to learn what was decided and why, and f
     a hostile Markdown corpus (`ls checks/fixtures` → `highlight`, `idle-shell`, `plain`, `repo`,
     `repo.git.tar`, `text`; § 6 `see-git-status` at `:L1211-L1212` and `read-markdown` are where
     they are owed). Two fixture folders on disk go unnamed: `highlight` (seven files,
-    `crates/nozoki-core/tests/highlight.rs`) and `text` (seven files, `read_file.rs`,
+    `crates/ka-reader-core/tests/highlight.rs`) and `text` (seven files, `read_file.rs`,
     `select_file.rs`; `docs/SDD.md:L1498` names `checks/fixtures/text/` in a slice bar). The
     answer does not strike the planned names: they are the design's and slices deliver them. It
     asks the row to tell the two apart, as it already does once.
@@ -155,4 +155,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/SDD.md`** — `<CORE>/launchers/product-sdd/launcher.sh nozoki`
+- **`docs/SDD.md`** — `<CORE>/launchers/product-sdd/launcher.sh ka-reader`

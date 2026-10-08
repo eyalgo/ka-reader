@@ -11,25 +11,25 @@ written for the `product-architecture` run that folds the answer.
 - **Decided by:** `decide_companion_answers.md` v1.3.0
 - **Date:** 2026-10-03
 - **Sources re-read:** None. The answer rests on this repository alone: `crates/`, `.github/` and
-  `docs/` at `nozoki@b7ff27a`, and on the commands named below. Nothing outside the repository was
+  `docs/` at `ka-reader@b7ff27a`, and on the commands named below. Nothing outside the repository was
   relied on, and nothing was read on the web.
 
 **What this run read.** The companion, whole. From `docs/nfdr.md`: the header and preamble
 (`:L1-L44`), QC-5 whole (`:L182-L207`), QC-15 whole (`:L406-L441`), § 10's preamble and its QC-1 to
 QC-7 rows (`:L1475-L1502`), and RN-45 whole (`:L4010-L4059`). ADR-0018's § Consequences
-(`:L88-L95`), and a grep of the record for its pins at `nozoki@8edec4f`. The three named test cases
-and the helpers they call (`crates/nozoki-core/tests/root_finding.rs:L24-L68`, `:L160-L215`). The
+(`:L88-L95`), and a grep of the record for its pins at `ka-reader@8edec4f`. The three named test cases
+and the helpers they call (`crates/ka-reader-core/tests/root_finding.rs:L24-L68`, `:L160-L215`). The
 adapter's `.git`-entry dispatch and `probe_git_file`
-(`crates/nozoki-core/src/git_reader/libgit2.rs:L44-L72`). CI's test step
+(`crates/ka-reader-core/src/git_reader/libgit2.rs:L44-L72`). CI's test step
 (`.github/workflows/ci.yml:L20-L30`). **Not read whole:** `docs/nfdr.md` (379 KB) and `docs/SDD.md`
 (492 KB). The answer is checked against the entries it moves or rests on, which are listed above.
 
-**Run, not only read, at `nozoki@b7ff27a`.**
-- `git diff --stat 48308ff HEAD -- checks crates nozoki-mac .github Cargo.toml Cargo.lock` prints
-  nothing, so a pin at the merge `nozoki@48308ff` is a pin on this tree.
+**Run, not only read, at `ka-reader@b7ff27a`.**
+- `git diff --stat 48308ff HEAD -- checks crates ka-reader-mac .github Cargo.toml Cargo.lock` prints
+  nothing, so a pin at the merge `ka-reader@48308ff` is a pin on this tree.
 - `git log 1d81e12..HEAD -- docs/SRS.md docs/SDD.md docs/fdr.md docs/PRD.md docs/UXD.md
   docs/DESIGN.md docs/CONTENT.md` prints nothing, so no input moved under QC-5's traces.
-- `cargo test --locked -p nozoki-core --test root_finding` prints "37 passed; 0 failed". The three
+- `cargo test --locked -p ka-reader-core --test root_finding` prints "37 passed; 0 failed". The three
   named cases are among them, each `ok`.
 
 ## Items worked
@@ -52,7 +52,7 @@ adapter's `.git`-entry dispatch and `probe_git_file`
   - The adapter sends a `.git` regular file to `probe_git_file` (`libgit2.rs:L46`), which is defined
     at `:L58`.
   - CI runs the target inside `cargo test --workspace --locked` (`ci.yml:L26`).
-  - The tree has not moved since `nozoki@48308ff`.
+  - The tree has not moved since `ka-reader@48308ff`.
 
   The draft's reason also holds. The old forward clause ("all three go red … until the change …
   lands") described a change that has happened. Read now, it says the read bound has no check, and
@@ -94,7 +94,7 @@ adapter's `.git`-entry dispatch and `probe_git_file`
 
   *Check 4 — failure paths.*
   - **Stale.** The next edit to `root_finding.rs` or `libgit2.rs` moves these line numbers. The pin at
-    `nozoki@48308ff` makes that a re-measurement rather than a contradiction. A test that is renamed
+    `ka-reader@48308ff` makes that a re-measurement rather than a contradiction. A test that is renamed
     leaves the tail naming a function that no longer exists, while § 10's command still runs every
     case. The pin is what lets a reader tell those apart.
   - **Absent.** If the `linked-worktree` or `submodule` fixture archive is missing,
@@ -124,4 +124,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture nozoki`
+- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture ka-reader`

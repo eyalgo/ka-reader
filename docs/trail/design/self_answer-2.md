@@ -19,7 +19,7 @@
   settled.
 
   **Check 1.** The edit landed in `docs/DESIGN.md`, the CDO's own document, at v7
-  (`nozoki@1fb5e33`); the slot decides whether that wording stands. It binds no person, no outside
+  (`ka-reader@1fb5e33`); the slot decides whether that wording stands. It binds no person, no outside
   party, no money, no legal position, no risk anyone carries — only this document's agreement with
   three siblings on one word. No ground is unseeable: the sources the item cites were all opened
   (below). Yours, in the owner's seat.
@@ -53,7 +53,7 @@
   two dials (`:41-42`), § 4's path line (`:101`), UX-I4 (`:247`), UX-I7 (`:258`), UX-I9 (`:267`)
   and § 10's start sentence (`:432`) are in neither list. That is a fact in the UXD now false by
   measurement, and it is what holds the two phrases here. Raised on the UXD's live companion as
-  § 2.2 (`nozoki@f4a0788`), slot at its placeholder. The consequence for this document is stated
+  § 2.2 (`ka-reader@f4a0788`), slot at its placeholder. The consequence for this document is stated
   in the slot: when the UXD folds it, these two lines follow on the prompt's *upstream UXD change*
   authorization (`<CORE>/prompts/cdo_create_design.md` § *The stability rule*, the same one v7 ran
   on), and no owner answer is owed here for it. RN-2's phrase is not in that set: it is this
@@ -96,5 +96,5 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/DESIGN.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-design/launcher.sh nozoki`
-- **`docs/UXD.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-uxd/launcher.sh nozoki`
+- **`docs/DESIGN.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-design/launcher.sh ka-reader`
+- **`docs/UXD.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-uxd/launcher.sh ka-reader`

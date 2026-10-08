@@ -11,7 +11,7 @@
 - **Sources re-read:** None — no answer this run gave rests on a source outside this repository.
   The case-folding and volume-root conditions the check turns on are stated by the SDD and the FDR
   as facts the product reads from the folder itself, not as a vendor claim this run leaned on.
-  Everything was measured on the tree at `nozoki@88b237f` (HEAD, the NFDR v18 commit): `git diff
+  Everything was measured on the tree at `ka-reader@88b237f` (HEAD, the NFDR v18 commit): `git diff
   --stat 69cc4b2 HEAD -- crates/` prints nothing, so the crates are the ones the item cites.
 
 One item, in bucket 2, and it belongs to this document's seat. Nothing needed a call only the owner
@@ -35,7 +35,7 @@ this run was found owed a change no item raised.
   forbidden read (`docs/SDD.md:L777-L782`), which is why v17's "on the canonical path, symlinks
   resolved" could not stand: read literally it asked for that read. FDR R-183 and R-184
   (`docs/fdr.md:L87-L88`) carry the same definition and the same three refusals, Settled at v10.
-  The tree-state claims re-measure true: `crates/nozoki-core/src/fs_reader.rs` `mod tests`
+  The tree-state claims re-measure true: `crates/ka-reader-core/src/fs_reader.rs` `mod tests`
   (`:L370-L796`) holds the `..` and symlink-out cases and no test for any of the four spellings
   (`grep -n -i 'letter case\|case-fold\|normaliz\|volume' fs_reader.rs` hits only doc comments),
   and the walk answers `Outside` for a re-entry: at a position outside the root a name moves the
@@ -44,16 +44,16 @@ this run was found owed a change no item raised.
 
   **The addition — the layer-1 list's source, not the obligation.** The *verified by* names "the
   four spellings `docs/fdr.md`'s example rows fix (`:L357-L358`)". The rows fix three. `:L357`
-  holds `up → ../NOZOKI/docs` (shown as a folder, expands into `docs` — R-183, R-34, R-151),
-  `far → ../../projects/NOZOKI/docs` (marked outside although it leads to `docs` — R-184's
-  multi-level return) and `self → ../NOZOKI` (a cycle — R-152); `:L358` holds `back → ../Work/notes.txt`
+  holds `up → ../KA-READER/docs` (shown as a folder, expands into `docs` — R-183, R-34, R-151),
+  `far → ../../projects/KA-READER/docs` (marked outside although it leads to `docs` — R-184's
+  multi-level return) and `self → ../KA-READER` (a cycle — R-152); `:L358` holds `back → ../Work/notes.txt`
   under `/Volumes/Work` (R-184's volume root). No row exercises a Unicode-normalization difference;
   that refusal rests on R-184's second clause and SDD § 11 R-10 alone. Two consequences for the
   fold: the layer-1 case for normalization cites R-184 and § 11 R-10, not the rows; and the re-entry
   case has two forms the rows fix — `self`, ending `Cycle`, which the list names, and `up`,
   resolving inside and read as its target, which it does not. Both forms are `Outside` on the walk
-  at `nozoki@88b237f`, by the same lines — read from the code this pass, not run; the owner's
-  measurement at `docs/trail/sdd/cycle-15.md` § 5.1 covered the `self` form on `nozoki@46bb275`,
+  at `ka-reader@88b237f`, by the same lines — read from the code this pass, not run; the owner's
+  measurement at `docs/trail/sdd/cycle-15.md` § 5.1 covered the `self` form on `ka-reader@46bb275`,
   and the crates are unchanged since (the stat in the header).
 
   **Failure paths.** *Empty:* none of the four layer-1 tests exists, and the entry says so and
@@ -89,4 +89,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture nozoki`
+- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture ka-reader`

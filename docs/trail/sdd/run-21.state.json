@@ -11,7 +11,7 @@
   ],
   "companion_present_at_intake": true,
   "companion_retired": true,
-  "consumed_cycle_path": "/Users/eyalgolan/products/nozoki/docs/trail/sdd/cycle-18.md",
+  "consumed_cycle_path": "/Users/eyalgolan/products/ka-reader/docs/trail/sdd/cycle-18.md",
   "core_root": "/Users/eyalgolan/.kensaiapp/pins/20261001T115052Z-db88gv/core",
   "ended": "seats-close",
   "ended_at": "2026-10-01T13:41:12.276504+00:00",
@@ -121,12 +121,12 @@
   "output_tokens": 0,
   "output_tokens_under_counted": true,
   "pending_request": {
-    "cdo": "**CDO, round 1 \u2014 \u00a7 12's UXD boundary is repaired in three places, and the companion now lists no item.** I ran no builder and made no commit; the commit is the runner's.\n\n**What I wrote in `docs/SDD.md` \u00a7 12, the UXD boundary:**\n- **The version citation.** \"cited as `docs/UXD.md` v10 (Settled) states it\" now reads v11, followed by two sentences: the document was cut against v10, and v11 moved only UX-U1's expertise floor, which nothing above cites.\n- **\"The UXD stands at v10 under the view taken.\"** It keeps its words and gains a dated parenthesis: v10 was the version on 2026-09-23, and it is v11 since `nozoki@24d652b`, moved by the PRD's reader floor and not by the renderer exit.\n- **What the exit moves in `docs/DESIGN.md`** (companion \u00a7 2.1's second sentence). It keeps its words and gains a dated parenthesis saying how each of the three things it names stands at DESIGN v13.\n\n**What I checked before writing:**\n- **UXD v11 reaches no SDD sentence.** `git diff 4d7b653 24d652b -- docs/UXD.md` has three hunks: the `Version:` line, UX-U1, and RN-31 appended. `grep -n \"UX-U[0-9]\" docs/SDD.md` printed only `:L1433` (UX-U3) and `:L1717` (UX-U2) before my edits.\n- **The line-anchored UXD citations still open.** `:L3`, `:L3-L5` and `:L395-L397` are unshifted, because the first two hunks replace lines one for one and the third starts at `:L938`.\n- **All three DESIGN items, not only the one the item measured:**\n  - \u00a7 Overview reads \"realised in AppKit views drawn by the product's own Swift package\" (`docs/DESIGN.md:L331-L332`).\n  - RN-1 keeps the CSS sentence as what \"Revisions 1\u201310 read\" (`:L855-L857`).\n  - The two font stacks did not move (`:L29`, `:L46`, `:L447-L452`). \u00a7 12 expected them to; the design language kept them in its own run because \"the owner confirmed the families in those words\" (`:L1336-L1337`). The parenthesis records that outcome and does not reopen it.\n- **No token value moved.** A `diff` of the frontmatter at `nozoki@269bcf5` against the file on disk prints one changed line, `description:`.\n- **Nothing else above this seat moved.** `git log f5b7843..HEAD -- docs/DESIGN.md docs/CONTENT.md` prints nothing.\n\n**Two calls of mine, both recorded in RN-81:**\n- **I settled my half of \u00a7 2.1 with the slot unfilled.** The parenthesis changes no experience, condition, observable half or trace, and nothing the product promises. That is the same ground the CTO used in RN-80, under RN-19's routing rule (`docs/SDD.md:L2954-L2957`).\n- **No \u00a7 10 entry, with the doubt stated.** \u00a7 10 lists \"the PRD, SRS or UXD changed upstream\" as a re-cut trigger (`docs/SDD.md:L2274-L2276`), and the UXD is mine. I read the trigger as permission to redraw where an upstream change contradicts the cut. UX-U1's floor contradicts no slice, so there is nothing to record or redraw. A reader could hold that every upstream revision earns an entry; RN-81 and the \u00a7 12 clause are where the re-read is shown instead.\n\n**Companion.** \u00a7 2.1 is removed as folded. `docs/SDD_open_issues.md` \u00a7 2 now reads \"None.\" with a pointer to RN-80, RN-81 and the trail copy at `docs/trail/sdd/cycle-18.md` \u00a7 2.1, where the item stands whole with its slot unfilled. `grep -n \"^### \" docs/SDD_open_issues.md` prints nothing. I left the file on disk.\n\n**CPO \u2014** your flag is taken: both \"v10\" sites in the UXD boundary are handled as above.\n\n**CTO \u2014** both pieces of the successor work you named are done. I have no request of either seat.",
-    "cpo": "**CPO, round 1 \u2014 no edit. My lanes stand as written.**\n\nWhat I checked before saying so:\n\n- **The PRD and the Agari have not moved.** The PRD is still v15 Settled (`docs/PRD.md:L3-L5`), last commit `nozoki@7c89e19` of 2026-09-01. The Agari's last commit is `ee561fb` of 2026-09-01. \u00a7 12's PRD boundary cites \"v15 (Settled)\" (`docs/SDD.md:L2569`) and that is still true.\n- **UXD v11 touches no CPO sentence.** `git diff 4d7b653 24d652b -- docs/UXD.md` shows only UX-U1's floor, its RN-31 and the header. A grep of the SDD for the old floor's wording hits one line in my lanes, \u00a7 1's naming of the PRD goal (`docs/SDD.md:L145`), which carries no floor text.\n- **The 5.1 fold is wholly the CTO's.** Its four sites are *Open Questions*, \u00a7 3 `highlighter`, \u00a7 6 `read-a-file` command half and \u00a7 10 RC-3 (`docs/trail/sdd/cycle-18.md` \u00a7 5.1, \"What the fold writes\" and addition (a)). My fields on `read-a-file` name no engine (`docs/SDD.md:L1450-L1454`, `:L1491-L1505`). E-2's sizing rests on \u00a7 4 C-I5, \"what the panel shows for a given extension\" (`:L1166-L1168`).\n- **I add no re-read to \u00a7 5 step 4.** Naming the engine and dropping \"where it is a crate\" changes nothing a checker of `read-a-file` accepts or refuses, so the bar's content does not move.\n\n**CTO \u2014** three points on your fold:\n\n1. My lane cites *Open Questions* by ordinal in two places: \"third item\" in \u00a7 5 step 4 E-3 (`docs/SDD.md:L1183`) and in RN-63 (`:L3761`, `:L3779`). The item you remove is the fourth (`:L4521-L4524`), so both hold as long as the first three keep their order.\n2. If you add a condition to `read-a-file`'s command half beyond naming the engine, recall me on \u00a7 5 step 4 E-2. An example would be a check that answers a new \u00a7 11 row for the parser. That would move the bar, and the sizing is then owed a re-read.\n3. One product-side fact for the \u00a7 11 row the answer leaves to you (`docs/trail/sdd/cycle-18.md` \u00a7 5.1, \"Not covered\"). The driving scenario is a tree \"an automated tool or coding agent is actively changing\" (`docs/PRD.md:L85-L86`), and the open file \"updates in place\" (`:L253`). So a file caught mid-write is everyday input to the highlighter, not only a hostile one. Whether that earns a row is your call.\n\n**CDO \u2014** \u00a7 12's UXD boundary says \"`docs/UXD.md` v10 (Settled)\" and \"the UXD stands at v10\" (`docs/SDD.md:L2606`, `:L2620`). The UXD header now reads Version 11 (`docs/UXD.md:L5`). That clause is yours.\n\n**Both \u2014** companion item 2.1 still has its slot at the placeholder (`docs/SDD_open_issues.md:L95`). Its two sentences are in the CTO's downstream boundary and the CDO's UXD boundary. Nothing in it is a product call, so I leave it untouched and have no objection to whichever way you each handle your own sentence.",
-    "cto": "**CTO, round 2 \u2014 no edit. A new runner has picked run 21 up, and my reply for this round is unchanged.**\n\n**What changed around the run** (the turn message says \"nothing recorded\", so I checked):\n- **The looping helper is gone.** `pgrep -f sddloop.sh` exits 1.\n- **A new runner session is driving.** The instance's `system/logs/` now holds `claude-sdd-nozoki-20261001-133920.jsonl` and `sdd-nozoki-run21-t1.log`. This turn also arrived under a new core pin, `20261001T133651Z-98lvat`, while the state file's `core_root` still names `20261001T115052Z-db88gv`, which is still on disk.\n- **The state still has the round to close.** `docs/trail/sdd/run-21.state.json` shows round 2, 14 interruptions, a queue of one CTO turn, the CPO and CDO at `no_followup`, and my standing move still at `successor`.\n- **One commit landed in the product.** `HEAD` is `76325cb`, \"SDD open issues answered \u2014 0 of 0 items\". It adds only `docs/trail/sdd/self_answer-30.md`, which decides no item and says closing run 21 is the runner's.\n\n**The SDD and the companion are as round 1 left them:**\n- `git diff -U0 -- docs/SDD.md` shows 12 hunks, and `grep -c \"^- \\[OPEN:\" docs/SDD.md` prints `6`.\n- `grep -c \"^### \" docs/SDD_open_issues.md` prints `0`, so the companion lists no item.\n- Both files are still uncommitted, with the cycle-18 copy, the run-21 record and the state file untracked.\n\n**For the runner:** once this reply is collected, `next` should name `close-round`. Calling `resume` again before closing the round would re-queue it, which is the loop recorded in `docs/findings/2026-10-01_sdd-runner-loop-resumes-every-pass.md` at `kensaiapp-opensource@dc7e8d2`.\n\n**CPO \u2014** nothing new. I added no condition to `read-a-file`'s command half, so your recall trigger is still not met.\n\n**CDO \u2014** nothing new. I have no request.\n\nI made no commit this turn; the run's commit is the runner's."
+    "cdo": "**CDO, round 1 \u2014 \u00a7 12's UXD boundary is repaired in three places, and the companion now lists no item.** I ran no builder and made no commit; the commit is the runner's.\n\n**What I wrote in `docs/SDD.md` \u00a7 12, the UXD boundary:**\n- **The version citation.** \"cited as `docs/UXD.md` v10 (Settled) states it\" now reads v11, followed by two sentences: the document was cut against v10, and v11 moved only UX-U1's expertise floor, which nothing above cites.\n- **\"The UXD stands at v10 under the view taken.\"** It keeps its words and gains a dated parenthesis: v10 was the version on 2026-09-23, and it is v11 since `ka-reader@24d652b`, moved by the PRD's reader floor and not by the renderer exit.\n- **What the exit moves in `docs/DESIGN.md`** (companion \u00a7 2.1's second sentence). It keeps its words and gains a dated parenthesis saying how each of the three things it names stands at DESIGN v13.\n\n**What I checked before writing:**\n- **UXD v11 reaches no SDD sentence.** `git diff 4d7b653 24d652b -- docs/UXD.md` has three hunks: the `Version:` line, UX-U1, and RN-31 appended. `grep -n \"UX-U[0-9]\" docs/SDD.md` printed only `:L1433` (UX-U3) and `:L1717` (UX-U2) before my edits.\n- **The line-anchored UXD citations still open.** `:L3`, `:L3-L5` and `:L395-L397` are unshifted, because the first two hunks replace lines one for one and the third starts at `:L938`.\n- **All three DESIGN items, not only the one the item measured:**\n  - \u00a7 Overview reads \"realised in AppKit views drawn by the product's own Swift package\" (`docs/DESIGN.md:L331-L332`).\n  - RN-1 keeps the CSS sentence as what \"Revisions 1\u201310 read\" (`:L855-L857`).\n  - The two font stacks did not move (`:L29`, `:L46`, `:L447-L452`). \u00a7 12 expected them to; the design language kept them in its own run because \"the owner confirmed the families in those words\" (`:L1336-L1337`). The parenthesis records that outcome and does not reopen it.\n- **No token value moved.** A `diff` of the frontmatter at `ka-reader@269bcf5` against the file on disk prints one changed line, `description:`.\n- **Nothing else above this seat moved.** `git log f5b7843..HEAD -- docs/DESIGN.md docs/CONTENT.md` prints nothing.\n\n**Two calls of mine, both recorded in RN-81:**\n- **I settled my half of \u00a7 2.1 with the slot unfilled.** The parenthesis changes no experience, condition, observable half or trace, and nothing the product promises. That is the same ground the CTO used in RN-80, under RN-19's routing rule (`docs/SDD.md:L2954-L2957`).\n- **No \u00a7 10 entry, with the doubt stated.** \u00a7 10 lists \"the PRD, SRS or UXD changed upstream\" as a re-cut trigger (`docs/SDD.md:L2274-L2276`), and the UXD is mine. I read the trigger as permission to redraw where an upstream change contradicts the cut. UX-U1's floor contradicts no slice, so there is nothing to record or redraw. A reader could hold that every upstream revision earns an entry; RN-81 and the \u00a7 12 clause are where the re-read is shown instead.\n\n**Companion.** \u00a7 2.1 is removed as folded. `docs/SDD_open_issues.md` \u00a7 2 now reads \"None.\" with a pointer to RN-80, RN-81 and the trail copy at `docs/trail/sdd/cycle-18.md` \u00a7 2.1, where the item stands whole with its slot unfilled. `grep -n \"^### \" docs/SDD_open_issues.md` prints nothing. I left the file on disk.\n\n**CPO \u2014** your flag is taken: both \"v10\" sites in the UXD boundary are handled as above.\n\n**CTO \u2014** both pieces of the successor work you named are done. I have no request of either seat.",
+    "cpo": "**CPO, round 1 \u2014 no edit. My lanes stand as written.**\n\nWhat I checked before saying so:\n\n- **The PRD and the Agari have not moved.** The PRD is still v15 Settled (`docs/PRD.md:L3-L5`), last commit `ka-reader@7c89e19` of 2026-09-01. The Agari's last commit is `ee561fb` of 2026-09-01. \u00a7 12's PRD boundary cites \"v15 (Settled)\" (`docs/SDD.md:L2569`) and that is still true.\n- **UXD v11 touches no CPO sentence.** `git diff 4d7b653 24d652b -- docs/UXD.md` shows only UX-U1's floor, its RN-31 and the header. A grep of the SDD for the old floor's wording hits one line in my lanes, \u00a7 1's naming of the PRD goal (`docs/SDD.md:L145`), which carries no floor text.\n- **The 5.1 fold is wholly the CTO's.** Its four sites are *Open Questions*, \u00a7 3 `highlighter`, \u00a7 6 `read-a-file` command half and \u00a7 10 RC-3 (`docs/trail/sdd/cycle-18.md` \u00a7 5.1, \"What the fold writes\" and addition (a)). My fields on `read-a-file` name no engine (`docs/SDD.md:L1450-L1454`, `:L1491-L1505`). E-2's sizing rests on \u00a7 4 C-I5, \"what the panel shows for a given extension\" (`:L1166-L1168`).\n- **I add no re-read to \u00a7 5 step 4.** Naming the engine and dropping \"where it is a crate\" changes nothing a checker of `read-a-file` accepts or refuses, so the bar's content does not move.\n\n**CTO \u2014** three points on your fold:\n\n1. My lane cites *Open Questions* by ordinal in two places: \"third item\" in \u00a7 5 step 4 E-3 (`docs/SDD.md:L1183`) and in RN-63 (`:L3761`, `:L3779`). The item you remove is the fourth (`:L4521-L4524`), so both hold as long as the first three keep their order.\n2. If you add a condition to `read-a-file`'s command half beyond naming the engine, recall me on \u00a7 5 step 4 E-2. An example would be a check that answers a new \u00a7 11 row for the parser. That would move the bar, and the sizing is then owed a re-read.\n3. One product-side fact for the \u00a7 11 row the answer leaves to you (`docs/trail/sdd/cycle-18.md` \u00a7 5.1, \"Not covered\"). The driving scenario is a tree \"an automated tool or coding agent is actively changing\" (`docs/PRD.md:L85-L86`), and the open file \"updates in place\" (`:L253`). So a file caught mid-write is everyday input to the highlighter, not only a hostile one. Whether that earns a row is your call.\n\n**CDO \u2014** \u00a7 12's UXD boundary says \"`docs/UXD.md` v10 (Settled)\" and \"the UXD stands at v10\" (`docs/SDD.md:L2606`, `:L2620`). The UXD header now reads Version 11 (`docs/UXD.md:L5`). That clause is yours.\n\n**Both \u2014** companion item 2.1 still has its slot at the placeholder (`docs/SDD_open_issues.md:L95`). Its two sentences are in the CTO's downstream boundary and the CDO's UXD boundary. Nothing in it is a product call, so I leave it untouched and have no objection to whichever way you each handle your own sentence.",
+    "cto": "**CTO, round 2 \u2014 no edit. A new runner has picked run 21 up, and my reply for this round is unchanged.**\n\n**What changed around the run** (the turn message says \"nothing recorded\", so I checked):\n- **The looping helper is gone.** `pgrep -f sddloop.sh` exits 1.\n- **A new runner session is driving.** The instance's `system/logs/` now holds `claude-sdd-ka-reader-20261001-133920.jsonl` and `sdd-ka-reader-run21-t1.log`. This turn also arrived under a new core pin, `20261001T133651Z-98lvat`, while the state file's `core_root` still names `20261001T115052Z-db88gv`, which is still on disk.\n- **The state still has the round to close.** `docs/trail/sdd/run-21.state.json` shows round 2, 14 interruptions, a queue of one CTO turn, the CPO and CDO at `no_followup`, and my standing move still at `successor`.\n- **One commit landed in the product.** `HEAD` is `76325cb`, \"SDD open issues answered \u2014 0 of 0 items\". It adds only `docs/trail/sdd/self_answer-30.md`, which decides no item and says closing run 21 is the runner's.\n\n**The SDD and the companion are as round 1 left them:**\n- `git diff -U0 -- docs/SDD.md` shows 12 hunks, and `grep -c \"^- \\[OPEN:\" docs/SDD.md` prints `6`.\n- `grep -c \"^### \" docs/SDD_open_issues.md` prints `0`, so the companion lists no item.\n- Both files are still uncommitted, with the cycle-18 copy, the run-21 record and the state file untracked.\n\n**For the runner:** once this reply is collected, `next` should name `close-round`. Calling `resume` again before closing the round would re-queue it, which is the loop recorded in `docs/findings/2026-10-01_sdd-runner-loop-resumes-every-pass.md` at `kensaiapp-opensource@dc7e8d2`.\n\n**CPO \u2014** nothing new. I added no condition to `read-a-file`'s command half, so your recall trigger is still not met.\n\n**CDO \u2014** nothing new. I have no request.\n\nI made no commit this turn; the run's commit is the runner's."
   },
-  "product_path": "/Users/eyalgolan/products/nozoki",
-  "project": "nozoki",
+  "product_path": "/Users/eyalgolan/products/ka-reader",
+  "project": "ka-reader",
   "queue": [],
   "recall_outstanding": null,
   "recall_refusals": [],
@@ -134,31 +134,31 @@
   "resolved_inputs": {
     "cdo": [
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/SRS.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/UXD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/PRD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/agari.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ka-reader_doctrine.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ai_responsibility.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/definition_brief.md",
         "present": false
       },
       {
@@ -174,15 +174,15 @@
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/DESIGN.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/DESIGN.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/CONTENT.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/CONTENT.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/design_system",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/design_system",
         "present": false
       },
       {
@@ -196,31 +196,31 @@
     ],
     "cpo": [
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/SRS.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/UXD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/PRD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/agari.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ka-reader_doctrine.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ai_responsibility.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/definition_brief.md",
         "present": false
       },
       {
@@ -238,31 +238,31 @@
     ],
     "cto": [
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/SRS.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/UXD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/PRD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/agari.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ka-reader_doctrine.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ai_responsibility.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/definition_brief.md",
         "present": false
       },
       {
@@ -278,11 +278,11 @@
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/adr",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/adr",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/nfdr.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/nfdr.md",
         "present": true
       }
     ]
@@ -324,9 +324,9 @@
     "cto": "356312c5-f7e6-4b16-9c6c-c6d5e3ec8183"
   },
   "seats": {
-    "cdo": "sdd-nozoki-run21-cdo",
-    "cpo": "sdd-nozoki-run21-cpo",
-    "cto": "sdd-nozoki-run21-cto"
+    "cdo": "sdd-ka-reader-run21-cdo",
+    "cpo": "sdd-ka-reader-run21-cpo",
+    "cto": "sdd-ka-reader-run21-cto"
   },
   "spoke_at": {
     "cdo": 2,
@@ -357,7 +357,7 @@
       "declared": "no_followup",
       "kind": "ordinary",
       "no_reply": false,
-      "request_text": "**CTO, round 2 \u2014 no edit. A new runner has picked run 21 up, and my reply for this round is unchanged.**\n\n**What changed around the run** (the turn message says \"nothing recorded\", so I checked):\n- **The looping helper is gone.** `pgrep -f sddloop.sh` exits 1.\n- **A new runner session is driving.** The instance's `system/logs/` now holds `claude-sdd-nozoki-20261001-133920.jsonl` and `sdd-nozoki-run21-t1.log`. This turn also arrived under a new core pin, `20261001T133651Z-98lvat`, while the state file's `core_root` still names `20261001T115052Z-db88gv`, which is still on disk.\n- **The state still has the round to close.** `docs/trail/sdd/run-21.state.json` shows round 2, 14 interruptions, a queue of one CTO turn, the CPO and CDO at `no_followup`, and my standing move still at `successor`.\n- **One commit landed in the product.** `HEAD` is `76325cb`, \"SDD open issues answered \u2014 0 of 0 items\". It adds only `docs/trail/sdd/self_answer-30.md`, which decides no item and says closing run 21 is the runner's.\n\n**The SDD and the companion are as round 1 left them:**\n- `git diff -U0 -- docs/SDD.md` shows 12 hunks, and `grep -c \"^- \\[OPEN:\" docs/SDD.md` prints `6`.\n- `grep -c \"^### \" docs/SDD_open_issues.md` prints `0`, so the companion lists no item.\n- Both files are still uncommitted, with the cycle-18 copy, the run-21 record and the state file untracked.\n\n**For the runner:** once this reply is collected, `next` should name `close-round`. Calling `resume` again before closing the round would re-queue it, which is the loop recorded in `docs/findings/2026-10-01_sdd-runner-loop-resumes-every-pass.md` at `kensaiapp-opensource@dc7e8d2`.\n\n**CPO \u2014** nothing new. I added no condition to `read-a-file`'s command half, so your recall trigger is still not met.\n\n**CDO \u2014** nothing new. I have no request.\n\nI made no commit this turn; the run's commit is the runner's.",
+      "request_text": "**CTO, round 2 \u2014 no edit. A new runner has picked run 21 up, and my reply for this round is unchanged.**\n\n**What changed around the run** (the turn message says \"nothing recorded\", so I checked):\n- **The looping helper is gone.** `pgrep -f sddloop.sh` exits 1.\n- **A new runner session is driving.** The instance's `system/logs/` now holds `claude-sdd-ka-reader-20261001-133920.jsonl` and `sdd-ka-reader-run21-t1.log`. This turn also arrived under a new core pin, `20261001T133651Z-98lvat`, while the state file's `core_root` still names `20261001T115052Z-db88gv`, which is still on disk.\n- **The state still has the round to close.** `docs/trail/sdd/run-21.state.json` shows round 2, 14 interruptions, a queue of one CTO turn, the CPO and CDO at `no_followup`, and my standing move still at `successor`.\n- **One commit landed in the product.** `HEAD` is `76325cb`, \"SDD open issues answered \u2014 0 of 0 items\". It adds only `docs/trail/sdd/self_answer-30.md`, which decides no item and says closing run 21 is the runner's.\n\n**The SDD and the companion are as round 1 left them:**\n- `git diff -U0 -- docs/SDD.md` shows 12 hunks, and `grep -c \"^- \\[OPEN:\" docs/SDD.md` prints `6`.\n- `grep -c \"^### \" docs/SDD_open_issues.md` prints `0`, so the companion lists no item.\n- Both files are still uncommitted, with the cycle-18 copy, the run-21 record and the state file untracked.\n\n**For the runner:** once this reply is collected, `next` should name `close-round`. Calling `resume` again before closing the round would re-queue it, which is the loop recorded in `docs/findings/2026-10-01_sdd-runner-loop-resumes-every-pass.md` at `kensaiapp-opensource@dc7e8d2`.\n\n**CPO \u2014** nothing new. I added no condition to `read-a-file`'s command half, so your recall trigger is still not met.\n\n**CDO \u2014** nothing new. I have no request.\n\nI made no commit this turn; the run's commit is the runner's.",
       "seat": "cto",
       "spoke": true
     }

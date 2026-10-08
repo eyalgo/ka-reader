@@ -1,4 +1,4 @@
-# SDD conversation — nozoki, run 3
+# SDD conversation — ka-reader, run 3
 
 > The record of one `product-sdd` run: three seats — CTO, CPO, CDO — working one document together,
 > and a runner that starts them, gives the turns and counts the rounds.
@@ -18,9 +18,9 @@
 
 - **Round:** 2 (closed) — run ended
 - **Seats, and the names they answer to:**
-  - CTO — `sdd-nozoki-run3-cto`
-  - CPO — `sdd-nozoki-run3-cpo`
-  - CDO — `sdd-nozoki-run3-cdo`
+  - CTO — `sdd-ka-reader-run3-cto`
+  - CPO — `sdd-ka-reader-run3-cpo`
+  - CDO — `sdd-ka-reader-run3-cdo`
 - **Standing declared move:** CPO `no_followup` · CTO `no_followup` · CDO `no_followup`
 - **Recall outstanding:** none
 - **Recalls spent:** none

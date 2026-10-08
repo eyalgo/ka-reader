@@ -32,9 +32,9 @@ the `product-sdd` run that folds the answers.
   elsewhere that bears on the alternates file in other words was not seen. Of the SDD's inputs,
   `docs/UXD.md` was read at `:L241` and `docs/CONTENT.md` at `:L58-L66` and `:L329-L338`;
   `docs/PRD.md` and `docs/SRS.md` were searched for `object store` (0 lines each) and not read.
-- **The tree the answers were measured on:** `nozoki@2309ba5`. `git diff --stat 66f428d HEAD`
+- **The tree the answers were measured on:** `ka-reader@2309ba5`. `git diff --stat 66f428d HEAD`
   lists `docs/SDD_open_issues.md` and `docs/architecture_open_issues.md` and nothing else, so
-  outside `docs/` it is the tree at `nozoki@66f428d`. `cargo test --workspace --locked` printed
+  outside `docs/` it is the tree at `ka-reader@66f428d`. `cargo test --workspace --locked` printed
   499 passed, 0 failed and 0 ignored on it in this run.
 
 ## Items worked
@@ -48,7 +48,7 @@ the `product-sdd` run that folds the answers.
   widen the document.
 
   **What was checked.** Each claim of the item was opened at its source.
-  `check_alternates` is defined at `crates/nozoki-core/src/git_reader/libgit2.rs:L303` and called
+  `check_alternates` is defined at `crates/ka-reader-core/src/git_reader/libgit2.rs:L303` and called
   at `:L114`, `:L449` and `:L475`. `git ls-files checks/fixtures | grep alternates` prints the
   archive and the fixture's `README.md`. `tar -xOf checks/fixtures/alternates-names-outside.git.tar
   .git/objects/info/alternates` prints `../../../elsewhere/objects`. The four SDD passages read
@@ -67,7 +67,7 @@ the `product-sdd` run that folds the answers.
   **Addition two: the passages say what is held, and no more.** R-16's bar for this proof is "one
   case showing that directory is not read" (`docs/SDD.md:L3392-L3393`). The case in the tree,
   `test_the_outside_object_directory_is_never_read_on_the_three_calls`
-  (`crates/nozoki-core/tests/git_state.rs:L1733`), makes a FIFO at the outside directory's
+  (`crates/ka-reader-core/tests/git_state.rs:L1733`), makes a FIFO at the outside directory's
   `info/alternates` and asserts no call opened it (`:L1715-L1726`, `:L1742-L1746`). That is the
   file a load of the directory would open, and it is the same kind of watch the config case
   makes, which R-16 already accepts as its proof (`docs/SDD.md:L3299-L3301`). It is not a watch
@@ -94,7 +94,7 @@ the `product-sdd` run that folds the answers.
   row's own rule asks for this item: a file landing in `checks/` after the pinned commit "owes
   this row an item" (`docs/SDD.md:L354`). It corrects a count, so it does not widen the document.
 
-  **What was checked.** `ls -d checks/fixtures/*/ | wc -l` prints 12 at `nozoki@2309ba5`. The
+  **What was checked.** `ls -d checks/fixtures/*/ | wc -l` prints 12 at `ka-reader@2309ba5`. The
   row names eleven, and the twelfth is `alternates-names-outside`.
 
   **The addition: the rest of the cell was measured, not assumed.** The item re-measures one
@@ -129,7 +129,7 @@ the `product-sdd` run that folds the answers.
   call (`docs/trail/sdd/cycle-15.md` § 5.1) and the price of C-D1" (`:L1077-L1080`). It does not
   reach here, for the reason RN-101 gave for the two config forms: those three cannot be told
   from a true outside without a read outside the grant, and this entry is told apart by the
-  scanner with no read (`crates/nozoki-core/src/git_reader/alternates_scan.rs:L43-L48`). No
+  scanner with no read (`crates/ka-reader-core/src/git_reader/alternates_scan.rs:L43-L48`). No
   ground the run cannot see was found, so the item is the CTO's, in the owner's seat. The § 6
   clause is the CDO's; it follows from `docs/UXD.md` UX-S3's Error cell (`:L241`) as RN-101's
   did, and the fold names it so. That is one question with a wide consequence, not two seats, so
@@ -138,16 +138,16 @@ the `product-sdd` run that folds the answers.
   **Check 2 — the question.** It is the right question and it hides none. The item's own
   reading of the product was opened and holds: `EntryClass::Outside` is "any other entry"
   (`alternates_scan.rs:L12-L14`, `:L47`); the case for `relative/objects` asserts
-  `ObjectStoreNamesOutside` on all three calls (`crates/nozoki-core/tests/git_state.rs:L1781-L1788`);
+  `ObjectStoreNamesOutside` on all three calls (`crates/ka-reader-core/tests/git_state.rs:L1781-L1788`);
   the shipped sentence says "outside the folder you opened"
-  (`nozoki-mac/Sources/Surfaces/GitSentences.swift:L58-L62`). One more place says it: the
+  (`ka-reader-mac/Sources/Surfaces/GitSentences.swift:L58-L62`). One more place says it: the
   model's phrase, "the object store names a location outside the folder"
-  (`crates/nozoki-core/src/folder_model.rs:L235-L236`).
+  (`crates/ka-reader-core/src/folder_model.rs:L235-L236`).
 
   **Check 3 — the settled record.** R-16's own sentence for this entry rests on where the
   operating system resolves it (`docs/SDD.md:L3369-L3372`), and that is a claim about a process,
   not an observation the adapter makes: `grep -rn 'current_dir\|getcwd\|set_current_dir' crates
-  nozoki-mac/Sources` prints three lines, all in test files. The source behind the sentence was
+  ka-reader-mac/Sources` prints three lines, all in test files. The source behind the sentence was
   re-read: `odb.c:L794-L798` joins only an entry beginning `.`, and `:L800` passes every other
   entry on as written. Git's rule was read at its own page and measured (below): Git reads the
   same entry from the object directory. So the entry has two places it can lead and the adapter
@@ -172,7 +172,7 @@ the `product-sdd` run that folds the answers.
   (`ce013625030ba8dba906f756967f9e9ca394464a` for `hello\n`); its `objects/ce` directory copied to
   `b/.git/objects/store/ce`; `git -C b cat-file -t <sha>` printed "could not get object info".
   Then `b/.git/objects/info/alternates` was written as the one line `store`, and the same command
-  printed `blob`, run with the shell's working directory at the nozoki repository, which holds no
+  printed `blob`, run with the shell's working directory at the ka-reader repository, which holds no
   `store`. So Git read `store` from `b/.git/objects/`. libgit2's reading of the same line was not
   run; it is read from `odb.c:L800`.
 
@@ -208,4 +208,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/SDD.md`** — `<CORE>/launchers/skill/launcher.sh product-sdd nozoki`
+- **`docs/SDD.md`** — `<CORE>/launchers/skill/launcher.sh product-sdd ka-reader`

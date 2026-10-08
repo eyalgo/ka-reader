@@ -32,24 +32,24 @@ fold the two companions.
   treated it as a draft.
   - **Check 1, the seat.** The change lands in `nfdr.md` QC-11, this companion's own document. It
     commits nothing to a person or a third party. So the seat is this run's.
-  - **Check 2, what the item states.** I re-measured each claim at `nozoki@b25b407`:
+  - **Check 2, what the item states.** I re-measured each claim at `ka-reader@b25b407`:
     - The header's QC-11 *libgit2 binding* row reads every shipped-scope file in any crate, with two
-      exemptions: the `git_reader` unit and `crates/nozoki-bridge/src/machine_config.rs`
+      exemptions: the `git_reader` unit and `crates/ka-reader-bridge/src/machine_config.rs`
       (`checks/structure.sh:L130-L142`, the `case` at `:L1186`).
-    - The row landed in `nozoki@a611cf1`, an ancestor of the merge `nozoki@fc14574`.
+    - The row landed in `ka-reader@a611cf1`, an ancestor of the merge `ka-reader@fc14574`.
     - `bash checks/structure.sh` prints "16 Rust files in 2 crates read — nothing found" and exits 0.
     - QC-11's tail still says the bound "stays review until a change adds it"
       (`docs/nfdr.md:L357-L364`). That change has landed, so the tail's claim is now false. This is
       a correction, not a widening, and the item cites where it occurs.
   - **What the item's fold leaves out.** It keeps review only for the bound inside
     `machine_config.rs`, and that is one of two parts the script does not hold. The other is
-    `crates/nozoki-bridge/tests/`. QC-11 allows the binding in "that switch's test" and in no other
+    `crates/ka-reader-bridge/tests/`. QC-11 allows the binding in "that switch's test" and in no other
     test (`docs/nfdr.md:L355-L356`). The script reads `tests/` for the layer-5 rule alone
     (`checks/structure.sh:L41-L42`), so a second bridge test that names `git2` draws no finding.
-    Today only `tests/search_path.rs` names it (`grep -rln git2 crates/nozoki-bridge`). The
+    Today only `tests/search_path.rs` names it (`grep -rln git2 crates/ka-reader-bridge`). The
     addition names both parts. It also says why the file exemption is coarse: `machine_config.rs`
     holds the adapter's constructor beside the switch (`:L138-L139`).
-  - **I checked the other test tree too.** The only `nozoki-core` file under `tests/` that names
+  - **I checked the other test tree too.** The only `ka-reader-core` file under `tests/` that names
     `git2` is `tests/unit/libgit2.rs`. That file is the adapter's own `mod tests`, loaded by
     `#[path]` from `src/git_reader/libgit2.rs:L770`, so it belongs to `git-reader` and is not a
     second exception.
@@ -74,7 +74,7 @@ fold the two companions.
   - **The rule for this item.** The item widens QC-15, because it asks the list to state reads it
     does not state. It is raised from downstream, so it gets only the forms it cites an occurrence
     for (prompt § *A widening item waits until it occurs*). I checked each form:
-    - **The config reads.** They occur at `crates/nozoki-core/src/git_reader/libgit2.rs:L191-L247`:
+    - **The config reads.** They occur at `crates/ka-reader-core/src/git_reader/libgit2.rs:L191-L247`:
       `config` in the common directory, `config.worktree` where `extensions.worktreeConfig` is set,
       and each include that spells inside the folder. SDD § 3's `git-reader` row owns them
       (`docs/SDD.md:L338`, RN-99). They are taken.
@@ -100,7 +100,7 @@ fold the two companions.
   - **Check 3, against the settled record.** The NFDR derives its entries and never invents them
     (`docs/nfdr.md:L8-L10`). So QC-15 cannot name a read the SDD does not own. That half of the
     change belongs to the SDD first, and I opened `docs/SDD_open_issues.md` § 2.1 for it
-    (`nozoki@ed6e634`), before writing this slot.
+    (`ka-reader@ed6e634`), before writing this slot.
   - **Why this is not a split.** The item did not ask about `.gitmodules`. I found it while
     checking the item's own claim, so it is an addition the draft missed whose change lands
     upstream, not a second question inside the item.
@@ -139,7 +139,7 @@ None this run.
     (`:L3041-L3047`) and the *Open Questions* item (`:L7138-L7160`).
   - **A fact in it is now false.** "which libgit2 follows with no containment check" and the
     three-key list (`docs/nfdr.md:L256-L257`, `:L954-L955`) describe the product before the check
-    was built (`crates/nozoki-core/src/git_reader/libgit2.rs:L191`, merged at `nozoki@fc14574`).
+    was built (`crates/ka-reader-core/src/git_reader/libgit2.rs:L191`, merged at `ka-reader@fc14574`).
 
   The decision about the alternates read was made together with § 3.2's answer. Both say that
   read is not built. This item asks the entries to name it as uncovered and never as owned, so the
@@ -151,5 +151,5 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture nozoki`
-- **`docs/SDD.md`** — `<CORE>/launchers/skill/launcher.sh product-sdd nozoki`
+- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture ka-reader`
+- **`docs/SDD.md`** — `<CORE>/launchers/skill/launcher.sh product-sdd ka-reader`

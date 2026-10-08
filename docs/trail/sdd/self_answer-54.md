@@ -10,7 +10,7 @@ the `product-sdd` run that folds the answers.
 - **Document:** `docs/SDD.md` (v46, `Status:` Settled)
 - **Decided by:** `<CORE>/../skills/companion/.claude/skills/companion-self-answer/prompts/rich.md` v1.3.1
 - **Date:** 2026-10-07
-- **Sources re-read:** None. Both answers rest on the product's own tree at `nozoki@b12e48c` and
+- **Sources re-read:** None. Both answers rest on the product's own tree at `ka-reader@b12e48c` and
   on nothing outside this repository.
 - **What was read of the document:** `docs/SDD.md` is 8,000 lines and was not read whole. This
   run read the header (`:L1-L34`), the heading map (`grep -n '^#'`), § 3's `read-only-harness`
@@ -22,15 +22,15 @@ the `product-sdd` run that folds the answers.
   against what the document says of it, and no answer moves a sentence the PRD, the SRS or the UXD
   settled. Downstream, `docs/nfdr.md` QC-2 (`:L100-L115`) and `docs/architecture_open_issues.md`
   were read whole: the NFDR's matching tail already has its item there (§ 3.1, opened by the PM at
-  `nozoki@258b472`), so no companion is opened by this run.
-- **The tree the answers were measured on:** `nozoki@b12e48c`, the merge both items cite, which is
+  `ka-reader@258b472`), so no companion is opened by this run.
+- **The tree the answers were measured on:** `ka-reader@b12e48c`, the merge both items cite, which is
   `main`'s HEAD less the two companion-opening commits (`git log --oneline -8`: `258b472`,
   `bcac6fc`, then `b12e48c`); `git status --short` printed nothing. `b12e48c` is on no remote
   branch (`git branch -r --contains b12e48c` printed nothing), and `origin/main` is at
-  `nozoki@799c3d6`, an ancestor 29 commits back. On a disposable copy (`git archive b12e48c |
-  tar -x -C /tmp/nozoki-scratch.OESAgw`), never in the main checkout: `checks/read-only.sh` printed
+  `ka-reader@799c3d6`, an ancestor 29 commits back. On a disposable copy (`git archive b12e48c |
+  tar -x -C /tmp/ka-reader-scratch.OESAgw`), never in the main checkout: `checks/read-only.sh` printed
   `unchanged` on `checks/fixtures/plain`, `repo` and `submodule`; `cargo test --locked -p
-  nozoki-core --test git_state submodule` printed `test result: ok. 17 passed; 0 failed`. The
+  ka-reader-core --test git_state submodule` printed `test result: ok. 17 passed; 0 failed`. The
   workspace-wide `cargo test --workspace --locked` the items report (23 `ok` lines) was not re-run
   here; the two answers rest on the walks and the 17 cases, which were.
 
@@ -41,7 +41,7 @@ the `product-sdd` run that folds the answers.
 - **Bucket:** 5. Raised from downstream — an item from a seat that did not write the SDD
 - **Verdict:** confirmed with addition
 - **Why:** The item's "likely fold" is a lean, so it was weighed as a draft, and it holds for the
-  reason it gives: both limits the clause states are closed at `nozoki@b12e48c`, and it is taken
+  reason it gives: both limits the clause states are closed at `ka-reader@b12e48c`, and it is taken
   with three additions.
 
   *Check 1 — the seat.* The edit lands in `docs/SDD.md` § 6 S-4, the promise clause
@@ -55,9 +55,9 @@ the `product-sdd` run that folds the answers.
   the item: the step `Read-only, submodule` is at `.github/workflows/ci.yml:L73-L74`, after
   `Read-only, repository` (`:L70-L71`) and before `Read-only suite` (`:L76`); the case
   `test_read_git_on_the_restored_submodule_answers_root_with_its_status` is at
-  `crates/nozoki-core/tests/git_state.rs:L787`, the scene case at `:L771`, the three layouts at
+  `crates/ka-reader-core/tests/git_state.rs:L787`, the scene case at `:L771`, the three layouts at
   `:L802`, `:L815` and `:L828`, and `restored_submodule_scene` at `:L722`; and `checks/walk.rs` is
-  unchanged since `nozoki@275e179` (`git diff --quiet 275e179 b12e48c -- checks/walk.rs` exits 0),
+  unchanged since `ka-reader@275e179` (`git diff --quiet 275e179 b12e48c -- checks/walk.rs` exits 0),
   so the walk still drops the answer and the case is what holds it — which the item says. Where
   the draft is incomplete, and what the three additions are: **(1)** the clause has a third
   sentence that goes false with the two limits and the item does not name it — "that it does is
@@ -68,9 +68,9 @@ the `product-sdd` run that folds the answers.
   in the clause as the reason the case and not the walk holds the answer. **(2)** The CI half is
   bounded by what can be read: the step is in the workflow at `b12e48c`, but no hosted run has
   executed it — `b12e48c` is on no remote branch, and `gh run list --limit 5` names runs on
-  `main` at `nozoki@…` pushes up to 2026-10-07T03:00 only. So the fold says the step is in the
-  workflow and does not say it is green. **(3)** The pin moves: `nozoki@2d7692c` (`ci.yml:L67-L71`)
-  becomes `nozoki@b12e48c` (`:L67-L74`).
+  `main` at `ka-reader@…` pushes up to 2026-10-07T03:00 only. So the fold says the step is in the
+  workflow and does not say it is green. **(3)** The pin moves: `ka-reader@2d7692c` (`ci.yml:L67-L71`)
+  becomes `ka-reader@b12e48c` (`:L67-L74`).
 
   *Check 3 — the settled record.* § 4 C-I3 (`:L763-L800`) states the rule for a walk fixture and
   says "every walk fixture"; it names no step list, so it does not move, and the folded clause
@@ -91,7 +91,7 @@ the `product-sdd` run that folds the answers.
   words go into a dated note the way the v46 header records earlier re-pins, and the fold owes a
   new RN.
 
-### 5.2 — § 3's `read-only-harness` row is pinned at `nozoki@1d5c3cf`, and `checks/fixtures/.gitignore` has landed since
+### 5.2 — § 3's `read-only-harness` row is pinned at `ka-reader@1d5c3cf`, and `checks/fixtures/.gitignore` has landed since
 
 - **Bucket:** 5. Raised from downstream — an item from a seat that did not write the SDD
 - **Verdict:** confirmed with addition
@@ -121,7 +121,7 @@ the `product-sdd` run that folds the answers.
   `test_own_state.sh` cases the item cites are at `:L212`, `:L222` and `:L233` as it states. Where
   the draft is incomplete: **(1)** the cell pins six locators into `git_state.rs` and two into
   `root_finding.rs`, and the station inserted 125 lines into `git_state.rs` (`git diff --stat
-  1d5c3cf b12e48c -- crates/nozoki-core/tests`, the only file in that diff) — all of them above
+  1d5c3cf b12e48c -- crates/ka-reader-core/tests`, the only file in that diff) — all of them above
   `:L1214`, since the first inserted case is at `:L722` — so every one of the six has moved by
   exactly 125 and the row, pinned at `1d5c3cf`, now points at the wrong lines. The re-pins are in
   the answer, each verified by the fixture name on the line at both commits; `root_finding.rs` is
@@ -160,4 +160,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/SDD.md`** — `<CORE>/launchers/skill/launcher.sh product-sdd nozoki`
+- **`docs/SDD.md`** — `<CORE>/launchers/skill/launcher.sh product-sdd ka-reader`

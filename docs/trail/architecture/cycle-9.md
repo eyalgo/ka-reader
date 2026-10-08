@@ -1,4 +1,4 @@
-# Architecture open issues — Nozoki
+# Architecture open issues — KA-Reader
 
 > Companion to `adr/` and `nfdr.md`. The Principal Architect authored both records
 > non-interactively; this file holds what the run could not settle from its inputs — the SRS, the SDD
@@ -48,7 +48,7 @@
   QC-11's two stated edges (`markdown-renderer` → `fs-reader`'s check, `markdown-renderer` →
   `highlighter`) are the SDD's own words. Whichever the SDD's seat states, QC-10 and § 1.3's
   ownership follow by transcription.
-- **Answer:** Reading (a), carried to the SDD's companion as `docs/SDD_open_issues.md` § 2.4 (`nozoki@5e6198c`), because the sentence that settles this is the SDD's. `folder-model` calls `highlighter` and `markdown-renderer` on the bytes `fs-reader` returned, and holds a failed call as the item's `failed(condition)`. `core-bridge`'s row is what rules out (b): it must not own read logic, nor "anything the harness could not exercise through SM-5", and SM-5 is `folder-model`'s API. Nothing in these records moves yet. QC-10 stays as written until the SDD folds § 2.4. On that fold, QC-10's may-import set gains `markdown-renderer` and `highlighter`, its exclusion of `markdown-renderer` is retired, and its exclusions of `own-state` and the libgit2 binding stand. QC-11 and ADR-0016 do not move. Decided in the owner's seat by a `companion-self-answer` run, 2026-09-23. The reasoning is in `docs/trail/architecture/self_answer-12.md` § 1.1.
+- **Answer:** Reading (a), carried to the SDD's companion as `docs/SDD_open_issues.md` § 2.4 (`ka-reader@5e6198c`), because the sentence that settles this is the SDD's. `folder-model` calls `highlighter` and `markdown-renderer` on the bytes `fs-reader` returned, and holds a failed call as the item's `failed(condition)`. `core-bridge`'s row is what rules out (b): it must not own read logic, nor "anything the harness could not exercise through SM-5", and SM-5 is `folder-model`'s API. Nothing in these records moves yet. QC-10 stays as written until the SDD folds § 2.4. On that fold, QC-10's may-import set gains `markdown-renderer` and `highlighter`, its exclusion of `markdown-renderer` is retired, and its exclusions of `own-state` and the libgit2 binding stand. QC-11 and ADR-0016 do not move. Decided in the owner's seat by a `companion-self-answer` run, 2026-09-23. The reasoning is in `docs/trail/architecture/self_answer-12.md` § 1.1.
 
 ## 2. Choices to confirm — the Principal Architect drafted a best-effort answer; confirm or override
 
@@ -77,9 +77,9 @@
      `MarkdownDocument` and no HTML; the three walls are the containment check, the document as
      data, and `NSImage` fed by `asset_bytes` for a contained path in four formats; SVG excluded
      in v1 with RN-8's reopening condition; the owner's image override carried forward.
-  4. **ADR-0016, Proposed — supersedes ADR-0009 on acceptance.** `nozoki-core` (no `unsafe`, no
-     Apple framework), `nozoki-bridge` (the C ABI, the one `unsafe` unit, the Rust-side root),
-     `nozoki-mac` (Swift, no dependency, the only AppKit importer, the app's root), `checks/`;
+  4. **ADR-0016, Proposed — supersedes ADR-0009 on acceptance.** `ka-reader-core` (no `unsafe`, no
+     Apple framework), `ka-reader-bridge` (the C ABI, the one `unsafe` unit, the Rust-side root),
+     `ka-reader-mac` (Swift, no dependency, the only AppKit importer, the app's root), `checks/`;
      the reconstructed marking kept for the two readings the SDD does not weigh.
   5. **ADR-0012, revised at Proposed.** The control is `checks/fixtures/idle-shell`, the observable
      `open_folder`'s call with the panel presented, the frames re-measured on the first native
@@ -89,8 +89,8 @@
      rides this item rather than landing on a mechanism sentence this item is still open on.
   6. **The constraint set, re-derived** from §§ 2–4 at v13 under the SDD's rule that the § 4
      statement wins, each entry tracing to the Proposed record *and* the accepted one it
-     supersedes; § 9's table on `swift test --package-path nozoki-mac`, `checks/view.sh` and
-     `--test exports`, Vitest and the TypeScript packet leaving with `nozoki-ui`; § 10 following.
+     supersedes; § 9's table on `swift test --package-path ka-reader-mac`, `checks/view.sh` and
+     `--test exports`, Vitest and the TypeScript packet leaving with `ka-reader-ui`; § 10 following.
      Five symbol-level realizations this run added beyond the SDD's words are marked in their
      entries and listed in RN-22 (view.sh's three environment/argument names; the
      surfaces-never-call-`SM-4` rule; the dialog symbols; bundle.sh's no-second-executable and
@@ -114,9 +114,9 @@
   and costs nothing accepted; the reason for four is four reversal costs (RN-22). *Hold the entries
   at the previous shape until acceptance* — the constraint set would then contradict `docs/SDD.md`
   § 4 as it reads, against that document's rule and this one's practice since v5; a delivery reader
-  would be checked against a CSP, a capability file and a `nozoki-ui` the SDD no longer designs.
+  would be checked against a CSP, a capability file and a `ka-reader-ui` the SDD no longer designs.
   *Accept ADR-0012 now, apart from the four* — a one-line Status move and an index row; nothing
   else moves. *Reject a record's alternative or consequence* — say which; it is revised at Proposed.
   The four superseded records do not move under any override until a superseding record is
   accepted.
-- **Confirm or override:** confirm, with one addition. Accept ADR-0013, ADR-0014, ADR-0015 and ADR-0016 as drafted. Each supersedes the record it restates (ADR-0001, ADR-0002, ADR-0006, ADR-0009), which are exactly the four `docs/SDD.md` § 10 RC-3 says are owed. Accept ADR-0012 as revised against C-I3 at v13, and accept the re-derived constraint set. **Addition:** two entries still describe the previous shape. QC-2's *verified by* says `checks/read-only.sh` runs "after every IPC command". QC-30's boundary set still lists "the renderer's IPC commands and asset requests", although RN-22 counts QC-30 as re-derived. Both are bound by ADR-0013 on acceptance, and ADR-0013 has no IPC. On the fold, QC-2 should say "after every function the build exports, driven through SM-5" (C-I3's own words, "every command the build grants (C-R7) through SM-5"). QC-30's member should read "the `SM-4` functions the shell calls, `asset_bytes` among them". One count in the NFDR is also wrong. The header's `Version:` line and RN-22 both say "three items await the owner", but this file carries two (§ 1.1 and § 2.3). The acceptance does not depend on § 1.1's answer: ADR-0016 places every part in `nozoki-core` either way. Decided in the owner's seat by a `companion-self-answer` run, 2026-09-23. The reasoning is in `docs/trail/architecture/self_answer-12.md` § 2.3.
+- **Confirm or override:** confirm, with one addition. Accept ADR-0013, ADR-0014, ADR-0015 and ADR-0016 as drafted. Each supersedes the record it restates (ADR-0001, ADR-0002, ADR-0006, ADR-0009), which are exactly the four `docs/SDD.md` § 10 RC-3 says are owed. Accept ADR-0012 as revised against C-I3 at v13, and accept the re-derived constraint set. **Addition:** two entries still describe the previous shape. QC-2's *verified by* says `checks/read-only.sh` runs "after every IPC command". QC-30's boundary set still lists "the renderer's IPC commands and asset requests", although RN-22 counts QC-30 as re-derived. Both are bound by ADR-0013 on acceptance, and ADR-0013 has no IPC. On the fold, QC-2 should say "after every function the build exports, driven through SM-5" (C-I3's own words, "every command the build grants (C-R7) through SM-5"). QC-30's member should read "the `SM-4` functions the shell calls, `asset_bytes` among them". One count in the NFDR is also wrong. The header's `Version:` line and RN-22 both say "three items await the owner", but this file carries two (§ 1.1 and § 2.3). The acceptance does not depend on § 1.1's answer: ADR-0016 places every part in `ka-reader-core` either way. Decided in the owner's seat by a `companion-self-answer` run, 2026-09-23. The reasoning is in `docs/trail/architecture/self_answer-12.md` § 2.3.

@@ -1,4 +1,4 @@
-# Architecture open issues — Nozoki
+# Architecture open issues — KA-Reader
 
 > Companion to `adr/` and `nfdr.md`. The Principal Architect authored both records
 > non-interactively; this file holds what the run could not settle from its inputs — the SRS, the SDD
@@ -36,8 +36,8 @@ None.
 ### 3.1 QC-15's list of `git-reader`'s reads outside libgit2 omits two kinds the adapter makes
 - **Raised by:** PM — 2026-10-04
 - **Which record:** `nfdr.md` § 1.3, QC-15
-- **Tracked by:** `nozoki · nemawashi · 2026-10-02_git-says-what-changed`
-- **What it blocks:** nothing fails. The scan passes (`checks/structure.sh` exit 0 at `nozoki@6a0725c`),
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-02_git-says-what-changed`
+- **What it blocks:** nothing fails. The scan passes (`checks/structure.sh` exit 0 at `ka-reader@6a0725c`),
   because it holds `git-reader`'s file as an owner and does not check which reads that owner makes. What
   is missing is the statement: a later change to the read bound reads QC-15 to learn what the adapter
   may read outside libgit2, and the list it finds is shorter than what the adapter reads.
@@ -46,7 +46,7 @@ None.
   `.git` folder, and a `.git` file's own content". The adapter reads two more kinds, each inside the
   folder:
   - the metadata, and a link's own text, at each position along the spelled path of the Git directory
-    and of the common directory (`crates/nozoki-core/src/git_reader/libgit2.rs:L163`, `:L166`);
+    and of the common directory (`crates/ka-reader-core/src/git_reader/libgit2.rs:L163`, `:L166`);
   - the content of the `commondir` file in the Git directory (`:L115`, read through
     `read_spelling_file` at `:L275`). When the Git directory is named by a `.git` file, it need not
     be a `.git` folder, so "an entry inside a `.git` folder" does not cover this read.
@@ -59,7 +59,7 @@ None.
   own text, at each position inside the folder along the spelled path to the Git directory and to
   the common directory; and the content of the `commondir` file in a Git directory that lies inside
   the folder — "never a path past the folder and never a link followed out of it" stays as written.
-  Both kinds are measured inside that bound at `nozoki@6a0725c` (`libgit2.rs:L200` skips every
+  Both kinds are measured inside that bound at `ka-reader@6a0725c` (`libgit2.rs:L200` skips every
   position outside; `:L138-L142` refuses an outside location; `:L276-L279` opens `commondir` with
   `O_NOFOLLOW`). The tail's list of `Path`-method reads gains `:L163`, re-pinned at that commit.
   ADR-0018 does not move: its list is scoped to `probe`, which still makes only those four reads,

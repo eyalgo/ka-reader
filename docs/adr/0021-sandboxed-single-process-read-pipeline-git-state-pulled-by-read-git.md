@@ -1,4 +1,4 @@
-# ADR-0021: Nozoki is a sandboxed single-process read pipeline — one process under the App Sandbox, a Rust core reached across one closed C-ABI seam of ten calls, Git state pulled by `read_git` and not pushed, and its promise held by the process's own entitlements
+# ADR-0021: KA-Reader is a sandboxed single-process read pipeline — one process under the App Sandbox, a Rust core reached across one closed C-ABI seam of ten calls, Git state pulled by `read_git` and not pushed, and its promise held by the process's own entitlements
 
 **Status:** Accepted — supersedes ADR-0013
 **Date:** 2026-10-04
@@ -16,7 +16,7 @@ already decodes. No registration call for `model_changed` existed. `open_folder`
 member, and the shell's decoder rejects an `opened` answer with any other. `list_tree` and
 `select_file` answer as they do whatever the Git item holds. `folder-model` already carried the
 operation, and no export reached it (`docs/SDD.md` § 10 RC-4, *Observed reality*, read at
-`nozoki@ca915a4`). The PM raised it, and the CTO's seat answered by amending the SDD first
+`ka-reader@ca915a4`). The PM raised it, and the CTO's seat answered by amending the SDD first
 (`docs/trail/sdd/cycle-25.md` § 5.1; `docs/SDD.md` RN-90).
 
 The forces ADR-0013 recorded stand and are restated so this record reads alone. The one rule this
@@ -38,20 +38,20 @@ The system is a **sandboxed single-process read pipeline**. Two read-only source
 filesystem and, where the granted folder is itself a repository's root, that repository's Git
 state — feed one in-memory folder model, and the surfaces are projections of it. Everything runs
 in **one process under the App Sandbox with no network entitlement** (ADR-0011): a Rust core
-(`nozoki-core`) that does all the reading, and an AppKit shell (`nozoki-mac`) that draws the
+(`ka-reader-core`) that does all the reading, and an AppKit shell (`ka-reader-mac`) that draws the
 model's projections and **holds no I/O of its own**. It reads no file, opens no connection, spawns
 no process, hands no URL to another program, and imports no web engine (`docs/SDD.md` § 4 C-R7).
 
-The seam between them is **`SM-4`, one closed C-ABI function list** exported by `nozoki-bridge`:
+The seam between them is **`SM-4`, one closed C-ABI function list** exported by `ka-reader-bridge`:
 `open_folder`, `list_tree`, `select_file`, `open_relative_link`, `read_git`, `set_theme`,
 `open_diff`, `walk_history`, `switch_folder` and `asset_bytes`. Each is exported from the build in
 which a change of its slice first builds it, and all ten are exported from `v1.0.0`. Beside the list
-and not on it is `nozoki_free`, the one release call, exported from the first build because every
+and not on it is `ka_reader_free`, the one release call, exported from the first build because every
 return is an owned buffer it alone frees. Upward runs a `model_changed` callback carrying projection
 deltas. The header is generated from the bridge's source and never hand-kept (`docs/SDD.md` § 3
 SM-4).
 
-**Git state is pulled and not pushed.** `read_git`, exported as `nozoki_read_git`, takes no
+**Git state is pulled and not pushed.** `read_git`, exported as `ka_reader_read_git`, takes no
 argument and returns the open folder's Git item: `root` with the Git state, `plain`, `failed` with
 its condition, or `pending` where no folder is open. It is on the list and not beside it because it
 reaches the model over `SM-5`, so it is a command, and the read-only walk calls it in the build that
@@ -115,7 +115,7 @@ read-only and no-network acceptance criteria (`docs/SRS.md` § 8 AC-1 – AC-3) 
 write and the network are *absent*, not avoided. Every foreseen change is still a new read surface
 on the same two sources, and the model in the middle survives every reversal below. Git state
 arrives the way the three landed calls' answers do, as a call's return
-(`crates/nozoki-bridge/src/exports.rs:L55`, `:L73`, `:L90`, cited by RN-90), and being a command, it
+(`crates/ka-reader-bridge/src/exports.rs:L55`, `:L73`, `:L90`, cited by RN-90), and being a command, it
 is walked by the read-only harness in the build that exports it.
 
 Harder: the renderer wall — a process that could be handed *no* capability — is gone. In its place
@@ -130,7 +130,7 @@ registration call. When the model reads Git state, whether a `failed` item is as
 side orders two asks in flight, were left to the change that builds the call (RC-4, *Still
 unresolved*). That change settled the first two: the item is read on the first ask after each
 successful open, and an `observed` or `failed` item is answered with no second read
-(`crates/nozoki-bridge/src/session.rs:L650-L653`, cited by RC-4's dated note, RN-91).
+(`crates/ka-reader-bridge/src/session.rs:L650-L653`, cited by RC-4's dated note, RN-91).
 
 What undoing it costs: *moving the view into a second process* costs the bridge re-wired as IPC and
 nothing else, because the model, the readers and the harness survive. That is cheap in code, and
@@ -159,10 +159,10 @@ convention, and the wall is the operating system's.
   ground. RN-90 raised no item on this log's companion, and this record is the run that found it.
 - `docs/trail/sdd/cycle-25.md` § 5.1 — the PM's item and the answer in the CTO's seat that chose the
   route; its reasoning, `docs/trail/sdd/self_answer-37.md`.
-- The tree at `nozoki@2aed844`: `nozoki_read_git` is exported
-  (`crates/nozoki-bridge/src/exports.rs:L105`), and the export-set test admits it
-  (`crates/nozoki-bridge/tests/exports.rs:L17-L23`). No Swift source calls it
-  (`grep -rn nozoki_read_git nozoki-mac` prints nothing).
+- The tree at `ka-reader@2aed844`: `ka_reader_read_git` is exported
+  (`crates/ka-reader-bridge/src/exports.rs:L105`), and the export-set test admits it
+  (`crates/ka-reader-bridge/tests/exports.rs:L17-L23`). No Swift source calls it
+  (`grep -rn ka_reader_read_git ka-reader-mac` prints nothing).
 - ADR-0013 — the record this one supersedes on acceptance. Its decision is restated here whole,
   with the list at ten and the Git item pulled, so nothing in this record depends on that one being
   open. Its traces stand under this record: `docs/SDD.md` § 2 (forces 1, 3, 5 and 6; the candidates
@@ -175,7 +175,7 @@ convention, and the wall is the operating system's.
   ADR-0014 (the view), ADR-0019 (the port), ADR-0020 (the units).
 - `docs/trail/architecture/cycle-35.md` § 2.2 — the choice between this record, a correction in
   place, and no record, confirmed in the owner's seat (`docs/trail/architecture/self_answer-39.md`
-  § 2.2) and by the owner, 2026-10-04 (`nozoki@bb75290`): a superseding record, because the closed
+  § 2.2) and by the owner, 2026-10-04 (`ka-reader@bb75290`): a superseding record, because the closed
   list is the rule a later change is held to, and not a fact the rule does not rest on.
 - Inputs read for this record: SDD Settled v31 · SRS Settled v12 · FDR Settled v10.
 

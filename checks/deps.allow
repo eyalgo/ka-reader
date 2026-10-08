@@ -35,8 +35,8 @@ libgit2-sys
 libz-sys
 log
 memchr
-nozoki-bridge
-nozoki-core
+ka-reader-bridge
+ka-reader-core
 pkg-config
 proc-macro2
 quote

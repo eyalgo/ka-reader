@@ -1,4 +1,4 @@
-# SDD open issues — Nozoki
+# SDD open issues — KA-Reader
 
 > Companion to `SDD.md`. Three seats — the CTO, the CPO and the CDO — authored the SDD
 > non-interactively in one run; this file holds what that run could not settle from its inputs (the
@@ -65,7 +65,7 @@ seats' positions are on the trail (`docs/trail/sdd/cycle-9.md` § 1.1), and the 
      Drawing" where it read "I/O of any kind. The Tauri runtime. Own state. Rendering". "Rendering"
      becomes "Drawing" because drawing is what the model must never do: that is `surfaces`'. "The
      Tauri runtime" goes because RC-3 retired that runtime. "Any Apple framework" takes its place
-     because that is the boundary `nozoki-core` now holds (§ 3, the units paragraph).
+     because that is the boundary `ka-reader-core` now holds (§ 3, the units paragraph).
   3. **The units paragraph's edges** gain one sentence: the model calls down to
      `markdown-renderer` and `highlighter` to fill a `FileView`, and neither of them imports the
      model. That keeps "import neither the model nor one another" true as written.

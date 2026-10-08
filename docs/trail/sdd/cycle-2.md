@@ -1,4 +1,4 @@
-# SDD open issues — nozoki
+# SDD open issues — ka-reader
 
 > Companion to `SDD.md`. Three seats — the CTO, the CPO and the CDO — authored the SDD
 > non-interactively in one run; this file holds what that run could not settle from its inputs (the

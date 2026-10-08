@@ -19,7 +19,7 @@ the other review notes were not read, and a sentence there that speaks of the po
 words was not seen. In `docs/DESIGN.md` it read the lines each claim below cites and every line
 `grep -n -i hover` prints. It searched `docs/UXD.md`, `docs/SRS.md`, `docs/PRD.md`, `docs/fdr.md`,
 `docs/nfdr.md` and `docs/CONTENT.md` for `hover`; none was read whole. The companion was read
-whole. The product was read at `nozoki@a7ff3b6`, where `git status --short` printed nothing before
+whole. The product was read at `ka-reader@a7ff3b6`, where `git status --short` printed nothing before
 this run wrote.
 
 ## Items worked
@@ -41,18 +41,18 @@ this run wrote.
   **The seat.** Every edit lands in `docs/SDD.md` and commits nothing to a person or an outside
   party, so the item is this document's and the answer is in its slot.
 
-  **The item's measurements hold.** At `nozoki@a7ff3b6`, `grep -rn -i hover nozoki-mac/Sources |
+  **The item's measurements hold.** At `ka-reader@a7ff3b6`, `grep -rn -i hover ka-reader-mac/Sources |
   wc -l` prints `0`, and `grep -n -i -c hover` prints `0` for `docs/SDD.md` and for `docs/UXD.md`.
   `docs/DESIGN.md:L618-L626` states the rule the item quotes. The fill is the owner's own
   decision: `docs/DESIGN.md:L1000-L1003` quotes "hovering is something that developers use" and
   scopes it to rows that are clickable. It has been in the design language since
-  `nozoki@95f1279`, dated 2026-08-26.
+  `ka-reader@95f1279`, dated 2026-08-26.
 
   **One statement in the item is narrower than it reads.** The item says no slice's *Reached when*
   names the fill. No slice names it by word. `docs/SDD.md:L1533-L1535` has `open-a-folder` hold
   `docs/DESIGN.md` § *Components* "for the surfaces it draws, cited by section and never by
   value", and "Rows" is a paragraph of § *Components* (`docs/DESIGN.md:L612`). That sentence
-  entered the SDD at `nozoki@3f13391`, dated 2026-09-30, after the fill was already in the design
+  entered the SDD at `ka-reader@3f13391`, dated 2026-09-30, after the fill was already in the design
   language. So the tree row's fill is inside S-1's bar as written, and the built shell does not
   meet it. The finding stands and gets stronger for the tree row. No slice holds § *Components*
   for the Git view's file row, so there the gap is the one the item describes.
@@ -61,7 +61,7 @@ this run wrote.
   SDD to state something it does not state now, so the prompt's rule for a widening item raised
   from downstream applies. The item cites a measured failure, the `grep` above, against a shell
   "where the tree and the Git view are both built". This run opened both: every tree row is a
-  `BarRowView` (`nozoki-mac/Sources/Surfaces/RootItemsView.swift:L524-L530`), every Git-view file
+  `BarRowView` (`ka-reader-mac/Sources/Surfaces/RootItemsView.swift:L524-L530`), every Git-view file
   row is one (`GitView.swift:L253-L254`), and `BarRowView.swift:L1-L27` draws a bar and no fill
   under the pointer. Those two forms occur and take their change. The item cites no site for a
   commit row or for a menu item. The answer for those two is "not until it occurs", and the SDD
@@ -92,7 +92,7 @@ this run wrote.
   command half tests "that a row is drawn from a projection and from nothing else"
   (`:L1560-L1561`). A fill drawn from where the pointer is comes from neither a projection nor
   that exception. The tooltip folded in v35 is in the same position: it is drawn from a tracking
-  area the shell installs (`nozoki-mac/Sources/Surfaces/LetterTooltip.swift:L143-L146`). So the
+  area the shell installs (`ka-reader-mac/Sources/Surfaces/LetterTooltip.swift:L143-L146`). So the
   answer asks for one reading clause in the `surfaces` row, which is the CTO's part
   (`docs/SDD.md:L101`). The clause says the pointer's position is the shell's own observation
   and no state of the folder, so the exception count stays at one. That the sentence was written
@@ -111,7 +111,7 @@ this run wrote.
   **The release bars need no edit.** `first-public-release` has every surface behave "as S-1 to
   S-6's observable halves state" (`docs/SDD.md:L1996`), and `promise-one-point-zero` walks S-1 to
   S-10 (`:L2227-L2228`). Once the fill is in S-1 and S-4 it is inside both. `git tag` prints
-  nothing at `nozoki@a7ff3b6`, so no release has shipped without it.
+  nothing at `ka-reader@a7ff3b6`, so no release has shipped without it.
 
   **No § 10 entry.** The triggers are at `docs/SDD.md:L128-L131`: a *Reached when* that cannot be
   met, a slice that turned out a fragment, no slice that can be started, or an upstream change.
@@ -132,16 +132,16 @@ this run wrote.
   row against it. Second, a refresh that moves a row under a still pointer. The answer's wording,
   "the row now under the pointer", reaches it, and no sentence is added to `follow-the-folder`,
   because the shell refreshes nothing yet: `TreeMarkers.swift` and `GitRowOrder.swift` are still
-  in `nozoki-mac/Sources/Surfaces/`, which `docs/SDD.md:L1889-L1890` says ends when that slice is
+  in `ka-reader-mac/Sources/Surfaces/`, which `docs/SDD.md:L1889-L1890` says ends when that slice is
   reached. Third, what the fill does when the window stops being the active one with the pointer
   still over a row. `docs/DESIGN.md` does not say, and that is the design language's to state.
   Fourth, this run built nothing and ran no test.
 
   **The two rows that wait.** The history and the folder selector are not built.
-  `grep -rn -i 'walk_history\|switch_folder\|open_diff' nozoki-mac/Sources crates` prints two
-  lines, both in `crates/nozoki-bridge/tests/exports.rs` (`:L266`, `:L274`), where
-  `nozoki_open_diff` is a name the test refuses. The only `NSMenu` in the shell is the reading
-  panel's text menu (`nozoki-mac/Sources/Surfaces/CodeView.swift:L130-L155`), which is the
+  `grep -rn -i 'walk_history\|switch_folder\|open_diff' ka-reader-mac/Sources crates` prints two
+  lines, both in `crates/ka-reader-bridge/tests/exports.rs` (`:L266`, `:L274`), where
+  `ka_reader_open_diff` is a name the test refuses. The only `NSMenu` in the shell is the reading
+  panel's text menu (`ka-reader-mac/Sources/Surfaces/CodeView.swift:L130-L155`), which is the
   platform's context menu and not the selector's list. When either surface is built with no fill,
   that is the occurrence, and the PM's refine can raise it then.
 
@@ -170,4 +170,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/SDD.md`** — `<CORE>/launchers/skill/launcher.sh product-sdd nozoki`
+- **`docs/SDD.md`** — `<CORE>/launchers/skill/launcher.sh product-sdd ka-reader`

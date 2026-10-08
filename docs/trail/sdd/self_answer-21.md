@@ -43,7 +43,7 @@
   *Addition, the stale case (check 4).* Both lines carry the word *Proposed*, and the draft says
   the CTO moves it to *Accepted* "on the next fold here". There may be no next fold here. This item
   is the companion's last, so `product-sdd` removes the file when it folds this answer. Meanwhile
-  `docs/architecture_open_issues.md` § 2.1 is already confirmed (`nozoki@c5a2e76`), so the next
+  `docs/architecture_open_issues.md` § 2.1 is already confirmed (`ka-reader@c5a2e76`), so the next
   `product-architecture` run is the one that turns ADR-0011 and ADR-0012 to Accepted. After that,
   the SDD would state a status that is false, with no companion left to carry the fix. The lines
   should therefore leave the status to the index row they already cite and not copy the word.
@@ -86,5 +86,5 @@ so this run wrote nothing for them. The SDD already records both as outside itse
 
 ## Launchers owed
 
-- **`docs/SDD.md`** — `<CORE>/launchers/product-sdd/launcher.sh nozoki`
-- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture nozoki`
+- **`docs/SDD.md`** — `<CORE>/launchers/product-sdd/launcher.sh ka-reader`
+- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture ka-reader`

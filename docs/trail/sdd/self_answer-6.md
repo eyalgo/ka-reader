@@ -70,7 +70,7 @@ raised; § *Skipped*'s last bullet records it and why.
   *"They launch 1.0.0 over the state a previous release left: their theme, their window and their
   remembered folders are as they were"* — while *Delivers* promises only safety. So the slice can
   pass its own bar on something its contract is silent about. If continuity is meant, say so, and
-  the bundle identifier `com.kensaiapp.nozoki` (§ 4 C-R1) joins the priced set, because changing
+  the bundle identifier `com.kensaiapp.ka-reader` (§ 4 C-R1) joins the priced set, because changing
   it orphans every adopter's container. This is the strongest of the six and the one this run
   would press hardest; it is also, on its own, the reason not to confirm the draft unchanged.
   **(2) Make an enumerated surface's membership the meaning of "present".** *Every surface the
@@ -130,12 +130,12 @@ raised; § *Skipped*'s last bullet records it and why.
 - **§ 1 Open issues** — no item on the file; § 1.1 stands behind a one-line pointer to
   `docs/trail/sdd/cycle-1.md` § 1.1, folded into `SDD.md` RN-3, RN-5 and RN-17.
 - **§ 2.1 — an SVG inside the folder takes a stated placeholder** — dropped behind a pointer to
-  `docs/trail/sdd/cycle-1.md` § 2.1 at `nozoki@635f77f`; answered and folded.
+  `docs/trail/sdd/cycle-1.md` § 2.1 at `ka-reader@635f77f`; answered and folded.
 - **§ 2.3 — S-11's contract stated as two kinds, not one list of four** — dropped behind a pointer
-  to `docs/trail/sdd/cycle-1.md` § 2.3 at `nozoki@635f77f`; answered and folded.
+  to `docs/trail/sdd/cycle-1.md` § 2.3 at `ka-reader@635f77f`; answered and folded.
 - **§ 2.4 — the priced set carries "read-only" inside member (d)** — slot **filled**: decided
   *confirm* by the CPO seat in run 2, round 1 and folded into `SDD.md` § 6 S-11 *Delivers* and
-  RN-19 (`docs/trail/sdd/run-2.md`; `nozoki@635f77f`). A filled slot is an answer somebody gave;
+  RN-19 (`docs/trail/sdd/run-2.md`; `ka-reader@635f77f`). A filled slot is an answer somebody gave;
   a re-run leaves it alone. Raised by this skill's run 5, and this run's own check that the fold
   landed as the item asked: `SDD.md` § 6 S-11 *Delivers* now reads *every surface the PRD names,
   present*, and RN-19's worked example drops the same two words.
@@ -166,4 +166,4 @@ promise, not the UXD owing a repair.
 
 ## Launchers owed
 
-- **`docs/SDD.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-sdd/launcher.sh nozoki`
+- **`docs/SDD.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-sdd/launcher.sh ka-reader`

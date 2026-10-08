@@ -1,4 +1,4 @@
-# SDD open issues — Nozoki
+# SDD open issues — KA-Reader
 
 > Companion to `SDD.md`. The CTO wrote the SDD; this file holds what that run could not settle from
 > its inputs (the PRD, the SRS, the UXD, and any context or constraints), and the calls that are the
@@ -34,7 +34,7 @@
 
 > **No `product-sdd` run wrote this file.** The owner opened it on 2026-10-04, in an interactive
 > session, from the SDD's own companion template. The code-integrity step of
-> `nozoki · tobiishi · 2026-10-04_the-tree-marks-what-changed` stopped at placement: the tree's
+> `ka-reader · tobiishi · 2026-10-04_the-tree-marks-what-changed` stopped at placement: the tree's
 > changed-file marker logic is built in `surfaces`, and the SDD gives the marker to `folder-model`.
 > The step's rule leaves placement to the owner, and the owner chose to have the SDD settle it rather
 > than rule on the change alone. The SDD is Settled, and with no companion on disk a `product-sdd`
@@ -64,12 +64,12 @@ None.
 
 ### 5.1 Which part owns the tree's changed-file marker: `folder-model`, as § 3 says, or `surfaces`, where the change built it?
 - **Raised by:** Owner — 2026-10-04, from the code-integrity stop of
-  `nozoki · tobiishi · 2026-10-04_the-tree-marks-what-changed`
+  `ka-reader · tobiishi · 2026-10-04_the-tree-marks-what-changed`
 - **Seat:** cto
-- **Tracked by:** `nozoki · nemawashi · 2026-10-02_git-says-what-changed`
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-02_git-says-what-changed`
 - **What it blocks:** the change's code-integrity step. It stopped at placement and waits for this
   ruling. Its report gives the two rulings that would let a re-run pass (the instance's
-  `system/projects/nozoki/journey/tobiishi/2026-10-04_the-tree-marks-what-changed/code-integrity-report.md:L57-L66`,
+  `system/projects/ka-reader/journey/tobiishi/2026-10-04_the-tree-marks-what-changed/code-integrity-report.md:L57-L66`,
   at instance commit `8f2c5f1`).
 - **Where it shows:** three SDD sentences give the marker to `folder-model`:
   - § 3, the `folder-model` row's *Owns*: "the tree … the Git state where the root finding says
@@ -80,7 +80,7 @@ None.
   - § 6 S-4 *Rests on*: "`folder-model` (`kind` resolved; `GitState`; the tree's markers)"
     (`:L1802-L1803`).
 
-  The change built the join in Swift: `nozoki-mac/Sources/Surfaces/TreeMarkers.swift:L1-L68`, at
+  The change built the join in Swift: `ka-reader-mac/Sources/Surfaces/TreeMarkers.swift:L1-L68`, at
   product commit `6c49d5c` on branch `2026-10-04_the-tree-marks-what-changed`. The join takes a Git
   item onto row paths: only a repository answer marks, paths match byte for byte, one trailing `/`
   is allowed, and the changed list wins over the staged one. The change's design gives its grounds
@@ -116,13 +116,13 @@ None.
      `TreeEntry` carries the changed marker. `GitState`'s sentence (`:L492-L496`) keeps the marker
      among the things the model holds in no landed change, and adds where the join is built
      meanwhile. Word it so it is true before and after the change merges: at the time of this
-     answer `TreeMarkers.swift` is at `nozoki@6c49d5c` on the change's branch and is not on `main`.
+     answer `TreeMarkers.swift` is at `ka-reader@6c49d5c` on the change's branch and is not on `main`.
   3. **§ 6 S-4 *Rests on*.** `folder-model` (`kind` resolved; `GitState`), `surfaces` (the rail's
      Git entry, the Git view, and in this slice the tree's markers, under the § 3 bound).
   4. **§ 6 S-5, the CTO's halves.** *Rests on* gains the debt: from `follow-the-folder` the
      model's `TreeEntry` carries the marker and the `model_changed` delta brings it. The command
      half gains a clause that goes red while the shell still joins, for example that
-     `nozoki-mac/Sources` holds no `TreeMarkers`, and that the model's final snapshot carries the
+     `ka-reader-mac/Sources` holds no `TreeMarkers`, and that the model's final snapshot carries the
      markers. Without this the bound in (1) has no end a build can check.
   5. **§ 10.** One re-cut entry on the CTO's ground: S-4's *Rests on* assumed the model's
      `TreeEntry` would carry the marker in `see-git-status`, and no call or callback of that
@@ -133,9 +133,9 @@ None.
 ### 5.2 The Git view's row order, `GitRowOrder`, already landed in `surfaces` on the same reading. Is it in place?
 - **Raised by:** Owner — 2026-10-04, from the same code-integrity stop
 - **Seat:** cto
-- **Tracked by:** `nozoki · nemawashi · 2026-10-02_git-says-what-changed`
-- **What it blocks:** nothing fails. The sealed change `nozoki · tobiishi · 2026-10-04_the-shell-shows-git`
-  placed it in `surfaces` (`nozoki-mac/Sources/Surfaces/GitRowOrder.swift`, product commit
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-02_git-says-what-changed`
+- **What it blocks:** nothing fails. The sealed change `ka-reader · tobiishi · 2026-10-04_the-shell-shows-git`
+  placed it in `surfaces` (`ka-reader-mac/Sources/Surfaces/GitRowOrder.swift`, product commit
   `d65eec4`). It writes `fs-reader`'s order key out over Unicode scalars and bytes
   (`GitRowOrder.swift:L1-L6`). That change's code-integrity report treated "cannot be moved
   without a core change" as "already in place" (its `code-integrity-report.md:L161-L164`, in the
@@ -145,7 +145,7 @@ None.
 - **Where it shows:** the SDD names no owner for the Git list's row order. `folder-model`'s "the
   projections the surfaces draw" (`docs/SDD.md:L333`) could claim it, and `grep -n GitRowOrder
   docs/SDD.md` prints nothing. The order key it copies is `fs-reader`'s
-  (`crates/nozoki-core/src/fs_reader.rs:L818-L832`).
+  (`crates/ka-reader-core/src/fs_reader.rs:L818-L832`).
 - **If a document has to be written:** none. A sentence in § 3 naming the owner of the Git list's
   row order, or a § 11 risk or later slice that moves it into the core.
 - **Answer:** No, by the same reading as § 5.1. The order of the Git lists' rows is part of the
@@ -159,7 +159,7 @@ None.
      rule, which is the FDR's and the sealed spec's.
   2. **The § 3 `surfaces` clause § 5.1 asks for covers this too.** One clause, two things held
      for `see-git-status`: the marker join and the Git lists' row order
-     (`nozoki-mac/Sources/Surfaces/GitRowOrder.swift`, on `main` since `nozoki@d65eec4`). Same
+     (`ka-reader-mac/Sources/Surfaces/GitRowOrder.swift`, on `main` since `ka-reader@d65eec4`). Same
      four bounds, same end.
   3. **§ 6 S-5, the CTO's halves, carry it with the marker.** The core sends the lists in row
      order and the shell draws them in the order they arrive. The clause that goes red names

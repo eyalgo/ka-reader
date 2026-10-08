@@ -1,4 +1,4 @@
-# FDR open issues — Nozoki 覗き
+# FDR open issues — KA-Reader
 
 > Companion to `fdr.md`. The Principal PM authored the FDR non-interactively; this file holds what the
 > run could not settle from its inputs — the PRD, the SRS and the SDD.
@@ -18,8 +18,8 @@
 > (`docs/trail/fdr/cycle-3.md` — seven choices, all answered in the owner's seat) and took
 > `docs/fdr.md` from v4 to v5: the v4 re-derivation is confirmed as applied, PD-40 gains the
 > prerequisite clause, and one ground in RN-28 is corrected (`docs/fdr.md` RN-28). The same run
-> found the SDD moved beneath this document a second time — v3 → v5 (`nozoki@683db69`,
-> `nozoki@67372a5`), meeting the two owner answers RN-29 had found it against — and folded the move
+> found the SDD moved beneath this document a second time — v3 → v5 (`ka-reader@683db69`,
+> `ka-reader@67372a5`), meeting the two owner answers RN-29 had found it against — and folded the move
 > as an upstream change (`docs/fdr.md` RN-30). Two items stand: § 2.1, the part of that fold no item
 > had asked for; and § 3.1, raised by a downstream seat on the three sites the same move reached,
 > carried over unanswered with the repair now applied. Nothing here is a question the run could not
@@ -75,21 +75,21 @@
 > upstream document changed beneath a settled FDR is a legitimate delta and a finding
 > (`<CORE>/prompts/principal_pm_create_fdr.md` § On a re-run).** The three sites now read as the SDD
 > stands: the version note names the close; RN-7 records it, with the sentence departed from pinned to
-> `nozoki@827aa1c:docs/SDD.md` § 11 R-3; and R-21's and R-46's relations are *from*, each tracing to
+> `ka-reader@827aa1c:docs/SDD.md` § 11 R-3; and R-21's and R-46's relations are *from*, each tracing to
 > the SDD section that now carries the owner's value (`docs/fdr.md` RN-30). The Answer slot below is
 > left at its placeholder: the item is the raiser's, the repair is on disk for the owner to confirm or
 > override, and § 2.1 carries the rest of the same move.
 
 - **Raised by:** a `companion-self-answer` run answering `docs/SDD_open_issues.md` § 5.1 — 2026-09-04
   — reading `docs/fdr.md` as that item's source, in no authoring seat.
-- **Tracked by:** none. nozoki has no active 根回し Nemawashi seed and no open 宿場 Shukuba station
-  (`system/projects/nozoki/journey/` — both roots empty, 2026-09-04). Found while reading this
+- **Tracked by:** none. ka-reader has no active 根回し Nemawashi seed and no open 宿場 Shukuba station
+  (`system/projects/ka-reader/journey/` — both roots empty, 2026-09-04). Found while reading this
   document, not while cutting work from it.
 - **What it blocks:** nothing stalls and no gate fails. What it costs is this document's
   traceability, which is what a reader uses to know whether the FDR and the SDD agree: three
   sentences say they disagree where they now agree, so a builder or a QA seat chasing the departure
   finds nothing at the other end and cannot tell a resolved departure from an unrecorded one.
-- **Where it shows:** `docs/SDD.md` moved from v3 to v4 (`nozoki@683db69`) and folded both sentences
+- **Where it shows:** `docs/SDD.md` moved from v3 to v4 (`ka-reader@683db69`) and folded both sentences
   RN-29 found, under the owner's own answers at `docs/trail/fdr/cycle-1.md` §§ 2.4 and 2.7 — its
   § 3 `fs-reader` now admits UTF-16 by byte-order mark beside UTF-8 with its boundary stated
   (`docs/SDD.md` § SDD Review Notes RN-41), and its § 11 R-3's response now names where the Git
@@ -110,10 +110,10 @@
   already carries, and no rule, product decision, exclusion or example moves: R-21 and R-46 keep
   their wording exactly, because what changed is the SDD agreeing with them, not either rule.
   My reading, offered and not drafted: re-point the three sites at `docs/SDD.md` v4 and record the
-  meeting in a review note naming `nozoki@683db69` and SDD RN-41/RN-42 as what met it. Whether
+  meeting in a review note naming `ka-reader@683db69` and SDD RN-41/RN-42 as what met it. Whether
   R-21's *changed* and R-46's *added* then become realized or agreeing relations is this document's
   own traceability rule to apply, and this run does not word it.
-- **Answer:** confirmed — the repair applied at v5 stands as it is on disk, and this item closes with it. Each of the three sites was opened: the version note names the close and keeps the v4 sentence only inside its dated v4 parenthetical (`docs/fdr.md:5`); RN-7 pins the sentence departed from to `nozoki@827aa1c:docs/SDD.md` § 11 R-3, records **Met at SDD v4** with `nozoki@683db69` and SDD RN-42, and says R-21's relation is *from* since v5 (`docs/fdr.md:396`); R-21 and R-46 carry no *changed* and no *added* mark (`docs/fdr.md:62`, `:101`). RN-30 is the review note this item's offered reading asked for, naming `nozoki@683db69` and RN-41 / RN-42 as what met it (`docs/fdr.md:419`), and RN-29 is untouched, the dated record of v3 this item said it would stay. The question the item left to this document's own rule — what R-21's *changed* and R-46's *added* become — is settled by the authoring prompt's closed set: *from*, *added*, *changed*, *suggest-remove* (`<CORE>/prompts/principal_pm_create_fdr.md` § Every rule cites its relation to the three sources); a rule its source now states is *from*, and there is no *realized* or *agreeing* word to reach for. Decided in the owner's seat by a `companion-self-answer` run, 2026-09-04 — the run that raised this item left its slot for the next round, and the round between was `product-fdr`'s v5, so this is a decision on that run's repair and not on the raiser's own reasoning. Reasoning: `docs/trail/fdr/self_answer-4.md` § 3.1.
+- **Answer:** confirmed — the repair applied at v5 stands as it is on disk, and this item closes with it. Each of the three sites was opened: the version note names the close and keeps the v4 sentence only inside its dated v4 parenthetical (`docs/fdr.md:5`); RN-7 pins the sentence departed from to `ka-reader@827aa1c:docs/SDD.md` § 11 R-3, records **Met at SDD v4** with `ka-reader@683db69` and SDD RN-42, and says R-21's relation is *from* since v5 (`docs/fdr.md:396`); R-21 and R-46 carry no *changed* and no *added* mark (`docs/fdr.md:62`, `:101`). RN-30 is the review note this item's offered reading asked for, naming `ka-reader@683db69` and RN-41 / RN-42 as what met it (`docs/fdr.md:419`), and RN-29 is untouched, the dated record of v3 this item said it would stay. The question the item left to this document's own rule — what R-21's *changed* and R-46's *added* become — is settled by the authoring prompt's closed set: *from*, *added*, *changed*, *suggest-remove* (`<CORE>/prompts/principal_pm_create_fdr.md` § Every rule cites its relation to the three sources); a rule its source now states is *from*, and there is no *realized* or *agreeing* word to reach for. Decided in the owner's seat by a `companion-self-answer` run, 2026-09-04 — the run that raised this item left its slot for the next round, and the round between was `product-fdr`'s v5, so this is a decision on that run's repair and not on the raiser's own reasoning. Reasoning: `docs/trail/fdr/self_answer-4.md` § 3.1.
 
 **How it closes.** `product-fdr` folds it on its next run like any other item.
 

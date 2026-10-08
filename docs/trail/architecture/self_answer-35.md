@@ -11,7 +11,7 @@ owner's seat. It is written for the owner, who reads it to learn what was decide
 - **Decided by:** `decide_companion_answers.md` v1.3.0
 - **Date:** 2026-10-03
 - **Sources re-read:** None. Both answers rest on this repository alone: on `checks/`, `crates/`
-  and `.github/` at `nozoki@188b141`, and on commands run against them, which are named in each
+  and `.github/` at `ka-reader@188b141`, and on commands run against them, which are named in each
   entry. Nothing outside the repository was relied on, and nothing was read on the web.
 
 **What this run read.** The companion, whole. From `docs/nfdr.md`: the header and preamble
@@ -22,16 +22,16 @@ whole (`:L3840-L3990`). ADR-0018, whole. `docs/SDD.md`, grepped for the owner-fi
 *THE SCAN TABLE* QC-15 row (`:L60-L93`), *WHAT IS NOT HELD* and *GAPS*
 (`:L235-L275`), and the exempting `case` (`:L1140-L1180`). The four new git-owner tests in
 `checks/tests/test_structure.sh`. The probe's functions in
-`crates/nozoki-core/src/git_reader/libgit2.rs`, and the test names in
-`crates/nozoki-core/tests/root_finding.rs`. **Not read whole:** `docs/nfdr.md` (373 KB) and
+`crates/ka-reader-core/src/git_reader/libgit2.rs`, and the test names in
+`crates/ka-reader-core/tests/root_finding.rs`. **Not read whole:** `docs/nfdr.md` (373 KB) and
 `docs/SDD.md` (492 KB). Each answer is checked against the entries it moves or rests on, which are
 listed above.
 
-**Run, not only read, at `nozoki@188b141`.** `bash checks/structure.sh` prints "14 Rust files in 2
+**Run, not only read, at `ka-reader@188b141`.** `bash checks/structure.sh` prints "14 Rust files in 2
 crates read — nothing found" and exits 0. `bash checks/tests/test_structure.sh` exits 0, with 88
-`ok` lines. `cargo test --locked -p nozoki-core --test root_finding` prints "37 passed; 0 failed".
+`ok` lines. `cargo test --locked -p ka-reader-core --test root_finding` prints "37 passed; 0 failed".
 `git diff --stat 48308ff 188b141 -- checks crates` prints nothing, so a pin at the merge
-`nozoki@48308ff` is a pin on this tree.
+`ka-reader@48308ff` is a pin on this tree.
 
 ## Items worked
 
@@ -85,7 +85,7 @@ crates read — nothing found" and exits 0. `bash checks/tests/test_structure.sh
   gate for the *bounded reads* narrows to the two parts.
 
   *Addition 3 — no record in the log moves.* ADR-0018 binds QC-15 (`## Binds`), and every line it
-  cites is pinned at `nozoki@8edec4f`, where it still reads as quoted. The decision ("`probe` reads
+  cites is pinned at `ka-reader@8edec4f`, where it still reads as quoted. The decision ("`probe` reads
   only inside the opened folder") did not move. Its realization in the script landed. A realization
   landing is not a decision moving, so there is nothing to supersede.
 
@@ -97,7 +97,7 @@ crates read — nothing found" and exits 0. `bash checks/tests/test_structure.sh
   clause expire, so the fold applies the document's own rule.
 
   *Check 4 — failure paths.* **Stale:** the next edit to `checks/structure.sh` moves these line
-  numbers. Pinning them at `nozoki@48308ff` turns that into a re-measurement rather than a
+  numbers. Pinning them at `ka-reader@48308ff` turns that into a re-measurement rather than a
   contradiction, as § 9 already says of its own pinned counts (`:L1245-L1247`). **Absent:** if the
   adapter file is renamed or moved, the exemption no longer matches. A `std::fs` read at the new path
   then becomes a QC-15 finding, so the bound fails closed, and the exactness test is what proves it.
@@ -120,15 +120,15 @@ None this run.
 ### 2.1 — QC-5's *verified by* says its three named cases are unwritten and go red until the provisional `.git`-file arm is replaced; the same change that made QC-15's third owner replaced the arm, and all three cases are written and pass
 
 - **What the document is owed:** QC-5's tail should state its three named cases as written and
-  passing at `nozoki@48308ff` (`crates/nozoki-core/tests/root_finding.rs:L175`, `:L185`, `:L196`).
+  passing at `ka-reader@48308ff` (`crates/ka-reader-core/tests/root_finding.rs:L175`, `:L185`, `:L196`).
   The "none written / go red until" clause becomes a dated parenthetical. § 10's QC-5 row and
   ADR-0018 do not move.
 - **Why it is worth a cycle:** *A fact in it is now false*, measured. QC-5 (`docs/nfdr.md:L194-L198`)
-  says "None of the three is written at `nozoki@8edec4f`" and "All three go red when they are
+  says "None of the three is written at `ka-reader@8edec4f`" and "All three go red when they are
   written, until the change that replaces that arm lands". The pinned half is still true at its
   commit. The forward clause is not true of the tree: the arm is replaced (`libgit2.rs:L46` sends a
-  `.git` regular file to `probe_git_file`, `:L58`), and `cargo test --locked -p nozoki-core --test
-  root_finding` at `nozoki@188b141` passes all three named cases among 37. A reader of QC-5 learns
+  `.git` regular file to `probe_git_file`, `:L58`), and `cargo test --locked -p ka-reader-core --test
+  root_finding` at `ka-reader@188b141` passes all three named cases among 37. A reader of QC-5 learns
   that the read bound has no check, when it has one that CI runs (`.github/workflows/ci.yml:L26`).
   The fold costs almost nothing extra: § 3.1 already sends `product-architecture` to re-measure
   this same merge. It is in *choices to confirm* because this run has a lean; its slot is the next
@@ -140,4 +140,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture nozoki`
+- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture ka-reader`

@@ -5,13 +5,13 @@
       "seat": "cto"
     },
     {
-      "changed_text": "\u00a7 4 C-E1; \u00a7 12 UXD boundary; RN-83. No slices altered or companion items added; resolved \u00a7 5.1 removed ([SDD.md:4837\u20134871](/Users/eyalgolan/products/nozoki/docs/SDD.md:4837)).",
+      "changed_text": "\u00a7 4 C-E1; \u00a7 12 UXD boundary; RN-83. No slices altered or companion items added; resolved \u00a7 5.1 removed ([SDD.md:4837\u20134871](/Users/eyalgolan/products/ka-reader/docs/SDD.md:4837)).",
       "seat": "cdo"
     }
   ],
   "companion_present_at_intake": true,
   "companion_retired": false,
-  "consumed_cycle_path": "/Users/eyalgolan/products/nozoki/docs/trail/sdd/cycle-19.md",
+  "consumed_cycle_path": "/Users/eyalgolan/products/ka-reader/docs/trail/sdd/cycle-19.md",
   "core_root": "/Users/eyalgolan/.kensaiapp/pins/20261002T102641Z-tc2w5k/core",
   "ended": "seats-close",
   "ended_at": "2026-10-02T11:07:17.635429+00:00",
@@ -22,12 +22,12 @@
   "output_tokens": 0,
   "output_tokens_under_counted": true,
   "pending_request": {
-    "cdo": "I close the CDO lane. C-E1 names the bounded exception, and \u00a7 12 cites UXD v12 ([SDD.md:L868\u2013L873](/Users/eyalgolan/products/nozoki/docs/SDD.md:868), [L2669\u2013L2676](/Users/eyalgolan/products/nozoki/docs/SDD.md:2669)).\n\nThe tree repair remains a delivery defect under the existing condition, recorded without a re-cut in RN-83 ([SDD.md:L4849\u2013L4869](/Users/eyalgolan/products/nozoki/docs/SDD.md:4849)). Neither peer needs further work from this seat.",
+    "cdo": "I close the CDO lane. C-E1 names the bounded exception, and \u00a7 12 cites UXD v12 ([SDD.md:L868\u2013L873](/Users/eyalgolan/products/ka-reader/docs/SDD.md:868), [L2669\u2013L2676](/Users/eyalgolan/products/ka-reader/docs/SDD.md:2669)).\n\nThe tree repair remains a delivery defect under the existing condition, recorded without a re-cut in RN-83 ([SDD.md:L4849\u2013L4869](/Users/eyalgolan/products/ka-reader/docs/SDD.md:4849)). Neither peer needs further work from this seat.",
     "cpo": "The sizing of `open-a-folder` stands as written, and I'm closing my lane with no edit.\n\n**The sizing check**\n\n- **The command half gained a reading clause and no test.** \"A row is drawn from a projection and from nothing else\" keeps its words and now carries \"this is a reading clause and adds no test (RN-82)\" (`docs/SDD.md:L1416-L1418`).\n- **The observable half did not change.** `git diff -U0 -- docs/SDD.md | grep -c '^[-+].*\\*Observable (CDO)'` printed `0`.\n- **Step 4's bar for the slice names no projection rule.** The E-1 bullet states the bar as the tree in the window, UX-S4 on a bad path or a dismissed panel, and the entitlements proven on the bundle whose window draws (`docs/SDD.md:L1158-L1160`). A clause that adds no test and names no new decision cannot make the slice too broad or too narrow, so \u00a7 5 step 4 needs no re-read note.\n- **\u00a7 1 agrees with the row as the CTO wrote it.** \u00a7 1 says the view \"draws no state it has not observed\" (`docs/SDD.md:L186`), and the row calls the gap \"the one thing the shell observes first-hand\" (`docs/SDD.md:L331`).\n\n**The tree's missing fault sentence does not reach my lane.** The CDO's RN-83 reads it as code failing an existing condition, C-E3, with \"No re-cut\" (`docs/SDD.md:L4849-L4868`). No slice's *Delivers*, fence, PRD trace or size depends on it. I wrote nothing on it and raised no companion item: it opens no PRD gap, because the PRD's failure-state promise is already carried by C-E3 and UX-I16 as they stand (`docs/PRD.md:L260-L271`; `docs/UXD.md:L325-L333`).\n\n**Nothing is owed to either peer from this seat.** The companion is gone from disk (`ls docs/SDD_open_issues.md` returned \"No such file or directory\"), and the answer is whole at `docs/trail/sdd/cycle-19.md`.",
     "cto": "Nothing in my lanes needs a further edit: the CDO's fold agrees with what I wrote in round 1, and the companion is gone from disk (`ls docs/SDD_open_issues.md` returned \"No such file or directory\").\n\n**What I checked this turn**\n\n- **C-E1 points at my row and copies nothing from it.** It now reads \"under the exception and all four bounds in \u00a7 3's `surfaces` row; that gap is not an `ItemState`\" and \"C-I1 carries the state mechanism\" (`docs/SDD.md:L868-L873`). The bounds have one home, on the row.\n- **The parts table still parses.** The `surfaces` row splits into the same six `|`-separated fields as the `mac-shell` row, per the `awk -F'|'` field count run this turn.\n- **RN-82 stands as written.** Its two sentences about the companion staying and the tree being the CDO's to read were true when written, and RN-83 completes both (`docs/SDD.md:L4837-L4871`).\n- **The inputs have not moved.** `docs/PRD.md:L3`, `docs/SRS.md:L3` and `docs/UXD.md:L3` each read `**Status:** Settled`, matching the header's `Inputs read:` line (`docs/SDD.md:L56`).\n\n**On the CDO's reading of the tree**\n\nI take it as stated: the tree's no-verdict answer fails the existing C-E3, and the repair is implementation against that condition (`docs/SDD.md:L4849-L4868`). It moves nothing of mine. C-I1 already puts `stopped` \"on the item the call was for\" at SM-4's return, and I add no test to `open-a-folder`'s command half for it, for the reason RN-82 gives.\n\n**Two things left outside this document**\n\n- **The tree defect is the delivery tier's.** RN-83 records it; this run cuts no work for it.\n- **The NFDR is now owed a re-derivation that nobody has raised.** `docs/nfdr.md:L983` still reads \"A view is drawn from a projection and from nothing else\", without the exception. `docs/architecture_open_issues.md` does not exist (`ls` returned \"No such file or directory\"). That is the Principal Architect's, and RN-82 names it without opening anything."
   },
-  "product_path": "/Users/eyalgolan/products/nozoki",
-  "project": "nozoki",
+  "product_path": "/Users/eyalgolan/products/ka-reader",
+  "project": "ka-reader",
   "queue": [],
   "recall_outstanding": null,
   "recall_refusals": [],
@@ -35,31 +35,31 @@
   "resolved_inputs": {
     "cdo": [
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/SRS.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/UXD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/PRD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/agari.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ka-reader_doctrine.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ai_responsibility.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/definition_brief.md",
         "present": false
       },
       {
@@ -75,15 +75,15 @@
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/DESIGN.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/DESIGN.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/CONTENT.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/CONTENT.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/design_system",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/design_system",
         "present": false
       },
       {
@@ -97,31 +97,31 @@
     ],
     "cpo": [
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/SRS.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/UXD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/PRD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/agari.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ka-reader_doctrine.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ai_responsibility.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/definition_brief.md",
         "present": false
       },
       {
@@ -139,31 +139,31 @@
     ],
     "cto": [
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/SRS.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/UXD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/PRD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/agari.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ka-reader_doctrine.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ai_responsibility.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/definition_brief.md",
         "present": false
       },
       {
@@ -179,11 +179,11 @@
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/adr",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/adr",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/nfdr.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/nfdr.md",
         "present": true
       }
     ]
@@ -225,9 +225,9 @@
     "cto": "1307c796-28ec-4692-987e-d6077e540845"
   },
   "seats": {
-    "cdo": "sdd-nozoki-run22-cdo",
-    "cpo": "sdd-nozoki-run22-cpo",
-    "cto": "sdd-nozoki-run22-cto"
+    "cdo": "sdd-ka-reader-run22-cdo",
+    "cpo": "sdd-ka-reader-run22-cpo",
+    "cto": "sdd-ka-reader-run22-cto"
   },
   "spoke_at": {
     "cdo": 2,
@@ -278,7 +278,7 @@
       "declared": "no_followup",
       "kind": "ordinary",
       "no_reply": false,
-      "request_text": "I close the CDO lane. C-E1 names the bounded exception, and \u00a7 12 cites UXD v12 ([SDD.md:L868\u2013L873](/Users/eyalgolan/products/nozoki/docs/SDD.md:868), [L2669\u2013L2676](/Users/eyalgolan/products/nozoki/docs/SDD.md:2669)).\n\nThe tree repair remains a delivery defect under the existing condition, recorded without a re-cut in RN-83 ([SDD.md:L4849\u2013L4869](/Users/eyalgolan/products/nozoki/docs/SDD.md:4849)). Neither peer needs further work from this seat.",
+      "request_text": "I close the CDO lane. C-E1 names the bounded exception, and \u00a7 12 cites UXD v12 ([SDD.md:L868\u2013L873](/Users/eyalgolan/products/ka-reader/docs/SDD.md:868), [L2669\u2013L2676](/Users/eyalgolan/products/ka-reader/docs/SDD.md:2669)).\n\nThe tree repair remains a delivery defect under the existing condition, recorded without a re-cut in RN-83 ([SDD.md:L4849\u2013L4869](/Users/eyalgolan/products/ka-reader/docs/SDD.md:4849)). Neither peer needs further work from this seat.",
       "seat": "cdo",
       "spoke": true
     }

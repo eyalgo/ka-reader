@@ -25,7 +25,7 @@ written for the `product-architecture` run that folds the answer.
 
   *The PM's claims, re-measured.* `crates/` has not changed since the commit the PM cited
   (`git diff --stat 6a0725c HEAD -- crates checks` prints nothing), so all citations below are at
-  `nozoki@6a0725c`.
+  `ka-reader@6a0725c`.
   - `state()` and `status()` both go through `open_verified` (`libgit2.rs:L67-L73`). That calls
     `verified_locations` (`:L102-L127`), which walks the spelled path to the Git directory and to the
     common directory. At each position it calls `symlink_metadata`, and at a link it calls
@@ -77,7 +77,7 @@ written for the `product-architecture` run that folds the answer.
   only at positions that a Git pointer (`gitdir:` or `commondir`) spells out. QC-15's existing "the
   folder's own metadata" is the same kind of read. QC-35 says nothing is read outside the grant
   (`docs/nfdr.md:L890`), and the answer keeps that true. QC-15's tail cites the `Path`-method reads at
-  `nozoki@48308ff` (`:L38`, `:L42`, `:L136`, `:L62`, `:L69`). Each line still holds at that commit
+  `ka-reader@48308ff` (`:L38`, `:L42`, `:L136`, `:L62`, `:L69`). Each line still holds at that commit
   (`git show 48308ff:…/libgit2.rs`). The fold should add the walk's `symlink_metadata` (`:L163`) to
   that list, re-pinned at `6a0725c`. `read_link` (`:L166`) is a `std::fs` call, and the owner-file
   exemption already admits those.
@@ -118,4 +118,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture nozoki`
+- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture ka-reader`

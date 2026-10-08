@@ -8,7 +8,7 @@
 - **Decided by:** `decide_companion_answers.md` v1.3.0
 - **Date:** 2026-10-01
 - **Sources re-read:** None. No answer rests on a source outside this repository. Every claim was
-  read at its source in the product repository at `nozoki@f5b7843`: `docs/SDD.md` v22 § 4 C-R7 and
+  read at its source in the product repository at `ka-reader@f5b7843`: `docs/SDD.md` v22 § 4 C-R7 and
   C-I3, `docs/trail/sdd/cycle-17.md` §§ 2.1 and 5.1, and the code and scripts named below.
 
 One item was open, § 3.1, and it was worked. One item was raised on the records, § 2.1. Nothing is
@@ -21,7 +21,7 @@ left for the owner.
 - **Bucket:** 3. Raised from downstream — an item from a seat that did not write these records
 - **Verdict:** overridden
 - **Why:** The item asked two things. Its QC-2 half proposed an interim cover: name
-  `cargo test --locked -p nozoki-bridge --test select_file` as what holds the read until the walk
+  `cargo test --locked -p ka-reader-bridge --test select_file` as what holds the read until the walk
   drives `select_file`. That proposal is replaced. Its QC-24 half asked QC-24 to follow whichever
   staging reading the SDD settled, and that half is taken.
 
@@ -61,8 +61,8 @@ left for the owner.
   decision the record makes (one process, one closed seam) does not move with it.
 
   *Check 4, failure paths.* **Stale:** on product `main` since `select_file` was exported, QC-2 is
-  unmet. `crates/nozoki-bridge/tests/exports.rs:L20` admits `nozoki_select_file`, and
-  `crates/nozoki-core/tests/walk.rs:L1-L6` calls `list_tree` alone (both read at `nozoki@f5b7843`).
+  unmet. `crates/ka-reader-bridge/tests/exports.rs:L20` admits `ka_reader_select_file`, and
+  `crates/ka-reader-core/tests/walk.rs:L1-L6` calls `list_tree` alone (both read at `ka-reader@f5b7843`).
   That is a violation in the build, not a false sentence in the record, and the records state
   nothing about the interval, as the SDD states nothing. **Empty:** a fixture that offers no entry
   for a command is the second uncovered case, now named in QC-2. **Concurrent:** two slices that each
@@ -90,7 +90,7 @@ None this run.
   pinned to a commit, and § 9's `LaunchFlow.swift:L53` re-pointed to `:L60`.
 - **Why it is worth a cycle:** *A fact in it is now false*, and *it contradicts a document it must
   agree with* (`decide_companion_answers.md` § The items are not the whole of what a document is
-  owed). Measured at `nozoki@f5b7843`: `nozoki-mac/Sources/Shell/LaunchFlow.swift:L35-L37` is the
+  owed). Measured at `ka-reader@f5b7843`: `ka-reader-mac/Sources/Shell/LaunchFlow.swift:L35-L37` is the
   lazy `statusGlyphs` property. `chooseFolder()`'s panel wait is `:L54-L60`, the `[bridge]` capture is
   `:L60`, and `bridge.openFolder` is `:L69`. `checks/renderer.sh`'s frame list is `:L53-L56` and
   holds four frames. Its Mac reading is `:L57-L60`, and its hosted-runner reading is `:L61-L64`.
@@ -107,4 +107,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture nozoki`
+- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture ka-reader`

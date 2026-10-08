@@ -1,4 +1,4 @@
-# ADR-0001: Nozoki is a capability-split read pipeline, and its promise is held by withholding capability
+# ADR-0001: KA-Reader is a capability-split read pipeline, and its promise is held by withholding capability
 
 **Status:** Superseded by ADR-0013
 **Date:** 2026-09-01
@@ -11,7 +11,7 @@ hold through a crash, not only in normal operation (`docs/SRS.md` § 4.2 NFR-4; 
 NFR-8, NFR-16). The folder is live, untrusted input that may change at any moment (§ 6 DR-6). The
 design document set itself a test before naming a shape: a candidate that answers "is the no-write,
 no-network promise true by construction?" with *if the code is careful* loses to one that answers it
-structurally, whatever else it costs (`nozoki@70a879a:docs/SDD.md` § 1, last paragraph). A negative invariant is
+structurally, whatever else it costs (`ka-reader@70a879a:docs/SDD.md` § 1, last paragraph). A negative invariant is
 not held by a guarded domain core; it is held by withholding a capability at a boundary something
 outside the code enforces (`docs/SDD.md` § 2, force 3).
 
@@ -67,7 +67,7 @@ presence is checked on every build rather than assumed (ADR-0008) (`docs/SDD.md`
 ## Traces to
 
 - `docs/SDD.md` § 2 — the seven forces, the candidates table, and "Undoing it"; § 3 seam 4; § 12,
-  "The downstream boundary" (surfaced for an ADR); `nozoki@70a879a:docs/SDD.md` § SDD Review Notes RN-6.
+  "The downstream boundary" (surfaced for an ADR); `ka-reader@70a879a:docs/SDD.md` § SDD Review Notes RN-6.
 - `docs/SRS.md` § 4.2 NFR-4; § 4.3 NFR-5, NFR-6, NFR-8, NFR-16; § 6 DR-6; § 7 C-1.
 - `docs/fdr.md` PD-1, PD-6, PD-7, PD-26, PD-29 — the behaviour this shape realizes.
 - Inputs read for this record: SDD Settled v2 · SRS Settled v8 · FDR Draft v1.

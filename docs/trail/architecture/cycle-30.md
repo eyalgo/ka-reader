@@ -1,4 +1,4 @@
-# Architecture open issues — Nozoki
+# Architecture open issues — KA-Reader
 
 > Companion to `adr/` and `nfdr.md`. The Principal Architect authored both records
 > non-interactively; this file holds what the run could not settle from its inputs — the SRS, the SDD
@@ -30,7 +30,7 @@ None.
   and `adr/0016-physical-unit-set-core-bridge-mac-checks.md`; `nfdr.md` QC-11, QC-13, QC-17 and
   QC-35 name ADR-0020 in their traces
 - **Drafted into the records:** ADR-0020, at **Proposed — supersedes ADR-0016 on acceptance**. It
-  restates ADR-0016's four units and their map, with the `nozoki-bridge` row extended. It states
+  restates ADR-0016's four units and their map, with the `ka-reader-bridge` row extended. It states
   the exception: `core-bridge` names the binding in the composition root's config search-path
   switch and that switch's test, and nowhere else. It records the switch: four `set_search_path`
   calls before the adapter is wired, failing closed, once per process. Its alternatives are the
@@ -57,7 +57,7 @@ None.
 - **Confirm or override:** confirm, with one addition. A superseding record is the right mechanic,
   and the log's own test says so: an accepted record is corrected in place only where "the record's
   observable, its units table, its alternatives and its binds have not moved" (`nfdr.md` RN-24,
-  `:L2689-L2690`). Here the `nozoki-bridge` row's last column, the alternatives (four added) and the
+  `:L2689-L2690`). Here the `ka-reader-bridge` row's last column, the alternatives (four added) and the
   binds (QC-35 added) all move. Accept ADR-0020, and mark ADR-0016 `Superseded by ADR-0020`. The
   addition: before ADR-0020 is accepted, it carries in its own text what it now only points at, so
   the record in force stands alone once ADR-0016 is history, as ADR-0019 carried ADR-0004's. That
@@ -79,7 +79,7 @@ None.
   second QC-30 row
 - **Drafted into the records:** QC-30 now says a C `getenv` in a linked crate is a read of half
   (2), named on `checks/entry-points.allow` as a Rust read is. It names what this fold measured at
-  `nozoki@8edec4f`. Two of the 37 crates the command resolves carry `getenv` in C: `libgit2-sys`
+  `ka-reader@8edec4f`. Two of the 37 crates the command resolves carry `getenv` in C: `libgit2-sys`
   and `libz-sys`. A repository open reaches libgit2's `APP_SANDBOX_CONTAINER_ID`, `HOME` and
   `XDG_CONFIG_HOME` at init (`libgit2/src/libgit2/sysdir.c:L347`, `:L357`, `:L402-L405`,
   `:L458-L459`), and `SUDO_UID` only when the effective user is root

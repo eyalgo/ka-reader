@@ -1,4 +1,4 @@
-# SDD open issues — nozoki
+# SDD open issues — ka-reader
 
 > Companion to `SDD.md`. Three seats — the CTO, the CPO and the CDO — authored the SDD
 > non-interactively in one run; this file holds what that run could not settle from its inputs (the
@@ -25,7 +25,7 @@
 > **No `product-sdd` run opened this companion. The PM opened it on 2026-09-24.** `SDD.md` is
 > Settled at v17 and has no companion on disk, so a `product-sdd` re-run would read it as done and
 > find nothing to act on. The companion holds two items, § 5.1 and § 5.2. Each one comes from
-> measuring the tree on `main` at `nozoki@153f5a1`, after `checks/renderer.sh` and its `idle-shell`
+> measuring the tree on `main` at `ka-reader@153f5a1`, after `checks/renderer.sh` and its `idle-shell`
 > control landed, and from that gate's first hosted-runner run. Each says what the SDD holds that
 > the measurement answered.
 
@@ -35,17 +35,17 @@
 
 ### 5.1 C-I3 puts the renderer gate's observation "inside `open_folder`'s call", and the native shell calls `open_folder` only after the panel returns
 - **Raised by:** PM — 2026-09-24
-- **Tracked by:** `nozoki · nemawashi · 2026-09-15_open-a-folder`
+- **Tracked by:** `ka-reader · nemawashi · 2026-09-15_open-a-folder`
 - **What it blocks:** Nothing gates on it. C-I3 describes an observation the gate cannot make. While
   the panel is up, the launched main thread holds no bridge frame.
 - **Where it shows:**
   - `SDD.md:L701-L703` (§ 4 C-I3) says the gate fails unless the main process "is observed
     **inside `open_folder`'s call**".
-  - `nozoki-mac/Sources/Shell/LaunchFlow.swift:L35-L37` calls `panel.chooseFolder()` first and
+  - `ka-reader-mac/Sources/Shell/LaunchFlow.swift:L35-L37` calls `panel.chooseFolder()` first and
     `bridge.openFolder(location:)` once it returns.
   - `checks/renderer.sh:L44-L57` reads the launched main thread's sample for the shell's launch
     frames, with the Open panel's modal run nested inside them. The header says
-    `nozoki_open_folder` is not in the list for that reason.
+    `ka_reader_open_folder` is not in the list for that reason.
 - **If a document has to be written:** None. **The PM's lean:** C-I3's observable reads "parked in
   the Open panel's modal run, inside the shell's launch frames — the shell's first and only
   unconditional act". The frames are the ones `checks/renderer.sh`'s header records.
@@ -59,7 +59,7 @@
   § 9 TO-7. Its *costs* line says the shell's actual use of the bridge is "exercised only by the
   renderer gate and the timed release walk" (`SDD.md:L2117-L2118`). With the corrected
   observable, that is false. The shell makes no bridge call before the panel returns
-  (`nozoki-mac/Sources/Nozoki/AppDelegate.swift`, `LaunchFlow.swift:L35-L37`,
+  (`ka-reader-mac/Sources/KAReader/AppDelegate.swift`, `LaunchFlow.swift:L35-L37`,
   `NativeBridge.swift:L13-L25`), so the gate exercises none. The line now names the timed release
   walk alone. The gate shows that the launched shell ran its launch flow as far as the panel.
   No § 10 entry is needed: RC-3's *Still unresolved* already recorded the native gate's reading as
@@ -71,7 +71,7 @@
 
 ### 5.2 The last *Open Questions* item is answered. The native shell's frames were measured, and they read the same on a hosted runner
 - **Raised by:** PM — 2026-09-24
-- **Tracked by:** `nozoki · nemawashi · 2026-09-15_open-a-folder`
+- **Tracked by:** `ka-reader · nemawashi · 2026-09-15_open-a-folder`
 - **What it blocks:** Nothing gates on it. The SDD still presents as open a question the gate's first
   runs settled, and it names that settlement as the question's trigger.
 - **Where it shows:**

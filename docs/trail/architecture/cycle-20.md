@@ -1,4 +1,4 @@
-# Architecture open issues — Nozoki
+# Architecture open issues — KA-Reader
 
 > Companion to `adr/` and `nfdr.md`. The Principal Architect authored both records
 > non-interactively; this file holds what the run could not settle from its inputs — the SRS, the SDD
@@ -42,14 +42,14 @@ None.
 - **Lands in:** `nfdr.md` QC-30, *verified by*, half (2)
 - **Drafted into the records:** Nothing. No producing run wrote this, and the run that raised it writes
   no record. The proposed change: half (2) scans only the crates the command resolves from outside
-  the workspace. `nozoki-core` and `nozoki-bridge` are half (1)'s, so half (2) skips them. The skip is
+  the workspace. `ka-reader-core` and `ka-reader-bridge` are half (1)'s, so half (2) skips them. The skip is
   keyed on workspace membership, not on a list of names. Any other crate whose sources cannot be
   opened still fails the build, as the entry says now.
 - **Rationale:** The entry says half (2) scans "for every crate the `cargo tree` command above
   names, … the crate's whole package directory in the Cargo registry", and fails "on any resolved
   crate whose sources it cannot open" (`docs/nfdr.md:L572-L577`). The command, run this round with
-  `--offline` added, names `nozoki-bridge v0.0.0 (…/crates/nozoki-bridge)` and `nozoki-core v0.0.0
-  (…/crates/nozoki-core)`. Neither has a registry copy. So a `checks/entry-points.sh` written to the
+  `--offline` added, names `ka-reader-bridge v0.0.0 (…/crates/ka-reader-bridge)` and `ka-reader-core v0.0.0
+  (…/crates/ka-reader-core)`. Neither has a registry copy. So a `checks/entry-points.sh` written to the
   entry as it reads fails on every build, before it reads a single dependency. That blocks the same
   script § 3.2 blocks. The two crates are already covered: half (1) names them as "the product's own
   units" (`:L556-L557`) and checks them with `checks/structure.sh`, under § 9's scope, which leaves out
@@ -65,28 +65,28 @@ None.
 ### 3.1 QC-3 still calls the one-time review of the 17 names owed, and the review is recorded
 - **Raised by:** PM — 2026-10-01
 - **Which record:** `nfdr.md` QC-3 (the second half's tail) and RN-25's carried note
-- **Tracked by:** `nozoki · nemawashi · 2026-10-01_a-file-reads-in-the-panel`
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-01_a-file-reads-in-the-panel`
 - **What it blocks:** nothing is blocked. QC-3 states as owed a review that is now on the tree, so a
   reader of § 1.1 is sent to do work that is done.
 - **Where it shows:** QC-3 reads "So the one-time review is still owed, over those 17"
   (`docs/nfdr.md:L120`) and gives the list as "one `cargo:` section of 17 names" (`:L112-L113`), and
   RN-25's note repeats it (`:L2487`, `:L2491`). `checks/deps.review.md` now records the review as code, landed in
-  one commit with `checks/deps.allow` and `Cargo.lock` (`nozoki@85d9fa7`). It covers every name on the
-  list at that commit: the 17, the three added at `nozoki@21589c7` (`bitflags`, `errno`, `rustix`), and
+  one commit with `checks/deps.allow` and `Cargo.lock` (`ka-reader@85d9fa7`). It covers every name on the
+  list at that commit: the 17, the three added at `ka-reader@21589c7` (`bitflags`, `errno`, `rustix`), and
   20 the grammar engine brings (`tree-sitter` and its grammars, `cc`, the `regex` family and their
   dependencies). `bash checks/no-network.sh` prints "ok — 40 cargo names match checks/deps.allow". QC-3
   should say that the review is recorded at `checks/deps.review.md`, over every name on the list when
   it landed, and that every later addition is reviewed under the second half as usual.
 - **If a document has to be written:** none. QC-3's tail and the list's count.
 - **Answer:** Take the change as raised, with three additions. QC-3's tail stops saying the one-time
-  review is owed and says it is recorded at `checks/deps.review.md`, landed at `nozoki@85d9fa7` with
+  review is owed and says it is recorded at `checks/deps.review.md`, landed at `ka-reader@85d9fa7` with
   `checks/deps.allow` and `Cargo.lock`, over all 40 names on the list at that commit, and that every
   later addition is reviewed under the second half as before. The record is the review QC-3 asks for,
   not a name-only reading: each row reads `cargo tree --offline --locked -e features -i <crate>` and the
   registry copy at the locked version, and `comm` of its names against the list prints nothing (re-run
-  this round). (1) Pin the record to `nozoki@85d9fa7` when citing it. Its own title says "every name on
+  this round). (1) Pin the record to `ka-reader@85d9fa7` when citing it. Its own title says "every name on
   `checks/deps.allow`", which stops being true the next time a name is added. (2) Keep the dated clause
-  "At `nozoki@0aca57e` the list is one `cargo:` section of 17 names". It is still true as history; add
+  "At `ka-reader@0aca57e` the list is one `cargo:` section of 17 names". It is still true as history; add
   the current count beside it. (3) Leave RN-25 alone. A review note is a dated record of its own
   version, and RN-18 sets the rule that dated mentions stay as written. The fold records the closure in
   its own new review note. Reasoning: `docs/trail/architecture/self_answer-24.md` § 3.1.
@@ -94,7 +94,7 @@ None.
 ### 3.2 QC-30's registry scan excepts a crate's root `build.rs`, and the tree's build scripts are not all at the root
 - **Raised by:** PM — 2026-10-01
 - **Which record:** `nfdr.md` QC-30, *verified by*, half (2)
-- **Tracked by:** `nozoki · nemawashi · 2026-10-01_the-tree-is-checked-for-its-shape`
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-01_the-tree-is-checked-for-its-shape`
 - **What it blocks:** `checks/entry-points.sh` is not written yet. Written to QC-30 as it reads, it
   fails on a build script's own reads, which run at build time and are not an entry point of the
   shipped unit.

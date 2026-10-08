@@ -29,7 +29,7 @@
 
   **The bar for an item raised from downstream.** The item asks the document to state two cases it
   does not state now, so it widens the document. It cites where each one occurs. The placement site
-  is `nozoki-mac/Sources/Surfaces/LetterTooltip.swift:L195-L196`. Read on this run, that line puts
+  is `ka-reader-mac/Sources/Surfaces/LetterTooltip.swift:L195-L196`. Read on this run, that line puts
   the tooltip below the letter and right-aligns it, with no other case. The same code also does no
   clamping, so the line covers both edges. The left edge also has a measured failure: the
   developer's closing commit records that *"a 110-point tooltip anchored on a letter at x 52 hangs
@@ -95,7 +95,7 @@
   never moves while the tooltip is shown. Scrolling moves the letter out from under the pointer, and
   a refresh that changes the row's state removes the tooltip, both under rules that exist today
   (`docs/DESIGN.md` § Components "The tooltip"; the host's dismiss call,
-  `nozoki-mac/Sources/Surfaces/LetterTooltip.swift:L152-L161`). A theme change does not move it.
+  `ka-reader-mac/Sources/Surfaces/LetterTooltip.swift:L152-L161`). A theme change does not move it.
   *Empty or absent:* every row that carries a letter has a name, so the tooltip always has text. A
   surface that is not on screen raises nothing, because the pointer cannot rest on it. *Width:* the
   space left is always enough for the joining mark and the longest word, *untracked*. The sidebar is
@@ -118,4 +118,4 @@ None this run.
 
 ## Launchers owed
 
-- **docs/DESIGN.md** — `<CORE>/launchers/skill/launcher.sh product-design nozoki`
+- **docs/DESIGN.md** — `<CORE>/launchers/skill/launcher.sh product-design ka-reader`

@@ -29,8 +29,8 @@ read "None.". This run answered § 3.1 and raised nothing.
   (`docs/CONTENT.md:L394-L397`) fixes six states and six sentences, and this adds a seventh. The
   occurrence bar (`pm_shukuba_refine.md` § A gap is carried only where it occurs) is met by the item
   itself, and I re-read both sites: `RepositoryState::Am` is a variant at
-  `crates/nozoki-core/src/git_reader.rs:L117`, and `GitRepositoryState::ApplyMailbox =>
-  RepositoryState::Am` is the mapping at `crates/nozoki-core/src/git_reader/libgit2.rs:L339`. So the
+  `crates/ka-reader-core/src/git_reader.rs:L117`, and `GitRepositoryState::ApplyMailbox =>
+  RepositoryState::Am` is the mapping at `crates/ka-reader-core/src/git_reader/libgit2.rs:L339`. So the
   item is taken, not answered "not until it occurs".
 
   *Seat (check 1).* This one is ours. The edit lands in `CONTENT.md` and binds only its wording. The
@@ -48,7 +48,7 @@ read "None.". This run answered § 3.1 and raised nothing.
 
   *Against the settled record (check 3).* The wording is Git's. `git status` prints "You are in the
   middle of an am session." (`wt-status.c`, `show_am_in_progress`, re-read at the source). The word
-  is *am session*, so the sentence is Nozoki's and the word is Git's, which is the *Bilingual* row
+  is *am session*, so the sentence is KA-Reader's and the word is Git's, which is the *Bilingual* row
   of § Voice and the rule in RN-32. The reading bar admits it as a word Git itself uses for the
   state in hand (`docs/CONTENT.md:L446-L458`). It does not use *paused*, *stuck* or *interrupted*,
   which L400-L402 bars. It names no remote, no count and no branch. It does not pass Git's sentence
@@ -100,4 +100,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/CONTENT.md`** — `/Users/eyalgolan/.kensaiapp/pins/20261003T222410Z-402wmg/core/launchers/skill/launcher.sh product-content nozoki`
+- **`docs/CONTENT.md`** — `/Users/eyalgolan/.kensaiapp/pins/20261003T222410Z-402wmg/core/launchers/skill/launcher.sh product-content ka-reader`

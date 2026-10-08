@@ -24,7 +24,7 @@
 #
 # USAGE
 #   checks/tests/test_structure.sh
-#   NOZOKI_TEST_ONLY=<case> runs one case, and a name no case carries fails the run rather than
+#   KA_READER_TEST_ONLY=<case> runs one case, and a name no case carries fails the run rather than
 #   running nothing.
 #   Only crates/, checks/deps.allow and the script are copied: the script reads nothing else, so a
 #   whole-tree copy would carry target/ build output and prove nothing more.
@@ -37,8 +37,8 @@ set -uo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd -P)"
 STRUCTURE_SH="$ROOT/checks/structure.sh"
-CORE_FILE="nozoki-core/src/folder_model.rs"
-BRIDGE_FILE="nozoki-bridge/src/session.rs"
+CORE_FILE="ka-reader-core/src/folder_model.rs"
+BRIDGE_FILE="ka-reader-bridge/src/session.rs"
 
 STDOUT=""
 STDERR=""
@@ -138,7 +138,7 @@ test_value_module_rule_spares_units_and_lib_rs
 test_unit_file_draws_no_value_module_finding
 test_value_module_findings_join_one_report
 test_git2_in_a_bridge_src_file_is_refused
-test_git2_in_nozoki_core_lib_rs_is_refused
+test_git2_in_ka_reader_core_lib_rs_is_refused
 test_git2_in_machine_config_rs_is_allowed
 test_git2_under_git_reader_is_allowed
 test_folder_model_git2_stays_qc10_alone
@@ -281,11 +281,11 @@ test_case_2_core_unsafe_is_rejected() {
 # A third crate needs no manifest to be read, and the rule is not the core's alone.
 test_case_4_third_crate_unsafe_is_rejected() {
   new_root case4 || return 1
-  plant "$R" "nozoki-extra/src/lib.rs" 'fn f() { unsafe {} }'
-  [ ! -e "$R/crates/nozoki-extra/Cargo.toml" ] || fail "the planted crate must have no manifest" || return 1
+  plant "$R" "ka-reader-extra/src/lib.rs" 'fn f() { unsafe {} }'
+  [ ! -e "$R/crates/ka-reader-extra/Cargo.toml" ] || fail "the planted crate must have no manifest" || return 1
   run_structure "$R"
   expect_status 1 || return 1
-  expect_finding "crates/nozoki-extra/src/lib.rs" "$PLANT_LINE" QC-9
+  expect_finding "crates/ka-reader-extra/src/lib.rs" "$PLANT_LINE" QC-9
 }
 
 test_unsafe_forms_are_rejected() {
@@ -349,14 +349,14 @@ test_raw_unsafe_text_is_scanned() {
 # Only a crate's own top-level tests/ and its own build.rs are outside the scan.
 test_only_crate_level_exclusions_apply() {
   new_root excluded || return 1
-  plant "$R" "nozoki-core/tests/planted.rs" 'fn f() { unsafe {} }'
-  plant "$R" "nozoki-core/build.rs" 'fn main() { unsafe {} }'
-  plant "$R" "nozoki-extra/tests/planted.rs" 'fn f() { unsafe {} }'
+  plant "$R" "ka-reader-core/tests/planted.rs" 'fn f() { unsafe {} }'
+  plant "$R" "ka-reader-core/build.rs" 'fn main() { unsafe {} }'
+  plant "$R" "ka-reader-extra/tests/planted.rs" 'fn f() { unsafe {} }'
   run_structure "$R"
   expect_status 0 || return 1
   expect_stderr_empty || return 1
   new_root nested || return 1
-  nested_files="nozoki-core/src/tests/x.rs nozoki-core/src/build.rs nozoki-core/benches/x.rs nozoki-core/examples/x.rs"
+  nested_files="ka-reader-core/src/tests/x.rs ka-reader-core/src/build.rs ka-reader-core/benches/x.rs ka-reader-core/examples/x.rs"
   for nested_file in $nested_files; do
     plant "$R" "$nested_file" 'fn f() { unsafe {} }'
   done
@@ -390,7 +390,7 @@ test_empty_scope_fails() {
 # A file the scan cannot read is a failure naming the file, never a silent skip.
 test_unreadable_source_fails() {
   new_root unreadable || return 1
-  victim="crates/nozoki-core/src/error.rs"
+  victim="crates/ka-reader-core/src/error.rs"
   chmod 000 "$R/$victim"
   if [ -r "$R/$victim" ]; then
     chmod 644 "$R/$victim"
@@ -406,36 +406,36 @@ test_all_findings_are_ordered_and_distinct() {
   new_root ordered || return 1
   # Files are made in an order unlike their path order, and the lines 2 and 10 sort the other way
   # as text, so only a numeric order passes.
-  plant "$R" "nozoki-b/src/lib.rs" 'fn ok() {}'
-  plant "$R" "nozoki-b/src/lib.rs" 'fn f() { unsafe {} }'
+  plant "$R" "ka-reader-b/src/lib.rs" 'fn ok() {}'
+  plant "$R" "ka-reader-b/src/lib.rs" 'fn f() { unsafe {} }'
   b_first="$PLANT_LINE"
   for filler in 3 4 5 6 7 8 9; do
-    plant "$R" "nozoki-b/src/lib.rs" "fn filler_$filler() {}"
+    plant "$R" "ka-reader-b/src/lib.rs" "fn filler_$filler() {}"
   done
-  plant "$R" "nozoki-b/src/lib.rs" 'fn g() { unsafe {} }'
+  plant "$R" "ka-reader-b/src/lib.rs" 'fn g() { unsafe {} }'
   b_second="$PLANT_LINE"
   plant "$R" "$CORE_FILE" 'fn c() { unsafe {} }'
   core_line="$PLANT_LINE"
-  plant "$R" "nozoki-a/src/lib.rs" 'fn d() { unsafe { unsafe {} } }'
+  plant "$R" "ka-reader-a/src/lib.rs" 'fn d() { unsafe { unsafe {} } }'
   a_line="$PLANT_LINE"
   # An unreadable file that sorts before every finding must not stop the later ones.
-  plant "$R" "nozoki-a/src/aa.rs" 'fn e() {}'
-  chmod 000 "$R/crates/nozoki-a/src/aa.rs"
+  plant "$R" "ka-reader-a/src/aa.rs" 'fn e() {}'
+  chmod 000 "$R/crates/ka-reader-a/src/aa.rs"
   run_structure "$R"
-  chmod 644 "$R/crates/nozoki-a/src/aa.rs"
+  chmod 644 "$R/crates/ka-reader-a/src/aa.rs"
   expect_status 1 || return 1
-  expect_stderr_contains "crates/nozoki-a/src/aa.rs" || return 1
+  expect_stderr_contains "crates/ka-reader-a/src/aa.rs" || return 1
   [ "$b_first" -eq 2 ] && [ "$b_second" -eq 10 ] || fail "the fixture's lines are $b_first and $b_second, not 2 and 10" || return 1
-  expected="crates/nozoki-a/src/lib.rs:$a_line
-crates/nozoki-b/src/lib.rs:$b_first
-crates/nozoki-b/src/lib.rs:$b_second
+  expected="crates/ka-reader-a/src/lib.rs:$a_line
+crates/ka-reader-b/src/lib.rs:$b_first
+crates/ka-reader-b/src/lib.rs:$b_second
 crates/$CORE_FILE:$core_line"
   actual="$(printf '%s\n' "$STDERR" | grep ': QC-' | cut -d: -f1,2)"
   [ "$actual" = "$expected" ] || fail "findings out of order or not distinct. expected:
 $expected
 got:
 $actual" || return 1
-  [ "$(count_findings "crates/nozoki-a/src/lib.rs" "$a_line" QC-9)" -eq 1 ] \
+  [ "$(count_findings "crates/ka-reader-a/src/lib.rs" "$a_line" QC-9)" -eq 1 ] \
     || fail "two unsafe tokens on one line must give one finding. stderr: $STDERR" || return 1
 }
 
@@ -456,11 +456,11 @@ test_script_location_selects_the_root() {
 # know fails instead of running nothing.
 test_suite_selects_one_named_case() {
   one="test_clean_copy_passes"
-  selected="$(NOZOKI_TEST_ONLY="$one" "$ROOT/checks/tests/test_structure.sh" 2>&1)"
+  selected="$(KA_READER_TEST_ONLY="$one" "$ROOT/checks/tests/test_structure.sh" 2>&1)"
   selected_status=$?
   [ "$selected_status" -eq 0 ] || fail "the selected case failed (exit $selected_status): $selected" || return 1
   [ "$selected" = "ok   $one" ] || fail "expected exactly 'ok   $one', got: $selected" || return 1
-  unknown="$(NOZOKI_TEST_ONLY=no_such_case "$ROOT/checks/tests/test_structure.sh" 2>&1)"
+  unknown="$(KA_READER_TEST_ONLY=no_such_case "$ROOT/checks/tests/test_structure.sh" 2>&1)"
   unknown_status=$?
   [ "$unknown_status" -ne 0 ] || fail "a name no case carries must fail the run, got exit 0: $unknown" || return 1
   for defined in $(declare -F | awk '{print $3}' | grep '^test_'); do
@@ -483,7 +483,7 @@ test_originating_tree_is_unchanged() {
 
 # --- the cases of Task 2: the Apple-framework boundary ---
 
-# The floor of QC-9's Apple clause: every one of these is refused in nozoki-core in every form
+# The floor of QC-9's Apple clause: every one of these is refused in ka-reader-core in every form
 # below.
 APPLE_FLOOR="objc objc2 objc2_foundation objc2_app_kit objc2_core_foundation objc_foundation objc_id block block2 dispatch dispatch2 cocoa cocoa_foundation core_foundation core_foundation_sys core_graphics core_graphics_types core_text core_services security_framework security_framework_sys system_configuration system_configuration_sys fsevent fsevent_sys io_kit_sys metal"
 
@@ -570,8 +570,8 @@ test_apple_scope_and_near_names() {
   objc_line="$PLANT_LINE"
   plant "$R" "$BRIDGE_FILE" 'extern crate core_foundation;'
   foundation_line="$PLANT_LINE"
-  plant "$R" "nozoki-extra/src/lib.rs" 'use block2::RcBlock;'
-  plant "$R" "nozoki-extra/src/lib.rs" '#[link(name = "CoreServices", kind = "framework")]'
+  plant "$R" "ka-reader-extra/src/lib.rs" 'use block2::RcBlock;'
+  plant "$R" "ka-reader-extra/src/lib.rs" '#[link(name = "CoreServices", kind = "framework")]'
   run_structure "$R"
   # QC-13 refuses an Apple name in the bridge. What this case still proves is that it is no QC-9
   # finding, and that a third crate raises nothing.
@@ -579,7 +579,7 @@ test_apple_scope_and_near_names() {
   expect_finding "crates/$BRIDGE_FILE" "$objc_line" QC-13 || return 1
   expect_finding "crates/$BRIDGE_FILE" "$foundation_line" QC-13 || return 1
   expect_no_finding_for ": QC-9: " || return 1
-  expect_no_finding_for "nozoki-extra" || return 1
+  expect_no_finding_for "ka-reader-extra" || return 1
   new_root apple-near || return 1
   plant "$R" "$CORE_FILE" 'fn blocker() { let dispatcher = 1; let metallic = dispatcher; let _ = metallic; }'
   plant "$R" "$CORE_FILE" 'use my_objc2::thing; use objc22::thing; use metal_gear::thing; use cocoa_beans::thing;'
@@ -678,27 +678,27 @@ test_process_grouped_imports_use_the_member_line() {
 
 test_raw_process_text_is_scanned() {
   new_root raw-process || return 1
-  plant "$R" "nozoki-core/src/lib.rs" '/// never calls std::process'
+  plant "$R" "ka-reader-core/src/lib.rs" '/// never calls std::process'
   doc_line="$PLANT_LINE"
-  plant "$R" "nozoki-core/src/lib.rs" 'const NOTE: &str = "std::process";'
+  plant "$R" "ka-reader-core/src/lib.rs" 'const NOTE: &str = "std::process";'
   string_line="$PLANT_LINE"
   run_structure "$R"
   expect_status 1 || return 1
   for text_line in "$doc_line" "$string_line"; do
-    expect_finding "crates/nozoki-core/src/lib.rs" "$text_line" QC-9 || return 1
-    expect_finding "crates/nozoki-core/src/lib.rs" "$text_line" QC-36 || return 1
+    expect_finding "crates/ka-reader-core/src/lib.rs" "$text_line" QC-9 || return 1
+    expect_finding "crates/ka-reader-core/src/lib.rs" "$text_line" QC-36 || return 1
   done
 }
 
 # src/tests/ and src/build.rs are in scope, so the rule reaches them.
 test_nested_source_paths_are_scanned() {
   new_root nested-process || return 1
-  for nested_file in nozoki-core/src/tests/x.rs nozoki-core/src/build.rs; do
+  for nested_file in ka-reader-core/src/tests/x.rs ka-reader-core/src/build.rs; do
     plant "$R" "$nested_file" 'use std::process::Command;'
   done
   run_structure "$R"
   expect_status 1 || return 1
-  for nested_file in nozoki-core/src/tests/x.rs nozoki-core/src/build.rs; do
+  for nested_file in ka-reader-core/src/tests/x.rs ka-reader-core/src/build.rs; do
     expect_finding "crates/$nested_file" 1 QC-36 || return 1
     expect_finding "crates/$nested_file" 1 QC-9 || return 1
   done
@@ -760,9 +760,9 @@ test_process_spellings_and_near_names() {
 # them: by name they cannot be told from socket or pipe I/O.
 LIBC_FILE_CALLS="open openat creat fopen fdopen freopen opendir fdopendir readdir stat lstat fstat fstatat access faccessat mkdir mkdirat rmdir unlink unlinkat rename renameat truncate ftruncate readlink readlinkat symlink link chmod fchmod chown realpath"
 
-CORE_OWNER="nozoki-core/src/fs_reader.rs"
-BRIDGE_OWNER="nozoki-bridge/src/log_writer.rs"
-GIT_OWNER="nozoki-core/src/git_reader/libgit2.rs"
+CORE_OWNER="ka-reader-core/src/fs_reader.rs"
+BRIDGE_OWNER="ka-reader-bridge/src/log_writer.rs"
+GIT_OWNER="ka-reader-core/src/git_reader/libgit2.rs"
 
 test_case_5_core_non_owner_filesystem_is_rejected() {
   new_root case5 || return 1
@@ -775,7 +775,7 @@ test_case_5_core_non_owner_filesystem_is_rejected() {
 # Cases 1, 2, 3 and 5 together, where the scan does not look.
 test_case_7_crate_tests_are_excluded() {
   new_root case7 || return 1
-  plant "$R" "nozoki-core/tests/planted.rs" 'use objc2::runtime::AnyObject;
+  plant "$R" "ka-reader-core/tests/planted.rs" 'use objc2::runtime::AnyObject;
 fn f() { unsafe {} }
 use std::process::Command;
 fn g() { let _ = std::fs::read("x"); }'
@@ -868,10 +868,10 @@ test_every_filesystem_module_and_third_crate_is_checked() {
     expect_finding "crates/$CORE_FILE" "$module_line" QC-15 || return 1
   done
   new_root third-crate-fs || return 1
-  plant "$R" "nozoki-extra/src/lib.rs" 'fn f() { let _ = std::fs::read("x"); }'
+  plant "$R" "ka-reader-extra/src/lib.rs" 'fn f() { let _ = std::fs::read("x"); }'
   run_structure "$R"
   expect_status 1 || return 1
-  expect_finding "crates/nozoki-extra/src/lib.rs" "$PLANT_LINE" QC-15
+  expect_finding "crates/ka-reader-extra/src/lib.rs" "$PLANT_LINE" QC-15
 }
 
 # Exactly three files are exempt, only from QC-15: the same basenames anywhere else are not, and the
@@ -884,7 +884,7 @@ test_owner_exemption_is_exact_and_clause_specific() {
   plant "$R" "$GIT_OWNER" 'fn f() { let _ = std::fs::write("x", "y"); let _ = std::os::unix::fs::symlink("a", "b"); let _ = rustix::fs::stat("x"); let _ = libc::open; }'
   git_owner_line="$PLANT_LINE"
   run_structure "$R"
-  # QC-2 binds nozoki-core with no exemption, so each core owner's write is one QC-2 finding. The
+  # QC-2 binds ka-reader-core with no exemption, so each core owner's write is one QC-2 finding. The
   # owner exemption is QC-15's alone: no QC-15 there, and the bridge owner (outside QC-2) is clean.
   expect_status 1 || return 1
   expect_count "crates/$CORE_OWNER" "$core_owner_line" QC-2 1 || return 1
@@ -894,7 +894,7 @@ test_owner_exemption_is_exact_and_clause_specific() {
   [ "$(stderr_lines_with "crates/$BRIDGE_OWNER:")" -eq 0 ] || fail "the bridge owner is outside QC-2 and exempt from QC-15: $STDERR" || return 1
   [ "$(printf '%s\n' "$STDERR" | grep -c .)" -eq 2 ] || fail "expected the two QC-2 findings, one per core owner, and nothing else: $STDERR" || return 1
   new_root owners-elsewhere || return 1
-  elsewhere="nozoki-core/src/sub/fs_reader.rs nozoki-bridge/src/fs_reader.rs nozoki-core/src/log_writer.rs nozoki-bridge/src/sub/log_writer.rs nozoki-extra/src/fs_reader.rs nozoki-extra/src/log_writer.rs"
+  elsewhere="ka-reader-core/src/sub/fs_reader.rs ka-reader-bridge/src/fs_reader.rs ka-reader-core/src/log_writer.rs ka-reader-bridge/src/sub/log_writer.rs ka-reader-extra/src/fs_reader.rs ka-reader-extra/src/log_writer.rs"
   for elsewhere_file in $elsewhere; do
     plant "$R" "$elsewhere_file" 'fn f() { let _ = std::fs::write("x", "y"); }'
   done
@@ -966,7 +966,7 @@ test_git_owner_other_rules_still_bind() {
 # exempt.
 test_exemption_is_exact_for_the_adapter_name() {
   new_root git-owner-elsewhere || return 1
-  adapter_elsewhere="nozoki-core/src/git_reader.rs nozoki-core/src/libgit2.rs nozoki-core/src/git_reader/sub/libgit2.rs nozoki-core/src/sub/git_reader/libgit2.rs nozoki-bridge/src/git_reader/libgit2.rs nozoki-extra/src/git_reader/libgit2.rs"
+  adapter_elsewhere="ka-reader-core/src/git_reader.rs ka-reader-core/src/libgit2.rs ka-reader-core/src/git_reader/sub/libgit2.rs ka-reader-core/src/sub/git_reader/libgit2.rs ka-reader-bridge/src/git_reader/libgit2.rs ka-reader-extra/src/git_reader/libgit2.rs"
   for adapter_file in $adapter_elsewhere; do
     plant "$R" "$adapter_file" 'fn f() { let _ = std::fs::write("x", "y"); }'
     adapter_plant_line="$PLANT_LINE"
@@ -1026,14 +1026,14 @@ test_non_filesystem_forms_pass() {
 # S1 over the whole checker: the copy holds every form the clean tree is said to hold, and passes.
 test_complete_clean_tree_passes() {
   new_root complete-clean || return 1
-  grep -q 'unsafe' "$R"/crates/nozoki-bridge/src/*.rs || fail "the copy no longer holds the bridge's unsafe" || return 1
+  grep -q 'unsafe' "$R"/crates/ka-reader-bridge/src/*.rs || fail "the copy no longer holds the bridge's unsafe" || return 1
   grep -q 'std::fs' "$R/crates/$CORE_OWNER" || fail "the copy no longer holds the core owner's filesystem module" || return 1
   grep -q 'std::fs' "$R/crates/$BRIDGE_OWNER" || fail "the copy no longer holds the bridge owner's filesystem module" || return 1
-  grep -q 'include_str!' "$R/crates/nozoki-core/src/highlighter.rs" || fail "the copy no longer holds highlighter.rs's include_str!" || return 1
-  grep -q 'libc::getpwuid_r' "$R/crates/nozoki-bridge/src/log_install.rs" || fail "the copy no longer holds log_install.rs's getpwuid_r" || return 1
-  [ -d "$R/crates/nozoki-core/tests" ] || fail "the copy no longer holds the excluded tests/ files" || return 1
+  grep -q 'include_str!' "$R/crates/ka-reader-core/src/highlighter.rs" || fail "the copy no longer holds highlighter.rs's include_str!" || return 1
+  grep -q 'libc::getpwuid_r' "$R/crates/ka-reader-bridge/src/log_install.rs" || fail "the copy no longer holds log_install.rs's getpwuid_r" || return 1
+  [ -d "$R/crates/ka-reader-core/tests" ] || fail "the copy no longer holds the excluded tests/ files" || return 1
   grep -q '\.read(true)' "$R/crates/$CORE_OWNER" || fail "the copy no longer holds the core owner's read-only open" || return 1
-  grep -q 'std::env::current_exe' "$R/crates/nozoki-bridge/src/log_install.rs" || fail "the copy no longer holds log_install.rs's current_exe" || return 1
+  grep -q 'std::env::current_exe' "$R/crates/ka-reader-bridge/src/log_install.rs" || fail "the copy no longer holds log_install.rs's current_exe" || return 1
   grep -q 'std::env::temp_dir' "$R/crates/$BRIDGE_OWNER" || fail "the copy no longer holds log_writer.rs's temp_dir" || return 1
   find "$R"/crates/*/tests -type f -name '*.rs' | grep -q . || fail "the copy holds no Rust test file under crates/*/tests/" || return 1
   run_structure "$R"
@@ -1088,7 +1088,7 @@ test_distinct_clauses_on_one_line_are_reported() {
     || fail "expected one filesystem QC-15 clause: $STDERR" || return 1
   expect_stderr_contains 'Apple framework' || return 1
   expect_stderr_contains '`unsafe`' || return 1
-  expect_stderr_contains 'std::process named in nozoki-core' || return 1
+  expect_stderr_contains 'std::process named in ka-reader-core' || return 1
 }
 
 # CP-393 and design B require the status comparison after the last case, including selection.
@@ -1099,7 +1099,7 @@ test_suite_checks_origin_after_selected_case() {
   cp "$ROOT/checks/tests/test_structure.sh" "$R/checks/tests/test_structure.sh" || return 1
   git -C "$R" init -q || return 1
   printf '\ntouch %q\n' "$R/unexpected" >> "$R/checks/structure.sh"
-  selected="$(NOZOKI_TEST_ONLY=test_clean_copy_passes "$R/checks/tests/test_structure.sh" 2>&1)"
+  selected="$(KA_READER_TEST_ONLY=test_clean_copy_passes "$R/checks/tests/test_structure.sh" 2>&1)"
   selected_status=$?
   [ "$selected_status" -ne 0 ] || fail "suite passed after the selected case dirtied its origin: $selected" || return 1
   case "$selected" in
@@ -1114,13 +1114,13 @@ test_suite_checks_origin_after_selected_case() {
 # created by the append below.
 test_listed_bridge_crates_pass() {
   new_root listed-crates || return 1
-  for required in checks/deps.allow crates/nozoki-core/Cargo.toml crates/nozoki-bridge/Cargo.toml; do
+  for required in checks/deps.allow crates/ka-reader-core/Cargo.toml crates/ka-reader-bridge/Cargo.toml; do
     [ -r "$R/$required" ] || fail "the copy carries no readable $required" || return 1
   done
   cmp -s "$ROOT/checks/deps.allow" "$R/checks/deps.allow" \
     || fail "the copy's checks/deps.allow differs from the originating tree's" || return 1
   printf '\n# a comment between entries\n\nzzz-listed\n' >> "$R/checks/deps.allow"
-  plant "$R" "nozoki-bridge/src/boundary.rs" 'mod sibling_module;'
+  plant "$R" "ka-reader-bridge/src/boundary.rs" 'mod sibling_module;'
   plant "$R" "$BRIDGE_FILE" 'use serde_json::Value; use tree_sitter::Parser; use zzz_listed::Thing;'
   plant "$R" "$BRIDGE_FILE" 'use serde_json::Value as Json; use serde_json::{self, Map};'
   plant "$R" "$BRIDGE_FILE" 'use zzz_listed::Thing as Alias; fn al() { Alias::x(); }'
@@ -1132,7 +1132,7 @@ test_listed_bridge_crates_pass() {
   plant "$R" "$BRIDGE_FILE" '#[allow(clippy::x)] #[rustfmt::skip] fn t() {}'
   plant "$R" "$BRIDGE_FILE" '// tokio::spawn'
   plant "$R" "$BRIDGE_FILE" 'const T: &str = "reqwest::get";'
-  plant "$R" "nozoki-extra/src/lib.rs" 'use objc2::runtime::AnyObject;'
+  plant "$R" "ka-reader-extra/src/lib.rs" 'use objc2::runtime::AnyObject;'
   run_structure "$R"
   expect_status 0 || return 1
   expect_stderr_empty || return 1
@@ -1141,11 +1141,11 @@ test_listed_bridge_crates_pass() {
 # --- the cases of the unit-graph change: unit edges, the bridge's import set, the shipped manifests
 # and the logger clause ---
 
-HL_FILE="nozoki-core/src/highlighter.rs"
-FS_FILE="nozoki-core/src/fs_reader.rs"
-LANG_FILE="nozoki-core/src/language.rs"
-CORE_MANIFEST="nozoki-core/Cargo.toml"
-BRIDGE_MANIFEST="nozoki-bridge/Cargo.toml"
+HL_FILE="ka-reader-core/src/highlighter.rs"
+FS_FILE="ka-reader-core/src/fs_reader.rs"
+LANG_FILE="ka-reader-core/src/language.rs"
+CORE_MANIFEST="ka-reader-core/Cargo.toml"
+BRIDGE_MANIFEST="ka-reader-bridge/Cargo.toml"
 
 # A finding line `<path>:<line>: <QC-n>: <what>` whose <what> carries the text $4.
 expect_finding_naming() {
@@ -1246,7 +1246,7 @@ test_folder_model_own_state_is_rejected() {
   super_line="$PLANT_LINE"
   plant "$R" "$CORE_FILE" 'use super::own_state;'
   use_super_line="$PLANT_LINE"
-  plant "$R" "$CORE_FILE" 'fn n() { self::own_state::x(); nozoki_core::own_state::y(); let own_state = 1; let _ = own_state; }'
+  plant "$R" "$CORE_FILE" 'fn n() { self::own_state::x(); ka_reader_core::own_state::y(); let own_state = 1; let _ = own_state; }'
   none_line="$PLANT_LINE"
   run_structure "$R"
   expect_status 1 || return 1
@@ -1278,11 +1278,11 @@ test_highlighter_forbidden_units_are_rejected() {
   two_line="$PLANT_LINE"
   plant "$R" "$HL_FILE" 'fn d() { crate::fs_reader::a(); crate::fs_reader::b(); }'
   duplicate_line="$PLANT_LINE"
-  plant "$R" "nozoki-core/src/highlighter/extra.rs" 'use crate::fs_reader::Entry;'
+  plant "$R" "ka-reader-core/src/highlighter/extra.rs" 'use crate::fs_reader::Entry;'
   extra_line="$PLANT_LINE"
-  plant "$R" "nozoki-core/src/highlighter/deep/more.rs" 'use crate::folder_model::Thing;'
+  plant "$R" "ka-reader-core/src/highlighter/deep/more.rs" 'use crate::folder_model::Thing;'
   deep_line="$PLANT_LINE"
-  plant "$R" "nozoki-core/src/highlighter_ext.rs" 'use crate::fs_reader::Entry;'
+  plant "$R" "ka-reader-core/src/highlighter_ext.rs" 'use crate::fs_reader::Entry;'
   ext_line="$PLANT_LINE"
   run_structure "$R"
   expect_status 1 || return 1
@@ -1293,11 +1293,11 @@ test_highlighter_forbidden_units_are_rejected() {
   expect_count "crates/$HL_FILE" "$duplicate_line" QC-11 1 || return 1
   expect_finding_naming "crates/$HL_FILE" "$two_line" QC-11 "fs_reader" || return 1
   expect_finding_naming "crates/$HL_FILE" "$two_line" QC-11 "watcher" || return 1
-  expect_finding "crates/nozoki-core/src/highlighter/extra.rs" "$extra_line" QC-11 || return 1
-  expect_finding "crates/nozoki-core/src/highlighter/deep/more.rs" "$deep_line" QC-11 || return 1
+  expect_finding "crates/ka-reader-core/src/highlighter/extra.rs" "$extra_line" QC-11 || return 1
+  expect_finding "crates/ka-reader-core/src/highlighter/deep/more.rs" "$deep_line" QC-11 || return 1
   # A prefix-named file is no unit's file: no QC-10/QC-11 there, and the value-module rule reports it.
-  expect_no_unit_rule "crates/nozoki-core/src/highlighter_ext.rs" "$ext_line" || return 1
-  expect_qc63_once "crates/nozoki-core/src/highlighter_ext.rs" "$ext_line" "fs_reader" || return 1
+  expect_no_unit_rule "crates/ka-reader-core/src/highlighter_ext.rs" "$ext_line" || return 1
+  expect_qc63_once "crates/ka-reader-core/src/highlighter_ext.rs" "$ext_line" "fs_reader" || return 1
 }
 
 # CP-430 row 4.
@@ -1333,7 +1333,7 @@ test_fs_reader_forbidden_units_are_rejected() {
 # CP-430 row 5.
 test_root_reexport_reaches_the_unit() {
   new_root reexport-root-group || return 1
-  plant "$R" "nozoki-core/src/lib.rs" 'pub use crate::{
+  plant "$R" "ka-reader-core/src/lib.rs" 'pub use crate::{
     highlighter::{Span as LocalSpan},
     fs_reader::{Entry as GroupedEntry, Condition as GroupedCondition},
 };'
@@ -1347,7 +1347,7 @@ test_root_reexport_reaches_the_unit() {
   expect_count "crates/$HL_FILE" "$grouped_line" QC-11 1 || return 1
   expect_count "crates/$HL_FILE" "$local_line" QC-11 0 || return 1
   new_root reexport || return 1
-  plant "$R" "nozoki-core/src/lib.rs" 'pub use fs_reader::{NewThing, Entry as Renamed};'
+  plant "$R" "ka-reader-core/src/lib.rs" 'pub use fs_reader::{NewThing, Entry as Renamed};'
   plant "$R" "$HL_FILE" 'fn f(_: crate::Entry) {}'
   entry_line="$PLANT_LINE"
   plant "$R" "$HL_FILE" 'use crate::{Condition, language::Language};'
@@ -1379,7 +1379,7 @@ test_fs_reader_imports_folder_model_is_rejected() {
   new_root fs-reader-folder-model || return 1
   plant "$R" "$FS_FILE" 'use crate::folder_model::OpenFailure;'
   direct_line="$PLANT_LINE"
-  plant "$R" "nozoki-core/src/fs_reader/extra.rs" 'use crate::folder_model::OpenFailure;'
+  plant "$R" "ka-reader-core/src/fs_reader/extra.rs" 'use crate::folder_model::OpenFailure;'
   extra_line="$PLANT_LINE"
   plant "$R" "$FS_FILE" 'fn s() { super::super::folder_model::open_folder(); }'
   super_line="$PLANT_LINE"
@@ -1401,8 +1401,8 @@ test_fs_reader_imports_folder_model_is_rejected() {
     printf '%s\n' "$STDERR" | grep -Fx "crates/$FS_FILE:$hit_line: QC-11: fs_reader imports folder_model" > /dev/null ||
       fail "expected the complete QC-11 finding at crates/$FS_FILE:$hit_line. stderr: $STDERR" || return 1
   done
-  expect_count "crates/nozoki-core/src/fs_reader/extra.rs" "$extra_line" QC-11 1 || return 1
-  printf '%s\n' "$STDERR" | grep -Fx "crates/nozoki-core/src/fs_reader/extra.rs:$extra_line: QC-11: fs_reader imports folder_model" > /dev/null ||
+  expect_count "crates/ka-reader-core/src/fs_reader/extra.rs" "$extra_line" QC-11 1 || return 1
+  printf '%s\n' "$STDERR" | grep -Fx "crates/ka-reader-core/src/fs_reader/extra.rs:$extra_line: QC-11: fs_reader imports folder_model" > /dev/null ||
     fail "expected the complete QC-11 finding in fs_reader/extra.rs. stderr: $STDERR" || return 1
   expect_count "crates/$FS_FILE" "$reader_name_line" QC-11 0 || return 1
   expect_count "crates/$CORE_FILE" "$model_line" QC-10 0 || return 1
@@ -1517,7 +1517,7 @@ package = "checks"'
   for hit_line in "$package_line" "$quoted_line" "$dotted_line" "$dotted_package_line" "$nested_line" "$header_package_line"; do
     expect_finding "crates/$BRIDGE_MANIFEST" "$hit_line" QC-14 || return 1
   done
-  expect_finding_naming "crates/$BRIDGE_MANIFEST" "$package_line" QC-14 "nozoki-bridge" || return 1
+  expect_finding_naming "crates/$BRIDGE_MANIFEST" "$package_line" QC-14 "ka-reader-bridge" || return 1
   new_root manifest-name-nested || return 1
   plant "$R" "$CORE_MANIFEST" "[target.'cfg(unix)']
 dependencies = { checks = { version = \"1\" } }"
@@ -1581,7 +1581,7 @@ path = \"$physical_root/checks/probe\""
   absolute_line=$((PLANT_LINE + 1))
   plant "$R" "$HL_FILE" 'use crate::fs_reader::Entry;'
   highlighter_line="$PLANT_LINE"
-  plant "$R" "nozoki-core/src/highlighter/zz.rs" '// one
+  plant "$R" "ka-reader-core/src/highlighter/zz.rs" '// one
 use crate::fs_reader::A;
 // 3
 // 4
@@ -1603,7 +1603,7 @@ use crate::fs_reader::B;'
   expect_finding "crates/$HL_FILE" "$highlighter_line" QC-11 || return 1
   expect_before "crates/$BRIDGE_MANIFEST:$walker_line: " "crates/$CORE_MANIFEST:$target_line: " || return 1
   expect_before "crates/$CORE_MANIFEST:$absolute_line: " "crates/$HL_FILE:$highlighter_line: " || return 1
-  expect_before "crates/nozoki-core/src/highlighter/zz.rs:$second_line: " "crates/nozoki-core/src/highlighter/zz.rs:$tenth_line: " || return 1
+  expect_before "crates/ka-reader-core/src/highlighter/zz.rs:$second_line: " "crates/ka-reader-core/src/highlighter/zz.rs:$tenth_line: " || return 1
 }
 
 # CP-430 row 11. The library target, as it ships, may not live under checks/.
@@ -1669,8 +1669,8 @@ test_set_logger_outside_the_bridge_is_rejected() {
   hit_lines="$hit_lines $LANG_FILE:$PLANT_LINE"
   plant "$R" "$CORE_FILE" 'fn j() { ::log :: set_logger(&W); }'
   hit_lines="$hit_lines $CORE_FILE:$PLANT_LINE"
-  plant "$R" "nozoki-core/examples/x.rs" 'log::set_logger(&W);'
-  hit_lines="$hit_lines nozoki-core/examples/x.rs:$PLANT_LINE"
+  plant "$R" "ka-reader-core/examples/x.rs" 'log::set_logger(&W);'
+  hit_lines="$hit_lines ka-reader-core/examples/x.rs:$PLANT_LINE"
   plant "$R" "$CORE_FILE" 'use log::{info, set_logger};'
   hit_lines="$hit_lines $CORE_FILE:$PLANT_LINE"
   plant "$R" "$CORE_FILE" 'use log::{
@@ -1678,8 +1678,8 @@ test_set_logger_outside_the_bridge_is_rejected() {
     set_logger,
 };'
   hit_lines="$hit_lines $CORE_FILE:$((PLANT_LINE + 2))"
-  plant "$R" "nozoki-bridge/src_old/y.rs" 'fn y() { log::set_logger(&W); }'
-  hit_lines="$hit_lines nozoki-bridge/src_old/y.rs:$PLANT_LINE"
+  plant "$R" "ka-reader-bridge/src_old/y.rs" 'fn y() { log::set_logger(&W); }'
+  hit_lines="$hit_lines ka-reader-bridge/src_old/y.rs:$PLANT_LINE"
   plant "$R" "$CORE_FILE" 'fn k() { log::set_logger_racy(&W); mylog::set_logger(&W); ulog :: set_logger(&W); }'
   near_line="$PLANT_LINE"
   run_structure "$R"
@@ -1702,8 +1702,8 @@ test_set_boxed_logger_outside_the_bridge_is_rejected() {
   hit_lines="$hit_lines $HL_FILE:$PLANT_LINE"
   plant "$R" "$HL_FILE" 'const S: &str = "log::set_boxed_logger";'
   hit_lines="$hit_lines $HL_FILE:$PLANT_LINE"
-  plant "$R" "nozoki-bridge/examples/x.rs" 'log::set_boxed_logger(Box::new(W));'
-  hit_lines="$hit_lines nozoki-bridge/examples/x.rs:$PLANT_LINE"
+  plant "$R" "ka-reader-bridge/examples/x.rs" 'log::set_boxed_logger(Box::new(W));'
+  hit_lines="$hit_lines ka-reader-bridge/examples/x.rs:$PLANT_LINE"
   plant "$R" "$FS_FILE" 'use log::set_boxed_logger as boxed;'
   hit_lines="$hit_lines $FS_FILE:$PLANT_LINE"
   run_structure "$R"
@@ -1713,7 +1713,7 @@ test_set_boxed_logger_outside_the_bridge_is_rejected() {
     expect_count "crates/${hit%:*}" "${hit##*:}" QC-61 1 || return 1
   done
   new_root set-boxed-logger-clean || return 1
-  plant "$R" "nozoki-bridge/src/inner/deep.rs" 'fn i() { log::set_boxed_logger(Box::new(W)); }
+  plant "$R" "ka-reader-bridge/src/inner/deep.rs" 'fn i() { log::set_boxed_logger(Box::new(W)); }
 use log::set_logger as install;'
   run_structure "$R"
   expect_status 0 || return 1
@@ -1724,7 +1724,7 @@ use log::set_logger as install;'
 # still read before the verdict.
 test_required_inputs_are_read() {
   missing_index=0
-  for required in checks/deps.allow crates/nozoki-core/Cargo.toml crates/nozoki-bridge/Cargo.toml; do
+  for required in checks/deps.allow crates/ka-reader-core/Cargo.toml crates/ka-reader-bridge/Cargo.toml; do
     missing_index=$((missing_index + 1))
     new_root "required-missing-$missing_index" || return 1
     remove_input "$required"
@@ -1780,7 +1780,7 @@ test_allowed_unit_edges_pass() {
   plant "$R" "$CORE_FILE" 'use crate::fs_reader; use crate::highlighter;'
   plant "$R" "$FS_FILE" 'use crate::language::Language;'
   plant "$R" "$HL_FILE" 'use crate::language::Language;'
-  plant "$R" "$HL_FILE" '//! see nozoki_core::Entry and nozoki_core::folder_model::FileView'
+  plant "$R" "$HL_FILE" '//! see ka_reader_core::Entry and ka_reader_core::folder_model::FileView'
   plant "$R" "$HL_FILE" 'fn near() { let fs_reader = 1; let _ = fs_reader; self::watcher::x(); }'
   run_structure "$R"
   expect_status 0 || return 1
@@ -1812,7 +1812,7 @@ name = \"n\"
 path = \"../../checks/n.rs\"
 # a comment naming ../../checks/walk.rs"
   plant "$R" "$BRIDGE_MANIFEST" 'near = { path = "../../checksum" }
-round = { path = "../../checks/../crates/nozoki-core" }
+round = { path = "../../checks/../crates/ka-reader-core" }
 decoy = { version = "1", features = ["path = \"../../checks\"", "../../checks/x"] }
 text = "checks"'
   run_structure "$R"
@@ -1832,8 +1832,8 @@ ENV_MEMBERS="args args_os var var_os vars vars_os"
 ENV_LIBC_MEMBERS="getenv environ _NSGetEnviron _NSGetArgv _NSGetArgc"
 SOCKET_LIBC_CALLS="socket socketpair connect bind listen accept accept4"
 
-CORE_TESTS_FILE="nozoki-core/tests/planted.rs"
-BIN_EXE_TEXT='let exe = env!("CARGO_BIN_EXE_nozoki");'
+CORE_TESTS_FILE="ka-reader-core/tests/planted.rs"
+BIN_EXE_TEXT='let exe = env!("CARGO_BIN_EXE_ka_reader");'
 
 # The lines (set by plant_line) the case's plants landed on, each to be asserted below.
 PLANTED_LINES=""
@@ -1863,9 +1863,9 @@ test_core_write_api_is_rejected() {
   core_line="$PLANT_LINE"
   plant "$R" "$BRIDGE_FILE" 'fn f() { let _ = std::fs::write("x", "y"); }'
   bridge_line="$PLANT_LINE"
-  plant "$R" "nozoki-extra/src/lib.rs" 'fn f() { let _ = std::fs::write("x", "y"); }'
+  plant "$R" "ka-reader-extra/src/lib.rs" 'fn f() { let _ = std::fs::write("x", "y"); }'
   extra_line="$PLANT_LINE"
-  plant "$R" "nozoki-core/src/own_state.rs" 'fn f() { let _ = std::fs::write("x", "y"); }'
+  plant "$R" "ka-reader-core/src/own_state.rs" 'fn f() { let _ = std::fs::write("x", "y"); }'
   own_state_line="$PLANT_LINE"
   run_structure "$R"
   expect_status 1 || return 1
@@ -1873,8 +1873,8 @@ test_core_write_api_is_rejected() {
   expect_count "crates/$CORE_FILE" "$core_line" QC-15 1 || return 1
   expect_count "crates/$BRIDGE_FILE" "$bridge_line" QC-2 0 || return 1
   expect_count "crates/$BRIDGE_FILE" "$bridge_line" QC-15 1 || return 1
-  expect_count "crates/nozoki-extra/src/lib.rs" "$extra_line" QC-2 0 || return 1
-  expect_count "crates/nozoki-core/src/own_state.rs" "$own_state_line" QC-2 1 || return 1
+  expect_count "crates/ka-reader-extra/src/lib.rs" "$extra_line" QC-2 0 || return 1
+  expect_count "crates/ka-reader-core/src/own_state.rs" "$own_state_line" QC-2 1 || return 1
 }
 
 test_write_api_members_are_rejected() {
@@ -2009,11 +2009,11 @@ test_env_reads_are_rejected() {
   expect_count "crates/$BRIDGE_OWNER" "$PLANT_LINE" QC-30 1 || return 1
   expect_count "crates/$BRIDGE_OWNER" "$PLANT_LINE" QC-58 1 || return 1
   new_root env-third || return 1
-  plant "$R" "nozoki-extra/src/lib.rs" 'fn f() { let _ = std::env::args_os(); }'
+  plant "$R" "ka-reader-extra/src/lib.rs" 'fn f() { let _ = std::env::args_os(); }'
   run_structure "$R"
   expect_status 1 || return 1
-  expect_count "crates/nozoki-extra/src/lib.rs" "$PLANT_LINE" QC-30 1 || return 1
-  expect_count "crates/nozoki-extra/src/lib.rs" "$PLANT_LINE" QC-58 1 || return 1
+  expect_count "crates/ka-reader-extra/src/lib.rs" "$PLANT_LINE" QC-30 1 || return 1
+  expect_count "crates/ka-reader-extra/src/lib.rs" "$PLANT_LINE" QC-58 1 || return 1
 }
 
 test_env_near_names_pass() {
@@ -2031,13 +2031,13 @@ const W: Option<&str> = option_env!("X");'
 
 test_config_reads_are_rejected() {
   new_root config-reads || return 1
-  plant "$R" "$CORE_OWNER" 'fn f() { let _ = std::fs::read_to_string("/Users/a/.config/nozoki/settings.toml"); }'
+  plant "$R" "$CORE_OWNER" 'fn f() { let _ = std::fs::read_to_string("/Users/a/.config/ka-reader/settings.toml"); }'
   owner_line="$PLANT_LINE"
   PLANTED_LINES=""
-  plant_line "$R" "$BRIDGE_FILE" 'const C1_PATH: &str = "/home/u/.config/nozoki";'
+  plant_line "$R" "$BRIDGE_FILE" 'const C1_PATH: &str = "/home/u/.config/ka-reader";'
   plant_line "$R" "$BRIDGE_FILE" 'const C1_END: &str = "/home/u/.config";'
-  plant_line "$R" "$BRIDGE_FILE" 'const C2: &str = "Library/Preferences/nozoki.plist";'
-  plant_line "$R" "$BRIDGE_FILE" 'const C3: &str = "/etc/nozoki.conf";'
+  plant_line "$R" "$BRIDGE_FILE" 'const C2: &str = "Library/Preferences/ka-reader.plist";'
+  plant_line "$R" "$BRIDGE_FILE" 'const C3: &str = "/etc/ka-reader.conf";'
   plant_line "$R" "$BRIDGE_FILE" 'fn c4a() { let _ = config_dir(); }'
   plant_line "$R" "$BRIDGE_FILE" 'fn c4b() { let _ = config_local_dir(); }'
   plant_line "$R" "$BRIDGE_FILE" 'fn c4c() { let _ = preference_dir(); }'
@@ -2161,30 +2161,30 @@ test_bin_exe_under_tests_is_rejected() {
   new_root bin-exe || return 1
   plant "$R" "$CORE_TESTS_FILE" "$BIN_EXE_TEXT"
   core_line="$PLANT_LINE"
-  plant "$R" "nozoki-bridge/tests/common/sub/deep.rs" "$BIN_EXE_TEXT"
+  plant "$R" "ka-reader-bridge/tests/common/sub/deep.rs" "$BIN_EXE_TEXT"
   deep_line="$PLANT_LINE"
-  plant "$R" "nozoki-extra/tests/t.rs" '// CARGO_BIN_EXE_x'
+  plant "$R" "ka-reader-extra/tests/t.rs" '// CARGO_BIN_EXE_x'
   comment_line="$PLANT_LINE"
-  plant "$R" "nozoki-extra/tests/t.rs" 'let s = format!("CARGO_BIN_EXE_{}", n);'
+  plant "$R" "ka-reader-extra/tests/t.rs" 'let s = format!("CARGO_BIN_EXE_{}", n);'
   string_line="$PLANT_LINE"
-  plant "$R" "nozoki-extra/tests/t.rs" 'let a = "CARGO_BIN_EXE_a"; let b = "CARGO_BIN_EXE_b";'
+  plant "$R" "ka-reader-extra/tests/t.rs" 'let a = "CARGO_BIN_EXE_a"; let b = "CARGO_BIN_EXE_b";'
   twice_line="$PLANT_LINE"
-  plant "$R" "nozoki-extra/tests/t.rs" 'let m = "MY_CARGO_BIN_EXE_X";'
+  plant "$R" "ka-reader-extra/tests/t.rs" 'let m = "MY_CARGO_BIN_EXE_X";'
   embedded_line="$PLANT_LINE"
   run_structure "$R"
   expect_status 1 || return 1
   expect_count "crates/$CORE_TESTS_FILE" "$core_line" layer-5 1 || return 1
-  expect_count "crates/nozoki-bridge/tests/common/sub/deep.rs" "$deep_line" layer-5 1 || return 1
+  expect_count "crates/ka-reader-bridge/tests/common/sub/deep.rs" "$deep_line" layer-5 1 || return 1
   for extra_line in "$comment_line" "$string_line" "$twice_line" "$embedded_line"; do
-    expect_count "crates/nozoki-extra/tests/t.rs" "$extra_line" layer-5 1 || return 1
+    expect_count "crates/ka-reader-extra/tests/t.rs" "$extra_line" layer-5 1 || return 1
   done
 }
 
 test_bin_exe_outside_tests_passes() {
   new_root bin-exe-outside || return 1
   plant "$R" "$CORE_FILE" "$BIN_EXE_TEXT"
-  plant "$R" "nozoki-core/src/tests/x.rs" "$BIN_EXE_TEXT"
-  plant "$R" "nozoki-core/build.rs" "$BIN_EXE_TEXT"
+  plant "$R" "ka-reader-core/src/tests/x.rs" "$BIN_EXE_TEXT"
+  plant "$R" "ka-reader-core/build.rs" "$BIN_EXE_TEXT"
   run_structure "$R"
   expect_status 0 || return 1
   expect_stderr_empty || return 1
@@ -2197,7 +2197,7 @@ test_boundary_breaches_under_tests_pass() {
     'fn f() { let _ = std::fs::write("x", "y"); }' \
     'fn f() { let _ = std::env::args(); }' \
     'fn f() { let _ = std::env::var("X"); }' \
-    'fn f() { let _ = std::fs::read_to_string("/Users/a/.config/nozoki/settings.toml"); }' \
+    'fn f() { let _ = std::fs::read_to_string("/Users/a/.config/ka-reader/settings.toml"); }' \
     'fn f() { let _ = std::net::TcpStream::connect("127.0.0.1:1"); }'; do
     breach_number=$((breach_number + 1))
     new_root "breach-under-tests-$breach_number" || return 1
@@ -2240,20 +2240,20 @@ test_new_findings_join_one_report() {
   plant "$R" "$CORE_TESTS_FILE" "$BIN_EXE_TEXT"
   tests_line="$PLANT_LINE"
   # Findings of one file come out in numeric line order: lines 2 and 10 sort the other way as text.
-  plant "$R" "nozoki-extra/tests/t.rs" 'fn filler_1() {}'
-  plant "$R" "nozoki-extra/tests/t.rs" '// CARGO_BIN_EXE_a'
+  plant "$R" "ka-reader-extra/tests/t.rs" 'fn filler_1() {}'
+  plant "$R" "ka-reader-extra/tests/t.rs" '// CARGO_BIN_EXE_a'
   for filler in 3 4 5 6 7 8 9; do
-    plant "$R" "nozoki-extra/tests/t.rs" "fn filler_$filler() {}"
+    plant "$R" "ka-reader-extra/tests/t.rs" "fn filler_$filler() {}"
   done
-  plant "$R" "nozoki-extra/tests/t.rs" '// CARGO_BIN_EXE_b'
+  plant "$R" "ka-reader-extra/tests/t.rs" '// CARGO_BIN_EXE_b'
   run_structure "$R"
   expect_status 1 || return 1
   expect_count "crates/$CORE_FILE" "$write_line" QC-2 1 || return 1
   expect_count "crates/$CORE_TESTS_FILE" "$tests_line" layer-5 1 || return 1
   expect_before "crates/$CORE_FILE:" "crates/$CORE_TESTS_FILE:" || return 1
-  extra_order="$(printf '%s\n' "$STDERR" | grep ': layer-5: ' | grep 'nozoki-extra' | cut -d: -f1,2)"
-  [ "$extra_order" = "crates/nozoki-extra/tests/t.rs:2
-crates/nozoki-extra/tests/t.rs:10" ] || fail "layer-5 findings out of numeric line order: $extra_order" || return 1
+  extra_order="$(printf '%s\n' "$STDERR" | grep ': layer-5: ' | grep 'ka-reader-extra' | cut -d: -f1,2)"
+  [ "$extra_order" = "crates/ka-reader-extra/tests/t.rs:2
+crates/ka-reader-extra/tests/t.rs:10" ] || fail "layer-5 findings out of numeric line order: $extra_order" || return 1
   new_root one-line-clauses || return 1
   plant "$R" "$CORE_FILE" 'fn f() { let _ = std::env::var("X"); let _ = std::net::TcpStream::connect("a"); }'
   env_socket_line="$PLANT_LINE"
@@ -2276,7 +2276,7 @@ crates/nozoki-extra/tests/t.rs:10" ] || fail "layer-5 findings out of numeric li
 
 test_build_script_reads_stay_excluded() {
   new_root build-script || return 1
-  plant "$R" "nozoki-core/build.rs" 'fn main() {
+  plant "$R" "ka-reader-core/build.rs" 'fn main() {
     let _ = std::env::var("X");
     let _ = std::env::args();
     let _ = std::fs::write("x", "y");
@@ -2289,8 +2289,8 @@ test_build_script_reads_stay_excluded() {
 
 test_test_only_crate_does_not_change_shipped_counts() {
   new_root test-only-crate || return 1
-  plant "$R" "nozoki-testonly/tests/t.rs" 'fn f() {}'
-  [ -f "$R/crates/nozoki-testonly/tests/t.rs" ] || fail "the test-only crate was not planted" || return 1
+  plant "$R" "ka-reader-testonly/tests/t.rs" 'fn f() {}'
+  [ -f "$R/crates/ka-reader-testonly/tests/t.rs" ] || fail "the test-only crate was not planted" || return 1
   run_structure "$R"
   expect_status 0 || return 1
   expect_stderr_empty || return 1
@@ -2300,13 +2300,13 @@ test_test_only_crate_does_not_change_shipped_counts() {
     *) fail "expected the shipped counts $EXPECT_FILES files and $EXPECT_CRATE_COUNT crates only. stdout: $STDOUT" || return 1 ;;
   esac
   case "$EXPECT_CRATES" in
-    *nozoki-testonly*) fail "the test-only crate was counted as a shipped crate" || return 1 ;;
+    *ka-reader-testonly*) fail "the test-only crate was counted as a shipped crate" || return 1 ;;
   esac
 }
 
 # --- QC-63: a file of no unit imports no unit ---
 
-VALUE_ERROR_FILE="nozoki-core/src/error.rs"
+VALUE_ERROR_FILE="ka-reader-core/src/error.rs"
 
 # No QC-10 and no QC-11 finding at path $1, line $2.
 expect_no_unit_rule() {
@@ -2362,7 +2362,7 @@ test_value_module_import_forms_are_rejected() {
   lang_path="crates/$LANG_FILE"
   plant "$R" "$LANG_FILE" 'mod t { use super::super::folder_model::FileView; }'
   super_line="$PLANT_LINE"
-  plant "$R" "nozoki-core/src/paths.rs" 'use crate::Entry;'
+  plant "$R" "ka-reader-core/src/paths.rs" 'use crate::Entry;'
   reexport_line="$PLANT_LINE"
   plant "$R" "$VALUE_ERROR_FILE" 'use crate::{
     fs_reader::Entry,
@@ -2388,7 +2388,7 @@ test_value_module_import_forms_are_rejected() {
   run_structure "$R"
   expect_status 1 || return 1
   expect_qc63_once "$lang_path" "$super_line" "folder_model" || return 1
-  expect_qc63_once "crates/nozoki-core/src/paths.rs" "$reexport_line" "fs_reader" || return 1
+  expect_qc63_once "crates/ka-reader-core/src/paths.rs" "$reexport_line" "fs_reader" || return 1
   expect_qc63_once "$error_path" $((tree_start + 1)) "fs_reader" || return 1
   expect_qc63_once "$error_path" $((tree_start + 2)) "highlighter" || return 1
   expect_count "$error_path" "$tree_start" QC-63 0 || return 1
@@ -2403,18 +2403,18 @@ test_value_module_import_forms_are_rejected() {
 # CP-471: lib.rs is read on every run, so a re-export that changes target changes the finding.
 test_value_module_reexports_are_read_on_every_run() {
   new_root value-module-live-reexport || return 1
-  lib_rs="$R/crates/nozoki-core/src/lib.rs"
-  paths_path="crates/nozoki-core/src/paths.rs"
-  plant "$R" "nozoki-core/src/lib.rs" 'pub use crate::fs_reader::Entry as ValueBoundaryProbe;'
-  plant "$R" "nozoki-core/src/paths.rs" 'use crate::ValueBoundaryProbe;'
+  lib_rs="$R/crates/ka-reader-core/src/lib.rs"
+  paths_path="crates/ka-reader-core/src/paths.rs"
+  plant "$R" "ka-reader-core/src/lib.rs" 'pub use crate::fs_reader::Entry as ValueBoundaryProbe;'
+  plant "$R" "ka-reader-core/src/paths.rs" 'use crate::ValueBoundaryProbe;'
   probe_line="$PLANT_LINE"
   run_structure "$R"
   expect_status 1 || return 1
   expect_qc63_once "$paths_path" "$probe_line" "fs_reader" || return 1
-  expect_stderr_has_no_line_starting "crates/nozoki-core/src/lib.rs:" || return 1
+  expect_stderr_has_no_line_starting "crates/ka-reader-core/src/lib.rs:" || return 1
   grep -v -F 'as ValueBoundaryProbe' "$lib_rs" > "$WORK/lib.rs.next" || return 1
   cp "$WORK/lib.rs.next" "$lib_rs" || return 1
-  plant "$R" "nozoki-core/src/lib.rs" 'pub use crate::highlighter::Span as ValueBoundaryProbe;'
+  plant "$R" "ka-reader-core/src/lib.rs" 'pub use crate::highlighter::Span as ValueBoundaryProbe;'
   run_structure "$R"
   expect_status 1 || return 1
   expect_qc63_once "$paths_path" "$probe_line" "highlighter" || return 1
@@ -2422,7 +2422,7 @@ test_value_module_reexports_are_read_on_every_run() {
   case "$STDERR" in
     *"value module imports fs_reader"*) fail "the replaced re-export still drew a finding naming fs_reader. stderr: $STDERR" || return 1 ;;
   esac
-  expect_stderr_has_no_line_starting "crates/nozoki-core/src/lib.rs:" || return 1
+  expect_stderr_has_no_line_starting "crates/ka-reader-core/src/lib.rs:" || return 1
 }
 
 # No stderr line starts with the text $1.
@@ -2438,12 +2438,12 @@ expect_stderr_has_no_line_starting() {
 test_value_module_domain_is_a_class() {
   new_root value-module-domain || return 1
   for member in language/x.rs tests/x.rs x/lib.rs lib/x.rs; do
-    plant "$R" "nozoki-core/src/$member" 'use crate::fs_reader::Entry;'
+    plant "$R" "ka-reader-core/src/$member" 'use crate::fs_reader::Entry;'
   done
   run_structure "$R"
   expect_status 1 || return 1
   for member in language/x.rs tests/x.rs x/lib.rs lib/x.rs; do
-    expect_qc63_once "crates/nozoki-core/src/$member" 1 "fs_reader" || return 1
+    expect_qc63_once "crates/ka-reader-core/src/$member" 1 "fs_reader" || return 1
   done
 }
 
@@ -2451,7 +2451,7 @@ test_value_module_domain_is_a_class() {
 test_value_module_non_imports_pass() {
   new_root value-module-non-imports || return 1
   plant "$R" "$VALUE_ERROR_FILE" 'use crate::language::Language;'
-  plant "$R" "$VALUE_ERROR_FILE" '// see fs_reader and nozoki_core::fs_reader'
+  plant "$R" "$VALUE_ERROR_FILE" '// see fs_reader and ka_reader_core::fs_reader'
   plant "$R" "$VALUE_ERROR_FILE" 'fn e() -> Option<crate::Error> { None }'
   plant "$R" "$LANG_FILE" 'use self::fs_reader::Entry;'
   plant "$R" "$LANG_FILE" 'fn n() { let fs_reader = 1; let _ = fs_reader; }'
@@ -2465,15 +2465,15 @@ test_value_module_non_imports_pass() {
 test_value_module_rule_spares_units_and_lib_rs() {
   new_root value-module-spared || return 1
   plant "$R" "$FS_FILE" 'use crate::language::Language;'
-  plant "$R" "nozoki-core/src/lib.rs" 'pub use crate::fs_reader::Entry;'
+  plant "$R" "ka-reader-core/src/lib.rs" 'pub use crate::fs_reader::Entry;'
   for unit in own_state git_reader watcher markdown_renderer; do
-    plant "$R" "nozoki-core/src/$unit.rs" 'use crate::fs_reader::Entry;'
-    plant "$R" "nozoki-core/src/$unit/x.rs" 'use crate::fs_reader::Entry;'
+    plant "$R" "ka-reader-core/src/$unit.rs" 'use crate::fs_reader::Entry;'
+    plant "$R" "ka-reader-core/src/$unit/x.rs" 'use crate::fs_reader::Entry;'
   done
-  plant "$R" "nozoki-core/tests/common/mod.rs" 'use crate::fs_reader::Entry;'
-  plant "$R" "nozoki-core/examples/x.rs" 'use crate::fs_reader::Entry;'
-  plant "$R" "nozoki-core/build.rs" 'use crate::fs_reader::Entry;'
-  plant "$R" "nozoki-bridge/src/x.rs" 'use crate::fs_reader::Entry;'
+  plant "$R" "ka-reader-core/tests/common/mod.rs" 'use crate::fs_reader::Entry;'
+  plant "$R" "ka-reader-core/examples/x.rs" 'use crate::fs_reader::Entry;'
+  plant "$R" "ka-reader-core/build.rs" 'use crate::fs_reader::Entry;'
+  plant "$R" "ka-reader-bridge/src/x.rs" 'use crate::fs_reader::Entry;'
   run_structure "$R"
   expect_status 0 || return 1
   expect_stderr_empty || return 1
@@ -2521,18 +2521,18 @@ test_git2_in_a_bridge_src_file_is_refused() {
 }
 
 # CP-647, CP-650: a core file of no unit (lib.rs is one) is refused the same way.
-test_git2_in_nozoki_core_lib_rs_is_refused() {
+test_git2_in_ka_reader_core_lib_rs_is_refused() {
   new_root git2-core-lib || return 1
-  plant "$R" "nozoki-core/src/lib.rs" 'use git2 as _x;'
+  plant "$R" "ka-reader-core/src/lib.rs" 'use git2 as _x;'
   run_structure "$R"
   expect_status 1 || return 1
-  expect_finding_naming "crates/nozoki-core/src/lib.rs" "$PLANT_LINE" QC-11 "git2" || return 1
+  expect_finding_naming "crates/ka-reader-core/src/lib.rs" "$PLANT_LINE" QC-11 "git2" || return 1
 }
 
 # CP-647's first exemption: core-bridge's search-path switch, the one file of the bridge that names it.
 test_git2_in_machine_config_rs_is_allowed() {
   new_root git2-machine-config || return 1
-  plant "$R" "nozoki-bridge/src/machine_config.rs" 'use git2 as _x;'
+  plant "$R" "ka-reader-bridge/src/machine_config.rs" 'use git2 as _x;'
   run_structure "$R"
   expect_status 0 || return 1
   expect_stderr_empty || return 1
@@ -2541,9 +2541,9 @@ test_git2_in_machine_config_rs_is_allowed() {
 # CP-647's second exemption: every file of the git_reader unit, its own file and the ones beneath it.
 test_git2_under_git_reader_is_allowed() {
   new_root git2-git-reader || return 1
-  plant "$R" "nozoki-core/src/git_reader.rs" 'use git2 as _x;'
-  plant "$R" "nozoki-core/src/git_reader/config_scan.rs" 'use git2 as _x;'
-  plant "$R" "nozoki-core/src/git_reader/deep/more.rs" 'use libgit2_sys as _y;'
+  plant "$R" "ka-reader-core/src/git_reader.rs" 'use git2 as _x;'
+  plant "$R" "ka-reader-core/src/git_reader/config_scan.rs" 'use git2 as _x;'
+  plant "$R" "ka-reader-core/src/git_reader/deep/more.rs" 'use libgit2_sys as _y;'
   run_structure "$R"
   expect_status 0 || return 1
   expect_stderr_empty || return 1
@@ -2580,7 +2580,7 @@ trap cleanup EXIT
 failed=0
 ran=0
 for case_name in $CASES; do
-  if [ -n "${NOZOKI_TEST_ONLY:-}" ] && [ "$case_name" != "$NOZOKI_TEST_ONLY" ]; then
+  if [ -n "${KA_READER_TEST_ONLY:-}" ] && [ "$case_name" != "$KA_READER_TEST_ONLY" ]; then
     continue
   fi
   ran=$((ran + 1))
@@ -2594,7 +2594,7 @@ for case_name in $CASES; do
 done
 
 if [ "$ran" -eq 0 ]; then
-  echo "test_structure.sh: no case is named ${NOZOKI_TEST_ONLY:-<none>}" >&2
+  echo "test_structure.sh: no case is named ${KA_READER_TEST_ONLY:-<none>}" >&2
   exit 1
 fi
 

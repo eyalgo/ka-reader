@@ -28,4 +28,4 @@ Thumbs.db
 /target
 
 # SwiftPM's build output for the native shell package
-/nozoki-mac/.build/
+/ka-reader-mac/.build/

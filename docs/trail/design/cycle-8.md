@@ -1,4 +1,4 @@
-# DESIGN open issues — nozoki
+# DESIGN open issues — ka-reader
 
 > Companion to `DESIGN.md`. The CDO authored the design language non-interactively; this file
 > holds the calls it made and wants your sign-off on — each with the reason behind it, and what
@@ -23,12 +23,12 @@
 
 > **No `product-design` run opened this companion.** A `companion-self-answer` run answering
 > `docs/SDD_open_issues.md` § 5.1 opened it on 2026-09-30 with one item, § 2.1
-> (`nozoki@a047914`; its report is `docs/trail/sdd/self_answer-27.md`).
+> (`ka-reader@a047914`; its report is `docs/trail/sdd/self_answer-27.md`).
 >
 > **Where this round stands.** A `product-design` run has taken the file up and found the slot of
 > § 2.1 empty, so it folded no answer and retired no trail cycle. It applied § 2.1 anyway, on the
 > authorization its own rule gives a change in the evidence: the product's own source is an AppKit
-> shell with no web engine (`README.md:L46-L48`; `nozoki-mac/`). `DESIGN.md` is at v11 and reads
+> shell with no web engine (`README.md:L46-L48`; `ka-reader-mac/`). `DESIGN.md` is at v11 and reads
 > Draft while this file is on disk; what moved is recorded at its RN-31. § 2.1 is kept as **your
 > sign-off on what was applied**. The same run read the shell's source and found two things the
 > design language does not rule on. They are § 1.1 and § 2.2, and neither is applied: `DESIGN.md`
@@ -41,20 +41,20 @@
 ### 1.1 The application ships an icon that no document designs, and the one on disk is a plain blue square — is the icon the design language's, and what is it?
 - **Why it matters:** `docs/DESIGN.md` governs the one window (its frontmatter `description:`), and
   § Overview now says so: "Nothing the window draws is shipped that the machine does not already
-  have" (`docs/DESIGN.md:L335-L336`). The icon is the one thing of Nozoki's drawn outside that
+  have" (`docs/DESIGN.md:L335-L336`). The icon is the one thing of KA-Reader's drawn outside that
   window: in the Dock, in the application switcher, in Finder, and on the disk image a release is
-  offered as (`README.md:L17-L18`). It is also the only place a colour that is Nozoki's own
+  offered as (`README.md:L17-L18`). It is also the only place a colour that is KA-Reader's own
   appears, beside a shell whose confirmed signature is that it has none (`docs/DESIGN.md` RN-2;
   `docs/trail/design/cycle-1.md` § 2.1). Until this is answered the design language has no rule a
   builder or a release can hold the icon to, and the blue square ships as it is.
-- **What was searched:** `nozoki-mac/icon.icns` (12662 bytes), rendered on 2026-09-30 with
+- **What was searched:** `ka-reader-mac/icon.icns` (12662 bytes), rendered on 2026-09-30 with
   `sips -s format png`: one uniform blue field and no figure. It is named as the bundle's icon at
-  `nozoki-mac/Info.plist:L11-L12` and copied into the bundle at `nozoki-mac/assemble.sh:L61`. It
-  was not drawn for this product's shell: `nozoki@15e8790` adds it as "a byte copy of
-  crates/nozoki-app/icons/icon.icns", a file that entered with the earlier host at
-  `nozoki@9cc163d`. No document rules on it:
+  `ka-reader-mac/Info.plist:L11-L12` and copied into the bundle at `ka-reader-mac/assemble.sh:L61`. It
+  was not drawn for this product's shell: `ka-reader@15e8790` adds it as "a byte copy of
+  crates/ka-reader-app/icons/icon.icns", a file that entered with the earlier host at
+  `ka-reader@9cc163d`. No document rules on it:
   `git grep -n -i -E "icns|app icon|application icon|CFBundleIconFile|bundle's icon" HEAD -- docs/`
-  prints nothing at `nozoki@f287d73`. `docs/trail/design/cycle-1.md` § 2.6 confirms no wordmark, logo or product name
+  prints nothing at `ka-reader@f287d73`. `docs/trail/design/cycle-1.md` § 2.6 confirms no wordmark, logo or product name
   *in the shell* and does not speak to the icon. The instance holds no shared mark to derive one
   from (`system/experience/visual_direction.md` RN-9), and its direction starts every product
   from "No placeholder asset" (same file, § Overview, line 5).
@@ -66,7 +66,7 @@
   application icon; `DESIGN.md` records the absence. *The blue square stays* — it becomes a
   decided value: `DESIGN.md` records the colour and the reason, and RN-2 gains the one exception
   to a shell with no hue of its own.
-- **Answer:** the icon is this document's, and it is Nozoki's own: one drawn figure in the
+- **Answer:** the icon is this document's, and it is KA-Reader's own: one drawn figure in the
   shell's own ink on the shell's own surface, with no hue. The blue square is not kept. The
   item's lean is taken, with four things added. **(1) The blue square is never a decided value.**
   A release carries the drawn icon, or the bundle names no icon file and macOS draws its generic
@@ -102,14 +102,14 @@
   files leave to `currentColor` (`:L748-L751`); the first Do names "where a surface is drawn" in
   place of "a stylesheet" (`:L758-L759`); RN-1 and RN-19 are brought to the same fact; RN-31
   (`:L1261`) records all of it. **No token value moves**: the frontmatter is revision 10's, byte
-  for byte (`diff` of lines 1–296 against `nozoki@da88347`, the v10 commit, prints nothing), and
+  for byte (`diff` of lines 1–296 against `ka-reader@da88347`, the v10 commit, prints nothing), and
   the pinned lint reports the counts it reported at v10.
 - **Grounds:** the sentence v1–v10 carried stood on `docs/proposal.md` § Styling and on
   `README.md` § Planned stack (`docs/DESIGN.md` RN-1 as it read at v10). The README has no such
-  heading now; its § Stack reads "an AppKit shell in Swift (`nozoki-mac`) over a Rust library …
-  There is no web engine in it" (`README.md:L46-L48`, since `nozoki@61748fe`), and the shell on
+  heading now; its § Stack reads "an AppKit shell in Swift (`ka-reader-mac`) over a Rust library …
+  There is no web engine in it" (`README.md:L46-L48`, since `ka-reader@61748fe`), and the shell on
   disk is that package:
-  `grep -rn -i -E 'WebKit|WKWebView|\.css|html' nozoki-mac/Sources nozoki-mac/Package.swift nozoki-mac/assemble.sh`
+  `grep -rn -i -E 'WebKit|WKWebView|\.css|html' ka-reader-mac/Sources ka-reader-mac/Package.swift ka-reader-mac/assemble.sh`
   prints nothing (2026-09-30). The product's own source is first in the design language's
   grounding order, so the sentence follows it without waiting on an answer. Three calls inside
   the fold are this seat's, and they are what your sign-off covers. **The font stacks stay as
@@ -142,9 +142,9 @@
 - **Grounds:** the design language draws the chrome as "one strip across the top"
   (`docs/DESIGN.md:L504-L506`) and says nothing of the title bar above it:
   `git grep -n -i -E "title bar|titlebar|window title|window's title" HEAD -- docs/` at
-  `nozoki@f287d73` prints no rule, only one line of a trail recording what a build showed
-  (`docs/trail/sdd/cycle-8.md:38`, "one window titled "Nozoki""). The shell as built draws a standard titled
-  window and titles it "Nozoki" (`nozoki-mac/Sources/Shell/WindowPresenting.swift:L45`, `:L48`).
+  `ka-reader@f287d73` prints no rule, only one line of a trail recording what a build showed
+  (`docs/trail/sdd/cycle-8.md:38`, "one window titled "KA-Reader""). The shell as built draws a standard titled
+  window and titles it "KA-Reader" (`ka-reader-mac/Sources/Shell/WindowPresenting.swift:L45`, `:L48`).
   You confirmed "no wordmark, logo, or product name in the shell"
   (`docs/trail/design/cycle-1.md` § 2.6; `docs/DESIGN.md:L574-L575`, RN-9), and `docs/CONTENT.md`
   reads that as "the shell carries no product name at all" (`docs/CONTENT.md:L144`); whether the
@@ -158,7 +158,7 @@
   runs under a transparent bar and the three window buttons sit at the chrome's left end;
   § Layout's chrome line changes (the selector starts to the right of the buttons, and the 36px
   height is re-checked against them), and whether the window can be built that way is the SDD's
-  to answer before it is written here. *Keep "Nozoki" as the drawn title* — RN-9 and the wordmark
+  to answer before it is written here. *Keep "KA-Reader" as the drawn title* — RN-9 and the wordmark
   Don't gain their one exception, and `docs/CONTENT.md:L144` no longer reads true.
 - **Confirm or override:** confirm — the rule as proposed, with four things the fold carries
   beside it. **(1) The window's title is the string the chrome names the folder with**, and it
@@ -168,7 +168,7 @@
   in the window not drawn from a token; the document says so, and adds nothing between the bar
   and the chrome. **(3) The rule reaches the window and stops there.** The menu bar, the Dock and
   the application switcher show the product's name and are the platform's. The three window
-  buttons are the platform's controls and not Nozoki's, so the chrome still holds two controls
+  buttons are the platform's controls and not KA-Reader's, so the chrome still holds two controls
   and `docs/UXD.md` UX-A4 is not broken by three glyphs with no word; the Traceability table says
   so. **(4) "Draws no title" stands on the chrome naming the folder on the same surface**, and
   the rule says that, so a window is never built that names the folder nowhere. Decided in the

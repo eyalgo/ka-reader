@@ -3,7 +3,7 @@
 #
 # One job, one macOS image, every step fatal: a step that exits non-zero is the job's verdict, and the
 # run is green only when every step exits 0. Nothing here supplies a way to sign and no repository
-# secret is read; the bundle is ad-hoc signed by nozoki-mac/assemble.sh alone.
+# secret is read; the bundle is ad-hoc signed by ka-reader-mac/assemble.sh alone.
 
 name: CI
 
@@ -23,7 +23,7 @@ jobs:
         run: cargo build --workspace --locked
 
       - name: Test gate
-        run: cargo test --workspace --locked && swift test --package-path nozoki-mac
+        run: cargo test --workspace --locked && swift test --package-path ka-reader-mac
 
       - name: Structure check
         run: checks/structure.sh
@@ -37,11 +37,11 @@ jobs:
       - name: Entry-points check suite
         run: checks/tests/test_entry_points.sh
 
-      - name: Build Nozoki.app
-        run: nozoki-mac/assemble.sh
+      - name: Build KA-Reader.app
+        run: ka-reader-mac/assemble.sh
 
       - name: Bundle probe
-        run: checks/bundle.sh target/release/bundle/macos/Nozoki.app
+        run: checks/bundle.sh target/release/bundle/macos/KA-Reader.app
 
       # The probe's negative control runs here: without it the probe has not run.
       - name: Bundle probe suite
@@ -56,7 +56,7 @@ jobs:
       # The gate runs its own idle-shell control: a run without the control has not run the gate.
       # Its launch of the product may leave the app's log behind before "Launch the built bundle" runs.
       - name: Renderer gate
-        run: checks/renderer.sh target/release/bundle/macos/Nozoki.app
+        run: checks/renderer.sh target/release/bundle/macos/KA-Reader.app
 
       # The suite's real-bundle cases run the gate on the real bundle, and the gate refuses to launch
       # while an instance is running. "Launch the built bundle" leaves the app running, so this step
@@ -96,8 +96,8 @@ jobs:
         env:
           CONTAINER_WAIT_TICKS: 240
         run: |
-          log="$HOME/Library/Containers/com.kensaiapp.nozoki/Data/Library/Logs/nozoki.log"
-          open target/release/bundle/macos/Nozoki.app
+          log="$HOME/Library/Containers/com.kensaiapp.ka-reader/Data/Library/Logs/ka-reader.log"
+          open target/release/bundle/macos/KA-Reader.app
           ( until [ -f "$log" ]; do sleep 0.25; done ) &
           reader=$!
           ticks=0
@@ -117,7 +117,7 @@ jobs:
         env:
           CONTAINER_WAIT_TICKS: 240
         run: |
-          log="$HOME/Library/Containers/com.kensaiapp.nozoki/Data/Library/Logs/nozoki.log"
+          log="$HOME/Library/Containers/com.kensaiapp.ka-reader/Data/Library/Logs/ka-reader.log"
           checks/own-state.sh &
           reader=$!
           ticks=0
@@ -135,12 +135,12 @@ jobs:
       # After every gate: the bundle those gates ran on, handed out so someone who did not build it can
       # walk it in Finder (the-wall-holds condition 10). Zipped with ditto first, because an artifact
       # upload drops file modes and so would break the executable bit and the ad-hoc signature's seal.
-      - name: Package Nozoki.app
-        run: ditto -c -k --keepParent target/release/bundle/macos/Nozoki.app Nozoki.app.zip
+      - name: Package KA-Reader.app
+        run: ditto -c -k --keepParent target/release/bundle/macos/KA-Reader.app KA-Reader.app.zip
 
-      - name: Upload Nozoki.app
+      - name: Upload KA-Reader.app
         uses: actions/upload-artifact@v4
         with:
-          name: Nozoki.app
-          path: Nozoki.app.zip
+          name: KA-Reader.app
+          path: KA-Reader.app.zip
           if-no-files-found: error

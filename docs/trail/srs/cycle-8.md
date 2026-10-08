@@ -1,4 +1,4 @@
-# SRS open issues — Nozoki 覗き
+# SRS open issues — KA-Reader
 
 > Companion to `SRS.md`. The CTO authored the SRS non-interactively; this file holds
 > what it could not settle from the inputs (the PRD and any context/constraints).
@@ -44,9 +44,9 @@
   and a megabyte is on the order of ten thousand lines of C-I2's shape — more failures than anyone
   reads; the number is proposed, not measured, and is the CTO's to replace.
 - **If overridden:** keeping the previous session as well — a one-generation rotation to
-  `nozoki.log.1` at launch — covers the case this draft does not: a session that crashed and was
+  `ka-reader.log.1` at launch — covers the case this draft does not: a session that crashed and was
   relaunched before its log was read loses those lines. It costs a second file, which the NFDR's
-  QC-52 ("written to … `nozoki.log` and nowhere else") and the SDD's C-I2 would then have to name.
+  QC-52 ("written to … `ka-reader.log` and nowhere else") and the SDD's C-I2 would then have to name.
   A different cap changes one number. Whatever lands, the SDD's C-I2 carries the mechanism by its
   own revision, and the NFDR's QC-40 carries the checkable number and the test that reads it.
 - **Confirm or override:** **confirm — with three additions, and the number stands.** NFR-11 takes the
@@ -75,12 +75,12 @@
 - **Raised by:** the run above — not one of this document's own seats.
 - **What this document says:** **80** citations of the form `docs/<x>_trail/…` (`docs/prd_trail/`, `docs/srs_trail/`, `docs/uxd_trail/`).
 - **What is true:** none of those folders exists. The retired cycles live at `docs/trail/<x>/`, moved by
-  `nozoki@1e8bf3d` ("the six answer-trails move under `docs/trail/`"), which did not update the documents citing them. Every one is a pointer a cold reader follows and finds nothing, and these are mostly
+  `ka-reader@1e8bf3d` ("the six answer-trails move under `docs/trail/`"), which did not update the documents citing them. Every one is a pointer a cold reader follows and finds nothing, and these are mostly
   **authorization** pointers — the owner answer a Review Note rests on cannot be opened to check it.
 - **Drafted:** each `docs/<x>_trail/` becomes `docs/trail/<x>/`. Nothing the document says changes;
   only where it points. A pointer repair, not a revision.
 - **One exception, and it is not hypothetical.** A citation pinned to a commit — the form
-  `nozoki@<sha>:docs/<x>_trail/…` — must be left exactly as it is: it resolves at a commit where that
+  `ka-reader@<sha>:docs/<x>_trail/…` — must be left exactly as it is: it resolves at a commit where that
   path did exist (verified — `git show 1d5c553:docs/uxd_trail/cycle-1.md` returns the file), so
   rewriting it breaks a citation that currently works. This document carries **0** pinned citations; `docs/UXD.md` carries 4. A sweep that does not exclude the
   pinned form is wrong.
@@ -103,8 +103,8 @@
   1d5c553:docs/uxd_trail/cycle-2.md`) — while the file now at `docs/trail/uxd/cycle-2.md` is the
   **re-authored** UXD's cycle 2, whose only item is the theme control's home. The rule applied there
   turns a dead pointer into a false one. That citation takes the commit-pinned form the item itself
-  protects — `nozoki@1d5c553:docs/uxd_trail/cycle-2.md` § 2.1 — which resolves. The version line
-  records the change with its reason, `nozoki@1e8bf3d` (`system/doctrine/writing_bar.md` § 1.6).
+  protects — `ka-reader@1d5c553:docs/uxd_trail/cycle-2.md` § 2.1 — which resolves. The version line
+  records the change with its reason, `ka-reader@1e8bf3d` (`system/doctrine/writing_bar.md` § 1.6).
   Reasoning: `docs/trail/srs/self_answer-1.md` § 2.2.
 
 ### 2.3 RN-35's sibling sentence — "`docs/UXD.md` UX-S4 still makes a non-repository a startup failure" — describes a state that ended at UXD v6
@@ -120,8 +120,8 @@
   still makes a non-repository a startup failure; the UXD follows the PRD, not this SRS, and its
   revision is the CDO's through the UXD's own skill — this SRS records the divergence and does not
   reshape FR-3 or FR-34 to it."*
-- **What is true:** the UXD reached v6 after SRS v8 — `nozoki@e4ed5fe` (SRS v8) then
-  `nozoki@dd08f2d` (UXD v6), and UXD RN-28 says it read `docs/SRS.md` v8 as its sibling
+- **What is true:** the UXD reached v6 after SRS v8 — `ka-reader@e4ed5fe` (SRS v8) then
+  `ka-reader@dd08f2d` (UXD v6), and UXD RN-28 says it read `docs/SRS.md` v8 as its sibling
   (`docs/UXD.md:817-820`). At v6, UX-S4 *"narrows to a path that does not exist, is not a folder, or
   cannot be read"* (`docs/UXD.md:5`), and its row reads *"A folder that is not a Git repository is
   not on this list: it opens (UX-I17; narrowed at v6 with PRD v11 — RN-25)"* (`docs/UXD.md:229`).

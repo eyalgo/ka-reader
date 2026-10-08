@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # Version: 1.0.0 — first version: proves a walk of a fixture folder changed nothing in it
 #
-# checks/read-only.sh <fixture> — hash a fixture, walk it with nozoki-core's driver, hash it again.
+# checks/read-only.sh <fixture> — hash a fixture, walk it with ka-reader-core's driver, hash it again.
 #
 # WHY THIS EXISTS
 #   CP-35 and CP-36: the product must only ever read. The proof is outside the product — this script
-#   hashes the folder with its own tools (never through nozoki-core), runs the in-process driver
-#   (crates/nozoki-core/tests/walk.rs) over it, and hashes again. A difference is a write.
+#   hashes the folder with its own tools (never through ka-reader-core), runs the in-process driver
+#   (crates/ka-reader-core/tests/walk.rs) over it, and hashes again. A difference is a write.
 #
 # USAGE
 #   checks/read-only.sh checks/fixtures/plain
@@ -85,7 +85,7 @@ manifest "$absolute" > "$work/before"
 
 # stdout is read for the call count; the driver's and cargo's stderr passes through to ours.
 walked=0
-if walk_output="$(cd "$ROOT" && cargo test --locked --quiet -p nozoki-core --test walk -- "$absolute")"; then
+if walk_output="$(cd "$ROOT" && cargo test --locked --quiet -p ka-reader-core --test walk -- "$absolute")"; then
   calls="$(printf '%s\n' "$walk_output" | tail -n 1)"
   case "$calls" in
     '' | *[!0-9]*) ;;

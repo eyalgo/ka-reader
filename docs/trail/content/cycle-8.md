@@ -1,4 +1,4 @@
-# CONTENT open issues — Nozoki
+# CONTENT open issues — KA-Reader
 
 > Companion to `CONTENT.md`. The Content Editor authored the verbal language non-interactively;
 > this file holds the calls it made and wants your sign-off on — each with the reason behind it,
@@ -33,7 +33,7 @@ None.
 
 ## 2. Choices to confirm
 
-### 2.1 The reading panel's sentence for a file that is gone says it left the folder, which Nozoki did not observe
+### 2.1 The reading panel's sentence for a file that is gone says it left the folder, which KA-Reader did not observe
 
 > **No `product-content` run wrote this item.** A `companion-self-answer` run raised it on
 > 2026-09-26 while answering the former § 3.1 from a whole reading of `CONTENT.md`. What prompted
@@ -47,13 +47,13 @@ None.
   the example (`docs/CONTENT.md:L65`), in § Message patterns, *Recovered* (`:L380-L381`), and in
   § Traceability's UX-S1 file-gone row (`:L501`). This item proposes *"This file is no longer
   there."* in all three places.
-- **Grounds:** Nozoki observes that nothing is at the file's path. It does not observe that the
+- **Grounds:** KA-Reader observes that nothing is at the file's path. It does not observe that the
   file left the folder. When a file is renamed or moved inside the folder, which is what an agent
   working in it does, the file is still in the folder under another name, and the sentence is false
   (§ Voice's first row: *"never states something it has not read"*). The upstream documents word
   this state as *no longer there*: UX-S1 says the panel *"states plainly that it is no longer
   there"* (`docs/UXD.md:L236`), and so do `docs/SDD.md:L1604` and `docs/fdr.md` R-81. No shipped
-  string carries the current wording: `grep -rn "no longer in the folder"` over `nozoki-mac/` and
+  string carries the current wording: `grep -rn "no longer in the folder"` over `ka-reader-mac/` and
   `crates/` finds nothing, so the change costs no string. With it, the two gone sentences, file and
   folder, share one shape.
 - **What moves if you override:** Nothing else. The three places keep the current sentence, and

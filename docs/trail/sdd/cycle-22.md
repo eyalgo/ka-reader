@@ -1,4 +1,4 @@
-# SDD open issues — Nozoki
+# SDD open issues — KA-Reader
 
 > Companion to `SDD.md`. The CTO wrote the SDD; this file holds what that run could not settle from
 > its inputs (the PRD, the SRS, the UXD, and any context or constraints), and the calls that are the
@@ -53,7 +53,7 @@ None.
 ### 2.1 libgit2's repository open reads the user's global and the system Git config outside the grant, and the rules as written leave no unit that may switch it off
 - **Raised by:** the `companion-self-answer` run, 2026-10-03 — not one of the SDD's three seats. It
   answered `docs/architecture_open_issues.md` § 3.5, which the PM raised after `git-reader` landed
-  (`nozoki@126ef75`).
+  (`ka-reader@126ef75`).
 - **Seat:** cto
 - **Drafted into the SDD:** Nothing yet. The run proposes one reading: keep C-D1 and `docs/fdr.md`
   R-101 as written, and switch the reads off at the Rust-side composition root. Three edits:
@@ -64,13 +64,13 @@ None.
      other.
   2. **The units paragraph's** "Only `git-reader` imports the libgit2 binding" (`SDD.md:L347`) gains
      its one exception: `core-bridge` names the binding for that call and for nothing else.
-     `nozoki-core` still "holds no `unsafe`" (`:L336`).
+     `ka-reader-core` still "holds no `unsafe`" (`:L336`).
   3. **The evidence**, where C-I3 places it: a bridge test asserting that each of the four levels'
      search path is empty once the composition root has run; and *Open Questions*' second item,
      settled on the built bundle, showing the open answering `root` with those reads gone.
 - **Rationale:** The facts, read for this item in the registry copies of the crates the lock
   resolves (`libgit2-sys 0.18.8+1.9.7`, `git2 0.21.0`):
-  - The adapter opens with `Repository::open_ext` (`crates/nozoki-core/src/git_reader/libgit2.rs:L52`).
+  - The adapter opens with `Repository::open_ext` (`crates/ka-reader-core/src/git_reader/libgit2.rs:L52`).
     Every open takes a config snapshot (`libgit2/src/libgit2/repository.c:L997`) that adds the
     global (`:L1318`), XDG (`:L1324`), system (`:L1330`) and programdata (`:L1336`) levels.
   - Under the App Sandbox, libgit2 takes the global level's home from the password entry and not
@@ -89,20 +89,20 @@ None.
   - The one switch is `git2::opts::set_search_path`, an `unsafe fn`, because it mutates global state
     with no thread safety (`git2-0.21.0/src/opts.rs:L20-L23`). A level whose search path is empty is
     skipped before any file is touched (`sysdir.c:L559-L560`).
-  - The rules leave no unit that may make the call. `nozoki-core` holds no `unsafe` (`SDD.md:L336`),
+  - The rules leave no unit that may make the call. `ka-reader-core` holds no `unsafe` (`SDD.md:L336`),
     and only `git-reader` imports the binding (`:L347`), so the bridge, which holds `unsafe`, may not
     name it.
 
   **Why the bridge.** It is already the Rust-side composition root, the one unit that holds `unsafe`,
   and the one place the libgit2 adapter is wired to the Git port (`SDD.md:L330`). Process-global
-  setup made once before first use is a composition root's job. Keeping `unsafe` out of `nozoki-core`
+  setup made once before first use is a composition root's job. Keeping `unsafe` out of `ka-reader-core`
   keeps the property the units paragraph is built on: the harness links a core with no `unsafe`.
 
   **Not covered, and named.** (1) libgit2 still reads `HOME`, `XDG_CONFIG_HOME` and
   `APP_SANDBOX_CONTAINER_ID` at init, because every level is guessed then (`sysdir.c:L458-L459`) and
   `set_search_path` initialises the library first (`opts.rs:L27`). Those reads open no file, and they
   are raised against the NFDR's boundary set at `docs/architecture_open_issues.md` § 2.2. (2) The call
-  lives in the bridge, so `nozoki-core`'s own in-process cases still read the machine's config. An
+  lives in the bridge, so `ka-reader-core`'s own in-process cases still read the machine's config. An
   answer there that changes with a developer's config is a fault of the test environment, not
   product behaviour, and the bundle run is what proves the product. (3) The call is not thread-safe,
   which its place at startup, before the adapter is wired, meets.
@@ -134,7 +134,7 @@ None.
      the Git item is `failed`; a repository is never opened with the reads on. The four calls run
      once per process, and a second arrival at the composition root repeats nothing.
   3. **The bridge's manifest names the binding with its default features off**, as
-     `crates/nozoki-core/Cargo.toml:L9` does. A `git2` line with defaults on would turn HTTPS and
+     `crates/ka-reader-core/Cargo.toml:L9` does. A `git2` line with defaults on would turn HTTPS and
      SSH on for the whole build through feature unification, against § 4 C-R6.
   4. **Every statement of the import rule moves together.** Edit 2 names `SDD.md:L347`. The same
      rule is § 6 S-4's command clause, "the libgit2 import in `git-reader` alone" (`:L1698`), and
@@ -148,7 +148,7 @@ None.
      `:L1172-L1173`); it is a `failed` Git item. Both follow from R-101 as it stands. Honouring
      either would mean reading outside the grant, which is the owner's to allow.
   6. **§ 4 C-I3 names what the evidence does not reach.** The bridge test proves the four paths
-     are empty; it observes no read. `nozoki-core`'s in-process Git suites run with the reads on,
+     are empty; it observes no read. `ka-reader-core`'s in-process Git suites run with the reads on,
      so an answer there can differ from the bundle's on a machine with a global ignore file. This
      joins C-I3's "things no check holds". How those suites are isolated is the design of the
      change that builds the switch.

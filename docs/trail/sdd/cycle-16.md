@@ -1,4 +1,4 @@
-# SDD open issues — nozoki
+# SDD open issues — ka-reader
 
 > Companion to `SDD.md`. Three seats — the CTO, the CPO and the CDO — authored the SDD
 > non-interactively in one run; this file holds what that run could not settle from its inputs (the
@@ -25,7 +25,7 @@
 > **No `product-sdd` run opened this companion. The PM opened it on 2026-09-30.** `SDD.md` is
 > Settled at v20 and has no companion on disk, so a `product-sdd` re-run would read it as done and
 > find nothing to act on. The companion holds one item, § 5.1. It comes from reading the tree on
-> `main` at `nozoki@8e738b7` against `docs/DESIGN.md`: the window S-1 describes is drawn, and it
+> `main` at `ka-reader@8e738b7` against `docs/DESIGN.md`: the window S-1 describes is drawn, and it
 > departs from `docs/DESIGN.md` at three places no slice's *Reached when* holds.
 
 ---
@@ -52,7 +52,7 @@ None.
 
 ### 5.1 § 6 names no slice whose *Reached when* holds `docs/DESIGN.md`'s layout and component drawing for the surfaces S-1 draws
 - **Raised by:** PM — 2026-09-30
-- **Tracked by:** `nozoki · nemawashi · 2026-09-15_open-a-folder`
+- **Tracked by:** `ka-reader · nemawashi · 2026-09-15_open-a-folder`
 - **What it blocks:** whether `open-a-folder` is reached by the window as it is drawn now. S-1's
   observable half cites the UXD's screen states and no clause of `docs/DESIGN.md`
   (`docs/SDD.md:L1292-L1316`). § 4 says every token value is `docs/DESIGN.md`'s and that no
@@ -60,18 +60,18 @@ None.
   puts "any token value" out of its slice (`docs/SDD.md:L1659`, `:L1685-L1686`). So the three
   places below pass every bar § 6 states, and no later slice is named as the one that lands them:
   1. **The window's width.** The window opens 480 points wide and sets no minimum
-     (`nozoki-mac/Sources/Shell/WindowPresenting.swift:L21`, `:L44`), and the sidebar is held at 260
-     (`nozoki-mac/Sources/Surfaces/WorkbenchView.swift:L14`, `:L32-L34`), which leaves the reading
+     (`ka-reader-mac/Sources/Shell/WindowPresenting.swift:L21`, `:L44`), and the sidebar is held at 260
+     (`ka-reader-mac/Sources/Surfaces/WorkbenchView.swift:L14`, `:L32-L34`), which leaves the reading
      panel at most 220. `docs/DESIGN.md:L487-L489` sets a 720-point minimum width, "below which the
      panel stops being dominant and the product stops being what the PRD says it is". S-1 itself
      traces to the UXD's "sidebar beside a dominant reading panel" (`docs/SDD.md:L1353-L1354`;
      `docs/UXD.md:L65`).
   2. **The tree's own status line.** The empty-folder and failed-root sentences are centred in the
-     sidebar (`nozoki-mac/Sources/Surfaces/RootItemsView.swift:L69-L72`, `:L91-L93`).
+     sidebar (`ka-reader-mac/Sources/Surfaces/RootItemsView.swift:L69-L72`, `:L91-L93`).
      `docs/DESIGN.md:L914` (RN-14) says a status message is top-left, glyph-led and never centred.
   3. **The startup surface's routes and message.** The two routes are standard bordered buttons and
-     the message has no leading glyph (`nozoki-mac/Sources/Surfaces/StartupView.swift:L67-L68`;
-     `grep -n -i 'NSImage\|symbol' nozoki-mac/Sources/Surfaces/StartupView.swift` prints nothing).
+     the message has no leading glyph (`ka-reader-mac/Sources/Surfaces/StartupView.swift:L67-L68`;
+     `grep -n -i 'NSImage\|symbol' ka-reader-mac/Sources/Surfaces/StartupView.swift` prints nothing).
      `docs/DESIGN.md:L695-L705` draws the routes as text alone and leads the message with `info` or
      `circle-alert`.
 - **Where it shows:** § 6 S-1 `open-a-folder`, *Reached when* (observable) and *Not in this slice*
@@ -109,7 +109,7 @@ None.
   open station and no new seed: `the-startup-surface`'s condition 4 walks S-1's observable half as
   written. One thing this answer needs beside the SDD is raised on its own document, not here:
   `docs/DESIGN.md` § Overview still says the language is realised in CSS over markup, which the
-  shell S-1 draws is not — `docs/DESIGN_open_issues.md` § 2.1 (`nozoki@a047914`). Reasoning:
+  shell S-1 draws is not — `docs/DESIGN_open_issues.md` § 2.1 (`ka-reader@a047914`). Reasoning:
   `docs/trail/sdd/self_answer-27.md`.
 
 **How it closes.** `product-sdd` folds it on its next run like every other item in this file, and

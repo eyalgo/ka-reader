@@ -1,11 +1,11 @@
-# ADR-0010: The read-only proof runs against `nozoki-core` and the IPC command list, not the rendered UI, and the bundle probe — on every build from the first — reads the operating system's own report that the launched process is sandboxed
+# ADR-0010: The read-only proof runs against `ka-reader-core` and the IPC command list, not the rendered UI, and the bundle probe — on every build from the first — reads the operating system's own report that the launched process is sandboxed
 
 **Status:** Accepted — supersedes ADR-0008
 **Date:** 2026-09-19
 
 ## Context
 
-ADR-0008 decided two things: the read-only harness drives `nozoki-core` and the closed IPC command
+ADR-0008 decided two things: the read-only harness drives `ka-reader-core` and the closed IPC command
 list rather than the rendered UI, and the bundle probe runs on every CI build from the first. Neither
 moved. What moved is the observable that record's § Decision fixed for the probe's second half — that
 the launched bundle carries `APP_SANDBOX_CONTAINER_ID` in its environment — which ADR-0008 held
@@ -17,7 +17,7 @@ holds**: for the same process the operating system reports a read outside the gr
 network connection denied. The same binary built with no entitlements is unsandboxed and also shows
 no marker, and a team-signed sandboxed third-party app carries no marker in its main process. So the
 marker is absent from a sandboxed main process under either signature and does not separate a
-sandboxed bundle from an unsandboxed one (`docs/SDD.md` § 10 RC-1, citing `nozoki@ccb58d8` and
+sandboxed bundle from an unsandboxed one (`docs/SDD.md` § 10 RC-1, citing `ka-reader@ccb58d8` and
 `docs/trail/sdd/cycle-4.md` § 5.1; macOS 26.6.2, arm64). The wall stands; the observable failed.
 That the finding arrived with one reader written is what running the probe from the first build was
 for.
@@ -31,19 +31,19 @@ ad-hoc signed (ADR-0007), so no signing chain vouches for the sandbox, and a san
 would leave every test green and the wall gone (`docs/SDD.md` § 11 R-8). The owner accepted that the
 first public release lands after the whole v1 cut and asked that the bundle, the entitlement list and
 the probe be proved on an unpublished artifact as soon as the runtime exists
-(`nozoki@70a879a:docs/trail/sdd/cycle-1.md` § 3.3).
+(`ka-reader@70a879a:docs/trail/sdd/cycle-1.md` § 3.3).
 
 ## Decision
 
-The **read-only harness exercises `nozoki-core` and the closed IPC command list over fixture
+The **read-only harness exercises `ka-reader-core` and the closed IPC command list over fixture
 folders — repositories, plain folders, a folder inside a repository, a parent of two, a linked
 worktree, a submodule — not the rendered UI.** It runs on every CI build and before every release:
 `checks/read-only.sh` hashes a fixture (`.git` included where there is one), exercises every command
-through `nozoki-core`, hashes again, and prints `unchanged` or the differing paths;
+through `ka-reader-core`, hashes again, and prints `unchanged` or the differing paths;
 `checks/no-network.sh` diffs the dependency trees against the allowlist. The rendered UI's
 whole-product check is the timed release walk (`docs/SRS.md` § 8 AC-10).
 
-The **bundle probe**, `checks/bundle.sh`, reads `codesign -d --entitlements :- Nozoki.app` against
+The **bundle probe**, `checks/bundle.sh`, reads `codesign -d --entitlements :- KA-Reader.app` against
 the exact entitlement list, then launches the bundle and takes the pid of the main process that run
 started — found by its absolute executable path, with no instance of it running beforehand. **It
 fails unless the operating system reports that pid as sandboxed and reports two operations denied
@@ -65,7 +65,7 @@ error, when no pid is found, or when more than one is.
 
 **The probe runs on the bundle every CI build produces, from the first slice's first green build
 on**, so the release gate has a passing history before the first release is due (`docs/SDD.md` § 4
-C-I3; `nozoki@70a879a:docs/SDD.md` § SDD Review Notes RN-15, RN-25).
+C-I3; `ka-reader@70a879a:docs/SDD.md` § SDD Review Notes RN-15, RN-25).
 
 ## Alternatives ruled out
 
@@ -74,7 +74,7 @@ C-I3; `nozoki@70a879a:docs/SDD.md` § SDD Review Notes RN-15, RN-25).
   from an unsandboxed one: it does not separate the two cases, so a probe reading it is red while the
   wall stands and could never go green for the right reason (`docs/SDD.md` § 10 RC-1). No
   environment variable is read as evidence of the sandbox.
-- **The container directory `~/Library/Containers/com.kensaiapp.nozoki` existing** — it is created
+- **The container directory `~/Library/Containers/com.kensaiapp.ka-reader` existing** — it is created
   at first launch and survives from an earlier one, so a stale directory would pass an unsandboxed
   rebuild (`docs/SDD.md` § 10 RC-1, *Stopped*). A container directory that already exists is never
   evidence.
@@ -86,7 +86,7 @@ C-I3; `nozoki@70a879a:docs/SDD.md` § SDD Review Notes RN-15, RN-25).
   Accepted in its place: the renderer's actual command use is exercised only by the release walk —
   acceptable because the renderer holds no capability the harness could catch it using.
 - **Proving the sandbox at release, when the first release is due** — rejected by the owner:
-  publishing late does not require verifying late (`nozoki@70a879a:docs/trail/sdd/cycle-1.md`
+  publishing late does not require verifying late (`ka-reader@70a879a:docs/trail/sdd/cycle-1.md`
   § 3.3). The first built bundle is where the marker's failure was found; a release-time probe would
   have found it with the whole v1 cut written.
 - **Trusting a signing chain to prove the sandbox** — not available; the release is ad-hoc signed
@@ -146,22 +146,22 @@ its window, or a bundle not reported sandboxed within the probe's, is still R-8.
 
 ## Traces to
 
-- `docs/SDD.md` at v6 (`nozoki@b3439e8`) — § 4 C-I3, the observable and its *Violated by*; § 10
+- `docs/SDD.md` at v6 (`ka-reader@b3439e8`) — § 4 C-I3, the observable and its *Violated by*; § 10
   RC-1, the re-cut and its measurement; § SDD Review Notes RN-45; § 11 R-8; § 5 step 4 (E-1) with
   RN-46; § Open Questions, the hosted-runner item; § 3, `read-only-harness` row; § 9 TO-7.
 - `docs/trail/sdd/cycle-4.md` § 5.1 — the item as raised and answered on the SDD.
 - `docs/trail/architecture/cycle-5.md` § 3.1 — the answer, given in the owner's seat, that this is
   a reversal of ADR-0008's mechanism landing as a new record and not a correction edited into it;
   its reasoning is `docs/trail/architecture/self_answer-8.md` § 3.1.
-- `nozoki@ccb58d8` — the first built bundle's measurement, as the SDD cites it.
+- `ka-reader@ccb58d8` — the first built bundle's measurement, as the SDD cites it.
 - ADR-0008 — the record this one supersedes; its decision is restated here whole, so nothing in
   this record depends on that one being open.
-- `nozoki@70a879a:docs/trail/sdd/cycle-1.md` § 3.3 — the owner's mitigation;
-  `nozoki@70a879a:docs/SDD.md` § SDD Review Notes RN-15, RN-25.
+- `ka-reader@70a879a:docs/trail/sdd/cycle-1.md` § 3.3 — the owner's mitigation;
+  `ka-reader@70a879a:docs/SDD.md` § SDD Review Notes RN-15, RN-25.
 - `docs/SRS.md` § 8 AC-1 – AC-3, AC-10, AC-13, AC-24, AC-25; § 4.3 NFR-9.
 - Tauri's WebDriver page and Apple's App Sandbox page, cited above, each as the SDD cites it; the
   Apple page and the SDK's `sandbox.h` and `.tbd` stubs were re-read for this record on 2026-09-19.
-- `docs/SDD.md` at v8 (`nozoki@9b36a42`) — § 4 C-I3, the bounded window and the hosted-runner
+- `docs/SDD.md` at v8 (`ka-reader@9b36a42`) — § 4 C-I3, the bounded window and the hosted-runner
   narrowing; § SDD Review Notes RN-48; § 10 RC-1 *Still unresolved*; § 11 R-8. Read for the three
   in-place corrections dated 2026-09-23 above, each authorized in the owner's seat at
   `docs/trail/architecture/cycle-7.md` §§ 3.2 and 3.3 as a correction to this record and not a

@@ -8,17 +8,17 @@
 #   checks/view.sh is the proof that the Swift shell holds no I/O of its own, so a bug in it is a
 #   shell nobody is watching. These cases run the real script — never a copy of its logic. The script
 #   derives the product root from its own location, so each synthetic case copies the script into a
-#   temporary root that holds a synthetic nozoki-mac/Sources and a stand-in executable; `otool` is
+#   temporary root that holds a synthetic ka-reader-mac/Sources and a stand-in executable; `otool` is
 #   stood in on PATH, the one seam the script has.
 #   The technique is the shell packet's, minus its runner: this product has no Python, so the runner
 #   is this file, as in checks/tests/test_bundle.sh.
 #
 # USAGE
 #   checks/tests/test_view.sh
-#   The real-tree case reads target/release/bundle/macos/Nozoki.app, so run nozoki-mac/assemble.sh
+#   The real-tree case reads target/release/bundle/macos/KA-Reader.app, so run ka-reader-mac/assemble.sh
 #   first. A bundle that is absent FAILS that case with a stated message and never skips it: a skip
 #   would let CI conclude green having proved nothing.
-#   NOZOKI_TEST_ONLY=<case> runs one case.
+#   KA_READER_TEST_ONLY=<case> runs one case.
 #
 # WHY NO `set -e`
 #   A case that fails must not end the run before the remaining cases report. Each case returns its
@@ -28,7 +28,7 @@ set -uo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 VIEW_SH="$ROOT/checks/view.sh"
-REAL_EXECUTABLE="$ROOT/target/release/bundle/macos/Nozoki.app/Contents/MacOS/Nozoki"
+REAL_EXECUTABLE="$ROOT/target/release/bundle/macos/KA-Reader.app/Contents/MacOS/KAReader"
 
 STDOUT=""
 STDERR=""
@@ -78,21 +78,21 @@ fail() {
 new_root() {
   root="$WORK/$1"
   mkdir -p "$root/checks" \
-    "$root/nozoki-mac/Sources/CNozokiBridge" "$root/nozoki-mac/Sources/Nozoki" \
-    "$root/nozoki-mac/Sources/Shell" "$root/nozoki-mac/Sources/Surfaces" \
-    "$root/nozoki-mac/Tests" "$root/target/release/bundle/macos/Nozoki.app/Contents/MacOS"
+    "$root/ka-reader-mac/Sources/CKAReaderBridge" "$root/ka-reader-mac/Sources/KAReader" \
+    "$root/ka-reader-mac/Sources/Shell" "$root/ka-reader-mac/Sources/Surfaces" \
+    "$root/ka-reader-mac/Tests" "$root/target/release/bundle/macos/KA-Reader.app/Contents/MacOS"
   cp "$VIEW_SH" "$root/checks/view.sh"
   chmod +x "$root/checks/view.sh"
-  printf 'import AppKit\n' > "$root/nozoki-mac/Sources/Shell/Clean.swift"
-  printf 'stand-in executable\n' > "$root/target/release/bundle/macos/Nozoki.app/Contents/MacOS/Nozoki"
-  chmod +x "$root/target/release/bundle/macos/Nozoki.app/Contents/MacOS/Nozoki"
+  printf 'import AppKit\n' > "$root/ka-reader-mac/Sources/Shell/Clean.swift"
+  printf 'stand-in executable\n' > "$root/target/release/bundle/macos/KA-Reader.app/Contents/MacOS/KAReader"
+  chmod +x "$root/target/release/bundle/macos/KA-Reader.app/Contents/MacOS/KAReader"
   printf '%s' "$root"
 }
 
-# Writes the text $3 (as given, with printf's escapes read) to $1/nozoki-mac/$2.
+# Writes the text $3 (as given, with printf's escapes read) to $1/ka-reader-mac/$2.
 put_file() {
-  mkdir -p "$(dirname "$1/nozoki-mac/$2")"
-  printf '%b' "$3" > "$1/nozoki-mac/$2"
+  mkdir -p "$(dirname "$1/ka-reader-mac/$2")"
+  printf '%b' "$3" > "$1/ka-reader-mac/$2"
 }
 
 # A stand-in `otool` in directory $1. $2 is the body: the lines it prints after the header line.
@@ -186,20 +186,20 @@ expect_stdout_lacks() {
 }
 
 # A finding line on stderr: `<file>:<line>: <name>`, where <file> is relative to the product root and
-# the rest of the line names the refused thing. $1 is the file under nozoki-mac/, $2 the line, $3
+# the rest of the line names the refused thing. $1 is the file under ka-reader-mac/, $2 the line, $3
 # the name.
 expect_finding() {
   found=0
   while IFS= read -r line; do
     case "$line" in
-      "nozoki-mac/$1:$2: "*"$3"*) found=1 ;;
+      "ka-reader-mac/$1:$2: "*"$3"*) found=1 ;;
     esac
   done <<< "$STDERR"
-  [ "$found" -eq 1 ] || fail "expected a finding nozoki-mac/$1:$2: … $3 on stderr. stderr: $STDERR"
+  [ "$found" -eq 1 ] || fail "expected a finding ka-reader-mac/$1:$2: … $3 on stderr. stderr: $STDERR"
 }
 
 # Runs the script over one synthetic source and expects it reported at the given line.
-# $1 label, $2 file under nozoki-mac/, $3 file text, $4 line, $5 name.
+# $1 label, $2 file under ka-reader-mac/, $3 file text, $4 line, $5 name.
 expect_source_reported() {
   case_root="$(new_root "src-$(printf '%s' "$1" | tr -c 'A-Za-z0-9' '_')")"
   put_file "$case_root" "$2" "$3"
@@ -210,7 +210,7 @@ expect_source_reported() {
 }
 
 # Runs the script over one synthetic source and expects a clean pass.
-# $1 label, $2 file under nozoki-mac/, $3 file text.
+# $1 label, $2 file under ka-reader-mac/, $3 file text.
 expect_source_clean() {
   case_root="$(new_root "clean-$(printf '%s' "$1" | tr -c 'A-Za-z0-9' '_')")"
   put_file "$case_root" "$2" "$3"
@@ -221,10 +221,10 @@ expect_source_clean() {
 
 # --- cases ---
 
-# On the real product root, after nozoki-mac/assemble.sh.
+# On the real product root, after ka-reader-mac/assemble.sh.
 test_real_tree_passes() {
   [ -f "$REAL_EXECUTABLE" ] \
-    || fail "the real bundle is absent ($REAL_EXECUTABLE): run nozoki-mac/assemble.sh first. A missing bundle fails this case and never skips it"
+    || fail "the real bundle is absent ($REAL_EXECUTABLE): run ka-reader-mac/assemble.sh first. A missing bundle fails this case and never skips it"
   STDOUT_REAL="$("$VIEW_SH" 2> "$WORK/real-stderr")"
   status=$?
   stderr_real="$(cat "$WORK/real-stderr")"
@@ -232,13 +232,13 @@ test_real_tree_passes() {
   [ -z "$stderr_real" ] || fail "expected empty stderr on the real tree, got: $stderr_real"
   lines="$(printf '%s\n' "$STDOUT_REAL" | wc -l | tr -d ' ')"
   [ "$lines" -eq 1 ] || fail "expected one stdout line, got $lines: $STDOUT_REAL"
-  swift_count="$(find "$ROOT/nozoki-mac/Sources" -name '*.swift' | wc -l | tr -d ' ')"
+  swift_count="$(find "$ROOT/ka-reader-mac/Sources" -name '*.swift' | wc -l | tr -d ' ')"
   case "$STDOUT_REAL" in
     *" $swift_count Swift files"*) ;;
     *) fail "expected the pass line to give the count $swift_count of Swift files: $STDOUT_REAL" ;;
   esac
   case "$STDOUT_REAL" in
-    *"Nozoki.app/Contents/MacOS/Nozoki"*) ;;
+    *"KA-Reader.app/Contents/MacOS/KAReader"*) ;;
     *) fail "expected the pass line to name the executable: $STDOUT_REAL" ;;
   esac
   case "$STDOUT_REAL" in
@@ -272,11 +272,11 @@ test_each_family_is_reported() {
     found=0
     while IFS= read -r line; do
       case "$line" in
-        "nozoki-mac/Sources/$2:2: "*"$4"*) found=1 ;;
+        "ka-reader-mac/Sources/$2:2: "*"$4"*) found=1 ;;
       esac
     done <<< "$STDERR"
     [ "$found" -eq 1 ] || bad="$bad
-  $1: no finding nozoki-mac/Sources/$2:2: … $4. stderr: $STDERR"
+  $1: no finding ka-reader-mac/Sources/$2:2: … $4. stderr: $STDERR"
   }
   check_family F1 Shell/S.swift 'import WebKit' 'WebKit'
   check_family F2 Shell/S.swift 'let view = WKWebView()' 'WKWebView'
@@ -309,8 +309,8 @@ test_each_family_is_reported() {
   check_family F11 Shell/S.swift 'let a = CommandLine.arguments' 'CommandLine'
   check_family F11 Shell/S.swift 'let d = UserDefaults.standard' 'UserDefaults'
   check_family F11 Shell/S.swift 'let h = getenv("HOME")' 'getenv'
-  check_family F12 Surfaces/RootItemsView.swift 'let r = nozoki_list_tree(nil)' 'nozoki_list_tree'
-  check_family F12 Surfaces/RootItemsView.swift 'import CNozokiBridge' 'CNozokiBridge'
+  check_family F12 Surfaces/RootItemsView.swift 'let r = ka_reader_list_tree(nil)' 'ka_reader_list_tree'
+  check_family F12 Surfaces/RootItemsView.swift 'import CKAReaderBridge' 'CKAReaderBridge'
   check_family F13 Shell/S.swift 'NSAlert().runModal()' 'NSAlert'
   check_family F13 Shell/S.swift 'window.beginSheet(other)' 'beginSheet'
   check_family F13 Shell/S.swift 'let c = UNUserNotificationCenter.current()' 'UNUserNotificationCenter'
@@ -346,7 +346,7 @@ test_import_allowlist() {
   put_file "$extra_root" "Sources/Shell/I.swift" 'import Extra\n'
   run_view "$extra_root"
   expect_status 1 || return 1
-  mkdir -p "$extra_root/nozoki-mac/Sources/Extra"
+  mkdir -p "$extra_root/ka-reader-mac/Sources/Extra"
   put_file "$extra_root" "Sources/Extra/E.swift" 'import AppKit\n'
   run_view "$extra_root"
   expect_status 0 || return 1
@@ -381,11 +381,11 @@ let e = Bundle.main.paths(forResourcesOfType: "svg", inDirectory: nil)
 
 test_surfaces_may_not_call_the_bridge() {
   expect_source_reported surfaces-call Sources/Surfaces/RootItemsView.swift \
-    'import AppKit\nlet r = nozoki_list_tree(nil)\n' 2 nozoki_list_tree || return 1
-  expect_source_clean nozoki-call Sources/Nozoki/NativeBridge.swift \
-    'import AppKit\nimport CNozokiBridge\nlet r = nozoki_list_tree(nil)\n' || return 1
+    'import AppKit\nlet r = ka_reader_list_tree(nil)\n' 2 ka_reader_list_tree || return 1
+  expect_source_clean ka-reader-call Sources/KAReader/NativeBridge.swift \
+    'import AppKit\nimport CKAReaderBridge\nlet r = ka_reader_list_tree(nil)\n' || return 1
   expect_source_reported surfaces-import Sources/Surfaces/RootItemsView.swift \
-    'import AppKit\nimport CNozokiBridge\n' 2 CNozokiBridge || return 1
+    'import AppKit\nimport CKAReaderBridge\n' 2 CKAReaderBridge || return 1
 }
 
 test_open_panel_exception_is_narrow() {
@@ -397,7 +397,7 @@ test_open_panel_exception_is_narrow() {
     'import AppKit\nfunc a() { _ = panel.runModal() }\n' 2 runModal || return 1
   expect_source_reported with-argument Sources/Shell/OpenFolderPanel.swift \
     'import AppKit\nfunc a() { _ = NSApp.runModal(for: w) }\n' 2 runModal || return 1
-  expect_source_reported nsapp-anywhere Sources/Nozoki/AppDelegate.swift \
+  expect_source_reported nsapp-anywhere Sources/KAReader/AppDelegate.swift \
     'import AppKit\nfunc a() { _ = NSApp.runModal(for: w) }\n' 2 runModal || return 1
 }
 
@@ -418,7 +418,7 @@ test_comments_are_not_code() {
 
 # A string's interpolation holds code, and that code may hold string literals of its own. A `//` or
 # `/*` inside such a literal is inside a string still, so it opens no comment, and whatever follows
-# the outer string on its line is code and is scanned (CP-135: "anywhere in nozoki-mac/Sources").
+# the outer string on its line is code and is scanned (CP-135: "anywhere in ka-reader-mac/Sources").
 test_interpolation_does_not_end_a_string() {
   expect_source_reported interp-slashes Sources/Shell/P.swift \
     'import AppKit\nlet u = "\\(name ?? "https://x")" ; FileManager.default\n' 2 FileManager || return 1
@@ -510,7 +510,7 @@ test_every_finding_in_one_run() {
 
 test_no_swift_source_fails() {
   empty_root="$(new_root empty-scan)"
-  rm -f "$empty_root/nozoki-mac/Sources/Shell/Clean.swift"
+  rm -f "$empty_root/ka-reader-mac/Sources/Shell/Clean.swift"
   run_view "$empty_root"
   expect_status 1 || return 1
   expect_stdout_lacks "nothing found" || return 1
@@ -522,7 +522,7 @@ test_missing_executable_fails() {
   rm -rf "$missing_root/target"
   run_view "$missing_root"
   expect_status 1 || return 1
-  expect_stderr_contains "Nozoki.app/Contents/MacOS/Nozoki" || return 1
+  expect_stderr_contains "KA-Reader.app/Contents/MacOS/KAReader" || return 1
   expect_stdout_lacks "nothing found" || return 1
 }
 
@@ -671,7 +671,7 @@ trap cleanup EXIT
 
 failed=0
 for case_name in $CASES; do
-  if [ -n "${NOZOKI_TEST_ONLY:-}" ] && [ "$case_name" != "$NOZOKI_TEST_ONLY" ]; then
+  if [ -n "${KA_READER_TEST_ONLY:-}" ] && [ "$case_name" != "$KA_READER_TEST_ONLY" ]; then
     continue
   fi
   if result="$("$case_name" 2>&1)"; then

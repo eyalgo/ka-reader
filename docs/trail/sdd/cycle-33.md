@@ -1,4 +1,4 @@
-# SDD open issues — Nozoki
+# SDD open issues — KA-Reader
 
 > Companion to `SDD.md`. The CTO wrote the SDD; this file holds what that run could not settle from
 > its inputs (the PRD, the SRS, the UXD, and any context or constraints), and the calls that are the
@@ -63,7 +63,7 @@ None.
 ### 5.1 § 3 `surfaces` does not name the window's key status, which the hover fill and the tooltip are now drawn from
 - **Raised by:** PM — 2026-10-04
 - **Seat:** cto
-- **Tracked by:** `nozoki · nemawashi · 2026-10-02_git-says-what-changed`
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-02_git-says-what-changed`
 - **What it blocks:** nothing is cut by it. A part's sentence reads incomplete against the shell, and
   a later change that reads § 3 to place a second first-hand observation finds only the pointer
   named.
@@ -73,7 +73,7 @@ None.
   (`docs/SDD.md:L343`). Its *Owns* cell names no observation of the window's key status. `docs/DESIGN.md`
   § Components "Rows" and "The tooltip" now draw both only while the window is the key window (RN-40,
   `docs/DESIGN.md:L635-L640`, `:L681-L685`), and the shell observes that first-hand: a key-window
-  source in `surfaces` (`nozoki-mac/Sources/Surfaces/KeyWindowSource.swift:L7`, its live value from
+  source in `surfaces` (`ka-reader-mac/Sources/Surfaces/KeyWindowSource.swift:L7`, its live value from
   `:L50`) gates both the fill (`RowHover.swift`) and the tooltip (`LetterTooltip.swift`). It is not a
   state of the folder, is not held across a redraw, and raises no intent across SM-8 — the same bounds
   the sentence states for the pointer. The likely fold: the window's key status named beside the
@@ -104,7 +104,7 @@ None.
   CDO's clauses and `docs/DESIGN.md:L640-L645` and `:L690-L700` settle them, so no call is left for
   that seat.
   **Addition three.** Each of the two command halves gains three cases the shell's suites already
-  hold at `nozoki@6f92b29`: when the window stops being the key window the fill leaves under a
+  hold at `ka-reader@6f92b29`: when the window stops being the key window the fill leaves under a
   still pointer; while it is not key, no row shows the fill, whatever the pointer does and whatever
   rows move under it; when it becomes key again the fill is on the row under the pointer as the
   rows stand then. S-4 gains one more: a raised tooltip leaves when the window stops being key and

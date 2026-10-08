@@ -12,7 +12,7 @@ the item names them, `docs/PRD.md` (v12) § Key Use Cases, § Core Features, § 
 § Out of Scope; `docs/SDD.md` (v3) S-7, RN-20; `docs/trail/sdd/cycle-1.md` § 1.2; `docs/fdr.md`
 (v1) R-69, R-70, R-73, RN-1, RN-12, RN-14; `docs/fdr_open_issues.md` § 2.1;
 `docs/trail/fdr/self_answer-1.md` § 2.1 and § Companions opened; `docs/trail/srs/cycle-1.md`
-§ 2.2; `system/projects/nozoki/agari.md`; `<CORE>/prompts/cto_create_srs.md` § *Inputs you work
+§ 2.2; `system/projects/ka-reader/agari.md`; `<CORE>/prompts/cto_create_srs.md` § *Inputs you work
 from*, § *Every requirement cites its relation to the PRD*, § *On a re-run — fold, don't
 re-author*. The siblings the SRS may read and not cite — `docs/UXD.md` (v7) UX-F2, UX-F4,
 UX-S5, and its live companion `docs/UXD_open_issues.md` § 2.1 — were read for collision.
@@ -38,8 +38,8 @@ UX-S5, and its live companion `docs/UXD_open_issues.md` § 2.1 — were read for
   in the owner's seat at `docs/trail/fdr/self_answer-1.md` § 2.1. The item asks this seat to make
   its own document say what the owner decided; no person, party, risk or taste is committed by
   answering, and there is no named ground I cannot see. Two rounds sit between the raising
-  (`nozoki@dde4493`) and this deciding — a `product-srs` run that moved the status line to Draft
-  at v11 (`nozoki@4c79780`) and added the item's last bullet — and every fact below was
+  (`ka-reader@dde4493`) and this deciding — a `product-srs` run that moved the status line to Draft
+  at v11 (`ka-reader@4c79780`) and added the item's last bullet — and every fact below was
   re-measured on disk today.
 
   **Check 2 — the reasoning holds, for the reason it gives; four things it does not say.** The
@@ -148,4 +148,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/SRS.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-srs/launcher.sh nozoki`
+- **`docs/SRS.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-srs/launcher.sh ka-reader`

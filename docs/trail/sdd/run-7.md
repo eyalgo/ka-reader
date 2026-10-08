@@ -3,7 +3,7 @@ version: "1.0.0"
 ---
 <!-- The version above is template-file metadata; it is not copied into the instantiated document. -->
 
-# SDD conversation — nozoki, run run-7
+# SDD conversation — ka-reader, run run-7
 
 > The record of one `product-sdd` run: three seats — CTO, CPO, CDO — working one document together,
 > and a runner that starts them, gives the turns and counts the rounds.
@@ -23,9 +23,9 @@ version: "1.0.0"
 
 - **Round:** 2
 - **Seats, and the names they answer to:**
-  - CTO — `sdd-nozoki-run7-cto`
-  - CPO — `sdd-nozoki-run7-cpo`
-  - CDO — `sdd-nozoki-run7-cdo`
+  - CTO — `sdd-ka-reader-run7-cto`
+  - CPO — `sdd-ka-reader-run7-cpo`
+  - CDO — `sdd-ka-reader-run7-cdo`
 - **Standing declared move:** CTO `no_followup` · CPO `no_followup` · CDO `no_followup`
 - **Recall outstanding:** none
 - **Recalls spent:** none

@@ -1,4 +1,4 @@
-# Architecture open issues — Nozoki 覗き
+# Architecture open issues — KA-Reader
 
 > Companion to `adr/` and `nfdr.md`. The Principal Architect authored both records
 > non-interactively; this file holds what the run could not settle from its inputs — the SRS, the SDD
@@ -21,7 +21,7 @@
 - **Why it matters:** the organisation's quality floor says a known critical vulnerability has a
   stated remediation window, starting when the advisory is published, and that "a product that names
   no window has an obligation nobody is late against" (`quality_defaults.md` v1.1.0 § Dependencies).
-  Nozoki's support posture, quoted from the PRD into the SRS and the FDR, promises "no commitment to
+  KA-Reader's support posture, quoted from the PRD into the SRS and the FDR, promises "no commitment to
   fix, and no commitment that a fix ever arrives" and, for security reports, "no acknowledgement or
   response time promised" (`docs/SRS.md` § 7 C-7, C-13; `docs/fdr.md` PD-22). Where the SRS states a
   bar, the SRS wins over the floor — but C-7 is about reports, not advisories, and an NFDR that
@@ -72,10 +72,10 @@
   major version.
 - **Rationale:** the SRS binds a major version to "a breaking change to the product's public
   contract" and defines the contract nowhere (`docs/SRS.md` § 7 C-6); the FDR carries the same
-  promise (PD-20). For a library the contract is its API; Nozoki has none (PD-26), so what a stranger
+  promise (PD-20). For a library the contract is its API; KA-Reader has none (PD-26), so what a stranger
   relies on is what they can see and what survives an upgrade. The organisation's domain doctrine
   says the declaration is one "someone must make" and, for a tool with no library surface, names
-  flags, exit codes, output formats and config schema — Nozoki has none of those either, which is why
+  flags, exit codes, output formats and config schema — KA-Reader has none of those either, which is why
   the draft names behaviour, the install path, own-state and the floor.
 - **If overridden:** narrowing to behaviour alone makes an own-state discard or a raised floor a
   minor version, which QC-60 would then have to say; widening to "anything a screenshot shows"
@@ -144,8 +144,8 @@
 
 ### 2.5 ADR-0009 — the physical module set, reconstructed
 - **Lands in:** `adr/0009-physical-module-set.md`; `nfdr.md` § 1.2 – § 1.3
-- **Drafted into the records:** four units — `nozoki-core` as a library both the host and the
-  harness link; `nozoki-app` as the only Tauri-aware unit and the composition root; `nozoki-ui` as a
+- **Drafted into the records:** four units — `ka-reader-core` as a library both the host and the
+  harness link; `ka-reader-app` as the only Tauri-aware unit and the composition root; `ka-reader-ui` as a
   capability-free bundle; `checks/` outside the bundle — with the part-to-unit map and the import
   graph § 1.2 binds. The record is **Proposed**, because its decision is read off the design rather
   than argued in it.
@@ -182,7 +182,7 @@
 - **Drafted into the records:** `cargo audit` and `pnpm audit --audit-level=critical` for the
   vulnerability gate; `gitleaks detect` for the secrets scan; `checks/structure.sh` as the grep-based
   layer-6 check over the Rust workspace; `checks/notices.sh`, `checks/readme.sh` and
-  `checks/strings.sh` for the release inspections that mechanize; `cargo test -p nozoki-app --test
+  `checks/strings.sh` for the release inspections that mechanize; `cargo test -p ka-reader-app --test
   config` for the CSP, capability-file and plugin assertions.
 - **Rationale:** each obligation's source names the obligation and not the command — the
   organisation's floors for secrets and dependencies, the SDD's config and wording bars — and an
@@ -228,8 +228,8 @@
   false when written. But `docs/fdr_open_issues.md` no longer exists: the FDR folded to v2 at
   `0eb5c67` and to v3 at `3325469`, Settled, the companion removed and its two rounds kept at
   `docs/trail/fdr/cycle-1.md` and `cycle-2.md`. So RN-2 on the fold reads as a record of what v1
-  read — the FDR Draft at v1 with thirteen companion items, pinned to `nozoki@a50718a` — and of
-  where the FDR now stands, Settled at v3 (`nozoki@3325469`); the `Inputs read:` line takes the
+  read — the FDR Draft at v1 with thirteen companion items, pinned to `ka-reader@a50718a` — and of
+  where the FDR now stands, Settled at v3 (`ka-reader@3325469`); the `Inputs read:` line takes the
   FDR's present status, which is the record `unsettled_inputs.md` fixes. The note's other two
   sentences close the same way: "none turns on an item that companion holds" was true at v1 and
   is history now — QC-60's own question came back as R-168 – R-170 and PD-39 (item 2.2's fold);

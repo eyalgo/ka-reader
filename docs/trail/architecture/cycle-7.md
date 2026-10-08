@@ -1,4 +1,4 @@
-# Architecture open issues — Nozoki
+# Architecture open issues — KA-Reader
 
 > Companion to `adr/` and `nfdr.md`. The Principal Architect authored both records
 > non-interactively; this file holds what the run could not settle from its inputs — the SRS, the SDD
@@ -31,7 +31,7 @@
 ### 3.1 QC-3 closes over itself: the allowlist is what the check compares against, so nothing proves the allowlist is transport-free
 - **Raised by:** PM — 2026-09-20
 - **Which record:** NFDR § 1 QC-3 and its § 10 row
-- **Tracked by:** `nozoki · nemawashi · 2026-09-15_open-a-folder`
+- **Tracked by:** `ka-reader · nemawashi · 2026-09-15_open-a-folder`
 - **What it blocks:** Nothing fails today, and that is the point — the check cannot fail on the thing
   QC-3 is about. QC-3 states a domain ("No shipped unit links a network transport") and is *verified
   by* `checks/no-network.sh` diffing `cargo tree` and `pnpm ls` against `checks/deps.allow`
@@ -41,7 +41,7 @@
 - **Where it shows:**
   - QC-3 (`nfdr.md:L60-L63`) and its § 10 row (`nfdr.md:L665`) — both name `checks/no-network.sh`
     and no second gate.
-  - Measured on the tree at `nozoki@92a76c4`: `bash checks/no-network.sh` → `ok — 218 cargo names and
+  - Measured on the tree at `ka-reader@92a76c4`: `bash checks/no-network.sh` → `ok — 218 cargo names and
     163 pnpm names match checks/deps.allow`, exit 0, while `checks/deps.allow:L51` holds
     `crypto-common` and `:L204` holds `tokio`. Neither is a transport by name, and nothing in the
     harness or in either record traces what admitted them.
@@ -59,7 +59,7 @@
   `development-design`), and that review judges each added name against QC-3's domain — does it,
   **in the features the lockfile resolves**, link a network transport — not only whether it is
   deliberate. The features clause is needed because a name alone cannot answer QC-3. `tokio` is on
-  the list (`checks/deps.allow:L204`), and at `nozoki@9b36a42` `cargo tree --offline --locked -e
+  the list (`checks/deps.allow:L204`), and at `ka-reader@9b36a42` `cargo tree --offline --locked -e
   features -i tokio` resolves `bytes, default, fs, io-util, rt, rt-multi-thread, sync` and no
   `net`, so today it links no socket. And QC-3's own first clause, "libgit2 is built without its
   HTTPS and SSH transports", is a feature condition that a name diff cannot see at all once `git2`
@@ -69,7 +69,7 @@
   what C-R6 states. It is a correction, not a widening: the NFDR's own preamble says an entry with
   no nameable verification is not yet an entry, and QC-3's domain half has none. **One case the
   review does not reach, named:** the 381 names already on the list (218 cargo, 163 pnpm, `bash
-  checks/no-network.sh` at `nozoki@9b36a42`) went through the diff but were never recorded as
+  checks/no-network.sh` at `ka-reader@9b36a42`) went through the diff but were never recorded as
   reviewed against the domain. The entry should require that review once, recorded in the change
   that realizes the new tail. § 10's QC-3 row gains the review beside the script. Reasoning:
   `docs/trail/architecture/self_answer-10.md` § Items worked, 3.1.
@@ -77,8 +77,8 @@
 ### 3.2 ADR-0010 and QC-25 fix what the probe must read, not when — and the first CI runs read too early
 - **Raised by:** PM — 2026-09-23
 - **Which record:** ADR-0010 § Decision and § Consequences; NFDR § 1 QC-25 and its § 10 row
-- **Tracked by:** `nozoki · nemawashi · 2026-09-15_open-a-folder`; the fix to the probe is the change
-  unit `nozoki · tobiishi · 2026-09-23_the-probe-waits-for-the-sandbox`
+- **Tracked by:** `ka-reader · nemawashi · 2026-09-15_open-a-folder`; the fix to the probe is the change
+  unit `ka-reader · tobiishi · 2026-09-23_the-probe-waits-for-the-sandbox`
   (`kensaiapp-opensource@1523865`); the SDD side is `docs/SDD_open_issues.md` § 5.1
 - **What it blocks:** Nothing waits on it to be built. The change unit makes `checks/bundle.sh` wait,
   bounded, for the first `sandboxed: yes`, and makes the negative control answer `no` for the whole

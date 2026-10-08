@@ -1,4 +1,4 @@
-# Architecture open issues — Nozoki
+# Architecture open issues — KA-Reader
 
 > Companion to `adr/` and `nfdr.md`. The Principal Architect authored both records
 > non-interactively; this file holds what the run could not settle from its inputs — the SRS, the SDD
@@ -19,7 +19,7 @@
 > **No `product-architecture` run opened this companion. The PM opened it on 2026-09-26.**
 > `nfdr.md` is Settled at v19, and the records had no companion on disk, so a `product-architecture`
 > re-run would read them as done and find nothing to act on. The companion holds two items, §§ 3.1 and
-> 3.2. Both come from measuring `nozoki-mac` on `main` at `nozoki@f46269a` against § 9's statement of
+> 3.2. Both come from measuring `ka-reader-mac` on `main` at `ka-reader@f46269a` against § 9's statement of
 > the Swift packet, which says "a rule of it not named here is followed as written"
 > (`docs/nfdr.md:L1033-L1034`).
 
@@ -38,7 +38,7 @@ None.
 > holds a lean, and its slot is the next round's.
 
 ### 2.1 § 9's tools-version departure has two more consequences the bullet does not name — `.strictMemorySafety()` and `.defaultIsolation(MainActor.self)` are `PackageDescription` 6.2 settings the manifest cannot state, and the bullet says each is followed as written
-- **Lands in:** `nfdr.md` § 9, the `nozoki-mac` bullet's *Departed from* list, beside the three it
+- **Lands in:** `nfdr.md` § 9, the `ka-reader-mac` bullet's *Departed from* list, beside the three it
   names and the language mode § 3.2 adds.
 - **Drafted into the records:** Nothing. No producing run wrote this; the run that raised it writes
   no record. The change it proposes: both settings join *Departed from* under the same flip as the
@@ -49,14 +49,14 @@ None.
   executable and the target holding the UI code, not a target called from any isolation domain),
   which targets those are being the flip's change's placement under that rule. The cost named with
   each: strict memory safety will require the `unsafe` keyword at every pointer crossing
-  `CNozokiBridge` (`quality_gates.md` § Types: "a pointer crossing the bridge does"), and default
+  `CKAReaderBridge` (`quality_gates.md` § Types: "a pointer crossing the bridge does"), and default
   main-actor isolation lands on code that today runs off the main thread by design
-  (`nozoki-mac/Sources/Shell/ReadRunning.swift`).
+  (`ka-reader-mac/Sources/Shell/ReadRunning.swift`).
 - **Rationale:** `toolchain.md` § Toolchain version names three manifest settings "First available in
   PackageDescription 6.2" — `.treatAllWarnings(as:)`, `.strictMemorySafety()` and
   `.defaultIsolation(_:)` (`:L48-L53`) — and the bullet's list names the first alone
-  (`docs/nfdr.md:L1060-L1064`). `nozoki-mac/Package.swift` carries no `swiftSettings` on any target
-  (`grep -n swiftSettings nozoki-mac/Package.swift` prints nothing at `nozoki@6e1d79f`). By the
+  (`docs/nfdr.md:L1060-L1064`). `ka-reader-mac/Package.swift` carries no `swiftSettings` on any target
+  (`grep -n swiftSettings ka-reader-mac/Package.swift` prints nothing at `ka-reader@6e1d79f`). By the
   bullet's own words a packet rule not named is followed as written; neither of these can be, under
   a `5.9` manifest, so both are the same false claim § 3.2 found for the language mode, and the same
   cause. One item for both, because they share the cause and the flip.
@@ -67,33 +67,33 @@ None.
 - **Confirm or override:** Overridden — keep both settings in the same tools-version flip, but make
   their placement and cost exact (`docs/trail/architecture/self_answer-21.md:L31-L50`).
   `.strictMemorySafety()` goes on every **Swift** target, including the test targets;
-  `.defaultIsolation(MainActor.self)` goes only on `Surfaces` and `Nozoki`, not on `Shell`,
+  `.defaultIsolation(MainActor.self)` goes only on `Surfaces` and `KAReader`, not on `Shell`,
   `SurfacesTests` or `ShellTests` (`docs/trail/architecture/self_answer-21.md:L52-L61`). Strict memory
   safety currently requires `unsafe` acknowledgements at both kinds of boundary the package already
-  has: the C-pointer uses in `nozoki-mac/Sources/Nozoki/NativeBridge.swift` and AppKit's
-  `unowned(unsafe)` properties used in `nozoki-mac/Sources/Surfaces/RootItemsView.swift`
+  has: the C-pointer uses in `ka-reader-mac/Sources/KAReader/NativeBridge.swift` and AppKit's
+  `unowned(unsafe)` properties used in `ka-reader-mac/Sources/Surfaces/RootItemsView.swift`
   (`docs/trail/architecture/self_answer-21.md:L63-L76`). Default main-actor isolation does **not**
   land on `ReadRunning.swift`; the off-main failures already named in § 3.2 are the Swift 6
   language-mode cost, not this setting's (`docs/trail/architecture/self_answer-21.md:L52-L61`). No
   separate current source failure is named for default isolation: with the language mode held at
-  Swift 5 to isolate this setting, the current `Nozoki` target builds when default isolation is
+  Swift 5 to isolate this setting, the current `KAReader` target builds when default isolation is
   applied at the packet's two target boundaries (`docs/trail/architecture/self_answer-21.md:L78-L83`).
 
 ## 3. Raised from downstream — an item from a seat that did not write these records
 
 ### 3.1 § 9 says the Swift test framework is followed, but new tests are XCTest and no departure is recorded
 - **Raised by:** PM — 2026-09-26
-- **Which record:** `nfdr.md` § 9 *Test strategy*, the bullet "`nozoki-mac` against the Swift
+- **Which record:** `nfdr.md` § 9 *Test strategy*, the bullet "`ka-reader-mac` against the Swift
   packet", its *Framework — followed* clause (`docs/nfdr.md:L1034-L1039`).
-- **Tracked by:** `nozoki · nemawashi · 2026-09-15_open-a-folder`
+- **Tracked by:** `ka-reader · nemawashi · 2026-09-15_open-a-folder`
 - **What it blocks:** a true statement of the framework rule. The clause says the existing XCTest
   files stay, and a new test is Swift Testing. It also says the first new test finds out whether
   CI's toolchain runs Swift Testing, and that a departure is recorded here, with the measurement, if
-  it cannot. At `nozoki@f46269a`:
-  - `nozoki-mac/Tests/SurfacesTests/RootItemsViewExpansionTests.swift` is a new test file, added at
-    `nozoki@a5fc189`. It imports `XCTest` and runs 23 cases.
-  - `grep -rl 'import Testing' nozoki-mac/Tests` prints nothing.
-  - `grep -rl 'import XCTest' nozoki-mac/Tests` lists five files, where the clause counted four on
+  it cannot. At `ka-reader@f46269a`:
+  - `ka-reader-mac/Tests/SurfacesTests/RootItemsViewExpansionTests.swift` is a new test file, added at
+    `ka-reader@a5fc189`. It imports `XCTest` and runs 23 cases.
+  - `grep -rl 'import Testing' ka-reader-mac/Tests` prints nothing.
+  - `grep -rl 'import XCTest' ka-reader-mac/Tests` lists five files, where the clause counted four on
     2026-09-23.
 
   The ground given in the new file's commits is that `macos-14`'s default Xcode is 15.4, read from
@@ -120,10 +120,10 @@ None.
   departure can end on a `ci.yml` step that selects an Xcode the image already holds, the delivery
   tier's change, reviewed against this bullet, while the three wait on a 6.2 toolchain the image does
   not offer. The *Framework* clause's count is corrected and dated: five files import XCTest at
-  `nozoki@f46269a`, the fifth `nozoki-mac/Tests/SurfacesTests/RootItemsViewExpansionTests.swift`
-  (`nozoki@a5fc189`), and its "not known" sentence becomes the departure's flip. The *verified by*
+  `ka-reader@f46269a`, the fifth `ka-reader-mac/Tests/SurfacesTests/RootItemsViewExpansionTests.swift`
+  (`ka-reader@a5fc189`), and its "not known" sentence becomes the departure's flip. The *verified by*
   tail gains a trigger: review at `development-design` on any change that adds a file under
-  `nozoki-mac/Tests/`, against the *Framework* clause — the tail reads `Package.swift` and
+  `ka-reader-mac/Tests/`, against the *Framework* clause — the tail reads `Package.swift` and
   `.github/workflows/*.yml` only, which is how three changes wrote XCTest and none reached this
   file. Not the second reading: the clause already gave the first new test the measurement, three
   changes wrote XCTest and none took it, because nothing in the tree prints the toolchain and the
@@ -132,27 +132,27 @@ None.
 
 ### 3.2 § 9 does not state the Swift language mode, so it claims the Swift 6 mode is followed, and the package builds in the Swift 5 mode
 - **Raised by:** PM — 2026-09-26
-- **Which record:** `nfdr.md` § 9 *Test strategy*, the bullet "`nozoki-mac` against the Swift
+- **Which record:** `nfdr.md` § 9 *Test strategy*, the bullet "`ka-reader-mac` against the Swift
   packet", its *Departed from* list (`docs/nfdr.md:L1060-L1064`). Where an ADR records the step
   down, it is that ADR too.
-- **Tracked by:** `nozoki · nemawashi · 2026-09-15_open-a-folder`
+- **Tracked by:** `ka-reader · nemawashi · 2026-09-15_open-a-folder`
 - **What it blocks:** a true statement of the language mode, and the data-race checks that go with
   it. The packet builds a package in the Swift 6 language mode. A target that steps down to the Swift
   5 mode is recorded in the product's `docs/adr/` with its reason, because that "removes that
   module's data-race checks outright". Such a target also carries
   `.enableUpcomingFeature("StrictConcurrency")` (`languages/swift/toolchain.md` § *Language mode —
   Swift 6, stated in the manifest*).
-  - `nozoki-mac/Package.swift:L1` reads `// swift-tools-version:5.9`. Under that tools version every
+  - `ka-reader-mac/Package.swift:L1` reads `// swift-tools-version:5.9`. Under that tools version every
     target builds in the Swift 5 mode.
   - No target carries a language-mode or concurrency setting. `grep -n -i
-    "swiftLanguage\|StrictConcurrency\|swiftSettings" nozoki-mac/Package.swift` prints nothing.
+    "swiftLanguage\|StrictConcurrency\|swiftSettings" ka-reader-mac/Package.swift` prints nothing.
   - No record states it. `grep -n -i "StrictConcurrency\|language mode\|swiftLanguageMode\|Sendable"
     docs/nfdr.md docs/adr/*.md` prints nothing.
 
   So the rule is not named here, and by the bullet's own words it is followed as written. It is not.
-- **Where it shows:** `nozoki-mac/Sources/Shell/LaunchFlow.swift:L52-L53`. A closure run off the main
+- **Where it shows:** `ka-reader-mac/Sources/Shell/LaunchFlow.swift:L52-L53`. A closure run off the main
   thread captures `bridge`, an `any Bridging`. `Bridging` is not `Sendable`
-  (`nozoki-mac/Sources/Shell/Bridging.swift:L7`), and the build gives no diagnostic. The packet
+  (`ka-reader-mac/Sources/Shell/Bridging.swift:L7`), and the build gives no diagnostic. The packet
   measured this form building silently under the Swift 5 mode. Whether `StrictConcurrency` reports it
   here has not been measured. Whether tools version 5.9 accepts that feature under that spelling has
   not been measured either.
@@ -167,15 +167,15 @@ None.
   three and the mode adopted together. No target carries `StrictConcurrency` in the meantime, and
   the list says so with the ground: without `.treatAllWarnings(as: .error)` — departed with the same
   flip — the feature's diagnostics are warnings the Test gate cannot fail on (measured 2026-09-26 in
-  a copy of `nozoki-mac` at `nozoki@6e1d79f`, Apple Swift 6.4: `.enableUpcomingFeature("StrictConcurrency")`
+  a copy of `ka-reader-mac` at `ka-reader@6e1d79f`, Apple Swift 6.4: `.enableUpcomingFeature("StrictConcurrency")`
   on `Surfaces` and `Shell` under tools 5.9 was accepted and `swift build --target Shell` completed
   with three warnings and no error); and the setting's spelling follows the compiler —
   `enableExperimentalFeature` under 5.9 and 5.10 tools, `enableUpcomingFeature` from 6.0 (the Swift
   migration guide, read 2026-09-26) — while CI's toolchain is, by this bullet's own clause, not yet
   measured, so the record could not spell the setting it required. What the list names instead is
   the cost, so the flip's change knows its bar: the two sites the Swift 6 mode refuses, measured in
-  that build — `nozoki-mac/Sources/Shell/LaunchFlow.swift:L53` (`bridge`, `any Bridging`, captured
-  in a `@Sendable` closure) and `nozoki-mac/Sources/Shell/ReadRunning.swift:L28` (`deliver`, a
+  that build — `ka-reader-mac/Sources/Shell/LaunchFlow.swift:L53` (`bridge`, `any Bridging`, captured
+  in a `@Sendable` closure) and `ka-reader-mac/Sources/Shell/ReadRunning.swift:L28` (`deliver`, a
   `@MainActor (RootListing?) -> Void`, sent across one) — each reported as "an error in the Swift 6
   language mode", plus any site a later change adds before the flip. No ADR: no target steps down
   alone; the package sits in the Swift 5 mode as a consequence of a departure these records already

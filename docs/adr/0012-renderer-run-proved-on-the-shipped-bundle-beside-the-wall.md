@@ -10,8 +10,8 @@ the sandbox probe with its negative control, the allowlist diff — and the bund
 window with no Open panel and no response to a right-click (`docs/trail/sdd/cycle-8.md` § 5.1;
 `docs/SDD.md` § 10 RC-2). The wall stood; nothing ran behind it. That bundle's page never reached
 `open_folder` — the renderer's first and only unconditional command, invoked at page load
-(`nozoki@a4ab8e6:nozoki-ui/src/main.ts:L14-L19`) and parked in the Open panel until someone
-answers it (`nozoki@a4ab8e6:crates/nozoki-app/src/main.rs:L17-L19`) — because WebKit's content
+(`ka-reader@a4ab8e6:ka-reader-ui/src/main.ts:L14-L19`) and parked in the Open panel until someone
+answers it (`ka-reader@a4ab8e6:crates/ka-reader-app/src/main.rs:L17-L19`) — because WebKit's content
 process never got a network process to pair with (RC-2). The owner ordered a gate
 (`docs/trail/sdd/cycle-8.md` § 5.1,
 answer 4): the bundle CI ships must be shown to run its view under its shipped entitlements —
@@ -29,14 +29,14 @@ and nothing else (`docs/SDD.md` § SDD Review Notes RN-52).
 
 ## Decision
 
-`checks/renderer.sh Nozoki.app` runs on every CI build **after `checks/bundle.sh` and never
+`checks/renderer.sh KA-Reader.app` runs on every CI build **after `checks/bundle.sh` and never
 instead of it**. It launches the bundle CI built, as a user launches it, takes the pid the way
 `checks/bundle.sh` does, and within a bounded window of the same kind **fails unless the launched
 main process is observed parked in the Open panel's modal run, inside the shell's launch frames**
 — the shell's first and only unconditional act, presenting the Open panel at launch
 (`docs/SDD.md` § 4 C-R3) and parked in it until someone answers; `open_folder` is not among those
 frames, because the shell calls it only after the panel returns
-(`nozoki@ab39502:nozoki-mac/Sources/Shell/LaunchFlow.swift:L35-L37`) and the gate sends no input
+(`ka-reader@ab39502:ka-reader-mac/Sources/Shell/LaunchFlow.swift:L35-L37`) and the gate sends no input
 *(pinned in place 2026-10-01 to the commit it was read at — the lines moved under it; the answer at
 `docs/trail/architecture/cycle-19.md` § 2.1)* *(corrected in
 place 2026-09-24 — as accepted this clause read "observed inside `open_folder`'s call", the
@@ -68,12 +68,12 @@ draws on a bundle the wall is not proven on is the shape § 2 rejected.
 
 **Until the native shell lands, this gate is red by construction, and that red is the gate
 working.** Under the rule (ADR-0011) no bundle built from the previous shape — the tree as this
-record is written, `crates/nozoki-app` over `nozoki-ui` — reaches `open_folder` (`docs/SDD.md`
+record is written, `crates/ka-reader-app` over `ka-reader-ui` — reaches `open_folder` (`docs/SDD.md`
 § 10 RC-2). The red is never cleared by granting an entitlement or by skipping the script;
 `checks/renderer.sh` and `checks/fixtures/idle-shell` land with the native shell or after it (the
 owner's addition, `docs/trail/architecture/cycle-8.md` § 2.1) *(dated in place 2026-09-24 — this
 paragraph was a rule for the tree before the native shell, and that tree is gone: from
-`nozoki@153f5a1` `checks/renderer.sh` and `checks/fixtures/idle-shell` are in the tree and run on
+`ka-reader@153f5a1` `checks/renderer.sh` and `checks/fixtures/idle-shell` are in the tree and run on
 every CI build as `Renderer gate` (`.github/workflows/ci.yml:L43-L44`), after `Bundle probe`, and
 the gate passes on the native shell's bundle; the never-cleared clause stands on its own ground,
 C-I3's *Violated by* ("a renderer gate skipped") and ADR-0011; the answer at
@@ -119,8 +119,8 @@ into the bridge"; the shell makes no bridge call before the panel returns; the a
 and the script fixes them from the first native bundle. What this record fixes is the gate, its
 two rules — observed from the process and never from a marker; a control that must go red — and
 its place after the wall probe, not the frames. The observation was measured on a Mac
-(`nozoki@ab39502:checks/renderer.sh:L58-L61`, macOS 26.6.2) and on a GitHub-hosted runner — GitHub Actions run
-35988399477 on `nozoki@37a962d`, image `macos-14-arm64` 20260831.0302.1, macOS 14.8.9, its
+(`ka-reader@ab39502:checks/renderer.sh:L58-L61`, macOS 26.6.2) and on a GitHub-hosted runner — GitHub Actions run
+35988399477 on `ka-reader@37a962d`, image `macos-14-arm64` 20260831.0302.1, macOS 14.8.9, its
 `checks/renderer.sh` byte-equal to `main`'s — where the product matched the script's five-frame
 list on observation 1 and the control on none of 30; a runner image or macOS whose Open-panel
 frames read differently turns the gate red on the next build, a re-cut trigger on the mechanism,
@@ -131,19 +131,19 @@ accepted this read that the hosted-runner reading "is unmeasured (`docs/SDD.md` 
 last item)", an item SDD v18 closed; the runner reading is cited from the run because the
 script's header does not carry it yet; the answer at `docs/trail/architecture/cycle-12.md`
 § 3.1)* *(dated in place 2026-09-24, a second note after the one before it, which stands as
-written and was true of the tree at `nozoki@153f5a1` — from `nozoki@2b83dce`, in the change merged
-at `nozoki@ab39502`, the script's header carries the runner reading (`nozoki@ab39502:checks/renderer.sh:L62-L65`:
-run 35988399477 on `nozoki@37a962d`, image `macos-14-arm64` 20260831.0302.1, macOS 14.8.9, the
+written and was true of the tree at `ka-reader@153f5a1` — from `ka-reader@2b83dce`, in the change merged
+at `ka-reader@ab39502`, the script's header carries the runner reading (`ka-reader@ab39502:checks/renderer.sh:L62-L65`:
+run 35988399477 on `ka-reader@37a962d`, image `macos-14-arm64` 20260831.0302.1, macOS 14.8.9, the
 product at the panel on observation 1 of the bound of 30 and the control there in none), so it is
-cited from the header as the Mac reading is (`nozoki@ab39502:checks/renderer.sh:L58-L61`), the
-frame list at `nozoki@ab39502:checks/renderer.sh:L44-L57` unmoved; and
-at `nozoki@ab39502` the `Renderer gate` step is `.github/workflows/ci.yml:L46-L47` — the `:L43-L44`
-§ Decision's parenthesis gives, dated "from `nozoki@153f5a1`", was true there and moved when
+cited from the header as the Mac reading is (`ka-reader@ab39502:checks/renderer.sh:L58-L61`), the
+frame list at `ka-reader@ab39502:checks/renderer.sh:L44-L57` unmoved; and
+at `ka-reader@ab39502` the `Renderer gate` step is `.github/workflows/ci.yml:L46-L47` — the `:L43-L44`
+§ Decision's parenthesis gives, dated "from `ka-reader@153f5a1`", was true there and moved when
 `View check suite` landed above it (`:L41-L42`); `Bundle probe` is still `:L31-L32`; the answers at
 `docs/trail/architecture/cycle-14.md` §§ 3.4, 3.5)* *(pinned in place 2026-10-01 — the three
-`checks/renderer.sh` citations in this paragraph were unpinned and had moved: from `nozoki@b75348f`
+`checks/renderer.sh` citations in this paragraph were unpinned and had moved: from `ka-reader@b75348f`
 the header's list holds four frames, so at `HEAD` the list, the Mac reading and the runner reading
-sit one line higher; each is pinned to `nozoki@ab39502`, where all three read as cited; the
+sit one line higher; each is pinned to `ka-reader@ab39502`, where all three read as cited; the
 answer at `docs/trail/architecture/cycle-19.md` § 2.1)*.
 
 What undoing it costs: dropping the gate is a CI edit — and a return to the state where the wall's
@@ -157,34 +157,34 @@ sampling tool's output, or the view technology — the mechanism is re-derived a
 (`ls checks/`, 2026-09-23: `bundle.sh`, `deps.allow`, `fixtures`, `no-network.sh`, `own-state.sh`,
 `read-only.sh`, `sandbox_probe.rs`, `tests`); they become executable in the change that lands them
 with the native shell, and until then the gate is `development-design` reading `docs/nfdr.md` QC-62
-*(dated in place 2026-09-24 — that change landed: `ls checks checks/fixtures` at `nozoki@153f5a1`
+*(dated in place 2026-09-24 — that change landed: `ls checks checks/fixtures` at `ka-reader@153f5a1`
 lists `renderer.sh` and `idle-shell`, and the gate is `Renderer gate` on every CI build; the
 answer at `docs/trail/architecture/cycle-12.md` § 3.1)*.
 
 ## Traces to
 
-- `docs/SDD.md` at v13 (`nozoki@b236e7b`, Draft) — § 4 C-I3, "The shell's run is proved on the
+- `docs/SDD.md` at v13 (`ka-reader@b236e7b`, Draft) — § 4 C-I3, "The shell's run is proved on the
   shipped bundle, beside the wall" and its *Violated by*; § 3 `read-only-harness` (`renderer.sh`
   and `idle-shell` among the harness's parts); § 5 step 4 E-1; § 6 S-1 *Reached when*, command
   half; § 10 RC-2 *Changed*, RC-3 *Retained* and *Still unresolved*; § Open Questions, last item;
   § SDD Review Notes RN-51, RN-52, RN-60, RN-61. C-I3 names ADR-0010 as its record and this record
   as the gate's — "whose mechanism, control and observable's name are re-derived from this clause
   as it now reads" — which is what this revision does. The record was first drafted against
-  `docs/SDD.md` at v12 (`nozoki@6ebdc42`), where the control was the product's own renderer build
+  `docs/SDD.md` at v12 (`ka-reader@6ebdc42`), where the control was the product's own renderer build
   removed; the SDD's own companion carried the record line's move, confirmed by the owner
-  (`docs/trail/sdd/cycle-9.md` § 2.3; `nozoki@18ad26d`).
+  (`docs/trail/sdd/cycle-9.md` § 2.3; `ka-reader@18ad26d`).
 - `docs/trail/sdd/cycle-8.md` § 5.1 — the owner's ruling, answer 4, and the sample table the
   mechanism was first measured in.
 - `docs/trail/sdd/cycle-9.md` § 1.1 — the owner's answer that moves the renderer, under which the
   mechanism, the control and the observable's name were re-derived at v13.
-- `nozoki@a4ab8e6:nozoki-ui/src/main.ts:L14-L19`;
-  `nozoki@a4ab8e6:crates/nozoki-app/src/main.rs:L17-L19`; `checks/bundle.sh` header, its v1.3.0
+- `ka-reader@a4ab8e6:ka-reader-ui/src/main.ts:L14-L19`;
+  `ka-reader@a4ab8e6:crates/ka-reader-app/src/main.rs:L17-L19`; `checks/bundle.sh` header, its v1.3.0
   line — each opened on 2026-09-23 for the measurement this record's § Context reports, which was
   taken on the previous shape's bundle. The two source citations were pinned on 2026-09-24 to the
   last commit on `main` before those files left the tree, on the owner's ruling that a citation
   repair reverses no decision (`docs/trail/architecture/cycle-3.md` § 3.1;
   `docs/trail/architecture/cycle-11.md` § 3.7).
-- `docs/SDD.md` at v18 (`nozoki@399ef71`, Settled) — § 4 C-I3 as it now reads: the observable
+- `docs/SDD.md` at v18 (`ka-reader@399ef71`, Settled) — § 4 C-I3 as it now reads: the observable
   "parked in the Open panel's modal run, inside the shell's launch frames", the two readings and
   the re-cut rule; § 9 TO-7 *costs*; § SDD Review Notes RN-70; *Open Questions* with its seventh
   item removed. Read for the six in-place corrections dated 2026-09-24 above, each authorized in
@@ -192,7 +192,7 @@ answer at `docs/trail/architecture/cycle-12.md` § 3.1)*.
   record and not a reversal of it — reasoning `docs/trail/architecture/self_answer-15.md` §§ 3.1,
   3.2; the item as raised and answered on the SDD is `docs/trail/sdd/cycle-14.md` §§ 5.1, 5.2; the
   runner reading is GitHub Actions run 35988399477 as RN-70 records it, and the tree's state is
-  `nozoki@153f5a1`. This record says what it fixes is the gate and not the frames, which is why a
+  `ka-reader@153f5a1`. This record says what it fixes is the gate and not the frames, which is why a
   moved observable is a correction and not a supersession. What those corrections do not touch:
   § Decision's two rules — observed from the process and never from a marker; a control that must
   go red — and the gate's place after the wall probe; § Alternatives ruled out; § Binds.
@@ -209,23 +209,23 @@ answer at `docs/trail/architecture/cycle-12.md` § 3.1)*.
   revision against C-I3 at v13 — and it is Accepted on the owner's confirm at
   `docs/trail/architecture/cycle-9.md` § 2.3, with the four records RC-3 owes (the reasoning,
   `docs/trail/architecture/self_answer-12.md` § 2.3). Accepted with `docs/SDD.md` at v14
-  (`nozoki@2739007`, Draft), where C-I3's record line names this record and states no status word
+  (`ka-reader@2739007`, Draft), where C-I3's record line names this record and states no status word
   (SDD RN-64) — the index row is where its status is read.
 - `docs/trail/architecture/cycle-14.md` §§ 3.4, 3.5 — the owner's seat's answers, given by a
   `companion-self-answer` run (reasoning `docs/trail/architecture/self_answer-17.md` §§ 3.4, 3.5),
   under which the seventh dated in-place note above lands with NFDR v17 (RN-28): the runner reading
   cited from the script's header, and `Renderer gate` at `.github/workflows/ci.yml:L46-L47` from
-  `nozoki@ab39502`. A citation repair and a premise the tree moved past — no decision reversed, on
+  `ka-reader@ab39502`. A citation repair and a premise the tree moved past — no decision reversed, on
   the owner's ruling at `docs/trail/architecture/cycle-3.md` § 3.1 and in the form of
   `cycle-11.md` § 3.7 and `cycle-12.md` §§ 3.1, 3.2. What it does not touch: § Decision's two rules
   and the gate's place after the wall probe, § Alternatives ruled out, § Binds.
 - `docs/trail/architecture/cycle-19.md` § 2.1 — the owner's seat's answer, given by a
   `companion-self-answer` run (reasoning `docs/trail/architecture/self_answer-23.md` § 2.1), under
   which the eighth and ninth dated in-place notes above land with NFDR v22 (RN-33): the four
-  unpinned citations — `nozoki-mac/Sources/Shell/LaunchFlow.swift:L35-L37` in § Decision and
+  unpinned citations — `ka-reader-mac/Sources/Shell/LaunchFlow.swift:L35-L37` in § Decision and
   `checks/renderer.sh:L44-L57`, `:L58-L61` and `:L62-L65` in § Consequences — pinned to
-  `nozoki@ab39502`, the one commit at which all four read as this record says (`git show
-  ab39502:nozoki-mac/Sources/Shell/LaunchFlow.swift`, `:L35-L37`; `git show
+  `ka-reader@ab39502`, the one commit at which all four read as this record says (`git show
+  ab39502:ka-reader-mac/Sources/Shell/LaunchFlow.swift`, `:L35-L37`; `git show
   ab39502:checks/renderer.sh`, `:L44-L65`). They are pinned, not re-pointed, because the ruling at
   `docs/trail/architecture/cycle-3.md` § 3.1 gives an ADR a pin and the NFDR a re-point; the
   current lines live in QC-62. A citation repair, no decision reversed. What it does not touch:

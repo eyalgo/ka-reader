@@ -1,4 +1,4 @@
-# DESIGN open issues — Nozoki
+# DESIGN open issues — KA-Reader
 
 > Companion to `DESIGN.md`. The CDO authored the design language non-interactively; this file
 > holds the calls it made and wants your sign-off on — each with the reason behind it, and what
@@ -43,7 +43,7 @@ None.
 
 ### 3.1 What the selected row's `{colors.selection}` and bar do in a window that is not the key window
 - **Raised by:** PM — 2026-10-04
-- **Tracked by:** `nozoki · nemawashi · 2026-10-02_git-says-what-changed`
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-02_git-says-what-changed`
 - **What it blocks:** the CDO's ruling on a drawing the shell already makes. Nothing is cut by it;
   if the language rules that the selection dims, the Git view's selected row changes and the tree's
   is checked against the same sentence.
@@ -53,7 +53,7 @@ None.
   covered, with no item raising it (`:L1706-L1708`). `docs/SDD.md` RN-97 names the same case the
   CDO's, case (c) (`:L6298-L6301`). The shell draws the Git view's selected row the same whether or
   not the window is key: its selected drawing reads no key status
-  (`nozoki-mac/Sources/Surfaces/BarRowView.swift:L59-L66`). The tree's selected row is the table's
+  (`ka-reader-mac/Sources/Surfaces/BarRowView.swift:L59-L66`). The tree's selected row is the table's
   own selection (`:L3-L6`), whose look in a window that is not key is the platform's. Three readings
   were seen: the fill and the bar are drawn the same in either window; the fill dims and the bar
   stays, as a macOS selection does in an inactive window; or each surface follows what its platform
@@ -74,7 +74,7 @@ None.
 
 ### 3.2 Whether a Git-view file row is drawn selected when its file was opened from the tree
 - **Raised by:** PM — 2026-10-04
-- **Tracked by:** `nozoki · nemawashi · 2026-10-02_git-says-what-changed`
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-02_git-says-what-changed`
 - **What it blocks:** the CDO's ruling on a drawing the shell already makes. Nothing is cut by it;
   if the language rules that the Git row follows the open file, the Git view gains a selected row it
   does not draw today.
@@ -83,7 +83,7 @@ None.
   was chosen in the tree. `docs/SDD.md` RN-97 names it the CDO's, case (a) (`:L6293-L6297`). The shell
   clears the Git view's selection whenever the tree selects a file, so a file opened from the tree
   has no selected row in the Git view even where that file is listed there
-  (`nozoki-mac/Sources/Surfaces/WorkbenchView.swift:L160-L165`). Two readings were seen: the Git
+  (`ka-reader-mac/Sources/Surfaces/WorkbenchView.swift:L160-L165`). Two readings were seen: the Git
   view's selected row is only the one the reader clicked there, which is what the shell draws; or the
   row of the open file is drawn selected in whichever view lists it. The likely fold: one clause in
   § Components "Rows".
@@ -91,7 +91,7 @@ None.
 - **Answer:** The Git view's selected row is the row the reader last activated there. A file
   opened any other way, including from the tree, leaves the Git view with no selected row, even
   where that file has a row in the list. This is what the shell draws
-  (`nozoki-mac/Sources/Surfaces/WorkbenchView.swift:L160-L165`). A Git-view row opens the file's
+  (`ka-reader-mac/Sources/Surfaces/WorkbenchView.swift:L160-L165`). A Git-view row opens the file's
   diff wherever one exists (`docs/UXD.md` UX-F2). Drawing that row as selected for a file opened from
   the tree would say its diff is open when the file is. When one file has a row under both
   *Changes* and *Staged*, the selected row is the one the reader clicked. Fold: one clause in
@@ -99,15 +99,15 @@ None.
 
 ### 3.3 What the status letter's tooltip sits over on the selected row, which never takes the hover fill
 - **Raised by:** PM — 2026-10-04
-- **Tracked by:** `nozoki · nemawashi · 2026-10-02_git-says-what-changed`
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-02_git-says-what-changed`
 - **What it blocks:** a sentence of the language that reads false on one row. Nothing is cut by it.
 - **Where it shows:** § Components "The tooltip" says it "stacks with the row's hover fill … the row
   shows `{colors.hover}` and the tooltip sits over it", and that it "is never shown without its row's
   fill" (`docs/DESIGN.md:L681-L684`). § Components "Rows" says "selection outranks hover"
   (`:L634-L635`), so the selected row never shows `{colors.hover}`. The shell follows both: the
-  selected row shows no hover fill (`nozoki-mac/Sources/Surfaces/BarRowView.swift:L59`), and a rest on
+  selected row shows no hover fill (`ka-reader-mac/Sources/Surfaces/BarRowView.swift:L59`), and a rest on
   its status letter raises the tooltip, because the tooltip reads no selection
-  (`grep -n -i select nozoki-mac/Sources/Surfaces/LetterTooltip.swift` prints nothing). So on the
+  (`grep -n -i select ka-reader-mac/Sources/Surfaces/LetterTooltip.swift` prints nothing). So on the
   selected row the tooltip sits over `{colors.selection}`, which the sentence does not name. Two
   readings were seen: "its row's fill" means whichever fill the row shows, hover or selection, which
   is what the shell draws; or the selected row raises no tooltip. The likely fold: the tooltip's

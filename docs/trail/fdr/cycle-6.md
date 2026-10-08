@@ -1,4 +1,4 @@
-# FDR open issues — Nozoki
+# FDR open issues — KA-Reader
 
 > Companion to `fdr.md`. The Principal PM authored the FDR non-interactively; this file holds what the
 > run could not settle from its inputs — the PRD, the SRS and the SDD.
@@ -15,7 +15,7 @@
 > it be quietly folded back into § 1 as though the authoring run had asked it.
 
 > **How this companion came to exist.** No `product-fdr` run opened it. A `companion-self-answer`
-> run answering `docs/architecture_open_issues.md` § 3.1 opened it on 2026-09-25 (`nozoki@80c222e`),
+> run answering `docs/architecture_open_issues.md` § 3.1 opened it on 2026-09-25 (`ka-reader@80c222e`),
 > in the Principal Architect's posture: `fdr.md` was Settled at v8 with no companion on disk, so
 > without this file a `product-fdr` re-run would have read it as done. It held one item, § 2.1 — a
 > clause of R-94 that the NFDR's QC-4 check was verifying word for word, found while that check was
@@ -58,9 +58,9 @@ None.
   above; this item is where the FDR's seat says whether the reading is right.
 - **If overridden:** if R-94 is literal, CONTENT § Loading and UX-S2's loading row
   (`docs/UXD.md:L237`) cannot both hold beside it, and the product does not deliver it: at
-  `nozoki@46bb275` a `pending` row draws its name and glyph and no word
-  (`nozoki-mac/Sources/Surfaces/RootItemsView.swift:L161-L170`;
-  `nozoki-mac/Tests/SurfacesTests/RootItemsViewTests.swift:L96-L115`). That is then a behaviour
+  `ka-reader@46bb275` a `pending` row draws its name and glyph and no word
+  (`ka-reader-mac/Sources/Surfaces/RootItemsView.swift:L161-L170`;
+  `ka-reader-mac/Tests/SurfacesTests/RootItemsViewTests.swift:L96-L115`). That is then a behaviour
   gap to route as a change, and the NFDR's QC-4 check takes the word back on a fresh item.
 - **Confirm or override:** confirm, with two additions — decided in the owner's seat by a `companion-self-answer` run; reasoning at `docs/trail/fdr/self_answer-6.md` § 2.1. The lean holds: R-94's second clause names the state, as its one source does (SDD § 4 C-E1, "the surface shows pending", `docs/SDD.md:L825`) and as R-19, R-32 and R-157 already do, and the words are `docs/CONTENT.md`'s by R-88 (`docs/fdr.md:L172`) — so R-94 reads "the surface shows that it is pending, in the words `docs/CONTENT.md` § Message patterns *Loading* fixes, and no spinner or progress bar is drawn". Addition one: the pointer is to the whole *Loading* pattern — its formula, *Reading* + the thing being read (`docs/CONTENT.md:L307-L308`) — not to the one example the item quotes, so it covers every surface R-94 reaches: the Git view (R-19; *"Reading Git status."*, `:L313`), a tree folder (R-32; *"Reading this folder."*, `:L314`) and the reading panel (R-157; *"Reading this file."*, `:L277`). Addition two — the concurrent case: this fold and `docs/nfdr.md` QC-4's (`docs/architecture_open_issues.md` § 3.1, answered, awaiting `product-architecture`) may land in either order and converge, because the corrected layer-4 check points at CONTENT's *Loading* sentence and keeps its trace to R-94's first clause; neither order leaves a reader holding the word. The example rows at `docs/fdr.md:L347` and `:L363` are state language already and do not move.
 
@@ -108,7 +108,7 @@ None.
   Either way `docs/nfdr.md` QC-6 is owed the Principal Architect's re-derivation — named by SDD
   RN-71 and by RN-34, and raised on no companion by either, an input moving beneath the NFDR being
   that document's own rule to meet.
-- **Confirm or override:** confirm, with one addition — decided in the owner's seat by a `companion-self-answer` run; reasoning at `docs/trail/fdr/self_answer-6.md` § 2.2. The fold holds as applied: R-183 and R-184 say what `docs/SDD.md` v20 § 3 `fs-reader` says (`:L322`) and what the owner set at `docs/trail/sdd/cycle-15.md` § 5.1; two rules rather than a reworded R-34 is right, because R-34's *inside* and *outside* are R-183's and no downstream citation of R-34 reads a changed rule; the two example rows exercise the four spellings; `Inputs read: SDD Settled` is true (`docs/SDD.md:L3`). The addition — the absent case: where the product cannot establish that the volume ignores letter case, or that the folder is not its volume's root, the SDD compares as spelled ("as spelled wherever it cannot be sure", `:L322`); R-183's *only* already yields that — an unestablished condition means the other-case name does not count as back inside — and R-183 gains the clause "and as spelled wherever the product cannot establish either" so the QA seat does not read it as a gap. Not reopened: that the three spellings' mark is wrong about where the link leads is the owner's call at cycle-15 § 5.1. What this fold leaves out of date and this document does not carry — `docs/nfdr.md` QC-6 — is now raised at `docs/architecture_open_issues.md` § 2.1 (`nozoki@9cfb727`): SDD run 18 (`nozoki@4b9425b`) landed after NFDR v17 (`nozoki@18250d6`), so no item carried it; RN-34's sentence that none is opened here may record that one now is.
+- **Confirm or override:** confirm, with one addition — decided in the owner's seat by a `companion-self-answer` run; reasoning at `docs/trail/fdr/self_answer-6.md` § 2.2. The fold holds as applied: R-183 and R-184 say what `docs/SDD.md` v20 § 3 `fs-reader` says (`:L322`) and what the owner set at `docs/trail/sdd/cycle-15.md` § 5.1; two rules rather than a reworded R-34 is right, because R-34's *inside* and *outside* are R-183's and no downstream citation of R-34 reads a changed rule; the two example rows exercise the four spellings; `Inputs read: SDD Settled` is true (`docs/SDD.md:L3`). The addition — the absent case: where the product cannot establish that the volume ignores letter case, or that the folder is not its volume's root, the SDD compares as spelled ("as spelled wherever it cannot be sure", `:L322`); R-183's *only* already yields that — an unestablished condition means the other-case name does not count as back inside — and R-183 gains the clause "and as spelled wherever the product cannot establish either" so the QA seat does not read it as a gap. Not reopened: that the three spellings' mark is wrong about where the link leads is the owner's call at cycle-15 § 5.1. What this fold leaves out of date and this document does not carry — `docs/nfdr.md` QC-6 — is now raised at `docs/architecture_open_issues.md` § 2.1 (`ka-reader@9cfb727`): SDD run 18 (`ka-reader@4b9425b`) landed after NFDR v17 (`ka-reader@18250d6`), so no item carried it; RN-34's sentence that none is opened here may record that one now is.
 
 ## 3. Raised from downstream — an item raised against the FDR after it settled
 

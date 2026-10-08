@@ -1,4 +1,4 @@
-# SRS open issues — Nozoki 覗き
+# SRS open issues — KA-Reader
 
 > Companion to `SRS.md`. The CTO authored the SRS non-interactively; this file holds
 > what it could not settle from the inputs (the PRD and any context/constraints).

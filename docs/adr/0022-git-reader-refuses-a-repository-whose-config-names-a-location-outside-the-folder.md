@@ -98,14 +98,14 @@ nothing at a position outside the folder (`docs/SDD.md` § 3, the `git-reader` r
 Easier: R-101 holds in the in-process harness, not only in the bundle, for what the checks cover,
 and the harness can observe it. The cases watch the one outside path each scene names through a
 FIFO whose non-blocking open succeeds only once a reader holds it
-(`crates/nozoki-core/tests/git_state.rs:L1156-L1166`): the repository's config
+(`crates/ka-reader-core/tests/git_state.rs:L1156-L1166`): the repository's config
 (`test_no_answer_reads_the_path_the_config_names_outside`, `:L1202`), a submodule's config
 (`:L1218`), an include from `.gitmodules` (`:L1533`) and an include through an inside link
-(`:L1624`). `cargo test --locked -p nozoki-core --test git_state` printed 58 passed at
-`nozoki@076eac2`, run for this record. A reader sees the cause in the Git view instead of a status
+(`:L1624`). `cargo test --locked -p ka-reader-core --test git_state` printed 58 passed at
+`ka-reader@076eac2`, run for this record. A reader sees the cause in the Git view instead of a status
 read from somewhere else.
 
-Harder: `git-reader` parses Git's config syntax itself (`crates/nozoki-core/src/git_reader/config_scan.rs`),
+Harder: `git-reader` parses Git's config syntax itself (`crates/ka-reader-core/src/git_reader/config_scan.rs`),
 a second reader beside libgit2's, and the two must agree on what libgit2 would follow. The check and
 libgit2's read are two reads, so a file rewritten between them is followed unchecked. The sandbox
 bounds that in the bundle and nothing does in the harness. A link elsewhere inside the Git
@@ -114,11 +114,11 @@ pays: a clone made with `git clone --shared` or `--reference` from outside the f
 that includes `~/…`, or a `.gitmodules` that maps a submodule elsewhere shows a failed Git item
 where `git status` in a terminal works.
 
-**Built and not built, at `nozoki@076eac2`** (one tree outside `docs/` with `nozoki@5f3e895`,
+**Built and not built, at `ka-reader@076eac2`** (one tree outside `docs/` with `ka-reader@5f3e895`,
 `git diff --quiet 5f3e895 076eac2 -- . ':!docs'`). Built: the config check (`check_config`,
-`crates/nozoki-core/src/git_reader/libgit2.rs:L191`), the submodule verification
+`crates/ka-reader-core/src/git_reader/libgit2.rs:L191`), the submodule verification
 (`verify_submodules`, `:L285`) and the `.gitmodules` check for its include keys (`:L290-L303`). Not
-built: the alternates check (`grep -rl alternates checks crates nozoki-mac/Sources` prints nothing),
+built: the alternates check (`grep -rl alternates checks crates ka-reader-mac/Sources` prints nothing),
 the `.gitmodules` section-path refusals, and the refusal on the submodule map. The SDD states the
 last two as a known defect until a change lands (§ 11 R-16). Until they land, the sandbox is the
 only bound on those reads in the bundle, and nothing bounds them in the harness. For a section that
@@ -150,8 +150,8 @@ where the domain is re-measured, and a member it misses is a read this check doe
 - `docs/fdr.md` R-101; `docs/SRS.md` FR-12.
 - ADR-0020 — the switch, and the read it left to this decision; ADR-0019 (the port and its one
   adapter); ADR-0018 (the probe reads only inside the folder).
-- `crates/nozoki-core/src/git_reader/libgit2.rs` and `config_scan.rs`,
-  `crates/nozoki-core/tests/git_state.rs`, read at `nozoki@076eac2` at the lines cited above.
+- `crates/ka-reader-core/src/git_reader/libgit2.rs` and `config_scan.rs`,
+  `crates/ka-reader-core/tests/git_state.rs`, read at `ka-reader@076eac2` at the lines cited above.
 - `libgit2-sys 0.18.8+1.9.7` — the lines cited are the SDD's, read there and not re-read for this
   record.
 - `docs/trail/architecture/cycle-37.md` § 2.1 — the acceptance, confirmed in the owner's seat with

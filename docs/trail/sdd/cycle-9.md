@@ -1,4 +1,4 @@
-# SDD open issues — Nozoki
+# SDD open issues — KA-Reader
 
 > Companion to `SDD.md`. Three seats — the CTO, the CPO and the CDO — authored the SDD
 > non-interactively in one run; this file holds what that run could not settle from its inputs (the
@@ -34,7 +34,7 @@
 
 ### 1.1 Under C-R2's rule the system WKWebView cannot start — so the renderer gives way, or the rule's reach does, and which is yours
 - **Raised by:** CTO
-- **Why it matters:** `SDD.md` § 4 C-R1 renders `nozoki-ui` in the system WKWebView (ADR-0002);
+- **Why it matters:** `SDD.md` § 4 C-R1 renders `ka-reader-ui` in the system WKWebView (ADR-0002);
   § 4 C-R2 now states your rule — no network entitlement, ever. WKWebView's own processes refuse to
   start under that rule: WebKit checks the *host's* entitlements at each XPC service's start, and
   a sandboxed host without `com.apple.security.network.client` fails the check unless its sandbox
@@ -45,7 +45,7 @@
   `rdar://problem/54178641` / FB6993802). On your Mac the unified log shows exactly that: in both
   of your 2026-09-23 sampling windows, `com.apple.WebKit.Networking` logs `Application does not
   have permission to communicate with network resources` and is relaunched every 15–30 ms under
-  the running `nozoki-app` (`SDD.md` RN-52 carries the command and the lines). No Tauri key, no
+  the running `ka-reader-app` (`SDD.md` RN-52 carries the command and the lines). No Tauri key, no
   WebKit setting and no line of this product's reaches the check, so answer 3's "if the fix needs
   no entitlement, the list stands" does not decide this case. Where it bites: § 2's shape (row 1
   taken, row 4 the runner-up), § 3 `surfaces` and `SM-4`, § 4 C-R1, C-R2, C-R7, C-D3; § 6
@@ -68,7 +68,7 @@
     the service it opens is the one WebKit treats as network access — and so as refused by
     answer 1; it is listed so that refusal is yours and not assumed.
   - **(d) Drop the sandbox** — refused in cycle-1
-    (`nozoki@70a879a:docs/trail/sdd/cycle-1.md` § 2.3).
+    (`ka-reader@70a879a:docs/trail/sdd/cycle-1.md` § 2.3).
   - **(e) Wait for Apple** — WebKit's own FIXME says the check goes "once WebKit can work without
     network access"; the radar is from 2019 and carries no date.
   **The CTO's position: (a).** The wall is the product — § 1's first question, and the Way this
@@ -181,7 +181,7 @@
   - **Nothing the product promises names a renderer.** `docs/PRD.md` § Dependencies /
     Integrations names the filesystem and Git and nothing else; no PRD section names WKWebView,
     Tauri or CSS (`grep -n -i 'webview\|tauri\|css' docs/PRD.md` returns nothing, 2026-09-23),
-    and the Agari's three conditions name none (`system/projects/nozoki/agari.md`). So (a)
+    and the Agari's three conditions name none (`system/projects/ka-reader/agari.md`). So (a)
     changes nothing a stranger was promised and opens no PRD gap — the PRD stays at v15 under
     every exit, and `SDD.md` § 12's PRD boundary now says so.
   - **What (a) costs in product terms is a date, not a surface.** Every slice rests on
@@ -298,7 +298,7 @@
 ### 2.3 C-I3 still checks the bundle "against C-R2's exact list", and C-R2 and C-I3 name records that ADR-0011 and ADR-0012 now carry
 - **Raised by:** the `companion-self-answer` run, 2026-09-23 — not one of the SDD's three seats
 - **Drafted into the SDD:** Nothing yet. Two changes are proposed, both in § 4.
-  1. **C-I3's wording.** "`checks/bundle.sh` reads `codesign -d --entitlements :- Nozoki.app`
+  1. **C-I3's wording.** "`checks/bundle.sh` reads `codesign -d --entitlements :- KA-Reader.app`
      against C-R2's exact list" (`docs/SDD.md:L553-L554`) reads "against the set C-R2's rule admits,
      as the script's expected set records it". That is the form `docs/nfdr.md` QC-25 took at v10:
      set equality against the set the script expects, widened only by a change reviewed against the

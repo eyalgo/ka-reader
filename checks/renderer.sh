@@ -1,19 +1,19 @@
 #!/usr/bin/env bash
 # Version: 1.0.0 — first version: the renderer gate — the bundle is launched and its main thread observed at the Open panel inside the shell's launch frames, then its own idle-shell control is observed not to be
 #
-# checks/renderer.sh <path-to-app> — proves the shipped Nozoki.app reaches the Open panel.
+# checks/renderer.sh <path-to-app> — proves the shipped KA-Reader.app reaches the Open panel.
 #
 # WHY THIS EXISTS
 #   The wall proof (checks/bundle.sh) shows the launched process is sandboxed. It cannot show that the
 #   shell then reaches the folder-choosing panel, which is the shell's first and only unconditional
-#   act (nozoki-mac/Sources/Shell/LaunchFlow.swift). A shell that never reaches the panel is an empty
+#   act (ka-reader-mac/Sources/Shell/LaunchFlow.swift). A shell that never reaches the panel is an empty
 #   window, and every other check still passes on it. This launches the built bundle the way a user
 #   does and reads the operating system's own view of the process: a thread sample of the main thread.
 #   It sends no input. It reads nothing the product writes, and nothing in the product exists for
 #   this gate: the panel's modal run is what the shell does anyway.
 #
 # USAGE
-#   checks/renderer.sh target/release/bundle/macos/Nozoki.app
+#   checks/renderer.sh target/release/bundle/macos/KA-Reader.app
 #   Run it in a logged-in GUI session: LaunchServices must be able to start the application.
 #   RENDERER_SH_OBSERVATIONS   the bound: how many observations, of about 1 s each (default 30)
 #   RENDERER_SH_LAUNCH_TICKS   how long to wait for the launched process, in 0.25 s ticks (default 80)
@@ -48,17 +48,17 @@
 #   before and inside its subtree, read from sample's own indentation; its tree characters + | : ! mean
 #   nothing. A frame is its whole symbol, not a part of one. The list holds the shell's own launch
 #   frame and the Open panel's own modal run, and a generic -[NSApplication runModalForWindow:] alone
-#   is not a match, since any alert shows it. nozoki_open_folder is not in the list: the native shell
+#   is not a match, since any alert shows it. ka_reader_open_folder is not in the list: the native shell
 #   calls it only after the panel returns.
 #     AppDelegate.applicationDidFinishLaunching(_:)
 #     OpenFolderPanel.chooseFolder()
 #     -[NSSavePanel runModal]
 #     -[NSApplication runModalForWindow:]
 #   Mac reading (CP-145): macOS 26.6.2 (sw_vers -productVersion), a release bundle from
-#   nozoki-mac/assemble.sh launched by open -n -g and sampled while the panel was up. The main thread
+#   ka-reader-mac/assemble.sh launched by open -n -g and sampled while the panel was up. The main thread
 #   showed start, main, -[NSApplication run], the launch-notification frames, then the four frames
 #   above nested in that order, then _NSTryRunModal.
-#   Hosted runner reading: GitHub Actions run 35988399477 on nozoki@37a962d, image macos-14-arm64
+#   Hosted runner reading: GitHub Actions run 35988399477 on ka-reader@37a962d, image macos-14-arm64
 #   20260831.0302.1, macOS 14.8.9. The product's main process was observed at the Open panel, inside
 #   the shell's launch, on observation 1 of the bound of 30, so the frame list matched. The
 #   idle-shell control was observed there in none of the 30 observations, which is its expected red.
@@ -319,7 +319,7 @@ product_entitlements="$(flatten_entitlements "$work/product-entitlements.plist")
 [ -n "$product_entitlements" ] \
   || die "the signed entitlement set of $app is empty: there is nothing to sign the control with"
 
-# Ad hoc with the hardened runtime and the product's own set, the way nozoki-mac/assemble.sh signs the
+# Ad hoc with the hardened runtime and the product's own set, the way ka-reader-mac/assemble.sh signs the
 # product. The set is written from the product's signature at run time; none is tracked under checks/.
 codesign --force --sign - --options runtime --entitlements "$work/product-entitlements.plist" "$control_app" 2> "$work/codesign.log" \
   || die "cannot sign the control: $(cat "$work/codesign.log")"

@@ -1,4 +1,4 @@
-# DESIGN open issues — Nozoki
+# DESIGN open issues — KA-Reader
 
 > Companion to `DESIGN.md`. The CDO authored the design language non-interactively; this file
 > holds the calls it made and wants your sign-off on — each with the reason behind it, and what
@@ -39,7 +39,7 @@ None.
 
 ### 2.1 § Do's says "show pending as the word *pending*", and the words are CONTENT's — which fixes a different sentence
 - **Drafted into DESIGN.md:** the line as it stands — "Do draw an indicator — a status letter, a
-  count, a 'nothing changed', a pending word — only after Nozoki has read the state it stands for,
+  count, a 'nothing changed', a pending word — only after KA-Reader has read the state it stands for,
   and show pending as the word *pending*, not as a bar or a spinner" (`docs/DESIGN.md:L745-L747`).
   The lean, for the seat that folds it: keep the rule and drop the string — "show pending as a
   word, in `docs/CONTENT.md`'s wording, not as a bar or a spinner" — which is what RN-14 already

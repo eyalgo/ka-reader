@@ -16,23 +16,23 @@
 This run read the header and version lines, § 4 C-R6's transport sentences (`:L626-L653`), § 4
 C-I3 from its head to the bundle probe (`:L730-L804`), § 10 RC-4 (`:L2640-L2684`), § 11 R-14's
 tail to R-16 (`:L2794-L2840`) and *Open Questions* whole (`:L5720-L5825`). It searched the rest
-for `nozoki_read_git`, `R-15`, `C-I3`, `no Swift source`, `has not met`, `has not been read`,
+for `ka_reader_read_git`, `R-15`, `C-I3`, `no Swift source`, `has not met`, `has not been read`,
 `not closed` and `first calls`. A sentence elsewhere that states either claim in other words was
 not seen. `docs/PRD.md`, `docs/SRS.md` and `docs/UXD.md` were not opened: the answers move no
 requirement and no experience entry. `docs/nfdr.md` was read at QC-3 (`:L158-L178`) and at
 `:L4410-L4420`, and searched for `R-15`. `docs/architecture_open_issues.md` was read whole.
 
 **What this run measured.** The tree outside `docs/` at the commit this run started from,
-`nozoki@cfcbedf`, is the tree at `nozoki@129586e`: `git diff --quiet 129586e HEAD -- . ':!docs'`
+`ka-reader@cfcbedf`, is the tree at `ka-reader@129586e`: `git diff --quiet 129586e HEAD -- . ':!docs'`
 exits 0.
 
-- `nozoki-mac/Sources/Nozoki/NativeBridge.swift:L26` reads `adopt(nozoki_read_git())`.
-- `nozoki-mac/assemble.sh` exits 0 and writes
-  `target/release/bundle/macos/Nozoki.app/Contents/MacOS/Nozoki`.
+- `ka-reader-mac/Sources/KAReader/NativeBridge.swift:L26` reads `adopt(ka_reader_read_git())`.
+- `ka-reader-mac/assemble.sh` exits 0 and writes
+  `target/release/bundle/macos/KA-Reader.app/Contents/MacOS/KAReader`.
 - `checks/view.sh` exits 0 on that executable and prints "38 Swift files scanned under
-  nozoki-mac/Sources, … links no WebKit or JavaScriptCore and carries no Git transport — nothing
+  ka-reader-mac/Sources, … links no WebKit or JavaScriptCore and carries no Git transport — nothing
   found". It was run twice: on the executable found on disk, and on the one this run rebuilt.
-- `nm` on the executable prints `T _nozoki_read_git`, `T _git_repository_open_ext` and
+- `nm` on the executable prints `T _ka_reader_read_git`, `T _git_repository_open_ext` and
   `T _git_status_list_new`.
 - `nm … | awk 'NF==3 && $2!="U" && $3 ~ /^_git_/' | wc -l` prints 781.
 - `nm … | grep -c 'git_smart_subtransport_'` prints 0.
@@ -45,12 +45,12 @@ exits 0.
 
 ## Items worked
 
-### 5.1 — § 4 C-I3 says the `nm` read has not met an executable that links `nozoki_read_git`; it has, and it passes
+### 5.1 — § 4 C-I3 says the `nm` read has not met an executable that links `ka_reader_read_git`; it has, and it passes
 
 - **Bucket:** 5. Raised from downstream — an item from a seat that did not write the SDD
 - **Verdict:** confirmed with addition
 - **Why:** The item carries a lean ("The likely fold: the read has met the executable that links
-  the export, from `nozoki@129586e`, and passed"), so it was weighed as a draft. The draft holds,
+  the export, from `ka-reader@129586e`, and passed"), so it was weighed as a draft. The draft holds,
   and four things are added to it.
 
   **Whose it is.** The item's `Seat:` is `cto`. The change lands in `docs/SDD.md` alone, in § 4
@@ -63,8 +63,8 @@ exits 0.
 
   **Is the draft sound.** The PM's measurement was not taken on trust. This run rebuilt the bundle
   and re-ran the read, and the list above is what it printed. Each of the PM's three claims holds:
-  the shell calls the export, the executable defines `_nozoki_read_git`, and `checks/view.sh`
-  exits 0. So C-I3's sentences at `docs/SDD.md:L771-L775` are false from `nozoki@129586e`, and the
+  the shell calls the export, the executable defines `_ka_reader_read_git`, and `checks/view.sh`
+  exits 0. So C-I3's sentences at `docs/SDD.md:L771-L775` are false from `ka-reader@129586e`, and the
   draft's replacement is true.
 
   **The four additions.**
@@ -75,7 +75,7 @@ exits 0.
      old figures as if they were re-read and stating none.
   2. *Where the read ran.* C-I3's headline is "proved on every build". This read ran on the
      owner's machine. `main` is 214 commits ahead of `origin/main`, so no hosted runner has built
-     `nozoki@129586e`. The earlier measurement C-I3 carries was local too
+     `ka-reader@129586e`. The earlier measurement C-I3 carries was local too
      (`docs/SDD.md:L764-L766` cites `docs/trail/sdd/self_answer-38.md`), so this is the same
      kind of evidence, and the answer asks C-I3 to say so.
   3. *C-R6 points here.* C-R6 names three defined symbols the read's pattern does not match and
@@ -94,7 +94,7 @@ exits 0.
   carries "Until the shell calls the export the bundle opens no repository" inside a dated note
   that the next note already marks as describing an earlier tree (`docs/SDD.md:L5812-L5815`), so
   it does not move either. § 11 R-16 says "From the first build in which `mac-shell` calls
-  `nozoki_read_git` until that item is settled" (`docs/SDD.md:L2833-L2834`), which is still true
+  `ka_reader_read_git` until that item is settled" (`docs/SDD.md:L2833-L2834`), which is still true
   now that the build exists. `docs/nfdr.md` QC-3 repeats C-I3's two sentences
   (`docs/nfdr.md:L164-L167`); that is already carried at `docs/architecture_open_issues.md`
   § 3.1.
@@ -110,7 +110,7 @@ exits 0.
   - *Refused:* a red read is § 11 R-15's, which § 5.2 answers.
 
   **What would have tipped it.** Had the rebuild gone red, or had `nm` shown no
-  `_nozoki_read_git`, this would have been an override: the item's premise would be false and
+  `_ka_reader_read_git`, this would have been an override: the item's premise would be false and
   C-I3 would stand. Had the item asked C-I3 to stop scoping the claim to an executable, that half
   would have been refused.
 
@@ -146,10 +146,10 @@ exits 0.
 
   **Why the two clauses move.** *Shows up as* names one build: "the first release build whose
   executable links a Git export, which is the build in which `mac-shell` first calls
-  `nozoki_read_git`" (`docs/SDD.md:L2808-L2809`). That build has been read and was not red, so a
+  `ka_reader_read_git`" (`docs/SDD.md:L2808-L2809`). That build has been read and was not red, so a
   reader would take the clause to mean the risk can no longer show up. *Response* says "a re-cut
   recorded in § 10 before anything is built on that export" (`docs/SDD.md:L2811`). The Git view
-  is built on the export from `nozoki@129586e`, so that moment cannot be met again. The answer
+  is built on the export from `ka-reader@129586e`, so that moment cannot be met again. The answer
   keeps the response's substance, a re-cut recorded before the work goes on, and ties it to a
   moment that still exists: the change whose build turns the read red does not land until the
   re-cut is recorded. This is the part of the answer nearest to drafting the SDD's words. The
@@ -207,5 +207,5 @@ half of item 3.1 should stay open.
 
 ## Launchers owed
 
-- **`docs/SDD.md`** — `<CORE>/launchers/skill/launcher.sh product-sdd nozoki`
-- **`adr/` and `nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture nozoki`
+- **`docs/SDD.md`** — `<CORE>/launchers/skill/launcher.sh product-sdd ka-reader`
+- **`adr/` and `nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture ka-reader`

@@ -41,21 +41,21 @@ other words was not seen. The halt report and `change_spec.md:L55-L175` were rea
 commit `e414dc2`. `docs/nfdr.md` was read at `:L440-L470`, `docs/SRS.md` at `:L139-L143`,
 `:L202-L207`, `:L220-L224` and `:L297-L300`, `docs/fdr.md` at `:L136-L137` and `:L184-L192`, and
 `docs/CONTENT.md` at the lines a search for `outside the folder` and `UX-S3` printed. The adapter
-was read at `crates/nozoki-core/src/git_reader/libgit2.rs:L1-L140`, `:L330-L365` and `:L490-L520`,
-at `nozoki@8b50506`. No test was run.
+was read at `crates/ka-reader-core/src/git_reader/libgit2.rs:L1-L140`, `:L330-L365` and `:L490-L520`,
+at `ka-reader@8b50506`. No test was run.
 
 **How the widening rule was read.** All four items sit under *Raised from downstream*, and each
 asks the SDD to state something it does not state now. The prompt answers such an item "not until
 it occurs" unless it cites an occurrence. Each item does:
 
-- 5.1 and 5.2 cite a measured failure. The build at `nozoki@de11388` reads a path that
+- 5.1 and 5.2 cite a measured failure. The build at `ka-reader@de11388` reads a path that
   `include.path` and `core.excludesfile` name outside the folder (`change_spec.md`, *Verified
   Claims*), and the design could not land (the halt report).
 - 5.3 and 5.4 cite sites. The path-following code is in the library the product links, and the
   status read that leaves submodules on is at `libgit2.rs:L346-L357`.
 
 A library line in the cargo registry was taken as a site in the product, because it is compiled
-into `nozoki-core`. A stricter reading would have answered 5.3's two keys "not until it occurs",
+into `ka-reader-core`. A stricter reading would have answered 5.3's two keys "not until it occurs",
 since neither was run. That is the place this run was closest to a different verdict.
 
 ## Items worked
@@ -72,7 +72,7 @@ since neither was run. That is the place this run was closest to a different ver
   **The ground.** Reuse costs less: no new words, and the change touches one part. It was
   refused because the message would be false. `RepositoryReadFailed` reports a read that was
   tried and failed, and under the second form the adapter tries none. `docs/CONTENT.md:L62` holds
-  a message to what Nozoki observed, and `:L331-L342` fixes the sentence for anything outside the
+  a message to what KA-Reader observed, and `:L331-L342` fixes the sentence for anything outside the
   folder. § 6 S-4 asks that a failed Git item show what was observed
   (`docs/SDD.md:L1815-L1816`). § 11 R-3 already gives the outside Git directory a condition of
   its own (`:L2851-L2859`). A reader whose repository config includes a file in their home
@@ -210,7 +210,7 @@ None this run.
   points outside (`docs/SDD.md:L2980-L2981`), and C-D3 names one thing as not covered
   (`:L989-L991`). libgit2 reads `objects/info/alternates` and adds each entry as an object store
   with no containment check (`odb.c:L761-L803`). The SDD, the NFDR and the adapter do not mention
-  it: `grep -n -i alternates` over the three prints nothing at `nozoki@8b50506`.
+  it: `grep -n -i alternates` over the three prints nothing at `ka-reader@8b50506`.
 
   The doubt, stated: the read was not run, no fixture carries an alternates file, and the
   prompt's own bar for a downstream item would call this a form with no measured failure. It was
@@ -224,4 +224,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/SDD.md`** — `<CORE>/launchers/skill/launcher.sh product-sdd nozoki`
+- **`docs/SDD.md`** — `<CORE>/launchers/skill/launcher.sh product-sdd ka-reader`

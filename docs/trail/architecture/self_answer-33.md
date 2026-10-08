@@ -45,15 +45,15 @@ whole (`git show 4160b57 -- docs/SDD.md`), the units paragraph (`:L335-L353`), S
 C-D1 (`:L852-L857`), § 11 R-3 (`:L2549-L2556`), RN-44 (`:L3268-L3275`) and *Open Questions*
 (`:L5083-L5130`). `docs/trail/sdd/self_answer-33.md` whole. `docs/fdr.md` R-15, R-20, R-21,
 R-101, PD-27 and the linked-worktree example row (`:L351`). The SRS was not opened, because no
-answer moves a requirement. In the tree at `nozoki@4160b57`: `crates/nozoki-core/src/git_reader.rs`
-and `git_reader/libgit2.rs` whole, `crates/nozoki-core/Cargo.toml`, `src/lib.rs`, the
+answer moves a requirement. In the tree at `ka-reader@4160b57`: `crates/ka-reader-core/src/git_reader.rs`
+and `git_reader/libgit2.rs` whole, `crates/ka-reader-core/Cargo.toml`, `src/lib.rs`, the
 `root_finding` test list and its scene helpers, the two fixtures' `.git` files, and
 `checks/structure.sh`'s and `checks/entry-points.sh`'s headers. As input and not as a source, the
-change design behind `nozoki@126ef75`. Nothing here cites it, because the definition set does not
+change design behind `ka-reader@126ef75`. Nothing here cites it, because the definition set does not
 name the journey.
 
 **The SDD moved after this companion was opened, and every answer reads it as it stands now.** The
-companion was opened at `nozoki@136b227`. The SDD's companion was then answered (`814a369`) and
+companion was opened at `ka-reader@136b227`. The SDD's companion was then answered (`814a369`) and
 folded into SDD v26 (`4160b57`), which settled SM-2's placement (RN-85 § 5.2) and C-R6's transport
 claim (RN-85 § 5.3). Items 3.2 and 3.4 are about those same sentences downstream, so their answers
 follow v26 rather than re-deciding it.
@@ -70,7 +70,7 @@ follow v26 rather than re-deciding it.
 
   **The widening rule, first.** The item asks a record to state a case it does not state now, so
   it widens. It cites an occurrence: the `.git`-file arm is in the product at
-  `crates/nozoki-core/src/git_reader/libgit2.rs:L38-L40`, and the two fixtures it answers for are
+  `crates/ka-reader-core/src/git_reader/libgit2.rs:L38-L40`, and the two fixtures it answers for are
   on disk. Their `.git` files read `gitdir: ../main-repo/.git/worktrees/linked-worktree` and
   `gitdir: ../.git/modules/submodule` (`tar -xOf` on each archive). The change proceeds.
 
@@ -111,7 +111,7 @@ follow v26 rather than re-deciding it.
   reading. It is a real trade-off. And it is costly to reverse once the Git view draws a failed
   item from `state()`. QC-5 gains the `.git`-file clause and three `root_finding` cases.
   `linked-worktree` and `submodule` assert `Root`; today they assert no outcome
-  (`crates/nozoki-core/tests/root_finding.rs:L158-L169`). A third case plants a `.git` file naming a
+  (`crates/ka-reader-core/tests/root_finding.rs:L158-L169`). A third case plants a `.git` file naming a
   Git directory that does not exist and asserts `Root`. That is the case that goes red if `probe`
   ever follows the pointer, so the read bound has a check and is not only a sentence.
 
@@ -194,7 +194,7 @@ follow v26 rather than re-deciding it.
 
   **Check 3: against the settled record.**
   - QC-63 already admits a value module that any part may import (`docs/nfdr.md:L268-L296`). SM-2's
-    "or in a module of `nozoki-core` that is no part" is that module. The trace names QC-63 and
+    "or in a module of `ka-reader-core` that is no part" is that module. The trace names QC-63 and
     invents no third home.
   - QC-10's "must not import the libgit2 binding, `git-reader`'s adapter" stands as written. It is
     SM-2's "never the adapter".
@@ -238,8 +238,8 @@ follow v26 rather than re-deciding it.
 
   **Check 2: the draft.** The conclusion holds. One statement in the item's support does not:
   "`checks/structure.sh` exits 0, because `git-reader` is an I/O owner". The script's filesystem
-  clause exempts exactly two files by path, `crates/nozoki-core/src/fs_reader.rs` and
-  `crates/nozoki-bridge/src/log_writer.rs` (`checks/structure.sh:L76-L78`), and it lists "QC-15's
+  clause exempts exactly two files by path, `crates/ka-reader-core/src/fs_reader.rs` and
+  `crates/ka-reader-bridge/src/log_writer.rs` (`checks/structure.sh:L76-L78`), and it lists "QC-15's
   other owners" — `git-reader` among them — as not held (`:L247`). The scan passes because the
   adapter reads through `Path` methods, and the script names that as a gap it does not close: "a
   `Path` method that touches the filesystem (exists, metadata, read_dir, canonicalize), which names
@@ -250,7 +250,7 @@ follow v26 rather than re-deciding it.
   That fact is the first addition. QC-15's tail says "each Rust I/O primitive appears only in its
   owner", which a reader takes as covering `git-reader`. It does not, so the tail has to say what
   holds the bound. Today that is review at `development-design`. The rule that would make it a
-  check is the adapter's file, `crates/nozoki-core/src/git_reader/libgit2.rs`, added to the clause's
+  check is the adapter's file, `crates/ka-reader-core/src/git_reader/libgit2.rs`, added to the clause's
   owner files by exact path. The adapter could then write `std::fs` in the open, and a `std::fs` read
   anywhere else in `git-reader` would still be a finding. The NFDR names that rule as its own
   realization, as it has for other rules it adds to the script (the header's "Executability is per
@@ -298,7 +298,7 @@ follow v26 rather than re-deciding it.
   transports and streams whatever the features, and `transport.c:L32-L36` registers `git://`,
   `http://` and `https://` with no guard. So "built without its HTTPS … transports" is false of the
   library. What is absent is the TLS stream behind `https://`. And "no shipped unit" is false of
-  `nozoki-core` as a unit.
+  `ka-reader-core` as a unit.
 
   **Check 1: the seat.** The edits land in NFDR QC-3, § 10, and the decision log. They are this
   seat's. Which claim stands was not mine to pick, and it no longer needs picking. SDD v26 C-R6
@@ -320,7 +320,7 @@ follow v26 rather than re-deciding it.
     against the domain. A third half is added: the `nm` read on the release executable, riding
     `checks/view.sh` under that script's rule that it never passes having read nothing, with a
     suite case that turns it red (C-I3, `docs/SDD.md:L708-L714`). The read is not in the script at
-    `nozoki@4160b57`: `grep -n 'nm ' checks/view.sh` prints nothing and exits 1, run for this answer. The
+    `ka-reader@4160b57`: `grep -n 'nm ' checks/view.sh` prints nothing and exits 1, run for this answer. The
     NFDR's header rule already says what that means: the rule is executable from the change that
     adds it, and its gate is `development-design` until then. C-I3 names who owes it: the build that
     first exports a function reaching `git-reader`.
@@ -341,7 +341,7 @@ follow v26 rather than re-deciding it.
   - QC-26 and § 10's QC-26 row are unaffected. The allowlist and the review are as they were.
   - QC-8 already runs `otool -L` on the same executable through `checks/view.sh`. The new read sits
     beside that check, on the same file.
-  - QC-9's statement about the C `nozoki-core` links is unaffected by this item. Its tense is raised
+  - QC-9's statement about the C `ka-reader-core` links is unaffected by this item. Its tense is raised
     separately, in § 2.2 of the companion.
   - My § 3.2 answer puts its correction into the same superseding record, so the log gains one record
     for ADR-0004, not two.
@@ -371,7 +371,7 @@ follow v26 rather than re-deciding it.
 - **Verdict:** raised upstream
 - **Why:** The item is two questions with two seats, and it splits. Where the reads are switched
   off, or whether they are accepted instead, is the SDD's, and this verdict covers it: it is raised
-  at `docs/SDD_open_issues.md` § 2.1 (`nozoki@4f028c7`), carrying my answer as its proposal. What the
+  at `docs/SDD_open_issues.md` § 2.1 (`ka-reader@4f028c7`), carrying my answer as its proposal. What the
   NFDR states while the SDD decides is mine. That half is answered below, under 2.1, and moved to
   § 2.1 of this companion.
 
@@ -381,7 +381,7 @@ follow v26 rather than re-deciding it.
   (`:L1318`, `:L1324`, `:L1330`, `:L1336`).
 
   **The item's facts, re-read at the source, and one it did not have.**
-  - *Confirmed:* `set_search_path` is an `unsafe fn` (`opts.rs:L23`); `nozoki-core` holds no `unsafe`
+  - *Confirmed:* `set_search_path` is an `unsafe fn` (`opts.rs:L23`); `ka-reader-core` holds no `unsafe`
     (QC-9; `docs/SDD.md:L336`); only `git-reader` imports the binding (QC-11; `docs/SDD.md:L347`). The
     rules as written leave no unit that may make the call, as the item says.
   - *Sharper than the item:* under the App Sandbox, libgit2 deliberately takes the global level's
@@ -439,7 +439,7 @@ follow v26 rather than re-deciding it.
   - *Stale.* `set_search_path` initialises the library first (`opts.rs:L27`), and every level is
     guessed at init (`sysdir.c:L458-L459`). So `HOME`, `XDG_CONFIG_HOME` and
     `APP_SANDBOX_CONTAINER_ID` are still read. They open no file. That is § 2.2's.
-  - *Not covered, and named.* `nozoki-core`'s in-process cases do not pass through the bridge and
+  - *Not covered, and named.* `ka-reader-core`'s in-process cases do not pass through the bridge and
     still read the machine's config files.
 
   **What was close.** Leaving the item for the owner, since lowering R-101 is theirs. It did not carry,
@@ -501,9 +501,9 @@ was decided.
   `XDG_CONFIG_HOME` at init (`sysdir.c:L347`, `:L357`, `:L402-L405`, `:L458-L459`), which are not
   listed. `checks/entry-points.sh:L66` admits the scan cannot see a C `getenv`, and
   `checks/entry-points.allow:L29` admits the reads are "not held here". QC-9 says libgit2 is linked
-  "when `git-reader` links it", and `crates/nozoki-core/Cargo.toml:L9` has linked it since
-  `nozoki@126ef75`. A grep for `getenv` in the C sources of every crate `cargo tree --locked
-  -p nozoki-bridge -e normal` resolves finds two crates. One is libgit2-sys, with the reads above.
+  "when `git-reader` links it", and `crates/ka-reader-core/Cargo.toml:L9` has linked it since
+  `ka-reader@126ef75`. A grep for `getenv` in the C sources of every crate `cargo tree --locked
+  -p ka-reader-bridge -e normal` resolves finds two crates. One is libgit2-sys, with the reads above.
   The other is libz-sys, in its vendored zlib-ng (`src/zlib-ng/arch/arm/arm_features.c:L36`,
   `QEMU_EMULATING`). libz-sys entered the tree only through libgit2-sys, with its `libc` feature
   (`cargo tree -e features -i libz-sys`), and reached `checks/deps.allow` in the same change
@@ -518,5 +518,5 @@ was decided.
 
 ## Launchers owed
 
-- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture nozoki`
-- **`docs/SDD.md`** — `<CORE>/launchers/skill/launcher.sh product-sdd nozoki`
+- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture ka-reader`
+- **`docs/SDD.md`** — `<CORE>/launchers/skill/launcher.sh product-sdd ka-reader`

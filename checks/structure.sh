@@ -3,7 +3,7 @@
 # Version: 1.4.0 — structure.sh holds the value modules — QC-63 scan and its proof
 # Version: 1.3.0 — structure.sh holds the boundary reads; fs_reader test body moves to tests/unit
 # Version: 1.2.0 — fs_reader owns OpenFailure; structure.sh holds QC-11's fs-reader clause
-# Version: 1.1.0 — nozoki structure.sh holds the unit graph — QC-10/11/13/14/17/61 scanner and planted-break cases
+# Version: 1.1.0 — ka-reader structure.sh holds the unit graph — QC-10/11/13/14/17/61 scanner and planted-break cases
 # Version: 1.0.0 — first version: the Rust source scan over crates/ — QC-9's unsafe, Apple-framework and process clauses, QC-36's Rust half, QC-15's two filesystem owners
 #
 # checks/structure.sh — proves the Rust source holds the unit and import rules.
@@ -43,8 +43,8 @@
 #   line, and they never satisfy the guard against reading nothing: a run whose shipped scope is
 #   empty exits 1 with `no Rust source was read` even when tests/ files exist. One that cannot be
 #   read exits 1 with `structure.sh: cannot read <path>` after every other file was read.
-#   Three more files are REQUIRED inputs: checks/deps.allow, crates/nozoki-core/Cargo.toml and
-#   crates/nozoki-bridge/Cargo.toml. One that is absent or cannot be read exits 1 with
+#   Three more files are REQUIRED inputs: checks/deps.allow, crates/ka-reader-core/Cargo.toml and
+#   crates/ka-reader-bridge/Cargo.toml. One that is absent or cannot be read exits 1 with
 #   `structure.sh: cannot read <path>` on stderr, and every other file is still read before the
 #   verdict. They are not counted in the pass line, which counts Rust files and crates only.
 #   The script reads text and calls no toolchain: no cargo, no compiler.
@@ -52,7 +52,7 @@
 # THE SCAN TABLE
 #   A token is an identifier matched whole: a word character ([A-Za-z0-9_]) on either side means
 #   no match, so `unsafe_code` is not `unsafe`. "QC-n" is docs/nfdr.md.
-#     QC-9   Apple        In nozoki-core only. The list of forms is a floor: this script may
+#     QC-9   Apple        In ka-reader-core only. The list of forms is a floor: this script may
 #            framework    refuse more forms, never fewer. The attribute form
 #                         `kind = "framework"`, with any whitespace (a newline included)
 #                         around `=`. Each name below, in any of: a path root (`X::`, with no
@@ -72,12 +72,12 @@
 #                         word, so `process_info` is not `process` — and a segment or member
 #                         `process` in a `use` tree rooted at `std` or `::std`, the tree read
 #                         across lines and nested, the finding at the member's own line. In
-#                         nozoki-core the same occurrence is also a QC-9 finding, on the same
+#                         ka-reader-core the same occurrence is also a QC-9 finding, on the same
 #                         line. Source: QC-36's Rust half, QC-9's process clause.
 #     QC-15  filesystem   In every crate except in the three owner files,
-#                         crates/nozoki-core/src/fs_reader.rs,
-#                         crates/nozoki-bridge/src/log_writer.rs and
-#                         crates/nozoki-core/src/git_reader/libgit2.rs, the git-reader
+#                         crates/ka-reader-core/src/fs_reader.rs,
+#                         crates/ka-reader-bridge/src/log_writer.rs and
+#                         crates/ka-reader-core/src/git_reader/libgit2.rs, the git-reader
 #                         adapter, which reads a `.git` regular file's own bytes (matched by
 #                         the exact path, so the same basename anywhere else, and the rest of
 #                         git-reader, is not exempt, and the exemption is for this clause
@@ -100,9 +100,9 @@
 #                         named: by name they cannot be told from socket or pipe I/O.
 #                         Source: QC-15's filesystem owners.
 #     QC-9   unsafe       The token `unsafe`, in every use (block, fn, impl, extern,
-#                         #[unsafe(…)]), in every crate except nozoki-bridge. Source: QC-9's
-#                         "unsafe appearing in no crate but nozoki-bridge".
-#     QC-10  unit edge    In nozoki-core, a file of the unit `folder_model` (crates/nozoki-core/
+#                         #[unsafe(…)]), in every crate except ka-reader-bridge. Source: QC-9's
+#                         "unsafe appearing in no crate but ka-reader-bridge".
+#     QC-10  unit edge    In ka-reader-core, a file of the unit `folder_model` (crates/ka-reader-core/
 #     QC-11  (CP-417,     src/folder_model.rs, or any file under src/folder_model/) that imports
 #            CP-418,      `own_state`, or names the libgit2 binding, is a QC-10 finding. A file of
 #            CP-435)      `fs_reader` or of `highlighter` (the same shapes) that imports a
@@ -120,9 +120,9 @@
 #                         around `::` changing nothing: a path whose segment after a leading
 #                         `crate`, or a leading run of `super`, is the unit; a `use` tree that
 #                         reaches it in that position; or either form naming an item that
-#                         crates/nozoki-core/src/lib.rs re-exports from the unit's module
+#                         crates/ka-reader-core/src/lib.rs re-exports from the unit's module
 #                         (`crate::Entry`), read from lib.rs on every run. `self::<unit>` and
-#                         `nozoki_core::<unit>` are not imports, and a unit is never its own
+#                         `ka_reader_core::<unit>` are not imports, and a unit is never its own
 #                         target. A comment or a string counts. The libgit2 binding is `git2` or
 #                         `libgit2_sys`, a floor: this script may refuse more names, never fewer,
 #                         read in the forms the Apple floor is read in. One finding per distinct
@@ -131,40 +131,40 @@
 #            binding      libgit2 binding, read in the forms the Apple floor is read in, is a
 #            (CP-647 -    QC-11 finding at its line, `<what>` naming the binding. Only `git-reader`
 #            CP-651)      imports the binding, with one exception, so two exemptions: every file of
-#                         the `git_reader` unit (crates/nozoki-core/src/git_reader.rs and every
+#                         the `git_reader` unit (crates/ka-reader-core/src/git_reader.rs and every
 #                         file under src/git_reader/), and
-#                         crates/nozoki-bridge/src/machine_config.rs,
+#                         crates/ka-reader-bridge/src/machine_config.rs,
 #                         the composition root's search-path switch. The switch's test lies under
 #                         tests/, outside the shipped scope. A line that draws a QC-10 or QC-11
 #                         finding above draws no second one: a folder_model file stays QC-10 alone,
 #                         and an fs_reader or highlighter file draws its one QC-11 line. This clause
 #                         adds no other rule. Source: QC-11's "only git-reader imports the libgit2
 #                         binding".
-#     QC-63  value        In nozoki-core, a file of no unit (CP-470): a file of the shipped scope
-#            module       under crates/nozoki-core/src/ whose first component under src/, matched
+#     QC-63  value        In ka-reader-core, a file of no unit (CP-470): a file of the shipped scope
+#            module       under crates/ka-reader-core/src/ whose first component under src/, matched
 #            (CP-470 -    as an exact file or directory name and never as a prefix, is none of the
 #            CP-474)      seven units. The domain is stated by class and not by a list, so a file
 #                         added later is in it with no edit here: src/paths.rs, src/language/x.rs,
 #                         src/highlighter_ext.rs, src/tests/x.rs, and a lib.rs anywhere but
-#                         src/lib.rs. lib.rs aside: crates/nozoki-core/src/lib.rs is the one
+#                         src/lib.rs. lib.rs aside: crates/ka-reader-core/src/lib.rs is the one
 #                         exemption, matched by its exact path, so src/x/lib.rs and src/lib/x.rs
 #                         are in the domain. Not in it: any file of a unit (a unit with no file
-#                         today included), crates/nozoki-core/tests/, build.rs, a nozoki-core file
-#                         outside src/, and every file of nozoki-bridge. Such a file that imports a
+#                         today included), crates/ka-reader-core/tests/, build.rs, a ka-reader-core file
+#                         outside src/, and every file of ka-reader-bridge. Such a file that imports a
 #                         unit is a QC-63 finding, `value module imports <unit>`. The target set
 #                         is the seven units and the import forms are QC-10's and QC-11's, above:
 #                         a path whose segment after a leading `crate` or run of `super` is a
 #                         unit, a `use` tree reaching one, either form naming an item lib.rs
 #                         re-exports from a unit's module, read from lib.rs on every run, across
 #                         lines, with whitespace around `::` changing nothing. A comment or a
-#                         string counts; `self::<unit>`, `nozoki_core::<unit>`, a bare name, and a
+#                         string counts; `self::<unit>`, `ka_reader_core::<unit>`, a bare name, and a
 #                         path to a file of no unit are not imports. One finding per distinct
 #                         (file, line, unit): a line naming two units gives two, a line naming one
 #                         unit twice gives one, at the line holding the unit's name. A file of a
 #                         unit is judged by QC-10 and QC-11 alone and never draws this finding; a
 #                         file of no unit never draws a QC-10 or QC-11 one. libgit2 names are not
 #                         a QC-63 target. Source: QC-63's verified by.
-#     QC-13  crate set    In every file under crates/nozoki-bridge/, a crate named in code that
+#     QC-13  crate set    In every file under crates/ka-reader-bridge/, a crate named in code that
 #            (CP-421,     is not `std`, `core` or `alloc`, and not a name under the `cargo:`
 #            CP-422)      section of checks/deps.allow (read on every run, a `-` in a listed name
 #                         read as `_`). A crate is named in code by the first segment of a `use`
@@ -177,11 +177,11 @@
 #                         here this one reads code only: a comment or a string is not read,
 #                         because the domain is open and every `word::` in prose or test data
 #                         would be a candidate. Source: QC-13's import set.
-#     QC-13  Apple        In every file under crates/nozoki-bridge/, QC-9's Apple floor, the same
+#     QC-13  Apple        In every file under crates/ka-reader-bridge/, QC-9's Apple floor, the same
 #            (CP-423)     names and forms read over raw text, reported as QC-13 and naming the
-#                         framework or form. QC-9's own Apple finding stays nozoki-core's.
+#                         framework or form. QC-9's own Apple finding stays ka-reader-core's.
 #                         Source: QC-13's "must not import any Apple framework".
-#     QC-14  manifest     In crates/nozoki-core/Cargo.toml and crates/nozoki-bridge/Cargo.toml, at
+#     QC-14  manifest     In crates/ka-reader-core/Cargo.toml and crates/ka-reader-bridge/Cargo.toml, at
 #            (CP-424,     the line of the offending key: a dependency in [dependencies] or
 #            CP-425)      [target.<cfg>.dependencies] whose key is `checks`, whose `package` is
 #                         `checks`, or whose `path` lies at or under the product's checks/
@@ -194,14 +194,14 @@
 #                         [dev-dependencies], [build-dependencies] (and their target forms), the
 #                         `build` key, and [[test]], [[bench]], [[example]] and [[bin]] targets.
 #                         Source: QC-14's "as it ships" and its test-target exclusion.
-#     QC-17  logger       In every file read whose path is not under crates/nozoki-bridge/src/
+#     QC-17  logger       In every file read whose path is not under crates/ka-reader-bridge/src/
 #     QC-61  (CP-426)     (the exact path component), a path whose first segment is `log` (or
 #                         `::log`) and whose next segment is the whole word `set_logger` or
 #                         `set_boxed_logger`, or a `use` tree rooted at `log` naming either,
 #                         aliased or not. Two findings on that line, one QC-17 and one QC-61. A
 #                         comment or a string counts. Source: QC-17's and QC-61's verified-by.
-#     QC-2   write API    In nozoki-core only, every file of the shipped scope, no file exempt:
-#            (CP-445,     crates/nozoki-core/src/fs_reader.rs is read too, because its owner
+#     QC-2   write API    In ka-reader-core only, every file of the shipped scope, no file exempt:
+#            (CP-445,     crates/ka-reader-core/src/fs_reader.rs is read too, because its owner
 #            CP-446,      exemption is QC-15's filesystem clause alone, and a file added later for
 #            CP-447)      own-state is not exempt before it exists. Comments and strings count.
 #                         The floor is `std::fs::write`; the members are a floor this script may
@@ -291,7 +291,7 @@
 #   `std::env::home_dir` (it returns HOME), which are environment reads this script does not
 #   refuse; an environment read through a glob import (`use std::env::*;` and then a bare
 #   `var(…)`); a write, a socket or an environment read through a crate other than `std`, `rustix`
-#   and `libc` — in the bridge QC-13 names an unlisted crate, and in nozoki-core only QC-3's
+#   and `libc` — in the bridge QC-13 names an unlisted crate, and in ka-reader-core only QC-3's
 #   allowlist stands; an open whose write access sits in a variable or a numeric constant
 #   (`.write(w)`, `custom_flags(1)`, `libc::open(p, flags)`), and the fd-generic `libc::write`; a
 #   configuration location no member names, or one assembled at run time from parts; a
@@ -311,7 +311,7 @@ trap 'rm -rf "$work"' EXIT
 
 tab="$(printf '\t')"
 unit_names=" folder_model fs_reader highlighter own_state git_reader watcher markdown_renderer "
-required_inputs="checks/deps.allow crates/nozoki-core/Cargo.toml crates/nozoki-bridge/Cargo.toml"
+required_inputs="checks/deps.allow crates/ka-reader-core/Cargo.toml crates/ka-reader-bridge/Cargo.toml"
 
 # --- the scan program: one awk pass per file ---
 
@@ -357,17 +357,17 @@ function note(ln, qc, crank, target, what,    key) {
 }
 
 function add_unsafe(ln) {
-  if (!is_bridge) note(ln, "QC-9", 2, "", "`unsafe` outside nozoki-bridge")
+  if (!is_bridge) note(ln, "QC-9", 2, "", "`unsafe` outside ka-reader-bridge")
 }
 
 function add_apple(ln, form) {
-  if (is_core) note(ln, "QC-9", 1, "", "Apple framework or binding `" form "` in nozoki-core")
-  if (is_bridge) note(ln, "QC-13", 2, form, "Apple framework or binding `" form "` in nozoki-bridge")
+  if (is_core) note(ln, "QC-9", 1, "", "Apple framework or binding `" form "` in ka-reader-core")
+  if (is_bridge) note(ln, "QC-13", 2, form, "Apple framework or binding `" form "` in ka-reader-bridge")
 }
 
 function add_process(ln) {
   note(ln, "QC-36", 1, "", "std::process named — no shipped crate spawns a process")
-  if (is_core) note(ln, "QC-9", 3, "", "std::process named in nozoki-core")
+  if (is_core) note(ln, "QC-9", 3, "", "std::process named in ka-reader-core")
 }
 
 function add_fs(ln, form) {
@@ -386,7 +386,7 @@ function last_seg(path,    p, q) {
 }
 
 function add_write(ln, form) {
-  if (is_core) note(ln, "QC-2", 1, "", "write API `" form "` in nozoki-core")
+  if (is_core) note(ln, "QC-2", 1, "", "write API `" form "` in ka-reader-core")
 }
 
 # An argument, environment or configuration-file read: one QC-30 and one QC-58 finding on the line,
@@ -471,8 +471,8 @@ function add_git2(ln, w) {
 
 function add_logger(ln, w) {
   if (in_src) return
-  note(ln, "QC-17", 1, w, "`log::" w "` outside crates/nozoki-bridge/src/")
-  note(ln, "QC-61", 1, w, "`log::" w "` outside crates/nozoki-bridge/src/")
+  note(ln, "QC-17", 1, w, "`log::" w "` outside crates/ka-reader-bridge/src/")
+  note(ln, "QC-61", 1, w, "`log::" w "` outside crates/ka-reader-bridge/src/")
 }
 
 # A crate named in code in a bridge file. A path root may also be a name a `use` of the file bound.
@@ -783,7 +783,7 @@ END {
 }
 AWK
 
-# --- the re-export program: which items nozoki-core's lib.rs re-exports from which unit ---
+# --- the re-export program: which items ka-reader-core's lib.rs re-exports from which unit ---
 
 cat > "$work/reexport.awk" <<'AWK'
 # CP-416 requires the originating unit even when one root re-export groups several units.
@@ -1113,8 +1113,8 @@ fi
 
 # The items lib.rs re-exports from a unit's module, read afresh from the tree on every run.
 reexports=" "
-if [ -r "$crates_dir/nozoki-core/src/lib.rs" ]; then
-  reexports=" $(LC_ALL=C awk -v UNITS="$unit_names" -f "$work/reexport.awk" "$crates_dir/nozoki-core/src/lib.rs" || true) "
+if [ -r "$crates_dir/ka-reader-core/src/lib.rs" ]; then
+  reexports=" $(LC_ALL=C awk -v UNITS="$unit_names" -f "$work/reexport.awk" "$crates_dir/ka-reader-core/src/lib.rs" || true) "
 fi
 
 # --- the files in scope ---
@@ -1149,7 +1149,7 @@ bridge_mods=" "
 if [ -s "$work/files" ]; then
   while IFS= read -r relative; do
     case "$relative" in
-      crates/nozoki-bridge/*) ;;
+      crates/ka-reader-bridge/*) ;;
       *) continue ;;
     esac
     [ -r "$product_root/$relative" ] || continue
@@ -1172,23 +1172,23 @@ else
     in_bridge_src=0
     subject_unit=""
     value_module=0
-    [ "$crate_name" = "nozoki-core" ] && is_core=1
-    [ "$crate_name" = "nozoki-bridge" ] && is_bridge=1
+    [ "$crate_name" = "ka-reader-core" ] && is_core=1
+    [ "$crate_name" = "ka-reader-bridge" ] && is_bridge=1
     case "$relative" in
-      crates/nozoki-core/src/fs_reader.rs | crates/nozoki-bridge/src/log_writer.rs | crates/nozoki-core/src/git_reader/libgit2.rs) exempt=1 ;;
+      crates/ka-reader-core/src/fs_reader.rs | crates/ka-reader-bridge/src/log_writer.rs | crates/ka-reader-core/src/git_reader/libgit2.rs) exempt=1 ;;
     esac
     case "$relative" in
-      crates/nozoki-bridge/src/*) in_bridge_src=1 ;;
+      crates/ka-reader-bridge/src/*) in_bridge_src=1 ;;
     esac
     # The two files that may name the libgit2 binding: every file of the git_reader unit, and the
     # composition root's search-path switch.
     case "$relative" in
-      crates/nozoki-core/src/git_reader.rs | crates/nozoki-core/src/git_reader/* | crates/nozoki-bridge/src/machine_config.rs) git_exempt=1 ;;
+      crates/ka-reader-core/src/git_reader.rs | crates/ka-reader-core/src/git_reader/* | crates/ka-reader-bridge/src/machine_config.rs) git_exempt=1 ;;
     esac
     # The subject unit is the module by exact file or directory component, never a prefix.
     case "$relative" in
-      crates/nozoki-core/src/*)
-        within_src="${relative#crates/nozoki-core/src/}"
+      crates/ka-reader-core/src/*)
+        within_src="${relative#crates/ka-reader-core/src/}"
         case "$within_src" in
           */*) module_name="${within_src%%/*}" ;;
           *.rs) module_name="${within_src%.rs}" ;;
@@ -1205,7 +1205,7 @@ else
         esac
         # The one exemption is the exact path of the crate root, never the module name `lib`, so
         # src/lib/x.rs and src/x/lib.rs stay in the domain.
-        if [ "$relative" = "crates/nozoki-core/src/lib.rs" ]; then
+        if [ "$relative" = "crates/ka-reader-core/src/lib.rs" ]; then
           value_module=0
         fi
         ;;
@@ -1240,7 +1240,7 @@ done < "$work/test_files"
 
 # --- the shipped manifests: QC-14 ---
 
-for manifest_crate in nozoki-core nozoki-bridge; do
+for manifest_crate in ka-reader-core ka-reader-bridge; do
   manifest="crates/$manifest_crate/Cargo.toml"
   [ -r "$product_root/$manifest" ] || continue
   LC_ALL=C awk -v rel="$manifest" -v crate="$manifest_crate" -v mdir="$product_root/crates/$manifest_crate" \

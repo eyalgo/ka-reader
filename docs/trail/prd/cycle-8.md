@@ -1,4 +1,4 @@
-# PRD open issues — Nozoki 覗き
+# PRD open issues — KA-Reader
 
 > Companion to `PRD.md`. The CPO authored the PRD non-interactively; this file holds what it could
 > not settle from the inputs. **Answer inline** — fill each **Answer** / **Confirm-or-override**
@@ -29,7 +29,7 @@
 
 ## 1. Open issues — product-defining questions with no answer yet
 
-### 1.1 The stated expertise floor says the reader needs no Git knowledge; the owner says Nozoki's readers most likely have it
+### 1.1 The stated expertise floor says the reader needs no Git knowledge; the owner says KA-Reader's readers most likely have it
 
 - **Why it matters:** `docs/PRD.md` § Goals, *"No learning curve"* (`PRD.md:89-92`) sets the
   audience at *"anyone who can find their way around a repository on GitHub and follow a README"*,
@@ -45,9 +45,9 @@
   — so changing it is a fresh authorization, not a correction of an unreviewed draft. What would
   settle it is the owner saying which floor the product is actually built for; that is below.
 - **Answer:** **The reader is assumed to know Git.** The owner's words, given while settling the
-  status-letter question: *"Remember, users of nozoki most likely know how git works."* On that
+  status-letter question: *"Remember, users of ka-reader most likely know how git works."* On that
   basis they chose a hover tooltip over a permanent legend or a README list
-  (`docs/CONTENT_open_issues.md` § 1.2, committed at `nozoki@3692585`), which is the weaker fix for
+  (`docs/CONTENT_open_issues.md` § 1.2, committed at `ka-reader@3692585`), which is the weaker fix for
   a reader who does **not** know Git — and they made that call knowing so, because the mismatch was
   put to them in the same turn.
 
@@ -63,8 +63,8 @@
   the product has settled it will never build is the first failed claim a stranger meets.
 - **Reasoning / what would settle it:** `README.md:31` — *"3. **Refinement** — pane resizing,
   keyboard navigation, diff/commit-preview, sidebar search."* Of those four, **three are outside the
-  terminus**: `system/projects/nozoki/agari.md` places sidebar search / filter, pane resizing and
-  keyboard navigation outside the dock — *"nozoki is done without them"* — and states the keyboard
+  terminus**: `system/projects/ka-reader/agari.md` places sidebar search / filter, pane resizing and
+  keyboard navigation outside the dock — *"ka-reader is done without them"* — and states the keyboard
   absence is **permanent, not deferred**; `docs/UXD.md` UX-I8 and UX-A1 carry the same. The fourth,
   **`diff/commit-preview`, is inside** the dock — the Agari's v1 cut carries diffs and commit
   history — so it is not part of this problem and should not be removed with the other three.
@@ -72,12 +72,12 @@
   three permanently-out-of-scope items come out of phase 3; `diff/commit-preview` stays.
 
   **What is not settled here, and is the CPO's:** what replaces them. The session's observation,
-  offered and not ruled on: a plain statement that those three are outside what Nozoki is built to
+  offered and not ruled on: a plain statement that those three are outside what KA-Reader is built to
   become is more useful to a reader than silence, because it lets them stop waiting — the same
   reasoning the owner accepted for the accessibility sentence
   (`docs/CONTENT_open_issues.md` § 2.4, *"Neither is planned"*).
 
-### 1.3 The README calls Nozoki a web app, which it is not
+### 1.3 The README calls KA-Reader a web app, which it is not
 
 - **Why it matters:** it is the product's one-line self-description, in the first sentence of the
   README (`README.md:4`), and it tells a stranger the wrong thing about what they are getting.

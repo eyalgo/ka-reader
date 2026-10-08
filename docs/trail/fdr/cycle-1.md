@@ -1,4 +1,4 @@
-# FDR open issues — Nozoki 覗き
+# FDR open issues — KA-Reader
 
 > Companion to `fdr.md`. The Principal PM authored the FDR non-interactively; this file holds what the
 > run could not settle from its inputs — the PRD, the SRS and the SDD.
@@ -131,7 +131,7 @@
 - **Rationale:** measured 2026-09-01 — PRD v12, SRS v10, SDD v3, UXD v7, DESIGN v6, CONTENT v6;
   `docs/architecture_open_issues.md` sits beside the NFDR and this run opened companions beside
   the SRS, the UXD and DESIGN (`docs/trail/fdr/self_answer-1.md` § Companions opened); the
-  Agari's two pointers now read `trail/agari/` (`system/projects/nozoki/agari.md:16`, `:35`). Most
+  Agari's two pointers now read `trail/agari/` (`system/projects/ka-reader/agari.md:16`, `:35`). Most
   of those moves repaired citations and change no rule here. One did not: SRS v9's NFR-11 gained
   the diagnostic log's bound — *"the log holds at most the current session's lines: a launch
   creates the file where none exists and truncates it where one does, so nothing from an earlier

@@ -21,14 +21,14 @@ written for the `product-architecture` run that folds the answers.
 
 - **Bucket:** 3. Raised from downstream — an item from a seat that did not write these records
 - **Verdict:** confirmed with addition
-- **Why:** **The PM's fold is right: the read is in the script from `nozoki@392177d`, and the script
+- **Why:** **The PM's fold is right: the read is in the script from `ka-reader@392177d`, and the script
   is the gate. Three more things go with it.** The item carries no draft, only a "likely fold". A
   likely fold is a lean, so I weighed it as a draft, as the prompt directs for an item that carries
   one.
 
-  *The PM's claims, re-measured.* Nothing under `crates`, `checks`, `nozoki-mac` or `.github` has
-  changed since the merge (`git diff --stat 392177d HEAD -- crates checks nozoki-mac .github` prints
-  nothing), so these readings hold at `nozoki@27e2bbf`.
+  *The PM's claims, re-measured.* Nothing under `crates`, `checks`, `ka-reader-mac` or `.github` has
+  changed since the merge (`git diff --stat 392177d HEAD -- crates checks ka-reader-mac .github` prints
+  nothing), so these readings hold at `ka-reader@27e2bbf`.
   - The read is `checks/view.sh:L379-L404`. It is red on a defined `git_smart_subtransport_*`, on an
     undefined `connect`, `socket` or `getaddrinfo`, and where `nm` is missing, fails or prints no
     symbol. That is QC-3's half (3) word for word (`docs/nfdr.md:L149-L153`). The header names QC-3
@@ -37,20 +37,20 @@ written for the `product-architecture` run that folds the answers.
     only the three cause cases (nm absent, failing, printing nothing). The four symbol reds sit at
     `:L58-L61`. The item's supporting text is narrower than the suite, and the answer cites the whole
     range.
-  - CI runs `nozoki-mac/assemble.sh`, then `checks/view.sh`, then its suite, on every push
+  - CI runs `ka-reader-mac/assemble.sh`, then `checks/view.sh`, then its suite, on every push
     (`.github/workflows/ci.yml:L11`, `:L41`, `:L51`, `:L54`).
-  - `nozoki_read_git` is exported (`crates/nozoki-bridge/src/exports.rs:L105`), and no Swift source
-    calls it (`grep -rn nozoki_read_git` over `nozoki-mac` prints nothing).
+  - `ka_reader_read_git` is exported (`crates/ka-reader-bridge/src/exports.rs:L105`), and no Swift source
+    calls it (`grep -rn ka_reader_read_git` over `ka-reader-mac` prints nothing).
   - I ran `bash checks/view.sh` on the release bundle in this working copy, built at 08:20 on
     2026-10-04, after the 08:10 merge. It exited 0. `nm` on that executable shows 781 defined `_git_`
     symbols, `_git_repository_open_ext` among them. It shows no `git_smart_subtransport_` symbol, no
-    undefined `_connect`, `_socket` or `_getaddrinfo`, and no `_nozoki_read_git`. That matches the
-    SDD's own measurement on the bundle built at `nozoki@0aab3e7` (`docs/SDD.md:L763-L772`).
+    undefined `_connect`, `_socket` or `_getaddrinfo`, and no `_ka_reader_read_git`. That matches the
+    SDD's own measurement on the bundle built at `ka-reader@0aab3e7` (`docs/SDD.md:L763-L772`).
 
   *Check 1 — whose seat.* **This one is mine, in the owner's seat.** The edit lands in `nfdr.md`
   QC-3 and nowhere else. The SDD already folded the same facts upstream at v31, in the CTO's seat
   (`docs/SDD.md:L759-L775`; trail `docs/trail/sdd/cycle-26.md` § 5.3). So the NFDR is the one
-  document that has not seen them. ADR-0019 cites `nozoki@8edec4f` only as a dated measurement
+  document that has not seen them. ADR-0019 cites `ka-reader@8edec4f` only as a dated measurement
   (`docs/adr/0019-…-the-executable-links-no-transport.md:L124`). A record's dated measurement is not
   falsified by a later build, so no new record is owed. The answer binds no person and no outside
   party.
@@ -58,7 +58,7 @@ written for the `product-architecture` run that folds the answers.
   *Check 2 — the draft.* The conclusion is right. The argument is right but incomplete, in two places
   and with one framing slip.
   - **QC-3 says "no bridge function reaches `git-reader` at that commit."** The fold must drop that
-    clause, or a reader takes it as still true. `nozoki_read_git` now reaches it.
+    clause, or a reader takes it as still true. `ka_reader_read_git` now reaches it.
   - **The item's last sentence implies the read is waiting on something.** It reads "the read has not
     yet met a build with the export linked in." That is true, but it is not what the read is for. It
     has already met an executable that links libgit2's open and status code, and passed. The export
@@ -102,15 +102,15 @@ written for the `product-architecture` run that folds the answers.
   promises.** As with 3.1, the "likely fold" is a lean, and I weighed it as a draft.
 
   *The PM's claims, re-measured.*
-  - The switch is `crates/nozoki-bridge/src/machine_config.rs`. `run_switch` empties the four levels
+  - The switch is `crates/ka-reader-bridge/src/machine_config.rs`. `run_switch` empties the four levels
     and answers `Failed` at the first that errs, without trying the rest (`:L59-L69`). A `OnceLock`
     guard runs it once per process (`:L71`, `:L129-L133`). The adapter is made only in this module
     (`:L135-L140`).
-  - The read-back is `crates/nozoki-bridge/tests/search_path.rs:L36`. Step 0 asserts that the global
+  - The read-back is `crates/ka-reader-bridge/tests/search_path.rs:L36`. Step 0 asserts that the global
     level starts non-empty (`:L39-L43`). Step 1's first arrival is a production session's open, and
     after it all four levels read empty (`:L47-L55`). Steps 2 and 3 show that a second arrival sets
     nothing (`:L62-L73`).
-  - I ran `cargo test --locked -p nozoki-bridge` at `nozoki@27e2bbf`. It is green: every target
+  - I ran `cargo test --locked -p ka-reader-bridge` at `ka-reader@27e2bbf`. It is green: every target
     passed, `search_path` 1 of 1 among them. CI runs it inside `cargo test --workspace --locked` on
     every push (`.github/workflows/ci.yml:L26`).
 
@@ -135,13 +135,13 @@ written for the `product-architecture` run that folds the answers.
   stays: a bridge that wires the adapter with no switch run before it, or with no test of it. So do
   the uncovered-fifth-level sentence and the "read and not run" step to `sysdir.c`. QC-11 and QC-13
   name the switch and its test as the libgit2 binding's one exception in the bridge. That stays true:
-  `grep -rln git2 crates/nozoki-bridge` prints only the manifest, `src/machine_config.rs` and
+  `grep -rln git2 crates/ka-reader-bridge` prints only the manifest, `src/machine_config.rs` and
   `tests/search_path.rs`.
 
   *Check 4 — failure paths.*
   - **Ordering, the case QC-17's "before any thread can reach libgit2" turns on:** the switch runs on
     the session's first successful open (`session.rs:L594-L597`). The core's `open_folder` before it
-    reads through `fs_reader` alone (`crates/nozoki-core/src/folder_model.rs:L56-L64`). `probe`, the
+    reads through `fs_reader` alone (`crates/ka-reader-core/src/folder_model.rs:L56-L64`). `probe`, the
     first libgit2 call, runs through the wired port afterwards (`:L296`). So nothing reaches libgit2
     first.
   - **Absent:** a setter that errs leaves the Git item `failed`, and it logs one warning
@@ -167,7 +167,7 @@ None this run.
 ### 2.1 — QC-11 hands its exception's check to "the change that builds the switch"; that change landed and left `checks/structure.sh` as it was
 
 - **What the document is owed:** QC-11's tail should say, in the past tense, that the change that
-  built the switch (`nozoki@392177d`) did not add the exception's rule to the script. The bound stays
+  built the switch (`ka-reader@392177d`) did not add the exception's rule to the script. The bound stays
   review at `development-design` until a change adds it, and the script locator is re-pinned to
   `checks/structure.sh:L257-L258`.
 - **Why it is worth a cycle:** *A fact in it is now false.* QC-11 says "changing it for the exception
@@ -187,4 +187,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture nozoki`
+- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture ka-reader`

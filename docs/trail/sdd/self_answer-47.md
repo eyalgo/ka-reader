@@ -34,8 +34,8 @@ RN-99 (`:L6543-L6646`) and *Open Questions* whole (`:L6648-L6762`). It searched 
 on this item in other words was not seen. `docs/trail/sdd/self_answer-46.md` was read whole.
 `docs/nfdr.md` was read at `:L1-L25` and `:L436-L470`, `docs/SRS.md` at `:L200-L208`, and
 `docs/CONTENT.md` at `:L326-L344`. The adapter was read at
-`crates/nozoki-core/src/git_reader/libgit2.rs:L76-L240`, and the condition type at
-`crates/nozoki-core/src/git_reader.rs:L180-L212`, both at `nozoki@8892311`. The PRD, the UXD and
+`crates/ka-reader-core/src/git_reader/libgit2.rs:L76-L240`, and the condition type at
+`crates/ka-reader-core/src/git_reader.rs:L180-L212`, both at `ka-reader@8892311`. The PRD, the UXD and
 the FDR were not opened. No test was run and no fixture was built.
 
 ## Items worked
@@ -141,4 +141,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/SDD.md`** — `<CORE>/launchers/skill/launcher.sh product-sdd nozoki`
+- **`docs/SDD.md`** — `<CORE>/launchers/skill/launcher.sh product-sdd ka-reader`

@@ -34,14 +34,14 @@ None this run.
   its **Confirm-or-override** slot was already filled, by the previous self-answer run
   (`confirm — with two additions`, reasoning in `docs/trail/uxd/self_answer-1.md`). A prior
   verdict binds this run exactly as the owner's would; it was not revisited. Re-measured for
-  drift only: `docs/UXD.md` is unchanged since v6 (`nozoki@dd08f2d`) and still carries 71
+  drift only: `docs/UXD.md` is unchanged since v6 (`ka-reader@dd08f2d`) and still carries 71
   `docs/<x>_trail/` citations (43 `uxd_trail`, 14 `srs_trail`, 11 `prd_trail`, 3
   `content_trail`), of which 4 are commit-pinned and must not move — the numbers the answer
   states.
 
 **Read whole, and owed nothing the items do not already carry.** Since the previous report two
-of this document's inputs moved — `docs/PRD.md` to v12 (`nozoki@2d8c99d`) and `docs/SRS.md` to
-v9 (`nozoki@82c199a`) — so the prompt's "something upstream moved" ground was walked and does
+of this document's inputs moved — `docs/PRD.md` to v12 (`ka-reader@2d8c99d`) and `docs/SRS.md` to
+v9 (`ka-reader@82c199a`) — so the prompt's "something upstream moved" ground was walked and does
 not fire. PRD v12's diff outside its trail citations is empty of content, and every place the
 UXD names "PRD v11" is a statement of which version settled a thing ("widened at v6 with PRD
 v11", `docs/UXD.md:30`; "narrowed at v6: PRD v11", `:459`; RN-25, `:751`), which v12 does not
@@ -61,4 +61,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/UXD.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-uxd/launcher.sh nozoki`
+- **`docs/UXD.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-uxd/launcher.sh ka-reader`

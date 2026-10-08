@@ -1,4 +1,4 @@
-# SRS open issues — Nozoki 覗き
+# SRS open issues — KA-Reader
 
 > Companion to `SRS.md`. The CTO authored the SRS non-interactively; this file holds
 > what it could not settle from the inputs (the PRD and any context/constraints).
@@ -60,7 +60,7 @@ confirm.
   AC-23 checks that activating an external link produces no outbound traffic.
 - **Rationale:** the no-fetch half is not a choice — loading a remote image is a network call
   during operation and NFR-8 forbids it absolutely — so it is derived, not routed (SRS RN-23).
-  The link half is: handing an external link to the system browser makes Nozoki the initiator of
+  The link half is: handing an external link to the system browser makes KA-Reader the initiator of
   a network call even though another process makes it, which sits badly against a promise Way 2
   says is kept absolutely; and opening a relative link in the reading panel is in-document
   navigation, a feature the PRD never names and the Agari never places inside done. The lean
@@ -86,7 +86,7 @@ confirm.
        cost, not a wholesale confirm or override, and the owner used neither word.
        (b) Before answering, the owner was told that cost is not the axis the external half
        turns on — this item's own rationale leans on Way 2's promise, and handing a URL to the
-       system browser makes Nozoki the initiator of a call another process makes. The answer
+       system browser makes KA-Reader the initiator of a call another process makes. The answer
        above came after that was said. The owner did not say the trade is accepted, and no
        acceptance is recorded here. -->
 
@@ -95,7 +95,7 @@ confirm.
 - **Drafted into the SRS:** FR-31 carries the PRD's fallback as a permission — v1 may ship
   rendered-only, the switch following in a later release — and AC-12 exercises the switch **at
   the closing release**, placing it inside done.
-- **Rationale:** the Agari (`system/projects/nozoki/agari.md`) predates PRD v7/v8 and draws the
+- **Rationale:** the Agari (`system/projects/ka-reader/agari.md`) predates PRD v7/v8 and draws the
   dock as the v1 cut "as drawn" — file tree, reading with highlighting, Git status, live refresh —
   plus three named beyond-v1 features. Markdown rendering and its switch appear in neither list,
   because they did not exist when the dock was drawn. The lean reads "reading with highlighting"
@@ -122,7 +122,7 @@ confirm.
   that the dock's "a stranger can pick up a public release" is platform-agnostic and a second
   platform rides in whenever it is added — is not unreasonable, and only you can say which the
   dock means. This item does not ask whether Linux or Windows *will* be built; it asks whether
-  Nozoki is done without them.
+  KA-Reader is done without them.
 - **If overridden** (a second platform is inside done): §2's bullet moves the platform into the
   covered set; C-11 gains the second platform with its own minimum-version placement; NFR-13
   and AC-10 run the time-to-first-success check on each platform promised, as the PRD's own

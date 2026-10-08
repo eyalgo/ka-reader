@@ -31,7 +31,7 @@
   that was overridden afterwards — UX-I12's first case now renders it in place (RN-29 (6)), so the
   cycle-1 text is superseded and must not be read as binding. **Close to a different verdict:** this
   could have been read as the owner's own, since it is about their prior decisions. It is not,
-  because nothing here is unseeable — the answers are on disk at `nozoki@70a879a`, the upstream
+  because nothing here is unseeable — the answers are on disk at `ka-reader@70a879a`, the upstream
   documents carry most of them, and the money call carries an explicit instruction not to raise it
   again. What would have tipped it: a prior answer that lived only in the trail *and* committed
   something outward-facing. § 3.3 lives only in the trail but commits nothing new — it re-states a
@@ -87,12 +87,12 @@
 - **Bucket:** 5. Raised from downstream — an item from a seat that did not write the SDD
 - **Verdict:** answered
 - **Why:** The item scopes the work precisely and hands no draft of the values, so the answer is the
-  four rows and their derivation. `crates/nozoki-core` and `crates/nozoki-app` are Rust `crate`s —
+  four rows and their derivation. `crates/ka-reader-core` and `crates/ka-reader-app` are Rust `crate`s —
   the card names Rust, and the Rust packet's *"Workspace members live under `crates/`, one directory
-  per member"* is already satisfied, which is why the parts table owes nothing. `nozoki-ui` is a
+  per member"* is already satisfied, which is why the parts table owes nothing. `ka-reader-ui` is a
   TypeScript `package`, and this is the row that repairs the measured misplacement: the packet's
   tree is written for a product at the repository root, and the units table is what says the frame
-  lands inside `nozoki-ui/` instead — the template's own *"Where a language's frame lands is this
+  lands inside `ka-reader-ui/` instead — the template's own *"Where a language's frame lands is this
   table's to say"*, and where the card's test command already goes looking. `checks` is the one row
   with a real choice in it. It reads `Shell` / `directory`: Shell because the card declares Shell for
   exactly this unit ("plus the `checks/*.sh` harness the NFDR names"), and writing `none` would leave
@@ -136,7 +136,7 @@
   wrote, or discards it whole" promises **safety**, not **continuity**: a version that changed the
   bundle identifier would silently start from an empty container and satisfy the letter of (c), and
   what a reader loses is their theme and, beyond v1, their ten remembered folders. If continuity is
-  meant, `com.kensaiapp.nozoki` belongs in the covered list; if only safety is meant, say that
+  meant, `com.kensaiapp.ka-reader` belongs in the covered list; if only safety is meant, say that
   losing own state is permitted so nobody reads the promise as more than it is.
   *Second addition — decide the floor language set.* An adopter relies on their `.py` file being
   highlighted, and FR-8 makes the floor grow only by PRD revision. Dropping a floor language is not
@@ -163,8 +163,8 @@ None this run.
 - **Why it is worth a cycle:** *A fact in it is now false* — the strongest of the three grounds
   `decide_companion_answers.md` § *The items are not the whole of what a document is owed* names,
   and the one it says needs no argument beyond the measurement. Measured 2026-09-03 against
-  `nozoki@c3eb937`: 14 citations of `docs/trail/sdd/cycle-1.md` across five ADRs, dead since
-  `nozoki@9c91359`; 23 citations of this document's review notes by number across ADR-0001 –
+  `ka-reader@c3eb937`: 14 citations of `docs/trail/sdd/cycle-1.md` across five ADRs, dead since
+  `ka-reader@9c91359`; 23 citations of this document's review notes by number across ADR-0001 –
   ADR-0008, all against the deleted numbering, of which RN-24 and RN-25 no longer exist and the
   eight that resolve now carry notes on other subjects (ADR-0002's RN-7, ADR-0004's RN-8 and
   ADR-0007's RN-17 each checked); and `docs/nfdr.md:385`'s `SDD § 6 S-4`, which named live refresh
@@ -180,5 +180,5 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/SDD.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-sdd/launcher.sh nozoki`
-- **`docs/adr/` and `docs/nfdr.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-architecture/launcher.sh nozoki`
+- **`docs/SDD.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-sdd/launcher.sh ka-reader`
+- **`docs/adr/` and `docs/nfdr.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-architecture/launcher.sh ka-reader`

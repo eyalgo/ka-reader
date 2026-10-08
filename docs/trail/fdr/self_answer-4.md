@@ -2,7 +2,7 @@
 
 ## Header
 
-- **Companion:** /Users/eyalgolan/products/nozoki/docs/fdr_open_issues.md
+- **Companion:** /Users/eyalgolan/products/ka-reader/docs/fdr_open_issues.md
 - **Document:** `docs/fdr.md` — the FDR, Draft at v5
 - **Decided by:** `decide_companion_answers.md` v1.1.0
 - **Date:** 2026-09-04
@@ -85,19 +85,19 @@ other.
   (`docs/trail/fdr/cycle-1.md` § 2.4, § 2.7), now stated by the SDD. Mine, in the owner's seat.
   One thing said plainly because the skill's own rule is close to it: a run may not answer an item
   it raised on its own reasoning *"with nothing in between"*. Here the round between is
-  `product-fdr`'s v5 (`nozoki@4a73c1a`), which applied a repair; what this run weighs is that repair,
+  `product-fdr`'s v5 (`ka-reader@4a73c1a`), which applied a repair; what this run weighs is that repair,
   not the raiser's finding. **Check 2 — what was handed.** The item offers a reading and the v5
   blockquote states a repair; both were checked against disk. (1) The version note: the present-tense
   *"Two owner-confirmed rules the re-authored SDD contradicts stand"* now sits only inside the
   parenthetical that begins *"(v4: …"* — the version line's own convention for history — and the v5
   sentence before it names the close (`docs/fdr.md:5`). (2) RN-7: the departed-from sentence is
-  pinned to `nozoki@827aa1c:docs/SDD.md` § 11 R-3, past tense; the closing call is answered in the
-  same note — *"Met at SDD v4 (`nozoki@683db69`)"*, citing SDD RN-42 and the owner's confirm at
+  pinned to `ka-reader@827aa1c:docs/SDD.md` § 11 R-3, past tense; the closing call is answered in the
+  same note — *"Met at SDD v4 (`ka-reader@683db69`)"*, citing SDD RN-42 and the owner's confirm at
   `docs/trail/sdd/cycle-3.md` § 5.1 — and it ends *"R-21's relation is *from* since v5"*
   (`docs/fdr.md:396`). (3) R-21's tag carries `§ 11 R-3 — … as the owner set it` and *"the departure
   RN-7 recorded closed at SDD v4 — RN-30"* with no *changed*; R-46's carries `§ 3 fs-reader — the
   text rule, met at SDD v4 (RN-30)` with no *added* (`docs/fdr.md:62`, `:101`). The item's offered
-  reading — re-point the sites and record the meeting in a note naming `nozoki@683db69` and RN-41 /
+  reading — re-point the sites and record the meeting in a note naming `ka-reader@683db69` and RN-41 /
   RN-42 — is what RN-30 does (`docs/fdr.md:419`). The one question the item declined to word, which
   relation word the two rules take, is closed by the prompt's vocabulary rather than by taste: the
   set is *from*, *added*, *changed*, *suggest-remove* and nothing else
@@ -132,4 +132,4 @@ None this run.
 
 ## Launchers owed
 
-- **`fdr.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-fdr/launcher.sh nozoki`
+- **`fdr.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-fdr/launcher.sh ka-reader`

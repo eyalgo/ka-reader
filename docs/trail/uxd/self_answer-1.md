@@ -15,7 +15,7 @@
 - **Verdict:** confirmed with addition
 - **Why:** The draft's repair is right; its measurement counted four citations where the document carries 71.
   `docs/uxd_trail/` genuinely does not exist — all seven answer-trail folders moved to
-  `docs/trail/<x>/` at `nozoki@1e8bf3d`, which updated no citing document — so the repair
+  `docs/trail/<x>/` at `ka-reader@1e8bf3d`, which updated no citing document — so the repair
   (`docs/<x>_trail/` → `docs/trail/<x>/`) stands as drafted. Two additions, and each changes what a
   person doing the repair must actually do.
 
@@ -27,7 +27,7 @@
 
   **Second, and this is the one that would have caused a new defect: four of the UXD's 71 must not
   be touched.** RN-8, RN-15, RN-16 and RN-17 cite the *commit-pinned* form
-  `nozoki@1d5c553:docs/uxd_trail/cycle-1.md`, which resolves — verified, `git show
+  `ka-reader@1d5c553:docs/uxd_trail/cycle-1.md`, which resolves — verified, `git show
   1d5c553:docs/uxd_trail/cycle-1.md` returns the file — because at that commit the path existed.
   Rewriting a pinned citation breaks one that currently works, and the four sit in Review Notes
   recording owner authorizations, which are exactly the citations a cold reader opens to check a
@@ -85,9 +85,9 @@ second item would have been the near-duplicate the skill forbids.
 
 ## Launchers owed
 
-- **`docs/UXD.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-uxd/launcher.sh nozoki`
-- **`docs/SRS.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-srs/launcher.sh nozoki`
-- **`docs/SDD.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-sdd/launcher.sh nozoki`
-- **`docs/PRD.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/launch-product-prd/launcher.sh nozoki`
-- **`docs/CONTENT.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-content/launcher.sh nozoki`
-- **`docs/DESIGN.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-design/launcher.sh nozoki`
+- **`docs/UXD.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-uxd/launcher.sh ka-reader`
+- **`docs/SRS.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-srs/launcher.sh ka-reader`
+- **`docs/SDD.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-sdd/launcher.sh ka-reader`
+- **`docs/PRD.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/launch-product-prd/launcher.sh ka-reader`
+- **`docs/CONTENT.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-content/launcher.sh ka-reader`
+- **`docs/DESIGN.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-design/launcher.sh ka-reader`

@@ -1,4 +1,4 @@
-# SDD open issues — Nozoki
+# SDD open issues — KA-Reader
 
 > Companion to `SDD.md`. The CTO wrote the SDD; this file holds what that run could not settle from
 > its inputs (the PRD, the SRS, the UXD, and any context or constraints), and the calls that are the

@@ -1,4 +1,4 @@
-# SDD conversation — nozoki, run 5
+# SDD conversation — ka-reader, run 5
 
 > The record of one `product-sdd` run: three seats — CTO, CPO, CDO — working one document together,
 > and a runner that starts them, gives the turns and counts the rounds.
@@ -18,9 +18,9 @@
 
 - **Round:** 1 (closed) — run ended
 - **Seats, and the names they answer to:**
-  - CTO — `sdd-nozoki-run5-cto`
-  - CPO — `sdd-nozoki-run5-cpo`
-  - CDO — `sdd-nozoki-run5-cdo`
+  - CTO — `sdd-ka-reader-run5-cto`
+  - CPO — `sdd-ka-reader-run5-cpo`
+  - CDO — `sdd-ka-reader-run5-cdo`
 - **Standing declared move:** CPO `no_followup` · CTO `no_followup` · CDO `no_followup`
 - **Recall outstanding:** none
 - **Recalls spent:** none
@@ -35,7 +35,7 @@
 **Run intake note:** `docs/SDD_open_issues.md` § 5.1 (raised 2026-09-04 by a `companion-self-answer`
 run against `docs/fdr_open_issues.md` § 2.7) now carries a **filled** Answer slot — *"confirm — and
 it is already done. `product-sdd`'s run 4 folded both sentences at `docs/SDD.md` v4
-(`nozoki@683db69`) ... product-sdd may drop it as resolved — after which this file is empty of open
+(`ka-reader@683db69`) ... product-sdd may drop it as resolved — after which this file is empty of open
 items."* Per the skill's own rule ("a companion with no filled answer slot is not consumed"), a
 **filled** slot **is** consumed: the companion was copied whole to `docs/trail/sdd/cycle-3.md`
 before any seat touched it (this run's intake, prior to any turn). The seats' first round works from

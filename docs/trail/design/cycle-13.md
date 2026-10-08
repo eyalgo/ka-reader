@@ -1,4 +1,4 @@
-# DESIGN open issues — Nozoki
+# DESIGN open issues — KA-Reader
 
 > Companion to `DESIGN.md`. The CDO authored the design language non-interactively; this file
 > holds the calls it made and wants your sign-off on — each with the reason behind it, and what
@@ -41,13 +41,13 @@ None.
 
 ### 3.1 Where the tooltip goes when there is no room below the letter, or to its left
 - **Raised by:** PM — 2026-10-04
-- **Tracked by:** `nozoki · nemawashi · 2026-10-02_git-says-what-changed`
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-02_git-says-what-changed`
 - **What it blocks:** a drawn answer for two edges the tooltip now meets. Until the language rules on
   them, the shell keeps the one placement § Components states, and the tooltip is cut by its host.
 - **Where it shows:** `docs/DESIGN.md:L646-L650` puts the tooltip "below" the letter, "its right edge
   on the letter's right edge so it never runs past the sidebar", "one line, never wrapped", and says
   nothing else about where it goes. The shell places it exactly so, with no other case
-  (`nozoki-mac/Sources/Surfaces/LetterTooltip.swift:L195-L196`), inside the surface that draws the
+  (`ka-reader-mac/Sources/Surfaces/LetterTooltip.swift:L195-L196`), inside the surface that draws the
   letter. Two edges follow. **Bottom:** a letter on the last visible row of the tree or the Git view
   has no room below it inside that surface, so the tooltip is cut by the surface's bottom edge.
   **Left:** a name wider than the room left of the letter carries the tooltip past the surface's left

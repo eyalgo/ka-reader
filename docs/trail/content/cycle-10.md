@@ -1,4 +1,4 @@
-# CONTENT open issues — Nozoki
+# CONTENT open issues — KA-Reader
 
 > Companion to `CONTENT.md`. The Content Manager authored the verbal language non-interactively;
 > this file holds the calls it made and wants your sign-off on — each with the reason behind it,
@@ -42,7 +42,7 @@ None.
 
 ### 3.1 The status letters and their words are stated for a changed file; the product draws them on folder rows too
 - **Raised by:** PM — 2026-10-04
-- **Tracked by:** `nozoki · nemawashi · 2026-10-02_git-says-what-changed`
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-02_git-says-what-changed`
 - **What it blocks:** the expansion's words for a folder row. Until the standard says whether the six
   words cover a folder, whoever writes the expansion (`docs/fdr.md` R-38) has nothing to write
   *modified* for a submodule whose commit moved, or *untracked* for a repository nested in the folder
@@ -50,12 +50,12 @@ None.
 - **Where it shows:** `docs/CONTENT.md:L145-L147` and `:L422-L424` show the letters "beside a changed
   file", and § Terminology defines **changed** as "A file Git reports as different from the last
   commit". In the product a folder row carries a letter in both surfaces: the file tree marks a
-  listed folder's row (`nozoki-mac/Tests/SurfacesTests/TreeMarkersTests.swift:L69-L77`, `sub` **M** and
+  listed folder's row (`ka-reader-mac/Tests/SurfacesTests/TreeMarkersTests.swift:L69-L77`, `sub` **M** and
   `inner` **U**), and the Git view lists the same two folders with the same letters
-  (`nozoki-mac/Tests/SurfacesTests/WorkbenchTreeMarkerTests.swift:L110`, `:L168`). The likely fold: a
+  (`ka-reader-mac/Tests/SurfacesTests/WorkbenchTreeMarkerTests.swift:L110`, `:L168`). The likely fold: a
   line in § Accessibility of text or § Terminology that covers a listed folder — whether the six words
   apply to it as written, or which words a folder takes.
 - **If a document has to be written:** none. A line in `CONTENT.md`, written by `product-content`.
-- **Answer:** Take it. The six words cover a folder row as written, and a folder takes no word of its own: a submodule whose commit moved is **M** and reads *modified*, and a repository nested in the folder you opened is **U** and reads *untracked*. Resting on the letter names the row, which is the folder, and then the word, and it speaks of that folder alone and never of anything beneath it (the product marks only the listed row: `nozoki-mac/Tests/SurfacesTests/TreeMarkersTests.swift:L69-L77`). The fold: § Grammar and mechanics' single-letter bullet and § Accessibility of text's letters bullet read "beside a changed file or a listed folder"; § Terminology keeps *changed* for a file and its Notes cell says a folder row's letter is worded by the six and a folder is not called *changed*. **A**, **D**, **R** and **C** on a folder row are not stated until a site shows one. Reasoning: `docs/trail/content/self_answer-8.md`.
+- **Answer:** Take it. The six words cover a folder row as written, and a folder takes no word of its own: a submodule whose commit moved is **M** and reads *modified*, and a repository nested in the folder you opened is **U** and reads *untracked*. Resting on the letter names the row, which is the folder, and then the word, and it speaks of that folder alone and never of anything beneath it (the product marks only the listed row: `ka-reader-mac/Tests/SurfacesTests/TreeMarkersTests.swift:L69-L77`). The fold: § Grammar and mechanics' single-letter bullet and § Accessibility of text's letters bullet read "beside a changed file or a listed folder"; § Terminology keeps *changed* for a file and its Notes cell says a folder row's letter is worded by the six and a folder is not called *changed*. **A**, **D**, **R** and **C** on a folder row are not stated until a site shows one. Reasoning: `docs/trail/content/self_answer-8.md`.
 
 **How it closes.** `product-content` folds it on its next run exactly as it folds §§ 1–2.

@@ -38,7 +38,7 @@
 #
 # `cargo` and `swift` are found through PATH so a test can stand a tree in for the real one.
 # NO_NETWORK_ALLOW_FILE overrides the list's path and NO_NETWORK_SWIFT_PACKAGE_DIR the Swift package's
-# directory (nozoki-mac under the product root), for the same reason.
+# directory (ka-reader-mac under the product root), for the same reason.
 
 set -euo pipefail
 
@@ -47,10 +47,10 @@ die() { echo "no-network.sh: $*" >&2; exit 1; }
 root="$(cd "$(dirname "$0")/.." && pwd -P)"
 allow_file="${NO_NETWORK_ALLOW_FILE:-$root/checks/deps.allow}"
 [ -f "$allow_file" ] || die "the allowlist is missing: $allow_file"
-# The Swift package's directory. By default nozoki-mac under the product root, written as such in every
+# The Swift package's directory. By default ka-reader-mac under the product root, written as such in every
 # message; under the override, the override's own path.
-swift_package_dir="${NO_NETWORK_SWIFT_PACKAGE_DIR:-$root/nozoki-mac}"
-swift_package_name="${NO_NETWORK_SWIFT_PACKAGE_DIR:-nozoki-mac}"
+swift_package_dir="${NO_NETWORK_SWIFT_PACKAGE_DIR:-$root/ka-reader-mac}"
+swift_package_name="${NO_NETWORK_SWIFT_PACKAGE_DIR:-ka-reader-mac}"
 
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT

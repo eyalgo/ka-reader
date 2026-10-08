@@ -1,4 +1,4 @@
-# Architecture open issues — Nozoki
+# Architecture open issues — KA-Reader
 
 > Companion to `adr/` and `nfdr.md`. The Principal Architect authored both records
 > non-interactively; this file holds what the run could not settle from its inputs — the SRS, the SDD
@@ -17,7 +17,7 @@
 > — an ADR's binding and an NFDR obligation reach the same file.
 
 > **How this companion came to exist.** No `product-architecture` run opened it. A
-> `companion-self-answer` run opened it on 2026-09-23 (`nozoki@a9f1b8a`), while answering
+> `companion-self-answer` run opened it on 2026-09-23 (`ka-reader@a9f1b8a`), while answering
 > `docs/SDD_open_issues.md` § 1.1: both records were Settled at NFDR v9 with no companion on disk,
 > and without one a re-run would have read them as done. It held one § 2 item, proposed and not
 > drafted. **The first `product-architecture` run after it (NFDR v10, 2026-09-23) drafted that item
@@ -64,7 +64,7 @@
   an entitlement outside its three, which C-R2 permits with a record, and no entry carried the gate
   the owner added because a bundle passed every other one and drew an empty window (§ 10 RC-2).
   The rule is the owner's ruling and holds under every answer to the SDD companion's § 1.1 — which
-  you have since answered, (a), the renderer leaves WKWebView (`nozoki@5176475`); that answer is
+  you have since answered, (a), the renderer leaves WKWebView (`ka-reader@5176475`); that answer is
   not yet folded into the SDD (C-R1 at v12 still names WKWebView), so the gate's mechanism is
   recorded as C-I3 states it today and marked as moving. **Inputs:** `docs/SDD.md` is Draft at
   v12; the house rule for a Draft input is derive and record, never halt
@@ -81,7 +81,7 @@
 - **Lands in:** `adr/` — a record superseding ADR-0002 (the system WKWebView); `nfdr.md` QC-21 (no
   swap invariant for the renderer technology).
 - **Drafted into the records:** Nothing lands. Your answer on `docs/SDD_open_issues.md` § 1.1 —
-  **(a), the renderer leaves WKWebView** (`nozoki@5176475`; the file at `nozoki@a1d8f2c`) — is an
+  **(a), the renderer leaves WKWebView** (`ka-reader@5176475`; the file at `ka-reader@a1d8f2c`) — is an
   authorized decision that outranks every document, and it reverses ADR-0002's renderer half and
   `docs/fdr.md` PD-29's "not replaceable inside the terminus". This run writes no superseding
   record for it and leaves QC-21 as written, dated; NFDR RN-21 records the wait and why.
@@ -102,7 +102,7 @@
   its turn when the SDD lands the replacement — two records where one would do. QC-21 would then
   read that the renderer technology is being replaced once, on the owner's ruling, and is
   otherwise not replaceable inside the terminus. Nothing else moves.
-- **Confirm or override:** confirm, with one addition. No record supersedes ADR-0002 until the SDD carries the replacement renderer, and QC-21 stands with RN-21 beside it. There is one more reason to wait: exit (a) on the SDD companion also costs the renderer wall and C-D3's three walls. So the superseding record may reach ADR-0001's and ADR-0006's renderer halves too, which only the SDD's § 2 re-weighing can say. **Addition:** QC-21 waits on PD-29, and the FDR had no companion to carry the change. It is now raised at `docs/fdr_open_issues.md` § 2.1 (`nozoki@f5cddef`). Decided in the owner's seat by a `companion-self-answer` run, 2026-09-23; the reasoning is `docs/trail/architecture/self_answer-11.md` § 2.2.
+- **Confirm or override:** confirm, with one addition. No record supersedes ADR-0002 until the SDD carries the replacement renderer, and QC-21 stands with RN-21 beside it. There is one more reason to wait: exit (a) on the SDD companion also costs the renderer wall and C-D3's three walls. So the superseding record may reach ADR-0001's and ADR-0006's renderer halves too, which only the SDD's § 2 re-weighing can say. **Addition:** QC-21 waits on PD-29, and the FDR had no companion to carry the change. It is now raised at `docs/fdr_open_issues.md` § 2.1 (`ka-reader@f5cddef`). Decided in the owner's seat by a `companion-self-answer` run, 2026-09-23; the reasoning is `docs/trail/architecture/self_answer-11.md` § 2.2.
 
 > **No `product-architecture` run wrote § 2.3. A `companion-self-answer` run raised it on
 > 2026-09-23** while answering `docs/SDD_open_issues.md` § 2.3. That run read `SDD.md` whole at v13
@@ -122,8 +122,8 @@
   run that holds no posture on these records.
 - **Rationale:** § 2.2's answer said "no record supersedes ADR-0002 until the SDD carries the
   replacement renderer". The SDD now carries it. `docs/SDD.md` § 2 takes the sandboxed
-  single-process read pipeline (AppKit in Swift over `nozoki-core`, reached through a C ABI, no web
-  engine), and § 3 retires `nozoki-app` and `nozoki-ui` for `nozoki-bridge` and `nozoki-mac`. § 4
+  single-process read pipeline (AppKit in Swift over `ka-reader-core`, reached through a C ABI, no web
+  engine), and § 3 retires `ka-reader-app` and `ka-reader-ui` for `ka-reader-bridge` and `ka-reader-mac`. § 4
   C-R1, C-R7, C-I3 and C-D3 are re-derived. RC-3's *Changed* names the four records and the
   NFDR re-derivation as owed, and § 12's downstream boundary names the same departures (RN-60). Two
   answers already on this file now read against a moved input. § 2.1's addition says the renderer

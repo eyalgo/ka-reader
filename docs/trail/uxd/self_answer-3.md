@@ -2,7 +2,7 @@
 
 ## Header
 
-- **Companion:** /Users/eyalgolan/products/nozoki/docs/UXD_open_issues.md
+- **Companion:** /Users/eyalgolan/products/ka-reader/docs/UXD_open_issues.md
 - **Document:** `docs/UXD.md` — the UXD, Draft at v8
 - **Decided by:** `decide_companion_answers.md` v1.0.0
 - **Date:** 2026-09-01
@@ -79,7 +79,7 @@ status line.
   image loads at all; the owner overrode the SDD's draft to load them
   (`docs/trail/sdd/cycle-1.md` § 2.4) and this document is silent. UX-I12 gains all three cases,
   and "remote" reads "outside the folder", which is what `docs/CONTENT.md`'s sentence already says
-  (*"Nozoki fetches nothing from outside this folder"*). *(4) The Git view carries an entry for the
+  (*"KA-Reader fetches nothing from outside this folder"*). *(4) The Git view carries an entry for the
   history* — `docs/SDD.md` S-8 opens the history *"by the entry the Git view carries for it"* and
   `docs/DESIGN.md` § Components draws `clock` for it; the UXD says only *"reached from the Git
   view"*, which does not say how. *(5) The row never falls back* — SRS FR-13 and FDR R-70 both
@@ -140,4 +140,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/UXD.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-uxd/launcher.sh nozoki`
+- **`docs/UXD.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-uxd/launcher.sh ka-reader`

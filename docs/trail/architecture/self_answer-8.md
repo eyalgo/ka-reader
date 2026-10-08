@@ -2,7 +2,7 @@
 
 ## Header
 
-- **Companion:** /Users/eyalgolan/products/nozoki/docs/architecture_open_issues.md
+- **Companion:** /Users/eyalgolan/products/ka-reader/docs/architecture_open_issues.md
 - **Document:** `adr/` and `nfdr.md` (`docs/adr/`, `docs/nfdr.md`) — the companion's own header names both
 - **Decided by:** `decide_companion_answers.md` v1.3.0
 - **Date:** 2026-09-19
@@ -34,8 +34,8 @@
   or reserved taste is involved, so it is answered in the owner's seat.
 
   *The item waited on an SDD item, and that item is closed.* The companion was written at 16:58 on
-  2026-09-19 (`nozoki@d9cbefc`). The SDD item was answered at 17:03 (`nozoki@9b4bfde`) and folded
-  by SDD run 6 at 19:37 (`nozoki@b3439e8`). `docs/SDD.md` is Settled at v6, and C-I3
+  2026-09-19 (`ka-reader@d9cbefc`). The SDD item was answered at 17:03 (`ka-reader@9b4bfde`) and folded
+  by SDD run 6 at 19:37 (`ka-reader@b3439e8`). `docs/SDD.md` is Settled at v6, and C-I3
   (`docs/SDD.md:L510-L538`) now states the observable: the operating system's report that the
   launched main process is sandboxed, with an out-of-grant read and an outbound connection denied,
   plus a no-entitlement control that must fail. § 10 RC-1 (`docs/SDD.md:L1871-L1908`) records the
@@ -102,13 +102,13 @@
   whether the gap is the SDD's instead, because C-R7 (`docs/SDD.md:L483-L488`) carries the same
   placeholder. It is not. The SDD is coherent on this: C-R7 states the target policy, and the
   slice bar that proves it by string equality sits in the first Markdown slice, "with the
-  `nozoki-asset` origin form found" (`docs/SDD.md:L1185-L1188`). The NFDR is the document that
+  `ka-reader-asset` origin form found" (`docs/SDD.md:L1185-L1188`). The NFDR is the document that
   promised a check which "fails when the obligation is broken" and then stated one no build can
   run. So the answer is this document's, in the owner's seat.
 
   *This is not a widening answered "not until it occurs".* The item cites an occurrence: the first
   build's test asserts equality with the string minus the scheme
-  (`crates/nozoki-app/tests/config.rs:L17`, `:L181-L183`), and `tauri.conf.json:L12` declares that
+  (`crates/ka-reader-app/tests/config.rs:L17`, `:L181-L183`), and `tauri.conf.json:L12` declares that
   string. Both were opened this run and read as the item says.
 
   *Why the interim string is derived and not chosen.* C-R7's *Violated by* is "any widening of
@@ -173,7 +173,7 @@
   sentence at its word.
 
   *Why a machine check and not a review gate.* The floor's own test is whether the primitives are
-  enumerable. They are. Measured this run: `cargo tree -p nozoki-app --target aarch64-apple-darwin
+  enumerable. They are. Measured this run: `cargo tree -p ka-reader-app --target aarch64-apple-darwin
   -e normal --locked` resolves 216 crates, and a grep of their `src/` for `env::var`, `var_os`,
   `vars`, `args` and `args_os`, leaving out `build.rs`, hits 17 of them. That count is textual. It
   includes test modules, code gated to other platforms, and proc-macro crates that run at build
@@ -224,7 +224,7 @@ actor.
 
 **Seen in the document and not raised.** `docs/nfdr.md:L33-L36` says every command it names is
 "one the SDD names for a product that has no code yet". The product has code since
-`nozoki@00e1bf1`. The clause that a reader acts on still holds: a command becomes executable in
+`ka-reader@00e1bf1`. The clause that a reader acts on still holds: a command becomes executable in
 the change that lands its script, and until then the gate is `development-design` reading the
 entry. `checks/` holds `bundle.sh` and `tests` and no `structure.sh` today. No item was raised for
 this, for two reasons. An item raised by this run keeps its slot empty, so it would hold the
@@ -241,4 +241,4 @@ these items touch, already states 3.1's observable at v6, and 3.2 and 3.3 rest o
 
 ## Launchers owed
 
-- **`adr/` and `nfdr.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/skill/launcher.sh product-architecture nozoki`
+- **`adr/` and `nfdr.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/skill/launcher.sh product-architecture ka-reader`

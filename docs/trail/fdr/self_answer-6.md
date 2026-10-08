@@ -9,7 +9,7 @@
 - **Sources re-read:** None. No answer rests on a source outside this repository. Both rest on
   `docs/fdr.md` v9 read whole, `docs/SDD.md` v20, `docs/CONTENT.md` v7, `docs/UXD.md` v10,
   `docs/nfdr.md` v17, `docs/architecture_open_issues.md`, `docs/trail/sdd/cycle-15.md`,
-  `docs/trail/sdd/self_answer-26.md`, the product tree at `nozoki@46bb275` and the git history, each
+  `docs/trail/sdd/self_answer-26.md`, the product tree at `ka-reader@46bb275` and the git history, each
   read on disk this run.
 
 ## Items worked
@@ -36,10 +36,10 @@
     (`docs/CONTENT.md:L306-L314`). R-94 is therefore the one line in the definition set naming a
     string, and it names one the standard it defers to does not fix — which is what FDR RN-14's v9
     re-read also found (`docs/fdr.md:L408`).
-  - **Check 3 — nothing settled contradicts the confirm.** The product at `nozoki@46bb275` draws a
+  - **Check 3 — nothing settled contradicts the confirm.** The product at `ka-reader@46bb275` draws a
     `pending` row with its name and glyph and no word
-    (`nozoki-mac/Sources/Surfaces/RootItemsView.swift:L161-L170`, asserted by
-    `nozoki-mac/Tests/SurfacesTests/RootItemsViewTests.swift:L96-L115`), which a literal R-94 would
+    (`ka-reader-mac/Sources/Surfaces/RootItemsView.swift:L161-L170`, asserted by
+    `ka-reader-mac/Tests/SurfacesTests/RootItemsViewTests.swift:L96-L115`), which a literal R-94 would
     make a defect and the confirmed R-94 does not. The re-run rule that kept R-94 as written at v9
     (`<CORE>/prompts/principal_pm_create_fdr.md` § *On a re-run*, "change the FDR only if the owner
     answers") is met by this answer — it is the owner answer the rule waits for.
@@ -59,7 +59,7 @@
   - **Failure paths.** *Stale:* CONTENT re-words its *Loading* sentence — R-94 points and does not
     copy, so it stays true; that is the reason for the pointer form. *Absent:* today no expandable
     tree exists to carry the sentence for a collapsed folder — the open station's reached-when is
-    where it arrives (`system/projects/nozoki/journey/shukuba/2026-09-24_the-whole-tree.md` § *What
+    where it arrives (`system/projects/ka-reader/journey/shukuba/2026-09-24_the-whole-tree.md` § *What
     it is*, "A folder not yet read shows *Reading this folder.*"), so the confirmed R-94 is a bar the
     station is walking, not a defect in HEAD. *Refused:* a fault is R-91's and CONTENT's "a stopped
     read is never dressed as a pending one" (`docs/CONTENT.md:L276`); the answer does not reach it.
@@ -76,7 +76,7 @@
     The decision underneath — that the check compares spellings outside the grant and refuses three
     spellings that may lead in, and that their row sentence is wrong about where the link leads — was
     made in the owner's seat at `docs/trail/sdd/cycle-15.md` § 5.1 and folded into the SDD, Settled at
-    v20 (`nozoki@4b9425b`). The FDR follows the SDD here; nothing new is committed to anyone.
+    v20 (`ka-reader@4b9425b`). The FDR follows the SDD here; nothing new is committed to anyone.
   - **The draft is sound.** The re-run rule admits an upstream change as a delta and requires it
     surfaced as a finding (`<CORE>/prompts/principal_pm_create_fdr.md:L469-L471`); RN-34 does both.
     The SDD moved six times, runs 13 – 18, 550 insertions and 78 deletions
@@ -95,7 +95,7 @@
     the cycle, and the volume-root case. `Inputs read: SDD Settled` is true — `docs/SDD.md:L3` reads
     Settled — and RN-33's stale case is walked at RN-18 (`:L412`).
   - **Check 3.** R-101 (`:L188`) is what R-183 rests on and it is unchanged. R-152's cycle for
-    `self → ../NOZOKI` is cycle-15's own reading. R-59's "symbolic links followed" (`:L126`) is
+    `self → ../KA-READER` is cycle-15's own reading. R-59's "symbolic links followed" (`:L126`) is
     consistent: links are resolved at positions inside the grant. The v9 note on § 2.1 says no hunk
     falls on C-E1; checked — the `@@ -822` hunk is on C-E4 in v13's numbering (C-E1 sat at
     `5003426:docs/SDD.md` five lines into the § 4 C-E block, C-E4 at line 815 onward), so that holds
@@ -117,7 +117,7 @@
     Principal Architect run has read the moved row, `nfdr.md` reads Settled, and its one open channel is
     `docs/architecture_open_issues.md`, which named QC-4 and not QC-6. `docs/trail/sdd/self_answer-26.md`
     § Companions opened deferred raising it until "the SDD's fold" existed; it does now. So the run
-    appended § 2.1 there (`nozoki@9cfb727`) — under § *Companions opened* below — and the slot names it.
+    appended § 2.1 there (`ka-reader@9cfb727`) — under § *Companions opened* below — and the slot names it.
   - **Failure paths.** *Stale:* the SDD moves again — RN-34's pattern re-derives. *Concurrent:* QC-6's
     fold and this one are order-independent, since R-34 is unchanged and R-183/R-184 are additive.
     *Empty:* a viewed folder that is the root of its volume is R-184's third spelling. *Refused:* the
@@ -145,5 +145,5 @@ None this run.
 
 ## Launchers owed
 
-- **`fdr.md`** — `/Users/eyalgolan/.kensaiapp/pins/20260925T191701Z-hwtvc7/core/launchers/skill/launcher.sh product-fdr nozoki`
-- **`adr/` and `nfdr.md`** — `/Users/eyalgolan/.kensaiapp/pins/20260925T191701Z-hwtvc7/core/launchers/skill/launcher.sh product-architecture nozoki`
+- **`fdr.md`** — `/Users/eyalgolan/.kensaiapp/pins/20260925T191701Z-hwtvc7/core/launchers/skill/launcher.sh product-fdr ka-reader`
+- **`adr/` and `nfdr.md`** — `/Users/eyalgolan/.kensaiapp/pins/20260925T191701Z-hwtvc7/core/launchers/skill/launcher.sh product-architecture ka-reader`

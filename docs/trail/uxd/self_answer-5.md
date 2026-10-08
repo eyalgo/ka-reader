@@ -17,7 +17,7 @@ This report records the CDO's decision for the owner and the next `product-uxd` 
 
 - **Bucket:** 2. Choices to confirm — the CDO drafted a best-effort answer; confirm or override
 - **Verdict:** confirmed
-- **Why:** Confirm the proposed inventory correction: § 4 says seven images and three later unannotated images, while the reference owner states eight, split into four annotated and four described-only images (`docs/UXD.md:L68-L74`; `docs/ux_reference/README.md:L3-L19`). The on-disk check agrees: `rg --files /Users/eyalgolan/products/nozoki/docs/ux_reference -g '*.png' | wc -l` returned `8` on 2026-10-02. Reasoning: this is the UXD's factual accounting, so the CDO can settle it without making an owner's taste, risk or external commitment decision.
+- **Why:** Confirm the proposed inventory correction: § 4 says seven images and three later unannotated images, while the reference owner states eight, split into four annotated and four described-only images (`docs/UXD.md:L68-L74`; `docs/ux_reference/README.md:L3-L19`). The on-disk check agrees: `rg --files /Users/eyalgolan/products/ka-reader/docs/ux_reference -g '*.png' | wc -l` returned `8` on 2026-10-02. Reasoning: this is the UXD's factual accounting, so the CDO can settle it without making an owner's taste, risk or external commitment decision.
 
   Preserve RN-13's seven-image read as history and add the current inventory beside it, as proposed; RN-13 explicitly records what that revision opened and why those three additions moved no entry (`docs/UXD.md:L626-L650`). Reasoning: changing its historical count would falsely claim that revision read the eighth image. The new inventory grants that image no design authority: the reference explicitly leaves its adoption open (`docs/ux_reference/README.md:L214-L219`). The existing flow and screen requirements therefore take no change from this answer (`docs/UXD.md:L175-L199` and `docs/UXD.md:L240-L241`). No split or upstream companion is needed: inventory and image adoption are separable, and this item proposes only the former (`docs/UXD_open_issues.md:L36-L49`).
 
@@ -37,4 +37,4 @@ None this run.
 
 ## Launchers owed
 
-- **docs/UXD.md** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/skill/launcher.sh product-uxd nozoki`
+- **docs/UXD.md** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/skill/launcher.sh product-uxd ka-reader`

@@ -8,9 +8,9 @@
 - **Date:** 2026-09-25
 - **Sources re-read:** None. No answer here rests on a source outside this repository. The one
   platform behaviour the answer relies on, that this Mac's volume and `macos-14`'s resolve
-  `../<NAME>` to the granted folder, is the item's own measurement on `nozoki@46bb275`. That
+  `../<NAME>` to the granted folder, is the item's own measurement on `ka-reader@46bb275`. That
   measurement is recorded in
-  `system/projects/nozoki/journey/tobiishi/trail/2026-09-24_the-root-in-order/code-integrity-report.md`
+  `system/projects/ka-reader/journey/tobiishi/trail/2026-09-24_the-root-in-order/code-integrity-report.md`
   § Observations for their owners. This run did not measure it again.
 
 ## Items worked
@@ -36,7 +36,7 @@
   directory lookup. § 4 C-D1's *Violated by* names "any read outside the granted folder and the
   app's own container" (`docs/SDD.md:L778-L779`). `docs/nfdr.md` QC-35 enforces the same line
   (`docs/nfdr.md:L579-L580`). The reader already states it as its own rule: "without a filesystem
-  call on any path outside the root" (`crates/nozoki-core/src/fs_reader.rs:L175`). So the first
+  call on any path outside the root" (`crates/ka-reader-core/src/fs_reader.rs:L175`). So the first
   reading is the rule.
 
   The question also hides a second one, whether "compare spellings" means byte-equal. It does not
@@ -50,7 +50,7 @@
     (`docs/fdr.md:L84`), and R-151 says one to a folder inside it expands (`docs/fdr.md:L85`).
     `../<NAME>/docs` on a case-folding volume targets a folder inside, and exact spelling refuses
     it as `Outside`.
-  - The row sentence for `Outside` is "This link leads outside the folder you opened, so Nozoki
+  - The row sentence for `Outside` is "This link leads outside the folder you opened, so KA-Reader
     doesn't read it." (`docs/CONTENT.md:L332`). For `back → ../<NAME>` that states a destination
     the tool did not observe, which § 4 C-E4 forbids ("never a cause the tool did not observe").
     The item cites UX-I4 for the same point.
@@ -86,7 +86,7 @@
     then on another volume whose case rule cannot be read from inside, so the spelling is compared
     as written and the path is `Outside`. This case is named in the answer.
   - **Absent:** the path climbs more than one level and comes back in another case, for example
-    `../../PROJECTS/nozoki`. The grandparent's volume cannot be read from inside either, so this
+    `../../PROJECTS/ka-reader`. The grandparent's volume cannot be read from inside either, so this
     case is named too.
   - **Absent:** a Unicode-normalization difference is compared as spelled. It is § 11 R-10's
     already-named class, and it is named too.
@@ -127,4 +127,4 @@ target and no longer reaches the `Outside` sentence.
 
 ## Launchers owed
 
-- **`docs/SDD.md`** — `<CORE>/launchers/product-sdd/launcher.sh nozoki`
+- **`docs/SDD.md`** — `<CORE>/launchers/product-sdd/launcher.sh ka-reader`

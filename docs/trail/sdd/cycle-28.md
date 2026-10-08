@@ -1,4 +1,4 @@
-# SDD open issues — Nozoki
+# SDD open issues — KA-Reader
 
 > Companion to `SDD.md`. The CTO wrote the SDD; this file holds what that run could not settle from
 > its inputs (the PRD, the SRS, the UXD, and any context or constraints), and the calls that are the
@@ -33,7 +33,7 @@
 
 
 > **No `product-sdd` run wrote this file.** The PM opened it on 2026-10-04 from the SDD's own companion
-> template. From `nozoki@129586e` the shell calls `nozoki_read_git`, so the release executable links
+> template. From `ka-reader@129586e` the shell calls `ka_reader_read_git`, so the release executable links
 > the export. Two statements of the SDD say no Swift source calls it and no such build has been read.
 > The SDD is Settled, and with no companion on disk a `product-sdd` re-run reads it as done and has
 > nothing to act on. Its two items are in § 5.
@@ -60,44 +60,44 @@ None.
 
 ## 5. Raised from downstream — an item from a seat that did not write the SDD
 
-### 5.1 § 4 C-I3 says the `nm` read has not met an executable that links `nozoki_read_git`; it has, and it passes
+### 5.1 § 4 C-I3 says the `nm` read has not met an executable that links `ka_reader_read_git`; it has, and it passes
 - **Raised by:** PM — 2026-10-04
 - **Seat:** cto
-- **Tracked by:** `nozoki · nemawashi · 2026-10-02_git-says-what-changed`
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-02_git-says-what-changed`
 - **What it blocks:** nothing fails. A reader of C-I3 learns the transport claim is unproved for the
   linked export, and it now is.
 - **Where it shows:** § 4 C-I3, the transport-read sentences (`docs/SDD.md:L771-L775`): "It has not met
-  one that links the `nozoki_read_git` export: the same `nm` output holds no `_nozoki_read_git`, and no
-  Swift source calls it." At `nozoki@129586e`, `nozoki-mac/Sources/Nozoki/NativeBridge.swift:L26`
-  calls `nozoki_read_git()`. Measured 2026-10-04 at that commit: `nozoki-mac/assemble.sh` exits 0;
-  `nm` on `target/release/bundle/macos/Nozoki.app/Contents/MacOS/Nozoki` holds `_nozoki_read_git`; and
+  one that links the `ka_reader_read_git` export: the same `nm` output holds no `_ka_reader_read_git`, and no
+  Swift source calls it." At `ka-reader@129586e`, `ka-reader-mac/Sources/KAReader/NativeBridge.swift:L26`
+  calls `ka_reader_read_git()`. Measured 2026-10-04 at that commit: `ka-reader-mac/assemble.sh` exits 0;
+  `nm` on `target/release/bundle/macos/KA-Reader.app/Contents/MacOS/KAReader` holds `_ka_reader_read_git`; and
   `checks/view.sh` exits 0, printing "links no WebKit or JavaScriptCore and carries no Git transport —
   nothing found". The likely fold: the read has met the executable that links the export, from
-  `nozoki@129586e`, and passed.
+  `ka-reader@129586e`, and passed.
 - **If a document has to be written:** none. C-I3's transport-read sentences in `SDD.md`.
 - **Answer:** Take the likely fold, with four additions. Answered in the CTO's seat by an
   unattended `companion-self-answer` run on 2026-10-04, which rebuilt the bundle and re-ran the
   read before answering.
-  **The fold.** C-I3's sentences "It has not met one that links the `nozoki_read_git` export: the
-  same `nm` output holds no `_nozoki_read_git`, and no Swift source calls it" and "The read runs on
+  **The fold.** C-I3's sentences "It has not met one that links the `ka_reader_read_git` export: the
+  same `nm` output holds no `_ka_reader_read_git`, and no Swift source calls it" and "The read runs on
   every build, so it meets that executable in the build where `mac-shell` first calls the export,
-  with nothing further owed" stop being true at `nozoki@129586e`. They are replaced by the
+  with nothing further owed" stop being true at `ka-reader@129586e`. They are replaced by the
   measurement: the read has met the executable that links the export, and it passed.
-  **(1) The measurement C-I3 carries.** This run's own, at `nozoki@cfcbedf`, whose tree outside
-  `docs/` is the tree at `nozoki@129586e` (`git diff --quiet 129586e HEAD -- . ':!docs'` exits 0):
-  `nozoki-mac/assemble.sh` exits 0, and `checks/view.sh` exits 0 on the bundle it built, printing
+  **(1) The measurement C-I3 carries.** This run's own, at `ka-reader@cfcbedf`, whose tree outside
+  `docs/` is the tree at `ka-reader@129586e` (`git diff --quiet 129586e HEAD -- . ':!docs'` exits 0):
+  `ka-reader-mac/assemble.sh` exits 0, and `checks/view.sh` exits 0 on the bundle it built, printing
   "38 Swift files scanned" and "links no WebKit or JavaScriptCore and carries no Git transport —
-  nothing found". `nm` on that executable prints `T _nozoki_read_git`, `_git_repository_open_ext`
+  nothing found". `nm` on that executable prints `T _ka_reader_read_git`, `_git_repository_open_ext`
   and `_git_status_list_new`, 781 defined `_git_` symbols by the `awk` command C-I3 already
   carries, no `git_smart_subtransport_` symbol, and no undefined `_connect`, `_socket` or
-  `_getaddrinfo`. The measurement at `nozoki@0aab3e7` stays as a dated earlier one.
+  `_getaddrinfo`. The measurement at `ka-reader@0aab3e7` stays as a dated earlier one.
   **(2) Where the read ran.** On the owner's machine, twice. No hosted runner has read this build:
   `main` is ahead of `origin/main`, and the newest CI run is dated 2026-10-02. C-I3 says so beside
   the measurement, and says that CI runs the same script after `assemble.sh` on every push
   (`.github/workflows/ci.yml:L41`, `:L51`).
   **(3) C-R6 points at C-I3's executable.** C-R6 names three defined symbols the pattern does not
   match, read on "the executable C-I3's transport-read sentences name"
-  (`docs/SDD.md:L641-L645`). The executable built at `nozoki@129586e` still defines all three, so
+  (`docs/SDD.md:L641-L645`). The executable built at `ka-reader@129586e` still defines all three, so
   C-R6's sentence holds once C-I3 names the new executable; its date is re-pinned to this read.
   **(4) What stays scoped.** "The claim is proved for one executable" keeps its form: the claim is
   proved for each executable the read has met, and for no later one until the read meets it. What
@@ -107,19 +107,19 @@ None.
 ### 5.2 § 11 R-15 says the build that links the export has not been read; it has been read, and it passes
 - **Raised by:** PM — 2026-10-04
 - **Seat:** cto
-- **Tracked by:** `nozoki · nemawashi · 2026-10-02_git-says-what-changed`
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-02_git-says-what-changed`
 - **What it blocks:** nothing fails. R-15 reads as open for want of a measurement that now exists.
 - **Where it shows:** § 11 R-15 (`docs/SDD.md:L2803-L2805`): "That executable does not link the
-  `nozoki_read_git` export, which no Swift source calls, so the build that links the export has not
-  been read and this risk is not closed." The first build that links it is `nozoki@129586e`, and its
+  `ka_reader_read_git` export, which no Swift source calls, so the build that links the export has not
+  been read and this risk is not closed." The first build that links it is `ka-reader@129586e`, and its
   read passes (the measurement in § 5.1). Whether R-15 closes on one passing build or is kept is the
   CTO's call.
 - **If a document has to be written:** none. R-15's sentence in `SDD.md`.
 - **Answer:** R-15 is kept and restated. It is not closed. Answered in the CTO's seat by an
   unattended `companion-self-answer` run on 2026-10-04.
-  **What is corrected.** "That executable does not link the `nozoki_read_git` export, which no
+  **What is corrected.** "That executable does not link the `ka_reader_read_git` export, which no
   Swift source calls, so the build that links the export has not been read and this risk is not
-  closed" is false from `nozoki@129586e`. R-15 says instead that the build that links the export
+  closed" is false from `ka-reader@129586e`. R-15 says instead that the build that links the export
   has been read and passes both halves, and points at C-I3's transport-read sentences for the
   measurement, as it does now (§ 5.1's answer carries the measurement).
   **Why it is not closed.** One passing build answers the question R-15 was holding open: whether
@@ -133,9 +133,9 @@ None.
   change that calls libgit2 code beyond the open and the status read.
   **Two clauses that described a moment now past.** *Shows up as* names "the first release build
   whose executable links a Git export, which is the build in which `mac-shell` first calls
-  `nozoki_read_git`". That build was read and was not red. The clause now reads: the `nm` read
+  `ka_reader_read_git`". That build was read and was not red. The clause now reads: the `nm` read
   turning red on any release build. *Response* reads "a re-cut recorded in § 10 before anything
-  is built on that export". The Git view is built on it from `nozoki@129586e`. The response keeps
+  is built on that export". The Git view is built on it from `ka-reader@129586e`. The response keeps
   its substance and names a moment that can still be met: the change whose build turns the read
   red does not land until the re-cut is recorded in § 10. The last two sentences of R-15, on
   whose call it is to state the claim lower (`docs/fdr.md` PD-27), stay word for word.

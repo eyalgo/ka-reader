@@ -1,4 +1,4 @@
-# PRD open issues — Nozoki 覗き
+# PRD open issues — KA-Reader
 
 > Companion to `PRD.md`. **Answer inline** — fill each **Answer** /
 > **Confirm-or-override** slot — **commit this file**, then re-run `product-prd`. It folds

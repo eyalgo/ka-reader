@@ -1,0 +1,23 @@
+[package]
+name = "ka-reader-bridge"
+version = "0.0.0"
+edition = "2024"
+
+# The static library the native shell links, and an rlib so `cargo test` can build the crate's own tests.
+[lib]
+crate-type = ["staticlib", "rlib"]
+
+# Restated, not inherited: cargo refuses to override one workspace lint on top of `workspace = true`.
+# `unsafe_code` is the only lint the workspace sets. This crate relaxes it because the C ABI needs
+# un-mangled exports, the raw pointers they take, and (Task 7) the load-time initializer's link
+# section. It is the only manifest that does (CP-93); every other crate keeps the workspace's `forbid`.
+[lints.rust]
+unsafe_code = "allow"
+
+[dependencies]
+log = "0.4.34"
+ka-reader-core = { version = "0.0.0", path = "../ka-reader-core" }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
+libc = "0.2.189"
+git2 = { version = "0.21.0", default-features = false }

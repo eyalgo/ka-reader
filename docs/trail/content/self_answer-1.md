@@ -15,7 +15,7 @@
 - **Verdict:** confirmed with addition
 - **Why:** The drafted repair is right and, unusually for this defect, right exactly as written.
   `docs/content_trail/` and `docs/prd_trail/` do not exist; the answer-trails moved to
-  `docs/trail/<x>/` at `nozoki@1e8bf3d`, which updated no citing document. Everything the item claims
+  `docs/trail/<x>/` at `ka-reader@1e8bf3d`, which updated no citing document. Everything the item claims
   about *this* document verifies on disk (2026-09-01), which is worth stating because the same item's
   claims about its siblings did not.
 
@@ -55,7 +55,7 @@
   repair is executed. **Check 3.** Nothing the document states changes; only where it points. It
   agrees with the four sibling answers already given (same rule, same pinned exception). The writing
   bar's *"a change to a settled statement … is recorded in that document, with the reason that
-  authorized it"* (`system/doctrine/writing_bar.md`) is met by the fold naming `nozoki@1e8bf3d` on the
+  authorized it"* (`system/doctrine/writing_bar.md`) is met by the fold naming `ka-reader@1e8bf3d` on the
   version line. **Check 4.** *Concurrent:* if a sweep repairs the file before `product-content`
   re-runs, the fold meets an already-repaired document and the confirmed item folds as a no-op —
   clean either way. *Stale:* nothing here stops a second folder move doing this again; no
@@ -75,15 +75,15 @@ None this run — the companion carried one item and it was open.
 
 ### 2.2 — RN-24 cites a file outside this repository, which RN-15 rules this document never does
 
-- **What the document is owed:** RN-24 cites `system/projects/nozoki/agari.md` for the wording of the
+- **What the document is owed:** RN-24 cites `system/projects/ka-reader/agari.md` for the wording of the
   read-only promise, and that file is not in this repository — it is in the kensaiapp-opensource
   instance repo. RN-15 of the same document rules that it cites only files a reader who cloned this
   repository can open.
 - **Why it is worth a cycle:** the prompt's *"It contradicts a document it must agree with"*
   (`decide_companion_answers.md` § The items are not the whole of what a document is owed), in its
   sharpest form — the document contradicts itself, one note breaking a rule another note states.
-  Verified 2026-09-01: absent from `nozoki`, present at
-  `kensaiapp-opensource/system/projects/nozoki/agari.md`, and the only `system/` pointer in the file.
+  Verified 2026-09-01: absent from `ka-reader`, present at
+  `kensaiapp-opensource/system/projects/ka-reader/agari.md`, and the only `system/` pointer in the file.
   It is not taste: the dead pointer authorizes the wording of the product's defining promise, and the
   reader who cannot follow it is the stranger with nobody to ask that RN-15 was written for. The cycle
   is already open for § 2.1, so it costs no run of its own.
@@ -104,4 +104,4 @@ own companion (§ Raised on this document) rather than elsewhere.
 
 ## Launchers owed
 
-- **`docs/CONTENT.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-content/launcher.sh nozoki`
+- **`docs/CONTENT.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-content/launcher.sh ka-reader`

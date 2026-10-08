@@ -6,9 +6,9 @@
 - **Document:** `docs/adr/` and `docs/nfdr.md` (NFDR v28, Settled)
 - **Decided by:** `decide_companion_answers.md` v1.3.0
 - **Date:** 2026-10-03
-- **Sources re-read:** None. Every answer rests on files in this repository at `nozoki@bf9b90c`:
+- **Sources re-read:** None. Every answer rests on files in this repository at `ka-reader@bf9b90c`:
   `docs/nfdr.md`, `docs/SDD.md`, `docs/adr/0016-physical-unit-set-core-bridge-mac-checks.md`,
-  `crates/nozoki-core/src/` and `checks/structure.sh`.
+  `crates/ka-reader-core/src/` and `checks/structure.sh`.
 
 ## Items worked
 
@@ -18,7 +18,7 @@
 - **Verdict:** answered
 - **Why:** Reading (a). QC-11 stands and the edge goes. The question is not widening: it asks which
   of two settled statements governs an edge that exists, and the item cites where the edge is
-  (`crates/nozoki-core/src/fs_reader.rs:L14`).
+  (`crates/ka-reader-core/src/fs_reader.rs:L14`).
 
   *Whose it is (check 1).* It belongs to the constraint set, so it is this seat's to answer in the
   owner's place. Nothing in the answer commits a person or carries a risk. It only keeps the NFDR,
@@ -45,7 +45,7 @@
   `fs-reader` into the model would contradict it. Granting (b) would therefore need the SDD to
   change first, which is the CTO's call, and nothing in SM-1 asks for that. ADR-0016 binds only the
   four units and the cross-crate rules (`docs/adr/0016-physical-unit-set-core-bridge-mac-checks.md:L32-L41`),
-  not edges inside `nozoki-core`, so no record has to be superseded. Reading (a) contradicts nothing.
+  not edges inside `ka-reader-core`, so no record has to be superseded. Reading (a) contradicts nothing.
 
   *Where the type goes.* The item's (a) suggests a module of no part, as `language` is. I answer
   with `fs-reader` instead. That home needs no new rule, matches where the other five SM-1 types
@@ -54,8 +54,8 @@
   spelling remains the developer's (`docs/nfdr.md:L56-L57`). The constraint the answer sets is "not
   in `folder-model`, and somewhere `fs-reader` may import".
 
-  *Failure paths (check 4).* **Absent:** the bridge imports `nozoki_core::OpenFailure`
-  (`crates/nozoki-bridge/src/session.rs:L9`). The move keeps `lib.rs`'s `pub use` path, so the
+  *Failure paths (check 4).* **Absent:** the bridge imports `ka_reader_core::OpenFailure`
+  (`crates/ka-reader-bridge/src/session.rs:L9`). The move keeps `lib.rs`'s `pub use` path, so the
   bridge does not change and SM-4's returns do not change. **Stale:** until the change that moves
   the type lands, `checks/structure.sh` keeps listing the clause as not held (`:L157-L161`), and
   its gate stays the `development-design` review, as the NFDR's header rule says
@@ -88,7 +88,7 @@ None this run.
 
 ### 2.1 — § 1.2 says "may import" is the whole allowed set, but every part in the core imports `language`, a module of no part, and only the script says that is allowed
 
-- **What the document is owed:** a § 1.2 entry stating that a value module of `nozoki-core` that is
+- **What the document is owed:** a § 1.2 entry stating that a value module of `ka-reader-core` that is
   no SDD part may be imported by any part without that being an edge, and that such a module imports
   no part. `checks/structure.sh` would gain the matching finding.
 - **Why it is worth a cycle:** *It contradicts a document it must agree with* — here the record and
@@ -111,4 +111,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture nozoki`
+- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture ka-reader`

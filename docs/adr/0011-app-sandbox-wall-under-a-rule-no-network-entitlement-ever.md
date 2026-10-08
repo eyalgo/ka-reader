@@ -68,7 +68,7 @@ security-scoped bookmark re-opened without asking. Once the selector exists, lau
 last-viewed folder from its bookmark and presents the panel only when nothing is remembered or the
 bookmark no longer resolves. A path that does not exist, is not a folder, or cannot be read is
 reported in the app's window, never on a terminal (`docs/SDD.md` § 4 C-R3; owner-confirmed with the
-per-folder reconciliation, `nozoki@70a879a:docs/trail/sdd/cycle-1.md` § 2.3).
+per-folder reconciliation, `ka-reader@70a879a:docs/trail/sdd/cycle-1.md` § 2.3).
 
 **What the rule is known to cost.** Under it the system WKWebView does not start in this bundle
 (`docs/SDD.md` § 10 RC-2). Which gives way — the renderer ADR-0002 names, or nothing — was the
@@ -104,7 +104,7 @@ runs has a network profile of its own (`docs/SDD.md` § 4 C-R2).
   the file a reviewer reads, and a README proof sentence the harness could not back
   (`docs/SDD.md` RN-58).
 - **No sandbox, with a typed path or a launch argument as the start** — ADR-0003's first
-  alternative, not taken at `nozoki@70a879a:docs/trail/sdd/cycle-1.md` § 2.3 and refused again as
+  alternative, not taken at `ka-reader@70a879a:docs/trail/sdd/cycle-1.md` § 2.3 and refused again as
   exit (d) on the SDD's companion: the read-only entitlement goes and the OS wall goes with it.
 - **Waiting for Apple to drop the check** — WebKit's own FIXME says the check goes "once WebKit can
   work without network access"; the radar is from 2019, the file is unchanged since 2026-01-29, and
@@ -145,10 +145,10 @@ from documents, one has since been measured — the sandbox is enforced under an
 
 ## Traces to
 
-- `docs/SDD.md` at v12 (`nozoki@6ebdc42`, Draft) — § 1, the read-only bullet; § 4 C-R2 (the rule,
+- `docs/SDD.md` at v12 (`ka-reader@6ebdc42`, Draft) — § 1, the read-only bullet; § 4 C-R2 (the rule,
   and "departs from ADR-0003 on the one word *exactly*"), C-R3; § 10 RC-2; § 12, the downstream
   boundary; § SDD Review Notes RN-51, RN-52, RN-56, RN-58 — the SDD this record was drafted against.
-  Re-read at v13 (`nozoki@b236e7b`, Draft) for acceptance: C-R2 names this record and says ADR-0003
+  Re-read at v13 (`ka-reader@b236e7b`, Draft) for acceptance: C-R2 names this record and says ADR-0003
   is the record in force until it is Accepted; § 10 RC-3 § *Retained* keeps "the sandbox wall,
   C-R2's rule and the entitlement set" unchanged under the re-cut, so nothing in § Decision moves
   for it, and the dated paragraph on what the rule cost reads the replacement as the SDD now carries
@@ -159,7 +159,7 @@ from documents, one has since been measured — the sandbox is enforced under an
   the three seats' priced exits; `docs/trail/sdd/self_answer-19.md`, `self_answer-20.md`.
 - ADR-0003 — the record this one supersedes; its decision is restated here whole, so nothing in
   this record depends on that one being open. Its traces stand under this record:
-  `nozoki@70a879a:docs/trail/sdd/cycle-1.md` § 2.3; `docs/SRS.md` § 4.2 NFR-4, § 4.3 NFR-5, NFR-8,
+  `ka-reader@70a879a:docs/trail/sdd/cycle-1.md` § 2.3; `docs/SRS.md` § 4.2 NFR-4, § 4.3 NFR-5, NFR-8,
   NFR-9, § 3.1 FR-2, FR-3; `docs/fdr.md` R-3, R-4, R-5, R-7, R-8, R-21, R-98, PD-7, PD-14, OOS-19.
 - Apple's two entitlement pages, cited above as ADR-0003 and C-R2 cite them. The WebKit sources —
   `XPCServiceEntryPoint.mm` at `bb75cbc0003033ea73c42ef02370767aa52d6ba6`,

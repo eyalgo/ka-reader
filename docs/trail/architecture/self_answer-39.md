@@ -32,12 +32,12 @@ written for the `product-architecture` run that folds the answers.
   nowhere else. It changes what the tail says about where the check stands. It does not change what
   the entry forbids. It binds no person and no outside party.
 
-  *Check 2 — the draft, re-measured at `nozoki@566558b`.*
+  *Check 2 — the draft, re-measured at `ka-reader@566558b`.*
   - The script still lists the clause as not held: "QC-11's … 'only `git-reader` imports the libgit2
     binding' outside the three units' files" (`checks/structure.sh:L257-L258`).
   - `git log --oneline 8edec4f..HEAD -- checks/structure.sh` prints only `48308ff` and `0a095f9`,
     the probe change. The switch's change, `392177d`, did not touch the script.
-  - `grep -rln git2 crates/nozoki-bridge` prints `Cargo.toml`, `tests/search_path.rs` and
+  - `grep -rln git2 crates/ka-reader-bridge` prints `Cargo.toml`, `tests/search_path.rs` and
     `src/machine_config.rs`. That matches the tail's three files, so the bound holds today by review.
   - The SDD sentence the item cites reads as quoted. In `see-git-status`'s *Reached when*, command
     half, `checks/structure.sh` finds the libgit2 import "in `git-reader` alone, with the one
@@ -61,7 +61,7 @@ written for the `product-architecture` run that folds the answers.
   libgit2 binding in those calls and their test and nowhere else" (`docs/SDD.md:L335`). Nothing moves
   upstream.
 
-  *Check 4 — the failure paths.* Stale: the three-file list is pinned to `nozoki@392177d`. A fourth
+  *Check 4 — the failure paths.* Stale: the three-file list is pinned to `ka-reader@392177d`. A fourth
   bridge file that names `git2` is caught by review at `development-design` and not by a command, and
   the tail says the gate is review. Absent: if the rule never reaches the script, the entry still has
   a named gate. Concurrent: two changes in flight, one adding a `git2` file to the bridge before the
@@ -124,11 +124,11 @@ written for the `product-architecture` run that folds the answers.
   so a reader asks why Git state is pulled. A real trade-off: RC-4 *Stopped* gives two options up
   for stated reasons (`docs/SDD.md:L2658-L2661`). All three hold.
 
-  *ADR-0021's evidence, re-measured at `nozoki@566558b`.* `nozoki_read_git` is at
-  `crates/nozoki-bridge/src/exports.rs:L105`. The export test's admitted array is at
-  `crates/nozoki-bridge/tests/exports.rs:L17-L23` and holds it. `grep -rn nozoki_read_git nozoki-mac`
+  *ADR-0021's evidence, re-measured at `ka-reader@566558b`.* `ka_reader_read_git` is at
+  `crates/ka-reader-bridge/src/exports.rs:L105`. The export test's admitted array is at
+  `crates/ka-reader-bridge/tests/exports.rs:L17-L23` and holds it. `grep -rn ka_reader_read_git ka-reader-mac`
   prints nothing. The three earlier exports sit at `:L55`, `:L73` and `:L90`. The read-once rule is
-  at `crates/nozoki-bridge/src/session.rs:L649-L653`: the doc comment starts at `:L649` and the
+  at `crates/ka-reader-bridge/src/session.rs:L649-L653`: the doc comment starts at `:L649` and the
   record cites `:L650-L653`, which is close enough to find it and is not worth a change.
 
   *The addition.* ADR-0021's *Traces to* cites this item as "`docs/architecture_open_issues.md`
@@ -150,7 +150,7 @@ written for the `product-architecture` run that folds the answers.
   *Check 4 — the failure paths.* Stale: ADR-0021's "no Swift source calls it" is dated to a commit,
   which is how a record states a measurement. The future case: the record's title counts "ten
   calls". When `follow-the-folder` raises the `model_changed` registration call, QC-24 calls it a
-  "second plumbing export", beside the list like `nozoki_free`, so the count holds. If the SDD
+  "second plumbing export", beside the list like `ka_reader_free`, so the count holds. If the SDD
   instead puts it on the list, the log owes another superseding record. That is the cost of recording
   a closed list as a decision, and the record makes it visible rather than hiding it. Concurrent:
   "which side orders two asks in flight" is left open in ADR-0021 § Consequences and in RC-4 *Still
@@ -176,4 +176,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture nozoki`
+- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture ka-reader`

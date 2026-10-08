@@ -1,4 +1,4 @@
-# SRS open issues — Nozoki 覗き
+# SRS open issues — KA-Reader
 
 > Companion to `SRS.md`. **Answer inline** — fill each **Confirm-or-override** slot —
 > **commit this file**, then re-run `product-srs`. It folds your answers into the SRS and

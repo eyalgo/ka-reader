@@ -1,4 +1,4 @@
-# Architecture open issues — Nozoki
+# Architecture open issues — KA-Reader
 
 > Companion to `adr/` and `nfdr.md`. The Principal Architect authored both records
 > non-interactively; this file holds what the run could not settle from its inputs — the SRS, the SDD
@@ -29,7 +29,7 @@
 ### 3.1 QC-25 and ADR-0008 prove the sandbox with an observable a sandboxed app's own process does not carry
 - **Raised by:** PM — 2026-09-19
 - **Which record:** NFDR § 1 QC-25 and its § 10 row; `adr/0008-harness-over-core-and-bundle-probe-from-first-build.md`
-- **Tracked by:** `nozoki · nemawashi · 2026-09-15_open-a-folder`
+- **Tracked by:** `ka-reader · nemawashi · 2026-09-15_open-a-folder`
 - **What it blocks:** QC-25's *verified by*. Its second half, "`APP_SANDBOX_CONTAINER_ID` is set in
   the launched bundle's environment" (`nfdr.md:L199-L204`), fails on the built ad-hoc bundle even
   though the kernel enforces its sandbox. It also fails on the main process of a team-signed
@@ -41,7 +41,7 @@
   so that neither record keeps a check the SDD has retired.
 - **Answer:** Answered in the owner's seat by a `companion-self-answer` run, 2026-09-19. The SDD
   item this one waited on is settled: `docs/SDD.md` v6 § 4 C-I3 states the new observable, with
-  § 10 RC-1 and RN-45 behind it (`nozoki@b3439e8`). Two things follow, one per record.
+  § 10 RC-1 and RN-45 behind it (`ka-reader@b3439e8`). Two things follow, one per record.
   **(1) QC-25 is re-derived from C-I3 as it reads now**, under the SDD's own rule that the § 4
   statement wins and the NFDR entry is re-derived (`docs/SDD.md:L408`). Its *verified by* drops the
   `APP_SANDBOX_CONTAINER_ID` clause and carries C-I3's probe whole. `checks/bundle.sh` checks the
@@ -56,7 +56,7 @@
   **(2) ADR-0008 is superseded, not edited.** The marker sits in its § Decision (`:L28`) and in the
   platform fact its last paragraph rests on (`:L59-L62`), so this answer contradicts an accepted
   record, and that lands as a new record. ADR-0010 restates ADR-0008's decision whole — the
-  harness over `nozoki-core`, the probe on every build from the first — with C-I3's observable. It
+  harness over `ka-reader-core`, the probe on every build from the first — with C-I3's observable. It
   rules out the environment marker and the container directory, each with RC-1's measurement. It
   names what it rests on: `sandbox_check` is exported by libSystem and is not declared in the
   SDK's `sandbox.h`, no vendor page documents it, and the negative control is what turns a silent
@@ -70,13 +70,13 @@
 ### 3.2 QC-23's string-equality check cannot pass until the `<asset-scheme>` form is settled
 - **Raised by:** PM — 2026-09-19
 - **Which record:** NFDR § 1 QC-23
-- **Tracked by:** `nozoki · nemawashi · 2026-09-15_open-a-folder`
+- **Tracked by:** `ka-reader · nemawashi · 2026-09-15_open-a-folder`
 - **What it blocks:** QC-23 says the CSP "equals" a string that contains `<asset-scheme>`, which is
-  "the origin form settled for `nozoki-asset`" (`nfdr.md:L188-L192`). It is verified by "string
+  "the origin form settled for `ka-reader-asset`" (`nfdr.md:L188-L192`). It is verified by "string
   equality against the entry". The SDD settles that form only in the first Markdown slice
   (`SDD.md:L2504-L2507`, third Open Question). Until then no build can pass QC-23 as written. The
   first build's config test asserts equality with the string minus the asset scheme, plus the
-  entry's prohibitions (`crates/nozoki-app/tests/config.rs:181-182`), and nothing in the NFDR states
+  entry's prohibitions (`crates/ka-reader-app/tests/config.rs:181-182`), and nothing in the NFDR states
   that as the check in force.
 - **Where it shows:** QC-23 *verified by* (`nfdr.md:L192`).
 - **If a document has to be written:** none. QC-23's check needs to say what it verifies before the
@@ -89,11 +89,11 @@
   img-src 'self' data:; font-src 'self'` — and no directive admits `http:`, `https:`, `file:`,
   `asset:` or `*`. **From the SDD revision at which C-R7 carries the literal origin form**, the
   policy equals C-R7's string whole. Both are string equality in
-  `cargo test --locked -p nozoki-app --test config`.
+  `cargo test --locked -p ka-reader-app --test config`.
   Three grounds. A policy with no asset source is narrower than C-R7's, and C-R7 is violated only
   by "any widening". No asset handler exists before the first Markdown slice, so nothing needs the
   source. The SDD itself places the full-string bar in that slice (`docs/SDD.md:L1185-L1188`).
-  This is what the first build's test already asserts (`crates/nozoki-app/tests/config.rs:L17`,
+  This is what the first build's test already asserts (`crates/ka-reader-app/tests/config.rs:L17`,
   `:L181-L187`), so no code moves. The entry names C-R7's state and no slice. A change that adds
   an asset source before C-R7 carries the form fails the first state's equality, which is the
   intended result. Once C-R7 carries the form, the next revision of this document re-derives
@@ -106,7 +106,7 @@
 ### 3.3 QC-30 forbids environment variables, and the Tauri runtime the product links reads one
 - **Raised by:** PM — 2026-09-19
 - **Which record:** NFDR § 1 QC-30
-- **Tracked by:** `nozoki · nemawashi · 2026-09-15_open-a-folder`
+- **Tracked by:** `ka-reader · nemawashi · 2026-09-15_open-a-folder`
 - **What it blocks:** QC-30 says the product has "no other entry point — no argument vector, no
   environment variable" (`nfdr.md:L238-L241`). Its check, `checks/structure.sh`, scans "any shipped
   crate" for `std::env::var` (`nfdr.md:L242-L243`). The resolved `tauri-runtime-wry` 2.11.4
@@ -124,12 +124,12 @@
   a correction of a statement measured false, not a new requirement. No upstream document makes
   the absolute claim: `docs/fdr.md` R-2 and `docs/SRS.md` FR-1 say "the only input the product
   requires", which still holds. QC-30 is restated in two halves.
-  **(1) The product's own crates** — `nozoki-core` and `nozoki-app` — read no argument, no
+  **(1) The product's own crates** — `ka-reader-core` and `ka-reader-app` — read no argument, no
   environment variable and no configuration file, and open no socket: `checks/structure.sh`, as
   now. "Any shipped crate" becomes "the product's own crates", because a dependency ships in the
   binary too and the phrase read both ways.
   **(2) The linked dependency tree** — every environment or argument read in the crates
-  `cargo tree -p nozoki-app` resolves for the macOS target is a named member of the boundary set,
+  `cargo tree -p ka-reader-app` resolves for the macOS target is a named member of the boundary set,
   held in a reviewed list under `checks/`, one line per crate and name, each with what it changes.
   A scan of those crates' sources is diffed against the list, and a read not on it fails the build
   until the list change is reviewed as code in the same change, the way `checks/deps.allow` is

@@ -1,4 +1,4 @@
-# DESIGN open issues — Nozoki 覗き
+# DESIGN open issues — KA-Reader
 
 > Companion to `DESIGN.md`. The CDO authored the design language non-interactively; this file
 > holds the calls it made and wants your sign-off on — each with the reason behind it, and what
@@ -35,14 +35,14 @@
   item asked for it.
 - **What this document says:** **30** citations of the form `docs/<x>_trail/…` (`docs/design_trail/`, `docs/prd_trail/`, `docs/uxd_trail/`).
 - **What is true:** none of those folders exists. The retired cycles live at `docs/trail/<x>/`, moved
-  by `nozoki@1e8bf3d` ("the six answer-trails move under `docs/trail/`"), which did not update the
+  by `ka-reader@1e8bf3d` ("the six answer-trails move under `docs/trail/`"), which did not update the
   documents citing them. Every one is a pointer a cold reader follows and finds nothing, and these are
   mostly **authorization** pointers — the owner answer a Review Note rests on cannot be opened to
   check it.
 - **Drafted:** each `docs/<x>_trail/` becomes `docs/trail/<x>/`. Nothing the document says changes;
   only where it points. A pointer repair, not a revision — so this round need not reopen anything else.
 - **One exception, and it is not hypothetical.** A citation pinned to a commit — the form
-  `nozoki@<sha>:docs/<x>_trail/…` — must be left exactly as it is: it resolves at a commit where that
+  `ka-reader@<sha>:docs/<x>_trail/…` — must be left exactly as it is: it resolves at a commit where that
   path did exist (verified — `git show 1d5c553:docs/uxd_trail/cycle-1.md` returns the file), so
   rewriting it breaks a citation that currently works. This document carries **0** of those;
   `docs/UXD.md` carries 4. A sweep that does not exclude the pinned form is wrong.
@@ -56,10 +56,10 @@
   `docs/trail/prd/self_answer-1.md` § 2.1), and 0 pinned to a commit, so nothing is excluded. All
   seven distinct targets exist at the new path and all seventeen cited sections carry the heading
   this document attributes to them, checked one by one on 2026-09-01. The six `docs/uxd_trail/`
-  citations are to the re-authored UXD's trail, not the one removed at `nozoki@9017ae2`: this
-  document's v1 was authored 2026-08-26 off UXD v2 (`nozoki@e1e54f6`), and the sections it cites
-  (cycle-1 § 2.5 and § 2.6; cycle-2 § 1.1, cited with `nozoki@f4bc928`) exist only in the
+  citations are to the re-authored UXD's trail, not the one removed at `ka-reader@9017ae2`: this
+  document's v1 was authored 2026-08-26 off UXD v2 (`ka-reader@e1e54f6`), and the sections it cites
+  (cycle-1 § 2.5 and § 2.6; cycle-2 § 1.1, cited with `ka-reader@f4bc928`) exist only in the
   re-authored files — so the hazard the SRS run found on its own `uxd_trail` lines
   (`docs/trail/srs/self_answer-1.md` § 2.2) does not arise here and none of the six is repaired by
-  hand. The reason to record on the version line is `nozoki@1e8bf3d`. Reasoning:
+  hand. The reason to record on the version line is `ka-reader@1e8bf3d`. Reasoning:
   `docs/trail/design/self_answer-1.md` § 2.1.

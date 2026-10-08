@@ -1,8 +1,8 @@
-# PRD — Nozoki 覗き
+# PRD — KA-Reader
 
 **Status:** Settled
 **Owner:** CPO
-**Version:** 15 — the close: the one sentence v14 drafted in § UX Notes "The character" — the dominant surface is the *reading panel*, not the *editor panel* — is confirmed (`docs/trail/prd/cycle-13.md` § 2.1 — a self-answer in the owner's seat, its reasoning at `docs/trail/prd/self_answer-3.md` § 2.1) and its marker says so. The answer carried one correction, folded into the marker: the input sentence departed from is § Styling Guidance's "Make the editor panel the dominant visual surface" (`docs/proposal.md` § Styling Guidance), verbatim — not § Overview's "editor area" that v14 cited — so the marker now points where the departure is. Nothing else about the product changes; `docs/PRD_open_issues.md` is removed and `Status:` is Settled. (v14: that sentence drafted as *reading panel*, awaiting confirmation — authorized by the document's own § Out of Scope, § Assumptions, and `docs/CONTENT.md` § Terminology, which settles the term and rejects *editor* for it; the eight *folder* sentences v13 drafted confirmed at `docs/trail/prd/cycle-12.md` § 2.1, a self-answer in the owner's seat, its reasoning at `docs/trail/prd/self_answer-2.md` § 2.1. v13: eight sentences that still named the input *repository* after the v11 widening read *folder*: § Core Features "any file in the folder"; § UX Notes "The character" (two), "The path" 5 "Leaving", the *view never lies* rule, and "Trusting the tool"; § Scope (In)'s full ambition; § Out of Scope "Editing, permanently" — authorized by the widening the owner directed (`docs/trail/prd/cycle-9.md` § 1.1) and outside the three sections its fold kept as *repository* on purpose (`docs/trail/prd/cycle-10.md` § 2.1). v12: the 62 trail citations this document rests on are repaired to `trail/prd/` and `trail/srs/`, because the answer-trails moved under `docs/trail/` at `nozoki@1e8bf3d`; authorized by the owner's cycle-11 answer (`docs/trail/prd/cycle-11.md` § 2.1). v11: the owner's cycle-10 answers folded — `docs/trail/prd/cycle-10.md` — a reader of folders, files and repositories; the Git view shows nothing in a plain folder.)
+**Version:** 15 — the close: the one sentence v14 drafted in § UX Notes "The character" — the dominant surface is the *reading panel*, not the *editor panel* — is confirmed (`docs/trail/prd/cycle-13.md` § 2.1 — a self-answer in the owner's seat, its reasoning at `docs/trail/prd/self_answer-3.md` § 2.1) and its marker says so. The answer carried one correction, folded into the marker: the input sentence departed from is § Styling Guidance's "Make the editor panel the dominant visual surface" (`docs/proposal.md` § Styling Guidance), verbatim — not § Overview's "editor area" that v14 cited — so the marker now points where the departure is. Nothing else about the product changes; `docs/PRD_open_issues.md` is removed and `Status:` is Settled. (v14: that sentence drafted as *reading panel*, awaiting confirmation — authorized by the document's own § Out of Scope, § Assumptions, and `docs/CONTENT.md` § Terminology, which settles the term and rejects *editor* for it; the eight *folder* sentences v13 drafted confirmed at `docs/trail/prd/cycle-12.md` § 2.1, a self-answer in the owner's seat, its reasoning at `docs/trail/prd/self_answer-2.md` § 2.1. v13: eight sentences that still named the input *repository* after the v11 widening read *folder*: § Core Features "any file in the folder"; § UX Notes "The character" (two), "The path" 5 "Leaving", the *view never lies* rule, and "Trusting the tool"; § Scope (In)'s full ambition; § Out of Scope "Editing, permanently" — authorized by the widening the owner directed (`docs/trail/prd/cycle-9.md` § 1.1) and outside the three sections its fold kept as *repository* on purpose (`docs/trail/prd/cycle-10.md` § 2.1). v12: the 62 trail citations this document rests on are repaired to `trail/prd/` and `trail/srs/`, because the answer-trails moved under `docs/trail/` at `ka-reader@1e8bf3d`; authorized by the owner's cycle-11 answer (`docs/trail/prd/cycle-11.md` § 2.1). v11: the owner's cycle-10 answers folded — `docs/trail/prd/cycle-10.md` — a reader of folders, files and repositories; the Git view shows nothing in a plain folder.)
 
 > The PRD is the product source of truth: the product-facing **what and why**, read cold
 > by the CTO, the CDO, Principal PM, and Principal Architect. It is updated in place with
@@ -23,7 +23,7 @@
 
 ## Blurb
 
-Nozoki is a read-only reader of folders, files and repositories: browse a folder's tree, read
+KA-Reader is a read-only reader of folders, files and repositories: browse a folder's tree, read
 its files with syntax highlighting, watch it as it changes, and — when it is a Git repository —
 see what has changed, with the certainty that nothing in it can be changed from here. It is for
 developers inspecting a working tree they must not disturb, above all one that a coding agent or
@@ -31,7 +31,7 @@ automated tool is actively changing.
 
 ## Purpose
 
-Nozoki (覗き — *"to peek / peer in"*) is a lightweight code workspace viewer: a stripped-down
+KA-Reader is a lightweight code workspace viewer: a stripped-down
 shell for browsing a folder's files — and, when that folder is a Git repository, inspecting its
 Git status — in which nothing can be changed. It is **a reader of folders, files and
 repositories** — the three named flat, none subordinate to another: a repository is one of the
@@ -66,7 +66,7 @@ per-path configuration, not a whole-repository guarantee *(verified (external):
 https://code.visualstudio.com/updates/v1_79 — covers: the read-only settings and their per-path
 scope)*, and its Restricted Mode limits code execution while still permitting editing *(verified
 (external): https://code.visualstudio.com/docs/editing/workspaces/workspace-trust — the FAQ
-states text editing is always supported)*. Nozoki's edge is that the guarantee **is** the
+states text editing is always supported)*. KA-Reader's edge is that the guarantee **is** the
 product: there is no write path to configure away. Beside that, it is lighter than an editor —
 nothing to configure, nothing installed into the repository.
 
@@ -93,7 +93,7 @@ assumption (see Assumptions).
   repository in minutes, guided by the README alone. The README's first screen is product
   surface: what the tool does in one sentence, one install path, one copy-paste example, and
   what the tool will and will not touch *(added — instance doctrine, not in the input)*.
-- **No learning curve** — anyone who works with Git and can follow a README can use Nozoki: the
+- **No learning curve** — anyone who works with Git and can follow a README can use KA-Reader: the
   reader is assumed to know Git, and the product may leave Git's own vocabulary unexplained. No
   editor experience required, no onboarding, and no configuration of any kind: no settings, no
   project file, no setup step. The only input it ever needs is which folder to view *(folder,
@@ -102,7 +102,7 @@ assumption (see Assumptions).
   in trail/prd/cycle-2.md; owner-confirmed: trail/prd/cycle-8.md § 1.1. The no-configuration
   half is unchanged: owner-confirmed: trail/prd/cycle-2.md)*.
 
-No revenue applies: Nozoki is free, non-commercial open source by design; its cost side is
+No revenue applies: KA-Reader is free, non-commercial open source by design; its cost side is
 maintainer time, held down by the deliberately small surface (see Assumptions).
 
 ## Success Metrics
@@ -115,7 +115,7 @@ maintainer time, held down by the deliberately small surface (see Assumptions).
   violation is a release-blocking defect. Reckoned at every release. *(whole-product scope:
   changed from the input, which scoped "read-only" to the editor area; owner-confirmed:
   trail/prd/cycle-1.md)*
-- **Time-to-first-success:** from a stranger deciding to try Nozoki — by its single install
+- **Time-to-first-success:** from a stranger deciding to try KA-Reader — by its single install
   path, whatever that path is — to viewing a file of their own repository. Bar: ≤ 5 minutes,
   checked before each release, on macOS — the one platform v1 promises (see Scope). The clock is
   read against a Git repository, the fuller path; a plain folder is the same path with less in
@@ -124,7 +124,7 @@ maintainer time, held down by the deliberately small surface (see Assumptions).
   clock is the no-learning-curve goal's observable: it runs through first use — finding,
   starting, and viewing — not install alone *(that link: added — not in the input)*. *(bar
   value: added — not in the input; owner-confirmed: trail/prd/cycle-1.md)*
-- **Zero required configuration:** the only input Nozoki requires is which folder to view —
+- **Zero required configuration:** the only input KA-Reader requires is which folder to view —
   no settings, no project file, no setup step; whether the folder is a Git repository is found,
   never asked. Bar: pass/fail, checked at each release. *(owner-confirmed: trail/prd/cycle-2.md;
   folder rather than repository: owner-confirmed: trail/prd/cycle-9.md § 1.1)*
@@ -137,7 +137,7 @@ maintainer time, held down by the deliberately small surface (see Assumptions).
 
 ## Key Use Cases
 
-1. A developer opens Nozoki against a local repository and browses the file tree, reading files
+1. A developer opens KA-Reader against a local repository and browses the file tree, reading files
    with syntax highlighting exactly as they would in an editor — minus the ability to change
    anything.
 2. Mid-work, a developer switches the sidebar to the Git view — branch, changed files, staged
@@ -146,7 +146,7 @@ maintainer time, held down by the deliberately small surface (see Assumptions).
 3. A developer peeks at a repository an automated tool or agent is working on, watching its
    progress as the view follows the changing tree — without perturbing it *(added — not in the
    input; owner-confirmed: trail/prd/cycle-1.md, with Target Users)*.
-4. A developer opens Nozoki against a folder that is not a Git repository — a download, an
+4. A developer opens KA-Reader against a folder that is not a Git repository — a download, an
    export, a project that has no Git yet — and browses and reads it exactly as in case 1. The
    Git view is there and shows nothing; the tree, the reading, and the live refresh work as they
    always do *(changed — the input makes a non-repository a failure; owner-confirmed:
@@ -191,7 +191,7 @@ maintainer time, held down by the deliberately small surface (see Assumptions).
 
 *(Product-level only: no visual design, no mechanism.)*
 
-**The character.** Nozoki looks at a folder; it never acts on one — and the experience
+**The character.** KA-Reader looks at a folder; it never acts on one — and the experience
 should feel like that: calm, truthful, still. The product presents state; the person moves
 their attention around it. Read-only is the product's identity, not a mode: nothing in the
 experience suggests the folder could be changed from here — no editing affordances
@@ -207,10 +207,10 @@ and `docs/CONTENT.md` § Terminology settles it as the one name; confirmed at
 trail/prd/cycle-13.md § 2.1 — a self-answer in the owner's seat, its reasoning at
 trail/prd/self_answer-3.md § 2.1)*.
 
-**The path, end to end.** The experience begins with Nozoki open against one local folder —
+**The path, end to end.** The experience begins with KA-Reader open against one local folder —
 whatever precedes that moment belongs to the acquisition-and-start mechanism, which this PRD
 deliberately does not state (see Out of Scope). Whether the folder is a Git repository is
-Nozoki's to find out, never the person's to declare.
+KA-Reader's to find out, never the person's to declare.
 
 1. **Arrival.** The workbench opens with the file tree visible and nothing open — the empty
    state, a simple prompt such as "Select a file to view." Nothing to set up, sign into, or
@@ -224,10 +224,10 @@ Nozoki's to find out, never the person's to declare.
    files at a glance, with changed-file markers in the tree. Sidebar mode and the open file
    are independent: checking Git never closes what the person is reading. In a folder that is
    not a Git repository the Git view is still there, and what it opens is empty — no message, no
-   explanation, and nothing that invites the person to fix it: Nozoki does not create
+   explanation, and nothing that invites the person to fix it: KA-Reader does not create
    repositories, so a surface an editor would fill with "initialise" or "publish" offers have no
    truthful next step here and say nothing. A working state, not an error. An empty view cannot
-   by itself tell "this folder has no repository" apart from "Nozoki failed to read it"; that is
+   by itself tell "this folder has no repository" apart from "KA-Reader failed to read it"; that is
    accepted — where a fault needs telling apart, it is the unexplained-fault state the experience
    defines downstream, never a message in this state. How the empty view is drawn is decided
    downstream of this document *(the plain folder: owner-confirmed: trail/prd/cycle-9.md § 1.1;
@@ -235,7 +235,7 @@ Nozoki's to find out, never the person's to declare.
 4. **Watching.** The view follows the tree as the repository changes — the driving scenario.
    Changes appear on their own, within the refresh bar; there is no refresh control, because
    a manual refresh turns the user into a poller *(owner-confirmed: trail/prd/cycle-1.md)*.
-5. **Leaving.** Closing Nozoki asks nothing — nothing to save, nothing to confirm — and the
+5. **Leaving.** Closing KA-Reader asks nothing — nothing to save, nothing to confirm — and the
    person leaves certain the folder is exactly as they found it *(folder, not repository: the
    widening owner-confirmed at trail/prd/cycle-9.md § 1.1, applied here; confirmed at
    trail/prd/cycle-12.md § 2.1 — a self-answer in the owner's seat, its reasoning at
@@ -285,7 +285,7 @@ floor: owner-confirmed: trail/prd/cycle-8.md § 1.1)*:
 
 **The bounds v1 draws.**
 
-- Nozoki is mouse-driven — keyboard navigation is outside the product's done (see Out of
+- KA-Reader is mouse-driven — keyboard navigation is outside the product's done (see Out of
   Scope), so the absence of a keyboard-accessibility promise is permanent, not deferred *(the
   permanence: the project Agari's; owner-confirmed: trail/prd/cycle-8.md § 1.2)*.
 - Beyond that line, v1 makes no assistive-technology promise: its accessibility surface is
@@ -303,9 +303,9 @@ the directive is owner-confirmed at trail/prd/cycle-9.md § 1.1 and its placemen
 trail/prd/cycle-10.md § 2.3)*.
 
 **Run posture** *(added — the input never states how the tool runs against a repository;
-owner-confirmed: trail/prd/cycle-1.md)*: Nozoki is a local tool — the user launches it on their
+owner-confirmed: trail/prd/cycle-1.md)*: KA-Reader is a local tool — the user launches it on their
 own machine against one local folder at a time; nothing about its operation leaves the
-machine; there is no hosted mode. There is **exactly one way to get and start Nozoki, and it is
+machine; there is no hosted mode. There is **exactly one way to get and start KA-Reader, and it is
 simple** — one path, not a menu of them: a stranger should not have to choose how to install a
 viewer. The mechanism of that path is not stated here (see Out of Scope); that it must be single
 and simple is the product's, and the time-to-first-success bar measures it.
@@ -333,7 +333,7 @@ browsing, reading, status, and live refresh.
 - **Git operations** — staging, committing, pushing, branch switching, discarding: viewer only.
 - **Diff and commit-history views** — beyond v1 (the input's own roadmap defers them).
 - **Sidebar search / filter** — outside the product's done, not merely beyond v1: the project's
-  Agari (`system/projects/nozoki/agari.md`) places it outside the terminus, and the README says
+  Agari (`system/projects/ka-reader/agari.md`) places it outside the terminus, and the README says
   so rather than promising it *(changed — the input's roadmap lists it as a later phase;
   owner-confirmed: trail/prd/cycle-8.md § 1.2)*.
 - **Pane resizing and keyboard navigation** — outside the product's done, on the same footing as
@@ -362,7 +362,7 @@ browsing, reading, status, and live refresh.
   Git view offers no way to change that — no initialise, no publish *(added — not in the input;
   owner-confirmed: trail/prd/cycle-10.md § 2.2)*.
 - **Telemetry and any non-essential network call** — see Data & Privacy.
-- **The acquisition and start mechanism** — how Nozoki is obtained and launched is not stated
+- **The acquisition and start mechanism** — how KA-Reader is obtained and launched is not stated
   here; the product property is only that there is exactly one such path and it is simple (see
   Scope) *(owner-confirmed: trail/prd/cycle-1.md)*.
 - The input's implementation-stack recommendations (editor component, UI framework, styling
@@ -375,7 +375,7 @@ browsing, reading, status, and live refresh.
 - The input's three-phase delivery sequencing is not carried here: delivery, not product. Its
   phase-3 items appear above — diffs and commit history as v1 exclusions, the other three as
   exclusions from the product's done.
-- The README's one-line self-description does not call Nozoki a *web app*: nothing hosted is on
+- The README's one-line self-description does not call KA-Reader a *web app*: nothing hosted is on
   offer (see Scope, "Run posture"), and the word tells a stranger the wrong thing about what they
   are getting. What the shipped shape technically is stays out of this document *(changed — the
   input's README says "web app"; owner-confirmed: trail/prd/cycle-8.md § 1.3)*.
@@ -387,15 +387,15 @@ browsing, reading, status, and live refresh.
 - **The familiarity thesis:** a conventional editor-style layout — a file tree beside a reading
   panel — is what makes inspection comfortable. The product's central UX assumption, unproven;
   if false, the product needs rethinking, not tuning. *(owner-confirmed: trail/prd/cycle-2.md)*
-- Nozoki is free, non-commercial open source; no revenue exists or is intended. The cost is
+- KA-Reader is free, non-commercial open source; no revenue exists or is intended. The cost is
   maintainer time; the deliberately small surface is the sustainability strategy, and a version
   that can no longer be maintained is archived visibly rather than left looking staffed
   *(added — instance doctrine, not in the input)*.
 - **Licence:** MIT *(added — not in the input; owner-confirmed: trail/prd/cycle-1.md; recorded
   with its reason at first release)*.
-- **Public identity:** Nozoki is published under the `kensaiapp` GitHub organisation
-  (`github.com/kensaiapp/nozoki`) and maintained under that name; no personal handle is the
-  public face. The maintainer behind it is a private individual, and Nozoki is a side project
+- **Public identity:** KA-Reader is published under the `kensaiapp` GitHub organisation
+  (`github.com/kensaiapp/ka-reader`) and maintained under that name; no personal handle is the
+  public face. The maintainer behind it is a private individual, and KA-Reader is a side project
   *(added — not in the input; owner-confirmed: trail/prd/cycle-7.md)*.
 - **Support posture — nothing is promised.** Issues and questions are welcome and read when
   there is time, with no response time, no commitment to fix, and no commitment that a fix ever
@@ -410,7 +410,7 @@ browsing, reading, status, and live refresh.
   casual. *(added — not in the input; the 1.0.0-or-later closing condition is the project
   Agari's, owner-confirmed: trail/srs/cycle-1.md §2.4)*
 - **Regulatory posture:** published as free, non-monetized open source outside any commercial
-  activity, Nozoki is outside the EU Cyber Resilience Act's scope *(verified (external):
+  activity, KA-Reader is outside the EU Cyber Resilience Act's scope *(verified (external):
   https://digital-strategy.ec.europa.eu/en/policies/cra-open-source — non-monetised free
   open-source provision is not a commercial activity)*. The classification rests on the
   non-commercial character and falls with it.
@@ -425,7 +425,7 @@ browsing, reading, status, and live refresh.
 
 ## Data & Privacy
 
-- Nozoki stores nothing about its users: no accounts, no identity, no behavioural data.
+- KA-Reader stores nothing about its users: no accounts, no identity, no behavioural data.
 - No telemetry and no non-essential network calls — the tool's operation stays entirely on the
   user's machine *(added — instance doctrine default, not in the input)*. v1 makes no network
   call at all during operation; acquiring the tool uses the network, operating it does not. The
@@ -434,7 +434,7 @@ browsing, reading, status, and live refresh.
   is what is being kept, not a current call *(the definition and the headroom: added — not in
   the input; owner-confirmed: trail/prd/cycle-7.md)*.
 - The product reads only the folder it is pointed at and persists nothing of it.
-- Nozoki may keep its own state — preferences such as theme choice, window state, anything it
+- KA-Reader may keep its own state — preferences such as theme choice, window state, anything it
   remembers between sessions — and that lives where the tool keeps its own data on the machine,
   **never inside the folder it is pointed at**. It holds nothing personal. *(boundary:
   owner-confirmed: trail/prd/cycle-1.md)*

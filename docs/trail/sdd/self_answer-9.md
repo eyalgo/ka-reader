@@ -34,7 +34,7 @@
   negative control. The item carried no proposed replacement, so this is *answered*, not a
   confirmed draft. It is also not a widening, so § *A widening item waits until it occurs* does not
   apply. It corrects an observable the built bundle has shown false: the item's evidence
-  (`nozoki@ccb58d8`, commit body) and this run's re-measurement above.
+  (`ka-reader@ccb58d8`, commit body) and this run's re-measurement above.
 
   *Seat.* The change lands in `SDD.md`: C-I3 at `L516-L519`, § 6's *Command* bar at `L1043-L1045`,
   R-8 at `L1904-L1906`, and the fourth Open Question at `L2508-L2511`. It binds only the harness,
@@ -46,7 +46,7 @@
   sandboxed main process under either signature, and it does not separate sandboxed from
   unsandboxed (the item's evidence). Apple's documented runtime check is the process's own sandbox
   state (source above). `sandbox_check` is what already gave the correct reading on the ad-hoc
-  bundle, the trivial app and the unsandboxed control (`nozoki@ccb58d8`). The two operation denials
+  bundle, the trivial app and the unsandboxed control (`ka-reader@ccb58d8`). The two operation denials
   test the wall itself, what C-R2 promises, rather than a proxy for it. I ruled out the container
   directory as the observable. It survives from an earlier launch, so a stale directory would pass
   an unsandboxed rebuild.
@@ -62,7 +62,7 @@
   container counts for nothing. A macOS release that changes the undocumented function fails the
   negative control, which is R-8's re-cut trigger by design. **Concurrent:** the script requires no
   instance running before launch and exactly one after, and fails otherwise.
-  **Uncovered, named:** a GitHub-hosted macOS runner is unmeasured, since `nozoki@ccb58d8` says "I
+  **Uncovered, named:** a GitHub-hosted macOS runner is unmeasured, since `ka-reader@ccb58d8` says "I
   did not test another macOS version or a hosted runner". The probe's first CI run settles that
   case.
 
@@ -85,4 +85,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/SDD.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-sdd/launcher.sh nozoki`
+- **`docs/SDD.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-sdd/launcher.sh ka-reader`

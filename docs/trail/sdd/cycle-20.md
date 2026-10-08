@@ -1,4 +1,4 @@
-# SDD open issues — Nozoki
+# SDD open issues — KA-Reader
 
 > Companion to `SDD.md`. Three seats — the CTO, the CPO and the CDO — authored the SDD
 > non-interactively in one run; this file holds what that run could not settle from its inputs (the
@@ -17,7 +17,7 @@
 
 > **No `product-sdd` run wrote this file.** The PM opened it on 2026-10-03 from the SDD's own
 > companion template, after `checks/entry-points.sh` and `checks/entry-points.allow` landed
-> (`nozoki@b158052`). `SDD.md` is Settled, and with no companion on disk a `product-sdd` re-run reads
+> (`ka-reader@b158052`). `SDD.md` is Settled, and with no companion on disk a `product-sdd` re-run reads
 > it as done and has nothing to act on. Its one item is in § 5.
 
 ---
@@ -26,13 +26,13 @@
 
 ### 5.1 The `read-only-harness` row's list of what the unit owns omits files `checks/` holds
 - **Raised by:** PM — 2026-10-03
-- **Tracked by:** `nozoki · nemawashi · 2026-10-01_the-tree-is-checked-for-its-shape`
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-01_the-tree-is-checked-for-its-shape`
 - **What it blocks:** nothing is blocked. The two files sit in `checks/`, the unit the row names, and
   are wired on CI. What is missing is the row naming them among what the unit owns.
 - **Where it shows:** § 3's `read-only-harness` row enumerates the unit's scripts and lists
   (`docs/SDD.md:L332`): `read-only.sh`, `no-network.sh`, `bundle.sh`, `renderer.sh`, `view.sh`,
   `own-state.sh`, `churn.sh`, `latency.sh`, `structure.sh`, `deps.allow` and the fixture folders.
-  `ls checks/` on `nozoki@b158052` also lists `entry-points.sh` and `entry-points.allow`, which the
+  `ls checks/` on `ka-reader@b158052` also lists `entry-points.sh` and `entry-points.allow`, which the
   NFDR names as this unit's QC-30 check and its reviewed list (`docs/nfdr.md:L599-L604`, `:L992`).
   The same listing holds three more files the row does not name: `walk.rs`, `sandbox_probe.rs` and
   `deps.review.md`.
@@ -41,12 +41,12 @@
   list it diffs against, in the form the row already uses for `deps.allow`: the check the NFDR's
   QC-30 half (2) places in this unit (`docs/nfdr.md:L599-L604`, `:L992`). The three helpers go in
   the same listing, each beside the script that uses it: `walk.rs`, the in-process driver
-  `read-only.sh` runs, compiled into a `nozoki-core` test target by
-  `crates/nozoki-core/tests/walk.rs:L6`'s `#[path]` and never into the library; `sandbox_probe.rs`,
+  `read-only.sh` runs, compiled into a `ka-reader-core` test target by
+  `crates/ka-reader-core/tests/walk.rs:L6`'s `#[path]` and never into the library; `sandbox_probe.rs`,
   which `bundle.sh` compiles with `rustc` at run time (`checks/bundle.sh:L321-L322`); and
   `deps.review.md`, the review recorded beside `deps.allow` that the `highlighter` row already
   cites. And `tests/`, the per-script suites the NFDR § 10 tags `(suite test_<name>.sh)` — eight at
-  `nozoki@b158052`. Two bounds on the fold. The enumeration is dated and pinned to the commit it was
+  `ka-reader@b158052`. Two bounds on the fold. The enumeration is dated and pinned to the commit it was
   measured at, as `docs/nfdr.md` § 9 does for its suite count, so the next file to land in `checks/`
   is a re-measurement and not a contradiction. And the row tells what is on disk from what a slice
   still delivers, as it already does for `contract.sh`: `churn.sh`, `latency.sh` and five of the

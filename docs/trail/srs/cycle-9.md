@@ -1,4 +1,4 @@
-# SRS open issues — Nozoki 覗き
+# SRS open issues — KA-Reader
 
 > Companion to `SRS.md`. The CTO authored the SRS non-interactively; this file holds
 > what it could not settle from the inputs (the PRD and any context/constraints).
@@ -39,8 +39,8 @@ None this round.
   UX-S4 still makes a non-repository a startup failure; the UXD follows the PRD, not this SRS, and
   its revision is the CDO's through the UXD's own skill — this SRS records the divergence and does
   not reshape FR-3 or FR-34 to it."*
-- **What is true:** the UXD reached v6 after SRS v8 — `nozoki@e4ed5fe` (SRS v8) then
-  `nozoki@dd08f2d` (UXD v6), both 2026-08-26 — and UXD RN-28 says it read `docs/SRS.md` v8 as its
+- **What is true:** the UXD reached v6 after SRS v8 — `ka-reader@e4ed5fe` (SRS v8) then
+  `ka-reader@dd08f2d` (UXD v6), both 2026-08-26 — and UXD RN-28 says it read `docs/SRS.md` v8 as its
   sibling and found no collision with FR-33 / FR-34 (`docs/UXD.md` RN-28). At v6, UX-S4 *"narrows
   to a path that does not exist, is not a folder, or cannot be read"* (`docs/UXD.md` version line),
   and its row reads *"A folder that is not a Git repository is not on this list: it opens (UX-I17;
@@ -56,7 +56,7 @@ None this round.
   is either added or the sentence stands.
 - **Confirm or override:** **confirm — with two additions, and the clause is pinned.** RN-35's
   sibling sentence gains its closing clause as drafted, written as history at a version, in this
-  shape: *the divergence ended at UXD v6 (`nozoki@dd08f2d`, 2026-08-26): UX-S4 narrowed to a path
+  shape: *the divergence ended at UXD v6 (`ka-reader@dd08f2d`, 2026-08-26): UX-S4 narrowed to a path
   that does not exist, is not a folder, or cannot be read, and a plain folder opens (`docs/UXD.md`
   § UX-S4, RN-25); UXD RN-28 read this SRS at v8 as its sibling and found no collision with FR-33 /
   FR-34.* (1) **Pinned, because the sentence went false by being written in the present tense about

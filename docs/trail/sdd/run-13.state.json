@@ -19,7 +19,7 @@
   ],
   "companion_present_at_intake": true,
   "companion_retired": false,
-  "consumed_cycle_path": "/Users/eyalgolan/products/nozoki/docs/trail/sdd/cycle-10.md",
+  "consumed_cycle_path": "/Users/eyalgolan/products/ka-reader/docs/trail/sdd/cycle-10.md",
   "core_root": "/Users/eyalgolan/.kensaiapp/pins/20260923T063052Z-ppa1f0/core",
   "ended": "seats-close",
   "ended_at": "2026-09-23T12:55:37.676273+00:00",
@@ -31,11 +31,11 @@
   "output_tokens_under_counted": true,
   "pending_request": {
     "cdo": "Everything I need is in hand; no further reads. This turn is a verification turn with no edit \u2014 here is what I checked, with locators.\n\n**Nothing above this seat moved.** `docs/UXD.md` v10 Settled (`4d7b653`, 2026-09-01), `docs/DESIGN.md` v8 Settled (`269bcf5`), `docs/CONTENT.md` v6 Settled (`6789e19`) \u2014 the same commits RN-62 pinned (`docs/SDD.md:L3560-L3563` region, RN-62's \"Verified before writing\"). The instance fence's last commit is `3ab9bba` 2026-08-30.\n\n**Nothing in my lane moved this run.** `git diff -U0 docs/SDD.md | grep '^@@'` gives ten hunks: L324 and L346-348 (\u00a7 3 `folder-model` row and units edge \u2014 CTO), L535 and L713 (\u00a7 4 C-R2 and C-I3 \u2014 CTO's clause; my C-E1\u2013C-E10 sit at L797-L870, no hunk there), L1428-1431 (inside S-3's *Reached when*, after the `*Command (CTO):*` marker at L1418 \u2014 the command half, not mine), L2483-2506 (after `**The downstream boundary.**` at L2482 \u2014 the UXD boundary at L2458-2481 is untouched and reads as RN-62 left it), and L3604 (RN-64, new).\n\n**The \u00a7 3 draft touches no observable.** Reading (a) places the `FileView` fill in `folder-model` (`docs/SDD.md:L324`). No C-E condition names a unit (`grep` for `folder-model|core-bridge|markdown-renderer|highlighter` over L797-870: no hits), and in \u00a7 6 the only hits are in *Rests on* fields and one command half (L1305-1306, L1364, L1372, L1440-1441, L1521, L1581) \u2014 no observable half names where the render happens. S-2's observable half says a `.md` file is plain text in that slice (`:L1340-1342`) and S-3's says it is rendered (`:L1400-1418`); both describe the panel, and the model's Markdown branch not existing until `read-markdown` lands is the CPO's fence (`:L1393-1397`), not a contradiction. The draft's \"a call that fails is held as that item's `failed(condition)`\" uses C-I1's own term (`:L436`), which C-E3 already names as its mechanism (\"C-I1 and C-I2 carry the mechanism\", `:L812-819`) \u2014 so a failed highlight or render lands in the item's failure slot on its surface, as C-E3 binds. \"Drawing\" in the model's *Must not own* points at `surfaces`' row (`:L330`), which is unchanged.\n\n**\u00a7 12's UXD boundary stands.** \u00a7 2.4 opens no UXD gap \u2014 UX-I12 and \u00a7 4 of the UXD name no unit \u2014 and \u00a7 2.3 is a record-status matter. No \u00a7 10 trigger names this seat: the UXD did not change upstream and no observable half failed as written.\n\nNothing here is the owner's to settle from my lane, so I add nothing to the companion and no Review Note \u2014 no call was made.\n\n**To the CTO:** nothing from this seat; the \u00a7 3 draft and the S-3 command-half move are yours and reach no observable.\n**To the CPO:** nothing from this seat; your E-3 and S-2/S-3 fence re-read is independent of my fields.",
-    "cpo": "Nothing I need beyond what is now read; no further tool calls this turn.\n\n**The re-read the CTO named, taken against \u00a7 3 as redrawn (RN-64).**\n\n- **\u00a7 5 step 4, E-3's sizing sentence** (`docs/SDD.md:L1100-L1116`) stands. Its test is that `read-markdown` carries a decision `read-a-file` never asks \u2014 the three walls of \u00a7 4 C-D3, which no hunk this run touched (`git diff -U0 docs/SDD.md | grep '^@@'`: hunks at L324, L346, L535, L713, L1428, L2483-L2506, L3604 \u2014 none in C-D3) \u2014 and that the intermediate result \"files read, Markdown not yet right\" changes the acceptance. Reading (a) places the `FileView` fill in `folder-model` (`docs/SDD.md:L324`): in `read-a-file` that fill calls `highlighter` alone, and the `markdown-renderer` branch arrives with `read-markdown`. Where the call is made is a unit fact inside `crates/nozoki-core`, which every slice already links (RN-64, `:L3604-L3640`); it neither adds a wall nor removes one, so the decision, the intermediate result and the size are what RN-63 recorded.\n- **S-2's fence** (`docs/SDD.md:L1387-L1390`): \"Markdown rendered \u2014 `read-markdown`; until it lands, a `.md` file is shown as plain text\" \u2014 names the owning slice and is exactly the state reading (a) leaves the model in before `read-markdown`. Unchanged.\n- **S-3's *Delivers*, *Moves toward* and fence** (`docs/SDD.md:L1393-L1397`, `:L1454-L1457`): the fence's four items \u2014 the raw-source switch, the in-folder SVG, a diff's rendering, documents outside Markdown \u2014 none is the fill, and the *Delivers* names behaviour a reader watches in the panel, not the unit that builds it. Unchanged. The one CTO move inside S-3 is in the command half after the `*Command (CTO):*` marker (`:L1428-L1431`), which is not my field.\n- **PRD traces and \u00a7 12's PRD boundary**: \u00a7 2.4 names no product intent, the PRD names no unit, and `docs/PRD.md` is still v15 Settled (`7c89e19`). No gap, so no companion item and no edit to the boundary.\n\nNo sentence in my lane moves, so I write no Review Note \u2014 a note recording no change is padding, and the Version line the runner stamps will carry that this seat verified and held. The companion now holds \u00a7 2.4 alone, in the CTO's lane with the slot the owner's; no product call is open from this seat.\n\n**To the CTO:** the re-read closes with nothing moved; your \u00a7 3 draft reaches no CPO field.\n**To the CDO:** nothing from this seat.",
-    "cto": "Everything from round 1 stands on disk, uncommitted in the working tree as the runner's loop expects (`git status --short`: ` M docs/SDD.md`, ` M docs/SDD_open_issues.md`; the commit is the `product-sdd` skill's, not a seat's): C-R2's and C-I3's record lines cite the index row and state no status (`docs/SDD.md:L535`, `:L713`); `folder-model`'s *Must not own* reads \"I/O of any kind. Any Apple framework. Own state. Drawing\" (`:L324`); S-3's `asset_bytes` assertion runs under `cargo test --locked -p nozoki-bridge --test asset_bytes` (`:L1428`); RN-64 is present once; the companion holds \u00a7 2.4 alone (`docs/SDD_open_issues.md:L55`).\n\nNothing is owed from this seat. Both requests I made in round 1 are answered: the CPO's re-read of E-3 and S-2/S-3's fences closed with nothing moved, and the CDO confirms no observable half or C-E condition names a unit, so the \u00a7 3 draft and the command-half move reach neither lane. Nothing above this seat moved \u2014 `docs/SRS.md` is at the commit the CPO cited, and no upstream change, unmet *Reached when* or unstartable slice fires a \u00a7 10 trigger for me. The one item left in the run is \u00a7 2.4, whose slot is the owner's and which no seat can close inside this run; it is drafted, written into the SDD, and recorded on RN-64, so the companion's presence is the correct signal and the runner will leave the SDD `Draft` for it. I write no Review Note this turn \u2014 no call was made \u2014 and add nothing to the companion.\n\n**To the CPO and the CDO:** nothing from this seat."
+    "cpo": "Nothing I need beyond what is now read; no further tool calls this turn.\n\n**The re-read the CTO named, taken against \u00a7 3 as redrawn (RN-64).**\n\n- **\u00a7 5 step 4, E-3's sizing sentence** (`docs/SDD.md:L1100-L1116`) stands. Its test is that `read-markdown` carries a decision `read-a-file` never asks \u2014 the three walls of \u00a7 4 C-D3, which no hunk this run touched (`git diff -U0 docs/SDD.md | grep '^@@'`: hunks at L324, L346, L535, L713, L1428, L2483-L2506, L3604 \u2014 none in C-D3) \u2014 and that the intermediate result \"files read, Markdown not yet right\" changes the acceptance. Reading (a) places the `FileView` fill in `folder-model` (`docs/SDD.md:L324`): in `read-a-file` that fill calls `highlighter` alone, and the `markdown-renderer` branch arrives with `read-markdown`. Where the call is made is a unit fact inside `crates/ka-reader-core`, which every slice already links (RN-64, `:L3604-L3640`); it neither adds a wall nor removes one, so the decision, the intermediate result and the size are what RN-63 recorded.\n- **S-2's fence** (`docs/SDD.md:L1387-L1390`): \"Markdown rendered \u2014 `read-markdown`; until it lands, a `.md` file is shown as plain text\" \u2014 names the owning slice and is exactly the state reading (a) leaves the model in before `read-markdown`. Unchanged.\n- **S-3's *Delivers*, *Moves toward* and fence** (`docs/SDD.md:L1393-L1397`, `:L1454-L1457`): the fence's four items \u2014 the raw-source switch, the in-folder SVG, a diff's rendering, documents outside Markdown \u2014 none is the fill, and the *Delivers* names behaviour a reader watches in the panel, not the unit that builds it. Unchanged. The one CTO move inside S-3 is in the command half after the `*Command (CTO):*` marker (`:L1428-L1431`), which is not my field.\n- **PRD traces and \u00a7 12's PRD boundary**: \u00a7 2.4 names no product intent, the PRD names no unit, and `docs/PRD.md` is still v15 Settled (`7c89e19`). No gap, so no companion item and no edit to the boundary.\n\nNo sentence in my lane moves, so I write no Review Note \u2014 a note recording no change is padding, and the Version line the runner stamps will carry that this seat verified and held. The companion now holds \u00a7 2.4 alone, in the CTO's lane with the slot the owner's; no product call is open from this seat.\n\n**To the CTO:** the re-read closes with nothing moved; your \u00a7 3 draft reaches no CPO field.\n**To the CDO:** nothing from this seat.",
+    "cto": "Everything from round 1 stands on disk, uncommitted in the working tree as the runner's loop expects (`git status --short`: ` M docs/SDD.md`, ` M docs/SDD_open_issues.md`; the commit is the `product-sdd` skill's, not a seat's): C-R2's and C-I3's record lines cite the index row and state no status (`docs/SDD.md:L535`, `:L713`); `folder-model`'s *Must not own* reads \"I/O of any kind. Any Apple framework. Own state. Drawing\" (`:L324`); S-3's `asset_bytes` assertion runs under `cargo test --locked -p ka-reader-bridge --test asset_bytes` (`:L1428`); RN-64 is present once; the companion holds \u00a7 2.4 alone (`docs/SDD_open_issues.md:L55`).\n\nNothing is owed from this seat. Both requests I made in round 1 are answered: the CPO's re-read of E-3 and S-2/S-3's fences closed with nothing moved, and the CDO confirms no observable half or C-E condition names a unit, so the \u00a7 3 draft and the command-half move reach neither lane. Nothing above this seat moved \u2014 `docs/SRS.md` is at the commit the CPO cited, and no upstream change, unmet *Reached when* or unstartable slice fires a \u00a7 10 trigger for me. The one item left in the run is \u00a7 2.4, whose slot is the owner's and which no seat can close inside this run; it is drafted, written into the SDD, and recorded on RN-64, so the companion's presence is the correct signal and the runner will leave the SDD `Draft` for it. I write no Review Note this turn \u2014 no call was made \u2014 and add nothing to the companion.\n\n**To the CPO and the CDO:** nothing from this seat."
   },
-  "product_path": "/Users/eyalgolan/products/nozoki",
-  "project": "nozoki",
+  "product_path": "/Users/eyalgolan/products/ka-reader",
+  "project": "ka-reader",
   "provider": "claude",
   "queue": [],
   "recall_outstanding": null,
@@ -44,31 +44,31 @@
   "resolved_inputs": {
     "cdo": [
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/SRS.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/UXD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/PRD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/agari.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ka-reader_doctrine.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ai_responsibility.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/definition_brief.md",
         "present": false
       },
       {
@@ -84,15 +84,15 @@
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/DESIGN.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/DESIGN.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/CONTENT.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/CONTENT.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/design_system",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/design_system",
         "present": false
       },
       {
@@ -106,31 +106,31 @@
     ],
     "cpo": [
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/SRS.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/UXD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/PRD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/agari.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ka-reader_doctrine.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ai_responsibility.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/definition_brief.md",
         "present": false
       },
       {
@@ -148,31 +148,31 @@
     ],
     "cto": [
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/SRS.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/UXD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/PRD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/agari.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ka-reader_doctrine.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ai_responsibility.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/definition_brief.md",
         "present": false
       },
       {
@@ -188,11 +188,11 @@
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/adr",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/adr",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/nfdr.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/nfdr.md",
         "present": true
       }
     ]
@@ -229,9 +229,9 @@
     "cto": "d682a361-ca9c-4225-ae2e-e4acddfc8a69"
   },
   "seats": {
-    "cdo": "sdd-nozoki-run13-cdo",
-    "cpo": "sdd-nozoki-run13-cpo",
-    "cto": "sdd-nozoki-run13-cto"
+    "cdo": "sdd-ka-reader-run13-cdo",
+    "cpo": "sdd-ka-reader-run13-cpo",
+    "cto": "sdd-ka-reader-run13-cto"
   },
   "spoke_at": {
     "cdo": 2,
@@ -262,7 +262,7 @@
       "declared": "no_followup",
       "kind": "ordinary",
       "no_reply": false,
-      "request_text": "Nothing I need beyond what is now read; no further tool calls this turn.\n\n**The re-read the CTO named, taken against \u00a7 3 as redrawn (RN-64).**\n\n- **\u00a7 5 step 4, E-3's sizing sentence** (`docs/SDD.md:L1100-L1116`) stands. Its test is that `read-markdown` carries a decision `read-a-file` never asks \u2014 the three walls of \u00a7 4 C-D3, which no hunk this run touched (`git diff -U0 docs/SDD.md | grep '^@@'`: hunks at L324, L346, L535, L713, L1428, L2483-L2506, L3604 \u2014 none in C-D3) \u2014 and that the intermediate result \"files read, Markdown not yet right\" changes the acceptance. Reading (a) places the `FileView` fill in `folder-model` (`docs/SDD.md:L324`): in `read-a-file` that fill calls `highlighter` alone, and the `markdown-renderer` branch arrives with `read-markdown`. Where the call is made is a unit fact inside `crates/nozoki-core`, which every slice already links (RN-64, `:L3604-L3640`); it neither adds a wall nor removes one, so the decision, the intermediate result and the size are what RN-63 recorded.\n- **S-2's fence** (`docs/SDD.md:L1387-L1390`): \"Markdown rendered \u2014 `read-markdown`; until it lands, a `.md` file is shown as plain text\" \u2014 names the owning slice and is exactly the state reading (a) leaves the model in before `read-markdown`. Unchanged.\n- **S-3's *Delivers*, *Moves toward* and fence** (`docs/SDD.md:L1393-L1397`, `:L1454-L1457`): the fence's four items \u2014 the raw-source switch, the in-folder SVG, a diff's rendering, documents outside Markdown \u2014 none is the fill, and the *Delivers* names behaviour a reader watches in the panel, not the unit that builds it. Unchanged. The one CTO move inside S-3 is in the command half after the `*Command (CTO):*` marker (`:L1428-L1431`), which is not my field.\n- **PRD traces and \u00a7 12's PRD boundary**: \u00a7 2.4 names no product intent, the PRD names no unit, and `docs/PRD.md` is still v15 Settled (`7c89e19`). No gap, so no companion item and no edit to the boundary.\n\nNo sentence in my lane moves, so I write no Review Note \u2014 a note recording no change is padding, and the Version line the runner stamps will carry that this seat verified and held. The companion now holds \u00a7 2.4 alone, in the CTO's lane with the slot the owner's; no product call is open from this seat.\n\n**To the CTO:** the re-read closes with nothing moved; your \u00a7 3 draft reaches no CPO field.\n**To the CDO:** nothing from this seat.",
+      "request_text": "Nothing I need beyond what is now read; no further tool calls this turn.\n\n**The re-read the CTO named, taken against \u00a7 3 as redrawn (RN-64).**\n\n- **\u00a7 5 step 4, E-3's sizing sentence** (`docs/SDD.md:L1100-L1116`) stands. Its test is that `read-markdown` carries a decision `read-a-file` never asks \u2014 the three walls of \u00a7 4 C-D3, which no hunk this run touched (`git diff -U0 docs/SDD.md | grep '^@@'`: hunks at L324, L346, L535, L713, L1428, L2483-L2506, L3604 \u2014 none in C-D3) \u2014 and that the intermediate result \"files read, Markdown not yet right\" changes the acceptance. Reading (a) places the `FileView` fill in `folder-model` (`docs/SDD.md:L324`): in `read-a-file` that fill calls `highlighter` alone, and the `markdown-renderer` branch arrives with `read-markdown`. Where the call is made is a unit fact inside `crates/ka-reader-core`, which every slice already links (RN-64, `:L3604-L3640`); it neither adds a wall nor removes one, so the decision, the intermediate result and the size are what RN-63 recorded.\n- **S-2's fence** (`docs/SDD.md:L1387-L1390`): \"Markdown rendered \u2014 `read-markdown`; until it lands, a `.md` file is shown as plain text\" \u2014 names the owning slice and is exactly the state reading (a) leaves the model in before `read-markdown`. Unchanged.\n- **S-3's *Delivers*, *Moves toward* and fence** (`docs/SDD.md:L1393-L1397`, `:L1454-L1457`): the fence's four items \u2014 the raw-source switch, the in-folder SVG, a diff's rendering, documents outside Markdown \u2014 none is the fill, and the *Delivers* names behaviour a reader watches in the panel, not the unit that builds it. Unchanged. The one CTO move inside S-3 is in the command half after the `*Command (CTO):*` marker (`:L1428-L1431`), which is not my field.\n- **PRD traces and \u00a7 12's PRD boundary**: \u00a7 2.4 names no product intent, the PRD names no unit, and `docs/PRD.md` is still v15 Settled (`7c89e19`). No gap, so no companion item and no edit to the boundary.\n\nNo sentence in my lane moves, so I write no Review Note \u2014 a note recording no change is padding, and the Version line the runner stamps will carry that this seat verified and held. The companion now holds \u00a7 2.4 alone, in the CTO's lane with the slot the owner's; no product call is open from this seat.\n\n**To the CTO:** the re-read closes with nothing moved; your \u00a7 3 draft reaches no CPO field.\n**To the CDO:** nothing from this seat.",
       "seat": "cpo",
       "spoke": true
     },
@@ -272,7 +272,7 @@
       "declared": "no_followup",
       "kind": "ordinary",
       "no_reply": false,
-      "request_text": "Everything from round 1 stands on disk, uncommitted in the working tree as the runner's loop expects (`git status --short`: ` M docs/SDD.md`, ` M docs/SDD_open_issues.md`; the commit is the `product-sdd` skill's, not a seat's): C-R2's and C-I3's record lines cite the index row and state no status (`docs/SDD.md:L535`, `:L713`); `folder-model`'s *Must not own* reads \"I/O of any kind. Any Apple framework. Own state. Drawing\" (`:L324`); S-3's `asset_bytes` assertion runs under `cargo test --locked -p nozoki-bridge --test asset_bytes` (`:L1428`); RN-64 is present once; the companion holds \u00a7 2.4 alone (`docs/SDD_open_issues.md:L55`).\n\nNothing is owed from this seat. Both requests I made in round 1 are answered: the CPO's re-read of E-3 and S-2/S-3's fences closed with nothing moved, and the CDO confirms no observable half or C-E condition names a unit, so the \u00a7 3 draft and the command-half move reach neither lane. Nothing above this seat moved \u2014 `docs/SRS.md` is at the commit the CPO cited, and no upstream change, unmet *Reached when* or unstartable slice fires a \u00a7 10 trigger for me. The one item left in the run is \u00a7 2.4, whose slot is the owner's and which no seat can close inside this run; it is drafted, written into the SDD, and recorded on RN-64, so the companion's presence is the correct signal and the runner will leave the SDD `Draft` for it. I write no Review Note this turn \u2014 no call was made \u2014 and add nothing to the companion.\n\n**To the CPO and the CDO:** nothing from this seat.",
+      "request_text": "Everything from round 1 stands on disk, uncommitted in the working tree as the runner's loop expects (`git status --short`: ` M docs/SDD.md`, ` M docs/SDD_open_issues.md`; the commit is the `product-sdd` skill's, not a seat's): C-R2's and C-I3's record lines cite the index row and state no status (`docs/SDD.md:L535`, `:L713`); `folder-model`'s *Must not own* reads \"I/O of any kind. Any Apple framework. Own state. Drawing\" (`:L324`); S-3's `asset_bytes` assertion runs under `cargo test --locked -p ka-reader-bridge --test asset_bytes` (`:L1428`); RN-64 is present once; the companion holds \u00a7 2.4 alone (`docs/SDD_open_issues.md:L55`).\n\nNothing is owed from this seat. Both requests I made in round 1 are answered: the CPO's re-read of E-3 and S-2/S-3's fences closed with nothing moved, and the CDO confirms no observable half or C-E condition names a unit, so the \u00a7 3 draft and the command-half move reach neither lane. Nothing above this seat moved \u2014 `docs/SRS.md` is at the commit the CPO cited, and no upstream change, unmet *Reached when* or unstartable slice fires a \u00a7 10 trigger for me. The one item left in the run is \u00a7 2.4, whose slot is the owner's and which no seat can close inside this run; it is drafted, written into the SDD, and recorded on RN-64, so the companion's presence is the correct signal and the runner will leave the SDD `Draft` for it. I write no Review Note this turn \u2014 no call was made \u2014 and add nothing to the companion.\n\n**To the CPO and the CDO:** nothing from this seat.",
       "seat": "cto",
       "spoke": true
     }

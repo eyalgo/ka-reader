@@ -1,4 +1,4 @@
-# PRD open issues — Nozoki 覗き
+# PRD open issues — KA-Reader
 
 > Companion to `PRD.md`. The CPO authored the PRD non-interactively; this file holds
 > what it could not settle from the inputs. **Answer inline** — fill each **Answer** /
@@ -15,7 +15,7 @@
 > and citable for good.
 
 > **This companion was opened by a `companion-self-answer` run, not by a `product-prd` run**
-> (`nozoki@70abec1`), on a PRD that was Settled at v12 with its companion correctly deleted. A
+> (`ka-reader@70abec1`), on a PRD that was Settled at v12 with its companion correctly deleted. A
 > run answering the UXD's companion (`docs/UXD_open_issues.md` § 2.2) read this document whole
 > and found six sentences that still name the input *repository* after v11 made it a *folder*.
 > Reasoning: `docs/trail/uxd/self_answer-4.md` § Companions opened.
@@ -38,14 +38,14 @@ None.
 ### 2.1 Eight sentences in four sections still named the input *repository* where v11 made it a *folder* — drafted as *folder* at v13, awaiting your confirmation
 
 > **This item was raised by a `companion-self-answer` run, not by a `product-prd` run**, on six
-> sentences (`nozoki@70abec1`). The `product-prd` run that followed added two of the same kind
+> sentences (`ka-reader@70abec1`). The `product-prd` run that followed added two of the same kind
 > and drafted the eight. The self-answer run's finding and its stated doubt are kept below as
 > written, so what came from where stays legible; the CPO's own reading follows them.
 
 - **Drafted into the PRD (v13):** eight sentences now read *folder*, each carrying the marker
   *(folder, not repository: the widening owner-confirmed at trail/prd/cycle-9.md § 1.1,
   applied here awaiting confirmation)*. The six the self-answer run found: § UX Notes "The
-  character" — *"Nozoki looks at a folder; it never acts on one"* and *"nothing in the experience
+  character" — *"KA-Reader looks at a folder; it never acts on one"* and *"nothing in the experience
   suggests the folder could be changed from here"*; "The path" 5 "Leaving" — *"the person leaves
   certain the folder is exactly as they found it"*; the rule — *"the view never lies. What is
   shown is the folder's current state"*; § Scope (In)'s full ambition — *"switching which folder
@@ -64,13 +64,13 @@ None.
   *"switching which repository is viewed"* while § Out of Scope reads *"Changing the viewed
   folder without restarting … the word widened from repository to folder with the input"*, and
   the project's Agari names the terminus with *folder* and cites that § Out of Scope line as
-  *"the same word the PRD uses for it"* (`system/projects/nozoki/agari.md:23-26`). Each of the
+  *"the same word the PRD uses for it"* (`system/projects/ka-reader/agari.md:23-26`). Each of the
   six is a product rule this document makes true of a plain folder — Key Use Case 4 opens one
   and *"browses and reads it exactly as in case 1 … the tree, the reading, and the live refresh
   work as they always do"* — so a rule worded *repository* reads narrower than the product it
-  governs. The verbal language settled the split downstream: *folder* for *"the thing Nozoki is
+  governs. The verbal language settled the split downstream: *folder* for *"the thing KA-Reader is
   pointed at"*, *repository* for *"a folder that is the root of a Git repository, and the Git
-  state Nozoki reads from it"*, and *repository* elsewhere only *"where Git's own state is what
+  state KA-Reader reads from it"*, and *repository* elsewhere only *"where Git's own state is what
   the sentence is about"* (`docs/CONTENT.md` § Terminology); the instance's writing bar binds
   one name per term across every document here (`system/doctrine/writing_bar.md` § 1.2, *"A
   term has one name and one spelling across every document authored here"*). **The doubt, as

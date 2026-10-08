@@ -1,4 +1,4 @@
-# Architecture open issues — Nozoki 覗き
+# Architecture open issues — KA-Reader
 
 > Companion to `adr/` and `nfdr.md`. The Principal Architect authored both records
 > non-interactively; this file holds what the run could not settle from its inputs — the SRS, the SDD
@@ -29,7 +29,7 @@
 > (§ 9's preamble and Rust paths, RN-7, RN-6, § 8; its RN-14 records the run), so *Drafted into the
 > records* below is now literal. The items stand for your confirmation, and § 1.1 for your answer;
 > `docs/nfdr.md` reads Draft until this file is gone. The `docs/nfdr.md:L…` locators below are v2's
-> (`nozoki@1329741`).
+> (`ka-reader@1329741`).
 
 ---
 
@@ -42,7 +42,7 @@
 - **Why it matters:** the packet fixes the *shape* and deliberately not the choice — a library crate
   depends only on the facade, and **"A binary crate selects an implementation and initializes it once,
   early"** (`<CORE>/doctrine/engineering/languages/rust/errors_logging.md:L86`). The two candidates it
-  names are `log` and `tracing` (`:L80-L83`). `nozoki-app` is the binary and the composition root
+  names are `log` and `tracing` (`:L80-L83`). `ka-reader-app` is the binary and the composition root
   (`docs/adr/0009-physical-module-set.md:L30`), so the selection is its obligation and nothing in this
   product's records makes it: a search of `nfdr.md` and `SDD.md` for `tracing`, `log crate`,
   `env_logger` and `slog` returns nothing but an unrelated RN-8. The host left this open on its own
@@ -60,22 +60,22 @@
   which the allowlist (QC-3, QC-26) prefers, and the packet records that a library on `log` stays
   readable from a binary on `tracing`, so the choice is cheap to reverse. If overridden to
   `tracing`: the same entry, a second crate in `checks/deps.allow`, and a subscriber initialized
-  in `nozoki-app`.
+  in `ka-reader-app`.
 - **Answer:** `log`, recorded as a constraint in `nfdr.md` § 7 beside QC-52, and no ADR — the choice
   fails the significance test: the packet records that a library on `log` stays readable from a
   binary on `tracing`, so reversal is one allowlist change, and neither half of the choice surprises
   a cold reader. The entry binds three things. (1) Every shipped Rust crate depends on the `log`
-  facade for diagnostics and on nothing else — no `tracing`, no `slog`; `nozoki-core` uses the five
-  macros and initializes nothing. (2) The implementation is `nozoki-app`'s own log module — the
+  facade for diagnostics and on nothing else — no `tracing`, no `slog`; `ka-reader-core` uses the five
+  macros and initializes nothing. (2) The implementation is `ka-reader-app`'s own log module — the
   writer QC-39, QC-40 and QC-52 already bind, implementing `log::Log` — installed once at startup in
-  `nozoki-app`, the composition root (QC-17), with no third-party implementation crate. The reason is
+  `ka-reader-app`, the composition root (QC-17), with no third-party implementation crate. The reason is
   a constraint already on disk, not taste: the stock implementations of `log` read their level from
   the environment, and QC-30 / QC-58 forbid `std::env::var` in any shipped crate, so an off-the-shelf
   logger fails `checks/structure.sh` the day it lands. The level the writer admits is fixed in code
   and read from nothing outside; it holds what QC-39 and QC-52 describe and nothing below it. (3)
   Verified by: `checks/no-network.sh` — `checks/deps.allow` gains `log` and names no `tracing*`,
   `env_logger`, `slog*` or `log4rs` crate, so a swap fails the allowlist diff (QC-3, QC-26);
-  `checks/structure.sh` — `log::set_logger` / `log::set_boxed_logger` appears only in `nozoki-app`
+  `checks/structure.sh` — `log::set_logger` / `log::set_boxed_logger` appears only in `ka-reader-app`
   (layer 6). Ground for `log` over `tracing`: the packet's discriminator is *queried by field or
   attributed to a concurrent operation* against *read as lines*, and this log is read as lines by
   construction — one line per `failed` or `stopped` item naming the part, the operation and the error
@@ -126,14 +126,14 @@
   `checks/latency.sh`, `checks/read-only.sh --kill` and the manual AC-10 walk, all under `checks/`
   and none under `cargo test`, gated at CI build and release (§ 9 row 5; § 10). The only `--test`
   file the binary crate carries is `config` (layer 2), and ADR-0009 fixes exactly two crates, so
-  `cargo test --workspace` here is the union of `cargo test -p nozoki-core` and
-  `cargo test -p nozoki-app` — layers 1–3 across both — and the packet's per-crate form would run the
+  `cargo test --workspace` here is the union of `cargo test -p ka-reader-core` and
+  `cargo test -p ka-reader-app` — layers 1–3 across both — and the packet's per-crate form would run the
   same set. `testing_doctrine.md`'s "Layer 5 runs separately" is satisfied by the harness running
   outside the per-task gate, not by the flag or the crate selector. What the record is owed is the
   sentence that says so: RN-7's departure (1) gains its consequence — because layer 5 is not under
   `cargo test`, the workspace form is this product's change-time run and the card's per-task field
   may carry it, differently from `testing.md` § Layers 1–5's classification and for that reason —
-  with the condition that flips it named: a `crates/nozoki-app/tests/<flow>.rs` that starts the
+  with the condition that flips it named: a `crates/ka-reader-app/tests/<flow>.rs` that starts the
   built binary (`CARGO_BIN_EXE_*`) would put layer 5 inside the workspace run, and § 9 row 5 forbids
   it by keeping layer 5 on `checks/`; verified by `checks/structure.sh` (layer 6) — no
   `CARGO_BIN_EXE_` reference under `crates/*/tests/`. No SDD sentence moves — S-1's bar
@@ -159,15 +159,15 @@
      the parts that remain true and this product's own — layer 4's Playwright-not-WKWebView split, and
      the `cargo build --locked` / `cargo audit` tree obligations — now recorded as this product's
      realization *on top of* the packet rather than in the absence of one.
-  3. § 9's table names `nozoki-core/tests/` and `nozoki-app/tests/` at the repository root — three
+  3. § 9's table names `ka-reader-core/tests/` and `ka-reader-app/tests/` at the repository root — three
      path-shaped references, all on `docs/nfdr.md:L494-L495`, and the only ones in the whole document
-     set. They become `crates/nozoki-core/tests/` and `crates/nozoki-app/tests/`.
+     set. They become `crates/ka-reader-core/tests/` and `crates/ka-reader-app/tests/`.
 - **Rationale:** edit 3 is **the owner's already-made call, carried, not re-decided.** The packet
   states "Workspace members live under `crates/`, one directory per member"
   (`<CORE>/doctrine/engineering/languages/rust/layout.md:L88`), and it names this product by name as
   the one that adapts: "**This is the packet's answer and the products follow it, including the one
-  whose records said otherwise first**" (`:L95-L99`), citing `nozoki@docs/nfdr.md` § 9 exactly. The
-  owner's ruling is `kensaiapp-dev@49e0444f` — "the packet's placement is the house answer and nozoki
+  whose records said otherwise first**" (`:L95-L99`), citing `ka-reader@docs/nfdr.md` § 9 exactly. The
+  owner's ruling is `kensaiapp-dev@49e0444f` — "the packet's placement is the house answer and ka-reader
   adapts, which its own definition chains will carry." The ground is the manifest's: the Cargo Book's
   workspace example is `members = ["crates/*"]`, so a member is added by creating a directory, where a
   root layout makes `members` a hand-maintained list and a crate added without the list edit builds
@@ -176,7 +176,7 @@
   product's own decision files still outrank the packet, so this product *may* fix a different
   placement. Overriding means saying so in a record rather than by silence, since silence now reads as
   the packet's answer. Nothing else moves: the card's test command is workspace-relative
-  (`cargo test --workspace`) and unaffected, and the renderer's `cd nozoki-ui` is a TypeScript package,
+  (`cargo test --workspace`) and unaffected, and the renderer's `cd ka-reader-ui` is a TypeScript package,
   not a workspace member.
 - **Confirm or override:** confirm, with one addition to RN-7's departure list. The three edits stand
   as applied at v3, verified against the packet: `layout.md` § A multi-crate product names this
@@ -202,7 +202,7 @@
   history rather than present state, pinned to the commit that was true when it was written —
   applied at NFDR v3 (RN-6 pinned to `kensaiapp-opensource@4bdfddd`; § 8's preamble follows it).
 - **Rationale:** both halves of RN-6 were closed on 2026-09-02 in the managing instance. The card now
-  reads `**Test command:** cargo test --workspace && (cd nozoki-ui && pnpm exec vitest run)`
+  reads `**Test command:** cargo test --workspace && (cd ka-reader-ui && pnpm exec vitest run)`
   (`kensaiapp-opensource@c2155cc`, authored by a `cto:` run off the SDD's S-1 command bar) and
   `**Languages:** Rust, TypeScript, Shell` (`kensaiapp-opensource@0af5fb9`). RN-7's first sentence
   also derives the renderer's packet resolution from the *absence* of that line; with the line present,
@@ -212,7 +212,7 @@
   applied to RN-2 — a note that states what was true at a named commit rather than a live claim that
   goes false again.
 - **Confirm or override:** confirm. RN-6 as applied is history pinned to a commit and stays true
-  whatever the card does next: `git show 4bdfddd:system/projects/nozoki/project.md` carries
+  whatever the card does next: `git show 4bdfddd:system/projects/ka-reader/project.md` carries
   `**Test command:** pytest tests/` marked PROVISIONAL and no `Languages:` line, and the two closes
   are the commits named — `c2155cc` (2026-09-01, not 2026-09-02 as this item's rationale says) and
   `0af5fb9` (2026-09-02); RN-7 now resolves both packets at step 1 of the chain from the
@@ -229,7 +229,7 @@
 - **Lands in:** `nfdr.md` § 8.
 - **Drafted into the records:** § 8 reads "That card's test command is the SDD's command bar for the
   Rust workspace and Vitest for the renderer" (`docs/nfdr.md:L429-L432`). The card now reads
-  `cargo test --workspace --locked && (cd nozoki-ui && pnpm exec vitest run)`
+  `cargo test --workspace --locked && (cd ka-reader-ui && pnpm exec vitest run)`
   (`kensaiapp-opensource@3a960a7`), which is **stricter than** the SDD's S-1 bar rather than equal to
   it. Proposed: the sentence says the card's command satisfies the S-1 bar and adds the packet's
   `--locked`, naming the packet as the flag's source.
@@ -240,7 +240,7 @@
   the pointer § 8 already makes and stops restating the command — which would also make it immune to
   the next card change.
 - **Confirm or override:** confirm, with one addition. The sentence as drafted is true as measured:
-  the card reads `cargo test --workspace --locked && (cd nozoki-ui && pnpm exec vitest run)`
+  the card reads `cargo test --workspace --locked && (cd ka-reader-ui && pnpm exec vitest run)`
   (`kensaiapp-opensource@3a960a7`, 2026-09-02), which satisfies the S-1 bar (`docs/SDD.md` § 6 S-1,
   "`cargo test --workspace` exits 0") and adds the Rust packet's `--locked`
   (`languages/rust/testing.md` § Layers 1–5; `quality_gates.md` "`--locked` is on every per-change

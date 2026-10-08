@@ -37,8 +37,8 @@
 
   *Widening.* The item asks the document to state a case it does not state now, so it widens. It
   cites an occurrence: the product's own tracking area is declared `.activeInKeyWindow`
-  (`nozoki-mac/Sources/Surfaces/RowHover.swift:L29`), and the fill clears only on an exit or a
-  forget (`:L45-L53`). I read both lines at `nozoki@7c1acad` and they say what the item says. So the
+  (`ka-reader-mac/Sources/Surfaces/RowHover.swift:L29`), and the fill clears only on an exit or a
+  forget (`:L45-L53`). I read both lines at `ka-reader@7c1acad` and they say what the item says. So the
   item is answered rather than held "until it occurs".
 
   *Check 2 — the question.* The item has no draft. It sets out two readings and says what each
@@ -77,7 +77,7 @@
   fill and the tooltip are pointer-driven and never fire on an update" (`docs/DESIGN.md:L1657`) is
   untouched, since key status is not a content update. I did not rest on the forum report: the rule
   is stated in the language, so it holds whether or not the platform sends an exit at that moment.
-  The product's floor is macOS 14 (`nozoki-mac/Package.swift:L14`), and if that report is right the
+  The product's floor is macOS 14 (`ka-reader-mac/Package.swift:L14`), and if that report is right the
   shell may already clear the fill there. That is unmeasured, and the delivery tier must not lean on
   undocumented behaviour to meet this rule.
 
@@ -114,14 +114,14 @@
   CDO's. I can name no ground I cannot see.
 
   *Widening.* The item asks for a clause the document lacks. It cites an occurrence: the shell
-  draws the fill on both rows (`nozoki-mac/Tests/SurfacesTests/RootItemsViewHoverTests.swift:L302-L311`,
-  read at `nozoki@7c1acad`, as cited). So it is answered.
+  draws the fill on both rows (`ka-reader-mac/Tests/SurfacesTests/RootItemsViewHoverTests.swift:L302-L311`,
+  read at `ka-reader@7c1acad`, as cited). So it is answered.
 
   *Check 2 — does the draft hold for its reason?* The item gives two reasons. I checked both
   against source rather than taking them from the item.
   - A click on a failed file row raises the file selection. `outlineViewSelectionDidChange`
     raises `fileSelected` for any file row with no guard on its read state
-    (`nozoki-mac/Sources/Surfaces/RootItemsView.swift:L570-L575`). The reading panel then shows the
+    (`ka-reader-mac/Sources/Surfaces/RootItemsView.swift:L570-L575`). The reading panel then shows the
     path line over "an observed failed read, including a file gone or unreadable"
     (`docs/DESIGN.md:L671-L674`).
   - A failed folder row can be expanded and read again. Every folder row is expandable
@@ -158,7 +158,7 @@
   now sits on `{colors.hover}` while the pointer is over the row, is drawn in the system's
   `.secondaryLabelColor` (`RootItemsView.swift:L308`, `:L349`). The rule is to read it from a token
   (`docs/DESIGN.md:L840-L841`), and the shell has the token
-  (`nozoki-mac/Sources/Surfaces/CodeTokens.swift:L12`, `inkMuted`). `{colors.ink-muted}` on
+  (`ka-reader-mac/Sources/Surfaces/CodeTokens.swift:L12`, `inkMuted`). `{colors.ink-muted}` on
   `{colors.hover}` is a specified, measured pair (`docs/DESIGN.md:L437`; RN-22, `:L1098-L1100`).
   `.secondaryLabelColor` on `{colors.hover}` was never measured. The design language is right as
   it stands, so this is not raised on it. It is for the delivery tier to repair, and this run may
@@ -182,4 +182,4 @@ None this run.
 
 ## Launchers owed
 
-- **docs/DESIGN.md** — `<CORE>/launchers/skill/launcher.sh product-design nozoki`
+- **docs/DESIGN.md** — `<CORE>/launchers/skill/launcher.sh product-design ka-reader`

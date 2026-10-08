@@ -28,7 +28,7 @@ The companion held two open items, §§ 3.1 and 3.2, both raised from downstream
 
   *Is it widening, and does it cite an occurrence?* It widens the document, since § Grammar and
   mechanics states no joining mark (`docs/CONTENT.md:L113-L127`). It cites its occurrence: six shipped
-  strings, `"\(name) \u{2014} <word>"` at `nozoki-mac/Sources/Surfaces/GitSentences.swift:L114-L119`.
+  strings, `"\(name) \u{2014} <word>"` at `ka-reader-mac/Sources/Surfaces/GitSentences.swift:L114-L119`.
   I re-read them. So it is taken for that shape. The item's "any later label that joins a name to a
   word" reaches further than anything cited, so a label of another shape (the word first, two words,
   a count beside the name) is answered "not until it occurs".
@@ -40,14 +40,14 @@ The companion held two open items, §§ 3.1 and 3.2, both raised from downstream
   I did not split it: *which mark* and *which labels it governs* are one question with one seat.
 
   *The answer, and what the fold writes.* One line in § Grammar and mechanics: where a label puts a
-  name taken from the folder before a word Nozoki writes, the name is the row's own text, unchanged,
+  name taken from the folder before a word KA-Reader writes, the name is the row's own text, unchanged,
   then a space, U+2014 and a space, then the word, and the label carries no full stop. A label carries
   none already (`docs/CONTENT.md:L113-L115`), and the tooltip is a label, not a sentence, which is why
   § Localization's "one whole sentence" does not apply to it and "six whole strings with one
   placeholder each" (`GitSentences.swift:L110-L111`) does. Why this mark and not another: it is the
-  one dash Nozoki's own writing already uses (`ConditionSentences.swift:L23`;
+  one dash KA-Reader's own writing already uses (`ConditionSentences.swift:L23`;
   `docs/CONTENT.md:L287-L288`), so it adds no second mark. Names in this repository already carry
-  hyphens (`nozoki-mac`, `self_answer-8.md`), so a hyphen or an en dash would not read as a join. A
+  hyphens (`ka-reader-mac`, `self_answer-8.md`), so a hyphen or an en dash would not read as a join. A
   colon after a path is how tools print one, and I judged the reader would read it that way. A bare
   space and parentheses do not separate a name from a word at a glance. A verb is out for the item's
   own reason: *conflict* is a noun and the other five words are participles
@@ -103,7 +103,7 @@ The companion held two open items, §§ 3.1 and 3.2, both raised from downstream
 
   *Check 3.* It agrees with `docs/DESIGN.md:L468-L470` and `:L649`, and with the rule that bars a
   quotation mark around a name nowhere. It keeps `docs/CONTENT.md:L41-L45`: the name is the reader's
-  text and Nozoki neither corrects nor restyles it. Decided with § 3.1.
+  text and KA-Reader neither corrects nor restyles it. Decided with § 3.1.
 
   *Check 4, the failure paths.* **Stale:** if the design language later draws a name in the path type
   somewhere, this document stays true, because it names no type. **Long name:** the cut at the start
@@ -126,4 +126,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/CONTENT.md`** — `/Users/eyalgolan/.kensaiapp/pins/20261004T163836Z-cntntx/core/launchers/skill/launcher.sh product-content nozoki`
+- **`docs/CONTENT.md`** — `/Users/eyalgolan/.kensaiapp/pins/20261004T163836Z-cntntx/core/launchers/skill/launcher.sh product-content ka-reader`

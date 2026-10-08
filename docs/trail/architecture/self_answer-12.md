@@ -27,7 +27,7 @@
 - **Why:** **Whose it is.** The change goes into `docs/SDD.md` § 3, a row and a paragraph of
   another document. The item says so itself: "the sentence that settles it is the SDD's, at § 3,
   through that document's own run". QC-10 only transcribes whatever the SDD decides. So the answer
-  is written on the SDD's companion, as `docs/SDD_open_issues.md` § 2.4 (`nozoki@5e6198c`). It
+  is written on the SDD's companion, as `docs/SDD_open_issues.md` § 2.4 (`ka-reader@5e6198c`). It
   goes in *choices to confirm* because this run has a lean. The answer binds no person and no risk
   the owner carries, only the internal consistency of two documents, so it is not the owner's
   alone.
@@ -58,7 +58,7 @@
   outside the folder. *Empty:* an empty `.md` file is text (the text rule in the `fs-reader` row)
   and renders to a document with no blocks.
   **What the records do.** Nothing in `adr/` moves. ADR-0016 places every part involved inside
-  `nozoki-core` either way. When the SDD folds § 2.4, QC-10's may-import set gains
+  `ka-reader-core` either way. When the SDD folds § 2.4, QC-10's may-import set gains
   `markdown-renderer` and `highlighter`, and its exclusion of `markdown-renderer` is retired. Its
   exclusions of `own-state`, the libgit2 binding and `git-reader`'s adapter stand. QC-11 does not
   move. **What would have tipped me** to (b): an SDD row giving the bridge a call that is not a
@@ -97,7 +97,7 @@
   miscounts in two places. Its `Version:` line and RN-22 both say "three items await the owner",
   and the companion carries two.
   **Decided together with § 1.1.** The acceptance does not depend on § 1.1's answer. ADR-0016
-  places `folder-model`, `markdown-renderer` and `highlighter` in `nozoki-core` under either
+  places `folder-model`, `markdown-renderer` and `highlighter` in `ka-reader-core` under either
   reading, and ADR-0015 does not say which unit calls the renderer. Accepting now forecloses
   nothing that § 2.4 on the SDD's companion might move.
   **Failure paths.** *Stale:* the records are accepted while `docs/SDD.md` is Draft. Its
@@ -134,5 +134,5 @@ None this run. Both items carried a slot at its placeholder, and no item is addr
 
 ## Launchers owed
 
-- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture nozoki`
-- **`docs/SDD.md`** — `<CORE>/launchers/product-sdd/launcher.sh nozoki`
+- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture ka-reader`
+- **`docs/SDD.md`** — `<CORE>/launchers/product-sdd/launcher.sh ka-reader`

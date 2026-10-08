@@ -1,4 +1,4 @@
-# DESIGN open issues — Nozoki 覗き
+# DESIGN open issues — KA-Reader
 
 > Companion to `DESIGN.md`. The CDO authored the design language non-interactively; this file
 > holds the calls it made and wants your sign-off on — each with the reason behind it, and what
@@ -21,7 +21,7 @@
 
 ## 1. Open issues
 
-### 1.1 An earlier token set for Nozoki exists in this repository's history — is it to be folded, or is this draft the baseline?
+### 1.1 An earlier token set for KA-Reader exists in this repository's history — is it to be folded, or is this draft the baseline?
 
 - **Why it matters:** every value in `DESIGN.md` — the palette, the type, the widths — was derived
   fresh on this run (`DESIGN.md` RN-18). A design reference with nine token files, twenty specimens
@@ -159,14 +159,14 @@
 ### 2.6 No wordmark, logo, or product name in the shell
 
 - **Drafted into DESIGN.md:** § Components "The chrome" and the last-but-one Don't: the chrome
-  names the repository, not the product; Nozoki's name and its kanji live on the README. RN-9.
+  names the repository, not the product; KA-Reader's name and its kanji live on the README. RN-9.
 - **Grounds:** `docs/UXD.md` § 4 (the shell names what it is looking at) and the instance's
   direction that the one job is what is on the surface; the earlier design reference in history
   carried a wordmark treatment, which this draft does not read (§ 1.1). If you override — a small
   wordmark in the chrome — it enters as a vendored asset with a stated place (left of the
   selector), a size token, and the ink colour in both themes; RN-9 records it.
 - **Confirm or override:** confirm — no wordmark, logo, or product name in the shell. The chrome
-  names the repository; Nozoki's name and its kanji stay on the README. RN-9 stands. The owner said
+  names the repository; KA-Reader's name and its kanji stay on the README. RN-9 stands. The owner said
   "confirm" and nothing more; the argument put to them — that a wordmark beside the repository name
   reintroduces the doubling the UXD's § 2.2 call removed, and that a tool naming itself in its own
   chrome spends permanent screen space on what the user already knew — is the session's.

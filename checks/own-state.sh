@@ -11,7 +11,7 @@
 #   other trace — in a fixture it was pointed at, or in the repo — is a failure of the promise.
 #
 # THE THREE CONDITIONS
-#   1. A file exists at $HOME/Library/Containers/com.kensaiapp.nozoki/Data/Library/Logs/nozoki.log.
+#   1. A file exists at $HOME/Library/Containers/com.kensaiapp.ka-reader/Data/Library/Logs/ka-reader.log.
 #      That path is checked and no other; nothing is launched.
 #   2. Every folder directly under checks/fixtures/ holds exactly what git commits there, plus the
 #      folders those paths imply, plus `.git` and the archive's listing — and the folders that
@@ -29,7 +29,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 NAME="own-state.sh"
 FIXTURES_REL="checks/fixtures"
-LOG_SUFFIX="Library/Containers/com.kensaiapp.nozoki/Data/Library/Logs/nozoki.log"
+LOG_SUFFIX="Library/Containers/com.kensaiapp.ka-reader/Data/Library/Logs/ka-reader.log"
 
 work="$(mktemp -d)"
 cleanup() {

@@ -24,7 +24,7 @@
   content in the one unit that holds `unsafe`, where § 11 R-13's response is that "the bridge
   holds no logic" (`docs/SDD.md:2391-2395`). The other two edits hold as well. "Drawing" names the
   bar that is actually `surfaces`' (`docs/SDD.md:330`). "Any Apple framework" is the boundary
-  `nozoki-core` already states (`docs/SDD.md:333-334`). "The Tauri runtime" was retired by RC-3.
+  `ka-reader-core` already states (`docs/SDD.md:333-334`). "The Tauri runtime" was retired by RC-3.
   The new edge sentence (`docs/SDD.md:346-348`) keeps QC-11's rule true: the readers import
   neither the model nor one another (`docs/nfdr.md` QC-11).
 
@@ -72,4 +72,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/SDD.md`** — `<CORE>/launchers/product-sdd/launcher.sh nozoki`
+- **`docs/SDD.md`** — `<CORE>/launchers/product-sdd/launcher.sh ka-reader`

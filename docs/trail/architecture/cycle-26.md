@@ -1,4 +1,4 @@
-# Architecture open issues — Nozoki
+# Architecture open issues — KA-Reader
 
 > Companion to `adr/` and `nfdr.md`. The Principal Architect authored both records
 > non-interactively; this file holds what the run could not settle from its inputs — the SRS, the SDD
@@ -17,7 +17,7 @@
 > — an ADR's binding and an NFDR obligation reach the same file.
 
 > **No `product-architecture` run wrote this file.** The PM opened it on 2026-10-03 from the records'
-> own companion template, after `checks/structure.sh` gained the unit-graph rules (`nozoki@8c3ab40`).
+> own companion template, after `checks/structure.sh` gained the unit-graph rules (`ka-reader@8c3ab40`).
 > The tree has one edge that QC-11 forbids and SM-1 seems to need, so the script cannot hold that clause
 > until the records say which one governs. The NFDR is Settled, and with no companion on disk a
 > `product-architecture` re-run reads it as done and has nothing to act on. Its one item is in § 3.
@@ -39,7 +39,7 @@ None.
 ### 2.1 § 1.2 says "may import" is the whole allowed set, but every part in the core imports `language`, a module of no part, and only the script says that is allowed
 - **Lands in:** `nfdr.md` § 1.2 — the lead paragraph, or a new `QC` beside QC-10 and QC-11
 - **Drafted into the records:** Nothing. No producing run wrote this, and the run that raised it
-  writes no record. The change it proposes is a new entry in § 1.2. A module of `nozoki-core` that is
+  writes no record. The change it proposes is a new entry in § 1.2. A module of `ka-reader-core` that is
   no SDD part may be imported by any part, and that import is not an edge. Such a module is a value
   module: it holds types two or more parts share, it does no I/O, and **it imports no part**. Today
   those modules are `language` and `error`, plus `lib.rs` as the re-export surface. The new entry
@@ -72,15 +72,15 @@ None.
 ### 3.1 QC-11 forbids `fs-reader` importing `folder-model`, but SM-1 makes `folder-model` the owner of what a read returns
 - **Raised by:** PM — 2026-10-03
 - **Which record:** `nfdr.md` QC-11, read against QC-10's "neither imports the model"
-- **Tracked by:** `nozoki · nemawashi · 2026-10-01_the-tree-is-checked-for-its-shape`
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-01_the-tree-is-checked-for-its-shape`
 - **What it blocks:** `checks/structure.sh` cannot hold QC-11's `fs-reader` → `folder-model` clause.
   Holding it would fail the real tree, and the CI step `Structure check` is fatal. The script names the
   clause as not held, with its site (`checks/structure.sh`, `# WHAT IS NOT HELD`).
 - **Where it shows:** QC-11 says `fs-reader` "must not import" `folder-model` (`docs/nfdr.md:L251-L254`),
   and QC-10 repeats it: "neither imports the model" (`:L240-L241`). The tree has that edge:
-  `crates/nozoki-core/src/fs_reader.rs:L14` is `use crate::folder_model::OpenFailure;`. `fs_reader`
+  `crates/ka-reader-core/src/fs_reader.rs:L14` is `use crate::folder_model::OpenFailure;`. `fs_reader`
   maps I/O errors onto it (`:L20-L39`), and the type is defined at
-  `crates/nozoki-core/src/folder_model.rs:L38`. The SDD's SM-1 row names `folder-model` as the owner of
+  `crates/ka-reader-core/src/folder_model.rs:L38`. The SDD's SM-1 row names `folder-model` as the owner of
   the `fs-reader` ↔ `folder-model` contract: "it states what a read must return; the reader implements
   it" (`docs/SDD.md:L415`). SM-2 says the same for the Git port, and QC-10 lists "the Git port trait"
   apart from the model (`docs/nfdr.md:L236`). SM-1 has no such separate thing. Two readings fit:
@@ -93,9 +93,9 @@ None.
   perhaps SM-1's owner cell in `SDD.md`.
 - **Answer:** (a). QC-11 stands as written, and the edge goes. `OpenFailure` moves out of
   `folder-model` into `fs-reader` — beside `Condition`, the type of the same kind already there
-  (`crates/nozoki-core/src/fs_reader.rs:L100`) — by a behaviour-preserving source change that leaves
-  `lib.rs`'s `pub use` path, `nozoki_core::OpenFailure`, unchanged, so the bridge's import
-  (`crates/nozoki-bridge/src/session.rs:L9`) does not move. The Rust module spelling stays the
+  (`crates/ka-reader-core/src/fs_reader.rs:L100`) — by a behaviour-preserving source change that leaves
+  `lib.rs`'s `pub use` path, `ka_reader_core::OpenFailure`, unchanged, so the bridge's import
+  (`crates/ka-reader-bridge/src/session.rs:L9`) does not move. The Rust module spelling stays the
   developer's (`docs/nfdr.md:L56-L57`). Any home `fs-reader` may import satisfies QC-11. A module of
   no part does not satisfy it yet, because § 1.2 states no such module; that is § 2.1 below. Reading
   (b) is not this document's to grant. QC-11 transcribes `docs/SDD.md` § 3's units paragraph ("the

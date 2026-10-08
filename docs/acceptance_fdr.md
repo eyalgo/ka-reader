@@ -1,4 +1,4 @@
-# Acceptance — FDR — Nozoki 覗き
+# Acceptance — FDR — KA-Reader
 
 Behavioral acceptance gates derived from fdr.md. All must pass.
 Real implementation: Behave `.feature` files covering user-facing rules from fdr.md.

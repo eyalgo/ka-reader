@@ -7,13 +7,13 @@
 - **Decided by:** `decide_companion_answers.md` v1.3.0
 - **Date:** 2026-09-30
 - **Sources re-read:** None. No answer here rests on a source outside this repository. Every
-  fact the answer leans on was re-read in the tree on `main` at `nozoki@8e738b7` before writing:
-  `nozoki-mac/Sources/Shell/WindowPresenting.swift:L21` (480 × 640) and `:L44-L47` (no minimum
-  size), `nozoki-mac/Sources/Surfaces/WorkbenchView.swift:L14` and `:L32-L34` (the sidebar held at
+  fact the answer leans on was re-read in the tree on `main` at `ka-reader@8e738b7` before writing:
+  `ka-reader-mac/Sources/Shell/WindowPresenting.swift:L21` (480 × 640) and `:L44-L47` (no minimum
+  size), `ka-reader-mac/Sources/Surfaces/WorkbenchView.swift:L14` and `:L32-L34` (the sidebar held at
   260), `:L46-L53` (the prompt as a plain label, top-left, inset 24, no glyph),
-  `nozoki-mac/Sources/Surfaces/RootItemsView.swift:L69-L72` (the root line centred),
-  `nozoki-mac/Sources/Surfaces/StartupView.swift:L65-L70` (two `NSButton`s) and
-  `grep -n -i 'NSImage\|symbol' nozoki-mac/Sources/Surfaces/StartupView.swift` exiting 1;
+  `ka-reader-mac/Sources/Surfaces/RootItemsView.swift:L69-L72` (the root line centred),
+  `ka-reader-mac/Sources/Surfaces/StartupView.swift:L65-L70` (two `NSButton`s) and
+  `grep -n -i 'NSImage\|symbol' ka-reader-mac/Sources/Surfaces/StartupView.swift` exiting 1;
   `docs/DESIGN.md:L483-L489` (260, 720), `:L668-L688` (status messages), `:L695-L705` (the startup
   surface), `:L849-L856` (RN-8, every measurement owner-confirmed), `:L914-L920` (RN-14);
   `docs/UXD.md:L65-L67` (§ 4, the dominant reading panel).
@@ -32,7 +32,7 @@
   and it widens the SDD: § 6 states nothing today about which slice holds the design language's
   layout and component rules. So the prompt's § *A widening item waits until it occurs* applies,
   and the question is whether the item cites an occurrence. It cites three, each a path and line in
-  the product as it stands on `main` (`nozoki@8e738b7`), and each was re-read above and holds: the
+  the product as it stands on `main` (`ka-reader@8e738b7`), and each was re-read above and holds: the
   window opens 480 wide with no minimum, the tree's status line is centred, the startup routes are
   bordered buttons with no glyph before the message. Occurrences cited, so the widening proceeds.
 
@@ -137,7 +137,7 @@
   - **Absent — the glyphs.** C-E7 forbids "a glyph the tool does not ship", so a glyph-led status
     message in S-1 needs the icons in the bundle. C-R1 says the fourteen ship inside
     `Contents/Resources`; the shell already carries a `GlyphSource` seam and draws `folder` and
-    `file` from the bundle (`nozoki-mac/Sources/Shell/GlyphSource.swift:L1-L16`,
+    `file` from the bundle (`ka-reader-mac/Sources/Shell/GlyphSource.swift:L1-L16`,
     `LaunchFlow.swift:L8-L9`), and `third_party/lucide/icons/` holds `circle-alert.svg` among the
     set. `info` and `circle-alert` reach the startup surface and the status lines through the same
     seam. Not a new capability, and not a UXD gap.
@@ -181,7 +181,7 @@ None this run.
   value" (`:L786-L787`) are a fact now false — one AppKit process, no web engine, no markup since
   `docs/SDD.md` v13 (§ 10 RC-3). The SDD has carried it as owed to DESIGN's own run since RN-53
   (2026-09-23) and re-checked it at RN-69 (2026-09-24); DESIGN reached v10 on 2026-09-25
-  (`nozoki@da88347`) with the sentence unchanged, because the SDD is not among its inputs
+  (`ka-reader@da88347`) with the sentence unchanged, because the SDD is not among its inputs
   (`docs/DESIGN.md:L303`) and it had no companion — the case the prompt's § *The items are not the
   whole of what a document is owed* was written for. The item sits in § 2 *Choices to confirm* with
   its slot at the placeholder; it decides no value and names § Typography's font-stack syntax as the
@@ -190,5 +190,5 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/SDD.md`** — `<CORE>/launchers/product-sdd/launcher.sh nozoki`
-- **`docs/DESIGN.md`** — `<CORE>/launchers/skill/launcher.sh product-design nozoki`
+- **`docs/SDD.md`** — `<CORE>/launchers/product-sdd/launcher.sh ka-reader`
+- **`docs/DESIGN.md`** — `<CORE>/launchers/skill/launcher.sh product-design ka-reader`

@@ -1,4 +1,4 @@
-# Architecture open issues — Nozoki
+# Architecture open issues — KA-Reader
 
 > Companion to `adr/` and `nfdr.md`. The Principal Architect authored both records
 > non-interactively; this file holds what the run could not settle from its inputs — the SRS, the SDD
@@ -33,39 +33,39 @@ None.
 
 ## 3. Raised from downstream — an item from a seat that did not write these records
 
-### 3.1 QC-14 does not say whether a `nozoki-core` test target that compiles harness source counts as "a dependency of `nozoki-core`"
+### 3.1 QC-14 does not say whether a `ka-reader-core` test target that compiles harness source counts as "a dependency of `ka-reader-core`"
 - **Raised by:** PM — 2026-10-01
 - **Which record:** `nfdr.md` QC-14 and its § 10 row (QC-9 – QC-12, QC-14)
-- **Tracked by:** `nozoki · nemawashi · 2026-10-01_the-tree-is-checked-for-its-shape`
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-01_the-tree-is-checked-for-its-shape`
 - **What it blocks:** `checks/structure.sh` is not written yet, and it is QC-14's layer-6 check. As
   QC-14 reads now, the script could either fail the tree on the site below or pass it, and nothing in
   the records says which is right.
-- **Where it shows:** QC-14 says `checks/` is "**never a dependency** of `nozoki-core`, `nozoki-bridge`
-  or `nozoki-mac`" (`docs/nfdr.md:L275-L276`), with no shipped/unshipped distinction. SDD § 3
+- **Where it shows:** QC-14 says `checks/` is "**never a dependency** of `ka-reader-core`, `ka-reader-bridge`
+  or `ka-reader-mac`" (`docs/nfdr.md:L275-L276`), with no shipped/unshipped distinction. SDD § 3
   `read-only-harness` narrows what it must not own to "Being a dependency of any shipped unit"
-  (`docs/SDD.md:L332`). The tree now has a site where the two readings part. `nozoki-core`'s own
+  (`docs/SDD.md:L332`). The tree now has a site where the two readings part. `ka-reader-core`'s own
   Cargo test target compiles the harness's walk in with `#[path = "../../../checks/walk.rs"] mod walk;`
-  (`crates/nozoki-core/tests/walk.rs:L6-L7`). It is test-only: the shipped library, the manifests and
-  the bundle are unchanged, and `cargo tree -p nozoki-bridge` still names no `checks` crate. Under the
+  (`crates/ka-reader-core/tests/walk.rs:L6-L7`). It is test-only: the shipped library, the manifests and
+  the bundle are unchanged, and `cargo tree -p ka-reader-bridge` still names no `checks` crate. Under the
   SDD's reading the site conforms. Under QC-14's words it may not. QC-14 should say which, and its
-  § 10 row should say whether `structure.sh` reads a `nozoki-core` test target's `#[path]` into
+  § 10 row should say whether `structure.sh` reads a `ka-reader-core` test target's `#[path]` into
   `checks/` as a dependency.
 - **If a document has to be written:** none. QC-14's first clause, and the § 10 row that names
   `checks/structure.sh` for it.
 - **Answer:** The site conforms, and `checks/structure.sh` does not read a test target's `#[path]`
-  into `checks/` as a dependency. QC-14's "never a dependency of `nozoki-core`, `nozoki-bridge` or
-  `nozoki-mac`" means of each unit **as it ships** — the `nozoki-core` library, the `nozoki-bridge`
-  static library, the `nozoki-mac` executable — and never of a test target declared in one of their
+  into `checks/` as a dependency. QC-14's "never a dependency of `ka-reader-core`, `ka-reader-bridge` or
+  `ka-reader-mac`" means of each unit **as it ships** — the `ka-reader-core` library, the `ka-reader-bridge`
+  static library, the `ka-reader-mac` executable — and never of a test target declared in one of their
   manifests. Three grounds. (1) Both sources QC-14 traces to already carry the qualifier: ADR-0016
   "never a dependency of a shipped unit" (`docs/adr/0016-physical-unit-set-core-bridge-mac-checks.md:L40-L41`)
   and SDD § 3 `read-only-harness` "Being a dependency of any shipped unit" (`docs/SDD.md:L332`);
   QC-14 dropped it in transcription, and the entry is the copy. (2) Cargo compiles each file under
   `tests/` "as a separate crate", which "can use the public API of the package's library"
   (https://doc.rust-lang.org/cargo/reference/cargo-targets.html, re-read 2026-10-01). So
-  `crates/nozoki-core/tests/walk.rs` is a crate that imports `nozoki-core`, and `checks/walk.rs`,
-  compiled into it, imports only `nozoki_core`'s public items (`checks/walk.rs:L20`). That is the
-  direction QC-14's first clause allows ("`checks/` may import `nozoki-core`"), and the library
-  compiles no file of `checks/` (`cargo tree --offline --locked -p nozoki-bridge | grep -ci checks`
+  `crates/ka-reader-core/tests/walk.rs` is a crate that imports `ka-reader-core`, and `checks/walk.rs`,
+  compiled into it, imports only `ka_reader_core`'s public items (`checks/walk.rs:L20`). That is the
+  direction QC-14's first clause allows ("`checks/` may import `ka-reader-core`"), and the library
+  compiles no file of `checks/` (`cargo tree --offline --locked -p ka-reader-bridge | grep -ci checks`
   → `0`, 2026-10-01). (3) § 9's scope bullet already keeps `crates/*/tests/` out of every rule of
   `structure.sh`, "every other rule of the script alike" (`docs/nfdr.md:L1001-L1016`), and QC-14's
   rule is one of them. **The fold:** QC-14's first clause says "a dependency of any shipped unit —"

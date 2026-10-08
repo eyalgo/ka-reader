@@ -1,4 +1,4 @@
-# SDD open issues — Nozoki
+# SDD open issues — KA-Reader
 
 > Companion to `SDD.md`. Three seats — the CTO, the CPO and the CDO — authored the SDD
 > non-interactively in one run; this file holds what that run could not settle from its inputs (the
@@ -41,27 +41,27 @@ None.
 
 - **Raised by:** `companion-self-answer`, answering this file — 2026-10-01
 - **Drafted into the SDD:** Nothing has been written into the SDD. As it stands, § 4 C-I3 carries
-  four line citations and one count that do not match the tree on `main` (`nozoki@fcb7910`), and
+  four line citations and one count that do not match the tree on `main` (`ka-reader@fcb7910`), and
   § 6 S-1's command half carries one more citation of the same kind:
-  - `nozoki-mac/Sources/Shell/LaunchFlow.swift:L35-L37` (`docs/SDD.md:L706`), cited for "the shell
+  - `ka-reader-mac/Sources/Shell/LaunchFlow.swift:L35-L37` (`docs/SDD.md:L706`), cited for "the shell
     calls it only after the panel returns". Those three lines hold the status glyphs' declaration.
     The panel call is at `:L53-L57` and the `openFolder` call at `:L69`.
   - `checks/renderer.sh:L44-L57` (`docs/SDD.md:L708`), `:L53-L61` (`:L715`) and `:L58-L61`
     (`:L725`) in C-I3, and `:L53-L57` (`:L1369`) in S-1. In the script the frame list is
     `:L53-L56` and the Mac reading is `:L57-L60`.
   - "the runner matched the script's five-frame list on observation 1" (`docs/SDD.md:L727-L729`).
-    The list the gate reads holds four frames since `nozoki@b75348f` (2026-09-27), which removed
+    The list the gate reads holds four frames since `ka-reader@b75348f` (2026-09-27), which removed
     `LaunchFlow.run()` from the header and from `FRAME_LIST`.
 
   The draft change: re-point each of the five citations at the lines that hold what its sentence
   says, or pin it to the commit it was read at, the form RN-68 and RN-69 used. For the runner's
   reading, say that the list held five frames when run 35988399477 matched it and holds four
-  since `nozoki@b75348f`.
-- **Rationale:** Each is a measurement. `sed -n 35,37p nozoki-mac/Sources/Shell/LaunchFlow.swift`
+  since `ka-reader@b75348f`.
+- **Rationale:** Each is a measurement. `sed -n 35,37p ka-reader-mac/Sources/Shell/LaunchFlow.swift`
   prints `private lazy var statusGlyphs = StatusGlyphs(` and its two arguments. `sed -n 53,56p
   checks/renderer.sh` prints four frames, and `:L59` reads "then the four frames above". `git show
   b75348f -- checks/renderer.sh` shows the line `LaunchFlow.run()` removed twice. The SDD's last
-  revision is `nozoki@3f13391` (2026-09-30), three days after that commit, so the count was
+  revision is `ka-reader@3f13391` (2026-09-30), three days after that commit, so the count was
   already false at v21. C-I3 is a live condition every slice inherits, and the writing bar asks
   that a locator open on the sentence it is cited for (`system/doctrine/writing_bar.md` § 1.2 in
   the instance). The SDD's review notes are left out on purpose: a note is dated history
@@ -89,19 +89,19 @@ None.
 
 ### 5.1 C-R7 and C-I3 do not say what holds while a slice is built across several changes
 - **Raised by:** PM — 2026-10-01
-- **Tracked by:** `nozoki · nemawashi · 2026-10-01_a-file-reads-in-the-panel`
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-01_a-file-reads-in-the-panel`
 - **What it blocks:** nothing is blocked; two sentences read false on product `main` today and stay
   false until `read-a-file` is whole, so a reader checking the build against them finds a violation
   the design did not intend.
 - **Where it shows:** § 4 C-R7 says "a function whose slice has not landed is never exported", and
   SM-4 says each function is "exported from the build in which a slice lands it and not before".
-  `nozoki_select_file` is exported now (`crates/nozoki-bridge/tests/exports.rs` admits it; `cargo test
-  --locked -p nozoki-bridge --test exports` passes, 10 tests), while § 6 S-2's highlighter and
+  `ka_reader_select_file` is exported now (`crates/ka-reader-bridge/tests/exports.rs` admits it; `cargo test
+  --locked -p ka-reader-bridge --test exports` passes, 10 tests), while § 6 S-2's highlighter and
   read-only bars are not yet met. § 4 C-I3 says `checks/read-only.sh` "exercises every command the build
-  grants"; the walk it drives calls `list_tree` alone (`crates/nozoki-core/tests/walk.rs:L1-L6`), so
+  grants"; the walk it drives calls `list_tree` alone (`crates/ka-reader-core/tests/walk.rs:L1-L6`), so
   `select_file` is granted and not exercised. The SDD should state which reading binds: that a slice's
   function is exported from the first change that builds it, with C-I3 naming what covers the read until
-  the walk drives `select_file` (`cargo test --locked -p nozoki-bridge --test select_file` holds
+  the walk drives `select_file` (`cargo test --locked -p ka-reader-bridge --test select_file` holds
   `checks/fixtures/text/` byte-identical today); or that the export waits for the slice whole.
 - **If a document has to be written:** none — a sentence in C-R7, SM-4 and C-I3.
 - **Answer:** The first reading binds for the export, and C-I3 gains no interim cover. The item
@@ -116,7 +116,7 @@ None.
   *the functions its landed changes built*. C-R7's "a function whose slice has not landed is never
   exported" reads *a function no landed change has built is never exported*. SM-4's "exported from
   the build in which a slice lands it and not before" reads *from the build in which a change of
-  its slice first builds it, and not before*. Set equality, the closed list, `nozoki_free` beside
+  its slice first builds it, and not before*. Set equality, the closed list, `ka_reader_free` beside
   it, "all nine from `v1.0.0`" and the uncovered case C-R7 names before `v1.0.0` stand as written.
   **The harness (C-I3).** C-I3 stands as its headline and its `read-only.sh` sentence read: every
   build, and every command that build grants. It names no test that covers a command in place of
@@ -124,9 +124,9 @@ None.
   can call it in that same build, and no build is forced into an interval. C-I3's *Violated by*
   reads *a build that exports a command the harness does not exercise* where it reads "a slice
   that lands a command the harness does not exercise", so the clause names the unit its own
-  headline names. Product `main` at `nozoki@fcb7910` is that case:
-  `crates/nozoki-bridge/tests/exports.rs:L20` admits `nozoki_select_file`, and
-  `crates/nozoki-core/tests/walk.rs:L1-L6` calls `list_tree` alone. On those builds C-I3 is unmet,
+  headline names. Product `main` at `ka-reader@fcb7910` is that case:
+  `crates/ka-reader-bridge/tests/exports.rs:L20` admits `ka_reader_select_file`, and
+  `crates/ka-reader-core/tests/walk.rs:L1-L6` calls `list_tree` alone. On those builds C-I3 is unmet,
   the walk driving `select_file` closes it, and the SDD carries no sentence about the interval.
   Two cases this answer does not cover, named so the fold does not read them as covered. A fixture
   that offers no entry for a command exercises nothing for it, and which fixture a command needs
@@ -139,20 +139,20 @@ None.
 
 ### 5.2 § 3 gives `folder-model` the open file, and the built product holds it in `surfaces`
 - **Raised by:** PM — 2026-10-01
-- **Tracked by:** `nozoki · nemawashi · 2026-10-01_a-file-reads-in-the-panel`
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-01_a-file-reads-in-the-panel`
 - **What it blocks:** `follow-the-folder`, whose bar refreshes the open file and states its file-gone
   state, reads the open file where § 3 puts it — in the model the core keeps — and the core holds none.
 - **Where it shows:** § 3 gives `folder-model` "the selection and expansion, the open file" and the
   open `FileView` (`docs/SDD.md:L325`, `:L435`, `:L443`). In the product, `select_file` in
-  `crates/nozoki-core/src/folder_model.rs` reads and returns a verdict and keeps nothing; the selection
-  and the shown file live in `nozoki-mac/Sources/Surfaces/WorkbenchView.swift:L75-L93`. The SDD should
+  `crates/ka-reader-core/src/folder_model.rs` reads and returns a verdict and keeps nothing; the selection
+  and the shown file live in `ka-reader-mac/Sources/Surfaces/WorkbenchView.swift:L75-L93`. The SDD should
   say whether the open file moves into `folder-model` with `follow-the-folder`, or whether § 3 should
   place it in `surfaces`.
 - **If a document has to be written:** none — § 3's `folder-model` and `surfaces` rows, and
   `follow-the-folder`'s *Rests on*.
 - **Answer:** § 3 stands. The open file is `folder-model`'s, and the model holds it no later than
   `follow-the-folder`. § 3 does not place it in `surfaces`. `follow-the-folder`'s own command half
-  is the reason: `cargo test --locked -p nozoki-core --test watch` asserts, in-process and with no
+  is the reason: `cargo test --locked -p ka-reader-core --test watch` asserts, in-process and with no
   window, "the model's final snapshot equal to a fresh open of the fixture, and expansion,
   selection and reading position surviving" (`docs/SDD.md` § 6 S-5 *Reached when*). A model that
   holds no open file cannot say that the open file changed or is gone (`docs/SRS.md` FR-27,
@@ -162,8 +162,8 @@ None.
   and of S-5's bar, and nothing the item cites calls for one. The same answer covers the selection
   and the expansion: § 3 gives them to the model in the same phrase, S-5's test names them beside
   the reading position, and the product keeps both in the shell today
-  (`nozoki-mac/Sources/Surfaces/RootItemsView.swift:L18-L19`, `:L54-L61`;
-  `crates/nozoki-core/src/folder_model.rs:L69-L71`). What the SDD owes is one clause, in
+  (`ka-reader-mac/Sources/Surfaces/RootItemsView.swift:L18-L19`, `:L54-L61`;
+  `crates/ka-reader-core/src/folder_model.rs:L69-L71`). What the SDD owes is one clause, in
   `follow-the-folder`'s *Rests on*: its `folder-model` entry names the held state beside the
   reducer — the tree's expansion, the selection, and the open `FileView` with its reading position
   — so a seed cut from that slice carries the move. § 3's rows, `read-a-file`'s *Rests on* and
@@ -172,5 +172,5 @@ None.
   holds the open file. A change may bring the held state into the model earlier, with the first
   items the model holds. One case this answer does not cover, and it is the moving change's own
   design: which side orders two reads in flight once the model holds the selection. The shell's
-  count does it today (`nozoki-mac/Sources/Surfaces/WorkbenchView.swift:L78-L93`). Reasoning:
+  count does it today (`ka-reader-mac/Sources/Surfaces/WorkbenchView.swift:L78-L93`). Reasoning:
   `docs/trail/sdd/self_answer-28.md` § 5.2.

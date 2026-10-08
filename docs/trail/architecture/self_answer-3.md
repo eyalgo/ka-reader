@@ -2,7 +2,7 @@
 
 ## Header
 
-- **Companion:** /Users/eyalgolan/products/nozoki/docs/architecture_open_issues.md
+- **Companion:** /Users/eyalgolan/products/ka-reader/docs/architecture_open_issues.md
 - **Document:** `adr/` and `nfdr.md` (`docs/adr/`, `docs/nfdr.md`)
 - **Decided by:** `decide_companion_answers.md` v1.0.0
 - **Date:** 2026-09-02
@@ -42,10 +42,10 @@
   from the environment, and this product forbids `std::env::var` in any shipped crate (QC-30's
   `checks/structure.sh` rule; QC-58: "reads no configuration file, no environment variable and no
   argument"). So the implementation is the host's own writer — the module QC-39, QC-40 and QC-52
-  already bind, implementing `log::Log`, installed once in `nozoki-app` (the composition root,
+  already bind, implementing `log::Log`, installed once in `ka-reader-app` (the composition root,
   QC-17; ADR-0009 § Decision) — with its level fixed in code. That is not a new obligation but the
   existing ones read together: QC-52 says the file is "the product's only diagnostic output", so a
-  writer admitting `debug!` lines from `nozoki-core` would already break it. *Empty*: a session with
+  writer admitting `debug!` lines from `ka-reader-core` would already break it. *Empty*: a session with
   no `failed` or `stopped` item writes nothing, which QC-40's truncate-at-launch already covers.
   *Absent*: a failed log write surfaces nowhere (NFR-11; QC-40) — unchanged by the facade.
   *Concurrent*: two instances writing one file is NFR-11's own case and the bound is on-disk size,
@@ -68,11 +68,11 @@
 
 - **Bucket:** 2. Choices to confirm — the Principal Architect drafted a best-effort answer; confirm or override
 - **Verdict:** confirmed with addition
-- **Why:** Confirmed: the three edits are on disk at NFDR v3 (`nozoki@9229881`) and each holds for
+- **Why:** Confirmed: the three edits are on disk at NFDR v3 (`ka-reader@9229881`) and each holds for
   the reason it gives. **Check 1 — mine.** The edits land in this document alone; the placement is
   the owner's already-made ruling, carried and not re-decided (`kensaiapp-dev@49e0444f`, "crates/ is
   the house answer, and the product adapts to the packet"; `layout.md` § A multi-crate product,
-  which names `nozoki@docs/nfdr.md` § 9 by name). **Check 2 — the argument holds, and was read
+  which names `ka-reader@docs/nfdr.md` § 9 by name). **Check 2 — the argument holds, and was read
   against the packet rather than against the item.** RN-7's departure (1) — layers 3, 5 and 6 on
   the `checks/` harness where the packet's shape is `tests/<use_case>.rs`, `tests/<flow>.rs`,
   `tests/architecture.rs` — matches `testing.md` § Layers 1–5 and § Layers 6–7; departure (2) —
@@ -84,7 +84,7 @@
   `testing.md` 1.0.0, `layout.md` 1.1.0, `errors_logging.md` 1.1.0, `quality_gates.md` 1.1.0,
   `toolchain.md` 1.1.0 — and all five agree. **The addition is a departure RN-7 does not list.**
   `testing.md` § Layers 1–5 puts `--locked` on every run command in its table and states the reason;
-  § 9's `cargo test -p nozoki-core --test …` and `cargo test -p nozoki-app …` commands, and the same
+  § 9's `cargo test -p ka-reader-core --test …` and `cargo test -p ka-reader-app …` commands, and the same
   commands in § 10, carry no `--locked`. RN-7's own rule is that "what stays here is what this
   product fixes *differently* from a packet, each with its reason", and no reason for this
   difference exists anywhere in the document — it is an omission, not a decision, so the packet's
@@ -99,7 +99,7 @@
   visible as a version mismatch rather than a silent drift. *Absent*: if the packet's holder — the
   managing instance's core — stops moving, § 9 states every rule it relies on in full (RN-8), so the
   trace is provenance and never a dependency. *Empty*: a workspace with no `crates/` yet is the
-  present state (no Rust source is tracked in the product: `ls /Users/eyalgolan/products/nozoki`
+  present state (no Rust source is tracked in the product: `ls /Users/eyalgolan/products/ka-reader`
   shows `docs/`, `scripts/`, `third_party/` and no manifest), and the paths bind the first change
   that creates one. What would have tipped it to *overridden*: a product record fixing a different
   placement, which `languages/README.md` § Precedence would honour — there is none.
@@ -110,7 +110,7 @@
 - **Verdict:** confirmed
 - **Why:** Confirmed as applied at v3. **Check 1 — mine.** The edit is two review notes and § 8's
   preamble in this document; it commits nobody to anything. **Check 2 — the facts were re-measured,
-  and one date in the item is wrong.** `git -C kensaiapp-opensource show 4bdfddd:system/projects/nozoki/project.md`
+  and one date in the item is wrong.** `git -C kensaiapp-opensource show 4bdfddd:system/projects/ka-reader/project.md`
   prints `**Test command:** pytest tests/` with its PROVISIONAL comment and no `Languages:` line —
   so the pin RN-6 uses is the card as v2 read it, as the note says. The two closes:
   `kensaiapp-opensource@c2155cc` is dated **2026-09-01** ("the card's test command is the
@@ -121,7 +121,7 @@
   is, and it is reported here rather than edited. RN-7's derivation moved as the item says: it now
   reads "Both packets resolve at step 1 of `languages/README.md` § The resolution chain, from the
   card's `Languages:` line", and the card carries `**Languages:** Rust, TypeScript, Shell`
-  (`system/projects/nozoki/project.md` at HEAD, `0af5fb9`). **Check 3.** Agrees with 2.1 (RN-7 is
+  (`system/projects/ka-reader/project.md` at HEAD, `0af5fb9`). **Check 3.** Agrees with 2.1 (RN-7 is
   one note, re-derived once) and with 1.1 (nothing in the card names a facade). **Check 4.** *Stale*
   is the case that matters for a note about another repository's file, and the draft already
   answers it with the pinning treatment cycle 1 gave RN-2 (`docs/trail/architecture/cycle-1.md`
@@ -141,13 +141,13 @@ None this run.
 
 ## Skipped
 
-- **`system/projects/nozoki/project.md` (kensaiapp-opensource) — the `Languages:` comment and the
+- **`system/projects/ka-reader/project.md` (kensaiapp-opensource) — the `Languages:` comment and the
   test command** — not an item on this companion and no companion template names a project card,
   so nothing was written (SKILL.md § When a change belongs to another document, "No template names
   that document"). Two facts for the owner: the `Languages:` line's comment reads "Rust has no packet
   yet: resolution falls through to the language-agnostic floor" (`project.md`, the `Languages:`
   field, `0af5fb9`), false since `kensaiapp-dev@d628f75c`; and the test command
-  `cargo test --workspace && (cd nozoki-ui && pnpm exec vitest run)` carries no `--locked`, where the
+  `cargo test --workspace && (cd ka-reader-ui && pnpm exec vitest run)` carries no `--locked`, where the
   Rust packet puts it on every `cargo test` run (`languages/rust/testing.md` § Layers 1–5) — item
   2.1's answer follows the packet inside the NFDR and leaves the card's field to its owner.
 
@@ -157,4 +157,4 @@ None this run.
 
 ## Launchers owed
 
-- **`adr/` and `nfdr.md`** — `<CORE>/launchers/product-architecture/launcher.sh nozoki`
+- **`adr/` and `nfdr.md`** — `<CORE>/launchers/product-architecture/launcher.sh ka-reader`

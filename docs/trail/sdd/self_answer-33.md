@@ -17,7 +17,7 @@ seat. It is for the owner, who reads it to learn what was decided and why, and f
   condition, under the comment "they're all unconditionally always compiled";
   `libgit2/src/libgit2/transport.c:L32-L36` registers `git://`, `http://`, `https://` and `file://`
   with no `#ifdef`, and `:L38-L42` registers the three SSH schemes under `#ifdef GIT_SSH`. §§ 5.1
-  and 5.2 rest on this repository's documents and tree at `nozoki@136b227`, and on no source
+  and 5.2 rest on this repository's documents and tree at `ka-reader@136b227`, and on no source
   outside it.
 
 **What this run read, for all three items.** `docs/SDD.md` from its first line through § 4
@@ -51,12 +51,12 @@ were not opened, because no answer moves a requirement or a surface. Downstream 
   bar. I can name no ground I cannot see. The item is mine in the owner's seat.
 
   **Check 2: the draft.** It holds, and for the reason it gives. `ls checks/fixtures` at
-  `nozoki@136b227` prints `inside-a-repo`, `linked-worktree`, `parent-of-two` and `submodule`, each
+  `ka-reader@136b227` prints `inside-a-repo`, `linked-worktree`, `parent-of-two` and `submodule`, each
   beside a `<name>.git.tar`. `git diff --name-status 7a125b4 136b227 -- checks/` shows all eight as
   added since the pin. The draft is incomplete in three places, which are the additions:
 
   1. *The pin.* The draft says "re-measure the cell at the current commit". The commit the item
-     measured at, `nozoki@126ef75`, is already two commits behind `HEAD`. So the answer names the
+     measured at, `ka-reader@126ef75`, is already two commits behind `HEAD`. So the answer names the
      commit the fold is made on, and asks the fold to measure the tree itself. RN-84 did the same
      the last time this cell moved ("Re-verified before writing, not taken from the item or the
      answer", `docs/SDD.md:L4913`).
@@ -65,7 +65,7 @@ were not opened, because no answer moves a requirement or a surface. Downstream 
   3. *The slice-owed list.* The four were everything the cell said `see-git-status` owed. Once
      they move, that slice's clause leaves the list. The other slices' clauses stay as they are.
 
-  **What the archives are for.** `crates/nozoki-core/tests/root_finding.rs:L49` unpacks
+  **What the archives are for.** `crates/ka-reader-core/tests/root_finding.rs:L49` unpacks
   `<name>.git.tar` into a scene of its own, as `:L41` does for `repo.git.tar`. That file is the
   only reader of the four names under `checks/`, `crates/*/tests` and `.github`
   (`grep -rln` for the four names prints it alone). The cell already describes `repo.git.tar` as
@@ -110,9 +110,9 @@ were not opened, because no answer moves a requirement or a surface. Downstream 
 
   **The widening rule, first.** A correction, not a widening. SM-2 states where the trait is
   owned, and the tree and the SDD's own parts table say otherwise. The occurrence is cited and
-  re-read: `pub trait GitPort` is at `crates/nozoki-core/src/git_reader.rs:L33`, with
+  re-read: `pub trait GitPort` is at `crates/ka-reader-core/src/git_reader.rs:L33`, with
   `RootFinding` and `ProbeCondition` below it, and
-  `grep -n 'GitPort\|git_reader\|RootFinding\|ProbeCondition' crates/nozoki-core/src/folder_model.rs`
+  `grep -n 'GitPort\|git_reader\|RootFinding\|ProbeCondition' crates/ka-reader-core/src/folder_model.rs`
   prints nothing.
 
   **Check 1: the seat.** The edit lands in § 3's seams table, the CTO's (`docs/SDD.md:L91`). It
@@ -139,7 +139,7 @@ were not opened, because no answer moves a requirement or a surface. Downstream 
   (`docs/SDD.md:L471-L475`). A change that read "the model holds `GitState`" as "the model defines
   the type `state()` returns" would put a `folder-model` import into `git-reader`, the same edge
   this item is about. So the answer states the rule for every type that crosses SM-2, and leaves
-  to the change which of two homes each type takes: `git-reader`, or a module of `nozoki-core`
+  to the change which of two homes each type takes: `git-reader`, or a module of `ka-reader-core`
   that is no part. The second home is not invented here. `docs/SDD.md:L433` leaves the physical
   layout to the developer, and `docs/nfdr.md` QC-63 already admits a module that is no part and
   that any part may import.
@@ -158,8 +158,8 @@ were not opened, because no answer moves a requirement or a surface. Downstream 
   - § 2's hexagonal row and § 9 TO-10 call SM-2 the one port the design keeps. Neither says where
     the trait is defined, and neither moves.
   - § 6 S-4's command half uses "a port double" in `git_state` (`docs/SDD.md:L1656`). A double
-    implements the trait from `nozoki_core`'s public surface
-    (`crates/nozoki-core/src/lib.rs:L15`), wherever the trait is defined. Unaffected.
+    implements the trait from `ka_reader_core`'s public surface
+    (`crates/ka-reader-core/src/lib.rs:L15`), wherever the trait is defined. Unaffected.
   - My answer to § 5.1 touches a different table and nothing here bears on it.
 
   **Check 4: the failure paths.**
@@ -188,7 +188,7 @@ were not opened, because no answer moves a requirement or a surface. Downstream 
 
   **The widening rule, first.** A correction, with its occurrence cited and re-read at the source.
   C-R6 says "no shipped unit links a network transport" (`docs/SDD.md:L600`). § 3 names
-  `crates/nozoki-core` as a unit (`docs/SDD.md:L395`). That unit now compiles libgit2's transports
+  `crates/ka-reader-core` as a unit (`docs/SDD.md:L395`). That unit now compiles libgit2's transports
   in: `libgit2-sys 0.18.8+1.9.7`, the version `Cargo.lock:L122-L123` resolves, adds
   `libgit2/src/libgit2/transports` and `…/streams` with no condition (`build.rs:L155-L156`). So
   the sentence is false of a unit as written, and unproven of the executable. The check the answer
@@ -228,26 +228,26 @@ were not opened, because no answer moves a requirement or a surface. Downstream 
     has one honest referent, and the claim is checkable against it.
 
   **What was measured here, and what was not.**
-  - `cargo tree --locked --offline -p nozoki-core --prefix none | grep -Ei
+  - `cargo tree --locked --offline -p ka-reader-core --prefix none | grep -Ei
     'openssl|native-tls|rustls|libssh2|schannel|security-framework'` prints nothing at
-    `nozoki@136b227`.
-  - `crates/nozoki-core/src/git_reader/libgit2.rs:L90-L95` asserts `!version.https()` and
+    `ka-reader@136b227`.
+  - `crates/ka-reader-core/src/git_reader/libgit2.rs:L90-L95` asserts `!version.https()` and
     `!version.ssh()`.
-  - `nm -u nozoki-mac/.build/out/Products/Debug/Nozoki` (built 2026-10-03 20:11) lists `_connect`,
+  - `nm -u ka-reader-mac/.build/out/Products/Debug/KAReader` (built 2026-10-03 20:11) lists `_connect`,
     `_getaddrinfo` and `_socket`. The same file holds no symbol containing `git_` and 77
     containing `std3net`. So a debug executable imports the three through Rust's standard
     library, with no libgit2 in it. That is why the import half is bound to the release
     executable.
-  - `nm -u` on `nozoki-mac/.build/out/Products/Release/Nozoki` and on
-    `target/release/bundle/macos/Nozoki.app/Contents/MacOS/Nozoki` (both built 2026-10-02 21:39,
+  - `nm -u` on `ka-reader-mac/.build/out/Products/Release/KAReader` and on
+    `target/release/bundle/macos/KA-Reader.app/Contents/MacOS/KAReader` (both built 2026-10-02 21:39,
     before `git-reader` merged) lists none of the three. So a release executable can pass the
     import half. These two say nothing about libgit2, which they predate.
-  - **Not measured:** a release executable built at `nozoki@136b227` or later. I don't know
+  - **Not measured:** a release executable built at `ka-reader@136b227` or later. I don't know
     whether it defines a transport symbol. The check that finds out is a release build followed by
     `nm` on the executable, which is the check the answer puts in the harness. The only evidence
     on record is the architect's scratch measurement that `checks/deps.review.md` quotes, and this
-    run did not re-run it. `crates/nozoki-bridge/src` names nothing of `git-reader` today
-    (`grep -rn 'git_reader\|GitPort\|Libgit2' crates/nozoki-bridge/src` prints nothing), so no
+    run did not re-run it. `crates/ka-reader-bridge/src` names nothing of `git-reader` today
+    (`grep -rn 'git_reader\|GitPort\|Libgit2' crates/ka-reader-bridge/src` prints nothing), so no
     shipped code path reaches libgit2 yet.
 
   **Check 3: against the settled record.**
@@ -283,7 +283,7 @@ were not opened, because no answer moves a requirement or a surface. Downstream 
   - *Empty.* Today's case: nothing reaches libgit2, and the check passes with nothing to find. It
     still runs, so the first build that changes that is the build that says so.
   - *Not covered, and named:* a transport reached through a socket call outside the three, or
-    through a framework. `nozoki-mac/Package.swift:L35-L37` now links `z`, `Security` and
+    through a framework. `ka-reader-mac/Package.swift:L35-L37` now links `z`, `Security` and
     `CoreFoundation` for libgit2. `Security` is not a transport, and § 4 C-R7's link list names
     only `WebKit` and `JavaScriptCore`. Whether that list should say anything about `Security` was
     not weighed here.
@@ -327,4 +327,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/SDD.md`** — `<CORE>/launchers/skill/launcher.sh product-sdd nozoki`
+- **`docs/SDD.md`** — `<CORE>/launchers/skill/launcher.sh product-sdd ka-reader`

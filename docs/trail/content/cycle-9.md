@@ -1,4 +1,4 @@
-# CONTENT open issues — Nozoki
+# CONTENT open issues — KA-Reader
 
 > Companion to `CONTENT.md`. The Content Manager authored the verbal language non-interactively;
 > this file holds the calls it made and wants your sign-off on — each with the reason behind it,
@@ -23,7 +23,7 @@
 
 > **No `product-content` run wrote this file.** The PM opened it on 2026-10-04 from the verbal
 > language's own companion template. `git-reader` now reads a repository's state, and it can answer one
-> state for which the language has no sentence (`nozoki@6a0725c`). `CONTENT.md` is Settled, and with no
+> state for which the language has no sentence (`ka-reader@6a0725c`). `CONTENT.md` is Settled, and with no
 > companion on disk a `product-content` re-run reads it as done and has nothing to act on. Its one item
 > is in § 3.
 
@@ -41,15 +41,15 @@ None.
 
 ### 3.1 The Git view's short status has no sentence for a repository mid-`am`
 - **Raised by:** PM — 2026-10-04
-- **Tracked by:** `nozoki · nemawashi · 2026-10-02_git-says-what-changed`
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-02_git-says-what-changed`
 - **What it blocks:** the Git view's short status has no wording to write against for one state the
   repository can be in. Showing it as normal, or as one of the six, would show a state the repository
   is not in (`docs/fdr.md` R-71).
 - **Where it shows:** § *The Git view's short status* (`docs/CONTENT.md:L394-L397`) fixes "six states
   and six whole sentences": *merge*, *rebase*, *cherry-pick*, *revert*, *bisect*, and a detached HEAD.
   The reader answers a seventh state, a repository in the middle of applying a mailbox (`git am`):
-  `RepositoryState::Am` (`crates/nozoki-core/src/git_reader.rs:L117`), mapped from libgit2's
-  `ApplyMailbox` (`crates/nozoki-core/src/git_reader/libgit2.rs:L339`). `git status` reports it as
+  `RepositoryState::Am` (`crates/ka-reader-core/src/git_reader.rs:L117`), mapped from libgit2's
+  `ApplyMailbox` (`crates/ka-reader-core/src/git_reader/libgit2.rs:L339`). `git status` reports it as
   "You are in the middle of an am session". `docs/fdr.md` R-162 (`:L141`) says a state other than
   normal is named "in Git's own word for it", and its list of examples stops at the same six. Two ways
   forward were seen: a seventh whole sentence in Git's word, or a decision by the definition set that

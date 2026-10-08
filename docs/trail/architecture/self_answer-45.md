@@ -7,7 +7,7 @@
 - **Decided by:** `<CORE>/../skills/companion/.claude/skills/companion-self-answer/prompts/rich.md` v1.3.1
 - **Date:** 2026-10-07
 - **Sources re-read:** None. The answer rests on nothing outside this repository. It rests on the
-  tree at `nozoki@b12e48c`, read at the lines cited and run below, and on `docs/SDD.md` v47.
+  tree at `ka-reader@b12e48c`, read at the lines cited and run below, and on `docs/SDD.md` v47.
 
 **What this run read.** The companion, whole. In `docs/nfdr.md` (v45, 4,936 lines): the header and
 its two citing paragraphs (`:L1-L46`), § 1's opening and QC-1 through QC-3 (`:L48-L140`), which
@@ -20,24 +20,24 @@ ADR-0010:L38-L42 and ADR-0008:L23. Both state the harness runs on every CI build
 step makes truer and does not falsify. The other two hits, ADR-0016:L43 and ADR-0020:L62, are about
 other matters.
 
-Also read, at `nozoki@b12e48c`:
+Also read, at `ka-reader@b12e48c`:
 
 - `.github/workflows/ci.yml:L55-L85`, and its diff from `076eac2`, which inserts only the three
   lines of `Read-only, submodule` at `:L73-L75`.
 - `checks/walk.rs:L280-L296`.
-- `crates/nozoki-core/tests/git_state.rs:L715-L845`, which holds the scene, `read_git_over`, the
+- `crates/ka-reader-core/tests/git_state.rs:L715-L845`, which holds the scene, `read_git_over`, the
   normal-root helper and the four cases.
 - `main_head`, in the same file.
 
-**Measured.** At intake, `git -C nozoki status --short` printed nothing. HEAD was `c1032b5`.
+**Measured.** At intake, `git -C ka-reader status --short` printed nothing. HEAD was `c1032b5`.
 `git diff --stat b12e48c HEAD -- . ':!docs'` printed nothing, so every code locator holds at HEAD.
 `git fetch origin` then `git log -1 origin/main` printed `799c3d6`. `git branch -r --contains
 b12e48c` printed nothing, so no hosted run of the new step exists to read.
 
-The runs used a disposable copy: `git archive b12e48c | tar -x` into `/private/tmp/nozoki-qc2.Lv9h`,
+The runs used a disposable copy: `git archive b12e48c | tar -x` into `/private/tmp/ka-reader-qc2.Lv9h`,
 never the main checkout. In that copy:
 
-- `cargo test --locked -p nozoki-core --test git_state submodule` printed `test result: ok.
+- `cargo test --locked -p ka-reader-core --test git_state submodule` printed `test result: ok.
   17 passed; 0 failed`.
 - `test_read_git_on_the_restored_submodule_answers_root_with_its_status` passed alone.
 - `checks/read-only.sh` printed `unchanged` on `plain`, `repo` and `submodule`.
@@ -51,14 +51,14 @@ measurement, not this run's.
 
 - **Bucket:** 3. Raised from downstream — an item from a seat that did not write these records
 - **Verdict:** confirmed with addition
-- **Why:** **The verdict.** The tail is restated with both limits closed at `nozoki@b12e48c`. It
+- **Why:** **The verdict.** The tail is restated with both limits closed at `ka-reader@b12e48c`. It
   names the CI step and the case, keeps the old words in a dated note, and makes four additions.
   This document owns the call, so the answer is the Principal Architect's to give in the owner's
   seat. The change lands in `docs/nfdr.md` QC-2 and nowhere else. It commits nothing to a person or
   an outside party.
 
   **The item's facts hold.** The item is a correction, not a widening. QC-2's tail
-  (`docs/nfdr.md:L107-L111`) makes two claims that are false at `nozoki@b12e48c`. It says "no
+  (`docs/nfdr.md:L107-L111`) makes two claims that are false at `ka-reader@b12e48c`. It says "no
   case asserts what `read_git` answers on it", and it says CI "runs the walk on `plain` and `repo`
   alone". So § *A widening item waits until it occurs* does not apply. The item is in bucket 3
   with no confirm slot, but it carries a lean: "the likely fold is the tail restated…". This run
@@ -82,7 +82,7 @@ measurement, not this run's.
 
   **Addition 2: the CI half is bounded (stale).** The step is in the workflow. Its result on the
   hosted runner is unread, because `b12e48c` is on no remote branch and `origin/main` is at
-  `nozoki@799c3d6` (measured above). The tail must say "in the workflow", not "passing on every
+  `ka-reader@799c3d6` (measured above). The tail must say "in the workflow", not "passing on every
   build". SDD RN-107 bounds the same half the same way, so the two documents agree.
 
   **Addition 3: one sentence stays.** "The walk drops the Git answer" (`checks/walk.rs:L288-L292`)
@@ -100,7 +100,7 @@ measurement, not this run's.
     incomplete but not false, because the row names the target and the target already runs the
     case. I was close to adding the restored `submodule` to the gloss. What tipped it: the row is
     an index of commands, and QC-2's body is the home of what each command proves.
-  - § 9's suite count (`:L1540-L1548`) is pinned at `nozoki@b158052`. Its own sentence makes "a
+  - § 9's suite count (`:L1540-L1548`) is pinned at `ka-reader@b158052`. Its own sentence makes "a
     step inserted above these" a re-measurement and not a contradiction. The new step runs a
     script, not a suite, so the count of eight stands.
   - Every unpinned `ci.yml` locator in the NFDR sits above `:L73`: `:L18`, `:L26`, `:L41`, `:L51`,
@@ -114,7 +114,7 @@ measurement, not this run's.
     `unpack_fixture_archive` panic. The gap then reads red, not silently covered.
   - *Refused*: the layout where the walk refuses is held by `:L828`, which returns a `Failed`
     outside item.
-  - *Stale*: the line locators are pinned at `nozoki@b12e48c`, as the SDD's are. A later insertion
+  - *Stale*: the line locators are pinned at `ka-reader@b12e48c`, as the SDD's are. A later insertion
     above them is a re-measurement.
   - *Concurrent*: QC-2's harness runs one walk per fixture in sequence, so there is no concurrent
     path to state.
@@ -134,4 +134,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture nozoki`
+- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture ka-reader`

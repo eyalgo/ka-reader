@@ -1,4 +1,4 @@
-# UXD open issues — Nozoki
+# UXD open issues — KA-Reader
 
 > Companion to `UXD.md`. The CDO authored the UXD non-interactively; this file holds
 > what it could not settle from the inputs (the PRD, the project's Agari and its doctrine, the

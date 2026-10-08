@@ -28,7 +28,7 @@
 
 - **Bucket:** 2. Choices to confirm
 - **Verdict:** confirmed with addition
-- **Why:** The choice is taken: Nozoki supplies one drawing of its icon, at the light values, and
+- **Why:** The choice is taken: KA-Reader supplies one drawing of its icon, at the light values, and
   makes no second one. One clause of the proposed sentence is not taken, because Apple's own
   guidelines say the opposite of it, and two things are added that the proposal did not reach.
 
@@ -55,7 +55,7 @@
   document that promised "shown as it is" would state a thing it does not control and that its
   platform's vendor contradicts.
 
-  **The additions.** (1) *The clause is dropped.* The sentence says what Nozoki supplies, one
+  **The additions.** (1) *The clause is dropped.* The sentence says what KA-Reader supplies, one
   drawing at the light values and no second, and says nothing about how the platform shows it.
   (2) *Every appearance, not only dark.* The item's heading asks about dark. The platform has
   four: default, dark, clear and tinted. The draft answered the smaller question; the answer
@@ -79,13 +79,13 @@
   **Check 4.** *Empty* — no drawn icon exists yet: the bundle names no icon file and macOS draws
   its generic one (`docs/DESIGN.md:L781-L783`); this rule has nothing to act on and says nothing
   false. *Absent* — the system generates no variant, for instance on a macOS with no icon
-  appearances (the product's minimum is 14.0, `nozoki-mac/Info.plist:L13-L14`): the one drawing
+  appearances (the product's minimum is 14.0, `ka-reader-mac/Info.plist:L13-L14`): the one drawing
   is all there is, and the rule still reads true because it promises only what is supplied.
   *Stale* — a token's light value moves: the redraw rule covers it, at two values. *Concurrent* —
   one bundle, one icon; none. *Refused* — the owner overrides to a second drawing: the item
   states what moves, and the SDD answers the bundle form first.
   **Not covered, and named:** what macOS actually draws from an icon the bundle names as a
-  single `.icns` file through `CFBundleIconFile` (`nozoki-mac/Info.plist:L11-L12`). The HIG
+  single `.icns` file through `CFBundleIconFile` (`ka-reader-mac/Info.plist:L11-L12`). The HIG
   sentence is general and does not name that form. I don't know. The check is the one the item
   names: assemble the bundle with the drawn icon and look at it in the Dock under each icon
   appearance. It was not run here because no drawn icon exists and because it means changing a
@@ -111,4 +111,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/DESIGN.md`** — `<CORE>/launchers/skill/launcher.sh product-design nozoki`
+- **`docs/DESIGN.md`** — `<CORE>/launchers/skill/launcher.sh product-design ka-reader`

@@ -41,8 +41,8 @@
   **Check 3.** Nothing settled moves. The owner-confirmed clock stays read against a Git
   repository (`docs/trail/prd/cycle-10.md` § 2.3) and the goal that mirrors it stays with it; the
   Agari already names the terminus's input *folder* and cites the PRD's § Out of Scope line for the
-  word (`system/projects/nozoki/agari.md:23-26`); `docs/CONTENT.md` § Terminology settles *folder*
-  for *"the thing Nozoki is pointed at"* and *repository* for *"where Git's own state is what the
+  word (`system/projects/ka-reader/agari.md:23-26`); `docs/CONTENT.md` § Terminology settles *folder*
+  for *"the thing KA-Reader is pointed at"* and *repository* for *"where Git's own state is what the
   sentence is about"* (`:154-155`); the UXD's companion answered its matching residue *folder* on the
   same rule (`docs/UXD_open_issues.md` § 2.2, slot filled). I walked every *repository* left in v13
   outside the eight (`grep -n repositor docs/PRD.md`, 50 lines): each is Blurb / Purpose naming the
@@ -103,4 +103,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/PRD.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/launch-product-prd/launcher.sh nozoki`
+- **`docs/PRD.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/launch-product-prd/launcher.sh ka-reader`

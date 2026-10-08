@@ -1,4 +1,4 @@
-# SDD open issues — nozoki
+# SDD open issues — ka-reader
 
 > Companion to `SDD.md`. Three seats — the CTO, the CPO and the CDO — authored the SDD
 > non-interactively in one run; this file holds what that run could not settle from its inputs (the
@@ -25,7 +25,7 @@
 > **No `product-sdd` run opened this companion. The PM opened it on 2026-09-25.** `SDD.md` is
 > Settled at v18 and has no companion on disk, so a `product-sdd` re-run would read it as done and
 > find nothing to act on. The companion holds one item, § 5.1. It comes from measuring the tree on
-> `main` at `nozoki@46bb275` against the containment check § 3 defines. The measurement found one
+> `main` at `ka-reader@46bb275` against the containment check § 3 defines. The measurement found one
 > spelling of a path for which the check's definition and the product's answer disagree.
 
 ---
@@ -52,17 +52,17 @@ None.
 
 ### 5.1 The containment check is defined on the canonical path, and a path that leaves the grant and names it again in another letter case cannot be canonicalized without touching outside it
 - **Raised by:** PM — 2026-09-25
-- **Tracked by:** `nozoki · nemawashi · 2026-09-15_open-a-folder`
+- **Tracked by:** `ka-reader · nemawashi · 2026-09-15_open-a-folder`
 - **What it blocks:** which mark the tree gives one form of link, and so what the link's row says.
   § 3 `fs-reader` defines the containment check as "a canonical path, symlinks resolved and
   percent-decoding applied, is inside the granted folder or it is refused" (`docs/SDD.md:L321`).
   QC-35 says the product reads nothing outside the granted folder (`docs/nfdr.md:L579-L580`). The
   reader meets both by walking a path lexically while it lies outside the grant and reading nothing
-  there (`crates/nozoki-core/src/fs_reader.rs:L170-L177`). The two agree on every spelling but one.
+  there (`crates/ka-reader-core/src/fs_reader.rs:L170-L177`). The two agree on every spelling but one.
   That spelling is a link inside the folder that steps out to the folder's parent and names the
   folder again in another letter case, `back → ../<FOLDER NAME IN CAPITALS>`. On this Mac's volume,
   and on CI's `macos-14`, that path's canonical form is the granted folder itself. The product
-  answers `Outside`. Measured by a throwaway probe on `nozoki@46bb275`: `back → ../<NAME>` lists
+  answers `Outside`. Measured by a throwaway probe on `ka-reader@46bb275`: `back → ../<NAME>` lists
   `Failed(Outside)` beside `same → ../<name>`, which lists `Failed(Cycle)`. So the row tells the
   reader that the link leads outside the folder when it leads to the folder itself, which UX-I4
   forbids. The FDR's R-152 would mark it a cycle.

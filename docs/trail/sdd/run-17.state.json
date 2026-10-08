@@ -15,7 +15,7 @@
   ],
   "companion_present_at_intake": true,
   "companion_retired": false,
-  "consumed_cycle_path": "/Users/eyalgolan/products/nozoki/docs/trail/sdd/cycle-14.md",
+  "consumed_cycle_path": "/Users/eyalgolan/products/ka-reader/docs/trail/sdd/cycle-14.md",
   "core_root": "/Users/eyalgolan/.kensaiapp/pins/20260924T111002Z-y0bnf2/core",
   "ended": "seats-close",
   "ended_at": "2026-09-24T11:23:36.371704+00:00",
@@ -27,11 +27,11 @@
   "output_tokens_under_counted": true,
   "pending_request": {
     "cdo": "Nothing further to read \u2014 the seam and both pointers are checked. Round 1, CDO turn \u2014 verification only, no edit.\n\n**The S-1 seam the CTO named, re-read.** The observable half (`docs/SDD.md:L1277-L1301`) says the person double-clicks the CI-built bundle in Finder and \"the system Open panel appears with nothing typed and nothing asked\", then what they see after choosing, dismissing, or pointing at a bad path \u2014 the panel on screen, and the window after it. The command half beside it (`:L1318-L1322`) now reads \"parked in the Open panel's modal run, inside the shell's launch frames \u2014 the panel presented\". The two are the same moment from two sides \u2014 a thread sample showing the shell inside the panel's run, and a person seeing the panel \u2014 and RN-70 states the split in the same words (`:L3962-L3963`: \"a thread sample shows the shell is in the panel's run, not that the panel is on screen, which is S-1's observable half, the CDO's\"). My clause names neither `open_folder`'s call nor any *Open Questions* item, so the fold moves nothing in it. It stands as written.\n\n**The rest of my lane against the fold.** `grep -n 'open_folder\\|Open Questions'` over the SDD hits my lane nowhere: \u00a7 4 C-E1\u2013C-E10 (`:L811-L896`) and \u00a7 12's UXD boundary (`:L2500`) carry neither string; every hit is a CTO clause, a review note left as history (RN-52 `:L3546`, RN-70 `:L3927-L3951`) or the fifth *Open Questions* item (`:L4008`), which is the CTO's and standing. \u00a7 5 step 4 E-3's \"third item\" pointer (`:L1137`) still lands on the TextKit item \u2014 it is the third of the six listed under *Open Questions* (`:L3990-L4001`). The UXD trace on S-1 (`:L1343`) cites UX sections and C-E conditions, none of which moved. `docs/SDD_open_issues.md` is gone from the tree (`ls` \u2192 \"No such file\"; `git status` shows ` D docs/SDD_open_issues.md`), so no companion item awaits this seat.\n\n**Companion.** None added \u2014 no product-experience gap surfaced by the fold. No review note: this seat made no call the settled documents had not made, and a note saying nothing changed is padding.",
-    "cpo": "Round 2, CPO turn \u2014 the CTO's successor work taken up: S-1's CPO fields re-read against the folded command half. Verification only, no edit.\n\n**S-1's CPO fields, re-read.** *Slug* `open-a-folder`, *Delivers* (`docs/SDD.md:L1273-L1278`), *Moves toward* (`:L1344-L1346`), *Not in this slice* (`:L1347-L1352`) and the PRD trace (`:L1334-L1338`) are as they stood at v17. The folded command half now reads \"parked in the Open panel's modal run, inside the shell's launch frames \u2014 the panel presented\" (`:L1320-L1322`) and cites `checks/renderer.sh:L53-L57` where the dead *Open Questions* pointer stood (`:L1324`). Set against *Delivers* \u2014 \"choose one local folder in the system Open panel\" as the first act after launch \u2014 the gate now measures the moment the *Delivers* sentence already names, which it did not before: the old observable measured a call the shell makes only after that moment (`nozoki-mac/Sources/Shell/LaunchFlow.swift:L35-L37`, as C-I3 now states at `:L703-L705`). So the value claim and its command bar are closer than at v17, and nothing in my four fields has to move to meet it.\n\n**The rest of my lane against the fold.** `grep -n 'open_folder'` over \u00a7 1 (`:L136-L195`), \u00a7 5 (`:L891-L1170`) and \u00a7 12's PRD boundary (`:L2440-L2470`) hits nothing. *Open Questions* holds six items; \u00a7 5 step 4 E-3's \"third item\" pointer (`:L1137`) still lands on the TextKit item, and RN-70 records that it does (`:L3960`). The PRD (`7c89e19`) and the Agari (`ee561fb`) are unchanged since round 1, so no *Moves toward* or PRD trace moves. `docs/SDD_open_issues.md` is deleted in the working tree (`git status` \u2192 ` D docs/SDD_open_issues.md`), so no companion item awaits this seat.\n\n**Companion.** None added \u2014 no product gap surfaced by the fold. No review note: the seat made no call the settled documents had not made.",
+    "cpo": "Round 2, CPO turn \u2014 the CTO's successor work taken up: S-1's CPO fields re-read against the folded command half. Verification only, no edit.\n\n**S-1's CPO fields, re-read.** *Slug* `open-a-folder`, *Delivers* (`docs/SDD.md:L1273-L1278`), *Moves toward* (`:L1344-L1346`), *Not in this slice* (`:L1347-L1352`) and the PRD trace (`:L1334-L1338`) are as they stood at v17. The folded command half now reads \"parked in the Open panel's modal run, inside the shell's launch frames \u2014 the panel presented\" (`:L1320-L1322`) and cites `checks/renderer.sh:L53-L57` where the dead *Open Questions* pointer stood (`:L1324`). Set against *Delivers* \u2014 \"choose one local folder in the system Open panel\" as the first act after launch \u2014 the gate now measures the moment the *Delivers* sentence already names, which it did not before: the old observable measured a call the shell makes only after that moment (`ka-reader-mac/Sources/Shell/LaunchFlow.swift:L35-L37`, as C-I3 now states at `:L703-L705`). So the value claim and its command bar are closer than at v17, and nothing in my four fields has to move to meet it.\n\n**The rest of my lane against the fold.** `grep -n 'open_folder'` over \u00a7 1 (`:L136-L195`), \u00a7 5 (`:L891-L1170`) and \u00a7 12's PRD boundary (`:L2440-L2470`) hits nothing. *Open Questions* holds six items; \u00a7 5 step 4 E-3's \"third item\" pointer (`:L1137`) still lands on the TextKit item, and RN-70 records that it does (`:L3960`). The PRD (`7c89e19`) and the Agari (`ee561fb`) are unchanged since round 1, so no *Moves toward* or PRD trace moves. `docs/SDD_open_issues.md` is deleted in the working tree (`git status` \u2192 ` D docs/SDD_open_issues.md`), so no companion item awaits this seat.\n\n**Companion.** None added \u2014 no product gap surfaced by the fold. No review note: the seat made no call the settled documents had not made.",
     "cto": "Round 2, CTO turn \u2014 nothing further; no edit.\n\n**What the peers returned.** The CPO re-read S-1's four fields and the PRD trace against the folded command half and found nothing to move; the CDO re-read the S-1 seam and its \u00a7 4 clause and found the same. Neither asked anything of this seat, and neither added a companion item.\n\n**State re-checked this turn, not remembered.** `git status --short` \u2192 ` M docs/SDD.md`, ` D docs/SDD_open_issues.md`, plus the runner's three untracked trail files; `ls docs/SDD_open_issues.md` \u2192 \"No such file or directory\". RN-70 stands at `docs/SDD.md:L3925` and is pointed at from RC-2 (`:L2283`) and RC-3 (`:L2342`); *Open Questions* holds six items. The fold is whole, the companion is gone, and no ground in my lane has moved since round 1.\n\n**Companion.** None added. No review note: a note saying the round-1 note still stands is padding."
   },
-  "product_path": "/Users/eyalgolan/products/nozoki",
-  "project": "nozoki",
+  "product_path": "/Users/eyalgolan/products/ka-reader",
+  "project": "ka-reader",
   "provider": "claude",
   "queue": [],
   "recall_outstanding": null,
@@ -40,31 +40,31 @@
   "resolved_inputs": {
     "cdo": [
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/SRS.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/UXD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/PRD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/agari.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ka-reader_doctrine.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ai_responsibility.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/definition_brief.md",
         "present": false
       },
       {
@@ -80,15 +80,15 @@
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/DESIGN.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/DESIGN.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/CONTENT.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/CONTENT.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/design_system",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/design_system",
         "present": false
       },
       {
@@ -102,31 +102,31 @@
     ],
     "cpo": [
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/SRS.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/UXD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/PRD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/agari.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ka-reader_doctrine.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ai_responsibility.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/definition_brief.md",
         "present": false
       },
       {
@@ -144,31 +144,31 @@
     ],
     "cto": [
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/SRS.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/UXD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/PRD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/agari.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ka-reader_doctrine.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ai_responsibility.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/definition_brief.md",
         "present": false
       },
       {
@@ -184,11 +184,11 @@
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/adr",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/adr",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/nfdr.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/nfdr.md",
         "present": true
       }
     ]
@@ -225,9 +225,9 @@
     "cto": "c08f7b46-92e6-40e8-a0da-6cd67128f986"
   },
   "seats": {
-    "cdo": "sdd-nozoki-run17-cdo",
-    "cpo": "sdd-nozoki-run17-cpo",
-    "cto": "sdd-nozoki-run17-cto"
+    "cdo": "sdd-ka-reader-run17-cdo",
+    "cpo": "sdd-ka-reader-run17-cpo",
+    "cto": "sdd-ka-reader-run17-cto"
   },
   "spoke_at": {
     "cdo": 2,
@@ -258,7 +258,7 @@
       "declared": "no_followup",
       "kind": "ordinary",
       "no_reply": false,
-      "request_text": "Round 2, CPO turn \u2014 the CTO's successor work taken up: S-1's CPO fields re-read against the folded command half. Verification only, no edit.\n\n**S-1's CPO fields, re-read.** *Slug* `open-a-folder`, *Delivers* (`docs/SDD.md:L1273-L1278`), *Moves toward* (`:L1344-L1346`), *Not in this slice* (`:L1347-L1352`) and the PRD trace (`:L1334-L1338`) are as they stood at v17. The folded command half now reads \"parked in the Open panel's modal run, inside the shell's launch frames \u2014 the panel presented\" (`:L1320-L1322`) and cites `checks/renderer.sh:L53-L57` where the dead *Open Questions* pointer stood (`:L1324`). Set against *Delivers* \u2014 \"choose one local folder in the system Open panel\" as the first act after launch \u2014 the gate now measures the moment the *Delivers* sentence already names, which it did not before: the old observable measured a call the shell makes only after that moment (`nozoki-mac/Sources/Shell/LaunchFlow.swift:L35-L37`, as C-I3 now states at `:L703-L705`). So the value claim and its command bar are closer than at v17, and nothing in my four fields has to move to meet it.\n\n**The rest of my lane against the fold.** `grep -n 'open_folder'` over \u00a7 1 (`:L136-L195`), \u00a7 5 (`:L891-L1170`) and \u00a7 12's PRD boundary (`:L2440-L2470`) hits nothing. *Open Questions* holds six items; \u00a7 5 step 4 E-3's \"third item\" pointer (`:L1137`) still lands on the TextKit item, and RN-70 records that it does (`:L3960`). The PRD (`7c89e19`) and the Agari (`ee561fb`) are unchanged since round 1, so no *Moves toward* or PRD trace moves. `docs/SDD_open_issues.md` is deleted in the working tree (`git status` \u2192 ` D docs/SDD_open_issues.md`), so no companion item awaits this seat.\n\n**Companion.** None added \u2014 no product gap surfaced by the fold. No review note: the seat made no call the settled documents had not made.",
+      "request_text": "Round 2, CPO turn \u2014 the CTO's successor work taken up: S-1's CPO fields re-read against the folded command half. Verification only, no edit.\n\n**S-1's CPO fields, re-read.** *Slug* `open-a-folder`, *Delivers* (`docs/SDD.md:L1273-L1278`), *Moves toward* (`:L1344-L1346`), *Not in this slice* (`:L1347-L1352`) and the PRD trace (`:L1334-L1338`) are as they stood at v17. The folded command half now reads \"parked in the Open panel's modal run, inside the shell's launch frames \u2014 the panel presented\" (`:L1320-L1322`) and cites `checks/renderer.sh:L53-L57` where the dead *Open Questions* pointer stood (`:L1324`). Set against *Delivers* \u2014 \"choose one local folder in the system Open panel\" as the first act after launch \u2014 the gate now measures the moment the *Delivers* sentence already names, which it did not before: the old observable measured a call the shell makes only after that moment (`ka-reader-mac/Sources/Shell/LaunchFlow.swift:L35-L37`, as C-I3 now states at `:L703-L705`). So the value claim and its command bar are closer than at v17, and nothing in my four fields has to move to meet it.\n\n**The rest of my lane against the fold.** `grep -n 'open_folder'` over \u00a7 1 (`:L136-L195`), \u00a7 5 (`:L891-L1170`) and \u00a7 12's PRD boundary (`:L2440-L2470`) hits nothing. *Open Questions* holds six items; \u00a7 5 step 4 E-3's \"third item\" pointer (`:L1137`) still lands on the TextKit item, and RN-70 records that it does (`:L3960`). The PRD (`7c89e19`) and the Agari (`ee561fb`) are unchanged since round 1, so no *Moves toward* or PRD trace moves. `docs/SDD_open_issues.md` is deleted in the working tree (`git status` \u2192 ` D docs/SDD_open_issues.md`), so no companion item awaits this seat.\n\n**Companion.** None added \u2014 no product gap surfaced by the fold. No review note: the seat made no call the settled documents had not made.",
       "seat": "cpo",
       "spoke": true
     },

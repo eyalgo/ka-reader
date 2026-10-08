@@ -25,7 +25,7 @@
   NFR-11 keeps diagnostics with own state (`docs/SRS.md:340-343`); C-I2 writes one line per `failed`
   or `stopped` item naming the part, the operation and the error text — no timestamp field
   (`docs/SDD.md:357-361`); QC-40 says the bound is undecided and names NFR-11 (`docs/nfdr.md:294-297`);
-  QC-52 says `nozoki.log` "and nowhere else" (`docs/nfdr.md:383-387`). So "one session, because the
+  QC-52 says `ka-reader.log` "and nowhere else" (`docs/nfdr.md:383-387`). So "one session, because the
   file has no timestamps" carries its weight, and the within-session cap answers the item's own
   scenario, which "one session" alone did not.
 
@@ -91,7 +91,7 @@
   Every one of the 16 distinct `docs/prd_trail/cycle-N.md` and `docs/srs_trail/cycle-N.md` files
   cited exists at `docs/trail/<x>/cycle-N.md`, checked file by file. The item's cross-document
   figures are stale and are reported rather than edited: the repo-wide total was 295 once the PRD's
-  bare form was counted, and the PRD's 62 are repaired at `nozoki@2d8c99d`, so the live count today
+  bare form was counted, and the PRD's 62 are repaired at `ka-reader@2d8c99d`, so the live count today
   is 233 across five documents (SRS 80, UXD 71 of which 4 pinned, SDD 40, DESIGN 30, CONTENT 12).
 
   **Check 4 — the case the rule does not reach, and it is the one that would have written a false
@@ -107,7 +107,7 @@
   override control that UX-I9 requires actually live?" — the re-authored UXD's cycle 2, a different
   file under the same name. The mechanical rule would send a reader checking FR-18's authorization to
   a theme-control answer. The repair for that one is the pinned form the item already protects for
-  the UXD's four — `nozoki@1d5c553:docs/uxd_trail/cycle-2.md` § 2.1 — which resolves and is honest
+  the UXD's four — `ka-reader@1d5c553:docs/uxd_trail/cycle-2.md` § 2.1 — which resolves and is honest
   about being history.
 
   **Check 3.** Nothing the SRS states changes; the answer agrees with the UXD companion's filled
@@ -154,4 +154,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/SRS.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-srs/launcher.sh nozoki`
+- **`docs/SRS.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-srs/launcher.sh ka-reader`

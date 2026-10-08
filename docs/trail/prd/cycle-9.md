@@ -1,4 +1,4 @@
-# PRD open issues — Nozoki 覗き
+# PRD open issues — KA-Reader
 
 > Companion to `PRD.md`. The CPO authored the PRD non-interactively; this file holds what it could
 > not settle from the inputs. **Answer inline** — fill each **Answer** / **Confirm-or-override**
@@ -43,12 +43,12 @@
   in these words: *"and repo without git should be acdesible. the git tree will be disabled."* It was
   deliberately **not** written into any slot of that companion — an SDD companion slot would have
   put a product decision where only the CTO reads it, and the PRD, SRS and UXD would have gone on
-  saying the opposite. It is recorded in full in the body of the answering commit, `nozoki@86903c2`.
+  saying the opposite. It is recorded in full in the body of the answering commit, `ka-reader@86903c2`.
   The journey moves that followed are `kensaiapp-opensource@9fb6e9f` (the SDD station parked
   unreached) and `@04b709b` (the definition seed un-picked), and this station is item 1 of the seed
   `2026-08-26_open-a-plain-folder`.
 - **Answer:** **A folder that is not a Git repository opens.** The tree and the reading panel work
-  normally against it; the **Git view is disabled**, not absent-by-failure. Nozoki becomes a folder
+  normally against it; the **Git view is disabled**, not absent-by-failure. KA-Reader becomes a folder
   viewer that lights up Git when it finds it, rather than a Git repository viewer that refuses
   everything else.
 
@@ -64,7 +64,7 @@
      draws whichever this settles. The PRD should say which, and stop — the treatment itself is the
      CDO's.
   3. **Whether the plain folder is v1 or beyond v1.** The directive does not say. § Scope and
-     § Out of Scope both need a line either way, and `system/projects/nozoki/agari.md` decides
+     § Out of Scope both need a line either way, and `system/projects/ka-reader/agari.md` decides
      whether the terminus moves with it.
 
 ## 2. Choices to confirm — the CPO drafted a best-effort answer; confirm or override
@@ -83,7 +83,7 @@ CPO pass over the directive. Items the CPO drafts belong here on its own run.)*
   joins them.
 - **Everything else the PRD settles at v9 stands.** macOS only, read-only forever, one at a time,
   and sidebar search / filter, pane resizing and keyboard navigation permanently outside the done
-  (`system/projects/nozoki/agari.md`). This round widens the input; it does not reopen scope.
+  (`system/projects/ka-reader/agari.md`). This round widens the input; it does not reopen scope.
 
 ## 3. Directives — an external action the owner confirms as a gate
 

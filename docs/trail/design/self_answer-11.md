@@ -34,8 +34,8 @@
 
   *Widening.* The item asks the document to state a case it does not state now, so it widens. It
   cites an occurrence. The shell's selected drawing reads no key status
-  (`nozoki-mac/Sources/Surfaces/BarRowView.swift:L59-L73`), and the tree's selection is the table's
-  own (`:L4-L5`). I read both at `nozoki@9e8a544`, and they say what the item says. So the item is
+  (`ka-reader-mac/Sources/Surfaces/BarRowView.swift:L59-L73`), and the tree's selection is the table's
+  own (`:L4-L5`). I read both at `ka-reader@9e8a544`, and they say what the item says. So the item is
   answered, not held "until it occurs".
 
   *Check 2 — the question.* There is no draft. The item lists three readings and no lean, so I
@@ -85,7 +85,7 @@
   *Named and not covered — a shell defect, not this document's.* The tree's selected row is drawn
   by the table's own selection. `BarRowView` does not override the table row's selection drawing
   (the whole file, `BarRowView.swift:L1-L74`), and
-  `grep -rn selectionHighlightStyle nozoki-mac/Sources` prints nothing. By Apple's page above, that
+  `grep -rn selectionHighlightStyle ka-reader-mac/Sources` prints nothing. By Apple's page above, that
   drawing uses one of two system colours, and neither is `{colors.selection}`. The tree's selected
   row is therefore outside "Selection is a fill and a bar" in both windows, apart from this item's
   case. The design language is right as it stands, so nothing is raised on it. This is for the
@@ -110,8 +110,8 @@
   bears on it.
 
   *Widening.* The item widens the document and cites an occurrence: the shell clears the Git view's
-  selection on every tree selection (`nozoki-mac/Sources/Surfaces/WorkbenchView.swift:L160-L165`),
-  read at `nozoki@9e8a544`. So it is answered.
+  selection on every tree selection (`ka-reader-mac/Sources/Surfaces/WorkbenchView.swift:L160-L165`),
+  read at `ka-reader@9e8a544`. So it is answered.
 
   *Check 2 — the question.* There is no draft. The item gives two readings and no lean, so I
   answered it from scratch. Inside it is SDD RN-97's case (b): which row is selected when one file
@@ -146,7 +146,7 @@
 
   *Named and not covered, held "until it occurs".* One form is the mirror case: whether the tree
   draws a file as selected while the reading panel shows that file's diff. It could arise only once a
-  diff is drawn, and `grep -rli diff nozoki-mac/Sources` prints nothing. Another is whether opening
+  diff is drawn, and `grep -rli diff ka-reader-mac/Sources` prints nothing. Another is whether opening
   a commit from the history clears a Git file row's selection. No item cites an occurrence of
   either, so neither goes into the fold.
 
@@ -170,7 +170,7 @@
   "selection outranks hover" (`:L634-L635`). Correcting a statement found false is not widening, so
   the occurrence bar does not apply. The item cites an occurrence anyway. The shell's selected row
   shows no hover (`BarRowView.swift:L59`), and the tooltip reads no selection
-  (`grep -n -i select nozoki-mac/Sources/Surfaces/LetterTooltip.swift` prints nothing, run
+  (`grep -n -i select ka-reader-mac/Sources/Surfaces/LetterTooltip.swift` prints nothing, run
   2026-10-04).
 
   *Check 2 — the question.* There is no draft. The item gives two readings and no lean, so I
@@ -224,4 +224,4 @@ None this run.
 
 ## Launchers owed
 
-- **docs/DESIGN.md** — `<CORE>/launchers/skill/launcher.sh product-design nozoki`
+- **docs/DESIGN.md** — `<CORE>/launchers/skill/launcher.sh product-design ka-reader`

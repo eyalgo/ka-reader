@@ -1,4 +1,4 @@
-# SDD open issues — Nozoki
+# SDD open issues — KA-Reader
 
 > Companion to `SDD.md`. The CTO wrote the SDD; this file holds what that run could not settle from
 > its inputs (the PRD, the SRS, the UXD, and any context or constraints), and the calls that are the
@@ -61,14 +61,14 @@ None.
 ### 5.1 No slice delivers the clickable row's hover fill that `DESIGN.md` draws
 - **Raised by:** PM — 2026-10-04
 - **Seat:** cto
-- **Tracked by:** `nozoki · nemawashi · 2026-10-02_git-says-what-changed`
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-02_git-says-what-changed`
 - **What it blocks:** a seed for the hover fill. Seeds are cut from slices, and no slice's *Delivers*
   or *Reached when* names it, so nothing on any route builds it.
 - **Where it shows:** `docs/DESIGN.md:L617-L624` — "A clickable row has a hover state and an inert row
   has none": a tree row, a Git-view file row, a commit row and a menu item take a `{colors.hover}` fill
   edge to edge while the pointer is over them, and selection outranks it. `docs/DESIGN.md:L653-L654`
   stacks the status letter's tooltip over that fill. The shell draws no hover at all:
-  `grep -rn -i hover nozoki-mac/Sources | wc -l` → `0` at `nozoki@6040dc1`, where the tree and the Git
+  `grep -rn -i hover ka-reader-mac/Sources | wc -l` → `0` at `ka-reader@6040dc1`, where the tree and the Git
   view are both built. `docs/SDD.md` names no hover in any slice (`grep -n -i hover docs/SDD.md` →
   nothing), and neither does `docs/UXD.md` (same `grep` → nothing), so the fill is the design language's
   alone. The likely fold: the fill placed in the *Delivers* and *Reached when* of the slice that owns
@@ -92,7 +92,7 @@ None.
      file row in the Git view. A section header and a status message never show the fill. The
      status letter's tooltip sits over the row's fill, as § *Components* "The tooltip" states.
   4. **§ 6 S-1 and S-4 *Reached when*, command half (the CTO's).** `swift test --package-path
-     nozoki-mac` gains these cases in S-1. A tree row a click acts on shows the fill while the
+     ka-reader-mac` gains these cases in S-1. A tree row a click acts on shows the fill while the
      pointer is over it and loses it when the pointer leaves. A row nothing acts on never shows
      it. The selected row under the pointer keeps its selection fill and its bar. After a scroll,
      an expansion or a collapse moves rows under a pointer that has not moved, the fill is on the

@@ -41,21 +41,21 @@ is written for the owner and for the `product-architecture` run that folds the a
 
   *Check 2 — the draft.* **The draft holds on all three gates, and for the reasons it gives.**
   - **Hard to reverse.** The refusal conditions cross SM-2, SM-4 and SM-8. The config refusal
-    already has a shipped sentence (`nozoki-mac/Sources/Surfaces/GitSentences.swift`, cited at
+    already has a shipped sentence (`ka-reader-mac/Sources/Surfaces/GitSentences.swift`, cited at
     `docs/SDD.md:L3135`).
   - **Surprising without context.** A repository that `git status` reads in a terminal fails here.
   - **A real trade-off.** The record names eight ruled-out alternatives, and I counted eight.
 
   It also passes the domain's own test. A "never reads outside the folder" promise has to be a
   structure, and this record names one: the adapter's check, held by four FIFO cases in
-  `git_state`. I found all of them at HEAD (`crates/nozoki-core/tests/git_state.rs:L1202`,
+  `git_state`. I found all of them at HEAD (`crates/ka-reader-core/tests/git_state.rs:L1202`,
   `:L1218`, `:L1533`, and `test_an_include_link_to_outside_is_refused_without_opening_its_target`
   at `:L1624`).
 
-  The record's facts about the code hold at `nozoki@58a7a2b`. Its tree outside `docs/` matches
+  The record's facts about the code hold at `ka-reader@58a7a2b`. Its tree outside `docs/` matches
   `076eac2`, the commit the record pins (`git diff --quiet 076eac2 HEAD -- . ':!docs'` exits 0).
   `check_config` is at `libgit2.rs:L191` and `verify_submodules` at `:L285`.
-  `grep -rl alternates checks crates nozoki-mac/Sources` prints nothing, which matches the
+  `grep -rl alternates checks crates ka-reader-mac/Sources` prints nothing, which matches the
   record's "Not built". I did not re-run the 58-test suite.
 
   Three parts of the decision are not built: the alternates check, the section-path refusals and
@@ -108,7 +108,7 @@ is written for the owner and for the `product-architecture` run that folds the a
   *Check 4 — the failure paths.*
   - **Stale.** The domain is pinned to one libgit2 version, and a version change re-measures it at
     the C-R6 lockfile review, which the record names. The *Built and not built* paragraph is
-    pinned to `nozoki@076eac2`, so it stays true as history after later changes land.
+    pinned to `ka-reader@076eac2`, so it stays true as history after later changes land.
   - **Concurrent.** A file rewritten between the check and libgit2's read is named in
     *Consequences*.
   - **Absent.** A missing config, `config.worktree` or `.gitmodules` file is skipped. An unreadable
@@ -138,4 +138,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture nozoki`
+- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture ka-reader`

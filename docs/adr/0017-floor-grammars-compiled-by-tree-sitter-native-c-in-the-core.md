@@ -1,4 +1,4 @@
-# ADR-0017: The six floor grammars are compiled by tree-sitter — native C built from source into `nozoki-core` on every build
+# ADR-0017: The six floor grammars are compiled by tree-sitter — native C built from source into `ka-reader-core` on every build
 
 **Status:** Accepted
 **Date:** 2026-10-01
@@ -11,7 +11,7 @@ file, into the five token classes `docs/DESIGN.md` § Colors names (`docs/SDD.md
 something has to turn each language's text into spans. The SDD left which engine does it as an
 open question, to be settled by the dependency review of the change that lands it, under C-R6's
 rule that every dependency is a decision and the tree is reviewed as code (`docs/SDD.md` § 4 C-R6).
-That review settled it (`nozoki@85d9fa7:checks/deps.review.md` § *The engine chosen*), and SDD v23
+That review settled it (`ka-reader@85d9fa7:checks/deps.review.md` § *The engine chosen*), and SDD v23
 names the result in § 3 and states its cost as § 9 TO-11 and its risk as § 11 R-14.
 
 Two facts make it more than a library pick. The core unit's own Rust source holds no `unsafe`
@@ -25,7 +25,7 @@ compiled from source by the `cc` crate in each crate's build script, on every bu
 The six floor grammars are compiled by **tree-sitter**: its runtime (`tree-sitter`),
 `tree-sitter-highlight`, and one grammar crate for each floor language (`tree-sitter-python`,
 `tree-sitter-bash`, `tree-sitter-javascript`, `tree-sitter-json`, `tree-sitter-yaml`,
-`tree-sitter-toml-ng`), built from C into `nozoki-core` at build time, with nozoki's own query files
+`tree-sitter-toml-ng`), built from C into `ka-reader-core` at build time, with ka-reader's own query files
 compiled in. Only `highlighter` imports the engine, and the engine stands behind what `highlighter`
 owns: text and a floor language in, spans in the five classes out (`docs/SDD.md` § 3, the
 `highlighter` row; § 9 TO-11).
@@ -38,13 +38,13 @@ R-14).
 ## Alternatives ruled out
 
 - **Hand-written lexers in the core** — no names added to the dependency list, and no C. Lost
-  because it puts six grammars' worth of lexing in `nozoki-core`, written and kept by this product
-  for languages whose syntax it does not own (`nozoki@85d9fa7:checks/deps.review.md` § *The engine
+  because it puts six grammars' worth of lexing in `ka-reader-core`, written and kept by this product
+  for languages whose syntax it does not own (`ka-reader@85d9fa7:checks/deps.review.md` § *The engine
   chosen*; `docs/SDD.md` § 9 TO-11).
 - **`syntect`** — Lost because it needs vendored Sublime syntaxes for TOML, and its default
   syntax dump holds far more than six grammars, so the bundle would carry grammars with no floor
   language behind them. The `highlighter` row forbids that: "A seventh grammar with no floor
-  language behind it" is in its *Must not own* column (`nozoki@85d9fa7:checks/deps.review.md`
+  language behind it" is in its *Must not own* column (`ka-reader@85d9fa7:checks/deps.review.md`
   § *The engine chosen*; `docs/SDD.md` § 3).
 
 ## Consequences
@@ -81,7 +81,7 @@ record and not a note.
 runtime and four of the grammars (Python, Bash, JavaScript, JSON) name
 `https://github.com/tree-sitter/` repositories. The YAML and TOML grammars name
 `https://github.com/tree-sitter-grammars/` repositories (the `repository` field of each registry
-copy's `Cargo.toml`, at the versions `Cargo.lock` resolves at `nozoki@85d9fa7`). The third is a C
+copy's `Cargo.toml`, at the versions `Cargo.lock` resolves at `ka-reader@85d9fa7`). The third is a C
 compiler at build time, reached through `cc`. The runtime loads only grammars whose language ABI
 falls in a fixed range — 13 to 15 in `tree-sitter` 0.27.0 (`include/tree_sitter/api.h:L29`,
 `:L35`; `binding_rust/lib.rs:L780` of that registry copy). So when a grammar's holder stops
@@ -94,10 +94,10 @@ one part's rewrite for one language, and the risk is followed in the lockfile re
 
 ## Traces to
 
-- `docs/SDD.md` at v23 (`nozoki@e81a386`, Settled) — § 3, the `highlighter` row (`:L327`) and the
+- `docs/SDD.md` at v23 (`ka-reader@e81a386`, Settled) — § 3, the `highlighter` row (`:L327`) and the
   units paragraph (`:L339-L341`); § 4 C-R6; § 9 TO-11 (`:L2252-L2265`) and TO-2; § 11 R-14
   (`:L2566`); § SDD Review Notes RN-80.
-- `nozoki@85d9fa7:checks/deps.review.md` § *The engine chosen* — where the engine was chosen and
+- `ka-reader@85d9fa7:checks/deps.review.md` § *The engine chosen* — where the engine was chosen and
   the two alternatives were weighed. It landed with `Cargo.lock` and `checks/deps.allow` in one
   commit.
 - `docs/SRS.md` FR-8, FR-16, FR-29; DR-6; NFR-16.

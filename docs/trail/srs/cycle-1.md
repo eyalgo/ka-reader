@@ -1,4 +1,4 @@
-# SRS open issues — nozoki
+# SRS open issues — ka-reader
 
 > Companion to `SRS.md`. The CTO authored the SRS non-interactively; this file holds
 > what it could not settle from the inputs (the PRD and any context/constraints).
@@ -96,7 +96,7 @@ a choice to confirm.
   before 1.0.0, the fact that anything may change is stated plainly. Checked by AC-14.
 - **Rationale:** the Agari's third condition gates done on "version 1.0.0 or later — the
   semantic-versioning promise in force, so a breaking change is no longer free"
-  (`system/projects/nozoki/agari.md`). But the Agari bounds the SRS; it does not supply
+  (`system/projects/ka-reader/agari.md`). But the Agari bounds the SRS; it does not supply
   requirements — and the PRD carries no versioning statement at all. So this is a missing
   product statement being surfaced: the constraint is drafted here so the closing condition has
   an SRS realization, and it is yours to confirm (and, if you want it upstream, to fold into the

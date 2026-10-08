@@ -1,4 +1,4 @@
-# UXD open issues — Nozoki 覗き
+# UXD open issues — KA-Reader
 
 > Companion to `UXD.md`. The CDO authored the UXD non-interactively; this file holds
 > what it could not settle from the inputs (the PRD, the project's Agari and its doctrine, the
@@ -20,7 +20,7 @@
 > earlier UXD and its trail were removed at `9017ae2`, and the station that opened this run
 > records that the removed document binds nothing. So each taste call is drafted again with the
 > same lean the earlier answer took, the earlier answer is cited as evidence (readable at
-> `nozoki@1d5c553:docs/uxd_trail/`), and the call is yours again. Two items (§ 2.5, § 2.6) are new
+> `ka-reader@1d5c553:docs/uxd_trail/`), and the call is yours again. Two items (§ 2.5, § 2.6) are new
 > to this revision. The history topology is **not** here: your statement of its shape is on disk
 > at `docs/srs_trail/cycle-3.md` § 2.1 and the UXD carries it as settled (UXD RN-14).
 
@@ -47,7 +47,7 @@ None this round — every call the PRD does not make carried a defensible lean, 
   starts every product from its platform's own look and holds no house aesthetic
   (`system/experience/visual_direction.md` § Overview, line 2). The aesthetic lean is a taste
   call, so however confidently drafted it is yours. You confirmed the same lean before
-  (`nozoki@1d5c553:docs/uxd_trail/cycle-1.md` § 2.1) — evidence, not authorization (UXD RN-8).
+  (`ka-reader@1d5c553:docs/uxd_trail/cycle-1.md` § 2.1) — evidence, not authorization (UXD RN-8).
 - **If overridden** (an established design system named instead): § 1's read and § 9's
   direction and constraints re-anchor to that system; `DESIGN.md` is authored from the named
   system's official package rather than from primitives; § 2's dial reasoning is re-checked
@@ -73,7 +73,7 @@ None this round — every call the PRD does not make carried a defensible lean, 
   is what changes it, and the chrome is reachable from either sidebar mode, while the Git view
   header is unreachable with the sidebar in Files mode. Switching is a whole-shell act (it
   resets the arrival state), not a Git-scoped one. You confirmed this placement before
-  (`nozoki@1d5c553:docs/uxd_trail/cycle-2.md` § 2.2) — evidence, not authorization.
+  (`ka-reader@1d5c553:docs/uxd_trail/cycle-2.md` § 2.2) — evidence, not authorization.
 - **If overridden** (the Git view header, as `vscode-repo-selector.png` shows): the selector
   moves into UX-S3's header, grouped with repository-scoped state; the chrome's identity element
   (§ 4, RN-2) stays display-only; UX-F5 gains a step — switching from Files mode means switching
@@ -91,10 +91,10 @@ None this round — every call the PRD does not make carried a defensible lean, 
   exist; not an icon rail.
 - **Rationale:** the reference raises this and settles nothing (`docs/ux_reference/README.md`
   § One question the reference raises). VS Code's rail is built for many destinations and
-  identifies them by icon alone; Nozoki's § 4 rule is text-first with icons secondary, and it
+  identifies them by icon alone; KA-Reader's § 4 rule is text-first with icons secondary, and it
   has two destinations, ever — the Agari admits no third view. Labelled tabs say what each mode
   is in words, cost no chrome the shell does not already have, and keep the sidebar's full width
-  for content. You confirmed this before (`nozoki@1d5c553:docs/uxd_trail/cycle-2.md` § 2.3) —
+  for content. You confirmed this before (`ka-reader@1d5c553:docs/uxd_trail/cycle-2.md` § 2.3) —
   evidence, not authorization.
 - **If overridden** (a rail, or another control): § 4's presentation line and RN-16 reword; an
   icon rail needs a stated exception to § 4's text-first rule and to UX-A4 (no control by glyph
@@ -116,7 +116,7 @@ None this round — every call the PRD does not make carried a defensible lean, 
   claim the project can be held to. It adds a line to a surface the CPO owns — the README, whose
   first-screen content the PRD already fixes to four things — which is why it is routed rather
   than asserted, and why the draft keeps it off the first screen. You confirmed this with the
-  same bound before (`nozoki@1d5c553:docs/uxd_trail/cycle-1.md` § 2.2) — evidence, not
+  same bound before (`ka-reader@1d5c553:docs/uxd_trail/cycle-1.md` § 2.2) — evidence, not
   authorization.
 - **If overridden** (keep the posture out of the README): UX-A3 drops from the UXD and RN-17
   records the decision; UX-A1 and UX-A2 stand untouched; the posture stays discoverable only in

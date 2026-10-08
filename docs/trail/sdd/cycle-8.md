@@ -1,4 +1,4 @@
-# SDD open issues — Nozoki
+# SDD open issues — KA-Reader
 
 > Companion to `SDD.md`. Three seats — the CTO, the CPO and the CDO — authored the SDD
 > non-interactively in one run; this file holds what that run could not settle from its inputs (the
@@ -33,9 +33,9 @@
 
 ### 5.1 Under C-R2's exact entitlements the renderer never starts, so the window is empty
 - **Raised by:** Owner — 2026-09-23, from the Finder walk on `e7b2bcd`
-- **Tracked by:** `nozoki · shukuba · 2026-09-18_the-wall-holds` (condition 8)
+- **Tracked by:** `ka-reader · shukuba · 2026-09-18_the-wall-holds` (condition 8)
 - **What it blocks:** The station's close, and v1 itself. Condition 8 fails at its first step: the
-  bundle built from `e7b2bcd` opens one window titled "Nozoki", empty, with no Open panel, and the
+  bundle built from `e7b2bcd` opens one window titled "KA-Reader", empty, with no Open panel, and the
   window takes no right-click. CI run 35840538490 on the same commit is green, so no gate saw it.
 - **Where it shows:** A two-second thread sample (`sample <pid> 2`) of each build, launched from
   Finder with `open -n`:
@@ -49,7 +49,7 @@
 
   The main thread is idle in `NSApplication run` in every case, so nothing blocks. WebKit's web
   content process fails to launch or ends, the page never runs, and `main.ts` never calls
-  `open_folder` (`nozoki-ui/src/main.ts:L14-L19`). **The mechanism is not known.** The system log
+  `open_folder` (`ka-reader-ui/src/main.ts:L14-L19`). **The mechanism is not known.** The system log
   gave no lines to this session, and no crash report was written for a WebKit process
   (`~/Library/Logs/DiagnosticReports/`). C-R2 grants **exactly** the two v1 entitlements and names
   "a slice that adds an entitlement" as its violation (`SDD.md:L432-L442`), so C-R2 cannot hold as

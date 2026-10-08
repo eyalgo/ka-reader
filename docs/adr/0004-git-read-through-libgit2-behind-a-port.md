@@ -18,7 +18,7 @@ design expects to exercise (`docs/SDD.md` § 2, force 2).
 
 ## Decision
 
-Git state is read through **libgit2, linked into `nozoki-core` and built without its HTTPS and SSH
+Git state is read through **libgit2, linked into `ka-reader-core` and built without its HTTPS and SSH
 transports**, behind the **Git port** owned by the folder model: `probe(folder)` (ADR-0005), then —
 only on a root — `state()`, `status()`, `diff(kind, path)` and `walk(tips, window)`, each returning
 plain data and each documented as read-only (`docs/SDD.md` § 3, seam 2; § 4 C-R6). The **installed-
@@ -31,7 +31,7 @@ refreshes nothing — and is **built only when the lag risk fires**, never ahead
 - **Spawning the installed `git`** — a Command Line Tools prompt on a fresh Mac inside the
   install clock, an index refresh under `.git` unless every call carries the right flag, and a
   porcelain output to parse; and a spawned process is a capability the host would then hold
-  (`nozoki@70a879a:docs/SDD.md` § SDD Review Notes RN-8; `docs/SDD.md` § 3, `git-reader` "Must not own").
+  (`ka-reader@70a879a:docs/SDD.md` § SDD Review Notes RN-8; `docs/SDD.md` § 3, `git-reader` "Must not own").
 - **No port — libgit2 called directly from the model** — insulating a stable edge is ceremony
   everywhere except here, because this is the one mechanism that may be swapped when libgit2 lags
   Git (`docs/SDD.md` § 2, force 2; § 11 R-1). The port is the hexagonal alternative's one useful
@@ -41,7 +41,7 @@ refreshes nothing — and is **built only when the lag risk fires**, never ahead
 
 Easier: zero prerequisites; no optional-lock write to `.git/index`; a library links only the calls
 the tool makes, so the absence of a mutating call is a fact of the binary rather than a discipline
-(`docs/SDD.md` § 9 TO-2; `nozoki@70a879a:docs/SDD.md` § SDD Review Notes RN-8). Harder: a native C dependency to vendor and
+(`docs/SDD.md` § 9 TO-2; `ka-reader@70a879a:docs/SDD.md` § SDD Review Notes RN-8). Harder: a native C dependency to vendor and
 build; feature lag behind Git — a newer index format, a sparse index, an extension libgit2 does not
 know — surfacing first in the harness's fixtures and then in an adopter's report (`docs/SDD.md` § 11
 R-1); whether libgit2 reads correctly under a read-only sandbox grant with discovery disabled is an
@@ -62,7 +62,7 @@ keeps.
 ## Traces to
 
 - `docs/SDD.md` § 2 force 2; § 3, `git-reader` row and seam 2; § 4 C-R6; § 9 TO-2; § 11 R-1;
-  § 12, "The downstream boundary"; § Open Questions (second item); `nozoki@70a879a:docs/SDD.md` § 11 R-6, § SDD Review
+  § 12, "The downstream boundary"; § Open Questions (second item); `ka-reader@70a879a:docs/SDD.md` § 11 R-6, § SDD Review
   Notes RN-8.
 - `docs/SRS.md` § 5.3; § 4.3 NFR-5, NFR-6; § 7 C-3; § 8 AC-1, AC-2.
 - `docs/fdr.md` PD-27, PD-29.

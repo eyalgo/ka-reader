@@ -1,4 +1,4 @@
-# UXD open issues — Nozoki 覗き
+# UXD open issues — KA-Reader
 
 > Companion to `UXD.md`. The CDO authored the UXD non-interactively; this file holds
 > what it could not settle from the inputs (the PRD, the project's Agari and its doctrine, the
@@ -78,7 +78,7 @@ None this round.
   *"the repository is exactly as they found it"* (`:173`), UX-S2's Empty cell *"A repository with
   no files"* (`:237`), and § 10's terminus line *"repository switching"* (`:428`), which misquotes
   the Agari — it names the terminus *"switching the viewed folder"* and calls that *"the same word
-  the PRD uses for it"* (`system/projects/nozoki/agari.md:23-26`). **(2)** The doubt is settled by
+  the PRD uses for it"* (`system/projects/ka-reader/agari.md:23-26`). **(2)** The doubt is settled by
   rule, not by whether the PRD's matching sentence has moved: *repository* stays only where Git's
   own state is what the sentence is about (`docs/CONTENT.md` § Terminology `:154-155`, `:185`).
   So UX-U1 and UX-U2 stay, because they describe the developer and RN-25 keeps them; UX-F2's
@@ -87,7 +87,7 @@ None this round.
   *folder* whatever the PRD does — *folder* includes *repository*, and no rule becomes false. The
   PRD carries the same residue in the sentences UX-I4, UX-I7 and § 10 mirror, in neither its v11
   keep-list nor its moved lines, and that is raised on its own companion
-  (`docs/PRD_open_issues.md` § 2.1, `nozoki@70abec1`); this document's fold does not wait on it.
+  (`docs/PRD_open_issues.md` § 2.1, `ka-reader@70abec1`); this document's fold does not wait on it.
   **(3)** The line numbers above are v8's; at v9 the eight sit at `:41-42`, `:101`, `:173`,
   `:237`, `:256`, `:267`, `:276`, `:428` and `:447`. Review notes are records and do not move.
   `docs/DESIGN.md` § Overview and `{components.path-line}` follow on the fold, as its own

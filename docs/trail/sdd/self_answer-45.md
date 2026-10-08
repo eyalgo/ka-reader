@@ -21,9 +21,9 @@ the window's key status in other words was not seen. `docs/DESIGN.md` was read a
 `:L675-L702` and RN-40's opening (`:L1700-L1712`). `docs/UXD.md`, `docs/SRS.md`, `docs/PRD.md`,
 `docs/fdr.md`, `docs/nfdr.md` and `docs/CONTENT.md` were searched for `key window` and each count
 is 0; their bodies were not read. The shell was read at
-`nozoki-mac/Sources/Surfaces/KeyWindowSource.swift` whole, `RowHover.swift` whole and
-`LetterTooltip.swift:L172-L222`, and the test names in `nozoki-mac/Tests/SurfacesTests/` were
-listed, all at `nozoki@6f92b29`. No test was run.
+`ka-reader-mac/Sources/Surfaces/KeyWindowSource.swift` whole, `RowHover.swift` whole and
+`LetterTooltip.swift:L172-L222`, and the test names in `ka-reader-mac/Tests/SurfacesTests/` were
+listed, all at `ka-reader@6f92b29`. No test was run.
 
 ## Items worked
 
@@ -48,8 +48,8 @@ listed, all at `nozoki@6f92b29`. No test was run.
 
   **Is it a widening with no occurrence?** It is a widening, and it cites its occurrence. The
   item sits under *Raised from downstream* and asks § 3 to name an observation it does not name.
-  It cites the site: `nozoki-mac/Sources/Surfaces/KeyWindowSource.swift:L7` and `:L50`. At
-  `nozoki@6f92b29` that file defines the source (`:L7`) and its live value, which asks the
+  It cites the site: `ka-reader-mac/Sources/Surfaces/KeyWindowSource.swift:L7` and `:L50`. At
+  `ka-reader@6f92b29` that file defines the source (`:L7`) and its live value, which asks the
   host's window whether it is the key window (`:L50-L51`). The hover fill is gated on it
   (`RowHover.swift:L52`, `:L81`) and so is the tooltip (`LetterTooltip.swift:L194`, `:L214`). The
   form is present in the product as it stands, so it is taken.
@@ -95,8 +95,8 @@ listed, all at `nozoki@6f92b29`. No test was run.
      (`:L6142-L6152`): the settled design language already states the rule and leaves that seat no
      call.
   3. The command halves hold four and six hover cases and none for the key window. The shell's
-     suites hold them at `nozoki@6f92b29`: for the tree,
-     `nozoki-mac/Tests/SurfacesTests/RootItemsViewHoverTests.swift:L443`, `:L468`, `:L484` and
+     suites hold them at `ka-reader@6f92b29`: for the tree,
+     `ka-reader-mac/Tests/SurfacesTests/RootItemsViewHoverTests.swift:L443`, `:L468`, `:L484` and
      `:L500`; for the Git view, `GitViewHoverTests.swift:L403`, `:L444`, `:L463` and `:L517`. The
      answer adds three cases to each slice and a tooltip case to S-4, which is the slice that
      holds the tooltip (`docs/SDD.md:L1790-L1794`). This run read those tests' names and not their
@@ -151,8 +151,8 @@ None this run.
 ## Skipped
 
 - **5.1 — the item's `docs/DESIGN.md` line numbers** — the item's supporting text is stale by
-  line, reported and not edited. The item was written at `nozoki@9e8a544`, and `docs/DESIGN.md`
-  moved to v19 at `nozoki@6f92b29`. The item cites "Rows" at `:L635-L640` and "The tooltip" at
+  line, reported and not edited. The item was written at `ka-reader@9e8a544`, and `docs/DESIGN.md`
+  moved to v19 at `ka-reader@6f92b29`. The item cites "Rows" at `:L635-L640` and "The tooltip" at
   `:L681-L685`. The key-window rule for the fill is now at `:L640-L645` and for the tooltip at
   `:L690-L700`. The item was answered, and its answer carries the current lines.
 
@@ -162,4 +162,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/SDD.md`** — `<CORE>/launchers/skill/launcher.sh product-sdd nozoki`
+- **`docs/SDD.md`** — `<CORE>/launchers/skill/launcher.sh product-sdd ka-reader`

@@ -1,4 +1,4 @@
-# Architecture open issues — Nozoki
+# Architecture open issues — KA-Reader
 
 > Companion to `adr/` and `nfdr.md`. The Principal Architect authored both records
 > non-interactively; this file holds what the run could not settle from its inputs — the SRS, the SDD
@@ -17,9 +17,9 @@
 > — an ADR's binding and an NFDR obligation reach the same file.
 
 > **How this companion came to be.** No `product-architecture` run opened it. The PM opened it on
-> 2026-09-25 with a § 3.1 on QC-4's layer-4 check (`nozoki@41915e6`); a `companion-self-answer` run
+> 2026-09-25 with a § 3.1 on QC-4's layer-4 check (`ka-reader@41915e6`); a `companion-self-answer` run
 > answering `docs/fdr_open_issues.md` § 2.2 appended § 2.1 in the Principal PM's posture
-> (`nozoki@9cfb727`); § 3.1 was answered in the owner's seat (`nozoki@fcd7ac5`). The
+> (`ka-reader@9cfb727`); § 3.1 was answered in the owner's seat (`ka-reader@fcd7ac5`). The
 > `product-architecture` run of 2026-09-25 folded § 3.1 into NFDR v18 and dropped it — the companion
 > as it stood is `docs/trail/architecture/cycle-15.md`. One item stays: § 2.1, whose draft that run
 > wrote into QC-6 under the SDD's own move (NFDR RN-29), and whose slot is the owner's.
@@ -48,10 +48,10 @@ None.
   its volume's root. The *verified by* keeps the two layer-2 commands and names the layer-1 cases
   for the four spellings `docs/fdr.md`'s example rows fix (`:L357-L358`; R-183 `:L87`, R-184
   `:L88`) beside the `..` and symlink-out cases — and says what the tree does: none of the four is
-  written at `nozoki@69cc4b2` (`crates/nozoki-core/src/fs_reader.rs` `mod tests` holds the `..` and
+  written at `ka-reader@69cc4b2` (`crates/ka-reader-core/src/fs_reader.rs` `mod tests` holds the `..` and
   symlink cases), and the re-entry case goes red when it is, because the walk keeps one lexical
   position and answers `Outside` for `../<NAME>` (`:L170-L177`; measured at
-  `docs/trail/sdd/cycle-15.md` § 5.1 on `nozoki@46bb275`, the crates unchanged since). That nothing
+  `docs/trail/sdd/cycle-15.md` § 5.1 on `ka-reader@46bb275`, the crates unchanged since). That nothing
   is read outside the grant stays QC-35's, at layer 5. The trace adds ADR-0011, SDD § 4 C-D1 and
   § 9 TO-6, SRS FR-32 and NFR-16, FDR R-183 and R-184, and the owner's answer at
   `docs/trail/sdd/cycle-15.md` § 5.1. **Written under the SDD's move, not under an answer here:** a
@@ -65,7 +65,7 @@ None.
   read. Read as written, v17's QC-6 asked for the read C-D1 forbids and QC-35 excludes, and its two
   fixtures exercised none of the spellings the definition turns on. The FDR carries the definition
   as R-183 and R-184, confirmed in the owner's seat at `docs/trail/fdr/cycle-6.md` § 2.2. The move
-  landed after v17 (`nozoki@4b9425b` above `nozoki@18250d6`), so no run of these records had read
+  landed after v17 (`ka-reader@4b9425b` above `ka-reader@18250d6`), so no run of these records had read
   it; SDD RN-71 and FDR RN-34 each named QC-6 as owed, and the item that raised it here said a re-run
   re-deriving on its own is confirmed at no cost.
 - **If overridden:** *Override back to v17's wording* — QC-6 disagrees with SDD v20 § 3, C-D1 and
@@ -78,12 +78,12 @@ None.
   `companion-self-answer` run; reasoning at `docs/trail/architecture/self_answer-19.md` § 2.1.
   The obligation, the trace and § 10's row stand as v18 holds them. The addition is to the
   *verified by*'s layer-1 list and its source only: `docs/fdr.md`'s example rows (`:L357-L358`)
-  fix three of the four spellings, not four — the re-entry in two forms (`self → ../NOZOKI`
-  ending `Cycle`, R-152; `up → ../NOZOKI/docs` resolving inside and read as its target, R-34,
+  fix three of the four spellings, not four — the re-entry in two forms (`self → ../KA-READER`
+  ending `Cycle`, R-152; `up → ../KA-READER/docs` resolving inside and read as its target, R-34,
   R-151), the multi-level return (`far`) and the volume root (`back`) — and the
   Unicode-normalization refusal has no example row, resting on R-184's second clause and SDD
   § 11 R-10. The list cites it there, and names both re-entry forms, both `Outside` on the walk
-  at `nozoki@88b237f` (`crates/nozoki-core/src/fs_reader.rs:L211-L215`) until the change that
+  at `ka-reader@88b237f` (`crates/ka-reader-core/src/fs_reader.rs:L211-L215`) until the change that
   builds the re-entry lands.
 
 ## 3. Raised from downstream — an item from a seat that did not write these records

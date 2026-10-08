@@ -1,4 +1,4 @@
-# FDR open issues — Nozoki 覗き
+# FDR open issues — KA-Reader
 
 > Companion to `fdr.md`. The Principal PM authored the FDR non-interactively; this file holds what the
 > run could not settle from its inputs — the PRD, the SRS and the SDD.
@@ -16,7 +16,7 @@
 
 > **This round.** The file was opened on 2026-09-04 by a `companion-self-answer` run
 > (`docs/trail/architecture/self_answer-6.md`) with one item, § 2.1, after the SDD this FDR derives
-> from was deleted (`nozoki@9c91359`) and re-authored (Settled at v3, `nozoki@827aa1c`). The
+> from was deleted (`ka-reader@9c91359`) and re-authored (Settled at v3, `ka-reader@827aa1c`). The
 > `product-fdr` run of 2026-09-04 re-derived `docs/fdr.md` against the re-authored SDD, took it from v3
 > to v4, applied § 2.1's drafted form, and found the re-author had moved more than the twelve citations
 > § 2.1 counted and had changed four things a rule carries. Every delta is applied to the FDR and
@@ -39,7 +39,7 @@
   re-authored SDD carries the subject: R-106 → `§ 4 C-E9` (the initial theme); R-117, R-171 and
   R-174 → `§ SDD Review Notes RN-35` (the default branch set and the window); R-73 → § 3 `surfaces`
   (the history beneath the changes list); R-124 → § 3 `folder-model` replace-whole and
-  `§ 4 C-E6`; R-126 → `§ 4 C-R3`. **Pinned** to `nozoki@70a879a:docs/SDD.md § SDD Review Notes RN-n`,
+  `§ 4 C-E6`; R-126 → `§ 4 C-R3`. **Pinned** to `ka-reader@70a879a:docs/SDD.md § SDD Review Notes RN-n`,
   where it does not: R-70 (RN-20 — beside `docs/SRS.md` § SRS Review Notes RN-37, which now carries
   the owner's words), R-124, R-126 and R-181 (RN-26, for the clauses no live section carries), and
   this document's own RN-1, RN-9, RN-21 and RN-25, each of which records what the SDD said when a
@@ -57,14 +57,14 @@
   (`docs/trail/architecture/cycle-3.md` § 3.1). The repair form follows the document's revision rule
   and not the log's: the FDR revises in place, so a live pointer is right where a successor exists,
   and the log's pin is right only where none does. After the repair, `grep -c` on the same pattern,
-  excluding the `nozoki@70a879a:` prefix, → **0**.
-- **If overridden:** *pin all twelve* to `nozoki@70a879a:` — one rule, twelve edits, at the cost of a
+  excluding the `ka-reader@70a879a:` prefix, → **0**.
+- **If overridden:** *pin all twelve* to `ka-reader@70a879a:` — one rule, twelve edits, at the cost of a
   document that revises in place carrying pointers to a document no working tree holds, which is the
   form the owner rejected for the NFDR's one citation; or *leave them*, which restores eight rules and
   four review notes pointing at notes on other subjects or at nothing, in a document the Product
   Owner and the QA seat read cold. Either way no rule, product decision or exclusion changes its
   meaning.
-- **Confirm or override:** confirm — the re-pointed / pinned split stands as drafted, under the owner's rule for a document revised in place (`docs/trail/architecture/cycle-3.md` § 3.1, answer (2)). Every re-pointed target was opened this run and carries its subject: `docs/SDD.md` § 4 C-E9 states the initial theme, light where no signal can be read (R-106); RN-35 states the default tip set and the window (R-117, R-171, R-174); § 3 `surfaces` reads *"the history beneath its changes list"* (R-73); § 3 `folder-model` reads *replace-whole* and § 4 C-E6 the plain folder's state (R-124); § 4 C-R3 carries the path that cannot be read (R-126). The pinned trail resolves (`git cat-file -e 70a879a:docs/trail/sdd/cycle-1.md`), and `grep -c 'SDD § SDD Review Notes RN-\(16\|19\|20\|26\)'` on `docs/fdr.md`, the `nozoki@70a879a:` prefix excluded, prints 0 (2026-09-04). Not taken: pinning all twelve — a pointer that resolves live is the one signal a later reader has that this document and the SDD still agree, and freezing it hides that. Decided in the owner's seat by a `companion-self-answer` run, 2026-09-04. Reasoning: `docs/trail/fdr/self_answer-3.md` § 2.1.
+- **Confirm or override:** confirm — the re-pointed / pinned split stands as drafted, under the owner's rule for a document revised in place (`docs/trail/architecture/cycle-3.md` § 3.1, answer (2)). Every re-pointed target was opened this run and carries its subject: `docs/SDD.md` § 4 C-E9 states the initial theme, light where no signal can be read (R-106); RN-35 states the default tip set and the window (R-117, R-171, R-174); § 3 `surfaces` reads *"the history beneath its changes list"* (R-73); § 3 `folder-model` reads *replace-whole* and § 4 C-E6 the plain folder's state (R-124); § 4 C-R3 carries the path that cannot be read (R-126). The pinned trail resolves (`git cat-file -e 70a879a:docs/trail/sdd/cycle-1.md`), and `grep -c 'SDD § SDD Review Notes RN-\(16\|19\|20\|26\)'` on `docs/fdr.md`, the `ka-reader@70a879a:` prefix excluded, prints 0 (2026-09-04). Not taken: pinning all twelve — a pointer that resolves live is the one signal a later reader has that this document and the SDD still agree, and freezing it hides that. Decided in the owner's seat by a `companion-self-answer` run, 2026-09-04. Reasoning: `docs/trail/fdr/self_answer-3.md` § 2.1.
 
 ### 2.2 The re-author moved further citations outside § 2.1's count — the experience conditions re-lettered, sections moved, the deleted trail — and they take the same two forms
 - **Drafted into the FDR:** the rule of § 2.1 applied to every other `docs/SDD.md` citation the
@@ -77,7 +77,7 @@
   the renderer's cost from `§ 9 TO-1` to `§ 9 TO-4` and § 2 *Undoing it* (PD-29); the unexplained-fault
   class from RN-4 and RN-14 to `§ 4 C-E3, C-I1` (PD-38); the loaded window from `§ Open Questions` to
   `§ SDD Review Notes RN-35` (R-120, R-176, RN-11, RN-17, RN-21); and two quoted GitState phrases
-  follow the re-authored wording (R-66, R-161). **Pinned** to `nozoki@70a879a:docs/SDD.md`, beside the
+  follow the re-authored wording (R-66, R-161). **Pinned** to `ka-reader@70a879a:docs/SDD.md`, beside the
   live section that carries the rest of the claim: `§ 4 C-E9` — one shell, two chrome controls and no
   third, one path line over every treatment, no settings or onboarding surface — which the
   re-authored SDD states nowhere as one condition (R-27, R-41, R-63, R-113, R-121, PD-31, OOS-23);
@@ -99,7 +99,7 @@
   v5 revision applied the same two forms to its own tags (`docs/nfdr.md` RN-16). Measured after the
   repair, 2026-09-04: 73 entries of `docs/fdr.md` changed between v3 and v4
   (`git diff -U0 3325469 HEAD -- docs/fdr.md | grep -c '^-- \*\*'`), 32 citations carry the pin
-  (`grep -o 'nozoki@70a879a' docs/fdr.md | wc -l`), and the document cites the SDD 135 times in the
+  (`grep -o 'ka-reader@70a879a' docs/fdr.md | wc -l`), and the document cites the SDD 135 times in the
   `SDD § ` form (`grep -o 'SDD § ' docs/fdr.md | wc -l`).
 - **If overridden:** *pin every SDD citation* rather than re-point — one rule, all 135 `SDD § `
   citations edited, at the cost of a document that revises in place pointing at a document no
@@ -144,7 +144,7 @@
   believes an in-folder SVG renders, which the build will not do. If SVG is wanted in place, that is
   the SDD's reopening condition and reaches this document by that document's revision (SDD RN-8),
   never from here.
-- **Confirm or override:** confirm, with one correction to the ground that the fold should carry into RN-28 (2): the format set is not new with the re-author. The deleted SDD already fixed it — `nozoki@70a879a:docs/SDD.md` § 3 *The image set*: PNG, JPEG, GIF, WebP, *"SVG is outside the set in v1"*, an in-folder `.svg` taking *"the not-an-image placeholder"* (its RN-34) — so R-58's *every in-folder image* and R-160's *not an image the platform renders* were already out of step with the SDD this document read at v2 and v3, a hole this document's own cycle-1 § 2.8 answer opened. The delta is legitimate on both grounds the re-run rule admits — the re-authored SDD is a new document stating the set as a § 4 condition (C-D3), and the exclusion was confirmed at `docs/trail/sdd/cycle-1.md` § 2.1 — and R-58, R-160, PD-12 and the Markdown example row stand as v4 wrote them. Decided in the owner's seat by a `companion-self-answer` run, 2026-09-04. Reasoning: `docs/trail/fdr/self_answer-3.md` § 2.4.
+- **Confirm or override:** confirm, with one correction to the ground that the fold should carry into RN-28 (2): the format set is not new with the re-author. The deleted SDD already fixed it — `ka-reader@70a879a:docs/SDD.md` § 3 *The image set*: PNG, JPEG, GIF, WebP, *"SVG is outside the set in v1"*, an in-folder `.svg` taking *"the not-an-image placeholder"* (its RN-34) — so R-58's *every in-folder image* and R-160's *not an image the platform renders* were already out of step with the SDD this document read at v2 and v3, a hole this document's own cycle-1 § 2.8 answer opened. The delta is legitimate on both grounds the re-run rule admits — the re-authored SDD is a new document stating the set as a § 4 condition (C-D3), and the exclusion was confirmed at `docs/trail/sdd/cycle-1.md` § 2.1 — and R-58, R-160, PD-12 and the Markdown example row stand as v4 wrote them. Decided in the owner's seat by a `companion-self-answer` run, 2026-09-04. Reasoning: `docs/trail/fdr/self_answer-3.md` § 2.4.
 
 ### 2.5 R-120 no longer says the history's window is undecided — the re-authored SDD fixes it at 1,000 commits as a design bound — and this document does not carry the number
 - **Drafted into the FDR:** R-120 reads *The window's size is not this contract's: the SDD carries
@@ -225,14 +225,14 @@
 > the decision is the next round's.
 - **Raised by:** a `companion-self-answer` run answering `docs/SDD_open_issues.md` § 5.1 — 2026-09-04
   — reading `docs/fdr.md` as that item's source, in no authoring seat.
-- **Tracked by:** none. nozoki has no active 根回し Nemawashi seed and no open 宿場 Shukuba station
-  (`system/projects/nozoki/journey/` — both roots empty, 2026-09-04). Found while reading this
+- **Tracked by:** none. ka-reader has no active 根回し Nemawashi seed and no open 宿場 Shukuba station
+  (`system/projects/ka-reader/journey/` — both roots empty, 2026-09-04). Found while reading this
   document, not while cutting work from it.
 - **What it blocks:** nothing stalls and no gate fails. What it costs is this document's
   traceability, which is what a reader uses to know whether the FDR and the SDD agree: three
   sentences say they disagree where they now agree, so a builder or a QA seat chasing the departure
   finds nothing at the other end and cannot tell a resolved departure from an unrecorded one.
-- **Where it shows:** `docs/SDD.md` moved from v3 to v4 (`nozoki@683db69`) and folded both sentences
+- **Where it shows:** `docs/SDD.md` moved from v3 to v4 (`ka-reader@683db69`) and folded both sentences
   RN-29 found, under the owner's own answers at `docs/trail/fdr/cycle-1.md` §§ 2.4 and 2.7 — its
   § 3 `fs-reader` now admits UTF-16 by byte-order mark beside UTF-8 with its boundary stated
   (`docs/SDD.md` § SDD Review Notes RN-41), and its § 11 R-3's response now names where the Git
@@ -253,7 +253,7 @@
   already carries, and no rule, product decision, exclusion or example moves: R-21 and R-46 keep
   their wording exactly, because what changed is the SDD agreeing with them, not either rule.
   My reading, offered and not drafted: re-point the three sites at `docs/SDD.md` v4 and record the
-  meeting in a review note naming `nozoki@683db69` and SDD RN-41/RN-42 as what met it. Whether
+  meeting in a review note naming `ka-reader@683db69` and SDD RN-41/RN-42 as what met it. Whether
   R-21's *changed* and R-46's *added* then become realized or agreeing relations is this document's
   own traceability rule to apply, and this run does not word it.
 - **Answer:** <the owner fills this in>

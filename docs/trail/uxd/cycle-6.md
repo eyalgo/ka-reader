@@ -1,4 +1,4 @@
-# UXD open issues — Nozoki 覗き
+# UXD open issues — KA-Reader
 
 > Companion to `UXD.md`. The CDO authored the UXD non-interactively; this file holds
 > what it could not settle from the inputs (the PRD, the project's Agari and its doctrine, the
@@ -75,10 +75,10 @@
 - **What this seat adds, taking the item up:** four things the finding does not say, after opening
   every source it cites and finding each as described. **(1) The contingency has moved.** Since this
   item was written the owner answered the FDR's companion (`docs/fdr_open_issues.md`, committed at
-  `nozoki@ec2b3f9`): § 2.1 reads *confirm* on R-70 and sends UX-F2 to this item by name; § 1.1,
+  `ka-reader@ec2b3f9`): § 2.1 reads *confirm* on R-70 and sends UX-F2 to this item by name; § 1.1,
   § 1.2, § 1.3, § 1.4 and § 2.8 each answer the state named above as (a), (b), (c), the short status
   and (d), and none is overridden. `product-fdr` has not folded them — `docs/fdr.md` last changed at
-  `nozoki@a50718a`, before the answers. That fold is no longer what this item waits on. The FDR is
+  `ka-reader@a50718a`, before the answers. That fold is no longer what this item waits on. The FDR is
   downstream of this document and never a source it may trace to (`<CORE>/prompts/cdo_create_uxd.md`
   § *Inputs you work from*), so an answer written there does not authorize a fold here; the
   authorization the fold would cite is this companion's own trail cycle, which is why the slot below

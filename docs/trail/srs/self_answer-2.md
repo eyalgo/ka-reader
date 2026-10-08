@@ -24,7 +24,7 @@
   plainly: this item was raised by the previous self-answer run
   (`docs/trail/srs/self_answer-1.md` § Raised on this document) and its slot left at the placeholder
   because "the decision is the next round's". This is that round — a `product-srs` fold (SRS v9,
-  `nozoki@82c199a`) sits between the raising and the deciding, and every fact below was re-measured
+  `ka-reader@82c199a`) sits between the raising and the deciding, and every fact below was re-measured
   on disk today rather than inherited from the report that raised it.
 
   **Check 2 — the conclusion holds; one reason is replaced.** The claim is on disk both ways:
@@ -65,7 +65,7 @@
   **Check 4 — the failure paths.**
   - *Stale* — the one that bit this sentence. It went false because it was written in the present
     tense about a document that then moved. The addition: the clause is pinned — "ended at UXD v6
-    (`nozoki@dd08f2d`, 2026-08-26)" — so it stays true whatever UXD v8 does, the way RN-35's own
+    (`ka-reader@dd08f2d`, 2026-08-26)" — so it stays true whatever UXD v8 does, the way RN-35's own
     "PRD v8 → v11" and RN-19's `9017ae2` are already dated facts.
   - *Concurrent* — a UXD round in flight that could move UX-S4 again while the fold runs. None:
     `ls docs/*_open_issues.md` on 2026-09-01 shows `architecture`, `CONTENT`, `fdr` and `SRS`
@@ -92,4 +92,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/SRS.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-srs/launcher.sh nozoki`
+- **`docs/SRS.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-srs/launcher.sh ka-reader`

@@ -36,16 +36,16 @@
   § 1.1 — checked one by one on 2026-09-01.
 
   **The addition — the `uxd_trail` provenance, which the draft did not check.** The SRS run found
-  that a `docs/uxd_trail/cycle-N.md` citation can point at the UXD removed at `nozoki@9017ae2`
+  that a `docs/uxd_trail/cycle-N.md` citation can point at the UXD removed at `ka-reader@9017ae2`
   (2026-08-14), whose cycle files differ from the re-authored UXD's under the same name, so the
   mechanical rule would send a reader to the wrong answer (`docs/trail/srs/self_answer-1.md`
   § 2.2). That hazard is real for any document that predates the removal. This one does not:
-  `git log -- docs/DESIGN.md` puts v1 at `nozoki@e1e54f6` on 2026-08-26, authored *"off UXD v2"*
+  `git log -- docs/DESIGN.md` puts v1 at `ka-reader@e1e54f6` on 2026-08-26, authored *"off UXD v2"*
   by its own subject line, twelve days after the removal. The old cycle-1 at `1d5c553` carries only
   § 2.1 and § 2.2; this document cites cycle-1 § 2.5 (the initial theme) and § 2.6 (the Markdown
-  link), which exist only in the re-authored file added at `nozoki@7505e1b`. The old cycle-2's § 1
+  link), which exist only in the re-authored file added at `ka-reader@7505e1b`. The old cycle-2's § 1
   has no items; this document cites cycle-2 § 1.1 (the theme control's home) and pins it itself to
-  `nozoki@f4bc928`, the commit that added the re-authored cycle-2. So all six `uxd_trail`
+  `ka-reader@f4bc928`, the commit that added the re-authored cycle-2. So all six `uxd_trail`
   citations resolve correctly under the drafted rule, and none is repaired by hand. That the draft
   reached the right rule without this check is why the verdict carries an addition rather than a
   plain confirm: a sweep that took this document's item as its licence for the SRS's would have
@@ -54,7 +54,7 @@
   **The item's cross-document figures are stale, and are reported rather than edited.** The
   repo-wide count moved from 235 to 295 once the PRD's bare form was counted
   (`docs/trail/prd/self_answer-1.md` § 2.1), and three documents have since been repaired — PRD at
-  `nozoki@2d8c99d`, SRS at `nozoki@82c199a`, UXD at `nozoki@05eac42`. Measured today with
+  `ka-reader@2d8c99d`, SRS at `ka-reader@82c199a`, UXD at `ka-reader@05eac42`. Measured today with
   `grep -o '[a-z]*_trail/'` per document: DESIGN 30, SDD 40, CONTENT 12 — 82 unpinned across the
   three documents whose fold has not run — and residual mentions in the three that have: PRD 2,
   SRS 7 (2 pinned), UXD 6 (5 pinned). Why those residuals stand is each document's own version line
@@ -63,7 +63,7 @@
   **What the fold owes that no item says.** The writing bar's § 1.6 requires a change to a settled
   statement to be recorded in the document with the reason that authorized it
   (`system/doctrine/writing_bar.md` § 1.6), and this document records changes on its version line
-  (`docs/DESIGN.md:302`) — the slot names `nozoki@1e8bf3d` as that reason so the fold has it in
+  (`docs/DESIGN.md:302`) — the slot names `ka-reader@1e8bf3d` as that reason so the fold has it in
   hand. The version line itself is one of the 30 (`docs/design_trail/cycle-4.md`), so it moves
   twice in one revision: its pointer and its record.
 
@@ -113,4 +113,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/DESIGN.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-design/launcher.sh nozoki`
+- **`docs/DESIGN.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-design/launcher.sh ka-reader`

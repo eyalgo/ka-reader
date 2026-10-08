@@ -1,4 +1,4 @@
-# SDD open issues — Nozoki
+# SDD open issues — KA-Reader
 
 > Companion to `SDD.md`. The CTO wrote the SDD; this file holds what that run could not settle from
 > its inputs (the PRD, the SRS, the UXD, and any context or constraints), and the calls that are the
@@ -69,8 +69,8 @@ None.
   libgit2 takes from a config file it loads for the repository, during the open, the state read and
   the status read" (`docs/SDD.md:L3041-L3043`). The built adapter already checks it.
   `verify_submodules` runs the config scan over `.gitmodules` in the repository's working tree and
-  in each submodule's, before status opens any of them (`crates/nozoki-core/src/git_reader/libgit2.rs:L285-L302`
-  at `nozoki@b25b407`; the file name at `:L29`). The scan follows include keys only there
+  in each submodule's, before status opens any of them (`crates/ka-reader-core/src/git_reader/libgit2.rs:L285-L302`
+  at `ka-reader@b25b407`; the file name at `:L29`). The scan follows include keys only there
   (`:L238`). The SDD does not state this read. The `git-reader` row's config check lists the
   `config`, `config.worktree` and the files those include (`docs/SDD.md:L338`). Its *Must not own*
   excepts "a config file inside the folder that the repository's config includes (RN-99), and the
@@ -110,7 +110,7 @@ None.
   `diff_generate.c:L771`). Where a section's name is a gitlink's path and the section's path is
   another location, libgit2 opens the repository at that other location and reports it in the
   gitlink's place (`submodule.c:L1884`, `:L1647-L1665`). Measured through the adapter at
-  `nozoki@bd382c8`: with `[submodule "sub"] path = link/x`, `link` a link to a directory outside
+  `ka-reader@bd382c8`: with `[submodule "sub"] path = link/x`, `link` a link to a directory outside
   the folder and a repository at `x` there, `status()` listed `sub` as modified, and with nothing
   at `x` it listed no `sub`. With `path = evil` and a second repository at `evil` inside the
   folder, `status()` listed `sub` as modified where `git status --porcelain` printed only
@@ -123,7 +123,7 @@ None.
   the config condition is true of a path that spells inside the folder. Its observable half is
   the CDO's clause.
   **Addition two: not built, and stated so.** The adapter skips every key of `.gitmodules` but
-  the include keys (`crates/nozoki-core/src/git_reader/libgit2.rs:L235-L240` at `nozoki@bd382c8`)
+  the include keys (`crates/ka-reader-core/src/git_reader/libgit2.rs:L235-L240` at `ka-reader@bd382c8`)
   and verifies the index's gitlink paths alone (`:L307-L338`). R-16 carries both gaps as a known
   defect until a change lands. In the bundle the sandbox is the only bound on the outside open
   (§ 4 C-R2), and that was not run. In the harness nothing bounds it. The proof is one fixture and

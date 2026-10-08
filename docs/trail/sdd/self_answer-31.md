@@ -37,7 +37,7 @@ seat. It is for the owner, who reads it to learn what was decided and why, and f
   **The widening rule, first.** The item sits under the heading carrying *Raised from
   downstream*. Reading (a) asks the SDD to state an exception it does not state now, so it
   widens the document. The item cites its occurrences, and each was re-read and holds at
-  `nozoki@5b3040e`:
+  `ka-reader@5b3040e`:
   - `WorkbenchView.swift:L80-L88`: `select` calls `readingPanel.showReading()` at `:L86` and
     raises the intent at `:L88`.
   - `WorkbenchView.swift:L92-L98`: a `nil` verdict draws `showStopped`.
@@ -63,7 +63,7 @@ seat. It is for the owner, who reads it to learn what was decided and why, and f
   same seat, so both are answered in the one slot. One sentence of the supporting text is
   narrower than the code: "A `nil` answer is an answer that did not decode." `decodeFile`
   returns `nil` in three cases: a NULL buffer, a buffer that does not conform, and the wire's
-  own `pending` state (`nozoki-mac/Sources/Shell/BridgePayload.swift:L266-L277`). The answer
+  own `pending` state (`ka-reader-mac/Sources/Shell/BridgePayload.swift:L266-L277`). The answer
   covers all three. The sentence is the producing skill's to correct, and this run left it as
   written.
 
@@ -71,8 +71,8 @@ seat. It is for the owner, who reads it to learn what was decided and why, and f
   - The gap is the one state the bridge cannot send. SM-4 sends up in two ways: "the
     `model_changed` callback" and "each call's return as an owned buffer" (`docs/SDD.md:L418`).
     The bridge exports four functions and no callback today
-    (`crates/nozoki-bridge/src/exports.rs:L55`, `:L73`, `:L90`, `:L104`;
-    `grep -rn model_changed crates nozoki-mac/Sources` prints nothing). A call's answer is its
+    (`crates/ka-reader-bridge/src/exports.rs:L55`, `:L73`, `:L90`, `:L104`;
+    `grep -rn model_changed crates ka-reader-mac/Sources` prints nothing). A call's answer is its
     return. Until it returns, the bridge has said nothing.
   - A pending that must cross the seam cannot be drawn when it matters. UX-S1 *Loading* exists
     for "a file that is genuinely still being read" (`docs/UXD.md:L239`). That is a core that is
@@ -87,12 +87,12 @@ seat. It is for the owner, who reads it to learn what was decided and why, and f
   - `pending` as an `ItemState` is a different thing and stays where it is. The model holds
     `kind` as `pending` until the root finding answers (`docs/SDD.md:L435-L436`), and a folder
     entry not yet read crosses the bridge as `pending`
-    (`crates/nozoki-core/src/fs_reader.rs:L842`). Bound 4 keeps both the model's.
+    (`crates/ka-reader-core/src/fs_reader.rs:L842`). Bound 4 keeps both the model's.
 
   **Why the fault is not originated by the surface.** `mac-shell` decodes the return and hands
   the surface a verdict or `nil` (`LaunchFlow.swift:L118-L124`). The surface draws *stopped*
   from the value it was handed over SM-8. The model cannot report its own panic: the bridge
-  catches the panic at the boundary and returns NULL (`crates/nozoki-bridge/src/boundary.rs:L21-L40`).
+  catches the panic at the boundary and returns NULL (`crates/ka-reader-bridge/src/boundary.rs:L21-L40`).
   So for a call, `stopped` is established where the return is read. § 3 says only that the model
   holds `stopped` on an item (`docs/SDD.md:L440-L443`). The answer asks the SDD to state both
   places.
@@ -163,4 +163,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/SDD.md`** — `<CORE>/launchers/product-sdd/launcher.sh nozoki`
+- **`docs/SDD.md`** — `<CORE>/launchers/product-sdd/launcher.sh ka-reader`

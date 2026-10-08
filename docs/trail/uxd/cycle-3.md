@@ -1,4 +1,4 @@
-# UXD open issues — Nozoki 覗き
+# UXD open issues — KA-Reader
 
 > Companion to `UXD.md`. The CDO authored the UXD non-interactively; this file holds
 > what it could not settle from the inputs (the PRD, the project's Agari and its doctrine, the
@@ -16,7 +16,7 @@
 > file whole to `docs/uxd_trail/` — so what you decided, and why, stays readable and citable
 > for good.
 
-> **Round 2 on the fault state.** The companion you opened (`nozoki@0713035`) carried one item
+> **Round 2 on the fault state.** The companion you opened (`ka-reader@0713035`) carried one item
 > with three parts and said which seat each belongs to. This run took the two it was told it
 > could: **where** the unexplained-fault state is shown is now `UXD.md` § 6 and UX-I16 (RN-23),
 > and **whether a control reveals the fault's detail** is drafted as *no* and put up for your
@@ -40,7 +40,7 @@
   - **v1 ships without it.** Every failure v1 can reach is one it observed (the § 6 cells as they
     stood at v3); UX-I16 and the CONTENT formula stand written for the first release that proves
     otherwise, and no v1 change is asked to implement them. This is the reading the raising item
-    named as legitimate (`nozoki@0713035`; `docs/CONTENT_open_issues.md` § 1.1, part 3).
+    named as legitimate (`ka-reader@0713035`; `docs/CONTENT_open_issues.md` § 1.1, part 3).
   The call moves nothing in `UXD.md` either way — the entry is scope-neutral by design — but it
   decides whether v1 is built to reach the state at all, so it has to be yours.
 - **Answer:** **Yes — v1 has the class.** The owner's word was "yes", answering the question as the
@@ -56,7 +56,7 @@
 ### 1.2 RN-20 cites a file under `journey/`, which a definition document may not do
 
 - **Why it matters:** `docs/UXD.md` **RN-20** (`UXD.md:637-640`) sources its claim to
-  `system/projects/nozoki/journey/shukuba/2026-08-26_experience.md` § Guardrail. That is a citation
+  `system/projects/ka-reader/journey/shukuba/2026-08-26_experience.md` § Guardrail. That is a citation
   a definition document may not make: *"A product document's sources are the PRD, the project's
   Agari, its doctrine, and its sibling documents — all of which settle. A journey file moves to
   `trail/` the week after, so a settled product document that cites one cites a path that no longer
@@ -66,7 +66,7 @@
   in the whole set; `PRD.md`, `SRS.md`, `DESIGN.md`, `CONTENT.md` and `README.md` carry none.
 - **What was searched:** every settled document in `docs/` plus `README.md`, for any citation of a
   path under `journey/` and for each of that folder's stage names — one hit, `UXD.md:640`. Citations of
-  `system/projects/nozoki/agari.md` were checked and are **not** this: the Agari is a declaration and
+  `system/projects/ka-reader/agari.md` were checked and are **not** this: the Agari is a declaration and
   a named legitimate source, not a journey file.
 - **Answer:** **Re-source RN-20 to the SRS itself.** The note's fact does not change — no entry here
   traces to `docs/SRS.md`; it was read for collisions and none was found; its UI-visible requirements

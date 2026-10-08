@@ -1,4 +1,4 @@
-# Architecture open issues — Nozoki
+# Architecture open issues — KA-Reader
 
 > Companion to `adr/` and `nfdr.md`. The Principal Architect authored both records
 > non-interactively; this file holds what the run could not settle from its inputs — the SRS, the SDD
@@ -40,22 +40,22 @@ None.
 - **Lands in:** `nfdr.md` § 1.2 — the lead paragraph, or a new `QC` beside QC-10 and QC-11
 - **Drafted into the records:** `nfdr.md` **QC-63** in § 1.2, its § 10 row, and one sentence in
   § 1.2's lead pointing at it — at v29, by the `product-architecture` run of 2026-10-03 (RN-40).
-  QC-63 says a module of `nozoki-core` that is no SDD part is a value module: it holds types and
+  QC-63 says a module of `ka-reader-core` that is no SDD part is a value module: it holds types and
   values only, holds no I/O (QC-15), and imports no part. Any part may import it, and that import
   is not an edge. `lib.rs` is named as the re-export surface, neither a part nor a value module,
-  because it re-exports from every module (`crates/nozoki-core/src/lib.rs:L9-L15`). That is one
+  because it re-exports from every module (`crates/ka-reader-core/src/lib.rs:L9-L15`). That is one
   step beyond the item as raised. `checks/structure.sh` gains one rule, owed by the change that
   adds it: a file of no unit, `lib.rs` aside, that imports a unit is a finding. Until then the
-  gate is `development-design`. Re-measured at `nozoki@803b599`: `language.rs` and `error.rs`
+  gate is `development-design`. Re-measured at `ka-reader@803b599`: `language.rs` and `error.rs`
   import no part, so the rule would raise nothing on the tree today. *As raised, this field read
   "Nothing": the raising run wrote no record.* The change the item proposed, kept as it was
-  raised: a new entry in § 1.2. A module of `nozoki-core` that is
+  raised: a new entry in § 1.2. A module of `ka-reader-core` that is
   no SDD part may be imported by any part, and that import is not an edge. Such a module is a value
   module: it holds types two or more parts share, it does no I/O, and **it imports no part**. Today
   those modules are `language` and `error`, plus `lib.rs` as the re-export surface. The new entry
   is verified by `checks/structure.sh`, with one rule added there: a file of no unit that imports a
   unit is a finding.
-- **Rationale:** *(As raised; its `docs/nfdr.md` line numbers are v28's, at `nozoki@803b599` — v29
+- **Rationale:** *(As raised; its `docs/nfdr.md` line numbers are v28's, at `ka-reader@803b599` — v29
   moved them by the lead's new sentence.)* The record and the tree disagree. § 1.2 says "'May import' is the whole allowed
   set; 'must not import' is stated explicitly and never inferred" (`docs/nfdr.md:L208-L209`).
   QC-10's allowed set for `folder-model` does not include `language` (`:L236-L237`). Even so,
@@ -79,7 +79,7 @@ None.
   the lead's pointer; QC-63 is new at v29, so no record and no other entry traces to it yet.
 - **Confirm or override:** confirm, with one addition. This was decided in the owner's seat by a
   `companion-self-answer` run, not by the owner. QC-63 stands as v29 drafted it, and it is true of
-  the tree at `nozoki@a3caabd`, whose `crates/` and `checks/` are `nozoki@803b599`'s:
+  the tree at `ka-reader@a3caabd`, whose `crates/` and `checks/` are `ka-reader@803b599`'s:
   `language.rs:L30-L39` is one enum and `error.rs:L4-L9` a variantless enum that only `lib.rs:L9`
   re-exports, and their only crate-relative lines, `language.rs:L43` and `error.rs:L26`, sit in test
   modules and name their own type. **The addition.** "Holds types and values only" has no check, and

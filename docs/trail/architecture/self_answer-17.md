@@ -6,14 +6,14 @@
 - **Document:** `docs/adr/` and `docs/nfdr.md` (NFDR v16, Settled; ADR-0012 Accepted)
 - **Decided by:** `decide_companion_answers.md` v1.3.0
 - **Date:** 2026-09-24
-- **Sources re-read:** GitHub Actions, `kensaiapp/nozoki`, workflow `ci.yml`, re-read this run
-  with `gh run list --repo kensaiapp/nozoki --workflow ci.yml --limit 3`. The newest run is
+- **Sources re-read:** GitHub Actions, `kensaiapp/ka-reader`, workflow `ci.yml`, re-read this run
+  with `gh run list --repo kensaiapp/ka-reader --workflow ci.yml --limit 3`. The newest run is
   35988399477 on `37a962d` (branch `2026-09-24_the-shell-is-seen-at-the-panel`, `success`), and
   then 35968105480 on `c461b29` (`main`). No run exists on any commit that carries the five new
   suite steps. `git rev-list --count origin/main..main` → `28` (`origin/main` = `c461b29`), so
   nothing has been pushed since. § 3.2 depends on this.
 
-Everything else was measured on the tree at `nozoki@ab39502`. The only commit after it on `main`,
+Everything else was measured on the tree at `ka-reader@ab39502`. The only commit after it on `main`,
 `1a84367`, touches this companion alone (`git diff --stat ab39502 HEAD`). All five items are
 corrections to these records and none widens them, so § *A widening item waits until it occurs*
 does not apply. All five belong to this document's seat. None needs a call only the owner can
@@ -27,7 +27,7 @@ make, and none belongs to another document: `docs/SDD.md` v18 cites `checks/rend
 
 - **Bucket:** 3. Raised from downstream — an item from a seat that did not write these records
 - **Verdict:** confirmed with addition
-- **Why:** Confirmed, because the fact is false as the item says. At `nozoki@ab39502` each of the
+- **Why:** Confirmed, because the fact is false as the item says. At `ka-reader@ab39502` each of the
   six suites is the whole `run` of its own step: `.github/workflows/ci.yml:L35-L36`, `:L41-L42`,
   `:L52-L53`, `:L61-L62`, `:L67-L68`, `:L70-L71`. § 9's own comparison
   (`for s in checks/tests/*.sh; do grep -q "$s" .github/workflows/ci.yml || echo "$s"; done`)
@@ -39,7 +39,7 @@ make, and none belongs to another document: `docs/SDD.md` v18 cites `checks/rend
   read as still waiting. Second, § 10's preamble ends with "that bullet's tail is what fails while
   the rest are not". With all six on steps that clause has nothing to point at, and § 3.3 decides
   what the tail now says. The two items were decided together so the preamble and the tail agree.
-  Third, stale case: the count is dated at `nozoki@ab39502`, so a seventh suite later reads as a
+  Third, stale case: the count is dated at `ka-reader@ab39502`, so a seventh suite later reads as a
   re-measurement and not as a contradiction. The case of a new suite is already covered by the
   bullet's rule that "a script that lands with a suite lands the suite's CI step in the same
   change".
@@ -81,7 +81,7 @@ make, and none belongs to another document: `docs/SDD.md` v18 cites `checks/rend
 - **Bucket:** 3. Raised from downstream — an item from a seat that did not write these records
 - **Verdict:** confirmed with addition
 - **Why:** Confirmed. The tail's argument for staying a review gate (`nfdr.md:L951-L953`, "a CI
-  step for it would be red on every build until the five land") is false at `nozoki@ab39502`. The
+  step for it would be red on every build until the five land") is false at `ka-reader@ab39502`. The
   comparison prints nothing there, and `ls checks/*.sh` lists `bundle.sh`, `no-network.sh`,
   `own-state.sh`, `read-only.sh`, `renderer.sh`, `view.sh`, none of which runs it. The tail's own
   next clause said "the day the five are on steps, the comparison becomes a `checks/` script and
@@ -103,8 +103,8 @@ make, and none belongs to another document: `docs/SDD.md` v18 cites `checks/rend
 
 - **Bucket:** 3. Raised from downstream — an item from a seat that did not write these records
 - **Verdict:** confirmed with addition
-- **Why:** Confirmed. `checks/renderer.sh:L62-L65` at `nozoki@ab39502` holds "Hosted runner
-  reading: GitHub Actions run 35988399477 on nozoki@37a962d, image macos-14-arm64
+- **Why:** Confirmed. `checks/renderer.sh:L62-L65` at `ka-reader@ab39502` holds "Hosted runner
+  reading: GitHub Actions run 35988399477 on ka-reader@37a962d, image macos-14-arm64
   20260831.0302.1, macOS 14.8.9", with the match on observation 1 of 30 and the control in none.
   It was added by `2b83dce` (`git diff 153f5a1 ab39502 -- checks/renderer.sh` shows exactly those
   four lines). `nfdr.md:L434-L435` and `adr/0012-…md:L129-L130` both still say the header does
@@ -123,14 +123,14 @@ make, and none belongs to another document: `docs/SDD.md` v18 cites `checks/rend
 
 - **Bucket:** 3. Raised from downstream — an item from a seat that did not write these records
 - **Verdict:** confirmed with addition
-- **Why:** Confirmed. `.github/workflows/ci.yml:L46-L47` at `nozoki@ab39502` is
-  `- name: Renderer gate` and `run: checks/renderer.sh target/release/bundle/macos/Nozoki.app`,
+- **Why:** Confirmed. `.github/workflows/ci.yml:L46-L47` at `ka-reader@ab39502` is
+  `- name: Renderer gate` and `run: checks/renderer.sh target/release/bundle/macos/KA-Reader.app`,
   and `:L43` is blank and `:L44` a comment. `Bundle probe` is still at `:L31-L32`.
   **Addition.** The two cites are not equally wrong. ADR-0012's `:L75` sits in a parenthesis that
-  begins "from `nozoki@153f5a1`", and at that commit `Renderer gate` was at `:L43`
+  begins "from `ka-reader@153f5a1`", and at that commit `Renderer gate` was at `:L43`
   (`git show 153f5a1:.github/workflows/ci.yml | grep -n 'name:'`). So it went stale. QC-62's
   `nfdr.md:L426` is in the present tense ("run on every CI build as `Renderer gate`"), so it is
-  false. The fold corrects QC-62 in place and dates ADR-0012's new line at `nozoki@ab39502`, in the
+  false. The fold corrects QC-62 in place and dates ADR-0012's new line at `ka-reader@ab39502`, in the
   same new note as § 3.4. *Stale, and why a count was taken:* the run re-read every other
   `ci.yml` line cite in the records outside the Review Notes: `nfdr.md` `:L18`, `:L22-L29`,
   `:L26`, `:L29`, `:L35-L36`, and `:L31-L32` twice. All hold, so this item is the whole of the
@@ -152,4 +152,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture nozoki`
+- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture ka-reader`

@@ -19,7 +19,7 @@
 #
 # USAGE
 #   checks/tests/test_entry_points.sh
-#     NOZOKI_TEST_ONLY=<case> [<case> ...] runs the named cases. A name that is no case fails the
+#     KA_READER_TEST_ONLY=<case> [<case> ...] runs the named cases. A name that is no case fails the
 #     run.
 #
 # CASE NAMES
@@ -316,8 +316,8 @@ test_case_1_clean_tree_passes() {
 
   expect_zero_status || return 1
   expect_empty_stderr || return 1
-  expect_no_finding_for_crate nozoki-core || return 1
-  expect_no_finding_for_crate nozoki-bridge || return 1
+  expect_no_finding_for_crate ka-reader-core || return 1
+  expect_no_finding_for_crate ka-reader-bridge || return 1
   [ "$(printf '%s\n' "$STDOUT" | wc -l | tr -d ' ')" -eq 1 ] || fail "expected one line on stdout, got: $STDOUT" || return 1
   printf '%s\n' "$STDOUT" | grep -qE '^entry-points\.sh: ok — [0-9]+ crates scanned, [0-9]+ members skipped, [0-9]+ reads matched$' \
     || fail "stdout is not the counting line. stdout: $STDOUT"
@@ -609,9 +609,9 @@ test_c13_metadata_resolution_failure_is_fatal() {
 # membership; no name is the test.
 test_c14_new_member_is_skipped_by_membership() {
   new_case
-  printf 'nozoki-third v0.0.0 (/nowhere/crates/nozoki-third)\n' > "$STUB/tree.extra"
-  member_id="path+file:///nowhere/crates/nozoki-third#0.0.0"
-  meta_add_package nozoki-third 0.0.0 "$member_id" /nowhere/crates/nozoki-third/Cargo.toml
+  printf 'ka-reader-third v0.0.0 (/nowhere/crates/ka-reader-third)\n' > "$STUB/tree.extra"
+  member_id="path+file:///nowhere/crates/ka-reader-third#0.0.0"
+  meta_add_package ka-reader-third 0.0.0 "$member_id" /nowhere/crates/ka-reader-third/Cargo.toml
   meta_add_member "$member_id"
 
   run_scan
@@ -1036,9 +1036,9 @@ test_fifo_is_unreadable() {
 
 # --- cases: the suite itself ---
 
-# NOZOKI_TEST_ONLY names a case; only that case runs, and it is reported.
+# KA_READER_TEST_ONLY names a case; only that case runs, and it is reported.
 test_suite_selects_one_case() {
-  out="$(NOZOKI_TEST_ONLY=test_c16_missing_list_fails "$SUITE" 2>&1)"
+  out="$(KA_READER_TEST_ONLY=test_c16_missing_list_fails "$SUITE" 2>&1)"
   status=$?
 
   [ "$status" -eq 0 ] || fail "the selected run exited $status. output: $out" || return 1
@@ -1051,7 +1051,7 @@ test_suite_selects_one_case() {
 
 # A selection that names no case must fail, or a green run could have run nothing.
 test_suite_rejects_unknown_case() {
-  out="$(NOZOKI_TEST_ONLY=test_no_such_case "$SUITE" 2>&1)"
+  out="$(KA_READER_TEST_ONLY=test_no_such_case "$SUITE" 2>&1)"
   status=$?
 
   [ "$status" -ne 0 ] || fail "an unknown selector exited 0. output: $out" || return 1
@@ -1074,7 +1074,7 @@ test_suite_reports_each_failed_case() {
   printf '#!/usr/bin/env bash\nexit 1\n' > "$copy/checks/entry-points.sh"
   chmod +x "$copy/checks/entry-points.sh" "$copy/checks/tests/test_entry_points.sh"
 
-  out="$(NOZOKI_TEST_ONLY="test_case_1_clean_tree_passes test_case_2_unlisted_read_names_its_file" "$copy/checks/tests/test_entry_points.sh" 2>&1)"
+  out="$(KA_READER_TEST_ONLY="test_case_1_clean_tree_passes test_case_2_unlisted_read_names_its_file" "$copy/checks/tests/test_entry_points.sh" 2>&1)"
   status=$?
 
   [ "$status" -ne 0 ] || fail "a run with failing cases exited 0. output: $out" || return 1
@@ -1097,7 +1097,7 @@ test_suite_leaves_original_inputs_unchanged() {
   cmp -s "$WORK/baseline.packages" "$WORK/now.packages" || fail "a scanned package directory changed since the run began" || return 1
 
   snapshot_inputs "$WORK/before"
-  out="$(NOZOKI_TEST_ONLY="test_case_2_unlisted_read_names_its_file test_case_4_unopenable_package_fails test_c6_unreadable_file_fails" "$SUITE" 2>&1)"
+  out="$(KA_READER_TEST_ONLY="test_case_2_unlisted_read_names_its_file test_case_4_unopenable_package_fails test_c6_unreadable_file_fails" "$SUITE" 2>&1)"
   status=$?
   [ "$status" -eq 0 ] || fail "the selected run exited $status. output: $out" || return 1
   snapshot_inputs "$WORK/after"
@@ -1115,7 +1115,7 @@ cleanup() {
 trap cleanup EXIT
 
 normalised_cases="$(echo $CASES)"
-selected="${NOZOKI_TEST_ONLY:-}"
+selected="${KA_READER_TEST_ONLY:-}"
 for wanted in $selected; do
   case " $normalised_cases " in
     *" $wanted "*) ;;

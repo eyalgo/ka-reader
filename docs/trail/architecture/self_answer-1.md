@@ -2,7 +2,7 @@
 
 ## Header
 
-- **Companion:** /Users/eyalgolan/products/nozoki/docs/architecture_open_issues.md
+- **Companion:** /Users/eyalgolan/products/ka-reader/docs/architecture_open_issues.md
 - **Document:** `adr/` and `nfdr.md` (`docs/adr/`, `docs/nfdr.md`)
 - **Decided by:** `decide_companion_answers.md` v1.0.0
 - **Date:** 2026-09-01
@@ -125,7 +125,7 @@
 - **Why:** ADR-0009 moves to Accepted with its *(Reconstructed …)* marking kept. The unit set is not
   invented: the SDD names the three deliverables and the harness and assigns every part a home
   (`docs/SDD.md` § 3, "Three deliverables …" and the parts table), and the crate split is pinned by
-  facts the SDD states — the harness links `nozoki-core` without a window (C-I3) and the first slice
+  facts the SDD states — the harness links `ka-reader-core` without a window (C-I3) and the first slice
   links no `git-reader` (§ 6 S-1). What the SDD never wrote is the *weighing*, and the record marks
   its alternatives as this seat's readings; Accepted with that marking is the honest status, because
   the decision itself is settled upstream and only its argument is reconstructed. Check 1 was close:
@@ -199,11 +199,11 @@ None this run.
 
 ## Companions opened
 
-- **/Users/eyalgolan/products/nozoki/docs/SRS_open_issues.md** — **opened** — companion to `SRS.md`,
+- **/Users/eyalgolan/products/ka-reader/docs/SRS_open_issues.md** — **opened** — companion to `SRS.md`,
   landed in commit `63b5f39`
-- **/Users/eyalgolan/products/nozoki/docs/fdr_open_issues.md** — **appended** — companion to `fdr.md`,
+- **/Users/eyalgolan/products/ka-reader/docs/fdr_open_issues.md** — **appended** — companion to `fdr.md`,
   landed in commit `98df76b`
-- **/Users/eyalgolan/products/nozoki/docs/SDD_open_issues.md** — **opened** — companion to `SDD.md`,
+- **/Users/eyalgolan/products/ka-reader/docs/SDD_open_issues.md** — **opened** — companion to `SDD.md`,
   landed in commit `bf04b86`
 
 The SDD companion is the run's second kind of entry — a change found while reading, with no slot
@@ -216,7 +216,7 @@ for the next SDD revision.
 
 ## Launchers owed
 
-- **`adr/` and `nfdr.md`** — `<CORE>/launchers/product-architecture/launcher.sh nozoki [--dry-run] [--keep-awake]`
-- **`SRS.md`** — `<CORE>/launchers/product-srs/launcher.sh nozoki [--dry-run]`
-- **`fdr.md`** — `<CORE>/launchers/product-fdr/launcher.sh nozoki [--dry-run] [--keep-awake]`
-- **`SDD.md`** — `<CORE>/launchers/product-sdd/launcher.sh nozoki [--dry-run] [--keep-awake]`
+- **`adr/` and `nfdr.md`** — `<CORE>/launchers/product-architecture/launcher.sh ka-reader [--dry-run] [--keep-awake]`
+- **`SRS.md`** — `<CORE>/launchers/product-srs/launcher.sh ka-reader [--dry-run]`
+- **`fdr.md`** — `<CORE>/launchers/product-fdr/launcher.sh ka-reader [--dry-run] [--keep-awake]`
+- **`SDD.md`** — `<CORE>/launchers/product-sdd/launcher.sh ka-reader [--dry-run] [--keep-awake]`

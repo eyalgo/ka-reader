@@ -7,9 +7,9 @@
 - **Decided by:** `decide_companion_answers.md` v1.3.0
 - **Date:** 2026-09-25
 - **Sources re-read:** None — no answer this run gave rests on a source outside this repository.
-  Everything was measured on the tree at `nozoki@4b9425b`, the last commit before this run, whose
-  `nozoki-mac/` is the item's `nozoki@46bb275` unchanged (`git diff --stat 46bb275 HEAD --
-  nozoki-mac` prints nothing).
+  Everything was measured on the tree at `ka-reader@4b9425b`, the last commit before this run, whose
+  `ka-reader-mac/` is the item's `ka-reader@46bb275` unchanged (`git diff --stat 46bb275 HEAD --
+  ka-reader-mac` prints nothing).
 
 One item, and it belongs to this document's seat. It is a correction — the check's wording states
 something the tree does not do — so § *A widening item waits until it occurs* does not apply.
@@ -24,11 +24,11 @@ written (§ Companions opened).
 - **Bucket:** 3. Raised from downstream — an item from a seat that did not write these records
 - **Verdict:** confirmed with addition
 - **Why:** Confirmed, because the fact is as the item says and the obligation holds. At
-  `nozoki@46bb275` a `pending` row draws its name and its glyph and nothing else: the cell sets the
+  `ka-reader@46bb275` a `pending` row draws its name and its glyph and nothing else: the cell sets the
   name, the glyph, and a condition sentence for `failed` only
-  (`nozoki-mac/Sources/Surfaces/RootItemsView.swift:L161-L170`), and
+  (`ka-reader-mac/Sources/Surfaces/RootItemsView.swift:L161-L170`), and
   `testRepoProjectionDrawsNameAndGlyphOnly` asserts the only visible text is the name
-  (`nozoki-mac/Tests/SurfacesTests/RootItemsViewTests.swift:L96-L115`). QC-4's obligation — no
+  (`ka-reader-mac/Tests/SurfacesTests/RootItemsViewTests.swift:L96-L115`). QC-4's obligation — no
   marker, no count, no "nothing changed" from an item that is not `observed` — is what the tree
   does. The check's clause "renders the word *pending*" (`docs/nfdr.md:L121-L123`) is false.
 
@@ -62,12 +62,12 @@ written (§ Companions opened).
 
   **Failure paths.** *Empty:* a `pending` row with no words at all is the tree today, and the check
   passes on the existing test. *Absent:* a root nothing was read for has no projection
-  (`nozoki-mac/Sources/Surfaces/RootListing.swift:L3`), so the check, which reads "a projection
+  (`ka-reader-mac/Sources/Surfaces/RootListing.swift:L3`), so the check, which reads "a projection
   with a `pending` item", does not reach it; the root-before-read is C-E1's and QC-4's layer-1 half.
   *Stale:* CONTENT re-wording its *Loading* sentence leaves the check true, which the drafted
   clause would not have; the item's own cites already went stale between its writing and this run
-  (`:L302` → `:L314`, `:L420` → `:L492`, CONTENT v7 at `nozoki@1c95030`, 21:28 today; the item was
-  committed at `nozoki@41915e6`, 10:07) — reported here, not corrected in the item. *Concurrent:* a
+  (`:L302` → `:L314`, `:L420` → `:L492`, CONTENT v7 at `ka-reader@1c95030`, 21:28 today; the item was
+  committed at `ka-reader@41915e6`, 10:07) — reported here, not corrected in the item. *Concurrent:* a
   reused cell never carries a stale sentence because every row sets it
   (`RootItemsView.swift:L162`), and the check reads one projection. *Refused:* covered above — the
   FDR's seat refusing R-88's reading sends the word back on a fresh item.
@@ -94,6 +94,6 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture nozoki`
-- **`docs/fdr.md`** — `<CORE>/launchers/skill/launcher.sh product-fdr nozoki`
-- **`docs/DESIGN.md`** — `<CORE>/launchers/skill/launcher.sh product-design nozoki`
+- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture ka-reader`
+- **`docs/fdr.md`** — `<CORE>/launchers/skill/launcher.sh product-fdr ka-reader`
+- **`docs/DESIGN.md`** — `<CORE>/launchers/skill/launcher.sh product-design ka-reader`

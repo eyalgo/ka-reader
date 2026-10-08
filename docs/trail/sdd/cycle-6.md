@@ -1,4 +1,4 @@
-# SDD open issues — Nozoki
+# SDD open issues — KA-Reader
 
 > Companion to `SDD.md`. Three seats — the CTO, the CPO and the CDO — authored the SDD
 > non-interactively in one run; this file holds what that run could not settle from its inputs (the
@@ -34,8 +34,8 @@
 
 ### 5.1 The hosted runner is measured: the bundle is reported sandboxed, but not on the first ask — and C-I3 says nothing about when the probe reads
 - **Raised by:** PM — 2026-09-23
-- **Tracked by:** `nozoki · nemawashi · 2026-09-15_open-a-folder`; the fix to the probe is the change
-  unit `nozoki · tobiishi · 2026-09-23_the-probe-waits-for-the-sandbox`
+- **Tracked by:** `ka-reader · nemawashi · 2026-09-15_open-a-folder`; the fix to the probe is the change
+  unit `ka-reader · tobiishi · 2026-09-23_the-probe-waits-for-the-sandbox`
   (`kensaiapp-opensource@1523865`)
 - **What it blocks:** Nothing in the SDD is waiting on it to be built, but two sentences no longer
   say one thing. *Open Questions*' fourth item (`SDD.md:L2648-L2652`) is "settled by the probe's

@@ -15,12 +15,12 @@ that folds the answers.
   `docs/SDD.md` v43. One rule outside the repository is cited: the append-only rule, from the
   organisation's own `product-architecture` skill (`SKILL.md:L75`). That skill was read for this
   run, but it is the producing skill's own record and not a platform source. This run measured the
-  following at `nozoki@4a49995`. `git diff --stat 66f428d HEAD -- . ':!docs'` printed nothing.
-  `cargo test --locked -p nozoki-core --test git_state` printed 82 passed, 0 failed. The ten cases
+  following at `ka-reader@4a49995`. `git diff --stat 66f428d HEAD -- . ':!docs'` printed nothing.
+  `cargo test --locked -p ka-reader-core --test git_state` printed 82 passed, 0 failed. The ten cases
   whose names carry `alternates` all printed `ok`. `bash checks/structure.sh` printed "17 Rust files
   in 2 crates read — nothing found" and exited 0. `grep -nE
   'std::fs|File::|read_to|OpenOptions|read_link|metadata'
-  crates/nozoki-core/src/git_reader/alternates_scan.rs` printed nothing.
+  crates/ka-reader-core/src/git_reader/alternates_scan.rs` printed nothing.
 
 ## Items worked
 
@@ -35,23 +35,23 @@ that folds the answers.
   § *A widening item waits until it occurs* excludes from widening. QC-15's own text says the change
   that builds the read "owes this list that read", so the item also cites its occurrence.
   **The record is false, measured at the source.** `check_alternates` is defined at
-  `crates/nozoki-core/src/git_reader/libgit2.rs:L303`. It is called in `open_verified` before
+  `crates/ka-reader-core/src/git_reader/libgit2.rs:L303`. It is called in `open_verified` before
   `open_at` (`:L114`), on each verified submodule (`:L449`) and on the probe (`:L475`). The scanner
   holds no filesystem call. The fixture `checks/fixtures/alternates-names-outside` and its case
   `test_the_outside_object_directory_is_never_read_on_the_three_calls` (`tests/git_state.rs:L1733`)
   are in the tree and pass. **Upstream already moved.** `docs/SDD.md` v43, Settled at
-  `nozoki@4a49995` (RN-103), states the alternates check and its case as built. Its config-named-path
+  `ka-reader@4a49995` (RN-103), states the alternates check and its case as built. Its config-named-path
   *Open Question* is open on the `.gitmodules` case alone. That is the fresh authorization a settled
   entry needs, and the fold re-derives from it. **The draft holds, and it is incomplete in two
-  places.** First, QC-35's *verified by* names four FIFO cases and "58 passed at `nozoki@076eac2`".
+  places.** First, QC-35's *verified by* names four FIFO cases and "58 passed at `ka-reader@076eac2`".
   The fifth case is now in the tree, and the tail would understate the harness without it. The
   addition also names what SDD v43's *The proof* says the case does not watch, a `stat` of the
   outside directory, and that no case runs the check on the built bundle. Second, QC-6 and QC-35
   both say the config-named-path item is "open on its alternates and `.gitmodules` cases". That
   becomes `.gitmodules` alone. **Failure paths (check 4).** *Concurrent:* an alternates file
   rewritten between the check and libgit2's read is still followed unchecked, so QC-35 keeps that
-  clause, alternates included. *Stale:* every new count and locator is pinned to `nozoki@4a49995`,
-  whose tree outside `docs/` is `nozoki@66f428d`'s. *Absent and refused:* the cases for no
+  clause, alternates included. *Stale:* every new count and locator is pinned to `ka-reader@4a49995`,
+  whose tree outside `docs/` is `ka-reader@66f428d`'s. *Absent and refused:* the cases for no
   alternates file, an unreadable file, an oversized file and a level-six alternate exist and pass.
   The wording of the conditions belongs to `docs/CONTENT.md` (QC-53), so SDD v43's "known defect" in
   the shipped alternates sentence touches no entry here. *Bundle:* the check has not been run on
@@ -74,8 +74,8 @@ that folds the answers.
   wrong". A re-measured paragraph and a note beside it both touch the body. **Superseding the record
   fails the significance test.** A superseding record would restate the same decision to update a
   build-status sentence, so it would record nothing decided. **The paragraph is not false.** Its
-  heading is *Built and not built, at `nozoki@076eac2`*, and at that commit
-  `grep -rl alternates checks crates nozoki-mac/Sources` printed nothing (`nfdr.md` RN-53, *Measured
+  heading is *Built and not built, at `ka-reader@076eac2`*, and at that commit
+  `grep -rl alternates checks crates ka-reader-mac/Sources` printed nothing (`nfdr.md` RN-53, *Measured
   for this run*). Its "Until they land, the sandbox is the only bound" was written for this change.
   `nfdr.md` RN-53 read ADR-0020 the same way: a sentence pinned to SDD v27 by its own traces "is
   history". **The present state goes where the log points.** ADR-0022's `## Binds` names QC-6,
@@ -101,4 +101,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture nozoki`
+- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture ka-reader`

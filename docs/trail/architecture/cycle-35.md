@@ -1,4 +1,4 @@
-# Architecture open issues — Nozoki
+# Architecture open issues — KA-Reader
 
 > Companion to `adr/` and `nfdr.md`. The Principal Architect authored both records
 > non-interactively; this file holds what the run could not settle from its inputs — the SRS, the SDD
@@ -29,7 +29,7 @@ None.
 - **Lands in:** `nfdr.md` QC-11
 - **Drafted into the records:** QC-11's *verified by* tail at v38 (`docs/nfdr.md:L340-L350`). The
   exception's bound — the switch and its test, and nowhere else in the bridge — stays review at
-  `development-design`. The tail now says the change that built the switch (`nozoki@392177d`) did not
+  `development-design`. The tail now says the change that built the switch (`ka-reader@392177d`) did not
   add the rule to the script, so the bound stays review until a change adds it, by the header's rule.
   It re-pins the script to `checks/structure.sh:L257-L258` and names the bridge files that name
   `git2` at that commit: `src/machine_config.rs`, `tests/search_path.rs` and the manifest. The old
@@ -41,8 +41,8 @@ None.
   script's rule would come from. A cold reader takes that change to be pending, but it has landed.
   `git log --oneline 8edec4f..392177d -- checks/structure.sh` lists only the probe change. The script
   still lists the clause under *WHAT IS NOT HELD* (`checks/structure.sh:L257-L258`). And
-  `grep -rln git2 crates/nozoki-bridge` prints the manifest, `src/machine_config.rs` and
-  `tests/search_path.rs`, re-run by this run at `nozoki@2aed844`, so the bound holds today by
+  `grep -rln git2 crates/ka-reader-bridge` prints the manifest, `src/machine_config.rs` and
+  `tests/search_path.rs`, re-run by this run at `ka-reader@2aed844`, so the bound holds today by
   review. This is the same correction cycle 34 made to QC-3 and QC-17. One thing the draft does not
   decide: SDD § 6 `see-git-status`, *Reached when*, command half, has `checks/structure.sh` finding
   the libgit2 import "in `git-reader` alone, with the one exception § 3 states"
@@ -57,9 +57,9 @@ None.
 - **Confirm or override:** confirm. The draft is right, and it is right over the second override for a
   reason the item does not state. "Until a change adds it, by the header's rule" stays true however
   many changes land without the rule. Naming a delivery unit as the rule's source is the form that went
-  false at v37, when the named change landed without it. Re-measured at `nozoki@566558b`: the
+  false at v37, when the named change landed without it. Re-measured at `ka-reader@566558b`: the
   script's *WHAT IS NOT HELD* still names the clause (`checks/structure.sh:L257-L258`), only the probe
-  change touched the script after `8edec4f`, and `grep -rln git2 crates/nozoki-bridge` prints the
+  change touched the script after `8edec4f`, and `grep -rln git2 crates/ka-reader-bridge` prints the
   three files the tail names. Reasoning: `docs/trail/architecture/self_answer-39.md` § 2.1.
 
 ### 2.2 ADR-0013 names SM-4's list as nine, and SDD v30 makes it ten with `read_git`; the run drafted a superseding record, ADR-0021, rather than a correction in place

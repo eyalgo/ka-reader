@@ -17,7 +17,7 @@ opening note (`:L2445-L2464`) and RC-5 (`:L2722-L2767`), and SDD Review Notes RN
 sentence elsewhere that speaks of the status letter's expansion in other words was not seen. Of the
 other documents it read the lines each answer cites and searched `docs/fdr.md`, `docs/UXD.md`,
 `docs/SRS.md`, `docs/PRD.md`, `docs/CONTENT.md` and `docs/DESIGN.md` for `tooltip` and `R-38`;
-none was read whole. The companion was read whole. The product was read at `nozoki@c79b26c`, with
+none was read whole. The companion was read whole. The product was read at `ka-reader@c79b26c`, with
 `git status --short` printing nothing.
 
 ## Items worked
@@ -32,20 +32,20 @@ none was read whole. The companion was read whole. The product was read at `nozo
   edit is one sentence of `docs/SDD.md` § 3, a CTO part (`docs/SDD.md:L100`), and it commits
   nothing to anyone outside the document.
 
-  **The measurement.** At `nozoki@c79b26c`, `git merge-base --is-ancestor 6c49d5c main` exits 0.
+  **The measurement.** At `ka-reader@c79b26c`, `git merge-base --is-ancestor 6c49d5c main` exits 0.
   `git merge-base --is-ancestor 6c49d5c 67d103d` exits 0 and the same test against `67d103d^1`
   exits 1, so `67d103d` is the merge that brought the join to `main`, which is the commit the draft
-  names. `git diff --stat 6c49d5c main -- nozoki-mac/Sources/Surfaces/TreeMarkers.swift` prints
+  names. `git diff --stat 6c49d5c main -- ka-reader-mac/Sources/Surfaces/TreeMarkers.swift` prints
   nothing, so the file on `main` is byte for byte the one the SDD cites as built at
-  `nozoki@6c49d5c`.
+  `ka-reader@6c49d5c`.
 
   **The addition.** The draft names the sentence to change. The answer also names what keeps its
   words, because a fold that swept every mention of "not on `main`" would falsify three true
-  statements. The sentence before it (`docs/SDD.md:L502`) is pinned to `nozoki@b640345` and is true
+  statements. The sentence before it (`docs/SDD.md:L502`) is pinned to `ka-reader@b640345` and is true
   of that commit. The `surfaces` row's clause (`docs/SDD.md:L340`) is pinned the same way and says
   "this clause reads the same whether or not it merges". § 10 RC-5's *Observed reality*
   (`docs/SDD.md:L2731-L2736`) is a dated record. The model-side statements also stand:
-  `git grep -n marker main -- crates/nozoki-core/src/folder_model.rs` prints nothing, so the marker
+  `git grep -n marker main -- crates/ka-reader-core/src/folder_model.rs` prints nothing, so the marker
   is still in no change landed in the model, as `docs/SDD.md:L493-L497` says.
 
   **The four bounds still hold on `main`.** `TreeMarkers.swift:L17-L21` on `main` marks nothing
@@ -54,12 +54,12 @@ none was read whole. The companion was read whole. The product was read at `nozo
 
   **Failure paths.** *Stale:* the new sentence names a merge commit, which is an identity, so it
   stays true as `main` advances. When `follow-the-folder` moves the join into the model, "on `main`
-  from `nozoki@67d103d`" becomes history, and the entity's next sentence already says both pieces
+  from `ka-reader@67d103d`" becomes history, and the entity's next sentence already says both pieces
   move by then. *Empty, absent, concurrent, refused:* a one-sentence correction of a fact has none
   of these. **Not covered:** this run built nothing and ran no test on `main`; that the merged join
   works is the merged change's own record, not this answer's.
 
-  What would have tipped it: had the file on `main` differed from the one at `nozoki@6c49d5c`, the
+  What would have tipped it: had the file on `main` differed from the one at `ka-reader@6c49d5c`, the
   four bounds would have needed a fresh read before the sentence could say "under the four bounds".
 
 ### 5.2 — No slice delivers `docs/fdr.md` R-38's status-letter expansion, and two surfaces now draw the letters
@@ -72,9 +72,9 @@ none was read whole. The companion was read whole. The product was read at `nozo
   **It widens the SDD, and it cites its occurrence.** The item asks the SDD to state something it
   does not state now, so the prompt's rule for a widening item applies: it takes a change only
   where an occurrence is cited. The item cites two sites in the product where the letters are drawn
-  with nothing expanding them, and this run opened both: `nozoki-mac/Sources/Surfaces/GitView.swift:L24`
+  with nothing expanding them, and this run opened both: `ka-reader-mac/Sources/Surfaces/GitView.swift:L24`
   ("The letter is a label and the view raises no tooltip") and `RootItemsView.swift:L236` (the
-  tree row's status letter). `grep -rn -i tooltip nozoki-mac/Sources` prints two lines, both
+  tree row's status letter). `grep -rn -i tooltip ka-reader-mac/Sources` prints two lines, both
   comments saying none is raised. The form occurs, so the item takes its change.
 
   **It is two questions, and both have the same seat.** Which slice delivers the expansion, and
@@ -89,7 +89,7 @@ none was read whole. The companion was read whole. The product was read at `nozo
   the last of the v1 cut". `docs/fdr.md:L93` R-38 requires the behaviour. `docs/CONTENT.md:L422-L426`
   gives the six words and their order, and `docs/DESIGN.md:L644-L656` draws the tooltip and gives
   it one home, "a status letter, wherever one is drawn — the tree and the Git view". The SDD itself
-  said it before it was re-authored: `nozoki@70a879a:docs/SDD.md:L439-L441`, § 4 C-E6, "a status
+  said it before it was re-authored: `ka-reader@70a879a:docs/SDD.md:L439-L441`, § 4 C-E6, "a status
   letter's expansion is raised by the letter, as the tooltip, and nowhere else". The re-authored
   C-E8 (`docs/SDD.md:L1068-L1075`) dropped that clause, and R-38's trace still points at it. So
   the only open choice is between the two v1 slices that have letters on screen, `see-git-status`
@@ -163,4 +163,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/SDD.md`** — `<CORE>/launchers/skill/launcher.sh product-sdd nozoki`
+- **`docs/SDD.md`** — `<CORE>/launchers/skill/launcher.sh product-sdd ka-reader`

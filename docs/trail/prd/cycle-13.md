@@ -1,4 +1,4 @@
-# PRD open issues — Nozoki 覗き
+# PRD open issues — KA-Reader
 
 > Companion to `PRD.md`. The CPO authored the PRD non-interactively; this file holds
 > what it could not settle from the inputs. **Answer inline** — fill each **Answer** /

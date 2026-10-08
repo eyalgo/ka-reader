@@ -39,4 +39,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/CONTENT.md`** — `<CORE>/launchers/skill/launcher.sh product-content nozoki`
+- **`docs/CONTENT.md`** — `<CORE>/launchers/skill/launcher.sh product-content ka-reader`

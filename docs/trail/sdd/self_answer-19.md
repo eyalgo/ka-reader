@@ -43,7 +43,7 @@ None this run.
 - **Verdict:** left for the owner
 - **Why:** This is a choice between two of the owner's own calls, so it is theirs. The renderer is
   the owner's confirmation. `docs/SDD.md` § 10 RC-2 cites it to
-  `nozoki@70a879a:docs/trail/sdd/cycle-1.md` § 2.2. No network entitlement, ever, is the owner's
+  `ka-reader@70a879a:docs/trail/sdd/cycle-1.md` § 2.2. No network entitlement, ever, is the owner's
   ruling (`docs/trail/sdd/cycle-8.md` § 5.1, answer 1).
 
   Each exit breaks one of them. The run cannot pick between them in the owner's seat, for two
@@ -131,5 +131,5 @@ that C-R2's half holds under every answer to § 1.1, and that the renderer-gate 
 
 ## Launchers owed
 
-- **`docs/SDD.md`** — `<CORE>/launchers/product-sdd/launcher.sh nozoki`
-- **`adr/` and `nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture nozoki`
+- **`docs/SDD.md`** — `<CORE>/launchers/product-sdd/launcher.sh ka-reader`
+- **`adr/` and `nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture ka-reader`

@@ -1,4 +1,4 @@
-# SDD open issues — Nozoki
+# SDD open issues — KA-Reader
 
 > Companion to `SDD.md`. Three seats — the CTO, the CPO and the CDO — authored the SDD
 > non-interactively in one run; this file holds what that run could not settle from its inputs (the
@@ -50,17 +50,17 @@ None.
 - **Raised by:** `companion-self-answer`, answering this file — 2026-10-01
 - **Drafted into the SDD:** Nothing has been written into the SDD. As it stands, § 12's downstream
   boundary reads: "Two things of this document's are owed to that store on the cycle-12 fold, and
-  both are already raised there rather than from here: C-R7 now admits `nozoki_free` beside SM-4's
+  both are already raised there rather than from here: C-R7 now admits `ka_reader_free` beside SM-4's
   list, and `docs/nfdr.md` QC-24 still holds the export set inside the list alone
   (`docs/architecture_open_issues.md` § 2.1); and § 3's Swift-frame paragraph now rests on the
-  Swift packet, where `docs/nfdr.md` § 9 and ADR-0016 still say none exists and `nozoki-mac`'s
+  Swift packet, where `docs/nfdr.md` § 9 and ADR-0016 still say none exists and `ka-reader-mac`'s
   departures from it are that document's to record (`docs/architecture_open_issues.md` § 3.4)"
   (`docs/SDD.md:L2660-L2666`). Both debts are paid, and neither pointer opens on its item:
   - QC-24 holds the export set "inside the closed list `docs/SDD.md` § 3 `SM-4` names" and adds
-    "and `nozoki_free`, the seam's one release call beside the list and not on it"
+    "and `ka_reader_free`, the seam's one release call beside the list and not on it"
     (`docs/nfdr.md:L368-L374`).
-  - § 9 takes `nozoki-mac`'s tooling "from the Swift packet", says "Through v12 this paragraph read
-    that no Swift packet existed … true when written, and history", and records where `nozoki-mac`
+  - § 9 takes `ka-reader-mac`'s tooling "from the Swift packet", says "Through v12 this paragraph read
+    that no Swift packet existed … true when written, and history", and records where `ka-reader-mac`
     departs from the packet (`docs/nfdr.md:L926-L936`, `:L1056`). ADR-0016 carries the same
     correction, dated 2026-09-23
     (`docs/adr/0016-physical-unit-set-core-bridge-mac-checks.md:L44-L49`).
@@ -79,7 +79,7 @@ None.
   read *plain CSS custom properties* here". RN-75 records that DESIGN v11 made the move. The draft
   change is the same dated parenthesis. The other two things that clause names, the font-stack
   syntax and that document's RN-1, were not measured.
-- **Rationale:** Each is a measurement, made on `main` at `nozoki@0297c13`. The first sentence
+- **Rationale:** Each is a measurement, made on `main` at `ka-reader@0297c13`. The first sentence
   tells the Principal Architect that two things are owed which are done, and sends that reader to
   two companion items that are not there. It is the defect the PM raised against the NFDR's QC-3 on
   this same day: a record that "states as owed a review that is now on the tree"
@@ -90,7 +90,7 @@ None.
   RN-61). A reader could hold that the same route serves here. It is raised because this file is
   already open, so the item costs no round of its own, and no fold is certain to walk § 12.
 - **If overridden:** Nothing outside those two sentences moves. Left as they are, a reader of § 12
-  looks for a QC-24 that leaves `nozoki_free` out and finds one that names it, and opens
+  looks for a QC-24 that leaves `ka_reader_free` out and finds one that names it, and opens
   `docs/architecture_open_issues.md` § 2.1 and § 3.4 and finds neither item.
 - **Confirm or override:** <"confirm", or "override: <what to do instead>">
 
@@ -108,17 +108,17 @@ None.
 
 ### 5.1 The grammar-engine question is answered on the tree and still open in the SDD
 - **Raised by:** PM — 2026-10-01
-- **Tracked by:** `nozoki · nemawashi · 2026-10-01_a-file-reads-in-the-panel`
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-01_a-file-reads-in-the-panel`
 - **What it blocks:** nothing is blocked. *Open Questions* asks which engine compiles the six floor
   grammars, and the SDD states as open a decision the product has made and recorded.
 - **Where it shows:** *Open Questions* reads "[OPEN: Which grammar engine compiles the six floor
-  grammars into `nozoki-core` (§ 3 `highlighter`), and what it adds to `checks/deps.allow`. Settled in
+  grammars into `ka-reader-core` (§ 3 `highlighter`), and what it adds to `checks/deps.allow`. Settled in
   `read-a-file` by the dependency review that change carries under C-R6 …]" (`docs/SDD.md:L4521-L4524`).
   § 3's `highlighter` row (`:L327`) and § 6 S-2 (`:L1484`) point at it. `checks/deps.review.md`
   § *The engine chosen* answers it: tree-sitter, meaning the `tree-sitter` runtime, `tree-sitter-highlight`
-  and one grammar crate per floor language, compiled from C into `nozoki-core`. It also names the 20
-  names that engine adds to `checks/deps.allow` (`nozoki@85d9fa7`).
-  `crates/nozoki-core/src/highlighter.rs` is built on it, and `cargo test --locked -p nozoki-core --test
+  and one grammar crate per floor language, compiled from C into `ka-reader-core`. It also names the 20
+  names that engine adds to `checks/deps.allow` (`ka-reader@85d9fa7`).
+  `crates/ka-reader-core/src/highlighter.rs` is built on it, and `cargo test --locked -p ka-reader-core --test
   highlight` passes (18 passed). The item should close, citing the review record. The `highlighter`
   row and S-2 should then name the engine, or the record, in place of the open question.
 - **If a document has to be written:** none. *Open Questions*, § 3 `highlighter`, and § 6 S-2's
@@ -126,12 +126,12 @@ None.
 - **Answer:** Confirmed, with three additions. The question closes, and the SDD names the engine
   and cites the record. **The engine is tree-sitter**: the `tree-sitter` runtime,
   `tree-sitter-highlight`, and one grammar crate for each of the six floor languages, compiled from
-  C into `nozoki-core` at build time, with nozoki's own query files compiled in
+  C into `ka-reader-core` at build time, with ka-reader's own query files compiled in
   (`checks/deps.review.md` § *The engine chosen*). The decision was made where the question said it
   would be: in a change of `read-a-file`, by the dependency review C-R6 requires, landed in one
-  commit with `checks/deps.allow` and `Cargo.lock` (`nozoki@85d9fa7`). Re-read on `main` before
-  answering: `crates/nozoki-core/src/highlighter.rs` is built on it, `cargo test --locked -p
-  nozoki-core --test highlight` prints `18 passed; 0 failed`, and `bash checks/no-network.sh` prints
+  commit with `checks/deps.allow` and `Cargo.lock` (`ka-reader@85d9fa7`). Re-read on `main` before
+  answering: `crates/ka-reader-core/src/highlighter.rs` is built on it, `cargo test --locked -p
+  ka-reader-core --test highlight` prints `18 passed; 0 failed`, and `bash checks/no-network.sh` prints
   `ok — 40 cargo names match checks/deps.allow`.
 
   **What the fold writes.** (1) *Open Questions*: the fourth item is closed and removed, the way

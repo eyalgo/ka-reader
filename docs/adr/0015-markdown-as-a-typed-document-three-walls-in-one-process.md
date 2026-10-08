@@ -16,7 +16,7 @@ The requirements stand unchanged. Content read from the folder is displayed and 
 (`docs/SRS.md` § 4.3 NFR-16); rendering fetches nothing from outside the folder, an external link is
 displayed and not followed, a relative link may open its target (§ 3.3 FR-32); the folder is
 untrusted input (§ 6 DR-6). The owner's override that an image inside the granted folder is loaded
-and shown in place, a remote one never (`nozoki@70a879a:docs/trail/sdd/cycle-1.md` § 2.4), stands and
+and shown in place, a remote one never (`ka-reader@70a879a:docs/trail/sdd/cycle-1.md` § 2.4), stands and
 is carried forward from ADR-0006. UX-I12's three image cases and the readable link destination bind
 whichever engine renders (`docs/UXD.md` UX-I12; the CDO's position, `docs/trail/sdd/cycle-9.md`
 § 1.1).
@@ -65,7 +65,7 @@ condition, evidence and never taste, and adding a format is additive under the 1
   API (`docs/SDD.md` § 2, table row 6; § 4 C-R1's forbidden set).
 - **Load no image, remote or local** — the run-1 draft the owner overrode: image-bearing READMEs
   render as written, and the wall is kept by narrowing what crosses to "a byte the host has
-  already confirmed is inside the folder" (`nozoki@70a879a:docs/trail/sdd/cycle-1.md` § 2.4; carried
+  already confirmed is inside the folder" (`ka-reader@70a879a:docs/trail/sdd/cycle-1.md` § 2.4; carried
   from ADR-0006).
 - **An out-of-process image decoder** — a second process, which under the rule exists only for a
   view that starts under it; priced as this decision's undo, not taken ahead of a reason
@@ -92,7 +92,7 @@ What undoing it costs: an out-of-process decoder — a second process, under the
 placeholder returning for every image (`docs/SDD.md` § 9 TO-6).
 
 **What this rests on, and whose it stays.** `NSImage`'s decoders and TextKit are Apple's and move
-with macOS on Apple's schedule; the Markdown parser `nozoki-core` links is a crate under the
+with macOS on Apple's schedule; the Markdown parser `ka-reader-core` links is a crate under the
 allowlist, chosen by the dependency review `read-markdown` carries (§ 4 C-R6), and which crate is
 that slice's to name. If the parser's holder stops answering — the expected trajectory of an
 open-source dependency — the closed node set is this product's own type and a replacement parser
@@ -102,13 +102,13 @@ fed by the check alone.
 
 ## Traces to
 
-- `docs/SDD.md` at v13 (`nozoki@b236e7b`, Draft) — § 3, the `markdown-renderer` and `highlighter`
+- `docs/SDD.md` at v13 (`ka-reader@b236e7b`, Draft) — § 3, the `markdown-renderer` and `highlighter`
   rows, the `MarkdownDocument` entity, SM-7; § 4 C-R1, C-R6, C-R7, C-D3; § 6 S-3; § 9 TO-5, TO-6;
   § 10 RC-3; § 11 R-4, R-10, R-11; § SDD Review Notes RN-8, RN-10, RN-60; § Open Questions, third
   item.
 - `docs/trail/sdd/cycle-9.md` § 1.1 — the CDO's position: UX-I12's cells bind whichever engine
   renders, and which two of them are the cost.
-- `nozoki@70a879a:docs/trail/sdd/cycle-1.md` § 2.4 — the owner's image override, carried from
+- `ka-reader@70a879a:docs/trail/sdd/cycle-1.md` § 2.4 — the owner's image override, carried from
   ADR-0006; `docs/trail/sdd/cycle-1.md` § 2.1 — the SVG exclusion confirmed on the re-authored SDD's
   own trail.
 - `docs/SRS.md` § 3.3 FR-30, FR-31, FR-32; § 4.3 NFR-16; § 6 DR-6; § 8 AC-23.
@@ -121,7 +121,7 @@ fed by the check alone.
   `docs/trail/architecture/cycle-9.md` § 2.3 — the owner's confirm, given in the owner's seat by a
   `companion-self-answer` run on 2026-09-23 (its reasoning,
   `docs/trail/architecture/self_answer-12.md` § 2.3), on which this record is Accepted and
-  ADR-0006 superseded. Accepted with `docs/SDD.md` at v14 (`nozoki@2739007`, Draft): v14 names
+  ADR-0006 superseded. Accepted with `docs/SDD.md` at v14 (`ka-reader@2739007`, Draft): v14 names
   `folder-model` as the unit that calls `markdown-renderer` (§ 3, RN-64), which this record does
   not fix and whose import is `docs/nfdr.md` QC-10's; and S-3's command half tests `asset_bytes`
   in the bridge's crate, where § 3 places it — the decision here is unchanged. The four-format

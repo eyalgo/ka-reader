@@ -5,7 +5,7 @@
 
 ## Context
 
-ADR-0002 decided the runtime: Tauri 2, a Rust host over `nozoki-core`, the surfaces in the system
+ADR-0002 decided the runtime: Tauri 2, a Rust host over `ka-reader-core`, the surfaces in the system
 WKWebView, one bundle — and priced the renderer technology as not replaceable inside the terminus.
 What moved is that the renderer cannot start under the wall: WebKit's XPC services check the host's
 network entitlement at their own start, and the owner's rule grants none (`docs/SDD.md` § 10 RC-2;
@@ -25,13 +25,13 @@ CDO's pricing, `docs/trail/sdd/cycle-9.md` § 1.1). The Rust workspace forbids `
 
 ## Decision
 
-The product is **one macOS application bundle, `Nozoki.app`, bundle identifier
-`com.kensaiapp.nozoki`, and one process: an AppKit shell written in Swift (`nozoki-mac`) over the
-`nozoki-core` library, reached through `nozoki-bridge`'s C ABI, with no web engine of any kind** —
+The product is **one macOS application bundle, `KA-Reader.app`, bundle identifier
+`com.kensaiapp.ka-reader`, and one process: an AppKit shell written in Swift (`ka-reader-mac`) over the
+`ka-reader-core` library, reached through `ka-reader-bridge`'s C ABI, with no web engine of any kind** —
 no WKWebView, no WebKitLegacy `WebView`, no HTML import through `NSAttributedString`, no
 JavaScriptCore (`docs/SDD.md` § 4 C-R1). The tree is an `NSOutlineView`; the reading panel is an
 `NSTextView`, and rendered Markdown is laid out by TextKit from a `MarkdownDocument` rather than by
-a web engine from CSS (§ 3 `surfaces`; ADR-0015). `nozoki-mac/Package.swift` declares **no
+a web engine from CSS (§ 3 `surfaces`; ADR-0015). `ka-reader-mac/Package.swift` declares **no
 dependency** and no `Package.resolved` exists (C-R6). No runtime is installed; the fourteen icons
 and the six grammars ship inside the bundle; fonts are the platform's and none ship
 (`docs/DESIGN.md` § Typography).
@@ -63,7 +63,7 @@ that needs one (`docs/SDD.md` § 2, "The view is AppKit, and its language is Swi
 - **SwiftUI for the view** — a second layout system over the TextKit view the reading panel needs,
   for no surface that needs one (same paragraph).
 - **Electron** — ADR-0002 ruled it out for the browser engine it bundles against a five-minute
-  install and an allowlisted tree, and that ground stands (`nozoki@70a879a:docs/SDD.md` § SDD Review
+  install and an allowlisted tree, and that ground stands (`ka-reader@70a879a:docs/SDD.md` § SDD Review
   Notes RN-7; `docs/SDD.md` § 4 C-R6).
 
 ## Consequences
@@ -104,7 +104,7 @@ native build settles (`docs/SDD.md` § 6 S-1, command half).
 
 ## Traces to
 
-- `docs/SDD.md` at v13 (`nozoki@b236e7b`, Draft) — § 2 (forces 4 and 6; table rows 1, 5 and 6;
+- `docs/SDD.md` at v13 (`ka-reader@b236e7b`, Draft) — § 2 (forces 4 and 6; table rows 1, 5 and 6;
   "The view is AppKit, and its language is Swift"; "Undoing it"); § 3, the units table and the
   Swift-frame paragraph; § 4 C-R1, C-R5, C-R6, C-R7; § 9 TO-4, TO-7, TO-8; § 10 RC-2, RC-3; § 11
   R-11; § SDD Review Notes RN-53, RN-59, RN-60, RN-62; § Open Questions, third item.
@@ -118,7 +118,7 @@ native build settles (`docs/SDD.md` § 6 S-1, command half).
 - `Cargo.toml` `[workspace.lints.rust]` — `unsafe_code = "forbid"`, opened for this record on
   2026-09-23.
 - ADR-0002 — the record this one supersedes; its decision is restated here whole. Its owner
-  confirmation of the previous runtime (`nozoki@70a879a:docs/trail/sdd/cycle-1.md` § 2.2) is that
+  confirmation of the previous runtime (`ka-reader@70a879a:docs/trail/sdd/cycle-1.md` § 2.2) is that
   runtime's and stands as history under it.
 - ADR-0011 (the rule the renderer could not start under), ADR-0013 (the shape), ADR-0015 (what the
   view is handed), ADR-0016 (the units).
@@ -126,7 +126,7 @@ native build settles (`docs/SDD.md` § 6 S-1, command half).
   `docs/trail/architecture/cycle-9.md` § 2.3 — the owner's confirm, given in the owner's seat by a
   `companion-self-answer` run on 2026-09-23 (its reasoning,
   `docs/trail/architecture/self_answer-12.md` § 2.3), on which this record is Accepted and
-  ADR-0002 superseded. Accepted with `docs/SDD.md` at v14 (`nozoki@2739007`, Draft): v14 moves
+  ADR-0002 superseded. Accepted with `docs/SDD.md` at v14 (`ka-reader@2739007`, Draft): v14 moves
   nothing of § 2, the view or the Swift frame (SDD RN-64).
 - Inputs read for this record: SDD Draft v13 · SRS Settled v12 · FDR Settled v8.
 

@@ -111,12 +111,12 @@
 ## Skipped
 
 - **1.1 — Do the owner's answers to the previous SDD bind this run?** — answered at
-  `nozoki@59287c9`; a re-run leaves a decided item alone.
-- **2.1 — An SVG inside the folder is not rendered in place** — answered at `nozoki@59287c9`.
-- **3.1 — `first-public-release` lands after the v1 cut, below 1.0.0** — answered at `nozoki@59287c9`.
-- **5.1 — `sdd_template.md` § 3 gained a units table** — answered at `nozoki@59287c9`.
+  `ka-reader@59287c9`; a re-run leaves a decided item alone.
+- **2.1 — An SVG inside the folder is not rendered in place** — answered at `ka-reader@59287c9`.
+- **3.1 — `first-public-release` lands after the v1 cut, below 1.0.0** — answered at `ka-reader@59287c9`.
+- **5.1 — `sdd_template.md` § 3 gained a units table** — answered at `ka-reader@59287c9`.
 - **5.2 — The re-author broke 38 citations in the decision log and the NFDR** — answered at
-  `nozoki@caa3e0c`.
+  `ka-reader@caa3e0c`.
 - **§ 4 Disagreements** — reads "None yet."; no item to work.
 
 ## Companions opened
@@ -125,4 +125,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/SDD.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-sdd/launcher.sh nozoki`
+- **`docs/SDD.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-sdd/launcher.sh ka-reader`

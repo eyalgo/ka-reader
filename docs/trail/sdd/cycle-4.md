@@ -1,4 +1,4 @@
-# SDD open issues — Nozoki
+# SDD open issues — KA-Reader
 
 > Companion to `SDD.md`. Three seats — the CTO, the CPO and the CDO — authored the SDD
 > non-interactively in one run; this file holds what that run could not settle from its inputs (the
@@ -27,21 +27,21 @@
 
 ### 5.1 C-I3's sandbox observable is absent from a sandboxed app's own process, so the probe cannot pass as written
 - **Raised by:** PM — 2026-09-19
-- **Tracked by:** `nozoki · nemawashi · 2026-09-15_open-a-folder`
+- **Tracked by:** `ka-reader · nemawashi · 2026-09-15_open-a-folder`
 - **What it blocks:** `open-a-folder`'s *Command* bar (`SDD.md:L1043-L1045`) — "`checks/bundle.sh
-  Nozoki.app` … finds `APP_SANDBOX_CONTAINER_ID` in the launched bundle's environment". Until the
+  KA-Reader.app` … finds `APP_SANDBOX_CONTAINER_ID` in the launched bundle's environment". Until the
   observable is re-cut, no build can meet it.
 - **Where it shows:** § 4 C-I3 (`SDD.md:L516-L519`, "failing unless the launched process carries
   `APP_SANDBOX_CONTAINER_ID` in its environment"); § 6 `open-a-folder`'s *Command* bar
   (`SDD.md:L1043-L1045`); and the fourth *Open Questions* item (`SDD.md:L2508-L2511`), which settles
   the question on "the first slice's first built bundle", where "a failure is R-8 and a re-cut
   trigger on the probe's mechanism". That bundle now exists, and the probe fails on it:
-  - **Nozoki, ad-hoc signed, both C-R2 entitlements `true`.** `checks/bundle.sh` exits 1 with
+  - **KA-Reader, ad-hoc signed, both C-R2 entitlements `true`.** `checks/bundle.sh` exits 1 with
     "APP_SANDBOX_CONTAINER_ID is not in its environment". This held under four launch routes. Over
     the same process, `sandbox_check` reports a read of `~/.zshrc` and outbound network as denied,
-    and `~/Library/Containers/com.kensaiapp.nozoki` is created at first launch. A trivial ad-hoc app
+    and `~/Library/Containers/com.kensaiapp.ka-reader` is created at first launch. A trivial ad-hoc app
     with the same two entitlements behaves the same way. The same binary with no entitlements is
-    unsandboxed and also shows no marker. (`nozoki@ccb58d8`, commit body; macOS 26.6.2, arm64.)
+    unsandboxed and also shows no marker. (`ka-reader@ccb58d8`, commit body; macOS 26.6.2, arm64.)
   - **A team-signed, sandboxed third-party app, measured 2026-09-19 on the same Mac.** MD Viewer
     (`TeamIdentifier=HN9Q73NL62`, `com.apple.security.app-sandbox` true): `ps -wwE` on its main
     process (pid 52791) lists 11 environment keys, and `APP_SANDBOX_CONTAINER_ID` is not one of them.
@@ -79,7 +79,7 @@
     control reported unsandboxed".
   - **Fourth Open Question** (`SDD.md:L2508-L2511`) closes on its own terms. The first half is
     settled: the sandbox is enforced under an ad-hoc signature on macOS 26.6.2, arm64
-    (`nozoki@ccb58d8`). The second half is settled as *no*: the marker is absent from a sandboxed
+    (`ka-reader@ccb58d8`). The second half is settled as *no*: the marker is absent from a sandboxed
     main process under either signature. That is the "re-cut trigger on the probe's mechanism", not
     R-8 firing. **R-8's *shows up as*** (`SDD.md:L1904-L1906`) names the new observable in place of
     the marker. One case stays uncovered and should be named: a GitHub-hosted macOS runner, which

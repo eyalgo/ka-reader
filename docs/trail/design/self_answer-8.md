@@ -46,7 +46,7 @@ This report records the path-line placement decision for the owner and the CDO r
   path line serves code, rendered Markdown, raw source and diff
   (`docs/DESIGN.md:L658-L672`). The answer uses those existing tokens and one treatment.
   The cited implementation centres the text field's frame
-  (`nozoki-mac/Sources/Surfaces/ReadingPanelView.swift:L96-L112`).
+  (`ka-reader-mac/Sources/Surfaces/ReadingPanelView.swift:L96-L112`).
   That source establishes the constraint, not a measurement of the rendered line box:
   the nominal 18-point line height above is token arithmetic. No rendered-position
   measurement is claimed by this report.
@@ -81,4 +81,4 @@ None this run.
 
 ## Launchers owed
 
-- **docs/DESIGN.md** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/skill/launcher.sh product-design nozoki`
+- **docs/DESIGN.md** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/skill/launcher.sh product-design ka-reader`

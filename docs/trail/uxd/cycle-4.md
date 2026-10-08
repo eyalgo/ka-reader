@@ -1,4 +1,4 @@
-# UXD open issues — Nozoki 覗き
+# UXD open issues — KA-Reader
 
 > Companion to `UXD.md`. The CDO authored the UXD non-interactively; this file holds
 > what it could not settle from the inputs (the PRD, the project's Agari and its doctrine, the
@@ -54,7 +54,7 @@
      nothing that invites creating a repository. The owner's own words: *"the git button doesn't
      show anything. simple."* The grounds, recorded so the round does not soften it: VS Code fills
      that same state with *Initialize Repository* and *Publish to GitHub*, and **both are writes
-     Nozoki can never offer** — so the surface has no truthful next step, and saying nothing beats
+     KA-Reader can never offer** — so the surface has no truthful next step, and saying nothing beats
      explaining its own emptiness (`docs/prd_trail/cycle-10.md` § 2.2).
   2. **The tree carries no changed-file markers** in that state.
   3. **UX-S4 narrows, it is not deleted.** A path that does not exist, or cannot be read, is still
@@ -87,7 +87,7 @@ CDO pass over the change. Items the CDO drafts belong here on its own run.)*
 the unexplained-fault class being in v1 (§ 1.1, RN-23) with no control revealing a fault's detail
 (RN-24); the tooltip's single home on the status letter (RN-23); and the surface being complete *"as
 drawn, not as listed"* — sidebar search / filter, pane resizing and keyboard navigation staying
-permanently outside the product's done (`system/projects/nozoki/agari.md`).
+permanently outside the product's done (`system/projects/ka-reader/agari.md`).
 
 **Values and words stay where they live.** Every token, colour, type, spacing and radius value is
 `docs/DESIGN.md`'s and every final string is `docs/CONTENT.md`'s; both catch up after this document

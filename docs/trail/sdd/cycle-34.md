@@ -1,4 +1,4 @@
-# SDD open issues — Nozoki
+# SDD open issues — KA-Reader
 
 > Companion to `SDD.md`. The CTO wrote the SDD; this file holds what that run could not settle from
 > its inputs (the PRD, the SRS, the UXD, and any context or constraints), and the calls that are the
@@ -34,10 +34,10 @@
 
 > **No `product-sdd` run wrote this file.** The PM opened it on 2026-10-04, on the owner's direction
 > in an interactive session, from the SDD's own companion template. `development-design` for
-> `nozoki · tobiishi · 2026-10-04_the-promise-holds-over-git` halted with `form-two-unwritten`: the
+> `ka-reader · tobiishi · 2026-10-04_the-promise-holds-over-git` halted with `form-two-unwritten`: the
 > R-16 fix can only be built in *Open Questions*' second form, and that form must be written into
 > the `git-reader` row and § 11 R-16 before it is built. The halt report is the instance's
-> `system/projects/nozoki/journey/tobiishi/2026-10-04_the-promise-holds-over-git/halt_report.md`,
+> `system/projects/ka-reader/journey/tobiishi/2026-10-04_the-promise-holds-over-git/halt_report.md`,
 > on the instance branch of that name at commit `e414dc2`; its *What the owner is asked* list
 > (`:L46-L82`) is the source of the four items here. The SDD is Settled, and with no companion on
 > disk a `product-sdd` re-run reads it as done and has nothing to act on. Its four items are in § 5.
@@ -70,7 +70,7 @@ None.
   (`docs/SDD.md:L2980-L2981`), and C-D3 names the config-named path as what is not covered
   (`:L989-L991`). Both read as the whole list. The alternates file is a third way, it is not
   config, and item 5.3's rule does not reach it. `grep -n -i alternates docs/SDD.md docs/nfdr.md
-  crates/nozoki-core/src/git_reader/libgit2.rs` prints nothing at `nozoki@8b50506`. The source
+  crates/ka-reader-core/src/git_reader/libgit2.rs` prints nothing at `ka-reader@8b50506`. The source
   was read and not run: no fixture carries an alternates file, and no read of an outside object
   directory has been measured. The same class may hold a link inside the Git directory that
   leads out, such as a linked `config` or `objects`; that was not checked in the source.
@@ -94,9 +94,9 @@ None.
 
 ### 5.1 R-16's second form: which condition does the refusal answer — `RepositoryReadFailed`, or a new one that names the cause?
 - **Raised by:** PM — 2026-10-04, on the owner's word, from the `development-design` halt of
-  `nozoki · tobiishi · 2026-10-04_the-promise-holds-over-git`
+  `ka-reader · tobiishi · 2026-10-04_the-promise-holds-over-git`
 - **Seat:** cto
-- **Tracked by:** `nozoki · nemawashi · 2026-10-02_git-says-what-changed`
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-02_git-says-what-changed`
 - **What it blocks:** the change's design, and with it the whole change. The first form does not
   exist in libgit2 (halt report `:L16-L34`), so the second is the only fix for R-16, and the
   change's spec forbids building it unwritten (CP-659, the change's `change_spec.md:L77-L84`, same
@@ -105,10 +105,10 @@ None.
   (`docs/SDD.md:L6529-L6531`, and `:L6543-L6545`, "adds a condition under which a repository's
   Git state is not shown, which a reader sees"); § 11 R-16 (`:L2974-L2997`); the `git-reader` row
   (`:L336`). The two answers and the parts each one reaches are halt report `:L50-L55`. The code
-  today: the adapter answers `RepositoryReadFailed` for a failed open (`crates/nozoki-core/src/git_reader/libgit2.rs:L81-L92`);
-  a new condition reaches `folder-model`'s text (`crates/nozoki-core/src/folder_model.rs:L204-L214`),
-  `core-bridge` (`crates/nozoki-bridge/src/session.rs:L360-L366`) and
-  `nozoki-mac/Sources/Surfaces/GitItem.swift`. Reuse keeps the change `Publishes text: no`; a new
+  today: the adapter answers `RepositoryReadFailed` for a failed open (`crates/ka-reader-core/src/git_reader/libgit2.rs:L81-L92`);
+  a new condition reaches `folder-model`'s text (`crates/ka-reader-core/src/folder_model.rs:L204-L214`),
+  `core-bridge` (`crates/ka-reader-bridge/src/session.rs:L360-L366`) and
+  `ka-reader-mac/Sources/Surfaces/GitItem.swift`. Reuse keeps the change `Publishes text: no`; a new
   condition makes it publish text.
 - **If a document has to be written:** the `git-reader` row and § 11 R-16 in `SDD.md`, through
   `product-sdd`.
@@ -117,17 +117,17 @@ None.
   - **What it is.** The adapter refuses before libgit2 opens anything, and the condition says what
     it observed: the repository's config names a path outside the folder. It carries the key and
     the path as the config spells them, as `GitDirectoryOutside` carries its path
-    (`crates/nozoki-core/src/git_reader.rs:L194-L197`; the bridge's
-    `crates/nozoki-bridge/src/session.rs:L469-L475`). The log line still holds no path
-    (`crates/nozoki-core/src/folder_model.rs:L194-L196`).
+    (`crates/ka-reader-core/src/git_reader.rs:L194-L197`; the bridge's
+    `crates/ka-reader-bridge/src/session.rs:L469-L475`). The log line still holds no path
+    (`crates/ka-reader-core/src/folder_model.rs:L194-L196`).
   - **Why not reuse.** `RepositoryReadFailed` says a read was tried and failed. Here no read is
-    tried. `docs/CONTENT.md:L62` holds every message to "what Nozoki observed", and `:L331-L342`
+    tried. `docs/CONTENT.md:L62` holds every message to "what KA-Reader observed", and `:L331-L342`
     already fixes how anything outside the folder is said: it is "outside the folder you opened,
-    so Nozoki doesn't read it". § 6 S-4 asks that a failed Git item show "what was observed"
+    so KA-Reader doesn't read it". § 6 S-4 asks that a failed Git item show "what was observed"
     (`docs/SDD.md:L1815-L1816`). § 11 R-3 is the precedent: the outside Git directory has its own
     condition and shows where it lies (`:L2851-L2859`).
   - **The probe.** The probe's open loads the same config
-    (`crates/nozoki-core/src/git_reader/libgit2.rs:L500-L508`), so the check runs before it and the
+    (`crates/ka-reader-core/src/git_reader/libgit2.rs:L500-L508`), so the check runs before it and the
     probe answers a failed root finding with the same cause. The Git view then shows the fault in
     its slot, as `docs/UXD.md` UX-I16 already draws a stopped finding.
   - **What moves in `SDD.md`.** The `git-reader` row's *Owns* gains the check and the condition.
@@ -147,7 +147,7 @@ None.
 ### 5.2 What may the second form's check read beyond libgit2: an *inside* include that sits in the working tree?
 - **Raised by:** PM — 2026-10-04, on the owner's word, from the same halt
 - **Seat:** cto
-- **Tracked by:** `nozoki · nemawashi · 2026-10-02_git-says-what-changed`
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-02_git-says-what-changed`
 - **What it blocks:** the same design. CP-659's third bullet — "A repository whose config names no
   outside path answers exactly as it does today" (`change_spec.md:L84`) — means the check follows
   an include that stays inside the folder, and that file can be in the working tree (halt report
@@ -178,7 +178,7 @@ None.
     `docs/SDD.md:L959-L964`). `docs/fdr.md` R-101 (`:L188`) bounds reads to the viewed folder, and
     this read is in it.
   - **Which part reads.** `git-reader`, with the spelling walk it already locates the Git
-    directory by (`crates/nozoki-core/src/git_reader/libgit2.rs:L162-L184`), run before any open
+    directory by (`crates/ka-reader-core/src/git_reader/libgit2.rs:L162-L184`), run before any open
     and reading nothing at a position outside the folder. `fs-reader` *Must not own* "Git, in any
     form" (`docs/SDD.md:L335`), so the read is not its. *Open Questions*' "through `fs-reader`'s
     check" names the rule the walk follows, and the fold says so.
@@ -199,7 +199,7 @@ None.
 ### 5.3 Which paths are in R-16's domain beyond its three keys: `includeIf.<condition>.path`, and `core.worktree`?
 - **Raised by:** PM — 2026-10-04, on the owner's word, from the same halt
 - **Seat:** cto
-- **Tracked by:** `nozoki · nemawashi · 2026-10-02_git-says-what-changed`
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-02_git-says-what-changed`
 - **What it blocks:** the same design. The spec leaves the domain open above a floor of three keys
   and names `includeIf` a candidate (CP-658, `change_spec.md:L76`; Gap 6, `:L163`).
 - **Where it shows:** R-16 and *Open Questions* name three keys (`docs/SDD.md:L2976-L2978`,
@@ -208,7 +208,7 @@ None.
     Matching its condition is a read of its own, so the check would refuse any `includeIf` naming
     an outside path, whatever its condition.
   - `core.worktree`, resolved with `realpath` during the open (`repository.c:L406`, `:L436`), so
-    before `open_verified`'s check after the open (`crates/nozoki-core/src/git_reader/libgit2.rs:L86-L92`)
+    before `open_verified`'s check after the open (`crates/ka-reader-core/src/git_reader/libgit2.rs:L86-L92`)
     can refuse it.
 - **If a document has to be written:** § 11 R-16 and the `git-reader` row in `SDD.md`, through
   `product-sdd`.
@@ -231,7 +231,7 @@ None.
     item 5.1's condition. libgit2 resolves the value during the open (`repository.c:L436`), which
     is a look at a position outside the grant, and § 4 C-D1 counts that as a read
     (`docs/SDD.md:L962-L964`). A value that spells inside the folder but is not the folder itself
-    answers as it does today (`crates/nozoki-core/src/git_reader/libgit2.rs:L86-L92`).
+    answers as it does today (`crates/ka-reader-core/src/git_reader/libgit2.rs:L86-L92`).
   - **The spellings.** A relative value is spelled from the directory of the file that carries it
     (`config_file.c:L573-L578`). A value beginning `~/` is outside. A link met inside the folder
     is followed by the walk's own rule, and a spelling that leaves the folder is refused without
@@ -253,11 +253,11 @@ None.
 ### 5.4 Is a submodule's repository in R-16's domain, which `status()` opens?
 - **Raised by:** PM — 2026-10-04, on the owner's word, from the same halt
 - **Seat:** cto
-- **Tracked by:** `nozoki · nemawashi · 2026-10-02_git-says-what-changed`
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-02_git-says-what-changed`
 - **What it blocks:** the same design. CP-658 promises no outside path a repository's own config
   names is read (`change_spec.md:L76`), and does not say which repositories.
 - **Where it shows:** the adapter's status read leaves submodules on
-  (`crates/nozoki-core/src/git_reader/libgit2.rs:L346-L357`), so libgit2 opens each submodule's
+  (`crates/ka-reader-core/src/git_reader/libgit2.rs:L346-L357`), so libgit2 opens each submodule's
   repository during `status()`, follows its includes, and follows its `.git` file, which can name
   a Git directory outside the folder (halt report `:L72-L82`, with the libgit2 lines). The three
   routes are halt report `:L77-L82`: the check covers every submodule repository status opens;
@@ -272,7 +272,7 @@ None.
   read opens, and the status read keeps submodules on.
   - **Why it is in.** `docs/fdr.md` R-101 (`:L188`) and § 4 C-D1 bound what the product reads.
     Neither is limited to the top-level repository. The site is in the product: the status read
-    sets no `exclude_submodules` (`crates/nozoki-core/src/git_reader/libgit2.rs:L346-L357`), and
+    sets no `exclude_submodules` (`crates/ka-reader-core/src/git_reader/libgit2.rs:L346-L357`), and
     `checks/fixtures/submodule` is a repository with a submodule.
   - **Why not exclude submodules.** With them excluded, a submodule whose commit moved leaves the
     changed list, while `git status` lists it. `docs/SRS.md` FR-12 (`:L204-L207`) and

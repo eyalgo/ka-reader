@@ -1,4 +1,4 @@
-# DESIGN open issues — Nozoki
+# DESIGN open issues — KA-Reader
 
 > Companion to `DESIGN.md`. The CDO authored the design language non-interactively; this file
 > holds the calls it made and wants your sign-off on — each with the reason behind it, and what
@@ -32,7 +32,7 @@
 
 ### 3.1 Whether the reading panel's path line shows while a selected file is still being read
 - **Raised by:** PM — 2026-10-01
-- **Tracked by:** `nozoki · nemawashi · 2026-10-01_a-file-reads-in-the-panel`
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-01_a-file-reads-in-the-panel`
 - **What it blocks:** nothing is blocked. The pending state is built. What is missing is a rule
   that says whether it is built right, and the two documents it rests on read differently.
 - **Where it shows:** § Components *The reading panel* says "Its first row is always
@@ -42,9 +42,9 @@
   empty" (`docs/CONTENT.md:L306-L310`). Its UX-S1 row for the reading panel's loading state asks for no
   progress claim and no ellipsis (`docs/CONTENT.md:L499`). As built, the pending panel draws only
   *Reading this file.* and hides the path line
-  (`nozoki-mac/Sources/Surfaces/ReadingPanelView.swift:L101-L109`), while the tree's bar already
+  (`ka-reader-mac/Sources/Surfaces/ReadingPanelView.swift:L101-L109`), while the tree's bar already
   marks the selected file. The fault state that can follow does draw the path line
-  (`nozoki-mac/Sources/Surfaces/ReadingPanelView.swift:L114-L119`). The build reads "always" as
+  (`ka-reader-mac/Sources/Surfaces/ReadingPanelView.swift:L114-L119`). The build reads "always" as
   holding only once a file's verdict is shown, the same way the no-file prompt draws no path line.
   Read literally, "always" and "the open file" would put the selected path above *Reading this
   file.* Two readings are open. (a) The path line is drawn only once a verdict or the fault is
@@ -52,6 +52,6 @@
   is selected, pending included. If (b), the item also needs to say how a path holding a digit or
   a `…` sits beside *Loading*'s no-progress rule.
 - **If a document has to be written:** none. § Components *The reading panel*.
-- **Answer:** Choose (a). The selected-file pending state shows the loading status message without a path line. In § Components *The reading panel*, scope the path line's first-row rule to the selected file's content or outcome: text (including an empty text file), cannot-display, an observed failed read (including a file gone or unreadable), and an unexplained fault. The no-file prompt has no path line; pending is a distinct state, not that prompt. This reading follows the UXD's path-with-content rule and its named failure states, and keeps the pending treatment to the loading message (`docs/UXD.md:L101-L103`, `L236-L236`; `docs/CONTENT.md:L306-L310`). Reasoning: the existing selection cue names the pending target without adding a second panel row, and the result's path identifies what was read or what stopped. This is a clarification of the pending case, not a change to the path line shared by code, rendered Markdown, raw source and diff (`docs/DESIGN.md:L657-L661`). On a replacement selection, no earlier file's path or content stands under the new pending message; an obsolete reply restores neither. A fault ends pending and identifies the current selection under its path, with the tree remaining the way on (`docs/UXD.md:L253-L255`, `L322-L331`; `nozoki-mac/Sources/Surfaces/WorkbenchView.swift:L80-L98`). A path containing a digit or `…` is the reader's identifier, not Nozoki's progress claim; CONTENT expressly keeps its writing rules off the reader's names, so no exception to Loading is owed (`docs/CONTENT.md:L41-L45`, `L306-L310`). Reasoning and failure-path checks: docs/trail/design/self_answer-7.md.
+- **Answer:** Choose (a). The selected-file pending state shows the loading status message without a path line. In § Components *The reading panel*, scope the path line's first-row rule to the selected file's content or outcome: text (including an empty text file), cannot-display, an observed failed read (including a file gone or unreadable), and an unexplained fault. The no-file prompt has no path line; pending is a distinct state, not that prompt. This reading follows the UXD's path-with-content rule and its named failure states, and keeps the pending treatment to the loading message (`docs/UXD.md:L101-L103`, `L236-L236`; `docs/CONTENT.md:L306-L310`). Reasoning: the existing selection cue names the pending target without adding a second panel row, and the result's path identifies what was read or what stopped. This is a clarification of the pending case, not a change to the path line shared by code, rendered Markdown, raw source and diff (`docs/DESIGN.md:L657-L661`). On a replacement selection, no earlier file's path or content stands under the new pending message; an obsolete reply restores neither. A fault ends pending and identifies the current selection under its path, with the tree remaining the way on (`docs/UXD.md:L253-L255`, `L322-L331`; `ka-reader-mac/Sources/Surfaces/WorkbenchView.swift:L80-L98`). A path containing a digit or `…` is the reader's identifier, not KA-Reader's progress claim; CONTENT expressly keeps its writing rules off the reader's names, so no exception to Loading is owed (`docs/CONTENT.md:L41-L45`, `L306-L310`). Reasoning and failure-path checks: docs/trail/design/self_answer-7.md.
 
 **How it closes.** `product-design` folds it on its next run like any other item here.

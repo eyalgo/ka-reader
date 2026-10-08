@@ -26,8 +26,8 @@ owner's seat. It is for the owner, who reads it to learn what was decided and wh
     `libgit2/transports/ssh_exec.c` (`grep -rln git_process_new libgit2/src`).
   - `libz-sys-1.1.29/build.rs:L15-L22` — zlib-ng is built only under the `zlib-ng` or
     `zlib-ng-no-cmake-experimental-community-maintained` feature, and not under `stock-zlib`.
-  - The crate set: `cargo tree -p nozoki-bridge --target aarch64-apple-darwin -e normal --locked`
-    at `nozoki@4917cbb` resolves 37 crates. A grep of their `.c`, `.h`, `.cc` and `.cpp` files
+  - The crate set: `cargo tree -p ka-reader-bridge --target aarch64-apple-darwin -e normal --locked`
+    at `ka-reader@4917cbb` resolves 37 crates. A grep of their `.c`, `.h`, `.cc` and `.cpp` files
     finds `getenv` in `libgit2-sys` (10 files) and `libz-sys` (1 file) only, and whole-word
     `environ` or `_NSGetEnviron` in `libgit2-sys` (1 file) only.
 
@@ -69,7 +69,7 @@ moves or rests on, which are listed above.
   allowed where "the record's observable, its units table, its alternatives and its binds have not
   moved", which is RN-20's case for ADR-0010. A superseding record is needed where they move, which
   is RN-18's case for ADR-0008 (`nfdr.md:L2689-L2690`). Here three of the four move:
-  - the units table, where the `nozoki-bridge` row's last column gains "empties libgit2's
+  - the units table, where the `ka-reader-bridge` row's last column gains "empties libgit2's
     machine-level config search paths" (`adr/0020-…:L37`);
   - the alternatives, which gain the SDD's four (`:L65-L76`);
   - the binds, which gain QC-35 (`:L138`).
@@ -200,4 +200,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture nozoki`
+- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture ka-reader`

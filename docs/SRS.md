@@ -1,8 +1,8 @@
-# SRS — Nozoki 覗き
+# SRS — KA-Reader
 
 **Status:** Settled
 **Owner:** CTO
-**Version:** 12 — one change, with its authorization. FR-13 takes two readings, stated as a system state: where the diff (FR-17) is not present, activating a changed file's row in the Git view opens the file for reading exactly as a tree selection does; where it is present, activating the row opens that file's diff, and the file is read from the tree — the owner's call, confirmed at `docs/trail/srs/cycle-10.md` § 2.1 (RN-37). FR-13 carries the *changed* marker at the requirement; AC-6 takes both readings and AC-12 gains the row opening the diff; FR-17 and FR-22 do not move; the PRD is not reopened (RN-37). Nothing is left for the owner to answer; the companion is closed. (v11: bookkeeping only. `Status:` returns to Draft: a companion is open beside this document (`docs/SRS_open_issues.md`), and this SRS is Settled only when none is. No requirement, criterion, constraint or review note changed — the companion's one item is unanswered, and an unanswered re-run changes nothing this document states. (v10: one change, with its authorization. RN-35's sibling sentence gains its close: the divergence it records — `docs/UXD.md` UX-S4 making a non-repository a startup failure — ended at UXD v6 (`nozoki@dd08f2d`, 2026-08-26), and the close is pinned to that version and commit so it stays true whatever the UXD does next; confirmed at `docs/trail/srs/cycle-9.md` § 2.1. No requirement moves: FR-3 and FR-34 are unchanged and agree with the UXD. Nothing is left for the owner to answer; the companion is closed. (v9: two changes, each with its authorization. NFR-11 gains the diagnostic log's bound — one session's lines, the file created or truncated at launch, at most 1 MiB on disk within a session with emptied-and-continue, and a failed log write surfacing nowhere — the choice confirmed at `docs/trail/srs/cycle-8.md` § 2.1 (RN-36; AC-13 inspects it). And the 80 trail citations this document rests on are repaired: the 77 `docs/prd_trail/` and `docs/srs_trail/` pointers read `docs/trail/prd/` and `docs/trail/srs/`, because the answer-trails moved under `docs/trail/` at `nozoki@1e8bf3d` and the citing documents were not moved with them (authorized: `docs/trail/srs/cycle-8.md` § 2.2); nothing those citations authorize changes. Of the three `docs/uxd_trail/` mentions, RN-19's authorization for FR-18's shape takes the commit-pinned form `nozoki@1d5c553:docs/uxd_trail/cycle-2.md` § 2.1 — the file now at `docs/trail/uxd/cycle-2.md` is the re-authored UXD's cycle 2, not the one cited — and the two in RN-19 and RN-20 that describe the folder's removal at `9017ae2` are history and stand as written. One item stays open in `docs/SRS_open_issues.md`. (v8: the input contract widens from one local Git repository to one local folder, a Git repository or not, as PRD v11 states it (`docs/trail/prd/cycle-9.md` § 1.1, `docs/trail/prd/cycle-10.md` § 2.2 – § 2.4; the owner's fold directive: `docs/trail/srs/cycle-7.md` § 1.1). FR-33 says when Git is read and FR-34 what holds when it is not, and every Git-derived requirement cites them (RN-31 – RN-33); PRD v9's reader floor and README lines are folded on the same upstream branch (RN-34). Nothing is left for the owner to answer; the companion is closed.))))
+**Version:** 12 — one change, with its authorization. FR-13 takes two readings, stated as a system state: where the diff (FR-17) is not present, activating a changed file's row in the Git view opens the file for reading exactly as a tree selection does; where it is present, activating the row opens that file's diff, and the file is read from the tree — the owner's call, confirmed at `docs/trail/srs/cycle-10.md` § 2.1 (RN-37). FR-13 carries the *changed* marker at the requirement; AC-6 takes both readings and AC-12 gains the row opening the diff; FR-17 and FR-22 do not move; the PRD is not reopened (RN-37). Nothing is left for the owner to answer; the companion is closed. (v11: bookkeeping only. `Status:` returns to Draft: a companion is open beside this document (`docs/SRS_open_issues.md`), and this SRS is Settled only when none is. No requirement, criterion, constraint or review note changed — the companion's one item is unanswered, and an unanswered re-run changes nothing this document states. (v10: one change, with its authorization. RN-35's sibling sentence gains its close: the divergence it records — `docs/UXD.md` UX-S4 making a non-repository a startup failure — ended at UXD v6 (`ka-reader@dd08f2d`, 2026-08-26), and the close is pinned to that version and commit so it stays true whatever the UXD does next; confirmed at `docs/trail/srs/cycle-9.md` § 2.1. No requirement moves: FR-3 and FR-34 are unchanged and agree with the UXD. Nothing is left for the owner to answer; the companion is closed. (v9: two changes, each with its authorization. NFR-11 gains the diagnostic log's bound — one session's lines, the file created or truncated at launch, at most 1 MiB on disk within a session with emptied-and-continue, and a failed log write surfacing nowhere — the choice confirmed at `docs/trail/srs/cycle-8.md` § 2.1 (RN-36; AC-13 inspects it). And the 80 trail citations this document rests on are repaired: the 77 `docs/prd_trail/` and `docs/srs_trail/` pointers read `docs/trail/prd/` and `docs/trail/srs/`, because the answer-trails moved under `docs/trail/` at `ka-reader@1e8bf3d` and the citing documents were not moved with them (authorized: `docs/trail/srs/cycle-8.md` § 2.2); nothing those citations authorize changes. Of the three `docs/uxd_trail/` mentions, RN-19's authorization for FR-18's shape takes the commit-pinned form `ka-reader@1d5c553:docs/uxd_trail/cycle-2.md` § 2.1 — the file now at `docs/trail/uxd/cycle-2.md` is the re-authored UXD's cycle 2, not the one cited — and the two in RN-19 and RN-20 that describe the folder's removal at `9017ae2` are history and stand as written. One item stays open in `docs/SRS_open_issues.md`. (v8: the input contract widens from one local Git repository to one local folder, a Git repository or not, as PRD v11 states it (`docs/trail/prd/cycle-9.md` § 1.1, `docs/trail/prd/cycle-10.md` § 2.2 – § 2.4; the owner's fold directive: `docs/trail/srs/cycle-7.md` § 1.1). FR-33 says when Git is read and FR-34 what holds when it is not, and every Git-derived requirement cites them (RN-31 – RN-33); PRD v9's reader floor and README lines are folded on the same upstream branch (RN-34). Nothing is left for the owner to answer; the companion is closed.))))
 
 > The SRS is the technical source of truth: the system-level **what**, derived from the PRD and
 > read cold by the Principal PM (Delivery Plan / FDR) and the Principal Architect (ADR / NFDR).
@@ -19,7 +19,7 @@
 
 ## 1. Purpose
 
-Nozoki is a local, read-only reader of folders, files and repositories, one folder at a time: it
+KA-Reader is a local, read-only reader of folders, files and repositories, one folder at a time: it
 must present the folder's file tree and file contents with syntax highlighting — and, where the
 folder is itself the root of a Git repository, its Git status — keep that view following the
 folder as it changes on disk, and do all of it while provably changing nothing about the folder
@@ -30,7 +30,7 @@ and no configuration.
 ## 2. Scope
 
 **This SRS covers** the whole product the terminus requires — not v1 alone. The terminus it is
-scoped against is the project's 上がり Agari (`system/projects/nozoki/agari.md`): the v1 cut the
+scoped against is the project's 上がり Agari (`system/projects/ka-reader/agari.md`): the v1 cut the
 PRD locks in (file tree, reading with highlighting, Git status, live refresh) **plus** the three
 deferred features the Agari places inside done — diff view, commit history, and switching the
 viewed folder without restarting (always one at a time). Requirements below that the PRD places
@@ -42,13 +42,13 @@ a plain folder — is inside v1 and inside the terminus: it is an input the whol
 a capability added to it. The diff view and the commit history are Git's and exist only where the
 folder is a repository (FR-33); the switch takes any folder *(traces to: PRD Scope (In) "a Git
 repository or not"; owner-confirmed `docs/trail/prd/cycle-9.md` § 1.1, `docs/trail/prd/cycle-10.md`
-§ 2.3; the terminus widened to the same input: `system/projects/nozoki/agari.md`; see RN-31)*.
+§ 2.3; the terminus widened to the same input: `system/projects/ka-reader/agari.md`; see RN-31)*.
 
 **Deliberately outside this SRS, with the terminus as the reason** — considered and bounded, not
 forgotten:
 
 - **Sidebar search / filter, pane resizing, keyboard navigation** — the PRD defers them beyond
-  v1, and the Agari places them outside done; Nozoki is done without them. One accepted
+  v1, and the Agari places them outside done; KA-Reader is done without them. One accepted
   consequence, carried from the Agari: the product is mouse-driven and makes no
   keyboard-accessibility promise — with keyboard navigation outside the terminus, that absence is
   permanent, not deferred. History filtering and search stay outside done with them — adjacent to
@@ -111,7 +111,7 @@ revisitable (FR-19); telemetry and non-essential network calls.
   disappearing during a session is a change in that folder's Git state, and the view follows it
   within NFR-2's bar. *(traces to: PRD Core Features "Git is read only when the folder opened is
   itself the root of a Git repository", Out of Scope "Git found anywhere but at the opened
-  folder's root", UX Notes "The path" — "Whether the folder is a Git repository is Nozoki's to
+  folder's root", UX Notes "The path" — "Whether the folder is a Git repository is KA-Reader's to
   find out"; owner-confirmed `docs/trail/prd/cycle-10.md` § 2.4; the determination stated as a
   requirement: RN-32; the live clause: RN-33)*
 - **FR-34:** In a plain folder — a folder FR-33 does not find to be a repository's root — the
@@ -368,7 +368,7 @@ The PRD states the product's promises separately, none implied by another; so do
 *(category added beyond the standard six — the PRD's headline success metrics are usability bars;
 see RN-8)*
 
-- **NFR-13:** Time-to-first-success: from a stranger deciding to try Nozoki — by its single
+- **NFR-13:** Time-to-first-success: from a stranger deciding to try KA-Reader — by its single
   install path, whatever that path is — to viewing a file of their own repository, ≤ 5 minutes,
   checked before each release on macOS, the one platform v1 promises (C-11). The clock is read
   against a Git repository, the fuller path; a plain folder is the same path with less in it and
@@ -494,7 +494,7 @@ see RN-8)*
   "Platform", Out of Scope "Linux and Windows"; owner-confirmed: `docs/trail/prd/cycle-7.md`
   §1.2; the version-floor placement: RN-21)*
 - **C-12:** Public identity: the product is published from the `kensaiapp` GitHub organisation
-  (`github.com/kensaiapp/nozoki`) and maintained under that name; that repository is where C-7's
+  (`github.com/kensaiapp/ka-reader`) and maintained under that name; that repository is where C-7's
   channel is enabled and where releases are offered. *(traces to: PRD Assumptions "Public
   identity"; owner-confirmed: `docs/trail/prd/cycle-7.md` §1.1)*
 - **C-13:** The README states the support posture in the PRD's terms — "Issues and questions are
@@ -730,7 +730,7 @@ see RN-8)*
   cycle-1 answer on the history's shape only; cycle-1's diff decisions (FR-17, FR-22) and its
   history-filtering/search exclusion stand untouched. The owner reopened the shape during the
   UXD's rounds and confirmed the experience statement there; the wording authority is `UXD.md`
-  UX-S6 and RN-14 (owner-confirmed: `nozoki@1d5c553:docs/uxd_trail/cycle-2.md` § 2.1). The properties are
+  UX-S6 and RN-14 (owner-confirmed: `ka-reader@1d5c553:docs/uxd_trail/cycle-2.md` § 2.1). The properties are
   bound — the branches visible as branches when more than one exists, a chosen set of branches
   with a default that asks nothing, per commit its identifier, message, author, and date with
   changed files reachable — and the mechanism is not: how the history is drawn and what chooses
@@ -814,7 +814,7 @@ see RN-8)*
   condition covers the whole reading surface the PRD now draws) *(re: FR-30 – FR-32, NFR-16,
   DR-3, DR-6, AC-12, AC-22, AC-23; PRD source: Core Features, Data & Privacy, Success Metrics)*.
 - **RN-24:** *(added — C-12, C-13; changed — C-6's trace, C-7's response wording)* Identity and
-  support posture — *because* PRD v8 states the public identity (`github.com/kensaiapp/nozoki`,
+  support posture — *because* PRD v8 states the public identity (`github.com/kensaiapp/ka-reader`,
   owner: `docs/trail/prd/cycle-7.md` §1.1) and a support posture in which nothing is promised
   (owner: `docs/trail/prd/cycle-7.md` §2.4). C-12 carries the identity as the place C-7's
   channel and the releases live. C-7 at v4 asked SECURITY.md to state "what response to expect"
@@ -836,7 +836,7 @@ see RN-8)*
   other unit of Goals, Success Metrics, Key Use Cases, Core Features, UX Notes, Scope, Out of
   Scope, Assumptions, Dependencies, Data & Privacy or Risks moved between PRD v6 and v8 beyond
   the four RN-21 – RN-24 derive *(re: §2 – §8)*.
-- **RN-26:** *(the terminus, at v5)* The Agari (`system/projects/nozoki/agari.md`) is unchanged
+- **RN-26:** *(the terminus, at v5)* The Agari (`system/projects/ka-reader/agari.md`) is unchanged
   since v4 of this SRS and predates PRD v7/v8. Two of v5's additions sat against its edge and
   were routed to the owner rather than read into it — the platform (RN-21) and the raw-source
   switch (RN-23); the owner placed both outside done (RN-29, RN-30). Its second condition quotes the promise as "no non-essential network call";
@@ -875,7 +875,7 @@ see RN-8)*
   carried the versioning promise *(re: FR-31, AC-12, AC-22, §2; PRD source: Core Features)*.
 - **RN-30:** *(confirmed choice — §2, C-11)* A second platform is outside the terminus — the owner
   confirmed the reading (`docs/trail/srs/cycle-5.md` §2.4): the Agari's first condition
-  enumerates the beyond-v1 features inside done and platform is not among them, so Nozoki is
+  enumerates the beyond-v1 features inside done and platform is not among them, so KA-Reader is
   done on macOS alone. C-11, NFR-13 and AC-10 stand as written. The confirmation does not say
   Linux or Windows is never built — only that done does not wait for either *(re: §2, C-11,
   NFR-13, AC-10; PRD source: Out of Scope "Linux and Windows")*.
@@ -898,7 +898,7 @@ see RN-8)*
   narrows to the PRD's three — a path that does not exist, is not a folder, or cannot be read —
   and AC-15 with it. AC-24 is the plain folder's criterion end to end, including that finding out
   created nothing. Time-to-first-success stays read against a repository (NFR-13), as the PRD's
-  metric does. The terminus (`system/projects/nozoki/agari.md`) widened to the same input on the
+  metric does. The terminus (`system/projects/ka-reader/agari.md`) widened to the same input on the
   owner's direction, its integrity bar now reading "no write to the viewed folder — whether or
   not it is a repository"; §2 scopes against it as widened, and nothing in this revision sits
   against its edge *(re: as listed; PRD source: Purpose, Success Metrics, Key Use Case 4, Core
@@ -948,7 +948,7 @@ see RN-8)*
   folder") in NFR-5, NFR-9; "Zero required configuration" (found, never asked) in FR-1, NFR-14,
   DR-1, AC-9; "Time-to-first-success" (read against a repository) in NFR-13; Key Use Case 4 in
   FR-34, AC-24; Core Features' Git view and root rule in FR-12, FR-33, FR-34; UX Notes "The
-  path" (one local folder, Nozoki's to find out, "Checking") in FR-1, FR-33, FR-34; "Failure
+  path" (one local folder, KA-Reader's to find out, "Checking") in FR-1, FR-33, FR-34; "Failure
   states" in FR-3, AC-15; Scope (In) and its run posture in §2, FR-1; Out of Scope's two new
   lines in §2, FR-33, FR-34; the widened "Changing the viewed folder" and "Several folders" in
   §2, FR-2, FR-19; Dependencies / Integrations in §5.3; Data & Privacy's own-state boundary in
@@ -960,7 +960,7 @@ see RN-8)*
   non-repository a startup failure; the UXD follows the PRD, not this SRS, and its revision is
   the CDO's through the UXD's own skill — this SRS records the divergence and does not reshape
   FR-3 or FR-34 to it *(re: §1 – §8, FR-31, RN-29)*. The divergence ended at UXD v6
-  (`nozoki@dd08f2d`, 2026-08-26): UX-S4 narrowed to a path that does not exist, is not a folder,
+  (`ka-reader@dd08f2d`, 2026-08-26): UX-S4 narrowed to a path that does not exist, is not a folder,
   or cannot be read, and a plain folder opens (`docs/UXD.md` § UX-S4, RN-25); UXD RN-28 read this
   SRS at v8 as its sibling and found no collision with FR-33 / FR-34. FR-3 and FR-34 stand as
   written and now agree with the UXD. Confirmed at `docs/trail/srs/cycle-9.md` § 2.1 — a

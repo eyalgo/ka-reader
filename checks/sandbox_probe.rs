@@ -1,4 +1,4 @@
-//! `nozoki-sandbox-probe <pid>` — asks the operating system what sandbox a running process is under.
+//! `ka-reader-sandbox-probe <pid>` — asks the operating system what sandbox a running process is under.
 //!
 //! WHY THIS EXISTS
 //!   `checks/bundle.sh` must know from the operating system, not from anything the launched process
@@ -57,7 +57,7 @@ extern "C" {
 }
 
 fn fail(exit_code: i32, message: &str) -> ! {
-    eprintln!("nozoki-sandbox-probe: {message}");
+    eprintln!("ka-reader-sandbox-probe: {message}");
     exit(exit_code)
 }
 
@@ -96,7 +96,7 @@ fn parse_pid(arguments: &[String]) -> c_int {
             .ok()
             .filter(|pid| *pid > 0)
             .unwrap_or_else(|| fail(2, &format!("not a process id: {pid}"))),
-        _ => fail(2, "usage: nozoki-sandbox-probe <pid>"),
+        _ => fail(2, "usage: ka-reader-sandbox-probe <pid>"),
     }
 }
 

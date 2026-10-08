@@ -1,4 +1,4 @@
-# FDR open issues — Nozoki 覗き
+# FDR open issues — KA-Reader
 
 > Companion to `fdr.md`. The Principal PM authored the FDR non-interactively; this file holds what the
 > run could not settle from its inputs — the PRD, the SRS and the SDD.
@@ -15,7 +15,7 @@
 > it be quietly folded back into § 1 as though the authoring run had asked it.
 
 > **How this companion came to exist.** No `product-fdr` run opened it. A `companion-self-answer`
-> run opened it on 2026-09-23 (`nozoki@f5cddef`) while it answered `docs/architecture_open_issues.md`
+> run opened it on 2026-09-23 (`ka-reader@f5cddef`) while it answered `docs/architecture_open_issues.md`
 > § 2.2. `fdr.md` was Settled at v6 with no companion on disk, so without this file a `product-fdr`
 > re-run would have read it as done. But the owner's answer on `docs/SDD_open_issues.md` § 1.1 had
 > reversed one sentence of PD-29, and `docs/nfdr.md` QC-21 waits on PD-29 to move (NFDR RN-21). The
@@ -82,7 +82,7 @@
   diff; RN-31 lists each entry opened. **The Draft.** `docs/SDD.md` is Draft at v13 because
   `docs/SDD_open_issues.md` holds one item, § 2.3 — the wording of § 4 C-I3's entitlement check
   ("against the set C-R2's rule admits" where it read "C-R2's exact list") and the record lines of
-  C-R2 and C-I3 — answered in the owner's seat (`nozoki@18ad26d`) and awaiting `product-sdd`'s fold.
+  C-R2 and C-I3 — answered in the owner's seat (`ka-reader@18ad26d`) and awaiting `product-sdd`'s fold.
   The house rule is derive and record, never halt (`unsettled_inputs.md` § *The rule*; the prompt's
   § *Inputs you work from*). What turns on the Draft here: nothing. No FDR entry reads C-I3's check
   or either record line — RN-13 classes C-R2 and C-I3 as structure and process, and RN-31 re-walks

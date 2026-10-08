@@ -73,7 +73,7 @@
   - Keeping WKWebView means reading down the owner's own ruling. "No network entitlement, ever"
     comes from `docs/trail/sdd/cycle-8.md` § 5.1, answer 1.
   - Leaving WKWebView reverses the runtime the owner confirmed
-    (`nozoki@70a879a:docs/trail/sdd/cycle-1.md` § 2.2, cited at `docs/SDD.md` § 10 RC-2). It also
+    (`ka-reader@70a879a:docs/trail/sdd/cycle-1.md` § 2.2, cited at `docs/SDD.md` § 10 RC-2). It also
     reverses `docs/fdr.md` PD-29's "not replaceable inside the terminus".
 
   This run can name three grounds it cannot see:
@@ -156,4 +156,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/SDD.md`** — `<CORE>/launchers/product-sdd/launcher.sh nozoki`
+- **`docs/SDD.md`** — `<CORE>/launchers/product-sdd/launcher.sh ka-reader`

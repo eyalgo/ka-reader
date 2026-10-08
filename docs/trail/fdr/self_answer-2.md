@@ -2,7 +2,7 @@
 
 ## Header
 
-- **Companion:** /Users/eyalgolan/products/nozoki/docs/fdr_open_issues.md
+- **Companion:** /Users/eyalgolan/products/ka-reader/docs/fdr_open_issues.md
 - **Document:** `docs/fdr.md` — the FDR, Draft at v2
 - **Decided by:** `decide_companion_answers.md` v1.0.0
 - **Date:** 2026-09-01
@@ -148,4 +148,4 @@ None this run. Two were considered and refused: the NFDR, whose QC-40 stays true
 
 ## Launchers owed
 
-- **`fdr.md`** — `<CORE>/launchers/product-fdr/launcher.sh nozoki`
+- **`fdr.md`** — `<CORE>/launchers/product-fdr/launcher.sh ka-reader`

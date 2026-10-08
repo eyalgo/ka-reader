@@ -2,7 +2,7 @@
 
 ## Header
 
-- **Companion:** /Users/eyalgolan/products/nozoki/docs/fdr_open_issues.md
+- **Companion:** /Users/eyalgolan/products/ka-reader/docs/fdr_open_issues.md
 - **Document:** `docs/fdr.md` — the FDR, Draft at v4
 - **Decided by:** `decide_companion_answers.md` v1.1.0
 - **Date:** 2026-09-04
@@ -39,7 +39,7 @@ under each item.
   checked the other way — the deleted RN-20 and RN-26 have no successor note, so R-70, R-181 and
   the four review notes had nothing live to point at. `git cat-file -e
   70a879a:docs/trail/sdd/cycle-1.md` → exists; `grep -c 'SDD § SDD Review Notes
-  RN-\(16\|19\|20\|26\)' docs/fdr.md` with the `nozoki@70a879a:` prefix excluded → 0 (2026-09-04).
+  RN-\(16\|19\|20\|26\)' docs/fdr.md` with the `ka-reader@70a879a:` prefix excluded → 0 (2026-09-04).
   Check 3: nothing settled moves — RN-28 records every site, and the NFDR's v5 applied the same two
   forms to its own tags (`docs/nfdr.md` RN-16), so the two downstream documents now agree on the
   form. Check 4 — *absent*: a clone lacking `70a879a` loses the pins, a cost the owner accepted at
@@ -69,7 +69,7 @@ under each item.
   surface rewritten (§ 2, 'Undoing it')"* (PD-29); § 4 C-I5 is the extension set (R-43, R-44,
   PD-10); C-R3 carries the panel dismissed and C-D4 read-whole-or-discard-whole (R-146, R-168,
   R-170). The four counts reproduce: `git diff -U0 3325469 HEAD -- docs/fdr.md | grep -c '^-- \*\*'`
-  → 73; `grep -o 'nozoki@70a879a' docs/fdr.md | wc -l` → 32; `grep -o 'SDD § ' docs/fdr.md | wc
+  → 73; `grep -o 'ka-reader@70a879a' docs/fdr.md | wc -l` → 32; `grep -o 'SDD § ' docs/fdr.md | wc
   -l` → 135; unpinned dead notes → 0. No unpinned `docs/trail/sdd/cycle-1.md` citation survives.
   Checks 1, 3 and 4 as § 2.1 — the same seat, the same settled record, the same two failure paths.
   Not confirmed with addition, because nothing pinned was found that could have been re-pointed
@@ -228,9 +228,9 @@ needs it, and the words are the producing skill's to correct on the fold.
 
 ## Companions opened
 
-- **/Users/eyalgolan/products/nozoki/docs/SDD_open_issues.md** — **opened** — companion to `SDD.md`, landed in commit `bc34996`. Routed by § 2.7. One item, § 5.1, in the section the template's own header gives to a seat that did not write the SDD: § 3 `fs-reader`'s text rule gains the UTF-16 byte-order-mark clause the owner added at `docs/trail/fdr/cycle-1.md` § 2.4, and § 11 R-3's response takes the wording the owner set at § 2.7 — a failed Git item naming where the Git directory lies, stating that Git state is not read and the tree and reading work, offering no folder to choose. Provenance blockquote under the header; the `Answer` slot at its placeholder with the run's own reading offered in the item.
+- **/Users/eyalgolan/products/ka-reader/docs/SDD_open_issues.md** — **opened** — companion to `SDD.md`, landed in commit `bc34996`. Routed by § 2.7. One item, § 5.1, in the section the template's own header gives to a seat that did not write the SDD: § 3 `fs-reader`'s text rule gains the UTF-16 byte-order-mark clause the owner added at `docs/trail/fdr/cycle-1.md` § 2.4, and § 11 R-3's response takes the wording the owner set at § 2.7 — a failed Git item naming where the Git directory lies, stating that Git state is not read and the tree and reading work, offering no folder to choose. Provenance blockquote under the header; the `Answer` slot at its placeholder with the run's own reading offered in the item.
 
 ## Launchers owed
 
-- **`fdr.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-fdr/launcher.sh nozoki`
-- **`SDD.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-sdd/launcher.sh nozoki`
+- **`fdr.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-fdr/launcher.sh ka-reader`
+- **`SDD.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-sdd/launcher.sh ka-reader`

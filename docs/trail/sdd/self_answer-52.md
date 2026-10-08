@@ -29,13 +29,13 @@ the `product-sdd` run that folds the answers.
   `:L4795-L4830` and searched for every alternates-condition phrase, and `docs/adr/` was listed and
   searched (ADR-0022 names the alternates read at `:L28`, `:L43`, `:L47`, `:L121`, `:L125`, `:L134`
   and the condition's words nowhere).
-- **The tree the answers were measured on:** `nozoki@a6add8f`, the HEAD at intake, with
+- **The tree the answers were measured on:** `ka-reader@a6add8f`, the HEAD at intake, with
   `git status --short` printing nothing. `git diff --stat 0909fe0 HEAD -- . ':!docs'` prints
-  nothing, so outside `docs/` it is the tree at `nozoki@0909fe0`, the merge the items cite, and
+  nothing, so outside `docs/` it is the tree at `ka-reader@0909fe0`, the merge the items cite, and
   `git merge-base --is-ancestor 0909fe0 HEAD` exits 0; `66f428d` precedes `c25201a`, which
   precedes `0909fe0`, each an ancestor of the next. `cargo test --workspace --locked` printed 517
   passed, 0 failed, 0 ignored, summed over its 23 `test result` lines; `swift test --package-path
-  nozoki-mac` printed "Executed 140 tests, with 0 failures". Both ran in this run.
+  ka-reader-mac` printed "Executed 140 tests, with 0 failures". Both ran in this run.
 
 ## Items worked
 
@@ -54,25 +54,25 @@ the `product-sdd` run that folds the answers.
   clause near it that is another seat's, the CDO's sentence in the observable half of § 6 S-4
   (`docs/SDD.md:L1887-L1892`), does not move — RN-103 settled it from `docs/UXD.md` UX-S3 Error
   ("that item shows what the tool observed", `docs/UXD.md:L241`) and `docs/CONTENT.md:L62` ("A
-  message says what Nozoki observed, never why it happened"), and what changes is the build-state
+  message says what KA-Reader observed, never why it happened"), and what changes is the build-state
   sentence after it (`:L1895-L1898`), the CTO's statement of what the tree holds. The same shape
   RN-104 took for the config passage. No ground this run cannot see was found. Mine, in the
   owner's seat.
 
   **Check 2 — the draft, and what was opened.** Every claim of the item was opened at its source
   and read as the item states it: the three SDD passages (`docs/SDD.md:L347`, the sentence "At
-  `nozoki@66f428d` the adapter answers one condition for both observations, which § 11 R-16
+  `ka-reader@66f428d` the adapter answers one condition for both observations, which § 11 R-16
   states as a known defect until a change lands"; `:L1895-L1898`; `:L3432-L3444`);
   `spell_entry` returning `ObjectStoreNotLocated` when the entry's class is not-located, before
-  `spell_location` is called (`crates/nozoki-core/src/git_reader/libgit2.rs:L350-L353`), and
+  `spell_location` is called (`crates/ka-reader-core/src/git_reader/libgit2.rs:L350-L353`), and
   `ObjectStoreNamesOutside` for a spelled entry that lies outside (`:L358-L360`); the probe's
-  mapping (`:L495-L496`); the model's phrase arms (`crates/nozoki-core/src/folder_model.rs:L210-L211`,
+  mapping (`:L495-L496`); the model's phrase arms (`crates/ka-reader-core/src/folder_model.rs:L210-L211`,
   `:L230-L231`) and the constant they name (`:L252-L253`); the wire enum's variant
-  (`crates/nozoki-bridge/src/session.rs:L379`) under `rename_all = "snake_case"` (`:L362`), the
+  (`crates/ka-reader-bridge/src/session.rs:L379`) under `rename_all = "snake_case"` (`:L362`), the
   probe's mapping (`:L437`), the constructor sharing `object_store_refused` with the outside value
   (`:L480-L486`), and the string asserted at `:L1582` and `:L1707-L1728`; the shell's decode
-  (`nozoki-mac/Sources/Shell/BridgePayload.swift:L388-L389`); the sentence at
-  `nozoki-mac/Sources/Surfaces/GitSentences.swift:L68-L72`, over which `grep -i -c outside` printed
+  (`ka-reader-mac/Sources/Shell/BridgePayload.swift:L388-L389`); the sentence at
+  `ka-reader-mac/Sources/Surfaces/GitSentences.swift:L68-L72`, over which `grep -i -c outside` printed
   `0`, with the outside sentence unchanged at `:L63-L67`. The test counts the item gives are the
   counts this run measured.
 
@@ -80,16 +80,16 @@ the `product-sdd` run that folds the answers.
   document's own precedent is that a passage stating a property as built names every case that
   holds it (RN-104's *Built, and the cases that hold it*, `docs/SDD.md:L3165`). The cases are in
   the tree: `test_a_bare_relative_entry_is_refused_as_not_located_and_carried_as_written`
-  (`crates/nozoki-core/tests/git_state.rs:L2046`, asserting all three calls through
+  (`crates/ka-reader-core/tests/git_state.rs:L2046`, asserting all three calls through
   `assert_object_store_not_located` at `:L1924`),
   `test_every_entry_beginning_with_neither_dot_nor_slash_is_refused_as_not_located_as_written`
   (`:L2058`, four rows: a leading space, `~/`, a bare relative entry, and the same entry one level
   down), `test_an_own_outside_entry_is_met_before_a_level_one_not_located_entry` (`:L2097`),
   `test_a_submodules_not_located_alternates_entry_fails_status_alone` (`:L2453`), the log case
   `test_failed_git_item_with_the_object_store_not_located_condition_logs_one_warn_without_the_entry`
-  (`crates/nozoki-core/tests/git_state_log.rs:L325`, whose phrase constant at `:L318-L319` holds no
-  *outside*), the shell's decode case (`nozoki-mac/Tests/ShellTests/BridgePayloadGitTests.swift:L95-L97`)
-  and its two sentence cases (`nozoki-mac/Tests/SurfacesTests/GitSentencesTests.swift:L321`,
+  (`crates/ka-reader-core/tests/git_state_log.rs:L325`, whose phrase constant at `:L318-L319` holds no
+  *outside*), the shell's decode case (`ka-reader-mac/Tests/ShellTests/BridgePayloadGitTests.swift:L95-L97`)
+  and its two sentence cases (`ka-reader-mac/Tests/SurfacesTests/GitSentencesTests.swift:L321`,
   `:L338`, the second asserting that "outside" is absent). Their names and the lines cited were
   read; their bodies past those lines were not.
 
@@ -97,9 +97,9 @@ the `product-sdd` run that folds the answers.
   the three passages "re-measured at a current commit", and its lean reads that as the
   known-defect sentences. It is wider: R-16 *The condition* cites the adapter at `libgit2.rs:L354-L356`,
   `:L388-L392`, `:L350-L352` and `:L292-L297` and the scanner at `alternates_scan.rs:L43-L48`,
-  every one written against `nozoki@66f428d` (RN-103, *Measured in this fold*), and the station's
+  every one written against `ka-reader@66f428d` (RN-103, *Measured in this fold*), and the station's
   diff touched both files (`git diff --stat c25201a 0909fe0 -- . ':!docs'`: `libgit2.rs` 26 lines,
-  `alternates_scan.rs` 9 lines, among seventeen files). At `nozoki@0909fe0` the not-located
+  `alternates_scan.rs` 9 lines, among seventeen files). At `ka-reader@0909fe0` the not-located
   refusal is `:L350-L353`, the spelled-outside arm `:L358-L360`, the link arm `:L394-L396`, the
   first-refused-entry rule `:L291-L297`, and the class rule `alternates_scan.rs:L44-L50`. What each
   names is unchanged — the fold re-pins; it does not re-argue. Without this, the fold would state
@@ -110,10 +110,10 @@ the `product-sdd` run that folds the answers.
   `.gitmodules` known-defect passages (`:L1018-L1019`, `:L1915`, `:L3336`) stand: the adapter still
   skips every `.gitmodules` key but the include keys (`libgit2.rs:L247-L248`), and the station's
   guardrail names the section-path checks as items 13 and 14 of the seed, "no station yet". The
-  config condition's *Built* paragraph (`:L3165`) stands as pinned at `nozoki@fadff58`. And the
+  config condition's *Built* paragraph (`:L3165`) stands as pinned at `ka-reader@fadff58`. And the
   harness row (`:L356`) stands: the station's diff lists no file under `checks/`
   (`git diff --stat c25201a 0909fe0 -- checks` prints nothing), so its twelve-fixture count and
-  its pin at `nozoki@5331b85` are not contradicted.
+  its pin at `ka-reader@5331b85` are not contradicted.
 
   **Check 3 — the settled record.** § 3's `git-reader` row and R-16 *The condition* already
   state the condition as carrying which of the two was observed, "on the probe, on both reads and
@@ -122,7 +122,7 @@ the `product-sdd` run that folds the answers.
   named above. Downstream: ADR-0022 records the rule — a form the adapter does not locate
   "refuses as *not located*, not as *outside*" — and names the alternates read without the
   condition's words; `docs/nfdr.md` names the alternates refusal's not-located form as already in
-  QC-6 and records "SDD v43's known defect at `nozoki@66f428d`" as a dated judgment that the
+  QC-6 and records "SDD v43's known defect at `ka-reader@66f428d`" as a dated judgment that the
   defect "touches no entry" (`docs/nfdr.md:L4799-L4810`), which stays true of v43 and of the entries.
   Neither states the defect as current, and NFDR v44 (`:L5`) chose not to record the second
   observation as a decision ("a candidate that earns no record"), on a ground the build does not
@@ -168,16 +168,16 @@ the `product-sdd` run that folds the answers.
 
   **Check 2 — the draft, and what was opened.** The fact is read at every seam R-16 names
   (`:L3430`: SM-2, SM-4, SM-8). SM-2, the port: `ObjectStoreNotLocated(String)` is a variant of
-  its own on `GitReadCondition` (`crates/nozoki-core/src/git_reader.rs:L233`, beside
+  its own on `GitReadCondition` (`crates/ka-reader-core/src/git_reader.rs:L233`, beside
   `ObjectStoreNamesOutside(String)` at `:L227`) and on `ProbeCondition` (`:L328`, beside `:L324`).
-  SM-4, the wire: `GitConditionDto::ObjectStoreNotLocated` (`crates/nozoki-bridge/src/session.rs:L379`)
+  SM-4, the wire: `GitConditionDto::ObjectStoreNotLocated` (`crates/ka-reader-bridge/src/session.rs:L379`)
   serialises as `object_store_not_located` under `rename_all = "snake_case"` (`:L362`), which the
   bridge's own test asserts (`:L1582`, `:L1707-L1728`), and the members ride beside it exactly as
   they do for `object_store_names_outside`, both built by `object_store_refused` (`:L480-L486`).
   SM-8, the shell: `BridgePayload.swift:L388-L389` decodes the string to its own case,
-  `GitFailure.objectStoreNotLocated(path:)` (`nozoki-mac/Sources/Surfaces/GitItem.swift:L92`),
+  `GitFailure.objectStoreNotLocated(path:)` (`ka-reader-mac/Sources/Surfaces/GitItem.swift:L92`),
   and `GitSentences.swift:L68-L72` draws a sentence of its own for it. The model has its own
-  phrase (`crates/nozoki-core/src/folder_model.rs:L252-L253`). The item's precedent — the config
+  phrase (`crates/ka-reader-core/src/folder_model.rs:L252-L253`). The item's precedent — the config
   sentence folded the same way at `:L3130-L3141` — was read, and the draft's form, "the second
   condition as built, at SM-2, SM-4 and SM-8, with the locator at each seam", is that paragraph's.
   Nothing was added: the item asks one question and the tree answers it.
@@ -185,7 +185,7 @@ the `product-sdd` run that folds the answers.
   **Check 3 — the settled record.** *The condition* says the condition "crosses SM-2, SM-4 and
   SM-8 as the config condition does" (`:L3430`), and RN-101's "no seam moved" rule for the config
   condition — a second value under SM-4's existing functions is not a new function — holds here:
-  `git diff c25201a 0909fe0 -- crates/nozoki-bridge` touches `src/session.rs` alone and adds no
+  `git diff c25201a 0909fe0 -- crates/ka-reader-bridge` touches `src/session.rs` alone and adds no
   line carrying `no_mangle`, `extern "C"` or `pub extern` (`grep -c` prints `0`). The SDD pins no
   count of wire conditions (`grep -n -i 'closed set of\|fourteen\|fifteen\|sixteen' docs/SDD.md`
   prints six lines — icons, grammars, ADR records and check names — none about conditions), so
@@ -224,4 +224,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/SDD.md`** — `<CORE>/launchers/skill/launcher.sh product-sdd nozoki`
+- **`docs/SDD.md`** — `<CORE>/launchers/skill/launcher.sh product-sdd ka-reader`

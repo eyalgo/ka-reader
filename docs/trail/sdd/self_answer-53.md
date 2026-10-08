@@ -37,16 +37,16 @@ the `product-sdd` run that folds the answers.
   `looked up`, `no gitlink`, `gitlinks` (0 lines) and `cannot read answers` / `unreadable Git
   directory` (`:L4732`, a dated record of ADR-0022's line). `docs/CONTENT.md` was searched for
   `gitmodules` and `submodule` (`:L436`, `:L909`, neither a Git failure sentence).
-- **The tree the answers were measured on:** `nozoki@ccbe02a`, the HEAD at intake, with
+- **The tree the answers were measured on:** `ka-reader@ccbe02a`, the HEAD at intake, with
   `git status --short` printing nothing. `git diff --stat 772c63b ccbe02a -- . ':!docs'` prints
-  nothing, so outside `docs/` it is the tree at `nozoki@772c63b`, the merge the items cite;
+  nothing, so outside `docs/` it is the tree at `ka-reader@772c63b`, the merge the items cite;
   `git merge-base --is-ancestor 772c63b ccbe02a` exits 0, and `799c3d6` precedes `772c63b`. The
-  suites ran in a disposable copy (`git archive ccbe02a | tar -x -C /tmp/nozoki-scratch.*`), never
+  suites ran in a disposable copy (`git archive ccbe02a | tar -x -C /tmp/ka-reader-scratch.*`), never
   in the main checkout: `cargo test --workspace --locked` printed 558 passed, 0 failed, 0 ignored,
-  summed over its 23 `test result` lines; `swift test --package-path nozoki-mac` printed "Executed
+  summed over its 23 `test result` lines; `swift test --package-path ka-reader-mac` printed "Executed
   146 tests, with 0 failures"; `checks/read-only.sh <folder>` printed `unchanged` for each of the
   thirteen folders under `checks/fixtures/` (the script takes one folder per call). The claim that
-  R-16's fourth case fails against the crates at `nozoki@799c3d6` was not re-run: the case names
+  R-16's fourth case fails against the crates at `ka-reader@799c3d6` was not re-run: the case names
   `GitReadCondition::SubmoduleElsewhere`, which does not exist at that commit, so it does not
   compile there, and the claim is read from the item and the station's own *Reached when* 2.
 
@@ -68,27 +68,27 @@ the `product-sdd` run that folds the answers.
   loosened"). The one clause near the fold that is another seat's — the CDO's three-case passage in
   § 6 S-4's observable half (`docs/SDD.md:L1909-L1922`) — does not move: RN-102 (5) settled it at
   v42 from `docs/UXD.md` UX-S3 Error and `docs/CONTENT.md:L62`, and what changes is the build-state
-  sentence after it ("At `nozoki@5f3e895` the include-key refusal is built and the other two are
+  sentence after it ("At `ka-reader@5f3e895` the include-key refusal is built and the other two are
   not …", `:L1923-L1925`), the CTO's statement of what the tree holds — the same shape RN-104 and
   RN-105 took. No ground this run cannot see was found. Mine, in the owner's seat.
 
   **Check 2 — the draft, and what was opened.** Every claim of the item was opened at its source
-  and reads as the item states it. The passages: § 3's `git-reader` row, "At `nozoki@5f3e895` the
+  and reads as the item states it. The passages: § 3's `git-reader` row, "At `ka-reader@5f3e895` the
   check is built for the include keys alone …" (`:L348`); the `read-only-harness` row's "twelve
   fixture folders" (`:L357`); § 4 C-D3 "Two of its refusals are not built" (`:L1019-L1020`); § 6
   S-4 (`:L1923-L1925`); § 11 R-16 *A known defect, until a change lands* (`:L3346-L3352`) and *The
   proof*'s "A fourth case is owed" (`:L3400-L3404`); *Open Questions* "stays open on the
   `.gitmodules` case alone" (`:L7901-L7904`). The build: `status()` alone calls
-  `verify_submodules` (`crates/nozoki-core/src/git_reader/libgit2.rs:L100-L104`; `state()` at
+  `verify_submodules` (`crates/ka-reader-core/src/git_reader/libgit2.rs:L100-L104`; `state()` at
   `:L96-L98` does not), which reads the level's `.gitmodules` for its sections under
   `ConfigPurpose::Submodules` (`:L270-L275`, `:L558-L571`); `check_section_value` answers
   `ConfigNotLocated` for a value beginning `/` (`:L344-L346`), `ConfigNamesOutside` for one spelled
   outside (`:L347-L350`) and `SubmoduleElsewhere` for a looked-up name whose value spells to
   another location (`:L351-L357`); the variant is `GitReadCondition::SubmoduleElsewhere(SubmoduleNamedPath)`
-  (`crates/nozoki-core/src/git_reader.rs:L235-L237`); the wire value is `submodule_elsewhere`
-  with a `name` member (`crates/nozoki-bridge/src/session.rs:L486-L495`, `:L585`, asserted at
-  `:L1617`); the log phrase (`crates/nozoki-core/src/folder_model.rs:L259-L260`); the sentence
-  (`nozoki-mac/Sources/Surfaces/GitSentences.swift:L78-L82`). The fixture
+  (`crates/ka-reader-core/src/git_reader.rs:L235-L237`); the wire value is `submodule_elsewhere`
+  with a `name` member (`crates/ka-reader-bridge/src/session.rs:L486-L495`, `:L585`, asserted at
+  `:L1617`); the log phrase (`crates/ka-reader-core/src/folder_model.rs:L259-L260`); the sentence
+  (`ka-reader-mac/Sources/Surfaces/GitSentences.swift:L78-L82`). The fixture
   `checks/fixtures/gitmodules-names-outside` holds `.gitmodules`, `README.md` and `link`, with its
   `.git.tar` beside it; the case at `git_state.rs:L2680` watches a FIFO at the outside `x`'s
   `.git/config` through the three calls and asserts no opener, `probe` → `Root`, `state` ok and
@@ -99,7 +99,7 @@ the `product-sdd` run that folds the answers.
   passage stating a property as built names every case that holds it (RN-104's and RN-105's
   *Built, and the cases that hold it*). They are in the tree, and their names and the cited lines
   were read; their bodies past those lines were not, except L2653, L2680, L2748 and L3017. Core,
-  `crates/nozoki-core/tests/git_state.rs`:
+  `crates/ka-reader-core/tests/git_state.rs`:
   `test_section_path_outside_the_folder_is_refused_config_names_outside` (L2620),
   `test_section_path_beginning_slash_is_refused_config_not_located` (L2638),
   `test_submodule_section_for_a_looked_up_name_with_another_path_is_refused` (L2653, at both
@@ -115,9 +115,9 @@ the `product-sdd` run that folds the answers.
   `test_a_section_in_an_included_file_is_decided_and_spelled_from_the_levels_working_tree` (L2893),
   `test_a_verified_submodules_section_is_spelled_from_its_own_working_tree` (L2939),
   `test_state_ok_and_status_submodule_elsewhere_is_a_failed_item` (L3035). Unit,
-  `crates/nozoki-core/tests/unit/libgit2.rs`: the four `test_section_path_…` cases at L499, L521,
+  `crates/ka-reader-core/tests/unit/libgit2.rs`: the four `test_section_path_…` cases at L499, L521,
   L541, L555. Log: `test_failed_git_item_with_the_gitmodules_conditions_logs_one_warn_each_without_a_name_or_path`
-  (`crates/nozoki-core/tests/git_state_log.rs:L388`). Shell:
+  (`crates/ka-reader-core/tests/git_state_log.rs:L388`). Shell:
   `BridgePayloadGitTests.swift:L255`, `:L264`; `LaunchFlowGitTests.swift:L171`, `:L194`;
   `GitSentencesTests.swift:L401`, `:L423`; `GitViewTests.swift:L283`.
 
@@ -138,7 +138,7 @@ the `product-sdd` run that folds the answers.
   run grepped for `only bound` and found these.
 
   **Addition three: the harness row's re-measurement is exact.** The row pins its enumeration at
-  `nozoki@5331b85` and says a later file in `checks/` "owes this row an item" (`:L357`). This is
+  `ka-reader@5331b85` and says a later file in `checks/` "owes this row an item" (`:L357`). This is
   that item. `git diff --stat 5331b85 ccbe02a -- checks` lists `gitmodules-names-outside.git.tar`,
   `gitmodules-names-outside/.gitmodules`, `/README.md` and `/link`, four files and nothing else,
   so the cell re-pins at the fold's commit with thirteen folders, names the fourth fixture as §
@@ -148,10 +148,10 @@ the `product-sdd` run that folds the answers.
 
   **The fold stops at the three refusals.** The include-key sentences and their three cases
   stand (`git_state.rs:L1795`, `:L1806`, `:L1834`, now at those lines rather than the L1533,
-  L1544, L1572 the document cites at `nozoki@5f3e895`; the fold re-pins them as RN-105 re-pinned
+  L1544, L1572 the document cites at `ka-reader@5f3e895`; the fold re-pins them as RN-105 re-pinned
   the alternates locators, with a dated note). *The sixth member*'s `~/` sentence stands, held by
-  L2737. *Measured.* stands as a dated record of the measurement at `nozoki@bd382c8`. The config
-  and alternates *Built* paragraphs stand as pinned at `nozoki@fadff58` and `nozoki@6d3ef53`. The
+  L2737. *Measured.* stands as a dated record of the measurement at `ka-reader@bd382c8`. The config
+  and alternates *Built* paragraphs stand as pinned at `ka-reader@fadff58` and `ka-reader@6d3ef53`. The
   config condition's *Built* paragraph's last sentence — "This paragraph holds for the five keys
   named first: the sixth key's not-located form … is not built" (`:L3199-L3202`) — is a fourth
   sentence in other words, and it moves with the item: the sixth key's not-located form is built
@@ -161,7 +161,7 @@ the `product-sdd` run that folds the answers.
   condition* already state the refusals and what each carries, exactly as built — the station was
   cut from them — so no settled sentence moves except the build-state ones and the locators named
   above. Downstream: `docs/nfdr.md` QC-6 and QC-35 and ADR-0022's *Decision* are on
-  `docs/architecture_open_issues.md` §§ 3.1 and 3.2, raised by the PM at `nozoki@ccbe02a`, so no
+  `docs/architecture_open_issues.md` §§ 3.1 and 3.2, raised by the PM at `ka-reader@ccbe02a`, so no
   companion is owed elsewhere by this item. `docs/CONTENT.md` carries no catalogue of the Git
   failure sentences, so "The message's words are `docs/CONTENT.md`'s" reads as the rule at
   `:L62`, as RN-102 read it; the words came through the change's content step. Answers 5.2, 5.3
@@ -361,7 +361,7 @@ the `product-sdd` run that folds the answers.
   key follows a path to a file. A submodule section's own `path` is decided below, and repository
   options in .gitmodules do not configure the repository" — the source now says what the
   paragraph argued, so the fold cites it in the dead quotation's place and keeps the old quotation
-  in a dated note (as said at `:L236-L237` at `nozoki@5f3e895`). For a section with no `path`
+  in a dated note (as said at `:L236-L237` at `ka-reader@5f3e895`). For a section with no `path`
   key, `check_section` passes `section.word` as the key and `section.written_name` as the written
   path (`:L300-L310`); `word` is "The section word as the file writes it: `submodule`,
   `Submodule`" (`config_scan.rs:L59-L60`); and the case at `git_state.rs:L2748` asserts
@@ -386,7 +386,7 @@ the `product-sdd` run that folds the answers.
   inside is decided on its name and passes. Absent: n/a. Stale: the comment's locator is pinned
   by the fold at its own commit, and the dated note carries where the old one was. Concurrent:
   n/a. Refused: a name-only section naming an outside path is refused with the section word as
-  the key, which is what the case holds; the shell draws "Nozoki found submodule set to
+  the key, which is what the case holds; the shell draws "KA-Reader found submodule set to
   ../outside-n, outside the folder you opened …" for it, which is the config sentence with that
   key, and says nothing the adapter did not observe.
 
@@ -408,4 +408,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/SDD.md`** — `<CORE>/launchers/skill/launcher.sh product-sdd nozoki`
+- **`docs/SDD.md`** — `<CORE>/launchers/skill/launcher.sh product-sdd ka-reader`

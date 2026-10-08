@@ -9,9 +9,9 @@
 - **Sources re-read:** None outside this repository's own records and the organisation's core. The
   answers rest on:
   - `docs/SDD.md`, read whole
-  - the built tree: `crates/nozoki-bridge/src/exports.rs:L37`, `:L50`, `:L61`;
-    `crates/nozoki-bridge/tests/exports.rs:L17`; `target/include/nozoki_bridge.h:L13-L15`;
-    `nozoki-mac/` with `Package.swift`, `Sources/` and `Tests/`
+  - the built tree: `crates/ka-reader-bridge/src/exports.rs:L37`, `:L50`, `:L61`;
+    `crates/ka-reader-bridge/tests/exports.rs:L17`; `target/include/ka_reader_bridge.h:L13-L15`;
+    `ka-reader-mac/` with `Package.swift`, `Sources/` and `Tests/`
   - `docs/nfdr.md` QC-24; ADR-0013 `:L44-L49` and ADR-0016 `:L28`
   - the Swift packet at `<CORE>/doctrine/engineering/languages/swift/`, landed at
     `kensaiapp-dev@3ab2e8553`, and its skeleton tree's README
@@ -20,15 +20,15 @@
 
 ## Items worked
 
-### 5.1 — C-R7 and S-1 admit only SM-4's list, and SM-4's list leaves out the `nozoki_free` that SM-4's own returns require
+### 5.1 — C-R7 and S-1 admit only SM-4's list, and SM-4's list leaves out the `ka_reader_free` that SM-4's own returns require
 
 - **Bucket:** 5. Raised from downstream — an item from a seat that did not write the SDD
 - **Verdict:** confirmed with addition
 - **Why:** The item carries the PM's lean, so I weighed it as a draft (the prompt's rule for a
-  lean found outside bucket 2). The lean is right: `nozoki_free` stands beside SM-4's list, not on
+  lean found outside bucket 2). The lean is right: `ka_reader_free` stands beside SM-4's list, not on
   it. The item's own reason already holds, and three facts strengthen it.
   - **It is a different kind of function.** SM-4's list is the set of *calls*, each staged by the
-    slice that lands it (`SDD.md:L413`). `nozoki_free` is not staged. Every call's return needs
+    slice that lands it (`SDD.md:L413`). `ka_reader_free` is not staged. Every call's return needs
     it, so it is exported from the first build that exports anything.
   - **It is not a surface.** The priced contract reads "the surfaces' presence through SM-4"
     (C-I6, `:L744`). Adding a tenth function to the list would make "all nine from `v1.0.0`" false
@@ -40,17 +40,17 @@
   *The addition.* The draft is narrower than the defect. It fixes C-R7 and S-1, but SM-4's own row
   says the same wrong thing twice. Its Down cell says "calls from this list and no other", and its
   last sentence says "Nothing else crosses in either direction" (`SDD.md:L413`). Yet the shell
-  calls `nozoki_free` down the same seam. Fixing C-R7 alone would leave SM-4 contradicting C-R7.
+  calls `ka_reader_free` down the same seam. Fixing C-R7 alone would leave SM-4 contradicting C-R7.
   So the fold owes five edits:
-  1. SM-4's Down cell and its closing sentence name `nozoki_free` as the one release call beside
+  1. SM-4's Down cell and its closing sentence name `ka_reader_free` as the one release call beside
      the list.
   2. C-R7's "From `v1.0.0` the set is SM-4's list whole" (`:L598-L599`) becomes the list whole and
-     `nozoki_free`. Its *Violated by* line (`:L610`) reads "outside SM-4's list and
-     `nozoki_free`".
+     `ka_reader_free`. Its *Violated by* line (`:L610`) reads "outside SM-4's list and
+     `ka_reader_free`".
   3. S-11's command half pins "SM-4's nine functions" (`:L1920`), and that pin becomes the nine and
-     `nozoki_free`. C-I6's sentence (`:L738`) follows, since the pin reads the export set.
-  4. The fold says that `nozoki_free` is not a command. `read-only.sh` exercises "every command the
-     build grants" through SM-5 (C-I3, `:L637-L638`), and `nozoki_free` never reaches the model. So
+     `ka_reader_free`. C-I6's sentence (`:L738`) follows, since the pin reads the export set.
+  4. The fold says that `ka_reader_free` is not a command. `read-only.sh` exercises "every command the
+     build grants" through SM-5 (C-I3, `:L637-L638`), and `ka_reader_free` never reaches the model. So
      C-I3's "a slice that lands a command the harness does not exercise" does not reach it. Its
      misuse (a double free, a missing free) is § 11 R-13's case, which already runs the bridge's
      tests under the address sanitizer (`:L2395-L2402`).
@@ -61,7 +61,7 @@
   inside the closed list" (`:L296-L303`) is transcribed from C-R7. That record is not this
   document's, so its change is raised on `docs/architecture_open_issues.md` § 2.1 (commit
   `a8b662e`) and not written here. QC-24 is already false against the built bridge, which exports
-  `nozoki_free` (`exports.rs:L61`), and whose export test admits it (`tests/exports.rs:L17`).
+  `ka_reader_free` (`exports.rs:L61`), and whose export test admits it (`tests/exports.rs:L17`).
 
   *Check 4.* Four cases:
   - **Absent:** a build that exports no release function fails SM-4's return rule. After the fold
@@ -69,7 +69,7 @@
   - **Stale:** `ADMITTED` in the export test is a hand-kept array. It lists the permitted set, not a
     copy of the exported set, so C-R7's "never a hand-kept copy" is still met.
   - **Concurrent:** the rule is untouched. A buffer is freed once, by its owner (R-13).
-  - **Not covered, named:** only `nozoki_free` is admitted beside the list. SM-4 says
+  - **Not covered, named:** only `ka_reader_free` is admitted beside the list. SM-4 says
     `model_changed` crosses up to the shell, but it names no function for the shell to register
     the callback with. A slice that needs one has to export a second plumbing function, and this
     answer does not admit it. Under the prompt's rule that a widening waits until it occurs, that
@@ -92,9 +92,9 @@
   *The facts, checked at their source.* The registry carries `languages/swift/` with the six files
   the item names. Listed this run at the pinned core, the packet landed at
   `kensaiapp-dev@3ab2e8553` on 2026-09-23. The project card reads `Languages: Rust, Swift, Shell`,
-  and its test command ends `swift test --package-path nozoki-mac` (`project.md:L7-L8`, moved at
-  `kensaiapp-opensource@5b27023`). `nozoki-mac/` holds `Package.swift`, `Sources/` and `Tests/`,
-  first added at `nozoki@3e470bd` by the developer, by hand. So `SDD.md:L397-L402` states two
+  and its test command ends `swift test --package-path ka-reader-mac` (`project.md:L7-L8`, moved at
+  `kensaiapp-opensource@5b27023`). `ka-reader-mac/` holds `Package.swift`, `Sources/` and `Tests/`,
+  first added at `ka-reader@3e470bd` by the developer, by hand. So `SDD.md:L397-L402` states two
   falsehoods. It says no packet exists, and it says the card is still owed a change it has already
   taken. That is the prompt's strongest ground for reopening a document, a fact now false, and it
   needs no further argument.
@@ -107,7 +107,7 @@
   packet's word, not just SwiftPM's, and the cell stays.
 
   *The frame's layout.* The question has two layers, and only one is § 3's. § 3 says where the
-  frame lands (`nozoki-mac/`) and that it holds `Package.swift`, `Sources/` and `Tests/`. The
+  frame lands (`ka-reader-mac/`) and that it holds `Package.swift`, `Sources/` and `Tests/`. The
   packet's tree matches that, and so does the built one. How the package is laid out *inside* is
   a different layer: its test framework, its link route for the bridge, its tools version, its
   test-target names and its warnings level. That belongs to the packet and to `docs/nfdr.md` § 9,
@@ -148,9 +148,9 @@ None this run.
 ## Companions opened
 
 - **docs/architecture_open_issues.md** — **appended** — companion to `adr/` and `nfdr.md`, item
-  `2.1` (QC-24 owed `nozoki_free` beside SM-4's list), landed in commit `a8b662e`
+  `2.1` (QC-24 owed `ka_reader_free` beside SM-4's list), landed in commit `a8b662e`
 
 ## Launchers owed
 
-- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture nozoki`
-- **`docs/SDD.md`** — `<CORE>/launchers/product-sdd/launcher.sh nozoki`
+- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture ka-reader`
+- **`docs/SDD.md`** — `<CORE>/launchers/product-sdd/launcher.sh ka-reader`

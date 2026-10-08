@@ -1,4 +1,4 @@
-# DESIGN open issues — Nozoki 覗き
+# DESIGN open issues — KA-Reader
 
 > Companion to `DESIGN.md`. The CDO authored the design language non-interactively; this file
 > holds the calls it made and wants your sign-off on — each with the reason behind it, and what
@@ -78,7 +78,7 @@
   the kept phrases — *Density is the repository's* (§ Overview) and the path line's
   *repository-relative path* (§ Components) — stand only because `docs/UXD.md` § 2 and § 4 still
   read so, and that residue is now raised on the UXD's own companion
-  (`docs/UXD_open_issues.md` § 2.2, `nozoki@f4a0788`); when the UXD folds it, this document
+  (`docs/UXD_open_issues.md` § 2.2, `ka-reader@f4a0788`); when the UXD folds it, this document
   follows on the *upstream UXD change* authorization and no further answer is owed here.
   *Colour belongs to the repository* and RN-2 stay regardless, in the words the owner confirmed
   (`docs/trail/design/cycle-1.md` § 2.1). Reasoning: `docs/trail/design/self_answer-2.md` § 2.1.

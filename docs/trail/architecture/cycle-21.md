@@ -1,4 +1,4 @@
-# Architecture open issues — Nozoki 覗き
+# Architecture open issues — KA-Reader
 
 > Companion to `adr/` and `nfdr.md`. The Principal Architect authored both records
 > non-interactively; this file holds what the run could not settle from its inputs — the SRS, the SDD
@@ -27,14 +27,14 @@ None.
 ### 2.1 QC-30 half (2) scans only crates from outside the workspace, and skips the product's own two crates by membership
 - **Lands in:** `nfdr.md` QC-30, *verified by*, half (2)
 - **Drafted into the records:** QC-30 half (2) now scans "every crate the `cargo tree` command above
-  names from outside the workspace". `nozoki-core` and `nozoki-bridge` are half (1)'s, and the scan
+  names from outside the workspace". `ka-reader-core` and `ka-reader-bridge` are half (1)'s, and the scan
   skips them because they are workspace members, not because their names are on a list. Any other
   crate whose sources the scan cannot open still fails the build (`docs/nfdr.md:L585-L594`; RN-34).
   This item was raised by the `companion-self-answer` run of 2026-10-01
   (`docs/trail/architecture/cycle-20.md` § 2.1). That run left it undrafted. This run drafted it.
 - **Rationale:** Before this draft, half (2) scanned every crate the command names and failed on
-  any it could not open. Run again for this fold, the command names `nozoki-bridge v0.0.0
-  (…/crates/nozoki-bridge)` and `nozoki-core v0.0.0 (…/crates/nozoki-core)`, and neither has a
+  any it could not open. Run again for this fold, the command names `ka-reader-bridge v0.0.0
+  (…/crates/ka-reader-bridge)` and `ka-reader-core v0.0.0 (…/crates/ka-reader-core)`, and neither has a
   registry copy. A `checks/entry-points.sh` written to the old words would therefore fail every
   build before it read a single dependency. Half (1) already holds both crates by name
   (`docs/nfdr.md` QC-30, "**(1) The product's own units**"), and the half's own heading, "**(2) The
@@ -45,13 +45,13 @@ None.
   silent skip of that kind. Only QC-30's half (2) and RN-34's § 2.1 paragraph move. No record moves.
 - **Confirm or override:** confirm, with one addition. This was decided in the owner's seat by a
   `companion-self-answer` run. The draft's ground was re-read and holds:
-  `cargo tree -p nozoki-bridge --target aarch64-apple-darwin -e normal --locked --offline`, run this
-  round, names `nozoki-bridge v0.0.0 (…/crates/nozoki-bridge)` and `nozoki-core v0.0.0
-  (…/crates/nozoki-core)`, and the local Cargo registry holds no `nozoki-*` package. **The
+  `cargo tree -p ka-reader-bridge --target aarch64-apple-darwin -e normal --locked --offline`, run this
+  round, names `ka-reader-bridge v0.0.0 (…/crates/ka-reader-bridge)` and `ka-reader-core v0.0.0
+  (…/crates/ka-reader-core)`, and the local Cargo registry holds no `ka-reader-*` package. **The
   addition is a crate that falls between the two halves.** The workspace's members are a glob,
   `members = ["crates/*"]` (`Cargo.toml:L8`), so any directory created under `crates/` is a member
   with no manifest edit. Half (2) would skip it by membership. But half (1) names its crates —
-  "`nozoki-core`, `nozoki-bridge` and `nozoki-mac`" — so a third member would be in neither half.
+  "`ka-reader-core`, `ka-reader-bridge` and `ka-reader-mac`" — so a third member would be in neither half.
   The fold should make the two halves split on the same test: the skip in half (2) holds because
   half (1)'s rule reads every workspace member's sources, not only the two crates it names today.
   § 9 already scopes `checks/structure.sh` to "the product crates' sources outside
@@ -65,7 +65,7 @@ None.
 - **Lands in:** `adr/0017-floor-grammars-compiled-by-tree-sitter-native-c-in-the-core.md`; the
   index; `nfdr.md` QC-9, QC-26 and QC-30, whose trace tags name it
 - **Drafted into the records:** ADR-0017 records that the six floor grammars are compiled by
-  tree-sitter: native C, built from source into `nozoki-core` on every build, behind `highlighter`
+  tree-sitter: native C, built from source into `ka-reader-core` on every build, behind `highlighter`
   alone. It records the two alternatives the dependency review ruled out, hand-written lexers and
   `syntect`, and what the decision rests on: the tree-sitter and tree-sitter-grammars projects, a C
   compiler at build time, and the runtime's grammar-ABI range. It binds QC-9, QC-26 and QC-30.
@@ -76,7 +76,7 @@ None.
   trade-off is one of the places a record is found. The decision clears two of the three gates
   plainly. It is surprising without its context, because a core whose own source forbids `unsafe`
   parses the folder's bytes in C. And it was a real trade-off, with two alternatives weighed
-  (`nozoki@85d9fa7:checks/deps.review.md` § *The engine chosen*). The third gate, hard to reverse,
+  (`ka-reader@85d9fa7:checks/deps.review.md` § *The engine chosen*). The third gate, hard to reverse,
   could be read either way. TO-11 says undoing it rewrites one part and moves no seam. Against that,
   the rewrite is six languages' worth of lexing or a second engine with vendored syntaxes. The run
   leans toward a record. ADR-0004 recorded libgit2, the product's other body of native C, and TO-2
@@ -92,7 +92,7 @@ None.
   `:L339-L341`, `:L2252-L2265`, `:L2566`, `:L2575-L2576`), the ABI range 13 to 15
   (`tree-sitter-0.27.0/include/tree_sitter/api.h:L29`, `:L35`; `binding_rust/lib.rs:L780` of the
   registry copy), each grammar's `repository` field, and the two alternatives in
-  `nozoki@85d9fa7:checks/deps.review.md` § *The engine chosen*. **The addition: the draft carries
+  `ka-reader@85d9fa7:checks/deps.review.md` § *The engine chosen*. **The addition: the draft carries
   the reversibility gate on the weaker ground.** "Six languages' worth of lexing" is a real cost,
   but TO-11 is right that it is one part's rewrite. Two stronger grounds carry the gate. (1) The log
   already records a body of native C in the core whose undo is cheaper than this one: ADR-0004's

@@ -1,4 +1,4 @@
-# DESIGN open issues — nozoki
+# DESIGN open issues — ka-reader
 
 > Companion to `DESIGN.md`. The CDO authored the design language non-interactively; this file
 > holds the calls it made and wants your sign-off on — each with the reason behind it, and what
@@ -73,15 +73,15 @@ None.
   a form that holds more than one appearance, and whether it can is the SDD's to answer before
   the sentence is written here. *Leave it unruled* — the contract keeps its present last
   sentence, and the first design run to draw the icon decides it for the document.
-- **Confirm or override:** confirm — Nozoki supplies one drawing, at the light values, and makes
+- **Confirm or override:** confirm — KA-Reader supplies one drawing, at the light values, and makes
   no second drawing. Three things the fold carries beside it. **(1) The clause "it is shown as
   it is under every system appearance" is not written.** How the icon is shown under a system
   icon appearance is the platform's and not this document's to promise: Apple's guidelines say
   "the system automatically generates variants you don't provide"
   (https://developer.apple.com/design/human-interface-guidelines/app-icons, § Appearances, read
-  2026-09-30). The sentence says what Nozoki supplies and stops there. **(2) It covers every
+  2026-09-30). The sentence says what KA-Reader supplies and stops there. **(2) It covers every
   system icon appearance, not only dark.** The same page names default, dark, clear and tinted;
-  no variant is drawn for any of them. **(3) The contract binds the drawing Nozoki supplies and
+  no variant is drawn for any of them. **(3) The contract binds the drawing KA-Reader supplies and
   not the platform's rendering of it.** A variant the system generates or tints is the
   platform's, as the title bar's ground is (`docs/DESIGN.md` RN-32), so *no hue* and *no pure
   black or white* are not broken by it, and the redraw rule still covers two values. **Not

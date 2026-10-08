@@ -8,8 +8,8 @@
 - **Date:** 2026-09-25
 - **Sources re-read:** None. No answer this run rests on a source outside this repository. Every claim
   it leans on is in the product on disk: `docs/CONTENT.md`, `docs/fdr.md`, `docs/SDD.md`,
-  `docs/UXD.md`, `docs/DESIGN.md`, `README.md`, `nozoki-mac/Sources/Surfaces/ConditionSentences.swift`
-  and `crates/nozoki-core/src/fs_reader.rs`, read at `nozoki@4c59262`.
+  `docs/UXD.md`, `docs/DESIGN.md`, `README.md`, `ka-reader-mac/Sources/Surfaces/ConditionSentences.swift`
+  and `crates/ka-reader-core/src/fs_reader.rs`, read at `ka-reader@4c59262`.
 
 ## Items worked
 
@@ -25,10 +25,10 @@
 
   **It is not held as "not until it occurs".** The item widens the document, because it asks for cases
   § Message patterns does not state. It also cites an occurrence, which is a site in the product as it
-  stands: `nozoki-mac/Sources/Surfaces/ConditionSentences.swift:L18-L25` on `main`. I checked the site
-  at `nozoki@46bb275`. All four conditions come from the core's `Condition` enum
-  (`crates/nozoki-core/src/fs_reader.rs:L21-L34`), and each one is exercised by a test
-  (`crates/nozoki-core/tests/tree_links.rs`). The prompt's bar is met, so the item is answered on its
+  stands: `ka-reader-mac/Sources/Surfaces/ConditionSentences.swift:L18-L25` on `main`. I checked the site
+  at `ka-reader@46bb275`. All four conditions come from the core's `Condition` enum
+  (`crates/ka-reader-core/src/fs_reader.rs:L21-L34`), and each one is exercised by a test
+  (`crates/ka-reader-core/tests/tree_links.rs`). The prompt's bar is met, so the item is answered on its
   merits.
 
   **Check 1: mine, in the owner's seat.** The edit lands in `docs/CONTENT.md` § Message patterns,
@@ -39,36 +39,36 @@
   words are open. They are this document's.
 
   **Check 2, sentence by sentence.**
-  - *Loops*: *"This link loops back on itself, so Nozoki can't read it."* **Taken as written.** It
+  - *Loops*: *"This link loops back on itself, so KA-Reader can't read it."* **Taken as written.** It
     states what fs-reader observed, which is the `Cycle` condition. Its *can't read* matches R-152's
     *"an entry that cannot be read"*. It uses a contraction, ends in a full stop, and contains no
     banned word.
   - *Missing target*: *"This link leads to something that isn't there."* **Taken as written.** It is
-    a fact about the folder rather than about Nozoki, the same shape as *"This file is no longer in the
+    a fact about the folder rather than about KA-Reader, the same shape as *"This file is no longer in the
     folder."* It ends at the observation, which is where the § Voice guidance tells a sentence to end.
-  - *Outside*: **replaced** with *"This link leads outside the folder you opened, so Nozoki doesn't
+  - *Outside*: **replaced** with *"This link leads outside the folder you opened, so KA-Reader doesn't
     read it."* The shell's sentence fails on two grounds:
     - *This folder* is ambiguous on this surface. The Partial example on the same tree row,
-      *"Nozoki can't read this folder."*, uses *this folder* for the row itself. The outside sentence
+      *"KA-Reader can't read this folder."*, uses *this folder* for the row itself. The outside sentence
       uses it for the opened folder. A sub-folder's link can leave its parent and still stay inside
       the opened folder, and R-34 reads that link as its target. So *this folder* is exactly the
       distinction the reader needs made. *The folder you opened* names the reader's own act: the
       folder is chosen in the Open panel.
-    - *"Nozoki reads nothing outside it"* is wider than true. Nozoki reads its own remembered state,
+    - *"KA-Reader reads nothing outside it"* is wider than true. KA-Reader reads its own remembered state,
       which lives *"in the tool's own state — never in the folder"* (`docs/UXD.md` UX-I9), from
       outside the folder. That is the RN-16 failure shape: a sentence about the tool that claims more
       than holds. *Doesn't read it* is scoped to the link. It matches R-34's *"presented as an entry
-      that cannot be read"*, and it is honest that this is Nozoki's rule rather than an inability. For
+      that cannot be read"*, and it is honest that this is KA-Reader's rule rather than an inability. For
       that reason it says *doesn't*, not *can't*.
-  - *Too many links*: **replaced** with *"This link leads through more links than Nozoki follows."*
+  - *Too many links*: **replaced** with *"This link leads through more links than KA-Reader follows."*
     *"Too many other links"* judges the reader's own links by the tool's limit. The *Strict* row of
     § Voice forbids describing the reader's material by its failure to satisfy the tool. The
-    replacement puts the limit on Nozoki, where it belongs. It states no number, for two reasons. No
+    replacement puts the limit on KA-Reader, where it belongs. It states no number, for two reasons. No
     document fixes the bound: `docs/SDD.md`, `docs/fdr.md` and `docs/nfdr.md` carry no hop count, and
-    the 32 is the constant `MAX_LINK_HOPS` at `crates/nozoki-core/src/fs_reader.rs:L56`. And § Grammar
+    the 32 is the constant `MAX_LINK_HOPS` at `crates/ka-reader-core/src/fs_reader.rs:L56`. And § Grammar
     and mechanics, *Numbers*, holds that every number the product shows is counted from the folder,
-    which this one is not. It ends without *"so Nozoki can't read it"*. The row's failure mark already
-    carries that, and adding the clause would put *Nozoki* in the sentence twice.
+    which this one is not. It ends without *"so KA-Reader can't read it"*. The row's failure mark already
+    carries that, and adding the clause would put *KA-Reader* in the sentence twice.
 
   **The item hides a second question with the same seat, so both are answered in the one slot.**
   Taking these sentences brings the word *link* into the product. The reading bar in § Accessibility
@@ -97,7 +97,7 @@
   - `docs/SDD.md` § 4 C-E4 requires every message to carry what to do next, or to say that the route
     out is the surface's own, *"named in the sentence only where it is not already on screen"*. On a
     tree row the rest of the tree is on screen, so none of the four names a next step. That is also
-    the precedent the existing *"Nozoki can't read this folder."* sets.
+    the precedent the existing *"KA-Reader can't read this folder."* sets.
   - `docs/fdr.md` R-33, R-34 and R-152 fix the state. The words state the observation R-33 asks for
     and add nothing to it. The too-many-links case has no FDR rule of its own, and R-33 covers it
     generally, so `docs/fdr.md` is owed nothing.
@@ -147,4 +147,4 @@ owed nothing (Check 3 above).
 
 ## Launchers owed
 
-- **`docs/CONTENT.md`** — `<CORE>/launchers/skill/launcher.sh product-content nozoki`
+- **`docs/CONTENT.md`** — `<CORE>/launchers/skill/launcher.sh product-content ka-reader`

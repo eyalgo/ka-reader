@@ -19,14 +19,14 @@
 This run read the header and version lines, *Who holds what*, § 3's parts rows from `fs-reader` to
 `markdown-renderer` and the SM-4 row, § 4's opening note and C-D3's tail, § 6 S-4, the head of § 7
 and of § 10, § 10 RC-4, § 11 R-14's tail to R-16, RN-90, RN-91 and *Open Questions*. It searched the
-rest for `nozoki_read_git`, `no later than`, `before the slice is reached`, `R-16` and `outside the
+rest for `ka_reader_read_git`, `no later than`, `before the slice is reached`, `R-16` and `outside the
 grant`. A sentence elsewhere that states the bound in other words was not seen. `docs/PRD.md`,
 `docs/SRS.md` and `docs/UXD.md` were not opened: the answer moves no requirement and no experience
 entry. `docs/nfdr.md` was read at its header and at QC-6 and QC-35 only.
 
-**What this run measured,** at `nozoki@78e823a`:
+**What this run measured,** at `ka-reader@78e823a`:
 
-- `grep -rn 'nozoki_read_git\|read_git\|readGit' nozoki-mac/Sources` printed nothing.
+- `grep -rn 'ka_reader_read_git\|read_git\|readGit' ka-reader-mac/Sources` printed nothing.
 - `grep -rn 'include.path\|excludesfile\|attributesfile' checks/fixtures` printed nothing.
 - `grep -n 'no later than\|before the slice is reached' docs/SDD.md` printed six lines: `:L2676`,
   `:L2826`, `:L5227`, `:L5696`, `:L5698` and `:L5704`.
@@ -35,7 +35,7 @@ entry. `docs/nfdr.md` was read at its header and at QC-6 and QC-35 only.
 
 ## Items worked
 
-### 5.1 — The config-named-path item's bound falls on the first build that calls `nozoki_read_git`; move it to a later build of `see-git-status`
+### 5.1 — The config-named-path item's bound falls on the first build that calls `ka_reader_read_git`; move it to a later build of `see-git-status`
 
 - **Bucket:** 5. Raised from downstream — an item from a seat that did not write the SDD
 - **Verdict:** answered
@@ -49,7 +49,7 @@ entry. `docs/nfdr.md` was read at its header and at QC-6 and QC-35 only.
   is the owner's instead, because moving the bound means builds that open a reader's repository
   with a read outside the grant still unsettled. That trade-off is the owner's, and the owner has
   made it. The item records it under *The route the owner chose*, and the commit that opened the
-  companion says the same (`nozoki@78e823a`). This run did not see the owner's words. It rests on
+  companion says the same (`ka-reader@78e823a`). This run did not see the owner's words. It rests on
   the PM's record of them in those two places. What is left is how the SDD words a bound the
   owner already chose to move, and the item gives that to the SDD.
 
@@ -151,5 +151,5 @@ item should stay open and not be closed as done.
 
 ## Launchers owed
 
-- **`docs/SDD.md`** — `<CORE>/launchers/skill/launcher.sh product-sdd nozoki`
-- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture nozoki`
+- **`docs/SDD.md`** — `<CORE>/launchers/skill/launcher.sh product-sdd ka-reader`
+- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture ka-reader`

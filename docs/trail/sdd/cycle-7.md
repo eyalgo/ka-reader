@@ -1,4 +1,4 @@
-# SDD open issues — Nozoki
+# SDD open issues — KA-Reader
 
 > Companion to `SDD.md`. Three seats — the CTO, the CPO and the CDO — authored the SDD
 > non-interactively in one run; this file holds what that run could not settle from its inputs (the
@@ -47,8 +47,8 @@
   consumed the one companion item …". That is v5's entry with its opening clause missing, and
   there is no entry for v6 or v7. The draft change: put back v5's opening clause, "**Version:** 5
   — run 5 (`docs/trail/sdd/run-5.md`): all three seats declared `no_followup` with no"
-  (`nozoki@67372a5:docs/SDD.md:L9`). Write back the v7 and v6 entries from line 9 of
-  `nozoki@c1f8a20` and `nozoki@b3439e8`, newest first after v8. Any later bump then adds a new
+  (`ka-reader@67372a5:docs/SDD.md:L9`). Write back the v7 and v6 entries from line 9 of
+  `ka-reader@c1f8a20` and `ka-reader@b3439e8`, newest first after v8. Any later bump then adds a new
   first line above the old ones and never replaces it.
 - **Rationale:** Runs 6, 7 and 8 each replaced line 9 when they should have added a line above
   it. At `67372a5` (v5), line 9 opens v5's entry and line 10 continues it. At `b3439e8` (v6),
@@ -68,7 +68,7 @@
 
 ### 5.1 C-I3's "a red run says how long it waited" does not say whether it covers a run ended by a failed ask
 - **Raised by:** PM — 2026-09-23
-- **Tracked by:** `nozoki · nemawashi · 2026-09-15_open-a-folder`
+- **Tracked by:** `ka-reader · nemawashi · 2026-09-15_open-a-folder`
 - **What it blocks:** Nothing is waiting on it to be built. But one sentence can be read two ways,
   and `docs/nfdr.md` QC-25 copies it (`nfdr.md:L253-L254`). C-I3 says "the script prints the bound
   in the probe's output, so a red run says how long it waited" (`SDD.md:L537-L538`). The same

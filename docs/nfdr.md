@@ -1,8 +1,8 @@
-# NFDR — Nozoki 覗き
+# NFDR — KA-Reader
 
 **Status:** Settled
 **Owner:** Principal Architect
-**Version:** 46 — the close: the cycle-40 fold. The two limits QC-2 stated beside the `submodule` walk fixture are closed at `nozoki@b12e48c`, and `docs/SDD.md` v47 says so (SDD RN-107). On the owner's seat's answer at `docs/trail/architecture/cycle-40.md` § 3.1, QC-2's *verified by* tail names the CI step `Read-only, submodule` and the `read_git` case at `git_state.rs:L787`, names that case as a layer-2 no-write proof on the restored `submodule`, bounds the CI half to the step being in the workflow with its hosted result unread, keeps the sentence that the walk drops the Git answer, and moves its trace from SDD v42 to § 6 S-4 at v47; the old words are in a dated note. No `QC` is added, renumbered or reused, § 10 does not move, and no record is written or restatused. Nothing is left for the owner, so the companion is removed and `Status:` is Settled — RN-57
+**Version:** 46 — the close: the cycle-40 fold. The two limits QC-2 stated beside the `submodule` walk fixture are closed at `ka-reader@b12e48c`, and `docs/SDD.md` v47 says so (SDD RN-107). On the owner's seat's answer at `docs/trail/architecture/cycle-40.md` § 3.1, QC-2's *verified by* tail names the CI step `Read-only, submodule` and the `read_git` case at `git_state.rs:L787`, names that case as a layer-2 no-write proof on the restored `submodule`, bounds the CI half to the step being in the workflow with its hosted result unread, keeps the sentence that the walk drops the Git answer, and moves its trace from SDD v42 to § 6 S-4 at v47; the old words are in a dated note. No `QC` is added, renumbered or reused, § 10 does not move, and no record is written or restatused. Nothing is left for the owner, so the companion is removed and `Status:` is Settled — RN-57
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · PRD Settled · UXD Settled · DESIGN Settled · CONTENT Settled
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
@@ -38,7 +38,7 @@
 > `development-design` reading the entry. A script not yet in the tree is the case where no rule
 > has been added. Which rules a script holds is stated in the script's own header and is cited,
 > never copied here — for `checks/structure.sh`, *THE SCAN TABLE* and *WHAT IS NOT HELD*
-> (`checks/structure.sh:L35-L93` at `nozoki@463acb9`) — so the next rule added moves one file
+> (`checks/structure.sh:L35-L93` at `ka-reader@463acb9`) — so the next rule added moves one file
 > *(through v25 this sentence tied executability to the script's landing, which read every rule
 > § 10 assigns to `checks/structure.sh` as gated once the script landed holding four of them; on
 > the owner's seat's answer at `docs/trail/architecture/cycle-23.md` § 3.1 — RN-37)*.
@@ -50,19 +50,19 @@
 The physical module set is ADR-0020's, which supersedes ADR-0016 (confirmed in the owner's seat at
 `docs/trail/architecture/cycle-30.md` § 2.1 — RN-44), which superseded ADR-0009 (the owner's confirm,
 `docs/trail/architecture/cycle-9.md` § 2.3); this section is re-derived from `docs/SDD.md` § 3 as
-it reads at v14 under that document's own rule that the § 4 statement wins (RN-22, RN-23): `nozoki-core` (`crates/nozoki-core`, Rust library — `fs-reader`, `git-reader` with the
+it reads at v14 under that document's own rule that the § 4 statement wins (RN-22, RN-23): `ka-reader-core` (`crates/ka-reader-core`, Rust library — `fs-reader`, `git-reader` with the
 Git port, `watcher`, `folder-model`, `own-state`, `markdown-renderer`, `highlighter`),
-`nozoki-bridge` (`crates/nozoki-bridge`, Rust static library — `core-bridge`: the C ABI and the
-Rust-side composition root), `nozoki-mac` (a Swift package — `mac-shell`, `surfaces`), and
+`ka-reader-bridge` (`crates/ka-reader-bridge`, Rust static library — `core-bridge`: the C ABI and the
+Rust-side composition root), `ka-reader-mac` (a Swift package — `mac-shell`, `surfaces`), and
 `checks/` (build-time, not shipped). Part names are the SDD's (`docs/SDD.md` § 3); the Rust module
 spelling of each is the developer's. **The tree holds ADR-0020's four units and nothing else**
 *(corrected in place at v14 — RN-25, on the owner's seat's answer at
 `docs/trail/architecture/cycle-11.md` § 3.1; through v12 this paragraph read the tree as holding
 the previous shape alone, and at v13 as holding both shapes until the Tauri build's removal)*:
-the native shell landed at `nozoki@99e2bac` — `crates/nozoki-bridge` and `nozoki-mac` are on
-`main` — and the Tauri build left at `nozoki@0aca57e` (`git ls-files nozoki-ui crates/nozoki-app
+the native shell landed at `ka-reader@99e2bac` — `crates/ka-reader-bridge` and `ka-reader-mac` are on
+`main` — and the Tauri build left at `ka-reader@0aca57e` (`git ls-files ka-reader-ui crates/ka-reader-app
 | wc -l` → `0`, 2026-09-24; `docs/SDD.md` § 10 RC-3). Measured with `git ls-files`, not `ls`: a
-working copy that built the previous shape can still list `nozoki-ui/` and `crates/nozoki-app/`
+working copy that built the previous shape can still list `ka-reader-ui/` and `crates/ka-reader-app/`
 as untracked build output — `node_modules/`, `dist/`, `gen/`, `permissions/`, whose ignore lines
 left with the build — and an `ls` there reads the old shape back into a tree that does not hold
 it. The entries follow the SDD and the tree follows the entries — the reading RN-22 fixed for the
@@ -70,25 +70,25 @@ new units while they were unbuilt.
 
 ### 1.1 Architectural invariants
 
-- **QC-1:** `nozoki-mac` holds no I/O of its own — no filesystem read, no network, no spawned
+- **QC-1:** `ka-reader-mac` holds no I/O of its own — no filesystem read, no network, no spawned
   process, no URL handed to another program, no web engine — and its only channel to the core is
-  `SM-4`'s exported function list and `nozoki_free`, the seam's one release call beside the list,
+  `SM-4`'s exported function list and `ka_reader_free`, the seam's one release call beside the list,
   read through the generated header. The seam is where the promise
   is read, not where it is held: the wall is the process's entitlements (QC-25), and this entry is
   a source scan and a link check on every build, not a process boundary.
-  — *verified by:* `checks/view.sh` (test layer 6) over `nozoki-mac/Sources` and the built
+  — *verified by:* `checks/view.sh` (test layer 6) over `ka-reader-mac/Sources` and the built
   executable (QC-34); the bridge's export set (QC-24); `checks/no-network.sh` *(traces to:
   ADR-0021; ADR-0014; SDD § 3
-  SM-4; § 4 C-R7; re-derived at v11 — RN-22; `nozoki_free` named at v13 on the owner's addition at
+  SM-4; § 4 C-R7; re-derived at v11 — RN-22; `ka_reader_free` named at v13 on the owner's addition at
   `docs/trail/architecture/cycle-10.md` § 2.1 — RN-24)*
 - **QC-2:** No code path in any shipped unit opens a file under the granted folder for writing,
   creates, renames or removes an entry there, or creates a lock file in `.git`.
   — *verified by:* `checks/read-only.sh <fixture>` prints `unchanged` on every walk fixture after every
   command the build exports — a command being a call on `SM-4`'s list, driven through `SM-5`;
-  `nozoki_free` is the seam's release call and no command, it never reaches the model (C-I3, C-R7
+  `ka_reader_free` is the seam's release call and no command, it never reaches the model (C-I3, C-R7
   at v16) — `.git` hashed where present (test
   layer 3); structural check (layer 6):
-  `checks/structure.sh` rule *no write API in `nozoki-core` outside `own-state`*. The unit is the
+  `checks/structure.sh` rule *no write API in `ka-reader-core` outside `own-state`*. The unit is the
   build: a build that exports a command has that command's operation on `SM-5`, so the walk calls
   it in that same build, and no test of a slice's own stands in for `read-only.sh`. **Not covered,
   and named so it is not read as coverage:** nothing in the build compares the calls the walk makes
@@ -101,17 +101,17 @@ new units while they were unbuilt.
   script hashes the entries under the fixture folder and nothing above it (`:L17-L20`, `:L84`), so
   a scene whose Git directory lies outside the opened folder is not one: a wrong write there would
   land outside the hash. `inside-a-repo`, `parent-of-two` and `linked-worktree` are such scenes,
-  and they are proved by `cargo test --locked -p nozoki-core --test root_finding` and
+  and they are proved by `cargo test --locked -p ka-reader-core --test root_finding` and
   `--test git_state` (layer 2), which snapshot each scene's whole root around the calls
-  (`crates/nozoki-core/tests/root_finding.rs:L38-L43`; `crates/nozoki-core/tests/git_state.rs:L146-L155`).
+  (`crates/ka-reader-core/tests/root_finding.rs:L38-L43`; `crates/ka-reader-core/tests/git_state.rs:L146-L155`).
   `plain`, `repo` and `submodule` are walk fixtures, and CI walks all three: the step `Read-only,
   submodule` runs `checks/read-only.sh checks/fixtures/submodule` beside the `plain` and `repo`
-  steps (`.github/workflows/ci.yml:L73-L74` at `nozoki@b12e48c`), where "on every build" puts it.
+  steps (`.github/workflows/ci.yml:L73-L74` at `ka-reader@b12e48c`), where "on every build" puts it.
   That half is bounded by what can be read: the step is in the workflow, and its result on the
   hosted runner is unread, because `b12e48c` is on no remote branch and `origin/main` is at
-  `nozoki@799c3d6` — so this tail says the step is in the workflow and does not say it is green.
+  `ka-reader@799c3d6` — so this tail says the step is in the workflow and does not say it is green.
   The walk drops the Git answer (`checks/walk.rs:L288-L292`), which is why a case and not the walk
-  holds it: in `--test git_state` (layer 2), the case at `crates/nozoki-core/tests/git_state.rs:L787`
+  holds it: in `--test git_state` (layer 2), the case at `crates/ka-reader-core/tests/git_state.rs:L787`
   builds `submodule` as the script's in-place restore builds it, in a disposable scene of its own,
   and asserts `read_git`'s whole answer there — `root`, HEAD on `main` in the normal state, staged
   empty, and changed = {`submodule` modified, `README.md` untracked}. The same case is a layer-2
@@ -121,10 +121,10 @@ new units while they were unbuilt.
   answer moves *(through v45 the tail read: "two limits stand beside `submodule` until a change
   closes them: the walk drops the Git answer (`checks/walk.rs:L288-L292`), so no case asserts what
   `read_git` answers on it; and CI runs the walk on `plain` and `repo` alone
-  (`.github/workflows/ci.yml:L68`, `:L71` at `nozoki@076eac2`), so the `submodule` run is made by
+  (`.github/workflows/ci.yml:L68`, `:L71` at `ka-reader@076eac2`), so the `submodule` run is made by
   hand until it joins them, where 'on every build' puts it", and its trace read "the walk fixture,
   the three scenes the suites prove and the two limits from SDD § 4 C-I3 and § 6 S-4, command half,
-  as they read at v42 (SDD RN-101)"; both limits are closed at `nozoki@b12e48c` — RN-57)* *(through
+  as they read at v42 (SDD RN-101)"; both limits are closed at `ka-reader@b12e48c` — RN-57)* *(through
   v41 this tail read "on every fixture" — RN-53)* *(traces to:
   SRS NFR-5, NFR-6, C-2; SDD § 4 C-I3; ADR-0021; ADR-0011; the tail's IPC wording corrected on the
   owner's addition at `docs/trail/architecture/cycle-9.md` § 2.3 — RN-23; the command carve-out on
@@ -134,7 +134,7 @@ new units while they were unbuilt.
   and the three scenes the suites prove (RN-53), the CI step, the `read_git` case and its no-write
   proof from SDD § 6 S-4, command half, as it reads at v47 (SDD RN-107), on the owner's seat's
   answer at `docs/trail/architecture/cycle-40.md` § 3.1 — RN-57)*
-- **QC-3:** The shipped executable, `Nozoki.app/Contents/MacOS/Nozoki`, links no network
+- **QC-3:** The shipped executable, `KA-Reader.app/Contents/MacOS/KAReader`, links no network
   transport, and every crate and package the bundle contains is named in `checks/deps.allow`. The
   claim is made of the executable and of nothing smaller. *What the build holds:* libgit2 is
   vendored with its `https` and `ssh` features off, and every manifest that names `git2` turns its
@@ -143,12 +143,12 @@ new units while they were unbuilt.
   compiled or linked. *What it does not hold:* the vendored libgit2 compiles its transports and
   streams whatever the features, and registers `git://`, `http://` and `https://` with no guard
   (`libgit2-sys 0.18.8+1.9.7`, `build.rs:L152-L156`, `libgit2/src/libgit2/transport.c:L33-L35`), so
-  this entry claims nothing of the library or of `nozoki-core` as a unit *(through v31 the first
+  this entry claims nothing of the library or of `ka-reader-core` as a unit *(through v31 the first
   clause read "No shipped unit links a network transport: libgit2 is built without its HTTPS and
-  SSH transports", which was false of the library and of `nozoki-core` — RN-43)*.
+  SSH transports", which was false of the library and of `ka-reader-core` — RN-43)*.
   — *verified by:* three halves, and the entry holds only with all three. **(1) The tree equals the
   list:** `checks/no-network.sh` — `cargo tree` diffed against the allowlist, non-zero on any hit,
-  and non-zero where `nozoki-mac/Package.swift` declares a dependency or a `Package.resolved`
+  and non-zero where `ka-reader-mac/Package.swift` declares a dependency or a `Package.resolved`
   exists — the view brings nothing to the tree (the tree). That diff proves nothing about a name
   the list admits. **(2) The
   list holds no transport:** the allowlist change reviewed as code in the same change (QC-26, at
@@ -158,18 +158,18 @@ new units while they were unbuilt.
   --locked -e features -i <crate>` is what the review reads for a crate, and a feature-gated
   transport — libgit2's own HTTPS and SSH once a libgit2 binding is on the list, the case this
   entry's first clause states — is a condition no name diff sees. The names on the list before
-  this half was stated (218 cargo and 163 pnpm, `bash checks/no-network.sh` at `nozoki@9b36a42`)
-  passed the diff and were never reviewed against the domain. At `nozoki@0aca57e` the list is one
+  this half was stated (218 cargo and 163 pnpm, `bash checks/no-network.sh` at `ka-reader@9b36a42`)
+  passed the diff and were never reviewed against the domain. At `ka-reader@0aca57e` the list is one
   `cargo:` section of 17 names (`checks/deps.allow:L18` onward); the `pnpm:` section and 201 of
-  the 218 cargo names left with the Tauri build at `nozoki@fad4e78`, unreviewed, and none of them
+  the 218 cargo names left with the Tauri build at `ka-reader@fad4e78`, unreviewed, and none of them
   is shipped now; the 17 that stayed were among the 218 never reviewed, and until
-  `nozoki@85d9fa7` no record showed the review — `nozoki@6acfb65` generated the list and read its names against the file's header
+  `ka-reader@85d9fa7` no record showed the review — `ka-reader@6acfb65` generated the list and read its names against the file's header
   rules, which is the reading by name this half says cannot answer the question, and
-  `nozoki@fad4e78` records only that the tree equals the list *(the count and the commits on the
+  `ka-reader@fad4e78` records only that the tree equals the list *(the count and the commits on the
   owner's seat's answer at `docs/trail/architecture/cycle-11.md` § 3.2 — RN-25)*. **The one-time
-  review is recorded**, at `nozoki@85d9fa7:checks/deps.review.md`, which landed in one commit with
+  review is recorded**, at `ka-reader@85d9fa7:checks/deps.review.md`, which landed in one commit with
   `checks/deps.allow` and `Cargo.lock`. At that commit the list is one `cargo:` section of 40
-  names — the 17, the three `nozoki@21589c7` added (`bitflags`, `errno`, `rustix`) and the 20 the
+  names — the 17, the three `ka-reader@21589c7` added (`bitflags`, `errno`, `rustix`) and the 20 the
   grammar engine brings (SDD § 3 `highlighter`) — and the record has one row for each of the 40.
   Every row reads `cargo tree --offline --locked -e features -i <crate>` and the crate's registry
   copy at the version the lock resolves, which is this half's question and not a reading by name.
@@ -186,27 +186,27 @@ new units while they were unbuilt.
   standard library with no libgit2 in it. The three names are a floor: a framework API that reaches
   the network is C-R7's scan's to find (QC-34), and the wall behind all three halves is QC-25.
   Beside that floor, the pattern does not match three symbols the release executable that links the
-  `nozoki_read_git` export defines, each a local defined symbol (`t`) —
+  `ka_reader_read_git` export defines, each a local defined symbol (`t`) —
   `_git_socket_stream_global_init`, `_git_stream_registry_global_init` and
   `_git_transport_ssh_libssh2_global_init`. What they do was not read, no network call behind them
   is cited, and the pattern is not widened for them. The read is in the script from the build at
-  `nozoki@392177d` (`checks/view.sh:L379-L404`), with its suite cases in
+  `ka-reader@392177d` (`checks/view.sh:L379-L404`), with its suite cases in
   `checks/tests/test_view.sh:L58-L64` — the four symbol reds at `:L58-L61`, the three cause reds at
-  `:L62-L64` — and CI runs both on every push after `nozoki-mac/assemble.sh`
+  `:L62-L64` — and CI runs both on every push after `ka-reader-mac/assemble.sh`
   (`.github/workflows/ci.yml:L41`, `:L51`, `:L54`). This half's gate is that script. The read is
   proved for each executable it has met, and for no later one until it meets it. It has met two,
   both on the owner's machine. The first links libgit2's open and status code and not the
-  `nozoki_read_git` export (`crates/nozoki-bridge/src/exports.rs:L105`). The second is the first
-  that links the export, which the shell calls from `nozoki@129586e`
-  (`nozoki-mac/Sources/Nozoki/NativeBridge.swift:L26`): `nm` prints `T _nozoki_read_git`, no
+  `ka_reader_read_git` export (`crates/ka-reader-bridge/src/exports.rs:L105`). The second is the first
+  that links the export, which the shell calls from `ka-reader@129586e`
+  (`ka-reader-mac/Sources/KAReader/NativeBridge.swift:L26`): `nm` prints `T _ka_reader_read_git`, no
   `git_smart_subtransport_` symbol and no undefined `_connect`, `_socket` or `_getaddrinfo`, and
   `checks/view.sh` exits 0. No hosted runner has read a build that links the export *(through v40
   this tail said the read had not met an executable that links the export, which no Swift source
   called, and would meet one in the build where `mac-shell` first calls it; that build landed at
-  `nozoki@129586e` and passed — RN-52)* *(through v37 this tail said the read was not
-  in the script at `nozoki@8edec4f`, that no bridge function reached `git-reader` at that commit,
+  `ka-reader@129586e` and passed — RN-52)* *(through v37 this tail said the read was not
+  in the script at `ka-reader@8edec4f`, that no bridge function reached `git-reader` at that commit,
   and that its gate was `development-design` until the build that first exported one; that build
-  landed at `nozoki@392177d` — RN-49)*. A red read on any release build is SDD § 11 R-15's: the
+  landed at `ka-reader@392177d` — RN-49)*. A red read on any release build is SDD § 11 R-15's: the
   change whose build turns the read red does not land until a re-cut is recorded in SDD § 10
   *(through v40 the response read "a re-cut recorded before anything is built on that export" —
   RN-52)*. Stating the claim lower is the owner's call under FDR PD-27. The manifest clause is
@@ -227,11 +227,11 @@ new units while they were unbuilt.
   `failed(condition)` or `stopped` — and no surface draws a marker, a count or a "nothing changed"
   from an item that is not `observed`.
   — *verified by:* unit tests on the reducer (layer 1): every read path yields a state;
-  `swift test --package-path nozoki-mac` (layer 4): a projection with a `pending` item draws no
+  `swift test --package-path ka-reader-mac` (layer 4): a projection with a `pending` item draws no
   marker, no count and no empty-folder sentence, and the only words it may carry for the state
   are the *Loading* sentence `docs/CONTENT.md` § Message patterns fixes — by pointer, never
-  copied here (at `nozoki@69cc4b2` the check passes on
-  `nozoki-mac/Tests/SurfacesTests/RootItemsViewTests.swift:L96-L115`, a `pending` row drawing its
+  copied here (at `ka-reader@69cc4b2` the check passes on
+  `ka-reader-mac/Tests/SurfacesTests/RootItemsViewTests.swift:L96-L115`, a `pending` row drawing its
   name and its glyph and nothing else; the cycle-15 fold, RN-29) *(traces
   to: SDD § 3 ItemState; § 4 C-I1, C-E1; SRS NFR-3; FDR R-19, R-36, R-94 — a state and not a
   string, at v10)*
@@ -243,28 +243,28 @@ new units while they were unbuilt.
   own metadata, the `.git` entry's metadata without following a link, an entry inside a `.git`
   folder, and a `.git` file's own content — and never opens the Git directory a `.git` file names.
   Where that directory lies is `state()`'s to report (SDD § 11 R-3).
-  — *verified by:* `cargo test --locked -p nozoki-core --test root_finding` over the plain,
+  — *verified by:* `cargo test --locked -p ka-reader-core --test root_finding` over the plain,
   inside-a-repository, parent-of-two, linked-worktree and submodule fixtures (layer 2), with three
   cases this entry names: `linked-worktree` answers `Root`, `submodule` answers `Root`, and a scene
   whose `.git` file names a Git directory that does not exist answers `Root` — the case that goes
   red if `probe` ever follows the pointer, so the read bound has a check. All three are written
-  and pass at `nozoki@48308ff`: `test_linked_worktree_answers_root`, `test_submodule_answers_root`
+  and pass at `ka-reader@48308ff`: `test_linked_worktree_answers_root`, `test_submodule_answers_root`
   and `test_git_file_naming_a_missing_git_directory_answers_root`
-  (`crates/nozoki-core/tests/root_finding.rs:L175`, `:L185`, `:L196`). The adapter answers a `.git`
-  regular file through `probe_git_file` (`crates/nozoki-core/src/git_reader/libgit2.rs:L46`,
+  (`crates/ka-reader-core/tests/root_finding.rs:L175`, `:L185`, `:L196`). The adapter answers a `.git`
+  regular file through `probe_git_file` (`crates/ka-reader-core/src/git_reader/libgit2.rs:L46`,
   `:L58`), and CI runs the target under `cargo test --workspace --locked`
   (`.github/workflows/ci.yml:L26`). The missing-directory case does not hold the whole read bound.
   It goes red for a `probe` whose attempt to follow the pointer changes the answer. A `probe` that
   tries the pointer, swallows the failed open and still answers `Root` passes it, because the case
   asserts only the answer, that the answer holds no path, and that the scene is unchanged
-  (`crates/nozoki-core/tests/root_finding.rs:L24-L37`, `:L65-L68`), and a swallowed open changes
+  (`crates/ka-reader-core/tests/root_finding.rs:L24-L37`, `:L65-L68`), and a swallowed open changes
   none of the three. No command can see the attempt. Seeing it would take a trace of every open
   `probe` makes, and this target has none. That half of the bound is held by QC-15's review at
   `development-design`, which judges which read the adapter makes inside its owner file
   *(through v33 this tail said none of the three was written at
-  `nozoki@8edec4f`, where the `linked-worktree` and `submodule` cases asserted an unchanged scene
+  `ka-reader@8edec4f`, where the `linked-worktree` and `submodule` cases asserted an unchanged scene
   and no outcome and the adapter answered a `.git` file with a provisional condition, and that all
-  three would go red until the change replacing that arm landed. It landed at `nozoki@48308ff`.
+  three would go red until the change replacing that arm landed. It landed at `ka-reader@48308ff`.
   Drafted at v34 and confirmed at `docs/trail/architecture/cycle-32.md` § 2.1 — RN-45, RN-46)*
   *(traces to: ADR-0018; QC-15; SRS FR-33, FR-34, AC-24, AC-25; FDR R-15, R-21, R-101; SDD § 11 R-3;
   the `.git`-file answer, the read bound and the three cases on the owner's seat's answer at
@@ -300,7 +300,7 @@ new units while they were unbuilt.
   and a version change re-measures both at the lockfile review (QC-26; ADR-0023, *Decision*, last
   bullet). A libgit2 that looked up more paths would leave a section naming an extra one
   unchecked. `test_looked_up_kinds_the_measurement_found_are_refused`
-  (`crates/nozoki-core/tests/git_state.rs:L3017`) would see an opener for the one kind it runs, a
+  (`crates/ka-reader-core/tests/git_state.rs:L3017`) would see an opener for the one kind it runs, a
   working-tree folder holding `.git` with no gitlink, and no case watches any other *(through v44
   this passage closed on "**Still uncovered, and named:** a `.gitmodules` section's path and the
   submodule map — their refusals are stated and not built, which SDD § 11 R-16 calls a known
@@ -310,7 +310,7 @@ new units while they were unbuilt.
   `.gitmodules` case alone, settled before `see-git-status` is reached", and held that bound by
   review of the change after which `see-git-status`'s *Reached when* is claimed whole, "where a
   case's fixture and its case are missing at that review, the slice is not reached". Both
-  refusals are built at `nozoki@772c63b`, SDD v46 removed the item, and the fourth case and its
+  refusals are built at `ka-reader@772c63b`, SDD v46 removed the item, and the fourth case and its
   fixture are in the tree — RN-56)*. The adapter's walk is a second implementation
   of this check's rule — `git-reader` may not import `fs-reader` (QC-11) — and whether the two walks
   agree has not been compared, which SDD RN-99 records as its own finding (SDD § 3 `git-reader`;
@@ -322,31 +322,31 @@ new units while they were unbuilt.
   alternates and `.gitmodules` cases", and said "The config check runs before libgit2 opens
   anything" — RN-55; through v41 this sentence named three keys "which libgit2 follows with no containment check",
   with the sandbox as the only bound in the bundle, from SDD v32 — RN-51; through v39 the bound
-  read "no later than the build in which `mac-shell` first calls `nozoki_read_git`", from SDD
+  read "no later than the build in which `mac-shell` first calls `ka_reader_read_git`", from SDD
   v31 — RN-49; through v37 this pointer read "*Open Questions*' last item", which stopped naming
   this item at SDD v29).
   — *verified by:* unit tests on the check (layer 1, beside the module —
-  `crates/nozoki-core/src/fs_reader.rs` `mod tests`): `..` leaving the grant and a symlink out end
+  `crates/ka-reader-core/src/fs_reader.rs` `mod tests`): `..` leaving the grant and a symlink out end
   `Outside`; the four spellings the definition turns on — three fixed by `docs/fdr.md`'s example
   rows (`:L357-L358`), the fourth by R-184's second clause: the re-entry on the folder's own name
-  in another letter case, in both forms the rows fix — `self → ../NOZOKI`, ending `Cycle`
-  (R-152), and `up → ../NOZOKI/docs`, resolving inside and read as its target (R-34, R-151); the
-  multi-level return (`far → ../../projects/NOZOKI/docs`) ending `Outside`; the volume root
+  in another letter case, in both forms the rows fix — `self → ../KA-READER`, ending `Cycle`
+  (R-152), and `up → ../KA-READER/docs`, resolving inside and read as its target (R-34, R-151); the
+  multi-level return (`far → ../../projects/KA-READER/docs`) ending `Outside`; the volume root
   (`back → ../Work/notes.txt` under `/Volumes/Work`) ending `Outside`; and a Unicode-normalization
   difference ending `Outside`, which no example row exercises and which rests on R-184's second
-  clause and SDD § 11 R-10 alone. None of the four is written at `nozoki@368f127` (`mod tests`
+  clause and SDD § 11 R-10 alone. None of the four is written at `ka-reader@368f127` (`mod tests`
   holds the `..` and symlink cases, `:L412-L578`), and two go red when they are, until the change
   that builds the check as defined lands: the re-entry, in either form — the walk keeps one
   lexical position and at a position outside the grant moves it by name and touches nothing
-  (`:L170-L177` states it, `:L211-L215` does it), so `../NOZOKI` ends `Outside` (measured at
-  `docs/trail/sdd/cycle-15.md` § 5.1 on `nozoki@46bb275`; `git diff --stat 46bb275 368f127 --
+  (`:L170-L177` states it, `:L211-L215` does it), so `../KA-READER` ends `Outside` (measured at
+  `docs/trail/sdd/cycle-15.md` § 5.1 on `ka-reader@46bb275`; `git diff --stat 46bb275 368f127 --
   crates` prints nothing) — and the volume root, read from the code and not run: `..` pops the
   root to its parent (`:L201-L203`), `Work` re-enters lexically to a position equal to the root
   (`:L211-L215`), and `notes.txt` is then `lstat`ed from inside (`:L217`), so the walk reads what
   the definition refuses. That nothing is read at a position outside the grant
-  is QC-35's, at layer 5, not a claim of these unit tests. `cargo test --locked -p nozoki-core
+  is QC-35's, at layer 5, not a claim of these unit tests. `cargo test --locked -p ka-reader-core
   --test markdown` — the `..` and symlink-out fixtures yield a placeholder node — and `cargo test
-  --locked -p nozoki-bridge --test asset_bytes` — `asset_bytes` refuses them, tested in the bridge's
+  --locked -p ka-reader-bridge --test asset_bytes` — `asset_bytes` refuses them, tested in the bridge's
   crate where § 3 places the function (SDD § 6 S-3 at v14, RN-64) (layer 2). What `git-reader`'s
   check holds is QC-35's to verify *(traces to: ADR-0015; ADR-0023, which superseded ADR-0022 at
   v45 — RN-56;
@@ -370,35 +370,35 @@ new units while they were unbuilt.
 ### 1.2 Forbidden imports
 
 One graph, both halves stated. "May import" is the whole allowed set; "must not import" is stated
-explicitly and never inferred. A module of `nozoki-core` that is no part is QC-63's, and importing
+explicitly and never inferred. A module of `ka-reader-core` that is no part is QC-63's, and importing
 one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 — RN-41)*.
 
-- **QC-8:** `nozoki-mac` may import AppKit and Foundation — the platform's own — and its own
-  modules, and it links `libnozoki_bridge.a` through the generated header. It **must not** declare
+- **QC-8:** `ka-reader-mac` may import AppKit and Foundation — the platform's own — and its own
+  modules, and it links `libka_reader_bridge.a` through the generated header. It **must not** declare
   a package dependency (`Package.swift` declares none; no `Package.resolved` exists), **must not
   import** `WebKit` or `JavaScriptCore`, and `surfaces` **must not** reach the bridge — a surface
   hands `mac-shell` an intent and never calls `SM-4`.
-  — *verified by:* `checks/view.sh` (layer 6): the forbidden-symbol scan over `nozoki-mac/Sources`
+  — *verified by:* `checks/view.sh` (layer 6): the forbidden-symbol scan over `ka-reader-mac/Sources`
   and `otool -L` on the built executable naming neither `WebKit` nor `JavaScriptCore`;
   `checks/no-network.sh` — no Swift dependency, no `Package.resolved`; `swift test --package-path
-  nozoki-mac` — the shell issues no call `SM-4` does not name (SDD § 6 S-1) *(traces to:
+  ka-reader-mac` — the shell issues no call `SM-4` does not name (SDD § 6 S-1) *(traces to:
   ADR-0021; ADR-0014; ADR-0020; SDD § 3 `mac-shell` and `surfaces` "Must not own", SM-8; § 4 C-R6, C-R7;
   re-derived at v11 — RN-22)*
-- **QC-9:** `nozoki-core` **must not import** any Apple framework or a binding to one, any crate
+- **QC-9:** `ka-reader-core` **must not import** any Apple framework or a binding to one, any crate
   outside `checks/deps.allow`, or `std::process`, and **holds no `unsafe`** — the workspace forbids
-  it, and only `nozoki-bridge`'s manifest relaxes it. *No `unsafe`* is said of each crate's own
-  Rust source. The C that `nozoki-core` links — the grammar engine's runtime and six grammars
+  it, and only `ka-reader-bridge`'s manifest relaxes it. *No `unsafe`* is said of each crate's own
+  Rust source. The C that `ka-reader-core` links — the grammar engine's runtime and six grammars
   today (SDD § 3 `highlighter`), and libgit2, which `git-reader` links — is compiled in beside
   that source and is outside the claim, so this entry does not say the unit runs only
   memory-safe code. A fault in that C is bounded by the sandbox (QC-25), which this entry does
   not replace (SDD § 11 R-14).
   — *verified by:* `checks/no-network.sh`; `checks/structure.sh` (layer 6) — the imports, and
-  `unsafe` appearing in no crate but `nozoki-bridge`; `cargo build --workspace --locked` under
+  `unsafe` appearing in no crate but `ka-reader-bridge`; `cargo build --workspace --locked` under
   `[workspace.lints.rust] unsafe_code = "forbid"`, a build failure on an `unsafe` block in any
   crate whose manifest does not relax it *(traces to: ADR-0021; ADR-0020; ADR-0017; SDD § 3, the units paragraph; § 4 C-R6; `Cargo.toml`
   `[workspace.lints.rust]`; re-derived at v11 — RN-22; the limit from SDD § 3's units paragraph
   and § 11 R-14 as they read at v23 — RN-34; libgit2 stated as linked, which it has been since
-  `nozoki@126ef75` (`crates/nozoki-core/Cargo.toml:L9`) — RN-43)*
+  `ka-reader@126ef75` (`crates/ka-reader-core/Cargo.toml:L9`) — RN-43)*
 - **QC-10:** `folder-model` may import `fs-reader`, the Git port trait and the plain-data types
   that cross SM-2 beside it, `watcher`,
   `markdown-renderer` and `highlighter` — the last two to fill the open `FileView`: the model
@@ -415,7 +415,7 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   `folder-model` "Owns" and "Must not own" as they read at v14, and the units paragraph's edge
   sentence (SDD RN-64); the reading answered in the owner's seat at
   `docs/trail/architecture/cycle-9.md` § 1.1 and confirmed on the SDD's companion at
-  `nozoki@705d306` (its reasoning, `docs/trail/sdd/self_answer-22.md` § 2.4); `arch_defaults.md`
+  `ka-reader@705d306` (its reasoning, `docs/trail/sdd/self_answer-22.md` § 2.4); `arch_defaults.md`
   § Dependency Graph Rules; transcribed at v12 — RN-23)*
 - **QC-11:** `fs-reader`, `git-reader`, `watcher`, `highlighter` and `markdown-renderer` **must not
   import** `folder-model`, `own-state`, or one another — with two stated edges: `markdown-renderer`
@@ -426,23 +426,23 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   lists QC-11's clauses whose subject is `git-reader`, `watcher` or `markdown-renderer` as not held
   (`checks/structure.sh:L270`). **The libgit2-binding clause is held across the whole shipped
   scope of every crate**: the header's QC-11 *libgit2 binding* row (`:L130-L142`, the exempting
-  `case` at `:L1186`), on `main` since `nozoki@fc14574`, exempts every file of the `git_reader`
-  unit and `crates/nozoki-bridge/src/machine_config.rs`, and at `nozoki@076eac2` the script exits 0
+  `case` at `:L1186`), on `main` since `ka-reader@fc14574`, exempts every file of the `git_reader`
+  unit and `crates/ka-reader-bridge/src/machine_config.rs`, and at `ka-reader@076eac2` the script exits 0
   printing "16 Rust files in 2 crates read — nothing found". The script exempts a file and reads a
   scope, and the exception is a call and its test, so two parts of the exception's bound stay
   review at `development-design`: (1) inside `machine_config.rs` the binding is allowed for the
   switch alone, and the script exempts the whole file, which also holds the adapter's constructor
-  (`crates/nozoki-bridge/src/machine_config.rs:L138-L139`); (2) under `crates/nozoki-bridge/tests/`
+  (`crates/ka-reader-bridge/src/machine_config.rs:L138-L139`); (2) under `crates/ka-reader-bridge/tests/`
   the binding is allowed in the switch's own test alone, and the script reads `tests/` for the
   layer-5 rule only (`checks/structure.sh:L41-L42`), so a second bridge test that names `git2`
-  draws no finding. At `nozoki@076eac2` the bridge files that name `git2` are `machine_config.rs`,
-  `tests/search_path.rs` and the manifest (`grep -rln git2 crates/nozoki-bridge`), which is the
+  draws no finding. At `ka-reader@076eac2` the bridge files that name `git2` are `machine_config.rs`,
+  `tests/search_path.rs` and the manifest (`grep -rln git2 crates/ka-reader-bridge`), which is the
   exception's bound exactly *(through v41 this tail said the script did not hold the import rule
-  outside the three units' files it read (`checks/structure.sh:L257-L258` at `nozoki@392177d`),
+  outside the three units' files it read (`checks/structure.sh:L257-L258` at `ka-reader@392177d`),
   so the whole bound stayed review until a change added it; that change landed at
-  `nozoki@a611cf1` and merged at `nozoki@fc14574`. On the owner's seat's answer at
+  `ka-reader@a611cf1` and merged at `ka-reader@fc14574`. On the owner's seat's answer at
   `docs/trail/architecture/cycle-36.md` § 3.1 — RN-53)* *(drafted at v38 — RN-49; confirmed in the
-  owner's seat at `docs/trail/architecture/cycle-35.md` § 2.1 — RN-50; through v37 this tail pinned the script at `:L249-L250` at `nozoki@8edec4f` and named
+  owner's seat at `docs/trail/architecture/cycle-35.md` § 2.1 — RN-50; through v37 this tail pinned the script at `:L249-L250` at `ka-reader@8edec4f` and named
   changing it for the exception as the design of the change that builds the switch, SDD
   RN-87)* *(traces to: ADR-0019; ADR-0015;
   ADR-0020; SDD § 3, the units paragraph at v27 — the exception, RN-87; SDD § 3, the units paragraph's stated edges as it reads at v14 — the two into `fs-reader` and
@@ -457,21 +457,21 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   `docs/trail/architecture/cycle-29.md` § 3.2 — RN-43; through v31 this read "unlike SM-2's
   port") — so a type that crosses SM-1 is defined where `fs-reader` may import it and never in
   `folder-model`; `OpenFailure`, defined at
-  `crates/nozoki-core/src/folder_model.rs:L38` and imported at `fs_reader.rs:L14` at
-  `nozoki@803b599`, is the one type that does not, and moves to `fs-reader` by a
-  behaviour-preserving change that keeps `nozoki_core::OpenFailure`; `checks/structure.sh` holds
+  `crates/ka-reader-core/src/folder_model.rs:L38` and imported at `fs_reader.rs:L14` at
+  `ka-reader@803b599`, is the one type that does not, and moves to `fs-reader` by a
+  behaviour-preserving change that keeps `ka_reader_core::OpenFailure`; `checks/structure.sh` holds
   the `fs-reader` → `folder-model` clause from that change, and until it the clause's gate is
   `development-design` — RN-40)*
-- **QC-63:** A module of `nozoki-core` that is no SDD part is a **value module**: it holds types
+- **QC-63:** A module of `ka-reader-core` that is no SDD part is a **value module**: it holds types
   and values only — shared between parts, or exposed through the crate's public surface — holds no
   I/O (QC-15), and **imports no part**. Any part may import a value module, and that import is not
   an edge of this graph: QC-10's and QC-11's sets neither name it nor need to. A module that would
   have to import a part to hold its type is not a value module; the type moves into a part, under
   QC-10 and QC-11, so no forbidden edge can route through a module the graph does not see.
   `lib.rs` is the crate's re-export surface: it declares the modules and re-exports from them,
-  holds no implementation, and is neither a part nor a value module. At `nozoki@803b599` the
+  holds no implementation, and is neither a part nor a value module. At `ka-reader@803b599` the
   value modules are `language` and `error`, and neither imports a part.
-  — *verified by:* `checks/structure.sh` (layer 6): a file of `nozoki-core` that belongs to no
+  — *verified by:* `checks/structure.sh` (layer 6): a file of `ka-reader-core` that belongs to no
   unit, `lib.rs` aside, and imports a unit is a finding — a rule this document adds to the script
   (RN-40); until the change that adds it, its gate is `development-design` reading this entry, by
   the header's rule. The no-I/O half is QC-15's scan, which already reads every Rust I/O primitive
@@ -497,19 +497,19 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   or `markdown-renderer`; it reads and writes only inside the app's container.
   — *verified by:* `checks/structure.sh` (layer 6); `checks/own-state.sh` (layer 5) *(traces to:
   ADR-0020; SDD § 3 `own-state`; § 4 C-D2)*
-- **QC-13:** `nozoki-bridge` may import `nozoki-core`, the standard library and the crates
-  `checks/deps.allow` names — the whole allowed set, in the form QC-9 bounds `nozoki-core` with,
+- **QC-13:** `ka-reader-bridge` may import `ka-reader-core`, the standard library and the crates
+  `checks/deps.allow` names — the whole allowed set, in the form QC-9 bounds `ka-reader-core` with,
   and never a hand-kept list of names, which goes false at the bridge's next reviewed dependency.
   It **must not
   import** any Apple framework or `std::fs` outside its log writer, and holds no read logic: every
   exported function decodes its arguments, calls `folder-model`, and returns plain data as an
-  owned buffer freed by `nozoki_free`. Beside the exported functions it runs process setup before
+  owned buffer freed by `ka_reader_free`. Beside the exported functions it runs process setup before
   first use — the log writer's install and libgit2's config search-path switch (QC-17) — and that
   setup is no read logic. It is the one unit that holds `unsafe`, relaxed in its own
   manifest with the reason recorded; every function catches a panic at the boundary and returns a
   failure value; the header is generated from its source and never hand-edited.
   — *verified by:* `checks/structure.sh` (layer 6) for the imports; `cargo test --locked -p
-  nozoki-bridge --test exports` — the header declares what the library exports and nothing else
+  ka-reader-bridge --test exports` — the header declares what the library exports and nothing else
   (QC-24); the bridge's tests under `-Zsanitizer=address` in CI on every build (layer 2); review at
   `development-design` for the delegation rule — what counts as logic is not greppable, and the
   import rule is the part that is; the allowlist admits a crate to the workspace and not to a
@@ -520,11 +520,11 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   SM-4; § 4 C-I2; § 11 R-13; `arch_defaults.md` § Application Layer; re-derived at v11 —
   RN-22; the *may import* set answered in the owner's seat at
   `docs/trail/architecture/cycle-10.md` § 3.1 — RN-24)*
-- **QC-14:** `checks/` may import `nozoki-core` and is **never a dependency of any shipped
-  unit** — the `nozoki-core` library, the `nozoki-bridge` static library or the `nozoki-mac`
+- **QC-14:** `checks/` may import `ka-reader-core` and is **never a dependency of any shipped
+  unit** — the `ka-reader-core` library, the `ka-reader-bridge` static library or the `ka-reader-mac`
   executable, each as it ships, and never a test target declared in one of their manifests — and
   never ships in the bundle.
-  — *verified by:* `cargo tree -p nozoki-bridge` names no `checks` crate; `checks/structure.sh`
+  — *verified by:* `cargo tree -p ka-reader-bridge` names no `checks` crate; `checks/structure.sh`
   (layer 6); `checks/bundle.sh` — nothing of `checks/` under `Contents/` (layer 5) *(traces to:
   ADR-0010; ADR-0020; SDD § 3 `read-only-harness` "Must not own"; the shipped-unit qualifier
   restored at v25 from those two sources, answered at `docs/trail/architecture/cycle-22.md`
@@ -553,13 +553,13 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   locate its Git directory and its common directory, its config check and its alternates check —
   never a path past the folder and never a link followed out of it); change
   notifications are `watcher`'s
-  (FSEvents); the diagnostic log writer is `nozoki-bridge`'s; the Open panel and the one window
-  are `mac-shell`'s, in `nozoki-mac`; drawing is `surfaces`', in `nozoki-mac`, which holds no I/O
+  (FSEvents); the diagnostic log writer is `ka-reader-bridge`'s; the Open panel and the one window
+  are `mac-shell`'s, in `ka-reader-mac`; drawing is `surfaces`', in `ka-reader-mac`, which holds no I/O
   of its own; **no unit owns a socket and no unit spawns a process.**
   — *verified by:* `checks/structure.sh` (layer 6): each Rust I/O primitive appears only in its
   owner. Its filesystem clause exempts three owner files by exact path: `fs_reader.rs`,
-  `log_writer.rs` and `git-reader`'s adapter, `crates/nozoki-core/src/git_reader/libgit2.rs`
-  (`checks/structure.sh:L77-L80`, the exempting `case` at `:L1161`, at `nozoki@48308ff`). The
+  `log_writer.rs` and `git-reader`'s adapter, `crates/ka-reader-core/src/git_reader/libgit2.rs`
+  (`checks/structure.sh:L77-L80`, the exempting `case` at `:L1161`, at `ka-reader@48308ff`). The
   adapter may name `std::fs`, and a `std::fs` read anywhere else in `git-reader` is a finding. The
   suite holds the exemption to the exact path. `test_exemption_is_exact_for_the_adapter_name`
   plants a `std::fs` write under the adapter's file name at six other paths and requires a QC-15
@@ -571,33 +571,33 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   which read the adapter makes inside its owner file: the script admits every filesystem form
   there, so it cannot tell a read inside the folder from one past it. The second is `git-reader`'s
   `Path`-method reads, which is how the adapter reads the folder, the `.git` entry and each
-  position along a spelled path (`crates/nozoki-core/src/git_reader/libgit2.rs:L54`, `:L58`,
-  `:L103`, `:L163`, `:L513`, at `nozoki@6a0725c`; the `.git` file's open is at `:L439` and its
-  handle's `metadata()` at `:L446`) *(through v36 these locators were pinned at `nozoki@48308ff`,
+  position along a spelled path (`crates/ka-reader-core/src/git_reader/libgit2.rs:L54`, `:L58`,
+  `:L103`, `:L163`, `:L513`, at `ka-reader@6a0725c`; the `.git` file's open is at `:L439` and its
+  handle's `metadata()` at `:L446`) *(through v36 these locators were pinned at `ka-reader@48308ff`,
   as `:L38`, `:L42`, `:L136`, `:L62` and `:L69`, before `state()` and the walk landed — RN-48)*.
   For those two parts only, the bound is review
   at `development-design`, which judges each against the clause above *(through v33 this tail
-  exempted two owner files at `nozoki@8edec4f`, named QC-15's other owners as not held, and held
+  exempted two owner files at `ka-reader@8edec4f`, named QC-15's other owners as not held, and held
   the adapter's file as a rule still to come, with review as the whole bound until it came. The
-  change that adds it merged at `nozoki@48308ff`. On the owner's seat's answer at
+  change that adds it merged at `ka-reader@48308ff`. On the owner's seat's answer at
   `docs/trail/architecture/cycle-31.md` § 3.1 — RN-45)*. Every read the list names is the
-  adapter's, in its owner file — `check_config` (`crates/nozoki-core/src/git_reader/libgit2.rs:L191`),
-  `follow` (`:L252`) and `verify_submodules` (`:L285`), at `nozoki@076eac2`; and `check_alternates`
-  (`:L303`, at `nozoki@66f428d`), which reads each alternates file through `read_alternates`
+  adapter's, in its owner file — `check_config` (`crates/ka-reader-core/src/git_reader/libgit2.rs:L191`),
+  `follow` (`:L252`) and `verify_submodules` (`:L285`), at `ka-reader@076eac2`; and `check_alternates`
+  (`:L303`, at `ka-reader@66f428d`), which reads each alternates file through `read_alternates`
   (`:L366`) and each position through the walk's `inspect_on_disk` (`:L517`) — and the scanners
   those checks parse with read nothing: `config_scan.rs`'s `scan` takes bytes
-  (`crates/nozoki-core/src/git_reader/config_scan.rs:L66`), and so does `alternates_scan::scan`
-  (`crates/nozoki-core/src/git_reader/alternates_scan.rs:L28`, at `nozoki@66f428d`), where `grep -nE
+  (`crates/ka-reader-core/src/git_reader/config_scan.rs:L66`), and so does `alternates_scan::scan`
+  (`crates/ka-reader-core/src/git_reader/alternates_scan.rs:L28`, at `ka-reader@66f428d`), where `grep -nE
   'std::fs|File::|read_to|OpenOptions|read_link|metadata'` prints nothing *(the config,
   `.gitmodules` and submodule reads, and the walk along each value, on the owner's seat's answer
   at `docs/trail/architecture/cycle-36.md` § 3.2; `.gitmodules` named once SDD v42's `git-reader`
   row owns it, SDD RN-102 — RN-53; the alternates check's reads, from SDD v43's `git-reader` row
   (SDD RN-103), on the owner's seat's answer at `docs/trail/architecture/cycle-38.md` § 3.1 —
   RN-55; through v43 this tail read "The alternates read is owned by SDD § 3's `git-reader` row and
-  is not built (`grep -rl alternates checks crates nozoki-mac/Sources` prints nothing at
-  `nozoki@076eac2`), so the list does not name it until it occurs: the change that builds it owes
+  is not built (`grep -rl alternates checks crates ka-reader-mac/Sources` prints nothing at
+  `ka-reader@076eac2`), so the list does not name it until it occurs: the change that builds it owes
   this list that read, through review at `development-design`" — RN-55)*. `checks/view.sh` (layer 6): no I/O
-  primitive in `nozoki-mac/Sources` at all *(traces to: ADR-0021; ADR-0020; ADR-0018; ADR-0023,
+  primitive in `ka-reader-mac/Sources` at all *(traces to: ADR-0021; ADR-0020; ADR-0018; ADR-0023,
   which superseded ADR-0022 at v45, the list unchanged — RN-56;
   SDD § 3 parts table, and the `git-reader` row's *Must not own*, "A file outside Git's
   own on-disk layout", with its three exceptions as it reads at v42 (SDD RN-99, RN-100, RN-102); § 4
@@ -605,50 +605,50 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   `docs/trail/architecture/cycle-29.md` § 3.3 — RN-43; the three owner files, the suite's two
   cases and the narrowed gate on the owner's seat's answer at
   `docs/trail/architecture/cycle-31.md` § 3.1 — RN-45; the walk's reads and the `commondir` read
-  named in the list, and the `Path`-method locators re-pinned at `nozoki@6a0725c`, on the owner's
+  named in the list, and the `Path`-method locators re-pinned at `ka-reader@6a0725c`, on the owner's
   seat's answer at `docs/trail/architecture/cycle-33.md` § 3.1 — RN-48; the config, `.gitmodules`
   and submodule reads named in the list, on the owner's seat's answer at
   `docs/trail/architecture/cycle-36.md` § 3.2 — RN-53; the alternates check's reads named in the
   list, from SDD v43's `git-reader` row (SDD RN-103), on the owner's seat's answer at
   `docs/trail/architecture/cycle-38.md` § 3.1 — RN-55)*
 - **QC-16:** The only writes the product performs are `own-state`'s and the bridge's diagnostic
-  log, both inside `~/Library/Containers/com.kensaiapp.nozoki/`.
+  log, both inside `~/Library/Containers/com.kensaiapp.ka-reader/`.
   — *verified by:* `checks/own-state.sh` — after a session every changed file under `$HOME` is
   under the container and none under the fixture (layer 5) *(traces to: SDD § 4 C-D2, C-I2; SRS
   FR-21, AC-13; ADR-0021; ADR-0020 — the trace its § Binds names, added at v12 against ADR-0016 — RN-23 — and carried to ADR-0020 at v33, RN-44)*
 - **QC-17:** Two composition roots, one per language, and each is the single place its runtime is
-  touched: `nozoki-bridge` is the Rust-side root — the only place the libgit2 adapter is wired to
+  touched: `ka-reader-bridge` is the Rust-side root — the only place the libgit2 adapter is wired to
   the Git port, the only place the log writer is installed, and the only place libgit2's four
   machine-level config search paths — system, global, XDG and programdata — are set to empty. That
   is four `git2::opts::set_search_path` calls, run once per process, before the adapter is wired and
   before any thread can reach libgit2, and failing closed: if any of the four fails, the adapter is
   not wired and the Git item is `failed`, so no repository is opened with those reads on.
-  `mac-shell` in `nozoki-mac` is the
+  `mac-shell` in `ka-reader-mac` is the
   app's root — the only place `NSApplication` and the one window are created and the only place
   `SM-4` is called.
   — *verified by:* `checks/structure.sh` (layer 6): the adapter's constructor and `log::set_logger`
-  / `log::set_boxed_logger` appear only under `crates/nozoki-bridge/src/`; `checks/view.sh`
-  (layer 6): a `nozoki_` symbol the header declares is called from `mac-shell`'s sources and from
+  / `log::set_boxed_logger` appear only under `crates/ka-reader-bridge/src/`; `checks/view.sh`
+  (layer 6): a `ka_reader_` symbol the header declares is called from `mac-shell`'s sources and from
   no file of `surfaces` — a rule this document adds to the script (RN-22); `cargo test --locked -p
-  nozoki-bridge`, which CI runs on every push inside `cargo test --workspace --locked`
-  (`.github/workflows/ci.yml:L26`). The switch is `crates/nozoki-bridge/src/machine_config.rs`,
-  landed at `nozoki@392177d`, and the suite holds its three promises. The four empty paths:
-  `test_the_switch_against_the_real_libgit2` (`crates/nozoki-bridge/tests/search_path.rs:L36`),
+  ka-reader-bridge`, which CI runs on every push inside `cargo test --workspace --locked`
+  (`.github/workflows/ci.yml:L26`). The switch is `crates/ka-reader-bridge/src/machine_config.rs`,
+  landed at `ka-reader@392177d`, and the suite holds its three promises. The four empty paths:
+  `test_the_switch_against_the_real_libgit2` (`crates/ka-reader-bridge/tests/search_path.rs:L36`),
   whose first arrival is a production session's open, after which it reads each of the four
   levels' search paths back empty with `git2::opts::get_search_path` (`:L47-L55`). Failing closed
   and once per process: `machine_config.rs`'s `mod tests` — any one of the four erring is `Failed`
   (`:L213`), no retry after `Failed` (`:L249`), and concurrent first arrivals set four paths in
   total (`:L262`) — and `session.rs`'s erring-setter cases, in which the Git item answers that the
-  config was not switched off (`:L1798` at `nozoki@076eac2`) and stays so after a second folder
+  config was not switched off (`:L1798` at `ka-reader@076eac2`) and stays so after a second folder
   opens (`:L1809`) *(through v41 these read `:L1729` and `:L1740` with no commit, true at
-  `nozoki@e89b5b6`; the file grew above both cases after that commit — RN-53)*. The
+  `ka-reader@e89b5b6`; the file grew above both cases after that commit — RN-53)*. The
   read-back proves four empty paths and observes no read: the step from an empty path to no file
   touched is `libgit2/src/libgit2/sysdir.c:L559-L560` in the registry copy of
   `libgit2-sys 0.18.8+1.9.7`, read and not run. A bridge that wires the adapter with no switch run
   before it, or with no test of the switch, violates this entry *(through v37 this tail said the
-  switch and its test were not in the tree at `nozoki@8edec4f`, and that the gate was
+  switch and its test were not in the tree at `ka-reader@8edec4f`, and that the gate was
   `development-design` until the change that wires the adapter in the bridge; that change landed at
-  `nozoki@392177d` — RN-49)*. A libgit2 release that adds a fifth
+  `ka-reader@392177d` — RN-49)*. A libgit2 release that adds a fifth
   level is not caught by a test naming four, and the lockfile change reviewed as code (QC-26) is
   the only gate for it *(traces to: ADR-0014; ADR-0020; SDD § 3 `core-bridge`
   as it reads at v27, `mac-shell`, SM-8; § 4 C-I3 at v27 — the bridge test and what it does not
@@ -660,7 +660,7 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
 ### 1.4 Replaceability
 
 - **QC-18:** Swapping the Git mechanism — libgit2 for the installed `git` run with
-  `--no-optional-locks` — touches `git-reader` (the adapter) and `nozoki-bridge`'s wiring only; the
+  `--no-optional-locks` — touches `git-reader` (the adapter) and `ka-reader-bridge`'s wiring only; the
   port, the model and the surfaces do not change.
   — *verified by:* review at `development-design` when a change touches `git-reader`; the port's
   contract tests (QC-50) pass unchanged against the new adapter *(traces to: FDR PD-29; SRS § 5.3;
@@ -670,8 +670,8 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   `own-state`'s bookmarks, `mac-shell`'s launch-time restore and the shell chrome only — the tree,
   the Git view and the reading panel
   do not change.
-  — *verified by:* `cargo test --locked -p nozoki-core --test switch` (layer 3);
-  `git diff --stat <first-public-release tag>..HEAD -- nozoki-mac` lists only files of the selector
+  — *verified by:* `cargo test --locked -p ka-reader-core --test switch` (layer 3);
+  `git diff --stat <first-public-release tag>..HEAD -- ka-reader-mac` lists only files of the selector
   and of `mac-shell`'s launch-time restore, and no file of the tree, the Git view or the reading
   panel, on the change that adds the selector (the change) *(traces to: SRS NFR-12, FR-19; FDR
   PD-29; SDD § 3 `folder-model`, § 6 S-10 as it reads at v13; re-derived at v11 — RN-22)*
@@ -712,18 +712,18 @@ reviewed tag.
   folder*, the in-folder SVG a placeholder carrying *a format not decoded*; the external link is an
   *external* node with its destination readable; the relative link is a *relative* node with its
   target path; and no node carries markup or a URL.
-  — *verified by:* `cargo test --locked -p nozoki-core --test markdown` over `checks/fixtures/hostile.md`
+  — *verified by:* `cargo test --locked -p ka-reader-core --test markdown` over `checks/fixtures/hostile.md`
   (layer 2) *(traces to: SRS NFR-16, FR-32, AC-23; SDD § 3 `markdown-renderer` and the
   `MarkdownDocument` entity; § 4 C-D3; § 6 S-3, command half; § SDD Review Notes RN-8 — the SVG
   case; ADR-0015; re-derived at v11 —
   RN-22)*
-- **QC-23:** No web engine of any kind is in the product: `nozoki-mac` links neither `WebKit` nor
+- **QC-23:** No web engine of any kind is in the product: `ka-reader-mac` links neither `WebKit` nor
   `JavaScriptCore`; its sources hold no `WKWebView`, `WebView`, `JSContext`, or
   `NSAttributedString` initialised from HTML or with the `.html` document type; and no crate in the
   resolved tree is a web engine or a binding to one. There is no Content Security Policy to
   declare, because there is no engine to declare it to — the previous shape's CSP and its
   `<asset-scheme>` keying, which this entry carried through v10, are retired with it.
-  — *verified by:* `checks/view.sh` (layer 6): the forbidden-symbol scan over `nozoki-mac/Sources`
+  — *verified by:* `checks/view.sh` (layer 6): the forbidden-symbol scan over `ka-reader-mac/Sources`
   and `otool -L` on the built executable; `checks/no-network.sh` with QC-3's second half — an
   allowlist change that admits a web engine or a binding to one is refused at the same-change
   review, by name, under C-R1 (the tree; the change) *(traces to: SDD § 4 C-R1 — "no web engine of
@@ -732,16 +732,16 @@ reviewed tag.
   owner's seat at `docs/trail/architecture/cycle-5.md` § 3.2 — RN-18 — and is history; re-derived
   at v11 — RN-22)*
 - **QC-24:** A build exports to the shell exactly the functions its landed changes built — set
-  equality between the C symbols `libnozoki_bridge.a` exports (`nm -gU`, the `nozoki_` prefix) and
+  equality between the C symbols `libka_reader_bridge.a` exports (`nm -gU`, the `ka_reader_` prefix) and
   the functions the generated header declares — and that set is always inside the closed list
   `docs/SDD.md` § 3 `SM-4` names — `open_folder`, `list_tree`, `select_file`, `open_relative_link`,
   `read_git`, `set_theme`, `open_diff`, `walk_history`, `switch_folder`, `asset_bytes`, ten *(nine
-  through v37, without `read_git` — RN-49)* — and `nozoki_free`,
+  through v37, without `read_git` — RN-49)* — and `ka_reader_free`,
   the seam's one release call beside the list and not on it, exported from the first build on
   because every call's return is an owned buffer it alone frees. No listed function is exported
   before a landed change has built it — a change has built a function when the bridge function
   exists and delegates to an operation `folder-model`'s API carries (`SM-5`) — and from `v1.0.0`
-  the set is that list whole and `nozoki_free`. No
+  the set is that list whole and `ka_reader_free`. No
   second plumbing export — a registration call for `model_changed`, or any other — is admitted:
   one is raised on C-R7 and `SM-4` by the slice that needs it, and not before. The header is generated
   from the bridge's source and never hand-kept; the test reads the exported set and never a
@@ -749,18 +749,18 @@ reviewed tag.
   **Not covered before `v1.0.0`, and named so it is not read as coverage:** a change that stops
   exporting a function an earlier slice built passes this check, because the export and the
   header move together; until QC-59's pin exists, only that slice's own bar holds the function.
-  — *verified by:* `cargo test --locked -p nozoki-bridge --test exports` (layer 2), holding two
+  — *verified by:* `cargo test --locked -p ka-reader-bridge --test exports` (layer 2), holding two
   things: set equality between the exported symbols and the header's declarations, and that set
-  inside the list above and `nozoki_free`. From `v1.0.0` the whole list and `nozoki_free` are held
-  by QC-59's pin, which reads `SM-4`'s function list and `nozoki_free` as the bridge exports them
+  inside the list above and `ka_reader_free`. From `v1.0.0` the whole list and `ka_reader_free` are held
+  by QC-59's pin, which reads `SM-4`'s function list and `ka_reader_free` as the bridge exports them
   *(traces to: SDD § 3 SM-4 as it reads at v30 — the list of ten, `read_git` added (SDD § 10 RC-4,
   RN-90) — RN-49; § 4 C-R7 as it reads at v22 — the export staged by change and not by
   slice, and what *built* means, on the owner's seat's answer at
   `docs/trail/architecture/cycle-18.md` § 3.1 — RN-32;
   § 4 C-I6; § 11 R-12; § SDD Review Notes RN-47, RN-60, RN-66; ADR-0021 — RN-49, accepted over
-  ADR-0013 at v39 — RN-50; ADR-0020, whose units table names `nozoki_free` apart from the list; QC-59; the staged form answered in the owner's seat at
+  ADR-0013 at v39 — RN-50; ADR-0020, whose units table names `ka_reader_free` apart from the list; QC-59; the staged form answered in the owner's seat at
   `docs/trail/architecture/cycle-6.md` § 3.1 — RN-19 — carried from the capability file to the
-  export set at v11 — RN-22; `nozoki_free` beside the list confirmed with additions in the owner's
+  export set at v11 — RN-22; `ka_reader_free` beside the list confirmed with additions in the owner's
   seat at `docs/trail/architecture/cycle-10.md` § 2.1 — RN-24)*
 - **QC-25:** The bundle's entitlement set is bound by C-R2's rule, not held as a list. **No
   network entitlement of any kind** — neither `com.apple.security.network.client` nor
@@ -775,7 +775,7 @@ reviewed tag.
   sandboxed.
   — *verified by:* two halves, and the entry holds only with both. **(1) The set equals the recorded
   set, and the process is sandboxed:** `checks/bundle.sh` — `codesign -d --entitlements :-
-  Nozoki.app` equals the set the script expects (`nozoki@0aca57e:checks/bundle.sh:L132-L133`,
+  KA-Reader.app` equals the set the script expects (`ka-reader@0aca57e:checks/bundle.sh:L132-L133`,
   the range pinned to the commit it was read at — RN-25; the two v1 entitlements today), every
   value boolean true; an entitlement the bundle carries that the script
   does not expect fails the build, and a bundle that fails there is never launched. The script then
@@ -825,8 +825,8 @@ reviewed tag.
   observed **parked in the Open panel's modal run, inside the shell's launch frames** — the
   shell's first and only unconditional act, presenting the Open panel at launch (C-R3) and parked
   in it until someone answers; `open_folder` is not among those frames, because the shell calls it
-  only after the panel returns (`nozoki-mac/Sources/Shell/LaunchFlow.swift`, `chooseFolder()` and
-  `openAndList(_:through:)` — `:L54-L60` and `:L69` at `nozoki@7c7038f`) and the gate
+  only after the panel returns (`ka-reader-mac/Sources/Shell/LaunchFlow.swift`, `chooseFolder()` and
+  `openAndList(_:through:)` — `:L54-L60` and `:L69` at `ka-reader@7c7038f`) and the gate
   sends no input — within a bounded window, and the observation is the operating system's or the
   process's own report: never a marker the product writes for the check, never an environment
   variable, never a code path that exists for the gate. The gate's negative control —
@@ -837,31 +837,31 @@ reviewed tag.
   granting an entitlement or by skipping the script *(through v14 this entry read the observation
   as "inside `open_folder`'s call" — the page's act, not the native shell's — and carried the
   owner's cycle-8 rule that the gate is red by construction until the native shell lands, true of
-  the tree as written then; from `nozoki@153f5a1` that tree is gone and the rule is history, its
+  the tree as written then; from `ka-reader@153f5a1` that tree is gone and the rule is history, its
   never-cleared clause standing on C-I3's *Violated by* and ADR-0011; on the owner's seat's
   answers at `docs/trail/architecture/cycle-12.md` §§ 3.1, 3.2 — RN-26)*.
-  — *verified by:* `checks/renderer.sh Nozoki.app` and its `idle-shell` control (layer 5), in the
-  tree since `nozoki@153f5a1` and run on every CI build as `Renderer gate`
-  (`.github/workflows/ci.yml:L46-L47` at `nozoki@ab39502` — `:L43-L44` at `nozoki@153f5a1`, moved
+  — *verified by:* `checks/renderer.sh KA-Reader.app` and its `idle-shell` control (layer 5), in the
+  tree since `ka-reader@153f5a1` and run on every CI build as `Renderer gate`
+  (`.github/workflows/ci.yml:L46-L47` at `ka-reader@ab39502` — `:L43-L44` at `ka-reader@153f5a1`, moved
   when `View check suite` landed above it at `:L41-L42`), after `Bundle probe` (`:L31-L32`,
   unmoved) — the script fixes the mechanism it reads and the bound, and prints the bound the way
   `checks/bundle.sh` does; the
   frame list is the script's header's (`checks/renderer.sh`, header § *THE FRAMES* — the list at
-  `:L53-L56` at `nozoki@7c7038f`), cited and not copied here,
+  `:L53-L56` at `ka-reader@7c7038f`), cited and not copied here,
   the way C-I3 cites it, so the next re-measurement moves one file. The frames were re-measured
   on the first slice's first native bundle: on a Mac, recorded in the script's header
-  (`checks/renderer.sh`, header § *THE FRAMES* — `:L57-L60` at `nozoki@7c7038f`, macOS 26.6.2),
-  and on a GitHub-hosted runner — GitHub Actions run 35988399477 on `nozoki@37a962d`, image
+  (`checks/renderer.sh`, header § *THE FRAMES* — `:L57-L60` at `ka-reader@7c7038f`, macOS 26.6.2),
+  and on a GitHub-hosted runner — GitHub Actions run 35988399477 on `ka-reader@37a962d`, image
   `macos-14-arm64` 20260831.0302.1, macOS 14.8.9 — where the product matched the five-frame list
   the script carried at that commit on observation 1 and the control on none of 30, recorded in
-  the script's header from `nozoki@2b83dce` (`:L61-L64` at `nozoki@7c7038f`) and cited from there
-  as the Mac reading is. The list has held four frames since `nozoki@b75348f`, which removed
+  the script's header from `ka-reader@2b83dce` (`:L61-L64` at `ka-reader@7c7038f`) and cited from there
+  as the Mac reading is. The list has held four frames since `ka-reader@b75348f`, which removed
   `LaunchFlow.run()` from it; the four-frame list matched on the same runner image at run
-  36795836747 (`nozoki@702f7c4`), again on observation 1 with the control matched on none of 30
+  36795836747 (`ka-reader@702f7c4`), again on observation 1 with the control matched on none of 30
   (`docs/SDD.md` § 4 C-I3 at v22; SDD RN-76) *(the citations and the frame count re-pointed and
   pinned at v21 — RN-32)*
   *(through v16 cited from the run, the header not carrying the reading yet — true at
-  `nozoki@153f5a1`; this cite and the step's lines on the owner's seat's answers at
+  `ka-reader@153f5a1`; this cite and the step's lines on the owner's seat's answers at
   `docs/trail/architecture/cycle-14.md` §§ 3.4, 3.5 — RN-28)*. Not covered, and named so it is not
   read as coverage: a thread sample shows the shell in the panel's modal run, not that the panel
   is on screen — S-1's
@@ -879,7 +879,7 @@ reviewed tag.
   second runner reading re-pointed to C-I3 at v22, raised at `docs/trail/architecture/cycle-18.md`
   § 2.1 — RN-32)*
 - **QC-26:** Every dependency is deliberate: `Cargo.lock` is committed and CI builds with
-  `cargo build --locked`; `nozoki-mac/Package.swift` declares no dependency and no
+  `cargo build --locked`; `ka-reader-mac/Package.swift` declares no dependency and no
   `Package.resolved` exists — the view brings nothing to the tree; and a lockfile diff that adds a
   name outside `checks/deps.allow` fails the build until the allowlist change is reviewed as code
   in the same change.
@@ -901,14 +901,14 @@ reviewed tag.
   advisory a release carries is ignored by id, `--ignore <RUSTSEC-id>`, the ignore and its reason
   added in the change that adds it and reviewed as code the way `checks/deps.allow` is (QC-26);
   over the tree, as a release gate. The Swift package declares no dependency, so there is nothing
-  on that side to audit (SDD § 4 C-R6); `pnpm audit` left with `nozoki-ui` at `nozoki@0aca57e`
+  on that side to audit (SDD § 4 C-R6); `pnpm audit` left with `ka-reader-ui` at `ka-reader@0aca57e`
   (RN-22; RN-25) *(traces to:
   `quality_defaults.md` § Dependencies; SRS C-7,
   C-13; FDR PD-22; the commands are this document's realization — RN-3; the no-window call and the
   `cargo audit` gate confirmed at `docs/trail/architecture/cycle-1.md` § 1.1, § 2.7 — RN-11)*
 - **QC-28:** No secret is in the repository, and the release workflow holds no signing identity.
   — *verified by:* `gitleaks git` exits 0 over the repository — exit 1 on a leak or an error;
-  `gh secret list --repo kensaiapp/nozoki` prints no entry; `codesign -dv Nozoki.app` on the
+  `gh secret list --repo kensaiapp/ka-reader` prints no entry; `codesign -dv KA-Reader.app` on the
   downloaded bundle reports `Signature=adhoc` *(traces to: `quality_defaults.md` § Secrets; SDD § 4
   C-R4; ADR-0007; the scanner is this document's realization — RN-3; the command confirmed at
   `docs/trail/architecture/cycle-1.md` § 2.7 — RN-11)*
@@ -924,10 +924,10 @@ reviewed tag.
   shipped process reads, whichever crate holds the line that reads it — an adopter runs one
   process. It is held in two halves. **(1) The product's own units** — every member of the Cargo
   workspace, whose members are the glob `crates/*` (`Cargo.toml` `members`), so a crate created
-  there is a member with no manifest edit (`nozoki-core` and `nozoki-bridge` today), and
-  `nozoki-mac` — read no argument vector, no environment variable and no
+  there is a member with no manifest edit (`ka-reader-core` and `ka-reader-bridge` today), and
+  `ka-reader-mac` — read no argument vector, no environment variable and no
   configuration file, and open no socket. **(2) The linked dependency tree** — every environment or
-  argument read in the crates `cargo tree -p nozoki-bridge --target aarch64-apple-darwin -e normal
+  argument read in the crates `cargo tree -p ka-reader-bridge --target aarch64-apple-darwin -e normal
   --locked` resolves is a named member of the set: one line in `checks/entry-points.allow` per
   crate and name, each with
   what the read changes. A read not on the list fails the build until the list change is reviewed
@@ -942,7 +942,7 @@ reviewed tag.
   said libgit2 follows such a path with no containment check). **A C environment read in a linked crate is a read of half (2)** — a `getenv`, or a
   read of the process's environment array through `environ` or `_NSGetEnviron` — and is named on the
   list as a Rust read is *(drafted at v32 — RN-43; confirmed at v33, with the environment array
-  added — RN-44)*. At `nozoki@8edec4f`, and unchanged at `nozoki@2f15e2c`, two of the 37 crates the
+  added — RN-44)*. At `ka-reader@8edec4f`, and unchanged at `ka-reader@2f15e2c`, two of the 37 crates the
   command resolves carry `getenv` in C: `libgit2-sys`, in ten files, and `libz-sys`, in one; and one
   of them, `libgit2-sys`, reads `environ`, in one file. The reads a repository open reaches are
   libgit2's `APP_SANDBOX_CONTAINER_ID`,
@@ -965,7 +965,7 @@ reviewed tag.
   `std::env::var`, socket or config-file read in any workspace member's sources, the scope § 9's
   `checks/structure.sh` bullet states; `checks/view.sh`
   (layer 6): no `CommandLine.arguments`, `ProcessInfo.processInfo.arguments` or
-  `ProcessInfo.processInfo.environment` read in `nozoki-mac/Sources` — three names this document
+  `ProcessInfo.processInfo.environment` read in `ka-reader-mac/Sources` — three names this document
   adds to C-R7's scan to realize C-R3's *Violated by* (RN-22). Half (2) —
   `checks/entry-points.sh` (layer 6): for every crate the `cargo tree` command above names from
   outside the workspace, a scan of the crate's whole package directory in the Cargo registry — its
@@ -974,7 +974,7 @@ reviewed tag.
   a listed line no longer found, and on any resolved crate whose sources it cannot open — a crate
   it cannot scan is a failure, never a pass. The scan covers the package directory and not `src/`,
   because a crate need not keep its sources there (RN-18). **The workspace's own members** —
-  `nozoki-core` and `nozoki-bridge` today, which the command names and which have no registry
+  `ka-reader-core` and `ka-reader-bridge` today, which the command names and which have no registry
   copy — are half (1)'s, whose rule reads every member's sources, and the scan skips them by their
   membership in the workspace, never by a list of names. The two halves split on that one test,
   so no crate falls between them; any other crate whose sources it cannot open still fails. The
@@ -1001,7 +1001,7 @@ reviewed tag.
   build and is not in the shipped process (§ 9, the `checks/structure.sh` bullet). **Not covered,
   and named:** a build script that pulls other files in through `mod`, `#[path]` or `include!` has
   those files scanned, which fails loud and never passes silently; none of the 17 build scripts
-  the lock resolves at `nozoki@85d9fa7` does (RN-34). Review at `development-design` when a change adds
+  the lock resolves at `ka-reader@85d9fa7` does (RN-34). Review at `development-design` when a change adds
   an entry point — a scanner finds a new read or a new socket, not a new trust assumption *(traces
   to: `quality_defaults.md` § The boundary set; SRS NFR-14, FR-1; FDR R-2; SDD § 4 C-R3 *Violated
   by*, C-R7; ADR-0021; ADR-0017; ADR-0023, which superseded ADR-0022 at v45 — RN-56; the two
@@ -1047,10 +1047,10 @@ reviewed tag.
 The **privilege** half binds. These are *reach* checks, not import checks (§ 1.2): a unit can
 import nothing forbidden and still read a path it was never granted.
 
-- **QC-34:** The shell reaches nothing but the functions QC-24 names: `nozoki-mac` opens no socket,
+- **QC-34:** The shell reaches nothing but the functions QC-24 names: `ka-reader-mac` opens no socket,
   reads no file, spawns no process, hands no URL to another program, and loads no web engine —
   every byte a surface shows crossed `SM-4`.
-  — *verified by:* `checks/view.sh` (layer 6) — the scan over `nozoki-mac/Sources`, whose list of
+  — *verified by:* `checks/view.sh` (layer 6) — the scan over `ka-reader-mac/Sources`, whose list of
   what it refuses is the script's own header: the families F1 – F13 of its scan table
   (`checks/view.sh:L33-L87`), which this entry points at and does not copy, so the list lives in
   one place and the same-change clause below adds to it there. C-R7's set is the scan's floor —
@@ -1082,13 +1082,13 @@ import nothing forbidden and still read a path it was never granted.
   naming another location inside the folder is bounded by nothing in either (QC-6; SDD § 11
   R-16)", and closed it on SDD *Open Questions*' config-named-path item, "open on its
   `.gitmodules` case alone, settled before `see-git-status` is reached, with no build inside the
-  slice bounding it", the other two as "the last two"; the refusals are built at `nozoki@772c63b`
+  slice bounding it", the other two as "the last two"; the refusals are built at `ka-reader@772c63b`
   and SDD v46 removed the item — RN-56)* *(through v43 the first of these read "the
   `objects/info/alternates` read and a `.gitmodules` section's path, whose refusals are stated
   and not built", and closed as "the first two" — RN-55)* *(through v41 this case named three keys of
   the repository's own config, "which libgit2 follows with no containment check" — RN-53; through
   v39 this bound read "no later than the build in which `mac-shell` first calls
-  `nozoki_read_git`" — RN-51)*; (2) `nozoki-core`'s in-process Git suites
+  `ka_reader_read_git`" — RN-51)*; (2) `ka-reader-core`'s in-process Git suites
   and the read-only walk, which call libgit2 without the bridge and so with the machine-level
   reads on — the walk calls `read_git` with the libgit2 adapter and no switch
   (`checks/walk.rs:L292`) — so `checks/read-only.sh`'s
@@ -1101,9 +1101,9 @@ import nothing forbidden and still read a path it was never granted.
   — the changed files under `$HOME`, and the fixture's hashes — and neither observes a read;
   QC-17's bridge test, which proves the four search paths empty and observes no read; and the
   sandbox grant (QC-25), which in the bundle bounds every read the switch does not stop. Beside
-  them, six cases of `cargo test --locked -p nozoki-core --test git_state` (layer 2) each observe
+  them, six cases of `cargo test --locked -p ka-reader-core --test git_state` (layer 2) each observe
   that no call opens the one outside path its scene names, through a FIFO whose non-blocking open
-  succeeds only once a reader holds it (`crates/nozoki-core/tests/git_state.rs:L1155-L1206`): the
+  succeeds only once a reader holds it (`crates/ka-reader-core/tests/git_state.rs:L1155-L1206`): the
   repository's config (`:L1212`), a submodule's config (`:L1228`), an include from `.gitmodules`
   (`:L1795`), an include through an inside link (`:L1886`), the outside object directory's
   `info/alternates`, which a load of that directory would open
@@ -1111,19 +1111,19 @@ import nothing forbidden and still read a path it was never granted.
   `.git/config` of a repository outside the folder that a `.gitmodules` section leads to through
   an inside link, which an open of that repository would read
   (`test_section_leading_through_a_link_to_an_outside_x_opens_nothing_outside`, `:L2680`, over
-  `checks/fixtures/gitmodules-names-outside`) — locators at `nozoki@772c63b`; 120 passed for v45 on
-  a disposable copy of `nozoki@d90814b`, whose tree outside `docs/` is `nozoki@772c63b`'s. The
+  `checks/fixtures/gitmodules-names-outside`) — locators at `ka-reader@772c63b`; 120 passed for v45 on
+  a disposable copy of `ka-reader@d90814b`, whose tree outside `docs/` is `ka-reader@772c63b`'s. The
   fifth does not watch a `stat` of the outside
   directory, which is the first thing libgit2 does to an alternate: that no such `stat` is made
   rests on the check running before the open
-  (`crates/nozoki-core/src/git_reader/libgit2.rs:L112-L115`, at `nozoki@66f428d`) and not on the
+  (`crates/ka-reader-core/src/git_reader/libgit2.rs:L112-L115`, at `ka-reader@66f428d`) and not on the
   case (SDD § 11 R-16, "A third way out", *The proof*). The six run the adapter in-process, and
   no case runs the check on the built bundle *(through v44 this sentence named five cases, the
   helper at `:L1156-L1170` and the last three at `:L1543`, `:L1634` and `:L1733`, at
-  `nozoki@66f428d` — 82 passed at `nozoki@4a49995`, and again for v44 at `nozoki@f2e22e9`; the five
+  `ka-reader@66f428d` — 82 passed at `ka-reader@4a49995`, and again for v44 at `ka-reader@f2e22e9`; the five
   are re-pinned, not changed in what they name, and the helper's span now reaches the poll it
   describes — RN-56)* *(through v43 this sentence named four cases, at
-  `:L1156-L1166`, `:L1202`, `:L1218`, `:L1533` and `:L1624` — 58 passed at `nozoki@076eac2`, run
+  `:L1156-L1166`, `:L1202`, `:L1218`, `:L1533` and `:L1624` — 58 passed at `ka-reader@076eac2`, run
   for v42; the four locators are re-pinned, not changed in what they name — RN-55)*. Each
   observes one named path, with the machine-level reads on as (2) states, and not
   the product's reach: no command observes a read outside the grant in general, the reads half
@@ -1145,7 +1145,7 @@ import nothing forbidden and still read a path it was never granted.
   proof*) as it reads at v46 (SDD RN-106), on the owner's seat's answer at
   `docs/trail/architecture/cycle-39.md` § 3.1 — RN-56)*
 - **QC-36:** No unit spawns a process: no `std::process` in any shipped crate, and no `Process`
-  in `nozoki-mac/Sources`.
+  in `ka-reader-mac/Sources`.
   — *verified by:* `checks/structure.sh` (layer 6); `checks/view.sh` (layer 6) *(traces to: SDD
   § 3 `git-reader` "Must not own", `mac-shell` "Must not own"; § 4 C-R7; ADR-0019; ADR-0021; re-derived at v11 — RN-22)*
 - **QC-37:** `asset_bytes` returns bytes read-only, only for a path the containment check passes
@@ -1155,9 +1155,9 @@ import nothing forbidden and still read a path it was never granted.
   placeholder stating that its format is one the tool does not render; SVG reaches the decoder only
   after C-D3's format list moves on the evidence SDD RN-8 names, never by an `asset_bytes` edit
   alone.
-  — *verified by:* `cargo test --locked -p nozoki-bridge --test asset_bytes` — `asset_bytes` returns the
+  — *verified by:* `cargo test --locked -p ka-reader-bridge --test asset_bytes` — `asset_bytes` returns the
   in-folder PNG's bytes for its path and a refusal for the in-folder SVG and for each escaping
-  path, on a second call with the same inputs (layer 2); `swift test --package-path nozoki-mac` — a
+  path, on a second call with the same inputs (layer 2); `swift test --package-path ka-reader-mac` — a
   *resolved* image node is drawn from the bytes `asset_bytes` returned and a placeholder node from
   no bytes at all (layer 4) *(traces to: SDD § 3 `core-bridge`, SM-7; § 4 C-D3; § 6 S-3, command
   half; § SDD Review Notes RN-8; ADR-0015;
@@ -1187,8 +1187,8 @@ import nothing forbidden and still read a path it was never granted.
   which it is emptied and writing continues; a failed write surfaces nowhere, stops no item and is
   not retried.
   — *verified by:* unit tests (layer 1) — the log writer truncates at launch and empties at the
-  cap (`cargo test --locked -p nozoki-bridge`), and the remembered list evicts the oldest entry on the eleventh
-  and exposes no removal (`cargo test --locked -p nozoki-core`); `checks/own-state.sh` after
+  cap (`cargo test --locked -p ka-reader-bridge`), and the remembered list evicts the oldest entry on the eleventh
+  and exposes no removal (`cargo test --locked -p ka-reader-core`); `checks/own-state.sh` after
   `checks/churn.sh` — the log under the container is no larger than 1 MiB, and a line written
   before a relaunch is absent after it (layer 5; `docs/SRS.md` AC-13's inspection, machine-run)
   *(traces to: SRS NFR-11, AC-13; FDR R-110, R-178, R-180, R-182; SDD § 4 C-I2; § 3 `own-state`;
@@ -1201,10 +1201,10 @@ import nothing forbidden and still read a path it was never granted.
   S-7) (the release) *(traces to: SRS C-4, C-5, AC-14;
   FDR R-141; the script is this document's realization — RN-3)*
 - **QC-42:** Before the first public release, private vulnerability reporting is enabled on
-  `github.com/kensaiapp/nozoki` and `SECURITY.md` exists, promising nothing beyond
+  `github.com/kensaiapp/ka-reader` and `SECURITY.md` exists, promising nothing beyond
   *"Security reports have a private channel and are read, with no acknowledgement or response
   time promised"* (`docs/PRD.md` § Assumptions, "Support posture").
-  — *verified by:* `gh api repos/kensaiapp/nozoki/private-vulnerability-reporting` returns
+  — *verified by:* `gh api repos/kensaiapp/ka-reader/private-vulnerability-reporting` returns
   `"enabled": true`; `SECURITY.md` present; release inspection reads its wording (the release)
   *(traces to: SRS C-7, AC-14; FDR R-143, PD-22)*
 - **QC-43:** The product's position outside the EU Cyber Resilience Act rests on its free,
@@ -1245,10 +1245,10 @@ binds the *process*, and asserts no number of its own.
 
 - **QC-47:** A failure to read one file, one tree entry or one part of Git state degrades only
   that item, and the next successful read of the same item replaces it without ceremony.
-  — *verified by:* `cargo test --locked -p nozoki-core --test watch` — an unreadable fixture entry yields
+  — *verified by:* `cargo test --locked -p ka-reader-core --test watch` — an unreadable fixture entry yields
   `failed` on that item and the failure changes no other item: each sibling holds the state its
   own read gave it, `observed`, `pending`, `failed` or `stopped` (layer 2); `swift test --package-path
-  nozoki-mac` (layer 4): the failure slot renders and the rest of the surface stands. What a failed
+  ka-reader-mac` (layer 4): the failure slot renders and the rest of the surface stands. What a failed
   re-read of a folder already expanded does to the entries listed under it is not held here: those
   entries are not the folder's siblings, and SDD § 4 C-I1 leaves the form to S-5's design (SDD
   *Open Questions*, the failed-re-read item), so this entry gains a clause when C-I1 states it
@@ -1263,12 +1263,12 @@ binds the *process*, and asserts no number of its own.
   changed marker on that file's `TreeEntry` and both Git lists in row order: the marker join and
   the row order are `folder-model`'s, and stand in `surfaces` for `see-git-status` alone until
   `follow-the-folder` is reached (SDD § 3 `surfaces` and `GitState`; § 10 RC-5).
-  — *verified by:* `cargo test --locked -p nozoki-core --test watch` running `checks/churn.sh <fixture> 30`,
+  — *verified by:* `cargo test --locked -p ka-reader-core --test watch` running `checks/churn.sh <fixture> 30`,
   with the same suite's case for a status change mid-run;
   `checks/read-only.sh` against the churn's final state as baseline (layer 3); and
-  `grep -rn 'TreeMarkers\|GitRowOrder' nozoki-mac/Sources` printing nothing, red while either
-  file remains in the shell. What runs them is owed by `follow-the-folder`: at `nozoki@076eac2` no
-  `watch` target is under `crates/nozoki-core/tests/`, `checks/churn.sh` is not in the tree (SDD § 3,
+  `grep -rn 'TreeMarkers\|GitRowOrder' ka-reader-mac/Sources` printing nothing, red while either
+  file remains in the shell. What runs them is owed by `follow-the-folder`: at `ka-reader@076eac2` no
+  `watch` target is under `crates/ka-reader-core/tests/`, `checks/churn.sh` is not in the tree (SDD § 3,
   the `read-only-harness` row, *Owed by a slice*), and the `grep` prints five files, which is the
   placement RC-5 bounds and not a violation until that slice is reached *(traces to: SRS
   FR-16, NFR-3, NFR-4, AC-8; SDD § 6 S-5; ADR-0010; the mid-run case, the `grep` and the end of
@@ -1292,11 +1292,11 @@ binds the *process*, and asserts no number of its own.
 - **QC-51:** A failure the user must know about is visible in the product's own window, in the
   failure slot of the item that stopped, with an enabled route out on the same surface; no
   modal, toast, dialog or terminal line carries a failure.
-  — *verified by:* `swift test --package-path nozoki-mac` (layer 4): a `failed` and a `stopped`
+  — *verified by:* `swift test --package-path ka-reader-mac` (layer 4): a `failed` and a `stopped`
   projection each render in the item's slot with the route present; `checks/view.sh` — no
-  `NSAlert`, no user-notification API and no modal presentation in `nozoki-mac/Sources` other than
+  `NSAlert`, no user-notification API and no modal presentation in `ka-reader-mac/Sources` other than
   the Open panel's own presentation, which C-R3 requires: exactly one `.runModal()` with no
-  argument, in `nozoki-mac/Sources/Shell/OpenFolderPanel.swift` (`:L14`); a second one there, one
+  argument, in `ka-reader-mac/Sources/Shell/OpenFolderPanel.swift` (`:L14`); a second one there, one
   with an argument, or one in any other file is reported (`checks/view.sh:L80-L86`, F13) — the
   bound is stated as the scan holds it, so a sheet, a second panel or a modal elsewhere under
   `Shell/` is not read as admitted (layer 6; the symbols the script names are this document's
@@ -1305,15 +1305,15 @@ binds the *process*, and asserts no number of its own.
   — RN-26) *(traces to: SRS NFR-11; SDD § 3 `surfaces` "Must not own"; § 4 C-R3, C-E3, C-I1; FDR
   R-86, R-87, R-90, R-91)*
 - **QC-52:** The diagnostic log is written to
-  `~/Library/Containers/com.kensaiapp.nozoki/Data/Library/Logs/nozoki.log` and nowhere else, one
+  `~/Library/Containers/com.kensaiapp.ka-reader/Data/Library/Logs/ka-reader.log` and nowhere else, one
   line per `failed` or `stopped` item; it is the product's only diagnostic output.
   — *verified by:* `checks/own-state.sh` (layer 5); unit test on the writer's path and line shape
   (layer 1) *(traces to: SDD § 4 C-I2; SRS NFR-11; FDR PD-32)*
 - **QC-61:** The logging facade is `log`, and its implementation is the product's own. Every
   shipped Rust crate depends on the `log` facade for diagnostics and on nothing else — no
-  `tracing`, no `slog`, no second facade; `nozoki-core` uses the five macros and initializes
-  nothing. The implementation is `nozoki-bridge`'s own log writer — the writer QC-39, QC-40 and
-  QC-52 already bind — implementing `log::Log`, installed once at startup in `nozoki-bridge`, the
+  `tracing`, no `slog`, no second facade; `ka-reader-core` uses the five macros and initializes
+  nothing. The implementation is `ka-reader-bridge`'s own log writer — the writer QC-39, QC-40 and
+  QC-52 already bind — implementing `log::Log`, installed once at startup in `ka-reader-bridge`, the
   Rust-side composition root (QC-17), with no third-party implementation crate; the level it admits is fixed
   in code and read from nothing outside the binary, and it holds what QC-39 and QC-52 describe and
   nothing below it. The implementation is the product's own because of a constraint already here,
@@ -1327,7 +1327,7 @@ binds the *process*, and asserts no number of its own.
   — *verified by:* `checks/no-network.sh` — `checks/deps.allow` names `log` and names no
   `tracing*`, `env_logger`, `slog*` or `log4rs` crate, so a swap fails the allowlist diff (QC-3,
   QC-26; the tree); `checks/structure.sh` (layer 6) — `log::set_logger` and
-  `log::set_boxed_logger` appear only under `crates/nozoki-bridge/src/`; test targets under
+  `log::set_boxed_logger` appear only under `crates/ka-reader-bridge/src/`; test targets under
   `crates/*/tests/` are outside this rule, as they are outside every rule of that script but one
   (§ 9) — Cargo compiles each file there as a separate crate, so a logger installed there is never
   in the process an adopter runs *(traces to:
@@ -1339,7 +1339,7 @@ binds the *process*, and asserts no number of its own.
 - **QC-53:** No internal text reaches any surface: no stack trace, no error code, no library name,
   and none of the words `docs/CONTENT.md` § Terminology bans; every message the product shows is a
   whole sentence from its catalogue.
-  — *verified by:* `checks/strings.sh` — a lint over `surfaces`' message catalogue in `nozoki-mac` for the
+  — *verified by:* `checks/strings.sh` — a lint over `surfaces`' message catalogue in `ka-reader-mac` for the
   banned list, non-zero on a hit (the tree); layer-5 error-path tests that a `stopped` item's
   surface text is a catalogue sentence *(traces to: SDD § 4 C-E4, C-I2; FDR R-89; CONTENT
   § Terminology "Banned", § Localization; `quality_defaults.md` § Failure visibility; the lint is
@@ -1354,11 +1354,11 @@ binds the *process*, and asserts no number of its own.
 ## 8. Operational constraints
 
 The execution context — execution type, test command, parallelism — is the project card's
-(`system/projects/nozoki/project.md` in the managing instance), not restated here. That card's
-test command is `cargo test --workspace --locked && swift test --package-path nozoki-mac` — the
+(`system/projects/ka-reader/project.md` in the managing instance), not restated here. That card's
+test command is `cargo test --workspace --locked && swift test --package-path ka-reader-mac` — the
 SDD's command bar for the Rust workspace, `cargo test --workspace --locked` exits 0
 (`docs/SDD.md` § 6 S-1), the bar carrying the Rust packet's `--locked` itself since the SDD's
-re-author (`languages/rust/testing.md` § Layers 1–5; RN-16), and `swift test` for `nozoki-mac`,
+re-author (`languages/rust/testing.md` § Layers 1–5; RN-16), and `swift test` for `ka-reader-mac`,
 the command the SDD's bars name (§ 6 S-1) — and its `Languages:` line names Rust, Swift and Shell
 (RN-6). The move the SDD named as owed at v13 (RN-60) is made: § 8 states the card as it reads at
 `kensaiapp-opensource@ec80077` — two moves past the `defe740` v12 read, `5b27023` (Swift in place
@@ -1368,8 +1368,8 @@ of TypeScript on the `Languages:` line, in the test command and on `Language roo
 workspace form is this product's change-time run, where the Rust packet classifies it as
 release-time, is RN-7. What follows exceeds the card.
 
-- **QC-55:** The product is one macOS application bundle, `Nozoki.app`, bundle identifier
-  `com.kensaiapp.nozoki`, and one process; no second binary, no second process the product starts,
+- **QC-55:** The product is one macOS application bundle, `KA-Reader.app`, bundle identifier
+  `com.kensaiapp.ka-reader`, and one process; no second binary, no second process the product starts,
   no prerequisite, no runtime install, no fetched asset, and no font shipped — the fonts are the
   platform's.
   — *verified by:* `checks/bundle.sh` — one executable under `Contents/MacOS`, the fourteen icons
@@ -1379,7 +1379,7 @@ release-time, is RN-7. What follows exceeds the card.
 - **QC-56:** The minimum macOS version is 14 (Sonoma): the bundle's `LSMinimumSystemVersion` is
   `14.0`, and the floor is stated wherever the install path is offered.
   — *verified by:* `/usr/libexec/PlistBuddy -c 'Print :LSMinimumSystemVersion'
-  Nozoki.app/Contents/Info.plist` prints `14.0` (the release); release inspection reads the README
+  KA-Reader.app/Contents/Info.plist` prints `14.0` (the release); release inspection reads the README
   and the release page (`docs/SRS.md` AC-14) *(traces to: SDD § 4 C-R5; § 9 TO-8; SRS C-11; FDR
   R-133, PD-18; ADR-0007)*
 - **QC-57:** There is exactly one install path — download the `.dmg`, drag to Applications, the
@@ -1389,7 +1389,7 @@ release-time, is RN-7. What follows exceeds the card.
   stranger's path and is deliberately not automated *(traces to: SDD § 4 C-R4; SRS C-3, C-9; FDR
   R-128 – R-130; ADR-0007)*
 - **QC-58:** The product offers no configuration surface: its own units — every workspace member (QC-30 half (1)) and
-  `nozoki-mac` — read no configuration file, no environment variable and no argument, and the only
+  `ka-reader-mac` — read no configuration file, no environment variable and no argument, and the only
   input the product requires is the folder chosen in the Open panel. What the linked dependency tree reads from the environment or
   the argument vector is not a surface the product offers: it is the named list QC-30's second
   half holds, and no read enters that list unreviewed.
@@ -1415,7 +1415,7 @@ release-time, is RN-7. What follows exceeds the card.
   `checks/contract/<major>` — written once at the major's `.0.0` release from the built bundle and
   read as `git show v<major>.0.0:checks/contract/<major>`, holding the macOS floor as
   `LSMinimumSystemVersion` prints it, the release's asset names, and `SM-4`'s function list and
-  `nozoki_free`, the set as the bridge exports it (C-I6 at v16) — fails on a tag inside a major
+  `ka_reader_free`, the set as the bridge exports it (C-I6 at v16) — fails on a tag inside a major
   whose bundle raises the floor, drops an asset
   or drops a function (the release; layer 5): the machine check for the install path, the floor and the
   surfaces' presence; own-state readability is QC-60's check. The behaviour member has no machine
@@ -1425,7 +1425,7 @@ release-time, is RN-7. What follows exceeds the card.
   (`docs/SRS.md` AC-14). Before `v1.0.0` there is no pin and the script is not run — C-6's
   pre-1.0.0 half, stated rather than tested *(traces to: SRS C-6; FDR R-142, PD-20, PD-40 — the
   FDR's statement of the priced set since its v4, the prerequisite clause an owner answer at
-  `docs/trail/fdr/cycle-3.md` § 2.6, folded here at v6 — RN-17; SDD § 4 C-I6 as it reads at v16 — the pin reads the bridge's exports, `nozoki_free` among them (RN-22, RN-24), § 11 R-12 — the
+  `docs/trail/fdr/cycle-3.md` § 2.6, folded here at v6 — RN-17; SDD § 4 C-I6 as it reads at v16 — the pin reads the bridge's exports, `ka_reader_free` among them (RN-22, RN-24), § 11 R-12 — the
   check added at v5, RN-16; confirmed with the breaking/additive split at
   `docs/trail/architecture/cycle-1.md` § 2.1 — RN-5, RN-11; the own-state member confirmed against
   SDD § 6 S-11 at `docs/trail/architecture/cycle-4.md` § 1.1 — RN-17)*
@@ -1448,28 +1448,28 @@ release-time, is RN-7. What follows exceeds the card.
 
 The layer set is **not defined here** — it is `testing_doctrine.md` v2.2.0, and this table is one
 project's realization of it. Tooling for the core and the bridge comes from the Rust packet
-(`languages/rust/testing.md` v1.0.1), and for `nozoki-mac` from the Swift packet
+(`languages/rust/testing.md` v1.0.1), and for `ka-reader-mac` from the Swift packet
 (`languages/swift/testing.md` v1.1.0), in the organisation's language registry since
 `kensaiapp-dev@3ab2e8553` (2026-09-23) — each resolving at step 1 of `languages/README.md` § The
 resolution chain from the card's `Languages:` line (RN-6). Through v12 this paragraph read that no
-Swift packet existed and that `nozoki-mac`'s tooling was this product's own to record; true when
-written, and history (RN-24). The packet's runner is `swift test --package-path nozoki-mac`, the
-command the SDD's bars name (`docs/SDD.md` § 6 S-1, S-2, S-3, S-8), over `nozoki-mac/Tests/`. What
-this table fixes differently from the Rust packet, and why, is RN-7; where `nozoki-mac` stands
+Swift packet existed and that `ka-reader-mac`'s tooling was this product's own to record; true when
+written, and history (RN-24). The packet's runner is `swift test --package-path ka-reader-mac`, the
+command the SDD's bars name (`docs/SDD.md` § 6 S-1, S-2, S-3, S-8), over `ka-reader-mac/Tests/`. What
+this table fixes differently from the Rust packet, and why, is RN-7; where `ka-reader-mac` stands
 against the Swift packet — followed, adopted, or departed from, one by one, and the toolchain CI
 builds it with — is the bullet below, and the reasons are RN-24. If
 this table and the doctrine disagree on the layers, this table is the copy and is wrong. Through
 v10 the renderer's tooling was the TypeScript packet's — Vitest, and Playwright at layer 4 — and it
-left with `nozoki-ui` at `nozoki@0aca57e` (RN-22; RN-25).
+left with `ka-reader-ui` at `ka-reader@0aca57e` (RN-22; RN-25).
 
 | Level | Scope | Tool | Where it lives |
 |---|---|---|---|
-| 1 — Unit | The reducer, `ItemState` transitions, the containment check, the text rule, extension recognition, the log line shape; on the Swift side, a projection decoded from an `SM-4` buffer | `cargo test --locked` (`#[cfg(test)]` beside the module); `swift test --package-path nozoki-mac` | inside each `nozoki-core` / `nozoki-bridge` module; `nozoki-mac/Tests/` |
-| 2 — Integration | `fs-reader` and `git-reader` against real fixture folders and repositories; the Markdown pipeline against `hostile.md`; `highlighter` against one fixture per floor language; the bridge's export set against its generated header; `asset_bytes` against the containment check; the bridge under the address sanitizer | `cargo test --locked -p nozoki-core --test git_state`, `--test root_finding`, `--test markdown`, `--test highlight`, `--test watch`; `cargo test --locked -p nozoki-bridge --test exports`, `--test asset_bytes` | `crates/nozoki-core/tests/`, `crates/nozoki-bridge/tests/`, over `checks/fixtures/` |
-| 3 — Application | `SM-4`'s function list driven in-process through `SM-5`, bypassing the shell; the whole-model switch | `checks/read-only.sh`; `cargo test --locked -p nozoki-core --test switch` | `checks/`, `crates/nozoki-core/tests/` |
-| 4 — UI | A view is drawn from a projection and from nothing else — read with the one exception `docs/SDD.md` § 3's `surfaces` row names, that an intent the surface raised has not been answered yet, under that row's four bounds; the gap is no `ItemState`, and the reading adds no test (`docs/SDD.md` RN-82, v24; RN-37) — read too with the same row's two clauses that are not a second exception: what the pointer is over and whether the window is the key window are the shell's own observations, held across no redraw and no state of the folder (`docs/SDD.md` RN-96, RN-98), and for `see-git-status` alone the tree's marker join and the Git lists' row order stand in `surfaces`, derived only from projections the bridge sent, until `follow-the-folder` (`docs/SDD.md` § 10 RC-5, RN-94; QC-48 holds the end; RN-53) — and the shell issues no call `SM-4` does not name: nothing drawn from `pending` but the entry's name, its glyph and CONTENT's *Loading* sentence, no marker before `observed`, the Git view empty on `plain`, the failure slot and its route, the text view `isEditable` false and registering no drop type, a *resolved* image drawn from `asset_bytes`' bytes and a placeholder from none, staged told from unstaged by text, both themes | `swift test --package-path nozoki-mac` — the tests on `main` XCTest, which the Swift packet keeps; a new test Swift Testing (the bullet below) | `nozoki-mac/Tests/` |
+| 1 — Unit | The reducer, `ItemState` transitions, the containment check, the text rule, extension recognition, the log line shape; on the Swift side, a projection decoded from an `SM-4` buffer | `cargo test --locked` (`#[cfg(test)]` beside the module); `swift test --package-path ka-reader-mac` | inside each `ka-reader-core` / `ka-reader-bridge` module; `ka-reader-mac/Tests/` |
+| 2 — Integration | `fs-reader` and `git-reader` against real fixture folders and repositories; the Markdown pipeline against `hostile.md`; `highlighter` against one fixture per floor language; the bridge's export set against its generated header; `asset_bytes` against the containment check; the bridge under the address sanitizer | `cargo test --locked -p ka-reader-core --test git_state`, `--test root_finding`, `--test markdown`, `--test highlight`, `--test watch`; `cargo test --locked -p ka-reader-bridge --test exports`, `--test asset_bytes` | `crates/ka-reader-core/tests/`, `crates/ka-reader-bridge/tests/`, over `checks/fixtures/` |
+| 3 — Application | `SM-4`'s function list driven in-process through `SM-5`, bypassing the shell; the whole-model switch | `checks/read-only.sh`; `cargo test --locked -p ka-reader-core --test switch` | `checks/`, `crates/ka-reader-core/tests/` |
+| 4 — UI | A view is drawn from a projection and from nothing else — read with the one exception `docs/SDD.md` § 3's `surfaces` row names, that an intent the surface raised has not been answered yet, under that row's four bounds; the gap is no `ItemState`, and the reading adds no test (`docs/SDD.md` RN-82, v24; RN-37) — read too with the same row's two clauses that are not a second exception: what the pointer is over and whether the window is the key window are the shell's own observations, held across no redraw and no state of the folder (`docs/SDD.md` RN-96, RN-98), and for `see-git-status` alone the tree's marker join and the Git lists' row order stand in `surfaces`, derived only from projections the bridge sent, until `follow-the-folder` (`docs/SDD.md` § 10 RC-5, RN-94; QC-48 holds the end; RN-53) — and the shell issues no call `SM-4` does not name: nothing drawn from `pending` but the entry's name, its glyph and CONTENT's *Loading* sentence, no marker before `observed`, the Git view empty on `plain`, the failure slot and its route, the text view `isEditable` false and registering no drop type, a *resolved* image drawn from `asset_bytes`' bytes and a placeholder from none, staged told from unstaged by text, both themes | `swift test --package-path ka-reader-mac` — the tests on `main` XCTest, which the Swift packet keeps; a new test Swift Testing (the bullet below) | `ka-reader-mac/Tests/` |
 | 5 — End-to-end | The built bundle: entitlements and sandbox, the shell's run under them, own-state after a session, churn and kill, latency figures; from `v1.0.0` the priced contract against its major's pin; the timed release walk | `checks/bundle.sh`, `checks/renderer.sh` with `checks/fixtures/idle-shell`, `checks/own-state.sh`, `checks/churn.sh`, `checks/latency.sh`, `checks/read-only.sh --kill`, `checks/contract.sh <tag>`; `docs/SRS.md` AC-10 as a manual timed walk | `checks/` |
-| 6 — Architecture | § 1.2's graph, § 1.3's I/O ownership, § 3's reach rules, the linked tree's environment and argument reads against their reviewed list (QC-30), the shell's forbidden set and link list (QC-34), and this section's layer-5 placement (no `CARGO_BIN_EXE_` reference under `crates/*/tests/`) | `checks/structure.sh` (Rust, grep rules over shipped sources — its scope is the bullet below); `checks/entry-points.sh` (the resolved dependency tree); `checks/view.sh` (Swift: the source scan over `nozoki-mac/Sources` and `otool -L` on the built executable) | `checks/` |
+| 6 — Architecture | § 1.2's graph, § 1.3's I/O ownership, § 3's reach rules, the linked tree's environment and argument reads against their reviewed list (QC-30), the shell's forbidden set and link list (QC-34), and this section's layer-5 placement (no `CARGO_BIN_EXE_` reference under `crates/*/tests/`) | `checks/structure.sh` (Rust, grep rules over shipped sources — its scope is the bullet below); `checks/entry-points.sh` (the resolved dependency tree); `checks/view.sh` (Swift: the source scan over `ka-reader-mac/Sources` and `otool -L` on the built executable) | `checks/` |
 | 7 — Specification | The SRS's acceptance criteria as scenarios through the real entry point | the SDD's per-slice command bars and the AC walk at release, until a QA seat writes the layer | `checks/` |
 
 - **Layer 3 is present**, realized as the harness: it enters inside the boundary by calling
@@ -1483,7 +1483,7 @@ left with `nozoki-ui` at `nozoki@0aca57e` (RN-22; RN-25).
   release (`docs/SDD.md` § 11 R-11), not asserted here.
 - **Layer 5 stays outside `cargo test`**, against the Rust packet's shape (`tests/<flow>.rs` in
   the binary crate): no crate of this product is a binary crate — the executable is
-  `nozoki-mac`'s — the `--test` files `nozoki-bridge` carries are `exports` and `asset_bytes` (layer 2), and no
+  `ka-reader-mac`'s — the `--test` files `ka-reader-bridge` carries are `exports` and `asset_bytes` (layer 2), and no
   file under `crates/*/tests/` starts the built bundle — no `CARGO_BIN_EXE_` reference there, a
   `checks/structure.sh` rule (layer 6, row 6). That placement is what makes
   `cargo test --workspace --locked` this product's change-time run (RN-7). The built bundle is
@@ -1497,12 +1497,12 @@ left with `nozoki-ui` at `nozoki@0aca57e` (RN-22; RN-25).
   Cargo will compile a build script into an executable" and run it
   (https://doc.rust-lang.org/cargo/reference/build-scripts.html, read 2026-09-23), so a build
   script is never in it either — the ground QC-30's second half already takes for a dependency's
-  build script. The tree holds one: `crates/nozoki-bridge/build.rs` reads and writes the
+  build script. The tree holds one: `crates/ka-reader-bridge/build.rs` reads and writes the
   generated header with `std::fs` (`:L11`, `:L25`, `:L28-L30`) and reads `CARGO_MANIFEST_DIR`
   through `std::env::var` (`:L18`), and the exclusion covers every rule of the script — QC-13's
   `std::fs` rule and QC-30's and QC-58's first half alike (RN-24). The scope binds each rule that names a crate — QC-2's *no
-  write API in `nozoki-core` outside `own-state`*, QC-7's and QC-9's *no `std::process`*, QC-9's
-  *no `unsafe` outside `nozoki-bridge`*, QC-13's *no `std::fs` in `nozoki-bridge` outside its log
+  write API in `ka-reader-core` outside `own-state`*, QC-7's and QC-9's *no `std::process`*, QC-9's
+  *no `unsafe` outside `ka-reader-bridge`*, QC-13's *no `std::fs` in `ka-reader-bridge` outside its log
   writer*, QC-30's and QC-58's first half, QC-61's `set_logger` rule, and every other rule of the
   script alike — and a test target may do what those rules forbid shipped code: build a fixture,
   read a config file, take an argument, install a capturing logger. **One rule reads exactly that
@@ -1515,23 +1515,23 @@ left with `nozoki-ui` at `nozoki@0aca57e` (RN-22; RN-25).
   fails closed. The ground is this bullet's own: a `#[cfg(test)]` item is compiled only "when
   compiling the test harness" (https://doc.rust-lang.org/reference/conditional-compilation.html,
   re-read 2026-10-03), so its body never enters the process an adopter runs, and it is out for the
-  reason `tests/` is out. The tree holds three such sites at `nozoki@456098c`, and
+  reason `tests/` is out. The tree holds three such sites at `ka-reader@456098c`, and
   `grep -rn '#\[path' crates/*/src` prints exactly those three. Two are
   `#[path = "../tests/common/mod.rs"]` on a `#[cfg(test)]` `mod test_support`, at
-  `crates/nozoki-core/src/lib.rs:L18-L24` and `crates/nozoki-bridge/src/lib.rs:L10-L16`; both of
-  those bodies import `std::fs` and `std::process` (`crates/nozoki-core/tests/common/mod.rs:L8`,
-  `:L11`; `crates/nozoki-bridge/tests/common/mod.rs:L8`, `:L13`). The third is
+  `crates/ka-reader-core/src/lib.rs:L18-L24` and `crates/ka-reader-bridge/src/lib.rs:L10-L16`; both of
+  those bodies import `std::fs` and `std::process` (`crates/ka-reader-core/tests/common/mod.rs:L8`,
+  `:L11`; `crates/ka-reader-bridge/tests/common/mod.rs:L8`, `:L13`). The third is
   `#[path = "../tests/unit/fs_reader.rs"]` on `fs_reader`'s `#[cfg(test)]` `mod tests`, at
-  `crates/nozoki-core/src/fs_reader.rs:L894-L896`. Its body imports no `std::process`, and its
-  fixture writes (`crates/nozoki-core/tests/unit/fs_reader.rs:L753`, `:L953`) sit in `fs-reader`,
+  `crates/ka-reader-core/src/fs_reader.rs:L894-L896`. Its body imports no `std::process`, and its
+  fixture writes (`crates/ka-reader-core/tests/unit/fs_reader.rs:L753`, `:L953`) sit in `fs-reader`,
   a filesystem owner QC-15 exempts. A reading by module would fail the tree as built: with each
-  body placed where such a reading judges it, `checks/structure.sh` v1.3.0 at `nozoki@456098c`
-  raises QC-2, QC-9, QC-15 and QC-36 in `nozoki-core` and QC-15 and QC-36 in `nozoki-bridge` —
+  body placed where such a reading judges it, `checks/structure.sh` v1.3.0 at `ka-reader@456098c`
+  raises QC-2, QC-9, QC-15 and QC-36 in `ka-reader-core` and QC-15 and QC-36 in `ka-reader-bridge` —
   the overreach RN-19 removed when it scoped QC-61. The count, the lines and the findings are
   dated and pinned: a fourth site, or a rule the script gains, is a re-measurement of this
   sentence and not a contradiction of it *(through v30 this sentence counted two sites and named
-  QC-36 and QC-15 alone. The third site arrived at `nozoki@04ad072` and the script's QC-2 rule at
-  `nozoki@e7f151e`, both merged at `nozoki@73c408e`; QC-9's process clause has been in the script
+  QC-36 and QC-15 alone. The third site arrived at `ka-reader@04ad072` and the script's QC-2 rule at
+  `ka-reader@e7f151e`, both merged at `ka-reader@73c408e`; QC-9's process clause has been in the script
   since its v1.0.0 (`checks/structure.sh:L5`), so QC-9 was missing from the list since v26. On
   the owner's seat's answer at `docs/trail/architecture/cycle-28.md` § 3.1 — RN-42)*. **What the scope does not do, named so none of it is read as coverage:** any later
   `benches/` or `examples/` is not excluded, until one occurs; and two escapes are review catches
@@ -1540,46 +1540,46 @@ left with `nozoki-ui` at `nozoki@0aca57e` (RN-22; RN-25).
   which is the attribute above on a module without the `#[cfg(test)]` gate, whose body would then
   ship and no scan would read (RN-19). The file reading above and this escape rest on each other:
   the reading is safe only while the module stays gated, and the script's own header names the
-  gap (`checks/structure.sh:L101-L102` at `nozoki@463acb9`) *(through v25 this sentence said the
+  gap (`checks/structure.sh:L101-L102` at `ka-reader@463acb9`) *(through v25 this sentence said the
   tree held no such site, true of shipped code and silent on the two test-only ones; on the
   owner's seat's answers at `docs/trail/architecture/cycle-23.md` §§ 3.3, 3.4 — RN-37)*. The
   second escape is Rust source a build script generates into `OUT_DIR` and a shipped file pulls
   in with `include!`, which ships and which no scan of sources reads (`grep -rn OUT_DIR crates/`
   prints nothing, 2026-09-23; RN-24). **`checks/view.sh` has the same scope on the Swift
-  side:** it scans `nozoki-mac/Sources`, the path C-R7 names, and `nozoki-mac/Tests/` is outside
+  side:** it scans `ka-reader-mac/Sources`, the path C-R7 names, and `ka-reader-mac/Tests/` is outside
   its scan — a test may build an attributed string or read a fixture file that a surface may not.
 - **The harness's own suites, `checks/tests/`, run as CI steps — stated once, here.** Each
   `checks/<name>.sh` script with a suite `checks/tests/test_<name>.sh` beside it is proved by that
   suite to read what its entry says it reads, and the suite runs as its own CI step on every
   build, the way `Bundle probe suite` runs `checks/tests/test_bundle.sh`
-  (`.github/workflows/ci.yml:L41-L42` at `nozoki@463acb9`) — a script whose suite runs nowhere
+  (`.github/workflows/ci.yml:L41-L42` at `ka-reader@463acb9`) — a script whose suite runs nowhere
   is ADR-0012's rule broken one level down: a gate that cannot go red has not run. A script that lands with a suite
   lands the suite's CI step in the same change. Eight suites are in the tree (`ls checks/tests`:
   `test_bundle.sh`, `test_entry_points.sh`, `test_no_network.sh`, `test_own_state.sh`,
   `test_read_only.sh`, `test_renderer.sh`, `test_structure.sh`, `test_view.sh`) and all eight are
-  on steps at `nozoki@b158052`, each the whole `run` of its own step (`.github/workflows/ci.yml` at
-  `nozoki@b158052`: `:L31-L32` `test_structure.sh`; `:L37-L38` `test_entry_points.sh`;
+  on steps at `ka-reader@b158052`, each the whole `run` of its own step (`.github/workflows/ci.yml` at
+  `ka-reader@b158052`: `:L31-L32` `test_structure.sh`; `:L37-L38` `test_entry_points.sh`;
   `:L47-L48` `test_bundle.sh`; `:L53-L54` `test_view.sh`; `:L64-L65` `test_renderer.sh`;
   `:L73-L74` `test_read_only.sh`; `:L79-L80` `test_no_network.sh`; `:L82-L83`
   `test_own_state.sh`); the test command (`ci.yml:L26`) runs none of them. The count and the lines are dated and pinned: an eighth suite, or a step inserted
   above these, is a re-measurement of this sentence and not a contradiction of it, and a new suite
   lands its step in the same change by the rule above. This sentence is the count's one home —
   § 10 points here and does not repeat it *(through v25 it counted six, on steps from
-  `nozoki@ab39502`, at `:L35-L36`, `:L41-L42`, `:L52-L53`, `:L61-L62`, `:L67-L68` and `:L70-L71`
-  with no commit named — true at `nozoki@ab39502`, and moved six lines down when `Structure check`
+  `ka-reader@ab39502`, at `:L35-L36`, `:L41-L42`, `:L52-L53`, `:L61-L62`, `:L67-L68` and `:L70-L71`
+  with no commit named — true at `ka-reader@ab39502`, and moved six lines down when `Structure check`
   and `Structure check suite` landed at `:L28-L32`; on the owner's seat's answer at
   `docs/trail/architecture/cycle-23.md` § 3.2 — RN-37; through v27 it counted seven, on steps at
-  `nozoki@463acb9` — `:L31-L32`, `:L41-L42`, `:L47-L48`, `:L58-L59`, `:L67-L68`, `:L73-L74` and
+  `ka-reader@463acb9` — `:L31-L32`, `:L41-L42`, `:L47-L48`, `:L58-L59`, `:L67-L68`, `:L73-L74` and
   `:L76-L77` — true at that pin, and re-measured to eight when `test_entry_points.sh` landed with
-  its step at `nozoki@b158052`; on the owner's seat's answer at
+  its step at `ka-reader@b158052`; on the owner's seat's answer at
   `docs/trail/architecture/cycle-25.md` § 3.1 — RN-39)*. *History,
-  and the rule it kept:* at `nozoki@153f5a1` one suite was on a step, `test_bundle.sh`, and
+  and the rule it kept:* at `ka-reader@153f5a1` one suite was on a step, `test_bundle.sh`, and
   `test_renderer.sh` failed one case, `test_header_names_the_runner_reading`, the test of a task
   that change deferred; the ordering rule then in force — that suite's step lands with the change
   that puts the runner reading in `checks/renderer.sh`'s header, or after it, never by skipping
-  or deleting the case — held: the reading went into the header at `nozoki@2b83dce` and the
-  suite's step landed at `nozoki@66ba2e8`, both in the change merged at `nozoki@ab39502`, and
-  the case passes there (`NOZOKI_TEST_ONLY=test_header_names_the_runner_reading
+  or deleting the case — held: the reading went into the header at `ka-reader@2b83dce` and the
+  suite's step landed at `ka-reader@66ba2e8`, both in the change merged at `ka-reader@ab39502`, and
+  the case passes there (`KA_READER_TEST_ONLY=test_header_names_the_runner_reading
   checks/tests/test_renderer.sh` → `ok`, exit 0, re-run this fold). **How a suite joins.** A
   suite joins as a fatal step, and its first CI run is its hosted-runner reading: whether a suite
   runs on the hosted runner is not known until it is tried there, and trying it is the join. A
@@ -1588,41 +1588,41 @@ left with `nozoki-ui` at `nozoki@0aca57e` (RN-22; RN-25).
   red; the step is never quieted. The one ruled-out way to join: a non-fatal step —
   `continue-on-error`, or an `if:` that skips it — while a suite waits for its reading, a gate
   that cannot go red (ADR-0012 § Decision). Where the five stand as this fold runs (2026-09-24,
-  at `nozoki@c26d47c`): not yet run on the hosted runner — no step carries `if:` or
+  at `ka-reader@c26d47c`): not yet run on the hosted runner — no step carries `if:` or
   `continue-on-error` (`grep -nE 'continue-on-error|^[[:space:]]+if:' .github/workflows/ci.yml`
-  prints nothing), and `gh run list --repo kensaiapp/nozoki --workflow ci.yml` lists as its
-  newest 35988399477 on `nozoki@37a962d` and 35968105480 on `nozoki@c461b29`, `origin/main` is
+  prints nothing), and `gh run list --repo kensaiapp/ka-reader --workflow ci.yml` lists as its
+  newest 35988399477 on `ka-reader@37a962d` and 35968105480 on `ka-reader@c461b29`, `origin/main` is
   `c461b29` and `git rev-list --count origin/main..main` prints `29`, so no push yet carries the
-  five steps; on a Mac at `nozoki@ab39502` with the bundle built, all six exit 0 (the PM's
+  five steps; on a Mac at `ka-reader@ab39502` with the bundle built, all six exit 0 (the PM's
   measurement, `docs/trail/architecture/cycle-14.md` § 3.2). The first push that carries them is
   their reading, and this bullet records it *(through v16 this bullet read one of six on a step
   and the five joining "as each is green on the hosted runner" — a precondition only the join
   could meet; on the owner's seat's answers at `docs/trail/architecture/cycle-14.md` §§ 3.1, 3.2
-  — RN-28)*. Where they stand at v28 (2026-10-03, at `nozoki@6dae2ca`, whose `ci.yml` and
-  `checks/` are `nozoki@b158052`'s): **the five have their reading, green.** The first push to
-  carry them, `nozoki@c79270f`, ran as GitHub Actions run 36034875098 (push to `main`,
+  — RN-28)*. Where they stand at v28 (2026-10-03, at `ka-reader@6dae2ca`, whose `ci.yml` and
+  `checks/` are `ka-reader@b158052`'s): **the five have their reading, green.** The first push to
+  carry them, `ka-reader@c79270f`, ran as GitHub Actions run 36034875098 (push to `main`,
   2026-09-24T17:31:13Z, `success`), and `View check suite`, `Renderer gate suite`, `Read-only
   suite`, `No-network suite` and `Own state suite` each read `success` in it, as does `Bundle
-  probe suite` (`gh run view 36034875098 --repo kensaiapp/nozoki --json jobs`); the run before
-  it, 35988399477 on `nozoki@37a962d`, does not carry `nozoki@ab39502`. **The four steps that joined
-  after have none.** `Structure check` and `Structure check suite` landed at `nozoki@463acb9`, and
-  `Entry-points check` and `Entry-points check suite` at `nozoki@b158052`. `origin/main` is
+  probe suite` (`gh run view 36034875098 --repo kensaiapp/ka-reader --json jobs`); the run before
+  it, 35988399477 on `ka-reader@37a962d`, does not carry `ka-reader@ab39502`. **The four steps that joined
+  after have none.** `Structure check` and `Structure check suite` landed at `ka-reader@463acb9`, and
+  `Entry-points check` and `Entry-points check suite` at `ka-reader@b158052`. `origin/main` is
   `d234b57`, `git merge-base --is-ancestor <commit> origin/main` exits 1 for both commits, and
-  the newest run, 36958237363 on `nozoki@d234b57` (2026-10-02T03:00:44Z, `success`), lists none
+  the newest run, 36958237363 on `ka-reader@d234b57` (2026-10-02T03:00:44Z, `success`), lists none
   of the four steps. All four are fatal — the grep above still prints nothing — and the first
   push that carries each pair is its reading, which this bullet records *(added at v28: the
   entry-points pair on the owner's seat's answer at `docs/trail/architecture/cycle-25.md` § 3.1,
   the five's reading and the structure pair found while folding it — RN-39)*. § 10 names each
   script's suite beside it.
   — *verified by:* `for s in checks/tests/*.sh; do grep -q "$s" .github/workflows/ci.yml || echo
-  "$s"; done` over the tree, which prints the suites on no step — nothing at `nozoki@ab39502`,
-  re-run that fold, and nothing at `nozoki@b083f99`, re-run for v26, whose `ci.yml` and
-  `checks/` are `nozoki@463acb9`'s (`git diff --stat 463acb9 b083f99` over both prints nothing),
-  and nothing at `nozoki@6dae2ca`, re-run for v28, whose `ci.yml` and `checks/` are
-  `nozoki@b158052`'s (`git diff --stat b158052 6dae2ca` over both prints nothing) —
+  "$s"; done` over the tree, which prints the suites on no step — nothing at `ka-reader@ab39502`,
+  re-run that fold, and nothing at `ka-reader@b083f99`, re-run for v26, whose `ci.yml` and
+  `checks/` are `ka-reader@463acb9`'s (`git diff --stat 463acb9 b083f99` over both prints nothing),
+  and nothing at `ka-reader@6dae2ca`, re-run for v28, whose `ci.yml` and `checks/` are
+  `ka-reader@b158052`'s (`git diff --stat b158052 6dae2ca` over both prints nothing) —
   read at `development-design` on any change under `checks/` or to
   `.github/workflows/ci.yml` — a review gate, argued: no script in the tree runs that comparison
-  (`ls checks/*.sh` at `nozoki@ab39502`: `bundle.sh`, `no-network.sh`, `own-state.sh`,
+  (`ls checks/*.sh` at `ka-reader@ab39502`: `bundle.sh`, `no-network.sh`, `own-state.sh`,
   `read-only.sh`, `renderer.sh`, `view.sh`), and that absence is the gate's only ground. What is
   owed, so the change that writes it has a bar: a `checks/` script that runs the comparison and
   exits non-zero when any suite under `checks/tests/` is named by no step of `ci.yml`, on a CI
@@ -1631,18 +1631,18 @@ left with `nozoki-ui` at `nozoki@0aca57e` (RN-22; RN-25).
   then the gap is one-sided, and named: a suite added with no step is caught only at
   `development-design`; a step naming a deleted suite fails the job on its own, a missing file
   exiting non-zero *(through v16 this tail's ground was that a step would be red on every build
-  until the five landed, false from `nozoki@ab39502`; on the owner's seat's answer at
+  until the five landed, false from `ka-reader@ab39502`; on the owner's seat's answer at
   `docs/trail/architecture/cycle-14.md` § 3.3 — RN-28)* *(traces to: SDD § 4 C-I3 — its
   *Violated by*, "a build that skips a script", and its probe-suite clause; § 3
   `read-only-harness`; ADR-0012 § Decision — "a gate that cannot go red has not run"; QC-25's
   tail — the probe's suite, "without which the probe has not run"; added at v15 on the owner's
   seat's answer at `docs/trail/architecture/cycle-12.md` § 3.5 — RN-26; re-cut at v17 on the
   owner's seat's answers at `docs/trail/architecture/cycle-14.md` §§ 3.1 – 3.3 — RN-28)*
-- **`nozoki-mac` against the Swift packet, stated once, here** (the reasons are RN-24; the packet
+- **`ka-reader-mac` against the Swift packet, stated once, here** (the reasons are RN-24; the packet
   is `languages/swift/`, and a rule of it not named here is followed as written). *Framework —
   departed from until a CI log on `main` names a toolchain that runs Swift Testing:* new tests use
-  XCTest in the test targets that exist. Five files import XCTest at `nozoki@f46269a`; the fifth is
-  `nozoki-mac/Tests/SurfacesTests/RootItemsViewExpansionTests.swift`, added at `nozoki@a5fc189`.
+  XCTest in the test targets that exist. Five files import XCTest at `ka-reader@f46269a`; the fifth is
+  `ka-reader-mac/Tests/SurfacesTests/RootItemsViewExpansionTests.swift`, added at `ka-reader@a5fc189`.
   From the first such log onward, new tests use Swift Testing and the existing XCTest files stay,
   as the packet keeps them (`testing.md` § One framework). This flip is separate from the tools-6.2
   flip below: Swift Testing ships with the Swift 6 toolchain and Xcode 16, and the current
@@ -1650,42 +1650,42 @@ left with `nozoki-ui` at `nozoki@0aca57e` (RN-22; RN-25).
   can select a toolchain the image already holds; the flip still waits on the named log, never the
   image label (RN-31). *Test targets — adopted:* named
   `<Target><Layer>Tests`, the packet's form (`layout.md` § Naming); `SurfacesTests` and
-  `ShellTests` (`nozoki-mac/Package.swift:L39-L40` at `nozoki@827aad4`) predate the packet and are
-  owed it *(through v40 cited `:L34-L35` with no commit named, true at `nozoki@a4ab8e6`; the lines
-  moved five down when `nozoki@827aad4` added the libgit2 link lines above them — RN-52)*, and which
+  `ShellTests` (`ka-reader-mac/Package.swift:L39-L40` at `ka-reader@827aad4`) predate the packet and are
+  owed it *(through v40 cited `:L34-L35` with no commit named, true at `ka-reader@a4ab8e6`; the lines
+  moved five down when `ka-reader@827aad4` added the libgit2 link lines above them — RN-52)*, and which
   layer word each takes is the delivery tier's placement under this table's rows. *Toolchain —
-  not yet measured:* from `nozoki@0aca57e` CI builds `nozoki-mac` in two steps —
-  `.github/workflows/ci.yml:L26` runs `swift test --package-path nozoki-mac` in `Test gate`, and
-  `:L35` runs `nozoki-mac/assemble.sh`, both at `nozoki@463acb9` *(drafted at v26 — RN-37 — and
+  not yet measured:* from `ka-reader@0aca57e` CI builds `ka-reader-mac` in two steps —
+  `.github/workflows/ci.yml:L26` runs `swift test --package-path ka-reader-mac` in `Test gate`, and
+  `:L35` runs `ka-reader-mac/assemble.sh`, both at `ka-reader@463acb9` *(drafted at v26 — RN-37 — and
   confirmed in the owner's seat at `docs/trail/architecture/cycle-24.md` § 2.1 — RN-38: through
-  v25 the build step was cited `:L29` with no commit named, true at `nozoki@0aca57e`, and it
+  v25 the build step was cited `:L29` with no commit named, true at `ka-reader@0aca57e`, and it
   moved six lines down when `Structure check` and `Structure check suite` landed at `:L28-L32`)*
   *(through v13 this clause read that CI did not build it,
-  true of `ci.yml` at `nozoki@99e2bac`; corrected on the owner's seat's answer at
+  true of `ci.yml` at `ka-reader@99e2bac`; corrected on the owner's seat's answer at
   `docs/trail/architecture/cycle-11.md` § 3.4 — RN-25)* — but the toolchain version CI builds
   it with, which the packet has this document record where no `.swift-version` pin exists, and
   none does (`toolchain.md` § Toolchain version), is still unread. The first CI run on `main` to
-  run those steps is GitHub Actions run 35968105480 on `nozoki@c461b29` (`success`; image
+  run those steps is GitHub Actions run 35968105480 on `ka-reader@c461b29` (`success`; image
   `macos-14-arm64` 20260831.0302.1, macOS 14.8.9), and its log names no Swift version — the one
   `swift-version` line in it is a build file's name, `Write swift-version-76B232A4806BA581.txt` —
   so by this line's own rule it stays *not yet measured* and waits for a log on `main` that names
   the toolchain, recording then the Swift version, the run id and the runner image's version
   together, because `macos-14` is a label whose default Xcode can move under the same name and a
   later reader must tell a re-measurement from a contradiction. `ci.yml` has no `swift --version`
-  step (`:L22-L35` at `nozoki@463acb9`, and `grep -n 'swift --version' .github/workflows/ci.yml`
+  step (`:L22-L35` at `ka-reader@463acb9`, and `grep -n 'swift --version' .github/workflows/ci.yml`
   prints nothing over the whole file — drafted at v26, RN-37, and confirmed at
   `docs/trail/architecture/cycle-24.md` § 2.1, RN-38); whether to add one is the delivery tier's *(through v14 this clause read that
   no CI run on `main` had built it, true at `origin/main` = `a4ab8e6`; drafted at v15 on the item a
   `companion-self-answer` run raised on this document — RN-26 — and confirmed in the owner's seat
   at `docs/trail/architecture/cycle-13.md` § 2.1 — RN-27)*. *Departed from, as one decision, until CI builds
-  `nozoki-mac` on an image carrying a Swift 6.2 or later toolchain:* the `6.2` tools version
+  `ka-reader-mac` on an image carrying a Swift 6.2 or later toolchain:* the `6.2` tools version
   (`Package.swift:L1` reads `5.9`); the `.binaryTarget` artifact-bundle link (`:L19`, `:L26-L29`
-  link `libnozoki_bridge.a` as a system library with a `-L` linker flag, the route the packet
+  link `libka_reader_bridge.a` as a system library with a `-L` linker flag, the route the packet
   lists second among its alternatives); `.treatAllWarnings(as:)` on every target (none set); the
   Swift 6 language mode, written as `swiftLanguageModes: [.v6]` for every target (the 5.9 manifest
   leaves every target in Swift 5 mode); `.strictMemorySafety()` on every Swift target, including
   `SurfacesTests` and `ShellTests`; and `.defaultIsolation(MainActor.self)` on `Surfaces` and
-  `Nozoki`, but not on `Shell`, `SurfacesTests` or `ShellTests`. The manifest APIs for the three
+  `KAReader`, but not on `Shell`, `SurfacesTests` or `ShellTests`. The manifest APIs for the three
   settings need `PackageDescription` 6.2 (`toolchain.md` § Toolchain version; `quality_gates.md`
   § Types; `conventions.md` concurrency rules), and the one image this
   product's CI runs on, `macos-14` (`ci.yml:L18`), offers Xcode 15.0.1 – 16.2
@@ -1693,30 +1693,30 @@ left with `nozoki-ui` at `nozoki@0aca57e` (RN-22; RN-25).
   (https://github.com/actions/runner-images/blob/main/images/macos/macos-14-arm64-Readme.md, read
   2026-09-23), while Swift 6.2 was released on 2025-09-15
   (https://www.swift.org/blog/swift-6.2-released/, read 2026-09-23). Which Swift each of those
-  Xcodes carries is not cited here — the first CI log that builds `nozoki-mac` prints it, and if
+  Xcodes carries is not cited here — the first CI log that builds `ka-reader-mac` prints it, and if
   it shows a 6.2 or later toolchain the departure's ground is gone and all six are adopted then.
   Otherwise the change that moves CI to such an image adopts all six together and re-measures
   QC-25's hosted-runner narrowing, taken on `macos-14` (`docs/SDD.md` RN-48), on the new image.
   The adoption's measured source cost is explicit. Swift 6 mode refuses
-  `nozoki-mac/Sources/Shell/LaunchFlow.swift:L60`, `:L107` and `:L111` at `nozoki@7c7038f` (each
+  `ka-reader-mac/Sources/Shell/LaunchFlow.swift:L60`, `:L107` and `:L111` at `ka-reader@7c7038f` (each
   `bridge`, an `any Bridging`, captured in a `@Sendable` closure — the measured site was the
-  `listTree` closure, `:L53` at `nozoki@6e1d79f` and `:L107` now; `:L60`, the open closure, and
+  `listTree` closure, `:L53` at `ka-reader@6e1d79f` and `:L107` now; `:L60`, the open closure, and
   `:L111`, the `selectFile` closure, were added after it and fail the same way — RN-33) and
-  `nozoki-mac/Sources/Shell/ReadRunning.swift:L28` (`deliver`, a
+  `ka-reader-mac/Sources/Shell/ReadRunning.swift:L28` (`deliver`, a
   `@MainActor (RootListing?) -> Void`, sent across one), plus any site added before the flip. No
   target carries `StrictConcurrency` meanwhile: without warnings-as-errors its diagnostics cannot
   fail the Test gate, and CI's unmeasured compiler leaves the setting's required spelling unknown.
   Strict memory safety requires explicit `unsafe` acknowledgements at the C-pointer uses in
-  `nozoki-mac/Sources/Nozoki/NativeBridge.swift` and the AppKit `unowned(unsafe)` properties in
-  `nozoki-mac/Sources/Surfaces/RootItemsView.swift`. No separate current source failure is named
-  for default isolation: with Swift 5 mode held, the current `Nozoki` target builds with default
-  isolation on `Surfaces` and `Nozoki` (RN-31).
+  `ka-reader-mac/Sources/KAReader/NativeBridge.swift` and the AppKit `unowned(unsafe)` properties in
+  `ka-reader-mac/Sources/Surfaces/RootItemsView.swift`. No separate current source failure is named
+  for default isolation: with Swift 5 mode held, the current `KAReader` target builds with default
+  isolation on `Surfaces` and `KAReader` (RN-31).
   *Departed from, with the same flip — the packet's dependency gate's `type == "system"`
   clause:* the packet's gate refuses any target whose `type` is `"system"` (`quality_gates.md`
-  § The gates — `select(.url != null or .type == "system")`), and `nozoki-mac` links the bridge
-  through `.systemLibrary(name: "CNozokiBridge")` (`Package.swift:L19`), so that gate as written
+  § The gates — `select(.url != null or .type == "system")`), and `ka-reader-mac` links the bridge
+  through `.systemLibrary(name: "CKAReaderBridge")` (`Package.swift:L19`), so that gate as written
   fails the tree as built. The departure is that one clause and nothing else, for the same reason
-  as the link: the system library is a module map over `nozoki-bridge`'s generated header, that
+  as the link: the system library is a module map over `ka-reader-bridge`'s generated header, that
   crate is this repository's own and is on `checks/deps.allow`, and the link brings nothing new
   into the tree. `checks/no-network.sh` stands in the gate's place: it holds the gate's other two
   conditions — a non-empty `dependencies` array and a target carrying a `url` (`:L31-L32`) —
@@ -1726,13 +1726,13 @@ left with `nozoki-ui` at `nozoki@0aca57e` (RN-22; RN-25).
   artifact-bundle link replaces the system library, no target has `type == "system"` and the
   packet's gate is followed as written *(on the owner's seat's answer at
   `docs/trail/architecture/cycle-11.md` § 3.6 — RN-25)*.
-  — *verified by:* `swift test --package-path nozoki-mac` (the runner, every change);
+  — *verified by:* `swift test --package-path ka-reader-mac` (the runner, every change);
   `checks/no-network.sh` (the Swift half of the dependency gate, every change); review at
-  `development-design` on any change to `nozoki-mac/Package.swift` or `.github/workflows/*.yml`
+  `development-design` on any change to `ka-reader-mac/Package.swift` or `.github/workflows/*.yml`
   against this bullet — the seven tools-6.2 departures, including the dependency-gate clause,
   flip together or not at all — and review at `development-design` on any change that adds a file
-  under `nozoki-mac/Tests/`, against the *Framework* clause — review gates because no command reads
-  which toolchain CI builds with: CI builds `nozoki-mac` from `nozoki@0aca57e`,
+  under `ka-reader-mac/Tests/`, against the *Framework* clause — review gates because no command reads
+  which toolchain CI builds with: CI builds `ka-reader-mac` from `ka-reader@0aca57e`,
   and the review stands until a CI log on `main` names the toolchain; the day one does, the
   toolchain line above is what that log is checked against.
 - **Layers 6–7 are QA-role ATDD work.** No QA seat has written either for this product yet; until
@@ -1756,52 +1756,52 @@ proves what its script holds; it does not reach a rule the script does not hold.
 *Gated at* reads by the header's rule, per rule: a row's `CI build` holds for the rules its command
 already holds, and `development-design` reading the entry is the gate for the rest. Which rules a
 script holds is its own header's to state — for `checks/structure.sh`, *THE SCAN TABLE* and *WHAT
-IS NOT HELD* (`checks/structure.sh:L35-L93` at `nozoki@463acb9`) — and no row here copies it
+IS NOT HELD* (`checks/structure.sh:L35-L93` at `ka-reader@463acb9`) — and no row here copies it
 *(on the owner's seat's answer at `docs/trail/architecture/cycle-23.md` § 3.1 — RN-37)*.
 
 | QC | Check | Command / layer | Runs over | Gated at |
 |---|---|---|---|---|
 | QC-1 | the shell holds no I/O of its own | `checks/view.sh` (suite `test_view.sh`); `checks/no-network.sh` (suite `test_no_network.sh`) | the tree | CI build |
-| QC-2 | no write under the folder; the walk's calls against the export set | `checks/read-only.sh <fixture>` on every walk fixture (suite `test_read_only.sh`); `cargo test --locked -p nozoki-core --test root_finding`, `--test git_state` — the three scenes whose Git directory lies outside the opened folder; `checks/structure.sh` (suite `test_structure.sh`); the walk's calls read against the build's export set, reviewed in the change that exports a command | the tree; the change | CI build; release; `development-design` |
+| QC-2 | no write under the folder; the walk's calls against the export set | `checks/read-only.sh <fixture>` on every walk fixture (suite `test_read_only.sh`); `cargo test --locked -p ka-reader-core --test root_finding`, `--test git_state` — the three scenes whose Git directory lies outside the opened folder; `checks/structure.sh` (suite `test_structure.sh`); the walk's calls read against the build's export set, reviewed in the change that exports a command | the tree; the change | CI build; release; `development-design` |
 | QC-3 | no network transport — the tree equals the list; the list holds no transport; the release executable links none | `checks/no-network.sh` (suite `test_no_network.sh`); the allowlist diff reviewed against the entry's domain, in the resolved features, at `development-design`; `checks/view.sh` (suite `test_view.sh`) — `nm` on the release executable | the tree; the change | CI build; `development-design` |
-| QC-4 | ItemState on every read | `cargo test --locked -p nozoki-core` (layer 1); `swift test --package-path nozoki-mac` (layer 4) | the change | `development-implementation` |
-| QC-5 | root finding | `cargo test --locked -p nozoki-core --test root_finding` | the change | `development-implementation` |
-| QC-6 | containment check | `cargo test --locked -p nozoki-core --test markdown`; `cargo test --locked -p nozoki-bridge --test asset_bytes` | the change | `development-implementation` |
+| QC-4 | ItemState on every read | `cargo test --locked -p ka-reader-core` (layer 1); `swift test --package-path ka-reader-mac` (layer 4) | the change | `development-implementation` |
+| QC-5 | root finding | `cargo test --locked -p ka-reader-core --test root_finding` | the change | `development-implementation` |
+| QC-6 | containment check | `cargo test --locked -p ka-reader-core --test markdown`; `cargo test --locked -p ka-reader-bridge --test asset_bytes` | the change | `development-implementation` |
 | QC-7 | no mutating Git call, no spawn | `checks/read-only.sh` (suite `test_read_only.sh`); `checks/structure.sh` (suite `test_structure.sh`) | the tree | CI build |
-| QC-8 | `nozoki-mac` imports and dependencies | `checks/view.sh` (suite `test_view.sh`); `checks/no-network.sh` (suite `test_no_network.sh`); `swift test --package-path nozoki-mac` | the tree | CI build |
-| QC-9 – QC-12, QC-14 | `nozoki-core` / `checks/` imports; no `unsafe` outside the bridge | `checks/structure.sh` (suite `test_structure.sh`); `checks/no-network.sh` (suite `test_no_network.sh`); `cargo tree -p nozoki-bridge`; `cargo build --workspace --locked` | the tree | CI build |
-| QC-63 | a module of no part in `nozoki-core` imports no part | `checks/structure.sh` (suite `test_structure.sh`) | the tree | CI build |
-| QC-13 | `nozoki-bridge` imports; the export set; the ABI under the sanitizer | `checks/structure.sh` (suite `test_structure.sh`); `cargo test --locked -p nozoki-bridge --test exports`; the bridge's tests under `-Zsanitizer=address` | the tree | CI build |
-| QC-15, QC-17 | I/O ownership; the two composition roots; libgit2's machine-level config search paths empty, failing closed, once per process | `checks/structure.sh` (suite `test_structure.sh`); `checks/view.sh` (suite `test_view.sh`); `cargo test --locked -p nozoki-bridge` — the four search paths read back empty, and the switch's fail-closed and once-per-process cases | the tree | CI build |
+| QC-8 | `ka-reader-mac` imports and dependencies | `checks/view.sh` (suite `test_view.sh`); `checks/no-network.sh` (suite `test_no_network.sh`); `swift test --package-path ka-reader-mac` | the tree | CI build |
+| QC-9 – QC-12, QC-14 | `ka-reader-core` / `checks/` imports; no `unsafe` outside the bridge | `checks/structure.sh` (suite `test_structure.sh`); `checks/no-network.sh` (suite `test_no_network.sh`); `cargo tree -p ka-reader-bridge`; `cargo build --workspace --locked` | the tree | CI build |
+| QC-63 | a module of no part in `ka-reader-core` imports no part | `checks/structure.sh` (suite `test_structure.sh`) | the tree | CI build |
+| QC-13 | `ka-reader-bridge` imports; the export set; the ABI under the sanitizer | `checks/structure.sh` (suite `test_structure.sh`); `cargo test --locked -p ka-reader-bridge --test exports`; the bridge's tests under `-Zsanitizer=address` | the tree | CI build |
+| QC-15, QC-17 | I/O ownership; the two composition roots; libgit2's machine-level config search paths empty, failing closed, once per process | `checks/structure.sh` (suite `test_structure.sh`); `checks/view.sh` (suite `test_view.sh`); `cargo test --locked -p ka-reader-bridge` — the four search paths read back empty, and the switch's fail-closed and once-per-process cases | the tree | CI build |
 | QC-16 | writes only in the container | `checks/own-state.sh` (suite `test_own_state.sh`) | the tree | CI build; release |
-| QC-19 | folder replace-whole | `cargo test --locked -p nozoki-core --test switch`; `git diff --stat … -- nozoki-mac` | the change | `development-implementation` |
+| QC-19 | folder replace-whole | `cargo test --locked -p ka-reader-core --test switch`; `git diff --stat … -- ka-reader-mac` | the change | `development-implementation` |
 | QC-20 | own-state isolation | `checks/structure.sh` (suite `test_structure.sh`) | the tree | CI build |
-| QC-22 | the hostile fixture as a `MarkdownDocument` | `cargo test --locked -p nozoki-core --test markdown` | the change | `development-implementation` |
+| QC-22 | the hostile fixture as a `MarkdownDocument` | `cargo test --locked -p ka-reader-core --test markdown` | the change | `development-implementation` |
 | QC-23 | no web engine | `checks/view.sh` (suite `test_view.sh`); `checks/no-network.sh` (suite `test_no_network.sh`) | the tree | CI build |
-| QC-24 | the export set equals the header, inside `SM-4`'s list and `nozoki_free` | `cargo test --locked -p nozoki-bridge --test exports` | the tree | CI build |
+| QC-24 | the export set equals the header, inside `SM-4`'s list and `ka_reader_free` | `cargo test --locked -p ka-reader-bridge --test exports` | the tree | CI build |
 | QC-25 | entitlements; sandbox present | `checks/bundle.sh` (suite `test_bundle.sh`) | the tree | CI build; release gate |
-| QC-62 | the shell runs under the shipped entitlements | `checks/renderer.sh Nozoki.app` (suite `test_renderer.sh`) and `checks/fixtures/idle-shell` | the tree | CI build; release gate |
+| QC-62 | the shell runs under the shipped entitlements | `checks/renderer.sh KA-Reader.app` (suite `test_renderer.sh`) and `checks/fixtures/idle-shell` | the tree | CI build; release gate |
 | QC-26 | allowlist; locked build; no Swift dependency | `checks/no-network.sh` (suite `test_no_network.sh`); `cargo build --locked` | the tree | CI build |
 | QC-27 | critical vulnerability | `cargo audit` (every advisory; `--ignore <RUSTSEC-id>` with its reason) | the tree | release |
-| QC-28 | no secret; no signing identity | `gitleaks git`; `gh secret list --repo kensaiapp/nozoki`; `codesign -dv Nozoki.app` | the tree; the release | CI build; release |
+| QC-28 | no secret; no signing identity | `gitleaks git`; `gh secret list --repo kensaiapp/ka-reader`; `codesign -dv KA-Reader.app` | the tree; the release | CI build; release |
 | QC-29 | artifact = tag build | `shasum -a 256 -c SHA256SUMS` against a rebuild | the release | release |
 | QC-30, QC-58 | no other entry point; no configuration — the product's own units | `checks/structure.sh` (suite `test_structure.sh`); `checks/view.sh` (suite `test_view.sh`) | the tree | CI build |
 | QC-30, QC-58 | the linked tree's environment and argument reads — Rust names, and C `getenv`, `environ` and `_NSGetEnviron` — against the reviewed list | `checks/entry-points.sh` (suite `test_entry_points.sh`) against `checks/entry-points.allow` | the tree | CI build |
 | QC-32 | empty egress set | AC-3 network monitor; `checks/no-network.sh` (suite `test_no_network.sh`) | the release; the tree | release; CI build |
 | QC-34 | the shell's reach | `checks/view.sh` (suite `test_view.sh`); `checks/no-network.sh` (suite `test_no_network.sh`) | the tree | CI build |
-| QC-35 | the product's reach — writes observed; the machine-level config reads switched off; the one outside path each scene names, not opened | `checks/own-state.sh` (suite `test_own_state.sh`); `checks/read-only.sh` (suite `test_read_only.sh`); `cargo test --locked -p nozoki-bridge` — the four search paths read back empty (QC-17); `cargo test --locked -p nozoki-core --test git_state` — the six FIFO cases | the tree | CI build |
+| QC-35 | the product's reach — writes observed; the machine-level config reads switched off; the one outside path each scene names, not opened | `checks/own-state.sh` (suite `test_own_state.sh`); `checks/read-only.sh` (suite `test_read_only.sh`); `cargo test --locked -p ka-reader-bridge` — the four search paths read back empty (QC-17); `cargo test --locked -p ka-reader-core --test git_state` — the six FIFO cases | the tree | CI build |
 | QC-36 | no spawned process | `checks/structure.sh` (suite `test_structure.sh`); `checks/view.sh` (suite `test_view.sh`) | the tree | CI build |
-| QC-37 | `asset_bytes` and the decoder | `cargo test --locked -p nozoki-bridge --test asset_bytes`; `swift test --package-path nozoki-mac` | the change | `development-implementation` |
+| QC-37 | `asset_bytes` and the decoder | `cargo test --locked -p ka-reader-bridge --test asset_bytes`; `swift test --package-path ka-reader-mac` | the change | `development-implementation` |
 | QC-38 | own-state fields | `checks/own-state.sh` (suite `test_own_state.sh`) | the tree | CI build |
-| QC-39, QC-52 | log shape and location | `cargo test --locked -p nozoki-bridge` (layer 1); `checks/own-state.sh` (suite `test_own_state.sh`) | the change; the tree | `development-implementation`; CI build |
-| QC-40 | log bound; own-state retention | `cargo test --locked -p nozoki-bridge`, `cargo test --locked -p nozoki-core` (layer 1); `checks/own-state.sh` (suite `test_own_state.sh`) after `checks/churn.sh` | the change; the tree | `development-implementation`; CI build |
+| QC-39, QC-52 | log shape and location | `cargo test --locked -p ka-reader-bridge` (layer 1); `checks/own-state.sh` (suite `test_own_state.sh`) | the change; the tree | `development-implementation`; CI build |
+| QC-40 | log bound; own-state retention | `cargo test --locked -p ka-reader-bridge`, `cargo test --locked -p ka-reader-core` (layer 1); `checks/own-state.sh` (suite `test_own_state.sh`) after `checks/churn.sh` | the change; the tree | `development-implementation`; CI build |
 | QC-41 | third-party notices | `checks/notices.sh` | the release | release |
-| QC-42 | private reporting; SECURITY.md | `gh api repos/kensaiapp/nozoki/private-vulnerability-reporting` | the release | release |
+| QC-42 | private reporting; SECURITY.md | `gh api repos/kensaiapp/ka-reader/private-vulnerability-reporting` | the release | release |
 | QC-44 | standing sentences verbatim | `checks/readme.sh` | the release | release |
 | QC-46 | latency figures | `checks/latency.sh` | the tree | CI build |
-| QC-47, QC-48 | per-item degradation; churn; the marker and the row order in the model | `cargo test --locked -p nozoki-core --test watch` with `checks/churn.sh`; `swift test --package-path nozoki-mac` (layer 4); QC-48's `grep` over `nozoki-mac/Sources` prints nothing, from `follow-the-folder` | the change | `development-implementation` |
+| QC-47, QC-48 | per-item degradation; churn; the marker and the row order in the model | `cargo test --locked -p ka-reader-core --test watch` with `checks/churn.sh`; `swift test --package-path ka-reader-mac` (layer 4); QC-48's `grep` over `ka-reader-mac/Sources` prints nothing, from `follow-the-folder` | the change | `development-implementation` |
 | QC-49 | promises through kill | `checks/read-only.sh --kill` (suite `test_read_only.sh`) | the tree | CI build; release |
-| QC-51 | failure visible in window | `swift test --package-path nozoki-mac` (layer 4); `checks/view.sh` (suite `test_view.sh`) | the change; the tree | `development-implementation`; CI build |
+| QC-51 | failure visible in window | `swift test --package-path ka-reader-mac` (layer 4); `checks/view.sh` (suite `test_view.sh`) | the change; the tree | `development-implementation`; CI build |
 | QC-53 | no internal text | `checks/strings.sh`; layer-5 error-path tests | the tree | CI build |
 | QC-55 | one bundle, one process | `checks/bundle.sh` (suite `test_bundle.sh`) | the tree | CI build |
 | QC-56 | macOS floor in the bundle | `/usr/libexec/PlistBuddy -c 'Print :LSMinimumSystemVersion' …` | the release | release |
@@ -1822,22 +1822,22 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   entries; the SDD describes each once and this document carries the checkable form, per the
   ownership rule that the enforceable statement lives where the checker looks.
 - **RN-2:** *(the FDR at Draft — history, corrected at v2)* v1 of this document read `docs/fdr.md`
-  at Draft, v1, with thirteen companion items open — `nozoki@a50718a`, the FDR's v1 commit;
+  at Draft, v1, with thirteen companion items open — `ka-reader@a50718a`, the FDR's v1 commit;
   `git show a50718a:docs/fdr_open_issues.md | grep -c '^### '` prints `13` — and v1 of this note
   said *eight*, which was the second bucket alone and false when written. Every FDR trace v1 wrote
   was to a rule or decision the FDR carried from a settled source, and none turned on an item that
-  companion held; the fourteenth item, this document's own QC-60 question (`nozoki@98df76b`), came
+  companion held; the fourteenth item, this document's own QC-60 question (`ka-reader@98df76b`), came
   back as R-168 – R-170 and PD-39 and QC-60 traces to them. The FR-13 contradiction v1 recorded —
   the Git-view row opening the diff against the SRS's row opening the file — ended at SRS v12
-  (`nozoki@5c9dda7`; `docs/fdr.md` RN-25) and was behaviour throughout. The FDR now stands Settled
-  at v3 (`nozoki@3325469`), its companion removed and its two rounds at `docs/trail/fdr/cycle-1.md`
+  (`ka-reader@5c9dda7`; `docs/fdr.md` RN-25) and was behaviour throughout. The FDR now stands Settled
+  at v3 (`ka-reader@3325469`), its companion removed and its two rounds at `docs/trail/fdr/cycle-1.md`
   and `cycle-2.md`; the header's `Inputs read:` line carries the present status. Corrected on the
   owner's-seat answer at `docs/trail/architecture/cycle-1.md` § 2.8, which moved the count under
   its commit and made the note history rather than present state.
 - **RN-3:** *(tools this document names where the SDD named none)* `cargo audit`,
   `pnpm audit --audit-level=critical`, `gitleaks git`, `checks/structure.sh`,
   `checks/notices.sh`, `checks/readme.sh`, `checks/strings.sh` and
-  `cargo test -p nozoki-app --test config` are this document's realizations of obligations whose
+  `cargo test -p ka-reader-app --test config` are this document's realizations of obligations whose
   source names the obligation and not the command — the doctrine floors for secrets and
   dependencies, and the SDD's config, notice and wording bars. Another tool with an exit code
   satisfies the same entry; the tool choice is the CTO's toolchain lane and was put to the owner,
@@ -1870,9 +1870,9 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   `development-specs` naming the parts touched is the check — and C-6's "the product's public
   contract" points at it; three of its four parts are the FDR itself or FDR rules (R-129, R-133).
   **QC-60** was overridden into a wider rule and its behavioural half carried upstream
-  (`docs/trail/architecture/cycle-1.md` § 2.2): raised on the FDR's companion (`nozoki@98df76b`),
+  (`docs/trail/architecture/cycle-1.md` § 2.2): raised on the FDR's companion (`ka-reader@98df76b`),
   confirmed by the owner's seat with the discard made silent (`docs/trail/fdr/cycle-1.md` § 2.9),
-  and folded at FDR v2 as R-168 – R-170 and PD-39 (`nozoki@0eb5c67`) — symmetric, so a downgrade
+  and folded at FDR v2 as R-168 – R-170 and PD-39 (`ka-reader@0eb5c67`) — symmetric, so a downgrade
   is covered; never a startup failure, because FR-3's list is closed; silent in the window, the
   release notes carrying the statement. QC-60 keeps its check and traces to those rules; its
   verified-by gains the unreadable-container case and a layer-1 test on the reader — this
@@ -1881,27 +1881,27 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   discard-whole clause exists for. *(re: QC-59, QC-60; source: SRS C-6, DR-5, FR-3; FDR PD-20,
   R-168 – R-170, PD-39; `docs/trail/architecture/cycle-1.md` § 2.1, § 2.2)*
 - **RN-6:** *(the project card — history, pinned by commit)* At v1 and v2
-  `system/projects/nozoki/project.md` carried a provisional `pytest tests/` test command and no
+  `system/projects/ka-reader/project.md` carried a provisional `pytest tests/` test command and no
   `Languages:` line (`kensaiapp-opensource@4bdfddd`, the card as it stood when v2 read it), while
   the SDD's command bar was `cargo test --workspace` and the units Rust and TypeScript; § 8 pointed
   at the card as the template requires and named the disagreement. The card has moved four times
   since, each pinned. The test command became
-  `cargo test --workspace && (cd nozoki-ui && pnpm exec vitest run)` — the SDD's S-1 bar for the
-  Rust workspace and Vitest for `nozoki-ui`, one gate over the two toolchains ADR-0009 fixes
+  `cargo test --workspace && (cd ka-reader-ui && pnpm exec vitest run)` — the SDD's S-1 bar for the
+  Rust workspace and Vitest for `ka-reader-ui`, one gate over the two toolchains ADR-0009 fixes
   (`kensaiapp-opensource@c2155cc`, 2026-09-01). The card declared
   `Languages: Rust, TypeScript, Shell` (`kensaiapp-opensource@0af5fb9`, 2026-09-02). Its
   `Languages:` comment stopped saying Rust had no packet (`kensaiapp-opensource@ff43026`,
   2026-09-02) — the fact v3's fold could not reach and left for the owner, closed in the managing
   instance. And the test command took the Rust packet's `--locked`, a `cto:` run's field
   (`kensaiapp-opensource@3a960a7`, 2026-09-02), so it reads
-  `cargo test --workspace --locked && (cd nozoki-ui && pnpm exec vitest run)`. § 8 states the card
+  `cargo test --workspace --locked && (cd ka-reader-ui && pnpm exec vitest run)`. § 8 states the card
   as it reads at the last of those commits, and goes false at the card's next move until this note
   is extended — the accepted cost of a live sentence with its pinned history beside it, the shape
   the owner's seat confirmed for RN-2 and again here (`docs/trail/architecture/cycle-2.md` § 2.2,
   § 2.3). Three moves since, the first pinned at v12 and the last two at v13 (RN-23, RN-24): the
   card gained `Language roots:` (`kensaiapp-opensource@defe740`, 2026-09-23), touching neither
   line § 8 states; Swift replaced TypeScript on the `Languages:` line, in the test command — now
-  `cargo test --workspace --locked && swift test --package-path nozoki-mac` — and on `Language
+  `cargo test --workspace --locked && swift test --package-path ka-reader-mac` — and on `Language
   roots:` (`kensaiapp-opensource@5b27023`, 2026-09-23); and the `Languages:` comment named
   Swift's packet (`kensaiapp-opensource@ec80077`, 2026-09-23). § 8 states the card as it reads at
   the last of these. *(re: § 8; source: SDD § 6 S-1; ADR-0009; ADR-0016;
@@ -1910,7 +1910,7 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
 - **RN-7:** *(language packets — re-derived at v3)* Both packets resolve at step 1 of
   `languages/README.md` § The resolution chain, from the card's `Languages:` line (RN-6): the
   renderer to the TypeScript packet *(history since the card's `kensaiapp-opensource@5b27023`,
-  2026-09-23 — `nozoki-mac` resolves from the same line, at the same step, to the Swift packet,
+  2026-09-23 — `ka-reader-mac` resolves from the same line, at the same step, to the Swift packet,
   and where it stands against that packet is § 9's bullet and RN-24)*, the host and core to the
   Rust packet, which the organisation's
   registry gained on 2026-09-02 (`kensaiapp-dev@d628f75c`). v1 and v2 of this note said no packet
@@ -1925,14 +1925,14 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   (`languages/rust/testing.md` § Layers 1–5, § Layers 6–7); the SDD and an owner answer each
   outrank the packet. One consequence follows, and it is this product's own: because layer 5 is
   not under `cargo test`, `cargo test --workspace --locked` is the union of
-  `cargo test --locked -p nozoki-core` and `cargo test --locked -p nozoki-app` — layers 1–3 across
+  `cargo test --locked -p ka-reader-core` and `cargo test --locked -p ka-reader-app` — layers 1–3 across
   the two crates ADR-0009 fixes — and is this product's *change-time* run, which the project card's
   per-task field carries (RN-6), where the packet classifies the workspace form as release-time for
   the one reason it states: that layer 5 lives in the binary crate's `tests/<flow>.rs` and the
   workspace run includes it (`languages/rust/testing.md` § Layers 1–5). `testing_doctrine.md`'s
   "Layer 5 runs separately" is met by the harness running outside the per-task gate, not by a
   crate selector. The condition that would flip it is named and checked: a
-  `crates/nozoki-app/tests/<flow>.rs` that starts the built binary through `CARGO_BIN_EXE_*` would
+  `crates/ka-reader-app/tests/<flow>.rs` that starts the built binary through `CARGO_BIN_EXE_*` would
   put layer 5 inside the workspace run silently, and § 9 forbids it by keeping layer 5 on `checks/`
   — `checks/structure.sh` (layer 6), no `CARGO_BIN_EXE_` reference under `crates/*/tests/`. No SDD
   sentence moves — S-1's bar is a floor the card satisfies — and the card's field stands on this
@@ -1944,7 +1944,7 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   browser Playwright drives is not the WKWebView the product ships in, so § 9 splits what layer 4
   proves (rendering given state) from what layer 5 proves (the bundle) — this product's own,
   unchanged. **Where § 9 now follows the packet.** The Rust test paths sit under `crates/` —
-  `crates/nozoki-core/tests/`, `crates/nozoki-app/tests/` — the owner's ruling for every Rust
+  `crates/ka-reader-core/tests/`, `crates/ka-reader-app/tests/` — the owner's ruling for every Rust
   product here (`languages/rust/layout.md` § A multi-crate product; `kensaiapp-dev@49e0444f`),
   which names this document's § 9 as the one that adapts; ADR-0009 names the crates by name and
   fixes no directory, so no record moves. And every `cargo test` command in § 9, § 10 and the
@@ -1996,9 +1996,9 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
 - **RN-11:** *(the cycle-1 fold — what moved, and on whose authority)* Every change to settled
   content in this revision names its authorization; the companion as answered is
   `docs/trail/architecture/cycle-1.md`, and its ten answers were the owner's seat's — nine by a
-  `companion-self-answer` run (`docs/trail/architecture/self_answer-1.md`, `nozoki@a44a19e`), one
-  more by a second (`self_answer-2.md`, `nozoki@357190e`). § 1.1 → QC-27 (no window; the SRS bar
-  C-13 outranks the floor). § 1.2 → QC-40 takes the number the SRS folded at v9 (`nozoki@82c199a`,
+  `companion-self-answer` run (`docs/trail/architecture/self_answer-1.md`, `ka-reader@a44a19e`), one
+  more by a second (`self_answer-2.md`, `ka-reader@357190e`). § 1.1 → QC-27 (no window; the SRS bar
+  C-13 outranks the floor). § 1.2 → QC-40 takes the number the SRS folded at v9 (`ka-reader@82c199a`,
   NFR-11, AC-13) and becomes a machine check — the two layer-1 tests and the `checks/own-state.sh`
   reading it names are this document's realization, as RN-3's tools are; the pointer to the
   companion goes. § 2.1 → QC-59's
@@ -2016,14 +2016,14 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   the note that how the log carries it "is the producing run's call". Both halves are derived here
   rather than routed, because the test between a decision and a derivation — could two architects
   reading the same sources answer differently? — returns the same answer for each. **QC-40.** v1
-  wrote "a remembered folder until its entry is removed", true of the FDR at v1 (`nozoki@a50718a`)
-  and false at v3: R-178 – R-182 (`nozoki@0eb5c67`) and R-110 as re-worded at v3 (`nozoki@3325469`)
+  wrote "a remembered folder until its entry is removed", true of the FDR at v1 (`ka-reader@a50718a`)
+  and false at v3: R-178 – R-182 (`ka-reader@0eb5c67`) and R-110 as re-worded at v3 (`ka-reader@3325469`)
   state that no control removes an entry, the list changes only by viewing a folder, and an
   aged-out entry is not restored. A settled entry changes on a new upstream sentence, and the FDR is
   upstream of this document; QC-40 now states the FDR's rule and traces to it — transcription, not
   a call. **ADR-0003 and ADR-0005.** Each record's § Consequences says the Git view presents the
   outside-the-grant case "as a failure naming the folder to choose", citing `docs/fdr.md` R-21 —
-  the FDR's v1 text (`nozoki@a50718a:docs/fdr.md`, R-21). The owner's seat overrode R-21 at v2
+  the FDR's v1 text (`ka-reader@a50718a:docs/fdr.md`, R-21). The owner's seat overrode R-21 at v2
   (`docs/trail/fdr/cycle-1.md` § 2.7; `docs/fdr.md` RN-7): the failure state names where the Git
   directory lies, says this folder's Git state is therefore not read, and offers no folder to
   choose, because choosing that folder views *that* folder (PD-4) and the route led somewhere else.
@@ -2039,14 +2039,14 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   `docs/trail/fdr/cycle-2.md` § 2.3; `docs/trail/architecture/cycle-1.md` § 2.9)*
 - **RN-13:** *(upstream moved under this document since v1 read its sources)* Measured on
   2026-09-01 as `git diff --stat b23ed43 HEAD` over the seven inputs, `b23ed43` being v1's own
-  commit. `docs/SRS.md` v8 → v12: NFR-11 and AC-13 gained the log's bound at v9 (`nozoki@82c199a`)
+  commit. `docs/SRS.md` v8 → v12: NFR-11 and AC-13 gained the log's bound at v9 (`ka-reader@82c199a`)
   — QC-40 carries it; FR-13, AC-6 and AC-12 took the Git-view row's two readings at v12
-  (`nozoki@5c9dda7`) — behaviour, no entry moves, RN-2 records the close; RN-35's clause closed at
+  (`ka-reader@5c9dda7`) — behaviour, no entry moves, RN-2 records the close; RN-35's clause closed at
   v10 and 80 trail pointers were repaired at v9 — nothing here cites a repaired path.
-  `docs/SDD.md` v2 → v3 (`nozoki@5c776aa`): C-R6 reads `pnpm ls` where it read `npm ls` — QC-3 and
+  `docs/SDD.md` v2 → v3 (`ka-reader@5c776aa`): C-R6 reads `pnpm ls` where it read `npm ls` — QC-3 and
   QC-26 already realized the clause as pnpm, so nothing moves; § 12 and RN-6 – RN-8 name ADR-0001,
-  ADR-0002 and ADR-0004; 40 trail pointers repaired. `docs/fdr.md` v1 → v3 (`nozoki@0eb5c67`,
-  `nozoki@3325469`), now Settled: R-168 – R-170 and PD-39 — QC-60; R-178 – R-182 and R-110 —
+  ADR-0002 and ADR-0004; 40 trail pointers repaired. `docs/fdr.md` v1 → v3 (`ka-reader@0eb5c67`,
+  `ka-reader@3325469`), now Settled: R-168 – R-170 and PD-39 — QC-60; R-178 – R-182 and R-110 —
   QC-40 (RN-12); R-21 overridden — RN-12; the 37 rules and one decision v2 added beyond those
   (`docs/fdr.md` header, its v2 clause) and R-166 are behaviour and move no entry. `docs/PRD.md` v11 → v15, `docs/UXD.md` v6 → v10, `docs/DESIGN.md` v5 → v8 and
   `docs/CONTENT.md` v4 → v6: wording, the startup surface, the history's home, the folder rename
@@ -2059,9 +2059,9 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
 - **RN-14:** *(v3 — an input moved under a settled document; what this revision did and did not
   do, and on whose authority)* The registry gained a Rust packet on 2026-09-02
   (`kensaiapp-dev@d628f75c`, merged at `bc12fcbe`), after v2 closed on 2026-09-01
-  (`nozoki@1329741`). With no companion on disk a
+  (`ka-reader@1329741`). With no companion on disk a
   `product-architecture` re-run reads both records as done, so the companion was re-opened by an
-  owner-directed session (`nozoki@5003906`) with two drafts and one question, and this run — the
+  owner-directed session (`ka-reader@5003906`) with two drafts and one question, and this run — the
   first `product-architecture` run after it — is what applied the drafts: § 2.1 → § 9's preamble,
   § 9's two Rust paths and RN-7; § 2.2 → RN-6 and § 8's preamble. Neither is confirmed: the
   companion's slots are unfilled, so nothing was folded and no trail cycle is written; the items
@@ -2071,7 +2071,7 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   Rust packet requires the binary crate to select a logging facade and initialize it once, early,
   and leaves the choice — `log` or `tracing` — to this document
   (`languages/rust/errors_logging.md` § Logging, § Which facade; the owner's relaxation of the
-  packet's first shape, `kensaiapp-dev@819f6708`). `nozoki-app` is that crate and the composition
+  packet's first shape, `kensaiapp-dev@819f6708`). `ka-reader-app` is that crate and the composition
   root (ADR-0009 § Decision). No entry names a facade, and none is false for it: QC-39 and QC-52
   bind the log's line shape and location and QC-40 its bound, and each holds under either. What the
   choice moves when made: `checks/deps.allow` gains the facade crate and its implementation — a
@@ -2080,19 +2080,19 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   ("Recording it is the part that is not optional", same section) and a facade a change could
   swap silently is a constraint by lifecycle. Two architects reading the same SDD could answer
   differently — the packet's discriminator is whether diagnostics are queried by field or read as
-  lines — so it is routed, not derived. **No record moves.** ADR-0009 names `nozoki-core` and
-  `nozoki-app` by name and fixes no directory: the `crates/` placement is a layout fact under it,
+  lines — so it is routed, not derived. **No record moves.** ADR-0009 names `ka-reader-core` and
+  `ka-reader-app` by name and fixes no directory: the `crates/` placement is a layout fact under it,
   not a reversal of it, and ADR-0002's *two languages* and ADR-0009's *two toolchains* stay true.
   *(re: header `Status:`, `Version:`; § 8, § 9, RN-6, RN-7; source:
   `docs/architecture_open_issues.md` § 1.1, § 2.1, § 2.2; `languages/rust/errors_logging.md`
   v1.1.0; ADR-0009; the commits named)*
 - **RN-15:** *(v4 — the close of the re-opened companion; what moved, and on whose authority)* The
-  companion re-opened at `nozoki@5003906` was answered in the owner's seat by two
+  companion re-opened at `ka-reader@5003906` was answered in the owner's seat by two
   `companion-self-answer` runs — three items (`docs/trail/architecture/self_answer-3.md`,
-  `nozoki@5b285e4`), then two more raised by an owner-directed session (`nozoki@b55a6d4`) and
-  answered (`self_answer-4.md`, `nozoki@6415c46`) — and as answered is
+  `ka-reader@5b285e4`), then two more raised by an owner-directed session (`ka-reader@b55a6d4`) and
+  answered (`self_answer-4.md`, `ka-reader@6415c46`) — and as answered is
   `docs/trail/architecture/cycle-2.md`. **§ 1.1 → QC-61:** `log`, the product's own `log::Log`
-  writer installed once in `nozoki-app`, no third-party implementation. Two things the entry does
+  writer installed once in `ka-reader-app`, no third-party implementation. Two things the entry does
   not carry are recorded here. Why no record: the choice fails the significance test — the packet
   records that a library on `log` stays readable from a binary on `tracing` ("It is not a fork
   paid for twice", `languages/rust/errors_logging.md` § Which facade), so reversal is one allowlist
@@ -2128,14 +2128,14 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   RN-6, RN-7; source: `docs/trail/architecture/cycle-2.md`; `languages/rust/errors_logging.md`
   v1.1.0, `testing.md` v1.0.0; `testing_doctrine.md` v2.2.0; the commits named)*
 - **RN-16:** *(v5 — the cycle-3 fold, and the SDD re-authored beneath a settled document)* Two
-  authorizations, kept apart. **The owner's answer.** The companion re-opened at `nozoki@20b9a94`
+  authorizations, kept apart. **The owner's answer.** The companion re-opened at `ka-reader@20b9a94`
   by a `companion-self-answer` run — to carry one finding the SDD's re-author raised (its RN-34),
   no authoring run having written it — was answered by the owner through a `companion-answer` walk
-  (`nozoki@07a6b74`) and as answered is `docs/trail/architecture/cycle-3.md`. § 3.1 → the 37
+  (`ka-reader@07a6b74`) and as answered is `docs/trail/architecture/cycle-3.md`. § 3.1 → the 37
   citations in ADR-0001 – ADR-0008 of the deleted SDD's trail and review notes are pinned: the 14
-  of `docs/trail/sdd/cycle-1.md` read `nozoki@70a879a:docs/trail/sdd/cycle-1.md`, the 23 of
-  `docs/SDD.md` § SDD Review Notes RN-n read `nozoki@70a879a:docs/SDD.md` § SDD Review Notes RN-n
-  — `70a879a` being the last commit that touched the SDD before `nozoki@9c91359` deleted it, and
+  of `docs/trail/sdd/cycle-1.md` read `ka-reader@70a879a:docs/trail/sdd/cycle-1.md`, the 23 of
+  `docs/SDD.md` § SDD Review Notes RN-n read `ka-reader@70a879a:docs/SDD.md` § SDD Review Notes RN-n
+  — `70a879a` being the last commit that touched the SDD before `ka-reader@9c91359` deleted it, and
   carrying RN-1 – RN-34, RN-24 and RN-25 included (`git log 70a879a..9c91359 -- docs/SDD.md`
   returns the deletion alone; re-measured 2026-09-04). Where a review-note citation shared a
   backticked path with section references that still resolve, the pinned path is placed on the
@@ -2145,9 +2145,9 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   decision: no record's Status, date, decision, alternative or consequence moved, no superseding
   record is written, and ADR-0009 and the index are untouched. And QC-48's `SDD § 6 S-4` reads
   `S-5`, the re-authored SDD's `follow-the-folder`. **The upstream that moved.** The SDD every
-  earlier revision read (v1 – v4: `nozoki@70a879a` and before) was deleted at `nozoki@9c91359` on
-  2026-09-03 and re-authored from the PRD, SRS and UXD as they stand — v1 at `nozoki@c3eb937`,
-  Settled at v3 at `nozoki@827aa1c` on 2026-09-04 (`git diff --stat 7cdc857 HEAD` over the seven
+  earlier revision read (v1 – v4: `ka-reader@70a879a` and before) was deleted at `ka-reader@9c91359` on
+  2026-09-03 and re-authored from the PRD, SRS and UXD as they stand — v1 at `ka-reader@c3eb937`,
+  Settled at v3 at `ka-reader@827aa1c` on 2026-09-04 (`git diff --stat 7cdc857 HEAD` over the seven
   inputs: `docs/SDD.md` alone, 2,021 insertions and 1,549 deletions). Its § 4 fixes the relation —
   "where the two disagree, the § 4 statement wins and the NFDR entry is re-derived" — and its § 12
   records that its run found no disagreement with this document, one confirmation (C-R5's floor,
@@ -2173,7 +2173,7 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   QC-22's fixture names the PNG and the SVG. **§ 8.** S-1's command bar reads `cargo test
   --workspace --locked` in the re-authored SDD, so the card's field equals the bar rather than
   exceeding it; § 8 says so, RN-6's history stands, and RN-7's "S-1's bar is a floor the card
-  satisfies" was true of the SDD v4 read and is history at `nozoki@70a879a`. Nothing else in § 1
+  satisfies" was true of the SDD v4 read and is history at `ka-reader@70a879a`. Nothing else in § 1
   – § 10 moves; the `Inputs read:` line stands on the statuses as read, the SDD Settled at the
   re-authored v3. **What is raised, not folded.** Two items, at
   `docs/architecture_open_issues.md`. § 2.1 — the re-author also moved thirteen further ADR
@@ -2196,11 +2196,11 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   commits named)*
 - **RN-17:** *(v6 — the close of the cycle-4 companion, and two inputs moved beneath a settled
   document)* Three authorizations, kept apart. **The owner's two answers** — the companion the v5
-  run wrote at `nozoki@41d8c9f`, answered as `docs/trail/architecture/cycle-4.md`: § 2.1 in the
-  owner's seat by a `companion-self-answer` run (`self_answer-6.md`, `nozoki@f60bc3f`), § 1.1 by
-  the owner in a `companion-answer` walk (`nozoki@e54f920`). **§ 2.1 → fourteen pins.** The thirteen citations
+  run wrote at `ka-reader@41d8c9f`, answered as `docs/trail/architecture/cycle-4.md`: § 2.1 in the
+  owner's seat by a `companion-self-answer` run (`self_answer-6.md`, `ka-reader@f60bc3f`), § 1.1 by
+  the owner in a `companion-answer` walk (`ka-reader@e54f920`). **§ 2.1 → fourteen pins.** The thirteen citations
   the item counted, each measured this run at the line it names and each landing on another subject
-  in `docs/SDD.md` v5 as it did in v3, read `nozoki@70a879a:docs/SDD.md` § …: ADR-0002's `§ 9 TO-1,
+  in `docs/SDD.md` v5 as it did in v3, read `ka-reader@70a879a:docs/SDD.md` § …: ADR-0002's `§ 9 TO-1,
   TO-4` (three in § Consequences, one in § Traces to) and its `§ Open Questions, fifth item`;
   ADR-0006's fifth item in § Consequences and § Traces to; ADR-0005's *paragraph following / after
   the parts table* in § Decision, § Alternatives ruled out and § Traces to; ADR-0004's `§ 11 R-6`;
@@ -2229,7 +2229,7 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   with that report beside it, kept the check as it is (*"QC-60's `checks/own-state.sh` keeps the
   member it verifies"*); so the check stands on an owner's word, and a change to it is a fresh
   authorization, not a fold of this one. **The SDD moved beneath this document**, v3 → v5
-  (`nozoki@683db69`, `nozoki@67372a5`; `git diff --stat 827aa1c HEAD -- docs/SDD.md`: 158 lines,
+  (`ka-reader@683db69`, `ka-reader@67372a5`; `git diff --stat 827aa1c HEAD -- docs/SDD.md`: 158 lines,
   2026-09-05), read whole against § 1 – § 10. Four sentences moved and one entry follows. (1) § 3
   `fs-reader`'s text rule admits UTF-16 by byte-order mark beside UTF-8 and states its boundary — no
   detection from content, no third encoding, an empty file is text (SDD RN-41): QC-31 said *the UTF-8
@@ -2249,7 +2249,7 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   `watch`, `switch`, `config`) are the SDD's and unchanged. Every condition C-R1 – C-R7, C-I1 – C-I6,
   C-D1 – C-D4 keeps its number and subject; every `docs/SDD.md` trace tag in § 1 – § 10 was opened
   and resolves to the passage it names. **The FDR moved beneath this document**, v3 → v6
-  (`nozoki@2cd990f`, `4a73c1a`, `356b531`), read whole. (5) PD-40, added at FDR v4 and widened at v5
+  (`ka-reader@2cd990f`, `4a73c1a`, `356b531`), read whole. (5) PD-40, added at FDR v4 and widened at v5
   by an owner answer (`docs/trail/fdr/cycle-3.md` § 2.6), states the priced set — the install path,
   the macOS floor, every PRD-named surface present, and by PD-39 own-state readability — and prices
   *adding a prerequisite* as a major version. QC-59 stated the same set from SRS C-6 and the FDR's
@@ -2262,7 +2262,7 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   so no § 10 row moves. (6) R-46, R-154, R-155 and R-21 now realize SDD sections (FDR RN-30) — the
   traces QC-31 takes in (1). (7) FDR RN-28 re-pointed or pinned the FDR's own citations of the deleted
   SDD's review notes — the defect RN-16 reported as the Principal PM's is closed by that document's own
-  run, and `docs/fdr.md` RN-28 (*What is pinned to `nozoki@70a879a:docs/SDD.md`*) is its record. Nothing else the FDR added — R-146 – R-182, PD-40's siblings — moves
+  run, and `docs/fdr.md` RN-28 (*What is pinned to `ka-reader@70a879a:docs/SDD.md`*) is its record. Nothing else the FDR added — R-146 – R-182, PD-40's siblings — moves
   an entry: behaviour, the FDR's tell. **What did not move.** `docs/PRD.md`, `docs/UXD.md`,
   `docs/DESIGN.md`, `docs/CONTENT.md`: `git log 827aa1c..HEAD` over them prints nothing (2026-09-05),
   so the `Inputs read:` line stands on the statuses as read — every input Settled. The doctrine files
@@ -2280,13 +2280,13 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
 - **RN-18:** *(v7 — the close of the cycle-5 companion: three verifications the first built code
   showed could not run as stated)* **How the companion came to exist.** No `product-architecture`
   run opened it. Both records were Settled with no companion on disk, and a re-run would have read
-  them as done; the PM opened it on 2026-09-19 from a post-build review (`nozoki@d9cbefc`) with
+  them as done; the PM opened it on 2026-09-19 from a post-build review (`ka-reader@d9cbefc`) with
   three items, all raised from downstream and none drafted. All three were answered in the owner's
-  seat by one `companion-self-answer` run (`nozoki@0f4eab3`; its reasoning,
+  seat by one `companion-self-answer` run (`ka-reader@0f4eab3`; its reasoning,
   `docs/trail/architecture/self_answer-8.md`) and as answered the companion is
   `docs/trail/architecture/cycle-5.md`. Every change below names the answer that authorizes it,
   and what this run added beyond an answer's words is marked as this run's own. **§ 3.1 → QC-25,
-  and one record.** `docs/SDD.md` moved v5 → v6 (`nozoki@b3439e8`): § 4 C-I3 states a new
+  and one record.** `docs/SDD.md` moved v5 → v6 (`ka-reader@b3439e8`): § 4 C-I3 states a new
   observable for the bundle probe, § 10 RC-1 records the measurement that retired the old one —
   `APP_SANDBOX_CONTAINER_ID` is absent from a sandboxed main process under either signature and
   from an unsandboxed one, so it separates nothing — and RN-45 hands QC-25 and ADR-0008 to this
@@ -2310,7 +2310,7 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   `usr/lib/system/libsystem_sandbox.tbd` list `_sandbox_check`; and Apple's App Sandbox page
   carries the Activity Monitor sentence C-I3 quotes and names neither the marker nor the function.
   One fact a delivery reader needs and no entry states: `checks/bundle.sh` as last committed
-  (`nozoki@ccb58d8`, v1.0.0) still reads the marker, so QC-25 as it now reads is red against the
+  (`ka-reader@ccb58d8`, v1.0.0) still reads the marker, so QC-25 as it now reads is red against the
   script as built until a change lands C-I3's probe and its control. That is the correct reading,
   not a defect of this revision — the entry follows the SDD, and the script follows the entry.
   **§ 3.2 → QC-23.** The entry promised string equality with a string containing `<asset-scheme>`,
@@ -2321,8 +2321,8 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   rather than on this document's next revision, because the delivery tier does not edit this
   document, and an entry that waited on a revision here would contradict the test that lands with
   the form. The first state is what the built test already asserts
-  (`nozoki@a4ab8e6:crates/nozoki-app/tests/config.rs:L17`, `:L181-L188`;
-  `nozoki@a4ab8e6:crates/nozoki-app/tauri.conf.json:L12`), opened this run.
+  (`ka-reader@a4ab8e6:crates/ka-reader-app/tests/config.rs:L17`, `:L181-L188`;
+  `ka-reader@a4ab8e6:crates/ka-reader-app/tauri.conf.json:L12`), opened this run.
   The tail's second clause — the scan of every directive for the five forbidden sources — names
   what the prohibition half of the obligation was always checked by; the old tail named the
   equality alone. No record moves: ADR-0006 already says the form is open. Not covered, and the
@@ -2340,7 +2340,7 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   phrase read both ways. The answer accepts no read: it makes the entry true and puts every read
   on a list reviewed as code, the pattern the owner confirmed for `checks/deps.allow` (RN-3,
   QC-26). **The measurement the answer left to this fold**, taken 2026-09-19 with nothing fetched
-  or re-resolved: `cargo tree -p nozoki-app --target aarch64-apple-darwin -e normal --locked
+  or re-resolved: `cargo tree -p ka-reader-app --target aarch64-apple-darwin -e normal --locked
   --offline` resolves 216 crates; a scan of their sources for the six primitives QC-30's tail
   names finds a textual hit in 17 — `tauri-utils`, `tauri-macros`, `tauri-codegen`, `tauri`,
   `tauri-runtime-wry`, `dirs`, `dirs-sys`, `brotli`, `brotli-decompressor`, `tokio`, `once_cell`,
@@ -2391,13 +2391,13 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
 - **RN-19:** *(v8 — the close of the cycle-6 companion: two checks the first built code showed the
   entries state wider than they can run)* **How the companion came to exist.** As at RN-18, no
   `product-architecture` run opened it: both records were Settled at v7 with no companion on disk,
-  and the PM opened one on 2026-09-19 from a post-build review (`nozoki@07beb5b`, `nozoki@422f6d1`)
+  and the PM opened one on 2026-09-19 from a post-build review (`ka-reader@07beb5b`, `ka-reader@422f6d1`)
   with two items, both raised from downstream and each carrying a lean. Both were answered in the
   owner's seat by one unattended `companion-self-answer` run, not by the owner in person
-  (`nozoki@bf99e8e`; its reasoning, `docs/trail/architecture/self_answer-9.md`), and as answered
+  (`ka-reader@bf99e8e`; its reasoning, `docs/trail/architecture/self_answer-9.md`), and as answered
   the companion is `docs/trail/architecture/cycle-6.md`. Every change below names the answer that
   authorizes it, and what this run added beyond an answer's words is marked as this run's own.
-  **§ 3.1 → QC-24.** `docs/SDD.md` moved v6 → v7 (`nozoki@c1f8a20`): § 4 C-R7 states the staged
+  **§ 3.1 → QC-24.** `docs/SDD.md` moved v6 → v7 (`ka-reader@c1f8a20`): § 4 C-R7 states the staged
   grant where it said "exactly SM-4's command list", § 3 SM-4 and § 4 C-I3 follow it, and RN-47
   hands QC-24 to this seat in terms — it "still states the whole list and is the Principal
   Architect's to bring into line". QC-24 is re-derived from C-R7 under that document's own rule
@@ -2415,28 +2415,28 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   (2) The trace to SDD § 11 R-12, which C-R7 itself cites for the pre-`v1.0.0` half. § 10's row
   names the command and not the mechanism, so it stands, though the item named it as owed. **One
   fact a delivery reader needs and no entry states:** the test as built holds two hand-kept
-  constants (`crates/nozoki-app/tests/config.rs:L228`, `:L231`, opened this run at
-  `nozoki@bf99e8e`), and the capability file grants `allow-open-folder` and `allow-list-tree`
-  (`crates/nozoki-app/capabilities/main.json:L5`). The test is green today and does not yet meet
+  constants (`crates/ka-reader-app/tests/config.rs:L228`, `:L231`, opened this run at
+  `ka-reader@bf99e8e`), and the capability file grants `allow-open-folder` and `allow-list-tree`
+  (`crates/ka-reader-app/capabilities/main.json:L5`). The test is green today and does not yet meet
   the re-derived tail. That is the correct reading, not a defect of this revision — the entry
   follows the SDD, and the test follows the entry. How the test comes to read the registered set is
   the delivery tier's to plan (`docs/SDD.md` RN-47); if it finds no way to read it, that comes back
   here as a raised item and is not settled inside a change. **§ 3.2 → QC-61 and § 9.** QC-61's
-  rule said `log::set_logger` appears "only in `nozoki-app`" and stated no scope, and the tree
-  holds `crates/nozoki-core/tests/failure_log.rs:L52` and `failure_log_kinds.rs:L61`, each
-  installing a capturing logger in its own test binary to assert on `nozoki-core`'s warn line —
+  rule said `log::set_logger` appears "only in `ka-reader-app`" and stated no scope, and the tree
+  holds `crates/ka-reader-core/tests/failure_log.rs:L52` and `failure_log_kinds.rs:L61`, each
+  installing a capturing logger in its own test binary to assert on `ka-reader-core`'s warn line —
   the only way a test can observe one, since `set_logger` "may only be called once in the lifetime
   of a program" (https://docs.rs/log/latest/log/fn.set_logger.html). That sentence and the Cargo
   reference's "as a separate crate" were both re-read at source this fold, 2026-09-19, rather than
   transcribed from the answer. The check overreached the property, which is about the shipped process; narrowing
   it relaxes nothing the property protects — the one shipped site is
-  `nozoki@a4ab8e6:crates/nozoki-app/src/log_writer.rs:L142` and `crates/nozoki-core/src/` holds none (`grep -rn
+  `ka-reader@a4ab8e6:crates/ka-reader-app/src/log_writer.rs:L142` and `crates/ka-reader-core/src/` holds none (`grep -rn
   'set_logger\|set_boxed_logger' crates/`, run this fold). **The answer's addition, folded as
   written:** the same script carries rules against which the tree holds a test-target site each —
-  QC-2's write rule (`crates/nozoki-core/tests/common/mod.rs:L57`), QC-7's and QC-9's
-  `std::process` (`…/common/mod.rs:L11`), QC-13's `std::fs` (`nozoki@a4ab8e6:crates/nozoki-app/tests/config.rs:L11`,
+  QC-2's write rule (`crates/ka-reader-core/tests/common/mod.rs:L57`), QC-7's and QC-9's
+  `std::process` (`…/common/mod.rs:L11`), QC-13's `std::fs` (`ka-reader@a4ab8e6:crates/ka-reader-app/tests/config.rs:L11`,
   the very test QC-23, QC-24 and QC-36 name) and QC-30's `std::env::args`
-  (`crates/nozoki-core/tests/walk.rs:L66`, the driver `checks/read-only.sh` runs) — every one
+  (`crates/ka-reader-core/tests/walk.rs:L66`, the driver `checks/read-only.sh` runs) — every one
   opened this fold and found as cited. Scoping QC-61 alone would have left a cold reader to infer
   the other rules do reach test targets, and the first `checks/structure.sh` written to the words
   would have failed a correct tree on five rules. So the scope is stated once, in § 9's new bullet,
@@ -2449,9 +2449,9 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   so no rule is left to inference a second time. (3) The `#[path]` escape is a review catch
   because the tree holds no such site to shape a grep rule against — that is the whole reason, and
   a rule becomes owed the day a site appears. No `QC` is added, as the answer ruled. **Seen this
-  fold, and breaks nothing:** `nozoki@a4ab8e6:crates/nozoki-app/src/log_writer.rs:L201` calls `fs::write` inside
-  `src/`. It sits in `nozoki-app`'s log module, which QC-13 admits by name, and QC-2's write rule
-  names `nozoki-core`; so the scope's first not-covered case stays undecided, as the answer left
+  fold, and breaks nothing:** `ka-reader@a4ab8e6:crates/ka-reader-app/src/log_writer.rs:L201` calls `fs::write` inside
+  `src/`. It sits in `ka-reader-app`'s log module, which QC-13 admits by name, and QC-2's write rule
+  names `ka-reader-core`; so the scope's first not-covered case stays undecided, as the answer left
   it. `checks/structure.sh` is not in the tree (`ls checks/` prints `bundle.sh`, `fixtures`,
   `own-state.sh`, `read-only.sh`, `tests`), so no built script is made wrong by this revision; the
   first one written follows the entries as they now read. **Seen and not raised.** QC-2's tail
@@ -2483,13 +2483,13 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   GitHub-hosted runner, and a `companion-self-answer` run answering the SDD's own companion added
   § 3.3 the same day, while re-reading the CI run that item cites. All three were answered in the
   owner's seat by one unattended `companion-self-answer` run, not by the owner in person
-  (`nozoki@b91ba55`; its reasoning, `docs/trail/architecture/self_answer-10.md`), and as answered
+  (`ka-reader@b91ba55`; its reasoning, `docs/trail/architecture/self_answer-10.md`), and as answered
   the companion is `docs/trail/architecture/cycle-7.md`. Every change below names the answer that
   authorizes it, and what this run added beyond an answer's words is marked as this run's own.
   **§ 3.1 → QC-3 and its § 10 row.** The defect: QC-3 states a domain — no shipped unit links a
   network transport — and was verified by a diff of the tree against `checks/deps.allow`, which
   proves the two agree and cannot fail on a name the list admits. Measured on the answer's own
-  case and re-run this fold at `nozoki@b91ba55`: `bash checks/no-network.sh` exits 0 while
+  case and re-run this fold at `ka-reader@b91ba55`: `bash checks/no-network.sh` exits 0 while
   `checks/deps.allow:L51` holds `crypto-common` and `:L204` holds `tokio`. The tail now states two
   halves, the second being QC-26's same-change review told what question to ask — each added
   name judged against QC-3's domain in the features the lockfile resolves — which is what
@@ -2497,7 +2497,7 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   "no shipped unit links a network transport". A correction, not a widening, by this document's
   own preamble: an entry with no nameable verification is not yet an entry, and the domain half
   had none. The features clause is the answer's, on the ground that a name cannot answer the
-  question — `tokio` is on the list and at `nozoki@9b36a42` resolves no `net` feature — and that
+  question — `tokio` is on the list and at `ka-reader@9b36a42` resolves no `net` feature — and that
   QC-3's own first clause, libgit2 without its HTTPS and SSH transports, is a feature condition a
   name diff never sees once a binding lands (no `git2` is in `crates/*/Cargo.toml` today; grep
   run this fold). The one-time review of the 381 names already on the list is the answer's too:
@@ -2512,7 +2512,7 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   half is a class-2 gate and argues it in the tail — no command judges whether a name is a
   transport. § 10's QC-3 row gains the review beside the script, as the answer ruled, with *the
   change* beside *the tree* under *Runs over*. **§ 3.2 and § 3.3 → QC-25, and ADR-0010 corrected
-  in place.** `docs/SDD.md` moved v7 → v8 (`nozoki@9b36a42`): § 4 C-I3 states the bounded window
+  in place.** `docs/SDD.md` moved v7 → v8 (`ka-reader@9b36a42`): § 4 C-I3 states the bounded window
   and the hosted-runner narrowing, RN-48 records the measurement, and RN-48 hands both to this
   seat in terms — "the Principal Architect's to bring into line". QC-25's tail is re-derived from
   C-I3 at v8 under that document's own rule that the § 4 statement wins: transcription, not a
@@ -2524,7 +2524,7 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   hosted runner, settled by the probe's first CI run — is false since the run happened (GitHub
   Actions run 35797893381, as RN-48 records it) and is gone. The § 10 row does not move:
   `checks/bundle.sh` is still the command, and the script on `main` already holds the window,
-  the printed bound, the whole-window control and the per-ask existence check (`nozoki@cf539a4`;
+  the printed bound, the whole-window control and the per-ask existence check (`ka-reader@cf539a4`;
   `checks/bundle.sh:L2`, `:L78-L79`, `:L290-L292`, `:L326-L329`, opened this fold), so the
   re-derived tail is green against the script as built. **The record, and the append-only rule.**
   The answers rule that neither the window nor the narrowing supersedes ADR-0010: the observable
@@ -2543,8 +2543,8 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   accepted record is never rewritten and that an owner's answer contradicting one produces a
   superseding record; it also says that where the owner meant a correction and not a reversal,
   that is the owner's call and not the run's to guess. The owner's seat made it, in terms, and
-  the log has taken corrections of this kind before — the citation pins of v5 (`nozoki@41d8c9f`,
-  eight accepted records) and v6 (`nozoki@00c1bc9`, six) — so this fold follows the ruling and
+  the log has taken corrections of this kind before — the citation pins of v5 (`ka-reader@41d8c9f`,
+  eight accepted records) and v6 (`ka-reader@00c1bc9`, six) — so this fold follows the ruling and
   records here that it did, rather than writing an ADR-0011 that restates ADR-0010 whole with two
   sentences narrowed, which the answer expressly did not order. What the corrections leave
   untouched, stated so the next reader can check it by diff: § Decision's observable, three
@@ -2575,7 +2575,7 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   movement is drafted; nothing is folded)* **How the companion came to exist.** As at RN-18 –
   RN-20, no `product-architecture` run opened it: both records were Settled at v9 with no companion
   on disk. A `companion-self-answer` run answering `docs/SDD_open_issues.md` § 1.1 opened it on
-  2026-09-23 (`nozoki@a9f1b8a`; its reasoning, `docs/trail/sdd/self_answer-19.md`) with one § 2
+  2026-09-23 (`ka-reader@a9f1b8a`; its reasoning, `docs/trail/sdd/self_answer-19.md`) with one § 2
   item, proposed and not drafted, on the ground the SDD itself gives: § 12 and § 10 RC-2 name
   QC-25's *exactly* and ADR-0003's as the Principal Architect's to bring into line, and route it
   nowhere. This run — the first `product-architecture` run after it — is what drafted the item. Its
@@ -2585,13 +2585,13 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   --stat -- docs/` — `42bd7b5` being v9's own commit — names `docs/SDD.md`, the two companions and
   `docs/trail/sdd/` and nothing else (2026-09-23), so the SRS, the FDR, the PRD, the UXD, DESIGN and
   CONTENT are byte-for-byte what v9 read whole and were not re-read whole; each one's `Status:` line
-  was re-read this run. The SDD moved v8 → v12 (`nozoki@e7b2bcd`, `ba63b44`, `6ebdc42`; 556 lines
+  was re-read this run. The SDD moved v8 → v12 (`ka-reader@e7b2bcd`, `ba63b44`, `6ebdc42`; 556 lines
   in and 44 out), read whole as a diff and every passage cited here opened: the header, § 1's
   read-only bullet, § 2 row 4, § 4 C-R2 and C-I3, § 5 step 4 E-1, § 6 S-1, § 10 RC-1 and RC-2,
   § 12, RN-49 – RN-58, Open Questions. Two subjects: the form of the wall, and the renderer that
   cannot start under it; QC-25 and a new entry follow, and the `Inputs read:` line reads the SDD
   Draft — its companion holds three answered items awaiting a `product-sdd` fold at
-  `nozoki@a1d8f2c`. Which entries turn on the Draft, stated per the rule that the header names the
+  `ka-reader@a1d8f2c`. Which entries turn on the Draft, stated per the rule that the header names the
   run's inputs and a record its own: QC-25's rule and ADR-0011 rest on C-R2, which is the owner's
   ruling (`docs/trail/sdd/cycle-8.md` § 5.1) and holds under every answer to that companion's
   § 1.1; QC-62's and ADR-0012's mechanism rests on C-I3's WKWebView-specific clause and each says
@@ -2611,7 +2611,7 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   upstream's current words rather than keeping a less precise copy of an earlier one. One fact a
   delivery reader needs and no entry states: `checks/bundle.sh` at v1.5.0 already realizes half (1)
   as the entry now reads — the set equality at `:L73` and `:L127-L187`, the window, the printed
-  bound and the control's whole-window rule since `nozoki@cf539a4` — so QC-25 is green against the
+  bound and the control's whole-window rule since `ka-reader@cf539a4` — so QC-25 is green against the
   script as built, and half (2) first runs on the change that adds a key. ADR-0011 restates
   ADR-0003 whole with the rule in place of the list — the form ADR-0010 took over ADR-0008 — and
   lands **Proposed**: the owner has not answered the item, a Proposed record is the run's to
@@ -2635,7 +2635,7 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   mechanism, so none of the three is read as covered. § 9's layer-5 row and § 10 gain the script;
   QC-25's § 10 row does not move, the command being the same. **What is not done, and why
   (companion § 2.2).** The owner answered `docs/SDD_open_issues.md` § 1.1 on 2026-09-23 — (a), the
-  renderer leaves WKWebView (`nozoki@5176475`) — an authorized decision that outranks every
+  renderer leaves WKWebView (`ka-reader@5176475`) — an authorized decision that outranks every
   document and reverses ADR-0002's renderer half and `docs/fdr.md` PD-29. No record supersedes
   ADR-0002 this run and QC-21 stands as written: the SDD has not decided what the renderer becomes
   (§ 4 C-R1 at v12 still renders in WKWebView; the answer's own last sentence leaves the technology
@@ -2653,15 +2653,15 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   index; source: `docs/architecture_open_issues.md` § 2.1, § 2.2; `docs/SDD.md` v12 — § 1, § 2 row
   4, § 4 C-R1, C-R2, C-I3, § 5 step 4, § 6 S-1, § 10 RC-2, § 12, RN-50, RN-52, RN-56, RN-58, Open
   Questions; `docs/trail/sdd/cycle-8.md` § 5.1; `docs/SDD_open_issues.md` § 1.1 at
-  `nozoki@a1d8f2c`; `docs/trail/sdd/self_answer-19.md`, `self_answer-20.md`;
+  `ka-reader@a1d8f2c`; `docs/trail/sdd/self_answer-19.md`, `self_answer-20.md`;
   `checks/bundle.sh:L73`, `:L127-L187`; `docs/fdr.md` PD-29; the commits named)*
 
 - **RN-22:** *(v11 — the cycle-8 fold, and the SDD's re-cut of the shape beneath a settled
   document: what is folded, what is drafted for the owner, and what this run added of its own)*
-  **The fold.** The companion at intake (`docs/architecture_open_issues.md` at `nozoki@c2cb01c`)
+  **The fold.** The companion at intake (`docs/architecture_open_issues.md` at `ka-reader@c2cb01c`)
   held two answered items and one unanswered, and as answered is
   `docs/trail/architecture/cycle-8.md`; both answers were given in the owner's seat by a
-  `companion-self-answer` run (`nozoki@c5a2e76`; its reasoning,
+  `companion-self-answer` run (`ka-reader@c5a2e76`; its reasoning,
   `docs/trail/architecture/self_answer-11.md`). **§ 2.1 → ADR-0011 Accepted, superseding
   ADR-0003;** ADR-0003's Status line reads `Superseded by ADR-0011` and no other line of it moved;
   the index follows; the seven sites that cited ADR-0003 beside QC-25 — QC-2, QC-32, QC-33, QC-35,
@@ -2678,7 +2678,7 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   it as drafted; the same seat's later reading, given while answering the SDD's companion, is that
   it "may also move under the RC-3 re-derivation, now raised at
   `docs/architecture_open_issues.md` § 2.3, and the index row follows it wherever it goes"
-  (`docs/trail/sdd/cycle-9.md` § 2.3, the owner's addition, `nozoki@18ad26d`) — and it has moved:
+  (`docs/trail/sdd/cycle-9.md` § 2.3, the owner's addition, `ka-reader@18ad26d`) — and it has moved:
   C-I3 at v13 fixes the control as `checks/fixtures/idle-shell` ("a single-process shell has no
   renderer build to remove") and the observable as `open_folder`'s call with the panel presented,
   and names this record as the one "whose mechanism, control and observable's name are re-derived
@@ -2690,10 +2690,10 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   the companion as part of the drafted § 2.3, per the loop's rule that an answered item never
   survives the drop. **§ 2.2 → nothing lands, as confirmed**, and its condition is met: the SDD
   carries the replacement (v13, § 10 RC-3) and the FDR closed at v8 with PD-29 moved
-  (`docs/trail/fdr/cycle-5.md` § 2.1; `nozoki@5003426`), which is what QC-21's re-derivation
+  (`docs/trail/fdr/cycle-5.md` § 2.1; `ka-reader@5003426`), which is what QC-21's re-derivation
   waited on (RN-21). **What moved beneath this document, and what did not.** `git diff --stat
   bd98225..HEAD -- docs/` — `bd98225` being v10's own commit — names `docs/SDD.md` (run 12,
-  `nozoki@b236e7b`, v12 → v13), `docs/fdr.md` (v6 → v8, `nozoki@be1a821`, `nozoki@5003426`), the
+  `ka-reader@b236e7b`, v12 → v13), `docs/fdr.md` (v6 → v8, `ka-reader@be1a821`, `ka-reader@5003426`), the
   companions and the trails, and nothing else (2026-09-23); the SRS, the PRD, the UXD, DESIGN and
   CONTENT were re-read whole this run and are what v10 read — every one Settled — so the `Inputs
   read:` line stands, the SDD Draft: its companion holds one answered item (§ 2.3 — C-I3's wording
@@ -2714,7 +2714,7 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   ADR-0014 (AppKit in Swift, no web engine of any kind, the view's language weighed against
   `objc2` and SwiftUI; supersedes ADR-0002), ADR-0015 (Markdown as a `MarkdownDocument`, the three
   walls redrawn as the check, the document as data and the decoder fed by the check alone;
-  supersedes ADR-0006), ADR-0016 (the unit set — `nozoki-core`, `nozoki-bridge`, `nozoki-mac`,
+  supersedes ADR-0006), ADR-0016 (the unit set — `ka-reader-core`, `ka-reader-bridge`, `ka-reader-mac`,
   `checks/`; supersedes ADR-0009, its reconstructed marking kept for the two readings still this
   seat's). Four rather than fewer because the four decisions have four reversal costs: moving the
   view into a second process costs the bridge re-wired as IPC; replacing the view technology costs
@@ -2725,16 +2725,16 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   re-derived (§ 4, opening note) — the rule this document followed at v5 – v10 — and each traces to
   the Proposed record *and* to the accepted one it supersedes, the form RN-21 fixed for QC-25, so a
   cold reader sees both the record in force and the record the entry is written against: § 1's
-  opening paragraph; QC-1 (the shell holds no I/O — a scan, not a boundary); QC-8 (`nozoki-mac`'s
+  opening paragraph; QC-1 (the shell holds no I/O — a scan, not a boundary); QC-8 (`ka-reader-mac`'s
   imports, no package dependency, `surfaces` never calling `SM-4`); QC-9 (no Apple framework, no
   `unsafe` in the core); QC-11 (`highlighter` among the parts, the second stated edge); QC-13
-  (`nozoki-bridge`: delegation, `unsafe`, the generated header, the sanitizer); QC-14, QC-15,
-  QC-16, QC-17 (two composition roots); QC-18, QC-19 (the S-10 diff over `nozoki-mac`), QC-20;
+  (`ka-reader-bridge`: delegation, `unsafe`, the generated header, the sanitizer); QC-14, QC-15,
+  QC-16, QC-17 (two composition roots); QC-18, QC-19 (the S-10 diff over `ka-reader-mac`), QC-20;
   QC-21 (the non-invariant re-stated on PD-29 at v8); § 2's boundaries and threat classes; QC-22
   (the hostile fixture as a `MarkdownDocument`); QC-23 (no web engine, in place of a CSP the shape
   cannot declare); QC-24 (the bridge's export set, in place of the capability file — the staged
   form RN-19 fixed carried across unchanged in kind); QC-26 (no Swift dependency, no
-  `Package.resolved`); QC-27 (`pnpm audit` leaves); QC-30 (`-p nozoki-bridge`; the shell in
+  `Package.resolved`); QC-27 (`pnpm audit` leaves); QC-30 (`-p ka-reader-bridge`; the shell in
   half (1)); QC-34 (the shell's reach: C-R7's forbidden set, and its own caveat that the scan is
   the check and the sentence is the rule); QC-36, QC-37 (`asset_bytes` and the decoder), QC-40,
   QC-41, QC-47, QC-51, QC-53, QC-55 (one process; no font; no second executable), QC-58, QC-59
@@ -2745,7 +2745,7 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   its entry:** (1) three symbols for `checks/view.sh` — `CommandLine.arguments`,
   `ProcessInfo.processInfo.arguments`, `ProcessInfo.processInfo.environment` — realizing C-R3's
   *Violated by* ("accepts a path by argument, environment or configuration file"), which C-R7's
-  scan does not name (QC-30 half (1)); (2) a `view.sh` rule that a `nozoki_` symbol is called
+  scan does not name (QC-30 half (1)); (2) a `view.sh` rule that a `ka_reader_` symbol is called
   from `mac-shell`'s sources and from no file of `surfaces`, realizing SM-8's "a surface never
   reaches the bridge" (QC-17); (3) `NSAlert`, the user-notification API and modal presentation as
   the symbols `view.sh` refuses, realizing `surfaces`' "Must not own: a dialog, a toast, a
@@ -2762,15 +2762,15 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   and the reason no harness drives the AppKit views is C-I3's and TO-7's — the accessibility surface
   UX-A1 disclaims, and an Xcode project this product does not keep; and ADR-0010's "the closed IPC
   command list" is `SM-4`'s function list now, the same closed list across a different seam. Neither
-  reverses ADR-0010's decision — the harness through `nozoki-core` in-process, the probe on every
+  reverses ADR-0010's decision — the harness through `ka-reader-core` in-process, the probe on every
   build reading the operating system's report — and C-I3 still names ADR-0010 as its record. RN-3's
-  tool list names `cargo test -p nozoki-app --test config`, a test the shape retires with
+  tool list names `cargo test -p ka-reader-app --test config`, a test the shape retires with
   `tauri.conf.json` and the capability file; the note is dated history and stands. RN-7's "Layer 4
   is present, on Vitest Browser Mode with Playwright" and its TypeScript-packet clauses are history
   as of this revision, and the departure list stands for the Rust packet as written. The doctrine
   cites move under no answer: `languages/rust/testing.md` reads v1.0.1 and `toolchain.md` v1.1.1
   (each read whole this run, 2026-09-23; neither moved a layer or a rule this document cites), and
-  the TypeScript packet leaves the citing paragraph with `nozoki-ui`. **One item is raised,
+  the TypeScript packet leaves the citing paragraph with `ka-reader-ui`. **One item is raised,
   companion § 1.1, and one entry names it rather than deciding it:** `docs/SDD.md` § 3 at v13 has
   `folder-model` own `FileView` — whose content carries `highlighter`'s spans or a
   `MarkdownDocument` — and `core-bridge` "must not own read logic — every function delegates and
@@ -2780,14 +2780,14 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   differently, so it is routed to the SDD's seat through the companion and QC-10 stands as written
   with the gap named. **Seen and not raised, each the SDD's to move at its next run:** `folder-model`'s
   "Must not own" still names "The Tauri runtime" (§ 3, the parts table); RN-8 still says SVG would
-  be "served on the same `nozoki-asset` scheme", a mechanism RC-3 retired, while C-D3 carries the
+  be "served on the same `ka-reader-asset` scheme", a mechanism RC-3 retired, while C-D3 carries the
   current reopening condition; and S-3's command half tests `asset_bytes` under `cargo test -p
-  nozoki-core --test markdown` where § 3 places `asset_bytes` in `core-bridge` — QC-37 cites the
+  ka-reader-core --test markdown` where § 3 places `asset_bytes` in `core-bridge` — QC-37 cites the
   command as the SDD states it. **Owed outside this document, named so the fold is not read as
   complete:** the project card's `Languages:` line and test command (§ 8; SDD RN-60);
   `README.md:L46-L51`'s stack and proof sentences (SDD RN-59); `docs/DESIGN.md`'s realisation
-  sentence (SDD RN-62). **The tree.** `crates/nozoki-app`, `nozoki-ui` and `checks/` as v10 read
-  them (`ls`, 2026-09-23; no `nozoki-mac`, no `crates/nozoki-bridge`, no `checks/view.sh`,
+  sentence (SDD RN-62). **The tree.** `crates/ka-reader-app`, `ka-reader-ui` and `checks/` as v10 read
+  them (`ls`, 2026-09-23; no `ka-reader-mac`, no `crates/ka-reader-bridge`, no `checks/view.sh`,
   `renderer.sh` or `idle-shell`), so every entry that names the new units is red against it until
   the change that lands the native shell — the reading RN-18 fixed for QC-25 against
   `checks/bundle.sh` at v7, applied to the whole shape. No `QC` is added, renumbered or reused;
@@ -2804,7 +2804,7 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   resolution chain; `<CORE>/doctrine/engineering/languages/` listing; the commits named)*
 - **RN-23:** *(v12 — the close: the cycle-9 fold, and the SDD moved v13 → v14 beneath this
   document)* **The fold.** The companion at intake (`docs/architecture_open_issues.md` at
-  `nozoki@cddc286`) held two items, both answered in the owner's seat by a `companion-self-answer`
+  `ka-reader@cddc286`) held two items, both answered in the owner's seat by a `companion-self-answer`
   run (its reasoning, `docs/trail/architecture/self_answer-12.md`), and as answered is
   `docs/trail/architecture/cycle-9.md`. **§ 2.3 → ADR-0013, ADR-0014, ADR-0015 and ADR-0016
   Accepted, superseding ADR-0001, ADR-0002, ADR-0006 and ADR-0009;** each superseded record's
@@ -2812,7 +2812,7 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   the index follows. Before acceptance, while still Proposed, each of the five took one edit the
   run owns: its § Traces to bullet names the trail cycle and the confirm in place of the live
   companion, and reads the SDD at v14 for the acceptance — v14's one move in § 3 (below) sits
-  inside `nozoki-core` and touches no sentence of the four; and the four superseding records'
+  inside `ka-reader-core` and touches no sentence of the four; and the four superseding records'
   § Binds is the plain list their "on acceptance" halves named. Every entry that traced to *the
   Proposed record and the accepted one it supersedes* (RN-22's form) traces to the accepted record
   alone: § 1's opening paragraph; QC-1, QC-6, QC-8, QC-9, QC-11 – QC-17, QC-20 – QC-24, QC-26,
@@ -2828,7 +2828,7 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   `folder-model`'s *Owns* gains the fill of the open `FileView`, its *Must not own* reads
   "Drawing" and "Any Apple framework" where it read "Rendering" and "The Tauri runtime", and the
   units paragraph gains the edge (SDD RN-64) — and the owner confirmed it on that document's
-  companion (`nozoki@705d306`; `docs/trail/sdd/self_answer-22.md` § 2.4) with one addition and the
+  companion (`ka-reader@705d306`; `docs/trail/sdd/self_answer-22.md` § 2.4) with one addition and the
   words "No § 3 text changes; only the stated reason does". The fold that drops the SDD's item is
   still owed to `product-sdd`, and it moves no sentence QC-10 transcribes, so QC-10 is transcribed
   now rather than left contradicting § 3 as it reads — the rule this document has followed since
@@ -2839,15 +2839,15 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   — "I/O of any kind" means I/O the model performs itself, the renderer's containment call
   reaching the filesystem through `fs-reader` over `SM-7` — is carried in QC-10's text, and
   QC-15's ownership already says it. ADR-0016 does not move: it places every part involved in
-  `nozoki-core` under either reading. **What moved beneath this document.** `git diff --stat
+  `ka-reader-core` under either reading. **What moved beneath this document.** `git diff --stat
   38aaa48..HEAD -- docs/` — `38aaa48` being v11's own commit — names `docs/SDD.md` (run 13,
-  `nozoki@2739007`, v13 → v14), the two companions and the trails, and nothing else (2026-09-23);
+  `ka-reader@2739007`, v13 → v14), the two companions and the trails, and nothing else (2026-09-23);
   the SRS (v12), the FDR (v8), the PRD, the UXD, DESIGN and CONTENT are what v11 read, every one
   Settled, so the `Inputs read:` line stands, the SDD Draft — its companion holds § 2.4 answered,
   awaiting `product-sdd`. The SDD's v14 moves, each opened: § 3 `folder-model` and the units
   edge (QC-10, above); § 4 C-R2's and C-I3's record lines, which name their record and state no
   status word — nothing here cites a status word from the SDD, so nothing moves; § 6 S-3's
-  command half, which tests `asset_bytes` under `cargo test --locked -p nozoki-bridge --test
+  command half, which tests `asset_bytes` under `cargo test --locked -p ka-reader-bridge --test
   asset_bytes` — the bridge's crate, where § 3 places the function, the defect RN-22 saw and left
   to that run — so QC-6's and QC-37's tails, § 9's layer-2 row and layer-5 bullet, and § 10's
   QC-6 and QC-37 rows follow, the `MarkdownDocument` assertions staying under `--test markdown`;
@@ -2861,7 +2861,7 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   the project card moved once past § 8's `3a960a7` — `kensaiapp-opensource@defe740`, the
   `Language roots:` line — touching neither line § 8 states, so § 8's pin moves and its sentence
   stands; RN-3's and RN-7's dated history stand as RN-22 left them. **The tree.**
-  `crates/nozoki-app`, `nozoki-ui` and `checks/` as v11 read them (`ls`, 2026-09-23), so every
+  `crates/ka-reader-app`, `ka-reader-ui` and `checks/` as v11 read them (`ls`, 2026-09-23), so every
   entry naming the new units is red against it until the change that lands the native shell
   (§ 1). No `QC` is added, renumbered or reused; no accepted record is edited beyond the four
   Status lines; nothing is left for the owner, `docs/architecture_open_issues.md` is removed and
@@ -2871,59 +2871,59 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   ADR-0012 – ADR-0016, the index; source: `docs/trail/architecture/cycle-9.md` §§ 1.1, 2.3;
   `docs/trail/architecture/self_answer-12.md`; `docs/SDD.md` v14 — § 3 `folder-model`,
   `core-bridge`, the units paragraph, SM-5, SM-7; § 4 C-R2, C-I3; § 6 S-3; § 12; RN-64;
-  `docs/trail/sdd/cycle-10.md` § 2.3; `docs/trail/sdd/self_answer-22.md` § 2.4; `nozoki@705d306`;
+  `docs/trail/sdd/cycle-10.md` § 2.3; `docs/trail/sdd/self_answer-22.md` § 2.4; `ka-reader@705d306`;
   `kensaiapp-opensource@defe740`; the commits named)*
 - **RN-24:** *(v13 — the close of the cycle-10 companion: one entry the SDD's fold left behind,
   and four things the built native shell and the moved card showed the records state wrong)*
   **How the companion came to exist.** As at RN-18 – RN-21, no `product-architecture` run opened
   it: both records were Settled at v12 with no companion on disk. The PM opened it on 2026-09-23
-  after the native shell landed (`nozoki@196a505`) with four items raised from downstream —
+  after the native shell landed (`ka-reader@196a505`) with four items raised from downstream —
   §§ 3.1 – 3.4 — and a `companion-self-answer` run answering the SDD's own companion added § 2.1
-  the same day (`nozoki@a8b662e`), drafted and not written into any record. All five were
+  the same day (`ka-reader@a8b662e`), drafted and not written into any record. All five were
   answered in the owner's seat by one unattended `companion-self-answer` run, not by the owner in
-  person (`nozoki@5c4bd9a`; its reasoning, `docs/trail/architecture/self_answer-13.md`), and as
+  person (`ka-reader@5c4bd9a`; its reasoning, `docs/trail/architecture/self_answer-13.md`), and as
   answered the companion is `docs/trail/architecture/cycle-10.md`. Every change below names the
   answer that authorizes it, and what this run added beyond an answer's words is marked as this
   run's own. **§ 2.1 → QC-24, QC-1, QC-2, QC-59 and § 10.** `docs/SDD.md` moved v14 → v16
-  beneath this document (`nozoki@1f4961a`, `nozoki@097ef33`; `git diff 1dfdd86..HEAD --stat --
+  beneath this document (`ka-reader@1f4961a`, `ka-reader@097ef33`; `git diff 1dfdd86..HEAD --stat --
   docs/SDD.md`: 197 lines, read whole as a diff and every passage cited here opened). At v16 § 4
-  C-R7 holds the export set inside `SM-4`'s list *and* `nozoki_free`, from `v1.0.0` the list
-  whole and `nozoki_free`, states that `nozoki_free` is no command and admits no second plumbing
-  export until the slice that needs one raises it; `SM-4`'s Down cell names `nozoki_free` beside
+  C-R7 holds the export set inside `SM-4`'s list *and* `ka_reader_free`, from `v1.0.0` the list
+  whole and `ka_reader_free`, states that `ka_reader_free` is no command and admits no second plumbing
+  export until the slice that needs one raises it; `SM-4`'s Down cell names `ka_reader_free` beside
   the list and not on it; C-I3's *Violated by* carries the command parenthesis; C-I6's pin takes
   the same set; S-1's and S-11's command halves follow (SDD RN-66, on the owner's confirm at
   `docs/trail/sdd/cycle-12.md` § 5.1). QC-24 is re-derived from C-R7 at v16 under that document's
   own rule that the § 4 statement wins — transcription, not a call — and the defect it closes is
-  measured: the bridge on `main` exports `nozoki_free` (`crates/nozoki-bridge/src/exports.rs:L61`)
-  and its test admits it (`crates/nozoki-bridge/tests/exports.rs:L17`), which QC-24 as it read
+  measured: the bridge on `main` exports `ka_reader_free` (`crates/ka-reader-bridge/src/exports.rs:L61`)
+  and its test admits it (`crates/ka-reader-bridge/tests/exports.rs:L17`), which QC-24 as it read
   refused. The answer's four additions, folded as written: QC-2's tail, whose "every function the
-  build exports" reached `nozoki_free` on its own words where the drafted item claimed it did not,
+  build exports" reached `ka_reader_free` on its own words where the drafted item claimed it did not,
   takes C-I3's carve-out — a command is a call on `SM-4`'s list, driven through `SM-5`, and
-  `nozoki_free` never reaches the model; QC-1's "only channel to the core" names `nozoki_free`
-  beside the list, as `SM-4`'s Down cell does; QC-59's pin reads the list and `nozoki_free`, as
+  `ka_reader_free` never reaches the model; QC-1's "only channel to the core" names `ka_reader_free`
+  beside the list, as `SM-4`'s Down cell does; QC-59's pin reads the list and `ka_reader_free`, as
   C-I6 does; QC-24's trace reads C-R7 at v16. QC-30 does not move — its boundary set is what the
-  process reads, and `nozoki_free` reads nothing, the SDD's own ground for placing it beside the
+  process reads, and `ka_reader_free` reads nothing, the SDD's own ground for placing it beside the
   list. **Two things here are this run's own.** (1) QC-24 carries C-R7's no-second-export
   sentence in the obligation, not only in the trace: a later plumbing export would pass the
   tail's set equality while sitting outside the held set, which is the stale case C-R7 names, and
   an entry that binds the set has to say what a second export means. (2) QC-24's trace gains
-  ADR-0016, whose units table already names `nozoki_free` apart from the list (§ Decision, the
-  `nozoki-bridge` row) — the record said it before the entry did, and the pair was navigable one
-  way only. No record moves: ADR-0013 names `nozoki_free` after the nine and ADR-0016 lists it
+  ADR-0016, whose units table already names `ka_reader_free` apart from the list (§ Decision, the
+  `ka-reader-bridge` row) — the record said it before the entry did, and the pair was navigable one
+  way only. No record moves: ADR-0013 names `ka_reader_free` after the nine and ADR-0016 lists it
   separately, so the log already held what the entry now holds. **§ 3.1 → QC-13.** The item's
   framing was partly wrong and the answer says so: QC-13 did not leave open whether "may import"
   is the whole list — § 1.2's preamble says it is — so under the one reading available the bridge
-  as built breaks the entry (`crates/nozoki-bridge/Cargo.toml` declares `log`, `serde`,
-  `serde_json` and `libc` beside `nozoki-core`, each on `checks/deps.allow`), and QC-13 read that
+  as built breaks the entry (`crates/ka-reader-bridge/Cargo.toml` declares `log`, `serde`,
+  `serde_json` and `libc` beside `ka-reader-core`, each on `checks/deps.allow`), and QC-13 read that
   way contradicts QC-61, which requires every shipped Rust crate to depend on `log`. A correction
   of two settled entries that disagree, not a widening. Of the lean's two forms the answer chose
-  *points at the list*, QC-9's form for `nozoki-core`, on the ground that four names in the entry
+  *points at the list*, QC-9's form for `ka-reader-core`, on the ground that four names in the entry
   would be a hand-kept copy of the manifest, false at the bridge's next reviewed dependency; every
   other clause stands. **One thing here is this run's own:** the tail's sentence that the
   allowlist admits a crate to the workspace and not to a purpose, so a listed parser or grammar
   engine imported to put read logic in the bridge is the delegation review's catch — the answer
   named the review as the catch, and the tail says why the list alone cannot be. **§ 3.2 → § 9's
-  scope bullet.** The tree holds a build script — `crates/nozoki-bridge/build.rs` reads and writes
+  scope bullet.** The tree holds a build script — `crates/ka-reader-bridge/build.rs` reads and writes
   with `std::fs` (`:L11`, `:L25`, `:L28-L30`) and reads `CARGO_MANIFEST_DIR` (`:L18`), each opened
   this fold — and § 9 as it read named `build.rs` as *not excluded*, written when no build script
   existed to shape a rule against (RN-19). The scope's own ground decides it: every property the
@@ -2940,32 +2940,32 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   the Cargo reference says a script "should not modify any files outside of" — a delivery-code
   matter under a doctrine convention, which no entry here states and this seat does not mint.
   **§ 3.3 → § 8 and RN-6.** § 8 was false against the card, measured this fold: the card reads
-  `cargo test --workspace --locked && swift test --package-path nozoki-mac` and `Languages: Rust,
-  Swift, Shell` (`system/projects/nozoki/project.md:L7-L8`, in the managing instance). The
+  `cargo test --workspace --locked && swift test --package-path ka-reader-mac` and `Languages: Rust,
+  Swift, Shell` (`system/projects/ka-reader/project.md:L7-L8`, in the managing instance). The
   answer's addition: the card moved twice since `defe740`, not once — `kensaiapp-opensource@5b27023`
-  and `ec80077`, both 2026-09-23 (`git log -- system/projects/nozoki/project.md`) — so RN-6's
+  and `ec80077`, both 2026-09-23 (`git log -- system/projects/ka-reader/project.md`) — so RN-6's
   pinned history gains both and § 8 pins `ec80077`, the commit the fold read; the *owed a move*
   sentence is gone because the move happened. Decided with § 3.4: RN-7's step-1 sentence naming
   the TypeScript packet for the renderer takes a dated parenthesis and is history. **§ 3.4 → § 9,
   RN-7 and ADR-0016.** The premise is false: the registry carries `languages/swift/` since
   `kensaiapp-dev@3ab2e8553` (18:46 on 2026-09-23, merged; each file read whole this fold at the
   version § 9 cites), and `docs/nfdr.md` § 9 and ADR-0016 said none existed — true at 15:13 the
-  same day, when v12 closed and the record was accepted (`nozoki@1dfdd86`), and false three hours
-  later. § 9's preamble reads the packet as `nozoki-mac`'s tooling, resolving at step 1 from the
+  same day, when v12 closed and the record was accepted (`ka-reader@1dfdd86`), and false three hours
+  later. § 9's preamble reads the packet as `ka-reader-mac`'s tooling, resolving at step 1 from the
   card's line as the Rust packet does, and its previous reading is marked as history. **Where
-  `nozoki-mac` stands against the Swift packet, one verdict per point, each the answer's and each
+  `ka-reader-mac` stands against the Swift packet, one verdict per point, each the answer's and each
   stated in § 9's new bullet.** *(1) Framework — followed, not a departure.* The item's supporting
   text was partly wrong and the answer reports it: the packet keeps a product's existing XCTest
   tests — "XCTest tests a product already has stay as they are" (`testing.md` § One framework) —
   and only a new test is Swift Testing; the four test files on `main` are XCTest (`grep -rl
-  'import XCTest' nozoki-mac/Tests`, run this fold, and no `import Testing`). Whether the toolchain
+  'import XCTest' ka-reader-mac/Tests`, run this fold, and no `import Testing`). Whether the toolchain
   CI builds with runs Swift Testing is not known; the change that writes the first new test finds
   out, and § 9 records a departure with the measurement if it cannot. *(2), (3) and (5) — departed
   from, as one decision, with the flip named.* The `6.2` tools version, the `.binaryTarget`
   artifact bundle and `.treatAllWarnings(as:)` each need `PackageDescription` 6.2 — the packet
   states it of the manifest settings ("First available in PackageDescription 6.2", `toolchain.md`
   § Toolchain version) and of the artifact route (SE-0482, "Implemented (Swift 6.2)", § Linking a
-  C library built by another toolchain), and `nozoki-mac/Package.swift` declares `5.9` (`:L1`),
+  C library built by another toolchain), and `ka-reader-mac/Package.swift` declares `5.9` (`:L1`),
   links the bridge as a system library with a `-L` flag (`:L19`, `:L26-L29`) and sets no warnings
   level. The one CI image this product runs, `macos-14` (`.github/workflows/ci.yml:L18`; a
   `release.yml:L18` cited beside it through v13 named a file this repository has never held,
@@ -2974,7 +2974,7 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   fold). **What this run does not claim, stated so the bullet is read at its measure:** which
   Swift each of those Xcodes carries. Four fetches of Apple's and swift.org's pages returned no
   line pairing Xcode 16.2 with a Swift version, so the bullet cites the three facts it has and
-  names the check that settles the fourth — the first CI log that builds `nozoki-mac` prints the
+  names the check that settles the fourth — the first CI log that builds `ka-reader-mac` prints the
   toolchain, and if it shows 6.2 or later the departure's ground is gone and the three are adopted
   then. The answer weighed *adopt and move the runner* and did not take it: the records bind no
   runner, so choosing one is not this document's decision, the departure costs nothing the day
@@ -2982,21 +2982,21 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   re-measurement because the hosted-runner narrowing was taken on `macos-14` (SDD RN-48), and a
   new image is that measurement's stale case. *(4) Test-target names — adopted.* `<Target><Layer>Tests`
   (`layout.md` § Naming) needs no toolchain; `SurfacesTests` and `ShellTests`
-  (`nozoki-mac/Package.swift:L34-L35` at `nozoki@a4ab8e6`, pinned at v41 — RN-52) predate the
+  (`ka-reader-mac/Package.swift:L34-L35` at `ka-reader@a4ab8e6`, pinned at v41 — RN-52) predate the
   packet, nothing in the records grounds them, and
   a packet outranks the code's own habits (`languages/README.md` § Precedence). Which layer word
   each takes is the delivery tier's placement under § 9's rows, not this document's. *Also owed by
-  the packet, and recorded:* the toolchain version CI builds `nozoki-mac` with, where no
+  the packet, and recorded:* the toolchain version CI builds `ka-reader-mac` with, where no
   `.swift-version` pin exists — none does (`ls -a`, 2026-09-23) — has no value, because CI does not
-  build `nozoki-mac` (`ci.yml` at `nozoki@99e2bac` still builds the Tauri shape, `:L33-L44`); the
+  build `ka-reader-mac` (`ci.yml` at `ka-reader@99e2bac` still builds the Tauri shape, `:L33-L44`); the
   first CI log that builds it supplies one. **The bullet is held in § 9 and not minted as a `QC`**,
   RN-15's form for the layer-5 rule: it binds the test strategy's own realization, which § 9 owns;
   a reader who needs it as an entry may say so on the next companion. Its review half is a
   class-2 gate and argues it in place — no command reads which toolchain CI builds with until CI
-  builds `nozoki-mac`. **ADR-0016, and the append-only rule.** The answer rules that the moved
+  builds `ka-reader-mac`. **ADR-0016, and the append-only rule.** The answer rules that the moved
   premise corrects the record and does not reverse it: the four units, the frame inside
-  `nozoki-mac/`, and "declares no package dependency" all stand — the artifact-bundle route, if
-  adopted, stays inside `nozoki-mac` and declares nothing — and only a *because* clause in
+  `ka-reader-mac/`, and "declares no package dependency" all stand — the artifact-bundle route, if
+  adopted, stays inside `ka-reader-mac` and declares nothing — and only a *because* clause in
   § Decision and one consequence clause go false. This run reads the same: the record's
   observable, its units table, its alternatives and its binds have not moved, which is RN-20's
   case for ADR-0010 and not RN-18's for ADR-0008. So ADR-0016 takes two prose corrections in
@@ -3011,9 +3011,9 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   § Binds. No record lands and none changes status; the index is a projection of number, title,
   status and date, none moved, so it is untouched. **Fixed in place, under no answer.** § 1's
   opening paragraph read the tree as holding the previous shape alone and every entry naming
-  `nozoki-bridge` or `nozoki-mac` as red until the native shell landed. It landed
-  (`nozoki@99e2bac`, 22:42 on 2026-09-23; `ls crates/` prints `nozoki-app`, `nozoki-bridge`,
-  `nozoki-core`, and `nozoki-mac` and `nozoki-ui` both stand at the root), so the tree holds both
+  `ka-reader-bridge` or `ka-reader-mac` as red until the native shell landed. It landed
+  (`ka-reader@99e2bac`, 22:42 on 2026-09-23; `ls crates/` prints `ka-reader-app`, `ka-reader-bridge`,
+  `ka-reader-core`, and `ka-reader-mac` and `ka-reader-ui` both stand at the root), so the tree holds both
   shapes until the Tauri build's removal, and the paragraph says so, dated — a defect found while
   walking, the way RN-18 corrected the header's "no code yet". The header's citing paragraph names
   the Swift packet beside the Rust one, and reads the Rust packet's `layout.md` and
@@ -3025,7 +3025,7 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   confirms § 3's `FileView` fill and corrects RN-64's *because* on the owner's addition, gives S-3
   `folder-model` and `SM-5` in *Rests on* and one `select_file` case in its command half, and
   re-aims § 12's pointer at the retired companion (SDD RN-65) — QC-10 already carries the
-  corrected reason and no entry moves; v16 (run 15) is the two subjects above — `nozoki_free`
+  corrected reason and no entry moves; v16 (run 15) is the two subjects above — `ka_reader_free`
   beside the list, and the Swift-frame paragraph on the packet, with RC-3's *Still unresolved* and
   RN-60 taking dated parentheses (SDD RN-66). The SDD is Settled, its companion removed, so the
   `Inputs read:` line reads it Settled where v12 read it Draft. The SRS (v12), the FDR (v8), the
@@ -3041,39 +3041,39 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   dated corrections and one trace bullet. Nothing is left for the owner;
   `docs/architecture_open_issues.md` is removed and `Status:` is Settled *(re: header `Version:`,
   `Inputs read:`, the citing paragraph; § 1 opening; QC-1, QC-2, QC-13, QC-24, QC-59; § 8; § 9
-  preamble, row 4, the scope bullet, the `nozoki-mac` bullet; § 10 QC-24 row; RN-6, RN-7;
+  preamble, row 4, the scope bullet, the `ka-reader-mac` bullet; § 10 QC-24 row; RN-6, RN-7;
   ADR-0016 § Decision, § Consequences, § Traces to; source: `docs/trail/architecture/cycle-10.md`
   §§ 2.1, 3.1 – 3.4; `docs/trail/architecture/self_answer-13.md`; `docs/SDD.md` v16 — § 3 SM-4,
   the Swift-frame paragraph, § 4 C-R7, C-I3, C-I6, § 6 S-1, S-3, S-11, § 10 RC-3, § 12, RN-65,
   RN-66; `docs/trail/sdd/cycle-12.md` §§ 5.1, 5.2; `docs/trail/sdd/self_answer-23.md`;
-  `crates/nozoki-bridge/Cargo.toml`, `build.rs`, `src/exports.rs`, `tests/exports.rs`;
-  `nozoki-mac/Package.swift`; `nozoki-mac/Tests/`; `.github/workflows/ci.yml` (`release.yml`,
+  `crates/ka-reader-bridge/Cargo.toml`, `build.rs`, `src/exports.rs`, `tests/exports.rs`;
+  `ka-reader-mac/Package.swift`; `ka-reader-mac/Tests/`; `.github/workflows/ci.yml` (`release.yml`,
   listed here through v13, was never in the tree — struck at v14, RN-25);
-  `checks/deps.allow`; `system/projects/nozoki/project.md`; `languages/swift/` — `README.md`,
+  `checks/deps.allow`; `system/projects/ka-reader/project.md`; `languages/swift/` — `README.md`,
   `testing.md`, `layout.md`, `toolchain.md`, `quality_gates.md`; `languages/README.md`
   § Precedence, § The resolution chain; https://doc.rust-lang.org/cargo/reference/build-scripts.html;
   https://github.com/actions/runner-images/blob/main/images/macos/macos-14-arm64-Readme.md;
   https://www.swift.org/blog/swift-6.2-released/; the commits named)*
 - **RN-25:** *(v14 — the close of the cycle-11 companion: seven facts these records held that the
-  Tauri build's removal made false, each raised by the PM from the tree at `nozoki@0aca57e`)*
+  Tauri build's removal made false, each raised by the PM from the tree at `ka-reader@0aca57e`)*
   **How the companion came to exist.** As at RN-18 – RN-21 and RN-24, no `product-architecture`
   run opened it: both records were Settled at v13 with no companion on disk. The PM opened it on
-  2026-09-24 (`nozoki@1e2faad`) with seven items raised from downstream, §§ 3.1 – 3.7, each a
-  measurement of `main` at `nozoki@0aca57e` — the merge at which the Tauri build left the tree
+  2026-09-24 (`ka-reader@1e2faad`) with seven items raised from downstream, §§ 3.1 – 3.7, each a
+  measurement of `main` at `ka-reader@0aca57e` — the merge at which the Tauri build left the tree
   (`docs/SDD.md` § 10 RC-3) — against a sentence here. All seven were answered in the owner's
   seat by one unattended `companion-self-answer` run, not by the owner in person
-  (`nozoki@c461b29`; its reasoning, `docs/trail/architecture/self_answer-14.md`), and as answered
+  (`ka-reader@c461b29`; its reasoning, `docs/trail/architecture/self_answer-14.md`), and as answered
   the companion is `docs/trail/architecture/cycle-11.md`. Every change below names the answer
   that authorizes it, and what this run added beyond an answer's words is marked as this run's
-  own. Every measurement below was re-run this fold at `nozoki@c461b29`, not taken from the
-  answer. **§ 3.1 → § 1's opening paragraph.** `git ls-files nozoki-ui crates/nozoki-app | wc -l`
+  own. Every measurement below was re-run this fold at `ka-reader@c461b29`, not taken from the
+  answer. **§ 3.1 → § 1's opening paragraph.** `git ls-files ka-reader-ui crates/ka-reader-app | wc -l`
   prints `0`, so the v13 sentence that the tree holds both shapes is false; the paragraph reads
-  the tree as ADR-0016's four units and nothing else from `nozoki@0aca57e`, dated in place in the
+  the tree as ADR-0016's four units and nothing else from `ka-reader@0aca57e`, dated in place in the
   form v13 used for the same paragraph, and its closing clause about the old units "while they
   remain" goes with it, nothing old remaining. The answer's addition, folded as written: the
   measure is `git ls-files`, not the `ls` the v13 sentence cited, because a working copy that
-  built the previous shape still lists `nozoki-ui/` and `crates/nozoki-app/` as untracked build
-  output — this checkout does (`ls -d nozoki-ui crates/nozoki-app` lists both while `git
+  built the previous shape still lists `ka-reader-ui/` and `crates/ka-reader-app/` as untracked build
+  output — this checkout does (`ls -d ka-reader-ui crates/ka-reader-app` lists both while `git
   ls-files` tracks neither; the answer names `node_modules/`, `dist/`, `gen/`, `permissions/`),
   their ignore lines having left with the build — and an `ls` there reads the old shape back into
   a tree that does not hold it. The four scripts not yet in the tree — `checks/view.sh`,
@@ -3082,18 +3082,18 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   `sandbox_probe.rs`, `tests`) — stay as the entries name them, under the header's rule that a
   command becomes executable in the change that lands its script. **§ 3.2 → QC-3.** The one item
   the answer overrode, in one clause: the PM's lean had the tail say the review half was realized
-  at `nozoki@0aca57e` over the 17 names, and the answer checked that clause against the record and
-  found no review — `nozoki@6acfb65` generated the list and read its names against the file's
+  at `ka-reader@0aca57e` over the 17 names, and the answer checked that clause against the record and
+  found no review — `ka-reader@6acfb65` generated the list and read its names against the file's
   header rules, which is the reading by name QC-3's own second half says cannot answer the domain
-  question, and `nozoki@fad4e78`'s body records only that the tree equals the list. So the tail
+  question, and `ka-reader@fad4e78`'s body records only that the tree equals the list. So the tail
   does not say the half was realized. What it says instead, transcribed from the answer: at
-  `nozoki@0aca57e` the list is one `cargo:` section of 17 names (`checks/deps.allow:L18` onward;
+  `ka-reader@0aca57e` the list is one `cargo:` section of 17 names (`checks/deps.allow:L18` onward;
   `awk '/^cargo:/{p=1;next} p && !/^#/ && NF' checks/deps.allow | wc -l` → `17`, and
   `grep -c '^pnpm:'` → `0`); the `pnpm:` section (163 names) and 201 of the 218 cargo names left
-  with the Tauri build at `nozoki@fad4e78`, unreviewed, and none of them is shipped now; the 17
+  with the Tauri build at `ka-reader@fad4e78`, unreviewed, and none of them is shipped now; the 17
   that stayed were among the 218 never reviewed; the one-time review is still owed over those 17,
   by the change that first realizes the half, and the rest of the tail stands. The clause "the
-  pnpm names leave the list with `nozoki-ui`" is gone from the tail, the leaving having happened.
+  pnpm names leave the list with `ka-reader-ui`" is gone from the tail, the leaving having happened.
   § 10's QC-3 row names the script and the review and does not move. **Seen and not written, the
   answer's own note carried here:** read by name, none of the 17 (`itoa`, `libc`, `log`, `memchr`,
   `proc-macro2`, `quote`, the `serde` family, `syn`, `thiserror`, `thiserror-impl`,
@@ -3101,17 +3101,17 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   exactly the name-level reading QC-3 says is not the review, so it settles nothing. **§ 3.3 →
   QC-25.** `grep -n EXPECTED_ENTITLEMENTS checks/bundle.sh` prints `132:`, and `:L132-L133` hold
   the two entitlements the entry names; QC-25's tail cited `:L127-L128`, true of the script at
-  `nozoki@99e2bac` and five lines high since the contents block above the set grew. Of the lean's
+  `ka-reader@99e2bac` and five lines high since the contents block above the set grew. Of the lean's
   two options the answer took the current range pinned to the commit it was read at,
-  `nozoki@0aca57e:checks/bundle.sh:L132-L133` — the form § 3.7 uses, so the two answers agree, and
+  `ka-reader@0aca57e:checks/bundle.sh:L132-L133` — the form § 3.7 uses, so the two answers agree, and
   a pin fails by being old rather than by pointing at the wrong lines. The answer's addition,
   folded as written: RN-21's two old ranges (`:L127-L128` "opened this run", and `:L127-L187` in
   its source list) are dated history, true when their fold read them, and do not move; only QC-25
   is a live entry. § 10's QC-25 row names the script alone and does not move. **§ 3.4 → § 9's
-  `nozoki-mac` bullet, the toolchain clause and the tail.** The clause read that CI does not
-  build `nozoki-mac` — true of `ci.yml` at `nozoki@99e2bac` — and on `main`
-  `.github/workflows/ci.yml:L26` runs `swift test --package-path nozoki-mac` in `Test gate` and
-  `:L29` runs `nozoki-mac/assemble.sh`, both from `nozoki@0aca57e`. The clause now says so, dated
+  `ka-reader-mac` bullet, the toolchain clause and the tail.** The clause read that CI does not
+  build `ka-reader-mac` — true of `ci.yml` at `ka-reader@99e2bac` — and on `main`
+  `.github/workflows/ci.yml:L26` runs `swift test --package-path ka-reader-mac` in `Test gate` and
+  `:L29` runs `ka-reader-mac/assemble.sh`, both from `ka-reader@0aca57e`. The clause now says so, dated
   in place, and says the value is still unread: `git rev-parse --short origin/main` prints
   `a4ab8e6` and `git rev-list --count origin/main..main` prints `14` this fold (`9` when the PM
   measured, `13` when the answer did — the count moves with every local commit and the fact does
@@ -3119,7 +3119,7 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   (1) `ci.yml` has no `swift --version` step (`:L22-L29`) and neither the answer nor this run
   knows whether `swift test`'s output names the toolchain, so the clause states what happens if
   the first log is silent — the line stays *not yet measured* and says what it waits for — and
-  the tail's review gate, which read "until CI builds `nozoki-mac`", a condition now met while the
+  the tail's review gate, which read "until CI builds `ka-reader-mac`", a condition now met while the
   value is still unread, reads "until a CI log on `main` names the toolchain"; (2) `macos-14` is a
   label whose default Xcode the runner-images project can move under the same name, so the line
   will record the runner image's version beside the run id and the Swift version, and a later
@@ -3133,14 +3133,14 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   both are false in the same way; each is struck where it stands, with a dated parenthesis saying
   so rather than by rewriting the note — the form the SDD's RN-66 – RN-68 fixed for a note that
   records history, and RN-24 is one. QC-29's `release.yml` states an obligation — the release is
-  built by that workflow — not a citation, and stands. **§ 3.6 → § 9's `nozoki-mac` bullet, a
+  built by that workflow — not a citation, and stands. **§ 3.6 → § 9's `ka-reader-mac` bullet, a
   fourth departure and the tail.** The bullet said a packet rule it does not name is followed as
   written, and the packet's dependency gate refuses any target whose `type` is `"system"`
   (`languages/swift/quality_gates.md` § The gates — `select(.url != null or .type == "system")`,
-  read this fold at v1.1.0) while `nozoki-mac/Package.swift:L19` is
-  `.systemLibrary(name: "CNozokiBridge")`; a delivery reader writing the packet's gate from the
+  read this fold at v1.1.0) while `ka-reader-mac/Package.swift:L19` is
+  `.systemLibrary(name: "CKAReaderBridge")`; a delivery reader writing the packet's gate from the
   bullet's words would fail the tree as built. The bullet names the clause as departed from, for
-  the reason the answer gives — the system library is a module map over `nozoki-bridge`'s
+  the reason the answer gives — the system library is a module map over `ka-reader-bridge`'s
   generated header, that crate is this repository's own and is on `checks/deps.allow`, so the link
   brings nothing new into the tree — and names `checks/no-network.sh` as the gate in its place.
   The answer's two additions, folded as written: (1) the departure is that one clause and nothing
@@ -3156,12 +3156,12 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   now says the script stands in the packet gate's place, and a stand-in the tail does not name is
   a review bar wearing a script's name. **§ 3.7 → RN-18, RN-19 and ADR-0012.** The item's grep,
   re-run this fold, finds the seven unpinned citations the item lists — RN-18's
-  `crates/nozoki-app/tests/config.rs:L17`, `:L181-L188` and `tauri.conf.json:L12`; RN-19's
+  `crates/ka-reader-app/tests/config.rs:L17`, `:L181-L188` and `tauri.conf.json:L12`; RN-19's
   `log_writer.rs:L142`, `tests/config.rs:L11` and `log_writer.rs:L201`; ADR-0012's
-  `nozoki-ui/src/main.ts:L14-L19` and `crates/nozoki-app/src/main.rs:L17-L19` in its § Context
+  `ka-reader-ui/src/main.ts:L14-L19` and `crates/ka-reader-app/src/main.rs:L17-L19` in its § Context
   and again in its § Traces to — and RN-19's `tests/config.rs:L228`, `:L231` and
-  `capabilities/main.json:L5`, already pinned to `nozoki@bf99e8e` in their own sentence. Each of
-  the seven is pinned to `nozoki@a4ab8e6:` with its full path: `git show a4ab8e6:<path>` opened
+  `capabilities/main.json:L5`, already pinned to `ka-reader@bf99e8e` in their own sentence. Each of
+  the seven is pinned to `ka-reader@a4ab8e6:` with its full path: `git show a4ab8e6:<path>` opened
   each line this fold and each reads as the records say (`config.rs:L11` `use std::fs;`, `:L17`
   and `:L181-L188` the CSP assertions, `tauri.conf.json:L12` the `csp` string,
   `log_writer.rs:L142` `log::set_logger(writer)?;`, `:L201` `fs::write(…)`, `main.ts:L14-L19`
@@ -3176,16 +3176,16 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   at the SDD's RN-68 for the same two citations) — its § Traces to bullet says so in one sentence
   so the record does not depend on this note; no record is superseded and the index, a projection
   of number, title, status and date, is untouched. `…/common/mod.rs:L11` at RN-19 is
-  `crates/nozoki-core/tests/common/mod.rs`, which stands, and is out of the item. **Fixed in
+  `crates/ka-reader-core/tests/common/mod.rs`, which stands, and is out of the item. **Fixed in
   place, under no answer** — a defect found while walking, RN-24's form for § 1's paragraph:
   QC-27's tail and § 9's preamble each said `pnpm audit` and the TypeScript packet's tooling
-  "leaves with `nozoki-ui`", a prediction the removal fulfilled; each reads *left* and is dated to
-  `nozoki@0aca57e`, and nothing either binds moves. **What moved beneath this document, and what
-  did not.** The SDD moved v16 → v17 (`nozoki@7608edb`, run 16; `git diff --stat 097ef33..7608edb
+  "leaves with `ka-reader-ui`", a prediction the removal fulfilled; each reads *left* and is dated to
+  `ka-reader@0aca57e`, and nothing either binds moves. **What moved beneath this document, and what
+  did not.** The SDD moved v16 → v17 (`ka-reader@7608edb`, run 16; `git diff --stat 097ef33..7608edb
   -- docs/SDD.md`: 142 insertions, 14 deletions, read whole as a diff): its `Version:` line, a
   dated parenthesis on § 10 RC-3's *Still unresolved* recording that the README's stack and status
-  block moved at `nozoki@61748fe`, and the Review Notes — RN-52, RN-53, RN-57 and RN-58 pinning
-  citations to `nozoki@a4ab8e6:`, RN-59 and RN-60 taking dated parentheses, RN-67 – RN-69 new. No
+  block moved at `ka-reader@61748fe`, and the Review Notes — RN-52, RN-53, RN-57 and RN-58 pinning
+  citations to `ka-reader@a4ab8e6:`, RN-59 and RN-60 taking dated parentheses, RN-67 – RN-69 new. No
   § 1 – § 9 statement moved, so no entry here follows it; the SDD is Settled and its companion
   removed. The SRS (v12), the FDR (v8), the PRD (v15), the UXD (v10), DESIGN (v8) and CONTENT (v6)
   are byte-for-byte what v13 read (`git diff --stat 5c4bd9a..HEAD` over the six is empty); each
@@ -3195,39 +3195,39 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   no accepted record is edited beyond ADR-0012's three pins and the one § Traces to sentence that
   states their provenance. Nothing is left for the owner; `docs/architecture_open_issues.md` is
   removed and `Status:` is Settled *(re: header `Version:`; § 1 opening; QC-3, QC-25,
-  QC-27; § 9 preamble, the `nozoki-mac` bullet; RN-18, RN-19, RN-24; ADR-0012 § Context,
+  QC-27; § 9 preamble, the `ka-reader-mac` bullet; RN-18, RN-19, RN-24; ADR-0012 § Context,
   § Traces to; source: `docs/trail/architecture/cycle-11.md` §§ 3.1 – 3.7;
   `docs/trail/architecture/self_answer-14.md`; `docs/trail/architecture/cycle-3.md` § 3.1;
   `docs/SDD.md` v17 — § 10 RC-3, RN-67, RN-68; `checks/deps.allow`; `checks/bundle.sh`;
-  `checks/no-network.sh`; `nozoki-mac/Package.swift`; `.github/workflows/ci.yml`;
-  `nozoki@a4ab8e6:crates/nozoki-app/tests/config.rs`, `:src/log_writer.rs`, `:src/main.rs`,
-  `:tauri.conf.json`; `nozoki@a4ab8e6:nozoki-ui/src/main.ts`; `languages/swift/quality_gates.md`
+  `checks/no-network.sh`; `ka-reader-mac/Package.swift`; `.github/workflows/ci.yml`;
+  `ka-reader@a4ab8e6:crates/ka-reader-app/tests/config.rs`, `:src/log_writer.rs`, `:src/main.rs`,
+  `:tauri.conf.json`; `ka-reader@a4ab8e6:ka-reader-ui/src/main.ts`; `languages/swift/quality_gates.md`
   § The gates; the commits named)*
 - **RN-26:** *(v15 — the cycle-12 fold: five facts these records held that the renderer gate's
-  landing made false, each raised by the PM from the tree at `nozoki@153f5a1`, and one choice a
+  landing made false, each raised by the PM from the tree at `ka-reader@153f5a1`, and one choice a
   `companion-self-answer` run raised on this document for the owner's confirm)* **How the
   companion came to exist.** As at RN-18 – RN-21, RN-24 and RN-25, no `product-architecture` run
   opened it: both records were Settled at v14 with no companion on disk. The PM opened it on
-  2026-09-24 (`nozoki@2bcefd5`, § 3.5 at `nozoki@28eb54f`) with five items raised from
-  downstream, §§ 3.1 – 3.5, each a measurement of `main` at `nozoki@153f5a1` — the merge at which
+  2026-09-24 (`ka-reader@2bcefd5`, § 3.5 at `ka-reader@28eb54f`) with five items raised from
+  downstream, §§ 3.1 – 3.5, each a measurement of `main` at `ka-reader@153f5a1` — the merge at which
   `checks/view.sh`, `checks/renderer.sh` and `checks/fixtures/idle-shell` landed — against a
   sentence here. All five were answered in the owner's seat by one unattended
-  `companion-self-answer` run, not by the owner in person (`nozoki@c28255e`; its reasoning,
+  `companion-self-answer` run, not by the owner in person (`ka-reader@c28255e`; its reasoning,
   `docs/trail/architecture/self_answer-15.md`), and that run appended one item of its own, § 2.1,
   in the bucket *Choices to confirm*, with its slot empty. As answered the companion is
   `docs/trail/architecture/cycle-12.md`. Every change below names the answer that authorizes it,
   and what this run added beyond an answer's words is marked as this run's own. Every measurement
-  below was re-run this fold at `nozoki@c28255e`, not taken from the answer: `git diff --stat
-  153f5a1 HEAD -- checks .github nozoki-mac` prints nothing, so the PM's tree is this one.
+  below was re-run this fold at `ka-reader@c28255e`, not taken from the answer: `git diff --stat
+  153f5a1 HEAD -- checks .github ka-reader-mac` prints nothing, so the PM's tree is this one.
   **§§ 3.1 and 3.2 → QC-62 and ADR-0012, decided together.** Every sentence the two items correct
   is measured false: `ls checks checks/fixtures` lists `renderer.sh` and `idle-shell`;
   `.github/workflows/ci.yml:L43-L44` runs the gate as `Renderer gate` after `Bundle probe`
-  (`:L31-L32`); `nozoki-mac/Sources/Shell/LaunchFlow.swift:L35-L37` calls `panel.chooseFolder()`
+  (`:L31-L32`); `ka-reader-mac/Sources/Shell/LaunchFlow.swift:L35-L37` calls `panel.chooseFolder()`
   and only then `bridge.openFolder(location:)`; `checks/renderer.sh:L53-L57` lists five frames
   with no bridge frame and `:L51-L52` says why; `:L58-L61` records the Mac reading (macOS
   26.6.2); `gh run view 35988399477 --json headSha,conclusion,headBranch` → `37a962d`, `success`,
   branch `2026-09-24_the-shell-is-seen-at-the-panel`, and `git diff --stat 37a962d HEAD --
-  checks/renderer.sh checks/fixtures/idle-shell nozoki-mac/Sources` prints nothing, so the run
+  checks/renderer.sh checks/fixtures/idle-shell ka-reader-mac/Sources` prints nothing, so the run
   read the script and the shell `main` holds (its *Renderer gate* lines are as SDD RN-70 quotes
   them; this run did not re-download that log). QC-62 reads the observation in the words
   `docs/SDD.md` § 4 C-I3 carries at v18 — parked in the Open panel's modal run, inside the shell's
@@ -3257,9 +3257,9 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   reverses and no record is superseded: the record says what it fixes is the gate, its two rules
   and its place after the wall probe, not the frames. § 10's QC-62 row names the script and the
   control and does not move beyond the suite annotation below. **§ 3.3 → QC-51's tail.**
-  `nozoki-mac/Sources/Shell/OpenFolderPanel.swift:L14` is `return panel.runModal() == .OK ?
+  `ka-reader-mac/Sources/Shell/OpenFolderPanel.swift:L14` is `return panel.runModal() == .OK ?
   panel.url : nil`, and C-R3 requires the panel at launch, so "no modal presentation in
-  `nozoki-mac/Sources`" was false as written. The tail admits the Open panel's own presentation,
+  `ka-reader-mac/Sources`" was false as written. The tail admits the Open panel's own presentation,
   which C-R3 requires, and the answer's addition is folded as written: at the bound the scan
   holds, not the lean's looser "the Open panel's presentation" — exactly one `.runModal()` with
   no argument in that file, a second one there, one with an argument, or one in any other file
@@ -3309,14 +3309,14 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   slot empty. Re-read before writing, not taken from the item: `gh run view 35968105480 --json
   headSha,conclusion,headBranch` → `c461b29`, `success`, `main`; its log's *Runner Image* block
   prints `Image: macos-14-arm64`, `Version: 20260831.0302.1` and `14.8.9`; its *Test gate* ran
-  `cargo test --workspace --locked && swift test --package-path nozoki-mac` and the XCTest
+  `cargo test --workspace --locked && swift test --package-path ka-reader-mac` and the XCTest
   suites executed with 0 failures; the only lines matching `swift-version`, `Swift version`,
   `swiftlang` or `Apple Swift` are two `Write swift-version-76B232A4806BA581.txt` build lines. So
   the clause records the run and stays *not yet measured* by its own rule, "no CI run on `main`
   has built it" becoming dated history; the tail's review gate and the four departures do not
   move. An override at § 2.1 reverts the clause on the next run. **Fixed in place, under no
   answer:** none this fold. **What moved beneath this document, and what did not.** The SDD
-  moved v17 → v18 (`nozoki@399ef71`, run 17; `git diff --stat 8655a33 HEAD -- docs/SDD.md`:
+  moved v17 → v18 (`ka-reader@399ef71`, run 17; `git diff --stat 8655a33 HEAD -- docs/SDD.md`:
   85 insertions, 21 deletions): § 4 C-I3's observable, measured-frames sentence and hosted-runner
   sentence with the re-cut rule; § 6 `open-a-folder`'s command half; § 9 TO-7's *costs*; § 10
   RC-2's and RC-3's dated parentheses; the seventh *Open Questions* item removed; RN-70. The
@@ -3330,30 +3330,30 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   § Traces to bullet that states their provenance; the index, a projection of number, title,
   status and date, is untouched. One item awaits the owner, § 2.1; `docs/architecture_open_issues.md`
   holds it alone and `Status:` is Draft *(re: header `Status:`, `Version:`; QC-34, QC-51, QC-62;
-  § 9 the `checks/tests/` bullet and the `nozoki-mac` bullet's toolchain clause; § 10 legend and
+  § 9 the `checks/tests/` bullet and the `ka-reader-mac` bullet's toolchain clause; § 10 legend and
   rows; ADR-0012 § Decision, § Consequences, § Traces to; source:
   `docs/trail/architecture/cycle-12.md` §§ 2.1, 3.1 – 3.5;
   `docs/trail/architecture/self_answer-15.md`; `docs/SDD.md` v18 — § 4 C-I3, C-R3, § 9 TO-7,
   RN-70; `docs/trail/sdd/cycle-14.md` §§ 5.1, 5.2; `checks/renderer.sh:L44-L61`;
-  `checks/view.sh:L33-L87`; `checks/tests/test_renderer.sh:L64`; `nozoki-mac/Sources/Shell/
-  LaunchFlow.swift:L35-L37`; `nozoki-mac/Sources/Shell/OpenFolderPanel.swift:L14`;
+  `checks/view.sh:L33-L87`; `checks/tests/test_renderer.sh:L64`; `ka-reader-mac/Sources/Shell/
+  LaunchFlow.swift:L35-L37`; `ka-reader-mac/Sources/Shell/OpenFolderPanel.swift:L14`;
   `.github/workflows/ci.yml:L26`, `:L31-L36`, `:L43-L44`; GitHub Actions runs 35988399477 at
-  `nozoki@37a962d` and 35968105480 at `nozoki@c461b29`; `nozoki@153f5a1`; the commits named)*
+  `ka-reader@37a962d` and 35968105480 at `ka-reader@c461b29`; `ka-reader@153f5a1`; the commits named)*
 - **RN-27:** *(v16 — the close: the cycle-13 fold, one choice v15 drafted into § 9's toolchain
   clause, confirmed with addition in the owner's seat)* **How the item came to exist.** The
   `companion-self-answer` run that answered cycle 12's five downstream items raised § 2.1 on this
   document (`docs/trail/architecture/self_answer-15.md`, § Raised on this document), from reading
   § 9 whole against the CI runs on `main`; the v15 fold drafted it into the clause and left the
   slot empty (RN-26). It was answered in the owner's seat by a second unattended
-  `companion-self-answer` run, not by the owner in person (`nozoki@0f7743e`; its reasoning,
+  `companion-self-answer` run, not by the owner in person (`ka-reader@0f7743e`; its reasoning,
   `docs/trail/architecture/self_answer-16.md`): confirmed, with one addition. As answered the
   companion is `docs/trail/architecture/cycle-13.md`. **Re-measured this fold, not taken from the
-  answer** (2026-09-24, at `nozoki@0f7743e`): `gh run view 35968105480 --json
+  answer** (2026-09-24, at `ka-reader@0f7743e`): `gh run view 35968105480 --json
   status,conclusion,headSha,headBranch,event` → `completed`, `success`, `main`, `push`, `c461b29`;
   `gh run list --branch main --workflow CI --limit 6` lists five runs on `main` and 35968105480 is
   the newest — local `main` is 22 commits ahead of `origin/main` at `c461b29` and unpushed, so no
   later `main` run exists whose log could name the toolchain; `.github/workflows/ci.yml:L25-L26`
-  still runs `swift test --package-path nozoki-mac` in `Test gate`, and `grep -n 'swift --version'
+  still runs `swift test --package-path ka-reader-mac` in `Test gate`, and `grep -n 'swift --version'
   .github/workflows/ci.yml` prints nothing. The log's contents — image `macos-14-arm64`
   20260831.0302.1, macOS 14.8.9, no line naming a Swift version — are as RN-26 measured them; this
   run did not re-download the log. **§ 2.1 → § 9's toolchain clause.** The drafted clause stands
@@ -3374,41 +3374,41 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   read:` line stands. No `QC` is added, renumbered or reused; § 10 does not move; no record is
   edited and the index is untouched. Nothing is left for the owner;
   `docs/architecture_open_issues.md` is removed and `Status:` is Settled *(re: header `Status:`,
-  `Version:`; § 9 the `nozoki-mac` bullet's toolchain clause; source:
+  `Version:`; § 9 the `ka-reader-mac` bullet's toolchain clause; source:
   `docs/trail/architecture/cycle-13.md` § 2.1; `docs/trail/architecture/self_answer-16.md`;
-  `.github/workflows/ci.yml:L22-L29`; GitHub Actions run 35968105480 at `nozoki@c461b29`;
-  `nozoki@0f7743e`)*
+  `.github/workflows/ci.yml:L22-L29`; GitHub Actions run 35968105480 at `ka-reader@c461b29`;
+  `ka-reader@0f7743e`)*
 - **RN-28:** *(v17 — the close: the cycle-14 fold, five items raised by the PM from the tree at
-  `nozoki@ab39502`, each answered in the owner's seat)* **How the items came to exist.** No
+  `ka-reader@ab39502`, each answered in the owner's seat)* **How the items came to exist.** No
   `product-architecture` run opened the companion: the PM opened it on 2026-09-24
-  (`nozoki@1a84367`) from measuring `main` at `nozoki@ab39502` — the merge at which the runner
-  reading went into `checks/renderer.sh`'s header (`nozoki@2b83dce`) and the five remaining
-  `checks/tests/` suites went onto CI steps of their own (`nozoki@82996b8`, `nozoki@66ba2e8`) —
+  (`ka-reader@1a84367`) from measuring `main` at `ka-reader@ab39502` — the merge at which the runner
+  reading went into `checks/renderer.sh`'s header (`ka-reader@2b83dce`) and the five remaining
+  `checks/tests/` suites went onto CI steps of their own (`ka-reader@82996b8`, `ka-reader@66ba2e8`) —
   against these records at v16. §§ 3.1, 3.4 and 3.5 were facts the records held that the tree
   made false; §§ 3.2 and 3.3 were rules § 9 wrote for a day that had come. All five were answered
   in the owner's seat by a `companion-self-answer` run, not by the owner in person
-  (`nozoki@c26d47c`; its reasoning, `docs/trail/architecture/self_answer-17.md`): each confirmed
+  (`ka-reader@c26d47c`; its reasoning, `docs/trail/architecture/self_answer-17.md`): each confirmed
   with addition, §§ 3.1 and 3.3 decided together, §§ 3.4 and 3.5 decided together. As answered
   the companion is `docs/trail/architecture/cycle-14.md`. **Re-measured this fold, not taken
-  from the answers** (2026-09-24, at `nozoki@c26d47c`, whose tree outside `docs/` is
-  `nozoki@ab39502`'s — `git diff --stat ab39502 HEAD` lists the companion and
+  from the answers** (2026-09-24, at `ka-reader@c26d47c`, whose tree outside `docs/` is
+  `ka-reader@ab39502`'s — `git diff --stat ab39502 HEAD` lists the companion and
   `self_answer-17.md` alone): the six suite steps at `.github/workflows/ci.yml:L35-L36`,
   `:L41-L42`, `:L52-L53`, `:L61-L62`, `:L67-L68`, `:L70-L71`, each a step's whole `run`; the
   comparison in § 9's tail prints nothing; `grep -nE 'continue-on-error|^[[:space:]]+if:'
   .github/workflows/ci.yml` prints nothing; `ls checks/*.sh` lists the six scripts and none runs
-  the comparison; `NOZOKI_TEST_ONLY=test_header_names_the_runner_reading
+  the comparison; `KA_READER_TEST_ONLY=test_header_names_the_runner_reading
   checks/tests/test_renderer.sh` prints `ok` and exits 0; `checks/renderer.sh:L44-L57` holds the
   frame list, `:L58-L61` the Mac reading, `:L62-L65` the hosted-runner reading (run 35988399477
-  on `nozoki@37a962d`, `macos-14-arm64` 20260831.0302.1, macOS 14.8.9); `Renderer gate` is
+  on `ka-reader@37a962d`, `macos-14-arm64` 20260831.0302.1, macOS 14.8.9); `Renderer gate` is
   `ci.yml:L46-L47` and `Bundle probe` `:L31-L32`, and `git show 153f5a1:.github/workflows/ci.yml`
   has `Renderer gate` at `:L43-L44`, so ADR-0012's dated cite was true when written; `gh run list
-  --repo kensaiapp/nozoki --workflow ci.yml --limit 5` lists 35988399477 on `nozoki@37a962d`
-  (branch `2026-09-24_the-shell-is-seen-at-the-panel`) and 35968105480 on `nozoki@c461b29`
+  --repo kensaiapp/ka-reader --workflow ci.yml --limit 5` lists 35988399477 on `ka-reader@37a962d`
+  (branch `2026-09-24_the-shell-is-seen-at-the-panel`) and 35968105480 on `ka-reader@c461b29`
   (`main`) as its newest, `origin/main` is `c461b29`, and `git rev-list --count origin/main..main`
   prints `29` — the answer counted `28` and the PM `27`, the two companion commits since — so no
   run has run the five. The Mac run of all six suites is the PM's measurement in the item and was
   not repeated here. **§§ 3.1, 3.3 → § 9's `checks/tests/` bullet and § 10's preamble.** The
-  bullet reads all six on steps from `nozoki@ab39502`, dated; the ordering rule is history that
+  bullet reads all six on steps from `ka-reader@ab39502`, dated; the ordering rule is history that
   held and its case passes; the tail keeps its review gate on the one ground left — no script
   runs the comparison — and states the script it owes, its exit condition, its own step, its
   suite's step in the same change, and the day it lands as the day the gate drops; the one-sided
@@ -3424,13 +3424,13 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   above. **§§ 3.4, 3.5 → QC-62 and ADR-0012.** QC-62's tail cites the runner reading from the
   header (`checks/renderer.sh:L62-L65`) as it cites the Mac reading from `:L58-L61`, its "cited
   from the run" clause dated history in a parenthesis, and cites `Renderer gate` at
-  `ci.yml:L46-L47` with `:L43-L44` dated to `nozoki@153f5a1`; its trace names v17. ADR-0012 takes
+  `ci.yml:L46-L47` with `:L43-L44` dated to `ka-reader@153f5a1`; its trace names v17. ADR-0012 takes
   one new dated in-place note in § Consequences, after the 2026-09-24 note that was true at
-  `nozoki@153f5a1` and stands as written, carrying both corrections, and one § Traces to bullet
+  `ka-reader@153f5a1` and stands as written, carrying both corrections, and one § Traces to bullet
   naming the cycle — the record's own practice for its six earlier dated notes, on the owner's
   ruling that a citation repair reverses no decision (`docs/trail/architecture/cycle-3.md`
   § 3.1) and the form the log took at v9, v13, v14 and v15; § Decision's `:L43-L44` stands,
-  inside a parenthesis dated "from `nozoki@153f5a1`", where it was true. After the fold, `grep -n
+  inside a parenthesis dated "from `ka-reader@153f5a1`", where it was true. After the fold, `grep -n
   'L43-L44' docs/nfdr.md docs/adr/*.md` finds only sites that date it — QC-62's tail, ADR-0012's
   § Decision parenthesis and its new note, and RN-26's measurement, which stands as history.
   **Fixed in place, under no answer:** none this fold. **What moved beneath this document, and
@@ -3440,7 +3440,7 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   byte-for-byte what v16 read; the three primary inputs' `Status:` lines were re-read this run
   and each is Settled, so the `Inputs read:` line stands. The SDD's seven cites into
   `checks/renderer.sh` (`docs/SDD.md:L707`, `:L714`, `:L724`, `:L1324`, `:L2340`, `:L3940`,
-  `:L3972` — ranges inside `:L44-L61`) were opened at `nozoki@ab39502` and hold, and the SDD
+  `:L3972` — ranges inside `:L44-L61`) were opened at `ka-reader@ab39502` and hold, and the SDD
   states no suite count and no `Renderer gate` line (`grep -n 'ci.yml:L\|checks/tests'
   docs/SDD.md` prints nothing), so it is owed nothing here. No `QC` is added, renumbered or
   reused; § 10's rows do not move; no accepted record is edited beyond ADR-0012's one dated note
@@ -3451,17 +3451,17 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   `docs/trail/architecture/self_answer-17.md`; `.github/workflows/ci.yml:L26`, `:L31-L36`,
   `:L41-L42`, `:L46-L47`, `:L52-L53`, `:L61-L62`, `:L67-L68`, `:L70-L71`;
   `checks/renderer.sh:L44-L65`; `checks/tests/test_renderer.sh`; GitHub Actions runs 35988399477
-  at `nozoki@37a962d` and 35968105480 at `nozoki@c461b29`; `nozoki@153f5a1`, `nozoki@2b83dce`,
-  `nozoki@82996b8`, `nozoki@66ba2e8`, `nozoki@ab39502`, `nozoki@1a84367`, `nozoki@c26d47c`)*
+  at `ka-reader@37a962d` and 35968105480 at `ka-reader@c461b29`; `ka-reader@153f5a1`, `ka-reader@2b83dce`,
+  `ka-reader@82996b8`, `ka-reader@66ba2e8`, `ka-reader@ab39502`, `ka-reader@1a84367`, `ka-reader@c26d47c`)*
 - **RN-29:** *(v18 — the cycle-15 fold: § 3.1 folded as answered; QC-6 re-derived on SDD v20
   under a new upstream sentence; § 2.1 kept for the owner's confirm)* **How the items came to
   exist.** No `product-architecture` run opened the companion. The PM opened it on 2026-09-25 with
-  § 3.1 (`nozoki@41915e6`), measuring `main` at `nozoki@46bb275` — the first commit at which the
+  § 3.1 (`ka-reader@41915e6`), measuring `main` at `ka-reader@46bb275` — the first commit at which the
   shell draws `pending` items — against QC-4; a `companion-self-answer` run answering
-  `docs/fdr_open_issues.md` § 2.2 appended § 2.1 in the Principal PM's posture (`nozoki@9cfb727`),
-  because SDD run 18 (`nozoki@4b9425b`) had moved § 3 `fs-reader` after v17 (`nozoki@18250d6`) and
+  `docs/fdr_open_issues.md` § 2.2 appended § 2.1 in the Principal PM's posture (`ka-reader@9cfb727`),
+  because SDD run 18 (`ka-reader@4b9425b`) had moved § 3 `fs-reader` after v17 (`ka-reader@18250d6`) and
   no run of these records had read it. § 3.1 was answered in the owner's seat by a
-  `companion-self-answer` run (`nozoki@fcd7ac5`; its reasoning
+  `companion-self-answer` run (`ka-reader@fcd7ac5`; its reasoning
   `docs/trail/architecture/self_answer-18.md`); § 2.1's slot was empty at intake. As it stood at
   intake the companion is `docs/trail/architecture/cycle-15.md`. **§ 3.1 → QC-4's layer-4 half and
   § 9's row 4.** The half no longer names a word: a projection with a `pending` item draws no
@@ -3471,12 +3471,12 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   the day CONTENT re-words it. Row 4 of § 9's layer table moves the same way; § 10's QC-4 row names
   commands only and does not move; the trace to R-94 stays and reads R-94 at v10. The contingency
   the answer left — the FDR's seat answering that R-94 is literal — closed before this fold: FDR
-  v10 (`nozoki@69cc4b2`, RN-35) re-worded R-94 to name the state and point at CONTENT's *Loading*
+  v10 (`ka-reader@69cc4b2`, RN-35) re-worded R-94 to name the state and point at CONTENT's *Loading*
   words, so no document in the definition set names the word *pending* any longer, and nothing
   comes back on a fresh item. Re-measured this fold, not taken from the answer: `git diff --stat
-  46bb275 HEAD -- crates nozoki-mac checks` prints nothing, so the tree the items measured is the
-  tree at `nozoki@69cc4b2`; `testRepoProjectionDrawsNameAndGlyphOnly` sits at
-  `nozoki-mac/Tests/SurfacesTests/RootItemsViewTests.swift:L96-L115` and asserts the only visible
+  46bb275 HEAD -- crates ka-reader-mac checks` prints nothing, so the tree the items measured is the
+  tree at `ka-reader@69cc4b2`; `testRepoProjectionDrawsNameAndGlyphOnly` sits at
+  `ka-reader-mac/Tests/SurfacesTests/RootItemsViewTests.swift:L96-L115` and asserts the only visible
   text on a `pending` row is its name; CONTENT's *Loading* sentence is at `docs/CONTENT.md:L314`,
   UX-S2's row at `:L492`. **§ 2.1 → QC-6, re-derived, and the item kept.** v17's QC-6 stated the
   check "on the canonical path, symlinks resolved and after decoding" — SDD § 3's wording at v13 —
@@ -3494,11 +3494,11 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   confirm with its *Drafted into the records* now naming what v18 holds, and its slot is what the
   item was opened for. The *verified by* names the layer-1 cases for the four spellings
   `docs/fdr.md`'s example rows fix (`:L357-L358`; R-183 at `:L87`, R-184 at `:L88`) beside the
-  `..` and symlink-out cases, states that none of the four is written at `nozoki@69cc4b2`
-  (`crates/nozoki-core/src/fs_reader.rs` `mod tests`, the `..` and symlink cases at `:L412-L578`),
+  `..` and symlink-out cases, states that none of the four is written at `ka-reader@69cc4b2`
+  (`crates/ka-reader-core/src/fs_reader.rs` `mod tests`, the `..` and symlink cases at `:L412-L578`),
   and that the re-entry case goes red when it is — the walk at `:L170-L177` keeps one lexical
   position and answers `Outside` for `../<NAME>`, measured at `docs/trail/sdd/cycle-15.md` § 5.1
-  on `nozoki@46bb275` with the crates unchanged since (the stat above); SDD RN-71's own
+  on `ka-reader@46bb275` with the crates unchanged since (the stat above); SDD RN-71's own
   re-verification says the same, the reader meeting the definition on every spelling but the one
   re-entry spelling. That nothing is read outside the grant is left to QC-35 at layer 5, where it
   already is, rather than claimed of a unit test. The trace adds ADR-0011 (the wall the no-read
@@ -3509,9 +3509,9 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   both hold, decided by the owner in the SDD's trail, reversible inside one function, and bound
   already through ADR-0015 → QC-6; a record would restate the wall. **What moved beneath this
   document, and what it reached.** `git log 18250d6..HEAD -- docs/SRS.md docs/SDD.md docs/fdr.md
-  docs/PRD.md docs/UXD.md docs/DESIGN.md docs/CONTENT.md` lists SDD run 18 (`nozoki@4b9425b`,
-  v18 → v20), FDR v9 and v10 (`nozoki@d341d42`, `nozoki@69cc4b2`), DESIGN v9 and v10
-  (`nozoki@cdb756c`, `nozoki@da88347`) and CONTENT v7 (`nozoki@1c95030`); the SRS, the PRD and the
+  docs/PRD.md docs/UXD.md docs/DESIGN.md docs/CONTENT.md` lists SDD run 18 (`ka-reader@4b9425b`,
+  v18 → v20), FDR v9 and v10 (`ka-reader@d341d42`, `ka-reader@69cc4b2`), DESIGN v9 and v10
+  (`ka-reader@cdb756c`, `ka-reader@da88347`) and CONTENT v7 (`ka-reader@1c95030`); the SRS, the PRD and the
   UXD did not move. The SDD's seven hunks (`git diff 18250d6 HEAD -- docs/SDD.md`): the header;
   § 3 `fs-reader` (QC-6, above); § 4 C-D1's *Violated by* (QC-6's trace — QC-35's obligation
   already states the no-read); § 4 C-E4's new clause — a refused path is one thing the tool
@@ -3529,33 +3529,33 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   3.1; `docs/trail/architecture/self_answer-18.md`; `docs/trail/fdr/self_answer-6.md`
   § Companions opened; `docs/trail/fdr/cycle-6.md` § 2.2; `docs/trail/sdd/cycle-15.md` § 5.1;
   `docs/SDD.md:L322`, § 4 C-D1, § 9 TO-6, § 11 R-10, RN-71; `docs/fdr.md:L87-L88`, `:L357-L358`,
-  R-94, RN-34, RN-35; `docs/CONTENT.md:L314`, `:L492`; `crates/nozoki-core/src/fs_reader.rs:L170-L177`,
-  `:L412-L578`; `nozoki-mac/Tests/SurfacesTests/RootItemsViewTests.swift:L96-L115`;
-  `nozoki@18250d6`, `nozoki@4b9425b`, `nozoki@41915e6`, `nozoki@46bb275`, `nozoki@fcd7ac5`,
-  `nozoki@9cfb727`, `nozoki@d341d42`, `nozoki@69cc4b2`, `nozoki@cdb756c`, `nozoki@da88347`,
-  `nozoki@1c95030`)*
+  R-94, RN-34, RN-35; `docs/CONTENT.md:L314`, `:L492`; `crates/ka-reader-core/src/fs_reader.rs:L170-L177`,
+  `:L412-L578`; `ka-reader-mac/Tests/SurfacesTests/RootItemsViewTests.swift:L96-L115`;
+  `ka-reader@18250d6`, `ka-reader@4b9425b`, `ka-reader@41915e6`, `ka-reader@46bb275`, `ka-reader@fcd7ac5`,
+  `ka-reader@9cfb727`, `ka-reader@d341d42`, `ka-reader@69cc4b2`, `ka-reader@cdb756c`, `ka-reader@da88347`,
+  `ka-reader@1c95030`)*
 
 - **RN-30:** *(v19 — the close: the cycle-16 fold; QC-6's layer-1 list re-sourced under the
   owner's answer; the volume-root case named red under this run's own reading)* **The fold.** The
-  companion at intake (`docs/architecture_open_issues.md` at `nozoki@368f127`) held one item, § 2.1,
+  companion at intake (`docs/architecture_open_issues.md` at `ka-reader@368f127`) held one item, § 2.1,
   answered in the owner's seat by a `companion-self-answer` run (its reasoning
   `docs/trail/architecture/self_answer-19.md` § 2.1): *confirm, with one addition*. The companion as
   it stood is `docs/trail/architecture/cycle-16.md`, copied before this fold rewrote anything.
   **§ 2.1 → QC-6's *verified by*, the layer-1 list only.** The obligation, the trace and § 10's
   row stand as v18 holds them; the answer moves one sentence. v18 said "the four spellings
   `docs/fdr.md`'s example rows fix (`:L357-L358`)" — the rows fix three: `:L357` holds
-  `up → ../NOZOKI/docs`, shown as a folder and expanding into `docs` (R-183, R-34, R-151),
-  `far → ../../projects/NOZOKI/docs`, marked outside although it leads in (R-184's multi-level
-  return), and `self → ../NOZOKI`, a cycle (R-152); `:L358` holds `back → ../Work/notes.txt` under
+  `up → ../KA-READER/docs`, shown as a folder and expanding into `docs` (R-183, R-34, R-151),
+  `far → ../../projects/KA-READER/docs`, marked outside although it leads in (R-184's multi-level
+  return), and `self → ../KA-READER`, a cycle (R-152); `:L358` holds `back → ../Work/notes.txt` under
   `/Volumes/Work` (R-184's volume root). No row exercises a Unicode-normalization difference; that
   refusal rests on R-184's second clause (`docs/fdr.md:L88`) and SDD § 11 R-10 (`docs/SDD.md:L2431`),
   and the list now cites those in its place, so a QA seat deriving the case has a source to derive
   it from. Two consequences the answer drew, folded as given: the re-entry has two forms the rows
   fix — `self`, ending `Cycle`, which v18 named, and `up`, resolving inside and read as its
   target, which it did not — and the list names both; and both are `Outside` on the walk at
-  `nozoki@368f127` by the same lines (`crates/nozoki-core/src/fs_reader.rs:L211-L215`), the
+  `ka-reader@368f127` by the same lines (`crates/ka-reader-core/src/fs_reader.rs:L211-L215`), the
   owner's measurement at `docs/trail/sdd/cycle-15.md` § 5.1 having covered the `self` form on
-  `nozoki@46bb275` with the crates unchanged since — re-measured this fold, not taken from the
+  `ka-reader@46bb275` with the crates unchanged since — re-measured this fold, not taken from the
   answer: `git diff --stat 46bb275 HEAD -- crates` prints nothing, `mod tests` sits at `:L370-L796`
   with the `..` and symlink cases at `:L412-L578`, and `grep -n -i -E 'letter case|case-fold|
   normaliz|volume' fs_reader.rs` hits two doc comments (`:L269`, `:L309`) and no test. **Fixed in
@@ -3568,7 +3568,7 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   refuses any path that leaves a granted folder that is the root of its volume (SDD § 3
   `fs-reader`, `docs/SDD.md:L322`; FDR R-184, `:L88`; the example row at `:L358`), so a layer-1
   test written to it fails on this tree. The other two — `far`, whose walk ends at
-  `…/projects/NOZOKI/docs` and fails `strip_prefix(root)` (`:L256-L262`), and a
+  `…/projects/KA-READER/docs` and fails `strip_prefix(root)` (`:L256-L262`), and a
   normalization difference, whose bytes never equal the root's — are `Outside` already. A
   tree-state clause that names one red case where there are two sends the station's tree half to
   the wrong gap, which is the reason the clause exists; it is logged here because the answer did
@@ -3586,19 +3586,19 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   `Version:`; QC-6 *verified by*; source: `docs/trail/architecture/cycle-16.md` § 2.1;
   `docs/trail/architecture/self_answer-19.md` § 2.1; `docs/trail/sdd/cycle-15.md` § 5.1;
   `docs/SDD.md:L322`, `:L2431`; `docs/fdr.md:L84-L88`, `:L357-L358`;
-  `crates/nozoki-core/src/fs_reader.rs:L170-L177`, `:L201-L203`, `:L211-L215`, `:L217`,
-  `:L256-L262`, `:L269`, `:L309`, `:L370-L796`, `:L412-L578`; `nozoki@46bb275`, `nozoki@88b237f`,
-  `nozoki@368f127`)*
+  `crates/ka-reader-core/src/fs_reader.rs:L170-L177`, `:L201-L203`, `:L211-L215`, `:L217`,
+  `:L256-L262`, `:L269`, `:L309`, `:L370-L796`, `:L412-L578`; `ka-reader@46bb275`, `ka-reader@88b237f`,
+  `ka-reader@368f127`)*
 - **RN-31:** *(v20 — the close: the three answered cycle-17 items folded into § 9)* **The fold.**
   The companion at intake held one overridden choice and two answered downstream findings; copied
   whole before this fold as `docs/trail/architecture/cycle-17.md`. §§ 3.1 and 3.2 were decided in
   the owner's seat by `docs/trail/architecture/self_answer-20.md`; § 2.1 was decided there by
   `self_answer-21.md`. Nothing is left for the owner. **Framework.** The old *followed* clause was
   false after a fifth XCTest file landed. Its answer makes the present state a departure, fixes the
-  count at five at `nozoki@f46269a`, and gives it its own evidence-based flip: new tests remain
+  count at five at `ka-reader@f46269a`, and gives it its own evidence-based flip: new tests remain
   XCTest until a CI log on `main` names a toolchain that runs Swift Testing; from that log onward,
   new tests use Swift Testing and the existing XCTest files stay. The review tail gains changes
-  adding a file under `nozoki-mac/Tests/`, because the previous trigger read only the manifest and
+  adding a file under `ka-reader-mac/Tests/`, because the previous trigger read only the manifest and
   workflow and therefore did not read the three changes that wrote XCTest. **Language mode.** The
   5.9 manifest puts every target in Swift 5 mode, so Swift 6 mode joins the recorded tools-version
   departure and flips with it, explicitly as `swiftLanguageModes: [.v6]`. No target takes
@@ -3606,7 +3606,7 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   warnings-as-errors setting, and the unmeasured CI compiler leaves the spelling unresolved. The
   migration cost is named at `LaunchFlow.swift:L53` and `ReadRunning.swift:L28`. **The two 6.2
   settings.** `.strictMemorySafety()` joins every Swift target, including both test targets, and
-  `.defaultIsolation(MainActor.self)` joins `Surfaces` and `Nozoki` only. The strict-memory cost is
+  `.defaultIsolation(MainActor.self)` joins `Surfaces` and `KAReader` only. The strict-memory cost is
   the C-pointer crossings in `NativeBridge.swift` and AppKit's `unowned(unsafe)` properties in
   `RootItemsView.swift`; default isolation has no separately measured current-source failure when
   Swift 5 mode is held. These placements replace the draft that incorrectly put the isolation cost
@@ -3618,10 +3618,10 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   v7 → v9, changing the gone-folder and gone-file sentences only. The NFDR cites CONTENT by section
   and no obligation here fixes either sentence, so no entry moves for it. No `QC` is added,
   renumbered or reused; § 10 does not move. The companion is removed and `Status:` remains Settled
-  *(re: § 9 `nozoki-mac` bullet; source: `docs/trail/architecture/cycle-17.md` §§ 2.1, 3.1, 3.2;
+  *(re: § 9 `ka-reader-mac` bullet; source: `docs/trail/architecture/cycle-17.md` §§ 2.1, 3.1, 3.2;
   `docs/trail/architecture/self_answer-20.md`; `docs/trail/architecture/self_answer-21.md`;
-  `nozoki-mac/Package.swift:L1-L36`; `docs/adr/0016-physical-unit-set-core-bridge-mac-checks.md`
-  § Consequences; `docs/CONTENT.md` RN-34, RN-35; `nozoki@f46269a`; `nozoki@a5fc189`)*
+  `ka-reader-mac/Package.swift:L1-L36`; `docs/adr/0016-physical-unit-set-core-bridge-mac-checks.md`
+  § Consequences; `docs/CONTENT.md` RN-34, RN-35; `ka-reader@f46269a`; `ka-reader@a5fc189`)*
 - **RN-32:** *(v21 — the cycle-18 fold, § 3.1 answered; § 2.1 drafted for the owner's confirm)*
   **The fold.** The companion at intake held one answered downstream item, § 3.1, decided in the
   owner's seat by `docs/trail/architecture/self_answer-22.md`, and one unanswered choice, § 2.1,
@@ -3630,9 +3630,9 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   to the shell exactly the functions its landed changes built" and "A change has built a function
   when the bridge function exists and delegates to an operation `folder-model`'s API carries
   (SM-5)" (`docs/SDD.md:L596-L604`). QC-24's two slice-grain sentences now read by change, and the
-  entry carries that meaning of *built*. Set equality, the closed list, `nozoki_free`, "from
+  entry carries that meaning of *built*. Set equality, the closed list, `ka_reader_free`, "from
   `v1.0.0`", the no-second-export clause and the pre-`v1.0.0` uncovered case stand as written.
-  **§ 3.1 → QC-2.** The item proposed naming `cargo test --locked -p nozoki-bridge --test
+  **§ 3.1 → QC-2.** The item proposed naming `cargo test --locked -p ka-reader-bridge --test
   select_file` in place of `read-only.sh` until the walk drives `select_file`; the answer overrode
   that, because C-I3 at v22 reads "The unit is the build … no test of a slice's own stands in for
   `read-only.sh`" (`docs/SDD.md:L653-L655`). The tail's "after every command the build exports"
@@ -3645,14 +3645,14 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   violation in the build, closed when the walk drives the command, not a false sentence here.
   **§ 2.1 → QC-62 and § 9, drafted.** No owner answer stands behind this; a new upstream sentence
   does. C-I3 at v22 re-points and pins the same citations QC-62 carries (`docs/SDD.md:L717-L748`),
-  and QC-62 traces to C-I3. Read at `nozoki@a954a90`, whose code under these paths is byte-equal
-  to `nozoki@7c7038f` (`git diff --quiet 7c7038f HEAD --` over `LaunchFlow.swift`,
+  and QC-62 traces to C-I3. Read at `ka-reader@a954a90`, whose code under these paths is byte-equal
+  to `ka-reader@7c7038f` (`git diff --quiet 7c7038f HEAD --` over `LaunchFlow.swift`,
   `ReadRunning.swift` and `checks/renderer.sh`): `LaunchFlow.swift:L35-L37` is the lazy
   `statusGlyphs` property, `chooseFolder()`'s panel wait and hand-off are `:L54-L60`, and
   `bridge.openFolder` is `:L69`; `checks/renderer.sh`'s frame list is `:L53-L56` and holds four
-  frames, its Mac reading `:L57-L60`, its runner reading `:L61-L64`; `nozoki@b75348f` removed
-  `LaunchFlow.run()` from the list. QC-62 cites each at `nozoki@7c7038f`, as C-I3 does, says the
-  five-frame match was the list the script carried at `nozoki@37a962d`, and carries C-I3's second
+  frames, its Mac reading `:L57-L60`, its runner reading `:L61-L64`; `ka-reader@b75348f` removed
+  `LaunchFlow.run()` from the list. QC-62 cites each at `ka-reader@7c7038f`, as C-I3 does, says the
+  five-frame match was the list the script carried at `ka-reader@37a962d`, and carries C-I3's second
   runner reading (run 36795836747), cited to the SDD and not re-measured here. § 9's Swift 6
   migration-cost sentence moves `LaunchFlow.swift:L53` to `:L60`; `ReadRunning.swift:L28` still
   names `deliver` and stands. Earlier Review Notes that cite the old lines are dated accounts and
@@ -3672,46 +3672,46 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   moves for them. SDD v22's SM-4,
   C-R7 and C-I3 moves are the ones folded above. Every input's `Status:` line was re-read and is
   Settled, so `Inputs read:` stands. No `QC` is added, renumbered or reused *(re: header `Status:`,
-  `Version:`; QC-2; QC-24; QC-62; § 9 `nozoki-mac` bullet; § 10 QC-2 row; source:
+  `Version:`; QC-2; QC-24; QC-62; § 9 `ka-reader-mac` bullet; § 10 QC-2 row; source:
   `docs/trail/architecture/cycle-18.md` §§ 2.1, 3.1; `docs/trail/architecture/self_answer-22.md`;
   `docs/SDD.md` § 4 C-R7, C-I3 at v22, RN-76; `docs/trail/sdd/cycle-17.md` §§ 2.1, 5.1;
-  `nozoki@7c7038f`, `nozoki@b75348f`, `nozoki@a954a90`)*
+  `ka-reader@7c7038f`, `ka-reader@b75348f`, `ka-reader@a954a90`)*
 - **RN-33:** *(v22 — the close: the cycle-19 fold, § 2.1 confirmed with two additions)* **The
   fold.** The companion at intake held one answered choice, § 2.1, decided in the owner's seat by a
   `companion-self-answer` run (`docs/trail/architecture/self_answer-23.md` § 2.1); it was copied
   whole before this fold as `docs/trail/architecture/cycle-19.md`. The answer confirms QC-62 as v21
   drafted it and adds two corrections; with both folded nothing is open, and the companion is
   removed. **QC-62 does not move.** **§ 9 — addition (1).** RN-32 moved the measured site
-  `LaunchFlow.swift:L53` to `:L60`, and that named a different closure: at `nozoki@6e1d79f`, where
+  `LaunchFlow.swift:L53` to `:L60`, and that named a different closure: at `ka-reader@6e1d79f`, where
   the cost was measured, `:L52-L53` is the `listTree` closure, `{ Self.listing(at: path, through:
-  bridge) }`, and at `nozoki@7c7038f` that closure is `:L106-L107`; `:L60` is the closure
+  bridge) }`, and at `ka-reader@7c7038f` that closure is `:L106-L107`; `:L60` is the closure
   `chooseFolder()` hands to `openAndList`, and `:L110-L111` the `selectFile` closure, both added
   after the measurement (read this fold with `git show` at both commits;
-  `nozoki-mac/Sources/Shell/` is byte-equal between `7c7038f` and `HEAD`, `git diff --stat 7c7038f
-  HEAD -- nozoki-mac checks` printing nothing). The sentence now names all three sites and
+  `ka-reader-mac/Sources/Shell/` is byte-equal between `7c7038f` and `HEAD`, `git diff --stat 7c7038f
+  HEAD -- ka-reader-mac checks` printing nothing). The sentence now names all three sites and
   `ReadRunning.swift:L28`, which stands (`:L28`, `MainActor.assumeIsolated { deliver(listing) }`).
   That all three fail Swift 6 mode is the answer's measurement — Apple Swift 6.4, a copy of
-  `nozoki-mac` at `nozoki@7c7038f`, `swift build --target Shell -Xswiftc -swift-version -Xswiftc 6`
+  `ka-reader-mac` at `ka-reader@7c7038f`, `swift build --target Shell -Xswiftc -swift-version -Xswiftc 6`
   failing at exactly those three lines, and the cycle-17 method (tools 5.9, `StrictConcurrency` on
   `Surfaces` and `Shell`) warning at the three and at `ReadRunning.swift:L28`
   (`self_answer-23.md` § 2.1) — cited and not re-run by this fold. **ADR-0012 — addition (2).**
   RN-32's reason for leaving ADR-0012 alone — that it is Accepted — does not hold: the owner's
   ruling makes a citation repair an edit to an ADR's own prose, as a pin, with no superseding record
   (`docs/trail/architecture/cycle-3.md` § 3.1, answers (1) and (3)). ADR-0012's four unpinned
-  citations — `nozoki-mac/Sources/Shell/LaunchFlow.swift:L35-L37` in § Decision and
+  citations — `ka-reader-mac/Sources/Shell/LaunchFlow.swift:L35-L37` in § Decision and
   `checks/renderer.sh:L44-L57`, `:L58-L61` and `:L62-L65` in § Consequences — are each pinned to
-  `nozoki@ab39502:` in two dated in-place notes and a *Traces to* bullet. Read this fold at
-  `nozoki@ab39502`: `LaunchFlow.swift:L35-L37` is `panel.chooseFolder()` followed by
+  `ka-reader@ab39502:` in two dated in-place notes and a *Traces to* bullet. Read this fold at
+  `ka-reader@ab39502`: `LaunchFlow.swift:L35-L37` is `panel.chooseFolder()` followed by
   `bridge.openFolder(location:)`, and `checks/renderer.sh` carries § *THE FRAMES* at `:L44`, the
   five-frame list ending at `:L57`, the Mac reading at `:L58-L61` and the runner reading at
   `:L62-L65`. The record's Status, decision, alternatives and binding are untouched, so the index
   does not move. RN-32 stands as the dated account of v21. **What moved beneath this document.**
-  `git log c5f3a59..HEAD` lists only the answer's own commit, `nozoki@cb10c34`; every input's
+  `git log c5f3a59..HEAD` lists only the answer's own commit, `ka-reader@cb10c34`; every input's
   `Status:` line was re-read and is Settled, so `Inputs read:` stands. No `QC` is added,
-  renumbered or reused *(re: header `Status:`, `Version:`; § 9 `nozoki-mac` bullet; ADR-0012
+  renumbered or reused *(re: header `Status:`, `Version:`; § 9 `ka-reader-mac` bullet; ADR-0012
   § Decision, § Consequences, § Traces to; source: `docs/trail/architecture/cycle-19.md` § 2.1;
   `docs/trail/architecture/self_answer-23.md` § 2.1; `docs/trail/architecture/cycle-3.md` § 3.1;
-  `nozoki@6e1d79f`, `nozoki@7c7038f`, `nozoki@ab39502`)*
+  `ka-reader@6e1d79f`, `ka-reader@7c7038f`, `ka-reader@ab39502`)*
 - **RN-34:** *(v23 — the cycle-20 fold, §§ 3.1 and 3.2 answered; two drafts for the owner's
   confirm)* **The fold.** The companion at intake held two answered downstream items, §§ 3.1 and
   3.2, raised by the PM and decided in the owner's seat by a `companion-self-answer` run
@@ -3719,34 +3719,34 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   same run; it was copied whole before this fold as `docs/trail/architecture/cycle-20.md`.
   **§ 3.1 → QC-3.** The tail no longer says the one-time review is owed. Re-verified for this fold,
   not taken from the answer: `git show --stat 85d9fa7` lists `Cargo.lock`, `checks/deps.allow`,
-  `checks/deps.review.md` and `crates/nozoki-core/Cargo.toml`; at that commit the list's `cargo:`
+  `checks/deps.review.md` and `crates/ka-reader-core/Cargo.toml`; at that commit the list's `cargo:`
   section holds 40 names and the record 40 rows, and `comm -3` of the two name sets prints
   nothing; `bash checks/no-network.sh` on `HEAD` prints "ok — 40 cargo names match
   checks/deps.allow". The answer's three additions are folded as written: the record is cited
-  pinned to `nozoki@85d9fa7`, because its title goes stale at the next added name; the dated
-  clause "At `nozoki@0aca57e` the list is one `cargo:` section of 17 names" stays as history, with
+  pinned to `ka-reader@85d9fa7`, because its title goes stale at the next added name; the dated
+  clause "At `ka-reader@0aca57e` the list is one `cargo:` section of 17 names" stays as history, with
   the current count beside it; and RN-25 is left as written, its "still owed" being the dated
   account of v14 that this note closes, as RN-18 left RN-4's, RN-7's and RN-16's dated mentions. One word beyond the
   answer, under the same authority: the dated clause's "no record shows the review" becomes "until
-  `nozoki@85d9fa7` no record showed the review", because in the present tense it is now false.
+  `ka-reader@85d9fa7` no record showed the review", because in the present tense it is now false.
   **§ 3.2 → QC-30 half (2) and § 9.** The exception names the package's build script — the file the
   `build` key of the registry copy's `Cargo.toml` names, `build.rs` at the root by default — per
   Cargo's manifest reference (https://doc.rust-lang.org/cargo/reference/manifest.html, § The
   `build` field), and excepts nothing where the key is `false` or the default file is absent.
-  Re-measured for this fold over the 32 registry crates `cargo tree -p nozoki-bridge --target
+  Re-measured for this fold over the 32 registry crates `cargo tree -p ka-reader-bridge --target
   aarch64-apple-darwin -e normal --locked --offline` resolves: 17 name a script (`tree-sitter` →
   `binding_rust/build.rs`; the six grammars → `bindings/rust/build.rs`; ten → `build.rs`), 14 set
   `false`, and `streaming-iterator` sets no key and has no root `build.rs`. A grep of the 17
   scripts for `mod …;`, `#[path` and `include!` prints nothing, which is the ground for the entry's
-  *Not covered* sentence. `Cargo.lock` is unchanged between `nozoki@85d9fa7` and `HEAD` (`git diff
+  *Not covered* sentence. `Cargo.lock` is unchanged between `ka-reader@85d9fa7` and `HEAD` (`git diff
   --stat 85d9fa7 HEAD -- Cargo.lock` prints nothing). § 9's bullet changes "a dependency's root
   `build.rs`" to "a dependency's build script", as the answer's addition (2) directs; its own
   "outside each crate's `build.rs`", about the product's crates, is not in the answer and stands.
   RN-24's mention is dated history and stays. The § 10 row carries no exception and does not move
   (the answer's addition (3)).
   **§ 2.1 → QC-30 half (2), drafted.** No owner answer stands behind this yet. The command half
-  (2) names also names `nozoki-bridge v0.0.0 (…/crates/nozoki-bridge)` and `nozoki-core v0.0.0
-  (…/crates/nozoki-core)` — re-run for this fold — and neither has a registry copy, so a script
+  (2) names also names `ka-reader-bridge v0.0.0 (…/crates/ka-reader-bridge)` and `ka-reader-core v0.0.0
+  (…/crates/ka-reader-core)` — re-run for this fold — and neither has a registry copy, so a script
   written to the entry's words failed every build before reading a dependency. Half (1) already
   holds both crates by name. The entry now scans only crates from outside the workspace and skips
   members by membership, not by a name list, which keeps every other unopenable crate a failure.
@@ -3754,16 +3754,16 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   what the check does, so it is drafted and put to the owner: `docs/architecture_open_issues.md`
   § 2.1.
   **What moved beneath this document, and ADR-0017.** `git log cc351c8..HEAD` over the seven inputs
-  lists SDD v23 (`nozoki@e81a386`) and UXD v11 (`nozoki@24d652b`). UXD v11 moved UX-U1, the reader
+  lists SDD v23 (`ka-reader@e81a386`) and UXD v11 (`ka-reader@24d652b`). UXD v11 moved UX-U1, the reader
   floor; `grep -n 'UX-U1' docs/nfdr.md` printed nothing before this note was written, so nothing
   here moves for it. SDD v23 names the grammar engine — tree-sitter, its runtime,
-  `tree-sitter-highlight` and one grammar crate per floor language, built from C into `nozoki-core`
+  `tree-sitter-highlight` and one grammar crate per floor language, built from C into `ka-reader-core`
   (`docs/SDD.md:L327`) — and adds § 9 TO-11 (`:L2252-L2265`), § 11 R-14 (`:L2566`) and two
   sentences to § 3's units paragraph (`:L339-L341`). TO-11 is a § 9 trade-off, one of the three
   surfaces a record is found on, so it was walked through the gates. It is surprising without its
   context — a core whose own source forbids `unsafe` parses the folder's bytes in C — and it was a
   real trade-off, with hand-written lexers and `syntect` weighed and ruled out
-  (`nozoki@85d9fa7:checks/deps.review.md` § *The engine chosen*). Whether it is hard enough to
+  (`ka-reader@85d9fa7:checks/deps.review.md` § *The engine chosen*). Whether it is hard enough to
   reverse is the one gate two architects could read differently: TO-11 says undoing it rewrites
   one part and moves no seam, which is the argument for no record, and the rewrite is six
   grammars' worth of lexing or a second engine's vendored syntaxes, which is the argument for one.
@@ -3781,11 +3781,11 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   `Version:`; QC-3; QC-9; QC-26; QC-30; § 9 `checks/structure.sh` bullet; ADR-0017; source:
   `docs/trail/architecture/cycle-20.md` §§ 2.1, 3.1, 3.2;
   `docs/trail/architecture/self_answer-24.md` §§ 3.1, 3.2; `docs/SDD.md` § 3, § 9 TO-11, § 11
-  R-14, RN-80 at v23; `nozoki@85d9fa7`, `nozoki@e81a386`)*
+  R-14, RN-80 at v23; `ka-reader@85d9fa7`, `ka-reader@e81a386`)*
 - **RN-35:** *(v24 — the close: the cycle-21 fold, §§ 2.1 and 2.2 confirmed with an addition
   each)* **The fold.** The companion at intake held the two v23 drafts, both answered in the
   owner's seat by a `companion-self-answer` run (`docs/trail/architecture/self_answer-25.md`) and
-  committed at `nozoki@e49b34e`; it was copied whole before this fold as
+  committed at `ka-reader@e49b34e`; it was copied whole before this fold as
   `docs/trail/architecture/cycle-21.md`. Nothing is left unresolved, so the companion is removed
   and `Status:` is Settled.
   **§ 2.1 → QC-30 and QC-58.** The draft stands: half (2) scans only crates from outside the
@@ -3793,14 +3793,14 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   members are a glob, `members = ["crates/*"]` (`Cargo.toml:L8`, re-read for this fold), so a
   crate created under `crates/` is a member with no manifest edit. Half (2) would skip it, and
   half (1) named three units, so it fell in neither half. Half (1) now names every workspace member
-  and keeps `nozoki-core` and `nozoki-bridge` as today's examples. Its *verified by* points at the
+  and keeps `ka-reader-core` and `ka-reader-bridge` as today's examples. Its *verified by* points at the
   scope § 9's `checks/structure.sh` bullet already gives the script, "the product crates' sources
   outside `crates/*/tests/`", so that rule does not grow. Neither `checks/structure.sh` nor
   `checks/entry-points.sh` is on the tree yet (`ls checks/`, this fold), so no script moves. The
   entry sets each script's scope for the change that lands it, and until then the gate is
   `development-design` reading the entry, as the header says. One phrase beyond the answer, under
-  the same authority: QC-58 called its units "the two crates and `nozoki-mac`" and says its halves
-  follow QC-30's, so it now reads "every workspace member (QC-30 half (1)) and `nozoki-mac`". Left
+  the same authority: QC-58 called its units "the two crates and `ka-reader-mac`" and says its halves
+  follow QC-30's, so it now reads "every workspace member (QC-30 half (1)) and `ka-reader-mac`". Left
   as it was, it would have named a smaller set than the entry it follows. § 10's two QC-30 rows
   name no crate and do not move.
   **§ 2.2 → ADR-0017.** The record is Accepted. Before acceptance, while it was still Proposed, it
@@ -3818,44 +3818,44 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   `docs/trail/architecture/self_answer-25.md` §§ 2.1, 2.2; `Cargo.toml:L8`)*
 - **RN-36:** *(v25 — the close: the cycle-22 fold, § 3.1 answered)* **The fold.** The companion
   at intake was opened by the PM, not by a `product-architecture` run, with one item raised from
-  downstream (`nozoki@b15a89a`). It was answered in the owner's seat by a `companion-self-answer`
-  run (`docs/trail/architecture/self_answer-26.md`) and committed at `nozoki@fdaa957`, and was
+  downstream (`ka-reader@b15a89a`). It was answered in the owner's seat by a `companion-self-answer`
+  run (`docs/trail/architecture/self_answer-26.md`) and committed at `ka-reader@fdaa957`, and was
   copied whole before this fold as `docs/trail/architecture/cycle-22.md`. Nothing is left
   unresolved, so the companion is removed and `Status:` is Settled.
-  **§ 3.1 → QC-14.** QC-14 said `checks/` is "never a dependency of `nozoki-core`, `nozoki-bridge`
-  or `nozoki-mac`", with no shipped/unshipped line, and `crates/nozoki-core/tests/walk.rs:L6-L7`
-  compiles `checks/walk.rs` into a `nozoki-core` test target by `#[path]`. The answer reads the
+  **§ 3.1 → QC-14.** QC-14 said `checks/` is "never a dependency of `ka-reader-core`, `ka-reader-bridge`
+  or `ka-reader-mac`", with no shipped/unshipped line, and `crates/ka-reader-core/tests/walk.rs:L6-L7`
+  compiles `checks/walk.rs` into a `ka-reader-core` test target by `#[path]`. The answer reads the
   entry as its two sources already do — ADR-0016 "never a dependency of a shipped unit"
   (`docs/adr/0016-physical-unit-set-core-bridge-mac-checks.md:L40-L41`) and SDD § 3
   `read-only-harness` "Being a dependency of any shipped unit" (`docs/SDD.md:L332`), both re-read
   for this fold — so QC-14 had dropped the qualifier in transcription, and the entry was the copy.
   The first clause now says "any shipped unit" and names the three units as the artifacts that
   ship. The site conforms: Cargo compiles a `tests/` file as its own crate over the library's
-  public API, so the edge runs `checks` → `nozoki-core`, the direction QC-14 allows, and § 9's
+  public API, so the edge runs `checks` → `ka-reader-core`, the direction QC-14 allows, and § 9's
   `checks/structure.sh` scope bullet already keeps `crates/*/tests/` out of every rule of the
   script, this one included. The trace tag names this note. § 10's QC-9 – QC-14 row needs no new
   command and does not move.
   **Not covered, named so it is not read as coverage.** A `#[path]` or `include!` from a unit's
   shipped source under `src/` into `checks/` would make `checks/` a dependency of a shipped unit
   and break QC-14. No such site exists — `grep -rn '#\[path\|include!' crates/` finds this test
-  target and two `#[cfg(test)]` sites into `tests/common/` (`crates/nozoki-core/src/lib.rs:L18-L19`,
-  `crates/nozoki-bridge/src/lib.rs:L10-L11`), re-run for this fold — so, per the answer, no rule
+  target and two `#[cfg(test)]` sites into `tests/common/` (`crates/ka-reader-core/src/lib.rs:L18-L19`,
+  `crates/ka-reader-bridge/src/lib.rs:L10-L11`), re-run for this fold — so, per the answer, no rule
   of `checks/structure.sh` is owed for it until one occurs.
   **Inputs.** `git log a7e4445..HEAD` over the seven inputs prints nothing, and every input's
   `Status:` line was re-read and is Settled, so `Inputs read:` stands. No record is written or
   restatused, and no `QC` is added, renumbered or reused *(re: header `Status:`, `Version:`;
   QC-14; source: `docs/trail/architecture/cycle-22.md` § 3.1;
-  `docs/trail/architecture/self_answer-26.md` § 3.1; `crates/nozoki-core/tests/walk.rs:L6-L7`)*
+  `docs/trail/architecture/self_answer-26.md` § 3.1; `crates/ka-reader-core/tests/walk.rs:L6-L7`)*
 - **RN-37:** *(v26 — the cycle-23 fold, §§ 3.1 – 3.4 answered; one draft for the owner's
   confirm)* **The fold.** The companion at intake was opened by the PM, not by a
   `product-architecture` run, with four items raised from downstream after `checks/structure.sh`
-  and its suite landed (`nozoki@463acb9`, opened at `nozoki@c308b2f`). All four were answered in the
+  and its suite landed (`ka-reader@463acb9`, opened at `ka-reader@c308b2f`). All four were answered in the
   owner's seat by a `companion-self-answer` run (`docs/trail/architecture/self_answer-27.md`), which
-  also raised one unanswered choice, § 2.1; the companion was committed at `nozoki@b083f99` and
+  also raised one unanswered choice, § 2.1; the companion was committed at `ka-reader@b083f99` and
   copied whole before this fold as `docs/trail/architecture/cycle-23.md`. § 2.1 stays open, so the
   companion is rewritten with it alone and `Status:` is Draft. Every fact below was re-measured at
-  `nozoki@b083f99`, not taken from the answers; `git diff --stat 463acb9 b083f99 --
-  .github/workflows/ci.yml checks crates` prints nothing, so the pins to `nozoki@463acb9` hold.
+  `ka-reader@b083f99`, not taken from the answers; `git diff --stat 463acb9 b083f99 --
+  .github/workflows/ci.yml checks crates` prints nothing, so the pins to `ka-reader@463acb9` hold.
   **§ 3.1 → the header and § 10.** Executability is tied to each rule, not to its script: a rule a
   command names becomes executable in the change that adds it to the command. Which rules
   `checks/structure.sh` holds is cited from its header (*THE SCAN TABLE* at `:L35`, *WHAT IS NOT
@@ -3867,9 +3867,9 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   is its only command and the script does not hold QC-20.
   **§ 3.2 → § 9's `checks/tests/` bullet and § 10.** `ls checks/tests` lists seven `test_*.sh`,
   and the bullet's own loop over `ci.yml` prints nothing, so all seven are on steps. The count is
-  now seven, and every step is cited pinned to `nozoki@463acb9` at the lines the answer gives,
+  now seven, and every step is cited pinned to `ka-reader@463acb9` at the lines the answer gives,
   re-read with `cat -n .github/workflows/ci.yml`. The bullet's opening citation of
-  `Bundle probe suite` moves from `:L35-L36`, which at HEAD is `nozoki-mac/assemble.sh`, to
+  `Bundle probe suite` moves from `:L35-L36`, which at HEAD is `ka-reader-mac/assemble.sh`, to
   `:L41-L42` under the same pin. § 10's preamble points at § 9 for the count and no longer repeats
   it: the count went stale in two places because it was written in two. `(suite
   test_structure.sh)` is added to the nine § 10 rows that name `checks/structure.sh`, all nine
@@ -3880,23 +3880,23 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   through `#[path]` from `crates/*/tests/` is outside every rule, and an inline `#[cfg(test)]`
   module under `src/` stays inside every rule, which `test_inline_test_module_is_scanned` holds
   (`checks/tests/test_structure.sh:L761`). The two test-only sites are named
-  (`crates/nozoki-core/src/lib.rs:L18-L24`, `crates/nozoki-bridge/src/lib.rs:L10-L16`, both
+  (`crates/ka-reader-core/src/lib.rs:L18-L24`, `crates/ka-reader-bridge/src/lib.rs:L10-L16`, both
   re-read), and so are their bodies' `std::fs` and `std::process` imports, which a reading by
   module would turn into QC-36 and QC-15 findings on the tree as built. The escape's reason now
   says the tree holds no *shipped* site. The escape stays a review catch at `development-design`,
   and no grep rule is owed until a shipped site appears, by RN-19's own terms. The bullet states
   that the two answers rest on each other, and cites the script's header for the gap
   (`checks/structure.sh:L101-L102`).
-  **§ 2.1 → § 9's `nozoki-mac` bullet, drafted.** No owner answer stands behind this yet. Two
+  **§ 2.1 → § 9's `ka-reader-mac` bullet, drafted.** No owner answer stands behind this yet. Two
   pointers in the *Toolchain* clause moved with the same six-line shift. `:L29` named
-  `nozoki-mac/assemble.sh` and at HEAD is `run: checks/structure.sh`. The step is now cited `:L35`
-  at `nozoki@463acb9`. The *no `swift --version` step* range `:L22-L29` is now `:L22-L35` under the
+  `ka-reader-mac/assemble.sh` and at HEAD is `run: checks/structure.sh`. The step is now cited `:L35`
+  at `ka-reader@463acb9`. The *no `swift --version` step* range `:L22-L29` is now `:L22-L35` under the
   same pin, with the whole-file grep beside it, which prints nothing. The draft is put to the owner
   at `docs/architecture_open_issues.md` § 2.1. If overridden, the clause keeps a pointer to the
   wrong step; nothing is gated on it.
   **What moved beneath this document.** `git log 3bbc6ce..HEAD` over the seven inputs lists SDD
-  v24 (`nozoki@542dc1c`), UXD v12 (`nozoki@5b3040e`) and three DESIGN folds (`nozoki@51148f9`,
-  `nozoki@d234b57`, `nozoki@cec2b7d`). UXD v12 corrects its layout-reference inventory and "changes
+  v24 (`ka-reader@542dc1c`), UXD v12 (`ka-reader@5b3040e`) and three DESIGN folds (`ka-reader@51148f9`,
+  `ka-reader@d234b57`, `ka-reader@cec2b7d`). UXD v12 corrects its layout-reference inventory and "changes
   no experience requirement" (`docs/SDD.md:L2673`, § 12, citing `docs/UXD.md` RN-32). The DESIGN folds
   are a gutter padding, a pending path line and the path text's placement. None is named by any
   entry here: `grep -n -i 'gutter\|path line\|path text\|layout-reference' docs/nfdr.md` matched
@@ -3914,47 +3914,47 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   it. Every input's `Status:` line was re-read and is Settled, so `Inputs read:` stands. No record
   is written or restatused, and no `QC` is added, renumbered or reused *(re: header `Status:`,
   `Version:`, the executability sentence; § 9 the layer-4 row, the `checks/structure.sh`,
-  `checks/tests/` and `nozoki-mac` bullets; § 10 preamble and nine rows; source:
+  `checks/tests/` and `ka-reader-mac` bullets; § 10 preamble and nine rows; source:
   `docs/trail/architecture/cycle-23.md` §§ 2.1, 3.1 – 3.4;
   `docs/trail/architecture/self_answer-27.md` §§ 3.1 – 3.4; `docs/SDD.md` v24 § 3 `surfaces`, § 4
-  C-I1, RN-82; `checks/structure.sh:L35-L102`; `.github/workflows/ci.yml` at `nozoki@463acb9`)*
+  C-I1, RN-82; `checks/structure.sh:L35-L102`; `.github/workflows/ci.yml` at `ka-reader@463acb9`)*
 - **RN-38:** *(v27 — the close: the cycle-24 fold, § 2.1 confirmed)* **The fold.** The companion
   at intake held one choice, § 2.1, which this document's v26 fold had drafted (RN-37). It was
   confirmed in the owner's seat by a `companion-self-answer` run
-  (`docs/trail/architecture/self_answer-28.md` § 2.1) and committed at `nozoki@a3d0e1e`, then
+  (`docs/trail/architecture/self_answer-28.md` § 2.1) and committed at `ka-reader@a3d0e1e`, then
   copied whole before this fold as `docs/trail/architecture/cycle-24.md`. That trail file is now
   where RN-37's pointer to `docs/architecture_open_issues.md` § 2.1 reads, because the companion
-  is removed. **§ 2.1 → § 9's `nozoki-mac` bullet.** The clause stands as v26 drafted it. Its
+  is removed. **§ 2.1 → § 9's `ka-reader-mac` bullet.** The clause stands as v26 drafted it. Its
   two *drafted at v26* markers now also name the confirmation, in the form the same bullet's
   v15 correction takes (RN-27). This fold re-measured the answer's facts at HEAD
-  `nozoki@a3d0e1e` instead of taking them from it. `git diff --stat 463acb9 HEAD --
+  `ka-reader@a3d0e1e` instead of taking them from it. `git diff --stat 463acb9 HEAD --
   .github/workflows/ci.yml` prints nothing, so the pin reads today's file. In that file `:L26` is
-  `cargo test --workspace --locked && swift test --package-path nozoki-mac`, `:L28-L32` are
-  `Structure check` and `Structure check suite`, and `:L35` is `run: nozoki-mac/assemble.sh`.
+  `cargo test --workspace --locked && swift test --package-path ka-reader-mac`, `:L28-L32` are
+  `Structure check` and `Structure check suite`, and `:L35` is `run: ka-reader-mac/assemble.sh`.
   `grep -n 'swift --version' .github/workflows/ci.yml` prints nothing and exits 1. At
-  `nozoki@0aca57e`, `:L29` is `run: nozoki-mac/assemble.sh`, so the dated history the clause keeps
-  is true. `nozoki@463acb9` is a merge commit on `main`, so the pin stays reachable. ADR-0012's
+  `ka-reader@0aca57e`, `:L29` is `run: ka-reader-mac/assemble.sh`, so the dated history the clause keeps
+  is true. `ka-reader@463acb9` is a merge commit on `main`, so the pin stays reachable. ADR-0012's
   unpinned `ci.yml` citation does not move: a line pointer is no change of decision
   (`self_answer-28.md` § 2.1, check 3). **What moved beneath this document.** `git log
-  7ef2386..HEAD` lists only the answer's own commit, `nozoki@a3d0e1e`. Every input's `Status:`
+  7ef2386..HEAD` lists only the answer's own commit, `ka-reader@a3d0e1e`. Every input's `Status:`
   line was re-read and is Settled, so `Inputs read:` stands. No record is written or restatused,
   the index does not move, and no `QC` is added, renumbered or reused *(re: header `Status:`,
-  `Version:`; § 9 `nozoki-mac` bullet; source: `docs/trail/architecture/cycle-24.md` § 2.1;
+  `Version:`; § 9 `ka-reader-mac` bullet; source: `docs/trail/architecture/cycle-24.md` § 2.1;
   `docs/trail/architecture/self_answer-28.md` § 2.1; `.github/workflows/ci.yml` at
-  `nozoki@463acb9`, `nozoki@0aca57e` and `nozoki@a3d0e1e`)*
+  `ka-reader@463acb9`, `ka-reader@0aca57e` and `ka-reader@a3d0e1e`)*
 - **RN-39:** *(v28 — the close: the cycle-25 fold, § 3.1 answered)* **The fold.** The companion
   at intake held one item, § 3.1, raised from downstream by the PM on 2026-10-03 after
   `checks/entry-points.sh`, `checks/entry-points.allow` and `checks/tests/test_entry_points.sh`
-  landed at `nozoki@b158052`. It was answered in the owner's seat by a `companion-self-answer` run
-  (`docs/trail/architecture/self_answer-29.md` § 3.1), committed at `nozoki@6dae2ca`, and copied
+  landed at `ka-reader@b158052`. It was answered in the owner's seat by a `companion-self-answer` run
+  (`docs/trail/architecture/self_answer-29.md` § 3.1), committed at `ka-reader@6dae2ca`, and copied
   whole before this fold as `docs/trail/architecture/cycle-25.md`. Both halves are corrections:
   § 10's own rule and § 9's own pinned count read false against the tree. **§ 3.1 (a) → § 10's
   QC-30 / QC-58 linked-tree row** gains `(suite test_entry_points.sh)`, as § 10's preamble
   requires of a row naming a script that has a suite. The suite drives the real script against
   the allow list (`checks/tests/test_entry_points.sh:L8-L17`), so the tag stays inside what the
   script holds. **§ 3.1 (b) → § 9's `checks/tests/` bullet** counts eight suites, re-pinned to
-  `nozoki@b158052`, and the seven-suite sentence moves into the bullet's dated history beside the
-  v25 six. The verified-by tail gains this fold's re-run. **Re-measured at HEAD `nozoki@6dae2ca`,
+  `ka-reader@b158052`, and the seven-suite sentence moves into the bullet's dated history beside the
+  v25 six. The verified-by tail gains this fold's re-run. **Re-measured at HEAD `ka-reader@6dae2ca`,
   not taken from the answer.** `git diff --stat b158052 HEAD -- .github/workflows/ci.yml checks/`
   prints nothing. `ls checks/tests` lists eight `test_*.sh`. `ci.yml`'s `run:` lines `:L32`,
   `:L38`, `:L48`, `:L54`, `:L65`, `:L74`, `:L80` and `:L83` are the eight suites, with each
@@ -3963,55 +3963,55 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   hosted-runner record — the answer's addition, and one correction beyond it.** The answer asked
   the fold to write the entry-points pair's state the way the bullet wrote it for the five
   earlier suites. Writing it beside that paragraph showed the paragraph stale. It recorded the
-  five as not yet run at `nozoki@c26d47c`, and promised that the first push carrying them would
+  five as not yet run at `ka-reader@c26d47c`, and promised that the first push carrying them would
   be their reading and that this bullet would record it. That push happened and was never
   recorded: `git merge-base --is-ancestor ab39502 c79270f` exits 0, the same test against
-  `37a962d` exits 1, and run 36034875098 on `nozoki@c79270f` reads `success` on every suite step.
+  `37a962d` exits 1, and run 36034875098 on `ka-reader@c79270f` reads `success` on every suite step.
   The 2026-09-24 paragraph stays as dated history, and the v28 sentence after it records the
   reading. The same measurement shows `Structure check` and `Structure check suite`, which landed
-  at `nozoki@463acb9`, also unread: `git merge-base --is-ancestor 463acb9 origin/main` exits 1,
-  and run 36958237363 on `nozoki@d234b57` lists neither step. So the sentence names the four
+  at `ka-reader@463acb9`, also unread: `git merge-base --is-ancestor 463acb9 origin/main` exits 1,
+  and run 36958237363 on `ka-reader@d234b57` lists neither step. So the sentence names the four
   pending steps, not two. This goes beyond the answer's words. It applies the bullet's own rule,
   "this bullet records it", and makes no new decision: nothing is moved, quieted or reclassified.
   Two failed runs since, 36761379052 and 36769305658, failed at `Test gate`, not at a suite step,
   so they change no suite's reading. **What moved beneath this document.** `git log
-  f8fb6d8..HEAD` lists the entry-points change merged at `nozoki@b158052`, the PM's two companion
-  openings, and SDD v25 (`nozoki@0670083`). SDD v25 moves only § 3's `read-only-harness` *Owns*
+  f8fb6d8..HEAD` lists the entry-points change merged at `ka-reader@b158052`, the PM's two companion
+  openings, and SDD v25 (`ka-reader@0670083`). SDD v25 moves only § 3's `read-only-harness` *Owns*
   cell (SDD RN-84). This document cites that row for its *Must not own* cell in § 1, and by name
   in two trace tags, one in § 2 and one in § 9. None of the three moves: the *Must not own* cell
   is unchanged, and the row still holds every script those tags name. SDD RN-84 names § 9's count and § 10's row as owed here, which is
   this fold. Every input's `Status:` line was re-read and is Settled, so `Inputs read:` stands.
   No record is written or restatused, the index does not move, and no `QC` is added, renumbered
-  or reused. § 9's tail ground, `ls checks/*.sh` at `nozoki@ab39502`, stays true at its pin and
+  or reused. § 9's tail ground, `ls checks/*.sh` at `ka-reader@ab39502`, stays true at its pin and
   is not re-pinned *(re: header `Status:`, `Version:`; § 9 `checks/tests/` bullet; § 10 QC-30 /
   QC-58 linked-tree row; source: `docs/trail/architecture/cycle-25.md` § 3.1;
   `docs/trail/architecture/self_answer-29.md` § 3.1; `.github/workflows/ci.yml` at
-  `nozoki@b158052` and `nozoki@6dae2ca`; GitHub Actions runs 36034875098, 35988399477 and
+  `ka-reader@b158052` and `ka-reader@6dae2ca`; GitHub Actions runs 36034875098, 35988399477 and
   36958237363; `docs/SDD.md` v25 RN-84)*
 - **RN-40:** *(v29 — the cycle-26 fold, § 3.1 answered; one draft for the owner's confirm)*
   **How the companion came to exist.** As at RN-26 and RN-39, no `product-architecture` run opened
   it. The NFDR was Settled at v28 with no companion on disk. The PM opened it on 2026-10-03
-  (`nozoki@bf9b90c`) after `checks/structure.sh` gained the unit-graph rules (`nozoki@8c3ab40`),
+  (`ka-reader@bf9b90c`) after `checks/structure.sh` gained the unit-graph rules (`ka-reader@8c3ab40`),
   with one item raised from downstream, § 3.1. A `companion-self-answer` run answered § 3.1 in the
   owner's seat and appended § 2.1 in the bucket *Choices to confirm*, with its slot empty
-  (`nozoki@803b599`; its reasoning, `docs/trail/architecture/self_answer-30.md`). As answered, the
+  (`ka-reader@803b599`; its reasoning, `docs/trail/architecture/self_answer-30.md`). As answered, the
   companion is `docs/trail/architecture/cycle-26.md`. **§ 3.1 → QC-11's trace.** The answer is
   reading (a): QC-11 stands as written and the `fs-reader` → `folder-model` edge goes. QC-11's
   text and QC-10's "neither imports the model" do not move. The trace now records the reading of
   SDD SM-1 the answer fixed, and where the clause is held from. The answer's ground was re-read
-  at `nozoki@803b599`, not taken from it. `docs/SDD.md:L415` gives SM-1's owner as the model,
+  at `ka-reader@803b599`, not taken from it. `docs/SDD.md:L415` gives SM-1's owner as the model,
   which "states what a read must return"; `:L416` says SM-2's port "is a trait the model owns";
   `:L347-L348` is the units paragraph QC-11 transcribes. `fs_reader.rs:L14` is
   `use crate::folder_model::OpenFailure;`, `folder_model.rs:L38` defines the type, and
   `folder_model.rs:L6` imports the other SM-1 types from `fs_reader`, which QC-10 allows.
   `lib.rs:L10-L12` re-exports `OpenFailure` from `folder_model`, and
-  `crates/nozoki-bridge/src/session.rs:L9` imports it as `nozoki_core::OpenFailure`, so a move
+  `crates/ka-reader-bridge/src/session.rs:L9` imports it as `ka_reader_core::OpenFailure`, so a move
   that keeps the re-export leaves the bridge alone. `checks/structure.sh` *WHAT IS NOT HELD*
   names the clause and its site, and that stays true until the move lands. No SDD change is owed:
   SM-1 already says what is true under (a), and that judgment is the answer's. **§ 2.1 → QC-63,
   drafted.** The item was raised by the self-answer run, not asked of it, so no answer authorizes
   it. This run drafts it into the records the way RN-26 drafted the item that run raised, and it
-  stays in the companion for the owner's confirm. Re-measured at `nozoki@803b599`:
+  stays in the companion for the owner's confirm. Re-measured at `ka-reader@803b599`:
   `folder_model.rs:L8`, `fs_reader.rs:L15` and `highlighter.rs:L13` each import `crate::language`.
   No allowed set in § 1.2 names it, and the only permission is `checks/structure.sh`'s carve-out
   for lib.rs, language.rs and error.rs, which "belong to no unit, are never a subject, and
@@ -4033,12 +4033,12 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   stands. QC-63 is the one new ID. No `QC` is renumbered or reused, no record is written or
   restatused, and the index does not move *(re: header `Status:`, `Version:`; § 1.2 lead; QC-11;
   QC-63; § 10 QC-63 row; source: `docs/trail/architecture/cycle-26.md` §§ 2.1, 3.1;
-  `docs/trail/architecture/self_answer-30.md`; `crates/nozoki-core/src/` and
-  `checks/structure.sh` at `nozoki@803b599`; `docs/SDD.md` § 3)*
+  `docs/trail/architecture/self_answer-30.md`; `crates/ka-reader-core/src/` and
+  `checks/structure.sh` at `ka-reader@803b599`; `docs/SDD.md` § 3)*
 - **RN-41:** *(v30 — the close: the cycle-27 fold, § 2.1 confirmed with an addition)* **The fold.**
   The companion at intake held one item, § 2.1, the QC-63 draft RN-40 wrote for the owner's
   confirm. A `companion-self-answer` run answered it in the owner's seat
-  (`docs/trail/architecture/self_answer-31.md` § 2.1), committed at `nozoki@61295fb`, and copied
+  (`docs/trail/architecture/self_answer-31.md` § 2.1), committed at `ka-reader@61295fb`, and copied
   whole before this fold as `docs/trail/architecture/cycle-27.md`. The verdict is *confirm, with
   one addition*, and it also corrects one reason. **The addition → QC-63's *verified by:* and
   § 10's closing list.** "Holds types and values only" had no verification, and this document's
@@ -4068,7 +4068,7 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   superseding record written only to add one ID to a list would record no decision, and the
   module boundaries ADR-0016 fixes have not moved. The trace cites the record's own hand-off to
   § 1.2, so a reader can get from QC-63 to the record and back through § 1.2. **Re-measured at
-  HEAD `nozoki@61295fb`, not taken from the answer.** `git diff --stat 803b599 HEAD -- crates
+  HEAD `ka-reader@61295fb`, not taken from the answer.** `git diff --stat 803b599 HEAD -- crates
   checks .github` prints nothing. The only crate-relative lines in `language.rs` and `error.rs`
   are `language.rs:L43` `use crate::Language;` and `error.rs:L26` `use super::Error;`, both in
   test modules and both naming their own type. `lib.rs:L9-L15` re-exports from all five modules.
@@ -4080,37 +4080,37 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   move. Nothing is left for the owner, so the companion is removed and `Status:` is Settled
   *(re: header `Status:`, `Version:`; § 1.2 lead; QC-63; § 10 closing list; source:
   `docs/trail/architecture/cycle-27.md` § 2.1; `docs/trail/architecture/self_answer-31.md` § 2.1;
-  `crates/nozoki-core/src/` at `nozoki@61295fb`; `docs/SDD.md` § 3;
+  `crates/ka-reader-core/src/` at `ka-reader@61295fb`; `docs/SDD.md` § 3;
   `docs/adr/0016-physical-unit-set-core-bridge-mac-checks.md`)*
 - **RN-42:** *(v31 — the close: the cycle-28 fold, § 3.1 answered)* **The fold.** The companion
   at intake was opened by the PM, not by a `product-architecture` run, with one item raised from
-  downstream after `fs_reader`'s test body moved under `crates/nozoki-core/tests/unit/`
-  (`nozoki@73c408e`, opened at `nozoki@7a8f61d`). A `companion-self-answer` run answered it in the
-  owner's seat (`docs/trail/architecture/self_answer-32.md` § 3.1), committed at `nozoki@456098c`,
+  downstream after `fs_reader`'s test body moved under `crates/ka-reader-core/tests/unit/`
+  (`ka-reader@73c408e`, opened at `ka-reader@7a8f61d`). A `companion-self-answer` run answered it in the
+  owner's seat (`docs/trail/architecture/self_answer-32.md` § 3.1), committed at `ka-reader@456098c`,
   and copied whole before this fold as `docs/trail/architecture/cycle-28.md`. The verdict is
   *confirmed with addition*. **§ 3.1 → § 9's `checks/structure.sh` scope bullet.** The bullet named
   two `#[cfg(test)]` `#[path]` sites, and the tree holds three. The third,
-  `crates/nozoki-core/src/fs_reader.rs:L894-L896`, is named beside the two `test_support` sites.
+  `crates/ka-reader-core/src/fs_reader.rs:L894-L896`, is named beside the two `test_support` sites.
   The answer's three additions are folded with it. (1) The sentence that both bodies import
   `std::fs` and `std::process` stays about the two `test_support` bodies and is not widened: the
   third body imports no `std::process`, and its filesystem use sits in `fs-reader`, a file QC-15
   exempts. (2) The findings list is re-measured, not extended by one name. The script gained its
-  QC-2 rule at `nozoki@e7f151e`, in the same merge as the body move, so the core's `test_support`
+  QC-2 rule at `ka-reader@e7f151e`, in the same merge as the body move, so the core's `test_support`
   body raises QC-2 too, and QC-9, whose process clause the script has carried since v1.0.0, was
   missing from the list since v26. (3) The count, the lines and the findings are pinned to a
   commit and the command that prints the sites, `grep -rn '#\[path' crates/*/src`, the form § 9's
   `checks/tests/` bullet already takes for its suite count. The bullet's dated tail records what
   it said through v30. RN-36's "two `#[cfg(test)]` sites" is a dated fold note and stands as
-  written. **Re-measured at HEAD `nozoki@456098c`, not taken from the answer.** `git diff --stat
-  7a8f61d HEAD -- crates checks .github nozoki-mac` prints nothing, so the answer's measurement at
-  `nozoki@7a8f61d` is a measurement of this tree. `grep -rn '#\[path' crates/*/src` prints
+  written. **Re-measured at HEAD `ka-reader@456098c`, not taken from the answer.** `git diff --stat
+  7a8f61d HEAD -- crates checks .github ka-reader-mac` prints nothing, so the answer's measurement at
+  `ka-reader@7a8f61d` is a measurement of this tree. `grep -rn '#\[path' crates/*/src` prints
   exactly the three sites. The third body's first lines carry no `std::process` import
-  (`crates/nozoki-core/tests/unit/fs_reader.rs:L1-L6`), and `:L753` and `:L953` are `fs::write`
+  (`crates/ka-reader-core/tests/unit/fs_reader.rs:L1-L6`), and `:L753` and `:L953` are `fs::write`
   calls. On a throwaway clone, the unmodified `checks/structure.sh` printed `12 Rust files in 2
   crates read — nothing found`. Each `tests/common/mod.rs` body was then copied into its crate's
   `src/`, and the `fs_reader` test body was appended to `fs_reader.rs` so the owner exemption still
   applied to it. The same script then reported QC-2 (nine lines), QC-9 (one), QC-15 (two) and
-  QC-36 (one) in `nozoki-core`, and QC-15 (three) and QC-36 (one) in `nozoki-bridge`. The escape
+  QC-36 (one) in `ka-reader-core`, and QC-15 (three) and QC-36 (one) in `ka-reader-bridge`. The escape
   sentence still holds, because all three sites carry `#[cfg(test)]`. No record names these sites
   (`grep -rnE '#\[path|tests/unit|tests/common|test_support' docs/adr` prints nothing). **What
   moved beneath this document.** `git log 0b62d5f..HEAD -- docs/SRS.md docs/SDD.md docs/fdr.md
@@ -4120,20 +4120,20 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   is left for the owner, so the companion is removed and `Status:` is Settled *(re: header
   `Status:`, `Version:`; § 9 `checks/structure.sh` scope bullet; source:
   `docs/trail/architecture/cycle-28.md` § 3.1; `docs/trail/architecture/self_answer-32.md` § 3.1;
-  `crates/` and `checks/structure.sh` at `nozoki@456098c`)*
+  `crates/` and `checks/structure.sh` at `ka-reader@456098c`)*
 - **RN-43:** *(v32 — the cycle-29 fold, §§ 3.1 – 3.5 answered; a re-derivation against SDD v26
   and v27; two items for the owner)* **The fold.** The companion at intake was opened by the PM,
   not by a `product-architecture` run, with five items raised from downstream after `git-reader`
-  landed (`nozoki@126ef75`, opened at `nozoki@136b227`). A `companion-self-answer` run answered all
+  landed (`ka-reader@126ef75`, opened at `ka-reader@136b227`). A `companion-self-answer` run answered all
   five in the owner's seat (`docs/trail/architecture/self_answer-33.md`), raised one of them
   upstream, and added two § 2 items whose slots it left for the next round. The answers were
-  committed at `nozoki@0955e9e`, and the companion was copied whole before this fold as
+  committed at `ka-reader@0955e9e`, and the companion was copied whole before this fold as
   `docs/trail/architecture/cycle-29.md`. **§ 3.1 → ADR-0018, QC-5.** A new record supersedes
   ADR-0005, as the answer ordered. A `.git` file answers `root` from its own content, and the Git
   directory it names is `state()`'s to report. That is SDD § 11 R-3's reading, which FDR R-15 and
   R-21 already follow. `probe` reads only inside the folder, which replaces ADR-0005's "reading …
   nothing" that the adapter never met. QC-5 gains the clause and three named cases, none of them
-  written at `nozoki@8edec4f`, so the entry says they go red until the provisional arm is replaced.
+  written at `ka-reader@8edec4f`, so the entry says they go red until the provisional arm is replaced.
   **§ 3.2 → ADR-0019, QC-10, QC-11.** QC-11's trace reads SM-2 as SDD v26 states it, QC-10's
   may-import set gains the types that cross SM-2, and ADR-0004's "owned by the folder model" is
   corrected by the one record that supersedes ADR-0004 for § 3.4 too. **§ 3.3 → QC-15.** The
@@ -4144,8 +4144,8 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   with what the build holds and does not as SDD § 4 C-R6 states them at v26, and a third
   verification half, the `nm` read in `checks/view.sh`, owed by the build that first exports a
   function reaching `git-reader`. **§ 3.5 → QC-9, QC-11, QC-13, QC-17, QC-35, through the SDD.**
-  The answer raised the unit question upstream (`docs/SDD_open_issues.md` § 2.1, `nozoki@4f028c7`).
-  The SDD folded it at v27 (`nozoki@8edec4f`; its RN-87), in the CTO's seat, after this companion's
+  The answer raised the unit question upstream (`docs/SDD_open_issues.md` § 2.1, `ka-reader@4f028c7`).
+  The SDD folded it at v27 (`ka-reader@8edec4f`; its RN-87), in the CTO's seat, after this companion's
   answers were committed. `core-bridge` empties libgit2's four machine-level config search paths
   before the adapter is wired, fails closed, runs once, and is the one exception to the rule that
   only `git-reader` names the binding. Its manifest's `git2` line turns default features off. The
@@ -4163,7 +4163,7 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   not re-enter the companion: what it asked is settled by the upstream sentence, and its text
   survives in the trail cycle. **§ 2.2 of the companion → QC-9 now; QC-30 drafted, and re-raised.**
   QC-9's "when `git-reader` links it" becomes "which `git-reader` links", a fact SDD v26 and v27
-  § 3 state, at `crates/nozoki-core/Cargo.toml:L9`. QC-30 was left unconfirmed and is drafted here
+  § 3 state, at `crates/ka-reader-core/Cargo.toml:L9`. QC-30 was left unconfirmed and is drafted here
   differently from the item's proposal, for two reasons this fold measured. First, the item's three
   reads are not the whole set. libgit2's compiled C carries `git__getenv` at more sites. The open
   reaches the three init reads, and `SUDO_UID` only when the effective user is root
@@ -4172,7 +4172,7 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   is not compiled, because `want_ng` needs a zlib-ng feature (`build.rs:L15-L18`), and the debug
   build's script output links the system `libz` after a `-lz` smoke test
   (`target/debug/build/libz-sys-*/output`). A grep of the C sources of the 37 crates
-  `cargo tree -p nozoki-bridge --target aarch64-apple-darwin -e normal --locked` resolves finds
+  `cargo tree -p ka-reader-bridge --target aarch64-apple-darwin -e normal --locked` resolves finds
   `getenv` in those two crates alone, and in none of the tree-sitter crates. Second, a class-2 gate
   is a downgrade this document must argue, and the item did not argue it: `checks/entry-points.sh`
   already scans each crate's whole package directory and lists uncompiled reads with their reason
@@ -4192,32 +4192,32 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   **Pointers re-pointed.** Every entry trace that named ADR-0004 now names ADR-0019 (QC-3, QC-7,
   QC-10, QC-11, QC-18, QC-26, QC-36, QC-50), and QC-5's ADR-0005 names ADR-0018. Both new records'
   `## Binds` list exactly those entries, plus QC-15 for ADR-0018. Dated notes keep the numbers they
-  were written with. **Re-measured at HEAD `nozoki@8edec4f`, not taken from the answers.** `git log
-  126ef75..HEAD -- crates checks nozoki-mac .github Cargo.toml Cargo.lock` prints nothing, so the
-  answers' measurements at `nozoki@4160b57` and `nozoki@136b227` are measurements of this tree. The
+  were written with. **Re-measured at HEAD `ka-reader@8edec4f`, not taken from the answers.** `git log
+  126ef75..HEAD -- crates checks ka-reader-mac .github Cargo.toml Cargo.lock` prints nothing, so the
+  answers' measurements at `ka-reader@4160b57` and `ka-reader@136b227` are measurements of this tree. The
   lines cited read as quoted: `libgit2.rs:L31`, `:L35`, `:L38-L40`, `:L52`, `:L63`;
   `git_reader.rs:L33`; `Cargo.toml:L9`; `root_finding.rs:L158-L169`; `structure.sh:L76-L78`,
   `:L247`, `:L249-L250`, `:L257-L258`; `entry-points.sh:L66`; `grep -n 'nm ' checks/view.sh`
   prints nothing; `grep -n 'GitPort\|git_reader\|RootFinding\|ProbeCondition'
-  crates/nozoki-core/src/folder_model.rs` prints nothing. **What moved beneath this document.**
+  crates/ka-reader-core/src/folder_model.rs` prints nothing. **What moved beneath this document.**
   `git log c6b2fa8..HEAD -- docs/SRS.md docs/SDD.md docs/fdr.md docs/PRD.md docs/UXD.md
-  docs/DESIGN.md docs/CONTENT.md` names only the SDD's three commits, v26 at `nozoki@4160b57`, a
-  Draft stamp at `nozoki@3cfeb35`, and v27 at `nozoki@8edec4f`. The SDD is Settled at v27, and every
+  docs/DESIGN.md docs/CONTENT.md` names only the SDD's three commits, v26 at `ka-reader@4160b57`, a
+  Draft stamp at `ka-reader@3cfeb35`, and v27 at `ka-reader@8edec4f`. The SDD is Settled at v27, and every
   input's `Status:` line was re-read and is Settled, so `Inputs read:` stands. **Not weighed here,
   and named.** SDD RN-85 names `Security`, `CoreFoundation`, `iconv` and `z` as linked for the
-  bridge's static library (`nozoki-mac/Package.swift:L32-L37`), and leaves open whether C-R7 says
+  bridge's static library (`ka-reader-mac/Package.swift:L32-L37`), and leaves open whether C-R7 says
   anything about `Security`. QC-8 and QC-23 restate C-R7's link list and do not move until it does.
   No `QC` is added, renumbered or reused. Two items await the owner, so `Status:` is Draft *(re:
   header `Status:`, `Version:`; QC-3, QC-5, QC-6, QC-9, QC-10, QC-11, QC-13, QC-15, QC-17, QC-30,
   QC-35; the traces of QC-7, QC-18, QC-26, QC-36, QC-50; § 10's QC-3, QC-15/QC-17, QC-30 and QC-35
   rows; ADR-0018, ADR-0019, ADR-0020; source: `docs/trail/architecture/cycle-29.md`;
   `docs/trail/architecture/self_answer-33.md`; `docs/SDD.md` v26 and v27, RN-85, RN-87;
-  `docs/trail/sdd/self_answer-34.md` § 2.1; `crates/` and `checks/` at `nozoki@8edec4f`; the
+  `docs/trail/sdd/self_answer-34.md` § 2.1; `crates/` and `checks/` at `ka-reader@8edec4f`; the
   registry copies of `libgit2-sys 0.18.8+1.9.7`, `libz-sys 1.1.29` and `git2 0.21.0`)*
 - **RN-44:** *(v33 — the close: the cycle-30 fold, §§ 2.1 and 2.2 confirmed, each with an
   addition)* **The fold.** The companion at intake was the one v32 wrote, with two § 2 items. A
   `companion-self-answer` run confirmed both in the owner's seat, each with an addition
-  (`docs/trail/architecture/self_answer-34.md`). The answers were committed at `nozoki@2f15e2c`, and
+  (`docs/trail/architecture/self_answer-34.md`). The answers were committed at `ka-reader@2f15e2c`, and
   the companion was copied whole before this fold as `docs/trail/architecture/cycle-30.md`.
   **§ 2.1 → ADR-0020 Accepted, ADR-0016 superseded.** A superseding record is the mechanic, on the
   test RN-24 drew: a correction in place is allowed only where the record's observable, its units
@@ -4257,10 +4257,10 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   beside QC-13's and QC-63's review halves. **What this run adds beyond the answer:** the list's
   name field accepts only the six Rust names (`checks/entry-points.allow:L10`, `:L16`), so the
   change that adds the C rule also widens that field. QC-30 says so, so that the delivery session
-  does not find it out by a malformed-line failure. **Re-measured at HEAD `nozoki@2f15e2c`, not
+  does not find it out by a malformed-line failure. **Re-measured at HEAD `ka-reader@2f15e2c`, not
   taken from the answers.** `git log 8edec4f..HEAD -- docs/SRS.md docs/SDD.md docs/fdr.md
-  docs/PRD.md docs/UXD.md docs/DESIGN.md docs/CONTENT.md crates checks nozoki-mac .github Cargo.toml
-  Cargo.lock` prints nothing. `cargo tree -p nozoki-bridge --target aarch64-apple-darwin -e normal
+  docs/PRD.md docs/UXD.md docs/DESIGN.md docs/CONTENT.md crates checks ka-reader-mac .github Cargo.toml
+  Cargo.lock` prints nothing. `cargo tree -p ka-reader-bridge --target aarch64-apple-darwin -e normal
   --locked` resolves 37 crates. A grep of the `.c`, `.h`, `.cc` and `.cpp` files in their registry
   copies finds `getenv` in `libgit2-sys` (10 files) and `libz-sys` (1), and whole-word `environ` or
   `_NSGetEnviron` in `libgit2-sys` (1) alone. The lines cited read as quoted: `process.c:L21-L23`,
@@ -4268,24 +4268,24 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   `process.h`, the two `process.c` files and `transports/ssh_exec.c`; `sysdir.c:L347`, `:L357`,
   `:L402-L405`, `:L458-L459`, `:L559-L560`; `fs_path.c:L2030-L2033`; `entry-points.sh:L55`, `:L66`;
   `entry-points.allow:L10`, `:L16`, `:L20-L21`, `:L23-L26`; `Cargo.toml:L8`, `:L11`, `:L16`;
-  `crates/nozoki-bridge/Cargo.toml:L11-L15`. **What moved beneath this document:** nothing. Every
+  `crates/ka-reader-bridge/Cargo.toml:L11-L15`. **What moved beneath this document:** nothing. Every
   input's `Status:` line was re-read and is Settled, so `Inputs read:` stands. No `QC` is added,
   renumbered or reused. Nothing is left for the owner, so the companion is removed and `Status:` is
   Settled *(re: header `Status:`, `Version:`; § 1's opening; QC-30; the traces of QC-8 – QC-17,
   QC-20, QC-24, QC-35, QC-61, QC-63; § 10's QC-30 row and its list of entries with no row; ADR-0016's
   Status line; ADR-0020; the index; source: `docs/trail/architecture/cycle-30.md` §§ 2.1, 2.2;
-  `docs/trail/architecture/self_answer-34.md`; `checks/` and `Cargo.toml` at `nozoki@2f15e2c`; the
+  `docs/trail/architecture/self_answer-34.md`; `checks/` and `Cargo.toml` at `ka-reader@2f15e2c`; the
   registry copies of `libgit2-sys 0.18.8+1.9.7`, `libz-sys 1.1.29` and `git2 0.21.0`)*
 - **RN-45:** *(v34 — the cycle-31 fold, § 3.1 confirmed with three additions; § 2.1 drafted for
   the owner)* **The fold.** The companion at intake was opened by the PM, not by a
   `product-architecture` run, with one item raised from downstream: `checks/structure.sh` holds the
-  `git-reader` adapter's file as a third QC-15 filesystem owner (`nozoki@48308ff`), and QC-15's
+  `git-reader` adapter's file as a third QC-15 filesystem owner (`ka-reader@48308ff`), and QC-15's
   *verified by* still described the script as it stood before. A `companion-self-answer` run
   answered it in the owner's seat (`docs/trail/architecture/self_answer-35.md` § 3.1) and raised a
   § 2 item on QC-5, whose slot it left for the next round. The answer was committed at
-  `nozoki@cd88d52`, and the companion was copied whole before this fold as
+  `ka-reader@cd88d52`, and the companion was copied whole before this fold as
   `docs/trail/architecture/cycle-31.md`. **§ 3.1 → QC-15.** The tail names the three exact-path
-  owner files and the exempting `case`, pinned at `nozoki@48308ff`. It drops "names QC-15's other
+  owner files and the exempting `case`, pinned at `ka-reader@48308ff`. It drops "names QC-15's other
   owners as not held" and the rule still to come, which RN-43 named as this document's realization
   and which has now landed. That is the header's own rule: a rule becomes executable in the change
   that adds it to the command. The three additions are folded as answered. (1) The tail names the
@@ -4293,7 +4293,7 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   `Path`-method gap stays, for every crate, re-pinned to the script's *GAPS* (`:L266-L267`), and
   only the `development-design` gate narrows, to the two parts the script lists as unheld
   (`:L253-L256`). (3) No record moves. ADR-0018 binds QC-15, and its citations are pinned at
-  `nozoki@8edec4f`, where they still read as quoted: its decision did not change, and its
+  `ka-reader@8edec4f`, where they still read as quoted: its decision did not change, and its
   realization landed. **What this run adds beyond the answer:** the tail argues its class-2 half in
   the script's own reasons. The script admits every filesystem form inside an owner file, and a
   `Path` method names no filesystem module, so a source scan cannot tell a read inside the folder
@@ -4302,15 +4302,15 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   traced, and named-verifiable*). **§ 2.1 of the companion → QC-5, drafted, for the owner.** The
   self-answer run raised it with a proposal and no draft in the records. This run drafts it, as
   RN-43 did with the § 2 items that run raised, and leaves the slot for the owner. QC-5's tail
-  states the three named cases as written and passing at `nozoki@48308ff`, cites the adapter's
+  states the three named cases as written and passing at `ka-reader@48308ff`, cites the adapter's
   `.git`-file arm and CI's command, and keeps the old "none written / go red until" sentences as a
   dated parenthetical. § 10's QC-5 row does not move: it names the same command. ADR-0018 does not
   move either. Its § Consequences already says the missing-directory case goes red if `probe`
-  follows the pointer. **Re-measured at HEAD `nozoki@cd88d52`, not taken from the answers.** `git
-  diff --stat 48308ff HEAD -- checks crates nozoki-mac .github Cargo.toml Cargo.lock` prints
+  follows the pointer. **Re-measured at HEAD `ka-reader@cd88d52`, not taken from the answers.** `git
+  diff --stat 48308ff HEAD -- checks crates ka-reader-mac .github Cargo.toml Cargo.lock` prints
   nothing, so a pin at the merge is a pin on this tree. `bash checks/structure.sh` prints "14 Rust
   files in 2 crates read — nothing found" and exits 0. `bash checks/tests/test_structure.sh` exits 0
-  with 88 `ok` lines, the two cases named above among them. `cargo test --locked -p nozoki-core
+  with 88 `ok` lines, the two cases named above among them. `cargo test --locked -p ka-reader-core
   --test root_finding` prints "37 passed; 0 failed", the three QC-5 cases among them. The lines
   cited read as quoted: `structure.sh:L77-L80`, `:L1161`, `:L253-L256`, `:L266-L267`;
   `test_structure.sh:L931`, `:L961`; `libgit2.rs:L38`, `:L42`, `:L46`, `:L58`, `:L62`, `:L69`,
@@ -4325,11 +4325,11 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   added, renumbered or reused, and no record is written or restatused, so the index does not move.
   One item awaits the owner, so `Status:` is Draft *(re: header `Status:`, `Version:`; QC-5;
   QC-15; source: `docs/trail/architecture/cycle-31.md` § 3.1; `docs/trail/architecture/self_answer-35.md`
-  §§ 3.1, 2.1; `checks/`, `crates/` and `.github/` at `nozoki@cd88d52`)*
+  §§ 3.1, 2.1; `checks/`, `crates/` and `.github/` at `ka-reader@cd88d52`)*
 - **RN-46:** *(v35 — the close: the cycle-32 fold, § 2.1 confirmed with one addition)* **The
   fold.** The companion at intake held one item, § 2.1, which the v34 run drafted into QC-5's
   *verified by*. It was answered in the owner's seat (`docs/trail/architecture/self_answer-36.md`
-  § 2.1) and committed at `nozoki@899be3d`. The companion was then copied whole, before this fold, as
+  § 2.1) and committed at `ka-reader@899be3d`. The companion was then copied whole, before this fold, as
   `docs/trail/architecture/cycle-32.md`. **§ 2.1 → QC-5.** The v34 draft stands as written: the
   three named cases, the adapter's `.git`-file arm, CI's command and the dated parenthetical. The
   parenthetical's pointer moves from the companion, which this run removes, to the trail cycle that
@@ -4343,9 +4343,9 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   answer's text and a snapshot of the scene. A swallowed open changes none of the three, and the
   target records no trace of the opens `probe` makes (`root_finding.rs` names none), so no command
   in it can see the attempt (`principal_architect_create_architecture.md` § *Every constraint is
-  traced, and named-verifiable*). **Re-measured at HEAD `nozoki@899be3d`, not taken from the
-  answer.** `cargo test --locked -p nozoki-core --test root_finding` prints "37 passed; 0 failed",
-  and the three QC-5 cases are among them. `git diff --stat 48308ff HEAD -- checks crates nozoki-mac
+  traced, and named-verifiable*). **Re-measured at HEAD `ka-reader@899be3d`, not taken from the
+  answer.** `cargo test --locked -p ka-reader-core --test root_finding` prints "37 passed; 0 failed",
+  and the three QC-5 cases are among them. `git diff --stat 48308ff HEAD -- checks crates ka-reader-mac
   .github Cargo.toml Cargo.lock` prints nothing. The lines cited read as quoted: `root_finding.rs:L24`
   (`assert_clean`, the path and scene assertions through `:L30`), `:L33-L37`
   (`probe_leaving_the_scene_unchanged`), `:L65-L68` (`probe_git_file`), `:L175`, `:L185`, `:L196`.
@@ -4358,11 +4358,11 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   this fold. No `QC` is added, renumbered or reused, no record is written or restatused, and the index
   does not move. Nothing is left for the owner, so the companion is removed and `Status:` is Settled
   *(re: header `Status:`, `Version:`; QC-5; source: `docs/trail/architecture/cycle-32.md` § 2.1;
-  `docs/trail/architecture/self_answer-36.md` § 2.1; `crates/` at `nozoki@899be3d`)*
+  `docs/trail/architecture/self_answer-36.md` § 2.1; `crates/` at `ka-reader@899be3d`)*
 - **RN-47:** *(v36 — a re-derivation on a new upstream sentence; nothing folded from the owner)*
   **Intake.** The companion on disk held two items, and neither answer slot was filled: § 2.1
-  (QC-47's sibling wording, appended at `nozoki@f0789a6` by a `companion-self-answer` run in the
-  CTO's seat) and § 3.1 (QC-15's list, raised by the PM at `nozoki@df55117`). No `product-architecture`
+  (QC-47's sibling wording, appended at `ka-reader@f0789a6` by a `companion-self-answer` run in the
+  CTO's seat) and § 3.1 (QC-15's list, raised by the PM at `ka-reader@df55117`). No `product-architecture`
   run wrote either. With no slot filled, nothing is consumed and no trail cycle is written. **What
   moved beneath this document.** `git log 4a91621..HEAD -- docs/SRS.md docs/SDD.md docs/fdr.md
   docs/PRD.md docs/UXD.md docs/DESIGN.md docs/CONTENT.md` names five commits: the SDD's cycle-23 and
@@ -4371,7 +4371,7 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   gave it: `observed`, `pending`, `failed` or `stopped`" (`docs/SDD.md:L686-L690`). S-5's command half
   says the same (`:L1799-L1801`). QC-47's *verified by* repeated the old wording, "`observed` on its
   siblings", which a folder holding a folder cannot meet: a folder entry not yet read is `Pending`
-  (`crates/nozoki-core/src/fs_reader.rs:L853` at `nozoki@77c91fc`). QC-47 traces to C-I1, so the
+  (`crates/ka-reader-core/src/fs_reader.rs:L853` at `ka-reader@77c91fc`). QC-47 traces to C-I1, so the
   tail is re-derived from the sentence as it now reads. This is a new upstream sentence, which is a
   fresh authorization for a settled entry (`principal_architect_create_architecture.md` § *Two
   lifecycles*). QC-47's statement, "degrades only that item", does not move, and neither does NFR-3,
@@ -4385,7 +4385,7 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   overridden" branch kept the old wording knowing it would then differ from C-I1. With the SDD
   folded, two architects reading C-I1 at v29 derive the same tail, so what is left is a derivation
   and not a choice (`principal_architect_create_architecture.md` § *When upstream is silent*, the
-  test between cases 2 and 3). The item is dropped. Its text is the companion at `nozoki@f0789a6`,
+  test between cases 2 and 3). The item is dropped. Its text is the companion at `ka-reader@f0789a6`,
   and its reasoning is `docs/trail/sdd/self_answer-36.md` § 2.1. No owner's words were in it, so no
   trail cycle keeps it. **The rest of SDD v28 and v29, weighed and left as written.** SM-2 now places
   every type that `probe`, `state` and `status` answer in `git-reader`, and `GitState` is a type
@@ -4403,15 +4403,15 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   states what the adapter does, not a read bound. Widening the list, or narrowing the reads, is a
   call on the read-only promise's bound, and no answer authorizes either yet. The PM's code
   citations were not re-measured by this run. **Not run.** No test: QC-47's command needs
-  `--test watch`, which does not exist at `nozoki@77c91fc` (`ls crates/nozoki-core/tests/`). No `QC`
+  `--test watch`, which does not exist at `ka-reader@77c91fc` (`ls crates/ka-reader-core/tests/`). No `QC`
   is added, renumbered or reused, no record is written or restatused, the index and § 10 do not
   move. A companion stays on disk, so `Status:` moves from Settled to Draft *(re: header `Status:`,
   `Version:`; QC-47; source: `docs/SDD.md` v29 § 4 C-I1, § 6 S-5, RN-89; `docs/trail/sdd/cycle-24.md`
-  § 2.1; `docs/architecture_open_issues.md` § 2.1 at `nozoki@f0789a6`)*
+  § 2.1; `docs/architecture_open_issues.md` § 2.1 at `ka-reader@f0789a6`)*
 - **RN-48:** *(v37 — the close: the cycle-33 fold, § 3.1 answered)* **The fold.** The companion
   at intake held one item, § 3.1, which the PM raised against QC-15's list of `git-reader`'s reads
   outside libgit2. It was answered in the owner's seat (`docs/trail/architecture/self_answer-37.md`
-  § 3.1) and committed at `nozoki@46c7ab0`. The companion was then copied whole, before this fold, as
+  § 3.1) and committed at `ka-reader@46c7ab0`. The companion was then copied whole, before this fold, as
   `docs/trail/architecture/cycle-33.md`. **§ 3.1 → QC-15.** The list names the two kinds the adapter
   makes and the list left out, in the answer's words: the metadata, and a link's own text, at each
   position inside the folder along the spelled path to the Git directory and to the common
@@ -4419,8 +4419,8 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   The list's items are now separated by semicolons, because the new item carries commas of its own.
   The bound, "never a path past the folder and never a link followed out of it", stays as written.
   The answer corrects a list that read as complete. It does not widen the read-only promise, and
-  QC-35 does not move. **Re-measured at HEAD `nozoki@46c7ab0`, not taken from the answer.** `git diff
-  --stat 6a0725c HEAD -- crates checks nozoki-mac .github Cargo.toml Cargo.lock` prints nothing, so
+  QC-35 does not move. **Re-measured at HEAD `ka-reader@46c7ab0`, not taken from the answer.** `git diff
+  --stat 6a0725c HEAD -- crates checks ka-reader-mac .github Cargo.toml Cargo.lock` prints nothing, so
   every citation at `6a0725c` reads at HEAD. The lines read as quoted: `libgit2.rs:L102-L127`
   (`verified_locations`), `:L115` (the `commondir` read), `:L138-L142` (an outside location
   refused), `:L162-L172` (`inspect_on_disk`: `symlink_metadata` at `:L163`, `read_link` at `:L166`),
@@ -4430,7 +4430,7 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   checks/tests/test_structure.sh` exits 0 with 88 `ok` lines, and QC-15's two cases are among them.
   **What this run adds beyond the answer.** (1) The answer adds `:L163` to the tail's list of
   `Path`-method reads, "re-pinned at that commit". The list's old locators were pinned at
-  `nozoki@48308ff`, and `libgit2.rs` has since moved (`git diff --stat 48308ff 6a0725c` shows 448
+  `ka-reader@48308ff`, and `libgit2.rs` has since moved (`git diff --stat 48308ff 6a0725c` shows 448
   lines added there). A list re-pinned at `6a0725c` with only `:L163` added would leave the old
   numbers on lines they no longer name. So every locator is re-pinned, read off the file at
   `6a0725c`: `:L38` → `:L54`, `:L42` → `:L58`, `:L136` → `:L513`, the `.git` file's open `:L62` →
@@ -4441,7 +4441,7 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   dated parenthetical, so a reader holding a `48308ff` citation can follow it. (2) The header carried
   a second version line, `Version 35 — 35 — …`, left there by the v36 run. No earlier revision kept
   one (`git show 5a1e13f~1:docs/nfdr.md`), so it was a defect and is removed. Its text is held in the
-  v36 commit, `nozoki@5a1e13f`. **Weighed and left as written.** ADR-0018's four-kind list is scoped to
+  v36 commit, `ka-reader@5a1e13f`. **Weighed and left as written.** ADR-0018's four-kind list is scoped to
   `probe` (`docs/adr/0018-root-finding-answers-root-for-a-git-file-and-reads-only-inside-the-folder.md:L55-L58`),
   which still makes only those four reads, and the record gives the `commondir` case to `state()`
   (`:L97-L99`). So it stays true, and no record supersedes it. QC-5's copy of the same list is
@@ -4457,16 +4457,16 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   `checks/structure.sh`, whose rules did not change, so the row does not move either. Nothing is left
   for the owner, so the companion is removed and `Status:` is Settled *(re: header `Status:`,
   `Version:`; QC-15; source: `docs/trail/architecture/cycle-33.md` § 3.1;
-  `docs/trail/architecture/self_answer-37.md` § 3.1; `crates/` and `checks/` at `nozoki@6a0725c`)*
+  `docs/trail/architecture/self_answer-37.md` § 3.1; `crates/` and `checks/` at `ka-reader@6a0725c`)*
 - **RN-49:** *(v38 — the cycle-34 fold, § 3.1 and § 3.2 answered; a re-derivation on SDD v30 and
   v31; § 2.1 drafted for the owner; ADR-0021 proposed)* **Intake.** The companion on disk was opened
-  by the PM at `nozoki@0aab3e7`, not by a `product-architecture` run, with two items raised from
+  by the PM at `ka-reader@0aab3e7`, not by a `product-architecture` run, with two items raised from
   downstream: QC-3's `nm` read (§ 3.1) and QC-17's search-path switch (§ 3.2), each stated as
-  still to come after the build at `nozoki@392177d` had landed both. A `companion-self-answer` run
+  still to come after the build at `ka-reader@392177d` had landed both. A `companion-self-answer` run
   answered both in the owner's seat and added § 2.1 on QC-11, leaving its slot empty
-  (`docs/trail/architecture/self_answer-38.md`). The answers were committed at `nozoki@2aed844`,
+  (`docs/trail/architecture/self_answer-38.md`). The answers were committed at `ka-reader@2aed844`,
   and the companion was copied whole before this fold as `docs/trail/architecture/cycle-34.md`.
-  **§ 3.1 → QC-3.** Half (3) is held by `checks/view.sh` from `nozoki@392177d`, with the read's
+  **§ 3.1 → QC-3.** Half (3) is held by `checks/view.sh` from `ka-reader@392177d`, with the read's
   locators, its suite cases and the three CI steps. The sentence that said the read was not in the
   script, and its clause that no bridge function reached `git-reader`, go. The tail states what the
   read has met, and has not, in SDD § 4 C-I3's terms at v31, with nothing further owed. Beside "The
@@ -4476,25 +4476,25 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   suite under `cargo test --workspace --locked` in CI. It names the tests that hold the fail-closed
   and once-per-process halves, which the read-back cannot see. The two sentences that put the
   switch and its test outside the tree go. The violation clause stays as written. The trace is
-  re-pinned to C-I3 at v31. **Re-measured at HEAD `nozoki@2aed844`, not taken from the answers.**
-  `git diff --stat 392177d HEAD -- crates checks nozoki-mac .github` prints nothing. Each locator
+  re-pinned to C-I3 at v31. **Re-measured at HEAD `ka-reader@2aed844`, not taken from the answers.**
+  `git diff --stat 392177d HEAD -- crates checks ka-reader-mac .github` prints nothing. Each locator
   both answers cite was opened and reads as quoted: `checks/view.sh:L379-L404`;
   `checks/tests/test_view.sh:L58-L64`; `.github/workflows/ci.yml:L26`, `:L41`, `:L51`, `:L54`;
-  `crates/nozoki-bridge/src/exports.rs:L105`; `tests/search_path.rs:L36`, `:L47-L55`;
+  `crates/ka-reader-bridge/src/exports.rs:L105`; `tests/search_path.rs:L36`, `:L47-L55`;
   `src/machine_config.rs:L213`, `:L249`, `:L262`; `src/session.rs:L1729`, `:L1740`; and `docs/SDD.md`
-  `:L639-L645` and `:L759-L785`. `grep -rn nozoki_read_git nozoki-mac` prints nothing. This run
-  executed `cargo test --locked -p nozoki-bridge` (every target `ok`, `search_path` 1 of 1),
+  `:L639-L645` and `:L759-L785`. `grep -rn ka_reader_read_git ka-reader-mac` prints nothing. This run
+  executed `cargo test --locked -p ka-reader-bridge` (every target `ok`, `search_path` 1 of 1),
   `bash checks/tests/test_view.sh` (exit 0, 28 `ok` lines), and `bash checks/view.sh` on the release
   bundle on disk, last modified 2026-10-04 08:20 (exit 0, "carries no Git transport — nothing
   found"). That this bundle is the build of a given commit rests on the file's time and on
   `self_answer-38.md`, and was not otherwise shown. **What moved beneath this document.** `git log
   b716c7b..HEAD -- docs/SDD.md` names the SDD's cycle-25 and cycle-26 folds (v30, v31,
-  `nozoki@51de784`, `nozoki@27e2bbf`). Neither raised an item on this companion (SDD RN-90, RN-91,
+  `ka-reader@51de784`, `ka-reader@27e2bbf`). Neither raised an item on this companion (SDD RN-90, RN-91,
   each under *Downstream*). A new upstream sentence is a fresh authorization for a settled entry
   (`principal_architect_create_architecture.md` § *Two lifecycles*), so each entry that traces to
   a moved sentence was re-read against it. (1) **SM-4's list is ten** (SDD § 3 SM-4, § 10 RC-4,
   RN-90). QC-24 named the nine and held the exported set inside them, while the tree's export test
-  admits `nozoki_read_git` (`crates/nozoki-bridge/tests/exports.rs:L17-L23`). Read as written, the
+  admits `ka_reader_read_git` (`crates/ka-reader-bridge/tests/exports.rs:L17-L23`). Read as written, the
   entry called a landed build a violation. The list now names ten, in the SDD's order, and the trace
   is re-pinned. QC-24's "No second plumbing export" sentence stays, because RC-4 retains C-R7's
   rule on the registration call word for word. QC-1, QC-2, QC-59 and § 9's layer-3 row read the
@@ -4510,7 +4510,7 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   self-answer run raised with no draft. The tail states that the switch's change did not add the
   exception's rule to `checks/structure.sh`, so the bound stays review until a change adds it. It
   re-pins the script at `:L257-L258` and names the bridge files that name `git2`, measured at HEAD
-  (`grep -rln git2 crates/nozoki-bridge`). The slot is left for the owner. (b) **ADR-0021, Proposed —
+  (`grep -rln git2 crates/ka-reader-bridge`). The slot is left for the owner. (b) **ADR-0021, Proposed —
   supersedes ADR-0013 on acceptance.** ADR-0013 § Decision quotes the nine names and "all nine from
   `v1.0.0`", and RC-4 *Changed* names this log as owed a record on that ground. The record restates
   ADR-0013 whole, with the list at ten and Git state pulled by `read_git`. Its alternatives are
@@ -4534,14 +4534,14 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   `Status:`, `Version:`; QC-3, QC-6, QC-11, QC-17, QC-24, QC-35; § 10's QC-15/QC-17 row; ADR-0021;
   source: `docs/trail/architecture/cycle-34.md` § 3.1, § 3.2; `docs/trail/architecture/self_answer-38.md`;
   `docs/SDD.md` v30 § 3 SM-4, § 10 RC-4, RN-90, and v31 § 4 C-R6, C-I3, § 11 R-16, RN-91; the tree
-  at `nozoki@2aed844`)*
+  at `ka-reader@2aed844`)*
 - **RN-50:** *(v39 — the close: the cycle-35 fold, § 2.1 and § 2.2 confirmed)* **The fold.** The
   companion at intake was the one v38 wrote, with two § 2 items. A `companion-self-answer` run
   confirmed both in the owner's seat, § 2.2 with one addition (`docs/trail/architecture/self_answer-39.md`),
-  and the answers were committed at `nozoki@98e35f8`. A `product-architecture` run then stopped short
+  and the answers were committed at `ka-reader@98e35f8`. A `product-architecture` run then stopped short
   of accepting ADR-0021 with only a self-answer behind it, and the owner confirmed § 2.2, the addition
-  kept, in an interactive session (`nozoki@bb75290`). A second self-answer run found nothing left to
-  decide (`docs/trail/architecture/self_answer-40.md`, `nozoki@16f1ce1`). The companion was copied
+  kept, in an interactive session (`ka-reader@bb75290`). A second self-answer run found nothing left to
+  decide (`docs/trail/architecture/self_answer-40.md`, `ka-reader@16f1ce1`). The companion was copied
   whole, before this fold, as `docs/trail/architecture/cycle-35.md`. **§ 2.2 → ADR-0021 Accepted,
   ADR-0013 superseded.** A superseding record is the mechanic, on the line the answer draws from the
   log's own practice: a fact, a pointer or a description the record's rule does not rest on is
@@ -4562,14 +4562,14 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   `checks/structure.sh`. The answer's reason is that the form names no delivery unit as the rule's
   source, and that form is the one that went false at v37. The tail's "drafted at v38 for the owner's
   confirm" now reads as drafted and confirmed, pointing at the trail cycle. **Re-measured at HEAD
-  `nozoki@16f1ce1`, not taken from the answers.** `git log 566558b..HEAD -- docs/SRS.md docs/SDD.md
-  docs/fdr.md docs/PRD.md docs/UXD.md docs/DESIGN.md docs/CONTENT.md crates checks nozoki-mac
+  `ka-reader@16f1ce1`, not taken from the answers.** `git log 566558b..HEAD -- docs/SRS.md docs/SDD.md
+  docs/fdr.md docs/PRD.md docs/UXD.md docs/DESIGN.md docs/CONTENT.md crates checks ka-reader-mac
   .github Cargo.toml Cargo.lock` prints nothing. `checks/structure.sh:L257-L258` still names QC-11's
-  libgit2 clause under *WHAT IS NOT HELD*, and `grep -rln git2 crates/nozoki-bridge` prints the
+  libgit2 clause under *WHAT IS NOT HELD*, and `grep -rln git2 crates/ka-reader-bridge` prints the
   manifest, `src/machine_config.rs` and `tests/search_path.rs`, the three files the tail names.
-  `crates/nozoki-bridge/src/exports.rs:L105` is `nozoki_read_git`, the export test admits it
-  (`crates/nozoki-bridge/tests/exports.rs:L17-L23`), and `grep -rn nozoki_read_git nozoki-mac` prints
-  nothing. This run executed `cargo test --locked -p nozoki-bridge` (every target `ok`; `exports` 11
+  `crates/ka-reader-bridge/src/exports.rs:L105` is `ka_reader_read_git`, the export test admits it
+  (`crates/ka-reader-bridge/tests/exports.rs:L17-L23`), and `grep -rn ka_reader_read_git ka-reader-mac` prints
+  nothing. This run executed `cargo test --locked -p ka-reader-bridge` (every target `ok`; `exports` 11
   of 11, `search_path` 1 of 1) and `bash checks/structure.sh` (exit 0, "15 Rust files in 2 crates
   read — nothing found"). **What moved beneath this document:** nothing. Every input's `Status:`
   line was re-read and is Settled, so `Inputs read:` stands. No `QC` is added, renumbered or reused.
@@ -4577,20 +4577,20 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   removed and `Status:` is Settled *(re: header `Status:`, `Version:`; QC-11; the traces of QC-1,
   QC-2, QC-8, QC-9, QC-15, QC-16, QC-24, QC-30, QC-32, QC-34, QC-36; ADR-0013's Status line;
   ADR-0021; the index; source: `docs/trail/architecture/cycle-35.md` § 2.1, § 2.2;
-  `docs/trail/architecture/self_answer-39.md`, `self_answer-40.md`; `nozoki@bb75290`; the tree at
-  `nozoki@16f1ce1`)*
+  `docs/trail/architecture/self_answer-39.md`, `self_answer-40.md`; `ka-reader@bb75290`; the tree at
+  `ka-reader@16f1ce1`)*
 - **RN-51:** *(v40 — the close: a re-derivation on SDD v32)* **Intake.** The companion on disk had
-  one item, § 2.1, opened at `nozoki@250fc6e` by a `companion-self-answer` run in the CTO's seat
+  one item, § 2.1, opened at `ka-reader@250fc6e` by a `companion-self-answer` run in the CTO's seat
   while it answered the SDD's companion, not by a `product-architecture` run
-  (`nozoki@250fc6e:docs/architecture_open_issues.md` § 2.1; reasoning
+  (`ka-reader@250fc6e:docs/architecture_open_issues.md` § 2.1; reasoning
   `docs/trail/sdd/self_answer-39.md`). It proposed that QC-6 and QC-35 state the config-named-path
   item's bound as the SDD's *Open Questions* item would state it after the SDD's fold, with a stated
   doubt: the change was owed only once `product-sdd` had folded, and the item was to stay open if
   the SDD still stated the old bound. Its slot was not filled, so the companion is not consumed and
   no trail cycle is written. **What moved beneath this document.** `docs/SDD.md` v31 → v32, Settled
-  (`nozoki@19a76bc`, SDD RN-92, `docs/trail/sdd/cycle-27.md` § 5.1): the item's bound is "before the
+  (`ka-reader@19a76bc`, SDD RN-92, `docs/trail/sdd/cycle-27.md` § 5.1): the item's bound is "before the
   slice is reached" alone, the clause naming the build in which `mac-shell` first calls
-  `nozoki_read_git` is removed, the bound is held by review of the change after which
+  `ka_reader_read_git` is removed, the bound is held by review of the change after which
   `see-git-status`'s *Reached when* is claimed whole, and § 11 R-16 states what the builds between
   hold. The § 2.1 doubt is resolved: the SDD now states the new bound. **Why this is a derivation,
   not a choice.** The new SDD sentence is the fresh authorization a settled entry needs, and the SDD
@@ -4612,25 +4612,25 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   restatused. No ADR states the bound: `grep -n 'first calls' docs/adr/*.md` prints nothing.
   ADR-0020's "How that is closed is the SDD's last *Open Question*" (`:L130`) is not a stale pointer:
   the record's `## Traces to` pins `docs/SDD.md` at v27, where the item was the last, and the SDD
-  added the item after it at `nozoki@77c91fc`. **Re-measured at HEAD `nozoki@19a76bc`.** `git log
+  added the item after it at `ka-reader@77c91fc`. **Re-measured at HEAD `ka-reader@19a76bc`.** `git log
   d2dd1f2..HEAD -- docs/SRS.md docs/fdr.md docs/PRD.md docs/UXD.md docs/DESIGN.md docs/CONTENT.md
-  crates checks nozoki-mac .github Cargo.toml Cargo.lock` prints nothing. `git diff d2dd1f2..HEAD --
-  docs/SDD.md` is the v32 fold alone, read whole. `grep -rn 'nozoki_read_git\|read_git\|readGit'
-  nozoki-mac/Sources` prints nothing. Every input's `Status:` line was re-read and is Settled, so
+  crates checks ka-reader-mac .github Cargo.toml Cargo.lock` prints nothing. `git diff d2dd1f2..HEAD --
+  docs/SDD.md` is the v32 fold alone, read whole. `grep -rn 'ka_reader_read_git\|read_git\|readGit'
+  ka-reader-mac/Sources` prints nothing. Every input's `Status:` line was re-read and is Settled, so
   `Inputs read:` stands. **Known limits.** This run read the SDD's v32 diff whole and the SRS and
   FDR at their status lines; their bodies did not move after v39, which derived from them. It built
   nothing and ran no test: it changes no code. **The companion.** Nothing is left for the owner, so
   it is removed and `Status:` is Settled *(re: header `Status:`, `Version:`; QC-6; QC-35; source:
   `docs/SDD.md` v32, SDD RN-92; `docs/trail/sdd/cycle-27.md` § 5.1;
-  `nozoki@250fc6e:docs/architecture_open_issues.md` § 2.1; the tree at `nozoki@19a76bc`)*
+  `ka-reader@250fc6e:docs/architecture_open_issues.md` § 2.1; the tree at `ka-reader@19a76bc`)*
 - **RN-52:** *(v41 — the close: a re-derivation on SDD v33)* **Intake.** The companion on disk had
   no `product-architecture` run behind it: the PM opened it on 2026-10-04 with two § 3 items
-  (`nozoki@cfcbedf`), and a `companion-self-answer` run answering `docs/SDD_open_issues.md` § 5.2
-  added to § 3.1 (`nozoki@f3aa266`). Neither **Answer** slot was filled, so the companion is not
+  (`ka-reader@cfcbedf`), and a `companion-self-answer` run answering `docs/SDD_open_issues.md` § 5.2
+  added to § 3.1 (`ka-reader@f3aa266`). Neither **Answer** slot was filled, so the companion is not
   consumed and no trail cycle is written. It was clean in git at intake. **What moved beneath this
-  document.** `docs/SDD.md` v32 → v33, Settled (`nozoki@c120c95`, SDD RN-93,
+  document.** `docs/SDD.md` v32 → v33, Settled (`ka-reader@c120c95`, SDD RN-93,
   `docs/trail/sdd/cycle-28.md` §§ 5.1, 5.2): § 4 C-I3 states that the `nm` read has met two
-  executables, the second the first that links `nozoki_read_git`, from `nozoki@129586e`, and that it
+  executables, the second the first that links `ka_reader_read_git`, from `ka-reader@129586e`, and that it
   passed; § 4 C-R6 pins its three unmatched defined symbols to that executable; § 11 R-15 is kept,
   its *shows up as* a red read on any release build, its *response* that the change whose build turns
   the read red does not land until a re-cut is recorded in § 10. Nothing else among the inputs moved:
@@ -4642,12 +4642,12 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   § 4 C-I3 does", so following C-I3 as it now reads carries that answer forward and does not
   override it. Two architects reading SDD v33 would write the same tail. This is RN-47's and RN-51's
   form. **§ 3.2 — a locator re-pin, decided in this seat.** The § 9 bullet and RN-24's item (4)
-  cited `nozoki-mac/Package.swift:L34-L35` with no commit. That was true when v13 wrote it: at
-  `nozoki@a4ab8e6` the two `.testTarget` lines are `:L34-L35`. `nozoki@827aad4` added five link lines
+  cited `ka-reader-mac/Package.swift:L34-L35` with no commit. That was true when v13 wrote it: at
+  `ka-reader@a4ab8e6` the two `.testTarget` lines are `:L34-L35`. `ka-reader@827aad4` added five link lines
   above them (`.linkedLibrary("z")`, two frameworks, a two-line comment), so at HEAD they are
   `:L39-L40`. No obligation's words change, and no product promise moves. The item offered two
   folds; this run takes both, each where it fits. The live § 9 bullet cites `:L39-L40` at
-  `nozoki@827aad4` with a dated note, which is RN-38's convention (confirmed in the owner's seat at
+  `ka-reader@827aad4` with a dated note, which is RN-38's convention (confirmed in the owner's seat at
   `docs/trail/architecture/cycle-24.md` § 2.1). RN-24 is a v13 record, so it keeps `:L34-L35` and
   gains the commit it was read at. A seat decided this, not the owner. Where the owner reads either
   item otherwise, the cost is one revert of this run's commit. **What does not move.** QC-3's other
@@ -4657,34 +4657,34 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   says the link "is not measured" and gives R-15's former response; its `## Traces to` pins
   `docs/SDD.md` at v27, where both were true, and its decision — libgit2 behind the port, no
   transport linked — is unchanged by a passing read, so it is history and not a reversal. ADR-0021's
-  "No Swift source calls it" (`:L162-L165`) is pinned to the tree at `nozoki@2aed844`. QC-6, QC-35
+  "No Swift source calls it" (`:L162-L165`) is pinned to the tree at `ka-reader@2aed844`. QC-6, QC-35
   and § 11 R-16 speak of the builds from the first in which the shell calls the export, which SDD
-  RN-93 names as still true. **Re-measured for this run at HEAD `nozoki@c120c95`.** `git diff --quiet
-  129586e HEAD -- . ':!docs'` exits 0. `nozoki-mac/Sources/Nozoki/NativeBridge.swift:L26` reads
-  `adopt(nozoki_read_git())`; `crates/nozoki-bridge/src/exports.rs:L105` defines it. On
-  `target/release/bundle/macos/Nozoki.app/Contents/MacOS/Nozoki`, modified 2026-10-04 15:02, `nm`
-  prints `T _nozoki_read_git`, 781 defined `_git_` symbols by QC-3's `awk` count, no
+  RN-93 names as still true. **Re-measured for this run at HEAD `ka-reader@c120c95`.** `git diff --quiet
+  129586e HEAD -- . ':!docs'` exits 0. `ka-reader-mac/Sources/KAReader/NativeBridge.swift:L26` reads
+  `adopt(ka_reader_read_git())`; `crates/ka-reader-bridge/src/exports.rs:L105` defines it. On
+  `target/release/bundle/macos/KA-Reader.app/Contents/MacOS/KAReader`, modified 2026-10-04 15:02, `nm`
+  prints `T _ka_reader_read_git`, 781 defined `_git_` symbols by QC-3's `awk` count, no
   `git_smart_subtransport_` symbol, no undefined `_connect`, `_socket` or `_getaddrinfo`, and the
   three symbols each as `t`. `bash checks/view.sh` exits 0 printing "38 Swift files scanned … carries
   no Git transport — nothing found". `bash checks/structure.sh` exits 0. The code that landed since
-  v40 is 27 files under `nozoki-mac`'s existing `Nozoki`, `Shell` and `Surfaces` targets and their
+  v40 is 27 files under `ka-reader-mac`'s existing `KAReader`, `Shell` and `Surfaces` targets and their
   tests; no target, package or dependency was added. Every input's `Status:` line was re-read and is
   Settled, so `Inputs read:` stands. **Known limits.** This run read SDD v33's diff whole, the
   sections QC-3 traces to, and the other inputs at their status lines; their bodies did not move
   after v40, which derived from them. It built nothing and ran no test suite: whether the executable
-  on disk is the one built from the tree at `nozoki@129586e` rests on SDD RN-93 and the file's
+  on disk is the one built from the tree at `ka-reader@129586e` rests on SDD RN-93 and the file's
   time. **The companion.** Nothing is left for the owner, so it is removed and `Status:` is Settled
   *(re: header `Status:`, `Version:`; QC-3; § 9, the Swift-packet bullet; RN-24; source:
   `docs/SDD.md` v33, SDD RN-93; `docs/trail/sdd/cycle-28.md` §§ 5.1, 5.2;
-  `nozoki@f3aa266:docs/architecture_open_issues.md` §§ 3.1, 3.2; the tree at `nozoki@c120c95`)*
+  `ka-reader@f3aa266:docs/architecture_open_issues.md` §§ 3.1, 3.2; the tree at `ka-reader@c120c95`)*
 - **RN-53:** *(v42 — the cycle-36 fold, § 3.1 and § 3.2 answered, § 2.1 closed by derivation; a
   re-derivation on SDD v42; ADR-0022 proposed)* **Intake.** The companion on disk had three items,
   and no `product-architecture` run had written any of them. The PM opened §§ 3.1 and 3.2 on
   2026-10-05. A `companion-self-answer` run answered both in the owner's seat and raised § 2.1 with
-  its slot empty (`nozoki@d605605`; reasoning `docs/trail/architecture/self_answer-41.md`). The
+  its slot empty (`ka-reader@d605605`; reasoning `docs/trail/architecture/self_answer-41.md`). The
   file was clean in git at intake and two slots were filled, so it is consumed. It was copied whole
   to `docs/trail/architecture/cycle-36.md` before this fold's first edit. **What moved beneath
-  this document.** `docs/SDD.md` v33 → v42, Settled (`nozoki@076eac2`, SDD RN-94 – RN-102): nine
+  this document.** `docs/SDD.md` v33 → v42, Settled (`ka-reader@076eac2`, SDD RN-94 – RN-102): nine
   versions this document had not seen. `git diff e89b5b6 HEAD -- docs/SDD.md` was read whole.
   `docs/DESIGN.md` v17 – v19 and `docs/CONTENT.md` v11 – v12 moved too, and each was read at its
   status line, Settled. The SRS, the FDR, the PRD and the UXD did not move (`git diff --stat e89b5b6
@@ -4738,19 +4738,19 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   reading clauses that are not a second exception, and one dated placement. § 9's layer-4 row now
   reads them. QC-4 and QC-51 do not move. **Found while walking, and fixed in place.** QC-17 cited
   `session.rs:L1729` and `:L1740` with no commit, and both were dead at HEAD: the cases are at
-  `:L1798` and `:L1809`. They are re-pinned at `nozoki@076eac2` with a dated note
+  `:L1798` and `:L1809`. They are re-pinned at `ka-reader@076eac2` with a dated note
   (`<CORE>/doctrine/governance/found_while_walking.md` § *The rule*, clause 1; RN-38's convention).
   **What does not move.** QC-7: the checks read and do not mutate. QC-17's statement never listed
   the keys, and the `core-bridge` row's *Not covered* sentence it would follow is QC-6's and QC-35's
   to carry. QC-39: the new conditions' log line holds no path (SDD § 3, the `git-reader` row). QC-53:
   the conditions' words are `docs/CONTENT.md`'s. No accepted record is edited, written over or
-  restatused. **Measured for this run at `nozoki@076eac2`.** `git status --porcelain` printed
+  restatused. **Measured for this run at `ka-reader@076eac2`.** `git status --porcelain` printed
   nothing at intake. `git diff --quiet 5f3e895 HEAD -- . ':!docs'` exits 0, and so does the same
   command from `b25b407` and from `fc14574`. `bash checks/structure.sh` exits 0, printing "16 Rust
-  files in 2 crates read — nothing found". `cargo test --locked -p nozoki-core --test git_state`
-  printed 58 passed. `grep -rln git2 crates/nozoki-bridge` prints the manifest, `machine_config.rs`
-  and `tests/search_path.rs`. `grep -rl alternates checks crates nozoki-mac/Sources` prints
-  nothing. `grep -rln 'TreeMarkers\|GitRowOrder' nozoki-mac/Sources` prints five files.
+  files in 2 crates read — nothing found". `cargo test --locked -p ka-reader-core --test git_state`
+  printed 58 passed. `grep -rln git2 crates/ka-reader-bridge` prints the manifest, `machine_config.rs`
+  and `tests/search_path.rs`. `grep -rl alternates checks crates ka-reader-mac/Sources` prints
+  nothing. `grep -rln 'TreeMarkers\|GitRowOrder' ka-reader-mac/Sources` prints five files.
   `config_scan.rs` holds no `std::fs`, and its `scan` takes bytes (`:L66`). **Known limits.** This
   run read the SDD's diff whole, and the other inputs at their status lines. It re-read no libgit2
   source: every libgit2 line ADR-0022 cites is the SDD's. It ran one suite and one script. It built
@@ -4759,11 +4759,11 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   `Version:`; QC-2, QC-6, QC-11, QC-15, QC-17, QC-30, QC-35, QC-48; § 9, the layer-4 row; § 10, the
   QC-2, QC-35 and QC-47 – QC-48 rows; ADR-0022 and the index; source: `docs/SDD.md` v42, SDD RN-94 –
   RN-102, § 10 RC-5; `docs/trail/architecture/cycle-36.md` §§ 2.1, 3.1, 3.2;
-  `docs/trail/architecture/self_answer-41.md`; the tree at `nozoki@076eac2`)*
+  `docs/trail/architecture/self_answer-41.md`; the tree at `ka-reader@076eac2`)*
 - **RN-54:** *(v43 — the close: the cycle-37 fold, § 2.1 confirmed with one addition)* **Intake.**
   The companion on disk was the one v42 wrote, with one § 2 item and nothing in §§ 1 or 3. A
   `companion-self-answer` run confirmed it in the owner's seat, with one addition, and the answer
-  was committed at `nozoki@78276ed` (reasoning `docs/trail/architecture/self_answer-42.md`). The
+  was committed at `ka-reader@78276ed` (reasoning `docs/trail/architecture/self_answer-42.md`). The
   file was clean in git at intake and its slot was filled, so it is consumed. It was copied whole
   to `docs/trail/architecture/cycle-37.md` before this fold's first edit. **Whose answer this is.**
   The `companion-self-answer` skill takes the owner's seat on a companion, and the fold is this
@@ -4786,9 +4786,9 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   and the index follows. **Traces re-read.** QC-6, QC-15, QC-30 and QC-35 traced to "ADR-0022
   (Proposed)". The marker is dropped, as RN-44 dropped ", Proposed" for ADR-0020. No entry states
   either scoped sentence (`grep -n -i 'includeIf\|read-failed'` over §§ 1 – 10 prints nothing), so
-  no obligation moves. **Measured for this run at `nozoki@78276ed`.** `git status --porcelain`
+  no obligation moves. **Measured for this run at `ka-reader@78276ed`.** `git status --porcelain`
   printed nothing at intake. `git diff --quiet 076eac2 HEAD -- . ':!docs'` exits 0, so the code
-  facts the record pins to `nozoki@076eac2` still hold at HEAD. `git diff --stat 58a7a2b HEAD --
+  facts the record pins to `ka-reader@076eac2` still hold at HEAD. `git diff --stat 58a7a2b HEAD --
   docs ':!docs/trail'` lists the companion alone, and every input's `Status:` line was re-read as
   Settled, so `Inputs read:` stands. **Known limits.** This run ran no suite and no script, and
   re-read no libgit2 source. The self-answer re-read libgit2's option list, and this fold relies on
@@ -4797,25 +4797,25 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   companion.** Nothing is left for the owner, so the companion is removed and `Status:` is Settled
   *(re: header `Status:`, `Version:`; the traces of QC-6, QC-15, QC-30, QC-35; ADR-0022 and the
   index; source: `docs/trail/architecture/cycle-37.md` § 2.1;
-  `docs/trail/architecture/self_answer-42.md`; `nozoki@78276ed`; `docs/SDD.md` v42 at the lines
+  `docs/trail/architecture/self_answer-42.md`; `ka-reader@78276ed`; `docs/SDD.md` v42 at the lines
   cited)*
 - **RN-55:** *(v44 — the close: the cycle-38 fold, §§ 3.1 and 3.2 answered)* **Intake.** The
   companion on disk had two § 3 items and nothing in §§ 1 or 2. No `product-architecture` run wrote
-  it. The PM opened it on 2026-10-06, after the alternates check landed on `main` (`nozoki@66f428d`),
-  because QC-6, QC-15, QC-35 and ADR-0022 still read that check as not built (`nozoki@2309ba5`). A
+  it. The PM opened it on 2026-10-06, after the alternates check landed on `main` (`ka-reader@66f428d`),
+  because QC-6, QC-15, QC-35 and ADR-0022 still read that check as not built (`ka-reader@2309ba5`). A
   `companion-self-answer` run answered both items in the owner's seat: § 3.1 confirmed with
-  addition, § 3.2 answered (`nozoki@f2e22e9`; reasoning `docs/trail/architecture/self_answer-43.md`).
+  addition, § 3.2 answered (`ka-reader@f2e22e9`; reasoning `docs/trail/architecture/self_answer-43.md`).
   The file was clean in git at intake and both slots were filled, so it is consumed. It was copied
   whole to `docs/trail/architecture/cycle-38.md` before this fold's first edit. **Whose answer this
   is.** The fold rests on the same ground as RN-54: the answer binds only the records' consistency
   with the tree and with the settled SDD, and the owner can reverse the fold with one revert.
-  **What moved beneath this document.** `docs/SDD.md` v42 → v43, Settled (`nozoki@4a49995`, SDD
+  **What moved beneath this document.** `docs/SDD.md` v42 → v43, Settled (`ka-reader@4a49995`, SDD
   RN-103). `git diff af21672 HEAD -- docs/SDD.md` was read whole. Nothing else in `docs/` outside
   the trail moved: `git diff --stat af21672 HEAD -- docs ':!docs/trail'` lists the SDD and the
   companion alone. Every input's `Status:` line was re-read as Settled, so `Inputs read:` stands.
   **§ 3.1 → QC-6, QC-15 and QC-35, as answered, with the addition.** The fresh authorization is
   SDD v43: § 11 R-16 *Until the checks are built* and *The proof* under "A third way out" state the
-  alternates check and its case as in the tree at `nozoki@66f428d`, and *Open Questions*'
+  alternates check and its case as in the tree at `ka-reader@66f428d`, and *Open Questions*'
   config-named-path item is open on the `.gitmodules` case alone. (1) QC-15's list names the
   alternates check's reads, as SDD § 3's `git-reader` row states them. Its tail names
   `check_alternates` beside `check_config`, and `alternates_scan::scan`, which takes bytes and reads
@@ -4826,10 +4826,10 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   addition: QC-35's tail names the fifth FIFO case, says that it does not watch a `stat` of the
   outside directory, says that the absence of that `stat` rests on the check running before the open
   (`libgit2.rs:L112-L115`), says that no case runs the check on the built bundle, and re-pins the
-  count at 82 passed at `nozoki@4a49995`. (5) ADR-0022 stays in each entry's trace, and each trace
+  count at 82 passed at `ka-reader@4a49995`. (5) ADR-0022 stays in each entry's trace, and each trace
   names SDD v43 RN-103 as the source. Every sentence whose claim changed keeps its old words in a
   dated note. **§ 3.2 → no change to ADR-0022.** The record is Accepted, so its body is not
-  rewritten. Its *Built and not built* paragraph is pinned to `nozoki@076eac2`, where it was true.
+  rewritten. Its *Built and not built* paragraph is pinned to `ka-reader@076eac2`, where it was true.
   Its `## Binds` names QC-6, QC-15, QC-30 and QC-35, and QC-6, QC-15 and QC-35 now carry the built
   state. The record and the index are untouched by this run. The answer names one guard it leaves
   open: a reader who opens ADR-0022 alone and reads past its pin still meets the old state.
@@ -4840,8 +4840,8 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   `.gitmodules` check locates". The list now names three checks, so "either" would not say which
   two. The alternates walk has its own clause. (c) QC-15's tail cites `read_alternates` (`:L366`)
   and `inspect_on_disk` (`:L517`). The item named both, and the answer did not. (d) QC-35's four
-  earlier FIFO case locators were true at `nozoki@076eac2` and are ten lines later at
-  `nozoki@66f428d`, and the helper's span ends four lines later. Each is re-pinned there with a dated note, so the count's new pin does not sit beside locators
+  earlier FIFO case locators were true at `ka-reader@076eac2` and are ten lines later at
+  `ka-reader@66f428d`, and the helper's span ends four lines later. Each is re-pinned there with a dated note, so the count's new pin does not sit beside locators
   from another commit. What each locator names is unchanged (RN-38's convention). (e) § 10's QC-35
   row reads "the five FIFO cases", because the row is a projection of the entry. **A candidate that
   earns no record.** SDD v43 RN-103 adds a second observation to the alternates condition. An entry
@@ -4853,16 +4853,16 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   gate: a reader of ADR-0022 would not be surprised by it. The alternative that was weighed,
   locating the entry, is held in SDD § 11 R-16 *The spellings*. No entry moves for it either. QC-6
   already refuses "a form it does not locate" for the alternates file, and the condition's words are
-  `docs/CONTENT.md`'s (QC-53). SDD v43's known defect at `nozoki@66f428d`, one condition for both
+  `docs/CONTENT.md`'s (QC-53). SDD v43's known defect at `ka-reader@66f428d`, one condition for both
   observations, touches no entry: `grep -n -i 'object store names'` over §§ 1 – 10 prints nothing.
-  The owner can reopen this as a superseding record. **Measured for this run at `nozoki@f2e22e9`.**
+  The owner can reopen this as a superseding record. **Measured for this run at `ka-reader@f2e22e9`.**
   `git status --porcelain` printed nothing at intake. `git diff --stat 66f428d HEAD -- . ':!docs'`
-  prints nothing, so every code locator here is written against `nozoki@66f428d`. `check_alternates`
+  prints nothing, so every code locator here is written against `ka-reader@66f428d`. `check_alternates`
   is defined at `libgit2.rs:L303` and called at `:L114`, `:L449` and `:L475`. `alternates_scan::scan`
   is at `alternates_scan.rs:L28`, and `grep -nE
   'std::fs|File::|read_to|OpenOptions|read_link|metadata'` over that file prints nothing.
   `git_state.rs` holds the FIFO helper at `:L1156-L1170` and the five cases at `:L1212`, `:L1228`,
-  `:L1543`, `:L1634` and `:L1733`. `cargo test --locked -p nozoki-core --test git_state` printed 82
+  `:L1543`, `:L1634` and `:L1733`. `cargo test --locked -p ka-reader-core --test git_state` printed 82
   passed, 0 failed, and every case whose name carries `alternates` or `outside_object` printed `ok`.
   **Known limits.** This run read the SDD's diff since `af21672` whole, and the other inputs at their
   status lines. It ran one suite. It ran no `checks/*.sh` script, built no bundle, ran no
@@ -4872,14 +4872,14 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   removed and `Status:` is Settled *(re: header `Version:`; QC-6, QC-15, QC-35; § 10, the QC-35 row;
   source: `docs/trail/architecture/cycle-38.md` §§ 3.1, 3.2;
   `docs/trail/architecture/self_answer-43.md`; `docs/SDD.md` v43, SDD RN-103; the tree at
-  `nozoki@66f428d`, measured at `nozoki@f2e22e9`)*
+  `ka-reader@66f428d`, measured at `ka-reader@f2e22e9`)*
 - **RN-56:** *(v45 — the close: the cycle-39 fold, §§ 3.1 and 3.2 answered)* **Intake.** The
   companion on disk had two § 3 items and nothing in §§ 1 or 2. No `product-architecture` run wrote
-  it. The PM opened it on 2026-10-07 (`nozoki@ccbe02a`), after the `.gitmodules` section-path
-  refusals and the refusal on the submodule map merged to `main` (`nozoki@772c63b`), because QC-6
+  it. The PM opened it on 2026-10-07 (`ka-reader@ccbe02a`), after the `.gitmodules` section-path
+  refusals and the refusal on the submodule map merged to `main` (`ka-reader@772c63b`), because QC-6
   and QC-35 still read both as not built and ADR-0022's *Decision* gave an unreadable `.gitmodules`
   a condition the build no longer gives it. A `companion-self-answer` run answered both items in
-  the owner's seat: § 3.1 confirmed with additions, § 3.2 answered (`nozoki@d90814b`; reasoning
+  the owner's seat: § 3.1 confirmed with additions, § 3.2 answered (`ka-reader@d90814b`; reasoning
   `docs/trail/architecture/self_answer-44.md`). The file was clean in git at intake and both slots
   were filled, so it is consumed. It was copied whole to `docs/trail/architecture/cycle-39.md`
   before this fold's first edit, and `cmp` found the two identical. **Whose answer this is.** The
@@ -4894,7 +4894,7 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   file the check cannot read answers the unreadable-Git-directory condition, except a `.gitmodules`
   at depth 0 of a level's walk, which answers `GitmodulesUnreadable` on `status()` alone; a file it
   includes keeps the old condition. *Alternatives ruled out* gains the two the answer names.
-  *Built and not built* is re-pinned at `nozoki@d90814b`, where everything the record decides is
+  *Built and not built* is re-pinned at `ka-reader@d90814b`, where everything the record decides is
   built. ADR-0022's Status line reads `Superseded by ADR-0023`, and no other line in it moved
   (`git diff` on the file shows one line). The index's ADR-0022 row is restatused and an ADR-0023
   row is added. ADR-0023 lands Accepted: the answer chose the record, named what it carries and
@@ -4924,12 +4924,12 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   said "no case would notice", which is true of every kind but that one. (c) QC-35's helper span
   moves from `:L1156-L1170` to `:L1155-L1206`. The old span covered the doc comment and the FIFO
   maker and stopped before the non-blocking open it cites; the helper is byte-identical to
-  `nozoki@66f428d`'s (`diff` on `:L1155-L1210` printed nothing). (d) QC-35's trace names *Open
+  `ka-reader@66f428d`'s (`diff` on `:L1155-L1210` printed nothing). (d) QC-35's trace names *Open
   Questions*' second item alone as live, and the config-named-path item as removed. **Measured for
-  this run at `nozoki@d90814b`.** `git status --short` printed nothing at intake. `git diff --stat
+  this run at `ka-reader@d90814b`.** `git status --short` printed nothing at intake. `git diff --stat
   772c63b HEAD -- . ':!docs'` printed nothing, so every code locator here is written against
-  `nozoki@772c63b`. On a disposable copy (`git archive d90814b`, unpacked under `/private/tmp`, the
-  suite run by `--manifest-path`): `cargo test --locked -p nozoki-core --test git_state` printed
+  `ka-reader@772c63b`. On a disposable copy (`git archive d90814b`, unpacked under `/private/tmp`, the
+  suite run by `--manifest-path`): `cargo test --locked -p ka-reader-core --test git_state` printed
   120 passed, 0 failed, and each of the six FIFO cases and the looked-up-kinds case printed `ok`.
   The six cases are at `git_state.rs:L1212`, `:L1228`, `:L1795`, `:L1886`, `:L1995` and `:L2680`,
   and the helper at `:L1155-L1206`. In the adapter, `state()` and `status()` are at
@@ -4950,32 +4950,32 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   `Version:`; QC-6, QC-15, QC-30, QC-35; § 10, the QC-35 row; ADR-0023, ADR-0022's Status line and
   the index; source: `docs/trail/architecture/cycle-39.md` §§ 3.1, 3.2;
   `docs/trail/architecture/self_answer-44.md`; `docs/SDD.md` v46, SDD RN-106; the tree at
-  `nozoki@772c63b`, measured at `nozoki@d90814b`)*
+  `ka-reader@772c63b`, measured at `ka-reader@d90814b`)*
 - **RN-57:** *(v46 — the close: the cycle-40 fold, § 3.1 answered)* **Intake.** The companion on
   disk had one § 3 item and nothing in §§ 1 or 2. No `product-architecture` run wrote it. The PM
-  opened it on 2026-10-07 (`nozoki@258b472`), after the change that runs the `submodule` walk every
-  build merged to `main` (`nozoki@b12e48c`), because QC-2's tail still stated two limits beside the
+  opened it on 2026-10-07 (`ka-reader@258b472`), after the change that runs the `submodule` walk every
+  build merged to `main` (`ka-reader@b12e48c`), because QC-2's tail still stated two limits beside the
   `submodule` walk fixture that the change had closed. A `companion-self-answer` run answered it in
-  the owner's seat, confirmed with four additions (`nozoki@201498e`; reasoning
+  the owner's seat, confirmed with four additions (`ka-reader@201498e`; reasoning
   `docs/trail/architecture/self_answer-45.md`). The file was clean in git at intake and its one slot
   was filled, so it is consumed. It was copied whole to `docs/trail/architecture/cycle-40.md` before
   this fold's first edit, and `cmp` found the two identical. **Whose answer this is.** The fold rests
   on the ground RN-54 to RN-56 rest on: the answer binds only the records' consistency with the tree
   and with the settled SDD, which states the substance (SDD RN-107), and the owner can reverse the
   fold with one revert. **What moved beneath this document.** `docs/SDD.md` v46 → v47, Settled
-  (`nozoki@c1032b5`, SDD RN-107). `git diff 275e179 HEAD -- docs/SDD.md` touches the header, § 3's
+  (`ka-reader@c1032b5`, SDD RN-107). `git diff 275e179 HEAD -- docs/SDD.md` touches the header, § 3's
   `read-only-harness` row, § 6 S-4's promise clause and *Rests on*, and RN-107, and each was read.
   `git diff --stat 275e179 HEAD -- docs ':!docs/trail'` lists the SDD and the companion alone. Every
   input's `Status:` line was re-read as Settled, so `Inputs read:` stands. **§ 3.1 → QC-2, as
   answered, with the four additions.** The fresh authorization is SDD v47 § 6 S-4, command half, the
-  promise clause, which reads both limits as closed at `nozoki@b12e48c`. QC-2's tail now names the
+  promise clause, which reads both limits as closed at `ka-reader@b12e48c`. QC-2's tail now names the
   CI step `Read-only, submodule` (`.github/workflows/ci.yml:L73-L74`) and the case
-  `crates/nozoki-core/tests/git_state.rs:L787`, and it keeps the old words in a dated note. (1) The
+  `crates/ka-reader-core/tests/git_state.rs:L787`, and it keeps the old words in a dated note. (1) The
   tail names the case as a layer-2 no-write proof on the restored `submodule` as well as the answer
   it asserts, because `read_git_over` snapshots the whole scene before and after the call
   (`:L730-L738`). (2) The CI half is bounded. The step is in the workflow, and its result on the
   hosted runner is unread: `git branch -r --contains b12e48c` prints nothing, and `origin/main` is at
-  `nozoki@799c3d6`. The tail says this and does not say the step is green. (3) The sentence that the
+  `ka-reader@799c3d6`. The tail says this and does not say the step is green. (3) The sentence that the
   walk drops the Git answer (`checks/walk.rs:L288-L292`) stays, as the reason the case and not the
   walk holds the answer. (4) The trace moves from SDD § 4 C-I3 and § 6 S-4, command half, as they
   read at v42 (SDD RN-101) to § 6 S-4 at v47 (SDD RN-107), and the v42 reading is in the dated note.
@@ -4986,23 +4986,23 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   `main` in the normal state, staged empty, and changed = {`submodule` modified, `README.md`
   untracked} — as the item and SDD v47 state it, so a reader does not have to open the test to learn
   what "the whole answer" means. **What does not move**, as the answer directs. § 10's QC-2 row reads
-  "on every walk fixture", which is still true. § 9's suite count is pinned at `nozoki@b158052`, and
+  "on every walk fixture", which is still true. § 9's suite count is pinned at `ka-reader@b158052`, and
   its own sentence makes an inserted step a re-measurement. The export-set clause stands. No ADR is
   written, edited or restatused, and the index does not move. No `QC` is added, renumbered or reused.
   **No candidate record.** Running the `submodule` walk in CI and asserting `read_git`'s answer in a
   case are verification moves, not decisions. Undoing either is cheap, and neither involved a real
-  trade-off, so neither earns a record. **Measured for this run at `nozoki@201498e`.** `git status
+  trade-off, so neither earns a record. **Measured for this run at `ka-reader@201498e`.** `git status
   --porcelain` printed nothing at intake. `git diff --stat b12e48c HEAD -- . ':!docs'` printed
-  nothing, so every code locator here is written against `nozoki@b12e48c`. At that commit,
+  nothing, so every code locator here is written against `ka-reader@b12e48c`. At that commit,
   `ci.yml:L73-L74` holds the `Read-only, submodule` step, and `git_state.rs` holds `read_git_over` at
   `:L730-L738` with its snapshot at `:L731` and `:L736`, the scene case at `:L771`, the answer case at
   `:L787` with its assertion at `:L792-L798`, and the three layout cases at `:L802`, `:L815` and
   `:L828`. `walk.rs:L288-L292` still drops the answer. The locators QC-2 already carried were
   re-read at HEAD: `git_state.rs:L146-L155` and `root_finding.rs:L38-L43` still snapshot the scene
-  around the calls, and `checks/read-only.sh` is unchanged since `nozoki@076eac2`. On a disposable
+  around the calls, and `checks/read-only.sh` is unchanged since `ka-reader@076eac2`. On a disposable
   copy (`git archive HEAD`, unpacked under `/private/tmp`, the suite run by `--manifest-path`),
   `checks/read-only.sh` printed `unchanged` on `plain`, `repo` and `submodule`. In the same copy,
-  `cargo test --locked -p nozoki-core --test git_state submodule` printed `test result: ok. 17 passed;
+  `cargo test --locked -p ka-reader-core --test git_state submodule` printed `test result: ok. 17 passed;
   0 failed`, and the cases at `:L771`, `:L787`, `:L802` and `:L815` printed `ok`. The filter does
   not reach `:L828`, whose name does not carry `submodule`; run by its own name, it printed `test
   result: ok. 1 passed; 0 failed`. **Known limits.** This run read the SDD's diff since `275e179`
@@ -5011,4 +5011,4 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   read no hosted CI run. **The companion.** Nothing is left for the owner, so the companion is removed
   and `Status:` is Settled *(re: header `Version:`; QC-2; source:
   `docs/trail/architecture/cycle-40.md` § 3.1; `docs/trail/architecture/self_answer-45.md`;
-  `docs/SDD.md` v47, SDD RN-107; the tree at `nozoki@b12e48c`, measured at `nozoki@201498e`)*
+  `docs/SDD.md` v47, SDD RN-107; the tree at `ka-reader@b12e48c`, measured at `ka-reader@201498e`)*

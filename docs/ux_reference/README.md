@@ -1,9 +1,9 @@
 # UX reference — layout, not style
 
-Eight screenshots of VS Code, taken by the owner as a layout reference for Nozoki's shell.
+Eight screenshots of VS Code, taken by the owner as a layout reference for KA-Reader's shell.
 
 They are here for **what the layout does** — where things sit, how the sidebar relates to the
-reading panel, how a changed file is marked. They are **not** a reference for how Nozoki should
+reading panel, how a changed file is marked. They are **not** a reference for how KA-Reader should
 look. The design direction is a restrained workbench built from primitives, no established
 component design system (`UXD.md` § 9); VS Code's own visual language is not being adopted.
 
@@ -13,12 +13,12 @@ taken or excluded below, and an element not listed here was not considered.
 **Four of the eight carry a take / do-not-take reading; four carry only a description.** The four
 annotated are the ones this file opened with — `vscode-files-view.png`, `vscode-git-view.png`,
 `vscode-repo-selector.png`, `vscode-branch-filter.png`. The four added later — three at
-`nozoki@b7119cb`, one at `nozoki@8879041` — are described under *Four images described, not
+`ka-reader@b7119cb`, one at `ka-reader@8879041` — are described under *Four images described, not
 adjudicated* below, and by the rule above nothing in them is taken or excluded. That is not an
 oversight to read past: `UXD.md` RN-13 rests on it, recording that the UXD's entries stand on the
 four annotated images alone.
 
-Every shot is dark. That says nothing about Nozoki's default — the initial theme follows the
+Every shot is dark. That says nothing about KA-Reader's default — the initial theme follows the
 platform's signal, and both themes are first-class (UX-I9).
 
 ---
@@ -31,14 +31,14 @@ platform's signal, and both themes are first-class (UX-I9).
   The proportion is the reference: the panel you read in dominates. *(UXD § 4)*
 - **The tree.** Repository name as the root, folders collapsible, files listed beneath, one
   selection at a time. *(UX-S2)*
-- **The repository named in the shell chrome.** VS Code puts `nozoki` in the centre of the title
+- **The repository named in the shell chrome.** VS Code puts `ka-reader` in the centre of the title
   row. The element is right — certainty about what is being inspected is part of what the product
   sells. Its behaviour there (a command field) is not. *(§ 4, RN-2)*
 
 ### Do not take
 
 - **The activity bar's icon set** — search, run and debug, remote, extensions, testing, and the
-  installed-tool icons below them. Nozoki has two views, Files and Git, and no other top-level
+  installed-tool icons below them. KA-Reader has two views, Files and Git, and no other top-level
   area exists. *(§ 4)*
 - **The title row** — back and forward arrows, the command field, the update button, the
   layout-toggle icon. No navigation history, no command surface, no updater in the shell.
@@ -47,7 +47,7 @@ platform's signal, and both themes are first-class (UX-I9).
 - **The empty-state content** — the watermark and the keyboard-shortcut list. The empty reading
   panel states one thing: select a file. A shortcut list would also promise a keyboard model the
   product does not have. *(UX-S1, UX-I8)*
-- **The count badge** on the extensions icon. Nothing in Nozoki bids for attention. *(UX-I2)*
+- **The count badge** on the extensions icon. Nothing in KA-Reader bids for attention. *(UX-I2)*
 
 ---
 
@@ -59,7 +59,7 @@ platform's signal, and both themes are first-class (UX-I9).
   by the switch. *(§ 4, UX-I3)*
 - **Changed files as a named, collapsible group.** *(UX-S3)*
 - **The status letter beside each file** — `A`, `M`, `R`. The letter carries the meaning and the
-  colour repeats it, which is the rule Nozoki holds itself to: no state distinction readable by
+  colour repeats it, which is the rule KA-Reader holds itself to: no state distinction readable by
   hue alone. This is the reference's clearest single lesson. *(UX-A2)*
 - **The branch shown inside the Git view**, not in the shell chrome. *(§ 4)*
 - **Beyond v1** — a commit list with each commit's changed files beneath it is the shape the
@@ -68,11 +68,11 @@ platform's signal, and both themes are first-class (UX-I9).
 ### Do not take
 
 - **The commit message box and the sync button.** These write. No editing affordance exists in
-  Nozoki, enabled or disabled. *(UX-I1)*
+  KA-Reader, enabled or disabled. *(UX-I1)*
 - **The graph toolbar** — fetch, pull, push, refresh. Write operations, and there is no manual
   refresh control in any case. *(UX-I1, UX-I2)*
 - **Outgoing-changes framing and the sync counter.** They describe a relationship to a remote and
-  invite an action. Nozoki reports the state of the local repository.
+  invite an action. KA-Reader reports the state of the local repository.
 
 ### Neither — the graph's rails and commit dots
 
@@ -100,7 +100,7 @@ and choosing it is how the viewed repository changes.
 
 ### Do not take
 
-- **Two repositories open at once, each with its own section.** Nozoki views exactly one repository
+- **Two repositories open at once, each with its own section.** KA-Reader views exactly one repository
   at a time; switching replaces, never adds. *(UX-F5)*
 - **The per-repository commit boxes and the publish-branch button.** These write. *(UX-I1)*
 
@@ -136,7 +136,7 @@ the choosing here is one control among several that would serve.
 
 ### Do not take
 
-- **`origin/HEAD` and `origin/main`.** Nozoki reports the state of the local repository; a remote's
+- **`origin/HEAD` and `origin/main`.** KA-Reader reports the state of the local repository; a remote's
   refs describe a relationship it does not report. The same exclusion as the outgoing-changes
   framing in `vscode-git-view.png`.
 - **The `Outgoing Changes` group** behind the picker — excluded already, and named again here
@@ -157,13 +157,13 @@ refinement of the drafted shape, not a new question.
 
 **It was reconciled.** *Set* is the word both settled documents now use — `UXD.md` UX-F4 and
 `SRS.md` FR-18, each reading "a chosen **set** of branches — one, several, or all of them". The
-draft this pointed at (`docs/UXD_open_issues.md` § 2.1) was removed at `nozoki@9017ae2`.
+draft this pointed at (`docs/UXD_open_issues.md` § 2.1) was removed at `ka-reader@9017ae2`.
 
 ---
 
 ## Four images described, not adjudicated
 
-Three were added at `nozoki@b7119cb` and one at `nozoki@8879041`, all from the same workbench.
+Three were added at `ka-reader@b7119cb` and one at `ka-reader@8879041`, all from the same workbench.
 They are here as evidence, not as annotation: nothing in them is taken or excluded, and by this
 file's own rule nothing in them has been considered.
 
@@ -205,7 +205,7 @@ is not history filtering (`UXD.md` § 10).
 
 ### `vscode-commit-detail-pane.png` — what selecting a commit opens
 
-Added at `nozoki@8879041`. The graph with one commit selected and its detail filling the reading
+Added at `ka-reader@8879041`. The graph with one commit selected and its detail filling the reading
 panel: author avatar and name, the time both relative and absolute, the message body in full, the
 commit's trailers as plain lines, the branch chip, `1 file changed`, the short identifier with a
 copy control, and an `Open on GitHub` link. The seven images before it show the changes list and
@@ -255,19 +255,19 @@ its shape.
 own words at `docs/trail/srs/cycle-3.md` § 2.1. The UXD carries the shape at UX-F4 and UX-S6 and
 the reasoning at RN-14, and § 5.4's closing line records it as carried and not reopened. The
 companion this line used to point at (`docs/UXD_open_issues.md` § 2.1) was removed at
-`nozoki@9017ae2`.
+`ka-reader@9017ae2`.
 
 ### 2. Switching the viewed repository is a dropdown
 
 `UX-F5` says only "a single switch action in the shell". The owner names the control: a dropdown,
-listing the repositories Nozoki remembers, with an entry to browse for one not in the list. On
+listing the repositories KA-Reader remembers, with an entry to browse for one not in the list. On
 first run the list is empty and only the browse entry is there.
 
 Remembering them is already permitted — `PRD.md:290-293` lets the tool keep its own state between
 sessions, provided it lives outside the viewed repository. Nothing here needs the CPO.
 
 **Not settled — where the control lives.** VS Code carries the repository name twice: in the title
-row, and as the control in the graph header (this image). Nozoki has to choose one, because a name
+row, and as the control in the graph header (this image). KA-Reader has to choose one, because a name
 in one place and a switch in another is two elements telling one truth.
 
 - **In the shell chrome** — the identity element (§ 4, RN-2) becomes the control. Reachable from
@@ -282,13 +282,13 @@ The CDO drafts a lean with the whole document in view and routes it back through
 reasoning at RN-15. Two things moved with it, and restating them is not this file's job: the input
 widened from a repository to any local folder, so the control is the **folder selector** (RN-25),
 and its list is bounded to ten by recency (UX-S7, RN-29). The companion this line used to point at
-(`docs/UXD_open_issues.md` § 2.2) was removed at `nozoki@9017ae2`.
+(`docs/UXD_open_issues.md` § 2.2) was removed at `ka-reader@9017ae2`.
 
 ---
 
 ## One question the reference raises
 
-VS Code switches views with a vertical rail of icons. Nozoki's navigation is text-first with icons
+VS Code switches views with a vertical rail of icons. KA-Reader's navigation is text-first with icons
 secondary (§ 4), and it has exactly two destinations. Whether the Files/Git switch is a rail, a
 pair of labelled tabs at the top of the sidebar, or something else is not settled by these images
 and is not settled here.
@@ -297,4 +297,4 @@ and is not settled here.
 a small text label beneath it. The owner overrode the drafted labelled tabs
 (`docs/trail/uxd/cycle-1.md` § 2.3), so the mechanism this section questioned is the one taken,
 with a label attached; `UXD.md` RN-16 carries it. The companion this line used to point at
-(`docs/UXD_open_issues.md` § 2.3) was removed at `nozoki@9017ae2`.
+(`docs/UXD_open_issues.md` § 2.3) was removed at `ka-reader@9017ae2`.

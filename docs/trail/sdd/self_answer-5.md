@@ -84,17 +84,17 @@ the document is § 2.4, raised rather than answered, and recorded under *Raised 
 ## Skipped
 
 - **1.1 — Do the owner's answers to the previous SDD bind this run?** — slot filled at
-  `nozoki@59287c9`; a re-run leaves a decided item alone.
-- **2.1 — An SVG inside the folder is not rendered in place** — slot filled at `nozoki@59287c9`,
-  folded into § 4 C-D3 and RN-8 at `nozoki@f2b8a74`.
+  `ka-reader@59287c9`; a re-run leaves a decided item alone.
+- **2.1 — An SVG inside the folder is not rendered in place** — slot filled at `ka-reader@59287c9`,
+  folded into § 4 C-D3 and RN-8 at `ka-reader@f2b8a74`.
 - **2.3 — S-11's *Delivers* states the contract as one list of four** — slot filled at
-  `nozoki@d5c3d59`, folded into S-11 and RN-19 at `nozoki@f2b8a74`.
+  `ka-reader@d5c3d59`, folded into S-11 and RN-19 at `ka-reader@f2b8a74`.
 - **3.1 — `first-public-release` lands after the v1 cut, below 1.0.0** — slot filled at
-  `nozoki@59287c9`.
-- **5.1 — `sdd_template.md` § 3 gained a units table** — slot filled at `nozoki@59287c9`, folded at
-  `nozoki@f2b8a74`.
+  `ka-reader@59287c9`.
+- **5.1 — `sdd_template.md` § 3 gained a units table** — slot filled at `ka-reader@59287c9`, folded at
+  `ka-reader@f2b8a74`.
 - **5.2 — The re-author broke 38 citations in the decision log and the NFDR** — slot filled at
-  `nozoki@caa3e0c`.
+  `ka-reader@caa3e0c`.
 - **§ 4 Disagreements** — reads "None yet."; no item to work.
 
 ## Raised on this document
@@ -128,4 +128,4 @@ or the UXD beyond those already routed by RN-32 and RN-34 and recorded in § 5.2
 
 ## Launchers owed
 
-- **`docs/SDD.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-sdd/launcher.sh nozoki`
+- **`docs/SDD.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-sdd/launcher.sh ka-reader`

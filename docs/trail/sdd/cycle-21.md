@@ -1,4 +1,4 @@
-# SDD open issues — Nozoki
+# SDD open issues — KA-Reader
 
 > Companion to `SDD.md`. The CTO wrote the SDD; this file holds what that run could not settle from
 > its inputs (the PRD, the SRS, the UXD, and any context or constraints), and the calls that are the
@@ -32,8 +32,8 @@
 > which stay fixed to the three lane seats on purpose.
 
 > **No `product-sdd` run wrote this file.** The PM opened it on 2026-10-03 from the SDD's own companion
-> template. `git-reader` now exists in the tree (`crates/nozoki-core/src/git_reader.rs`,
-> `crates/nozoki-core/src/git_reader/libgit2.rs`, `nozoki@126ef75`) with the four Git fixture scenes beside
+> template. `git-reader` now exists in the tree (`crates/ka-reader-core/src/git_reader.rs`,
+> `crates/ka-reader-core/src/git_reader/libgit2.rs`, `ka-reader@126ef75`) with the four Git fixture scenes beside
 > it, and three statements of the SDD no longer match what landed: the `read-only-harness` row's pinned
 > inventory, SM-2's owner cell, and C-R6's transport sentence. The SDD is Settled, and with no companion on
 > disk a `product-sdd` re-run reads it as done and has nothing to act on. Its three items are in § 5.
@@ -63,20 +63,20 @@ None.
 ### 5.1 The `read-only-harness` row lists the four Git fixture scenes as owed; they are on disk
 - **Raised by:** PM — 2026-10-03
 - **Seat:** cto
-- **Tracked by:** `nozoki · nemawashi · 2026-10-02_git-says-what-changed`
-- **What it blocks:** nothing fails; the row's inventory is pinned at `nozoki@7a125b4` and says itself
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-02_git-says-what-changed`
+- **What it blocks:** nothing fails; the row's inventory is pinned at `ka-reader@7a125b4` and says itself
   that a file landing in `checks/` after that commit "is a re-measurement of this cell and not a
   contradiction of it, and it owes this row an item" (`docs/SDD.md:L332`).
 - **Where it shows:** § 3, the `read-only-harness` row (`docs/SDD.md:L332`), lists `inside-a-repo`,
   `parent-of-two`, `linked-worktree` and `submodule` under "Owed by a slice and not on disk". At
-  `nozoki@126ef75`, `ls checks/fixtures/` lists all four folders and their four archives
+  `ka-reader@126ef75`, `ls checks/fixtures/` lists all four folders and their four archives
   (`inside-a-repo.git.tar`, `parent-of-two.git.tar`, `linked-worktree.git.tar`, `submodule.git.tar`). The
   likely fold: re-measure the cell at the current commit and move the four scenes, each with its archive,
   into the on-disk inventory.
 - **If a document has to be written:** none. The § 3 row in `SDD.md`.
 - **Answer:** Yes, as the item's likely fold reads, with three additions. `inside-a-repo`,
   `parent-of-two`, `linked-worktree` and `submodule` leave *Owed by a slice* and join *On disk*, each
-  with its `<name>.git.tar` archive, which `crates/nozoki-core/tests/root_finding.rs:L49` unpacks into
+  with its `<name>.git.tar` archive, which `crates/ka-reader-core/tests/root_finding.rs:L49` unpacks into
   a scene of its own. The additions: (1) the cell is re-pinned to the commit the fold is made on, and
   the fold measures the tree itself (`git ls-tree --name-only HEAD checks/`, `ls checks/fixtures`)
   and does not take this list, because a file can land between this answer and the fold; (2) the
@@ -89,13 +89,13 @@ None.
 ### 5.2 SM-2 says the port is a trait the model owns; the trait and its outcome types live in `git-reader`
 - **Raised by:** PM — 2026-10-03
 - **Seat:** cto
-- **Tracked by:** `nozoki · nemawashi · 2026-10-02_git-says-what-changed`
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-02_git-says-what-changed`
 - **What it blocks:** nothing fails today. Every later Git station reads SM-2 to decide where the port's
   methods (`state`, `status`) and their types are added, and the seam's text sends them to the model.
 - **Where it shows:** § 3 SM-2's row, "The port is a trait the model owns", owner `folder-model` — "the
   port is its" (`docs/SDD.md:L416`). In the tree, `pub trait GitPort` is defined at
-  `crates/nozoki-core/src/git_reader.rs:L33` with `RootFinding` and `ProbeCondition` beside it, and
-  `crates/nozoki-core/src/folder_model.rs` names neither (`grep -n 'GitPort\|git_reader'` prints nothing).
+  `crates/ka-reader-core/src/git_reader.rs:L33` with `RootFinding` and `ProbeCondition` beside it, and
+  `crates/ka-reader-core/src/folder_model.rs` names neither (`grep -n 'GitPort\|git_reader'` prints nothing).
   The placement keeps `docs/nfdr.md` QC-11's "must not import `folder-model`" for `git-reader`: a trait the
   model held would need that import. What still holds is that the model states the contract. The likely
   fold: SM-2 keeps `folder-model` as the owner of the contract and says the trait and its types are held
@@ -113,7 +113,7 @@ None.
   nor one another, and an adapter cannot implement a trait the model defines without importing the
   model. Addition two, for the changes that add `state`, `status`, `diff` and `walk`: a type that
   crosses SM-2 is never defined in `folder-model`. It is defined in `git-reader`, or in a module of
-  `nozoki-core` that is no part; which of the two is that change's design. The model imports the
+  `ka-reader-core` that is no part; which of the two is that change's design. The model imports the
   trait and those types, and never the adapter. Whether the model's `GitState` (*What the system
   holds*) is the port's type or is built from it is also that change's design, and SM-2 should not
   read as though the port returns a type the model defines. ADR-0004's sentence is the records' and
@@ -124,12 +124,12 @@ None.
 ### 5.3 C-R6 says no shipped unit links a network transport; the vendored libgit2 compiles its `git://` and `http://` transports unconditionally
 - **Raised by:** PM — 2026-10-03
 - **Seat:** cto
-- **Tracked by:** `nozoki · nemawashi · 2026-10-02_git-says-what-changed`
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-02_git-says-what-changed`
 - **What it blocks:** the claim C-R6 makes has nothing that proves it. Its two halves differ. "libgit2 is
-  built without its HTTPS and SSH transports" holds: `cargo tree --locked -p nozoki-core --prefix none |
+  built without its HTTPS and SSH transports" holds: `cargo tree --locked -p ka-reader-core --prefix none |
   grep -Ei 'openssl|native-tls|rustls|libssh2|schannel|security-framework'` prints nothing at
-  `nozoki@126ef75`. "No shipped unit links a network transport" has no check. The bridge's static
-  library now carries libgit2: the `nozoki-mac/Package.swift` link entries landed for it at `nozoki@126ef75`.
+  `ka-reader@126ef75`. "No shipped unit links a network transport" has no check. The bridge's static
+  library now carries libgit2: the `ka-reader-mac/Package.swift` link entries landed for it at `ka-reader@126ef75`.
 - **Where it shows:** § 4 C-R6 (`docs/SDD.md:L600-L601`), and the `git-reader` row's "libgit2 linked
   without its HTTPS and SSH transports" (`docs/SDD.md:L323`). `libgit2-sys 0.18.8+1.9.7`, the version the
   lock resolves, compiles `libgit2/src/libgit2/transports` whatever its features ("These are activated by
@@ -146,13 +146,13 @@ None.
   transports; no shipped unit links a network transport".
   (1) *What the build holds.* libgit2 is vendored and built with its `https` and `ssh` features off:
   no TLS backend and no libssh2 is compiled or linked. The evidence already runs on every build: the
-  tree names no TLS or SSH crate, and the inline test in `crates/nozoki-core/src/git_reader/libgit2.rs`
+  tree names no TLS or SSH crate, and the inline test in `crates/ka-reader-core/src/git_reader/libgit2.rs`
   asserts `git2::Version` reports HTTPS off and SSH off.
   (2) *What the build does not hold, stated as a fact.* The vendored libgit2 compiles its transports
   and its socket stream whatever the features, and registers `git://`, `http://` and `https://` with
   no guard (`libgit2-sys 0.18.8+1.9.7`, `build.rs:L152-L156`; `libgit2/src/libgit2/transport.c:L33-L35`).
-  So C-R6 claims nothing about the library, or about `nozoki-core` as a unit.
-  (3) *What is claimed.* The shipped executable, `Nozoki.app/Contents/MacOS/Nozoki`, links no network
+  So C-R6 claims nothing about the library, or about `ka-reader-core` as a unit.
+  (3) *What is claimed.* The shipped executable, `KA-Reader.app/Contents/MacOS/KAReader`, links no network
   transport. The harness reads it on every build, on the release executable: `nm` finds no defined
   `git_smart_subtransport_*` symbol and no undefined import of `connect`, `socket` or `getaddrinfo`.
   The check rides a script that already reads that executable (`checks/view.sh` reads it with

@@ -7,7 +7,7 @@
 # Version: 1.1.0 — the launched sandbox is read from the operating system (sandbox_check, through a compiled probe), not from an environment marker
 # Version: 1.0.0 — first version: the wall proven on a built bundle (entitlements, then the launched sandbox)
 #
-# checks/bundle.sh <path-to-app> — proves the App Sandbox wall on a BUILT Nozoki.app.
+# checks/bundle.sh <path-to-app> — proves the App Sandbox wall on a BUILT KA-Reader.app.
 #
 # WHY THIS EXISTS
 #   The wall is two things: the bundle asks for exactly the entitlements C-R2 lists, and the
@@ -21,7 +21,7 @@
 #   in the bundle. Each offending path is named on stderr.
 #
 # USAGE
-#   checks/bundle.sh target/release/bundle/macos/Nozoki.app
+#   checks/bundle.sh target/release/bundle/macos/KA-Reader.app
 #   checks/bundle.sh --negative-control <path-to-app>
 #     The control: the same launch-and-probe path, but the bundle's entitlement set must be EMPTY and
 #     the run passes only when every report the operating system gives, across the whole probe window,
@@ -38,7 +38,7 @@
 #
 # HOW THE OPERATING SYSTEM IS ASKED
 #   Only libSystem's sandbox_check answers, and no shell can call it, so checks/sandbox_probe.rs is
-#   compiled with rustc into this run's temporary directory and run as `nozoki-sandbox-probe <pid>`,
+#   compiled with rustc into this run's temporary directory and run as `ka-reader-sandbox-probe <pid>`,
 #   found through PATH — the seam a test uses to stand one condition at a time in for the real probe.
 #   The ordinary path asks it up to BUNDLE_SH_PROBE_TICKS times, 0.25 s apart (default 40).
 #   The pass is the first ask on which all three hold. A report that falls short is asked past until
@@ -322,7 +322,7 @@ PROBE_SOURCE="$(cd "$(dirname "$0")" && pwd -P)/sandbox_probe.rs"
 command -v rustc > /dev/null 2>&1 || die "rustc not found on PATH — the sandbox probe (checks/sandbox_probe.rs) is compiled with it"
 [ -f "$PROBE_SOURCE" ] || die "the probe source is missing: $PROBE_SOURCE"
 mkdir -p "$work/probe-bin"
-rustc --edition 2021 -O -o "$work/probe-bin/nozoki-sandbox-probe" "$PROBE_SOURCE" 2> "$work/probe-build.log" \
+rustc --edition 2021 -O -o "$work/probe-bin/ka-reader-sandbox-probe" "$PROBE_SOURCE" 2> "$work/probe-build.log" \
   || die "the sandbox probe did not compile: $(cat "$work/probe-build.log")"
 # Appended, not prepended: a directory ahead of it on PATH (a test's stand-in) is the one that answers.
 PATH="$PATH:$work/probe-bin"
@@ -366,7 +366,7 @@ if [ "$negative_control" -eq 1 ]; then
   tick=0
   while :; do
     tick=$((tick + 1))
-    if ! probe_output="$("nozoki-sandbox-probe" "$pid" 2> "$work/probe.err")"; then
+    if ! probe_output="$("ka-reader-sandbox-probe" "$pid" 2> "$work/probe.err")"; then
       die "the operating system's sandbox report for pid $pid could not be read: $(cat "$work/probe.err")"
     fi
     case "
@@ -401,7 +401,7 @@ fi
 tick=0
 while :; do
   tick=$((tick + 1))
-  if ! probe_output="$("nozoki-sandbox-probe" "$pid" 2> "$work/probe.err")"; then
+  if ! probe_output="$("ka-reader-sandbox-probe" "$pid" 2> "$work/probe.err")"; then
     die "the operating system's sandbox report for pid $pid could not be read: $(cat "$work/probe.err")"
   fi
   problems=""

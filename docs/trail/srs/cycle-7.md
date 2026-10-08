@@ -1,4 +1,4 @@
-# SRS open issues — Nozoki 覗き
+# SRS open issues — KA-Reader
 
 > Companion to `SRS.md`. The CTO authored the SRS non-interactively; this file holds
 > what it could not settle from the inputs (the PRD and any context/constraints).
@@ -46,9 +46,9 @@
   absence is the defect this round exists to remove.
 - **Answer:** **Widen the input contract to a local folder, which may or may not be a Git
   repository, and carry the absence through every Git-derived requirement.** The owner's product
-  sentence, given verbatim: **Nozoki is a reader of folders, files and repos** — the three named
+  sentence, given verbatim: **KA-Reader is a reader of folders, files and repos** — the three named
   flat, none subordinate to another. The Agari already carries the same widening
-  (`system/projects/nozoki/agari.md`, round 2), including its read-only integrity bar, which now
+  (`system/projects/ka-reader/agari.md`, round 2), including its read-only integrity bar, which now
   reads *no write to the viewed folder — whether or not it is a repository*.
 
   **Three answers from the PRD are settled input and must be carried, not re-derived:**
@@ -56,7 +56,7 @@
   1. **In a plain folder the Git view is present and shows *nothing*.** No message, no explanation,
      no invitation to create a repository. The owner overrode the drafted *"states plainly that
      this folder is not a Git repository"* — the grounds being that VS Code fills that same state
-     with *Initialize Repository* and *Publish to GitHub*, and **both are writes Nozoki can never
+     with *Initialize Repository* and *Publish to GitHub*, and **both are writes KA-Reader can never
      offer**, so the surface has no truthful next step (`docs/prd_trail/cycle-10.md` § 2.2). The
      tree's changed-file markers are absent in that state.
   2. **Git is read only when the folder opened is itself the root of a repository.** A folder

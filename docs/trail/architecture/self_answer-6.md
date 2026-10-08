@@ -2,14 +2,14 @@
 
 ## Header
 
-- **Companion:** /Users/eyalgolan/products/nozoki/docs/architecture_open_issues.md
+- **Companion:** /Users/eyalgolan/products/ka-reader/docs/architecture_open_issues.md
 - **Document:** `adr/` and `nfdr.md` (`docs/adr/`, `docs/nfdr.md`) — the companion's own header names both
 - **Decided by:** `decide_companion_answers.md` v1.1.0
 - **Date:** 2026-09-04
 
 ## Items worked
 
-### 2.1 — Thirteen more citations in the records the SDD's re-author moved, outside cycle 3's scope — pin them to `nozoki@70a879a:` the same way
+### 2.1 — Thirteen more citations in the records the SDD's re-author moved, outside cycle 3's scope — pin them to `ka-reader@70a879a:` the same way
 
 - **Bucket:** 2. Choices to confirm — the Principal Architect drafted a best-effort answer; confirm or override
 - **Verdict:** confirmed with addition
@@ -31,7 +31,7 @@
   the re-authored list's fifth is the fixture sizes, the origin form now third; the deleted R-6 is *a
   dependency brings a capability the product must not have* and the re-authored R-6 is *the reader's
   place is lost on a refresh*; the deleted S-6 is *Switch the viewed folder* and the re-authored S-6
-  is the theme slice, the `nozoki-ui/src/…` paths now under S-10; the deleted § 3 paragraph after
+  is the theme slice, the `ka-reader-ui/src/…` paths now under S-10; the deleted § 3 paragraph after
   the parts table argues the root finding's placement in `git-reader`, the re-authored one is the
   four physical units. And the draft's claim that these are the only ones was tested rather than
   taken: the same records' other § 9 and § 11 citations — TO-2 (libgit2), TO-5 (the raw-source
@@ -111,7 +111,7 @@
   reliance and prices nothing for breaking it is the sentence that misleads a stranger. (2) The
   domain's public contract for a tool with no library surface includes its config fields
   (`system/loaders/principal_architect.md` § *The domain*, "The public contract is the other one");
-  own state is the nearest thing Nozoki has to one, and C-D4 closes its field list, so pricing
+  own state is the nearest thing KA-Reader has to one, and C-D4 closes its field list, so pricing
   readability costs the maintainer a migration for a three-field file or a major version — small —
   while not pricing it puts the cost on strangers, which is the trade the domain doctrine says to
   refuse. (3) Dependency direction does not decide against the FDR: PD-39 traces to SRS C-6 and the
@@ -139,9 +139,9 @@
 
 ## Companions opened
 
-- **/Users/eyalgolan/products/nozoki/docs/fdr_open_issues.md** — **opened** — companion to `fdr.md`, landed in commit `d0ce7b7`. Not routed by an item: opened under the prompt's *a fact in it is now false*, measured while reading the FDR as an input to § 1.1 — twelve trace tags (R-70, R-73, R-106, R-117, R-124, R-126, R-171, R-174, RN-1, RN-9, RN-21, RN-25) cite the deleted SDD's review notes RN-16, RN-19, RN-20 and RN-26, two of which carry other subjects in `docs/SDD.md` v3 and two of which it does not carry (`grep -c 'SDD § SDD Review Notes RN-\(16\|19\|20\|26\)' docs/fdr.md` → 12, 2026-09-04). `docs/nfdr.md` RN-16 had reported it as the Principal PM's and nothing routed to that run. One item in choices to confirm, slot at its placeholder, drafting the form under the owner's cycle-3 rule for a document revised in place and leaving the pointers to the FDR's run. The doubt: the same run could re-derive the whole FDR against the re-authored SDD, and this item asks only for the measured repair — the wider re-derivation is that run's to judge.
+- **/Users/eyalgolan/products/ka-reader/docs/fdr_open_issues.md** — **opened** — companion to `fdr.md`, landed in commit `d0ce7b7`. Not routed by an item: opened under the prompt's *a fact in it is now false*, measured while reading the FDR as an input to § 1.1 — twelve trace tags (R-70, R-73, R-106, R-117, R-124, R-126, R-171, R-174, RN-1, RN-9, RN-21, RN-25) cite the deleted SDD's review notes RN-16, RN-19, RN-20 and RN-26, two of which carry other subjects in `docs/SDD.md` v3 and two of which it does not carry (`grep -c 'SDD § SDD Review Notes RN-\(16\|19\|20\|26\)' docs/fdr.md` → 12, 2026-09-04). `docs/nfdr.md` RN-16 had reported it as the Principal PM's and nothing routed to that run. One item in choices to confirm, slot at its placeholder, drafting the form under the owner's cycle-3 rule for a document revised in place and leaving the pointers to the FDR's run. The doubt: the same run could re-derive the whole FDR against the re-authored SDD, and this item asks only for the measured repair — the wider re-derivation is that run's to judge.
 
 ## Launchers owed
 
-- **`adr/` and `nfdr.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-architecture/launcher.sh nozoki`
-- **`fdr.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-fdr/launcher.sh nozoki`
+- **`adr/` and `nfdr.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-architecture/launcher.sh ka-reader`
+- **`fdr.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-fdr/launcher.sh ka-reader`

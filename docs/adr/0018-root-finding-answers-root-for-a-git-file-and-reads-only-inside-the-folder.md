@@ -21,7 +21,7 @@ requires two things here. Such a folder is a root whether or not its Git directo
 (`docs/fdr.md` R-21). The design already placed the report: "`probe` answering `root` and
 `state()` failing on the gitdir path" (`docs/SDD.md` § 11 R-3). The adapter that landed answered
 neither reading. It returned a provisional condition for a `.git` that is not a folder
-(`crates/nozoki-core/src/git_reader/libgit2.rs:L38-L40` at `nozoki@8edec4f`), and the delivery
+(`crates/ka-reader-core/src/git_reader/libgit2.rs:L38-L40` at `ka-reader@8edec4f`), and the delivery
 tier had parked the choice on the argument that `root` "requires following the link outside the
 folder".
 
@@ -63,8 +63,8 @@ folder, never follows a link out of it, and creates nothing.
   directory lies. A condition raised by `probe` could do that only by carrying the path, and the
   path lies above the folder: both fixture scenes' pointers start `../`. The rule against a path
   above the folder forbids it, and the type already cannot carry one: `RootFinding` "holds no path
-  and no text" (`crates/nozoki-core/src/git_reader.rs`, the doc comment above `RootFinding`, at
-  `nozoki@8edec4f`).
+  and no text" (`crates/ka-reader-core/src/git_reader.rs`, the doc comment above `RootFinding`, at
+  `ka-reader@8edec4f`).
 - **libgit2 opening the `.git` file inside `probe`** — the open follows the `gitdir:` pointer, and
   for a linked worktree or a submodule the Git directory lies outside the grant
   (`docs/fdr.md` R-101; `docs/SDD.md` § 4 C-D1).
@@ -73,7 +73,7 @@ folder, never follows a link out of it, and creates nothing.
 - **Answer the finding in `fs-reader`, as a check for a `.git` entry** — ADR-0005's reason, which
   stands: the finding reads Git's on-disk layout, and the one part that may be substituted
   (ADR-0019) must carry it in every adapter, so a check outside the port would have to be right
-  for both (`nozoki@70a879a:docs/SDD.md` § 3, the paragraph following the parts table).
+  for both (`ka-reader@70a879a:docs/SDD.md` § 3, the paragraph following the parts table).
 - **Answer it in the model** — the model consumes the answer and does not know how it was found,
   which is what `docs/SRS.md` FR-33 asks for ("how the determination is made is the SDD's").
 - **Ask Git and accept what it finds** — Git walks up from the folder and reports an ancestor's
@@ -115,17 +115,17 @@ outside the grant.
 
 - `docs/SDD.md` at v27 (Settled) — § 3, the `git-reader`, `folder-model` and `watcher` rows and
   SM-2; § 4 C-D1, C-R3; § 11 R-3; § *Open Questions*, second item.
-  `nozoki@70a879a:docs/SDD.md` § 3, the paragraph after the parts table, and § SDD Review Notes
+  `ka-reader@70a879a:docs/SDD.md` § 3, the paragraph after the parts table, and § SDD Review Notes
   RN-24 (3)–(5).
 - `docs/SRS.md` § 3.1 FR-33, FR-34; § 8 AC-24, AC-25; § SRS Review Notes RN-32, RN-33.
 - `docs/fdr.md` R-12 – R-18, R-21 – R-26, R-101, PD-5, PD-37.
 - `docs/trail/prd/cycle-10.md` § 2.2, § 2.4 — the owner's plain-folder and root-only rulings.
 - `docs/trail/architecture/cycle-29.md` § 3.1 — raised by the PM after `git-reader` landed
-  (`nozoki@126ef75`). The answer, given in the owner's seat by a `companion-self-answer` run on
+  (`ka-reader@126ef75`). The answer, given in the owner's seat by a `companion-self-answer` run on
   2026-10-03, ordered this record. Its reasoning is `docs/trail/architecture/self_answer-33.md`
   § 3.1, and the read bound is decided together with § 3.3.
-- `crates/nozoki-core/src/git_reader/libgit2.rs:L31`, `:L35`, `:L38-L40`, `:L52`, `:L63`, and
-  the `RootFinding` type in `crates/nozoki-core/src/git_reader.rs`, at `nozoki@8edec4f`.
+- `crates/ka-reader-core/src/git_reader/libgit2.rs:L31`, `:L35`, `:L38-L40`, `:L52`, `:L63`, and
+  the `RootFinding` type in `crates/ka-reader-core/src/git_reader.rs`, at `ka-reader@8edec4f`.
   `libgit2-sys 0.18.8+1.9.7`, `libgit2/src/libgit2/repository.c:L76`, in the registry copy the
   lock resolves.
 - ADR-0005 — the record this one supersedes.

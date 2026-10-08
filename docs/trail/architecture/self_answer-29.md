@@ -4,7 +4,7 @@
 
 - **Companion:** `docs/architecture_open_issues.md`
 - **Document:** `docs/adr/` and `docs/nfdr.md`. The NFDR is v27 and `Settled` (`docs/nfdr.md:L3-L5`).
-  The PM opened this companion on 2026-10-03, after `nozoki@b158052` landed (`docs/architecture_open_issues.md:L19-L23`),
+  The PM opened this companion on 2026-10-03, after `ka-reader@b158052` landed (`docs/architecture_open_issues.md:L19-L23`),
   and it carries one item, § 3.1, about `nfdr.md` only. No ADR is touched.
 - **Decided by:** `decide_companion_answers.md` v1.3.0
 - **Date:** 2026-10-03
@@ -12,9 +12,9 @@
   record. After `git fetch origin`, `origin/main` is `d234b57`. `git merge-base --is-ancestor b158052
   origin/main` fails, so the merge that landed the suite has not been pushed, and
   `git rev-list --count origin/main..main` prints `66`. The newest run in
-  `gh run list --repo kensaiapp/nozoki --workflow ci.yml` is 36958237363 (`success`,
+  `gh run list --repo kensaiapp/ka-reader --workflow ci.yml` is 36958237363 (`success`,
   2026-10-02T03:00:44Z, "product-design: clarify the reading panel path line during pending"), which
-  predates `b158052`. Everything else rests on this repository's own tree at HEAD `nozoki@0670083`.
+  predates `b158052`. Everything else rests on this repository's own tree at HEAD `ka-reader@0670083`.
 
 ## Items worked
 
@@ -42,7 +42,7 @@
     meets the preamble's whole meaning of the tag. The row's other cells hold: it already says
     `CI build`, and that matches the step `Entry-points check` (`ci.yml:L34-L35`).
   - **(b) § 9's count becomes eight**, re-measured and re-pinned, in the place § 9 itself names as
-    the count's one home (`docs/nfdr.md:L1074-L1075`). The pin is `nozoki@b158052`, the merge that
+    the count's one home (`docs/nfdr.md:L1074-L1075`). The pin is `ka-reader@b158052`, the merge that
     landed the suite. Nothing that pin covers has moved since: `git diff --stat b158052 0670083 --
     .github/workflows/ci.yml checks/` prints nothing. At that pin `ls checks/tests` lists eight
     `test_*.sh`. Each is the whole `run` of its own step: `:L31-L32` `test_structure.sh`;
@@ -56,20 +56,20 @@
   - **Checked against the inputs (check 3).** The Settled SDD, v25, already describes this state.
     The `read-only-harness` row lists `entry-points.sh` with `entry-points.allow`, and "one
     `test_<name>.sh` suite for each of the eight scripts above, each the whole `run` of its own CI
-    step" (`docs/SDD.md:L332`, pinned at `nozoki@7a125b4`). The NFDR is behind its input here, not
+    step" (`docs/SDD.md:L332`, pinned at `ka-reader@7a125b4`). The NFDR is behind its input here, not
     ahead of it. No other count of suites stands in the NFDR: `grep -nE '[Ss]even suites|all seven'
     docs/nfdr.md` finds only `:L1065`, `:L1067` and Review Notes history (`:L3096`, `:L3352`).
   - **What the fold also owes, so the bullet does not go stale while it is being fixed (check 4,
     the stale and absent cases).** The bullet's *How a suite joins* rule holds that a suite's first
     CI run is its hosted-runner reading, and that the bullet records it (`docs/nfdr.md:L1087-L1105`).
     For `Entry-points check suite`, and for `Entry-points check` beside it, that run has not
-    happened: `nozoki@b158052` is not on `origin/main`, which is `d234b57` (Sources re-read). The
+    happened: `ka-reader@b158052` is not on `origin/main`, which is `d234b57` (Sources re-read). The
     fold should write that state the way the bullet wrote it for the five earlier suites. Both steps
     are fatal and not yet run on the hosted runner, and the first push carrying `b158052` is their
     reading. The tail's review gate stands for the same reason it stood before: no script in the
     tree compares `checks/tests/` against `ci.yml`. `grep -l 'ci.yml' checks/*.sh checks/tests/*.sh`
     prints nothing, and that holds now that `structure.sh` and `entry-points.sh` are in the tree.
-    The tail's `ls checks/*.sh` at `nozoki@ab39502` stays true at its own pin, so re-pinning it is
+    The tail's `ls checks/*.sh` at `ka-reader@ab39502` stays true at its own pin, so re-pinning it is
     optional.
   - **What would have tipped me elsewhere.** If the suite only matched the script's name and did not
     drive the script against the list, half (a) would have been *overridden*, and the row would have
@@ -90,4 +90,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture nozoki`
+- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture ka-reader`

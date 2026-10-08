@@ -1,4 +1,4 @@
-# SDD open issues — Nozoki
+# SDD open issues — KA-Reader
 
 > Companion to `SDD.md`. Three seats — the CTO, the CPO and the CDO — authored the SDD
 > non-interactively in one run; this file holds what that run could not settle from its inputs (the
@@ -34,7 +34,7 @@
 
 ### 5.1 C-R7 and SM-4 state the whole command list as the grant, while the slices grant it one command at a time
 - **Raised by:** PM — 2026-09-19
-- **Tracked by:** `nozoki · nemawashi · 2026-09-15_open-a-folder`
+- **Tracked by:** `ka-reader · nemawashi · 2026-09-15_open-a-folder`
 - **What it blocks:** Nothing yet fails. But no build before the last slice meets C-R7 as written,
   and every downstream reader that holds a build to it has to choose, alone, which list is in
   force.
@@ -43,15 +43,15 @@
     command list and the asset scheme, and no plugin". *Violated by:* "any widening of either list".
   - § 3 SM-4 (`SDD.md:L352`): "exactly the commands `open_folder`, `list_tree`, `select_file`,
     `open_relative_link`, `set_theme`, and — where built — `open_diff`, `walk_history`,
-    `switch_folder`; and asset requests on the `nozoki-asset` scheme". Only the last three are
+    `switch_folder`; and asset requests on the `ka-reader-asset` scheme". Only the last three are
     conditioned on being built.
   - § 6 S-2's *Command* bar (`SDD.md:L1117`): "`select_file` is on `SM-4`'s list and in the
     capability file". So the SDD's own slices add a command to the grant in the slice that builds
     it. That contradicts C-R7 and SM-4 read as a rule for every build.
   - § 4 C-I3 (`SDD.md:L512`): `read-only.sh` "exercises every command on SM-4's list". On the S-1
     tree, three of the five unconditional commands do not exist to exercise.
-  - The tree at `nozoki@1741429`: `crates/nozoki-app/capabilities/main.json:L5` grants
-    `allow-open-folder` and `allow-list-tree` and nothing else. `crates/nozoki-app/tests/config.rs:L231`
+  - The tree at `ka-reader@1741429`: `crates/ka-reader-app/capabilities/main.json:L5` grants
+    `allow-open-folder` and `allow-list-tree` and nothing else. `crates/ka-reader-app/tests/config.rs:L231`
     holds set equality against those two. No asset scheme is granted, and its origin form is still
     open (*Open Questions*, third item).
   - The CSP half of C-R7 already has a staged statement downstream. NFDR QC-23 keys its check on

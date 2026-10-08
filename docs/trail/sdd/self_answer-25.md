@@ -6,8 +6,8 @@
 - **Document:** `docs/SDD.md` (Settled, v17)
 - **Decided by:** `decide_companion_answers.md` v1.3.0
 - **Date:** 2026-09-24
-- **Sources re-read:** GitHub Actions run 35988399477 on `kensaiapp/nozoki`, read with
-  `gh run view 35988399477 --repo kensaiapp/nozoki --json headSha,...` and `--log` on
+- **Sources re-read:** GitHub Actions run 35988399477 on `kensaiapp/ka-reader`, read with
+  `gh run view 35988399477 --repo kensaiapp/ka-reader --json headSha,...` and `--log` on
   2026-09-24:
   - The run succeeded on head `37a962d`, and its runner image is `macos-14-arm64` Version
     20260831.0302.1, with Operating System macOS 14.8.9 (23J631).
@@ -19,13 +19,13 @@
     observed at the Open panel in any of 30 observations — the expected red".
 
   Repository facts were read directly:
-  - `git diff --stat 37a962d 153f5a1 -- checks/renderer.sh nozoki-mac checks/fixtures/idle-shell`
+  - `git diff --stat 37a962d 153f5a1 -- checks/renderer.sh ka-reader-mac checks/fixtures/idle-shell`
     printed nothing.
-  - `git diff --stat 153f5a1 HEAD -- nozoki-mac checks docs/SDD.md` printed nothing.
+  - `git diff --stat 153f5a1 HEAD -- ka-reader-mac checks docs/SDD.md` printed nothing.
 - **What was read:** the whole companion, the whole decision prompt, and `docs/SDD.md` line by
   line, all 3,952 lines. Also read:
   - `checks/renderer.sh:L1-L90`;
-  - `nozoki-mac/Sources/Shell/LaunchFlow.swift`, `nozoki-mac/Sources/Nozoki/AppDelegate.swift`
+  - `ka-reader-mac/Sources/Shell/LaunchFlow.swift`, `ka-reader-mac/Sources/KAReader/AppDelegate.swift`
     and `NativeBridge.swift`;
   - `docs/trail/sdd/cycle-8.md` § 5.1, the owner's answer 4;
   - `docs/architecture_open_issues.md`, header and § 3.2.
@@ -41,7 +41,7 @@
   - `LaunchFlow.swift:L35-L37` presents the panel first and calls `bridge.openFolder` only after
     the panel returns.
   - `AppDelegate.swift` makes no bridge call before `flow.run()`.
-  - `NativeBridge.swift:L13-L25` shows that `nozoki_open_folder` is the first C call and runs
+  - `NativeBridge.swift:L13-L25` shows that `ka_reader_open_folder` is the first C call and runs
     only after the panel.
 
   So while the panel is up, the main thread holds no `open_folder` frame. `renderer.sh` sends no
@@ -63,7 +63,7 @@
   (`docs/trail/sdd/cycle-8.md` § 5.1). A literal reading makes the fix a change to the owner's
   ruling. It is not one, for three reasons:
   - The floor was written for a page whose `open_folder` call was the act that presented the panel
-    (`nozoki@a4ab8e6:crates/nozoki-app/src/main.rs:L17-L19`, `open_folder` calling
+    (`ka-reader@a4ab8e6:crates/ka-reader-app/src/main.rs:L17-L19`, `open_folder` calling
     `pick_folder()`).
   - The ruling's stated purpose is "the empty window got past every gate". The `idle-shell`
     control, which has exactly the empty window's shape, goes red (run 35988399477).
@@ -116,7 +116,7 @@
   - The runner OS is macOS 14.8.9. That is inside the C-R5 floor's major, so the observation holds
     on the floor's macOS and on the Mac's 26.6.2 (`checks/renderer.sh:L58-L61`).
   - The run's head, `37a962d`, is byte-equal to `main`'s at `153f5a1` in `checks/renderer.sh`,
-    `nozoki-mac` and `checks/fixtures/idle-shell` (`git diff --stat`, empty), and `main` has not
+    `ka-reader-mac` and `checks/fixtures/idle-shell` (`git diff --stat`, empty), and `main` has not
     moved them since.
   - The runner observed, so the item's re-cut trigger ("a runner that cannot observe it") did not
     fire.
@@ -172,4 +172,4 @@ its placeholder, with a lean this run agrees with.
 
 ## Launchers owed
 
-- **`docs/SDD.md`** — `<CORE>/launchers/product-sdd/launcher.sh nozoki`
+- **`docs/SDD.md`** — `<CORE>/launchers/product-sdd/launcher.sh ka-reader`

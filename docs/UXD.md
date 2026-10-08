@@ -1,8 +1,8 @@
-# UXD — Nozoki 覗き
+# UXD — KA-Reader
 
 **Status:** Settled
 **Owner:** CDO
-**Version:** 12 — the layout-reference inventory in § 4 names eight images, four annotated and four described without adjudication; RN-32 records the confirmed correction and RN-13 retains its historical seven-image read (`docs/trail/uxd/cycle-8.md:L35-L50`). No experience requirement changes. Prior revision: 11 — UX-U1's expertise floor is carried from PRD § Goals "No learning curve" as PRD v9 restated it: the reader works with Git and can follow a README, and is assumed to know Git (RN-31). No flow, screen, interaction pattern or accessibility requirement changes what it requires; `docs/UXD_open_issues.md` is removed and `Status:` is Settled. (v10: the close: the owner's cycle-7 answer folded (`docs/trail/uxd/cycle-7.md` § 2.2; RN-30). Eight body places that still named the input *repository* after RN-25 read *folder* — § 2's motion and density dials, § 4's path line (*folder-relative*), UX-F3's closing sentence, UX-S2's Empty cell, UX-I4, UX-I7, UX-I9, and § 10's terminus line and start sentence — and RN-25's list of what moved grows by them. *Repository* stays where Git's own state is what the sentence is about. No flow, screen, pattern or accessibility requirement changes what it requires; `docs/UXD_open_issues.md` is removed and `Status:` is Settled. (v9: the owner's cycle-6 answer folded (`docs/trail/uxd/cycle-6.md` § 2.1; RN-29). The Git-view row is a system state: it opens the file where no diff exists and that file's diff where one does — one click target, the status letter a label — and UX-F2 carries the *changed* marker against PRD Key Use Case 2. The history has a home: an entry in the Git view, commit rows drawn in the sidebar beneath the changes list, a selected commit's diff taking the reading panel, and a stated end where the loaded history stops short of the repository's (§ 4, UX-S6). UX-S4 is the **startup surface**: its Empty cell is the Open panel dismissed before any folder is chosen, and it renders in the app's window — the one open question closes and § Open Questions goes with it (RN-11, RN-20). The folder selector's list is bounded to ten, ordered by recency, the current folder marked, with no removal control (UX-S7, UX-F5). The short status states what it says (UX-S3). An image in rendered Markdown has three cases, and an image inside the folder renders in place (UX-I12). One item stays open in `docs/UXD_open_issues.md`, so `Status:` reads Draft. (v8: bookkeeping only. `Status:` returned to Draft: a companion was open beside this document, and this UXD is Settled only when none is. No flow, screen row, interaction pattern, accessibility requirement or review note changed — the companion's one item was unanswered, and an unanswered re-run changes nothing this document states. (v7: nothing about the experience changes. The layout reference is counted at seven images, not four (§ 4, RN-13): the three added at `nozoki@b7119cb` were read and move no entry, by the owner's directive that this seat decide (`docs/trail/uxd/cycle-5.md` § 1.1). And the 67 unpinned `docs/<x>_trail/` citations this document rests on are repaired to `docs/trail/<x>/`, the answer-trails having moved at `nozoki@1e8bf3d` without the citing documents; the four commit-pinned `nozoki@1d5c553:docs/uxd_trail/` citations in RN-8, RN-15, RN-16 and RN-17 resolve as written and stand (`docs/trail/uxd/cycle-5.md` § 2.1). (v6: PRD v11 and the owner's fold directive (`docs/trail/uxd/cycle-4.md` § 1.1) folded: the input is one local folder, a Git repository or not. The plain folder is drawn as a **working state** — a condition on the surfaces that already exist, not a surface of its own — with its Git view present and showing nothing (UX-I17, RN-26, RN-27); UX-S4 narrows to a path that does not exist, is not a folder, or cannot be read; and every "repository" that meant the input now reads "folder", the selector included (RN-25). The SRS was re-read as a sibling and no collision found (RN-28). (v5: the owner's cycle-3 answers folded (`docs/trail/uxd/cycle-3.md`): v1 **has** the unexplained-fault class — every read path is one that can end in *stopped, can't tell why*, and the SDD sizes it (§ 1.1, RN-23); and the no-detail-control call is confirmed — no control on any surface reveals, expands or copies a fault's detail (§ 2.1, RN-24, UX-I16). No entry moves on either: UX-I16 was written scope-neutral and stands as drafted. (v4: the fault state given its surfaces — § 6, UX-I16, RN-23, RN-24; v3: the theme control's home — `docs/trail/uxd/cycle-2.md`; v2: the owner's cycle-1 answers — `docs/trail/uxd/cycle-1.md`.)))))
+**Version:** 12 — the layout-reference inventory in § 4 names eight images, four annotated and four described without adjudication; RN-32 records the confirmed correction and RN-13 retains its historical seven-image read (`docs/trail/uxd/cycle-8.md:L35-L50`). No experience requirement changes. Prior revision: 11 — UX-U1's expertise floor is carried from PRD § Goals "No learning curve" as PRD v9 restated it: the reader works with Git and can follow a README, and is assumed to know Git (RN-31). No flow, screen, interaction pattern or accessibility requirement changes what it requires; `docs/UXD_open_issues.md` is removed and `Status:` is Settled. (v10: the close: the owner's cycle-7 answer folded (`docs/trail/uxd/cycle-7.md` § 2.2; RN-30). Eight body places that still named the input *repository* after RN-25 read *folder* — § 2's motion and density dials, § 4's path line (*folder-relative*), UX-F3's closing sentence, UX-S2's Empty cell, UX-I4, UX-I7, UX-I9, and § 10's terminus line and start sentence — and RN-25's list of what moved grows by them. *Repository* stays where Git's own state is what the sentence is about. No flow, screen, pattern or accessibility requirement changes what it requires; `docs/UXD_open_issues.md` is removed and `Status:` is Settled. (v9: the owner's cycle-6 answer folded (`docs/trail/uxd/cycle-6.md` § 2.1; RN-29). The Git-view row is a system state: it opens the file where no diff exists and that file's diff where one does — one click target, the status letter a label — and UX-F2 carries the *changed* marker against PRD Key Use Case 2. The history has a home: an entry in the Git view, commit rows drawn in the sidebar beneath the changes list, a selected commit's diff taking the reading panel, and a stated end where the loaded history stops short of the repository's (§ 4, UX-S6). UX-S4 is the **startup surface**: its Empty cell is the Open panel dismissed before any folder is chosen, and it renders in the app's window — the one open question closes and § Open Questions goes with it (RN-11, RN-20). The folder selector's list is bounded to ten, ordered by recency, the current folder marked, with no removal control (UX-S7, UX-F5). The short status states what it says (UX-S3). An image in rendered Markdown has three cases, and an image inside the folder renders in place (UX-I12). One item stays open in `docs/UXD_open_issues.md`, so `Status:` reads Draft. (v8: bookkeeping only. `Status:` returned to Draft: a companion was open beside this document, and this UXD is Settled only when none is. No flow, screen row, interaction pattern, accessibility requirement or review note changed — the companion's one item was unanswered, and an unanswered re-run changes nothing this document states. (v7: nothing about the experience changes. The layout reference is counted at seven images, not four (§ 4, RN-13): the three added at `ka-reader@b7119cb` were read and move no entry, by the owner's directive that this seat decide (`docs/trail/uxd/cycle-5.md` § 1.1). And the 67 unpinned `docs/<x>_trail/` citations this document rests on are repaired to `docs/trail/<x>/`, the answer-trails having moved at `ka-reader@1e8bf3d` without the citing documents; the four commit-pinned `ka-reader@1d5c553:docs/uxd_trail/` citations in RN-8, RN-15, RN-16 and RN-17 resolve as written and stand (`docs/trail/uxd/cycle-5.md` § 2.1). (v6: PRD v11 and the owner's fold directive (`docs/trail/uxd/cycle-4.md` § 1.1) folded: the input is one local folder, a Git repository or not. The plain folder is drawn as a **working state** — a condition on the surfaces that already exist, not a surface of its own — with its Git view present and showing nothing (UX-I17, RN-26, RN-27); UX-S4 narrows to a path that does not exist, is not a folder, or cannot be read; and every "repository" that meant the input now reads "folder", the selector included (RN-25). The SRS was re-read as a sibling and no collision found (RN-28). (v5: the owner's cycle-3 answers folded (`docs/trail/uxd/cycle-3.md`): v1 **has** the unexplained-fault class — every read path is one that can end in *stopped, can't tell why*, and the SDD sizes it (§ 1.1, RN-23); and the no-detail-control call is confirmed — no control on any surface reveals, expands or copies a fault's detail (§ 2.1, RN-24, UX-I16). No entry moves on either: UX-I16 was written scope-neutral and stands as drafted. (v4: the fault state given its surfaces — § 6, UX-I16, RN-23, RN-24; v3: the theme control's home — `docs/trail/uxd/cycle-2.md`; v2: the owner's cycle-1 answers — `docs/trail/uxd/cycle-1.md`.)))))
 **Inputs read:** PRD Settled · UXD Settled · SRS Settled · SDD Settled · DESIGN Settled · CONTENT Settled · FDR Settled · NFDR Settled · visual restrictions Settled · voice restrictions Settled · writing bar Draft
 
 > The UXD is the experience source of truth: the experience-level **what**, derived from the
@@ -51,7 +51,7 @@ RN-8.)*
   vocabulary may stand unexplained; no editor experience required. *(→ PRD § Target Users;
   § Goals "No learning curve")* *(the floor as PRD v9 states it — RN-31)*
 - **UX-U2** — A developer watching a working tree an automated tool or coding agent is actively
-  changing — the driving scenario. Attention is split: Nozoki shares the screen with the agent's
+  changing — the driving scenario. Attention is split: KA-Reader shares the screen with the agent's
   own surface, so the view is read in glances and never asks for an action to stay current.
   *(→ PRD § Target Users; § Key Use Cases 3)*
 - **UX-U3** — Context, both users: the tool runs on the user's own macOS machine, in a windowed
@@ -116,7 +116,7 @@ RN-8.)*
 
 ### 5.1 UX-F1 — Arrive and read *(→ PRD § Key Use Cases 1; § UX Notes "The path" steps 1–2)*
 
-- Steps: the experience begins with Nozoki open against one local folder — a Git repository or
+- Steps: the experience begins with KA-Reader open against one local folder — a Git repository or
   not, and which it is is the tool's to find out, never the person's to declare — what precedes
   that moment is out of scope (§ 10). The workbench opens with the file tree visible and the
   reading panel in its empty state, prompting file selection. The user selects a file; its
@@ -205,7 +205,7 @@ RN-8.)*
 - Steps: the **folder selector** shows the current folder's name — the name is both the label
   and the control (the owner's directive: `docs/ux_reference/README.md` § Owner directives 2 —
   RN-15; named the *repository selector* there, before the input widened: the same control,
-  RN-25). Opening it lists the folders Nozoki remembers, with an entry to browse for one not in
+  RN-25). Opening it lists the folders KA-Reader remembers, with an entry to browse for one not in
   the list — what the list holds, in what order, and for how long is UX-S7's; on first run,
   before any folder has been viewed, it is empty and only the browse entry is there. Choosing
   one returns the shell to the arrival state (UX-F1) for that folder — a repository or a plain
@@ -427,7 +427,7 @@ nothing else; every cell not naming it holds for both inputs as written (UX-I17,
 
 ## 10. Out of Scope
 
-Scoped against the project's 上がり Agari (`system/projects/nozoki/agari.md`) — the terminus:
+Scoped against the project's 上がり Agari (`system/projects/ka-reader/agari.md`) — the terminus:
 the v1 cut plus diffs, commit history, and switching the viewed folder, which is why UX-F4/UX-F5 and
 UX-S5–S7 are designed here despite being beyond v1.
 
@@ -578,7 +578,7 @@ UX-S5–S7 are designed here despite being beyond v1.
   panel, one sidebar, one chrome strip and a two-entry mode switch, too small for a design
   system's payoff of consistency across many unfamiliar components to arrive. An earlier
   confirmation of the same lean sits in a trail `9017ae2` removed
-  (`nozoki@1d5c553:docs/uxd_trail/cycle-1.md` § 2.1); it was evidence, and the cycle-1 answer is
+  (`ka-reader@1d5c553:docs/uxd_trail/cycle-1.md` § 2.1); it was evidence, and the cycle-1 answer is
   the authorization this document stands on. *(re: § 1, § 9; PRD source: UX Notes "The
   character", Assumptions)*
 - **RN-9:** *(added)* Public pictures of the shell must match the running product (UX-I11) —
@@ -632,7 +632,7 @@ UX-S5–S7 are designed here despite being beyond v1.
   not style** (its own opening paragraph), and this document points at it rather than restating
   it — a copied annotation would drift from the one the owner maintains. All seven images were
   opened for this revision. The README annotates the first four; the three added at
-  `nozoki@b7119cb` — `vscode-git-view-worktree-stack.png`, `vscode-git-graph-merge-lanes.png`,
+  `ka-reader@b7119cb` — `vscode-git-view-worktree-stack.png`, `vscode-git-graph-merge-lanes.png`,
   `vscode-branch-filter-many-branches.png` — are not annotated, so by the README's own rule
   nothing in them is yet taken or excluded, and this document's entries rest on the four that
   are. Read against the entries they bear on, the three move nothing, and the owner directed
@@ -646,7 +646,7 @@ UX-S5–S7 are designed here despite being beyond v1.
   where its ref-list filter earns its place — the mechanism is unbound by the owner's own word
   (RN-14), and a ref-list filter is not history filtering (§ 10). Annotating the three is the
   README's owner's, not this seat's and not `product-design`'s: both of the README's commits
-  carry `Role: Product` (`nozoki@d8ebfb1`, `nozoki@ea2e78a`). One defect beside the claim: that
+  carry `Role: Product` (`ka-reader@d8ebfb1`, `ka-reader@ea2e78a`). One defect beside the claim: that
   README's three *"Where it now stands"* lines and its § 2.1–2.3 pointers name a companion that
   `9017ae2` removed; this document keeps the `UX-…` identifiers the README cites so its entry
   references still resolve, and the retired companion (`docs/trail/uxd/cycle-1.md`) numbers the
@@ -676,7 +676,7 @@ UX-S5–S7 are designed here despite being beyond v1.
   PRD source: Scope (In) full ambition "commit history")*
 - **RN-15:** *(owner directive; placement confirmed)* The repository switch
   is a **dropdown selector** showing the current repository's name — the name is both label and
-  control — listing the repositories Nozoki remembers plus a browse entry, empty of all but
+  control — listing the repositories KA-Reader remembers plus a browse entry, empty of all but
   browse on first run: the owner's own naming (`docs/ux_reference/README.md` § Owner directives
   2). Remembering repositories is already permitted (PRD § Data & Privacy — tool state outside
   the viewed repository), so nothing here needs the CPO. Where it lives is drafted as the
@@ -686,7 +686,7 @@ UX-S5–S7 are designed here despite being beyond v1.
   not. The alternative the reference shows — the selector grouped with repository-scoped state
   in the Git view header — buys grouping and costs reachability. The owner confirmed
   the chrome (`docs/trail/uxd/cycle-1.md` § 2.2); the earlier confirmation in the removed trail
-  (`nozoki@1d5c553:docs/uxd_trail/cycle-2.md` § 2.2) was evidence, and the cycle-1 answer is
+  (`ka-reader@1d5c553:docs/uxd_trail/cycle-2.md` § 2.2) was evidence, and the cycle-1 answer is
   the authorization. One fence drawn with it: where a **branch** control lives is a separate
   question — the history view's set-scoping choice is RN-14's and lives with that view. *(re:
   UX-F5, UX-S7, § 4; PRD source: Scope (In) / Out of Scope, repository switching; Data &
@@ -701,7 +701,7 @@ UX-S5–S7 are designed here despite being beyond v1.
   text-first rule rather than implying one; and the label beneath each entry means no control is
   carried by a glyph alone, so UX-A4 holds and no exception to it is owed. Which icons the two
   entries carry is `DESIGN.md`'s. An earlier confirmation of the tabs in the removed trail
-  (`nozoki@1d5c553:docs/uxd_trail/cycle-2.md` § 2.3) was evidence, and this answer supersedes
+  (`ka-reader@1d5c553:docs/uxd_trail/cycle-2.md` § 2.3) was evidence, and this answer supersedes
   it. *(re: § 4, § 9, UX-A4; PRD source: UX Notes "The character" — text-first; Core Features —
   the sidebar toggle)*
 - **RN-17:** *(confirmed choice)* The accessibility posture is stated on the README, not its
@@ -712,7 +712,7 @@ UX-S5–S7 are designed here despite being beyond v1.
   CPO owns, which is why it went to the owner rather than being asserted; the owner confirmed it,
   and the below-the-first-screen bound is their own words — *"agreed, keep it below the first
   screen"* (`docs/trail/uxd/cycle-1.md` § 2.4). The earlier confirmation in the removed trail
-  (`nozoki@1d5c553:docs/uxd_trail/cycle-1.md` § 2.2) was evidence; the cycle-1 answer is the
+  (`ka-reader@1d5c553:docs/uxd_trail/cycle-1.md` § 2.2) was evidence; the cycle-1 answer is the
   authorization. *(re: UX-A3; PRD source: UX Notes "The bounds v1 draws"; Goals "Pick-it-up
   adoption")*
 - **RN-18:** *(added)* Syntax highlighting and monospace are recorded as expectations, not
@@ -737,7 +737,7 @@ UX-S5–S7 are designed here despite being beyond v1.
   One seam was handed forward rather than absorbed — FR-2 supplies the repository at start with
   no in-product chooser, so where UX-S4 renders in v1 waited on the start mechanism — and it has
   closed: UX-S4 renders in the app's window (RN-29). *(re: UX-S4)*
-- **RN-21:** *(the terminus)* The Agari (`system/projects/nozoki/agari.md`) was walked against
+- **RN-21:** *(the terminus)* The Agari (`system/projects/ka-reader/agari.md`) was walked against
   every flow and screen. UX-F4, UX-F5 and UX-S5–S7 serve work inside done and are designed;
   search, resizing, keyboard navigation, history filtering and a second platform serve work
   outside done and are recorded in § 10, not designed. No entry traces to the Agari alone.
@@ -773,7 +773,7 @@ UX-S5–S7 are designed here despite being beyond v1.
   that answer, by design.
   The routing that put this here — which surface carries it is the CDO's, the detail control is
   the CDO's to declare and the CTO's to cost, the scope call is the owner's — is the owner's own
-  partition (`nozoki@0713035`, the companion as opened; `docs/CONTENT_open_issues.md` § 1.1) and
+  partition (`ka-reader@0713035`, the companion as opened; `docs/CONTENT_open_issues.md` § 1.1) and
   is carried, not re-made. *(re: § 6, UX-I16; PRD source: UX Notes "Failure states", "the view
   never lies")*
 - **RN-24:** *(owner answer)* No control on any surface reveals, expands or
@@ -822,7 +822,7 @@ UX-S5–S7 are designed here despite being beyond v1.
   and says why* (`docs/trail/prd/cycle-10.md` § 2.2, carried to this document at
   `docs/trail/uxd/cycle-4.md` § 1.1). The grounds are the owner's, recorded so this document does
   not soften them: VS Code fills the same empty state with *Initialize Repository* and *Publish to
-  GitHub*, and **both are writes Nozoki can never offer** — so the surface an editor uses to sell
+  GitHub*, and **both are writes KA-Reader can never offer** — so the surface an editor uses to sell
   a next step has no truthful next step here, and saying nothing beats explaining its own
   emptiness. The accepted cost is the owner's too: an empty view cannot by itself tell a plain
   folder apart from a repository the tool failed to read; where a fault needs telling apart it is
@@ -938,7 +938,7 @@ UX-S5–S7 are designed here despite being beyond v1.
   the path shown is relative to the folder, what the view shows is the folder's state, nothing
   is written into the folder, the tool's own state is kept outside it, the reader leaves the
   folder as found, the empty tree is a folder's, and the terminus is *"switching the viewed
-  folder"* — the Agari's own word (`system/projects/nozoki/agari.md`), which § 10 had misquoted
+  folder"* — the Agari's own word (`system/projects/ka-reader/agari.md`), which § 10 had misquoted
   as *repository switching*. *Folder* includes *repository*, so no rule becomes false for either
   input. The PRD sentences UX-I4, UX-I7 and § 10 mirror moved the same way at PRD v13, as its own
   markers record (`docs/PRD.md` § UX Notes, the *view never lies* rule; § Out of Scope "Editing,
@@ -951,7 +951,7 @@ UX-S5–S7 are designed here despite being beyond v1.
   lies", "The path" 5; Out of Scope "Editing, permanently"; Scope (In) full ambition; Data &
   Privacy)*
 - **RN-31:** *(upstream PRD v9)* UX-U1's expertise floor is the one PRD § Goals "No learning
-  curve" states — *"anyone who works with Git and can follow a README can use Nozoki: the reader
+  curve" states — *"anyone who works with Git and can follow a README can use KA-Reader: the reader
   is assumed to know Git, and the product may leave Git's own vocabulary unexplained"*, with no
   editor experience required (`docs/PRD.md` § Goals). PRD v9 replaced the floor UX-U1 had carried
   since v1 — someone who *"can find their way around a repository on GitHub"*, with no Git

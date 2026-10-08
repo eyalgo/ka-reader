@@ -1,4 +1,4 @@
-# UXD open issues — Nozoki 覗き
+# UXD open issues — KA-Reader
 
 > Companion to `UXD.md`. The CDO authored the UXD non-interactively; this file holds
 > what it could not settle from the inputs (the PRD, the project's Agari and its doctrine, the
@@ -33,7 +33,7 @@
 ### 1.1 Three more layout references landed; does the UXD change?
 
 - **Raised by:** the owner, 2026-09-01, via a `principal-architect:` session that committed the
-  images (`nozoki@b7119cb`). Not a CDO finding — the CDO has not read these three.
+  images (`ka-reader@b7119cb`). Not a CDO finding — the CDO has not read these three.
 
 - **What is on disk.** `docs/ux_reference/` now holds **seven** VS Code screenshots, not four. The
   three new ones are the owner's own workbench, named for the state each shows:
@@ -93,7 +93,7 @@
   `docs/uxd_trail/cycle-2.md` and `docs/uxd_trail/cycle-1.md` (`docs/UXD.md:5`).
 
 - **What is true.** `docs/uxd_trail/` **does not exist.** The four cycles live at `docs/trail/uxd/`,
-  moved by `nozoki@1e8bf3d` ("the six answer-trails move under `docs/trail/`"), which did not
+  moved by `ka-reader@1e8bf3d` ("the six answer-trails move under `docs/trail/`"), which did not
   update the documents citing them. Every one of those pointers is one a cold reader follows and
   finds nothing — the failure mode a pointer has that an omission does not.
 
@@ -111,8 +111,8 @@
   do.** (1) **The scale was understated.** The item says the version line cites four cycles; the
   document actually carries **71** `docs/<x>_trail/` citations across **four** dead folders —
   `uxd_trail`, `prd_trail`, `srs_trail`, `content_trail` — and the defect is repo-wide: **235**
-  across six documents, one cause, `nozoki@1e8bf3d`. (2) **A blind sweep would introduce a new
-  defect.** Four of the UXD's 71 are pinned to a commit — the `nozoki@<sha>:docs/uxd_trail/…` form in
+  across six documents, one cause, `ka-reader@1e8bf3d`. (2) **A blind sweep would introduce a new
+  defect.** Four of the UXD's 71 are pinned to a commit — the `ka-reader@<sha>:docs/uxd_trail/…` form in
   RN-8, RN-15, RN-16 and RN-17 — and those *resolve*, at a commit where the path did exist (`git show
   1d5c553:docs/uxd_trail/cycle-1.md` returns the file). They must be left exactly as they are; only
   the 67 unpinned ones move. The item's "surfaced not fixed" for the sibling documents is now

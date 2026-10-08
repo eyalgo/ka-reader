@@ -1,16 +1,16 @@
-# Nozoki 覗き
+# KA-Reader
 
-**Nozoki** (覗き — *"to peek / peer in"*) is a lightweight, strictly **read-only** reader of
+**KA-Reader** is a lightweight, strictly **read-only** reader of
 folders, files and repositories: a stripped-down, VS Code-like tool that runs on your own
 machine, for browsing a folder's tree, reading its files, and — when the folder is a Git
 repository — seeing what has changed. Look, don't touch.
 
-Nozoki never changes the folder you point it at. It writes no file in it, and it runs no Git
+KA-Reader never changes the folder you point it at. It writes no file in it, and it runs no Git
 command that alters your repository's state.
 
 > **Status: specified, partly built.** What exists now: the Rust library that reads a folder
-> (`crates/nozoki-core`), the C interface over it (`crates/nozoki-bridge`) and the AppKit shell in
-> Swift (`nozoki-mac`). In the app you choose a folder through the system's Open panel and browse
+> (`crates/ka-reader-core`), the C interface over it (`crates/ka-reader-bridge`) and the AppKit shell in
+> Swift (`ka-reader-mac`). In the app you choose a folder through the system's Open panel and browse
 > its tree, opening folders as you go, beside a reading panel that is still empty. If you dismiss
 > the panel, or the folder cannot be opened, the window says so and offers *Browse…* and *Quit*.
 > Viewing a file, the Git view and live refresh are not built yet. The product is specified in
@@ -19,7 +19,7 @@ command that alters your repository's state.
 > `docs/adr/`, `docs/nfdr.md`). There is no release yet. When there is one, it is a `.dmg` on a
 > GitHub Release for macOS 14 or later, under the MIT licence.
 >
-> Nozoki is before version 1.0.0. Until 1.0.0, anything in it may change: what it does, how it
+> KA-Reader is before version 1.0.0. Until 1.0.0, anything in it may change: what it does, how it
 > looks, and how you start it.
 >
 > The original proposal is kept at [`docs/proposal.md`](docs/proposal.md).
@@ -37,17 +37,17 @@ and shows nothing. The intentionally narrow v1:
 - Sidebar toggle between **Files** and **Git**.
 - Live refresh: a change on disk appears in the view with nothing for you to do.
 - Fast file switching in a familiar workbench-style shell.
-- Minimal chrome. The only input Nozoki ever needs is which folder to view.
+- Minimal chrome. The only input KA-Reader ever needs is which folder to view.
 
-Nozoki is used with a mouse. It has no keyboard navigation, and it makes no promise about
+KA-Reader is used with a mouse. It has no keyboard navigation, and it makes no promise about
 screen readers or other assistive technology. Neither is planned: keyboard navigation is outside
-what Nozoki is built to become.
+what KA-Reader is built to become.
 
 ## Stack
 
-One macOS application bundle, running as one process: an AppKit shell in Swift (`nozoki-mac`)
-over a Rust library that does all the reading (`crates/nozoki-core`), reached through a C
-interface (`crates/nozoki-bridge`). There is no web engine in it. The fourteen Lucide icons ship
+One macOS application bundle, running as one process: an AppKit shell in Swift (`ka-reader-mac`)
+over a Rust library that does all the reading (`crates/ka-reader-core`), reached through a C
+interface (`crates/ka-reader-bridge`). There is no web engine in it. The fourteen Lucide icons ship
 inside the bundle. A shell harness under `checks/` proves the read-only and no-network promises
 on every build. The decisions and their reasons are in [`docs/adr/`](docs/adr/README.md).
 
@@ -63,10 +63,9 @@ on every build. The decisions and their reasons are in [`docs/adr/`](docs/adr/RE
 The order, slice by slice, is `docs/SDD.md` § 6.
 
 Not on the roadmap, and not coming later: sidebar search, pane resizing and keyboard navigation
-are outside what Nozoki is built to become.
+are outside what KA-Reader is built to become.
 
 ## Name
 
-*Nozoki* (覗き) is drawn from the kensaiapp naming family — Japanese terms that name a thing by
-its essence. To *peek* is exactly what this tool does: it lets you peer into a folder, but
-never reach in and change it.
+*KA-Reader* was called *Nozoki* (覗き — *"to peek / peer in"*) until 2026-10-08. The tool is
+the same: it lets you look into a folder, but never reach in and change it.

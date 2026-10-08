@@ -5,17 +5,17 @@
 
 ## Context
 
-ADR-0016 fixed four units — `nozoki-core`, `nozoki-bridge`, `nozoki-mac`, `checks/` — and stated
-three rules the unit boundaries are built on: `nozoki-core` holds no `unsafe` and imports no Apple
-framework, `nozoki-bridge` is the only unit that holds `unsafe`, and "only `git-reader` imports the
+ADR-0016 fixed four units — `ka-reader-core`, `ka-reader-bridge`, `ka-reader-mac`, `checks/` — and stated
+three rules the unit boundaries are built on: `ka-reader-core` holds no `unsafe` and imports no Apple
+framework, `ka-reader-bridge` is the only unit that holds `unsafe`, and "only `git-reader` imports the
 libgit2 binding". The unit set itself came from the re-cut at `docs/SDD.md` § 10 RC-3, which
 retired the Tauri host and the web renderer, and the SDD states it in its own words (§ 3, "Four
 physical units carry the eleven parts"). The boundary that matters most is argued there:
-`nozoki-core` "imports no Apple framework and holds no `unsafe`, so the harness links it without a
+`ka-reader-core` "imports no Apple framework and holds no `unsafe`, so the harness links it without a
 window", and the workspace forbids `unsafe` while one manifest relaxes it with its reason
-(`Cargo.toml` `[workspace.lints.rust]`; `crates/nozoki-bridge/Cargo.toml`).
+(`Cargo.toml` `[workspace.lints.rust]`; `crates/ka-reader-bridge/Cargo.toml`).
 
-When `git-reader` landed (`nozoki@126ef75`), the third rule met the product's read promise. Every
+When `git-reader` landed (`ka-reader@126ef75`), the third rule met the product's read promise. Every
 libgit2 repository open takes a config snapshot that adds four machine-level levels — system,
 global, XDG and programdata (`libgit2-sys 0.18.8+1.9.7`,
 `libgit2/src/libgit2/repository.c:L997-L999`, `:L1316-L1338`). Under the App Sandbox the global
@@ -37,28 +37,28 @@ Four physical units, and the map from the design's parts to them:
 
 | Unit | Kind | Holds | Is the only unit that |
 |---|---|---|---|
-| `nozoki-core` (`crates/nozoki-core`) | Rust library crate | `fs-reader`, `git-reader` (with the Git port), `watcher`, `folder-model`, `own-state`, `markdown-renderer`, `highlighter` | reads the folder, reads Git's on-disk state, renders Markdown to a `MarkdownDocument`, produces spans, and writes own-state |
-| `nozoki-bridge` (`crates/nozoki-bridge`) | Rust static library crate (`libnozoki_bridge.a`) | `core-bridge`: the C ABI over `folder-model`'s API — `SM-4`'s function list, the `model_changed` callback, `asset_bytes`, `nozoki_free`; the generated header; the diagnostic log writer; the Rust-side composition root | exports a C ABI; holds `unsafe`; wires the libgit2 adapter to the Git port; empties libgit2's machine-level config search paths; installs the log writer |
-| `nozoki-mac` | Swift package building the app's one executable | `mac-shell` (the `NSApplication`, the one window, the Open panel and its grant, the Swift-side composition root, `Info.plist`, `Entitlements.plist`, the bundle's assembly) and `surfaces` (every view, the theme tokens as values, the message catalogue) | imports AppKit; draws anything; presents the Open panel |
+| `ka-reader-core` (`crates/ka-reader-core`) | Rust library crate | `fs-reader`, `git-reader` (with the Git port), `watcher`, `folder-model`, `own-state`, `markdown-renderer`, `highlighter` | reads the folder, reads Git's on-disk state, renders Markdown to a `MarkdownDocument`, produces spans, and writes own-state |
+| `ka-reader-bridge` (`crates/ka-reader-bridge`) | Rust static library crate (`libka_reader_bridge.a`) | `core-bridge`: the C ABI over `folder-model`'s API — `SM-4`'s function list, the `model_changed` callback, `asset_bytes`, `ka_reader_free`; the generated header; the diagnostic log writer; the Rust-side composition root | exports a C ABI; holds `unsafe`; wires the libgit2 adapter to the Git port; empties libgit2's machine-level config search paths; installs the log writer |
+| `ka-reader-mac` | Swift package building the app's one executable | `mac-shell` (the `NSApplication`, the one window, the Open panel and its grant, the Swift-side composition root, `Info.plist`, `Entitlements.plist`, the bundle's assembly) and `surfaces` (every view, the theme tokens as values, the message catalogue) | imports AppKit; draws anything; presents the Open panel |
 | `checks/` | Scripts, fixtures and one probe, build-time, not shipped | the read-only harness, the bundle probe and its control, the renderer gate and its `idle-shell` control, `view.sh`, `deps.allow`, the fixtures, and from `v1.0.0` `contract.sh` with its pin | drives the built bundle |
 
-`nozoki-core` imports no Apple framework and holds no `unsafe`. **Only `git-reader` imports the
+`ka-reader-core` imports no Apple framework and holds no `unsafe`. **Only `git-reader` imports the
 libgit2 binding, with one exception: `core-bridge` names it in the composition root's
 config search-path switch and that switch's test, and nowhere else.** Only `own-state` and the
-bridge's log writer write anything. `nozoki-bridge` is the **Rust-side composition root** — the
+bridge's log writer write anything. `ka-reader-bridge` is the **Rust-side composition root** — the
 one place a concrete adapter is wired to the Git port and the log writer is installed — and holds
 no read logic: every exported function decodes its arguments, calls `folder-model` and returns
-plain data. `nozoki-mac`'s `mac-shell` is the **app's composition root** on the Swift side — the
+plain data. `ka-reader-mac`'s `mac-shell` is the **app's composition root** on the Swift side — the
 one place `SM-4` is called — and `surfaces` never reaches the bridge, handing `mac-shell` intents
-instead (`docs/SDD.md` § 3 SM-8). `nozoki-mac` declares no package dependency and links
-`libnozoki_bridge.a` statically, `nozoki-core` inside it (§ 3, "Two libraries, one executable, one
-bundle"). `checks/` may import `nozoki-core` and is never a dependency of a shipped unit.
+instead (`docs/SDD.md` § 3 SM-8). `ka-reader-mac` declares no package dependency and links
+`libka_reader_bridge.a` statically, `ka-reader-core` inside it (§ 3, "Two libraries, one executable, one
+bundle"). `checks/` may import `ka-reader-core` and is never a dependency of a shipped unit.
 
 **Where the units sit.** The Rust crates sit under `crates/`, because that placement is the owner's
 ruling for every Rust product in this instance (`kensaiapp-dev@49e0444f`, carried by
 `docs/nfdr.md` § 9; `docs/SDD.md` § 3, the *Four physical units* paragraph), and the workspace's
 `members = ["crates/*"]` makes a crate created there a member with no manifest edit. The Swift
-frame (`Package.swift`, `Sources/`, `Tests/`) lands inside `nozoki-mac/`, where the project's test
+frame (`Package.swift`, `Sources/`, `Tests/`) lands inside `ka-reader-mac/`, where the project's test
 command goes to find it. It was laid out by hand in the slice that landed it, and its inner layout
 is the Swift packet's and `docs/nfdr.md` § 9's (`docs/SDD.md` § 3, the Swift-frame paragraph).
 
@@ -113,7 +113,7 @@ brings nothing to the tree. The read promise holds for a repository open without
 libgit2, and the exception is narrow enough to check: the switch and its test, and nowhere else.
 
 Harder: two toolchains, `cargo` and `swift`. A C ABI to keep honest: a generated header never
-hand-edited, every buffer owned and freed by `nozoki_free` alone, every function catching a panic
+hand-edited, every buffer owned and freed by `ka_reader_free` alone, every function catching a panic
 at the boundary, and the bridge's tests under the address sanitizer in CI (§ 11 R-13). A Swift
 package whose departures from the Swift packet, and the toolchain CI builds it with, are this
 product's own to record (`docs/nfdr.md` § 9).
@@ -128,7 +128,7 @@ stands, and honouring either would mean a read outside the grant.
 Three things the switch does not reach. A path the repository's own config names —
 `include.path`, `core.excludesfile`, `core.attributesfile` — is followed by libgit2 with no
 containment check (`docs/SDD.md` § 11 R-16). How that is closed is the SDD's last *Open Question*.
-`nozoki-core`'s in-process Git suites run without the bridge, so they run with the reads on. And
+`ka-reader-core`'s in-process Git suites run without the bridge, so they run with the reads on. And
 libgit2 still reads `HOME`, `XDG_CONFIG_HOME` and `APP_SANDBOX_CONTAINER_ID` from the environment at
 init, which opens no file (`sysdir.c:L347`, `:L357`, `:L402-L405`; `docs/nfdr.md` QC-30).
 
@@ -146,7 +146,7 @@ lowered.
 project's; Swift Package Manager and its `swift build` / `swift test` are Apple's. Neither holder
 owes this product anything, and the unit set survives either moving: the seams are a trait (the Git
 port), a C header and an intent set, none of which a toolchain owns. The one fact that makes
-`nozoki-bridge` *the* unit holding `unsafe` is a line in `crates/nozoki-bridge/Cargo.toml` this
+`ka-reader-bridge` *the* unit holding `unsafe` is a line in `crates/ka-reader-bridge/Cargo.toml` this
 product controls. The switch rests on two more platform facts. The first is libgit2's config levels
 and its rule that an empty search path touches no file. libgit2's maintainers hold that rule, and a
 release may add a level or change the rule. The second is `git2`'s `set_search_path`, held by the
@@ -175,8 +175,8 @@ re-read.
   `docs/trail/architecture/self_answer-34.md` § 2.1.
 - `docs/fdr.md` R-101, R-153. `docs/SRS.md` NFR-7, DR-6.
 - `Cargo.toml` — `members = ["crates/*"]` (`:L8`) and `[workspace.lints.rust]
-  unsafe_code = "forbid"` (`:L11`, `:L16`); `crates/nozoki-bridge/Cargo.toml:L11-L15`, the one
-  relaxation and its reason. Read at `nozoki@2f15e2c`.
+  unsafe_code = "forbid"` (`:L11`, `:L16`); `crates/ka-reader-bridge/Cargo.toml:L11-L15`, the one
+  relaxation and its reason. Read at `ka-reader@2f15e2c`.
 - `libgit2-sys 0.18.8+1.9.7` and `git2-0.21.0`, in the registry copies the lock resolves, at the
   lines cited above.
 - `arch_defaults.md` v2.0.0 § Package Structure, § Composition Root — drawn on, not applied; a

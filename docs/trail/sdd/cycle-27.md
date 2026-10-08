@@ -1,4 +1,4 @@
-# SDD open issues — Nozoki
+# SDD open issues — KA-Reader
 
 > Companion to `SDD.md`. The CTO wrote the SDD; this file holds what that run could not settle from
 > its inputs (the PRD, the SRS, the UXD, and any context or constraints), and the calls that are the
@@ -33,7 +33,7 @@
 
 > **No `product-sdd` run wrote this file.** The PM opened it on 2026-10-04 from the SDD's own companion
 > template. The config-named-path item's bound falls on the build in which `mac-shell` first calls
-> `nozoki_read_git`, and the owner has chosen to move that bound rather than settle the item in that
+> `ka_reader_read_git`, and the owner has chosen to move that bound rather than settle the item in that
 > build. The SDD is Settled, and with no companion on disk a `product-sdd` re-run reads it as done
 > and has nothing to act on. Its one item is in § 5.
 
@@ -59,14 +59,14 @@ None.
 
 ## 5. Raised from downstream — an item from a seat that did not write the SDD
 
-### 5.1 The config-named-path item's bound falls on the first build that calls `nozoki_read_git`; move it to a later build of `see-git-status`
+### 5.1 The config-named-path item's bound falls on the first build that calls `ka_reader_read_git`; move it to a later build of `see-git-status`
 - **Raised by:** PM — 2026-10-04
 - **Seat:** cto
-- **Tracked by:** `nozoki · nemawashi · 2026-10-02_git-says-what-changed`
-- **What it blocks:** the build in which `mac-shell` first calls `nozoki_read_git`, which is the
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-02_git-says-what-changed`
+- **What it blocks:** the build in which `mac-shell` first calls `ka_reader_read_git`, which is the
   build that gives the shell its Git view. *Open Questions*, the config-named-path item, says the
   item is "Settled in `see-git-status`, no later than the build in which `mac-shell` first calls
-  `nozoki_read_git`", and that the bound "is held by review of the change that makes the shell call
+  `ka_reader_read_git`", and that the bound "is held by review of the change that makes the shell call
   the export" (`docs/SDD.md:L5696-L5701`). That build does not carry the fixture or its case, so its
   review cannot pass it as the item reads now.
 - **Where it shows:**
@@ -76,15 +76,15 @@ None.
     2026-10-04 (`docs/SDD.md:L5576-L5583`), from "no later than the build that first exports a
     function reaching `git-reader`" (`docs/SDD.md:L5704-L5705`).
   - **Neither half of the item is in the tree yet.** The shell calls the export nowhere:
-    `grep -rn 'nozoki_read_git\|read_git\|readGit' nozoki-mac/Sources` printed nothing. No fixture
+    `grep -rn 'ka_reader_read_git\|read_git\|readGit' ka-reader-mac/Sources` printed nothing. No fixture
     names an outside path: `grep -rn 'include.path\|excludesfile\|attributesfile' checks/fixtures`
-    printed nothing. Both were run on 2026-10-04 at `nozoki@d2dd1f2`.
+    printed nothing. Both were run on 2026-10-04 at `ka-reader@d2dd1f2`.
   - **What holds in the meantime.** R-16's own response: in the shipped bundle "the sandbox refuses
     the read", the wall is C-R2's, "so no byte outside the grant is read there". Whether libgit2's
     open or status read survives that refusal "has not been run" (`docs/SDD.md:L2821-L2823`). If it
     does not survive, the Git view shows a failed read.
   - **What is asked.** Move the bound off the build in which `mac-shell` first calls
-    `nozoki_read_git`, to a later build of `see-git-status`. The item's other half, "in every case
+    `ka_reader_read_git`, to a later build of `see-git-status`. The item's other half, "in every case
     before the slice is reached" (`docs/SDD.md:L5698`), is not asked to move. Neither is the rest
     of the item: which of the two forms closes it, what settles it (a fixture repository whose config
     names an outside path, and a case showing that path is not read), and the rule that the second
@@ -104,7 +104,7 @@ None.
   bounds it any longer. Answered in the CTO's seat by an unattended run, on the route the owner
   chose on 2026-10-04.
   - **What comes out.** The clause "no later than the build in which `mac-shell` first calls
-    `nozoki_read_git`, which is the first build whose release executable links that export, and in
+    `ka_reader_read_git`, which is the first build whose release executable links that export, and in
     every case" in *Open Questions*; the matching clause in § 11 R-16; and "It is held by review of
     the change that makes the shell call the export". § 10 RC-4's parenthesis is a dated record, so
     its words stay and it gains a second dated sentence saying the bound moved again.
@@ -128,7 +128,7 @@ None.
     R-16 before it is built. No slice's *Reached when*, *Delivers*, § 7 edge or order moves, so
     this is a dated correction and not a § 10 re-cut.
   - **The NFDR.** QC-6 and QC-35 are carried at `docs/architecture_open_issues.md` § 2.1
-    (`nozoki@250fc6e`), for the Principal Architect. Nothing is asked of the SDD there.
+    (`ka-reader@250fc6e`), for the Principal Architect. Nothing is asked of the SDD there.
 
   Reasoning: `docs/trail/sdd/self_answer-39.md`.
 

@@ -5,7 +5,7 @@
 - **Companion:** `docs/architecture_open_issues.md`
 - **Document:** `docs/adr/` and `docs/nfdr.md`. The NFDR is v23 and Draft (`docs/nfdr.md:L3-L5`).
   ADR-0017 is Proposed (`docs/adr/0017-floor-grammars-compiled-by-tree-sitter-native-c-in-the-core.md:L3`).
-  The companion was written by the cycle-20 fold at `nozoki@d7f31fa`, with two drafts in § 2.
+  The companion was written by the cycle-20 fold at `ka-reader@d7f31fa`, with two drafts in § 2.
 - **Decided by:** `decide_companion_answers.md` v1.3.0
 - **Date:** 2026-10-01
 - **Sources re-read:** Both answers rest on sources outside this repository, and each was read where
@@ -17,7 +17,7 @@
   field of each grammar's registry copy: Python, Bash, JavaScript and JSON name
   `https://github.com/tree-sitter/…`, and YAML and TOML name `https://github.com/tree-sitter-grammars/…`.
   The runtime names `https://github.com/tree-sitter/tree-sitter`. (3) Cargo itself, by running
-  `cargo tree -p nozoki-bridge --target aarch64-apple-darwin -e normal --locked --offline`. These
+  `cargo tree -p ka-reader-bridge --target aarch64-apple-darwin -e normal --locked --offline`. These
   are local copies of published sources, not a vendor's published documentation. No answer this run
   rests on a vendor web page.
 
@@ -35,13 +35,13 @@
   does". That is a reason to have it confirmed, not a ground only the owner can see.
 
   *Is the draft sound?* Yes, and I re-measured it rather than taking it from RN-34. The command half
-  (2) names, run this round with `--offline`, prints `nozoki-bridge v0.0.0
-  (/Users/eyalgolan/products/nozoki/crates/nozoki-bridge)` at the root and `nozoki-core v0.0.0
-  (…/crates/nozoki-core)` under it. `ls -d ~/.cargo/registry/src/*/nozoki-*` matches nothing. So a
+  (2) names, run this round with `--offline`, prints `ka-reader-bridge v0.0.0
+  (/Users/eyalgolan/products/ka-reader/crates/ka-reader-bridge)` at the root and `ka-reader-core v0.0.0
+  (…/crates/ka-reader-core)` under it. `ls -d ~/.cargo/registry/src/*/ka-reader-*` matches nothing. So a
   script written to v22's words ("every crate the `cargo tree` command above names") fails on every
   build before it reads a dependency. That is the draft's ground, and it holds. The draft gives two
   reasons. One is weak: the heading "**(2) The linked dependency tree**" does not by itself leave out
-  `nozoki-core`, which *is* linked into the bridge. The real reason is the second one. Half (1)
+  `ka-reader-core`, which *is* linked into the bridge. The real reason is the second one. Half (1)
   already holds both crates to a stricter rule than half (2) could: they read no argument, no
   environment variable and no config file at all (`docs/nfdr.md:L569-L571`). Half (2) would only
   have checked their reads against a list. Scanning them there adds nothing and blocks the build.
@@ -55,7 +55,7 @@
   *Failure paths — the addition.* **Stale:** the workspace's members are a glob, `members =
   ["crates/*"]` (`Cargo.toml:L8`), so a directory created under `crates/` becomes a member with no
   edit to the manifest. Half (2) would skip that crate by membership, as drafted. Half (1) names
-  its crates: "`nozoki-core`, `nozoki-bridge` and `nozoki-mac`" (`docs/nfdr.md:L569-L570`). So a third
+  its crates: "`ka-reader-core`, `ka-reader-bridge` and `ka-reader-mac`" (`docs/nfdr.md:L569-L570`). So a third
   member would be in neither half. Today the two sets are equal only by coincidence. The fold should
   make the halves split on one test: half (2) skips a member because half (1)'s rule reads every
   workspace member's sources. § 9 already scopes `checks/structure.sh` to "the product crates'
@@ -92,7 +92,7 @@
   paragraph's *no `unsafe`* sentences at `:L339-L341`, TO-11 at `:L2252-L2265`, R-14 at `:L2566`,
   and the quoted "comes back as data" at `:L2575-L2576`. The ABI range 13 to 15 and the
   `set_language` check match the registry copy (§ Header). The six grammar repositories split
-  between the two organisations as the record says. `nozoki@85d9fa7:checks/deps.review.md`
+  between the two organisations as the record says. `ka-reader@85d9fa7:checks/deps.review.md`
   § *The engine chosen* weighs hand-written lexers and `syntect` in the words the record uses.
 
   Two gates are clear, as the draft says. The decision is surprising without its context: C reads
@@ -112,7 +112,7 @@
      reconstruct is *why* C parses the folder's bytes in the no-`unsafe` core, and why that C is
      compiled from source by `cc` on every build. ADR-0017 § Context states both. Without the
      record, that reasoning lives in the SDD, which is revised in place, and in
-     `checks/deps.review.md`, which QC-3 cites pinned to `nozoki@85d9fa7` because its own title
+     `checks/deps.review.md`, which QC-3 cites pinned to `ka-reader@85d9fa7` because its own title
      stops being true at the next name added (`docs/nfdr.md:L126-L127`). I checked whether TO-11's
      "The weighing is the record's" (`docs/SDD.md:L2265`) means an ADR. It does not: SDD RN-80 says
      the row "cites the record for what was weighed", meaning the dependency review. So TO-11 does
@@ -158,4 +158,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture nozoki`
+- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture ka-reader`

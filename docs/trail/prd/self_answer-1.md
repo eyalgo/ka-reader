@@ -15,7 +15,7 @@
 - **Verdict:** confirmed with addition
 - **Why:** The draft's repair is right and its measurement of this document is wrong by a factor of
   thirty. `docs/prd_trail/` genuinely does not exist — the seven answer-trail folders moved to
-  `docs/trail/<x>/` at `nozoki@1e8bf3d`, which updated no citing document — so the drafted rule
+  `docs/trail/<x>/` at `ka-reader@1e8bf3d`, which updated no citing document — so the drafted rule
   (`docs/<x>_trail/` → `docs/trail/<x>/`) stands. The addition is what the rule does not reach.
 
   **The scale in this document.** The item counted **2**, from a grep for `docs/<x>_trail/`. The PRD
@@ -48,7 +48,7 @@
   exception). One thing the fold owes that no item says: the writing bar's § 1.6 requires a change to
   a settled statement to be recorded in the document with its reason, and the PRD's own version line
   is where it records changes (`docs/PRD.md:5`, and the template note at `:7-11`) — the slot names
-  `nozoki@1e8bf3d` as that reason so the fold has it in hand. **Check 4.** *Concurrent:* if the owner
+  `ka-reader@1e8bf3d` as that reason so the fold has it in hand. **Check 4.** *Concurrent:* if the owner
   runs one sweep across the six documents before re-running `product-prd`, the fold meets a document
   already repaired and the confirmed item becomes a no-op — the answer still folds cleanly. If the
   fold runs first with only the drafted rule, 60 pointers stay dead, which is why the addition is
@@ -75,11 +75,11 @@ None this run.
 
 ## Companions opened
 
-- **`/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari_open_issues.md`** — **opened** — companion to `agari.md`, landed in commit `acaff0f`
+- **`/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/agari_open_issues.md`** — **opened** — companion to `agari.md`, landed in commit `acaff0f`
 - **`/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/doctrine/writing_bar_open_issues.md`** — **opened** — companion to `system/doctrine/writing_bar.md`, landed in commit `4e974c0`
 
 Both are entry-2 openings — documents this run read while answering, each with two or nine trail
-citations now dead on the instance side (`system/projects/nozoki/agari_trail/`,
+citations now dead on the instance side (`system/projects/ka-reader/agari_trail/`,
 `system/doctrine/writing_bar_trail/` — moved under `trail/` at `kensaiapp-opensource@cca5603`,
 citing documents not updated). The same defect reaches five more instance documents this run did not
 read — `doctrine_structure.md` 2, `visual_direction.md` 6, `visual_restrictions.md` 20,
@@ -89,6 +89,6 @@ and carries the count, so the owner's sweep can take all seven at once.
 
 ## Launchers owed
 
-- **`docs/PRD.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/launch-product-prd/launcher.sh nozoki`
-- **`system/projects/nozoki/agari.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/project-agari/launcher.sh nozoki`
+- **`docs/PRD.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/launch-product-prd/launcher.sh ka-reader`
+- **`system/projects/ka-reader/agari.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/project-agari/launcher.sh ka-reader`
 - **`system/doctrine/writing_bar.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/kensaiapp-writing-bar/launcher.sh /Users/eyalgolan/projects/kensai/kensaiapp-opensource`

@@ -1,4 +1,4 @@
-# DESIGN open issues — Nozoki 覗き
+# DESIGN open issues — KA-Reader
 
 > Companion to `DESIGN.md`. The CDO authored the design language non-interactively; this file
 > holds the calls it made and wants your sign-off on — each with the reason behind it, and what
@@ -20,7 +20,7 @@
 > **This companion was opened by the owner, not by a `product-design` run.** `DESIGN.md` is settled
 > at v3 and its companion was correctly deleted. It is re-opened because `docs/UXD.md` reached **v5**
 > after this document was last authored, adding an entry (**UX-I16**) that v3 could not have seen —
-> v3 landed at `nozoki@e5f0c02`, UX-I16 entered at `nozoki@8af3e8d`. Both items below are
+> v3 landed at `ka-reader@e5f0c02`, UX-I16 entered at `ka-reader@8af3e8d`. Both items below are
 > **derivable and already answered**; neither needs an owner decision, and no token, colour, type,
 > spacing or radius value moves.
 
@@ -33,7 +33,7 @@
 - **Why it matters:** `docs/DESIGN.md:657-659` defines the component as *"every empty, pending, and
   failure state the UXD names (`docs/UXD.md` § 6)"* and then enumerates them: the empty reading
   panel, the empty tree, the clean Git view, a cannot-display placeholder, a vanished file, an
-  unreadable entry, a startup failure. Every one is a condition Nozoki **observed**. `docs/UXD.md`
+  unreadable entry, a startup failure. Every one is a condition KA-Reader **observed**. `docs/UXD.md`
   § 6 now states that **every failure cell holds two classes** — the observed condition and the
   **unexplained fault** — and **UX-I16** gives the second its presentation. So the component's own
   claim of completeness is no longer true, and the enumeration is the part that went stale, not the

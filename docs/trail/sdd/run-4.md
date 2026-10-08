@@ -1,4 +1,4 @@
-# SDD conversation — nozoki, run 4
+# SDD conversation — ka-reader, run 4
 
 > The record of one `product-sdd` run: three seats — CTO, CPO, CDO — working one document together,
 > and a runner that starts them, gives the turns and counts the rounds.
@@ -18,9 +18,9 @@
 
 - **Round:** 2 (closed) — run ended
 - **Seats, and the names they answer to:**
-  - CTO — `sdd-nozoki-run4-cto`
-  - CPO — `sdd-nozoki-run4-cpo`
-  - CDO — `sdd-nozoki-run4-cdo`
+  - CTO — `sdd-ka-reader-run4-cto`
+  - CPO — `sdd-ka-reader-run4-cpo`
+  - CDO — `sdd-ka-reader-run4-cdo`
 - **Standing declared move:** CPO `no_followup` · CTO `no_followup` · CDO `no_followup`
 - **Recall outstanding:** none
 - **Recalls spent:** none
@@ -107,7 +107,7 @@ its turn; see *What this round settled* above.)
 - One found-while-walking defect fixed in place, in CTO's own lane: S-4's observable half (added by
   CDO in Round 1) asserted a behaviour the command half's existing fixtures never exercised — the
   `linked-worktree`/`submodule` fixtures cannot produce R-3's failure on their own (the harness drives
-  `nozoki-core` in-process under no sandbox grant; the failure exists only under the bundle's grant).
+  `ka-reader-core` in-process under no sandbox grant; the failure exists only under the bundle's grant).
   CTO added the missing reducer case rather than leaving the assertion unbacked.
 - No item remains open anywhere in the (unconsumed) companion — it was not touched this run.
 

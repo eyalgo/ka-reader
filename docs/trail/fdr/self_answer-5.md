@@ -27,9 +27,9 @@
     foreseen again inside the terminus". `:2067-2074` (§ 9 TO-4) says "paid once already,
     from the WKWebView".
   - **"Before any public release" is true.** `git tag` in the product repo prints nothing, and
-    `gh release list -R kensaiapp/nozoki` prints nothing (2026-09-23).
+    `gh release list -R kensaiapp/ka-reader` prints nothing (2026-09-23).
   - **The altitude call is right.** PD-29 leaves the technology unnamed. The SDD names it
-    (`docs/SDD.md` § 3, `mac-shell` and `surfaces` rows, `nozoki-mac`). Naming AppKit in PD-29
+    (`docs/SDD.md` § 3, `mac-shell` and `surfaces` rows, `ka-reader-mac`). Naming AppKit in PD-29
     would turn a later view change under the same behaviour into a behaviour change.
   - **No contradiction elsewhere in the FDR.** It has no other mention of WKWebView, Tauri,
     an ADR or the "renderer technology" apart from PD-29, RN-31 and the header (`grep`,
@@ -104,4 +104,4 @@ None this run.
 
 ## Launchers owed
 
-- **`fdr.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/skill/launcher.sh product-fdr nozoki`
+- **`fdr.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/skill/launcher.sh product-fdr ka-reader`

@@ -1,4 +1,4 @@
-# PRD open issues — Nozoki 覗き
+# PRD open issues — KA-Reader
 
 > Companion to `PRD.md`. The CPO authored the PRD non-interactively; this file holds
 > what it could not settle from the inputs. **Answer inline** — fill each **Answer** /
@@ -32,14 +32,14 @@
   item asked for it.
 - **What this document says:** **2** citations of the form `docs/<x>_trail/…` (`docs/prd_trail/`).
 - **What is true:** none of those folders exists. The retired cycles live at `docs/trail/<x>/`, moved
-  by `nozoki@1e8bf3d` ("the six answer-trails move under `docs/trail/`"), which did not update the
+  by `ka-reader@1e8bf3d` ("the six answer-trails move under `docs/trail/`"), which did not update the
   documents citing them. Every one is a pointer a cold reader follows and finds nothing, and these are
   mostly **authorization** pointers — the owner answer a Review Note rests on cannot be opened to
   check it.
 - **Drafted:** each `docs/<x>_trail/` becomes `docs/trail/<x>/`. Nothing the document says changes;
   only where it points. A pointer repair, not a revision — so this round need not reopen anything else.
 - **One exception, and it is not hypothetical.** A citation pinned to a commit — the form
-  `nozoki@<sha>:docs/<x>_trail/…` — must be left exactly as it is: it resolves at a commit where that
+  `ka-reader@<sha>:docs/<x>_trail/…` — must be left exactly as it is: it resolves at a commit where that
   path did exist (verified — `git show 1d5c553:docs/uxd_trail/cycle-1.md` returns the file), so
   rewriting it breaks a citation that currently works. This document carries **0** of those;
   `docs/UXD.md` carries 4. A sweep that does not exclude the pinned form is wrong.
@@ -59,5 +59,5 @@
   inert here. The undercount is this document's alone — the five siblings' totals equal their
   `docs/`-prefixed counts — so the repo-wide figure is **295**, not 235, and a sweep whose pattern
   requires the `docs/` prefix misses this file almost whole. The fold records the change on the
-  version line with its reason, `nozoki@1e8bf3d`. Reasoning: `docs/trail/prd/self_answer-1.md`
+  version line with its reason, `ka-reader@1e8bf3d`. Reasoning: `docs/trail/prd/self_answer-1.md`
   § 2.1.

@@ -1,4 +1,4 @@
-# DESIGN open issues — Nozoki
+# DESIGN open issues — KA-Reader
 
 > Companion to `DESIGN.md`. The CDO authored the design language non-interactively; this file
 > holds the calls it made and wants your sign-off on — each with the reason behind it, and what
@@ -32,7 +32,7 @@
 
 ### 3.1 Where the path line's text stands, vertically, inside its row
 - **Raised by:** PM — 2026-10-02
-- **Tracked by:** `nozoki · nemawashi · 2026-10-01_a-file-reads-in-the-panel`
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-01_a-file-reads-in-the-panel`
 - **What it blocks:** nothing is blocked. The path line is built. What is missing is a rule that
   says whether its text is placed right inside its row.
 - **Where it shows:** `{components.path-line}` gives the row `height: "{spacing.row}"` (24) and
@@ -43,7 +43,7 @@
   readings are open: (a) centred vertically in the row; (b) on a baseline shared with the tree's
   24-point rows (`{components.tree-row}`, `:L161-L166`); (c) top-aligned in the row. As built, the
   text is centred: `pathLine.centerYAnchor.constraint(equalTo: pathRow.centerYAnchor)`
-  (`nozoki-mac/Sources/Surfaces/ReadingPanelView.swift:L112`). That placement was landed as a
+  (`ka-reader-mac/Sources/Surfaces/ReadingPanelView.swift:L112`). That placement was landed as a
   placeholder for this document to confirm or replace, not as a design decision. The other
   24-point rows in the language may be read the same way, and the answer may name them too.
 - **If a document has to be written:** none. § Components *The reading panel*, or the

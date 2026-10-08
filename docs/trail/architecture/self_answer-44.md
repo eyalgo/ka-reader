@@ -7,7 +7,7 @@
 - **Decided by:** `<CORE>/../skills/companion/.claude/skills/companion-self-answer/prompts/rich.md` v1.3.1
 - **Date:** 2026-10-07
 - **Sources re-read:** None. No answer rests on a source outside this repository. Both answers rest
-  on the tree at `nozoki@772c63b`, read at the lines cited, and on `docs/SDD.md` v46. The libgit2
+  on the tree at `ka-reader@772c63b`, read at the lines cited, and on `docs/SDD.md` v46. The libgit2
   facts the records repeat — the six members, the include and alternates depths, and the looked-up
   set — are the SDD's and the building change's measurements. They were not re-read at the
   libgit2 source, and neither answer turns on their exact values.
@@ -24,16 +24,16 @@ and RN-106 whole, including *Surfaced for the Principal Architect to record*. Th
 `GitmodulesUnreadable` and the config-named-path item was read at every line it printed. Also
 read: `docs/trail/architecture/cycle-38.md` §§ 3.1 – 3.2 (the answers);
 `<CORE>/templates/product-templates/adr_record_template.md` on supersession and status. At
-`nozoki@772c63b`: `crates/nozoki-core/src/git_reader/libgit2.rs:L200-L360` and the walk's two
+`ka-reader@772c63b`: `crates/ka-reader-core/src/git_reader/libgit2.rs:L200-L360` and the walk's two
 inspectors (`:L660-L700`); `git_reader.rs:L200-L260`; `git_state.rs:L2630-L2730` and the name of
 every `.gitmodules` case; and `GitSentences.swift:L1-L60`.
 
-**Measured.** `git -C nozoki status --short` printed nothing at intake.
+**Measured.** `git -C ka-reader status --short` printed nothing at intake.
 `git diff --stat 772c63b HEAD -- . ':!docs'` printed nothing at HEAD `63e48c1`, so every code
 locator holds at HEAD. `git grep -c 'std::process' 772c63b -- 'crates/*/src'` printed nothing
 and exited 1. `ls checks/fixtures` lists `gitmodules-names-outside` and its `.git.tar`.
 `cargo test` was not run in this run, and no pass count here is this run's. The SDD's fold ran
-`cargo test --workspace --locked` on a disposable copy at `nozoki@1d5c3cf` (558 passed; SDD RN-106,
+`cargo test --workspace --locked` on a disposable copy at `ka-reader@1d5c3cf` (558 passed; SDD RN-106,
 *Measured in this fold*). That tree is `772c63b`'s outside `docs/`.
 
 ## Items worked
@@ -49,7 +49,7 @@ and exited 1. `ls checks/fixtures` lists `gitmodules-names-outside` and its `.gi
   tree and with the Settled SDD.
 
   **Check 2 — the draft holds, and it answers a smaller question than the entries now owe.** At
-  `nozoki@772c63b`, `check_section_value` (`libgit2.rs:L330-L357`) does three things, all on
+  `ka-reader@772c63b`, `check_section_value` (`libgit2.rs:L330-L357`) does three things, all on
   `status()` alone. A value beginning `/` answers `ConfigNotLocated`. A value that spells outside
   the folder answers `ConfigNamesOutside`. A looked-up name whose value spells to another location
   answers `SubmoduleElsewhere`. Both condition variants exist (`git_reader.rs:L237`, `:L241`), and
@@ -126,7 +126,7 @@ and exited 1. `ls checks/fixtures` lists `gitmodules-names-outside` and its `.gi
     with the tool, and its cold reader has no SDD session to correct it.
 
   **Why this does not contradict cycle-38 § 3.2 (check 3).** That answer declined to supersede
-  ADR-0022 for two reasons that do not hold here. Its paragraph was pinned to `nozoki@076eac2`
+  ADR-0022 for two reasons that do not hold here. Its paragraph was pinned to `ka-reader@076eac2`
   and true there. And nothing had been decided anew: the check built was the check decided. Here
   the line is not pinned, and the condition is a new decision the CTO made and surfaced to this
   seat. The significance test passes, though not by much:
@@ -172,4 +172,4 @@ is Settled with no companion. No other document was found owing a change.
 
 ## Launchers owed
 
-- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture nozoki`
+- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture ka-reader`

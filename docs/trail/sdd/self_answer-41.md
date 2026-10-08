@@ -24,24 +24,24 @@ experience entry. `docs/fdr.md` was searched for `marker` and `order`. `docs/nfd
 **The change's records.** Read in the instance repository
 `/Users/eyalgolan/projects/kensai/kensaiapp-opensource`, at commit `8f2c5f1` on the branch
 `2026-10-04_the-tree-marks-what-changed`, under
-`system/projects/nozoki/journey/tobiishi/2026-10-04_the-tree-marks-what-changed/`:
+`system/projects/ka-reader/journey/tobiishi/2026-10-04_the-tree-marks-what-changed/`:
 `code-integrity-report.md` whole, `change_design.md:L150-L260`, and the rules CP-573 to CP-585 of
 `change_spec.md`. `change_request.md` was read on the instance's `main`. The sealed change's report
 was read at
-`system/projects/nozoki/journey/tobiishi/trail/2026-10-04_the-shell-shows-git/code-integrity-report.md:L155-L168`.
+`system/projects/ka-reader/journey/tobiishi/trail/2026-10-04_the-shell-shows-git/code-integrity-report.md:L155-L168`.
 
-**What this run measured**, on the product tree at `nozoki@6a51cbc` (`main`):
+**What this run measured**, on the product tree at `ka-reader@6a51cbc` (`main`):
 
-- `git show 6c49d5c:nozoki-mac/Sources/Surfaces/TreeMarkers.swift` prints the 68-line join. The
-  file is not on `main`: `ls nozoki-mac/Sources/Surfaces/TreeMarkers.swift` prints "No such file
+- `git show 6c49d5c:ka-reader-mac/Sources/Surfaces/TreeMarkers.swift` prints the 68-line join. The
+  file is not on `main`: `ls ka-reader-mac/Sources/Surfaces/TreeMarkers.swift` prints "No such file
   or directory", and `git merge-base --is-ancestor 6c49d5c HEAD` fails.
-- `nozoki-mac/Sources/Surfaces/GitRowOrder.swift` is on `main`, and
+- `ka-reader-mac/Sources/Surfaces/GitRowOrder.swift` is on `main`, and
   `git merge-base --is-ancestor d65eec4 HEAD` succeeds.
-- `grep -rn model_changed crates nozoki-mac/Sources` prints nothing.
-- `grep -n marker crates/nozoki-core/src/folder_model.rs` prints nothing.
-- `crates/nozoki-core/src/git_reader.rs:L121` reads "The two lists a status read answers. Neither
+- `grep -rn model_changed crates ka-reader-mac/Sources` prints nothing.
+- `grep -n marker crates/ka-reader-core/src/folder_model.rs` prints nothing.
+- `crates/ka-reader-core/src/git_reader.rs:L121` reads "The two lists a status read answers. Neither
   carries a count, and no order is promised."
-- `crates/nozoki-bridge/src/session.rs:L279-L280` reads "The bridge carries the core's item and
+- `crates/ka-reader-bridge/src/session.rs:L279-L280` reads "The bridge carries the core's item and
   decides nothing: no count, wording or sort key crosses (CP-543)."
 - No test and no build was run. The answers place logic and do not judge whether it works. The
   code-integrity report gives the gate as green (`code-integrity-report.md`, § *What was
@@ -69,7 +69,7 @@ was read at
   change"), and the answer does not lift it.
 
   **Not a widening.** The item asks the SDD to choose between what it states and what a change
-  built. It cites the occurrence: `TreeMarkers.swift` at `nozoki@6c49d5c`.
+  built. It cites the occurrence: `TreeMarkers.swift` at `ka-reader@6c49d5c`.
 
   **Why `folder-model` stays the owner.** Three reasons, each from the SDD or the code.
   1. The shape the SDD took is "an AppKit shell that draws the model's projections"
@@ -83,12 +83,12 @@ was read at
      only in Swift is not in that snapshot.
   3. The join's own header shows the cost of the language. It keys on bytes "because Swift's
      `String` equality and hashing fold canonically equivalent spellings together"
-     (`TreeMarkers.swift:L5-L8`, at `nozoki@6c49d5c`). The core compares paths as it reads them
+     (`TreeMarkers.swift:L5-L8`, at `ka-reader@6c49d5c`). The core compares paths as it reads them
      and needs no such guard.
 
   **Why the join still stands in `surfaces` for this slice.** Three reasons.
   1. No path from the core reaches a row the tree has already drawn.
-     `grep -rn model_changed crates nozoki-mac/Sources` prints nothing, and § 10 RC-4 holds that
+     `grep -rn model_changed crates ka-reader-mac/Sources` prints nothing, and § 10 RC-4 holds that
      registration back to `follow-the-folder` on purpose: a callback "adds a function pointer, a
      context lifetime and a second thread to the one unit that holds `unsafe`"
      (`docs/SDD.md:L2677-L2680`). The spec requires that rows "already drawn when that answer
@@ -173,15 +173,15 @@ was read at
   and sets only the latest point.
 
   **Not a widening without an occurrence.** The item asks § 3 to name an owner it does not name
-  now. It cites the occurrence: `GitRowOrder.swift`, on `main` since `nozoki@d65eec4`.
+  now. It cites the occurrence: `GitRowOrder.swift`, on `main` since `ka-reader@d65eec4`.
 
   **Two questions, one seat.** The item asks whether the file is in place and what the SDD
   should write. Both are the CTO's and both are answered in the one slot.
 
   **Why `folder-model` owns the order.**
   1. The tree's order is already the core's. `list_tree` answers "with its entries in core's
-     order" (`crates/nozoki-bridge/src/session.rs:L123-L124`), from `fs-reader`'s `order`
-     (`crates/nozoki-core/src/fs_reader.rs:L818-L832`). The Git lists are the other list the
+     order" (`crates/ka-reader-bridge/src/session.rs:L123-L124`), from `fs-reader`'s `order`
+     (`crates/ka-reader-core/src/fs_reader.rs:L818-L832`). The Git lists are the other list the
      shell draws, and nothing in the SDD gives a reason for the shell to own one and the core
      the other.
   2. `GitRowOrder` is a second implementation of a rule the core already has. Its header says
@@ -253,4 +253,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/SDD.md`** — `<CORE>/launchers/skill/launcher.sh product-sdd nozoki`
+- **`docs/SDD.md`** — `<CORE>/launchers/skill/launcher.sh product-sdd ka-reader`

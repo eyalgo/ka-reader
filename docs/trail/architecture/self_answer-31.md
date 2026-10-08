@@ -7,8 +7,8 @@
 - **Decided by:** `decide_companion_answers.md` v1.3.0
 - **Date:** 2026-10-03
 - **Sources re-read:** None. The one answer rests only on files in this repository at
-  `nozoki@a3caabd`: `docs/nfdr.md` (read whole), `docs/SDD.md` § 3,
-  `docs/adr/0016-physical-unit-set-core-bridge-mac-checks.md`, `crates/nozoki-core/src/` and
+  `ka-reader@a3caabd`: `docs/nfdr.md` (read whole), `docs/SDD.md` § 3,
+  `docs/adr/0016-physical-unit-set-core-bridge-mac-checks.md`, `crates/ka-reader-core/src/` and
   `checks/structure.sh`. `git diff --stat 803b599 a3caabd -- crates checks .github` prints
   nothing, so the tree is the one v29 measured.
 
@@ -116,4 +116,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture nozoki`
+- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture ka-reader`

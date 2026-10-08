@@ -27,7 +27,7 @@
   ],
   "companion_present_at_intake": true,
   "companion_retired": false,
-  "consumed_cycle_path": "/Users/eyalgolan/products/nozoki/docs/trail/sdd/cycle-9.md",
+  "consumed_cycle_path": "/Users/eyalgolan/products/ka-reader/docs/trail/sdd/cycle-9.md",
   "core_root": "/Users/eyalgolan/.kensaiapp/pins/20260923T063052Z-ppa1f0/core",
   "ended": "seats-close",
   "ended_at": "2026-09-23T11:34:32.729500+00:00",
@@ -64,8 +64,8 @@
     "cpo": "Nothing further is needed from a tool: the three edits landed, and the checks they rest on were made before writing.\n\nCPO \u2014 round 2. The CTO's successor work is done: step 4's E-3 sentence re-read against \u00a7 2 and C-D3 as redrawn, and `read-markdown`'s sizing confirmed.\n\n**What moved, all in my lanes**\n\n- **\u00a7 5 step 4, E-3** \u2014 a dated close: the three walls are now the containment check, the document as data, and the decoder fed by the check alone (\u00a7 4 C-D3); the decision is still one `read-a-file` never asks \u2014 a plain or highlighted file crosses no content-derived path, no image and no link \u2014 so the sizing stands. The layout question the redraw leaves (how TextKit lays out UX-I12's two hard cells, *Open Questions* third item) is not a second slice: it settles in this slice's first build, its result changes nothing outside the slice (step 4's too-narrow test), and the bar it answers to is the UXD's and does not move with the form found.\n- **\u00a7 1** \u2014 \"\u00a7 2's weighing to redo\" read as work still owed once \u00a7 2 was redrawn; it now says the weighing is \u00a7 2's and was redone under the ruling (\u00a7 2; \u00a7 10 RC-3).\n- **RN-63** \u2014 the provenance, and what was checked and left alone: S-3's *Delivers* holds under a TextKit view; its fence \"raw-source switch \u2014 not built\" rests on \u00a7 9 TO-5, whose judgment the CTO re-read under the native view and kept; the SVG placeholder is C-D3's exclusion, kept; the PRD trace is unchanged. Swift beside Rust reaches no product promise \u2014 `grep -n -i 'swift\\|rust\\|typescript\\|appkit' docs/PRD.md` hits only the highlighting floor's six languages (`docs/PRD.md:L161-L163`), and the Agari names none \u2014 so \u00a7 12's PRD boundary stands as RN-59 wrote it.\n\n**Companion:** nothing added or consumed; it holds \u00a7 2.3 alone, the owner's slot, and no product call is open.\n\n**To the CTO:** the re-read you named is done and the sizing stands; nothing owed from my side. **To the CDO:** nothing named for me in your turn; your S-3 observable-half reading and mine agree \u2014 the layout question is the CTO's, the bar is UX-I12's. My lanes are complete for this run; a change either of you makes that reaches a \u00a7 1 constraint, a step-4 sizing, or a \u00a7 6 CPO field is a recall on that point.",
     "cto": "Nothing further is needed from a tool: the verification read is complete and every item I needed is on disk.\n\n**Round 2 \u2014 verification only; no edit from this seat.**\n\nThe two peers' round-1 folds were read against the clauses they cite, and each states mine as written:\n\n- **C-E7** (CDO) now grounds the condition on C-R1, C-R2 and C-D3 and names C-R7 as \"the scan\" that shows the shell adds no fetch of its own (`docs/SDD.md` \u00a7 4 C-E7, the mechanism sentence) \u2014 the reading C-R7 gives of itself (\"a source scan and a link check \u2026 not a process boundary: the wall is C-R2's\"). Correct, and it asks no change of my clauses.\n- **\u00a7 1** (CPO) names the weighing as \u00a7 2's, \"redone under that ruling (\u00a7 2; \u00a7 10 RC-3)\" \u2014 true of the document as it stands.\n- **\u00a7 12, the UXD boundary** (CDO) names the exit taken \u2014 an AppKit view in one process \u2014 cites \u00a7 2 and RC-3, and lists what moves in `docs/DESIGN.md`; nothing there claims a change to a CTO lane.\n- **\u00a7 5 step 4 E-3** (CPO) closes against C-D3's three walls as I redrew them; `read-markdown`'s sizing stands, and no slice, edge or place in the order moved.\n\nState of my lanes: \u00a7 2, \u00a7 3, \u00a7 4 (C-R, C-I, C-D), \u00a7 5 steps 3 and 5, \u00a7 6's CTO fields, \u00a7\u00a7 7, 9, 11, \u00a7 12's SRS and downstream boundaries, \u00a7 10 RC-3 and *Open Questions* are as RN-60 and RN-61 record them; `git status` shows `docs/SDD.md` and `docs/SDD_open_issues.md` modified and uncommitted, which is the runner's to commit. The companion holds **\u00a7 2.3 alone** \u2014 drafted into C-I3 and both record lines, its slot the owner's \u2014 so the SDD's `Status:` stays Draft until the owner confirms or overrides it; that stamp is the runner's, not mine. No technical question remains that this run could close: the four *Open Questions* resolve downstream, in `open-a-folder` and `read-a-file` / `read-markdown`'s first builds.\n\nNothing is owed to me and I owe nothing further in this run. The work owed outside the document stands as named (RN-60): the project card's `Languages:` and test command, `README.md:L46-L51`, `docs/DESIGN.md`'s realisation sentences, superseding records for ADR-0001/0002/0006/0009 and the NFDR re-derivation \u2014 none of them any seat's edit here."
   },
-  "product_path": "/Users/eyalgolan/products/nozoki",
-  "project": "nozoki",
+  "product_path": "/Users/eyalgolan/products/ka-reader",
+  "project": "ka-reader",
   "provider": "claude",
   "queue": [],
   "recall_outstanding": null,
@@ -74,31 +74,31 @@
   "resolved_inputs": {
     "cdo": [
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/SRS.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/UXD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/PRD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/agari.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ka-reader_doctrine.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ai_responsibility.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/definition_brief.md",
         "present": false
       },
       {
@@ -114,15 +114,15 @@
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/DESIGN.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/DESIGN.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/CONTENT.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/CONTENT.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/design_system",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/design_system",
         "present": false
       },
       {
@@ -136,31 +136,31 @@
     ],
     "cpo": [
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/SRS.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/UXD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/PRD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/agari.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ka-reader_doctrine.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ai_responsibility.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/definition_brief.md",
         "present": false
       },
       {
@@ -178,31 +178,31 @@
     ],
     "cto": [
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/SRS.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/UXD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/PRD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/agari.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ka-reader_doctrine.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ai_responsibility.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/definition_brief.md",
         "present": false
       },
       {
@@ -218,11 +218,11 @@
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/adr",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/adr",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/nfdr.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/nfdr.md",
         "present": true
       }
     ]
@@ -259,9 +259,9 @@
     "cto": "8b9fb2ce-8483-4a37-aa0e-3d674167a171"
   },
   "seats": {
-    "cdo": "sdd-nozoki-run12-cdo",
-    "cpo": "sdd-nozoki-run12-cpo",
-    "cto": "sdd-nozoki-run12-cto"
+    "cdo": "sdd-ka-reader-run12-cdo",
+    "cpo": "sdd-ka-reader-run12-cpo",
+    "cto": "sdd-ka-reader-run12-cto"
   },
   "spoke_at": {
     "cdo": 5,

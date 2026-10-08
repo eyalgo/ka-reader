@@ -1,4 +1,4 @@
-# SDD open issues — Nozoki
+# SDD open issues — KA-Reader
 
 > Companion to `SDD.md`. The CTO wrote the SDD; this file holds what that run could not settle from
 > its inputs (the PRD, the SRS, the UXD, and any context or constraints), and the calls that are the
@@ -32,7 +32,7 @@
 > which stay fixed to the three lane seats on purpose.
 
 > **Where this file stands.** The PM opened it on 2026-10-04 with four items in § 5, after
-> `git-reader` answered `state` and `status` (`nozoki@6a0725c`). A `companion-self-answer` run
+> `git-reader` answered `state` and `status` (`ka-reader@6a0725c`). A `companion-self-answer` run
 > answered the four the same day and raised § 2.1 below. The `product-sdd` run that wrote SDD
 > version 28 folded the four answers and dropped their items; the file as answered is kept whole at
 > `docs/trail/sdd/cycle-23.md`, and the fold's record is `docs/SDD.md` RN-88. One item is left,
@@ -67,7 +67,7 @@ None.
   siblings stand as they were — `observed` where read, `pending` where not yet read, `failed` where
   an earlier read failed. RN-44's parenthesis, which quotes C-I1 (`docs/SDD.md:L3333`), follows.
 - **Rationale:** The wording cannot be met by any folder that holds a folder. `list_tree` reports a
-  folder it has not expanded as `Pending` (`crates/nozoki-core/src/fs_reader.rs:L137`, `:L853`), so
+  folder it has not expanded as `Pending` (`crates/ka-reader-core/src/fs_reader.rs:L137`, `:L853`), so
   a failed entry beside an unexpanded folder has a sibling that is not `observed`. S-4 carried the
   same defect and SDD version 28 corrected it there (`docs/SDD.md` RN-88, (4)): its reducer case
   had to choose a tree of files only. S-5 has not been built, and its `--test watch` case would
@@ -91,7 +91,7 @@ None.
   it is not decided here; those entries are not its siblings, and it is `follow-the-folder`'s
   design. RN-44's parenthesis follows C-I1, corrected in place with a review note recording what it
   said. `docs/nfdr.md` QC-47 repeats the wording; that change is carried as
-  `docs/architecture_open_issues.md` § 2.1 (`nozoki@f0789a6`) and is not the SDD's to make.
+  `docs/architecture_open_issues.md` § 2.1 (`ka-reader@f0789a6`) and is not the SDD's to make.
   Reasoning: `docs/trail/sdd/self_answer-36.md` § 2.1.
 
 ## 3. Cut calls to confirm — where the slicing could reasonably have gone another way

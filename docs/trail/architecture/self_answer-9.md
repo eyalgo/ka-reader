@@ -2,7 +2,7 @@
 
 ## Header
 
-- **Companion:** /Users/eyalgolan/products/nozoki/docs/architecture_open_issues.md
+- **Companion:** /Users/eyalgolan/products/ka-reader/docs/architecture_open_issues.md
 - **Document:** `adr/` and `nfdr.md` (`docs/adr/`, `docs/nfdr.md`) — the companion's own header names both
 - **Decided by:** `decide_companion_answers.md` v1.3.0
 - **Date:** 2026-09-19
@@ -35,8 +35,8 @@
 
   *The item waited on an SDD item, and that item is closed.* The item says what is owed is
   "re-derived from whatever C-R7 settles in `SDD_open_issues.md` § 5.1". That companion was
-  answered at `nozoki@d9ffe66` and folded at `nozoki@c1f8a20`, both after this item was written
-  (`nozoki@07beb5b`). `docs/SDD.md` is Settled at v7 (`docs/SDD.md:L3`, `:L9`), and
+  answered at `ka-reader@d9ffe66` and folded at `ka-reader@c1f8a20`, both after this item was written
+  (`ka-reader@07beb5b`). `docs/SDD.md` is Settled at v7 (`docs/SDD.md:L3`, `:L9`), and
   `docs/SDD_open_issues.md` is no longer on disk (`ls docs/*_open_issues.md` prints
   `docs/architecture_open_issues.md` alone).
 
@@ -50,7 +50,7 @@
 
   *Not a widening that waits.* The item asks QC-24 to state staging it does not state now. It is a
   correction that follows an upstream sentence, and it cites a site in the product:
-  `crates/nozoki-app/capabilities/main.json:L5` grants two commands, confirmed this run. So the
+  `crates/ka-reader-app/capabilities/main.json:L5` grants two commands, confirmed this run. So the
   prompt's "not until it occurs" answer does not apply.
 
   *What the answer adds to the lean.* The lean said "set equality against the commands the built
@@ -58,7 +58,7 @@
   each from C-R7 or from a failure path:
   1. The check reads the registered set and never a hand-kept copy. This is C-R7's sentence, and
      it matters because the test as built holds two hand-kept constants
-     (`crates/nozoki-app/tests/config.rs:L228`, `:L231`). The test passes today and does not meet
+     (`crates/ka-reader-app/tests/config.rs:L228`, `:L231`). The test passes today and does not meet
      the re-derived tail. The answer says so, the way RN-18 said `checks/bundle.sh` was red against
      QC-25 (`docs/nfdr.md:L1160-L1163`), so a delivery reader does not take a green test for a met
      entry.
@@ -111,19 +111,19 @@
   in this repository scans. It is answered in the owner's seat.
 
   *Why the lean holds, and for the reason it gives.* QC-61's property is that the logger is
-  "installed once at startup in `nozoki-app`, the composition root" (`docs/nfdr.md:L467-L468`).
-  The check says `log::set_logger` and `log::set_boxed_logger` "appear only in `nozoki-app`"
-  (`docs/nfdr.md:L480-L481`) and states no scope. The tree at `nozoki@1741429` holds
-  `crates/nozoki-core/tests/failure_log.rs:L52` and
-  `crates/nozoki-core/tests/failure_log_kinds.rs:L61`, confirmed this run, and each test installs
-  a capturing logger to assert on `nozoki-core`'s warn line. Two outside facts carry the lean, and
+  "installed once at startup in `ka-reader-app`, the composition root" (`docs/nfdr.md:L467-L468`).
+  The check says `log::set_logger` and `log::set_boxed_logger` "appear only in `ka-reader-app`"
+  (`docs/nfdr.md:L480-L481`) and states no scope. The tree at `ka-reader@1741429` holds
+  `crates/ka-reader-core/tests/failure_log.rs:L52` and
+  `crates/ka-reader-core/tests/failure_log_kinds.rs:L61`, confirmed this run, and each test installs
+  a capturing logger to assert on `ka-reader-core`'s warn line. Two outside facts carry the lean, and
   both were re-read at their source. Cargo compiles each file under `tests/` "as a separate crate",
   so these binaries are never the shipped process. `set_logger` sets "the global logger" and "may
   only be called once in the lifetime of a program", so a test cannot observe a log line except by
   installing a logger in its own binary. The check overreached the property. Narrowing it relaxes
   nothing the property protects: `grep -rn 'set_logger\|set_boxed_logger' crates/` finds the one
-  shipped site at `crates/nozoki-app/src/log_writer.rs:L142` and none under
-  `crates/nozoki-core/src/`.
+  shipped site at `crates/ka-reader-app/src/log_writer.rs:L142` and none under
+  `crates/ka-reader-core/src/`.
 
   *Not a widening that waits.* The item cites two sites in the product, by path and line. A check
   that fails a correct tree is a statement found false, which is a correction.
@@ -131,16 +131,16 @@
   *The addition, and why it sits in this answer.* Check 4 on the lean found the case it did not
   serve. `checks/structure.sh` is one script (`docs/nfdr.md:L598`), and four more of its rules
   name a crate and state no scope. The tree holds a test-target site against each:
-  - QC-2, *no write API in `nozoki-core` outside `own-state`* (`docs/nfdr.md:L58`):
-    `crates/nozoki-core/tests/common/mod.rs:L57`, `fs::write` building a fixture.
-  - QC-9, *`nozoki-core` must not import `std::process`* (`docs/nfdr.md:L98-L99`), the rule QC-7's
-    tail shares (`docs/nfdr.md:L85`): `crates/nozoki-core/tests/common/mod.rs:L11`, used for
+  - QC-2, *no write API in `ka-reader-core` outside `own-state`* (`docs/nfdr.md:L58`):
+    `crates/ka-reader-core/tests/common/mod.rs:L57`, `fs::write` building a fixture.
+  - QC-9, *`ka-reader-core` must not import `std::process`* (`docs/nfdr.md:L98-L99`), the rule QC-7's
+    tail shares (`docs/nfdr.md:L85`): `crates/ka-reader-core/tests/common/mod.rs:L11`, used for
     `process::id()` in a temporary folder's name (`:L29`).
-  - QC-13, *`nozoki-app` must not import `std::fs` outside its log module*
-    (`docs/nfdr.md:L115-L116`): `crates/nozoki-app/tests/config.rs:L11`. That file is the test
+  - QC-13, *`ka-reader-app` must not import `std::fs` outside its log module*
+    (`docs/nfdr.md:L115-L116`): `crates/ka-reader-app/tests/config.rs:L11`. That file is the test
     QC-23, QC-24 and QC-36 name, and it has to read `tauri.conf.json` and the capability file.
   - QC-30 half (1), *no `std::env::args` in the product's own crates* (`docs/nfdr.md:L275-L276`):
-    `crates/nozoki-core/tests/walk.rs:L66`. That file is the driver `checks/read-only.sh` runs
+    `crates/ka-reader-core/tests/walk.rs:L66`. That file is the driver `checks/read-only.sh` runs
     (`checks/read-only.sh:L88`), and it takes the fixture path as its argument.
 
   Each of those properties is about shipped code, for the same reason QC-61's is. If the fold wrote
@@ -163,7 +163,7 @@
   *Failure paths, each named in the slot so it is not read as coverage.* A `#[cfg(test)]` module
   inside `src/` stays inside every rule. The tree holds no such site that breaks one
   (`grep -rn 'fs::write\|set_logger' crates/*/src/` finds only the log module), so nothing is
-  decided for it. `crates/nozoki-app/build.rs` and any later `benches/` or `examples/` are not
+  decided for it. `crates/ka-reader-app/build.rs` and any later `benches/` or `examples/` are not
   excluded, because no site needs them to be. Shipped code that includes a file from `tests/`
   through a `#[path]` attribute would escape the rules, and that is left as a review catch, with
   no grep rule invented for it.
@@ -173,7 +173,7 @@
   (`docs/nfdr.md:L668`) names the two scripts and stands, although the item named it as owed.
   `checks/structure.sh` is not in the tree (`ls checks/` prints `bundle.sh`, `fixtures`,
   `own-state.sh`, `read-only.sh`, `tests`), so no built script is made wrong by this answer. It is
-  consistent with item 3.1's answer: `crates/nozoki-app/tests/config.rs` is the test 3.1 asks to
+  consistent with item 3.1's answer: `crates/ka-reader-app/tests/config.rs` is the test 3.1 asks to
   read the registered set, and it can only do that from outside the rules QC-13 states.
 
   *The item's supporting text, one correction.* It says a script that follows the words "fails on
@@ -195,4 +195,4 @@ None this run.
 
 ## Launchers owed
 
-- **`adr/` and `nfdr.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/skill/launcher.sh product-architecture nozoki`
+- **`adr/` and `nfdr.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/skill/launcher.sh product-architecture ka-reader`

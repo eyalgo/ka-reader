@@ -23,7 +23,7 @@
   ],
   "companion_present_at_intake": true,
   "companion_retired": false,
-  "consumed_cycle_path": "/Users/eyalgolan/products/nozoki/docs/trail/sdd/cycle-15.md",
+  "consumed_cycle_path": "/Users/eyalgolan/products/ka-reader/docs/trail/sdd/cycle-15.md",
   "core_root": "/Users/eyalgolan/.kensaiapp/pins/20260925T191701Z-hwtvc7/core",
   "ended": "seats-close",
   "ended_at": "2026-09-25T19:45:01.926965+00:00",
@@ -34,12 +34,12 @@
   "output_tokens": 0,
   "output_tokens_under_counted": true,
   "pending_request": {
-    "cdo": "CDO \u2014 round 1, turn taken. The CTO's successor work is done: the three refused cases were read against \u00a7 4 C-E4 and the `open-a-folder` / `read-markdown` observable halves, and the answer is that nothing in my lane *stated* what the row says there \u2014 so C-E4 now does.\n\n**What I checked, before writing.** `docs/trail/sdd/cycle-15.md` \u00a7 5.1's Answer settles that for the three refused-though-inward spellings \"the row's sentence is wrong about where the link leads, and C-D1 is what wins\" \u2014 the owner's call, not a position to reopen. My lane's surfaces against that: \u00a7 6 S-1's observable half binds \"an entry that cannot be read is marked with what the tool observed\" (`docs/SDD.md:L1296`, from `docs/UXD.md` UX-S2 Error, `:L237`); S-3's binds \"a placeholder \u2026 saying that content outside the folder is not fetched\" (`:L1432-L1434`, UX-I12); C-E4 bound \"never a cause the tool did not observe\" (`:L854`). The sentence itself is `docs/CONTENT.md`'s \u2014 one wording for anything outside the folder, \"This link leads outside the folder you opened, so Nozoki doesn't read it\" (`docs/CONTENT.md:L321-L332`), which is not mine and not a companion's. The gap was real but narrow: a builder holding C-E4 beside \u00a7 3's new \"refused as outside although they may lead in\" could read the outside sentence as an *inferred* cause and write a fourth sentence the catalogue does not carry.\n\n**The edit.**\n- **\u00a7 4 C-E4** \u2014 a clause stating that a refused path *is* something the tool observed (the spelled path left the grant, no accepted spelling brought it back, nothing read past that point), so a tree row or image placeholder carries CONTENT's one outside sentence \u2014 for the three named spellings as much as a true outside; that the sentence is wrong there by the owner's call and the price of C-D1; that no \u00a7 6 observable half tells them apart because a watcher cannot without the read the tool does not make; and that no further sentence exists \u2014 a wording is CONTENT's to change. *Violated by* gains \"a sentence written for a refused-though-inward spelling that the catalogue does not carry.\"\n- **RN-72** (CDO) \u2014 the why, and what did not move: S-1 and S-3's observable halves stay as written (each states the check's verdict, not the volume's truth); no companion item (owner-settled, no two-position disagreement); UX-I4 not reopened here (\u00a7 12 \u2014 the UXD's pen is another run's); *Traces to* unchanged.\n- **Header** \u2014 my part of the Version 19 line.\n\nNot committed \u2014 the commit is the `product-sdd` skill's.\n\n**For the CTO, not a request:** C-E4 now cites \u00a7 3 `fs-reader` by name for the accepted spellings; if the \u00a7 3 row's wording of the re-entry rule moves again, C-E4 reads it by reference, not by copy, so nothing here needs to follow.",
-    "cpo": "CPO \u2014 round 2, turn taken. Nothing to add; here is the check that says so.\n\n**The peers' edits against my lane.** `git diff -U0 -- docs/SDD.md` on the working tree lists eight hunks: the Version line (`:L9`), \u00a7 3 `fs-reader` (`:L322`), \u00a7 4 C-D1 (`:L780-L782`), \u00a7 4 C-E4 (`:L856-L867`), \u00a7 9 TO-6 (`:L2141-L2143`), \u00a7 11 R-10 (`:L2434-L2438`) and the two review notes RN-71 and RN-72 (`:L3994-L4069`). None falls inside \u00a7 1 (`:L137-`), \u00a7 5 steps 1/2/4 (`:L911-`), any \u00a7 6 CPO field (`:L1270-L1993`) or \u00a7 12's PRD-boundary clause (`:L2461-`). `docs/SDD_open_issues.md` is off disk (`ls` reports no such file), so the fold left no item for the owner and nothing for the companion.\n\n**The one thing I read for value, not lane.** \u00a7 3's new clause refuses three inward-leading spellings as outside, and the CDO's C-E4 records that the row's sentence is wrong there by the owner's call (`docs/trail/sdd/cycle-15.md` \u00a7 5.1, \"C-D1 is what wins\"). That is the read-only bar outranking the view's accuracy on one link form \u2014 the Agari's second condition over the UXD's UX-I4 \u2014 and the Agari already ranks them that way (\"the promise has held the whole way\", `system/projects/nozoki/agari.md`). No *Moves toward* or *Delivers* changes, and no PRD gap opens: the PRD's promise is \"look, don't touch\", not \"every row true\" (`docs/SDD.md:L139`, citing `docs/PRD.md` \u00a7 Purpose).\n\nUpstream still unmoved since round 1 (PRD `nozoki@7c89e19`, Agari `kensaiapp-opensource@ee561fb`).",
+    "cdo": "CDO \u2014 round 1, turn taken. The CTO's successor work is done: the three refused cases were read against \u00a7 4 C-E4 and the `open-a-folder` / `read-markdown` observable halves, and the answer is that nothing in my lane *stated* what the row says there \u2014 so C-E4 now does.\n\n**What I checked, before writing.** `docs/trail/sdd/cycle-15.md` \u00a7 5.1's Answer settles that for the three refused-though-inward spellings \"the row's sentence is wrong about where the link leads, and C-D1 is what wins\" \u2014 the owner's call, not a position to reopen. My lane's surfaces against that: \u00a7 6 S-1's observable half binds \"an entry that cannot be read is marked with what the tool observed\" (`docs/SDD.md:L1296`, from `docs/UXD.md` UX-S2 Error, `:L237`); S-3's binds \"a placeholder \u2026 saying that content outside the folder is not fetched\" (`:L1432-L1434`, UX-I12); C-E4 bound \"never a cause the tool did not observe\" (`:L854`). The sentence itself is `docs/CONTENT.md`'s \u2014 one wording for anything outside the folder, \"This link leads outside the folder you opened, so KA-Reader doesn't read it\" (`docs/CONTENT.md:L321-L332`), which is not mine and not a companion's. The gap was real but narrow: a builder holding C-E4 beside \u00a7 3's new \"refused as outside although they may lead in\" could read the outside sentence as an *inferred* cause and write a fourth sentence the catalogue does not carry.\n\n**The edit.**\n- **\u00a7 4 C-E4** \u2014 a clause stating that a refused path *is* something the tool observed (the spelled path left the grant, no accepted spelling brought it back, nothing read past that point), so a tree row or image placeholder carries CONTENT's one outside sentence \u2014 for the three named spellings as much as a true outside; that the sentence is wrong there by the owner's call and the price of C-D1; that no \u00a7 6 observable half tells them apart because a watcher cannot without the read the tool does not make; and that no further sentence exists \u2014 a wording is CONTENT's to change. *Violated by* gains \"a sentence written for a refused-though-inward spelling that the catalogue does not carry.\"\n- **RN-72** (CDO) \u2014 the why, and what did not move: S-1 and S-3's observable halves stay as written (each states the check's verdict, not the volume's truth); no companion item (owner-settled, no two-position disagreement); UX-I4 not reopened here (\u00a7 12 \u2014 the UXD's pen is another run's); *Traces to* unchanged.\n- **Header** \u2014 my part of the Version 19 line.\n\nNot committed \u2014 the commit is the `product-sdd` skill's.\n\n**For the CTO, not a request:** C-E4 now cites \u00a7 3 `fs-reader` by name for the accepted spellings; if the \u00a7 3 row's wording of the re-entry rule moves again, C-E4 reads it by reference, not by copy, so nothing here needs to follow.",
+    "cpo": "CPO \u2014 round 2, turn taken. Nothing to add; here is the check that says so.\n\n**The peers' edits against my lane.** `git diff -U0 -- docs/SDD.md` on the working tree lists eight hunks: the Version line (`:L9`), \u00a7 3 `fs-reader` (`:L322`), \u00a7 4 C-D1 (`:L780-L782`), \u00a7 4 C-E4 (`:L856-L867`), \u00a7 9 TO-6 (`:L2141-L2143`), \u00a7 11 R-10 (`:L2434-L2438`) and the two review notes RN-71 and RN-72 (`:L3994-L4069`). None falls inside \u00a7 1 (`:L137-`), \u00a7 5 steps 1/2/4 (`:L911-`), any \u00a7 6 CPO field (`:L1270-L1993`) or \u00a7 12's PRD-boundary clause (`:L2461-`). `docs/SDD_open_issues.md` is off disk (`ls` reports no such file), so the fold left no item for the owner and nothing for the companion.\n\n**The one thing I read for value, not lane.** \u00a7 3's new clause refuses three inward-leading spellings as outside, and the CDO's C-E4 records that the row's sentence is wrong there by the owner's call (`docs/trail/sdd/cycle-15.md` \u00a7 5.1, \"C-D1 is what wins\"). That is the read-only bar outranking the view's accuracy on one link form \u2014 the Agari's second condition over the UXD's UX-I4 \u2014 and the Agari already ranks them that way (\"the promise has held the whole way\", `system/projects/ka-reader/agari.md`). No *Moves toward* or *Delivers* changes, and no PRD gap opens: the PRD's promise is \"look, don't touch\", not \"every row true\" (`docs/SDD.md:L139`, citing `docs/PRD.md` \u00a7 Purpose).\n\nUpstream still unmoved since round 1 (PRD `ka-reader@7c89e19`, Agari `kensaiapp-opensource@ee561fb`).",
     "cto": "CTO \u2014 round 2, turn taken. Nothing to add; here is the check that says so.\n\n**The CDO's edit against \u00a7 3 as I wrote it.** C-E4's new clause (`docs/SDD.md:L856-L865`) describes the refusal as \"the spelled path left the grant and no spelling \u00a7 3 `fs-reader` accepts brought it back, and nothing was read past that point\" \u2014 that is \u00a7 3's definition read by reference, and it is true of it: outside the grant the walk compares spellings, re-enters only on the one accepted form, and reads nothing (`:L322`). The three cases it names as refused-though-inward are the three \u00a7 3 names, and it attributes the wrong-sentence cost to C-D1 and the owner's call (`docs/trail/sdd/cycle-15.md` \u00a7 5.1), which is where RN-71 placed it. It restates no mechanics, so if \u00a7 3's wording moves again nothing in C-E4 has to follow \u2014 the CDO's own point, confirmed from my side.\n\n**My lane, re-read after the two peers' turns.** `git diff -U0 -- docs/SDD.md` lists eight hunks; the CDO's two (`:L856-L865`, `:L867-L868`) and RN-72 (`:L4045-`) fall in \u00a7 4's experience clause and the review notes, no CTO section. The CPO altered nothing. \u00a7 3, \u00a7 4 C-D1, \u00a7 9 TO-6, \u00a7 11 R-10, \u00a7 7, \u00a7 12's SRS and downstream boundaries and *Open Questions* stand as round 1 left them. `docs/SDD_open_issues.md` is off disk; no companion item was added by any seat, so nothing awaits the owner and no downstream item is opened beyond RN-71's note that NFDR QC-6 is owed re-derivation by its own rule.\n\nThe header's Version 19 line carries the CTO part, the CDO part and the CPO's \"nothing\" \u2014 three seats, one line. Not committed \u2014 the commit is the `product-sdd` skill's."
   },
-  "product_path": "/Users/eyalgolan/products/nozoki",
-  "project": "nozoki",
+  "product_path": "/Users/eyalgolan/products/ka-reader",
+  "project": "ka-reader",
   "provider": "claude",
   "queue": [],
   "recall_outstanding": null,
@@ -48,31 +48,31 @@
   "resolved_inputs": {
     "cdo": [
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/SRS.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/UXD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/PRD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/agari.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ka-reader_doctrine.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ai_responsibility.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/definition_brief.md",
         "present": false
       },
       {
@@ -88,15 +88,15 @@
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/DESIGN.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/DESIGN.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/CONTENT.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/CONTENT.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/design_system",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/design_system",
         "present": false
       },
       {
@@ -110,31 +110,31 @@
     ],
     "cpo": [
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/SRS.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/UXD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/PRD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/agari.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ka-reader_doctrine.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ai_responsibility.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/definition_brief.md",
         "present": false
       },
       {
@@ -152,31 +152,31 @@
     ],
     "cto": [
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/SRS.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/UXD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/PRD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/agari.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ka-reader_doctrine.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ai_responsibility.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/definition_brief.md",
         "present": false
       },
       {
@@ -192,11 +192,11 @@
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/adr",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/adr",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/nfdr.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/nfdr.md",
         "present": true
       }
     ]
@@ -233,9 +233,9 @@
     "cto": "c85e15ee-b202-458c-99c4-092cdd4f8eab"
   },
   "seats": {
-    "cdo": "sdd-nozoki-run18-cdo",
-    "cpo": "sdd-nozoki-run18-cpo",
-    "cto": "sdd-nozoki-run18-cto"
+    "cdo": "sdd-ka-reader-run18-cdo",
+    "cpo": "sdd-ka-reader-run18-cpo",
+    "cto": "sdd-ka-reader-run18-cto"
   },
   "spoke_at": {
     "cdo": 3,
@@ -266,7 +266,7 @@
       "declared": "no_followup",
       "kind": "ordinary",
       "no_reply": false,
-      "request_text": "CPO \u2014 round 2, turn taken. Nothing to add; here is the check that says so.\n\n**The peers' edits against my lane.** `git diff -U0 -- docs/SDD.md` on the working tree lists eight hunks: the Version line (`:L9`), \u00a7 3 `fs-reader` (`:L322`), \u00a7 4 C-D1 (`:L780-L782`), \u00a7 4 C-E4 (`:L856-L867`), \u00a7 9 TO-6 (`:L2141-L2143`), \u00a7 11 R-10 (`:L2434-L2438`) and the two review notes RN-71 and RN-72 (`:L3994-L4069`). None falls inside \u00a7 1 (`:L137-`), \u00a7 5 steps 1/2/4 (`:L911-`), any \u00a7 6 CPO field (`:L1270-L1993`) or \u00a7 12's PRD-boundary clause (`:L2461-`). `docs/SDD_open_issues.md` is off disk (`ls` reports no such file), so the fold left no item for the owner and nothing for the companion.\n\n**The one thing I read for value, not lane.** \u00a7 3's new clause refuses three inward-leading spellings as outside, and the CDO's C-E4 records that the row's sentence is wrong there by the owner's call (`docs/trail/sdd/cycle-15.md` \u00a7 5.1, \"C-D1 is what wins\"). That is the read-only bar outranking the view's accuracy on one link form \u2014 the Agari's second condition over the UXD's UX-I4 \u2014 and the Agari already ranks them that way (\"the promise has held the whole way\", `system/projects/nozoki/agari.md`). No *Moves toward* or *Delivers* changes, and no PRD gap opens: the PRD's promise is \"look, don't touch\", not \"every row true\" (`docs/SDD.md:L139`, citing `docs/PRD.md` \u00a7 Purpose).\n\nUpstream still unmoved since round 1 (PRD `nozoki@7c89e19`, Agari `kensaiapp-opensource@ee561fb`).",
+      "request_text": "CPO \u2014 round 2, turn taken. Nothing to add; here is the check that says so.\n\n**The peers' edits against my lane.** `git diff -U0 -- docs/SDD.md` on the working tree lists eight hunks: the Version line (`:L9`), \u00a7 3 `fs-reader` (`:L322`), \u00a7 4 C-D1 (`:L780-L782`), \u00a7 4 C-E4 (`:L856-L867`), \u00a7 9 TO-6 (`:L2141-L2143`), \u00a7 11 R-10 (`:L2434-L2438`) and the two review notes RN-71 and RN-72 (`:L3994-L4069`). None falls inside \u00a7 1 (`:L137-`), \u00a7 5 steps 1/2/4 (`:L911-`), any \u00a7 6 CPO field (`:L1270-L1993`) or \u00a7 12's PRD-boundary clause (`:L2461-`). `docs/SDD_open_issues.md` is off disk (`ls` reports no such file), so the fold left no item for the owner and nothing for the companion.\n\n**The one thing I read for value, not lane.** \u00a7 3's new clause refuses three inward-leading spellings as outside, and the CDO's C-E4 records that the row's sentence is wrong there by the owner's call (`docs/trail/sdd/cycle-15.md` \u00a7 5.1, \"C-D1 is what wins\"). That is the read-only bar outranking the view's accuracy on one link form \u2014 the Agari's second condition over the UXD's UX-I4 \u2014 and the Agari already ranks them that way (\"the promise has held the whole way\", `system/projects/ka-reader/agari.md`). No *Moves toward* or *Delivers* changes, and no PRD gap opens: the PRD's promise is \"look, don't touch\", not \"every row true\" (`docs/SDD.md:L139`, citing `docs/PRD.md` \u00a7 Purpose).\n\nUpstream still unmoved since round 1 (PRD `ka-reader@7c89e19`, Agari `kensaiapp-opensource@ee561fb`).",
       "seat": "cpo",
       "spoke": true
     },

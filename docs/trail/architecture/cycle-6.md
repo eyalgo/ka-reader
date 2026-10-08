@@ -1,4 +1,4 @@
-# Architecture open issues — Nozoki
+# Architecture open issues — KA-Reader
 
 > Companion to `adr/` and `nfdr.md`. The Principal Architect authored both records
 > non-interactively; this file holds what the run could not settle from its inputs — the SRS, the SDD
@@ -29,15 +29,15 @@
 ### 3.1 QC-24's set equality names the whole command list, and the tree's check holds the commands built so far
 - **Raised by:** PM — 2026-09-19
 - **Which record:** NFDR § 1 QC-24 and its § 10 row
-- **Tracked by:** `nozoki · nemawashi · 2026-09-15_open-a-folder`
+- **Tracked by:** `ka-reader · nemawashi · 2026-09-15_open-a-folder`
 - **What it blocks:** Nothing fails today, because the check in the tree is not the check the entry
   states. QC-24 is verified by "set equality against the list" (`nfdr.md:L205-L209`), and the list is
   `open_folder`, `list_tree`, `select_file`, `open_relative_link`, `set_theme`, with three more
   where built, plus the asset scheme. Read literally, no build before the last slice passes it.
 - **Where it shows:**
   - QC-24 (`nfdr.md:L205-L209`) and its § 10 row (`nfdr.md:L641`).
-  - The tree at `nozoki@1741429`: `crates/nozoki-app/capabilities/main.json:L5` grants
-    `allow-open-folder` and `allow-list-tree`, and `crates/nozoki-app/tests/config.rs:L231` holds
+  - The tree at `ka-reader@1741429`: `crates/ka-reader-app/capabilities/main.json:L5` grants
+    `allow-open-folder` and `allow-list-tree`, and `crates/ka-reader-app/tests/config.rs:L231` holds
     set equality against those two. No asset scheme is granted.
   - QC-23 (`nfdr.md:L188-L200`) already states the same kind of staging for C-R7's CSP half, keyed on
     what C-R7 carries. QC-24 has no counterpart for the command half.
@@ -50,7 +50,7 @@
   settled.
 - **Answer:** Answered in the owner's seat by a `companion-self-answer` run, 2026-09-19. **The
   PM's lean is confirmed, with additions, and the item no longer waits on anything.**
-  `docs/SDD_open_issues.md` § 5.1 was answered (`nozoki@d9ffe66`) and folded (`nozoki@c1f8a20`).
+  `docs/SDD_open_issues.md` § 5.1 was answered (`ka-reader@d9ffe66`) and folded (`ka-reader@c1f8a20`).
   `docs/SDD.md` is Settled at v7, and § 4 C-R7 (`docs/SDD.md:L483-L503`) states the staged grant.
   The SDD's own rule is that "the § 4 statement wins and the NFDR entry is re-derived"
   (`docs/SDD.md:L408`), so QC-24 is re-derived from C-R7 as it reads at v7. That is transcription,
@@ -64,7 +64,7 @@
   scheme is granted. QC-24 says when the scheme enters the grant and not where the grant is
   written, because where is part of the SDD's open question (`docs/SDD.md:L2644`).
 
-  **What verifies it.** `cargo test --locked -p nozoki-app --test config`, holding four things:
+  **What verifies it.** `cargo test --locked -p ka-reader-app --test config`, holding four things:
   set equality between the commands the capability file grants and the commands the host
   registers; that set inside SM-4's list; no plugin; and no asset scheme while the placeholder
   stands. The test reads the registered set and never a hand-kept copy of it, which is C-R7's own
@@ -78,7 +78,7 @@
   registration move together. Only that slice's own bar holds the command until the pin exists.
 
   **What a delivery reader needs and no entry states.** The test as built holds two hand-kept
-  constants (`crates/nozoki-app/tests/config.rs:L228`, `:L231`, at `nozoki@1741429`). It passes
+  constants (`crates/ka-reader-app/tests/config.rs:L228`, `:L231`, at `ka-reader@1741429`). It passes
   today and does not yet meet the re-derived tail. The entry follows the SDD and the test follows
   the entry, which is how RN-18 read QC-25 against `checks/bundle.sh`. How the test comes to read
   the registered set is the delivery tier's to plan (`docs/SDD.md` § SDD Review Notes RN-47).
@@ -93,50 +93,50 @@
 ### 3.2 QC-61's `structure.sh` check reaches test binaries that must install a logger
 - **Raised by:** PM — 2026-09-19
 - **Which record:** NFDR § 1 QC-61 and its § 10 row
-- **Tracked by:** `nozoki · nemawashi · 2026-09-15_open-a-folder`
+- **Tracked by:** `ka-reader · nemawashi · 2026-09-15_open-a-folder`
 - **What it blocks:** `checks/structure.sh` as QC-61 states it. The check is "`log::set_logger` and
-  `log::set_boxed_logger` appear only in `nozoki-app`" (`nfdr.md:L480-L481`), and nothing scopes it
+  `log::set_boxed_logger` appear only in `ka-reader-app`" (`nfdr.md:L480-L481`), and nothing scopes it
   to shipped sources. A script that follows the words fails on the tree as it stands.
 - **Where it shows:**
   - QC-61 *verified by* (`nfdr.md:L478-L481`) and its § 10 row (`nfdr.md:L668`).
-  - The tree at `nozoki@1741429`: `grep -rn set_logger crates/` outside `crates/nozoki-app/src/`
-    prints `crates/nozoki-core/tests/failure_log.rs:52` and
-    `crates/nozoki-core/tests/failure_log_kinds.rs:61`. Each installs a capturing logger in its own
-    test binary to observe the warn line `nozoki-core` emits for a failed read. The logger is
+  - The tree at `ka-reader@1741429`: `grep -rn set_logger crates/` outside `crates/ka-reader-app/src/`
+    prints `crates/ka-reader-core/tests/failure_log.rs:52` and
+    `crates/ka-reader-core/tests/failure_log_kinds.rs:61`. Each installs a capturing logger in its own
+    test binary to observe the warn line `ka-reader-core` emits for a failed read. The logger is
     process-global, so a test that asserts on log output has to install one.
   - The property QC-61 protects is about the shipped process: "installed once at startup in
-    `nozoki-app`, the composition root" (`nfdr.md:L467-L468`). A test binary is not shipped.
+    `ka-reader-app`, the composition root" (`nfdr.md:L467-L468`). A test binary is not shipped.
 - **If a document has to be written:** none. What is owed is the check's scope stated in the entry.
-  The PM's lean is: `set_logger` / `set_boxed_logger` appear only under `crates/nozoki-app/src/`
+  The PM's lean is: `set_logger` / `set_boxed_logger` appear only under `crates/ka-reader-app/src/`
   among shipped sources, and test targets under `crates/*/tests/` are outside the check.
 - **Answer:** Answered in the owner's seat by a `companion-self-answer` run, 2026-09-19. **The
   PM's lean is confirmed, with one addition: the scope belongs to `checks/structure.sh`, not to
   QC-61's rule alone.**
 
   **QC-61.** `log::set_logger` and `log::set_boxed_logger` appear only under
-  `crates/nozoki-app/src/`, and test targets under `crates/*/tests/` are outside the rule. The
-  obligation clause does not move. The property is "installed once at startup in `nozoki-app`, the
+  `crates/ka-reader-app/src/`, and test targets under `crates/*/tests/` are outside the rule. The
+  obligation clause does not move. The property is "installed once at startup in `ka-reader-app`, the
   composition root" (`nfdr.md:L467-L468`), which is about the shipped process. Cargo compiles each
   file under `tests/` "as a separate crate"
   (https://doc.rust-lang.org/cargo/reference/cargo-targets.html, read 2026-09-19), so a logger
   installed there is never in the process an adopter runs. `set_logger` sets "the global logger"
   and "may only be called once in the lifetime of a program"
   (https://docs.rs/log/latest/log/fn.set_logger.html, read 2026-09-19), so a test that asserts on
-  `nozoki-core`'s warn line can observe it only by installing a logger in its own binary.
-  "`nozoki-core` … initializes nothing" stays true of the library:
-  `grep -rn set_logger crates/nozoki-core/src/` prints nothing at `nozoki@1741429`.
+  `ka-reader-core`'s warn line can observe it only by installing a logger in its own binary.
+  "`ka-reader-core` … initializes nothing" stays true of the library:
+  `grep -rn set_logger crates/ka-reader-core/src/` prints nothing at `ka-reader@1741429`.
 
-  **The addition.** The same script carries other rules that say "in `nozoki-core`", "in
-  `nozoki-app`" or "in the product's own crates" and state no scope. The tree at `nozoki@1741429`
+  **The addition.** The same script carries other rules that say "in `ka-reader-core`", "in
+  `ka-reader-app`" or "in the product's own crates" and state no scope. The tree at `ka-reader@1741429`
   holds a test-target site against each:
-  - QC-2's *no write API in `nozoki-core` outside `own-state`* —
-    `crates/nozoki-core/tests/common/mod.rs:L57` (`fs::write`, building a fixture).
-  - QC-9's *`nozoki-core` must not import `std::process`*, the rule QC-7's tail shares —
-    `crates/nozoki-core/tests/common/mod.rs:L11`.
-  - QC-13's *`nozoki-app` must not import `std::fs` outside its log module* —
-    `crates/nozoki-app/tests/config.rs:L11`, the test QC-23 and QC-24 name.
+  - QC-2's *no write API in `ka-reader-core` outside `own-state`* —
+    `crates/ka-reader-core/tests/common/mod.rs:L57` (`fs::write`, building a fixture).
+  - QC-9's *`ka-reader-core` must not import `std::process`*, the rule QC-7's tail shares —
+    `crates/ka-reader-core/tests/common/mod.rs:L11`.
+  - QC-13's *`ka-reader-app` must not import `std::fs` outside its log module* —
+    `crates/ka-reader-app/tests/config.rs:L11`, the test QC-23 and QC-24 name.
   - QC-30 half (1)'s *no `std::env::args` in the product's own crates* —
-    `crates/nozoki-core/tests/walk.rs:L66`, the driver `checks/read-only.sh` runs, which has to
+    `crates/ka-reader-core/tests/walk.rs:L66`, the driver `checks/read-only.sh` runs, which has to
     read its fixture argument.
 
   Each property is about shipped code, as QC-61's is. Scoping QC-61 alone would leave a reader to
@@ -150,7 +150,7 @@
   **Not covered, named.** (1) A `#[cfg(test)]` module inside `src/` stays inside every rule. The
   tree holds no such site that breaks one, so nothing is decided for it: a layer-1 test that needs
   a write or a logger sits under `tests/` until a site shows otherwise. (2)
-  `crates/nozoki-app/build.rs`, and any later `benches/` or `examples/`, are not excluded. No site
+  `crates/ka-reader-app/build.rs`, and any later `benches/` or `examples/`, are not excluded. No site
   in the tree needs them to be. (3) Shipped code that pulls in a file from `tests/` through a
   `#[path]` attribute would escape the rules. No grep rule is added for it. It is a review catch
   at `development-design`.

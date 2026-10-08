@@ -1,4 +1,4 @@
-# SDD open issues — Nozoki
+# SDD open issues — KA-Reader
 
 > Companion to `SDD.md`. The CTO wrote the SDD; this file holds what that run could not settle from
 > its inputs (the PRD, the SRS, the UXD, and any context or constraints), and the calls that are the
@@ -33,7 +33,7 @@
 
 > **No `product-sdd` run wrote this file.** The PM opened it on 2026-10-04 from the SDD's own companion
 > template. `git-reader` now answers `state` and `status`, and `folder-model` folds the answer into a Git
-> item (`nozoki@6a0725c`). Four statements of the SDD no longer match what landed: two hand-offs to "the
+> item (`ka-reader@6a0725c`). Four statements of the SDD no longer match what landed: two hand-offs to "the
 > design of the change that adds" a type, which that change has now made, and two clauses of S-4's
 > reducer case. The SDD is Settled, and with no companion on disk a `product-sdd` re-run reads it as done
 > and has nothing to act on. Its four items are in § 5.
@@ -67,7 +67,7 @@ None.
   siblings stand as they were — `observed` where read, `pending` where not yet read, `failed` where
   an earlier read failed. RN-44's parenthesis, which quotes C-I1, follows.
 - **Rationale:** The wording cannot be met by any folder that holds a folder. `list_tree` reports a
-  folder it has not expanded as `Pending` (`crates/nozoki-core/src/fs_reader.rs:L137`, `:L853`), so
+  folder it has not expanded as `Pending` (`crates/ka-reader-core/src/fs_reader.rs:L137`, `:L853`), so
   a failed entry beside an unexpanded folder has a sibling that is not `observed`. § 5.4 of this
   file records the same defect met in S-4: the reducer case had to choose a tree of files only. S-5
   has not been built, and its `--test watch` case would meet it again. The requirement C-I1 cites
@@ -96,23 +96,23 @@ None.
 ### 5.1 § 3 `GitState` leaves a choice to "the change that adds `state`"; that change has made it
 - **Raised by:** PM — 2026-10-04
 - **Seat:** cto
-- **Tracked by:** `nozoki · nemawashi · 2026-10-02_git-says-what-changed`
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-02_git-says-what-changed`
 - **What it blocks:** nothing fails. The next Git surface reads the entity to learn what the model holds,
   and the entity still says the choice is open.
 - **Where it shows:** § 3 `GitState` (`docs/SDD.md:L479-L481`): "whether it is the type the port returns
   or one the model builds from what the port returns is the design of the change that adds `state`".
   In the tree, the model builds it: `pub struct GitState` is defined in `folder-model`
-  (`crates/nozoki-core/src/folder_model.rs:L166`) and holds the `HeadState` the port answers
-  (`crates/nozoki-core/src/git_reader.rs:L74`). The port answers its parts through separate calls,
+  (`crates/ka-reader-core/src/folder_model.rs:L166`) and holds the `HeadState` the port answers
+  (`crates/ka-reader-core/src/git_reader.rs:L74`). The port answers its parts through separate calls,
   `state` and `status`. The likely fold: state that the model builds `GitState` from the port's answers
   and defines it in `folder-model`.
 - **If a document has to be written:** none. The § 3 entity in `SDD.md`.
 - **Answer:** Take the likely fold, with one bound. § 3 `GitState` states the choice as made:
   `GitState` is a type `folder-model` defines and builds from what the port returns, and the port
   never returns it. The hand-off to "the change that adds `state`" goes. The bound: do not say the
-  model builds it from `state` and `status` both. At `nozoki@6a0725c` the model asks `state` alone
+  model builds it from `state` and `status` both. At `ka-reader@6a0725c` the model asks `state` alone
   and `GitState` holds the port's `HeadState` and nothing else
-  (`crates/nozoki-core/src/folder_model.rs:L166-L168`, `:L273-L278`); the changed and staged entries
+  (`crates/ka-reader-core/src/folder_model.rs:L166-L168`, `:L273-L278`); the changed and staged entries
   the entity lists are the design, and no landed change puts them in the model yet. The rest of the
   entity stands as written. Answered in the CTO's seat by an unattended run; reasoning in
   `docs/trail/sdd/self_answer-35.md`.
@@ -120,19 +120,19 @@ None.
 ### 5.2 SM-2 leaves where the crossing types live to "the design of the change that adds it"; they live in `git-reader`
 - **Raised by:** PM — 2026-10-04
 - **Seat:** cto
-- **Tracked by:** `nozoki · nemawashi · 2026-10-02_git-says-what-changed`
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-02_git-says-what-changed`
 - **What it blocks:** nothing fails. A later port method (`diff`, `walk`) reads SM-2 to place its types,
   and the row gives two homes with no choice made between them.
 - **Where it shows:** SM-2's row (`docs/SDD.md:L420`): a crossing type "is defined in `git-reader`, or in
-  a module of `nozoki-core` that is no part, and which of the two is the design of the change that adds
+  a module of `ka-reader-core` that is no part, and which of the two is the design of the change that adds
   it". Every type `state` and `status` answer is defined in `git-reader`: `HeadState`, `BranchElement`,
   `RepositoryState`, `StatusLists`, `StatusEntry`, `StatusCategory` and `GitReadCondition`
-  (`crates/nozoki-core/src/git_reader.rs:L74-L194`). The likely fold: say that the types `state` and
+  (`crates/ka-reader-core/src/git_reader.rs:L74-L194`). The likely fold: say that the types `state` and
   `status` answer are defined in `git-reader`.
 - **If a document has to be written:** none. SM-2's row in `SDD.md`.
 - **Answer:** Take the likely fold, and keep the rule. SM-2's row says where the types that cross
   today live: every type `probe`, `state` and `status` answer is defined in `git-reader`, beside the
-  trait (`crates/nozoki-core/src/git_reader.rs:L74-L263`), which is also what the row's own earlier
+  trait (`crates/ka-reader-core/src/git_reader.rs:L74-L263`), which is also what the row's own earlier
   sentence, "with the plain-data types that cross beside it", already says. The rule itself stays
   as written for a type a later method brings: never in `folder-model`, and its home is the design
   of the change that adds it. The row is not asked to choose a home for the types of `diff` and
@@ -143,7 +143,7 @@ None.
 ### 5.3 S-4 and RN-44 say the reducer case needs a double because `linked-worktree` reads fine in-process; the adapter now refuses it there
 - **Raised by:** PM — 2026-10-04
 - **Seat:** cto
-- **Tracked by:** `nozoki · nemawashi · 2026-10-02_git-says-what-changed`
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-02_git-says-what-changed`
 - **What it blocks:** nothing fails. The reason the slice gives for its double is now false, and a
   reader taking it at its word would think the in-process harness cannot produce the R-3 failure.
 - **Where it shows:** S-4's *Command* (`docs/SDD.md:L1720-L1721`) says the double is "injected because
@@ -152,8 +152,8 @@ None.
   "libgit2 reads a gitdir outside the opened folder there without complaint". In the tree, the
   in-process adapter refuses both fixtures by the path's spelling before libgit2 opens anything:
   `test_linked_worktree_and_submodule_answer_outside_from_both_calls`
-  (`crates/nozoki-core/tests/git_state.rs:L715-L725`) asserts `GitDirectoryOutside`, and it passes
-  (`cargo test --locked -p nozoki-core --test git_state`: 36 passed, run 2026-10-04 at `nozoki@6a0725c`).
+  (`crates/ka-reader-core/tests/git_state.rs:L715-L725`) asserts `GitDirectoryOutside`, and it passes
+  (`cargo test --locked -p ka-reader-core --test git_state`: 36 passed, run 2026-10-04 at `ka-reader@6a0725c`).
   The double is still how the reducer case reaches the model with no adapter. The likely fold: give
   that as the reason, and say the in-process adapter now refuses the fixture by spelling.
 - **If a document has to be written:** none. S-4 and RN-44 in `SDD.md`.
@@ -166,9 +166,9 @@ None.
   The `git_state` suite runs the `linked-worktree` and `submodule` fixtures through the adapter, and
   both `state` and `status` answer the outside condition, because the adapter locates the Git
   directory and the common directory by spelling before libgit2 opens anything
-  (`crates/nozoki-core/src/git_reader/libgit2.rs:L79-L81`;
-  `crates/nozoki-core/tests/git_state.rs:L714-L725`; `cargo test --locked -p nozoki-core --test
-  git_state`: 36 passed, re-run 2026-10-04 at `nozoki@22e36c3`). Three: the fold claims nothing
+  (`crates/ka-reader-core/src/git_reader/libgit2.rs:L79-L81`;
+  `crates/ka-reader-core/tests/git_state.rs:L714-L725`; `cargo test --locked -p ka-reader-core --test
+  git_state`: 36 passed, re-run 2026-10-04 at `ka-reader@22e36c3`). Three: the fold claims nothing
   about the bundle. A refusal by spelling shows nothing about the sandbox, so § 11 R-3 and *Open
   Questions*' second item stand as written. RN-44 is corrected where it stands, and a new review
   note records what it said. Answered in the CTO's seat by an unattended run; reasoning in
@@ -177,13 +177,13 @@ None.
 ### 5.4 S-4 and RN-44 say "every tree item `observed`"; a tree holding an unexpanded folder holds it `Pending`
 - **Raised by:** PM — 2026-10-04
 - **Seat:** cto
-- **Tracked by:** `nozoki · nemawashi · 2026-10-02_git-says-what-changed`
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-02_git-says-what-changed`
 - **What it blocks:** nothing fails. The bar is unmeetable as worded for any tree with a folder in it, and
   the case that meets it had to choose a tree of files only.
 - **Where it shows:** S-4's *Command* (`docs/SDD.md:L1721-L1722`) and RN-44 (`docs/SDD.md:L3315`) ask
   that after the failed Git read "every tree item `observed`". `list_tree` reports a folder it has not
-  expanded as `Pending` (`crates/nozoki-core/src/fs_reader.rs:L137`, `:L853`). The reducer case passes
-  by using a tree of files only (`model_over_files`, `crates/nozoki-core/tests/git_state.rs:L940-L947`)
+  expanded as `Pending` (`crates/ka-reader-core/src/fs_reader.rs:L137`, `:L853`). The reducer case passes
+  by using a tree of files only (`model_over_files`, `crates/ka-reader-core/tests/git_state.rs:L940-L947`)
   and asserting the tree is unchanged by the fold. The likely fold: say the failed Git read leaves every
   tree item as it was — `observed`, or `pending` for a folder not yet expanded.
 - **If a document has to be written:** none. S-4 and RN-44 in `SDD.md`.
@@ -193,9 +193,9 @@ None.
   file stays `observed`, a folder not yet expanded stays `pending`, and an entry that had failed
   stays `failed`. The item's wording names the first two; the third is the same rule and is added so
   the bar does not read as "no tree item may be `failed`". It rests on the fold itself, which
-  replaces the Git item alone (`crates/nozoki-core/src/folder_model.rs:L273-L288`), and on what the
+  replaces the Git item alone (`crates/ka-reader-core/src/folder_model.rs:L273-L288`), and on what the
   case asserts, that the tree is equal before and after
-  (`crates/nozoki-core/tests/git_state.rs:L952-L985`). RN-44's parenthesis quoting C-I1, "its
+  (`crates/ka-reader-core/tests/git_state.rs:L952-L985`). RN-44's parenthesis quoting C-I1, "its
   siblings `observed`", is not reworded here: it quotes a § 4 condition that has the same defect,
   and that is § 2.1 of this file. Answered in the CTO's seat by an unattended run; reasoning in
   `docs/trail/sdd/self_answer-35.md`.

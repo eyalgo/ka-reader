@@ -1,4 +1,4 @@
-# PRD open issues — Nozoki 覗き
+# PRD open issues — KA-Reader
 
 > Companion to `PRD.md`. The CPO authored the PRD non-interactively; this file holds
 > what it could not settle from the inputs. **Answer inline** — fill each **Answer** /
@@ -25,7 +25,7 @@
 
 ## 1. Open issues — product-defining questions with no answer yet
 
-### 1.1 Under what public identity is Nozoki published?
+### 1.1 Under what public identity is KA-Reader published?
 - **Why it matters:** the PRD commits the product to a public release under MIT with a README
   that is its front door, and to a support posture and a security-reporting channel that a
   stranger will address to *someone*. Whose account the repository sits under, and what name
@@ -38,7 +38,7 @@
   organisation. Once answered it lands in Assumptions beside the licence, and the two `[OPEN]`
   lines in Open Questions collapse to one or none.
 - **Answer:** kensaiapp — the repository sits under the `kensaiapp` GitHub organisation
-  (already true on disk: `git@github.com:kensaiapp/nozoki.git`), and `kensaiapp` is also the name
+  (already true on disk: `git@github.com:kensaiapp/ka-reader.git`), and `kensaiapp` is also the name
   the tool is maintained under. No personal handle is the public face.
 
 ### 1.2 Which platforms does v1 promise to run on?
@@ -113,7 +113,7 @@
   posture the README carries. Anything firmer than best-effort is a capacity commitment only you
   can make.
 - **Confirm or override:** confirm best-effort, and state it harder than the lean does.
-  The maintainer is a private individual and Nozoki is a side project, so **nothing is
+  The maintainer is a private individual and KA-Reader is a side project, so **nothing is
   promised at all** — issues and questions are welcome and read when there is time, with
   no response time, no commitment to fix, and no commitment to a fix ever arriving. That
   applies to security reports too: a private channel exists and reports are read, but the

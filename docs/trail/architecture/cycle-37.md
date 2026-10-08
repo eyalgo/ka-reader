@@ -1,4 +1,4 @@
-# Architecture open issues — Nozoki
+# Architecture open issues — KA-Reader
 
 > Companion to `adr/` and `nfdr.md`. The Principal Architect authored both records
 > non-interactively; this file holds what the run could not settle from its inputs — the SRS, the SDD
@@ -48,7 +48,7 @@ None.
   - **Surprising without context.** A repository that `git status` reads in a terminal shows a
     failed Git item here, and the adapter parses Git's config syntax beside libgit2.
   - **A real trade-off.** The record names what a reader pays and what is not built at
-    `nozoki@076eac2`: the alternates check, the section-path refusals and the refusal on the
+    `ka-reader@076eac2`: the alternates check, the section-path refusals and the refusal on the
     submodule map.
 
   This seat records the decision and does not make it. What is put to you is whether the log

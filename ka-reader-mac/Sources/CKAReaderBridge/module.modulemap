@@ -1,0 +1,7 @@
+// The bridge's generated header, by a path relative to this file: `<repository>/target/include/`.
+// `crates/ka-reader-bridge/build.rs` writes it on every build of the bridge, and it is never committed.
+module CKAReaderBridge [system] {
+    header "../../../target/include/ka_reader_bridge.h"
+    link "ka_reader_bridge"
+    export *
+}

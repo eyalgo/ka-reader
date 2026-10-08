@@ -87,8 +87,8 @@ removes it with the file.
 ### 2.1 — The Version line has lost versions 5–7, and v8's entry runs into the tail of v5's
 
 - **What the document is owed:** Put back v5's opening clause
-  (`nozoki@67372a5:docs/SDD.md:L9`). Restore the v7 and v6 entries from line 9 of
-  `nozoki@c1f8a20` and `nozoki@b3439e8`. From now on, bump the version by adding a new first line
+  (`ka-reader@67372a5:docs/SDD.md:L9`). Restore the v7 and v6 entries from line 9 of
+  `ka-reader@c1f8a20` and `ka-reader@b3439e8`. From now on, bump the version by adding a new first line
   above the old ones, never by replacing it.
 - **Why it is worth a cycle:** It meets the first ground in `decide_companion_answers.md`
   § *The items are not the whole of what a document is owed*: a fact in it is now false. The
@@ -104,4 +104,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/SDD.md`** — `<CORE>/launchers/product-sdd/launcher.sh nozoki`
+- **`docs/SDD.md`** — `<CORE>/launchers/product-sdd/launcher.sh ka-reader`

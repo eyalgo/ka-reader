@@ -36,8 +36,8 @@
 #   No other environment variable changes what is read: none names a registry, a crate or a skip.
 #
 # THE CRATE SET
-#   The packages `cargo tree -p nozoki-bridge --target aarch64-apple-darwin -e normal --locked`
-#   prints (the command QC-30 fixes), with presentation flags only. `nozoki-bridge` here is the
+#   The packages `cargo tree -p ka-reader-bridge --target aarch64-apple-darwin -e normal --locked`
+#   prints (the command QC-30 fixes), with presentation flags only. `ka-reader-bridge` here is the
 #   set's root and no skip. Each is joined by name and version to a package of
 #   `cargo metadata --format-version 1 --locked --filter-platform aarch64-apple-darwin`. A package
 #   whose id is one of the metadata's workspace_members is skipped: membership is the test, and no
@@ -149,7 +149,7 @@ command -v plutil > /dev/null 2>&1 || unresolved "plutil is not on PATH, so the 
 # The tree is printed as `<name> v<version> ...`; a repeat, and Cargo's `(*)` marker, collapse to
 # one line.
 status=0
-(cd "$root" && cargo tree -p nozoki-bridge --target aarch64-apple-darwin -e normal --locked --prefix none --format '{p}') \
+(cd "$root" && cargo tree -p ka-reader-bridge --target aarch64-apple-darwin -e normal --locked --prefix none --format '{p}') \
   > "$work/tree.out" 2> "$work/tree.err" || status=$?
 [ "$status" -eq 0 ] || unresolved "cargo tree exited $status: $(head -n 1 "$work/tree.err")"
 awk -v tab="$TAB" 'NF >= 2 && $2 ~ /^v[0-9]/ { print $1 tab substr($2, 2) }' "$work/tree.out" | LC_ALL=C sort -u > "$work/set.tsv"

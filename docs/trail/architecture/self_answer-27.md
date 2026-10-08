@@ -4,9 +4,9 @@
 
 - **Companion:** `docs/architecture_open_issues.md`
 - **Document:** `docs/adr/` and `docs/nfdr.md`. The NFDR is v25 and Settled (`docs/nfdr.md:L3-L5`).
-  No `product-architecture` run wrote this companion. The PM opened it at `nozoki@c308b2f` with four
+  No `product-architecture` run wrote this companion. The PM opened it at `ka-reader@c308b2f` with four
   items in § 3, raised from downstream after `checks/structure.sh` and its suite landed at
-  `nozoki@463acb9`. All four are about `nfdr.md`. None touches an ADR.
+  `ka-reader@463acb9`. All four are about `nfdr.md`. None touches an ADR.
 - **Decided by:** `decide_companion_answers.md` v1.3.0
 - **Date:** 2026-10-03
 - **Sources re-read:** Two, both behind 3.4's answer.
@@ -46,7 +46,7 @@
   `development-design` reading the entry" (`docs/nfdr.md:L35-L37`). Now that `checks/structure.sh`
   is in the tree, that sentence makes every rule § 10 assigns to the script read as executable. The
   script holds four clauses (`checks/structure.sh:L35-L84`) and names the rest "NOT held"
-  (`:L86-L93`). On the tree at `nozoki@c308b2f`, running `bash checks/structure.sh` printed
+  (`:L86-L93`). On the tree at `ka-reader@c308b2f`, running `bash checks/structure.sh` printed
   `structure.sh: 12 Rust files in 2 crates read — nothing found` and exited 0. That pass covers the
   four clauses and nothing else. So the header's sentence is a coverage claim nothing provides.
   The script's header already reads the sentence per rule (`:L88-L90`). The NFDR should say the
@@ -89,7 +89,7 @@
   says it reads" (`docs/nfdr.md:L1033-L1035`). `checks/tests/test_structure.sh` has cases for each
   of the four clauses held today (for example `test_case_3_core_process_names_both_rules`,
   `test_case_5_core_non_owner_filesystem_is_rejected`). **Absent:** a script not yet in the tree
-  (`checks/entry-points.sh`, `checks/latency.sh` and others; `ls checks/` at `nozoki@c308b2f`)
+  (`checks/entry-points.sh`, `checks/latency.sh` and others; `ls checks/` at `ka-reader@c308b2f`)
   holds no rule, so the per-rule sentence covers it and the header needs no second clause.
   **Empty:** a script that lands holding no rule is the same as an absent one. **Concurrent:** two
   changes add rules in parallel. Each one's header edit is its own, and the NFDR changes for
@@ -120,25 +120,25 @@
   (`.github/workflows/ci.yml:L31-L32`). I checked the nine rows the item cites by line
   (`docs/nfdr.md:L1201`, `:L1206`, `:L1208`, `:L1209`, `:L1210`, `:L1213`, `:L1223`, `:L1228`,
   `:L1245`). Each names `checks/structure.sh` with no suite beside it, and `grep -n 'structure.sh'
-  docs/nfdr.md` finds no other row in § 10 that names it. `ls checks/tests` at `nozoki@c308b2f` lists seven
+  docs/nfdr.md` finds no other row in § 10 that names it. `ls checks/tests` at `ka-reader@c308b2f` lists seven
   `test_*.sh`. § 9's own *verified by* loop (`for s in checks/tests/*.sh; do grep -q "$s"
   .github/workflows/ci.yml || echo "$s"; done`) printed nothing. So all seven are on steps, and
   "six" in § 9 (`docs/nfdr.md:L1039-L1041`) and in § 10's preamble (`:L1195`) is now false. § 9
   itself says this is a re-measurement and not a contradiction (`:L1045-L1046`).
 
   *Addition 1: the line numbers in the same sentence.* The two structure steps landed at
-  `ci.yml:L28-L32`, and every step after them moved down six lines. At `nozoki@ab39502`,
+  `ci.yml:L28-L32`, and every step after them moved down six lines. At `ka-reader@ab39502`,
   `git show ab39502:.github/workflows/ci.yml` puts the six suites' `run:` lines at 36, 42, 53, 62,
   68 and 71. Those match § 9's citations, so the citations were true when written. At
-  `nozoki@463acb9` (`git diff --stat 463acb9 HEAD -- .github/workflows/ci.yml` is empty, so the
+  `ka-reader@463acb9` (`git diff --stat 463acb9 HEAD -- .github/workflows/ci.yml` is empty, so the
   same holds at HEAD) the steps are: `test_structure.sh` `:L31-L32`, `test_bundle.sh` `:L41-L42`,
   `test_view.sh` `:L47-L48`, `test_renderer.sh` `:L58-L59`, `test_read_only.sh` `:L67-L68`,
   `test_no_network.sh` `:L73-L74` and `test_own_state.sh` `:L76-L77`. The bullet's opening
   citation "the way `Bundle probe suite` runs `checks/tests/test_bundle.sh`
   (`.github/workflows/ci.yml:L35-L36`)" (`docs/nfdr.md:L1036-L1037`) carries no commit, and at HEAD
-  `:L35` is `run: nozoki-mac/assemble.sh`. A re-measurement that fixed the count and left these
+  `:L35` is `run: ka-reader-mac/assemble.sh`. A re-measurement that fixed the count and left these
   would leave the sentence half-false. Pin them to a commit, as QC-62's tail already does
-  ("`.github/workflows/ci.yml:L46-L47` at `nozoki@ab39502`", `docs/nfdr.md:L493`), so the next
+  ("`.github/workflows/ci.yml:L46-L47` at `ka-reader@ab39502`", `docs/nfdr.md:L493`), so the next
   inserted step makes them dated rather than wrong.
 
   *Addition 2: one home for the count.* The count went stale in two places because it is written
@@ -182,7 +182,7 @@
   escape as "shipped code that pulls a file from `tests/` in through a `#[path]` attribute" and
   leaves it a review catch "because the tree holds no such site to shape one against"
   (`docs/nfdr.md:L1026-L1028`). "Such site" means shipped code. The two sites the item found
-  (`crates/nozoki-core/src/lib.rs:L18-L24`, `crates/nozoki-bridge/src/lib.rs:L10-L16`, both opened
+  (`crates/ka-reader-core/src/lib.rs:L18-L24`, `crates/ka-reader-bridge/src/lib.rs:L10-L16`, both opened
   this run) are each gated `#[cfg(test)]`. The Rust Reference says the `test` option is "Enabled
   when compiling the test harness", so neither site ships, and the sentence is not false as
   written. The item's own text says so: "Neither is shipped code, so the escape itself is not
@@ -211,7 +211,7 @@
 
   *Check 3.* It agrees with QC-14 at v25, which also judges a unit "as it ships" and leaves out a
   test target's `#[path]` into `checks/` (`docs/nfdr.md:L5`). The third `#[path]` site in the tree,
-  `crates/nozoki-core/tests/walk.rs:L6` into `checks/walk.rs`, is that QC-14 case. It sits under
+  `crates/ka-reader-core/tests/walk.rs:L6` into `checks/walk.rs`, is that QC-14 case. It sits under
   `tests/` and is not this item's. It agrees with 3.4's answer.
 
   *Check 4.* **Stale:** a change removes `#[cfg(test)]` from either `test_support`. The body ships
@@ -246,8 +246,8 @@
   only "when compiling the test harness" (Rust Reference, re-read 2026-10-03), so it never enters
   the adopter's process. It is out on the same ground. The module-by-module reading would put it
   back in. That reading fails the tree as built, and wrongly. The core body imports `std::process`
-  (`crates/nozoki-core/tests/common/mod.rs:L11`) and the bridge body does too
-  (`crates/nozoki-bridge/tests/common/mod.rs:L13`), which is QC-36 in every crate and QC-9 in the
+  (`crates/ka-reader-core/tests/common/mod.rs:L11`) and the bridge body does too
+  (`crates/ka-reader-bridge/tests/common/mod.rs:L13`), which is QC-36 in every crate and QC-9 in the
   core. Both import `std::fs` (`:L8` in each) outside the two filesystem owners, which is QC-15.
   RN-19 already turned down that kind of reach when it scoped QC-61: "The check overreached the
   property, which is about the shipped process" (`docs/nfdr.md:L1866`). The sentence "a
@@ -286,16 +286,16 @@ None this run.
 
 ## Raised on this document
 
-### 2.1 — § 9's `nozoki-mac` bullet says `ci.yml:L29` runs `nozoki-mac/assemble.sh`, and at HEAD `:L29` runs `checks/structure.sh`
+### 2.1 — § 9's `ka-reader-mac` bullet says `ci.yml:L29` runs `ka-reader-mac/assemble.sh`, and at HEAD `:L29` runs `checks/structure.sh`
 
 - **What the document is owed:** re-cite the *Toolchain — not yet measured* clause's `ci.yml:L29`
   (`docs/nfdr.md:L1107-L1109`) and its `:L22-L29` range (`:L1120-L1121`) to a named commit. At
-  `nozoki@463acb9` that is `:L35` and `:L22-L35`. The other way is to pin the existing numbers to
-  `nozoki@0aca57e`.
+  `ka-reader@463acb9` that is `:L35` and `:L22-L35`. The other way is to pin the existing numbers to
+  `ka-reader@0aca57e`.
 - **Why it is worth a cycle:** *A fact in it is now false* (`decide_companion_answers.md` § The
   items are not the whole of what a document is owed). I measured `git show
-  0aca57e:.github/workflows/ci.yml`: `:L29` there is `run: nozoki-mac/assemble.sh`, so the
-  citation was true when written. In the tree at `nozoki@463acb9` and at HEAD, `:L29` is `run:
+  0aca57e:.github/workflows/ci.yml`: `:L29` there is `run: ka-reader-mac/assemble.sh`, so the
+  citation was true when written. In the tree at `ka-reader@463acb9` and at HEAD, `:L29` is `run:
   checks/structure.sh`, and `assemble.sh` runs at `:L35` (`grep -n 'assemble.sh'
   .github/workflows/ci.yml`). The `:L22-L29` range backs "`ci.yml` has no `swift --version` step".
   That claim still holds for the whole file (`grep -n 'swift --version'` prints nothing), but the
@@ -305,10 +305,10 @@ None this run.
 
   *Seen and not raised.* Every other `ci.yml` line citation in `nfdr.md` outside the Review Notes
   is pinned to a commit or belongs to 3.2. QC-62's tail reads "`.github/workflows/ci.yml:L46-L47`
-  at `nozoki@ab39502`" (`docs/nfdr.md:L493`). The Review Notes' citations are dated history.
+  at `ka-reader@ab39502`" (`docs/nfdr.md:L493`). The Review Notes' citations are dated history.
   ADR-0012 cites `ci.yml:L43-L44` unpinned (`docs/adr/0012-renderer-run-proved-on-the-shipped-bundle-beside-the-wall.md:L77`),
   but an accepted record is append-only and not rewritten. Its later line records the move at
-  `nozoki@ab39502` (`:L140`).
+  `ka-reader@ab39502` (`:L140`).
 
   *On the edit to the companion.* § 2 read "None." I replaced that one word with the provenance
   blockquote and item 2.1, because leaving it beside an item would make the section say two
@@ -320,4 +320,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture nozoki`
+- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture ka-reader`

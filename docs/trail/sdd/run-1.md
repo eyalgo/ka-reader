@@ -1,4 +1,4 @@
-# SDD conversation — nozoki, run 1
+# SDD conversation — ka-reader, run 1
 
 > The record of one `product-sdd` run: three seats — CTO, CPO, CDO — working one document together,
 > and a runner that starts them, gives the turns and counts the rounds.
@@ -18,9 +18,9 @@
 
 - **Round:** 4 (closed) — all three seats hold `no_followup`, no recall outstanding. **Run ended.**
 - **Seats, and the names they answer to:**
-  - CTO — `sdd-nozoki-run1-cto`
-  - CPO — `sdd-nozoki-run1-cpo`
-  - CDO — `sdd-nozoki-run1-cdo`
+  - CTO — `sdd-ka-reader-run1-cto`
+  - CPO — `sdd-ka-reader-run1-cpo`
+  - CDO — `sdd-ka-reader-run1-cdo`
 - **Standing declared move:** CTO `no_followup` · CPO `no_followup` · CDO `no_followup`
 - **Recall outstanding:** none
 - **Recalls spent:** none
@@ -163,16 +163,16 @@ None.
   on`, the SRS clause of `Traces to`) across the eleven slices but missed S-8's `Why here in the
   order`, then hit `API Error: 529 Overloaded` while starting § 7 — no reply arrived, and no move
   was declared. The runner (a different session from this one) waited and then stopped; per
-  `nozoki@c3eb937`'s commit message, it waited until 15:38 before giving up, and did not append a
+  `ka-reader@c3eb937`'s commit message, it waited until 15:38 before giving up, and did not append a
   round-2 block, leaving this file's head reading "round 1 (closed) — round 2 opening" while
   `SDD.md` already carried round 2's unclosed work — write-as-you-go put that work in the SDD
   regardless of whether the round itself ever closed.
 - **Found by the new runner:** at resume, `claude agents --json --all` showed all three seat names
-  (`sdd-nozoki-run1-cpo`, `-cto`, `-cdo`) still registered, idle, under process IDs distinct from
+  (`sdd-ka-reader-run1-cpo`, `-cto`, `-cdo`) still registered, idle, under process IDs distinct from
   the ones the crash commit describes (three prior generations of each name exist in the harness's
   own agent history — earlier restart attempts this record has no other trace of). None needed a
-  fresh replacement: `sdd-nozoki-run1-cpo` answered its round-2 turn from the current name with a
-  reply that matches the SDD's on-disk state exactly (verifying `nozoki@c3eb937`, the record's own
+  fresh replacement: `sdd-ka-reader-run1-cpo` answered its round-2 turn from the current name with a
+  reply that matches the SDD's on-disk state exactly (verifying `ka-reader@c3eb937`, the record's own
   gap, and its own five fields against disk before acting), so it is the same conversation, not a
   memory-less stand-in.
 - **Retaken:** round 2 is being re-run whole, per the conduct body's rule that a seat may take a

@@ -35,13 +35,13 @@ NFDR § 9 (`docs/adr/0016-physical-unit-set-core-bridge-mac-checks.md:L75-L81`,
 - **Verdict:** overridden
 - **Why:** The conclusion stands and the draft's placement and cost do not: both settings join NFDR
   § 9's *Departed from* list under the tools-version flip, but strict memory safety applies to every
-  Swift target, default main-actor isolation applies only to `Surfaces` and `Nozoki`, strict memory
+  Swift target, default main-actor isolation applies only to `Surfaces` and `KAReader`, strict memory
   safety reaches AppKit as well as the C bridge, and default isolation does not reach
   `ReadRunning.swift`. The answer slot records that replacement
   (`docs/architecture_open_issues.md:L40-L79`).
 
   **What survives the draft.** The package still declares tools 5.9 and no target has
-  `swiftSettings` (`nozoki-mac/Package.swift:L1-L36`), while the packet requires tools 6.2 because
+  `swiftSettings` (`ka-reader-mac/Package.swift:L1-L36`), while the packet requires tools 6.2 because
   `.strictMemorySafety()` and `.defaultIsolation(_:)` first become manifest APIs there
   (`<CORE>/doctrine/engineering/languages/swift/toolchain.md:L41-L53`). NFDR § 9 already makes the
   tools version a recorded departure with a later 6.2 flip (`docs/nfdr.md:L1057-L1067`), so these
@@ -54,30 +54,30 @@ NFDR § 9 (`docs/adr/0016-physical-unit-set-core-bridge-mac-checks.md:L75-L81`,
   `.defaultIsolation(MainActor.self)` on the app executable and UI target, while excluding a logic
   library or anything called from a background task
   (`<CORE>/doctrine/engineering/languages/swift/conventions.md:L169-L188`). In this manifest those
-  target roles are `Nozoki` and `Surfaces`; `Shell` owns the explicit off-main runner, and the two
-  test targets are neither the app executable nor the UI target (`nozoki-mac/Package.swift:L16-L35`,
-  `nozoki-mac/Sources/Shell/ReadRunning.swift:L4-L30`). The draft therefore cannot attribute
+  target roles are `KAReader` and `Surfaces`; `Shell` owns the explicit off-main runner, and the two
+  test targets are neither the app executable nor the UI target (`ka-reader-mac/Package.swift:L16-L35`,
+  `ka-reader-mac/Sources/Shell/ReadRunning.swift:L4-L30`). The draft therefore cannot attribute
   `ReadRunning.swift`'s off-main work to default isolation; § 3.2 already and correctly records its
   Swift 6 language-mode failures (`docs/architecture_open_issues.md:L162-L182`).
 
-  **The cost correction, measured on the current tree.** A copy of `nozoki-mac` at `nozoki@f3e3467`
+  **The cost correction, measured on the current tree.** A copy of `ka-reader-mac` at `ka-reader@f3e3467`
   was given tools 6.2, `swiftLanguageModes: [.v5]` to hold § 3.2's separate change still,
   `.treatAllWarnings(as: .error)` and `.strictMemorySafety()` on every Swift target, and
-  `.defaultIsolation(MainActor.self)` on `Surfaces` and `Nozoki`. `swift test --package-path
-  /private/tmp/nozoki-companion-probe.z7GqBe/nozoki-mac` exited 1 first at
+  `.defaultIsolation(MainActor.self)` on `Surfaces` and `KAReader`. `swift test --package-path
+  /private/tmp/ka-reader-companion-probe.z7GqBe/ka-reader-mac` exited 1 first at
   `RootItemsView.swift:57,128,129,154,327,336,337`, each an AppKit `unowned(unsafe)` property; after
   those expressions were acknowledged in the copy, `swift build --package-path
-  /private/tmp/nozoki-companion-probe.z7GqBe/nozoki-mac --target Nozoki` exited 1 at
+  /private/tmp/ka-reader-companion-probe.z7GqBe/ka-reader-mac --target KA-Reader` exited 1 at
   `NativeBridge.swift:13,17,21,25,29,32`, each involving unsafe pointer types. Those two command
   outputs make the draft's pointer cost true but incomplete; the product sources at those sites are
-  `nozoki-mac/Sources/Surfaces/RootItemsView.swift:L55-L59`,
-  `nozoki-mac/Sources/Surfaces/RootItemsView.swift:L112-L159`,
-  `nozoki-mac/Sources/Surfaces/RootItemsView.swift:L319-L345`, and
-  `nozoki-mac/Sources/Nozoki/NativeBridge.swift:L10-L34`.
+  `ka-reader-mac/Sources/Surfaces/RootItemsView.swift:L55-L59`,
+  `ka-reader-mac/Sources/Surfaces/RootItemsView.swift:L112-L159`,
+  `ka-reader-mac/Sources/Surfaces/RootItemsView.swift:L319-L345`, and
+  `ka-reader-mac/Sources/KAReader/NativeBridge.swift:L10-L34`.
 
   With `.strictMemorySafety()` removed from that copy and the language mode still held at Swift 5,
-  the same `swift build … --target Nozoki` exited 0 with `Build complete! (1,51 sec)` while default
-  isolation remained on `Surfaces` and `Nozoki`. That result does not promise that a future tree has
+  the same `swift build … --target KA-Reader` exited 0 with `Build complete! (1,51 sec)` while default
+  isolation remained on `Surfaces` and `KAReader`. That result does not promise that a future tree has
   no isolation migration; it establishes only the answer this record needs now: the current
   off-main errors are not a consequence of applying default isolation at the packet's target
   boundaries.
@@ -97,7 +97,7 @@ NFDR § 9 (`docs/adr/0016-physical-unit-set-core-bridge-mac-checks.md:L75-L81`,
   the strict-memory diagnostics become build failures because the same packet requires warnings as
   errors (`<CORE>/doctrine/engineering/languages/swift/quality_gates.md:L155-L184`). *Concurrent:*
   `Shell` remains nonisolated by default and its off-main seam is handled by the Swift 6 migration,
-  not silently pulled onto the main actor (`nozoki-mac/Sources/Shell/ReadRunning.swift:L4-L30`,
+  not silently pulled onto the main actor (`ka-reader-mac/Sources/Shell/ReadRunning.swift:L4-L30`,
   `docs/architecture_open_issues.md:L162-L182`). *A later target:* every added Swift target must carry
   strict memory safety, while default isolation follows the target's role; the packet says manifest
   review, not an automated gate, enforces both placements
@@ -110,7 +110,7 @@ NFDR § 9 (`docs/adr/0016-physical-unit-set-core-bridge-mac-checks.md:L75-L81`,
   preserved the draft's cost attribution; the packet excludes background-called targets and the
   isolated target build completed instead
   (`<CORE>/doctrine/engineering/languages/swift/conventions.md:L169-L182`; `swift build
-  --package-path /private/tmp/nozoki-companion-probe.z7GqBe/nozoki-mac --target Nozoki` → exit 0,
+  --package-path /private/tmp/ka-reader-companion-probe.z7GqBe/ka-reader-mac --target KA-Reader` → exit 0,
   `Build complete! (1,51 sec)`).
 
 ## Left for the owner
@@ -131,4 +131,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture nozoki`
+- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture ka-reader`

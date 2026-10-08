@@ -13,12 +13,12 @@
   `tree-sitter-javascript` 0.25.0, `tree-sitter-json` 0.24.8, `tree-sitter-yaml` 0.7.2 and
   `tree-sitter-toml-ng` 0.7.0. That matches the licence column of `checks/deps.review.md` for those
   eight rows. No vendor page was needed for any answer here. Everything else was re-read in the tree
-  on `main` at `nozoki@0297c13`: `checks/deps.review.md:L8-L16` (§ *The engine chosen*);
+  on `main` at `ka-reader@0297c13`: `checks/deps.review.md:L8-L16` (§ *The engine chosen*);
   `git show --stat 85d9fa7` (`Cargo.lock`, `checks/deps.allow`, `checks/deps.review.md` and
-  `crates/nozoki-core/Cargo.toml` in one commit, the manifest gaining the eight crates above);
+  `crates/ka-reader-core/Cargo.toml` in one commit, the manifest gaining the eight crates above);
   `git diff 85d9fa7 HEAD -- checks/deps.review.md` (two table rows reworded, § *The engine chosen*
-  untouched); `crates/nozoki-core/src/highlighter.rs:L1-L11` and `:L120-L166`; `cargo test --locked
-  -p nozoki-core --test highlight` → `18 passed; 0 failed`; `bash checks/no-network.sh` → `ok — 40
+  untouched); `crates/ka-reader-core/src/highlighter.rs:L1-L11` and `:L120-L166`; `cargo test --locked
+  -p ka-reader-core --test highlight` → `18 passed; 0 failed`; `bash checks/no-network.sh` → `ok — 40
   cargo names match checks/deps.allow`; `comm -3` between the allowlist's `cargo:` section and the
   record's first column prints nothing; `cargo tree --offline --locked -i cc` shows `cc` as a build
   dependency of `tree-sitter` and of each grammar crate.
@@ -39,7 +39,7 @@
   It does not widen the SDD. *Open Questions* states that the engine is undecided
   (`docs/SDD.md:L4521-L4524`), and that statement is now false, so the item corrects a statement.
   It also cites its occurrence: a site in the product, `checks/deps.review.md` § *The engine chosen*
-  and `crates/nozoki-core/src/highlighter.rs`, at `nozoki@85d9fa7`. Both were re-read and hold.
+  and `crates/ka-reader-core/src/highlighter.rs`, at `ka-reader@85d9fa7`. Both were re-read and hold.
 
   **Check 1: the seat.** Every sentence the answer moves is in `docs/SDD.md`, in the CTO's lanes:
   *Open Questions*, the § 3 `highlighter` row, § 6 S-2's command half and § 10 RC-3. The answer
@@ -93,7 +93,7 @@
   - `docs/UXD.md` names no engine. § 9 holds syntax highlighting as a domain expectation.
   - `docs/SDD.md` § 3 `highlighter`: "the six grammars compiled into the library" and "A seventh
     grammar with no floor language behind it" in *Must not own*. Six grammars are compiled in.
-  - § 3, the units paragraph: `crates/nozoki-core` "holds no `unsafe`". `highlighter.rs` holds none.
+  - § 3, the units paragraph: `crates/ka-reader-core` "holds no `unsafe`". `highlighter.rs` holds none.
     The engine's own C and Rust are a dependency's, which is C-R6's subject and not that sentence's.
   - § 4 C-R6: the lockfile, the allowlist and the review landed in one commit. § 4 C-R1: "the six
     grammars compiled into the library" ships in the bundle. § 4 C-I5: the extension set is
@@ -155,7 +155,7 @@ None this run.
 
 - **`checks/deps.review.md`** — a document with no companion template on disk, so nothing is
   opened on it. Its line 14 cites `docs/SDD.md:L4521-L4524` for the open question, with no commit.
-  The citation is true at `nozoki@85d9fa7` (`git show 85d9fa7:docs/SDD.md | sed -n 4521,4524p`
+  The citation is true at `ka-reader@85d9fa7` (`git show 85d9fa7:docs/SDD.md | sed -n 4521,4524p`
   prints the question). It stops opening on the question once `product-sdd` removes the item. The
   file is the delivery tier's.
 
@@ -172,12 +172,12 @@ actor.
   (`:L2620-L2625`), which quotes a `docs/DESIGN.md` sentence that document no longer has.
 - **Why it is worth a cycle:** *A fact in it is now false* — a claim about another document
   (`decide_companion_answers.md` § *The items are not the whole of what a document is owed*). The
-  measurements, on `main` at `nozoki@0297c13`:
+  measurements, on `main` at `ka-reader@0297c13`:
   - § 12 says "`docs/nfdr.md` QC-24 still holds the export set inside the list alone". QC-24 reads
-    "inside the closed list `docs/SDD.md` § 3 `SM-4` names … and `nozoki_free`, the seam's one
+    "inside the closed list `docs/SDD.md` § 3 `SM-4` names … and `ka_reader_free`, the seam's one
     release call beside the list and not on it" (`docs/nfdr.md:L368-L374`).
   - § 12 says "`docs/nfdr.md` § 9 and ADR-0016 still say none exists", of the Swift packet. § 9
-    takes `nozoki-mac`'s tooling "from the Swift packet" and says "Through v12 this paragraph read
+    takes `ka-reader-mac`'s tooling "from the Swift packet" and says "Through v12 this paragraph read
     that no Swift packet existed … true when written, and history" (`docs/nfdr.md:L926-L932`).
     ADR-0016 carries the same correction, dated 2026-09-23 (`:L44-L49` of that record).
   - § 12 cites `docs/architecture_open_issues.md` § 2.1 and § 3.4 for the two. That file holds
@@ -212,12 +212,12 @@ actor.
   - `docs/UXD.md:L49-L51`: "Expertise floor: can find their way around a repository on GitHub and
     follow a README — no editor experience, and no Git knowledge beyond that", traced to PRD
     § Goals "No learning curve".
-  - `docs/PRD.md:L96-L103`: "anyone who works with Git and can follow a README can use Nozoki: the
+  - `docs/PRD.md:L96-L103`: "anyone who works with Git and can follow a README can use KA-Reader: the
     reader is assumed to know Git", marked as superseding the GitHub floor on the owner's answer at
-    `docs/trail/prd/cycle-8.md` § 1.1. That answer quotes the owner: "Remember, users of nozoki most
+    `docs/trail/prd/cycle-8.md` § 1.1. That answer quotes the owner: "Remember, users of ka-reader most
     likely know how git works."
-  - The PRD carried the new floor from v9 (`nozoki@a85bc24`, 2026-08-26), which is an ancestor of
-    UXD v6 (`nozoki@dd08f2d`) and of UXD v10 (`nozoki@4d7b653`). No UXD review note records the
+  - The PRD carried the new floor from v9 (`ka-reader@a85bc24`, 2026-08-26), which is an ancestor of
+    UXD v6 (`ka-reader@dd08f2d`) and of UXD v10 (`ka-reader@4d7b653`). No UXD review note records the
     floor being re-read.
   - `docs/SRS.md` NFR-15 (`:L383-L388`), `docs/fdr.md` R-144 (`:L261`) and `docs/CONTENT.md:L82`
     carry the new floor. `grep -n -i "works with Git" docs/UXD.md` prints nothing.
@@ -232,5 +232,5 @@ actor.
 
 ## Launchers owed
 
-- **`docs/SDD.md`** — `<CORE>/launchers/product-sdd/launcher.sh nozoki`
-- **`docs/UXD.md`** — `<CORE>/launchers/skill/launcher.sh product-uxd nozoki`
+- **`docs/SDD.md`** — `<CORE>/launchers/product-sdd/launcher.sh ka-reader`
+- **`docs/UXD.md`** — `<CORE>/launchers/skill/launcher.sh product-uxd ka-reader`

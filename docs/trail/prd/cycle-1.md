@@ -1,4 +1,4 @@
-# PRD open issues — nozoki
+# PRD open issues — ka-reader
 
 > Companion to `PRD.md`. The CPO authored the PRD non-interactively; this file holds
 > what it could not settle from the inputs. **Answer inline** — fill each **Answer** /
@@ -50,7 +50,7 @@ a choice to confirm.
   downstream — this settles only what the product *is*.
 - **Confirm or override:** **Confirmed on what is product; the acquisition mechanism is struck as
   not the PRD's to settle.**
-  - **Confirmed:** nozoki is local — it runs on the user's own machine, against one repository at a
+  - **Confirmed:** ka-reader is local — it runs on the user's own machine, against one repository at a
     time; nothing about its operation leaves the machine; there is no hosted mode.
   - **One repository at a time is a v1 cut, not a permanent property.** **Switching which
     repository you are looking at — picking a different one from inside the product — is a named
@@ -60,11 +60,11 @@ a choice to confirm.
     restarting — beyond v1"* rather than leaving "single local Git repository" sounding permanent.
     Recorded here so the SRS knows v1 must not design the single repository in so deeply that
     switching becomes a rewrite.
-  - **Struck:** *how* nozoki is obtained and started — clone-and-run, a package, an installed
+  - **Struck:** *how* ka-reader is obtained and started — clone-and-run, a package, an installed
     build. **That is a CTO call and belongs to the SRS, not the PRD.** Remove the clone-and-run
     sentence from Scope (In) rather than replacing it with a different mechanism.
   - **What the PRD keeps instead, as a product property:** there is **exactly one** way to get and
-    start nozoki, and it is simple. One path, not a menu of them — a stranger should not have to
+    start ka-reader, and it is simple. One path, not a menu of them — a stranger should not have to
     choose how to install a viewer. How that is achieved is the CTO's; that it must be single and
     simple is the product's, and the time-to-first-success bar in 2.4 is what measures it.
   - Note for the SRS, not a product decision: the drafted clone-and-run shape sits in tension with
@@ -84,7 +84,7 @@ a choice to confirm.
   setting, not a promise. State the promises separately rather than naming one and implying the
   rest — no write to the working tree, no Git mutation (no checkout, stash, index or commit
   operation), no telemetry, no non-essential network call.
-  **Where the line falls:** nozoki writes nothing *into the repository it is pointed at*, under any
+  **Where the line falls:** ka-reader writes nothing *into the repository it is pointed at*, under any
   operation. It may keep its own state — preferences, window state, anything it remembers between
   sessions — and that lives wherever it keeps its own data on the machine, never inside the
   repository. Say this in the PRD; leaving it implicit is how a stranger discovers a promise that
@@ -99,7 +99,7 @@ a choice to confirm.
   make; it is a starting bar to tighten with evidence, not a law.
 - **Confirm or override:** **Confirmed — with one restatement and one addition.**
   - **Restate time-to-first-success without naming a mechanism (2.2):** measure from a stranger
-    deciding to try nozoki, by whatever its single install path turns out to be, to viewing a file
+    deciding to try ka-reader, by whatever its single install path turns out to be, to viewing a file
     of their own repository. "Fresh machine, README only" presumed clone-and-run; the bar should
     outlive whatever the CTO picks. ≤ 5 minutes stands.
   - **Add a refresh bar.** Refresh is in v1 (2.1) and the driving scenario is watching a tree that
@@ -118,9 +118,9 @@ a choice to confirm.
   surface; copyleft would serve a downstream-source-freedom goal this product doesn't claim.
 - **Confirm or override:** **Confirmed — MIT.** The reasoning holds: a local read-only viewer has
   essentially no patent-sensitive surface, so Apache-2.0's express patent grant buys little here,
-  and copyleft would serve a goal nozoki does not claim. **The code is open-sourced**, and nothing
+  and copyleft would serve a goal ka-reader does not claim. **The code is open-sourced**, and nothing
   about how it is distributed (2.2) changes that.
-  Not a PRD call, recorded so it is not lost: whatever nozoki ships as, it will bundle third-party
+  Not a PRD call, recorded so it is not lost: whatever ka-reader ships as, it will bundle third-party
   components whose licences ride along — the release has to carry their notices. That is a release
   obligation for the SRS/SDD, not a product property.
 

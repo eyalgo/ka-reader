@@ -1,4 +1,4 @@
-# CONTENT open issues — Nozoki 覗き
+# CONTENT open issues — KA-Reader
 
 > Companion to `CONTENT.md`. The Content Editor authored the verbal language non-interactively;
 > this file holds the calls it made and wants your sign-off on — each with the reason behind it,
@@ -21,7 +21,7 @@
 
 ## 1. Open issues
 
-### 1.1 Nozoki's network promise is stronger than the instance's fenced wording — which sentence does it carry?
+### 1.1 KA-Reader's network promise is stronger than the instance's fenced wording — which sentence does it carry?
 
 - **Why it matters:** `CONTENT.md` § Terminology, *Standing sentences* — the network row, and
   through it every surface that states the promise (the README, the release page, and the
@@ -29,10 +29,10 @@
 - **What was searched:** `system/experience/voice_restrictions.md` § `one-wording-per-promise`
   fixes one sentence for every product holding this instance's no-telemetry default: *"This tool
   sends no telemetry and makes no network call except the ones the job you asked for requires."*
-  Nozoki's own promise is stronger and differently shaped: *"v1 makes no network call at all
+  KA-Reader's own promise is stronger and differently shaped: *"v1 makes no network call at all
   during operation; acquiring the tool uses the network, operating it does not"* (`docs/PRD.md`
   § Data & Privacy), backed by `docs/SRS.md` NFR-8 (*"none, not merely no telemetry"*). Carrying
-  the fenced sentence verbatim would understate what Nozoki does — its job requires no call, so
+  the fenced sentence verbatim would understate what KA-Reader does — its job requires no call, so
   *"except the ones the job you asked for requires"* reads as headroom the product does not use.
   The fence permits a product to tighten an entry and not to loosen one, but its wording clause
   says the sentence is carried *in those words*, and this run cannot tell whether a stronger
@@ -41,10 +41,10 @@
   *non-essential* as headroom for a possible future update or version check. The drafted sentence
   states v1's truth and says nothing about later versions, which keeps that headroom without
   advertising it.
-- **What was drafted meanwhile:** *"Nozoki sends no telemetry, and it makes no network call while
+- **What was drafted meanwhile:** *"KA-Reader sends no telemetry, and it makes no network call while
   it runs — downloading it uses the network; using it does not."*
-- **Answer:** **Nozoki carries its own stronger sentence — the drafted one**, in these words:
-  *"Nozoki sends no telemetry, and it makes no network call while it runs — downloading it uses the
+- **Answer:** **KA-Reader carries its own stronger sentence — the drafted one**, in these words:
+  *"KA-Reader sends no telemetry, and it makes no network call while it runs — downloading it uses the
   network; using it does not."* It does **not** carry the instance's fenced sentence verbatim. That
   wording becomes the standing sentence for the network row, on every surface that states the
   promise (the README, the release page, the not-loaded placeholder in rendered Markdown).
@@ -91,7 +91,7 @@
 - **Answer:** **A hover tooltip on the row, as VS Code does it** — hovering a status letter shows,
   briefly, the file and the expanded word ("Modified"). The owner's words: *"in VS code, when you
   hover over an `M` for example, there's a short-time 'file and + Modified'. I think that this is
-  enough. Remember, users of nozoki most likely know how git works."*
+  enough. Remember, users of ka-reader most likely know how git works."*
 
   So the expansion lives **in the view, on demand** — not as a permanent legend in the Git view, and
   not as a README list. The README expansion the run drafted as the interim rule is **not** the
@@ -102,7 +102,7 @@
   to the owner.**
 
   1. **`DESIGN.md` § Do's and Don'ts rules out a tooltip**, and that Don't is *settled* — DESIGN v2
-     (`nozoki@95f1279`) with no companion on disk. When the owner overrode the no-hover rule at
+     (`ka-reader@95f1279`) with no companion on disk. When the owner overrode the no-hover rule at
      `DESIGN_open_issues.md` § 2.3 they overrode hover **alone**; the record there states that "no
      transition, no focus ring and no tooltip ... stand as drafted". **The owner has since ruled
      on this directly: *"i think that tooltips should be included in v1."*** So the tooltip is in
@@ -111,7 +111,7 @@
      not made here.
   2. **The stated expertise floor says the opposite about Git knowledge.** `docs/PRD.md` § Goals,
      "No learning curve", puts the audience at *no Git knowledge beyond finding their way around a
-     repository on a hosting site*. The owner's reason here — that Nozoki's users most likely know
+     repository on a hosting site*. The owner's reason here — that KA-Reader's users most likely know
      how Git works — is a different audience assumption, and the PRD is the CPO's settled document.
      A tooltip is a weaker fix than a legend for a reader who does **not** know Git, because it
      must be discovered by hovering. The owner made the call knowing this, and answered the
@@ -134,7 +134,7 @@
   https://www.mehmetbaykar.com/posts/understanding-git-status-indicators-u-m-a-d-c-r-in-vs-code/).
   The colours agree with `DESIGN.md` too: U and A green, M brown/yellow, D red. So `DESIGN.md`
   carries VS Code's vocabulary and carries it correctly. The full finding is
-  `docs/DESIGN_open_issues.md` § 1.2 (`nozoki@fdee2fc`).
+  `docs/DESIGN_open_issues.md` § 1.2 (`ka-reader@fdee2fc`).
 
   **The correction owed here, and it is this document's:** `docs/CONTENT.md:282` expands the letters
   as *"added, modified, deleted, renamed, **copied**, **unmerged**"* — porcelain vocabulary, against
@@ -157,21 +157,21 @@
   over a README list, and by the vocabulary correction above.
 
   **One VS Code quirk deliberately not copied:** recent VS Code versions badge a renamed file as `U`
-  rather than `R`. Nozoki keeps `R` for renamed — the letters follow VS Code's *vocabulary*, not its
+  rather than `R`. KA-Reader keeps `R` for renamed — the letters follow VS Code's *vocabulary*, not its
   every behaviour.
 
-### 1.3 The README promises three things the Agari places permanently outside done, and calls Nozoki a web app
+### 1.3 The README promises three things the Agari places permanently outside done, and calls KA-Reader a web app
 
 - **Why it matters:** the README is the corpus this document was derived from and the surface this
   instance's own doctrine treats as where adoption is decided. Its claims are the CPO's, so this
   run raised them rather than editing them. `CONTENT.md` does not repeat any of them.
 - **What was searched:** `README.md` § Roadmap, phase 3: *"pane resizing, keyboard navigation,
-  diff/commit-preview, sidebar search"*. `system/projects/nozoki/agari.md` places sidebar search /
-  filter, pane resizing, and keyboard navigation **outside** the dock — *"nozoki is done without
+  diff/commit-preview, sidebar search"*. `system/projects/ka-reader/agari.md` places sidebar search /
+  filter, pane resizing, and keyboard navigation **outside** the dock — *"ka-reader is done without
   them"* — and states the keyboard absence is permanent, not deferred; `docs/UXD.md` UX-I8 and
   UX-A1 carry the same. So the README currently promises a stranger three things the product has
   settled it will not build, on the surface where the first failed claim ends the adoption.
-  Separately, `README.md` § What it is calls Nozoki a *"stripped-down, VS Code-like web app"*,
+  Separately, `README.md` § What it is calls KA-Reader a *"stripped-down, VS Code-like web app"*,
   while `docs/SRS.md` C-11 promises macOS only and `docs/PRD.md` § Out of Scope rules out *"any
   hosted operation of the tool itself"*. Whether *web app* is accurate for the shipped shape is
   the CTO's; whether the README should say it is the CPO's.
@@ -182,31 +182,31 @@
   fix the roadmap. i guess it should be written in the prd companion."*
 
   1. ***"web app"* is inaccurate and is to be changed.** The owner ruled on the substance directly:
-     Nozoki is not a web app. `docs/SRS.md` C-11 (macOS only) and `docs/PRD.md` § Out of Scope
+     KA-Reader is not a web app. `docs/SRS.md` C-11 (macOS only) and `docs/PRD.md` § Out of Scope
      (*"any hosted operation of the tool itself"*) are what it collides with. The replacement
      wording is the CPO's to write and is **not** drafted here; the session's observation, offered
      but not ruled on, was that the misleading word is *web* rather than the *VS Code-like*
      comparison, which is doing real work in the sentence.
   2. **The roadmap is to be fixed.** `README.md` § Roadmap phase 3 promises *pane resizing,
-     keyboard navigation, sidebar search* — three things `system/projects/nozoki/agari.md` places
-     permanently outside the dock (*"nozoki is done without them"*, the keyboard absence stated as
+     keyboard navigation, sidebar search* — three things `system/projects/ka-reader/agari.md` places
+     permanently outside the dock (*"ka-reader is done without them"*, the keyboard absence stated as
      permanent, not deferred; `docs/UXD.md` UX-I8 and UX-A1 carry the same). What replaces them is
      the CPO's call and is not settled here.
 
   **Routing, as the owner set it:** both go into the PRD's open-issues companion, alongside the
   audience/Git-knowledge line from § 1.2. That companion does not exist yet — the PRD is settled at
   v8 with no companion on disk — so it has to be opened deliberately for the CPO to have anything
-  to act on, exactly as the UXD's was at `nozoki@ee8abcf`.
+  to act on, exactly as the UXD's was at `ka-reader@ee8abcf`.
 
   **`CONTENT.md` itself carries none of these claims** and needs no change from this item; the
   run raised them rather than editing them because the README's claims are the CPO's.
 
 ## 2. Choices to confirm
 
-### 2.1 The voice, and the ruling that Nozoki is conversational but not casual
+### 2.1 The voice, and the ruling that KA-Reader is conversational but not casual
 
-- **Written into CONTENT.md:** § Voice — the opening paragraph (Nozoki speaks as itself, names
-  what it observed and stops; the reader's own text is not Nozoki's writing and no rule applies to
+- **Written into CONTENT.md:** § Voice — the opening paragraph (KA-Reader speaks as itself, names
+  what it observed and stops; the reader's own text is not KA-Reader's writing and no rule applies to
   it), the conversational-not-casual ruling, and the seven behaviours in the table.
 - **Grounds:** `docs/PRD.md` § UX Notes "The character" (*"calm, truthful, still"*), § Target
   Users (the reader is watching a tree an agent is changing), and `docs/UXD.md` UX-I2 (updates
@@ -217,8 +217,8 @@
 - **What moves if you override:** everything below it. The tone maps, the ban on exclamation marks
   and on *sorry* / *don't worry*, the three-sentence ceiling on a failure, and the Recovered
   pattern's *no message at all* are all derived from this paragraph.
-- **Confirm or override:** confirm — § Voice stands as written: Nozoki speaks as itself, names what
-  it observed and stops; the reader's own text is not Nozoki's writing and no rule applies to it;
+- **Confirm or override:** confirm — § Voice stands as written: KA-Reader speaks as itself, names what
+  it observed and stops; the reader's own text is not KA-Reader's writing and no rule applies to it;
   the voice is conversational but not casual; the seven behaviours in the table stand. Everything
   derived from it stands with it — the tone maps, the ban on exclamation marks and on *sorry* /
   *don't worry*, the three-sentence ceiling on a failure, and the Recovered pattern's *no message
@@ -248,14 +248,14 @@
 
   **The amendment.** The read-only row's wording becomes:
 
-  > **"Nozoki never changes the repository you point it at. It writes no file in it, and it runs no
+  > **"KA-Reader never changes the repository you point it at. It writes no file in it, and it runs no
   > Git command that alters your repository's state."**
 
   The change is two words — *no file* becomes *no file in it*. Everything else in the row is
   unchanged, and every surface carrying this sentence carries the amended wording.
 
   **Why.** The first sentence is scoped to *the repository you point it at*; the second was not, and
-  as an absolute it is false. Nozoki does write files: `docs/UXD.md` UX-I9 remembers the theme
+  as an absolute it is false. KA-Reader does write files: `docs/UXD.md` UX-I9 remembers the theme
   choice *"in the tool's own state — never in the repository"*, and UX-F5's selector remembers
   repositories across sessions. Both live on disk somewhere outside the repository. A stranger who
   reads *"it writes no file"* and then finds a preferences file has caught the product's defining
@@ -270,7 +270,7 @@
   confirm is § 2.4). Two that were checked against their sources and hold: the support posture
   declines to promise acknowledgement on security reports, matching what the owner settled in the
   PRD round; the accessibility sentence states the absence as permanent rather than deferred,
-  matching `system/projects/nozoki/agari.md`.
+  matching `system/projects/ka-reader/agari.md`.
 
   **One accounting note for the fold, not a call:** this item is titled *"Five standing sentences"*
   but § Terminology's table has **six** rows — the owner counted them. The sixth is the
@@ -327,30 +327,30 @@
 ### 2.4 The accessibility posture sentence for the README
 
 - **Written into CONTENT.md:** § Terminology, *Standing sentences*, last row —
-  **"Nozoki is used with a mouse. It has no keyboard navigation, and it makes no promise about
+  **"KA-Reader is used with a mouse. It has no keyboard navigation, and it makes no promise about
   screen readers or other assistive technology. Neither is planned: keyboard navigation is outside
-  what Nozoki is built to become."**
+  what KA-Reader is built to become."**
 - **Grounds:** `docs/UXD.md` UX-A3 asks this document for the wording and fixes the placement (the
   README, below its first screen, stating the fact and not apologising for it); UX-A1 fixes what
   may be claimed. The permanence in the third sentence comes from
-  `system/projects/nozoki/agari.md`, which places keyboard navigation outside the dock. It lands
+  `system/projects/ka-reader/agari.md`, which places keyboard navigation outside the dock. It lands
   on the README, which is a surface the CPO owns, which is why it is here rather than simply
   written.
 - **What moves if you override:** the wording is the whole item; UX-A3's requirement that the
   sentence exists, and where, is settled and does not move.
 - **Confirm or override:** confirm — the accessibility sentence stands exactly as written:
-  **"Nozoki is used with a mouse. It has no keyboard navigation, and it makes no promise about
+  **"KA-Reader is used with a mouse. It has no keyboard navigation, and it makes no promise about
   screen readers or other assistive technology. Neither is planned: keyboard navigation is outside
-  what Nozoki is built to become."** UX-A3's placement (the README, below its first screen) was
+  what KA-Reader is built to become."** UX-A3's placement (the README, below its first screen) was
   already settled by the owner and does not move.
 
   The owner said "confirm" and nothing more. The reading put to them, which is the session's: it
   states the limit as a fact rather than a failing, so it does not apologise; it separates a definite
   absence (no keyboard navigation) from an untested one (no promise about assistive technology),
   which is the honest split; and *"Neither is planned"* lets a reader who needs keyboard access stop
-  waiting, matching `system/projects/nozoki/agari.md`'s permanent-not-deferred placement. One
+  waiting, matching `system/projects/ka-reader/agari.md`'s permanent-not-deferred placement. One
   preference was offered and **not** taken up, so the drafted wording stands: that *"outside what
-  Nozoki is built to become"* could read plainer as *"not something Nozoki will add"*.
+  KA-Reader is built to become"* could read plainer as *"not something KA-Reader will add"*.
 
 ### 2.5 One word for the repository — a rename of three words the README ships today
 
@@ -358,9 +358,9 @@
   *codebase* and *repository status* for one thing, in one file. The running product has no
   strings yet (*"Status: proposal — not yet implemented"*), so the README is the whole corpus.
 - **This document says:** **repository**, everywhere. *repo* is rejected as an abbreviation the
-  product never expands; *project* because it also means a unit of work Nozoki has no concept of;
+  product never expands; *project* because it also means a unit of work KA-Reader has no concept of;
   *workspace* because in the editor this product resembles it names a saved multi-folder
-  configuration Nozoki has not got; *codebase* because it names the code and half of what Nozoki
+  configuration KA-Reader has not got; *codebase* because it names the code and half of what KA-Reader
   shows is Git state. Separately, the sidebar's list is **file tree** and never *tree* alone,
   because `docs/PRD.md` uses "the tree" for both that list and the files on disk.
 - **What it costs:** a revision of `README.md` — four phrases — and nothing else, because no
@@ -373,7 +373,7 @@
   **file tree** and never *tree* alone.
 
   The owner said "confirm" and nothing more; the argument put to them — that *repository* is Git's
-  own word and the only one of the four covering both halves of what Nozoki shows, and that
+  own word and the only one of the four covering both halves of what KA-Reader shows, and that
   *codebase* fails that test by naming only the code when half the product is Git state — is the
   session's.
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Two rules Nozoki holds, checked rather than remembered.
+ * Two rules KA-Reader holds, checked rather than remembered.
  *
  * 1. NO RUNTIME NETWORK. SRS NFR-8: "The system makes no network call during operation — none,
  *    not merely no non-essential." AC-3 monitors for zero outbound traffic across a full session
@@ -9,7 +9,7 @@
  *
  * 2. NO TOOLING EXHAUST. The design language was authored with an external design-system tool.
  *    Its card markers, compiled bundles, manifests and skill wrappers are that tool's furniture,
- *    not Nozoki, and a public MIT repository should read as the product and nothing else.
+ *    not KA-Reader, and a public MIT repository should read as the product and nothing else.
  *
  * Usage: node scripts/design-check.mjs [--verbose]
  * Exits 0 when clean, 1 on the first rule broken. Scans git-tracked files only.
@@ -33,7 +33,7 @@ const RULES = [
   {
     rule: 'no-tooling-exhaust',
     why: 'a public repository should read as the product, not as the tools used to build it',
-    patterns: [/@dsCard/, /_ds_bundle/, /_ds_manifest/, /NozokiDesignSystem_/, /\bclaude\b/i], // design-check: allow no-tooling-exhaust
+    patterns: [/@dsCard/, /_ds_bundle/, /_ds_manifest/, /KAReaderDesignSystem_/, /\bclaude\b/i], // design-check: allow no-tooling-exhaust
   },
 ]
 

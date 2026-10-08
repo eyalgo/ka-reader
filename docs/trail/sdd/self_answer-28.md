@@ -7,20 +7,20 @@
 - **Decided by:** `decide_companion_answers.md` v1.3.0
 - **Date:** 2026-10-01
 - **Sources re-read:** None. No answer here rests on a source outside this repository. Every
-  fact the answers lean on was re-read in the tree on `main` at `nozoki@fcb7910` before writing:
-  `crates/nozoki-bridge/tests/exports.rs:L17-L22` (the admitted set names `nozoki_select_file`),
-  and `cargo test --locked -p nozoki-bridge --test exports` → `10 passed; 0 failed`;
-  `crates/nozoki-core/tests/walk.rs:L1-L6` and `:L41-L53` (the walk calls `list_tree` and nothing
+  fact the answers lean on was re-read in the tree on `main` at `ka-reader@fcb7910` before writing:
+  `crates/ka-reader-bridge/tests/exports.rs:L17-L22` (the admitted set names `ka_reader_select_file`),
+  and `cargo test --locked -p ka-reader-bridge --test exports` → `10 passed; 0 failed`;
+  `crates/ka-reader-core/tests/walk.rs:L1-L6` and `:L41-L53` (the walk calls `list_tree` and nothing
   else); `checks/read-only.sh:L88` (the script runs that walk);
-  `crates/nozoki-bridge/tests/select_file.rs:L103-L105`
+  `crates/ka-reader-bridge/tests/select_file.rs:L103-L105`
   (`test_reading_every_text_fixture_leaves_its_bytes_unchanged`, over `checks/fixtures/text`);
-  `crates/nozoki-core/src/folder_model.rs:L13-L15` (an opened folder holds its root and nothing
+  `crates/ka-reader-core/src/folder_model.rs:L13-L15` (an opened folder holds its root and nothing
   else), `:L69-L71` ("Nothing is cached, so every call reads again") and `:L99-L101`
   (`select_file` delegates to `fs_reader::read` and keeps nothing);
-  `nozoki-mac/Sources/Surfaces/WorkbenchView.swift:L44-L45` and `:L78-L93` (the selection count and
-  the shown file are the workbench's); `nozoki-mac/Sources/Surfaces/RootItemsView.swift:L18-L19`
+  `ka-reader-mac/Sources/Surfaces/WorkbenchView.swift:L44-L45` and `:L78-L93` (the selection count and
+  the shown file are the workbench's); `ka-reader-mac/Sources/Surfaces/RootItemsView.swift:L18-L19`
   (every expansion reads the folder again) and `:L54-L61` (`openFilePath` is the tree view's); `checks/renderer.sh:L44-L64` (four frames, the Mac
-  reading, the runner reading); `nozoki-mac/Sources/Shell/LaunchFlow.swift:L35-L37`, `:L53-L57`
+  reading, the runner reading); `ka-reader-mac/Sources/Shell/LaunchFlow.swift:L35-L37`, `:L53-L57`
   and `:L69`.
 
 ## Items worked
@@ -37,7 +37,7 @@
   **The widening rule, first.** The item sits under the heading carrying *Raised from downstream*
   and it widens the SDD: C-R7, SM-4 and C-I3 state nothing today about a slice built across
   several changes. It cites an occurrence for each half, a site in the product as it stands, and
-  both were re-read and hold: `exports.rs:L20` admits `nozoki_select_file`, and `walk.rs:L1-L6`
+  both were re-read and hold: `exports.rs:L20` admits `ka_reader_select_file`, and `walk.rs:L1-L6`
   drives `list_tree` alone. Occurrences cited, so the widening proceeds.
 
   **Check 1: the seat.** Every sentence the answer moves is in `docs/SDD.md`: § 4 C-R7, § 3 SM-4
@@ -53,7 +53,7 @@
   **Check 2: the question.** The item holds two questions: when a function is exported, and what
   the harness owes a build that exports one. Both have the same seat, so the item is one item
   answered on both, in the one slot. The supporting text is right on every count checked. One
-  claim was tested separately: "`cargo test --locked -p nozoki-bridge --test select_file` holds
+  claim was tested separately: "`cargo test --locked -p ka-reader-bridge --test select_file` holds
   `checks/fixtures/text/` byte-identical today" is true (`select_file.rs:L103-L105`).
 
   **The export.** The first reading binds. A slice is cut into one or more seeds and each share
@@ -88,11 +88,11 @@
   build, where it reads "a slice". The two halves were decided together. Exporting from the first
   change is safe to state because the harness follows the export in the same build.
 
-  **What this says about `main`.** On `main` at `nozoki@fcb7910`, C-I3 is unmet as it reads: the
+  **What this says about `main`.** On `main` at `ka-reader@fcb7910`, C-I3 is unmet as it reads: the
   build grants `select_file` and `read-only.sh` does not exercise it. The read itself is held by
   the bridge's own test over `checks/fixtures/text`, so nothing is known to write. The walk
   driving `select_file` closes it. That work sits on the seed's last station
-  (`nozoki · nemawashi · 2026-10-01_a-file-reads-in-the-panel`, `the-panel-cannot-write`), and
+  (`ka-reader · nemawashi · 2026-10-01_a-file-reads-in-the-panel`, `the-panel-cannot-write`), and
   under this answer it is owed by the next build, not the slice's last. Journey files are the
   PM's and nothing is written there from here. This is the line for the PM's next re-read of the
   route.
@@ -100,7 +100,7 @@
   **Check 3: against the settled record.**
   - `docs/trail/sdd/cycle-5.md` § 5.1 (the staged grant): agrees. Its three additions stand,
     including the uncovered case before `v1.0.0`.
-  - `docs/trail/sdd/cycle-12.md` § 5.1 (`nozoki_free` beside the list, exported from the first
+  - `docs/trail/sdd/cycle-12.md` § 5.1 (`ka_reader_free` beside the list, exported from the first
     build): untouched.
   - `docs/SDD.md` § 8: a *Reached when* "divides", and the slice's bar is met when its last seed
     closes. S-2's promise clause stays part of that bar. C-I3 is a § 4 condition and binds every
@@ -119,7 +119,7 @@
     answer; its slot is not mine to fill and its text is not edited.
 
   **Check 4: the failure paths.**
-  - **Empty.** A build that exports nothing new owes the harness nothing new. `nozoki_free` is no
+  - **Empty.** A build that exports nothing new owes the harness nothing new. `ka_reader_free` is no
     command and stays outside C-I3 (RN-66).
   - **Absent.** A fixture with no entry a command can act on exercises nothing for it: `open_diff`
     over a fixture with no changed file, for one. Which fixture a command needs is its slice's
@@ -155,9 +155,9 @@
   **The widening rule, first.** The item sits under the heading carrying *Raised from
   downstream*, and it asks the SDD to state something it does not state now: in which slice the
   model comes to hold the open file. It cites its occurrence, and both sites were re-read and
-  hold. `select_file` in `crates/nozoki-core/src/folder_model.rs:L99-L101` reads, answers and
+  hold. `select_file` in `crates/ka-reader-core/src/folder_model.rs:L99-L101` reads, answers and
   keeps nothing. The selection and the shown file live in
-  `nozoki-mac/Sources/Surfaces/WorkbenchView.swift:L78-L93`. Occurrence cited, so the widening
+  `ka-reader-mac/Sources/Surfaces/WorkbenchView.swift:L78-L93`. Occurrence cited, so the widening
   proceeds.
 
   **Check 1: the seat.** The edit lands in `docs/SDD.md`: § 6 S-5 *Rests on*, the CTO's field. It
@@ -177,7 +177,7 @@
 
   **Why § 3 stands.** Four settled statements need the model to hold this state, and one of them
   is a command.
-  - S-5's command half asserts in `nozoki-core`, in-process and with no window, "the model's
+  - S-5's command half asserts in `ka-reader-core`, in-process and with no window, "the model's
     final snapshot equal to a fresh open of the fixture, and expansion, selection and reading
     position surviving". A test in the core can assert that only of state the core holds.
   - SM-3: "The model decides what to re-read." A model that does not know which file is open
@@ -221,8 +221,8 @@
     needs the same held state, and comes after S-5.
   - The sealed unit `2026-10-01_a-text-file-reads`: its design kept the selection in the shell
     "for this change", and its audit recorded that as a divergence with no review note
-    (`nozoki · tobiishi · 2026-10-01_a-text-file-reads`, in the instance at
-    `system/projects/nozoki/journey/tobiishi/trail/2026-10-01_a-text-file-reads/flow_findings/development-design.md:L6`).
+    (`ka-reader · tobiishi · 2026-10-01_a-text-file-reads`, in the instance at
+    `system/projects/ka-reader/journey/tobiishi/trail/2026-10-01_a-text-file-reads/flow_findings/development-design.md:L6`).
     The answer contradicts nothing sealed. It says where that divergence ends.
   - This run's own § 5.1 answer: no conflict. That answer is about exports and the walk, and it
     asks nothing of the model's held state.
@@ -270,8 +270,8 @@ None this run.
   matched.
 - **Why it is worth a cycle:** *A fact in it is now false* (`decide_companion_answers.md` § *The
   items are not the whole of what a document is owed*). The measurements, on `main` at
-  `nozoki@fcb7910`:
-  - `docs/SDD.md:L706` cites `nozoki-mac/Sources/Shell/LaunchFlow.swift:L35-L37` for "the shell
+  `ka-reader@fcb7910`:
+  - `docs/SDD.md:L706` cites `ka-reader-mac/Sources/Shell/LaunchFlow.swift:L35-L37` for "the shell
     calls it only after the panel returns". `sed -n 35,37p` on that file prints the
     `statusGlyphs` declaration. The panel call is at `:L53-L57` and `openFolder` at `:L69`.
   - `docs/SDD.md:L708`, `:L715`, `:L725` and `:L1369` cite `checks/renderer.sh:L44-L57`,
@@ -280,7 +280,7 @@ None this run.
   - `docs/SDD.md:L727-L729` says "the runner matched the script's five-frame list". The script
     lists four frames. `git show b75348f -- checks/renderer.sh` (2026-09-27) removes
     `LaunchFlow.run()` from the header and from `FRAME_LIST`. The SDD's last revision,
-    `nozoki@3f13391` (2026-09-30), came after that commit, so the count was false at v21.
+    `ka-reader@3f13391` (2026-09-30), came after that commit, so the count was false at v21.
 
   C-I3 is a condition every slice inherits, and the frame list is what its gate clause describes.
   The review notes are left out: a note is dated history (RN-55).
@@ -299,4 +299,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/SDD.md`** — `<CORE>/launchers/product-sdd/launcher.sh nozoki`
+- **`docs/SDD.md`** — `<CORE>/launchers/product-sdd/launcher.sh ka-reader`

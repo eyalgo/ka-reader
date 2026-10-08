@@ -1,4 +1,4 @@
-# CONTENT open issues — Nozoki 覗き
+# CONTENT open issues — KA-Reader
 
 > Companion to `CONTENT.md`. The Content Editor authored the verbal language non-interactively;
 > this file holds the calls it made and wants your sign-off on — each with the reason behind it,
@@ -38,22 +38,22 @@ None this round.
 > below is left unanswered on purpose: the reasoning is that run's, the decision is yours, because
 > the second option moves a rule rather than a note. Its report is
 > `docs/trail/content/self_answer-1.md`. Re-verified on disk 2026-09-01 by the run that folded
-> cycle 4: `system/projects/nozoki/agari.md` is still absent from this repository, and it is still
+> cycle 4: `system/projects/ka-reader/agari.md` is still absent from this repository, and it is still
 > the only pointer in `docs/CONTENT.md` to a file outside it.
 
 - **What this document says:** RN-15 rules that this document "quotes and cites only files a reader
   who has cloned this repository can open", and that "a pointer a reader cannot follow is worse
-  than no pointer". RN-24 then cites `system/projects/nozoki/agari.md` for the wording of the
+  than no pointer". RN-24 then cites `system/projects/ka-reader/agari.md` for the wording of the
   product's defining read-only promise.
 - **What is true:** that file is not in this repository. It lives in the kensaiapp-opensource
-  instance repo — verified 2026-09-01, absent from `nozoki` and present at
-  `kensaiapp-opensource/system/projects/nozoki/agari.md`. It is the only pointer to a file outside
+  instance repo — verified 2026-09-01, absent from `ka-reader` and present at
+  `kensaiapp-opensource/system/projects/ka-reader/agari.md`. It is the only pointer to a file outside
   this repository anywhere in the document, so this is the one place the rule is broken, not a
   pattern.
 - **Why it is worth the round:** the citation authorizes the wording of the promise the whole
   product rests on, and the reader who cannot open it is exactly the reader RN-15 was written for —
   a stranger who cloned the public repository and has nobody to ask.
-- **Drafted:** apply RN-15 as it stands — state the Agari's ground in Nozoki's own words inside
+- **Drafted:** apply RN-15 as it stands — state the Agari's ground in KA-Reader's own words inside
   RN-24 and drop the pointer, which is what RN-15 already prescribes for a limit inherited from the
   publishing organisation. The alternative is to narrow RN-15 to admit a named instance-repo
   citation; that moves a rule rather than a note, which is why this is asked rather than done.
@@ -63,11 +63,11 @@ None this round.
   the alternative and RN-15 changes, which reaches every citation in the document rather than this
   one.
 - **Confirm or override:** override: keep RN-15 exactly as it stands — the choice between the two
-  options goes the drafted way and no rule moves — but do not restate the Agari's ground in Nozoki's
+  options goes the drafted way and no rule moves — but do not restate the Agari's ground in KA-Reader's
   own words. Drop the outside pointer and put the in-repository source of the same sentence in its
   place: `docs/PRD.md` § Purpose, which already states the promise over the wider input — *"browsing
   a folder's files — and, when that folder is a Git repository, inspecting its Git status — in which
-  nothing can be changed"* — and which `system/projects/nozoki/agari.md` itself defers to for that
+  nothing can be changed"* — and which `system/projects/ka-reader/agari.md` itself defers to for that
   sentence (*"the product sentence is the PRD's, `docs/PRD.md` § Purpose"*). The drafted remedy would
   have paraphrased a commitment to avoid an unopenable locator, and the house bar forbids both:
   *"A commitment is quoted, never paraphrased"* (`system/doctrine/writing_bar.md` § 1.5 *What open source adds*). Citing the

@@ -15,7 +15,7 @@
   ],
   "companion_present_at_intake": true,
   "companion_retired": false,
-  "consumed_cycle_path": "/Users/eyalgolan/products/nozoki/docs/trail/sdd/cycle-11.md",
+  "consumed_cycle_path": "/Users/eyalgolan/products/ka-reader/docs/trail/sdd/cycle-11.md",
   "core_root": "/Users/eyalgolan/.kensaiapp/pins/20260923T063052Z-ppa1f0/core",
   "ended": "seats-close",
   "ended_at": "2026-09-23T13:34:25.342094+00:00",
@@ -30,8 +30,8 @@
     "cpo": "## CPO \u2014 run 14, round 2\n\n**The fold, verified on disk against my lane \u2014 no edit.** The CTO's round-1 edits land in seven hunks of `docs/SDD.md` (`git diff` \u2192 `:321`, `:345`, `:1425-1431`, `:1438-1447`, `:2504-2518`, `:3630-3649`, `:3649-3711`) and the companion's deletion (`git status` \u2192 `D docs/SDD_open_issues.md`; `ls` \u2192 \"No such file\"). None of those hunks is in a CPO field:\n\n- **S-3 `read-markdown`**: *Slug*, *Delivers*, *Moves toward*, *Not in this slice* and the PRD trace read exactly as before (`docs/SDD.md:1398-1402`, `:1448-1450`, `:1456-1461`). The two fields that moved \u2014 *Rests on* now naming `folder-model` and `SM-5` (`:1443-1447`), and the command half's SM-5 fill case (`:1428-1431`) \u2014 are the CTO's by the table, and the *Rests on* addition takes up the point I raised in round 1; RN-65 records the decision and its reason (`:3672-3711`). Nothing S-3 is sized against changed: the reached-when bar is the same behaviour checked from one more side, so step 4's sizing stands.\n- **\u00a7 1, \u00a7 5 steps 1, 2 and 4, \u00a7 12's PRD boundary**: no hunk touches them; the PRD is still v15 Settled (`docs/PRD.md:3`) and the Agari unchanged (`ee561fb`).\n- **The companion**: gone with nothing in it, its last state whole at `docs/trail/sdd/cycle-11.md`. No product call is open, so no item from this seat.\n\nThe CDO's round-1 point (three older CTO-signed notes still pointing bare at the retired `docs/architecture_open_issues.md`) is in the CTO's field and not mine; I have nothing to add to it.\n\nNothing further is owed from this seat in this run.",
     "cto": "## CTO \u2014 run 14, round 1\n\n**The fold, all in this seat's field by the table** (`sdd_template.md` \u00a7 *Who holds what*: \u00a7 3, \u00a7 6 *Rests on* and the command half, \u00a7 12's downstream boundary, the Review Notes entry).\n\n- **RN-64's *because*, corrected in place** (`docs/SDD.md:3641-3649`), dated, the way RN-64 corrected \u00a7 12's record count: \"neither callee reads anything\" does not hold \u2014 `markdown-renderer` calls `fs-reader`'s containment check over SM-7 (`docs/SDD.md:345`, SM-7 at `:416`) and that check resolves symlinks on disk (`fs-reader` row, `:321`); the bar holds because every filesystem touch belongs to `fs-reader` \u2014 the model's own reads over SM-1 (`:410`), the renderer's check over SM-7 \u2014 so \"I/O of any kind\" means I/O the model performs itself. No \u00a7 3 sentence moved, per the owner (`docs/trail/sdd/cycle-11.md` \u00a7 2.4, *Confirm or override*).\n- **\u00a7 12's downstream boundary** (`docs/SDD.md:2511-2518`) reads the confirmed state: QC-10 transcribed at NFDR v12 (`docs/nfdr.md:150-158`, its v12 note; commit `1dfdd86`), already carrying the corrected reason (\"the renderer's containment call reaches the filesystem through `fs-reader` over `SM-7`, never through the model\", `docs/nfdr.md:156-158`). Its pointer at `docs/architecture_open_issues.md` \u2014 a file that no longer exists (`ls` \u2192 \"No such file\") \u2014 re-aims at `docs/trail/architecture/cycle-9.md` \u00a7 1.1 (`:31`), where that item now reads; RN-64's two pointers at the same retired file say where it went (`docs/SDD.md:3652-3653`, `:3670-3671`).\n- **\u00a7 3's two \"drafted\" marks** (`docs/SDD.md:324`, `:348`) now cite the confirm on the trail.\n- **The CPO's point, decided: S-3 *Rests on* gains `folder-model` and `SM-5`** (`docs/SDD.md:1443-1447`). RN-64's \"no *Rests on* moves\" reasoned from linking; the field names what a slice *realizes* (`cto_create_sdd.md` \u00a7 6), and under (a) the Markdown branch of the model's fill is \u00a7 3 text no earlier slice realizes \u2014 S-2 shows a `.md` as plain text (`docs/SDD.md:1386-1387`). RN-64's sentence carries the pointer (`:3657-3658`).\n- **S-3's command half gains one case** inside the existing `--test markdown` target (`docs/SDD.md:1428-1431`): `select_file` on a `.md` entry, driven through SM-5, yields a `FileView` holding the `MarkdownDocument` and no spans. Before it, the target proved the renderer alone; a build that put the fill in the bridge would have passed the command and failed the observable \u2014 the split the item's *If overridden* warned of. The CDO's observable half is untouched.\n- **RN-65** records all of it with its reasons (`docs/SDD.md:3672-3711`).\n- **Companion consumed and removed.** `diff` showed `docs/SDD_open_issues.md` identical to `docs/trail/sdd/cycle-11.md` before `rm`; `git status` shows `D docs/SDD_open_issues.md`. Nothing is left for the owner; the Status stamp is the runner's.\n\nNo slice, slug, *Delivers*, *Moves toward*, fence, seam, \u00a7 7 edge or place in the order moved; no companion item added; nothing S-3 is sized against changed."
   },
-  "product_path": "/Users/eyalgolan/products/nozoki",
-  "project": "nozoki",
+  "product_path": "/Users/eyalgolan/products/ka-reader",
+  "project": "ka-reader",
   "provider": "claude",
   "queue": [],
   "recall_outstanding": null,
@@ -40,31 +40,31 @@
   "resolved_inputs": {
     "cdo": [
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/SRS.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/UXD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/PRD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/agari.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ka-reader_doctrine.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ai_responsibility.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/definition_brief.md",
         "present": false
       },
       {
@@ -80,15 +80,15 @@
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/DESIGN.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/DESIGN.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/CONTENT.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/CONTENT.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/design_system",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/design_system",
         "present": false
       },
       {
@@ -102,31 +102,31 @@
     ],
     "cpo": [
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/SRS.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/UXD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/PRD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/agari.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ka-reader_doctrine.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ai_responsibility.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/definition_brief.md",
         "present": false
       },
       {
@@ -144,31 +144,31 @@
     ],
     "cto": [
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/SRS.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/SRS.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/UXD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/UXD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/PRD.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/PRD.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/agari.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/agari.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/nozoki_doctrine.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ka-reader_doctrine.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/nozoki/doctrine/ai_responsibility.md",
+        "path": "/Users/eyalgolan/projects/kensai/kensaiapp-opensource/system/projects/ka-reader/doctrine/ai_responsibility.md",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/definition_brief.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/definition_brief.md",
         "present": false
       },
       {
@@ -184,11 +184,11 @@
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/adr",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/adr",
         "present": true
       },
       {
-        "path": "/Users/eyalgolan/products/nozoki/docs/nfdr.md",
+        "path": "/Users/eyalgolan/products/ka-reader/docs/nfdr.md",
         "present": true
       }
     ]
@@ -225,9 +225,9 @@
     "cto": "bfbb39bb-3f19-4234-8043-66664e30b41b"
   },
   "seats": {
-    "cdo": "sdd-nozoki-run14-cdo",
-    "cpo": "sdd-nozoki-run14-cpo",
-    "cto": "sdd-nozoki-run14-cto"
+    "cdo": "sdd-ka-reader-run14-cdo",
+    "cpo": "sdd-ka-reader-run14-cpo",
+    "cto": "sdd-ka-reader-run14-cto"
   },
   "spoke_at": {
     "cdo": 3,

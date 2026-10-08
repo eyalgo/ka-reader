@@ -2,7 +2,7 @@
 
 ## Header
 
-- **Companion:** /Users/eyalgolan/products/nozoki/docs/architecture_open_issues.md
+- **Companion:** /Users/eyalgolan/products/ka-reader/docs/architecture_open_issues.md
 - **Document:** `adr/` and `nfdr.md` (`docs/adr/`, `docs/nfdr.md`)
 - **Decided by:** `decide_companion_answers.md` v1.0.0
 - **Date:** 2026-09-02
@@ -15,7 +15,7 @@
 - **Verdict:** answered
 - **Why:** The shape stands: the card's `cargo test --workspace --locked` is this product's
   change-time suite, no § 10 gate moves, and the card's field does not move. The item was raised
-  by a Product-role session as "the channel, not the decision" (`nozoki@b55a6d4`) and carries no
+  by a Product-role session as "the channel, not the decision" (`ka-reader@b55a6d4`) and carries no
   draft, so it was answered from scratch — but its framing carries a premise, and the premise was
   measured before anything else. **The premise is false for this product.** The packet calls the
   workspace form release-time for one stated reason: layer 5 lives in the binary crate's
@@ -25,10 +25,10 @@
   by the `checks/` harness", confirmed at `docs/trail/architecture/cycle-1.md` § 2.7 — and § 9 row 5
   puts layer 5 on `checks/bundle.sh`, `checks/own-state.sh`, `checks/churn.sh`, `checks/latency.sh`,
   `checks/read-only.sh --kill` and the manual AC-10 walk, gated at CI build and release in § 10.
-  Measured: `grep -o 'cargo test -p nozoki-app[^;)|,]*' docs/nfdr.md` returns `--test config`
+  Measured: `grep -o 'cargo test -p ka-reader-app[^;)|,]*' docs/nfdr.md` returns `--test config`
   (layer 2) and the bare layer-1 form and nothing else; `grep 'CARGO_BIN_EXE\|<flow>.rs' docs/nfdr.md
   docs/SDD.md` hits only RN-7's description of the packet's shape. ADR-0009 § Decision fixes exactly
-  two crates, so `cargo test --workspace` is the union of `-p nozoki-core` and `-p nozoki-app` —
+  two crates, so `cargo test --workspace` is the union of `-p ka-reader-core` and `-p ka-reader-app` —
   layers 1–3 across both — and the packet's per-crate change-time form would run the same set.
   **Check 1 — mine, in the owner's seat, and not the CTO's, for a reason the item's own "Whose call"
   does not reach.** The decision the item routes to the CTO was already made by the CTO, twice
@@ -49,15 +49,15 @@
   with `kensaiapp-opensource@3a960a7`'s field. Nothing settled moves; RN-7 gains a sentence under
   its own rule that a difference from the packet is recorded "each with its reason". **Check 4 —
   *stale* is the case that decided the addition's shape.** The answer is true only while layer 5
-  stays outside `cargo test`: a future `crates/nozoki-app/tests/<flow>.rs` starting the built binary
+  stays outside `cargo test`: a future `crates/ka-reader-app/tests/<flow>.rs` starting the built binary
   through `CARGO_BIN_EXE_*` — the packet's own layer-5 mechanism (`testing.md` § The rules that make
   that table work) — would put layer 5 inside the per-task run silently and make the packet's
   classification apply. So the sentence names the condition and its enforcement: `checks/structure.sh`
   (layer 6, § 9 row 6 "grep rules") — no `CARGO_BIN_EXE_` reference under `crates/*/tests/`. That is
   the enforceability lens: a constraint a behaviour-preserving change could break needs a check that
-  names the break. *Empty*: no workspace exists yet (`ls /Users/eyalgolan/products/nozoki` shows no
+  names the break. *Empty*: no workspace exists yet (`ls /Users/eyalgolan/products/ka-reader` shows no
   manifest); the card's own comment carries that the first change generates the lockfile before the
-  gate can pass (`system/projects/nozoki/project.md`, `Test command:`). *Refused*: `--locked` fails
+  gate can pass (`system/projects/ka-reader/project.md`, `Test command:`). *Refused*: `--locked` fails
   when the lockfile would change — QC-26 commits the diff in the same task, which the card's comment
   also states. *Absent*: the packet's holder going silent — § 9 states its rules in full (RN-8).
   *Concurrent*: not reached — one gate, two toolchains, run in sequence by `&&`. **What would have
@@ -74,8 +74,8 @@
   this document and commits nobody to anything. **Check 2 — the draft holds for the reason it gives,
   and the measurement is on disk.** § 8 reads "That card's test command is the SDD's command bar for
   the Rust workspace and Vitest for the renderer" (`docs/nfdr.md:L429-L432`); the card reads
-  `cargo test --workspace --locked && (cd nozoki-ui && pnpm exec vitest run)`
-  (`git -C kensaiapp-opensource show 3a960a7 -- system/projects/nozoki/project.md`, one line changed,
+  `cargo test --workspace --locked && (cd ka-reader-ui && pnpm exec vitest run)`
+  (`git -C kensaiapp-opensource show 3a960a7 -- system/projects/ka-reader/project.md`, one line changed,
   2026-09-02); the SDD's bar is "`cargo test --workspace` exits 0" (`docs/SDD.md:L783`). The two are
   not the same command, so the sentence is false as written and "is" becomes "satisfies and adds".
   No SDD change is owed: a stricter command passes a floor. **The addition is RN-6.** § 8 hands its
@@ -117,4 +117,4 @@ None this run.
 
 ## Launchers owed
 
-- **`adr/` and `nfdr.md`** — `<CORE>/launchers/product-architecture/launcher.sh nozoki`
+- **`adr/` and `nfdr.md`** — `<CORE>/launchers/product-architecture/launcher.sh ka-reader`

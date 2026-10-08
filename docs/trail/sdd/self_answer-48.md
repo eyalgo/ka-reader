@@ -39,14 +39,14 @@ bears on these items in other words was not seen. `docs/CONTENT.md` was read at 
 `read-only.sh` and not read. `docs/PRD.md` was not opened. `docs/architecture_open_issues.md`,
 `docs/trail/sdd/self_answer-46.md` and `docs/trail/sdd/self_answer-47.md` were read whole.
 
-The product was read at `nozoki@d3f9e6a`, whose tree outside `docs/` is the tree at
-`nozoki@fc14574`: `crates/nozoki-core/src/git_reader/config_scan.rs`, `checks/read-only.sh`,
-`checks/walk.rs` and `nozoki-mac/Sources/Surfaces/GitSentences.swift` whole;
-`crates/nozoki-core/src/git_reader/libgit2.rs:L76-L375`;
-`crates/nozoki-core/tests/root_finding.rs:L1-L135`; and
-`crates/nozoki-core/tests/git_state.rs:L1-L12`, `:L136-L158`, `:L712-L740` and `:L1180-L1254`.
+The product was read at `ka-reader@d3f9e6a`, whose tree outside `docs/` is the tree at
+`ka-reader@fc14574`: `crates/ka-reader-core/src/git_reader/config_scan.rs`, `checks/read-only.sh`,
+`checks/walk.rs` and `ka-reader-mac/Sources/Surfaces/GitSentences.swift` whole;
+`crates/ka-reader-core/src/git_reader/libgit2.rs:L76-L375`;
+`crates/ka-reader-core/tests/root_finding.rs:L1-L135`; and
+`crates/ka-reader-core/tests/git_state.rs:L1-L12`, `:L136-L158`, `:L712-L740` and `:L1180-L1254`.
 
-Four things were run. `cargo test --locked -p nozoki-core --test git_state` on the two cases
+Four things were run. `cargo test --locked -p ka-reader-core --test git_state` on the two cases
 answer 5.2 names. `tar -tf` on each archive in `checks/fixtures/`. A copy of each of the four
 scene fixtures, made in a temporary folder outside the repository, with its archive unpacked
 into it as `checks/read-only.sh:L73-L76` does. And `git diff --name-status 814a369 d3f9e6a --
@@ -75,9 +75,9 @@ item cites sites in the product by path and line, so none was answered "not unti
 
   **The item's facts hold.** The scanner gives `Placement::Outside` to a value beginning `~/`
   under any key and to a relative excludes or attributes file
-  (`crates/nozoki-core/src/git_reader/config_scan.rs:L175-L186`), and the adapter refuses that
+  (`crates/ka-reader-core/src/git_reader/config_scan.rs:L175-L186`), and the adapter refuses that
   placement before it spells anything (`libgit2.rs:L264-L265`). The shipped sentence then says
-  "outside the folder you opened" (`nozoki-mac/Sources/Surfaces/GitSentences.swift:L53-L57`). A
+  "outside the folder you opened" (`ka-reader-mac/Sources/Surfaces/GitSentences.swift:L53-L57`). A
   reader whose folder is `~/proj` and whose config includes `~/proj/local.config` is told a path
   inside the folder is outside it. That reader can check the sentence against the path it
   prints.
@@ -93,7 +93,7 @@ item cites sites in the product by path and line, so none was answered "not unti
   **Why the value is not located instead.** libgit2 expands `~/` from the home directory
   (`config_file.c:L526-L527`, `attrcache.c:L338-L339`, `sysdir.c:L640-L650`). Locating the value
   means the adapter finds that directory too. The crate's own source reads no environment
-  variable for it (`grep -rn 'env::var\|HOME' crates/nozoki-core/src` prints only the prefix
+  variable for it (`grep -rn 'env::var\|HOME' crates/ka-reader-core/src` prints only the prefix
   constant), and which directory libgit2 takes as home inside the sandboxed bundle was not read
   in this run. A relative excludes file has no base at all: libgit2 keeps the value as written
   and loads it with a null base (`attrcache.c:L341-L342`, `ignore.c:L362-L368`). This run reads
@@ -111,7 +111,7 @@ item cites sites in the product by path and line, so none was answered "not unti
   step (`libgit2.rs:L331`), and so does the probe (`:L356`), so the observation crosses on all of
   them. A config rewritten between the check and libgit2's open is the case R-16 already names.
   Between now and the change that builds this, the shipped sentence still says outside for both
-  forms. The answer has R-16 state that as a known defect, pinned to `nozoki@fc14574`.
+  forms. The answer has R-16 state that as a known defect, pinned to `ka-reader@fc14574`.
 
   **Decided together with 5.3**, which names the same two forms in *The spellings*. Both say
   "refused without being located", and neither says "outside by rule".
@@ -137,7 +137,7 @@ item cites sites in the product by path and line, so none was answered "not unti
   The row itself says a file landing in `checks/` after its pinned commit "owes this row an
   item" (`docs/SDD.md:L347`).
 
-  **The measurement.** `ls checks/fixtures` at `nozoki@d3f9e6a` lists eleven folders and seven
+  **The measurement.** `ls checks/fixtures` at `ka-reader@d3f9e6a` lists eleven folders and seven
   archives. `git diff --name-status 814a369 d3f9e6a -- checks` shows four added paths and no
   other added file: `config-names-outside/README.md`, `submodule-config-names-outside/README.md`
   and the two archives. Five files under `checks/` were modified between those commits. None was
@@ -155,7 +155,7 @@ item cites sites in the product by path and line, so none was answered "not unti
   *Until the checks are built* says no build bounds the config-named read (`:L3140-L3148`).
   *Open Questions* says the proof stays open (`:L6878`). Each is pinned to an older commit or
   written as a condition, so none is false as dated. A reader at v40 still takes from them that
-  the config check has no case. Two cases exist and passed in this run at `nozoki@d3f9e6a`: the
+  the config check has no case. Two cases exist and passed in this run at `ka-reader@d3f9e6a`: the
   top-level one (`git_state.rs:L1202`) and the submodule-config one (`:L1218`). The alternates
   case does not exist, so the *Open Questions* item does not close on this answer.
 
@@ -234,14 +234,14 @@ item cites sites in the product by path and line, so none was answered "not unti
   becomes a repository's root. `submodule` becomes the superproject. `linked-worktree` has no
   `.git` at its root. `parent-of-two` has none, and holds its repositories one folder further
   down. The archives are laid out for the suites, which unpack them at a scene's root with the
-  fixture copied beneath it (`crates/nozoki-core/tests/root_finding.rs:L54-L59`).
+  fixture copied beneath it (`crates/ka-reader-core/tests/root_finding.rs:L54-L59`).
 
   **The ground.** A walk fixture proves that nothing under the fixture folder changed
   (`checks/read-only.sh:L17-L20`, `:L84`). For a scene whose Git directory lies outside the
   opened folder, the place a wrong write would land is outside the hash. The suites hold that
   property with a wider instrument: they snapshot the whole scene root before and after the
   probe (`root_finding.rs:L22-L43`) and before and after `state` and `status`
-  (`crates/nozoki-core/tests/git_state.rs:L146-L155`, `:L719-L738`). So the walk is the weaker
+  (`crates/ka-reader-core/tests/git_state.rs:L146-L155`, `:L719-L738`). So the walk is the weaker
   proof for those scenes even when built correctly, and building them correctly in the script
   costs a second scene builder.
 
@@ -302,4 +302,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/SDD.md`** — `<CORE>/launchers/skill/launcher.sh product-sdd nozoki`
+- **`docs/SDD.md`** — `<CORE>/launchers/skill/launcher.sh product-sdd ka-reader`

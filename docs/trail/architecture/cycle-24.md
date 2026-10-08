@@ -1,4 +1,4 @@
-# Architecture open issues — Nozoki
+# Architecture open issues — KA-Reader
 
 > Companion to `adr/` and `nfdr.md`. The Principal Architect authored both records
 > non-interactively; this file holds what the run could not settle from its inputs — the SRS, the SDD
@@ -24,14 +24,14 @@ None.
 
 ## 2. Choices to confirm — the Principal Architect drafted a best-effort answer; confirm or override
 
-### 2.1 § 9's `nozoki-mac` bullet re-cites the two `ci.yml` pointers that moved, pinned to `nozoki@463acb9`
-- **Lands in:** `nfdr.md` § 9, the `nozoki-mac` bullet's *Toolchain — not yet measured* clause
+### 2.1 § 9's `ka-reader-mac` bullet re-cites the two `ci.yml` pointers that moved, pinned to `ka-reader@463acb9`
+- **Lands in:** `nfdr.md` § 9, the `ka-reader-mac` bullet's *Toolchain — not yet measured* clause
   (`docs/nfdr.md:L1142-L1147`, `:L1158-L1160`)
 - **Drafted into the records:** the v26 fold wrote it into `nfdr.md` (RN-37). The clause said
-  `.github/workflows/ci.yml:L29` runs `nozoki-mac/assemble.sh`. That was true at `nozoki@0aca57e`,
-  but from `nozoki@463acb9` `:L29` is `run: checks/structure.sh` and the build step is `:L35`
-  (`cat -n .github/workflows/ci.yml` at `nozoki@b083f99`, whose `ci.yml` is `nozoki@463acb9`'s).
-  The clause now reads "`:L35` runs `nozoki-mac/assemble.sh`, both at `nozoki@463acb9`", with the
+  `.github/workflows/ci.yml:L29` runs `ka-reader-mac/assemble.sh`. That was true at `ka-reader@0aca57e`,
+  but from `ka-reader@463acb9` `:L29` is `run: checks/structure.sh` and the build step is `:L35`
+  (`cat -n .github/workflows/ci.yml` at `ka-reader@b083f99`, whose `ci.yml` is `ka-reader@463acb9`'s).
+  The clause now reads "`:L35` runs `ka-reader-mac/assemble.sh`, both at `ka-reader@463acb9`", with the
   old citation kept as dated history (`docs/nfdr.md:L1144-L1147`). The same clause's *no
   `swift --version` step* range moves from `:L22-L29` to `:L22-L35` under the same pin. The
   whole-file grep stands beside it, `grep -n 'swift --version' .github/workflows/ci.yml`, and it
@@ -48,11 +48,11 @@ None.
   an accepted record, which is append-only, so they do not move.
 - **If overridden:** the clause goes back to its v25 pointer, or takes whatever pin you name.
   Nothing is gated on it, so no obligation moves and no record supersedes.
-- **Confirm or override:** confirm. Re-measured at HEAD `nozoki@7ef2386`: `ci.yml` is unchanged since
-  `nozoki@463acb9` (`git diff --stat 463acb9 HEAD -- .github/workflows/ci.yml` prints nothing), so the
-  pin holds. There `:L26` is `swift test --package-path nozoki-mac`, `:L35` is `run: nozoki-mac/assemble.sh`,
+- **Confirm or override:** confirm. Re-measured at HEAD `ka-reader@7ef2386`: `ci.yml` is unchanged since
+  `ka-reader@463acb9` (`git diff --stat 463acb9 HEAD -- .github/workflows/ci.yml` prints nothing), so the
+  pin holds. There `:L26` is `swift test --package-path ka-reader-mac`, `:L35` is `run: ka-reader-mac/assemble.sh`,
   `:L28-L32` are the two Structure steps, and `grep -n 'swift --version' .github/workflows/ci.yml` prints
-  nothing. Pinning to `nozoki@463acb9` rather than keeping `:L29` pinned to `nozoki@0aca57e` matches the pin
+  nothing. Pinning to `ka-reader@463acb9` rather than keeping `:L29` pinned to `ka-reader@0aca57e` matches the pin
   § 9's `checks/tests/` bullet already carries. Reasoning: `docs/trail/architecture/self_answer-28.md` § 2.1.
 
 ## 3. Raised from downstream — an item from a seat that did not write these records

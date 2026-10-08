@@ -21,14 +21,14 @@ None this run.
 One thing here needs a person, and it is not a companion item. **`product-sdd` run 21 folded this
 companion and never closed.** What is on disk:
 
-- `git -C /Users/eyalgolan/products/nozoki status --short` prints ` M docs/SDD.md`,
+- `git -C /Users/eyalgolan/products/ka-reader status --short` prints ` M docs/SDD.md`,
   ` M docs/SDD_open_issues.md`, and `??` for `docs/trail/sdd/cycle-18.md`, `run-21.md` and
   `run-21.state.json`. The fold is in the working tree and in no commit. `HEAD` is `24d652b`.
 - `docs/trail/sdd/run-21.state.json` reads `"ended": null`, `"round": 2`,
   `"companion_retired": false`, an empty `turn_log`, and 14 entries under `interruptions`. Its
   `pending_request.cto` opens "CTO, round 2 (turn given a fourteenth time) — no edit and no new
   checks. The run is still looping on the runner's helper".
-- No runner is alive. `ps -Ao pid,etime,command | grep -E 'sddloop|sdd_run|sdd_seat|product-sdd-runner|sdd-nozoki'`
+- No runner is alive. `ps -Ao pid,etime,command | grep -E 'sddloop|sdd_run|sdd_seat|product-sdd-runner|sdd-ka-reader'`
   at 15:38 CEST printed two `claude --print` sessions, this one (pid 9633) and a `senior-engineer`
   run (pid 77006), and no runner, helper or seat process. `/tmp/sddloop.sh` is still on disk.
 - The cause and the recovery are recorded at
@@ -61,4 +61,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/SDD.md`** — `<CORE>/launchers/product-sdd/launcher.sh nozoki`
+- **`docs/SDD.md`** — `<CORE>/launchers/product-sdd/launcher.sh ka-reader`

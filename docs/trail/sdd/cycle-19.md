@@ -1,4 +1,4 @@
-# SDD open issues — Nozoki
+# SDD open issues — KA-Reader
 
 > Companion to `SDD.md`. Three seats — the CTO, the CPO and the CDO — authored the SDD
 > non-interactively in one run; this file holds what that run could not settle from its inputs (the
@@ -26,7 +26,7 @@
 
 ### 5.1 The `surfaces` row says it draws no state the bridge did not send, and the reading panel's pending state is not sent
 - **Raised by:** PM — 2026-10-01
-- **Tracked by:** `nozoki · nemawashi · 2026-10-01_a-file-reads-in-the-panel`
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-01_a-file-reads-in-the-panel`
 - **What it blocks:** nothing is blocked. The pending state is built and passes its tests. What is
   missing is the SDD saying whether it is built in the right part. As written, § 3 says it is not.
 - **Where it shows:** § 3's `surfaces` row ends "It draws projections and draws no state the bridge
@@ -36,13 +36,13 @@
   the surface's showing of pending "the surface's half of the same rule" (`docs/SDD.md:L846-L851`).
   The app works differently. When a file is selected, the workbench draws the panel's *reading* state
   from its own selection, before the read is even asked for
-  (`nozoki-mac/Sources/Surfaces/WorkbenchView.swift:L80-L88`; the panel is drawn at `:L86`, the intent raised at
-  `:L88`). The read itself goes out through the shell (`nozoki-mac/Sources/Shell/LaunchFlow.swift:L112-L113`). A `nil` answer is an answer that
+  (`ka-reader-mac/Sources/Surfaces/WorkbenchView.swift:L80-L88`; the panel is drawn at `:L86`, the intent raised at
+  `:L88`). The read itself goes out through the shell (`ka-reader-mac/Sources/Shell/LaunchFlow.swift:L112-L113`). A `nil` answer is an answer that
   did not decode. The SDD names that state `stopped`, an `ItemState` the model holds
   (`docs/SDD.md:L440-L443`). The workbench draws it from the `nil` itself
-  (`nozoki-mac/Sources/Surfaces/WorkbenchView.swift:L94-L97`). The tree's *Reading this folder.*
+  (`ka-reader-mac/Sources/Surfaces/WorkbenchView.swift:L94-L97`). The tree's *Reading this folder.*
   line follows the same pattern: it is set before the listing is asked for
-  (`nozoki-mac/Sources/Surfaces/RootItemsView.swift:L254-L260`). Two readings
+  (`ka-reader-mac/Sources/Surfaces/RootItemsView.swift:L254-L260`). Two readings
   are open. (a) A surface may draw the gap between an intent it raised and the answer, as long as
   that is the only state it originates. The `surfaces` row then names this exception. (b) Pending
   comes only from a `folder-model` projection. The current drawing is then misplaced, and the work
@@ -68,14 +68,14 @@
   The item carries a second question, the fault, and the answer covers it. The *stopped* state the
   workbench draws from a `nil` answer is not a state the surface originates. `mac-shell` hands that
   `nil` down SM-8 when the call's return carried no verdict: a NULL buffer after the bridge caught
-  a panic (`crates/nozoki-bridge/src/boundary.rs:L21-L40`), or a buffer that does not conform
-  (`nozoki-mac/Sources/Shell/BridgePayload.swift:L272-L277`). The SDD states this as a second place
+  a panic (`crates/ka-reader-bridge/src/boundary.rs:L21-L40`), or a buffer that does not conform
+  (`ka-reader-mac/Sources/Shell/BridgePayload.swift:L272-L277`). The SDD states this as a second place
   `stopped` is established: at SM-4's return, where the answer is read, beside the `stopped` the
   model holds on an item. C-I1's "a panic that reaches the host" stays a violation.
 
   Why (a). The gap is the one state the bridge cannot send. An SM-4 call's answer is its return,
   so until the call returns the bridge has said nothing, and the bridge exports no callback today
-  (`crates/nozoki-bridge/src/exports.rs:L55-L104`; C-R7 admits one only from the slice that needs
+  (`crates/ka-reader-bridge/src/exports.rs:L55-L104`; C-R7 admits one only from the slice that needs
   it). A pending that must itself cross the seam cannot be drawn in the one case UX-S1 *Loading*
   exists for, a core that is slow to answer. The rule's purpose holds: a surface still draws
   nothing about the folder from its own knowledge, and "asked, not yet answered" is the one thing
@@ -86,7 +86,7 @@
   sentence; `stopped` at SM-4's return, in *What the system holds* and C-I1; and § 6
   `open-a-folder`'s command half, "a row is drawn from a projection and from nothing else", read
   with the exception, because the tree's *Reading this folder.* line is the same gap
-  (`nozoki-mac/Sources/Surfaces/RootItemsView.swift:L254-L260`). No § 10 entry: no bar, no seam's
+  (`ka-reader-mac/Sources/Surfaces/RootItemsView.swift:L254-L260`). No § 10 entry: no bar, no seam's
   list and no order moves. `docs/trail/sdd/cycle-17.md` § 5.2 stands: the open file, the selection
   and the expansion are the model's from `follow-the-folder` at the latest, and the gap is not held
   state. Two cases this answer does not cover. A read that never returns leaves pending standing,

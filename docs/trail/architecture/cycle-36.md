@@ -1,4 +1,4 @@
-# Architecture open issues — Nozoki
+# Architecture open issues — KA-Reader
 
 > Companion to `adr/` and `nfdr.md`. The Principal Architect authored both records
 > non-interactively; this file holds what the run could not settle from its inputs — the SRS, the SDD
@@ -17,7 +17,7 @@
 > — an ADR's binding and an NFDR obligation reach the same file.
 
 > **No `product-architecture` run wrote this file.** The PM opened it on 2026-10-05 from the records'
-> own companion template. From `nozoki@4a50e68`, `checks/structure.sh` holds QC-11's libgit2-import
+> own companion template. From `ka-reader@4a50e68`, `checks/structure.sh` holds QC-11's libgit2-import
 > clause over the whole shipped scope, and `git-reader` reads Git's config files itself before libgit2
 > opens. QC-11's *verified by* tail still says the clause is held by review, and QC-15's list of
 > `git-reader`'s reads outside libgit2 names no config read. The records are Settled, and with no
@@ -60,7 +60,7 @@ None.
     and the submodule-config fixture and their cases in the tree. It stays open only on the
     alternates case (`:L7138-L7160`).
   - The check is built: `check_config` and `verify_submodules`
-    (`crates/nozoki-core/src/git_reader/libgit2.rs:L191`, `:L285`), merged at `nozoki@fc14574`.
+    (`crates/ka-reader-core/src/git_reader/libgit2.rs:L191`, `:L285`), merged at `ka-reader@fc14574`.
   Two architects reading SDD v41 would write the same sentences, as RN-51 found for the SDD v32
   bound. One thing stays uncovered and should be named as uncovered, not as covered: the
   `objects/info/alternates` read. C-D3 names it as a second read that libgit2 takes with no
@@ -78,17 +78,17 @@ None.
 ### 3.1 QC-11's tail says the libgit2-import bound is review, and the script now holds it by file
 - **Raised by:** PM — 2026-10-05
 - **Which record:** `nfdr.md` QC-11
-- **Tracked by:** `nozoki · nemawashi · 2026-10-02_git-says-what-changed`
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-02_git-says-what-changed`
 - **What it blocks:** nothing is cut by it. A reviewer at `development-design` is told to hold by hand
   a rule the script already holds, and the one part the script does not hold is not named.
 - **Where it shows:** QC-11's *verified by* says "The exception's bound — the switch and its test, and
   nowhere else in the bridge — is review at `development-design`: the script does not hold the import
-  rule outside the three units' files it reads (`checks/structure.sh:L257-L258` at `nozoki@392177d`)",
+  rule outside the three units' files it reads (`checks/structure.sh:L257-L258` at `ka-reader@392177d`)",
   and that the bound "stays review until a change adds it" (`docs/nfdr.md:L357-L362`). That change has
   landed. The script's header now carries the clause over "every file of the shipped scope in any
   crate", with two exemptions, every file of the `git_reader` unit and
-  `crates/nozoki-bridge/src/machine_config.rs` (`checks/structure.sh:L130-L142`, the exempting `case`
-  at `:L1186`). At `nozoki@fc14574` it exits 0: "16 Rust files in 2 crates read — nothing found". The
+  `crates/ka-reader-bridge/src/machine_config.rs` (`checks/structure.sh:L130-L142`, the exempting `case`
+  at `:L1186`). At `ka-reader@fc14574` it exits 0: "16 Rust files in 2 crates read — nothing found". The
   switch's test lies under `tests/`, outside the shipped scope. What the script holds is a file, not
   the switch: a second `git2` use added inside `machine_config.rs` draws no finding, while QC-11
   allows the binding "in the composition root's config search-path switch and that switch's test,
@@ -101,17 +101,17 @@ None.
   `checks/structure.sh` as the check that holds the libgit2-binding clause across the whole shipped
   scope of every crate. That is the header's QC-11 *libgit2 binding* row
   (`checks/structure.sh:L130-L142`, with the exempting `case` at `:L1186`), on `main` since
-  `nozoki@fc14574`. At `nozoki@b25b407` the script exits 0 with "16 Rust files in 2 crates read —
+  `ka-reader@fc14574`. At `ka-reader@b25b407` the script exits 0 with "16 Rust files in 2 crates read —
   nothing found". Review at `development-design` still holds two parts of the exception's bound,
   not one:
-  (1) inside `crates/nozoki-bridge/src/machine_config.rs`, the binding is named only for the switch.
+  (1) inside `crates/ka-reader-bridge/src/machine_config.rs`, the binding is named only for the switch.
   The script exempts the whole file, and that file also holds the adapter's constructor
   (`:L138-L139`).
-  (2) under `crates/nozoki-bridge/tests/`, the binding is named only in the switch's own test. The
+  (2) under `crates/ka-reader-bridge/tests/`, the binding is named only in the switch's own test. The
   script reads `tests/` for the layer-5 rule alone (`checks/structure.sh:L41-L42`), so a second
   bridge test that names `git2` draws no finding.
   The fold re-measures the sentence that names the bridge files that name `git2` at its own commit.
-  At `nozoki@b25b407` they are still `machine_config.rs`, `tests/search_path.rs` and the manifest.
+  At `ka-reader@b25b407` they are still `machine_config.rs`, `tests/search_path.rs` and the manifest.
   It keeps "for the clauses its header holds", because the header still lists QC-11's clauses whose
   subject is `git-reader`, `watcher` or `markdown-renderer` as not held (`:L270`). Reasoning:
   `docs/trail/architecture/self_answer-41.md` § 3.1.
@@ -119,7 +119,7 @@ None.
 ### 3.2 QC-15's list of `git-reader`'s reads outside libgit2 names no config read
 - **Raised by:** PM — 2026-10-05
 - **Which record:** `nfdr.md` QC-15
-- **Tracked by:** `nozoki · nemawashi · 2026-10-02_git-says-what-changed`
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-02_git-says-what-changed`
 - **What it blocks:** nothing is cut by it. QC-15 fixes I/O ownership by list, and a read the list
   does not name reads as a read nobody owns.
 - **Where it shows:** QC-15 gives `git-reader` "reads bounded to the opened folder": the folder's own
@@ -129,7 +129,7 @@ None.
   `extensions.worktreeConfig` is set; each config file those include that spells inside the folder,
   the working tree included; and, before the status read, the same files and the `.git` entry,
   `.git` file, spelled positions and `commondir` of each submodule it verifies
-  (`crates/nozoki-core/src/git_reader/libgit2.rs:L190-L250`, `:L289-L320`). `docs/SDD.md` § 3's
+  (`crates/ka-reader-core/src/git_reader/libgit2.rs:L190-L250`, `:L289-L320`). `docs/SDD.md` § 3's
   `git-reader` row already owns these reads (`docs/SDD.md:L338`, RN-99). Its alternates read (RN-100) is
   not built yet. The likely fold: QC-15's list gains the config reads and the submodule reads in those
   terms, and, once built, the alternates file.
@@ -143,18 +143,18 @@ None.
   - the metadata, and a link's own text, at each position inside the folder along the spelled path
     of every config value the check locates, not only along the paths to the Git directory and the
     common directory. `follow` spells each value with the same walk
-    (`crates/nozoki-core/src/git_reader/libgit2.rs:L252-L280` at `nozoki@b25b407`), which the
+    (`crates/ka-reader-core/src/git_reader/libgit2.rs:L252-L280` at `ka-reader@b25b407`), which the
     item's text does not name;
   - for each submodule verified before the status read, its `.git` entry's metadata, the location
     reads above for its Git directory and common directory, and its config check
     (`:L285-L340`).
   Addition one: the alternates read (SDD RN-100) is not built. `grep -n alternates` over the
-  adapter prints nothing at `nozoki@b25b407`. So it is not until it occurs, and the change that
+  adapter prints nothing at `ka-reader@b25b407`. So it is not until it occurs, and the change that
   builds it owes QC-15 that read, through review at `development-design`.
   Addition two: the adapter also reads `.gitmodules` in the working tree of the repository and of
   each submodule, and follows its include keys (`:L292-L303`, `:L238`), because libgit2 loads that
   file as a config file during the status read. SDD § 3's row does not own that read, so QC-15
   does not name it until the SDD does. That change is carried at `docs/SDD_open_issues.md` § 2.1
-  (`nozoki@ed6e634`). Reasoning: `docs/trail/architecture/self_answer-41.md` § 3.2.
+  (`ka-reader@ed6e634`). Reasoning: `docs/trail/architecture/self_answer-41.md` § 3.2.
 
 **How it closes.** `product-architecture` folds it on its next run like any other item here.

@@ -1,4 +1,4 @@
-# UXD open issues — Nozoki 覗き
+# UXD open issues — KA-Reader
 
 > Companion to `UXD.md`. The CDO authored the UXD non-interactively; this file holds
 > what it could not settle from the inputs (the PRD, the project's Agari and its doctrine, the
@@ -17,12 +17,12 @@
 > for good.
 
 > **This companion was opened by the owner, not by a `product-uxd` run, and it carries exactly one
-> item.** The UXD was settled at v2 (`nozoki@7505e1b`) and its companion was correctly deleted. It
+> item.** The UXD was settled at v2 (`ka-reader@7505e1b`) and its companion was correctly deleted. It
 > is re-opened here because the **design** round that followed produced one consequence the UXD
 > must absorb, and the UXD's own loop has no other way to be told: with no companion on disk a
 > `product-uxd` re-run reads the document as done and has nothing to act on. The item below is
 > already answered — the owner settled it while walking `DESIGN_open_issues.md` § 2.5
-> (`nozoki@e90027a`) — so this round is a fold, not a question. Nothing else in `UXD.md` is
+> (`ka-reader@e90027a`) — so this round is a fold, not a question. Nothing else in `UXD.md` is
 > reopened, and no other item is parked here.
 
 ---
@@ -46,7 +46,7 @@
   home, alongside the identity element that RN-2 and RN-15 already put there.
 
   This is the owner's settled call, made at `DESIGN_open_issues.md` § 2.5 and committed at
-  `nozoki@e90027a`: *"confirm all three"*, answered after being told in the same turn that
+  `ka-reader@e90027a`: *"confirm all three"*, answered after being told in the same turn that
   confirming carried this UXD amendment with it. The design side of the same call is already in
   `DESIGN.md` § Components "The chrome" (RN-10, RN-12); this item is the UXD half, so that the two
   documents state one placement between them rather than one stating it and the other leaving a gap.

@@ -90,9 +90,9 @@
   companion (none is on disk — CONTENT is Settled v7 with its companion gone) and
   `docs/fdr_open_issues.md` § 2.1 answered literal; naming that is the cost of the override, and
   nothing here forecloses it. One case this answer does not cover, named: whether the tree today
-  *shows* a pending row at all. At `nozoki@46bb275` a `pending` row draws its name and glyph and
+  *shows* a pending row at all. At `ka-reader@46bb275` a `pending` row draws its name and glyph and
   no word (`docs/fdr_open_issues.md` § 2.1 *If overridden*, citing
-  `nozoki-mac/Sources/Surfaces/RootItemsView.swift:L161-L170`), while UX-S2 requires that a folder
+  `ka-reader-mac/Sources/Surfaces/RootItemsView.swift:L161-L170`), while UX-S2 requires that a folder
   not yet read "shows that it is pending rather than showing as empty" (`docs/UXD.md:L237`) and
   FDR R-32 says the same. That is a behaviour question against a settled requirement, the PM's to
   route, not a design-language one — this item decides how pending looks when it is shown, and
@@ -118,4 +118,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/DESIGN.md`** — `<CORE>/launchers/skill/launcher.sh product-design nozoki`
+- **`docs/DESIGN.md`** — `<CORE>/launchers/skill/launcher.sh product-design ka-reader`

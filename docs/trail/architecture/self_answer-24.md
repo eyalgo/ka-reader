@@ -4,7 +4,7 @@
 
 - **Companion:** `docs/architecture_open_issues.md`
 - **Document:** `docs/adr/` and `docs/nfdr.md`. The NFDR is v22 and Settled (`docs/nfdr.md:L3-L5`).
-  The PM opened the companion on 2026-10-01 at `nozoki@438279b` with two items in § 3.
+  The PM opened the companion on 2026-10-01 at `ka-reader@438279b` with two items in § 3.
 - **Decided by:** `decide_companion_answers.md` v1.3.0
 - **Date:** 2026-10-01
 - **Sources re-read:** Cargo's manifest reference, § The `build` field
@@ -41,17 +41,17 @@
   against the `cargo:` section of `checks/deps.allow` printed nothing. `bash checks/no-network.sh`
   printed "ok — 40 cargo names match checks/deps.allow" and exited 0.
   `git merge-base --is-ancestor 85d9fa7 main` succeeds. `git show --stat 85d9fa7` lists
-  `Cargo.lock`, `checks/deps.allow`, `checks/deps.review.md` and `crates/nozoki-core/Cargo.toml`. So
+  `Cargo.lock`, `checks/deps.allow`, `checks/deps.review.md` and `crates/ka-reader-core/Cargo.toml`. So
   "the change that first realizes this half … records that review as code in the same change"
   (`:L120-L122`) has happened, and "still owed" (`:L120`) is false.
 
   *Addition 1 (the stale case).* The record calls itself a review of "every name on
   `checks/deps.allow`" (`checks/deps.review.md:L1`). That stops being true the first time a name is
-  added. QC-3 should cite it pinned to `nozoki@85d9fa7`, as QC-25 pins `checks/bundle.sh`. A later
+  added. QC-3 should cite it pinned to `ka-reader@85d9fa7`, as QC-25 pins `checks/bundle.sh`. A later
   addition is reviewed under the second half at `development-design`, as the entry already says.
   Nothing upstream requires the record to grow a row per later name, so the fold should not make it.
 
-  *Addition 2.* The clause "At `nozoki@0aca57e` the list is one `cargo:` section of 17 names"
+  *Addition 2.* The clause "At `ka-reader@0aca57e` the list is one `cargo:` section of 17 names"
   (`:L112-L113`) is pinned to a commit and still true. It stays as history, with the current count
   beside it. The item's "If a document has to be written" field ("the list's count") could be read as
   rewriting it.
@@ -86,7 +86,7 @@
   matters for whether that list is true, not only for whether the build is green.
 
   *What the whole tree does (check 4).* I measured every crate that QC-30's own command
-  (`cargo tree -p nozoki-bridge --target aarch64-apple-darwin -e normal --locked`, with `--offline`)
+  (`cargo tree -p ka-reader-bridge --target aarch64-apple-darwin -e normal --locked`, with `--offline`)
   resolves: 34 crates. 2 are the workspace's own (see § 2.1 below). Of the 32 registry crates, 17 name
   a script in `build` (10 at the root, 7 under a subdirectory), 14 set `build = false`, and
   `streaming-iterator` 0.1.9 sets no key and has no root `build.rs`. So the default case, a missing
@@ -128,15 +128,15 @@ None this run.
 ### 2.1 — QC-30 half (2) scans every crate its `cargo tree` command names, and that command names the product's own two crates, which have no registry copy
 
 - **What the document is owed:** QC-30 half (2) should scan only the crates the command resolves from
-  outside the workspace, keyed on workspace membership. `nozoki-core` and `nozoki-bridge` are already
+  outside the workspace, keyed on workspace membership. `ka-reader-core` and `ka-reader-bridge` are already
   half (1)'s.
 - **Why it is worth a cycle:** On the ground `decide_companion_answers.md` § *The items are not the
   whole of what a document is owed* calls "a fact in it is now false", read here as a statement that
   cannot be carried out as written. The entry scans "for every crate the `cargo tree` command above
   names, … the crate's whole package directory in the Cargo registry", and fails "on any resolved
   crate whose sources it cannot open" (`docs/nfdr.md:L572-L577`). The command, run 2026-10-01 with
-  `--offline` added, names `nozoki-bridge v0.0.0 (/Users/eyalgolan/products/nozoki/crates/nozoki-bridge)`
-  and `nozoki-core v0.0.0 (/Users/eyalgolan/products/nozoki/crates/nozoki-core)`. Neither has a
+  `--offline` added, names `ka-reader-bridge v0.0.0 (/Users/eyalgolan/products/ka-reader/crates/ka-reader-bridge)`
+  and `ka-reader-core v0.0.0 (/Users/eyalgolan/products/ka-reader/crates/ka-reader-core)`. Neither has a
   registry copy. So a script written to the words fails on every build. That blocks
   `checks/entry-points.sh`, the same script § 3.2 is about, and `ls checks/entry-points*` finds
   nothing yet, so this is the cheapest moment to fix it. The intent is clear from half (2)'s own
@@ -152,4 +152,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture nozoki`
+- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture ka-reader`

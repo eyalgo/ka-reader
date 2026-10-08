@@ -3,7 +3,7 @@
 ## Header
 
 - **Companion:** `docs/SDD_open_issues.md`
-- **Document:** `docs/SDD.md` (Draft, v4 — `nozoki@683db69`)
+- **Document:** `docs/SDD.md` (Draft, v4 — `ka-reader@683db69`)
 - **Decided by:** `decide_companion_answers.md` v1.1.0
 - **Date:** 2026-09-04
 
@@ -15,7 +15,7 @@
 - **Verdict:** confirmed with addition
 - **Why:** Confirm — and the document has already done it. The item asked for two prose edits, each
   under a review note naming `docs/trail/fdr/cycle-1.md` as its authorization. `product-sdd`'s run 4
-  made exactly those, at v4 (`nozoki@683db69`): § 3 `fs-reader`'s text rule now admits a file
+  made exactly those, at v4 (`ka-reader@683db69`): § 3 `fs-reader`'s text rule now admits a file
   beginning with a UTF-16 byte-order mark and decoding as UTF-16 beside UTF-8 with or without its
   mark, and states its own boundary — no detection from content, no third encoding, one undecodable
   sequence is not text, an empty file is text (`docs/SDD.md:262`, RN-41); § 11 R-3's response now
@@ -86,7 +86,7 @@ next revision, which has now been met with nothing there recording it. Two of th
 and neither is taste — *a fact in it is now false*, RN-7 stating in the present tense that "the SDD's
 response has the failure state 'naming the folder that would need granting'" against a path that no
 longer reads that way at `docs/SDD.md:1867`; and *something upstream moved and it has not seen it*,
-`docs/SDD.md` being R-21's and R-46's cited source and having gone v3 → v4 at `nozoki@683db69`. The
+`docs/SDD.md` being R-21's and R-46's cited source and having gone v3 → v4 at `ka-reader@683db69`. The
 consequence, not just the change: the FDR's traceability marks a departure from a source that has
 caught up, so a builder or QA seat chasing it finds nothing at the other end and cannot tell a
 resolved departure from an unrecorded one. The cycle it costs is one already owed — that companion
@@ -108,5 +108,5 @@ precedent is in this product: the previous `companion-self-answer` run placed it
 
 ## Launchers owed
 
-- **`docs/SDD.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-sdd/launcher.sh nozoki`
-- **`docs/fdr.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-fdr/launcher.sh nozoki`
+- **`docs/SDD.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-sdd/launcher.sh ka-reader`
+- **`docs/fdr.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-fdr/launcher.sh ka-reader`

@@ -1,4 +1,4 @@
-# CONTENT open issues — Nozoki 覗き
+# CONTENT open issues — KA-Reader
 
 > Companion to `CONTENT.md`. The Content Editor authored the verbal language non-interactively;
 > this file holds the calls it made and wants your sign-off on — each with the reason behind it,
@@ -34,7 +34,7 @@
 ### 1.1 The worked example for the *Terminal* rule shows a message the product can no longer produce
 
 - **What was searched:** `CONTENT.md:62` illustrates *a message names one thing the reader can do
-  next* with *"Point Nozoki at the top folder of a repository — the one you cloned — and start it
+  next* with *"Point KA-Reader at the top folder of a repository — the one you cloned — and start it
   again."* — contrasted against *"Not a Git repository."*
 - **Why it matters:** under `docs/PRD.md` v11 a folder that is not a Git repository **opens**. Both
   halves of that example describe a refusal that no longer happens, so the document teaches one of

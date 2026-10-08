@@ -11,7 +11,7 @@ the `product-sdd` run that folds the answer.
 - **Decided by:** `decide_companion_answers.md` v1.3.0
 - **Date:** 2026-10-04
 - **Sources re-read:** None. The answer rests on no source outside this repository. It rests on the
-  product's own tree, read at `nozoki@bc76311`. `git diff --stat 6a0725c HEAD -- crates checks`
+  product's own tree, read at `ka-reader@bc76311`. `git diff --stat 6a0725c HEAD -- crates checks`
   printed nothing, so the code is what the item measured.
 
 **What this run read.** The companion whole. Of `docs/SDD.md` (5,384 lines, version 28): the header
@@ -24,7 +24,7 @@ slice's command clause (`:L1964-L1974`), RN-44 (`:L3323-L3340`), RN-88's close (
 line.** The prompt asks for the document whole; this run did not do that, and a sentence in those
 sections that bears on the item and uses none of those words was not seen.
 
-Outside the SDD: `crates/nozoki-core/src/fs_reader.rs:L125-L140` and `:L846-L858`;
+Outside the SDD: `crates/ka-reader-core/src/fs_reader.rs:L125-L140` and `:L846-L858`;
 `docs/SRS.md:L285-L302`; `docs/nfdr.md:L1000-L1014`; `docs/UXD.md`'s UX-I10 lines (`:L136`,
 `:L199`, `:L284`); `docs/architecture_open_issues.md` whole; `docs/trail/sdd/self_answer-35.md`
 whole. `docs/nfdr.md`, `docs/fdr.md`, `docs/UXD.md`, `docs/CONTENT.md`, `docs/PRD.md` and
@@ -55,7 +55,7 @@ invocation listed no items.
   its siblings" (`docs/SDD.md:L686-L687`), and S-5 reads "an unreadable entry yields `failed` on
   that item and `observed` on its siblings" (`:L1794-L1795`). A folder entry not yet expanded is
   `Pending`: `Ok(file_type) if file_type.is_dir() => (EntryKind::Folder, ItemState::Pending)`
-  (`crates/nozoki-core/src/fs_reader.rs:L853`). So a failed entry beside an unexpanded folder has a
+  (`crates/ka-reader-core/src/fs_reader.rs:L853`). So a failed entry beside an unexpanded folder has a
   sibling that is not `observed`, and no folder that holds a folder meets either sentence as
   written. The SDD says the same thing against itself: § 3 `Item<T>` gives `pending` as "a folder
   entry not yet read" (`docs/SDD.md:L456-L457`). The requirement C-I1 cites says what the draft
@@ -102,7 +102,7 @@ invocation listed no items.
   **Failure paths.** *Empty*: an item with no siblings meets "changes no other item" with nothing
   to check. *Absent*: a folder whose listing fails is itself the failed item, and its own siblings
   are untouched; its children are addition 3. *Stale*: the line locators are pinned to
-  `nozoki@bc76311` and move at the fold. *Concurrent*: addition 2. *Refused*: a sibling the system
+  `ka-reader@bc76311` and move at the fold. *Concurrent*: addition 2. *Refused*: a sibling the system
   refuses to read is `failed` by its own read, which the rule already allows.
 
   **What would have tipped it.** Had C-I1 been a sentence no command bar repeats, the shorthand
@@ -128,7 +128,7 @@ None this run. The companion held one open item and no filled slot.
 
 **Why.** QC-47's *verified by* says an unreadable entry yields "`failed` on that item and
 `observed` on its siblings" (`docs/nfdr.md:L1009-L1010`). It has the defect this run confirmed in
-the SDD, measured the same way (`crates/nozoki-core/src/fs_reader.rs:L853`), and it is false on its
+the SDD, measured the same way (`crates/ka-reader-core/src/fs_reader.rs:L853`), and it is false on its
 own whether or not the SDD moves: *a fact in it is now false*, and after the fold *something
 upstream moved and it has not seen it* (`decide_companion_answers.md` § *The items are not the whole
 of what a document is owed*). The previous run raised nothing there because the SDD's change was not
@@ -142,5 +142,5 @@ have caught this with no item. Nothing guarantees that it re-reads that clause, 
 
 ## Launchers owed
 
-- **`docs/SDD.md`** — `<CORE>/launchers/skill/launcher.sh product-sdd nozoki`
-- **`adr/` and `nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture nozoki`
+- **`docs/SDD.md`** — `<CORE>/launchers/skill/launcher.sh product-sdd ka-reader`
+- **`adr/` and `nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture ka-reader`

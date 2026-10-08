@@ -1,4 +1,4 @@
-# PRD open issues — nozoki
+# PRD open issues — ka-reader
 
 > Companion to `PRD.md`. **Answer inline** — fill each **Answer** /
 > **Confirm-or-override** slot — **commit this file**, then re-run `product-prd`. It folds
@@ -26,8 +26,8 @@ None — both items this cycle are owner decisions already made.
 
 ## 2. Choices to confirm — the CPO drafted a best-effort answer; confirm or override
 
-### 2.1 Nozoki is not defined by reference to VS Code
-- **Drafted into the PRD:** VS Code is the PRD's reference point for what Nozoki *is* —
+### 2.1 KA-Reader is not defined by reference to VS Code
+- **Drafted into the PRD:** VS Code is the PRD's reference point for what KA-Reader *is* —
   "a stripped-down, VS Code-like shell" (Purpose), "anyone who has used VS Code needs no
   learning" (Goals), "instantly familiar to anyone who has used VS Code" (UX Notes), "a
   VS Code-like shell is what makes inspection comfortable" (the familiarity thesis,
@@ -38,7 +38,7 @@ None — both items this cycle are owner decisions already made.
   places, and reset the bar.** The property underneath is real and states itself without
   borrowing a name: it looks and works like a familiar code editor, and it needs no learning.
   **The bar is not editor experience.** It is this: *anyone who can find their way around a
-  repository on GitHub and follow a README should be able to use Nozoki.* That is lower and
+  repository on GitHub and follow a README should be able to use KA-Reader.* That is lower and
   broader than "has used VS Code," and it is the bar to write into the PRD.
   - **Purpose** — drop "VS Code-like": a stripped-down shell for browsing a project's files
     and inspecting its Git status, in which nothing can be changed.
@@ -54,7 +54,7 @@ None — both items this cycle are owner decisions already made.
   - **`Why This` is the one exception — keep it.** There VS Code is the alternative a
     developer actually reaches for today, and the two verified citations (its read-only
     settings are per-path, not whole-repository; Restricted Mode still permits editing) are
-    the evidence that Nozoki's guarantee is not already available. Write the section around
+    the evidence that KA-Reader's guarantee is not already available. Write the section around
     *a full code editor*, and name VS Code only inside those citations, where it is evidence
     rather than identity. Do not weaken or drop the citations.
 
@@ -69,10 +69,10 @@ None — both items this cycle are owner decisions already made.
   should describe when or how the repository is supplied.
   - **Goals** — replace the "Zero-config familiarity" bullet with, in substance: **No learning
     curve** — anyone who can find their way around a repository on GitHub and follow a README
-    can use Nozoki. No editor experience required, no onboarding, and no configuration of any
+    can use KA-Reader. No editor experience required, no onboarding, and no configuration of any
     kind: no settings, no project file, no setup step. The only input it ever needs is which
     repository to view. *(This single bullet carries 2.1's change too.)*
-  - **Success Metrics** — Zero required configuration becomes: the only input Nozoki requires
+  - **Success Metrics** — Zero required configuration becomes: the only input KA-Reader requires
     is which repository to view — no settings, no project file, no setup step. Bar: pass/fail,
     checked at each release.
 

@@ -1,4 +1,4 @@
-# SDD open issues — Nozoki 覗き
+# SDD open issues — KA-Reader
 
 > Companion to `SDD.md`. Three seats — the CTO, the CPO and the CDO — authored the SDD
 > non-interactively in one run; this file holds what that run could not settle from its inputs (the
@@ -25,7 +25,7 @@
 > **This companion was opened on 2026-09-04 by a `companion-self-answer` run, not by a
 > `product-sdd` run.** The run was answering `docs/fdr_open_issues.md` § 2.7
 > (`docs/trail/fdr/self_answer-3.md` § 2.7), and that item's change lands in this document and
-> nowhere else. `SDD.md` is Settled at v3 (`nozoki@827aa1c`) and its companion was correctly absent;
+> nowhere else. `SDD.md` is Settled at v3 (`ka-reader@827aa1c`) and its companion was correctly absent;
 > it is re-opened because two answers the owner gave on the FDR reach sentences only this document
 > can change, and a settled document has no other channel — with no companion on disk a
 > `product-sdd` re-run reads the design as done and has nothing to act on. One item, in § 5, the
@@ -57,8 +57,8 @@
 ### 5.1 Two sentences of this SDD cannot hold beside rules the owner confirmed on the FDR — `fs-reader`'s text rule omits UTF-16, and § 11 R-3's response names a folder to choose
 - **Raised by:** Principal PM — 2026-09-04, by a `companion-self-answer` run answering
   `docs/fdr_open_issues.md` § 2.7; the FDR's own record of both is `docs/fdr.md` RN-29.
-- **Tracked by:** none. nozoki has no active 根回し Nemawashi seed and no open 宿場 Shukuba station
-  (`system/projects/nozoki/journey/`, 2026-09-04). Found while reading this document as the FDR's
+- **Tracked by:** none. ka-reader has no active 根回し Nemawashi seed and no open 宿場 Shukuba station
+  (`system/projects/ka-reader/journey/`, 2026-09-04). Found while reading this document as the FDR's
   input, not while cutting work from it.
 - **What it blocks:** nothing stalls and no gate fails. What it costs is two builds that disagree
   with the contract the QA seat derives acceptance from: a builder reading § 3 `fs-reader` refuses
@@ -92,7 +92,7 @@
   each with a review note naming `docs/trail/fdr/cycle-1.md` as its authorization, since this
   document does not read the FDR and the trail is where the value was set.
 - **Answer:** confirm — and it is already done. `product-sdd`'s run 4 folded both sentences at
-  `docs/SDD.md` v4 (`nozoki@683db69`), in the form this item offered and with the review notes it
+  `docs/SDD.md` v4 (`ka-reader@683db69`), in the form this item offered and with the review notes it
   asked for. § 3 `fs-reader`'s text rule now reads *"bytes decode as UTF-8, with or without a
   byte-order mark, or begin with a UTF-16 byte-order mark and decode as UTF-16, and the file is
   text"*, with R-154's and R-155's boundary stated beside it — no detection from content, no third
@@ -121,7 +121,7 @@
   **One consequence beyond this document, already carried:** `docs/fdr.md` still records the
   contradiction as live in three places — its version note, RN-7's present-tense claim against an
   unpinned path, and R-21's *changed* / R-46's *added* relation marks — so a raised item now sits
-  at `docs/fdr_open_issues.md` § 3.1 (`nozoki@d347a63`). Nothing here waits on it. Decided in the
+  at `docs/fdr_open_issues.md` § 3.1 (`ka-reader@d347a63`). Nothing here waits on it. Decided in the
   owner's seat by a `companion-self-answer` run, 2026-09-04. Reasoning:
   `docs/trail/sdd/self_answer-8.md`.
 

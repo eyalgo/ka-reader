@@ -1,4 +1,4 @@
-# Architecture open issues — Nozoki
+# Architecture open issues — KA-Reader
 
 > Companion to `adr/` and `nfdr.md`. The Principal Architect authored both records
 > non-interactively; this file holds what the run could not settle from its inputs — the SRS, the SDD
@@ -32,18 +32,18 @@ None.
 
 - **Lands in:** `nfdr.md` QC-5
 - **Drafted into the records:** QC-5's *verified by*, at NFDR v34. It states the three named cases as
-  written and passing at `nozoki@48308ff`: `test_linked_worktree_answers_root`,
+  written and passing at `ka-reader@48308ff`: `test_linked_worktree_answers_root`,
   `test_submodule_answers_root` and `test_git_file_naming_a_missing_git_directory_answers_root`
-  (`crates/nozoki-core/tests/root_finding.rs:L175`, `:L185`, `:L196`). It cites the adapter's
-  `.git`-file arm, `probe_git_file` (`crates/nozoki-core/src/git_reader/libgit2.rs:L46`, `:L58`), and
+  (`crates/ka-reader-core/tests/root_finding.rs:L175`, `:L185`, `:L196`). It cites the adapter's
+  `.git`-file arm, `probe_git_file` (`crates/ka-reader-core/src/git_reader/libgit2.rs:L46`, `:L58`), and
   CI's command (`.github/workflows/ci.yml:L26`). The old "none of the three is written at
-  `nozoki@8edec4f`" and "all three go red … until the change that replaces that arm lands" now
+  `ka-reader@8edec4f`" and "all three go red … until the change that replaces that arm lands" now
   appear as a dated parenthetical. § 10's QC-5 row does not move, because it names the same command,
   and ADR-0018 does not move (`nfdr.md` RN-45).
 - **Rationale:** The tail's forward clause described a change that has already happened, so it read
-  as though the read bound had no check. Re-run at `nozoki@cd88d52`,
-  `cargo test --locked -p nozoki-core --test root_finding` prints "37 passed; 0 failed", with all
-  three cases among them. `git diff --stat 48308ff HEAD -- checks crates nozoki-mac .github
+  as though the read bound had no check. Re-run at `ka-reader@cd88d52`,
+  `cargo test --locked -p ka-reader-core --test root_finding` prints "37 passed; 0 failed", with all
+  three cases among them. `git diff --stat 48308ff HEAD -- checks crates ka-reader-mac .github
   Cargo.toml Cargo.lock` prints nothing. QC-15's tail, folded in the same run from
   `docs/trail/architecture/cycle-31.md` § 3.1, is pinned at the same merge. ADR-0018 § Consequences
   already says the missing-directory case goes red if `probe` follows the pointer
@@ -55,7 +55,7 @@ None.
   missing-directory case does not reach. It goes red for a `probe` whose attempt to follow the
   pointer changes the answer. A `probe` that tries the pointer, swallows the failed open and still
   answers `Root` passes it, because the case asserts only the answer, that it holds no path, and
-  that the scene is unchanged (`crates/nozoki-core/tests/root_finding.rs:L24-L37`, `:L65-L68`).
+  that the scene is unchanged (`crates/ka-reader-core/tests/root_finding.rs:L24-L37`, `:L65-L68`).
   That half of the read bound is QC-15's review at `development-design` ("which read the adapter
   makes inside its owner file"), and the tail should point there. Reasoning:
   `docs/trail/architecture/self_answer-36.md` § 2.1.

@@ -2,7 +2,7 @@
 
 ## Header
 
-- **Companion:** /Users/eyalgolan/products/nozoki/docs/UXD_open_issues.md
+- **Companion:** /Users/eyalgolan/products/ka-reader/docs/UXD_open_issues.md
 - **Document:** `docs/UXD.md` — the UXD, Draft at v9
 - **Decided by:** `decide_companion_answers.md` v1.0.0
 - **Date:** 2026-09-01
@@ -13,7 +13,7 @@ as the item names them, `docs/UXD.md` RN-25, RN-27 and RN-29; `docs/DESIGN.md` (
 `docs/trail/design/self_answer-2.md`; `docs/fdr.md` (v1) RN-14 and § Out of scope; `docs/PRD.md`
 (v12) § Purpose, § Key Use Cases, § UX Notes, § Scope (In), § Out of Scope, § Data & Privacy,
 with the owner's fold record `docs/trail/prd/cycle-10.md` § 2.1; `docs/CONTENT.md` (v6)
-§ Terminology; `system/projects/nozoki/agari.md`; `system/doctrine/writing_bar.md` § 1.2;
+§ Terminology; `system/projects/ka-reader/agari.md`; `system/doctrine/writing_bar.md` § 1.2;
 `docs/SDD.md` for the term it already uses for the panel's path (`:235`, `:264`, `:768`:
 *folder-relative*). Every `repositor*` in the UXD was re-measured on v9
 (`grep -n -i repositor docs/UXD.md`, 2026-09-01) and each occurrence classified — the input,
@@ -52,13 +52,13 @@ Git state, a PRD or Agari quotation, or a review-note record.
   folder holds for both inputs, and this cell's own word narrows it), and § 10's terminus line
   *"the v1 cut plus diffs, commit history, and repository switching"* (`:428` — a claim about
   the Agari, which reads *"switching the viewed folder without restarting"* and says that is
-  *"the same word the PRD uses for it"*, `system/projects/nozoki/agari.md:23-26`; a claim about
+  *"the same word the PRD uses for it"*, `system/projects/ka-reader/agari.md:23-26`; a claim about
   another file that the file does not say). Eight places, not five. *(b) The doubt is settled by
   a rule the item did not reach for.* The item left open whether any of the five is *"a
   deliberate mirror of the PRD"*, to be decided at the fold. The test is not whether the PRD's
   sentence has moved but what the sentence is about: `docs/CONTENT.md` § Terminology fixes
-  *folder* for *"the thing Nozoki is pointed at"* and *repository* for *"a folder that is the
-  root of a Git repository, and the Git state Nozoki reads from it"* (`:154-155`), and elsewhere
+  *folder* for *"the thing KA-Reader is pointed at"* and *repository* for *"a folder that is the
+  root of a Git repository, and the Git state KA-Reader reads from it"* (`:154-155`), and elsewhere
   *repository* only *"where Git's own state is what the sentence is about"* (`:185`). RN-25's
   keep-list — UX-U1, UX-U2 — passes that test on its own terms: those entries describe the
   developer's situation, and the PRD's fold kept exactly the sections that do (*"The Problem
@@ -72,7 +72,7 @@ Git state, a PRD or Agari quotation, or a review-note record.
   over-apply the rename: UX-F2's *"short repository status"* is the PRD's own feature name
   (`docs/PRD.md:171`) and is Git state; UX-S3, UX-S6, UX-F4 and UX-I17 report Git state; review
   notes RN-2, RN-15, RN-22 and RN-23 are records of decisions in the words they were made in and
-  do not move. *(c) The supporting text's line numbers are v8's.* At v9 (`nozoki@b8010dd`) the
+  do not move. *(c) The supporting text's line numbers are v8's.* At v9 (`ka-reader@b8010dd`) the
   eight sit at `:41-42`, `:101`, `:173`, `:237`, `:256`, `:267`, `:276`, `:428`, `:447`. Reported
   here and in the slot, not corrected in the item.
 
@@ -136,5 +136,5 @@ places sit inside the item's own question and are carried in its slot.
 
 ## Launchers owed
 
-- **`docs/UXD.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-uxd/launcher.sh nozoki`
-- **`docs/PRD.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/launch-product-prd/launcher.sh nozoki`
+- **`docs/UXD.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-uxd/launcher.sh ka-reader`
+- **`docs/PRD.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/launch-product-prd/launcher.sh ka-reader`

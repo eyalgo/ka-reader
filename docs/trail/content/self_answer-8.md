@@ -28,12 +28,12 @@ read "None.". This run answered § 3.1 and raised nothing.
   letters (`docs/CONTENT.md:L145-L147`, `:L422-L424`) say "beside a changed file", and § Terminology
   defines **changed** for a file. The occurrence bar (`pm_shukuba_refine.md` § A gap is carried only
   where it occurs) is met by the item itself, and I re-read the sites. The production code sets a
-  letter on every row by its path and not by its kind: `nozoki-mac/Sources/Surfaces/RootItemsView.swift:L470`
+  letter on every row by its path and not by its kind: `ka-reader-mac/Sources/Surfaces/RootItemsView.swift:L470`
   calls `markers.category(forRowPath: row.entry.path)`, and `TreeMarkers.swift:L31-L33` says the entry
   wins "whatever the row's kind (CP-574)". The tests show the two forms the item names:
-  `nozoki-mac/Tests/SurfacesTests/TreeMarkersTests.swift:L69-L77` marks a submodule `sub` as modified
+  `ka-reader-mac/Tests/SurfacesTests/TreeMarkersTests.swift:L69-L77` marks a submodule `sub` as modified
   and a nested repository `inner/` as untracked, and
-  `nozoki-mac/Tests/SurfacesTests/WorkbenchTreeMarkerTests.swift:L110` and `:L168` carry the same two
+  `ka-reader-mac/Tests/SurfacesTests/WorkbenchTreeMarkerTests.swift:L110` and `:L168` carry the same two
   rows end to end as **M** and **U** in the file tree. So the item is taken for those two forms and
   not answered "not until it occurs".
 
@@ -94,4 +94,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/CONTENT.md`** — `/Users/eyalgolan/.kensaiapp/pins/20261004T144519Z-ahszka/core/launchers/skill/launcher.sh product-content nozoki`
+- **`docs/CONTENT.md`** — `/Users/eyalgolan/.kensaiapp/pins/20261004T144519Z-ahszka/core/launchers/skill/launcher.sh product-content ka-reader`

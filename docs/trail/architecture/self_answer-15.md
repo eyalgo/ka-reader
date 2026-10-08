@@ -9,15 +9,15 @@
 - **Sources re-read:**
   - GitHub Actions run 35988399477 (`gh run view --json headSha,conclusion,headBranch`): `success`,
     `headSha` `37a962d`, branch `2026-09-24_the-shell-is-seen-at-the-panel`.
-    `git diff --stat 37a962d HEAD -- checks/renderer.sh checks/fixtures/idle-shell nozoki-mac/Sources`
+    `git diff --stat 37a962d HEAD -- checks/renderer.sh checks/fixtures/idle-shell ka-reader-mac/Sources`
     prints nothing, so the run read the script and shell `main` holds. Its *Renderer gate* lines are
     quoted by the item and re-verified by the SDD's fold (`docs/SDD.md` RN-70); this run did not
     re-download that log.
   - GitHub Actions run 35968105480 on `main` (`gh run view --log`): `headSha` `c461b29`, `success`.
     Image `macos-14-arm64`, version 20260831.0302.1, macOS 14.8.9. `Test gate` ran
-    `cargo test --workspace --locked && swift test --package-path nozoki-mac`, and the XCTest suites
+    `cargo test --workspace --locked && swift test --package-path ka-reader-mac`, and the XCTest suites
     ran with 0 failures. No line prints a Swift version.
-  - `gh repo view kensaiapp/nozoki --json visibility` → `PRIVATE`.
+  - `gh repo view kensaiapp/ka-reader --json visibility` → `PRIVATE`.
   - https://docs.github.com/en/billing/concepts/product-billing/github-actions, read 2026-09-24:
     usage "is free for self-hosted runners and for public repositories that use standard
     GitHub-hosted runners". Private repositories receive "a quota of free minutes … depending on the
@@ -25,14 +25,14 @@
 
 **What was read.** The companion whole. `docs/nfdr.md` whole (§§ 1–10; RN-16 onward read in full, and
 RN-1 – RN-15 for what they record). `docs/adr/0012-…md` whole. `docs/SDD.md` § 4 C-I3 as it reads at v18
-(Settled, `nozoki@399ef71`) and its RN-70, which folded the SDD's half of § 3.2 and closed the
+(Settled, `ka-reader@399ef71`) and its RN-70, which folded the SDD's half of § 3.2 and closed the
 hosted-runner question. The tree at HEAD: `checks/` and `checks/tests/` listed; `checks/renderer.sh`'s
 header (`:L1-L70`); `checks/view.sh`'s scan table (`:L33-L87`) and `:L116`; `.github/workflows/ci.yml`
-whole; `nozoki-mac/Sources/Shell/LaunchFlow.swift:L34-L37` and `OpenFolderPanel.swift:L9-L15`.
+whole; `ka-reader-mac/Sources/Shell/LaunchFlow.swift:L34-L37` and `OpenFolderPanel.swift:L9-L15`.
 `bash checks/tests/test_renderer.sh` run at HEAD printed `test_renderer.sh: 1 case(s) failed`, the
 case being `test_header_names_the_runner_reading`. `git diff --stat 153f5a1 HEAD` over `checks`,
-`.github`, `nozoki-mac`, `docs/nfdr.md` and `docs/adr` prints nothing, so every item's measurement
-at `nozoki@153f5a1` holds at HEAD. The occurrence bar for a widening downstream item was read at
+`.github`, `ka-reader-mac`, `docs/nfdr.md` and `docs/adr` prints nothing, so every item's measurement
+at `ka-reader@153f5a1` holds at HEAD. The occurrence bar for a widening downstream item was read at
 `<CORE>/prompts/pm_shukuba_refine.md` § *A gap is carried only where it occurs*.
 
 **How the items were taken.** In the companion's order. §§ 3.1 and 3.2 were decided together, because
@@ -70,7 +70,7 @@ both rewrite QC-62's tail and ADR-0012's same paragraphs. Each *why* says so.
   The correction cites the run id, image and macOS version together, so a later image's reading is
   distinguishable. *Check 4 (absent):* the script's header does not carry the runner reading. That is
   task 6 of the change that landed the gate, deferred (`kensaiapp-opensource`,
-  `system/projects/nozoki/journey/tobiishi/trail/2026-09-24_the-shell-is-seen-at-the-panel/change_request.md:L77`).
+  `system/projects/ka-reader/journey/tobiishi/trail/2026-09-24_the-shell-is-seen-at-the-panel/change_request.md:L77`).
   So the correction cites the run, not the header. I was close to leaving ADR-0012 out and raising it
   as a separate item. A second item would ask the next round the same question twice, and that is
   what tipped it.
@@ -96,7 +96,7 @@ both rewrite QC-62's tail and ADR-0012's same paragraphs. Each *why* says so.
   red, which is what the gate is for. A macOS release that renames AppKit's modal-run symbols is the
   re-cut trigger § 3.1 carries. Decided together with § 3.1.
 
-### 3.3 — QC-51's *verified by* says there is no modal presentation in `nozoki-mac/Sources`, and the Open panel's is there
+### 3.3 — QC-51's *verified by* says there is no modal presentation in `ka-reader-mac/Sources`, and the Open panel's is there
 
 - **Bucket:** 3. Raised from downstream — an item from a seat that did not write these records
 - **Verdict:** confirmed with addition
@@ -177,18 +177,18 @@ None this run.
 
 ## Raised on this document
 
-### 2.1 — § 9 says no CI run on `main` has built `nozoki-mac`. Run 35968105480 on `main` did, and its log names no Swift toolchain
+### 2.1 — § 9 says no CI run on `main` has built `ka-reader-mac`. Run 35968105480 on `main` did, and its log names no Swift toolchain
 
-- **What the document is owed:** § 9's `nozoki-mac` toolchain clause records run 35968105480 on
-  `nozoki@c461b29` (image `macos-14-arm64` 20260831.0302.1, macOS 14.8.9) as the first `main` run to
-  build `nozoki-mac`, and records that its log names no Swift version. So, by the clause's own rule,
+- **What the document is owed:** § 9's `ka-reader-mac` toolchain clause records run 35968105480 on
+  `ka-reader@c461b29` (image `macos-14-arm64` 20260831.0302.1, macOS 14.8.9) as the first `main` run to
+  build `ka-reader-mac`, and records that its log names no Swift version. So, by the clause's own rule,
   it stays *not yet measured* and waits for a log that names the toolchain. The `a4ab8e6` reading
   becomes dated history.
 - **Why it is worth a cycle:** "A fact in it is now false", and the bullet names its own trigger.
   "The first CI log on `main` that runs those steps supplies the value and this line takes it … if
   the first log names none, this line stays *not yet measured* and says it waits for a log that
   does." That log exists (`gh run view 35968105480` → `success`, `c461b29`; `Test gate` ran
-  `swift test --package-path nozoki-mac`), and its only `swift-version` line is a build file name,
+  `swift test --package-path ka-reader-mac`), and its only `swift-version` line is a build file name,
   `Write swift-version-76B232A4806BA581.txt`. The clause is what a review of a CI or `Package.swift`
   change reads. The round is already owed for §§ 3.1 – 3.5, so this rides the same
   `product-architecture` run and costs no extra cycle. It was appended as § 2 of the companion
@@ -202,4 +202,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture nozoki`
+- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture ka-reader`

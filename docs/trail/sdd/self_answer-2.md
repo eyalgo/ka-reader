@@ -15,9 +15,9 @@
 - **Verdict:** confirmed with addition
 - **Why:** The item is this document's own — the edit it calls for lands in `SDD.md`, and the
   *repair* it does not call for is already routed elsewhere — so no seat has to be found for it. Its
-  measurement was re-checked rather than taken on trust, against `nozoki@59287c9`, 2026-09-03: 14
+  measurement was re-checked rather than taken on trust, against `ka-reader@59287c9`, 2026-09-03: 14
   citations of `docs/trail/sdd/cycle-1.md` across ADR-0002, ADR-0003, ADR-0006, ADR-0007 and
-  ADR-0008, all dead since `nozoki@9c91359`; `docs/nfdr.md:385`'s `SDD § 6 S-4`, which now names
+  ADR-0008, all dead since `ka-reader@9c91359`; `docs/nfdr.md:385`'s `SDD § 6 S-4`, which now names
   `see-git-status`; and ADR citations of this document's review notes by number, including RN-24 and
   RN-25, which this document does not have — its notes run RN-1 – RN-19 and RN-30 – RN-33. So the
   ground is the strongest of the three the prompt names, *a fact in it is now false*, and it needs no
@@ -95,10 +95,10 @@
 ## Skipped
 
 - **1.1 — Do the owner's answers to the previous SDD bind this run?** — answered at
-  `nozoki@59287c9`; a re-run leaves a decided item alone.
-- **2.1 — An SVG inside the folder is not rendered in place** — answered at `nozoki@59287c9`.
-- **3.1 — `first-public-release` lands after the v1 cut, below 1.0.0** — answered at `nozoki@59287c9`.
-- **5.1 — `sdd_template.md` § 3 gained a units table** — answered at `nozoki@59287c9`.
+  `ka-reader@59287c9`; a re-run leaves a decided item alone.
+- **2.1 — An SVG inside the folder is not rendered in place** — answered at `ka-reader@59287c9`.
+- **3.1 — `first-public-release` lands after the v1 cut, below 1.0.0** — answered at `ka-reader@59287c9`.
+- **5.1 — `sdd_template.md` § 3 gained a units table** — answered at `ka-reader@59287c9`.
 - **§ 4 Disagreements** — reads "None yet."; no item to work.
 
 ## Companions opened
@@ -107,4 +107,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/SDD.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-sdd/launcher.sh nozoki`
+- **`docs/SDD.md`** — `/Users/eyalgolan/projects/kensai/kensaiapp-dev/core/launchers/product-sdd/launcher.sh ka-reader`

@@ -2,7 +2,7 @@
 
 ## Header
 
-- **Companion:** /Users/eyalgolan/products/nozoki/docs/fdr_open_issues.md
+- **Companion:** /Users/eyalgolan/products/ka-reader/docs/fdr_open_issues.md
 - **Document:** `docs/fdr.md` — the FDR, Draft at v1
 - **Decided by:** `decide_companion_answers.md` v1.0.0
 - **Date:** 2026-09-01
@@ -33,7 +33,7 @@ every item that touches a surface.
   the two routes a cancelled person needs; and R-134's five-minute clock is what a silent quit
   costs — a stranger who presses Escape on first launch watches the product vanish and goes
   looking for it. Re-presenting the panel unasked is a prompt loop, which UX-I7 (nothing asked of
-  the reader) and CONTENT's *"Nozoki asks the reader nothing"* rule out. Check 4: cancelling
+  the reader) and CONTENT's *"KA-Reader asks the reader nothing"* rule out. Check 4: cancelling
   again from the surface returns to the same surface, stated; beyond v1 the panel R-5 presents for
   want of a remembered folder is cancelled the same way, with the selector as the route, which is
   the route C-R3 already gives UX-S4 beyond v1. Consequence: UX-S4's *Empty* cell reads *"n/a —
@@ -227,7 +227,7 @@ every item that touches a surface.
 - **Bucket:** 2. Choices to confirm
 - **Verdict:** confirmed with addition
 - **Why:** Confirmed: C-D3 answers nothing for the escaping path, the placeholder is the one
-  shape an unloaded image has, and CONTENT's sentence for it — *"This image isn't loaded: Nozoki
+  shape an unloaded image has, and CONTENT's sentence for it — *"This image isn't loaded: KA-Reader
   fetches nothing from outside this folder."* — is true of a remote and of an escaping reference
   alike. Check 4 found the hole beside it: a reference that resolves *inside* the folder to a file
   that is missing, unreadable, or not an image is neither R-58's case (loaded) nor R-59's (outside),
@@ -270,7 +270,7 @@ None this run.
   seen it"*. Measured 2026-09-01: RN-18 says PRD v11 / SRS v8 / SDD v2 and no companion beside any;
   the status lines read PRD v12, SRS v10, SDD v3, and after this run companions sit beside the SRS,
   the UXD and DESIGN. RN-14 says UXD v6 / DESIGN v5 / CONTENT v4; they are v7 / v6 / v6. RN-15
-  records the Agari's `agari_trail/` locators as stale; `system/projects/nozoki/agari.md:16` and
+  records the Agari's `agari_trail/` locators as stale; `system/projects/ka-reader/agari.md:16` and
   `:35` now read `trail/agari/`. And `docs/SRS.md` § 4.5 NFR-11 at v9 gained a bound — one
   session's lines, at most 1 MiB, truncated at launch, a failed write surfacing nowhere — that R-93
   (traces to NFR-11) has not seen. It costs no extra cycle: it rides the fold this companion
@@ -279,11 +279,11 @@ None this run.
 
 ## Companions opened
 
-- **/Users/eyalgolan/products/nozoki/docs/UXD_open_issues.md** — **opened** — companion to `UXD.md`,
+- **/Users/eyalgolan/products/ka-reader/docs/UXD_open_issues.md** — **opened** — companion to `UXD.md`,
   landed in commit `c7589e3`
-- **/Users/eyalgolan/products/nozoki/docs/SRS_open_issues.md** — **opened** — companion to `SRS.md`,
+- **/Users/eyalgolan/products/ka-reader/docs/SRS_open_issues.md** — **opened** — companion to `SRS.md`,
   landed in commit `dde4493`
-- **/Users/eyalgolan/products/nozoki/docs/DESIGN_open_issues.md** — **opened** — companion to `DESIGN.md`,
+- **/Users/eyalgolan/products/ka-reader/docs/DESIGN_open_issues.md** — **opened** — companion to `DESIGN.md`,
   landed in commit `4a3308c`
 
 The UXD's is both kinds of entry at once: item 2.1 routed its UX-F2 half there, and reading the
@@ -299,7 +299,7 @@ record's response, recorded rather than reopened.
 
 ## Launchers owed
 
-- **`fdr.md`** — `<CORE>/launchers/product-fdr/launcher.sh nozoki`
-- **`UXD.md`** — `<CORE>/launchers/product-uxd/launcher.sh nozoki`
-- **`SRS.md`** — `<CORE>/launchers/product-srs/launcher.sh nozoki`
-- **`DESIGN.md`** — `<CORE>/launchers/product-design/launcher.sh nozoki`
+- **`fdr.md`** — `<CORE>/launchers/product-fdr/launcher.sh ka-reader`
+- **`UXD.md`** — `<CORE>/launchers/product-uxd/launcher.sh ka-reader`
+- **`SRS.md`** — `<CORE>/launchers/product-srs/launcher.sh ka-reader`
+- **`DESIGN.md`** — `<CORE>/launchers/product-design/launcher.sh ka-reader`

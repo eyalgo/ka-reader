@@ -4,7 +4,7 @@
 
 - **Companion:** `docs/architecture_open_issues.md`
 - **Document:** `docs/adr/` and `docs/nfdr.md` (NFDR v19, Settled — its header reads Settled because
-  no `product-architecture` run has opened the companion; the PM opened it at `nozoki@53bded6`, so
+  no `product-architecture` run has opened the companion; the PM opened it at `ka-reader@53bded6`, so
   the records are owed a fold. The inputs the items name are SDD v20 Settled, FDR v10 Settled, the
   Swift packet at `toolchain.md` v1.1.0 / `testing.md` v1.1.0 / `conventions.md` /
   `quality_gates.md` v1.1.0 — outside this repository, read at `<CORE>/doctrine/engineering/languages/swift/`.)
@@ -26,8 +26,8 @@
     tools version 6.0 "enables the Swift 6 language mode for all targets"; the `StrictConcurrency`
     setting is `enableExperimentalFeature` for Swift 5.9/5.10 tools and `enableUpcomingFeature` for
     6.0 and later — § 3.2 rests on it.
-  - GitHub Actions run 36034875098 on `nozoki@c79270f`, the newest run on `main` (`gh run list
-    --repo kensaiapp/nozoki --workflow ci.yml`, 2026-09-26): `success`, image `macos-14-arm64`; its
+  - GitHub Actions run 36034875098 on `ka-reader@c79270f`, the newest run on `main` (`gh run list
+    --repo kensaiapp/ka-reader --workflow ci.yml`, 2026-09-26): `success`, image `macos-14-arm64`; its
     809-line log names no Swift version — the only `swift-version` lines are the build file's name,
     as run 35968105480's were. So the toolchain clause's "waits for a log on `main` that names the
     toolchain" is still true, and no answer here rests on knowing CI's toolchain.
@@ -36,8 +36,8 @@ Two items, both in § 3 *Raised from downstream*, both this document's seat, bot
 raised on this document, § 2.1. Nothing left for the owner: neither item commits a person, a party
 or a risk, and the one ground the run could not see — which toolchain CI builds with — is one the
 records themselves hold as unmeasured, so each answer is built to hold either way. Local
-measurements were taken on the tree at `nozoki@6e1d79f` (HEAD; `nozoki-mac/` unchanged since
-`nozoki@f46269a`, the merge the items measured — `git diff --stat f46269a HEAD -- nozoki-mac` prints
+measurements were taken on the tree at `ka-reader@6e1d79f` (HEAD; `ka-reader-mac/` unchanged since
+`ka-reader@f46269a`, the merge the items measured — `git diff --stat f46269a HEAD -- ka-reader-mac` prints
 nothing), and the one build measurement was made in a copy under `/tmp`, removed afterwards; the
 tree was not touched.
 
@@ -51,21 +51,21 @@ tree was not touched.
   in three ways the item left open: the flip is the framework's own and not the four's; the count is
   corrected; and the *verified by* tail gains the trigger whose absence let this happen.
 
-  **Every claim in the item re-measures true.** `nozoki-mac/Tests/SurfacesTests/RootItemsViewExpansionTests.swift:L2`
-  reads `import XCTest`, added at `nozoki@a5fc189` (`git log --oneline -- <file>`: `a5fc189`,
-  `cc0e030`). `grep -rl 'import Testing' nozoki-mac/Tests` prints nothing. `grep -rl 'import
-  XCTest' nozoki-mac/Tests` lists five files where `docs/nfdr.md:L1035-L1036` counts four. The
+  **Every claim in the item re-measures true.** `ka-reader-mac/Tests/SurfacesTests/RootItemsViewExpansionTests.swift:L2`
+  reads `import XCTest`, added at `ka-reader@a5fc189` (`git log --oneline -- <file>`: `a5fc189`,
+  `cc0e030`). `grep -rl 'import Testing' ka-reader-mac/Tests` prints nothing. `grep -rl 'import
+  XCTest' ka-reader-mac/Tests` lists five files where `docs/nfdr.md:L1035-L1036` counts four. The
   ground the change gave is at the code-integrity report, not the commits the item names — the
   closing marker as that report quotes it: "this image's default Xcode is 15.4, and that Swift
   Testing ships with Xcode 16"
-  (`system/projects/nozoki/journey/tobiishi/trail/2026-09-25_the-tree-opens/code-integrity-report.md:L110-L118`,
+  (`system/projects/ka-reader/journey/tobiishi/trail/2026-09-25_the-tree-opens/code-integrity-report.md:L110-L118`,
   in the instance repository) — and the flow findings for that change already say what the item
   says: the ground "rests on a document the product's own NFDR says is not a measurement"
   (`…/flow_findings/development-implementation.md:L15`). The item's supporting text is right in
   substance and off by one word ("commits"); no correction is owed.
 
   **Why the framework's flip is its own.** The four departures the bullet holds flip "until CI
-  builds `nozoki-mac` on an image carrying a Swift 6.2 or later toolchain" (`:L1057-L1059`), and the
+  builds `ka-reader-mac` on an image carrying a Swift 6.2 or later toolchain" (`:L1057-L1059`), and the
   image tops out at Xcode 16.2 (the readme, re-read). Swift Testing needs "the Swift 6 toolchain and
   Xcode 16" (the README, re-read) — which the image *has*, at 16.1 and 16.2, behind a 15.4 default.
   So the framework departure can end on a `ci.yml` step selecting an installed Xcode, a change the
@@ -88,10 +88,10 @@ tree was not touched.
   breaks, with no sentence saying when it stops.
 
   **The addition the item did not ask for, and why it is in the answer rather than raised
-  separately:** the bullet's *verified by* triggers on `nozoki-mac/Package.swift` and
+  separately:** the bullet's *verified by* triggers on `ka-reader-mac/Package.swift` and
   `.github/workflows/*.yml` (`:L1096-L1102`). A new test file touches neither, so the one gate that
   reads the Framework clause never fired for the three changes that departed from it. The answer
-  adds `nozoki-mac/Tests/` to the trigger. It is part of this item because it is the mechanism by
+  adds `ka-reader-mac/Tests/` to the trigger. It is part of this item because it is the mechanism by
   which this item's defect occurred, not a second defect.
 
   **Failure paths.** *Empty:* no new test written — the clause binds nothing and says nothing false.
@@ -102,7 +102,7 @@ tree was not touched.
   record stays true until a log says otherwise; that is the cost the toolchain clause already
   accepted. *Concurrent:* XCTest and Swift Testing in one test target after the flip — the packet's
   own README quotes "side-by-side" (`testing.md` § One framework). *Refused:* a change after the flip
-  writes XCTest anyway — a violation with a name, caught at the new `nozoki-mac/Tests/` trigger.
+  writes XCTest anyway — a violation with a name, caught at the new `ka-reader-mac/Tests/` trigger.
 
   **What would have tipped it.** A CI log on `main` naming a Swift 6 toolchain. Then the rule is
   followed as written, the one XCTest file added since the packet landed is a fact the fold dates
@@ -117,13 +117,13 @@ tree was not touched.
   mode will refuse are named as the flip's cost; no ADR is written.
 
   **Every claim re-measures true, and the two the item left unmeasured are now measured.**
-  `nozoki-mac/Package.swift:L1` reads `// swift-tools-version:5.9`; `grep -n -i
-  "swiftLanguage\|StrictConcurrency\|swiftSettings" nozoki-mac/Package.swift` prints nothing; the
+  `ka-reader-mac/Package.swift:L1` reads `// swift-tools-version:5.9`; `grep -n -i
+  "swiftLanguage\|StrictConcurrency\|swiftSettings" ka-reader-mac/Package.swift` prints nothing; the
   records grep prints nothing. `LaunchFlow.swift:L52-L53` captures `bridge` in the closure handed to
   `reader.run`, whose parameter is `@escaping @Sendable () -> RootListing?`
-  (`nozoki-mac/Sources/Shell/ReadRunning.swift:L12`), and `Bridging` is a plain `package protocol`
-  (`Bridging.swift:L7`). Measured 2026-09-26, in a copy of `nozoki-mac` (`.build` excluded) at
-  `nozoki@6e1d79f`, Xcode 27.0, Apple Swift 6.4: with
+  (`ka-reader-mac/Sources/Shell/ReadRunning.swift:L12`), and `Bridging` is a plain `package protocol`
+  (`Bridging.swift:L7`). Measured 2026-09-26, in a copy of `ka-reader-mac` (`.build` excluded) at
+  `ka-reader@6e1d79f`, Xcode 27.0, Apple Swift 6.4: with
   `.enableUpcomingFeature("StrictConcurrency")` on `Surfaces` and `Shell`, `swift build --target
   Shell` printed `Build complete!` with three warnings and no error — `ReadRunning.swift:28:44`
   twice (capture of `deliver`, non-Sendable `@MainActor (RootListing?) -> Void`, in a `@Sendable`
@@ -185,7 +185,7 @@ None this run.
 
 ### 2.1 — § 9's tools-version departure has two more consequences the bullet does not name — `.strictMemorySafety()` and `.defaultIsolation(MainActor.self)` are `PackageDescription` 6.2 settings the manifest cannot state, and the bullet says each is followed as written
 
-- **What the document is owed:** two more entries on the `nozoki-mac` bullet's *Departed from*
+- **What the document is owed:** two more entries on the `ka-reader-mac` bullet's *Departed from*
   list, under the three's flip, with the cost of each named.
 - **Why it is worth a cycle:** *A fact in it is now false* — the bullet's "a rule of it not named
   here is followed as written" (`docs/nfdr.md:L1033-L1034`) is false for two rules by the same
@@ -193,8 +193,8 @@ None this run.
   settings "First available in PackageDescription 6.2" (`:L48-L53`) — `.treatAllWarnings(as:)`,
   `.strictMemorySafety()`, `.defaultIsolation(_:)` — and the list names the first alone
   (`:L1060-L1064`); `conventions.md` requires the second on every target unconditionally and the
-  third on the app's and the UI's targets; `nozoki-mac/Package.swift` carries no `swiftSettings` on
-  any target (`grep -n swiftSettings nozoki-mac/Package.swift` prints nothing, 2026-09-26). It is
+  third on the app's and the UI's targets; `ka-reader-mac/Package.swift` carries no `swiftSettings` on
+  any target (`grep -n swiftSettings ka-reader-mac/Package.swift` prints nothing, 2026-09-26). It is
   raised as one item because both share § 3.2's cause and flip, and the fold that takes § 3.2 is the
   fold that should take them. No separate cycle is spent: the companion is already open.
 
@@ -204,4 +204,4 @@ None this run.
 
 ## Launchers owed
 
-- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture nozoki`
+- **`docs/adr/` and `docs/nfdr.md`** — `<CORE>/launchers/skill/launcher.sh product-architecture ka-reader`

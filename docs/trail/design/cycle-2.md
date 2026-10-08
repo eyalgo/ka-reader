@@ -1,4 +1,4 @@
-# DESIGN open issues — Nozoki 覗き
+# DESIGN open issues — KA-Reader
 
 > Companion to `DESIGN.md`. The CDO authored the design language non-interactively; this file
 > holds the calls it made and wants your sign-off on — each with the reason behind it, and what
@@ -18,7 +18,7 @@
 > for good.
 
 > **This companion was opened by the owner, not by a `product-design` run.** `DESIGN.md` is settled
-> at v2 (`nozoki@95f1279`) and its companion was correctly deleted. It is re-opened deliberately
+> at v2 (`ka-reader@95f1279`) and its companion was correctly deleted. It is re-opened deliberately
 > because the **verbal-language** round that followed found three things in `DESIGN.md` that only a
 > CDO run can fix, and the design loop has no other channel: with no companion on disk a
 > `product-design` re-run reads the document as done and has nothing to act on.
@@ -45,7 +45,7 @@
   designed not to have one.
 - **What was searched:** `docs/DESIGN.md` § Do's and Don'ts (`:672-673`) and RN-11 (`:790-792`);
   `docs/design_trail/cycle-1.md` § 2.3 for the scope of the owner's hover override;
-  `docs/CONTENT_open_issues.md` § 1.2 (`nozoki@3692585`) for the ruling that reopens it.
+  `docs/CONTENT_open_issues.md` § 1.2 (`ka-reader@3692585`) for the ruling that reopens it.
   **RN-11's own stated reason is the thing that fails here.** It bans a tooltip *because* "a tooltip
   is a second surface for words the label already carries (UX-A4)". That reasoning holds wherever a
   control carries its own word — the rail entries, the chrome controls. It does **not** hold for a
@@ -54,7 +54,7 @@
 - **Answer:** **Tooltips are in v1, and the Don't is lifted.** The owner's words, given while
   settling the Git status letters: *"i think that tooltips should be included in v1."* Recorded there
   as a **v1 decision, not a one-off exception for status letters**
-  (`docs/CONTENT_open_issues.md` § 1.2, `nozoki@3692585`).
+  (`docs/CONTENT_open_issues.md` § 1.2, `ka-reader@3692585`).
 
   The behaviour the owner described, and the thing the tooltip has to serve: *"in VS code, when you
   hover over an `M` for example, there's a short-time 'file and + Modified'."* So — pointer-driven,
@@ -111,7 +111,7 @@
   alone.** Git's own porcelain does use `C` for *copied* and `U` for *updated but unmerged*, and a
   reader who checks the letters against `git status --porcelain` — as this session did — will
   conclude the document is wrong and try to "fix" it. VS Code's convention is the right one for
-  Nozoki: the product is explicitly modelled on it (`README.md` § What it is,
+  KA-Reader: the product is explicitly modelled on it (`README.md` § What it is,
   `docs/ux_reference/` is VS Code screenshots), and the letters exist to be recognised by readers
   who have seen them somewhere, which for this audience is VS Code and not porcelain output.
 
@@ -131,11 +131,11 @@
 
   **It is recorded where it will be acted on:** `docs/CONTENT_open_issues.md` § 1.2 now carries that
   correction as a directive on its own fold, and the withdrawn claim there is struck in place
-  (`nozoki@1593434`). So neither companion is left asserting what `fdee2fc` disproved, and the fix
+  (`ka-reader@1593434`). So neither companion is left asserting what `fdee2fc` disproved, and the fix
   lands in the document that owns the words.
 
   **One VS Code quirk deliberately not copied:** recent VS Code versions badge a renamed file as `U`
-  rather than `R` (per the bobbyhadz source). Nozoki keeps `R` for renamed, as `DESIGN.md` has it —
+  rather than `R` (per the bobbyhadz source). KA-Reader keeps `R` for renamed, as `DESIGN.md` has it —
   the letters follow VS Code's *vocabulary*, not its every behaviour, and collapsing renamed into
   untracked would lose a distinction the four-family grouping already draws.
 
@@ -147,7 +147,7 @@
 - **What was searched:** `docs/DESIGN.md:898` reads — *"Theme control in the chrome (§ Components,
   RN-10 — placement added beyond the UXD and owner-confirmed; the UXD-side record is **pending** in
   `docs/UXD_open_issues.md` § 1.1)"*. That file does not exist: it was consumed and deleted when the
-  UXD folded the answer (`nozoki@f4bc928`). The record is no longer pending — it landed. `UXD.md` is
+  UXD folded the answer (`ka-reader@f4bc928`). The record is no longer pending — it landed. `UXD.md` is
   at v3 and carries the placement in § 4 (`UXD.md:87`, *"The theme control lives in the shell chrome,
   at its right end"*) with **RN-22** (`UXD.md:624-625`) holding the owner's basis, and its own
   traceability row (`UXD.md:415`) citing `docs/uxd_trail/cycle-2.md` § 1.1.

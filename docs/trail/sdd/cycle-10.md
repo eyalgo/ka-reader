@@ -1,4 +1,4 @@
-# SDD open issues — Nozoki
+# SDD open issues — KA-Reader
 
 > Companion to `SDD.md`. Three seats — the CTO, the CPO and the CDO — authored the SDD
 > non-interactively in one run; this file holds what that run could not settle from its inputs (the
@@ -51,7 +51,7 @@ seats' positions are on the trail (`docs/trail/sdd/cycle-9.md` § 1.1), and the 
 ### 2.3 C-I3 still checks the bundle "against C-R2's exact list", and C-R2 and C-I3 name records that ADR-0011 and ADR-0012 now carry
 - **Raised by:** the `companion-self-answer` run, 2026-09-23 — not one of the SDD's three seats
 - **Drafted into the SDD:** Both changes, in § 4, at run 12, round 1 (RN-61).
-  1. **C-I3's wording.** "`checks/bundle.sh` reads `codesign -d --entitlements :- Nozoki.app`
+  1. **C-I3's wording.** "`checks/bundle.sh` reads `codesign -d --entitlements :- KA-Reader.app`
      against C-R2's exact list" now reads "against the set C-R2's rule admits, as the script's
      expected set records it — set equality, the expected set widened only by a change reviewed
      against the rule" (`SDD.md` § 4 C-I3, its third sentence). That is the form `docs/nfdr.md`
@@ -84,7 +84,7 @@ seats' positions are on the trail (`docs/trail/sdd/cycle-9.md` § 1.1), and the 
 - **If overridden:** C-I3 keeps checking against a list C-R2 no longer holds, and the two
   conditions keep citing ADR-0003 after it is superseded and no record for the renderer gate.
   Nothing the SDD decides moves either way: the rule, the gate and the probe stand as written.
-- **Confirm or override:** confirm, with one addition. Both drafts hold. C-I3 now checks the bundle against the set C-R2's rule admits, in the form `docs/nfdr.md` QC-25 took at v10, and the record lines name ADR-0011 and ADR-0012, which is what `docs/adr/README.md` shows on 2026-09-23. **Addition:** the two record lines should not carry the status word *Proposed*. For the status, they should point at the index row they already cite. The draft moves the word "on the next fold here", but this item is the file's last. After this fold the companion is removed, so the SDD may never have a next fold. `docs/architecture_open_issues.md` § 2.1 is already confirmed, so the fold that turns both records to Accepted is the next `product-architecture` run, and the SDD would then misstate their status with nothing left to correct it. C-R2's conditional, "until it is Accepted, ADR-0003 is the record in force", stays true in both states and stays as written. ADR-0012 may also move under the RC-3 re-derivation, now raised at `docs/architecture_open_issues.md` § 2.3 (`nozoki@c2cb01c`), and the index row follows it wherever it goes. Decided in the owner's seat by a `companion-self-answer` run, 2026-09-23. The reasoning is in `docs/trail/sdd/self_answer-21.md` § 2.3.
+- **Confirm or override:** confirm, with one addition. Both drafts hold. C-I3 now checks the bundle against the set C-R2's rule admits, in the form `docs/nfdr.md` QC-25 took at v10, and the record lines name ADR-0011 and ADR-0012, which is what `docs/adr/README.md` shows on 2026-09-23. **Addition:** the two record lines should not carry the status word *Proposed*. For the status, they should point at the index row they already cite. The draft moves the word "on the next fold here", but this item is the file's last. After this fold the companion is removed, so the SDD may never have a next fold. `docs/architecture_open_issues.md` § 2.1 is already confirmed, so the fold that turns both records to Accepted is the next `product-architecture` run, and the SDD would then misstate their status with nothing left to correct it. C-R2's conditional, "until it is Accepted, ADR-0003 is the record in force", stays true in both states and stays as written. ADR-0012 may also move under the RC-3 re-derivation, now raised at `docs/architecture_open_issues.md` § 2.3 (`ka-reader@c2cb01c`), and the index row follows it wherever it goes. Decided in the owner's seat by a `companion-self-answer` run, 2026-09-23. The reasoning is in `docs/trail/sdd/self_answer-21.md` § 2.3.
 
 > **No `product-sdd` run wrote this item. A `companion-self-answer` run raised it on
 > 2026-09-23** while it answered `docs/architecture_open_issues.md` § 1.1. That item was raised by
@@ -106,7 +106,7 @@ seats' positions are on the trail (`docs/trail/sdd/cycle-9.md` § 1.1), and the 
      state. Rendering" to "I/O of any kind. Any Apple framework. Own state. Drawing". "Rendering"
      becomes "Drawing" because drawing is what the model must never do: that is `surfaces`'. "The
      Tauri runtime" goes because RC-3 retired that runtime. "Any Apple framework" takes its place
-     because that is the boundary `nozoki-core` now holds (§ 3, the units paragraph).
+     because that is the boundary `ka-reader-core` now holds (§ 3, the units paragraph).
   3. **The units paragraph's edges** gain one sentence: `folder-model` calls `markdown-renderer`
      and `highlighter`, and neither of them imports the model. That keeps "import neither the model
      nor one another" true as written.

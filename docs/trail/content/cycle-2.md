@@ -1,4 +1,4 @@
-# CONTENT open issues — Nozoki 覗き
+# CONTENT open issues — KA-Reader
 
 > Companion to `CONTENT.md`. The Content Editor authored the verbal language non-interactively;
 > this file holds the calls it made and wants your sign-off on — each with the reason behind it,
@@ -42,7 +42,7 @@ for without a home.
   message degrades to *something went wrong*. `CONTENT.md` now carries a second formula for it.
 
   The state itself, though, is not named anywhere. `docs/UXD.md` § 6 lists a failure cell for every
-  surface, and **every one of them is a condition Nozoki observed** — a path with no repository, a
+  surface, and **every one of them is a condition KA-Reader observed** — a path with no repository, a
   file that is no longer there, a file that cannot be read, `.git/index.lock` present. There is no
   cell for a fault the tool cannot account for. `docs/UXD.md` RN-4 states the principle that makes
   this a gap rather than an omission: *"an unhandled state is a defect of this document."*
@@ -57,13 +57,13 @@ for without a home.
      internal text through to a message (§ Terminology, *Banned*: *error, exception, stack trace,
      ENOENT, EACCES*), and `docs/UXD.md` UX-I14 rules that an issue tracker is not a route out and
      never stands alone. Both hold. But a fault nobody can see is also a fault nobody can report,
-     and Nozoki's support posture already declines to promise a fix rather than declining the
+     and KA-Reader's support posture already declines to promise a fix rather than declining the
      report. Whether a release offers any way to see or copy the detail is a control, so it is the
      CDO's to declare and the CTO's to cost — this document deliberately writes **no** label for a
      control that does not exist, because a rule that cannot be applied to a real string is worth
      nothing.
   3. **Whether v1 has this class at all.** It is legitimate to answer that v1 ships without it —
-     that every failure Nozoki can reach is one it observed, and the second formula is written down
+     that every failure KA-Reader can reach is one it observed, and the second formula is written down
      for the first release that proves otherwise. The pattern would stay in `CONTENT.md` with that
      stated, which is how § Message patterns *Recovered* already carries a decision rather than a
      string.
@@ -77,7 +77,7 @@ for without a home.
   records the state rather than a decision, because two of the three are still gated.
 
   **Part 1 — which surfaces carry it: DERIVED AND SETTLED.** `UXD.md` is at **v4**
-  (`nozoki@8af3e8d`). The run derived rather than chose: a fault is the tool stopping one surface's
+  (`ka-reader@8af3e8d`). The run derived rather than chose: a fault is the tool stopping one surface's
   work, so it lands in **that surface's existing failure slot**, with the scope UX-I10 already fixes
   and the route out UX-I14 already requires. § 6's preamble now states that **every failure cell
   holds two classes** — the observed condition and the unexplained fault — and **UX-I16** states the

@@ -1,4 +1,4 @@
-# ADR-0013: Nozoki is a sandboxed single-process read pipeline — one process under the App Sandbox, a Rust core reached across one closed C-ABI seam, and its promise held by the process's own entitlements
+# ADR-0013: KA-Reader is a sandboxed single-process read pipeline — one process under the App Sandbox, a Rust core reached across one closed C-ABI seam, and its promise held by the process's own entitlements
 
 **Status:** Superseded by ADR-0021
 **Date:** 2026-09-23
@@ -37,15 +37,15 @@ The system is a **sandboxed single-process read pipeline**. Two read-only source
 filesystem and, where the granted folder is itself a repository's root, that repository's Git
 state — feed one in-memory folder model, and the surfaces are projections of it. Everything runs
 in **one process under the App Sandbox with no network entitlement** (ADR-0011): a Rust core
-(`nozoki-core`) that does all the reading, and an AppKit shell (`nozoki-mac`) that draws the
+(`ka-reader-core`) that does all the reading, and an AppKit shell (`ka-reader-mac`) that draws the
 model's projections and **holds no I/O of its own** — it reads no file, opens no connection, spawns
 no process, hands no URL to another program, and imports no web engine (`docs/SDD.md` § 4 C-R7).
 
-The seam between them is **`SM-4`, one closed C-ABI function list** exported by `nozoki-bridge`:
+The seam between them is **`SM-4`, one closed C-ABI function list** exported by `ka-reader-bridge`:
 `open_folder`, `list_tree`, `select_file`, `open_relative_link`, `set_theme`, `open_diff`,
 `walk_history`, `switch_folder` and `asset_bytes` — each exported from the build in which a slice
 lands it, all nine from `v1.0.0`; a `model_changed` callback carrying projection deltas; every
-return an owned buffer of plain data freed by one `nozoki_free`; the header generated from the
+return an owned buffer of plain data freed by one `ka_reader_free`; the header generated from the
 bridge's source and never hand-kept (`docs/SDD.md` § 3 SM-4). **The seam is where the promise is
 read, not where it is held.** The wall is the process's entitlements; the seam makes visible that
 the shell reads through the core alone, and `checks/view.sh` shows on every build that the shell
@@ -112,7 +112,7 @@ convention, and the wall is the operating system's.
 
 ## Traces to
 
-- `docs/SDD.md` at v13 (`nozoki@b236e7b`, Draft) — § 2 (forces 1, 3, 5 and 6; the candidates
+- `docs/SDD.md` at v13 (`ka-reader@b236e7b`, Draft) — § 2 (forces 1, 3, 5 and 6; the candidates
   table, rows 1–4 and 7; "Which side this product falls on, and why"; "Undoing it"); § 3 SM-4,
   SM-5, SM-8; § 4 C-R2, C-R7, C-I3; § 9 TO-1; § 10 RC-2, RC-3; § 12, the downstream boundary; § SDD
   Review Notes RN-56, RN-60. Read for this record while the SDD's companion held one answered item
@@ -131,9 +131,9 @@ convention, and the wall is the operating system's.
   `docs/trail/architecture/cycle-9.md` § 2.3 — the owner's confirm, given in the owner's seat by a
   `companion-self-answer` run on 2026-09-23 (its reasoning,
   `docs/trail/architecture/self_answer-12.md` § 2.3), on which this record is Accepted and
-  ADR-0001 superseded. Accepted with `docs/SDD.md` at v14 (`nozoki@2739007`, Draft): v14's one
+  ADR-0001 superseded. Accepted with `docs/SDD.md` at v14 (`ka-reader@2739007`, Draft): v14's one
   move in § 3 — the model fills the `FileView` by calling `markdown-renderer` and `highlighter`
-  (SDD RN-64) — sits inside `nozoki-core` and touches no sentence of this record.
+  (SDD RN-64) — sits inside `ka-reader-core` and touches no sentence of this record.
 - Inputs read for this record: SDD Draft v13 · SRS Settled v12 · FDR Settled v8.
 
 ## Binds

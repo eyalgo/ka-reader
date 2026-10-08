@@ -1,21 +1,21 @@
 #!/usr/bin/env bash
 # Version: 1.1.0 — the bridge serves Git — libgit2 machine-config switch, read_git export, Git item wire, nm transport read in view.sh
-# Version: 1.0.0 — first version: the source scan (F1–F13) over nozoki-mac/Sources and the link check on the built executable
+# Version: 1.0.0 — first version: the source scan (F1–F13) over ka-reader-mac/Sources and the link check on the built executable
 #
 # checks/view.sh — proves the Swift shell holds no I/O of its own.
 #
 # WHY THIS EXISTS
-#   The shell (nozoki-mac) draws what the bridge hands it and does nothing else: it reads no file, opens
+#   The shell (ka-reader-mac) draws what the bridge hands it and does nothing else: it reads no file, opens
 #   no socket, spawns no process, embeds no web engine and shows no alert of its own (SDD C-R7; NFDR
 #   QC-8, QC-15, QC-17, QC-30, QC-34, QC-51, QC-58). A reviewer cannot keep watching for that, so this
 #   script reads it off the tree and off the built executable, on every run of CI.
 #   Three checks run, and all always run before the verdict, so one run reports every finding:
-#     1. The source scan, over every *.swift file under nozoki-mac/Sources at any depth and nothing
-#        under nozoki-mac/Tests. Comments are blanked in place, so a name in a comment is not a use and
+#     1. The source scan, over every *.swift file under ka-reader-mac/Sources at any depth and nothing
+#        under ka-reader-mac/Tests. Comments are blanked in place, so a name in a comment is not a use and
 #        every finding names the true line. String contents stay in the text and are scanned: a string
 #        is how NSClassFromString("…") names an API this scan would otherwise catch. The cost is a
 #        false positive when a user-visible string holds a forbidden name, and that fails closed.
-#     2. The link check: `otool -L` on target/release/bundle/macos/Nozoki.app/Contents/MacOS/Nozoki. An
+#     2. The link check: `otool -L` on target/release/bundle/macos/KA-Reader.app/Contents/MacOS/KA-Reader. An
 #        install name is a finding when one of its path components is WebKit.framework or
 #        JavaScriptCore.framework, wherever that framework lives.
 #     3. The transport read: `nm` on the same executable. A defined symbol whose name begins
@@ -23,7 +23,7 @@
 #        undefined import of connect, socket or getaddrinfo (the executable reaches for the network).
 #        A leading underscore, which Mach-O adds to a C name, is not part of the name. Source: NFDR
 #        QC-3 (3), SDD § 4 C-R6 and C-I3; it is owed by the build that first exports a command reaching
-#        git-reader, which is the one that exports nozoki_read_git.
+#        git-reader, which is the one that exports ka_reader_read_git.
 #   It never passes having read nothing: no .swift file, a missing or unreadable executable, no otool,
 #   an otool that fails, an otool that prints no install name (every executable links libSystem, so
 #   an empty list is a read of nothing), no nm, an nm that fails, and an nm that prints no symbol are
@@ -46,7 +46,7 @@
 #   docs/SDD.md § 4 C-R7; a QC-n is docs/nfdr.md; "design addition" is added under the NFDR's
 #   same-change clause (QC-34), and every row passes today's tree.
 #     F1  Imports        Any `import` of a module outside {AppKit, Foundation, and the directory names
-#                        directly under nozoki-mac/Sources, read when the script runs}, in every form
+#                        directly under ka-reader-mac/Sources, read when the script runs}, in every form
 #                        (`import X`, `import class X.Y`, `@testable import X`, `@_implementationOnly
 #                        import X`). Source: QC-8's "may import" set.
 #     F2  Web engine     WKWebView, WebView, JSContext. Source: C-R7.
@@ -83,14 +83,14 @@
 #                        .environment on any receiver; getenv, environ, _NSGetArgv, _NSGetArgc,
 #                        _NSGetEnviron; UserDefaults, NSUserDefaults, CFPreferences…. Source: QC-30 and
 #                        QC-58; design addition for the rest.
-#     F12 Only the shell calls the bridge   In files under nozoki-mac/Sources/Surfaces/ only: any token
-#                        beginning nozoki_, and `import CNozokiBridge`. Source: QC-17, realized by C-R7's
+#     F12 Only the shell calls the bridge   In files under ka-reader-mac/Sources/Surfaces/ only: any token
+#                        beginning ka_reader_, and `import CKAReaderBridge`. Source: QC-17, realized by C-R7's
 #                        export prefix.
 #     F13 Alerts, notifications, modals   NSAlert; tokens beginning NSUserNotification; tokens beginning
 #                        UN that contain Notification; tokens beginning runModal, beginSheet,
 #                        beginCriticalSheet, beginModalSession, presentAsModalWindow, presentAsSheet.
 #                        The one exception is a single `.runModal()` with no argument in
-#                        nozoki-mac/Sources/Shell/OpenFolderPanel.swift, the Open panel's own
+#                        ka-reader-mac/Sources/Shell/OpenFolderPanel.swift, the Open panel's own
 #                        presentation; a second one there, or `.runModal(` with an argument, is
 #                        reported. Source: QC-51, narrowed by the Open panel C-R3 requires.
 #   QC-34's, QC-1's and QC-23's lists point here: this header is the list, and C-R7's set is its floor.
@@ -102,8 +102,8 @@ die() { echo "view.sh: $*" >&2; exit 1; }
 # --- the product root, and what is read ---
 
 product_root="$(cd "$(dirname "$0")/.." && pwd -P)"
-sources_dir="$product_root/nozoki-mac/Sources"
-executable="$product_root/target/release/bundle/macos/Nozoki.app/Contents/MacOS/Nozoki"
+sources_dir="$product_root/ka-reader-mac/Sources"
+executable="$product_root/target/release/bundle/macos/KA-Reader.app/Contents/MacOS/KAReader"
 
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
@@ -188,7 +188,7 @@ function scan_imports(s,   t, i, start, len, m) {
     sub(/^import[ \t]+/, "", m)
     if (m ~ /^(class|struct|enum|protocol|typealias|func|var|let)[ \t]/) sub(/^[A-Za-z]+[ \t]+/, "", m)
     if (index(allowed, " " m " ") == 0) report(m)
-    if (m == "CNozokiBridge" && in_surfaces) report(m)
+    if (m == "CKAReaderBridge" && in_surfaces) report(m)
     i += start + len
   }
 }
@@ -214,7 +214,7 @@ function apply(s) {
   scanre(s, "@_(silgen_name|extern)[^A-Za-z0-9_]", 0, 1, "plain")
   scan(s, "CommandLine|getenv|environ|_NSGetArgv|_NSGetArgc|_NSGetEnviron|UserDefaults|NSUserDefaults|CFPreferences[A-Za-z0-9_]*", 11)
   scanre(s, "[.](arguments|environment)[^A-Za-z0-9_]", 0, 1, "plain")
-  if (in_surfaces) scan(s, "nozoki_[A-Za-z0-9_]*", 12)
+  if (in_surfaces) scan(s, "ka_reader_[A-Za-z0-9_]*", 12)
   scan(s, "NSAlert|NSUserNotification[A-Za-z0-9_]*|UN[A-Za-z0-9_]*Notification[A-Za-z0-9_]*", 13)
   scan(s, "(runModal|beginSheet|beginCriticalSheet|beginModalSession|presentAsModalWindow|presentAsSheet)[A-Za-z0-9_]*", 13)
 }
@@ -321,17 +321,17 @@ fi
 
 swift_count=0
 if [ -z "$swift_files" ]; then
-  echo "no .swift file under nozoki-mac/Sources — the scan read nothing" >> "$work/causes"
+  echo "no .swift file under ka-reader-mac/Sources — the scan read nothing" >> "$work/causes"
 else
   while IFS= read -r swift_file; do
     swift_count=$((swift_count + 1))
     relative="${swift_file#"$product_root"/}"
     in_surfaces=0
     case "$relative" in
-      nozoki-mac/Sources/Surfaces/*) in_surfaces=1 ;;
+      ka-reader-mac/Sources/Surfaces/*) in_surfaces=1 ;;
     esac
     is_panel=0
-    [ "$relative" = "nozoki-mac/Sources/Shell/OpenFolderPanel.swift" ] && is_panel=1
+    [ "$relative" = "ka-reader-mac/Sources/Shell/OpenFolderPanel.swift" ] && is_panel=1
     LC_ALL=C awk -v rel="$relative" -v allowed="$allowed" -v in_surfaces="$in_surfaces" -v is_panel="$is_panel" \
       -f "$work/scan.awk" "$swift_file" >> "$work/findings" \
       || die "the scan could not read $relative"
@@ -416,4 +416,4 @@ if [ -s "$work/findings" ] || [ -s "$work/causes" ]; then
   exit 1
 fi
 
-echo "view.sh: $swift_count Swift files scanned under nozoki-mac/Sources, $executable links no WebKit or JavaScriptCore and carries no Git transport — nothing found"
+echo "view.sh: $swift_count Swift files scanned under ka-reader-mac/Sources, $executable links no WebKit or JavaScriptCore and carries no Git transport — nothing found"
