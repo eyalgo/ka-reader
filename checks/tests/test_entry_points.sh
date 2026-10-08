@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.0.1 — CI green again: scene-building git runs no background maintenance, Swift builds with Xcode 16.2, and the entry-points suite reads metadata with plutil -extract
 # Version: 1.0.0 — first version: drives the real checks/entry-points.sh with every read, list and
 # resolution fault planted in a temporary copy
 #
@@ -117,18 +118,23 @@ fail() {
 }
 
 # name, version, id and manifest path of every package in the metadata file $1, tab separated.
+# Read with plutil -extract, as checks/entry-points.sh reads it, because plutil -help calls -p "not
+# for machine parsing". The table is written once beside $1 and read from there after.
 metadata_packages() {
-  plutil -p "$1" | awk '
-    function flush() { if (name != "") { print name "\t" version "\t" id "\t" manifest } name = ""; version = ""; id = ""; manifest = "" }
-    /^  "[a-z_]+" => / { section = $0; sub(/^  "/, "", section); sub(/".*/, "", section); if (section != "packages") { flush() } }
-    section != "packages" { next }
-    /^    [0-9]+ => \{$/ { flush(); next }
-    /^      "name" => "/ { name = $0; sub(/^      "name" => "/, "", name); sub(/"$/, "", name) }
-    /^      "version" => "/ { version = $0; sub(/^      "version" => "/, "", version); sub(/"$/, "", version) }
-    /^      "id" => "/ { id = $0; sub(/^      "id" => "/, "", id); sub(/"$/, "", id) }
-    /^      "manifest_path" => "/ { manifest = $0; sub(/^      "manifest_path" => "/, "", manifest); sub(/"$/, "", manifest) }
-    END { flush() }
-  '
+  table="$1.packages.tsv"
+  if [ ! -e "$table" ]; then
+    count="$(plutil -extract packages raw -expect array "$1")" || return 1
+    : > "$table.partial"
+    index=0
+    while [ "$index" -lt "$count" ]; do
+      for key in name version id manifest_path; do
+        plutil -extract "packages.$index.$key" raw -expect string "$1" || return 1
+      done | paste -s -d '\t' - >> "$table.partial"
+      index=$((index + 1))
+    done
+    mv "$table.partial" "$table"
+  fi
+  cat "$table"
 }
 
 # The package directory the real metadata resolves for crate $1.

@@ -32,7 +32,8 @@ fn port() -> &'static dyn GitPort {
     &Libgit2
 }
 
-/// A `git` invocation in `dir` that reads no machine-level configuration and runs no hook.
+/// A `git` invocation in `dir` that reads no machine-level configuration, runs no hook and starts
+/// no background maintenance.
 fn git_command(dir: &Path, args: &[&str]) -> Command {
     let mut command = Command::new("git");
     command
@@ -45,6 +46,13 @@ fn git_command(dir: &Path, args: &[&str]) -> Command {
             "commit.gpgsign=false",
             "-c",
             "advice.detachedHead=false",
+            // A command that writes starts `git maintenance run --auto`, detached by default, and
+            // its `objects/maintenance.lock` can come and go after the command returns: a scene
+            // then changes under a test that holds it must not.
+            "-c",
+            "maintenance.auto=false",
+            "-c",
+            "gc.auto=0",
         ])
         .args(args)
         .env("GIT_CONFIG_GLOBAL", "/dev/null")
@@ -146,7 +154,7 @@ fn committed_files_repository() -> (TempDir, PathBuf) {
 fn read_against(before: &Snapshot, scene: &TempDir, root: &Path) -> Answers {
     let state = port().state(root);
     let status = port().status(root);
-    assert_eq!(&scene.snapshot(), before, "a read changed the scene");
+    scene.assert_unchanged_since(before, "a read changed the scene");
     Answers { state, status }
 }
 
@@ -733,7 +741,7 @@ fn read_git_over(scene: &TempDir, folder: &Path) -> FolderModel {
 
     let folded = read_git(model, port());
 
-    assert_eq!(&scene.snapshot(), &before, "a read changed the scene");
+    scene.assert_unchanged_since(&before, "a read changed the scene");
     folded
 }
 
@@ -896,7 +904,7 @@ fn read_against_locked(before: &Snapshot, scene: &TempDir, root: &Path, locked: 
     let state = port().state(root);
     let status = port().status(root);
     scene.set_mode(locked, 0o755);
-    assert_eq!(&scene.snapshot(), before, "a read changed the scene");
+    scene.assert_unchanged_since(before, "a read changed the scene");
     Answers { state, status }
 }
 
@@ -1416,7 +1424,7 @@ fn test_the_excludesfile_pointing_outside_refuses_with_the_config_condition() {
         answers.failure(),
         &GitReadCondition::ConfigNamesOutside(named)
     );
-    assert_eq!(&scene.snapshot(), &before, "the probe changed the scene");
+    scene.assert_unchanged_since(&before, "the probe changed the scene");
 }
 
 #[test]
@@ -1651,7 +1659,7 @@ fn assert_refused_on_status_alone(scene: &TempDir, root: &Path, read: GitReadCon
     assert_eq!(port().probe(root), RootFinding::Root);
     assert!(port().state(root).is_ok());
     assert_eq!(port().status(root), Err(read));
-    assert_eq!(&scene.snapshot(), &before, "a call changed the scene");
+    scene.assert_unchanged_since(&before, "a call changed the scene");
 }
 
 /// CP-694 (a): a `~/` value is not located, and the observation is the value's, not the key's.
@@ -2042,7 +2050,7 @@ fn assert_object_store_refused(scene: &TempDir, root: &Path, entry: &str) {
     );
     assert_eq!(port().state(root), Err(condition.clone()));
     assert_eq!(port().status(root), Err(condition));
-    assert_eq!(&scene.snapshot(), &before, "a call changed the scene");
+    scene.assert_unchanged_since(&before, "a call changed the scene");
 }
 
 /// What each of the three calls answers when `entry` is refused without being located.
@@ -2082,7 +2090,7 @@ fn assert_failed_on_all_three(
     assert_eq!(port().probe(root), RootFinding::Failed(probe));
     assert_eq!(port().state(root), Err(read.clone()));
     assert_eq!(port().status(root), Err(read));
-    assert_eq!(&scene.snapshot(), &before, "a call changed the scene");
+    scene.assert_unchanged_since(&before, "a call changed the scene");
 }
 
 /// A folder named `outside-store` beside the repository's folder, holding an `objects/info`, and its
@@ -2109,7 +2117,7 @@ fn assert_no_opener_and_scene_unchanged(scene: &TempDir, folder: &Path, fifo: &P
         !opener_seen,
         "a call opened the object directory the alternates check must not read"
     );
-    assert_eq!(&scene.snapshot(), &before, "a call changed the scene");
+    scene.assert_unchanged_since(&before, "a call changed the scene");
 }
 
 /// CP-677 and E19, through the libgit2 adapter and no port double: the archive's alternates file
@@ -2485,7 +2493,7 @@ fn test_an_unreadable_alternates_file_answers_unreadable_for_the_repositorys_own
         port().status(&root),
     );
     scene.set_mode(ALTERNATES, 0o644);
-    assert_eq!(&scene.snapshot(), &before_own, "a call changed the scene");
+    scene.assert_unchanged_since(&before_own, "a call changed the scene");
     assert_eq!(
         own,
         (
@@ -2505,11 +2513,7 @@ fn test_an_unreadable_alternates_file_answers_unreadable_for_the_repositorys_own
         port().status(&root),
     );
     scene.set_mode("S/.git/objects/vendor-store/info/alternates", 0o644);
-    assert_eq!(
-        &scene.snapshot(),
-        &before_nested,
-        "a call changed the scene"
-    );
+    scene.assert_unchanged_since(&before_nested, "a call changed the scene");
     assert_eq!(
         nested,
         (
@@ -2567,9 +2571,9 @@ fn test_a_submodules_outside_alternates_entry_fails_status_alone() {
         port().status(&root),
         Err(GitReadCondition::ObjectStoreNamesOutside(outside))
     );
-    assert_eq!(&scene.snapshot(), &before, "a call changed the scene");
+    scene.assert_unchanged_since(&before, "a call changed the scene");
     assert!(!opener_seen_during_the_three_calls(&root, &fifo));
-    assert_eq!(&scene.snapshot(), &before, "a call changed the scene");
+    scene.assert_unchanged_since(&before, "a call changed the scene");
 }
 
 /// A verified submodule's alternates entry that begins with neither `.` nor `/` fails the status
@@ -2591,7 +2595,7 @@ fn test_a_submodules_not_located_alternates_entry_fails_status_alone() {
             "relative/objects".to_string()
         ))
     );
-    assert_eq!(&scene.snapshot(), &before, "a call changed the scene");
+    scene.assert_unchanged_since(&before, "a call changed the scene");
 }
 
 /// A verified submodule's alternates entry that spells outside by its dots fails the status read
@@ -2615,7 +2619,7 @@ fn test_a_submodules_dotted_outside_alternates_entry_fails_status_alone() {
             "../../../../../outside-store/objects".to_string()
         ))
     );
-    assert_eq!(&scene.snapshot(), &before, "a call changed the scene");
+    scene.assert_unchanged_since(&before, "a call changed the scene");
 }
 
 /// E16: both checks refuse, and the config check, which runs first, is the answer.
@@ -2650,7 +2654,7 @@ fn test_a_git_file_root_probes_as_root_and_state_answers_the_condition() {
     let condition = GitReadCondition::ObjectStoreNamesOutside(outside);
     assert_eq!(port().state(&root), Err(condition.clone()));
     assert_eq!(port().status(&root), Err(condition));
-    assert_eq!(&scene.snapshot(), &before, "a call changed the scene");
+    scene.assert_unchanged_since(&before, "a call changed the scene");
 }
 
 // --- the `.gitmodules` section paths (CP-715 to CP-736) ----------------------------------------

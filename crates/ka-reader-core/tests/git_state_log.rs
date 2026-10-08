@@ -14,12 +14,12 @@ use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
 use common::TempDir;
-use log::{LevelFilter, Log, Metadata, Record};
 use ka_reader_core::{
     BranchElement, ConfigNamedPath, FolderModel, GitPort, GitReadCondition, HeadState,
     ProbeCondition, RepositoryState, RootFinding, StatusLists, SubmoduleNamedPath, open_folder,
     read_git,
 };
+use log::{LevelFilter, Log, Metadata, Record};
 
 struct Capture {
     records: Mutex<Vec<(log::Level, String)>>,
