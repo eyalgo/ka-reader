@@ -1140,7 +1140,8 @@ final class ReadingPanelTests: XCTestCase {
 
     func testCopyingAllTheTextYieldsTheFilesCharactersWithNoNumber() throws {
         let codeView = makeCodeView("print(\"hi\")\n")
-        let pasteboard = NSPasteboard(name: NSPasteboard.Name("ka-reader-test-\(UUID().uuidString)"))
+        let pasteboard = NSPasteboard(
+            name: NSPasteboard.Name("ka-reader-test-\(UUID().uuidString)"))
         defer { pasteboard.releaseGlobally() }
 
         codeView.textView.setSelectedRange(
@@ -2699,7 +2700,8 @@ final class ReadingPanelTests: XCTestCase {
         // A pasteboard of this test's own, never the general one: that is the owner's clipboard,
         // and an empty one would let the test pass having pasted nothing (change_design.md § 4,
         // *Paste test*).
-        let pasteboard = NSPasteboard(name: NSPasteboard.Name("ka-reader.tests.\(UUID().uuidString)"))
+        let pasteboard = NSPasteboard(
+            name: NSPasteboard.Name("ka-reader.tests.\(UUID().uuidString)"))
         defer { pasteboard.releaseGlobally() }
         let pasted = "PASTED INTO THE PANEL"
         pasteboard.clearContents()
@@ -2757,7 +2759,8 @@ final class ReadingPanelTests: XCTestCase {
         // pasteboard: that one is shared, so what it happened to hold would decide whether a text
         // view that wrongly took the drop changed anything (the Swift packet's testing.md, "a test
         // that shares state gets its own state").
-        let pasteboard = NSPasteboard(name: NSPasteboard.Name("ka-reader.tests.\(UUID().uuidString)"))
+        let pasteboard = NSPasteboard(
+            name: NSPasteboard.Name("ka-reader.tests.\(UUID().uuidString)"))
         defer { pasteboard.releaseGlobally() }
         let dropped = "DROPPED ON THE PANEL"
         pasteboard.clearContents()
@@ -2898,7 +2901,8 @@ final class ReadingPanelTests: XCTestCase {
         let copy = try XCTUnwrap(entries(of: menu).first { $0.title == "Copy" })
         XCTAssertEqual(copy.action, #selector(NSText.copy(_:)))
         // A pasteboard of this test's own, never the general one: that is the owner's clipboard.
-        let pasteboard = NSPasteboard(name: NSPasteboard.Name("ka-reader-test-\(UUID().uuidString)"))
+        let pasteboard = NSPasteboard(
+            name: NSPasteboard.Name("ka-reader-test-\(UUID().uuidString)"))
         defer { pasteboard.releaseGlobally() }
 
         pasteboard.clearContents()
