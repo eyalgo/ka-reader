@@ -8,6 +8,8 @@ repository — seeing what has changed. Look, don't touch.
 KA-Reader never changes the folder you point it at. It writes no file in it, and it runs no Git
 command that alters your repository's state.
 
+## Status
+
 > **Status: specified, partly built.** What exists now: the Rust library that reads a folder
 > (`crates/ka-reader-core`), the C interface over it (`crates/ka-reader-bridge`) and the AppKit shell in
 > Swift (`ka-reader-mac`). In the app you choose a folder through the system's Open panel and browse
