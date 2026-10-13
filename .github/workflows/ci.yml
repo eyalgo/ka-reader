@@ -15,12 +15,8 @@ permissions:
 
 jobs:
   wall:
-    runs-on: macos-14
-    # The image's default Xcode, 15.4, holds the macOS 14.5 SDK, and ka-reader-mac calls a macOS 15.2
-    # API behind `#available`, which compiles only against an SDK that declares it. Xcode 16.2 is on
-    # the same image with the macOS 15.2 SDK; the app still runs here on macOS 14, its floor.
-    env:
-      DEVELOPER_DIR: /Applications/Xcode_16.2.app/Contents/Developer
+    runs-on: macos-26
+    # The job builds with the image's own default Xcode; it selects none of its own.
     steps:
       - uses: actions/checkout@v5
 
