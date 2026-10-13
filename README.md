@@ -10,16 +10,15 @@ command that alters your repository's state.
 
 ## Status
 
-> **Status: specified, partly built.** What exists now: the Rust library that reads a folder
-> (`crates/ka-reader-core`), the C interface over it (`crates/ka-reader-bridge`) and the AppKit shell in
-> Swift (`ka-reader-mac`). In the app you choose a folder through the system's Open panel and browse
-> its tree, opening folders as you go, beside a reading panel that is still empty. If you dismiss
-> the panel, or the folder cannot be opened, the window says so and offers *Browse…* and *Quit*.
-> Viewing a file, the Git view and live refresh are not built yet. The product is specified in
-> full — what it is (`docs/PRD.md`), what it does (`docs/SRS.md`, `docs/fdr.md`), how it looks and
-> reads (`docs/UXD.md`, `docs/DESIGN.md`, `docs/CONTENT.md`), and how it is built (`docs/SDD.md`,
-> `docs/adr/`, `docs/nfdr.md`). There is no release yet. When there is one, it is a `.dmg` on a
-> GitHub Release for macOS 14 or later, under the MIT licence.
+> **Status: specified, partly built.** You can choose a folder through the system's Open panel and see its entries listed, which came in with commit `1741429c5`.
+> You can open and close the folders in the file tree, which came in with commit `f46269a00`.
+> If you dismiss the Open panel, or the folder can't be opened, the window says so and offers *Browse…* and *Quit*, which came in with commit `2270920c8`.
+> You can select a file and read its text in the reading panel, which came in with commit `75cc7ba60`.
+> The reading panel highlights the code of a file in JavaScript, JSON, Python, shell, TOML or YAML, which came in with commit `6a3738a2d`.
+> You can switch between Files and Git, and the Git view shows the Git state of the folder you opened, which came in with commit `129586e43`.
+>
+> KA-Reader does not yet follow the folder on its own, say plainly when the open file is gone, render Markdown by default, show a repository's diffs, show a repository's commit history or switch to another folder without restarting. It has no one way to get and start it, it is not public under the MIT licence and it is not at version 1.0.0 or later. The README does not yet open with what KA-Reader does, one install path, one example and what it will and won't touch, and it does not yet say that nothing is promised about issues, questions and security reports.
+> The product is specified in full — what it is (`docs/PRD.md`), what it does (`docs/SRS.md`, `docs/fdr.md`), how it looks and reads (`docs/UXD.md`, `docs/DESIGN.md`, `docs/CONTENT.md`), and how it is built (`docs/SDD.md`, `docs/adr/`, `docs/nfdr.md`). There is no release yet.
 >
 > KA-Reader is before version 1.0.0. Until 1.0.0, anything in it may change: what it does, how it
 > looks, and how you start it.
