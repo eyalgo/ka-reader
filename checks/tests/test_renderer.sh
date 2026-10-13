@@ -1,22 +1,24 @@
 #!/usr/bin/env bash
-# Version: 1.0.0 — first version: drives the real checks/renderer.sh, both halves, over stand-in ps, open, sample, codesign and swiftc, and over the real bundle
+# Version: 1.0.0 — first version: drives the real checks/renderer.sh, both halves, over stand-in
+#   ps, open, sample, codesign and swiftc, and over the real bundle
 #
 # checks/tests/test_renderer.sh — the tests of checks/renderer.sh.
 #
 # WHY THIS EXISTS
-#   checks/renderer.sh is the proof that the shipped shell reaches the Open panel, so a bug in it is a
-#   wall nobody is watching. These cases run the real script — never a copy of its logic. `ps`, `open`,
-#   `sample`, `codesign` and `swiftc` are stood in on PATH, the seams the script has. The pids are real processes (`sleep`),
-#   started and stopped by pid, because the script asks the operating system whether a pid still names
-#   a process and signals it.
+#   checks/renderer.sh is the proof that the shipped shell reaches the Open panel, so a bug in it
+#   is a wall nobody is watching. These cases run the real script — never a copy of its logic.
+#   `ps`, `open`, `sample`, `codesign` and `swiftc` are stood in on PATH, the seams the script has.
+#   The pids are real processes (`sleep`), started and stopped by pid, because the script asks the
+#   operating system whether a pid still names a process and signals it.
 #   The technique is the shell packet's, minus its runner: this product has no Python, so the runner
 #   is this file, as in checks/tests/test_bundle.sh.
 #
 # USAGE
 #   checks/tests/test_renderer.sh
-#   The real-bundle cases launch target/release/bundle/macos/KA-Reader.app and samples it, so run
-#   ka-reader-mac/assemble.sh first and run this in a logged-in GUI session; they also build and sign the
-#   real control with the real swiftc and codesign. A bundle that is absent FAILS those cases with a stated message and never skips it: a skip would let CI conclude green having
+#   The real-bundle cases launch target/release/bundle/macos/KA-Reader.app and sample it, so run
+#   ka-reader-mac/assemble.sh first and run this in a logged-in GUI session; they also build and
+#   sign the real control with the real swiftc and codesign. A bundle that is absent FAILS those
+#   cases with a stated message and never skips it: a skip would let CI conclude green having
 #   proved nothing.
 #   KA_READER_TEST_ONLY=<case> runs one case.
 #
