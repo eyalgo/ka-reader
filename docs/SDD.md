@@ -6,7 +6,8 @@
        signal, and the state a finished SDD carries; the open-issues file is gone.
      Locked = ratified as the source of truth. -->
 **Owner:** CTO — writes every part; the CPO and the CDO decide the parts the lane table names, through `SDD_open_issues.md` items carrying their `Seat:`
-**Version:** 47 — CTO, one run, with two answered companion items folded (`docs/trail/sdd/cycle-42.md` §§ 5.1 – 5.2), both the CTO's, raised by the PM after the change that runs the `submodule` walk every build merged to `main` (`ka-reader@b12e48c`): § 6 `see-git-status` *Reached when*, command half, the promise clause (the two limits it stated beside the `submodule` walk read as closed at `ka-reader@b12e48c` — the `read_git` case at `crates/ka-reader-core/tests/git_state.rs:L787` and the CI step `Read-only, submodule` at `.github/workflows/ci.yml:L73-L74` — with the CI half bounded to the step being in the workflow, its hosted result unread; the old words in a dated note) and *Rests on* (RN-107); § 3, the `read-only-harness` row (re-measured and re-pinned at `ka-reader@b12e48c`: `fixtures/.gitignore` named with the `own-state.sh` condition it serves, the six `git_state.rs` locators re-pinned with a dated note, the counts unchanged); SDD Review Notes RN-107 (new); trail copy at `docs/trail/sdd/cycle-42.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. Measured in this fold on a disposable copy: the three walks printed `unchanged` and the seventeen `submodule` cases of `--test git_state` passed. No *Delivers*, no slice added, no § 10 entry, no § 7 edge, no slice order, no part's *Must not own* and no seam altered. Companion items added: none.
+**Version:** 48 — CTO, one run, with the one answered companion item folded (`docs/trail/sdd/cycle-43.md` § 5.1), the CTO's columns, raised and answered by the owner in one hand on 2026-10-13 (`ka-reader@821a163`) after GitHub announced the retirement of the `macos-14` runner image: the macOS floor moves from 14.0 to 26.0 and CI's image from `macos-14` to `macos-26`. § 4 C-R5 (the floor is 26.0; its ground stays the maintainer's narrowing, now to the one macOS the hosted runner and the maintainer's Mac both run; the sentence that kept 14.0 because `docs/nfdr.md` QC-56 bound it is replaced — the NFDR entry is the one re-derived from this condition, by § 4's own rule on the two stores; the CI image is named, pinned by label and never by `macos-latest`; *Violated by* gains the workflow case); § 4 C-I3 (the renderer gate's two hosted readings are dated as taken on `macos-14`, below the floor from this revision, and the first reading on `macos-26` is named as the moving change's to take); § 6 `see-git-status` *Reached when*, command half (a dated note beside the `macos-14` runner the workflow still names at `ka-reader@0c0d5f9`); § 6 `first-public-release` and `promise-one-point-zero` *Reached when*, command halves (`prints 26.0`; the floor `26.0` in the enumeration the contract pin is written from); § 9 TO-8 (rewritten at 26 — the cost named as the majors excluded, the undo named at every line the floor is written on; "above 11" corrected to "above 12", C-R5's own number); § 11 R-17 (new: the floor follows a runner image's lifetime); SDD Review Notes RN-6 (a dated parenthesis) and RN-108 (new); trail copy at `docs/trail/sdd/cycle-43.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. Every sentence whose claim changed keeps its old words in a dated note beside it. Nothing in the tree moves in this fold: the plists, the manifest, the deployment target, the test that asserts `14.0` and the workflow are the change's, each located in RN-108. No § 10 entry (no bar became unmeetable and no input changed — RN-108), no *Delivers*, no slice added, no § 7 edge, no slice order, no part's *Must not own* and no seam altered. Companion items added: none.
+Version 47 — CTO, one run, with two answered companion items folded (`docs/trail/sdd/cycle-42.md` §§ 5.1 – 5.2), both the CTO's, raised by the PM after the change that runs the `submodule` walk every build merged to `main` (`ka-reader@b12e48c`): § 6 `see-git-status` *Reached when*, command half, the promise clause (the two limits it stated beside the `submodule` walk read as closed at `ka-reader@b12e48c` — the `read_git` case at `crates/ka-reader-core/tests/git_state.rs:L787` and the CI step `Read-only, submodule` at `.github/workflows/ci.yml:L73-L74` — with the CI half bounded to the step being in the workflow, its hosted result unread; the old words in a dated note) and *Rests on* (RN-107); § 3, the `read-only-harness` row (re-measured and re-pinned at `ka-reader@b12e48c`: `fixtures/.gitignore` named with the `own-state.sh` condition it serves, the six `git_state.rs` locators re-pinned with a dated note, the counts unchanged); SDD Review Notes RN-107 (new); trail copy at `docs/trail/sdd/cycle-42.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. Measured in this fold on a disposable copy: the three walks printed `unchanged` and the seventeen `submodule` cases of `--test git_state` passed. No *Delivers*, no slice added, no § 10 entry, no § 7 edge, no slice order, no part's *Must not own* and no seam altered. Companion items added: none.
 Version 46 — CTO, one run, with four answered companion items folded (`docs/trail/sdd/cycle-41.md` §§ 5.1 – 5.4), all four the CTO's, raised by the PM after the `.gitmodules` section-path refusals and the refusal on the submodule map were built (`ka-reader@772c63b`): § 3, the `git-reader` row (the known-defect sentence for the `.gitmodules` check is replaced by the build, pinned at `ka-reader@1d5c3cf`, naming the three refusals and the condition each answers on `status()` alone; a `.gitmodules` the adapter cannot read answers a condition of its own, `GitmodulesUnreadable`, and a file it includes keeps the unreadable-Git-directory condition) and the `read-only-harness` row (re-measured and re-pinned at `ka-reader@1d5c3cf`: thirteen fixture folders, `gitmodules-names-outside` named as § 11 R-16's fourth fixture with what its tracked folder holds and the suite that unpacks it; the cell's `git_state.rs` and `root_finding.rs` locators re-pinned with a dated note, what each names unchanged); § 4 C-D3 (the *Not covered* passage says the three refusals are built); § 6 `see-git-status` *Reached when*, observable half (the build-state sentence after the three-case `.gitmodules` passage: the shipped sentence for a submodule the map would place elsewhere, quoted and pinned, with the shell's four cases that hold it; the CDO's three-case passage before it does not move) and *Rests on* (RN-106); § 11 R-16 (the config *Built* paragraph's closing sentence says the sixth key's not-located form is built; *The sixth member* cites the adapter's current comment in place of one that no longer exists; *Its spelling and its refusals* says a section with no `path` key is decided on its name and what its refusal carries as the key; *Which paths the status read looks up* states the measured set — the index's gitlinks — with its method, its `libgit2-sys` pin, the two kinds that saw no opener, why a FIFO at `.git/HEAD` measures nothing, the bound the finding is, and the case that holds it; the paragraph headed *A known defect, until a change lands* is replaced by *Built, and the cases that hold it*, which pins the build, states the condition at each seam, quotes the shipped sentence, names every case and records both test runs; *Not covered* states the condition an unreadable `.gitmodules` answers, as built, and the ADR line it departs from; *The proof* re-pins the three include-key cases and names the fourth case and its fixture as in the tree; *Until the checks are built* says the `.gitmodules` check is built whole and that the sandbox is no longer the only bound on any read this risk names); *Open Questions*, the config-named-path item (closed and removed — seven stand: the form was found at v39, its four cases are in the tree, and the two things its last change settled are settled); SDD Review Notes RN-106 (new); trail copy at `docs/trail/sdd/cycle-41.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. Every sentence whose claim changed keeps its old words in a dated note beside it. No *Delivers*, no slice added, no § 10 entry, no § 7 edge, no slice order, no part's *Must not own* and no seam altered. Companion items added: none.
 Version 45 — CTO, one run, with two answered companion items folded (`docs/trail/sdd/cycle-40.md` §§ 5.1 – 5.2), both the CTO's, raised by the PM after the alternates condition's second observation was built: § 3, the `git-reader` row (the known-defect sentence for the alternates condition is replaced by the build, pinned at `ka-reader@6d3ef53`); § 6 `see-git-status` *Reached when*, observable half (the build-state sentence after the second alternates passage: the shipped sentence for an entry the tool does not locate, quoted and pinned, with the shell's two cases that hold it; the CDO's own sentence before it does not move) and *Rests on* (RN-105); § 11 R-16, "A third way out", *The condition* (the sentence that left the field-or-condition split to the building change states a second condition at SM-2, SM-4 and SM-8, with the locator at each seam; the adapter and scanner locators are re-pinned at the current tree with a dated note; the paragraph headed *A known defect, until a change lands* is replaced by *Built, and the cases that hold it*, which pins the build, quotes the sentence, names the eight cases and records both test runs); SDD Review Notes RN-105 (new); trail copy at `docs/trail/sdd/cycle-40.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. Every sentence whose claim changed keeps its old words in a dated note beside it. The three `.gitmodules` known-defect passages stand, and so do the pins at `ka-reader@66f428d` in *The spellings*, *The proof* and *Until the checks are built*, which describe the tree at that commit. No *Delivers*, no slice added, no § 10 entry, no § 7 edge, no slice order, no part's *Must not own* and no seam altered.
 Version 44 — CTO, one run, with two answered companion items folded (`docs/trail/sdd/cycle-39.md` §§ 5.1 – 5.2), both the CTO's, raised by the PM after the config condition's second observation was built: § 6 `see-git-status` *Reached when*, observable half (the build-state sentence after the second config passage: the shipped sentence for a value the tool does not locate, quoted and pinned at `ka-reader@fadff58`, with the shell's case that holds it; the CDO's own sentence before it does not move) and *Rests on* (RN-104); § 11 R-16, *The refusal and its condition* (the sentence that left the field-or-condition split to the building change states a second condition at SM-2, SM-4 and SM-8, with the locator at each seam; the paragraph headed *A known defect, until a change lands* is replaced by *Built, and the cases that hold it*, which pins the build, quotes the sentence, names the five cases, records both test runs, and scopes itself to the five keys named first); SDD Review Notes RN-104 (new); trail copy at `docs/trail/sdd/cycle-39.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. Every sentence whose claim changed keeps its old words in a dated note beside it. The alternates condition's field-or-condition sentence and its known defect at `ka-reader@66f428d` stand, and so do the three `.gitmodules` known-defect passages. No *Delivers*, no slice added, no § 10 entry, no § 7 edge, no slice order, no part's *Must not own* and no seam altered. Companion items added: none.
@@ -632,17 +633,35 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   no terminal command is ever the documented route. No Homebrew cask, no second channel.
   *Violated by:* a release built anywhere but CI from its tag, a checksum that does not match, a
   second install path, an `xattr` or `spctl` line in the README.
-- **C-R5.** The minimum macOS version is **14.0** (Sonoma): the bundle's `LSMinimumSystemVersion`
-  is `14.0` and the floor is stated wherever the install path is offered (C-11). The floor
-  is not forced by the stack — AppKit runs on every macOS Apple supports, and TextKit 2's
-  `NSTextLayoutManager`, which the reading panel's Markdown treatment lays out with, is available
-  from macOS 12.0 (https://developer.apple.com/documentation/appkit/nstextlayoutmanager) — so the
-  floor is the maintainer's narrowing: it is
-  the oldest macOS the timed release walk (AC-10) is run on, and one AppKit generation fewer to
-  walk UX-I12's layout fixtures on per release (§ 11 R-11). The value is the one `docs/nfdr.md` QC-56 already
-  binds, kept because nothing upstream moved to change it (RN-6). Raising it after 1.0.0 is a
-  breaking change under C-6. *Violated by:* a bundle whose plist says otherwise, an install page
-  that does not state it.
+- **C-R5.** The minimum macOS version is **26.0**: the bundle's `LSMinimumSystemVersion` is `26.0`
+  and the floor is stated wherever the install path is offered (C-11). The floor is not forced by
+  the stack — AppKit runs on every macOS Apple supports, and TextKit 2's `NSTextLayoutManager`,
+  which the reading panel's Markdown treatment lays out with, is available from macOS 12.0
+  (https://developer.apple.com/documentation/appkit/nstextlayoutmanager) — so the floor is the
+  maintainer's narrowing: it is the one macOS the product is built, proved and walked on — the
+  GitHub-hosted `macos-26` image, "macOS 26.6.2 (25G83)" with Xcode "26.6 (default)"
+  (https://github.com/actions/runner-images/blob/main/images/macos/macos-26-arm64-Readme.md, read
+  2026-10-13), and the maintainer's own Mac, where `sw_vers` printed `26.6.2` and `25G83` on
+  2026-10-13 — so a hosted reading taken on that image is a reading on the floor's major, which a
+  reading on `macos-14` no longer is (C-I3), and the timed release walk (AC-10) and UX-I12's layout
+  fixtures (§ 11 R-11) are walked on one AppKit generation. CI runs on the `macos-26` label and
+  never on `macos-latest`: GitHub gives `macos-latest` as the alias of `macos-26`
+  (https://github.blog/changelog/2026-10-01-github-actions-macos-14-runner-image-retirement/, read
+  2026-10-13), and an alias moves to the next major under the same name, so a run on it is a run on
+  a floor nobody chose. The workflow names `macos-14` at `ka-reader@0c0d5f9`
+  (`.github/workflows/ci.yml:L18`) and moves with the change that follows this revision. The value
+  is the owner's, 2026-10-13 (`docs/trail/sdd/cycle-43.md` § 5.1), and `docs/nfdr.md` QC-56 is
+  re-derived from this condition, by this section's own rule on the two stores (RN-108). Raising it
+  after 1.0.0 is a breaking change under C-6. *(Until v48 this condition read: "The minimum macOS
+  version is **14.0** (Sonoma): the bundle's `LSMinimumSystemVersion` is `14.0` and the floor is
+  stated wherever the install path is offered (C-11)", and its ground: "it is the oldest macOS the
+  timed release walk (AC-10) is run on, and one AppKit generation fewer to walk UX-I12's layout
+  fixtures on per release (§ 11 R-11). The value is the one `docs/nfdr.md` QC-56 already binds, kept
+  because nothing upstream moved to change it (RN-6)." The cause of the move is outside the product:
+  GitHub retires the `macos-14` image on 2026-11-02, and the owner raised the floor to what CI and
+  the maintainer's Mac run rather than keep a floor no hosted run could run the app on — RN-108.)*
+  *Violated by:* a bundle whose plist says otherwise, an install page that does not state it, a
+  workflow whose `runs-on` names an alias or an image below the floor's major.
 - **C-R6.** **Every dependency is a decision, and the tree is reviewed as code.** `Cargo.lock` is
   committed and CI builds with `--locked`; `ka-reader-mac/Package.swift` declares **no dependency**
   and no `Package.resolved` exists — the view brings nothing to the tree; every crate the bundle
@@ -924,7 +943,10 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   4, E-1). The observation was measured on the Mac (`checks/renderer.sh`, header § *THE FRAMES* —
   `:L57-L60` at `ka-reader@7c7038f`, macOS 26.6.2)
   and on a GitHub-hosted macOS runner (GitHub Actions run 35988399477, image `macos-14-arm64`
-  20260831.0302.1, macOS 14.8.9 — inside the C-R5 floor's major): the runner matched the script's
+  20260831.0302.1, macOS 14.8.9 — inside the C-R5 floor's major as C-R5 read it then, 14.0; below
+  the floor from v48, when it moved to 26.0, so this reading and run 36795836747's below are dated
+  readings on an image CI leaves, and the first hosted reading on `macos-26` is the one the change
+  that moves CI takes — RN-108): the runner matched the script's
   frame list on observation 1 and its control was not matched on any of 30 — a match of the
   list the gate reads, not a comparison of full stacks, which only the Mac reading recorded. The
   list held five frames at that run (`ka-reader@37a962d`) and holds four since `ka-reader@b75348f`
@@ -1994,7 +2016,9 @@ public at 1.0.0 or later (`system/projects/ka-reader/agari.md`).
   `Read-only, repository` and before `Read-only suite` (`.github/workflows/ci.yml:L67-L77` at
   `ka-reader@b12e48c`), where § 4 C-I3's "on every build" puts it. That half is bounded by what can
   be read: the step is in the workflow, and its result on the hosted `macos-14` runner
-  (`ci.yml:L18`) is unread at this revision — `b12e48c` is on no remote branch, and `origin/main`
+  (`ci.yml:L18` — the image the workflow still names at `ka-reader@0c0d5f9`, and the one the change
+  after v48 moves to `macos-26`; § 4 C-R5, RN-108) is unread at v47, this clause's revision —
+  `b12e48c` is on no remote branch, and `origin/main`
   is at `ka-reader@799c3d6`, 29 commits behind it — so this clause says the step is in the workflow
   and does not say it is green; a red run there is C-I3's "on every build" holding, not this
   clause going false. Measured in this fold on a disposable copy of `ka-reader@100a631`, whose tree
@@ -2188,7 +2212,7 @@ public at 1.0.0 or later (`system/projects/ka-reader/agari.md`).
   builds `KA-Reader-<version>.dmg` and `SHA256SUMS` from that tag and attaches both to a
   GitHub Release on `kensaiapp/ka-reader`; on the *downloaded* bundle, `shasum -a 256 -c SHA256SUMS`
   passes, `codesign -dv KA-Reader.app` reports `Signature=adhoc`, `/usr/libexec/PlistBuddy -c 'Print
-  :LSMinimumSystemVersion' KA-Reader.app/Contents/Info.plist` prints `14.0`, and `checks/bundle.sh`
+  :LSMinimumSystemVersion' KA-Reader.app/Contents/Info.plist` prints `26.0` *(`14.0` until v48; § 4 C-R5, RN-108)*, and `checks/bundle.sh`
   passes with C-R2's two entries; `checks/notices.sh` finds every name in `cargo tree` in
   `THIRD_PARTY_NOTICES.md` — the Swift package declares no dependency to notice (C-R6); `LICENSE`
   is MIT; `SECURITY.md` exists and `gh api
@@ -2427,7 +2451,7 @@ public at 1.0.0 or later (`system/projects/ka-reader/agari.md`).
   `first-public-release`'s half passes again on the downloaded bundle, with two differences —
   `checks/bundle.sh` now against C-R2's three entries, and that half's closing check inverted: the
   version is 1.0.0, not below it; `checks/contract/1` exists, written from this bundle and this
-  build's `libka_reader_bridge.a` — the floor `14.0`, the two asset names, SM-4's ten functions and
+  build's `libka_reader_bridge.a` — the floor `26.0` *(`14.0` until v48; § 4 C-R5, RN-108)*, the two asset names, SM-4's ten functions and
   `ka_reader_free` — and `checks/contract.sh v1.0.0` passes against it (C-I6); `checks/own-state.sh --from
   <previous-tag>` passes — a container
   written by the previous release is opened by this build with no write outside the container, and
@@ -2620,10 +2644,19 @@ been weighed. For each, say what undoing it would take if it turned out wrong.>
   shell ran its launch flow as far as the panel — accepted because the shell
   holds no I/O the harness could catch it using (C-R7); *undoing it costs* an XCUITest target and
   the Xcode project it needs, when one is worth what it brings.
-- **TO-8:** A macOS floor of 14 where nothing in the stack forces one above 11 (C-R5) — *buys* one
-  walk per release over the versions the maintainer will actually run, and fewer AppKit
+- **TO-8:** A macOS floor of 26 where nothing in the stack forces one above 12 (C-R5) — *buys* one
+  walk per release on the one macOS the maintainer's Mac and the hosted runner both run, one AppKit
+  generation to walk UX-I12's layout fixtures on, and a CI that runs the app on its floor for as
+  long as GitHub hosts that image; *costs* every adopter on macOS 12 through 15, four majors the
+  stack runs on and the floor excludes, and a floor tied to a runner image's lifetime (§ 11 R-17);
+  *undoing it costs* the plist line, the manifest's platform line, the bridge's deployment target
+  and the walk widened to every major re-admitted — cheap before 1.0.0, a breaking change after it
+  (C-6). *(Until v48: "A macOS floor of 14 where nothing in the stack forces one above 11 (C-R5) —
+  *buys* one walk per release over the versions the maintainer will actually run, and fewer AppKit
   generations to walk UX-I12's layout fixtures on; *costs* every adopter on 12 or 13; *undoing it
-  costs* a plist line and the walk widened — cheap before 1.0.0, a breaking change after it (C-6).
+  costs* a plist line and the walk widened — cheap before 1.0.0, a breaking change after it (C-6)."
+  Its "above 11" did not match C-R5's own number, 12.0, the macOS `NSTextLayoutManager` is available
+  from; the floor moved by the owner's answer at `docs/trail/sdd/cycle-43.md` § 5.1 — RN-108.)*
 - **TO-9:** Ad-hoc signing, never notarized (C-R4) — *buys* a channel that costs nothing and
   holds no signing secret in CI; *costs* a Gatekeeper step inside every stranger's first five
   minutes, and a sandbox whose enforcement is proved by a probe rather than a signing chain
@@ -3586,6 +3619,23 @@ A risk with no trigger and no response is an observation.>
   check was not built and that the sandbox was still the only bound on the alternates read.
   `docs/trail/sdd/cycle-38.md` § 5.1; RN-103.)* The `.gitmodules` check is a third check, and at `ka-reader@1d5c3cf` it is built whole: for the file's include keys from `ka-reader@5f3e895`, and for each section's path and for the submodule map from `ka-reader@772c63b`, the merge that landed them (*The sixth member*, *Built, and the cases that hold it*, above; RN-102, RN-106). *(Until 2026-10-07 this sentence said the check was built for the file's include keys and not for a section's path, and that the refusal on the submodule map was not built. `docs/trail/sdd/cycle-37.md` § 2.1; RN-102; `docs/trail/sdd/cycle-41.md` § 5.1; RN-106.)*
 
+- **R-17:** The floor follows the hosted runner's lifetime — C-R5 grounds the value in the one macOS
+  the `macos-26` image and the maintainer's Mac run, so the image's retirement is the floor's next
+  move, set by a vendor's calendar and not by the stack or the product — *shows up as* a GitHub
+  changelog entry retiring the `macos-26` image, with brownout windows before the date — the shape
+  of https://github.blog/changelog/2026-10-01-github-actions-macos-14-runner-image-retirement/,
+  which gave 32 days from its 2026-10-01 post to the 2026-11-02 retirement and failed jobs in eight
+  windows before it — or as a CI run that fails in a brownout window with no change under it;
+  *response* the floor is the owner's to move, and the move is a companion item on this document in
+  the owner's hand, as the 14.0 → 26.0 move was (`docs/trail/sdd/cycle-43.md` § 5.1); before 1.0.0
+  the move is the plist line, the manifest's platform, the deployment target and the walk, and after
+  1.0.0 it is a major under C-6, with `checks/contract.sh` red on the pin until one is cut (R-12);
+  `docs/nfdr.md` QC-56 and `docs/fdr.md` R-133 are re-derived in their seats' rounds, the route this
+  move's companions took (`ka-reader@55c04de:docs/architecture_open_issues.md` § 2.1,
+  `ka-reader@2629164:docs/fdr_open_issues.md` § 2.1). What the design does not do: pin CI to an
+  image below the floor to keep adopters, because then no hosted run runs the app on its floor — the
+  gap the owner closed; or run on `macos-latest`, C-R5's alias rule.
+
 ## 12. What this design is not
 
 <The boundaries, so a reader does not look here for something this document never held.
@@ -3815,7 +3865,8 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   it is the oldest version the timed walk is run on, chosen for fewer WKWebView generations to hold
   C-R7 and C-D3 against; and `docs/nfdr.md` QC-56 already binds 14.0, which this run keeps rather
   than re-derives with no upstream cause to move it *(re: § 4 C-R5, § 9 TO-8; source: SRS C-11;
-  https://v2.tauri.app/start/prerequisites/)*.
+  https://v2.tauri.app/start/prerequisites/)*. *(Superseded at v48: the floor is 26.0, by the owner's
+  answer at `docs/trail/sdd/cycle-43.md` § 5.1; this note stands as the record of the 14.0 call — RN-108.)*
 - **RN-7:** *(CTO)* *(added)* The floor's extension set (C-I5) is this document's value: FR-29
   requires "every extension in common use" per language "with the full extension set fixed in the
   SDD", and names one example (`.js` and `.mjs` both). The set is deliberately modest — an
@@ -7994,6 +8045,90 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   carries this fold *(re: § 3 `read-only-harness`; § 6 `see-git-status`; the header; source:
   `docs/trail/sdd/cycle-42.md` §§ 5.1 – 5.2; `docs/trail/sdd/self_answer-54.md`; `ka-reader@b12e48c`;
   `ka-reader@100a631`)*.
+- **RN-108:** *(CTO)* *(changed)* The macOS floor is 26.0, and CI's image is `macos-26`. One
+  companion item is folded, the owner's own: Product raised it and answered it in one hand on
+  2026-10-13 (`ka-reader@821a163`), from this document's companion template, while this document was
+  Settled with no companion on disk — "Raise the floor to macOS 26.0 and move CI to `macos-26`."
+  (`docs/trail/sdd/cycle-43.md` § 5.1, *Answer*). An unattended run met the companion the same day,
+  found the slot filled, worked nothing, and opened the two downstream companions named below
+  (`ka-reader@0c0d5f9`; reasoning `docs/trail/sdd/self_answer-55.md`). **The cause is outside the
+  product.** "The macOS 14 runner image will be retired on November 2, 2026", with jobs on it
+  failing in eight brownout windows before then, each 14:00 UTC to 00:00 UTC the next day, the last
+  six on Oct 16, 19, 23, 26, 29 and 30; the labels offered in its place are `macos-latest`
+  (`macos-26`), `macos-15`, `macos-latest-xlarge` and `macos-15-xlarge`
+  (https://github.blog/changelog/2026-10-01-github-actions-macos-14-runner-image-retirement/, read
+  2026-10-13 by this fold). The `macos-26` image is "macOS 26.6.2 (25G83)", image version
+  20260907.0351.1, seven Xcodes from 26.0.1 to 26.6 with "26.6 (default)" and no Xcode 16.2
+  (https://github.com/actions/runner-images/blob/main/images/macos/macos-26-arm64-Readme.md, read
+  2026-10-13 by this fold); `sw_vers` on the maintainer's Mac printed `26.6.2` and `25G83` in this
+  fold. With no macOS 14 image after 2026-11-02, a floor of 14.0 is a floor no hosted run runs the
+  app on; the owner closed that gap from the floor's side, and the alternative — floor at 14, CI on
+  `macos-15` or `macos-26` — was before the owner and not taken (the same § 5.1, *Why the floor
+  moves with the runner*). **Whose call.** § 4 C-R5 and § 9 TO-8 are the CTO's columns; the value is
+  the owner's directive, and this seat holds it as C-R5's ground says: the maintainer's narrowing,
+  to the one macOS CI and the maintainer's Mac run. KA-Reader is before 1.0.0, so under C-R5's own
+  sentence the raise is not a breaking change; after 1.0.0 the same move is a major (C-6). **What
+  moved, each named.** (1) § 4 C-R5: 26.0; the ground restated at the two machines that run it; the
+  sentence that kept 14.0 because `docs/nfdr.md` QC-56 bound it is gone, because § 4's own rule runs
+  the other way — the § 4 statement wins and the NFDR entry is re-derived — and this is the first
+  time the two stores have disagreed by this document's own move; the CI label named, with
+  `macos-latest` refused as an alias; the workflow's state at `ka-reader@0c0d5f9` stated; *Violated
+  by* gains the workflow case; the old words in a dated note. (2) § 4 C-I3, the renderer gate's
+  hosted reading: dated as taken on `macos-14`, below the floor from this revision, with the
+  `macos-26` reading named as the moving change's to take — the gate's rule that a differing image
+  turns it red on the next build is unchanged. (3) § 6 S-4 *Reached when*, command half: a dated
+  note beside the `macos-14` runner the clause names, which is the image
+  `.github/workflows/ci.yml:L18` still names at `ka-reader@0c0d5f9`; the clause's "unread" is pinned
+  to v47, the revision that wrote it. (4) § 6 S-7 and S-11 *Reached when*, command halves: `prints
+  26.0`, and the floor `26.0` in the enumeration `checks/contract/1` is written from (C-I6) — so the
+  first `1.0.0` pin carries 26.0, and R-12 catches a plist that moves off it under a minor. (5) § 9
+  TO-8: rewritten at 26, with the cost named as the majors excluded and the undo named at every line
+  the floor is written on; "above 11" corrected to "above 12", C-R5's own number for
+  `NSTextLayoutManager`, which C-R5 already cited. (6) § 11 R-17, new: the floor now follows a
+  runner image's lifetime, with its trigger and its response. (7) RN-6: a dated parenthesis; the
+  14.0 call stands as history. (8) The header: `Version:` 48, `Status:` Settled. **Not moved, and
+  why.** § 10 gains no entry: no *Reached when* became unmeetable — a bundle at `14.0` meets S-7's
+  bar as it read, and the bar moved by an owner's directive, not by a reality that contradicted it —
+  no slice is a fragment, every slice can start, and the PRD, SRS and UXD did not change: SRS C-11
+  names no number ("The minimum macOS version is not set by the PRD; it is fixed in the SDD",
+  `docs/SRS.md:L491`), and the PRD and UXD name none (`grep -n -E 'macOS 1[0-9]|macOS
+  2[0-9]|14\.0|Sonoma|macos-14' docs/PRD.md docs/UXD.md` prints no floor line, 2026-10-13); § 2's
+  shape and § 3's seams do not move, so no ADR is owed by a re-cut. § 11 R-11 stands: "every macOS
+  the floor admits" is now one. The dated readings that name `macos-14` or `14.0` as what a run or a
+  tree held stand as written: RN-48's probe run, RN-70's and RN-76's gate runs, RN-70's "literal
+  `prints 14.0`", and RN-107. **The tree does not move in this fold.** The floor is written at
+  `ka-reader-mac/Info.plist:L13-L14` and `checks/fixtures/idle-shell/Info.plist:L11-L12`
+  (`LSMinimumSystemVersion` `14.0`), `ka-reader-mac/Package.swift:L1`, `:L5` and `:L14`
+  (`swift-tools-version:5.9`, "the lowest that has `.macOS(.v14)`", `platforms: [.macOS(.v14)]`),
+  `ka-reader-mac/assemble.sh:L19-L20` and `:L43` (`MACOSX_DEPLOYMENT_TARGET=14.0`),
+  `ka-reader-mac/Tests/ShellTests/BundleManifestTests.swift:L34` (asserts `"14.0"`) and
+  `.github/workflows/ci.yml:L18-L23` (`runs-on: macos-14`, and `DEVELOPER_DIR` at Xcode 16.2, which
+  its comment says exists to reach the macOS 15.2 SDK), all at `ka-reader@0c0d5f9` and each read in
+  this fold; the two `#available(macOS 15.2, *)` guards
+  (`ka-reader-mac/Sources/Surfaces/CodeView.swift:L144`,
+  `ka-reader-mac/Tests/SurfacesTests/ReadingPanelTests.swift:L2891`) are always true on a 26 floor.
+  Two facts for the change that moves them, read here: `.macOS(.v26)` is introduced in SwiftPM 6.2
+  (Apple's documentation data for `SupportedPlatform.MacOSVersion.v26`,
+  `metadata.platforms[0].introducedAt` reads `"6.2"`,
+  https://developer.apple.com/tutorials/data/documentation/packagedescription/supportedplatform/macosversion/v26.json,
+  read 2026-10-13), so `Package.swift:L1` moves with the floor and brings the tools-6.2 departure
+  `docs/nfdr.md` names (`:L1680-L1700` at v46) with it; and the `macos-26` image carries no Xcode
+  16.2, so the `DEVELOPER_DIR` pin goes with the runner. Which change carries them, and in how many,
+  is the PM's and is not named here. **Downstream, not changed here:** `docs/nfdr.md` QC-56
+  (`:L1379-L1384`) and its § 10 row (`:L1807`) read 14 and are re-derived from C-R5 in the Principal
+  Architect's round — item `ka-reader@55c04de:docs/architecture_open_issues.md` § 2.1, which also
+  holds whether the log is owed a record (the lean there: none; ADR-0011's "the macOS 14 floor" at
+  `:L99` is a dated account, and the log is append-only); `docs/fdr.md` R-133 (`:L250`), PD-18
+  (`:L285`) and the acceptance row (`:L389`) read 14 and are re-derived in the Principal PM's round
+  — item `ka-reader@2629164:docs/fdr_open_issues.md` § 2.1. Two further log passages name the
+  `macos-14` runner as a measurement — ADR-0012 `:L123` and `:L136`, ADR-0014 `:L102`; they are
+  dated readings, and whether the log says anything about them is the Principal Architect's, in that
+  same round. **Not run here:** no check, because the fold moves no code and claims no test result.
+  **The companion:** item 5.1 is folded and dropped, nothing is left in the file, and it is removed
+  in the commit that carries this fold *(re: § 4 C-R5, C-I3; § 6 `see-git-status`,
+  `first-public-release`, `promise-one-point-zero`; § 9 TO-8; § 11 R-17; RN-6; the header; source:
+  `docs/trail/sdd/cycle-43.md` § 5.1; `docs/trail/sdd/self_answer-55.md`; `ka-reader@821a163`;
+  `ka-reader@0c0d5f9`; SRS C-11)*.
 
 ## Open Questions
 
