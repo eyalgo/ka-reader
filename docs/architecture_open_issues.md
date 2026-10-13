@@ -57,7 +57,30 @@ None.
     The dated `macos-14` readings elsewhere in the document (`:L855`, `:L1680`, the *NFDR Review Notes*) are
     history and stand.
 - **If a document has to be written:** none — a re-derivation of § 9 by `product-architecture`.
-- **Answer:** <the owner fills this in>
+- **Answer:** Confirmed with addition, and one clause of the lean overridden. Fold § 9's
+  Swift-packet bullet against `ka-reader@fcb2e2f`. (1) `:L1659-L1662` and `:L1701-L1705` name
+  `macos-26` (`ci.yml:L18`), which selects no Xcode (`:L19`). Their `macos-14` words become dated
+  notes, and the dated readings at `:L855`, `:L1680` and in the Review Notes stand. (2) **Overridden:
+  the toolchain is not unread, and the Swift Testing flip does not wait.** The `Toolchain` step
+  (`ci.yml:L23-L24`, from `ka-reader@d852457`) has printed it on every `main` build since GitHub
+  Actions run 37845881070 on `ka-reader@fcc3d4f` (2026-10-08): Apple Swift 6.0.3, SDK 15.2, image
+  `macos-14-arm64` 20260831.0302.1. Run 38449250910 on `ka-reader@8926052` prints the same. Swift 6
+  toolchains include Swift Testing (swift.org, *Announcing Swift 6*, re-read 2026-10-13), so by the
+  *Framework* clause's own rule the flip happened at run 37845881070, and new tests use Swift Testing
+  from then on. No test file has been added under `ka-reader-mac/Tests/` since, so nothing has broken
+  the rule. The *Toolchain* clause records that run as its first measurement: the Swift version, the
+  run id and the image version together. Three phrases become dated notes: its "not yet measured",
+  its "no `swift --version` step", and the *verified by*'s "no command reads which toolchain CI
+  builds with". (3) The `macos-26` toolchain is a re-measurement, read from the first `main` log on
+  that image. No such log exists yet: `main` is three commits ahead of `origin/main`, and no run on
+  `macos-26` is listed. (4) **The tools-6.2 departure gets one trigger, `:L1711-L1718`'s:** the change
+  that writes the `6.2` tools version adopts the six, with the dependency-gate clause beside them.
+  These are the seven the *verified by* counts. That trigger replaces `:L1691-L1692`'s "until CI
+  builds … on an image carrying a Swift 6.2" and `:L1707-L1710`'s "all six are adopted then /
+  otherwise the change that moves CI …". The CI move landed without adopting any of them, as the
+  review gate requires. That change's own CI build checks its ground: a toolchain below 6.2 refuses a
+  `6.2` manifest, and the job goes red. Decided together with 3.2. Reasoning:
+  `docs/trail/architecture/self_answer-46.md` § 3.1.
 
 ### 3.2 § 9 does not say which change re-measures QC-25's hosted-runner narrowing on the new image
 - **Raised by:** PM — 2026-10-13
@@ -78,6 +101,30 @@ None.
   a command whose output shows the control's read result on the hosted image.
 - **If a document has to be written:** none — a re-derivation of § 9 (and QC-25's *verified by*, if
   the measurement becomes a check) by `product-architecture`.
-- **Answer:** <the owner fills this in>
+- **Answer:** Answered. **No image move and not the tools-6.2 change: the reading becomes standing,
+  taken on every hosted build.** (1) QC-25 gains this document's own realization of its runner
+  clause. On every CI build, the `Bundle probe suite` step's log carries the unentitled control's
+  last report, `out-of-grant-read:` line included. It is read with
+  `gh run view <run-id> --repo kensaiapp/ka-reader --log | awk -F'\t' '$2 == "Bundle probe suite" && /out-of-grant-read:/'`.
+  That prints nothing today. `checks/bundle.sh:L382` prints the report, but the suite captures it
+  (`test_bundle.sh:L144-L146`) and prints only `ok` on success (`:L1573-L1577`). (2) **Which change:**
+  one of its own, scheduled by the PM, and not the tools-6.2 change. That change is a manifest change
+  whose seven flips move together or not at all, and tying a harness reading to it makes the reading
+  wait on the floor move. An owner named per image move has already lapsed once (`ka-reader@fcb2e2f`
+  moved the image and re-measured nothing). The label moves on GitHub's schedule (SDD § 11 R-17), so
+  only a per-build reading cannot lapse. Until that change lands, `development-design` reading QC-25
+  is the gate on any change to `checks/bundle.sh`, `checks/tests/test_bundle.sh` or
+  `.github/workflows/`. (3) **Meanwhile the narrowing is dated.** QC-25's runner clause names
+  `macos-14`, run 35797893381 (SDD RN-48), and says the `macos-26` reading is not yet taken. The gap
+  overclaims nothing. The narrowing only removes the read denial from the evidence, and the control
+  passes on `sandboxed: no` alone. So a green `macos-26` build still shows the wall by the sandboxed
+  report and the outbound denial. (4) **When the reading lands:** a `denied` reading leaves the
+  narrowing standing, re-dated with the run id and the image version. An `allowed` reading means the
+  read denial separates again on the runner. C-I3 is then restated by the CTO, and QC-25 follows.
+  (5) At `:L1709-L1710`, "and re-measures QC-25's hosted-runner narrowing … on the new image" becomes
+  a dated note pointing to QC-25. § 10's QC-25 row gains the log reading. No ADR is owed, because
+  ADR-0010 dates its runner measurement (`:L131-L136`). C-I3 carries the same sentence with no image
+  named, and that is raised on `docs/SDD_open_issues.md` § 2.1. Decided together with 3.1. Reasoning:
+  `docs/trail/architecture/self_answer-46.md` § 3.2.
 
 **How it closes.** `product-architecture` folds it on its next run like any other item here.
