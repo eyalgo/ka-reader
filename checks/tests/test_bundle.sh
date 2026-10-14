@@ -18,6 +18,9 @@
 #     KA_READER_APP defaults to target/release/bundle/macos/KA-Reader.app under the product root.
 #   A bundle that is absent FAILS the suite with a stated message and runs no case: a skip would
 #   let CI conclude green having proved nothing.
+#   A clean run prints, after the negative control's `ok` line, that control's one reading — the line
+#   `out-of-grant-read: denied` or `out-of-grant-read: allowed` — so a hosted build's log carries it
+#   (NFDR QC-25). It is printed, never judged.
 #
 # WHY NO `set -e`
 #   A case that fails must not end the run before the remaining cases report. Each case returns its
@@ -619,6 +622,25 @@ printf 'sandboxed: yes\nout-of-grant-read: denied\noutbound-connection: denied\n
   process_is_running "$bystander" || fail "the second process (pid $bystander) was stopped with it"
 }
 
+# CP-768, CP-771: the control's report must hold the reading, and the reading is this case's whole
+# output — the runner prints it once, after the case's `ok` line. Printing it is all that is done with
+# it: `denied` and `allowed` are both a pass (CP-769).
+publish_control_reading() {
+  # `|| true`: pipefail would otherwise end the run on a report with no line, before the guard reports.
+  marker_lines="$(printf '%s\n' "$OUT" | grep -c 'out-of-grant-read:' || true)"
+  [ "$marker_lines" -ne 0 ] \
+    || fail "The negative control's report has no out-of-grant-read line. This run has no reading to print. To read the whole report, run checks/bundle.sh --negative-control on a copy of the bundle under test re-signed with an empty entitlement set." \
+    || return 1
+  [ "$marker_lines" -eq 1 ] \
+    || fail "The negative control's report has more than one out-of-grant-read line. This run has no reading to print. To read the whole report, run checks/bundle.sh --negative-control on a copy of the bundle under test re-signed with an empty entitlement set." \
+    || return 1
+  reading="$(printf '%s\n' "$OUT" | grep -E '^out-of-grant-read: (denied|allowed)$' || true)"
+  [ -n "$reading" ] \
+    || fail "The negative control's report has one out-of-grant-read line, and it isn't exactly out-of-grant-read, a colon, a space, and then denied or allowed. This run has no reading to print. To read the whole report, run checks/bundle.sh --negative-control on a copy of the bundle under test re-signed with an empty entitlement set." \
+    || return 1
+  printf '%s\n' "$reading"
+}
+
 # CP-44: the negative control. `checks/bundle.sh` refuses to launch a bundle whose entitlements are not
 # exactly C-R2's, so the ordinary path cannot run the probe on a no-entitlement build; --negative-control
 # is the mode that does, and it passes only on a NOT-sandboxed report.
@@ -633,7 +655,8 @@ test_negative_control_reports_unsandboxed() {
   expect_output_contains "40 asks" || return 1
   expect_output_contains "0.25 s" || return 1
   expect_one_report || return 1
-  expect_no_bundle_process "$copy"
+  expect_no_bundle_process "$copy" || return 1
+  publish_control_reading
 }
 
 # CP-69, CP-68: a report that turns sandboxed later in the window still fails the control — waiting
@@ -1677,6 +1700,10 @@ for case_name in $CASES; do
   ran="$ran $case_name"
   if result="$("$case_name" 2>&1)"; then
     echo "ok   $case_name"
+    # The control's whole output on success is its one reading (CP-768). It is forwarded because the
+    # case runs in this command substitution, where an assignment would not reach the runner; every
+    # other case's output stays suppressed, so no other probe report is published.
+    [ "$case_name" != "$CONTROL_CASE" ] || printf '%s\n' "$result"
   else
     echo "FAIL $case_name"
     [ -z "$result" ] || echo "$result"
