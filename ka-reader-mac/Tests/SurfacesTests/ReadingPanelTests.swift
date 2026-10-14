@@ -90,9 +90,9 @@ final class ReadingPanelTests: XCTestCase {
         panel.show(path: "README.md", verdict: .text(source, .plain))
 
         XCTAssertEqual(panel.contentView.string, source)
-        let storage = try XCTUnwrap(panel.contentView.textStorage)
+        let storage = try unsafe XCTUnwrap(panel.contentView.textStorage)
         var run = NSRange()
-        let attributes = storage.attributes(at: 0, effectiveRange: &run)
+        let attributes = unsafe storage.attributes(at: 0, effectiveRange: &run)
         XCTAssertEqual(run, NSRange(location: 0, length: storage.length), "one attribute run")
         // The base ink is `{colors.primary}`, the one ink of a file with no spans (CP-333).
         let foreground = try XCTUnwrap(attributes[.foregroundColor] as? NSColor)
@@ -324,9 +324,9 @@ final class ReadingPanelTests: XCTestCase {
 
     /// The panel's text storage, one foreground colour per UTF-16 unit.
     private func foregrounds(of panel: ReadingPanelView) -> [NSColor?] {
-        guard let storage = panel.contentView.textStorage else { return [] }
+        guard let storage = unsafe panel.contentView.textStorage else { return [] }
         return (0..<storage.length).map {
-            storage.attribute(.foregroundColor, at: $0, effectiveRange: nil) as? NSColor
+            unsafe storage.attribute(.foregroundColor, at: $0, effectiveRange: nil) as? NSColor
         }
     }
 
@@ -414,9 +414,9 @@ final class ReadingPanelTests: XCTestCase {
 
         panel.show(path: "x.json", verdict: floorVerdict("{}", .json, []))
 
-        let storage = try XCTUnwrap(panel.contentView.textStorage)
+        let storage = try unsafe XCTUnwrap(panel.contentView.textStorage)
         var run = NSRange()
-        let attributes = storage.attributes(at: 0, effectiveRange: &run)
+        let attributes = unsafe storage.attributes(at: 0, effectiveRange: &run)
         XCTAssertEqual(run, NSRange(location: 0, length: storage.length), "one attribute run")
         let foreground = try XCTUnwrap(attributes[.foregroundColor] as? NSColor)
         assertSame(
@@ -462,7 +462,7 @@ final class ReadingPanelTests: XCTestCase {
         panel.show(path: "combined.py", verdict: floorVerdict(content, .python, spans))
 
         XCTAssertEqual(panel.contentView.string, content)
-        let storage = try XCTUnwrap(panel.contentView.textStorage)
+        let storage = try unsafe XCTUnwrap(panel.contentView.textStorage)
         XCTAssertEqual(storage.length, 5)
         for appearance in [aqua, darkAqua] {
             assertDrawn(
@@ -470,7 +470,7 @@ final class ReadingPanelTests: XCTestCase {
                 under: appearance)
         }
         for index in 0..<storage.length {
-            XCTAssertNil(storage.attribute(.backgroundColor, at: index, effectiveRange: nil))
+            unsafe XCTAssertNil(storage.attribute(.backgroundColor, at: index, effectiveRange: nil))
         }
     }
 
@@ -481,7 +481,7 @@ final class ReadingPanelTests: XCTestCase {
         panel.show(path: "empty.py", verdict: floorVerdict("", .python, []))
 
         XCTAssertEqual(panel.contentView.string, "")
-        XCTAssertEqual(try XCTUnwrap(panel.contentView.textStorage).length, 0)
+        unsafe XCTAssertEqual(try XCTUnwrap(panel.contentView.textStorage).length, 0)
         XCTAssertEqual(visibleStrings(panel), ["empty.py"])
         XCTAssertFalse(panel.contentView.isEditable)
     }
@@ -656,11 +656,11 @@ final class ReadingPanelTests: XCTestCase {
     private func layoutRows(
         of textView: NSTextView
     ) throws -> [(top: CGFloat, bottom: CGFloat, baseline: CGFloat)] {
-        let layoutManager = try XCTUnwrap(textView.layoutManager)
-        let container = try XCTUnwrap(textView.textContainer)
+        let layoutManager = try unsafe XCTUnwrap(textView.layoutManager)
+        let container = try unsafe XCTUnwrap(textView.textContainer)
         layoutManager.ensureLayout(for: container)
         var rows: [(top: CGFloat, bottom: CGFloat, baseline: CGFloat)] = []
-        layoutManager.enumerateLineFragments(
+        unsafe layoutManager.enumerateLineFragments(
             forGlyphRange: NSRange(location: 0, length: layoutManager.numberOfGlyphs)
         ) { rect, _, _, glyphRange, _ in
             let location = layoutManager.location(forGlyphAt: glyphRange.location)
@@ -788,7 +788,7 @@ final class ReadingPanelTests: XCTestCase {
         let widthWithTwoDigits = gutter.width
         XCTAssertEqual(gutter.lineCount, 10)
 
-        textView.textStorage?.setAttributedString(codeText(lines(9)))
+        unsafe textView.textStorage?.setAttributedString(codeText(lines(9)))
         gutter.reload()
 
         XCTAssertEqual(gutter.lineCount, 9)
@@ -870,7 +870,7 @@ final class ReadingPanelTests: XCTestCase {
         let (gutter, _) = makeGutter(lines(3))
 
         XCTAssertTrue(gutter.subviews.isEmpty)
-        XCTAssertFalse(gutter is NSControl)
+        XCTAssertFalse((gutter as NSView) is NSControl)
         XCTAssertTrue(gutter.registeredDraggedTypes.isEmpty)
     }
 
@@ -932,11 +932,11 @@ final class ReadingPanelTests: XCTestCase {
         let codeView = makeCodeView("a\n")
 
         XCTAssertNil(codeView.textView.textLayoutManager, "TextKit 1 from construction")
-        XCTAssertNotNil(codeView.textView.layoutManager)
+        unsafe XCTAssertNotNil(codeView.textView.layoutManager)
         XCTAssertFalse(codeView.textView.isEditable)
         XCTAssertFalse(codeView.textView.isRichText)
         XCTAssertTrue(codeView.textView.isSelectable)
-        XCTAssertFalse(
+        unsafe XCTAssertFalse(
             try XCTUnwrap(codeView.textView.textContainer).widthTracksTextView, "no wrapping")
     }
 
@@ -1008,8 +1008,8 @@ final class ReadingPanelTests: XCTestCase {
 
         try scroll(codeView, to: NSPoint(x: textView.frame.width - clip.bounds.width, y: 0))
 
-        let layoutManager = try XCTUnwrap(textView.layoutManager)
-        let container = try XCTUnwrap(textView.textContainer)
+        let layoutManager = try unsafe XCTUnwrap(textView.layoutManager)
+        let container = try unsafe XCTUnwrap(textView.textContainer)
         let lastCharacter = layoutManager.boundingRect(
             forGlyphRange: NSRange(location: layoutManager.numberOfGlyphs - 1, length: 1),
             in: container)
@@ -1027,8 +1027,8 @@ final class ReadingPanelTests: XCTestCase {
                 let clip = try clipView(of: codeView)
                 try scroll(
                     codeView, to: NSPoint(x: textView.frame.width - clip.bounds.width, y: 0))
-                let layout = try XCTUnwrap(textView.layoutManager)
-                let container = try XCTUnwrap(textView.textContainer)
+                let layout = try unsafe XCTUnwrap(textView.layoutManager)
+                let container = try unsafe XCTUnwrap(textView.textContainer)
                 let lastGlyph = layout.glyphIndexForCharacter(at: (wide as NSString).length - 1)
                 let end =
                     layout.boundingRect(
@@ -1073,8 +1073,8 @@ final class ReadingPanelTests: XCTestCase {
         let textView = codeView.textView
         let scrollView = try XCTUnwrap(textView.enclosingScrollView)
         let clip = try clipView(of: codeView)
-        let layoutManager = try XCTUnwrap(textView.layoutManager)
-        let container = try XCTUnwrap(textView.textContainer)
+        let layoutManager = try unsafe XCTUnwrap(textView.layoutManager)
+        let container = try unsafe XCTUnwrap(textView.textContainer)
         let gutterFrame = codeView.gutter.frame
 
         XCTAssertEqual(scrollView.frame.minX, gutterFrame.maxX, accuracy: 0.5)
@@ -1210,7 +1210,7 @@ final class ReadingPanelTests: XCTestCase {
     private func kindName(highlighted: Bool) -> String { highlighted ? "highlighted" : "plain" }
 
     private func codeView(of panel: ReadingPanelView) throws -> CodeView {
-        try XCTUnwrap(gutter(of: panel).superview as? CodeView)
+        try unsafe XCTUnwrap(gutter(of: panel).superview as? CodeView)
     }
 
     /// Where the gutter's edge, its numbers' right ends and each shown line's first character stand,
@@ -1227,8 +1227,8 @@ final class ReadingPanelTests: XCTestCase {
         codeView.layoutSubtreeIfNeeded()
         let gutter = codeView.gutter
         let textView = codeView.textView
-        let layoutManager = try XCTUnwrap(textView.layoutManager)
-        let container = try XCTUnwrap(textView.textContainer)
+        let layoutManager = try unsafe XCTUnwrap(textView.layoutManager)
+        let container = try unsafe XCTUnwrap(textView.textContainer)
         let numberEnds = gutter.labels.map { codeView.convert($0.point, from: gutter) }
         let text = textView.string as NSString
         var lineStarts: [CGFloat] = []
@@ -1572,8 +1572,8 @@ final class ReadingPanelTests: XCTestCase {
             panel.appearance = appearance
             let resolvedUnder = panel.contentView.effectiveAppearance
             for (index, colour) in foregrounds(of: panel).enumerated() {
-                let storage = try XCTUnwrap(panel.contentView.textStorage)
-                XCTAssertEqual(
+                let storage = try unsafe XCTUnwrap(panel.contentView.textStorage)
+                unsafe XCTAssertEqual(
                     storage.attribute(.font, at: index, effectiveRange: nil) as? NSFont,
                     CodeType.font, "unit \(index) font")
                 assertSame(
@@ -1674,8 +1674,8 @@ final class ReadingPanelTests: XCTestCase {
         panel.appearance = darkAqua
 
         let resolvedUnder = gutter.effectiveAppearance
-        let storage = try XCTUnwrap(panel.contentView.textStorage)
-        let ink = try XCTUnwrap(
+        let storage = try unsafe XCTUnwrap(panel.contentView.textStorage)
+        let ink = try unsafe XCTUnwrap(
             storage.attribute(.foregroundColor, at: 7, effectiveRange: nil) as? NSColor)
         assertSame(srgb(ink, under: resolvedUnder), hex(Token.primary.values.dark), "ink")
         let label = try XCTUnwrap(
@@ -1694,7 +1694,7 @@ final class ReadingPanelTests: XCTestCase {
             let panel = makePanel()
             if let verdict { panel.show(path: "f", verdict: verdict) } else { panel.showNoFile() }
             let gutter = try gutter(of: panel)
-            let codeView = try XCTUnwrap(gutter.superview)
+            let codeView = try unsafe XCTUnwrap(gutter.superview)
 
             for view in [gutter, codeView] {
                 XCTAssertTrue(view.registeredDraggedTypes.isEmpty, "\(view)")
@@ -1710,7 +1710,7 @@ final class ReadingPanelTests: XCTestCase {
 
         XCTAssertNotNil(panel.contentView.enclosingScrollView)
         XCTAssertEqual(panel.contentView.string, "body\n")
-        XCTAssertTrue(
+        unsafe XCTAssertTrue(
             panel.contentView.isDescendant(of: try XCTUnwrap(gutter(of: panel).superview)))
     }
 
@@ -1817,7 +1817,7 @@ final class ReadingPanelTests: XCTestCase {
                 if let text = view as? NSTextView { XCTAssertFalse(text.isEditable, name) }
             }
             let gutter = try gutter(of: panel)
-            let codeView = try XCTUnwrap(gutter.superview)
+            let codeView = try unsafe XCTUnwrap(gutter.superview)
             for view in [gutter, codeView] {
                 XCTAssertTrue(view.registeredDraggedTypes.isEmpty, "\(name): \(view)")
                 XCTAssertFalse(view is NSControl, "\(name): \(view)")
@@ -2114,7 +2114,7 @@ final class ReadingPanelTests: XCTestCase {
         try eachLineState { state, appearance, panel in
             let name = "\(state.name) under \(appearance.name)"
             let row = panel.pathRow.frame
-            XCTAssertTrue(panel.pathRow.superview === panel, name)
+            unsafe XCTAssertTrue(panel.pathRow.superview === panel, name)
             XCTAssertEqual(row.minX, 0, accuracy: 0.001, name)
             XCTAssertEqual(row.width, panel.bounds.width, accuracy: 0.001, name)
             XCTAssertEqual(row.height, 24, accuracy: 0.001, "\(name): row height (CP-360)")
@@ -2175,7 +2175,7 @@ final class ReadingPanelTests: XCTestCase {
         try eachLineState { state, appearance, panel in
             let name = "\(state.name) under \(appearance.name)"
             let hairline = panel.pathHairline.frame
-            XCTAssertTrue(panel.pathHairline.superview === panel, name)
+            unsafe XCTAssertTrue(panel.pathHairline.superview === panel, name)
             XCTAssertEqual(hairline.height, 1, accuracy: 0.001, "\(name): thickness (CP-363)")
             XCTAssertEqual(
                 topDown(hairline, in: panel), 24, accuracy: 0.001, "\(name): top, 24 down (CP-363)")
@@ -2544,7 +2544,7 @@ final class ReadingPanelTests: XCTestCase {
                     XCTAssertTrue(
                         candidate.registeredDraggedTypes.isEmpty,
                         "\(name): \(candidate) takes no drop at the \(place) (CP-367)")
-                    receiver = candidate.superview
+                    receiver = unsafe candidate.superview
                 }
                 let drag = StubDragInfo(window: window, location: point)
                 XCTAssertEqual(
@@ -2727,7 +2727,7 @@ final class ReadingPanelTests: XCTestCase {
         defer { shown.window.close() }
         let window = shown.window
         let contentView = try XCTUnwrap(window.contentView)
-        let frameView = try XCTUnwrap(contentView.superview)
+        let frameView = try unsafe XCTUnwrap(contentView.superview)
         let textView = shown.textView
         XCTAssertFalse(textView.isEditable)
         let before = Drawn(shown.panel)
@@ -2751,7 +2751,7 @@ final class ReadingPanelTests: XCTestCase {
         while let candidate = receiver, !reachedContentView {
             XCTAssertTrue(candidate.registeredDraggedTypes.isEmpty, "\(candidate) takes no drop")
             reachedContentView = candidate === contentView
-            receiver = candidate.superview
+            receiver = unsafe candidate.superview
         }
         XCTAssertTrue(reachedContentView, "the walk reached the window's content view")
 
@@ -2888,9 +2888,7 @@ final class ReadingPanelTests: XCTestCase {
         let menu = try textMenu(showing: "src/lib.rs", .text("fn main() {}\n", .plain))
 
         XCTAssertFalse(menu.allowsContextMenuPlugIns, "no contextual-menu plug-in entries")
-        if #available(macOS 15.2, *) {
-            XCTAssertFalse(menu.automaticallyInsertsWritingToolsItems, "no Writing Tools entries")
-        }
+        XCTAssertFalse(menu.automaticallyInsertsWritingToolsItems, "no Writing Tools entries")
     }
 
     func testMenuCopyPreservesSelectedCharactersAndShownText() throws {

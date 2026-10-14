@@ -103,9 +103,9 @@ final class CodeView: NSView {
     /// attributes, reaches this one (CP-313). It lays the text out, rebuilds the gutter from this text
     /// alone (CP-342) and scrolls to the top-left.
     func show(_ text: NSAttributedString) {
-        textView.textStorage?.setAttributedString(text)
-        if let container = textView.textContainer {
-            textView.layoutManager?.ensureLayout(for: container)
+        unsafe textView.textStorage?.setAttributedString(text)
+        if let container = unsafe textView.textContainer {
+            unsafe textView.layoutManager?.ensureLayout(for: container)
         }
         codeTextView.measureWidestRow()
         textView.sizeToFit()
@@ -127,7 +127,7 @@ private let keptTextMenuActions: [Selector] = [#selector(NSText.copy(_:))]
 /// submenu is entered; `menu` is left whole, whether or not AppKit shares it between calls.
 ///
 /// The menu also refuses what AppKit adds only when it shows a menu as a context menu: plug-in
-/// entries and, from macOS 15.2, Writing Tools entries (`NSMenu.h`, "if used as a context menu").
+/// entries and Writing Tools entries (`NSMenu.h`, "if used as a context menu").
 func keptTextMenu(from menu: NSMenu) -> NSMenu? {
     let kept = menu.items.filter { item in
         item.action.map(keptTextMenuActions.contains) ?? false
@@ -141,9 +141,7 @@ func keptTextMenu(from menu: NSMenu) -> NSMenu? {
         filtered.addItem(copy)
     }
     filtered.allowsContextMenuPlugIns = false
-    if #available(macOS 15.2, *) {
-        filtered.automaticallyInsertsWritingToolsItems = false
-    }
+    filtered.automaticallyInsertsWritingToolsItems = false
     return filtered
 }
 
@@ -169,7 +167,7 @@ private final class CodeTextView: NSTextView {
     /// counts the break glyph that ends a row, and is rounded to the pixel grid.
     override func setConstrainedFrameSize(_ desiredSize: NSSize) {
         var size = desiredSize
-        if let extraLineFragment = layoutManager?.extraLineFragmentRect {
+        if let extraLineFragment = unsafe layoutManager?.extraLineFragmentRect {
             size.height -= extraLineFragment.height
         }
         size.width = widestRowEnd + CodeSpacing.inset
@@ -183,13 +181,14 @@ private final class CodeTextView: NSTextView {
 
     /// Measures where the widest row's last character ends. The text must be laid out.
     func measureWidestRow() {
-        guard let layoutManager, let container = textContainer else { return }
+        guard let layoutManager = unsafe self.layoutManager, let container = unsafe textContainer
+        else { return }
         let text = string as NSString
         var widest: CGFloat = 0
-        layoutManager.enumerateLineFragments(
+        unsafe layoutManager.enumerateLineFragments(
             forGlyphRange: NSRange(location: 0, length: layoutManager.numberOfGlyphs)
         ) { _, _, _, glyphRange, _ in
-            var characters = layoutManager.characterRange(
+            var characters = unsafe layoutManager.characterRange(
                 forGlyphRange: glyphRange, actualGlyphRange: nil)
             while characters.length > 0,
                 CharacterSet.newlines.contains(

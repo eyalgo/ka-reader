@@ -26,6 +26,11 @@ jobs:
       - name: Build the workspace
         run: cargo build --workspace --locked
 
+      # The app build comes first: it writes the bridge artifact the Swift package links, which a
+      # fresh checkout does not have, so the Test gate cannot run before it.
+      - name: Build KA-Reader.app
+        run: ka-reader-mac/assemble.sh
+
       - name: Test gate
         run: cargo test --workspace --locked && swift test --package-path ka-reader-mac
 
@@ -40,9 +45,6 @@ jobs:
 
       - name: Entry-points check suite
         run: checks/tests/test_entry_points.sh
-
-      - name: Build KA-Reader.app
-        run: ka-reader-mac/assemble.sh
 
       - name: Bundle probe
         run: checks/bundle.sh target/release/bundle/macos/KA-Reader.app

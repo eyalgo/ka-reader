@@ -3,11 +3,17 @@ import Shell
 import Surfaces
 
 /// The order in which the fakes were touched, so a test can say what came before what.
-final class EventLog {
-    private(set) var events: [String] = []
+///
+/// `@unchecked Sendable` because a bridge fake records into it from whichever thread the read runner
+/// calls the bridge on. The lock is enough: `storedEvents` is read and written only inside `lock`.
+final class EventLog: @unchecked Sendable {
+    private let lock = NSLock()
+    private var storedEvents: [String] = []
+
+    var events: [String] { lock.withLock { storedEvents } }
 
     func record(_ event: String) {
-        events.append(event)
+        lock.withLock { storedEvents.append(event) }
     }
 }
 
@@ -29,29 +35,74 @@ final class FakePanel: FolderChoosing {
 }
 
 /// A bridge that answers from canned bytes and records every call, buffer and free.
-final class RecordingBridge: Bridging {
-    var openAnswer: Data? = Data(#"{"state":"opened"}"#.utf8)
-    var openAnswers: [Data?] = []
-    var listAnswer: Data? = Data(#"{"state":"observed","entries":[]}"#.utf8)
+///
+/// `@unchecked Sendable` because `Bridging` is `Sendable` (the read runner calls a bridge from a
+/// background queue) and this fake keeps mutable answers and records. The lock is enough: every
+/// stored property is read and written only inside `lock`, through the accessors below, which keep
+/// the names and shapes the tests already use.
+final class RecordingBridge: Bridging, @unchecked Sendable {
+    private struct State {
+        var openAnswer: Data? = Data(#"{"state":"opened"}"#.utf8)
+        var openAnswers: [Data?] = []
+        var listAnswer: Data? = Data(#"{"state":"observed","entries":[]}"#.utf8)
+        var listAnswers: [String: Data?] = [:]
+        var selectAnswer: Data? = Data(#"{"state":"pending"}"#.utf8)
+        var selectAnswers: [String: Data?] = [:]
+        var gitAnswer: Data? = Data(#"{"state":"pending"}"#.utf8)
+        var nextHandle: UInt = 1
+        var openedLocations: [URL] = []
+        var listedPaths: [String] = []
+        var selectedPaths: [String] = []
+        var gitReadCount = 0
+        var handedOut: [UInt] = []
+        var freed: [UInt] = []
+    }
+
+    private let lock = NSLock()
+    private var state = State()
+    let log: EventLog
+
+    var openAnswer: Data? {
+        get { lock.withLock { state.openAnswer } }
+        set { lock.withLock { state.openAnswer = newValue } }
+    }
+    var openAnswers: [Data?] {
+        get { lock.withLock { state.openAnswers } }
+        set { lock.withLock { state.openAnswers = newValue } }
+    }
+    var listAnswer: Data? {
+        get { lock.withLock { state.listAnswer } }
+        set { lock.withLock { state.listAnswer = newValue } }
+    }
     /// An answer for one path. A path with no entry here gets `listAnswer`, and an entry holding
     /// `nil` is the bridge's failure value for that path.
-    var listAnswers: [String: Data?] = [:]
+    var listAnswers: [String: Data?] {
+        get { lock.withLock { state.listAnswers } }
+        set { lock.withLock { state.listAnswers = newValue } }
+    }
+    var selectAnswer: Data? {
+        get { lock.withLock { state.selectAnswer } }
+        set { lock.withLock { state.selectAnswer = newValue } }
+    }
     /// The answer for a file read. A path with no entry in `selectAnswers` gets `selectAnswer`, and
     /// an entry holding `nil` is the bridge's failure value for that path.
-    var selectAnswer: Data? = Data(#"{"state":"pending"}"#.utf8)
-    var selectAnswers: [String: Data?] = [:]
+    var selectAnswers: [String: Data?] {
+        get { lock.withLock { state.selectAnswers } }
+        set { lock.withLock { state.selectAnswers = newValue } }
+    }
     /// The answer for the Git read: `pending`, until a test sets it. `nil` is the bridge's failure
     /// value.
-    var gitAnswer: Data? = Data(#"{"state":"pending"}"#.utf8)
+    var gitAnswer: Data? {
+        get { lock.withLock { state.gitAnswer } }
+        set { lock.withLock { state.gitAnswer = newValue } }
+    }
 
-    let log: EventLog
-    private var nextHandle: UInt = 1
-    private(set) var openedLocations: [URL] = []
-    private(set) var listedPaths: [String] = []
-    private(set) var selectedPaths: [String] = []
-    private(set) var gitReadCount = 0
-    private(set) var handedOut: [UInt] = []
-    private(set) var freed: [UInt] = []
+    var openedLocations: [URL] { lock.withLock { state.openedLocations } }
+    var listedPaths: [String] { lock.withLock { state.listedPaths } }
+    var selectedPaths: [String] { lock.withLock { state.selectedPaths } }
+    var gitReadCount: Int { lock.withLock { state.gitReadCount } }
+    var handedOut: [UInt] { lock.withLock { state.handedOut } }
+    var freed: [UInt] { lock.withLock { state.freed } }
 
     init(log: EventLog) {
         self.log = log
@@ -59,38 +110,49 @@ final class RecordingBridge: Bridging {
 
     func openFolder(location: URL) -> BridgeBuffer? {
         log.record("open_folder")
-        openedLocations.append(location)
-        return makeBuffer(from: openAnswers.isEmpty ? openAnswer : openAnswers.removeFirst())
+        return lock.withLock {
+            state.openedLocations.append(location)
+            let answer =
+                state.openAnswers.isEmpty ? state.openAnswer : state.openAnswers.removeFirst()
+            return makeBuffer(from: answer)
+        }
     }
 
     func listTree(path: String) -> BridgeBuffer? {
         log.record("list_tree")
-        listedPaths.append(path)
-        return makeBuffer(from: listAnswers[path] ?? listAnswer)
+        return lock.withLock {
+            state.listedPaths.append(path)
+            return makeBuffer(from: state.listAnswers[path] ?? state.listAnswer)
+        }
     }
 
     func selectFile(path: String) -> BridgeBuffer? {
         log.record("select_file")
-        selectedPaths.append(path)
-        return makeBuffer(from: selectAnswers[path] ?? selectAnswer)
+        return lock.withLock {
+            state.selectedPaths.append(path)
+            return makeBuffer(from: state.selectAnswers[path] ?? state.selectAnswer)
+        }
     }
 
     func readGit() -> BridgeBuffer? {
         log.record("read_git")
-        gitReadCount += 1
-        return makeBuffer(from: gitAnswer)
+        return lock.withLock {
+            state.gitReadCount += 1
+            return makeBuffer(from: state.gitAnswer)
+        }
     }
 
     func free(_ buffer: BridgeBuffer) {
         log.record("free")
-        freed.append(buffer.handle)
+        lock.withLock { state.freed.append(buffer.handle) }
     }
 
+    /// Called with `lock` held.
     private func makeBuffer(from payload: Data?) -> BridgeBuffer? {
         guard let payload else { return nil }
-        let handle = nextHandle
-        nextHandle += 1
-        handedOut.append(handle)
+        let handle = state.nextHandle
+        state.nextHandle += 1
+        state.handedOut.append(handle)
         return BridgeBuffer(payload: payload, handle: handle)
     }
 }
@@ -147,9 +209,9 @@ final class HoldingReadRunner: ReadRunning {
     /// Each held read, ready to run and deliver. A test releases them in any order.
     private var held: [@MainActor () -> Void] = []
 
-    func run<Answer>(
+    func run<Answer: Sendable>(
         _ read: @escaping @Sendable () -> Answer,
-        deliver: @escaping @MainActor (Answer) -> Void
+        deliver: @escaping @MainActor @Sendable (Answer) -> Void
     ) {
         heldReads += 1
         held.append { deliver(read()) }
@@ -164,9 +226,9 @@ final class HoldingReadRunner: ReadRunning {
 /// Runs the read and the delivery at once, on the caller's thread.
 @MainActor
 struct InlineReadRunner: ReadRunning {
-    func run<Answer>(
+    func run<Answer: Sendable>(
         _ read: @escaping @Sendable () -> Answer,
-        deliver: @escaping @MainActor (Answer) -> Void
+        deliver: @escaping @MainActor @Sendable (Answer) -> Void
     ) {
         deliver(read())
     }
@@ -255,9 +317,9 @@ final class DeliveryRecordingReadRunner: ReadRunning {
     private(set) var deliveriesOnMain: [Bool] = []
     var onDelivery: (() -> Void)?
 
-    func run<Answer>(
+    func run<Answer: Sendable>(
         _ read: @escaping @Sendable () -> Answer,
-        deliver: @escaping @MainActor (Answer) -> Void
+        deliver: @escaping @MainActor @Sendable (Answer) -> Void
     ) {
         runner.run(read) { [weak self] answer in
             self?.deliveriesOnMain.append(Thread.isMainThread)

@@ -47,7 +47,9 @@ final class RootItemsViewTests: XCTestCase {
 
     /// The images the rows draw, top to bottom.
     private func drawnGlyphs(_ view: RootItemsView) throws -> [NSImage?] {
-        try (0..<view.outlineView.numberOfRows).map { try cell(view, row: $0).imageView?.image }
+        try (0..<view.outlineView.numberOfRows).map {
+            try unsafe cell(view, row: $0).imageView?.image
+        }
     }
 
     /// How many image views a row's cell holds: the glyph leading it is the only one.
@@ -73,11 +75,11 @@ final class RootItemsViewTests: XCTestCase {
         let view = makeView(showing: plainProjection)
 
         XCTAssertEqual(view.outlineView.numberOfRows, 4)
-        let names = try (0..<4).map { try cell(view, row: $0).textField?.stringValue }
+        let names = try (0..<4).map { try unsafe cell(view, row: $0).textField?.stringValue }
         XCTAssertEqual(names, ["docs", ".hidden-note", "outside-link", "readme.txt"])
-        XCTAssertTrue(try cell(view, row: 0).imageView?.image === folderGlyph)
+        unsafe XCTAssertTrue(try cell(view, row: 0).imageView?.image === folderGlyph)
         for row in 1...3 {
-            XCTAssertTrue(try cell(view, row: row).imageView?.image === fileGlyph)
+            unsafe XCTAssertTrue(try cell(view, row: row).imageView?.image === fileGlyph)
         }
         XCTAssertEqual(try conditionText(cell(view, row: 2)), outsideSentence)
         for row in [0, 1, 3] {
@@ -134,7 +136,7 @@ final class RootItemsViewTests: XCTestCase {
             let visibleText = drawn.subviews.compactMap { $0 as? NSTextField }
                 .filter { !$0.isHidden }.map(\.stringValue)
             XCTAssertEqual(visibleText, [names[row]])
-            XCTAssertNotNil(drawn.imageView?.image)
+            unsafe XCTAssertNotNil(drawn.imageView?.image)
         }
     }
 
@@ -195,7 +197,7 @@ final class RootItemsViewTests: XCTestCase {
     func testFailedFileEntryDrawsTheFileGlyph() throws {
         let view = makeView(showing: [entry("gone", .file, .failed(.missing))])
 
-        XCTAssertTrue(try cell(view, row: 0).imageView?.image === fileGlyph)
+        unsafe XCTAssertTrue(try cell(view, row: 0).imageView?.image === fileGlyph)
     }
 
     func testRowsEqualEntriesInCountAndOrder() throws {
@@ -208,7 +210,7 @@ final class RootItemsViewTests: XCTestCase {
 
         XCTAssertEqual(view.outlineView.numberOfRows, entries.count)
         for (index, entry) in entries.enumerated() {
-            XCTAssertEqual(try cell(view, row: index).textField?.stringValue, entry.name)
+            unsafe XCTAssertEqual(try cell(view, row: index).textField?.stringValue, entry.name)
         }
     }
 
@@ -216,7 +218,7 @@ final class RootItemsViewTests: XCTestCase {
         let view = makeView(showing: [entry(".hidden-note", .file, .observed)])
 
         XCTAssertEqual(view.outlineView.numberOfRows, 1)
-        XCTAssertEqual(try cell(view, row: 0).textField?.stringValue, ".hidden-note")
+        unsafe XCTAssertEqual(try cell(view, row: 0).textField?.stringValue, ".hidden-note")
     }
 
     func testNestedEntryIsLabelledByNameNotPath() throws {
@@ -224,13 +226,13 @@ final class RootItemsViewTests: XCTestCase {
             Entry(name: "guides", path: "docs/guides", kind: .folder, state: .pending)
         ])
 
-        XCTAssertEqual(try cell(view, row: 0).textField?.stringValue, "guides")
+        unsafe XCTAssertEqual(try cell(view, row: 0).textField?.stringValue, "guides")
     }
 
     func testFolderKindDrawsFolderGlyph() throws {
         let view = makeView(showing: [entry("docs", .folder, .pending)])
 
-        XCTAssertTrue(try cell(view, row: 0).imageView?.image === folderGlyph)
+        unsafe XCTAssertTrue(try cell(view, row: 0).imageView?.image === folderGlyph)
     }
 
     func testRowsAreNotReordered() throws {
@@ -238,7 +240,7 @@ final class RootItemsViewTests: XCTestCase {
         let view = makeView(showing: names.map { entry($0, .file, .observed) })
 
         for (index, name) in names.enumerated() {
-            XCTAssertEqual(try cell(view, row: index).textField?.stringValue, name)
+            unsafe XCTAssertEqual(try cell(view, row: index).textField?.stringValue, name)
         }
     }
 
@@ -303,7 +305,7 @@ final class RootItemsViewTests: XCTestCase {
 
             XCTAssertNil(decoded.language, language)
             let view = makeView(showing: [decoded])
-            XCTAssertTrue(try cell(view, row: 0).imageView?.image === folderGlyph, language)
+            unsafe XCTAssertTrue(try cell(view, row: 0).imageView?.image === folderGlyph, language)
         }
     }
 
@@ -313,8 +315,8 @@ final class RootItemsViewTests: XCTestCase {
             entry("app.py", .file, .observed),
         ])
 
-        XCTAssertTrue(try cell(view, row: 0).imageView?.image === fileCodeGlyph)
-        XCTAssertTrue(try cell(view, row: 1).imageView?.image === fileGlyph)
+        unsafe XCTAssertTrue(try cell(view, row: 0).imageView?.image === fileCodeGlyph)
+        unsafe XCTAssertTrue(try cell(view, row: 1).imageView?.image === fileGlyph)
     }
 
     func testPlainFileRowDrawsFileInEveryState() throws {
@@ -325,7 +327,7 @@ final class RootItemsViewTests: XCTestCase {
         ])
 
         for row in 0..<3 {
-            XCTAssertTrue(try cell(view, row: row).imageView?.image === fileGlyph, "\(row)")
+            unsafe XCTAssertTrue(try cell(view, row: row).imageView?.image === fileGlyph, "\(row)")
             XCTAssertEqual(imageViewCount(try cell(view, row: row)), 1)
         }
         XCTAssertEqual(
@@ -335,21 +337,21 @@ final class RootItemsViewTests: XCTestCase {
     func testFileRowWithAFloorLanguageDrawsTheFileCodeGlyph() throws {
         let view = makeView(showing: [entry("app.py", .file, .observed, language: .python)])
 
-        XCTAssertTrue(try cell(view, row: 0).imageView?.image === fileCodeGlyph)
+        unsafe XCTAssertTrue(try cell(view, row: 0).imageView?.image === fileCodeGlyph)
         XCTAssertEqual(imageViewCount(try cell(view, row: 0)), 1)
     }
 
     func testPlainFileRowDrawsTheFileGlyph() throws {
         let view = makeView(showing: [entry("notes.txt", .file, .observed)])
 
-        XCTAssertTrue(try cell(view, row: 0).imageView?.image === fileGlyph)
+        unsafe XCTAssertTrue(try cell(view, row: 0).imageView?.image === fileGlyph)
         XCTAssertEqual(imageViewCount(try cell(view, row: 0)), 1)
     }
 
     func testFolderRowDrawsTheFolderGlyphEvenWhenBuiltWithALanguage() throws {
         let view = makeView(showing: [entry("scripts.py", .folder, .pending, language: .python)])
 
-        XCTAssertTrue(try cell(view, row: 0).imageView?.image === folderGlyph)
+        unsafe XCTAssertTrue(try cell(view, row: 0).imageView?.image === folderGlyph)
     }
 
     func testFileRowDrawsFileCodeInEveryState() throws {
@@ -360,7 +362,8 @@ final class RootItemsViewTests: XCTestCase {
         ])
 
         for row in 0..<3 {
-            XCTAssertTrue(try cell(view, row: row).imageView?.image === fileCodeGlyph, "\(row)")
+            unsafe XCTAssertTrue(
+                try cell(view, row: row).imageView?.image === fileCodeGlyph, "\(row)")
         }
         XCTAssertEqual(
             try conditionText(cell(view, row: 2)), "This link leads to something that isn't there.")
@@ -394,8 +397,8 @@ final class RootItemsViewTests: XCTestCase {
         var seen: Set<String> = []
         for row in 0..<entries.count {
             let drawn = try cell(view, row: row)
-            let name = try XCTUnwrap(drawn.textField?.stringValue)
-            let image = drawn.imageView?.image
+            let name = try unsafe XCTUnwrap(drawn.textField?.stringValue)
+            let image = unsafe drawn.imageView?.image
             seen.insert(name)
             if name == "scripts.py" {
                 XCTAssertTrue(image === folderGlyph, name)
@@ -520,7 +523,7 @@ final class RootItemsViewTests: XCTestCase {
                     Entry(name: "x.txt", path: "src/x.txt", kind: .file, state: .observed)
                 ]))
         }
-        let files = (0..<40).map { entry(String(format: "f%02d.txt", $0), .file, .observed) }
+        let files = (0..<40).map { unsafe entry(String(format: "f%02d.txt", $0), .file, .observed) }
         view.show(.observed([entry("src", .folder, .pending)] + files))
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 260, height: 200), styleMask: [.borderless],

@@ -48,13 +48,13 @@ package struct KeyWindowSource {
     /// The window's own answers. The pointer is the window's `mouseLocationOutsideOfEventStream`,
     /// converted into the host's coordinates.
     package static let live = KeyWindowSource(
-        isKey: { host in host.window?.isKeyWindow ?? false },
+        isKey: { host in unsafe host.window?.isKeyWindow ?? false },
         observe: { host, stoppedBeingKey, becameKey in
             LiveKeyWindowObservation(
                 host: host, stoppedBeingKey: stoppedBeingKey, becameKey: becameKey)
         },
         pointer: { host in
-            guard let window = host.window else { return nil }
+            guard let window = unsafe host.window else { return nil }
             return host.convert(window.mouseLocationOutsideOfEventStream, from: nil)
         })
 }
@@ -95,6 +95,6 @@ private final class LiveKeyWindowObservation: NSObject {
 
     private func isHostWindow(_ notification: Notification) -> Bool {
         guard let window = notification.object as? NSWindow else { return false }
-        return window === host?.window
+        return unsafe window === host?.window
     }
 }

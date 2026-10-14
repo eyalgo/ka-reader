@@ -1,7 +1,7 @@
 /// The open folder's Git item as `Shell` decodes it and hands it down: exactly one of five things.
 /// Every set in it is closed, and there is no "unknown" member anywhere: a value the wire does not
 /// name never reaches a surface, because the decoder refuses it and the item is *stopped* (CP-561).
-package enum GitItem: Equatable, Sendable {
+package nonisolated enum GitItem: Equatable, Sendable {
     /// The bridge answered `pending`: nothing was read.
     case pending
     /// The folder is not a repository's top level.
@@ -15,7 +15,7 @@ package enum GitItem: Equatable, Sendable {
 }
 
 /// A repository's top level as the answer states it.
-package struct GitRepository: Equatable, Sendable {
+package nonisolated struct GitRepository: Equatable, Sendable {
     package let branch: GitBranch
     package let state: RepositoryState
     package let staged: [GitEntry]
@@ -32,7 +32,7 @@ package struct GitRepository: Equatable, Sendable {
 }
 
 /// What the branch element shows.
-package enum GitBranch: Equatable, Sendable {
+package nonisolated enum GitBranch: Equatable, Sendable {
     /// A branch's short name.
     case named(String)
     /// A detached HEAD's commit identifier, carried in full (CP-556).
@@ -40,7 +40,7 @@ package enum GitBranch: Equatable, Sendable {
 }
 
 /// The eight repository states, each raw value the wire's own string.
-package enum RepositoryState: String, CaseIterable, Sendable {
+package nonisolated enum RepositoryState: String, CaseIterable, Sendable {
     case normal
     case merge
     case rebase
@@ -52,7 +52,7 @@ package enum RepositoryState: String, CaseIterable, Sendable {
 }
 
 /// The six status categories, each raw value the wire's own string.
-package enum GitStatusCategory: String, CaseIterable, Sendable {
+package nonisolated enum GitStatusCategory: String, CaseIterable, Sendable {
     case added
     case untracked
     case modified
@@ -62,7 +62,7 @@ package enum GitStatusCategory: String, CaseIterable, Sendable {
 }
 
 /// One listed file: its folder-relative path (for `renamed`, the path renamed to) and its category.
-package struct GitEntry: Equatable, Sendable {
+package nonisolated struct GitEntry: Equatable, Sendable {
     package let path: String
     package let category: GitStatusCategory
 
@@ -73,7 +73,7 @@ package struct GitEntry: Equatable, Sendable {
 }
 
 /// The eighteen conditions a failed answer names: the six that carry text, and the other twelve.
-package enum GitFailure: Equatable, Sendable {
+package nonisolated enum GitFailure: Equatable, Sendable {
     /// The Git directory lies outside the opened folder, at `gitDirectory` as the answer spells it.
     case gitDirectoryOutside(gitDirectory: String)
     /// The repository's own Git config sets `key` to `path`, a path outside the opened folder, both
@@ -98,7 +98,7 @@ package enum GitFailure: Equatable, Sendable {
 }
 
 /// The twelve conditions a failed answer names without a path, each raw value the wire's own string.
-package enum GitCondition: String, CaseIterable, Sendable {
+package nonisolated enum GitCondition: String, CaseIterable, Sendable {
     case probeFolderUnavailable = "probe_folder_unavailable"
     case probeGitDirectoryUnreadable = "probe_git_directory_unreadable"
     case probeGitEntryNotDirectory = "probe_git_entry_not_directory"

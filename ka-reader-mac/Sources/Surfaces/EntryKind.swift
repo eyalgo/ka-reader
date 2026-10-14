@@ -3,7 +3,7 @@
 /// The set is closed: decoding any other string fails, so a kind the shell has no glyph for cannot
 /// enter a row. A link never appears here: the reader lists it as the folder or file it reaches, and
 /// a link that could not be resolved is a `file` whose state is `failed`.
-package enum EntryKind: String, Decodable, Sendable {
+package nonisolated enum EntryKind: String, Decodable, Sendable {
     case folder
     case file
 }

@@ -14,7 +14,7 @@ final class BundleManifestTests: XCTestCase {
 
     private func plist(named name: String) throws -> [String: Any] {
         let data = try Data(contentsOf: packageDirectory.appendingPathComponent(name))
-        let value = try PropertyListSerialization.propertyList(from: data, format: nil)
+        let value = try unsafe PropertyListSerialization.propertyList(from: data, format: nil)
         return try XCTUnwrap(value as? [String: Any], "\(name) is a dictionary")
     }
 
@@ -23,7 +23,7 @@ final class BundleManifestTests: XCTestCase {
         guard CFGetTypeID(object) == CFBooleanGetTypeID() else {
             return false
         }
-        return CFBooleanGetValue(unsafeBitCast(object, to: CFBoolean.self))
+        return unsafe CFBooleanGetValue(unsafeDowncast(object, to: CFBoolean.self))
     }
 
     func testInfoPlistIdentifiesTheBundle() throws {

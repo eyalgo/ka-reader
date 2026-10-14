@@ -191,7 +191,7 @@ final class RootItemsViewExpansionTests: XCTestCase {
         XCTAssertEqual(rowLabels(view), ["docs", ".hidden-note", "readme.txt"])
         let docsCell = try cell(view, row: 0)
         XCTAssertEqual(visibleTexts(docsCell), ["docs"])
-        XCTAssertTrue(docsCell.imageView?.image === folderGlyph)
+        unsafe XCTAssertTrue(docsCell.imageView?.image === folderGlyph)
         XCTAssertEqual(log.paths, [], "nothing is read until a row is expanded")
     }
 
@@ -224,7 +224,7 @@ final class RootItemsViewExpansionTests: XCTestCase {
         XCTAssertEqual(rowLabels(view), ["locked", "a.txt"], "nothing beneath the failed folder")
         let siblingCell = try cell(view, row: row("a.txt", in: view))
         XCTAssertEqual(visibleTexts(siblingCell), ["a.txt"])
-        XCTAssertTrue(siblingCell.imageView?.image === fileGlyph)
+        unsafe XCTAssertTrue(siblingCell.imageView?.image === fileGlyph)
     }
 
     func testReExpandingAFailedFolderClearsTheSentenceWhileTheReadIsOut() throws {
@@ -408,9 +408,9 @@ final class RootItemsViewExpansionTests: XCTestCase {
             ]))
 
         XCTAssertEqual(rowLabels(view), ["docs", "guides", "a.txt", "gone"])
-        XCTAssertTrue(try cell(view, row: 1).imageView?.image === folderGlyph, "guides")
-        XCTAssertTrue(try cell(view, row: 2).imageView?.image === fileGlyph, "a.txt")
-        XCTAssertTrue(try cell(view, row: 3).imageView?.image === fileGlyph, "gone")
+        unsafe XCTAssertTrue(try cell(view, row: 1).imageView?.image === folderGlyph, "guides")
+        unsafe XCTAssertTrue(try cell(view, row: 2).imageView?.image === fileGlyph, "a.txt")
+        unsafe XCTAssertTrue(try cell(view, row: 3).imageView?.image === fileGlyph, "gone")
     }
 
     func testExpandedFolderDrawsFileCodeAndFileGlyphsAtTheNestedDepth() throws {
@@ -427,8 +427,8 @@ final class RootItemsViewExpansionTests: XCTestCase {
             ]))
 
         XCTAssertEqual(rowLabels(view), ["src", "lib.py", "notes.txt"])
-        XCTAssertTrue(try cell(view, row: 1).imageView?.image === fileCodeGlyph, "lib.py")
-        XCTAssertTrue(try cell(view, row: 2).imageView?.image === fileGlyph, "notes.txt")
+        unsafe XCTAssertTrue(try cell(view, row: 1).imageView?.image === fileCodeGlyph, "lib.py")
+        unsafe XCTAssertTrue(try cell(view, row: 2).imageView?.image === fileGlyph, "notes.txt")
     }
 
     func testExpandingWithNoIntentStillDrawsTheReadingLine() throws {

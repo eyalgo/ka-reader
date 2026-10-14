@@ -366,7 +366,7 @@ final class RootItemsViewSelectionTests: XCTestCase {
         let made = fixture.view.outlineView.view(atColumn: 0, row: index, makeIfNecessary: true)
         let cell = try XCTUnwrap(made as? NSTableCellView)
         cell.layoutSubtreeIfNeeded()
-        let name = try XCTUnwrap(cell.textField)
+        let name = try unsafe XCTUnwrap(cell.textField)
         let letter = try XCTUnwrap(
             cell.subviews.compactMap { $0 as? NSTextField }
                 .first { $0.identifier?.rawValue == "treeRowLetter" },

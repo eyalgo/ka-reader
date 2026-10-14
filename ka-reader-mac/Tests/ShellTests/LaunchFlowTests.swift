@@ -104,7 +104,7 @@ final class LaunchFlowTests: XCTestCase {
     private func labels(in view: RootItemsView) throws -> [String] {
         try (0..<view.outlineView.numberOfRows).map { row in
             let cell = view.outlineView.view(atColumn: 0, row: row, makeIfNecessary: true)
-            return try XCTUnwrap((cell as? NSTableCellView)?.textField?.stringValue)
+            return try unsafe XCTUnwrap((cell as? NSTableCellView)?.textField?.stringValue)
         }
     }
 

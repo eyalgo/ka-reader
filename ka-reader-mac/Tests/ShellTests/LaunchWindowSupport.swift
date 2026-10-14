@@ -83,7 +83,7 @@ class LaunchWindowTestCase: XCTestCase {
 
     /// The window `view` was presented in, laid out. Fails when the view is in no window.
     func laidOutWindow(of view: NSView) throws -> NSWindow {
-        let window = try XCTUnwrap(view.window, "the view was presented in no window")
+        let window = try unsafe XCTUnwrap(view.window, "the view was presented in no window")
         if !shownWindows.contains(where: { $0 === window }) { shownWindows.append(window) }
         layOut(window)
         return window
@@ -195,7 +195,7 @@ func visibleViews<Kind: NSView>(of kind: Kind.Type, beneath root: NSView) -> [Ki
 @MainActor
 func wholenessFailure(of element: NSControl, in window: NSWindow) -> String? {
     let name = "“\(drawnString(of: element))”"
-    guard element.window === window, !element.isHiddenOrHasHiddenAncestor else {
+    guard unsafe element.window === window, !element.isHiddenOrHasHiddenAncestor else {
         return "\(name) is not visible in the window"
     }
     let frame = frameInWindow(of: element)
@@ -361,8 +361,8 @@ func control(
 func panel(of workbench: NSView, containing element: NSView) -> NSView? {
     var current: NSView? = element
     while let view = current {
-        if view.superview === workbench { return view }
-        current = view.superview
+        if unsafe view.superview === workbench { return view }
+        current = unsafe view.superview
     }
     return nil
 }

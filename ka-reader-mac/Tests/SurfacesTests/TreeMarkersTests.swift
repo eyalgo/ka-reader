@@ -3,6 +3,7 @@ import XCTest
 @testable import Surfaces
 
 /// The join of a Git item onto the tree's row paths (CP-573, CP-574, CP-577, CP-579).
+@MainActor
 final class TreeMarkersTests: XCTestCase {
     private func entry(_ path: String, _ category: GitStatusCategory) -> GitEntry {
         GitEntry(path: path, category: category)

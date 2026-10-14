@@ -41,7 +41,7 @@ final class LaunchFlowGitTests: LaunchWindowTestCase {
 
     private func choose(_ entry: RailEntry, in workbench: WorkbenchView) {
         workbench.rail.entryChosen?(entry)
-        layOut(workbench.window ?? NSWindow())
+        unsafe layOut(workbench.window ?? NSWindow())
     }
 
     private func strings(in workbench: WorkbenchView) -> [String] {
@@ -54,7 +54,7 @@ final class LaunchFlowGitTests: LaunchWindowTestCase {
             textElements(beneath: workbench.gitView).first { $0.stringValue == text },
             "no element showing \(text)")
         let frame = element.convert(element.bounds, to: workbench.gitView)
-        let event = NSEvent.mouseEvent(
+        let event = unsafe NSEvent.mouseEvent(
             with: .leftMouseDown,
             location: workbench.gitView.convert(NSPoint(x: frame.midX, y: frame.midY), to: nil),
             modifierFlags: [], timestamp: 0, windowNumber: workbench.window?.windowNumber ?? 0,
@@ -79,7 +79,7 @@ final class LaunchFlowGitTests: LaunchWindowTestCase {
         XCTAssertEqual(reader.heldReads, 2, "the open's read, then the Git read")
 
         if reader.heldReads > 1 { reader.release(1) }
-        layOut(try XCTUnwrap(workbench.window))
+        unsafe layOut(try XCTUnwrap(workbench.window))
 
         XCTAssertEqual(launch.bridge.gitReadCount, 1)
         XCTAssertEqual(launch.bridge.log.events.filter { $0 == "read_git" }.count, 1)

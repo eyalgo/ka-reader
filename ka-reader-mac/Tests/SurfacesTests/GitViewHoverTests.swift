@@ -96,7 +96,7 @@ final class GitViewHoverTests: XCTestCase {
             var current: NSView? = field
             while let next = current {
                 if next is BarRowView { return true }
-                current = next.superview
+                current = unsafe next.superview
             }
             return false
         }
@@ -302,7 +302,7 @@ final class GitViewHoverTests: XCTestCase {
     }
 
     func test_hover_s4_scroll_moves_rows_under_still_pointer_fill_follows() throws {
-        let many = (0..<30).map { entry(String(format: "c%02d.txt", $0)) }
+        let many = (0..<30).map { unsafe entry(String(format: "c%02d.txt", $0)) }
         let fixture = makeFixture(
             showing: repository(staged: [entry("s.txt", .added)], changed: many))
         let view = fixture.view
@@ -481,7 +481,7 @@ final class GitViewHoverTests: XCTestCase {
     func test_hover_s4_list_scrolled_while_not_key_puts_a_heading_under_the_pointer_on_return()
         throws
     {
-        let many = (0..<30).map { entry(String(format: "c%02d.txt", $0)) }
+        let many = (0..<30).map { unsafe entry(String(format: "c%02d.txt", $0)) }
         let fixture = makeFixture(
             showing: repository(staged: [entry("s.txt", .added)], changed: many))
         let view = fixture.view
@@ -515,7 +515,7 @@ final class GitViewHoverTests: XCTestCase {
     }
 
     func test_hover_s4_window_becomes_key_with_pointer_outside_the_host_fills_nothing() throws {
-        let many = (0..<30).map { entry(String(format: "c%02d.txt", $0)) }
+        let many = (0..<30).map { unsafe entry(String(format: "c%02d.txt", $0)) }
         let fixture = makeFixture(showing: repository(changed: many))
         let view = fixture.view
         let onRow = try point(ofRow: "c00.txt", in: view)

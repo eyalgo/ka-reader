@@ -23,8 +23,8 @@ final class LetterTooltipTests: XCTestCase {
         override func mouseDown(with event: NSEvent) { presses += 1 }
     }
 
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 400, height: 300), styleMask: [.titled],
             backing: .buffered, defer: false)
@@ -50,11 +50,11 @@ final class LetterTooltipTests: XCTestCase {
         }
     }
 
-    override func tearDown() {
+    override func tearDown() async throws {
         window = nil
         host = nil
         tooltip = nil
-        super.tearDown()
+        try await super.tearDown()
     }
 
     private var onFirst: NSPoint { NSPoint(x: first.frame.midX, y: first.frame.midY) }
@@ -194,7 +194,7 @@ final class LetterTooltipTests: XCTestCase {
         try PointerDelivery.move(to: onNothing, in: host)
 
         XCTAssertNil(tooltip.shownView)
-        XCTAssertNil(view.superview)
+        unsafe XCTAssertNil(view.superview)
         XCTAssertTrue(tooltipViews().isEmpty)
     }
 
@@ -205,7 +205,7 @@ final class LetterTooltipTests: XCTestCase {
         try PointerDelivery.move(to: onSecond, in: host)
 
         XCTAssertNil(tooltip.shownView)
-        XCTAssertNil(shownFirst.superview)
+        unsafe XCTAssertNil(shownFirst.superview)
         XCTAssertEqual(rest.requests.count, 2)
         XCTAssertEqual(rest.requests[1].interval, 0.5)
 
@@ -274,8 +274,8 @@ final class LetterTooltipTests: XCTestCase {
     func test_itIsAViewInsideTheHostAndOpensNoSecondWindow() throws {
         try restAndShow(on: onFirst)
 
-        XCTAssertTrue(tooltip.shownView?.superview === host)
-        XCTAssertTrue(tooltip.shownView?.window === window)
+        unsafe XCTAssertTrue(tooltip.shownView?.superview === host)
+        unsafe XCTAssertTrue(tooltip.shownView?.window === window)
         XCTAssertTrue(NSApp.windows.allSatisfy { $0 === window || !$0.isVisible })
     }
 

@@ -1,5 +1,5 @@
 /// Every sentence unique to the startup surface.
-package enum OpeningSentences {
+package nonisolated enum OpeningSentences {
     package static let empty = "Choose a folder to view."
     package static let stopped = "KA-Reader couldn't open this folder."
 

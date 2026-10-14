@@ -46,7 +46,7 @@ final class WorkbenchGitTests: XCTestCase {
         let glyphs = StatusGlyphs(empty: glyph, failure: glyph)
         let tree = RootItemsView(
             folderGlyph: glyph, fileGlyph: glyph, fileCodeGlyph: glyph, statusGlyphs: glyphs)
-        let filler = (0..<files).map { entry(String(format: "z%02d.txt", $0), .file) }
+        let filler = (0..<files).map { unsafe entry(String(format: "z%02d.txt", $0), .file) }
         tree.show(
             .observed(
                 [
@@ -541,8 +541,8 @@ final class WorkbenchGitTests: XCTestCase {
         XCTAssertEqual(workbench.rail.frame.width, 48, accuracy: 0.5)
         XCTAssertEqual(workbench.sidebar.frame.minX, workbench.rail.frame.maxX, accuracy: 0.5)
         XCTAssertEqual(workbench.sidebar.frame.width, 260, accuracy: 0.5)
-        XCTAssertTrue(workbench.rootItemsView.superview === workbench.sidebar)
-        XCTAssertTrue(workbench.gitView.superview === workbench.sidebar)
+        unsafe XCTAssertTrue(workbench.rootItemsView.superview === workbench.sidebar)
+        unsafe XCTAssertTrue(workbench.gitView.superview === workbench.sidebar)
         XCTAssertEqual(
             workbench.readingPanel.frame.minX, workbench.sidebar.frame.maxX + 1, accuracy: 0.5)
 

@@ -57,8 +57,8 @@ final class LaunchWindowWorkbenchTests: LaunchWindowTestCase {
         let windowAfter = try present(second, through: presenter)
 
         XCTAssertTrue(windowAfter === window)
-        XCTAssertNil(first.window, "the replaced surface is in no window")
-        XCTAssertNil(first.superview, "the replaced surface is beneath no view")
+        unsafe XCTAssertNil(first.window, "the replaced surface is in no window")
+        unsafe XCTAssertNil(first.superview, "the replaced surface is beneath no view")
     }
 
     func testASurfaceThatAsksForNoSizeIsGivenTheWholeContentArea() throws {
@@ -112,7 +112,7 @@ final class LaunchWindowWorkbenchTests: LaunchWindowTestCase {
         let windowAfter = try laidOutWindow(of: workbench)
         XCTAssertTrue(windowAfter === window, "the workbench is presented in the same window")
         XCTAssertEqual(contentArea(of: windowAfter).size, openingContentSize)
-        XCTAssertNil(startup.window, "the startup surface it replaced is in no window")
+        unsafe XCTAssertNil(startup.window, "the startup surface it replaced is in no window")
         assertDrawnWhole(
             try textElement(saying: "src", beneath: workbench.rootItemsView), in: windowAfter)
         // CP-247 names the workbench "presented over a startup surface" as a case of its own, so
@@ -136,7 +136,7 @@ final class LaunchWindowWorkbenchTests: LaunchWindowTestCase {
         let tree = workbench.rootItemsView.outlineView
         XCTAssertEqual(tree.numberOfRows, 2)
         let images = try (0..<2).map { row in
-            try XCTUnwrap(
+            try unsafe XCTUnwrap(
                 (tree.view(atColumn: 0, row: row, makeIfNecessary: true) as? NSTableCellView)?
                     .imageView?.image)
         }
@@ -161,7 +161,7 @@ final class LaunchWindowWorkbenchTests: LaunchWindowTestCase {
         let windowAfter = try laidOutWindow(of: dismissed)
         XCTAssertTrue(windowAfter === window, "the next surface is presented in the same window")
         XCTAssertEqual(contentArea(of: windowAfter).size, sizeBefore)
-        XCTAssertNil(failed.window, "the startup surface it replaced is in no window")
+        unsafe XCTAssertNil(failed.window, "the startup surface it replaced is in no window")
         // CP-240 is about the window: nothing of the surface it replaced is still drawn in it.
         XCTAssertEqual(
             drawnStrings(beneath: try XCTUnwrap(windowAfter.contentView)),
@@ -372,11 +372,11 @@ final class LaunchWindowWorkbenchTests: LaunchWindowTestCase {
         XCTAssertTrue(
             workbench.rootItemsView.outlineView.enclosingScrollView === workbench.rootItemsView,
             "the tree's nearest scrolling ancestor is itself")
-        var ancestor = workbench.rootItemsView.superview
+        var ancestor = unsafe workbench.rootItemsView.superview
         while let view = ancestor, view !== workbench {
             XCTAssertFalse(
                 view is NSScrollView, "the tree is not wrapped in a second scrolling view")
-            ancestor = view.superview
+            ancestor = unsafe view.superview
         }
     }
 

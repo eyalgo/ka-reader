@@ -3,7 +3,7 @@
 ///
 /// It is never built for `pending`: a read that produced nothing to draw is no answer at all, and
 /// reaches the view as `nil`.
-package enum RootListing: Equatable, Sendable {
+package nonisolated enum RootListing: Equatable, Sendable {
     case observed([Entry])
     case failed(Condition)
 }

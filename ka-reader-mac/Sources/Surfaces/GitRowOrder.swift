@@ -4,7 +4,7 @@
 /// This is the key `fs-reader` orders the tree by (`crates/ka-reader-core/src/fs_reader.rs:L818-L832`),
 /// written out over scalars and bytes. Swift's `String` `<` compares under canonical equivalence and
 /// `localizedStandardCompare` compares digits as numbers, and each breaks one of the two clauses.
-package enum GitRowOrder {
+package nonisolated enum GitRowOrder {
     /// `entries` in row order. The result does not depend on the order they arrive in.
     package static func ordered(_ entries: [GitEntry]) -> [GitEntry] {
         entries.sorted { precedes($0.path, $1.path) }

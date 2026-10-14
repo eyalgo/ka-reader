@@ -4,7 +4,10 @@ import Foundation
 ///
 /// A `nil` return is the bridge's failure value: a panic was caught or no buffer could be made.
 /// Every non-`nil` buffer is released once with `free`, and a `nil` is never released.
-package protocol Bridging {
+///
+/// It is `Sendable` because a folder read runs it on a background queue (`ReadRunning`); every
+/// method is callable off the main actor.
+package protocol Bridging: Sendable {
     /// `ka_reader_open_folder`. Cancellation is handled before this boundary.
     func openFolder(location: URL) -> BridgeBuffer?
 

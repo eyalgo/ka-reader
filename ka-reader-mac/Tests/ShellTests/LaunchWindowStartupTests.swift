@@ -367,7 +367,8 @@ final class LaunchWindowStartupTests: LaunchWindowTestCase {
 
         _ = try present(surface)
 
-        XCTAssertTrue(titleInside.superview === button, "the field is still inside the button")
+        unsafe XCTAssertTrue(
+            titleInside.superview === button, "the field is still inside the button")
         XCTAssertFalse(titleInside.isHiddenOrHasHiddenAncestor, "the field inside is visible")
         let elements = drawnElements(beneath: surface)
         XCTAssertEqual(elements.count, 1, "\(elements.map(drawnString))")
