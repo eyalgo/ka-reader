@@ -30,3 +30,12 @@ Thumbs.db
 # SwiftPM's build output for the native shell package
 /ka-reader-mac/.build/
 /ka-reader-mac/CKAReaderBridge.artifactbundle/
+
+# Added by the product-skeleton launcher — what the Swift toolchain generates
+/ka-reader-mac/.build
+/ka-reader-mac/Packages
+xcuserdata/
+DerivedData/
+/ka-reader-mac/.swiftpm/configuration/registries.json
+/ka-reader-mac/.swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
+.netrc
