@@ -339,7 +339,7 @@ fn a_link_to_a_folder_holding_it_fails_as_cycle_however_its_target_is_spelled() 
 }
 
 /// CP-174's first class on a volume that ignores letter case, which is what the product runs on
-/// (macOS, CI's `macos-14`). There `../A` names the folder `a`, so `a/up → ../A` reaches the folder
+/// (macOS, and the CI runner). There `../A` names the folder `a`, so `a/up → ../A` reaches the folder
 /// that holds it. Listing it as a folder would show `a` inside itself without end (spec Gap 4). On a
 /// volume that keeps case, `../A` names nothing, and the link is Missing (CP-175).
 #[test]
