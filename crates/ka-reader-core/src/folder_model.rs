@@ -2,11 +2,12 @@
 //! a canonical root, and listing is delegated to fs-reader.
 
 use std::collections::{BTreeMap, BTreeSet};
+use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 
 use crate::fs_reader::{
     self, CannotDisplayReason, Entry, EntryKind, FileContent, ItemState, Listed,
-    ListingObservation, Location, OpenFailure,
+    ListingObservation, Location, OpenFailure, order,
 };
 use crate::git_reader::{
     GitPort, GitReadCondition, HeadState, ProbeCondition, RootFinding, StatusLists,
@@ -355,6 +356,68 @@ pub enum TreeRequest {
     Expand(PathBuf),
     /// Hold the folder collapsed. Nothing is read, and nothing held beneath it is dropped.
     Collapse(PathBuf),
+    /// Apply what the disk reported: entries created, changed and removed. Only the listings the
+    /// model holds change, and the place and the Git item are carried as they were.
+    Delta(ModelDelta),
+}
+
+/// A batch of reports about the disk: entry paths, relative to the opened folder's root, that were
+/// created, changed or removed. A report says what happened and never asks for it to happen.
+///
+/// # Examples
+///
+/// ```
+/// use std::path::PathBuf;
+/// use ka_reader_core::ModelDelta;
+///
+/// let delta = ModelDelta::new(vec![PathBuf::from("src/new.rs")], vec![], vec![]);
+/// assert!(!delta.is_empty());
+/// assert!(ModelDelta::default().is_empty());
+/// ```
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct ModelDelta {
+    created: Vec<PathBuf>,
+    changed: Vec<PathBuf>,
+    removed: Vec<PathBuf>,
+}
+
+impl ModelDelta {
+    pub fn new(created: Vec<PathBuf>, changed: Vec<PathBuf>, removed: Vec<PathBuf>) -> Self {
+        Self {
+            created,
+            changed,
+            removed,
+        }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.created.is_empty() && self.changed.is_empty() && self.removed.is_empty()
+    }
+
+    /// Every reported path, each with whether it was reported removed.
+    fn reports(&self) -> impl Iterator<Item = (&Path, bool)> {
+        let present = self
+            .created
+            .iter()
+            .chain(&self.changed)
+            .map(|path| (path.as_path(), false));
+        present.chain(self.removed.iter().map(|path| (path.as_path(), true)))
+    }
+}
+
+/// The names a delta reports in one folder: those it says exist (created or changed) and those it
+/// says are gone. Names are raw, so two names that display alike stay two.
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
+struct ReportedNames {
+    present: BTreeSet<OsString>,
+    removed: BTreeSet<OsString>,
+}
+
+/// What reducing one held folder needs: what the delta reported about it, and a fresh read of it.
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct FolderChange {
+    reported: ReportedNames,
+    observed: ItemState<ListingObservation>,
 }
 
 /// An act on the file: which is selected, which is open, and where the reader is in it.
@@ -481,11 +544,13 @@ impl FolderModel {
         self.listings.get(path).map(|held| &held.entries)
     }
 
-    /// Applies a disclosure act and returns the model that results.
+    /// Applies a disclosure act or a delta and returns the model that results.
     ///
     /// `Expand` reads the folder's direct listing and holds it; `Collapse` changes only that
     /// folder's flag and reads nothing. A path that does not resolve inside the root to a folder,
-    /// and the root itself, leaves the model as it was.
+    /// and the root itself, leaves the model as it was. `Delta` changes only the held listings that
+    /// hold a reported entry, by the reported entries alone, and leaves the place and the Git item
+    /// as they were.
     ///
     /// # Examples
     ///
@@ -501,6 +566,7 @@ impl FolderModel {
         match request {
             TreeRequest::Expand(path) => self.expand(path),
             TreeRequest::Collapse(path) => self.collapse(path),
+            TreeRequest::Delta(delta) => self.apply_delta(&delta),
         }
     }
 
@@ -529,6 +595,49 @@ impl FolderModel {
             FileRequest::Open(path, position) => self.open(path, position),
             FileRequest::Position(position) => self.with_position(position),
         }
+    }
+
+    /// Reads each held folder a delta touches once, then hands the report and what was read to the
+    /// pure [`reduce`]. A folder the model holds no listing of is never read, so a report inside
+    /// one changes nothing.
+    fn apply_delta(self, delta: &ModelDelta) -> Self {
+        let root = &self.folder.root;
+        let held_identities: BTreeSet<&PathBuf> = std::iter::once(&self.root_listing)
+            .chain(self.listings.values())
+            .map(|held| &held.identity)
+            .collect();
+        let mut parent_identities: BTreeMap<PathBuf, Option<PathBuf>> = BTreeMap::new();
+        let mut reported: BTreeMap<PathBuf, ReportedNames> = BTreeMap::new();
+        for (path, removed) in delta.reports() {
+            let Some(name) = path.file_name() else {
+                continue;
+            };
+            let parent = path.parent().unwrap_or(Path::new("")).to_path_buf();
+            let identity = parent_identities.entry(parent).or_insert_with(|| {
+                fs_reader::locate_parent(root, path)
+                    .ok()
+                    .filter(|location| location.kind == EntryKind::Folder)
+                    .map(|location| location.identity)
+            });
+            let Some(identity) = identity.as_ref().filter(|id| held_identities.contains(id)) else {
+                continue;
+            };
+            let names = reported.entry(identity.clone()).or_default();
+            let set = if removed {
+                &mut names.removed
+            } else {
+                &mut names.present
+            };
+            set.insert(name.to_os_string());
+        }
+        let changes: BTreeMap<PathBuf, FolderChange> = reported
+            .into_iter()
+            .map(|(identity, reported)| {
+                let observed = fs_reader::observe_listing(root, &identity);
+                (identity, FolderChange { reported, observed })
+            })
+            .collect();
+        reduce(self, &changes)
     }
 
     /// The location of `path` when it resolves inside the root to something of `kind`.
@@ -588,6 +697,57 @@ impl FolderModel {
         }
         self
     }
+}
+
+/// The model after a delta: every held listing whose folder `changes` names is reduced, and nothing
+/// else moves. It is pure. It takes the held data, the reports and a fresh read of each reported
+/// folder, and reads nothing itself, so the place, the open file's content and the Git item are
+/// carried from the input and never rebuilt from the listings.
+fn reduce(model: FolderModel, changes: &BTreeMap<PathBuf, FolderChange>) -> FolderModel {
+    let reduced = |held: HeldListing| match changes.get(&held.identity) {
+        Some(change) => reduce_listing(held, change),
+        None => held,
+    };
+    FolderModel {
+        root_listing: reduced(model.root_listing),
+        listings: model
+            .listings
+            .into_iter()
+            .map(|(path, held)| (path, reduced(held)))
+            .collect(),
+        ..model
+    }
+}
+
+/// One held listing after the delta: each entry the delta names is dropped, each one it says exists
+/// comes back as its fresh observation (when the fresh read still sees it), every other entry is
+/// kept as it was held, and the result is ordered as a fresh listing orders. A name reported both
+/// present and removed is decided by the fresh read.
+///
+/// A listing that is not observed, and a fresh read that failed, leave the held listing as it was:
+/// what the model holds for a failed folder read is not this change's to settle.
+fn reduce_listing(held: HeldListing, change: &FolderChange) -> HeldListing {
+    let (ItemState::Observed(_), ItemState::Observed(fresh)) = (&held.entries, &change.observed)
+    else {
+        return held;
+    };
+    let reported = &change.reported;
+    let mut items: Vec<Listed> = held
+        .items
+        .into_iter()
+        .filter(|item| {
+            !reported.present.contains(&item.raw_name) && !reported.removed.contains(&item.raw_name)
+        })
+        .collect();
+    items.extend(
+        fresh
+            .items
+            .iter()
+            .filter(|item| reported.present.contains(&item.raw_name))
+            .cloned(),
+    );
+    order(&mut items);
+    HeldListing::from_items(held.identity, items)
 }
 
 /// Asks `port` about the model's folder and returns the model with only the Git item replaced.

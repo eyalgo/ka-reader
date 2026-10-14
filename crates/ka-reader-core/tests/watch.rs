@@ -17,8 +17,8 @@ use std::time::SystemTime;
 
 use common::TempDir;
 use ka_reader_core::{
-    Entry, EntryKind, FileRequest, FolderModel, ItemState, ReadingPosition, TreeRequest, list_tree,
-    open_folder,
+    Entry, EntryKind, FileRequest, FolderModel, ItemState, ModelDelta, ReadingPosition,
+    TreeRequest, list_tree, open_folder,
 };
 
 /// A project-shaped folder: a root file, nested folders, a `.git` entry and files to open.

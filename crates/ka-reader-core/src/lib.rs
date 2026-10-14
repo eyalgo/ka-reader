@@ -9,7 +9,7 @@ mod language;
 
 pub use error::Error;
 pub use folder_model::{
-    FileRequest, FileView, FolderKind, FolderModel, GitCondition, GitState, OpenFile,
+    FileRequest, FileView, FolderKind, FolderModel, GitCondition, GitState, ModelDelta, OpenFile,
     OpenFolderOutcome, OpenedFolder, ReaderPlace, ReadingPosition, TreeRequest, list_tree,
     open_folder, read_git, select_file,
 };
