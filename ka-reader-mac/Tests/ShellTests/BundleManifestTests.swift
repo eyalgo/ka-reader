@@ -31,7 +31,7 @@ final class BundleManifestTests: XCTestCase {
 
         XCTAssertEqual(info["CFBundleIdentifier"] as? String, "com.kensaiapp.ka-reader")
         XCTAssertEqual(info["CFBundleExecutable"] as? String, "KAReader")
-        XCTAssertEqual(info["LSMinimumSystemVersion"] as? String, "14.0")
+        XCTAssertEqual(info["LSMinimumSystemVersion"] as? String, "26.0")
     }
 
     func testInfoPlistNamesTheBundleTypeAndTheIcon() throws {
