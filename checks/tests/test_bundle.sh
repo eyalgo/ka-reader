@@ -18,9 +18,9 @@
 #     KA_READER_APP defaults to target/release/bundle/macos/KA-Reader.app under the product root.
 #   A bundle that is absent FAILS the suite with a stated message and runs no case: a skip would
 #   let CI conclude green having proved nothing.
-#   A clean run prints, after the negative control's `ok` line, that control's one reading — the line
-#   `out-of-grant-read: denied` or `out-of-grant-read: allowed` — so a hosted build's log carries it
-#   (NFDR QC-25). It is printed, never judged.
+#   A clean run prints, after the negative control's `ok` line, that control's one reading — the
+#   line `out-of-grant-read: denied` or `out-of-grant-read: allowed` — so a hosted build's log
+#   carries it (NFDR QC-25). It is printed, never judged.
 #
 # WHY NO `set -e`
 #   A case that fails must not end the run before the remaining cases report. Each case returns its
@@ -623,10 +623,11 @@ printf 'sandboxed: yes\nout-of-grant-read: denied\noutbound-connection: denied\n
 }
 
 # CP-768, CP-771: the control's report must hold the reading, and the reading is this case's whole
-# output — the runner prints it once, after the case's `ok` line. Printing it is all that is done with
-# it: `denied` and `allowed` are both a pass (CP-769).
+# output — the runner prints it once, after the case's `ok` line. Printing it is all that is done
+# with it: `denied` and `allowed` are both a pass (CP-769).
 publish_control_reading() {
-  # `|| true`: pipefail would otherwise end the run on a report with no line, before the guard reports.
+  # `|| true`: pipefail would otherwise end the run on a report with no line, before the guard
+  # reports.
   marker_lines="$(printf '%s\n' "$OUT" | grep -c 'out-of-grant-read:' || true)"
   [ "$marker_lines" -ne 0 ] \
     || fail "The negative control's report has no out-of-grant-read line. This run has no reading to print. To read the whole report, run checks/bundle.sh --negative-control on a copy of the bundle under test re-signed with an empty entitlement set." \
@@ -758,9 +759,9 @@ test_negative_control_reported_sandboxed_fails_the_suite() {
   esac
 }
 
-# A stand-in for `ka-reader-sandbox-probe` whose whole report is the lines given, one per argument, each
-# printed exactly as written — so a report with no reading, an empty, indented or doubled one can be
-# made. `probe_stub` always prints all three lines, so it cannot.
+# A stand-in for `ka-reader-sandbox-probe` whose whole report is the lines given, one per argument,
+# each printed exactly as written — so a report with no reading, an empty, indented or doubled one
+# can be made. `probe_stub` always prints all three lines, so it cannot.
 report_stub() {
   dir="$1"
   shift
@@ -771,25 +772,26 @@ report_stub() {
   make_stub "$dir" ka-reader-sandbox-probe "$body"
 }
 
-# The suite's own control, run nested against the stand-in probe in $1. The two streams are kept apart:
-# NESTED_STATUS, NESTED_STDOUT and NESTED_STDERR hold what the nested run exited with and wrote.
+# The suite's own control, run nested against the stand-in probe in $1. The two streams are kept
+# apart: nested_status, nested_stdout and nested_stderr hold what the nested run exited with and
+# wrote.
 run_nested_control() {
-  NESTED_STDOUT="$(PATH="$1:$PATH" KA_READER_TEST_ONLY="$CONTROL_CASE" bash "$0" 2> "$WORK/nested-stderr")"
-  NESTED_STATUS=$?
-  NESTED_STDERR="$(cat "$WORK/nested-stderr")"
+  nested_stdout="$(PATH="$1:$PATH" KA_READER_TEST_ONLY="$CONTROL_CASE" bash "$0" 2> "$WORK/nested-stderr")"
+  nested_status=$?
+  nested_stderr="$(cat "$WORK/nested-stderr")"
 }
 
 nested_output_names_a_reading() {
-  case "$NESTED_STDOUT$NESTED_STDERR" in
+  case "$nested_stdout$nested_stderr" in
     *"out-of-grant-read:"*) return 0 ;;
   esac
   return 1
 }
 
-# A control report the suite must refuse: the nested run exits non-zero and writes the marker text on
-# neither stream, so a hosted log holds no line a reader could take for a reading. $1 names the kind of
-# report — `missing` (no reading line), `odd` (one reading line not in the exact form) or `several` — and
-# the remaining arguments are the lines of the report. The failure texts are change_text.md's.
+# A control report the suite must refuse: the nested run exits non-zero and writes the marker text
+# on neither stream, so a hosted log holds no line a reader could take for a reading. $1 names the
+# kind of report — `missing` (no reading line), `odd` (one reading line not in the exact form) or
+# `several` — and the remaining arguments are the lines of the report.
 expect_report_refused() {
   kind="$1"
   shift
@@ -803,10 +805,10 @@ expect_report_refused() {
     odd) exited_zero="With a negative control report whose one out-of-grant-read line isn't exactly out-of-grant-read, a colon, a space, and then denied or allowed, the suite exited 0." ;;
     several) exited_zero="With a negative control report that has more than one out-of-grant-read line, the suite exited 0." ;;
   esac
-  [ "$NESTED_STATUS" -ne 0 ] || fail "$exited_zero" || return 1
+  [ "$nested_status" -ne 0 ] || fail "$exited_zero" || return 1
 
   if [ "$kind" = missing ]; then
-    case "$NESTED_STDOUT$NESTED_STDERR" in
+    case "$nested_stdout$nested_stderr" in
       *"no out-of-grant-read line"*) ;;
       *) fail "With a negative control report that has no out-of-grant-read line, the suite's output doesn't name the missing line." || return 1 ;;
     esac
@@ -822,10 +824,11 @@ expect_report_refused() {
 }
 
 # CP-771, CP-772 and CP-773: the suite goes red when the control's report carries no reading it can
-# publish — and goes red on every run, which is what proves the check can. The real probe always prints
-# the line, so the real control passes; stand-ins make each report the check must refuse, and two make
-# the one it must publish. Every report keeps the control's other assertions green (`sandboxed: no`,
-# one such line, the whole window), so a refusal here comes from the reading check alone.
+# publish — and goes red on every run, which is what proves the check can. The real probe always
+# prints the line, so the real control passes; stand-ins make each report the check must refuse, and
+# two make the one it must publish. Every report keeps the control's other assertions green
+# (`sandboxed: no`, one such line, the whole window), so a refusal here comes from the reading
+# check alone.
 test_negative_control_missing_read_fails_the_suite() {
   expect_report_refused missing 'sandboxed: no' 'outbound-connection: denied' || return 1
 
@@ -836,16 +839,16 @@ test_negative_control_missing_read_fails_the_suite() {
 
     run_nested_control "$stubs"
 
-    [ "$NESTED_STATUS" -eq 0 ] \
-      || fail "With a negative control report that reads $reading, the suite exited $NESTED_STATUS instead of 0." || return 1
+    [ "$nested_status" -eq 0 ] \
+      || fail "With a negative control report that reads $reading, the suite exited $nested_status instead of 0." || return 1
     expected_stdout="$(printf 'ok   %s\nout-of-grant-read: %s' "$CONTROL_CASE" "$reading")"
-    [ "$NESTED_STDOUT" = "$expected_stdout" ] \
+    [ "$nested_stdout" = "$expected_stdout" ] \
       || fail "With a negative control report that reads $reading, the suite's stdout isn't exactly the negative control's ok line followed by its reading." || return 1
-    case "$NESTED_STDERR" in
+    case "$nested_stderr" in
       *"out-of-grant-read:"*) fail "With a negative control report that reads $reading, the suite printed an out-of-grant-read line on stderr." || return 1 ;;
     esac
     # Both streams, with the reading itself masked: what is left must not depend on the value.
-    masked="$(printf '%s\n%s' "$NESTED_STDOUT" "$NESTED_STDERR" | sed 's/^out-of-grant-read: .*$/out-of-grant-read: READING/')"
+    masked="$(printf '%s\n%s' "$nested_stdout" "$nested_stderr" | sed 's/^out-of-grant-read: .*$/out-of-grant-read: READING/')"
     if [ "$reading" = denied ]; then denied_output="$masked"; else allowed_output="$masked"; fi
   done
   [ "$denied_output" = "$allowed_output" ] \
