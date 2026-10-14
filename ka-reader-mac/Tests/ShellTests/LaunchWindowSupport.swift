@@ -263,8 +263,17 @@ func click(_ control: NSControl) {
 /// the release are queued before the press is delivered, so a view that tracks a drag in its own
 /// loop finds them there; whatever is still queued afterwards is delivered in turn, so a view that
 /// takes each event as it comes gets them too, and nothing is left for a later test.
+///
+/// A queued event's location is read back through where the window server has the window, and the
+/// server places a window some time after AppKit gives it its frame: on a Mac it reports no bounds
+/// at first, then the window's opening, a little smaller than its frame; on the hosted macos-26
+/// image queued events came back as if it had the window at the screen's top-left corner (run
+/// 38496422879: (+152, -32) from the window's own (152, 64)). So the drag waits until the server's
+/// bounds are the window's frame (`waitUntilPlaced`); from then on a queued event comes back where
+/// it was put.
 @MainActor
 func dragAsAPersonDoes(in window: NSWindow, from start: NSPoint, by distance: CGFloat) throws {
+    try waitUntilPlaced(window)
     let end = NSPoint(x: start.x + distance, y: start.y)
     let press = try mouseEvent(.leftMouseDown, at: start, in: window)
     NSApp.postEvent(try mouseEvent(.leftMouseDragged, at: end, in: window), atStart: false)
@@ -278,6 +287,50 @@ func dragAsAPersonDoes(in window: NSWindow, from start: NSPoint, by distance: CG
         window.sendEvent(queued)
     }
     layOut(window)
+}
+
+/// Runs the main run loop until the window server's bounds for `window` are its frame, and throws
+/// when they are not within `placementTimeout`: a drag delivered before then is read at the wrong
+/// place. The server's bounds are in screen coordinates measured down from the top of the first
+/// screen, so the frame is turned over before they are compared.
+@MainActor
+private func waitUntilPlaced(_ window: NSWindow) throws {
+    let topOfFirstScreen = try XCTUnwrap(NSScreen.screens.first, "no screen").frame.maxY
+    let frame = window.frame
+    let expected = CGRect(
+        x: frame.minX, y: topOfFirstScreen - frame.maxY, width: frame.width, height: frame.height)
+    let deadline = Date().addingTimeInterval(placementTimeout)
+    while serverBounds(of: window) != expected {
+        guard Date() < deadline else {
+            throw PlacementTimedOut(
+                expected: expected, server: serverBounds(of: window), within: placementTimeout)
+        }
+        RunLoop.current.run(until: Date().addingTimeInterval(0.01))
+    }
+}
+
+/// How long the window server is given to place a window before a drag on it fails.
+private let placementTimeout: TimeInterval = 5
+
+/// The window server's bounds for `window`, or nil when it reports none.
+@MainActor
+private func serverBounds(of window: NSWindow) -> CGRect? {
+    let info =
+        CGWindowListCopyWindowInfo([.optionIncludingWindow], CGWindowID(window.windowNumber))
+        as? [[String: Any]]
+    guard let bounds = info?.first?[kCGWindowBounds as String] as? NSDictionary else { return nil }
+    return CGRect(dictionaryRepresentation: bounds as CFDictionary)
+}
+
+private struct PlacementTimedOut: Error, CustomStringConvertible {
+    let expected: CGRect
+    let server: CGRect?
+    let within: TimeInterval
+
+    var description: String {
+        "the window server did not place the window at \(expected) within \(within) s "
+            + "(it reports \(server.map { "\($0)" } ?? "no bounds"))"
+    }
 }
 
 @MainActor
