@@ -28,7 +28,36 @@ None.
 
 ## 2. Choices to confirm — the Principal Architect drafted a best-effort answer; confirm or override
 
-None.
+### 2.1 § 9 says the tools-6.2 adoption is the tree's and not yet CI's, and CI has built it since run 38549778886
+
+> **No `product-architecture` run wrote this item.** A `companion-self-answer` run raised it on
+> 2026-10-14, while answering § 3.1. It read § 9's *Adopted* passage beside the runs § 3.1 cites, and
+> found that a fact in it is now false. No item asked about it. The reasoning is
+> `docs/trail/architecture/self_answer-50.md` § *Raised on this document*.
+
+- **Lands in:** `nfdr.md` § 9, the `ka-reader-mac` bullet's *Adopted* passage, the sentences from "The
+  adoption is the tree's, not yet CI's." to "a red there contradicts this clause and is not noise"
+  (lines 1845–1849 at `ka-reader@20a15ed`). No ADR.
+- **Drafted into the records:** nothing. The run that raised this writes no document. The lean, for
+  the seat that folds it: those sentences become a dated account. `ka-reader@f0f1e5f` is on
+  `origin/main`. The first hosted build of the `6.2` manifest is GitHub Actions run 38549778886 on
+  `ka-reader@47e8e6b` (2026-10-14). It went red at `Build KA-Reader.app` with "expression uses unsafe
+  constructs but is not marked with 'unsafe'" at `NativeBridge.swift:24:9` and `:28:9`. The manifest
+  loaded, and the source failed to compile. As the clause said, that red was not noise: it was the
+  adopted `.strictMemorySafety()` setting meeting Swift 6.3.3. `ka-reader@24be581` fixed it, and run
+  38551538187 on that commit is the first green hosted build of the manifest. The v49 words stand in a
+  dated note.
+- **Rationale:** A fact in the document is now false, measured at the source on 2026-10-14.
+  `git merge-base --is-ancestor f0f1e5f origin/main` holds. `gh run view 38549778886` gives head
+  `47e8e6b`, step `Build KA-Reader.app` failed, and its log prints both `NativeBridge.swift` errors.
+  `gh run view 38551538187` gives head `24be581`, job `wall` success. § 3.1's fold touches the same
+  bullet's *Toolchain* clause and cites the same run, so the cheapest place to make this change is
+  that fold. But § 3.1 does not ask about this passage, and an answer is not the place to carry a
+  separate defect.
+- **If overridden:** § 9 keeps telling a cold reader that no hosted run has built a manifest that CI
+  has built on every push since 2026-10-14. It also leaves open whether that first red broke the
+  clause. Nothing else moves.
+- **Confirm or override:** <"confirm", or "override: <what to do instead>">
 
 ## 3. Raised from downstream — an item from a seat that did not write these records
 
@@ -60,7 +89,23 @@ None.
   pair (6.3 and 6.4), or as a stop-gap until the gate's toolchain is CI's?
 - **If a document has to be written:** possibly an ADR, if the gate's environment becomes a binding.
   Otherwise a fold into § 8 and § 9.
-- **Answer:** <the owner fills this in>
+- **Answer:** Fold into `nfdr.md` §§ 8 and 9; no ADR. (1) **Yes, as a reading rule, not as an
+  environment.** § 9's *Toolchain* clause names the toolchain it records — CI's, today Apple Swift
+  6.3.3 on SDK 26.5 — as the reference for every verdict that depends on the compiler. A change-time
+  verdict stands in for CI only when the Swift version and SDK the run printed are that toolchain. A
+  run on any other toolchain, a patch release included, or a run that names none, proves the change on
+  what it ran on and nothing more; the CI build on `main` is the reading. Where the gate runs — the
+  owner's Mac, a guest VM — stays the project card's and the pipeline's (§ 8's first sentence; the
+  instance finding this item names), and the records name no VM. (2) **Yes, and the window server
+  gets the same rule.** § 9's runner paragraph states a second precondition beside the bridge's
+  assembly: a layer-4 test that places a window needs a session in which the window server places
+  windows. A run whose window tests fail with *the window server did not place the window* in a locked
+  session has not read the change either way. It is re-run where windows are placed, and never
+  skipped or quieted. (3) **A supported pair, bounded.** The `#else` arm builds on the toolchain § 9
+  records, and CI holds it on every build. The `compiler(>=6.4)` arm is held by no hosted check, only
+  by change-time runs on 6.4, and the records say so. The `#else` arm is owed removal from the first
+  CI log that prints Swift 6.4 or later, because from then nothing builds it. Reasoning:
+  `docs/trail/architecture/self_answer-50.md` § 3.1.
 
 ### 3.2 § 8 says the card's test command does not assemble the bridge, and the card now does
 - **Raised by:** Product (owner) — 2026-10-14
@@ -72,6 +117,12 @@ None.
   `cargo test --workspace --locked && ka-reader-mac/assemble.sh && swift test --package-path ka-reader-mac`.
 - **Where it shows:** § 8 lines 1438 and 1451–1460, measured at `ka-reader@0e3ad5e`.
 - **If a document has to be written:** none. This is a fold into `nfdr.md` § 8.
-- **Answer:** <the owner fills this in>
+- **Answer:** Fold into `nfdr.md` § 8; no record. The card moved at `kensaiapp-opensource@d5005730`,
+  and its `Test command:` reads `cargo test --workspace --locked && ka-reader-mac/assemble.sh && swift
+  test --package-path ka-reader-mac` (re-read 2026-10-14). § 8 quotes the card at that commit. The
+  paragraph *The card's Swift half needs the bridge assembled first, and the card does not say so yet*
+  becomes a dated note, because the move it named as owed is made. RN-6 is extended with the pin. § 9's
+  runner paragraph stays the precondition's one home and does not move. Reasoning:
+  `docs/trail/architecture/self_answer-50.md` § 3.2.
 
 **How it closes.** `product-architecture` folds both on its next run like any other item here.
