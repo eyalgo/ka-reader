@@ -354,7 +354,14 @@ fn ask_git(port: &dyn GitPort, root: &Path) -> Result<FolderKind, (GitCondition,
 
 #[cfg(test)]
 mod tests {
-    use super::{OpenFailure, OpenFolderOutcome, open_folder};
+    use std::path::{Path, PathBuf};
+
+    use super::{
+        FileRequest, FileView, FolderKind, FolderModel, ItemState, OpenFailure, OpenFolderOutcome,
+        ReaderPlace, ReadingPosition, TreeRequest, list_tree, open_folder, read_git, select_file,
+    };
+    use crate::fs_reader::Condition;
+    use crate::git_reader::{GitPort, GitReadCondition, HeadState, RootFinding, StatusLists};
     use crate::test_support::TempDir;
 
     #[test]
@@ -381,5 +388,373 @@ mod tests {
             open_folder(file),
             OpenFolderOutcome::Failed(OpenFailure::NotAFolder)
         );
+    }
+
+    /// A project-shaped folder: a root file, nested folders, a `.git` entry and a file to open.
+    fn project() -> TempDir {
+        let folder = TempDir::new();
+        folder.write_file("README.md", "# readme\n");
+        folder.write_file("src/main.rs", "fn main() {}\n");
+        folder.write_file("src/util.rs", "// util\n");
+        folder.write_file("src/lib/a.rs", "// a\n");
+        folder.write_file("docs/guide.md", "guide\n");
+        folder.write_file("tests/b.rs", "// b\n");
+        folder.write_file(".git/HEAD", "ref: refs/heads/main\n");
+        folder
+    }
+
+    fn model_over(folder: &TempDir) -> FolderModel {
+        FolderModel::new(open_folder(folder.path()).expect("the project folder opens"))
+    }
+
+    fn expand(model: FolderModel, path: &str) -> FolderModel {
+        model.list_tree(TreeRequest::Expand(PathBuf::from(path)))
+    }
+
+    fn collapse(model: FolderModel, path: &str) -> FolderModel {
+        model.list_tree(TreeRequest::Collapse(PathBuf::from(path)))
+    }
+
+    fn select(model: FolderModel, path: &str) -> FolderModel {
+        model.select_file(FileRequest::Select(Some(PathBuf::from(path))))
+    }
+
+    fn open(model: FolderModel, path: &str, position: &ReadingPosition) -> FolderModel {
+        model.select_file(FileRequest::Open(PathBuf::from(path), position.clone()))
+    }
+
+    fn position(bytes: &[u8]) -> ReadingPosition {
+        ReadingPosition::new(bytes)
+    }
+
+    #[test]
+    fn test_a_new_model_holds_the_arrival_state() {
+        let folder = project();
+        let model = model_over(&folder);
+
+        assert_eq!(model.place(), &ReaderPlace::default());
+        for path in ["src", "docs", "tests", ".git"] {
+            assert!(!model.place().is_expanded(Path::new(path)), "{path}");
+        }
+        assert_eq!(model.place().selected(), None);
+        assert!(model.open_file().is_none());
+    }
+
+    #[test]
+    fn test_no_open_file_means_no_reading_position() {
+        let folder = project();
+        let model = select(model_over(&folder), "src/main.rs");
+
+        assert!(model.open_file().is_none());
+        assert!(model.place().open_file().is_none());
+    }
+
+    #[test]
+    fn test_position_without_an_open_file_leaves_the_model_equal() {
+        let folder = project();
+        let model = select(expand(model_over(&folder), "src"), "src/util.rs");
+
+        let after = model
+            .clone()
+            .select_file(FileRequest::Position(position(b"line 400")));
+
+        assert_eq!(after, model);
+        assert!(after.open_file().is_none());
+    }
+
+    #[test]
+    fn test_selection_and_open_file_are_held_independently() {
+        let folder = project();
+        let held = position(b"top");
+
+        let model = open(
+            select(model_over(&folder), "src/util.rs"),
+            "src/main.rs",
+            &held,
+        );
+
+        assert_eq!(model.place().selected(), Some(Path::new("src/util.rs")));
+        let open_file = model.open_file().expect("a file is open");
+        assert_eq!(open_file.path(), Path::new("src/main.rs"));
+        assert_eq!(open_file.position(), &held);
+    }
+
+    #[test]
+    fn test_selecting_does_not_open_or_close_the_open_file() {
+        let folder = project();
+        let held = position(b"top");
+        let opened = open(model_over(&folder), "src/main.rs", &held);
+
+        let selected = select(opened.clone(), "src/util.rs");
+        let cleared = selected.clone().select_file(FileRequest::Select(None));
+
+        assert_eq!(selected.open_file(), opened.open_file());
+        assert_eq!(cleared.open_file(), opened.open_file());
+        assert!(
+            select(model_over(&folder), "src/util.rs")
+                .open_file()
+                .is_none()
+        );
+    }
+
+    #[test]
+    fn test_select_none_clears_the_selection() {
+        let folder = project();
+        let model = select(model_over(&folder), "src/main.rs");
+        assert_eq!(model.place().selected(), Some(Path::new("src/main.rs")));
+
+        let cleared = model.select_file(FileRequest::Select(None));
+
+        assert_eq!(cleared.place().selected(), None);
+        assert_eq!(cleared.place(), &ReaderPlace::default());
+    }
+
+    #[test]
+    fn test_selecting_performs_no_content_read() {
+        let folder = project();
+        folder.set_mode("src/util.rs", 0o000);
+
+        let model = select(model_over(&folder), "src/util.rs");
+
+        assert_eq!(model.place().selected(), Some(Path::new("src/util.rs")));
+        assert!(model.open_file().is_none());
+    }
+
+    #[test]
+    fn test_expansion_is_the_last_act_on_that_folder() {
+        let folder = project();
+        let model = model_over(&folder);
+
+        let expanded = expand(model.clone(), "docs");
+        let collapsed = collapse(expanded.clone(), "docs");
+        let reexpanded = expand(collapsed.clone(), "docs");
+
+        assert!(expanded.place().is_expanded(Path::new("docs")));
+        assert!(!collapsed.place().is_expanded(Path::new("docs")));
+        assert!(reexpanded.place().is_expanded(Path::new("docs")));
+        assert_eq!(collapsed.place(), model.place());
+    }
+
+    #[test]
+    fn test_expanding_holds_the_folders_direct_listing_as_a_fresh_list_tree_reads_it() {
+        let folder = project();
+        let opened = open_folder(folder.path()).expect("opens");
+
+        let model = expand(model_over(&folder), "src");
+
+        assert_eq!(
+            model.listing(Path::new("src")),
+            Some(&list_tree(&opened, "src"))
+        );
+    }
+
+    #[test]
+    fn test_collapsing_a_parent_keeps_every_descendants_flag_and_listing() {
+        let folder = project();
+        let model = expand(expand(model_over(&folder), "src"), "src/lib");
+        let child_listing = model.listing(Path::new("src/lib")).cloned();
+        let parent_listing = model.listing(Path::new("src")).cloned();
+
+        let collapsed = collapse(model, "src");
+
+        assert!(!collapsed.place().is_expanded(Path::new("src")));
+        assert!(collapsed.place().is_expanded(Path::new("src/lib")));
+        assert_eq!(
+            collapsed.listing(Path::new("src/lib")).cloned(),
+            child_listing
+        );
+        assert_eq!(collapsed.listing(Path::new("src")).cloned(), parent_listing);
+    }
+
+    #[test]
+    fn test_collapse_of_a_never_expanded_folder_holds_it_collapsed() {
+        let folder = project();
+        let model = model_over(&folder);
+
+        let collapsed = collapse(model.clone(), "tests");
+
+        assert!(!collapsed.place().is_expanded(Path::new("tests")));
+        assert!(collapsed.listing(Path::new("tests")).is_none());
+        assert_eq!(collapsed, model);
+    }
+
+    #[test]
+    fn test_open_replaces_the_previous_open_file_and_its_position() {
+        let folder = project();
+        let first = position(b"first");
+        let second = position(b"second");
+
+        let model = open(
+            open(model_over(&folder), "src/main.rs", &first),
+            "src/util.rs",
+            &second,
+        );
+
+        let open_file = model.open_file().expect("a file is open");
+        assert_eq!(open_file.path(), Path::new("src/util.rs"));
+        assert_eq!(open_file.position(), &second);
+    }
+
+    #[test]
+    fn test_open_holds_the_file_view_as_select_file_reads_it() {
+        let folder = project();
+        let opened = open_folder(folder.path()).expect("opens");
+
+        let model = open(model_over(&folder), "src/main.rs", &position(b"top"));
+
+        assert_eq!(
+            model.open_file().expect("a file is open").view(),
+            &select_file(&opened, "src/main.rs")
+        );
+        assert!(matches!(
+            model.open_file().expect("a file is open").view(),
+            ItemState::Observed(FileView::Text { .. })
+        ));
+    }
+
+    #[test]
+    fn test_the_reading_position_round_trips_byte_for_byte() {
+        let folder = project();
+        // A caller-chosen anchor for line 400 with finer offsets, then bytes that are not text.
+        let anchors: [&[u8]; 3] = [b"line=400;offset=0.25", &[0xFF, 0x00, 0x80, 0xC3], &[]];
+
+        for bytes in anchors {
+            let model = open(model_over(&folder), "src/main.rs", &position(bytes));
+
+            let open_file = model.open_file().expect("a file is open");
+            assert_eq!(open_file.position().as_bytes(), bytes);
+        }
+    }
+
+    #[test]
+    fn test_a_distinct_position_set_later_reads_back_as_the_later_one() {
+        let folder = project();
+        let model = open(model_over(&folder), "src/main.rs", &position(b"line=400"));
+
+        let later = model.select_file(FileRequest::Position(position(b"line=912")));
+
+        let open_file = later.open_file().expect("a file is open");
+        assert_eq!(open_file.position(), &position(b"line=912"));
+        assert_eq!(open_file.path(), Path::new("src/main.rs"));
+    }
+
+    #[test]
+    fn test_open_of_a_path_that_is_not_a_file_leaves_the_model_equal_to_its_input() {
+        let folder = project();
+        let model = open(model_over(&folder), "src/main.rs", &position(b"top"));
+
+        for path in ["src", "missing.rs", "src/missing.rs"] {
+            assert_eq!(open(model.clone(), path, &position(b"x")), model, "{path}");
+        }
+    }
+
+    #[test]
+    fn test_select_of_a_path_that_is_not_a_file_leaves_the_model_equal_to_its_input() {
+        let folder = project();
+        let model = select(model_over(&folder), "src/main.rs");
+
+        for path in ["src", "missing.rs"] {
+            assert_eq!(select(model.clone(), path), model, "{path}");
+        }
+    }
+
+    #[test]
+    fn test_expand_of_a_file_path_leaves_the_model_equal_to_its_input() {
+        let folder = project();
+        let model = expand(model_over(&folder), "src");
+
+        for path in ["src/main.rs", "missing"] {
+            assert_eq!(expand(model.clone(), path), model, "{path}");
+        }
+    }
+
+    #[test]
+    fn test_the_root_is_not_a_disclosure_target() {
+        let folder = project();
+        let model = model_over(&folder);
+
+        for path in ["", ".", "src/.."] {
+            assert_eq!(expand(model.clone(), path), model, "expand {path:?}");
+            assert_eq!(collapse(model.clone(), path), model, "collapse {path:?}");
+        }
+    }
+
+    #[test]
+    fn test_a_request_outside_the_root_leaves_the_model_equal_to_its_input() {
+        let folder = project();
+        let model = open(
+            expand(model_over(&folder), "src"),
+            "src/main.rs",
+            &position(b"top"),
+        );
+
+        assert_eq!(expand(model.clone(), ".."), model);
+        assert_eq!(collapse(model.clone(), "../x"), model);
+        assert_eq!(select(model.clone(), "../x"), model);
+        assert_eq!(open(model.clone(), "../x", &position(b"y")), model);
+    }
+
+    struct PlainFolder;
+
+    impl GitPort for PlainFolder {
+        fn probe(&self, _: &Path) -> RootFinding {
+            RootFinding::Plain
+        }
+
+        fn state(&self, _: &Path) -> Result<HeadState, GitReadCondition> {
+            Err(GitReadCondition::NotARoot)
+        }
+
+        fn status(&self, _: &Path) -> Result<StatusLists, GitReadCondition> {
+            Err(GitReadCondition::NotARoot)
+        }
+    }
+
+    #[test]
+    fn test_read_git_preserves_the_place_and_every_non_git_listing() {
+        let folder = project();
+        let model = open(
+            select(
+                expand(expand(model_over(&folder), "src"), "docs"),
+                "src/util.rs",
+            ),
+            "src/main.rs",
+            &position(b"line=400"),
+        );
+
+        let read = read_git(model.clone(), &PlainFolder);
+
+        assert_eq!(read.kind(), &ItemState::Observed(FolderKind::Plain));
+        assert_eq!(read.place(), model.place());
+        assert_eq!(read.tree(), model.tree());
+        for path in ["src", "docs"] {
+            assert_eq!(
+                read.listing(Path::new(path)),
+                model.listing(Path::new(path))
+            );
+        }
+    }
+
+    #[test]
+    fn test_tree_is_the_root_projection_of_the_held_root_listing() {
+        let folder = project();
+        let opened = open_folder(folder.path()).expect("opens");
+        let model = expand(model_over(&folder), "src");
+
+        assert_eq!(model.tree(), &list_tree(&opened, ""));
+        assert_eq!(model.listing(Path::new("")), Some(model.tree()));
+        assert_eq!(model.listing(Path::new("never-expanded")), None);
+    }
+
+    #[test]
+    fn test_a_failed_root_listing_is_held_as_the_failure() {
+        let folder = project();
+        let model = model_over(&folder);
+        folder.set_mode("", 0o000);
+
+        let unreadable = FolderModel::new(model.folder().clone());
+
+        assert_eq!(unreadable.tree(), &ItemState::Failed(Condition::Unreadable));
+        assert_eq!(unreadable.listing(Path::new("")), Some(unreadable.tree()));
     }
 }
