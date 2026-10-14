@@ -638,12 +638,19 @@ fn ask_git(port: &dyn GitPort, root: &Path) -> Result<FolderKind, (GitCondition,
 mod tests {
     use std::path::{Path, PathBuf};
 
+    use std::collections::{BTreeMap, BTreeSet};
+    use std::ffi::OsString;
+
     use super::{
-        FileRequest, FileView, FolderKind, FolderModel, ItemState, OpenFailure, OpenFolderOutcome,
-        ReaderPlace, ReadingPosition, TreeRequest, list_tree, open_folder, read_git, select_file,
+        FileRequest, FileView, FolderChange, FolderKind, FolderModel, GitCondition, HeldListing,
+        ItemState, ModelDelta, OpenFailure, OpenFolderOutcome, OpenedFolder, ReaderPlace,
+        ReadingPosition, ReportedNames, TreeRequest, list_tree, open_folder, read_git, reduce,
+        select_file,
     };
-    use crate::fs_reader::Condition;
+    use crate::fs_reader::{Condition, Entry, EntryKind, Listed, ListingObservation};
+    use crate::git_reader::ProbeCondition;
     use crate::git_reader::{GitPort, GitReadCondition, HeadState, RootFinding, StatusLists};
+    use crate::language::Language;
     use crate::test_support::TempDir;
 
     #[test]
@@ -1038,5 +1045,410 @@ mod tests {
 
         assert_eq!(unreadable.tree(), &ItemState::Failed(Condition::Unreadable));
         assert_eq!(unreadable.listing(Path::new("")), Some(unreadable.tree()));
+    }
+
+    // ---- The pure reducer: held data, observed values and a report, and no disk ----
+
+    fn listed(identity: &str, name: &str, kind: EntryKind) -> Listed {
+        listed_with_state(identity, name, kind, None)
+    }
+
+    /// An entry as a listing of the folder at `identity` gives it; `state` overrides the usual one.
+    fn listed_with_state(
+        identity: &str,
+        name: &str,
+        kind: EntryKind,
+        state: Option<ItemState<()>>,
+    ) -> Listed {
+        let usual = match kind {
+            EntryKind::Folder => ItemState::Pending,
+            EntryKind::File => ItemState::Observed(()),
+        };
+        Listed {
+            raw_name: OsString::from(name),
+            entry: Entry {
+                name: name.to_string(),
+                path: PathBuf::from(identity)
+                    .join(name)
+                    .to_string_lossy()
+                    .into_owned(),
+                kind,
+                state: state.unwrap_or(usual),
+                language: (kind == EntryKind::File).then_some(Language::Plain),
+            },
+        }
+    }
+
+    fn held(identity: &str, entries: &[(&str, EntryKind)]) -> HeldListing {
+        HeldListing::from_items(
+            PathBuf::from(identity),
+            entries
+                .iter()
+                .map(|(name, kind)| listed(identity, name, *kind))
+                .collect(),
+        )
+    }
+
+    /// A model over a root that is never read: every value in it is supplied here.
+    fn supplied_model(
+        root: HeldListing,
+        listings: &[(&str, HeldListing)],
+        place: ReaderPlace,
+    ) -> FolderModel {
+        FolderModel {
+            folder: OpenedFolder {
+                root: PathBuf::from("/a/root/that/is/not/read"),
+            },
+            root_listing: root,
+            listings: listings
+                .iter()
+                .map(|(path, listing)| (PathBuf::from(path), listing.clone()))
+                .collect(),
+            place,
+            kind: ItemState::Pending,
+        }
+    }
+
+    fn names_in(listing: &HeldListing) -> Vec<&str> {
+        listing
+            .items
+            .iter()
+            .map(|item| item.entry.name.as_str())
+            .collect()
+    }
+
+    fn names(present: &[&str], removed: &[&str]) -> ReportedNames {
+        ReportedNames {
+            present: present.iter().map(OsString::from).collect(),
+            removed: removed.iter().map(OsString::from).collect(),
+        }
+    }
+
+    /// One folder's change: the names reported and what a fresh read of the folder saw.
+    fn change(
+        reported: ReportedNames,
+        identity: &str,
+        seen: Vec<Listed>,
+    ) -> BTreeMap<PathBuf, FolderChange> {
+        let mut seen = seen;
+        crate::fs_reader::order(&mut seen);
+        BTreeMap::from([(
+            PathBuf::from(identity),
+            FolderChange {
+                reported,
+                observed: ItemState::Observed(ListingObservation {
+                    location: PathBuf::from(identity),
+                    items: seen,
+                }),
+            },
+        )])
+    }
+
+    fn root_of(model: &FolderModel) -> Vec<&str> {
+        names_in(&model.root_listing)
+    }
+
+    const FILE: EntryKind = EntryKind::File;
+    const FOLDER: EntryKind = EntryKind::Folder;
+
+    #[test]
+    fn test_a_created_path_is_listed_in_its_held_parent() {
+        let model = supplied_model(
+            held("", &[("a.rs", FILE), ("src", FOLDER)]),
+            &[],
+            ReaderPlace::default(),
+        );
+        let seen = vec![
+            listed("", "a.rs", FILE),
+            listed("", "b.rs", FILE),
+            listed("", "src", FOLDER),
+        ];
+
+        let after = reduce(model, &change(names(&["b.rs"], &[]), "", seen));
+
+        assert_eq!(root_of(&after), ["src", "a.rs", "b.rs"]);
+    }
+
+    #[test]
+    fn test_a_changed_path_is_listed_as_its_fresh_observation() {
+        let model = supplied_model(
+            held("", &[("a.rs", FILE), ("b.rs", FILE)]),
+            &[],
+            ReaderPlace::default(),
+        );
+        let unreadable = listed_with_state(
+            "",
+            "a.rs",
+            FILE,
+            Some(ItemState::Failed(Condition::Unreadable)),
+        );
+
+        let after = reduce(
+            model,
+            &change(
+                names(&["a.rs"], &[]),
+                "",
+                vec![unreadable.clone(), listed("", "b.rs", FILE)],
+            ),
+        );
+
+        assert_eq!(after.root_listing.items[0], unreadable);
+        assert_eq!(
+            after.tree(),
+            &ItemState::Observed(vec![unreadable.entry, listed("", "b.rs", FILE).entry])
+        );
+    }
+
+    #[test]
+    fn test_a_removed_path_is_not_listed() {
+        let model = supplied_model(
+            held("", &[("a.rs", FILE), ("b.rs", FILE)]),
+            &[],
+            ReaderPlace::default(),
+        );
+
+        let after = reduce(
+            model,
+            &change(names(&[], &["a.rs"]), "", vec![listed("", "b.rs", FILE)]),
+        );
+
+        assert_eq!(root_of(&after), ["b.rs"]);
+    }
+
+    #[test]
+    fn test_created_changed_and_removed_in_one_batch() {
+        let model = supplied_model(
+            held(
+                "",
+                &[("gone.md", FILE), ("keep.md", FILE), ("util.rs", FILE)],
+            ),
+            &[],
+            ReaderPlace::default(),
+        );
+        let seen = vec![
+            listed("", "keep.md", FILE),
+            listed("", "new.rs", FILE),
+            listed("", "util.rs", FOLDER),
+        ];
+
+        let after = reduce(
+            model,
+            &change(names(&["new.rs", "util.rs"], &["gone.md"]), "", seen),
+        );
+
+        assert_eq!(root_of(&after), ["util.rs", "keep.md", "new.rs"]);
+        assert_eq!(after.root_listing.items[0].entry.kind, FOLDER);
+    }
+
+    #[test]
+    fn test_a_changed_entry_that_moves_between_folder_and_file_groups_is_reordered() {
+        let model = supplied_model(
+            held("", &[("alpha", FOLDER), ("beta", FILE), ("zeta", FILE)]),
+            &[],
+            ReaderPlace::default(),
+        );
+        let seen = vec![
+            listed("", "alpha", FOLDER),
+            listed("", "beta", FOLDER),
+            listed("", "zeta", FILE),
+        ];
+
+        let after = reduce(model, &change(names(&["beta"], &[]), "", seen));
+
+        assert_eq!(root_of(&after), ["alpha", "beta", "zeta"]);
+        assert_eq!(after.root_listing.items[1].entry.kind, FOLDER);
+    }
+
+    #[test]
+    fn test_removing_the_last_listed_entry_leaves_an_empty_listing_not_a_failed_one() {
+        let model = supplied_model(held("", &[("only.rs", FILE)]), &[], ReaderPlace::default());
+
+        let after = reduce(model, &change(names(&[], &["only.rs"]), "", vec![]));
+
+        assert_eq!(after.tree(), &ItemState::Observed(vec![]));
+    }
+
+    #[test]
+    fn test_a_fresh_observation_with_unreported_extras_does_not_leak_them_into_the_model() {
+        let model = supplied_model(
+            held("", &[("a.rs", FILE), ("b.rs", FILE)]),
+            &[],
+            ReaderPlace::default(),
+        );
+        // The fresh read saw `a.rs` and `c.rs` gone, `d.rs` added and `b.rs` changed; only `e.rs`
+        // is reported, so none of those four reaches the model.
+        let seen = vec![
+            listed_with_state(
+                "",
+                "b.rs",
+                FILE,
+                Some(ItemState::Failed(Condition::Missing)),
+            ),
+            listed("", "d.rs", FILE),
+            listed("", "e.rs", FILE),
+        ];
+
+        let after = reduce(model, &change(names(&["e.rs"], &[]), "", seen));
+
+        assert_eq!(root_of(&after), ["a.rs", "b.rs", "e.rs"]);
+        assert_eq!(after.root_listing.items[1], listed("", "b.rs", FILE));
+    }
+
+    #[test]
+    fn test_repeated_identical_reports_leave_no_duplicates() {
+        let model = supplied_model(held("", &[("a.rs", FILE)]), &[], ReaderPlace::default());
+        let seen = vec![listed("", "a.rs", FILE), listed("", "b.rs", FILE)];
+        let changes = change(names(&["b.rs"], &[]), "", seen);
+
+        let once = reduce(model, &changes);
+        let twice = reduce(once.clone(), &changes);
+
+        assert_eq!(root_of(&twice), ["a.rs", "b.rs"]);
+        assert_eq!(twice, once);
+    }
+
+    #[test]
+    fn test_an_empty_batch_is_the_identity() {
+        let folder = project();
+        let model = expand(model_over(&folder), "src");
+
+        let after = model
+            .clone()
+            .list_tree(TreeRequest::Delta(ModelDelta::default()));
+
+        assert_eq!(after, model);
+        assert_eq!(reduce(model.clone(), &BTreeMap::new()), model);
+    }
+
+    #[test]
+    fn test_a_delta_with_no_held_parent_changes_nothing() {
+        let model = supplied_model(held("", &[("a.rs", FILE)]), &[], ReaderPlace::default());
+
+        let after = reduce(
+            model.clone(),
+            &change(
+                names(&["new.rs"], &[]),
+                "elsewhere",
+                vec![listed("elsewhere", "new.rs", FILE)],
+            ),
+        );
+
+        assert_eq!(after, model);
+    }
+
+    #[test]
+    fn test_a_collapsed_never_read_folder_gets_no_listing() {
+        let folder = project();
+        let model = model_over(&folder);
+        folder.write_file("tests/a.rs", "// a\n");
+
+        let after = model.clone().list_tree(TreeRequest::Delta(ModelDelta::new(
+            vec![PathBuf::from("tests/a.rs")],
+            vec![],
+            vec![],
+        )));
+
+        assert_eq!(after, model);
+        assert!(after.listing(Path::new("tests")).is_none());
+        assert!(!after.place().is_expanded(Path::new("tests")));
+    }
+
+    #[test]
+    fn test_a_collapsed_previously_read_folder_updates_its_listing_and_stays_collapsed() {
+        let model = supplied_model(
+            held("", &[("src", FOLDER)]),
+            &[("src", held("src", &[("a.rs", FILE)]))],
+            ReaderPlace::default(),
+        );
+        assert!(!model.place.is_expanded(Path::new("src")));
+
+        let after = reduce(
+            model,
+            &change(
+                names(&["b.rs"], &[]),
+                "src",
+                vec![listed("src", "a.rs", FILE), listed("src", "b.rs", FILE)],
+            ),
+        );
+
+        assert_eq!(
+            names_in(&after.listings[Path::new("src")]),
+            ["a.rs", "b.rs"]
+        );
+        assert!(!after.place.is_expanded(Path::new("src")));
+        assert_eq!(root_of(&after), ["src"]);
+    }
+
+    #[test]
+    fn test_explicit_collapsed_flags_and_nested_held_listings_survive_unchanged() {
+        let place = ReaderPlace {
+            expanded: BTreeSet::from([PathBuf::from("src/lib")]),
+            ..ReaderPlace::default()
+        };
+        let model = supplied_model(
+            held("", &[("src", FOLDER), ("a.rs", FILE)]),
+            &[
+                ("src", held("src", &[("lib", FOLDER)])),
+                ("src/lib", held("src/lib", &[("m.rs", FILE)])),
+            ],
+            place.clone(),
+        );
+
+        let after = reduce(
+            model.clone(),
+            &change(
+                names(&["b.rs"], &[]),
+                "",
+                vec![
+                    listed("", "a.rs", FILE),
+                    listed("", "b.rs", FILE),
+                    listed("", "src", FOLDER),
+                ],
+            ),
+        );
+
+        assert_eq!(after.place, place);
+        assert_eq!(after.listings, model.listings);
+        assert_eq!(root_of(&after), ["src", "a.rs", "b.rs"]);
+    }
+
+    #[test]
+    fn test_the_git_item_is_unchanged_whether_pending_observed_or_failed() {
+        let git_items = [
+            ItemState::Pending,
+            ItemState::Observed(FolderKind::Plain),
+            ItemState::Failed(GitCondition::Probe(ProbeCondition::FolderUnavailable)),
+        ];
+
+        for kind in git_items {
+            let mut model =
+                supplied_model(held("", &[("a.rs", FILE)]), &[], ReaderPlace::default());
+            model.kind = kind.clone();
+
+            let after = reduce(model, &change(names(&[], &["a.rs"]), "", vec![]));
+
+            assert_eq!(after.kind(), &kind);
+        }
+    }
+
+    #[test]
+    fn test_the_open_file_path_position_and_content_are_unchanged() {
+        let folder = project();
+        let model = open(
+            expand(model_over(&folder), "src"),
+            "src/main.rs",
+            &position(b"line=400"),
+        );
+        let open_file = model.open_file().cloned();
+        folder.write_file("src/main.rs", "changed on disk, and not reported\n");
+        folder.write_file("src/new.rs", "// new\n");
+
+        let after = model.list_tree(TreeRequest::Delta(ModelDelta::new(
+            vec![PathBuf::from("src/new.rs")],
+            vec![],
+            vec![],
+        )));
+
+        assert_eq!(after.open_file().cloned(), open_file);
     }
 }
