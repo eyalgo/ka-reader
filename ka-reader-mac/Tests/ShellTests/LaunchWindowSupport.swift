@@ -265,11 +265,12 @@ func click(_ control: NSControl) {
 /// takes each event as it comes gets them too, and nothing is left for a later test.
 ///
 /// A queued event's location is read back through where the window server has the window, and the
-/// server places a window some time after AppKit gives it its frame: on a Mac it is still drawing
-/// the window's opening, a little smaller than its frame, and on the hosted macos-26 image it still
-/// had the window at the screen's top-left corner (run 38496422879: queued events back at
-/// (+152, -32) from the window's own (152, 64)). So the drag waits until the server's bounds are
-/// the window's frame (`waitUntilPlaced`); from then on a queued event comes back where it was put.
+/// server places a window some time after AppKit gives it its frame: on a Mac it reports no bounds
+/// at first, then the window's opening, a little smaller than its frame; on the hosted macos-26
+/// image queued events came back as if it had the window at the screen's top-left corner (run
+/// 38496422879: (+152, -32) from the window's own (152, 64)). So the drag waits until the server's
+/// bounds are the window's frame (`waitUntilPlaced`); from then on a queued event comes back where
+/// it was put.
 @MainActor
 func dragAsAPersonDoes(in window: NSWindow, from start: NSPoint, by distance: CGFloat) throws {
     try waitUntilPlaced(window)

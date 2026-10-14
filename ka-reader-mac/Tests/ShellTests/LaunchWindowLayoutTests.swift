@@ -23,8 +23,9 @@ private enum LayoutExpectations {
     static let dragDistance: CGFloat = 100
 
     /// How far a queued pointer event may land from where it was posted. A queued event's place is
-    /// read back through the screen it is on: measured on a window on a second display, 460 came
-    /// back as 461.98, where the press, which is delivered and not queued, kept its place.
+    /// read back through where the window server has the window (`dragAsAPersonDoes`): measured
+    /// before the drag waited for the server to place it, 460 came back as 461.98, where the
+    /// press, which is delivered and not queued, kept its place.
     static let queuedPointerDrift: CGFloat = 3
 
     static let readingPrompt = "Select a file to view."
