@@ -263,12 +263,22 @@ func click(_ control: NSControl) {
 /// the release are queued before the press is delivered, so a view that tracks a drag in its own
 /// loop finds them there; whatever is still queued afterwards is delivered in turn, so a view that
 /// takes each event as it comes gets them too, and nothing is left for a later test.
+///
+/// The queue does not hand an event back at the location it was given: it rewrites it by where it
+/// takes the window to be, and that is not where the window is. Measured on the hosted macos-26
+/// image, a window at (152, 64) in a 1024 x 768 screen got every queued event back shifted by
+/// (+152, -32), where the press, handed straight to the window, kept its place; on a Mac the shift
+/// is about 2 points. So the drag and the release are queued where the shift puts them at the
+/// place asked for, the shift being read off one event queued first and taken back out
+/// (`queuedShift`). A drag of `distance` then arrives as one of `distance`.
 @MainActor
 func dragAsAPersonDoes(in window: NSWindow, from start: NSPoint, by distance: CGFloat) throws {
     let end = NSPoint(x: start.x + distance, y: start.y)
+    let shift = try queuedShift(at: end, in: window)
+    let queuedEnd = NSPoint(x: end.x - shift.x, y: end.y - shift.y)
     let press = try mouseEvent(.leftMouseDown, at: start, in: window)
-    NSApp.postEvent(try mouseEvent(.leftMouseDragged, at: end, in: window), atStart: false)
-    NSApp.postEvent(try mouseEvent(.leftMouseUp, at: end, in: window), atStart: false)
+    NSApp.postEvent(try mouseEvent(.leftMouseDragged, at: queuedEnd, in: window), atStart: false)
+    NSApp.postEvent(try mouseEvent(.leftMouseUp, at: queuedEnd, in: window), atStart: false)
 
     window.sendEvent(press)
     while let queued = NSApp.nextEvent(
@@ -278,6 +288,20 @@ func dragAsAPersonDoes(in window: NSWindow, from start: NSPoint, by distance: CG
         window.sendEvent(queued)
     }
     layOut(window)
+}
+
+/// How far the queue moves a location in `window`: an event queued at `location` and taken back out
+/// is read at `location` plus the answer. Nothing is delivered, and the queue is as it was; no
+/// event coming back means no shift is known and none is allowed for.
+@MainActor
+private func queuedShift(at location: NSPoint, in window: NSWindow) throws -> NSPoint {
+    NSApp.postEvent(try mouseEvent(.leftMouseDragged, at: location, in: window), atStart: false)
+    guard
+        let probe = NSApp.nextEvent(
+            matching: [.leftMouseDragged], until: .distantPast, inMode: .default, dequeue: true)
+    else { return .zero }
+    return NSPoint(
+        x: probe.locationInWindow.x - location.x, y: probe.locationInWindow.y - location.y)
 }
 
 @MainActor
