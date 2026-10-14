@@ -6,7 +6,8 @@
        signal, and the state a finished SDD carries; the open-issues file is gone.
      Locked = ratified as the source of truth. -->
 **Owner:** CTO — writes every part; the CPO and the CDO decide the parts the lane table names, through `SDD_open_issues.md` items carrying their `Seat:`
-**Version:** 50 — CTO, one run, with the one answered companion item folded (`docs/trail/sdd/cycle-45.md` § 5.1), the CTO's column, raised by the PM on 2026-10-14 from a `shukuba-refine` review (`ka-reader@0473ba5`) and answered in the CTO's seat the same day (`ka-reader@976ab73`): § 4 C-I3, the probe half (the locator for the line that prints the control's report reads `checks/bundle.sh:L383`, not `:L382`, pinned to the commits it is read at; the clause gains one dated sentence — at `ka-reader@970ad65` the suite requires exactly one `out-of-grant-read:` line in the control's report, fails the case otherwise, and forwards that line after the control's `ok`, so the line owed at `4601cd9` is carried and the *Violated by* missing-line case is live from that commit, enforced by the suite going red; the ground for the untaken `macos-26` reading is restated — the image reaches the suite, runs 38501500758 and 38551538187 on `main` concluded *Bundle probe suite* `success` with `docs/nfdr.md` QC-25's command printing nothing on each, and `origin/main` is `24be581`, which does not hold `970ad65`); RN-109 (its `:L382` corrected to `:L383`, with a dated note that it mis-read the line on the day it was written); the header. No slice, edge, seam, part or place in the order moves; `Status:` stays Settled and the companion is removed — RN-110.
+**Version:** 51 — CTO, one run, with two answered companion items folded (`docs/trail/sdd/cycle-46.md` §§ 5.1 – 5.2), both the CTO's column, raised by the Principal PM on 2026-10-14 (`ka-reader@9532dee`) and answered in the CTO's seat the same day (`ka-reader@b236572`): § 4 C-I3, the probe half (the first `macos-26` bundle-probe reading is taken — GitHub Actions run 38577309118 on `ka-reader@f357008`, image `macos-26-arm64` 20260907.0351.1, the first hosted run on `main` that holds `970ad65` and concludes *Bundle probe suite* `success`, on whose log `docs/nfdr.md` QC-25's command prints `out-of-grant-read: denied` — so the hosted-runner narrowing stands, re-dated to that run and image under the clause's own rule, and the "has not been taken" passage with its two-run ground becomes a dated account); § 4 C-I3, the renderer half (the first hosted renderer-gate reading on `macos-26` is recorded — run 38501500758 on `ka-reader@3f7a68d`, the first hosted run to reach the gate on that image, observation 1 and the control unmatched on all 30, inside the C-R5 floor, with run 38577309118 as corroboration; the gate's rule, the frame list's home and ADR-0012 do not move); RN-110 (a dated parenthesis: the item it said was owed is cycle-46 § 5.2); the header. No slice, edge, seam, part or place in the order moves; `Status:` stays Settled and the companion is removed — RN-111.
+Version 50 — CTO, one run, with the one answered companion item folded (`docs/trail/sdd/cycle-45.md` § 5.1), the CTO's column, raised by the PM on 2026-10-14 from a `shukuba-refine` review (`ka-reader@0473ba5`) and answered in the CTO's seat the same day (`ka-reader@976ab73`): § 4 C-I3, the probe half (the locator for the line that prints the control's report reads `checks/bundle.sh:L383`, not `:L382`, pinned to the commits it is read at; the clause gains one dated sentence — at `ka-reader@970ad65` the suite requires exactly one `out-of-grant-read:` line in the control's report, fails the case otherwise, and forwards that line after the control's `ok`, so the line owed at `4601cd9` is carried and the *Violated by* missing-line case is live from that commit, enforced by the suite going red; the ground for the untaken `macos-26` reading is restated — the image reaches the suite, runs 38501500758 and 38551538187 on `main` concluded *Bundle probe suite* `success` with `docs/nfdr.md` QC-25's command printing nothing on each, and `origin/main` is `24be581`, which does not hold `970ad65`); RN-109 (its `:L382` corrected to `:L383`, with a dated note that it mis-read the line on the day it was written); the header. No slice, edge, seam, part or place in the order moves; `Status:` stays Settled and the companion is removed — RN-110.
 Version 49 — CTO, one run, with the one answered companion item folded (`docs/trail/sdd/cycle-44.md` § 2.1), the CTO's column, raised by the Principal Architect's unattended run on 2026-10-13 and answered in the owner's seat the same day (`ka-reader@c04dcc6`): § 4 C-I3, the probe half (the hosted-runner narrowing of the read denial is dated to the image it was read on, `macos-14-arm64` 20260831.0302.1 at GitHub Actions run 35797893381, with the `macos-26` reading stated as not taken and the ground stated — the first hosted run on that image, 38463966607 on `ka-reader@4601cd9`, ended at *Test gate* before the probe ran; the clause names where the reading is read, the unentitled control's `out-of-grant-read:` line in the suite's log on every hosted build, owed at `ka-reader@4601cd9`, an empty read the measurable not-yet; a `denied` reading re-dates the narrowing and an `allowed` one lifts it); § 4 C-I3, the renderer-gate half (a hosted reading is the first hosted run that reaches the gate on that image, not a named change's — the v48 words in a dated note); C-I3's *Violated by* gains the missing-line case once the suite prints the line; the header. No slice, edge, seam, part or place in the order moves; `Status:` stays Settled and the companion is removed — RN-109.
 Version 48 — CTO, one run, with the one answered companion item folded (`docs/trail/sdd/cycle-43.md` § 5.1), the CTO's columns, raised and answered by the owner in one hand on 2026-10-13 (`ka-reader@821a163`) after GitHub announced the retirement of the `macos-14` runner image: the macOS floor moves from 14.0 to 26.0 and CI's image from `macos-14` to `macos-26`. § 4 C-R5 (the floor is 26.0; its ground stays the maintainer's narrowing, now to the one macOS the hosted runner and the maintainer's Mac both run; the sentence that kept 14.0 because `docs/nfdr.md` QC-56 bound it is replaced — the NFDR entry is the one re-derived from this condition, by § 4's own rule on the two stores; the CI image is named, pinned by label and never by `macos-latest`; *Violated by* gains the workflow case); § 4 C-I3 (the renderer gate's two hosted readings are dated as taken on `macos-14`, below the floor from this revision, and the first reading on `macos-26` is named as the moving change's to take); § 6 `see-git-status` *Reached when*, command half (a dated note beside the `macos-14` runner the workflow still names at `ka-reader@0c0d5f9`); § 6 `first-public-release` and `promise-one-point-zero` *Reached when*, command halves (`prints 26.0`; the floor `26.0` in the enumeration the contract pin is written from); § 9 TO-8 (rewritten at 26 — the cost named as the majors excluded, the undo named at every line the floor is written on; "above 11" corrected to "above 12", C-R5's own number); § 11 R-17 (new: the floor follows a runner image's lifetime); SDD Review Notes RN-6 (a dated parenthesis) and RN-108 (new); trail copy at `docs/trail/sdd/cycle-43.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. Every sentence whose claim changed keeps its old words in a dated note beside it. Nothing in the tree moves in this fold: the plists, the manifest, the deployment target, the test that asserts `14.0` and the workflow are the change's, each located in RN-108. No § 10 entry (no bar became unmeetable and no input changed — RN-108), no *Delivers*, no slice added, no § 7 edge, no slice order, no part's *Must not own* and no seam altered. Companion items added: none.
 Version 47 — CTO, one run, with two answered companion items folded (`docs/trail/sdd/cycle-42.md` §§ 5.1 – 5.2), both the CTO's, raised by the PM after the change that runs the `submodule` walk every build merged to `main` (`ka-reader@b12e48c`): § 6 `see-git-status` *Reached when*, command half, the promise clause (the two limits it stated beside the `submodule` walk read as closed at `ka-reader@b12e48c` — the `read_git` case at `crates/ka-reader-core/tests/git_state.rs:L787` and the CI step `Read-only, submodule` at `.github/workflows/ci.yml:L73-L74` — with the CI half bounded to the step being in the workflow, its hosted result unread; the old words in a dated note) and *Rests on* (RN-107); § 3, the `read-only-harness` row (re-measured and re-pinned at `ka-reader@b12e48c`: `fixtures/.gitignore` named with the `own-state.sh` condition it serves, the six `git_state.rs` locators re-pinned with a dated note, the counts unchanged); SDD Review Notes RN-107 (new); trail copy at `docs/trail/sdd/cycle-42.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. Measured in this fold on a disposable copy: the three walks printed `unchanged` and the seventeen `submodule` cases of `--test git_state` passed. No *Delivers*, no slice added, no § 10 entry, no § 7 edge, no slice order, no part's *Must not own* and no seam altered. Companion items added: none.
@@ -893,7 +894,15 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   only: there the out-of-grant read is reported denied for the unentitled control on every ask as
   well, so on the runner the wall is evidenced by the sandboxed report and the outbound denial, and
   the read denial separates nothing (a reading of one image — GitHub Actions run 35797893381,
-  image `macos-14-arm64` 20260831.0302.1, RN-48 — below the floor from v48; the `macos-26` reading has not been taken: the image reaches the suite — GitHub Actions run
+  image `macos-14-arm64` 20260831.0302.1, RN-48 — below the floor from v48; the first `macos-26` reading is taken and reads `denied`: GitHub Actions run 38577309118 on
+  `ka-reader@f357008`, created 2026-10-14T14:04:45Z, image `macos-26-arm64` 20260907.0351.1, macOS
+  26.6.2 (25G83), the first hosted run on `main` that holds `ka-reader@970ad65` and concludes *Bundle
+  probe suite* `success`, and `docs/nfdr.md` QC-25's command on its log prints exactly one line,
+  `out-of-grant-read: denied`, stamped 2026-10-14T14:15:35Z. So this narrowing stands, re-dated to
+  that run and that image version under this clause's own rule below — on the image CI runs and
+  inside the floor C-R5 set at v48, the runner's wall is evidenced by the sandboxed report and the
+  outbound denial, and the read denial separates nothing there, on `macos-26` as on `macos-14`
+  (RN-48) — RN-111. *(Through v50 this read: "the `macos-26` reading has not been taken: the image reaches the suite — GitHub Actions run
   38501500758 on `ka-reader@3f7a68d`, created 2026-10-14T02:31:44Z, the first hosted run on `main`
   after the CI move to conclude *Bundle probe suite* `success`, and run 38551538187 on
   `ka-reader@24be581`, created 2026-10-14T10:43:17Z, the newest run on `main` when this was read —
@@ -902,7 +911,10 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   is not an ancestor of it, so no hosted run holds it. The first `macos-26` reading is that line in
   the log of the first hosted run on `main` that holds `970ad65` and concludes with *Bundle probe
   suite* `success`, on whichever later commit that run is; it is recorded here when read, by a later
-  item, and this clause does not wait for it — RN-110. *(Through v49 the ground read: the change
+  item, and this clause does not wait for it — RN-110." True when written: run 38577309118
+  was created after v50 was read, it is the first run on `main` that holds `970ad65` — at
+  `ka-reader@b236572`, `git merge-base --is-ancestor 970ad65 f357008` holds and `970ad65 3f7a68d`
+  does not — and `origin/main` is `f357008` — RN-111.)* *(Through v49 the ground read: the change
   that moved CI, `ka-reader@fcb2e2f`, is on `origin/main`, and its first hosted run, 38463966607 on
   `ka-reader@4601cd9`, image `macos-26-arm64` 20260907.0351.1, ended at the *Test gate* step, so
   neither *Bundle probe* nor *Bundle probe suite* ran on that image — RN-109. True of that run, and
@@ -980,7 +992,8 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   20260831.0302.1, macOS 14.8.9 — inside the C-R5 floor's major as C-R5 read it then, 14.0; below
   the floor from v48, when it moved to 26.0, so this reading and run 36795836747's below are dated
   readings on an image CI leaves, and the first hosted reading on `macos-26` is the first hosted
-  run that reaches this gate on that image — RN-108; through v48 this clause gave that reading to
+  run that reaches this gate on that image — RN-108, and that run, 38501500758, is recorded after
+  RN-76's reading below, RN-111; through v48 this clause gave that reading to
   "the change that moves CI", which landed at `ka-reader@fcb2e2f` and whose first hosted run,
   38463966607, ended at *Test gate* before either gate ran, RN-109): the runner matched the script's
   frame list on observation 1 and its control was not matched on any of 30 — a match of the
@@ -988,7 +1001,23 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   list held five frames at that run (`ka-reader@37a962d`) and holds four since `ka-reader@b75348f`
   (2026-09-27), which removed `LaunchFlow.run()` from it; the four-frame list matched on the same
   runner image at run 36795836747 (`ka-reader@702f7c4`, 2026-10-01), again on observation 1 with the
-  control matched on none of 30 (RN-76). A
+  control matched on none of 30 (RN-76). The first hosted reading on `macos-26` — the run the
+  parenthesis above defines — is GitHub Actions run 38501500758 on `ka-reader@3f7a68d`, created
+  2026-10-14T02:31:44Z, image `macos-26-arm64` 20260907.0351.1: the first hosted run to reach this
+  gate on that image, after run 38463966607 ended at *Test gate* (RN-109), with one run between them
+  on any branch, 38496422879 at `ka-reader@1ea3595`, which ended at *Test gate* too, its *Renderer
+  gate* step skipped. Its *Renderer gate* step concluded `success`: the product matched the script's
+  four-frame list on observation 1, and the `idle-shell` control was not observed at the Open panel
+  on any of 30 — the shape both `macos-14` readings above took, now on the image CI runs and inside
+  the floor C-R5 set at v48, which ends the state RN-108 left this half in, two dated readings below
+  the floor and none on it. Run 38577309118 on `ka-reader@f357008`, created 2026-10-14T14:04:45Z on
+  the same image, read the same — observation 1, the control on none of 30 — and is corroboration,
+  not a second recorded reading, because this clause records the first reading per image version.
+  The reading moves nothing else: the gate's rule in the next sentence stands, the frame list stays
+  the script's header's and is not copied here, and no ADR is owed — ADR-0012 cites the `macos-14`
+  run as the reading at its date
+  (`docs/adr/0012-renderer-run-proved-on-the-shipped-bundle-beside-the-wall.md:L123`, `:L136`) and
+  stands as the dated record it is (RN-111). A
   runner image or macOS whose Open-panel frames read differently turns the gate red on the next
   build, because the gate runs on every build; that is a re-cut trigger on the gate's mechanism,
   never on the gate.
@@ -8288,7 +8317,8 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   `macos-26`, so the first hosted renderer-gate reading on that image, which that half names as the
   first hosted run to reach the gate there, now exists in run 38501500758's log and is not read by
   this fold: the item did not ask it, and it is owed to an item of its own, recorded here so it does
-  not stay in a transcript. The two stores: `docs/nfdr.md` QC-25 traces to C-I3; what QC-25 says is
+  not stay in a transcript *(discharged at v51: that item is `docs/trail/sdd/cycle-46.md` § 5.2, and
+  the reading is recorded in C-I3's renderer half — RN-111)*. The two stores: `docs/nfdr.md` QC-25 traces to C-I3; what QC-25 says is
   the Principal Architect's to fold, and this clause now carries the sentence it traces to. **Not
   run here:** no check, because the fold moves no code and claims no test result beyond what the
   cited suite lines state. The locator will drift again when `checks/bundle.sh` changes above line
@@ -8298,6 +8328,65 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   `docs/trail/sdd/self_answer-57.md` § 5.1; `docs/nfdr.md` QC-25; `ka-reader@0473ba5`;
   `ka-reader@976ab73`; `ka-reader@970ad65`; `ka-reader@4601cd9`; `ka-reader@3f7a68d`;
   `ka-reader@24be581`)*.
+
+- **RN-111:** *(CTO)* *(changed)* § 4 C-I3, both halves: the probe half records the first `macos-26`
+  bundle-probe reading — run 38577309118, `denied` — and re-dates the hosted-runner narrowing to it
+  under the clause's own rule, where through v50 it said the reading had not been taken; the renderer
+  half records the first hosted renderer-gate reading on `macos-26` — run 38501500758, observation 1,
+  the control unmatched on all 30 — where through v50 it defined that run without naming it. Two
+  companion items are folded, §§ 5.1 and 5.2 of a companion no `product-sdd` run opened: the
+  Principal PM opened it on 2026-10-14 (`ka-reader@9532dee`) from a `nemawashi-refine` run, and an
+  unattended run in the CTO's seat answered both the same day (`docs/trail/sdd/cycle-46.md` §§ 5.1 –
+  5.2, *Answer*; reasoning `docs/trail/sdd/self_answer-58.md` §§ 5.1 – 5.2; `ka-reader@b236572`).
+  *Because* both sentences stated a not-yet that an occurrence has discharged — C-I3 had pre-decided
+  what each reading means (a `denied` reading re-dates the narrowing; the first hosted run to reach
+  the gate on the image is the reading) and named the run that would take it, so each fold is the
+  clause's own branch taken and dated, not a decision made here — and because RN-110 said the
+  renderer reading was owed to an item of its own, which § 5.2 is. **What moved, each named.** (1)
+  C-I3, the probe half: the "has not been taken" passage and its two-run ground are replaced by the
+  reading, and the old words stand in a dated note beside it with the ancestry check that makes
+  38577309118 the first run. (2) C-I3, the renderer half: the parenthesis that defined the `macos-26`
+  reading names the run; after RN-76's `macos-14` reading, a passage records run 38501500758, why it
+  is first, what it read, run 38577309118 as corroboration, and that the gate's rule, the frame
+  list's home and ADR-0012 do not move. (3) RN-110: one dated parenthesis, that the item it said was
+  owed is cycle-46 § 5.2. (4) The header: `Version:` 51, `Status:` Settled. **Read at source by this
+  fold, not from the record:** `gh run view 38577309118 --repo kensaiapp/ka-reader --json
+  headSha,headBranch,createdAt,conclusion` — `main`, `f3570082…`, 2026-10-14T14:04:45Z, `success`;
+  its *Bundle probe suite* and *Renderer gate* steps each `success`; its log's *Set up job* prints
+  `Image: macos-26-arm64`, `Version: 20260907.0351.1`, `26.6.2`, `25G83`; `awk -F'\t' '$2 == "Bundle
+  probe suite" && /out-of-grant-read:/'` over its `--log` prints one line, `out-of-grant-read:
+  denied`, stamped 2026-10-14T14:15:35Z; its *Renderer gate* lines read `pid 69518 — the main process
+  was observed at the Open panel, inside the shell's launch, on observation 1 (bound: 30
+  observations, about 1 s each)` and `control pid 69815 (idle-shell, one window and no panel) was
+  not observed at the Open panel in any of 30 observations — the expected red`. The same on
+  38501500758 — `main`, `3f7a68d7…`, 2026-10-14T02:31:44Z, `success`, both steps `success`, the same
+  image and version, QC-25's command printing nothing, `pid 59529 … on observation 1` and `control
+  pid 59797 … in any of 30`. `gh run list --repo kensaiapp/ka-reader --limit 30`, filtered to ids
+  from 38463966607: 38463966607 (`4601cd9`, `main`, `failure`), 38496422879 (`1ea3595`, a branch,
+  `failure` at *Test gate*, every later step skipped), 38501500758, 38549778886 (`47e8e6b`,
+  `failure`), 38551538187 (`24be581`, `success`), 38577309118. In the checkout at
+  `ka-reader@b236572`: `git merge-base --is-ancestor 970ad65 f357008` holds; `970ad65 3f7a68d` does
+  not; `origin/main` is `f357008`. `docs/adr/0012-…` cites run 35988399477 on `macos-14-arm64` at
+  `:L123`, `:L136` and `:L194` and names no `macos-26` run. **What was read of this document, at `ka-reader@b236572`:**
+  not whole — the header (`:L1-L100`), the section map, § 4 C-I3 from the probe passage through
+  *Violated by* (`:L880-L1000`), RN-110 whole (`:L8232-L8300`) and the head of *Open Questions*; of
+  the inputs, `docs/PRD.md`, `docs/SRS.md` and `docs/UXD.md` at their `Status:` lines, each Settled,
+  the Agari whole, and `docs/architecture_open_issues.md` § 3.1, which carries QC-25's side of the
+  same reading for the Principal Architect. **Not moved, and why.** No slice's *Reached when*, no
+  edge, no seam and no part moves; § 10 gains no entry, because no bar failed as written — two
+  not-yets discharged by dated occurrences, each on the branch the clause had already written for
+  it; § 2's shape and § 3's seams do not move, so no ADR is owed, and ADR-0012 stands as a dated
+  record; RN-48, RN-76, RN-108, RN-109 and RN-110 stand as written, dated accounts. The two stores:
+  `docs/nfdr.md` QC-25 and QC-62 trace to C-I3; what each says of the same readings is the Principal
+  Architect's to fold, carried for QC-25 by `docs/architecture_open_issues.md` § 3.1, and this fold
+  reaches into neither. **Not run here:** no check, because the fold moves no code and claims no
+  test result beyond what the two runs' logs print. **The companion:** items 5.1 and 5.2 are folded
+  and dropped, nothing is left in the file, and it is removed in the commit that carries this fold
+  *(re: § 4 C-I3; RN-110; the header; source: `docs/trail/sdd/cycle-46.md` §§ 5.1 – 5.2;
+  `docs/trail/sdd/self_answer-58.md` §§ 5.1 – 5.2; `docs/nfdr.md` QC-25;
+  `docs/adr/0012-renderer-run-proved-on-the-shipped-bundle-beside-the-wall.md`; `ka-reader@9532dee`;
+  `ka-reader@b236572`; `ka-reader@970ad65`; `ka-reader@f357008`; `ka-reader@3f7a68d`;
+  `ka-reader@1ea3595`; `ka-reader@4601cd9`)*.
 
 ## Open Questions
 
