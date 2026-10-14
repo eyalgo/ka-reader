@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.3.0 — the suite prints the control line — test_bundle.sh publishes the control's one reading and refuses a report without it
 # Version: 1.2.0 — the Tauri build leaves — native bundle assembled, bundle.sh and no-network.sh read it, CI builds it, boundaries and README pinned
 # Version: 1.1.0 — the probe waits, bounded, for the sandbox report, and its control holds for the whole window; plutil read only on exit 0
 # Version: 1.0.0 — first version: drives the real checks/bundle.sh against the built KA-Reader.app
@@ -18,6 +19,9 @@
 #     KA_READER_APP defaults to target/release/bundle/macos/KA-Reader.app under the product root.
 #   A bundle that is absent FAILS the suite with a stated message and runs no case: a skip would
 #   let CI conclude green having proved nothing.
+#   A clean run prints, after the negative control's `ok` line, that control's one reading — the
+#   line `out-of-grant-read: denied` or `out-of-grant-read: allowed` — so a hosted build's log
+#   carries it (NFDR QC-25). It is printed, never judged.
 #
 # WHY NO `set -e`
 #   A case that fails must not end the run before the remaining cases report. Each case returns its
@@ -82,6 +86,7 @@ test_negative_control_probe_failure_fails
 test_negative_control_unreadable_report_fails
 test_negative_control_reported_sandboxed_fails
 test_negative_control_reported_sandboxed_fails_the_suite
+test_negative_control_missing_read_fails_the_suite
 test_absent_control_fails_the_suite
 test_negative_control_refuses_the_c_r2_entitlement_set
 test_second_executable_fails
@@ -618,6 +623,26 @@ printf 'sandboxed: yes\nout-of-grant-read: denied\noutbound-connection: denied\n
   process_is_running "$bystander" || fail "the second process (pid $bystander) was stopped with it"
 }
 
+# CP-768, CP-771: the control's report must hold the reading, and the reading is this case's whole
+# output — the runner prints it once, after the case's `ok` line. Printing it is all that is done
+# with it: `denied` and `allowed` are both a pass (CP-769).
+publish_control_reading() {
+  # `|| true`: pipefail would otherwise end the run on a report with no line, before the guard
+  # reports.
+  marker_lines="$(printf '%s\n' "$OUT" | grep -c 'out-of-grant-read:' || true)"
+  [ "$marker_lines" -ne 0 ] \
+    || fail "The negative control's report has no out-of-grant-read line. This run has no reading to print. To read the whole report, run checks/bundle.sh --negative-control on a copy of the bundle under test re-signed with an empty entitlement set." \
+    || return 1
+  [ "$marker_lines" -eq 1 ] \
+    || fail "The negative control's report has more than one out-of-grant-read line. This run has no reading to print. To read the whole report, run checks/bundle.sh --negative-control on a copy of the bundle under test re-signed with an empty entitlement set." \
+    || return 1
+  reading="$(printf '%s\n' "$OUT" | grep -E '^out-of-grant-read: (denied|allowed)$' || true)"
+  [ -n "$reading" ] \
+    || fail "The negative control's report has one out-of-grant-read line, and it isn't exactly out-of-grant-read, a colon, a space, and then denied or allowed. This run has no reading to print. To read the whole report, run checks/bundle.sh --negative-control on a copy of the bundle under test re-signed with an empty entitlement set." \
+    || return 1
+  printf '%s\n' "$reading"
+}
+
 # CP-44: the negative control. `checks/bundle.sh` refuses to launch a bundle whose entitlements are not
 # exactly C-R2's, so the ordinary path cannot run the probe on a no-entitlement build; --negative-control
 # is the mode that does, and it passes only on a NOT-sandboxed report.
@@ -632,7 +657,8 @@ test_negative_control_reports_unsandboxed() {
   expect_output_contains "40 asks" || return 1
   expect_output_contains "0.25 s" || return 1
   expect_one_report || return 1
-  expect_no_bundle_process "$copy"
+  expect_no_bundle_process "$copy" || return 1
+  publish_control_reading
 }
 
 # CP-69, CP-68: a report that turns sandboxed later in the window still fails the control — waiting
@@ -732,6 +758,112 @@ test_negative_control_reported_sandboxed_fails_the_suite() {
     *"FAIL $CONTROL_CASE"*) ;;
     *) fail "the failing control case is not named. output: $nested" ;;
   esac
+}
+
+# A stand-in for `ka-reader-sandbox-probe` whose whole report is the lines given, one per argument,
+# each printed exactly as written — so a report with no reading, an empty, indented or doubled one
+# can be made. `probe_stub` always prints all three lines, so it cannot.
+report_stub() {
+  dir="$1"
+  shift
+  body="printf '%s\\n'"
+  for report_line in "$@"; do
+    body="$body '$report_line'"
+  done
+  make_stub "$dir" ka-reader-sandbox-probe "$body"
+}
+
+# The suite's own control, run nested against the stand-in probe in $1. The two streams are kept
+# apart: nested_status, nested_stdout and nested_stderr hold what the nested run exited with and
+# wrote.
+run_nested_control() {
+  nested_stdout="$(PATH="$1:$PATH" KA_READER_TEST_ONLY="$CONTROL_CASE" bash "$0" 2> "$WORK/nested-stderr")"
+  nested_status=$?
+  nested_stderr="$(cat "$WORK/nested-stderr")"
+}
+
+nested_output_names_a_reading() {
+  case "$nested_stdout$nested_stderr" in
+    *"out-of-grant-read:"*) return 0 ;;
+  esac
+  return 1
+}
+
+# A control report the suite must refuse: the nested run exits non-zero and writes the marker text
+# on neither stream, so a hosted log holds no line a reader could take for a reading. $1 names the
+# kind of report — `missing` (no reading line), `odd` (one reading line not in the exact form) or
+# `several` — and the remaining arguments are the lines of the report.
+expect_report_refused() {
+  kind="$1"
+  shift
+  stubs="$(mktemp -d "$WORK/stubs-refused.XXXXXX")"
+  report_stub "$stubs" "$@"
+
+  run_nested_control "$stubs"
+
+  case "$kind" in
+    missing) exited_zero="With a negative control report that has no out-of-grant-read line, the suite exited 0." ;;
+    odd) exited_zero="With a negative control report whose one out-of-grant-read line isn't exactly out-of-grant-read, a colon, a space, and then denied or allowed, the suite exited 0." ;;
+    several) exited_zero="With a negative control report that has more than one out-of-grant-read line, the suite exited 0." ;;
+  esac
+  [ "$nested_status" -ne 0 ] || fail "$exited_zero" || return 1
+
+  if [ "$kind" = missing ]; then
+    case "$nested_stdout$nested_stderr" in
+      *"no out-of-grant-read line"*) ;;
+      *) fail "With a negative control report that has no out-of-grant-read line, the suite's output doesn't name the missing line." || return 1 ;;
+    esac
+    if nested_output_names_a_reading; then
+      fail "With a negative control report that has no out-of-grant-read line, the suite still printed an out-of-grant-read line." || return 1
+    fi
+  elif nested_output_names_a_reading; then
+    case "$kind" in
+      odd) fail "With a negative control report whose one out-of-grant-read line isn't exactly out-of-grant-read, a colon, a space, and then denied or allowed, the suite printed a denied or allowed reading on stdout." || return 1 ;;
+      several) fail "With a negative control report that has more than one out-of-grant-read line, the suite printed a denied or allowed reading on stdout." || return 1 ;;
+    esac
+  fi
+}
+
+# CP-771, CP-772 and CP-773: the suite goes red when the control's report carries no reading it can
+# publish — and goes red on every run, which is what proves the check can. The real probe always
+# prints the line, so the real control passes; stand-ins make each report the check must refuse, and
+# two make the one it must publish. Every report keeps the control's other assertions green
+# (`sandboxed: no`, one such line, the whole window), so a refusal here comes from the reading
+# check alone.
+test_negative_control_missing_read_fails_the_suite() {
+  expect_report_refused missing 'sandboxed: no' 'outbound-connection: denied' || return 1
+
+  for reading in denied allowed; do
+    stubs="$WORK/stubs-reading-$reading"
+    mkdir -p "$stubs"
+    report_stub "$stubs" 'sandboxed: no' "out-of-grant-read: $reading" 'outbound-connection: denied'
+
+    run_nested_control "$stubs"
+
+    [ "$nested_status" -eq 0 ] \
+      || fail "With a negative control report that reads $reading, the suite exited $nested_status instead of 0." || return 1
+    expected_stdout="$(printf 'ok   %s\nout-of-grant-read: %s' "$CONTROL_CASE" "$reading")"
+    [ "$nested_stdout" = "$expected_stdout" ] \
+      || fail "With a negative control report that reads $reading, the suite's stdout isn't exactly the negative control's ok line followed by its reading." || return 1
+    case "$nested_stderr" in
+      *"out-of-grant-read:"*) fail "With a negative control report that reads $reading, the suite printed an out-of-grant-read line on stderr." || return 1 ;;
+    esac
+    # Both streams, with the reading itself masked: what is left must not depend on the value.
+    masked="$(printf '%s\n%s' "$nested_stdout" "$nested_stderr" | sed 's/^out-of-grant-read: .*$/out-of-grant-read: READING/')"
+    if [ "$reading" = denied ]; then denied_output="$masked"; else allowed_output="$masked"; fi
+  done
+  [ "$denied_output" = "$allowed_output" ] \
+    || fail "The suite's output with a negative control report that reads denied differs from its output with one that reads allowed in more than the reading." || return 1
+
+  expect_report_refused odd 'sandboxed: no' 'out-of-grant-read: unknown' 'outbound-connection: denied' || return 1
+  expect_report_refused odd 'sandboxed: no' 'out-of-grant-read:' 'outbound-connection: denied' || return 1
+  expect_report_refused odd 'sandboxed: no' '  out-of-grant-read: denied' 'outbound-connection: denied' || return 1
+  expect_report_refused odd 'sandboxed: no' 'out-of-grant-read: denied (cached)' 'outbound-connection: denied' || return 1
+  expect_report_refused odd 'sandboxed: no' 'out-of-grant-read: denied ' 'outbound-connection: denied' || return 1
+
+  expect_report_refused several 'sandboxed: no' 'out-of-grant-read: denied' 'out-of-grant-read: allowed' 'outbound-connection: denied' || return 1
+  expect_report_refused several 'sandboxed: no' 'out-of-grant-read: denied' 'out-of-grant-read: denied' 'outbound-connection: denied' || return 1
+  expect_report_refused several 'sandboxed: no' 'out-of-grant-read: denied' 'out-of-grant-read: unknown' 'outbound-connection: denied' || return 1
 }
 
 # A run in which the control did not run is a failure, not a skip — recorded by the runner.
@@ -1572,6 +1704,10 @@ for case_name in $CASES; do
   ran="$ran $case_name"
   if result="$("$case_name" 2>&1)"; then
     echo "ok   $case_name"
+    # The control's whole output on success is its one reading (CP-768). It is forwarded because the
+    # case runs in this command substitution, where an assignment would not reach the runner; every
+    # other case's output stays suppressed, so no other probe report is published.
+    [ "$case_name" != "$CONTROL_CASE" ] || printf '%s\n' "$result"
   else
     echo "FAIL $case_name"
     [ -z "$result" ] || echo "$result"
