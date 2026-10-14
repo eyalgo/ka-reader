@@ -1383,7 +1383,9 @@ fn observed_listing(root: &Path, requested: &str) -> ListingObservation {
     }
 }
 
-/// A folder holding every ordering case the FDR names: folders first, case ties, digit names.
+/// A folder holding the ordering cases a disk can hold: folders first, case, digit names. A case
+/// tie needs two names that differ only by case, which one volume that ignores case cannot hold,
+/// so that case is exercised on values.
 fn make_ordering_cases(temp: &TempDir) {
     temp.make_folder("B");
     temp.make_folder("a");
@@ -1391,7 +1393,6 @@ fn make_ordering_cases(temp: &TempDir) {
     temp.write_file("file2", "");
     temp.write_file(".dot", "");
     temp.write_file("Readme", "");
-    temp.write_file("readme", "");
 }
 
 #[test]
@@ -1600,7 +1601,7 @@ fn test_pure_ordering_matches_a_fresh_listing_for_the_same_entries() {
             .iter()
             .map(|item| item.entry.name.as_str())
             .collect::<Vec<_>>(),
-        ["a", "B", ".dot", "file10", "file2", "Readme", "readme"]
+        ["a", "B", ".dot", "file10", "file2", "Readme"]
     );
 }
 
@@ -1611,7 +1612,9 @@ fn test_pure_ordering_performs_no_read() {
         location: PathBuf::from("/a/location/that/is/not/on/disk"),
         items: vec![
             listed_entry(b"z", "z", EntryKind::File),
+            listed_entry(b"readme", "readme", EntryKind::File),
             listed_entry(b"d", "d", EntryKind::Folder),
+            listed_entry(b"Readme", "Readme", EntryKind::File),
             listed_entry(b"a", "a", EntryKind::File),
         ],
     };
@@ -1623,7 +1626,7 @@ fn test_pure_ordering_performs_no_read() {
             .iter()
             .map(|item| item.entry.name.as_str())
             .collect::<Vec<_>>(),
-        ["d", "a", "z"]
+        ["d", "a", "Readme", "readme", "z"]
     );
 }
 

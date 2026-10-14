@@ -132,6 +132,18 @@ pub enum ItemState<T, C = Condition> {
     Failed(C),
 }
 
+impl<T, C> ItemState<T, C> {
+    /// The same state with an observed value carried through `convert`; `Pending` and `Failed` pass
+    /// as they are.
+    pub(crate) fn map<U>(self, convert: impl FnOnce(T) -> U) -> ItemState<U, C> {
+        match self {
+            Self::Pending => ItemState::Pending,
+            Self::Observed(value) => ItemState::Observed(convert(value)),
+            Self::Failed(condition) => ItemState::Failed(condition),
+        }
+    }
+}
+
 /// One direct entry of a listed folder.
 ///
 /// A folder is `Pending`, and a file is `Observed`. An entry that failed is always a `File`.
@@ -343,15 +355,67 @@ fn list_with_filesystem(
     root: &Path,
     requested: &str,
 ) -> ItemState<Vec<Entry>> {
-    match resolve(filesystem, root, Path::new(requested))
-        .and_then(|at| list_folder(filesystem, root, &at.below_root))
-    {
-        Ok(entries) => ItemState::Observed(entries),
+    observe_listing_with_filesystem(filesystem, root, Path::new(requested))
+        .map(ListingObservation::into_entries)
+}
+
+/// Observes the direct entries of `requested`, a path relative to `root`, keeping what [`list`]'s
+/// answer discards: the folder's resolved location and, for each entry, the raw name the operating
+/// system reported. The path is resolved by the walk [`list`] uses and each entry is classified the
+/// way [`list`] classifies it, so the two answers agree entry for entry. The answer is `Observed`
+/// or `Failed`, never `Pending`, and a failure is logged exactly as [`list`] logs it.
+pub(crate) fn observe_listing(root: &Path, requested: &Path) -> ItemState<ListingObservation> {
+    observe_listing_with_filesystem(&NativeFilesystem, root, requested)
+}
+
+fn observe_listing_with_filesystem(
+    filesystem: &impl Filesystem,
+    root: &Path,
+    requested: &Path,
+) -> ItemState<ListingObservation> {
+    match resolve(filesystem, root, requested).and_then(|at| {
+        list_folder(filesystem, root, &at.below_root).map(|items| ListingObservation {
+            location: at.below_root,
+            items,
+        })
+    }) {
+        Ok(observation) => ItemState::Observed(observation),
         Err(blocked) => {
             log::warn!("fs-reader: list failed: {}", blocked.text);
             ItemState::Failed(blocked.condition)
         }
     }
+}
+
+/// Where a requested path resolves to, below the root, and what the last step found there.
+///
+/// `identity` is the resolved location, so two requests that reach one folder (a link shown as a
+/// folder and its target) share it, and it is never the spelling the caller asked with.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct Location {
+    pub(crate) identity: PathBuf,
+    pub(crate) kind: EntryKind,
+}
+
+/// Resolves `requested`, a path relative to `root`, to its [`Location`] by the containment walk
+/// [`list`] uses, reading no folder's entries and no file's bytes. A failure is the walk's own
+/// condition, logged at `warn` as `fs-reader: locate failed: ` with a fixed phrase and no path.
+pub(crate) fn locate(root: &Path, requested: &Path) -> Result<Location, Condition> {
+    resolve(&NativeFilesystem, root, requested)
+        .map(|at| Location {
+            identity: at.below_root,
+            kind: at.kind,
+        })
+        .map_err(|blocked| {
+            log::warn!("fs-reader: locate failed: {}", blocked.text);
+            blocked.condition
+        })
+}
+
+/// The [`Location`] of the folder that holds `requested`. It is the question to ask of a removed
+/// entry, whose own path no longer resolves while its parent still does.
+pub(crate) fn locate_parent(root: &Path, requested: &Path) -> Result<Location, Condition> {
+    locate(root, requested.parent().unwrap_or(Path::new("")))
 }
 
 /// Reads the file at `requested`, a path relative to `root`, and decides its verdict.
@@ -371,7 +435,21 @@ fn read_with_filesystem(
     root: &Path,
     requested: &str,
 ) -> ItemState<FileContent> {
-    let requested = Path::new(requested);
+    observe_file_with_filesystem(filesystem, root, Path::new(requested))
+}
+
+/// Reads the file at `requested`, a path relative to `root`, exactly as [`read`] reads the same
+/// path spelled as text: the one difference is that the caller keeps the path as the native value
+/// it holds, so a name that is not UTF-8 reaches the walk unchanged.
+pub(crate) fn observe_file(root: &Path, requested: &Path) -> ItemState<FileContent> {
+    observe_file_with_filesystem(&NativeFilesystem, root, requested)
+}
+
+fn observe_file_with_filesystem(
+    filesystem: &impl Filesystem,
+    root: &Path,
+    requested: &Path,
+) -> ItemState<FileContent> {
     let answer = resolve(filesystem, root, requested).and_then(|at| match at.kind {
         EntryKind::Folder => Err(Blocked::not_a_regular_file()),
         EntryKind::File => read_bytes(&root.join(at.below_root)).map(|bytes| {
@@ -811,17 +889,37 @@ fn next_step_is_a_links_target(pending: &VecDeque<Step>) -> bool {
 
 /// An entry beside the raw name the operating system reported for it. The reported name is lossy
 /// for a name that is not UTF-8, so the raw bytes are what make the order total.
-struct Listed {
-    raw_name: OsString,
-    entry: Entry,
+///
+/// This is the entry observation: the entry's native path is its folder's location joined with
+/// `raw_name`, so no path is stored twice.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct Listed {
+    pub(crate) raw_name: OsString,
+    pub(crate) entry: Entry,
+}
+
+/// One folder as observed: the resolved location it was read at, and its entries in the FDR's
+/// order with the raw names behind them.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct ListingObservation {
+    pub(crate) location: PathBuf,
+    pub(crate) items: Vec<Listed>,
+}
+
+impl ListingObservation {
+    /// The public projection: each entry as [`list`] answers it.
+    pub(crate) fn into_entries(self) -> Vec<Entry> {
+        self.items.into_iter().map(|item| item.entry).collect()
+    }
 }
 
 /// Puts `items` in the order the FDR fixes for a folder's entries: every entry that lists as a folder
 /// first, then everything else. Within a group, names compare on their lowercase forms by code
 /// point, with digits as characters. A tie falls back to the reported name's bytes, and then to the
 /// raw name's bytes. No Unicode normalization is applied. The order comes from this key alone and
-/// never from the order the disk listed the entries in.
-fn order(items: &mut [Listed]) {
+/// never from the order the disk listed the entries in. It is pure: it reads nothing, so a listing
+/// merged from retained and fresh observations is ordered by the key a fresh listing uses.
+pub(crate) fn order(items: &mut [Listed]) {
     items.sort_by_cached_key(|item| {
         (
             item.entry.kind != EntryKind::Folder,
@@ -840,7 +938,7 @@ fn list_folder(
     filesystem: &impl Filesystem,
     root: &Path,
     below_root: &Path,
-) -> Result<Vec<Entry>, Blocked> {
+) -> Result<Vec<Listed>, Blocked> {
     let mut items = Vec::new();
     for item in filesystem
         .read_dir(&root.join(below_root))
@@ -869,7 +967,7 @@ fn list_folder(
         });
     }
     order(&mut items);
-    Ok(items.into_iter().map(|item| item.entry).collect())
+    Ok(items)
 }
 
 /// The language an entry carries, taken from the raw name the system reported (never the lossy
