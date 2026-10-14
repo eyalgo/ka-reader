@@ -55,7 +55,28 @@ None.
   with the first `macos-26` reading. That reading has not been taken: `origin/main` is
   `ka-reader@24be581`, which does not hold the change.
 - **If a document has to be written:** none. This is a fold into `SDD.md`.
-- **Answer:** <the owner fills this in>
+- **Answer:** Fold both, in the CTO's column. (1) The locator: `checks/bundle.sh:L382` reads
+  `:L383` in § 4 C-I3 and in RN-109, each pinned to the commit it is read at — the `printf '%s\n'
+  "$probe_output"` line is `:L383` at `ka-reader@4601cd9`, `fcb2e2f`, `24be581` and `970ad65`
+  (`git show <sha>:checks/bundle.sh | grep -n probe_output`), so RN-109's "read at source" sentence
+  carried a mis-read locator on the day it was written, and the new revision note says that in those
+  words rather than leaving RN-109 as it stands. (2) The clause: C-I3's dated sentence about
+  `ka-reader@4601cd9` stays as written, and gains one dated sentence after it — at `ka-reader@970ad65`
+  the suite validates the control's report, exactly one line matching
+  `^out-of-grant-read: (denied|allowed)$` and the case fails otherwise
+  (`checks/tests/test_bundle.sh:L629-L661`), and forwards that one line after the control's `ok` line
+  (`:L1710`); so the line owed at `4601cd9` is carried from `970ad65`, and C-I3's *Violated by*
+  missing-line case is live from that commit and is enforced by the suite going red, not by a reader of
+  the log. (3) The `macos-26` reading is still not taken, and its ground moves: the hosted image now
+  reaches *Bundle probe suite* — GitHub Actions run 38551538187 on `ka-reader@24be581`, created
+  2026-10-14T10:43:17Z, concluded `success` with that step `success`, and `docs/nfdr.md` QC-25's command
+  on it prints nothing, the expected not-yet, because `24be581` does not hold the change — and
+  `origin/main` is `24be581` (`git ls-remote origin refs/heads/main`), so no hosted run holds `970ad65`.
+  The first `macos-26` reading is that line in the log of the first hosted run on `main` that holds
+  `970ad65` and concludes with *Bundle probe suite* `success`, whichever later commit that run is on;
+  it is recorded when read, by a later item, and this fold does not wait for it. Nothing else moves: no
+  slice, edge, seam or part, and `Status:` stays Settled. The push and the reading are not this
+  document's. Reasoning: `docs/trail/sdd/self_answer-57.md` § 5.1.
 
 **How it closes.** `product-sdd` folds it on its next run like every other item in this file, and
 the trail copy and the delete-when-empty behaviour are unchanged.
