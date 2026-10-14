@@ -207,7 +207,7 @@ final class LaunchWindowLayoutTests: LaunchWindowTestCase {
         /// Follows the pointer from the press to the release, as a divider does, and keeps how far
         /// the last drag carried it.
         override func mouseDown(with press: NSEvent) {
-            while let event = window?.nextEvent(
+            while let event = unsafe window?.nextEvent(
                 matching: [.leftMouseDragged, .leftMouseUp], until: .distantPast,
                 inMode: .eventTracking, dequeue: true), event.type == .leftMouseDragged
             {

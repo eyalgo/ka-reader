@@ -198,7 +198,7 @@ package final class RootItemsView: NSScrollView {
 
         let column = NSTableColumn(identifier: Self.columnIdentifier)
         outlineView.addTableColumn(column)
-        outlineView.outlineTableColumn = column
+        unsafe outlineView.outlineTableColumn = column
         outlineView.headerView = nil
         // The row views draw the selection themselves, from `drawsSelection`. The platform draws a
         // row's selection only while this style is not none, and a `drawSelection(in:)` override
@@ -338,8 +338,8 @@ package final class RootItemsView: NSScrollView {
         cell.addSubview(textField)
         cell.addSubview(conditionLabel)
         cell.addSubview(letterLabel)
-        cell.imageView = imageView
-        cell.textField = textField
+        unsafe cell.imageView = imageView
+        unsafe cell.textField = textField
 
         NSLayoutConstraint.activate([
             imageView.leadingAnchor.constraint(equalTo: cell.leadingAnchor),
@@ -367,7 +367,7 @@ package final class RootItemsView: NSScrollView {
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.textColor = .secondaryLabelColor
         cell.addSubview(textField)
-        cell.textField = textField
+        unsafe cell.textField = textField
         NSLayoutConstraint.activate([
             textField.leadingAnchor.constraint(equalTo: cell.leadingAnchor),
             textField.centerYAnchor.constraint(equalTo: cell.centerYAnchor),
@@ -545,7 +545,7 @@ extension RootItemsView: NSOutlineViewDelegate {
             let cell =
                 outlineView.makeView(withIdentifier: Self.lineCellIdentifier, owner: self)
                 as? NSTableCellView ?? makeLineCell()
-            cell.textField?.stringValue = line.text
+            unsafe cell.textField?.stringValue = line.text
             return cell
         }
         guard let row = item as? Row else {
@@ -554,8 +554,8 @@ extension RootItemsView: NSOutlineViewDelegate {
         let cell =
             outlineView.makeView(withIdentifier: Self.cellIdentifier, owner: self)
             as? EntryCell ?? makeCell()
-        cell.textField?.stringValue = row.entry.name
-        cell.imageView?.image = glyph(for: row.entry)
+        unsafe cell.textField?.stringValue = row.entry.name
+        unsafe cell.imageView?.image = glyph(for: row.entry)
         // Every row sets the sentence, so a reused cell never carries a stale one.
         if let sentence = conditionSentence(for: row) {
             cell.conditionLabel.stringValue = sentence

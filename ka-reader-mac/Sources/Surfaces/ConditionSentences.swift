@@ -2,7 +2,7 @@
 /// strings exist (CP-185).
 ///
 /// The row sentences are `docs/CONTENT.md` v7's, § Message patterns, *Partial* (CP-203).
-package enum ConditionSentences {
+package nonisolated enum ConditionSentences {
     /// The line for a root that could not be read, whatever the condition.
     package static let failedRoot = "KA-Reader can't read this folder."
 

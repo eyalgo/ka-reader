@@ -29,3 +29,4 @@ Thumbs.db
 
 # SwiftPM's build output for the native shell package
 /ka-reader-mac/.build/
+/ka-reader-mac/CKAReaderBridge.artifactbundle/

@@ -2,7 +2,7 @@
 /// for a file, the language its name carries.
 ///
 /// This is the projection a row is drawn from, and nothing else feeds a row (CP-82).
-package struct Entry: Decodable, Equatable, Sendable {
+package nonisolated struct Entry: Decodable, Equatable, Sendable {
     package let name: String
     package let path: String
     package let kind: EntryKind

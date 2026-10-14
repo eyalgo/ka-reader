@@ -130,7 +130,7 @@ final class RootItemsViewMarkerTests: XCTestCase {
         }
         for path in ["b.txt", "sub", "inner"] {
             let drawn = try cell(fixture.view, path: path)
-            let name = try XCTUnwrap(drawn.textField)
+            let name = try unsafe XCTUnwrap(drawn.textField)
             XCTAssertGreaterThanOrEqual(
                 try letterField(drawn).frame.minX, name.frame.maxX,
                 "the letter sits after the name on \(path)")
@@ -177,12 +177,12 @@ final class RootItemsViewMarkerTests: XCTestCase {
 
         let unmarked = try cell(marked.view, path: "top.txt")
         XCTAssertEqual(visibleTexts(unmarked), ["top.txt"])
-        XCTAssertEqual(
+        unsafe XCTAssertEqual(
             unmarked.textField?.textColor,
             try cell(plain.view, path: "top.txt").textField?.textColor)
         let failed = visibleTexts(try cell(marked.view, path: "broken.txt"))
         XCTAssertEqual(failed.count, 2, "a failed entry shows its name and its sentence only")
-        XCTAssertEqual(
+        unsafe XCTAssertEqual(
             try cell(marked.view, path: "b.txt").textField?.textColor,
             try cell(plain.view, path: "b.txt").textField?.textColor,
             "no hue is added to a marked row's name")
@@ -190,7 +190,7 @@ final class RootItemsViewMarkerTests: XCTestCase {
 
     func test_showingMarkersChangesNothingElse() throws {
         for hidden in [false, true] {
-            let files = (0..<40).map { file(String(format: "f%02d.txt", $0)) }
+            let files = (0..<40).map { unsafe file(String(format: "f%02d.txt", $0)) }
             let fixture = makeFixture(
                 [folder("src"), file("b.txt")] + files,
                 listings: ["src": [file("src/c.txt"), file("src/d.txt")]])
@@ -328,7 +328,7 @@ final class RootItemsViewMarkerTests: XCTestCase {
 
         fixture.rest.fireLast()
 
-        let name = try XCTUnwrap(cell.textField?.stringValue)
+        let name = try unsafe XCTUnwrap(cell.textField?.stringValue)
         XCTAssertEqual(fixture.view.letterTooltip.shownText, name + " \u{2014} modified")
         XCTAssertEqual(name, "b.txt")
     }
@@ -340,7 +340,7 @@ final class RootItemsViewMarkerTests: XCTestCase {
         try rest(on: try letterField(cell), in: fixture)
         XCTAssertNotNil(fixture.view.letterTooltip.shownView)
 
-        try PointerDelivery.move(
+        try unsafe PointerDelivery.move(
             to: centre(of: try XCTUnwrap(cell.textField), in: fixture.view), in: fixture.view)
 
         XCTAssertNil(fixture.view.letterTooltip.shownView)
@@ -351,13 +351,13 @@ final class RootItemsViewMarkerTests: XCTestCase {
         fixture.view.showMarkers(markers(changed: [("b.txt", .modified)]))
         let marked = try cell(fixture.view, path: "b.txt")
         let unmarked = try cell(fixture.view, path: "top.txt")
-        let name = try XCTUnwrap(marked.textField)
+        let name = try unsafe XCTUnwrap(marked.textField)
         let letter = try letterField(marked)
         let gap = NSPoint(
             x: fixture.view.convert(NSPoint(x: name.frame.maxX, y: 0), from: marked).x
                 + (letter.frame.minX - name.frame.maxX) / 2,
             y: centre(of: letter, in: fixture.view).y)
-        let points = [
+        let points = unsafe [
             ("the name", centre(of: name, in: fixture.view)),
             ("the glyph", centre(of: try XCTUnwrap(marked.imageView), in: fixture.view)),
             ("the space between the name and the letter", gap),
@@ -414,7 +414,7 @@ final class RootItemsViewMarkerTests: XCTestCase {
         let child = try cell(fixture.view, path: "inner/x.txt")
         XCTAssertNil(try letter(fixture.view, path: "inner/x.txt"))
         let before = fixture.rest.requests.count
-        for view in [try XCTUnwrap(child.textField), try letterField(child)] {
+        for view in unsafe [try XCTUnwrap(child.textField), try letterField(child)] {
             try PointerDelivery.move(to: centre(of: view, in: fixture.view), in: fixture.view)
         }
 
@@ -443,7 +443,7 @@ final class RootItemsViewMarkerTests: XCTestCase {
             let fixture = makeFixture([folder("sub")], listings: ["sub": [file("sub/x.txt")]])
             fixture.view.showMarkers(markers(changed: [("sub", .modified)]))
             let cell = try cell(fixture.view, path: "sub")
-            try ClickDelivery.clickMiddle(
+            try unsafe ClickDelivery.clickMiddle(
                 of: letterNotName ? try letterField(cell) : try XCTUnwrap(cell.textField))
             return (fixture.selected, fixture.reads)
         }
@@ -456,7 +456,7 @@ final class RootItemsViewMarkerTests: XCTestCase {
     }
 
     func test_scrollingShowAndShowMarkersEachRemoveAShownTooltip() throws {
-        let entries = (0..<30).map { file(String(format: "f%02d.txt", $0)) }
+        let entries = (0..<30).map { unsafe file(String(format: "f%02d.txt", $0)) }
         let fixture = makeFixture(entries)
         let marked = markers(changed: [("f00.txt", .modified)])
         func showTooltip() throws {

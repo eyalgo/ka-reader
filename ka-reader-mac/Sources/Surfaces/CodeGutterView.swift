@@ -77,7 +77,7 @@ final class CodeGutterView: NSView {
     }
 
     init(textView: NSTextView) {
-        guard let layoutManager = textView.layoutManager else {
+        guard let layoutManager = unsafe textView.layoutManager else {
             preconditionFailure("CodeGutterView numbers the rows of a TextKit 1 text view")
         }
         self.textView = textView
@@ -97,15 +97,15 @@ final class CodeGutterView: NSView {
 
     /// Re-reads the layout after the text changed: the rows, the count, the column and the width.
     func reload() {
-        if let container = textView.textContainer {
+        if let container = unsafe textView.textContainer {
             layoutManager.ensureLayout(for: container)
         }
         let text = textView.string as NSString
         var rows: [Row] = []
-        layoutManager.enumerateLineFragments(
+        unsafe layoutManager.enumerateLineFragments(
             forGlyphRange: NSRange(location: 0, length: layoutManager.numberOfGlyphs)
         ) { rect, _, _, glyphRange, _ in
-            let characters = self.layoutManager.characterRange(
+            let characters = unsafe self.layoutManager.characterRange(
                 forGlyphRange: glyphRange, actualGlyphRange: nil)
             // A row holding only its break has no glyph to measure: the layout puts the break's
             // own location at the fragment's bottom, 3 points below where a row of text has its

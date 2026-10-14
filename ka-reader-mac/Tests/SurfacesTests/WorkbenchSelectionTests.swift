@@ -143,7 +143,7 @@ final class WorkbenchSelectionTests: XCTestCase {
         let tree = workbench.rootItemsView
         let made = tree.outlineView.view(
             atColumn: 0, row: try row(name, in: workbench), makeIfNecessary: true)
-        return (made as? NSTableCellView)?.imageView?.image
+        return unsafe (made as? NSTableCellView)?.imageView?.image
     }
 
     func testSelectingACannotDisplayPythonRowKeepsItsFileCodeGlyph() throws {
@@ -171,8 +171,8 @@ final class WorkbenchSelectionTests: XCTestCase {
         XCTAssertEqual(tree.outlineView.selectedRow, index)
         let made = tree.outlineView.view(atColumn: 0, row: index, makeIfNecessary: true)
         let drawn = try XCTUnwrap(made as? NSTableCellView)
-        XCTAssertEqual(drawn.textField?.stringValue, "app.py")
-        XCTAssertTrue(drawn.imageView?.image === fileCodeGlyph)
+        unsafe XCTAssertEqual(drawn.textField?.stringValue, "app.py")
+        unsafe XCTAssertTrue(drawn.imageView?.image === fileCodeGlyph)
     }
 
     func testTreeStaysEnabledAfterCannotDisplayAndAfterFailedRead() throws {

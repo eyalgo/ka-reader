@@ -264,8 +264,8 @@ final class RowHoverUnitTests: XCTestCase {
     private let lowerPoint = NSPoint(x: 50, y: 20)
     private let nowhere = NSPoint(x: 50, y: 90)
 
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 200, height: 100), styleMask: [.titled],
             backing: .buffered, defer: false)

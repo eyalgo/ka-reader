@@ -43,7 +43,7 @@ final class WorkbenchTreeMarkerTests: XCTestCase {
         let glyphs = StatusGlyphs(empty: glyph, failure: glyph)
         let tree = RootItemsView(
             folderGlyph: glyph, fileGlyph: glyph, fileCodeGlyph: glyph, statusGlyphs: glyphs)
-        let filler = (0..<files).map { entry(String(format: "z%02d.txt", $0), .file) }
+        let filler = (0..<files).map { unsafe entry(String(format: "z%02d.txt", $0), .file) }
         tree.show(
             .observed(
                 [

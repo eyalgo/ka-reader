@@ -50,7 +50,7 @@ enum PointerDelivery {
         }
         let found = try XCTUnwrap(
             owners.isEmpty ? nil : owners, "the host carries no tooltip or hover tracking area")
-        let window = try XCTUnwrap(host.window, "the host is in no window")
+        let window = try unsafe XCTUnwrap(host.window, "the host is in no window")
         return (found, window)
     }
 
@@ -67,7 +67,7 @@ enum PointerDelivery {
     private static func crossing(
         _ type: NSEvent.EventType, at point: NSPoint, in host: NSView, window: NSWindow
     ) throws -> NSEvent {
-        try XCTUnwrap(
+        try unsafe XCTUnwrap(
             NSEvent.enterExitEvent(
                 with: type, location: host.convert(point, to: nil), modifierFlags: [], timestamp: 0,
                 windowNumber: window.windowNumber, context: nil, eventNumber: 0, trackingNumber: 0,

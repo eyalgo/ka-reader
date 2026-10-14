@@ -67,7 +67,7 @@ final class RootItemsViewHoverTests: XCTestCase {
     }
 
     private func files(_ count: Int) -> [Entry] {
-        (0..<count).map { file(String(format: "f%02d.txt", $0)) }
+        (0..<count).map { unsafe file(String(format: "f%02d.txt", $0)) }
     }
 
     private func markers(_ changed: [(String, GitStatusCategory)]) -> TreeMarkers {
@@ -248,7 +248,7 @@ final class RootItemsViewHoverTests: XCTestCase {
     func test_hover_s1_scroll_moves_rows_under_still_pointer_fill_follows() throws {
         let fixture = makeFixture(files(40))
         let view = fixture.view
-        let pointer = try point(ofRow: 3, in: view)
+        let pointer = point(ofRow: 3, in: view)
         try PointerDelivery.move(to: pointer, in: view)
         XCTAssertEqual(view.hoverPaths(), ["f03.txt"])
 
@@ -280,7 +280,7 @@ final class RootItemsViewHoverTests: XCTestCase {
             listings: ["src": .observed([file("src/x.txt"), file("src/y.txt")])])
         let view = fixture.view
         try expand("src", in: view)
-        let pointer = try point(ofRow: 1, in: view)
+        let pointer = point(ofRow: 1, in: view)
         try PointerDelivery.move(to: pointer, in: view)
         XCTAssertEqual(view.hoverPaths(), ["src/x.txt"])
 
@@ -322,7 +322,8 @@ final class RootItemsViewHoverTests: XCTestCase {
         view.showMarkers(markers([("a.txt", .modified)]))
         let cell = try cell(view, path: "a.txt")
 
-        try PointerDelivery.move(to: centre(of: try XCTUnwrap(cell.textField), in: view), in: view)
+        try unsafe PointerDelivery.move(
+            to: centre(of: try XCTUnwrap(cell.textField), in: view), in: view)
         XCTAssertEqual(view.hoverPaths(), ["a.txt"], "on the name")
 
         try PointerDelivery.move(to: point(ofPath: "b.txt", in: view), in: view)
@@ -485,7 +486,7 @@ final class RootItemsViewHoverTests: XCTestCase {
         let fixture = makeFixture(
             [folder("src")] + files(40), listings: ["src": .observed([file("src/c.txt")])])
         let view = fixture.view
-        try PointerDelivery.move(to: try point(ofRow: 3, in: view), in: view)
+        try PointerDelivery.move(to: point(ofRow: 3, in: view), in: view)
         XCTAssertEqual(view.hoverPaths(), ["f02.txt"])
         fixture.key.stopBeingKey()
 
@@ -601,7 +602,7 @@ final class RootItemsViewHoverTests: XCTestCase {
     func test_hover_s1_window_becomes_key_with_pointer_outside_the_host_fills_nothing() throws {
         let fixture = makeFixture(files(40))
         let view = fixture.view
-        try PointerDelivery.move(to: try point(ofRow: 3, in: view), in: view)
+        try PointerDelivery.move(to: point(ofRow: 3, in: view), in: view)
         scroll(view, to: 100)
         let above = NSPoint(x: 40, y: view.bounds.maxY + 12)
         XCTAssertNotNil(entryPath(at: above, in: view), "a row's frame lies above the view")
@@ -611,7 +612,7 @@ final class RootItemsViewHoverTests: XCTestCase {
         let requests = fixture.rest.requests.count
 
         for (what, outside) in [("beside", beside), ("above", above), ("below", below)] {
-            try PointerDelivery.move(to: try point(ofRow: 5, in: view), in: view)
+            try PointerDelivery.move(to: point(ofRow: 5, in: view), in: view)
             XCTAssertEqual(view.hoverPaths().count, 1, what)
             fixture.key.stopBeingKey()
             fixture.key.pointer = outside

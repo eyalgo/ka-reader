@@ -468,7 +468,7 @@ final class GitViewTests: XCTestCase {
     {
         let paths = descendants(of: fixture.view).compactMap { $0 as? NSTextField }
             .filter { $0.identifier?.rawValue == "gitRowPath" && $0.stringValue == path }
-        let row = try XCTUnwrap(paths[nth].superview)
+        let row = try unsafe XCTUnwrap(paths[nth].superview)
         return try XCTUnwrap(
             row.subviews.compactMap { $0 as? NSTextField }
                 .first { $0.identifier?.rawValue == "gitRowLetter" })
@@ -593,7 +593,7 @@ final class GitViewTests: XCTestCase {
     }
 
     func test_showAndAScrollEachRemoveAShownTooltip() throws {
-        let entries = (0..<40).map { entry(String(format: "f%02d.txt", $0), .modified) }
+        let entries = (0..<40).map { unsafe entry(String(format: "f%02d.txt", $0), .modified) }
         let fixture = makeView(showing: repository(changed: entries))
         let scroll = try XCTUnwrap(
             descendants(of: fixture.view).compactMap { $0 as? NSScrollView }.first)

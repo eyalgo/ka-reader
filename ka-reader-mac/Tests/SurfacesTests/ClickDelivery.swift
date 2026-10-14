@@ -15,11 +15,11 @@ enum ClickDelivery {
     /// Clicks at `point`, in `view`'s own coordinates, and returns the view the press went to.
     @discardableResult
     static func click(at point: NSPoint, in view: NSView) throws -> NSView {
-        let window = try XCTUnwrap(view.window, "the view is in no window")
+        let window = try unsafe XCTUnwrap(view.window, "the view is in no window")
         let content = try XCTUnwrap(window.contentView, "the window has no content")
         content.layoutSubtreeIfNeeded()
         let inWindow = view.convert(point, to: nil)
-        let underPointer = content.superview?.convert(inWindow, from: nil) ?? inWindow
+        let underPointer = unsafe content.superview?.convert(inWindow, from: nil) ?? inWindow
         let hit = try XCTUnwrap(content.hitTest(underPointer), "nothing is under the pointer")
         let app = NSApplication.shared
         app.postEvent(try event(.leftMouseUp, at: inWindow, in: window), atStart: false)

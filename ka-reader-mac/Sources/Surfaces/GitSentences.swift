@@ -2,7 +2,7 @@
 /// Each one is placed as `change_text.md` writes it; the ones `docs/CONTENT.md` already writes are
 /// copied literally. Every choice is an exhaustive `switch` with no `default`, so a state or
 /// condition added later fails to compile here instead of drawing nothing.
-package enum GitSentences {
+package nonisolated enum GitSentences {
     /// The switch's two labels: no full stop (`docs/CONTENT.md:L113-L115`).
     package static let filesLabel = "Files"
     package static let gitLabel = "Git"
