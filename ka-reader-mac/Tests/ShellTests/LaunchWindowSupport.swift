@@ -264,21 +264,19 @@ func click(_ control: NSControl) {
 /// loop finds them there; whatever is still queued afterwards is delivered in turn, so a view that
 /// takes each event as it comes gets them too, and nothing is left for a later test.
 ///
-/// The queue does not hand an event back at the location it was given: it rewrites it by where it
-/// takes the window to be, and that is not where the window is. Measured on the hosted macos-26
-/// image, a window at (152, 64) in a 1024 x 768 screen got every queued event back shifted by
-/// (+152, -32), where the press, handed straight to the window, kept its place; on a Mac the shift
-/// is about 2 points. So the drag and the release are queued where the shift puts them at the
-/// place asked for, the shift being read off one event queued first and taken back out
-/// (`queuedShift`). A drag of `distance` then arrives as one of `distance`.
+/// A queued event's location is read back through where the window server has the window, and the
+/// server places a window some time after AppKit gives it its frame: on a Mac it is still drawing
+/// the window's opening, a little smaller than its frame, and on the hosted macos-26 image it still
+/// had the window at the screen's top-left corner (run 38496422879: queued events back at
+/// (+152, -32) from the window's own (152, 64)). So the drag waits until the server's bounds are
+/// the window's frame (`waitUntilPlaced`); from then on a queued event comes back where it was put.
 @MainActor
 func dragAsAPersonDoes(in window: NSWindow, from start: NSPoint, by distance: CGFloat) throws {
+    try waitUntilPlaced(window)
     let end = NSPoint(x: start.x + distance, y: start.y)
-    let shift = try queuedShift(at: end, in: window)
-    let queuedEnd = NSPoint(x: end.x - shift.x, y: end.y - shift.y)
     let press = try mouseEvent(.leftMouseDown, at: start, in: window)
-    NSApp.postEvent(try mouseEvent(.leftMouseDragged, at: queuedEnd, in: window), atStart: false)
-    NSApp.postEvent(try mouseEvent(.leftMouseUp, at: queuedEnd, in: window), atStart: false)
+    NSApp.postEvent(try mouseEvent(.leftMouseDragged, at: end, in: window), atStart: false)
+    NSApp.postEvent(try mouseEvent(.leftMouseUp, at: end, in: window), atStart: false)
 
     window.sendEvent(press)
     while let queued = NSApp.nextEvent(
@@ -290,18 +288,48 @@ func dragAsAPersonDoes(in window: NSWindow, from start: NSPoint, by distance: CG
     layOut(window)
 }
 
-/// How far the queue moves a location in `window`: an event queued at `location` and taken back out
-/// is read at `location` plus the answer. Nothing is delivered, and the queue is as it was; no
-/// event coming back means no shift is known and none is allowed for.
+/// Runs the main run loop until the window server's bounds for `window` are its frame, and throws
+/// when they are not within `placementTimeout`: a drag delivered before then is read at the wrong
+/// place. The server's bounds are in screen coordinates measured down from the top of the first
+/// screen, so the frame is turned over before they are compared.
 @MainActor
-private func queuedShift(at location: NSPoint, in window: NSWindow) throws -> NSPoint {
-    NSApp.postEvent(try mouseEvent(.leftMouseDragged, at: location, in: window), atStart: false)
-    guard
-        let probe = NSApp.nextEvent(
-            matching: [.leftMouseDragged], until: .distantPast, inMode: .default, dequeue: true)
-    else { return .zero }
-    return NSPoint(
-        x: probe.locationInWindow.x - location.x, y: probe.locationInWindow.y - location.y)
+private func waitUntilPlaced(_ window: NSWindow) throws {
+    let topOfFirstScreen = try XCTUnwrap(NSScreen.screens.first, "no screen").frame.maxY
+    let frame = window.frame
+    let expected = CGRect(
+        x: frame.minX, y: topOfFirstScreen - frame.maxY, width: frame.width, height: frame.height)
+    let deadline = Date().addingTimeInterval(placementTimeout)
+    while serverBounds(of: window) != expected {
+        guard Date() < deadline else {
+            throw PlacementTimedOut(
+                expected: expected, server: serverBounds(of: window), within: placementTimeout)
+        }
+        RunLoop.current.run(until: Date().addingTimeInterval(0.01))
+    }
+}
+
+/// How long the window server is given to place a window before a drag on it fails.
+private let placementTimeout: TimeInterval = 5
+
+/// The window server's bounds for `window`, or nil when it reports none.
+@MainActor
+private func serverBounds(of window: NSWindow) -> CGRect? {
+    let info =
+        CGWindowListCopyWindowInfo([.optionIncludingWindow], CGWindowID(window.windowNumber))
+        as? [[String: Any]]
+    guard let bounds = info?.first?[kCGWindowBounds as String] as? NSDictionary else { return nil }
+    return CGRect(dictionaryRepresentation: bounds as CFDictionary)
+}
+
+private struct PlacementTimedOut: Error, CustomStringConvertible {
+    let expected: CGRect
+    let server: CGRect?
+    let within: TimeInterval
+
+    var description: String {
+        "the window server did not place the window at \(expected) within \(within) s "
+            + "(it reports \(server.map { "\($0)" } ?? "no bounds"))"
+    }
 }
 
 @MainActor
