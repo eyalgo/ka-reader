@@ -1,8 +1,8 @@
 # NFDR — KA-Reader
 
-**Status:** Draft
+**Status:** Settled
 **Owner:** Principal Architect
-**Version:** 52 — the cycle-45 fold, §§ 3.1 and 3.2 answered in the owner's seat; § 2.1 drafted for the owner. § 8 quotes the card's test command as it reads at `kensaiapp-opensource@d5005730`, which assembles the bridge before its Swift half, and its "the card does not say so yet" paragraph becomes a dated note; RN-6 is extended with the pin. § 9's *Toolchain* clause makes the toolchain it records the reference for every compiler-dependent verdict — a change-time run stands in for CI only on that Swift and SDK — and records `NativeBridge.swift`'s two-compiler branch as a bounded supported pair, its `#else` arm owed removal from the first CI log that prints Swift 6.4 or later. § 9's runner paragraph gains a second precondition: a layer-4 test that places a window needs a session in which the window server places windows. § 9's *Adopted* passage becomes a dated account of the first hosted builds of the `6.2` manifest, runs 38549778886 and 38551538187 — drafted, awaiting the owner's confirm. No `QC` is added, renumbered or reused, and no record is written or restatused. One item awaits the owner, so `Status:` is Draft — RN-63 (v51: the close of the cycle-44 fold, QC-25's first hosted `macos-26` reading — RN-62)
+**Version:** 53 — the close: the cycle-46 fold, § 2.1 confirmed in the owner's seat. § 9's *Adopted* passage stands as v52 drafted it — the adoption is CI's as well as the tree's, its first hosted build GitHub Actions run 38549778886, red at a source compile and not at the manifest load, and run 38551538187 its first green — and its dated note now reads drafted and confirmed, pointing at the trail cycle. No `QC` is added, renumbered or reused, and no record is written or restatused. Nothing is left for the owner, so the companion is removed and `Status:` is Settled — RN-64 (v52: the cycle-45 fold, § 8's quoted card, § 9's toolchain reference rule and window-server precondition, and the *Adopted* passage drafted — RN-63)
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · PRD Settled · UXD Settled · DESIGN Settled · CONTENT Settled
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
@@ -1895,7 +1895,8 @@ left with `ka-reader-ui` at `ka-reader@0aca57e` (RN-22; RN-25).
   contradicts this clause and is not noise", true when v49 wrote it. The first hosted build's red
   came from the source, not from the manifest, so it did not contradict the clause; drafted at v52 on
   the item a `companion-self-answer` run raised on this document,
-  `docs/trail/architecture/self_answer-50.md` § *Raised on this document* — RN-63)*. **The `type == "system"` clause
+  `docs/trail/architecture/self_answer-50.md` § *Raised on this document* — RN-63 — and confirmed
+  in the owner's seat at `docs/trail/architecture/cycle-46.md` § 2.1 — RN-64)*. **The `type == "system"` clause
   holds with no check behind it.** `checks/no-network.sh` refuses only a non-empty `dependencies`
   array and a target carrying a `url` (`:L31-L32`, `:L131-L138`), reads the dump with `plutil`
   rather than `jq`, and refuses a `Package.resolved` at any depth under the package (`:L149`), so a
@@ -5719,3 +5720,36 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   bullet's *verified by* tail; RN-6; source: `docs/trail/architecture/cycle-45.md` §§ 3.1, 3.2, 2.1;
   `docs/trail/architecture/self_answer-50.md`; GitHub Actions runs 38549778886, 38551538187 and
   38577309118, read at the source for this run)*
+- **RN-64:** *(v53 — the close: the cycle-46 fold, § 2.1 confirmed)* **Intake.** The companion on
+  disk was the one v52 wrote, with one § 2 item and nothing in §§ 1 or 3. A `companion-self-answer`
+  run confirmed it in the owner's seat (`ka-reader@a8f9c96`; reasoning
+  `docs/trail/architecture/self_answer-51.md` § 2.1). The file was clean in git at intake and its
+  slot was filled, so it is consumed. It was copied whole to `docs/trail/architecture/cycle-46.md`
+  before this fold's first edit, and `cmp` found the two identical. **Whose answer this is.** The
+  fold rests on the ground RN-54 to RN-63 rest on: the answer binds only this document's agreement
+  with hosted CI and the tree, names no machine, commits nobody to infrastructure, and the owner can
+  reverse the fold with one revert. **§ 2.1 → § 9's *Adopted* passage, as drafted.** The v52 words
+  stand as written: the adoption is CI's as well as the tree's, the first hosted build of the `6.2`
+  manifest is run 38549778886, red at a source compile and not at the manifest load, and run
+  38551538187 is the first green. The answer adds one measured fact the draft asserted and the
+  raising item did not measure — that no run before 38549778886 had a head carrying
+  `ka-reader@f0f1e5f` — and it needs no new words, since "the first hosted build" already says it.
+  The passage's dated note, "drafted at v52 … — RN-63", now reads drafted and confirmed, pointing
+  at the trail cycle, as RN-27 and RN-50 did for their drafts. No other sentence moves. **What moved
+  beneath this document.** `git diff --stat 8c39c73 a8f9c96` lists this companion and its
+  self-answer, and nothing else. Every input's `Status:` line still reads Settled, and `git log -1`
+  over the seven inputs is SDD v51 (`ka-reader@761bd6e`), the revision v52 read, so `Inputs read:`
+  stands. **Re-measured for this run at `ka-reader@a8f9c96`, `origin/main` `ka-reader@f357008`.**
+  `git status --porcelain` printed nothing at intake. `git merge-base --is-ancestor f0f1e5f
+  origin/main` holds. `gh run list --repo kensaiapp/ka-reader --workflow ci.yml --limit 5` lists
+  38577309118 (`success`), 38551538187 (`success`) and 38549778886 (`failure`) as the newest runs on
+  `main`, in that order, with nothing after them, so the passage's account is still the current
+  one. **No candidate record.** Confirming a dated account of hosted runs is cheap to reverse and
+  involves no structural trade-off. No ADR is written, edited or restatused, the index does not
+  move, no `QC` is added, renumbered or reused, and § 10 does not move, because no row names the
+  passage. **Known limits.** This run read the inputs at their status lines and the SDD's last
+  commit; it built no bundle and ran no suite or `checks/*.sh` script. **The companion.** Nothing is
+  left for the owner, so the companion is removed and `Status:` is Settled *(re: header `Status:`,
+  `Version:`; § 9's *Adopted* passage's dated note; source: `docs/trail/architecture/cycle-46.md`
+  § 2.1; `docs/trail/architecture/self_answer-51.md` § 2.1; GitHub Actions runs 38549778886,
+  38551538187 and 38577309118, listed at the source for this run)*
