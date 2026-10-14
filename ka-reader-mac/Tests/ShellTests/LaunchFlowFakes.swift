@@ -3,10 +3,10 @@ import Shell
 import Surfaces
 
 /// The order in which the fakes were touched, so a test can say what came before what.
-///
-/// `@unchecked Sendable` because a bridge fake records into it from whichever thread the read runner
-/// calls the bridge on. The lock is enough: `storedEvents` is read and written only inside `lock`.
 final class EventLog: @unchecked Sendable {
+    // `@unchecked Sendable` because a bridge fake records into it from whichever thread the read
+    // runner calls the bridge on. The lock is enough: `storedEvents` is read and written only inside
+    // `lock`.
     private let lock = NSLock()
     private var storedEvents: [String] = []
 
@@ -35,12 +35,11 @@ final class FakePanel: FolderChoosing {
 }
 
 /// A bridge that answers from canned bytes and records every call, buffer and free.
-///
-/// `@unchecked Sendable` because `Bridging` is `Sendable` (the read runner calls a bridge from a
-/// background queue) and this fake keeps mutable answers and records. The lock is enough: every
-/// stored property is read and written only inside `lock`, through the accessors below, which keep
-/// the names and shapes the tests already use.
 final class RecordingBridge: Bridging, @unchecked Sendable {
+    // `@unchecked Sendable` because `Bridging` is `Sendable` (the read runner calls a bridge from a
+    // background queue) and this fake keeps mutable answers and records. The lock is enough: every
+    // stored property is read and written only inside `lock`, through the accessors below, which
+    // keep the names and shapes the tests already use.
     private struct State {
         var openAnswer: Data? = Data(#"{"state":"opened"}"#.utf8)
         var openAnswers: [Data?] = []

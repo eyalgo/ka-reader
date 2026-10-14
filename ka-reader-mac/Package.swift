@@ -10,7 +10,9 @@ import PackageDescription
 // writes `CKAReaderBridge.artifactbundle` from the release build of the bridge crate, before any
 // `swift build` or `swift test`; it is generated, git-ignored and never committed.
 
-// Every target is a Swift target, so these three settings are written once and shared.
+// All five Swift targets carry these two settings, unconditionally, so they are written once and
+// shared; `Surfaces` and `KAReader` add the main-actor default isolation to them. The binary target
+// compiles nothing and carries no settings.
 let strictness: [SwiftSetting] = [
     .treatAllWarnings(as: .error),
     .strictMemorySafety(),
