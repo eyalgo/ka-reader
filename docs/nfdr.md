@@ -2,7 +2,7 @@
 
 **Status:** Settled
 **Owner:** Principal Architect
-**Version:** 49 — the close: the cycle-42 fold, §§ 3.1 and 3.2 answered in the owner's seat, after the change that moves the product to its macOS 26 floor merged to `main` (`ka-reader@f0f1e5f`). § 9's Swift-packet bullet reads the seven tools-6.2 items as adopted in the tree at `ka-reader@f0f1e5f`, with the first hosted build of it named as the confirming reading; the refusal of a `type == "system"` target is named as owed to `checks/no-network.sh`, and the bullet's review gate is re-aimed from "flip together" to "stay adopted", read off `dump-package`. The *Toolchain* clause cites CI's new order, assembly before `Test gate`, and records the `macos-26` measurement, Swift 6.3.3 at GitHub Actions run 38463966607. § 9's runner paragraph states once that every run assembles the bridge first, and § 8 names the project card's test command as owing that step to `product-card`. QC-25's trace re-reads C-I3 at SDD v49 and gains its *Violated by*. Three CI line citations that named no commit are re-pinned. The superseded words stand in dated notes. No `QC` is added, renumbered or reused, and no record is written or restatused. Nothing is left for the owner, so the companion is removed and `Status:` is Settled — RN-60 (v48: the close of the cycle-41 fold, § 9 on `macos-26` — RN-59)
+**Version:** 50 — the close: the cycle-43 fold, § 3.1 answered in the owner's seat, after the change that makes the probe suite print the sandbox control's reading merged to the working tree (`ka-reader@970ad65`). QC-25's runner-reading passage states the suite's one validated control reading — exactly one `out-of-grant-read: denied|allowed` line, a red suite on none, a malformed one or more than one, forwarded after the control's `ok` — and retires the `development-design` gate on `checks/bundle.sh` and `checks/tests/test_bundle.sh`; the gate stays, narrowed, on a workflow change that renames or drops the `Bundle probe suite` step the reading command keys on. The hosted reading stays not yet taken, because `origin/main` does not hold `970ad65`, and the entry names the run from which an empty read becomes a break. The locator is corrected to `checks/bundle.sh:L383`; RN-59's mis-read is corrected by a dated note beside it. QC-25's trace re-reads C-I3 at SDD v50, and § 10's QC-25 row follows the entry. The superseded words stand in a dated note. No `QC` is added, renumbered or reused, and no record is written or restatused. Nothing is left for the owner, so the companion is removed and `Status:` is Settled — RN-61 (v49: the close of the cycle-42 fold, § 9's tools-6.2 adoption and CI's assembly order — RN-60)
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · PRD Settled · UXD Settled · DESIGN Settled · CONTENT Settled
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
@@ -816,15 +816,38 @@ reviewed tag.
   allowed for the control is not recorded. **The runner reading is taken on every hosted build**,
   this document's own realization of the runner clause (RN-59):
   `gh run view <run-id> --repo kensaiapp/ka-reader --log | awk -F'\t' '$2 == "Bundle probe suite" && /out-of-grant-read:/'`
-  prints the control's `out-of-grant-read:` line for the run named. It prints nothing today, and
-  that empty output is the measurable *not yet*, never a pass: `checks/bundle.sh:L382` prints the
-  control's report, but the suite captures it (`checks/tests/test_bundle.sh:L144-L146`) and prints
-  only `ok` and the case name on success (`:L1573-L1577`), all at `ka-reader@fcb2e2f`. No script
-  holds the reading, so until the change that makes the suite's log carry the line lands,
-  `development-design` reading this entry is the gate on any change to `checks/bundle.sh`,
-  `checks/tests/test_bundle.sh` or `.github/workflows/`. Once the suite prints the line, a hosted
-  build whose suite log carries no `out-of-grant-read:` line for the control breaks this entry
-  (C-I3's *Violated by* at SDD v49; RN-60). A `denied` reading leaves the narrowing
+  prints the control's `out-of-grant-read:` line for the run named. `checks/bundle.sh:L383`
+  prints the control's report — the line at `ka-reader@81734d9`, `fcb2e2f`, `24be581` and
+  `970ad65` alike — and at `ka-reader@970ad65` the suite carries it: `publish_control_reading`
+  (`checks/tests/test_bundle.sh:L629-L644`) requires exactly one line matching
+  `^out-of-grant-read: (denied|allowed)$` in the control's report, fails the case on none, on a
+  malformed one and on more than one, and prints the line; the runner forwards it after the
+  control's `ok` line (`:L1710`); and `test_negative_control_missing_read_fails_the_suite` (`:L833`)
+  proves the three refusals on every run. A control report with no reading is a red suite, so no
+  review gate is owed on `checks/bundle.sh` or `checks/tests/test_bundle.sh` for it. **The hosted
+  reading is not yet taken.** Read on 2026-10-14: `origin/main` is `ka-reader@24be581`, which does
+  not hold `970ad65`, and the newest run on `main`, GitHub Actions run 38551538187 on `24be581`,
+  concluded *Bundle probe suite* `success` with this command printing nothing. Until a hosted run on
+  `main` that holds `970ad65` concludes *Bundle probe suite* `success`, an empty read is the
+  measurable *not yet*, never a pass. From that run on, a hosted build whose *Bundle probe suite*
+  step concludes `success` and for which this command prints no `out-of-grant-read:` line breaks
+  this entry (C-I3's *Violated by* at SDD v50; SDD RN-110; RN-61). The command picks the step out by
+  its name, and no script holds that name — § 9's suites bullet holds that the step exists, not what
+  it is called — so a rename makes the command print nothing, which reads the same as the not-yet.
+  **A change to `.github/workflows/` that renames or drops the `Bundle probe suite` step changes
+  this command in the same change**, and `development-design` reading this entry is that gate: a
+  review gate, because no check reads the workflow's step names against this command *(through v49
+  this passage read: "It prints nothing today, and that empty output is the measurable *not yet*,
+  never a pass: `checks/bundle.sh:L382` prints the control's report, but the suite captures it
+  (`checks/tests/test_bundle.sh:L144-L146`) and prints only `ok` and the case name on success
+  (`:L1573-L1577`), all at `ka-reader@fcb2e2f`. No script holds the reading, so until the change
+  that makes the suite's log carry the line lands, `development-design` reading this entry is the
+  gate on any change to `checks/bundle.sh`, `checks/tests/test_bundle.sh` or `.github/workflows/`.
+  Once the suite prints the line, a hosted build whose suite log carries no `out-of-grant-read:`
+  line for the control breaks this entry (C-I3's *Violated by* at SDD v49; RN-60)." The observation
+  stands as true of `ka-reader@fcb2e2f`, except its `:L382`, which was `:L383` there too; re-derived
+  at v50 on the owner's seat's answer at `docs/trail/architecture/cycle-43.md` § 3.1 — RN-61)*.
+  A `denied` reading leaves the narrowing
   standing, re-dated here with the run id and the image version, and the first reading on each
   image version is the one recorded, as § 9 records the toolchain. An `allowed` reading means the
   read denial separates again on the runner: C-I3 is restated by the CTO, and this entry follows
@@ -843,9 +866,10 @@ reviewed tag.
   check treats a `mach-lookup` as a stand-in for that question — which is why the second half is a
   review gate at a named moment and says so here. On every CI build and as a release gate
   (layer 5) *(traces to: SDD § 4 C-R2, C-I3 as they read at SDD v13, and C-I3's probe half as it reads
-  at SDD v49 — the runner narrowing dated to the image it was read on, the reading taken on every
-  hosted build, and the missing line in its *Violated by* (SDD RN-109; RN-60; through v48 this trace
-  read the probe half "unchanged since v9", true until SDD v49);
+  at SDD v50 — the runner narrowing dated to the image it was read on, the reading taken on every
+  hosted build, the missing line in its *Violated by*, and the suite's validated reading at
+  `ka-reader@970ad65` (SDD RN-109, RN-110; RN-60, RN-61; through v48 this trace read the probe half
+  "unchanged since v9", true until SDD v49; through v49 it read C-I3 at SDD v49);
   § 10 RC-1, RC-2, RC-3 *Retained*; § 11 R-8;
   § SDD Review Notes RN-48, RN-50, RN-52; the owner's ruling at `docs/trail/sdd/cycle-8.md` § 5.1,
   answers 1–2; ADR-0011 — Accepted, superseding ADR-0003; ADR-0010; the tail's window re-derived
@@ -853,7 +877,9 @@ reviewed tag.
   the rule, the second half and the failed-ask scoping re-derived at v10 — RN-21 — and confirmed
   in the owner's seat at `docs/trail/architecture/cycle-8.md` § 2.1 — RN-22; the runner clause
   dated to `macos-14` and its reading made standing at v48 on the owner's seat's answer at
-  `docs/trail/architecture/cycle-41.md` § 3.2 — RN-59)*
+  `docs/trail/architecture/cycle-41.md` § 3.2 — RN-59; the suite's validated reading, the
+  `bundle.sh:L383` locator and the step-name gate at v50 on the owner's seat's answer at
+  `docs/trail/architecture/cycle-43.md` § 3.1 — RN-61)*
 - **QC-62:** The bundle CI ships runs its shell under its shipped entitlements. On every CI build,
   after `checks/bundle.sh` and never instead of it, the launched main process of the bundle CI
   built — launched as a user launches it, its pid taken the way `checks/bundle.sh` takes it — is
@@ -1883,7 +1909,7 @@ IS NOT HELD* (`checks/structure.sh:L35-L93` at `ka-reader@463acb9`) — and no r
 | QC-22 | the hostile fixture as a `MarkdownDocument` | `cargo test --locked -p ka-reader-core --test markdown` | the change | `development-implementation` |
 | QC-23 | no web engine | `checks/view.sh` (suite `test_view.sh`); `checks/no-network.sh` (suite `test_no_network.sh`) | the tree | CI build |
 | QC-24 | the export set equals the header, inside `SM-4`'s list and `ka_reader_free` | `cargo test --locked -p ka-reader-bridge --test exports` | the tree | CI build |
-| QC-25 | entitlements; sandbox present; the control's out-of-grant read on the hosted image | `checks/bundle.sh` (suite `test_bundle.sh`); `gh run view <run-id> --repo kensaiapp/ka-reader --log \| awk -F'\t' '$2 == "Bundle probe suite" && /out-of-grant-read:/'`, which prints nothing until the suite's log carries the line (RN-59) | the tree; the CI run | CI build; release gate; `development-design` reading the entry until the line prints |
+| QC-25 | entitlements; sandbox present; the control's out-of-grant read on the hosted image | `checks/bundle.sh` (suite `test_bundle.sh`); `gh run view <run-id> --repo kensaiapp/ka-reader --log \| awk -F'\t' '$2 == "Bundle probe suite" && /out-of-grant-read:/'`, whose empty read is the not-yet until a hosted `main` run holding `ka-reader@970ad65` concludes the step `success`, and a break after it (RN-59, RN-61) | the tree; the CI run | CI build; release gate; `development-design` on a workflow change that renames or drops the `Bundle probe suite` step |
 | QC-62 | the shell runs under the shipped entitlements | `checks/renderer.sh KA-Reader.app` (suite `test_renderer.sh`) and `checks/fixtures/idle-shell` | the tree | CI build; release gate |
 | QC-26 | allowlist; locked build; no Swift dependency | `checks/no-network.sh` (suite `test_no_network.sh`); `cargo build --locked` | the tree | CI build |
 | QC-27 | critical vulnerability | `cargo audit` (every advisory; `--ignore <RUSTSEC-id>` with its reason) | the tree | release |
@@ -5254,7 +5280,9 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   `Toolchain` step prints "Apple Swift version 6.0.3 (swiftlang-6.0.3.1.10 clang-1600.0.30.1)" and
   `15.2`. Run 38449250910 at `ka-reader@8926052` prints the same. `gh run list` lists no `main` run
   between `ka-reader@d852457` and run 37845881070. The QC-25 reading command, run against both,
-  printed nothing. `checks/bundle.sh:L382` holds `printf '%s\n' "$probe_output"`,
+  printed nothing. `checks/bundle.sh:L382` holds `printf '%s\n' "$probe_output"`
+  *(read at v50: that line is `:L383` at `ka-reader@81734d9` and at every commit read since, so
+  this note mis-read it on the day it was written; the note stands as written — RN-61)*,
   `test_bundle.sh:L144-L146` the capturing `run_bundle_sh`, and `:L1573-L1577` the `ok`-only
   success path. `git log --since=2026-10-08 --diff-filter=A -- ka-reader-mac/Tests` printed
   nothing, and no tracked file under `ka-reader-mac/Tests/` imports `Testing`. **Known limits.**
@@ -5426,3 +5454,71 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   *Adopted* and *verified by*; source: `docs/trail/architecture/cycle-42.md` §§ 3.1, 3.2;
   `docs/trail/architecture/self_answer-47.md`; `docs/SDD.md` v49 RN-108, RN-109; the tree at
   `ka-reader@f0f1e5f`, measured at `ka-reader@f2d02bf`)*
+
+- **RN-61:** *(v50 — the close: the cycle-43 fold, § 3.1 answered)* **Intake.** The companion on
+  disk had one § 3 item and nothing in §§ 1 or 2. No `product-architecture` run wrote it. The PM
+  opened it on 2026-10-14 (`ka-reader@6fd689f`), after the change
+  that makes the probe suite print the control's reading landed (`ka-reader@970ad65`). A
+  `companion-self-answer` run answered it in the owner's seat, *confirmed with addition*
+  (`ka-reader@0c1c6de`; reasoning `docs/trail/architecture/self_answer-48.md` § 3.1). The file was
+  clean in git at intake and its slot was filled, so it is consumed. It was copied whole to
+  `docs/trail/architecture/cycle-43.md` before this fold's first edit, and `cmp` found the two
+  identical. **Whose answer this is.** The fold rests on the ground RN-54 to RN-60 rest on: the
+  answer binds only this document's agreement with the tree, with hosted CI and with the settled
+  SDD, and the owner can reverse the fold with one revert. **What moved beneath this document.**
+  `git diff --stat 47e8e6b 0c1c6de -- docs` lists SDD v50 (`ka-reader@a67c257`), its trail and
+  self-answer, this companion and its self-answer. SDD v50 moves § 4 C-I3's probe half alone
+  (SDD RN-110): the `:L383` locator, the suite's validated reading at `970ad65` with the missing-line
+  case of *Violated by* live from that commit, and the ground for the untaken `macos-26` reading
+  restated. Every input's `Status:` line still reads Settled, so `Inputs read:` stands as it reads.
+  Outside `docs/`, `git diff --stat 47e8e6b 0c1c6de` lists `checks/tests/test_bundle.sh` and
+  `ka-reader-mac/Sources/KAReader/NativeBridge.swift`, and `git diff --stat 970ad65 0c1c6de -- .
+  ':!docs'` prints nothing, so the tree this fold cites is `ka-reader@970ad65`'s. **§ 3.1 → QC-25's
+  runner-reading passage, its trace, § 10's QC-25 row, and RN-59, confirmed with addition.** The
+  passage states the suite's one validated reading and retires the gate that rested on
+  `development-design` reading the entry for the two scripts; the `fcb2e2f` observation stands, whole,
+  in a dated parenthesis; the hosted reading stays unmeasured; the locator reads `:L383`. The
+  answer's additions, each placed: (1) the trace names C-I3 at SDD v50 and SDD RN-110, so this
+  document follows its input rather than stating the reading fresh; (2) the `development-design`
+  gate is narrowed rather than retired — it holds a change to `.github/workflows/` that renames or
+  drops the `Bundle probe suite` step, because the reading command matches the step by name and no
+  check holds the name, and the passage argues the downgrade in its own words; (3) the passage names
+  the boundary: an empty read is the not-yet until a hosted run on `main` that holds `970ad65`
+  concludes the step `success`, and a break from that run on; (4) RN-59's `:L382` is corrected by a
+  dated note beside it and not rewritten, since a review note is history — `:L383` was the line at
+  `81734d9`, the commit that note names; (5) the fold re-read `origin/main` and the newest `main` run
+  at its own time, below, and no run holding `970ad65` exists, so the not-yet stands and no
+  `macos-26` reading is recorded; (6) no record is owed. **Where the fold goes beyond the answer's
+  words, each named.** (a) The break is written as a build whose *Bundle probe suite* step concludes
+  `success` and for which the command prints no line, rather than any build with no line: a red
+  suite is already a red build, and the reading is not read off a red run, as the answer's own
+  *Refused* case puts it. (b) § 10's gate cell names the narrowed workflow gate in place of
+  "`development-design` reading the entry until the line prints", and its command cell names the
+  boundary in place of "prints nothing until the suite's log carries the line"; the row is a
+  projection of the entry, so it carries no dated note of its own. (c) The passage cites
+  `publish_control_reading` at `:L629-L644`, the function, where the item cited `:L629-L661`, which
+  runs on to the control case that calls it at `:L661`; the answer's own reasoning cites
+  `:L629-L644`. **What does not move.** § 9's suites bullet is unchanged: it holds that the step
+  exists, which is true, and the passage says what it does not hold. QC-25's two verification halves,
+  its *verified by* classes and every other clause stand. **No candidate record.** The suite's
+  validation is a verification move, cheap to undo and with no real trade-off, and `grep -rn L382
+  docs/adr` prints nothing. No ADR is written, edited or restatused, the index does not move, and no
+  `QC` is added, renumbered or reused. **Measured for this run at `ka-reader@0c1c6de`.** `git status
+  --porcelain` printed nothing at intake. `git show <commit>:checks/bundle.sh | grep -nF` finds
+  `printf '%s\n' "$probe_output"` at `:L383` (the negative-control branch) and `:L439` at
+  `81734d9`, `fcb2e2f`, `24be581`, `970ad65` and `0c1c6de`. At `970ad65`, `test_bundle.sh:L629`
+  opens `publish_control_reading`, `:L639` holds the `^out-of-grant-read: (denied|allowed)$` match,
+  `:L661` calls it from the control case, `:L833` opens
+  `test_negative_control_missing_read_fails_the_suite`, and `:L1710` forwards the control's output;
+  `ci.yml:L53` names the `Bundle probe suite` step. `git ls-remote origin refs/heads/main` prints
+  `24be581344cee53ca7741c5b66a9a9bae0623c4b`, and `git merge-base --is-ancestor 970ad65 origin/main`
+  fails. `gh run list --branch main --limit 4` lists run 38551538187 on `24be581`
+  (2026-10-14T10:43:17Z, `success`) as the newest. **Known limits.** This run read the SDD's v50
+  header and C-I3's probe half and the other inputs at their status lines. It did not re-read run
+  38551538187's log; that the command prints nothing there is SDD v50's reading and follows from the
+  run's commit. It built no bundle and ran no test suite or `checks/*.sh` script. **The companion.**
+  Nothing is left for the owner, so the companion is removed and `Status:` is Settled *(re: header
+  `Version:`; QC-25, the runner-reading passage, its trace and its tail; § 10's QC-25 row; RN-59;
+  source: `docs/trail/architecture/cycle-43.md` § 3.1;
+  `docs/trail/architecture/self_answer-48.md` § 3.1; `docs/SDD.md` v50 RN-110; the tree at
+  `ka-reader@970ad65`, measured at `ka-reader@0c1c6de`)*
