@@ -20,12 +20,23 @@ nonisolated struct NativeBridge: Bridging {
         }
     }
 
+    // Swift 6.3 counts `withCString` as an unsafe use and Swift 6.4 does not, and each rejects the
+    // other's spelling under strict memory safety with warnings as errors: CI builds with 6.3.3
+    // (`docs/nfdr.md` § 9) and a Mac may build with 6.4. The two branches make the same call.
     func listTree(path: String) -> BridgeBuffer? {
-        path.withCString { unsafe adopt(unsafe ka_reader_list_tree($0)) }
+        #if compiler(>=6.4)
+            path.withCString { unsafe adopt(unsafe ka_reader_list_tree($0)) }
+        #else
+            unsafe path.withCString { unsafe adopt(unsafe ka_reader_list_tree($0)) }
+        #endif
     }
 
     func selectFile(path: String) -> BridgeBuffer? {
-        path.withCString { unsafe adopt(unsafe ka_reader_select_file($0)) }
+        #if compiler(>=6.4)
+            path.withCString { unsafe adopt(unsafe ka_reader_select_file($0)) }
+        #else
+            unsafe path.withCString { unsafe adopt(unsafe ka_reader_select_file($0)) }
+        #endif
     }
 
     func readGit() -> BridgeBuffer? {
