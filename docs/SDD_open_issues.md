@@ -80,7 +80,18 @@ None.
 - **If a document has to be written:** none. This is a fold into `SDD.md`. The NFDR's QC-25 records
   the same reading on its own side. That is raised separately in `docs/architecture_open_issues.md`
   § 3.1, because what QC-25 says belongs to the Principal Architect.
-- **Answer:** <the owner fills this in>
+- **Answer:** Record it. The first `macos-26` reading of the probe half is taken: GitHub Actions run
+  38577309118 on `main` at `ka-reader@f357008`, created 2026-10-14T14:04:45Z, image `macos-26-arm64`
+  20260907.0351.1 (macOS 26.6.2, 25G83), the first hosted run on `main` that holds `ka-reader@970ad65`
+  and concludes *Bundle probe suite* `success`; QC-25's command on its log prints exactly one line,
+  `out-of-grant-read: denied`. So the clause's "has not been taken" sentence and its ground become a
+  dated account, and the reading is recorded in C-I3 under the clause's own rule: a `denied` reading
+  leaves the hosted-runner narrowing standing, re-dated with the run id and the image version — the
+  runner's wall is evidenced by the sandboxed report and the outbound denial, and the read denial
+  separates nothing there, now on `macos-26` as it did on `macos-14` (RN-48). Nothing is lifted and
+  no part moves. Per § 4's two-stores rule, what QC-25 says of the same reading is the Principal
+  Architect's, carried by `docs/architecture_open_issues.md` § 3.1 — this answer does not reach into
+  it. Reasoning: `docs/trail/sdd/self_answer-58.md` § 5.1.
 
 **How it closes.** `product-sdd` folds it on its next run like every other item in this file, and
 the trail copy and the delete-when-empty behaviour are unchanged.
@@ -105,4 +116,17 @@ the trail copy and the delete-when-empty behaviour are unchanged.
 - **Where it shows:** § 4 C-I3's renderer half, lines 978–990, and RN-110, lines 8287–8291, at
   `ka-reader@f357008`.
 - **If a document has to be written:** none. This is a fold into `SDD.md`.
-- **Answer:** <the owner fills this in>
+- **Answer:** Record it. The first hosted renderer-gate reading on `macos-26` is GitHub Actions run
+  38501500758 on `main` at `ka-reader@3f7a68d`, created 2026-10-14T02:31:44Z, image `macos-26-arm64`
+  20260907.0351.1 — the first hosted run to reach the gate on that image, after run 38463966607
+  ended at *Test gate* and no branch run on the image reached it between. Its *Renderer gate* step
+  concluded `success`; the product matched the script's four-frame list on observation 1 and the
+  `idle-shell` control was not matched on any of 30 — the same shape as both `macos-14` readings,
+  now on the image CI runs and inside the floor C-R5 set at v48. Run 38577309118 on `ka-reader@f357008`
+  (same image) reads the same and is corroboration, not a second recorded reading. So the renderer
+  half's "the first hosted reading on `macos-26` is the first hosted run that reaches this gate on
+  that image" is discharged by this run and becomes dated; the gate's rule — an image whose frames
+  read differently turns it red on the next build — does not move, the frame list stays the script's
+  header's and is not copied, and RN-110's "owed to an item of its own" is discharged by this item.
+  No slice, seam or part moves; no ADR is owed; ADR-0012 stands as a dated record. Reasoning:
+  `docs/trail/sdd/self_answer-58.md` § 5.2.
