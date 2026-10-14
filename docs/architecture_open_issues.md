@@ -48,7 +48,7 @@ None.
 - **If overridden:** § 9 goes back to its v51 words. A cold reader would then be told that no
   hosted run has built a manifest CI has built on every push since 2026-10-14, and the record would
   leave open whether that first red broke the clause. No record moves either way.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm. Every fact in the drafted passage holds at its source: `f0f1e5f` is on `origin/main`; no CI run before 38549778886 had a head carrying `f0f1e5f`, so it is the first hosted build of the `6.2` manifest; it printed Swift 6.3.3 on SDK 26.5, built the Rust workspace, and failed at `Build KA-Reader.app` on `NativeBridge.swift:24:9` and `:28:9`; `24be581` changed that one source file and no manifest, and run 38551538187 on it is green. The manifest loaded, so the v49 clause's "a red there contradicts this clause" did not fire, as the draft says. Reasoning: `docs/trail/architecture/self_answer-51.md` § 2.1.
 
 ## 3. Raised from downstream — an item from a seat that did not write these records
 
