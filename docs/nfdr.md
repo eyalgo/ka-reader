@@ -2,7 +2,7 @@
 
 **Status:** Settled
 **Owner:** Principal Architect
-**Version:** 48 — the close: the cycle-41 fold, §§ 3.1 and 3.2 answered in the owner's seat, after CI moved its one job to `macos-26` and dropped its Xcode pin (`ka-reader@fcb2e2f`). § 9's Swift-packet bullet reads the image as `macos-26`; its *Framework* clause is adopted, the flip having happened at GitHub Actions run 37845881070 (Swift 6.0.3), and its *Toolchain* clause is measured, that run its first measurement and the `macos-26` reading named as a re-measurement not yet taken; the tools-6.2 departure keeps one trigger, the change that writes the `6.2` tools version. QC-25's hosted-runner narrowing is dated to `macos-14` and its reading made standing, taken on every hosted build by a command this document names as its own; § 10's QC-25 row gains it. The superseded words stand in dated notes. No `QC` is added, renumbered or reused, and no record is written or restatused. Nothing is left for the owner, so the companion is removed and `Status:` is Settled — RN-59 (v47: a re-derivation on SDD v48, the macOS floor at 26.0 — RN-58)
+**Version:** 49 — the close: the cycle-42 fold, §§ 3.1 and 3.2 answered in the owner's seat, after the change that moves the product to its macOS 26 floor merged to `main` (`ka-reader@f0f1e5f`). § 9's Swift-packet bullet reads the seven tools-6.2 items as adopted in the tree at `ka-reader@f0f1e5f`, with the first hosted build of it named as the confirming reading; the refusal of a `type == "system"` target is named as owed to `checks/no-network.sh`, and the bullet's review gate is re-aimed from "flip together" to "stay adopted", read off `dump-package`. The *Toolchain* clause cites CI's new order, assembly before `Test gate`, and records the `macos-26` measurement, Swift 6.3.3 at GitHub Actions run 38463966607. § 9's runner paragraph states once that every run assembles the bridge first, and § 8 names the project card's test command as owing that step to `product-card`. QC-25's trace re-reads C-I3 at SDD v49 and gains its *Violated by*. Three CI line citations that named no commit are re-pinned. The superseded words stand in dated notes. No `QC` is added, renumbered or reused, and no record is written or restatused. Nothing is left for the owner, so the companion is removed and `Status:` is Settled — RN-60 (v48: the close of the cycle-41 fold, § 9 on `macos-26` — RN-59)
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · PRD Settled · UXD Settled · DESIGN Settled · CONTENT Settled
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
@@ -193,7 +193,10 @@ new units while they were unbuilt.
   `ka-reader@392177d` (`checks/view.sh:L379-L404`), with its suite cases in
   `checks/tests/test_view.sh:L58-L64` — the four symbol reds at `:L58-L61`, the three cause reds at
   `:L62-L64` — and CI runs both on every push after `ka-reader-mac/assemble.sh`
-  (`.github/workflows/ci.yml:L41`, `:L51`, `:L54`). This half's gate is that script. The read is
+  (`.github/workflows/ci.yml:L32`, `:L57`, `:L60` at `ka-reader@f0f1e5f` *(through v48 cited `:L41`,
+  `:L51`, `:L54` with no commit named, true through `ka-reader@c915d52`; the lines moved when the
+  `Toolchain` step landed at `ka-reader@d852457` and again when the app build moved ahead of `Test
+  gate` at `ka-reader@d2694c7` — RN-60)*). This half's gate is that script. The read is
   proved for each executable it has met, and for no later one until it meets it. It has met two,
   both on the owner's machine. The first links libgit2's open and status code and not the
   `ka_reader_read_git` export (`crates/ka-reader-bridge/src/exports.rs:L105`). The second is the first
@@ -253,7 +256,9 @@ new units while they were unbuilt.
   (`crates/ka-reader-core/tests/root_finding.rs:L175`, `:L185`, `:L196`). The adapter answers a `.git`
   regular file through `probe_git_file` (`crates/ka-reader-core/src/git_reader/libgit2.rs:L46`,
   `:L58`), and CI runs the target under `cargo test --workspace --locked`
-  (`.github/workflows/ci.yml:L26`). The missing-directory case does not hold the whole read bound.
+  (`.github/workflows/ci.yml:L35` at `ka-reader@f0f1e5f` *(through v48 cited `:L26` with no commit
+  named, true through `ka-reader@c915d52`; moved by the `Toolchain` step at `ka-reader@d852457` and the
+  app build's move ahead of `Test gate` at `ka-reader@d2694c7` — RN-60)*). The missing-directory case does not hold the whole read bound.
   It goes red for a `probe` whose attempt to follow the pointer changes the answer. A `probe` that
   tries the pointer, swallows the failed open and still answers `Root` passes it, because the case
   asserts only the answer, that the answer holds no path, and that the scene is unchanged
@@ -631,7 +636,9 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   (layer 6): a `ka_reader_` symbol the header declares is called from `mac-shell`'s sources and from
   no file of `surfaces` — a rule this document adds to the script (RN-22); `cargo test --locked -p
   ka-reader-bridge`, which CI runs on every push inside `cargo test --workspace --locked`
-  (`.github/workflows/ci.yml:L26`). The switch is `crates/ka-reader-bridge/src/machine_config.rs`,
+  (`.github/workflows/ci.yml:L35` at `ka-reader@f0f1e5f` *(through v48 cited `:L26` with no commit
+  named, true through `ka-reader@c915d52`; moved by the `Toolchain` step at `ka-reader@d852457` and the
+  app build's move ahead of `Test gate` at `ka-reader@d2694c7` — RN-60)*). The switch is `crates/ka-reader-bridge/src/machine_config.rs`,
   landed at `ka-reader@392177d`, and the suite holds its three promises. The four empty paths:
   `test_the_switch_against_the_real_libgit2` (`crates/ka-reader-bridge/tests/search_path.rs:L36`),
   whose first arrival is a production session's open, after which it reads each of the four
@@ -815,7 +822,9 @@ reviewed tag.
   only `ok` and the case name on success (`:L1573-L1577`), all at `ka-reader@fcb2e2f`. No script
   holds the reading, so until the change that makes the suite's log carry the line lands,
   `development-design` reading this entry is the gate on any change to `checks/bundle.sh`,
-  `checks/tests/test_bundle.sh` or `.github/workflows/`. A `denied` reading leaves the narrowing
+  `checks/tests/test_bundle.sh` or `.github/workflows/`. Once the suite prints the line, a hosted
+  build whose suite log carries no `out-of-grant-read:` line for the control breaks this entry
+  (C-I3's *Violated by* at SDD v49; RN-60). A `denied` reading leaves the narrowing
   standing, re-dated here with the run id and the image version, and the first reading on each
   image version is the one recorded, as § 9 records the toolchain. An `allowed` reading means the
   read denial separates again on the runner: C-I3 is restated by the CTO, and this entry follows
@@ -833,7 +842,10 @@ reviewed tag.
   judges whether an exception entitlement reaches the network under another name — WebKit's own
   check treats a `mach-lookup` as a stand-in for that question — which is why the second half is a
   review gate at a named moment and says so here. On every CI build and as a release gate
-  (layer 5) *(traces to: SDD § 4 C-R2, C-I3 as they read at SDD v13 — the probe half unchanged since v9;
+  (layer 5) *(traces to: SDD § 4 C-R2, C-I3 as they read at SDD v13, and C-I3's probe half as it reads
+  at SDD v49 — the runner narrowing dated to the image it was read on, the reading taken on every
+  hosted build, and the missing line in its *Violated by* (SDD RN-109; RN-60; through v48 this trace
+  read the probe half "unchanged since v9", true until SDD v49);
   § 10 RC-1, RC-2, RC-3 *Retained*; § 11 R-8;
   § SDD Review Notes RN-48, RN-50, RN-52; the owner's ruling at `docs/trail/sdd/cycle-8.md` § 5.1,
   answers 1–2; ADR-0011 — Accepted, superseding ADR-0003; ADR-0010; the tail's window re-derived
@@ -1383,13 +1395,26 @@ SDD's command bar for the Rust workspace, `cargo test --workspace --locked` exit
 (`docs/SDD.md` § 6 S-1), the bar carrying the Rust packet's `--locked` itself since the SDD's
 re-author (`languages/rust/testing.md` § Layers 1–5; RN-16), and `swift test` for `ka-reader-mac`,
 the command the SDD's bars name (§ 6 S-1) — and its `Languages:` line names Rust, Swift and Shell
-(RN-6). The move the SDD named as owed at v13 (RN-60) is made: § 8 states the card as it reads at
+(RN-6). The move the SDD named as owed at v13 (`docs/SDD.md` RN-60) is made: § 8 states the card as it reads at
 `kensaiapp-opensource@ec80077` — two moves past the `defe740` v12 read, `5b27023` (Swift in place
 of TypeScript on the `Languages:` line, in the test command and on `Language roots:`) and
 `ec80077` (the `Languages:` comment naming Swift's packet), neither this document's to edit
 (RN-24) — and goes false at the card's next move until RN-6 is extended (RN-22). Why the
 workspace form is this product's change-time run, where the Rust packet classifies it as
 release-time, is RN-7. What follows exceeds the card.
+
+**The card's Swift half needs the bridge assembled first, and the card does not say so yet.** From
+`ka-reader@f0f1e5f`, `ka-reader-mac` links the bridge as a local binary target that
+`ka-reader-mac/assemble.sh` writes and no checkout holds, so the card's `swift test --package-path
+ka-reader-mac` fails on every fresh checkout — each worktree the delivery tier opens is one — and,
+run without assembly in an old checkout, tests the bridge an earlier run left. § 9's runner
+paragraph is that precondition's one home. The card's `Test command:` is `product-card`'s to
+derive, not this document's to edit (RN-24), so the move is named as owed, in the form
+`docs/SDD.md` RN-60 used: the card's command gains the bridge's assembly before its Swift half —
+today `ka-reader-mac/assemble.sh`, the artifact's one writer — in whatever form that skill
+chooses. Until the card moves, the paragraph above states the card truly and the card's command
+fails on a fresh checkout. CI is unaffected, because it assembles first
+(`.github/workflows/ci.yml:L31-L35` at `ka-reader@f0f1e5f`) (RN-60).
 
 - **QC-55:** The product is one macOS application bundle, `KA-Reader.app`, bundle identifier
   `com.kensaiapp.ka-reader`, and one process; no second binary, no second process the product starts,
@@ -1488,7 +1513,20 @@ project's realization of it. Tooling for the core and the bridge comes from the 
 resolution chain from the card's `Languages:` line (RN-6). Through v12 this paragraph read that no
 Swift packet existed and that `ka-reader-mac`'s tooling was this product's own to record; true when
 written, and history (RN-24). The packet's runner is `swift test --package-path ka-reader-mac`, the
-command the SDD's bars name (`docs/SDD.md` § 6 S-1, S-2, S-3, S-8), over `ka-reader-mac/Tests/`. What
+command the SDD's bars name (`docs/SDD.md` § 6 S-1, S-2, S-3, S-8), over `ka-reader-mac/Tests/`.
+**Every run assembles the bridge first.** From `ka-reader@f0f1e5f` the package links the bridge as
+the local binary target `CKAReaderBridge.artifactbundle` (`ka-reader-mac/Package.swift:L30`), which
+`ka-reader-mac/assemble.sh` alone writes and which is git-ignored (`.gitignore:L32`). On a fresh
+checkout `swift build --package-path ka-reader-mac` exits 1 with `error: local binary target
+'CKAReaderBridge' at '…/ka-reader-mac/CKAReaderBridge.artifactbundle' does not contain a binary
+artifact.` (measured on a fresh clone of `ka-reader@f0f1e5f`, 2026-10-14), and the runner resolves
+the same target before it builds (`ka-reader-mac/assemble.sh:L10-L12`). The precondition is every
+run, not only the first: `assemble.sh` deletes and rebuilds the bundle from the checkout each time
+(`:L70-L74`), so a bundle an earlier run left holds that run's bridge, and the runner tests it
+without an error. The rule is CI's order — `ka-reader-mac/assemble.sh`, then the runner
+(`.github/workflows/ci.yml:L31-L32`, `:L34-L35` at `ka-reader@f0f1e5f`). Every `verified by:` tail
+and § 10 row in this document that names `swift test --package-path ka-reader-mac` reads under
+this sentence, and none repeats it (RN-60). What
 this table fixes differently from the Rust packet, and why, is RN-7; where `ka-reader-mac` stands
 against the Swift packet — followed, adopted, or departed from, one by one, and the toolchain CI
 builds it with — is the bullet below, and the reasons are RN-24. If
@@ -1697,9 +1735,15 @@ left with `ka-reader-ui` at `ka-reader@0aca57e` (RN-22; RN-25).
   owed it *(through v40 cited `:L34-L35` with no commit named, true at `ka-reader@a4ab8e6`; the lines
   moved five down when `ka-reader@827aad4` added the libgit2 link lines above them — RN-52)*, and which
   layer word each takes is the delivery tier's placement under this table's rows. *Toolchain —
-  measured on every build:* from `ka-reader@0aca57e` CI builds `ka-reader-mac` in two steps —
+  measured on every build:* CI builds `ka-reader-mac` in two steps, assembly first —
+  `.github/workflows/ci.yml:L31-L32` runs `ka-reader-mac/assemble.sh` in `Build KA-Reader.app`, and
+  `:L34-L35` runs `swift test --package-path ka-reader-mac` in `Test gate`, both at
+  `ka-reader@f0f1e5f` — the order the runner needs (the runner paragraph above) *(through v48 this
+  clause read "from `ka-reader@0aca57e` CI builds `ka-reader-mac` in two steps —
   `.github/workflows/ci.yml:L26` runs `swift test --package-path ka-reader-mac` in `Test gate`, and
-  `:L35` runs `ka-reader-mac/assemble.sh`, both at `ka-reader@463acb9` *(drafted at v26 — RN-37 — and
+  `:L35` runs `ka-reader-mac/assemble.sh`, both at `ka-reader@463acb9`", true at that pin; the app
+  build moved ahead of `Test gate` at `ka-reader@d2694c7`, merged at `ka-reader@f0f1e5f`; on the
+  owner's seat's answer at `docs/trail/architecture/cycle-42.md` § 3.2 — RN-60)* *(drafted at v26 — RN-37 — and
   confirmed in the owner's seat at `docs/trail/architecture/cycle-24.md` § 2.1 — RN-38: through
   v25 the build step was cited `:L29` with no commit named, true at `ka-reader@0aca57e`, and it
   moved six lines down when `Structure check` and `Structure check suite` landed at `:L28-L32`)*
@@ -1714,9 +1758,16 @@ left with `ka-reader-ui` at `ka-reader@0aca57e` (RN-22; RN-25).
   20260831.0302.1; run 38449250910 on `ka-reader@8926052`, the last `main` build on that image,
   prints the same. The Swift version, the run id and the image version are recorded together
   because a label's default Xcode can move under the same name, and a later reader must tell a
-  re-measurement from a contradiction. **The `macos-26` toolchain is a re-measurement**, recorded
-  here from the first `main` log on that image, and none exists yet: `ka-reader@fcb2e2f`, which
-  moved the job, is on no remote branch, and `origin/main` is `ka-reader@8926052` *(through v47
+  re-measurement from a contradiction. **The `macos-26` measurement:** GitHub Actions run
+  38463966607 on `ka-reader@4601cd9` (2026-10-13), the first `main` run on that image — Apple Swift
+  6.3.3 (swiftlang-6.3.3.1.3), SDK 26.5, image `macos-26-arm64` 20260907.0351.1. That run failed at
+  `Test gate`, after its `Toolchain` step passed, so the reading stands; run 38501500758 on
+  `ka-reader@3f7a68d` (2026-10-14, `success`) prints the same *(through v48 this sentence read "The
+  `macos-26` toolchain is a re-measurement, recorded here from the first `main` log on that image,
+  and none exists yet: `ka-reader@fcb2e2f`, which moved the job, is on no remote branch, and
+  `origin/main` is `ka-reader@8926052`", true when v48 was written; `ka-reader@fcb2e2f` reached
+  `origin/main` and run 38463966607 built it; on the owner's seat's answer at
+  `docs/trail/architecture/cycle-42.md` § 3.2 — RN-60)* *(through v47
   this clause read *not yet measured* and the toolchain *still unread*: the first CI run on `main`
   to run those steps, GitHub Actions run 35968105480 on `ka-reader@c461b29` (`success`; image
   `macos-14-arm64` 20260831.0302.1, macOS 14.8.9), names no Swift version — its one
@@ -1728,83 +1779,63 @@ left with `ka-reader-ui` at `ka-reader@0aca57e` (RN-22; RN-25).
   `docs/trail/architecture/cycle-41.md` § 3.1 — RN-59)* *(through v14 this clause read that
   no CI run on `main` had built it, true at `origin/main` = `a4ab8e6`; drafted at v15 on the item a
   `companion-self-answer` run raised on this document — RN-26 — and confirmed in the owner's seat
-  at `docs/trail/architecture/cycle-13.md` § 2.1 — RN-27)*. *Departed from, as one decision, until the change that
-  writes the `6.2` tools version:* the `6.2` tools version
-  (`Package.swift:L1` reads `5.9`); the `.binaryTarget` artifact-bundle link (`:L19`, `:L26-L29`
-  link `libka_reader_bridge.a` as a system library with a `-L` linker flag, the route the packet
-  lists second among its alternatives); `.treatAllWarnings(as:)` on every target (none set); the
-  Swift 6 language mode, written as `swiftLanguageModes: [.v6]` for every target (the 5.9 manifest
-  leaves every target in Swift 5 mode); `.strictMemorySafety()` on every Swift target, including
-  `SurfacesTests` and `ShellTests`; and `.defaultIsolation(MainActor.self)` on `Surfaces` and
-  `KAReader`, but not on `Shell`, `SurfacesTests` or `ShellTests`. The manifest APIs for the three
-  settings need `PackageDescription` 6.2 (`toolchain.md` § Toolchain version; `quality_gates.md`
-  § Types; `conventions.md` concurrency rules), and CI's image, `macos-26` (`ci.yml:L18` at
-  `ka-reader@fcb2e2f`), builds with its own default Xcode and selects none (`:L19`). Which Swift
-  it carries is unread until the *Toolchain* clause's re-measurement; the last one measured, Swift
-  6.0.3 on `macos-14`, is below 6.2, which was released on 2025-09-15
-  (https://www.swift.org/blog/swift-6.2-released/, read 2026-09-23).
-  The floor at `26.0` (QC-56) brings this departure's end with it: `.macOS(.v26)` is introduced in
-  SwiftPM 6.2 (Apple's documentation data for `SupportedPlatform.MacOSVersion.v26` reads
-  `"introducedAt": "6.2"`,
-  https://developer.apple.com/tutorials/data/documentation/packagedescription/supportedplatform/macosversion/v26.json,
-  read 2026-10-13), so `Package.swift:L1` moves with the floor (`docs/SDD.md` RN-108), and the
-  change that writes the `6.2` tools version adopts the other five with it, because the six are
-  departed from as one decision. The measured source cost below is that change's *(added at v47 —
-  RN-58)*.
-  **That change is the departure's one trigger.** Its own CI build checks the ground: the tools
-  version is a floor the compiler enforces (`toolchain.md` § Toolchain version), so a toolchain
-  below 6.2 refuses the `6.2` manifest and the job goes red, and no separate gate is owed
-  *(through v47 the departure carried two further triggers — it ran "until CI builds
-  `ka-reader-mac` on an image carrying a Swift 6.2 or later toolchain", and "if [the first CI log]
-  shows a 6.2 or later toolchain the departure's ground is gone and all six are adopted then.
-  Otherwise the change that moves CI to such an image adopts all six together and re-measures
-  QC-25's hosted-runner narrowing, taken on `macos-14` (`docs/SDD.md` RN-48), on the new image" —
-  and read CI's image as "`macos-14` (`ci.yml:L18`), [which] offers Xcode 15.0.1 – 16.2 with 15.4
-  the default" (https://github.com/actions/runner-images/blob/main/images/macos/macos-14-arm64-Readme.md,
-  read 2026-09-23). The CI move landed at `ka-reader@fcb2e2f` adopting none of the six, as the
-  review gate below requires. Both triggers give way to the one above, which agrees with
-  `docs/SDD.md` RN-108 tying the tools version to the floor, and the narrowing's re-measurement is
-  QC-25's, taken on every hosted build; re-derived at v48 on the owner's seat's answers at
-  `docs/trail/architecture/cycle-41.md` §§ 3.1, 3.2 — RN-59)*.
-  The adoption's measured source cost is explicit. Swift 6 mode refuses
-  `ka-reader-mac/Sources/Shell/LaunchFlow.swift:L60`, `:L107` and `:L111` at `ka-reader@7c7038f` (each
-  `bridge`, an `any Bridging`, captured in a `@Sendable` closure — the measured site was the
-  `listTree` closure, `:L53` at `ka-reader@6e1d79f` and `:L107` now; `:L60`, the open closure, and
-  `:L111`, the `selectFile` closure, were added after it and fail the same way — RN-33) and
-  `ka-reader-mac/Sources/Shell/ReadRunning.swift:L28` (`deliver`, a
-  `@MainActor (RootListing?) -> Void`, sent across one), plus any site added before the flip. No
-  target carries `StrictConcurrency` meanwhile: without warnings-as-errors its diagnostics cannot
-  fail the Test gate, and CI's unmeasured compiler leaves the setting's required spelling unknown.
-  Strict memory safety requires explicit `unsafe` acknowledgements at the C-pointer uses in
-  `ka-reader-mac/Sources/KAReader/NativeBridge.swift` and the AppKit `unowned(unsafe)` properties in
-  `ka-reader-mac/Sources/Surfaces/RootItemsView.swift`. No separate current source failure is named
-  for default isolation: with Swift 5 mode held, the current `KAReader` target builds with default
-  isolation on `Surfaces` and `KAReader` (RN-31).
-  *Departed from, with the same flip — the packet's dependency gate's `type == "system"`
-  clause:* the packet's gate refuses any target whose `type` is `"system"` (`quality_gates.md`
-  § The gates — `select(.url != null or .type == "system")`), and `ka-reader-mac` links the bridge
-  through `.systemLibrary(name: "CKAReaderBridge")` (`Package.swift:L19`), so that gate as written
-  fails the tree as built. The departure is that one clause and nothing else, for the same reason
-  as the link: the system library is a module map over `ka-reader-bridge`'s generated header, that
-  crate is this repository's own and is on `checks/deps.allow`, and the link brings nothing new
-  into the tree. `checks/no-network.sh` stands in the gate's place: it holds the gate's other two
-  conditions — a non-empty `dependencies` array and a target carrying a `url` (`:L31-L32`) —
-  reads the dump with `plutil` rather than `jq`, and refuses a `Package.resolved` at any depth
-  under the package (`:L149`), wider than the packet's working-directory test. The clause departs
-  only because the system-library link exists, so it flips with the six above: when the
-  artifact-bundle link replaces the system library, no target has `type == "system"` and the
-  packet's gate is followed as written *(on the owner's seat's answer at
-  `docs/trail/architecture/cycle-11.md` § 3.6 — RN-25)*.
-  — *verified by:* `swift test --package-path ka-reader-mac` (the runner, every change);
-  `checks/no-network.sh` (the Swift half of the dependency gate, every change); review at
-  `development-design` on any change to `ka-reader-mac/Package.swift` or `.github/workflows/*.yml`
-  against this bullet — the seven tools-6.2 departures, including the dependency-gate clause,
-  flip together or not at all — and review at `development-design` on any change that adds a file
-  under `ka-reader-mac/Tests/`, against the *Framework* clause — review gates because no script holds either check: the seven
-  flipping together is read off the manifest's diff, and a test's framework binds only the files a
-  change adds, which no command over the tree tells apart from the XCTest files the packet keeps;
-  each stays a review bar at `development-design` until a check is written for it. The `Toolchain`
-  step's log is what the *Toolchain* clause above is checked against, on every build *(through v47
+  at `docs/trail/architecture/cycle-13.md` § 2.1 — RN-27)*. *Adopted in the tree at `ka-reader@f0f1e5f`, as one decision — the seven tools-6.2 items:* the
+  `6.2` tools version (`ka-reader-mac/Package.swift:L1` reads `// swift-tools-version:6.2`, and `:L23`
+  `platforms: [.macOS(.v26)]`); the artifact-bundle link, the route the packet lists first —
+  `.binaryTarget(name: "CKAReaderBridge", path: "CKAReaderBridge.artifactbundle")` (`:L30`), a bundle
+  `ka-reader-mac/assemble.sh` writes from the bridge's release archive, its generated header and
+  the tracked module map `ka-reader-mac/Sources/CKAReaderBridge/module.modulemap`
+  (`assemble.sh:L53-L74`), git-ignored (`.gitignore:L32`) and never committed; the Swift 6 language
+  mode, written out (`swiftLanguageModes: [.v6]`, `Package.swift:L49`); `.treatAllWarnings(as:
+  .error)` and `.strictMemorySafety()` on all five Swift targets, `SurfacesTests` and `ShellTests`
+  included; `.defaultIsolation(MainActor.self)` on `Surfaces` and `KAReader` only; and the packet's
+  dependency gate's `type == "system"` clause (`quality_gates.md` § The gates —
+  `select(.url != null or .type == "system")`), followed as written, since no target is of type
+  `system`. Measured on a fresh clone of `ka-reader@f0f1e5f` on 2026-10-14:
+  `swift package --package-path ka-reader-mac dump-package` exits 0 without the bridge artifact and
+  prints tools `6.2.0`, language mode `6`, platform `macos 26.0`, the settings on the targets named
+  above, `CKAReaderBridge` of type `binary`, no target of type `system` and none carrying a `url`.
+  The flip is the departure's own trigger firing — the change that writes the `6.2` tools version,
+  which `docs/SDD.md` RN-108 ties to the floor — and all seven flipped together, as the review gate
+  then required; no record is owed for it (RN-60). **The adoption is the tree's, not yet CI's.**
+  `ka-reader@f0f1e5f` is not on `origin/main` (`ka-reader@3f7a68d`), so no hosted run has built the
+  `6.2` manifest. The hosted `macos-26` Swift is 6.3.3 (the *Toolchain* clause), above the tools
+  floor, so the manifest is expected to load, and the first hosted build of it is the confirming
+  reading: a red there contradicts this clause and is not noise. **The `type == "system"` clause
+  holds with no check behind it.** `checks/no-network.sh` refuses only a non-empty `dependencies`
+  array and a target carrying a `url` (`:L31-L32`, `:L131-L138`), reads the dump with `plutil`
+  rather than `jq`, and refuses a `Package.resolved` at any depth under the package (`:L149`), so a
+  change that put a `.systemLibrary` target back would pass every gate in the tree. A refusal of
+  any target of type `system` is owed to `checks/no-network.sh`, with a case in its suite
+  `checks/tests/test_no_network.sh` that turns it red; until it lands, the `development-design`
+  review below holds it, and whether and when to write it is the delivery tier's *(through v48 this
+  passage read the seven as departed from, as one decision, until the change that writes the `6.2`
+  tools version, with the bridge linked through `.systemLibrary(name: "CKAReaderBridge")` and
+  `no-network.sh` standing in the dependency gate's place; its words — the measured source cost of
+  adopting, "No target carries `StrictConcurrency` meanwhile", "with Swift 5 mode held" and "Which
+  Swift it carries is unread … Swift 6.0.3 on `macos-14`, is below 6.2" among them — were true until
+  `ka-reader@f0f1e5f` and stand whole in RN-60; on the owner's seat's answer at
+  `docs/trail/architecture/cycle-42.md` § 3.1 — RN-60)*.
+  — *verified by:* `swift test --package-path ka-reader-mac` after `ka-reader-mac/assemble.sh` (the
+  runner, every change; the runner paragraph above); `checks/no-network.sh` (the dependency gate's
+  `dependencies` and `url` conditions, every change); review at `development-design` on any change
+  to `ka-reader-mac/Package.swift` or `.github/workflows/*.yml` against this bullet — the seven
+  tools-6.2 items stay adopted, read off `swift package --package-path ka-reader-mac dump-package`,
+  which runs without the bridge artifact: tools `6.2.0`, language mode `6`, the settings on the
+  targets the *Adopted* passage names, no target of type `system`, none carrying a `url` — and
+  review at `development-design` on any change that adds a file under `ka-reader-mac/Tests/`,
+  against the *Framework* clause — review gates because no script holds either check: no script in
+  the tree reads the dump for the seven or for a `system` target (the refusal owed above), and a
+  test's framework binds only the files a change adds, which no command over the tree tells apart
+  from the XCTest files the packet keeps; each stays a review bar at `development-design` until a
+  check is written for it, and the day `checks/no-network.sh` refuses a `system` target, that
+  clause's gate is the script. The `Toolchain` step's log is what the *Toolchain* clause above is
+  checked against, on every build *(through v48 the first review gate read "the seven tools-6.2
+  departures, including the dependency-gate clause, flip together or not at all", its ground "the
+  seven flipping together is read off the manifest's diff", and the no-network clause "the Swift
+  half of the dependency gate"; the flip happened at `ka-reader@f0f1e5f`, so the gate is re-aimed at
+  keeping the seven; on the owner's seat's answer at `docs/trail/architecture/cycle-42.md` § 3.1 —
+  RN-60)* *(through v47
   this ground read "no command reads which toolchain CI builds with … the review stands until a CI
   log on `main` names the toolchain", true until `ka-reader@d852457`; re-derived at v48 on the
   owner's seat's answer at `docs/trail/architecture/cycle-41.md` § 3.1 — RN-59)*.
@@ -5235,3 +5266,163 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   tools-6.2 clauses and its *verified by*; § 10, the QC-25 row; source:
   `docs/trail/architecture/cycle-41.md` §§ 3.1, 3.2; `docs/trail/architecture/self_answer-46.md`;
   `docs/SDD.md` v48 RN-48, RN-108; the tree at `ka-reader@fcb2e2f`, measured at `ka-reader@81734d9`)*
+
+- **RN-60:** *(v49 — the close: the cycle-42 fold, §§ 3.1 and 3.2 answered)* **Intake.** The
+  companion on disk had two § 3 items and nothing in §§ 1 or 2. No `product-architecture` run wrote
+  it. The PM opened it on 2026-10-14 (`ka-reader@175c40e`), after the change that moves the product
+  to its macOS 26 floor merged to `main` (`ka-reader@f0f1e5f`). A `companion-self-answer` run
+  answered both in the owner's seat, decided together (`ka-reader@f2d02bf`; reasoning
+  `docs/trail/architecture/self_answer-47.md`). The file was clean in git at intake and both slots
+  were filled, so it is consumed. It was copied whole to `docs/trail/architecture/cycle-42.md`
+  before this fold's first edit, and `cmp` found the two identical. **Whose answer this is.** The
+  fold rests on the ground RN-54 to RN-59 rest on: both answers bind only the records' consistency
+  with the tree, with hosted CI logs and with the settled SDD, and the owner can reverse the fold
+  with one revert. **What moved beneath this document.** `git diff --stat 4601cd9 HEAD -- docs`
+  lists SDD v49 (`ka-reader@23e197d`), its trail and self-answer, this companion and its
+  self-answer. SDD v49 moves § 4 C-I3 alone (SDD RN-109): the probe's hosted-runner narrowing is
+  dated to the image it was read on, the reading is named as taken on every hosted build from the
+  control's `out-of-grant-read:` line, and *Violated by* gains a hosted build whose suite log
+  carries no such line once the suite prints it. RN-59 said QC-25's trace to C-I3 would be re-read
+  when the CTO folded that item, and this fold re-reads it. The two stores already agreed on the
+  dating and on the per-build reading, so QC-25's body gains only the *Violated by* sentence, and
+  its trace names C-I3 at v49, with the old "the probe half unchanged since v9" in a dated
+  parenthesis. Every input's `Status:` line still reads Settled, so `Inputs read:` stands as it
+  reads. `git diff --stat f0f1e5f HEAD -- . ':!docs'` prints nothing, so the tree this fold cites
+  is `ka-reader@f0f1e5f`'s. **§ 3.1 → § 9's Swift-packet bullet, confirmed with addition.** The
+  departure passage becomes *Adopted in the tree at `ka-reader@f0f1e5f`*, dated, naming the
+  artifact-bundle route — `assemble.sh` writes the git-ignored bundle from the tracked module map —
+  as the item asked. The answer's additions, each placed: (1) the adoption is dated to the tree,
+  not to CI, and the first hosted build of the `6.2` manifest is named as the confirming reading;
+  (2) the `type == "system"` clause is followed as written but no check holds it, so a refusal is
+  named as owed to `checks/no-network.sh` and its suite, and the `development-design` review on
+  `Package.swift` holds it until then; (3) the departure-only words go to this note, quoted whole
+  below, and the passage carries a dated parenthesis that points here; (4) the *verified by* gate
+  "flip together or not at all" is spent and is re-aimed at "the seven stay adopted", read off
+  `dump-package`; (5) RN-25 stays as written, since review notes are history, and this note records
+  that the departure it describes has ended; (6) no record is owed. **§ 3.2 → § 9's *Toolchain*
+  clause, § 9's runner paragraph and § 8, confirmed with addition and the item's last sentence
+  overridden.** The *Toolchain* clause cites `ci.yml:L31-L32` (`Build KA-Reader.app`) before
+  `:L34-L35` (`Test gate`) at `ka-reader@f0f1e5f`, and the old citations go to a dated note. The
+  answer's additions, each placed: (1) the precondition is stated once, in § 9's runner paragraph,
+  and the eleven *verified by* tails and § 10 rows that name `swift test --package-path
+  ka-reader-mac` read under it, unedited; (2) the precondition is every run, not only a fresh
+  checkout, because `assemble.sh` rebuilds the bundle each time (`:L70-L74`); (3) § 8 names the
+  project card's `Test command:` as owing the assembly, a move that is `product-card`'s, in the form
+  `docs/SDD.md` RN-60 used, and the card is not edited; (4) the override: the `macos-26` toolchain
+  reading exists — run 38463966607 on `ka-reader@4601cd9`, Swift 6.3.3, SDK 26.5, image
+  `macos-26-arm64` 20260907.0351.1 — and the clause records it, with "none exists yet" in a dated
+  note. **Where the fold goes beyond the answers' words, each named.** (a) The *Adopted* passage
+  names the language mode as written out in the manifest (`swiftLanguageModes: [.v6]`,
+  `Package.swift:L49`), because the packet asks for it written (`toolchain.md` § Language mode)
+  and the item named only the mode `dump-package` reports. (b) The *verified by* names
+  `no-network.sh`'s reach as the `dependencies` and `url` conditions in place of "the Swift half
+  of the dependency gate", which would now claim the `system` condition it does not hold. (c) The
+  runner paragraph quotes the measured failure of `swift build`, which is what the answering run
+  measured, and cites `assemble.sh:L10-L12` for `swift test` resolving the same target, rather
+  than claiming a `swift test` measurement nobody took. (d) § 8's existing "(RN-60)" named the
+  SDD's RN-60 and would now read as this note, so it is spelled `docs/SDD.md` RN-60. (e) Found
+  while folding, and fixed in place as small: three citations of `.github/workflows/ci.yml` named no
+  commit and had gone false — QC-3's `:L41`, `:L51`, `:L54` and two citations of `:L26` for
+  `cargo test --workspace --locked` (§ 1.1 and § 1.3). Each is re-pinned to `ka-reader@f0f1e5f`
+  (`:L32`, `:L57`, `:L60`; `:L35`), with the old lines, true through `ka-reader@c915d52`, in a
+  dated note. What each cites is unchanged. The `:L26` in § 9's suites bullet sits inside a
+  sentence pinned to `ka-reader@b158052` and stands. **The departure, whole, as it read through
+  v48** — the words § 3.1 sends here:
+
+  > *Departed from, as one decision, until the change that
+  > writes the `6.2` tools version:* the `6.2` tools version
+  > (`Package.swift:L1` reads `5.9`); the `.binaryTarget` artifact-bundle link (`:L19`, `:L26-L29`
+  > link `libka_reader_bridge.a` as a system library with a `-L` linker flag, the route the packet
+  > lists second among its alternatives); `.treatAllWarnings(as:)` on every target (none set); the
+  > Swift 6 language mode, written as `swiftLanguageModes: [.v6]` for every target (the 5.9 manifest
+  > leaves every target in Swift 5 mode); `.strictMemorySafety()` on every Swift target, including
+  > `SurfacesTests` and `ShellTests`; and `.defaultIsolation(MainActor.self)` on `Surfaces` and
+  > `KAReader`, but not on `Shell`, `SurfacesTests` or `ShellTests`. The manifest APIs for the three
+  > settings need `PackageDescription` 6.2 (`toolchain.md` § Toolchain version; `quality_gates.md`
+  > § Types; `conventions.md` concurrency rules), and CI's image, `macos-26` (`ci.yml:L18` at
+  > `ka-reader@fcb2e2f`), builds with its own default Xcode and selects none (`:L19`). Which Swift
+  > it carries is unread until the *Toolchain* clause's re-measurement; the last one measured, Swift
+  > 6.0.3 on `macos-14`, is below 6.2, which was released on 2025-09-15
+  > (https://www.swift.org/blog/swift-6.2-released/, read 2026-09-23).
+  > The floor at `26.0` (QC-56) brings this departure's end with it: `.macOS(.v26)` is introduced in
+  > SwiftPM 6.2 (Apple's documentation data for `SupportedPlatform.MacOSVersion.v26` reads
+  > `"introducedAt": "6.2"`,
+  > https://developer.apple.com/tutorials/data/documentation/packagedescription/supportedplatform/macosversion/v26.json,
+  > read 2026-10-13), so `Package.swift:L1` moves with the floor (`docs/SDD.md` RN-108), and the
+  > change that writes the `6.2` tools version adopts the other five with it, because the six are
+  > departed from as one decision. The measured source cost below is that change's *(added at v47 —
+  > RN-58)*.
+  > **That change is the departure's one trigger.** Its own CI build checks the ground: the tools
+  > version is a floor the compiler enforces (`toolchain.md` § Toolchain version), so a toolchain
+  > below 6.2 refuses the `6.2` manifest and the job goes red, and no separate gate is owed
+  > *(through v47 the departure carried two further triggers — it ran "until CI builds
+  > `ka-reader-mac` on an image carrying a Swift 6.2 or later toolchain", and "if [the first CI log]
+  > shows a 6.2 or later toolchain the departure's ground is gone and all six are adopted then.
+  > Otherwise the change that moves CI to such an image adopts all six together and re-measures
+  > QC-25's hosted-runner narrowing, taken on `macos-14` (`docs/SDD.md` RN-48), on the new image" —
+  > and read CI's image as "`macos-14` (`ci.yml:L18`), [which] offers Xcode 15.0.1 – 16.2 with 15.4
+  > the default" (https://github.com/actions/runner-images/blob/main/images/macos/macos-14-arm64-Readme.md,
+  > read 2026-09-23). The CI move landed at `ka-reader@fcb2e2f` adopting none of the six, as the
+  > review gate below requires. Both triggers give way to the one above, which agrees with
+  > `docs/SDD.md` RN-108 tying the tools version to the floor, and the narrowing's re-measurement is
+  > QC-25's, taken on every hosted build; re-derived at v48 on the owner's seat's answers at
+  > `docs/trail/architecture/cycle-41.md` §§ 3.1, 3.2 — RN-59)*.
+  > The adoption's measured source cost is explicit. Swift 6 mode refuses
+  > `ka-reader-mac/Sources/Shell/LaunchFlow.swift:L60`, `:L107` and `:L111` at `ka-reader@7c7038f` (each
+  > `bridge`, an `any Bridging`, captured in a `@Sendable` closure — the measured site was the
+  > `listTree` closure, `:L53` at `ka-reader@6e1d79f` and `:L107` now; `:L60`, the open closure, and
+  > `:L111`, the `selectFile` closure, were added after it and fail the same way — RN-33) and
+  > `ka-reader-mac/Sources/Shell/ReadRunning.swift:L28` (`deliver`, a
+  > `@MainActor (RootListing?) -> Void`, sent across one), plus any site added before the flip. No
+  > target carries `StrictConcurrency` meanwhile: without warnings-as-errors its diagnostics cannot
+  > fail the Test gate, and CI's unmeasured compiler leaves the setting's required spelling unknown.
+  > Strict memory safety requires explicit `unsafe` acknowledgements at the C-pointer uses in
+  > `ka-reader-mac/Sources/KAReader/NativeBridge.swift` and the AppKit `unowned(unsafe)` properties in
+  > `ka-reader-mac/Sources/Surfaces/RootItemsView.swift`. No separate current source failure is named
+  > for default isolation: with Swift 5 mode held, the current `KAReader` target builds with default
+  > isolation on `Surfaces` and `KAReader` (RN-31).
+  > *Departed from, with the same flip — the packet's dependency gate's `type == "system"`
+  > clause:* the packet's gate refuses any target whose `type` is `"system"` (`quality_gates.md`
+  > § The gates — `select(.url != null or .type == "system")`), and `ka-reader-mac` links the bridge
+  > through `.systemLibrary(name: "CKAReaderBridge")` (`Package.swift:L19`), so that gate as written
+  > fails the tree as built. The departure is that one clause and nothing else, for the same reason
+  > as the link: the system library is a module map over `ka-reader-bridge`'s generated header, that
+  > crate is this repository's own and is on `checks/deps.allow`, and the link brings nothing new
+  > into the tree. `checks/no-network.sh` stands in the gate's place: it holds the gate's other two
+  > conditions — a non-empty `dependencies` array and a target carrying a `url` (`:L31-L32`) —
+  > reads the dump with `plutil` rather than `jq`, and refuses a `Package.resolved` at any depth
+  > under the package (`:L149`), wider than the packet's working-directory test. The clause departs
+  > only because the system-library link exists, so it flips with the six above: when the
+  > artifact-bundle link replaces the system library, no target has `type == "system"` and the
+  > packet's gate is followed as written *(on the owner's seat's answer at
+  > `docs/trail/architecture/cycle-11.md` § 3.6 — RN-25)*.
+
+  **What does not move.** QC-56 reads the floor at `26.0`, and its sentence that the tree meets
+  neither half is pinned to `ka-reader@d6405e2` and stands. At `ka-reader@f0f1e5f` the manifest
+  half is met (`Package.swift:L23`); the plist half is not read by this fold. Neither QC-26 nor
+  QC-3 claims the `system` condition, so neither gains it; QC-3 moves only by the re-pin in (e). The *Framework* clause, adopted at v48,
+  does not move, since 6.3.3 is a Swift 6 toolchain. **No candidate record.** The adoption is the
+  departure's own trigger firing, and `docs/SDD.md` RN-108 ties the tools version to the floor. The
+  artifact-bundle link is the route the packet lists first, and undoing it is a one-file change, so
+  it fails the hard-to-reverse gate. `docs/adr/` mentions neither `systemLibrary` nor the tools
+  version. No ADR is written, edited or restatused, the index does not move, and no `QC` is added,
+  renumbered or reused. **Measured for this run at `ka-reader@f2d02bf`.** `git status --porcelain`
+  printed nothing at intake. `Package.swift:L1` reads `// swift-tools-version:6.2`, `:L23`
+  `platforms: [.macOS(.v26)]`, `:L30` the `.binaryTarget`, and `:L49` `swiftLanguageModes: [.v6]`.
+  `.gitignore:L32` ignores the bundle. `ci.yml:L31-L32` is `Build KA-Reader.app` and `:L34-L35` is
+  `Test gate`, and `git show d2694c7^:.github/workflows/ci.yml` names `Test gate` at `:L29` and
+  `Build KA-Reader.app` at `:L44`. `checks/no-network.sh:L31-L32` and `:L131-L138` hold the two
+  conditions it refuses and no other. `assemble.sh:L53-L74` writes the bundle from the module map.
+  `origin/main` is `ka-reader@3f7a68d`, and `git merge-base --is-ancestor f0f1e5f origin/main`
+  fails. `gh run list` lists run 38501500758 on `ka-reader@3f7a68d` with `success`, and its log
+  prints image `macos-26-arm64` version 20260907.0351.1 and "Apple Swift version 6.3.3
+  (swiftlang-6.3.3.1.3 clang-2100.1.1.101)". The CI line histories in (e) were read with
+  `git show <commit>:.github/workflows/ci.yml`. **Known limits.** This run read the SDD's diff since
+  `ka-reader@4601cd9` and the other inputs at their status lines. It did not re-run `dump-package`
+  or the fresh-clone `swift build`, which the answering run measured, and it built no bundle and ran
+  no test suite or `checks/*.sh` script. **The companion.** Nothing is left for the owner, so the
+  companion is removed and `Status:` is Settled *(re: header `Version:`; QC-3; the two `ci.yml:L26`
+  citations; QC-25; § 8; § 9, the runner paragraph and the Swift-packet bullet's *Toolchain*,
+  *Adopted* and *verified by*; source: `docs/trail/architecture/cycle-42.md` §§ 3.1, 3.2;
+  `docs/trail/architecture/self_answer-47.md`; `docs/SDD.md` v49 RN-108, RN-109; the tree at
+  `ka-reader@f0f1e5f`, measured at `ka-reader@f2d02bf`)*
