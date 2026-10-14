@@ -297,6 +297,26 @@ impl ReadingPosition {
 
 /// The one file shown for reading: its path, the position the reader holds in it, and what reading
 /// it gave. The sole owner of those three, so none is kept anywhere else.
+///
+/// # Examples
+///
+/// ```
+/// use ka_reader_core::{FileRequest, FolderModel, ReadingPosition, open_folder};
+///
+/// let folder = std::env::temp_dir().join("ka-reader-doc-open-file");
+/// std::fs::create_dir_all(&folder).expect("the example folder is made");
+/// std::fs::write(folder.join("main.rs"), "fn main() {}\n").expect("the example file is written");
+///
+/// let opened = open_folder(&folder).expect("the example folder opens");
+/// let position = ReadingPosition::new(b"line=400".as_slice());
+/// let model = FolderModel::new(opened)
+///     .select_file(FileRequest::Open("main.rs".into(), position.clone()));
+///
+/// let open = model.open_file().expect("the file is open");
+/// assert_eq!(open.path(), std::path::Path::new("main.rs"));
+/// assert_eq!(open.position(), &position);
+/// std::fs::remove_dir_all(&folder).expect("the example folder is removed");
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct OpenFile {
     path: PathBuf,
@@ -310,6 +330,7 @@ impl OpenFile {
         &self.path
     }
 
+    /// The position the reader holds in the file, exactly as it was supplied.
     pub fn position(&self) -> &ReadingPosition {
         &self.position
     }
@@ -325,6 +346,20 @@ impl OpenFile {
 ///
 /// A folder absent from the expanded set is collapsed, so a place that expanded and collapsed a
 /// folder equals one that never touched it. Paths are native, relative to the opened folder's root.
+///
+/// # Examples
+///
+/// ```
+/// use std::path::Path;
+/// use ka_reader_core::{FolderModel, open_folder};
+///
+/// let opened = open_folder(std::env::temp_dir()).expect("the temporary folder opens");
+/// let model = FolderModel::new(opened);
+///
+/// assert!(!model.place().is_expanded(Path::new(".git")));
+/// assert_eq!(model.place().selected(), None);
+/// assert!(model.place().open_file().is_none());
+/// ```
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct ReaderPlace {
     expanded: BTreeSet<PathBuf>,
@@ -350,6 +385,24 @@ impl ReaderPlace {
 }
 
 /// An act on the tree: a folder disclosed or hidden.
+///
+/// # Examples
+///
+/// ```
+/// use std::path::Path;
+/// use ka_reader_core::{FolderModel, TreeRequest, open_folder};
+///
+/// let folder = std::env::temp_dir().join("ka-reader-doc-tree-request");
+/// std::fs::create_dir_all(folder.join("src")).expect("the example folder is made");
+///
+/// let opened = open_folder(&folder).expect("the example folder opens");
+/// let model = FolderModel::new(opened).list_tree(TreeRequest::Expand("src".into()));
+/// assert!(model.place().is_expanded(Path::new("src")));
+///
+/// let model = model.list_tree(TreeRequest::Collapse("src".into()));
+/// assert!(!model.place().is_expanded(Path::new("src")));
+/// std::fs::remove_dir_all(&folder).expect("the example folder is removed");
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TreeRequest {
     /// Hold the folder expanded, with its direct listing read now.
@@ -421,6 +474,29 @@ struct FolderChange {
 }
 
 /// An act on the file: which is selected, which is open, and where the reader is in it.
+///
+/// # Examples
+///
+/// ```
+/// use std::path::Path;
+/// use ka_reader_core::{FileRequest, FolderModel, ReadingPosition, open_folder};
+///
+/// let folder = std::env::temp_dir().join("ka-reader-doc-file-request");
+/// std::fs::create_dir_all(&folder).expect("the example folder is made");
+/// std::fs::write(folder.join("a.txt"), "a\n").expect("the example file is written");
+///
+/// let opened = open_folder(&folder).expect("the example folder opens");
+/// let model = FolderModel::new(opened).select_file(FileRequest::Select(Some("a.txt".into())));
+/// assert_eq!(model.place().selected(), Some(Path::new("a.txt")));
+/// assert!(model.open_file().is_none());
+///
+/// let anchor = ReadingPosition::new(b"line=400".as_slice());
+/// let model = model
+///     .select_file(FileRequest::Open("a.txt".into(), ReadingPosition::new(b"top".as_slice())))
+///     .select_file(FileRequest::Position(anchor.clone()));
+/// assert_eq!(model.open_file().map(|open| open.position()), Some(&anchor));
+/// std::fs::remove_dir_all(&folder).expect("the example folder is removed");
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum FileRequest {
     /// Select a file, or with `None` select none. No content is read.
