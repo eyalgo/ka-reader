@@ -82,7 +82,39 @@ None.
   model's API, that the C ABI and the Swift callers have not yet acquired the arguments, and that SM-4's
   row owes its description once that crossing is built. It would not describe the shell-to-model path
   as built.
-- **Answer:** <the owner fills this in>
+- **Answer:** Confirm, with additions. The sentence is false at `ka-reader@8ef8c5b`: the first form
+  is found, at the model's API. `FolderModel::list_tree(TreeRequest)` takes the expansion, the
+  collapse and the disk's delta, and `FolderModel::select_file(FileRequest)` takes the selection, the
+  open with its reading position, and the position alone
+  (`crates/ka-reader-core/src/folder_model.rs:L631`, `:L654`; `TreeRequest` `:L400-L408`,
+  `FileRequest` `:L491-L499`, `ReadingPosition` `:L286`); in a fresh clone at `ka-reader@a2b9389`,
+  whose tree outside `docs/` is `8ef8c5b`'s, `cargo test --locked -p ka-reader-core --test watch`
+  passes 13, `place_survives_mixed_delta` among them, and `cargo test --locked -p ka-reader-bridge
+  --test exports` passes 11. SM-4 is unchanged: `ka_reader_list_tree` and `ka_reader_select_file`
+  take the path alone (`crates/ka-reader-bridge/src/exports.rs:L74`, `:L91`;
+  `ka-reader-mac/Sources/KAReader/NativeBridge.swift:L26-L39`), and no export was added. The fold
+  writes four things and describes no shell-to-model path as built. (1) *Open Questions*, the
+  collapse-and-scroll item **narrows and does not close**: the three-form fork is settled — the
+  first form is the one built, so the second and third are off and no § 10 entry is owed, since
+  form one moves no list and no bar failed; what stays open is the crossing of SM-4 alone — the
+  collapse, the selection and the reading position as arguments on `list_tree` and `select_file`
+  with no new export — settled by the first build in which the shell calls them with those
+  arguments and `--test exports` still passes with SM-4's ten; a crossing that needs an eleventh
+  call is the third form again, and the item's own rule for it — recorded in § 10 before it is
+  built, an eleventh call without one failing C-R7's set equality — stays as written. The sentence
+  "SM-5 carries the operations those functions name and no others, so … has no operation to set a
+  reading position with" becomes a dated account. (2) SM-4's row takes the form now, as the item's
+  own rule says — "written into SM-4's row when found" — and not once the crossing is built: `list_tree`
+  carries the expansion or the collapse of a folder, `select_file` the selection, the open with the
+  reading position, or the position alone; built at the model's API at `ka-reader@8ef8c5b`, the C ABI
+  taking the path alone until the shell's crossing is built, and no function joins the list. The row
+  already describes calls ahead of their build with a build-state clause, so this is its own style.
+  (3) SM-5's row: "the operations the functions name" now reads as the model's request types,
+  `TreeRequest` and `FileRequest`, pinned — a delta is SM-3's events applied through this seam and
+  not a shell call. (4) § 6 `follow-the-folder` *Rests on*: the model holds the place from
+  `ka-reader@8ef8c5b`, and "how a collapse and a scroll reach it across SM-4 is open" stands,
+  narrowed as in (1). RN-77 stands as a dated record. Reasoning:
+  `docs/trail/sdd/self_answer-59.md` § 5.1.
 
 ### 5.2 No document says what the held expansion and selection hold when the entry they name is removed
 - **Raised by:** PM — 2026-10-16
@@ -103,4 +135,39 @@ None.
 - **Where it shows:** § 3, the `folder-model` row; § 4 C-E2; *Open Questions* holds no item for it.
 - **If a document has to be written:** none. A clause in § 4 C-E2, or an *Open Questions* item settled
   in `follow-the-folder`, would carry it.
-- **Answer:** <the owner fills this in>
+- **Answer:** The second form, bounded, with two consequences the reducer carries. **The rule:** the
+  reader's place — the expanded set, the selection, the open file's path and position — is the
+  reader's acts and not a read of the disk, and a delta carries it as it was
+  (`crates/ka-reader-core/src/folder_model.rs:L405-L407`, `:L772`). When a delta reports the entry
+  it names removed, the model keeps it, inert: it is drawn nowhere, because the parent's listing no
+  longer lists the entry (`reduce_listing`, `:L795-L815`) and a surface draws only from listings;
+  when an entry at that path returns, the held flag or selection binds to it again. Not the first
+  form, because the churn this slice is for removes and recreates folders — a branch checkout, a
+  build directory, an agent's rewrite — and a node collapsed on its return is the refresh taking the
+  place away that § 4 C-E2's *Violated by* and `docs/fdr.md` R-78 forbid. Not the third form,
+  because a row for an entry its parent's listing no longer carries is state the bridge did not send
+  from a read (§ 3, the `surfaces` row's one exception), and the "marked as no longer there" half of
+  UX-I4 is already met where it occurs: `docs/CONTENT.md` § *Message patterns* → *Partial*'s folder
+  sentence covers a row listed and then found empty before the parent re-lists, and R-80 covers the
+  open file; neither needs a held ghost row after the parent re-lists. **Consequence one, measured
+  and binding:** the held *listing* under a removed folder is not the place and is not kept as
+  current. At `ka-reader@8ef8c5b` `reduce` touches only listings whose folder a reported path's
+  parent resolves to (`apply_delta`, `:L669-L705`), so a removed folder's own listing stays; a
+  folder expanded over `a.rs`, removed and reported, then recreated holding `b.rs` and reported,
+  answers `listing("src")` as `["a.rs"]` while the disk holds `b.rs` (measured in a disposable clone
+  at `ka-reader@a2b9389` through the public API). Drawn under the returned, still-expanded folder,
+  that is stale content presented as current — R-81, UX-I4. So the fold states the reducer's rule:
+  an entry reported removed drops every held listing at and under its path, the listings and never
+  the place; an entry reported present at a path the place holds expanded is read in that same
+  delta, so the folder returns with its listing fresh or `pending`, never the old one. Both are
+  SM-5's and move no seam. **Consequence two, measured and stated as a bound:** a collapse or an
+  expand of a path that no longer resolves is refused at admission (`admit`, `:L710-L714`; `expand`
+  `:L716`; `collapse` `:L732`), so the held flag cannot change while the entry is absent — and no row
+  is drawn, so no act reaches it; `Select(None)` still clears the selection (measured). **Where it
+  lands:** § 3, the `folder-model` row — one clause stating the rule and both consequences; § 6
+  `follow-the-folder` *Reached when*, command half — "expansion, selection and reading position
+  surviving" reads through the removal and return of their own entries, with the returned folder's
+  listing fresh, as a `--test watch` case; *Open Questions* gains nothing, because the form is
+  decided here; § 4 C-E2 does not move — the CDO's condition already binds the surface's half. Not
+  this item: the open file's own removal (R-80), and the root's own disappearance. Reasoning:
+  `docs/trail/sdd/self_answer-59.md` § 5.2.
