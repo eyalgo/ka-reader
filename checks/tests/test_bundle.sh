@@ -26,8 +26,25 @@
 # WHY NO `set -e`
 #   A case that fails must not end the run before the remaining cases report. Each case returns its
 #   own status and the runner counts them.
+#
+# ADMISSION
+#   The first thing the suite does is ask the host whether it is a macOS virtual machine (`uname -s`
+#   Darwin and `sysctl -n kern.hv_vmm_present` 1, both succeeding), because its cases launch the built
+#   bundle. On any other reading it prints one line on stderr, nothing on stdout, and exits 1, before it
+#   finds the product root or the bundle, makes a work directory or runs a case (docs/nfdr.md QC-65).
+#   Nothing it is given turns this off. The case that proves it is checks/tests/test_vm_refusal.sh's: a
+#   suite that refused has no case left to run, so its own refusal cannot be one of its cases.
 
 set -uo pipefail
+
+# --- admission: this suite runs only in a macOS virtual machine (docs/nfdr.md QC-65) ---
+# First work of the run, inline so nothing is opened, found or read before it. Both host readings must
+# succeed and read exactly Darwin and 1; a reader that fails, is missing or prints anything else
+# refuses, and a failing reader that prints 1 does not admit (the status is kept, not only the text).
+# Nothing the suite reads — argument, flag or variable — changes this.
+host_os="$(uname -s 2> /dev/null)" && host_vmm="$(sysctl -n kern.hv_vmm_present 2> /dev/null)" \
+  && [ "$host_os" = "Darwin" ] && [ "$host_vmm" = "1" ] \
+  || { echo "test_bundle.sh: refused: this host does not read as a macOS virtual machine. This step launches KA-Reader.app or reads this machine's home, and runs only in a macOS virtual machine (docs/nfdr.md QC-65)." >&2; exit 1; }
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 BUNDLE_SH="$ROOT/checks/bundle.sh"
