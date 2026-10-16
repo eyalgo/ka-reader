@@ -30,6 +30,8 @@ set -uo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 BUNDLE_SUITE="$ROOT/checks/tests/test_bundle.sh"
 RENDERER_SUITE="$ROOT/checks/tests/test_renderer.sh"
+WORKFLOWS="$ROOT/.github/workflows"
+WORKFLOW="$WORKFLOWS/ci.yml"
 # shellcheck source=checks/tests/support/vm_refusal.sh
 source "$ROOT/checks/tests/support/vm_refusal.sh"
 
@@ -40,6 +42,11 @@ test_bundle_suite_refuses_off_vm_before_work
 test_bundle_suite_admits_on_a_vm_reading
 test_renderer_suite_refuses_off_vm_before_work
 test_renderer_suite_admits_on_a_vm_reading
+test_moved_steps_hold_no_block_and_no_timer_setting
+test_moved_steps_are_single_line_commands_in_order
+test_every_toplevel_suite_is_an_entire_fatal_step
+test_no_conditional_or_nonfatal_step
+test_every_runner_names_macos_26
 "
 
 # --- helpers ---
@@ -47,6 +54,19 @@ test_renderer_suite_admits_on_a_vm_reading
 fail() {
   echo "  $*"
   return 1
+}
+
+# The text of the workflow step named $1: its name line down to the line before the next step's.
+step_text() {
+  awk -v want="      - name: $1" '
+    /^      - name: / { printing = ($0 == want) }
+    printing { print }
+  ' "$WORKFLOW"
+}
+
+# The step names of the workflow, one per line, in order.
+step_names() {
+  sed -n 's/^      - name: //p' "$WORKFLOW"
 }
 
 # --- cases ---
@@ -129,6 +149,70 @@ test_renderer_suite_admits_on_a_vm_reading() {
   if grep -q 'refused' "$vmr_case/stdout" "$vmr_case/stderr"; then
     fail "a refusal line appeared on a virtual machine's reading. stderr: $(cat "$vmr_case/stderr")"
   fi
+}
+
+# CP-792, CP-795 (workflow proof): the two moved steps hold no multi-line block and no timer setting; the
+# rule they carried is in the scripts. Asserted over the real workflow, which acquires no rule of its own.
+test_moved_steps_hold_no_block_and_no_timer_setting() {
+  for step in "Launch the built bundle" "Own state"; do
+    text="$(step_text "$step")"
+    [ -n "$text" ] || fail "the workflow has no step named $step" || return 1
+    case "$text" in
+      *"run: |"* | *"run: >"*) fail "step $step still holds a multi-line run block" || return 1 ;;
+    esac
+    case "$text" in
+      *CONTAINER_WAIT_TICKS* | *"env:"*) fail "step $step still sets a timer or any environment" || return 1 ;;
+    esac
+  done
+}
+
+# CP-792, CP-795: each moved step calls exactly its script as its whole run, keeps its name, and sits where
+# it sat: the renderer gate suite before the real launch, and Own state last before packaging.
+test_moved_steps_are_single_line_commands_in_order() {
+  [ "$(step_text "Launch the built bundle" | grep -c '^        run:')" -eq 1 ] \
+    && step_text "Launch the built bundle" | grep -q -x '        run: checks/launch.sh' \
+    || fail "Launch the built bundle is not exactly run: checks/launch.sh" || return 1
+  [ "$(step_text "Own state" | grep -c '^        run:')" -eq 1 ] \
+    && step_text "Own state" | grep -q -x '        run: checks/own-state-step.sh' \
+    || fail "Own state is not exactly run: checks/own-state-step.sh" || return 1
+
+  names="$(step_names)"
+  position() { printf '%s\n' "$names" | grep -n -x -F "$1" | head -1 | cut -d: -f1; }
+  renderer_suite="$(position "Renderer gate suite")"
+  launch="$(position "Launch the built bundle")"
+  own_state="$(position "Own state")"
+  packaging="$(position "Package KA-Reader.app")"
+  for found in "$renderer_suite" "$launch" "$own_state" "$packaging"; do
+    [ -n "$found" ] || fail "a step the order depends on is missing from the workflow" || return 1
+  done
+  [ "$renderer_suite" -lt "$launch" ] || fail "Renderer gate suite does not come before Launch the built bundle" || return 1
+  [ "$launch" -lt "$own_state" ] || fail "Own state does not come after Launch the built bundle" || return 1
+  [ "$((own_state + 1))" -eq "$packaging" ] || fail "Own state is not the step directly before Package KA-Reader.app"
+}
+
+# CP-803: every top-level suite is the entire run of a step, so none is left off the workflow.
+test_every_toplevel_suite_is_an_entire_fatal_step() {
+  checked=0
+  for suite in "$ROOT"/checks/tests/*.sh; do
+    checked=$((checked + 1))
+    grep -q -x "        run: checks/tests/$(basename "$suite")" "$WORKFLOW" \
+      || fail "checks/tests/$(basename "$suite") is not the entire run of a workflow step" || return 1
+  done
+  [ "$checked" -gt 0 ] || fail "no top-level suite was found, so nothing was checked"
+}
+
+# CP-804: no step is conditional and none may fail without failing the run.
+test_no_conditional_or_nonfatal_step() {
+  found="$(grep -n -E 'continue-on-error|^[[:space:]]+if:' "$WORKFLOW" || true)"
+  [ -z "$found" ] || fail "a conditional or non-fatal step: $found"
+}
+
+# CP-805: every runner the workflows name is macos-26, the image whose virtual machine the refusal needs.
+test_every_runner_names_macos_26() {
+  runners="$(grep -h -E '^[[:space:]]*runs-on:' "$WORKFLOWS"/*.yml || true)"
+  [ -n "$runners" ] || fail "no workflow names a runner, so nothing was checked" || return 1
+  other="$(printf '%s\n' "$runners" | grep -v -E 'runs-on:[[:space:]]*macos-26[[:space:]]*$' || true)"
+  [ -z "$other" ] || fail "a runner other than macos-26: $other"
 }
 
 # --- the runner ---
