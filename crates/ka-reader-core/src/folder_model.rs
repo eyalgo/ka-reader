@@ -303,19 +303,15 @@ impl ReadingPosition {
 /// ```
 /// use ka_reader_core::{FileRequest, FolderModel, ReadingPosition, open_folder};
 ///
-/// let folder = std::env::temp_dir().join("ka-reader-doc-open-file");
-/// std::fs::create_dir_all(&folder).expect("the example folder is made");
-/// std::fs::write(folder.join("main.rs"), "fn main() {}\n").expect("the example file is written");
-///
-/// let opened = open_folder(&folder).expect("the example folder opens");
+/// // This crate's own folder, only read.
+/// let opened = open_folder(env!("CARGO_MANIFEST_DIR")).expect("the crate folder opens");
 /// let position = ReadingPosition::new(b"line=400".as_slice());
 /// let model = FolderModel::new(opened)
-///     .select_file(FileRequest::Open("main.rs".into(), position.clone()));
+///     .select_file(FileRequest::Open("Cargo.toml".into(), position.clone()));
 ///
 /// let open = model.open_file().expect("the file is open");
-/// assert_eq!(open.path(), std::path::Path::new("main.rs"));
+/// assert_eq!(open.path(), std::path::Path::new("Cargo.toml"));
 /// assert_eq!(open.position(), &position);
-/// std::fs::remove_dir_all(&folder).expect("the example folder is removed");
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct OpenFile {
@@ -392,16 +388,13 @@ impl ReaderPlace {
 /// use std::path::Path;
 /// use ka_reader_core::{FolderModel, TreeRequest, open_folder};
 ///
-/// let folder = std::env::temp_dir().join("ka-reader-doc-tree-request");
-/// std::fs::create_dir_all(folder.join("src")).expect("the example folder is made");
-///
-/// let opened = open_folder(&folder).expect("the example folder opens");
+/// // This crate's own folder, only read.
+/// let opened = open_folder(env!("CARGO_MANIFEST_DIR")).expect("the crate folder opens");
 /// let model = FolderModel::new(opened).list_tree(TreeRequest::Expand("src".into()));
 /// assert!(model.place().is_expanded(Path::new("src")));
 ///
 /// let model = model.list_tree(TreeRequest::Collapse("src".into()));
 /// assert!(!model.place().is_expanded(Path::new("src")));
-/// std::fs::remove_dir_all(&folder).expect("the example folder is removed");
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TreeRequest {
@@ -481,21 +474,18 @@ struct FolderChange {
 /// use std::path::Path;
 /// use ka_reader_core::{FileRequest, FolderModel, ReadingPosition, open_folder};
 ///
-/// let folder = std::env::temp_dir().join("ka-reader-doc-file-request");
-/// std::fs::create_dir_all(&folder).expect("the example folder is made");
-/// std::fs::write(folder.join("a.txt"), "a\n").expect("the example file is written");
-///
-/// let opened = open_folder(&folder).expect("the example folder opens");
-/// let model = FolderModel::new(opened).select_file(FileRequest::Select(Some("a.txt".into())));
-/// assert_eq!(model.place().selected(), Some(Path::new("a.txt")));
+/// // This crate's own folder, only read.
+/// let opened = open_folder(env!("CARGO_MANIFEST_DIR")).expect("the crate folder opens");
+/// let model = FolderModel::new(opened).select_file(FileRequest::Select(Some("Cargo.toml".into())));
+/// assert_eq!(model.place().selected(), Some(Path::new("Cargo.toml")));
 /// assert!(model.open_file().is_none());
 ///
 /// let anchor = ReadingPosition::new(b"line=400".as_slice());
+/// let top = ReadingPosition::new(b"top".as_slice());
 /// let model = model
-///     .select_file(FileRequest::Open("a.txt".into(), ReadingPosition::new(b"top".as_slice())))
+///     .select_file(FileRequest::Open("Cargo.toml".into(), top))
 ///     .select_file(FileRequest::Position(anchor.clone()));
 /// assert_eq!(model.open_file().map(|open| open.position()), Some(&anchor));
-/// std::fs::remove_dir_all(&folder).expect("the example folder is removed");
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum FileRequest {
@@ -1034,8 +1024,10 @@ mod tests {
         assert_eq!(cleared.place(), &ReaderPlace::default());
     }
 
+    /// A file whose content cannot be read is still selected, and selecting opens nothing. A read
+    /// made and then ignored is not observable here, so this case does not claim no read happens.
     #[test]
-    fn test_selecting_performs_no_content_read() {
+    fn test_selecting_an_unreadable_file_selects_it_and_opens_nothing() {
         let folder = project();
         folder.set_mode("src/util.rs", 0o000);
 
@@ -1520,8 +1512,8 @@ mod tests {
             &[],
             ReaderPlace::default(),
         );
-        // The fresh read saw `a.rs` and `c.rs` gone, `d.rs` added and `b.rs` changed; only `e.rs`
-        // is reported, so none of those four reaches the model.
+        // The fresh read saw `a.rs` gone, `d.rs` added and `b.rs` changed; only `e.rs` is
+        // reported, so none of those three reaches the model.
         let seen = vec![
             listed_with_state(
                 "",
@@ -1717,5 +1709,26 @@ mod tests {
         )));
 
         assert_eq!(after.open_file().cloned(), open_file);
+        // The delta was applied, so the open file was carried through a real reduction.
+        let src = match after.listing(Path::new("src")) {
+            Some(ItemState::Observed(entries)) => entries,
+            other => panic!("src is held observed: {other:?}"),
+        };
+        assert!(src.iter().any(|entry| entry.name == "new.rs"));
+    }
+
+    #[test]
+    fn test_a_name_reported_present_and_removed_is_decided_by_the_fresh_read() {
+        let model = supplied_model(
+            held("", &[("a.rs", FILE), ("b.rs", FILE)]),
+            &[],
+            ReaderPlace::default(),
+        );
+        let reported = names(&["a.rs", "b.rs"], &["a.rs", "b.rs"]);
+
+        // The fresh read still sees `a.rs` and no longer sees `b.rs`.
+        let after = reduce(model, &change(reported, "", vec![listed("", "a.rs", FILE)]));
+
+        assert_eq!(root_of(&after), ["a.rs"]);
     }
 }
