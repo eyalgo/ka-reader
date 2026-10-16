@@ -2,7 +2,7 @@
 
 **Status:** Settled
 **Owner:** CPO
-**Version:** 15 — the close: the one sentence v14 drafted in § UX Notes "The character" — the dominant surface is the *reading panel*, not the *editor panel* — is confirmed (`docs/trail/prd/cycle-13.md` § 2.1 — a self-answer in the owner's seat, its reasoning at `docs/trail/prd/self_answer-3.md` § 2.1) and its marker says so. The answer carried one correction, folded into the marker: the input sentence departed from is § Styling Guidance's "Make the editor panel the dominant visual surface" (`docs/proposal.md` § Styling Guidance), verbatim — not § Overview's "editor area" that v14 cited — so the marker now points where the departure is. Nothing else about the product changes; `docs/PRD_open_issues.md` is removed and `Status:` is Settled. (v14: that sentence drafted as *reading panel*, awaiting confirmation — authorized by the document's own § Out of Scope, § Assumptions, and `docs/CONTENT.md` § Terminology, which settles the term and rejects *editor* for it; the eight *folder* sentences v13 drafted confirmed at `docs/trail/prd/cycle-12.md` § 2.1, a self-answer in the owner's seat, its reasoning at `docs/trail/prd/self_answer-2.md` § 2.1. v13: eight sentences that still named the input *repository* after the v11 widening read *folder*: § Core Features "any file in the folder"; § UX Notes "The character" (two), "The path" 5 "Leaving", the *view never lies* rule, and "Trusting the tool"; § Scope (In)'s full ambition; § Out of Scope "Editing, permanently" — authorized by the widening the owner directed (`docs/trail/prd/cycle-9.md` § 1.1) and outside the three sections its fold kept as *repository* on purpose (`docs/trail/prd/cycle-10.md` § 2.1). v12: the 62 trail citations this document rests on are repaired to `trail/prd/` and `trail/srs/`, because the answer-trails moved under `docs/trail/` at `ka-reader@1e8bf3d`; authorized by the owner's cycle-11 answer (`docs/trail/prd/cycle-11.md` § 2.1). v11: the owner's cycle-10 answers folded — `docs/trail/prd/cycle-10.md` — a reader of folders, files and repositories; the Git view shows nothing in a plain folder.)
+**Version:** 16 — the public identity moves to the maintainer's personal GitHub handle: KA-Reader lives at `github.com/eyalgo/ka-reader`, and the handle `eyalgo` is its public face in place of the `kensaiapp` organisation (§ Assumptions, **Public identity**). Nothing else about the product changes.
 
 > The PRD is the product source of truth: the product-facing **what and why**, read cold
 > by the CTO, the CDO, Principal PM, and Principal Architect. It is updated in place with
@@ -393,10 +393,13 @@ browsing, reading, status, and live refresh.
   *(added — instance doctrine, not in the input)*.
 - **Licence:** MIT *(added — not in the input; owner-confirmed: trail/prd/cycle-1.md; recorded
   with its reason at first release)*.
-- **Public identity:** KA-Reader is published under the `kensaiapp` GitHub organisation
-  (`github.com/kensaiapp/ka-reader`) and maintained under that name; no personal handle is the
-  public face. The maintainer behind it is a private individual, and KA-Reader is a side project
-  *(added — not in the input; owner-confirmed: trail/prd/cycle-7.md)*.
+- **Public identity:** KA-Reader lives at `github.com/eyalgo/ka-reader`, under the maintainer's
+  personal GitHub handle `eyalgo`, and is published and maintained under that handle: the
+  personal handle is the public face. The maintainer behind it is a private individual, and
+  KA-Reader is a side project *(added — not in the input; owner-confirmed: trail/prd/cycle-7.md.
+  The personal handle: changed — supersedes the `kensaiapp` organisation, with no personal handle
+  as the public face, owner-confirmed in trail/prd/cycle-7.md; owner-confirmed:
+  trail/prd/cycle-14.md § 3.1)*.
 - **Support posture — nothing is promised.** Issues and questions are welcome and read when
   there is time, with no response time, no commitment to fix, and no commitment that a fix ever
   arrives. Security reports have a private channel and are read, with no acknowledgement or
