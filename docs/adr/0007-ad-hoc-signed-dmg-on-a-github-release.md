@@ -1,6 +1,6 @@
 # ADR-0007: The release is an ad-hoc-signed, un-notarized `.dmg` on a GitHub Release, built by CI from the tag — never Developer ID-signed
 
-**Status:** Accepted
+**Status:** Superseded by ADR-0024
 **Date:** 2026-09-01
 
 ## Context

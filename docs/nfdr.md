@@ -2,7 +2,7 @@
 
 **Status:** Settled
 **Owner:** Principal Architect
-**Version:** 54 — the close: the cycle-47 fold. `checks/structure.sh` and its suite `checks/tests/test_structure.sh` are gated at the change as well as the CI build, on the owner's call: § 8 states the rule and names the move it owes `product-card` — the card's command gains the pair — § 9's `checks/tests/` bullet points there, and § 10's preamble and the ten rows that name the script add the change to *Runs over* and `development-implementation` to *Gated at*. No `QC` is added, renumbered or reused, and no record is written or restatused. Nothing is left for the owner, so the companion is removed and `Status:` is Settled — RN-65 (v53: the close: the cycle-46 fold, § 2.1 confirmed in the owner's seat, the companion removed — RN-64)
+**Version:** 55 — the close: the cycle-48 fold. ADR-0024 supersedes ADR-0007: the release channel is a GitHub Release at `github.com/eyalgo/ka-reader`, the decision otherwise unchanged, on the owner's answer and PRD v16, SRS v13 C-12 and SDD v52 C-R4. The forward-looking checks follow — QC-25's runner reading, QC-28, QC-42 and their § 10 rows — and QC-28, QC-29, QC-56, QC-57 and § 2's threat model trace to ADR-0024. § 8, § 10's preamble and RN-6 also follow the card, which now runs the structure pair. Records of runs made at the old address stand as written. No `QC` is added, renumbered or reused. Nothing is left for the owner, so the companion is removed and `Status:` is Settled — RN-66 (v54: the close: the cycle-47 fold, the structure pair gated at the change — RN-65)
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · PRD Settled · UXD Settled · DESIGN Settled · CONTENT Settled
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
@@ -706,7 +706,8 @@ function list, read through the generated header — where the promise is read, 
 held (`docs/SDD.md` § 3 SM-4). (3) The bundle ↔ the operating system: the App Sandbox and its
 entitlements, bound by a rule (ADR-0011). (4) The dependency tree ↔ the build: the allowlist,
 `Cargo.lock`, and a `Package.swift` that declares nothing (`docs/SDD.md` § 4 C-R6). (5) The release
-artifact ↔ the adopter: a CI build from a tag with a published checksum (ADR-0007). The threat
+artifact ↔ the adopter: a CI build from a tag with a published checksum (ADR-0024, which
+superseded ADR-0007 at v55 — RN-66). The threat
 classes are a desktop reader's: hostile file content reaching an interpreter or a decoder, a path
 that escapes the folder, a dependency that brings a capability, and an artifact that is not the
 reviewed tag.
@@ -821,8 +822,10 @@ reviewed tag.
   the runner reports it that way is not known, and whether the one Mac measured reports that read
   allowed for the control is not recorded. **The runner reading is taken on every hosted build**,
   this document's own realization of the runner clause (RN-59):
-  `gh run view <run-id> --repo kensaiapp/ka-reader --log | awk -F'\t' '$2 == "Bundle probe suite" && /out-of-grant-read:/'`
-  prints the control's `out-of-grant-read:` line for the run named. `checks/bundle.sh:L383`
+  `gh run view <run-id> --repo eyalgo/ka-reader --log | awk -F'\t' '$2 == "Bundle probe suite" && /out-of-grant-read:/'`
+  prints the control's `out-of-grant-read:` line for the run named *(`--repo kensaiapp/ka-reader`
+  through v54; moved at v55 on the owner's answer at `docs/trail/architecture/cycle-48.md` § 3.1 —
+  RN-66)*. `checks/bundle.sh:L383`
   prints the control's report — the line at `ka-reader@81734d9`, `fcb2e2f`, `24be581` and
   `970ad65` alike — and at `ka-reader@970ad65` the suite carries it: `publish_control_reading`
   (`checks/tests/test_bundle.sh:L629-L644`) requires exactly one line matching
@@ -988,15 +991,17 @@ reviewed tag.
   `cargo audit` gate confirmed at `docs/trail/architecture/cycle-1.md` § 1.1, § 2.7 — RN-11)*
 - **QC-28:** No secret is in the repository, and the release workflow holds no signing identity.
   — *verified by:* `gitleaks git` exits 0 over the repository — exit 1 on a leak or an error;
-  `gh secret list --repo kensaiapp/ka-reader` prints no entry; `codesign -dv KA-Reader.app` on the
+  `gh secret list --repo eyalgo/ka-reader` prints no entry; `codesign -dv KA-Reader.app` on the
   downloaded bundle reports `Signature=adhoc` *(traces to: `quality_defaults.md` § Secrets; SDD § 4
-  C-R4; ADR-0007; the scanner is this document's realization — RN-3; the command confirmed at
-  `docs/trail/architecture/cycle-1.md` § 2.7 — RN-11)*
+  C-R4; ADR-0024, which superseded ADR-0007 at v55; the scanner is this document's realization —
+  RN-3; the command confirmed at `docs/trail/architecture/cycle-1.md` § 2.7 — RN-11)* *(through v54
+  `--repo kensaiapp/ka-reader`; moved at v55 — RN-66)*
 - **QC-29:** Every release's `SHA256SUMS` matches its artifact, and the artifact is built from the
   release's tagged commit by `.github/workflows/release.yml`; a release with no build from its tag
   is not offered.
   — *verified by:* `shasum -a 256 -c SHA256SUMS` passes against a rebuild from the tag (the
-  release) *(traces to: SDD § 4 C-R4; § 11 R-7; FDR R-132; ADR-0007)*
+  release) *(traces to: SDD § 4 C-R4; § 11 R-7; FDR R-132; ADR-0024, which superseded ADR-0007 at
+  v55 — RN-66)*
 - **QC-30:** The boundary set is exactly: the Open-panel grant; the granted folder's content
   (files, entries, `.git`); FSEvents for that folder; the `SM-4` functions the shell calls, `asset_bytes` among
   them; the product's own files in its container; and the environment and argument reads of
@@ -1281,12 +1286,14 @@ import nothing forbidden and still read a path it was never granted.
   S-7) (the release) *(traces to: SRS C-4, C-5, AC-14;
   FDR R-141; the script is this document's realization — RN-3)*
 - **QC-42:** Before the first public release, private vulnerability reporting is enabled on
-  `github.com/kensaiapp/ka-reader` and `SECURITY.md` exists, promising nothing beyond
+  `github.com/eyalgo/ka-reader` and `SECURITY.md` exists, promising nothing beyond
   *"Security reports have a private channel and are read, with no acknowledgement or response
   time promised"* (`docs/PRD.md` § Assumptions, "Support posture").
-  — *verified by:* `gh api repos/kensaiapp/ka-reader/private-vulnerability-reporting` returns
+  — *verified by:* `gh api repos/eyalgo/ka-reader/private-vulnerability-reporting` returns
   `"enabled": true`; `SECURITY.md` present; release inspection reads its wording (the release)
-  *(traces to: SRS C-7, AC-14; FDR R-143, PD-22)*
+  *(traces to: SRS C-7, C-12, AC-14; FDR R-143, PD-22)* *(through v54 this entry named
+  `github.com/kensaiapp/ka-reader` and its command `repos/kensaiapp/ka-reader`; moved at v55 on SRS
+  v13 C-12 and the owner's answer at `docs/trail/architecture/cycle-48.md` § 3.1 — RN-66)*
 - **QC-43:** The product's position outside the EU Cyber Resilience Act rests on its free,
   non-monetized, non-commercial character; every release re-affirms that character before it is
   offered.
@@ -1436,20 +1443,26 @@ binds the *process*, and asserts no number of its own.
 The execution context — execution type, test command, parallelism — is the project card's
 (`system/projects/ka-reader/project.md` in the managing instance), not restated here. That card's
 test command is `cargo test --workspace --locked && ka-reader-mac/assemble.sh && swift test
---package-path ka-reader-mac` — the SDD's command bar for the Rust workspace, `cargo test --workspace --locked` exits 0
+--package-path ka-reader-mac && checks/structure.sh && checks/tests/test_structure.sh` — the SDD's command bar for the Rust workspace, `cargo test --workspace --locked` exits 0
 (`docs/SDD.md` § 6 S-1), the bar carrying the Rust packet's `--locked` itself since the SDD's
 re-author (`languages/rust/testing.md` § Layers 1–5; RN-16), the bridge's assembly, which the Swift
-half needs first (§ 9's runner paragraph), and `swift test` for `ka-reader-mac`,
-the command the SDD's bars name (§ 6 S-1) — and its `Languages:` line names Rust, Swift and Shell
-(RN-6). The move the SDD named as owed at v13 (`docs/SDD.md` RN-60) is made, and so is the move
-the paragraph below named as owed at v49: § 8 states the card as it reads at
-`kensaiapp-opensource@d5005730` — three moves past the `defe740` v12 read, `5b27023` (Swift in
+half needs first (§ 9's runner paragraph), `swift test` for `ka-reader-mac`,
+the command the SDD's bars name (§ 6 S-1), and the structure pair, on the owner's call (the
+structure-pair paragraph below) — and its `Languages:` line names Rust, Swift and Shell
+(RN-6). The move the SDD named as owed at v13 (`docs/SDD.md` RN-60) is made, so is the move
+the paragraph below named as owed at v49, and so is the move the structure-pair paragraph named as
+owed at v54: § 8 states the card as it reads at
+`kensaiapp-opensource@a4204e5b` — five moves past the `defe740` v12 read, `5b27023` (Swift in
 place of TypeScript on the `Languages:` line, in the test command and on `Language roots:`),
-`ec80077` (the `Languages:` comment naming Swift's packet) and `d5005730` (the bridge's assembly
-before the Swift half), none of them this document's to edit (RN-24) — and goes false at the
+`ec80077` (the `Languages:` comment naming Swift's packet), `d5005730` (the bridge's assembly
+before the Swift half), `5be8615c` (the structure pair at the end of the test command) and
+`a4204e5b` (the command's comment no longer saying the harness stays out of it), none of them this
+document's to edit (RN-24) — and goes false at the
 card's next move until RN-6 is extended (RN-22) *(through v51 this paragraph quoted the command
 without `ka-reader-mac/assemble.sh` and pinned the card at `kensaiapp-opensource@ec80077`, true at
-that pin; on the owner's seat's answer at `docs/trail/architecture/cycle-45.md` § 3.2 — RN-63)*. Why the
+that pin; on the owner's seat's answer at `docs/trail/architecture/cycle-45.md` § 3.2 — RN-63.
+Through v54 it quoted the command without the structure pair and pinned the card at
+`kensaiapp-opensource@d5005730`, true at that pin; moved at v55, where the card moved — RN-66)*. Why the
 workspace form is this product's change-time run, where the Rust packet classifies it as
 release-time, is RN-7. Where the card's command runs is the card's and the pipeline's, and this
 document names no machine; what its verdict is worth against CI is § 9's *Toolchain* clause
@@ -1469,7 +1482,7 @@ moved, the card's command failed on a fresh checkout, and that CI was unaffected
 assembled first. True until `kensaiapp-opensource@d5005730`, where the card moved (RN-60); on the
 owner's seat's answer at `docs/trail/architecture/cycle-45.md` § 3.2 — RN-63)*.
 
-**The card's command runs the structure pair on every change, and the card does not say so yet.**
+**The card's command runs the structure pair on every change, and the card says so.**
 `checks/structure.sh` and its suite `checks/tests/test_structure.sh` are gated at the change as well
 as at the CI build: the card's test command runs both, on every change — the owner's call
 (`docs/trail/architecture/cycle-47.md` § 3.1). The ground is measured. The chain gates a change on
@@ -1484,11 +1497,13 @@ toolchain or a build — the script reads source text (`checks/structure.sh`, *W
 the suite runs the real script over copies of `crates/` (`checks/tests/test_structure.sh`, *WHY THIS
 EXISTS*) — so § 9's *Toolchain* clause does not bear on the pair, and its change-time verdict is the
 same reading CI's is. The other `checks/*.sh` scripts and their suites stay where § 10 has them.
-**The move is owed to `product-card`:** the card's command gains `checks/structure.sh` and
-`checks/tests/test_structure.sh`; where in the command they sit is the card's. Until the card moves,
-its command runs neither, the gate that holds for the pair is the CI build, after the seal, and the
-gap this paragraph closes is open. The card is not this document's to edit (RN-24); when it moves,
-this section's first paragraph re-quotes it and RN-6 is extended (RN-65).
+The card's command ends with the pair, after its Swift half (`kensaiapp-opensource@5be8615c`), and
+this section's first paragraph quotes it *(through v54 this paragraph was headed "and the card does
+not say so yet". It named the move owed to `product-card` — the card's command gains
+`checks/structure.sh` and `checks/tests/test_structure.sh`, where in the command they sit being the
+card's — and said that until the card moved, its command ran neither, the gate that held for the
+pair was the CI build, after the seal, and the gap the paragraph closed was open. True until
+`kensaiapp-opensource@5be8615c`, where the card moved (RN-65); moved at v55 — RN-66)*.
 
 - **QC-55:** The product is one macOS application bundle, `KA-Reader.app`, bundle identifier
   `com.kensaiapp.ka-reader`, and one process; no second binary, no second process the product starts,
@@ -1511,7 +1526,8 @@ this section's first paragraph re-quotes it and RN-6 is extended (RN-65).
   release inspection runs it (RN-58). At `ka-reader@d6405e2` the tree meets neither half: the
   plist, the manifest, the deployment target and the workflow still hold the floor and the image
   the lines SDD RN-108 lists name, and that check prints `runs-on: macos-14` *(traces to: SDD § 4
-  C-R5 as it reads at v48; § 9 TO-8; § 11 R-17; SRS C-11; FDR R-133, PD-18; ADR-0007; the owner's
+  C-R5 as it reads at v48; § 9 TO-8; § 11 R-17; SRS C-11; FDR R-133, PD-18; ADR-0024, which
+  superseded ADR-0007 at v55 — RN-66; the owner's
   answer at `docs/trail/sdd/cycle-43.md` § 5.1)* *(through v46 this entry read the floor as "14
   (Sonoma)" and `LSMinimumSystemVersion` as `14.0`, its check as "prints `14.0`", and named no CI
   image; moved at v47 on SDD v48 — RN-58)*
@@ -1520,7 +1536,7 @@ this section's first paragraph re-quotes it and RN-6 is extended (RN-65).
   terminal command is ever the documented route; no cask, no second channel.
   — *verified by:* release inspection (`docs/SRS.md` AC-10, AC-14) — a review gate: the walk is a
   stranger's path and is deliberately not automated *(traces to: SDD § 4 C-R4; SRS C-3, C-9; FDR
-  R-128 – R-130; ADR-0007)*
+  R-128 – R-130; ADR-0024, which superseded ADR-0007 at v55 — RN-66)*
 - **QC-58:** The product offers no configuration surface: its own units — every workspace member (QC-30 half (1)) and
   `ka-reader-mac` — read no configuration file, no environment variable and no argument, and the only
   input the product requires is the folder chosen in the Open panel. What the linked dependency tree reads from the environment or
@@ -1987,10 +2003,12 @@ IS NOT HELD* (`checks/structure.sh:L35-L93` at `ka-reader@463acb9`) — and no r
 **`checks/structure.sh` and its suite are gated at the change as well as the CI build.** On every
 row that names them, *Runs over* adds `the change` and *Gated at* adds `development-implementation`,
 and both additions are the pair's alone: every other command on a mixed row keeps the gate its row
-already had. § 8 holds the rule and the move it owes the card. Until the card's command carries the
-pair, `development-implementation` on these rows is the rule and not yet the run, and the CI build
-is the gate that holds *(added at v54, on the owner's answer at
-`docs/trail/architecture/cycle-47.md` § 3.1 — RN-65)*.
+already had. § 8 holds the rule, and the card's command carries the pair
+(`kensaiapp-opensource@5be8615c`), so `development-implementation` on these rows is the run as well
+as the rule *(added at v54, on the owner's answer at `docs/trail/architecture/cycle-47.md` § 3.1 —
+RN-65; through v54 this paragraph said that until the card carried the pair,
+`development-implementation` here was the rule and not yet the run, and the CI build the gate that
+held; moved at v55, where the card moved — RN-66)*.
 
 | QC | Check | Command / layer | Runs over | Gated at |
 |---|---|---|---|---|
@@ -2012,11 +2030,11 @@ is the gate that holds *(added at v54, on the owner's answer at
 | QC-22 | the hostile fixture as a `MarkdownDocument` | `cargo test --locked -p ka-reader-core --test markdown` | the change | `development-implementation` |
 | QC-23 | no web engine | `checks/view.sh` (suite `test_view.sh`); `checks/no-network.sh` (suite `test_no_network.sh`) | the tree | CI build |
 | QC-24 | the export set equals the header, inside `SM-4`'s list and `ka_reader_free` | `cargo test --locked -p ka-reader-bridge --test exports` | the tree | CI build |
-| QC-25 | entitlements; sandbox present; the control's out-of-grant read on the hosted image | `checks/bundle.sh` (suite `test_bundle.sh`); `gh run view <run-id> --repo kensaiapp/ka-reader --log \| awk -F'\t' '$2 == "Bundle probe suite" && /out-of-grant-read:/'`, whose empty read on a run whose step concluded `success` is a break from run 38577309118 on (RN-59, RN-61, RN-62) | the tree; the CI run | CI build; release gate; `development-design` on a workflow change that renames or drops the `Bundle probe suite` step |
+| QC-25 | entitlements; sandbox present; the control's out-of-grant read on the hosted image | `checks/bundle.sh` (suite `test_bundle.sh`); `gh run view <run-id> --repo eyalgo/ka-reader --log \| awk -F'\t' '$2 == "Bundle probe suite" && /out-of-grant-read:/'`, whose empty read on a run whose step concluded `success` is a break from run 38577309118 on (RN-59, RN-61, RN-62) | the tree; the CI run | CI build; release gate; `development-design` on a workflow change that renames or drops the `Bundle probe suite` step |
 | QC-62 | the shell runs under the shipped entitlements | `checks/renderer.sh KA-Reader.app` (suite `test_renderer.sh`) and `checks/fixtures/idle-shell` | the tree | CI build; release gate |
 | QC-26 | allowlist; locked build; no Swift dependency | `checks/no-network.sh` (suite `test_no_network.sh`); `cargo build --locked` | the tree | CI build |
 | QC-27 | critical vulnerability | `cargo audit` (every advisory; `--ignore <RUSTSEC-id>` with its reason) | the tree | release |
-| QC-28 | no secret; no signing identity | `gitleaks git`; `gh secret list --repo kensaiapp/ka-reader`; `codesign -dv KA-Reader.app` | the tree; the release | CI build; release |
+| QC-28 | no secret; no signing identity | `gitleaks git`; `gh secret list --repo eyalgo/ka-reader`; `codesign -dv KA-Reader.app` | the tree; the release | CI build; release |
 | QC-29 | artifact = tag build | `shasum -a 256 -c SHA256SUMS` against a rebuild | the release | release |
 | QC-30, QC-58 | no other entry point; no configuration — the product's own units | `checks/structure.sh` (suite `test_structure.sh`); `checks/view.sh` (suite `test_view.sh`) | the tree; the change | CI build; `development-implementation` (the structure pair) |
 | QC-30, QC-58 | the linked tree's environment and argument reads — Rust names, and C `getenv`, `environ` and `_NSGetEnviron` — against the reviewed list | `checks/entry-points.sh` (suite `test_entry_points.sh`) against `checks/entry-points.allow` | the tree | CI build |
@@ -2029,7 +2047,7 @@ is the gate that holds *(added at v54, on the owner's answer at
 | QC-39, QC-52 | log shape and location | `cargo test --locked -p ka-reader-bridge` (layer 1); `checks/own-state.sh` (suite `test_own_state.sh`) | the change; the tree | `development-implementation`; CI build |
 | QC-40 | log bound; own-state retention | `cargo test --locked -p ka-reader-bridge`, `cargo test --locked -p ka-reader-core` (layer 1); `checks/own-state.sh` (suite `test_own_state.sh`) after `checks/churn.sh` | the change; the tree | `development-implementation`; CI build |
 | QC-41 | third-party notices | `checks/notices.sh` | the release | release |
-| QC-42 | private reporting; SECURITY.md | `gh api repos/kensaiapp/ka-reader/private-vulnerability-reporting` | the release | release |
+| QC-42 | private reporting; SECURITY.md | `gh api repos/eyalgo/ka-reader/private-vulnerability-reporting` | the release | release |
 | QC-44 | standing sentences verbatim | `checks/readme.sh` | the release | release |
 | QC-46 | latency figures | `checks/latency.sh` | the tree | CI build |
 | QC-47, QC-48 | per-item degradation; churn; the marker and the row order in the model | `cargo test --locked -p ka-reader-core --test watch` with `checks/churn.sh`; `swift test --package-path ka-reader-mac` (layer 4); QC-48's `grep` over `ka-reader-mac/Sources` prints nothing, from `follow-the-folder` | the change | `development-implementation` |
@@ -2141,8 +2159,14 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   command so it assembles the bridge before its Swift half, and it now reads
   `cargo test --workspace --locked && ka-reader-mac/assemble.sh && swift test --package-path
   ka-reader-mac` (`kensaiapp-opensource@d5005730`, 2026-10-14). That is the move § 8 named as owed
-  at v49 (RN-60). § 8 states the card as it reads there. *(re: § 8; source: SDD § 6 S-1; ADR-0009;
-  ADR-0016; `languages/rust/testing.md` v1.0.0; the eight
+  at v49 (RN-60). Two moves since, pinned at v55 (RN-66): the test command gained the structure
+  pair after its Swift half, and now reads `cargo test --workspace --locked &&
+  ka-reader-mac/assemble.sh && swift test --package-path ka-reader-mac && checks/structure.sh &&
+  checks/tests/test_structure.sh` (`kensaiapp-opensource@5be8615c`, 2026-10-16) — the move § 8
+  named as owed at v54 (RN-65); and the command's comment stopped saying the `checks/*.sh` harness
+  stays out of the field (`kensaiapp-opensource@a4204e5b`, 2026-10-16). § 8 states the card as it
+  reads at the last of these. *(re: § 8; source: SDD § 6 S-1; ADR-0009;
+  ADR-0016; `languages/rust/testing.md` v1.0.0; the eleven
   commits named)*
 - **RN-7:** *(language packets — re-derived at v3)* Both packets resolve at step 1 of
   `languages/README.md` § The resolution chain, from the card's `Languages:` line (RN-6): the
@@ -5834,3 +5858,56 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   `Status:` is Settled *(re: header `Status:`, `Version:`; § 8; § 9 the `checks/tests/` bullet;
   § 10 preamble and ten rows; source: `docs/trail/architecture/cycle-47.md` § 3.1; GitHub Actions
   run 38673999031; `ka-reader@f1280b6`, `ka-reader@21cfd34`, `ka-reader@527f030`)*
+- **RN-66:** *(v55 — the close: the cycle-48 fold, § 3.1 answered)* **Intake.** The companion on
+  disk had one § 3 item and nothing in §§ 1 or 2. No `product-architecture` run wrote it: the owner
+  opened it on 2026-10-16 in an interactive session and answered it in the same commit
+  (`ka-reader@d1d4274`). The file was clean in git at intake and its slot was filled, so it is
+  consumed. It was copied whole to `docs/trail/architecture/cycle-48.md` before this fold's first
+  edit, and `cmp` found the two identical. **Whose answer this is.** The owner's own, and it
+  outranks every input; it also follows three Settled inputs that moved first — PRD v16 § Assumptions
+  "Public identity", SRS v13 C-12 and SDD v52 § 4 C-R4, whose reason is SDD RN-112. **§ 3.1 → a
+  superseding record.** The answer moves where the release lives and leaves the decision as it was.
+  ADR-0007 named `github.com/kensaiapp/ka-reader` in its *Context* and its *Decision*, and an
+  Accepted record is never rewritten, so ADR-0024 restates ADR-0007 whole at the new address and
+  supersedes it. ADR-0007's Status line now reads `Superseded by ADR-0024`, its only changed line,
+  and the index follows. Superseding is right whether the owner meant a correction or a reversal: in
+  both readings it keeps the history, and an in-place edit would lose it. So the run raises no item
+  asking which was meant. **§ 3.1 → this document.** The forward-looking checks read
+  `eyalgo/ka-reader`: QC-25's runner reading in § 2, QC-28's `gh secret list`, QC-42's repository
+  and its `gh api` path, and the QC-25, QC-28 and QC-42 rows of § 10. Each entry keeps its old words
+  in a dated note. QC-28, QC-29, QC-56 and QC-57, which ADR-0024 binds, and § 2's threat-model
+  sentence on the release artifact trace to ADR-0024 in place of ADR-0007. **Not moved, and why.**
+  The records of runs made at the old address stand as written, by the item's own *Not to change*:
+  § 9's two `gh run` lines on the five suites' reading, and the `gh run` lines in RN-28, RN-62,
+  RN-63 and RN-64. Review Notes that name ADR-0007 as it stood when they
+  were written stand too: RN-18's, RN-22's and RN-58's. The bundle identifier
+  `com.kensaiapp.ka-reader` (QC-55) is not a repository address and does not move. SDD § 4 C-R4 cites
+  ADR-0007's *Context* for the owner's standing call. That citation still opens and is still true,
+  and it is the CTO's to move, not this seat's. **Two additions beyond the answer, each logged
+  here.** (1) QC-42 traces to SRS C-12 as well as C-7, because the repository it names is C-12's.
+  (2) The card moved. RN-65 left § 8 owing a re-quote "when it moves", and it moved twice on
+  2026-10-16. The test command gained `checks/structure.sh && checks/tests/test_structure.sh` after
+  its Swift half (`kensaiapp-opensource@5be8615c`), and its comment stopped saying the harness stays
+  out of the field (`kensaiapp-opensource@a4204e5b`). § 8's first paragraph re-quotes the card at
+  `a4204e5b`. The structure-pair paragraph now says the card carries the pair. § 10's preamble now
+  says `development-implementation` is the run as well as the rule on the pair's rows. RN-6 is
+  extended. Each keeps its old words in a dated note. RN-6's closing count read "the eight commits
+  named" while it named nine, since v52 added `d5005730` without moving the count; it now reads
+  eleven. This is a found-while-walking repair, small and fixed in place. **No candidate record
+  beyond ADR-0024.** Where a gate runs is cheap to reverse, and RN-65 already ruled that move out of
+  the log. **What moved beneath this document.** `git diff --stat 1ea70ae d1d4274 -- docs` lists
+  PRD, SRS and SDD, their three trail cycles, and this companion. SDD RN-112 names what moved, and
+  every item is the address. Every input's `Status:` line still reads Settled, so `Inputs read:`
+  stands. The SDD's last commit is v52 (`ka-reader@ab7ba0b`). **Read at source for this run:** `git
+  remote -v` in the product checkout prints `origin git@github.com:eyalgo/ka-reader.git` for fetch
+  and push. **Known limits.** This run read the inputs at their status lines and the SDD's RN-112
+  for what moved, and did not re-read the PRD, SRS and SDD diffs line by line. It ran no `gh`
+  command, built no bundle, and ran no suite or `checks/*.sh` script. The repository is private, so
+  QC-42's check cannot pass before it is public. SDD RN-112 records it answering `HTTP 404` on
+  2026-10-16. That is a condition on the first public release, not a change to the entry's bar.
+  **The companion.** Nothing is left for the owner, so the companion is removed and `Status:` is
+  Settled *(re: header `Status:`, `Version:`; § 2 threat model, QC-25, QC-28, QC-29, QC-42; § 8
+  first and structure-pair paragraphs, QC-56, QC-57; § 10 preamble and the QC-25, QC-28 and QC-42
+  rows; RN-6; source: `docs/trail/architecture/cycle-48.md` § 3.1; ADR-0024; `docs/PRD.md` v16;
+  `docs/SRS.md` v13 C-12; `docs/SDD.md` v52 C-R4, RN-112; `kensaiapp-opensource@5be8615c`,
+  `kensaiapp-opensource@a4204e5b`)*
