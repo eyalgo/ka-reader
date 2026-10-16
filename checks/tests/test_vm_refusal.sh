@@ -29,6 +29,7 @@ set -uo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 BUNDLE_SUITE="$ROOT/checks/tests/test_bundle.sh"
+RENDERER_SUITE="$ROOT/checks/tests/test_renderer.sh"
 # shellcheck source=checks/tests/support/vm_refusal.sh
 source "$ROOT/checks/tests/support/vm_refusal.sh"
 
@@ -37,6 +38,8 @@ WORK=""
 CASES="
 test_bundle_suite_refuses_off_vm_before_work
 test_bundle_suite_admits_on_a_vm_reading
+test_renderer_suite_refuses_off_vm_before_work
+test_renderer_suite_admits_on_a_vm_reading
 "
 
 # --- helpers ---
@@ -85,6 +88,42 @@ test_bundle_suite_admits_on_a_vm_reading() {
   vmr_run_on admit "$BUNDLE_SUITE" || return 1
 
   grep -q '^ok   test_nonexistent_path_fails$' "$vmr_case/stdout" \
+    || fail "the suite did not reach its first case. stdout: $(cat "$vmr_case/stdout"); stderr: $(cat "$vmr_case/stderr")" \
+    || return 1
+  if grep -q 'refused' "$vmr_case/stdout" "$vmr_case/stderr"; then
+    fail "a refusal line appeared on a virtual machine's reading. stderr: $(cat "$vmr_case/stderr")"
+  fi
+}
+
+# QC-65 (CP-797, CP-798, CP-799, CP-801): off a macOS virtual machine the renderer suite prints its one
+# refusal line and does nothing else: no temporary work, fixture read, case, control compile, `ok` or
+# `FAIL` line, and no `open`. The helper's stand-ins record `open` and every compile or fixture tool.
+test_renderer_suite_refuses_off_vm_before_work() {
+  VMR_TMP="$WORK"
+  scene="$WORK/renderer-suite-scene"
+  mkdir -p "$scene"
+  VMR_SCENE="$scene"
+
+  # Every run selects a case: a suite that did not refuse runs only the one named, and a nonexistent
+  # name runs none. Both run on stand-ins that cannot launch anything.
+  VMR_ENV=("KA_READER_TEST_ONLY=test_real_bundle_passes")
+  vmr_assert_refusal "$RENDERER_SUITE" test_renderer.sh || return 1
+  VMR_ENV=("KA_READER_TEST_ONLY=test_no_such_case")
+  vmr_assert_refusal "$RENDERER_SUITE" test_renderer.sh || return 1
+  VMR_ENV=("KA_READER_TEST_ONLY=test_real_bundle_passes" "TMPDIR=$scene")
+  vmr_assert_refusal "$RENDERER_SUITE" test_renderer.sh || return 1
+}
+
+# CP-798/CP-800: on a virtual machine's reading the admission adds no line and the suite goes on to its
+# first case. The selected case runs renderer.sh on a path that is not an app, which launches nothing.
+test_renderer_suite_admits_on_a_vm_reading() {
+  VMR_TMP="$WORK"
+  VMR_SCENE=""
+  VMR_ENV=("KA_READER_TEST_ONLY=test_not_an_app_launches_nothing")
+
+  vmr_run_on admit "$RENDERER_SUITE" || return 1
+
+  grep -q '^ok   test_not_an_app_launches_nothing$' "$vmr_case/stdout" \
     || fail "the suite did not reach its first case. stdout: $(cat "$vmr_case/stdout"); stderr: $(cat "$vmr_case/stderr")" \
     || return 1
   if grep -q 'refused' "$vmr_case/stdout" "$vmr_case/stderr"; then
