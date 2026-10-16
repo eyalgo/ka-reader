@@ -24,6 +24,8 @@ set -uo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 OWN_STATE_SH="$ROOT/checks/own-state.sh"
+# shellcheck source=checks/tests/support/vm_refusal.sh
+source "$ROOT/checks/tests/support/vm_refusal.sh"
 FIXTURES="$ROOT/checks/fixtures"
 LOG_SUFFIX="Library/Containers/com.kensaiapp.ka-reader/Data/Library/Logs/ka-reader.log"
 
@@ -46,6 +48,8 @@ test_runs_from_anywhere_in_the_repo
 test_restored_submodule_is_not_extra
 test_stray_in_restored_submodule_fails_condition_two
 test_stray_under_restored_submodule_folder_fails_condition_two
+test_refuses_off_vm_before_work
+test_admits_on_a_vm_reading
 "
 
 # --- helpers ---
@@ -239,6 +243,47 @@ test_stray_under_restored_submodule_folder_fails_condition_two() {
 
   expect_nonzero_status || return 1
   expect_line_with "condition 2" "submodule/submodule/stray.txt"
+}
+
+# QC-65 (CP-797, CP-798): off a macOS virtual machine own-state.sh prints its one refusal line — no
+# condition line, no fixture tool run — whatever home and whatever fixtures it is pointed at. The matrix
+# and the traced run are the shared helper's. Every other case in this file runs the script with its
+# real guest observation and goes red off a virtual machine; none of them simulates one.
+test_refuses_off_vm_before_work() {
+  VMR_TMP="$WORK"
+  VMR_ENV=()
+  VMR_SCENE=""
+
+  # The real script, with a home that holds no log, then a home that holds it.
+  VMR_HOME_FILES=""
+  vmr_assert_refusal "$OWN_STATE_SH" own-state.sh || return 1
+  vmr_assert_refusal "$OWN_STATE_SH" own-state.sh unexpected arguments || return 1
+  VMR_HOME_FILES="$LOG_SUFFIX"
+  vmr_assert_refusal "$OWN_STATE_SH" own-state.sh || return 1
+  VMR_HOME_FILES=""
+
+  # A scene of its own: a copy of the script with fixtures that are changed (a stray file), then missing.
+  scene="$WORK/own-state-scene"
+  mkdir -p "$scene/checks/fixtures/plain"
+  cp "$OWN_STATE_SH" "$scene/checks/own-state.sh"
+  echo stray > "$scene/checks/fixtures/plain/stray.txt"
+  VMR_SCENE="$scene"
+  vmr_assert_refusal "$scene/checks/own-state.sh" own-state.sh || return 1
+  rm -rf "$scene/checks/fixtures"
+  vmr_assert_refusal "$scene/checks/own-state.sh" own-state.sh || return 1
+}
+
+# CP-798/CP-800: on a virtual machine's reading the admission adds no line and changes no verdict — with
+# the log in place the script prints `own state holds`, as before, and no refusal.
+test_admits_on_a_vm_reading() {
+  home="$(home_with_log admits)"
+  vmr_install_admission "$WORK/admit-bin"
+
+  OUT="$(cd "$ROOT" && PATH="$WORK/admit-bin:$PATH" HOME="$home" "$OWN_STATE_SH" 2>&1)"
+  STATUS=$?
+
+  expect_status 0 || return 1
+  [ "$OUT" = "own state holds" ] || fail "expected only 'own state holds'. output: $OUT"
 }
 
 # --- the runner ---

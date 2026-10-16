@@ -18,6 +18,7 @@
 #   VMR_ENV=(NAME=value ...)                              extra environment for the next calls (optional)
 #   VMR_SCENE=<a directory the subject must leave unchanged>   (optional; the run's own cwd and home are
 #                                                         always checked as well)
+#   VMR_HOME_FILES="<path> ..."                           files to create under the run's home first (optional)
 #   vmr_assert_refuses <reading> <subject> <bare name> [args...]
 #   vmr_assert_refuses_all <subject> <bare name> [args...]     every refusing reading, one after another
 #   vmr_assert_no_work_traced <subject> <bare name> [args...]  the traced run: nothing before the refusal
@@ -45,13 +46,14 @@ if [ "${BASH_SOURCE[0]}" = "$0" ]; then
 fi
 
 VMR_ENV=()
+VMR_HOME_FILES=""
 VMR_CASES=0
 
 # Ordinary tools a script may reach once admitted. `uname` and `sysctl` are not among them: a reading
 # is the stand-in's, or it is missing.
-VMR_ORDINARY_TOOLS="bash env sh awk sed cat cut tr sort uniq comm find xargs tar git mktemp rm mkdir rmdir dirname basename cp mv ls head tail wc grep expr date kill chmod ln cmp readlink touch stat cksum pwd"
+VMR_ORDINARY_TOOLS="bash env sh awk sed cat cut tr sort uniq comm find xargs mktemp rm mkdir rmdir dirname basename cp mv ls head tail wc grep expr date kill chmod ln cmp readlink touch stat cksum pwd"
 # Tools that compile, probe, read a fixture or wait. A stand-in fails and records the call.
-VMR_MARKER_TOOLS="swiftc rustc cargo codesign sample plutil ps ditto xcrun sleep"
+VMR_MARKER_TOOLS="swiftc rustc cargo codesign sample plutil ps ditto xcrun sleep git tar"
 
 # The refusal line for the script whose bare file name is $1.
 vmr_expected_line() {
@@ -151,6 +153,10 @@ vmr_new_case() {
   rm -rf "$vmr_case"
   mkdir -p "$vmr_case/cwd" "$vmr_case/home/Library" "$vmr_case/log"
   : > "$vmr_case/cwd/scene.txt"
+  for home_file in $VMR_HOME_FILES; do
+    mkdir -p "$vmr_case/home/$(dirname "$home_file")"
+    : > "$vmr_case/home/$home_file"
+  done
   vmr_install_ordinary "$vmr_case/ordinary"
 }
 
