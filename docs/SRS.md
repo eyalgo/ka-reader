@@ -2,7 +2,8 @@
 
 **Status:** Settled
 **Owner:** CTO
-**Version:** 12 — one change, with its authorization. FR-13 takes two readings, stated as a system state: where the diff (FR-17) is not present, activating a changed file's row in the Git view opens the file for reading exactly as a tree selection does; where it is present, activating the row opens that file's diff, and the file is read from the tree — the owner's call, confirmed at `docs/trail/srs/cycle-10.md` § 2.1 (RN-37). FR-13 carries the *changed* marker at the requirement; AC-6 takes both readings and AC-12 gains the row opening the diff; FR-17 and FR-22 do not move; the PRD is not reopened (RN-37). Nothing is left for the owner to answer; the companion is closed. (v11: bookkeeping only. `Status:` returns to Draft: a companion is open beside this document (`docs/SRS_open_issues.md`), and this SRS is Settled only when none is. No requirement, criterion, constraint or review note changed — the companion's one item is unanswered, and an unanswered re-run changes nothing this document states. (v10: one change, with its authorization. RN-35's sibling sentence gains its close: the divergence it records — `docs/UXD.md` UX-S4 making a non-repository a startup failure — ended at UXD v6 (`ka-reader@dd08f2d`, 2026-08-26), and the close is pinned to that version and commit so it stays true whatever the UXD does next; confirmed at `docs/trail/srs/cycle-9.md` § 2.1. No requirement moves: FR-3 and FR-34 are unchanged and agree with the UXD. Nothing is left for the owner to answer; the companion is closed. (v9: two changes, each with its authorization. NFR-11 gains the diagnostic log's bound — one session's lines, the file created or truncated at launch, at most 1 MiB on disk within a session with emptied-and-continue, and a failed log write surfacing nowhere — the choice confirmed at `docs/trail/srs/cycle-8.md` § 2.1 (RN-36; AC-13 inspects it). And the 80 trail citations this document rests on are repaired: the 77 `docs/prd_trail/` and `docs/srs_trail/` pointers read `docs/trail/prd/` and `docs/trail/srs/`, because the answer-trails moved under `docs/trail/` at `ka-reader@1e8bf3d` and the citing documents were not moved with them (authorized: `docs/trail/srs/cycle-8.md` § 2.2); nothing those citations authorize changes. Of the three `docs/uxd_trail/` mentions, RN-19's authorization for FR-18's shape takes the commit-pinned form `ka-reader@1d5c553:docs/uxd_trail/cycle-2.md` § 2.1 — the file now at `docs/trail/uxd/cycle-2.md` is the re-authored UXD's cycle 2, not the one cited — and the two in RN-19 and RN-20 that describe the folder's removal at `9017ae2` are history and stand as written. One item stays open in `docs/SRS_open_issues.md`. (v8: the input contract widens from one local Git repository to one local folder, a Git repository or not, as PRD v11 states it (`docs/trail/prd/cycle-9.md` § 1.1, `docs/trail/prd/cycle-10.md` § 2.2 – § 2.4; the owner's fold directive: `docs/trail/srs/cycle-7.md` § 1.1). FR-33 says when Git is read and FR-34 what holds when it is not, and every Git-derived requirement cites them (RN-31 – RN-33); PRD v9's reader floor and README lines are folded on the same upstream branch (RN-34). Nothing is left for the owner to answer; the companion is closed.))))
+**Version:** 13 — one change, with its authorization. C-12 follows PRD v16: the product is published from `github.com/eyalgo/ka-reader`, under the maintainer's personal GitHub handle `eyalgo`, in place of the `kensaiapp` organisation — the owner's answer at `docs/trail/srs/cycle-11.md` § 1.1 (RN-38). C-7 and AC-14 follow C-12 without a change of their own. Nothing is left for the owner to answer; the companion is closed.
+**Inputs read:** PRD Settled
 
 > The SRS is the technical source of truth: the system-level **what**, derived from the PRD and
 > read cold by the Principal PM (Delivery Plan / FDR) and the Principal Architect (ADR / NFDR).
@@ -493,10 +494,12 @@ see RN-8)*
   path is offered, so a stranger knows before installing. *(traces to: PRD Scope (In)
   "Platform", Out of Scope "Linux and Windows"; owner-confirmed: `docs/trail/prd/cycle-7.md`
   §1.2; the version-floor placement: RN-21)*
-- **C-12:** Public identity: the product is published from the `kensaiapp` GitHub organisation
-  (`github.com/kensaiapp/ka-reader`) and maintained under that name; that repository is where C-7's
-  channel is enabled and where releases are offered. *(traces to: PRD Assumptions "Public
-  identity"; owner-confirmed: `docs/trail/prd/cycle-7.md` §1.1)*
+- **C-12:** Public identity: the product is published from `github.com/eyalgo/ka-reader`, under
+  the maintainer's personal GitHub handle `eyalgo`, and maintained under that handle; that
+  repository is where C-7's channel is enabled and where releases are offered. *(traces to: PRD
+  Assumptions "Public identity"; owner-confirmed: `docs/trail/prd/cycle-7.md` §1.1; the personal
+  handle: changed at v13 with PRD v16, owner-confirmed `docs/trail/prd/cycle-14.md` § 3.1 and
+  `docs/trail/srs/cycle-11.md` § 1.1; see RN-38)*
 - **C-13:** The README states the support posture in the PRD's terms — "Issues and questions are
   welcome and read when there is time, with no response time, no commitment to fix, and no
   commitment that a fix ever arrives" (`docs/PRD.md` § Assumptions, "Support posture") — and
@@ -1010,3 +1013,15 @@ see RN-8)*
   both readings; AC-18's "files still open for reading", the tree's; RN-31's list of the
   requirements that keep "repository". No site beyond these names FR-13 *(re: FR-13, AC-6, AC-12;
   PRD source: Key Use Case 2)*.
+- **RN-38:** *(changed — C-12; upstream: PRD v16)* The public identity is the maintainer's
+  personal GitHub handle: the product is published from `github.com/eyalgo/ka-reader`, under the
+  handle `eyalgo`, in place of the `kensaiapp` organisation RN-24 records — *because* PRD v16
+  § Assumptions, "Public identity", states it (owner: `docs/trail/prd/cycle-14.md` § 3.1,
+  superseding the organisation confirmed at `docs/trail/prd/cycle-7.md` § 1.1), and the owner
+  directed the fold at `docs/trail/srs/cycle-11.md` § 1.1. C-12 carries the address as the
+  repository where C-7's channel is enabled and where releases are offered. Three further sites
+  reach the identity and stand as written: C-7 and AC-14 name the repository through C-12, so
+  they follow it without a change of their own; RN-24 records why C-12 was added, against PRD v8,
+  and stays the record of that. The PRD states neither when the repository becomes public nor how
+  its CI is paid for, so neither lands as a requirement here; C-7 already binds the channel to the
+  first public release *(re: C-12, C-7, AC-14, RN-24; PRD source: Assumptions "Public identity")*.
