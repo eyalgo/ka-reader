@@ -24,7 +24,9 @@
 #   vmr_assert_refusal <subject> <bare name> [args...]         the two above
 #   vmr_run_on <reading> <subject> [args...]                   one run on any reading, `admit` included; leaves
 #                                                              vmr_status, $vmr_case/stdout and $vmr_case/stderr
-#   vmr_install_standins <bin dir> <log dir> <reading>         the stand-ins alone, for a case that builds its own
+#   vmr_install_admission <bin dir>                            only the admitting uname and sysctl, for a case
+#                                                              that builds the rest of its own stand-ins
+#   vmr_install_standins <bin dir> <log dir> <reading>         every stand-in, for the reading
 #   Each assertion prints what failed on stdout and returns 1; it returns 0 only when every check holds.
 #
 # THE READINGS
@@ -121,6 +123,13 @@ vmr_install_standins() {
     } > "$bin/$marker"
     chmod +x "$bin/$marker"
   done
+}
+
+# The admitting reading alone (Darwin, 1) into directory $1, ahead of the real tools on a case's PATH.
+vmr_install_admission() {
+  mkdir -p "$1"
+  vmr_write_reader "$1/uname" "Darwin\\n" "" 0
+  vmr_write_reader "$1/sysctl" "1\\n" "" 0
 }
 
 # Links to the ordinary tools in directory $1.
