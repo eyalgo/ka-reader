@@ -73,7 +73,45 @@ None.
   `checks/tests/test_own_state_step.sh` and `checks/tests/test_vm_refusal.sh`.
 - **If a document has to be written:** none. The fold re-measures the cell at a named commit, and keeps
   the `b12e48c` inventory as history.
-- **Answer:** <the owner fills this in>
+- **Answer:** Confirmed, with additions. Re-measure the cell at `ka-reader@13e8d42`, the merge that
+  landed the six files, and keep the `b12e48c` inventory as a dated note beside it; `ee80fc9`'s tree
+  outside `docs/` is `13e8d42`'s (`git diff --stat 13e8d42 ee80fc9 -- . ':!docs'` prints nothing), so the
+  pin names the tree the fold reads. The six files take the cell's own categories. **Two scripts,
+  each the whole `run` of its own CI step:** `launch.sh`, the *Launch the built bundle* step
+  (`.github/workflows/ci.yml:L112-L113`), which asks the host whether it is a macOS virtual machine
+  before any other work (`docs/nfdr.md` QC-65), opens the built bundle once and waits a fixed 240
+  ticks of 0.25 s for the app's log, looking in a child so a consent prompt cannot stop the count;
+  and `own-state-step.sh`, the *Own state* step (`:L117-L118`), which runs `own-state.sh` as a child
+  under the same bound and has no admission of its own — the child's refusal is the only output off
+  a virtual machine. **Three suites, each the whole `run` of its own step:** `tests/test_launch.sh`
+  (*Launch step suite*, `:L98-L99`), `tests/test_own_state_step.sh` (*Own state step suite*,
+  `:L101-L102`) and `tests/test_vm_refusal.sh` (*VM refusal suite*, `:L95-L96`), the last paired with
+  no script of its own — it runs `test_bundle.sh` and `test_renderer.sh` as subjects, because a
+  suite that refuses cannot hold its own refusal case, and holds the workflow's shape. **One sourced
+  helper, not a suite:** `tests/support/vm_refusal.sh`, the shared refusal assertion for QC-65, sourced
+  by six suites (`test_bundle.sh:L53`, `test_renderer.sh:L52`, `test_own_state.sh:L29`,
+  `test_launch.sh:L41`, `test_own_state_step.sh:L39`, `test_vm_refusal.sh:L36`) and placed under
+  `support/` so that no loop over `checks/tests/*.sh` and no workflow step takes it for a suite
+  (`checks/tests/support/vm_refusal.sh:L11-L12`). So the suite sentence is re-counted: ten scripts,
+  eleven suites — one `test_<name>.sh` for each of the ten and `test_vm_refusal.sh` beside them; the
+  fixture-folder count stays thirteen (`git log --diff-filter=A --name-only b12e48c..13e8d42 --
+  checks/fixtures` prints nothing) and `fixtures/.gitignore` is still six lines. The cell's own
+  locators moved under it and are re-pinned at `13e8d42`: `checks/bundle.sh:L321-L322` reads
+  `:L338`, `:L341`; `checks/own-state.sh:L21` reads `:L118` (the comment at `:L28`), and `:L16-L20`,
+  `:L64-L68` read `:L24-L28`, `:L59-L68` with the calls at `:L77`, `:L84`;
+  `checks/tests/test_own_state.sh:L212`, `:L222`, `:L233` read `:L217`, `:L227`, `:L238`;
+  `.github/workflows/ci.yml:L73-L74` reads `:L79-L80` and `:L116` reads `:L117-L118`, the *Own state*
+  step now running `own-state-step.sh`, so the order the `.gitignore` sentence rests on still holds;
+  the six `git_state.rs` locators read `:L1347-L1348`, `:L1363-L1367`, `:L1900-L1904`,
+  `:L2130-L2134`, `:L2147-L2151` and `:L2811-L2815`; `root_finding.rs:L55`, `:L63` and
+  `tests/walk.rs:L6` do not move. What each names is unchanged. The slice-owed list does not move:
+  none of `churn.sh`, `latency.sh`, `contract.sh`, `fixtures/hostile.md`, `fixtures/history` or
+  `fixtures/scale-*` is in the tree. Two things this answer does not write: the admission's rule,
+  which is `docs/nfdr.md` QC-65's and reaches the row only as the description of what `launch.sh`
+  does first; and `docs/nfdr.md` § 9's suite count, which that record's own companion carries
+  (`docs/architecture_open_issues.md` § 3.3) and this fold does not pre-empt. Bound: the three new
+  steps' hosted result is unread, Actions being off; the row says what is on disk and not that a
+  step is green. Reasoning at `docs/trail/sdd/self_answer-60.md`.
 
 **How it closes.** `product-sdd` folds it on its next run like every other item in this file, and
 the trail copy and the delete-when-empty behaviour are unchanged.
