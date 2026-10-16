@@ -2,7 +2,7 @@
 
 **Status:** Settled
 **Owner:** Principal Architect
-**Version:** 55 — the close: the cycle-48 fold. ADR-0024 supersedes ADR-0007: the release channel is a GitHub Release at `github.com/eyalgo/ka-reader`, the decision otherwise unchanged, on the owner's answer and PRD v16, SRS v13 C-12 and SDD v52 C-R4. The forward-looking checks follow — QC-25's runner reading, QC-28, QC-42 and their § 10 rows — and QC-28, QC-29, QC-56, QC-57 and § 2's threat model trace to ADR-0024. § 8, § 10's preamble and RN-6 also follow the card, which now runs the structure pair. Records of runs made at the old address stand as written. No `QC` is added, renumbered or reused. Nothing is left for the owner, so the companion is removed and `Status:` is Settled — RN-66 (v54: the close: the cycle-47 fold, the structure pair gated at the change — RN-65)
+**Version:** 56 — the close: the cycle-49 fold. Every rule `.github/workflows/ci.yml` holds is held without GitHub: one script, `checks/gate.sh`, runs the workflow's rule-holding steps in the workflow's order, the card's test command runs it at every change in the macOS guest, and the workflow, when Actions runs, runs that script and holds no rule of its own (QC-64). The steps that launch the bundle or read the machine's home refuse to run outside a virtual machine (QC-65). The Swift toolchain of record is the one the change gate runs on (§ 9 *Toolchain*). Both entries owe a build, and until it lands the rules § 10 gates at `CI build` alone are held by no run while Actions is off (§ 8). No ADR is written, and no `QC` is renumbered or reused. Nothing is left for the owner, so the companion is removed and `Status:` is Settled — RN-67 (v55: the close: the cycle-48 fold, ADR-0024 supersedes ADR-0007 at `github.com/eyalgo/ka-reader` — RN-66)
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · PRD Settled · UXD Settled · DESIGN Settled · CONTENT Settled
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
@@ -28,7 +28,8 @@
 > `testing_doctrine.md` v2.2.0, the Rust packet (`languages/rust/`, `testing.md` v1.0.1,
 > `layout.md` v1.1.1, `errors_logging.md` v1.1.0, `quality_gates.md` v1.1.1, `toolchain.md`
 > v1.1.1) or the Swift packet (`languages/swift/`, `README.md` v1.0.1, `testing.md` v1.1.0,
-> `layout.md` v1.0.0, `toolchain.md` v1.1.0, `quality_gates.md` v1.1.0) names an
+> `layout.md` v1.0.0, `toolchain.md` v1.1.0, `quality_gates.md` v1.1.0,
+> `environment.md` v1.2.0) names an
 > engineering-doctrine file of
 > the organisation that publishes this product, which is not in this repository; every such entry
 > states the rule in full here, so the trace is provenance and never a dependency. Every command
@@ -1465,8 +1466,8 @@ Through v54 it quoted the command without the structure pair and pinned the card
 `kensaiapp-opensource@d5005730`, true at that pin; moved at v55, where the card moved — RN-66)*. Why the
 workspace form is this product's change-time run, where the Rust packet classifies it as
 release-time, is RN-7. Where the card's command runs is the card's and the pipeline's, and this
-document names no machine; what its verdict is worth against CI is § 9's *Toolchain* clause
-(RN-63). What follows exceeds the card.
+document names no machine; what its verdict is worth is § 9's *Toolchain* clause (RN-63, RN-67) *(through v55 "what its
+verdict is worth against CI", true while hosted CI was the reference — RN-67)*. What follows exceeds the card.
 
 **The card's Swift half needs the bridge assembled first, and the card says so.** From
 `ka-reader@f0f1e5f`, `ka-reader-mac` links the bridge as a local binary target that
@@ -1504,6 +1505,48 @@ not say so yet". It named the move owed to `product-card` — the card's command
 card's — and said that until the card moved, its command ran neither, the gate that held for the
 pair was the CI build, after the seal, and the gap the paragraph closed was open. True until
 `kensaiapp-opensource@5be8615c`, where the card moved (RN-65); moved at v55 — RN-66)*.
+
+**Every rule the CI workflow holds is held without GitHub, at the change, in a macOS virtual
+machine** — the owner's answer at `docs/trail/architecture/cycle-49.md` § 3.1, which leaves the
+split to this document. On 2026-10-16 the owner switched GitHub Actions off on `eyalgo/ka-reader`
+until billing is settled. The last hosted runs were refused for billing (38908439556,
+38930009564), and whether hosted CI returns is not settled. The workflow runs twenty-four steps
+that run a command (`.github/workflows/ci.yml` at `ka-reader@bb2e4cb`, whose workflow is
+`ka-reader@d2694c7`'s). One, packaging the bundle, holds no rule. Of the other twenty-three, the
+card's command runs four in full: the bridge's assembly, the test gate and the structure pair. It
+runs the workspace build only as far as `cargo test` compiles it. The other eighteen ran nowhere
+once Actions stopped: the toolchain print, the entry-points pair, the bundle probe and its suite,
+the view pair, the renderer gate and its suite, the three read-only walks and their suite, the
+no-network pair, the own-state suite, the launch of the built bundle, and own-state. QC-64 moves
+every one of them to the change. **Why all of them at the change, and none at a later point.** The
+pipeline issues a command for a product at three points, and each issues the card's test command and
+nothing else: the developer's closing run, the code-integrity run and the seal. The seal issues none
+for a product kept in its own repository, as this one is. The source is the managing pipeline's gate
+tool, `gate_suite.py` v1.2.0, `run_gate` (`:L962`), which is not in this repository; the rule is
+stated in full here. So no later point the pipeline reaches runs a command for this product, and a
+rule placed anywhere but the card's command is held by no run. The cost is accepted and named. On the
+last green hosted run, 38673998411, the checks took about 70 s, their suites about 12 min
+(entry-points 218 s, bundle 351 s, renderer 120 s, the rest seconds), and the launch and own-state
+about 2 s. That cost is paid twice per change, once at each gate. In the guest it is unmeasured, and
+the first guest run is its reading, by § 9's rule on how a suite joins. **Where the gate runs.** The
+same tool places the card's command in the macOS guest because the product's CI configuration names
+a macOS runner. It places the command on the owner's Mac in two cases: the product has no CI, or the
+owner asks (`gate_suite.py` v1.2.0, `resolve_environment`, `:L554-L560`). So
+`.github/workflows/ci.yml` stays in the tree whether Actions runs or not: it is what places the change
+gate in the guest. If it ever leaves the tree, the gate moves to the owner's Mac, where QC-65 turns it
+red. Where the guest comes from, and what it carries, is the managing pipeline's; § 9's *Toolchain*
+clause records what the guest printed. **What this does not reach.** The packaging and upload steps
+hold no rule. They hand the built bundle out, stay the workflow's, and run only when Actions does. Two
+release-time obligations name CI, and they stand as the SDD writes them: QC-29's build from the tag
+(`docs/SDD.md` § 4 C-R4) and QC-25's read of a hosted run's log (C-I3). While Actions is off, no
+hosted run exists for QC-25's read to break on. No release can be built the way C-R4 states either,
+and moving C-R4 is the CTO's if hosted CI has not returned by the first public release (RN-67).
+**Until the script lands.** Every `verified by:` tail and § 10 row in this document that names the CI
+build, or a workflow step, reads under this paragraph, and none repeats it. Until `checks/gate.sh` is
+in the tree and the card's command runs it, a rule gated at the CI build alone is held by no run while
+Actions is off, and by this document's header rule its gate is `development-design` reading the
+entry. The card's move is owed to `product-card`, in the form RN-60 used: the test command runs
+`checks/gate.sh`, and how the field spells that is the card's.
 
 - **QC-55:** The product is one macOS application bundle, `KA-Reader.app`, bundle identifier
   `com.kensaiapp.ka-reader`, and one process; no second binary, no second process the product starts,
@@ -1592,6 +1635,59 @@ pair was the CI build, after the seal, and the gap the paragraph closed was open
   never a partial one *(traces to: FDR R-168 – R-170, PD-39; SRS DR-5, C-6, FR-3; FDR R-108,
   R-109; the rule raised from this document, answered on the FDR's companion and folded at FDR v2
   — `docs/trail/architecture/cycle-1.md` § 2.2, RN-5, RN-11)*
+
+- **QC-64:** One script, `checks/gate.sh`, holds every rule the CI workflow holds. It runs every
+  step of `.github/workflows/ci.yml` that runs a command, except packaging the bundle. It runs them
+  in the workflow's order, each fatal: the toolchain print first, then the workspace build, the
+  bridge's assembly, the test gate, and every `checks/*.sh` script, suite and step after them, the
+  launch of the built bundle and own-state included. So the order rules the workflow's comments
+  state come with it. The script exits 0 only when every step exits 0, and it names the step that
+  failed. The card's test command runs it, so it runs at every change, at both gates (§ 8). The
+  workflow holds no rule of its own. When Actions runs, its job runs `checks/gate.sh` and the
+  packaging and upload steps, and nothing else, so a rule added to one is added to both.
+  `.github/workflows/ci.yml` stays in the tree whether Actions runs or not (§ 8, *Where the gate
+  runs*).
+  — *verified by:* the card's test command, issued by the pipeline's gate tool at the developer's
+  closing run and at code-integrity, whose `Environment:` line names where it ran (layer 5, every
+  change); `grep -nE '^[[:space:]]+run:' .github/workflows/ci.yml` prints the line that runs
+  `checks/gate.sh`, the packaging line, and nothing else (the tree); and `for s in
+  checks/tests/*.sh; do grep -q "$s" checks/gate.sh || echo "$s"; done` prints nothing (the tree),
+  § 9's suites comparison aimed at the script. The two comparisons are this document's own
+  realization and are held by no script, so `development-design` reading this entry is their gate
+  for a change under `.github/workflows/` or `checks/`, as it is for QC-56's workflow check. That
+  absence is the review gate's only ground. Until `checks/gate.sh` lands, no command holds this
+  entry (§ 8, *Until the script lands*) *(traces to: SDD § 4 C-I3 — "The promises are proved on
+  every build", and its *Violated by*, "a build that skips a script"; ADR-0010; ADR-0012 § Decision
+  — "a gate that cannot go red has not run"; the owner's answer at
+  `docs/trail/architecture/cycle-49.md` § 3.1, requirements 1 and 4 — RN-67)*
+- **QC-65:** The steps that launch the bundle or read the running machine's home run only in a macOS
+  virtual machine. They never run on a physical Mac, the owner's included, and never under the gate
+  tool's owner's-Mac option. Today they are `checks/bundle.sh` and its suite, `checks/renderer.sh`
+  and its suite, the launch of the built bundle, and `checks/own-state.sh` against the machine's
+  home. These are the steps that start `KA-Reader.app` with `open` (`checks/bundle.sh:L339`,
+  `checks/tests/test_bundle.sh:L317`, `checks/renderer.sh`, the real-bundle cases of
+  `checks/tests/test_renderer.sh`) or read the app's container under `$HOME`
+  (`checks/own-state.sh`), at `ka-reader@bb2e4cb`. On a host that is not a virtual machine, each one
+  refuses before it launches or reads anything. It exits non-zero and says why, so the gate goes red
+  and never reads as green. The script offers no option, flag or variable of its own that skips the
+  refusal. A step added later that launches the bundle or reads the machine's home joins this set in
+  the change that adds it. The refusal lands in the change that puts these steps on the card's
+  command, or before it, never after, because from that change the owner's-Mac option would run
+  them. The layer-4 window tests open a window inside `swift test`'s own process, start no bundle
+  and read no home, and are not in the set. The cost is named: under the owner's-Mac option no
+  change to this product can pass a gate, and a contributor with no virtual machine runs every step
+  but these. How a script tells a virtual machine from a physical Mac is the delivery tier's. One
+  reading exists: `sysctl -n kern.hv_vmm_present` printed `1` in the guest and `0` on the owner's
+  Mac on 2026-10-16.
+  — *verified by:* in each guarded script's suite, a case in which the host reads as a physical Mac
+  and the script exits non-zero having launched nothing and read nothing (layer 6, in the suites
+  QC-64's script runs), owed with the refusal and landing in the same change; and the gate tool's
+  `Environment:` line on each change's record, which names `macos-guest` (every change). Until the
+  refusal lands, no command holds this entry, and `development-design` reading it is its gate. What
+  holds meanwhile is that the card's command runs none of these steps *(traces to: the owner's
+  answer at `docs/trail/architecture/cycle-49.md` § 3.1, requirement 2; the steps' launches and
+  reads as the scripts make them, and the workflow's own comments on them, `.github/workflows/ci.yml`
+  at `ka-reader@d2694c7` — RN-67)*
 
 ## 9. Test strategy
 
@@ -1734,7 +1830,7 @@ left with `ka-reader-ui` at `ka-reader@0aca57e` (RN-22; RN-25).
   `:L73-L74` `test_read_only.sh`; `:L79-L80` `test_no_network.sh`; `:L82-L83`
   `test_own_state.sh`); the test command (`ci.yml:L26`) runs none of them. One suite runs at the
   change as well: `test_structure.sh`, with its script, on the card's command — § 8 holds that
-  rule and what it still owes, and this bullet does not repeat it (RN-65). The count and the lines are dated and pinned: an eighth suite, or a step inserted
+  rule and what it still owes, and this bullet does not repeat it (RN-65). **From `checks/gate.sh`, every suite runs at the change** (QC-64): the script runs each suite as its own fatal step, in the workflow's order. The comparison in this bullet's tail is aimed at the script, whose list the card and the workflow both run. While Actions is off and the script is not in the tree, a suite on a workflow step alone runs nowhere (§ 8; RN-67). The count and the lines are dated and pinned: an eighth suite, or a step inserted
   above these, is a re-measurement of this sentence and not a contradiction of it, and a new suite
   lands its step in the same change by the rule above. This sentence is the count's one home —
   § 10 points here and does not repeat it *(through v25 it counted six, on steps from
@@ -1760,7 +1856,7 @@ left with `ka-reader-ui` at `ka-reader@0aca57e` (RN-22; RN-25).
   the measurement, never left silent — and until the next change moves or fixes it, `main` is
   red; the step is never quieted. The one ruled-out way to join: a non-fatal step —
   `continue-on-error`, or an `if:` that skips it — while a suite waits for its reading, a gate
-  that cannot go red (ADR-0012 § Decision). Where the five stand as this fold runs (2026-09-24,
+  that cannot go red (ADR-0012 § Decision). *From v56 a suite joins as a fatal step of `checks/gate.sh`, and its first guest run is its reading. A suite that is red there stays red, and `main` with it, until the next change fixes it. A suite that launches the bundle or reads the machine's home never moves to the owner's Mac (QC-65), and no suite is quieted (RN-67).* Where the five stand as this fold runs (2026-09-24,
   at `ka-reader@c26d47c`): not yet run on the hosted runner — no step carries `if:` or
   `continue-on-error` (`grep -nE 'continue-on-error|^[[:space:]]+if:' .github/workflows/ci.yml`
   prints nothing), and `gh run list --repo kensaiapp/ka-reader --workflow ci.yml` lists as its
@@ -1800,7 +1896,7 @@ left with `ka-reader-ui` at `ka-reader@0aca57e` (RN-22; RN-25).
   owed, so the change that writes it has a bar: a `checks/` script that runs the comparison and
   exits non-zero when any suite under `checks/tests/` is named by no step of `ci.yml`, on a CI
   step of its own; if that script has a suite, the suite lands its own step in the same change,
-  by this bullet's rule. The day it lands, this tail names it and the review gate drops. Until
+  by this bullet's rule. The day it lands, this tail names it and the review gate drops. From `checks/gate.sh`, the comparison is the same loop over the script (QC-64's tail), and the workflow running the script makes the script's list the one list (RN-67). Until
   then the gap is one-sided, and named: a suite added with no step is caught only at
   `development-design`; a step naming a deleted suite fails the job on its own, a missing file
   exiting non-zero *(through v16 this tail's ground was that a step would be red on every build
@@ -1880,16 +1976,30 @@ left with `ka-reader-ui` at `ka-reader@0aca57e` (RN-22; RN-25).
   `docs/trail/architecture/cycle-41.md` § 3.1 — RN-59)* *(through v14 this clause read that
   no CI run on `main` had built it, true at `origin/main` = `a4ab8e6`; drafted at v15 on the item a
   `companion-self-answer` run raised on this document — RN-26 — and confirmed in the owner's seat
-  at `docs/trail/architecture/cycle-13.md` § 2.1 — RN-27)*. **The toolchain this clause records is the
-  reference for every verdict that depends on the compiler.** A change-time verdict — the card's
-  command (§ 8), wherever it runs — stands in for CI only when the Swift version and SDK the run
-  printed are that toolchain, today Apple Swift 6.3.3 on SDK 26.5. A run on any other toolchain, a
-  patch release included, or a run that names none, proves the change on the toolchain it ran on and
-  nothing more; the CI build on `main` is the reading. The rule is set at the strict reading: only a
-  minor-version difference has been measured to matter (6.3 against 6.4, below), and a patch
-  difference has been checked on this tree once. Its cost is named: until a change-time run carries
-  the recorded toolchain, no change-time verdict stands in for CI. Where the gate runs is the card's
-  and the pipeline's, and this document names no machine (RN-63). **Two compilers, held as a bounded
+  at `docs/trail/architecture/cycle-13.md` § 2.1 — RN-27)*. **The toolchain of record is the one the change gate runs on** (the owner's answer at
+  `docs/trail/architecture/cycle-49.md` § 3.1, requirement 3 — RN-67). `checks/gate.sh` prints
+  `swift --version` and `xcrun --show-sdk-version` before its first build (QC-64), so every gate
+  run's output carries its toolchain. The record is the guest's: **Apple Swift 6.3.2
+  (swiftlang-6.3.2.1.108), SDK 26.5**, on macOS 26.6.2 (25G83), with Xcode at
+  `/Applications/Xcode_26.5.app`. It was read in the managing pipeline's macOS guest, `kensai-macos`,
+  on image `ghcr.io/cirruslabs/macos-tahoe-xcode:26.5`, on 2026-10-16, with `tart exec kensai-macos
+  sh -c 'swift --version; xcrun --show-sdk-version; sw_vers'`. A verdict that depends on the
+  compiler is read off a run that printed that toolchain. A run on any other toolchain, a patch
+  release included, or a run that names none, proves the change on the toolchain it ran on and
+  nothing more. The rule stays at the strict reading, which is tighter than the Swift packet's: the
+  packet accepts a patch-level gap between the guest's Swift and CI's (`environment.md` § Default and
+  CI alignment). It stays strict because only a minor-version difference has been measured to
+  matter (6.3 against 6.4, below), and a patch difference has been checked on this tree once. If
+  Actions returns, a hosted run runs the same script (QC-64) and prints its own toolchain. It
+  corroborates the gate when the two toolchains match. Where they differ and the results differ, the
+  difference is measured and recorded here, as the 6.3/6.4 pair below was. The record moves when the
+  guest's printed toolchain does, by re-measurement. Where the gate runs is § 8's *Where the gate
+  runs* *(through v55 this passage made the hosted CI build on `main` the reference: "A change-time
+  verdict — the card's command (§ 8), wherever it runs — stands in for CI only when the Swift version
+  and SDK the run printed are that toolchain, today Apple Swift 6.3.3 on SDK 26.5", with "the CI
+  build on `main` is the reading", "until a change-time run carries the recorded toolchain, no
+  change-time verdict stands in for CI" and "this document names no machine (RN-63)"; true while
+  hosted CI ran on every push, and moved at v56 on the owner's answer — RN-67)*. **Two compilers, held as a bounded
   supported pair.** Swift 6.3 counts `withCString` as an unsafe use and Swift 6.4 does not, and under
   `.strictMemorySafety()` with warnings as errors each rejects the other's spelling.
   `ka-reader@47e8e6b` passed a change-time run on Swift 6.4, then went red on the recorded toolchain
@@ -1897,10 +2007,13 @@ left with `ka-reader-ui` at `ka-reader@0aca57e` (RN-22; RN-25).
   `:28:9`, "expression uses unsafe constructs but is not marked with 'unsafe'".
   `ka-reader-mac/Sources/KAReader/NativeBridge.swift` now carries both spellings under
   `#if compiler(>=6.4)` (`:L23-L40` at `ka-reader@24be581`, unchanged at `ka-reader@f357008`). The
-  `#else` arm builds on the toolchain this clause records, and CI holds it on every build; run
+  `#else` arm builds on the toolchain this clause records — the guest's Swift 6.3.2 takes it, as
+  the hosted 6.3.3 did — and the change gate holds it on every change, today through the card's
+  `swift test` in the guest *(through v55 "and CI holds it on every build" — RN-67)*; run
   38551538187 on `ka-reader@24be581` is its first green. The `compiler(>=6.4)` arm is held by no
-  hosted check, only by change-time runs on 6.4. The `#else` arm is owed removal from the first CI
-  log whose `Toolchain` step prints Swift 6.4 or later, because from then nothing builds it; whether
+  hosted check, only by change-time runs on 6.4. The `#else` arm is owed removal from the first gate run of record whose printed toolchain is
+  Swift 6.4 or later, because from then nothing builds it *(through v55 "from the first CI log
+  whose `Toolchain` step prints Swift 6.4 or later" — RN-67)*; whether
   and when to remove it is the delivery tier's (on the owner's seat's answer at
   `docs/trail/architecture/cycle-45.md` § 3.1 — RN-63). *Adopted in the tree at `ka-reader@f0f1e5f`, as one decision — the seven tools-6.2 items:* the
   `6.2` tools version (`ka-reader-mac/Package.swift:L1` reads `// swift-tools-version:6.2`, and `:L23`
@@ -1963,10 +2076,15 @@ left with `ka-reader-ui` at `ka-reader@0aca57e` (RN-22; RN-25).
   test's framework binds only the files a change adds, which no command over the tree tells apart
   from the XCTest files the packet keeps; each stays a review bar at `development-design` until a
   check is written for it, and the day `checks/no-network.sh` refuses a `system` target, that
-  clause's gate is the script. The `Toolchain` step's log is what the *Toolchain* clause above is
-  checked against, on every build. The CI build on `main` — `Build KA-Reader.app` and `Test gate`,
-  every push — is the reading the clause's reference rule names, and it is what fails when the
-  `#else` arm stops building; the same log is where the arm's removal comes due. The
+  clause's gate is the script. The toolchain lines `checks/gate.sh` prints are what the *Toolchain* clause above is checked
+  against, on every change. The gate run — the bridge's assembly and the test gate, every change — is
+  the reading the clause's reference rule names, and it is what fails when the `#else` arm stops
+  building; the same output is where the arm's removal comes due. Until the script lands, the card's
+  `swift test` in the guest holds the arm, and the guest's toolchain is the one the clause records
+  as read in the guest *(through v55 this read "The `Toolchain` step's log is what the *Toolchain*
+  clause above is checked against, on every build. The CI build on `main` — `Build KA-Reader.app` and
+  `Test gate`, every push — is the reading the clause's reference rule names", with the same log
+  where the arm's removal came due — RN-67)*. The
   `compiler(>=6.4)` arm has no hosted check, as the clause says (RN-63) *(through v48 the first review gate read "the seven tools-6.2
   departures, including the dependency-gate clause, flip together or not at all", its ground "the
   seven flipping together is read off the manifest's diff", and the no-network clause "the Swift
@@ -1978,7 +2096,8 @@ left with `ka-reader-ui` at `ka-reader@0aca57e` (RN-22; RN-25).
   owner's seat's answer at `docs/trail/architecture/cycle-41.md` § 3.1 — RN-59)*.
 - **Layers 6–7 are QA-role ATDD work.** No QA seat has written either for this product yet; until
   one does, layer 6 is verified by `checks/structure.sh`, `checks/entry-points.sh` and
-  `checks/view.sh`, run in CI, and layer 7 by the SDD's per-slice command bars and the acceptance
+  `checks/view.sh`, run in CI and, from `checks/gate.sh`, at the change (QC-64; through v55 "run in
+  CI" alone — RN-67), and layer 7 by the SDD's per-slice command bars and the acceptance
   walk at release.
 
 ## 10. Verification map
@@ -2009,6 +2128,16 @@ as the rule *(added at v54, on the owner's answer at `docs/trail/architecture/cy
 RN-65; through v54 this paragraph said that until the card carried the pair,
 `development-implementation` here was the rule and not yet the run, and the CI build the gate that
 held; moved at v55, where the card moved — RN-66)*.
+
+**`CI build` reads under § 8's paragraph on the workflow's rules.** Every row's `CI build` names the
+workflow step that held the rule while Actions ran. From the change that lands `checks/gate.sh` and
+puts it on the card's command, the same command runs at every change, through the pipeline's gate
+tool in the macOS guest (QC-64). So on every row `CI build` reads `development-implementation` as
+well, and the workflow runs the same script when Actions does. Until then, a row gated at `CI build`
+alone is held by no run while Actions is off, and its gate is `development-design` reading the entry.
+The structure pair's rows already run at the change (above). No row is rewritten for this: the rule
+is stated once, in § 8 *(added at v56, on the owner's answer at `docs/trail/architecture/cycle-49.md`
+§ 3.1 — RN-67)*.
 
 | QC | Check | Command / layer | Runs over | Gated at |
 |---|---|---|---|---|
@@ -2059,6 +2188,8 @@ held; moved at v55, where the card moved — RN-66)*.
 | QC-59 | priced contract against its major's pin | `checks/contract.sh <tag>` | the release | release, from `v1.0.0` |
 | QC-60 | own-state read across versions | `checks/own-state.sh --from <previous-tag>` (suite `test_own_state.sh`) | the release | release |
 | QC-61 | logging facade and its implementation | `checks/no-network.sh` (suite `test_no_network.sh`); `checks/structure.sh` (suite `test_structure.sh`) | the tree; the change | CI build; `development-implementation` (the structure pair) |
+| QC-64 | every workflow rule held by one script, run at the change; the workflow holds none of its own | the card's test command through the gate tool; `grep -nE '^[[:space:]]+run:' .github/workflows/ci.yml`; the suites loop over `checks/gate.sh` | the change; the tree | `development-implementation`; `development-design` reading the entry |
+| QC-65 | the launching and home-reading steps refuse outside a virtual machine | the refusal case in each guarded script's suite; the gate tool's `Environment:` line | the change | `development-implementation` |
 
 Entries with no row are review gates, each arguing its downgrade in its own tail: QC-13 (the
 delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a listed crate and name), QC-18, QC-21, QC-31, QC-33, QC-43, QC-45, QC-50, QC-54, QC-57, and QC-59's behaviour member.
@@ -5911,3 +6042,58 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   rows; RN-6; source: `docs/trail/architecture/cycle-48.md` § 3.1; ADR-0024; `docs/PRD.md` v16;
   `docs/SRS.md` v13 C-12; `docs/SDD.md` v52 C-R4, RN-112; `kensaiapp-opensource@5be8615c`,
   `kensaiapp-opensource@a4204e5b`)*
+- **RN-67:** *(v56 — the close: the cycle-49 fold, § 3.1 answered)* **Intake.** The companion on
+  disk had one § 3 item and nothing in §§ 1 or 2. No `product-architecture` run wrote it: the owner
+  opened it on 2026-10-16 in an interactive session, after switching GitHub Actions off on
+  `eyalgo/ka-reader`, and answered it in the same commit (`ka-reader@bb2e4cb`). The file was clean
+  in git at intake and its slot was filled, so it is consumed. It was copied whole to
+  `docs/trail/architecture/cycle-49.md` before this fold's first edit, and `cmp` found the two
+  identical. **Whose answer this is.** The owner's own, and it outranks every input. It states four
+  requirements and leaves the shape to this seat: every rule the workflow holds is held by a gate that
+  runs without GitHub; the app-launching and home-reading checks run only in the macOS guest; the
+  toolchain of record is the gate's; and CI, if it returns, runs the same thing. **The split, and
+  why it has one answer.** The requirement allowed "at the change, or at a stated point the pipeline
+  reaches". The pipeline's gate tool issues the card's command at the developer's closing run and at
+  code-integrity, and issues nothing at the seal for a product in its own repository
+  (`gate_suite.py` v1.2.0, `run_gate`, `:L962`). So there is no later point, and every rule goes to
+  the change: § 8's new paragraph and QC-64. The cost the owner measured — about 14 min more per
+  gate run on the hosted runner, paid at both gates — is stated there. **Requirement 2 → QC-65.**
+  The tool runs the card's command verbatim on the owner's Mac under the owner's ask (`mac_argv`),
+  so only the product's own scripts can keep a step off that Mac. The entry has each launching or
+  home-reading step refuse outside a virtual machine, red and never skipped, by ADR-0012's rule that a
+  gate that cannot go red has not run. It also names the cost: under the owner's-Mac option no gate
+  for this product can pass. **Requirement 3 → § 9's *Toolchain* clause.** The record moves from the
+  hosted image's Apple Swift 6.3.3 to the guest's 6.3.2, both on SDK 26.5, read in the guest for
+  this run. The strict patch rule stays: the guest and the last hosted image differ by a patch, and
+  that gap is now named rather than hidden. Its two dependants follow: the `#else` arm's holder and
+  its removal trigger. **Requirement 4 → QC-64's workflow half**, checked by a grep over the
+  workflow's `run:` lines. **Two additions beyond the answer, each logged here.** (1) The guest
+  depends on the workflow file. The tool sends a product with no CI to the owner's Mac
+  (`resolve_environment`, `:L554-L560`), so `.github/workflows/ci.yml` stays in the tree with Actions
+  off, and § 8 and QC-64 say so. (2) Two release-time obligations name CI and are not rules the
+  workflow holds today: QC-29's tag build under SDD C-R4 and QC-25's hosted-log read under C-I3. They
+  stand as the SDD writes them. While Actions is off, the first has no builder and the second has no
+  run to read. Moving C-R4 is the CTO's, and it is raised by the first public release, not by this
+  fold, so no companion item is written for it. **No candidate record.** Where a gate runs is cheap
+  to reverse: one line of the card, and once QC-64 holds, one line of the workflow. RN-65 ruled the
+  same move out of the log, and the same reasoning holds. ADR-0010 and ADR-0012 say their gates run
+  "on every CI build". That stays true, and this fold adds the change as a second place they run;
+  it reverses neither, so neither is superseded. No ADR is written, edited or restatused, and the
+  index does not move. QC-64 and QC-65 are new, and no `QC` is renumbered or reused. **What moved
+  beneath this document.** `git diff --stat bc84712 bb2e4cb -- docs` lists this companion and
+  nothing else. Every input's `Status:` line still reads Settled, so `Inputs read:` stands. The
+  header gains the Swift packet's `environment.md` v1.2.0, which § 9 now cites. **Read at source for
+  this run, 2026-10-16:** `tart exec kensai-macos` printed `1` for `sysctl -n kern.hv_vmm_present`,
+  `VirtualMac2,1`, macOS 26.6.2 (25G83), Apple Swift 6.3.2 (swiftlang-6.3.2.1.108), SDK 26.5 and
+  `/Applications/Xcode_26.5.app/Contents/Developer`. On the owner's Mac the same reads printed `0`,
+  `Mac16,5`, Apple Swift 6.4 (swiftlang-6.4.0.34.1) and SDK 27.0. The workflow's step list, and the
+  `open` calls and container reads QC-65 names, were read at `ka-reader@bb2e4cb`. **Known limits.**
+  This run read the inputs at their status lines and searched the SDD for what names CI; it did not
+  re-read the SDD whole. It ran no gate, no suite and no `checks/*.sh` script, and built no bundle.
+  The checks' cost in the guest is unmeasured. **The companion.** Nothing is left for the owner, so
+  the companion is removed and `Status:` is Settled *(re: header `Status:`, `Version:`, the
+  doctrine-file list; § 8 first paragraph, the new workflow paragraph, QC-64, QC-65; § 9 the
+  `checks/tests/` bullet, the Swift bullet's *Toolchain* clause, its `#else` arm and its tail, the
+  layers 6–7 bullet; § 10 preamble and the QC-64 and QC-65 rows; source:
+  `docs/trail/architecture/cycle-49.md` § 3.1; GitHub Actions runs 38908439556, 38930009564,
+  38673998411; `ka-reader@bb2e4cb`)*
