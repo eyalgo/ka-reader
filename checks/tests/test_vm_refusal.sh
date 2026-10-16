@@ -32,6 +32,8 @@ BUNDLE_SUITE="$ROOT/checks/tests/test_bundle.sh"
 RENDERER_SUITE="$ROOT/checks/tests/test_renderer.sh"
 WORKFLOWS="$ROOT/.github/workflows"
 WORKFLOW="$WORKFLOWS/ci.yml"
+GATE="$ROOT/checks/gate.sh"
+TAB=$'\t'
 # shellcheck source=checks/tests/support/vm_refusal.sh
 source "$ROOT/checks/tests/support/vm_refusal.sh"
 
@@ -56,17 +58,34 @@ fail() {
   return 1
 }
 
-# The text of the workflow step named $1: its name line down to the line before the next step's.
-step_text() {
-  awk -v want="      - name: $1" '
-    /^      - name: / { printing = ($0 == want) }
-    printing { print }
-  ' "$WORKFLOW"
+# The steps of the gate, one per line: the name, a tab, the command. Only a top-level call in the
+# gate's literal form is read, so a comment or an indented call is never a step. The gate is read,
+# never run.
+gate_steps() {
+  [ -f "$GATE" ] || return 0
+  sed -n "s/^run_step '\([^']*\)' '\(.*\)'\$/\1${TAB}\2/p" "$GATE"
 }
 
-# The step names of the workflow, one per line, in order.
-step_names() {
-  sed -n 's/^      - name: //p' "$WORKFLOW"
+# Reads the gate's steps into $steps, or fails when none was read.
+read_gate_steps() {
+  steps="$(gate_steps)"
+  [ -n "$steps" ] || fail "no step was read from checks/gate.sh, so nothing was checked"
+}
+
+# Puts the command of the gate's step named $1 in $gate_command; fails when the name is on no step or on
+# more than one.
+gate_command_of() {
+  count="$(printf '%s\n' "$steps" | awk -F'\t' -v want="$1" '$1 == want' | wc -l | tr -d ' ')"
+  [ "$count" -ge 1 ] || fail "checks/gate.sh has no step named \"$1\"" || return 1
+  [ "$count" -le 1 ] || fail "checks/gate.sh has more than one step named \"$1\"" || return 1
+  gate_command="$(printf '%s\n' "$steps" | awk -F'\t' -v want="$1" '$1 == want { print substr($0, length($1) + 2) }')"
+}
+
+# Fails unless the gate's step named $1 runs exactly $2.
+assert_gate_step_runs_exactly() {
+  gate_command_of "$1" || return 1
+  [ "$gate_command" = "$2" ] \
+    || fail "the step \"$1\" in checks/gate.sh does not run exactly $2, with no variable or timer set for it"
 }
 
 # --- cases ---
@@ -151,52 +170,59 @@ test_renderer_suite_admits_on_a_vm_reading() {
   fi
 }
 
-# CP-792, CP-795 (workflow proof): the two moved steps hold no multi-line block and no timer setting; the
-# rule they carried is in the scripts. Asserted over the real workflow, which acquires no rule of its own.
+# CP-792, CP-795: the two moved steps are exactly their scripts, with no timer setting and no environment
+# prefix; the rule they carried is in the scripts. Asserted over the gate's own calls.
 test_moved_steps_hold_no_block_and_no_timer_setting() {
-  for step in "Launch the built bundle" "Own state"; do
-    text="$(step_text "$step")"
-    [ -n "$text" ] || fail "the workflow has no step named $step" || return 1
-    case "$text" in
-      *"run: |"* | *"run: >"*) fail "step $step still holds a multi-line run block" || return 1 ;;
-    esac
-    case "$text" in
-      *CONTAINER_WAIT_TICKS* | *"env:"*) fail "step $step still sets a timer or any environment" || return 1 ;;
-    esac
-  done
+  read_gate_steps || return 1
+  assert_gate_step_runs_exactly "Launch the built bundle" "checks/launch.sh" || return 1
+  assert_gate_step_runs_exactly "Own state" "checks/own-state-step.sh"
 }
 
-# CP-792, CP-795: each moved step calls exactly its script as its whole run, keeps its name, and sits where
-# it sat: the renderer gate suite before the real launch, and Own state last before packaging.
+# CP-792, CP-795: each moved step calls exactly its script, keeps its name, and sits where it sat in the
+# gate: the renderer gate suite before the real launch, and Own state after it and last. In the workflow,
+# the step that runs the gate is the step directly before packaging.
 test_moved_steps_are_single_line_commands_in_order() {
-  [ "$(step_text "Launch the built bundle" | grep -c '^        run:')" -eq 1 ] \
-    && step_text "Launch the built bundle" | grep -q -x '        run: checks/launch.sh' \
-    || fail "Launch the built bundle is not exactly run: checks/launch.sh" || return 1
-  [ "$(step_text "Own state" | grep -c '^        run:')" -eq 1 ] \
-    && step_text "Own state" | grep -q -x '        run: checks/own-state-step.sh' \
-    || fail "Own state is not exactly run: checks/own-state-step.sh" || return 1
+  read_gate_steps || return 1
+  assert_gate_step_runs_exactly "Launch the built bundle" "checks/launch.sh" || return 1
+  assert_gate_step_runs_exactly "Own state" "checks/own-state-step.sh" || return 1
+  gate_command_of "Renderer gate suite" || return 1
 
-  names="$(step_names)"
+  names="$(printf '%s\n' "$steps" | awk -F'\t' '{ print $1 }')"
   position() { printf '%s\n' "$names" | grep -n -x -F "$1" | head -1 | cut -d: -f1; }
   renderer_suite="$(position "Renderer gate suite")"
   launch="$(position "Launch the built bundle")"
   own_state="$(position "Own state")"
-  packaging="$(position "Package KA-Reader.app")"
-  for found in "$renderer_suite" "$launch" "$own_state" "$packaging"; do
-    [ -n "$found" ] || fail "a step the order depends on is missing from the workflow" || return 1
-  done
-  [ "$renderer_suite" -lt "$launch" ] || fail "Renderer gate suite does not come before Launch the built bundle" || return 1
-  [ "$launch" -lt "$own_state" ] || fail "Own state does not come after Launch the built bundle" || return 1
-  [ "$((own_state + 1))" -eq "$packaging" ] || fail "Own state is not the step directly before Package KA-Reader.app"
+  [ "$renderer_suite" -lt "$launch" ] \
+    || fail "in checks/gate.sh, \"Renderer gate suite\" does not come before \"Launch the built bundle\"" || return 1
+  [ "$launch" -lt "$own_state" ] \
+    || fail "in checks/gate.sh, \"Own state\" does not come after \"Launch the built bundle\"" || return 1
+  [ "$own_state" -eq "$(printf '%s\n' "$names" | wc -l | tr -d ' ')" ] \
+    || fail "in checks/gate.sh, \"Own state\" is not the last step" || return 1
+
+  # The workflow's gate steps and packaging steps counted, and where each sits among the steps.
+  set -- $(awk '
+    /^      - / { step_number++ }
+    $0 == "        run: checks/gate.sh" { gates++; gate_at = step_number }
+    $0 == "      - name: Package KA-Reader.app" { packages++; package_at = step_number }
+    END { print gates + 0, gate_at + 0, packages + 0, package_at + 0 }
+  ' "$WORKFLOW")
+  gate_count="$1" gate_at="$2" package_count="$3" package_at="$4"
+  [ "$gate_count" -ge 1 ] || fail "the workflow has no step whose entire run is checks/gate.sh" || return 1
+  [ "$gate_count" -le 1 ] || fail "the workflow has more than one step whose entire run is checks/gate.sh" || return 1
+  [ "$package_count" -ge 1 ] || fail "the workflow has no step named \"Package KA-Reader.app\"" || return 1
+  [ "$((gate_at + 1))" -eq "$package_at" ] \
+    || fail "in the workflow, the step that runs checks/gate.sh is not the step directly before \"Package KA-Reader.app\""
 }
 
-# CP-803: every top-level suite is the entire run of a step, so none is left off the workflow.
+# CP-803: every top-level suite is the entire command of a step of the gate, so none is left off it.
 test_every_toplevel_suite_is_an_entire_fatal_step() {
+  read_gate_steps || return 1
+  commands="$(printf '%s\n' "$steps" | awk -F'\t' '{ print substr($0, length($1) + 2) }')"
   checked=0
   for suite in "$ROOT"/checks/tests/*.sh; do
     checked=$((checked + 1))
-    grep -q -x "        run: checks/tests/$(basename "$suite")" "$WORKFLOW" \
-      || fail "checks/tests/$(basename "$suite") is not the entire run of a workflow step" || return 1
+    printf '%s\n' "$commands" | grep -q -x -F "checks/tests/$(basename "$suite")" \
+      || fail "checks/tests/$(basename "$suite") is not the entire command of a step in checks/gate.sh" || return 1
   done
   [ "$checked" -gt 0 ] || fail "no top-level suite was found, so nothing was checked"
 }
