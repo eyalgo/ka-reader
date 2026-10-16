@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Version: 1.0.0 — first version: the one ordered list of the gate's steps, each fatal (NFDR QC-64)
 #
-# checks/gate.sh — runs every step of the gate, in order. The first step that exits non-zero ends the
-# run.
+# checks/gate.sh — runs every step of the gate, in order. The first step that exits non-zero ends
+# the run.
 #
 # WHY THIS EXISTS
 #   The workflow ran each of these steps on its own. This script holds them in one place, so the
@@ -13,8 +13,8 @@
 #   Run from the product root. It reads no argument and no variable of its own.
 #
 # WHY NO RETRY, CAPTURE OR FILTER
-#   A step's own output is what says why it stopped, so it stays attached to this script's stdout and
-#   stderr as the step wrote it.
+#   A step's own output is what says why it stopped, so it stays attached to this script's stdout
+#   and stderr as the step wrote it.
 
 set -euo pipefail
 
