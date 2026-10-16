@@ -2,7 +2,7 @@
 
 **Status:** Settled
 **Owner:** Principal Architect
-**Version:** 53 — the close: the cycle-46 fold, § 2.1 confirmed in the owner's seat. § 9's *Adopted* passage stands as v52 drafted it — the adoption is CI's as well as the tree's, its first hosted build GitHub Actions run 38549778886, red at a source compile and not at the manifest load, and run 38551538187 its first green — and its dated note now reads drafted and confirmed, pointing at the trail cycle. No `QC` is added, renumbered or reused, and no record is written or restatused. Nothing is left for the owner, so the companion is removed and `Status:` is Settled — RN-64 (v52: the cycle-45 fold, § 8's quoted card, § 9's toolchain reference rule and window-server precondition, and the *Adopted* passage drafted — RN-63)
+**Version:** 54 — the close: the cycle-47 fold. `checks/structure.sh` and its suite `checks/tests/test_structure.sh` are gated at the change as well as the CI build, on the owner's call: § 8 states the rule and names the move it owes `product-card` — the card's command gains the pair — § 9's `checks/tests/` bullet points there, and § 10's preamble and the ten rows that name the script add the change to *Runs over* and `development-implementation` to *Gated at*. No `QC` is added, renumbered or reused, and no record is written or restatused. Nothing is left for the owner, so the companion is removed and `Status:` is Settled — RN-65 (v53: the close: the cycle-46 fold, § 2.1 confirmed in the owner's seat, the companion removed — RN-64)
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · PRD Settled · UXD Settled · DESIGN Settled · CONTENT Settled
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
@@ -1469,6 +1469,27 @@ moved, the card's command failed on a fresh checkout, and that CI was unaffected
 assembled first. True until `kensaiapp-opensource@d5005730`, where the card moved (RN-60); on the
 owner's seat's answer at `docs/trail/architecture/cycle-45.md` § 3.2 — RN-63)*.
 
+**The card's command runs the structure pair on every change, and the card does not say so yet.**
+`checks/structure.sh` and its suite `checks/tests/test_structure.sh` are gated at the change as well
+as at the CI build: the card's test command runs both, on every change — the owner's call
+(`docs/trail/architecture/cycle-47.md` § 3.1). The ground is measured. The chain gates a change on
+the card's command and never reads CI, so a change could be sealed while it broke a rule the script
+holds, and one was: doc examples added to `crates/ka-reader-core/src/folder_model.rs` at
+`ka-reader@f1280b6` wrote through `std::fs`, `checks/structure.sh` drew 16 QC-2 and QC-15 findings,
+CI went red at *Structure check* (GitHub Actions run 38673999031), and the change merged at
+`ka-reader@21cfd34` on a green card command; the tree was repaired at `ka-reader@527f030`. The cost
+is accepted: the script took 0.8 s and the suite 2 min 20 s on the owner's Mac on 2026-10-16, and
+running the suite as well is what catches a change that edits `checks/` itself. Neither needs a
+toolchain or a build — the script reads source text (`checks/structure.sh`, *WHY THIS EXISTS*) and
+the suite runs the real script over copies of `crates/` (`checks/tests/test_structure.sh`, *WHY THIS
+EXISTS*) — so § 9's *Toolchain* clause does not bear on the pair, and its change-time verdict is the
+same reading CI's is. The other `checks/*.sh` scripts and their suites stay where § 10 has them.
+**The move is owed to `product-card`:** the card's command gains `checks/structure.sh` and
+`checks/tests/test_structure.sh`; where in the command they sit is the card's. Until the card moves,
+its command runs neither, the gate that holds for the pair is the CI build, after the seal, and the
+gap this paragraph closes is open. The card is not this document's to edit (RN-24); when it moves,
+this section's first paragraph re-quotes it and RN-6 is extended (RN-65).
+
 - **QC-55:** The product is one macOS application bundle, `KA-Reader.app`, bundle identifier
   `com.kensaiapp.ka-reader`, and one process; no second binary, no second process the product starts,
   no prerequisite, no runtime install, no fetched asset, and no font shipped — the fonts are the
@@ -1695,7 +1716,9 @@ left with `ka-reader-ui` at `ka-reader@0aca57e` (RN-22; RN-25).
   `ka-reader@b158052`: `:L31-L32` `test_structure.sh`; `:L37-L38` `test_entry_points.sh`;
   `:L47-L48` `test_bundle.sh`; `:L53-L54` `test_view.sh`; `:L64-L65` `test_renderer.sh`;
   `:L73-L74` `test_read_only.sh`; `:L79-L80` `test_no_network.sh`; `:L82-L83`
-  `test_own_state.sh`); the test command (`ci.yml:L26`) runs none of them. The count and the lines are dated and pinned: an eighth suite, or a step inserted
+  `test_own_state.sh`); the test command (`ci.yml:L26`) runs none of them. One suite runs at the
+  change as well: `test_structure.sh`, with its script, on the card's command — § 8 holds that
+  rule and what it still owes, and this bullet does not repeat it (RN-65). The count and the lines are dated and pinned: an eighth suite, or a step inserted
   above these, is a re-measurement of this sentence and not a contradiction of it, and a new suite
   lands its step in the same change by the rule above. This sentence is the count's one home —
   § 10 points here and does not repeat it *(through v25 it counted six, on steps from
@@ -1961,23 +1984,31 @@ script holds is its own header's to state — for `checks/structure.sh`, *THE SC
 IS NOT HELD* (`checks/structure.sh:L35-L93` at `ka-reader@463acb9`) — and no row here copies it
 *(on the owner's seat's answer at `docs/trail/architecture/cycle-23.md` § 3.1 — RN-37)*.
 
+**`checks/structure.sh` and its suite are gated at the change as well as the CI build.** On every
+row that names them, *Runs over* adds `the change` and *Gated at* adds `development-implementation`,
+and both additions are the pair's alone: every other command on a mixed row keeps the gate its row
+already had. § 8 holds the rule and the move it owes the card. Until the card's command carries the
+pair, `development-implementation` on these rows is the rule and not yet the run, and the CI build
+is the gate that holds *(added at v54, on the owner's answer at
+`docs/trail/architecture/cycle-47.md` § 3.1 — RN-65)*.
+
 | QC | Check | Command / layer | Runs over | Gated at |
 |---|---|---|---|---|
 | QC-1 | the shell holds no I/O of its own | `checks/view.sh` (suite `test_view.sh`); `checks/no-network.sh` (suite `test_no_network.sh`) | the tree | CI build |
-| QC-2 | no write under the folder; the walk's calls against the export set | `checks/read-only.sh <fixture>` on every walk fixture (suite `test_read_only.sh`); `cargo test --locked -p ka-reader-core --test root_finding`, `--test git_state` — the three scenes whose Git directory lies outside the opened folder; `checks/structure.sh` (suite `test_structure.sh`); the walk's calls read against the build's export set, reviewed in the change that exports a command | the tree; the change | CI build; release; `development-design` |
+| QC-2 | no write under the folder; the walk's calls against the export set | `checks/read-only.sh <fixture>` on every walk fixture (suite `test_read_only.sh`); `cargo test --locked -p ka-reader-core --test root_finding`, `--test git_state` — the three scenes whose Git directory lies outside the opened folder; `checks/structure.sh` (suite `test_structure.sh`); the walk's calls read against the build's export set, reviewed in the change that exports a command | the tree; the change | CI build; release; `development-design`; `development-implementation` (the structure pair) |
 | QC-3 | no network transport — the tree equals the list; the list holds no transport; the release executable links none | `checks/no-network.sh` (suite `test_no_network.sh`); the allowlist diff reviewed against the entry's domain, in the resolved features, at `development-design`; `checks/view.sh` (suite `test_view.sh`) — `nm` on the release executable | the tree; the change | CI build; `development-design` |
 | QC-4 | ItemState on every read | `cargo test --locked -p ka-reader-core` (layer 1); `swift test --package-path ka-reader-mac` (layer 4) | the change | `development-implementation` |
 | QC-5 | root finding | `cargo test --locked -p ka-reader-core --test root_finding` | the change | `development-implementation` |
 | QC-6 | containment check | `cargo test --locked -p ka-reader-core --test markdown`; `cargo test --locked -p ka-reader-bridge --test asset_bytes` | the change | `development-implementation` |
-| QC-7 | no mutating Git call, no spawn | `checks/read-only.sh` (suite `test_read_only.sh`); `checks/structure.sh` (suite `test_structure.sh`) | the tree | CI build |
+| QC-7 | no mutating Git call, no spawn | `checks/read-only.sh` (suite `test_read_only.sh`); `checks/structure.sh` (suite `test_structure.sh`) | the tree; the change | CI build; `development-implementation` (the structure pair) |
 | QC-8 | `ka-reader-mac` imports and dependencies | `checks/view.sh` (suite `test_view.sh`); `checks/no-network.sh` (suite `test_no_network.sh`); `swift test --package-path ka-reader-mac` | the tree | CI build |
-| QC-9 – QC-12, QC-14 | `ka-reader-core` / `checks/` imports; no `unsafe` outside the bridge | `checks/structure.sh` (suite `test_structure.sh`); `checks/no-network.sh` (suite `test_no_network.sh`); `cargo tree -p ka-reader-bridge`; `cargo build --workspace --locked` | the tree | CI build |
-| QC-63 | a module of no part in `ka-reader-core` imports no part | `checks/structure.sh` (suite `test_structure.sh`) | the tree | CI build |
-| QC-13 | `ka-reader-bridge` imports; the export set; the ABI under the sanitizer | `checks/structure.sh` (suite `test_structure.sh`); `cargo test --locked -p ka-reader-bridge --test exports`; the bridge's tests under `-Zsanitizer=address` | the tree | CI build |
-| QC-15, QC-17 | I/O ownership; the two composition roots; libgit2's machine-level config search paths empty, failing closed, once per process | `checks/structure.sh` (suite `test_structure.sh`); `checks/view.sh` (suite `test_view.sh`); `cargo test --locked -p ka-reader-bridge` — the four search paths read back empty, and the switch's fail-closed and once-per-process cases | the tree | CI build |
+| QC-9 – QC-12, QC-14 | `ka-reader-core` / `checks/` imports; no `unsafe` outside the bridge | `checks/structure.sh` (suite `test_structure.sh`); `checks/no-network.sh` (suite `test_no_network.sh`); `cargo tree -p ka-reader-bridge`; `cargo build --workspace --locked` | the tree; the change | CI build; `development-implementation` (the structure pair) |
+| QC-63 | a module of no part in `ka-reader-core` imports no part | `checks/structure.sh` (suite `test_structure.sh`) | the tree; the change | CI build; `development-implementation` (the structure pair) |
+| QC-13 | `ka-reader-bridge` imports; the export set; the ABI under the sanitizer | `checks/structure.sh` (suite `test_structure.sh`); `cargo test --locked -p ka-reader-bridge --test exports`; the bridge's tests under `-Zsanitizer=address` | the tree; the change | CI build; `development-implementation` (the structure pair) |
+| QC-15, QC-17 | I/O ownership; the two composition roots; libgit2's machine-level config search paths empty, failing closed, once per process | `checks/structure.sh` (suite `test_structure.sh`); `checks/view.sh` (suite `test_view.sh`); `cargo test --locked -p ka-reader-bridge` — the four search paths read back empty, and the switch's fail-closed and once-per-process cases | the tree; the change | CI build; `development-implementation` (the structure pair) |
 | QC-16 | writes only in the container | `checks/own-state.sh` (suite `test_own_state.sh`) | the tree | CI build; release |
 | QC-19 | folder replace-whole | `cargo test --locked -p ka-reader-core --test switch`; `git diff --stat … -- ka-reader-mac` | the change | `development-implementation` |
-| QC-20 | own-state isolation | `checks/structure.sh` (suite `test_structure.sh`) | the tree | CI build |
+| QC-20 | own-state isolation | `checks/structure.sh` (suite `test_structure.sh`) | the tree; the change | CI build; `development-implementation` (the structure pair) |
 | QC-22 | the hostile fixture as a `MarkdownDocument` | `cargo test --locked -p ka-reader-core --test markdown` | the change | `development-implementation` |
 | QC-23 | no web engine | `checks/view.sh` (suite `test_view.sh`); `checks/no-network.sh` (suite `test_no_network.sh`) | the tree | CI build |
 | QC-24 | the export set equals the header, inside `SM-4`'s list and `ka_reader_free` | `cargo test --locked -p ka-reader-bridge --test exports` | the tree | CI build |
@@ -1987,12 +2018,12 @@ IS NOT HELD* (`checks/structure.sh:L35-L93` at `ka-reader@463acb9`) — and no r
 | QC-27 | critical vulnerability | `cargo audit` (every advisory; `--ignore <RUSTSEC-id>` with its reason) | the tree | release |
 | QC-28 | no secret; no signing identity | `gitleaks git`; `gh secret list --repo kensaiapp/ka-reader`; `codesign -dv KA-Reader.app` | the tree; the release | CI build; release |
 | QC-29 | artifact = tag build | `shasum -a 256 -c SHA256SUMS` against a rebuild | the release | release |
-| QC-30, QC-58 | no other entry point; no configuration — the product's own units | `checks/structure.sh` (suite `test_structure.sh`); `checks/view.sh` (suite `test_view.sh`) | the tree | CI build |
+| QC-30, QC-58 | no other entry point; no configuration — the product's own units | `checks/structure.sh` (suite `test_structure.sh`); `checks/view.sh` (suite `test_view.sh`) | the tree; the change | CI build; `development-implementation` (the structure pair) |
 | QC-30, QC-58 | the linked tree's environment and argument reads — Rust names, and C `getenv`, `environ` and `_NSGetEnviron` — against the reviewed list | `checks/entry-points.sh` (suite `test_entry_points.sh`) against `checks/entry-points.allow` | the tree | CI build |
 | QC-32 | empty egress set | AC-3 network monitor; `checks/no-network.sh` (suite `test_no_network.sh`) | the release; the tree | release; CI build |
 | QC-34 | the shell's reach | `checks/view.sh` (suite `test_view.sh`); `checks/no-network.sh` (suite `test_no_network.sh`) | the tree | CI build |
 | QC-35 | the product's reach — writes observed; the machine-level config reads switched off; the one outside path each scene names, not opened | `checks/own-state.sh` (suite `test_own_state.sh`); `checks/read-only.sh` (suite `test_read_only.sh`); `cargo test --locked -p ka-reader-bridge` — the four search paths read back empty (QC-17); `cargo test --locked -p ka-reader-core --test git_state` — the six FIFO cases | the tree | CI build |
-| QC-36 | no spawned process | `checks/structure.sh` (suite `test_structure.sh`); `checks/view.sh` (suite `test_view.sh`) | the tree | CI build |
+| QC-36 | no spawned process | `checks/structure.sh` (suite `test_structure.sh`); `checks/view.sh` (suite `test_view.sh`) | the tree; the change | CI build; `development-implementation` (the structure pair) |
 | QC-37 | `asset_bytes` and the decoder | `cargo test --locked -p ka-reader-bridge --test asset_bytes`; `swift test --package-path ka-reader-mac` | the change | `development-implementation` |
 | QC-38 | own-state fields | `checks/own-state.sh` (suite `test_own_state.sh`) | the tree | CI build |
 | QC-39, QC-52 | log shape and location | `cargo test --locked -p ka-reader-bridge` (layer 1); `checks/own-state.sh` (suite `test_own_state.sh`) | the change; the tree | `development-implementation`; CI build |
@@ -2009,7 +2040,7 @@ IS NOT HELD* (`checks/structure.sh:L35-L93` at `ka-reader@463acb9`) — and no r
 | QC-56 | macOS floor in the bundle; CI on the floor's image label | `/usr/libexec/PlistBuddy -c 'Print :LSMinimumSystemVersion' …`; `grep -h -E '^[[:space:]]*runs-on:' .github/workflows/*.yml \| grep -v …` | the release; the tree | release; `development-design` reading the entry |
 | QC-59 | priced contract against its major's pin | `checks/contract.sh <tag>` | the release | release, from `v1.0.0` |
 | QC-60 | own-state read across versions | `checks/own-state.sh --from <previous-tag>` (suite `test_own_state.sh`) | the release | release |
-| QC-61 | logging facade and its implementation | `checks/no-network.sh` (suite `test_no_network.sh`); `checks/structure.sh` (suite `test_structure.sh`) | the tree | CI build |
+| QC-61 | logging facade and its implementation | `checks/no-network.sh` (suite `test_no_network.sh`); `checks/structure.sh` (suite `test_structure.sh`) | the tree; the change | CI build; `development-implementation` (the structure pair) |
 
 Entries with no row are review gates, each arguing its downgrade in its own tail: QC-13 (the
 delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a listed crate and name), QC-18, QC-21, QC-31, QC-33, QC-43, QC-45, QC-50, QC-54, QC-57, and QC-59's behaviour member.
@@ -5753,3 +5784,53 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   `Version:`; § 9's *Adopted* passage's dated note; source: `docs/trail/architecture/cycle-46.md`
   § 2.1; `docs/trail/architecture/self_answer-51.md` § 2.1; GitHub Actions runs 38549778886,
   38551538187 and 38577309118, listed at the source for this run)*
+- **RN-65:** *(v54 — the close: the cycle-47 fold, § 3.1 answered)* **Intake.** The companion on
+  disk had one § 3 item and nothing in §§ 1 or 2. No `product-architecture` run wrote it: the owner
+  opened it on 2026-10-16 in an interactive session (`ka-reader@3870e48`) and answered it in the
+  same commit. The file was clean in git at intake and its slot was filled, so it is consumed. It
+  was copied whole to `docs/trail/architecture/cycle-47.md` before this fold's first edit, and `cmp`
+  found the two identical. **Whose answer this is.** The owner's own, and it outranks every input.
+  It binds where two of the harness's commands run and nothing about what they hold, and the owner
+  can reverse the fold with one revert. **§ 3.1 → § 8, § 9's `checks/tests/` bullet, and § 10.**
+  The question was whether § 10 gates `checks/structure.sh` and its suite at the change as well as
+  the CI build, so the card's test command runs both; the answer is yes, both on every change, the
+  suite's 2 min 20 s accepted, and every other `checks/*.sh` script left where § 10 has it. § 8
+  gains the rule, its measured ground — the merge at `ka-reader@21cfd34` of doc examples that broke
+  QC-2 and QC-15 while the card's command was green, CI red at run 38673999031, the repair at
+  `ka-reader@527f030` — and the move it owes `product-card`, in the form RN-60 used: the card's
+  command gains the pair. § 10's preamble states the change-time half once, and the ten rows that
+  name `checks/structure.sh` — QC-2, QC-7, QC-9 – QC-12 and QC-14, QC-63, QC-13, QC-15 and QC-17,
+  QC-20, the first QC-30 and QC-58 row, QC-36 and QC-61 — gain `the change` in *Runs over* and
+  `development-implementation (the structure pair)` in *Gated at*, so a row's other commands keep
+  their gate. **Two additions beyond the answer, each logged here.** (1) § 9's `checks/tests/`
+  bullet says every suite runs as a CI step and that CI's test command runs none, both still true;
+  without a pointer a reader of that bullet alone would conclude no suite runs at the change, so it
+  gains one sentence pointing at § 8 and repeats nothing. (2) § 8 states that § 9's *Toolchain*
+  clause does not bear on the pair. That clause holds a change-time verdict short of CI's unless
+  the run carries the recorded Swift toolchain, and read alone it would discount the pair's
+  change-time verdict too. It does not apply: the script reads source text and needs no toolchain
+  or build (`checks/structure.sh`, *WHY THIS EXISTS*), and the suite runs the real script over
+  copies of `crates/` and invokes neither `cargo` nor `swift` (`grep -nE '\bcargo\b|swift |rustc'
+  checks/tests/test_structure.sh` prints nothing). **What stays open, and where.** The card does not
+  carry the pair yet: `system/projects/ka-reader/project.md` in the managing instance reads
+  `cargo test --workspace --locked && ka-reader-mac/assemble.sh && swift test --package-path
+  ka-reader-mac`, and its comment says the harness "gates CI and release, not this field". Until
+  `product-card` moves it, the change-time gate is the rule and not the run, and the gap the item
+  raised stays open; § 8 and § 10's preamble both say so where a reader meets them. § 8's first
+  paragraph and RN-6 still state the card as it reads at `kensaiapp-opensource@d5005730`, which is
+  true today, and move when the card does. **What moved beneath this document.** `git diff --stat
+  f3b3bb1 HEAD -- docs` lists this companion and nothing else. Every input's `Status:` line still
+  reads Settled, and `git log -1` over the seven inputs is SDD v51 (`ka-reader@761bd6e`), the
+  revision v53 read, so `Inputs read:` stands. **Re-measured for this run at `ka-reader@3870e48`**,
+  on a fresh clone: `checks/structure.sh` prints `17 Rust files in 2 crates read — nothing found`
+  and exits 0, and `checks/tests/test_structure.sh` exits 0 with 94 `ok` lines in 2 min 44 s. **No
+  candidate record.** Where a gate runs is cheap to reverse — one line of the card — and it gives
+  up nothing structural; it fails the first gate. `grep -n -i -E "change-time|test command|gates
+  CI"` over `docs/adr/` prints nothing, so no accepted record says where the harness runs and none
+  is superseded. No ADR is written, edited or restatused, the index does not move, and no `QC` is
+  added, renumbered or reused. **Known limits.** This run read the inputs at their status lines and
+  the SDD's last commit, and ran only the structure pair; it built no bundle and ran no other suite
+  or script. **The companion.** Nothing is left for the owner, so the companion is removed and
+  `Status:` is Settled *(re: header `Status:`, `Version:`; § 8; § 9 the `checks/tests/` bullet;
+  § 10 preamble and ten rows; source: `docs/trail/architecture/cycle-47.md` § 3.1; GitHub Actions
+  run 38673999031; `ka-reader@f1280b6`, `ka-reader@21cfd34`, `ka-reader@527f030`)*
