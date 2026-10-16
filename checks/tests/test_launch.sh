@@ -15,8 +15,9 @@
 #
 # USAGE
 #   checks/tests/test_launch.sh
-#   Refuses off a macOS virtual machine, as the script under test does (its refusal case is
-#   test_refuses_off_vm_before_work, run here through the shared helper).
+#   Runs on any host: every host reading is a stand-in, `open` only records, and the home is the
+#   scene's. The script under test refuses off a macOS virtual machine; its refusal case is
+#   test_refuses_off_vm_before_work, run here through the shared helper.
 #
 # THE CLOCK
 #   The script waits with `sleep 0.25` in two places: the foreground loop that counts ticks, and the
@@ -252,7 +253,7 @@ test_admits_on_a_vm_reading() {
   expect_silent
 }
 
-# CP-792: the built bundle is launched once, through `open`, by its path from the product root, with
+# CP-793: the built bundle is launched once, through `open`, by its path from the product root, with
 # no environment the workflow set.
 test_launches_the_built_bundle_once() {
   new_scene

@@ -201,13 +201,13 @@ test_every_toplevel_suite_is_an_entire_fatal_step() {
   [ "$checked" -gt 0 ] || fail "no top-level suite was found, so nothing was checked"
 }
 
-# CP-804: no step is conditional and none may fail without failing the run.
+# CP-803: no step is conditional and none may fail without failing the run.
 test_no_conditional_or_nonfatal_step() {
   found="$(grep -n -E 'continue-on-error|^[[:space:]]+if:' "$WORKFLOW" || true)"
   [ -z "$found" ] || fail "a conditional or non-fatal step: $found"
 }
 
-# CP-805: every runner the workflows name is macos-26, the image whose virtual machine the refusal needs.
+# CP-804: every runner the workflows name is macos-26, the image whose virtual machine the refusal needs.
 test_every_runner_names_macos_26() {
   runners="$(grep -h -E '^[[:space:]]*runs-on:' "$WORKFLOWS"/*.yml || true)"
   [ -n "$runners" ] || fail "no workflow names a runner, so nothing was checked" || return 1

@@ -33,7 +33,9 @@
 
 set -euo pipefail
 
-LOG="$HOME/Library/Containers/com.kensaiapp.ka-reader/Data/Library/Logs/ka-reader.log"
+# Built for the timeout line alone. `${HOME-}`, not `$HOME`: under `set -u` an unset HOME would end this
+# script here, before the child, and the child is the one that decides whether a reading runs.
+LOG="${HOME-}/Library/Containers/com.kensaiapp.ka-reader/Data/Library/Logs/ka-reader.log"
 WAIT_TICKS=240
 
 set -m
