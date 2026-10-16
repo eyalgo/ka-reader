@@ -9,8 +9,9 @@ mod language;
 
 pub use error::Error;
 pub use folder_model::{
-    FileView, FolderKind, FolderModel, GitCondition, GitState, OpenFolderOutcome, OpenedFolder,
-    list_tree, open_folder, read_git, select_file,
+    FileRequest, FileView, FolderKind, FolderModel, GitCondition, GitState, ModelDelta, OpenFile,
+    OpenFolderOutcome, OpenedFolder, ReaderPlace, ReadingPosition, TreeRequest, list_tree,
+    open_folder, read_git, select_file,
 };
 pub use fs_reader::{CannotDisplayReason, Condition, Entry, EntryKind, ItemState, OpenFailure};
 pub use git_reader::{

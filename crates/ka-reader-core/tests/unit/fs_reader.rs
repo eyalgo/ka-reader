@@ -1373,3 +1373,273 @@ fn test_reading_leaves_the_tree_byte_identical() {
         assert_eq!(snapshot(temp.path()), before, "{requested}");
     }
 }
+
+// ---- Observation data: what a model needs beyond the public listing and read answers ----
+
+fn observed_listing(root: &Path, requested: &str) -> ListingObservation {
+    match observe_listing(root, Path::new(requested)) {
+        ItemState::Observed(observation) => observation,
+        other => panic!("{requested} was expected to be observed: {other:?}"),
+    }
+}
+
+/// A folder holding the ordering cases a disk can hold: folders first, case, digit names. A case
+/// tie needs two names that differ only by case, which one volume that ignores case cannot hold,
+/// so that case is exercised on values.
+fn make_ordering_cases(temp: &TempDir) {
+    temp.make_folder("B");
+    temp.make_folder("a");
+    temp.write_file("file10", "");
+    temp.write_file("file2", "");
+    temp.write_file(".dot", "");
+    temp.write_file("Readme", "");
+}
+
+#[test]
+fn test_observe_listing_matches_the_legacy_listing_entry_for_entry() {
+    let temp = TempDir::new();
+    make_ordering_cases(&temp);
+    temp.write_file("src/main.rs", "");
+    temp.make_link("src/link", "../a");
+    temp.make_link("dangling", "gone");
+
+    for requested in ["", "src", "."] {
+        assert_eq!(
+            observe_listing(temp.path(), Path::new(requested))
+                .map(ListingObservation::into_entries),
+            list(temp.path(), requested),
+            "{requested:?}"
+        );
+    }
+}
+
+#[test]
+fn test_observation_keeps_native_paths_and_ordering_evidence_for_two_names_that_display_alike() {
+    // Neither raw name is valid UTF-8, and both report as "\u{FFFD}" once made lossy. APFS refuses
+    // to create such names, so the observation is built as the values it holds.
+    let observation = ListingObservation {
+        location: PathBuf::from("docs"),
+        items: vec![
+            listed_entry(&[0xFF], "\u{FFFD}", EntryKind::File),
+            listed_entry(&[0xFE], "\u{FFFD}", EntryKind::File),
+        ],
+    };
+    let mut items = observation.items.clone();
+    order(&mut items);
+
+    let native_paths: Vec<PathBuf> = items
+        .iter()
+        .map(|item| observation.location.join(&item.raw_name))
+        .collect();
+    assert_eq!(
+        native_paths,
+        [
+            PathBuf::from("docs").join(OsString::from_vec(vec![0xFE])),
+            PathBuf::from("docs").join(OsString::from_vec(vec![0xFF])),
+        ]
+    );
+    assert_eq!(items[0].entry.name, items[1].entry.name);
+}
+
+#[test]
+fn test_observe_listing_keeps_each_raw_name_beside_its_entry() {
+    let temp = TempDir::new();
+    make_ordering_cases(&temp);
+
+    let observation = observed_listing(temp.path(), "");
+
+    assert_eq!(observation.location, PathBuf::new());
+    for item in &observation.items {
+        assert_eq!(
+            observation.location.join(&item.raw_name).to_string_lossy(),
+            item.entry.path
+        );
+        assert_eq!(item.raw_name.to_string_lossy(), item.entry.name);
+    }
+}
+
+#[test]
+fn test_observe_listing_of_an_outside_request_returns_the_existing_failed_condition() {
+    let temp = TempDir::new();
+    let root = temp.make_folder("root");
+
+    for requested in ["..", "../x"] {
+        assert_eq!(
+            observe_listing(&root, Path::new(requested)),
+            ItemState::Failed(Condition::Outside),
+            "{requested}"
+        );
+        assert_eq!(list(&root, requested), failed(Condition::Outside));
+    }
+}
+
+#[test]
+fn test_observe_file_matches_the_legacy_read() {
+    let temp = TempDir::new();
+    temp.write_file("note.md", "# title\n");
+    temp.write_file("empty.txt", "");
+    write_bytes(&temp, "utf16.txt", &[0xFF, 0xFE, b'h', 0, b'i', 0]);
+    write_bytes(&temp, "latin1.txt", &[b'c', b'a', b'f', 0xE9]);
+    temp.make_folder("src");
+
+    for requested in [
+        "note.md",
+        "empty.txt",
+        "utf16.txt",
+        "latin1.txt",
+        "src",
+        "missing",
+    ] {
+        assert_eq!(
+            observe_file(temp.path(), Path::new(requested)),
+            read(temp.path(), requested),
+            "{requested}"
+        );
+    }
+    assert!(matches!(
+        observe_file(temp.path(), Path::new("latin1.txt")),
+        ItemState::Observed(FileContent::CannotDisplay(CannotDisplayReason::InvalidUtf8))
+    ));
+    assert!(matches!(
+        observe_file(temp.path(), Path::new("utf16.txt")),
+        ItemState::Observed(FileContent::Text { .. })
+    ));
+}
+
+#[test]
+fn test_location_identity_resolves_an_inside_folder_link_to_its_target_identity() {
+    let temp = TempDir::new();
+    temp.make_folder("real/inner");
+    temp.make_link("shown", "real");
+
+    let linked = locate(temp.path(), Path::new("shown")).expect("the link resolves inside");
+    let target = locate(temp.path(), Path::new("real")).expect("the target resolves inside");
+
+    assert_eq!(linked.identity, PathBuf::from("real"));
+    assert_eq!(linked.kind, EntryKind::Folder);
+    assert_eq!(linked, target);
+    assert_eq!(
+        locate(temp.path(), Path::new("shown/inner")),
+        Ok(Location {
+            identity: PathBuf::from("real/inner"),
+            kind: EntryKind::Folder,
+        })
+    );
+}
+
+#[test]
+fn test_location_identity_reports_a_file_as_a_file() {
+    let temp = TempDir::new();
+    temp.write_file("src/main.rs", "");
+
+    assert_eq!(
+        locate(temp.path(), Path::new("src/main.rs")),
+        Ok(Location {
+            identity: PathBuf::from("src/main.rs"),
+            kind: EntryKind::File,
+        })
+    );
+}
+
+#[test]
+fn test_location_identity_of_a_removed_entry_resolves_its_parent() {
+    let temp = TempDir::new();
+    temp.make_folder("src");
+    let folder = |identity: &str| {
+        Ok(Location {
+            identity: PathBuf::from(identity),
+            kind: EntryKind::Folder,
+        })
+    };
+
+    assert_eq!(
+        locate(temp.path(), Path::new("src/gone.rs")),
+        Err(Condition::Missing)
+    );
+    assert_eq!(
+        locate_parent(temp.path(), Path::new("src/gone.rs")),
+        folder("src")
+    );
+    assert_eq!(locate_parent(temp.path(), Path::new("gone.rs")), folder(""));
+}
+
+#[test]
+fn test_location_identity_of_a_path_outside_the_root_fails_with_the_existing_condition() {
+    let temp = TempDir::new();
+    let root = temp.make_folder("root");
+    temp.write_file("outside.txt", "secret");
+    temp.make_link("root/escape", "../outside.txt");
+
+    for requested in ["..", "../outside.txt", "escape"] {
+        assert_eq!(
+            locate(&root, Path::new(requested)),
+            Err(Condition::Outside),
+            "{requested}"
+        );
+    }
+    assert_eq!(
+        locate_parent(&root, Path::new("../outside.txt")),
+        Err(Condition::Outside)
+    );
+}
+
+#[test]
+fn test_pure_ordering_matches_a_fresh_listing_for_the_same_entries() {
+    let temp = TempDir::new();
+    make_ordering_cases(&temp);
+    let fresh = observed_listing(temp.path(), "").items;
+
+    let mut shuffled = fresh.clone();
+    shuffled.reverse();
+    shuffled.rotate_left(3);
+    assert_ne!(shuffled, fresh, "the shuffle must disturb the order");
+    order(&mut shuffled);
+
+    assert_eq!(shuffled, fresh);
+    assert_eq!(
+        shuffled
+            .iter()
+            .map(|item| item.entry.name.as_str())
+            .collect::<Vec<_>>(),
+        ["a", "B", ".dot", "file10", "file2", "Readme"]
+    );
+}
+
+#[test]
+fn test_pure_ordering_performs_no_read() {
+    // Nothing named here exists, and `order` takes no root, so there is nothing for it to read.
+    let observation = ListingObservation {
+        location: PathBuf::from("/a/location/that/is/not/on/disk"),
+        items: vec![
+            listed_entry(b"z", "z", EntryKind::File),
+            listed_entry(b"readme", "readme", EntryKind::File),
+            listed_entry(b"d", "d", EntryKind::Folder),
+            listed_entry(b"Readme", "Readme", EntryKind::File),
+            listed_entry(b"a", "a", EntryKind::File),
+        ],
+    };
+    let mut items = observation.items;
+    order(&mut items);
+
+    assert_eq!(
+        items
+            .iter()
+            .map(|item| item.entry.name.as_str())
+            .collect::<Vec<_>>(),
+        ["d", "a", "Readme", "readme", "z"]
+    );
+}
+
+#[test]
+fn test_mapping_an_item_state_carries_only_the_observed_value() {
+    let observed: ItemState<u8> = ItemState::Observed(2);
+    let failed: ItemState<u8> = ItemState::Failed(Condition::Missing);
+    let pending: ItemState<u8> = ItemState::Pending;
+
+    assert_eq!(observed.map(|value| value * 2), ItemState::Observed(4));
+    assert_eq!(
+        failed.map(|value| value * 2),
+        ItemState::Failed(Condition::Missing)
+    );
+    assert_eq!(pending.map(|value| value * 2), ItemState::Pending);
+}

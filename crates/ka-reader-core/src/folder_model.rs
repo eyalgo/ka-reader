@@ -1,9 +1,14 @@
 //! folder-model: SM-5, the crate's public surface for the host and the harness. An opened folder is
 //! a canonical root, and listing is delegated to fs-reader.
 
+use std::collections::{BTreeMap, BTreeSet};
+use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 
-use crate::fs_reader::{self, CannotDisplayReason, Entry, FileContent, ItemState, OpenFailure};
+use crate::fs_reader::{
+    self, CannotDisplayReason, Entry, EntryKind, FileContent, ItemState, Listed,
+    ListingObservation, Location, OpenFailure, order,
+};
 use crate::git_reader::{
     GitPort, GitReadCondition, HeadState, ProbeCondition, RootFinding, StatusLists,
 };
@@ -262,10 +267,291 @@ const SUBMODULE_ELSEWHERE_PHRASE: &str =
 /// The one phrase for a `.gitmodules` the check could not read.
 const GITMODULES_UNREADABLE_PHRASE: &str = "a .gitmodules could not be read";
 
-/// An opened folder with what has been read of it: the root listing and the Git item.
+/// Where the reader's place in a file is, held exactly as the caller supplied it.
 ///
-/// A value: [`read_git`] consumes one and returns the next, so a caller that keeps one replaces it
-/// whole.
+/// The bytes are opaque: the model never parses, rounds, clamps or derives them, so a caller
+/// chooses the encoding (a line, a line with a finer offset, a scroll fraction) and reads the same
+/// bytes back.
+///
+/// # Examples
+///
+/// ```
+/// use ka_reader_core::ReadingPosition;
+///
+/// let position = ReadingPosition::new(b"line=400".as_slice());
+/// assert_eq!(position.as_bytes(), b"line=400");
+/// assert_eq!(position, ReadingPosition::new(b"line=400".as_slice()));
+/// ```
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ReadingPosition(Vec<u8>);
+
+impl ReadingPosition {
+    pub fn new(bytes: impl Into<Vec<u8>>) -> Self {
+        Self(bytes.into())
+    }
+
+    pub fn as_bytes(&self) -> &[u8] {
+        &self.0
+    }
+}
+
+/// The one file shown for reading: its path, the position the reader holds in it, and what reading
+/// it gave. The sole owner of those three, so none is kept anywhere else.
+///
+/// # Examples
+///
+/// ```
+/// use ka_reader_core::{FileRequest, FolderModel, ReadingPosition, open_folder};
+///
+/// let folder = std::env::temp_dir().join("ka-reader-doc-open-file");
+/// std::fs::create_dir_all(&folder).expect("the example folder is made");
+/// std::fs::write(folder.join("main.rs"), "fn main() {}\n").expect("the example file is written");
+///
+/// let opened = open_folder(&folder).expect("the example folder opens");
+/// let position = ReadingPosition::new(b"line=400".as_slice());
+/// let model = FolderModel::new(opened)
+///     .select_file(FileRequest::Open("main.rs".into(), position.clone()));
+///
+/// let open = model.open_file().expect("the file is open");
+/// assert_eq!(open.path(), std::path::Path::new("main.rs"));
+/// assert_eq!(open.position(), &position);
+/// std::fs::remove_dir_all(&folder).expect("the example folder is removed");
+/// ```
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct OpenFile {
+    path: PathBuf,
+    position: ReadingPosition,
+    view: ItemState<FileView>,
+}
+
+impl OpenFile {
+    /// The path the file was opened by, relative to the folder's root.
+    pub fn path(&self) -> &Path {
+        &self.path
+    }
+
+    /// The position the reader holds in the file, exactly as it was supplied.
+    pub fn position(&self) -> &ReadingPosition {
+        &self.position
+    }
+
+    /// What reading the file gave when it was opened, as [`select_file`] answers it.
+    pub fn view(&self) -> &ItemState<FileView> {
+        &self.view
+    }
+}
+
+/// What the reader has done to the tree and the file: which folders are expanded, which file is
+/// selected, and the open file. It is held in memory only and is never written anywhere.
+///
+/// A folder absent from the expanded set is collapsed, so a place that expanded and collapsed a
+/// folder equals one that never touched it. Paths are native, relative to the opened folder's root.
+///
+/// # Examples
+///
+/// ```
+/// use std::path::Path;
+/// use ka_reader_core::{FolderModel, open_folder};
+///
+/// let opened = open_folder(std::env::temp_dir()).expect("the temporary folder opens");
+/// let model = FolderModel::new(opened);
+///
+/// assert!(!model.place().is_expanded(Path::new(".git")));
+/// assert_eq!(model.place().selected(), None);
+/// assert!(model.place().open_file().is_none());
+/// ```
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct ReaderPlace {
+    expanded: BTreeSet<PathBuf>,
+    selected: Option<PathBuf>,
+    open_file: Option<OpenFile>,
+}
+
+impl ReaderPlace {
+    /// Whether the folder at `path`, as it was asked for, is expanded.
+    pub fn is_expanded(&self, path: &Path) -> bool {
+        self.expanded.contains(path)
+    }
+
+    /// The selected file, if one is.
+    pub fn selected(&self) -> Option<&Path> {
+        self.selected.as_deref()
+    }
+
+    /// The open file, if one is. With none open there is no reading position.
+    pub fn open_file(&self) -> Option<&OpenFile> {
+        self.open_file.as_ref()
+    }
+}
+
+/// An act on the tree: a folder disclosed or hidden.
+///
+/// # Examples
+///
+/// ```
+/// use std::path::Path;
+/// use ka_reader_core::{FolderModel, TreeRequest, open_folder};
+///
+/// let folder = std::env::temp_dir().join("ka-reader-doc-tree-request");
+/// std::fs::create_dir_all(folder.join("src")).expect("the example folder is made");
+///
+/// let opened = open_folder(&folder).expect("the example folder opens");
+/// let model = FolderModel::new(opened).list_tree(TreeRequest::Expand("src".into()));
+/// assert!(model.place().is_expanded(Path::new("src")));
+///
+/// let model = model.list_tree(TreeRequest::Collapse("src".into()));
+/// assert!(!model.place().is_expanded(Path::new("src")));
+/// std::fs::remove_dir_all(&folder).expect("the example folder is removed");
+/// ```
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TreeRequest {
+    /// Hold the folder expanded, with its direct listing read now.
+    Expand(PathBuf),
+    /// Hold the folder collapsed. Nothing is read, and nothing held beneath it is dropped.
+    Collapse(PathBuf),
+    /// Apply what the disk reported: entries created, changed and removed. Only the listings the
+    /// model holds change, and the place and the Git item are carried as they were.
+    Delta(ModelDelta),
+}
+
+/// A batch of reports about the disk: entry paths, relative to the opened folder's root, that were
+/// created, changed or removed. A report says what happened and never asks for it to happen.
+///
+/// # Examples
+///
+/// ```
+/// use std::path::PathBuf;
+/// use ka_reader_core::ModelDelta;
+///
+/// let delta = ModelDelta::new(vec![PathBuf::from("src/new.rs")], vec![], vec![]);
+/// assert!(!delta.is_empty());
+/// assert!(ModelDelta::default().is_empty());
+/// ```
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct ModelDelta {
+    created: Vec<PathBuf>,
+    changed: Vec<PathBuf>,
+    removed: Vec<PathBuf>,
+}
+
+impl ModelDelta {
+    pub fn new(created: Vec<PathBuf>, changed: Vec<PathBuf>, removed: Vec<PathBuf>) -> Self {
+        Self {
+            created,
+            changed,
+            removed,
+        }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.created.is_empty() && self.changed.is_empty() && self.removed.is_empty()
+    }
+
+    /// Every reported path, each with whether it was reported removed.
+    fn reports(&self) -> impl Iterator<Item = (&Path, bool)> {
+        let present = self
+            .created
+            .iter()
+            .chain(&self.changed)
+            .map(|path| (path.as_path(), false));
+        present.chain(self.removed.iter().map(|path| (path.as_path(), true)))
+    }
+}
+
+/// The names a delta reports in one folder: those it says exist (created or changed) and those it
+/// says are gone. Names are raw, so two names that display alike stay two.
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
+struct ReportedNames {
+    present: BTreeSet<OsString>,
+    removed: BTreeSet<OsString>,
+}
+
+/// What reducing one held folder needs: what the delta reported about it, and a fresh read of it.
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct FolderChange {
+    reported: ReportedNames,
+    observed: ItemState<ListingObservation>,
+}
+
+/// An act on the file: which is selected, which is open, and where the reader is in it.
+///
+/// # Examples
+///
+/// ```
+/// use std::path::Path;
+/// use ka_reader_core::{FileRequest, FolderModel, ReadingPosition, open_folder};
+///
+/// let folder = std::env::temp_dir().join("ka-reader-doc-file-request");
+/// std::fs::create_dir_all(&folder).expect("the example folder is made");
+/// std::fs::write(folder.join("a.txt"), "a\n").expect("the example file is written");
+///
+/// let opened = open_folder(&folder).expect("the example folder opens");
+/// let model = FolderModel::new(opened).select_file(FileRequest::Select(Some("a.txt".into())));
+/// assert_eq!(model.place().selected(), Some(Path::new("a.txt")));
+/// assert!(model.open_file().is_none());
+///
+/// let anchor = ReadingPosition::new(b"line=400".as_slice());
+/// let model = model
+///     .select_file(FileRequest::Open("a.txt".into(), ReadingPosition::new(b"top".as_slice())))
+///     .select_file(FileRequest::Position(anchor.clone()));
+/// assert_eq!(model.open_file().map(|open| open.position()), Some(&anchor));
+/// std::fs::remove_dir_all(&folder).expect("the example folder is removed");
+/// ```
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum FileRequest {
+    /// Select a file, or with `None` select none. No content is read.
+    Select(Option<PathBuf>),
+    /// Open a file at the given position, replacing any file open before.
+    Open(PathBuf, ReadingPosition),
+    /// Set the open file's position. With no file open the model is returned unchanged.
+    Position(ReadingPosition),
+}
+
+/// One folder's direct entries as the model holds them: the entry observations, in the FDR's order,
+/// and the public listing derived from them in this one place, so the two cannot disagree.
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct HeldListing {
+    /// The resolved location the listing was read at, where two folder rows that reach one folder
+    /// share it.
+    identity: PathBuf,
+    entries: ItemState<Vec<Entry>>,
+    items: Vec<Listed>,
+}
+
+impl HeldListing {
+    /// The listing `observation` answers for the folder at `identity`. A failed observation has no
+    /// location of its own, so the one the request resolved to is kept.
+    fn from_observation(identity: PathBuf, observation: ItemState<ListingObservation>) -> Self {
+        match observation {
+            ItemState::Observed(observed) => Self::from_items(observed.location, observed.items),
+            ItemState::Failed(condition) => Self {
+                identity,
+                entries: ItemState::Failed(condition),
+                items: Vec::new(),
+            },
+            ItemState::Pending => Self {
+                identity,
+                entries: ItemState::Pending,
+                items: Vec::new(),
+            },
+        }
+    }
+
+    fn from_items(identity: PathBuf, items: Vec<Listed>) -> Self {
+        let entries = ItemState::Observed(items.iter().map(|item| item.entry.clone()).collect());
+        Self {
+            identity,
+            entries,
+            items,
+        }
+    }
+}
+
+/// An opened folder with what has been read of it: the root listing, the listing of every folder
+/// the reader has expanded, the reader's place, and the Git item.
+///
+/// A value: [`read_git`] and the two request operations consume one and return the next, so a
+/// caller that keeps one replaces it whole.
 ///
 /// # Examples
 ///
@@ -275,21 +561,29 @@ const GITMODULES_UNREADABLE_PHRASE: &str = "a .gitmodules could not be read";
 /// let opened = open_folder(std::env::temp_dir()).expect("the temporary folder opens");
 /// let model = FolderModel::new(opened);
 /// assert_eq!(model.kind(), &ItemState::Pending);
+/// assert!(model.open_file().is_none());
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FolderModel {
     folder: OpenedFolder,
-    tree: ItemState<Vec<Entry>>,
+    root_listing: HeldListing,
+    /// Every non-root listing read, by the path the reader asked for it with. A folder collapsed
+    /// after it was read keeps its listing here.
+    listings: BTreeMap<PathBuf, HeldListing>,
+    place: ReaderPlace,
     kind: ItemState<FolderKind, GitCondition>,
 }
 
 impl FolderModel {
-    /// Holds `opened` with its root listing as [`list_tree`] answers it, and the Git item `Pending`.
+    /// Holds `opened` with its root listing as [`list_tree`] answers it, the arrival place (nothing
+    /// expanded, nothing selected, nothing open), and the Git item `Pending`.
     pub fn new(opened: OpenedFolder) -> Self {
-        let tree = list_tree(&opened, "");
+        let observation = fs_reader::observe_listing(&opened.root, Path::new(""));
         Self {
+            root_listing: HeldListing::from_observation(PathBuf::new(), observation),
             folder: opened,
-            tree,
+            listings: BTreeMap::new(),
+            place: ReaderPlace::default(),
             kind: ItemState::Pending,
         }
     }
@@ -298,14 +592,238 @@ impl FolderModel {
         &self.folder
     }
 
+    /// The root listing: the same one [`FolderModel::listing`] holds for the root.
     pub fn tree(&self) -> &ItemState<Vec<Entry>> {
-        &self.tree
+        &self.root_listing.entries
     }
 
     /// The Git item: `Pending` until [`read_git`] folds an answer in.
     pub fn kind(&self) -> &ItemState<FolderKind, GitCondition> {
         &self.kind
     }
+
+    pub fn place(&self) -> &ReaderPlace {
+        &self.place
+    }
+
+    pub fn open_file(&self) -> Option<&OpenFile> {
+        self.place.open_file()
+    }
+
+    /// The held direct listing of the folder at `path`: the root for the empty path, any folder the
+    /// reader has expanded, and any folder collapsed since. A folder never expanded holds none, and
+    /// nothing is read to answer.
+    pub fn listing(&self, path: &Path) -> Option<&ItemState<Vec<Entry>>> {
+        if path.as_os_str().is_empty() {
+            return Some(&self.root_listing.entries);
+        }
+        self.listings.get(path).map(|held| &held.entries)
+    }
+
+    /// Applies a disclosure act or a delta and returns the model that results.
+    ///
+    /// `Expand` reads the folder's direct listing and holds it; `Collapse` changes only that
+    /// folder's flag and reads nothing. A path that does not resolve inside the root to a folder,
+    /// and the root itself, leaves the model as it was. `Delta` changes only the held listings that
+    /// hold a reported entry, by the reported entries alone, and leaves the place and the Git item
+    /// as they were.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use std::path::{Path, PathBuf};
+    /// use ka_reader_core::{FolderModel, TreeRequest, open_folder};
+    ///
+    /// let opened = open_folder(std::env::temp_dir()).expect("the temporary folder opens");
+    /// let model = FolderModel::new(opened).list_tree(TreeRequest::Expand(PathBuf::from("..")));
+    /// assert!(!model.place().is_expanded(Path::new("..")));
+    /// ```
+    pub fn list_tree(self, request: TreeRequest) -> Self {
+        match request {
+            TreeRequest::Expand(path) => self.expand(path),
+            TreeRequest::Collapse(path) => self.collapse(path),
+            TreeRequest::Delta(delta) => self.apply_delta(&delta),
+        }
+    }
+
+    /// Applies a selection, open or position act and returns the model that results.
+    ///
+    /// `Select` reads no content and changes only the selection. `Open` reads the file as
+    /// [`select_file`] does and changes only the open file. `Position` changes only the open file's
+    /// position. A path that does not resolve inside the root to a file leaves the model as it was.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use ka_reader_core::{FileRequest, FolderModel, open_folder};
+    ///
+    /// let opened = open_folder(std::env::temp_dir()).expect("the temporary folder opens");
+    /// let model = FolderModel::new(opened).select_file(FileRequest::Select(None));
+    /// assert_eq!(model.place().selected(), None);
+    /// ```
+    pub fn select_file(self, request: FileRequest) -> Self {
+        match request {
+            FileRequest::Select(None) => self.with_selection(None),
+            FileRequest::Select(Some(path)) => match self.admit(&path, EntryKind::File) {
+                Some(_) => self.with_selection(Some(path)),
+                None => self,
+            },
+            FileRequest::Open(path, position) => self.open(path, position),
+            FileRequest::Position(position) => self.with_position(position),
+        }
+    }
+
+    /// Reads each held folder a delta touches once, then hands the report and what was read to the
+    /// pure [`reduce`]. A folder the model holds no listing of is never read, so a report inside
+    /// one changes nothing.
+    fn apply_delta(self, delta: &ModelDelta) -> Self {
+        let root = &self.folder.root;
+        let held_identities: BTreeSet<&PathBuf> = std::iter::once(&self.root_listing)
+            .chain(self.listings.values())
+            .map(|held| &held.identity)
+            .collect();
+        let mut parent_identities: BTreeMap<PathBuf, Option<PathBuf>> = BTreeMap::new();
+        let mut reported: BTreeMap<PathBuf, ReportedNames> = BTreeMap::new();
+        for (path, removed) in delta.reports() {
+            let Some(name) = path.file_name() else {
+                continue;
+            };
+            let parent = path.parent().unwrap_or(Path::new("")).to_path_buf();
+            let identity = parent_identities.entry(parent).or_insert_with(|| {
+                fs_reader::locate_parent(root, path)
+                    .ok()
+                    .filter(|location| location.kind == EntryKind::Folder)
+                    .map(|location| location.identity)
+            });
+            let Some(identity) = identity.as_ref().filter(|id| held_identities.contains(id)) else {
+                continue;
+            };
+            let names = reported.entry(identity.clone()).or_default();
+            let set = if removed {
+                &mut names.removed
+            } else {
+                &mut names.present
+            };
+            set.insert(name.to_os_string());
+        }
+        let changes: BTreeMap<PathBuf, FolderChange> = reported
+            .into_iter()
+            .map(|(identity, reported)| {
+                let observed = fs_reader::observe_listing(root, &identity);
+                (identity, FolderChange { reported, observed })
+            })
+            .collect();
+        reduce(self, &changes)
+    }
+
+    /// The location of `path` when it resolves inside the root to something of `kind`.
+    fn admit(&self, path: &Path, kind: EntryKind) -> Option<Location> {
+        fs_reader::locate(&self.folder.root, path)
+            .ok()
+            .filter(|location| location.kind == kind)
+    }
+
+    fn expand(mut self, path: PathBuf) -> Self {
+        let Some(location) = self.admit(&path, EntryKind::Folder) else {
+            return self;
+        };
+        if location.identity.as_os_str().is_empty() {
+            return self;
+        }
+        let observation = fs_reader::observe_listing(&self.folder.root, &path);
+        self.listings.insert(
+            path.clone(),
+            HeldListing::from_observation(location.identity, observation),
+        );
+        self.place.expanded.insert(path);
+        self
+    }
+
+    fn collapse(mut self, path: PathBuf) -> Self {
+        match self.admit(&path, EntryKind::Folder) {
+            Some(location) if !location.identity.as_os_str().is_empty() => {
+                self.place.expanded.remove(&path);
+            }
+            _ => {}
+        }
+        self
+    }
+
+    fn with_selection(mut self, selected: Option<PathBuf>) -> Self {
+        self.place.selected = selected;
+        self
+    }
+
+    fn open(mut self, path: PathBuf, position: ReadingPosition) -> Self {
+        if self.admit(&path, EntryKind::File).is_none() {
+            return self;
+        }
+        let view = fs_reader::observe_file(&self.folder.root, &path).map(FileView::from);
+        self.place.open_file = Some(OpenFile {
+            path,
+            position,
+            view,
+        });
+        self
+    }
+
+    fn with_position(mut self, position: ReadingPosition) -> Self {
+        if let Some(open_file) = self.place.open_file.as_mut() {
+            open_file.position = position;
+        }
+        self
+    }
+}
+
+/// The model after a delta: every held listing whose folder `changes` names is reduced, and nothing
+/// else moves. It is pure. It takes the held data, the reports and a fresh read of each reported
+/// folder, and reads nothing itself, so the place, the open file's content and the Git item are
+/// carried from the input and never rebuilt from the listings.
+fn reduce(model: FolderModel, changes: &BTreeMap<PathBuf, FolderChange>) -> FolderModel {
+    let reduced = |held: HeldListing| match changes.get(&held.identity) {
+        Some(change) => reduce_listing(held, change),
+        None => held,
+    };
+    FolderModel {
+        root_listing: reduced(model.root_listing),
+        listings: model
+            .listings
+            .into_iter()
+            .map(|(path, held)| (path, reduced(held)))
+            .collect(),
+        ..model
+    }
+}
+
+/// One held listing after the delta: each entry the delta names is dropped, each one it says exists
+/// comes back as its fresh observation (when the fresh read still sees it), every other entry is
+/// kept as it was held, and the result is ordered as a fresh listing orders. A name reported both
+/// present and removed is decided by the fresh read.
+///
+/// A listing that is not observed, and a fresh read that failed, leave the held listing as it was:
+/// what the model holds for a failed folder read is not this change's to settle.
+fn reduce_listing(held: HeldListing, change: &FolderChange) -> HeldListing {
+    let (ItemState::Observed(_), ItemState::Observed(fresh)) = (&held.entries, &change.observed)
+    else {
+        return held;
+    };
+    let reported = &change.reported;
+    let mut items: Vec<Listed> = held
+        .items
+        .into_iter()
+        .filter(|item| {
+            !reported.present.contains(&item.raw_name) && !reported.removed.contains(&item.raw_name)
+        })
+        .collect();
+    items.extend(
+        fresh
+            .items
+            .iter()
+            .filter(|item| reported.present.contains(&item.raw_name))
+            .cloned(),
+    );
+    order(&mut items);
+    HeldListing::from_items(held.identity, items)
 }
 
 /// Asks `port` about the model's folder and returns the model with only the Git item replaced.
@@ -354,7 +872,21 @@ fn ask_git(port: &dyn GitPort, root: &Path) -> Result<FolderKind, (GitCondition,
 
 #[cfg(test)]
 mod tests {
-    use super::{OpenFailure, OpenFolderOutcome, open_folder};
+    use std::path::{Path, PathBuf};
+
+    use std::collections::{BTreeMap, BTreeSet};
+    use std::ffi::OsString;
+
+    use super::{
+        FileRequest, FileView, FolderChange, FolderKind, FolderModel, GitCondition, HeldListing,
+        ItemState, ModelDelta, OpenFailure, OpenFolderOutcome, OpenedFolder, ReaderPlace,
+        ReadingPosition, ReportedNames, TreeRequest, list_tree, open_folder, read_git, reduce,
+        select_file,
+    };
+    use crate::fs_reader::{Condition, Entry, EntryKind, Listed, ListingObservation};
+    use crate::git_reader::ProbeCondition;
+    use crate::git_reader::{GitPort, GitReadCondition, HeadState, RootFinding, StatusLists};
+    use crate::language::Language;
     use crate::test_support::TempDir;
 
     #[test]
@@ -381,5 +913,809 @@ mod tests {
             open_folder(file),
             OpenFolderOutcome::Failed(OpenFailure::NotAFolder)
         );
+    }
+
+    /// A project-shaped folder: a root file, nested folders, a `.git` entry and a file to open.
+    fn project() -> TempDir {
+        let folder = TempDir::new();
+        folder.write_file("README.md", "# readme\n");
+        folder.write_file("src/main.rs", "fn main() {}\n");
+        folder.write_file("src/util.rs", "// util\n");
+        folder.write_file("src/lib/a.rs", "// a\n");
+        folder.write_file("docs/guide.md", "guide\n");
+        folder.write_file("tests/b.rs", "// b\n");
+        folder.write_file(".git/HEAD", "ref: refs/heads/main\n");
+        folder
+    }
+
+    fn model_over(folder: &TempDir) -> FolderModel {
+        FolderModel::new(open_folder(folder.path()).expect("the project folder opens"))
+    }
+
+    fn expand(model: FolderModel, path: &str) -> FolderModel {
+        model.list_tree(TreeRequest::Expand(PathBuf::from(path)))
+    }
+
+    fn collapse(model: FolderModel, path: &str) -> FolderModel {
+        model.list_tree(TreeRequest::Collapse(PathBuf::from(path)))
+    }
+
+    fn select(model: FolderModel, path: &str) -> FolderModel {
+        model.select_file(FileRequest::Select(Some(PathBuf::from(path))))
+    }
+
+    fn open(model: FolderModel, path: &str, position: &ReadingPosition) -> FolderModel {
+        model.select_file(FileRequest::Open(PathBuf::from(path), position.clone()))
+    }
+
+    fn position(bytes: &[u8]) -> ReadingPosition {
+        ReadingPosition::new(bytes)
+    }
+
+    #[test]
+    fn test_a_new_model_holds_the_arrival_state() {
+        let folder = project();
+        let model = model_over(&folder);
+
+        assert_eq!(model.place(), &ReaderPlace::default());
+        for path in ["src", "docs", "tests", ".git"] {
+            assert!(!model.place().is_expanded(Path::new(path)), "{path}");
+        }
+        assert_eq!(model.place().selected(), None);
+        assert!(model.open_file().is_none());
+    }
+
+    #[test]
+    fn test_no_open_file_means_no_reading_position() {
+        let folder = project();
+        let model = select(model_over(&folder), "src/main.rs");
+
+        assert!(model.open_file().is_none());
+        assert!(model.place().open_file().is_none());
+    }
+
+    #[test]
+    fn test_position_without_an_open_file_leaves_the_model_equal() {
+        let folder = project();
+        let model = select(expand(model_over(&folder), "src"), "src/util.rs");
+
+        let after = model
+            .clone()
+            .select_file(FileRequest::Position(position(b"line 400")));
+
+        assert_eq!(after, model);
+        assert!(after.open_file().is_none());
+    }
+
+    #[test]
+    fn test_selection_and_open_file_are_held_independently() {
+        let folder = project();
+        let held = position(b"top");
+
+        let model = open(
+            select(model_over(&folder), "src/util.rs"),
+            "src/main.rs",
+            &held,
+        );
+
+        assert_eq!(model.place().selected(), Some(Path::new("src/util.rs")));
+        let open_file = model.open_file().expect("a file is open");
+        assert_eq!(open_file.path(), Path::new("src/main.rs"));
+        assert_eq!(open_file.position(), &held);
+    }
+
+    #[test]
+    fn test_selecting_does_not_open_or_close_the_open_file() {
+        let folder = project();
+        let held = position(b"top");
+        let opened = open(model_over(&folder), "src/main.rs", &held);
+
+        let selected = select(opened.clone(), "src/util.rs");
+        let cleared = selected.clone().select_file(FileRequest::Select(None));
+
+        assert_eq!(selected.open_file(), opened.open_file());
+        assert_eq!(cleared.open_file(), opened.open_file());
+        assert!(
+            select(model_over(&folder), "src/util.rs")
+                .open_file()
+                .is_none()
+        );
+    }
+
+    #[test]
+    fn test_select_none_clears_the_selection() {
+        let folder = project();
+        let model = select(model_over(&folder), "src/main.rs");
+        assert_eq!(model.place().selected(), Some(Path::new("src/main.rs")));
+
+        let cleared = model.select_file(FileRequest::Select(None));
+
+        assert_eq!(cleared.place().selected(), None);
+        assert_eq!(cleared.place(), &ReaderPlace::default());
+    }
+
+    #[test]
+    fn test_selecting_performs_no_content_read() {
+        let folder = project();
+        folder.set_mode("src/util.rs", 0o000);
+
+        let model = select(model_over(&folder), "src/util.rs");
+
+        assert_eq!(model.place().selected(), Some(Path::new("src/util.rs")));
+        assert!(model.open_file().is_none());
+    }
+
+    #[test]
+    fn test_expansion_is_the_last_act_on_that_folder() {
+        let folder = project();
+        let model = model_over(&folder);
+
+        let expanded = expand(model.clone(), "docs");
+        let collapsed = collapse(expanded.clone(), "docs");
+        let reexpanded = expand(collapsed.clone(), "docs");
+
+        assert!(expanded.place().is_expanded(Path::new("docs")));
+        assert!(!collapsed.place().is_expanded(Path::new("docs")));
+        assert!(reexpanded.place().is_expanded(Path::new("docs")));
+        assert_eq!(collapsed.place(), model.place());
+
+        // The reverse: collapse, expand, collapse reads collapsed.
+        let first_collapse = collapse(model, "docs");
+        let then_expanded = expand(first_collapse.clone(), "docs");
+        let last_collapse = collapse(then_expanded.clone(), "docs");
+
+        assert!(!first_collapse.place().is_expanded(Path::new("docs")));
+        assert!(then_expanded.place().is_expanded(Path::new("docs")));
+        assert!(!last_collapse.place().is_expanded(Path::new("docs")));
+    }
+
+    #[test]
+    fn test_expanding_holds_the_folders_direct_listing_as_a_fresh_list_tree_reads_it() {
+        let folder = project();
+        let opened = open_folder(folder.path()).expect("opens");
+
+        let model = expand(model_over(&folder), "src");
+
+        assert_eq!(
+            model.listing(Path::new("src")),
+            Some(&list_tree(&opened, "src"))
+        );
+    }
+
+    #[test]
+    fn test_collapsing_a_parent_keeps_every_descendants_flag_and_listing() {
+        let folder = project();
+        let model = expand(expand(model_over(&folder), "src"), "src/lib");
+        let child_listing = model.listing(Path::new("src/lib")).cloned();
+        let parent_listing = model.listing(Path::new("src")).cloned();
+
+        let collapsed = collapse(model, "src");
+
+        assert!(!collapsed.place().is_expanded(Path::new("src")));
+        assert!(collapsed.place().is_expanded(Path::new("src/lib")));
+        assert_eq!(
+            collapsed.listing(Path::new("src/lib")).cloned(),
+            child_listing
+        );
+        assert_eq!(collapsed.listing(Path::new("src")).cloned(), parent_listing);
+    }
+
+    #[test]
+    fn test_collapse_of_a_never_expanded_folder_holds_it_collapsed() {
+        let folder = project();
+        let model = model_over(&folder);
+
+        let collapsed = collapse(model.clone(), "tests");
+
+        assert!(!collapsed.place().is_expanded(Path::new("tests")));
+        assert!(collapsed.listing(Path::new("tests")).is_none());
+        assert_eq!(collapsed, model);
+    }
+
+    #[test]
+    fn test_open_replaces_the_previous_open_file_and_its_position() {
+        let folder = project();
+        let first = position(b"first");
+        let second = position(b"second");
+
+        let model = open(
+            open(model_over(&folder), "src/main.rs", &first),
+            "src/util.rs",
+            &second,
+        );
+
+        let open_file = model.open_file().expect("a file is open");
+        assert_eq!(open_file.path(), Path::new("src/util.rs"));
+        assert_eq!(open_file.position(), &second);
+    }
+
+    #[test]
+    fn test_open_holds_the_file_view_as_select_file_reads_it() {
+        let folder = project();
+        let opened = open_folder(folder.path()).expect("opens");
+
+        let model = open(model_over(&folder), "src/main.rs", &position(b"top"));
+
+        assert_eq!(
+            model.open_file().expect("a file is open").view(),
+            &select_file(&opened, "src/main.rs")
+        );
+        assert!(matches!(
+            model.open_file().expect("a file is open").view(),
+            ItemState::Observed(FileView::Text { .. })
+        ));
+    }
+
+    #[test]
+    fn test_the_reading_position_round_trips_byte_for_byte() {
+        let folder = project();
+        // A caller-chosen anchor for line 400 with finer offsets, then bytes that are not text.
+        let anchors: [&[u8]; 3] = [b"line=400;offset=0.25", &[0xFF, 0x00, 0x80, 0xC3], &[]];
+
+        for bytes in anchors {
+            let model = open(model_over(&folder), "src/main.rs", &position(bytes));
+
+            let open_file = model.open_file().expect("a file is open");
+            assert_eq!(open_file.position().as_bytes(), bytes);
+        }
+    }
+
+    #[test]
+    fn test_a_distinct_position_set_later_reads_back_as_the_later_one() {
+        let folder = project();
+        let model = open(model_over(&folder), "src/main.rs", &position(b"line=400"));
+
+        let later = model.select_file(FileRequest::Position(position(b"line=912")));
+
+        let open_file = later.open_file().expect("a file is open");
+        assert_eq!(open_file.position(), &position(b"line=912"));
+        assert_eq!(open_file.path(), Path::new("src/main.rs"));
+    }
+
+    #[test]
+    fn test_open_of_a_path_that_is_not_a_file_leaves_the_model_equal_to_its_input() {
+        let folder = project();
+        let model = open(model_over(&folder), "src/main.rs", &position(b"top"));
+
+        for path in ["src", "missing.rs", "src/missing.rs"] {
+            assert_eq!(open(model.clone(), path, &position(b"x")), model, "{path}");
+        }
+    }
+
+    #[test]
+    fn test_select_of_a_path_that_is_not_a_file_leaves_the_model_equal_to_its_input() {
+        let folder = project();
+        let model = select(model_over(&folder), "src/main.rs");
+
+        for path in ["src", "missing.rs"] {
+            assert_eq!(select(model.clone(), path), model, "{path}");
+        }
+    }
+
+    #[test]
+    fn test_expand_of_a_file_path_leaves_the_model_equal_to_its_input() {
+        let folder = project();
+        let model = expand(model_over(&folder), "src");
+
+        for path in ["src/main.rs", "missing"] {
+            assert_eq!(expand(model.clone(), path), model, "{path}");
+        }
+    }
+
+    #[test]
+    fn test_the_root_is_not_a_disclosure_target() {
+        let folder = project();
+        let model = model_over(&folder);
+
+        for path in ["", ".", "src/.."] {
+            assert_eq!(expand(model.clone(), path), model, "expand {path:?}");
+            assert_eq!(collapse(model.clone(), path), model, "collapse {path:?}");
+        }
+    }
+
+    #[test]
+    fn test_a_request_outside_the_root_leaves_the_model_equal_to_its_input() {
+        let folder = project();
+        let model = open(
+            expand(model_over(&folder), "src"),
+            "src/main.rs",
+            &position(b"top"),
+        );
+
+        assert_eq!(expand(model.clone(), ".."), model);
+        assert_eq!(collapse(model.clone(), "../x"), model);
+        assert_eq!(select(model.clone(), "../x"), model);
+        assert_eq!(open(model.clone(), "../x", &position(b"y")), model);
+    }
+
+    struct PlainFolder;
+
+    impl GitPort for PlainFolder {
+        fn probe(&self, _: &Path) -> RootFinding {
+            RootFinding::Plain
+        }
+
+        fn state(&self, _: &Path) -> Result<HeadState, GitReadCondition> {
+            Err(GitReadCondition::NotARoot)
+        }
+
+        fn status(&self, _: &Path) -> Result<StatusLists, GitReadCondition> {
+            Err(GitReadCondition::NotARoot)
+        }
+    }
+
+    #[test]
+    fn test_read_git_preserves_the_place_and_every_non_git_listing() {
+        let folder = project();
+        let model = open(
+            select(
+                expand(expand(model_over(&folder), "src"), "docs"),
+                "src/util.rs",
+            ),
+            "src/main.rs",
+            &position(b"line=400"),
+        );
+
+        let read = read_git(model.clone(), &PlainFolder);
+
+        assert_eq!(read.kind(), &ItemState::Observed(FolderKind::Plain));
+        assert_eq!(read.place(), model.place());
+        assert_eq!(read.tree(), model.tree());
+        for path in ["src", "docs"] {
+            assert_eq!(
+                read.listing(Path::new(path)),
+                model.listing(Path::new(path))
+            );
+        }
+    }
+
+    #[test]
+    fn test_tree_is_the_root_projection_of_the_held_root_listing() {
+        let folder = project();
+        let opened = open_folder(folder.path()).expect("opens");
+        let model = expand(model_over(&folder), "src");
+
+        assert_eq!(model.tree(), &list_tree(&opened, ""));
+        assert_eq!(model.listing(Path::new("")), Some(model.tree()));
+        assert_eq!(model.listing(Path::new("never-expanded")), None);
+    }
+
+    #[test]
+    fn test_a_failed_root_listing_is_held_as_the_failure() {
+        let folder = project();
+        let model = model_over(&folder);
+        folder.set_mode("", 0o000);
+
+        let unreadable = FolderModel::new(model.folder().clone());
+
+        assert_eq!(unreadable.tree(), &ItemState::Failed(Condition::Unreadable));
+        assert_eq!(unreadable.listing(Path::new("")), Some(unreadable.tree()));
+    }
+
+    // ---- The pure reducer: held data, observed values and a report, and no disk ----
+
+    fn listed(identity: &str, name: &str, kind: EntryKind) -> Listed {
+        listed_with_state(identity, name, kind, None)
+    }
+
+    /// An entry as a listing of the folder at `identity` gives it; `state` overrides the usual one.
+    fn listed_with_state(
+        identity: &str,
+        name: &str,
+        kind: EntryKind,
+        state: Option<ItemState<()>>,
+    ) -> Listed {
+        let usual = match kind {
+            EntryKind::Folder => ItemState::Pending,
+            EntryKind::File => ItemState::Observed(()),
+        };
+        Listed {
+            raw_name: OsString::from(name),
+            entry: Entry {
+                name: name.to_string(),
+                path: PathBuf::from(identity)
+                    .join(name)
+                    .to_string_lossy()
+                    .into_owned(),
+                kind,
+                state: state.unwrap_or(usual),
+                language: (kind == EntryKind::File).then_some(Language::Plain),
+            },
+        }
+    }
+
+    fn held(identity: &str, entries: &[(&str, EntryKind)]) -> HeldListing {
+        HeldListing::from_items(
+            PathBuf::from(identity),
+            entries
+                .iter()
+                .map(|(name, kind)| listed(identity, name, *kind))
+                .collect(),
+        )
+    }
+
+    /// A model over a root that is never read: every value in it is supplied here.
+    fn supplied_model(
+        root: HeldListing,
+        listings: &[(&str, HeldListing)],
+        place: ReaderPlace,
+    ) -> FolderModel {
+        FolderModel {
+            folder: OpenedFolder {
+                root: PathBuf::from("/a/root/that/is/not/read"),
+            },
+            root_listing: root,
+            listings: listings
+                .iter()
+                .map(|(path, listing)| (PathBuf::from(path), listing.clone()))
+                .collect(),
+            place,
+            kind: ItemState::Pending,
+        }
+    }
+
+    fn names_in(listing: &HeldListing) -> Vec<&str> {
+        listing
+            .items
+            .iter()
+            .map(|item| item.entry.name.as_str())
+            .collect()
+    }
+
+    fn names(present: &[&str], removed: &[&str]) -> ReportedNames {
+        ReportedNames {
+            present: present.iter().map(OsString::from).collect(),
+            removed: removed.iter().map(OsString::from).collect(),
+        }
+    }
+
+    /// One folder's change: the names reported and what a fresh read of the folder saw.
+    fn change(
+        reported: ReportedNames,
+        identity: &str,
+        seen: Vec<Listed>,
+    ) -> BTreeMap<PathBuf, FolderChange> {
+        let mut seen = seen;
+        crate::fs_reader::order(&mut seen);
+        BTreeMap::from([(
+            PathBuf::from(identity),
+            FolderChange {
+                reported,
+                observed: ItemState::Observed(ListingObservation {
+                    location: PathBuf::from(identity),
+                    items: seen,
+                }),
+            },
+        )])
+    }
+
+    fn root_of(model: &FolderModel) -> Vec<&str> {
+        names_in(&model.root_listing)
+    }
+
+    const FILE: EntryKind = EntryKind::File;
+    const FOLDER: EntryKind = EntryKind::Folder;
+
+    #[test]
+    fn test_a_created_path_is_listed_in_its_held_parent() {
+        let model = supplied_model(
+            held("", &[("a.rs", FILE), ("src", FOLDER)]),
+            &[],
+            ReaderPlace::default(),
+        );
+        let seen = vec![
+            listed("", "a.rs", FILE),
+            listed("", "b.rs", FILE),
+            listed("", "src", FOLDER),
+        ];
+
+        let after = reduce(model, &change(names(&["b.rs"], &[]), "", seen));
+
+        assert_eq!(root_of(&after), ["src", "a.rs", "b.rs"]);
+    }
+
+    #[test]
+    fn test_a_changed_path_is_listed_as_its_fresh_observation() {
+        let model = supplied_model(
+            held("", &[("a.rs", FILE), ("b.rs", FILE)]),
+            &[],
+            ReaderPlace::default(),
+        );
+        let unreadable = listed_with_state(
+            "",
+            "a.rs",
+            FILE,
+            Some(ItemState::Failed(Condition::Unreadable)),
+        );
+
+        let after = reduce(
+            model,
+            &change(
+                names(&["a.rs"], &[]),
+                "",
+                vec![unreadable.clone(), listed("", "b.rs", FILE)],
+            ),
+        );
+
+        assert_eq!(after.root_listing.items[0], unreadable);
+        assert_eq!(
+            after.tree(),
+            &ItemState::Observed(vec![unreadable.entry, listed("", "b.rs", FILE).entry])
+        );
+    }
+
+    #[test]
+    fn test_a_removed_path_is_not_listed() {
+        let model = supplied_model(
+            held("", &[("a.rs", FILE), ("b.rs", FILE)]),
+            &[],
+            ReaderPlace::default(),
+        );
+
+        let after = reduce(
+            model,
+            &change(names(&[], &["a.rs"]), "", vec![listed("", "b.rs", FILE)]),
+        );
+
+        assert_eq!(root_of(&after), ["b.rs"]);
+    }
+
+    #[test]
+    fn test_created_changed_and_removed_in_one_batch() {
+        let model = supplied_model(
+            held(
+                "",
+                &[("gone.md", FILE), ("keep.md", FILE), ("util.rs", FILE)],
+            ),
+            &[],
+            ReaderPlace::default(),
+        );
+        let seen = vec![
+            listed("", "keep.md", FILE),
+            listed("", "new.rs", FILE),
+            listed("", "util.rs", FOLDER),
+        ];
+
+        let after = reduce(
+            model,
+            &change(names(&["new.rs", "util.rs"], &["gone.md"]), "", seen),
+        );
+
+        assert_eq!(root_of(&after), ["util.rs", "keep.md", "new.rs"]);
+        assert_eq!(after.root_listing.items[0].entry.kind, FOLDER);
+    }
+
+    #[test]
+    fn test_a_changed_entry_that_moves_between_folder_and_file_groups_is_reordered() {
+        let model = supplied_model(
+            held("", &[("alpha", FOLDER), ("beta", FILE), ("zeta", FILE)]),
+            &[],
+            ReaderPlace::default(),
+        );
+        let seen = vec![
+            listed("", "alpha", FOLDER),
+            listed("", "beta", FOLDER),
+            listed("", "zeta", FILE),
+        ];
+
+        let after = reduce(model, &change(names(&["beta"], &[]), "", seen));
+
+        assert_eq!(root_of(&after), ["alpha", "beta", "zeta"]);
+        assert_eq!(after.root_listing.items[1].entry.kind, FOLDER);
+    }
+
+    #[test]
+    fn test_removing_the_last_listed_entry_leaves_an_empty_listing_not_a_failed_one() {
+        let model = supplied_model(held("", &[("only.rs", FILE)]), &[], ReaderPlace::default());
+
+        let after = reduce(model, &change(names(&[], &["only.rs"]), "", vec![]));
+
+        assert_eq!(after.tree(), &ItemState::Observed(vec![]));
+    }
+
+    #[test]
+    fn test_a_fresh_observation_with_unreported_extras_does_not_leak_them_into_the_model() {
+        let model = supplied_model(
+            held("", &[("a.rs", FILE), ("b.rs", FILE)]),
+            &[],
+            ReaderPlace::default(),
+        );
+        // The fresh read saw `a.rs` and `c.rs` gone, `d.rs` added and `b.rs` changed; only `e.rs`
+        // is reported, so none of those four reaches the model.
+        let seen = vec![
+            listed_with_state(
+                "",
+                "b.rs",
+                FILE,
+                Some(ItemState::Failed(Condition::Missing)),
+            ),
+            listed("", "d.rs", FILE),
+            listed("", "e.rs", FILE),
+        ];
+
+        let after = reduce(model, &change(names(&["e.rs"], &[]), "", seen));
+
+        assert_eq!(root_of(&after), ["a.rs", "b.rs", "e.rs"]);
+        assert_eq!(after.root_listing.items[1], listed("", "b.rs", FILE));
+    }
+
+    #[test]
+    fn test_a_reported_entry_the_fresh_read_does_not_see_is_not_listed() {
+        // CP-785 lists a reported entry as a fresh read lists it now: one reported created or
+        // changed that the fresh read no longer sees is not listed, and the unreported entry stays.
+        let model = supplied_model(
+            held("", &[("a.rs", FILE), ("b.rs", FILE)]),
+            &[],
+            ReaderPlace::default(),
+        );
+
+        let after = reduce(
+            model,
+            &change(
+                names(&["ghost.rs", "a.rs"], &[]),
+                "",
+                vec![listed("", "b.rs", FILE)],
+            ),
+        );
+
+        assert_eq!(root_of(&after), ["b.rs"]);
+    }
+
+    #[test]
+    fn test_repeated_identical_reports_leave_no_duplicates() {
+        let model = supplied_model(held("", &[("a.rs", FILE)]), &[], ReaderPlace::default());
+        let seen = vec![listed("", "a.rs", FILE), listed("", "b.rs", FILE)];
+        let changes = change(names(&["b.rs"], &[]), "", seen);
+
+        let once = reduce(model, &changes);
+        let twice = reduce(once.clone(), &changes);
+
+        assert_eq!(root_of(&twice), ["a.rs", "b.rs"]);
+        assert_eq!(twice, once);
+    }
+
+    #[test]
+    fn test_an_empty_batch_is_the_identity() {
+        let folder = project();
+        let model = expand(model_over(&folder), "src");
+
+        let after = model
+            .clone()
+            .list_tree(TreeRequest::Delta(ModelDelta::default()));
+
+        assert_eq!(after, model);
+        assert_eq!(reduce(model.clone(), &BTreeMap::new()), model);
+    }
+
+    #[test]
+    fn test_a_delta_with_no_held_parent_changes_nothing() {
+        let model = supplied_model(held("", &[("a.rs", FILE)]), &[], ReaderPlace::default());
+
+        let after = reduce(
+            model.clone(),
+            &change(
+                names(&["new.rs"], &[]),
+                "elsewhere",
+                vec![listed("elsewhere", "new.rs", FILE)],
+            ),
+        );
+
+        assert_eq!(after, model);
+    }
+
+    #[test]
+    fn test_a_collapsed_never_read_folder_gets_no_listing() {
+        let folder = project();
+        let model = model_over(&folder);
+        folder.write_file("tests/a.rs", "// a\n");
+
+        let after = model.clone().list_tree(TreeRequest::Delta(ModelDelta::new(
+            vec![PathBuf::from("tests/a.rs")],
+            vec![],
+            vec![],
+        )));
+
+        assert_eq!(after, model);
+        assert!(after.listing(Path::new("tests")).is_none());
+        assert!(!after.place().is_expanded(Path::new("tests")));
+    }
+
+    #[test]
+    fn test_a_collapsed_previously_read_folder_updates_its_listing_and_stays_collapsed() {
+        let model = supplied_model(
+            held("", &[("src", FOLDER)]),
+            &[("src", held("src", &[("a.rs", FILE)]))],
+            ReaderPlace::default(),
+        );
+        assert!(!model.place.is_expanded(Path::new("src")));
+
+        let after = reduce(
+            model,
+            &change(
+                names(&["b.rs"], &[]),
+                "src",
+                vec![listed("src", "a.rs", FILE), listed("src", "b.rs", FILE)],
+            ),
+        );
+
+        assert_eq!(
+            names_in(&after.listings[Path::new("src")]),
+            ["a.rs", "b.rs"]
+        );
+        assert!(!after.place.is_expanded(Path::new("src")));
+        assert_eq!(root_of(&after), ["src"]);
+    }
+
+    #[test]
+    fn test_explicit_collapsed_flags_and_nested_held_listings_survive_unchanged() {
+        let place = ReaderPlace {
+            expanded: BTreeSet::from([PathBuf::from("src/lib")]),
+            ..ReaderPlace::default()
+        };
+        let model = supplied_model(
+            held("", &[("src", FOLDER), ("a.rs", FILE)]),
+            &[
+                ("src", held("src", &[("lib", FOLDER)])),
+                ("src/lib", held("src/lib", &[("m.rs", FILE)])),
+            ],
+            place.clone(),
+        );
+
+        let after = reduce(
+            model.clone(),
+            &change(
+                names(&["b.rs"], &[]),
+                "",
+                vec![
+                    listed("", "a.rs", FILE),
+                    listed("", "b.rs", FILE),
+                    listed("", "src", FOLDER),
+                ],
+            ),
+        );
+
+        assert_eq!(after.place, place);
+        assert_eq!(after.listings, model.listings);
+        assert_eq!(root_of(&after), ["src", "a.rs", "b.rs"]);
+    }
+
+    #[test]
+    fn test_the_git_item_is_unchanged_whether_pending_observed_or_failed() {
+        let git_items = [
+            ItemState::Pending,
+            ItemState::Observed(FolderKind::Plain),
+            ItemState::Failed(GitCondition::Probe(ProbeCondition::FolderUnavailable)),
+        ];
+
+        for kind in git_items {
+            let mut model =
+                supplied_model(held("", &[("a.rs", FILE)]), &[], ReaderPlace::default());
+            model.kind = kind.clone();
+
+            let after = reduce(model, &change(names(&[], &["a.rs"]), "", vec![]));
+
+            assert_eq!(after.kind(), &kind);
+        }
+    }
+
+    #[test]
+    fn test_the_open_file_path_position_and_content_are_unchanged() {
+        let folder = project();
+        let model = open(
+            expand(model_over(&folder), "src"),
+            "src/main.rs",
+            &position(b"line=400"),
+        );
+        let open_file = model.open_file().cloned();
+        folder.write_file("src/main.rs", "changed on disk, and not reported\n");
+        folder.write_file("src/new.rs", "// new\n");
+
+        let after = model.list_tree(TreeRequest::Delta(ModelDelta::new(
+            vec![PathBuf::from("src/new.rs")],
+            vec![],
+            vec![],
+        )));
+
+        assert_eq!(after.open_file().cloned(), open_file);
     }
 }
