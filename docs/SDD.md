@@ -6,7 +6,8 @@
        signal, and the state a finished SDD carries; the open-issues file is gone.
      Locked = ratified as the source of truth. -->
 **Owner:** CTO — writes every part; the CPO and the CDO decide the parts the lane table names, through `SDD_open_issues.md` items carrying their `Seat:`
-**Version:** 51 — CTO, one run, with two answered companion items folded (`docs/trail/sdd/cycle-46.md` §§ 5.1 – 5.2), both the CTO's column, raised by the Principal PM on 2026-10-14 (`ka-reader@9532dee`) and answered in the CTO's seat the same day (`ka-reader@b236572`): § 4 C-I3, the probe half (the first `macos-26` bundle-probe reading is taken — GitHub Actions run 38577309118 on `ka-reader@f357008`, image `macos-26-arm64` 20260907.0351.1, the first hosted run on `main` that holds `970ad65` and concludes *Bundle probe suite* `success`, on whose log `docs/nfdr.md` QC-25's command prints `out-of-grant-read: denied` — so the hosted-runner narrowing stands, re-dated to that run and image under the clause's own rule, and the "has not been taken" passage with its two-run ground becomes a dated account); § 4 C-I3, the renderer half (the first hosted renderer-gate reading on `macos-26` is recorded — run 38501500758 on `ka-reader@3f7a68d`, the first hosted run to reach the gate on that image, observation 1 and the control unmatched on all 30, inside the C-R5 floor, with run 38577309118 as corroboration; the gate's rule, the frame list's home and ADR-0012 do not move); RN-110 (a dated parenthesis: the item it said was owed is cycle-46 § 5.2); the header. No slice, edge, seam, part or place in the order moves; `Status:` stays Settled and the companion is removed — RN-111.
+**Version:** 52 — CTO, one run, with the one answered companion item folded (`docs/trail/sdd/cycle-47.md` § 5.1), raised and answered by the owner in one hand on 2026-10-16 (`ka-reader@e34d16f`) after PRD v16 (`ka-reader@74ca793`, § Assumptions "Public identity") and SRS v13 (`ka-reader@3a6e021`, C-12) moved the public identity from the `kensaiapp` organisation to the maintainer's personal GitHub handle: every forward-looking mention of the repository reads `github.com/eyalgo/ka-reader`, and `eyalgo/ka-reader` in commands — § 4 C-R4 (the release channel); § 5 step 1 E-7; § 6 `first-public-release` *Delivers*, *Reached when* observable half (the address a stranger opens) and command half (the Release's repository, the `gh api … private-vulnerability-reporting` path and the `gh secret list --repo` value); the header. Each changed sentence keeps its old words in a dated note beside it. Not moved, by the item's own fence and the PRD's "Nothing else about the product changes": the four CI run records in RN-109 – RN-111 (`gh run … --repo kensaiapp/ka-reader`), which record runs made at the old address; the bundle identifier `com.kensaiapp.ka-reader`, which is not a repository address; and the pins that name the instance repositories (`kensaiapp-dev@…`, `kensaiapp-opensource@…`). No slice, edge, seam, part or place in the order moves; § 10 gains no entry; `Status:` stays Settled and the companion is removed — RN-112.
+Version 51 — CTO, one run, with two answered companion items folded (`docs/trail/sdd/cycle-46.md` §§ 5.1 – 5.2), both the CTO's column, raised by the Principal PM on 2026-10-14 (`ka-reader@9532dee`) and answered in the CTO's seat the same day (`ka-reader@b236572`): § 4 C-I3, the probe half (the first `macos-26` bundle-probe reading is taken — GitHub Actions run 38577309118 on `ka-reader@f357008`, image `macos-26-arm64` 20260907.0351.1, the first hosted run on `main` that holds `970ad65` and concludes *Bundle probe suite* `success`, on whose log `docs/nfdr.md` QC-25's command prints `out-of-grant-read: denied` — so the hosted-runner narrowing stands, re-dated to that run and image under the clause's own rule, and the "has not been taken" passage with its two-run ground becomes a dated account); § 4 C-I3, the renderer half (the first hosted renderer-gate reading on `macos-26` is recorded — run 38501500758 on `ka-reader@3f7a68d`, the first hosted run to reach the gate on that image, observation 1 and the control unmatched on all 30, inside the C-R5 floor, with run 38577309118 as corroboration; the gate's rule, the frame list's home and ADR-0012 do not move); RN-110 (a dated parenthesis: the item it said was owed is cycle-46 § 5.2); the header. No slice, edge, seam, part or place in the order moves; `Status:` stays Settled and the companion is removed — RN-111.
 Version 50 — CTO, one run, with the one answered companion item folded (`docs/trail/sdd/cycle-45.md` § 5.1), the CTO's column, raised by the PM on 2026-10-14 from a `shukuba-refine` review (`ka-reader@0473ba5`) and answered in the CTO's seat the same day (`ka-reader@976ab73`): § 4 C-I3, the probe half (the locator for the line that prints the control's report reads `checks/bundle.sh:L383`, not `:L382`, pinned to the commits it is read at; the clause gains one dated sentence — at `ka-reader@970ad65` the suite requires exactly one `out-of-grant-read:` line in the control's report, fails the case otherwise, and forwards that line after the control's `ok`, so the line owed at `4601cd9` is carried and the *Violated by* missing-line case is live from that commit, enforced by the suite going red; the ground for the untaken `macos-26` reading is restated — the image reaches the suite, runs 38501500758 and 38551538187 on `main` concluded *Bundle probe suite* `success` with `docs/nfdr.md` QC-25's command printing nothing on each, and `origin/main` is `24be581`, which does not hold `970ad65`); RN-109 (its `:L382` corrected to `:L383`, with a dated note that it mis-read the line on the day it was written); the header. No slice, edge, seam, part or place in the order moves; `Status:` stays Settled and the companion is removed — RN-110.
 Version 49 — CTO, one run, with the one answered companion item folded (`docs/trail/sdd/cycle-44.md` § 2.1), the CTO's column, raised by the Principal Architect's unattended run on 2026-10-13 and answered in the owner's seat the same day (`ka-reader@c04dcc6`): § 4 C-I3, the probe half (the hosted-runner narrowing of the read denial is dated to the image it was read on, `macos-14-arm64` 20260831.0302.1 at GitHub Actions run 35797893381, with the `macos-26` reading stated as not taken and the ground stated — the first hosted run on that image, 38463966607 on `ka-reader@4601cd9`, ended at *Test gate* before the probe ran; the clause names where the reading is read, the unentitled control's `out-of-grant-read:` line in the suite's log on every hosted build, owed at `ka-reader@4601cd9`, an empty read the measurable not-yet; a `denied` reading re-dates the narrowing and an `allowed` one lifts it); § 4 C-I3, the renderer-gate half (a hosted reading is the first hosted run that reaches the gate on that image, not a named change's — the v48 words in a dated note); C-I3's *Violated by* gains the missing-line case once the suite prints the line; the header. No slice, edge, seam, part or place in the order moves; `Status:` stays Settled and the companion is removed — RN-109.
 Version 48 — CTO, one run, with the one answered companion item folded (`docs/trail/sdd/cycle-43.md` § 5.1), the CTO's columns, raised and answered by the owner in one hand on 2026-10-13 (`ka-reader@821a163`) after GitHub announced the retirement of the `macos-14` runner image: the macOS floor moves from 14.0 to 26.0 and CI's image from `macos-14` to `macos-26`. § 4 C-R5 (the floor is 26.0; its ground stays the maintainer's narrowing, now to the one macOS the hosted runner and the maintainer's Mac both run; the sentence that kept 14.0 because `docs/nfdr.md` QC-56 bound it is replaced — the NFDR entry is the one re-derived from this condition, by § 4's own rule on the two stores; the CI image is named, pinned by label and never by `macos-latest`; *Violated by* gains the workflow case); § 4 C-I3 (the renderer gate's two hosted readings are dated as taken on `macos-14`, below the floor from this revision, and the first reading on `macos-26` is named as the moving change's to take); § 6 `see-git-status` *Reached when*, command half (a dated note beside the `macos-14` runner the workflow still names at `ka-reader@0c0d5f9`); § 6 `first-public-release` and `promise-one-point-zero` *Reached when*, command halves (`prints 26.0`; the floor `26.0` in the enumeration the contract pin is written from); § 9 TO-8 (rewritten at 26 — the cost named as the majors excluded, the undo named at every line the floor is written on; "above 11" corrected to "above 12", C-R5's own number); § 11 R-17 (new: the floor follows a runner image's lifetime); SDD Review Notes RN-6 (a dated parenthesis) and RN-108 (new); trail copy at `docs/trail/sdd/cycle-43.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. Every sentence whose claim changed keeps its old words in a dated note beside it. Nothing in the tree moves in this fold: the plists, the manifest, the deployment target, the test that asserts `14.0` and the workflow are the change's, each located in RN-108. No § 10 entry (no bar became unmeetable and no input changed — RN-108), no *Delivers*, no slice added, no § 7 edge, no slice order, no part's *Must not own* and no seam altered. Companion items added: none.
@@ -625,7 +626,7 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   accepts a path by argument, environment or configuration file (NFR-14), that prints a surface to
   a terminal, or that exits or re-presents the panel on dismissal.
 - **C-R4.** The one acquisition-and-start path (C-3) is a **GitHub Release on
-  `github.com/kensaiapp/ka-reader`** (C-12) carrying `KA-Reader-<version>.dmg` and `SHA256SUMS`, built
+  `github.com/eyalgo/ka-reader`** (C-12) *(`github.com/kensaiapp/ka-reader` until v51; PRD v16, SRS v13 C-12, RN-112)* carrying `KA-Reader-<version>.dmg` and `SHA256SUMS`, built
   by CI from the tagged commit and never on a maintainer's machine, and the artifact verified to
   match the tag before it is offered. The bundle is **ad-hoc signed** (`codesign --sign -`) — what
   binds the entitlements to the binary at no cost — and is never Developer ID-signed or
@@ -1282,7 +1283,7 @@ struck by the CPO. Step 2 is applied to this list after that read.
   chrome, the first theme following the platform's appearance, and find the choice remembered at
   the next launch — kept in the tool's own data location, nothing of it in the folder. *(PRD § UX
   Notes "The character"; § Data & Privacy)*
-- **E-7** — After this, a stranger can find KA-Reader at `github.com/kensaiapp/ka-reader`, install it
+- **E-7** — After this, a stranger can find KA-Reader at `github.com/eyalgo/ka-reader` *(`github.com/kensaiapp/ka-reader` until v51; PRD v16, SRS v13 C-12, RN-112)*, install it
   by the one path the README's first screen names, and be reading a file of their own repository
   within five minutes — the README stating what the tool will and will not touch, the support
   posture, what is outside done, the MIT licence and what the version number promises, and a
@@ -2254,7 +2255,7 @@ public at 1.0.0 or later (`system/projects/ka-reader/agari.md`).
 ### S-7 — A stranger can pick it up
 
 - **Slug:** `first-public-release`
-- **Delivers:** After this, a stranger can find KA-Reader at `github.com/kensaiapp/ka-reader`, install
+- **Delivers:** After this, a stranger can find KA-Reader at `github.com/eyalgo/ka-reader` *(`github.com/kensaiapp/ka-reader` until v51; PRD v16, SRS v13 C-12, RN-112)*, install
   it by the one path the README's first screen names, and be reading a file of their own
   repository within five minutes — the README stating what the tool will and will not touch, the
   support posture, what is outside done, the MIT licence, and that before 1.0.0 anything may
@@ -2262,7 +2263,7 @@ public at 1.0.0 or later (`system/projects/ka-reader/agari.md`).
   the folder and the repository byte-identical after every command, no outbound traffic — as a
   result a reviewer reads rather than a claim.
 - **Reached when:** *Observable (CDO):* a stranger on a Mac holding only stock macOS opens
-  `github.com/kensaiapp/ka-reader` in a browser. The README's first screen tells them in one sentence
+  `github.com/eyalgo/ka-reader` *(`github.com/kensaiapp/ka-reader` until v51; RN-112)* in a browser. The README's first screen tells them in one sentence
   what the tool does, shows one install path, and shows a screenshot that is the shell of the
   release they are about to download — not a mock-up, not an earlier build (`docs/UXD.md` UX-I11).
   The page's images all come from the repository itself; no badge or picture is served from
@@ -2277,15 +2278,15 @@ public at 1.0.0 or later (`system/projects/ka-reader/agari.md`).
   and the repository's Git state unchanged, with no outbound connection recorded. `SECURITY.md`
   names where to report. *Command (CTO):* `.github/workflows/release.yml`, on a tag `v0.y.z`,
   builds `KA-Reader-<version>.dmg` and `SHA256SUMS` from that tag and attaches both to a
-  GitHub Release on `kensaiapp/ka-reader`; on the *downloaded* bundle, `shasum -a 256 -c SHA256SUMS`
+  GitHub Release on `eyalgo/ka-reader` *(`kensaiapp/ka-reader` here and in the two `gh` commands below until v51; RN-112)*; on the *downloaded* bundle, `shasum -a 256 -c SHA256SUMS`
   passes, `codesign -dv KA-Reader.app` reports `Signature=adhoc`, `/usr/libexec/PlistBuddy -c 'Print
   :LSMinimumSystemVersion' KA-Reader.app/Contents/Info.plist` prints `26.0` *(`14.0` until v48; § 4 C-R5, RN-108)*, and `checks/bundle.sh`
   passes with C-R2's two entries; `checks/notices.sh` finds every name in `cargo tree` in
   `THIRD_PARTY_NOTICES.md` — the Swift package declares no dependency to notice (C-R6); `LICENSE`
   is MIT; `SECURITY.md` exists and `gh api
-  repos/kensaiapp/ka-reader/private-vulnerability-reporting` returns `"enabled": true`; `cargo audit`
+  repos/eyalgo/ka-reader/private-vulnerability-reporting` returns `"enabled": true`; `cargo audit`
   exits 0; `gitleaks git` exits 0 and `gh secret list --repo
-  kensaiapp/ka-reader` prints no entry; the version in `Cargo.toml` and `CFBundleShortVersionString`
+  eyalgo/ka-reader` prints no entry; the version in `Cargo.toml` and `CFBundleShortVersionString`
   is below 1.0.0. *The promise clause, over the whole surface built so far:* `checks/read-only.sh`
   prints `unchanged` on every fixture after every command the build grants (§ 4 C-R7); `checks/no-network.sh`
   exits 0; and a network monitor across one full session against the downloaded bundle records zero
@@ -8387,6 +8388,68 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   `docs/adr/0012-renderer-run-proved-on-the-shipped-bundle-beside-the-wall.md`; `ka-reader@9532dee`;
   `ka-reader@b236572`; `ka-reader@970ad65`; `ka-reader@f357008`; `ka-reader@3f7a68d`;
   `ka-reader@1ea3595`; `ka-reader@4601cd9`)*.
+
+- **RN-112:** *(CTO)* *(changed)* § 4 C-R4, § 5 step 1 E-7 and § 6 `first-public-release` (*Delivers*, the
+  observable half's opening sentence, and the command half's Release and two `gh` commands): the
+  repository the product is published from reads `github.com/eyalgo/ka-reader` — `eyalgo/ka-reader` in
+  commands — where through v51 it read `github.com/kensaiapp/ka-reader`. One companion item is folded,
+  § 5.1 of a companion no `product-sdd` run opened: the owner opened it in an interactive session on
+  2026-10-16 and answered it in the same hand (`docs/trail/sdd/cycle-47.md` § 5.1, *Answer*;
+  `ka-reader@e34d16f`). *Because* the two documents above this one moved first and the SDD had not
+  followed: `docs/PRD.md` v16 § Assumptions "Public identity" (`:L396-L398`) reads "KA-Reader lives at
+  `github.com/eyalgo/ka-reader`, under the maintainer's personal GitHub handle `eyalgo`, and is
+  published and maintained under that handle", and `docs/SRS.md` v13 C-12 (`:L497-L502`) reads "the
+  product is published from `github.com/eyalgo/ka-reader`, under the maintainer's personal GitHub handle
+  `eyalgo`, and maintained under that handle; that repository is where C-7's channel is enabled and
+  where releases are offered" — the owner's answer at `docs/trail/srs/cycle-11.md` § 1.1. So the SDD
+  stated an address the documents it derives from no longer do, and the fold is transcription at the
+  new address, not a decision made here. **The columns.** C-R4 and the command half are the CTO's;
+  E-7 and *Delivers* are the CPO's, and the observable half's sentence is the CDO's (§ *Who decides
+  what*). All three follow on one authorization — the owner's answer, "every forward-looking mention
+  reads `github.com/eyalgo/ka-reader` (and `eyalgo/ka-reader` in commands)" — and the CPO's column
+  follows, besides, the move in the PRD it traces to. **What moved, each named.** (1) § 4 C-R4: the
+  release channel's address. (2) § 5 step 1 E-7: the address a stranger finds the tool at. (3) § 6
+  `first-public-release` *Delivers*: the same. (4) *Reached when*, observable half: the address a
+  stranger opens in a browser. (5) *Reached when*, command half: the Release's repository, the
+  `gh api repos/…/private-vulnerability-reporting` path and the `gh secret list --repo` value. (6) The
+  header: `Version:` 52, `Status:` Settled. Each changed sentence keeps its old words in a dated note
+  beside it. **Read at source by this fold, not from the record:** `git remote -v` in the product
+  checkout prints `origin git@github.com:eyalgo/ka-reader.git` for fetch and for push;
+  `gh api repos/eyalgo/ka-reader --jq '{full_name,private,visibility}'` prints
+  `{"full_name":"eyalgo/ka-reader","private":true,"visibility":"private"}`; and
+  `gh api repos/eyalgo/ka-reader/private-vulnerability-reporting` answers `HTTP 404`, on 2026-10-16.
+  **A limit beside the claim.** The repository is private at this fold, and the item says its
+  visibility and CI billing are to be settled later. C-R4, E-7 and `first-public-release` describe the
+  closing release and bind nothing about today's visibility, so nothing here is false while it stays
+  private; but two of the slice's conditions cannot be met until it is public — a stranger opening the
+  address in a browser, and the `gh api … private-vulnerability-reporting` call returning
+  `"enabled": true`, which today returns `404` — and that is a condition on reaching the slice, not a
+  change to its bar. **Not moved, and why.** The four CI run records (`gh run … --repo
+  kensaiapp/ka-reader`, in RN-109, RN-110 and RN-111) record runs made at the old address and stand as
+  written, by the item's own *Not to change*; the bundle identifier `com.kensaiapp.ka-reader` (§ 4
+  C-R1 and the log path in § 4, two places in § 6, one in § 10) is not a repository address, and PRD
+  v16's `Version:` line says "Nothing else about the product changes"; the `kensaiapp-dev@…` and
+  `kensaiapp-opensource@…` pins name other repositories. `docs/SRS.md` RN-24 (`:L820`) still names
+  the old address as what PRD v8 stated, a dated record that `docs/trail/srs/cycle-11.md` § 1.1 says
+  "stays as written", so it is no gap to raise. No slice's bar changes in what it checks, no edge, no
+  seam, no part and no place in the order moves; § 10 gains no entry — an upstream change is a re-cut
+  trigger where the cut must be redrawn, and here no slice is redrawn: the address is a value inside a
+  bar that is otherwise met the same way; § 2's shape and § 3's seams do not move, so no ADR is owed —
+  the item says ADR-0007 names the same address and is raised separately for the Principal Architect,
+  and this fold does not reach into it. **What was read of this document, at `ka-reader@e34d16f`:**
+  not whole — the header (`:L1-L135`), the section map, every line `grep -n 'kensaiapp'` and
+  `grep -n 'eyalgo'` print (the second printed none), § 4 C-R4 (`:L620-L640`), E-7 (`:L1278-L1292`),
+  § 6 `first-public-release` (`:L2250-L2295`), § 10's preamble (`:L2751-L2772`), RN-111 whole and
+  *Open Questions* whole; of the inputs, `docs/PRD.md` at its `Status:` and `Version:` lines and
+  `:L394-L400`, `docs/SRS.md` at its `Status:` and `Version:` lines and C-12, `docs/UXD.md` at its
+  `Status:` and `Version:` lines, the Agari whole, and `docs/trail/srs/cycle-11.md` § 1.1; `grep -n`
+  for the old address over `docs/PRD.md`, `docs/SRS.md`, `docs/UXD.md` and the Agari printed the SRS's
+  RN-24 line and nothing else. **Not run here:** no check; the fold moves no code. **The companion:**
+  item 5.1 is folded and dropped, nothing is left in the file, and it is removed in the commit that
+  carries this fold *(re: § 4 C-R4; § 5 step 1 E-7; § 6 `first-public-release`; the header; source:
+  `docs/trail/sdd/cycle-47.md` § 5.1; `docs/PRD.md` § Assumptions "Public identity"; `docs/SRS.md`
+  C-12; `docs/trail/srs/cycle-11.md` § 1.1; `ka-reader@e34d16f`; `ka-reader@74ca793`;
+  `ka-reader@3a6e021`)*.
 
 ## Open Questions
 
