@@ -1058,6 +1058,15 @@ mod tests {
         assert!(!collapsed.place().is_expanded(Path::new("docs")));
         assert!(reexpanded.place().is_expanded(Path::new("docs")));
         assert_eq!(collapsed.place(), model.place());
+
+        // The reverse: collapse, expand, collapse reads collapsed.
+        let first_collapse = collapse(model, "docs");
+        let then_expanded = expand(first_collapse.clone(), "docs");
+        let last_collapse = collapse(then_expanded.clone(), "docs");
+
+        assert!(!first_collapse.place().is_expanded(Path::new("docs")));
+        assert!(then_expanded.place().is_expanded(Path::new("docs")));
+        assert!(!last_collapse.place().is_expanded(Path::new("docs")));
     }
 
     #[test]
@@ -1528,6 +1537,28 @@ mod tests {
 
         assert_eq!(root_of(&after), ["a.rs", "b.rs", "e.rs"]);
         assert_eq!(after.root_listing.items[1], listed("", "b.rs", FILE));
+    }
+
+    #[test]
+    fn test_a_reported_entry_the_fresh_read_does_not_see_is_not_listed() {
+        // CP-785 lists a reported entry as a fresh read lists it now: one reported created or
+        // changed that the fresh read no longer sees is not listed, and the unreported entry stays.
+        let model = supplied_model(
+            held("", &[("a.rs", FILE), ("b.rs", FILE)]),
+            &[],
+            ReaderPlace::default(),
+        );
+
+        let after = reduce(
+            model,
+            &change(
+                names(&["ghost.rs", "a.rs"], &[]),
+                "",
+                vec![listed("", "b.rs", FILE)],
+            ),
+        );
+
+        assert_eq!(root_of(&after), ["b.rs"]);
     }
 
     #[test]

@@ -449,6 +449,30 @@ fn a_delta_through_a_folder_link_updates_both_held_listings() {
 }
 
 #[test]
+fn a_change_reported_by_the_target_path_updates_both_held_listings() {
+    let folder = project();
+    folder.make_link("shown", "src");
+    let model = expand(expand(model_over(&folder), "src"), "shown");
+
+    // A child changes kind on disk and is reported changed by its target path.
+    fs::remove_file(folder.path().join("src/util.rs")).expect("the file is removed");
+    folder.make_folder("src/util.rs");
+    let model = model.list_tree(delta(&[], &["src/util.rs"], &[]));
+
+    for path in ["src", "shown"] {
+        let listing = model.listing(Path::new(path)).expect("the listing is held");
+        assert_eq!(listing, &fresh(&folder, path), "{path}");
+        assert_eq!(
+            entry_named(listing, "util.rs").map(|entry| entry.kind),
+            Some(EntryKind::Folder),
+            "{path}"
+        );
+    }
+    assert!(expanded(&model, "src"));
+    assert!(expanded(&model, "shown"));
+}
+
+#[test]
 fn unreported_disk_changes_are_not_adopted() {
     let folder = project();
     let model = expand(model_over(&folder), "src");
