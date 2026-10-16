@@ -85,6 +85,7 @@ new_scene() {
   : > "$SCENE/rd"
   : > "$SCENE/fg_args"
   : > "$SCENE/rd_sleepers"
+  : > "$SCENE/rd_args"
   : > "$SCENE/open_calls"
   vmr_install_ordinary "$SCENE/ordinary"
   vmr_install_admission "$SCENE/bin"
@@ -135,6 +136,7 @@ if [ "\$PPID" = "\$(cat "\$S/main_pid" 2> /dev/null)" ]; then
   fi
 else
   echo "\$\$" >> "\$S/rd_sleepers"
+  printf '%s\n' "\$*" >> "\$S/rd_args"
   echo "\$PPID" > "\$S/rd_pid"
   if [ -f "\$S/block" ]; then
     read -r _ < "\$S/fifo"
@@ -197,6 +199,13 @@ expect_timeout_line_only() {
 expect_quarter_second_ticks() {
   odd="$(grep -v -x '0.25' "$SCENE/fg_args" || true)"
   [ -z "$odd" ] || fail "a foreground wait was not 0.25 seconds: $odd"
+}
+
+# CP-793: the child looks for the log every 0.25 seconds — every wait it made between two looks was 0.25.
+expect_quarter_second_polls() {
+  [ -s "$SCENE/rd_args" ] || fail "the child never waited between two looks, so nothing was checked" || return 1
+  odd="$(grep -v -x '0.25' "$SCENE/rd_args" || true)"
+  [ -z "$odd" ] || fail "a wait of the child's between two looks was not 0.25 seconds: $odd"
 }
 
 # No process this run started is still alive: the child that polls, and every wait it made.
@@ -309,7 +318,8 @@ test_no_log_times_out_at_240_ticks() {
   expect_status 1 || return 1
   expect_timeout_line_only || return 1
   [ "$(fg_ticks)" -eq "$TICKS" ] || fail "expected $TICKS foreground ticks, got $(fg_ticks)" || return 1
-  expect_quarter_second_ticks
+  expect_quarter_second_ticks || return 1
+  expect_quarter_second_polls
 }
 
 # CP-793: a file observation that never returns does not stop the count. The child's first wait blocks on

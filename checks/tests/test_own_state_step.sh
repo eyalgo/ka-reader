@@ -54,6 +54,8 @@ test_child_success_is_forwarded
 test_child_condition_failure_is_forwarded
 test_child_other_nonzero_status_is_forwarded
 test_real_child_refusal_off_vm
+test_child_reads_the_home_the_step_was_given
+test_no_home_still_runs_the_child
 test_child_finishing_on_the_last_tick_returns_its_result
 test_hung_reader_times_out_at_240_ticks
 test_timeout_stops_the_reader_and_its_descendants
@@ -127,6 +129,17 @@ run_step() {
   (
     cd "$SCENE/cwd" || exit 99
     exec /usr/bin/env -i PATH="$SCENE/bin:$SCENE/ordinary" HOME="$SCENE/home" "$@" "$STEP_SH"
+  ) > "$SCENE/out" 2> "$SCENE/err"
+  STATUS=$?
+  OUT="$(cat "$SCENE/out")"
+  ERR="$(cat "$SCENE/err")"
+}
+
+# As run_step, with no HOME in the environment at all. Sets STATUS, OUT and ERR.
+run_step_with_no_home() {
+  (
+    cd "$SCENE/cwd" || exit 99
+    exec /usr/bin/env -i PATH="$SCENE/bin:$SCENE/ordinary" "$STEP_SH"
   ) > "$SCENE/out" 2> "$SCENE/err"
   STATUS=$?
   OUT="$(cat "$SCENE/out")"
@@ -222,6 +235,35 @@ test_real_child_refusal_off_vm() {
   write_sleep
   echo 0 > "$SCENE/pid"
   run_step
+
+  expect_status 1 || return 1
+  [ "$ERR" = "$(vmr_expected_line own-state.sh)" ] || fail "expected only the child's refusal line. got: $ERR" || return 1
+  [ -z "$OUT" ] || fail "expected nothing on stdout, got: $OUT" || return 1
+  expect_no_ci_line
+}
+
+# CP-794: the step runs checks/own-state.sh against the home it was itself given; it passes HOME through
+# and sets no other.
+test_child_reads_the_home_the_step_was_given() {
+  new_scene
+  write_child 'printf "%s\n" "${HOME-no home}"'
+  run_step
+
+  expect_status 0 || return 1
+  [ "$OUT" = "$SCENE/home" ] || fail "the child did not read the step's home. got: $OUT" || return 1
+  [ -z "$ERR" ] || fail "expected nothing on stderr, got: $ERR"
+}
+
+# CP-794/CP-796 (change_design.md § 3 C: the wrapper "does not inspect HOME to decide whether its child
+# runs"): with no HOME at all, the step still runs its child, so off a virtual machine the child's own
+# refusal is the step's only output — not a line of the step's, and not a failure of the step's own.
+test_no_home_still_runs_the_child() {
+  new_scene
+  cp "$REAL_OWN_STATE_SH" "$SCENE/cwd/checks/own-state.sh"
+  vmr_install_standins "$SCENE/bin" "$SCENE/log" physical
+  write_sleep
+  echo 0 > "$SCENE/pid"
+  run_step_with_no_home
 
   expect_status 1 || return 1
   [ "$ERR" = "$(vmr_expected_line own-state.sh)" ] || fail "expected only the child's refusal line. got: $ERR" || return 1
