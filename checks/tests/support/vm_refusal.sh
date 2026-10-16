@@ -226,7 +226,7 @@ vmr_assert_refuses() {
   fi
   vmr_expected_line "$name" > "$vmr_case/expected"
   if ! cmp -s "$vmr_case/expected" "$vmr_case/stderr"; then
-    echo "  $reading: stderr is not exactly the refusal line. expected: $(cat "$vmr_case/expected") got: $(cat "$vmr_case/stderr")"
+    echo "  $reading: stderr is not exactly the refusal line for $name. got: $(cat "$vmr_case/stderr")"
     failed=1
   fi
   if [ "$vmr_status" -ne 1 ]; then

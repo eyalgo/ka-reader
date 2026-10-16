@@ -31,6 +31,8 @@ set -uo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 BUNDLE_SH="$ROOT/checks/bundle.sh"
+# shellcheck source=checks/tests/support/vm_refusal.sh
+source "$ROOT/checks/tests/support/vm_refusal.sh"
 APP="${KA_READER_APP:-$ROOT/target/release/bundle/macos/KA-Reader.app}"
 
 APP_SANDBOX_KEY="com.apple.security.app-sandbox"
@@ -133,6 +135,8 @@ test_directory_without_app_suffix_fails
 test_unlaunchable_bundle_fails
 test_absent_bundle_fails_the_suite
 test_temporaries_removed
+test_refuses_off_vm_before_work
+test_admits_on_a_vm_reading
 "
 
 # --- helpers ---
@@ -1673,6 +1677,43 @@ test_temporaries_removed() {
   nested_work="$(cat "$log" 2> /dev/null || true)"
   [ -n "$nested_work" ] || fail "the nested suite recorded no temporary directory" || return 1
   [ ! -e "$nested_work" ] || fail "the temporary directory still exists: $nested_work"
+}
+
+# QC-65 (CP-797, CP-798, CP-799): off a macOS virtual machine bundle.sh prints its one refusal line and
+# does nothing else, whatever it is given. The matrix (every host reading that must refuse) and the
+# traced run are the shared helper's; the arguments and inputs below are the ones bundle.sh reads.
+test_refuses_off_vm_before_work() {
+  VMR_TMP="$WORK"
+  scene="$WORK/refusal-scene"
+  mkdir -p "$scene/plain" "$scene/Fake.app/Contents"
+  : > "$scene/Fake.app/Contents/Info.plist"
+  VMR_SCENE="$scene"
+  VMR_ENV=()
+
+  vmr_assert_refusal "$BUNDLE_SH" bundle.sh || return 1
+  vmr_assert_refusal "$BUNDLE_SH" bundle.sh /nonexistent || return 1
+  vmr_assert_refusal "$BUNDLE_SH" bundle.sh "$scene/plain" || return 1
+  vmr_assert_refusal "$BUNDLE_SH" bundle.sh "$scene/Fake.app" || return 1
+  vmr_assert_refusal "$BUNDLE_SH" bundle.sh --negative-control || return 1
+  vmr_assert_refusal "$BUNDLE_SH" bundle.sh --negative-control "$scene/Fake.app" || return 1
+  for ticks in 1 0 abc ""; do
+    VMR_ENV=("BUNDLE_SH_PROBE_TICKS=$ticks" "BUNDLE_SH_LAUNCH_TICKS=$ticks")
+    vmr_assert_refusal "$BUNDLE_SH" bundle.sh "$scene/Fake.app" || return 1
+  done
+}
+
+# CP-798/CP-800: on a virtual machine's reading the admission adds no line and changes no verdict.
+test_admits_on_a_vm_reading() {
+  VMR_TMP="$WORK"
+  VMR_SCENE=""
+  VMR_ENV=()
+
+  vmr_run_on admit "$BUNDLE_SH" /nonexistent || return 1
+
+  [ "$vmr_status" -eq 1 ] || fail "expected exit 1, got $vmr_status" || return 1
+  [ ! -s "$vmr_case/stdout" ] || fail "stdout is not empty: $(cat "$vmr_case/stdout")" || return 1
+  [ "$(cat "$vmr_case/stderr")" = "bundle.sh: not found: /nonexistent" ] \
+    || fail "expected only the existing verdict. stderr: $(cat "$vmr_case/stderr")"
 }
 
 # --- the runner ---
