@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.4.0 — the launch steps refuse off a VM
 # Version: 1.3.0 — the suite prints the control line — test_bundle.sh publishes the control's one reading and refuses a report without it
 # Version: 1.2.0 — the Tauri build leaves — native bundle assembled, bundle.sh and no-network.sh read it, CI builds it, boundaries and README pinned
 # Version: 1.1.0 — the probe waits, bounded, for the sandbox report, and its control holds for the whole window; plutil read only on exit 0
@@ -26,11 +27,30 @@
 # WHY NO `set -e`
 #   A case that fails must not end the run before the remaining cases report. Each case returns its
 #   own status and the runner counts them.
+#
+# ADMISSION
+#   The first thing the suite does is ask the host whether it is a macOS virtual machine (`uname -s`
+#   Darwin and `sysctl -n kern.hv_vmm_present` 1, both succeeding), because its cases launch the built
+#   bundle. On any other reading it prints one line on stderr, nothing on stdout, and exits 1, before it
+#   finds the product root or the bundle, makes a work directory or runs a case (docs/nfdr.md QC-65).
+#   Nothing it is given turns this off. The case that proves it is checks/tests/test_vm_refusal.sh's: a
+#   suite that refused has no case left to run, so its own refusal cannot be one of its cases.
 
 set -uo pipefail
 
+# --- admission: this suite runs only in a macOS virtual machine (docs/nfdr.md QC-65) ---
+# First work of the run, inline so nothing is opened, found or read before it. Both host readings must
+# succeed and read exactly Darwin and 1; a reader that fails, is missing or prints anything else
+# refuses, and a failing reader that prints 1 does not admit (the status is kept, not only the text).
+# Nothing the suite reads — argument, flag or variable — changes this.
+host_os="$(uname -s 2> /dev/null)" && host_vmm="$(sysctl -n kern.hv_vmm_present 2> /dev/null)" \
+  && [ "$host_os" = "Darwin" ] && [ "$host_vmm" = "1" ] \
+  || { echo "test_bundle.sh: refused: this host does not read as a macOS virtual machine. This step launches KA-Reader.app or reads this machine's home, and runs only in a macOS virtual machine (docs/nfdr.md QC-65)." >&2; exit 1; }
+
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 BUNDLE_SH="$ROOT/checks/bundle.sh"
+# shellcheck source=checks/tests/support/vm_refusal.sh
+source "$ROOT/checks/tests/support/vm_refusal.sh"
 APP="${KA_READER_APP:-$ROOT/target/release/bundle/macos/KA-Reader.app}"
 
 APP_SANDBOX_KEY="com.apple.security.app-sandbox"
@@ -133,6 +153,8 @@ test_directory_without_app_suffix_fails
 test_unlaunchable_bundle_fails
 test_absent_bundle_fails_the_suite
 test_temporaries_removed
+test_refuses_off_vm_before_work
+test_admits_on_a_vm_reading
 "
 
 # --- helpers ---
@@ -1673,6 +1695,43 @@ test_temporaries_removed() {
   nested_work="$(cat "$log" 2> /dev/null || true)"
   [ -n "$nested_work" ] || fail "the nested suite recorded no temporary directory" || return 1
   [ ! -e "$nested_work" ] || fail "the temporary directory still exists: $nested_work"
+}
+
+# QC-65 (CP-797, CP-798, CP-799): off a macOS virtual machine bundle.sh prints its one refusal line and
+# does nothing else, whatever it is given. The matrix (every host reading that must refuse) and the
+# traced run are the shared helper's; the arguments and inputs below are the ones bundle.sh reads.
+test_refuses_off_vm_before_work() {
+  VMR_TMP="$WORK"
+  scene="$WORK/refusal-scene"
+  mkdir -p "$scene/plain" "$scene/Fake.app/Contents"
+  : > "$scene/Fake.app/Contents/Info.plist"
+  VMR_SCENE="$scene"
+  VMR_ENV=()
+
+  vmr_assert_refusal "$BUNDLE_SH" bundle.sh || return 1
+  vmr_assert_refusal "$BUNDLE_SH" bundle.sh /nonexistent || return 1
+  vmr_assert_refusal "$BUNDLE_SH" bundle.sh "$scene/plain" || return 1
+  vmr_assert_refusal "$BUNDLE_SH" bundle.sh "$scene/Fake.app" || return 1
+  vmr_assert_refusal "$BUNDLE_SH" bundle.sh --negative-control || return 1
+  vmr_assert_refusal "$BUNDLE_SH" bundle.sh --negative-control "$scene/Fake.app" || return 1
+  for ticks in 1 0 abc ""; do
+    VMR_ENV=("BUNDLE_SH_PROBE_TICKS=$ticks" "BUNDLE_SH_LAUNCH_TICKS=$ticks")
+    vmr_assert_refusal "$BUNDLE_SH" bundle.sh "$scene/Fake.app" || return 1
+  done
+}
+
+# CP-798/CP-800: on a virtual machine's reading the admission adds no line and changes no verdict.
+test_admits_on_a_vm_reading() {
+  VMR_TMP="$WORK"
+  VMR_SCENE=""
+  VMR_ENV=()
+
+  vmr_run_on admit "$BUNDLE_SH" /nonexistent || return 1
+
+  [ "$vmr_status" -eq 1 ] || fail "expected exit 1, got $vmr_status" || return 1
+  [ ! -s "$vmr_case/stdout" ] || fail "stdout is not empty: $(cat "$vmr_case/stdout")" || return 1
+  [ "$(cat "$vmr_case/stderr")" = "bundle.sh: not found: /nonexistent" ] \
+    || fail "expected only the existing verdict. stderr: $(cat "$vmr_case/stderr")"
 }
 
 # --- the runner ---

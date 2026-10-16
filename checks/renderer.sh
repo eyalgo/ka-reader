@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.1.0 — the launch steps refuse off a VM
 # Version: 1.0.0 — first version: the renderer gate — the bundle is launched and its main thread observed at the Open panel inside the shell's launch frames, then its own idle-shell control is observed not to be
 #
 # checks/renderer.sh <path-to-app> — proves the shipped KA-Reader.app reaches the Open panel.
@@ -11,6 +12,12 @@
 #   does and reads the operating system's own view of the process: a thread sample of the main thread.
 #   It sends no input. It reads nothing the product writes, and nothing in the product exists for
 #   this gate: the panel's modal run is what the shell does anyway.
+#
+# ADMISSION
+#   The first thing the script does is ask the host whether it is a macOS virtual machine (`uname -s`
+#   Darwin and `sysctl -n kern.hv_vmm_present` 1, both succeeding). On any other reading it prints one
+#   line on stderr, nothing on stdout, and exits 1, before it reads an argument, a path or a fixture,
+#   compiles the control or launches anything (docs/nfdr.md QC-65). Nothing it is given turns this off.
 #
 # USAGE
 #   checks/renderer.sh target/release/bundle/macos/KA-Reader.app
@@ -72,6 +79,15 @@
 #   report to /tmp.
 
 set -euo pipefail
+
+# --- admission: this step runs only in a macOS virtual machine (docs/nfdr.md QC-65) ---
+# First work of the run, inline so nothing is opened, found or read before it. Both host readings must
+# succeed and read exactly Darwin and 1; a reader that fails, is missing or prints anything else
+# refuses, and a failing reader that prints 1 does not admit (the status is kept, not only the text).
+# Nothing the script reads — argument, flag or variable — changes this.
+host_os="$(uname -s 2> /dev/null)" && host_vmm="$(sysctl -n kern.hv_vmm_present 2> /dev/null)" \
+  && [ "$host_os" = "Darwin" ] && [ "$host_vmm" = "1" ] \
+  || { echo "renderer.sh: refused: this host does not read as a macOS virtual machine. This step launches KA-Reader.app or reads this machine's home, and runs only in a macOS virtual machine (docs/nfdr.md QC-65)." >&2; exit 1; }
 
 die() { echo "renderer.sh: $*" >&2; exit 1; }
 

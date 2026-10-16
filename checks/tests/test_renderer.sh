@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.1.0 — the launch steps refuse off a VM
 # Version: 1.0.0 — first version: drives the real checks/renderer.sh, both halves, over stand-in
 #   ps, open, sample, codesign and swiftc, and over the real bundle
 #
@@ -25,11 +26,30 @@
 # WHY NO `set -e`
 #   A case that fails must not end the run before the remaining cases report. Each case returns its
 #   own status and the runner counts them.
+#
+# ADMISSION
+#   The first thing the suite does is ask the host whether it is a macOS virtual machine (`uname -s`
+#   Darwin and `sysctl -n kern.hv_vmm_present` 1, both succeeding), because its cases launch the built
+#   bundle. On any other reading it prints one line on stderr, nothing on stdout, and exits 1, before it
+#   finds the product root, makes a temporary directory or runs a case (docs/nfdr.md QC-65). Nothing it
+#   is given turns this off, KA_READER_TEST_ONLY included. The case that proves it is
+#   checks/tests/test_vm_refusal.sh's: a suite that refused has no case left to run.
 
 set -uo pipefail
 
+# --- admission: this suite runs only in a macOS virtual machine (docs/nfdr.md QC-65) ---
+# First work of the run, inline so nothing is opened, found or read before it. Both host readings must
+# succeed and read exactly Darwin and 1; a reader that fails, is missing or prints anything else
+# refuses, and a failing reader that prints 1 does not admit (the status is kept, not only the text).
+# Nothing the suite reads — argument, flag or variable — changes this.
+host_os="$(uname -s 2> /dev/null)" && host_vmm="$(sysctl -n kern.hv_vmm_present 2> /dev/null)" \
+  && [ "$host_os" = "Darwin" ] && [ "$host_vmm" = "1" ] \
+  || { echo "test_renderer.sh: refused: this host does not read as a macOS virtual machine. This step launches KA-Reader.app or reads this machine's home, and runs only in a macOS virtual machine (docs/nfdr.md QC-65)." >&2; exit 1; }
+
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 RENDERER_SH="$ROOT/checks/renderer.sh"
+# shellcheck source=checks/tests/support/vm_refusal.sh
+source "$ROOT/checks/tests/support/vm_refusal.sh"
 REAL_APP="$ROOT/target/release/bundle/macos/KA-Reader.app"
 
 STDOUT=""
@@ -78,6 +98,8 @@ test_control_line_states_the_bound
 test_nothing_written_under_fixtures
 test_no_checks_file_matches_a_bundle_file
 test_no_input_sent
+test_refuses_off_vm_before_work
+test_admits_on_a_vm_reading
 "
 
 # --- helpers ---
@@ -426,11 +448,13 @@ run_renderer_with_path() {
 }
 
 # A directory of links to the ordinary tools and to no `swiftc`, so a run on it finds everything but
-# the seam.
+# the seam. `uname` and `sysctl` are linked too: the script reads the host first (docs/nfdr.md QC-65),
+# and without them this run would be refused for its host reading before it reached the missing
+# compiler. They are the real tools, so the case still has its real guest observation.
 tools_without_swiftc() {
   mkdir -p "$1"
   for tool in bash env awk grep sed find sort tr cat cut head tail wc basename dirname mktemp rm mkdir \
-    ls uniq expr od date cp mv tee xargs sh test kill sleep printf chmod cmp git; do
+    ls uniq expr od date cp mv tee xargs sh test kill sleep printf chmod cmp git uname sysctl; do
     resolved="$(command -v "$tool" 2> /dev/null || true)"
     case "$resolved" in
       /*) ln -sf "$resolved" "$1/$tool" ;;
@@ -1085,6 +1109,41 @@ $candidate_hash
 "*) fail "$tracked_file has the same bytes as a file in the bundle" || return 1 ;;
     esac
   done <<< "$tracked"
+}
+
+# QC-65 (CP-797, CP-798, CP-799): off a macOS virtual machine renderer.sh prints its one refusal line and
+# does nothing else — no launch, no fixture read, no control compiled — whatever it is given. The matrix
+# and the traced run are the shared helper's; the apps and inputs below are the ones renderer.sh reads.
+test_refuses_off_vm_before_work() {
+  new_case refusal
+  VMR_TMP="$WORK"
+  scene="$WORK/refusal-scene"
+  mkdir -p "$scene/plain" "$scene/wrong.app/Contents"
+  VMR_SCENE="$scene"
+  VMR_ENV=()
+
+  vmr_assert_refusal "$RENDERER_SH" renderer.sh || return 1
+  vmr_assert_refusal "$RENDERER_SH" renderer.sh /nonexistent || return 1
+  vmr_assert_refusal "$RENDERER_SH" renderer.sh "$scene/plain" || return 1
+  vmr_assert_refusal "$RENDERER_SH" renderer.sh "$scene/wrong.app" || return 1
+  vmr_assert_refusal "$RENDERER_SH" renderer.sh "$APP" || return 1
+  for value in 1 0 abc ""; do
+    VMR_ENV=("RENDERER_SH_OBSERVATIONS=$value" "RENDERER_SH_LAUNCH_TICKS=$value")
+    vmr_assert_refusal "$RENDERER_SH" renderer.sh "$APP" || return 1
+    vmr_assert_refusal "$RENDERER_SH" renderer.sh "$scene/wrong.app" || return 1
+  done
+}
+
+# CP-798/CP-800: on a virtual machine's reading the admission adds no line and changes no verdict — an
+# ordinary pass run passes and prints no refusal.
+test_admits_on_a_vm_reading() {
+  new_case admits
+  pass_reports
+  vmr_install_admission "$STUBS"
+  run_renderer "$APP"
+  expect_status 0 || return 1
+  expect_stderr_lacks "refused" || return 1
+  expect_stdout_contains "observation 1 " || return 1
 }
 
 # --- runner ---
