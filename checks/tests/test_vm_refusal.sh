@@ -60,9 +60,17 @@ fail() {
 
 # The steps of the gate, one per line: the name, a tab, the command. Only a top-level call in the
 # gate's literal form is read, so a comment or an indented call is never a step. The gate is read,
-# never run.
+# never run. From the first call to the end of the file, the list holds nothing but calls, comments
+# and blank lines. Any other line there is read as no list at all: an `if` or a `fi`, a heredoc, a
+# function, an `exit` or an `export` around or between the calls can leave a call that never runs,
+# or one that runs with a variable set, and a reader that took each call on its own would still
+# count it as a step.
 gate_steps() {
   [ -f "$GATE" ] || return 0
+  first="$(grep -n -m 1 "^run_step '" "$GATE" | cut -d: -f1 || true)"
+  [ -n "$first" ] || return 0
+  stray="$(tail -n +"$first" "$GATE" | grep -v -E "^run_step '[^']*' '.*'\$|^[[:space:]]*(#.*)?\$" || true)"
+  [ -z "$stray" ] || return 0
   sed -n "s/^run_step '\([^']*\)' '\(.*\)'\$/\1${TAB}\2/p" "$GATE"
 }
 
@@ -72,8 +80,8 @@ read_gate_steps() {
   [ -n "$steps" ] || fail "no step was read from checks/gate.sh, so nothing was checked"
 }
 
-# Puts the command of the gate's step named $1 in $gate_command; fails when the name is on no step or on
-# more than one.
+# Puts the command of the gate's step named $1 in $gate_command; fails when the name is on no step
+# or on more than one.
 gate_command_of() {
   count="$(printf '%s\n' "$steps" | awk -F'\t' -v want="$1" '$1 == want' | wc -l | tr -d ' ')"
   [ "$count" -ge 1 ] || fail "checks/gate.sh has no step named \"$1\"" || return 1
@@ -170,17 +178,17 @@ test_renderer_suite_admits_on_a_vm_reading() {
   fi
 }
 
-# CP-792, CP-795: the two moved steps are exactly their scripts, with no timer setting and no environment
-# prefix; the rule they carried is in the scripts. Asserted over the gate's own calls.
+# CP-792, CP-795: the two moved steps are exactly their scripts, with no timer setting and no
+# environment prefix; the rule they carried is in the scripts. Asserted over the gate's own calls.
 test_moved_steps_hold_no_block_and_no_timer_setting() {
   read_gate_steps || return 1
   assert_gate_step_runs_exactly "Launch the built bundle" "checks/launch.sh" || return 1
   assert_gate_step_runs_exactly "Own state" "checks/own-state-step.sh"
 }
 
-# CP-792, CP-795: each moved step calls exactly its script, keeps its name, and sits where it sat in the
-# gate: the renderer gate suite before the real launch, and Own state after it and last. In the workflow,
-# the step that runs the gate is the step directly before packaging.
+# CP-792, CP-795: each moved step calls exactly its script, keeps its name, and sits where it sat in
+# the gate: the renderer gate suite before the real launch, and Own state after it and last. In the
+# workflow, the step that runs the gate is the step directly before packaging.
 test_moved_steps_are_single_line_commands_in_order() {
   read_gate_steps || return 1
   assert_gate_step_runs_exactly "Launch the built bundle" "checks/launch.sh" || return 1
