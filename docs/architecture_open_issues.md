@@ -52,7 +52,7 @@ None.
   contributor then reads the gate as review-only when a suite holds it. A change that drops the case
   from the suite goes unnoticed, because the NFDR does not name the case as the check. No record moves
   either way.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm, with two additions. (1) The tail's check and the suite case both read only `.github/workflows/*.yml`. GitHub runs a workflow file ending `.yaml` as well, so a second workflow such as `release.yaml` with `runs-on: macos-latest` passes both while breaking QC-56. The tail says so, and names `development-design` reading the entry as the gate for a workflow file ending `.yaml`. That gate stays even after the card's command runs the script, because the gap is in what the case reads, not in whether a run issues it. (2) The sentence after the tail, "At `ka-reader@d6405e2` the tree meets neither half … prints `runs-on: macos-14`", is re-measured at `ka-reader@8b93322`, where the tree meets both halves: `ka-reader-mac/Info.plist` holds `26.0`, `Package.swift` names `.macOS(.v26)`, the workflow's one runner is `macos-26` (`ci.yml:L18`), and the suite passes 9 of 9. The `d6405e2` words go into a dated note. Reasoning in `docs/trail/architecture/self_answer-54.md`.
 
 ## 3. Raised from downstream — an item from a seat that did not write these records
 
