@@ -1,8 +1,8 @@
 # NFDR — KA-Reader
 
-**Status:** Draft
+**Status:** Settled
 **Owner:** Principal Architect
-**Version:** 58 — the cycle-51 fold, §§ 3.1 – 3.3 answered in the owner's seat; § 2.1 drafted for the owner. `checks/gate.sh` is in the tree from `ka-reader@8b93322` and runs every suite, so the sentences that waited on it move. QC-25's hosted-log read selects, inside the workflow's `Test gate` step, the line after the control case's `ok` line, because that step now prints the shipped bundle's reading as well; runs on earlier commits keep the old selector. § 8's *Until the script lands* becomes *Until the card runs the script*, and QC-64, QC-65 and § 9's *Toolchain* passage follow; nothing the NFDR names still stands in front of the card's move. QC-64's two comparisons and § 9's suites comparison are held by `checks/tests/test_vm_refusal.sh`, a step of the gate, and the review gates' ground becomes that no run issues it at a change. § 9's suites are steps of `checks/gate.sh`, re-pinned at `ka-reader@8b93322`, still eleven, and § 10's preamble follows. QC-56 names the same suite's runner case as its check — drafted, awaiting the owner's confirm. No ADR is written, and no `QC` is added, renumbered or reused. One item awaits the owner, so `Status:` is Draft — RN-69 (v57: the close: the cycle-50 fold, QC-65's cost and temporary gate and § 9's suite count re-measured at `ka-reader@13e8d42` — RN-68)
+**Version:** 59 — the close: the cycle-52 fold, § 2.1 confirmed in the owner's seat with two additions. QC-56 names `checks/tests/test_vm_refusal.sh`'s runner case as its check, says that the case and the command read no workflow file ending `.yaml`, and names `development-design` as that file's gate, which outlives the card's move; its sentence on the tree is re-measured at `ka-reader@8b93322`, where the tree meets both halves. § 10's row follows. No ADR is written, and no `QC` is added, renumbered or reused. Nothing is left for the owner, so the companion is removed and `Status:` is Settled — RN-70 (v58: the cycle-51 fold, §§ 3.1 – 3.3 answered in the owner's seat; § 2.1 drafted for the owner. `checks/gate.sh` is in the tree from `ka-reader@8b93322` and runs every suite, so the sentences that waited on it move. QC-25's hosted-log read selects, inside the workflow's `Test gate` step, the line after the control case's `ok` line, because that step now prints the shipped bundle's reading as well; runs on earlier commits keep the old selector. § 8's *Until the script lands* becomes *Until the card runs the script*, and QC-64, QC-65 and § 9's *Toolchain* passage follow; nothing the NFDR names still stands in front of the card's move. QC-64's two comparisons and § 9's suites comparison are held by `checks/tests/test_vm_refusal.sh`, a step of the gate, and the review gates' ground becomes that no run issues it at a change. § 9's suites are steps of `checks/gate.sh`, re-pinned at `ka-reader@8b93322`, still eleven, and § 10's preamble follows. QC-56 names the same suite's runner case as its check — drafted, awaiting the owner's confirm. No ADR is written, and no `QC` is added, renumbered or reused. One item awaits the owner, so `Status:` is Draft — RN-69)
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · PRD Settled · UXD Settled · DESIGN Settled · CONTENT Settled
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
@@ -1603,12 +1603,24 @@ answer at `docs/trail/architecture/cycle-51.md` § 3.2 — RN-69)*.
   runner, which the command does not. No run issues that suite at a change until the card's command
   runs the script (§ 8, *Until the card runs the script*), so until then `development-design` reading
   this entry is its gate for a change under `.github/workflows/`, and release inspection runs it
-  (RN-58) *(drafted at v58, awaiting the owner's confirm at the companion's § 2.1 — RN-69; through
-  v57 this read "this document's own realization of C-R5's workflow case, held by no script, so
-  `development-design` reading this entry is its gate", false from `ka-reader@13e8d42`, where the
-  suite already held the case)*. At `ka-reader@d6405e2` the tree meets neither half: the
-  plist, the manifest, the deployment target and the workflow still hold the floor and the image
-  the lines SDD RN-108 lists name, and that check prints `runs-on: macos-14` *(traces to: SDD § 4
+  (RN-58). Both the command and the case read only workflow files ending `.yml`, and GitHub runs a
+  workflow file ending `.yaml` as well: a `.github/workflows/release.yaml` whose runner is
+  `macos-latest` breaks this entry and passes both. For a workflow file ending `.yaml`,
+  `development-design` reading this entry is the gate, and that gate stays after the card's command
+  runs the script, because the gap is in which files the check reads, not in whether a run issues it
+  *(drafted at v58 — RN-69; confirmed with the `.yaml` sentence added, in the owner's seat at
+  `docs/trail/architecture/cycle-52.md` § 2.1 — RN-70; through v57 this read "this document's own
+  realization of C-R5's workflow case, held by no script, so `development-design` reading this entry
+  is its gate", false from `ka-reader@13e8d42`, where the suite already held the case)*. At
+  `ka-reader@8b93322` the tree meets both halves: `ka-reader-mac/Info.plist:L13-L14` holds `26.0`,
+  `ka-reader-mac/Package.swift:L23` names `.macOS(.v26)`, `ka-reader-mac/assemble.sh:L50` builds with
+  `MACOSX_DEPLOYMENT_TARGET=26.0`, the workflow's one runner is `macos-26`
+  (`.github/workflows/ci.yml:L18`), that check prints nothing, and the suite passes 9 of 9
+  *(re-measured at v59 on the owner's seat's answer at `docs/trail/architecture/cycle-52.md` § 2.1 —
+  RN-70; through v58 this sentence read "At `ka-reader@d6405e2` the tree meets neither half: the
+  plist, the manifest, the deployment target and the workflow still hold the floor and the image the
+  lines SDD RN-108 lists name, and that check prints `runs-on: macos-14`", true at its pin)*
+  *(traces to: SDD § 4
   C-R5 as it reads at v48; § 9 TO-8; § 11 R-17; SRS C-11; FDR R-133, PD-18; ADR-0024, which
   superseded ADR-0007 at v55 — RN-66; the owner's
   answer at `docs/trail/sdd/cycle-43.md` § 5.1)* *(through v46 this entry read the floor as "14
@@ -2296,7 +2308,7 @@ is stated once, in § 8 *(added at v56, on the owner's answer at `docs/trail/arc
 | QC-51 | failure visible in window | `swift test --package-path ka-reader-mac` (layer 4); `checks/view.sh` (suite `test_view.sh`) | the change; the tree | `development-implementation`; CI build |
 | QC-53 | no internal text | `checks/strings.sh`; layer-5 error-path tests | the tree | CI build |
 | QC-55 | one bundle, one process | `checks/bundle.sh` (suite `test_bundle.sh`) | the tree | CI build |
-| QC-56 | macOS floor in the bundle; CI on the floor's image label | `/usr/libexec/PlistBuddy -c 'Print :LSMinimumSystemVersion' …`; `grep -h -E '^[[:space:]]*runs-on:' .github/workflows/*.yml \| grep -v …`; `checks/tests/test_vm_refusal.sh` — `test_every_runner_names_macos_26` (drafted, RN-69) | the release; the tree | release; `development-design` reading the entry |
+| QC-56 | macOS floor in the bundle; CI on the floor's image label | `/usr/libexec/PlistBuddy -c 'Print :LSMinimumSystemVersion' …`; `grep -h -E '^[[:space:]]*runs-on:' .github/workflows/*.yml \| grep -v …`; `checks/tests/test_vm_refusal.sh` — `test_every_runner_names_macos_26` (RN-69, RN-70); neither reads a workflow file ending `.yaml` | the release; the tree | release; `development-design` reading the entry, which alone gates a workflow file ending `.yaml` |
 | QC-59 | priced contract against its major's pin | `checks/contract.sh <tag>` | the release | release, from `v1.0.0` |
 | QC-60 | own-state read across versions | `checks/own-state.sh --from <previous-tag>` (suite `test_own_state.sh`) | the release | release |
 | QC-61 | logging facade and its implementation | `checks/no-network.sh` (suite `test_no_network.sh`); `checks/structure.sh` (suite `test_structure.sh`) | the tree; the change | CI build; `development-implementation` (the structure pair) |
@@ -6334,3 +6346,44 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   `checks/tests/` bullet and the *Toolchain* passage; § 10 the preamble and the QC-25, QC-56 and QC-64
   rows; source: `docs/trail/architecture/cycle-51.md` §§ 2.1, 3.1 – 3.3;
   `docs/trail/architecture/self_answer-53.md`; `ka-reader@8b93322`)*
+- **RN-70:** *(v59 — the close: the cycle-52 fold, § 2.1 confirmed with two additions)* **Intake.**
+  The companion on disk held one item, § 2.1, which the v58 run drafted into QC-56 and § 10's row
+  (RN-69). A `companion-self-answer` run answered it in the owner's seat on 2026-10-20
+  (`ka-reader@20e4810`; the reasoning at `docs/trail/architecture/self_answer-54.md`). The file was
+  clean in git at intake and its one slot was filled, so it is consumed. It was copied whole to
+  `docs/trail/architecture/cycle-52.md` before this fold's first edit, and `cmp` found the two
+  identical. **Whose answer this is.** The owner's seat's, and it outranks every input. Neither
+  addition moves what QC-56 obliges; both make its tail say what the check reads and what the tree
+  holds. **§ 2.1 → QC-56.** The v58 draft stands, and its *drafted* marker now names the
+  confirmation. **Addition 1, the `.yaml` gap.** QC-56 binds every `runs-on` in the product's CI,
+  and both the command and the suite case read only `.github/workflows/*.yml`, while GitHub runs a
+  workflow file ending `.yaml` as well (the self-answer report's header names the source). The tail
+  now says so, and names `development-design` reading the entry as the gate for such a file, a gate
+  that stays after the card's command runs the script because the gap is in what the check reads.
+  Whether the case is widened is the delivery tier's; the entry only stops implying coverage it does
+  not have. § 10's row says the same in its command and gate columns. **Addition 2, the tree
+  sentence.** "At `ka-reader@d6405e2` the tree meets neither half" was true at its pin and sat
+  beside a check that now passes, so it is re-measured at `ka-reader@8b93322` and its old words go
+  into a dated note. This run adds one locator the answer did not name:
+  `ka-reader-mac/assemble.sh:L50`, the deployment target, which the `d6405e2` sentence listed among
+  the lines holding the old floor and which now reads `MACOSX_DEPLOYMENT_TARGET=26.0`; naming it
+  keeps the re-measured sentence covering every line the old one named. **Read at source for this
+  run:** `HEAD` is `ka-reader@20e4810`, and `git diff --stat 8b93322 HEAD -- ka-reader-mac checks
+  .github` prints nothing. At `8b93322`: `ka-reader-mac/Info.plist:L13-L14` holds
+  `LSMinimumSystemVersion` `26.0`; `ka-reader-mac/Package.swift:L23` reads
+  `platforms: [.macOS(.v26)]`; `ka-reader-mac/assemble.sh:L50` sets `MACOSX_DEPLOYMENT_TARGET=26.0`;
+  `.github/workflows/` holds `ci.yml` alone, whose one runner is `runs-on: macos-26` (`:L18`);
+  `checks/gate.sh:L77` runs `checks/tests/test_vm_refusal.sh` as `VM refusal suite`. In a disposable
+  clone of `8b93322` the suite passed 9 of 9; with a `.github/workflows/release.yaml` added whose
+  runner is `macos-latest`, it still passed 9 of 9 and QC-56's `grep` printed nothing, which is the
+  gap Addition 1 states. The clone was removed afterwards. **What moved beneath this document.**
+  Since v58 (`ka-reader@aaa07ea`) only the companion and the self-answer report moved; every input's
+  `Status:` line still reads Settled, so `Inputs read:` stands. **No candidate record.** Each move
+  re-measures or narrows a pinned sentence and gives up nothing, so it fails the first gate. No ADR
+  is written, edited or restatused, the index does not move, and no `QC` is added, renumbered or
+  reused. **Known limits.** This run ran no gate and built no bundle; it ran one suite and QC-56's
+  `grep`, in the clone. It did not read the SRS, SDD or FDR in full: the fold touches one entry, its
+  traces stand, and none of the three moved since v58. **The companion.** Nothing is left for the
+  owner, so the companion is removed and `Status:` is Settled *(re: header `Version:` and `Status:`;
+  § 8 QC-56; § 10 the QC-56 row; source: `docs/trail/architecture/cycle-52.md` § 2.1;
+  `docs/trail/architecture/self_answer-54.md`; `ka-reader@8b93322`)*
