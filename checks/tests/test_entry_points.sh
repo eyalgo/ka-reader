@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Version: 1.1.0 — the named-read cases reject the other five names, the deterministic-output case
+# holds the complete printed order, and a whole-run case holds the full-run reporting
 # Version: 1.0.1 — CI green again: scene-building git runs no background maintenance, Swift builds with Xcode 16.2, and the entry-points suite reads metadata with plutil -extract
 # Version: 1.0.0 — first version: drives the real checks/entry-points.sh with every read, list and
 # resolution fault planted in a temporary copy
@@ -97,6 +99,7 @@ test_fifo_is_unreadable
 test_suite_selects_one_case
 test_suite_rejects_unknown_case
 test_suite_reports_each_failed_case
+test_suite_reports_whole_run_failures
 test_suite_leaves_original_inputs_unchanged
 "
 
@@ -339,6 +342,7 @@ test_case_2_unlisted_read_names_its_file() {
 
   expect_nonzero_status || return 1
   expect_finding unlisted itoa env::var || return 1
+  expect_only_name env::var || return 1
   expect_stderr_contains "src/planted_read.rs" || return 1
   case "$STDERR" in
     *"$PLANT_DIR"*) fail "the file is named by an absolute path. stderr: $STDERR" ;;
@@ -356,6 +360,7 @@ test_case_3_removed_read_is_stale() {
 
   expect_nonzero_status || return 1
   expect_finding stale quote env::var_os || return 1
+  expect_only_name env::var_os || return 1
   expect_no_finding_kind unlisted
 }
 
@@ -432,7 +437,8 @@ test_case_14_grouped_import_is_found() {
   run_scan
 
   expect_nonzero_status || return 1
-  expect_finding unlisted itoa env::var
+  expect_finding unlisted itoa env::var || return 1
+  expect_only_name env::var
 }
 
 # --- cases: the further cases of change_design.md § 5 ---
@@ -947,9 +953,18 @@ test_findings_are_distinct_and_deterministic() {
   chmod +x "$STUB/find"
   plant_copy itoa || return 1
   plant_file "$PLANT_DIR" src/z_last.rs 'fn z() { let _ = std::env::var("X"); }'
-  plant_file "$PLANT_DIR" src/a_first.rs 'fn a() { let _ = std::env::var("X"); }'
+  plant_file "$PLANT_DIR" src/a_first.rs 'fn a() { let _ = std::env::var("X"); let _ = std::env::args(); }'
+  plant_copy quote || return 1
+  plant_file "$PLANT_DIR" src/planted_vars.rs 'fn q() { let _ = std::env::vars(); }'
+  # Eight comment lines fix the two malformed entries at lines 9 and 10; the real entries follow,
+  # then one stale entry. The case's own copy of the list is the only one edited.
+  : > "$LIST"
+  for number in 1 2 3 4 5 6 7 8; do
+    printf '# comment line %s\n' "$number" >> "$LIST"
+  done
+  printf '%s\n' 'itoa | env::getenv | not one of the six' 'itoa | env::var |' >> "$LIST"
+  grep -vE '^[[:space:]]*(#|$)' "$REAL_LIST" >> "$LIST"
   append_list_line 'tokio | env::var | a crate the lock no longer resolves'
-  append_list_line 'itoa | env::getenv | not one of the six'
 
   run_scan
   first_run="$STDERR"
@@ -957,6 +972,16 @@ test_findings_are_distinct_and_deterministic() {
 
   expect_nonzero_status || return 1
   [ "$first_run" = "$STDERR" ] || fail "two runs on one tree printed different stderr" || return 1
+  # The expected records are written from the plants above, in the order the scan is held to. They
+  # are compared with stderr as printed: never sorted and never made unique first.
+  expected="entry-points.sh: malformed: line 9: names env::getenv, which is none of the six read names
+entry-points.sh: malformed: line 10: lacks its what-it-changes text
+entry-points.sh: stale: tokio env::var
+entry-points.sh: unlisted: itoa env::args src/a_first.rs
+entry-points.sh: unlisted: itoa env::var src/a_first.rs
+entry-points.sh: unlisted: quote env::vars src/planted_vars.rs"
+  [ "$STDERR" = "$expected" ] \
+    || fail "expected stderr to be exactly these findings, in this order. expected: $expected stderr: $STDERR" || return 1
   [ "$(printf '%s\n' "$STDERR" | grep -c '^entry-points\.sh: unlisted: itoa env::var ')" -eq 1 ] \
     || fail "expected exactly one unlisted finding for the read. stderr: $STDERR" || return 1
   expect_stderr_contains "src/a_first.rs" || return 1
@@ -1092,6 +1117,33 @@ test_suite_reports_each_failed_case() {
     *"FAIL test_case_2_unlisted_read_names_its_file"*) ;;
     *) fail "case 2 is not named as failed, so the run stopped at the first. output: $out" ;;
   esac
+}
+
+# CP-411, CP-826, CP-827: a whole run, with no selection, goes on past every failed case, names each
+# of them and exits non-zero. The product copy holds a script that always prints one finding and
+# exits non-zero. A case that expects exactly that finding still passes, but nearly every other case
+# that runs the script fails, so a whole run has far more than two failed cases. The copy's run
+# starts with the selector removed and carries the marker below. The marker filters nothing: that
+# run still visits every case, and this case alone returns at once on seeing it, so a whole run
+# starts one more whole run and no deeper.
+test_suite_reports_whole_run_failures() {
+  [ -z "${KA_READER_ENTRY_POINTS_WHOLE_CHILD:-}" ] || return 0
+  new_case
+  copy="$CASE/product-copy"
+  mkdir -p "$copy/checks/tests"
+  cp "$ROOT/Cargo.toml" "$ROOT/Cargo.lock" "$ROOT/rust-toolchain.toml" "$copy/"
+  cp -R "$ROOT/crates" "$copy/crates"
+  cp "$REAL_LIST" "$copy/checks/entry-points.allow"
+  cp "$SUITE" "$copy/checks/tests/test_entry_points.sh"
+  printf '#!/usr/bin/env bash\necho "entry-points.sh: unlisted: itoa env::var src/planted_read.rs" >&2\nexit 1\n' > "$copy/checks/entry-points.sh"
+  chmod +x "$copy/checks/entry-points.sh" "$copy/checks/tests/test_entry_points.sh"
+
+  out="$(env -u KA_READER_TEST_ONLY KA_READER_ENTRY_POINTS_WHOLE_CHILD=1 "$copy/checks/tests/test_entry_points.sh" 2>&1)"
+  status=$?
+  failed_lines="$(printf '%s\n' "$out" | grep -c '^FAIL')"
+
+  [ "$status" -ne 0 ] || fail "expected a non-zero exit from a whole run whose scan always exits non-zero, got 0. output: $out" || return 1
+  [ "$failed_lines" -gt 2 ] || fail "expected more than two lines beginning FAIL from a whole run whose scan always exits non-zero, got $failed_lines. output: $out"
 }
 
 # CP-409: the product's status and every scanned package directory are what they were. This case is
