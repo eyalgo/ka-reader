@@ -950,9 +950,18 @@ test_findings_are_distinct_and_deterministic() {
   chmod +x "$STUB/find"
   plant_copy itoa || return 1
   plant_file "$PLANT_DIR" src/z_last.rs 'fn z() { let _ = std::env::var("X"); }'
-  plant_file "$PLANT_DIR" src/a_first.rs 'fn a() { let _ = std::env::var("X"); }'
+  plant_file "$PLANT_DIR" src/a_first.rs 'fn a() { let _ = std::env::var("X"); let _ = std::env::args(); }'
+  plant_copy quote || return 1
+  plant_file "$PLANT_DIR" src/planted_vars.rs 'fn q() { let _ = std::env::vars(); }'
+  # Eight comment lines fix the two malformed entries at lines 9 and 10; the real entries follow, then
+  # one stale entry. The case's own copy of the list is the only one edited.
+  : > "$LIST"
+  for number in 1 2 3 4 5 6 7 8; do
+    printf '# comment line %s\n' "$number" >> "$LIST"
+  done
+  printf '%s\n' 'itoa | env::getenv | not one of the six' 'itoa | env::var |' >> "$LIST"
+  grep -vE '^[[:space:]]*(#|$)' "$REAL_LIST" >> "$LIST"
   append_list_line 'tokio | env::var | a crate the lock no longer resolves'
-  append_list_line 'itoa | env::getenv | not one of the six'
 
   run_scan
   first_run="$STDERR"
@@ -960,6 +969,16 @@ test_findings_are_distinct_and_deterministic() {
 
   expect_nonzero_status || return 1
   [ "$first_run" = "$STDERR" ] || fail "two runs on one tree printed different stderr" || return 1
+  # The expected records are written from the plants above, in the order the scan is held to. They are
+  # compared with stderr as printed: never sorted and never made unique first.
+  expected="entry-points.sh: malformed: line 9: names env::getenv, which is none of the six read names
+entry-points.sh: malformed: line 10: lacks its what-it-changes text
+entry-points.sh: stale: tokio env::var
+entry-points.sh: unlisted: itoa env::args src/a_first.rs
+entry-points.sh: unlisted: itoa env::var src/a_first.rs
+entry-points.sh: unlisted: quote env::vars src/planted_vars.rs"
+  [ "$STDERR" = "$expected" ] \
+    || fail "expected stderr to be exactly these findings, in this order. expected: $expected stderr: $STDERR" || return 1
   [ "$(printf '%s\n' "$STDERR" | grep -c '^entry-points\.sh: unlisted: itoa env::var ')" -eq 1 ] \
     || fail "expected exactly one unlisted finding for the read. stderr: $STDERR" || return 1
   expect_stderr_contains "src/a_first.rs" || return 1
