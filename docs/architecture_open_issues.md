@@ -46,6 +46,19 @@ None.
   sentence still holds. Only its locators moved.
 - **If a document has to be written:** none. The fold would pin the three locators to a named commit.
   The sentence's claim does not change.
-- **Answer:** <the owner fills this in>
+- **Answer:** Confirmed, with additions. Fold the three locators pinned to `ka-reader@c268945`, the merge that
+  landed the restore change; the tree outside `docs/` has not moved since (`git diff --stat c268945 b5c8042 -- . ':!docs'`
+  prints nothing). (1) The locators: the restore is `restore()` (`checks/read-only.sh:L210-L252`, its header
+  `:L24-L29`), and what it lays down is removed once the verdict is taken (`:L31-L36`); what is hashed is
+  every entry under the fixture and nothing above it (`:L19-L22`; `manifest()` at `:L45-L65`), once after
+  the restore (`:L368`) and once after the walk (`:L389`). (2) The label, which the item did not raise:
+  QC-2 calls it "the script's in-place restore" twice, in the walk-fixture sentence (`docs/nfdr.md:L101`)
+  and in the `git_state.rs:L787` sentence (`:L116`). Drop "in-place" from both. The SDD, whose C-I3 QC-2
+  traces to, dropped the same label on the same facts at v56 (`docs/SDD.md:L824-L829`, `:L2103`;
+  `docs/trail/sdd/cycle-51.md` § 5.1), because the archive is now unpacked in scratch space and only the
+  entries the fixture lacks are copied in. Keeping it would leave the NFDR naming the mechanism one way and
+  its input another. The sentence's claim stands: the restore still builds the walk fixture whole before
+  the first hash, so a scene whose Git directory lies outside the folder is still not a walk fixture. No
+  ADR is written, and no `QC` is added or renumbered. Reasoning: `docs/trail/architecture/self_answer-55.md`.
 
 **How it closes.** `product-architecture` folds it on its next run like any other item here.
