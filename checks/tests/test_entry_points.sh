@@ -339,6 +339,7 @@ test_case_2_unlisted_read_names_its_file() {
 
   expect_nonzero_status || return 1
   expect_finding unlisted itoa env::var || return 1
+  expect_only_name env::var || return 1
   expect_stderr_contains "src/planted_read.rs" || return 1
   case "$STDERR" in
     *"$PLANT_DIR"*) fail "the file is named by an absolute path. stderr: $STDERR" ;;
@@ -356,6 +357,7 @@ test_case_3_removed_read_is_stale() {
 
   expect_nonzero_status || return 1
   expect_finding stale quote env::var_os || return 1
+  expect_only_name env::var_os || return 1
   expect_no_finding_kind unlisted
 }
 
@@ -432,7 +434,8 @@ test_case_14_grouped_import_is_found() {
   run_scan
 
   expect_nonzero_status || return 1
-  expect_finding unlisted itoa env::var
+  expect_finding unlisted itoa env::var || return 1
+  expect_only_name env::var
 }
 
 # --- cases: the further cases of change_design.md § 5 ---
