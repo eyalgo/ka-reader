@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Version: 1.1.0 — the named-read cases reject the other five names, the deterministic-output case holds the complete printed order, and a whole-run case holds the full-run reporting
+# Version: 1.1.0 — the named-read cases reject the other five names, the deterministic-output case
+# holds the complete printed order, and a whole-run case holds the full-run reporting
 # Version: 1.0.1 — CI green again: scene-building git runs no background maintenance, Swift builds with Xcode 16.2, and the entry-points suite reads metadata with plutil -extract
 # Version: 1.0.0 — first version: drives the real checks/entry-points.sh with every read, list and
 # resolution fault planted in a temporary copy
@@ -955,8 +956,8 @@ test_findings_are_distinct_and_deterministic() {
   plant_file "$PLANT_DIR" src/a_first.rs 'fn a() { let _ = std::env::var("X"); let _ = std::env::args(); }'
   plant_copy quote || return 1
   plant_file "$PLANT_DIR" src/planted_vars.rs 'fn q() { let _ = std::env::vars(); }'
-  # Eight comment lines fix the two malformed entries at lines 9 and 10; the real entries follow, then
-  # one stale entry. The case's own copy of the list is the only one edited.
+  # Eight comment lines fix the two malformed entries at lines 9 and 10; the real entries follow,
+  # then one stale entry. The case's own copy of the list is the only one edited.
   : > "$LIST"
   for number in 1 2 3 4 5 6 7 8; do
     printf '# comment line %s\n' "$number" >> "$LIST"
@@ -971,8 +972,8 @@ test_findings_are_distinct_and_deterministic() {
 
   expect_nonzero_status || return 1
   [ "$first_run" = "$STDERR" ] || fail "two runs on one tree printed different stderr" || return 1
-  # The expected records are written from the plants above, in the order the scan is held to. They are
-  # compared with stderr as printed: never sorted and never made unique first.
+  # The expected records are written from the plants above, in the order the scan is held to. They
+  # are compared with stderr as printed: never sorted and never made unique first.
   expected="entry-points.sh: malformed: line 9: names env::getenv, which is none of the six read names
 entry-points.sh: malformed: line 10: lacks its what-it-changes text
 entry-points.sh: stale: tokio env::var
