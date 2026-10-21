@@ -46,6 +46,8 @@ test_failed_walk_is_not_unchanged
 test_zero_call_walk_is_not_unchanged
 test_missing_fixture_names_argument
 test_file_as_fixture_names_argument
+test_no_argument_is_a_usage_error
+test_extra_argument_is_a_usage_error
 "
 
 # --- helpers ---
@@ -87,6 +89,34 @@ fixture_copy() {
   cp -R "$ROOT/$FIXTURES/$1" "$WORK/$2/$1"
   rm -rf "$WORK/$2/$1/.git"
   printf '%s' "$WORK/$2/$1"
+}
+
+# A copy of committed fixture $1 with its archive beside it and no `.git`, so the script has
+# something to restore. Same layout as fixture_copy, plus the unmodified archive. Prints the path.
+archive_backed_copy() {
+  copy="$(fixture_copy "$1" "$2")"
+  cp "$ROOT/$FIXTURES/$1.git.tar" "$WORK/$2/$1.git.tar"
+  printf '%s' "$copy"
+}
+
+# One line per entry under $1 — relative path, kind, and the bytes (or a link's target) — read with
+# `cksum` and `readlink`, not with the script's own manifest, so a case compares scenes with a
+# yardstick the script under test does not supply. Links are never followed.
+scene_of() {
+  (
+    cd "$1" || exit 1
+    find . -mindepth 1 | LC_ALL=C sort | while IFS= read -r entry; do
+      if [ -L "$entry" ]; then
+        printf '%s link %s\n' "$entry" "$(readlink "$entry")"
+      elif [ -d "$entry" ]; then
+        printf '%s dir\n' "$entry"
+      elif [ -f "$entry" ]; then
+        printf '%s file %s\n' "$entry" "$(cksum < "$entry")"
+      else
+        printf '%s other\n' "$entry"
+      fi
+    done
+  )
 }
 
 expect_status() {
@@ -268,7 +298,42 @@ test_file_as_fixture_names_argument() {
 
   expect_nonzero_status || return 1
   expect_stdout_lacks_unchanged || return 1
-  expect_stderr_contains "$FIXTURES/repo.git.tar"
+  expect_stderr_contains "$FIXTURES/repo.git.tar" || return 1
+
+  # The same refusal on a temporary copy of the archive: nothing is restored or removed beside it.
+  mkdir -p "$WORK/fileasfixture"
+  cp "$ROOT/$FIXTURES/repo.git.tar" "$WORK/fileasfixture/repo.git.tar"
+  before="$(scene_of "$WORK/fileasfixture")"
+
+  run_read_only "$WORK/fileasfixture/repo.git.tar"
+
+  expect_nonzero_status || return 1
+  [ "$(scene_of "$WORK/fileasfixture")" = "$before" ] || fail "the refusal restored or removed an entry"
+}
+
+# CP-836: a run that ends before any restore restores nothing and removes nothing. No argument is
+# that run: the usage line goes to stderr, stdout stays empty, the exit is 2.
+test_no_argument_is_a_usage_error() {
+  run_read_only
+
+  expect_status 2 || return 1
+  expect_stdout_is "" || return 1
+  expect_stderr_contains "usage"
+}
+
+# Two fixture arguments are refused before the first restore: the first one, a temporary copy with its
+# archive beside it, is left exactly as it was given.
+test_extra_argument_is_a_usage_error() {
+  copy="$(archive_backed_copy repo extraarg)"
+  before="$(scene_of "$WORK/extraarg")"
+
+  run_read_only "$copy" "$copy"
+
+  expect_status 2 || return 1
+  expect_stdout_is "" || return 1
+  expect_stderr_contains "usage" || return 1
+  [ ! -e "$copy/.git" ] || fail "the refusal restored .git"
+  [ "$(scene_of "$WORK/extraarg")" = "$before" ] || fail "the refusal changed the copy or its archive"
 }
 
 # --- the runner ---
