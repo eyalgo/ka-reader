@@ -206,7 +206,7 @@ expect_scene_plus() {
   added="$(only_in_second "$1" "$after")"
   lost="$(only_in_second "$after" "$1")"
   expected="$(printf '%s\n' "$3" | LC_ALL=C sort)"
-  [ -z "$lost" ] || fail "the run lost start entries: [$lost]"
+  [ -z "$lost" ] || fail "the run lost start entries: [$lost]" || return 1
   [ "$added" = "$expected" ] || fail "expected exactly [$expected] to be added, got [$added]"
 }
 
@@ -384,7 +384,7 @@ test_restore_extracts_git_before_baseline() {
 
   expect_status 0 || return 1
   expect_stdout_is "unchanged" || return 1
-  [ -f "$WORK/restore-head-seen" ] || fail "the archive was not extracted before the walk: no .git/HEAD"
+  [ -f "$WORK/restore-head-seen" ] || fail "the archive was not extracted before the walk: no .git/HEAD" || return 1
   [ ! -e "$WORK/restore/repo/.git" ] || fail "the restored .git is still in the copy after the return"
 }
 
@@ -546,7 +546,7 @@ test_extra_argument_is_a_usage_error() {
   expect_status 2 || return 1
   expect_stdout_is "" || return 1
   expect_stderr_contains "usage" || return 1
-  [ ! -e "$copy/.git" ] || fail "the refusal restored .git"
+  [ ! -e "$copy/.git" ] || fail "the refusal restored .git" || return 1
   [ "$(scene_of "$WORK/extraarg")" = "$before" ] || fail "the refusal changed the copy or its archive"
 }
 
@@ -585,7 +585,7 @@ test_implied_and_nested_restores_leave_no_entry_behind() {
     expect_scene_is "$before" "$WORK/implied-$fixture" || return 1
   done
   [ -f "$WORK/implied-parent-of-two/parent-of-two/alpha/README.md" ] \
-    || fail "alpha/README.md is gone from parent-of-two"
+    || fail "alpha/README.md is gone from parent-of-two" || return 1
   [ -f "$WORK/implied-parent-of-two/parent-of-two/beta/README.md" ] \
     || fail "beta/README.md is gone from parent-of-two"
 }
@@ -611,7 +611,7 @@ test_existing_git_disables_restore_and_removal() {
     expect_status 0 || return 1
     expect_stdout_is "unchanged" || return 1
     [ "$(cat "$WORK/existing-$kind-during-walk")" = "$listing_before" ] \
-      || fail "$kind: the walk saw entries the start did not hold: something was restored"
+      || fail "$kind: the walk saw entries the start did not hold: something was restored" || return 1
     expect_scene_is "$before" "$WORK/existing-$kind" || return 1
   done
 }
@@ -636,10 +636,10 @@ test_existing_start_entries_survive_with_kind_and_content() {
   expect_status 0 || return 1
   expect_stdout_is "unchanged" || return 1
   [ "$(cat "$WORK/start-entries-during-walk")" = "planted" ] \
-    || fail ".gitmodules did not hold its planted content while the walk ran"
+    || fail ".gitmodules did not hold its planted content while the walk ran" || return 1
   expect_scene_is "$before" "$WORK/start-entries" || return 1
-  [ "$(cat "$copy/.gitmodules")" = "planted" ] || fail ".gitmodules lost its planted content"
-  [ ! -e "$copy/.git" ] || fail "the restored .git is still there"
+  [ "$(cat "$copy/.gitmodules")" = "planted" ] || fail ".gitmodules lost its planted content" || return 1
+  [ ! -e "$copy/.git" ] || fail "the restored .git is still there" || return 1
 
   copy="$(archive_backed_copy submodule start-link)"
   mkdir -p "$WORK/start-link-target"
@@ -654,9 +654,9 @@ test_existing_start_entries_survive_with_kind_and_content() {
 
   expect_status 0 || return 1
   expect_stdout_is "unchanged" || return 1
-  [ -e "$WORK/start-link-during-walk" ] || fail "the link at submodule was not a link while the walk ran"
+  [ -e "$WORK/start-link-during-walk" ] || fail "the link at submodule was not a link while the walk ran" || return 1
   expect_scene_is "$before" "$WORK/start-link" || return 1
-  [ -L "$copy/submodule" ] || fail "the link at submodule was replaced"
+  [ -L "$copy/submodule" ] || fail "the link at submodule was replaced" || return 1
   [ "$(scene_of "$WORK/start-link-target")" = "$target_before" ] \
     || fail "the link's target was written through"
 }
@@ -677,7 +677,7 @@ test_existing_folder_takes_restored_entries_and_keeps_its_own() {
   expect_status 0 || return 1
   expect_stdout_is "unchanged" || return 1
   [ -e "$WORK/startfolder-during-walk" ] \
-    || fail "submodule/.git was not restored inside the existing folder before the walk"
+    || fail "submodule/.git was not restored inside the existing folder before the walk" || return 1
   expect_scene_is "$before" "$WORK/startfolder"
 }
 
@@ -704,7 +704,7 @@ test_walk_created_lock_stays_with_only_its_needed_ancestors() {
 
   expect_nonzero_status || return 1
   expect_stdout_is ".git/index.lock" || return 1
-  [ "$(count_lines_with "$REMOVAL_LINE" "$ERR")" -eq 0 ] || fail "a cleanup diagnostic was printed: $ERR"
+  [ "$(count_lines_with "$REMOVAL_LINE" "$ERR")" -eq 0 ] || fail "a cleanup diagnostic was printed: $ERR" || return 1
   expect_scene_plus "$before" "$WORK/lockstays" \
     "$(printf '%s\n%s' "./repo/.git dir" "$(empty_file_line ./repo/.git/index.lock)")" || return 1
 
@@ -751,7 +751,7 @@ test_restored_leaf_replaced_by_link_or_folder() {
   expect_nonzero_status || return 1
   expect_stdout_is ".git/HEAD" || return 1
   expect_scene_is "$before" "$WORK/leaflink" || return 1
-  [ "$(scene_of "$WORK/leaflink-target")" = "$target_before" ] || fail "the link's target was touched"
+  [ "$(scene_of "$WORK/leaflink-target")" = "$target_before" ] || fail "the link's target was touched" || return 1
 
   copy="$(archive_backed_copy repo leaffolder)"
   before="$(scene_of "$WORK/leaffolder")"
@@ -783,8 +783,8 @@ test_restored_folder_replaced_by_link_is_not_followed() {
   expect_nonzero_status || return 1
   expect_stdout_is "$(printf '%s\n%s\n%s\n%s' \
     ".git/refs" ".git/refs/heads" ".git/refs/heads/main" ".git/refs/tags")" || return 1
-  [ "$(count_lines_with "$REMOVAL_LINE" "$ERR")" -eq 0 ] || fail "a cleanup diagnostic was printed: $ERR"
-  [ "$(scene_of "$outside")" = "$reference" ] || fail "cleanup went through the link: the folder outside lost entries"
+  [ "$(count_lines_with "$REMOVAL_LINE" "$ERR")" -eq 0 ] || fail "a cleanup diagnostic was printed: $ERR" || return 1
+  [ "$(scene_of "$outside")" = "$reference" ] || fail "cleanup went through the link: the folder outside lost entries" || return 1
   expect_scene_is "$before" "$WORK/folderlink"
 }
 
@@ -800,7 +800,7 @@ test_failed_walk_with_restore_leaves_no_entry_behind() {
 
     expect_nonzero_status || return 1
     expect_stdout_lacks_unchanged || return 1
-    [ "$ERR" = "read-only.sh: walk did not complete: $copy" ] || fail "unexpected stderr: [$ERR]"
+    [ "$ERR" = "read-only.sh: walk did not complete: $copy" ] || fail "unexpected stderr: [$ERR]" || return 1
     expect_scene_is "$before" "$WORK/failedwalk" || return 1
     rm -rf "$WORK/failedwalk"
   done
@@ -847,7 +847,7 @@ exec \"\$REAL\" \"\$@\""
 
   expect_nonzero_status || return 1
   expect_stdout_lacks_unchanged || return 1
-  [ "$(cat "$WORK/failedcopy-count")" -ge 3 ] || fail "no entry was laid down before the failure"
+  [ "$(cat "$WORK/failedcopy-count")" -ge 3 ] || fail "no entry was laid down before the failure" || return 1
   expect_scene_is "$before" "$WORK/failedcopy" || return 1
   [ ! -e "$WORK/failedcopy-walked" ] || fail "the walk ran after a failed restore"
 }
@@ -978,7 +978,7 @@ test_failed_removal_keeps_the_differing_paths_and_a_failed_walk() {
 
   expect_nonzero_status || return 1
   expect_stdout_is ".DS_Store" || return 1
-  [ "$ERR" = "$REMOVAL_LINE .git" ] || fail "expected the one line for .git, got [$ERR]"
+  [ "$ERR" = "$REMOVAL_LINE .git" ] || fail "expected the one line for .git, got [$ERR]" || return 1
 
   copy="$(archive_backed_copy repo removalandfailedwalk)"
   make_objects_unremovable "$WORK/stubs-removalandfailedwalk"
