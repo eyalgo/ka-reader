@@ -1,12 +1,19 @@
 #!/usr/bin/env bash
 # Version: 1.7.0 — the launch steps refuse off a VM
-# Version: 1.6.0 — the Tauri build leaves — native bundle assembled, bundle.sh and no-network.sh read it, CI builds it, boundaries and README pinned
-# Version: 1.5.0 — the probe waits, bounded, for the sandbox report, and its control holds for the whole window; plutil read only on exit 0
-# Version: 1.4.0 — --negative-control: the same launch-and-probe path on a no-entitlement build, passing only when it is reported NOT sandboxed
-# Version: 1.3.0 — one executable under Contents/MacOS, and the renderer build under Contents/Resources, read before the launch
-# Version: 1.2.0 — one process, found by its executable path and stopped alone (no pattern match, no pkill)
-# Version: 1.1.0 — the launched sandbox is read from the operating system (sandbox_check, through a compiled probe), not from an environment marker
-# Version: 1.0.0 — first version: the wall proven on a built bundle (entitlements, then the launched sandbox)
+# Version: 1.6.0 — the Tauri build leaves — native bundle assembled, bundle.sh and no-network.sh
+#   read it, CI builds it, boundaries and README pinned
+# Version: 1.5.0 — the probe waits, bounded, for the sandbox report, and its control holds for the
+#   whole window; plutil read only on exit 0
+# Version: 1.4.0 — --negative-control: the same launch-and-probe path on a no-entitlement build,
+#   passing only when it is reported NOT sandboxed
+# Version: 1.3.0 — one executable under Contents/MacOS, and the renderer build under
+#   Contents/Resources, read before the launch
+# Version: 1.2.0 — one process, found by its executable path and stopped
+#   alone (no pattern match, no pkill)
+# Version: 1.1.0 — the launched sandbox is read from the operating system (sandbox_check, through a
+#   compiled probe), not from an environment marker
+# Version: 1.0.0 — first version: the wall proven on a built bundle
+#   (entitlements, then the launched sandbox)
 #
 # checks/bundle.sh <path-to-app> — proves the App Sandbox wall on a BUILT KA-Reader.app.
 #
@@ -17,50 +24,51 @@
 #   Entitlements are checked first, and a bundle that fails there is never launched — a wrong
 #   entitlement set proves nothing by running.
 #   The contents are read next, and also before anything is launched: exactly one executable (a file
-#   with any execute bit, or a Mach-O binary whatever its mode), no font, no byte copy of a file tracked
-#   under checks/, and every file of third_party/lucide/icons under Contents/Resources and nowhere else
-#   in the bundle. Each offending path is named on stderr.
+#   with any execute bit, or a Mach-O binary whatever its mode), no font, no byte copy of a file
+#   tracked under checks/, and every file of third_party/lucide/icons under Contents/Resources and
+#   nowhere else in the bundle. Each offending path is named on stderr.
 #
 # USAGE
 #   checks/bundle.sh target/release/bundle/macos/KA-Reader.app
 #   checks/bundle.sh --negative-control <path-to-app>
-#     The control: the same launch-and-probe path, but the bundle's entitlement set must be EMPTY and
-#     the run passes only when every report the operating system gives, across the whole probe window,
-#     says the launched process is NOT sandboxed. It cannot pass on a bundle carrying the C-R2 keys, so
-#     it is not a route past the gate above. It
+#     The control: the same launch-and-probe path, but the bundle's entitlement set must be EMPTY
+#     and the run passes only when every report the operating system gives, across the whole probe
+#     window, says the launched process is NOT sandboxed. It cannot pass on a bundle carrying the
+#     C-R2 keys, so it is not a route past the gate above. It
 #     exists because the ordinary path refuses to launch anything but C-R2's set, and a probe that
 #     cannot tell the two builds apart has not run (NFDR QC-25).
 #   Exit 0 only when the entitlement set is exactly the expected one, every value boolean true, and
-#   the operating system reports the launched process sandboxed, an out-of-grant file read denied and
-#   an outbound network connection denied for it. Every failure names its cause on stderr. On every
-#   exit path the one process this run launched, and recorded, is stopped — and only that one: a
-#   process of the same bundle already running when the script started, or started by anything else
-#   while it ran, is never signalled.
+#   the operating system reports the launched process sandboxed, an out-of-grant file read denied
+#   and an outbound network connection denied for it. Every failure names its cause on stderr. On
+#   every exit path the one process this run launched, and recorded, is stopped — and only that one:
+#   a process of the same bundle already running when the script started, or started by anything
+#   else while it ran, is never signalled.
 #
 # HOW THE OPERATING SYSTEM IS ASKED
 #   Only libSystem's sandbox_check answers, and no shell can call it, so checks/sandbox_probe.rs is
-#   compiled with rustc into this run's temporary directory and run as `ka-reader-sandbox-probe <pid>`,
-#   found through PATH — the seam a test uses to stand one condition at a time in for the real probe.
-#   The ordinary path asks it up to BUNDLE_SH_PROBE_TICKS times, 0.25 s apart (default 40).
-#   The pass is the first ask on which all three hold. A report that falls short is asked past until
-#   the window runs out, and the last report asked is then judged. The bound is printed on the pass
-#   line and on the red closing line.
+#   compiled with rustc into this run's temporary directory and run as
+#   `ka-reader-sandbox-probe <pid>`, found through PATH — the seam a test uses to stand one
+#   condition at a time in for the real probe. The ordinary path asks it up to BUNDLE_SH_PROBE_TICKS
+#   times, 0.25 s apart (default 40). The pass is the first ask on which all three hold. A report
+#   that falls short is asked past until the window runs out, and the last report asked is then
+#   judged. The bound is printed on the pass line and on the red closing line.
 #   No environment variable and no container directory is evidence of a sandbox: a process can carry
 #   the one and a directory can outlive the other (docs/SDD.md § 4 C-I3; NFDR QC-25; ADR-0010).
 #
 # ADMISSION
-#   The first thing the script does is ask the host whether it is a macOS virtual machine (`uname -s`
-#   Darwin and `sysctl -n kern.hv_vmm_present` 1, both succeeding). On any other reading it prints one
-#   line on stderr, nothing on stdout, and exits 1, before it reads an argument, a path or the home
-#   and before it launches anything (docs/nfdr.md QC-65). Nothing it is given turns this off.
+#   The first thing the script does is ask the host whether it is a macOS virtual machine
+#   (`uname -s` Darwin and `sysctl -n kern.hv_vmm_present` 1, both succeeding). On any other reading
+#   it prints one line on stderr, nothing on stdout, and exits 1, before it reads an argument, a
+#   path or the home and before it launches anything (docs/nfdr.md QC-65).
+#   Nothing it is given turns this off.
 
 set -euo pipefail
 
 # --- admission: this step runs only in a macOS virtual machine (docs/nfdr.md QC-65) ---
-# First work of the run, inline so nothing is opened, found or read before it. Both host readings must
-# succeed and read exactly Darwin and 1; a reader that fails, is missing or prints anything else
-# refuses, and a failing reader that prints 1 does not admit (the status is kept, not only the text).
-# Nothing the script reads — argument, flag or variable — changes this.
+# First work of the run, inline so nothing is opened, found or read before it. Both host readings
+# must succeed and read exactly Darwin and 1; a reader that fails, is missing or prints anything
+# else refuses, and a failing reader that prints 1 does not admit (the status is kept, not only the
+# text). Nothing the script reads — argument, flag or variable — changes this.
 host_os="$(uname -s 2> /dev/null)" && host_vmm="$(sysctl -n kern.hv_vmm_present 2> /dev/null)" \
   && [ "$host_os" = "Darwin" ] && [ "$host_vmm" = "1" ] \
   || { echo "bundle.sh: refused: this host does not read as a macOS virtual machine. This step launches KA-Reader.app or reads this machine's home, and runs only in a macOS virtual machine (docs/nfdr.md QC-65)." >&2; exit 1; }
@@ -98,20 +106,21 @@ LAUNCH_POLL_TICKS="${BUNDLE_SH_LAUNCH_TICKS:-80}"   # of 0.25 s: 20 s for the la
 STOP_POLL_TICKS=20     # of 0.25 s: 5 s for it to exit after SIGTERM
 
 # The probe window: up to this many asks, spaced 0.25 s apart, before the ordinary path judges the
-# last report and the negative control gives up waiting for one (both below). An empty value reads as
-# unset, the same way LAUNCH_POLL_TICKS above does. Refused before anything is launched, so a bad
+# last report and the negative control gives up waiting for one (both below). An empty value reads
+# as unset, the same way LAUNCH_POLL_TICKS above does. Refused before anything is launched, so a bad
 # value never reaches either loop.
 PROBE_TICKS="${BUNDLE_SH_PROBE_TICKS:-40}"   # of 0.25 s: the bound on every ask
 case "$PROBE_TICKS" in
   *[!0-9]*) die "BUNDLE_SH_PROBE_TICKS must be a positive whole number (got: $PROBE_TICKS)" ;;
 esac
-# Read in base 10 (10#…) so a leading zero such as 08 is accepted, rather than read as invalid octal.
+# Read in base 10 (10#…) so a leading zero such as 08 is accepted,
+# rather than read as invalid octal.
 [ "$((10#$PROBE_TICKS))" -gt 0 ] || die "BUNDLE_SH_PROBE_TICKS must be a positive whole number (got: $PROBE_TICKS)"
 PROBE_TICKS=$((10#$PROBE_TICKS))
 
 # The main process is identified by its absolute executable path — never by a pattern over command
-# lines, which would also match every process that merely mentions the bundle. `ps` through PATH so a
-# test can stub it; an unreadable listing reads as "none found", never as a crash.
+# lines, which would also match every process that merely mentions the bundle. `ps` through PATH so
+# a test can stub it; an unreadable listing reads as "none found", never as a crash.
 bundle_executable="$app/Contents/MacOS/$executable_name"
 executable_pids() {
   { ps -axo pid=,comm= 2> /dev/null || true; } | while read -r candidate_pid candidate_path; do
@@ -209,15 +218,15 @@ fi
 
 # --- the contents: one executable, no font, no copy of a checks/ file ---
 
-# Read before the probe is compiled and before anything is launched: a bundle that ships more than its
-# one executable and its glyphs is refused unstarted (NFDR QC-55, QC-14). Every offending path is
-# named on stderr, so one run says everything that is wrong.
+# Read before the probe is compiled and before anything is launched: a bundle that ships more than
+# its one executable and its glyphs is refused unstarted (NFDR QC-55, QC-14). Every offending path
+# is named on stderr, so one run says everything that is wrong.
 product_root="$(cd "$(dirname "$0")/.." && pwd -P)"
 contents_problems=""
 
-# The candidates for the copy rule: the regular, non-empty files git tracks under checks/. A listing that
-# fails, or comes back empty, is a refusal and never a pass: an empty candidate set would let every copy
-# through.
+# The candidates for the copy rule: the regular, non-empty files git tracks under checks/. A listing
+# that fails, or comes back empty, is a refusal and never a pass: an empty candidate set would let
+# every copy through.
 tracked_checks="$(git -C "$product_root" ls-files checks 2> "$work/ls-files.err")" \
   || die "cannot list the files tracked under checks/: $(cat "$work/ls-files.err")"
 [ -n "$tracked_checks" ] || die "the list of files tracked under checks/ is empty — there is nothing to compare the bundle's files against"
@@ -229,8 +238,8 @@ while IFS= read -r tracked; do
   fi
 done <<< "$tracked_checks"
 
-# Any execute bit at all, on any regular file under Contents; the magic below catches the binary whose
-# mode says nothing.
+# Any execute bit at all, on any regular file under Contents; the magic below catches the binary
+# whose mode says nothing.
 mode_executables="$(find "$app/Contents" -type f \( -perm -100 -o -perm -010 -o -perm -001 \) | LC_ALL=C sort)"
 
 while IFS= read -r member; do
@@ -247,8 +256,8 @@ $mode_executables
 $member
 "*) is_executable=1 ;;
   esac
-  # Mach-O, thin or fat, in either byte order. cafebabe is a Java class file's magic too, so a class file
-  # is refused as well; that fails closed.
+  # Mach-O, thin or fat, in either byte order. cafebabe is a Java class file's magic too, so a class
+  # file is refused as well; that fails closed.
   case "$magic" in
     feedface | feedfacf | cefaedfe | cffaedfe | cafebabe | cafebabf | bebafeca | bfbafeca) is_executable=1 ;;
   esac
@@ -271,8 +280,8 @@ $member
 "
   fi
 
-  # A file of checks/ has no business in the bundle whatever it is called. Hashed once each side, and
-  # every hit confirmed byte for byte before it is named.
+  # A file of checks/ has no business in the bundle whatever it is called. Hashed once each side,
+  # and every hit confirmed byte for byte before it is named.
   if [ -s "$work/checks.sha" ] && [ -s "$member" ]; then
     member_hash="$(shasum -a 256 "$member" | awk '{ print $1 }')"
     while IFS= read -r same_hash_path; do
@@ -290,8 +299,8 @@ done <<< "$(find "$app/Contents" -type f | LC_ALL=C sort)"
 # --- the glyphs: every member of the expected set is under Contents/Resources, and nowhere else ---
 
 # The expected set is every regular file directly in the source tree's glyph directory, dotfiles
-# included, read when the script runs — never a list held here. An override for a caller that must stand
-# another directory in (a test).
+# included, read when the script runs — never a list held here. An override for a caller that must
+# stand another directory in (a test).
 GLYPH_DIR="${BUNDLE_SH_GLYPH_DIR:-$product_root/third_party/lucide/icons}"
 [ -d "$GLYPH_DIR" ] || die "the expected glyph set is empty: $GLYPH_DIR does not exist; the bundle was not launched"
 glyph_members="$(find "$GLYPH_DIR" -maxdepth 1 -type f | sed 's#.*/##' | LC_ALL=C sort)"
@@ -304,8 +313,8 @@ while IFS= read -r glyph; do
 done <<< "$glyph_members"
 
 # Every path outside Contents/Resources, at any depth, Contents itself included. Info.plist,
-# _CodeSignature and icon.icns are nobody's glyph and are outside the rule: only a member's name or an
-# .svg suffix is read.
+# _CodeSignature and icon.icns are nobody's glyph and are outside the rule: only a member's name or
+# an .svg suffix is read.
 while IFS= read -r outside; do
   [ -n "$outside" ] || continue
   outside_name="${outside##*/}"
@@ -340,7 +349,8 @@ command -v rustc > /dev/null 2>&1 || die "rustc not found on PATH — the sandbo
 mkdir -p "$work/probe-bin"
 rustc --edition 2021 -O -o "$work/probe-bin/ka-reader-sandbox-probe" "$PROBE_SOURCE" 2> "$work/probe-build.log" \
   || die "the sandbox probe did not compile: $(cat "$work/probe-build.log")"
-# Appended, not prepended: a directory ahead of it on PATH (a test's stand-in) is the one that answers.
+# Appended, not prepended: a directory ahead of it on PATH (a test's
+# stand-in) is the one that answers.
 PATH="$PATH:$work/probe-bin"
 
 # --- launch it and observe the sandbox ---
@@ -372,12 +382,12 @@ launched_pid="$pid"
 echo "launched: pid $pid ($bundle_executable)"
 
 # The control asks up to PROBE_TICKS times, 0.25 s apart, and passes only when every report in the
-# window says the launched process is NOT sandboxed (CP-69). Any report that does not say so ends the
-# run at once: an entitled build the probe calls sandboxed is the answer the control was built to
-# expect, so that same report on an unentitled build means the probe cannot tell the two apart (CP-59:
-# that is the result, and it is not worked around). The probe's own failure — sandbox_check
-# unresolvable, or an error from it — is neither a pass nor a denial (CP-43): the run ends here, naming
-# what it could not read. No sleep follows the last ask.
+# window says the launched process is NOT sandboxed (CP-69). Any report that does not say so ends
+# the run at once: an entitled build the probe calls sandboxed is the answer the control was built
+# to expect, so that same report on an unentitled build means the probe cannot tell the two apart
+# (CP-59: that is the result, and it is not worked around). The probe's own failure — sandbox_check
+# unresolvable, or an error from it — is neither a pass nor a denial (CP-43): the run ends here,
+# naming what it could not read. No sleep follows the last ask.
 if [ "$negative_control" -eq 1 ]; then
   tick=0
   while :; do
@@ -409,11 +419,11 @@ fi
 
 # The ordinary path judges each ask's report once, inside the loop: the first ask whose report holds
 # all three lines ends the loop as a pass (CP-73). Any other report is asked past while the window
-# lasts — a sandboxed: no, a yes carrying an allowed, or a report missing a line. When the window runs
-# out, the last report asked is the one judged, by the same three-condition check (CP-74), and the
-# closing failure line states the window (CP-75). Exactly one report is printed, whichever way the
-# loop ends (CP-77). A probe failure on any ask ends the run at once, on the same die path as the
-# control's (CP-67). No sleep follows the last ask, whichever way the loop ends.
+# lasts — a sandboxed: no, a yes carrying an allowed, or a report missing a line. When the window
+# runs out, the last report asked is the one judged, by the same three-condition check (CP-74), and
+# the closing failure line states the window (CP-75). Exactly one report is printed, whichever way
+# the loop ends (CP-77). A probe failure on any ask ends the run at once, on the same die path as
+# the control's (CP-67). No sleep follows the last ask, whichever way the loop ends.
 tick=0
 while :; do
   tick=$((tick + 1))

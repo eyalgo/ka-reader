@@ -3,7 +3,8 @@
 # Version: 1.3.0 — structure.sh holds the value modules — QC-63 scan and its proof
 # Version: 1.2.0 — structure.sh holds the boundary reads; fs_reader test body moves to tests/unit
 # Version: 1.1.0 — fs_reader owns OpenFailure; structure.sh holds QC-11's fs-reader clause
-# Version: 1.0.0 — first version: drives the real checks/structure.sh over copies of the real crates/ with breaches planted
+# Version: 1.0.0 — first version: drives the real checks/structure.sh over copies of the
+#   real crates/ with breaches planted
 #
 # checks/tests/test_structure.sh — the tests of checks/structure.sh.
 #
@@ -1295,7 +1296,8 @@ test_highlighter_forbidden_units_are_rejected() {
   expect_finding_naming "crates/$HL_FILE" "$two_line" QC-11 "watcher" || return 1
   expect_finding "crates/ka-reader-core/src/highlighter/extra.rs" "$extra_line" QC-11 || return 1
   expect_finding "crates/ka-reader-core/src/highlighter/deep/more.rs" "$deep_line" QC-11 || return 1
-  # A prefix-named file is no unit's file: no QC-10/QC-11 there, and the value-module rule reports it.
+  # A prefix-named file is no unit's file: no QC-10/QC-11 there, and
+  # the value-module rule reports it.
   expect_no_unit_rule "crates/ka-reader-core/src/highlighter_ext.rs" "$ext_line" || return 1
   expect_qc63_once "crates/ka-reader-core/src/highlighter_ext.rs" "$ext_line" "fs_reader" || return 1
 }
@@ -2460,8 +2462,8 @@ test_value_module_non_imports_pass() {
   expect_stderr_empty || return 1
 }
 
-# CP-480 (a) and (c), CP-473, CP-474: a clean case. Every unit, in file and directory form, and every
-# file outside the domain, may name a unit.
+# CP-480 (a) and (c), CP-473, CP-474: a clean case. Every unit, in file and directory form, and
+# every file outside the domain, may name a unit.
 test_value_module_rule_spares_units_and_lib_rs() {
   new_root value-module-spared || return 1
   plant "$R" "$FS_FILE" 'use crate::language::Language;'
@@ -2529,7 +2531,8 @@ test_git2_in_ka_reader_core_lib_rs_is_refused() {
   expect_finding_naming "crates/ka-reader-core/src/lib.rs" "$PLANT_LINE" QC-11 "git2" || return 1
 }
 
-# CP-647's first exemption: core-bridge's search-path switch, the one file of the bridge that names it.
+# CP-647's first exemption: core-bridge's search-path switch, the one
+# file of the bridge that names it.
 test_git2_in_machine_config_rs_is_allowed() {
   new_root git2-machine-config || return 1
   plant "$R" "ka-reader-bridge/src/machine_config.rs" 'use git2 as _x;'
@@ -2538,7 +2541,8 @@ test_git2_in_machine_config_rs_is_allowed() {
   expect_stderr_empty || return 1
 }
 
-# CP-647's second exemption: every file of the git_reader unit, its own file and the ones beneath it.
+# CP-647's second exemption: every file of the git_reader unit, its
+# own file and the ones beneath it.
 test_git2_under_git_reader_is_allowed() {
   new_root git2-git-reader || return 1
   plant "$R" "ka-reader-core/src/git_reader.rs" 'use git2 as _x;'
@@ -2549,7 +2553,8 @@ test_git2_under_git_reader_is_allowed() {
   expect_stderr_empty || return 1
 }
 
-# CP-648: a folder_model file keeps the one QC-10 finding it drew before, and the clause adds no QC-11 beside it.
+# CP-648: a folder_model file keeps the one QC-10 finding it drew before, and the
+# clause adds no QC-11 beside it.
 test_folder_model_git2_stays_qc10_alone() {
   new_root git2-folder-model || return 1
   plant "$R" "$CORE_FILE" 'use git2 as _x;'
@@ -2559,7 +2564,8 @@ test_folder_model_git2_stays_qc10_alone() {
   expect_count "crates/$CORE_FILE" "$PLANT_LINE" QC-11 0 || return 1
 }
 
-# CP-648: an fs_reader file draws one QC-11 line, because the clause and the unit's own rule share a key.
+# CP-648: an fs_reader file draws one QC-11 line, because the clause and
+# the unit's own rule share a key.
 test_fs_reader_git2_draws_one_qc11_line() {
   new_root git2-fs-reader || return 1
   plant "$R" "$FS_FILE" 'use git2 as _x;'

@@ -29,19 +29,19 @@
 #
 # ADMISSION
 #   The first thing the suite does is ask the host whether it is a macOS virtual machine (`uname -s`
-#   Darwin and `sysctl -n kern.hv_vmm_present` 1, both succeeding), because its cases launch the built
-#   bundle. On any other reading it prints one line on stderr, nothing on stdout, and exits 1, before it
-#   finds the product root, makes a temporary directory or runs a case (docs/nfdr.md QC-65). Nothing it
-#   is given turns this off, KA_READER_TEST_ONLY included. The case that proves it is
-#   checks/tests/test_vm_refusal.sh's: a suite that refused has no case left to run.
+#   Darwin and `sysctl -n kern.hv_vmm_present` 1, both succeeding), because its cases launch the
+#   built bundle. On any other reading it prints one line on stderr, nothing on stdout, and exits 1,
+#   before it finds the product root, makes a temporary directory or runs a case (docs/nfdr.md
+#   QC-65). Nothing it is given turns this off, KA_READER_TEST_ONLY included. The case that proves
+#   it is checks/tests/test_vm_refusal.sh's: a suite that refused has no case left to run.
 
 set -uo pipefail
 
 # --- admission: this suite runs only in a macOS virtual machine (docs/nfdr.md QC-65) ---
-# First work of the run, inline so nothing is opened, found or read before it. Both host readings must
-# succeed and read exactly Darwin and 1; a reader that fails, is missing or prints anything else
-# refuses, and a failing reader that prints 1 does not admit (the status is kept, not only the text).
-# Nothing the suite reads — argument, flag or variable — changes this.
+# First work of the run, inline so nothing is opened, found or read before it. Both host readings
+# must succeed and read exactly Darwin and 1; a reader that fails, is missing or prints anything
+# else refuses, and a failing reader that prints 1 does not admit (the status is kept, not only the
+# text). Nothing the suite reads — argument, flag or variable — changes this.
 host_os="$(uname -s 2> /dev/null)" && host_vmm="$(sysctl -n kern.hv_vmm_present 2> /dev/null)" \
   && [ "$host_os" = "Darwin" ] && [ "$host_vmm" = "1" ] \
   || { echo "test_renderer.sh: refused: this host does not read as a macOS virtual machine. This step launches KA-Reader.app or reads this machine's home, and runs only in a macOS virtual machine (docs/nfdr.md QC-65)." >&2; exit 1; }
@@ -120,8 +120,8 @@ stop_all_spawned() {
   return 0
 }
 
-# A synthetic application bundle: an Info.plist naming the executable, and an executable that records
-# any direct run, so a launch that bypasses `open` is seen.
+# A synthetic application bundle: an Info.plist naming the executable, and an executable that
+# records any direct run, so a launch that bypasses `open` is seen.
 new_app() {
   app_dir="$WORK/$1/app/KA-Reader.app"
   mkdir -p "$app_dir/Contents/MacOS"
@@ -142,7 +142,8 @@ set_entitlements() {
 
 PRODUCT_ENTITLEMENTS='<key>com.apple.security.app-sandbox</key><true/><key>com.apple.security.files.user-selected.read-only</key><true/>'
 
-# The stand-ins for one case, in $WORK/<case>/stubs. Their behaviour is set by small files beside them.
+# The stand-ins for one case, in $WORK/<case>/stubs. Their behaviour is
+# set by small files beside them.
 make_stubs() {
   stubs="$WORK/$1/stubs"
   mkdir -p "$stubs"
@@ -170,7 +171,8 @@ for last_argument in "$@"; do :; done
 executable="$last_argument/Contents/MacOS/$(ls "$last_argument/Contents/MacOS" | head -1)"
 echo "$executable" > "$STUB/exe_path"
 open_number="$(wc -l < "$STUB/open_calls" | tr -d ' ')"
-# What the first launch's process is doing when a later launch is made: the run must have stopped it.
+# What the first launch's process is doing when a later launch is
+# made: the run must have stopped it.
 if [ "$open_number" -ge 2 ]; then
   first_pid="$(head -1 "$STUB/spawned")"
   if kill -0 "$first_pid" 2> /dev/null; then
@@ -232,8 +234,9 @@ STUB
 
   cat > "$stubs/codesign" << 'STUB'
 #!/bin/bash
-# -d ... <app>: prints the entitlement plist of the product, or of the control (what it was last signed
-# with, unless a case overrides it). --sign ...: records the call and keeps the entitlements it was given.
+# -d ... <app>: prints the entitlement plist of the product, or of the control (what it was last
+# signed with, unless a case overrides it). --sign ...: records the call and keeps
+# the entitlements it was given.
 echo "$*" >> "$STUB/codesign_calls"
 for target_path in "$@"; do :; done
 case " $* " in
@@ -313,8 +316,8 @@ new_case() {
 }
 
 # A process that outlives the script under test, listed by the ps stand-in under path $1 with the
-# arguments $2. Started in a subshell so it is not this shell's child: a child that is killed stays a
-# zombie until it is waited for, and a zombie still answers `kill -0`.
+# arguments $2. Started in a subshell so it is not this shell's child: a child that is killed stays
+# a zombie until it is waited for, and a zombie still answers `kill -0`.
 spawn_listed() {
   spawned="$( (sleep 300 > /dev/null 2>&1 & echo $!) )"
   echo "$spawned $1 ${2:-}" >> "$STUBS/ps_table"
@@ -429,15 +432,15 @@ IDLE_FRAMES="1 start
 3 -[NSApplication run]
 4 _DPSNextEvent"
 
-# Reports for a run that should exit 0: the product is observed at the panel on the first sample, and
-# the control never is.
+# Reports for a run that should exit 0: the product is observed at the panel on the first sample,
+# and the control never is.
 pass_reports() {
   write_report "$STUBS/report.1" "$FULL_FRAMES"
   write_report "$STUBS/report.default" "$IDLE_FRAMES"
 }
 
-# The ordinary run with PATH exactly $1 (the stand-ins first, then a directory of ordinary tools): for
-# the case where one tool must be absent.
+# The ordinary run with PATH exactly $1 (the stand-ins first, then a directory of ordinary tools):
+# for the case where one tool must be absent.
 run_renderer_with_path() {
   restricted_path="$1"
   shift
@@ -448,9 +451,9 @@ run_renderer_with_path() {
 }
 
 # A directory of links to the ordinary tools and to no `swiftc`, so a run on it finds everything but
-# the seam. `uname` and `sysctl` are linked too: the script reads the host first (docs/nfdr.md QC-65),
-# and without them this run would be refused for its host reading before it reached the missing
-# compiler. They are the real tools, so the case still has its real guest observation.
+# the seam. `uname` and `sysctl` are linked too: the script reads the host first (docs/nfdr.md
+# QC-65), and without them this run would be refused for its host reading before it reached the
+# missing compiler. They are the real tools, so the case still has its real guest observation.
 tools_without_swiftc() {
   mkdir -p "$1"
   for tool in bash env awk grep sed find sort tr cat cut head tail wc basename dirname mktemp rm mkdir \
@@ -566,8 +569,9 @@ test_pid_found_by_path_not_pattern() {
 }
 
 test_stops_only_its_own_pid() {
-  # Three endings: a pass, a window that runs out, and a failed observation. In each, another process
-  # with the product's path that appears after the launch survives, and the launched one is gone.
+  # Three endings: a pass, a window that runs out, and a failed observation. In each, another
+  # process with the product's path that appears after the launch
+  # survives, and the launched one is gone.
   for ending in pass runs-out failed-observation; do
     new_case "own-pid-$ending"
     touch "$STUBS/decoy_on_first"
@@ -640,7 +644,8 @@ test_first_matching_observation_passes() {
   write_report "$STUBS/report.default" "$IDLE_FRAMES"
   RENDERER_SH_OBSERVATIONS=10 run_renderer "$APP"
   expect_status 0 || return 1
-  # The product's own line names the observation it passed on; the control then takes ten more samples.
+  # The product's own line names the observation it passed on; the
+  # control then takes ten more samples.
   product_line="$(printf '%s\n' "$STDOUT" | head -1)"
   case "$product_line" in
     *"observation 3 "*) ;;
@@ -669,8 +674,8 @@ test_main_thread_under_its_early_label_counts() {
   write_report "$STUBS/report.default" "$IDLE_FRAMES"
   RENDERER_SH_OBSERVATIONS=5 run_renderer "$APP"
   expect_status 0 || return 1
-  # The product passes on the second observation, after the first was read under the early label; the
-  # control then takes its five.
+  # The product passes on the second observation, after the first was read under the early label;
+  # the control then takes its five.
   product_line="$(printf '%s\n' "$STDOUT" | head -1)"
   case "$product_line" in
     *"observation 2 "*) ;;
@@ -681,7 +686,8 @@ test_main_thread_under_its_early_label_counts() {
 
 test_frames_out_of_order_do_not_count() {
   new_case out-of-order
-  # The panel's frames hang off a sibling of AppDelegate.applicationDidFinishLaunching(_:), not off it.
+  # The panel's frames hang off a sibling of
+  # AppDelegate.applicationDidFinishLaunching(_:), not off it.
   write_report "$STUBS/report.default" "$LAUNCH_FRAMES
 5 OpenFolderPanel.chooseFolder()
 6 -[NSSavePanel runModal]
@@ -718,8 +724,8 @@ test_panel_without_shell_frames_does_not_count() {
 
 test_near_frame_names_do_not_count() {
   new_case near-names
-  # "specialized OpenFolderPanel.chooseFolder()" is not OpenFolderPanel.chooseFolder(): a frame is its
-  # whole symbol, not a part of one, so a containing symbol does not advance the match.
+  # "specialized OpenFolderPanel.chooseFolder()" is not OpenFolderPanel.chooseFolder(): a frame is
+  # its whole symbol, not a part of one, so a containing symbol does not advance the match.
   write_report "$STUBS/report.default" "1 start
 2 main
 3 -[NSApplication run]
@@ -783,8 +789,8 @@ test_sample_error_fails_at_once() {
 
 test_sample_writing_no_report_fails_at_once() {
   new_case no-report
-  # The product passes on the first sample. The control's first sample writes no file at all, and the
-  # product's report must not be taken for it.
+  # The product passes on the first sample. The control's first sample writes no file at all, and
+  # the product's report must not be taken for it.
   write_report "$STUBS/report.1" "$FULL_FRAMES"
   RENDERER_SH_OBSERVATIONS=5 run_renderer "$APP"
   expect_status 1 || return 1
@@ -855,8 +861,9 @@ test_header_names_frames_and_the_mac_reading() {
 }
 
 test_header_names_the_runner_reading() {
-  # The hosted runner's reading is recorded in the header: a GitHub Actions run id (all digits) beside
-  # the words that label it, and the runner image that run names. Read from the script, not a copy.
+  # The hosted runner's reading is recorded in the header: a GitHub Actions run id (all digits)
+  # beside the words that label it, and the runner image that run names.
+  # Read from the script, not a copy.
   header="$(awk '/^set -/ { exit } { print }' "$RENDERER_SH")"
   printf '%s\n' "$header" | grep -Eqi 'hosted runner.*run [0-9]+|run [0-9]+.*hosted runner' \
     || fail "the header carries no GitHub Actions run id labelled as the hosted runner's reading" || return 1
@@ -1032,7 +1039,8 @@ test_control_pid_not_found_once_fails() {
   run_renderer "$APP"
   expect_status 1 || return 1
   expect_stderr_contains "more than one" || return 1
-  # The first spawned pid is the product's, stopped by its own half; the other two are the control's.
+  # The first spawned pid is the product's, stopped by its own half;
+  # the other two are the control's.
   sed -n '2,$p' "$STUBS/spawned" | while read -r control_pid; do
     alive "$control_pid" || exit 1
   done || fail "a control pid was signalled although the run could not tell which was its own" || return 1
@@ -1111,9 +1119,10 @@ $candidate_hash
   done <<< "$tracked"
 }
 
-# QC-65 (CP-797, CP-798, CP-799): off a macOS virtual machine renderer.sh prints its one refusal line and
-# does nothing else — no launch, no fixture read, no control compiled — whatever it is given. The matrix
-# and the traced run are the shared helper's; the apps and inputs below are the ones renderer.sh reads.
+# QC-65 (CP-797, CP-798, CP-799): off a macOS virtual machine renderer.sh prints its one refusal
+# line and does nothing else — no launch, no fixture read, no control compiled — whatever it is
+# given. The matrix and the traced run are the shared helper's; the apps and inputs below
+# are the ones renderer.sh reads.
 test_refuses_off_vm_before_work() {
   new_case refusal
   VMR_TMP="$WORK"
@@ -1134,8 +1143,8 @@ test_refuses_off_vm_before_work() {
   done
 }
 
-# CP-798/CP-800: on a virtual machine's reading the admission adds no line and changes no verdict — an
-# ordinary pass run passes and prints no refusal.
+# CP-798/CP-800: on a virtual machine's reading the admission adds no line and changes no verdict —
+# an ordinary pass run passes and prints no refusal.
 test_admits_on_a_vm_reading() {
   new_case admits
   pass_reports

@@ -3,19 +3,20 @@
 # Version: 1.0.0 — first version: the refusal of the guarded suites' entry points (NFDR QC-65)
 #
 # checks/tests/test_vm_refusal.sh — proves that the guarded suites refuse to run off a macOS virtual
-# machine, and that the workflow runs the refusal and step suites.
+# machine, and that checks/gate.sh runs the refusal and step suites, while .github/workflows/ci.yml
+# runs checks/gate.sh as exactly one step, directly before it packages the app.
 #
 # WHY THIS EXISTS
-#   test_bundle.sh and test_renderer.sh launch KA-Reader.app, so each now refuses, on its first work,
-#   to run on a host that does not read as a macOS virtual machine (docs/nfdr.md QC-65). A suite that
-#   refuses cannot be required to run its own refusal case: there is no case to run once it has
-#   refused, and a case inside it would only run where the refusal does not apply. So the cases that
-#   run those two suites as subjects live here, in a suite that does not launch anything and so has no
-#   reason to refuse. Its existing and mandatory cases (the sandbox negative control among them) stay
-#   in the suites they belong to.
-#   The assertion is checks/tests/support/vm_refusal.sh's: a matrix of host readings, each given to the
-#   REAL suite entry point through stand-ins on PATH, and a traced run showing nothing precedes the
-#   refusal. The suites are never told which reading they have.
+#   test_bundle.sh and test_renderer.sh launch KA-Reader.app, so each now refuses, on its first
+#   work, to run on a host that does not read as a macOS virtual machine (docs/nfdr.md QC-65). A
+#   suite that refuses cannot be required to run its own refusal case: there is no case to run once
+#   it has refused, and a case inside it would only run where the refusal does not apply. So the
+#   cases that run those two suites as subjects live here, in a suite that does not launch anything
+#   and so has no reason to refuse. Its existing and mandatory cases (the sandbox negative control
+#   among them) stay in the suites they belong to.
+#   The assertion is checks/tests/support/vm_refusal.sh's: a matrix of host readings, each given to
+#   the REAL suite entry point through stand-ins on PATH, and a traced run showing nothing precedes
+#   the refusal. The suites are never told which reading they have.
 #
 # USAGE
 #   checks/tests/test_vm_refusal.sh
@@ -99,9 +100,10 @@ assert_gate_step_runs_exactly() {
 
 # --- cases ---
 
-# QC-65 (CP-797, CP-798, CP-799, CP-801): off a macOS virtual machine the bundle suite prints its one
-# refusal line and does nothing else, whatever it is given. Nothing precedes the line: no bundle lookup,
-# no temporary directory, no case, no `ok` or `FAIL` line, no write of the work-directory log.
+# QC-65 (CP-797, CP-798, CP-799, CP-801): off a macOS virtual machine the bundle suite prints its
+# one refusal line and does nothing else, whatever it is given. Nothing precedes the line: no bundle
+# lookup, no temporary directory, no case, no `ok` or `FAIL` line, no
+# write of the work-directory log.
 test_bundle_suite_refuses_off_vm_before_work() {
   VMR_TMP="$WORK"
   scene="$WORK/bundle-suite-scene"
@@ -111,7 +113,8 @@ test_bundle_suite_refuses_off_vm_before_work() {
   VMR_SCENE="$scene"
 
   # Every run names an app that is absent or a bare directory, so a suite that did not refuse could
-  # never reach the real bundle: it would stop at its own missing-bundle message, or fail a case at once.
+  # never reach the real bundle: it would stop at its own missing-bundle
+  # message, or fail a case at once.
   VMR_ENV=("KA_READER_APP=/nonexistent/KA-Reader.app")
   vmr_assert_refusal "$BUNDLE_SUITE" test_bundle.sh || return 1
   VMR_ENV=("KA_READER_APP=$scene/Fake.app" "KA_READER_TEST_ONLY=test_real_bundle_passes")
@@ -123,9 +126,10 @@ test_bundle_suite_refuses_off_vm_before_work() {
   [ ! -e "$workdir_log" ] || fail "the refused suite wrote the work-directory log: $workdir_log"
 }
 
-# CP-798/CP-800: on a virtual machine's reading the admission adds no line and the suite goes on to its
-# first case. The selected case calls bundle.sh on a path that does not exist, so no real bundle is
-# launched; the suite's own closing verdict (the negative control did not run) is not this case's.
+# CP-798/CP-800: on a virtual machine's reading the admission adds no line and the suite goes on to
+# its first case. The selected case calls bundle.sh on a path that does not exist, so no real bundle
+# is launched; the suite's own closing verdict (the negative control
+# did not run) is not this case's.
 test_bundle_suite_admits_on_a_vm_reading() {
   VMR_TMP="$WORK"
   scene="$WORK/bundle-suite-admit-scene"
@@ -143,9 +147,10 @@ test_bundle_suite_admits_on_a_vm_reading() {
   fi
 }
 
-# QC-65 (CP-797, CP-798, CP-799, CP-801): off a macOS virtual machine the renderer suite prints its one
-# refusal line and does nothing else: no temporary work, fixture read, case, control compile, `ok` or
-# `FAIL` line, and no `open`. The helper's stand-ins record `open` and every compile or fixture tool.
+# QC-65 (CP-797, CP-798, CP-799, CP-801): off a macOS virtual machine the renderer suite prints its
+# one refusal line and does nothing else: no temporary work, fixture read, case, control compile,
+# `ok` or `FAIL` line, and no `open`. The helper's stand-ins record `open` and
+# every compile or fixture tool.
 test_renderer_suite_refuses_off_vm_before_work() {
   VMR_TMP="$WORK"
   scene="$WORK/renderer-suite-scene"
@@ -162,8 +167,9 @@ test_renderer_suite_refuses_off_vm_before_work() {
   vmr_assert_refusal "$RENDERER_SUITE" test_renderer.sh || return 1
 }
 
-# CP-798/CP-800: on a virtual machine's reading the admission adds no line and the suite goes on to its
-# first case. The selected case runs renderer.sh on a path that is not an app, which launches nothing.
+# CP-798/CP-800: on a virtual machine's reading the admission adds no line and the suite goes on to
+# its first case. The selected case runs renderer.sh on a path that is not
+# an app, which launches nothing.
 test_renderer_suite_admits_on_a_vm_reading() {
   VMR_TMP="$WORK"
   VMR_SCENE=""
@@ -242,7 +248,8 @@ test_no_conditional_or_nonfatal_step() {
   [ -z "$found" ] || fail "a conditional or non-fatal step: $found"
 }
 
-# CP-804: every runner the workflows name is macos-26, the image whose virtual machine the refusal needs.
+# CP-804: every runner the workflows name is macos-26, the image whose
+# virtual machine the refusal needs.
 test_every_runner_names_macos_26() {
   runners="$(grep -h -E '^[[:space:]]*runs-on:' "$WORKFLOWS"/*.yml || true)"
   [ -n "$runners" ] || fail "no workflow names a runner, so nothing was checked" || return 1

@@ -39,11 +39,12 @@ run_step() {
 # and why: read it before you move the step.
 
 # "Toolchain" comes first, before any build. No Swift version is pinned in this tree, so these two
-# lines are the record of which Swift and which SDK the run built with (docs/nfdr.md § 9, Toolchain).
+# lines are the record of which Swift and which SDK the run built with
+# (docs/nfdr.md § 9, Toolchain).
 run_step 'Toolchain' 'swift --version && xcrun --show-sdk-version'
 run_step 'Build the workspace' 'cargo build --workspace --locked'
-# The app build comes before "Test gate": it writes the bridge artifact the Swift package links, which
-# a fresh checkout does not have, so "Test gate" cannot run before it.
+# The app build comes before "Test gate": it writes the bridge artifact the Swift package links,
+# which a fresh checkout does not have, so "Test gate" cannot run before it.
 run_step 'Build KA-Reader.app' 'ka-reader-mac/assemble.sh'
 run_step 'Test gate' 'cargo test --workspace --locked && swift test --package-path ka-reader-mac'
 run_step 'Structure check' 'checks/structure.sh'

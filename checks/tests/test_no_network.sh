@@ -1,28 +1,31 @@
 #!/usr/bin/env bash
-# Version: 1.2.0 — git-reader probes the root — libgit2 bound behind the Git port, six fixture scenes
-# Version: 1.1.0 — the Tauri build leaves — native bundle assembled, bundle.sh and no-network.sh read it, CI builds it, boundaries and README pinned
-# Version: 1.0.0 — first version: drives the real checks/no-network.sh against the real tree and against stubbed ones
+# Version: 1.2.0 — git-reader probes the root — libgit2 bound behind
+#   the Git port, six fixture scenes
+# Version: 1.1.0 — the Tauri build leaves — native bundle assembled, bundle.sh and no-network.sh
+#   read it, CI builds it, boundaries and README pinned
+# Version: 1.0.0 — first version: drives the real checks/no-network.sh against the
+#   real tree and against stubbed ones
 #
 # checks/tests/test_no_network.sh — the tests of checks/no-network.sh and checks/deps.allow.
 #
 # WHY THIS EXISTS
-#   checks/no-network.sh is the review gate on what the product is built from: a name in the tree that
-#   nobody put in checks/deps.allow fails the build. A bug in it is a tree nobody is reviewing. These
-#   cases run the real script — never a copy of its logic — against the real tree and against stubbed
-#   ones, with `cargo`, `swift`, `pnpm` (only as a guard that is never called) and `uname` stubbed on
-#   PATH. A stub that must keep the real tree's shape runs the real tool and edits its output, so this
-#   suite never lists the tree's names by hand. Every case but the real-tree pass stubs `swift` and
-#   points the Swift package at a work directory, so no case depends on the machine's toolchain.
-#   The runner is this file: the product has no Python (docs/nfdr.md § 9 names its toolchains), which
-#   is why the shell packet's pytest runner is not used here.
+#   checks/no-network.sh is the review gate on what the product is built from: a name in the tree
+#   that nobody put in checks/deps.allow fails the build. A bug in it is a tree nobody is reviewing.
+#   These cases run the real script — never a copy of its logic — against the real tree and against
+#   stubbed ones, with `cargo`, `swift`, `pnpm` (only as a guard that is never called) and `uname`
+#   stubbed on PATH. A stub that must keep the real tree's shape runs the real tool and edits its
+#   output, so this suite never lists the tree's names by hand. Every case but the real-tree pass
+#   stubs `swift` and points the Swift package at a work directory, so no case depends on the
+#   machine's toolchain. The runner is this file: the product has no Python (docs/nfdr.md § 9 names
+#   its toolchains), which is why the shell packet's pytest runner is not used here.
 #
 # USAGE
 #   checks/tests/test_no_network.sh
 #     KA_READER_TEST_ONLY=<case> runs one case.
 #
 # WHY NO `set -e`
-#   A case that fails must not end the run before the remaining cases report. Each case returns its own
-#   status and the runner counts them.
+#   A case that fails must not end the run before the remaining cases report. Each case returns its
+#   own status and the runner counts them.
 
 set -uo pipefail
 
@@ -172,8 +175,8 @@ test_allowlist_entry_not_in_the_tree_fails() {
   expect_output_contains "in checks/deps.allow and not in the tree"
 }
 
-# CP-126, D2-2: the allowlist admits one section. A `pnpm:` section goes down the unknown-section path:
-# the file is called malformed and the section is named.
+# CP-126, D2-2: the allowlist admits one section. A `pnpm:` section goes down the unknown-section
+# path: the file is called malformed and the section is named.
 test_pnpm_section_is_refused_as_malformed() {
   printf 'cargo:\nitoa\npnpm:\nleft-pad\n' > "$WORK/with-pnpm.allow"
 
@@ -185,9 +188,9 @@ test_pnpm_section_is_refused_as_malformed() {
   expect_output_contains "unknown section: pnpm"
 }
 
-# CP-50: the compared set does not depend on the running CPU. Held by construction — the cargo half names
-# both Apple-Darwin triples itself rather than taking the host's — so the case checks both halves of that:
-# the verdict under a stubbed `uname`, and the triples on the command line.
+# CP-50: the compared set does not depend on the running CPU. Held by construction — the cargo half
+# names both Apple-Darwin triples itself rather than taking the host's — so the case checks both
+# halves of that: the verdict under a stubbed `uname`, and the triples on the command line.
 test_verdict_is_unchanged_on_an_x64_machine() {
   clean_swift_stubs "$WORK/stubs-x64"
   make_stub "$WORK/stubs-x64" uname 'echo x86_64'
@@ -203,10 +206,11 @@ test_verdict_is_unchanged_on_an_x64_machine() {
   esac
 }
 
-# CP-485, CP-490 (the runnable half of CP-51's successor): the libgit2 binding is admitted, with its HTTPS
-# and SSH features off and libgit2 vendored, and none of the named TLS or SSH transport crates is in the
-# core's tree or the allowlist. The domain closure past these names is a review gate (checks/deps.review.md).
-# An inverse tree that cannot be read is a failure, never evidence that no feature resolved.
+# CP-485, CP-490 (the runnable half of CP-51's successor): the libgit2 binding is admitted, with its
+# HTTPS and SSH features off and libgit2 vendored, and none of the named TLS or SSH transport crates
+# is in the core's tree or the allowlist. The domain closure past these names is a review gate
+# (checks/deps.review.md). An inverse tree that cannot be read is a failure, never
+# evidence that no feature resolved.
 test_binding_has_no_https_or_ssh_transport() {
   # An absent allowlist names nothing, which would pass every check below for the wrong reason.
   [ -f "$ALLOWLIST" ] || fail "checks/deps.allow does not exist" || return 1
@@ -260,8 +264,8 @@ test_swapped_log_writer_fails() {
   expect_output_contains "cargo: env_logger"
 }
 
-# Added by the plan: blank lines and comments in checks/deps.allow enter neither compared set — a comment
-# that reads like a name must not become one.
+# Added by the plan: blank lines and comments in checks/deps.allow enter neither compared set — a
+# comment that reads like a name must not become one.
 test_comments_and_blank_lines_are_ignored() {
   awk '{ print; print ""; print "# a-comment-that-reads-like-a-name" }' "$ALLOWLIST" > "$WORK/noisy.allow"
 
@@ -287,8 +291,8 @@ test_declared_dependency_fails() {
   expect_output_contains "$WORK/pkg-clean/Package.swift"
 }
 
-# CP-127 names `ka-reader-mac/Package.swift`. Under an override the case above names the override's, so this
-# one runs with no override and holds the default wording.
+# CP-127 names `ka-reader-mac/Package.swift`. Under an override the case above names the override's,
+# so this one runs with no override and holds the default wording.
 test_declared_dependency_names_the_default_manifest() {
   clean_swift_stubs "$WORK/stubs-dep-default"
   swift_stub "$WORK/stubs-dep-default" "$WORK/dump-dependency.json"
@@ -314,8 +318,8 @@ test_remote_binary_target_fails() {
   expect_output_contains "$WORK/pkg-clean/Package.swift"
 }
 
-# A binary target over a local artifact bundle (a path, no url) downloads nothing and stays admitted; a
-# check that refused every binary target would pass every case above.
+# A binary target over a local artifact bundle (a path, no url) downloads nothing and stays
+# admitted; a check that refused every binary target would pass every case above.
 test_local_binary_target_is_admitted() {
   clean_swift_stubs "$WORK/stubs-local"
   swift_stub "$WORK/stubs-local" "$WORK/dump-local-binary.json"
@@ -338,8 +342,8 @@ test_swift_that_fails_is_refused() {
   esac
 }
 
-# D2-6: `swift` absent. PATH is built from links to the tools the script calls, so `swift` — which sits
-# in /usr/bin beside awk, sort and comm — is the one thing missing.
+# D2-6: `swift` absent. PATH is built from links to the tools the script calls, so `swift` — which
+# sits in /usr/bin beside awk, sort and comm — is the one thing missing.
 test_swift_absent_is_refused() {
   tools="$WORK/tools-without-swift"
   mkdir -p "$tools"
@@ -398,9 +402,9 @@ test_package_resolved_nested_deep_fails() {
 
 # --- added by the code-integrity review ---
 
-# A local binary target is admitted because it carries no url (change_design.md § Architect Review Notes;
-# tl_instruction.md, Task 2, "a path and no url exits 0"). A dump that writes the absent url as an explicit
-# JSON null carries no url either, and is the same admitted target.
+# A local binary target is admitted because it carries no url (change_design.md § Architect Review
+# Notes; tl_instruction.md, Task 2, "a path and no url exits 0"). A dump that writes the absent url
+# as an explicit JSON null carries no url either, and is the same admitted target.
 test_local_binary_target_with_a_null_url_is_admitted() {
   clean_swift_stubs "$WORK/stubs-null-url"
   swift_stub "$WORK/stubs-null-url" "$WORK/dump-local-binary-null-url.json"
@@ -410,8 +414,8 @@ test_local_binary_target_with_a_null_url_is_admitted() {
   expect_zero_status
 }
 
-# CP-127, D2-7: each Package.resolved is named — a script that named only the first would pass the two
-# cases above.
+# CP-127, D2-7: each Package.resolved is named — a script that named only the first would pass the
+# two cases above.
 test_each_package_resolved_is_named() {
   clean_swift_stubs "$WORK/stubs-resolved-each"
   mkdir -p "$WORK/pkg-resolved-each/a/b"
@@ -433,7 +437,8 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# The manifest dumps the `swift` stubs answer with, and the package directory a case points the script at.
+# The manifest dumps the `swift` stubs answer with, and the package
+# directory a case points the script at.
 mkdir -p "$WORK/pkg-clean"
 echo '{"dependencies":[],"targets":[{"name":"KAReader","type":"executable"}]}' > "$WORK/dump-clean.json"
 echo '{"dependencies":[{"sourceControl":[{"identity":"left-pad","location":{"remote":[{"urlString":"https://example.invalid/left-pad.git"}]}}]}],"targets":[{"name":"KAReader","type":"executable"}]}' > "$WORK/dump-dependency.json"

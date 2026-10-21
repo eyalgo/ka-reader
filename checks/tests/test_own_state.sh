@@ -6,11 +6,11 @@
 # checks/tests/test_own_state.sh — the tests of checks/own-state.sh.
 #
 # WHY THIS EXISTS
-#   checks/own-state.sh is the proof that a launch left nothing behind but the log, so a bug in it is
-#   a proof nobody is checking. These cases run the real script against the committed fixtures. The
-#   log condition is exercised by pointing HOME at a temporary directory. The fixture conditions are
-#   exercised by putting a stray file into a fixture, removed again by the trap, and by adding or
-#   removing repo's restored `.git` (its prior state is put back), and by unpacking submodule's
+#   checks/own-state.sh is the proof that a launch left nothing behind but the log, so a bug in it
+#   is a proof nobody is checking. These cases run the real script against the committed fixtures.
+#   The log condition is exercised by pointing HOME at a temporary directory. The fixture conditions
+#   are exercised by putting a stray file into a fixture, removed again by the trap, and by adding
+#   or removing repo's restored `.git` (its prior state is put back), and by unpacking submodule's
 #   archive in place the way checks/read-only.sh does (its three restored entries are put back too).
 #
 # USAGE
@@ -247,9 +247,9 @@ test_stray_under_restored_submodule_folder_fails_condition_two() {
 }
 
 # QC-65 (CP-797, CP-798): off a macOS virtual machine own-state.sh prints its one refusal line — no
-# condition line, no fixture tool run — whatever home and whatever fixtures it is pointed at. The matrix
-# and the traced run are the shared helper's. Every other case in this file runs the script with its
-# real guest observation and goes red off a virtual machine; none of them simulates one.
+# condition line, no fixture tool run — whatever home and whatever fixtures it is pointed at. The
+# matrix and the traced run are the shared helper's. Every other case in this file runs the script
+# with its real guest observation and goes red off a virtual machine; none of them simulates one.
 test_refuses_off_vm_before_work() {
   VMR_TMP="$WORK"
   VMR_ENV=()
@@ -263,7 +263,8 @@ test_refuses_off_vm_before_work() {
   vmr_assert_refusal "$OWN_STATE_SH" own-state.sh || return 1
   VMR_HOME_FILES=""
 
-  # A scene of its own: a copy of the script with fixtures that are changed (a stray file), then missing.
+  # A scene of its own: a copy of the script with fixtures that are
+  # changed (a stray file), then missing.
   scene="$WORK/own-state-scene"
   mkdir -p "$scene/checks/fixtures/plain"
   cp "$OWN_STATE_SH" "$scene/checks/own-state.sh"
@@ -274,8 +275,8 @@ test_refuses_off_vm_before_work() {
   vmr_assert_refusal "$scene/checks/own-state.sh" own-state.sh || return 1
 }
 
-# CP-798/CP-800: on a virtual machine's reading the admission adds no line and changes no verdict — with
-# the log in place the script prints `own state holds`, as before, and no refusal.
+# CP-798/CP-800: on a virtual machine's reading the admission adds no line and changes no verdict —
+# with the log in place the script prints `own state holds`, as before, and no refusal.
 test_admits_on_a_vm_reading() {
   home="$(home_with_log admits)"
   vmr_install_admission "$WORK/admit-bin"
