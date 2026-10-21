@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Version: 1.1.0 — takes out what its own restore laid down, once the verdict is taken, on every exit
+# Version: 1.1.0 — takes out what its own restore laid down, once the verdict is taken, on
+#   every exit
 # Version: 1.0.0 — first version: proves a walk of a fixture folder changed nothing in it
 #
 # checks/read-only.sh <fixture> — hash a fixture, walk it with ka-reader-core's driver, hash it again.
@@ -31,8 +32,8 @@
 #   Once the verdict is taken, the entries in the ledger are removed, deepest first and never
 #   recursively, and the script says so if one is left (`restored entry not removed: <path>`). Two
 #   things stay: an entry already in the fixture at start, and an entry the walk created together
-#   with the restored folders it needs. A restored file the walk rewrote is still restored, and goes.
-#   This holds on every way the script ends after the restore began, a signal included.
+#   with the restored folders it needs. A restored file the walk rewrote is still restored, and
+#   goes. This holds on every way the script ends after the restore began, a signal included.
 
 set -euo pipefail
 
@@ -83,8 +84,8 @@ absolute="$(cd "$fixture" && pwd)"
 archive="$fixture.git.tar"
 
 # --- the lifetime of the restore ---
-# What the finalizer reads. All of it is set before the first fixture write, so an interruption at any
-# point finds the state it needs.
+# What the finalizer reads. All of it is set before the first fixture write, so an interruption at
+# any point finds the state it needs.
 work=""
 ledger=""
 walk_started=0
@@ -128,8 +129,8 @@ reachable() {
   done
 }
 
-# Runs "$@" as a child the signal handler can find and stop, and waits for it. A child that can still
-# write is never left running while the evidence is read and the entries are removed.
+# Runs "$@" as a child the signal handler can find and stop, and waits for it. A child that can
+# still write is never left running while the evidence is read and the entries are removed.
 run_child() {
   local status=0
   "$@" < /dev/null &
@@ -172,8 +173,8 @@ actionable_signals() {
     done
 }
 
-# A signal ends the run with 128 plus its number, through the finalizer. A second signal, or one that
-# arrives during teardown, is recorded and teardown goes on to its end.
+# A signal ends the run with 128 plus its number, through the finalizer. A second signal, or one
+# that arrives during teardown, is recorded and teardown goes on to its end.
 on_signal() {
   local number
   number="$(kill -l "$1")"
@@ -187,8 +188,9 @@ on_signal() {
 }
 
 # Lays the archive's entries into the fixture, never over an entry already there. Each is entered in
-# the ledger before it is made, so a failure or a signal in the middle of one still leaves the ledger
-# naming it. Explicit checks throughout: `set -e` does not reach into a function called as a condition.
+# the ledger before it is made, so a failure or a signal in the middle of one still leaves the
+# ledger naming it. Explicit checks throughout: `set -e` does not reach into a function called as a
+# condition.
 restore() {
   local stage entry destination skipped_folders="" kind
   [ -f "$archive" ] || return 0

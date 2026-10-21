@@ -11,8 +11,9 @@
 #   it with the real `cargo` and the real driver on the committed fixtures. The rest put a stub
 #   `cargo` on PATH that does one specific thing to a TEMPORARY COPY of a fixture (never a committed
 #   one), so each kind of change the script must report has a case that makes exactly that change.
-#   Some copies sit beside an unmodified archive, so the script has a `.git` to restore, and some put
-#   a stand-in for another tool (tar, cp, rm, rmdir, shasum, mktemp) on PATH to make one step fail.
+#   Some copies sit beside an unmodified archive, so the script has a `.git` to restore, and some
+#   put a stand-in for another tool (tar, cp, rm, rmdir, shasum, mktemp) on PATH to make one step
+#   fail.
 #
 # USAGE
 #   checks/tests/test_read_only.sh
@@ -167,8 +168,9 @@ expect_stderr_contains() {
   fail "expected stderr to contain: $1. stderr: $ERR"
 }
 
-# A stand-in for tool $2, in folder $1, whose body is $3. The real tool's path is in $REAL inside it,
-# found before the folder is on PATH, so a body can pass the call through with `exec "$REAL" "$@"`.
+# A stand-in for tool $2, in folder $1, whose body is $3. The real tool's path is in $REAL inside
+# it, found before the folder is on PATH, so a body can pass the call through with `exec "$REAL"
+# "$@"`.
 make_tool_shim() {
   mkdir -p "$1"
   printf "#!/bin/sh\nREAL='%s'\n%s\n" "$(command -v "$2")" "$3" > "$1/$2"
@@ -187,15 +189,16 @@ empty_file_line() {
   printf '%s file %s' "$1" "$(cksum < /dev/null)"
 }
 
-# Folder $2 holds exactly the scene $1 recorded earlier: nothing added, nothing lost, nothing changed.
+# Folder $2 holds exactly the scene $1 recorded earlier: nothing added, nothing lost, nothing
+# changed.
 expect_scene_is() {
   after="$(scene_of "$2")"
   [ "$after" = "$1" ] && return 0
   fail "the scene changed. Only now: [$(only_in_second "$1" "$after" | head -6)] Only before: [$(only_in_second "$after" "$1" | head -6)]"
 }
 
-# Folder $2 holds scene $1 plus exactly the lines in $3 (one per line, `scene_of` form), and has lost
-# nothing from $1.
+# Folder $2 holds scene $1 plus exactly the lines in $3 (one per line, `scene_of` form), and has
+# lost nothing from $1.
 expect_scene_plus() {
   after="$(scene_of "$2")"
   added="$(only_in_second "$1" "$after")"
@@ -268,6 +271,17 @@ wait_for_script() {
   ERR="$(cat "$WORK/sig-err")"
 }
 
+# The scene a run ended by a signal must leave in $WORK/$id: the start, plus the lock the walk made
+# when the signal landed in the walk.
+expect_signalled_scene() {
+  if [ "$boundary" = walk ]; then
+    expect_scene_plus "$before" "$WORK/$id" "$(printf '%s\n%s' "./repo/.git dir" "$(empty_file_line ./repo/.git/index.lock)")" \
+      || { fail "$boundary/$sig: the scene is not the start plus the walk's lock"; return 1; }
+  else
+    expect_scene_is "$before" "$WORK/$id" || { fail "$boundary/$sig: a restored entry survived"; return 1; }
+  fi
+}
+
 # One run ended by signal $2 at boundary $1 (restore, walk or teardown), on an archive-backed `repo`
 # copy. The boundary is held open by a stub that writes a ready marker, so the signal always lands
 # there. Prints nothing and returns 0 when every claim holds.
@@ -286,7 +300,8 @@ run_signal_scene() {
       make_tool_shim "$stubs" tar "touch \"$ready\"; sleep 30; exec \"\$REAL\" \"\$@\""
       ;;
     walk)
-      make_cargo_stub "$stubs" "touch \"\$last/.git/index.lock\"; touch \"$ready\"; sleep 30; echo 1"
+      make_cargo_stub "$stubs" "touch \"\$last/.git/index.lock\"; touch \"$ready\"; sleep 3
+touch \"\$last/.git/late-write\"; echo 1"
       ;;
     teardown)
       make_tool_shim "$stubs" rm "if [ ! -e \"$ready\" ]; then touch \"$ready\"; waited=0
@@ -315,11 +330,11 @@ exec \"\$REAL\" \"\$@\""
   case "$OUT" in
     *unchanged*) fail "$boundary/$sig: stdout says unchanged: $OUT"; return 1 ;;
   esac
-  if [ "$boundary" = walk ]; then
-    expect_scene_plus "$before" "$WORK/$id" "$(printf '%s\n%s' "./repo/.git dir" "$(empty_file_line ./repo/.git/index.lock)")" \
-      || { fail "$boundary/$sig: the scene is not the start plus the walk's lock"; return 1; }
-  else
-    expect_scene_is "$before" "$WORK/$id" || { fail "$boundary/$sig: a restored entry survived"; return 1; }
+  expect_signalled_scene || return 1
+  if [ "$sig" = TERM ]; then
+    # A child the run left running would write after the run ended: wait for it, and look again.
+    sleep 4
+    expect_signalled_scene || return 1
   fi
 }
 
@@ -505,8 +520,8 @@ test_no_argument_is_a_usage_error() {
   expect_stderr_contains "usage"
 }
 
-# Two fixture arguments are refused before the first restore: the first one, a temporary copy with its
-# archive beside it, is left exactly as it was given.
+# Two fixture arguments are refused before the first restore: the first one, a temporary copy with
+# its archive beside it, is left exactly as it was given.
 test_extra_argument_is_a_usage_error() {
   copy="$(archive_backed_copy repo extraarg)"
   before="$(scene_of "$WORK/extraarg")"
@@ -767,7 +782,8 @@ exec \"\$REAL\" \"\$@\""
   [ ! -e "$WORK/failedcopy-walked" ] || fail "the walk ran after a failed restore"
 }
 
-# CP-836 (5): the tool that hashes fails after the restore. The run fails and takes out what it laid down.
+# CP-836 (5): the tool that hashes fails after the restore. The run fails and takes out what it laid
+# down.
 test_failed_baseline_manifest_cleans_up() {
   copy="$(archive_backed_copy repo failedbaseline)"
   before="$(scene_of "$WORK/failedbaseline")"
@@ -782,8 +798,8 @@ test_failed_baseline_manifest_cleans_up() {
   [ ! -e "$WORK/failedbaseline-walked" ] || fail "the walk ran with no baseline"
 }
 
-# CP-836 (5), CP-835: the hashing tool fails only after the walk. The run fails, the restore is taken
-# out, and the lock the walk created is kept.
+# CP-836 (5), CP-835: the hashing tool fails only after the walk. The run fails, the restore is
+# taken out, and the lock the walk created is kept.
 test_failed_final_manifest_keeps_walk_evidence() {
   copy="$(archive_backed_copy repo failedfinal)"
   before="$(scene_of "$WORK/failedfinal")"
@@ -814,7 +830,8 @@ test_scratch_failure_before_restore_touches_nothing() {
   [ ! -e "$WORK/noscratch-walked" ] || fail "the walk ran without a scratch folder"
 }
 
-# CP-834: a fixture with no archive beside it has nothing to restore, so nothing is added or removed.
+# CP-834: a fixture with no archive beside it has nothing to restore, so nothing is added or
+# removed.
 test_archive_absent_plain_restores_nothing() {
   copy="$(fixture_copy plain noarchive)"
   before="$(scene_of "$WORK/noarchive")"
@@ -828,8 +845,8 @@ test_archive_absent_plain_restores_nothing() {
 }
 
 # CP-836 (6): every signal the script can act on, at the restore, the walk and the teardown, ends
-# the run non-zero with no `unchanged` and no restored entry. A script that handled only INT, TERM and
-# HUP fails here on the rest.
+# the run non-zero with no `unchanged` and no restored entry. A script that handled only INT, TERM
+# and HUP fails here on the rest.
 test_signal_during_restore_walk_and_teardown_cleans_up() {
   failures=""
   for sig in $(actionable_signals); do
