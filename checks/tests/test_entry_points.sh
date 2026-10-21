@@ -1120,8 +1120,9 @@ test_suite_reports_each_failed_case() {
 }
 
 # CP-411, CP-826, CP-827: a whole run, with no selection, goes on past every failed case, names each
-# of them and exits non-zero. The product copy holds a script that always exits non-zero, so every
-# case that runs the script fails and a whole run has far more than two failed cases. The copy's run
+# of them and exits non-zero. The product copy holds a script that always prints one finding and
+# exits non-zero. A case that expects exactly that finding still passes, but nearly every other case
+# that runs the script fails, so a whole run has far more than two failed cases. The copy's run
 # starts with the selector removed and carries the marker below. The marker filters nothing: that
 # run still visits every case, and this case alone returns at once on seeing it, so a whole run
 # starts one more whole run and no deeper.
