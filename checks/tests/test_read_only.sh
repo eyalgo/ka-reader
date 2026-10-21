@@ -57,10 +57,12 @@ test_ordinary_restore_leaves_no_entry_behind
 test_implied_and_nested_restores_leave_no_entry_behind
 test_existing_git_disables_restore_and_removal
 test_existing_start_entries_survive_with_kind_and_content
+test_existing_folder_takes_restored_entries_and_keeps_its_own
 test_walk_created_file_stays
 test_walk_created_lock_stays_with_only_its_needed_ancestors
 test_rewritten_restored_file_is_reported_then_removed
 test_restored_leaf_replaced_by_link_or_folder
+test_restored_folder_replaced_by_link_is_not_followed
 test_failed_walk_with_restore_leaves_no_entry_behind
 test_truncated_archive_fails_clean
 test_failed_materialization_removes_what_it_laid_down
@@ -228,7 +230,7 @@ exec "$REAL" "$@"'
 # continue, or to be ignored (TSTP, TTIN, TTOU, CONT, CHLD, URG, WINCH, INFO, IO).
 actionable_signals() {
   for sig in HUP INT QUIT ILL TRAP ABRT EMT FPE BUS SEGV SYS PIPE ALRM TERM XCPU XFSZ VTALRM PROF USR1 USR2; do
-    kill -l "$sig" > /dev/null 2>&1 && printf '%s ' "$sig"
+    kill -l "$sig" > /dev/null 2>&1 && printf '%s\n' "$sig"
   done
 }
 
@@ -282,9 +284,11 @@ expect_signalled_scene() {
   fi
 }
 
-# One run ended by signal $2 at boundary $1 (restore, walk or teardown), on an archive-backed `repo`
-# copy. The boundary is held open by a stub that writes a ready marker, so the signal always lands
-# there. Prints nothing and returns 0 when every claim holds.
+# One run ended by signal $2 at boundary $1 (restore, walk, teardown or scratch), on an
+# archive-backed `repo` copy. The boundary is held open by a stub that writes a ready marker, so the
+# signal always lands there. `teardown` holds the first removal in the fixture; `scratch` holds the
+# removal of the script's own scratch folder, after the fixture is clean and before the run has
+# ended. Prints nothing and returns 0 when every claim holds.
 run_signal_scene() {
   boundary="$1"
   sig="$2"
@@ -308,6 +312,11 @@ touch \"\$last/.git/late-write\"; echo 1"
 while [ ! -e \"$go\" ] && [ \$waited -lt 200 ]; do sleep 0.1; waited=\$((waited + 1)); done; fi
 exec \"\$REAL\" \"\$@\""
       ;;
+    scratch)
+      make_tool_shim "$stubs" rm "if [ \"\$1\" = -rf ] && [ ! -e \"$ready\" ]; then touch \"$ready\"; waited=0
+while [ ! -e \"$go\" ] && [ \$waited -lt 200 ]; do sleep 0.1; waited=\$((waited + 1)); done; fi
+exec \"\$REAL\" \"\$@\""
+      ;;
   esac
 
   start_script "$stubs" "$copy"
@@ -317,13 +326,19 @@ exec \"\$REAL\" \"\$@\""
     return 1
   fi
   kill -s "$sig" "$SCRIPT_PID"
-  if [ "$boundary" = teardown ]; then
-    sleep 0.2
-    kill -s "$sig" "$SCRIPT_PID" 2> /dev/null
-    : > "$go"
-    sleep 0.2
-    kill -s "$sig" "$SCRIPT_PID" 2> /dev/null
-  fi
+  case "$boundary" in
+    teardown)
+      sleep 0.2
+      kill -s "$sig" "$SCRIPT_PID" 2> /dev/null
+      : > "$go"
+      sleep 0.2
+      kill -s "$sig" "$SCRIPT_PID" 2> /dev/null
+      ;;
+    scratch)
+      sleep 0.2
+      : > "$go"
+      ;;
+  esac
   wait_for_script || { fail "$boundary/$sig: the run did not end within the watchdog"; return 1; }
 
   [ "$STATUS" -ne 0 ] || { fail "$boundary/$sig: exit 0 after the signal. stdout: $OUT"; return 1; }
@@ -576,6 +591,8 @@ test_implied_and_nested_restores_leave_no_entry_behind() {
 }
 
 # CP-834: a `.git` of any kind at start disables restore and removal, a dangling link included.
+# "Nothing restored" is looked at while the walk runs, not only after the return: a script that
+# laid entries into the existing `.git` and took them out again would leave the same scene behind.
 test_existing_git_disables_restore_and_removal() {
   for kind in folder file link; do
     copy="$(archive_backed_copy repo "existing-$kind")"
@@ -585,12 +602,16 @@ test_existing_git_disables_restore_and_removal() {
       link) ln -s "$WORK/nowhere-at-all" "$copy/.git" ;;
     esac
     before="$(scene_of "$WORK/existing-$kind")"
-    make_cargo_stub "$WORK/stubs-existing-$kind" 'echo 1'
+    listing_before="$(cd "$copy" && find . -mindepth 1 | LC_ALL=C sort)"
+    make_cargo_stub "$WORK/stubs-existing-$kind" \
+      "(cd \"\$last\" && find . -mindepth 1 | LC_ALL=C sort) > \"$WORK/existing-$kind-during-walk\"; echo 1"
 
     run_read_only_with_stubs "$WORK/stubs-existing-$kind" "$copy"
 
     expect_status 0 || return 1
     expect_stdout_is "unchanged" || return 1
+    [ "$(cat "$WORK/existing-$kind-during-walk")" = "$listing_before" ] \
+      || fail "$kind: the walk saw entries the start did not hold: something was restored"
     expect_scene_is "$before" "$WORK/existing-$kind" || return 1
   done
 }
@@ -598,7 +619,8 @@ test_existing_git_disables_restore_and_removal() {
 # CP-834: entries present at start keep their kind and content. A `submodule` copy holds a planted
 # `.gitmodules`, nested files, an empty folder and a link; the archive's `.git` and `submodule/` go.
 # A second copy holds a link where the archive wants the folder `submodule/`: it is neither followed
-# nor overwritten, and what it points at is untouched.
+# nor overwritten, and what it points at is untouched. Both are looked at while the walk runs too:
+# an entry overwritten by the restore and put back afterwards was not left as found.
 test_existing_start_entries_survive_with_kind_and_content() {
   copy="$(archive_backed_copy submodule start-entries)"
   printf 'planted\n' > "$copy/.gitmodules"
@@ -606,12 +628,15 @@ test_existing_start_entries_survive_with_kind_and_content() {
   printf 'kept\n' > "$copy/nested/deep/file.txt"
   ln -s README.md "$copy/link-to-readme"
   before="$(scene_of "$WORK/start-entries")"
-  make_cargo_stub "$WORK/stubs-start-entries" 'echo 1'
+  make_cargo_stub "$WORK/stubs-start-entries" \
+    "cat \"\$last/.gitmodules\" > \"$WORK/start-entries-during-walk\"; echo 1"
 
   run_read_only_with_stubs "$WORK/stubs-start-entries" "$copy"
 
   expect_status 0 || return 1
   expect_stdout_is "unchanged" || return 1
+  [ "$(cat "$WORK/start-entries-during-walk")" = "planted" ] \
+    || fail ".gitmodules did not hold its planted content while the walk ran"
   expect_scene_is "$before" "$WORK/start-entries" || return 1
   [ "$(cat "$copy/.gitmodules")" = "planted" ] || fail ".gitmodules lost its planted content"
   [ ! -e "$copy/.git" ] || fail "the restored .git is still there"
@@ -622,16 +647,38 @@ test_existing_start_entries_survive_with_kind_and_content() {
   ln -s "$WORK/start-link-target" "$copy/submodule"
   before="$(scene_of "$WORK/start-link")"
   target_before="$(scene_of "$WORK/start-link-target")"
-  make_cargo_stub "$WORK/stubs-start-link" 'echo 1'
+  make_cargo_stub "$WORK/stubs-start-link" \
+    "if [ -L \"\$last/submodule\" ]; then touch \"$WORK/start-link-during-walk\"; fi; echo 1"
 
   run_read_only_with_stubs "$WORK/stubs-start-link" "$copy"
 
   expect_status 0 || return 1
   expect_stdout_is "unchanged" || return 1
+  [ -e "$WORK/start-link-during-walk" ] || fail "the link at submodule was not a link while the walk ran"
   expect_scene_is "$before" "$WORK/start-link" || return 1
   [ -L "$copy/submodule" ] || fail "the link at submodule was replaced"
   [ "$(scene_of "$WORK/start-link-target")" = "$target_before" ] \
     || fail "the link's target was written through"
+}
+
+# CP-834, CP-833: a real folder at start where the archive also has a folder is kept, and so is what
+# it holds; the restore lays the archive's missing entries inside it for the walk, and takes them out
+# again. Nothing else in the suite has a start folder at an archive folder's place.
+test_existing_folder_takes_restored_entries_and_keeps_its_own() {
+  copy="$(archive_backed_copy submodule startfolder)"
+  mkdir "$copy/submodule"
+  printf 'mine\n' > "$copy/submodule/mine.txt"
+  before="$(scene_of "$WORK/startfolder")"
+  make_cargo_stub "$WORK/stubs-startfolder" \
+    "if [ -f \"\$last/submodule/.git\" ]; then touch \"$WORK/startfolder-during-walk\"; fi; echo 1"
+
+  run_read_only_with_stubs "$WORK/stubs-startfolder" "$copy"
+
+  expect_status 0 || return 1
+  expect_stdout_is "unchanged" || return 1
+  [ -e "$WORK/startfolder-during-walk" ] \
+    || fail "submodule/.git was not restored inside the existing folder before the walk"
+  expect_scene_is "$before" "$WORK/startfolder"
 }
 
 # CP-835: what the walk created stays where it is.
@@ -716,6 +763,29 @@ test_restored_leaf_replaced_by_link_or_folder() {
   expect_stdout_is "$(printf '%s\n%s' ".git/HEAD" ".git/HEAD/new")" || return 1
   expect_scene_plus "$before" "$WORK/leaffolder" "$(printf '%s\n%s\n%s' \
     "./repo/.git dir" "./repo/.git/HEAD dir" "$(empty_file_line ./repo/.git/HEAD/new)")" || return 1
+}
+
+# CP-835, CP-834: a restored folder the walk moved outside and replaced with a link to it. The
+# restored entries that were inside it now sit behind the link, under the same names; cleanup takes
+# out the link and never goes through it, so the folder outside still holds every one of them.
+test_restored_folder_replaced_by_link_is_not_followed() {
+  copy="$(archive_backed_copy repo folderlink)"
+  outside="$WORK/folderlink-outside"
+  mkdir -p "$WORK/folderlink-reference"
+  tar -xf "$ROOT/$FIXTURES/repo.git.tar" -C "$WORK/folderlink-reference"
+  reference="$(scene_of "$WORK/folderlink-reference/.git/refs")"
+  before="$(scene_of "$WORK/folderlink")"
+  make_cargo_stub "$WORK/stubs-folderlink" \
+    "mv \"\$last/.git/refs\" \"$outside\"; ln -s \"$outside\" \"\$last/.git/refs\"; echo 1"
+
+  run_read_only_with_stubs "$WORK/stubs-folderlink" "$copy"
+
+  expect_nonzero_status || return 1
+  expect_stdout_is "$(printf '%s\n%s\n%s\n%s' \
+    ".git/refs" ".git/refs/heads" ".git/refs/heads/main" ".git/refs/tags")" || return 1
+  [ "$(count_lines_with "$REMOVAL_LINE" "$ERR")" -eq 0 ] || fail "a cleanup diagnostic was printed: $ERR"
+  [ "$(scene_of "$outside")" = "$reference" ] || fail "cleanup went through the link: the folder outside lost entries"
+  expect_scene_is "$before" "$WORK/folderlink"
 }
 
 # CP-836 (3): a walk that failed, or made no call, still takes out what the restore laid down, and a
@@ -846,17 +916,22 @@ test_archive_absent_plain_restores_nothing() {
 
 # CP-836 (6): every signal the script can act on, at the restore, the walk and the teardown, ends
 # the run non-zero with no `unchanged` and no restored entry. A script that handled only INT, TERM
-# and HUP fails here on the rest.
+# and HUP fails here on the rest. The teardown is held twice: at the first removal in the fixture,
+# and at the removal of the scratch folder, where the run has not ended either, so a script that
+# had already printed `unchanged` by then fails.
 test_signal_during_restore_walk_and_teardown_cleans_up() {
   failures=""
-  for sig in $(actionable_signals); do
-    for boundary in restore walk teardown; do
-      if ! result="$(run_signal_scene "$boundary" "$sig")"; then
+  while IFS= read -r sig; do
+    [ -n "$sig" ] || continue
+    for boundary in restore walk teardown scratch; do
+      if ! result="$(run_signal_scene "$boundary" "$sig" < /dev/null)"; then
         failures="$failures$result
 "
       fi
     done
-  done
+  done <<EOF
+$(actionable_signals)
+EOF
   [ -z "$failures" ] || fail "$failures"
 }
 
