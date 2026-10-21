@@ -2,7 +2,7 @@
 
 **Status:** Settled
 **Owner:** Principal Architect
-**Version:** 59 — the close: the cycle-52 fold, § 2.1 confirmed in the owner's seat with two additions. QC-56 names `checks/tests/test_vm_refusal.sh`'s runner case as its check, says that the case and the command read no workflow file ending `.yaml`, and names `development-design` as that file's gate, which outlives the card's move; its sentence on the tree is re-measured at `ka-reader@8b93322`, where the tree meets both halves. § 10's row follows. No ADR is written, and no `QC` is added, renumbered or reused. Nothing is left for the owner, so the companion is removed and `Status:` is Settled — RN-70 (v58: the cycle-51 fold, §§ 3.1 – 3.3 answered in the owner's seat; § 2.1 drafted for the owner. `checks/gate.sh` is in the tree from `ka-reader@8b93322` and runs every suite, so the sentences that waited on it move. QC-25's hosted-log read selects, inside the workflow's `Test gate` step, the line after the control case's `ok` line, because that step now prints the shipped bundle's reading as well; runs on earlier commits keep the old selector. § 8's *Until the script lands* becomes *Until the card runs the script*, and QC-64, QC-65 and § 9's *Toolchain* passage follow; nothing the NFDR names still stands in front of the card's move. QC-64's two comparisons and § 9's suites comparison are held by `checks/tests/test_vm_refusal.sh`, a step of the gate, and the review gates' ground becomes that no run issues it at a change. § 9's suites are steps of `checks/gate.sh`, re-pinned at `ka-reader@8b93322`, still eleven, and § 10's preamble follows. QC-56 names the same suite's runner case as its check — drafted, awaiting the owner's confirm. No ADR is written, and no `QC` is added, renumbered or reused. One item awaits the owner, so `Status:` is Draft — RN-69)
+**Version:** 60 — the close: the cycle-53 fold, § 3.1 confirmed in the owner's seat with two additions. QC-2's walk-fixture sentence cites `checks/read-only.sh` pinned to `ka-reader@c268945` — the restore (`:L210-L252`, header `:L24-L29`), its removal once the verdict is taken (`:L31-L36`), the hashing (`:L19-L22`, `manifest()` `:L45-L65`) and its two runs (`:L368`, `:L389`) — in place of three unpinned locators that had moved; and both of QC-2's sentences drop the label "in-place restore", as the SDD's C-I3 did at v56 on the same facts. The claim does not move. No ADR is written, and no `QC` is added, renumbered or reused. Nothing is left for the owner, so the companion is removed and `Status:` is Settled — RN-71 (v59: the close: the cycle-52 fold, § 2.1 confirmed in the owner's seat with two additions. QC-56 names `checks/tests/test_vm_refusal.sh`'s runner case as its check, says that the case and the command read no workflow file ending `.yaml`, and names `development-design` as that file's gate, which outlives the card's move; its sentence on the tree is re-measured at `ka-reader@8b93322`, where the tree meets both halves. § 10's row follows. No ADR is written, and no `QC` is added, renumbered or reused. Nothing is left for the owner, so the companion is removed and `Status:` is Settled — RN-70)
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · PRD Settled · UXD Settled · DESIGN Settled · CONTENT Settled
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
@@ -98,10 +98,16 @@ new units while they were unbuilt.
   makes it a check; no command does today, which is why that half is a review gate and says so
   here. And a fixture that offers no entry a command can act on exercises nothing for that command;
   which fixture a command needs is its slice's own bar (`docs/SDD.md` § 6). **A walk fixture is
-  a folder the script's in-place restore builds whole** (`checks/read-only.sh:L73-L76`), and the
-  script hashes the entries under the fixture folder and nothing above it (`:L17-L20`, `:L84`), so
-  a scene whose Git directory lies outside the opened folder is not one: a wrong write there would
-  land outside the hash. `inside-a-repo`, `parent-of-two` and `linked-worktree` are such scenes,
+  a folder the script's restore builds whole** before the first hash (`restore()`,
+  `checks/read-only.sh:L210-L252`, its header `:L24-L29`, at `ka-reader@c268945`), and what the
+  restore lays down is removed once the verdict is taken (`:L31-L36`). The script hashes every entry
+  under the fixture folder and nothing above it (`:L19-L22`; `manifest()` at `:L45-L65`), once after
+  the restore (`:L368`) and once after the walk (`:L389`), so a scene whose Git directory lies
+  outside the opened folder is not one: a wrong write there would land outside the hash *(through
+  v59 this read "a folder the script's in-place restore builds whole (`checks/read-only.sh:L73-L76`),
+  and the script hashes the entries under the fixture folder and nothing above it (`:L17-L20`,
+  `:L84`)"; none of the three locators was pinned, and at `c268945` `:L73-L76` is the usage refusal —
+  `docs/trail/architecture/cycle-53.md` § 3.1; RN-71)*. `inside-a-repo`, `parent-of-two` and `linked-worktree` are such scenes,
   and they are proved by `cargo test --locked -p ka-reader-core --test root_finding` and
   `--test git_state` (layer 2), which snapshot each scene's whole root around the calls
   (`crates/ka-reader-core/tests/root_finding.rs:L38-L43`; `crates/ka-reader-core/tests/git_state.rs:L146-L155`).
@@ -113,7 +119,8 @@ new units while they were unbuilt.
   `ka-reader@799c3d6` — so this tail says the step is in the workflow and does not say it is green.
   The walk drops the Git answer (`checks/walk.rs:L288-L292`), which is why a case and not the walk
   holds it: in `--test git_state` (layer 2), the case at `crates/ka-reader-core/tests/git_state.rs:L787`
-  builds `submodule` as the script's in-place restore builds it, in a disposable scene of its own,
+  builds `submodule` as the script's restore builds it (the label read "in-place restore" through
+  v59 — RN-71), in a disposable scene of its own,
   and asserts `read_git`'s whole answer there — `root`, HEAD on `main` in the normal state, staged
   empty, and changed = {`submodule` modified, `README.md` untracked}. The same case is a layer-2
   no-write proof on the restored `submodule` beside the walk's: `read_git_over` snapshots the whole
@@ -6387,3 +6394,41 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   owner, so the companion is removed and `Status:` is Settled *(re: header `Version:` and `Status:`;
   § 8 QC-56; § 10 the QC-56 row; source: `docs/trail/architecture/cycle-52.md` § 2.1;
   `docs/trail/architecture/self_answer-54.md`; `ka-reader@8b93322`)*
+
+- **RN-71:** *(v60 — the close: the cycle-53 fold, § 3.1 confirmed with two additions)* **Intake.**
+  The companion on disk held one item, § 3.1, raised by the PM on 2026-10-21 (`ka-reader@060fc76`):
+  QC-2's three locators into `checks/read-only.sh` no longer named what they cite. A
+  `companion-self-answer` run answered it in the owner's seat on 2026-10-22 (`ka-reader@f6fd13e`; the
+  reasoning at `docs/trail/architecture/self_answer-55.md`). The file was clean in git at intake and
+  its one slot was filled, so it is consumed. It was copied whole to
+  `docs/trail/architecture/cycle-53.md` before this fold's first edit, and `cmp` found the two
+  identical. **Whose answer this is.** The owner's seat's, and it outranks every input. Neither
+  addition moves what QC-2 obliges. **§ 3.1 → QC-2, the locators.** The walk-fixture sentence's
+  three unpinned locators (`:L73-L76`, `:L17-L20`, `:L84`) are replaced by the set the answer names,
+  pinned to `ka-reader@c268945`, the merge that landed the restore change: `restore()` at
+  `:L210-L252` with its header `:L24-L29`; the removal once the verdict is taken, `:L31-L36`; the
+  hashing header `:L19-L22` and `manifest()` at `:L45-L65`; the two hashes at `:L368` and `:L389`.
+  These are the locators the SDD's C-I3 took at v56 on the same commit (`docs/trail/sdd/cycle-51.md`
+  § 5.1), so the two documents cite the script alike. The old words stand in a dated note in the
+  sentence. **Addition 2, the label.** "The script's in-place restore" stood twice in QC-2, in the
+  walk-fixture sentence and in the `git_state.rs:L787` sentence. The SDD dropped the label at v56
+  because the archive is now unpacked in scratch space and only the entries the fixture lacks are
+  copied in (`docs/SDD.md:L824-L829`, `:L2103`); QC-2 traces to C-I3, so it drops it in both places,
+  each with a dated note. **The claim stands.** The restore still builds the walk fixture whole before
+  the first hash, and a restore that fails exits before it (`:L366`), so a scene whose Git directory
+  lies outside the folder is still not a walk fixture. **Read at source for this run:**
+  `checks/read-only.sh` at `ka-reader@c268945`, lines `:L17-L66`, `:L205-L254` and `:L362-L392`; each
+  locator above names what the answer says it names. `git diff --stat c268945 HEAD -- . ':!docs'`
+  prints nothing at `HEAD` `ka-reader@f6fd13e`. `grep -n 'in-place restore\|read-only.sh:L'` finds no
+  other unpinned locator into the script and no other use of the label in this document outside the
+  dated notes, the header and this note. **What moved beneath this document.** Since v59 (`ka-reader@2baeecf`) the SDD moved to
+  v56 (`ka-reader@b5c8042`), re-saying C-I3's restore, which is this fold's ground; every input's
+  `Status:` line still reads Settled, so `Inputs read:` stands. **No candidate record.** The fold
+  re-pins and relabels one entry and gives up nothing, so it fails the first gate. No ADR is written,
+  edited or restatused, the index does not move, and no `QC` is added, renumbered or reused; § 10's
+  QC-2 row names no locator, so it does not move. **Known limits.** This run ran no gate and no
+  suite: the fold moves citations, not a check. It did not read the SRS, SDD or FDR in full; it read
+  the SDD passages the answer cites. **The companion.** Nothing is left for the owner, so the
+  companion is removed and `Status:` is Settled *(re: header `Version:`; § 1.1 QC-2; source:
+  `docs/trail/architecture/cycle-53.md` § 3.1; `docs/trail/architecture/self_answer-55.md`;
+  `ka-reader@c268945`)*
