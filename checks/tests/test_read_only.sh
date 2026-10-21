@@ -662,8 +662,8 @@ test_existing_start_entries_survive_with_kind_and_content() {
 }
 
 # CP-834, CP-833: a real folder at start where the archive also has a folder is kept, and so is what
-# it holds; the restore lays the archive's missing entries inside it for the walk, and takes them out
-# again. Nothing else in the suite has a start folder at an archive folder's place.
+# it holds; the restore lays the archive's missing entries inside it for the walk, and takes them
+# out again. Nothing else in the suite has a start folder at an archive folder's place.
 test_existing_folder_takes_restored_entries_and_keeps_its_own() {
   copy="$(archive_backed_copy submodule startfolder)"
   mkdir "$copy/submodule"

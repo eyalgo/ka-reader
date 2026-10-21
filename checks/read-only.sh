@@ -148,15 +148,31 @@ kill_tree() {
     children="$(pgrep -P "$1" 2> /dev/null || true)"
   fi
   kill "$1" 2> /dev/null || true
-  for child in $children; do
-    kill_tree "$child"
-  done
+  while IFS= read -r child; do
+    [ -z "$child" ] || kill_tree "$child"
+  done <<EOF
+$children
+EOF
 }
 
+# Stops every child this shell still has, each with everything under it. It asks `jobs -p` rather
+# than trusting $child_pid alone: a signal can land after a child starts and before run_child has
+# recorded its id, and `jobs -p` names the child from its start until it is waited for.
 stop_child() {
-  [ -n "$child_pid" ] || return 0
-  kill_tree "$child_pid"
-  wait "$child_pid" 2> /dev/null || true
+  local live pid
+  live="$(jobs -p)"
+  if [ -n "$live" ]; then
+    while IFS= read -r pid; do
+      kill_tree "$pid"
+    done <<EOF
+$live
+EOF
+    while IFS= read -r pid; do
+      wait "$pid" 2> /dev/null || true
+    done <<EOF
+$live
+EOF
+  fi
   child_pid=""
 }
 
@@ -302,17 +318,25 @@ remove_restored() {
 }
 
 # The one exit. It runs once, on every way the script ends after the arguments are checked. It
-# preserves a failing outcome, can turn a candidate success into a failure, and never the reverse:
-# stdout is printed here, after the removal, so `unchanged` is never printed over a tree left dirty.
+# preserves a failing outcome, can turn a candidate success into a failure, and never the reverse.
+# stdout is printed last, after the removal and after the scratch folder is gone, so `unchanged` is
+# never printed over a tree left dirty, nor before a signal that lands while teardown still runs.
+# `teardown` is set before the EXIT trap is dropped: a signal in between would otherwise exit with
+# neither the trap nor the handler's own way back into this function.
 finish() {
   local incoming=$? status
-  trap - EXIT
   teardown=1
+  trap - EXIT
   set +e
   status="$incoming"
   stop_child
   remove_restored
-  if [ "$incoming" -eq 0 ] && [ -z "$signal_status" ] && [ "$compared" -eq 1 ]; then
+  if [ -n "$work" ] && [ -d "$work" ]; then
+    chmod -R u+w "$work" 2> /dev/null
+    rm -rf "$work"
+  fi
+  [ "$status" -ne 0 ] || [ -z "$signal_status" ] || status="$signal_status"
+  if [ "$status" -eq 0 ] && [ "$compared" -eq 1 ]; then
     if [ -n "$changed" ]; then
       printf '%s\n' "$changed"
       status=1
@@ -320,20 +344,17 @@ finish() {
       echo "unchanged"
     fi
   fi
-  [ "$status" -ne 0 ] || [ -z "$signal_status" ] || status="$signal_status"
   [ "$status" -ne 0 ] || [ "$residual_count" -eq 0 ] || status=1
-  if [ -n "$work" ] && [ -d "$work" ]; then
-    chmod -R u+w "$work" 2> /dev/null
-    rm -rf "$work"
-  fi
   exit "$status"
 }
 
 # The guard is in place before the first fixture write: the finalizer, then the signals.
 trap finish EXIT
-for signal_name in $(actionable_signals); do
-  trap "on_signal $signal_name" "$signal_name" 2> /dev/null || true
-done
+while IFS= read -r signal_name; do
+  [ -z "$signal_name" ] || trap "on_signal $signal_name" "$signal_name" 2> /dev/null || true
+done <<EOF
+$(actionable_signals)
+EOF
 
 work="$(mktemp -d)" || {
   echo "$NAME: could not make a scratch folder" >&2
