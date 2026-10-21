@@ -5,12 +5,12 @@
 #
 # WHY THIS EXISTS
 #   checks/own-state-step.sh holds the rule the Own state step used to carry inline: run
-#   checks/own-state.sh, and give up on it after a fixed number of ticks. It adds no admission of its own
-#   and no line of its own except the one for a run that gave up. These cases run the REAL step script,
-#   never a copy of its logic, from a scene that stands in for the product root. The scene's
-#   checks/own-state.sh is a stand-in child that behaves as each case needs, except in
-#   test_real_child_refusal_off_vm, where it is a copy of the real script's bytes. Nothing here reads the
-#   machine's home.
+#   checks/own-state.sh, and give up on it after a fixed number of ticks. It adds no admission of
+#   its own and no line of its own except the one for a run that gave up. These cases run the REAL
+#   step script, never a copy of its logic, from a scene that stands in for the product root. The
+#   scene's checks/own-state.sh is a stand-in child that behaves as each case needs, except in
+#   test_real_child_refusal_off_vm, where it is a copy of the real script's bytes. Nothing here
+#   reads the machine's home.
 #   The technique is the shell packet's, minus its runner: this product has no Python, so the runner
 #   is this file (docs/nfdr.md § 9 names the product's toolchains).
 #
@@ -20,11 +20,12 @@
 #   or refuses by itself.
 #
 # THE CLOCK
-#   The step waits with `sleep 0.25` in one place, the foreground loop that counts ticks. The `sleep` on
-#   PATH here is a stand-in that returns at once and keeps the foreground and the child in step: tick 1
-#   returns only once the child has started (so a slow start cannot turn into a timeout), and a case can
-#   make a chosen tick return only once the child has finished, with the child finishing only after that
-#   tick has been counted. So time is fast and the outcome never depends on scheduling.
+#   The step waits with `sleep 0.25` in one place, the foreground loop that counts ticks. The
+#   `sleep` on PATH here is a stand-in that returns at once and keeps the foreground and the child
+#   in step: tick 1 returns only once the child has started (so a slow start cannot turn into a
+#   timeout), and a case can make a chosen tick return only once the child has finished, with the
+#   child finishing only after that tick has been counted. So time is fast and the
+#   outcome never depends on scheduling.
 #
 # WHY NO `set -e`
 #   A case that fails must not end the run before the remaining cases report. Each case returns its
@@ -69,8 +70,8 @@ fail() {
   return 1
 }
 
-# A fresh scene: the product root (cwd) holding checks/, a home, and a PATH of stand-ins ahead of the
-# ordinary tools. Sets SCENE and LOG.
+# A fresh scene: the product root (cwd) holding checks/, a home, and a PATH of stand-ins ahead of
+# the ordinary tools. Sets SCENE and LOG.
 new_scene() {
   # Each case runs in its own subshell, so the count restarts: a scene is cleared before it is made.
   SCENE_COUNT=$((SCENE_COUNT + 1))
@@ -111,8 +112,8 @@ EOF
   chmod +x "$SCENE/bin/sleep"
 }
 
-# The stand-in child, checks/own-state.sh in the scene. The body ($1) is what the case needs it to do;
-# it first records its own pid.
+# The stand-in child, checks/own-state.sh in the scene. The body ($1) is what the case needs it to
+# do; it first records its own pid.
 write_child() {
   {
     echo '#!/bin/bash'
@@ -123,8 +124,8 @@ write_child() {
   chmod +x "$SCENE/cwd/checks/own-state.sh"
 }
 
-# Runs the real step script from the scene's product root with a home of its own. Extra environment as
-# arguments. Sets STATUS, OUT and ERR.
+# Runs the real step script from the scene's product root with a home of its own. Extra environment
+# as arguments. Sets STATUS, OUT and ERR.
 run_step() {
   (
     cd "$SCENE/cwd" || exit 99
@@ -181,7 +182,8 @@ expect_nothing_left_running() {
   done
 }
 
-# A child that never finishes: it spawns a descendant doing the read, then blocks on a pipe nothing fills.
+# A child that never finishes: it spawns a descendant doing the read, then
+# blocks on a pipe nothing fills.
 hung_child() {
   write_child '( exec /bin/sleep 600 ) &
 echo "$!" >> "$S/descendants"
@@ -190,7 +192,8 @@ read -r _ < "$S/fifo"'
 
 # --- cases ---
 
-# CP-794: a child that succeeds: its stdout and status come through byte for byte, with no line added.
+# CP-794: a child that succeeds: its stdout and status come through
+# byte for byte, with no line added.
 test_child_success_is_forwarded() {
   new_scene
   write_child 'echo "own state holds"'
@@ -225,13 +228,14 @@ test_child_other_nonzero_status_is_forwarded() {
   [ -z "$ERR$OUT" ] || fail "expected no output. stdout: $OUT; stderr: $ERR"
 }
 
-# CP-794/CP-796: the real guarded child on physical-host stand-ins: only its own refusal line, exit 1, and
-# no line from the step - no wrapper refusal, no timeout.
+# CP-794/CP-796: the real guarded child on physical-host stand-ins: only its own refusal line, exit
+# 1, and no line from the step - no wrapper refusal, no timeout.
 test_real_child_refusal_off_vm() {
   new_scene
   cp "$REAL_OWN_STATE_SH" "$SCENE/cwd/checks/own-state.sh"
   vmr_install_standins "$SCENE/bin" "$SCENE/log" physical
-  # The recorded stand-ins for compile and probe tools would shadow `sleep`; the step needs the clock.
+  # The recorded stand-ins for compile and probe tools would shadow
+  # `sleep`; the step needs the clock.
   write_sleep
   echo 0 > "$SCENE/pid"
   run_step
@@ -242,8 +246,8 @@ test_real_child_refusal_off_vm() {
   expect_no_ci_line
 }
 
-# CP-794: the step runs checks/own-state.sh against the home it was itself given; it passes HOME through
-# and sets no other.
+# CP-794: the step runs checks/own-state.sh against the home it was itself given; it passes HOME
+# through and sets no other.
 test_child_reads_the_home_the_step_was_given() {
   new_scene
   write_child 'printf "%s\n" "${HOME-no home}"'
@@ -254,9 +258,10 @@ test_child_reads_the_home_the_step_was_given() {
   [ -z "$ERR" ] || fail "expected nothing on stderr, got: $ERR"
 }
 
-# CP-794/CP-796 (change_design.md § 3 C: the wrapper "does not inspect HOME to decide whether its child
-# runs"): with no HOME at all, the step still runs its child, so off a virtual machine the child's own
-# refusal is the step's only output — not a line of the step's, and not a failure of the step's own.
+# CP-794/CP-796 (change_design.md § 3 C: the wrapper "does not inspect HOME to decide whether its
+# child runs"): with no HOME at all, the step still runs its child, so off a virtual machine the
+# child's own refusal is the step's only output — not a line of the step's, and
+# not a failure of the step's own.
 test_no_home_still_runs_the_child() {
   new_scene
   cp "$REAL_OWN_STATE_SH" "$SCENE/cwd/checks/own-state.sh"
@@ -290,7 +295,8 @@ exit 4'
 }
 
 # CP-794: a child that never finishes is given up on after 240 ticks of 0.25 seconds, whatever the
-# workflow's environment or an inherited timer value says: the exact line (the home written out), exit 1.
+# workflow's environment or an inherited timer value says: the exact line
+# (the home written out), exit 1.
 test_hung_reader_times_out_at_240_ticks() {
   for value in none 3 1000; do
     new_scene
@@ -309,8 +315,8 @@ test_hung_reader_times_out_at_240_ticks() {
   done
 }
 
-# CP-794: a timeout stops the reader and what it spawned, and the shell adds no job-control diagnostic
-# (the timeout line is the whole of stderr).
+# CP-794: a timeout stops the reader and what it spawned, and the shell adds no job-control
+# diagnostic (the timeout line is the whole of stderr).
 test_timeout_stops_the_reader_and_its_descendants() {
   new_scene
   hung_child
@@ -322,9 +328,9 @@ test_timeout_stops_the_reader_and_its_descendants() {
   expect_nothing_left_running
 }
 
-# CP-794: a child that finishes before the bound is never cleaned up after: what it left running is left
-# running, which is what no termination attempt looks like from outside. (The child spawns a detached wait
-# of its own, finishes, and that wait must still be alive when the step has returned.)
+# CP-794: a child that finishes before the bound is never cleaned up after: what it left running is
+# left running, which is what no termination attempt looks like from outside. (The child spawns a
+# detached wait of its own, finishes, and that wait must still be alive when the step has returned.)
 test_completion_before_the_bound_never_enters_cleanup() {
   new_scene
   write_child '( exec /bin/sleep 30 ) &

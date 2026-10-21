@@ -1,44 +1,54 @@
 #!/usr/bin/env bash
-# Version: 1.0.0 — first version: the refusal assertion the six guarded scripts' cases share (NFDR QC-65)
+# Version: 1.0.0 — first version: the refusal assertion the six guarded
+#   scripts' cases share (NFDR QC-65)
 #
-# checks/tests/support/vm_refusal.sh — SOURCED, never run. The one place a case asserts that a guarded
-# script refuses on a host that does not read as a macOS virtual machine.
+# checks/tests/support/vm_refusal.sh — SOURCED, never run. The one place a case asserts that a
+# guarded script refuses on a host that does not read as a macOS virtual machine.
 #
 # WHY THIS EXISTS
-#   Six scripts refuse the same way (docs/nfdr.md QC-65), and each needs a case that goes red when its
-#   refusal is removed. One assertion, written once, is what lets that case be pointed at the real
-#   script and, unchanged, at a copy with only its admission removed (the mutation run the change's
-#   review notes record). It lives under support/, outside the top-level checks/tests/*.sh set, so no
-#   suite loop and no workflow step mistakes it for a suite.
-#   It sets no shell option: a sourced file must not change the options of the suite that sources it.
+#   Six scripts refuse the same way (docs/nfdr.md QC-65), and each needs a case that goes red when
+#   its refusal is removed. One assertion, written once, is what lets that case be pointed at the
+#   real script and, unchanged, at a copy with only its admission removed (the mutation run the
+#   change's review notes record). It lives under support/, outside the top-level checks/tests/*.sh
+#   set, so no suite loop and no workflow step mistakes it for a suite.
+#   It sets no shell option: a sourced file must not change the
+#   options of the suite that sources it.
 #
 # USAGE
 #   VMR_TMP=<a directory the caller owns and removes>     set before any call
 #   source checks/tests/support/vm_refusal.sh
-#   VMR_ENV=(NAME=value ...)                              extra environment for the next calls (optional)
-#   VMR_SCENE=<a directory the subject must leave unchanged>   (optional; the run's own cwd and home are
+#   VMR_ENV=(NAME=value ...)                              extra environment for the next calls
+#   (optional) VMR_SCENE=<a directory the subject must leave unchanged>   (optional;
+#   the run's own cwd and home are
 #                                                         always checked as well)
-#   VMR_HOME_FILES="<path> ..."                           files to create under the run's home first (optional)
-#   vmr_assert_refuses <reading> <subject> <bare name> [args...]
-#   vmr_assert_refuses_all <subject> <bare name> [args...]     every refusing reading, one after another
-#   vmr_assert_no_work_traced <subject> <bare name> [args...]  the traced run: nothing before the refusal
-#   vmr_assert_refusal <subject> <bare name> [args...]         the two above
-#   vmr_run_on <reading> <subject> [args...]                   one run on any reading, `admit` included; leaves
-#                                                              vmr_status, $vmr_case/stdout and $vmr_case/stderr
-#   vmr_install_admission <bin dir>                            only the admitting uname and sysctl, for a case
-#                                                              that builds the rest of its own stand-ins
+#   VMR_HOME_FILES="<path> ..."                           files to create under the run's home first
+#   (optional) vmr_assert_refuses <reading> <subject> <bare name> [args...]
+#   vmr_assert_refuses_all <subject> <bare name> [args...]     every refusing reading, one after
+#   another vmr_assert_no_work_traced <subject> <bare name> [args...]  the traced run: nothing
+#   before the refusal vmr_assert_refusal <subject> <bare name> [args...]         the two above
+#   vmr_run_on <reading> <subject> [args...]                   one run on any
+#   reading, `admit` included; leaves
+#                                                              vmr_status,
+#                                                              $vmr_case/stdout and $vmr_case/stderr
+#   vmr_install_admission <bin dir>                            only the
+#   admitting uname and sysctl, for a case
+#                                                              that builds the rest
+#                                                              of its own stand-ins
 #   vmr_install_standins <bin dir> <log dir> <reading>         every stand-in, for the reading
-#   Each assertion prints what failed on stdout and returns 1; it returns 0 only when every check holds.
+#   Each assertion prints what failed on stdout and returns 1; it returns
+#   0 only when every check holds.
 #
 # THE READINGS
-#   The subject finds `uname` and `sysctl` through PATH, as it would on any host, and is given a PATH whose
-#   first directory holds stand-ins and whose other directory holds links to ordinary tools only. The
-#   subject is never told which reading it has: there is no variable, flag or argument for it to read.
-#   A "missing" reading is a PATH with no such tool, not a stand-in that says so.
+#   The subject finds `uname` and `sysctl` through PATH, as it would on any host, and is given a
+#   PATH whose first directory holds stand-ins and whose other directory holds links to ordinary
+#   tools only. The subject is never told which reading it has: there is no variable, flag or
+#   argument for it to read. A "missing" reading is a PATH with no such
+#   tool, not a stand-in that says so.
 #
 # WHAT A REFUSAL IS (docs/nfdr.md QC-65; change_spec CP-797, CP-798)
-#   stdout empty; stderr exactly one line, `<name>: refused: …`, ended by one newline; exit 1; no `open`
-#   call and no call of a compilation, probing, fixture-reading or waiting tool; the scene unchanged.
+#   stdout empty; stderr exactly one line, `<name>: refused: …`, ended by one newline; exit 1; no
+#   `open` call and no call of a compilation, probing, fixture-reading or
+#   waiting tool; the scene unchanged.
 
 if [ "${BASH_SOURCE[0]}" = "$0" ]; then
   echo "vm_refusal.sh: sourced by a suite, never run" >&2
@@ -49,8 +59,8 @@ VMR_ENV=()
 VMR_HOME_FILES=""
 VMR_CASES=0
 
-# Ordinary tools a script may reach once admitted. `uname` and `sysctl` are not among them: a reading
-# is the stand-in's, or it is missing.
+# Ordinary tools a script may reach once admitted. `uname` and `sysctl` are not among them: a
+# reading is the stand-in's, or it is missing.
 VMR_ORDINARY_TOOLS="bash env sh awk sed cat cut tr sort uniq comm find xargs mktemp rm mkdir rmdir dirname basename cp mv ls head tail wc grep expr date kill chmod ln cmp readlink touch stat cksum pwd"
 # Tools that compile, probe, read a fixture or wait. A stand-in fails and records the call.
 VMR_MARKER_TOOLS="swiftc rustc cargo codesign sample plutil ps ditto xcrun sleep git tar"
@@ -127,7 +137,8 @@ vmr_install_standins() {
   done
 }
 
-# The admitting reading alone (Darwin, 1) into directory $1, ahead of the real tools on a case's PATH.
+# The admitting reading alone (Darwin, 1) into directory $1, ahead of
+# the real tools on a case's PATH.
 vmr_install_admission() {
   mkdir -p "$1"
   vmr_write_reader "$1/uname" "Darwin\\n" "" 0
@@ -184,7 +195,8 @@ vmr_run() {
   vmr_status=$?
 }
 
-# Checks the run's marker logs and the scene against the snapshots taken before it. Prints each failure.
+# Checks the run's marker logs and the scene against the snapshots taken
+# before it. Prints each failure.
 vmr_check_no_work() {
   vmr_ok=0
   if [ -s "$vmr_case/log/open" ]; then
@@ -261,13 +273,15 @@ vmr_assert_refuses_all() {
   return "$all_ok"
 }
 
-# A trace line is allowed before the refusal only if it is the shell's option setup, one of the two host
-# observations, the capture of their values, a string comparison of those values, or the refusal itself.
+# A trace line is allowed before the refusal only if it is the shell's option setup, one of the two
+# host observations, the capture of their values, a string comparison of those
+# values, or the refusal itself.
 VMR_ALLOWED_TRACE='^\++ (set -[a-z]+|uname( |$)|sysctl( |$)|host_[a-z_]+=|(\[|'\''\['\'') [^-]|echo |exit 1$)'
 
 # The traced run: the subject under `bash -x` on the physical reading. Nothing may run before the
-# refusal except the allowed lines, so no file predicate, root or fixture discovery, directory change,
-# temporary directory or case body is reached. The trace is a file apart from the output proof.
+# refusal except the allowed lines, so no file predicate, root or fixture discovery, directory
+# change, temporary directory or case body is reached. The trace is a
+# file apart from the output proof.
 vmr_assert_no_work_traced() {
   subject="$1"
   name="$2"

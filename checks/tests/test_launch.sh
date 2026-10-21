@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
-# Version: 1.0.0 — first version: the tests of checks/launch.sh, the Launch the built bundle step's script
+# Version: 1.0.0 — first version: the tests of checks/launch.sh, the Launch
+#   the built bundle step's script
 #
 # checks/tests/test_launch.sh — the tests of checks/launch.sh.
 #
 # WHY THIS EXISTS
-#   checks/launch.sh holds the rule the Launch the built bundle step used to carry inline: open the built
-#   bundle once, then wait, for a fixed number of ticks, for the app's log to appear. A rule in a
-#   workflow could not be run by a person or proved by a case; in a script it is both. These cases run
-#   the REAL script, never a copy of its logic, from a scene that stands in for the product root, with a
-#   recording `open`, a stand-in `sleep` and a temporary home. Nothing here launches a bundle or reads
-#   the machine's home.
+#   checks/launch.sh holds the rule the Launch the built bundle step used to carry inline: open the
+#   built bundle once, then wait, for a fixed number of ticks, for the app's log to appear. A rule
+#   in a workflow could not be run by a person or proved by a case; in a script it is both. These
+#   cases run the REAL script, never a copy of its logic, from a scene that stands in for the
+#   product root, with a recording `open`, a stand-in `sleep` and a temporary home. Nothing here
+#   launches a bundle or reads the machine's home.
 #   The technique is the shell packet's, minus its runner: this product has no Python, so the runner
 #   is this file (docs/nfdr.md § 9 names the product's toolchains).
 #
@@ -21,13 +22,14 @@
 #
 # THE CLOCK
 #   The script waits with `sleep 0.25` in two places: the foreground loop that counts ticks, and the
-#   child that polls for the log. The `sleep` on PATH here is a stand-in that returns at once but keeps
-#   the two in step: it tells them apart by its parent (the foreground's is the script itself, whose pid
-#   `open` records), numbers the foreground ticks, and lets the child's n-th poll happen only after the
-#   foreground's n-th tick, and the foreground's n-th tick only after the child's (n-1)-th poll. So time
-#   is fast, and a child that is slow to start cannot turn into a timeout. A case can create the log at
-#   a chosen foreground tick, hold the child's first wait on a pipe that never fills (a file observation
-#   that never returns), or make the last tick wait for the child to finish.
+#   child that polls for the log. The `sleep` on PATH here is a stand-in that returns at once but
+#   keeps the two in step: it tells them apart by its parent (the foreground's is the script itself,
+#   whose pid `open` records), numbers the foreground ticks, and lets the child's n-th poll happen
+#   only after the foreground's n-th tick, and the foreground's n-th tick only after the child's
+#   (n-1)-th poll. So time is fast, and a child that is slow to start cannot turn into a timeout. A
+#   case can create the log at a chosen foreground tick, hold the child's first wait on a pipe that
+#   never fills (a file observation that never returns), or make the last
+#   tick wait for the child to finish.
 #
 # WHY NO `set -e`
 #   A case that fails must not end the run before the remaining cases report. Each case returns its
@@ -202,7 +204,8 @@ expect_quarter_second_ticks() {
   [ -z "$odd" ] || fail "a foreground wait was not 0.25 seconds: $odd"
 }
 
-# CP-793: the child looks for the log every 0.25 seconds — every wait it made between two looks was 0.25.
+# CP-793: the child looks for the log every 0.25 seconds — every wait it
+# made between two looks was 0.25.
 expect_quarter_second_polls() {
   [ -s "$SCENE/rd_args" ] || fail "the child never waited between two looks, so nothing was checked" || return 1
   odd="$(grep -v -x '0.25' "$SCENE/rd_args" || true)"
@@ -286,8 +289,8 @@ test_log_created_at_tick_12_succeeds() {
   [ -f "$LOG" ] || fail "the stand-in clock never created the log"
 }
 
-# CP-793: a child that finishes at the last permitted observation is a success, not a timeout. The last
-# tick returns only once the child has finished, so the outcome does not depend on scheduling.
+# CP-793: a child that finishes at the last permitted observation is a success, not a timeout. The
+# last tick returns only once the child has finished, so the outcome does not depend on scheduling.
 test_reader_completing_on_the_last_tick_succeeds() {
   new_scene
   echo "$TICKS" > "$SCENE/create_at"
@@ -311,7 +314,8 @@ test_conflicting_inherited_timer_values_change_nothing() {
   done
 }
 
-# CP-793: no log in 240 ticks of 0.25 seconds: the exact line, with the home written out, and exit 1.
+# CP-793: no log in 240 ticks of 0.25 seconds: the exact line, with
+# the home written out, and exit 1.
 test_no_log_times_out_at_240_ticks() {
   new_scene
   run_launch
@@ -323,8 +327,9 @@ test_no_log_times_out_at_240_ticks() {
   expect_quarter_second_polls
 }
 
-# CP-793: a file observation that never returns does not stop the count. The child's first wait blocks on
-# a pipe nothing writes, and the foreground still reaches the bound, with the same line and exit 1.
+# CP-793: a file observation that never returns does not stop the count. The child's first wait
+# blocks on a pipe nothing writes, and the foreground still reaches the bound,
+# with the same line and exit 1.
 test_blocked_file_observation_times_out() {
   new_scene
   rm -f "$SCENE/lockstep"

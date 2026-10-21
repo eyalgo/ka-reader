@@ -1,23 +1,25 @@
 #!/usr/bin/env bash
-# Version: 1.1.0 — the bridge serves Git — libgit2 machine-config switch, read_git export, Git item wire, nm transport read in view.sh
-# Version: 1.0.0 — first version: drives the real checks/view.sh over synthetic product roots and the real tree
+# Version: 1.1.0 — the bridge serves Git — libgit2 machine-config switch, read_git export, Git item
+#   wire, nm transport read in view.sh
+# Version: 1.0.0 — first version: drives the real checks/view.sh over synthetic
+#   product roots and the real tree
 #
 # checks/tests/test_view.sh — the tests of checks/view.sh.
 #
 # WHY THIS EXISTS
 #   checks/view.sh is the proof that the Swift shell holds no I/O of its own, so a bug in it is a
-#   shell nobody is watching. These cases run the real script — never a copy of its logic. The script
-#   derives the product root from its own location, so each synthetic case copies the script into a
-#   temporary root that holds a synthetic ka-reader-mac/Sources and a stand-in executable; `otool` is
-#   stood in on PATH, the one seam the script has.
+#   shell nobody is watching. These cases run the real script — never a copy of its logic. The
+#   script derives the product root from its own location, so each synthetic case copies the script
+#   into a temporary root that holds a synthetic ka-reader-mac/Sources and a stand-in executable;
+#   `otool` is stood in on PATH, the one seam the script has.
 #   The technique is the shell packet's, minus its runner: this product has no Python, so the runner
 #   is this file, as in checks/tests/test_bundle.sh.
 #
 # USAGE
 #   checks/tests/test_view.sh
-#   The real-tree case reads target/release/bundle/macos/KA-Reader.app, so run ka-reader-mac/assemble.sh
-#   first. A bundle that is absent FAILS that case with a stated message and never skips it: a skip
-#   would let CI conclude green having proved nothing.
+#   The real-tree case reads target/release/bundle/macos/KA-Reader.app, so run
+#   ka-reader-mac/assemble.sh first. A bundle that is absent FAILS that case with a stated message
+#   and never skips it: a skip would let CI conclude green having proved nothing.
 #   KA_READER_TEST_ONLY=<case> runs one case.
 #
 # WHY NO `set -e`
@@ -110,8 +112,8 @@ make_otool() {
   chmod +x "$1/otool"
 }
 
-# A stand-in `nm` in directory $1. $2 is the text it prints, in `nm`'s own shape: a defined symbol is
-# `<address> <type letter> <name>`, an undefined one is the type letter U and the name.
+# A stand-in `nm` in directory $1. $2 is the text it prints, in `nm`'s own shape: a defined symbol
+# is `<address> <type letter> <name>`, an undefined one is the type letter U and the name.
 make_nm() {
   mkdir -p "$1"
   {
@@ -185,9 +187,9 @@ expect_stdout_lacks() {
   esac
 }
 
-# A finding line on stderr: `<file>:<line>: <name>`, where <file> is relative to the product root and
-# the rest of the line names the refused thing. $1 is the file under ka-reader-mac/, $2 the line, $3
-# the name.
+# A finding line on stderr: `<file>:<line>: <name>`, where <file> is relative to the product root
+# and the rest of the line names the refused thing. $1 is the file under ka-reader-mac/, $2 the
+# line, $3 the name.
 expect_finding() {
   found=0
   while IFS= read -r line; do
@@ -340,8 +342,8 @@ test_import_allowlist() {
   done
   [ -z "$bad" ] || fail "imports not reported:$bad"
   expect_source_clean allowed Sources/Shell/I.swift 'import Shell\nimport Foundation\nimport AppKit\n@testable import Surfaces\n' || return 1
-  # The allowed set is read from the tree when the script runs: a new directory under Sources/ admits
-  # `import` of its name.
+  # The allowed set is read from the tree when the script runs: a new directory under Sources/
+  # admits `import` of its name.
   extra_root="$(new_root import-extra)"
   put_file "$extra_root" "Sources/Shell/I.swift" 'import Extra\n'
   run_view "$extra_root"
@@ -468,9 +470,9 @@ test_link_list_names_webkit() {
   expect_status 0 || return 1
 }
 
-# A fat binary: otool -L prints "<path> (architecture <arch>):" before each slice's list. Those lines
-# are not install names, and a slice after the first is read like the first (CP-137: any linked
-# library's install name).
+# A fat binary: otool -L prints "<path> (architecture <arch>):" before each slice's list. Those
+# lines are not install names, and a slice after the first is read like the first (CP-137: any
+# linked library's install name).
 test_fat_binary_link_list() {
   fat_root="$(new_root link-fat)"
   mkdir -p "$WORK/otool-fat"
@@ -561,8 +563,8 @@ test_pass_line_on_stdout_findings_on_stderr() {
   [ -z "$STDOUT" ] || fail "expected no stdout on a red run, got: $STDOUT"
 }
 
-# A run with the stand-in `nm` printing $2, beside the clean `otool`. Each call gets a stub folder of
-# its own, named by $3.
+# A run with the stand-in `nm` printing $2, beside the clean `otool`. Each call gets a stub folder
+# of its own, named by $3.
 run_view_with_symbols() {
   symbols_root="$(new_root "sym-$3")"
   make_otool "$WORK/stubs-$3" "$CLEAN_LINKS"
@@ -579,7 +581,8 @@ test_defined_git_smart_subtransport_symbol_is_red() {
   expect_stdout_lacks "nothing found" || return 1
 }
 
-# An undefined import of a network call is a finding, from a list with no defined subtransport symbol.
+# An undefined import of a network call is a finding, from a list with
+# no defined subtransport symbol.
 test_undefined_connect_import_is_red() {
   run_view_with_symbols x "$CLEAN_SYMBOLS
                  U _connect" connect
@@ -640,8 +643,8 @@ test_a_clean_symbol_list_passes() {
   run_view_with_symbols x "$CLEAN_SYMBOLS" clean
   expect_status 0 || return 1
   [ -z "$STDERR" ] || fail "expected empty stderr on a clean list, got: $STDERR"
-  # A name that only contains a refused one is not that call, and a defined symbol of the same name as
-  # a refused import (an executable may define its own) is not an import.
+  # A name that only contains a refused one is not that call, and a defined symbol of the same name
+  # as a refused import (an executable may define its own) is not an import.
   run_view_with_symbols x "$CLEAN_SYMBOLS
                  U _connectx_like
                  U _sockets
@@ -649,7 +652,8 @@ test_a_clean_symbol_list_passes() {
   expect_status 0 || return 1
 }
 
-# Both reads always run before the verdict, so one run reports the link finding and the transport one.
+# Both reads always run before the verdict, so one run reports the link
+# finding and the transport one.
 test_both_reads_run_before_the_verdict() {
   both_reads_root="$(new_root both-reads)"
   make_otool "$WORK/stubs-both-reads" "/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1351.0.0)

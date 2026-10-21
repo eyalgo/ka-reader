@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Version: 1.1.0 — the named-read cases reject the other five names, the deterministic-output case
 # holds the complete printed order, and a whole-run case holds the full-run reporting
-# Version: 1.0.1 — CI green again: scene-building git runs no background maintenance, Swift builds with Xcode 16.2, and the entry-points suite reads metadata with plutil -extract
+# Version: 1.0.1 — CI green again: scene-building git runs no background maintenance, Swift builds
+#   with Xcode 16.2, and the entry-points suite reads metadata with plutil -extract
 # Version: 1.0.0 — first version: drives the real checks/entry-points.sh with every read, list and
 # resolution fault planted in a temporary copy
 #

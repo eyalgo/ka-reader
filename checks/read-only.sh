@@ -3,7 +3,8 @@
 #   every exit
 # Version: 1.0.0 — first version: proves a walk of a fixture folder changed nothing in it
 #
-# checks/read-only.sh <fixture> — hash a fixture, walk it with ka-reader-core's driver, hash it again.
+# checks/read-only.sh <fixture> — hash a fixture, walk it with
+# ka-reader-core's driver, hash it again.
 #
 # WHY THIS EXISTS
 #   CP-35 and CP-36: the product must only ever read. The proof is outside the product — this script

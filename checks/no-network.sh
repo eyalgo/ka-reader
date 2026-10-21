@@ -1,44 +1,47 @@
 #!/usr/bin/env bash
-# Version: 1.1.0 — the Tauri build leaves — native bundle assembled, bundle.sh and no-network.sh read it, CI builds it, boundaries and README pinned
-# Version: 1.0.0 — first version: both dependency trees compared, by name, against the reviewed checks/deps.allow
+# Version: 1.1.0 — the Tauri build leaves — native bundle assembled, bundle.sh and no-network.sh
+#   read it, CI builds it, boundaries and README pinned
+# Version: 1.0.0 — first version: both dependency trees compared, by name, against
+#   the reviewed checks/deps.allow
 #
 # checks/no-network.sh — proves the product is built from nothing nobody reviewed.
 #
 # WHY THIS EXISTS
-#   The product promises it never reaches the network (docs/SDD.md § 4 C-R6, C-I3; NFDR QC-3, QC-26).
-#   What it is built from is what could break that promise. The Rust half is compared by name: the
-#   names `cargo tree` reports against checks/deps.allow, the one list a reviewer has read. A name in
-#   the tree that the list does not hold fails; so does a name on the list that the tree no longer
-#   holds, so the list cannot go stale unnoticed. The Swift half is a claim of none: the package
-#   declares no dependency, and no resolution file exists, so there is nothing to review.
+#   The product promises it never reaches the network (docs/SDD.md § 4 C-R6, C-I3; NFDR QC-3,
+#   QC-26). What it is built from is what could break that promise. The Rust half is compared by
+#   name: the names `cargo tree` reports against checks/deps.allow, the one list a reviewer has
+#   read. A name in the tree that the list does not hold fails; so does a name on the list that the
+#   tree no longer holds, so the list cannot go stale unnoticed. The Swift half is a claim of none:
+#   the package declares no dependency, and no resolution file exists,
+#   so there is nothing to review.
 #
 # USAGE
 #   checks/no-network.sh
 #   Exit 0 when the cargo name set equals the `cargo:` section of checks/deps.allow and the Swift
-#   package declares no dependency and holds no Package.resolved, printing one line that names counts
-#   and no dependency. Otherwise non-zero, naming each differing cargo name and its side, and the
-#   Swift manifest or the Package.resolved path at fault.
+#   package declares no dependency and holds no Package.resolved, printing one line that names
+#   counts and no dependency. Otherwise non-zero, naming each differing cargo name and its side, and
+#   the Swift manifest or the Package.resolved path at fault.
 #
 # THE CARGO SET DOES NOT DEPEND ON THE MACHINE
-#   Both Apple-Darwin triples are named on the command line, so the set is the union Cargo.lock fixes
-#   and not whatever the running CPU resolves (CP-50, by construction). It is a superset of what the
-#   bundle contains (dev and build dependencies), which is the reading under which both C-R6 and QC-26
-#   hold.
+#   Both Apple-Darwin triples are named on the command line, so the set is the union Cargo.lock
+#   fixes and not whatever the running CPU resolves (CP-50, by construction). It is a superset of
+#   what the bundle contains (dev and build dependencies), which is the reading under which both
+#   C-R6 and QC-26 hold.
 #
 # THE SWIFT HALF READS WHAT THE TOOLCHAIN EVALUATES
-#   `swift package dump-package` prints the manifest as the toolchain reads it, so a dependency in any
-#   form a manifest can declare one shows up, which a search of the manifest's text would not promise.
-#   Two things fail: a non-empty top-level `dependencies` array, and any target carrying a `url` (a
-#   remote binary target is a download the array does not show; a binary target over a local path is
-#   not, and stays admitted). The dump is read with plutil, which ships with macOS and reads JSON.
-#   Unreadable is red: `swift` or `plutil` absent, `swift` failing, or a dump that cannot be read each
-#   exit non-zero, and none can pass. Any file named Package.resolved under the package directory, at
-#   any depth, fails too. `dump-package` writes .build/ into the package; that directory is ignored
-#   and inside the scan, and a resolve that happened there is a finding.
+#   `swift package dump-package` prints the manifest as the toolchain reads it, so a dependency in
+#   any form a manifest can declare one shows up, which a search of the manifest's text would not
+#   promise. Two things fail: a non-empty top-level `dependencies` array, and any target carrying a
+#   `url` (a remote binary target is a download the array does not show; a binary target over a
+#   local path is not, and stays admitted). The dump is read with plutil, which ships with macOS and
+#   reads JSON. Unreadable is red: `swift` or `plutil` absent, `swift` failing, or a dump that
+#   cannot be read each exit non-zero, and none can pass. Any file named Package.resolved under the
+#   package directory, at any depth, fails too. `dump-package` writes .build/ into the package; that
+#   directory is ignored and inside the scan, and a resolve that happened there is a finding.
 #
 # `cargo` and `swift` are found through PATH so a test can stand a tree in for the real one.
-# NO_NETWORK_ALLOW_FILE overrides the list's path and NO_NETWORK_SWIFT_PACKAGE_DIR the Swift package's
-# directory (ka-reader-mac under the product root), for the same reason.
+# NO_NETWORK_ALLOW_FILE overrides the list's path and NO_NETWORK_SWIFT_PACKAGE_DIR the Swift
+# package's directory (ka-reader-mac under the product root), for the same reason.
 
 set -euo pipefail
 
@@ -47,8 +50,8 @@ die() { echo "no-network.sh: $*" >&2; exit 1; }
 root="$(cd "$(dirname "$0")/.." && pwd -P)"
 allow_file="${NO_NETWORK_ALLOW_FILE:-$root/checks/deps.allow}"
 [ -f "$allow_file" ] || die "the allowlist is missing: $allow_file"
-# The Swift package's directory. By default ka-reader-mac under the product root, written as such in every
-# message; under the override, the override's own path.
+# The Swift package's directory. By default ka-reader-mac under the product root, written as such in
+# every message; under the override, the override's own path.
 swift_package_dir="${NO_NETWORK_SWIFT_PACKAGE_DIR:-$root/ka-reader-mac}"
 swift_package_name="${NO_NETWORK_SWIFT_PACKAGE_DIR:-ka-reader-mac}"
 
@@ -57,8 +60,8 @@ trap 'rm -rf "$work"' EXIT
 
 # --- the allowlist: one section ---
 
-# A name outside a section, or a section that is not `cargo`, is a malformed list: read as written it
-# would silently drop names from the comparison. A `pnpm:` section left behind is one.
+# A name outside a section, or a section that is not `cargo`, is a malformed list: read as written
+# it would silently drop names from the comparison. A `pnpm:` section left behind is one.
 malformed="$(awk '
   /^[[:space:]]*(#|$)/ { next }
   /^[^[:space:]#][^[:space:]]*:[[:space:]]*$/ {
@@ -84,8 +87,8 @@ cd "$root"
 cargo tree --workspace --locked --offline --prefix none \
   --target aarch64-apple-darwin --target x86_64-apple-darwin > "$work/cargo.raw" 2> "$work/cargo.err" \
   || die "cargo tree failed: $(cat "$work/cargo.err")"
-# The name is the first field; the version and cargo's `(*)` dedup marker are dropped, and so are the
-# blank lines between workspace members.
+# The name is the first field; the version and cargo's `(*)` dedup marker are dropped, and so are
+# the blank lines between workspace members.
 awk 'NF && $1 !~ /^\[/ { print $1 }' "$work/cargo.raw" | LC_ALL=C sort -u > "$work/cargo.tree"
 [ -s "$work/cargo.tree" ] || die "cargo tree reported no package"
 
@@ -128,9 +131,9 @@ else
 "
   target_index=0
   while [ "$target_index" -lt "$swift_target_count" ]; do
-    # The key's type, not its value: a null `url` is no download, and a `url` of any other type is one.
-    # plutil names a JSON null's type `(any)`, parentheses included; the bare spellings are kept so a
-    # plutil that drops them still reads a null as one.
+    # The key's type, not its value: a null `url` is no download, and a `url` of any other type is
+    # one. plutil names a JSON null's type `(any)`, parentheses included; the bare spellings are
+    # kept so a plutil that drops them still reads a null as one.
     if url_type="$(plutil -type "targets.$target_index.url" "$work/swift.dump" 2> /dev/null)"; then
       case "$url_type" in
         "(any)" | any | null) ;;
@@ -145,7 +148,8 @@ else
   done
 fi
 
-# Any depth, `.build/` included. A missing directory is already a failure above, so its find is silent.
+# Any depth, `.build/` included. A missing directory is already a
+# failure above, so its find is silent.
 resolved_files="$(find "$swift_package_dir" -name Package.resolved 2> /dev/null | LC_ALL=C sort || true)"
 resolved_count=0
 while IFS= read -r resolved; do

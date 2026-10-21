@@ -1,70 +1,76 @@
 #!/usr/bin/env bash
 # Version: 1.1.0 — the launch steps refuse off a VM
-# Version: 1.0.0 — first version: the renderer gate — the bundle is launched and its main thread observed at the Open panel inside the shell's launch frames, then its own idle-shell control is observed not to be
+# Version: 1.0.0 — first version: the renderer gate — the bundle is launched and its main thread
+#   observed at the Open panel inside the shell's launch frames, then its own
+#   idle-shell control is observed not to be
 #
 # checks/renderer.sh <path-to-app> — proves the shipped KA-Reader.app reaches the Open panel.
 #
 # WHY THIS EXISTS
-#   The wall proof (checks/bundle.sh) shows the launched process is sandboxed. It cannot show that the
-#   shell then reaches the folder-choosing panel, which is the shell's first and only unconditional
-#   act (ka-reader-mac/Sources/Shell/LaunchFlow.swift). A shell that never reaches the panel is an empty
-#   window, and every other check still passes on it. This launches the built bundle the way a user
-#   does and reads the operating system's own view of the process: a thread sample of the main thread.
-#   It sends no input. It reads nothing the product writes, and nothing in the product exists for
-#   this gate: the panel's modal run is what the shell does anyway.
+#   The wall proof (checks/bundle.sh) shows the launched process is sandboxed. It cannot show that
+#   the shell then reaches the folder-choosing panel, which is the shell's first and only
+#   unconditional act (ka-reader-mac/Sources/Shell/LaunchFlow.swift). A shell that never reaches the
+#   panel is an empty window, and every other check still passes on it. This launches the built
+#   bundle the way a user does and reads the operating system's own view of the process: a thread
+#   sample of the main thread. It sends no input. It reads nothing the product writes, and nothing
+#   in the product exists for this gate: the panel's modal run is what the shell does anyway.
 #
 # ADMISSION
-#   The first thing the script does is ask the host whether it is a macOS virtual machine (`uname -s`
-#   Darwin and `sysctl -n kern.hv_vmm_present` 1, both succeeding). On any other reading it prints one
-#   line on stderr, nothing on stdout, and exits 1, before it reads an argument, a path or a fixture,
-#   compiles the control or launches anything (docs/nfdr.md QC-65). Nothing it is given turns this off.
+#   The first thing the script does is ask the host whether it is a macOS virtual machine
+#   (`uname -s` Darwin and `sysctl -n kern.hv_vmm_present` 1, both succeeding). On any other reading
+#   it prints one line on stderr, nothing on stdout, and exits 1, before it reads an argument, a
+#   path or a fixture, compiles the control or launches anything (docs/nfdr.md QC-65).
+#   Nothing it is given turns this off.
 #
 # USAGE
 #   checks/renderer.sh target/release/bundle/macos/KA-Reader.app
 #   Run it in a logged-in GUI session: LaunchServices must be able to start the application.
 #   RENDERER_SH_OBSERVATIONS   the bound: how many observations, of about 1 s each (default 30)
-#   RENDERER_SH_LAUNCH_TICKS   how long to wait for the launched process, in 0.25 s ticks (default 80)
-#   Each is a positive whole number, read in base 10, and is refused before anything is launched. They
-#   set this harness's timing; they are not what is observed, and CI sets neither.
-#   Exit 0 only when an observation shows the frames below on the product and none does on the control,
-#   with two stdout lines: the product's pass, then the control's expected red. Every other ending is
-#   exit 1:
+#   RENDERER_SH_LAUNCH_TICKS   how long to wait for the launched process, in 0.25 s ticks (default
+#   80) Each is a positive whole number, read in base 10, and is refused before anything is
+#   launched. They set this harness's timing; they are not what is observed, and CI sets neither.
+#   Exit 0 only when an observation shows the frames below on the product and none does on the
+#   control, with two stdout lines: the product's pass, then the control's expected red. Every other
+#   ending is exit 1:
 #     - the window of observations runs out: stderr names the pid, says it was never observed at the
 #       panel, states the bound, and prints the last observation's main-thread frames;
-#     - an observation fails (the pid is gone, sample errors, the report has no main-thread block): it
-#       ends the run at once, names what failed, and prints no bound, since none was reached.
-#   On every exit path the one process this run launched, and recorded, is stopped — and only that one.
+#     - an observation fails (the pid is gone, sample errors, the report has no main-thread block):
+#       it ends the run at once, names what failed, and prints no bound, since none was reached.
+#   On every exit path the one process this run launched, and recorded,
+#   is stopped — and only that one.
 #
 # THE CONTROL
 #   A gate that only ever says yes proves nothing, so the run builds a second application from
-#   checks/fixtures/idle-shell: an event loop and one window, the shape the shell had before it opened a
-#   panel (SDD C-I3). It is compiled into this run's temporary directory and never under checks/, which
-#   checks/own-state.sh reads; signed ad hoc with the hardened runtime and the entitlement set read from
-#   the product's own signature; and that set is read back and must equal the product's, since a control
-#   with another set would differ from the product in more than the shell. It is then launched, sampled
-#   over the same bound and judged by the same code as the product, and it must NOT be observed at the
-#   panel. Its red counts only because it ran: exit 0 needs the product observed AND the control not, so
-#   a gate that cannot tell the two apart fails. The control is not optional and no argument selects one
-#   half: the script runs both or exits 1. A control that is observed at the panel, whose pid is not
-#   found once, that exits mid-window or whose sample fails fails the gate rather than reading as red.
+#   checks/fixtures/idle-shell: an event loop and one window, the shape the shell had before it
+#   opened a panel (SDD C-I3). It is compiled into this run's temporary directory and never under
+#   checks/, which checks/own-state.sh reads; signed ad hoc with the hardened runtime and the
+#   entitlement set read from the product's own signature; and that set is read back and must equal
+#   the product's, since a control with another set would differ from the product in more than the
+#   shell. It is then launched, sampled over the same bound and judged by the same code as the
+#   product, and it must NOT be observed at the panel. Its red counts only because it ran: exit 0
+#   needs the product observed AND the control not, so a gate that cannot tell the two apart fails.
+#   The control is not optional and no argument selects one half: the script runs both or exits 1. A
+#   control that is observed at the panel, whose pid is not found once, that exits mid-window or
+#   whose sample fails fails the gate rather than reading as red.
 #
 # THE FRAMES
-#   One ordered list, outermost first. A match needs every frame of it in the main-thread block of the
-#   report — the block sample labels com.apple.main-thread, or Main Thread while the main queue is
-#   not yet up (a sample taken at the launch's first moments, measured on this Mac) — each nested strictly deeper than the one
-#   before and inside its subtree, read from sample's own indentation; its tree characters + | : ! mean
-#   nothing. A frame is its whole symbol, not a part of one. The list holds the shell's own launch
-#   frame and the Open panel's own modal run, and a generic -[NSApplication runModalForWindow:] alone
-#   is not a match, since any alert shows it. ka_reader_open_folder is not in the list: the native shell
-#   calls it only after the panel returns.
+#   One ordered list, outermost first. A match needs every frame of it in the main-thread block of
+#   the report — the block sample labels com.apple.main-thread, or Main Thread while the main queue
+#   is not yet up (a sample taken at the launch's first moments, measured on this Mac) — each nested
+#   strictly deeper than the one before and inside its subtree, read from sample's own indentation;
+#   its tree characters + | : ! mean nothing. A frame is its whole symbol, not a part of one. The
+#   list holds the shell's own launch frame and the Open panel's own modal run, and a generic
+#   -[NSApplication runModalForWindow:] alone is not a match, since any alert shows it.
+#   ka_reader_open_folder is not in the list: the native shell calls
+#   it only after the panel returns.
 #     AppDelegate.applicationDidFinishLaunching(_:)
 #     OpenFolderPanel.chooseFolder()
 #     -[NSSavePanel runModal]
 #     -[NSApplication runModalForWindow:]
 #   Mac reading (CP-145): macOS 26.6.2 (sw_vers -productVersion), a release bundle from
-#   ka-reader-mac/assemble.sh launched by open -n -g and sampled while the panel was up. The main thread
-#   showed start, main, -[NSApplication run], the launch-notification frames, then the four frames
-#   above nested in that order, then _NSTryRunModal.
+#   ka-reader-mac/assemble.sh launched by open -n -g and sampled while the panel was up. The main
+#   thread showed start, main, -[NSApplication run], the launch-notification frames, then the four
+#   frames above nested in that order, then _NSTryRunModal.
 #   Hosted runner reading: GitHub Actions run 35988399477 on ka-reader@37a962d, image macos-14-arm64
 #   20260831.0302.1, macOS 14.8.9. The product's main process was observed at the Open panel, inside
 #   the shell's launch, on observation 1 of the bound of 30, so the frame list matched. The
@@ -72,19 +78,19 @@
 #
 # HOW THE OPERATING SYSTEM IS ASKED
 #   `ps`, `open` and `sample` are found through PATH — the seams a test stands its own in for. The
-#   process is launched through LaunchServices (open -n -g), the route a user takes; a direct exec would
-#   test a path no user takes. It is found by its absolute executable path, never by a pattern over
-#   command lines, which would also match every process that merely mentions the bundle. sample runs as
-#   the invoking user, with -file into this run's temporary directory: without -file it also writes each
-#   report to /tmp.
+#   process is launched through LaunchServices (open -n -g), the route a user takes; a direct exec
+#   would test a path no user takes. It is found by its absolute executable path, never by a pattern
+#   over command lines, which would also match every process that merely mentions the bundle. sample
+#   runs as the invoking user, with -file into this run's temporary directory: without -file it also
+#   writes each report to /tmp.
 
 set -euo pipefail
 
 # --- admission: this step runs only in a macOS virtual machine (docs/nfdr.md QC-65) ---
-# First work of the run, inline so nothing is opened, found or read before it. Both host readings must
-# succeed and read exactly Darwin and 1; a reader that fails, is missing or prints anything else
-# refuses, and a failing reader that prints 1 does not admit (the status is kept, not only the text).
-# Nothing the script reads — argument, flag or variable — changes this.
+# First work of the run, inline so nothing is opened, found or read before it. Both host readings
+# must succeed and read exactly Darwin and 1; a reader that fails, is missing or prints anything
+# else refuses, and a failing reader that prints 1 does not admit (the status is kept, not only the
+# text). Nothing the script reads — argument, flag or variable — changes this.
 host_os="$(uname -s 2> /dev/null)" && host_vmm="$(sysctl -n kern.hv_vmm_present 2> /dev/null)" \
   && [ "$host_os" = "Darwin" ] && [ "$host_vmm" = "1" ] \
   || { echo "renderer.sh: refused: this host does not read as a macOS virtual machine. This step launches KA-Reader.app or reads this machine's home, and runs only in a macOS virtual machine (docs/nfdr.md QC-65)." >&2; exit 1; }
@@ -177,8 +183,8 @@ trap 'stop_launched_process; rm -rf "$work"' EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
 
-# The pid is cleared after each half, so the control's launch never runs beside a product pid this run
-# still holds.
+# The pid is cleared after each half, so the control's launch never runs beside a product pid this
+# run still holds.
 stop_and_clear() {
   stop_launched_process
   launched_pid=""
@@ -220,10 +226,11 @@ launch_and_record() {
 
 printf '%s' "$FRAME_LIST" > "$work/frames"
 
-# Reads the frame list, then the report $1. Line one is `main=<0|1> match=<0|1>`; the lines after it are
-# the main-thread block's frames as sample wrote them. A frame's depth is the column of its count, the
-# tree characters before it being drawing only. Along the path from the thread header down, each frame
-# equal to the next listed name advances the match, so a match is every listed frame nested in order.
+# Reads the frame list, then the report $1. Line one is `main=<0|1> match=<0|1>`; the lines after it
+# are the main-thread block's frames as sample wrote them. A frame's depth is the column of its
+# count, the tree characters before it being drawing only. Along the path from the thread header
+# down, each frame equal to the next listed name advances the match, so a match is
+# every listed frame nested in order.
 main_thread_verdict() {
   awk '
     NR == FNR { if ($0 != "") { wanted_count++; wanted[wanted_count] = $0 } next }
@@ -263,10 +270,10 @@ main_thread_verdict() {
 last_frames=""
 report_number=0
 
-# Observes launched_pid up to OBSERVATIONS times. Returns 0 on the first observation that matches the
-# frames, with matched_at set to its number, and 1 when the window runs out with none, with last_frames
-# holding the last observation's main-thread frames. A failed observation ends the run at once through
-# die, and names no bound.
+# Observes launched_pid up to OBSERVATIONS times. Returns 0 on the first observation that matches
+# the frames, with matched_at set to its number, and 1 when the window runs out with none, with
+# last_frames holding the last observation's main-thread frames. A failed observation ends the run
+# at once through die, and names no bound.
 observe_window() {
   local observation=1 report verdict status_line
   while [ "$observation" -le "$OBSERVATIONS" ]; do
@@ -298,13 +305,14 @@ observe_window() {
 
 # The signed entitlements of application $1 as the property list codesign prints, written to $2. The
 # non-deprecated form first; the older `:-` spelling only where `--xml` is unknown
-# (checks/bundle.sh does the same). stderr is dropped on both: codesign prints the executable path and a
-# deprecation note there, and only stdout is the property list.
+# (checks/bundle.sh does the same). stderr is dropped on both: codesign prints the executable path
+# and a deprecation note there, and only stdout is the property list.
 read_entitlements_plist() {
   { codesign -d --xml --entitlements - "$1" 2> /dev/null || codesign -d --entitlements :- "$1" 2> /dev/null; } > "$2"
 }
 
-# The property list $1 as sorted `key = value` lines, one per entitlement. An empty file is an empty set.
+# The property list $1 as sorted `key = value` lines, one per entitlement.
+# An empty file is an empty set.
 flatten_entitlements() {
   [ -s "$1" ] || return 0
   /usr/libexec/PlistBuddy -c Print "$1" 2> /dev/null | while IFS= read -r line; do
@@ -318,8 +326,8 @@ refuse_if_running "$bundle_executable"
 
 control_app="$work/control/idle-shell.app"
 mkdir -p "$control_app/Contents/MacOS"
-# Never `swift build`: it writes .build/ beside its sources, and those are under checks/fixtures/, which
-# checks/own-state.sh reads.
+# Never `swift build`: it writes .build/ beside its sources, and those are under checks/fixtures/,
+# which checks/own-state.sh reads.
 swiftc -O -framework AppKit -o "$control_app/Contents/MacOS/idle-shell" "$FIXTURE_DIR/main.swift" 2> "$work/swiftc.log" \
   || die "the control did not compile: $(cat "$work/swiftc.log")"
 cp "$FIXTURE_DIR/Info.plist" "$control_app/Contents/Info.plist"
@@ -335,8 +343,9 @@ product_entitlements="$(flatten_entitlements "$work/product-entitlements.plist")
 [ -n "$product_entitlements" ] \
   || die "the signed entitlement set of $app is empty: there is nothing to sign the control with"
 
-# Ad hoc with the hardened runtime and the product's own set, the way ka-reader-mac/assemble.sh signs the
-# product. The set is written from the product's signature at run time; none is tracked under checks/.
+# Ad hoc with the hardened runtime and the product's own set, the way ka-reader-mac/assemble.sh
+# signs the product. The set is written from the product's signature at run time;
+# none is tracked under checks/.
 codesign --force --sign - --options runtime --entitlements "$work/product-entitlements.plist" "$control_app" 2> "$work/codesign.log" \
   || die "cannot sign the control: $(cat "$work/codesign.log")"
 

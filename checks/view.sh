@@ -1,99 +1,116 @@
 #!/usr/bin/env bash
-# Version: 1.1.0 — the bridge serves Git — libgit2 machine-config switch, read_git export, Git item wire, nm transport read in view.sh
-# Version: 1.0.0 — first version: the source scan (F1–F13) over ka-reader-mac/Sources and the link check on the built executable
+# Version: 1.1.0 — the bridge serves Git — libgit2 machine-config switch, read_git export, Git item
+#   wire, nm transport read in view.sh
+# Version: 1.0.0 — first version: the source scan (F1–F13) over ka-reader-mac/Sources and the
+#   link check on the built executable
 #
 # checks/view.sh — proves the Swift shell holds no I/O of its own.
 #
 # WHY THIS EXISTS
-#   The shell (ka-reader-mac) draws what the bridge hands it and does nothing else: it reads no file, opens
-#   no socket, spawns no process, embeds no web engine and shows no alert of its own (SDD C-R7; NFDR
-#   QC-8, QC-15, QC-17, QC-30, QC-34, QC-51, QC-58). A reviewer cannot keep watching for that, so this
-#   script reads it off the tree and off the built executable, on every run of CI.
+#   The shell (ka-reader-mac) draws what the bridge hands it and does nothing else: it reads no
+#   file, opens no socket, spawns no process, embeds no web engine and shows no alert of its own
+#   (SDD C-R7; NFDR QC-8, QC-15, QC-17, QC-30, QC-34, QC-51, QC-58). A reviewer cannot keep watching
+#   for that, so this script reads it off the tree and off the built executable, on every run of CI.
 #   Three checks run, and all always run before the verdict, so one run reports every finding:
-#     1. The source scan, over every *.swift file under ka-reader-mac/Sources at any depth and nothing
-#        under ka-reader-mac/Tests. Comments are blanked in place, so a name in a comment is not a use and
-#        every finding names the true line. String contents stay in the text and are scanned: a string
-#        is how NSClassFromString("…") names an API this scan would otherwise catch. The cost is a
-#        false positive when a user-visible string holds a forbidden name, and that fails closed.
-#     2. The link check: `otool -L` on target/release/bundle/macos/KA-Reader.app/Contents/MacOS/KA-Reader. An
-#        install name is a finding when one of its path components is WebKit.framework or
-#        JavaScriptCore.framework, wherever that framework lives.
+#     1. The source scan, over every *.swift file under ka-reader-mac/Sources at any depth and
+#        nothing under ka-reader-mac/Tests. Comments are blanked in place, so a name in a comment is
+#        not a use and every finding names the true line. String contents stay in the text and are
+#        scanned: a string is how NSClassFromString("…") names an API this scan would otherwise
+#        catch. The cost is a false positive when a user-visible string holds a
+#        forbidden name, and that fails closed.
+#     2. The link check: `otool -L` on
+#        target/release/bundle/macos/KA-Reader.app/Contents/MacOS/KA-Reader. An install name is a
+#        finding when one of its path components is WebKit.framework or JavaScriptCore.framework,
+#        wherever that framework lives.
 #     3. The transport read: `nm` on the same executable. A defined symbol whose name begins
-#        git_smart_subtransport_ is a finding (libgit2's network transport is linked in), and so is an
-#        undefined import of connect, socket or getaddrinfo (the executable reaches for the network).
-#        A leading underscore, which Mach-O adds to a C name, is not part of the name. Source: NFDR
-#        QC-3 (3), SDD § 4 C-R6 and C-I3; it is owed by the build that first exports a command reaching
-#        git-reader, which is the one that exports ka_reader_read_git.
-#   It never passes having read nothing: no .swift file, a missing or unreadable executable, no otool,
-#   an otool that fails, an otool that prints no install name (every executable links libSystem, so
-#   an empty list is a read of nothing), no nm, an nm that fails, and an nm that prints no symbol are
-#   each a failure that names its cause.
+#        git_smart_subtransport_ is a finding (libgit2's network transport is linked in), and so is
+#        an undefined import of connect, socket or getaddrinfo (the executable reaches for the
+#        network). A leading underscore, which Mach-O adds to a C name, is not part of the name.
+#        Source: NFDR QC-3 (3), SDD § 4 C-R6 and C-I3; it is owed by the build that first exports a
+#        command reaching git-reader, which is the one that exports ka_reader_read_git.
+#   It never passes having read nothing: no .swift file, a missing or unreadable executable, no
+#   otool, an otool that fails, an otool that prints no install name (every executable links
+#   libSystem, so an empty list is a read of nothing), no nm, an nm that fails, and an nm that
+#   prints no symbol are each a failure that names its cause.
 #
 # USAGE
 #   checks/view.sh
 #   No argument, and no environment variable: the product root is the parent of this script's own
-#   directory, as checks/own-state.sh derives it. `otool` and `nm` are found through PATH, so a test can
-#   stand in for them; those are the seams.
+#   directory, as checks/own-state.sh derives it. `otool` and `nm` are found through PATH, so a test
+#   can stand in for them; those are the seams.
 #   A finding is one line on stderr — `<path relative to the root>:<line>: <refused name>`,
-#   `link: <install name>`, or `transport: defined <symbol>` / `transport: undefined import <symbol>`.
-#   A pass is exit 0 and one stdout line: the count of Swift files, the executable's path, and that
-#   nothing was found. Every other ending is exit 1, its cause on stderr.
+#   `link: <install name>`, or `transport: defined <symbol>` /
+#   `transport: undefined import <symbol>`. A pass is exit 0 and one stdout line: the count of Swift
+#   files, the executable's path, and that nothing was found. Every other ending
+#   is exit 1, its cause on stderr.
 #
 # THE SCAN TABLE
 #   A token is an identifier matched whole: a word character on either side means no match, so
-#   `Process` does not match `ProcessInfo`. A name in the table is refused wherever it appears, never
-#   left out of a pattern to be excused: a name left out of a pattern can never be reported. "C-R7" is
-#   docs/SDD.md § 4 C-R7; a QC-n is docs/nfdr.md; "design addition" is added under the NFDR's
-#   same-change clause (QC-34), and every row passes today's tree.
-#     F1  Imports        Any `import` of a module outside {AppKit, Foundation, and the directory names
-#                        directly under ka-reader-mac/Sources, read when the script runs}, in every form
-#                        (`import X`, `import class X.Y`, `@testable import X`, `@_implementationOnly
-#                        import X`). Source: QC-8's "may import" set.
+#   `Process` does not match `ProcessInfo`. A name in the table is refused wherever it appears,
+#   never left out of a pattern to be excused: a name left out of a pattern can never be reported.
+#   "C-R7" is docs/SDD.md § 4 C-R7; a QC-n is docs/nfdr.md; "design addition" is added under the
+#   NFDR's same-change clause (QC-34), and every row passes today's tree.
+#     F1  Imports        Any `import` of a module outside {AppKit,
+#     Foundation, and the directory names
+#                        directly under ka-reader-mac/Sources, read when the script runs}, in every
+#                        form (`import X`, `import class X.Y`, `@testable import X`,
+#                        `@_implementationOnly import X`). Source: QC-8's "may import" set.
 #     F2  Web engine     WKWebView, WebView, JSContext. Source: C-R7.
-#     F3  Attributed string through a web engine   NSHTMLTextDocumentType, NSWebArchiveTextDocumentType,
+#     F3  Attributed string through a web engine
+#     NSHTMLTextDocumentType, NSWebArchiveTextDocumentType,
 #                        the members .html and .webArchive, the labels html: and HTML: after `(`.
 #                        Source: C-R7, CP-135's domain.
 #     F4  Network        Tokens beginning URLSession, NSURLSession, NSURLConnection, CFSocket,
-#                        CFStreamCreatePairWith; getStreamsToHost. Source: C-R7; design addition (the CF
-#                        and Stream forms).
-#     F5  Spawning a process or running a script   Process, NSTask, NSAppleScript, NSUser…Task. Source:
+#                        CFStreamCreatePairWith; getStreamsToHost. Source: C-R7; design addition
+#                        (the CF and Stream forms).
+#     F5  Spawning a process or running a script   Process, NSTask,
+#     NSAppleScript, NSUser…Task. Source:
 #                        C-R7 (Process); design addition.
-#     F6  Handing a URL, a file or data to another program   Every NSWorkspace token, NSSharingService…,
-#                        NSPerformService. Source: C-R7 (NSWorkspace.open, NSSharingService); the list
-#                        CP-135 leaves to the design.
+#     F6  Handing a URL, a file or data to another program   Every
+#     NSWorkspace token, NSSharingService…,
+#                        NSPerformService. Source: C-R7 (NSWorkspace.open, NSSharingService); the
+#                        list CP-135 leaves to the design.
 #     F7  File I/O through Foundation   FileManager…, FileHandle, InputStream, OutputStream,
-#                        NSFileCoordinator, FileWrapper, NSFileWrapper; an initialiser whose first label
-#                        is contentsOf:, contentsOfFile: or contentsOfURL: on a capitalised type or
-#                        .init(; .write(to:, .write(toFile:, .write(toURL:; NSImage(byReferencing…;
-#                        tokens ending CreateWithURL or CreateWithFilename. Source: C-R7 (FileManager,
-#                        Data(contentsOf:), String(contentsOf:)), QC-15; the rest are design additions.
-#     F8  Reading a bundle other than as a resource lookup   Every Bundle, NSBundle and CFBundle… token,
+#                        NSFileCoordinator, FileWrapper, NSFileWrapper; an initialiser whose first
+#                        label is contentsOf:, contentsOfFile: or contentsOfURL: on a capitalised
+#                        type or .init(; .write(to:, .write(toFile:, .write(toURL:;
+#                        NSImage(byReferencing…; tokens ending CreateWithURL or CreateWithFilename.
+#                        Source: C-R7 (FileManager, Data(contentsOf:), String(contentsOf:)), QC-15;
+#                        the rest are design additions.
+#     F8  Reading a bundle other than as a resource lookup   Every
+#     Bundle, NSBundle and CFBundle… token,
 #                        except Bundle.main followed straight away by .image(forResource:,
 #                        .url(forResource:, .urls(forResourcesWithExtension:, .path(forResource: or
 #                        .paths(forResourcesOfType:. Source: C-R7; the other Bundle forms are design
 #                        additions.
-#     F9  POSIX calls reached through Foundation's re-export of Darwin   A free call (not preceded by a
-#                        dot or a word character) to open, openat, fopen, fdopen, freopen, opendir, stat,
-#                        lstat, access, popen, system, fork, vfork, execl, execle, execlp, execv, execve,
-#                        execvp, posix_spawn, posix_spawnp, socket. Source: design addition.
+#     F9  POSIX calls reached through Foundation's re-export of Darwin
+#     A free call (not preceded by a
+#                        dot or a word character) to open, openat, fopen, fdopen, freopen, opendir,
+#                        stat, lstat, access, popen, system, fork, vfork, execl, execle, execlp,
+#                        execv, execve, execvp, posix_spawn, posix_spawnp,
+#                        socket. Source: design addition.
 #     F10 Dynamic lookup   dlopen, dlsym, NSClassFromString, NSSelectorFromString, objc_getClass,
 #                        objc_lookUpClass, objc_msgSend; the attributes @_silgen_name and @_extern.
 #                        Source: C-R7 (dlopen); design addition.
 #     F11 Arguments, environment and configuration   CommandLine; the members .arguments and
 #                        .environment on any receiver; getenv, environ, _NSGetArgv, _NSGetArgc,
-#                        _NSGetEnviron; UserDefaults, NSUserDefaults, CFPreferences…. Source: QC-30 and
-#                        QC-58; design addition for the rest.
-#     F12 Only the shell calls the bridge   In files under ka-reader-mac/Sources/Surfaces/ only: any token
-#                        beginning ka_reader_, and `import CKAReaderBridge`. Source: QC-17, realized by C-R7's
-#                        export prefix.
-#     F13 Alerts, notifications, modals   NSAlert; tokens beginning NSUserNotification; tokens beginning
+#                        _NSGetEnviron; UserDefaults, NSUserDefaults, CFPreferences…. Source: QC-30
+#                        and QC-58; design addition for the rest.
+#     F12 Only the shell calls the bridge   In files under
+#     ka-reader-mac/Sources/Surfaces/ only: any token
+#                        beginning ka_reader_, and `import CKAReaderBridge`. Source: QC-17, realized
+#                        by C-R7's export prefix.
+#     F13 Alerts, notifications, modals   NSAlert; tokens beginning
+#     NSUserNotification; tokens beginning
 #                        UN that contain Notification; tokens beginning runModal, beginSheet,
-#                        beginCriticalSheet, beginModalSession, presentAsModalWindow, presentAsSheet.
-#                        The one exception is a single `.runModal()` with no argument in
-#                        ka-reader-mac/Sources/Shell/OpenFolderPanel.swift, the Open panel's own
-#                        presentation; a second one there, or `.runModal(` with an argument, is
-#                        reported. Source: QC-51, narrowed by the Open panel C-R3 requires.
-#   QC-34's, QC-1's and QC-23's lists point here: this header is the list, and C-R7's set is its floor.
+#                        beginCriticalSheet, beginModalSession, presentAsModalWindow,
+#                        presentAsSheet. The one exception is a single `.runModal()` with no
+#                        argument in ka-reader-mac/Sources/Shell/OpenFolderPanel.swift, the Open
+#                        panel's own presentation; a second one there, or `.runModal(` with an
+#                        argument, is reported. Source: QC-51, narrowed
+#                        by the Open panel C-R3 requires.
+#   QC-34's, QC-1's and QC-23's lists point here: this header is the
+#   list, and C-R7's set is its floor.
 
 set -euo pipefail
 
@@ -169,9 +186,10 @@ function scanre(s, re, lead, trail, mode,   t, i, start, len, m) {
     else if (mode == "call") { sub(/^./, "", m); sub(/[ \t]*[(]$/, "", m) }
     else m = substr(m, lead + 1, length(m) - lead - trail)
     report(m)
-    # Resume on the match's last character (s-index i + start + len - 2), not after it: that character
-    # (the `(` of a free call, the boundary after a member) may be the boundary the next match opens
-    # with, as in system(open(…)). Every pattern here matches two characters or more, so i advances.
+    # Resume on the match's last character (s-index i + start + len - 2), not after it: that
+    # character (the `(` of a free call, the boundary after a member) may be the boundary the next
+    # match opens with, as in system(open(…)). Every pattern here matches two
+    # characters or more, so i advances.
     i += start + len - 2
   }
 }
@@ -221,10 +239,10 @@ function apply(s) {
 
 # The comment and string machine. Comment characters become spaces and newlines are kept, so every
 # rule reports the true line. String contents stay.
-# A string's interpolation — \( in a string, \#( in a #-raw string — is code, and may hold strings of its
-# own, so entering one pushes the string's state and the matching `)` pops it: a // or /* in a literal
-# inside an interpolation is still inside a string. `parens` counts the open parentheses of the code
-# being read, so only the `)` that closes the interpolation pops.
+# A string's interpolation — \( in a string, \#( in a #-raw string — is code, and may hold strings
+# of its own, so entering one pushes the string's state and the matching `)` pops it: a // or /* in
+# a literal inside an interpolation is still inside a string. `parens` counts the open parentheses
+# of the code being read, so only the `)` that closes the interpolation pops.
 function sethash(   k) { hashstr = ""; for (k = 0; k < hashes; k++) hashstr = hashstr "#" }
 function push_interpolation() { sp++; stk_mode[sp] = mode; stk_parens[sp] = parens; stk_hashes[sp] = hashes; mode = "code"; parens = 0 }
 function pop_interpolation() { mode = stk_mode[sp]; parens = stk_parens[sp]; hashes = stk_hashes[sp]; sethash(); sp-- }
@@ -301,9 +319,9 @@ AWK
 
 # --- the source scan ---
 
-# The allowed import set: AppKit, Foundation, and the package's own modules — the directories directly
-# under Sources — read when the script runs, never held as a list here, so a new target is admitted by
-# existing (and an import of it still has to pass every other row).
+# The allowed import set: AppKit, Foundation, and the package's own modules — the directories
+# directly under Sources — read when the script runs, never held as a list here, so a new target is
+# admitted by existing (and an import of it still has to pass every other row).
 allowed=" AppKit Foundation"
 if [ -d "$sources_dir" ]; then
   for module_dir in "$sources_dir"/*/; do
@@ -384,9 +402,9 @@ if [ -f "$executable" ] && [ -r "$executable" ]; then
     if [ "$nm_status" -ne 0 ]; then
       echo "nm failed on $executable (exit $nm_status): $(cat "$work/nm.err")" >> "$work/causes"
     else
-      # An nm line is `<address> <type letter> <name>` for a defined symbol and `<type letter> <name>`
-      # for an undefined one (type U). Any other line — a fat binary's per-architecture header, a blank
-      # — is no symbol, so a list of nothing else counts zero.
+      # An nm line is `<address> <type letter> <name>` for a defined symbol and
+      # `<type letter> <name>` for an undefined one (type U). Any other line — a fat binary's
+      # per-architecture header, a blank — is no symbol, so a list of nothing else counts zero.
       LC_ALL=C awk -v count_file="$work/nm.count" '
         {
           if (NF == 3 && $1 ~ /^[0-9A-Fa-f]+$/ && $2 ~ /^[A-Za-z?-]$/) { type = $2; name = $3 }

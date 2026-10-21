@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 # Version: 1.4.0 — the launch steps refuse off a VM
-# Version: 1.3.0 — the suite prints the control line — test_bundle.sh publishes the control's one reading and refuses a report without it
-# Version: 1.2.0 — the Tauri build leaves — native bundle assembled, bundle.sh and no-network.sh read it, CI builds it, boundaries and README pinned
-# Version: 1.1.0 — the probe waits, bounded, for the sandbox report, and its control holds for the whole window; plutil read only on exit 0
+# Version: 1.3.0 — the suite prints the control line — test_bundle.sh publishes the control's one
+#   reading and refuses a report without it
+# Version: 1.2.0 — the Tauri build leaves — native bundle assembled, bundle.sh and no-network.sh
+#   read it, CI builds it, boundaries and README pinned
+# Version: 1.1.0 — the probe waits, bounded, for the sandbox report, and its control holds for the
+#   whole window; plutil read only on exit 0
 # Version: 1.0.0 — first version: drives the real checks/bundle.sh against the built KA-Reader.app
 #
 # checks/tests/test_bundle.sh — the tests of checks/bundle.sh.
@@ -30,19 +33,20 @@
 #
 # ADMISSION
 #   The first thing the suite does is ask the host whether it is a macOS virtual machine (`uname -s`
-#   Darwin and `sysctl -n kern.hv_vmm_present` 1, both succeeding), because its cases launch the built
-#   bundle. On any other reading it prints one line on stderr, nothing on stdout, and exits 1, before it
-#   finds the product root or the bundle, makes a work directory or runs a case (docs/nfdr.md QC-65).
-#   Nothing it is given turns this off. The case that proves it is checks/tests/test_vm_refusal.sh's: a
-#   suite that refused has no case left to run, so its own refusal cannot be one of its cases.
+#   Darwin and `sysctl -n kern.hv_vmm_present` 1, both succeeding), because its cases launch the
+#   built bundle. On any other reading it prints one line on stderr, nothing on stdout, and exits 1,
+#   before it finds the product root or the bundle, makes a work directory or runs a case
+#   (docs/nfdr.md QC-65). Nothing it is given turns this off. The case that proves it is
+#   checks/tests/test_vm_refusal.sh's: a suite that refused has no case left to run, so its own
+#   refusal cannot be one of its cases.
 
 set -uo pipefail
 
 # --- admission: this suite runs only in a macOS virtual machine (docs/nfdr.md QC-65) ---
-# First work of the run, inline so nothing is opened, found or read before it. Both host readings must
-# succeed and read exactly Darwin and 1; a reader that fails, is missing or prints anything else
-# refuses, and a failing reader that prints 1 does not admit (the status is kept, not only the text).
-# Nothing the suite reads — argument, flag or variable — changes this.
+# First work of the run, inline so nothing is opened, found or read before it. Both host readings
+# must succeed and read exactly Darwin and 1; a reader that fails, is missing or prints anything
+# else refuses, and a failing reader that prints 1 does not admit (the status is kept, not only the
+# text). Nothing the suite reads — argument, flag or variable — changes this.
 host_os="$(uname -s 2> /dev/null)" && host_vmm="$(sysctl -n kern.hv_vmm_present 2> /dev/null)" \
   && [ "$host_os" = "Darwin" ] && [ "$host_vmm" = "1" ] \
   || { echo "test_bundle.sh: refused: this host does not read as a macOS virtual machine. This step launches KA-Reader.app or reads this machine's home, and runs only in a macOS virtual machine (docs/nfdr.md QC-65)." >&2; exit 1; }
@@ -56,9 +60,9 @@ APP="${KA_READER_APP:-$ROOT/target/release/bundle/macos/KA-Reader.app}"
 APP_SANDBOX_KEY="com.apple.security.app-sandbox"
 USER_SELECTED_READ_ONLY_KEY="com.apple.security.files.user-selected.read-only"
 EXTRA_KEY="com.apple.security.files.bookmarks.app-scope"
-# The legacy marker's name, assembled from two halves so this file carries no literal of it: the case
-# that proves the marker is gone from the tree greps for the literal (CP-41), and a literal here would
-# make that grep find its own subject.
+# The legacy marker's name, assembled from two halves so this file carries no literal of it: the
+# case that proves the marker is gone from the tree greps for the literal (CP-41), and a literal
+# here would make that grep find its own subject.
 LEGACY_MARKER="APP_SANDBOX""_CONTAINER_ID"
 PROBE_SOURCE="$ROOT/checks/sandbox_probe.rs"
 # The case without which the probe has not run (NFDR QC-25): the same probe, on the same bundle
@@ -225,9 +229,9 @@ closing_line() {
   printf '%s\n' "$OUT" | grep '^bundle.sh: ' | tail -1
 }
 
-# The closing failure line of a run whose window ran out (CP-75), matched exactly: "bundle.sh: the wall
-# does not hold on the launched process (pid <digits>): no ask held all three within <N> asks, 0.25 s
-# apart". $1 is N.
+# The closing failure line of a run whose window ran out (CP-75), matched exactly: "bundle.sh: the
+# wall does not hold on the launched process (pid <digits>): no ask held all three within <N> asks,
+# 0.25 s apart". $1 is N.
 expect_closing_line_states_the_window() {
   closing="$(closing_line)"
   matched="$(printf '%s' "$closing" | sed -n "s/^bundle\.sh: the wall does not hold on the launched process (pid [0-9][0-9]*): no ask held all three within $1 asks, 0\.25 s apart\$/matched/p")"
@@ -235,8 +239,9 @@ expect_closing_line_states_the_window() {
     || fail "expected the closing failure line to state the window of $1 asks, 0.25 s apart exactly. closing line: $closing. output: $OUT"
 }
 
-# The not-sandboxed condition line exactly as it reads today: the condition blocks read the kept report
-# unchanged (change_design.md § 4), and the window belongs to the closing line, not to this one.
+# The not-sandboxed condition line exactly as it reads today: the condition blocks read the kept
+# report unchanged (change_design.md § 4), and the window belongs to the
+# closing line, not to this one.
 expect_not_sandboxed_condition_line_unchanged() {
   printf '%s\n' "$OUT" | grep -qx 'condition not held: the launched process is not sandboxed' \
     || fail "expected the unchanged line 'condition not held: the launched process is not sandboxed'. output: $OUT"
@@ -251,20 +256,21 @@ resigned_copy() {
   printf '%s' "$copy"
 }
 
-# A stand-in for `ka-reader-sandbox-probe`, placed ahead of the real one on PATH. $2 is the sandboxed
-# line, $3 the out-of-grant read line, $4 the outbound connection line — each the value the real probe
-# would print, so one condition at a time can be made to fail without an unsandboxed bundle.
+# A stand-in for `ka-reader-sandbox-probe`, placed ahead of the real one on PATH. $2 is the
+# sandboxed line, $3 the out-of-grant read line, $4 the outbound connection line — each the value
+# the real probe would print, so one condition at a time can be made to fail
+# without an unsandboxed bundle.
 probe_stub() {
   make_stub "$1" ka-reader-sandbox-probe "printf 'sandboxed: %s\nout-of-grant-read: %s\noutbound-connection: %s\n' $2 $3 $4"
 }
 
-# A stand-in for `ka-reader-sandbox-probe` whose answer depends on how many times it has been called —
-# for proving the ordinary-path and negative-control loops, which ask more than once. $1 is a fresh
-# directory the caller owns; the remaining arguments are the answers, one per ask, each either a
-# three-value report (`sandboxed out-of-grant-read outbound-connection`, space-separated, one call's
-# worth) or the literal FAIL for a probe failure (exits non-zero with a sandbox_check message on
-# stderr, like the real probe's own failure shape). An ask past the last answer repeats the last one.
-# Every call bumps the counter file at $1/count; `asked_count` below reads it as the ask count.
+# A stand-in for `ka-reader-sandbox-probe` whose answer depends on how many times it has been called
+# — for proving the ordinary-path and negative-control loops, which ask more than once. $1 is a
+# fresh directory the caller owns; the remaining arguments are the answers, one per ask, each either
+# a three-value report (`sandboxed out-of-grant-read outbound-connection`, space-separated, one
+# call's worth) or the literal FAIL for a probe failure (exits non-zero with a sandbox_check message
+# on stderr, like the real probe's own failure shape). An ask past the last answer repeats the last
+# one. Every call bumps the counter file at $1/count; `asked_count` below reads it as the ask count.
 sequenced_probe_stub() {
   dir="$1"
   shift
@@ -315,8 +321,8 @@ compile_probe() {
     || fail "the probe source did not compile: $(cat "$WORK/probe-build.log" 2> /dev/null)"
 }
 
-# The executable path a bundle's main process has: <app>/Contents/MacOS/<CFBundleExecutable>, with the
-# bundle path resolved the way checks/bundle.sh resolves it.
+# The executable path a bundle's main process has: <app>/Contents/MacOS/<CFBundleExecutable>, with
+# the bundle path resolved the way checks/bundle.sh resolves it.
 bundle_executable_of() {
   resolved="$(cd "$1" && pwd -P)"
   name="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$resolved/Contents/Info.plist")"
@@ -398,9 +404,9 @@ test_probe_waits_past_an_early_unsandboxed_report() {
   expect_no_bundle_process "$APP"
 }
 
-# CP-73: the loop's stop and the verdict are the same judgment, computed once per ask — the first ask
-# whose report holds all three lines ends the loop as a pass. A first `yes` carrying an `allowed` is
-# asked past, not judged as it stands (the split CP-73 reverses).
+# CP-73: the loop's stop and the verdict are the same judgment, computed once per ask — the first
+# ask whose report holds all three lines ends the loop as a pass. A first `yes` carrying an
+# `allowed` is asked past, not judged as it stands (the split CP-73 reverses).
 test_first_ask_holding_all_three_passes() {
   seq="$WORK/seq-first-all-three"
   sequenced_probe_stub "$seq" "yes denied allowed" "yes denied denied"
@@ -419,8 +425,8 @@ test_first_ask_holding_all_three_passes() {
   expect_no_bundle_process "$APP"
 }
 
-# CP-76: the pass line states the window in force ($PROBE_TICKS), never the ask that passed. The pass
-# comes on ask 1 while the line says 5, which is what tells the two apart.
+# CP-76: the pass line states the window in force ($PROBE_TICKS), never the ask that passed. The
+# pass comes on ask 1 while the line says 5, which is what tells the two apart.
 test_pass_line_states_the_window_in_force() {
   seq="$WORK/seq-pass-line-window"
   sequenced_probe_stub "$seq" "yes denied denied"
@@ -483,8 +489,8 @@ test_red_verdict_lines_are_on_stderr() {
 }
 
 # CP-74, CP-75: a `yes` report is not exempt when the window runs out — one condition short still
-# fails after every ask, and the closing line states the window. Bounded at 3 asks: at the default the
-# static stub would be asked 40 times, about 10 s.
+# fails after every ask, and the closing line states the window. Bounded at 3 asks: at the default
+# the static stub would be asked 40 times, about 10 s.
 test_outbound_connection_allowed_fails() {
   seq="$WORK/seq-outbound-allowed"
   sequenced_probe_stub "$seq" "yes denied allowed"
@@ -534,8 +540,8 @@ test_not_sandboxed_fails() {
 }
 
 # `sandbox_check` answers "sandboxed, everything denied" for a pid that names no process at all — a
-# measured false positive (pid 99999999, this change). A wall check that reads it as a pass would pass
-# on a process that is not there, so the probe must fail on a pid it cannot find.
+# measured false positive (pid 99999999, this change). A wall check that reads it as a pass would
+# pass on a process that is not there, so the probe must fail on a pid it cannot find.
 test_probe_fails_on_a_pid_that_does_not_exist() {
   compile_probe || return 1
 
@@ -546,8 +552,8 @@ test_probe_fails_on_a_pid_that_does_not_exist() {
   expect_output_lacks "sandboxed: yes"
 }
 
-# CP-42: three counts, three named failures. `ps` is stubbed on PATH; `open` is stubbed too, so nothing
-# is launched and the stubbed `ps` is the only thing that says what is running.
+# CP-42: three counts, three named failures. `ps` is stubbed on PATH; `open` is stubbed too, so
+# nothing is launched and the stubbed `ps` is the only thing that says what is running.
 test_instance_already_running_fails_before_launch() {
   executable="$(bundle_executable_of "$APP")"
   mkdir -p "$WORK/stubs-running"
@@ -587,12 +593,12 @@ test_more_than_one_process_fails() {
   expect_output_contains "more than one process"
 }
 
-# CP-46 binds EVERY exit path: the script stops the process it launched and stops nothing else. On this
-# path it recorded no pid — it cannot tell which of the two it launched — so it must signal neither.
-# The two processes are real, so "still running afterwards" is a fact about the machine and not about
-# what a stub reported; the case above uses invented pids and cannot assert survival at all. Without
-# this, a stop that went back to signalling everything it found (the pkill-by-pattern defect CP-46
-# exists to retire) would leave the whole suite green.
+# CP-46 binds EVERY exit path: the script stops the process it launched and stops nothing else. On
+# this path it recorded no pid — it cannot tell which of the two it launched — so it must signal
+# neither. The two processes are real, so "still running afterwards" is a fact about the machine and
+# not about what a stub reported; the case above uses invented pids and cannot assert survival at
+# all. Without this, a stop that went back to signalling everything it found (the pkill-by-pattern
+# defect CP-46 exists to retire) would leave the whole suite green.
 test_more_than_one_process_signals_neither() {
   executable="$(bundle_executable_of "$APP")"
   first="$(sleep 120 > /dev/null 2>&1 & echo $!)"
@@ -665,9 +671,9 @@ publish_control_reading() {
   printf '%s\n' "$reading"
 }
 
-# CP-44: the negative control. `checks/bundle.sh` refuses to launch a bundle whose entitlements are not
-# exactly C-R2's, so the ordinary path cannot run the probe on a no-entitlement build; --negative-control
-# is the mode that does, and it passes only on a NOT-sandboxed report.
+# CP-44: the negative control. `checks/bundle.sh` refuses to launch a bundle whose entitlements are
+# not exactly C-R2's, so the ordinary path cannot run the probe on a no-entitlement build;
+# --negative-control is the mode that does, and it passes only on a NOT-sandboxed report.
 test_negative_control_reports_unsandboxed() {
   write_entitlements "$WORK/empty.plist"
   copy="$(resigned_copy control "$WORK/empty.plist")" || fail "could not re-sign the copy" || return 1
@@ -735,8 +741,8 @@ test_negative_control_probe_failure_fails() {
   expect_no_bundle_process "$copy"
 }
 
-# CP-67's last sentence (control half): a report that exits 0 but carries no sandboxed: line is not a
-# NOT-sandboxed report, so it fails the control exactly as a sandboxed: yes report would.
+# CP-67's last sentence (control half): a report that exits 0 but carries no sandboxed: line is not
+# a NOT-sandboxed report, so it fails the control exactly as a sandboxed: yes report would.
 test_negative_control_unreadable_report_fails() {
   write_entitlements "$WORK/empty-unreadable.plist"
   copy="$(resigned_copy control-unreadable "$WORK/empty-unreadable.plist")" || fail "could not re-sign the copy" || return 1
@@ -751,8 +757,9 @@ test_negative_control_unreadable_report_fails() {
 }
 
 # The script's own judgement, on its own: an unentitled build the operating system reports sandboxed
-# means the probe cannot tell the two builds apart, and the control fails. The suite-level case below
-# would fail on the control case's own assertion whatever the script decided, so it cannot carry this.
+# means the probe cannot tell the two builds apart, and the control fails. The suite-level case
+# below would fail on the control case's own assertion whatever the script
+# decided, so it cannot carry this.
 test_negative_control_reported_sandboxed_fails() {
   write_entitlements "$WORK/empty-judged.plist"
   copy="$(resigned_copy control-judged "$WORK/empty-judged.plist")" || fail "could not re-sign the copy" || return 1
@@ -766,8 +773,8 @@ test_negative_control_reported_sandboxed_fails() {
   expect_no_bundle_process "$copy"
 }
 
-# The suite run as its own subject: a probe that reports the no-entitlement build sandboxed cannot tell
-# the two builds apart, so the suite must fail and say which case.
+# The suite run as its own subject: a probe that reports the no-entitlement build sandboxed cannot
+# tell the two builds apart, so the suite must fail and say which case.
 test_negative_control_reported_sandboxed_fails_the_suite() {
   mkdir -p "$WORK/stubs-control-sandboxed"
   probe_stub "$WORK/stubs-control-sandboxed" yes denied denied
@@ -929,9 +936,9 @@ test_second_executable_fails() {
 # --- the drawn-from rule and the contents block (CP-116 – CP-118) ---
 #
 # Every refusal case asserts two things: the run exits non-zero and names the offending path, and
-# nothing was launched — the `open` stub's log does not exist. A copy that gains or loses a file needs
-# no re-signing for a refusal, because the refusal comes before the launch; a case that expects the run
-# to go past both blocks and launch re-signs it first.
+# nothing was launched — the `open` stub's log does not exist. A copy that gains or loses a file
+# needs no re-signing for a refusal, because the refusal comes before the launch; a case that
+# expects the run to go past both blocks and launch re-signs it first.
 
 # Runs the script on $1 with an `open` stub that records a launch in $WORK/open-$2.log. Any further
 # argument is a NAME=value pair put into the run's environment. A stub the caller already placed in
@@ -950,7 +957,8 @@ expect_not_launched() {
   [ ! -e "$WORK/open-$1.log" ] || fail "the bundle was launched: $(cat "$WORK/open-$1.log")"
 }
 
-# The shape every refusal shares: non-zero, every path in "$@" named, nothing launched. $1 is the tag.
+# The shape every refusal shares: non-zero, every path in "$@" named,
+# nothing launched. $1 is the tag.
 expect_refused_naming() {
   tag="$1"
   shift
@@ -961,7 +969,8 @@ expect_refused_naming() {
   expect_not_launched "$tag"
 }
 
-# A re-signed copy of the bundle with a file of $3 placed at $2, relative to the bundle. $1 names the copy.
+# A re-signed copy of the bundle with a file of $3 placed at $2, relative to
+# the bundle. $1 names the copy.
 copy_with_file() {
   placed="$(valid_copy "$1")" || return 1
   mkdir -p "$(dirname "$placed/$2")"
@@ -984,8 +993,8 @@ test_drawn_from_pass_line_is_on_stdout() {
   esac
 }
 
-# D1-2: the expected set is the source tree's, read when the script runs — a set with one more member
-# than the bundle holds is refused, naming it.
+# D1-2: the expected set is the source tree's, read when the script runs — a set with one more
+# member than the bundle holds is refused, naming it.
 test_expected_set_is_read_from_the_source_tree() {
   mkdir -p "$WORK/set-plus-extra"
   cp "$EXPECTED_SET_DIR"/* "$WORK/set-plus-extra/"
@@ -1023,7 +1032,8 @@ test_svg_nested_deep_outside_resources_fails() {
   expect_refused_naming svg-deep "Contents/MacOS/a/b/file.svg"
 }
 
-# D1-6: a name that is not in the set, ending in .svg. Only the suffix half of the rule can refuse it.
+# D1-6: a name that is not in the set, ending in .svg. Only the suffix
+# half of the rule can refuse it.
 test_foreign_svg_outside_resources_fails() {
   copy="$(copy_with_file svg-foreign Contents/MacOS/stray.svg '<svg/>')" || fail "could not re-sign the copy" || return 1
 
@@ -1060,8 +1070,8 @@ test_glyphs_missing_from_resources_are_each_named() {
   expect_refused_naming glyphs-missing "folder.svg" "file.svg"
 }
 
-# D1-10: files of any other name, at any depth under Contents/Resources, are outside the rule and do not
-# stop the run. The rule's output never names the three entries outside its domain.
+# D1-10: files of any other name, at any depth under Contents/Resources, are outside the rule and do
+# not stop the run. The rule's output never names the three entries outside its domain.
 test_files_outside_the_set_under_resources_pass() {
   copy="$(copy_with_file resources-extra Contents/Resources/sub/x.txt 'x')" || fail "could not place the file" || return 1
   codesign --force --sign - --entitlements "$WORK/valid.plist" "$copy" > /dev/null 2>&1 \
@@ -1089,7 +1099,8 @@ exit 0
   expect_refused_naming exec-bit "Contents/Resources/helper"
 }
 
-# D1-12 (CP-118 a): a Mach-O binary is an executable whatever its mode. Only the magic can refuse it.
+# D1-12 (CP-118 a): a Mach-O binary is an executable whatever its
+# mode. Only the magic can refuse it.
 test_mach_o_without_execute_bit_fails() {
   copy="$(valid_copy mach-o)" || fail "could not re-sign the copy" || return 1
   cp "$copy/Contents/MacOS/KAReader" "$copy/Contents/Resources/bin"
@@ -1120,8 +1131,8 @@ test_font_by_signature_fails() {
   expect_refused_naming font-sig "Contents/Resources/glyphs.dat"
 }
 
-# D1-14 (CP-118 c): a byte copy of a tracked checks/ file, whatever its name. Its mode is set to 644 so
-# the execute bit does not refuse it first: only the copy rule can.
+# D1-14 (CP-118 c): a byte copy of a tracked checks/ file, whatever its name. Its mode is set to 644
+# so the execute bit does not refuse it first: only the copy rule can.
 test_copy_of_a_checks_file_fails() {
   copy="$(valid_copy checks-copy)" || fail "could not re-sign the copy" || return 1
   cp "$ROOT/checks/bundle.sh" "$copy/Contents/Resources/x"
@@ -1132,8 +1143,8 @@ test_copy_of_a_checks_file_fails() {
   expect_refused_naming checks-copy "Contents/Resources/x"
 }
 
-# D1-14 (CP-118 c): an empty file matches nothing — checks/.gitkeep is tracked and empty — so the run
-# goes past the blocks and reaches the launch, which the `open` stub records.
+# D1-14 (CP-118 c): an empty file matches nothing — checks/.gitkeep is tracked and empty — so the
+# run goes past the blocks and reaches the launch, which the `open` stub records.
 test_empty_file_is_not_a_checks_copy() {
   copy="$(copy_with_file empty-file Contents/Resources/empty '')" || fail "could not place the file" || return 1
 
@@ -1154,7 +1165,8 @@ test_checks_listing_that_fails_is_refused() {
   expect_refused_naming git-fails "cannot list the files tracked under checks/"
 }
 
-# The listing that comes back empty: a set of candidates with no member would let every copy through.
+# The listing that comes back empty: a set of candidates with no
+# member would let every copy through.
 test_empty_checks_listing_is_refused() {
   mkdir -p "$WORK/stubs-git-empty"
   make_stub "$WORK/stubs-git-empty" git 'exit 0'
@@ -1164,9 +1176,9 @@ test_empty_checks_listing_is_refused() {
   expect_refused_naming git-empty "the list of files tracked under checks/ is empty"
 }
 
-# CP-117 and CP-118 name the cause on stderr. The suite's helper folds the streams together, so this is
-# the one case that reads stderr alone: with stdout discarded, a drawn-from refusal and a contents
-# refusal each still name their path.
+# CP-117 and CP-118 name the cause on stderr. The suite's helper folds the streams together, so this
+# is the one case that reads stderr alone: with stdout discarded, a drawn-from refusal and a
+# contents refusal each still name their path.
 test_pre_launch_refusals_are_on_stderr() {
   mkdir -p "$WORK/stubs-stderr"
   make_stub "$WORK/stubs-stderr" open "exit 0"
@@ -1191,12 +1203,12 @@ exit 0
 
 # --- added by the code-integrity review: each member of a closed list, and each half of a rule ---
 #
-# The cases above test one member of each list the plan fixed (tl_instruction.md, Task 2, 2b). A script
-# that dropped any other member would still pass them, so each case below places every member at once
-# and asserts each is named. Every file is mode 644 unless the case is about the mode.
+# The cases above test one member of each list the plan fixed (tl_instruction.md, Task 2, 2b). A
+# script that dropped any other member would still pass them, so each case below places every member
+# at once and asserts each is named. Every file is mode 644 unless the case is about the mode.
 
-# CP-118 (b): every extension of the plan's set, compared case-insensitively. The contents are no font,
-# so only the extension can refuse them.
+# CP-118 (b): every extension of the plan's set, compared case-insensitively. The contents are no
+# font, so only the extension can refuse them.
 test_every_font_extension_fails_in_any_case() {
   copy="$(valid_copy font-exts)" || fail "could not re-sign the copy" || return 1
   for name in a.OTF b.ttc c.Otc d.woff e.WOFF2 f.dfont g.TTF; do
@@ -1231,8 +1243,8 @@ test_every_font_signature_fails() {
     "font: Contents/Resources/woff2.dat"
 }
 
-# CP-118 (a): a Mach-O is an executable whatever its mode — thin or fat, in either byte order. Each file is
-# the four magic bytes and nothing else, at mode 644, so only the magic can refuse it.
+# CP-118 (a): a Mach-O is an executable whatever its mode — thin or fat, in either byte order. Each
+# file is the four magic bytes and nothing else, at mode 644, so only the magic can refuse it.
 test_every_mach_o_magic_is_an_executable() {
   copy="$(valid_copy mach-o-magics)" || fail "could not re-sign the copy" || return 1
   printf '\376\355\372\316' > "$copy/Contents/Resources/m-feedface"
@@ -1269,9 +1281,9 @@ test_group_or_other_execute_bit_fails() {
     "extra executable: Contents/Resources/group-exec" "extra executable: Contents/Resources/other-exec"
 }
 
-# CP-117 (c): a path outside Contents/Resources is refused when its name is a member's, as well as when it
-# ends in .svg. Every real member ends in .svg, so the name half is proved with a set that holds one member
-# that does not; the copy carries it under Resources too, so only (c) can refuse.
+# CP-117 (c): a path outside Contents/Resources is refused when its name is a member's, as well as
+# when it ends in .svg. Every real member ends in .svg, so the name half is proved with a set that
+# holds one member that does not; the copy carries it under Resources too, so only (c) can refuse.
 test_member_name_without_svg_suffix_outside_resources_fails() {
   mkdir -p "$WORK/set-plain-member"
   cp "$EXPECTED_SET_DIR"/* "$WORK/set-plain-member/"
@@ -1287,8 +1299,8 @@ test_member_name_without_svg_suffix_outside_resources_fails() {
   expect_output_lacks "glyph missing from Contents/Resources"
 }
 
-# CP-117: the expected set is every file in the glyph directory, dotfiles included (tl_instruction.md,
-# Task 2, 2b). A dotfile member the bundle lacks is a missing member, named.
+# CP-117: the expected set is every file in the glyph directory, dotfiles included
+# (tl_instruction.md, Task 2, 2b). A dotfile member the bundle lacks is a missing member, named.
 test_dotfile_in_the_expected_set_is_a_member() {
   mkdir -p "$WORK/set-dotfile"
   cp "$EXPECTED_SET_DIR"/* "$WORK/set-dotfile/"
@@ -1411,7 +1423,8 @@ test_leading_zero_window_reads_in_base_ten() {
   [ "$(asked_count "$seq")" -eq 8 ] || fail "expected 8 asks, got $(asked_count "$seq")" || return 1
 }
 
-# CP-74, CP-75, CP-77: never sandboxed within the window — the run fails naming the window it waited.
+# CP-74, CP-75, CP-77: never sandboxed within the window — the run
+# fails naming the window it waited.
 test_never_sandboxed_within_the_window_fails_naming_it() {
   seq="$WORK/seq-never-sandboxed"
   sequenced_probe_stub "$seq" "no denied denied"
@@ -1453,8 +1466,8 @@ test_window_exhausted_after_a_short_yes_judges_the_last_report() {
 }
 
 # CP-80.2: a probe failure on any ask ends the run at once — a short `yes` on an earlier ask changes
-# nothing, and the report that would have followed (a full sandboxed: yes) never gets the chance to be
-# judged.
+# nothing, and the report that would have followed (a full sandboxed: yes) never gets the chance to
+# be judged.
 test_probe_failure_after_a_short_yes_ends_the_run() {
   seq="$WORK/seq-short-yes-then-fail"
   sequenced_probe_stub "$seq" "yes denied allowed" FAIL "yes denied denied"
@@ -1513,8 +1526,8 @@ test_no_sandbox_observed_fails_and_cleans_up() {
   expect_no_bundle_process "$APP"
 }
 
-# The inverse of the case the legacy marker used to have: the launched process carries the marker and
-# the operating system says it is not sandboxed — the marker changes nothing (CP-41).
+# The inverse of the case the legacy marker used to have: the launched process carries the marker
+# and the operating system says it is not sandboxed — the marker changes nothing (CP-41).
 test_marker_in_the_environment_does_not_pass() {
   mkdir -p "$WORK/stubs-marker"
   probe_stub "$WORK/stubs-marker" no allowed allowed
@@ -1546,8 +1559,8 @@ test_existing_container_is_not_evidence() {
   expect_no_bundle_process "$APP"
 }
 
-# `sandbox_check` cannot be resolved: the run fails naming the symbol, and says nothing that reads as a
-# pass or as a denial (CP-43).
+# `sandbox_check` cannot be resolved: the run fails naming the symbol, and says nothing that reads
+# as a pass or as a denial (CP-43).
 test_unresolvable_symbol_fails() {
   mkdir -p "$WORK/stubs-unresolvable"
   make_stub "$WORK/stubs-unresolvable" ka-reader-sandbox-probe 'echo "ka-reader-sandbox-probe: sandbox_check cannot be resolved" >&2; exit 2'
@@ -1575,8 +1588,8 @@ test_probe_error_fails() {
 }
 
 # CP-73: a report that exits 0 but is missing a line — a report the judgment cannot read as holding
-# that condition — is asked past like any report short of all three; it is neither a failure that ends
-# the run nor a pass.
+# that condition — is asked past like any report short of all three; it is neither a failure that
+# ends the run nor a pass.
 test_unreadable_report_is_asked_past() {
   dir="$WORK/stubs-unreadable-then-yes"
   mkdir -p "$dir"
@@ -1593,8 +1606,8 @@ if [ \"\$n\" -eq 1 ]; then printf 'garbled\\n'; else printf 'sandboxed: yes\\nou
   expect_no_bundle_process "$APP"
 }
 
-# CP-67: a probe failure on any ask ends the run at once — no later ask is made, and the failure that
-# never happens (ask 3's sandboxed: yes) never gets the chance to be judged.
+# CP-67: a probe failure on any ask ends the run at once — no later ask is made, and the failure
+# that never happens (ask 3's sandboxed: yes) never gets the chance to be judged.
 test_probe_failure_mid_window_ends_the_run() {
   seq="$WORK/seq-mid-window"
   sequenced_probe_stub "$seq" "no denied denied" FAIL "yes denied denied"
@@ -1609,7 +1622,8 @@ test_probe_failure_mid_window_ends_the_run() {
 }
 
 # Every other case stubs the probe, so this is the one that holds the real probe's output contract:
-# the suite's own shell is unsandboxed, and the compiled probe must say so in the lines the script parses.
+# the suite's own shell is unsandboxed, and the compiled probe must say so
+# in the lines the script parses.
 test_probe_reports_an_unsandboxed_pid_as_unsandboxed() {
   compile_probe || return 1
 
@@ -1697,9 +1711,10 @@ test_temporaries_removed() {
   [ ! -e "$nested_work" ] || fail "the temporary directory still exists: $nested_work"
 }
 
-# QC-65 (CP-797, CP-798, CP-799): off a macOS virtual machine bundle.sh prints its one refusal line and
-# does nothing else, whatever it is given. The matrix (every host reading that must refuse) and the
-# traced run are the shared helper's; the arguments and inputs below are the ones bundle.sh reads.
+# QC-65 (CP-797, CP-798, CP-799): off a macOS virtual machine bundle.sh prints its one refusal line
+# and does nothing else, whatever it is given. The matrix (every host reading that must refuse) and
+# the traced run are the shared helper's; the arguments and inputs
+# below are the ones bundle.sh reads.
 test_refuses_off_vm_before_work() {
   VMR_TMP="$WORK"
   scene="$WORK/refusal-scene"
@@ -1774,8 +1789,8 @@ for case_name in $CASES; do
   fi
 done
 
-# The runner records which cases ran, and a run without the control is a failure: without it the probe
-# has not run (NFDR QC-25).
+# The runner records which cases ran, and a run without the control is a failure: without it the
+# probe has not run (NFDR QC-25).
 case "$ran " in
   *" $CONTROL_CASE "*) ;;
   *)

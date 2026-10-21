@@ -12,14 +12,16 @@
 #   other trace — in a fixture it was pointed at, or in the repo — is a failure of the promise.
 #
 # ADMISSION
-#   Before any of the three conditions, and before the root is found, the script asks the host whether it
-#   is a macOS virtual machine (`uname -s` Darwin and `sysctl -n kern.hv_vmm_present` 1, both succeeding).
-#   On any other reading it prints one line on stderr, nothing on stdout, and exits 1: no condition line,
-#   nothing read under $HOME or the fixtures (docs/nfdr.md QC-65). Nothing it is given turns this off.
+#   Before any of the three conditions, and before the root is found, the script asks the host
+#   whether it is a macOS virtual machine (`uname -s` Darwin and `sysctl -n kern.hv_vmm_present` 1,
+#   both succeeding). On any other reading it prints one line on stderr, nothing on stdout, and
+#   exits 1: no condition line, nothing read under $HOME or the fixtures (docs/nfdr.md QC-65).
+#   Nothing it is given turns this off.
 #
 # THE THREE CONDITIONS
-#   1. A file exists at $HOME/Library/Containers/com.kensaiapp.ka-reader/Data/Library/Logs/ka-reader.log.
-#      That path is checked and no other; nothing is launched.
+#   1. A file exists at
+#      $HOME/Library/Containers/com.kensaiapp.ka-reader/Data/Library/Logs/ka-reader.log. That path
+#      is checked and no other; nothing is launched.
 #   2. Every folder directly under checks/fixtures/ holds exactly what git commits there, plus the
 #      folders those paths imply, plus `.git` and the archive's listing — and the folders that
 #      listing implies — when a `<fixture>.git.tar` sits beside it. Anything else — ignored files
@@ -34,10 +36,11 @@
 set -euo pipefail
 
 # --- admission: this step runs only in a macOS virtual machine (docs/nfdr.md QC-65) ---
-# First work of the run, inline so nothing is opened, found or read before it — the root below is not
-# discovered, no condition is looked at. Both host readings must succeed and read exactly Darwin and 1;
-# a reader that fails, is missing or prints anything else refuses, and a failing reader that prints 1
-# does not admit (the status is kept, not only the text). Nothing the script reads changes this.
+# First work of the run, inline so nothing is opened, found or read before it — the root below is
+# not discovered, no condition is looked at. Both host readings must succeed and read exactly Darwin
+# and 1; a reader that fails, is missing or prints anything else refuses, and a failing reader that
+# prints 1 does not admit (the status is kept, not only the text). Nothing
+# the script reads changes this.
 host_os="$(uname -s 2> /dev/null)" && host_vmm="$(sysctl -n kern.hv_vmm_present 2> /dev/null)" \
   && [ "$host_os" = "Darwin" ] && [ "$host_vmm" = "1" ] \
   || { echo "own-state.sh: refused: this host does not read as a macOS virtual machine. This step launches KA-Reader.app or reads this machine's home, and runs only in a macOS virtual machine (docs/nfdr.md QC-65)." >&2; exit 1; }

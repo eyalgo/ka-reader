@@ -3,8 +3,10 @@
 # Version: 1.4.0 — structure.sh holds the value modules — QC-63 scan and its proof
 # Version: 1.3.0 — structure.sh holds the boundary reads; fs_reader test body moves to tests/unit
 # Version: 1.2.0 — fs_reader owns OpenFailure; structure.sh holds QC-11's fs-reader clause
-# Version: 1.1.0 — ka-reader structure.sh holds the unit graph — QC-10/11/13/14/17/61 scanner and planted-break cases
-# Version: 1.0.0 — first version: the Rust source scan over crates/ — QC-9's unsafe, Apple-framework and process clauses, QC-36's Rust half, QC-15's two filesystem owners
+# Version: 1.1.0 — ka-reader structure.sh holds the unit graph — QC-10/11/13/14/17/61
+#   scanner and planted-break cases
+# Version: 1.0.0 — first version: the Rust source scan over crates/ — QC-9's unsafe, Apple-framework
+#   and process clauses, QC-36's Rust half, QC-15's two filesystem owners
 #
 # checks/structure.sh — proves the Rust source holds the unit and import rules.
 #
@@ -102,8 +104,9 @@
 #     QC-9   unsafe       The token `unsafe`, in every use (block, fn, impl, extern,
 #                         #[unsafe(…)]), in every crate except ka-reader-bridge. Source: QC-9's
 #                         "unsafe appearing in no crate but ka-reader-bridge".
-#     QC-10  unit edge    In ka-reader-core, a file of the unit `folder_model` (crates/ka-reader-core/
-#     QC-11  (CP-417,     src/folder_model.rs, or any file under src/folder_model/) that imports
+#     QC-10  unit edge    In ka-reader-core, a file of the unit `folder_model`
+#     (crates/ka-reader-core/ QC-11  (CP-417,     src/folder_model.rs, or any file under
+#     src/folder_model/) that imports
 #            CP-418,      `own_state`, or names the libgit2 binding, is a QC-10 finding. A file of
 #            CP-435)      `fs_reader` or of `highlighter` (the same shapes) that imports a
 #                         forbidden unit, or names the libgit2 binding, is a QC-11 finding. A
@@ -149,16 +152,16 @@
 #                         src/lib.rs. lib.rs aside: crates/ka-reader-core/src/lib.rs is the one
 #                         exemption, matched by its exact path, so src/x/lib.rs and src/lib/x.rs
 #                         are in the domain. Not in it: any file of a unit (a unit with no file
-#                         today included), crates/ka-reader-core/tests/, build.rs, a ka-reader-core file
-#                         outside src/, and every file of ka-reader-bridge. Such a file that imports a
-#                         unit is a QC-63 finding, `value module imports <unit>`. The target set
-#                         is the seven units and the import forms are QC-10's and QC-11's, above:
-#                         a path whose segment after a leading `crate` or run of `super` is a
-#                         unit, a `use` tree reaching one, either form naming an item lib.rs
-#                         re-exports from a unit's module, read from lib.rs on every run, across
-#                         lines, with whitespace around `::` changing nothing. A comment or a
-#                         string counts; `self::<unit>`, `ka_reader_core::<unit>`, a bare name, and a
-#                         path to a file of no unit are not imports. One finding per distinct
+#                         today included), crates/ka-reader-core/tests/, build.rs, a ka-reader-core
+#                         file outside src/, and every file of ka-reader-bridge. Such a file that
+#                         imports a unit is a QC-63 finding, `value module imports <unit>`. The
+#                         target set is the seven units and the import forms are QC-10's and
+#                         QC-11's, above: a path whose segment after a leading `crate` or run of
+#                         `super` is a unit, a `use` tree reaching one, either form naming an item
+#                         lib.rs re-exports from a unit's module, read from lib.rs on every run,
+#                         across lines, with whitespace around `::` changing nothing. A comment or a
+#                         string counts; `self::<unit>`, `ka_reader_core::<unit>`, a bare name, and
+#                         a path to a file of no unit are not imports. One finding per distinct
 #                         (file, line, unit): a line naming two units gives two, a line naming one
 #                         unit twice gives one, at the line holding the unit's name. A file of a
 #                         unit is judged by QC-10 and QC-11 alone and never draws this finding; a
@@ -181,7 +184,8 @@
 #            (CP-423)     names and forms read over raw text, reported as QC-13 and naming the
 #                         framework or form. QC-9's own Apple finding stays ka-reader-core's.
 #                         Source: QC-13's "must not import any Apple framework".
-#     QC-14  manifest     In crates/ka-reader-core/Cargo.toml and crates/ka-reader-bridge/Cargo.toml, at
+#     QC-14  manifest     In crates/ka-reader-core/Cargo.toml and
+#     crates/ka-reader-bridge/Cargo.toml, at
 #            (CP-424,     the line of the offending key: a dependency in [dependencies] or
 #            CP-425)      [target.<cfg>.dependencies] whose key is `checks`, whose `package` is
 #                         `checks`, or whose `path` lies at or under the product's checks/
