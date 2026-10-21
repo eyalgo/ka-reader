@@ -316,7 +316,7 @@ exec \"\$REAL\" \"\$@\""
     *unchanged*) fail "$boundary/$sig: stdout says unchanged: $OUT"; return 1 ;;
   esac
   if [ "$boundary" = walk ]; then
-    expect_scene_plus "$before" "$WORK/$id" "$(printf '%s\n%s' "./.git dir" "$(empty_file_line ./.git/index.lock)")" \
+    expect_scene_plus "$before" "$WORK/$id" "$(printf '%s\n%s' "./repo/.git dir" "$(empty_file_line ./repo/.git/index.lock)")" \
       || { fail "$boundary/$sig: the scene is not the start plus the walk's lock"; return 1; }
   else
     expect_scene_is "$before" "$WORK/$id" || { fail "$boundary/$sig: a restored entry survived"; return 1; }
@@ -644,7 +644,7 @@ test_walk_created_lock_stays_with_only_its_needed_ancestors() {
   expect_stdout_is ".git/index.lock" || return 1
   [ "$(count_lines_with "$REMOVAL_LINE" "$ERR")" -eq 0 ] || fail "a cleanup diagnostic was printed: $ERR"
   expect_scene_plus "$before" "$WORK/lockstays" \
-    "$(printf '%s\n%s' "./.git dir" "$(empty_file_line ./.git/index.lock)")" || return 1
+    "$(printf '%s\n%s' "./repo/.git dir" "$(empty_file_line ./repo/.git/index.lock)")" || return 1
 
   copy="$(archive_backed_copy repo subtree)"
   before="$(scene_of "$WORK/subtree")"
@@ -656,8 +656,8 @@ test_walk_created_lock_stays_with_only_its_needed_ancestors() {
   expected_out="$(printf '%s\n%s\n%s' ".git/logs/fresh" ".git/logs/fresh/deeper" ".git/logs/fresh/deeper/x")"
   expect_stdout_is "$expected_out" || return 1
   expect_scene_plus "$before" "$WORK/subtree" "$(printf '%s\n%s\n%s\n%s\n%s' \
-    "./.git dir" "./.git/logs dir" "./.git/logs/fresh dir" "./.git/logs/fresh/deeper dir" \
-    "$(empty_file_line ./.git/logs/fresh/deeper/x)")" || return 1
+    "./repo/.git dir" "./repo/.git/logs dir" "./repo/.git/logs/fresh dir" "./repo/.git/logs/fresh/deeper dir" \
+    "$(empty_file_line ./repo/.git/logs/fresh/deeper/x)")" || return 1
 }
 
 # CP-835: a restored file the walk rewrote is still a restored entry. It is named on stdout, then it
@@ -700,7 +700,7 @@ test_restored_leaf_replaced_by_link_or_folder() {
   expect_nonzero_status || return 1
   expect_stdout_is "$(printf '%s\n%s' ".git/HEAD" ".git/HEAD/new")" || return 1
   expect_scene_plus "$before" "$WORK/leaffolder" "$(printf '%s\n%s\n%s' \
-    "./.git dir" "./.git/HEAD dir" "$(empty_file_line ./.git/HEAD/new)")" || return 1
+    "./repo/.git dir" "./repo/.git/HEAD dir" "$(empty_file_line ./repo/.git/HEAD/new)")" || return 1
 }
 
 # CP-836 (3): a walk that failed, or made no call, still takes out what the restore laid down, and a
@@ -729,7 +729,7 @@ test_failed_walk_with_restore_leaves_no_entry_behind() {
   expect_nonzero_status || return 1
   expect_stdout_lacks_unchanged || return 1
   expect_scene_plus "$before" "$WORK/failedlock" \
-    "$(printf '%s\n%s' "./.git dir" "$(empty_file_line ./.git/index.lock)")"
+    "$(printf '%s\n%s' "./repo/.git dir" "$(empty_file_line ./repo/.git/index.lock)")"
 }
 
 # CP-836 (4): an archive cut short fails the run, leaves the start scene, and the walk never runs.
@@ -796,7 +796,7 @@ exec \"\$REAL\" \"\$@\""
   expect_nonzero_status || return 1
   expect_stdout_lacks_unchanged || return 1
   expect_scene_plus "$before" "$WORK/failedfinal" \
-    "$(printf '%s\n%s' "./.git dir" "$(empty_file_line ./.git/index.lock)")"
+    "$(printf '%s\n%s' "./repo/.git dir" "$(empty_file_line ./repo/.git/index.lock)")"
 }
 
 # CP-836: a run whose scratch folder cannot be made has restored nothing yet, and touches nothing.
