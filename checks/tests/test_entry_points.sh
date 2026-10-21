@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.1.0 — the named-read cases reject the other five names, the deterministic-output case holds the complete printed order, and a whole-run case holds the full-run reporting
 # Version: 1.0.1 — CI green again: scene-building git runs no background maintenance, Swift builds with Xcode 16.2, and the entry-points suite reads metadata with plutil -extract
 # Version: 1.0.0 — first version: drives the real checks/entry-points.sh with every read, list and
 # resolution fault planted in a temporary copy
@@ -97,6 +98,7 @@ test_fifo_is_unreadable
 test_suite_selects_one_case
 test_suite_rejects_unknown_case
 test_suite_reports_each_failed_case
+test_suite_reports_whole_run_failures
 test_suite_leaves_original_inputs_unchanged
 "
 
@@ -1114,6 +1116,32 @@ test_suite_reports_each_failed_case() {
     *"FAIL test_case_2_unlisted_read_names_its_file"*) ;;
     *) fail "case 2 is not named as failed, so the run stopped at the first. output: $out" ;;
   esac
+}
+
+# CP-411, CP-826, CP-827: a whole run, with no selection, goes on past every failed case, names each
+# of them and exits non-zero. The product copy holds a script that always exits non-zero, so every
+# case that runs the script fails and a whole run has far more than two failed cases. The copy's run
+# starts with the selector removed and carries the marker below. The marker filters nothing: that
+# run still visits every case, and this case alone returns at once on seeing it, so a whole run
+# starts one more whole run and no deeper.
+test_suite_reports_whole_run_failures() {
+  [ -z "${KA_READER_ENTRY_POINTS_WHOLE_CHILD:-}" ] || return 0
+  new_case
+  copy="$CASE/product-copy"
+  mkdir -p "$copy/checks/tests"
+  cp "$ROOT/Cargo.toml" "$ROOT/Cargo.lock" "$ROOT/rust-toolchain.toml" "$copy/"
+  cp -R "$ROOT/crates" "$copy/crates"
+  cp "$REAL_LIST" "$copy/checks/entry-points.allow"
+  cp "$SUITE" "$copy/checks/tests/test_entry_points.sh"
+  printf '#!/usr/bin/env bash\necho "entry-points.sh: unlisted: itoa env::var src/planted_read.rs" >&2\nexit 1\n' > "$copy/checks/entry-points.sh"
+  chmod +x "$copy/checks/entry-points.sh" "$copy/checks/tests/test_entry_points.sh"
+
+  out="$(env -u KA_READER_TEST_ONLY KA_READER_ENTRY_POINTS_WHOLE_CHILD=1 "$copy/checks/tests/test_entry_points.sh" 2>&1)"
+  status=$?
+  failed_lines="$(printf '%s\n' "$out" | grep -c '^FAIL')"
+
+  [ "$status" -ne 0 ] || fail "expected a non-zero exit from a whole run whose scan always exits non-zero, got 0. output: $out" || return 1
+  [ "$failed_lines" -gt 2 ] || fail "expected more than two lines beginning FAIL from a whole run whose scan always exits non-zero, got $failed_lines. output: $out"
 }
 
 # CP-409: the product's status and every scanned package directory are what they were. This case is
