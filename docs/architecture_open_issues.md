@@ -28,7 +28,42 @@ None.
 
 ## 2. Choices to confirm — the Principal Architect drafted a best-effort answer; confirm or override
 
-None.
+### 2.1 § 8 says the card's command does not run `checks/gate.sh` yet; it has run it since 2026-10-20
+
+> **No `product-architecture` run wrote this item.** A `companion-self-answer` run raised it on
+> 2026-10-22, in the Principal Architect's seat, while answering § 3.1 and § 3.2 of this file. No item
+> asked for it. Reading § 8 whole to answer § 3.1, the run found the paragraph that § 3.1's sentence
+> sits in describing a project card that has since moved. The reasoning is at
+> `docs/trail/architecture/self_answer-56.md` § Raised on this document.
+
+- **Lands in:** `nfdr.md` § 8 — the opening paragraph's quote of the card's test command and its pin
+  (`docs/nfdr.md:L1475-L1501`), and *Until the card runs the script* (`:L1575-L1588`) — and every
+  sentence that reads under that paragraph: QC-56 (`:L1610-L1612`), QC-64 (`:L1723-L1726`), QC-65
+  (`:L1781-L1784`), § 9's harness-suites bullet (`:L2021-L2024`), § 9's `ka-reader-mac` bullet
+  (`:L2211-L2213`), and RN-6, which the opening paragraph says is extended when the card moves.
+- **Drafted into the records:** nothing yet. The change is proposed here, and only the fold may write
+  it.
+- **Rationale:** the paragraph is false now. § 8 quotes the card's test command as `cargo test
+  --workspace --locked && ka-reader-mac/assemble.sh && swift test --package-path ka-reader-mac &&
+  checks/structure.sh && checks/tests/test_structure.sh`, pinned at `kensaiapp-opensource@a4204e5b`.
+  It also says the card's move to `checks/gate.sh` "is owed to `product-card`". The move landed at
+  `kensaiapp-opensource@1941f963` (2026-10-20 17:14, "product-card: ka-reader — the test command runs
+  checks/gate.sh (NFDR v59 § 8)"). The comment beside it landed at `85264c69`. The card's
+  `**Test command:**` line now reads `checks/gate.sh` (`system/projects/ka-reader/project.md:L8` in
+  the managing instance). Both commits landed two minutes after NFDR v59 (`ka-reader@2baeecf`, 17:12),
+  and v60 (`ka-reader@435bb4e`) did not fold them. The paragraph says itself that it "goes false at the
+  card's next move until RN-6 is extended". That move has happened. The consequence matters more than
+  the quote. Five passages make `development-design` the gate for a rule because "no run issues" the
+  script at a change. At `1941f963`, the card's command is the script, so a run does issue it. The
+  fold would re-read the card, re-pin § 8 to it, extend RN-6, and re-derive each "until" against the
+  card as it stands. A gate the script now holds moves to the script. A gate that rests on something
+  else stays and names that ground; QC-64's *nothing else* half is one of these. Each pinned reading
+  of an earlier tree stays as a dated record.
+- **If overridden:** § 8 keeps describing a card that does not exist. Five entries keep naming a
+  review as the only gate for rules a run now holds at every change. A contributor who reads them
+  waits on a review that is no longer the only thing protecting them. Nothing supersedes and no ADR
+  moves.
+- **Confirm or override:** <"confirm", or "override: <what to do instead>">
 
 ## 3. Raised from downstream — an item from a seat that did not write these records
 
@@ -46,7 +81,18 @@ None.
   the bridge's `test result:` lines.
 - **If a document has to be written:** none. The fold would add a dated, commit-pinned reading of the
   27-step gate and keep the `8b93322` statement, which stays true of that tree.
-- **Answer:** <the owner fills this in>
+- **Answer:** Fold it as the item proposes: a correction, not a widening. Keep the `8b93322`
+  sentence as a dated record of that tree. Beside it, add the gate as it stands, pinned to
+  `ka-reader@389adad`, version 1.1.0 (`checks/gate.sh:L2`), with 27 steps.
+  `grep -c '^run_step' checks/gate.sh` prints 28, which is 27 steps plus the dispatcher at `:L27`. The
+  same count on `git show 8b93322:checks/gate.sh` prints 27. The new step is *Bridge tests under the
+  address sanitizer* (`:L57`), between *Test gate* (`:L50`) and *Structure check* (`:L58`). The tree
+  this run read, `ka-reader@9ce336b`, carries `389adad`, and `git diff --stat 389adad 9ce336b --
+  checks/gate.sh` prints nothing. The guest pass is cited as the PM's measurement in this item, from
+  the trail copy the fold makes. No commit is named for it, because the item names none. This was
+  decided together with § 2.1, which re-reads the same paragraph against the card. If § 2.1 is
+  confirmed, this dated reading stays as a record while the paragraph around it is re-derived.
+  Reasoning: `docs/trail/architecture/self_answer-56.md` § 3.1.
 
 ### 3.2 QC-13's sanitizer run is met with the sanitizer's global-variable checks switched off
 - **Raised by:** PM — 2026-10-22
@@ -68,6 +114,24 @@ None.
   buffers handed across the C ABI and freed by `ka_reader_free`, which are heap, and the bridge holds
   no logic of its own in statics. If the record rules otherwise, a later change has to find another
   way to link the load-time initializer under the sanitizer.
-- **Answer:** <the owner fills this in>
+- **Answer:** The step meets QC-13. QC-13's *verified by:* tail should say that its sanitizer run admits
+  `-Cllvm-args=-asan-globals=0`, give the reason and give the limit. § 10's QC-13 row names the flag
+  too. **Reason.** R-13 guards against a buffer freed twice or never, and a lifetime crossed. Every
+  buffer the bridge hands across the C ABI is an owned heap buffer that `ka_reader_free` frees, as
+  QC-13 already requires. The flag removes only the padding around globals. In LLVM, `if
+  (Opts.asan_globals)` wraps `instrumentGlobals` alone (`AddressSanitizer.cpp:L2645`, llvm-project
+  `main` at `044150762369`, read 2026-10-22). Load, store, heap and stack checks still run, and the PM
+  saw a heap overflow reported. At `389adad`, every `unsafe` site in the bridge works on a caller's
+  pointer, a heap box or the stack. None works on a static, and safe Rust bounds-checks any static it
+  indexes. **Why it is needed.** LLVM skips ELF's init arrays but not Mach-O's `__mod_init_func`
+  (`shouldInstrumentGlobal`, `:L1986-L1992`). So `INSTALL_LOG_AT_LOAD` (`exports.rs:L141-L143`) gets
+  padding and the linker refuses it, as `checks/gate.sh:L55-L56` records. **Limit.** The flag reaches
+  every crate built for the host target, not only the bridge. It costs nothing in `ka-reader-core`,
+  which holds no `unsafe`. The admission lapses for any change that hands a static across the ABI or
+  reaches one through a raw pointer. Such a change already breaks QC-13's owned-buffer rule, and
+  `development-design` reading QC-13 is its gate. If a later toolchain links the instrumented
+  initializer, the gate can drop the flag with no NFDR change. A leak (a buffer "freed never") is not
+  something this ruling claims the run catches. No ADR, and no `QC` added or renumbered. SDD R-13's
+  words stand. Reasoning: `docs/trail/architecture/self_answer-56.md` § 3.2.
 
 **How it closes.** `product-architecture` folds it on its next run like any other item here.
