@@ -144,6 +144,12 @@ test_git2_in_machine_config_rs_is_allowed
 test_git2_under_git_reader_is_allowed
 test_folder_model_git2_stays_qc10_alone
 test_fs_reader_git2_draws_one_qc11_line
+test_git_reader_unit_edges_are_rejected
+test_every_forbidden_pair_is_rejected
+test_future_unit_files_are_judged_without_editing_the_scan
+test_unit_edges_read_paths_and_trees_across_lines
+test_own_unit_and_allowed_edges_stay_clean
+test_binding_in_the_new_subjects
 "
 
 # --- helpers ---
@@ -2468,9 +2474,13 @@ test_value_module_rule_spares_units_and_lib_rs() {
   new_root value-module-spared || return 1
   plant "$R" "$FS_FILE" 'use crate::language::Language;'
   plant "$R" "ka-reader-core/src/lib.rs" 'pub use crate::fs_reader::Entry;'
-  for unit in own_state git_reader watcher markdown_renderer; do
+  for unit in own_state markdown_renderer; do
     plant "$R" "ka-reader-core/src/$unit.rs" 'use crate::fs_reader::Entry;'
     plant "$R" "ka-reader-core/src/$unit/x.rs" 'use crate::fs_reader::Entry;'
+  done
+  for unit in git_reader watcher; do
+    plant "$R" "ka-reader-core/src/$unit.rs" "use crate::$unit::Item;"
+    plant "$R" "ka-reader-core/src/$unit/x.rs" "use crate::$unit::Item;"
   done
   plant "$R" "ka-reader-core/tests/common/mod.rs" 'use crate::fs_reader::Entry;'
   plant "$R" "ka-reader-core/examples/x.rs" 'use crate::fs_reader::Entry;'
@@ -2573,6 +2583,170 @@ test_fs_reader_git2_draws_one_qc11_line() {
   expect_status 1 || return 1
   expect_count "crates/$FS_FILE" "$PLANT_LINE" QC-11 1 || return 1
   expect_count "crates/$FS_FILE" "$PLANT_LINE" QC-10 0 || return 1
+}
+
+# --- the cases of QC-11's git_reader, watcher and markdown_renderer subjects ---
+
+SRC="ka-reader-core/src"
+
+# One QC-11 line at $2 of $1, and it names the edge $3.
+expect_edge() {
+  expect_count "crates/$1" "$2" QC-11 1 || return 1
+  expect_finding_naming "crates/$1" "$2" QC-11 "$3" || return 1
+}
+
+test_git_reader_unit_edges_are_rejected() {
+  new_root git-reader-edges || return 1
+  for file in git_reader.rs git_reader/config_scan.rs; do
+    plant "$R" "$SRC/$file" 'use crate::folder_model::FolderModel;'
+    edge_folder="$PLANT_LINE"
+    plant "$R" "$SRC/$file" 'use crate::own_state::Theme;'
+    edge_own="$PLANT_LINE"
+    plant "$R" "$SRC/$file" 'use crate::highlighter::Span;'
+    edge_other="$PLANT_LINE"
+    run_structure "$R"
+    expect_status 1 || return 1
+    expect_edge "$SRC/$file" "$edge_folder" "git_reader imports folder_model" || return 1
+    expect_edge "$SRC/$file" "$edge_own" "git_reader imports own_state" || return 1
+    expect_edge "$SRC/$file" "$edge_other" "git_reader imports highlighter" || return 1
+  done
+}
+
+test_every_forbidden_pair_is_rejected() {
+  new_root forbidden-pairs || return 1
+  pairs=""
+  for target in folder_model own_state fs_reader watcher highlighter markdown_renderer; do
+    pairs="$pairs git_reader:$target"
+  done
+  for target in folder_model own_state fs_reader git_reader highlighter markdown_renderer; do
+    pairs="$pairs watcher:$target"
+  done
+  for target in folder_model own_state git_reader watcher; do
+    pairs="$pairs markdown_renderer:$target"
+  done
+  planted=""
+  for pair in $pairs; do
+    subject="${pair%%:*}"
+    target="${pair#*:}"
+    plant "$R" "$SRC/$subject/pairs.rs" "use crate::$target::Item;"
+    planted="$planted $subject:$target:$PLANT_LINE"
+  done
+  plant "$R" "$SRC/git_reader/pairs.rs" 'fn f(_: crate::Entry) {}'
+  reexport_line="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  for item in $planted; do
+    subject="${item%%:*}"
+    rest="${item#*:}"
+    expect_edge "$SRC/$subject/pairs.rs" "${rest#*:}" "$subject imports ${rest%%:*}" || return 1
+  done
+  expect_edge "$SRC/git_reader/pairs.rs" "$reexport_line" "git_reader imports fs_reader" || return 1
+}
+
+test_future_unit_files_are_judged_without_editing_the_scan() {
+  new_root future-units || return 1
+  for file in watcher.rs watcher/fsevents.rs markdown_renderer.rs markdown_renderer/nested/x.rs; do
+    [ ! -e "$R/crates/$SRC/$file" ] || fail "$file must not exist in the tree" || return 1
+  done
+  plant "$R" "$SRC/watcher.rs" 'use crate::folder_model::FolderModel;'
+  w1="$PLANT_LINE"
+  plant "$R" "$SRC/watcher/fsevents.rs" 'use crate::highlighter::Span;'
+  w2="$PLANT_LINE"
+  plant "$R" "$SRC/markdown_renderer.rs" 'use crate::folder_model::FileView;'
+  m1="$PLANT_LINE"
+  plant "$R" "$SRC/markdown_renderer/nested/x.rs" 'use crate::git_reader::GitPort;'
+  m2="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_edge "$SRC/watcher.rs" "$w1" "watcher imports folder_model" || return 1
+  expect_edge "$SRC/watcher/fsevents.rs" "$w2" "watcher imports highlighter" || return 1
+  expect_edge "$SRC/markdown_renderer.rs" "$m1" "markdown_renderer imports folder_model" || return 1
+  expect_edge "$SRC/markdown_renderer/nested/x.rs" "$m2" "markdown_renderer imports git_reader" || return 1
+}
+
+test_unit_edges_read_paths_and_trees_across_lines() {
+  new_root edges-across-lines || return 1
+  file="$SRC/git_reader/across.rs"
+  plant "$R" "$file" 'use crate::
+    folder_model
+    ::FolderModel;'
+  split_line=$((PLANT_LINE + 1))
+  plant "$R" "$file" 'use super::super::{own_state::Theme,
+    highlighter :: Span};'
+  tree_own=$PLANT_LINE
+  tree_highlighter=$((PLANT_LINE + 1))
+  plant "$R" "$file" '// crate::watcher::W in a comment counts'
+  comment_line="$PLANT_LINE"
+  plant "$R" "$file" 'const S: &str = "crate::markdown_renderer::R";'
+  string_line="$PLANT_LINE"
+  plant "$R" "$file" 'use crate::highlighter::{Span, TokenClass};'
+  same_target="$PLANT_LINE"
+  plant "$R" "$file" 'use crate::{highlighter::Span, folder_model::FileView};'
+  two_targets="$PLANT_LINE"
+  plant "$R" "$file" 'use crate::folder_model::A; // one'
+  again_one="$PLANT_LINE"
+  plant "$R" "$file" 'use crate::folder_model::B;'
+  again_two="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_edge "$file" "$split_line" "git_reader imports folder_model" || return 1
+  expect_edge "$file" "$tree_own" "git_reader imports own_state" || return 1
+  expect_edge "$file" "$tree_highlighter" "git_reader imports highlighter" || return 1
+  expect_edge "$file" "$comment_line" "git_reader imports watcher" || return 1
+  expect_edge "$file" "$string_line" "git_reader imports markdown_renderer" || return 1
+  expect_edge "$file" "$same_target" "git_reader imports highlighter" || return 1
+  expect_count "crates/$file" "$two_targets" QC-11 2 || return 1
+  expect_edge "$file" "$again_one" "git_reader imports folder_model" || return 1
+  expect_edge "$file" "$again_two" "git_reader imports folder_model" || return 1
+}
+
+test_own_unit_and_allowed_edges_stay_clean() {
+  new_root new-subject-allowed-edges || return 1
+  plant "$R" "$SRC/git_reader/libgit2.rs" 'use super::{StatusEntry, GitPort};'
+  plant "$R" "$SRC/git_reader.rs" 'use crate::git_reader::GitPort;'
+  plant "$R" "$SRC/git_reader.rs" 'use crate::language::Language;'
+  plant "$R" "$SRC/git_reader.rs" 'use crate::error::Error;'
+  plant "$R" "$SRC/git_reader.rs" 'use self::fs_reader::Entry;'
+  plant "$R" "$SRC/git_reader.rs" 'use ka_reader_core::folder_model::FolderModel;'
+  plant "$R" "$SRC/watcher.rs" 'use crate::watcher::W;'
+  plant "$R" "$SRC/markdown_renderer.rs" 'use crate::fs_reader::Entry;'
+  plant "$R" "$SRC/markdown_renderer.rs" 'use crate::highlighter::Span;'
+  plant "$R" "$SRC/markdown_renderer.rs" 'use crate::language::Language;'
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+  # A file whose name only begins with a unit's name is a value module: QC-63, never QC-11.
+  new_root near-names || return 1
+  for near in watcher_ext markdown_renderer_ext git_reader_ext; do
+    plant "$R" "$SRC/$near.rs" 'use crate::folder_model::FileView;'
+    expect_near="$PLANT_LINE"
+    run_structure "$R"
+    expect_status 1 || return 1
+    expect_count "crates/$SRC/$near.rs" "$expect_near" QC-11 0 || return 1
+    expect_finding_naming "crates/$SRC/$near.rs" "$expect_near" QC-63 "value module imports folder_model" || return 1
+  done
+}
+
+test_binding_in_the_new_subjects() {
+  new_root binding-new-subjects || return 1
+  plant "$R" "$SRC/git_reader.rs" 'use git2 as _x;'
+  plant "$R" "$SRC/git_reader/x.rs" 'use libgit2_sys as _y;'
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+  new_root binding-general-line || return 1
+  for file in watcher.rs watcher/x.rs markdown_renderer.rs markdown_renderer/x.rs; do
+    plant "$R" "$SRC/$file" 'use git2::Repository;'
+    one="$PLANT_LINE"
+    plant "$R" "$SRC/$file" 'use git2::A; use libgit2_sys::B;'
+    two="$PLANT_LINE"
+    run_structure "$R"
+    expect_status 1 || return 1
+    expect_count "crates/$SRC/$file" "$one" QC-11 1 || return 1
+    expect_finding_naming "crates/$SRC/$file" "$one" QC-11 'the libgit2 binding `git2` named outside git-reader' || return 1
+    expect_count "crates/$SRC/$file" "$two" QC-11 2 || return 1
+    expect_finding_naming "crates/$SRC/$file" "$two" QC-11 'the libgit2 binding `libgit2_sys` named outside git-reader' || return 1
+  done
 }
 
 # --- runner ---
