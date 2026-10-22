@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Version: 1.6.0 — structure.sh holds QC-10's adapter, QC-11's git_reader, watcher and markdown_renderer
+#   subjects, and QC-17's adapter construction
 # Version: 1.5.0 — probe answers root for a git file; third QC-15 filesystem owner
 # Version: 1.4.0 — structure.sh holds the value modules — QC-63 scan and its proof
 # Version: 1.3.0 — structure.sh holds the boundary reads; fs_reader test body moves to tests/unit
