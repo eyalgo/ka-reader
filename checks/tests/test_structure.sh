@@ -150,6 +150,10 @@ test_future_unit_files_are_judged_without_editing_the_scan
 test_unit_edges_read_paths_and_trees_across_lines
 test_own_unit_and_allowed_edges_stay_clean
 test_binding_in_the_new_subjects
+test_folder_model_adapter_name_is_rejected
+test_folder_model_adapter_module_form_is_rejected
+test_folder_model_allowed_git_port_forms_stay_clean
+test_folder_model_adapter_findings_compose
 "
 
 # --- helpers ---
@@ -2747,6 +2751,110 @@ test_binding_in_the_new_subjects() {
     expect_count "crates/$SRC/$file" "$two" QC-11 2 || return 1
     expect_finding_naming "crates/$SRC/$file" "$two" QC-11 'the libgit2 binding `libgit2_sys` named outside git-reader' || return 1
   done
+}
+
+# --- QC-10's adapter clause: folder_model names git-reader's adapter ---
+
+FM_DIR_FILE="ka-reader-core/src/folder_model/x.rs"
+
+# The QC-10 adapter finding at $2 of $1 names the form $3, once.
+expect_adapter() {
+  expect_finding_naming "crates/$1" "$2" QC-10 "folder_model names git-reader's adapter \`$3\`" || return 1
+}
+
+test_folder_model_adapter_name_is_rejected() {
+  new_root adapter-name || return 1
+  for file in "$CORE_FILE" "$FM_DIR_FILE"; do
+    plant "$R" "$file" 'use crate::git_reader::Libgit2;'
+    l_path="$PLANT_LINE"
+    plant "$R" "$file" 'use crate::git_reader::{GitPort, Libgit2};'
+    l_group="$PLANT_LINE"
+    plant "$R" "$file" 'type Held = Libgit2;'
+    l_bare="$PLANT_LINE"
+    plant "$R" "$file" '// wired to Libgit2 by the bridge'
+    l_comment="$PLANT_LINE"
+    plant "$R" "$file" 'const S: &str = "Libgit2";'
+    l_string="$PLANT_LINE"
+    plant "$R" "$file" 'const R: &str = r#"Libgit2"#;'
+    l_raw="$PLANT_LINE"
+    run_structure "$R"
+    expect_status 1 || return 1
+    for line in "$l_path" "$l_group" "$l_bare" "$l_comment" "$l_string" "$l_raw"; do
+      expect_adapter "$file" "$line" Libgit2 || return 1
+      expect_count "crates/$file" "$line" QC-10 1 || return 1
+    done
+  done
+  new_root adapter-near-names || return 1
+  plant "$R" "$CORE_FILE" 'struct MyLibgit2; struct Libgit2Foo; struct Libgit2s;'
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+}
+
+test_folder_model_adapter_module_form_is_rejected() {
+  new_root adapter-module || return 1
+  file="$FM_DIR_FILE"
+  lines=""
+  for text in \
+    'use crate::git_reader::libgit2::Item;' \
+    'fn f(_: crate::git_reader::libgit2::X) {}' \
+    'use super::super::git_reader::libgit2::Y;' \
+    'use crate::{git_reader::{libgit2::Z, GitPort}};' \
+    'use crate::git_reader :: libgit2 :: W;'; do
+    plant "$R" "$file" "$text"
+    lines="$lines $PLANT_LINE"
+  done
+  plant "$R" "$file" 'use crate::git_reader::
+    libgit2::V;'
+  lines="$lines $((PLANT_LINE + 1))"
+  run_structure "$R"
+  expect_status 1 || return 1
+  for line in $lines; do
+    expect_adapter "$file" "$line" git_reader::libgit2 || return 1
+    expect_count "crates/$file" "$line" QC-10 1 || return 1
+  done
+}
+
+test_folder_model_allowed_git_port_forms_stay_clean() {
+  new_root adapter-clean || return 1
+  plant "$R" "$CORE_FILE" 'use crate::git_reader::{GitPort, RootFinding};'
+  plant "$R" "$CORE_FILE" 'fn f(_: &dyn crate::GitPort) {}'
+  plant "$R" "$CORE_FILE" '// libgit2 does the I/O'
+  plant "$R" "$CORE_FILE" 'fn libgit2() { let libgit2 = 1; let _ = libgit2; }'
+  plant "$R" "$CORE_FILE" 'use crate::libgit2::Item;'
+  plant "$R" "$CORE_FILE" 'use self::git_reader::libgit2::Item;'
+  plant "$R" "$CORE_FILE" 'use ka_reader_core::git_reader::libgit2::Item;'
+  plant "$R" "$FM_DIR_FILE" 'use crate::git_reader::GitPort;'
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+}
+
+test_folder_model_adapter_findings_compose() {
+  new_root adapter-compose || return 1
+  file="$CORE_FILE"
+  plant "$R" "$file" 'use crate::own_state::Theme; use crate::git_reader::Libgit2;'
+  l_edge="$PLANT_LINE"
+  plant "$R" "$file" 'use git2 as _x; // Libgit2'
+  l_binding="$PLANT_LINE"
+  plant "$R" "$file" '// Libgit2 and again Libgit2'
+  l_repeat="$PLANT_LINE"
+  plant "$R" "$file" 'use crate::git_reader::libgit2::Libgit2;'
+  l_both="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_count "crates/$file" "$l_edge" QC-10 2 || return 1
+  expect_finding_naming "crates/$file" "$l_edge" QC-10 "folder_model imports own_state" || return 1
+  expect_adapter "$file" "$l_edge" Libgit2 || return 1
+  expect_count "crates/$file" "$l_binding" QC-10 2 || return 1
+  expect_finding_naming "crates/$file" "$l_binding" QC-10 "folder_model names the libgit2 binding \`git2\`" || return 1
+  expect_adapter "$file" "$l_binding" Libgit2 || return 1
+  expect_count "crates/$file" "$l_repeat" QC-10 1 || return 1
+  expect_count "crates/$file" "$l_both" QC-10 2 || return 1
+  expect_adapter "$file" "$l_both" Libgit2 || return 1
+  expect_adapter "$file" "$l_both" git_reader::libgit2 || return 1
+  expect_before "$file:$l_edge: QC-10: folder_model imports own_state" "$file:$l_edge: QC-10: folder_model names git-reader's adapter" || return 1
+  expect_before "$file:$l_both: QC-10: folder_model names git-reader's adapter \`Libgit2\`" "$file:$l_both: QC-10: folder_model names git-reader's adapter \`git_reader::libgit2\`" || return 1
 }
 
 # --- runner ---
