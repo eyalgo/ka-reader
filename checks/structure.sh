@@ -16,7 +16,8 @@
 #   source, on every run of CI. It reads text, never the compiler's view of it, so it needs no
 #   toolchain and no build. The scan table states each rule's text scope. Closed-name source
 #   rules include comments and strings: a forbidden name in a comment is cheap to remove. The
-#   bridge crate set reads code only, and manifest rules read TOML keys and values.
+#   bridge crate set and the adapter-construction rule read code only, and manifest rules read TOML
+#   keys and values.
 #
 # USAGE
 #   checks/structure.sh
@@ -104,25 +105,39 @@
 #     QC-9   unsafe       The token `unsafe`, in every use (block, fn, impl, extern,
 #                         #[unsafe(…)]), in every crate except ka-reader-bridge. Source: QC-9's
 #                         "unsafe appearing in no crate but ka-reader-bridge".
-#     QC-10  unit edge    In ka-reader-core, a file of the unit `folder_model`
-#     (crates/ka-reader-core/ QC-11  (CP-417,     src/folder_model.rs, or any file under
-#     src/folder_model/) that imports
-#            CP-418,      `own_state`, or names the libgit2 binding, is a QC-10 finding. A file of
-#            CP-435)      `fs_reader` or of `highlighter` (the same shapes) that imports a
-#                         forbidden unit, or names the libgit2 binding, is a QC-11 finding. A
-#                         unit is its module and the units are folder_model, fs_reader,
-#                         highlighter, own_state, git_reader, watcher and markdown_renderer;
-#                         every other file of the core (lib.rs, language.rs, error.rs) belongs
-#                         to no unit, is never a subject of QC-10 or QC-11 (QC-63 below reads the
-#                         files of no unit), and importing it is never an edge.
-#                         Forbidden for fs_reader: folder_model, own_state, git_reader,
-#                         watcher, markdown_renderer, highlighter. Forbidden for highlighter:
-#                         folder_model, own_state, git_reader, watcher, markdown_renderer,
-#                         fs_reader. A file
-#                         imports a unit when its text holds, read across lines with whitespace
-#                         around `::` changing nothing: a path whose segment after a leading
-#                         `crate`, or a leading run of `super`, is the unit; a `use` tree that
-#                         reaches it in that position; or either form naming an item that
+#     QC-10  unit edge    In ka-reader-core, a file of a unit is src/<unit>.rs or any file under
+#     QC-11  (CP-417,     src/<unit>/, the module name matched as an exact file or directory name
+#            CP-418,      and never as a prefix, so src/watcher_ext.rs is a file of no unit. The
+#            CP-435)      units are folder_model, fs_reader, highlighter, own_state, git_reader,
+#                         watcher and markdown_renderer. Every other file of the core (lib.rs,
+#                         language.rs, error.rs) belongs to no unit, is never a subject of QC-10 or
+#                         QC-11 (QC-63 below reads the files of no unit), and importing it is never
+#                         an edge. A file of `folder_model` that imports `own_state`, or names the
+#                         libgit2 binding, is a QC-10 finding. A file of `fs_reader`, `highlighter`,
+#                         `git_reader`, `watcher` or `markdown_renderer` that imports a unit its set
+#                         below forbids is a QC-11 finding, `<subject> imports <unit>`. A file of
+#                         `fs_reader` or `highlighter` that names the libgit2 binding is a QC-11
+#                         finding too; the binding in the other three is the libgit2-binding row's.
+#                         watcher and markdown_renderer have no file today, and a file of either is
+#                         judged from the run in which it first appears, with no edit here. The sets
+#                         are QC-11's "must not import `folder-model`, `own-state`, or one another",
+#                         less its two stated edges.
+#                         Forbidden for fs_reader: folder_model, own_state, git_reader, watcher,
+#                         markdown_renderer, highlighter.
+#                         Forbidden for highlighter: folder_model, own_state, git_reader, watcher,
+#                         markdown_renderer, fs_reader.
+#                         Forbidden for git_reader: folder_model, own_state, fs_reader, watcher,
+#                         highlighter, markdown_renderer.
+#                         Forbidden for watcher: folder_model, own_state, fs_reader, git_reader,
+#                         highlighter, markdown_renderer.
+#                         Forbidden for markdown_renderer: folder_model, own_state, git_reader,
+#                         watcher. Its imports of fs_reader and highlighter are QC-11's two stated
+#                         edges and draw nothing. That the fs_reader edge reaches the containment
+#                         check alone is not held here (WHAT IS NOT HELD).
+#                         A file imports a unit when its text holds, read across lines with
+#                         whitespace around `::` changing nothing: a path whose segment after a
+#                         leading `crate`, or a leading run of `super`, is the unit; a `use` tree
+#                         that reaches it in that position; or either form naming an item that
 #                         crates/ka-reader-core/src/lib.rs re-exports from the unit's module
 #                         (`crate::Entry`), read from lib.rs on every run. `self::<unit>` and
 #                         `ka_reader_core::<unit>` are not imports, and a unit is never its own
@@ -130,19 +145,38 @@
 #                         `libgit2_sys`, a floor: this script may refuse more names, never fewer,
 #                         read in the forms the Apple floor is read in. One finding per distinct
 #                         (file, line, rule, target). Source: QC-10's and QC-11's must-not lists.
+#     QC-10  git-reader's In ka-reader-core, every file of the unit `folder_model`, in the unit-edge
+#            adapter      row's shapes: each line that names git-reader's adapter. Two forms, a
+#                         floor: this script may refuse more forms, never fewer. `Libgit2`, the
+#                         adapter's type, as a token, anywhere: in a path, as a member of a `use`
+#                         tree, as a bare name, in a comment or in a string. And
+#                         `git_reader::libgit2`, the adapter's module, where `libgit2` is the
+#                         segment directly after `git_reader` in a path or `use` tree that starts
+#                         with `crate` or a run of `super`, read across lines, whitespace around
+#                         `::` changing nothing, the finding at the line of `libgit2`. The finding
+#                         names the form, `Libgit2` or `git_reader::libgit2`, spelled as written
+#                         here, one per distinct (file, line, form). Not a finding: the Git port
+#                         trait and the plain-data types beside it, reached through
+#                         `crate::git_reader::…` or through an item lib.rs re-exports, and the
+#                         lowercase word `libgit2` anywhere but directly after `git_reader::`. The
+#                         unit-edge row's QC-10 findings stand beside this one on the same line.
+#                         Source: QC-10's "must not import the libgit2 binding, `git-reader`'s
+#                         adapter, or `own-state`".
 #     QC-11  libgit2      In every file of the shipped scope in any crate (CP-647 - CP-651): the
-#            binding      libgit2 binding, read in the forms the Apple floor is read in, is a
-#            (CP-647 -    QC-11 finding at its line, `<what>` naming the binding. Only `git-reader`
+#            binding      libgit2 binding, read in the forms the Apple floor is read in, is a QC-11
+#            (CP-647 -    finding at its line, `<what>` naming the binding. Only `git-reader`
 #            CP-651)      imports the binding, with one exception, so two exemptions: every file of
 #                         the `git_reader` unit (crates/ka-reader-core/src/git_reader.rs and every
 #                         file under src/git_reader/), and
-#                         crates/ka-reader-bridge/src/machine_config.rs,
-#                         the composition root's search-path switch. The switch's test lies under
-#                         tests/, outside the shipped scope. A line that draws a QC-10 or QC-11
-#                         finding above draws no second one: a folder_model file stays QC-10 alone,
-#                         and an fs_reader or highlighter file draws its one QC-11 line. This clause
-#                         adds no other rule. Source: QC-11's "only git-reader imports the libgit2
-#                         binding".
+#                         crates/ka-reader-bridge/src/machine_config.rs, the composition root's
+#                         search-path switch. The switch's test lies under tests/, outside the
+#                         shipped scope. A line that draws the unit-edge row's binding finding draws
+#                         no second one: a folder_model file stays QC-10 alone, and an fs_reader or
+#                         highlighter file draws its one QC-11 line. A file of git_reader stays
+#                         exempt here although it is a unit-edge subject, and a file of watcher or
+#                         markdown_renderer draws this row's one line, never a second QC-11 line for
+#                         the same name. This clause adds no other rule. Source: QC-11's "only
+#                         git-reader imports the libgit2 binding".
 #     QC-63  value        In ka-reader-core, a file of no unit (CP-470): a file of the shipped scope
 #            module       under crates/ka-reader-core/src/ whose first component under src/, matched
 #            (CP-470 -    as an exact file or directory name and never as a prefix, is none of the
@@ -168,18 +202,18 @@
 #                         file of no unit never draws a QC-10 or QC-11 one. libgit2 names are not
 #                         a QC-63 target. Source: QC-63's verified by.
 #     QC-13  crate set    In every file under crates/ka-reader-bridge/, a crate named in code that
-#            (CP-421,     is not `std`, `core` or `alloc`, and not a name under the `cargo:`
-#            CP-422)      section of checks/deps.allow (read on every run, a `-` in a listed name
-#                         read as `_`). A crate is named in code by the first segment of a `use`
-#                         path or of a root-group member, the crate of an `extern crate` (never
-#                         its alias), or the first segment of a path written in code. Never a
-#                         crate: crate, self, super, Self, a name beginning with an uppercase
-#                         letter, a primitive type, clippy, rustdoc, rustfmt, a module a file of
-#                         the bridge declares with `mod`, and — as a path root only — a name a
-#                         `use` item of the same file brings into scope. UNLIKE every other rule
-#                         here this one reads code only: a comment or a string is not read,
-#                         because the domain is open and every `word::` in prose or test data
-#                         would be a candidate. Source: QC-13's import set.
+#            (CP-421,     is not `std`, `core` or `alloc`, and not a name under the `cargo:` section
+#            CP-422)      of checks/deps.allow (read on every run, a `-` in a listed name read as
+#                         `_`). A crate is named in code by the first segment of a `use` path or of
+#                         a root-group member, the crate of an `extern crate` (never its alias), or
+#                         the first segment of a path written in code. Never a crate: crate, self,
+#                         super, Self, a name beginning with an uppercase letter, a primitive type,
+#                         clippy, rustdoc, rustfmt, a module a file of the bridge declares with
+#                         `mod`, and — as a path root only — a name a `use` item of the same file
+#                         brings into scope. UNLIKE every other rule here but QC-17's adapter
+#                         construction, this one reads code only: a comment or a string is not read,
+#                         because the domain is open and every `word::` in prose or test data would
+#                         be a candidate. Source: QC-13's import set.
 #     QC-13  Apple        In every file under crates/ka-reader-bridge/, QC-9's Apple floor, the same
 #            (CP-423)     names and forms read over raw text, reported as QC-13 and naming the
 #                         framework or form. QC-9's own Apple finding stays ka-reader-core's.
@@ -199,6 +233,28 @@
 #                         `build` key, and [[test]], [[bench]], [[example]] and [[bin]] targets.
 #                         Source: QC-14's "as it ships" and its test-target exclusion.
 #     QC-17  logger       In every file read whose path is not under crates/ka-reader-bridge/src/
+#     QC-17  adapter      In every file read whose path is not under crates/ka-reader-bridge/src/
+#            construc-    (the exact path component, as the logger row reads it): each line of code
+#            tion         that makes a value of git-reader's adapter from its name, `Libgit2`. The
+#                         forms are a floor, each read across lines with whitespace changing
+#                         nothing: the unit value as an expression (`Arc::new(Libgit2)`,
+#                         `Box::new(Libgit2)`, `f(Libgit2)`, `f(&Libgit2)`, `let p = Libgit2;`,
+#                         `return Libgit2`); a struct literal, `Libgit2 { … }`; and an associated
+#                         function called on the type, such as `Libgit2::new(…)` or
+#                         `Libgit2::default()`. Never a finding, because the name stands where a
+#                         type stands: a `use` item or re-export, `pub use` included; the `struct
+#                         Libgit2` definition; an `impl` header; a generic argument
+#                         (`assert_port::<Libgit2>()`); the self type of a qualified path (`<Libgit2
+#                         as GitPort>::probe`); a type annotation or bound (`p: Libgit2` as a
+#                         parameter or field type, `-> Libgit2`, `&Libgit2` or `Arc<Libgit2>` in a
+#                         type, `T: Into<Libgit2>`). Like the QC-13 crate set and unlike the logger
+#                         row, this rule reads code only: a comment or a string holds no expression,
+#                         so construction text inside one is not read, and a string between two code
+#                         tokens still keeps them apart. The finding names the adapter, `Libgit2`,
+#                         and the bridge's source path, at the line holding `Libgit2`, one per line.
+#                         A folder_model line that constructs the adapter draws this finding and the
+#                         QC-10 adapter finding. Source: QC-17's "the adapter's constructor …
+#                         appear[s] only under crates/ka-reader-bridge/src/".
 #     QC-61  (CP-426)     (the exact path component), a path whose first segment is `log` (or
 #                         `::log`) and whose next segment is the whole word `set_logger` or
 #                         `set_boxed_logger`, or a `use` tree rooted at `log` naming either,
@@ -266,13 +322,14 @@
 #   rules become executable with the script is read as: a rule is executable from the change
 #   that adds it here. Until then its gate is the design review. Not held: QC-7; QC-12;
 #   QC-20. And these parts of rules the table above holds in part:
-#     - QC-10's `git-reader`-adapter clause.
 #     - QC-15's filesystem owners, in two parts: which read the adapter makes inside its owner
 #       file (every filesystem form there is admitted), and `git-reader`'s `Path`-method reads
 #       (`Path::metadata`, `symlink_metadata`, which name no `fs` module). Review at
 #       development-design holds both.
-#     - QC-11's clauses whose subject is `git-reader`, `watcher` or `markdown-renderer`.
-#     - QC-17's adapter-constructor clause.
+#     - QC-11's bound on the edge from `markdown-renderer` to `fs-reader`: that the edge reaches
+#       `fs-reader`'s containment check alone. The scan judges an import a whole unit at a time, so
+#       every import of fs_reader by a markdown_renderer file draws nothing. Review at
+#       development-design holds it.
 #     - QC-63's types-and-values half: whether a value module holds anything a part's Owns cell
 #       names. No script rule approximates it; its gate is review at development-design.
 #
@@ -302,6 +359,14 @@
 #   `CARGO_BIN_EXE_` name assembled by a macro (`concat!`); and a `#[path]` that loads a tests/
 #   file into shipped source, which only the `#[cfg(test)]` on its declaration keeps out of the
 #   binary.
+#   And, for the adapter rules: an adapter reached under another name, as in `use
+#   crate::git_reader::Libgit2 as L;` or `type G = Libgit2;`, and then constructed as `L` or
+#   `G::default()`; the adapter's module reached through an alias of git_reader (`use
+#   crate::git_reader as g;` and then `g::libgit2`), on a line that does not also name `Libgit2`; a
+#   value made inside an impl of the adapter as `Self`; a value made by a trait call whose type is
+#   inferred, as in `let p: Libgit2 = Default::default();`, where the name stands only as a type; a
+#   field value written `port: Libgit2` inside a struct literal, which reads as a field type; and a
+#   construction in macro-generated or `include!`d source. A review catches these.
 
 set -euo pipefail
 
@@ -484,6 +549,9 @@ function add_git2(ln, w) {
   note(ln, "QC-11", 2, w, "the libgit2 binding `" w "` named outside git-reader")
 }
 
+# Each new clause has its own rank, after the clauses its QC already had, so a line that draws two
+# clauses keeps both and the report's order does not move.
+#
 # QC-10's adapter clause. `Libgit2` counts as a whole word in the raw text, comments and strings
 # included. `libgit2` counts only as the segment directly after `git_reader` in a path or `use` tree
 # that starts with `crate` or a run of `super`, so the lowercase word in prose draws nothing. One

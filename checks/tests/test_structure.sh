@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Version: 1.5.0 — the cases of QC-10's adapter, QC-11's git_reader, watcher and markdown_renderer
+#   subjects, and QC-17's adapter construction
 # Version: 1.4.0 — probe answers root for a git file; third QC-15 filesystem owner
 # Version: 1.3.0 — structure.sh holds the value modules — QC-63 scan and its proof
 # Version: 1.2.0 — structure.sh holds the boundary reads; fs_reader test body moves to tests/unit
@@ -2478,8 +2480,9 @@ test_value_module_non_imports_pass() {
   expect_stderr_empty || return 1
 }
 
-# CP-480 (a) and (c), CP-473, CP-474: a clean case. Every unit, in file and directory form, and
-# every file outside the domain, may name a unit.
+# CP-480 (a) and (c), CP-473, CP-474: a clean case. A file of every unit, in file and directory form,
+# draws no QC-63 finding for naming a unit, and lib.rs and every file outside QC-63's domain may name
+# one. The git_reader and watcher files name their own unit, the one unit their QC-11 sets allow.
 test_value_module_rule_spares_units_and_lib_rs() {
   new_root value-module-spared || return 1
   plant "$R" "$FS_FILE" 'use crate::language::Language;'
@@ -2595,7 +2598,8 @@ test_fs_reader_git2_draws_one_qc11_line() {
   expect_count "crates/$FS_FILE" "$PLANT_LINE" QC-10 0 || return 1
 }
 
-# --- the cases of QC-11's git_reader, watcher and markdown_renderer subjects ---
+# --- the cases of QC-10's adapter, QC-11's git_reader, watcher and markdown_renderer subjects, and
+# QC-17's adapter construction ---
 
 SRC="ka-reader-core/src"
 
@@ -3036,7 +3040,7 @@ test_header_states_the_held_clauses() {
   # The scan table names each new rule.
   for text in \
     "Forbidden for git_reader:" "Forbidden for watcher:" "Forbidden for markdown_renderer:" \
-    "QC-10's \"must not import the libgit2 binding, \`git-reader\`'s adapter" \
+    "Source: QC-10's \"must not import the libgit2 binding," \
     "QC-17's \"the adapter's constructor"; do
     [ "$(header_count "$text")" -ge 1 ] || fail "the header does not state: $text" || return 1
   done
