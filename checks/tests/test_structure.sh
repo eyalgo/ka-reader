@@ -2609,6 +2609,9 @@ expect_edge() {
   expect_finding_naming "crates/$1" "$2" QC-11 "$3" || return 1
 }
 
+# QC-11 for git_reader. An import of each unit its set forbids is one finding naming that unit, in
+# the unit's own file and in a file under it, on its own line, and through an item lib.rs re-
+# exports.
 test_git_reader_unit_edges_are_rejected() {
   new_root git-reader-edges || return 1
   for file in git_reader.rs git_reader/config_scan.rs; do
@@ -2657,6 +2660,9 @@ test_every_forbidden_pair_is_rejected() {
   expect_edge "$SRC/git_reader/pairs.rs" "$reexport_line" "git_reader imports fs_reader" || return 1
 }
 
+# QC-11 for the two units with no file yet. A watcher or markdown_renderer file created in the copy
+# is judged in the run in which it appears, with nothing in the script edited, and each forbidden
+# import planted in it draws its line. These files exist only in the copy.
 test_future_unit_files_are_judged_without_editing_the_scan() {
   new_root future-units || return 1
   for file in watcher.rs watcher/fsevents.rs markdown_renderer.rs markdown_renderer/nested/x.rs; do
@@ -2678,6 +2684,10 @@ test_future_unit_files_are_judged_without_editing_the_scan() {
   expect_edge "$SRC/markdown_renderer/nested/x.rs" "$m2" "markdown_renderer imports git_reader" || return 1
 }
 
+# The import forms QC-11 reads for its new subjects: a path or a nested `use` tree from `crate` or a
+# run of `super`, across lines; an item the copy's lib.rs re-exports; a comment or a string. One
+# target imported twice on a line is one finding, two targets on a line are two, and one target on
+# two lines is two.
 test_unit_edges_read_paths_and_trees_across_lines() {
   new_root edges-across-lines || return 1
   file="$SRC/git_reader/across.rs"
@@ -2714,6 +2724,11 @@ test_unit_edges_read_paths_and_trees_across_lines() {
   expect_edge "$file" "$again_two" "git_reader imports folder_model" || return 1
 }
 
+# What QC-11 allows its new subjects. A file importing its own unit, `super::{StatusEntry, GitPort}`
+# in the adapter's file among them, draws nothing, nor does an import of a value module, nor
+# markdown_renderer's imports of fs_reader and highlighter, QC-11's two stated edges. `self::<unit>`
+# and `ka_reader_core::<unit>` are not imports. A file whose name only begins with a unit's name is
+# not that unit's file: watcher_ext.rs is judged by the QC-63 rule, and no QC-11 line appears.
 test_own_unit_and_allowed_edges_stay_clean() {
   new_root new-subject-allowed-edges || return 1
   plant "$R" "$SRC/git_reader/libgit2.rs" 'use super::{StatusEntry, GitPort};'
@@ -2741,6 +2756,10 @@ test_own_unit_and_allowed_edges_stay_clean() {
   done
 }
 
+# The binding in the new subjects. `git2` and `libgit2_sys` in a git_reader file draw nothing,
+# because git-reader owns the binding. In a watcher or markdown_renderer file each draws one line,
+# the one it drew before either unit was a subject. The folder_model, fs_reader and highlighter
+# lines and the bridge's switch file are unchanged.
 test_binding_in_the_new_subjects() {
   new_root binding-new-subjects || return 1
   plant "$R" "$SRC/git_reader.rs" 'use git2 as _x;'
@@ -2772,6 +2791,10 @@ expect_adapter() {
   expect_finding_naming "crates/$1" "$2" QC-10 "folder_model names git-reader's adapter \`$3\`" || return 1
 }
 
+# QC-10's adapter clause, the type's form. `Libgit2` in a folder_model file, in the unit's own file
+# and in a file under it, is one QC-10 finding at its line: as a path, a member of a grouped `use`,
+# a bare name, a comment, a string and a raw string. A word that only contains the name is not the
+# name.
 test_folder_model_adapter_name_is_rejected() {
   new_root adapter-name || return 1
   for file in "$CORE_FILE" "$FM_DIR_FILE"; do
@@ -2801,6 +2824,10 @@ test_folder_model_adapter_name_is_rejected() {
   expect_stderr_empty || return 1
 }
 
+# QC-10's adapter clause, the module's form. `git_reader::libgit2` reached from `crate` or a run of
+# `super`, as a path or inside a nested `use` tree, with spaces or a newline around `::`, is one
+# finding at the line of `libgit2`. The lowercase word anywhere else, the Git port and the plain-
+# data types beside it, and `GitPort` through its lib.rs re-export draw nothing.
 test_folder_model_adapter_module_form_is_rejected() {
   new_root adapter-module || return 1
   file="$FM_DIR_FILE"
@@ -2840,6 +2867,10 @@ test_folder_model_allowed_git_port_forms_stay_clean() {
   expect_stderr_empty || return 1
 }
 
+# Two findings on one line stay two. Constructing the adapter in folder_model draws the QC-10
+# adapter line and the QC-17 line. The adapter beside an own_state import or the binding keeps every
+# finding. A form repeated on one line is one finding, and the two forms on one line are two. The
+# report stays sorted by path, line, QC and clause.
 test_folder_model_adapter_findings_compose() {
   new_root adapter-compose || return 1
   file="$CORE_FILE"
@@ -2883,6 +2914,10 @@ expect_no_construction() {
   expect_count "crates/$1" "$2" QC-17 0
 }
 
+# QC-17's floor. Outside crates/ka-reader-bridge/src/, each construction of the adapter is one QC-17
+# finding at the line of `Libgit2`: `Arc::new`, `Box::new`, a bare or a borrowed argument, a `let`
+# initializer, `return`, a struct literal, `Libgit2::new` and `Libgit2::default`, a construction
+# split across lines included. The adapter's own source file is not exempt.
 test_adapter_construction_outside_bridge_is_rejected() {
   new_root construct || return 1
   file="$ADAPTER_FILE"
@@ -2918,6 +2953,10 @@ test_adapter_construction_outside_bridge_is_rejected() {
   expect_count "crates/$FS_FILE" "$fs_line" QC-11 0 || return 1
 }
 
+# QC-17's type positions draw nothing: a `use` or a re-export, the definition, an inherent or a
+# trait `impl` header, a generic argument, a qualified path's self type, a parameter, field or
+# return type, a reference or `Arc<Libgit2>` in a type, and a bound. The six such lines the core
+# holds today stay clean. A construction on the same line as a type position is still a finding.
 test_adapter_type_positions_are_clean() {
   new_root type-positions || return 1
   plant "$R" "$ADAPTER_FILE" 'pub use libgit2::Libgit2;'
@@ -2946,6 +2985,10 @@ test_adapter_type_positions_are_clean() {
   expect_construction "$ADAPTER_FILE" "$mixed" || return 1
 }
 
+# QC-17 reads code only. Construction text in a comment, a doc comment, a nested block comment or a
+# string, whether ordinary, raw or escaped, draws no QC-17 finding, and a string between two code
+# tokens does not join them into one expression. In a folder_model file the QC-10 adapter clause
+# still reads the same text.
 test_adapter_construction_in_comments_and_strings_is_ignored() {
   new_root construct-text || return 1
   file="$FS_FILE"
@@ -2968,6 +3011,10 @@ test_adapter_construction_in_comments_and_strings_is_ignored() {
   expect_construction "$file" "$boundary" || return 1
 }
 
+# Where QC-17 applies. A construction under crates/ka-reader-bridge/src/, in machine_config.rs or in
+# a new file, draws nothing. One in another crate, or under a path that only resembles the bridge's,
+# draws a finding. A crate's own tests/ and build.rs are outside the rule, and src/tests/ and
+# src/build.rs are not. Several constructions on one line are one finding, and two lines are two.
 test_bridge_source_may_construct_the_adapter() {
   new_root bridge-construct || return 1
   expect_no_construction "ka-reader-bridge/src/machine_config.rs" 139 || return 1
@@ -3033,6 +3080,10 @@ header_count() {
   grep -c -F -e "$1" "$STRUCTURE_SH"
 }
 
+# The header's coverage account. WHAT IS NOT HELD no longer lists the three clauses this version
+# holds, and it still lists QC-7, QC-12, QC-20 and the parts of QC-15 and QC-63. It lists the
+# containment bound on the edge from markdown-renderer to fs-reader as held by review, and the
+# adapter construction gaps are named. The case reads these properties, not the whole header.
 test_header_states_the_held_clauses() {
   # The three clauses this version holds are no longer listed as not held.
   retired="$(grep -c -F -e "QC-10's \`git-reader\`-adapter clause" -e "QC-11's clauses whose subject is" -e "QC-17's adapter-constructor clause" "$STRUCTURE_SH")"
