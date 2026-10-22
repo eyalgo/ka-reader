@@ -484,6 +484,32 @@ function add_git2(ln, w) {
   note(ln, "QC-11", 2, w, "the libgit2 binding `" w "` named outside git-reader")
 }
 
+# QC-10's adapter clause. `Libgit2` counts as a whole word in the raw text, comments and strings
+# included. `libgit2` counts only as the segment directly after `git_reader` in a path or `use` tree
+# that starts with `crate` or a run of `super`, so the lowercase word in prose draws nothing. One
+# finding per line and form.
+function add_adapter(ln, form) {
+  note(ln, "QC-10", 3, form, "folder_model names git-reader's adapter `" form "`")
+}
+
+# Whether the word w stands in text, a word character on either side meaning no match.
+function has_word(text, w,    off, rest, p, before, after) {
+  off = 0
+  rest = text
+  while ((p = index(rest, w)) > 0) {
+    before = (off + p > 1) ? substr(text, off + p - 1, 1) : ""
+    after = substr(text, off + p + length(w), 1)
+    if (before !~ /[A-Za-z0-9_]/ && after !~ /[A-Za-z0-9_]/) return 1
+    off += p
+    rest = substr(text, off + 1)
+  }
+  return 0
+}
+
+function is_git_reader_path(parent) {
+  return parent ~ /^(crate|super(::super)*)::git_reader$/
+}
+
 function add_logger(ln, w) {
   if (in_src) return
   note(ln, "QC-17", 1, w, "`log::" w "` outside crates/ka-reader-bridge/src/")
@@ -551,6 +577,7 @@ function use_segment(parent, first, w, atstart, ln) {
   if (first == "libc" && parent == "libc") libc_member_rules(w, ln)
   if (first == "log" && parent != "" && is_logger(w)) add_logger(ln, w)
   if (is_crate_or_super(parent)) add_unit(ln, w)
+  if (subj == "folder_model" && w == "libgit2" && is_git_reader_path(parent)) add_adapter(ln, "git_reader::libgit2")
   if (atstart && parent == "" && is_config_root(w)) add_config_read(ln, "configuration loader `" w "`")
   if (stream_code && parent == "" && atstart) crate_position(w, ln, 0)
 }
@@ -586,6 +613,7 @@ function scan_unit_path(t, l, k,    j) {
   if (t[k] == "super") { while (t[j] == "super" && t[j + 1] == "::") j += 2 }
   else j = k + 2
   if (is_word_token(t[j])) add_unit(l[j], t[j])
+  if (subj == "folder_model" && t[j] == "git_reader" && t[j + 1] == "::" && t[j + 2] == "libgit2") add_adapter(l[j + 2], "git_reader::libgit2")
 }
 
 # Each `use` item runs from `use` to the `;` at brace depth zero, read across lines. The tree is
@@ -664,6 +692,7 @@ function collect_bindings(t, n,    k, m, sp, w, want_alias) {
 # The rules read off the physical line, before the tokenizer splits a string's `/` and `.` apart: a
 # configuration location is its text as written, comments and strings included.
 function raw_line_rules(text, ln) {
+  if (subj == "folder_model" && has_word(text, "Libgit2")) add_adapter(ln, "Libgit2")
   if (index(text, ".config/") > 0 || index(text, ".config\"") > 0) add_config_read(ln, "configuration path `.config`")
   if (index(text, "Library/Preferences") > 0) add_config_read(ln, "configuration path `Library/Preferences`")
   if (index(text, "/etc/") > 0) add_config_read(ln, "configuration path `/etc/`")
