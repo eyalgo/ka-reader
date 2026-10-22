@@ -159,6 +159,7 @@ test_adapter_type_positions_are_clean
 test_adapter_construction_in_comments_and_strings_is_ignored
 test_bridge_source_may_construct_the_adapter
 test_folder_model_adapter_construction_draws_both_clauses
+test_header_states_the_held_clauses
 "
 
 # --- helpers ---
@@ -3019,6 +3020,34 @@ test_folder_model_adapter_construction_draws_both_clauses() {
   expect_construction "$CORE_FILE" "$line" || return 1
   expect_before "$CORE_FILE:$line: QC-10: " "$CORE_FILE:$line: QC-17: " || return 1
   expect_before "$CORE_FILE:$line: QC-17: " "$ADAPTER_FILE:$later: QC-17: " || return 1
+}
+
+# --- the header's coverage account ---
+
+# How many lines of checks/structure.sh hold the fixed text $1.
+header_count() {
+  grep -c -F -e "$1" "$STRUCTURE_SH"
+}
+
+test_header_states_the_held_clauses() {
+  # The three clauses this version holds are no longer listed as not held.
+  retired="$(grep -c -F -e "QC-10's \`git-reader\`-adapter clause" -e "QC-11's clauses whose subject is" -e "QC-17's adapter-constructor clause" "$STRUCTURE_SH")"
+  [ "$retired" = "0" ] || fail "expected the three retired phrasings to count 0, got $retired" || return 1
+  # The scan table names each new rule.
+  for text in \
+    "Forbidden for git_reader:" "Forbidden for watcher:" "Forbidden for markdown_renderer:" \
+    "QC-10's \"must not import the libgit2 binding, \`git-reader\`'s adapter" \
+    "QC-17's \"the adapter's constructor"; do
+    [ "$(header_count "$text")" -ge 1 ] || fail "the header does not state: $text" || return 1
+  done
+  # What stays not held.
+  for text in "Not held: QC-7; QC-12;" "QC-20." "QC-15's filesystem owners, in two parts" "QC-63's types-and-values half"; do
+    [ "$(header_count "$text")" -ge 1 ] || fail "the header no longer lists: $text" || return 1
+  done
+  # The containment-only bound is listed as held in part, and the construction gaps are named.
+  for text in "QC-11's bound on the edge from \`markdown-renderer\` to \`fs-reader\`" "And, for the adapter rules:" "port: Libgit2"; do
+    [ "$(header_count "$text")" -ge 1 ] || fail "the header does not state: $text" || return 1
+  done
 }
 
 # --- runner ---
