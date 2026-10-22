@@ -442,10 +442,17 @@ function unit_of(w,    p, rest, q) {
   return substr(rest, 1, q - 1)
 }
 
+# The forbidden sets are QC-11's "must not import `folder-model`, `own-state`, or one another", less
+# its two stated edges: markdown_renderer may import fs_reader and highlighter. folder_model is
+# QC-10's subject and is forbidden own_state alone. A file of watcher or markdown_renderer is judged
+# from the run in which it first appears.
 function forbidden_edge(u) {
   if (subj == "folder_model") return u == "own_state"
   if (subj == "fs_reader") return index(" folder_model own_state git_reader watcher markdown_renderer highlighter ", " " u " ") > 0
   if (subj == "highlighter") return index(" folder_model own_state git_reader watcher markdown_renderer fs_reader ", " " u " ") > 0
+  if (subj == "git_reader") return index(" folder_model own_state fs_reader watcher highlighter markdown_renderer ", " " u " ") > 0
+  if (subj == "watcher") return index(" folder_model own_state fs_reader git_reader highlighter markdown_renderer ", " " u " ") > 0
+  if (subj == "markdown_renderer") return index(" folder_model own_state git_reader watcher ", " " u " ") > 0
   return 0
 }
 
@@ -464,8 +471,12 @@ function add_unit(ln, w,    u) {
   if (forbidden_edge(u)) note(ln, subject_qc(), 1, u, subj " imports " u)
 }
 
+# The binding's wording does not follow the subject set. A folder_model, fs_reader or highlighter file
+# draws the subject-worded line. A git_reader file draws nothing, because git-reader owns the binding.
+# A watcher or markdown_renderer file draws the general line, the one it drew before either unit was a
+# subject.
 function add_git2(ln, w) {
-  if (subj != "") {
+  if (subj == "folder_model" || subj == "fs_reader" || subj == "highlighter") {
     note(ln, subject_qc(), 2, w, subj " names the libgit2 binding `" w "`")
     return
   }
@@ -1199,7 +1210,7 @@ else
           *) module_name="" ;;
         esac
         case "$module_name" in
-          folder_model | fs_reader | highlighter) subject_unit="$module_name" ;;
+          folder_model | fs_reader | highlighter | git_reader | watcher | markdown_renderer) subject_unit="$module_name" ;;
         esac
         # A file of no unit: its module is none of the units the awk pass is given (the same
         # full set, so a unit with no subject rule today stays out), however it is spelled.
