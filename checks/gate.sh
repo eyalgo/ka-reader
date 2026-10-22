@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.1.0 — the bridge's tests run under the address sanitizer, on a dated nightly
 # Version: 1.0.0 — first version: the one ordered list of the gate's steps, each fatal (NFDR QC-64)
 #
 # checks/gate.sh — runs every step of the gate, in order. The first step that exits non-zero ends
@@ -47,6 +48,13 @@ run_step 'Build the workspace' 'cargo build --workspace --locked'
 # which a fresh checkout does not have, so "Test gate" cannot run before it.
 run_step 'Build KA-Reader.app' 'ka-reader-mac/assemble.sh'
 run_step 'Test gate' 'cargo test --workspace --locked && swift test --package-path ka-reader-mac'
+# "Bridge tests under the address sanitizer" comes after "Test gate", so the ordinary build and
+# tests have passed first, and ahead of "Own state", which stays last. It names its nightly inside
+# its own command and nowhere else: the pin in rust-toolchain.toml stays "stable" for every other
+# step. The sanitizer flags are scoped to the target, so build scripts and procedural macros build
+# without them. "-asan-globals=0" keeps the sanitizer off the bridge's load-time initializer, which
+# the linker refuses once it is instrumented.
+run_step 'Bridge tests under the address sanitizer' 'set -o pipefail && export RUSTUP_AUTO_INSTALL=1 RUSTUP_TOOLCHAIN=nightly-2026-10-21 && rustc -V && T=$(rustc -vV | sed -n "s/^host: //p") && F="\"-Zsanitizer=address\",\"-Cllvm-args=-asan-globals=0\"" && cargo test --locked -p ka-reader-bridge --config "build.target=\"$T\"" --config "target.$T.rustflags=[$F]" --config "build.rustdocflags=[$F]"'
 run_step 'Structure check' 'checks/structure.sh'
 run_step 'Structure check suite' 'checks/tests/test_structure.sh'
 run_step 'Entry-points check' 'checks/entry-points.sh'
