@@ -64,7 +64,7 @@ None.
   review as the only gate for rules a run now holds at every change. A contributor who reads them
   waits on a review that is no longer the only thing protecting them. Nothing supersedes and no ADR
   moves.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm — with four additions: QC-56's `.yaml` half keeps its review gate beside QC-64's *nothing else* half; QC-65's "the card's command runs none of these steps" and its owner's-Mac cost are re-read as live, and its refusal-first ordering recorded as met (`ka-reader@13e8d42` before `kensaiapp-opensource@1941f963`); the ground is the card plus § 8's own gate-tool sentence, citing no change record; and the card's `Test command:` comment points at *Until the card runs the script* by name, so a renamed heading is a card move to raise, not to make. Reasoning: `docs/trail/architecture/self_answer-57.md`.
 
 ## 3. Raised from downstream — an item from a seat that did not write these records
 
