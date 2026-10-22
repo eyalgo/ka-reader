@@ -154,6 +154,11 @@ test_folder_model_adapter_name_is_rejected
 test_folder_model_adapter_module_form_is_rejected
 test_folder_model_allowed_git_port_forms_stay_clean
 test_folder_model_adapter_findings_compose
+test_adapter_construction_outside_bridge_is_rejected
+test_adapter_type_positions_are_clean
+test_adapter_construction_in_comments_and_strings_is_ignored
+test_bridge_source_may_construct_the_adapter
+test_folder_model_adapter_construction_draws_both_clauses
 "
 
 # --- helpers ---
@@ -2855,6 +2860,155 @@ test_folder_model_adapter_findings_compose() {
   expect_adapter "$file" "$l_both" git_reader::libgit2 || return 1
   expect_before "$file:$l_edge: QC-10: folder_model imports own_state" "$file:$l_edge: QC-10: folder_model names git-reader's adapter" || return 1
   expect_before "$file:$l_both: QC-10: folder_model names git-reader's adapter \`Libgit2\`" "$file:$l_both: QC-10: folder_model names git-reader's adapter \`git_reader::libgit2\`" || return 1
+}
+
+# --- QC-17's adapter construction: the adapter is made only under crates/ka-reader-bridge/src/ ---
+
+ADAPTER_FILE="ka-reader-core/src/git_reader/libgit2.rs"
+QC17_TEXT='git-reader'"'"'s adapter `Libgit2` constructed outside crates/ka-reader-bridge/src/'
+
+# One QC-17 finding at $2 of $1, with the fixed text.
+expect_construction() {
+  expect_count "crates/$1" "$2" QC-17 1 || return 1
+  expect_finding_naming "crates/$1" "$2" QC-17 "$QC17_TEXT" || return 1
+}
+
+# No QC-17 finding at $2 of $1.
+expect_no_construction() {
+  expect_count "crates/$1" "$2" QC-17 0
+}
+
+test_adapter_construction_outside_bridge_is_rejected() {
+  new_root construct || return 1
+  file="$ADAPTER_FILE"
+  lines=""
+  for text in \
+    'fn a() { let _ = Arc::new(Libgit2); }' \
+    'fn b() { let _ = Box::new(Libgit2); }' \
+    'fn c() { f(Libgit2); }' \
+    'fn d() { f(&Libgit2); }' \
+    'fn e() { let p = Libgit2; }' \
+    'fn g() -> impl GitPort { return Libgit2; }' \
+    'fn h() { let _ = Libgit2 {}; }' \
+    'fn i() { let _ = Libgit2::default(); }' \
+    'fn j() { let _ = Libgit2::new(); }' \
+    'fn k() { let _ = crate::git_reader::Libgit2; }' \
+    'fn m() { let _ = crate::Libgit2::default(); }' \
+    'fn n() { let _ = (Libgit2, Libgit2); }'; do
+    plant "$R" "$file" "$text"
+    lines="$lines $PLANT_LINE"
+  done
+  plant "$R" "$file" 'fn o() { let _ = Arc::new(
+    Libgit2,
+); }'
+  split_line=$((PLANT_LINE + 1))
+  plant "$R" "$FS_FILE" 'fn p() { let _ = Arc::new(Libgit2); }'
+  fs_line="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  for line in $lines $split_line; do
+    expect_construction "$file" "$line" || return 1
+  done
+  expect_construction "$FS_FILE" "$fs_line" || return 1
+  expect_count "crates/$FS_FILE" "$fs_line" QC-11 0 || return 1
+}
+
+test_adapter_type_positions_are_clean() {
+  new_root type-positions || return 1
+  plant "$R" "$ADAPTER_FILE" 'pub use libgit2::Libgit2;'
+  plant "$R" "$ADAPTER_FILE" 'pub struct Other(Libgit2);'
+  plant "$R" "$ADAPTER_FILE" 'struct Holder { port: Libgit2, shared: Arc<Libgit2>, r: &'"'"'static Libgit2 }'
+  plant "$R" "$ADAPTER_FILE" 'type Alias = Libgit2;'
+  plant "$R" "$ADAPTER_FILE" 'impl Libgit2 { fn id(&self) {} }'
+  plant "$R" "$ADAPTER_FILE" 'impl Clone for Libgit2 { fn clone(&self) -> Self { Self } }'
+  plant "$R" "$ADAPTER_FILE" 'fn q(p: &Libgit2, r: &mut Libgit2) -> Libgit2 { todo!() }'
+  plant "$R" "$ADAPTER_FILE" 'fn r() -> Option<Libgit2> { None }'
+  plant "$R" "$ADAPTER_FILE" 'fn s<T: Into<Libgit2>>(t: T) where T: Into<Libgit2> {}'
+  plant "$R" "$ADAPTER_FILE" 'fn t() { assert_port::<Libgit2>(); }'
+  plant "$R" "$ADAPTER_FILE" 'fn u() { let _ = <Libgit2 as GitPort>::probe; }'
+  plant "$R" "$ADAPTER_FILE" 'fn v(p: crate::git_reader::Libgit2) {}'
+  plant "$R" "$ADAPTER_FILE" 'fn w() { let p: Libgit2 = todo!(); let _ = p; }'
+  plant "$R" "$ADAPTER_FILE" 'fn x() { let _v = Vec::<Libgit2>::new(); }'
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+  # An expression and a type on one line report once, for the expression.
+  new_root type-and-expression || return 1
+  plant "$R" "$ADAPTER_FILE" 'fn y(p: &Libgit2) -> Libgit2 { Libgit2 }'
+  mixed="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_construction "$ADAPTER_FILE" "$mixed" || return 1
+}
+
+test_adapter_construction_in_comments_and_strings_is_ignored() {
+  new_root construct-text || return 1
+  file="$FS_FILE"
+  plant "$R" "$file" '// Arc::new(Libgit2)'
+  plant "$R" "$file" '/// let p = Libgit2;'
+  plant "$R" "$file" '/* Box::new(Libgit2) /* nested Libgit2::default() */ still Libgit2 { } */'
+  plant "$R" "$file" 'const A: &str = "Arc::new(Libgit2)";'
+  plant "$R" "$file" 'const B: &str = r#"let p = Libgit2;"#;'
+  plant "$R" "$file" 'const C: &str = "escaped \" Libgit2::new() \" still inside";'
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+  # A string between two code tokens keeps them apart: the name after it is still read as code, and
+  # the type-position `:` before the string does not reach across it.
+  new_root string-boundary || return 1
+  plant "$R" "$file" 'fn z(p: &str) { let _ = (p, "x" Libgit2); }'
+  boundary="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_construction "$file" "$boundary" || return 1
+}
+
+test_bridge_source_may_construct_the_adapter() {
+  new_root bridge-construct || return 1
+  expect_no_construction "ka-reader-bridge/src/machine_config.rs" 139 || return 1
+  plant "$R" "ka-reader-bridge/src/wiring.rs" 'fn w() { let _ = Arc::new(Libgit2); }'
+  plant "$R" "ka-reader-core/tests/x.rs" 'fn t() { let _ = Arc::new(Libgit2); }'
+  plant "$R" "ka-reader-bridge/build.rs" 'fn main() { let _ = Libgit2; }'
+  run_structure "$R"
+  case "$STDERR" in
+    *"QC-17: git-reader's adapter"*) fail "expected no QC-17 adapter finding. stderr: $STDERR" || return 1 ;;
+  esac
+  new_root bridge-near-names || return 1
+  plant "$R" "ka-reader-extra/src/lib.rs" 'fn a() { let _ = Libgit2; }'
+  other="$PLANT_LINE"
+  plant "$R" "ka-reader-bridge-extra/src/lib.rs" 'fn a() { let _ = Libgit2; }'
+  near="$PLANT_LINE"
+  plant "$R" "ka-reader-bridge/src/tests/x.rs" 'fn a() { let _ = Libgit2; }'
+  nested_tests="$PLANT_LINE"
+  plant "$R" "ka-reader-bridge/src/build.rs" 'fn a() { let _ = Libgit2; }'
+  nested_build="$PLANT_LINE"
+  plant "$R" "ka-reader-core/src/language.rs" 'fn a() { let _ = (Libgit2, Libgit2); }'
+  many="$PLANT_LINE"
+  plant "$R" "ka-reader-core/src/language.rs" 'fn b() { let _ = Libgit2; }'
+  second="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_construction "ka-reader-extra/src/lib.rs" "$other" || return 1
+  expect_construction "ka-reader-bridge-extra/src/lib.rs" "$near" || return 1
+  expect_no_construction "ka-reader-bridge/src/tests/x.rs" "$nested_tests" || return 1
+  expect_no_construction "ka-reader-bridge/src/build.rs" "$nested_build" || return 1
+  expect_construction "ka-reader-core/src/language.rs" "$many" || return 1
+  expect_construction "ka-reader-core/src/language.rs" "$second" || return 1
+}
+
+test_folder_model_adapter_construction_draws_both_clauses() {
+  new_root construct-folder-model || return 1
+  plant "$R" "$CORE_FILE" 'fn a() { let p = Libgit2; }'
+  line="$PLANT_LINE"
+  plant "$R" "$ADAPTER_FILE" 'fn b() { let _ = Libgit2; }'
+  later="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_count "crates/$CORE_FILE" "$line" QC-10 1 || return 1
+  expect_adapter "$CORE_FILE" "$line" Libgit2 || return 1
+  expect_construction "$CORE_FILE" "$line" || return 1
+  expect_before "$CORE_FILE:$line: QC-10: " "$CORE_FILE:$line: QC-17: " || return 1
+  expect_before "$CORE_FILE:$line: QC-17: " "$ADAPTER_FILE:$later: QC-17: " || return 1
 }
 
 # --- runner ---
