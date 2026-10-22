@@ -42,6 +42,14 @@ None.
   v12. All at `ka-reader@eb50e87`.
 - **If a document has to be written:** none. `product-fdr` re-derives R-128 and PD-21 against the moved
   sources on its next run.
-- **Answer:** <the owner fills this in>
+- **Answer:** Re-derive both to the moved identity. R-128 names `github.com/eyalgo/ka-reader` in place of
+  `github.com/kensaiapp/ka-reader`, its artifact and checksum file unchanged. PD-21 states that the product is
+  published from `github.com/eyalgo/ka-reader` and maintained under the maintainer's personal GitHub handle
+  `eyalgo`, which is its public face — the words of PRD v16 § Assumptions *Public identity* and SRS v13 § 7
+  C-12, set by the owner at `docs/trail/prd/cycle-14.md` § 3.1. Both traces gain *upstream moved*. R-143
+  names the repository through R-128 and follows it with no edit of its own; PD-15's GitHub-only channel
+  does not move. RN-32's `gh release list -R kensaiapp/ka-reader` is a dated measurement made at the old
+  address and stays as written. Whether and when the repository goes public stays the owner's and is not
+  this item's (`docs/trail/prd/cycle-14.md` § 3.1, *Why*). Reasoning: `docs/trail/fdr/self_answer-8.md`.
 
 **How it closes.** `product-fdr` folds it on its next run like any other item.
