@@ -1,8 +1,8 @@
 # NFDR — KA-Reader
 
-**Status:** Settled
+**Status:** Draft
 **Owner:** Principal Architect
-**Version:** 60 — the close: the cycle-53 fold, § 3.1 confirmed in the owner's seat with two additions. QC-2's walk-fixture sentence cites `checks/read-only.sh` pinned to `ka-reader@c268945` — the restore (`:L210-L252`, header `:L24-L29`), its removal once the verdict is taken (`:L31-L36`), the hashing (`:L19-L22`, `manifest()` `:L45-L65`) and its two runs (`:L368`, `:L389`) — in place of three unpinned locators that had moved; and both of QC-2's sentences drop the label "in-place restore", as the SDD's C-I3 did at v56 on the same facts. The claim does not move. No ADR is written, and no `QC` is added, renumbered or reused. Nothing is left for the owner, so the companion is removed and `Status:` is Settled — RN-71 (v59: the close: the cycle-52 fold, § 2.1 confirmed in the owner's seat with two additions. QC-56 names `checks/tests/test_vm_refusal.sh`'s runner case as its check, says that the case and the command read no workflow file ending `.yaml`, and names `development-design` as that file's gate, which outlives the card's move; its sentence on the tree is re-measured at `ka-reader@8b93322`, where the tree meets both halves. § 10's row follows. No ADR is written, and no `QC` is added, renumbered or reused. Nothing is left for the owner, so the companion is removed and `Status:` is Settled — RN-70)
+**Version:** 61 — the cycle-54 fold, §§ 3.1 and 3.2 answered in the owner's seat. § 8 keeps the 26-step count as the record of `ka-reader@8b93322` and adds the gate as it stands at `ka-reader@389adad`, version 1.1.0 with 27 steps, the address-sanitizer step at `checks/gate.sh:L57`; QC-13's sanitizer run admits `-Cllvm-args=-asan-globals=0`, with the reason, the need and the limit in its tail, and § 10's QC-13 row names the flag. No ADR is written, and no `QC` is added, renumbered or reused. § 2.1 of the companion, whether § 8 is re-derived against the card that now runs `checks/gate.sh`, is unanswered, so the companion stays and `Status:` is Draft — RN-72 (v60: the close: the cycle-53 fold, § 3.1 confirmed in the owner's seat with two additions. QC-2's walk-fixture sentence cites `checks/read-only.sh` pinned to `ka-reader@c268945` — the restore (`:L210-L252`, header `:L24-L29`), its removal once the verdict is taken (`:L31-L36`), the hashing (`:L19-L22`, `manifest()` `:L45-L65`) and its two runs (`:L368`, `:L389`) — in place of three unpinned locators that had moved; and both of QC-2's sentences drop the label "in-place restore", as the SDD's C-I3 did at v56 on the same facts. The claim does not move. No ADR is written, and no `QC` is added, renumbered or reused. Nothing is left for the owner, so the companion is removed and `Status:` is Settled — RN-71)
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · PRD Settled · UXD Settled · DESIGN Settled · CONTENT Settled
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
@@ -523,7 +523,29 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   failure value; the header is generated from its source and never hand-edited.
   — *verified by:* `checks/structure.sh` (layer 6) for the imports; `cargo test --locked -p
   ka-reader-bridge --test exports` — the header declares what the library exports and nothing else
-  (QC-24); the bridge's tests under `-Zsanitizer=address` in CI on every build (layer 2); review at
+  (QC-24); the bridge's tests under `-Zsanitizer=address` in CI on every build (layer 2), a run that
+  admits `-Cllvm-args=-asan-globals=0` beside the sanitizer flag, as the gate's *Bridge tests under
+  the address sanitizer* step passes both (`checks/gate.sh:L57` at `ka-reader@389adad`). **Why the
+  flag is admitted.** It turns off only the sanitizer's padding around global and static variables:
+  in LLVM, `if (Opts.asan_globals)` wraps `instrumentGlobals` alone (`AddressSanitizer.cpp:L2645`,
+  llvm-project `main` at `044150762369`, read 2026-10-22), so the load, store, heap and stack checks
+  still run, and with one bridge test changed to overflow a heap buffer the step's command exited 101
+  with `AddressSanitizer: heap-buffer-overflow` (the PM's measurement,
+  `docs/trail/architecture/cycle-54.md` § 3.2). What R-13 guards is a buffer freed twice or never and
+  a lifetime crossed at the C ABI, and every buffer the bridge hands across is an owned heap buffer
+  `ka_reader_free` frees, as this entry requires; at `ka-reader@389adad` every `unsafe` site in the
+  bridge works on a caller's pointer, a heap box or the stack, and none on a static. **Why it is
+  needed.** LLVM skips ELF's init arrays but not Mach-O's `__mod_init_func` (`shouldInstrumentGlobal`,
+  `AddressSanitizer.cpp:L1986-L1992` at the same commit), so the bridge's load-time initializer,
+  `INSTALL_LOG_AT_LOAD` (`crates/ka-reader-bridge/src/exports.rs:L141-L143`), is padded and the
+  linker refuses it (`checks/gate.sh:L55-L56`). **Its limit.** The flag reaches every crate built for
+  the host target, not only the bridge; in `ka-reader-core`, which holds no `unsafe`, it costs
+  nothing. The admission lapses for a change that hands a static across the ABI or reaches one
+  through a raw pointer; such a change already breaks this entry's owned-buffer rule, and
+  `development-design` reading this entry is its gate. If a later toolchain links the instrumented
+  initializer, the gate may drop the flag with no change here. The run is not claimed to catch a
+  leak, a buffer freed never *(added at v61, in the owner's seat at
+  `docs/trail/architecture/cycle-54.md` § 3.2 — RN-72)*; review at
   `development-design` for the delegation rule — what counts as logic is not greppable, and the
   import rule is the part that is; the allowlist admits a crate to the workspace and not to a
   purpose, so a listed parser or grammar engine imported to put read logic in the bridge is that
@@ -532,7 +554,8 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   "Owns" and "Must not own" as they read at v27 — the switch, RN-87, re-derived at v32, RN-43 —
   SM-4; § 4 C-I2; § 11 R-13; `arch_defaults.md` § Application Layer; re-derived at v11 —
   RN-22; the *may import* set answered in the owner's seat at
-  `docs/trail/architecture/cycle-10.md` § 3.1 — RN-24)*
+  `docs/trail/architecture/cycle-10.md` § 3.1 — RN-24; the sanitizer run's admitted flag, the owner's
+  seat's answer at `docs/trail/architecture/cycle-54.md` § 3.2 — RN-72)*
 - **QC-14:** `checks/` may import `ka-reader-core` and is **never a dependency of any shipped
   unit** — the `ka-reader-core` library, the `ka-reader-bridge` static library or the `ka-reader-mac`
   executable, each as it ships, and never a test target declared in one of their manifests — and
@@ -1576,7 +1599,15 @@ and moving C-R4 is the CTO's if hosted CI has not returned by the first public r
 names the CI build, or a workflow step, reads under this paragraph, and none repeats it.
 `checks/gate.sh` is in the tree from `ka-reader@8b93322`, mode `100755`, with 26 steps, and it has
 passed in the macOS guest: exit 0 at `ka-reader@726a234`, whose script differs from `8b93322`'s only
-in two re-wrapped comments (the PM's measurement, `docs/trail/architecture/cycle-51.md` § 3.2). Until
+in two re-wrapped comments (the PM's measurement, `docs/trail/architecture/cycle-51.md` § 3.2). That
+count is true of `8b93322` and stays as its record. At `ka-reader@389adad` the script is version
+1.1.0 (`checks/gate.sh:L2`) with 27 steps: the new one, *Bridge tests under the address sanitizer*
+(`:L57`), sits between *Test gate* (`:L50`) and *Structure check* (`:L58`), and `grep -c
+'^run_step' checks/gate.sh` prints 28 there, 27 steps and the `run_step()` definition at `:L27`,
+where the same count on `8b93322`'s script prints 27. The whole gate exited 0 in the macOS guest with
+that step in it, the step printing `rustc 1.101.0-nightly (19833af72 2026-10-20)` before the bridge's
+results (the PM's measurement, `docs/trail/architecture/cycle-54.md` § 3.1) *(added at v61, in the
+owner's seat at `docs/trail/architecture/cycle-54.md` § 3.1 — RN-72)*. Until
 the card's command runs it, a rule gated at the CI build alone is held by no run while Actions is
 off, and by this document's header rule its gate is `development-design` reading the entry. The
 card's move is owed to `product-card`, in the form RN-60 used: the test command runs
@@ -2282,7 +2313,7 @@ is stated once, in § 8 *(added at v56, on the owner's answer at `docs/trail/arc
 | QC-8 | `ka-reader-mac` imports and dependencies | `checks/view.sh` (suite `test_view.sh`); `checks/no-network.sh` (suite `test_no_network.sh`); `swift test --package-path ka-reader-mac` | the tree | CI build |
 | QC-9 – QC-12, QC-14 | `ka-reader-core` / `checks/` imports; no `unsafe` outside the bridge | `checks/structure.sh` (suite `test_structure.sh`); `checks/no-network.sh` (suite `test_no_network.sh`); `cargo tree -p ka-reader-bridge`; `cargo build --workspace --locked` | the tree; the change | CI build; `development-implementation` (the structure pair) |
 | QC-63 | a module of no part in `ka-reader-core` imports no part | `checks/structure.sh` (suite `test_structure.sh`) | the tree; the change | CI build; `development-implementation` (the structure pair) |
-| QC-13 | `ka-reader-bridge` imports; the export set; the ABI under the sanitizer | `checks/structure.sh` (suite `test_structure.sh`); `cargo test --locked -p ka-reader-bridge --test exports`; the bridge's tests under `-Zsanitizer=address` | the tree; the change | CI build; `development-implementation` (the structure pair) |
+| QC-13 | `ka-reader-bridge` imports; the export set; the ABI under the sanitizer | `checks/structure.sh` (suite `test_structure.sh`); `cargo test --locked -p ka-reader-bridge --test exports`; the bridge's tests under `-Zsanitizer=address`, with `-Cllvm-args=-asan-globals=0` admitted (RN-72) | the tree; the change | CI build; `development-implementation` (the structure pair) |
 | QC-15, QC-17 | I/O ownership; the two composition roots; libgit2's machine-level config search paths empty, failing closed, once per process | `checks/structure.sh` (suite `test_structure.sh`); `checks/view.sh` (suite `test_view.sh`); `cargo test --locked -p ka-reader-bridge` — the four search paths read back empty, and the switch's fail-closed and once-per-process cases | the tree; the change | CI build; `development-implementation` (the structure pair) |
 | QC-16 | writes only in the container | `checks/own-state.sh` (suite `test_own_state.sh`) | the tree | CI build; release |
 | QC-19 | folder replace-whole | `cargo test --locked -p ka-reader-core --test switch`; `git diff --stat … -- ka-reader-mac` | the change | `development-implementation` |
@@ -6432,3 +6463,48 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   companion is removed and `Status:` is Settled *(re: header `Version:`; § 1.1 QC-2; source:
   `docs/trail/architecture/cycle-53.md` § 3.1; `docs/trail/architecture/self_answer-55.md`;
   `ka-reader@c268945`)*
+
+- **RN-72:** *(v61 — the cycle-54 fold, §§ 3.1 and 3.2 answered; § 2.1 open)* **Intake.** The
+  companion on disk was opened by the PM on 2026-10-22, not by a `product-architecture` run, to carry
+  two items from a `shukuba-refine` review: § 3.1, § 8's 26-step count, and § 3.2, QC-13's sanitizer
+  run with the global-variable checks off. A `companion-self-answer` run answered both in the owner's
+  seat (`ka-reader@ccf3b22`; the reasoning at `docs/trail/architecture/self_answer-56.md`) and raised
+  § 2.1 with an empty slot. The file was clean in git at intake and two slots were filled, so it is
+  consumed. It was copied whole to `docs/trail/architecture/cycle-54.md` before this fold's first
+  edit, and `cmp` found the two identical. **Whose answers these are.** The owner's seat's, and they
+  outrank every input. Neither moves what an entry obliges. **§ 3.1 → § 8, *Until the card runs the
+  script*.** A correction, not a widening: the `8b93322` sentence stays as that tree's record, and
+  beside it the gate as it stands at `ka-reader@389adad`, version 1.1.0, 27 steps, with the new step's
+  place and the count that measures it. The guest pass is cited as the PM's measurement from the trail
+  copy, and no commit is named for it, because the item names none. **§ 3.2 → QC-13 and § 10.** QC-13's
+  *verified by:* tail now says its sanitizer run admits `-Cllvm-args=-asan-globals=0`, and gives the
+  answer's reason (the flag drops only the padding around globals; the bridge's ABI buffers are heap;
+  no `unsafe` site reaches a static), the need (LLVM pads Mach-O's `__mod_init_func`, so the linker
+  refuses the instrumented `INSTALL_LOG_AT_LOAD`) and the limit (the flag reaches every host-target
+  crate; the admission lapses for a change that hands a static across the ABI, which already breaks
+  the owned-buffer rule, gated at `development-design`; no leak is claimed caught). The PM's
+  heap-overflow negative control is cited as the PM's measurement. § 10's QC-13 row names the flag.
+  SDD § 11 R-13's words stand, as the answer says. **Read at source for this run:** `HEAD` is
+  `ka-reader@ccf3b22`, and `git diff --stat 389adad HEAD -- checks/gate.sh crates/ka-reader-bridge`
+  prints nothing. `grep -c '^run_step' checks/gate.sh` prints 28 at `HEAD` and 27 on
+  `git show 8b93322:checks/gate.sh`; `checks/gate.sh:L2` reads `Version: 1.1.0`; `:L50` is *Test
+  gate*, `:L57` the sanitizer step passing `-Zsanitizer=address` and `-Cllvm-args=-asan-globals=0`,
+  `:L58` *Structure check*; `:L55-L56` give the initializer as the flag's reason;
+  `crates/ka-reader-bridge/src/exports.rs:L141-L143` hold `INSTALL_LOG_AT_LOAD` in
+  `__DATA,__mod_init_func`. The LLVM locators are the answer's and were not re-read by this run.
+  **What moved beneath this document.** Since v60 (`ka-reader@435bb4e`) the SDD moved to v57 and the
+  FDR to v13; every input's `Status:` line still reads Settled, so `Inputs read:` stands. **No
+  candidate record.** Each fold re-measures or states the limit of an existing check and gives up
+  nothing, so it fails the first gate. No ADR is written, edited or restatused, the index does not
+  move, and no `QC` is added, renumbered or reused. **Not folded: § 2.1.** Whether § 8's opening
+  paragraph, *Until the card runs the script*, and the passages that read under it are re-derived
+  against the card that now runs `checks/gate.sh` is a choice whose slot is empty, so this run does
+  not touch them: they still read as v60 left them, including the 27-step reading's own *Until*
+  sentence after it. The item survives in the companion with its line locators re-measured against
+  this version. **Known limits.** This run ran no gate and no suite: the fold moves citations and a
+  stated limit, not a check. It did not read the SRS, SDD or FDR in full; it read their status lines,
+  the PM's items and the passages the answers cite. **The companion.** § 2.1 is left for the owner, so
+  the companion stays and `Status:` is Draft *(re: header `Version:` and `Status:`; § 1.2 QC-13;
+  § 8, *Until the card runs the script*; § 10 the QC-13 row; source:
+  `docs/trail/architecture/cycle-54.md` §§ 3.1 and 3.2; `docs/trail/architecture/self_answer-56.md`;
+  `ka-reader@389adad`)*
