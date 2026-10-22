@@ -516,6 +516,98 @@ function add_logger(ln, w) {
   note(ln, "QC-61", 1, w, "`log::" w "` outside crates/ka-reader-bridge/src/")
 }
 
+# QC-17's adapter construction. The name `Libgit2` in code is a construction unless it stands where a
+# type stands: a `use` item, the `struct` definition, an `impl` header, a generic argument, the self
+# type of a qualified path, an annotation or a bound. Those positions are closed off before the name
+# is judged, across lines and with brackets balanced. Comments and strings are not read, and a string
+# still separates the code tokens on either side of it. The finding is at the line holding the name,
+# once per line.
+
+# Marks a `use` or `type` item as a type position, to the `;` outside braces.
+function mark_to_semi(t, n, k,    m, d) {
+  d = 0
+  for (m = k; m <= n; m++) {
+    ty17[m] = 1
+    if (t[m] == "{") d++
+    else if (t[m] == "}") { if (d > 0) d-- }
+    else if (t[m] == ";" && d == 0) return
+  }
+}
+
+# Marks an item header, to its `{` or `;` outside brackets; with whole set, a `{` body too.
+function mark_item(t, n, k, whole,    m, d, b) {
+  d = 0
+  for (m = k; m <= n; m++) {
+    ty17[m] = 1
+    if (t[m] == "(" || t[m] == "[") d++
+    else if (t[m] == ")" || t[m] == "]") { if (d > 0) d-- }
+    else if (d == 0 && t[m] == ";") return
+    else if (d == 0 && t[m] == "{") {
+      if (!whole) return
+      b = 1
+      while (++m <= n && b > 0) {
+        ty17[m] = 1
+        if (t[m] == "{") b++
+        else if (t[m] == "}") b--
+      }
+      return
+    }
+  }
+}
+
+# A `<` opens a generic argument list or a qualified path, and is not a comparison, after `::`, after
+# a name that begins with an uppercase letter, `impl`, `dyn` or a function's name, and after any
+# punctuation that cannot end an operand.
+function opens_angle(t, k,    p) {
+  p = (k > 1) ? t[k - 1] : ""
+  if (p == "::") return 1
+  if (p == "<" || p == ")" || p == "]" || p == "}") return 0
+  if (is_word_token(p)) {
+    if (p ~ /^[A-Z]/ || p == "impl" || p == "dyn") return 1
+    return (k > 2 && t[k - 2] == "fn")
+  }
+  return 1
+}
+
+# The name follows a type marker: an annotation `:`, a return `->` or a cast `as`, past any path
+# prefix, reference, `mut`, lifetime or `dyn`.
+function after_type_marker(t, k,    j) {
+  j = k - 1
+  while (j >= 1 && t[j] == "::") {
+    j--
+    if (j >= 1 && is_word_token(t[j])) j--
+  }
+  while (j >= 1) {
+    if (t[j] == "&" || t[j] == "*" || t[j] == "mut" || t[j] == "const" || t[j] == "dyn") j--
+    else if (j >= 2 && is_word_token(t[j]) && t[j - 1] == "'") j -= 2
+    else break
+  }
+  if (j < 1) return 0
+  if (t[j] == ":" || t[j] == "as") return 1
+  return (t[j] == ">" && j > 1 && t[j - 1] == "-")
+}
+
+function scan_construction(t, l, n,    k, w, sp) {
+  for (k = 1; k <= n; k++) {
+    w = t[k]
+    if (w == "use" || w == "type") mark_to_semi(t, n, k)
+    else if (w == "struct" || w == "enum") mark_item(t, n, k, 1)
+    else if (w == "impl" || w == "fn" || w == "trait") mark_item(t, n, k, 0)
+  }
+  sp = 0
+  for (k = 1; k <= n; k++) {
+    w = t[k]
+    if (w == "{" || w == "}" || w == ";") sp = 0
+    else if (w == "<") { if (opens_angle(t, k)) sp++ }
+    else if (w == ">") { if (sp > 0 && t[k - 1] != "-" && t[k - 1] != "=") sp-- }
+    else if (sp > 0) ty17[k] = 1
+  }
+  for (k = 1; k <= n; k++) {
+    if (t[k] != "Libgit2" || (k in ty17) || after_type_marker(t, k)) continue
+    note(l[k], "QC-17", 2, "", "git-reader's adapter `Libgit2` constructed outside crates/ka-reader-bridge/src/")
+  }
+}
+
 # A crate named in code in a bridge file. A path root may also be a name a `use` of the file bound.
 function crate_position(w, ln, as_path_root) {
   if (!check_crates) return
@@ -769,7 +861,7 @@ layer5 {
     else {
       if (c2 == "//") { flush_word(); i += 2; while (i <= len) emit_at("c") }
       else if (c2 == "/*") { flush_word(); mode = "block"; blk = 1; i += 2 }
-      else if (c == "\"") { flush_word(); push("\"", ln, "s"); mode = "str"; i++ }
+      else if (c == "\"") { flush_word(); push("\"", ln, "s"); strmark[nt] = 1; mode = "str"; i++ }
       else if ((c == "r" || c == "b") && (i == 1 || substr(line, i - 1, 1) !~ /[A-Za-z0-9_]/) && match(substr(line, i), /^b?r#*"/)) {
         flush_word()
         rawtext = substr(line, i, RLENGTH)
@@ -778,6 +870,7 @@ layer5 {
         rawclose = ""
         for (q = 1; q <= rawhashes; q++) rawclose = rawclose "#"
         push("\"", ln, "s")
+        strmark[nt] = 1
         mode = "raw"
         i += RLENGTH
       }
@@ -820,6 +913,15 @@ END {
   if (check_crates) { mark_use_items(ct, nc); collect_bindings(ct, nc) }
   scan_stream(ct, cl, nc)
   scan_use_trees(ct, cl, nc)
+  if (!in_src) {
+    # The code stream with a placeholder where a string stood, so a string keeps its neighbours apart.
+    n17 = 0
+    for (k = 1; k <= nt; k++) {
+      if (tkind[k] == "k") { n17++; t17[n17] = tk[k]; l17[n17] = tl[k] }
+      else if (k in strmark) { n17++; t17[n17] = "\"str\""; l17[n17] = tl[k] }
+    }
+    scan_construction(t17, l17, n17)
+  }
   for (key in found) {
     split(key, kp, SUBSEP)
     printf "%s\t%d\t%d\t%d\t%s\t%s:%d: %s: %s\n", rel, kp[1], substr(kp[2], 4) + 0, kp[3], kp[4], rel, kp[1], kp[2], found[key]

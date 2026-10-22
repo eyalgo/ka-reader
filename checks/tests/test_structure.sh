@@ -2982,6 +2982,12 @@ test_bridge_source_may_construct_the_adapter() {
   nested_tests="$PLANT_LINE"
   plant "$R" "ka-reader-bridge/src/build.rs" 'fn a() { let _ = Libgit2; }'
   nested_build="$PLANT_LINE"
+  plant "$R" "ka-reader-extra/src/tests/y.rs" 'fn a() { let _ = Libgit2; }'
+  other_tests="$PLANT_LINE"
+  plant "$R" "ka-reader-extra/src/build.rs" 'fn a() { let _ = Libgit2; }'
+  other_build="$PLANT_LINE"
+  plant "$R" "ka-reader-extra/tests/z.rs" 'fn a() { let _ = Libgit2; }'
+  plant "$R" "ka-reader-extra/build.rs" 'fn a() { let _ = Libgit2; }'
   plant "$R" "ka-reader-core/src/language.rs" 'fn a() { let _ = (Libgit2, Libgit2); }'
   many="$PLANT_LINE"
   plant "$R" "ka-reader-core/src/language.rs" 'fn b() { let _ = Libgit2; }'
@@ -2992,6 +2998,10 @@ test_bridge_source_may_construct_the_adapter() {
   expect_construction "ka-reader-bridge-extra/src/lib.rs" "$near" || return 1
   expect_no_construction "ka-reader-bridge/src/tests/x.rs" "$nested_tests" || return 1
   expect_no_construction "ka-reader-bridge/src/build.rs" "$nested_build" || return 1
+  expect_construction "ka-reader-extra/src/tests/y.rs" "$other_tests" || return 1
+  expect_construction "ka-reader-extra/src/build.rs" "$other_build" || return 1
+  expect_no_finding_for "ka-reader-extra/tests/z.rs" || return 1
+  expect_no_finding_for "ka-reader-extra/build.rs" || return 1
   expect_construction "ka-reader-core/src/language.rs" "$many" || return 1
   expect_construction "ka-reader-core/src/language.rs" "$second" || return 1
 }
