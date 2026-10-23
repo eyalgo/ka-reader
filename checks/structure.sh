@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Version: 1.6.0 — structure.sh holds QC-10's adapter, QC-11's git_reader, watcher and markdown_renderer
-#   subjects, and QC-17's adapter construction
+# Version: 1.6.0 — structure.sh holds QC-10's adapter, QC-11's git_reader, watcher and
+#   markdown_renderer subjects, and QC-17's adapter construction
 # Version: 1.5.0 — probe answers root for a git file; third QC-15 filesystem owner
 # Version: 1.4.0 — structure.sh holds the value modules — QC-63 scan and its proof
 # Version: 1.3.0 — structure.sh holds the boundary reads; fs_reader test body moves to tests/unit
@@ -235,6 +235,11 @@
 #                         `build` key, and [[test]], [[bench]], [[example]] and [[bin]] targets.
 #                         Source: QC-14's "as it ships" and its test-target exclusion.
 #     QC-17  logger       In every file read whose path is not under crates/ka-reader-bridge/src/
+#     QC-61  (CP-426)     (the exact path component), a path whose first segment is `log` (or
+#                         `::log`) and whose next segment is the whole word `set_logger` or
+#                         `set_boxed_logger`, or a `use` tree rooted at `log` naming either,
+#                         aliased or not. Two findings on that line, one QC-17 and one QC-61. A
+#                         comment or a string counts. Source: QC-17's and QC-61's verified-by.
 #     QC-17  adapter      In every file read whose path is not under crates/ka-reader-bridge/src/
 #            construc-    (the exact path component, as the logger row reads it): each line of code
 #            tion         that makes a value of git-reader's adapter from its name, `Libgit2`. The
@@ -257,11 +262,6 @@
 #                         A folder_model line that constructs the adapter draws this finding and the
 #                         QC-10 adapter finding. Source: QC-17's "the adapter's constructor …
 #                         appear[s] only under crates/ka-reader-bridge/src/".
-#     QC-61  (CP-426)     (the exact path component), a path whose first segment is `log` (or
-#                         `::log`) and whose next segment is the whole word `set_logger` or
-#                         `set_boxed_logger`, or a `use` tree rooted at `log` naming either,
-#                         aliased or not. Two findings on that line, one QC-17 and one QC-61. A
-#                         comment or a string counts. Source: QC-17's and QC-61's verified-by.
 #     QC-2   write API    In ka-reader-core only, every file of the shipped scope, no file exempt:
 #            (CP-445,     crates/ka-reader-core/src/fs_reader.rs is read too, because its owner
 #            CP-446,      exemption is QC-15's filesystem clause alone, and a file added later for
@@ -367,8 +367,11 @@
 #   crate::git_reader as g;` and then `g::libgit2`), on a line that does not also name `Libgit2`; a
 #   value made inside an impl of the adapter as `Self`; a value made by a trait call whose type is
 #   inferred, as in `let p: Libgit2 = Default::default();`, where the name stands only as a type; a
-#   field value written `port: Libgit2` inside a struct literal, which reads as a field type; and a
-#   construction in macro-generated or `include!`d source. A review catches these.
+#   field value written `port: Libgit2` inside a struct literal, which reads as a field type; a
+#   construction later in an expression where `<` compares a value whose name is capitalised but not
+#   a constant, as in `Level::Debug < level && take(Libgit2)`, because that `<`
+#   reads as the opening of a generic argument list; and a construction in macro-generated or
+#   `include!`d source. A review catches these.
 
 set -euo pipefail
 
@@ -538,10 +541,10 @@ function add_unit(ln, w,    u) {
   if (forbidden_edge(u)) note(ln, subject_qc(), 1, u, subj " imports " u)
 }
 
-# The binding's wording does not follow the subject set. A folder_model, fs_reader or highlighter file
-# draws the subject-worded line. A git_reader file draws nothing, because git-reader owns the binding.
-# A watcher or markdown_renderer file draws the general line, the one it drew before either unit was a
-# subject.
+# The binding's wording does not follow the subject set. A folder_model, fs_reader or highlighter
+# file draws the subject-worded line. A git_reader file draws nothing, because git-reader owns the
+# binding. A watcher or markdown_renderer file draws the general line, the one it drew before either
+# unit was a subject.
 function add_git2(ln, w) {
   if (subj == "folder_model" || subj == "fs_reader" || subj == "highlighter") {
     note(ln, subject_qc(), 2, w, subj " names the libgit2 binding `" w "`")
@@ -586,12 +589,12 @@ function add_logger(ln, w) {
   note(ln, "QC-61", 1, w, "`log::" w "` outside crates/ka-reader-bridge/src/")
 }
 
-# QC-17's adapter construction. The name `Libgit2` in code is a construction unless it stands where a
-# type stands: a `use` item, the `struct` definition, an `impl` header, a generic argument, the self
-# type of a qualified path, an annotation or a bound. Those positions are closed off before the name
-# is judged, across lines and with brackets balanced. Comments and strings are not read, and a string
-# still separates the code tokens on either side of it. The finding is at the line holding the name,
-# once per line.
+# QC-17's adapter construction. The name `Libgit2` in code is a construction unless it stands where
+# a type stands: a `use` item, the `struct` definition, an `impl` header, a generic argument, the
+# self type of a qualified path, an annotation or a bound. Those positions are closed off before the
+# name is judged, across lines and with brackets balanced. Comments and strings are not read, and a
+# string still separates the code tokens on either side of it. The finding is at the line holding
+# the name, once per line.
 
 # Marks a `use` or `type` item as a type position, to the `;` outside braces.
 function mark_to_semi(t, n, k,    m, d) {
@@ -625,14 +628,63 @@ function mark_item(t, n, k, whole,    m, d, b) {
   }
 }
 
-# A `<` opens a generic argument list or a qualified path, and is not a comparison, after `::`, after
-# a name that begins with an uppercase letter, `impl`, `dyn` or a function's name, and after any
-# punctuation that cannot end an operand.
+# Marks the annotation of a `let`, `const` or `static` as a type position: from the `:` that follows
+# its pattern or name at depth zero to the `=` or `;` that ends it, brackets and generic lists
+# balanced, so a tuple, an array or a slice in it is a type too. The value after the `=` is not
+# marked. A `const fn` or a `*const T` has no such `:` before its `{`, `=` or `;`, and is left
+# alone.
+function mark_annotation(t, n, k,    m, d, a) {
+  d = 0
+  for (m = k + 1; m <= n; m++) {
+    if (t[m] == "(" || t[m] == "[") d++
+    else if (t[m] == ")" || t[m] == "]") { if (d == 0) return; d-- }
+    else if (d == 0 && (t[m] == "=" || t[m] == ";" || t[m] == "{" || t[m] == "}")) return
+    else if (d == 0 && t[m] == ":") break
+  }
+  d = 0
+  a = 0
+  for (m++; m <= n; m++) {
+    if (t[m] == "(" || t[m] == "[") d++
+    else if (t[m] == ")" || t[m] == "]") { if (d == 0) return; d-- }
+    else if (t[m] == "<") a++
+    else if (t[m] == ">" && t[m - 1] != "-") { if (a == 0) return; a-- }
+    else if (d == 0 && a == 0 && (t[m] == "=" || t[m] == ";" || t[m] == "{" || t[m] == "}")) return
+    ty17[m] = 1
+  }
+}
+
+# Marks the parameter types of a closure whose opening `|` is at k: each `:` at depth zero, to the
+# `,` or `|` that ends that parameter. A `|` opens a closure where an operand cannot end, so `a | b`
+# and `a || b` are left alone.
+function mark_closure_params(t, n, k,    p, m, d, a, on) {
+  p = (k > 1) ? t[k - 1] : ""
+  if (!(k == 1 || p == "(" || p == "," || p == "=" || p == "{" || p == ";" || p == "[" || p == ":" || p == "move" || p == "return" || (p == ">" && t[k - 2] == "="))) return
+  d = 0
+  a = 0
+  on = 0
+  for (m = k + 1; m <= n; m++) {
+    if (t[m] == "(" || t[m] == "[") d++
+    else if (t[m] == ")" || t[m] == "]") { if (d == 0) return; d-- }
+    else if (t[m] == "<") a++
+    else if (t[m] == ">" && t[m - 1] != "-") { if (a > 0) a-- }
+    else if (d == 0 && a == 0 && t[m] == "|") return
+    else if (d == 0 && a == 0 && t[m] == ",") { on = 0; continue }
+    else if (d == 0 && a == 0 && t[m] == ":") { on = 1; continue }
+    else if (t[m] == "{" || t[m] == "}" || t[m] == ";") return
+    if (on) ty17[m] = 1
+  }
+}
+
+# A `<` opens a generic argument list or a qualified path, and is not a comparison, after `::`,
+# after a name that begins with an uppercase letter, `impl`, `dyn` or a function's name, and after
+# any punctuation that cannot end an operand. A constant's name, all capitals, ends an operand, and
+# so do a string, a character and a `?`: after any of them the `<` compares.
 function opens_angle(t, k,    p) {
   p = (k > 1) ? t[k - 1] : ""
   if (p == "::") return 1
-  if (p == "<" || p == ")" || p == "]" || p == "}") return 0
+  if (p == "<" || p == ")" || p == "]" || p == "}" || p == "?" || p == "\"str\"" || p == "'chr'") return 0
   if (is_word_token(p)) {
+    if (p ~ /^[A-Z][A-Z0-9_]+$/) return 0
     if (p ~ /^[A-Z]/ || p == "impl" || p == "dyn") return 1
     return (k > 2 && t[k - 2] == "fn")
   }
@@ -663,6 +715,8 @@ function scan_construction(t, l, n,    k, w, sp) {
     if (w == "use" || w == "type") mark_to_semi(t, n, k)
     else if (w == "struct" || w == "enum") mark_item(t, n, k, 1)
     else if (w == "impl" || w == "fn" || w == "trait") mark_item(t, n, k, 0)
+    else if (w == "let" || w == "const" || w == "static") mark_annotation(t, n, k)
+    else if (w == "|") mark_closure_params(t, n, k)
   }
   sp = 0
   for (k = 1; k <= n; k++) {
@@ -949,9 +1003,10 @@ layer5 {
         if (substr(line, i + 1, 1) == "\\") {
           j = i + 3
           while (j <= len && substr(line, j, 1) != "'") j++
+          chrmark[nt] = 1
           i = j + 1
         }
-        else if (substr(line, i + 2, 1) == "'" && substr(line, i + 1, 1) != "'") i += 3
+        else if (substr(line, i + 2, 1) == "'" && substr(line, i + 1, 1) != "'") { chrmark[nt] = 1; i += 3 }
         else emit_at("k")
       }
       else emit_at("k")
@@ -984,11 +1039,13 @@ END {
   scan_stream(ct, cl, nc)
   scan_use_trees(ct, cl, nc)
   if (!in_src) {
-    # The code stream with a placeholder where a string stood, so a string keeps its neighbours apart.
+    # The code stream with a placeholder where a string or a character stood, so a literal keeps its
+    # neighbours apart and still ends an operand. chrmark[k] says a character follows token k.
     n17 = 0
-    for (k = 1; k <= nt; k++) {
-      if (tkind[k] == "k") { n17++; t17[n17] = tk[k]; l17[n17] = tl[k] }
+    for (k = 0; k <= nt; k++) {
+      if (k > 0 && tkind[k] == "k") { n17++; t17[n17] = tk[k]; l17[n17] = tl[k] }
       else if (k in strmark) { n17++; t17[n17] = "\"str\""; l17[n17] = tl[k] }
+      if (k in chrmark) { n17++; t17[n17] = "'chr'"; l17[n17] = (k > 0) ? tl[k] : 1 }
     }
     scan_construction(t17, l17, n17)
   }
