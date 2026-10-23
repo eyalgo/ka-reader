@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.2.0 — the scan of the whole history for a secret, and its suite, join the list (NFDR QC-28)
 # Version: 1.1.0 — the bridge's tests run under the address sanitizer, on a dated nightly
 # Version: 1.0.0 — first version: the one ordered list of the gate's steps, each fatal (NFDR QC-64)
 #
@@ -43,6 +44,8 @@ run_step() {
 # lines are the record of which Swift and which SDK the run built with
 # (docs/nfdr.md § 9, Toolchain).
 run_step 'Toolchain' 'swift --version && xcrun --show-sdk-version'
+run_step 'Secret scan suite' 'checks/tests/test_secret_scan.sh'
+run_step 'Secret scan' 'checks/secret-scan.sh gitleaks git'
 run_step 'Build the workspace' 'cargo build --workspace --locked'
 # The app build comes before "Test gate": it writes the bridge artifact the Swift package links,
 # which a fresh checkout does not have, so "Test gate" cannot run before it.

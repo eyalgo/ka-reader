@@ -34,8 +34,9 @@ GATE="$ROOT/checks/gate.sh"
 TAB=$'\t'
 PINNED_VERSION="8.30.1"
 
-# A fixture repository must not depend on the machine's Git configuration or on a hook's variables.
-unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE
+# A fixture repository must not depend on the machine's Git configuration, on a hook's variables or on
+# a hooks path a launching session sets through GIT_CONFIG_COUNT.
+unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_CONFIG_COUNT GIT_CONFIG_PARAMETERS
 export GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_SYSTEM=/dev/null
 export GIT_AUTHOR_NAME=fixture GIT_AUTHOR_EMAIL=fixture@example.invalid
 export GIT_COMMITTER_NAME=fixture GIT_COMMITTER_EMAIL=fixture@example.invalid
@@ -402,6 +403,7 @@ test_download_missing_bad_digest_failed_extraction_wrong_version_unsupported_arc
   expect_nonzero || return 1
   expect_no_count || return 1
 
+  : > "$SCENE/curl.log"
   SCAN_ENV=("${base[@]}" "FAKE_UNAME_M=armv7")
   run_scan "$REPO" gitleaks git
   expect_nonzero || return 1
@@ -549,7 +551,7 @@ test_commented_exact_commit_fingerprint_is_accepted() {
   write_allow_file "# a documentation example, not a key" "$sha:docs/a.md:generic-api-key:12" "" "# a second example" "$sha:docs/b.md:generic-api-key:3"
   run_scan "$REPO" gitleaks git
   expect_zero || return 1
-  expect_contains "beyond those .gitleaksignore covers; commits scanned:" "$OUT" || return 1
+  expect_contains "beyond those .gitleaksignore covers; commits scanned: $(git -C "$REPO" rev-list --count HEAD)" "$OUT" || return 1
   [ "$(argv_value --gitleaks-ignore-path)" = "$(cd "$REPO" && pwd -P)" ] \
     || fail "the scanner was not pointed at the product root's allow file: $(cat "$SCENE/argv.log")"
 }
