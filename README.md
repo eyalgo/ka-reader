@@ -66,6 +66,12 @@ The order, slice by slice, is `docs/SDD.md` § 6.
 Not on the roadmap, and not coming later: sidebar search, pane resizing and keyboard navigation
 are outside what KA-Reader is built to become.
 
+## Built by KensaiApp
+
+KA-Reader is built by [KensaiApp](https://github.com/eyalgo/kensaiapp), a system of AI roles that
+carries a software change from first ask to merged code. What that cost in Claude runs, tokens and
+money is in [`docs/build_cost.md`](docs/build_cost.md).
+
 ## Name
 
 *KA-Reader* was called *Nozoki* (覗き — *"to peek / peer in"*) until 2026-10-08.
