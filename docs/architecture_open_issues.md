@@ -47,7 +47,17 @@ None.
   a reader following one at `HEAD` reads the wrong rule.
 - **If overridden:** QC-15 keeps the four locators, read as inheriting the `48308ff` pin. The cost
   is a reader at `HEAD` reaching the QC-17 and QC-2 rows. Nothing else moves.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm — with two additions. (1) The pin is `ka-reader@82a3fb1`, the one
+  QC-11's tail carries since v63; `checks/` is unchanged from it through `ka-reader@7f1c949`. At it,
+  *GAPS THE RULES ABOVE DO NOT CLOSE*'s `Path`-method gap is `checks/structure.sh:L341-L342`, the
+  two `git-reader` parts are `:L327-L330`, and the suite defines
+  `test_exemption_is_exact_for_the_adapter_name` at `checks/tests/test_structure.sh:L988` and
+  `test_git_owner_write_is_still_one_qc2_finding` at `:L958`. (2) The tail's two locators already
+  pinned at `ka-reader@48308ff` (`:L77-L80`, `:L1161`) move to the same pin — `:L82-L85` and
+  `:L1451` — with the old reading in a dated note, so every scan and suite locator in the tail reads
+  at one commit, as QC-11's do; and `config_scan.rs:L66`, true at `ka-reader@66f428d` and `:L93` at
+  `82a3fb1`, carries that `66f428d` pin in its own parenthesis. The reasoning is in
+  `docs/trail/architecture/self_answer-59.md`.
 
 ## 3. Raised from downstream — an item from a seat that did not write these records
 
