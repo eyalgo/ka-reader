@@ -1,8 +1,8 @@
 # NFDR — KA-Reader
 
-**Status:** Draft
+**Status:** Settled
 **Owner:** Principal Architect
-**Version:** 63 — the cycle-56 fold, § 3.1 confirmed in the owner's seat with three additions. QC-11's *verified by* now cites the structure scan's header — *THE SCAN TABLE* and *WHAT IS NOT HELD*, pinned at `ka-reader@82a3fb1` — as what holds the entry, in place of a sentence that listed its `git-reader`, `watcher` and `markdown-renderer` clauses as not held; it names the suite's planted break of each subject, says the `watcher` and `markdown-renderer` clauses are held as rules on planted files until a file of either appears, re-pins every scan locator in the tail to `82a3fb1`, and names the three parts that stay review at `development-design`: the exception's two bounds and the renderer's containment-only edge. The old reading stands in a dated note. No ADR is written, and no `QC` is added, renumbered or reused. § 2.1, raised by the run that answered § 3.1, on QC-15's unpinned locators, is unanswered, so the companion stays and `Status:` is Draft — RN-74 (v62: the close, the cycle-55 fold — § 8 states the card that runs `checks/gate.sh` and every gate that read under *Until the card runs the script* is re-derived against it; `Status:` was Settled — RN-73)
+**Version:** 64 — the close, the cycle-57 fold, § 2.1 confirmed in the owner's seat with two additions. QC-15's *verified by* now pins every locator into the structure scan and its suite at `ka-reader@82a3fb1`, the commit QC-11's tail carries: the four that named no commit — the suite's two exemption cases, the `Path`-method gap and the two `git-reader` parts not held — and the two that read at `ka-reader@48308ff`, where the owner files are spelled under the crate's former name. The `config_scan.rs` locator carries its own pin, `ka-reader@66f428d`. Each old reading stands in a dated note. Nothing QC-15 obliges moves; no ADR is written, and no `QC` is added, renumbered or reused. Nothing is left for the owner, so the companion is removed and `Status:` is Settled — RN-75 (v63: the cycle-56 fold — QC-11's *verified by* cites the scan header that holds its three subjects, its locators re-pinned at `ka-reader@82a3fb1`; `Status:` was Draft — RN-74)
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · PRD Settled · UXD Settled · DESIGN Settled · CONTENT Settled
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
@@ -616,15 +616,21 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   — *verified by:* `checks/structure.sh` (layer 6): each Rust I/O primitive appears only in its
   owner. Its filesystem clause exempts three owner files by exact path: `fs_reader.rs`,
   `log_writer.rs` and `git-reader`'s adapter, `crates/ka-reader-core/src/git_reader/libgit2.rs`
-  (`checks/structure.sh:L77-L80`, the exempting `case` at `:L1161`, at `ka-reader@48308ff`). The
+  (`checks/structure.sh:L82-L85`, the exempting `case` at `:L1451`, at `ka-reader@82a3fb1`
+  *(through v63 these read `:L77-L80` and `:L1161`, at `ka-reader@48308ff`, where the three files
+  are spelled `crates/nozoki-*` — RN-75)*). The
   adapter may name `std::fs`, and a `std::fs` read anywhere else in `git-reader` is a finding. The
   suite holds the exemption to the exact path. `test_exemption_is_exact_for_the_adapter_name`
   plants a `std::fs` write under the adapter's file name at six other paths and requires a QC-15
   finding at each, and `test_git_owner_write_is_still_one_qc2_finding` holds that the exemption
-  lifts this clause only (`checks/tests/test_structure.sh:L961`, `:L931`). The scan does not see a
-  `Path` method that touches the filesystem, in any crate, because such a method names no
-  filesystem module (`checks/structure.sh:L266-L267`, *GAPS THE RULES ABOVE DO NOT CLOSE*). Two
-  parts of the `git-reader` bound are therefore not held by the script (`:L253-L256`). The first is
+  lifts this clause only (`checks/tests/test_structure.sh:L988`, `:L958`, at `ka-reader@82a3fb1`).
+  The scan does not see a `Path` method that touches the filesystem, in any crate, because such a
+  method names no filesystem module (`checks/structure.sh:L341-L342`, *GAPS THE RULES ABOVE DO NOT
+  CLOSE*, at `ka-reader@82a3fb1`). Two parts of the `git-reader` bound are therefore not held by the
+  script (`:L327-L330`, *WHAT IS NOT HELD*, at `ka-reader@82a3fb1`) *(through v63 these four
+  locators read `test_structure.sh:L961` and `:L931`, `structure.sh:L266-L267` and `:L253-L256`,
+  with no commit named; each was true at `ka-reader@48308ff` and fell in another row or another
+  case's body once the scan was re-wrapped and reached version 1.6.0 — RN-75)*. The first is
   which read the adapter makes inside its owner file: the script admits every filesystem form
   there, so it cannot tell a read inside the folder from one past it. The second is `git-reader`'s
   `Path`-method reads, which is how the adapter reads the folder, the `.git` entry and each
@@ -643,7 +649,8 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   (`:L303`, at `ka-reader@66f428d`), which reads each alternates file through `read_alternates`
   (`:L366`) and each position through the walk's `inspect_on_disk` (`:L517`) — and the scanners
   those checks parse with read nothing: `config_scan.rs`'s `scan` takes bytes
-  (`crates/ka-reader-core/src/git_reader/config_scan.rs:L66`), and so does `alternates_scan::scan`
+  (`crates/ka-reader-core/src/git_reader/config_scan.rs:L66`, at `ka-reader@66f428d`), and so does
+  `alternates_scan::scan`
   (`crates/ka-reader-core/src/git_reader/alternates_scan.rs:L28`, at `ka-reader@66f428d`), where `grep -nE
   'std::fs|File::|read_to|OpenOptions|read_link|metadata'` prints nothing *(the config,
   `.gitmodules` and submodule reads, and the walk along each value, on the owner's seat's answer
@@ -667,7 +674,9 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   and submodule reads named in the list, on the owner's seat's answer at
   `docs/trail/architecture/cycle-36.md` § 3.2 — RN-53; the alternates check's reads named in the
   list, from SDD v43's `git-reader` row (SDD RN-103), on the owner's seat's answer at
-  `docs/trail/architecture/cycle-38.md` § 3.1 — RN-55)*
+  `docs/trail/architecture/cycle-38.md` § 3.1 — RN-55; every scan and suite locator re-pinned at
+  `ka-reader@82a3fb1`, and the `config_scan.rs` locator given its own pin, on the owner's seat's
+  answer at `docs/trail/architecture/cycle-57.md` § 2.1 — RN-75)*
 - **QC-16:** The only writes the product performs are `own-state`'s and the bridge's diagnostic
   log, both inside `~/Library/Containers/com.kensaiapp.ka-reader/`.
   — *verified by:* `checks/own-state.sh` — after a session every changed file under `$HOME` is
@@ -6699,3 +6708,53 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   answer, so it stays, and `Status:` is Draft *(re: header `Status:`, `Version:`; QC-11's *verified
   by*; source: `docs/trail/architecture/cycle-56.md` § 3.1;
   `docs/trail/architecture/self_answer-58.md`)*
+
+- **RN-75:** *(v64 — the close: the cycle-57 fold, § 2.1 confirmed with two additions)* **Intake.**
+  The companion on disk held one item, § 2.1, raised on 2026-10-23 by a `companion-self-answer` run
+  in this seat while it answered the cycle-56 item (RN-74), not by a `product-architecture` run. A
+  second `companion-self-answer` run answered it in the owner's seat (`ka-reader@b17fb10`; the
+  reasoning at `docs/trail/architecture/self_answer-59.md`). The file was clean in git at intake and
+  its one slot was filled, so it is consumed. It was copied whole to
+  `docs/trail/architecture/cycle-57.md` before this fold's first edit, and `cmp` found the two
+  identical. **Whose answer this is.** The owner's seat's, and it outranks every input. It corrects
+  pointers and moves no obligation: QC-15 still fixes what it fixed, and the scan and the review at
+  `development-design` still hold the parts they held. **§ 2.1 → QC-15, the four unpinned
+  locators.** The suite's two exemption cases (`test_structure.sh:L961`, `:L931` →
+  `:L988`, `:L958`), the `Path`-method gap (`structure.sh:L266-L267` → `:L341-L342`) and the two
+  `git-reader` parts not held (`:L253-L256` → `:L327-L330`) now carry `ka-reader@82a3fb1`, the pin
+  QC-11's tail carries since v63, so the next scan change makes both tails stale at one commit.
+  **Addition 1, the pin.** It is `82a3fb1`, as the answer names; the item had said only "a named
+  commit". **Addition 2, the tail's other locators.** The QC-15 row and the exempting `case`, true at
+  their own pin `ka-reader@48308ff` as `:L77-L80` and `:L1161`, move to the same pin as `:L82-L85`
+  and `:L1451`, because at `48308ff` the three owner files are spelled `crates/nozoki-*` and the
+  sentence spells them `crates/ka-reader-*`, and because two pins in one sentence are what made the
+  later locators read as inheriting the earlier one. The `config_scan.rs:L66` locator carries
+  `ka-reader@66f428d` in its own parenthesis. Every old reading stands in a dated note. **Also,
+  beyond the answer's text.** The `:L327-L330` locator names its section, *WHAT IS NOT HELD*, as the
+  gap's locator already named *GAPS THE RULES ABOVE DO NOT CLOSE*, so a reader at the pin knows which
+  header the two parts sit under; and QC-15's trace names this answer. **Read at source for this
+  run**, in the main checkout at `ka-reader@b17fb10`, whose tree outside `docs/` is `82a3fb1`'s
+  (`git diff --stat 82a3fb1 b17fb10 -- . ':!docs'` prints nothing): `checks/structure.sh:L2-L3`
+  reads version 1.6.0; `:L82-L85` opens the QC-15 filesystem row naming the three owner files;
+  `:L1451` is the exempting `case`; `:L327-L330` is *WHAT IS NOT HELD*'s bullet on QC-15's two
+  parts; `:L341-L342` is the `Path`-method sentence under *GAPS THE RULES ABOVE DO NOT CLOSE*; and
+  `checks/tests/test_structure.sh` defines `test_git_owner_write_is_still_one_qc2_finding` at
+  `:L958` and `test_exemption_is_exact_for_the_adapter_name` at `:L988`. At `48308ff`, `:L77-L80`
+  and `:L1161` read as the dated note says, with `crates/nozoki-*`. `config_scan.rs`'s `scan` is
+  `:L66` at `66f428d` and `:L93` at `82a3fb1`; at `66f428d` the file, like `alternates_scan.rs` at
+  the same pin and `libgit2.rs` at its three pins, lies under `crates/nozoki-core/`, the crate's
+  name before `ka-reader@c915d52`, so `git log --follow` reaches it from the spelled path. The answer
+  weighed those pinned locators and left them, and this fold does too. **What moved beneath this
+  document.** Since v63 (`ka-reader@7f1c949`) only the answered companion and the self-answer report
+  have landed (`git log 7f1c949..HEAD` on the SRS, SDD, FDR, PRD, UXD, DESIGN and CONTENT prints
+  nothing), so `Inputs read:` stands. § 10's QC-15/QC-17 row names the scan and its suite and no
+  line, so it does not move. **No candidate record.** The fold re-pins citations and gives nothing
+  up, so it fails the first gate. No ADR is written, edited or restatused, the index does not move,
+  and no `QC` is added, renumbered or reused; the two records that name `config_scan.rs`, ADR-0022
+  and ADR-0023, name it by file and no line. **Known limits.** This run ran no gate and no suite: the
+  fold moves citations, not a check. It did not read the SRS, SDD or FDR in full: nothing beneath
+  this document moved, and it read their status lines, the answer and the passages the answer names.
+  **The companion.** Nothing is left for the owner, so the companion is removed and `Status:` is
+  Settled *(re: header `Status:`, `Version:`; QC-15's *verified by* and trace; source:
+  `docs/trail/architecture/cycle-57.md` § 2.1; `docs/trail/architecture/self_answer-59.md`;
+  `ka-reader@82a3fb1`)*
