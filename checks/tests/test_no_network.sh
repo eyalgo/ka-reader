@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Version: 1.3.0 — test_system_target_fails: a Swift target of type system is refused, and
+#   nothing else is
 # Version: 1.2.0 — git-reader probes the root — libgit2 bound behind
 #   the Git port, six fixture scenes
 # Version: 1.1.0 — the Tauri build leaves — native bundle assembled, bundle.sh and no-network.sh
@@ -59,6 +61,7 @@ test_package_resolved_at_the_package_root_fails
 test_package_resolved_nested_deep_fails
 test_local_binary_target_with_a_null_url_is_admitted
 test_each_package_resolved_is_named
+test_system_target_fails
 "
 
 # --- helpers ---
@@ -427,6 +430,207 @@ test_each_package_resolved_is_named() {
   expect_nonzero_status || return 1
   expect_output_contains "$WORK/pkg-resolved-each/Package.resolved —" || return 1
   expect_output_contains "$WORK/pkg-resolved-each/a/b/Package.resolved"
+}
+
+# --- the system-target refusal (CP-876 to CP-884) ---
+
+SYSTEM_PHRASE="is of type system"
+SYSTEM_CLOSING_LINE="no-network.sh: the dependencies differ from checks/deps.allow, or the Swift package declares or resolves one"
+# The one dump the `swift` stub of the system-target case answers with. Each run rewrites it.
+SYSTEM_DUMP=""
+STDOUT=""
+ERR=""
+
+# The dump in file $1 with the target text $2 (a leading comma) added after its last target, written
+# to the dump the system-target runs read. Fails when the edit did not land, so a run cannot pass
+# over the unedited dump it was copied from.
+system_dump_from() {
+  sed "s|\"type\":\"executable\"}\]|\"type\":\"executable\"}$2]|" "$1" > "$SYSTEM_DUMP"
+  grep -qF -- "$2]" "$SYSTEM_DUMP" || fail "the target was not added to the dump: $2. dump: $(cat "$SYSTEM_DUMP")"
+}
+
+# Runs the script with stub directory $1 ahead on PATH and the Swift package at directory $2
+# ('' leaves the override unset). Keeps stdout and stderr apart, and together in OUT.
+run_system_case() {
+  if [ -n "$2" ]; then
+    STDOUT="$(PATH="$1:$PATH" NO_NETWORK_SWIFT_PACKAGE_DIR="$2" "$NO_NETWORK_SH" 2> "$WORK/system-stderr" < /dev/null)"
+  else
+    STDOUT="$(PATH="$1:$PATH" "$NO_NETWORK_SH" 2> "$WORK/system-stderr" < /dev/null)"
+  fi
+  STATUS=$?
+  ERR="$(cat "$WORK/system-stderr")"
+  OUT="$STDOUT
+$ERR"
+}
+
+expect_line_once_on_stderr() {
+  count="$(printf '%s\n' "$ERR" | grep -cxF -- "$1" || true)"
+  [ "$count" = 1 ] || fail "expected stderr to hold this line once, found it $count times: $1. stderr: $ERR"
+}
+
+# One complete refusal line for each name in $2 onward, naming manifest $1, and no other line that
+# carries the finding.
+expect_system_refusals() {
+  manifest="$1"
+  shift
+  expected_total="$#"
+  first_line=""
+  for target_name in "$@"; do
+    refusal="swift: $manifest — target $target_name $SYSTEM_PHRASE, a library the dependencies array does not show"
+    [ -n "$first_line" ] || first_line="$refusal"
+    expect_line_once_on_stderr "$refusal" || return 1
+  done
+  total="$(printf '%s\n' "$ERR" | grep -cF -- "$SYSTEM_PHRASE" || true)"
+  [ "$total" -eq "$expected_total" ] || fail "expected stderr to hold this line once, found it $total times: $first_line. stderr: $ERR"
+}
+
+expect_closing_line_last() {
+  [ "$(printf '%s\n' "$ERR" | tail -n 1)" = "$SYSTEM_CLOSING_LINE" ] \
+    || fail "expected the last line on stderr to be: $SYSTEM_CLOSING_LINE. stderr: $ERR"
+}
+
+expect_no_ok_line() {
+  case "$STDOUT" in
+    *"no-network.sh: ok"*) fail "the ok line was printed with a target of type system in the dump. output: $OUT" ;;
+  esac
+}
+
+# The dump in SYSTEM_DUMP is admitted: exit 0, the ok line, and no system finding.
+expect_dump_admitted() {
+  expect_zero_status || return 1
+  case "$STDOUT" in
+    "no-network.sh: ok — "*) ;;
+    *) fail "expected the ok line for this dump: $(cat "$SYSTEM_DUMP"). output: $OUT" || return 1 ;;
+  esac
+  case "$OUT" in
+    *"$SYSTEM_PHRASE"*) fail "expected no line for a target of type system for this dump: $(cat "$SYSTEM_DUMP"). output: $OUT" ;;
+  esac
+}
+
+# CP-876 to CP-884: a target whose dump `type` is exactly the string `system` is refused, by name,
+# beside every other finding; no other target is. The runs below are separate dumps of one case.
+test_system_target_fails() {
+  SYSTEM_DUMP="$WORK/dump-system.json"
+  stubs="$WORK/stubs-system"
+  mkdir -p "$stubs"
+  swift_stub "$stubs" "$SYSTEM_DUMP"
+  override_manifest="$WORK/pkg-clean/Package.swift"
+  system_target=',{"name":"CSys","type":"system"}'
+
+  # The isolated refusal: the clean dump plus one system target and nothing else.
+  system_dump_from "$WORK/dump-clean.json" "$system_target" || return 1
+  run_system_case "$stubs" "$WORK/pkg-clean"
+  expect_nonzero_status || return 1
+  expect_system_refusals "$override_manifest" CSys || return 1
+  expect_no_ok_line || return 1
+  expect_closing_line_last || return 1
+
+  # The default manifest spelling, relative, with no product-root prefix.
+  run_system_case "$stubs" ""
+  expect_nonzero_status || return 1
+  expect_system_refusals "ka-reader-mac/Package.swift" CSys || return 1
+  case "$ERR" in
+    *"$ROOT/ka-reader-mac/Package.swift"*) fail "the default manifest is named by an absolute path. output: $OUT" || return 1 ;;
+  esac
+
+  # Several system targets: one line for each, none duplicated.
+  system_dump_from "$WORK/dump-clean.json" "$system_target"',{"name":"CZlib","type":"system"}' || return 1
+  run_system_case "$stubs" "$WORK/pkg-clean"
+  expect_nonzero_status || return 1
+  expect_system_refusals "$override_manifest" CSys CZlib || return 1
+
+  # A system target that also carries a url, at index 1: the index-based url line and the name-based
+  # system line, each once.
+  system_dump_from "$WORK/dump-clean.json" ',{"name":"CSys","type":"system","url":"https://example.invalid/CSys.zip"}' || return 1
+  run_system_case "$stubs" "$WORK/pkg-clean"
+  expect_nonzero_status || return 1
+  expect_system_refusals "$override_manifest" CSys || return 1
+  expect_line_once_on_stderr "swift: $override_manifest — target 1 carries a url, a download the dependencies array does not show" || return 1
+
+  # Co-findings survive: a declared dependency, a cargo name added and one removed, and a
+  # Package.resolved at the package root and a nested path.
+  stubs_all="$WORK/stubs-system-all"
+  mkdir -p "$stubs_all" "$WORK/pkg-system-all/a/b"
+  swift_stub "$stubs_all" "$SYSTEM_DUMP"
+  cargo_edited_by "$stubs_all" '/^itoa v/d
+$a\
+left-pad-rs v1.0.0
+'
+  echo '{}' > "$WORK/pkg-system-all/Package.resolved"
+  echo '{}' > "$WORK/pkg-system-all/a/b/Package.resolved"
+  system_dump_from "$WORK/dump-dependency.json" "$system_target" || return 1
+  run_system_case "$stubs_all" "$WORK/pkg-system-all"
+  all_manifest="$WORK/pkg-system-all/Package.swift"
+  expect_nonzero_status || return 1
+  expect_system_refusals "$all_manifest" CSys || return 1
+  expect_line_once_on_stderr "cargo: left-pad-rs — in the tree and not in checks/deps.allow" || return 1
+  expect_line_once_on_stderr "cargo: itoa — in checks/deps.allow and not in the tree" || return 1
+  expect_line_once_on_stderr "swift: $all_manifest — declares a dependency" || return 1
+  expect_line_once_on_stderr "swift: $WORK/pkg-system-all/Package.resolved — a Package.resolved, and a package with no dependency has none" || return 1
+  expect_line_once_on_stderr "swift: $WORK/pkg-system-all/a/b/Package.resolved — a Package.resolved, and a package with no dependency has none" || return 1
+  expect_no_ok_line || return 1
+  expect_closing_line_last || return 1
+
+  # The admitted class: every other target, and a dump that leaves the new extraction nothing to
+  # read.
+  while IFS= read -r extra_target; do
+    system_dump_from "$WORK/dump-clean.json" "$extra_target" || return 1
+    run_system_case "$stubs" "$WORK/pkg-clean"
+    expect_dump_admitted || return 1
+  done <<'TARGETS'
+,{"name":"T","type":"regular"}
+,{"name":"T","type":"executable"}
+,{"name":"T","type":"test"}
+,{"name":"T","type":"binary","path":"T.artifactbundle"}
+,{"name":"T","type":"binary","path":"T.artifactbundle","url":null}
+,{"name":"T","type":"plugin"}
+,{"name":"T","type":"macro"}
+,{"name":"T","type":"System"}
+,{"name":"T","type":"other"}
+,{"name":"T","type":"systemLibrary"}
+,{"name":"T","type":"notsystem"}
+,{"name":"T","type":"system "}
+,{"name":"T"}
+,{"name":"T","type":null}
+,{"name":"T","type":1}
+,{"name":"T","type":true}
+,{"name":"T","type":["system"]}
+,{"name":"T","type":{"system":true}}
+TARGETS
+  sed 's|"targets":\[.*\]|"targets":[]|' "$WORK/dump-clean.json" > "$SYSTEM_DUMP"
+  grep -qF '"targets":[]}' "$SYSTEM_DUMP" || fail "the targets were not emptied: $(cat "$SYSTEM_DUMP")" || return 1
+  run_system_case "$stubs" "$WORK/pkg-clean"
+  expect_dump_admitted || return 1
+
+  # The only system target, first and then last: found wherever it sits.
+  sed 's|"targets":\[|"targets":[{"name":"CSys","type":"system"},|' "$WORK/dump-clean.json" > "$SYSTEM_DUMP"
+  grep -qF '"targets":[{"name":"CSys","type":"system"},{' "$SYSTEM_DUMP" \
+    || fail "the system target was not placed first: $(cat "$SYSTEM_DUMP")" || return 1
+  run_system_case "$stubs" "$WORK/pkg-clean"
+  expect_nonzero_status || return 1
+  expect_system_refusals "$override_manifest" CSys || return 1
+  system_dump_from "$WORK/dump-clean.json" "$system_target" || return 1
+  run_system_case "$stubs" "$WORK/pkg-clean"
+  expect_nonzero_status || return 1
+  expect_system_refusals "$override_manifest" CSys || return 1
+
+  # A system target with an explicit null url is refused by the system line alone.
+  system_dump_from "$WORK/dump-clean.json" ',{"name":"CSys","type":"system","url":null}' || return 1
+  run_system_case "$stubs" "$WORK/pkg-clean"
+  expect_nonzero_status || return 1
+  expect_system_refusals "$override_manifest" CSys || return 1
+  case "$ERR" in
+    *"carries a url"*) fail "expected no line for a url for this dump: $(cat "$SYSTEM_DUMP"). output: $OUT" || return 1 ;;
+  esac
+
+  # A remote binary target with no system target: the url line alone, as before.
+  cp "$WORK/dump-remote-binary.json" "$SYSTEM_DUMP"
+  run_system_case "$stubs" "$WORK/pkg-clean"
+  expect_nonzero_status || return 1
+  expect_line_once_on_stderr "swift: $override_manifest — target 1 carries a url, a download the dependencies array does not show" || return 1
+  case "$OUT" in
+    *"$SYSTEM_PHRASE"*) fail "expected no line for a target of type system for this dump: $(cat "$SYSTEM_DUMP"). output: $OUT" ;;
+  esac
 }
 
 # --- the runner ---
