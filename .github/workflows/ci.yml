@@ -19,6 +19,8 @@ jobs:
     # The job builds with the image's own default Xcode; it selects none of its own.
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       # "Test gate" runs checks/gate.sh, which runs every step in its list, in order. One step in that
       # list is also named "Test gate": the Cargo and Swift tests.
