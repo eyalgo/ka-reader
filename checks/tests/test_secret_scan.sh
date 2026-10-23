@@ -2,20 +2,21 @@
 # Version: 1.0.0 — first version: drives the real checks/secret-scan.sh and the real checks/gate.sh
 #   against disposable repositories, with stand-in tools on PATH
 #
-# checks/tests/test_secret_scan.sh — the tests of checks/secret-scan.sh and its place in checks/gate.sh.
+# checks/tests/test_secret_scan.sh — the tests of checks/secret-scan.sh and its place in
+# checks/gate.sh.
 #
 # WHY THIS EXISTS
-#   checks/secret-scan.sh is the gate's scan of every commit reachable from HEAD (docs/nfdr.md QC-28).
-#   A bug in it is a secret nobody is looking for, or a green gate over half a history. These cases run
-#   the real script, never a copy of its logic, against disposable Git repositories. `uname`, `curl`
-#   and `shasum` are stand-ins on PATH, and the gitleaks the script unpacks is a stand-in that records
-#   what it was called with and answers with the status and report a case chooses. So the suite proves
-#   the script's protocol (what it passes, what it checks, what it prints, when it exits 0) and not the
-#   vendor's detection: the planted-secret control is not part of this change, and the first real scan
-#   of the product's own history is recorded in the change's report. That the pinned digests are the
-#   vendor's own is held by review.
-#   The cases that read checks/gate.sh run the real gate in a disposable fixture whose other steps are
-#   stand-ins, so no bundle is launched and this suite is not run again from inside itself.
+#   checks/secret-scan.sh is the gate's scan of every commit reachable from HEAD (docs/nfdr.md
+#   QC-28). A bug in it is a secret nobody is looking for, or a green gate over half a history.
+#   These cases run the real script, never a copy of its logic, against disposable Git repositories.
+#   `uname`, `curl` and `shasum` are stand-ins on PATH, and the gitleaks the script unpacks is a
+#   stand-in that records what it was called with and answers with the status and report a case
+#   chooses. So the suite proves the script's protocol (what it passes, what it checks, what it
+#   prints, when it exits 0) and not the vendor's detection: the planted-secret control is not part
+#   of this change, and the first real scan of the product's own history is recorded in the change's
+#   report. That the pinned digests are the vendor's own is held by review. The cases that read
+#   checks/gate.sh run the real gate in a disposable fixture whose other steps are stand-ins, so no
+#   bundle is launched and this suite is not run again from inside itself.
 #
 # USAGE
 #   checks/tests/test_secret_scan.sh
@@ -34,8 +35,8 @@ GATE="$ROOT/checks/gate.sh"
 TAB=$'\t'
 PINNED_VERSION="8.30.1"
 
-# A fixture repository must not depend on the machine's Git configuration, on a hook's variables or on
-# a hooks path a launching session sets through GIT_CONFIG_COUNT.
+# A fixture repository must not depend on the machine's Git configuration, on a hook's variables or
+# on a hooks path a launching session sets through GIT_CONFIG_COUNT.
 unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_CONFIG_COUNT GIT_CONFIG_PARAMETERS
 export GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_SYSTEM=/dev/null
 export GIT_AUTHOR_NAME=fixture GIT_AUTHOR_EMAIL=fixture@example.invalid
@@ -86,8 +87,8 @@ pin_for() {
   sed -n "s/^PIN_SHA256_$1=\"\\([0-9a-f]*\\)\"\$/\\1/p" "$SCAN"
 }
 
-# Builds a repository with a root commit, an ordinary one, an empty one, a deletion-only one, a merge
-# and a branch HEAD does not reach.
+# Builds a repository with a root commit, an ordinary one, an empty one, a deletion-only one, a
+# merge and a branch HEAD does not reach.
 make_mixed_repo() {
   repo="$1"
   mkdir -p "$repo"
@@ -482,7 +483,6 @@ test_invalid_or_extra_wrapper_arguments_fail() {
   deprecated="gitleaks ""detect"
   set --
   for arguments in "" "gitleaks" "git" "git gitleaks" "$deprecated" "gitleaks git --redact" "gitleaks git extra" "gitleaks  git x"; do
-    # shellcheck disable=SC2086
     run_scan "$REPO" $arguments
     expect_nonzero || return 1
     expect_no_count || return 1

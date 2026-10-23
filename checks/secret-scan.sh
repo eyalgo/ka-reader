@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Version: 1.0.0 — first version: gitleaks 8.30.1 over every commit HEAD reaches, fetched and checked
+# Version: 1.0.0 — first version: gitleaks 8.30.1 over every commit HEAD reaches, fetched and
+# checked
 #   on every run, reporting by location only
 #
 # checks/secret-scan.sh — scans the whole history HEAD reaches for a secret.
@@ -16,12 +17,12 @@
 #   finding pass: the only exceptions are the exact, reviewed fingerprints in .gitleaksignore.
 #
 # USAGE
-#   checks/secret-scan.sh gitleaks git
-#   Run from inside a clone of the product. The two words are fixed: a bare call, a different word
-#   or an extra argument fails. Exit 0 only when the scan finished clean and HEAD is still the commit
-#   it started from; the output then names the gitleaks version and the number of commits scanned,
-#   which is `git rev-list --count HEAD`. A finding, or any error, is non-zero. A finding is printed
-#   by its commit, file, line and rule and never by its value.
+#   checks/secret-scan.sh gitleaks git Run from inside a clone of the product. The two words are
+#   fixed: a bare call, a different word or an extra argument fails. Exit 0 only when the scan
+#   finished clean and HEAD is still the commit it started from; the output then names the gitleaks
+#   version and the number of commits scanned, which is `git rev-list --count HEAD`. A finding, or
+#   any error, is non-zero. A finding is printed by its commit, file, line and rule and never by its
+#   value.
 #
 # .GITLEAKSIGNORE
 #   The reviewed exceptions file, at the product root. Absent means no exception. Each line that is
