@@ -61,6 +61,7 @@ test_verified_download_selects_archive_by_architecture
 test_download_missing_bad_digest_failed_extraction_wrong_version_unsupported_arch_each_fail
 test_ambient_path_gitleaks_is_never_used
 test_only_clean_scanner_status_returns_zero
+test_run_owned_files_are_removed_on_exit
 test_invalid_or_extra_wrapper_arguments_fail
 test_ambient_gitleaks_config_does_not_weaken_the_scan
 test_report_template_and_flags_are_metadata_only
@@ -69,6 +70,7 @@ test_commented_exact_commit_fingerprint_is_accepted
 test_malformed_global_wildcard_range_or_uncommented_entries_are_refused
 test_fingerprint_differs_by_commit_file_rule_and_line
 test_gate_holds_exactly_one_literal_scan_call_and_its_suite_as_whole_steps
+test_gate_comment_names_the_version_the_scanner_pins
 test_scan_moved_after_own_state_is_rejected_by_the_existing_order_case
 test_gate_stops_and_names_secret_scan_when_the_scan_fails_or_the_tool_is_missing
 test_failing_scanner_suite_stops_before_the_scan
@@ -404,6 +406,33 @@ test_download_missing_bad_digest_failed_extraction_wrong_version_unsupported_arc
   expect_nonzero || return 1
   expect_no_count || return 1
 
+  # An unpacked gitleaks whose version command fails is a tool that does not run, never scanned with.
+  rm -f "$SCENE/argv.log"
+  SCAN_ENV=("${base[@]}" "FAKE_VERSION_STATUS=1")
+  run_scan "$REPO" gitleaks git
+  expect_nonzero || return 1
+  expect_no_count || return 1
+  expect_contains "unpacked without a gitleaks executable that runs" "$ERR" || return 1
+  expect_no_scanner_call || return 1
+
+  # A prerequisite missing from PATH stops the step before anything is fetched. The PATH holds
+  # every command the script and its stand-ins call, except shasum.
+  : > "$SCENE/curl.log"
+  mkdir -p "$SCENE/no-shasum"
+  for tool in bash git tar mktemp cut rm mkdir grep cp env; do
+    printf '#!/bin/sh\nexec %s "$@"\n' "$(command -v "$tool")" > "$SCENE/no-shasum/$tool"
+    chmod +x "$SCENE/no-shasum/$tool"
+  done
+  cp "$SCENE/bin/uname" "$SCENE/bin/curl" "$SCENE/no-shasum/"
+  SCAN_ENV=("${base[@]}")
+  SCAN_ENV[0]="PATH=$SCENE/no-shasum"
+  run_scan "$REPO" gitleaks git
+  expect_nonzero || return 1
+  expect_no_count || return 1
+  expect_contains "shasum is not on PATH" "$ERR" || return 1
+  expect_no_download || return 1
+  expect_no_scanner_call || return 1
+
   : > "$SCENE/curl.log"
   SCAN_ENV=("${base[@]}" "FAKE_UNAME_M=armv7")
   run_scan "$REPO" gitleaks git
@@ -475,7 +504,47 @@ test_only_clean_scanner_status_returns_zero() {
   SCAN_ENV=("${base[@]}" "FAKE_REPORT_BODY=$finding")
   run_scan "$REPO" gitleaks git
   expect_nonzero || return 1
-  expect_no_count
+  expect_no_count || return 1
+
+  # A setup failure: the run-owned temporary directory cannot be made, so nothing is fetched.
+  rm -f "$SCENE/argv.log"
+  : > "$SCENE/curl.log"
+  SCAN_ENV=("${base[@]}" "TMPDIR=$SCENE/no-such-directory")
+  run_scan "$REPO" gitleaks git
+  expect_nonzero || return 1
+  expect_no_count || return 1
+  expect_contains "could not write to the temporary directory $SCENE/no-such-directory" "$ERR" || return 1
+  expect_no_download || return 1
+  expect_no_scanner_call
+}
+
+# The run-owned directory under TMPDIR holds the download, the config and the report template.
+test_run_owned_files_are_removed_on_exit() {
+  new_scene removed || return 1
+  base=("${SCAN_ENV[@]}")
+  temp="$SCENE/tmp"
+  mkdir "$temp"
+  sha="$(head_sha)"
+  finding="${sha}${TAB}docs/a.md${TAB}12${TAB}generic-api-key${TAB}${sha}:docs/a.md:generic-api-key:12${TAB}REDACTED"$'\n'
+
+  SCAN_ENV=("${base[@]}" "TMPDIR=$temp")
+  run_scan "$REPO" gitleaks git
+  expect_zero || return 1
+  # The scan ran out of a directory under this TMPDIR, so an empty TMPDIR below is a removal.
+  case "$(argv_value --config)" in
+    "$temp"/*) ;;
+    *) fail "the scanner's config is not under the TMPDIR the run was given: $(argv_value --config)" || return 1 ;;
+  esac
+  left="$(ls -A "$temp")"
+  [ -z "$left" ] || fail "a clean run left files behind: $left" || return 1
+
+  for outcome in "FAKE_SCAN_STATUS=2" "FAKE_SCAN_STATUS=1" "FAKE_SHA=$(pin_for X64)" "FAKE_REPORTED_VERSION=8.30.0"; do
+    SCAN_ENV=("${base[@]}" "TMPDIR=$temp" "$outcome" "FAKE_REPORT_BODY=$finding")
+    run_scan "$REPO" gitleaks git
+    expect_nonzero || return 1
+    left="$(ls -A "$temp")"
+    [ -z "$left" ] || fail "a run ending on $outcome left files behind: $left" || return 1
+  done
 }
 
 test_invalid_or_extra_wrapper_arguments_fail() {
@@ -602,6 +671,13 @@ ENTRIES
   expect_contains "line 2 of .gitleaksignore has no reason comment" "$ERR" || return 1
   expect_no_scanner_call || return 1
   expect_no_count || return 1
+  # one reason for two entries: the reason is the first entry's, so the second has none
+  write_allow_file "# a reason" "$sha:docs/a.md:generic-api-key:12" "$sha:docs/b.md:generic-api-key:3"
+  run_scan "$REPO" gitleaks git
+  expect_nonzero || return 1
+  expect_contains "line 3 of .gitleaksignore has no reason comment" "$ERR" || return 1
+  expect_no_scanner_call || return 1
+  expect_no_count || return 1
 
   # an allow file that cannot be read is not a missing one
   write_allow_file "# a reason" "$sha:docs/a.md:generic-api-key:12"
@@ -675,6 +751,24 @@ test_gate_holds_exactly_one_literal_scan_call_and_its_suite_as_whole_steps() {
   deprecated="gitleaks ""detect"
   hits="$(grep -rIn -F "$deprecated" "$ROOT/checks" "$ROOT/.github" || true)"
   [ -z "$hits" ] || fail "the deprecated subcommand appears: $hits"
+}
+
+# The comment directly above the scan step names the version the scanner pins and prints, so a
+# version bump that misses either one is caught here rather than on a reading.
+test_gate_comment_names_the_version_the_scanner_pins() {
+  pinned="$(sed -n 's/^VERSION="\([0-9]*\.[0-9]*\.[0-9]*\)"$/\1/p' "$SCAN")"
+  [ -n "$pinned" ] || fail "checks/secret-scan.sh pins no N.N.N VERSION" || return 1
+  [ "$pinned" = "$PINNED_VERSION" ] \
+    || fail "checks/secret-scan.sh pins $pinned, and this suite expects the step to print $PINNED_VERSION" || return 1
+  comment="$(awk '
+    /^#/ { block = block $0 "\n"; next }
+    /^run_step '\''Secret scan'\'' / { printf "%s", block; exit }
+    { block = "" }
+  ' "$GATE")"
+  [ -n "$comment" ] || fail "checks/gate.sh has no comment directly above the Secret scan step" || return 1
+  expect_contains "gitleaks $pinned " "$comment" || return 1
+  others="$(printf '%s' "$comment" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | grep -v -x -F "$pinned" || true)"
+  [ -z "$others" ] || fail "the comment above Secret scan names another version: $others"
 }
 
 test_scan_moved_after_own_state_is_rejected_by_the_existing_order_case() {
