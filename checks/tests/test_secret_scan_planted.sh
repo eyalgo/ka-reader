@@ -81,6 +81,7 @@ test_planted_run_without_a_finding_line_does_not_pass
 test_planted_run_with_no_output_does_not_pass
 test_finding_at_the_clean_commit_does_not_count
 test_shortened_planted_hash_does_not_count
+test_lengthened_planted_hash_does_not_count
 test_finding_text_inside_another_line_does_not_count
 test_clean_run_without_the_archive_line_does_not_pass
 test_planted_run_without_the_archive_line_does_not_pass
@@ -375,6 +376,16 @@ test_shortened_planted_hash_does_not_count() {
   commit="$(record_text "$RECORDS/planted.commit")"
   transcript="$(record_text "$RECORDS/planted.out" \
     | sed "s/finding at commit $commit,/finding at commit ${commit:0:12},/")"
+  expect_refusal planted 1 "$transcript" "$commit" "$(explain_planted_without_finding 1 "$commit")"
+}
+
+# The planted hash is a finding's only when the scanner's field delimiter follows it, so a hash that
+# merely begins with it names some other object.
+test_lengthened_planted_hash_does_not_count() {
+  local transcript commit
+  commit="$(record_text "$RECORDS/planted.commit")"
+  transcript="$(record_text "$RECORDS/planted.out" \
+    | sed "s/finding at commit $commit,/finding at commit ${commit}0,/")"
   expect_refusal planted 1 "$transcript" "$commit" "$(explain_planted_without_finding 1 "$commit")"
 }
 
