@@ -158,6 +158,8 @@ test_folder_model_allowed_git_port_forms_stay_clean
 test_folder_model_adapter_findings_compose
 test_adapter_construction_outside_bridge_is_rejected
 test_adapter_type_positions_are_clean
+test_adapter_compound_annotation_types_are_clean
+test_adapter_construction_after_a_comparison_is_rejected
 test_adapter_construction_in_comments_and_strings_is_ignored
 test_bridge_source_may_construct_the_adapter
 test_folder_model_adapter_construction_draws_both_clauses
@@ -2985,6 +2987,56 @@ test_adapter_type_positions_are_clean() {
   expect_construction "$ADAPTER_FILE" "$mixed" || return 1
 }
 
+# CP-869: a type annotation is a type position, whatever type it spells. A tuple, an array or a
+# slice naming the adapter in the annotation of a `let`, a `const`, a `static` or a closure's
+# parameter draws nothing. The value after the `=` is still read: a construction there is a finding.
+test_adapter_compound_annotation_types_are_clean() {
+  new_root compound-annotations || return 1
+  file="$ADAPTER_FILE"
+  plant "$R" "$file" 'fn a() { let t: (Libgit2, u8) = todo!(); }'
+  plant "$R" "$file" 'fn b() { let x: [Libgit2; 2] = todo!(); }'
+  plant "$R" "$file" 'fn c(v: &Vec<u8>) { let s: &[Libgit2] = todo!(); }'
+  plant "$R" "$file" 'fn d() { let (p, q): (Libgit2, Option<Libgit2>) = todo!(); }'
+  plant "$R" "$file" 'const PAIR: (Libgit2, u8) = todo!();'
+  plant "$R" "$file" 'static PORTS: [Libgit2; 1] = todo!();'
+  plant "$R" "$file" 'fn e() { let f = |p: (Libgit2, u8), q: &[Libgit2]| p.1; }'
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+  new_root compound-annotation-value || return 1
+  plant "$R" "$file" 'fn g() { let t: (Libgit2, u8) = (Libgit2, 1); }'
+  value_line="$PLANT_LINE"
+  plant "$R" "$file" 'static PORTS: [Libgit2; 1] = [Libgit2];'
+  static_line="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_construction "$file" "$value_line" || return 1
+  expect_construction "$file" "$static_line" || return 1
+}
+
+# CP-869's floor holds wherever the form stands in code. A `<` that compares, after a constant, a
+# string, a character or a `?`, is not the opening of a generic argument list, so a construction
+# later in the same expression is still a finding.
+test_adapter_construction_after_a_comparison_is_rejected() {
+  new_root construct-after-comparison || return 1
+  file="$FS_FILE"
+  lines=""
+  for text in \
+    'fn a(n: usize) -> bool { LIMIT < n && take(Libgit2) }' \
+    'fn b(n: usize) -> bool { Self::MAX_DEPTH < n && take(Libgit2) }' \
+    'fn c(s: &str) -> bool { "a" < s && take(Libgit2) }' \
+    "fn d(c: char) -> bool { ('a' < c) && take(Libgit2) }" \
+    'fn e(x: Option<u8>) -> Option<bool> { Some(x? < 3 && take(Libgit2)) }'; do
+    plant "$R" "$file" "$text"
+    lines="$lines $PLANT_LINE"
+  done
+  run_structure "$R"
+  expect_status 1 || return 1
+  for line in $lines; do
+    expect_construction "$file" "$line" || return 1
+  done
+}
+
 # QC-17 reads code only. Construction text in a comment, a doc comment, a nested block comment or a
 # string, whether ordinary, raw or escaped, draws no QC-17 finding, and a string between two code
 # tokens does not join them into one expression. In a folder_model file the QC-10 adapter clause
@@ -3017,11 +3069,13 @@ test_adapter_construction_in_comments_and_strings_is_ignored() {
 # src/build.rs are not. Several constructions on one line are one finding, and two lines are two.
 test_bridge_source_may_construct_the_adapter() {
   new_root bridge-construct || return 1
-  expect_no_construction "ka-reader-bridge/src/machine_config.rs" 139 || return 1
+  grep -q -F 'Arc::new(Libgit2)' "$R/crates/ka-reader-bridge/src/machine_config.rs" \
+    || fail "the bridge's own construction is no longer in machine_config.rs to be judged" || return 1
   plant "$R" "ka-reader-bridge/src/wiring.rs" 'fn w() { let _ = Arc::new(Libgit2); }'
   plant "$R" "ka-reader-core/tests/x.rs" 'fn t() { let _ = Arc::new(Libgit2); }'
   plant "$R" "ka-reader-bridge/build.rs" 'fn main() { let _ = Libgit2; }'
   run_structure "$R"
+  expect_no_finding_for "ka-reader-bridge/src/machine_config.rs" || return 1
   case "$STDERR" in
     *"QC-17: git-reader's adapter"*) fail "expected no QC-17 adapter finding. stderr: $STDERR" || return 1 ;;
   esac
@@ -3103,6 +3157,17 @@ test_header_states_the_held_clauses() {
   for text in "QC-11's bound on the edge from \`markdown-renderer\` to \`fs-reader\`" "And, for the adapter rules:" "port: Libgit2"; do
     [ "$(header_count "$text")" -ge 1 ] || fail "the header does not state: $text" || return 1
   done
+  # CP-871: GAPS names every construction form the rule cannot classify, the one a comparison hides
+  # among them.
+  [ "$(header_count "reads as the opening of a generic argument list")" -ge 1 ] \
+    || fail "the header does not name the construction a comparison hides" || return 1
+  # CP-872: the rows the scan held before keep their text. The new QC-17 row stands after the logger
+  # row, so the logger row's first line runs on into its own second line.
+  logger_next="$(grep -A1 -F -e "#     QC-17  logger" "$STRUCTURE_SH" | sed -n 2p)"
+  case "$logger_next" in
+    *"(the exact path component), a path whose first segment is \`log\`"*) ;;
+    *) fail "the logger row is split: its first line is followed by: $logger_next" || return 1 ;;
+  esac
 }
 
 # --- runner ---
