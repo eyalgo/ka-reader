@@ -39,10 +39,11 @@
 #   local path is not, and stays admitted), and any target whose `type` is exactly the string
 #   `system` (a library on the machine that the array does not show; it is named by its `name`, and
 #   every other type, an absent `type` and a `type` of any other JSON kind stay admitted). The dump
-#   is read with plutil, which ships with macOS and reads JSON. Unreadable is red: `swift` or `plutil` absent, `swift` failing, or a dump that
-#   cannot be read each exit non-zero, and none can pass. Any file named Package.resolved under the
-#   package directory, at any depth, fails too. `dump-package` writes .build/ into the package; that
-#   directory is ignored and inside the scan, and a resolve that happened there is a finding.
+#   is read with plutil, which ships with macOS and reads JSON. Unreadable is red: `swift` or
+#   `plutil` absent, `swift` failing, or a dump that cannot be read each exit non-zero, and none can
+#   pass. Any file named Package.resolved under the package directory, at any depth, fails too.
+#   `dump-package` writes .build/ into the package; that directory is ignored and inside the scan,
+#   and a resolve that happened there is a finding.
 #
 # `cargo` and `swift` are found through PATH so a test can stand a tree in for the real one.
 # NO_NETWORK_ALLOW_FILE overrides the list's path and NO_NETWORK_SWIFT_PACKAGE_DIR the Swift
