@@ -167,7 +167,45 @@ has_finding_at() {
 # planted), the status the scan returned, the transcript it printed and the planted commit. An unmet
 # expectation prints its explanation and the transcript; the result is non-zero when any is unmet.
 check_scan_outcome() {
-  return 0
+  local phase="$1" status="$2" transcript="$3" commit="$4" unmet=0
+  case "$phase" in
+    clean)
+      if [ -z "$status" ]; then
+        unmet=1
+      elif [ "$status" != 0 ]; then
+        explain_clean_nonzero "$status"
+        printf '%s\n' "$transcript"
+        unmet=1
+      fi
+      if ! has_archive_line "$transcript"; then
+        explain_clean_without_archive_line
+        printf '%s\n' "$transcript"
+        unmet=1
+      fi
+      ;;
+    planted)
+      if [ -z "$status" ]; then
+        unmet=1
+      elif [ "$status" = 0 ]; then
+        explain_planted_exit_zero "$commit"
+        printf '%s\n' "$transcript"
+        unmet=1
+      elif ! has_finding_at "$transcript" "$commit"; then
+        explain_planted_without_finding "$status" "$commit"
+        printf '%s\n' "$transcript"
+        unmet=1
+      fi
+      if ! has_archive_line "$transcript"; then
+        explain_planted_without_archive_line
+        printf '%s\n' "$transcript"
+        unmet=1
+      fi
+      ;;
+    *)
+      unmet=1
+      ;;
+  esac
+  [ "$unmet" -eq 0 ]
 }
 
 # --- the real scans ---
@@ -261,7 +299,7 @@ expect_refusal() {
 }
 
 fail() {
-  echo "  $*"
+  echo "$*"
   return 1
 }
 
