@@ -1,8 +1,8 @@
 # NFDR — KA-Reader
 
-**Status:** Settled
+**Status:** Draft
 **Owner:** Principal Architect
-**Version:** 62 — the close: the cycle-55 fold, § 2.1 confirmed in the owner's seat with four additions. § 8 states the card as it reads at `kensaiapp-opensource@85264c69`, whose test command is `checks/gate.sh` from `1941f963`, and RN-6 is extended by those two moves. *Until the card runs the script* keeps its heading, which the card's comment cites by name, and records its condition met. Every gate that read under it is re-derived against that card: QC-56's suite, QC-64's two comparisons, QC-65's suite half, § 9's harness-suites and `ka-reader-mac` bullets and § 10's *CI build* paragraph run at every change through the card's command, while QC-56's `.yaml` half and QC-64's *nothing else* half keep `development-design` on the ground that no script holds them. QC-65's guarded steps and its owner's-Mac cost are re-read as live, and its refusal-first ordering is recorded as met; § 10's QC-56 row adds the change. No ADR is written, and no `QC` is added, renumbered or reused. Nothing is left for the owner, so the companion is removed and `Status:` is Settled — RN-73 (v61: the cycle-54 fold, §§ 3.1 and 3.2 answered in the owner's seat. § 8 keeps the 26-step count as the record of `ka-reader@8b93322` and adds the gate as it stands at `ka-reader@389adad`, version 1.1.0 with 27 steps; QC-13's sanitizer run admits `-Cllvm-args=-asan-globals=0`, and § 10's QC-13 row names the flag; § 2.1 was left open, so `Status:` was Draft — RN-72)
+**Version:** 63 — the cycle-56 fold, § 3.1 confirmed in the owner's seat with three additions. QC-11's *verified by* now cites the structure scan's header — *THE SCAN TABLE* and *WHAT IS NOT HELD*, pinned at `ka-reader@82a3fb1` — as what holds the entry, in place of a sentence that listed its `git-reader`, `watcher` and `markdown-renderer` clauses as not held; it names the suite's planted break of each subject, says the `watcher` and `markdown-renderer` clauses are held as rules on planted files until a file of either appears, re-pins every scan locator in the tail to `82a3fb1`, and names the three parts that stay review at `development-design`: the exception's two bounds and the renderer's containment-only edge. The old reading stands in a dated note. No ADR is written, and no `QC` is added, renumbered or reused. § 2.1, raised by the run that answered § 3.1, on QC-15's unpinned locators, is unanswered, so the companion stays and `Status:` is Draft — RN-74 (v62: the close, the cycle-55 fold — § 8 states the card that runs `checks/gate.sh` and every gate that read under *Until the card runs the script* is re-derived against it; `Status:` was Settled — RN-73)
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · PRD Settled · UXD Settled · DESIGN Settled · CONTENT Settled
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
@@ -435,22 +435,43 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   imports `fs-reader`'s containment check, and `highlighter` for a fenced block's spans. Only
   `git-reader` imports the libgit2 binding, with one exception: `core-bridge` names it in the
   composition root's config search-path switch and that switch's test, and nowhere else (QC-17).
-  — *verified by:* `checks/structure.sh` (layer 6), for the clauses its header holds; it still
-  lists QC-11's clauses whose subject is `git-reader`, `watcher` or `markdown-renderer` as not held
-  (`checks/structure.sh:L270`). **The libgit2-binding clause is held across the whole shipped
-  scope of every crate**: the header's QC-11 *libgit2 binding* row (`:L130-L142`, the exempting
-  `case` at `:L1186`), on `main` since `ka-reader@fc14574`, exempts every file of the `git_reader`
-  unit and `crates/ka-reader-bridge/src/machine_config.rs`, and at `ka-reader@076eac2` the script exits 0
-  printing "16 Rust files in 2 crates read — nothing found". The script exempts a file and reads a
-  scope, and the exception is a call and its test, so two parts of the exception's bound stay
-  review at `development-design`: (1) inside `machine_config.rs` the binding is allowed for the
-  switch alone, and the script exempts the whole file, which also holds the adapter's constructor
-  (`crates/ka-reader-bridge/src/machine_config.rs:L138-L139`); (2) under `crates/ka-reader-bridge/tests/`
-  the binding is allowed in the switch's own test alone, and the script reads `tests/` for the
-  layer-5 rule only (`checks/structure.sh:L41-L42`), so a second bridge test that names `git2`
-  draws no finding. At `ka-reader@076eac2` the bridge files that name `git2` are `machine_config.rs`,
+  — *verified by:* `checks/structure.sh` (layer 6). What it holds of this entry is stated in its
+  header and cited here, never copied: *THE SCAN TABLE*'s unit-edge row
+  (`checks/structure.sh:L110-L149`) and libgit2-binding row (`:L167-L181`), and *WHAT IS NOT HELD*
+  (`:L321-L336`), all at `ka-reader@82a3fb1`. At that commit the header holds the clauses whose
+  subject is `fs-reader`, `highlighter`, `git-reader`, `watcher` or `markdown-renderer`, and the
+  suite `checks/tests/test_structure.sh` plants a break of each
+  (`test_fs_reader_forbidden_units_are_rejected`, `test_highlighter_forbidden_units_are_rejected`,
+  `test_git_reader_unit_edges_are_rejected`, and for the two units with no file
+  `test_future_unit_files_are_judged_without_editing_the_scan`). `watcher` and `markdown-renderer`
+  have no file yet: their clauses are held as rules, proved on planted files, and judged from the
+  run in which a file of either first appears, so *held* is not *measured on their code*. **The
+  libgit2-binding clause is held across the whole shipped scope of every crate**: the binding row,
+  on `main` since `ka-reader@fc14574`, exempts every file of the `git_reader` unit and
+  `crates/ka-reader-bridge/src/machine_config.rs` (the exempting `case` at `checks/structure.sh:L1459`
+  at `ka-reader@82a3fb1`), and at that commit the script exits 0 printing "17 Rust files in 2
+  crates read — nothing found" and its suite exits 0 with 112 `ok` lines. Three parts of this
+  entry's bound stay review at `development-design`. The first two are the exception's: the script
+  exempts a file and reads a scope, and the exception is a call and its test. (1) Inside
+  `machine_config.rs` the binding is allowed for the switch alone, and the script exempts the whole
+  file, which also holds the adapter's constructor
+  (`crates/ka-reader-bridge/src/machine_config.rs:L138-L139` at `ka-reader@82a3fb1`). (2) Under
+  `crates/ka-reader-bridge/tests/` the binding is allowed in the switch's own test alone, and the
+  script reads `tests/` for the layer-5 rule only (`checks/structure.sh:L46-L47` at
+  `ka-reader@82a3fb1`), so a second bridge test that names `git2` draws no finding. At
+  `ka-reader@82a3fb1` the bridge files that name `git2` are `machine_config.rs`,
   `tests/search_path.rs` and the manifest (`grep -rln git2 crates/ka-reader-bridge`), which is the
-  exception's bound exactly *(through v41 this tail said the script did not hold the import rule
+  exception's bound exactly. (3) `markdown-renderer`'s stated edge into `fs-reader` reaches the
+  containment check alone, and the scan judges an import a whole unit at a time, so no import of
+  `fs-reader` by a `markdown-renderer` file draws a finding (*WHAT IS NOT HELD*,
+  `checks/structure.sh:L331-L334` at `ka-reader@82a3fb1`) *(through v62 this tail said the script
+  still listed QC-11's clauses whose subject is `git-reader`, `watcher` or `markdown-renderer` as not
+  held (`checks/structure.sh:L270`), and cited the binding row at `:L130-L142`, the exempting `case`
+  at `:L1186` and the `tests/` reading at `:L41-L42`, each true at `ka-reader@076eac2` and none
+  pinned; it measured the pass line ("16 Rust files in 2 crates read — nothing found") and the
+  bridge files that name `git2` at that commit, and named two review-held parts. The scan's
+  version 1.6.0, merged at `ka-reader@82a3fb1`, holds the three subjects. On the owner's seat's
+  answer at `docs/trail/architecture/cycle-56.md` § 3.1 — RN-74)* *(through v41 this tail said the script did not hold the import rule
   outside the three units' files it read (`checks/structure.sh:L257-L258` at `ka-reader@392177d`),
   so the whole bound stayed review until a change added it; that change landed at
   `ka-reader@a611cf1` and merged at `ka-reader@fc14574`. On the owner's seat's answer at
@@ -6624,3 +6645,57 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   bullets; § 10 the *CI build* paragraph and the QC-56 row; RN-6; source:
   `docs/trail/architecture/cycle-55.md` § 2.1; `docs/trail/architecture/self_answer-57.md`;
   `kensaiapp-opensource@1941f963`, `85264c69`)*
+
+- **RN-74:** *(v63 — the cycle-56 fold, § 3.1 confirmed with three additions; § 2.1 open)*
+  **Intake.** The companion on disk held two items. § 3.1 was raised on 2026-10-23 by the PM
+  (`ka-reader@c35081a`). A `companion-self-answer` run answered it in the owner's seat
+  (`ka-reader@a364701`; the reasoning at `docs/trail/architecture/self_answer-58.md`) and, while
+  doing so, raised § 2.1 on QC-15's locators and left its slot empty. The file was clean in git at
+  intake and one slot was filled, so it is consumed. It was copied whole to
+  `docs/trail/architecture/cycle-56.md` before this fold's first edit, and `cmp` found the two
+  identical. **Whose answer this is.** The owner's seat's, and it outranks every input. It corrects
+  a stated fact and moves no obligation: QC-11 still forbids what it forbade, and only the account
+  of what the scan holds has changed. **§ 3.1 → QC-11.** The sentence that the script "still lists
+  QC-11's clauses whose subject is `git-reader`, `watcher` or `markdown-renderer` as not held" is
+  false at the scan's version 1.6.0, and is replaced by a pointer to the header that owns the
+  account — *THE SCAN TABLE* and *WHAT IS NOT HELD* — which is this document's own rule for every
+  script (the header's *Two things about how this document cites*). **Addition 1 → the review-held
+  parts.** The tail names three: the exception's two bounds, which it already stated, and the
+  `markdown-renderer` → `fs-reader` edge's containment-only bound, which *WHAT IS NOT HELD* names as
+  the one part of QC-11 the scan does not hold. **Addition 2 → the locators.** The binding row
+  (`:L130-L142` → `:L167-L181`), the exempting `case` (`:L1186` → `:L1459`) and the `tests/`
+  reading (`:L41-L42` → `:L46-L47`) were each true at `ka-reader@076eac2` and carried no pin. Every
+  scan locator in the tail now carries `ka-reader@82a3fb1`, the merge that landed version 1.6.0, and
+  so do the constructor's locator and the `git2` bound, which did not move. **Addition 3 → the two
+  units with no file.** The tail says their clauses are held as rules, proved on planted files, and
+  judged from the run in which a file of either first appears, so *held* is not read as *measured on
+  their code*. **Also corrected, beyond the answer's text.** The answer named the suite cases for
+  the three subjects it covered. The tail names the planted-break case for each of the five subjects,
+  because a sentence that says the header holds all five and names cases for three reads as if two
+  were unproved. **Read at source for this run**, in the main checkout at `ka-reader@a364701`, whose
+  tree outside `docs/` is `82a3fb1`'s (`git diff --stat 82a3fb1 a364701 -- . ':!docs'` prints
+  nothing): `checks/structure.sh:L2-L3` reads version 1.6.0 holding "QC-11's git_reader, watcher
+  and markdown_renderer subjects"; the unit-edge row is `:L110-L149`, the binding row `:L167-L181`,
+  *WHAT IS NOT HELD* `:L321-L336` with the renderer's bound at `:L331-L334`, and the exempting `case`
+  `:L1459`; the `tests/` reading is `:L46-L47`; the suite defines
+  `test_fs_reader_forbidden_units_are_rejected` (`checks/tests/test_structure.sh:L1326`),
+  `test_highlighter_forbidden_units_are_rejected` (`:L1281`),
+  `test_git_reader_unit_edges_are_rejected` (`:L2617`) and
+  `test_future_unit_files_are_judged_without_editing_the_scan` (`:L2668`);
+  `crates/ka-reader-bridge/src/machine_config.rs:L138-L139` is still the constructor, the file
+  unchanged since `ka-reader@c915d52`; and `grep -rln git2 crates/ka-reader-bridge` prints the
+  manifest, `src/machine_config.rs` and `tests/search_path.rs`. In a disposable clone at
+  `a364701`, `checks/structure.sh` exits 0 printing "17 Rust files in 2 crates read — nothing found",
+  and `checks/tests/test_structure.sh` exits 0 with 112 `ok` lines and no other line. **What moved
+  beneath this document.** Since v62 (`ka-reader@ef2f47c`) only the companion and the self-answer
+  report have landed (`git log ef2f47c..HEAD` on the SRS, SDD, FDR, PRD, UXD, DESIGN and CONTENT
+  prints nothing), so `Inputs read:` stands. § 10's QC-9 – QC-12 row already names the scan and its
+  suite and does not move. **No candidate record.** The fold corrects a pointer and the account of a
+  check's coverage, and gives nothing up, so it fails the first gate. No ADR is written, edited or
+  restatused, the index does not move, and no `QC` is added, renumbered or reused. **Known limits.**
+  This run did not read the SRS, SDD or FDR in full: nothing beneath this document moved, and it
+  read their status lines, the answer and the passages the answer names. **The companion.** § 3.1 is
+  resolved and dropped. § 2.1 — QC-15's four unpinned locators into the scan and its suite — has no
+  answer, so it stays, and `Status:` is Draft *(re: header `Status:`, `Version:`; QC-11's *verified
+  by*; source: `docs/trail/architecture/cycle-56.md` § 3.1;
+  `docs/trail/architecture/self_answer-58.md`)*
