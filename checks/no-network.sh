@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Version: 1.2.0 — a Swift target of type system is refused, by name: a library the dependencies
+#   array does not show
 # Version: 1.1.0 — the Tauri build leaves — native bundle assembled, bundle.sh and no-network.sh
 #   read it, CI builds it, boundaries and README pinned
 # Version: 1.0.0 — first version: both dependency trees compared, by name, against
@@ -12,15 +14,16 @@
 #   name: the names `cargo tree` reports against checks/deps.allow, the one list a reviewer has
 #   read. A name in the tree that the list does not hold fails; so does a name on the list that the
 #   tree no longer holds, so the list cannot go stale unnoticed. The Swift half is a claim of none:
-#   the package declares no dependency, and no resolution file exists,
-#   so there is nothing to review.
+#   the package declares no dependency, no target is a system library, and no resolution file
+#   exists, so there is nothing to review.
 #
 # USAGE
 #   checks/no-network.sh
 #   Exit 0 when the cargo name set equals the `cargo:` section of checks/deps.allow and the Swift
-#   package declares no dependency and holds no Package.resolved, printing one line that names
-#   counts and no dependency. Otherwise non-zero, naming each differing cargo name and its side, and
-#   the Swift manifest or the Package.resolved path at fault.
+#   package declares no dependency, has no target of type system and holds no Package.resolved,
+#   printing one line that names counts and no dependency. Otherwise non-zero, naming each differing
+#   cargo name and its side, and the Swift manifest, the system target or the Package.resolved path
+#   at fault.
 #
 # THE CARGO SET DOES NOT DEPEND ON THE MACHINE
 #   Both Apple-Darwin triples are named on the command line, so the set is the union Cargo.lock
@@ -31,9 +34,11 @@
 # THE SWIFT HALF READS WHAT THE TOOLCHAIN EVALUATES
 #   `swift package dump-package` prints the manifest as the toolchain reads it, so a dependency in
 #   any form a manifest can declare one shows up, which a search of the manifest's text would not
-#   promise. Two things fail: a non-empty top-level `dependencies` array, and any target carrying a
+#   promise. Three things fail: a non-empty top-level `dependencies` array, any target carrying a
 #   `url` (a remote binary target is a download the array does not show; a binary target over a
-#   local path is not, and stays admitted). The dump is read with plutil, which ships with macOS and
+#   local path is not, and stays admitted), and any target whose `type` is exactly the string
+#   `system` (a library on the machine that the array does not show; it is named by its `name`, and
+#   every other type, an absent `type` and a `type` of any other JSON kind stay admitted). The dump is read with plutil, which ships with macOS and
 #   reads JSON. Unreadable is red: `swift` or `plutil` absent, `swift` failing, or a dump that
 #   cannot be read each exit non-zero, and none can pass. Any file named Package.resolved under the
 #   package directory, at any depth, fails too. `dump-package` writes .build/ into the package; that
@@ -143,6 +148,18 @@ else
           declared_targets=$((declared_targets + 1))
           ;;
       esac
+    fi
+    # The exact string `system`, and nothing else: a target with no `type`, or a `type` of another
+    # JSON kind, is no system target. The kind is read first because `plutil -extract ... raw` prints
+    # an object's keys, so an object holding the key `system` would read as the word. Both reads sit
+    # in an `if` so a missing key cannot end the script under its shell options. Independent of the
+    # url check above: a target can fail both, and the scan goes on through every target.
+    if [ "$(plutil -type "targets.$target_index.type" "$work/swift.dump" 2> /dev/null || true)" = "string" ] \
+      && target_type="$(plutil -extract "targets.$target_index.type" raw -o - "$work/swift.dump" 2> /dev/null)" \
+      && [ "$target_type" = "system" ]; then
+      target_name="$(plutil -extract "targets.$target_index.name" raw -o - "$work/swift.dump" 2> /dev/null || true)"
+      problems="${problems}swift: $manifest — target $target_name is of type system, a library the dependencies array does not show
+"
     fi
     target_index=$((target_index + 1))
   done
