@@ -442,9 +442,11 @@ STDOUT=""
 ERR=""
 
 # The dump in file $1 with the target text $2 (a leading comma) added after its last target, written
-# to the dump the system-target runs read.
+# to the dump the system-target runs read. Fails when the edit did not land, so a run cannot pass
+# over the unedited dump it was copied from.
 system_dump_from() {
   sed "s|\"type\":\"executable\"}\]|\"type\":\"executable\"}$2]|" "$1" > "$SYSTEM_DUMP"
+  grep -qF -- "$2]" "$SYSTEM_DUMP" || fail "the target was not added to the dump: $2. dump: $(cat "$SYSTEM_DUMP")"
 }
 
 # Runs the script with stub directory $1 ahead on PATH and the Swift package at directory $2
@@ -516,7 +518,7 @@ test_system_target_fails() {
   system_target=',{"name":"CSys","type":"system"}'
 
   # The isolated refusal: the clean dump plus one system target and nothing else.
-  system_dump_from "$WORK/dump-clean.json" "$system_target"
+  system_dump_from "$WORK/dump-clean.json" "$system_target" || return 1
   run_system_case "$stubs" "$WORK/pkg-clean"
   expect_nonzero_status || return 1
   expect_system_refusals "$override_manifest" CSys || return 1
@@ -532,14 +534,14 @@ test_system_target_fails() {
   esac
 
   # Several system targets: one line for each, none duplicated.
-  system_dump_from "$WORK/dump-clean.json" "$system_target"',{"name":"CZlib","type":"system"}'
+  system_dump_from "$WORK/dump-clean.json" "$system_target"',{"name":"CZlib","type":"system"}' || return 1
   run_system_case "$stubs" "$WORK/pkg-clean"
   expect_nonzero_status || return 1
   expect_system_refusals "$override_manifest" CSys CZlib || return 1
 
   # A system target that also carries a url, at index 1: the index-based url line and the name-based
   # system line, each once.
-  system_dump_from "$WORK/dump-clean.json" ',{"name":"CSys","type":"system","url":"https://example.invalid/CSys.zip"}'
+  system_dump_from "$WORK/dump-clean.json" ',{"name":"CSys","type":"system","url":"https://example.invalid/CSys.zip"}' || return 1
   run_system_case "$stubs" "$WORK/pkg-clean"
   expect_nonzero_status || return 1
   expect_system_refusals "$override_manifest" CSys || return 1
@@ -556,7 +558,7 @@ left-pad-rs v1.0.0
 '
   echo '{}' > "$WORK/pkg-system-all/Package.resolved"
   echo '{}' > "$WORK/pkg-system-all/a/b/Package.resolved"
-  system_dump_from "$WORK/dump-dependency.json" "$system_target"
+  system_dump_from "$WORK/dump-dependency.json" "$system_target" || return 1
   run_system_case "$stubs_all" "$WORK/pkg-system-all"
   all_manifest="$WORK/pkg-system-all/Package.swift"
   expect_nonzero_status || return 1
@@ -572,7 +574,7 @@ left-pad-rs v1.0.0
   # The admitted class: every other target, and a dump that leaves the new extraction nothing to
   # read.
   while IFS= read -r extra_target; do
-    system_dump_from "$WORK/dump-clean.json" "$extra_target"
+    system_dump_from "$WORK/dump-clean.json" "$extra_target" || return 1
     run_system_case "$stubs" "$WORK/pkg-clean"
     expect_dump_admitted || return 1
   done <<'TARGETS'
@@ -585,6 +587,9 @@ left-pad-rs v1.0.0
 ,{"name":"T","type":"macro"}
 ,{"name":"T","type":"System"}
 ,{"name":"T","type":"other"}
+,{"name":"T","type":"systemLibrary"}
+,{"name":"T","type":"notsystem"}
+,{"name":"T","type":"system "}
 ,{"name":"T"}
 ,{"name":"T","type":null}
 ,{"name":"T","type":1}
@@ -593,21 +598,24 @@ left-pad-rs v1.0.0
 ,{"name":"T","type":{"system":true}}
 TARGETS
   sed 's|"targets":\[.*\]|"targets":[]|' "$WORK/dump-clean.json" > "$SYSTEM_DUMP"
+  grep -qF '"targets":[]}' "$SYSTEM_DUMP" || fail "the targets were not emptied: $(cat "$SYSTEM_DUMP")" || return 1
   run_system_case "$stubs" "$WORK/pkg-clean"
   expect_dump_admitted || return 1
 
   # The only system target, first and then last: found wherever it sits.
   sed 's|"targets":\[|"targets":[{"name":"CSys","type":"system"},|' "$WORK/dump-clean.json" > "$SYSTEM_DUMP"
+  grep -qF '"targets":[{"name":"CSys","type":"system"},{' "$SYSTEM_DUMP" \
+    || fail "the system target was not placed first: $(cat "$SYSTEM_DUMP")" || return 1
   run_system_case "$stubs" "$WORK/pkg-clean"
   expect_nonzero_status || return 1
   expect_system_refusals "$override_manifest" CSys || return 1
-  system_dump_from "$WORK/dump-clean.json" "$system_target"
+  system_dump_from "$WORK/dump-clean.json" "$system_target" || return 1
   run_system_case "$stubs" "$WORK/pkg-clean"
   expect_nonzero_status || return 1
   expect_system_refusals "$override_manifest" CSys || return 1
 
   # A system target with an explicit null url is refused by the system line alone.
-  system_dump_from "$WORK/dump-clean.json" ',{"name":"CSys","type":"system","url":null}'
+  system_dump_from "$WORK/dump-clean.json" ',{"name":"CSys","type":"system","url":null}' || return 1
   run_system_case "$stubs" "$WORK/pkg-clean"
   expect_nonzero_status || return 1
   expect_system_refusals "$override_manifest" CSys || return 1
