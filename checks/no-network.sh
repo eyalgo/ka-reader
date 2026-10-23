@@ -38,8 +38,8 @@
 #   `url` (a remote binary target is a download the array does not show; a binary target over a
 #   local path is not, and stays admitted), and any target whose `type` is exactly the string
 #   `system` (a library on the machine that the array does not show; it is named by its `name`, and
-#   every other type, an absent `type` and a `type` of any other JSON kind stay admitted). The dump is read with plutil, which ships with macOS and
-#   reads JSON. Unreadable is red: `swift` or `plutil` absent, `swift` failing, or a dump that
+#   every other type, an absent `type` and a `type` of any other JSON kind stay admitted). The dump
+#   is read with plutil, which ships with macOS and reads JSON. Unreadable is red: `swift` or `plutil` absent, `swift` failing, or a dump that
 #   cannot be read each exit non-zero, and none can pass. Any file named Package.resolved under the
 #   package directory, at any depth, fails too. `dump-package` writes .build/ into the package; that
 #   directory is ignored and inside the scan, and a resolve that happened there is a finding.
@@ -150,10 +150,11 @@ else
       esac
     fi
     # The exact string `system`, and nothing else: a target with no `type`, or a `type` of another
-    # JSON kind, is no system target. The kind is read first because `plutil -extract ... raw` prints
-    # an object's keys, so an object holding the key `system` would read as the word. Both reads sit
-    # in an `if` so a missing key cannot end the script under its shell options. Independent of the
-    # url check above: a target can fail both, and the scan goes on through every target.
+    # JSON kind, is no system target. The kind is read first because `plutil -extract ... raw`
+    # prints an object's keys, so an object holding the key `system` would read as the word. Both
+    # reads sit in an `if` so a missing key cannot end the script under its shell options.
+    # Independent of the url check above: a target can fail both, and the scan goes on through every
+    # target.
     if [ "$(plutil -type "targets.$target_index.type" "$work/swift.dump" 2> /dev/null || true)" = "string" ] \
       && target_type="$(plutil -extract "targets.$target_index.type" raw -o - "$work/swift.dump" 2> /dev/null)" \
       && [ "$target_type" = "system" ]; then

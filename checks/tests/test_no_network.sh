@@ -447,8 +447,8 @@ system_dump_from() {
   sed "s|\"type\":\"executable\"}\]|\"type\":\"executable\"}$2]|" "$1" > "$SYSTEM_DUMP"
 }
 
-# Runs the script with stub directory $1 ahead on PATH and the Swift package at directory $2 ('' leaves
-# the override unset). Keeps stdout and stderr apart, and together in OUT.
+# Runs the script with stub directory $1 ahead on PATH and the Swift package at directory $2
+# ('' leaves the override unset). Keeps stdout and stderr apart, and together in OUT.
 run_system_case() {
   if [ -n "$2" ]; then
     STDOUT="$(PATH="$1:$PATH" NO_NETWORK_SWIFT_PACKAGE_DIR="$2" "$NO_NETWORK_SH" 2> "$WORK/system-stderr" < /dev/null)"
@@ -569,7 +569,8 @@ left-pad-rs v1.0.0
   expect_no_ok_line || return 1
   expect_closing_line_last || return 1
 
-  # The admitted class: every other target, and a dump that leaves the new extraction nothing to read.
+  # The admitted class: every other target, and a dump that leaves the new extraction nothing to
+  # read.
   while IFS= read -r extra_target; do
     system_dump_from "$WORK/dump-clean.json" "$extra_target"
     run_system_case "$stubs" "$WORK/pkg-clean"
