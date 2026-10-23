@@ -2,7 +2,7 @@
 
 **Status:** Settled
 **Owner:** Principal Architect
-**Version:** 64 — the close, the cycle-57 fold, § 2.1 confirmed in the owner's seat with two additions. QC-15's *verified by* now pins every locator into the structure scan and its suite at `ka-reader@82a3fb1`, the commit QC-11's tail carries: the four that named no commit — the suite's two exemption cases, the `Path`-method gap and the two `git-reader` parts not held — and the two that read at `ka-reader@48308ff`, where the owner files are spelled under the crate's former name. The `config_scan.rs` locator carries its own pin, `ka-reader@66f428d`. Each old reading stands in a dated note. Nothing QC-15 obliges moves; no ADR is written, and no `QC` is added, renumbered or reused. Nothing is left for the owner, so the companion is removed and `Status:` is Settled — RN-75 (v63: the cycle-56 fold — QC-11's *verified by* cites the scan header that holds its three subjects, its locators re-pinned at `ka-reader@82a3fb1`; `Status:` was Draft — RN-74)
+**Version:** 65 — the close, the cycle-58 fold, § 3.1 confirmed in the owner's seat with four additions. § 9's Swift-packet bullet now names `checks/no-network.sh` at version 1.2.0 and its suite case `test_system_target_fails` as the gate of the packet's `type == "system"` clause, in place of a passage that said no check stood behind it. It lists the system-target refusal among the script's conditions beside `dependencies` and `url`, re-pins every script locator at `ka-reader@825bfcd`, says the suite holds the refusal's logic on stubbed dumps while the gate run reads the real dump and the script fails closed, and keeps the `development-design` review for the six tools-6.2 items no script reads and for an added test's framework. Each old reading stands in a dated note. No ADR is written, and no `QC` is added, renumbered or reused. Nothing is left for the owner, so the companion is removed and `Status:` is Settled — RN-76 (v64: the close, the cycle-57 fold — QC-15's scan and suite locators re-pinned at `ka-reader@82a3fb1`; `Status:` was Settled — RN-75)
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · PRD Settled · UXD Settled · DESIGN Settled · CONTENT Settled
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
@@ -2283,13 +2283,28 @@ left with `ka-reader-ui` at `ka-reader@0aca57e` (RN-22; RN-25).
   the item a `companion-self-answer` run raised on this document,
   `docs/trail/architecture/self_answer-50.md` § *Raised on this document* — RN-63 — and confirmed
   in the owner's seat at `docs/trail/architecture/cycle-46.md` § 2.1 — RN-64)*. **The `type == "system"` clause
-  holds with no check behind it.** `checks/no-network.sh` refuses only a non-empty `dependencies`
-  array and a target carrying a `url` (`:L31-L32`, `:L131-L138`), reads the dump with `plutil`
-  rather than `jq`, and refuses a `Package.resolved` at any depth under the package (`:L149`), so a
-  change that put a `.systemLibrary` target back would pass every gate in the tree. A refusal of
-  any target of type `system` is owed to `checks/no-network.sh`, with a case in its suite
+  is held by `checks/no-network.sh`.** The script, at version 1.2.0, reads the dump with `plutil`
+  rather than `jq` and refuses three things in the Swift package (*THE SWIFT HALF*,
+  `checks/no-network.sh:L34-L46` at `ka-reader@825bfcd`): a non-empty `dependencies` array
+  (`:L136`), a target carrying a `url` (`:L143-L151`), and a target whose `type` is exactly the
+  string `system`, named by its `name` (`:L159-L164`). It also refuses a `Package.resolved` at any
+  depth under the package (`:L172-L179`). Its suite `checks/tests/test_no_network.sh`, at version
+  1.3.0, holds the refusal with `test_system_target_fails` (`:L64`, `:L512`, at
+  `ka-reader@825bfcd`). The two halves hold different things. The suite drives the script on
+  stubbed dumps, so it holds the refusal's logic, and a change that drops the refusal turns that
+  case red. The gate run reads the real dump, on every change. The script fails closed: a missing
+  `swift` or `plutil`, or a dump it cannot read, is a failure (`:L120-L133`, exiting non-zero at
+  `:L181`), never a silent pass *(through v64 this passage read "The `type == "system"` clause holds
+  with no check behind it. `checks/no-network.sh` refuses only a non-empty `dependencies` array and
+  a target carrying a `url` (`:L31-L32`, `:L131-L138`), reads the dump with `plutil` rather than
+  `jq`, and refuses a `Package.resolved` at any depth under the package (`:L149`), so a change that
+  put a `.systemLibrary` target back would pass every gate in the tree. A refusal of any target of
+  type `system` is owed to `checks/no-network.sh`, with a case in its suite
   `checks/tests/test_no_network.sh` that turns it red; until it lands, the `development-design`
-  review below holds it, and whether and when to write it is the delivery tier's *(through v48 this
+  review below holds it, and whether and when to write it is the delivery tier's". Its three
+  locators named no commit; they were true of the script at version 1.1.0, `ka-reader@ae72bdc`. The
+  passage held until version 1.2.0 landed. Re-derived on the owner's seat's answer at
+  `docs/trail/architecture/cycle-58.md` § 3.1 — RN-76)* *(through v48 this
   passage read the seven as departed from, as one decision, until the change that writes the `6.2`
   tools version, with the bridge linked through `.systemLibrary(name: "CKAReaderBridge")` and
   `no-network.sh` standing in the dependency gate's place; its words — the measured source cost of
@@ -2299,18 +2314,25 @@ left with `ka-reader-ui` at `ka-reader@0aca57e` (RN-22; RN-25).
   `docs/trail/architecture/cycle-42.md` § 3.1 — RN-60)*.
   — *verified by:* `swift test --package-path ka-reader-mac` after `ka-reader-mac/assemble.sh` (the
   runner, every change; the runner paragraph above); `checks/no-network.sh` (the dependency gate's
-  `dependencies` and `url` conditions, every change); review at `development-design` on any change
-  to `ka-reader-mac/Package.swift` or `.github/workflows/*.yml` against this bullet — the seven
-  tools-6.2 items stay adopted, read off `swift package --package-path ka-reader-mac dump-package`,
-  which runs without the bridge artifact: tools `6.2.0`, language mode `6`, the settings on the
-  targets the *Adopted* passage names, no target of type `system`, none carrying a `url` — and
+  `dependencies`, `url` and `type == "system"` conditions, every change), with its suite
+  `checks/tests/test_no_network.sh`, whose `test_system_target_fails` goes red when the
+  system-target refusal is dropped; review at `development-design` on any change to
+  `ka-reader-mac/Package.swift` or `.github/workflows/*.yml` against this bullet — the six tools-6.2
+  items no script reads stay adopted, read off `swift package --package-path ka-reader-mac
+  dump-package`, which runs without the bridge artifact: tools `6.2.0`, language mode `6`, the
+  settings on the targets the *Adopted* passage names, none carrying a `url` — and
   review at `development-design` on any change that adds a file under `ka-reader-mac/Tests/`,
   against the *Framework* clause — review gates because no script holds either check: no script in
-  the tree reads the dump for the seven or for a `system` target (the refusal owed above), and a
+  the tree reads the dump for the six, and a
   test's framework binds only the files a change adds, which no command over the tree tells apart
   from the XCTest files the packet keeps; each stays a review bar at `development-design` until a
-  check is written for it, and the day `checks/no-network.sh` refuses a `system` target, that
-  clause's gate is the script. The toolchain lines `checks/gate.sh` prints are what the *Toolchain* clause above is checked
+  check is written for it *(through v64 this tail named the script for "the dependency gate's
+  `dependencies` and `url` conditions" only, read "the seven tools-6.2 items stay adopted" with "no
+  target of type `system`" among the dump's readings, gave as its ground "no script in the tree
+  reads the dump for the seven or for a `system` target (the refusal owed above)", and ended "and
+  the day `checks/no-network.sh` refuses a `system` target, that clause's gate is the script". That
+  day came with the script's version 1.2.0; on the owner's seat's answer at
+  `docs/trail/architecture/cycle-58.md` § 3.1 — RN-76)*. The toolchain lines `checks/gate.sh` prints are what the *Toolchain* clause above is checked
   against, on every change. The gate run — the bridge's assembly and the test gate, every change — is
   the reading the clause's reference rule names, and it is what fails when the `#else` arm stops
   building; the same output is where the arm's removal comes due. The card's command is the script, so the
@@ -6758,3 +6780,56 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   Settled *(re: header `Status:`, `Version:`; QC-15's *verified by* and trace; source:
   `docs/trail/architecture/cycle-57.md` § 2.1; `docs/trail/architecture/self_answer-59.md`;
   `ka-reader@82a3fb1`)*
+
+- **RN-76:** *(v65 — the close: the cycle-58 fold, § 3.1 confirmed with four additions)* **Intake.**
+  The companion on disk held one item, § 3.1, raised from downstream on 2026-10-23 by the PM
+  (`ka-reader@825bfcd`) after `checks/no-network.sh` reached version 1.2.0. A `companion-self-answer`
+  run answered it in the owner's seat (`ka-reader@a12e5ed`; the reasoning at
+  `docs/trail/architecture/self_answer-60.md`). The file was clean in git at intake and its one slot
+  was filled, so it is consumed. It was copied whole to `docs/trail/architecture/cycle-58.md` before
+  this fold's first edit, and `cmp` found the two identical. **Whose answer this is.** The owner's
+  seat's, and it outranks every input. It corrects what § 9 says holds the packet's
+  `type == "system"` clause and moves no obligation: the clause binds as it did, and what changed is
+  that a script now fails when it is broken. **§ 3.1 → § 9's Swift-packet bullet.** The passage that
+  said the clause "holds with no check behind it", that a `.systemLibrary` target "would pass every
+  gate in the tree" and that a refusal "is owed" now names `checks/no-network.sh` 1.2.0 as the
+  clause's gate, with its refusal at `:L159-L164` and its suite case `test_system_target_fails` at
+  `checks/tests/test_no_network.sh:L64`, `:L512`, all at `ka-reader@825bfcd`. The *verified by* tail
+  lists the system-target refusal beside the `dependencies` and `url` conditions, and drops "(the
+  refusal owed above)" and the closing "the day `checks/no-network.sh` refuses a `system` target"
+  clause; the bullet's own tail had named that day as the moment the script becomes the gate.
+  **Addition 1, the locators.** Every script locator the passage cites is re-pinned at
+  `ka-reader@825bfcd`: *THE SWIFT HALF* at `:L34-L46`, the `dependencies` refusal at `:L136`, the
+  `url` refusal at `:L143-L151`, the `Package.resolved` refusal at `:L172-L179`. The unpinned
+  `:L31-L32`, `:L131-L138` and `:L149` stand in the dated note, which says they were true of the
+  script at version 1.1.0, `ka-reader@ae72bdc`. **Addition 2, the review that stays.** The
+  `development-design` review on `Package.swift` now covers the six tools-6.2 items no script reads,
+  and an added test's framework. Only the system-target ground leaves its rationale, and "no target
+  of type `system`" leaves the dump readings the review checks. **Addition 3, what each half
+  holds.** The suite drives the script on stubbed dumps, so it holds the refusal's logic. The gate
+  run reads the real dump on every change. The script fails closed on a missing `swift` or `plutil`
+  or an unreadable dump (`:L120-L133`, exiting at `:L181`). **Addition 4, no record.** A check
+  landing reverses no decision and gives nothing up, so it fails the first gate. No ADR is written,
+  edited or restatused, the index does not move, and no `QC` is added, renumbered or reused; `grep`
+  over `docs/adr/` for `systemLibrary` and `type == "system"` finds nothing, so no record states the
+  old gap. **Left as it stands, and why.** QC-8 and QC-26 cite `checks/no-network.sh` for a Swift
+  dependency and a `Package.resolved`. Neither says that is all the script refuses, so neither is
+  false, and the answer names § 9 only. The Review Notes that record the old gap are history. § 10
+  has no row for § 9's bullet, and the rows that name the script name no condition, so the map does
+  not move. **Read at source for this run**, at `ka-reader@a12e5ed`, whose tree outside `docs/` is
+  `825bfcd`'s (`git diff --stat 825bfcd a12e5ed` names only the companion and the self-answer
+  report): `checks/no-network.sh:L2` reads version 1.2.0, and the lines above read as cited;
+  `checks/tests/test_no_network.sh:L2` reads version 1.3.0. At `ka-reader@ae72bdc` the script reads
+  version 1.1.0, with *THE SWIFT HALF* opening at `:L31-L32` and the `url` loop at `:L131-L138`. The
+  suite, run in a disposable clone at `825bfcd`, exits 0 with 21 `ok` lines and no `FAIL`,
+  `test_system_target_fails` among them. The answer's other reading, the case going red with the
+  refusal removed, is the PM's measurement and was not repeated. **What moved beneath this
+  document.** Since v64 (`ka-reader@a42a625`) no commit touches the SRS, SDD, FDR, PRD, UXD,
+  DESIGN, CONTENT or `docs/adr/` (`git log a42a625..HEAD` on those paths prints nothing), and all
+  three primary inputs read `Status: Settled`, so `Inputs read:` stands. **Known limits.** This run
+  did not read the SRS, SDD or FDR in full: nothing beneath this document moved, and it read their
+  status lines, the answer and the passages the answer names. **The companion.** Nothing is left for
+  the owner, so the companion is removed and `Status:` is Settled *(re: header `Status:`,
+  `Version:`; § 9's Swift-packet bullet and its *verified by*; source:
+  `docs/trail/architecture/cycle-58.md` § 3.1; `docs/trail/architecture/self_answer-60.md`;
+  `ka-reader@825bfcd`)*
