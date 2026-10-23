@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Version: 1.5.0 — the cases of QC-10's adapter, QC-11's git_reader, watcher and markdown_renderer
+#   subjects, and QC-17's adapter construction
 # Version: 1.4.0 — probe answers root for a git file; third QC-15 filesystem owner
 # Version: 1.3.0 — structure.sh holds the value modules — QC-63 scan and its proof
 # Version: 1.2.0 — structure.sh holds the boundary reads; fs_reader test body moves to tests/unit
@@ -144,6 +146,24 @@ test_git2_in_machine_config_rs_is_allowed
 test_git2_under_git_reader_is_allowed
 test_folder_model_git2_stays_qc10_alone
 test_fs_reader_git2_draws_one_qc11_line
+test_git_reader_unit_edges_are_rejected
+test_every_forbidden_pair_is_rejected
+test_future_unit_files_are_judged_without_editing_the_scan
+test_unit_edges_read_paths_and_trees_across_lines
+test_own_unit_and_allowed_edges_stay_clean
+test_binding_in_the_new_subjects
+test_folder_model_adapter_name_is_rejected
+test_folder_model_adapter_module_form_is_rejected
+test_folder_model_allowed_git_port_forms_stay_clean
+test_folder_model_adapter_findings_compose
+test_adapter_construction_outside_bridge_is_rejected
+test_adapter_type_positions_are_clean
+test_adapter_compound_annotation_types_are_clean
+test_adapter_construction_after_a_comparison_is_rejected
+test_adapter_construction_in_comments_and_strings_is_ignored
+test_bridge_source_may_construct_the_adapter
+test_folder_model_adapter_construction_draws_both_clauses
+test_header_states_the_held_clauses
 "
 
 # --- helpers ---
@@ -2462,15 +2482,20 @@ test_value_module_non_imports_pass() {
   expect_stderr_empty || return 1
 }
 
-# CP-480 (a) and (c), CP-473, CP-474: a clean case. Every unit, in file and directory form, and
-# every file outside the domain, may name a unit.
+# CP-480 (a) and (c), CP-473, CP-474: a clean case. A file of every unit, in file and directory form,
+# draws no QC-63 finding for naming a unit, and lib.rs and every file outside QC-63's domain may name
+# one. The git_reader and watcher files name their own unit, the one unit their QC-11 sets allow.
 test_value_module_rule_spares_units_and_lib_rs() {
   new_root value-module-spared || return 1
   plant "$R" "$FS_FILE" 'use crate::language::Language;'
   plant "$R" "ka-reader-core/src/lib.rs" 'pub use crate::fs_reader::Entry;'
-  for unit in own_state git_reader watcher markdown_renderer; do
+  for unit in own_state markdown_renderer; do
     plant "$R" "ka-reader-core/src/$unit.rs" 'use crate::fs_reader::Entry;'
     plant "$R" "ka-reader-core/src/$unit/x.rs" 'use crate::fs_reader::Entry;'
+  done
+  for unit in git_reader watcher; do
+    plant "$R" "ka-reader-core/src/$unit.rs" "use crate::$unit::Item;"
+    plant "$R" "ka-reader-core/src/$unit/x.rs" "use crate::$unit::Item;"
   done
   plant "$R" "ka-reader-core/tests/common/mod.rs" 'use crate::fs_reader::Entry;'
   plant "$R" "ka-reader-core/examples/x.rs" 'use crate::fs_reader::Entry;'
@@ -2573,6 +2598,576 @@ test_fs_reader_git2_draws_one_qc11_line() {
   expect_status 1 || return 1
   expect_count "crates/$FS_FILE" "$PLANT_LINE" QC-11 1 || return 1
   expect_count "crates/$FS_FILE" "$PLANT_LINE" QC-10 0 || return 1
+}
+
+# --- the cases of QC-10's adapter, QC-11's git_reader, watcher and markdown_renderer subjects, and
+# QC-17's adapter construction ---
+
+SRC="ka-reader-core/src"
+
+# One QC-11 line at $2 of $1, and it names the edge $3.
+expect_edge() {
+  expect_count "crates/$1" "$2" QC-11 1 || return 1
+  expect_finding_naming "crates/$1" "$2" QC-11 "$3" || return 1
+}
+
+# QC-11 for git_reader. An import of each unit its set forbids is one finding naming that unit, in
+# the unit's own file and in a file under it, on its own line, and through an item lib.rs re-
+# exports.
+test_git_reader_unit_edges_are_rejected() {
+  new_root git-reader-edges || return 1
+  for file in git_reader.rs git_reader/config_scan.rs; do
+    plant "$R" "$SRC/$file" 'use crate::folder_model::FolderModel;'
+    edge_folder="$PLANT_LINE"
+    plant "$R" "$SRC/$file" 'use crate::own_state::Theme;'
+    edge_own="$PLANT_LINE"
+    plant "$R" "$SRC/$file" 'use crate::highlighter::Span;'
+    edge_other="$PLANT_LINE"
+    run_structure "$R"
+    expect_status 1 || return 1
+    expect_edge "$SRC/$file" "$edge_folder" "git_reader imports folder_model" || return 1
+    expect_edge "$SRC/$file" "$edge_own" "git_reader imports own_state" || return 1
+    expect_edge "$SRC/$file" "$edge_other" "git_reader imports highlighter" || return 1
+  done
+}
+
+test_every_forbidden_pair_is_rejected() {
+  new_root forbidden-pairs || return 1
+  pairs=""
+  for target in folder_model own_state fs_reader watcher highlighter markdown_renderer; do
+    pairs="$pairs git_reader:$target"
+  done
+  for target in folder_model own_state fs_reader git_reader highlighter markdown_renderer; do
+    pairs="$pairs watcher:$target"
+  done
+  for target in folder_model own_state git_reader watcher; do
+    pairs="$pairs markdown_renderer:$target"
+  done
+  planted=""
+  for pair in $pairs; do
+    subject="${pair%%:*}"
+    target="${pair#*:}"
+    plant "$R" "$SRC/$subject/pairs.rs" "use crate::$target::Item;"
+    planted="$planted $subject:$target:$PLANT_LINE"
+  done
+  plant "$R" "$SRC/git_reader/pairs.rs" 'fn f(_: crate::Entry) {}'
+  reexport_line="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  for item in $planted; do
+    subject="${item%%:*}"
+    rest="${item#*:}"
+    expect_edge "$SRC/$subject/pairs.rs" "${rest#*:}" "$subject imports ${rest%%:*}" || return 1
+  done
+  expect_edge "$SRC/git_reader/pairs.rs" "$reexport_line" "git_reader imports fs_reader" || return 1
+}
+
+# QC-11 for the two units with no file yet. A watcher or markdown_renderer file created in the copy
+# is judged in the run in which it appears, with nothing in the script edited, and each forbidden
+# import planted in it draws its line. These files exist only in the copy.
+test_future_unit_files_are_judged_without_editing_the_scan() {
+  new_root future-units || return 1
+  for file in watcher.rs watcher/fsevents.rs markdown_renderer.rs markdown_renderer/nested/x.rs; do
+    [ ! -e "$R/crates/$SRC/$file" ] || fail "$file must not exist in the tree" || return 1
+  done
+  plant "$R" "$SRC/watcher.rs" 'use crate::folder_model::FolderModel;'
+  w1="$PLANT_LINE"
+  plant "$R" "$SRC/watcher/fsevents.rs" 'use crate::highlighter::Span;'
+  w2="$PLANT_LINE"
+  plant "$R" "$SRC/markdown_renderer.rs" 'use crate::folder_model::FileView;'
+  m1="$PLANT_LINE"
+  plant "$R" "$SRC/markdown_renderer/nested/x.rs" 'use crate::git_reader::GitPort;'
+  m2="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_edge "$SRC/watcher.rs" "$w1" "watcher imports folder_model" || return 1
+  expect_edge "$SRC/watcher/fsevents.rs" "$w2" "watcher imports highlighter" || return 1
+  expect_edge "$SRC/markdown_renderer.rs" "$m1" "markdown_renderer imports folder_model" || return 1
+  expect_edge "$SRC/markdown_renderer/nested/x.rs" "$m2" "markdown_renderer imports git_reader" || return 1
+}
+
+# The import forms QC-11 reads for its new subjects: a path or a nested `use` tree from `crate` or a
+# run of `super`, across lines; an item the copy's lib.rs re-exports; a comment or a string. One
+# target imported twice on a line is one finding, two targets on a line are two, and one target on
+# two lines is two.
+test_unit_edges_read_paths_and_trees_across_lines() {
+  new_root edges-across-lines || return 1
+  file="$SRC/git_reader/across.rs"
+  plant "$R" "$file" 'use crate::
+    folder_model
+    ::FolderModel;'
+  split_line=$((PLANT_LINE + 1))
+  plant "$R" "$file" 'use super::super::{own_state::Theme,
+    highlighter :: Span};'
+  tree_own=$PLANT_LINE
+  tree_highlighter=$((PLANT_LINE + 1))
+  plant "$R" "$file" '// crate::watcher::W in a comment counts'
+  comment_line="$PLANT_LINE"
+  plant "$R" "$file" 'const S: &str = "crate::markdown_renderer::R";'
+  string_line="$PLANT_LINE"
+  plant "$R" "$file" 'use crate::highlighter::{Span, TokenClass};'
+  same_target="$PLANT_LINE"
+  plant "$R" "$file" 'use crate::{highlighter::Span, folder_model::FileView};'
+  two_targets="$PLANT_LINE"
+  plant "$R" "$file" 'use crate::folder_model::A; // one'
+  again_one="$PLANT_LINE"
+  plant "$R" "$file" 'use crate::folder_model::B;'
+  again_two="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_edge "$file" "$split_line" "git_reader imports folder_model" || return 1
+  expect_edge "$file" "$tree_own" "git_reader imports own_state" || return 1
+  expect_edge "$file" "$tree_highlighter" "git_reader imports highlighter" || return 1
+  expect_edge "$file" "$comment_line" "git_reader imports watcher" || return 1
+  expect_edge "$file" "$string_line" "git_reader imports markdown_renderer" || return 1
+  expect_edge "$file" "$same_target" "git_reader imports highlighter" || return 1
+  expect_count "crates/$file" "$two_targets" QC-11 2 || return 1
+  expect_edge "$file" "$again_one" "git_reader imports folder_model" || return 1
+  expect_edge "$file" "$again_two" "git_reader imports folder_model" || return 1
+}
+
+# What QC-11 allows its new subjects. A file importing its own unit, `super::{StatusEntry, GitPort}`
+# in the adapter's file among them, draws nothing, nor does an import of a value module, nor
+# markdown_renderer's imports of fs_reader and highlighter, QC-11's two stated edges. `self::<unit>`
+# and `ka_reader_core::<unit>` are not imports. A file whose name only begins with a unit's name is
+# not that unit's file: watcher_ext.rs is judged by the QC-63 rule, and no QC-11 line appears.
+test_own_unit_and_allowed_edges_stay_clean() {
+  new_root new-subject-allowed-edges || return 1
+  plant "$R" "$SRC/git_reader/libgit2.rs" 'use super::{StatusEntry, GitPort};'
+  plant "$R" "$SRC/git_reader.rs" 'use crate::git_reader::GitPort;'
+  plant "$R" "$SRC/git_reader.rs" 'use crate::language::Language;'
+  plant "$R" "$SRC/git_reader.rs" 'use crate::error::Error;'
+  plant "$R" "$SRC/git_reader.rs" 'use self::fs_reader::Entry;'
+  plant "$R" "$SRC/git_reader.rs" 'use ka_reader_core::folder_model::FolderModel;'
+  plant "$R" "$SRC/watcher.rs" 'use crate::watcher::W;'
+  plant "$R" "$SRC/markdown_renderer.rs" 'use crate::fs_reader::Entry;'
+  plant "$R" "$SRC/markdown_renderer.rs" 'use crate::highlighter::Span;'
+  plant "$R" "$SRC/markdown_renderer.rs" 'use crate::language::Language;'
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+  # A file whose name only begins with a unit's name is a value module: QC-63, never QC-11.
+  new_root near-names || return 1
+  for near in watcher_ext markdown_renderer_ext git_reader_ext; do
+    plant "$R" "$SRC/$near.rs" 'use crate::folder_model::FileView;'
+    expect_near="$PLANT_LINE"
+    run_structure "$R"
+    expect_status 1 || return 1
+    expect_count "crates/$SRC/$near.rs" "$expect_near" QC-11 0 || return 1
+    expect_finding_naming "crates/$SRC/$near.rs" "$expect_near" QC-63 "value module imports folder_model" || return 1
+  done
+}
+
+# The binding in the new subjects. `git2` and `libgit2_sys` in a git_reader file draw nothing,
+# because git-reader owns the binding. In a watcher or markdown_renderer file each draws one line,
+# the one it drew before either unit was a subject. The folder_model, fs_reader and highlighter
+# lines and the bridge's switch file are unchanged.
+test_binding_in_the_new_subjects() {
+  new_root binding-new-subjects || return 1
+  plant "$R" "$SRC/git_reader.rs" 'use git2 as _x;'
+  plant "$R" "$SRC/git_reader/x.rs" 'use libgit2_sys as _y;'
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+  new_root binding-general-line || return 1
+  for file in watcher.rs watcher/x.rs markdown_renderer.rs markdown_renderer/x.rs; do
+    plant "$R" "$SRC/$file" 'use git2::Repository;'
+    one="$PLANT_LINE"
+    plant "$R" "$SRC/$file" 'use git2::A; use libgit2_sys::B;'
+    two="$PLANT_LINE"
+    run_structure "$R"
+    expect_status 1 || return 1
+    expect_count "crates/$SRC/$file" "$one" QC-11 1 || return 1
+    expect_finding_naming "crates/$SRC/$file" "$one" QC-11 'the libgit2 binding `git2` named outside git-reader' || return 1
+    expect_count "crates/$SRC/$file" "$two" QC-11 2 || return 1
+    expect_finding_naming "crates/$SRC/$file" "$two" QC-11 'the libgit2 binding `libgit2_sys` named outside git-reader' || return 1
+  done
+}
+
+# --- QC-10's adapter clause: folder_model names git-reader's adapter ---
+
+FM_DIR_FILE="ka-reader-core/src/folder_model/x.rs"
+
+# The QC-10 adapter finding at $2 of $1 names the form $3, once.
+expect_adapter() {
+  expect_finding_naming "crates/$1" "$2" QC-10 "folder_model names git-reader's adapter \`$3\`" || return 1
+}
+
+# QC-10's adapter clause, the type's form. `Libgit2` in a folder_model file, in the unit's own file
+# and in a file under it, is one QC-10 finding at its line: as a path, a member of a grouped `use`,
+# a bare name, a comment, a string and a raw string. A word that only contains the name is not the
+# name.
+test_folder_model_adapter_name_is_rejected() {
+  new_root adapter-name || return 1
+  for file in "$CORE_FILE" "$FM_DIR_FILE"; do
+    plant "$R" "$file" 'use crate::git_reader::Libgit2;'
+    l_path="$PLANT_LINE"
+    plant "$R" "$file" 'use crate::git_reader::{GitPort, Libgit2};'
+    l_group="$PLANT_LINE"
+    plant "$R" "$file" 'type Held = Libgit2;'
+    l_bare="$PLANT_LINE"
+    plant "$R" "$file" '// wired to Libgit2 by the bridge'
+    l_comment="$PLANT_LINE"
+    plant "$R" "$file" 'const S: &str = "Libgit2";'
+    l_string="$PLANT_LINE"
+    plant "$R" "$file" 'const R: &str = r#"Libgit2"#;'
+    l_raw="$PLANT_LINE"
+    run_structure "$R"
+    expect_status 1 || return 1
+    for line in "$l_path" "$l_group" "$l_bare" "$l_comment" "$l_string" "$l_raw"; do
+      expect_adapter "$file" "$line" Libgit2 || return 1
+      expect_count "crates/$file" "$line" QC-10 1 || return 1
+    done
+  done
+  new_root adapter-near-names || return 1
+  plant "$R" "$CORE_FILE" 'struct MyLibgit2; struct Libgit2Foo; struct Libgit2s;'
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+}
+
+# QC-10's adapter clause, the module's form. `git_reader::libgit2` reached from `crate` or a run of
+# `super`, as a path or inside a nested `use` tree, with spaces or a newline around `::`, is one
+# finding at the line of `libgit2`. The lowercase word anywhere else, the Git port and the plain-
+# data types beside it, and `GitPort` through its lib.rs re-export draw nothing.
+test_folder_model_adapter_module_form_is_rejected() {
+  new_root adapter-module || return 1
+  file="$FM_DIR_FILE"
+  lines=""
+  for text in \
+    'use crate::git_reader::libgit2::Item;' \
+    'fn f(_: crate::git_reader::libgit2::X) {}' \
+    'use super::super::git_reader::libgit2::Y;' \
+    'use crate::{git_reader::{libgit2::Z, GitPort}};' \
+    'use crate::git_reader :: libgit2 :: W;'; do
+    plant "$R" "$file" "$text"
+    lines="$lines $PLANT_LINE"
+  done
+  plant "$R" "$file" 'use crate::git_reader::
+    libgit2::V;'
+  lines="$lines $((PLANT_LINE + 1))"
+  run_structure "$R"
+  expect_status 1 || return 1
+  for line in $lines; do
+    expect_adapter "$file" "$line" git_reader::libgit2 || return 1
+    expect_count "crates/$file" "$line" QC-10 1 || return 1
+  done
+}
+
+test_folder_model_allowed_git_port_forms_stay_clean() {
+  new_root adapter-clean || return 1
+  plant "$R" "$CORE_FILE" 'use crate::git_reader::{GitPort, RootFinding};'
+  plant "$R" "$CORE_FILE" 'fn f(_: &dyn crate::GitPort) {}'
+  plant "$R" "$CORE_FILE" '// libgit2 does the I/O'
+  plant "$R" "$CORE_FILE" 'fn libgit2() { let libgit2 = 1; let _ = libgit2; }'
+  plant "$R" "$CORE_FILE" 'use crate::libgit2::Item;'
+  plant "$R" "$CORE_FILE" 'use self::git_reader::libgit2::Item;'
+  plant "$R" "$CORE_FILE" 'use ka_reader_core::git_reader::libgit2::Item;'
+  plant "$R" "$FM_DIR_FILE" 'use crate::git_reader::GitPort;'
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+}
+
+# Two findings on one line stay two. Constructing the adapter in folder_model draws the QC-10
+# adapter line and the QC-17 line. The adapter beside an own_state import or the binding keeps every
+# finding. A form repeated on one line is one finding, and the two forms on one line are two. The
+# report stays sorted by path, line, QC and clause.
+test_folder_model_adapter_findings_compose() {
+  new_root adapter-compose || return 1
+  file="$CORE_FILE"
+  plant "$R" "$file" 'use crate::own_state::Theme; use crate::git_reader::Libgit2;'
+  l_edge="$PLANT_LINE"
+  plant "$R" "$file" 'use git2 as _x; // Libgit2'
+  l_binding="$PLANT_LINE"
+  plant "$R" "$file" '// Libgit2 and again Libgit2'
+  l_repeat="$PLANT_LINE"
+  plant "$R" "$file" 'use crate::git_reader::libgit2::Libgit2;'
+  l_both="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_count "crates/$file" "$l_edge" QC-10 2 || return 1
+  expect_finding_naming "crates/$file" "$l_edge" QC-10 "folder_model imports own_state" || return 1
+  expect_adapter "$file" "$l_edge" Libgit2 || return 1
+  expect_count "crates/$file" "$l_binding" QC-10 2 || return 1
+  expect_finding_naming "crates/$file" "$l_binding" QC-10 "folder_model names the libgit2 binding \`git2\`" || return 1
+  expect_adapter "$file" "$l_binding" Libgit2 || return 1
+  expect_count "crates/$file" "$l_repeat" QC-10 1 || return 1
+  expect_count "crates/$file" "$l_both" QC-10 2 || return 1
+  expect_adapter "$file" "$l_both" Libgit2 || return 1
+  expect_adapter "$file" "$l_both" git_reader::libgit2 || return 1
+  expect_before "$file:$l_edge: QC-10: folder_model imports own_state" "$file:$l_edge: QC-10: folder_model names git-reader's adapter" || return 1
+  expect_before "$file:$l_both: QC-10: folder_model names git-reader's adapter \`Libgit2\`" "$file:$l_both: QC-10: folder_model names git-reader's adapter \`git_reader::libgit2\`" || return 1
+}
+
+# --- QC-17's adapter construction: the adapter is made only under crates/ka-reader-bridge/src/ ---
+
+ADAPTER_FILE="ka-reader-core/src/git_reader/libgit2.rs"
+QC17_TEXT='git-reader'"'"'s adapter `Libgit2` constructed outside crates/ka-reader-bridge/src/'
+
+# One QC-17 finding at $2 of $1, with the fixed text.
+expect_construction() {
+  expect_count "crates/$1" "$2" QC-17 1 || return 1
+  expect_finding_naming "crates/$1" "$2" QC-17 "$QC17_TEXT" || return 1
+}
+
+# No QC-17 finding at $2 of $1.
+expect_no_construction() {
+  expect_count "crates/$1" "$2" QC-17 0
+}
+
+# QC-17's floor. Outside crates/ka-reader-bridge/src/, each construction of the adapter is one QC-17
+# finding at the line of `Libgit2`: `Arc::new`, `Box::new`, a bare or a borrowed argument, a `let`
+# initializer, `return`, a struct literal, `Libgit2::new` and `Libgit2::default`, a construction
+# split across lines included. The adapter's own source file is not exempt.
+test_adapter_construction_outside_bridge_is_rejected() {
+  new_root construct || return 1
+  file="$ADAPTER_FILE"
+  lines=""
+  for text in \
+    'fn a() { let _ = Arc::new(Libgit2); }' \
+    'fn b() { let _ = Box::new(Libgit2); }' \
+    'fn c() { f(Libgit2); }' \
+    'fn d() { f(&Libgit2); }' \
+    'fn e() { let p = Libgit2; }' \
+    'fn g() -> impl GitPort { return Libgit2; }' \
+    'fn h() { let _ = Libgit2 {}; }' \
+    'fn i() { let _ = Libgit2::default(); }' \
+    'fn j() { let _ = Libgit2::new(); }' \
+    'fn k() { let _ = crate::git_reader::Libgit2; }' \
+    'fn m() { let _ = crate::Libgit2::default(); }' \
+    'fn n() { let _ = (Libgit2, Libgit2); }'; do
+    plant "$R" "$file" "$text"
+    lines="$lines $PLANT_LINE"
+  done
+  plant "$R" "$file" 'fn o() { let _ = Arc::new(
+    Libgit2,
+); }'
+  split_line=$((PLANT_LINE + 1))
+  plant "$R" "$FS_FILE" 'fn p() { let _ = Arc::new(Libgit2); }'
+  fs_line="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  for line in $lines $split_line; do
+    expect_construction "$file" "$line" || return 1
+  done
+  expect_construction "$FS_FILE" "$fs_line" || return 1
+  expect_count "crates/$FS_FILE" "$fs_line" QC-11 0 || return 1
+}
+
+# QC-17's type positions draw nothing: a `use` or a re-export, the definition, an inherent or a
+# trait `impl` header, a generic argument, a qualified path's self type, a parameter, field or
+# return type, a reference or `Arc<Libgit2>` in a type, and a bound. The six such lines the core
+# holds today stay clean. A construction on the same line as a type position is still a finding.
+test_adapter_type_positions_are_clean() {
+  new_root type-positions || return 1
+  plant "$R" "$ADAPTER_FILE" 'pub use libgit2::Libgit2;'
+  plant "$R" "$ADAPTER_FILE" 'pub struct Other(Libgit2);'
+  plant "$R" "$ADAPTER_FILE" 'struct Holder { port: Libgit2, shared: Arc<Libgit2>, r: &'"'"'static Libgit2 }'
+  plant "$R" "$ADAPTER_FILE" 'type Alias = Libgit2;'
+  plant "$R" "$ADAPTER_FILE" 'impl Libgit2 { fn id(&self) {} }'
+  plant "$R" "$ADAPTER_FILE" 'impl Clone for Libgit2 { fn clone(&self) -> Self { Self } }'
+  plant "$R" "$ADAPTER_FILE" 'fn q(p: &Libgit2, r: &mut Libgit2) -> Libgit2 { todo!() }'
+  plant "$R" "$ADAPTER_FILE" 'fn r() -> Option<Libgit2> { None }'
+  plant "$R" "$ADAPTER_FILE" 'fn s<T: Into<Libgit2>>(t: T) where T: Into<Libgit2> {}'
+  plant "$R" "$ADAPTER_FILE" 'fn t() { assert_port::<Libgit2>(); }'
+  plant "$R" "$ADAPTER_FILE" 'fn u() { let _ = <Libgit2 as GitPort>::probe; }'
+  plant "$R" "$ADAPTER_FILE" 'fn v(p: crate::git_reader::Libgit2) {}'
+  plant "$R" "$ADAPTER_FILE" 'fn w() { let p: Libgit2 = todo!(); let _ = p; }'
+  plant "$R" "$ADAPTER_FILE" 'fn x() { let _v = Vec::<Libgit2>::new(); }'
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+  # An expression and a type on one line report once, for the expression.
+  new_root type-and-expression || return 1
+  plant "$R" "$ADAPTER_FILE" 'fn y(p: &Libgit2) -> Libgit2 { Libgit2 }'
+  mixed="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_construction "$ADAPTER_FILE" "$mixed" || return 1
+}
+
+# CP-869: a type annotation is a type position, whatever type it spells. A tuple, an array or a
+# slice naming the adapter in the annotation of a `let`, a `const`, a `static` or a closure's
+# parameter draws nothing. The value after the `=` is still read: a construction there is a finding.
+test_adapter_compound_annotation_types_are_clean() {
+  new_root compound-annotations || return 1
+  file="$ADAPTER_FILE"
+  plant "$R" "$file" 'fn a() { let t: (Libgit2, u8) = todo!(); }'
+  plant "$R" "$file" 'fn b() { let x: [Libgit2; 2] = todo!(); }'
+  plant "$R" "$file" 'fn c(v: &Vec<u8>) { let s: &[Libgit2] = todo!(); }'
+  plant "$R" "$file" 'fn d() { let (p, q): (Libgit2, Option<Libgit2>) = todo!(); }'
+  plant "$R" "$file" 'const PAIR: (Libgit2, u8) = todo!();'
+  plant "$R" "$file" 'static PORTS: [Libgit2; 1] = todo!();'
+  plant "$R" "$file" 'fn e() { let f = |p: (Libgit2, u8), q: &[Libgit2]| p.1; }'
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+  new_root compound-annotation-value || return 1
+  plant "$R" "$file" 'fn g() { let t: (Libgit2, u8) = (Libgit2, 1); }'
+  value_line="$PLANT_LINE"
+  plant "$R" "$file" 'static PORTS: [Libgit2; 1] = [Libgit2];'
+  static_line="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_construction "$file" "$value_line" || return 1
+  expect_construction "$file" "$static_line" || return 1
+}
+
+# CP-869's floor holds wherever the form stands in code. A `<` that compares, after a constant, a
+# string, a character or a `?`, is not the opening of a generic argument list, so a construction
+# later in the same expression is still a finding.
+test_adapter_construction_after_a_comparison_is_rejected() {
+  new_root construct-after-comparison || return 1
+  file="$FS_FILE"
+  lines=""
+  for text in \
+    'fn a(n: usize) -> bool { LIMIT < n && take(Libgit2) }' \
+    'fn b(n: usize) -> bool { Self::MAX_DEPTH < n && take(Libgit2) }' \
+    'fn c(s: &str) -> bool { "a" < s && take(Libgit2) }' \
+    "fn d(c: char) -> bool { ('a' < c) && take(Libgit2) }" \
+    'fn e(x: Option<u8>) -> Option<bool> { Some(x? < 3 && take(Libgit2)) }'; do
+    plant "$R" "$file" "$text"
+    lines="$lines $PLANT_LINE"
+  done
+  run_structure "$R"
+  expect_status 1 || return 1
+  for line in $lines; do
+    expect_construction "$file" "$line" || return 1
+  done
+}
+
+# QC-17 reads code only. Construction text in a comment, a doc comment, a nested block comment or a
+# string, whether ordinary, raw or escaped, draws no QC-17 finding, and a string between two code
+# tokens does not join them into one expression. In a folder_model file the QC-10 adapter clause
+# still reads the same text.
+test_adapter_construction_in_comments_and_strings_is_ignored() {
+  new_root construct-text || return 1
+  file="$FS_FILE"
+  plant "$R" "$file" '// Arc::new(Libgit2)'
+  plant "$R" "$file" '/// let p = Libgit2;'
+  plant "$R" "$file" '/* Box::new(Libgit2) /* nested Libgit2::default() */ still Libgit2 { } */'
+  plant "$R" "$file" 'const A: &str = "Arc::new(Libgit2)";'
+  plant "$R" "$file" 'const B: &str = r#"let p = Libgit2;"#;'
+  plant "$R" "$file" 'const C: &str = "escaped \" Libgit2::new() \" still inside";'
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+  # A string between two code tokens keeps them apart: the name after it is still read as code, and
+  # the type-position `:` before the string does not reach across it.
+  new_root string-boundary || return 1
+  plant "$R" "$file" 'fn z(p: &str) { let _ = (p, "x" Libgit2); }'
+  boundary="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_construction "$file" "$boundary" || return 1
+}
+
+# Where QC-17 applies. A construction under crates/ka-reader-bridge/src/, in machine_config.rs or in
+# a new file, draws nothing. One in another crate, or under a path that only resembles the bridge's,
+# draws a finding. A crate's own tests/ and build.rs are outside the rule, and src/tests/ and
+# src/build.rs are not. Several constructions on one line are one finding, and two lines are two.
+test_bridge_source_may_construct_the_adapter() {
+  new_root bridge-construct || return 1
+  grep -q -F 'Arc::new(Libgit2)' "$R/crates/ka-reader-bridge/src/machine_config.rs" \
+    || fail "the bridge's own construction is no longer in machine_config.rs to be judged" || return 1
+  plant "$R" "ka-reader-bridge/src/wiring.rs" 'fn w() { let _ = Arc::new(Libgit2); }'
+  plant "$R" "ka-reader-core/tests/x.rs" 'fn t() { let _ = Arc::new(Libgit2); }'
+  plant "$R" "ka-reader-bridge/build.rs" 'fn main() { let _ = Libgit2; }'
+  run_structure "$R"
+  expect_no_finding_for "ka-reader-bridge/src/machine_config.rs" || return 1
+  case "$STDERR" in
+    *"QC-17: git-reader's adapter"*) fail "expected no QC-17 adapter finding. stderr: $STDERR" || return 1 ;;
+  esac
+  new_root bridge-near-names || return 1
+  plant "$R" "ka-reader-extra/src/lib.rs" 'fn a() { let _ = Libgit2; }'
+  other="$PLANT_LINE"
+  plant "$R" "ka-reader-bridge-extra/src/lib.rs" 'fn a() { let _ = Libgit2; }'
+  near="$PLANT_LINE"
+  plant "$R" "ka-reader-bridge/src/tests/x.rs" 'fn a() { let _ = Libgit2; }'
+  nested_tests="$PLANT_LINE"
+  plant "$R" "ka-reader-bridge/src/build.rs" 'fn a() { let _ = Libgit2; }'
+  nested_build="$PLANT_LINE"
+  plant "$R" "ka-reader-extra/src/tests/y.rs" 'fn a() { let _ = Libgit2; }'
+  other_tests="$PLANT_LINE"
+  plant "$R" "ka-reader-extra/src/build.rs" 'fn a() { let _ = Libgit2; }'
+  other_build="$PLANT_LINE"
+  plant "$R" "ka-reader-extra/tests/z.rs" 'fn a() { let _ = Libgit2; }'
+  plant "$R" "ka-reader-extra/build.rs" 'fn a() { let _ = Libgit2; }'
+  plant "$R" "ka-reader-core/src/language.rs" 'fn a() { let _ = (Libgit2, Libgit2); }'
+  many="$PLANT_LINE"
+  plant "$R" "ka-reader-core/src/language.rs" 'fn b() { let _ = Libgit2; }'
+  second="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_construction "ka-reader-extra/src/lib.rs" "$other" || return 1
+  expect_construction "ka-reader-bridge-extra/src/lib.rs" "$near" || return 1
+  expect_no_construction "ka-reader-bridge/src/tests/x.rs" "$nested_tests" || return 1
+  expect_no_construction "ka-reader-bridge/src/build.rs" "$nested_build" || return 1
+  expect_construction "ka-reader-extra/src/tests/y.rs" "$other_tests" || return 1
+  expect_construction "ka-reader-extra/src/build.rs" "$other_build" || return 1
+  expect_no_finding_for "ka-reader-extra/tests/z.rs" || return 1
+  expect_no_finding_for "ka-reader-extra/build.rs" || return 1
+  expect_construction "ka-reader-core/src/language.rs" "$many" || return 1
+  expect_construction "ka-reader-core/src/language.rs" "$second" || return 1
+}
+
+test_folder_model_adapter_construction_draws_both_clauses() {
+  new_root construct-folder-model || return 1
+  plant "$R" "$CORE_FILE" 'fn a() { let p = Libgit2; }'
+  line="$PLANT_LINE"
+  plant "$R" "$ADAPTER_FILE" 'fn b() { let _ = Libgit2; }'
+  later="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_count "crates/$CORE_FILE" "$line" QC-10 1 || return 1
+  expect_adapter "$CORE_FILE" "$line" Libgit2 || return 1
+  expect_construction "$CORE_FILE" "$line" || return 1
+  expect_before "$CORE_FILE:$line: QC-10: " "$CORE_FILE:$line: QC-17: " || return 1
+  expect_before "$CORE_FILE:$line: QC-17: " "$ADAPTER_FILE:$later: QC-17: " || return 1
+}
+
+# --- the header's coverage account ---
+
+# How many lines of checks/structure.sh hold the fixed text $1.
+header_count() {
+  grep -c -F -e "$1" "$STRUCTURE_SH"
+}
+
+# The header's coverage account. WHAT IS NOT HELD no longer lists the three clauses this version
+# holds, and it still lists QC-7, QC-12, QC-20 and the parts of QC-15 and QC-63. It lists the
+# containment bound on the edge from markdown-renderer to fs-reader as held by review, and the
+# adapter construction gaps are named. The case reads these properties, not the whole header.
+test_header_states_the_held_clauses() {
+  # The three clauses this version holds are no longer listed as not held.
+  retired="$(grep -c -F -e "QC-10's \`git-reader\`-adapter clause" -e "QC-11's clauses whose subject is" -e "QC-17's adapter-constructor clause" "$STRUCTURE_SH")"
+  [ "$retired" = "0" ] || fail "expected the three retired phrasings to count 0, got $retired" || return 1
+  # The scan table names each new rule.
+  for text in \
+    "Forbidden for git_reader:" "Forbidden for watcher:" "Forbidden for markdown_renderer:" \
+    "Source: QC-10's \"must not import the libgit2 binding," \
+    "QC-17's \"the adapter's constructor"; do
+    [ "$(header_count "$text")" -ge 1 ] || fail "the header does not state: $text" || return 1
+  done
+  # What stays not held.
+  for text in "Not held: QC-7; QC-12;" "QC-20." "QC-15's filesystem owners, in two parts" "QC-63's types-and-values half"; do
+    [ "$(header_count "$text")" -ge 1 ] || fail "the header no longer lists: $text" || return 1
+  done
+  # The containment-only bound is listed as held in part, and the construction gaps are named.
+  for text in "QC-11's bound on the edge from \`markdown-renderer\` to \`fs-reader\`" "And, for the adapter rules:" "port: Libgit2"; do
+    [ "$(header_count "$text")" -ge 1 ] || fail "the header does not state: $text" || return 1
+  done
+  # CP-871: GAPS names every construction form the rule cannot classify, the one a comparison hides
+  # among them.
+  [ "$(header_count "reads as the opening of a generic argument list")" -ge 1 ] \
+    || fail "the header does not name the construction a comparison hides" || return 1
+  # CP-872: the rows the scan held before keep their text. The new QC-17 row stands after the logger
+  # row, so the logger row's first line runs on into its own second line.
+  logger_next="$(grep -A1 -F -e "#     QC-17  logger" "$STRUCTURE_SH" | sed -n 2p)"
+  case "$logger_next" in
+    *"(the exact path component), a path whose first segment is \`log\`"*) ;;
+    *) fail "the logger row is split: its first line is followed by: $logger_next" || return 1 ;;
+  esac
 }
 
 # --- runner ---

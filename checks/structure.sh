@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Version: 1.6.0 — structure.sh holds QC-10's adapter, QC-11's git_reader, watcher and
+#   markdown_renderer subjects, and QC-17's adapter construction
 # Version: 1.5.0 — probe answers root for a git file; third QC-15 filesystem owner
 # Version: 1.4.0 — structure.sh holds the value modules — QC-63 scan and its proof
 # Version: 1.3.0 — structure.sh holds the boundary reads; fs_reader test body moves to tests/unit
@@ -16,7 +18,8 @@
 #   source, on every run of CI. It reads text, never the compiler's view of it, so it needs no
 #   toolchain and no build. The scan table states each rule's text scope. Closed-name source
 #   rules include comments and strings: a forbidden name in a comment is cheap to remove. The
-#   bridge crate set reads code only, and manifest rules read TOML keys and values.
+#   bridge crate set and the adapter-construction rule read code only, and manifest rules read TOML
+#   keys and values.
 #
 # USAGE
 #   checks/structure.sh
@@ -104,25 +107,39 @@
 #     QC-9   unsafe       The token `unsafe`, in every use (block, fn, impl, extern,
 #                         #[unsafe(…)]), in every crate except ka-reader-bridge. Source: QC-9's
 #                         "unsafe appearing in no crate but ka-reader-bridge".
-#     QC-10  unit edge    In ka-reader-core, a file of the unit `folder_model`
-#     (crates/ka-reader-core/ QC-11  (CP-417,     src/folder_model.rs, or any file under
-#     src/folder_model/) that imports
-#            CP-418,      `own_state`, or names the libgit2 binding, is a QC-10 finding. A file of
-#            CP-435)      `fs_reader` or of `highlighter` (the same shapes) that imports a
-#                         forbidden unit, or names the libgit2 binding, is a QC-11 finding. A
-#                         unit is its module and the units are folder_model, fs_reader,
-#                         highlighter, own_state, git_reader, watcher and markdown_renderer;
-#                         every other file of the core (lib.rs, language.rs, error.rs) belongs
-#                         to no unit, is never a subject of QC-10 or QC-11 (QC-63 below reads the
-#                         files of no unit), and importing it is never an edge.
-#                         Forbidden for fs_reader: folder_model, own_state, git_reader,
-#                         watcher, markdown_renderer, highlighter. Forbidden for highlighter:
-#                         folder_model, own_state, git_reader, watcher, markdown_renderer,
-#                         fs_reader. A file
-#                         imports a unit when its text holds, read across lines with whitespace
-#                         around `::` changing nothing: a path whose segment after a leading
-#                         `crate`, or a leading run of `super`, is the unit; a `use` tree that
-#                         reaches it in that position; or either form naming an item that
+#     QC-10  unit edge    In ka-reader-core, a file of a unit is src/<unit>.rs or any file under
+#     QC-11  (CP-417,     src/<unit>/, the module name matched as an exact file or directory name
+#            CP-418,      and never as a prefix, so src/watcher_ext.rs is a file of no unit. The
+#            CP-435)      units are folder_model, fs_reader, highlighter, own_state, git_reader,
+#                         watcher and markdown_renderer. Every other file of the core (lib.rs,
+#                         language.rs, error.rs) belongs to no unit, is never a subject of QC-10 or
+#                         QC-11 (QC-63 below reads the files of no unit), and importing it is never
+#                         an edge. A file of `folder_model` that imports `own_state`, or names the
+#                         libgit2 binding, is a QC-10 finding. A file of `fs_reader`, `highlighter`,
+#                         `git_reader`, `watcher` or `markdown_renderer` that imports a unit its set
+#                         below forbids is a QC-11 finding, `<subject> imports <unit>`. A file of
+#                         `fs_reader` or `highlighter` that names the libgit2 binding is a QC-11
+#                         finding too; the binding in the other three is the libgit2-binding row's.
+#                         watcher and markdown_renderer have no file today, and a file of either is
+#                         judged from the run in which it first appears, with no edit here. The sets
+#                         are QC-11's "must not import `folder-model`, `own-state`, or one another",
+#                         less its two stated edges.
+#                         Forbidden for fs_reader: folder_model, own_state, git_reader, watcher,
+#                         markdown_renderer, highlighter.
+#                         Forbidden for highlighter: folder_model, own_state, git_reader, watcher,
+#                         markdown_renderer, fs_reader.
+#                         Forbidden for git_reader: folder_model, own_state, fs_reader, watcher,
+#                         highlighter, markdown_renderer.
+#                         Forbidden for watcher: folder_model, own_state, fs_reader, git_reader,
+#                         highlighter, markdown_renderer.
+#                         Forbidden for markdown_renderer: folder_model, own_state, git_reader,
+#                         watcher. Its imports of fs_reader and highlighter are QC-11's two stated
+#                         edges and draw nothing. That the fs_reader edge reaches the containment
+#                         check alone is not held here (WHAT IS NOT HELD).
+#                         A file imports a unit when its text holds, read across lines with
+#                         whitespace around `::` changing nothing: a path whose segment after a
+#                         leading `crate`, or a leading run of `super`, is the unit; a `use` tree
+#                         that reaches it in that position; or either form naming an item that
 #                         crates/ka-reader-core/src/lib.rs re-exports from the unit's module
 #                         (`crate::Entry`), read from lib.rs on every run. `self::<unit>` and
 #                         `ka_reader_core::<unit>` are not imports, and a unit is never its own
@@ -130,19 +147,38 @@
 #                         `libgit2_sys`, a floor: this script may refuse more names, never fewer,
 #                         read in the forms the Apple floor is read in. One finding per distinct
 #                         (file, line, rule, target). Source: QC-10's and QC-11's must-not lists.
+#     QC-10  git-reader's In ka-reader-core, every file of the unit `folder_model`, in the unit-edge
+#            adapter      row's shapes: each line that names git-reader's adapter. Two forms, a
+#                         floor: this script may refuse more forms, never fewer. `Libgit2`, the
+#                         adapter's type, as a token, anywhere: in a path, as a member of a `use`
+#                         tree, as a bare name, in a comment or in a string. And
+#                         `git_reader::libgit2`, the adapter's module, where `libgit2` is the
+#                         segment directly after `git_reader` in a path or `use` tree that starts
+#                         with `crate` or a run of `super`, read across lines, whitespace around
+#                         `::` changing nothing, the finding at the line of `libgit2`. The finding
+#                         names the form, `Libgit2` or `git_reader::libgit2`, spelled as written
+#                         here, one per distinct (file, line, form). Not a finding: the Git port
+#                         trait and the plain-data types beside it, reached through
+#                         `crate::git_reader::…` or through an item lib.rs re-exports, and the
+#                         lowercase word `libgit2` anywhere but directly after `git_reader::`. The
+#                         unit-edge row's QC-10 findings stand beside this one on the same line.
+#                         Source: QC-10's "must not import the libgit2 binding, `git-reader`'s
+#                         adapter, or `own-state`".
 #     QC-11  libgit2      In every file of the shipped scope in any crate (CP-647 - CP-651): the
-#            binding      libgit2 binding, read in the forms the Apple floor is read in, is a
-#            (CP-647 -    QC-11 finding at its line, `<what>` naming the binding. Only `git-reader`
+#            binding      libgit2 binding, read in the forms the Apple floor is read in, is a QC-11
+#            (CP-647 -    finding at its line, `<what>` naming the binding. Only `git-reader`
 #            CP-651)      imports the binding, with one exception, so two exemptions: every file of
 #                         the `git_reader` unit (crates/ka-reader-core/src/git_reader.rs and every
 #                         file under src/git_reader/), and
-#                         crates/ka-reader-bridge/src/machine_config.rs,
-#                         the composition root's search-path switch. The switch's test lies under
-#                         tests/, outside the shipped scope. A line that draws a QC-10 or QC-11
-#                         finding above draws no second one: a folder_model file stays QC-10 alone,
-#                         and an fs_reader or highlighter file draws its one QC-11 line. This clause
-#                         adds no other rule. Source: QC-11's "only git-reader imports the libgit2
-#                         binding".
+#                         crates/ka-reader-bridge/src/machine_config.rs, the composition root's
+#                         search-path switch. The switch's test lies under tests/, outside the
+#                         shipped scope. A line that draws the unit-edge row's binding finding draws
+#                         no second one: a folder_model file stays QC-10 alone, and an fs_reader or
+#                         highlighter file draws its one QC-11 line. A file of git_reader stays
+#                         exempt here although it is a unit-edge subject, and a file of watcher or
+#                         markdown_renderer draws this row's one line, never a second QC-11 line for
+#                         the same name. This clause adds no other rule. Source: QC-11's "only
+#                         git-reader imports the libgit2 binding".
 #     QC-63  value        In ka-reader-core, a file of no unit (CP-470): a file of the shipped scope
 #            module       under crates/ka-reader-core/src/ whose first component under src/, matched
 #            (CP-470 -    as an exact file or directory name and never as a prefix, is none of the
@@ -168,18 +204,18 @@
 #                         file of no unit never draws a QC-10 or QC-11 one. libgit2 names are not
 #                         a QC-63 target. Source: QC-63's verified by.
 #     QC-13  crate set    In every file under crates/ka-reader-bridge/, a crate named in code that
-#            (CP-421,     is not `std`, `core` or `alloc`, and not a name under the `cargo:`
-#            CP-422)      section of checks/deps.allow (read on every run, a `-` in a listed name
-#                         read as `_`). A crate is named in code by the first segment of a `use`
-#                         path or of a root-group member, the crate of an `extern crate` (never
-#                         its alias), or the first segment of a path written in code. Never a
-#                         crate: crate, self, super, Self, a name beginning with an uppercase
-#                         letter, a primitive type, clippy, rustdoc, rustfmt, a module a file of
-#                         the bridge declares with `mod`, and — as a path root only — a name a
-#                         `use` item of the same file brings into scope. UNLIKE every other rule
-#                         here this one reads code only: a comment or a string is not read,
-#                         because the domain is open and every `word::` in prose or test data
-#                         would be a candidate. Source: QC-13's import set.
+#            (CP-421,     is not `std`, `core` or `alloc`, and not a name under the `cargo:` section
+#            CP-422)      of checks/deps.allow (read on every run, a `-` in a listed name read as
+#                         `_`). A crate is named in code by the first segment of a `use` path or of
+#                         a root-group member, the crate of an `extern crate` (never its alias), or
+#                         the first segment of a path written in code. Never a crate: crate, self,
+#                         super, Self, a name beginning with an uppercase letter, a primitive type,
+#                         clippy, rustdoc, rustfmt, a module a file of the bridge declares with
+#                         `mod`, and — as a path root only — a name a `use` item of the same file
+#                         brings into scope. UNLIKE every other rule here but QC-17's adapter
+#                         construction, this one reads code only: a comment or a string is not read,
+#                         because the domain is open and every `word::` in prose or test data would
+#                         be a candidate. Source: QC-13's import set.
 #     QC-13  Apple        In every file under crates/ka-reader-bridge/, QC-9's Apple floor, the same
 #            (CP-423)     names and forms read over raw text, reported as QC-13 and naming the
 #                         framework or form. QC-9's own Apple finding stays ka-reader-core's.
@@ -204,6 +240,28 @@
 #                         `set_boxed_logger`, or a `use` tree rooted at `log` naming either,
 #                         aliased or not. Two findings on that line, one QC-17 and one QC-61. A
 #                         comment or a string counts. Source: QC-17's and QC-61's verified-by.
+#     QC-17  adapter      In every file read whose path is not under crates/ka-reader-bridge/src/
+#            construc-    (the exact path component, as the logger row reads it): each line of code
+#            tion         that makes a value of git-reader's adapter from its name, `Libgit2`. The
+#                         forms are a floor, each read across lines with whitespace changing
+#                         nothing: the unit value as an expression (`Arc::new(Libgit2)`,
+#                         `Box::new(Libgit2)`, `f(Libgit2)`, `f(&Libgit2)`, `let p = Libgit2;`,
+#                         `return Libgit2`); a struct literal, `Libgit2 { … }`; and an associated
+#                         function called on the type, such as `Libgit2::new(…)` or
+#                         `Libgit2::default()`. Never a finding, because the name stands where a
+#                         type stands: a `use` item or re-export, `pub use` included; the `struct
+#                         Libgit2` definition; an `impl` header; a generic argument
+#                         (`assert_port::<Libgit2>()`); the self type of a qualified path (`<Libgit2
+#                         as GitPort>::probe`); a type annotation or bound (`p: Libgit2` as a
+#                         parameter or field type, `-> Libgit2`, `&Libgit2` or `Arc<Libgit2>` in a
+#                         type, `T: Into<Libgit2>`). Like the QC-13 crate set and unlike the logger
+#                         row, this rule reads code only: a comment or a string holds no expression,
+#                         so construction text inside one is not read, and a string between two code
+#                         tokens still keeps them apart. The finding names the adapter, `Libgit2`,
+#                         and the bridge's source path, at the line holding `Libgit2`, one per line.
+#                         A folder_model line that constructs the adapter draws this finding and the
+#                         QC-10 adapter finding. Source: QC-17's "the adapter's constructor …
+#                         appear[s] only under crates/ka-reader-bridge/src/".
 #     QC-2   write API    In ka-reader-core only, every file of the shipped scope, no file exempt:
 #            (CP-445,     crates/ka-reader-core/src/fs_reader.rs is read too, because its owner
 #            CP-446,      exemption is QC-15's filesystem clause alone, and a file added later for
@@ -266,13 +324,14 @@
 #   rules become executable with the script is read as: a rule is executable from the change
 #   that adds it here. Until then its gate is the design review. Not held: QC-7; QC-12;
 #   QC-20. And these parts of rules the table above holds in part:
-#     - QC-10's `git-reader`-adapter clause.
 #     - QC-15's filesystem owners, in two parts: which read the adapter makes inside its owner
 #       file (every filesystem form there is admitted), and `git-reader`'s `Path`-method reads
 #       (`Path::metadata`, `symlink_metadata`, which name no `fs` module). Review at
 #       development-design holds both.
-#     - QC-11's clauses whose subject is `git-reader`, `watcher` or `markdown-renderer`.
-#     - QC-17's adapter-constructor clause.
+#     - QC-11's bound on the edge from `markdown-renderer` to `fs-reader`: that the edge reaches
+#       `fs-reader`'s containment check alone. The scan judges an import a whole unit at a time, so
+#       every import of fs_reader by a markdown_renderer file draws nothing. Review at
+#       development-design holds it.
 #     - QC-63's types-and-values half: whether a value module holds anything a part's Owns cell
 #       names. No script rule approximates it; its gate is review at development-design.
 #
@@ -302,6 +361,17 @@
 #   `CARGO_BIN_EXE_` name assembled by a macro (`concat!`); and a `#[path]` that loads a tests/
 #   file into shipped source, which only the `#[cfg(test)]` on its declaration keeps out of the
 #   binary.
+#   And, for the adapter rules: an adapter reached under another name, as in `use
+#   crate::git_reader::Libgit2 as L;` or `type G = Libgit2;`, and then constructed as `L` or
+#   `G::default()`; the adapter's module reached through an alias of git_reader (`use
+#   crate::git_reader as g;` and then `g::libgit2`), on a line that does not also name `Libgit2`; a
+#   value made inside an impl of the adapter as `Self`; a value made by a trait call whose type is
+#   inferred, as in `let p: Libgit2 = Default::default();`, where the name stands only as a type; a
+#   field value written `port: Libgit2` inside a struct literal, which reads as a field type; a
+#   construction later in an expression where `<` compares a value whose name is capitalised but not
+#   a constant, as in `Level::Debug < level && take(Libgit2)`, because that `<`
+#   reads as the opening of a generic argument list; and a construction in macro-generated or
+#   `include!`d source. A review catches these.
 
 set -euo pipefail
 
@@ -442,10 +512,17 @@ function unit_of(w,    p, rest, q) {
   return substr(rest, 1, q - 1)
 }
 
+# The forbidden sets are QC-11's "must not import `folder-model`, `own-state`, or one another", less
+# its two stated edges: markdown_renderer may import fs_reader and highlighter. folder_model is
+# QC-10's subject and is forbidden own_state alone. A file of watcher or markdown_renderer is judged
+# from the run in which it first appears.
 function forbidden_edge(u) {
   if (subj == "folder_model") return u == "own_state"
   if (subj == "fs_reader") return index(" folder_model own_state git_reader watcher markdown_renderer highlighter ", " " u " ") > 0
   if (subj == "highlighter") return index(" folder_model own_state git_reader watcher markdown_renderer fs_reader ", " " u " ") > 0
+  if (subj == "git_reader") return index(" folder_model own_state fs_reader watcher highlighter markdown_renderer ", " " u " ") > 0
+  if (subj == "watcher") return index(" folder_model own_state fs_reader git_reader highlighter markdown_renderer ", " " u " ") > 0
+  if (subj == "markdown_renderer") return index(" folder_model own_state git_reader watcher ", " " u " ") > 0
   return 0
 }
 
@@ -464,8 +541,12 @@ function add_unit(ln, w,    u) {
   if (forbidden_edge(u)) note(ln, subject_qc(), 1, u, subj " imports " u)
 }
 
+# The binding's wording does not follow the subject set. A folder_model, fs_reader or highlighter
+# file draws the subject-worded line. A git_reader file draws nothing, because git-reader owns the
+# binding. A watcher or markdown_renderer file draws the general line, the one it drew before either
+# unit was a subject.
 function add_git2(ln, w) {
-  if (subj != "") {
+  if (subj == "folder_model" || subj == "fs_reader" || subj == "highlighter") {
     note(ln, subject_qc(), 2, w, subj " names the libgit2 binding `" w "`")
     return
   }
@@ -473,10 +554,182 @@ function add_git2(ln, w) {
   note(ln, "QC-11", 2, w, "the libgit2 binding `" w "` named outside git-reader")
 }
 
+# Each new clause has its own rank, after the clauses its QC already had, so a line that draws two
+# clauses keeps both and the report's order does not move.
+#
+# QC-10's adapter clause. `Libgit2` counts as a whole word in the raw text, comments and strings
+# included. `libgit2` counts only as the segment directly after `git_reader` in a path or `use` tree
+# that starts with `crate` or a run of `super`, so the lowercase word in prose draws nothing. One
+# finding per line and form.
+function add_adapter(ln, form) {
+  note(ln, "QC-10", 3, form, "folder_model names git-reader's adapter `" form "`")
+}
+
+# Whether the word w stands in text, a word character on either side meaning no match.
+function has_word(text, w,    off, rest, p, before, after) {
+  off = 0
+  rest = text
+  while ((p = index(rest, w)) > 0) {
+    before = (off + p > 1) ? substr(text, off + p - 1, 1) : ""
+    after = substr(text, off + p + length(w), 1)
+    if (before !~ /[A-Za-z0-9_]/ && after !~ /[A-Za-z0-9_]/) return 1
+    off += p
+    rest = substr(text, off + 1)
+  }
+  return 0
+}
+
+function is_git_reader_path(parent) {
+  return parent ~ /^(crate|super(::super)*)::git_reader$/
+}
+
 function add_logger(ln, w) {
   if (in_src) return
   note(ln, "QC-17", 1, w, "`log::" w "` outside crates/ka-reader-bridge/src/")
   note(ln, "QC-61", 1, w, "`log::" w "` outside crates/ka-reader-bridge/src/")
+}
+
+# QC-17's adapter construction. The name `Libgit2` in code is a construction unless it stands where
+# a type stands: a `use` item, the `struct` definition, an `impl` header, a generic argument, the
+# self type of a qualified path, an annotation or a bound. Those positions are closed off before the
+# name is judged, across lines and with brackets balanced. Comments and strings are not read, and a
+# string still separates the code tokens on either side of it. The finding is at the line holding
+# the name, once per line.
+
+# Marks a `use` or `type` item as a type position, to the `;` outside braces.
+function mark_to_semi(t, n, k,    m, d) {
+  d = 0
+  for (m = k; m <= n; m++) {
+    ty17[m] = 1
+    if (t[m] == "{") d++
+    else if (t[m] == "}") { if (d > 0) d-- }
+    else if (t[m] == ";" && d == 0) return
+  }
+}
+
+# Marks an item header, to its `{` or `;` outside brackets; with whole set, a `{` body too.
+function mark_item(t, n, k, whole,    m, d, b) {
+  d = 0
+  for (m = k; m <= n; m++) {
+    ty17[m] = 1
+    if (t[m] == "(" || t[m] == "[") d++
+    else if (t[m] == ")" || t[m] == "]") { if (d > 0) d-- }
+    else if (d == 0 && t[m] == ";") return
+    else if (d == 0 && t[m] == "{") {
+      if (!whole) return
+      b = 1
+      while (++m <= n && b > 0) {
+        ty17[m] = 1
+        if (t[m] == "{") b++
+        else if (t[m] == "}") b--
+      }
+      return
+    }
+  }
+}
+
+# Marks the annotation of a `let`, `const` or `static` as a type position: from the `:` that follows
+# its pattern or name at depth zero to the `=` or `;` that ends it, brackets and generic lists
+# balanced, so a tuple, an array or a slice in it is a type too. The value after the `=` is not
+# marked. A `const fn` or a `*const T` has no such `:` before its `{`, `=` or `;`, and is left
+# alone.
+function mark_annotation(t, n, k,    m, d, a) {
+  d = 0
+  for (m = k + 1; m <= n; m++) {
+    if (t[m] == "(" || t[m] == "[") d++
+    else if (t[m] == ")" || t[m] == "]") { if (d == 0) return; d-- }
+    else if (d == 0 && (t[m] == "=" || t[m] == ";" || t[m] == "{" || t[m] == "}")) return
+    else if (d == 0 && t[m] == ":") break
+  }
+  d = 0
+  a = 0
+  for (m++; m <= n; m++) {
+    if (t[m] == "(" || t[m] == "[") d++
+    else if (t[m] == ")" || t[m] == "]") { if (d == 0) return; d-- }
+    else if (t[m] == "<") a++
+    else if (t[m] == ">" && t[m - 1] != "-") { if (a == 0) return; a-- }
+    else if (d == 0 && a == 0 && (t[m] == "=" || t[m] == ";" || t[m] == "{" || t[m] == "}")) return
+    ty17[m] = 1
+  }
+}
+
+# Marks the parameter types of a closure whose opening `|` is at k: each `:` at depth zero, to the
+# `,` or `|` that ends that parameter. A `|` opens a closure where an operand cannot end, so `a | b`
+# and `a || b` are left alone.
+function mark_closure_params(t, n, k,    p, m, d, a, on) {
+  p = (k > 1) ? t[k - 1] : ""
+  if (!(k == 1 || p == "(" || p == "," || p == "=" || p == "{" || p == ";" || p == "[" || p == ":" || p == "move" || p == "return" || (p == ">" && t[k - 2] == "="))) return
+  d = 0
+  a = 0
+  on = 0
+  for (m = k + 1; m <= n; m++) {
+    if (t[m] == "(" || t[m] == "[") d++
+    else if (t[m] == ")" || t[m] == "]") { if (d == 0) return; d-- }
+    else if (t[m] == "<") a++
+    else if (t[m] == ">" && t[m - 1] != "-") { if (a > 0) a-- }
+    else if (d == 0 && a == 0 && t[m] == "|") return
+    else if (d == 0 && a == 0 && t[m] == ",") { on = 0; continue }
+    else if (d == 0 && a == 0 && t[m] == ":") { on = 1; continue }
+    else if (t[m] == "{" || t[m] == "}" || t[m] == ";") return
+    if (on) ty17[m] = 1
+  }
+}
+
+# A `<` opens a generic argument list or a qualified path, and is not a comparison, after `::`,
+# after a name that begins with an uppercase letter, `impl`, `dyn` or a function's name, and after
+# any punctuation that cannot end an operand. A constant's name, all capitals, ends an operand, and
+# so do a string, a character and a `?`: after any of them the `<` compares.
+function opens_angle(t, k,    p) {
+  p = (k > 1) ? t[k - 1] : ""
+  if (p == "::") return 1
+  if (p == "<" || p == ")" || p == "]" || p == "}" || p == "?" || p == "\"str\"" || p == "'chr'") return 0
+  if (is_word_token(p)) {
+    if (p ~ /^[A-Z][A-Z0-9_]+$/) return 0
+    if (p ~ /^[A-Z]/ || p == "impl" || p == "dyn") return 1
+    return (k > 2 && t[k - 2] == "fn")
+  }
+  return 1
+}
+
+# The name follows a type marker: an annotation `:`, a return `->` or a cast `as`, past any path
+# prefix, reference, `mut`, lifetime or `dyn`.
+function after_type_marker(t, k,    j) {
+  j = k - 1
+  while (j >= 1 && t[j] == "::") {
+    j--
+    if (j >= 1 && is_word_token(t[j])) j--
+  }
+  while (j >= 1) {
+    if (t[j] == "&" || t[j] == "*" || t[j] == "mut" || t[j] == "const" || t[j] == "dyn") j--
+    else if (j >= 2 && is_word_token(t[j]) && t[j - 1] == "'") j -= 2
+    else break
+  }
+  if (j < 1) return 0
+  if (t[j] == ":" || t[j] == "as") return 1
+  return (t[j] == ">" && j > 1 && t[j - 1] == "-")
+}
+
+function scan_construction(t, l, n,    k, w, sp) {
+  for (k = 1; k <= n; k++) {
+    w = t[k]
+    if (w == "use" || w == "type") mark_to_semi(t, n, k)
+    else if (w == "struct" || w == "enum") mark_item(t, n, k, 1)
+    else if (w == "impl" || w == "fn" || w == "trait") mark_item(t, n, k, 0)
+    else if (w == "let" || w == "const" || w == "static") mark_annotation(t, n, k)
+    else if (w == "|") mark_closure_params(t, n, k)
+  }
+  sp = 0
+  for (k = 1; k <= n; k++) {
+    w = t[k]
+    if (w == "{" || w == "}" || w == ";") sp = 0
+    else if (w == "<") { if (opens_angle(t, k)) sp++ }
+    else if (w == ">") { if (sp > 0 && t[k - 1] != "-" && t[k - 1] != "=") sp-- }
+    else if (sp > 0) ty17[k] = 1
+  }
+  for (k = 1; k <= n; k++) {
+    if (t[k] != "Libgit2" || (k in ty17) || after_type_marker(t, k)) continue
+    note(l[k], "QC-17", 2, "", "git-reader's adapter `Libgit2` constructed outside crates/ka-reader-bridge/src/")
+  }
 }
 
 # A crate named in code in a bridge file. A path root may also be a name a `use` of the file bound.
@@ -540,6 +793,7 @@ function use_segment(parent, first, w, atstart, ln) {
   if (first == "libc" && parent == "libc") libc_member_rules(w, ln)
   if (first == "log" && parent != "" && is_logger(w)) add_logger(ln, w)
   if (is_crate_or_super(parent)) add_unit(ln, w)
+  if (subj == "folder_model" && w == "libgit2" && is_git_reader_path(parent)) add_adapter(ln, "git_reader::libgit2")
   if (atstart && parent == "" && is_config_root(w)) add_config_read(ln, "configuration loader `" w "`")
   if (stream_code && parent == "" && atstart) crate_position(w, ln, 0)
 }
@@ -575,6 +829,7 @@ function scan_unit_path(t, l, k,    j) {
   if (t[k] == "super") { while (t[j] == "super" && t[j + 1] == "::") j += 2 }
   else j = k + 2
   if (is_word_token(t[j])) add_unit(l[j], t[j])
+  if (subj == "folder_model" && t[j] == "git_reader" && t[j + 1] == "::" && t[j + 2] == "libgit2") add_adapter(l[j + 2], "git_reader::libgit2")
 }
 
 # Each `use` item runs from `use` to the `;` at brace depth zero, read across lines. The tree is
@@ -653,6 +908,7 @@ function collect_bindings(t, n,    k, m, sp, w, want_alias) {
 # The rules read off the physical line, before the tokenizer splits a string's `/` and `.` apart: a
 # configuration location is its text as written, comments and strings included.
 function raw_line_rules(text, ln) {
+  if (subj == "folder_model" && has_word(text, "Libgit2")) add_adapter(ln, "Libgit2")
   if (index(text, ".config/") > 0 || index(text, ".config\"") > 0) add_config_read(ln, "configuration path `.config`")
   if (index(text, "Library/Preferences") > 0) add_config_read(ln, "configuration path `Library/Preferences`")
   if (index(text, "/etc/") > 0) add_config_read(ln, "configuration path `/etc/`")
@@ -729,7 +985,7 @@ layer5 {
     else {
       if (c2 == "//") { flush_word(); i += 2; while (i <= len) emit_at("c") }
       else if (c2 == "/*") { flush_word(); mode = "block"; blk = 1; i += 2 }
-      else if (c == "\"") { flush_word(); push("\"", ln, "s"); mode = "str"; i++ }
+      else if (c == "\"") { flush_word(); push("\"", ln, "s"); strmark[nt] = 1; mode = "str"; i++ }
       else if ((c == "r" || c == "b") && (i == 1 || substr(line, i - 1, 1) !~ /[A-Za-z0-9_]/) && match(substr(line, i), /^b?r#*"/)) {
         flush_word()
         rawtext = substr(line, i, RLENGTH)
@@ -738,6 +994,7 @@ layer5 {
         rawclose = ""
         for (q = 1; q <= rawhashes; q++) rawclose = rawclose "#"
         push("\"", ln, "s")
+        strmark[nt] = 1
         mode = "raw"
         i += RLENGTH
       }
@@ -746,9 +1003,10 @@ layer5 {
         if (substr(line, i + 1, 1) == "\\") {
           j = i + 3
           while (j <= len && substr(line, j, 1) != "'") j++
+          chrmark[nt] = 1
           i = j + 1
         }
-        else if (substr(line, i + 2, 1) == "'" && substr(line, i + 1, 1) != "'") i += 3
+        else if (substr(line, i + 2, 1) == "'" && substr(line, i + 1, 1) != "'") { chrmark[nt] = 1; i += 3 }
         else emit_at("k")
       }
       else emit_at("k")
@@ -780,6 +1038,17 @@ END {
   if (check_crates) { mark_use_items(ct, nc); collect_bindings(ct, nc) }
   scan_stream(ct, cl, nc)
   scan_use_trees(ct, cl, nc)
+  if (!in_src) {
+    # The code stream with a placeholder where a string or a character stood, so a literal keeps its
+    # neighbours apart and still ends an operand. chrmark[k] says a character follows token k.
+    n17 = 0
+    for (k = 0; k <= nt; k++) {
+      if (k > 0 && tkind[k] == "k") { n17++; t17[n17] = tk[k]; l17[n17] = tl[k] }
+      else if (k in strmark) { n17++; t17[n17] = "\"str\""; l17[n17] = tl[k] }
+      if (k in chrmark) { n17++; t17[n17] = "'chr'"; l17[n17] = (k > 0) ? tl[k] : 1 }
+    }
+    scan_construction(t17, l17, n17)
+  }
   for (key in found) {
     split(key, kp, SUBSEP)
     printf "%s\t%d\t%d\t%d\t%s\t%s:%d: %s: %s\n", rel, kp[1], substr(kp[2], 4) + 0, kp[3], kp[4], rel, kp[1], kp[2], found[key]
@@ -1199,7 +1468,7 @@ else
           *) module_name="" ;;
         esac
         case "$module_name" in
-          folder_model | fs_reader | highlighter) subject_unit="$module_name" ;;
+          folder_model | fs_reader | highlighter | git_reader | watcher | markdown_renderer) subject_unit="$module_name" ;;
         esac
         # A file of no unit: its module is none of the units the awk pass is given (the same
         # full set, so a unit with no subject rule today stays out), however it is spelled.
