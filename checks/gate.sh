@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Version: 1.2.0 — the scan of the whole history for a secret, and its suite, join the list
+#   (NFDR QC-28)
 # Version: 1.1.0 — the bridge's tests run under the address sanitizer, on a dated nightly
 # Version: 1.0.0 — first version: the one ordered list of the gate's steps, each fatal (NFDR QC-64)
 #
@@ -43,6 +45,17 @@ run_step() {
 # lines are the record of which Swift and which SDK the run built with
 # (docs/nfdr.md § 9, Toolchain).
 run_step 'Toolchain' 'swift --version && xcrun --show-sdk-version'
+run_step 'Secret scan suite' 'checks/tests/test_secret_scan.sh'
+# "Secret scan" runs gitleaks 8.30.1 over every commit reachable from HEAD. On every run the step
+# fetches gitleaks's own release archive for this machine's architecture, checks it against the
+# SHA-256 pinned in checks/secret-scan.sh and the version the executable reports, and installs
+# nothing. In the macOS guest, a run on 2026-10-23 found no gitleaks on PATH as the guest started,
+# so there the step's own fetch is what provides it. On the macos-26 hosted runner, whether gitleaks
+# is present is not measured by a run. The runner image's software list
+# (github.com/actions/runner-images, images/macos/macos-26-Readme.md), read on 2026-10-23, names no
+# gitleaks; a tool missing from that list may still be on the runner, and the step fetches its own
+# either way.
+run_step 'Secret scan' 'checks/secret-scan.sh gitleaks git'
 run_step 'Build the workspace' 'cargo build --workspace --locked'
 # The app build comes before "Test gate": it writes the bridge artifact the Swift package links,
 # which a fresh checkout does not have, so "Test gate" cannot run before it.
