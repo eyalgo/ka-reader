@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.3.0 — the planted-secret suite, the scan's negative control, joins the list
 # Version: 1.2.0 — the scan of the whole history for a secret, and its suite, join the list
 #   (NFDR QC-28)
 # Version: 1.1.0 — the bridge's tests run under the address sanitizer, on a dated nightly
@@ -57,6 +58,13 @@ run_step 'Secret scan suite' 'checks/tests/test_secret_scan.sh'
 # either way.
 run_step 'Secret scan' 'checks/secret-scan.sh gitleaks git'
 run_step 'Build the workspace' 'cargo build --workspace --locked'
+# "Planted secret suite" comes after "Build the workspace" and never before it. The "Secret scan
+# suite" runs this list in a fixture that holds no copy of this suite and makes "Build the workspace"
+# exit non-zero, and it expects that step to be the one that stops the run after a clean scan; placed
+# earlier, this step would stop it there instead. The suite runs the real gitleaks twice, fetched and
+# checked as "Secret scan" fetches it: once over a disposable repository with a clean commit, which
+# must pass, and once after a commit that adds a secret-shaped string, which must turn the scan red.
+run_step 'Planted secret suite' 'checks/tests/test_secret_scan_planted.sh'
 # The app build comes before "Test gate": it writes the bridge artifact the Swift package links,
 # which a fresh checkout does not have, so "Test gate" cannot run before it.
 run_step 'Build KA-Reader.app' 'ka-reader-mac/assemble.sh'
