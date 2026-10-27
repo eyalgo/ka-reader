@@ -66,6 +66,37 @@ None.
 - **If a document has to be written:** none — sentences of `nfdr.md`, folded by
   `product-architecture`. Whether QC-28's *verified by* or its § 10 row should name the negative
   control beside the scan, now that a green scan is shown able to turn red, is the fold's call.
-- **Answer:** <the owner fills this in>
+- **Answer:** Fold it, and the fold's call on QC-28 is yes. **(1) § 8, *Until the card runs the
+  script*,** gains the 1.3.0 reading at `ka-reader@1b32500`: 30 steps, `grep -c '^run_step'
+  checks/gate.sh` printing 31 with `run_step()` at `:L30`; *Secret scan suite* `:L49`, *Secret scan*
+  `:L59`, *Build the workspace* `:L60`, *Planted secret suite* `:L67` with its order comment at
+  `:L61-L66`; and the guest's exit 0 on `38b4e3e`, whose tree is `1b32500`'s outside
+  `docs/build_cost.md` (the PM's measurement, this item). "The scan step is the one step that reaches
+  the network on every run" is false at `1b32500` and is re-said: two steps fetch on every run,
+  *Secret scan* once and *Planted secret suite* twice, each checking the pinned SHA-256. The new step
+  adds no failure path of its own: a machine that cannot fetch is already red at *Secret scan*, and
+  because the suite runs the real `checks/secret-scan.sh`, the one pin there moves both steps. The
+  shallow-checkout refusal stays *Secret scan*'s alone, since the suite scans its own disposable
+  repository. § 8's first paragraph says the planted-secret suite runs after the workspace build and
+  before the bridge's assembly, so it is not read as one of the steps that come "after them". Re-pin
+  § 8's other `gate.sh` locators (`:L60`, `:L70`, `:L71`; `:L60`, `:L70-L71`; `:L79-L80`, the
+  sanitizer `:L78`), QC-28's (`:L59`, `:L49`) and QC-64's (`:L41-L43`; `:L49`, `:L59`), each keeping
+  its `8235240` reading, as RN-77 did. QC-64's order sentence also names the planted suite, placed
+  after the workspace build by the comment above it. **(2) § 9's suites bullet** counts thirteen
+  (`git ls-tree --name-only 1b32500 checks/tests/`), adds `test_secret_scan_planted.sh` at `:L67`,
+  re-pins every suite locator (`:L49`, `:L67`, `:L80`, `:L82`, `:L85`, `:L87`, `:L97`, `:L101`,
+  `:L103`, `:L104`, `:L107`, `:L108`, `:L109`) and its *Bundle probe suite* example (`:L85`), and says
+  two of the thirteen have no `checks/<name>.sh` of their own name: `test_vm_refusal.sh`, and
+  `test_secret_scan_planted.sh`, a second suite over `checks/secret-scan.sh`, whose paired suite stays
+  `test_secret_scan.sh`. "All twelve" at the bullet's `Test gate` sentence becomes all thirteen.
+  **(3) QC-28's *verified by*** names `checks/tests/test_secret_scan_planted.sh` as the scan's negative
+  control: the real scan over a disposable repository passes clean and must go red at a planted
+  commit. Its bound is stated so it is not read as coverage: it shows the pinned gitleaks reports one
+  planted string of GitHub-token shape, and nothing about other kinds of secret (the suite's header,
+  *WHY THIS EXISTS*). § 10's QC-28 row names it beside `test_secret_scan.sh` as the control; the
+  spelling is the fold's. The ground is ADR-0012 § Decision and ADR-0010, "A negative control is part
+  of the gate, not an accessory to it", and QC-62's row, which already names its control,
+  `checks/fixtures/idle-shell`. No ADR is owed, and no `QC` is added, renumbered or reused. The
+  reasoning is in `docs/trail/architecture/self_answer-62.md`.
 
 **How it closes.** `product-architecture` folds it on its next run like any other item here.
