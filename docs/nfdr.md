@@ -2,7 +2,7 @@
 
 **Status:** Settled
 **Owner:** Principal Architect
-**Version:** 66 — the close, the cycle-59 fold, § 3.1 confirmed in the owner's seat with five moves. The gate's *Secret scan* step realizes QC-28 at the change: QC-28's *verified by* names `checks/secret-scan.sh gitleaks git` over every commit HEAD reaches, with the script's exit contract, the reviewed `.gitleaksignore` as its one way through and two fail-closed paths — the per-run fetch of gitleaks's release archive and the shallow-checkout refusal — and § 10's QC-28 row names the script and its suite, gated at the change. § 8 gains the gate's 1.2.0 reading, 29 steps, and re-pins its `gate.sh` locators at `ka-reader@8235240`; § 9 counts twelve suites and re-pins every suite locator; QC-64's order sentence, false at `8235240`, is re-worded. Each old reading stands in a dated note. No ADR is written, and no `QC` is added, renumbered or reused. Nothing is left for the owner, so the companion is removed and `Status:` is Settled — RN-77 (v65: the close, the cycle-58 fold — § 9's Swift-packet bullet names `checks/no-network.sh` 1.2.0 as the system-target clause's gate; `Status:` was Settled — RN-76)
+**Version:** 67 — the close, the cycle-60 fold, § 3.1 confirmed in the owner's seat with three moves. QC-28's *verified by* names the gate's *Planted secret suite* step, `checks/tests/test_secret_scan_planted.sh`, as the scan's negative control — the real scan over a disposable repository passes clean and must go red at a planted commit — bounded to the one GitHub-token-shaped string it plants, and § 10's QC-28 row names it beside `test_secret_scan.sh`. § 8 gains the gate's 1.3.0 reading, 30 steps, re-says the sentence naming the scan as the one step that reaches the network (two steps fetch on every run), and re-pins its `gate.sh` locators at `ka-reader@1b32500`, as QC-28 and QC-64 do theirs; § 9 counts thirteen suites, two with no script of their own name, and re-pins every suite locator. Each old reading stands in a dated note. No ADR is written, and no `QC` is added, renumbered or reused. Nothing is left for the owner, so the companion is removed and `Status:` is Settled — RN-78 (v66: the close, the cycle-59 fold — QC-28 names the gate's secret scan over the whole history, §§ 8 and 9 re-measured at `ka-reader@8235240`; `Status:` was Settled — RN-77)
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · PRD Settled · UXD Settled · DESIGN Settled · CONTENT Settled
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
@@ -1076,14 +1076,24 @@ reviewed tag.
   `cargo audit` gate confirmed at `docs/trail/architecture/cycle-1.md` § 1.1, § 2.7 — RN-11)*
 - **QC-28:** No secret is in the repository, and the release workflow holds no signing identity.
   — *verified by:* `checks/secret-scan.sh gitleaks git` exits 0 over every commit HEAD reaches, at
-  every change: the gate's *Secret scan* step (`checks/gate.sh:L58` at `ka-reader@8235240`; § 8),
-  with its suite `checks/tests/test_secret_scan.sh` the step before it (`:L48`). The script runs
+  every change: the gate's *Secret scan* step (`checks/gate.sh:L59` at `ka-reader@1b32500`; § 8),
+  with its suite `checks/tests/test_secret_scan.sh` the step before it (`:L49`) *(`:L58` and `:L48`
+  at `ka-reader@8235240` — RN-78)*. The script runs
   gitleaks 8.30.1 with `--exit-code 2` (`checks/secret-scan.sh:L195`), so under it a finding exits 2
   and the tool's own error 1, and the script names which in its output; on either it exits
   non-zero and the step fails (`:L213-L218`). A finding passes only by its fingerprint on a line of
   `.gitleaksignore` at the product root, with the reason in a comment directly above it, added and
   reviewed as code in the same change, the way `checks/deps.allow` is for QC-26
   (`checks/secret-scan.sh`, *.GITLEAKSIGNORE*); a finding with no such line keeps the step red.
+  The scan's negative control is the gate's *Planted secret suite* step,
+  `checks/tests/test_secret_scan_planted.sh` (`checks/gate.sh:L67` at `ka-reader@1b32500`): it runs
+  the real script, with gitleaks fetched and checked as *Secret scan* fetches it, over a disposable
+  repository, and passes only when the scan exits 0 over a clean commit and then exits non-zero
+  with a finding at a commit that plants a secret-shaped string; a scan that cannot go red turns
+  the step red. Its bound is one planted string of GitHub-token shape, which gitleaks's
+  `github-pat` rule reports. It shows the pinned gitleaks reports that string and nothing about the
+  other kinds of secret gitleaks looks for (the suite's header, *WHY THIS EXISTS*, *THE PLANTED
+  STRING*), so it is the control, not coverage.
   Two paths fail closed, turning the step red and never green. The step fetches gitleaks 8.30.1's
   release archive from GitHub on every run and checks it against a pinned SHA-256: the archive is
   a platform fact this product does not hold, its holders are the gitleaks maintainers, and if they
@@ -1095,7 +1105,10 @@ reviewed tag.
   C-R4; ADR-0024, which superseded ADR-0007 at v55; the scanner is this document's realization —
   RN-3; the command confirmed at `docs/trail/architecture/cycle-1.md` § 2.7 — RN-11; the gate step,
   named in SDD § 3's `read-only-harness` row at v58, on the owner's seat's answer at
-  `docs/trail/architecture/cycle-59.md` § 3.1 — RN-77)* *(through v65 the first check read
+  `docs/trail/architecture/cycle-59.md` § 3.1 — RN-77; the negative control, on the owner's seat's
+  answer at `docs/trail/architecture/cycle-60.md` § 3.1, on ADR-0012 § Decision ("A negative control
+  is part of the gate, not an accessory to it"), ADR-0010's same rule for the probe, and QC-62's
+  row, which names its control — RN-78)* *(through v65 the first check read
   "`gitleaks git` exits 0 over the repository — exit 1 on a leak or an error", the bare tool's
   default, which RN-3 keeps as true of it — RN-77)* *(through v54 `--repo kensaiapp/ka-reader`;
   moved at v55 — RN-66)*
@@ -1548,14 +1561,14 @@ The execution context — execution type, test command, parallelism — is the p
 test command is `checks/gate.sh`, QC-64's one script. Its steps run the workspace build, the
 bridge's assembly, which the Swift half needs first (§ 9's runner paragraph), and the test gate,
 `cargo test --workspace --locked && swift test --package-path ka-reader-mac`
-(`checks/gate.sh:L59`, `:L62`, `:L63` at `ka-reader@8235240`; `:L46`, `:L49`, `:L50` at
-`ka-reader@389adad` — RN-77): the SDD's command bar for the Rust
+(`checks/gate.sh:L60`, `:L70`, `:L71` at `ka-reader@1b32500`; `:L59`, `:L62`, `:L63` at
+`ka-reader@8235240` — RN-78; `:L46`, `:L49`, `:L50` at `ka-reader@389adad` — RN-77): the SDD's command bar for the Rust
 workspace, `cargo test --workspace --locked` exits 0 (`docs/SDD.md` § 6 S-1), the bar carrying the
 Rust packet's `--locked` itself since the SDD's re-author (`languages/rust/testing.md` § Layers
 1–5; RN-16), and `swift test` for `ka-reader-mac`, the command the SDD's bars name (§ 6 S-1).
 After them come the structure pair, on the owner's call (the structure-pair paragraph below), and
 every other rule the CI workflow holds (QC-64). Before them, after the toolchain print, come the
-secret scan and its suite (QC-28; *Until the card runs the script*, below) *(added at v66 — RN-77)*. Its `Languages:` line names Rust, Swift and Shell
+secret scan and its suite (QC-28; *Until the card runs the script*, below) *(added at v66 — RN-77)*. The planted-secret suite, the scan's negative control, runs between the workspace build and the bridge's assembly, so it is not one of the steps that come after them (QC-28; *Until the card runs the script*) *(added at v67 — RN-78)*. Its `Languages:` line names Rust, Swift and Shell
 (RN-6). The move the SDD named as owed at v13 (`docs/SDD.md` RN-60) is made, so is the move
 the paragraph below named as owed at v49, so is the move the structure-pair paragraph named as
 owed at v54, and so is the move *Until the card runs the script* named as owed (RN-69): § 8 states
@@ -1587,7 +1600,7 @@ verdict is worth against CI", true while hosted CI was the reference — RN-67)*
 `ka-reader@f0f1e5f`, `ka-reader-mac` links the bridge as a local binary target that
 `ka-reader-mac/assemble.sh` writes and no checkout holds. The card's command runs that script
 as a step of `checks/gate.sh`, after the workspace build and before the test gate's Swift half
-(`checks/gate.sh:L59-L63` at `ka-reader@8235240`; `:L46-L50` at `ka-reader@389adad` — RN-77), which is CI's order
+(`checks/gate.sh:L60`, `:L70-L71` at `ka-reader@1b32500`, the planted-secret suite between them at `:L67`; `:L59-L63` at `ka-reader@8235240` — RN-78; `:L46-L50` at `ka-reader@389adad` — RN-77), which is CI's order
 (`.github/workflows/ci.yml:L31-L35` at `ka-reader@f357008`) *(through v61 "runs that script
 between its Rust half and its Swift half", true of the card from `kensaiapp-opensource@d5005730`
 until `kensaiapp-opensource@1941f963` — RN-73)*. § 9's runner paragraph is that precondition's one home, and it does not
@@ -1616,8 +1629,8 @@ the suite runs the real script over copies of `crates/` (`checks/tests/test_stru
 EXISTS*) — so § 9's *Toolchain* clause does not bear on the pair, and its change-time verdict is the
 same reading CI's is. The other `checks/*.sh` scripts and their suites stay where § 10 has them.
 The card's command runs the pair as steps of `checks/gate.sh`, after the test gate and the
-sanitizer step (`checks/gate.sh:L71-L72` at `ka-reader@8235240`, the sanitizer at `:L70`; `:L58-L59`
-at `ka-reader@389adad` — RN-77), and this section's first
+sanitizer step (`checks/gate.sh:L79-L80` at `ka-reader@1b32500`, the sanitizer at `:L78`; `:L71-L72` at
+`ka-reader@8235240`, the sanitizer at `:L70` — RN-78; `:L58-L59` at `ka-reader@389adad` — RN-77), and this section's first
 paragraph says so *(through v61 "The card's command ends with the pair, after its Swift half
 (`kensaiapp-opensource@5be8615c`), and this section's first paragraph quotes it", true until `kensaiapp-opensource@1941f963`
 — RN-73)* *(through v54 this paragraph was headed "and the card does
@@ -1681,9 +1694,26 @@ QC-28) sit after *Toolchain* (`:L47`) and before *Build the workspace* (`:L59`),
 '^run_step' checks/gate.sh` prints 30 there, 29 steps and the `run_step()` definition at `:L29`.
 The whole gate exited 0 in the macOS guest at `ka-reader@38158f4`, the scan printing `commits
 scanned: 1279`, and `git diff --stat 38158f4 8235240` prints nothing (the PM's measurement,
-`docs/trail/architecture/cycle-59.md` § 3.1). The scan step is the one step that reaches the network
-on every run, and it refuses a shallow checkout; what each costs a change is QC-28's tail *(added at
-v66, in the owner's seat at `docs/trail/architecture/cycle-59.md` § 3.1 — RN-77)*. **The card runs the script
+`docs/trail/architecture/cycle-59.md` § 3.1). The scan step refuses a shallow checkout, and what
+that costs a change is QC-28's tail *(added at v66, in the owner's seat at
+`docs/trail/architecture/cycle-59.md` § 3.1 — RN-77; through v66 the sentence read "The scan step is
+the one step that reaches the network on every run, and it refuses a shallow checkout; what each
+costs a change is QC-28's tail", true at `ka-reader@8235240` and false from `ka-reader@1b32500` —
+RN-78)*. At `ka-reader@1b32500` the script is version 1.3.0 (`checks/gate.sh:L2`) with 30 steps:
+*Planted secret suite* (`:L67`, `checks/tests/test_secret_scan_planted.sh`, QC-28's negative
+control) sits directly after *Build the workspace* (`:L60`), and the comment above it (`:L61-L66`)
+says why it must come after that step; *Secret scan suite* is at `:L49` and *Secret scan* at
+`:L59`. `grep -c '^run_step' checks/gate.sh` prints 31 there, 30 steps and the `run_step()`
+definition at `:L30`. The whole gate exited 0 in the macOS guest on the tree of
+`ka-reader@38b4e3e`, and `git diff --stat 38b4e3e 1b32500` touches only `docs/build_cost.md` (the
+PM's measurement, `docs/trail/architecture/cycle-60.md` § 3.1). Two steps reach the network on
+every run: *Secret scan* fetches gitleaks 8.30.1's release archive once and *Planted secret suite*
+twice, each fetch checked against the SHA-256 pinned in `checks/secret-scan.sh`. The new step adds
+no failure path of its own: a machine that cannot fetch the archive is already red at *Secret
+scan*, before it runs, and because the suite runs the real `checks/secret-scan.sh`, the one pin
+there moves both steps. The shallow-checkout refusal stays *Secret scan*'s alone, because the suite
+scans a disposable repository it builds itself *(added at v67, in the owner's seat at
+`docs/trail/architecture/cycle-60.md` § 3.1 — RN-78)*. **The card runs the script
 from `kensaiapp-opensource@1941f963`.** The card's test command is `checks/gate.sh` (this section's
 first paragraph), and the pipeline's gate tool issues the card's test command at the developer's
 closing run and at code-integrity (*Why all of them at the change*, above). So every step of the
@@ -1824,8 +1854,11 @@ answer at `docs/trail/architecture/cycle-51.md` § 3.2 — RN-69)*.
   them, the launch of the built bundle and own-state included. So the order rules the workflow's
   comments state come with it. A step added to the script after the move sits where the script
   places it; where it must come before or after another, the comment above it says which and why
-  (`checks/gate.sh:L40-L42` at `ka-reader@8235240`). The secret scan and its suite, added so, run
-  after the toolchain print and before the workspace build (`:L48`, `:L58`) *(through v65 "… the
+  (`checks/gate.sh:L41-L43` at `ka-reader@1b32500`; `:L40-L42` at `ka-reader@8235240` — RN-78). The
+  secret scan and its suite, added so, run after the toolchain print and before the workspace build
+  (`:L49`, `:L59`; `:L48`, `:L58` at `ka-reader@8235240` — RN-78), and the planted-secret suite,
+  added so, runs after the workspace build, as the comment above it requires (`:L67`, the comment
+  `:L61-L66`) *(added at v67 — RN-78)* *(through v65 "… the
   test gate, and every `checks/*.sh` script, suite and step after them …", which put every script
   after the build and was false from `ka-reader@8235240`; that order was this document's wording for
   the moved steps and not the owner's — `docs/trail/architecture/cycle-49.md` § 3.1 names none —
@@ -2060,7 +2093,8 @@ left with `ka-reader-ui` at `ka-reader@0aca57e` (RN-22; RN-25).
   here.** Each `checks/<name>.sh` script with a suite `checks/tests/test_<name>.sh` beside it is
   proved by that suite to read what its entry says it reads, and the suite runs as its own fatal step
   of `checks/gate.sh`, the way the gate's `Bundle probe suite` step runs `checks/tests/test_bundle.sh`
-  (`checks/gate.sh:L77` at `ka-reader@8235240`; `:L55` at `ka-reader@8b93322` — RN-77); the workflow
+  (`checks/gate.sh:L85` at `ka-reader@1b32500`; `:L77` at `ka-reader@8235240` — RN-78; `:L55` at
+  `ka-reader@8b93322` — RN-77); the workflow
   runs the gate through its `Test gate` step (`.github/workflows/ci.yml:L28` at `ka-reader@8235240`;
   `:L26` with no commit named through v65, true until `fetch-depth: 0` landed — RN-77) *(through v57 the suite ran "as its own CI step on every
   build, the way `Bundle probe suite` runs `checks/tests/test_bundle.sh`
@@ -2068,23 +2102,30 @@ left with `ka-reader-ui` at `ka-reader@0aca57e` (RN-22; RN-25).
   nowhere is ADR-0012's rule broken one level down: a gate that cannot go red has not run. A script
   that lands with a suite lands the suite as a step of `checks/gate.sh` in the same change, and the
   workflow runs it through `Test gate` *(through v57 "lands the suite's CI step in the same change" —
-  RN-69)*. Twelve suites are in the tree (`git ls-tree --name-only 8235240 checks/tests/`:
+  RN-69)*. Thirteen suites are in the tree (`git ls-tree --name-only 1b32500 checks/tests/`:
   `test_bundle.sh`, `test_entry_points.sh`, `test_launch.sh`, `test_no_network.sh`,
   `test_own_state.sh`, `test_own_state_step.sh`, `test_read_only.sh`, `test_renderer.sh`,
-  `test_secret_scan.sh`, `test_structure.sh`, `test_view.sh`, `test_vm_refusal.sh`) and all twelve
-  are steps of the gate at `ka-reader@8235240`, each the whole command of one `run_step` call
-  (`checks/gate.sh` at `ka-reader@8235240`: `:L48` `test_secret_scan.sh`; `:L72`
-  `test_structure.sh`; `:L74` `test_entry_points.sh`; `:L77` `test_bundle.sh`; `:L79`
-  `test_view.sh`; `:L89` `test_renderer.sh`; `:L93` `test_read_only.sh`; `:L95`
-  `test_no_network.sh`; `:L96` `test_own_state.sh`; `:L99` `test_vm_refusal.sh`; `:L100`
-  `test_launch.sh`; `:L101` `test_own_state_step.sh`). `test_secret_scan.sh` pairs with
-  `checks/secret-scan.sh` *(re-measured at v66 from eleven, on the owner's seat's answer at
+  `test_secret_scan.sh`, `test_secret_scan_planted.sh`, `test_structure.sh`, `test_view.sh`,
+  `test_vm_refusal.sh`) and all thirteen are steps of the gate at `ka-reader@1b32500`, each the
+  whole command of one `run_step` call (`checks/gate.sh` at `ka-reader@1b32500`: `:L49`
+  `test_secret_scan.sh`; `:L67` `test_secret_scan_planted.sh`; `:L80` `test_structure.sh`; `:L82`
+  `test_entry_points.sh`; `:L85` `test_bundle.sh`; `:L87` `test_view.sh`; `:L97`
+  `test_renderer.sh`; `:L101` `test_read_only.sh`; `:L103` `test_no_network.sh`; `:L104`
+  `test_own_state.sh`; `:L107` `test_vm_refusal.sh`; `:L108` `test_launch.sh`; `:L109`
+  `test_own_state_step.sh`). `test_secret_scan.sh` pairs with `checks/secret-scan.sh`
+  *(re-measured at v67 from twelve, on the owner's seat's answer at
+  `docs/trail/architecture/cycle-60.md` § 3.1 — RN-78; through v66 it counted twelve, all steps of
+  the gate at `ka-reader@8235240` — `:L48`, `:L72`, `:L74`, `:L77`, `:L79`, `:L89`, `:L93`, `:L95`,
+  `:L96`, `:L99`, `:L100` and `:L101` — true at that pin)* *(re-measured at v66 from eleven, on the owner's seat's answer at
   `docs/trail/architecture/cycle-59.md` § 3.1 — RN-77; through v65 it counted eleven, all steps of
   the gate at `ka-reader@8b93322` — `:L50`, `:L52`, `:L55`, `:L57`, `:L67`, `:L71`, `:L73`, `:L74`,
-  `:L77`, `:L78` and `:L79` — true at that pin)*. One of the twelve has no script beside it:
-  `test_vm_refusal.sh` holds the refusal cases of the two guarded suites and checks the gate's step
-  list and the workflow's shape (QC-64, QC-65), so it is counted and a step though no
-  `checks/<name>.sh` pairs with it. `checks/tests/support/` is not a suite: it holds the sourced
+  `:L77`, `:L78` and `:L79` — true at that pin)*. Two of the thirteen have no `checks/<name>.sh` of
+  their own name. `test_vm_refusal.sh` holds the refusal cases of the two guarded suites and checks
+  the gate's step list and the workflow's shape (QC-64, QC-65). `test_secret_scan_planted.sh` is a
+  second suite over `checks/secret-scan.sh`, the scan's negative control (QC-28), and the script's
+  paired suite stays `test_secret_scan.sh`. Each is counted and a step though no script of its name
+  pairs with it *(through v66 "One of the twelve has no script beside it", naming
+  `test_vm_refusal.sh` alone — RN-78)*. `checks/tests/support/` is not a suite: it holds the sourced
   helper `vm_refusal.sh`, kept outside the `checks/tests/*.sh` glob on purpose (its header)
   *(re-pinned at v58 on `checks/gate.sh`, on the owner's seat's answer at
   `docs/trail/architecture/cycle-51.md` § 3.3 — RN-69; through v57 all eleven were on workflow steps
@@ -2094,7 +2135,8 @@ left with `ka-reader-ui` at `ka-reader@0aca57e` (RN-22; RN-25).
   `docs/trail/architecture/cycle-50.md` § 3.3 — RN-68; through v56 it counted eight, on steps at
   `ka-reader@b158052` — `:L31-L32`, `:L37-L38`, `:L47-L48`, `:L53-L54`, `:L64-L65`, `:L73-L74`,
   `:L79-L80` and `:L82-L83` — true at that pin)*; the workflow's `Test gate` step (`ci.yml:L28` at
-  `ka-reader@8235240`) runs `checks/gate.sh`, and through it all twelve *(through v65 `ci.yml:L26`
+  `ka-reader@8235240`, unmoved at `ka-reader@1b32500`) runs `checks/gate.sh`, and through it all
+  thirteen *(through v66 "all twelve" — RN-78)* *(through v65 `ci.yml:L26`
   and "all eleven" — RN-77)* *(through v57 "the test command (`ci.yml:L26`)
   runs none of them", true at `ka-reader@13e8d42` — RN-69)*. One suite ran at the
   change before the script did: `test_structure.sh`, with its script, on the card's command from
@@ -2469,7 +2511,7 @@ is stated once, in § 8 *(added at v56, on the owner's answer at `docs/trail/arc
 | QC-62 | the shell runs under the shipped entitlements | `checks/renderer.sh KA-Reader.app` (suite `test_renderer.sh`) and `checks/fixtures/idle-shell` | the tree | CI build; release gate |
 | QC-26 | allowlist; locked build; no Swift dependency | `checks/no-network.sh` (suite `test_no_network.sh`); `cargo build --locked` | the tree | CI build |
 | QC-27 | critical vulnerability | `cargo audit` (every advisory; `--ignore <RUSTSEC-id>` with its reason) | the tree | release |
-| QC-28 | no secret in the history HEAD reaches; no signing identity | `checks/secret-scan.sh gitleaks git` (suite `test_secret_scan.sh`); `gh secret list --repo eyalgo/ka-reader`; `codesign -dv KA-Reader.app` | the change; the release | `development-implementation`; release |
+| QC-28 | no secret in the history HEAD reaches; the scan goes red at a planted secret; no signing identity | `checks/secret-scan.sh gitleaks git` (suite `test_secret_scan.sh`) and its control `checks/tests/test_secret_scan_planted.sh`; `gh secret list --repo eyalgo/ka-reader`; `codesign -dv KA-Reader.app` | the change; the release | `development-implementation`; release |
 | QC-29 | artifact = tag build | `shasum -a 256 -c SHA256SUMS` against a rebuild | the release | release |
 | QC-30, QC-58 | no other entry point; no configuration — the product's own units | `checks/structure.sh` (suite `test_structure.sh`); `checks/view.sh` (suite `test_view.sh`) | the tree; the change | CI build; `development-implementation` (the structure pair) |
 | QC-30, QC-58 | the linked tree's environment and argument reads — Rust names, and C `getenv`, `environ` and `_NSGetEnviron` — against the reviewed list | `checks/entry-points.sh` (suite `test_entry_points.sh`) against `checks/entry-points.allow` | the tree | CI build |
@@ -6938,3 +6980,60 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   runs the script*; QC-28; QC-64; § 9's `checks/tests/` bullet; § 10's QC-28 row; source:
   `docs/trail/architecture/cycle-59.md` § 3.1; `docs/trail/architecture/self_answer-61.md`;
   `ka-reader@8235240`)*
+- **RN-78:** *(v67 — the close: the cycle-60 fold, § 3.1 confirmed with three moves)* **Intake.**
+  The companion on disk held one item, § 3.1, raised from downstream on 2026-10-23 by the PM
+  (`ka-reader@cb8f4db`) after `ka-reader@1b32500` landed the planted-secret suite. A
+  `companion-self-answer` run answered it in the owner's seat (`ka-reader@af42a16`; the reasoning at
+  `docs/trail/architecture/self_answer-62.md`). The file was clean in git at intake and its one slot
+  was filled, so it is consumed. It was copied whole to `docs/trail/architecture/cycle-60.md` before
+  this fold's first edit, and `cmp` found the two identical. **Whose answer this is.** The owner's
+  seat's, and it outranks every input. It re-measures §§ 8 and 9 at a new pin and names a gate step
+  as QC-28's negative control; the obligation binds as it did. **Move 1, § 8.** *Until the card runs
+  the script* gains the 1.3.0 reading — 30 steps, *Planted secret suite* at `:L67` after *Build the
+  workspace* at `:L60`, its order comment at `:L61-L66`, and the guest's exit 0 on `38b4e3e`'s tree.
+  Its sentence naming the scan as the one step that reaches the network, false at `1b32500`, is
+  re-said: two steps fetch on every run, and the new one adds no failure path, since it runs the
+  real `checks/secret-scan.sh` behind the same pin. The shallow-checkout refusal stays *Secret
+  scan*'s. The first paragraph says the planted suite runs between the workspace build and the
+  bridge's assembly. The first, assembly and structure-pair paragraphs re-pin their `gate.sh`
+  locators at `1b32500` (`:L60`, `:L70`, `:L71`; `:L60`, `:L70-L71`; `:L79-L80`, the sanitizer at
+  `:L78`), as QC-28 (`:L59`, `:L49`) and QC-64 (`:L41-L43`; `:L49`, `:L59`) do theirs, each keeping
+  its `8235240` reading, as RN-77 did. QC-64's order sentence names the planted suite. **Move 2, § 9.**
+  The suites bullet counts thirteen, adds `test_secret_scan_planted.sh` at `:L67`, re-pins every
+  suite locator and its *Bundle probe suite* example (`:L85`), and says two of the thirteen have no
+  script of their own name. **Move 3, QC-28 and § 10.** QC-28's *verified by* names
+  `checks/tests/test_secret_scan_planted.sh` as the scan's negative control, with its bound — one
+  planted string of GitHub-token shape — so it is not read as coverage; § 10's QC-28 row names it
+  beside `test_secret_scan.sh` as the control, in the form QC-62's row names
+  `checks/fixtures/idle-shell`. **Where this fold departs from the answer's words, and why.** (1) The
+  answer grounds the control in "ADR-0012 § Decision and ADR-0010, 'A negative control is part of
+  the gate, not an accessory to it'". ADR-0012 § Decision says those words (`:L59`); ADR-0010 says
+  "part of the probe" (`:L61`). QC-28 quotes ADR-0012 and cites ADR-0010 as the same rule for the
+  probe, so it does not put words in a record that does not hold them. (2) The answer re-pins no
+  `ci.yml` locator. § 9's bullet cites `ci.yml:L28` at `8235240`; `git diff --stat 8235240 1b32500 --
+  checks .github` touches only `checks/gate.sh` and the new suite, so the pin stays and the bullet
+  says it is unmoved at `1b32500`. QC-28's `checks/secret-scan.sh` and `ci.yml:L21-L23` pins stay
+  for the same reason. (3) The answer's QC-64 sentence places the planted suite "after the workspace
+  build, by the comment above it"; the comment says *directly* after only as the gate stands, and
+  binds "after … and never before it" (`:L61`), so QC-64 says "after", and § 8 says "directly after"
+  as a reading of `1b32500`. **No record.** A gate step that makes an existing obligation falsifiable
+  reverses no decision, and undoing it is one line of the script, so it fails the first gate. No ADR
+  is written, edited or restatused, the index does not move, and no `QC` is added, renumbered or
+  reused; `grep -rln 'gitleaks\|secret-scan' docs/adr/` prints nothing. **Read at source for this
+  run**, at `ka-reader@af42a16`, whose `checks/` and `.github/` equal `1b32500`'s (`git diff --quiet
+  1b32500 HEAD -- checks .github` exits 0): `checks/gate.sh` (version 1.3.0 at `:L2`; the steps at
+  the lines cited; `grep -c '^run_step'` prints 31), the header of
+  `checks/tests/test_secret_scan_planted.sh` (*WHY THIS EXISTS*, *THE PLANTED STRING*, *USAGE*),
+  `git ls-tree --name-only 1b32500 checks/tests/` (thirteen suites and `support`), ADR-0010 `:L61`
+  and ADR-0012 `:L59-L63`. The gate and the suite were not run here; the suite's 19 of 19 and the
+  guest's exit 0 are the PM's measurements. **What moved beneath this document.** Since v66
+  (`ka-reader@3967f66`) the one upstream commit is SDD v59 (`ka-reader@9b5ef78`), Settled, which
+  re-measures § 3's `read-only-harness` row at `1b32500` and leaves the NFDR's count to this
+  document. No commit touches the SRS, FDR, PRD, UXD, DESIGN, CONTENT or `docs/adr/`, and every
+  input reads `Status: Settled`, so `Inputs read:` stands. **Known limits.** This run did not read
+  the SRS, SDD or FDR in full: it read their status lines and the passages the answer names. **The
+  companion.** Nothing is left for the owner, so the companion is removed and `Status:` is Settled
+  *(re: header `Version:`; § 8 first, assembly and structure-pair paragraphs, *Until the card runs
+  the script*; QC-28; QC-64; § 9's `checks/tests/` bullet; § 10's QC-28 row; source:
+  `docs/trail/architecture/cycle-60.md` § 3.1; `docs/trail/architecture/self_answer-62.md`;
+  `ka-reader@1b32500`)*
