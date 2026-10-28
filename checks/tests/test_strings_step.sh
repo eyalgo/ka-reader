@@ -327,8 +327,13 @@ expect_real_gate_case_reports() {
 
 # --- the cases ---
 
+# The real gate is not a copy: when it does not pass, the fault is in it, so only the test's own
+# lines are printed, and none of the lines that send the reader to this suite.
 test_real_gate_runs_strings_check_before_its_suite() {
-  expect_passes "$GATE"
+  run_verdict "$GATE"
+  [ "$VERDICT_STATUS" -eq 0 ] && return 0
+  printf '%s\n' "$VERDICT_OUT" | indent
+  return 1
 }
 
 test_this_suite_is_executable_and_carries_a_version_line() {
