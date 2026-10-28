@@ -309,6 +309,22 @@ run_nested() {
   NESTED_STATUS=$?
 }
 
+# Runs the real-gate case of a copy of this suite in a tree named $2 whose gate is the file at $1,
+# and expects it to fail saying what is wrong with that gate, with the phrase at $3, and never to
+# send the reader to this suite for it.
+expect_real_gate_case_reports() {
+  make_tree "$2" "$1"
+  run_nested test_real_gate_runs_strings_check_before_its_suite
+  [ "$NESTED_STATUS" -ne 0 ] \
+    || fail "the real-gate case passed over a gate it must not pass: $NESTED_OUT" || return 1
+  printf '%s\n' "$NESTED_OUT" | grep -q -F "$3" \
+    || fail "the real-gate case did not say what is wrong with the gate: $NESTED_OUT" || return 1
+  if printf '%s\n' "$NESTED_OUT" | grep -q -F "The fix is in this suite"; then
+    fail "the real-gate case sent the reader to this suite for a fault in checks/gate.sh: $NESTED_OUT"
+    return 1
+  fi
+}
+
 # --- the cases ---
 
 test_real_gate_runs_strings_check_before_its_suite() {
@@ -326,10 +342,13 @@ test_deleted_strings_check_line_is_named_missing() {
   delete_lint_line || return 1
   deletion_took_effect "$COPY" || return 1
   expect_rejected "$COPY" || return 1
-  output_has "$MISSING_PHRASE" && return 0
-  echo "  $MSG_DELETE_NOT_MISSING"
-  printf '%s\n' "$VERDICT_OUT" | indent
-  return 1
+  if ! output_has "$MISSING_PHRASE"; then
+    echo "  $MSG_DELETE_NOT_MISSING"
+    printf '%s\n' "$VERDICT_OUT" | indent
+    return 1
+  fi
+  # The whole suite over a tree with the line deleted names the step missing from checks/gate.sh.
+  expect_real_gate_case_reports "$COPY" real-deleted "$MISSING_PHRASE"
 }
 
 test_strings_check_moved_after_its_suite_is_named_out_of_order() {
@@ -345,6 +364,13 @@ test_strings_check_moved_after_its_suite_is_named_out_of_order() {
   if output_has "is missing from checks/gate.sh"; then
     echo "  $MSG_MOVE_CALLED_MISSING"
     printf '%s\n' "$VERDICT_OUT" | indent
+    return 1
+  fi
+  # The whole suite over a tree with the line moved names the order, and never the step missing.
+  expect_real_gate_case_reports "$COPY" real-moved "$ORDER_PHRASE" || return 1
+  if printf '%s\n' "$NESTED_OUT" | grep -q -F "is missing from checks/gate.sh"; then
+    echo "  $MSG_MOVE_CALLED_MISSING"
+    printf '%s\n' "$NESTED_OUT" | indent
     return 1
   fi
 }
