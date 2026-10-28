@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.5.0 — the message catalogue lint itself (NFDR QC-53) joins the list, before its suite
 # Version: 1.4.0 — the suite of the message catalogue lint (NFDR QC-53) joins the list
 # Version: 1.3.0 — the planted-secret suite, the scan's negative control, joins the list
 # Version: 1.2.0 — the scan of the whole history for a secret, and its suite, join the list
@@ -102,6 +103,11 @@ run_step 'Read-only, submodule' 'checks/read-only.sh checks/fixtures/submodule'
 run_step 'Read-only suite' 'checks/tests/test_read_only.sh'
 run_step 'No-network dependency list' 'checks/no-network.sh'
 run_step 'No-network suite' 'checks/tests/test_no_network.sh'
+# "Strings check" runs the lint itself, and it comes before "Strings check suite". The suite's
+# cases run the real lint over a copy of this tree's own catalogue, so a banned word in a string
+# literal turns the suite red too. Placed after the suite, this step would never be the one that
+# names the hit.
+run_step 'Strings check' 'checks/strings.sh'
 run_step 'Strings check suite' 'checks/tests/test_strings.sh'
 run_step 'Own state suite' 'checks/tests/test_own_state.sh'
 # "VM refusal suite", "Launch step suite" and "Own state step suite" launch nothing, so they run
