@@ -2,7 +2,7 @@
 
 **Status:** Settled
 **Owner:** Principal Architect
-**Version:** 69 — the close, the cycle-62 fold, § 3.1 confirmed in the owner's seat with two additions. The gate's *Strings check* step runs QC-53's lint `checks/strings.sh` itself, directly before *Strings check suite*: QC-53's *verified by* names the step and says the lint reaches the gate by two paths — the step, which names a hit, and the suite's `test_unchanged_catalogue_copy_passes`, the path that still holds if the step is removed — and § 10's QC-53 row names both. § 8 gains the gate's 1.5.0 reading, 32 steps, counts the new step among those that fetch nothing, and re-pins every `gate.sh` locator it holds at `ka-reader@f25fdbb`, as QC-28 and QC-64 do theirs; § 9 re-pins every suite locator and says the step runs the lint. Each old reading stands in a dated note. No ADR is written, and no `QC` is added, renumbered or reused. Nothing is left for the owner, so the companion is removed and `Status:` is Settled — RN-80 (v68: the close, the cycle-61 fold — QC-53 names the strings-lint suite, §§ 8 and 9 re-measured at `ka-reader@cd65c02`; `Status:` was Settled — RN-79)
+**Version:** 70 — the close, the cycle-63 fold, § 3.1 answered in the owner's seat. QC-53's error-path half names its verifier: the three Swift Testing cases in `ka-reader-mac/Tests/SurfacesTests/StoppedCatalogueTests.swift` at `ka-reader@bfa465a`, run by `swift test --package-path ka-reader-mac` in the gate's *Test gate* step, placed at layer 4 as § 9's table defines it, where through v69 it read "layer-5 error-path tests" and named none; a surface that gains a `stopped` state later is stated as uncovered, gated at `development-design`. § 10's QC-53 row names the runner and adds *the change* and `development-implementation`, as QC-51's row does. The old reading stands in a dated note. No ADR is written, and no `QC` is added, renumbered or reused. Nothing is left for the owner, so the companion is removed and `Status:` is Settled — RN-81 (v69: the close, the cycle-62 fold — QC-53 names the gate's *Strings check* step and the lint's two paths into the gate, §§ 8 and 9 re-measured at `ka-reader@f25fdbb`; `Status:` was Settled — RN-80)
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · PRD Settled · UXD Settled · DESIGN Settled · CONTENT Settled
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
@@ -1548,7 +1548,10 @@ binds the *process*, and asserts no number of its own.
   banned list, non-zero on a hit (the tree), run by the gate's *Strings check* step
   (`checks/gate.sh:L110` at `ka-reader@f25fdbb`; § 8), with its suite `checks/tests/test_strings.sh`,
   the gate's *Strings check suite* step directly after it (`:L111`; `:L105` at `ka-reader@cd65c02` —
-  RN-80); layer-5 error-path tests that a `stopped` item's surface text is a catalogue sentence.
+  RN-80); and `swift test --package-path ka-reader-mac` (layer 4) for the error-path half, in the
+  three cases named below *(through v69 "layer-5 error-path tests that a `stopped` item's surface
+  text is a catalogue sentence", which named no test and gave it the layer § 9 assigns to the built
+  bundle — RN-81)*.
   The lint reaches the gate by two paths. The first is *Strings check*: a banned term in the
   catalogue ends the gate at that step, named by the dispatcher, so *Strings check suite* runs only
   over a clean catalogue. The second is the suite's case `test_unchanged_catalogue_copy_passes`
@@ -1558,13 +1561,26 @@ binds the *process*, and asserts no number of its own.
   *Strings check* is removed. With both removed, the tree half is checked nowhere *(through v68 "No
   step of the gate runs `checks/strings.sh` itself … so the lint reaches the CI build gate through
   its suite alone … That one case is the lint's only path into the gate", true at
-  `ka-reader@cd65c02` — RN-80)* *(traces to: SDD § 4 C-E4, C-I2; FDR
+  `ka-reader@cd65c02` — RN-80)*. The error-path half is held by three Swift Testing cases in
+  `ka-reader-mac/Tests/SurfacesTests/StoppedCatalogueTests.swift` at `ka-reader@bfa465a`:
+  `stoppedReadingPanelUsesCatalogueSentence` (`:L52`), `stoppedStartupUsesCatalogueSentence`
+  (`:L74`) and `stoppedGitViewUsesCatalogueSentence` (`:L88`). Each draws the real reading panel,
+  start-up view or Git view in its `stopped` state and fails unless the text it shows is that
+  state's catalogue sentence and, where the surface has one, the path exactly once — nothing else
+  (the start-up case reads past its route button, by type, never by wording).
+  They run in the gate's *Test gate* step (`checks/gate.sh:L73` at `ka-reader@bfa465a`). They are
+  layer 4 by § 9's table — a view drawn from a projection, in process — and not layer 5, which § 9
+  gives to the built bundle run from `checks/` and whose rendered UI is the manual walk, not
+  automated. The three are the surfaces that have a `stopped` state at `bfa465a`. A surface that
+  gains one later is covered by no existing case, and until a case is added its gate is
+  `development-design` reading this entry *(traces to: SDD § 4 C-E4, C-I2; FDR
   R-89; CONTENT § Terminology "Banned", § Localization; `quality_defaults.md` § Failure visibility;
   the lint is this document's realization — RN-3; the suite and the lint's path into the gate, on
   the owner's seat's answer at `docs/trail/architecture/cycle-61.md` § 3.1, as SDD § 3's
   `read-only-harness` row states it at v60 — RN-79; the lint's own step and the two paths, on the
   owner's seat's answer at `docs/trail/architecture/cycle-62.md` § 3.1, as that row states it at
-  v61 — RN-80)*
+  v61 — RN-80; the error-path verifier named and placed at layer 4, on the owner's seat's answer at
+  `docs/trail/architecture/cycle-63.md` § 3.1 — RN-81)*
 - **QC-54:** **Non-repudiation and accountability — not applicable, with the reason.** The
   product performs no action on the user's data and knows no user; there is no action to
   attribute and no one to attribute it to. This stops being true the day a write path or an
@@ -2605,7 +2621,7 @@ is stated once, in § 8 *(added at v56, on the owner's answer at `docs/trail/arc
 | QC-47, QC-48 | per-item degradation; churn; the marker and the row order in the model | `cargo test --locked -p ka-reader-core --test watch` with `checks/churn.sh`; `swift test --package-path ka-reader-mac` (layer 4); QC-48's `grep` over `ka-reader-mac/Sources` prints nothing, from `follow-the-folder` | the change | `development-implementation` |
 | QC-49 | promises through kill | `checks/read-only.sh --kill` (suite `test_read_only.sh`) | the tree | CI build; release |
 | QC-51 | failure visible in window | `swift test --package-path ka-reader-mac` (layer 4); `checks/view.sh` (suite `test_view.sh`) | the change; the tree | `development-implementation`; CI build |
-| QC-53 | no internal text | `checks/strings.sh`, the gate's *Strings check* step (suite `test_strings.sh`, the lint's second path into the gate); layer-5 error-path tests | the tree | CI build |
+| QC-53 | no internal text | `checks/strings.sh`, the gate's *Strings check* step (suite `test_strings.sh`, the lint's second path into the gate); `swift test --package-path ka-reader-mac` (layer 4) — the three `stopped…UsesCatalogueSentence` cases | the tree; the change | CI build; `development-implementation` |
 | QC-55 | one bundle, one process | `checks/bundle.sh` (suite `test_bundle.sh`) | the tree | CI build |
 | QC-56 | macOS floor in the bundle; CI on the floor's image label | `/usr/libexec/PlistBuddy -c 'Print :LSMinimumSystemVersion' …`; `grep -h -E '^[[:space:]]*runs-on:' .github/workflows/*.yml \| grep -v …`; `checks/tests/test_vm_refusal.sh` — `test_every_runner_names_macos_26` (RN-69, RN-70); neither reads a workflow file ending `.yaml` | the release; the tree; the change | release; `development-implementation` (the suite); `development-design` (a workflow file ending `.yaml`) reading the entry, which alone gates a workflow file ending `.yaml` |
 | QC-59 | priced contract against its major's pin | `checks/contract.sh <tag>` | the release | release, from `v1.0.0` |
@@ -7238,3 +7254,54 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   structure-pair paragraphs, *Until the card runs the script*; QC-28; QC-53; QC-64; § 9's
   `checks/tests/` bullet; § 10's QC-53 row; source: `docs/trail/architecture/cycle-62.md` § 3.1;
   `docs/trail/architecture/self_answer-64.md`; `ka-reader@f25fdbb`)*
+- **RN-81:** *(v70 — the close: the cycle-63 fold, § 3.1 answered)* **Intake.** The companion on
+  disk held one item, § 3.1, raised from downstream on 2026-10-28 by the PM (`ka-reader@dd2c217`)
+  after `ka-reader@bfa465a` landed three in-process Swift Testing cases that hold QC-53's error-path
+  half. QC-53 called that verifier "layer-5 error-path tests" and named none, and § 9 puts the
+  runner those cases use at layer 4. A `companion-self-answer` run answered it in the owner's seat
+  (`ka-reader@c940a2e`; the reasoning at `docs/trail/architecture/self_answer-65.md`). The file was
+  clean in git at intake and its one slot was filled, so it is consumed. It was copied whole to
+  `docs/trail/architecture/cycle-63.md` before this fold's first edit, and `cmp` found the two
+  identical. **Whose answer this is.** The owner's seat's, and it outranks every input. It is a
+  correction, not a new obligation: QC-53 already promised error-path tests, and the answer names
+  them and gives them the layer § 9 already defines. **Move 1, QC-53.** The *verified by* names
+  `swift test --package-path ka-reader-mac` (layer 4) for the error-path half, and a paragraph after
+  the lint's two paths names the three cases, their file and lines at `bfa465a`, what each fails on,
+  and the gate step that runs them (`checks/gate.sh:L73`). It says why they are layer 4 and not
+  layer 5: § 9's table defines layer 4 as a view drawn from a projection in process, and its
+  layer-5 bullet gives layer 5 to the built bundle with the rendered UI walked by hand, so an
+  automated layer-5 error-path test cannot exist under this record. The v69 wording stands in a
+  dated note. **Move 2, the limit.** The three cases cover the three surfaces that have a `stopped`
+  state at `bfa465a`: the reading panel, the start-up view and the Git view. A surface that gains
+  one later is covered by no case, and QC-53 says so, with `development-design` reading the entry as
+  that surface's gate until one is added — the header's rule for a property no command holds yet.
+  **Move 3, § 10.** QC-53's row names the runner at layer 4 and the three
+  `stopped…UsesCatalogueSentence` cases in place of "layer-5 error-path tests". *Runs over* adds
+  *the change* and *Gated at* adds `development-implementation`, beside *the tree* and CI build, as
+  QC-51's row does for the same runner. Through v69 the row read "`checks/strings.sh`, the gate's
+  *Strings check* step (suite `test_strings.sh`, the lint's second path into the gate); layer-5
+  error-path tests | the tree | CI build"; § 10's rows carry no in-table notes, so the old row is
+  kept here. **Where this fold departs from the answer's words, and why.** (1) The answer calls the
+  § 10 column *Checked against*; the table's header reads *Runs over*, and this fold uses the
+  header's word. (2) The two additions to the row are placed after *the tree* and CI build, in the
+  order the row's commands run (lint first, runner second), as QC-7's row orders its two. Neither
+  changes what the answer decided. (3) § 9 is not edited: its table already puts the runner at
+  layer 4, and every tail that names it reads under § 9's preamble on the bridge's assembly (RN-60)
+  and the locked session (RN-63), so QC-53's new tail needs no sentence there. **No record.** Naming
+  the tests that verify an existing obligation reverses no decision, and undoing it is one line, so
+  it fails the first gate. No ADR is written, edited or restatused, the index does not move, and no
+  `QC` is added, renumbered or reused; `grep -rln 'error-path\|QC-53' docs/adr/` prints nothing.
+  **Read at source for this run**, at `ka-reader@c940a2e`:
+  `ka-reader-mac/Tests/SurfacesTests/StoppedCatalogueTests.swift` whole (the three `@Test` functions
+  at `:L52`, `:L74`, `:L88`), `checks/gate.sh:L70-L76` (*Test gate* at `:L73`), and
+  `git diff --stat bfa465a HEAD -- ka-reader-mac checks`, which prints nothing, so every locator
+  pinned at `bfa465a` holds at HEAD. `git diff --stat f25fdbb bfa465a -- checks/gate.sh` also prints
+  nothing, so QC-53's existing `f25fdbb` pins stay. The tests were not run here; the three passing
+  and the mutation that failed the reading-panel case are the PM's measurements. **What moved
+  beneath this document.** Since v69 (`ka-reader@de97955`) no commit touches the SRS, SDD, FDR, PRD,
+  UXD, DESIGN, CONTENT or `docs/adr/`, and every input reads `Status: Settled`, so `Inputs read:`
+  stands. **Known limits.** This run did not read the SRS, SDD or FDR in full: it read their status
+  lines, their history since v69, and the NFDR passages the answer names. **The companion.**
+  Nothing is left for the owner, so the companion is removed and `Status:` is Settled *(re: header
+  `Version:`; QC-53; § 10's QC-53 row; source: `docs/trail/architecture/cycle-63.md` § 3.1;
+  `docs/trail/architecture/self_answer-65.md`; `ka-reader@bfa465a`)*
