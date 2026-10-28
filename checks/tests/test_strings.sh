@@ -488,8 +488,8 @@ EOF
   expect_hit "$SURFACES/Planted/Alone.swift" error
 }
 
-# CP-918: a letter, digit or underscore beside an end of the term, a non-ASCII letter included, is
-# not a whole word; a non-ASCII punctuation mark is not a letter.
+# CP-918: a letter, digit or underscore beside an end of the term, a non-ASCII letter or digit
+# included, is not a whole word; a non-ASCII punctuation mark is not a letter.
 test_term_inside_a_longer_word_is_not_a_hit() {
   new_copy longer
   append_file "$COPY/$PLANT_FILE" <<'EOF'
@@ -500,6 +500,7 @@ let d = "error_ and _error"
 let e = "xerror and errorx"
 EOF
   printf 'let f = "\303\251error and error\303\251"\n' >> "$COPY/$PLANT_FILE"
+  printf 'let g = "\331\243error and error\331\243"\n' >> "$COPY/$PLANT_FILE"
   run_lint "$COPY"
   expect_clean || return 1
 
@@ -703,7 +704,8 @@ EOF
   expect_hit "$PLANT_FILE" failed
 }
 
-# CP-915: a backslash does not end the literal it is in, and an escape is not decoded into a term.
+# CP-915: a backslash does not end the literal it is in, an escaped backslash leaves the quote after
+# it to close the literal, and an escape is not decoded into a term.
 test_escapes_are_checked_as_spelled() {
   new_copy escaped-quotes
   append_file "$COPY/$PLANT_FILE" <<'EOF'
@@ -716,6 +718,7 @@ EOF
   append_file "$COPY/$PLANT_FILE" <<'EOF'
 let a = "ends with a backslash\\" // "error"
 let b = "err\u{6f}r and \u{65}rror"
+let c = "ends with a backslash\\" + fatal + "ok"
 EOF
   run_lint "$COPY"
   expect_clean || return 1
@@ -758,7 +761,8 @@ EOF
   fi
 }
 
-# CP-915: text that looks like a string and is not one.
+# CP-915: text that looks like a string and is not one. A slash used as a division sign opens no
+# regex, so a literal later on its line is still read.
 test_backticked_identifier_and_regex_literal_are_not_checked() {
   new_copy outside-strings
   append_file "$COPY/$PLANT_FILE" <<'EOF'
@@ -777,7 +781,14 @@ let r2 = /"failed"/
 let planted = "a fatal sentence"
 EOF
   run_lint "$COPY"
-  expect_exactly_pairs "$PLANT_FILE fatal"
+  expect_exactly_pairs "$PLANT_FILE fatal" || return 1
+
+  new_copy outside-strings-division
+  append_file "$COPY/$PLANT_FILE" <<'EOF'
+let half = width/2; let planted = "it failed/odd"
+EOF
+  run_lint "$COPY"
+  expect_hit "$PLANT_FILE" failed
 }
 
 # CP-916: an interpolation is skipped whole, with what it holds.
