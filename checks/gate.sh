@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.6.0 — the suite that holds the "Strings check" step joins the list, after "Strings check suite"
 # Version: 1.5.0 — the message catalogue lint itself (NFDR QC-53) joins the list, before its suite
 # Version: 1.4.0 — the suite of the message catalogue lint (NFDR QC-53) joins the list
 # Version: 1.3.0 — the planted-secret suite, the scan's negative control, joins the list
@@ -109,6 +110,7 @@ run_step 'No-network suite' 'checks/tests/test_no_network.sh'
 # names the hit.
 run_step 'Strings check' 'checks/strings.sh'
 run_step 'Strings check suite' 'checks/tests/test_strings.sh'
+run_step 'Strings check step suite' 'checks/tests/test_strings_step.sh'
 run_step 'Own state suite' 'checks/tests/test_own_state.sh'
 # "VM refusal suite", "Launch step suite" and "Own state step suite" launch nothing, so they run
 # before the real launch below.

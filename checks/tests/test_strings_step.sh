@@ -110,6 +110,47 @@ indent() {
 # The test of the gate. Reads the file at $1 as text, prints the reason for each condition that does
 # not hold, and returns 0 only when the file passes.
 gate_verdict() {
+  local file="$1"
+  local line
+  local number=0
+  local lint_count=0
+  local lint_numbers=""
+  local lint_line=0
+  local suite_line=0
+  while IFS= read -r line || [ -n "$line" ]; do
+    number=$((number + 1))
+    # The suite's step is recognised by its name alone, and the first one counts.
+    if [ "$suite_line" -eq 0 ]; then
+      case "$line" in
+        "$SUITE_PREFIX"*"'") suite_line=$number ;;
+      esac
+    fi
+    if [ "$line" = "$LINT_LINE" ]; then
+      lint_count=$((lint_count + 1))
+      if [ "$lint_count" -eq 1 ]; then
+        lint_line=$number
+        lint_numbers="$number"
+      else
+        lint_numbers="$lint_numbers, $number"
+      fi
+    fi
+  done < "$file"
+  if [ "$lint_count" -eq 0 ]; then
+    echo "$MSG_MISSING"
+    return 1
+  fi
+  if [ "$lint_count" -gt 1 ]; then
+    echo "checks/gate.sh holds the line $LINT_LINE more than once, at lines $lint_numbers, and the \"Strings check\" step must be in it exactly once. Keep one of them, before the \"Strings check suite\" step, and delete the rest."
+    return 1
+  fi
+  if [ "$suite_line" -eq 0 ]; then
+    echo "$MSG_NO_SUITE"
+    return 1
+  fi
+  if [ "$lint_line" -gt "$suite_line" ]; then
+    echo "In checks/gate.sh, \"Strings check\" is at line $lint_line and \"Strings check suite\" is at line $suite_line, but \"Strings check\" must come before \"Strings check suite\". Move the \"Strings check\" line above line $suite_line."
+    return 1
+  fi
   return 0
 }
 
