@@ -269,6 +269,11 @@ deletion_took_effect() {
 
 move_took_effect() {
   local line previous_is_suite=0 first_suite_seen=0
+  # A move that left the copy as the gate was changed no position, so the case tested nothing.
+  if cmp -s "$GATE" "$1"; then
+    fail "the move left this case's copy identical to checks/gate.sh, so the case tested nothing: checks/gate.sh already has the \"Strings check\" line directly after \"Strings check suite\"."
+    return 1
+  fi
   while IFS= read -r line || [ -n "$line" ]; do
     if [ "$previous_is_suite" -eq 1 ] && [ "$line" = "$LINT_LINE" ]; then
       return 0
