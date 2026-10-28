@@ -397,6 +397,7 @@ test_nested_block_comment_passes() {
   new_copy nested-comment
   append_file "$COPY/$PLANT_FILE" <<'EOF'
 /* the user /* nested */ sees this */
+/* outer /* inner */ "error" still in the outer comment */
 EOF
   run_lint "$COPY"
   expect_clean
@@ -424,6 +425,7 @@ test_interpolation_code_is_not_checked() {
   new_copy interpolation
   append_file "$COPY/$PLANT_FILE" <<'EOF'
 let planted = "\(failedName) can't be shown as text."
+let second = "\(failed) was not read."
 EOF
   run_lint "$COPY"
   expect_clean
@@ -716,7 +718,14 @@ let a = "ends with a backslash\\" // "error"
 let b = "err\u{6f}r and \u{65}rror"
 EOF
   run_lint "$COPY"
-  expect_clean
+  expect_clean || return 1
+
+  new_copy escape-is-a-boundary
+  append_file "$COPY/$PLANT_FILE" <<'EOF'
+let planted = "first line\nerror second"
+EOF
+  run_lint "$COPY"
+  expect_hit "$PLANT_FILE" error
 }
 
 # CP-915: every comment form, a quoted word inside it included.
