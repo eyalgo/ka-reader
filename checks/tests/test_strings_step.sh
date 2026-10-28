@@ -25,11 +25,12 @@
 #   Runs on any host: it launches nothing, reads nothing under the machine's home, reaches no
 #   network and runs no git command, so it carries no virtual-machine refusal.
 #
-# WHY NO `set -e`
-#   A case that fails must not end the run before the remaining cases report. Each case returns its
+# WHY A FAILING CASE DOES NOT END THE RUN
+#   A case that fails must not end the run before the remaining cases report. The runner calls each
+#   case as the condition of an `if`, where bash does not apply `set -e`, so each case returns its
 #   own status and the runner counts them.
 
-set -uo pipefail
+set -euo pipefail
 
 SUITE="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
@@ -40,14 +41,14 @@ SUITE_LINE="run_step 'Strings check suite' 'checks/tests/test_strings.sh'"
 SUITE_PREFIX="run_step 'Strings check suite' '"
 TAB=$'\t'
 
-WORK=""
-COPY=""
-TREE=""
-SCRATCH=""
-VERDICT_OUT=""
-VERDICT_STATUS=0
-NESTED_OUT=""
-NESTED_STATUS=0
+work=""
+copy=""
+tree=""
+scratch=""
+verdict_out=""
+verdict_status=0
+nested_out=""
+nested_status=0
 
 MISSING_PHRASE='"Strings check" step is missing from checks/gate.sh'
 ORDER_PHRASE='"Strings check" must come before "Strings check suite"'
@@ -156,25 +157,25 @@ gate_verdict() {
 
 # Runs the test of the gate over $1 and keeps its output and status.
 run_verdict() {
-  VERDICT_OUT="$(gate_verdict "$1")"
-  VERDICT_STATUS=$?
+  verdict_out="$(gate_verdict "$1")"
+  verdict_status=$?
 }
 
 output_has() {
-  printf '%s\n' "$VERDICT_OUT" | grep -q -F "$1"
+  printf '%s\n' "$verdict_out" | grep -q -F "$1"
 }
 
 expect_passes() {
   run_verdict "$1"
-  [ "$VERDICT_STATUS" -eq 0 ] && return 0
+  [ "$verdict_status" -eq 0 ] && return 0
   echo "  $MSG_MUST_PASS"
-  printf '%s\n' "$VERDICT_OUT" | indent
+  printf '%s\n' "$verdict_out" | indent
   return 1
 }
 
 expect_rejected() {
   run_verdict "$1"
-  [ "$VERDICT_STATUS" -ne 0 ] && return 0
+  [ "$verdict_status" -ne 0 ] && return 0
   fail "$MSG_MUST_NOT_PASS"
 }
 
@@ -184,7 +185,7 @@ expect_rejected_as_missing() {
   expect_rejected "$1" || return 1
   output_has "$MISSING_PHRASE" && return 0
   echo "  the test of the gate rejected this case's copy without saying the step is missing:"
-  printf '%s\n' "$VERDICT_OUT" | indent
+  printf '%s\n' "$verdict_out" | indent
   return 1
 }
 
@@ -193,7 +194,7 @@ expect_rejected_as_no_suite() {
   expect_rejected "$1" || return 1
   output_has "$MSG_NO_SUITE" && return 0
   echo "  the test of the gate rejected a gate with no suite step without saying so:"
-  printf '%s\n' "$VERDICT_OUT" | indent
+  printf '%s\n' "$verdict_out" | indent
   return 1
 }
 
@@ -202,7 +203,7 @@ expect_rejected_as_out_of_order() {
   expect_rejected "$1" || return 1
   output_has "$ORDER_PHRASE" && return 0
   echo "  the test of the gate rejected the suite step coming first without naming the order:"
-  printf '%s\n' "$VERDICT_OUT" | indent
+  printf '%s\n' "$verdict_out" | indent
   return 1
 }
 
@@ -216,7 +217,7 @@ expect_rejected_as_repeated() {
   expect_rejected "$file" || return 1
   output_has "more than once, at lines $numbers, and" && return 0
   echo "  the test of the gate rejected repeated exact lines without naming lines $numbers:"
-  printf '%s\n' "$VERDICT_OUT" | indent
+  printf '%s\n' "$verdict_out" | indent
   return 1
 }
 
@@ -232,28 +233,28 @@ write_gate() {
 }
 
 new_copy() {
-  COPY="$WORK/$1.gate.sh"
-  cp "$GATE" "$COPY"
+  copy="$work/$1.gate.sh"
+  cp "$GATE" "$copy"
 }
 
 # Edits of a copy, each done by comparing text.
 delete_lint_line() {
   grep -q -x -F "$LINT_LINE" "$GATE" || fail "$MSG_NO_LINE_TO_EDIT" || return 1
-  grep -v -x -F "$LINT_LINE" "$GATE" > "$COPY"
+  grep -v -x -F "$LINT_LINE" "$GATE" > "$copy"
   return 0
 }
 
 move_lint_line_after_suite() {
   local line moved=0
   grep -q -x -F "$LINT_LINE" "$GATE" || fail "$MSG_NO_LINE_TO_EDIT" || return 1
-  : > "$COPY"
+  : > "$copy"
   while IFS= read -r line || [ -n "$line" ]; do
     [ "$line" = "$LINT_LINE" ] && continue
-    printf '%s\n' "$line" >> "$COPY"
+    printf '%s\n' "$line" >> "$copy"
     if [ "$moved" -eq 0 ]; then
       case "$line" in
         "$SUITE_PREFIX"*"'")
-          printf '%s\n' "$LINT_LINE" >> "$COPY"
+          printf '%s\n' "$LINT_LINE" >> "$copy"
           moved=1
           ;;
       esac
@@ -291,22 +292,22 @@ move_took_effect() {
   fail "$MSG_MOVE_NOT_PLACED"
 }
 
-# Builds a tree holding a copy of this suite and the gate file at $2, under $WORK, with a scratch
+# Builds a tree holding a copy of this suite and the gate file at $2, under $work, with a scratch
 # directory of its own for the copy's temporary directory.
 make_tree() {
-  TREE="$WORK/tree-$1"
-  SCRATCH="$WORK/scratch-$1"
-  mkdir -p "$TREE/checks/tests" "$SCRATCH"
-  cp "$SUITE" "$TREE/checks/tests/test_strings_step.sh"
+  tree="$work/tree-$1"
+  scratch="$work/scratch-$1"
+  mkdir -p "$tree/checks/tests" "$scratch"
+  cp "$SUITE" "$tree/checks/tests/test_strings_step.sh"
   if [ -n "$2" ]; then
-    cp "$2" "$TREE/checks/gate.sh"
+    cp "$2" "$tree/checks/gate.sh"
   fi
 }
 
-# Runs the copy of this suite in $TREE with one case, its temporary directory under $SCRATCH.
+# Runs the copy of this suite in $tree with one case, its temporary directory under $scratch.
 run_nested() {
-  NESTED_OUT="$(TMPDIR="$SCRATCH" KA_READER_TEST_ONLY="$1" "$TREE/checks/tests/test_strings_step.sh" 2>&1)"
-  NESTED_STATUS=$?
+  nested_out="$(TMPDIR="$scratch" KA_READER_TEST_ONLY="$1" "$tree/checks/tests/test_strings_step.sh" 2>&1)"
+  nested_status=$?
 }
 
 # Runs the real-gate case of a copy of this suite in a tree named $2 whose gate is the file at $1,
@@ -315,12 +316,12 @@ run_nested() {
 expect_real_gate_case_reports() {
   make_tree "$2" "$1"
   run_nested test_real_gate_runs_strings_check_before_its_suite
-  [ "$NESTED_STATUS" -ne 0 ] \
-    || fail "the real-gate case passed over a gate it must not pass: $NESTED_OUT" || return 1
-  printf '%s\n' "$NESTED_OUT" | grep -q -F "$3" \
-    || fail "the real-gate case did not say what is wrong with the gate: $NESTED_OUT" || return 1
-  if printf '%s\n' "$NESTED_OUT" | grep -q -F "The fix is in this suite"; then
-    fail "the real-gate case sent the reader to this suite for a fault in checks/gate.sh: $NESTED_OUT"
+  [ "$nested_status" -ne 0 ] \
+    || fail "the real-gate case passed over a gate it must not pass: $nested_out" || return 1
+  printf '%s\n' "$nested_out" | grep -q -F "$3" \
+    || fail "the real-gate case did not say what is wrong with the gate: $nested_out" || return 1
+  if printf '%s\n' "$nested_out" | grep -q -F "The fix is in this suite"; then
+    fail "the real-gate case sent the reader to this suite for a fault in checks/gate.sh: $nested_out"
     return 1
   fi
 }
@@ -331,8 +332,8 @@ expect_real_gate_case_reports() {
 # lines are printed, and none of the lines that send the reader to this suite.
 test_real_gate_runs_strings_check_before_its_suite() {
   run_verdict "$GATE"
-  [ "$VERDICT_STATUS" -eq 0 ] && return 0
-  printf '%s\n' "$VERDICT_OUT" | indent
+  [ "$verdict_status" -eq 0 ] && return 0
+  printf '%s\n' "$verdict_out" | indent
   return 1
 }
 
@@ -345,165 +346,165 @@ test_this_suite_is_executable_and_carries_a_version_line() {
 test_deleted_strings_check_line_is_named_missing() {
   new_copy deleted || return 1
   delete_lint_line || return 1
-  deletion_took_effect "$COPY" || return 1
-  expect_rejected "$COPY" || return 1
+  deletion_took_effect "$copy" || return 1
+  expect_rejected "$copy" || return 1
   if ! output_has "$MISSING_PHRASE"; then
     echo "  $MSG_DELETE_NOT_MISSING"
-    printf '%s\n' "$VERDICT_OUT" | indent
+    printf '%s\n' "$verdict_out" | indent
     return 1
   fi
   # The whole suite over a tree with the line deleted names the step missing from checks/gate.sh.
-  expect_real_gate_case_reports "$COPY" real-deleted "$MISSING_PHRASE"
+  expect_real_gate_case_reports "$copy" real-deleted "$MISSING_PHRASE"
 }
 
 test_strings_check_moved_after_its_suite_is_named_out_of_order() {
   new_copy moved || return 1
   move_lint_line_after_suite || return 1
-  move_took_effect "$COPY" || return 1
-  expect_rejected "$COPY" || return 1
+  move_took_effect "$copy" || return 1
+  expect_rejected "$copy" || return 1
   if ! output_has "$ORDER_PHRASE"; then
     echo "  $MSG_MOVE_NOT_ORDER"
-    printf '%s\n' "$VERDICT_OUT" | indent
+    printf '%s\n' "$verdict_out" | indent
     return 1
   fi
   if output_has "is missing from checks/gate.sh"; then
     echo "  $MSG_MOVE_CALLED_MISSING"
-    printf '%s\n' "$VERDICT_OUT" | indent
+    printf '%s\n' "$verdict_out" | indent
     return 1
   fi
   # The whole suite over a tree with the line moved names the order, and never the step missing.
-  expect_real_gate_case_reports "$COPY" real-moved "$ORDER_PHRASE" || return 1
-  if printf '%s\n' "$NESTED_OUT" | grep -q -F "is missing from checks/gate.sh"; then
+  expect_real_gate_case_reports "$copy" real-moved "$ORDER_PHRASE" || return 1
+  if printf '%s\n' "$nested_out" | grep -q -F "is missing from checks/gate.sh"; then
     echo "  $MSG_MOVE_CALLED_MISSING"
-    printf '%s\n' "$NESTED_OUT" | indent
+    printf '%s\n' "$nested_out" | indent
     return 1
   fi
 }
 
 test_mutation_that_changed_nothing_is_a_failure() {
   new_copy unchanged || return 1
-  cmp -s "$GATE" "$COPY" || fail "the unedited copy differs from the gate it was taken from" || return 1
+  cmp -s "$GATE" "$copy" || fail "the unedited copy differs from the gate it was taken from" || return 1
   # An edit that took no effect must be reported by the same checks the controls rely on.
-  [ -n "$(deletion_took_effect "$COPY")" ] \
+  [ -n "$(deletion_took_effect "$copy")" ] \
     || fail "a deletion that left the copy identical to the gate was not reported" || return 1
-  [ -n "$(move_took_effect "$COPY")" ] \
+  [ -n "$(move_took_effect "$copy")" ] \
     || fail "a move that left the line where it was was not reported" || return 1
   # Each control, run whole over a real gate that already holds its edit, edits nothing and fails.
   new_copy already-moved || return 1
   move_lint_line_after_suite || return 1
-  make_tree already-moved "$COPY"
+  make_tree already-moved "$copy"
   run_nested test_strings_check_moved_after_its_suite_is_named_out_of_order
-  [ "$NESTED_STATUS" -ne 0 ] \
-    || fail "the move control passed on a gate whose line was already after its suite: $NESTED_OUT" \
+  [ "$nested_status" -ne 0 ] \
+    || fail "the move control passed on a gate whose line was already after its suite: $nested_out" \
     || return 1
   new_copy already-deleted || return 1
   delete_lint_line || return 1
-  make_tree already-deleted "$COPY"
+  make_tree already-deleted "$copy"
   run_nested test_deleted_strings_check_line_is_named_missing
-  [ "$NESTED_STATUS" -ne 0 ] \
-    || fail "the deletion control passed on a gate whose line was already deleted: $NESTED_OUT"
+  [ "$nested_status" -ne 0 ] \
+    || fail "the deletion control passed on a gate whose line was already deleted: $nested_out"
 }
 
 test_commented_strings_check_line_does_not_count() {
-  write_gate "$WORK/commented.gate.sh" "# $LINT_LINE" "$SUITE_LINE"
-  expect_rejected_as_missing "$WORK/commented.gate.sh"
+  write_gate "$work/commented.gate.sh" "# $LINT_LINE" "$SUITE_LINE"
+  expect_rejected_as_missing "$work/commented.gate.sh"
 }
 
 test_space_indented_strings_check_line_does_not_count() {
-  write_gate "$WORK/spaced.gate.sh" "  $LINT_LINE" "$SUITE_LINE"
-  expect_rejected_as_missing "$WORK/spaced.gate.sh"
+  write_gate "$work/spaced.gate.sh" "  $LINT_LINE" "$SUITE_LINE"
+  expect_rejected_as_missing "$work/spaced.gate.sh"
 }
 
 test_tab_indented_strings_check_line_does_not_count() {
-  write_gate "$WORK/tabbed.gate.sh" "${TAB}$LINT_LINE" "$SUITE_LINE"
-  expect_rejected_as_missing "$WORK/tabbed.gate.sh"
+  write_gate "$work/tabbed.gate.sh" "${TAB}$LINT_LINE" "$SUITE_LINE"
+  expect_rejected_as_missing "$work/tabbed.gate.sh"
 }
 
 test_strings_check_with_another_command_does_not_count() {
-  write_gate "$WORK/other.gate.sh" "run_step 'Strings check' 'checks/other.sh'" "$SUITE_LINE"
-  expect_rejected_as_missing "$WORK/other.gate.sh"
+  write_gate "$work/other.gate.sh" "run_step 'Strings check' 'checks/other.sh'" "$SUITE_LINE"
+  expect_rejected_as_missing "$work/other.gate.sh"
 }
 
 test_strings_check_with_a_command_suffix_does_not_count() {
-  write_gate "$WORK/suffix.gate.sh" "run_step 'Strings check' 'checks/strings.sh || true'" "$SUITE_LINE"
-  expect_rejected_as_missing "$WORK/suffix.gate.sh" || return 1
-  write_gate "$WORK/trailing.gate.sh" "$LINT_LINE # kept" "$SUITE_LINE"
-  expect_rejected_as_missing "$WORK/trailing.gate.sh"
+  write_gate "$work/suffix.gate.sh" "run_step 'Strings check' 'checks/strings.sh || true'" "$SUITE_LINE"
+  expect_rejected_as_missing "$work/suffix.gate.sh" || return 1
+  write_gate "$work/trailing.gate.sh" "$LINT_LINE # kept" "$SUITE_LINE"
+  expect_rejected_as_missing "$work/trailing.gate.sh"
 }
 
 test_longer_line_containing_the_strings_check_line_does_not_count() {
-  write_gate "$WORK/longer.gate.sh" "if true; then $LINT_LINE; fi" "$SUITE_LINE"
-  expect_rejected_as_missing "$WORK/longer.gate.sh"
+  write_gate "$work/longer.gate.sh" "if true; then $LINT_LINE; fi" "$SUITE_LINE"
+  expect_rejected_as_missing "$work/longer.gate.sh"
 }
 
 test_strings_check_line_twice_does_not_pass_even_with_one_before_its_suite() {
-  expect_rejected_as_repeated "$WORK/twice.gate.sh" "1, 3" \
+  expect_rejected_as_repeated "$work/twice.gate.sh" "1, 3" \
     "$LINT_LINE" "$SUITE_LINE" "$LINT_LINE" || return 1
-  expect_rejected_as_repeated "$WORK/twice-before.gate.sh" "1, 2" \
+  expect_rejected_as_repeated "$work/twice-before.gate.sh" "1, 2" \
     "$LINT_LINE" "$LINT_LINE" "$SUITE_LINE" || return 1
-  expect_rejected_as_repeated "$WORK/thrice.gate.sh" "1, 2, 4" \
+  expect_rejected_as_repeated "$work/thrice.gate.sh" "1, 2, 4" \
     "$LINT_LINE" "$LINT_LINE" "$SUITE_LINE" "$LINT_LINE"
 }
 
 test_empty_gate_does_not_pass() {
-  : > "$WORK/empty.gate.sh"
-  expect_rejected_as_missing "$WORK/empty.gate.sh"
+  : > "$work/empty.gate.sh"
+  expect_rejected_as_missing "$work/empty.gate.sh"
 }
 
 test_gate_with_no_step_lines_does_not_pass() {
-  write_gate "$WORK/stepless.gate.sh" "#!/usr/bin/env bash" "set -euo pipefail" "echo nothing to run"
-  expect_rejected_as_missing "$WORK/stepless.gate.sh"
+  write_gate "$work/stepless.gate.sh" "#!/usr/bin/env bash" "set -euo pipefail" "echo nothing to run"
+  expect_rejected_as_missing "$work/stepless.gate.sh"
 }
 
 test_gate_with_only_the_strings_check_suite_step_does_not_pass() {
-  write_gate "$WORK/suite-only.gate.sh" "$SUITE_LINE"
-  expect_rejected_as_missing "$WORK/suite-only.gate.sh"
+  write_gate "$work/suite-only.gate.sh" "$SUITE_LINE"
+  expect_rejected_as_missing "$work/suite-only.gate.sh"
 }
 
 test_another_step_between_strings_check_and_its_suite_passes() {
-  write_gate "$WORK/between.gate.sh" "$LINT_LINE" "run_step 'Another step' 'checks/another.sh'" "$SUITE_LINE"
-  expect_passes "$WORK/between.gate.sh"
+  write_gate "$work/between.gate.sh" "$LINT_LINE" "run_step 'Another step' 'checks/another.sh'" "$SUITE_LINE"
+  expect_passes "$work/between.gate.sh"
 }
 
 test_missing_strings_check_suite_step_does_not_pass() {
-  write_gate "$WORK/no-suite.gate.sh" "$LINT_LINE" "run_step 'Another step' 'checks/another.sh'"
-  expect_rejected_as_no_suite "$WORK/no-suite.gate.sh"
+  write_gate "$work/no-suite.gate.sh" "$LINT_LINE" "run_step 'Another step' 'checks/another.sh'"
+  expect_rejected_as_no_suite "$work/no-suite.gate.sh"
 }
 
 test_commented_strings_check_suite_step_does_not_count() {
-  write_gate "$WORK/suite-commented.gate.sh" "$LINT_LINE" "# $SUITE_LINE"
-  expect_rejected_as_no_suite "$WORK/suite-commented.gate.sh"
+  write_gate "$work/suite-commented.gate.sh" "$LINT_LINE" "# $SUITE_LINE"
+  expect_rejected_as_no_suite "$work/suite-commented.gate.sh"
 }
 
 test_indented_strings_check_suite_step_does_not_count() {
-  write_gate "$WORK/suite-spaced.gate.sh" "$LINT_LINE" "  $SUITE_LINE"
-  expect_rejected_as_no_suite "$WORK/suite-spaced.gate.sh" || return 1
-  write_gate "$WORK/suite-tabbed.gate.sh" "$LINT_LINE" "${TAB}$SUITE_LINE"
-  expect_rejected_as_no_suite "$WORK/suite-tabbed.gate.sh"
+  write_gate "$work/suite-spaced.gate.sh" "$LINT_LINE" "  $SUITE_LINE"
+  expect_rejected_as_no_suite "$work/suite-spaced.gate.sh" || return 1
+  write_gate "$work/suite-tabbed.gate.sh" "$LINT_LINE" "${TAB}$SUITE_LINE"
+  expect_rejected_as_no_suite "$work/suite-tabbed.gate.sh"
 }
 
 test_strings_check_suite_step_earlier_than_strings_check_does_not_pass() {
-  write_gate "$WORK/suite-first.gate.sh" "$SUITE_LINE" "run_step 'Another step' 'checks/another.sh'" "$LINT_LINE"
-  expect_rejected_as_out_of_order "$WORK/suite-first.gate.sh"
+  write_gate "$work/suite-first.gate.sh" "$SUITE_LINE" "run_step 'Another step' 'checks/another.sh'" "$LINT_LINE"
+  expect_rejected_as_out_of_order "$work/suite-first.gate.sh"
 }
 
 test_strings_check_suite_step_with_another_command_still_counts() {
-  write_gate "$WORK/suite-other.gate.sh" "$LINT_LINE" "run_step 'Strings check suite' 'checks/tests/other.sh'"
-  expect_passes "$WORK/suite-other.gate.sh"
+  write_gate "$work/suite-other.gate.sh" "$LINT_LINE" "run_step 'Strings check suite' 'checks/tests/other.sh'"
+  expect_passes "$work/suite-other.gate.sh"
 }
 
 test_strings_check_before_the_first_of_two_suite_steps_passes() {
-  write_gate "$WORK/two-suites.gate.sh" "$LINT_LINE" "$SUITE_LINE" "$SUITE_LINE"
-  expect_passes "$WORK/two-suites.gate.sh"
+  write_gate "$work/two-suites.gate.sh" "$LINT_LINE" "$SUITE_LINE" "$SUITE_LINE"
+  expect_passes "$work/two-suites.gate.sh"
 }
 
 test_strings_check_between_two_suite_steps_does_not_pass() {
-  write_gate "$WORK/straddle.gate.sh" "$SUITE_LINE" "$LINT_LINE" "$SUITE_LINE"
-  expect_rejected_as_out_of_order "$WORK/straddle.gate.sh"
+  write_gate "$work/straddle.gate.sh" "$SUITE_LINE" "$LINT_LINE" "$SUITE_LINE"
+  expect_rejected_as_out_of_order "$work/straddle.gate.sh"
 }
 
 test_unrelated_text_does_not_change_a_pass() {
-  write_gate "$WORK/unrelated.gate.sh" \
+  write_gate "$work/unrelated.gate.sh" \
     "#!/usr/bin/env bash" \
     "set -euo pipefail" \
     "# nothing in this line names either step" \
@@ -512,70 +513,70 @@ test_unrelated_text_does_not_change_a_pass() {
     "run_step 'Own state' 'checks/own-state-step.sh'" \
     "$SUITE_LINE" \
     "run_step 'Somewhere else' 'checks/else.sh'"
-  expect_passes "$WORK/unrelated.gate.sh" || return 1
+  expect_passes "$work/unrelated.gate.sh" || return 1
   # The test holds two conditions and no rule about the other steps: a gate of only the two passes.
-  write_gate "$WORK/bare.gate.sh" "$LINT_LINE" "$SUITE_LINE"
-  expect_passes "$WORK/bare.gate.sh"
+  write_gate "$work/bare.gate.sh" "$LINT_LINE" "$SUITE_LINE"
+  expect_passes "$work/bare.gate.sh"
 }
 
 test_lookalike_beside_the_strings_check_line_still_counts_once() {
-  write_gate "$WORK/look-commented.gate.sh" "# $LINT_LINE" "$LINT_LINE" "$SUITE_LINE"
-  expect_passes "$WORK/look-commented.gate.sh" || return 1
-  write_gate "$WORK/look-indented.gate.sh" "$LINT_LINE" "  $LINT_LINE" "$SUITE_LINE"
-  expect_passes "$WORK/look-indented.gate.sh" || return 1
-  write_gate "$WORK/look-other.gate.sh" "$LINT_LINE" "run_step 'Strings check' 'checks/other.sh'" "$SUITE_LINE"
-  expect_passes "$WORK/look-other.gate.sh"
+  write_gate "$work/look-commented.gate.sh" "# $LINT_LINE" "$LINT_LINE" "$SUITE_LINE"
+  expect_passes "$work/look-commented.gate.sh" || return 1
+  write_gate "$work/look-indented.gate.sh" "$LINT_LINE" "  $LINT_LINE" "$SUITE_LINE"
+  expect_passes "$work/look-indented.gate.sh" || return 1
+  write_gate "$work/look-other.gate.sh" "$LINT_LINE" "run_step 'Strings check' 'checks/other.sh'" "$SUITE_LINE"
+  expect_passes "$work/look-other.gate.sh"
 }
 
 test_closing_line_counts_cases_actually_run() {
   make_tree closing-pass "$GATE"
   run_nested test_real_gate_runs_strings_check_before_its_suite
-  [ "$NESTED_STATUS" -eq 0 ] || fail "a run of one passing case exited $NESTED_STATUS: $NESTED_OUT" || return 1
-  [ "$(printf '%s\n' "$NESTED_OUT" | tail -n 1)" = "1 of 1 passed" ] \
-    || fail "the last line of a run of one passing case was not '1 of 1 passed': $NESTED_OUT" || return 1
+  [ "$nested_status" -eq 0 ] || fail "a run of one passing case exited $nested_status: $nested_out" || return 1
+  [ "$(printf '%s\n' "$nested_out" | tail -n 1)" = "1 of 1 passed" ] \
+    || fail "the last line of a run of one passing case was not '1 of 1 passed': $nested_out" || return 1
   new_copy closing-deleted || return 1
   delete_lint_line || return 1
-  make_tree closing-fail "$COPY"
+  make_tree closing-fail "$copy"
   run_nested test_real_gate_runs_strings_check_before_its_suite
-  [ "$NESTED_STATUS" -ne 0 ] || fail "a suite in which a case failed exited 0: $NESTED_OUT" || return 1
-  [ "$(printf '%s\n' "$NESTED_OUT" | tail -n 1)" = "0 of 1 passed" ] \
-    || fail "the last line of a run of one failing case was not '0 of 1 passed': $NESTED_OUT"
+  [ "$nested_status" -ne 0 ] || fail "a suite in which a case failed exited 0: $nested_out" || return 1
+  [ "$(printf '%s\n' "$nested_out" | tail -n 1)" = "0 of 1 passed" ] \
+    || fail "the last line of a run of one failing case was not '0 of 1 passed': $nested_out"
 }
 
 test_copies_live_outside_the_product_tree_and_are_removed() {
-  case "$WORK" in
-    "$ROOT" | "$ROOT"/*) fail "the temporary directory $WORK is inside the product tree $ROOT" || return 1 ;;
+  case "$work" in
+    "$ROOT" | "$ROOT"/*) fail "the temporary directory $work is inside the product tree $ROOT" || return 1 ;;
   esac
   new_copy outside || return 1
-  case "$COPY" in
-    "$WORK"/*) ;;
-    *) fail "an edited copy, $COPY, is not under the temporary directory $WORK" || return 1 ;;
+  case "$copy" in
+    "$work"/*) ;;
+    *) fail "an edited copy, $copy, is not under the temporary directory $work" || return 1 ;;
   esac
   # A run that passes, and a run in which a case fails, each leave nothing in the directory the
   # temporary directory is made in; the gate they read stays byte-identical.
   make_tree removal-pass "$GATE"
   run_nested test_real_gate_runs_strings_check_before_its_suite
-  [ "$NESTED_STATUS" -eq 0 ] || fail "the passing run exited $NESTED_STATUS: $NESTED_OUT" || return 1
-  [ -z "$(ls -A "$SCRATCH")" ] || fail "a passing run left $(ls -A "$SCRATCH") behind" || return 1
+  [ "$nested_status" -eq 0 ] || fail "the passing run exited $nested_status: $nested_out" || return 1
+  [ -z "$(ls -A "$scratch")" ] || fail "a passing run left $(ls -A "$scratch") behind" || return 1
   new_copy removal-deleted || return 1
   delete_lint_line || return 1
-  make_tree removal-fail "$COPY"
+  make_tree removal-fail "$copy"
   run_nested test_real_gate_runs_strings_check_before_its_suite
-  [ "$NESTED_STATUS" -ne 0 ] || fail "the run with a failing case exited 0: $NESTED_OUT" || return 1
-  [ -z "$(ls -A "$SCRATCH")" ] || fail "a run with a failing case left $(ls -A "$SCRATCH") behind" || return 1
+  [ "$nested_status" -ne 0 ] || fail "the run with a failing case exited 0: $nested_out" || return 1
+  [ -z "$(ls -A "$scratch")" ] || fail "a run with a failing case left $(ls -A "$scratch") behind" || return 1
   cmp -s "$GATE" "$GATE_AT_START" || fail "checks/gate.sh changed while the suite ran" || return 1
   # The two states before any case runs leave nothing behind either.
   make_tree no-gate ""
   run_nested test_real_gate_runs_strings_check_before_its_suite
-  [ "$NESTED_STATUS" -ne 0 ] || fail "a run with no gate to read exited 0" || return 1
-  printf '%s\n' "$NESTED_OUT" | grep -q -F "The suite found no readable checks/gate.sh at $TREE/checks/gate.sh, so no case ran." \
-    || fail "no message said the gate could not be read: $NESTED_OUT" || return 1
+  [ "$nested_status" -ne 0 ] || fail "a run with no gate to read exited 0" || return 1
+  printf '%s\n' "$nested_out" | grep -q -F "The suite found no readable checks/gate.sh at $tree/checks/gate.sh, so no case ran." \
+    || fail "no message said the gate could not be read: $nested_out" || return 1
   make_tree no-temp "$GATE"
-  SCRATCH="$WORK/absent"
+  scratch="$work/absent"
   run_nested test_real_gate_runs_strings_check_before_its_suite
-  [ "$NESTED_STATUS" -ne 0 ] || fail "a run with no temporary directory to make exited 0" || return 1
-  printf '%s\n' "$NESTED_OUT" | grep -q -F "The suite could not create its temporary directory under $SCRATCH, so no case ran." \
-    || fail "no message said the temporary directory could not be made: $NESTED_OUT"
+  [ "$nested_status" -ne 0 ] || fail "a run with no temporary directory to make exited 0" || return 1
+  printf '%s\n' "$nested_out" | grep -q -F "The suite could not create its temporary directory under $scratch, so no case ran." \
+    || fail "no message said the temporary directory could not be made: $nested_out"
 }
 
 # --- the runner ---
@@ -586,17 +587,17 @@ if [ ! -r "$GATE" ]; then
 fi
 
 TEMP_PARENT="${TMPDIR:-/tmp}"
-WORK="$(mktemp -d "${TEMP_PARENT%/}/strings-step.XXXXXX" 2>/dev/null)" || {
+work="$(mktemp -d "${TEMP_PARENT%/}/strings-step.XXXXXX" 2>/dev/null)" || {
   echo "The suite could not create its temporary directory under $TEMP_PARENT, so no case ran. Make $TEMP_PARENT writable, then run the suite again." >&2
   exit 1
 }
 cleanup() {
-  [ -z "$WORK" ] || rm -rf "$WORK"
+  [ -z "$work" ] || rm -rf "$work"
 }
 trap cleanup EXIT
 trap 'exit 1' HUP INT TERM
 
-GATE_AT_START="$WORK/gate-at-start"
+GATE_AT_START="$work/gate-at-start"
 cp "$GATE" "$GATE_AT_START"
 
 failed=0
