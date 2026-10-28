@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Version: 1.0.0 — first version: holds the gate's "Strings check" step, by reading checks/gate.sh as
-#   text and applying one test of the gate to the real file and to disposable edited copies
+# Version: 1.0.0 — first version: holds the gate's "Strings check" step, by reading checks/gate.sh
+#   as text and applying one test of the gate to the real file and to disposable edited copies
 #
 # checks/tests/test_strings_step.sh — the test of the gate's "Strings check" step.
 #
@@ -439,7 +439,7 @@ test_unrelated_text_does_not_change_a_pass() {
     "$SUITE_LINE" \
     "run_step 'Somewhere else' 'checks/else.sh'"
   expect_passes "$WORK/unrelated.gate.sh" || return 1
-  # The test holds two conditions and no rule about the other steps: a gate with only the two passes.
+  # The test holds two conditions and no rule about the other steps: a gate of only the two passes.
   write_gate "$WORK/bare.gate.sh" "$LINT_LINE" "$SUITE_LINE"
   expect_passes "$WORK/bare.gate.sh"
 }

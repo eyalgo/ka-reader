@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Version: 1.6.0 — the suite that holds the "Strings check" step joins the list, after "Strings check suite"
+# Version: 1.6.0 — the suite that holds the "Strings check" step joins the list, after its suite
 # Version: 1.5.0 — the message catalogue lint itself (NFDR QC-53) joins the list, before its suite
 # Version: 1.4.0 — the suite of the message catalogue lint (NFDR QC-53) joins the list
 # Version: 1.3.0 — the planted-secret suite, the scan's negative control, joins the list
