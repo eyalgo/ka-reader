@@ -253,7 +253,7 @@ EOF
 # the table's title to the next heading, the rows, the first column, the glosses cut, the commas split.
 oracle_terms() {
   sed -n "/^\*\*$BANNED_TITLE:\*\*\$/,/^### /p" "$ORACLE_CONTENT" 2> /dev/null \
-    | grep '^| ' | sed '1,2d' | cut -d'|' -f2 | sed 's/([^)]*)//g' | tr ',' '\n' \
+    | grep '^|' | sed '1,2d' | cut -d'|' -f2 | sed 's/([^)]*)//g' | tr ',' '\n' \
     | sed 's/^ *//; s/ *$//' | grep -v '^$'
 }
 
