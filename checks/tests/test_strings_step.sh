@@ -188,6 +188,38 @@ expect_rejected_as_missing() {
   return 1
 }
 
+# A copy that must be rejected as having no "Strings check suite" step.
+expect_rejected_as_no_suite() {
+  expect_rejected "$1" || return 1
+  output_has "$MSG_NO_SUITE" && return 0
+  echo "  the test of the gate rejected a gate with no suite step without saying so:"
+  printf '%s\n' "$VERDICT_OUT" | indent
+  return 1
+}
+
+# A copy that must be rejected as having "Strings check" after the first "Strings check suite" step.
+expect_rejected_as_out_of_order() {
+  expect_rejected "$1" || return 1
+  output_has "$ORDER_PHRASE" && return 0
+  echo "  the test of the gate rejected the suite step coming first without naming the order:"
+  printf '%s\n' "$VERDICT_OUT" | indent
+  return 1
+}
+
+# Writes the lines after the first two arguments to the file named by the first, and expects the
+# copy rejected for holding the exact line more than once, at the line numbers the second names.
+expect_rejected_as_repeated() {
+  local file="$1"
+  local numbers="$2"
+  shift 2
+  write_gate "$file" "$@"
+  expect_rejected "$file" || return 1
+  output_has "more than once, at lines $numbers, and" && return 0
+  echo "  the test of the gate rejected repeated exact lines without naming lines $numbers:"
+  printf '%s\n' "$VERDICT_OUT" | indent
+  return 1
+}
+
 # Writes the lines after the first argument to the file named by it, one per line.
 write_gate() {
   local file="$1"
@@ -320,6 +352,20 @@ test_mutation_that_changed_nothing_is_a_failure() {
     || fail "a deletion that left the copy identical to the gate was not reported" || return 1
   [ -n "$(move_took_effect "$COPY")" ] \
     || fail "a move that left the line where it was was not reported" || return 1
+  # Each control, run whole over a real gate that already holds its edit, edits nothing and fails.
+  new_copy already-moved || return 1
+  move_lint_line_after_suite || return 1
+  make_tree already-moved "$COPY"
+  run_nested test_strings_check_moved_after_its_suite_is_named_out_of_order
+  [ "$NESTED_STATUS" -ne 0 ] \
+    || fail "the move control passed on a gate whose line was already after its suite: $NESTED_OUT" \
+    || return 1
+  new_copy already-deleted || return 1
+  delete_lint_line || return 1
+  make_tree already-deleted "$COPY"
+  run_nested test_deleted_strings_check_line_is_named_missing
+  [ "$NESTED_STATUS" -ne 0 ] \
+    || fail "the deletion control passed on a gate whose line was already deleted: $NESTED_OUT"
 }
 
 test_commented_strings_check_line_does_not_count() {
@@ -355,22 +401,22 @@ test_longer_line_containing_the_strings_check_line_does_not_count() {
 }
 
 test_strings_check_line_twice_does_not_pass_even_with_one_before_its_suite() {
-  write_gate "$WORK/twice.gate.sh" "$LINT_LINE" "$SUITE_LINE" "$LINT_LINE"
-  expect_rejected "$WORK/twice.gate.sh" || return 1
-  output_has "more than once, at lines 1, 3" && return 0
-  echo "  the test of the gate rejected two exact lines without naming lines 1 and 3:"
-  printf '%s\n' "$VERDICT_OUT" | indent
-  return 1
+  expect_rejected_as_repeated "$WORK/twice.gate.sh" "1, 3" \
+    "$LINT_LINE" "$SUITE_LINE" "$LINT_LINE" || return 1
+  expect_rejected_as_repeated "$WORK/twice-before.gate.sh" "1, 2" \
+    "$LINT_LINE" "$LINT_LINE" "$SUITE_LINE" || return 1
+  expect_rejected_as_repeated "$WORK/thrice.gate.sh" "1, 2, 4" \
+    "$LINT_LINE" "$LINT_LINE" "$SUITE_LINE" "$LINT_LINE"
 }
 
 test_empty_gate_does_not_pass() {
   : > "$WORK/empty.gate.sh"
-  expect_rejected "$WORK/empty.gate.sh"
+  expect_rejected_as_missing "$WORK/empty.gate.sh"
 }
 
 test_gate_with_no_step_lines_does_not_pass() {
   write_gate "$WORK/stepless.gate.sh" "#!/usr/bin/env bash" "set -euo pipefail" "echo nothing to run"
-  expect_rejected "$WORK/stepless.gate.sh"
+  expect_rejected_as_missing "$WORK/stepless.gate.sh"
 }
 
 test_gate_with_only_the_strings_check_suite_step_does_not_pass() {
@@ -385,32 +431,24 @@ test_another_step_between_strings_check_and_its_suite_passes() {
 
 test_missing_strings_check_suite_step_does_not_pass() {
   write_gate "$WORK/no-suite.gate.sh" "$LINT_LINE" "run_step 'Another step' 'checks/another.sh'"
-  expect_rejected "$WORK/no-suite.gate.sh" || return 1
-  output_has "$MSG_NO_SUITE" && return 0
-  echo "  the test of the gate rejected a gate with no suite step without saying so:"
-  printf '%s\n' "$VERDICT_OUT" | indent
-  return 1
+  expect_rejected_as_no_suite "$WORK/no-suite.gate.sh"
 }
 
 test_commented_strings_check_suite_step_does_not_count() {
   write_gate "$WORK/suite-commented.gate.sh" "$LINT_LINE" "# $SUITE_LINE"
-  expect_rejected "$WORK/suite-commented.gate.sh"
+  expect_rejected_as_no_suite "$WORK/suite-commented.gate.sh"
 }
 
 test_indented_strings_check_suite_step_does_not_count() {
   write_gate "$WORK/suite-spaced.gate.sh" "$LINT_LINE" "  $SUITE_LINE"
-  expect_rejected "$WORK/suite-spaced.gate.sh" || return 1
+  expect_rejected_as_no_suite "$WORK/suite-spaced.gate.sh" || return 1
   write_gate "$WORK/suite-tabbed.gate.sh" "$LINT_LINE" "${TAB}$SUITE_LINE"
-  expect_rejected "$WORK/suite-tabbed.gate.sh"
+  expect_rejected_as_no_suite "$WORK/suite-tabbed.gate.sh"
 }
 
 test_strings_check_suite_step_earlier_than_strings_check_does_not_pass() {
   write_gate "$WORK/suite-first.gate.sh" "$SUITE_LINE" "run_step 'Another step' 'checks/another.sh'" "$LINT_LINE"
-  expect_rejected "$WORK/suite-first.gate.sh" || return 1
-  output_has "$ORDER_PHRASE" && return 0
-  echo "  the test of the gate rejected the suite step coming first without naming the order:"
-  printf '%s\n' "$VERDICT_OUT" | indent
-  return 1
+  expect_rejected_as_out_of_order "$WORK/suite-first.gate.sh"
 }
 
 test_strings_check_suite_step_with_another_command_still_counts() {
@@ -425,7 +463,7 @@ test_strings_check_before_the_first_of_two_suite_steps_passes() {
 
 test_strings_check_between_two_suite_steps_does_not_pass() {
   write_gate "$WORK/straddle.gate.sh" "$SUITE_LINE" "$LINT_LINE" "$SUITE_LINE"
-  expect_rejected "$WORK/straddle.gate.sh"
+  expect_rejected_as_out_of_order "$WORK/straddle.gate.sh"
 }
 
 test_unrelated_text_does_not_change_a_pass() {
