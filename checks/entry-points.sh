@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Version: 1.1.0 — Adds raw-text matching for C and C++ environment names to the reviewed
+# dependency scan.
 # Version: 1.0.0 — first version: the reads of the linked dependency tree's environment and
 # arguments, diffed against the reviewed checks/entry-points.allow
 #
@@ -47,31 +49,35 @@
 #   or failing ends the run.
 #
 # WHAT IS READ
-#   Every file under a scanned crate's package directory, at any depth and whatever its extension,
-#   in its raw text: a read counts in code, in a comment, in a string and in prose. A read is one of
-#   the six names env::var, env::var_os, env::vars, env::vars_os, env::args and env::args_os,
-#   matched as a whole word after `env::`, with no boundary before `env`, so `myenv::var` counts. A
-#   name listed inside
-#   `env::{ ... }` is a read of that name, across line breaks. A read is the pair (crate, name); two
-#   resolved versions of one crate share their reads. One file is excepted and is not opened: the
-#   crate's build script, which is the `build` key of the [package] table of that package's own
-#   Cargo.toml (a string names the file, `false` excepts nothing, no key means build.rs at the
-#   package root if it exists, and a key in any other form excepts nothing). Files that script pulls
-#   in are read.
+#   The scan reads every file under each resolved dependency package, at every depth and regardless
+#   of extension. Packages Cargo identifies as members are skipped. Matching uses raw text: code,
+#   declarations, comments, strings and prose all count, whether or not they are compiled. The six
+#   Rust names are env::var, env::var_os, env::vars, env::vars_os, env::args and env::args_os. A
+#   Rust name counts as a whole word after env::, with no boundary before env; names inside a
+#   grouped env import count across line breaks. The C names are getenv, environ and _NSGetEnviron.
+#   Matching is case-sensitive. Any substring getenv counts, including git__getenv and longer names.
+#   The names environ and _NSGetEnviron count when neither adjacent character is an ASCII letter, an
+#   ASCII digit or an underscore; the beginning and end of a file count as boundaries. Each crate
+#   and read name forms one pair across all resolved versions. One file is excepted and is not
+#   opened: the build script named by a string-valued build key in the package manifest. Without
+#   that key, Cargo's present default build script at the package root is excepted. A false or
+#   unrecognised build value, or an absent default script, excepts nothing. Included helpers,
+#   neighbouring files and nested sources remain scanned. An unreadable file, dangling link or
+#   non-file stream stops that crate from passing the scan.
 #
 # WHAT IS NOT HELD
-#   Named so that none is read as coverage:
-#     - code a build script generates into OUT_DIR and a shipped crate `include!`s;
-#     - a glob import followed by a bare call (`use std::env::*;` then `var(...)`);
-#     - a C `getenv`;
-#     - `env!` and `option_env!`, which read the build's environment;
-#     - the reads the operating system's frameworks make inside the process.
+#   The scan does not discover generated OUT_DIR code included by a shipped crate, bare Rust calls
+#   after glob imports, env! or option_env! reads of the build's environment, or reads made by
+#   operating-system frameworks. It cannot detect a new read inside an already listed crate and
+#   read-name pair. After a dependency or feature change, review the matching source sites and each
+#   explanation again. A matching list does not establish that a read is acceptable. Review decides
+#   that. The build-script exclusion covers one file; its helpers remain scanned.
 #
 # THE LIST
 #   checks/entry-points.allow, one line per read: `<crate> | <name> | <what the read changes>`. See
 #   the list's own header for the line format, the malformed rule and what a reviewer checks.
 #
-# `set -e` is on, so every grep that may match nothing carries `|| true`, and a guard follows it.
+# CP-968 requires matcher failures to remain distinct from an ordinary no-match.
 
 set -euo pipefail
 
@@ -107,7 +113,8 @@ awk -v names="$SIX_NAMES" -v tab="$TAB" -v good="$work/list.pairs" -v bad="$find
   function trim(text) { gsub(/^[[:space:]]+|[[:space:]]+$/, "", text); return text }
   BEGIN {
     split(names, short, " ")
-    for (i in short) six["env::" short[i]] = 1
+    for (i in short) admitted["env::" short[i]] = 1
+    admitted["getenv"] = admitted["environ"] = admitted["_NSGetEnviron"] = 1
     printf "" > good
   }
   {
@@ -129,7 +136,7 @@ awk -v names="$SIX_NAMES" -v tab="$TAB" -v good="$work/list.pairs" -v bad="$find
     if (crate == "") fault = "lacks its crate"
     else if (name == "") fault = "lacks its name"
     else if (text == "") fault = "lacks its what-it-changes text"
-    else if (!(name in six)) fault = "names " name ", which is none of the six read names"
+    else if (!(name in admitted)) fault = "Read name " name " is not one of the nine read names: env::var, env::var_os, env::vars, env::vars_os, env::args, env::args_os, getenv, environ, _NSGetEnviron. Replace it with one of those names."
     else if ((crate SUBSEP name) in seen) fault = "repeats the crate and name of line " seen[crate SUBSEP name]
     if (fault != "") {
       printf "malformed\t\t\t%d\tmalformed: line %d: %s\n", NR, NR, fault >> bad
@@ -286,6 +293,28 @@ scan_crate() {
       }
     }
   ' "$work/grep.out"
+
+  # macOS grep(1): --null terminates filenames; -Z would decompress.
+  # CP-966 matches raw bytes; CP-968 must distinguish grep's no-match from every failure.
+  for c_name in getenv environ _NSGetEnviron; do
+    case "$c_name" in
+      getenv) pattern='getenv' ;;
+      *) pattern="(^|[^A-Za-z0-9_])$c_name([^A-Za-z0-9_]|$)" ;;
+    esac
+    c_status=0
+    LC_ALL=C xargs -0 bash -c '
+      status=0
+      grep -a -l --null -E "$1" "${@:2}" || status=$?
+      [ "$status" -le 1 ]
+    ' _ "$pattern" < "$work/readable.nul" > "$work/c-files.nul" 2> "$work/c-grep.err" || c_status=$?
+    if [ "$c_status" -ne 0 ] || [ -s "$work/c-grep.err" ]; then
+      report_unreadable "$crate" "grep could not read its files: $(head -n 1 "$work/c-grep.err")"
+      return 0
+    fi
+    while IFS= read -r -d '' file; do
+      printf '%s\t%s\t%s\n' "$crate" "$c_name" "${file#"$dir"/}" >> "$work/reads.tsv"
+    done < "$work/c-files.nul"
+  done
 
   # The grouped form, read with the file as one string so a group split over lines is seen.
   LC_ALL=C sort -u "$work/group.files" | while IFS= read -r file; do

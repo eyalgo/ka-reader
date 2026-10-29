@@ -1591,6 +1591,7 @@ trap cleanup EXIT
 
 normalised_cases="$(echo $CASES)"
 selected="${KA_READER_TEST_ONLY:-}"
+normalised_selection=""
 for wanted in $selected; do
   case " $normalised_cases " in
     *" $wanted "*) ;;
@@ -1599,7 +1600,9 @@ for wanted in $selected; do
       exit 1
       ;;
   esac
+  normalised_selection="$normalised_selection $wanted"
 done
+selected="$normalised_selection"
 
 # The real metadata, read once: it says where each crate's package directory is, and it is never the
 # script's input. The state the suite must leave unchanged is recorded before the first case.
