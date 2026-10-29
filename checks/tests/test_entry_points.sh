@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Version: 1.2.0 — Adds C and C++ controls through the real dependency scan, including name
+# boundaries, repeated pairs, stale entries, unreadable sources and full-run reporting.
 # Version: 1.1.0 — the named-read cases reject the other five names, the deterministic-output case
 # holds the complete printed order, and a whole-run case holds the full-run reporting
 # Version: 1.0.1 — CI green again: scene-building git runs no background maintenance, Swift builds
@@ -139,6 +141,7 @@ test_c_matching_failure_after_admission_is_unreadable
 test_only_the_manifest_named_build_file_is_excepted_for_c_reads
 test_c_reads_survive_absent_false_and_unknown_build_settings
 test_c_links_and_streams_keep_admission_failures
+test_suite_normalises_selection_whitespace
 "
 CASES="$C_CASES$CASES"
 CASES="${CASES%test_suite_leaves_original_inputs_unchanged*}test_suite_reports_every_c_case_in_a_whole_run
@@ -224,9 +227,16 @@ test_array_names_reject_identifier_adjacency() {
 test_c_names_are_case_sensitive() {
   new_case
   plant_copy itoa || return 1
-  plant_file "$PLANT_DIR" read.cpp 'GETENV Getenv ENVIRON Environ _nsgetenviron _NSGETENVIRON'
+  plant_file "$PLANT_DIR" read.cpp 'GETENV Getenv ENVIRON Environ _nsGetEnviron _NSGETENVIRON'
   run_scan
-  expect_exact_success
+  expect_exact_success || return 1
+  # CP-966: lowercasing the accessor also plants the independent getenv substring.
+  plant_file "$PLANT_DIR" read.cpp '_nsgetenviron'
+  run_scan
+  expect_exact_findings 'entry-points.sh: unlisted: itoa getenv read.cpp' || return 1
+  append_list_line 'itoa | getenv | planted'
+  run_scan
+  expect_exact_success 1
 }
 
 test_array_names_treat_non_ascii_bytes_as_boundaries() {
@@ -394,7 +404,7 @@ entry-points.sh: unreadable: itoa cannot read read.$extension" || return 1
 
 test_c_matching_failure_after_admission_is_unreadable() {
   local diagnostic
-  for diagnostic in yes no; do
+  for diagnostic in yes no diagnostic_only; do
     new_case
     plant_copy itoa || return 1
     plant_file "$PLANT_DIR" read.c getenv
@@ -404,7 +414,8 @@ test_c_matching_failure_after_admission_is_unreadable() {
 for arg in "\$@"; do
   case "\$arg" in *copy-itoa/read.c)
     case "\$*" in *getenv*)
-      [ "$diagnostic" != yes ] || echo 'planted matcher failure' >&2
+      [ "$diagnostic" = no ] || echo 'planted matcher failure' >&2
+      [ "$diagnostic" != diagnostic_only ] || exit 0
       exit 2 ;;
     esac ;;
   esac
@@ -490,14 +501,29 @@ test_c_links_and_streams_keep_admission_failures() {
   done
 }
 
+test_suite_normalises_selection_whitespace() {
+  local out status selection
+  selection="$(printf 'test_c16_missing_list_fails\ntest_case_11_missing_crate_is_malformed\t')"
+  out="$(KA_READER_TEST_ONLY="$selection" "$SUITE" 2>&1)"
+  status=$?
+  [ "$status" -eq 0 ] || fail "the selected run exited $status. output: $out" || return 1
+  [ "$out" = "$(printf 'ok   test_case_11_missing_crate_is_malformed\nok   test_c16_missing_list_fails')" ]
+}
+
 test_suite_reports_every_c_case_in_a_whole_run() {
   [ -z "${KA_READER_ENTRY_POINTS_WHOLE_CHILD:-}" ] || return 0
-  local out status name
-  out="$(env -u KA_READER_TEST_ONLY KA_READER_ENTRY_POINTS_WHOLE_CHILD=1 "$SUITE" 2>&1)"
-  status=$?
-  [ "$status" -eq 0 ] || fail "$out" || return 1
-  for name in $C_CASES; do
-    [ "$(printf '%s\n' "$out" | grep -c "^ok   $name\$")" -eq 1 ] \
+  # CP-972's existing unselected negative control exercises every report, including failed cases.
+  # Reuse its complete output rather than starting a second full run of the scanner's controls.
+  [ -f "$WORK/whole-report" ] || test_suite_reports_whole_run_failures || return 1
+  local out reports name
+  out="$(cat "$WORK/whole-report")"
+  # The final case can quote nested C-case reports in its diagnostic; those are not root reports.
+  reports="$(printf '%s\n' "$out" | awk '
+    !diagnostic {print}
+    /^(ok   |FAIL )test_suite_leaves_original_inputs_unchanged$/ {diagnostic=1}
+  ')"
+  for name in $C_CASES test_suite_reports_every_c_case_in_a_whole_run; do
+    [ "$(printf '%s\n' "$reports" | grep -cE "^(ok   |FAIL )$name\$")" -eq 1 ] \
       || fail "The full run did not report $name. Compare the registered cases with the complete run output before accepting its coverage. Output: $out." || return 1
   done
 }
@@ -1530,6 +1556,7 @@ test_suite_reports_whole_run_failures() {
 
   out="$(env -u KA_READER_TEST_ONLY KA_READER_ENTRY_POINTS_WHOLE_CHILD=1 "$copy/checks/tests/test_entry_points.sh" 2>&1)"
   status=$?
+  printf '%s\n' "$out" > "$WORK/whole-report"
   failed_lines="$(printf '%s\n' "$out" | grep -c '^FAIL')"
 
   [ "$status" -ne 0 ] || fail "expected a non-zero exit from a whole run whose scan always exits non-zero, got 0. output: $out" || return 1
@@ -1578,20 +1605,24 @@ done
 # script's input. The state the suite must leave unchanged is recorded before the first case.
 (cd "$ROOT" && "$REAL_CARGO" metadata --format-version 1 --locked --filter-platform aarch64-apple-darwin) > "$WORK/real-metadata.json" 2> "$WORK/real-metadata.err" \
   || { echo "test_entry_points.sh: cargo metadata failed: $(cat "$WORK/real-metadata.err")" >&2; exit 1; }
-(cd "$ROOT" && "$REAL_CARGO" tree -p ka-reader-bridge --target aarch64-apple-darwin -e normal --locked --prefix none --format '{p}') > "$WORK/real-tree" || exit 1
-member_count="$(plutil -extract workspace_members raw -expect array "$WORK/real-metadata.json")" || exit 1
-: > "$WORK/member-ids"
-for ((member_index = 0; member_index < member_count; member_index++)); do
-  plutil -extract "workspace_members.$member_index" raw -expect string "$WORK/real-metadata.json" >> "$WORK/member-ids" || exit 1
-done
-awk 'NF >= 2 && $2 ~ /^v[0-9]/ {print $1 "\t" substr($2,2)}' "$WORK/real-tree" | LC_ALL=C sort -u > "$WORK/tree-pairs"
-metadata_packages "$WORK/real-metadata.json" > "$WORK/package-table"
-awk -F '\t' -v members="$WORK/member-ids" -v packages="$WORK/package-table" '
-  FILENAME == members {member[$0]=1; next}
-  FILENAME == packages {is_member[$1 FS $2] = ($3 in member); next}
-  {if (is_member[$1 FS $2]) skipped++; else scanned++}
-  END {print scanned+0, skipped+0}
-' "$WORK/member-ids" "$WORK/package-table" "$WORK/tree-pairs" > "$WORK/real-counts"
+# Keep the counting oracle's command hash and working variables out of the case runner.
+# Bash 3.2's temporary PATH assignment can still find a command cached before that assignment.
+(
+  (cd "$ROOT" && "$REAL_CARGO" tree -p ka-reader-bridge --target aarch64-apple-darwin -e normal --locked --prefix none --format '{p}') > "$WORK/real-tree" || exit 1
+  member_count="$(plutil -extract workspace_members raw -expect array "$WORK/real-metadata.json")" || exit 1
+  : > "$WORK/member-ids"
+  for ((member_index = 0; member_index < member_count; member_index++)); do
+    plutil -extract "workspace_members.$member_index" raw -expect string "$WORK/real-metadata.json" >> "$WORK/member-ids" || exit 1
+  done
+  awk 'NF >= 2 && $2 ~ /^v[0-9]/ {print $1 "\t" substr($2,2)}' "$WORK/real-tree" | LC_ALL=C sort -u > "$WORK/tree-pairs"
+  metadata_packages "$WORK/real-metadata.json" > "$WORK/package-table"
+  awk -F '\t' -v members="$WORK/member-ids" -v packages="$WORK/package-table" '
+    FILENAME == members {member[$0]=1; next}
+    FILENAME == packages {is_member[$1 FS $2] = ($3 in member); next}
+    {if (is_member[$1 FS $2]) skipped++; else scanned++}
+    END {print scanned+0, skipped+0}
+  ' "$WORK/member-ids" "$WORK/package-table" "$WORK/tree-pairs" > "$WORK/real-counts"
+) || exit 1
 snapshot_inputs "$WORK/baseline"
 
 failed=0
