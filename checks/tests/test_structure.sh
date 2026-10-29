@@ -2041,7 +2041,7 @@ test_env_reads_are_rejected() {
 test_env_near_names_pass() {
   new_root env-near || return 1
   for near_file in "$CORE_FILE" "$BRIDGE_FILE"; do
-    plant "$R" "$near_file" 'fn near() { let _ = std::env::current_exe(); let _ = std::env::current_dir(); let _ = std::env::temp_dir(); let _ = std::env::home_dir(); }
+    plant "$R" "$near_file" 'fn near() { let _ = std::env::current_exe(); let _ = std::env::current_dir(); let _ = std::env::temp_dir(); let _ = std::env::home_dir(); } // test-isolation: allowed — fixture text for the env-near check
 /// see std::env::temp_dir()
 const V: &str = env!("CARGO_PKG_VERSION");
 const W: Option<&str> = option_env!("X");'

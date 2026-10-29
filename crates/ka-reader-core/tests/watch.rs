@@ -182,7 +182,7 @@ fn own_data_record() -> Option<Vec<(PathBuf, u64, Option<SystemTime>)>> {
         }
     }
 
-    let home = std::env::var_os("HOME")?;
+    let home = std::env::var_os("HOME")?; // test-isolation: allowed — the subject is that nothing is written under the home; the gate runs it under an empty one
     let location = Path::new(&home).join(BELOW_HOME);
     let mut record = Vec::new();
     visit(&location, &mut record);

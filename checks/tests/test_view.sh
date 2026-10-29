@@ -310,7 +310,7 @@ test_each_family_is_reported() {
   check_family F11 Shell/S.swift 'let h = ProcessInfo.processInfo.environment["HOME"]' '.environment'
   check_family F11 Shell/S.swift 'let a = CommandLine.arguments' 'CommandLine'
   check_family F11 Shell/S.swift 'let d = UserDefaults.standard' 'UserDefaults'
-  check_family F11 Shell/S.swift 'let h = getenv("HOME")' 'getenv'
+  check_family F11 Shell/S.swift 'let h = getenv("HOME")' 'getenv'  # test-isolation: allowed — fixture text for the F11 check
   check_family F12 Surfaces/RootItemsView.swift 'let r = ka_reader_list_tree(nil)' 'ka_reader_list_tree'
   check_family F12 Surfaces/RootItemsView.swift 'import CKAReaderBridge' 'CKAReaderBridge'
   check_family F13 Shell/S.swift 'NSAlert().runModal()' 'NSAlert'
