@@ -114,6 +114,394 @@ STDERR=""
 APPENDED_LINE=0
 PLANT_DIR=""
 
+
+# CP-965–CP-972: C names use the same package and reviewed-pair contract as Rust.
+C_CASES="
+test_getenv_in_c_fails_unlisted_then_passes_listed
+test_getenv_in_cpp_fails_unlisted_then_passes_listed
+test_environ_in_c_fails_unlisted_then_passes_listed
+test_environ_in_cpp_fails_unlisted_then_passes_listed
+test_nsgetenviron_in_c_fails_unlisted_then_passes_listed
+test_nsgetenviron_in_cpp_fails_unlisted_then_passes_listed
+test_getenv_substrings_are_canonical_reads
+test_array_names_match_file_edges_and_punctuation
+test_array_names_reject_identifier_adjacency
+test_c_names_are_case_sensitive
+test_array_names_treat_non_ascii_bytes_as_boundaries
+test_c_matches_count_in_every_admitted_raw_file
+test_c_packages_are_scoped_by_resolution_and_membership
+test_c_pairs_accept_only_the_nine_canonical_names
+test_malformed_c_rows_leave_other_findings_visible
+test_c_findings_keep_complete_numeric_and_path_order
+test_each_c_pair_stales_only_after_its_last_occurrence
+test_unreadable_c_and_cpp_sources_fail_without_stale
+test_c_matching_failure_after_admission_is_unreadable
+test_only_the_manifest_named_build_file_is_excepted_for_c_reads
+test_c_reads_survive_absent_false_and_unknown_build_settings
+test_c_links_and_streams_keep_admission_failures
+"
+CASES="$C_CASES$CASES"
+CASES="${CASES%test_suite_leaves_original_inputs_unchanged*}test_suite_reports_every_c_case_in_a_whole_run
+test_suite_leaves_original_inputs_unchanged
+"
+
+expect_exact_findings() {
+  printf '%s\n' "$1" > "$CASE/expected.stderr"
+  [ "$STATUS" -eq 1 ] && [ ! -s "$CASE/stdout" ] && cmp -s "$CASE/expected.stderr" "$CASE/stderr" \
+    || fail "Expected the same complete findings in the specified order. Expected output: $1. Observed output: $STDERR. Compare kind, crate, read name, numeric list line and first path before changing the expectation."
+}
+
+expect_exact_success() {
+  local extra_pairs="${1:-0}" extra_scanned="${2:-0}" extra_skipped="${3:-0}"
+  local pairs scanned skipped
+  pairs="$(awk -F '|' '$0 !~ /^[[:space:]]*(#|$)/ {gsub(/[[:space:]]/, "", $1); gsub(/[[:space:]]/, "", $2); held[$1 FS $2]=1} END {for (pair in held) n++; print n+0}' "$REAL_LIST")"
+  read -r scanned skipped < "$WORK/real-counts"
+  printf 'entry-points.sh: ok — %s crates scanned, %s members skipped, %s reads matched\n' \
+    "$((scanned + extra_scanned))" "$((skipped + extra_skipped))" "$((pairs + extra_pairs))" > "$CASE/expected.stdout"
+  [ "$STATUS" -eq 0 ] && [ ! -s "$CASE/stderr" ] && cmp -s "$CASE/expected.stdout" "$CASE/stdout" \
+    || fail "Expected one counting line on standard output and no stderr. Expected standard output: $(cat "$CASE/expected.stdout"). Observed standard output: $STDOUT. Observed stderr: $STDERR. Compare the scanned, skipped and matched counts with the planted pair."
+}
+
+c_transition() {
+  local read_name="$1" extension="$2" bytes="${3:-$1}" relative="${4:-vendor/deep/read.$2}"
+  new_case
+  plant_copy itoa || return 1
+  plant_file "$PLANT_DIR" "$relative" "$bytes"
+  run_scan
+  expect_exact_findings "entry-points.sh: unlisted: itoa $read_name $relative" || return 1
+  append_list_line "itoa | $read_name | planted"
+  run_scan
+  expect_exact_success 1
+}
+
+test_getenv_in_c_fails_unlisted_then_passes_listed() { c_transition getenv c; }
+test_getenv_in_cpp_fails_unlisted_then_passes_listed() { c_transition getenv cpp; }
+test_environ_in_c_fails_unlisted_then_passes_listed() { c_transition environ c; }
+test_environ_in_cpp_fails_unlisted_then_passes_listed() { c_transition environ cpp; }
+test_nsgetenviron_in_c_fails_unlisted_then_passes_listed() { c_transition _NSGetEnviron c; }
+test_nsgetenviron_in_cpp_fails_unlisted_then_passes_listed() { c_transition _NSGetEnviron cpp; }
+
+test_getenv_substrings_are_canonical_reads() {
+  local bytes
+  for bytes in git__getenv _getenv getenv_suffix xgetenv_y 'prose getenv here'; do
+    c_transition getenv c "$bytes" notes.txt || return 1
+  done
+}
+
+test_array_names_match_file_edges_and_punctuation() {
+  local name bytes
+  for name in environ _NSGetEnviron; do
+    for bytes in "$name" "($name)" "-$name-"; do
+      new_case
+      plant_copy itoa || return 1
+      printf '%s' "$bytes" > "$PLANT_DIR/read.c"
+      run_scan
+      expect_exact_findings "entry-points.sh: unlisted: itoa $name read.c" || return 1
+    done
+  done
+  new_case
+  plant_copy itoa || return 1
+  printf 'environ-_NSGetEnviron' > "$PLANT_DIR/read.cpp"
+  run_scan
+  expect_exact_findings 'entry-points.sh: unlisted: itoa _NSGetEnviron read.cpp
+entry-points.sh: unlisted: itoa environ read.cpp'
+}
+
+test_array_names_reject_identifier_adjacency() {
+  new_case
+  plant_copy itoa || return 1
+  local name adjacent
+  for name in environ _NSGetEnviron; do
+    for adjacent in a Z 0 9 _; do
+      printf '%s%s %s%s\n' "$adjacent" "$name" "$name" "$adjacent" >> "$PLANT_DIR/read.c"
+    done
+  done
+  printf '%s\n' 'myenviron environ2 _environ _NSGetEnvironExtra x_NSGetEnviron _NSGetEnviron_' >> "$PLANT_DIR/read.c"
+  run_scan
+  expect_exact_success
+}
+
+test_c_names_are_case_sensitive() {
+  new_case
+  plant_copy itoa || return 1
+  plant_file "$PLANT_DIR" read.cpp 'GETENV Getenv ENVIRON Environ _nsgetenviron _NSGETENVIRON'
+  run_scan
+  expect_exact_success
+}
+
+test_array_names_treat_non_ascii_bytes_as_boundaries() {
+  new_case
+  plant_copy itoa || return 1
+  plant_file "$PLANT_DIR" read.cpp 'éenvironé é_NSGetEnvironé'
+  run_scan
+  expect_exact_findings 'entry-points.sh: unlisted: itoa _NSGetEnviron read.cpp
+entry-points.sh: unlisted: itoa environ read.cpp'
+}
+
+test_c_matches_count_in_every_admitted_raw_file() {
+  local relative
+  for relative in vendor/read.h vendor/read.hpp vendor/comment.c vendor/string.cpp docs/notes.txt data/bytes.bin; do
+    new_case
+    plant_copy itoa || return 1
+    mkdir -p "$(dirname "$PLANT_DIR/$relative")"
+    printf '\000/* getenv */ "getenv"\000\n' > "$PLANT_DIR/$relative"
+    run_scan
+    expect_exact_findings "entry-points.sh: unlisted: itoa getenv $relative" || return 1
+    append_list_line 'itoa | getenv | planted'
+    run_scan
+    expect_exact_success 1 || return 1
+  done
+}
+
+add_c_package() {
+  local name="$1" version="$2" folder="$3" member="${4:-no}"
+  mkdir -p "$folder"
+  printf '[package]\nname = "%s"\nversion = "%s"\nbuild = false\n' "$name" "$version" > "$folder/Cargo.toml"
+  printf '%s v%s\n' "$name" "$version" >> "$STUB/tree.extra"
+  meta_add_package "$name" "$version" "path+file://$folder#$name@$version" "$folder/Cargo.toml"
+  [ "$member" != yes ] || meta_add_member "path+file://$folder#$name@$version"
+}
+
+test_c_packages_are_scoped_by_resolution_and_membership() {
+  new_case
+  add_c_package ka-reader-third 0.0.1 "$CASE/member" yes
+  plant_file "$CASE/member" vendor/deep/read.c getenv
+  add_c_package ka-reader-core-lookalike 0.0.1 "$CASE/external"
+  plant_file "$CASE/external" vendor/deep/read.cpp environ
+  run_scan
+  expect_exact_findings 'entry-points.sh: unlisted: ka-reader-core-lookalike environ vendor/deep/read.cpp' || return 1
+  append_list_line 'ka-reader-core-lookalike | environ | planted'
+  run_scan
+  expect_exact_success 1 1 1
+}
+
+test_c_pairs_accept_only_the_nine_canonical_names() {
+  new_case
+  plant_copy itoa || return 1
+  plant_file "$PLANT_DIR" read.c 'getenv environ _NSGetEnviron'
+  local name
+  for name in getenv environ _NSGetEnviron; do
+    append_list_line "   itoa  |  $name  |  planted | with separator  "
+  done
+  printf '\n   # comment\n' >> "$LIST"
+  run_scan
+  expect_exact_success 3 || return 1
+  append_list_line 'itoa | env::getenv | unknown'
+  run_scan
+  expect_exact_findings "entry-points.sh: malformed: line $APPENDED_LINE: Read name env::getenv is not one of the nine read names: env::var, env::var_os, env::vars, env::vars_os, env::args, env::args_os, getenv, environ, _NSGetEnviron. Replace it with one of those names."
+}
+
+test_malformed_c_rows_leave_other_findings_visible() {
+  new_case
+  plant_copy itoa || return 1
+  plant_file "$PLANT_DIR" read.c 'getenv environ _NSGetEnviron'
+  local start
+  start="$(wc -l < "$LIST" | tr -d ' ')"
+  printf '%s\n' ' | getenv | planted' 'itoa | | planted' 'itoa | getenv |' 'itoa | env::getenv | unknown' 'itoa | environ | planted' 'itoa | environ | repeated' 'ghost | getenv | stale' 'quote | environ | unreadable' >> "$LIST"
+  plant_copy quote || return 1
+  chmod 000 "$PLANT_DIR"
+  run_scan
+  [ "$STATUS" -eq 1 ] && [ ! -s "$CASE/stdout" ] || return 1
+  expect_stderr_contains "malformed: line $((start + 1)): lacks its crate" || return 1
+  expect_stderr_contains "malformed: line $((start + 2)): lacks its name" || return 1
+  expect_stderr_contains "malformed: line $((start + 3)): lacks its what-it-changes text" || return 1
+  expect_stderr_contains "malformed: line $((start + 4)): Read name env::getenv is not one of the nine read names:" || return 1
+  expect_stderr_contains "malformed: line $((start + 6)): repeats the crate and name of line $((start + 5))" || return 1
+  expect_finding stale ghost getenv || return 1
+  expect_finding unlisted itoa getenv || return 1
+  expect_finding unlisted itoa _NSGetEnviron || return 1
+  expect_finding unreadable quote || return 1
+  expect_no_finding_for_crate_kind stale quote || return 1
+  if printf '%s\n' "$STDERR" | grep -qF 'entry-points.sh: unlisted: itoa environ '; then
+    fail "Expected this finding: only the unlisted planted pairs. Observed stderr: $STDERR. Compare the reported name, kind, line and path with the planted input." || return 1
+  fi
+}
+
+test_c_findings_keep_complete_numeric_and_path_order() {
+  new_case
+  printf '#!/usr/bin/env bash\nset -o pipefail\n"%s" "$@" | LC_ALL=C sort -z -r\n' "$(command -v find)" > "$STUB/find"
+  chmod +x "$STUB/find"
+  plant_copy itoa || return 1
+  plant_file "$PLANT_DIR" vendor/z.c 'getenv getenv'
+  add_c_package itoa 9.9.9 "$CASE/second"
+  plant_file "$CASE/second" vendor/a.cpp 'getenv getenv'
+  : > "$STUB/tree.repeat"
+  cp "$LIST" "$CASE/original-list"
+  : > "$LIST"
+  local number
+  for number in 1 2 3 4 5 6 7 8; do printf '# %s\n' "$number" >> "$LIST"; done
+  printf '%s\n' 'itoa | getenv |' ' | environ | planted' >> "$LIST"
+  cat "$CASE/original-list" >> "$LIST"
+  run_scan
+  expect_exact_findings 'entry-points.sh: malformed: line 9: lacks its what-it-changes text
+entry-points.sh: malformed: line 10: lacks its crate
+entry-points.sh: unlisted: itoa getenv vendor/a.cpp' || return 1
+  cp "$CASE/stderr" "$CASE/first.stderr"
+  run_scan
+  cmp -s "$CASE/first.stderr" "$CASE/stderr" || return 1
+  expect_exact_findings 'entry-points.sh: malformed: line 9: lacks its what-it-changes text
+entry-points.sh: malformed: line 10: lacks its crate
+entry-points.sh: unlisted: itoa getenv vendor/a.cpp'
+}
+
+test_each_c_pair_stales_only_after_its_last_occurrence() {
+  local name
+  for name in getenv environ _NSGetEnviron; do
+    new_case
+    plant_copy itoa || return 1
+    local first="$PLANT_DIR"
+    plant_file "$first" read.c "$name"
+    plant_file "$first" read.cpp "$name"
+    add_c_package itoa 9.9.9 "$CASE/second"
+    plant_file "$CASE/second" read.c "$name"
+    append_list_line "itoa | $name | planted"
+    run_scan
+    expect_exact_success 1 1 || return 1
+    rm "$first/read.c"
+    run_scan
+    expect_exact_success 1 1 || return 1
+    rm "$first/read.cpp"
+    run_scan
+    expect_exact_success 1 1 || return 1
+    rm "$CASE/second/read.c"
+    run_scan
+    expect_exact_findings "entry-points.sh: stale: itoa $name" || return 1
+    # Remove a resolved version, leaving an occurrence in the first.
+    plant_file "$first" read.c "$name"
+    rm "$STUB/tree.extra"
+    run_scan
+    expect_exact_success 1 || return 1
+  done
+}
+
+test_unreadable_c_and_cpp_sources_fail_without_stale() {
+  local extension
+  for extension in c cpp; do
+    new_case
+    plant_copy itoa || return 1
+    plant_file "$PLANT_DIR" "read.$extension" getenv
+    chmod 000 "$PLANT_DIR/read.$extension"
+    append_list_line 'itoa | getenv | planted'
+    append_list_line 'ghost | environ | stale'
+    plant_copy quote || return 1
+    plant_file "$PLANT_DIR" read.c _NSGetEnviron
+    run_scan
+    expect_exact_findings "entry-points.sh: stale: ghost environ
+entry-points.sh: unlisted: quote _NSGetEnviron read.c
+entry-points.sh: unreadable: itoa cannot read read.$extension" || return 1
+  done
+}
+
+test_c_matching_failure_after_admission_is_unreadable() {
+  local diagnostic
+  for diagnostic in yes no; do
+    new_case
+    plant_copy itoa || return 1
+    plant_file "$PLANT_DIR" read.c getenv
+    append_list_line 'itoa | getenv | planted'
+    cat > "$STUB/grep" <<STUB_END
+#!/usr/bin/env bash
+for arg in "\$@"; do
+  case "\$arg" in *copy-itoa/read.c)
+    case "\$*" in *getenv*)
+      [ "$diagnostic" != yes ] || echo 'planted matcher failure' >&2
+      exit 2 ;;
+    esac ;;
+  esac
+done
+exec "$(command -v grep)" "\$@"
+STUB_END
+    chmod +x "$STUB/grep"
+    run_scan
+    [ "$STATUS" -eq 1 ] && [ ! -s "$CASE/stdout" ] || return 1
+    expect_finding unreadable itoa || return 1
+    expect_no_finding_for_crate_kind stale itoa || return 1
+  done
+  new_case
+  plant_copy itoa || return 1
+  plant_file "$PLANT_DIR" read.c nothing
+  run_scan
+  expect_exact_success
+}
+
+test_only_the_manifest_named_build_file_is_excepted_for_c_reads() {
+  new_case
+  plant_copy itoa || return 1
+  sed 's|^build = false|build = "tools/gen.rs"|' "$PLANT_DIR/Cargo.toml" > "$PLANT_DIR/manifest.tmp"
+  mv "$PLANT_DIR/manifest.tmp" "$PLANT_DIR/Cargo.toml"
+  plant_file "$PLANT_DIR" tools/gen.rs 'getenv include!("helper.c");'
+  chmod 000 "$PLANT_DIR/tools/gen.rs"
+  run_scan
+  expect_exact_success || return 1
+  plant_file "$PLANT_DIR" tools/helper.c environ
+  plant_file "$PLANT_DIR" build.rs _NSGetEnviron
+  run_scan
+  expect_exact_findings 'entry-points.sh: unlisted: itoa _NSGetEnviron build.rs
+entry-points.sh: unlisted: itoa environ tools/helper.c' || return 1
+  chmod 000 "$PLANT_DIR/tools/helper.c"
+  run_scan
+  expect_exact_findings 'entry-points.sh: unlisted: itoa _NSGetEnviron build.rs
+entry-points.sh: unreadable: itoa cannot read tools/helper.c'
+}
+
+test_c_reads_survive_absent_false_and_unknown_build_settings() {
+  local setting
+  for setting in false true absent; do
+    new_case
+    plant_copy itoa || return 1
+    if [ "$setting" = absent ]; then
+      sed '/^build = /d' "$PLANT_DIR/Cargo.toml" > "$PLANT_DIR/manifest.tmp"
+    else
+      sed "s/^build = false/build = $setting/" "$PLANT_DIR/Cargo.toml" > "$PLANT_DIR/manifest.tmp"
+    fi
+    mv "$PLANT_DIR/manifest.tmp" "$PLANT_DIR/Cargo.toml"
+    plant_file "$PLANT_DIR" nested/read.c getenv
+    run_scan
+    expect_exact_findings 'entry-points.sh: unlisted: itoa getenv nested/read.c' || return 1
+  done
+  new_case
+  plant_copy itoa || return 1
+  sed '/^build = /d' "$PLANT_DIR/Cargo.toml" > "$PLANT_DIR/manifest.tmp"
+  mv "$PLANT_DIR/manifest.tmp" "$PLANT_DIR/Cargo.toml"
+  plant_file "$PLANT_DIR" build.rs getenv
+  run_scan
+  expect_exact_success
+}
+
+test_c_links_and_streams_keep_admission_failures() {
+  local extension
+  for extension in c cpp; do
+    new_case
+    plant_copy itoa || return 1
+    plant_file "$CASE" linked-bytes getenv
+    ln -s "$CASE/linked-bytes" "$PLANT_DIR/linked.$extension"
+    run_scan
+    expect_exact_findings "entry-points.sh: unlisted: itoa getenv linked.$extension" || return 1
+    append_list_line 'itoa | getenv | planted'
+    run_scan
+    expect_exact_success 1 || return 1
+    rm "$CASE/linked-bytes"
+    run_scan
+    expect_exact_findings "entry-points.sh: unreadable: itoa cannot read linked.$extension" || return 1
+    rm "$PLANT_DIR/linked.$extension"
+    mkfifo "$PLANT_DIR/stream.$extension"
+    run_scan
+    expect_exact_findings "entry-points.sh: unreadable: itoa cannot read stream.$extension" || return 1
+  done
+}
+
+test_suite_reports_every_c_case_in_a_whole_run() {
+  [ -z "${KA_READER_ENTRY_POINTS_WHOLE_CHILD:-}" ] || return 0
+  local out status name
+  out="$(env -u KA_READER_TEST_ONLY KA_READER_ENTRY_POINTS_WHOLE_CHILD=1 "$SUITE" 2>&1)"
+  status=$?
+  [ "$status" -eq 0 ] || fail "$out" || return 1
+  for name in $C_CASES; do
+    [ "$(printf '%s\n' "$out" | grep -c "^ok   $name\$")" -eq 1 ] \
+      || fail "The full run did not report $name. Compare the registered cases with the complete run output before accepting its coverage. Output: $out." || return 1
+  done
+}
+
 # --- helpers: the real tree ---
 
 fail() {
@@ -326,6 +714,7 @@ test_case_1_clean_tree_passes() {
 
   expect_zero_status || return 1
   expect_empty_stderr || return 1
+  expect_exact_success || return 1
   expect_no_finding_for_crate ka-reader-core || return 1
   expect_no_finding_for_crate ka-reader-bridge || return 1
   [ "$(printf '%s\n' "$STDOUT" | wc -l | tr -d ' ')" -eq 1 ] || fail "expected one line on stdout, got: $STDOUT" || return 1
@@ -975,7 +1364,7 @@ test_findings_are_distinct_and_deterministic() {
   [ "$first_run" = "$STDERR" ] || fail "two runs on one tree printed different stderr" || return 1
   # The expected records are written from the plants above, in the order the scan is held to. They
   # are compared with stderr as printed: never sorted and never made unique first.
-  expected="entry-points.sh: malformed: line 9: names env::getenv, which is none of the six read names
+  expected="entry-points.sh: malformed: line 9: Read name env::getenv is not one of the nine read names: env::var, env::var_os, env::vars, env::vars_os, env::args, env::args_os, getenv, environ, _NSGetEnviron. Replace it with one of those names.
 entry-points.sh: malformed: line 10: lacks its what-it-changes text
 entry-points.sh: stale: tokio env::var
 entry-points.sh: unlisted: itoa env::args src/a_first.rs
@@ -1156,7 +1545,7 @@ test_suite_leaves_original_inputs_unchanged() {
   cmp -s "$WORK/baseline.packages" "$WORK/now.packages" || fail "a scanned package directory changed since the run began" || return 1
 
   snapshot_inputs "$WORK/before"
-  out="$(KA_READER_TEST_ONLY="test_case_2_unlisted_read_names_its_file test_case_4_unopenable_package_fails test_c6_unreadable_file_fails" "$SUITE" 2>&1)"
+  out="$(KA_READER_TEST_ONLY="test_case_2_unlisted_read_names_its_file test_case_4_unopenable_package_fails test_c6_unreadable_file_fails test_getenv_in_c_fails_unlisted_then_passes_listed test_nsgetenviron_in_cpp_fails_unlisted_then_passes_listed test_unreadable_c_and_cpp_sources_fail_without_stale" "$SUITE" 2>&1)"
   status=$?
   [ "$status" -eq 0 ] || fail "the selected run exited $status. output: $out" || return 1
   snapshot_inputs "$WORK/after"
@@ -1189,6 +1578,20 @@ done
 # script's input. The state the suite must leave unchanged is recorded before the first case.
 (cd "$ROOT" && "$REAL_CARGO" metadata --format-version 1 --locked --filter-platform aarch64-apple-darwin) > "$WORK/real-metadata.json" 2> "$WORK/real-metadata.err" \
   || { echo "test_entry_points.sh: cargo metadata failed: $(cat "$WORK/real-metadata.err")" >&2; exit 1; }
+(cd "$ROOT" && "$REAL_CARGO" tree -p ka-reader-bridge --target aarch64-apple-darwin -e normal --locked --prefix none --format '{p}') > "$WORK/real-tree" || exit 1
+member_count="$(plutil -extract workspace_members raw -expect array "$WORK/real-metadata.json")" || exit 1
+: > "$WORK/member-ids"
+for ((member_index = 0; member_index < member_count; member_index++)); do
+  plutil -extract "workspace_members.$member_index" raw -expect string "$WORK/real-metadata.json" >> "$WORK/member-ids" || exit 1
+done
+awk 'NF >= 2 && $2 ~ /^v[0-9]/ {print $1 "\t" substr($2,2)}' "$WORK/real-tree" | LC_ALL=C sort -u > "$WORK/tree-pairs"
+metadata_packages "$WORK/real-metadata.json" > "$WORK/package-table"
+awk -F '\t' -v members="$WORK/member-ids" -v packages="$WORK/package-table" '
+  FILENAME == members {member[$0]=1; next}
+  FILENAME == packages {is_member[$1 FS $2] = ($3 in member); next}
+  {if (is_member[$1 FS $2]) skipped++; else scanned++}
+  END {print scanned+0, skipped+0}
+' "$WORK/member-ids" "$WORK/package-table" "$WORK/tree-pairs" > "$WORK/real-counts"
 snapshot_inputs "$WORK/baseline"
 
 failed=0
