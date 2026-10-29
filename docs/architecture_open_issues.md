@@ -53,6 +53,20 @@
   suites, the new one named, its step and its unpaired role — and let QC-53, its § 10 row and § 10's
   QC-53 verifier name this suite as the check of the *Strings check* step's presence and order, beside
   the lint and its suite. The `f25fdbb` reading stays as a dated note.
-- **Answer:** <the owner fills this in>
+- **Answer:** Confirm the proposed fold, with the verifier's scope made explicit. Re-measure § 9
+  at a named commit: fifteen suites, each the whole command of its own gate step, with
+  `checks/tests/test_strings_step.sh` as the third unpaired suite alongside `test_vm_refusal.sh`
+  and `test_secret_scan_planted.sh` (measured at `ka-reader@f5eb32e3fc6b3eed96b3170924fe0b6aa767fb19`;
+  `checks/gate.sh:L52-L119`). Add the new suite to QC-53's verifier and its § 10 row. It checks
+  exactly one complete *Strings check* command before the first *Strings check suite* command;
+  it checks presence and order, not adjacency or catalogue contents
+  (`checks/tests/test_strings_step.sh:L113-L156`, `:L464-L467`). Keep the lint, its own suite and
+  the existing Swift error-path cases as distinct verifiers. Update the two-path explanation:
+  a remaining content-checking path does not make removal of the direct lint step acceptable,
+  because the new suite's independent real-gate case then fails (`:L333-L338`). Carry the same
+  re-measurement through § 8's gate paragraph: version 1.6.0, 33 steps
+  (`checks/gate.sh:L2`, `:L51-L131`). Retain the `f25fdbb` readings as dated history. No ADR or
+  new quality constraint is needed for this verifier refresh. Reasoning, checks and the review
+  limit are in `docs/trail/architecture/self_answer-66.md`.
 
 **How it closes.** `product-architecture` folds it on its next run like any other item here.
