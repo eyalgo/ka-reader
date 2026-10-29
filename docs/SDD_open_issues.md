@@ -62,7 +62,7 @@
   to them. The behavior described remains supported by those cases.
 - **If overridden:** Retain another source locator only if it opens the named assertion at
   the stated commit. No slice, seam, requirement, or test needs to change for this correction.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm
 
 ## 3. Cut calls to confirm — where the slicing could reasonably have gone another way
 
