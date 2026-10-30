@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
+# checks/tests/test_strings.sh — the tests of checks/strings.sh, the QC-53 catalogue lint.
+# Version: 1.0.1 — Describes the no-table CONTENT input and both required observations in the
+#   no-term diagnostic.
 # Version: 1.0.0 — first version: drives the real checks/strings.sh against temporary copies of
 #   the message catalogue and of docs/CONTENT.md, with the negative controls that prove the suite
 #   and the every-term case can fail
-#
-# checks/tests/test_strings.sh — the tests of checks/strings.sh, the QC-53 catalogue lint.
 #
 # WHY THIS EXISTS
 #   checks/strings.sh fails the build when a string literal under ka-reader-mac/Sources/Surfaces
@@ -869,7 +870,7 @@ test_every_term_case_fails_when_it_reads_no_term() {
   run_nested test_every_banned_term_planted_alone_fails KA_READER_TEST_CONTENT="$WORK/content-without-table.md"
   if ! printf '%s\n' "$NESTED_OUT" | grep -q '^FAIL test_every_banned_term_planted_alone_fails$' \
     || ! printf '%s\n' "$NESTED_OUT" | grep -qF 'The case read no term from the Never column'; then
-    fail "The suite ran against a copy of checks/strings.sh altered to miss a finding, and test_every_banned_term_planted_alone_fails did not report FAIL. Its output follows."
+    fail "The nested run received CONTENT with no banned-terms table, but it did not report both FAIL for test_every_banned_term_planted_alone_fails and the explanation that no term was read from the Never column. Compare the nested output with those two required observations. Its output follows."
     nested_output_indented
     return 1
   fi

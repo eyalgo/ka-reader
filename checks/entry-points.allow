@@ -5,30 +5,58 @@
 # this file says which are accepted and what each changes. See the script's header for what it reads and
 # what it does not hold.
 #
-# One line per read:   <crate> | <name> | <what the read changes in the shipped process>
-#   <crate>  the crate's name, no version: a read in either of two resolved versions is one line.
-#   <name>   one of env::var, env::var_os, env::vars, env::vars_os, env::args, env::args_os, written in full.
-#   text     non-empty; it may itself contain `|`. It says what the read changes in the process that ships,
-#            and says so plainly when the occurrence is documentation or test code that never runs there.
-# Blank lines and lines whose first non-blank character is `#` are ignored. Fields are trimmed.
+#   Each entry has three fields: crate | read name | what the read changes in the shipped process.
+#   Write the crate name without a version; all resolved versions share one pair. Write one of these
+#   nine names in full: env::var, env::var_os, env::vars, env::vars_os, env::args, env::args_os,
+#   getenv, environ, _NSGetEnviron. The explanation is non-empty and may contain |. Fields are
+#   trimmed. Blank lines and lines whose first non-blank character is # are ignored. A missing
+#   field, an unknown name or a repeated well-formed crate and read-name pair stops the scan with
+#   the list line's number. Such a line authorizes no pair. The list contains at least one entry. An
+#   unlisted pair and a listed pair absent from every resolved version both stop the scan from
+#   passing. If a crate cannot be read, its absent pairs are not also reported as stale. Correct the
+#   numbered line or review the reported pair against the locked sources before changing the list.
 #
-# A line is MALFORMED, and fails the run naming its number, when it lacks its crate, its name or its text,
-# names something other than the six, or repeats the crate and name of an earlier line. A malformed line
-# takes no part in the comparison. The list must hold at least one line.
-#
-# The comparison fails in both directions: a read with no line here is unlisted, and a line whose read the
-# scan no longer finds is stale. A change that moves Cargo.lock edits this file in the same commit
-# (NFDR QC-30, QC-26), so the list cannot go stale unnoticed.
-#
-# What review of THIS file checks, past what the script can (NFDR QC-30, CP-405):
-#   - that each text is true: read the actual occurrence at the version the lock resolves, and say what it
-#     changes, including "nothing" for a doc comment, a README or a test helper;
-#   - that no read of the shipped process is accepted without that being said in its text.
-# The script never judges a text beyond its being non-empty.
+#   Review every occurrence contributing to each added pair at the locked package version. State
+#   what it changes in the shipped process. Distinguish reached reads from declarations,
+#   documentation, tests, build-only code, uncompiled code and dormant calls. A statement that an
+#   occurrence changes nothing needs source evidence too. Record the locked package version, the
+#   matching source sites, the build conditions and the callers supporting its reach beside the
+#   explanation. Evidence for one occurrence does not cover the other occurrences sharing its pair.
+#   The scan checks that an explanation is non-empty; a person reviewing the list addition decides
+#   whether the read is acceptable. A green comparison does not make that decision. Review existing
+#   pairs and explanations again after a dependency or feature change, because a new site inside a
+#   listed pair does not create an unlisted finding.
 
-git2 | env::var | src/build.rs only: a doc-comment example (`env::var("HOME")` at `:L31`, inside a `no_run` doctest for `RemoteCallbacks`); documentation, so the shipped process reads nothing. libgit2's own C reads of HOME and the XDG variables are not an `env::` name and are not held here (see the change design's "Reads outside the folder")
+git2 | env::var | The occurrence is an environment-lookup example in a documentation comment for remote callbacks. It is not a call made by the shipped process, so it changes nothing in that process. The Git dependency's C environment lookups have their own reviewed entry.
 libz-sys | env::var | zng/cc.rs only: the zlib-ng source build's `CARGO_CFG_TARGET_OS`, `CARGO_CFG_TARGET_ARCH`, `CARGO_CFG_TARGET_FEATURE` and `TARGET` reads, which `build.rs` compiles only under the `zlib-ng-no-cmake-experimental-community-maintained` feature (`build.rs:L175-L186`); the lock resolves only `libc` for libz-sys, so the file is not compiled and the shipped process reads nothing
 libz-sys | env::var_os | zng/cc.rs only: `OUT_DIR` at `:L105`, read by the same zlib-ng source build, behind the same feature the lock does not resolve; a build-script input and not part of the shipped process
 quote | env::var_os | README.md only: a build.rs usage example in the documentation (`env::var_os("OUT_DIR")`); not compiled, so the shipped process reads nothing
 syn | env::args | src/file.rs only: a doc comment's example program (`env::args()`); documentation, so the shipped process reads nothing
 syn | env::var | tests/repo/mod.rs only: syn's own test helper reads ABORT_AFTER_FAILURE and RUST_MIN_STACK; a test, not part of the library, so the shipped process reads nothing
+
+# Locked-source review: libgit2-sys 0.18.8+1.9.7. Matching sites: libgit2/deps/pcre2/CMakeLists.txt:L34; libgit2/src/cli/common.c:L46; libgit2/src/cli/opt.c:L327; libgit2/src/cli/opt.c:L330; libgit2/src/libgit2/remote.c:L1147; libgit2/src/libgit2/remote.c:L1151; libgit2/src/libgit2/remote.c:L1157; libgit2/src/libgit2/remote.c:L1160; libgit2/src/libgit2/repository.c:L210; libgit2/src/libgit2/repository.c:L393; libgit2/src/libgit2/repository.c:L933; libgit2/src/libgit2/repository.c:L947; libgit2/src/libgit2/repository.c:L957; libgit2/src/libgit2/repository.c:L1074; libgit2/src/libgit2/repository.c:L1369; libgit2/src/libgit2/repository.c:L1380; libgit2/src/libgit2/repository.c:L1393; libgit2/src/libgit2/repository.c:L1490; libgit2/src/libgit2/repository.c:L1510; libgit2/src/libgit2/repository.c:L1641; libgit2/src/libgit2/signature.c:L230; libgit2/src/libgit2/signature.c:L239; libgit2/src/libgit2/signature.c:L247; libgit2/src/libgit2/signature.c:L261; libgit2/src/libgit2/sysdir.c:L347; libgit2/src/libgit2/sysdir.c:L357; libgit2/src/libgit2/sysdir.c:L402; libgit2/src/libgit2/sysdir.c:L405; libgit2/src/libgit2/transports/ssh_exec.c:L156; libgit2/src/libgit2/transports/ssh_exec.c:L160; libgit2/src/util/fs_path.c:L1984; libgit2/src/util/fs_path.c:L2081; libgit2/src/util/util.c:L756; libgit2/src/util/util.c:L786; libgit2/src/util/util.c:L788; libgit2/src/util/util.h:L354. Build and call-path evidence: build.rs:L149-L185, L208, L248-L254; libgit2/src/libgit2/sysdir.c:L336-L418, L453-L459; libgit2/src/libgit2/repository.c:L926-L958, L1130; libgit2/src/util/fs_path.c:L1978-L2033; libgit2/src/util/unix/process.c:L102-L172, L198-L210; libgit2/src/libgit2/transports/ssh_exec.c:L10, L258; git2 0.21.0 src/opts.rs:L27; product crates/ka-reader-bridge/src/machine_config.rs:L118-L121; product crates/ka-reader-core/src/git_reader/libgit2.rs:L121, L411, L1011-L1012; product crates/ka-reader-core/src/git_reader/config_scan.rs:L26-L28; product crates/ka-reader-core/Cargo.toml:L9; product ka-reader-mac/Entitlements.plist:L5-L6.
+libgit2-sys | getenv | Library initialisation reads the process environment to seed search-path guesses. The sandbox selects the password entry for the global and home guesses; the XDG guess still reads the XDG and home values. Before any repository handle exists, the bridge empties the four machine search levels. The remaining home guess can expand a home-relative value, but the reader stops such a value as not located before opening it. These initialisation reads therefore change no file the shipped process opens. The ownership read runs only with effective root identity, outside the shipped app's execution. Other occurrences are declarations, dormant calls, uncompiled code or build text; they do not read the shipped process's environment.
+
+# Locked-source review: libc 0.2.189. Matching sites: CHANGELOG.md:L684; src/fuchsia/mod.rs:L3208; src/new/qurt/stdlib.rs:L26; src/solid/mod.rs:L542; src/solid/mod.rs:L601; src/unix/bsd/freebsdlike/freebsd/mod.rs:L5118; src/unix/bsd/freebsdlike/freebsd/mod.rs:L5228; src/unix/mod.rs:L733; src/unix/solarish/mod.rs:L2948; src/vxworks/mod.rs:L1561; src/wasi/mod.rs:L664; src/windows/mod.rs:L367. Build and call-path evidence: src/unix/mod.rs:L733; src/unix/bsd/apple/mod.rs:L5048; src/wasi/mod.rs:L675; src/unix/haiku/native.rs:L1203; etc/libc-util.py:L498, L572, L685, L1053, L1094.
+libc | getenv | The code occurrences are external declarations, not calls. The Unix declaration is compiled for the shipped target; declarations for other targets are not. No caller of this binding occurs in the scanned dependency sources. The remaining occurrence is changelog prose. These occurrences change nothing in the shipped process.
+
+# Locked-source review: libz-sys 1.1.29. Matching sites: src/zlib-ng/arch/arm/arm_features.c:L36. Build and call-path evidence: src/zlib-ng/arch/arm/arm_features.c:L35-L36; product Cargo.lock:L164-L171; build.rs:L175-L186.
+libz-sys | getenv | The occurrence is in the zlib-ng ARM feature check under a FreeBSD-and-AArch64 condition, so it is not compiled for macOS. The locked dependency selection does not build zlib-ng either. This occurrence changes nothing in the shipped process.
+
+# Locked-source review: rustix 1.1.5. Matching sites: src/io_uring/mod.rs:L250. Build and call-path evidence: src/io_uring/mod.rs:L250; src/lib.rs:L225-L228.
+rustix | getenv | The occurrence is a substring inside documentation for a Linux-only module. It is not a call. This occurrence changes nothing in the shipped process.
+
+# Locked-source review: libgit2-sys 0.18.8+1.9.7. Matching sites: libgit2/src/util/unix/process.c:L21; libgit2/src/util/unix/process.c:L23; libgit2/src/util/unix/process.c:L113; libgit2/src/util/unix/process.c:L128. Build and call-path evidence: build.rs:L149-L185, L208, L248-L254; libgit2/src/libgit2/sysdir.c:L336-L418, L453-L459; libgit2/src/libgit2/repository.c:L926-L958, L1130; libgit2/src/util/fs_path.c:L1978-L2033; libgit2/src/util/unix/process.c:L102-L172, L198-L210; libgit2/src/libgit2/transports/ssh_exec.c:L10, L258; git2 0.21.0 src/opts.rs:L27; product crates/ka-reader-bridge/src/machine_config.rs:L118-L121; product crates/ka-reader-core/src/git_reader/libgit2.rs:L121, L411, L1011-L1012; product crates/ka-reader-core/src/git_reader/config_scan.rs:L26-L28; product crates/ka-reader-core/Cargo.toml:L9; product ka-reader-mac/Entitlements.plist:L5-L6.
+libgit2-sys | environ | The environment-array copy is compiled but dormant. Its process-creation caller is reached only through the external SSH transport, which this build compiles to nothing. The non-Apple declaration is preprocessed away. The shipped process does not read the environment array through these occurrences.
+
+# Locked-source review: libc 0.2.189. Matching sites: etc/libc-util.py:L498; etc/libc-util.py:L572; etc/libc-util.py:L685; etc/libc-util.py:L1053; etc/libc-util.py:L1094; src/unix/haiku/native.rs:L1203; src/wasi/mod.rs:L675. Build and call-path evidence: src/unix/mod.rs:L733; src/unix/bsd/apple/mod.rs:L5048; src/wasi/mod.rs:L675; src/unix/haiku/native.rs:L1203; etc/libc-util.py:L498, L572, L685, L1053, L1094.
+libc | environ | The occurrences belong to a WASI declaration, a Haiku parameter and the maintainers' Python tool. None is compiled into the shipped target, and the Python tool is not part of its build. These occurrences change nothing in the shipped process.
+
+# Locked-source review: tree-sitter 0.27.0. Matching sites: Cargo.lock:L1044; Cargo.lock:L1068; Cargo.lock:L1145; Cargo.lock:L1160; Cargo.lock:L1195. Build and call-path evidence: Cargo.lock:L1044, L1068, L1145, L1160, L1195.
+tree-sitter | environ | All five occurrences are in the package's own locked dependency names. The hyphen beside the matched word counts as a boundary. This package text is not compiled or read by the shipped process, so these occurrences change nothing in it.
+
+# Locked-source review: libgit2-sys 0.18.8+1.9.7. Matching sites: libgit2/src/util/unix/process.c:L21. Build and call-path evidence: build.rs:L149-L185, L208, L248-L254; libgit2/src/libgit2/sysdir.c:L336-L418, L453-L459; libgit2/src/libgit2/repository.c:L926-L958, L1130; libgit2/src/util/fs_path.c:L1978-L2033; libgit2/src/util/unix/process.c:L102-L172, L198-L210; libgit2/src/libgit2/transports/ssh_exec.c:L10, L258; git2 0.21.0 src/opts.rs:L27; product crates/ka-reader-bridge/src/machine_config.rs:L118-L121; product crates/ka-reader-core/src/git_reader/libgit2.rs:L121, L411, L1011-L1012; product crates/ka-reader-core/src/git_reader/config_scan.rs:L26-L28; product crates/ka-reader-core/Cargo.toml:L9; product ka-reader-mac/Entitlements.plist:L5-L6.
+libgit2-sys | _NSGetEnviron | The macOS environment-array macro belongs to the dormant process-creation path. Its caller is reached only through the external SSH transport, which this build compiles to nothing. The shipped process does not call the accessor through this occurrence.
+
+# Locked-source review: libc 0.2.189. Matching sites: src/unix/bsd/apple/mod.rs:L5048. Build and call-path evidence: src/unix/mod.rs:L733; src/unix/bsd/apple/mod.rs:L5048; src/wasi/mod.rs:L675; src/unix/haiku/native.rs:L1203; etc/libc-util.py:L498, L572, L685, L1053, L1094.
+libc | _NSGetEnviron | This is a compiled external declaration with no caller in the scanned dependency sources. The Git dependency uses the platform header rather than this binding. The declaration changes nothing in the shipped process.
