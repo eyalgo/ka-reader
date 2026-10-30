@@ -2,7 +2,8 @@
 
 **Status:** Settled
 **Owner:** Principal Architect
-**Version:** 73 — QC-19 measures every selector contribution between its own before-and-after commits; its verification-map row follows SDD v65 § 6 S-10 — RN-83.
+**Version:** 74 — QC-40 separates writer and own-state tests from the outstanding built-bundle proof; its verification-map row names the interim review gate, on cycle-65 § 3.1 — RN-84.
+Version 73 — QC-19 measures every selector contribution between its own before-and-after commits; its verification-map row follows SDD v65 § 6 S-10 — RN-83.
 Version 72 — Correct QC-30’s verification description to the implemented nine-name dependency scan and planted controls; factual correction on the implementation branch.
 Version 71 — QC-53 and its verification-map row name the lint-step presence-and-order suite; §§ 8 and 9 carry the gate and suite re-measurement authorized by cycle-64 § 3.1 — RN-82.
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · writing bar Draft
@@ -1408,12 +1409,24 @@ import nothing forbidden and still read a path it was never granted.
   not retried.
   — *verified by:* unit tests (layer 1) — the log writer truncates at launch and empties at the
   cap (`cargo test --locked -p ka-reader-bridge`), and the remembered list evicts the oldest entry on the eleventh
-  and exposes no removal (`cargo test --locked -p ka-reader-core`); `checks/own-state.sh` after
-  `checks/churn.sh` — the log under the container is no larger than 1 MiB, and a line written
-  before a relaunch is absent after it (layer 5; `docs/SRS.md` AC-13's inspection, machine-run)
+  and exposes no removal (`cargo test --locked -p ka-reader-core`). Writer regressions remain
+  required when the writer changes; neither their success nor the own-state retention tests
+  discharge the separate layer-5 proof. That proof is owed with the watcher/churn capability in
+  `docs/SDD.md` § 6 S-5: the built-bundle scene generates admitted diagnostic output, measures
+  the container log against NFR-11's on-disk bound (including two instances writing one file),
+  and observes a known pre-launch line absent after relaunch (`docs/SRS.md` AC-13). An empty log
+  without an exercised writer is not proof. Until that scene proves those assertions,
+  `development-design` reading QC-40 is the review gate for the outstanding layer-5 obligation,
+  not an executed layer-5 proof. Reason for the review gate: at
+  `ka-reader@05d8809b5de13a92c26c834a78b5f12a30fe0050`, `checks/churn.sh` is absent, and
+  `checks/own-state.sh:L99-L104` tests log existence only; neither it nor
+  `checks/tests/test_own_state.sh` measures the size or relaunch assertions. The proof follows
+  § 9's placement outside `cargo test`; the review gate follows this document's per-rule
+  executability rule in the header.
   *(traces to: SRS NFR-11, AC-13; FDR R-110, R-178, R-180, R-182; SDD § 4 C-I2; § 3 `own-state`;
   the bound raised from this document and folded at SRS v9 — `docs/trail/architecture/cycle-1.md`
-  § 1.2, RN-11; the remembered-folder clause brought to FDR v3 — RN-12)*
+  § 1.2, RN-11; the remembered-folder clause brought to FDR v3 — RN-12;
+  verification corrected on `docs/trail/architecture/cycle-65.md` § 3.1 — RN-84)*
 - **QC-41:** Every release carries `LICENSE` (MIT) and a `THIRD_PARTY_NOTICES.md` listing every
   crate and package the bundle ships with its licence.
   — *verified by:* `checks/notices.sh` — the names in `cargo tree` each appear in the notices
@@ -2668,7 +2681,7 @@ is stated once, in § 8 *(added at v56, on the owner's answer at `docs/trail/arc
 | QC-37 | `asset_bytes` and the decoder | `cargo test --locked -p ka-reader-bridge --test asset_bytes`; `swift test --package-path ka-reader-mac` | the change | `development-implementation` |
 | QC-38 | own-state fields | `checks/own-state.sh` (suite `test_own_state.sh`) | the tree | CI build |
 | QC-39, QC-52 | log shape and location | `cargo test --locked -p ka-reader-bridge` (layer 1); `checks/own-state.sh` (suite `test_own_state.sh`) | the change; the tree | `development-implementation`; CI build |
-| QC-40 | log bound; own-state retention | `cargo test --locked -p ka-reader-bridge`, `cargo test --locked -p ka-reader-core` (layer 1); `checks/own-state.sh` (suite `test_own_state.sh`) after `checks/churn.sh` | the change; the tree | `development-implementation`; CI build |
+| QC-40 | writer regressions; own-state retention; separate container-log size and relaunch proof | `cargo test --locked -p ka-reader-bridge`; `cargo test --locked -p ka-reader-core` (layer 1). Layer-5 proof owed with SDD § 6 S-5; until its assertions run, review at `development-design`, for the reason in QC-40. No existing own-state check or writer-test result discharges that proof. | the change; the built bundle for layer 5 | `development-implementation` for writer and retention tests; `development-design` for the outstanding layer-5 obligation |
 | QC-41 | third-party notices | `checks/notices.sh` | the release | release |
 | QC-42 | private reporting; SECURITY.md | `gh api repos/eyalgo/ka-reader/private-vulnerability-reporting` | the release | release |
 | QC-44 | standing sentences verbatim | `checks/readme.sh` | the release | release |
@@ -7433,3 +7446,34 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   this revision verifies the scoped correction, not the entire definition set. No product test,
   selector comparison or full gate was executed, and this document change is not evidence of
   selector delivery. The source documents and companion were clean in git before the fold.
+- **RN-84:** *(v74 — QC-40's verification)* The committed answer at
+  `docs/trail/architecture/cycle-65.md` § 3.1 authorizes a correction to QC-40's verification
+  tail and its § 10 projection. The retention policy before that tail is unchanged verbatim.
+  SRS § 4.5 NFR-11 and § 8 AC-13 retain the shared-file bound and the write-failure rule;
+  SDD § 4 C-I2 carries them, and § 6 S-5 names the watcher/churn capability. FDR R-110,
+  R-178, R-180 and R-182 retain the own-state retention contract. No ADR is written or
+  restatused: the correction changes no architectural choice, seam or trade-off.
+
+  **Source check, 2026-10-30.** At
+  `ka-reader@05d8809b5de13a92c26c834a78b5f12a30fe0050`,
+  `git ls-files checks/churn.sh` returned no path, and the directory listing contained no
+  such script. The complete `checks/gate.sh` step list contains no churn invocation.
+  `checks/own-state.sh` § THE THREE CONDITIONS and its condition 1 (`:L99-L104`) test
+  log existence; the remaining conditions concern fixture entries and cleanliness. Its
+  suite, `checks/tests/test_own_state.sh`, was read whole and proves no size or relaunch
+  assertion. These are source observations, not execution results.
+
+  **Verification class.** QC-40 names `development-design` as the review gate for the
+  outstanding built-bundle proof because the cited checks cannot perform it. The gate
+  preserves that obligation until the S-5 scene exercises the writer and observes both
+  assertions. It does not turn review, an empty file, or passing writer regressions into
+  layer-5 evidence. The writer-test command and the own-state test obligation remain
+  separate, and § 9 continues to place built-bundle proof outside `cargo test`.
+
+  **Reading and execution limits.** This fold reads the answered companion and its
+  reasoning whole, the applicable source sections and answer history, and the ADR index;
+  it does not complete the skill's whole-document, whole-record and whole-trail reread.
+  The revision verifies the authorized correction, not the entire definition set. No
+  product test, bundle check or full gate was executed. The input documents and companion
+  were clean in git at intake. Cycle-65 preserves the answered companion whole; removing
+  the resolved companion through the builder leaves this constraint set Settled.
