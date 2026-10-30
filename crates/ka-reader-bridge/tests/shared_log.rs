@@ -28,8 +28,8 @@ struct Scene {
 
 impl Scene {
     fn new() -> Self {
-        // /tmp keeps Unix socket names below sockaddr_un's limit even on macOS, whose temp_dir
-        // is longer. Each scene owns this fresh directory (std::fs::create_dir rejects collisions).
+        // A short root avoids SUN_LEN failures for Unix-socket pathnames:
+        // https://doc.rust-lang.org/std/os/unix/net/struct.SocketAddr.html#method.from_pathname
         let root = Path::new("/tmp").join(format!(
             "ka-log-{}-{}",
             std::process::id(),
@@ -53,7 +53,6 @@ impl Scene {
 
 impl Drop for Scene {
     fn drop(&mut self) {
-        // Cleanup must not replace an assertion panic with a second panic.
         let _ = fs::remove_dir_all(&self.root);
     }
 }
@@ -95,7 +94,7 @@ impl Participant {
                 Err(error) => panic!("coordination: accept {identity}: {error}"),
             }
         };
-        // Explicitly leave nonblocking accept mode before the timed protocol reads:
+        // Set the accepted stream's mode explicitly before relying on timed protocol reads:
         // https://doc.rust-lang.org/std/os/unix/net/struct.UnixStream.html#method.set_nonblocking
         stream
             .set_nonblocking(false)
@@ -188,7 +187,6 @@ impl Participant {
         self.finished = true;
         assert!(status.success(), "child {status}: {stdout}\n{stderr}");
         assert!(stderr.is_empty(), "product stderr: {stderr}");
-        // All coordinator messages use the socket. Only libtest's own envelope may be on stdout.
         for line in stdout.lines().filter(|line| !line.is_empty()) {
             assert!(
                 line == "running 1 test"
@@ -243,8 +241,8 @@ struct Rendezvous<'a> {
     message: &'a str,
 }
 
-// Display takes &self, so the formatter holds a shared reference to a test-only interior-mutability
-// cell. This rendezvous occurs inside FileLog::log, without a production hook (design §4).
+// Display formats through &self, so the rendezvous borrows its channel through a test-only RefCell:
+// https://doc.rust-lang.org/std/fmt/trait.Display.html
 struct ControlledMessage<'a>(std::cell::RefCell<Rendezvous<'a>>);
 impl fmt::Display for ControlledMessage<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -392,7 +390,6 @@ fn shared_log_overlapping_processes() {
             thread::yield_now();
         }
     });
-    // A scope guard stops and joins the observer even if IPC fails while the calls are active.
     let mut observer = SizeObserver {
         stop,
         thread: Some(observer),
