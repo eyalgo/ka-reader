@@ -8,7 +8,7 @@
 use std::fs::{self, OpenOptions};
 use std::io::Write;
 use std::path::{Path, PathBuf};
-use std::sync::{Mutex, OnceLock, PoisonError};
+use std::sync::OnceLock;
 
 use log::{Level, LevelFilter, Log, Metadata, Record, SetLoggerError};
 
@@ -55,8 +55,6 @@ const STOPPED_OPEN_MODULES: [&str; 2] = ["ka_reader_bridge::boundary", "ka_reade
 pub struct FileLog {
     path: PathBuf,
     bound: u64,
-    /// Bytes in the file, kept here so the bound check needs no stat per line.
-    written: Mutex<u64>,
 }
 
 impl FileLog {
@@ -67,12 +65,11 @@ impl FileLog {
             // is not written, and the next record tries again on its own.
             fs::create_dir_all(parent).ok();
         }
-        fs::File::create(&path).ok();
-        Self {
-            path,
-            bound,
-            written: Mutex::new(0),
+        let writer = Self { path, bound };
+        if let Some(file) = writer.open_locked() {
+            file.set_len(0).ok();
         }
+        writer
     }
 
     /// One admitted record as one line, clipped so the line and its newline fit the bound.
@@ -85,25 +82,33 @@ impl FileLog {
     }
 
     fn append(&self, line: &str) {
-        let mut written = self.written.lock().unwrap_or_else(PoisonError::into_inner);
-        let length = u64::try_from(line.len()).unwrap_or(u64::MAX);
-        let crosses_bound = *written + length > self.bound;
-        let mut options = OpenOptions::new();
-        options.create(true);
-        if crosses_bound {
-            options.write(true).truncate(true);
-        } else {
-            options.append(true);
-        }
-        let Ok(mut file) = options.open(&self.path) else {
+        let Some(mut file) = self.open_locked() else {
             return;
         };
-        if crosses_bound {
-            *written = 0;
+        let Ok(metadata) = file.metadata() else {
+            return;
+        };
+        let length = u64::try_from(line.len()).unwrap_or(u64::MAX);
+        let crosses_bound = metadata
+            .len()
+            .checked_add(length)
+            .is_none_or(|total| total > self.bound);
+        if crosses_bound && file.set_len(0).is_err() {
+            return;
         }
-        if file.write_all(line.as_bytes()).is_ok() {
-            *written += length;
-        }
+        file.write_all(line.as_bytes()).ok();
+    }
+
+    fn open_locked(&self) -> Option<fs::File> {
+        let file = OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(&self.path)
+            .ok()?;
+        // An operation owns its handle so closing it releases the lock on every exit, including
+        // failures: https://doc.rust-lang.org/std/fs/struct.File.html#method.lock
+        file.lock().ok()?;
+        Some(file)
     }
 }
 
