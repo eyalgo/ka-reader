@@ -2,7 +2,8 @@
 
 **Status:** Settled
 **Owner:** Principal Architect
-**Version:** 71 — QC-53 and its verification-map row name the lint-step presence-and-order suite; §§ 8 and 9 carry the gate and suite re-measurement authorized by cycle-64 § 3.1 — RN-82.
+**Version:** 72 — Correct QC-30’s verification description to the implemented nine-name dependency scan and planted controls; factual correction on the implementation branch.
+Version 71 — QC-53 and its verification-map row name the lint-step presence-and-order suite; §§ 8 and 9 carry the gate and suite re-measurement authorized by cycle-64 § 3.1 — RN-82.
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · writing bar Draft
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
@@ -1181,21 +1182,20 @@ reviewed tag.
   copy — are half (1)'s, whose rule reads every member's sources, and the scan skips them by their
   membership in the workspace, never by a list of names. The two halves split on that one test,
   so no crate falls between them; any other crate whose sources it cannot open still fails. The
-  scan also reads each such crate's C and C++ sources for `getenv`, which matches libgit2's
-  `git__getenv` too, and for `environ` and `_NSGetEnviron` as whole words, against the same list —
-  a rule this document adds to the script (RN-43; the two array names at RN-44). The change that
-  adds it also admits the three C names to the list's name field, which accepts only the six Rust
-  names today (`checks/entry-points.allow:L10`, `:L16`). Until that change, a C read's gate is review
-  of the lockfile diff at `development-design`, reading this entry, and the script's header names a
-  C `getenv` among what it does not hold (`checks/entry-points.sh:L66`). **Not covered by the scan,
-  and named:** a read is the pair (crate, name) (`checks/entry-points.sh:L55`), so once
+  scan also reads every admitted raw file for case-sensitive `getenv` substrings, including
+  libgit2's `git__getenv`, and for `environ` and `_NSGetEnviron` with ASCII identifier boundaries,
+  against the same list (RN-43; the two array names at RN-44). The implemented list vocabulary is
+  the six Rust names and those three C names. The scan and its real-scan planted controls are
+  `checks/entry-points.sh` version 1.1.0 and `checks/tests/test_entry_points.sh` version 1.2.0,
+  measured at `ka-reader@a184404aaec6ee65b9ebfa661ab633e02b3a3099`. **Not covered by the scan,
+  and named:** a read is the pair (crate, name) (`checks/entry-points.sh:L60-L61`), so once
   `libgit2-sys | getenv` is listed, a new C `getenv` inside `libgit2-sys` matches the listed pair
   and passes — a new variable after a libgit2 bump, or a site that moves from uncompiled code into
   the compiled set. `libz-sys`'s line behaves the same way if a feature change compiles its
   zlib-ng. No command can tell a new read inside a listed pair from the reads already reviewed, so
   this case is a review gate: the lockfile change reviewed as code (QC-26), with each listed line's
   text re-read against the new sources, as the list's own header requires
-  (`checks/entry-points.allow:L20-L21`, `:L23-L26`). Rust reads have the same granularity; the case
+  (`checks/entry-points.allow:L19-L28`). Rust reads have the same granularity; the case
   is named for C because `libgit2-sys`'s line covers reads the shipped process makes. **The build script excepted**
   is the file the `build` key of that registry copy's `Cargo.toml` names, at the version the lock
   resolves, and `build.rs` at the package root where the manifest sets no key
