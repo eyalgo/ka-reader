@@ -41,4 +41,29 @@ None.
   `architecture_open_issues.md` § 3.1 so its producer follows the settled SDD.
 - **If a document has to be written:** No additional document; revise this command bar through
   `product-sdd`, and record any order change through the SDD's existing re-cut mechanism.
-- **Answer:** <the CTO fills this in>
+- **Answer:** Measure the selector contribution between its own before-and-after commits,
+  keeping S-10 last in the preferred order and keeping the untouched-viewing-surface bar.
+  For each landed selector change, record full commit SHAs for `B`, the destination tip
+  immediately before that change, and `T`, the result of landing it. For a merge commit,
+  `B` is its first parent and `T` is that merge commit; resolve both to full SHAs in the
+  evidence. Run `git diff --stat B T -- ka-reader-mac` and
+  `git diff --name-status --no-renames B T -- ka-reader-mac`, substituting those SHAs.
+  Check the complete package output: only selector and `mac-shell` launch-time-restore
+  files may differ; any tree, Git-view or reading-panel file fails the bar, including a
+  deletion or a move. Do not narrow the path filter to allowed files or subtract changes
+  from the result. The earlier diff/history work is already in the before state.
+  Where S-10 lands through several changes, retain and check every pair that contributes
+  to it; the last pair alone does not prove the whole slice, and a broad interval containing
+  unrelated work is not the replacement. A pre-landing check may compare a candidate
+  against its recorded destination base only when the candidate includes that base and
+  its difference contains only the selector contribution; refresh the check if that base
+  or candidate changes, and retain the actual landing comparisons, including conflict
+  resolutions. Missing commits, a failed command or an unexplained endpoint pair leaves
+  the check unproven. Empty output alone does not establish that switching was delivered:
+  all existing S-10 observable, command and promise checks still apply.
+  This corrects the comparison, not the delivery order or the NFR-12 / PD-29 obligation
+  (`docs/SRS.md:L363-L365`; `docs/fdr.md:L303`). Have `product-sdd` fold the replacement
+  into S-10 and record the corrected command bar under § 10's existing re-cut rule;
+  no shape or seam changes are requested. The separately raised QC-19 correction remains
+  with `docs/architecture_open_issues.md` § 3.1.
+  Reasoning and failure cases: `docs/trail/sdd/self_answer-70.md`.
