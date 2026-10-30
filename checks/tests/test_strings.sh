@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
+# checks/tests/test_strings.sh — the tests of checks/strings.sh, the QC-53 catalogue lint.
 # Version: 1.0.1 — Describes the no-table CONTENT input and both required observations in the
 #   no-term diagnostic.
 # Version: 1.0.0 — first version: drives the real checks/strings.sh against temporary copies of
 #   the message catalogue and of docs/CONTENT.md, with the negative controls that prove the suite
 #   and the every-term case can fail
-#
-# checks/tests/test_strings.sh — the tests of checks/strings.sh, the QC-53 catalogue lint.
 #
 # WHY THIS EXISTS
 #   checks/strings.sh fails the build when a string literal under ka-reader-mac/Sources/Surfaces

@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
+# checks/entry-points.sh — proves every environment or argument read in the linked dependency tree
+# is a named, reviewed member of the boundary set.
 # Version: 1.1.0 — Adds raw-text matching for C and C++ environment names to the reviewed
 # dependency scan.
 # Version: 1.0.0 — first version: the reads of the linked dependency tree's environment and
 # arguments, diffed against the reviewed checks/entry-points.allow
-#
-# checks/entry-points.sh — proves every environment or argument read in the linked dependency tree
-# is a named, reviewed member of the boundary set.
 #
 # WHY THIS EXISTS
 #   The product promises it reads nothing from its surroundings beyond what it was given

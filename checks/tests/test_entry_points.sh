@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# checks/tests/test_entry_points.sh — the tests of checks/entry-points.sh and
+# checks/entry-points.allow.
 # Version: 1.2.0 — Adds C and C++ controls through the real dependency scan, including name
 # boundaries, repeated pairs, stale entries, unreadable sources and full-run reporting.
 # Version: 1.1.0 — the named-read cases reject the other five names, the deterministic-output case
@@ -7,9 +9,6 @@
 #   with Xcode 16.2, and the entry-points suite reads metadata with plutil -extract
 # Version: 1.0.0 — first version: drives the real checks/entry-points.sh with every read, list and
 # resolution fault planted in a temporary copy
-#
-# checks/tests/test_entry_points.sh — the tests of checks/entry-points.sh and
-# checks/entry-points.allow.
 #
 # WHY THIS EXISTS
 #   checks/entry-points.sh is the review gate on the environment and argument reads of the linked
@@ -249,17 +248,21 @@ entry-points.sh: unlisted: itoa environ read.cpp'
 }
 
 test_c_matches_count_in_every_admitted_raw_file() {
-  local relative
+  local relative name
   for relative in vendor/read.h vendor/read.hpp vendor/comment.c vendor/string.cpp docs/notes.txt data/bytes.bin; do
     new_case
     plant_copy itoa || return 1
     mkdir -p "$(dirname "$PLANT_DIR/$relative")"
-    printf '\000/* getenv */ "getenv"\000\n' > "$PLANT_DIR/$relative"
+    printf '\000/* getenv */ "getenv"\000environ\000_NSGetEnviron\000' > "$PLANT_DIR/$relative"
     run_scan
-    expect_exact_findings "entry-points.sh: unlisted: itoa getenv $relative" || return 1
-    append_list_line 'itoa | getenv | planted'
+    expect_exact_findings "entry-points.sh: unlisted: itoa _NSGetEnviron $relative
+entry-points.sh: unlisted: itoa environ $relative
+entry-points.sh: unlisted: itoa getenv $relative" || return 1
+    for name in getenv environ _NSGetEnviron; do
+      append_list_line "itoa | $name | planted"
+    done
     run_scan
-    expect_exact_success 1 || return 1
+    expect_exact_success 3 || return 1
   done
 }
 
@@ -952,10 +955,10 @@ test_c7_removed_crate_line_is_stale() {
   expect_finding stale tokio env::var
 }
 
-# C8: a name outside the six is malformed, with its line number.
+# C8: a name outside the nine is malformed, with its line number.
 test_c8_unknown_name_is_malformed() {
   new_case
-  append_list_line 'itoa | env::getenv | not one of the six'
+  append_list_line 'itoa | env::getenv | not one of the nine'
 
   run_scan
 

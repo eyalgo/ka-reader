@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
+# checks/tests/test_secret_scan.sh — the tests of checks/secret-scan.sh and its place in
+# checks/gate.sh.
 # Version: 1.0.1 — Distinguishes stand-in protocol evidence from the real planted-secret control.
 # Version: 1.0.0 — first version: drives the real checks/secret-scan.sh and the real checks/gate.sh
 #   against disposable repositories, with stand-in tools on PATH
-#
-# checks/tests/test_secret_scan.sh — the tests of checks/secret-scan.sh and its place in
-# checks/gate.sh.
 #
 # WHY THIS EXISTS
 #   checks/secret-scan.sh is the gate's scan of every commit reachable from HEAD (docs/nfdr.md
