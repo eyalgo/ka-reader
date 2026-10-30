@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.0.1 — Distinguishes stand-in protocol evidence from the real planted-secret control.
 # Version: 1.0.0 — first version: drives the real checks/secret-scan.sh and the real checks/gate.sh
 #   against disposable repositories, with stand-in tools on PATH
 #
@@ -8,15 +9,15 @@
 # WHY THIS EXISTS
 #   checks/secret-scan.sh is the gate's scan of every commit reachable from HEAD (docs/nfdr.md
 #   QC-28). A bug in it is a secret nobody is looking for, or a green gate over half a history.
-#   These cases run the real script, never a copy of its logic, against disposable Git repositories.
-#   `uname`, `curl` and `shasum` are stand-ins on PATH, and the gitleaks the script unpacks is a
-#   stand-in that records what it was called with and answers with the status and report a case
-#   chooses. So the suite proves the script's protocol (what it passes, what it checks, what it
-#   prints, when it exits 0) and not the vendor's detection: the planted-secret control is not part
-#   of this change, and the first real scan of the product's own history is recorded in the change's
-#   report. That the pinned digests are the vendor's own is held by review. The cases that read
-#   checks/gate.sh run the real gate in a disposable fixture whose other steps are stand-ins, so no
-#   bundle is launched and this suite is not run again from inside itself.
+#   These cases run the real scan script against disposable Git repositories, with stand-in tools
+#   and a stand-in scanner. They check the script's protocol: what it passes, checks and prints,
+#   and when it exits 0. They do not establish the vendor scanner's detection. The separate
+#   planted-secret control, run with checks/tests/test_secret_scan_planted.sh, runs the real
+#   pinned scanner over one disposable repository, first clean and then with a planted
+#   secret-shaped string. That control checks a clean exit and a finding for that planted string;
+#   it does not establish detection of every kind of secret. The cases that exercise the full
+#   gate use stand-ins for its other steps, so they neither launch a bundle nor run this suite
+#   again inside itself. Review separately checks that the pinned digests are the vendor's own.
 #
 # USAGE
 #   checks/tests/test_secret_scan.sh
