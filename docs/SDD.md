@@ -6,7 +6,8 @@
        signal, and the state a finished SDD carries; the open-issues file is gone.
      Locked = ratified as the source of truth. -->
 **Owner:** CTO — writes every part; the CPO and the CDO decide the parts the lane table names, through `SDD_open_issues.md` items carrying their `Seat:`
-**Version:** 64 — Re-measure the five changed harness files for the dependency C-read scan and attached text corrections, retaining the earlier pinned inventory.
+**Version:** 65 — Measure each selector contribution between its own before-and-after commits; fold cycle-59 item 5.1, with the corrected command bar recorded in RC-6 and RN-124.
+Version 64 — Re-measure the five changed harness files for the dependency C-read scan and attached text corrections, retaining the earlier pinned inventory.
 Version 63 — Correct the strings-step suite evidence locators in § 3, confirmed in cycle-58 item 2.1; RN-123 records the source check and its limits.
 Version 62 — Fold cycle-57 item 5.1: re-measure the check-harness inventory at `ka-reader@3431b7d` (gate 1.6.0, 33 steps, fifteen suites), name the strings-step suite and refresh C-I3's gate references; RN-122 records the scope and verification limits.
 Version 61 — CTO, one run, with the one answered companion item folded (`docs/trail/sdd/cycle-56.md` § 5.1), the CTO's column, raised by the PM on 2026-10-28 from a `shukuba-refine` review (`ka-reader@eba1d83`) and answered in the CTO's seat the same day (`ka-reader@daf3389`; the reasoning at `docs/trail/sdd/self_answer-67.md`): § 3, the `read-only-harness` row (re-measured and re-pinned at `ka-reader@f25fdbb`, the merge that landed the gate's thirty-second step: `gate.sh` at version 1.5.0, the one ordered list of 32 steps at `checks/gate.sh:L50-L129` and the dispatcher at `:L32-L39`; the new step, *Strings check* at `:L110` with its comment at `:L106-L109`, directly after *No-network suite* and directly before *Strings check suite*, the whole command of `checks/strings.sh` — so every suite and every check script named in the row runs as a step of the gate, unqualified again; the comment's reason carried — the suite's cases run the real lint over a copy of the tree's own catalogue, so placed after the suite the step would never be the one that names the hit — and its consequence said: a banned term in the catalogue now ends the gate at *Strings check*, named by the dispatcher, and *Strings check suite* is reached only over a clean catalogue; the three sentences written for the `cd65c02` pin that go false replaced — the workflow sentence's "every check script but one", the "No step runs `checks/strings.sh` itself" passage with its promise to record the step, and the script entry's "in no step of its own" — each kept in the dated note; the counts thirteen scripts, fourteen suites, thirteen fixture folders, the six-line `fixtures/.gitignore` and the 41-line workflow unchanged, `gate.sh` the one file in `checks/` that changed; the fetch sentence held, both strings steps reaching no network and a machine that cannot reach `github.com` still ending at *Secret scan*, `:L61`; `test_vm_refusal.sh` unchanged at a fifth pin, its step reader skipping the new comment; GitHub Actions re-read at the platform, still disabled; every `gate.sh` locator from old `:L2` to old `:L104` one higher and every one at or below old `:L105` six higher; the `cd65c02` reading kept as a dated note with the line map); § 4 C-I3 (the dispatcher locator `:L32-L39`; the *Build KA-Reader.app* and *View check* locators `:L72`, `:L88`, still called from `ci.yml:L28`; each old reading kept in the sentence). RN-121 records the fold. `Status:` Settled; the companion is removed.
@@ -2510,10 +2511,27 @@ public at 1.0.0 or later (`system/projects/ka-reader/agari.md`).
   applied to B afresh; `own-state` holds A's and B's bookmark, display name and last-viewed mark
   and no folder content; an eleventh folder evicts the one viewed longest ago and no operation
   removes an entry; relaunching the bundle opens B with no Open panel, and relaunching after the
-  container's remembered list is removed presents the panel (C-R3). `git diff --stat
-  <first-public-release tag>..HEAD -- ka-reader-mac` lists only files of the selector and of
-  `mac-shell`'s launch-time restore, and no file of the tree, the Git view or the reading panel —
-  the viewing surface untouched by the change that adds the selector (NFR-12). *The promise clause:* `checks/read-only.sh` prints `unchanged` on A
+  container's remembered list is removed presents the panel (C-R3).
+  For each landed selector contribution, record full commit SHAs for `B`, the destination tip
+  immediately before that contribution, and `T`, the result of landing it. These letters name
+  commits here, not the folders A and B exercised above. For a merge commit, `B` is its first
+  parent and `T` is the merge commit. Substitute the recorded SHAs in both commands:
+  `git diff --stat B T -- ka-reader-mac` and
+  `git diff --name-status --no-renames B T -- ka-reader-mac`.
+  Both commands must succeed, and their complete package output must list only selector and
+  `mac-shell` launch-time-restore files. Any tree, Git-view or reading-panel file fails the bar,
+  including a deletion or a move. Do not narrow the path filter to allowed files or subtract
+  changes from the result. This measures the viewing surface untouched by the selector
+  contribution (NFR-12); earlier diff and history work is already in the before state.
+  When several changes deliver S-10, retain and check every contributing pair. The last pair
+  alone does not prove the slice, and an interval containing unrelated work is not a substitute.
+  A pre-landing comparison may use a candidate and its recorded destination base only when the
+  candidate includes that base and the difference contains only the selector contribution.
+  Refresh that check whenever either endpoint changes. Retain the actual landing comparisons,
+  including conflict resolutions. Missing commits, a failed command or an unexplained endpoint
+  pair leaves isolation unproven. Empty output alone does not prove that switching was delivered:
+  all other S-10 observable, command and promise checks still apply. The correction and its
+  authority are RC-6 and RN-124. *The promise clause:* `checks/read-only.sh` prints `unchanged` on A
   and on B after the switch, `.git` hashed where present; `checks/own-state.sh` finds every write
   inside the container; `checks/no-network.sh` exits 0.
 - **Rests on:** § 3 `folder-model` (replace-whole), `own-state` (bookmarks, the ten-entry list),
@@ -3129,6 +3147,29 @@ The seat whose ground moved is the CTO's: what the build contradicts is `see-git
   Whether the
   `model_changed` delta can carry the marker is the design of `follow-the-folder`. Where it
   cannot, that slice's new command clause stays red and the question returns here as a re-cut.
+
+### RC-6 — 2026-10-30 — measure the selector's own contribution
+
+The seat whose ground moved is the CTO's: S-10's command comparison, on the answered
+`docs/trail/sdd/cycle-59.md` § 5.1. The slice's observable bar and delivery order stand.
+
+- **Prior assumption:** S-10 compared the first public release tag with `HEAD` across
+  `ka-reader-mac` and admitted only selector and launch-time-restore files
+  (`ka-reader@97c95b4ae7e862b2da433297c56d96bd4227397f:docs/SDD.md:L2513-L2516`).
+- **Observed reality:** S-8 adds the reading-panel diff and S-9 adds history in the Git view
+  after that release, before S-10 in the preferred order (§ 6 S-8, S-9; § 7). Reasoning:
+  that cumulative comparison includes earlier surfaces and cannot isolate the selector's
+  contribution. This is a contradiction in the stated check, not a measured selector failure.
+- **Retained:** The untouched-viewing-surface bar serving `docs/SRS.md:L363-L365` (NFR-12),
+  every other S-10 check, the slices and their order, § 7's edges, § 2's shape and § 3's seams.
+- **Changed:** S-10 records and checks each selector contribution between the destination's
+  immediately preceding commit and the result of landing it, using full commit SHAs. Its
+  command clause defines the complete-package comparison and the treatment of several
+  contributions, pre-landing checks, moves, deletions and missing evidence.
+- **Stopped:** Using the first public release as the selector comparison's baseline.
+- **Still unresolved:** Nothing for the owner in this correction. The NFDR's QC-19 comparison
+  remains the Principal Architect's separate item (`docs/architecture_open_issues.md` § 3.1).
+  No shape or seam changes, so this correction triggers no superseding ADR under § 10's rule.
 
 ## 11. Technical risks
 
@@ -9399,6 +9440,29 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   the core engineering doctrine; no implementation or test is changed.
   *(re: § 3 `read-only-harness`; source: `docs/trail/sdd/cycle-58.md` § 2.1 and the
   pinned `checks/tests/test_strings_step.sh` ranges above.)*
+
+- **RN-124:** *(CTO)* *(changed — S-10's command comparison)* The committed answer at
+  `docs/trail/sdd/cycle-59.md` § 5.1 authorizes replacing the release-to-HEAD comparison with
+  the before-and-after commits of each selector contribution. The answer was committed at
+  `ka-reader@97c95b4ae7e862b2da433297c56d96bd4227397f` before this fold and is preserved whole
+  in that cycle. RC-6 records the contradiction before the command bar is redrawn.
+  **Reasoning:** S-8 and S-9 change the reading panel and Git view between the first release
+  and S-10's preferred position (§ 6 S-8–S-10; § 7). Measuring only the selector's contribution
+  preserves the isolation obligation in `docs/SRS.md:L363-L365` without charging it for those
+  earlier surfaces. The complete-package name-status comparison makes deletions and both sides
+  of moves visible for inspection; retaining every contributing pair prevents the final
+  landing alone from standing for the whole slice. The answer also supplies the pre-landing
+  limits and the rule that an empty diff does not establish delivery (cycle-59 § 5.1).
+  The CPO's slice scope and the CDO's observable bar remain as settled by the existing inputs;
+  neither requires a new call. This fold changes no shape, seam or ordering edge. QC-19 and
+  its verification-map row remain with their producing seat, on the separate architecture
+  companion (`docs/architecture_open_issues.md` § 3.1).
+  **Verification limits:** this is a document correction, not evidence that the selector is
+  delivered. No product check or full gate ran. The companion and PRD were read whole; the
+  larger definition documents were read in sections and the ADR set through its index.
+  The skill's whole-document reading requirement was not completed; this fold does not claim
+  a fresh contradiction review of the entire definition set.
+  *(re: § 6 S-10, § 10 RC-6; source: cycle-59 § 5.1; SRS NFR-12.)*
 
 ## Open Questions
 
