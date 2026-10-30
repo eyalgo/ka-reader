@@ -2,7 +2,8 @@
 
 **Status:** Settled
 **Owner:** Principal Architect
-**Version:** 72 — Correct QC-30’s verification description to the implemented nine-name dependency scan and planted controls; factual correction on the implementation branch.
+**Version:** 73 — QC-19 measures every selector contribution between its own before-and-after commits; its verification-map row follows SDD v65 § 6 S-10 — RN-83.
+Version 72 — Correct QC-30’s verification description to the implemented nine-name dependency scan and planted controls; factual correction on the implementation branch.
 Version 71 — QC-53 and its verification-map row name the lint-step presence-and-order suite; §§ 8 and 9 carry the gate and suite re-measurement authorized by cycle-64 § 3.1 — RN-82.
 **Inputs read:** SRS Settled · SDD Settled · FDR Settled · writing bar Draft
 
@@ -740,10 +741,26 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   the Git view and the reading panel
   do not change.
   — *verified by:* `cargo test --locked -p ka-reader-core --test switch` (layer 3);
-  `git diff --stat <first-public-release tag>..HEAD -- ka-reader-mac` lists only files of the selector
-  and of `mac-shell`'s launch-time restore, and no file of the tree, the Git view or the reading
-  panel, on the change that adds the selector (the change) *(traces to: SRS NFR-12, FR-19; FDR
-  PD-29; SDD § 3 `folder-model`, § 6 S-10 as it reads at v13; re-derived at v11 — RN-22)*
+  for every landed selector contribution, `git diff --stat B T -- ka-reader-mac` and
+  `git diff --name-status --no-renames B T -- ka-reader-mac`, substituting recorded full commit
+  SHAs for `B` (the destination tip immediately before that contribution) and `T` (the result of
+  landing it). For a merge, `B` is its first parent and `T` the merge commit. Both commands
+  succeed, and their complete package output contains only selector and `mac-shell`
+  launch-time-restore files. A tree, Git-view or reading-panel file fails the bar, including a
+  deletion or either side of a move. The path filter stays the whole package; no change is
+  subtracted from the output. Retain and check every contributing pair, including landing
+  conflict resolutions; neither the last pair alone nor an interval containing unrelated work
+  proves isolation. A pre-landing check uses a candidate and its recorded destination base only
+  when the candidate includes that base and the difference contains only the selector
+  contribution; refresh it whenever either endpoint changes, and retain the actual landing
+  comparisons. Missing commits, a failed command or an unexplained pair leaves isolation
+  unproven. Empty output alone does not prove delivery; all other S-10 checks still apply.
+  Review at selector-contribution acceptance checks the endpoint evidence and classifies every
+  changed file against the allowed parts. This is a review gate because successful diff commands
+  report changes but do not judge which architectural part a file implements or whether the
+  chosen pair isolates the contribution. The commands and the switch test remain required
+  alongside that judgment *(traces to: SRS NFR-12, FR-19; FDR PD-29; SDD § 3 `folder-model`,
+  § 6 S-10 at v65, RC-6 and RN-124; verification corrected at v73 — RN-83)*
 - **QC-20:** Swapping `own-state`'s storage format touches `own-state` only; no other unit reads
   the container.
   — *verified by:* `checks/structure.sh` (layer 6): the container path appears only in `own-state`
@@ -2631,7 +2648,7 @@ is stated once, in § 8 *(added at v56, on the owner's answer at `docs/trail/arc
 | QC-13 | `ka-reader-bridge` imports; the export set; the ABI under the sanitizer | `checks/structure.sh` (suite `test_structure.sh`); `cargo test --locked -p ka-reader-bridge --test exports`; the bridge's tests under `-Zsanitizer=address`, with `-Cllvm-args=-asan-globals=0` admitted (RN-72) | the tree; the change | CI build; `development-implementation` (the structure pair) |
 | QC-15, QC-17 | I/O ownership; the two composition roots; libgit2's machine-level config search paths empty, failing closed, once per process | `checks/structure.sh` (suite `test_structure.sh`); `checks/view.sh` (suite `test_view.sh`); `cargo test --locked -p ka-reader-bridge` — the four search paths read back empty, and the switch's fail-closed and once-per-process cases | the tree; the change | CI build; `development-implementation` (the structure pair) |
 | QC-16 | writes only in the container | `checks/own-state.sh` (suite `test_own_state.sh`) | the tree | CI build; release |
-| QC-19 | folder replace-whole | `cargo test --locked -p ka-reader-core --test switch`; `git diff --stat … -- ka-reader-mac` | the change | `development-implementation` |
+| QC-19 | folder replace-whole and selector isolation | `cargo test --locked -p ka-reader-core --test switch`; `git diff --stat B T -- ka-reader-mac`; `git diff --name-status --no-renames B T -- ka-reader-mac` — full SHAs and evidence rules in QC-19 | the change — every selector contribution | `development-implementation`; selector-contribution acceptance (QC-19's review gate) |
 | QC-20 | own-state isolation | `checks/structure.sh` (suite `test_structure.sh`) | the tree; the change | CI build; `development-implementation` (the structure pair) |
 | QC-22 | the hostile fixture as a `MarkdownDocument` | `cargo test --locked -p ka-reader-core --test markdown` | the change | `development-implementation` |
 | QC-23 | no web engine | `checks/view.sh` (suite `test_view.sh`); `checks/no-network.sh` (suite `test_no_network.sh`) | the tree | CI build |
@@ -7380,3 +7397,39 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   including the instance writing bar at Draft. The source documents and companion were clean
   in git before the fold. The single answer resolves its item; the companion is removed through
   the builder and the constraint set remains Settled.
+- **RN-83:** *(v73 — selector-isolation verification)* SDD v65 § 6 S-10, RC-6 and RN-124
+  authorize QC-19's comparison correction. The settled source is
+  `ka-reader@8f863b68ddf47283f6cddad25e3dbeea6558a9cc:docs/SDD.md:L2513-L2535`;
+  its answered authority is retained at `docs/trail/sdd/cycle-59.md` § 5.1.
+  QC-19 keeps its obligation and its switch test, and measures each selector contribution
+  between its own destination-before and landed-after commits. Its § 10 row projects both
+  commands and points to the entry for the evidence rules. SRS NFR-12
+  (`docs/SRS.md:L363-L365`) and FDR PD-29 (`docs/fdr.md:L303`) remain the source of the
+  untouched-viewing-surface and replaceable-input obligations.
+
+  **Reasoning and verification class.** The earlier release-to-HEAD range included the diff and
+  history surfaces that SDD § 6 S-8 and S-9 place before S-10. The new endpoints exclude those
+  earlier contributions without excluding any path inside the Swift package. The name-status
+  command disables rename detection so the comparison exposes deletions and additions for
+  inspection. Every landing pair is retained, and a changed candidate or base invalidates its
+  pre-landing check. These are the source's rules, including its refusal to treat an empty diff
+  as proof of delivery. This revision makes the judgment half explicit at selector-contribution
+  acceptance: command success alone does not classify a file's architectural responsibility or
+  establish that the endpoints isolate the contribution. That is the reason for the review
+  gate in QC-19's tail; it supplements the commands and test, never replaces them.
+
+  **Decision log and companion.** This corrects a verifier without changing a shape, seam or
+  architectural decision, as RC-6 states. It does not meet the ADR significance test; no record
+  is written or restatused and the index is unchanged. The downstream item is resolved from
+  the new committed SDD, not by inventing an owner answer in the producer's placeholder.
+  No answer slot was filled at intake, so no answered companion is consumed and no architecture
+  trail cycle is created. The companion is removed through the builder; no unresolved item
+  remains from this fold.
+
+  **Reading and execution limits.** The architecture companion, the SDD's cycle-59 answer,
+  the project card and Agari were read whole. The upstream definition documents and NFDR were
+  read in relevant sections, the ADR set through its index, and the answer history for this
+  correction. The skill's whole-document, whole-record and whole-trail reread was not completed;
+  this revision verifies the scoped correction, not the entire definition set. No product test,
+  selector comparison or full gate was executed, and this document change is not evidence of
+  selector delivery. The source documents and companion were clean in git before the fold.
