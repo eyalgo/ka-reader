@@ -1,13 +1,14 @@
 # NFDR — KA-Reader
 
-**Status:** Draft
+**Status:** Settled
 **Owner:** Principal Architect
-**Version:** 75 — Bind the bridge watcher and separate QC-66's tree proof from QC-48's full churn, QC-46's latency and QC-40's bundle proof; fold cycle-66 § 3.1 — RN-85.
+**Version:** 76 — Complete the full architecture reread and restore four omitted verification-map checks; no obligation or ADR changes — RN-86.
+Version 75 — Bind the bridge watcher and separate QC-66's tree proof from QC-48's full churn, QC-46's latency and QC-40's bundle proof; fold cycle-66 § 3.1 — RN-85.
 Version 74 — QC-40 separates writer and own-state tests from the outstanding built-bundle proof; its verification-map row names the interim review gate, on cycle-65 § 3.1 — RN-84.
 Version 73 — QC-19 measures every selector contribution between its own before-and-after commits; its verification-map row follows SDD v65 § 6 S-10 — RN-83.
 Version 72 — Correct QC-30’s verification description to the implemented nine-name dependency scan and planted controls; factual correction on the implementation branch.
 Version 71 — QC-53 and its verification-map row name the lint-step presence-and-order suite; §§ 8 and 9 carry the gate and suite re-measurement authorized by cycle-64 § 3.1 — RN-82.
-**Inputs read:** SRS Settled · SDD Settled · FDR Settled · writing bar Draft
+**Inputs read:** PRD Settled · SRS Settled · UXD Settled · SDD Settled · DESIGN Settled · CONTENT Settled · FDR Settled · writing bar Draft
 
 > The NFDR is the product's **standing obligations, consolidated and verifiable**: every quality
 > constraint a change is checked against, derived from the SRS, the SDD, the FDR and the ADR —
@@ -2755,10 +2756,12 @@ is stated once, in § 8 *(added at v56, on the owner's answer at `docs/trail/arc
 | QC-3 | no network transport — the tree equals the list; the list holds no transport; the release executable links none | `checks/no-network.sh` (suite `test_no_network.sh`); the allowlist diff reviewed against the entry's domain, in the resolved features, at `development-design`; `checks/view.sh` (suite `test_view.sh`) — `nm` on the release executable | the tree; the change | CI build; `development-design` |
 | QC-4 | ItemState on every read | `cargo test --locked -p ka-reader-core` (layer 1); `swift test --package-path ka-reader-mac` (layer 4) | the change | `development-implementation` |
 | QC-5 | root finding | `cargo test --locked -p ka-reader-core --test root_finding` | the change | `development-implementation` |
-| QC-6 | containment check | `cargo test --locked -p ka-reader-core --test markdown`; `cargo test --locked -p ka-reader-bridge --test asset_bytes` | the change | `development-implementation` |
+| QC-6 | containment check | layer-1 unit tests beside `fs_reader.rs` (`mod tests`), including the cases and coverage limits QC-6 states; `cargo test --locked -p ka-reader-core --test markdown`; `cargo test --locked -p ka-reader-bridge --test asset_bytes` | the change | `development-implementation` |
 | QC-7 | no mutating Git call, no spawn | `checks/read-only.sh` (suite `test_read_only.sh`); `checks/structure.sh` (suite `test_structure.sh`) | the tree; the change | CI build; `development-implementation` (the structure pair) |
 | QC-8 | `ka-reader-mac` imports and dependencies | `checks/view.sh` (suite `test_view.sh`); `checks/no-network.sh` (suite `test_no_network.sh`); `swift test --package-path ka-reader-mac` | the tree | CI build |
-| QC-9, QC-12, QC-14 | `ka-reader-core` / `checks/` imports; no `unsafe` outside the bridge | `checks/structure.sh` (suite `test_structure.sh`); `checks/no-network.sh` (suite `test_no_network.sh`); `cargo tree -p ka-reader-bridge`; `cargo build --workspace --locked` | the tree; the change | CI build; `development-implementation` (the structure pair) |
+| QC-9 | `ka-reader-core` imports; no `unsafe` outside the bridge | `checks/structure.sh` (suite `test_structure.sh`); `checks/no-network.sh` (suite `test_no_network.sh`); `cargo tree -p ka-reader-bridge`; `cargo build --workspace --locked` | the tree; the change | CI build; `development-implementation` (the structure pair) |
+| QC-12 | own-state import isolation and container-only I/O | `checks/structure.sh` (suite `test_structure.sh`); `checks/own-state.sh` (suite `test_own_state.sh`) | the tree; the change | CI build; `development-implementation` (the structure pair) |
+| QC-14 | checks are no shipped unit dependency and do not enter the bundle | `cargo tree -p ka-reader-bridge`; `checks/structure.sh` (suite `test_structure.sh`); `checks/bundle.sh` (suite `test_bundle.sh`) | the tree; the change | CI build; `development-implementation` (the structure pair) |
 | QC-10, QC-11 | model import set; watcher in the bridge with no model or reader import | `checks/structure.sh` and `checks/tests/test_structure.sh`, including planted model-to-watcher, core-to-bridge and bridge-watcher forbidden edges; interim review and its limits are in the entries | the tree; the change | CI build; `development-implementation`; `development-design` until the revised clauses are checked |
 | QC-63 | a module of no part in `ka-reader-core` imports no part | `checks/structure.sh` (suite `test_structure.sh`) | the tree; the change | CI build; `development-implementation` (the structure pair) |
 | QC-13 | bridge imports with the native-binding exception confined to watcher; the export set; the ABI under the sanitizer | `checks/structure.sh` and its suite's positive/negative watcher-boundary cases; `cargo test --locked -p ka-reader-bridge --test exports`; the bridge's tests under `-Zsanitizer=address`, with `-Cllvm-args=-asan-globals=0` admitted (RN-72); interim watcher-boundary review and reason in QC-13 | the tree; the change | CI build; `development-implementation`; `development-design` until the revised boundary is checked |
@@ -2798,7 +2801,7 @@ is stated once, in § 8 *(added at v56, on the owner's answer at `docs/trail/arc
 | QC-55 | one bundle, one process | `checks/bundle.sh` (suite `test_bundle.sh`) | the tree | CI build |
 | QC-56 | macOS floor in the bundle; CI on the floor's image label | `/usr/libexec/PlistBuddy -c 'Print :LSMinimumSystemVersion' …`; `grep -h -E '^[[:space:]]*runs-on:' .github/workflows/*.yml \| grep -v …`; `checks/tests/test_vm_refusal.sh` — `test_every_runner_names_macos_26` (RN-69, RN-70); neither reads a workflow file ending `.yaml` | the release; the tree; the change | release; `development-implementation` (the suite); `development-design` (a workflow file ending `.yaml`) reading the entry, which alone gates a workflow file ending `.yaml` |
 | QC-59 | priced contract against its major's pin | `checks/contract.sh <tag>` | the release | release, from `v1.0.0` |
-| QC-60 | own-state read across versions | `checks/own-state.sh --from <previous-tag>` (suite `test_own_state.sh`) | the release | release |
+| QC-60 | own-state read across versions; unreadable state discarded whole | `checks/own-state.sh --from <previous-tag>` (suite `test_own_state.sh`); layer-1 unit test on the own-state reader with an unreadable fixture, as QC-60 states | the release; the change | release; `development-implementation` (the unit test) |
 | QC-61 | logging facade and its implementation | `checks/no-network.sh` (suite `test_no_network.sh`); `checks/structure.sh` (suite `test_structure.sh`) | the tree; the change | CI build; `development-implementation` (the structure pair) |
 | QC-64 | every workflow rule held by one script, run at the change; the workflow holds none of its own | the card's test command through the gate tool; `grep -nE '^[[:space:]]+run:' .github/workflows/ci.yml`; the suites loop over `checks/gate.sh`; `checks/tests/test_vm_refusal.sh` — `test_every_toplevel_suite_is_an_entire_fatal_step`, `test_moved_steps_are_single_line_commands_in_order` | the change; the tree | `development-implementation`; `development-design` reading the entry |
 | QC-65 | the launching and home-reading steps refuse outside a virtual machine | the refusal case in each guarded script's suite, and the two guarded suites' cases in `checks/tests/test_vm_refusal.sh`; the gate tool's `Environment:` line | the change | `development-implementation` |
@@ -7627,3 +7630,35 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   verification-map rows. No product test, native scene, timing run or built-bundle proof is
   executed by this documentation fold. Removing the resolved companion through the builder
   leaves the constraint set Settled; it does not certify that the product passes those checks.
+
+- **RN-86:** *(v76 — full reread and verification-map repair)* The owner's answer at
+  `docs/trail/architecture/cycle-67.md` § 3.1 directs the full reread omitted by RN-85,
+  correction of its findings, and settlement without a new obligation or ADR change.
+  This run reads SRS v13, SDD v66, FDR v13 and the complete NFDR; every ADR, including
+  superseded records, and their index; every architecture answer and self-answer trail;
+  the project's Agari and doctrine; and the other top-level documents under `docs/`,
+  including PRD v16, UXD v12, DESIGN v19 and CONTENT v13. Binary reference images are
+  excluded. The reading is a document review, not execution of the verification map.
+
+  **The cycle-66 answer stands.** SDD § 3's *Watcher placement and delivery*, § 4 C-I4,
+  § 6 S-5–S-6 and § 10 RC-7 agree with QC-10, QC-11, QC-13, QC-15 and QC-66's bridge
+  watcher and tree proof. `docs/trail/architecture/cycle-66.md` § 3.1 keeps QC-48's full
+  churn, QC-46's latency and QC-40's built-bundle proof separate. Their entries and
+  verification rows retain that separation. QC-9, all other obligation bodies, the
+  diagnostic-retention policy and every ADR remain unchanged.
+
+  **Four projection omissions repaired.** The finish walk compares § 10 with each
+  entry's verification tail. QC-6's row omitted its layer-1 containment tests; the
+  combined QC-9/QC-12/QC-14 row omitted QC-12's own-state check and QC-14's bundle check;
+  QC-60's row omitted its unreadable-state unit test. The rows now name those existing
+  checks, with QC-12 and QC-14 in separate rows so their scopes remain visible. No test,
+  threshold or obligation is added. The entry remains authoritative over its projection.
+  The input-status header records the additional definition documents read this round.
+
+  **Limits and close.** The reread does not discharge any interim review gate or change
+  a claim about implementation coverage. In particular, the watcher-boundary, tree,
+  full-churn, latency and built-bundle evidence remains owed exactly where the entries
+  say so. No product test, native scene, timing measurement or bundle check is run by
+  this documentation skill. Cycle-67 preserves the committed answer whole; removal of
+  the resolved companion through the builder closes the architecture loop and leaves
+  the NFDR Settled.
