@@ -47,6 +47,9 @@ None.
 - **If a document has to be written:** Correct the obsolete attribution in `docs/CONTENT.md`
   through `product-content`, owned by the Content Manager; retain or revise the voice's
   explanation under that document's authority.
-- **Answer:**
+- **Answer:** Keep the no-*we* rule, and correct only its stated reason so it follows PRD v16 § Assumptions,
+  **Public identity**. Suggested wording: "There is no *we*: KA-Reader is a side project published under
+  the maintainer's personal handle, and the tool speaks as itself, never as a team or company"
+  (`docs/PRD.md` § Assumptions, public identity). The owner, 2026-11-02.
 
 **How it closes.** `product-content` folds it on its next run exactly as it folds §§ 1–2.
