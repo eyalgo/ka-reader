@@ -1,8 +1,9 @@
 # NFDR — KA-Reader
 
-**Status:** Settled
+**Status:** Draft
 **Owner:** Principal Architect
-**Version:** 74 — QC-40 separates writer and own-state tests from the outstanding built-bundle proof; its verification-map row names the interim review gate, on cycle-65 § 3.1 — RN-84.
+**Version:** 75 — Bind the bridge watcher and separate QC-66's tree proof from QC-48's full churn, QC-46's latency and QC-40's bundle proof; fold cycle-66 § 3.1 — RN-85.
+Version 74 — QC-40 separates writer and own-state tests from the outstanding built-bundle proof; its verification-map row names the interim review gate, on cycle-65 § 3.1 — RN-84.
 Version 73 — QC-19 measures every selector contribution between its own before-and-after commits; its verification-map row follows SDD v65 § 6 S-10 — RN-83.
 Version 72 — Correct QC-30’s verification description to the implemented nine-name dependency scan and planted controls; factual correction on the implementation branch.
 Version 71 — QC-53 and its verification-map row name the lint-step presence-and-order suite; §§ 8 and 9 carry the gate and suite re-measurement authorized by cycle-64 § 3.1 — RN-82.
@@ -51,15 +52,18 @@ Version 71 — QC-53 and its verification-map row name the lint-step presence-an
 
 ## 1. Structural integrity
 
-The physical module set is ADR-0020's, which supersedes ADR-0016 (confirmed in the owner's seat at
-`docs/trail/architecture/cycle-30.md` § 2.1 — RN-44), which superseded ADR-0009 (the owner's confirm,
-`docs/trail/architecture/cycle-9.md` § 2.3); this section is re-derived from `docs/SDD.md` § 3 as
-it reads at v14 under that document's own rule that the § 4 statement wins (RN-22, RN-23): `ka-reader-core` (`crates/ka-reader-core`, Rust library — `fs-reader`, `git-reader` with the
-Git port, `watcher`, `folder-model`, `own-state`, `markdown-renderer`, `highlighter`),
-`ka-reader-bridge` (`crates/ka-reader-bridge`, Rust static library — `core-bridge`: the C ABI and the
-Rust-side composition root), `ka-reader-mac` (a Swift package — `mac-shell`, `surfaces`), and
+The four physical units remain ADR-0020's. Their current part placement follows `docs/SDD.md`
+§ 3 and § 10 RC-7 at v66, on the owner's answer at
+`docs/trail/architecture/cycle-66.md` § 3.1: `ka-reader-core`
+(`crates/ka-reader-core`, Rust library — `fs-reader`, `git-reader` with the Git port,
+`folder-model`, `own-state`, `markdown-renderer`, `highlighter`),
+`ka-reader-bridge` (`crates/ka-reader-bridge`, Rust static library — `watcher` and `core-bridge`,
+the C ABI and Rust-side composition root), `ka-reader-mac` (a Swift package — `mac-shell`, `surfaces`), and
 `checks/` (build-time, not shipped). Part names are the SDD's (`docs/SDD.md` § 3); the Rust module
-spelling of each is the developer's. **The tree holds ADR-0020's four units and nothing else**
+spelling of each is the developer's. ADR-0020's older placement of `watcher` in the core differs
+from this corrected placement. The owner's answer leaves that accepted record unchanged;
+the current watcher constraints are QC-10, QC-11, QC-13 and QC-15 (RN-85).
+**The tree holds ADR-0020's four units and nothing else**
 *(corrected in place at v14 — RN-25, on the owner's seat's answer at
 `docs/trail/architecture/cycle-11.md` § 3.1; through v12 this paragraph read the tree as holding
 the previous shape alone, and at v13 as holding both shapes until the Tauri build's removal)*:
@@ -416,16 +420,26 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   and § 11 R-14 as they read at v23 — RN-34; libgit2 stated as linked, which it has been since
   `ka-reader@126ef75` (`crates/ka-reader-core/Cargo.toml:L9`) — RN-43)*
 - **QC-10:** `folder-model` may import `fs-reader`, the Git port trait and the plain-data types
-  that cross SM-2 beside it, `watcher`,
+  that cross SM-2 beside it,
   `markdown-renderer` and `highlighter` — the last two to fill the open `FileView`: the model
   calls `highlighter` for a text file in a floor language and `markdown-renderer` for a Markdown
   file, on the bytes `fs-reader` returned, and holds a call that fails as that item's
   `failed(condition)`. That is the one edge from the model into the two, in that direction only;
   neither imports the model (QC-11). It **must not import** the libgit2 binding, `git-reader`'s
-  adapter, or `own-state`. The model's "I/O of any kind" holds through the edge: the renderer's
+  adapter, `own-state`, `watcher` or `ka-reader-bridge`. The bridge composition root delivers
+  owned path reports over SM-5; the model owns their meaning and decides which contained reads
+  to repeat, including affected expanded descendants. No native event or Apple binding enters
+  the core (`docs/SDD.md` § 3, *Watcher placement and delivery*, SM-3 and SM-5; RC-7;
+  `docs/trail/architecture/cycle-66.md` § 3.1 — RN-85).
+  The model's "I/O of any kind" holds through the edge: the renderer's
   containment call reaches the filesystem through `fs-reader` over `SM-7`, never through the
   model.
-  — *verified by:* `checks/structure.sh` (layer 6) *(traces to: ADR-0019; ADR-0020; SDD § 3 SM-2 at v26
+  — *verified by:* `checks/structure.sh` (layer 6), including the forbidden model-to-watcher
+  and core-to-bridge edges, with planted violations in its suite. Until those clauses are
+  checked, `development-design` reading this entry holds them: at
+  `ka-reader@7b170d71fec3bf9d12975ae48be5f4554e23c2a6`, the scan's unit-edge row
+  (`checks/structure.sh:L110-L136`) does not forbid the model-to-watcher edge. This review
+  is not a passing structural result. *(traces to: ADR-0019; ADR-0020; SDD § 3 SM-2 at v26
   — "the model imports the trait and those types, and never the adapter" — added on the owner's
   seat's answer at `docs/trail/architecture/cycle-29.md` § 3.2, RN-43; SDD § 3
   `folder-model` "Owns" and "Must not own" as they read at v14, and the units paragraph's edge
@@ -438,7 +452,18 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   imports `fs-reader`'s containment check, and `highlighter` for a fenced block's spans. Only
   `git-reader` imports the libgit2 binding, with one exception: `core-bridge` names it in the
   composition root's config search-path switch and that switch's test, and nowhere else (QC-17).
-  — *verified by:* `checks/structure.sh` (layer 6). What it holds of this entry is stated in its
+  `watcher` lives in `ka-reader-bridge`; its sink accepts owned path batches and names no
+  model request type. `core-bridge` alone adapts that sink into SM-5. The import prohibition
+  applies in the bridge as it does to the readers in the core
+  (`docs/SDD.md` § 3, *Watcher placement and delivery*, SM-3; RC-7;
+  `docs/trail/architecture/cycle-66.md` § 3.1 — RN-85).
+  — *verified by:* `checks/structure.sh` (layer 6). The bridge watcher's forbidden edges require
+  planted violations in the script's suite. Until the scan checks that location,
+  `development-design` reading this entry is their gate: at
+  `ka-reader@7b170d71fec3bf9d12975ae48be5f4554e23c2a6`, subject-unit selection is limited to
+  `crates/ka-reader-core/src/` (`checks/structure.sh:L1462-L1472`). The following pinned
+  measurements prove the older core placement, not this bridge placement.
+  What it holds of this entry is stated in its
   header and cited here, never copied: *THE SCAN TABLE*'s unit-edge row
   (`checks/structure.sh:L110-L149`) and libgit2-binding row (`:L167-L181`), and *WHAT IS NOT HELD*
   (`:L321-L336`), all at `ka-reader@82a3fb1`. At that commit the header holds the clauses whose
@@ -537,15 +562,25 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
 - **QC-13:** `ka-reader-bridge` may import `ka-reader-core`, the standard library and the crates
   `checks/deps.allow` names — the whole allowed set, in the form QC-9 bounds `ka-reader-core` with,
   and never a hand-kept list of names, which goes false at the bridge's next reviewed dependency.
-  It **must not
-  import** any Apple framework or `std::fs` outside its log writer, and holds no read logic: every
+  Only its `watcher` part may bind the system FSEvents/CoreServices API and its CoreFoundation
+  types. No other bridge part imports an Apple framework or binding; `core-bridge` uses the
+  watcher's platform-neutral interface. `std::fs` remains confined to the log writer, and the
+  bridge holds no read logic: every
   exported function decodes its arguments, calls `folder-model`, and returns plain data as an
   owned buffer freed by `ka_reader_free`. Beside the exported functions it runs process setup before
   first use — the log writer's install and libgit2's config search-path switch (QC-17) — and that
-  setup is no read logic. It is the one unit that holds `unsafe`, relaxed in its own
+  setup is no read logic. The composition root also wires the watcher's path sink into SM-5
+  and owns its grant and callback lifetimes, under `docs/SDD.md` § 3 *Watcher placement and
+  delivery*. This grants no content read or filesystem-change interpretation to the watcher.
+  It is the one unit that holds `unsafe`, relaxed in its own
   manifest with the reason recorded; every function catches a panic at the boundary and returns a
   failure value; the header is generated from its source and never hand-edited.
-  — *verified by:* `checks/structure.sh` (layer 6) for the imports; `cargo test --locked -p
+  — *verified by:* `checks/structure.sh` (layer 6) for the imports, with positive coverage of
+  the native binding inside the bridge's `watcher` and planted violations outside it and
+  inside the core. Until that boundary is held, `development-design` reads this entry:
+  at `ka-reader@7b170d71fec3bf9d12975ae48be5f4554e23c2a6`, the script's Apple row
+  (`checks/structure.sh:L219-L222`) rejects the binding throughout the bridge, so its existing
+  pass cannot prove the revised boundary. QC-9 is not relaxed. `cargo test --locked -p
   ka-reader-bridge --test exports` — the header declares what the library exports and nothing else
   (QC-24); the bridge's tests under `-Zsanitizer=address` in CI on every build (layer 2), a run that
   admits `-Cllvm-args=-asan-globals=0` beside the sanitizer flag, as the gate's *Bridge tests under
@@ -579,7 +614,9 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   SM-4; § 4 C-I2; § 11 R-13; `arch_defaults.md` § Application Layer; re-derived at v11 —
   RN-22; the *may import* set answered in the owner's seat at
   `docs/trail/architecture/cycle-10.md` § 3.1 — RN-24; the sanitizer run's admitted flag, the owner's
-  seat's answer at `docs/trail/architecture/cycle-54.md` § 3.2 — RN-72)*
+  seat's answer at `docs/trail/architecture/cycle-54.md` § 3.2 — RN-72;
+  the watcher exception and composition from SDD § 3, § 10 RC-7 at v66 and
+  `docs/trail/architecture/cycle-66.md` § 3.1 — RN-85)*
 - **QC-14:** `checks/` may import `ka-reader-core` and is **never a dependency of any shipped
   unit** — the `ka-reader-core` library, the `ka-reader-bridge` static library or the `ka-reader-mac`
   executable, each as it ships, and never a test target declared in one of their manifests — and
@@ -612,12 +649,19 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   submodule verified before the status read, its `.git` entry's metadata, the reads above that
   locate its Git directory and its common directory, its config check and its alternates check —
   never a path past the folder and never a link followed out of it); change
-  notifications are `watcher`'s
-  (FSEvents); the diagnostic log writer is `ka-reader-bridge`'s; the Open panel and the one window
+  notifications are `watcher`'s in `ka-reader-bridge`
+  (FSEvents). The watcher reports owned paths only, reads no content and interprets no change;
+  uncertain native coverage reports the granted root. The model decides the contained reads,
+  through its readers. The subscription and native binding stay inside that watcher
+  (`docs/SDD.md` § 3 *Watcher placement and delivery*, SM-3, SM-5; RC-7;
+  `docs/trail/architecture/cycle-66.md` § 3.1 — RN-85).
+  The diagnostic log writer is `ka-reader-bridge`'s; the Open panel and the one window
   are `mac-shell`'s, in `ka-reader-mac`; drawing is `surfaces`', in `ka-reader-mac`, which holds no I/O
   of its own; **no unit owns a socket and no unit spawns a process.**
   — *verified by:* `checks/structure.sh` (layer 6): each Rust I/O primitive appears only in its
-  owner. Its filesystem clause exempts three owner files by exact path: `fs_reader.rs`,
+  owner, including FSEvents subscription and binding in the bridge's watcher alone. The
+  watcher's location follows QC-13's interim review gate and reason; the delivery and
+  callback-lifetime proof is QC-66's. Its filesystem clause exempts three owner files by exact path: `fs_reader.rs`,
   `log_writer.rs` and `git-reader`'s adapter, `crates/ka-reader-core/src/git_reader/libgit2.rs`
   (`checks/structure.sh:L82-L85`, the exempting `case` at `:L1451`, at `ka-reader@82a3fb1`
   *(through v63 these read `:L77-L80` and `:L1161`, at `ka-reader@48308ff`, where the three files
@@ -1411,8 +1455,9 @@ import nothing forbidden and still read a path it was never granted.
   cap (`cargo test --locked -p ka-reader-bridge`), and the remembered list evicts the oldest entry on the eleventh
   and exposes no removal (`cargo test --locked -p ka-reader-core`). Writer regressions remain
   required when the writer changes; neither their success nor the own-state retention tests
-  discharge the separate layer-5 proof. That proof is owed with the watcher/churn capability in
-  `docs/SDD.md` § 6 S-5: the built-bundle scene generates admitted diagnostic output, measures
+  discharge the separate layer-5 proof. That proof is owed by `follow-the-folder`, the complete
+  refresh slice in `docs/SDD.md` § 6 S-6, and not by `follow-the-tree` (S-5). The built-bundle
+  scene generates admitted diagnostic output, measures
   the container log against NFR-11's on-disk bound (including two instances writing one file),
   and observes a known pre-launch line absent after relaunch (`docs/SRS.md` AC-13). An empty log
   without an exercised writer is not proof. Until that scene proves those assertions,
@@ -1426,7 +1471,8 @@ import nothing forbidden and still read a path it was never granted.
   *(traces to: SRS NFR-11, AC-13; FDR R-110, R-178, R-180, R-182; SDD § 4 C-I2; § 3 `own-state`;
   the bound raised from this document and folded at SRS v9 — `docs/trail/architecture/cycle-1.md`
   § 1.2, RN-11; the remembered-folder clause brought to FDR v3 — RN-12;
-  verification corrected on `docs/trail/architecture/cycle-65.md` § 3.1 — RN-84)*
+  verification corrected on `docs/trail/architecture/cycle-65.md` § 3.1 — RN-84;
+  allocation follows SDD § 10 RC-7 and `docs/trail/architecture/cycle-66.md` § 3.1 — RN-85)*
 - **QC-41:** Every release carries `LICENSE` (MIT) and a `THIRD_PARTY_NOTICES.md` listing every
   crate and package the bundle ships with its licence.
   — *verified by:* `checks/notices.sh` — the names in `cargo tree` each appear in the notices
@@ -1471,10 +1517,15 @@ binds the *process*, and asserts no number of its own.
   assert against; the entry becomes a layer-5 timing assertion the day the SRS folds the numbers
   in *(traces to: SDD § 4 C-I4; SRS NFR-1, NFR-2, NFR-10, RN-4; FDR PD-30)*
 - **QC-46:** `checks/latency.sh` prints file-switch and refresh p95 in milliseconds over the
-  reference fixtures `checks/fixtures/scale-small`, `scale-medium` and `scale-large`, on every CI
-  build.
-  — *verified by:* the script exits 0 and prints three figures per metric (layer 5) *(traces to:
-  SDD § 4 C-I4; § 11 R-5; ADR-0010)*
+  reference fixtures `checks/fixtures/scale-small`, `scale-medium` and `scale-large`, beginning
+  with the first `follow-the-folder` build with every refresh path and on every CI build
+  thereafter. `follow-the-tree` starts no separate latency measurement or numeric threshold.
+  — *verified by:* the script exits 0 and prints three figures per metric (layer 5).
+  Until the complete-refresh measurement runs, `development-design` reading this entry holds
+  the obligation: at `ka-reader@7b170d71fec3bf9d12975ae48be5f4554e23c2a6`,
+  `git ls-files checks/latency.sh` returns no path. Review supplies no latency result.
+  *(traces to: SDD § 4 C-I4, § 6 S-6, § 10 RC-7, § 11 R-5; ADR-0010;
+  `docs/trail/architecture/cycle-66.md` § 3.1 — RN-85)*
 
 ## 6. Availability & reliability
 
@@ -1496,19 +1547,61 @@ binds the *process*, and asserts no number of its own.
   selection and reading position survive, and the fixture is byte-identical to the script's own
   final state. Where a file's Git status changes mid-run, the model's snapshot then carries the
   changed marker on that file's `TreeEntry` and both Git lists in row order: the marker join and
-  the row order are `folder-model`'s, and stand in `surfaces` for `see-git-status` alone until
-  `follow-the-folder` is reached (SDD § 3 `surfaces` and `GitState`; § 10 RC-5).
+  the row order are `folder-model`'s, and stand in `surfaces` from `see-git-status` through
+  `follow-the-tree` until
+  `follow-the-folder` is reached (SDD § 3 `surfaces` and `GitState`; § 10 RC-5, RC-7).
+  This allowance continues through `follow-the-tree`; QC-66's narrower scene neither
+  substitutes for this full proof nor discharges the marker/order migration.
   — *verified by:* `cargo test --locked -p ka-reader-core --test watch` running `checks/churn.sh <fixture> 30`,
   with the same suite's case for a status change mid-run;
   `checks/read-only.sh` against the churn's final state as baseline (layer 3); and
   `grep -rn 'TreeMarkers\|GitRowOrder' ka-reader-mac/Sources` printing nothing, red while either
-  file remains in the shell. What runs them is owed by `follow-the-folder`: at `ka-reader@076eac2` no
-  `watch` target is under `crates/ka-reader-core/tests/`, `checks/churn.sh` is not in the tree (SDD § 3,
-  the `read-only-harness` row, *Owed by a slice*), and the `grep` prints five files, which is the
-  placement RC-5 bounds and not a violation until that slice is reached *(traces to: SRS
-  FR-16, NFR-3, NFR-4, AC-8; SDD § 6 S-5; ADR-0010; the mid-run case, the `grep` and the end of
+  file remains in the shell. The full proof is owed by `follow-the-folder` (SDD § 6 S-6).
+  Until it runs, `development-design` reading this entry holds that obligation: at
+  `ka-reader@7b170d71fec3bf9d12975ae48be5f4554e23c2a6`, `git ls-files checks/churn.sh`
+  returns no path. The existing `crates/ka-reader-core/tests/watch.rs` exercises injected
+  deltas; its presence alone does not prove concurrent native delivery. The marker/order
+  placement remains permitted until this slice is reached. *(traces to: SRS
+  FR-16, NFR-3, NFR-4, AC-8; SDD § 6 S-6, § 10 RC-7; ADR-0010;
+  `docs/trail/architecture/cycle-66.md` § 3.1 — RN-85; the mid-run case, the `grep` and the end of
   the placement from SDD § 3 `surfaces`, § 6 S-5's command half and § 10 RC-5 as they read at
   v42 (SDD RN-94) — RN-53)*
+- **QC-66:** Tree-only concurrent change preserves the reader's place and converges to fresh
+  listings without panic or a write to the viewed folder.
+  The repeatable thirty-second scene creates, changes and deletes entries in nested expanded
+  folders, leaves the displayed file untouched and performs no Git operations. Its runnable
+  command and fixture setup stay with the check. Expansion, collapse, selection, sidebar mode,
+  the open file and reading position survive; after quiescence the live listings equal fresh
+  fixture reads. A separate case reports a held expanded folder and the selected file removed,
+  then restores and reports both present: the held place returns, a new child created while
+  the parent was absent appears, and a removed old child does not return from cache. A forced
+  unreadable item becomes `failed` without changing any sibling's independently observed,
+  pending, failed or stopped state. The expanded-folder failed re-read is exercised; the
+  treatment of its existing children is settled by the implementing design under SDD C-I1,
+  with recovery on the next successful read. The running app exercises real watcher-to-tree
+  delivery; injected Rust reports alone cannot establish that route.
+  — *verified by:* `cargo test --locked -p ka-reader-core --test watch` holds the scene,
+  fresh-read comparison, preservation, removal/return and failure cases (layer 2).
+  `cargo test --locked -p ka-reader-bridge` and `swift test --package-path ka-reader-mac`
+  cover disclosure, collapse and selection through SM-4, main-thread projection deltas and
+  callback ownership/lifetime: delivery starts before initial reconciliation, model work is
+  serialized, superseded-grant reports are rejected, callbacks stop and drain before their
+  context is released, and shell callbacks run after model locks are released (layers 2 and 4).
+  `cargo test --locked -p ka-reader-bridge --test exports` keeps C-R7's closed export set;
+  callback registration uses the existing `open_folder` call. `checks/structure.sh` with
+  planted violations holds QC-10, QC-11, QC-13 and QC-15's watcher boundaries (layer 6).
+  `checks/read-only.sh` against this scene's own final state prints `unchanged`, as does
+  `checks/read-only.sh --kill` killing the host mid-scene; `checks/no-network.sh` exits 0.
+  The built-app scene also shows no refresh control, toast, flash or badge and a responsive
+  window (layer 5; SDD § 6 S-5's observable bar). These proofs are owed by `follow-the-tree`.
+  Until they run, `development-design` reading this entry is the gate: at
+  `ka-reader@7b170d71fec3bf9d12975ae48be5f4554e23c2a6`, the existing `watch.rs` constructs
+  `ModelDelta` values directly, and the scan still assumes the old watcher placement
+  (QC-10, QC-11 and QC-13's tails). Neither is evidence for the native route or this scene.
+  QC-48's full scene, QC-46's figures and QC-40's bundle proof remain separate obligations.
+  *(traces to: SDD § 3 *Watcher placement and delivery*, SM-3–SM-5, § 4 C-I1 and C-R7,
+  § 6 S-5, § 10 RC-7; SRS FR-14–FR-16, FR-27, NFR-3, NFR-4; FDR R-77, R-78, R-81,
+  R-83, R-85; `docs/trail/architecture/cycle-66.md` § 3.1 — RN-85)*
 - **QC-49:** The read-only and no-network promises hold through abnormal exit: the host killed
   mid-churn leaves the fixture unchanged and `.git` byte-identical.
   — *verified by:* `checks/read-only.sh --kill` — the harness sends SIGKILL to the host during
@@ -2093,6 +2186,15 @@ answer at `docs/trail/architecture/cycle-51.md` § 3.2 — RN-69)*.
 
 ## 9. Test strategy
 
+**Refresh proof follows the two slices in SDD § 6.** QC-66's tree scene exercises the model
+at layer 2, bridge delivery and callback lifetime at layer 2, the shell and surfaces at layer 4,
+the real watcher-to-tree route and kill at layer 5, and watcher placement at layer 6.
+QC-48's full churn and marker/order migration, QC-46's first latency measurement and QC-40's
+built-bundle log proof belong to `follow-the-folder`, not `follow-the-tree`. The two scene
+commands and their regression cases enter the product gate under QC-64 when their respective
+capabilities are delivered. One scene's pass cannot discharge the other
+(`docs/SDD.md` § 6 S-5–S-6, § 10 RC-7; `docs/trail/architecture/cycle-66.md` § 3.1 — RN-85).
+
 The layer set is **not defined here** — it is `testing_doctrine.md` v2.2.0, and this table is one
 project's realization of it. Tooling for the core and the bridge comes from the Rust packet
 (`languages/rust/testing.md` v1.0.1), and for `ka-reader-mac` from the Swift packet
@@ -2136,7 +2238,7 @@ left with `ka-reader-ui` at `ka-reader@0aca57e` (RN-22; RN-25).
 | 1 — Unit | The reducer, `ItemState` transitions, the containment check, the text rule, extension recognition, the log line shape; on the Swift side, a projection decoded from an `SM-4` buffer | `cargo test --locked` (`#[cfg(test)]` beside the module); `swift test --package-path ka-reader-mac` | inside each `ka-reader-core` / `ka-reader-bridge` module; `ka-reader-mac/Tests/` |
 | 2 — Integration | `fs-reader` and `git-reader` against real fixture folders and repositories; the Markdown pipeline against `hostile.md`; `highlighter` against one fixture per floor language; the bridge's export set against its generated header; `asset_bytes` against the containment check; the bridge under the address sanitizer | `cargo test --locked -p ka-reader-core --test git_state`, `--test root_finding`, `--test markdown`, `--test highlight`, `--test watch`; `cargo test --locked -p ka-reader-bridge --test exports`, `--test asset_bytes` | `crates/ka-reader-core/tests/`, `crates/ka-reader-bridge/tests/`, over `checks/fixtures/` |
 | 3 — Application | `SM-4`'s function list driven in-process through `SM-5`, bypassing the shell; the whole-model switch | `checks/read-only.sh`; `cargo test --locked -p ka-reader-core --test switch` | `checks/`, `crates/ka-reader-core/tests/` |
-| 4 — UI | A view is drawn from a projection and from nothing else — read with the one exception `docs/SDD.md` § 3's `surfaces` row names, that an intent the surface raised has not been answered yet, under that row's four bounds; the gap is no `ItemState`, and the reading adds no test (`docs/SDD.md` RN-82, v24; RN-37) — read too with the same row's two clauses that are not a second exception: what the pointer is over and whether the window is the key window are the shell's own observations, held across no redraw and no state of the folder (`docs/SDD.md` RN-96, RN-98), and for `see-git-status` alone the tree's marker join and the Git lists' row order stand in `surfaces`, derived only from projections the bridge sent, until `follow-the-folder` (`docs/SDD.md` § 10 RC-5, RN-94; QC-48 holds the end; RN-53) — and the shell issues no call `SM-4` does not name: nothing drawn from `pending` but the entry's name, its glyph and CONTENT's *Loading* sentence, no marker before `observed`, the Git view empty on `plain`, the failure slot and its route, the text view `isEditable` false and registering no drop type, a *resolved* image drawn from `asset_bytes`' bytes and a placeholder from none, staged told from unstaged by text, both themes | `swift test --package-path ka-reader-mac` — the tests on `main` XCTest, which the Swift packet keeps; a new test Swift Testing (the bullet below) | `ka-reader-mac/Tests/` |
+| 4 — UI | A view is drawn from a projection and from nothing else — read with the one exception `docs/SDD.md` § 3's `surfaces` row names, that an intent the surface raised has not been answered yet, under that row's four bounds; the gap is no `ItemState`, and the reading adds no test (`docs/SDD.md` RN-82, v24; RN-37) — read too with the same row's two clauses that are not a second exception: what the pointer is over and whether the window is the key window are the shell's own observations, held across no redraw and no state of the folder (`docs/SDD.md` RN-96, RN-98), and from `see-git-status` through `follow-the-tree` the tree's marker join and the Git lists' row order stand in `surfaces`, derived only from projections the bridge sent, until `follow-the-folder` (`docs/SDD.md` § 10 RC-5, RN-94; QC-48 holds the end; RN-53) — and the shell issues no call `SM-4` does not name: nothing drawn from `pending` but the entry's name, its glyph and CONTENT's *Loading* sentence, no marker before `observed`, the Git view empty on `plain`, the failure slot and its route, the text view `isEditable` false and registering no drop type, a *resolved* image drawn from `asset_bytes`' bytes and a placeholder from none, staged told from unstaged by text, both themes | `swift test --package-path ka-reader-mac` — the tests on `main` XCTest, which the Swift packet keeps; a new test Swift Testing (the bullet below) | `ka-reader-mac/Tests/` |
 | 5 — End-to-end | The built bundle: entitlements and sandbox, the shell's run under them, own-state after a session, churn and kill, latency figures; from `v1.0.0` the priced contract against its major's pin; the timed release walk | `checks/bundle.sh`, `checks/renderer.sh` with `checks/fixtures/idle-shell`, `checks/own-state.sh`, `checks/churn.sh`, `checks/latency.sh`, `checks/read-only.sh --kill`, `checks/contract.sh <tag>`; `docs/SRS.md` AC-10 as a manual timed walk | `checks/` |
 | 6 — Architecture | § 1.2's graph, § 1.3's I/O ownership, § 3's reach rules, the linked tree's environment and argument reads against their reviewed list (QC-30), the shell's forbidden set and link list (QC-34), and this section's layer-5 placement (no `CARGO_BIN_EXE_` reference under `crates/*/tests/`) | `checks/structure.sh` (Rust, grep rules over shipped sources — its scope is the bullet below); `checks/entry-points.sh` (the resolved dependency tree); `checks/view.sh` (Swift: the source scan over `ka-reader-mac/Sources` and `otool -L` on the built executable) | `checks/` |
 | 7 — Specification | The SRS's acceptance criteria as scenarios through the real entry point | the SDD's per-slice command bars and the AC walk at release, until a QA seat writes the layer | `checks/` |
@@ -2656,10 +2758,11 @@ is stated once, in § 8 *(added at v56, on the owner's answer at `docs/trail/arc
 | QC-6 | containment check | `cargo test --locked -p ka-reader-core --test markdown`; `cargo test --locked -p ka-reader-bridge --test asset_bytes` | the change | `development-implementation` |
 | QC-7 | no mutating Git call, no spawn | `checks/read-only.sh` (suite `test_read_only.sh`); `checks/structure.sh` (suite `test_structure.sh`) | the tree; the change | CI build; `development-implementation` (the structure pair) |
 | QC-8 | `ka-reader-mac` imports and dependencies | `checks/view.sh` (suite `test_view.sh`); `checks/no-network.sh` (suite `test_no_network.sh`); `swift test --package-path ka-reader-mac` | the tree | CI build |
-| QC-9 – QC-12, QC-14 | `ka-reader-core` / `checks/` imports; no `unsafe` outside the bridge | `checks/structure.sh` (suite `test_structure.sh`); `checks/no-network.sh` (suite `test_no_network.sh`); `cargo tree -p ka-reader-bridge`; `cargo build --workspace --locked` | the tree; the change | CI build; `development-implementation` (the structure pair) |
+| QC-9, QC-12, QC-14 | `ka-reader-core` / `checks/` imports; no `unsafe` outside the bridge | `checks/structure.sh` (suite `test_structure.sh`); `checks/no-network.sh` (suite `test_no_network.sh`); `cargo tree -p ka-reader-bridge`; `cargo build --workspace --locked` | the tree; the change | CI build; `development-implementation` (the structure pair) |
+| QC-10, QC-11 | model import set; watcher in the bridge with no model or reader import | `checks/structure.sh` and `checks/tests/test_structure.sh`, including planted model-to-watcher, core-to-bridge and bridge-watcher forbidden edges; interim review and its limits are in the entries | the tree; the change | CI build; `development-implementation`; `development-design` until the revised clauses are checked |
 | QC-63 | a module of no part in `ka-reader-core` imports no part | `checks/structure.sh` (suite `test_structure.sh`) | the tree; the change | CI build; `development-implementation` (the structure pair) |
-| QC-13 | `ka-reader-bridge` imports; the export set; the ABI under the sanitizer | `checks/structure.sh` (suite `test_structure.sh`); `cargo test --locked -p ka-reader-bridge --test exports`; the bridge's tests under `-Zsanitizer=address`, with `-Cllvm-args=-asan-globals=0` admitted (RN-72) | the tree; the change | CI build; `development-implementation` (the structure pair) |
-| QC-15, QC-17 | I/O ownership; the two composition roots; libgit2's machine-level config search paths empty, failing closed, once per process | `checks/structure.sh` (suite `test_structure.sh`); `checks/view.sh` (suite `test_view.sh`); `cargo test --locked -p ka-reader-bridge` — the four search paths read back empty, and the switch's fail-closed and once-per-process cases | the tree; the change | CI build; `development-implementation` (the structure pair) |
+| QC-13 | bridge imports with the native-binding exception confined to watcher; the export set; the ABI under the sanitizer | `checks/structure.sh` and its suite's positive/negative watcher-boundary cases; `cargo test --locked -p ka-reader-bridge --test exports`; the bridge's tests under `-Zsanitizer=address`, with `-Cllvm-args=-asan-globals=0` admitted (RN-72); interim watcher-boundary review and reason in QC-13 | the tree; the change | CI build; `development-implementation`; `development-design` until the revised boundary is checked |
+| QC-15, QC-17 | I/O ownership, including watcher subscription in the bridge; the two composition roots; libgit2's machine-level config search paths empty, failing closed, once per process | `checks/structure.sh` (suite `test_structure.sh`); `checks/view.sh` (suite `test_view.sh`); `cargo test --locked -p ka-reader-bridge` — the four search paths read back empty, and the switch's fail-closed and once-per-process cases; watcher-boundary review follows QC-13 until checked | the tree; the change | CI build; `development-implementation`; `development-design` for the interim watcher boundary |
 | QC-16 | writes only in the container | `checks/own-state.sh` (suite `test_own_state.sh`) | the tree | CI build; release |
 | QC-19 | folder replace-whole and selector isolation | `cargo test --locked -p ka-reader-core --test switch`; `git diff --stat B T -- ka-reader-mac`; `git diff --name-status --no-renames B T -- ka-reader-mac` — full SHAs and evidence rules in QC-19 | the change — every selector contribution | `development-implementation`; selector-contribution acceptance (QC-19's review gate) |
 | QC-20 | own-state isolation | `checks/structure.sh` (suite `test_structure.sh`) | the tree; the change | CI build; `development-implementation` (the structure pair) |
@@ -2681,12 +2784,14 @@ is stated once, in § 8 *(added at v56, on the owner's answer at `docs/trail/arc
 | QC-37 | `asset_bytes` and the decoder | `cargo test --locked -p ka-reader-bridge --test asset_bytes`; `swift test --package-path ka-reader-mac` | the change | `development-implementation` |
 | QC-38 | own-state fields | `checks/own-state.sh` (suite `test_own_state.sh`) | the tree | CI build |
 | QC-39, QC-52 | log shape and location | `cargo test --locked -p ka-reader-bridge` (layer 1); `checks/own-state.sh` (suite `test_own_state.sh`) | the change; the tree | `development-implementation`; CI build |
-| QC-40 | writer regressions; own-state retention; separate container-log size and relaunch proof | `cargo test --locked -p ka-reader-bridge`; `cargo test --locked -p ka-reader-core` (layer 1). Layer-5 proof owed with SDD § 6 S-5; until its assertions run, review at `development-design`, for the reason in QC-40. No existing own-state check or writer-test result discharges that proof. | the change; the built bundle for layer 5 | `development-implementation` for writer and retention tests; `development-design` for the outstanding layer-5 obligation |
+| QC-40 | writer regressions; own-state retention; separate container-log size and relaunch proof | `cargo test --locked -p ka-reader-bridge`; `cargo test --locked -p ka-reader-core` (layer 1). Layer-5 proof owed by `follow-the-folder` (SDD § 6 S-6), not the tree slice; until its assertions run, review at `development-design`, for the reason in QC-40. No existing own-state check, tree-scene pass or writer-test result discharges that proof. | the change; the built bundle for layer 5 | `development-implementation` for writer and retention tests; `development-design` for the outstanding layer-5 obligation |
 | QC-41 | third-party notices | `checks/notices.sh` | the release | release |
 | QC-42 | private reporting; SECURITY.md | `gh api repos/eyalgo/ka-reader/private-vulnerability-reporting` | the release | release |
 | QC-44 | standing sentences verbatim | `checks/readme.sh` | the release | release |
-| QC-46 | latency figures | `checks/latency.sh` | the tree | CI build |
-| QC-47, QC-48 | per-item degradation; churn; the marker and the row order in the model | `cargo test --locked -p ka-reader-core --test watch` with `checks/churn.sh`; `swift test --package-path ka-reader-mac` (layer 4); QC-48's `grep` over `ka-reader-mac/Sources` prints nothing, from `follow-the-folder` | the change | `development-implementation` |
+| QC-46 | latency figures, beginning with complete refresh | `checks/latency.sh` — three figures per metric on the named scale fixtures; owed by `follow-the-folder` (SDD § 6 S-6), with interim review for the missing script as QC-46 states | the tree | every CI build from the first complete-refresh build; `development-design` until measured |
+| QC-47 | per-item degradation and recovery | `cargo test --locked -p ka-reader-core --test watch`; `swift test --package-path ka-reader-mac` (layer 4); the tree cases run under QC-66 without full churn | the change | `development-implementation` |
+| QC-48 | full churn; displayed-file and Git changes; marker and row order in the model | `cargo test --locked -p ka-reader-core --test watch` with `checks/churn.sh <fixture> 30`; `checks/read-only.sh` against churn's final state; QC-48's marker/order grep prints nothing, from `follow-the-folder` (SDD § 6 S-6); interim review and reason in QC-48 | the change; the fixture | `development-implementation` for complete refresh; `development-design` until the full proof runs |
+| QC-66 | tree-only convergence, preserved place, removal/return, sibling failure, native delivery and callback lifetime | QC-66's thirty-second scene under `cargo test --locked -p ka-reader-core --test watch`; `cargo test --locked -p ka-reader-bridge` and `--test exports`; `swift test --package-path ka-reader-mac`; `checks/structure.sh` and its suite; built-app tree scene; `checks/read-only.sh` and `checks/read-only.sh --kill` against that scene's final state; `checks/no-network.sh` | the change; the tree; the built app and fixture | `follow-the-tree` acceptance and `development-implementation`; `development-design` until the named proofs run |
 | QC-49 | promises through kill | `checks/read-only.sh --kill` (suite `test_read_only.sh`) | the tree | CI build; release |
 | QC-51 | failure visible in window | `swift test --package-path ka-reader-mac` (layer 4); `checks/view.sh` (suite `test_view.sh`) | the change; the tree | `development-implementation`; CI build |
 | QC-53 | no internal text; direct lint step present and ordered | `checks/strings.sh`, the gate's *Strings check* step (suite `test_strings.sh`, the lint's second content-checking path); `checks/tests/test_strings_step.sh` — the direct step's presence and order, not adjacency or catalogue contents; `swift test --package-path ka-reader-mac` (layer 4) — the three `stopped…UsesCatalogueSentence` cases | the tree; the change | CI build; `development-implementation` |
@@ -7477,3 +7582,48 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   product test, bundle check or full gate was executed. The input documents and companion
   were clean in git at intake. Cycle-65 preserves the answered companion whole; removing
   the resolved companion through the builder leaves this constraint set Settled.
+
+- **RN-85:** *(v75 — bridge watcher and separate refresh proofs)* The owner's committed
+  answer at `docs/trail/architecture/cycle-66.md` § 3.1 authorizes this fold, following
+  `docs/SDD.md` v66 § 3, § 4 C-I4, § 6 S-5–S-6 and § 10 RC-7. The answer is preserved
+  whole, including its provenance. QC-66 binds the tree-only scene and its native delivery,
+  place preservation, removal/return, failed-read and promise checks. QC-48 retains the full
+  displayed-file and Git churn scene and marker/order migration. QC-46's first figures and
+  QC-40's built-bundle diagnostic proof remain owed by `follow-the-folder`. The tree scene
+  cannot discharge them. QC-40's retention policy before its verification tail is unchanged.
+
+  **Structure.** The current module map places `watcher` in `ka-reader-bridge`. QC-10 forbids
+  a model import of that watcher or bridge; QC-11 applies the watcher's existing isolation to
+  its bridge location. QC-13 permits only the watcher's FSEvents/CoreServices binding and
+  CoreFoundation types, while `core-bridge` remains platform-neutral. QC-15 locates the
+  subscription there and retains reader-owned content reads. These are the constraints of
+  SDD § 3's *Watcher placement and delivery*, not a new choice of native binding.
+  QC-66 carries that section's callback-lifetime proof and C-R7's existing export boundary.
+  QC-9 is unchanged verbatim. No ADR or index is written or restatused, as the owner directs.
+  ADR-0020's old watcher placement remains visible as history; § 1 names its disagreement
+  with RC-7 rather than presenting the two mappings as identical.
+
+  **Verification class and evidence.** At
+  `ka-reader@7b170d71fec3bf9d12975ae48be5f4554e23c2a6`, the structure script's unit-edge
+  row reads core files (`checks/structure.sh:L110-L136`), its subject selection likewise
+  names the core (`:L1462-L1472`), and its Apple row rejects bindings across the whole bridge
+  (`:L219-L222`). QC-10, QC-11, QC-13 and QC-15 therefore name the revised scan obligations
+  and their interim `development-design` review, not a claim that this script already checks
+  them. `git ls-files checks/churn.sh checks/latency.sh` returns no path at that commit;
+  `crates/ka-reader-core/tests/watch.rs` constructs `ModelDelta` values directly. QC-46,
+  QC-48 and QC-66 name interim review for their outstanding measurements and scenes;
+  QC-40 retains its separate review gate for the bundle proof and the reason RN-84 records.
+  Existing semantic review gates remain as written. § 9 assigns the two proofs to their
+  test layers and QC-64's gate; § 10 projects each changed entry separately so a tree-only
+  check no longer inherits full churn through the combined QC-47/QC-48 row.
+
+  **Reading and execution limits.** This fold reads the committed answer, its SDD answer
+  source and the preceding retention answer whole, the relevant SDD, SRS, FDR and NFDR
+  sections, ADR-0020 and the ADR index. The skill's whole-document, whole-record and
+  whole-trail reread is not completed; this is a scoped fold, not a fresh review of the entire
+  definition set. Source documents and the companion were clean in git at intake. Document
+  verification checks the archive against that committed companion, preserves QC-9, the
+  retention policy and earlier review notes, and checks the revised entries against their
+  verification-map rows. No product test, native scene, timing run or built-bundle proof is
+  executed by this documentation fold. Removing the resolved companion through the builder
+  leaves the constraint set Settled; it does not certify that the product passes those checks.
