@@ -692,18 +692,22 @@ fn test_a_retargeted_link_is_marked_each_time_and_nothing_outside_is_read() {
 
         let after = invalidate(model.clone(), &["src/link"]);
 
-        assert_equals_fresh_reads(&after, &["src/link"]);
-        match target {
-            "../../outside" => assert_eq!(
-                after.listing(Path::new("src/link")),
-                Some(&ItemState::Failed(Condition::Outside))
-            ),
-            "../missing-target" => assert_eq!(
-                after.listing(Path::new("src/link")),
-                Some(&ItemState::Failed(Condition::Missing))
-            ),
-            _ => {}
-        }
+        // The parent is re-read too (it is the report's parent), so a link that no longer reads
+        // as a folder is marked on its own row in the parent's listing, and the listing under it
+        // goes with the drop pass.
+        assert_equals_fresh_reads(&after, &["src"]);
+        assert_eq!(after.listing(Path::new("src/link")), None);
+        let row_state = match after.listing(Path::new("src")) {
+            Some(ItemState::Observed(entries)) => entries
+                .iter()
+                .find(|entry| entry.name == "link")
+                .map(|entry| entry.state.clone()),
+            other => panic!("expected the observed parent listing, got {other:?}"),
+        };
+        assert!(
+            matches!(row_state, Some(ItemState::Failed(_))),
+            "the retargeted row is marked failed: {row_state:?}"
+        );
         assert_eq!(after.listing(Path::new("docs")).cloned(), siblings_before.0);
     }
     let _ = siblings_before.1;

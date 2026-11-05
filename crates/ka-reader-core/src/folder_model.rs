@@ -848,6 +848,49 @@ impl FolderModel {
             .insert(path, HeldListing::from_observation(identity, observation));
     }
 
+    /// The held listing requested at `path`, the root's for the empty path.
+    fn held_at(&self, path: &Path) -> Option<&HeldListing> {
+        if path.as_os_str().is_empty() {
+            return Some(&self.root_listing);
+        }
+        self.listings.get(path)
+    }
+
+    /// Whether the listing held at `folder` is observed and lists `name` as a folder.
+    fn lists_as_folder(&self, folder: &Path, name: &std::ffi::OsStr) -> bool {
+        self.held_at(folder).is_some_and(|held| {
+            matches!(held.entries, ItemState::Observed(_))
+                && held
+                    .items
+                    .iter()
+                    .any(|item| item.raw_name == name && item.entry.kind == EntryKind::Folder)
+        })
+    }
+
+    /// Drops every held non-root listing that lies under an ancestor re-read in this request when
+    /// that read is not observed or does not list the next path component as a folder. The place is
+    /// untouched: the expanded flags of a dropped listing stay.
+    fn drop_beneath_gone_folders(&mut self, reread: &BTreeSet<PathBuf>) {
+        let gone: Vec<PathBuf> = self
+            .listings
+            .keys()
+            .filter(|path| {
+                path.ancestors().skip(1).any(|ancestor| {
+                    let depth = ancestor.components().count();
+                    reread.contains(ancestor)
+                        && path
+                            .iter()
+                            .nth(depth)
+                            .is_some_and(|next| !self.lists_as_folder(ancestor, next))
+                })
+            })
+            .cloned()
+            .collect();
+        for path in gone {
+            self.listings.remove(&path);
+        }
+    }
+
     /// The location of `path` when it resolves inside the root to something of `kind`.
     fn admit(&self, path: &Path, kind: EntryKind) -> Option<Location> {
         fs_reader::locate(&self.folder.root, path)
@@ -918,16 +961,19 @@ fn covers(request: &Path, identity: &Path, reported: &Path) -> bool {
 }
 
 /// The model after an invalidation: each re-read in `reads`, keyed by request path, replaces the
-/// listing held there whole. Pure, so a test hands it supplied observations; `more` is how it asks
-/// for a read of its own.
+/// listing held there whole, and then every listing under a folder that is gone goes. Pure, so a
+/// test hands it supplied observations; `more` is how it asks for a read of its own.
 fn reduce_invalidation(
     mut model: FolderModel,
     reads: BTreeMap<PathBuf, ItemState<ListingObservation>>,
     _more: &mut dyn FnMut(&Path) -> ItemState<ListingObservation>,
 ) -> FolderModel {
+    let mut reread = BTreeSet::new();
     for (path, observation) in reads {
-        model.hold(path, observation);
+        model.hold(path.clone(), observation);
+        reread.insert(path);
     }
+    model.drop_beneath_gone_folders(&reread);
     model
 }
 
