@@ -24,6 +24,21 @@ pub struct OpenedFolder {
     root: PathBuf,
 }
 
+impl OpenedFolder {
+    /// The canonical root the folder was opened at: a folder chosen through a link names the
+    /// resolved path.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// let opened = ka_reader_core::open_folder(std::env::temp_dir()).expect("the temporary folder opens");
+    /// assert!(opened.root().is_absolute());
+    /// ```
+    pub fn root(&self) -> &Path {
+        &self.root
+    }
+}
+
 /// The closed answer to an attempt to open a chosen path.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum OpenFolderOutcome {
@@ -596,6 +611,22 @@ impl FolderModel {
         &self.place
     }
 
+    /// The model with only its Git item replaced by `item`: the tree, the place and the open file
+    /// are carried over unchanged.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use ka_reader_core::{FolderKind, FolderModel, ItemState, open_folder};
+    ///
+    /// let opened = open_folder(std::env::temp_dir()).expect("the temporary folder opens");
+    /// let model = FolderModel::new(opened).with_git_item(ItemState::Observed(FolderKind::Plain));
+    /// assert_eq!(model.kind(), &ItemState::Observed(FolderKind::Plain));
+    /// ```
+    pub fn with_git_item(self, item: ItemState<FolderKind, GitCondition>) -> Self {
+        Self { kind: item, ..self }
+    }
+
     pub fn open_file(&self) -> Option<&OpenFile> {
         self.place.open_file()
     }
@@ -816,15 +847,42 @@ fn reduce_listing(held: HeldListing, change: &FolderChange) -> HeldListing {
     HeldListing::from_items(held.identity, items)
 }
 
-/// Asks `port` about the model's folder and returns the model with only the Git item replaced.
+/// Asks `port` about the model's folder and returns the model with only the Git item replaced:
+/// [`read_git_item`] folded in by [`FolderModel::with_git_item`].
+pub fn read_git(model: FolderModel, port: &dyn GitPort) -> FolderModel {
+    let item = read_git_item(&model.folder, port);
+    model.with_git_item(item)
+}
+
+/// Asks `port` about `folder` and returns the Git item the answer makes, touching no model.
 ///
 /// `probe` is asked every call, whatever the item held. `state` is asked only where `probe` says
 /// `Root`, and `status` only if `state` succeeded, so one read holds the branch element, the
 /// repository state and both lists, or the condition of the read that failed, and never a root
 /// missing an element. An item that becomes failed emits one `warn` record naming `git-reader`, the
 /// operation that failed and a fixed phrase, and never a path.
-pub fn read_git(model: FolderModel, port: &dyn GitPort) -> FolderModel {
-    let kind = match ask_git(port, model.folder.root.as_path()) {
+///
+/// # Examples
+///
+/// ```
+/// use ka_reader_core::{FolderKind, GitPort, ItemState, open_folder, read_git_item};
+/// # use ka_reader_core::{GitReadCondition, HeadState, RootFinding, StatusLists};
+/// # use std::path::Path;
+/// # struct Plain;
+/// # impl GitPort for Plain {
+/// #     fn probe(&self, _: &Path) -> RootFinding { RootFinding::Plain }
+/// #     fn state(&self, _: &Path) -> Result<HeadState, GitReadCondition> { Err(GitReadCondition::NotARoot) }
+/// #     fn status(&self, _: &Path) -> Result<StatusLists, GitReadCondition> { Err(GitReadCondition::NotARoot) }
+/// # }
+///
+/// let opened = open_folder(std::env::temp_dir()).expect("the temporary folder opens");
+/// assert_eq!(read_git_item(&opened, &Plain), ItemState::Observed(FolderKind::Plain));
+/// ```
+pub fn read_git_item(
+    folder: &OpenedFolder,
+    port: &dyn GitPort,
+) -> ItemState<FolderKind, GitCondition> {
+    match ask_git(port, folder.root.as_path()) {
         Ok(observed) => ItemState::Observed(observed),
         Err((condition, operation)) => {
             let phrase = condition.log_phrase();
@@ -833,8 +891,7 @@ pub fn read_git(model: FolderModel, port: &dyn GitPort) -> FolderModel {
             );
             ItemState::Failed(condition)
         }
-    };
-    FolderModel { kind, ..model }
+    }
 }
 
 /// The port's operations one read asks, in order, and the name each is logged under.
