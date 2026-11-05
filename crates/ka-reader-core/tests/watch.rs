@@ -722,3 +722,82 @@ fn outside_of(scene: &TempDir) -> Vec<(PathBuf, common::SnapshotEntry)> {
         .filter(|(path, _)| path.starts_with("outside"))
         .collect()
 }
+
+#[test]
+fn test_removal_report_removes_the_folder_and_keeps_expansion_and_selection() {
+    let folder = project();
+    let model = select(
+        expand(
+            expand(expand(model_over(&folder), "src"), "src/lib"),
+            "docs",
+        ),
+        "src/util.rs",
+    );
+    fs::remove_dir_all(folder.path().join("src")).expect("the folder goes");
+
+    let model = invalidate(model, &["src"]);
+
+    assert_eq!(model.listing(Path::new("src")), None);
+    assert_eq!(model.listing(Path::new("src/lib")), None);
+    assert!(expanded(&model, "src") && expanded(&model, "src/lib"));
+    assert_eq!(model.place().selected(), Some(Path::new("src/util.rs")));
+    assert!(!names(model.listing(Path::new(""))).contains(&"src"));
+    assert_equals_fresh_reads(&model, &["", "docs"]);
+}
+
+#[test]
+fn test_a_folder_replaced_by_a_file_is_listed_as_a_file_with_the_flag_kept() {
+    let folder = project();
+    let model = expand(expand(model_over(&folder), "docs"), "src");
+    fs::remove_dir_all(folder.path().join("docs")).expect("the folder goes");
+    folder.write_file("docs", "now a file\n");
+
+    let model = invalidate(model, &["docs"]);
+
+    assert_eq!(model.listing(Path::new("docs")), None);
+    assert!(expanded(&model, "docs"));
+    let root = model
+        .listing(Path::new(""))
+        .expect("the root listing stands");
+    assert!(matches!(
+        root,
+        ItemState::Observed(entries)
+            if entries.iter().any(|e| e.name == "docs" && e.kind == EntryKind::File)
+    ));
+    assert_equals_fresh_reads(&model, &["", "src"]);
+}
+
+#[test]
+fn test_a_failed_expanded_folder_keeps_each_sibling_in_its_own_state() {
+    let folder = project();
+    folder.set_mode("docs", 0o000);
+    let model = expand(
+        expand(
+            expand(expand(model_over(&folder), "docs"), "src"),
+            "src/lib",
+        ),
+        "tests",
+    );
+    folder.set_mode("docs", 0o755);
+    let docs_before = model.listing(Path::new("docs")).cloned();
+    let tests_before = model.listing(Path::new("tests")).cloned();
+    assert_eq!(docs_before, Some(ItemState::Failed(Condition::Unreadable)));
+    folder.write_file("src/x.rs", "// x\n");
+    folder.set_mode("src", 0o000);
+
+    let model = invalidate(model, &["src"]);
+    folder.set_mode("src", 0o755);
+
+    assert_eq!(
+        model.listing(Path::new("src")),
+        Some(&ItemState::Failed(Condition::Unreadable))
+    );
+    assert_eq!(model.listing(Path::new("src/lib")), None);
+    assert_eq!(model.listing(Path::new("docs")).cloned(), docs_before);
+    assert_eq!(model.listing(Path::new("tests")).cloned(), tests_before);
+    assert!(matches!(
+        model.listing(Path::new("tests")),
+        Some(ItemState::Observed(_))
+    ));
+    assert_eq!(model.kind(), &ItemState::Pending);
+}

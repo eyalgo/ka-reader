@@ -1798,6 +1798,117 @@ mod tests {
         );
     }
 
+    // ---- Invalidate: the drop pass ----
+
+    fn expanded_place(expanded: &[&str], selected: &str) -> ReaderPlace {
+        ReaderPlace {
+            expanded: expanded.iter().map(PathBuf::from).collect(),
+            selected: Some(PathBuf::from(selected)),
+            open_file: None,
+        }
+    }
+
+    /// A model that holds `src`, `src/lib` and `src/lib/deep`, all expanded, with a file selected.
+    fn nested_model() -> FolderModel {
+        supplied_model(
+            held("", &[("other", FOLDER), ("src", FOLDER)]),
+            &[
+                ("other", held("other", &[("o.rs", FILE)])),
+                ("src", held("src", &[("lib", FOLDER), ("main.rs", FILE)])),
+                (
+                    "src/lib",
+                    held("src/lib", &[("deep", FOLDER), ("mod.rs", FILE)]),
+                ),
+                ("src/lib/deep", held("src/lib/deep", &[("d.rs", FILE)])),
+            ],
+            expanded_place(&["src", "src/lib", "src/lib/deep"], "src/lib/mod.rs"),
+        )
+    }
+
+    fn held_paths(model: &FolderModel) -> Vec<&str> {
+        model
+            .listings
+            .keys()
+            .map(|path| path.to_str().expect("UTF-8"))
+            .collect()
+    }
+
+    #[test]
+    fn test_a_failed_reread_drops_every_listing_beneath_it_and_keeps_the_place() {
+        let before = nested_model();
+
+        let after = fold(
+            before.clone(),
+            vec![("src", ItemState::Failed(Condition::Unreadable))],
+        );
+
+        assert_eq!(held_paths(&after), vec!["other", "src"]);
+        assert_eq!(
+            after.listing(Path::new("src")),
+            Some(&ItemState::Failed(Condition::Unreadable))
+        );
+        assert_eq!(after.place(), before.place());
+    }
+
+    #[test]
+    fn test_a_missing_entry_drops_the_listing_under_it() {
+        let after = fold(
+            nested_model(),
+            vec![("src", observed("src", &[("main.rs", FILE)]))],
+        );
+
+        assert_eq!(held_paths(&after), vec!["other", "src"]);
+        assert!(after.place().is_expanded(Path::new("src/lib")));
+    }
+
+    #[test]
+    fn test_an_entry_that_is_now_a_file_drops_the_listing_under_it() {
+        let after = fold(
+            nested_model(),
+            vec![("src", observed("src", &[("lib", FILE), ("main.rs", FILE)]))],
+        );
+
+        assert_eq!(held_paths(&after), vec!["other", "src"]);
+        assert!(after.place().is_expanded(Path::new("src/lib")));
+    }
+
+    #[test]
+    fn test_a_removed_folder_is_dropped_rather_than_drawn_as_a_failure() {
+        let after = fold(
+            nested_model(),
+            vec![
+                ("", observed("", &[("other", FOLDER)])),
+                ("src", ItemState::Failed(Condition::Missing)),
+            ],
+        );
+
+        assert_eq!(held_paths(&after), vec!["other"]);
+        assert_eq!(after.listing(Path::new("src")), None);
+        assert!(after.place().is_expanded(Path::new("src")));
+    }
+
+    #[test]
+    fn test_a_listing_under_a_folder_the_reread_still_lists_is_kept() {
+        let before = nested_model();
+
+        let after = fold(
+            before.clone(),
+            vec![(
+                "src",
+                observed(
+                    "src",
+                    &[("lib", FOLDER), ("main.rs", FILE), ("new.rs", FILE)],
+                ),
+            )],
+        );
+
+        assert_eq!(held_paths(&after), held_paths(&before));
+        assert_eq!(
+            after.listing(Path::new("src/lib")),
+            before.listing(Path::new("src/lib"))
+        );
+    }
+
     #[test]
     fn test_a_created_path_is_listed_in_its_held_parent() {
         let model = supplied_model(
