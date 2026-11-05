@@ -316,7 +316,8 @@ package final class RootItemsView: NSScrollView {
 
     /// Draws the listings the model changed, in place. Each listing replaces what is drawn beneath
     /// its path's row, or beneath the root for the empty path, in the order given, so a parent is
-    /// drawn before the folders under it. A row whose own read is out is left to its answer, a path
+    /// drawn before the folders under it. A row whose own read is out is left to its answer, and is
+    /// read once more when that answer lands, since the answer may be the older of the two; a path
     /// no row is drawn for is skipped, and a listing of `nil` draws nothing (no pending sentence).
     /// Rows already drawn keep their identity, so AppKit keeps their disclosure; no change expands or
     /// collapses a row. A row the reader's acts left expanded is drawn expanded again when it returns
@@ -354,7 +355,16 @@ package final class RootItemsView: NSScrollView {
     }
 
     private func applyChange(_ listing: RootListing, to row: Row) {
-        if case .reading = row.read { return }
+        // A read of the row is out, and its answer may have been read before this change or after
+        // it. The change is left to the answer, and the row is read once more when the answer lands.
+        if case .reading = row.read {
+            row.changedWhileOut = true
+            return
+        }
+        if row.readAgainOut {
+            row.changedWhileOut = true
+            return
+        }
         row.line = nil
         switch listing {
         case .observed(let entries):
@@ -509,6 +519,8 @@ package final class RootItemsView: NSScrollView {
     /// its path. Its earlier sinks go stale, because the generation moves.
     private func beginRead(of row: Row) {
         row.generation += 1
+        row.changedWhileOut = false
+        row.readAgainOut = false
         row.read = .reading
         row.children = []
         row.line = LineItem(ConditionSentences.readingFolder)
@@ -526,6 +538,33 @@ package final class RootItemsView: NSScrollView {
                 return
             }
             self.apply(listing, to: row)
+            self.readAgainIfChanged(row)
+        }
+    }
+
+    /// Reads `row` once more when a change reached it while a read of it was out, because that
+    /// read's answer may be older than the model's listing (CP-999). Only while the reader holds the
+    /// row expanded: a row the reader collapsed sends the model no expansion it did not make
+    /// (CP-1000), and its next expansion reads anyway. The read is the view's own, so it draws no
+    /// pending sentence (CP-1001), and its answer is drawn as a change is, into the rows already
+    /// drawn. A change that reaches the row while this read is out asks for one more.
+    private func readAgainIfChanged(_ row: Row) {
+        guard row.changedWhileOut else { return }
+        row.changedWhileOut = false
+        guard let listTree, outlineView.isItemExpanded(row) else { return }
+        row.readAgainOut = true
+        let generation = row.generation
+        let latch = AnswerLatch()
+        listTree(row.entry.path, .expand) { [weak self, weak row] listing in
+            guard !latch.fired else { return }
+            latch.fired = true
+            guard let self, let row, row.generation == generation else { return }
+            row.readAgainOut = false
+            if let listing, self.isInTree(row) {
+                self.applyChange(listing, to: row)
+                if let openFilePath = self.openFilePath { self.showOpenFile(path: openFilePath) }
+            }
+            self.readAgainIfChanged(row)
         }
     }
 
@@ -612,6 +651,11 @@ private final class Row: NSObject {
     var generation = 0
     var children: [Row] = []
     var line: LineItem?
+    /// A change for this row reached the view while a read of it was out, so that read's answer may
+    /// be older than the model's listing and the row is read once more when it lands.
+    var changedWhileOut = false
+    /// The read the view asked for itself, after a change crossed an answer, is out.
+    var readAgainOut = false
 
     init(_ entry: Entry, parent: Row?) {
         self.entry = entry

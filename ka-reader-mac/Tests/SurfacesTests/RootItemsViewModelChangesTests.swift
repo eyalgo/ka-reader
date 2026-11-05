@@ -311,7 +311,8 @@ struct RootItemsViewModelChangesTests {
     }
 
     /// The reads the view asked for at `path` after the first `count`, oldest first.
-    private func readsAfter(_ count: Int, at path: String, in harness: Harness) -> [ListTreeAnswer] {
+    private func readsAfter(_ count: Int, at path: String, in harness: Harness) -> [ListTreeAnswer]
+    {
         harness.reads.filter { $0.path == path }.dropFirst(count).map(\.answer)
     }
 
