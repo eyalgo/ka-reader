@@ -1,5 +1,6 @@
 import Foundation
 import Surfaces
+import Testing
 import XCTest
 
 @testable import Shell
@@ -358,5 +359,69 @@ final class BridgePayloadTests: XCTestCase {
                     content: #""e\u0301""#, language: "python",
                     spans: #"[{"start":0,"end":1,"class":"name"}]"#)),
             .text("e\u{301}", .floor(.python, [span(0, 1, .name)])))
+    }
+}
+
+/// The `model_changed` payload: `{"listings":[{"path":…,"answer":<list answer>}…]}`, where each
+/// answer is the shape `ka_reader_list_tree` answers. A `pending` answer reads as no listing.
+struct BridgePayloadChangesTests {
+    private func decode(_ payload: String) -> [(path: String, listing: RootListing?)]? {
+        BridgePayload.decodeChanges(Data(payload.utf8))
+    }
+
+    private let folder = Entry(name: "src", path: "src", kind: .folder, state: .pending)
+    private let file = Entry(name: "a.txt", path: "a.txt", kind: .file, state: .observed)
+
+    @Test func decodeChangesReadsObservedFailedAndPendingAnswers() throws {
+        let payload = """
+            {"listings":[
+              {"path":"src","answer":{"state":"observed","entries":[
+                {"name":"a.txt","path":"src/a.txt","kind":"file","state":"observed","language":"plain"},
+                {"name":"deep","path":"src/deep","kind":"folder","state":"pending"}]}},
+              {"path":"gone","answer":{"state":"failed","condition":"missing"}},
+              {"path":"later","answer":{"state":"pending"}}]}
+            """
+
+        let changes = try #require(decode(payload))
+
+        #expect(changes.map(\.path) == ["src", "gone", "later"])
+        #expect(
+            changes[0].listing
+                == .observed([
+                    Entry(name: "a.txt", path: "src/a.txt", kind: .file, state: .observed),
+                    Entry(name: "deep", path: "src/deep", kind: .folder, state: .pending),
+                ]))
+        #expect(changes[1].listing == .failed(.missing))
+        #expect(changes[2].listing == nil)
+    }
+
+    @Test func decodeChangesReadsTheRootAsTheEmptyPath() throws {
+        let payload = #"{"listings":[{"path":"","answer":{"state":"observed","entries":[]}}]}"#
+
+        let changes = try #require(decode(payload))
+
+        #expect(changes.map(\.path) == [""])
+        #expect(changes[0].listing == .observed([]))
+        #expect(try #require(decode(#"{"listings":[]}"#)).isEmpty)
+    }
+
+    @Test func decodeChangesReturnsNilForAMalformedPayload() {
+        let rejected = [
+            "", "malformed", "[]", #"{"listings":{}}"#, #"{}"#,
+            #"{"listings":[],"extra":1}"#,
+            #"{"listings":[{"path":"a"}]}"#,
+            #"{"listings":[{"answer":{"state":"pending"}}]}"#,
+            #"{"listings":[{"path":"a","answer":{"state":"pending"},"extra":1}]}"#,
+            #"{"listings":[{"path":1,"answer":{"state":"pending"}}]}"#,
+            #"{"listings":[{"path":"a","answer":{"state":"unknown"}}]}"#,
+            #"{"listings":[{"path":"a","answer":{"state":"failed","condition":"nope"}}]}"#,
+            #"{"listings":[{"path":"a","answer":{"state":"observed"}}]}"#,
+            // One bad listing refuses the whole payload; none is kept.
+            #"{"listings":[{"path":"a","answer":{"state":"pending"}},{"path":"b"}]}"#,
+        ]
+
+        for payload in rejected {
+            #expect(decode(payload) == nil, Comment(rawValue: payload))
+        }
     }
 }
