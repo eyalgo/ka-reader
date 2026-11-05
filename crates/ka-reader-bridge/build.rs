@@ -1,7 +1,8 @@
 //! Writes `target/include/ka_reader_bridge.h` from `src/exports.rs`.
 //!
-//! The header declares each `#[repr(C)]` struct and each exported `extern "C"` function the file
-//! holds, through a small fixed type map. A type outside the map fails the build, so the header can
+//! The header declares each `#[repr(C)]` struct, each callback alias
+//! (`pub type <Name> = Option<unsafe extern "C" fn(…)>`) and each exported `extern "C"` function the
+//! file holds, through a small fixed type map. A type outside the map fails the build, so the header can
 //! never quietly describe less than the source exports. The script adds no crate: it reads its own
 //! crate's source by pattern, and `tests/exports.rs` is the backstop against a generator that drifts.
 //!
@@ -35,6 +36,13 @@ struct Struct {
     fields: Vec<(String, String)>,
 }
 
+/// A callback type alias, `pub type <Name> = Option<unsafe extern "C" fn(…)>`, declared as a C
+/// function-pointer typedef.
+struct Callback {
+    name: String,
+    params: Vec<String>,
+}
+
 struct Function {
     name: String,
     params: Vec<(String, String)>,
@@ -43,7 +51,13 @@ struct Function {
 
 fn render(source: &str) -> String {
     let structs = parse_structs(source);
-    let known: Vec<&str> = structs.iter().map(|s| s.name.as_str()).collect();
+    let callbacks = parse_callbacks(source);
+    let known: Vec<&str> = structs
+        .iter()
+        .map(|s| s.name.as_str())
+        .chain(callbacks.iter().map(|c| c.name.as_str()))
+        .collect();
+    let struct_names: Vec<&str> = structs.iter().map(|s| s.name.as_str()).collect();
     let functions = parse_functions(source);
 
     let mut out = String::from(
@@ -56,6 +70,18 @@ fn render(source: &str) -> String {
             out.push_str(&format!("    {} {};\n", c_type(ty, &known), field));
         }
         out.push_str(&format!("}} {};\n\n", item.name));
+    }
+    for callback in &callbacks {
+        let params = callback
+            .params
+            .iter()
+            .map(|ty| c_type(ty, &struct_names))
+            .collect::<Vec<_>>()
+            .join(", ");
+        out.push_str(&format!(
+            "typedef void (*{})({});\n\n",
+            callback.name, params
+        ));
     }
     for function in &functions {
         let params = if function.params.is_empty() {
@@ -85,9 +111,14 @@ fn c_type(rust: &str, known_structs: &[&str]) -> String {
         "*const c_char" => return "const char *".to_string(),
         "*mut u8" => return "uint8_t *".to_string(),
         "usize" => return "size_t".to_string(),
+        "*mut c_void" => return "void *".to_string(),
+        "u32" => return "uint32_t".to_string(),
         _ => {}
     }
     for name in known_structs {
+        if rust == *name {
+            return (*name).to_string();
+        }
         if rust == format!("*mut {name}") {
             return format!("{name} *");
         }
@@ -128,6 +159,29 @@ fn parse_structs(source: &str) -> Vec<Struct> {
         index += 1;
     }
     found
+}
+
+fn parse_callbacks(source: &str) -> Vec<Callback> {
+    const OPEN: &str = "= Option<unsafe extern \"C\" fn(";
+    source
+        .lines()
+        .map(str::trim)
+        .filter_map(|line| {
+            let rest = line.strip_prefix("pub type ")?;
+            let (name, after) = rest.split_once(OPEN)?;
+            let params = after.strip_suffix(")>;").unwrap_or_else(|| {
+                panic!("ka-reader-bridge build.rs: cannot read the callback type `{line}`")
+            });
+            Some(Callback {
+                name: name.trim().to_string(),
+                params: params
+                    .split(',')
+                    .map(|param| param.trim().to_string())
+                    .filter(|param| !param.is_empty())
+                    .collect(),
+            })
+        })
+        .collect()
 }
 
 fn parse_functions(source: &str) -> Vec<Function> {
