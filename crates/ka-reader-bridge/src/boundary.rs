@@ -10,7 +10,7 @@ use std::path::PathBuf;
 use serde::Serialize;
 
 use crate::exports::{BufferOrigin, KAReaderBuffer};
-use crate::session::{FileAnswerDto, ListAnswerDto, OpenResult, Session};
+use crate::session::{FileAnswerDto, ListAnswerDto, OpenResult, Session, TreeAct};
 
 /// Runs `work` under `catch_unwind` and hands its answer across as an owned buffer of JSON bytes.
 ///
@@ -124,8 +124,8 @@ pub unsafe fn open_location(session: &Session, location: *const c_char) -> Optio
 pub unsafe fn list_entries(session: &Session, path: *const c_char) -> ListAnswerDto {
     // SAFETY: forwarded from the caller.
     match unsafe { decode_list_path(path) } {
-        ListPath::Root => session.list(""),
-        ListPath::Under(relative) => session.list(&relative),
+        ListPath::Root => session.list("", Some(TreeAct::Expand)),
+        ListPath::Under(relative) => session.list(&relative, Some(TreeAct::Expand)),
         ListPath::NotUtf8 => ListAnswerDto::Pending,
     }
 }

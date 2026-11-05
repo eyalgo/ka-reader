@@ -2,16 +2,16 @@
 //! delegates to `ka-reader-core` and only formats the result (QC-13). It never presents a panel: the
 //! location comes in as a plain `Option<PathBuf>`, so none of this needs a window or a runtime.
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, MutexGuard, PoisonError};
 
 use ka_reader_core::{
-    BranchElement, CannotDisplayReason, Condition, ConfigNamedPath, EntryKind, FileView,
-    FolderKind, FolderModel, GitCondition, GitPort, GitReadCondition, ItemState, Language,
-    OpenFailure, OpenFolderOutcome, OpenedFolder, ProbeCondition, RepositoryState, Span,
-    StatusCategory, StatusEntry, SubmoduleNamedPath, TokenClass, list_tree, open_folder, read_git,
-    select_file,
+    BranchElement, CannotDisplayReason, Condition, ConfigNamedPath, Entry, EntryKind, FileRequest,
+    FileView, FolderKind, FolderModel, GitCondition, GitPort, GitReadCondition, ItemState,
+    Language, OpenFailure, OpenFolderOutcome, OpenedFolder, ProbeCondition, RepositoryState, Span,
+    StatusCategory, StatusEntry, SubmoduleNamedPath, TokenClass, TreeRequest, list_tree,
+    open_folder, read_git_item, select_file,
 };
 use serde::Serialize;
 
@@ -620,6 +620,48 @@ fn production_arrival() -> Wiring {
     arrive_wiring(arrive_in_process(), production_port)
 }
 
+/// What the reader did to a folder row. The boundary decodes the wire's number into this closed set,
+/// and a number that is neither reaches the session as no act at all.
+///
+/// # Examples
+///
+/// ```
+/// use ka_reader_bridge::session::{ListAnswerDto, Session, TreeAct};
+///
+/// let session = Session::default();
+/// assert_eq!(session.list("src", Some(TreeAct::Collapse)), ListAnswerDto::Pending);
+/// assert_eq!(session.list("src", None), ListAnswerDto::Pending);
+/// ```
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TreeAct {
+    /// The reader disclosed the folder.
+    Expand,
+    /// The reader hid the folder.
+    Collapse,
+}
+
+/// Core's listing as the answer the shell reads.
+fn list_answer(listing: ItemState<Vec<Entry>>) -> ListAnswerDto {
+    match listing {
+        ItemState::Observed(entries) => ListAnswerDto::Observed {
+            entries: entries
+                .into_iter()
+                .map(|entry| EntryDto {
+                    name: entry.name,
+                    path: entry.path,
+                    kind: entry.kind.into(),
+                    state: entry.state.into(),
+                    language: entry.language.map(LanguageDto::from),
+                })
+                .collect(),
+        },
+        ItemState::Failed(condition) => ListAnswerDto::Failed {
+            condition: condition.into(),
+        },
+        ItemState::Pending => ListAnswerDto::Pending,
+    }
+}
+
 /// An opened folder as a model, with the wiring of the arrival its open made and a token naming that
 /// open, so a read answers only for the open it was made for.
 struct Held {
@@ -722,31 +764,36 @@ impl Session {
         }
     }
 
-    /// Lists `path` inside the opened folder. Core's item is carried over as it is: `observed`
-    /// with the entries, or `failed` with its condition. No folder open is `pending`, because
-    /// nothing was read.
-    pub fn list(&self, path: &str) -> ListAnswerDto {
-        let guard = self.lock();
-        let Some(held) = guard.held.as_ref() else {
+    /// Lists `path` inside the opened folder and applies the act the reader made there. `Expand`
+    /// reads the folder, holds it expanded and answers the held listing; `Collapse` reads nothing and
+    /// answers the listing held, or `pending` when none is. The root (the empty path) answers a fresh
+    /// read, and so does a path the model refuses (outside, not a folder, missing), with core's own
+    /// condition. `None` is an act the boundary could not decode: nothing changes and the answer is
+    /// `pending`. Core's item is carried over as it is: `observed` with the entries, or `failed`
+    /// with its condition. No folder open is `pending`, because nothing was read.
+    pub fn list(&self, path: &str, act: Option<TreeAct>) -> ListAnswerDto {
+        let Some(act) = act else {
             return ListAnswerDto::Pending;
         };
-        match list_tree(held.model.folder(), path) {
-            ItemState::Observed(entries) => ListAnswerDto::Observed {
-                entries: entries
-                    .into_iter()
-                    .map(|entry| EntryDto {
-                        name: entry.name,
-                        path: entry.path,
-                        kind: entry.kind.into(),
-                        state: entry.state.into(),
-                        language: entry.language.map(LanguageDto::from),
-                    })
-                    .collect(),
-            },
-            ItemState::Failed(condition) => ListAnswerDto::Failed {
-                condition: condition.into(),
-            },
-            ItemState::Pending => ListAnswerDto::Pending,
+        let mut guard = self.lock();
+        let Some(held) = guard.held.as_mut() else {
+            return ListAnswerDto::Pending;
+        };
+        if path.is_empty() {
+            return list_answer(list_tree(held.model.folder(), path));
+        }
+        let request = match act {
+            TreeAct::Expand => TreeRequest::Expand(PathBuf::from(path)),
+            TreeAct::Collapse => TreeRequest::Collapse(PathBuf::from(path)),
+        };
+        held.model = held.model.clone().list_tree(request);
+        let held_listing = held.model.listing(Path::new(path)).cloned();
+        match act {
+            TreeAct::Expand if held.model.place().is_expanded(Path::new(path)) => {
+                held_listing.map_or(ListAnswerDto::Pending, list_answer)
+            }
+            TreeAct::Expand => list_answer(list_tree(held.model.folder(), path)),
+            TreeAct::Collapse => held_listing.map_or(ListAnswerDto::Pending, list_answer),
         }
     }
 
@@ -755,7 +802,7 @@ impl Session {
     /// lock, and stored and answered only if its folder is still the open one; an item already
     /// `observed` or `failed` is answered with no read.
     pub fn read_git(&self) -> GitAnswerDto {
-        let (model, port, open) = {
+        let (folder, port, open) = {
             let state = self.lock();
             let Some(held) = state.held.as_ref() else {
                 return GitAnswerDto::Pending;
@@ -766,15 +813,17 @@ impl Session {
             if !matches!(held.model.kind(), ItemState::Pending) {
                 return state.answer();
             }
-            (held.model.clone(), Arc::clone(port), held.open)
+            (held.model.folder().clone(), Arc::clone(port), held.open)
         };
-        let read = read_git(model, port.as_ref());
+        let item = read_git_item(&folder, port.as_ref());
         let mut state = self.lock();
+        // Only the Git item is folded, into the model held now: the clone the read started from
+        // would lose any tree update that landed while the read was out.
         if let Some(held) = state.held.as_mut()
             && held.open == open
             && matches!(held.model.kind(), ItemState::Pending)
         {
-            held.model = read;
+            held.model = held.model.clone().with_git_item(item);
         }
         state.answer()
     }
@@ -794,12 +843,26 @@ impl Session {
         path: &str,
         read: impl FnOnce(&OpenedFolder, &str) -> ItemState<FileView>,
     ) -> FileAnswerDto {
-        let folder = self
+        let held = self
             .lock()
             .held
             .as_ref()
-            .map(|held| held.model.folder().clone());
-        folder.map_or(FileAnswerDto::Pending, |folder| read(&folder, path).into())
+            .map(|held| (held.model.folder().clone(), held.open));
+        let Some((folder, open)) = held else {
+            return FileAnswerDto::Pending;
+        };
+        let answer = read(&folder, path);
+        // The selection joins the model after the read, under the lock, and only for the open the
+        // read was made for.
+        if let Some(held) = self.lock().held.as_mut()
+            && held.open == open
+        {
+            held.model = held
+                .model
+                .clone()
+                .select_file(FileRequest::Select(Some(PathBuf::from(path))));
+        }
+        answer.into()
     }
 }
 
