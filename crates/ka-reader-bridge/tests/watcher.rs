@@ -11,15 +11,18 @@
 )]
 mod common;
 
+use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::mpsc;
 use std::sync::{Arc, Mutex};
 use std::thread;
-use std::time::Duration;
+use std::time::{Duration, Instant};
+
+use common::TempDir;
 
 use ka_reader_bridge::watcher::fakes::ManualWatching;
-use ka_reader_bridge::watcher::{PathSink, Watching};
+use ka_reader_bridge::watcher::{FsEvents, PathSink, Watching};
 
 /// How long a test waits for something it expects to happen.
 const EXPECTED_WITHIN: Duration = Duration::from_secs(10);
@@ -266,4 +269,134 @@ fn test_the_fake_reports_whether_a_subscription_was_stopped_and_its_sink_release
 
     assert!(recorded.is_stopped());
     assert!(recorded.sink_is_released());
+}
+
+/// The production adapter over real folders under the system temporary directory.
+struct FsEventsHarness {
+    watcher: FsEvents,
+    folder: TempDir,
+    provoked: AtomicUsize,
+}
+
+/// How long `settle` waits for a report that was going to arrive.
+const REAL_SETTLE: Duration = Duration::from_millis(1500);
+
+impl FsEventsHarness {
+    fn new() -> Self {
+        Self {
+            watcher: FsEvents,
+            folder: TempDir::new(),
+            provoked: AtomicUsize::new(0),
+        }
+    }
+}
+
+impl Harness for FsEventsHarness {
+    type Watcher = FsEvents;
+
+    fn watcher(&self) -> &FsEvents {
+        &self.watcher
+    }
+
+    fn make_root(&self, name: &str) -> PathBuf {
+        fs::canonicalize(self.folder.make_folder(name)).expect("the root resolves")
+    }
+
+    fn provoke(&self, root: &Path) {
+        let number = self.provoked.fetch_add(1, Ordering::SeqCst);
+        fs::write(root.join(format!("provoked-{number}.txt")), "x").expect("the file is written");
+    }
+
+    fn settle(&self) {
+        thread::sleep(REAL_SETTLE);
+    }
+}
+
+/// Collects batches from `from` until one holds a path `wanted` accepts, or `EXPECTED_WITHIN` passes.
+fn batches_until(
+    from: &mpsc::Receiver<Vec<PathBuf>>,
+    wanted: impl Fn(&Path) -> bool,
+) -> Option<Vec<PathBuf>> {
+    let deadline = Instant::now() + EXPECTED_WITHIN;
+    while let Some(left) = deadline.checked_duration_since(Instant::now()) {
+        if let Ok(batch) = from.recv_timeout(left)
+            && batch.iter().any(|path| wanted(path))
+        {
+            return Some(batch);
+        }
+    }
+    None
+}
+
+#[test]
+fn test_fsevents_satisfies_the_watching_contract() {
+    watching_contract(FsEventsHarness::new);
+}
+
+#[test]
+fn test_a_file_created_at_depth_is_reported_as_itself_or_an_ancestor_within_the_root() {
+    let harness = FsEventsHarness::new();
+    let root = harness.make_root("depth");
+    let deep = root.join("one/two/three");
+    fs::create_dir_all(&deep).expect("the nested folders");
+    let (into, from) = mpsc::channel();
+    let _subscription = harness
+        .watcher()
+        .subscribe(&root, forwarding_sink(into))
+        .expect("subscribe");
+
+    let file = deep.join("created.txt");
+    fs::write(&file, "x").expect("the file is written");
+
+    let batch = batches_until(&from, |path| {
+        file.starts_with(path) && path.starts_with(&root)
+    })
+    .expect("the file or an ancestor within the root is reported");
+    assert!(batch.iter().all(|path| path.starts_with(&root)));
+}
+
+#[test]
+fn test_a_change_under_the_roots_git_entry_is_reported() {
+    let harness = FsEventsHarness::new();
+    let root = harness.make_root("with-git");
+    let git_entry = root.join(".git");
+    fs::create_dir_all(&git_entry).expect("the .git folder");
+    let (into, from) = mpsc::channel();
+    let _subscription = harness
+        .watcher()
+        .subscribe(&root, forwarding_sink(into))
+        .expect("subscribe");
+
+    fs::write(git_entry.join("HEAD"), "ref: refs/heads/main\n").expect("HEAD is written");
+
+    assert!(batches_until(&from, |path| path.starts_with(&git_entry)).is_some());
+}
+
+#[test]
+fn test_no_reported_path_lies_outside_the_root_unless_it_is_the_root() {
+    let harness = FsEventsHarness::new();
+    let root = harness.make_root("inside");
+    let neighbour = harness.make_root("inside-and-more");
+    let (into, from) = mpsc::channel();
+    let _subscription = harness
+        .watcher()
+        .subscribe(&root, forwarding_sink(into))
+        .expect("subscribe");
+
+    fs::write(neighbour.join("elsewhere.txt"), "x").expect("the neighbour is written");
+    harness.provoke(&root);
+    harness.settle();
+
+    let mut reported = Vec::new();
+    while let Ok(batch) = from.try_recv() {
+        reported.extend(batch);
+    }
+    assert!(
+        !reported.is_empty(),
+        "the change under the root is reported"
+    );
+    assert!(
+        reported.iter().all(|path| path.starts_with(&root)),
+        "reported: {reported:?}"
+    );
 }

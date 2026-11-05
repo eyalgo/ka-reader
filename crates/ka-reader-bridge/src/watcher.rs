@@ -10,6 +10,7 @@ use std::path::{Path, PathBuf};
 
 #[cfg(any(test, feature = "testing"))]
 pub mod fakes;
+mod fsevents;
 
 /// Where a watcher hands each batch of reported paths: absolute, owned and coalesced. A sink is called
 /// on a thread the watcher owns, one batch at a time, until its subscription is stopped.
