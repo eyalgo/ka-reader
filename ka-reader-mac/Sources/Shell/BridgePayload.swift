@@ -108,6 +108,42 @@ enum BridgePayload {
         return (try? JSONDecoder().decode(ListAnswer.self, from: buffer.payload))?.listing
     }
 
+    /// One changed listing as the `model_changed` payload writes it: exactly `path` (the root is the
+    /// empty path) and `answer`, which is the list answer's shape.
+    private struct WireChange: Decodable {
+        let path: String
+        let listing: RootListing?
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: WireKey.self)
+            try BridgePayload.requireMembers(["path", "answer"], in: container)
+            path = try container.decode(String.self, forKey: WireKey(stringValue: "path"))
+            listing = try container.decode(ListAnswer.self, forKey: WireKey(stringValue: "answer"))
+                .listing
+        }
+    }
+
+    /// The payload's wire: exactly one `listings` array.
+    private struct ChangesPayload: Decodable {
+        let changes: [WireChange]
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: WireKey.self)
+            try BridgePayload.requireMembers(["listings"], in: container)
+            changes = try container.decode(
+                [WireChange].self, forKey: WireKey(stringValue: "listings"))
+        }
+    }
+
+    /// The listings a `model_changed` payload carries, in the order written, or `nil` when the
+    /// payload does not conform: one bad listing refuses the whole payload and none is kept. A
+    /// `pending` answer reads as no listing (`nil`), as it does for a folder read.
+    static func decodeChanges(_ payload: Data) -> [(path: String, listing: RootListing?)]? {
+        guard let decoded = try? JSONDecoder().decode(ChangesPayload.self, from: payload)
+        else { return nil }
+        return decoded.changes.map { (path: $0.path, listing: $0.listing) }
+    }
+
     /// The file answer's wire (design § 3 F): one object tagged by `state`, with exactly the
     /// members the state names. A member that is missing or extra, and a state, language, reason or
     /// condition outside its closed set, throws. `pending` means nothing was read, so it carries no
