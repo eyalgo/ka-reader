@@ -654,16 +654,16 @@ impl State {
 /// # Examples
 ///
 /// ```
-/// use ka_reader_bridge::session::{ListAnswerDto, Session};
+/// use ka_reader_bridge::session::{ListAnswerDto, Session, TreeAct};
 ///
 /// let session = Session::default();
 ///
 /// assert_eq!(
-///     serde_json::to_value(session.list("")).expect("the answer serializes"),
+///     serde_json::to_value(session.list("", Some(TreeAct::Expand))).expect("the answer serializes"),
 ///     serde_json::json!({ "state": "pending" }),
 ///     "nothing is open yet"
 /// );
-/// assert_eq!(session.list(""), ListAnswerDto::Pending);
+/// assert_eq!(session.list("", Some(TreeAct::Expand)), ListAnswerDto::Pending);
 /// ```
 pub struct Session {
     state: Mutex<State>,
@@ -814,7 +814,7 @@ mod tests {
 
     use ka_reader_core::{ItemState, list_tree, open_folder};
 
-    use super::Session;
+    use super::{Session, TreeAct};
     use crate::test_support::TempDir;
 
     #[test]
@@ -845,7 +845,7 @@ mod tests {
                 .recv_timeout(Duration::from_secs(10))
                 .expect("the read parked");
             scope.spawn(move || {
-                session.list("");
+                session.list("", Some(TreeAct::Expand));
                 listed_tx.send(()).expect("the test is listening");
             });
             let listed = listed_rx.recv_timeout(Duration::from_secs(10));
@@ -854,9 +854,97 @@ mod tests {
         });
     }
 
+    /// The model the session holds right now, cloned out for a test to read.
+    fn held_model(session: &Session) -> ka_reader_core::FolderModel {
+        session
+            .lock()
+            .held
+            .as_ref()
+            .expect("a folder is open")
+            .model
+            .clone()
+    }
+
+    #[test]
+    fn test_expand_holds_the_folder_and_collapse_leaves_the_selection_and_expansion_as_made() {
+        let folder = TempDir::new();
+        folder.write_file("src/main.rs", "fn main() {}");
+        folder.write_file("docs/guide.txt", "x");
+        let session = Session::default();
+        opened(&session, &folder);
+
+        session.list("src", Some(TreeAct::Expand));
+        session.list("docs", Some(TreeAct::Expand));
+        session.select_file("src/main.rs");
+        session.list("docs", Some(TreeAct::Collapse));
+
+        let place = held_model(&session).place().clone();
+        assert!(place.is_expanded(std::path::Path::new("src")));
+        assert!(!place.is_expanded(std::path::Path::new("docs")));
+        assert_eq!(place.selected(), Some(std::path::Path::new("src/main.rs")));
+    }
+
+    #[test]
+    fn test_a_collapse_reads_nothing() {
+        let folder = TempDir::new();
+        folder.write_file("src/main.rs", "fn main() {}");
+        folder.make_folder("never-expanded");
+        let session = Session::default();
+        opened(&session, &folder);
+        session.list("src", Some(TreeAct::Expand));
+        folder.write_file("src/added-after-the-expand.rs", "x");
+
+        let held = answer_to(&session, "src", Some(TreeAct::Collapse));
+        let never_held = answer_to(&session, "never-expanded", Some(TreeAct::Collapse));
+
+        assert_eq!(
+            names(&held),
+            vec!["main.rs"],
+            "the held listing, not a fresh read"
+        );
+        assert_eq!(never_held, json!({ "state": "pending" }));
+    }
+
+    #[test]
+    fn test_an_unknown_act_changes_nothing_and_answers_pending() {
+        let folder = TempDir::new();
+        folder.write_file("src/main.rs", "fn main() {}");
+        let session = Session::default();
+        opened(&session, &folder);
+        let before = held_model(&session);
+
+        let answered = answer_to(&session, "src", None);
+
+        assert_eq!(answered, json!({ "state": "pending" }));
+        assert_eq!(held_model(&session), before);
+    }
+
+    #[test]
+    fn test_select_file_applies_the_selection_to_the_held_model() {
+        let folder = TempDir::new();
+        folder.write_file("a.txt", "x");
+        let session = Session::default();
+        opened(&session, &folder);
+
+        session.select_file("a.txt");
+        let model = held_model(&session);
+
+        assert_eq!(
+            model.place().selected(),
+            Some(std::path::Path::new("a.txt"))
+        );
+        assert!(model.open_file().is_none(), "a selection opens nothing");
+    }
+
+    /// The answer to `path` for `act`, as the JSON the shell reads.
+    fn answer_to(session: &Session, path: &str, act: Option<TreeAct>) -> Value {
+        serde_json::to_value(session.list(path, act)).expect("the answer serializes")
+    }
+
     /// The answer to `path` as the JSON the shell reads.
     fn answer(session: &Session, path: &str) -> Value {
-        serde_json::to_value(session.list(path)).expect("the answer serializes")
+        serde_json::to_value(session.list(path, Some(TreeAct::Expand)))
+            .expect("the answer serializes")
     }
 
     /// The names of the entries of an observed answer, sorted.
@@ -1933,7 +2021,7 @@ mod tests {
         use serde_json::{Value, json};
 
         use crate::machine_config::{Level, SetterFailure, SwitchGuard};
-        use crate::session::{Session, Wiring, arrive_wiring};
+        use crate::session::{Session, TreeAct, Wiring, arrive_wiring};
         use crate::test_support::{TempDir, begin_log_capture, take_log_records};
 
         type SharedPort = Arc<dyn GitPort + Send + Sync>;
@@ -2104,7 +2192,8 @@ mod tests {
             open(&real, &repository);
 
             let listed = |session: &Session| {
-                serde_json::to_value(session.list("")).expect("the answer serializes")
+                serde_json::to_value(session.list("", Some(TreeAct::Expand)))
+                    .expect("the answer serializes")
             };
             let selected = |session: &Session| {
                 serde_json::to_value(session.select_file("README.md"))
@@ -2289,6 +2378,45 @@ mod tests {
             );
             let next = git_item(&session);
             assert_eq!(next["branch"]["name"], json!(name_of(&folder_b)));
+        }
+
+        #[test]
+        fn test_a_tree_act_during_a_parked_git_read_survives_the_write_back() {
+            let (parked_tx, parked_rx) = channel::<()>();
+            let (release_tx, release_rx) = channel::<()>();
+            let mut port = Counting::new();
+            port.gate = Some(Gate {
+                parked: Mutex::new(parked_tx),
+                release: Mutex::new(release_rx),
+                used: AtomicUsize::new(0),
+            });
+            let port = Arc::new(port);
+            let session = session_over(&port);
+            let folder = TempDir::new();
+            folder.write_file("src/main.rs", "fn main() {}");
+            open(&session, folder.path());
+
+            let session_ref = &session;
+            let git = std::thread::scope(|scope| {
+                let ask = scope.spawn(move || git_item(session_ref));
+                parked_rx
+                    .recv_timeout(Duration::from_secs(10))
+                    .expect("the Git read parked");
+                session_ref.list("src", Some(TreeAct::Expand));
+                release_tx.send(()).expect("the read is parked");
+                ask.join().expect("the ask finishes")
+            });
+
+            assert_eq!(git["state"], "observed");
+            let model = session.lock().held.as_ref().expect("open").model.clone();
+            assert!(
+                model.place().is_expanded(Path::new("src")),
+                "the expansion made while the read was out is still held"
+            );
+            assert!(matches!(
+                model.kind(),
+                ka_reader_core::ItemState::Observed(_)
+            ));
         }
 
         #[test]

@@ -13,7 +13,7 @@ use std::fs;
 use std::path::PathBuf;
 
 use common::TempDir;
-use ka_reader_bridge::session::Session;
+use ka_reader_bridge::session::{Session, TreeAct};
 
 /// Every file the name table sends to a floor language, the six floor names first, then their
 /// alternate extensions, a mixed-case spelling and a name whose last extension decides.
@@ -75,7 +75,8 @@ fn test_list_tree_answers_the_name_table_listing_byte_for_byte() {
     )
     .expect("the shared wire file exists");
 
-    let serialized = serde_json::to_string(&session.list("")).expect("the answer serializes");
+    let serialized = serde_json::to_string(&session.list("", Some(TreeAct::Expand)))
+        .expect("the answer serializes");
 
     assert_eq!(serialized, committed);
 }
