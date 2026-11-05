@@ -42,7 +42,8 @@ final class RootItemsViewHoverTests: XCTestCase {
             contentRect: NSRect(x: 0, y: 0, width: 260, height: 200), styleMask: [.borderless],
             backing: .buffered, defer: true)
         let fixture = Fixture(view: view, window: window, rest: rest, key: key)
-        view.listTree = { path, answer in
+        view.listTree = { path, act, answer in
+            guard act == .expand else { return }
             fixture.reads.append(path)
             if holdAnswers {
                 fixture.answers.append(answer)

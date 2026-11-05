@@ -2,15 +2,19 @@
 //! pointers the exports take. It holds no state and touches no filesystem (QC-13); the process's
 //! session lives in `exports`.
 
-use std::ffi::{CStr, c_char};
+use std::ffi::{CStr, c_char, c_void};
 use std::os::unix::ffi::OsStrExt;
 use std::panic::{self, AssertUnwindSafe};
 use std::path::PathBuf;
+use std::sync::Arc;
 
+use ka_reader_core::TreeChanges;
 use serde::Serialize;
 
-use crate::exports::{BufferOrigin, KAReaderBuffer};
-use crate::session::{FileAnswerDto, ListAnswerDto, OpenResult, Session};
+use crate::exports::{BufferOrigin, KAReaderBuffer, KAReaderModelChanged};
+use crate::session::{
+    Delivery, FileAnswerDto, ListAnswerDto, OpenResult, Session, TreeAct, list_answer,
+};
 
 /// Runs `work` under `catch_unwind` and hands its answer across as an owned buffer of JSON bytes.
 ///
@@ -37,7 +41,7 @@ fn stopped_open(origin: BufferOrigin, detail: &str) -> *mut KAReaderBuffer {
     match origin {
         BufferOrigin::OpenFolder => log::warn!("core-bridge: open_folder stopped: {detail}"),
         BufferOrigin::ReadGit => log::warn!("core-bridge: read_git stopped: {detail}"),
-        BufferOrigin::ListTree | BufferOrigin::SelectFile => {}
+        BufferOrigin::ListTree | BufferOrigin::SelectFile | BufferOrigin::ModelChanged => {}
     }
     std::ptr::null_mut()
 }
@@ -60,6 +64,32 @@ pub(crate) fn is_valid_open_answer(bytes: *mut u8, len: usize) -> bool {
         }
         _ => false,
     }
+}
+
+#[derive(Serialize)]
+struct ChangedListing {
+    path: String,
+    answer: ListAnswerDto,
+}
+
+#[derive(Serialize)]
+struct ChangesPayload {
+    listings: Vec<ChangedListing>,
+}
+
+/// The `model_changed` payload for `changes`: `{"listings":[{"path":…,"answer":…}…]}`, where each
+/// `answer` is exactly what `ka_reader_list_tree` answers for that listing and the root's `path`
+/// is empty.
+pub(crate) fn changes_payload(changes: &TreeChanges) -> Result<Vec<u8>, serde_json::Error> {
+    let listings = changes
+        .listings()
+        .iter()
+        .map(|(path, listing)| ChangedListing {
+            path: path.to_string_lossy().into_owned(),
+            answer: list_answer(listing.clone()),
+        })
+        .collect();
+    serde_json::to_vec(&ChangesPayload { listings })
 }
 
 /// A `list_tree` path, decoded. Root is NULL or empty.
@@ -105,27 +135,78 @@ pub unsafe fn decode_list_path(path: *const c_char) -> ListPath {
     }
 }
 
-/// Opens the panel's answer in `session`.
+/// The shell's callback context, carried to the thread the watcher owns.
+struct ShellContext(*mut c_void);
+
+// SAFETY: the pointer is only handed back to the shell's own callback, never dereferenced here. The
+// shell guarantees it stays valid until the next successful open has returned (SM-4's lifetime
+// contract), and the session never calls the delivery after that.
+unsafe impl Send for ShellContext {}
+// SAFETY: as for `Send`; the bridge reads the pointer and never writes through it.
+unsafe impl Sync for ShellContext {}
+
+impl ShellContext {
+    /// A method, so a closure captures the whole wrapper (and its `Send`) rather than the bare field.
+    fn get(&self) -> *mut c_void {
+        self.0
+    }
+}
+
+/// The delivery that hands each payload to the shell's callback as one owned buffer.
+fn shell_delivery(
+    callback: unsafe extern "C" fn(*mut c_void, *mut KAReaderBuffer),
+    context: *mut c_void,
+) -> Delivery {
+    let context = ShellContext(context);
+    Arc::new(move |payload: Vec<u8>| {
+        let buffer = KAReaderBuffer::allocate(payload, BufferOrigin::ModelChanged);
+        // SAFETY: the shell's contract keeps the context valid for this call, and the buffer is
+        // live and freed by the shell exactly once.
+        unsafe { callback(context.get(), buffer) };
+    })
+}
+
+/// Opens the panel's answer in `session`. A non-NULL `model_changed` also starts watching the
+/// folder, delivering each payload with `context`; a NULL one opens with no delivery.
 ///
 /// # Safety
 ///
-/// As `decode_location`.
-pub unsafe fn open_location(session: &Session, location: *const c_char) -> Option<OpenResult> {
+/// As `decode_location`. `context` stays valid as `ka_reader_open_folder` documents.
+pub unsafe fn open_location(
+    session: &Session,
+    location: *const c_char,
+    model_changed: KAReaderModelChanged,
+    context: *mut c_void,
+) -> Option<OpenResult> {
     // SAFETY: forwarded from the caller.
-    unsafe { decode_location(location) }.map(|chosen| session.open(chosen))
+    unsafe { decode_location(location) }.map(|chosen| match model_changed {
+        Some(callback) => session.open_delivering(chosen, shell_delivery(callback, context)),
+        None => session.open(chosen),
+    })
 }
 
-/// Lists `path` in `session`. A path that is not UTF-8 answers `{"state":"pending"}`, because
-/// nothing was read.
+/// What the reader did to a folder, decoded from the C `act`: `0` expanded, `1` collapsed, any other
+/// value none. Never a `#[repr]` enum read straight from C.
+pub(crate) fn decode_act(act: u32) -> Option<TreeAct> {
+    match act {
+        0 => Some(TreeAct::Expand),
+        1 => Some(TreeAct::Collapse),
+        _ => None,
+    }
+}
+
+/// Lists `path` in `session` for `act`. A path that is not UTF-8 answers `{"state":"pending"}`,
+/// because nothing was read.
 ///
 /// # Safety
 ///
 /// As `decode_list_path`.
-pub unsafe fn list_entries(session: &Session, path: *const c_char) -> ListAnswerDto {
+pub unsafe fn list_entries(session: &Session, path: *const c_char, act: u32) -> ListAnswerDto {
+    let act = decode_act(act);
     // SAFETY: forwarded from the caller.
     match unsafe { decode_list_path(path) } {
-        ListPath::Root => session.list(""),
-        ListPath::Under(relative) => session.list(&relative),
+        ListPath::Root => session.list("", act),
+        ListPath::Under(relative) => session.list(&relative, act),
         ListPath::NotUtf8 => ListAnswerDto::Pending,
     }
 }
@@ -422,7 +503,7 @@ mod tests {
         let (decoded, answer) = unsafe {
             (
                 decode_list_path(path.as_ptr()),
-                list_entries(&session, path.as_ptr()),
+                list_entries(&session, path.as_ptr(), 0),
             )
         };
 
@@ -433,7 +514,7 @@ mod tests {
             "nothing was read, and never a lossy guess"
         );
         // SAFETY: NULL is the root, and the folder holds one entry.
-        let root = unsafe { list_entries(&session, ptr::null::<c_char>()) };
+        let root = unsafe { list_entries(&session, ptr::null::<c_char>(), 0) };
         let root = serde_json::to_value(root).expect("the answer serializes");
         assert_eq!(
             root["state"], "observed",
@@ -447,8 +528,165 @@ mod tests {
         let session = Session::default();
 
         // SAFETY: NULL is the documented cancel.
-        let result = unsafe { open_location(&session, ptr::null()) };
+        let result = unsafe { open_location(&session, ptr::null(), None, ptr::null_mut()) };
 
         assert_eq!(result, None);
+    }
+
+    #[test]
+    fn test_the_payload_json_is_exactly_listings_with_list_answer_members() {
+        use ka_reader_core::{FolderModel, TreeRequest, open_folder};
+        use serde_json::json;
+
+        use super::changes_payload;
+        use crate::session::TreeAct;
+        use crate::test_support::TempDir;
+
+        let folder = TempDir::new();
+        folder.write_file("a.txt", "");
+        folder.make_folder("src");
+        let elsewhere = TempDir::new();
+        let earlier = FolderModel::new(open_folder(elsewhere.path()).expect("opens"));
+        let later = FolderModel::new(open_folder(folder.path()).expect("opens"))
+            .list_tree(TreeRequest::Expand("src".into()));
+        let session = Session::default();
+        session.open(folder.path().to_path_buf());
+        let answer = |path: &str| {
+            serde_json::to_value(session.list(path, Some(TreeAct::Expand)))
+                .expect("the answer serializes")
+        };
+
+        let payload = changes_payload(&later.changes_since(&earlier)).expect("serializes");
+
+        assert_eq!(
+            serde_json::from_slice::<serde_json::Value>(&payload).expect("JSON"),
+            json!({ "listings": [
+                { "path": "", "answer": answer("") },
+                { "path": "src", "answer": answer("src") },
+            ] })
+        );
+    }
+    /// A composition root whose Git port answers a plain folder, so an open writes no log line the
+    /// capture tests could see.
+    fn quiet_wiring() -> Box<dyn Fn() -> crate::session::Wiring + Send + Sync> {
+        use std::path::Path;
+        use std::sync::Arc;
+
+        use ka_reader_core::{GitPort, GitReadCondition, HeadState, RootFinding, StatusLists};
+
+        struct PlainFolder;
+
+        impl GitPort for PlainFolder {
+            fn probe(&self, _folder: &Path) -> RootFinding {
+                RootFinding::Plain
+            }
+
+            fn state(&self, _root: &Path) -> Result<HeadState, GitReadCondition> {
+                Err(GitReadCondition::NotARoot)
+            }
+
+            fn status(&self, _root: &Path) -> Result<StatusLists, GitReadCondition> {
+                Err(GitReadCondition::NotARoot)
+            }
+        }
+
+        let port: Arc<dyn GitPort + Send + Sync> = Arc::new(PlainFolder);
+        Box::new(move || crate::session::Wiring::Wired(Arc::clone(&port)))
+    }
+
+    /// What the test callback received: the payload bytes, copied out before the buffer is freed.
+    #[derive(Default)]
+    struct Received {
+        payloads: std::sync::Mutex<Vec<Vec<u8>>>,
+    }
+
+    /// A callback as the shell writes one: it reads the buffer, then frees it once through
+    /// `ka_reader_free`.
+    unsafe extern "C" fn record_and_free(
+        context: *mut std::ffi::c_void,
+        buffer: *mut KAReaderBuffer,
+    ) {
+        // SAFETY: the tests pass a live `Received` as the context, and it outlives the session.
+        let received = unsafe { &*context.cast::<Received>() };
+        // SAFETY: the bridge hands over a live buffer that nothing else frees.
+        let bytes = unsafe { std::slice::from_raw_parts((*buffer).bytes, (*buffer).len).to_vec() };
+        received
+            .payloads
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .push(bytes);
+        // SAFETY: freed exactly once, here, and never read again.
+        unsafe { ka_reader_free(buffer) };
+    }
+
+    #[test]
+    fn test_act_0_1_and_2_decode_as_expand_collapse_and_none() {
+        use super::decode_act;
+        use crate::session::TreeAct;
+
+        assert_eq!(decode_act(0), Some(TreeAct::Expand));
+        assert_eq!(decode_act(1), Some(TreeAct::Collapse));
+        assert_eq!(decode_act(2), None);
+        assert_eq!(decode_act(u32::MAX), None);
+    }
+
+    #[test]
+    fn test_a_null_callback_opens_with_no_delivery() {
+        use std::sync::Arc;
+
+        use crate::session::OpenResult;
+        use crate::watcher::fakes::ManualWatching;
+
+        let folder = TempDir::new();
+        let watching = Arc::new(ManualWatching::new());
+        let session = Session::with_parts(quiet_wiring(), watching.clone());
+        let location = CString::new(folder.path().as_os_str().as_encoded_bytes()).expect("no NUL");
+
+        // SAFETY: `location` is NUL-terminated and outlives the call; a NULL callback is allowed.
+        let result = unsafe { open_location(&session, location.as_ptr(), None, ptr::null_mut()) };
+
+        assert_eq!(result, Some(OpenResult::Opened));
+        assert!(
+            watching.recorded().is_empty(),
+            "no callback means no subscription"
+        );
+    }
+
+    #[test]
+    fn test_each_payload_a_callback_receives_is_freed_once_through_ka_reader_free() {
+        use std::sync::Arc;
+
+        use crate::watcher::fakes::ManualWatching;
+
+        let folder = TempDir::new();
+        folder.write_file("a.txt", "");
+        let watching = Arc::new(ManualWatching::new());
+        let session = Session::with_parts(quiet_wiring(), watching.clone());
+        let received = Received::default();
+        let location = CString::new(folder.path().as_os_str().as_encoded_bytes()).expect("no NUL");
+        // SAFETY: `location` is NUL-terminated and outlives the call; the context outlives the session.
+        unsafe {
+            open_location(
+                &session,
+                location.as_ptr(),
+                Some(record_and_free),
+                std::ptr::from_ref(&received).cast_mut().cast(),
+            )
+        };
+        let root = folder.path().canonicalize().expect("the folder resolves");
+        let subscription = watching.recorded().pop().expect("a subscription started");
+
+        folder.write_file("b.txt", "");
+        subscription.push(vec![root.join("b.txt")]);
+        folder.write_file("c.txt", "");
+        subscription.push(vec![root.join("c.txt")]);
+
+        let payloads = received.payloads.lock().expect("the lock");
+        assert_eq!(payloads.len(), 2, "one buffer per changing batch");
+        for payload in payloads.iter() {
+            let json: serde_json::Value = serde_json::from_slice(payload).expect("JSON");
+            assert!(json["listings"].is_array(), "{json}");
+        }
+        // The sanitizer step is what catches a second free of either buffer.
     }
 }

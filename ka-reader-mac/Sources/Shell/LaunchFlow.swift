@@ -30,8 +30,22 @@ package final class LaunchFlow {
     private let glyphs: GlyphSource
     private let presenter: WindowPresenting
     private let reader: ReadRunning
+    private let treeActs: ReadRunning
+    private let main: MainDelivering
     private let terminate: () -> Void
     package private(set) var folderOpened = false
+
+    /// The receiver whose deliveries are the live ones: the open in flight's from the moment it
+    /// starts, and the earlier one again if that open does not succeed.
+    private var currentReceiver: ModelChangesReceiver?
+    /// The receiver the open in flight replaces. The bridge keeps calling it until that open has
+    /// returned `opened`, because only then has it drained its callbacks, so it is held until then.
+    private var replacedReceiver: ModelChangesReceiver?
+    /// The tree the workbench draws, once the workbench is presented and until a startup surface
+    /// replaces it.
+    private weak var presentedTree: RootItemsView?
+    /// The current receiver's deliveries that arrived before the workbench was presented, in order.
+    private var heldChanges: [Data] = []
 
     /// Resolved on the first surface that needs them, as the tree's glyphs are, so a missing file
     /// stops the launch where it is first drawn.
@@ -39,15 +53,22 @@ package final class LaunchFlow {
         empty: glyph(named: StatusGlyphNames.emptyGlyphName),
         failure: glyph(named: StatusGlyphNames.failureGlyphName))
 
+    /// `reader` runs the folder open and the file and Git reads, `treeActs` the tree acts, and `main`
+    /// is where the bridge's deliveries cross to the main actor. With neither runner given, reads run
+    /// concurrently and tree acts on one serial queue; a `reader` given alone runs both, so a test
+    /// that runs reads inline sees the acts inline too.
     package init(
         panel: FolderChoosing, bridge: Bridging, glyphs: GlyphSource, presenter: WindowPresenting,
-        reader: ReadRunning = OffMainReadRunner(), terminate: @escaping () -> Void
+        reader: ReadRunning? = nil, treeActs: ReadRunning? = nil,
+        main: MainDelivering = MainQueueDelivery(), terminate: @escaping () -> Void
     ) {
         self.panel = panel
         self.bridge = bridge
         self.glyphs = glyphs
         self.presenter = presenter
-        self.reader = reader
+        self.reader = reader ?? OffMainReadRunner()
+        self.treeActs = treeActs ?? reader ?? SerialReadRunner()
+        self.main = main
         self.terminate = terminate
     }
 
@@ -59,39 +80,78 @@ package final class LaunchFlow {
             return
         }
         presentStartup(.reading)
+        let receiver = makeReceiver()
+        replacedReceiver = currentReceiver
+        currentReceiver = receiver
+        heldChanges = []
         reader.run(
-            { [bridge] in Self.openAndList(location, through: bridge) },
+            { [bridge] in Self.openAndList(location, changes: receiver, through: bridge) },
             deliver: { [weak self] answer in
                 self?.deliver(answer)
             })
     }
 
-    private nonisolated static func openAndList(_ location: URL, through bridge: Bridging)
-        -> LaunchAnswer
-    {
-        let openBuffer = bridge.openFolder(location: location)
+    private func makeReceiver() -> ModelChangesReceiver {
+        ModelChangesReceiver(bridge: bridge, main: main) { [weak self] receiver, payload in
+            self?.receive(payload, from: receiver)
+        }
+    }
+
+    /// One delivery, on the main actor. Only the current receiver's is live; any other receiver's
+    /// is dropped here. A live one waits for the workbench, then draws.
+    private func receive(_ payload: Data, from receiver: ModelChangesReceiver) {
+        guard receiver === currentReceiver else { return }
+        guard let tree = presentedTree else {
+            heldChanges.append(payload)
+            return
+        }
+        apply(payload, to: tree)
+    }
+
+    private func apply(_ payload: Data, to tree: RootItemsView) {
+        guard let changes = BridgePayload.decodeChanges(payload) else { return }
+        tree.apply(changes: changes)
+    }
+
+    private nonisolated static func openAndList(
+        _ location: URL, changes: ModelChangesReceiver, through bridge: Bridging
+    ) -> LaunchAnswer {
+        let openBuffer = bridge.openFolder(location: location, changes: changes)
         defer { release(openBuffer, through: bridge) }
         guard let result = BridgePayload.decodeOpen(openBuffer) else {
             return .stopped(path: location.path)
         }
         switch result {
         case .failed(let condition): return .failed(path: location.path, condition: condition)
-        case .opened: return .opened(listing(at: "", through: bridge))
+        case .opened: return .opened(listing(at: "", act: .expand, through: bridge))
         }
     }
 
     private func deliver(_ answer: LaunchAnswer) {
         switch answer {
         case .failed(let path, let condition):
+            keepEarlierReceiver()
             presentStartup(.failed(path: path, condition: condition))
-        case .stopped(let path): presentStartup(.stopped(path: path))
+        case .stopped(let path):
+            keepEarlierReceiver()
+            presentStartup(.stopped(path: path))
         case .opened(let root):
+            replacedReceiver = nil
             folderOpened = true
             presentWorkbench(root)
         }
     }
 
+    /// An open that did not succeed registered nothing, so the bridge still calls the receiver it
+    /// had; that one is the live one again, and the open's own is let go.
+    private func keepEarlierReceiver() {
+        currentReceiver = replacedReceiver
+        replacedReceiver = nil
+        heldChanges = []
+    }
+
     private func presentStartup(_ projection: StartupProjection) {
+        presentedTree = nil
         presenter.present(
             StartupView(projection: projection, glyphs: statusGlyphs) { [weak self] intent in
                 switch intent {
@@ -107,8 +167,8 @@ package final class LaunchFlow {
             fileGlyph: glyph(named: Self.fileGlyphName),
             fileCodeGlyph: glyph(named: Self.fileCodeGlyphName), statusGlyphs: statusGlyphs)
         view.show(root)
-        view.listTree = { [bridge, reader] path, answer in
-            reader.run({ Self.listing(at: path, through: bridge) }, deliver: answer)
+        view.listTree = { [bridge, treeActs] path, act, answer in
+            treeActs.run({ Self.listing(at: path, act: act, through: bridge) }, deliver: answer)
         }
         let workbench = WorkbenchView(
             rootItemsView: view, statusGlyphs: statusGlyphs,
@@ -121,6 +181,10 @@ package final class LaunchFlow {
             reader.run({ Self.gitItem(through: bridge) }, deliver: answer)
         }
         presenter.present(workbench)
+        presentedTree = view
+        let held = heldChanges
+        heldChanges = []
+        for payload in held { apply(payload, to: view) }
     }
 
     private nonisolated static func gitItem(through bridge: Bridging) -> GitItem {
@@ -137,10 +201,10 @@ package final class LaunchFlow {
         return BridgePayload.decodeFile(buffer)
     }
 
-    private nonisolated static func listing(at path: String, through bridge: Bridging)
-        -> RootListing?
-    {
-        let buffer = bridge.listTree(path: path)
+    private nonisolated static func listing(
+        at path: String, act: DisclosureAct, through bridge: Bridging
+    ) -> RootListing? {
+        let buffer = bridge.listTree(path: path, act: act)
         defer { release(buffer, through: bridge) }
         return BridgePayload.decodeRoot(buffer)
     }

@@ -65,7 +65,10 @@ final class WorkbenchGitTests: XCTestCase {
             log.selects.append(SelectRead(path: path, answer: answer))
         }
         workbench.readGit = { answer in log.gitAsks.append(GitAsk(answer: answer)) }
-        tree.listTree = { path, answer in log.listed.append((path, answer)) }
+        tree.listTree = { path, act, answer in
+            guard act == .expand else { return }
+            log.listed.append((path, answer))
+        }
         workbench.layoutSubtreeIfNeeded()
         return Fixture(workbench: workbench, window: window, log: log)
     }

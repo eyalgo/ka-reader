@@ -34,6 +34,15 @@ final class FakePanel: FolderChoosing {
     }
 }
 
+/// A receiver the bridge fake was handed, held weakly: the bridge's real pointer to it is unretained.
+struct WeakReceiver {
+    weak var receiver: ModelChangesReceiver?
+
+    init(_ receiver: ModelChangesReceiver?) {
+        self.receiver = receiver
+    }
+}
+
 /// A bridge that answers from canned bytes and records every call, buffer and free.
 final class RecordingBridge: Bridging, @unchecked Sendable {
     // `@unchecked Sendable` because `Bridging` is `Sendable` (the read runner calls a bridge from a
@@ -51,6 +60,8 @@ final class RecordingBridge: Bridging, @unchecked Sendable {
         var nextHandle: UInt = 1
         var openedLocations: [URL] = []
         var listedPaths: [String] = []
+        var listedActs: [DisclosureAct] = []
+        var receivers: [WeakReceiver] = []
         var selectedPaths: [String] = []
         var gitReadCount = 0
         var handedOut: [UInt] = []
@@ -98,6 +109,11 @@ final class RecordingBridge: Bridging, @unchecked Sendable {
 
     var openedLocations: [URL] { lock.withLock { state.openedLocations } }
     var listedPaths: [String] { lock.withLock { state.listedPaths } }
+    /// The act of each `listTree` call, in the order the calls were made.
+    var listedActs: [DisclosureAct] { lock.withLock { state.listedActs } }
+    /// The receiver of each `openFolder` call, `nil` for a command-only open or a receiver the flow
+    /// has let go. Held weakly, so a test can see when the flow releases one.
+    var receivers: [ModelChangesReceiver?] { lock.withLock { state.receivers.map(\.receiver) } }
     var selectedPaths: [String] { lock.withLock { state.selectedPaths } }
     var gitReadCount: Int { lock.withLock { state.gitReadCount } }
     var handedOut: [UInt] { lock.withLock { state.handedOut } }
@@ -107,20 +123,22 @@ final class RecordingBridge: Bridging, @unchecked Sendable {
         self.log = log
     }
 
-    func openFolder(location: URL) -> BridgeBuffer? {
+    func openFolder(location: URL, changes: ModelChangesReceiver?) -> BridgeBuffer? {
         log.record("open_folder")
         return lock.withLock {
             state.openedLocations.append(location)
+            state.receivers.append(WeakReceiver(changes))
             let answer =
                 state.openAnswers.isEmpty ? state.openAnswer : state.openAnswers.removeFirst()
             return makeBuffer(from: answer)
         }
     }
 
-    func listTree(path: String) -> BridgeBuffer? {
+    func listTree(path: String, act: DisclosureAct) -> BridgeBuffer? {
         log.record("list_tree")
         return lock.withLock {
             state.listedPaths.append(path)
+            state.listedActs.append(act)
             return makeBuffer(from: state.listAnswers[path] ?? state.listAnswer)
         }
     }
@@ -266,15 +284,17 @@ final class ThreadRecordingBridge: Bridging, @unchecked Sendable {
         lock.withLock { calls.filter { $0.name == name }.map(\.onMain) }
     }
 
-    func openFolder(location: URL) -> BridgeBuffer? {
+    func openFolder(location: URL, changes: ModelChangesReceiver?) -> BridgeBuffer? {
         record("open_folder")
         return makeBuffer(from: openAnswer, named: "open")
     }
 
-    func listTree(path: String) -> BridgeBuffer? {
-        record("list_tree:\(path)")
+    func listTree(path: String, act: DisclosureAct) -> BridgeBuffer? {
+        // A collapse is recorded under its own names, so the expansions' records stay as they were.
+        let prefix = act == .collapse ? "collapse:" : ""
+        record("list_tree:\(prefix)\(path)")
         guard let payload = listAnswers[path] else { return nil }
-        return makeBuffer(from: payload, named: path)
+        return makeBuffer(from: payload, named: "\(prefix)\(path)")
     }
 
     func selectFile(path: String) -> BridgeBuffer? {

@@ -14,6 +14,15 @@ crate-type = ["staticlib", "rlib"]
 [lints.rust]
 unsafe_code = "allow"
 
+# The fakes a unit test is handed (`watcher::fakes`) are built for tests and for this feature alone, and
+# no default feature turns it on, so a release build carries none. The crate names itself below so a
+# `tests/` file reaches them too (`<CORE>/doctrine/engineering/languages/rust/testing.md`).
+[features]
+testing = []
+
+[dev-dependencies]
+ka-reader-bridge = { path = ".", features = ["testing"] }
+
 [dependencies]
 log = "0.4.34"
 ka-reader-core = { version = "0.0.0", path = "../ka-reader-core" }

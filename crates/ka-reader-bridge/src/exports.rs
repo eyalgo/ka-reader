@@ -2,7 +2,7 @@
 //! export decodes, calls the session, and formats through the wrapper, and does nothing else
 //! (QC-13). The header generator reads this file, so it holds only what the header must declare.
 
-use std::ffi::c_char;
+use std::ffi::{c_char, c_void};
 use std::sync::LazyLock;
 
 use crate::boundary::{guarded, list_entries, open_location, select_entry};
@@ -16,12 +16,17 @@ pub struct KAReaderBuffer {
     pub len: usize,
 }
 
+/// The shell's `model_changed` callback: called with the `context` the open was given and one owned
+/// buffer holding a payload of changed listings, which the shell frees once with `ka_reader_free`.
+pub type KAReaderModelChanged = Option<unsafe extern "C" fn(*mut c_void, *mut KAReaderBuffer)>;
+
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(crate) enum BufferOrigin {
     OpenFolder,
     ListTree,
     SelectFile,
     ReadGit,
+    ModelChanged,
 }
 
 #[repr(C)]
@@ -49,14 +54,24 @@ static SESSION: LazyLock<Session> = LazyLock::new(Session::default);
 /// `{"state":"failed","condition":…}`, or NULL on boundary failure; a non-NULL answer is freed
 /// with `ka_reader_free`.
 ///
+/// A non-NULL `model_changed` is called, after a successful open, with `context` and one owned
+/// buffer of changed listings each time the disk changes the tree; the shell frees each buffer once
+/// with `ka_reader_free`. The call may come on any thread, and never after the next successful open
+/// has returned. A NULL `model_changed` opens with no subscription and no delivery.
+///
 /// # Safety
 ///
-/// `location` is NULL, or a NUL-terminated string valid for the call.
+/// `location` is NULL, or a NUL-terminated string valid for the call. `context` stays valid until
+/// the next successful open has returned (SM-4's lifetime contract).
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn ka_reader_open_folder(location: *const c_char) -> *mut KAReaderBuffer {
+pub unsafe extern "C" fn ka_reader_open_folder(
+    location: *const c_char,
+    model_changed: KAReaderModelChanged,
+    context: *mut c_void,
+) -> *mut KAReaderBuffer {
     // SAFETY: forwarded from the caller.
     guarded(BufferOrigin::OpenFolder, || unsafe {
-        open_location(&SESSION, location)
+        open_location(&SESSION, location, model_changed, context)
     })
 }
 
@@ -65,16 +80,17 @@ pub unsafe extern "C" fn ka_reader_open_folder(location: *const c_char) -> *mut 
 /// `{"name","path","kind","state"}`, a `"condition"` beside `"failed"` and a `"language"` on a file
 /// entry (a folder entry names none; the bridge carries core's answer and decides nothing),
 /// `{"state":"failed","condition":…}`, or `{"state":"pending"}` when nothing was read. NULL on
-/// failure; a non-NULL answer is freed with `ka_reader_free`.
+/// failure; a non-NULL answer is freed with `ka_reader_free`. `act` is what the reader did: `0`
+/// expanded the folder, `1` collapsed it; any other value applies nothing and answers `pending`.
 ///
 /// # Safety
 ///
 /// `path` is NULL, or a NUL-terminated string valid for the call.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn ka_reader_list_tree(path: *const c_char) -> *mut KAReaderBuffer {
+pub unsafe extern "C" fn ka_reader_list_tree(path: *const c_char, act: u32) -> *mut KAReaderBuffer {
     // SAFETY: forwarded from the caller.
     guarded(BufferOrigin::ListTree, || unsafe {
-        list_entries(&SESSION, path)
+        list_entries(&SESSION, path, act)
     })
 }
 
@@ -106,8 +122,8 @@ pub extern "C" fn ka_reader_read_git() -> *mut KAReaderBuffer {
     guarded(BufferOrigin::ReadGit, || SESSION.read_git())
 }
 
-/// Releases a buffer returned by `ka_reader_open_folder`, `ka_reader_list_tree`, `ka_reader_select_file` or
-/// `ka_reader_read_git`. NULL does nothing.
+/// Releases a buffer returned by `ka_reader_open_folder`, `ka_reader_list_tree`, `ka_reader_select_file`
+/// or `ka_reader_read_git`, or handed to a `model_changed` callback. NULL does nothing.
 ///
 /// # Safety
 ///

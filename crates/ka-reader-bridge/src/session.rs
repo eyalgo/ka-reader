@@ -2,20 +2,23 @@
 //! delegates to `ka-reader-core` and only formats the result (QC-13). It never presents a panel: the
 //! location comes in as a plain `Option<PathBuf>`, so none of this needs a window or a runtime.
 
-use std::path::PathBuf;
+use std::panic::{self, AssertUnwindSafe};
+use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc, Mutex, MutexGuard, PoisonError};
+use std::sync::{Arc, Mutex, MutexGuard, PoisonError, Weak};
 
 use ka_reader_core::{
-    BranchElement, CannotDisplayReason, Condition, ConfigNamedPath, EntryKind, FileView,
-    FolderKind, FolderModel, GitCondition, GitPort, GitReadCondition, ItemState, Language,
-    OpenFailure, OpenFolderOutcome, OpenedFolder, ProbeCondition, RepositoryState, Span,
-    StatusCategory, StatusEntry, SubmoduleNamedPath, TokenClass, list_tree, open_folder, read_git,
-    select_file,
+    BranchElement, CannotDisplayReason, Condition, ConfigNamedPath, Entry, EntryKind, FileRequest,
+    FileView, FolderKind, FolderModel, GitCondition, GitPort, GitReadCondition, ItemState,
+    Language, OpenFailure, OpenFolderOutcome, OpenedFolder, PathReports, ProbeCondition,
+    RepositoryState, Span, StatusCategory, StatusEntry, SubmoduleNamedPath, TokenClass,
+    TreeRequest, list_tree, open_folder, read_git_item, select_file,
 };
 use serde::Serialize;
 
+use crate::boundary::changes_payload;
 use crate::machine_config::{SwitchOutcome, arrive_in_process, production_port};
+use crate::watcher::{FsEvents, PathSink, Subscription, Watching};
 
 /// What `open_folder` answers across the bridge.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -620,12 +623,61 @@ fn production_arrival() -> Wiring {
     arrive_wiring(arrive_in_process(), production_port)
 }
 
+/// What the reader did to a folder row. The boundary decodes the wire's number into this closed set,
+/// and a number that is neither reaches the session as no act at all.
+///
+/// # Examples
+///
+/// ```
+/// use ka_reader_bridge::session::{ListAnswerDto, Session, TreeAct};
+///
+/// let session = Session::default();
+/// assert_eq!(session.list("src", Some(TreeAct::Collapse)), ListAnswerDto::Pending);
+/// assert_eq!(session.list("src", None), ListAnswerDto::Pending);
+/// ```
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TreeAct {
+    /// The reader disclosed the folder.
+    Expand,
+    /// The reader hid the folder.
+    Collapse,
+}
+
+/// Where the session sends a `model_changed` payload: the serialized JSON bytes. A delivery is called
+/// on a thread the watcher owns, never while a model lock is held, and never after the open that
+/// replaces it has returned.
+pub type Delivery = Arc<dyn Fn(Vec<u8>) + Send + Sync>;
+
+/// Core's listing as the answer the shell reads.
+pub(crate) fn list_answer(listing: ItemState<Vec<Entry>>) -> ListAnswerDto {
+    match listing {
+        ItemState::Observed(entries) => ListAnswerDto::Observed {
+            entries: entries
+                .into_iter()
+                .map(|entry| EntryDto {
+                    name: entry.name,
+                    path: entry.path,
+                    kind: entry.kind.into(),
+                    state: entry.state.into(),
+                    language: entry.language.map(LanguageDto::from),
+                })
+                .collect(),
+        },
+        ItemState::Failed(condition) => ListAnswerDto::Failed {
+            condition: condition.into(),
+        },
+        ItemState::Pending => ListAnswerDto::Pending,
+    }
+}
+
 /// An opened folder as a model, with the wiring of the arrival its open made and a token naming that
 /// open, so a read answers only for the open it was made for.
 struct Held {
     model: FolderModel,
     wiring: Wiring,
     open: u64,
+    /// The open's watcher subscription, held for its drop: stopping it drains every callback in flight.
+    _subscription: Option<Subscription>,
 }
 
 #[derive(Default)]
@@ -648,26 +700,76 @@ impl State {
     }
 }
 
+/// One watcher batch, for the grant `token`: a batch for any other grant is dropped. The next model
+/// is computed on a clone and assigned only once it and its payload exist, so a panic leaves the held
+/// model as it was. The delivery is called after the lock is released, only when something changed.
+/// A panic, or a payload that cannot be serialized, delivers nothing and writes one `stopped` line.
+fn deliver_batch(
+    state: &Mutex<State>,
+    token: u64,
+    batch: Vec<PathBuf>,
+    reduce: impl FnOnce(FolderModel, PathReports) -> FolderModel,
+    delivery: &Delivery,
+) {
+    let outcome = panic::catch_unwind(AssertUnwindSafe(|| {
+        let payload = apply_batch(state, token, batch, reduce)?;
+        if let Some(payload) = payload {
+            delivery(payload);
+        }
+        Ok::<(), serde_json::Error>(())
+    }));
+    match outcome {
+        Ok(Ok(())) => {}
+        Ok(Err(_)) => {
+            log::warn!("core-bridge: model_changed stopped: answer serialization failed");
+        }
+        Err(_) => log::warn!("core-bridge: model_changed stopped: boundary panicked"),
+    }
+}
+
+/// The locked half of [`deliver_batch`]: reduce, take the changes, serialize, then assign.
+fn apply_batch(
+    state: &Mutex<State>,
+    token: u64,
+    batch: Vec<PathBuf>,
+    reduce: impl FnOnce(FolderModel, PathReports) -> FolderModel,
+) -> Result<Option<Vec<u8>>, serde_json::Error> {
+    let mut guard = state.lock().unwrap_or_else(PoisonError::into_inner);
+    let Some(held) = guard.held.as_mut().filter(|held| held.open == token) else {
+        return Ok(None);
+    };
+    let next = reduce(held.model.clone(), PathReports::new(batch));
+    let changes = next.changes_since(&held.model);
+    let payload = if changes.is_empty() {
+        None
+    } else {
+        Some(changes_payload(&changes)?)
+    };
+    held.model = next;
+    Ok(payload)
+}
+
 /// The session: at most one opened folder, starting empty, replaced whole by a successful open.
 /// The bridge holds exactly one for the life of the process.
 ///
 /// # Examples
 ///
 /// ```
-/// use ka_reader_bridge::session::{ListAnswerDto, Session};
+/// use ka_reader_bridge::session::{ListAnswerDto, Session, TreeAct};
 ///
 /// let session = Session::default();
 ///
 /// assert_eq!(
-///     serde_json::to_value(session.list("")).expect("the answer serializes"),
+///     serde_json::to_value(session.list("", Some(TreeAct::Expand))).expect("the answer serializes"),
 ///     serde_json::json!({ "state": "pending" }),
 ///     "nothing is open yet"
 /// );
-/// assert_eq!(session.list(""), ListAnswerDto::Pending);
+/// assert_eq!(session.list("", Some(TreeAct::Expand)), ListAnswerDto::Pending);
 /// ```
 pub struct Session {
-    state: Mutex<State>,
+    state: Arc<Mutex<State>>,
     arrive: Arrival,
+    watching: Arc<dyn Watching>,
     switch_failure_logged: AtomicBool,
 }
 
@@ -679,11 +781,35 @@ impl Default for Session {
 }
 
 impl Session {
-    /// A session whose opens arrive through `arrive`, in place of the production switch.
+    /// A session whose opens arrive through `arrive`, in place of the production switch, and whose
+    /// delivering opens watch through the platform's `FsEvents`.
     pub fn with_wiring(arrive: Box<dyn Fn() -> Wiring + Send + Sync>) -> Self {
+        Self::with_parts(arrive, Arc::new(FsEvents))
+    }
+
+    /// A session whose opens arrive through `arrive` and whose delivering opens watch through
+    /// `watching`. A stream starts only for an open that carries a delivery.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use std::sync::Arc;
+    /// use ka_reader_bridge::session::{ListAnswerDto, Session, Wiring};
+    /// use ka_reader_bridge::watcher::fakes::ManualWatching;
+    ///
+    /// let watching = Arc::new(ManualWatching::new());
+    /// let session = Session::with_parts(Box::new(|| Wiring::SwitchFailed), watching.clone());
+    /// assert_eq!(session.list("", None), ListAnswerDto::Pending);
+    /// assert!(watching.recorded().is_empty());
+    /// ```
+    pub fn with_parts(
+        arrive: Box<dyn Fn() -> Wiring + Send + Sync>,
+        watching: Arc<dyn Watching>,
+    ) -> Self {
         Self {
-            state: Mutex::new(State::default()),
+            state: Arc::new(Mutex::new(State::default())),
             arrive,
+            watching,
             switch_failure_logged: AtomicBool::new(false),
         }
     }
@@ -692,61 +818,127 @@ impl Session {
         self.state.lock().unwrap_or_else(PoisonError::into_inner)
     }
 
-    /// Opens one chosen folder. A successful open replaces the held model whole and makes one
-    /// arrival at the composition root; a failed open touches neither.
+    /// Opens one chosen folder, for a host that only sends commands: no watcher subscription starts.
+    /// A successful open replaces the held model whole and makes one arrival at the composition
+    /// root; a failed open touches neither.
     pub fn open(&self, chosen: PathBuf) -> OpenResult {
-        match open_folder(chosen) {
-            OpenFolderOutcome::Opened(folder) => {
-                let wiring = (self.arrive)();
-                if matches!(wiring, Wiring::SwitchFailed)
-                    && !self.switch_failure_logged.swap(true, Ordering::SeqCst)
-                {
-                    log::warn!(
-                        "core-bridge: search-path switch failed: the machine-level config could not be switched off; the Git item stays failed"
-                    );
-                }
-                let model = FolderModel::new(folder);
-                let mut state = self.lock();
-                state.opens += 1;
-                let open = state.opens;
-                state.held = Some(Held {
-                    model,
-                    wiring,
-                    open,
-                });
-                OpenResult::Opened
-            }
-            OpenFolderOutcome::Failed(failure) => OpenResult::Failed {
-                condition: failure.into(),
-            },
-        }
+        self.open_with(chosen, None)
     }
 
-    /// Lists `path` inside the opened folder. Core's item is carried over as it is: `observed`
-    /// with the entries, or `failed` with its condition. No folder open is `pending`, because
-    /// nothing was read.
-    pub fn list(&self, path: &str) -> ListAnswerDto {
-        let guard = self.lock();
-        let Some(held) = guard.held.as_ref() else {
+    /// Opens one chosen folder and watches it: every change the disk reports reaches `delivery` as
+    /// a serialized payload of the listings that changed. The folder it replaces is no longer
+    /// watched when this returns, and its delivery is never called after. A failed open registers
+    /// nothing, and a watcher that cannot start leaves the folder open with no delivery.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use std::sync::Arc;
+    /// use ka_reader_bridge::session::{OpenResult, Session, Wiring};
+    /// use ka_reader_bridge::watcher::fakes::ManualWatching;
+    ///
+    /// let watching = Arc::new(ManualWatching::new());
+    /// let session = Session::with_parts(Box::new(|| Wiring::SwitchFailed), watching.clone());
+    /// let delivery = Arc::new(|payload: Vec<u8>| drop(payload));
+    ///
+    /// let result = session.open_delivering(std::env::temp_dir(), delivery);
+    /// assert!(matches!(result, OpenResult::Opened));
+    /// assert_eq!(watching.recorded().len(), 1);
+    /// ```
+    pub fn open_delivering(&self, chosen: PathBuf, delivery: Delivery) -> OpenResult {
+        self.open_with(chosen, Some(delivery))
+    }
+
+    fn open_with(&self, chosen: PathBuf, delivery: Option<Delivery>) -> OpenResult {
+        let folder = match open_folder(chosen) {
+            OpenFolderOutcome::Opened(folder) => folder,
+            OpenFolderOutcome::Failed(failure) => {
+                return OpenResult::Failed {
+                    condition: failure.into(),
+                };
+            }
+        };
+        let wiring = (self.arrive)();
+        if matches!(wiring, Wiring::SwitchFailed)
+            && !self.switch_failure_logged.swap(true, Ordering::SeqCst)
+        {
+            log::warn!(
+                "core-bridge: search-path switch failed: the machine-level config could not be switched off; the Git item stays failed"
+            );
+        }
+        // Under one hold of the lock: take the grant token, start the subscription, read the
+        // snapshot and install. A report that arrives during the snapshot waits on the lock and is
+        // applied right after the install, so nothing between subscribing and reading is lost.
+        let replaced = {
+            let mut state = self.lock();
+            state.opens += 1;
+            let open = state.opens;
+            let subscription =
+                delivery.and_then(|delivery| self.subscribe(folder.root(), open, delivery));
+            let model = FolderModel::new(folder);
+            state.held.replace(Held {
+                model,
+                wiring,
+                open,
+                _subscription: subscription,
+            })
+        };
+        // The replaced grant stops and drains outside the lock, because its callbacks may be waiting on it.
+        drop(replaced);
+        OpenResult::Opened
+    }
+
+    /// Starts the watcher on `root` with a sink tied to the grant `token`. The sink holds the state
+    /// weakly, so a dropped session is not kept alive by its own subscription.
+    fn subscribe(&self, root: &Path, token: u64, delivery: Delivery) -> Option<Subscription> {
+        let state = Arc::downgrade(&self.state);
+        let sink: PathSink = Box::new(move |batch| {
+            if let Some(state) = Weak::upgrade(&state) {
+                deliver_batch(
+                    &state,
+                    token,
+                    batch,
+                    |model, reports| model.list_tree(TreeRequest::Invalidate(reports)),
+                    &delivery,
+                );
+            }
+        });
+        // A subscription that cannot start leaves the folder open with no delivery, and writes no
+        // line: the log holds one line per failed or stopped item (QC-39, QC-52), and a
+        // subscription is no item.
+        self.watching.subscribe(root, sink).ok()
+    }
+
+    /// Lists `path` inside the opened folder and applies the act the reader made there. `Expand`
+    /// reads the folder, holds it expanded and answers the held listing; `Collapse` reads nothing and
+    /// answers the listing held, or `pending` when none is. The root (the empty path) answers a fresh
+    /// read, and so does a path the model refuses (outside, not a folder, missing), with core's own
+    /// condition. `None` is an act the boundary could not decode: nothing changes and the answer is
+    /// `pending`. Core's item is carried over as it is: `observed` with the entries, or `failed`
+    /// with its condition. No folder open is `pending`, because nothing was read.
+    pub fn list(&self, path: &str, act: Option<TreeAct>) -> ListAnswerDto {
+        let Some(act) = act else {
             return ListAnswerDto::Pending;
         };
-        match list_tree(held.model.folder(), path) {
-            ItemState::Observed(entries) => ListAnswerDto::Observed {
-                entries: entries
-                    .into_iter()
-                    .map(|entry| EntryDto {
-                        name: entry.name,
-                        path: entry.path,
-                        kind: entry.kind.into(),
-                        state: entry.state.into(),
-                        language: entry.language.map(LanguageDto::from),
-                    })
-                    .collect(),
-            },
-            ItemState::Failed(condition) => ListAnswerDto::Failed {
-                condition: condition.into(),
-            },
-            ItemState::Pending => ListAnswerDto::Pending,
+        let mut guard = self.lock();
+        let Some(held) = guard.held.as_mut() else {
+            return ListAnswerDto::Pending;
+        };
+        if path.is_empty() {
+            return list_answer(list_tree(held.model.folder(), path));
+        }
+        let request = match act {
+            TreeAct::Expand => TreeRequest::Expand(PathBuf::from(path)),
+            TreeAct::Collapse => TreeRequest::Collapse(PathBuf::from(path)),
+        };
+        held.model = held.model.clone().list_tree(request);
+        let held_listing = held.model.listing(Path::new(path)).cloned();
+        match act {
+            TreeAct::Expand if held.model.place().is_expanded(Path::new(path)) => {
+                held_listing.map_or(ListAnswerDto::Pending, list_answer)
+            }
+            TreeAct::Expand => list_answer(list_tree(held.model.folder(), path)),
+            TreeAct::Collapse => held_listing.map_or(ListAnswerDto::Pending, list_answer),
         }
     }
 
@@ -755,7 +947,7 @@ impl Session {
     /// lock, and stored and answered only if its folder is still the open one; an item already
     /// `observed` or `failed` is answered with no read.
     pub fn read_git(&self) -> GitAnswerDto {
-        let (model, port, open) = {
+        let (folder, port, open) = {
             let state = self.lock();
             let Some(held) = state.held.as_ref() else {
                 return GitAnswerDto::Pending;
@@ -766,15 +958,17 @@ impl Session {
             if !matches!(held.model.kind(), ItemState::Pending) {
                 return state.answer();
             }
-            (held.model.clone(), Arc::clone(port), held.open)
+            (held.model.folder().clone(), Arc::clone(port), held.open)
         };
-        let read = read_git(model, port.as_ref());
+        let item = read_git_item(&folder, port.as_ref());
         let mut state = self.lock();
+        // Only the Git item is folded, into the model held now: the clone the read started from
+        // would lose any tree update that landed while the read was out.
         if let Some(held) = state.held.as_mut()
             && held.open == open
             && matches!(held.model.kind(), ItemState::Pending)
         {
-            held.model = read;
+            held.model = held.model.clone().with_git_item(item);
         }
         state.answer()
     }
@@ -794,12 +988,26 @@ impl Session {
         path: &str,
         read: impl FnOnce(&OpenedFolder, &str) -> ItemState<FileView>,
     ) -> FileAnswerDto {
-        let folder = self
+        let held = self
             .lock()
             .held
             .as_ref()
-            .map(|held| held.model.folder().clone());
-        folder.map_or(FileAnswerDto::Pending, |folder| read(&folder, path).into())
+            .map(|held| (held.model.folder().clone(), held.open));
+        let Some((folder, open)) = held else {
+            return FileAnswerDto::Pending;
+        };
+        let answer = read(&folder, path);
+        // The selection joins the model after the read, under the lock, and only for the open the
+        // read was made for.
+        if let Some(held) = self.lock().held.as_mut()
+            && held.open == open
+        {
+            held.model = held
+                .model
+                .clone()
+                .select_file(FileRequest::Select(Some(PathBuf::from(path))));
+        }
+        answer.into()
     }
 }
 
@@ -814,7 +1022,7 @@ mod tests {
 
     use ka_reader_core::{ItemState, list_tree, open_folder};
 
-    use super::Session;
+    use super::{Session, TreeAct};
     use crate::test_support::TempDir;
 
     #[test]
@@ -845,7 +1053,7 @@ mod tests {
                 .recv_timeout(Duration::from_secs(10))
                 .expect("the read parked");
             scope.spawn(move || {
-                session.list("");
+                session.list("", Some(TreeAct::Expand));
                 listed_tx.send(()).expect("the test is listening");
             });
             let listed = listed_rx.recv_timeout(Duration::from_secs(10));
@@ -854,9 +1062,97 @@ mod tests {
         });
     }
 
+    /// The model the session holds right now, cloned out for a test to read.
+    fn held_model(session: &Session) -> ka_reader_core::FolderModel {
+        session
+            .lock()
+            .held
+            .as_ref()
+            .expect("a folder is open")
+            .model
+            .clone()
+    }
+
+    #[test]
+    fn test_expand_holds_the_folder_and_collapse_leaves_the_selection_and_expansion_as_made() {
+        let folder = TempDir::new();
+        folder.write_file("src/main.rs", "fn main() {}");
+        folder.write_file("docs/guide.txt", "x");
+        let session = Session::default();
+        opened(&session, &folder);
+
+        session.list("src", Some(TreeAct::Expand));
+        session.list("docs", Some(TreeAct::Expand));
+        session.select_file("src/main.rs");
+        session.list("docs", Some(TreeAct::Collapse));
+
+        let place = held_model(&session).place().clone();
+        assert!(place.is_expanded(std::path::Path::new("src")));
+        assert!(!place.is_expanded(std::path::Path::new("docs")));
+        assert_eq!(place.selected(), Some(std::path::Path::new("src/main.rs")));
+    }
+
+    #[test]
+    fn test_a_collapse_reads_nothing() {
+        let folder = TempDir::new();
+        folder.write_file("src/main.rs", "fn main() {}");
+        folder.make_folder("never-expanded");
+        let session = Session::default();
+        opened(&session, &folder);
+        session.list("src", Some(TreeAct::Expand));
+        folder.write_file("src/added-after-the-expand.rs", "x");
+
+        let held = answer_to(&session, "src", Some(TreeAct::Collapse));
+        let never_held = answer_to(&session, "never-expanded", Some(TreeAct::Collapse));
+
+        assert_eq!(
+            names(&held),
+            vec!["main.rs"],
+            "the held listing, not a fresh read"
+        );
+        assert_eq!(never_held, json!({ "state": "pending" }));
+    }
+
+    #[test]
+    fn test_an_unknown_act_changes_nothing_and_answers_pending() {
+        let folder = TempDir::new();
+        folder.write_file("src/main.rs", "fn main() {}");
+        let session = Session::default();
+        opened(&session, &folder);
+        let before = held_model(&session);
+
+        let answered = answer_to(&session, "src", None);
+
+        assert_eq!(answered, json!({ "state": "pending" }));
+        assert_eq!(held_model(&session), before);
+    }
+
+    #[test]
+    fn test_select_file_applies_the_selection_to_the_held_model() {
+        let folder = TempDir::new();
+        folder.write_file("a.txt", "x");
+        let session = Session::default();
+        opened(&session, &folder);
+
+        session.select_file("a.txt");
+        let model = held_model(&session);
+
+        assert_eq!(
+            model.place().selected(),
+            Some(std::path::Path::new("a.txt"))
+        );
+        assert!(model.open_file().is_none(), "a selection opens nothing");
+    }
+
+    /// The answer to `path` for `act`, as the JSON the shell reads.
+    fn answer_to(session: &Session, path: &str, act: Option<TreeAct>) -> Value {
+        serde_json::to_value(session.list(path, act)).expect("the answer serializes")
+    }
+
     /// The answer to `path` as the JSON the shell reads.
     fn answer(session: &Session, path: &str) -> Value {
-        serde_json::to_value(session.list(path)).expect("the answer serializes")
+        serde_json::to_value(session.list(path, Some(TreeAct::Expand)))
+            .expect("the answer serializes")
     }
 
     /// The names of the entries of an observed answer, sorted.
@@ -1933,7 +2229,7 @@ mod tests {
         use serde_json::{Value, json};
 
         use crate::machine_config::{Level, SetterFailure, SwitchGuard};
-        use crate::session::{Session, Wiring, arrive_wiring};
+        use crate::session::{Session, TreeAct, Wiring, arrive_wiring};
         use crate::test_support::{TempDir, begin_log_capture, take_log_records};
 
         type SharedPort = Arc<dyn GitPort + Send + Sync>;
@@ -2104,7 +2400,8 @@ mod tests {
             open(&real, &repository);
 
             let listed = |session: &Session| {
-                serde_json::to_value(session.list("")).expect("the answer serializes")
+                serde_json::to_value(session.list("", Some(TreeAct::Expand)))
+                    .expect("the answer serializes")
             };
             let selected = |session: &Session| {
                 serde_json::to_value(session.select_file("README.md"))
@@ -2292,6 +2589,45 @@ mod tests {
         }
 
         #[test]
+        fn test_a_tree_act_during_a_parked_git_read_survives_the_write_back() {
+            let (parked_tx, parked_rx) = channel::<()>();
+            let (release_tx, release_rx) = channel::<()>();
+            let mut port = Counting::new();
+            port.gate = Some(Gate {
+                parked: Mutex::new(parked_tx),
+                release: Mutex::new(release_rx),
+                used: AtomicUsize::new(0),
+            });
+            let port = Arc::new(port);
+            let session = session_over(&port);
+            let folder = TempDir::new();
+            folder.write_file("src/main.rs", "fn main() {}");
+            open(&session, folder.path());
+
+            let session_ref = &session;
+            let git = std::thread::scope(|scope| {
+                let ask = scope.spawn(move || git_item(session_ref));
+                parked_rx
+                    .recv_timeout(Duration::from_secs(10))
+                    .expect("the Git read parked");
+                session_ref.list("src", Some(TreeAct::Expand));
+                release_tx.send(()).expect("the read is parked");
+                ask.join().expect("the ask finishes")
+            });
+
+            assert_eq!(git["state"], "observed");
+            let model = session.lock().held.as_ref().expect("open").model.clone();
+            assert!(
+                model.place().is_expanded(Path::new("src")),
+                "the expansion made while the read was out is still held"
+            );
+            assert!(matches!(
+                model.kind(),
+                ka_reader_core::ItemState::Observed(_)
+            ));
+        }
+
+        #[test]
         fn test_a_switch_failure_emits_one_warn_and_a_repeat_ask_emits_none() {
             // The capture is process-wide, and the cases that read through a failing double warn
             // under `git-reader`; this case counts only the switch's own line.
@@ -2318,6 +2654,582 @@ mod tests {
                 "{after_arrival:?}"
             );
             assert!(after_asks.is_empty(), "an ask logs nothing: {after_asks:?}");
+        }
+    }
+
+    /// Task 12: delivery. The grant token, the sink adapter and `open_delivering`, over the fake
+    /// watcher a test drives by hand.
+    mod delivery {
+        use std::path::{Path, PathBuf};
+        use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+        use std::sync::mpsc::{Receiver, Sender, channel};
+        use std::sync::{Arc, Mutex, Weak};
+        use std::thread::JoinHandle;
+        use std::time::Duration;
+
+        use ka_reader_core::{
+            BranchElement, Entry, FolderModel, GitPort, GitReadCondition, HeadState, ItemState,
+            RepositoryState, RootFinding, StatusLists, list_tree,
+        };
+        use serde_json::Value;
+
+        use crate::session::{Delivery, OpenResult, Session, TreeAct, Wiring, deliver_batch};
+        use crate::test_support::{TempDir, begin_log_capture, take_log_records};
+        use crate::watcher::fakes::{ManualWatching, RecordedSubscription};
+        use crate::watcher::{PathSink, SubscribeError, Subscription, Watching};
+
+        const WAIT: Duration = Duration::from_secs(10);
+
+        /// Tells the test the read parked, and waits for the test to release it.
+        type Gate = (Mutex<Sender<()>>, Mutex<Receiver<()>>);
+
+        /// A Git port double: a plain answer, and the first `state` call parks when it holds a gate.
+        struct Port {
+            gate: Option<Gate>,
+            used: AtomicUsize,
+        }
+
+        impl Port {
+            fn plain() -> Self {
+                Self {
+                    gate: None,
+                    used: AtomicUsize::new(0),
+                }
+            }
+        }
+
+        impl GitPort for Port {
+            fn probe(&self, _folder: &Path) -> RootFinding {
+                RootFinding::Root
+            }
+
+            fn state(&self, _root: &Path) -> Result<HeadState, GitReadCondition> {
+                if let Some((parked, release)) = &self.gate
+                    && self.used.fetch_add(1, Ordering::SeqCst) == 0
+                {
+                    parked
+                        .lock()
+                        .expect("the gate lock")
+                        .send(())
+                        .expect("the test is listening");
+                    release
+                        .lock()
+                        .expect("the gate lock")
+                        .recv_timeout(WAIT)
+                        .expect("the test releases the read");
+                }
+                Ok(HeadState {
+                    branch: BranchElement::Branch("main".to_string()),
+                    state: RepositoryState::Normal,
+                })
+            }
+
+            fn status(&self, _root: &Path) -> Result<StatusLists, GitReadCondition> {
+                Ok(StatusLists {
+                    staged: Vec::new(),
+                    changed: Vec::new(),
+                })
+            }
+        }
+
+        /// Every payload a delivery received, parsed, in the order they arrived.
+        #[derive(Clone, Default)]
+        struct Received(Arc<Mutex<Vec<Value>>>);
+
+        impl Received {
+            fn delivery(&self) -> Delivery {
+                let log = Arc::clone(&self.0);
+                Arc::new(move |bytes: Vec<u8>| {
+                    let payload = serde_json::from_slice(&bytes).expect("a JSON payload");
+                    log.lock().expect("the payload log").push(payload);
+                })
+            }
+
+            fn all(&self) -> Vec<Value> {
+                self.0.lock().expect("the payload log").clone()
+            }
+        }
+
+        fn session_over(watching: &Arc<ManualWatching>, port: Port) -> Session {
+            let port: Arc<dyn GitPort + Send + Sync> = Arc::new(port);
+            Session::with_parts(
+                Box::new(move || Wiring::Wired(Arc::clone(&port))),
+                Arc::clone(watching) as Arc<dyn Watching>,
+            )
+        }
+
+        fn session_with(watching: &Arc<ManualWatching>) -> Session {
+            session_over(watching, Port::plain())
+        }
+
+        fn open_delivering(session: &Session, folder: &TempDir, received: &Received) {
+            let result = session.open_delivering(folder.path().to_path_buf(), received.delivery());
+            assert!(matches!(result, OpenResult::Opened), "the folder must open");
+        }
+
+        fn root_of(folder: &TempDir) -> PathBuf {
+            folder.path().canonicalize().expect("a canonical folder")
+        }
+
+        fn subscription_on(watching: &ManualWatching, folder: &TempDir) -> RecordedSubscription {
+            watching
+                .subscription_for(&root_of(folder))
+                .expect("a subscription on the folder")
+        }
+
+        fn held_model(session: &Session) -> FolderModel {
+            session
+                .lock()
+                .held
+                .as_ref()
+                .expect("a folder open")
+                .model
+                .clone()
+        }
+
+        fn root_names(model: &FolderModel) -> Vec<String> {
+            let ItemState::Observed(entries) = model.tree() else {
+                panic!("the root listing is observed");
+            };
+            entries
+                .iter()
+                .map(|entry: &Entry| entry.name.clone())
+                .collect()
+        }
+
+        #[test]
+        fn test_a_pushed_batch_delivers_a_payload_holding_the_changed_listing() {
+            let folder = TempDir::new();
+            folder.write_file("a.txt", "");
+            let watching = Arc::new(ManualWatching::new());
+            let session = session_with(&watching);
+            let received = Received::default();
+            open_delivering(&session, &folder, &received);
+            assert!(received.all().is_empty(), "opening delivers nothing");
+
+            folder.write_file("b.txt", "");
+            subscription_on(&watching, &folder).push(vec![root_of(&folder).join("b.txt")]);
+
+            let payloads = received.all();
+            assert_eq!(payloads.len(), 1, "{payloads:?}");
+            let listings = payloads[0]["listings"]
+                .as_array()
+                .expect("a listings array");
+            assert_eq!(listings.len(), 1, "only the root listing changed");
+            assert_eq!(listings[0]["path"], "");
+            let entries = listings[0]["answer"]["entries"]
+                .as_array()
+                .expect("entries");
+            let names: Vec<&str> = entries
+                .iter()
+                .map(|entry| entry["name"].as_str().expect("a name"))
+                .collect();
+            assert_eq!(names, ["a.txt", "b.txt"]);
+        }
+
+        #[test]
+        fn test_a_batch_that_changes_nothing_delivers_nothing() {
+            let folder = TempDir::new();
+            folder.write_file("a.txt", "");
+            let watching = Arc::new(ManualWatching::new());
+            let session = session_with(&watching);
+            let received = Received::default();
+            open_delivering(&session, &folder, &received);
+
+            let recorded = subscription_on(&watching, &folder);
+            recorded.push(vec![root_of(&folder).join("a.txt")]);
+            recorded.push(vec![]);
+
+            assert!(received.all().is_empty(), "{:?}", received.all());
+        }
+
+        /// A watcher that, between starting a subscription and returning it, changes the disk and
+        /// has a report pushed from another thread, as a real stream can.
+        struct ChangesAtSubscribe {
+            inner: Arc<ManualWatching>,
+            make_change: Box<dyn Fn() + Send + Sync>,
+            report: PathBuf,
+            pushers: Mutex<Vec<JoinHandle<()>>>,
+        }
+
+        impl Watching for ChangesAtSubscribe {
+            fn subscribe(
+                &self,
+                root: &Path,
+                sink: PathSink,
+            ) -> Result<Subscription, SubscribeError> {
+                let subscription = self.inner.subscribe(root, sink)?;
+                (self.make_change)();
+                let recorded = self.inner.subscription_for(root).expect("recorded");
+                let report = self.report.clone();
+                self.pushers
+                    .lock()
+                    .expect("the pusher list")
+                    .push(std::thread::spawn(move || recorded.push(vec![report])));
+                Ok(subscription)
+            }
+        }
+
+        #[test]
+        fn test_a_change_made_at_subscribe_time_is_not_lost() {
+            let folder = Arc::new(TempDir::new());
+            let root = folder.path().canonicalize().expect("canonical");
+            let made = Arc::clone(&folder);
+            let watching = Arc::new(ChangesAtSubscribe {
+                inner: Arc::new(ManualWatching::new()),
+                make_change: Box::new(move || {
+                    made.write_file("early.txt", "");
+                }),
+                report: root.join("early.txt"),
+                pushers: Mutex::new(Vec::new()),
+            });
+            let port: Arc<dyn GitPort + Send + Sync> = Arc::new(Port::plain());
+            let session = Session::with_parts(
+                Box::new(move || Wiring::Wired(Arc::clone(&port))),
+                Arc::clone(&watching) as Arc<dyn Watching>,
+            );
+            let received = Received::default();
+
+            let result = session.open_delivering(root.clone(), received.delivery());
+            assert!(matches!(result, OpenResult::Opened));
+            for pusher in watching.pushers.lock().expect("the pusher list").drain(..) {
+                pusher.join().expect("the report was applied");
+            }
+
+            let model = held_model(&session);
+            assert_eq!(root_names(&model), ["early.txt"]);
+            assert_eq!(
+                model.tree(),
+                &list_tree(model.folder(), ""),
+                "the held root equals a fresh read"
+            );
+        }
+
+        #[test]
+        fn test_two_threads_pushing_while_acts_arrive_end_equal_to_fresh_reads() {
+            let folder = TempDir::new();
+            folder.make_folder("d0");
+            folder.make_folder("d1");
+            let watching = Arc::new(ManualWatching::new());
+            let session = session_with(&watching);
+            let received = Received::default();
+            open_delivering(&session, &folder, &received);
+            session.list("d0", Some(TreeAct::Expand));
+            session.list("d1", Some(TreeAct::Expand));
+            let recorded = subscription_on(&watching, &folder);
+            let root = root_of(&folder);
+
+            std::thread::scope(|scope| {
+                for directory in ["d0", "d1"] {
+                    let recorded = recorded.clone();
+                    let root = &root;
+                    let folder = &folder;
+                    scope.spawn(move || {
+                        for index in 0..20 {
+                            folder.write_file(&format!("{directory}/f{index}.txt"), "");
+                            recorded.push(vec![root.join(directory)]);
+                        }
+                    });
+                }
+                for round in 0..20 {
+                    let act = if round % 2 == 0 {
+                        TreeAct::Collapse
+                    } else {
+                        TreeAct::Expand
+                    };
+                    session.list("d0", Some(act));
+                    session.list("d1", Some(act));
+                }
+            });
+
+            let model = held_model(&session);
+            for directory in ["d0", "d1"] {
+                assert_eq!(
+                    model.listing(Path::new(directory)),
+                    Some(&list_tree(model.folder(), directory)),
+                    "{directory} equals a fresh read"
+                );
+            }
+        }
+
+        /// A misbehaving watcher: its stop does nothing, so a sink the session replaced stays
+        /// callable. The sink adapter's grant token is what must refuse it.
+        struct Leaky {
+            sinks: Mutex<Vec<Arc<PathSink>>>,
+        }
+
+        impl Watching for Leaky {
+            fn subscribe(
+                &self,
+                _root: &Path,
+                sink: PathSink,
+            ) -> Result<Subscription, SubscribeError> {
+                self.sinks
+                    .lock()
+                    .expect("the sink list")
+                    .push(Arc::new(sink));
+                Ok(Subscription::new(|| {}))
+            }
+        }
+
+        #[test]
+        fn test_a_push_to_a_replaced_grants_sink_delivers_nothing_and_leaves_the_model() {
+            let first = TempDir::new();
+            let second = TempDir::new();
+            let leaky = Arc::new(Leaky {
+                sinks: Mutex::new(Vec::new()),
+            });
+            let port: Arc<dyn GitPort + Send + Sync> = Arc::new(Port::plain());
+            let session = Session::with_parts(
+                Box::new(move || Wiring::Wired(Arc::clone(&port))),
+                Arc::clone(&leaky) as Arc<dyn Watching>,
+            );
+            let first_received = Received::default();
+            let second_received = Received::default();
+            open_delivering(&session, &first, &first_received);
+            open_delivering(&session, &second, &second_received);
+            let old_sink = Arc::clone(&leaky.sinks.lock().expect("the sink list")[0]);
+            first.write_file("late.txt", "");
+            second.write_file("kept.txt", "");
+            let before = held_model(&session);
+
+            old_sink(vec![root_of(&first).join("late.txt")]);
+
+            assert!(first_received.all().is_empty());
+            assert!(second_received.all().is_empty());
+            assert_eq!(held_model(&session), before, "the held model is unchanged");
+        }
+
+        #[test]
+        fn test_the_old_subscription_is_stopped_and_drained_before_open_delivering_returns() {
+            let first = TempDir::new();
+            let second = TempDir::new();
+            let watching = Arc::new(ManualWatching::new());
+            let session = Arc::new(session_with(&watching));
+            let (inside_tx, inside_rx) = channel::<()>();
+            let (release_tx, release_rx) = channel::<()>();
+            let release_rx = Mutex::new(release_rx);
+            let inside_tx = Mutex::new(inside_tx);
+            let parked_delivery: Delivery = Arc::new(move |_payload| {
+                inside_tx
+                    .lock()
+                    .expect("the lock")
+                    .send(())
+                    .expect("listening");
+                release_rx
+                    .lock()
+                    .expect("the lock")
+                    .recv_timeout(WAIT)
+                    .expect("released");
+            });
+            let result = session.open_delivering(first.path().to_path_buf(), parked_delivery);
+            assert!(matches!(result, OpenResult::Opened));
+            let old = subscription_on(&watching, &first);
+            first.write_file("x.txt", "");
+            let report = root_of(&first).join("x.txt");
+            let replaced = Arc::new(AtomicBool::new(false));
+
+            std::thread::scope(|scope| {
+                let old_push = old.clone();
+                scope.spawn(move || old_push.push(vec![report]));
+                inside_rx
+                    .recv_timeout(WAIT)
+                    .expect("the callback is in flight");
+                let replacing = Arc::clone(&session);
+                let flag = Arc::clone(&replaced);
+                let second_path = second.path().to_path_buf();
+                let opener = scope.spawn(move || {
+                    let result =
+                        replacing.open_delivering(second_path, Received::default().delivery());
+                    flag.store(true, Ordering::SeqCst);
+                    result
+                });
+                std::thread::sleep(Duration::from_millis(200));
+                assert!(
+                    !replaced.load(Ordering::SeqCst),
+                    "open_delivering waits for the callback in flight"
+                );
+                release_tx.send(()).expect("the callback is parked");
+                let result = opener.join().expect("the replacing open finishes");
+                assert!(matches!(result, OpenResult::Opened));
+            });
+
+            assert!(old.is_stopped());
+            assert!(old.sink_is_released());
+        }
+
+        #[test]
+        fn test_the_delivery_can_call_list_from_inside_itself() {
+            let folder = TempDir::new();
+            folder.write_file("a.txt", "");
+            let watching = Arc::new(ManualWatching::new());
+            let session = Arc::new(session_with(&watching));
+            let (listed_tx, listed_rx) = channel::<Value>();
+            let listed_tx = Mutex::new(listed_tx);
+            let weak: Weak<Session> = Arc::downgrade(&session);
+            let delivery: Delivery = Arc::new(move |_payload| {
+                let session = weak.upgrade().expect("the session is alive");
+                let answer = serde_json::to_value(session.list("", Some(TreeAct::Expand)))
+                    .expect("the answer serializes");
+                listed_tx
+                    .lock()
+                    .expect("the lock")
+                    .send(answer)
+                    .expect("listening");
+            });
+            let result = session.open_delivering(folder.path().to_path_buf(), delivery);
+            assert!(matches!(result, OpenResult::Opened));
+            folder.write_file("b.txt", "");
+            let recorded = subscription_on(&watching, &folder);
+            let report = root_of(&folder).join("b.txt");
+
+            let pusher = std::thread::spawn(move || recorded.push(vec![report]));
+            let answer = listed_rx
+                .recv_timeout(WAIT)
+                .expect("the delivery listed from inside itself");
+            pusher.join().expect("the push finishes");
+
+            assert_eq!(answer["entries"].as_array().expect("entries").len(), 2);
+        }
+
+        #[test]
+        fn test_a_command_only_open_starts_no_subscription() {
+            let folder = TempDir::new();
+            let watching = Arc::new(ManualWatching::new());
+            let session = session_with(&watching);
+
+            let result = session.open(folder.path().to_path_buf());
+
+            assert!(matches!(result, OpenResult::Opened));
+            assert!(watching.recorded().is_empty());
+        }
+
+        #[test]
+        fn test_a_failed_open_leaves_the_earlier_grants_subscription_as_it_was() {
+            let folder = TempDir::new();
+            folder.write_file("a.txt", "");
+            let watching = Arc::new(ManualWatching::new());
+            let session = session_with(&watching);
+            let received = Received::default();
+            open_delivering(&session, &folder, &received);
+            let missing = folder.path().join("no-such-folder");
+
+            let result = session.open_delivering(missing, Received::default().delivery());
+
+            assert!(matches!(result, OpenResult::Failed { .. }));
+            assert_eq!(
+                watching.recorded().len(),
+                1,
+                "a failed open registers nothing"
+            );
+            let recorded = subscription_on(&watching, &folder);
+            assert!(!recorded.is_stopped());
+            folder.write_file("b.txt", "");
+            recorded.push(vec![root_of(&folder).join("b.txt")]);
+            assert_eq!(
+                received.all().len(),
+                1,
+                "the earlier delivery still answers"
+            );
+        }
+
+        #[test]
+        fn test_a_batch_applied_during_a_parked_git_read_survives_the_write_back() {
+            let (parked_tx, parked_rx) = channel::<()>();
+            let (release_tx, release_rx) = channel::<()>();
+            let port = Port {
+                gate: Some((Mutex::new(parked_tx), Mutex::new(release_rx))),
+                used: AtomicUsize::new(0),
+            };
+            let folder = TempDir::new();
+            folder.write_file("a.txt", "");
+            let watching = Arc::new(ManualWatching::new());
+            let session = session_over(&watching, port);
+            let received = Received::default();
+            open_delivering(&session, &folder, &received);
+            let recorded = subscription_on(&watching, &folder);
+
+            let session_ref = &session;
+            std::thread::scope(|scope| {
+                let ask = scope.spawn(move || session_ref.read_git());
+                parked_rx.recv_timeout(WAIT).expect("the Git read parked");
+                folder.write_file("b.txt", "");
+                recorded.push(vec![root_of(&folder).join("b.txt")]);
+                release_tx.send(()).expect("the read is parked");
+                ask.join().expect("the ask finishes");
+            });
+
+            let model = held_model(&session);
+            assert_eq!(root_names(&model), ["a.txt", "b.txt"]);
+            assert!(matches!(model.kind(), ItemState::Observed(_)));
+        }
+
+        #[test]
+        fn test_a_panicking_batch_delivers_nothing_writes_one_stopped_line_and_leaves_the_model_intact()
+         {
+            let _serial = begin_log_capture();
+            let folder = TempDir::new();
+            folder.write_file("a.txt", "");
+            let watching = Arc::new(ManualWatching::new());
+            let session = session_with(&watching);
+            let received = Received::default();
+            open_delivering(&session, &folder, &received);
+            let before = held_model(&session);
+            let token = session.lock().held.as_ref().expect("open").open;
+            take_log_records();
+
+            deliver_batch(
+                &session.state,
+                token,
+                vec![root_of(&folder).join("a.txt")],
+                |_model, _reports| panic!("the reduction failed"),
+                &received.delivery(),
+            );
+
+            let lines: Vec<String> = take_log_records()
+                .into_iter()
+                .filter(|record| record.contains("core-bridge"))
+                .collect();
+            assert!(received.all().is_empty());
+            assert_eq!(held_model(&session), before);
+            assert_eq!(
+                lines,
+                ["core-bridge: model_changed stopped: boundary panicked"]
+            );
+        }
+
+        #[test]
+        fn test_a_subscription_that_cannot_start_opens_the_folder_with_no_delivery() {
+            let folder = TempDir::new();
+            folder.write_file("a.txt", "");
+            let watching = Arc::new(ManualWatching::failing());
+            let session = session_with(&watching);
+            let received = Received::default();
+
+            open_delivering(&session, &folder, &received);
+
+            assert!(watching.recorded().is_empty());
+            assert_eq!(root_names(&held_model(&session)), ["a.txt"]);
+            assert!(received.all().is_empty());
+        }
+
+        #[test]
+        fn test_a_failed_subscribe_logs_nothing() {
+            let _serial = begin_log_capture();
+            let folder = TempDir::new();
+            let watching = Arc::new(ManualWatching::failing());
+            let session = session_with(&watching);
+            take_log_records();
+
+            open_delivering(&session, &folder, &Received::default());
+
+            // The capture is the process logger, so a test running beside this one that logs from
+            // another crate's code lands here too. Only the bridge's own lines are this test's.
+            let lines: Vec<String> = take_log_records()
+                .into_iter()
+                .filter(|record| record.contains("core-bridge"))
+                .collect();
+            assert_eq!(lines, Vec::<String>::new());
         }
     }
 }

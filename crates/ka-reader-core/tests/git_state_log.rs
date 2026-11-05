@@ -17,7 +17,7 @@ use common::TempDir;
 use ka_reader_core::{
     BranchElement, ConfigNamedPath, FolderModel, GitPort, GitReadCondition, HeadState,
     ProbeCondition, RepositoryState, RootFinding, StatusLists, SubmoduleNamedPath, open_folder,
-    read_git,
+    read_git, read_git_item,
 };
 use log::{LevelFilter, Log, Metadata, Record};
 
@@ -129,6 +129,7 @@ fn test_failed_git_item_logs_one_warn_without_the_path() {
     );
 
     status_failure_logs_one_warn_naming_git_reader_and_status();
+    test_read_git_item_logs_one_warn_record_on_failure();
     test_failed_git_item_with_the_config_condition_logs_one_warn_without_the_path();
     test_failed_git_item_with_the_not_located_condition_logs_one_warn_without_the_path();
     test_failed_git_item_with_the_alternates_condition_logs_one_warn_without_the_path_or_entry();
@@ -158,6 +159,38 @@ fn status_failure_logs_one_warn_naming_git_reader_and_status() {
     assert!(text.contains("status"), "{text}");
     assert!(!text.contains("state"), "{text}");
     assert!(!text.contains('/'), "the record holds a path: {text}");
+}
+
+/// Run inside the one test above: the split read logs as `read_git` does, one `warn` record on a
+/// failure and none for an item that stands.
+fn test_read_git_item_logs_one_warn_record_on_failure() {
+    let scene = TempDir::new();
+    scene.write_file("a.txt", "a");
+    let opened = open_folder(scene.path()).expect("the scene opens");
+    let standing = Double {
+        probe: RootFinding::Root,
+        head: Ok(standing_head()),
+        lists: Ok(clean_lists()),
+    };
+    let failing = Double {
+        probe: RootFinding::Root,
+        head: Ok(standing_head()),
+        lists: Err(GitReadCondition::RepositoryReadFailed),
+    };
+
+    let _ = read_git_item(&opened, &standing);
+    assert!(
+        take_records().is_empty(),
+        "an item that stands emits nothing"
+    );
+
+    let _ = read_git_item(&opened, &failing);
+    let records = take_records();
+    assert_eq!(records.len(), 1, "one record: {records:?}");
+    let (level, text) = &records[0];
+    assert_eq!(*level, log::Level::Warn);
+    assert!(text.contains("git-reader"), "{text}");
+    assert!(text.contains("status"), "{text}");
 }
 
 /// The phrase the config condition is logged under, under both the probe's arm and the read's.

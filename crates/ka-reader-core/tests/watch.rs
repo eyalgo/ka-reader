@@ -13,12 +13,17 @@ mod common;
 
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::sync::mpsc;
+use std::thread;
+use std::time::Duration;
+use std::time::Instant;
 use std::time::SystemTime;
 
+use common::Snapshot;
 use common::TempDir;
 use ka_reader_core::{
-    Entry, EntryKind, FileRequest, FolderModel, ItemState, ModelDelta, ReadingPosition,
-    TreeRequest, list_tree, open_folder,
+    Condition, Entry, EntryKind, FileRequest, FolderModel, ItemState, ModelDelta, PathReports,
+    ReadingPosition, TreeRequest, list_tree, open_folder,
 };
 
 /// A project-shaped folder: a root file, nested folders, a `.git` entry and files to open.
@@ -488,4 +493,611 @@ fn unreported_disk_changes_are_not_adopted() {
     assert!(entry_named(listing, "new.rs").is_some());
     assert!(entry_named(listing, "unreported.rs").is_none());
     assert!(entry_named(listing, "util.rs").is_some());
+}
+
+// ---- Invalidate: path hints re-read the listings they cover, whole ----
+
+/// The model after a batch of reports, each naming a path relative to the opened root.
+fn invalidate(model: FolderModel, reported: &[&str]) -> FolderModel {
+    let root = model.folder().root().to_path_buf();
+    let paths = reported.iter().map(|path| root.join(path)).collect();
+    model.list_tree(TreeRequest::Invalidate(PathReports::new(paths)))
+}
+
+/// Every listing the model holds at `paths` equals a fresh read of the same path, in its order.
+fn assert_equals_fresh_reads(model: &FolderModel, paths: &[&str]) {
+    for path in paths {
+        assert_eq!(
+            model.listing(Path::new(path)),
+            Some(&list_tree(model.folder(), path)),
+            "the listing at {path:?} differs from a fresh read"
+        );
+    }
+}
+
+#[test]
+fn test_create_in_nested_expanded_folder_appears_and_matches_a_fresh_read() {
+    let folder = project();
+    let model = expand(
+        expand(expand(model_over(&folder), "src"), "src/lib"),
+        "docs",
+    );
+    folder.write_file("src/lib/new.rs", "// new\n");
+    folder.write_file("docs/more.md", "more\n");
+
+    let model = invalidate(model, &["src/lib/new.rs", "docs/more.md"]);
+
+    assert!(names(model.listing(Path::new("src/lib"))).contains(&"new.rs"));
+    assert!(names(model.listing(Path::new("docs"))).contains(&"more.md"));
+    assert_equals_fresh_reads(&model, &["", "src", "src/lib", "docs"]);
+}
+
+#[test]
+fn test_deleting_the_last_child_gives_an_observed_empty_listing() {
+    let folder = project();
+    let model = expand(expand(model_over(&folder), "docs"), "src");
+    fs::remove_file(folder.path().join("docs/guide.md")).expect("the file goes");
+
+    let model = invalidate(model, &["docs/guide.md"]);
+
+    assert_eq!(
+        model.listing(Path::new("docs")),
+        Some(&ItemState::Observed(vec![]))
+    );
+    assert_equals_fresh_reads(&model, &["", "docs", "src"]);
+}
+
+#[test]
+fn test_rename_across_folders_reads_as_absent_then_present() {
+    let folder = project();
+    let model = expand(expand(model_over(&folder), "src"), "docs");
+    fs::rename(
+        folder.path().join("src/util.rs"),
+        folder.path().join("docs/util.rs"),
+    )
+    .expect("the file moves");
+
+    let model = invalidate(model, &["src/util.rs", "docs/util.rs"]);
+
+    assert!(!names(model.listing(Path::new("src"))).contains(&"util.rs"));
+    assert!(names(model.listing(Path::new("docs"))).contains(&"util.rs"));
+    assert_equals_fresh_reads(&model, &["", "src", "docs"]);
+}
+
+#[test]
+fn test_the_same_report_twice_leaves_no_duplicate_row() {
+    let folder = project();
+    let model = expand(model_over(&folder), "src");
+    folder.write_file("src/new.rs", "// new\n");
+
+    let once = invalidate(model.clone(), &["src/new.rs"]);
+    let twice = invalidate(once.clone(), &["src/new.rs", "src/new.rs"]);
+
+    assert_eq!(
+        names(twice.listing(Path::new("src")))
+            .iter()
+            .filter(|n| **n == "new.rs")
+            .count(),
+        1
+    );
+    assert_eq!(twice, once);
+    assert_equals_fresh_reads(&twice, &["", "src"]);
+}
+
+#[test]
+fn test_place_survives_an_invalidate() {
+    let folder = project();
+    let anchor = line_400_anchor();
+    let model = open_at(
+        select(
+            collapse(expand(expand(model_over(&folder), "src"), "docs"), "docs"),
+            "src/util.rs",
+        ),
+        "src/main.rs",
+        &anchor,
+    );
+    let before = model.place().clone();
+    let open_before = model.open_file().cloned();
+    folder.write_file("src/new.rs", "// new\n");
+    folder.write_file("docs/more.md", "more\n");
+
+    let after = invalidate(model, &["src/new.rs", "docs/more.md"]);
+
+    assert_eq!(after.place(), &before);
+    assert!(!expanded(&after, "docs"));
+    assert_eq!(after.place().selected(), Some(Path::new("src/util.rs")));
+    let open = after.open_file().expect("the open file stands");
+    assert_eq!(open.path(), Path::new("src/main.rs"));
+    assert_eq!(open.position(), &anchor);
+    assert_eq!(Some(open), open_before.as_ref());
+}
+
+#[test]
+fn test_a_root_failed_reread_then_recovery() {
+    let folder = project();
+    let model = model_over(&folder);
+    folder.set_mode("", 0o000);
+
+    let failed = invalidate(model, &[""]);
+    folder.set_mode("", 0o755);
+
+    assert_eq!(failed.tree(), &ItemState::Failed(Condition::Unreadable));
+
+    let recovered = invalidate(failed, &[""]);
+    assert_eq!(recovered.tree(), &list_tree(recovered.folder(), ""));
+    assert!(matches!(recovered.tree(), ItemState::Observed(_)));
+}
+
+#[test]
+fn test_an_unreadable_entry_is_failed_alone() {
+    let folder = project();
+    let model = expand(expand(model_over(&folder), "docs"), "src");
+    let root_before = model.listing(Path::new("")).cloned();
+    let src_before = model.listing(Path::new("src")).cloned();
+    folder.set_mode("docs", 0o000);
+
+    let model = invalidate(model, &["docs"]);
+    folder.set_mode("docs", 0o755);
+
+    assert_eq!(
+        model.listing(Path::new("docs")),
+        Some(&ItemState::Failed(Condition::Unreadable))
+    );
+    assert_eq!(model.listing(Path::new("")).cloned(), root_before);
+    assert_eq!(model.listing(Path::new("src")).cloned(), src_before);
+}
+
+#[test]
+fn test_an_ancestor_report_and_a_root_report_cover_descendants() {
+    let folder = project();
+    let model = expand(expand(model_over(&folder), "src"), "src/lib");
+    folder.write_file("src/lib/deep.rs", "// deep\n");
+    folder.write_file("src/top.rs", "// top\n");
+
+    let by_ancestor = invalidate(model.clone(), &["src"]);
+    assert!(names(by_ancestor.listing(Path::new("src/lib"))).contains(&"deep.rs"));
+    assert_equals_fresh_reads(&by_ancestor, &["", "src", "src/lib"]);
+
+    let by_root = invalidate(model.clone(), &[""]);
+    assert_equals_fresh_reads(&by_root, &["", "src", "src/lib"]);
+
+    let outside = model
+        .folder()
+        .root()
+        .parent()
+        .expect("the root has a parent")
+        .join("elsewhere");
+    let by_outside = model.list_tree(TreeRequest::Invalidate(PathReports::new(vec![outside])));
+    assert_equals_fresh_reads(&by_outside, &["", "src", "src/lib"]);
+}
+
+#[test]
+fn test_a_retargeted_link_is_marked_each_time_and_nothing_outside_is_read() {
+    let scene = TempDir::new();
+    let folder = scene.make_folder("opened");
+    scene.write_file("opened/docs/guide.md", "guide\n");
+    scene.write_file("opened/src/main.rs", "fn main() {}\n");
+    scene.write_file("outside/secret.txt", "secret\n");
+    scene.make_link("opened/src/link", "../docs");
+    let opened = open_folder(&folder).expect("the folder opens");
+    let model = expand(
+        expand(expand(FolderModel::new(opened), "src"), "src/link"),
+        "docs",
+    );
+    let siblings_before = (
+        model.listing(Path::new("docs")).cloned(),
+        model.listing(Path::new("src")).cloned(),
+    );
+    let outside_before = outside_of(&scene);
+
+    for target in ["../../outside", "../missing-target", "."] {
+        fs::remove_file(folder.join("src/link")).expect("the link goes");
+        std::os::unix::fs::symlink(target, folder.join("src/link"))
+            .expect("the link is retargeted");
+
+        let after = invalidate(model.clone(), &["src/link"]);
+
+        // The parent is re-read too (it is the report's parent), so a link that no longer reads
+        // as a folder is marked on its own row in the parent's listing, and the listing under it
+        // goes with the drop pass.
+        assert_equals_fresh_reads(&after, &["src"]);
+        assert_eq!(after.listing(Path::new("src/link")), None);
+        let row_state = match after.listing(Path::new("src")) {
+            Some(ItemState::Observed(entries)) => entries
+                .iter()
+                .find(|entry| entry.name == "link")
+                .map(|entry| entry.state.clone()),
+            other => panic!("expected the observed parent listing, got {other:?}"),
+        };
+        assert!(
+            matches!(row_state, Some(ItemState::Failed(_))),
+            "the retargeted row is marked failed: {row_state:?}"
+        );
+        assert_eq!(after.listing(Path::new("docs")).cloned(), siblings_before.0);
+    }
+    let _ = siblings_before.1;
+    assert_eq!(
+        outside_of(&scene),
+        outside_before,
+        "nothing outside the root is touched"
+    );
+}
+
+/// What the scene holds beside the opened folder, snapshotted without following a link.
+fn outside_of(scene: &TempDir) -> Vec<(PathBuf, common::SnapshotEntry)> {
+    scene
+        .snapshot()
+        .into_iter()
+        .filter(|(path, _)| path.starts_with("outside"))
+        .collect()
+}
+
+#[test]
+fn test_removal_report_removes_the_folder_and_keeps_expansion_and_selection() {
+    let folder = project();
+    let model = select(
+        expand(
+            expand(expand(model_over(&folder), "src"), "src/lib"),
+            "docs",
+        ),
+        "src/util.rs",
+    );
+    fs::remove_dir_all(folder.path().join("src")).expect("the folder goes");
+
+    let model = invalidate(model, &["src"]);
+
+    assert_eq!(model.listing(Path::new("src")), None);
+    assert_eq!(model.listing(Path::new("src/lib")), None);
+    assert!(expanded(&model, "src") && expanded(&model, "src/lib"));
+    assert_eq!(model.place().selected(), Some(Path::new("src/util.rs")));
+    assert!(!names(model.listing(Path::new(""))).contains(&"src"));
+    assert_equals_fresh_reads(&model, &["", "docs"]);
+}
+
+#[test]
+fn test_a_folder_replaced_by_a_file_is_listed_as_a_file_with_the_flag_kept() {
+    let folder = project();
+    let model = expand(expand(model_over(&folder), "docs"), "src");
+    fs::remove_dir_all(folder.path().join("docs")).expect("the folder goes");
+    folder.write_file("docs", "now a file\n");
+
+    let model = invalidate(model, &["docs"]);
+
+    assert_eq!(model.listing(Path::new("docs")), None);
+    assert!(expanded(&model, "docs"));
+    let root = model
+        .listing(Path::new(""))
+        .expect("the root listing stands");
+    assert!(matches!(
+        root,
+        ItemState::Observed(entries)
+            if entries.iter().any(|e| e.name == "docs" && e.kind == EntryKind::File)
+    ));
+    assert_equals_fresh_reads(&model, &["", "src"]);
+}
+
+#[test]
+fn test_a_failed_expanded_folder_keeps_each_sibling_in_its_own_state() {
+    let folder = project();
+    folder.set_mode("docs", 0o000);
+    let model = expand(
+        expand(
+            expand(expand(model_over(&folder), "docs"), "src"),
+            "src/lib",
+        ),
+        "tests",
+    );
+    folder.set_mode("docs", 0o755);
+    let docs_before = model.listing(Path::new("docs")).cloned();
+    let tests_before = model.listing(Path::new("tests")).cloned();
+    assert_eq!(docs_before, Some(ItemState::Failed(Condition::Unreadable)));
+    folder.write_file("src/x.rs", "// x\n");
+    folder.set_mode("src", 0o000);
+
+    let model = invalidate(model, &["src"]);
+    folder.set_mode("src", 0o755);
+
+    assert_eq!(
+        model.listing(Path::new("src")),
+        Some(&ItemState::Failed(Condition::Unreadable))
+    );
+    assert_eq!(model.listing(Path::new("src/lib")), None);
+    assert_eq!(model.listing(Path::new("docs")).cloned(), docs_before);
+    assert_eq!(model.listing(Path::new("tests")).cloned(), tests_before);
+    assert!(matches!(
+        model.listing(Path::new("tests")),
+        Some(ItemState::Observed(_))
+    ));
+    assert_eq!(model.kind(), &ItemState::Pending);
+}
+
+// ---- Invalidate: the return pass ----
+
+#[test]
+fn test_a_returning_folder_shows_a_fresh_listing_not_the_old_one() {
+    let folder = project();
+    let model = select(
+        expand(expand(model_over(&folder), "src"), "src/lib"),
+        "src/util.rs",
+    );
+    fs::remove_dir_all(folder.path().join("src")).expect("the folder goes");
+    let model = invalidate(model, &["src"]);
+    assert_eq!(model.listing(Path::new("src")), None);
+    folder.write_file("src/new.txt", "new\n");
+    folder.write_file("src/util.rs", "// util again\n");
+
+    let model = invalidate(model, &["src"]);
+
+    let listing = model.listing(Path::new("src"));
+    assert!(names(listing).contains(&"new.txt") && names(listing).contains(&"util.rs"));
+    assert!(!names(listing).contains(&"main.rs"));
+    assert_equals_fresh_reads(&model, &["", "src"]);
+    assert!(expanded(&model, "src") && expanded(&model, "src/lib"));
+    assert_eq!(model.listing(Path::new("src/lib")), None);
+    assert_eq!(model.place().selected(), Some(Path::new("src/util.rs")));
+}
+
+#[test]
+fn test_the_next_read_after_a_failure_lists_the_new_entry_and_rereads_nested_expanded_folders() {
+    let folder = project();
+    let model = expand(
+        expand(expand(model_over(&folder), "src"), "src/lib"),
+        "docs",
+    );
+    folder.write_file("src/x.rs", "// x\n");
+    folder.set_mode("src", 0o000);
+    let failed = invalidate(model, &["src"]);
+    folder.set_mode("src", 0o755);
+    assert_eq!(
+        failed.listing(Path::new("src")),
+        Some(&ItemState::Failed(Condition::Unreadable))
+    );
+    assert_eq!(failed.listing(Path::new("src/lib")), None);
+    folder.write_file("src/lib/new.rs", "// new\n");
+
+    let model = invalidate(failed, &["src"]);
+
+    assert!(names(model.listing(Path::new("src"))).contains(&"x.rs"));
+    assert!(names(model.listing(Path::new("src/lib"))).contains(&"new.rs"));
+    assert_equals_fresh_reads(&model, &["", "src", "src/lib", "docs"]);
+}
+
+// ---- The thirty-second scene (CP-1010) ----
+
+/// How long the writer thread spreads the scene's operations over.
+const SCENE_LENGTH: Duration = Duration::from_secs(30);
+
+/// Seeds the choice of how the model thread delivers each batch of reports, so a run repeats.
+const SCENE_SEED: u64 = 0x5eed_7ee5_ce2e;
+
+/// The scene's starting layout, each file holding [`start_content`].
+const SCENE_START_FILES: &[&str] = &[
+    "README.md",
+    "reading/long.md",
+    "src/a.rs",
+    "src/old.rs",
+    "src/nested/gone.txt",
+    "src/nested/deep/d.rs",
+    "src/nested/deep/stale.rs",
+    "docs/guide.md",
+    "docs/draft.md",
+    "notes/n.txt",
+];
+
+/// The folders the reader holds expanded throughout the scene.
+const SCENE_EXPANDED: &[&str] = &[
+    "src",
+    "src/nested",
+    "src/nested/deep",
+    "docs",
+    "notes",
+    "reading",
+];
+
+/// The file the reader keeps open, which the scene never touches.
+const SCENE_OPEN_FILE: &str = "reading/long.md";
+
+/// The file the reader keeps selected. The scene rewrites it, which changes its listing alone.
+const SCENE_SELECTED_FILE: &str = "src/a.rs";
+
+/// One thing the writer thread does to the folder.
+enum SceneOp {
+    /// Creates or replaces a file with [`scene_content`], making any missing folder above it.
+    Write(&'static str),
+    Remove(&'static str),
+    RemoveFolder(&'static str),
+    Rename(&'static str, &'static str),
+}
+
+/// Every operation, in order. Applied to the starting layout they leave the committed fixture
+/// `checks/fixtures/tree-scene`, which differs from the start in every expanded folder, so a model
+/// that never updated cannot equal it.
+const SCENE: &[SceneOp] = &[
+    SceneOp::Write("src/nested/fresh.txt"),
+    SceneOp::Remove("src/nested/gone.txt"),
+    SceneOp::Write("src/a.rs"),
+    SceneOp::Write("reading/extra.md"),
+    SceneOp::RemoveFolder("src/nested/deep"),
+    SceneOp::Write("src/nested/deep/d.rs"),
+    SceneOp::Write("src/nested/deep/e.rs"),
+    SceneOp::Rename("src/old.rs", "src/nested/deep/moved.rs"),
+    SceneOp::Remove("docs/draft.md"),
+    SceneOp::Write("docs/changelog.md"),
+    SceneOp::RemoveFolder("docs"),
+    SceneOp::Write("docs/guide.md"),
+    SceneOp::Write("docs/changelog.md"),
+    SceneOp::Write("notes/n2.txt"),
+    SceneOp::Remove("notes/n.txt"),
+    SceneOp::Write("notes/n3.txt"),
+    SceneOp::Remove("notes/n3.txt"),
+    SceneOp::Write(".scene-note"),
+    SceneOp::Write("src/newer/n.rs"),
+    SceneOp::Rename("README.md", "README.txt"),
+    SceneOp::Write("tmp/t.txt"),
+    SceneOp::RemoveFolder("tmp"),
+    SceneOp::Write("src/a.rs"),
+    SceneOp::Write("src/nested/fresh.txt"),
+];
+
+fn start_content(path: &str) -> String {
+    format!("start: {path}\n")
+}
+
+fn scene_content(path: &str) -> String {
+    format!("scene: {path}\n")
+}
+
+impl SceneOp {
+    /// Does the operation under `root` and returns the absolute paths a watcher would report for it.
+    fn apply(&self, root: &Path) -> Vec<PathBuf> {
+        match self {
+            Self::Write(path) => {
+                make_parent(root, path);
+                fs::write(root.join(path), scene_content(path)).expect("the file is written");
+                vec![root.join(path)]
+            }
+            Self::Remove(path) => {
+                fs::remove_file(root.join(path)).expect("the file goes");
+                vec![root.join(path)]
+            }
+            Self::RemoveFolder(path) => {
+                fs::remove_dir_all(root.join(path)).expect("the folder goes");
+                vec![root.join(path)]
+            }
+            Self::Rename(from, to) => {
+                make_parent(root, to);
+                fs::rename(root.join(from), root.join(to)).expect("the entry is renamed");
+                vec![root.join(from), root.join(to)]
+            }
+        }
+    }
+}
+
+fn make_parent(root: &Path, path: &str) {
+    if let Some(parent) = root.join(path).parent() {
+        fs::create_dir_all(parent).expect("the folder above is made");
+    }
+}
+
+/// A step of a fixed pseudo-random sequence: the same seed gives the same choices on every run.
+fn next_random(state: &mut u64) -> u64 {
+    *state = state
+        .wrapping_mul(6_364_136_223_846_793_005)
+        .wrapping_add(1_442_695_040_888_963_407);
+    *state >> 33
+}
+
+fn apply_reports(model: FolderModel, paths: Vec<PathBuf>) -> FolderModel {
+    model.list_tree(TreeRequest::Invalidate(PathReports::new(paths)))
+}
+
+/// The folder a coalesced report names in place of `path`: its parent, or the root.
+fn coalesced(root: &Path, path: &Path) -> PathBuf {
+    path.parent()
+        .filter(|parent| parent.starts_with(root))
+        .unwrap_or(root)
+        .to_path_buf()
+}
+
+/// Applies each batch the writer sends, delivered the way a watcher might: at once, delayed until a
+/// later batch, coalesced at the folder above, as a report of the root, or twice. The reports held
+/// back arrive last, once the writer is done.
+fn apply_batches(
+    mut model: FolderModel,
+    root: &Path,
+    batches: mpsc::Receiver<Vec<PathBuf>>,
+) -> FolderModel {
+    let mut seed = SCENE_SEED;
+    let mut delayed = Vec::new();
+    for batch in batches {
+        model = match next_random(&mut seed) % 10 {
+            0..=3 => apply_reports(model, batch),
+            4 | 5 => {
+                delayed.extend(batch);
+                model
+            }
+            6 => apply_reports(
+                model,
+                batch.iter().map(|path| coalesced(root, path)).collect(),
+            ),
+            7 => apply_reports(model, vec![root.to_path_buf()]),
+            8 => apply_reports(apply_reports(model, batch.clone()), batch),
+            _ => {
+                let mut every = std::mem::take(&mut delayed);
+                every.extend(batch);
+                apply_reports(model, every)
+            }
+        };
+    }
+    apply_reports(model, delayed)
+}
+
+/// The scene: for thirty seconds a writer thread creates, changes, renames and deletes entries in
+/// nested expanded folders, removes and recreates two expanded folders and churns the root, while
+/// the model thread applies the reports as `Invalidate` batches that are delayed, coalesced at
+/// ancestors, sometimes the root and sometimes repeated. A file is open and never touched, and no
+/// Git runs. Once the writer is done and the last reports have arrived, every held listing equals a
+/// fresh read, the place and the open file are as they were set, and the folder equals the
+/// committed fixture `checks/fixtures/tree-scene`.
+///
+/// Run it with `cargo test --locked -p ka-reader-core --test watch`; the scene runs whole, so a
+/// filter that selects no test is not proof it passed. It takes thirty seconds.
+#[test]
+fn test_the_thirty_second_scene_ends_equal_to_fresh_reads_and_to_the_fixture() {
+    let folder = TempDir::new();
+    for path in SCENE_START_FILES {
+        folder.write_file(path, &start_content(path));
+    }
+    let mut model = model_over(&folder);
+    for path in SCENE_EXPANDED {
+        model = expand(model, path);
+    }
+    let model = select(model, SCENE_SELECTED_FILE);
+    let model = open_at(model, SCENE_OPEN_FILE, &line_400_anchor());
+    let open_before = model.open_file().cloned();
+    assert!(open_before.is_some(), "the file is open before the scene");
+
+    let (reports, batches) = mpsc::channel();
+    let root = folder.path().to_path_buf();
+    let writer = thread::spawn({
+        let root = root.clone();
+        move || {
+            let start = Instant::now();
+            let count = u32::try_from(SCENE.len()).expect("the scene is short");
+            for (index, op) in (1..=count).zip(SCENE) {
+                thread::sleep(
+                    (start + SCENE_LENGTH * index / count)
+                        .saturating_duration_since(Instant::now()),
+                );
+                reports
+                    .send(op.apply(&root))
+                    .expect("the model thread is receiving");
+            }
+        }
+    });
+    let model = apply_batches(model, &root, batches);
+    writer.join().expect("the writer finishes");
+
+    let mut held = vec![""];
+    held.extend(SCENE_EXPANDED);
+    assert_equals_fresh_reads(&model, &held);
+    for path in SCENE_EXPANDED {
+        assert!(expanded(&model, path), "{path} stays expanded");
+    }
+    assert_eq!(
+        model.place().selected(),
+        Some(Path::new(SCENE_SELECTED_FILE))
+    );
+    assert_eq!(model.open_file().cloned(), open_before);
+    let fixture = TempDir::new();
+    fixture.copy_fixture("tree-scene");
+    let want: Snapshot = fixture
+        .snapshot()
+        .into_iter()
+        .filter_map(|(path, entry)| {
+            let inside = path.strip_prefix("tree-scene").ok()?;
+            (!inside.as_os_str().is_empty()).then(|| (inside.to_path_buf(), entry))
+        })
+        .collect();
+    folder.assert_unchanged_since(&want, "the scene's final folder differs from the fixture");
 }

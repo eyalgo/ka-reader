@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Version: 1.8.0 — the read-only walk of the tree scene, whole and killed, joins the list
+# Version: 1.7.0 — the suite of the tree-scene helper joins the list, before the real launch
 # Version: 1.6.0 — the suite that holds the "Strings check" step joins the list, after its suite
 # Version: 1.5.0 — the message catalogue lint itself (NFDR QC-53) joins the list, before its suite
 # Version: 1.4.0 — the suite of the message catalogue lint (NFDR QC-53) joins the list
@@ -101,6 +103,8 @@ run_step 'Renderer gate suite' 'checks/tests/test_renderer.sh'
 run_step 'Read-only, plain folder' 'checks/read-only.sh checks/fixtures/plain'
 run_step 'Read-only, repository' 'checks/read-only.sh checks/fixtures/repo'
 run_step 'Read-only, submodule' 'checks/read-only.sh checks/fixtures/submodule'
+run_step 'Read-only, tree scene' 'checks/read-only.sh checks/fixtures/tree-scene'
+run_step 'Read-only, tree scene, killed' 'checks/read-only.sh --kill checks/fixtures/tree-scene'
 run_step 'Read-only suite' 'checks/tests/test_read_only.sh'
 run_step 'No-network dependency list' 'checks/no-network.sh'
 run_step 'No-network suite' 'checks/tests/test_no_network.sh'
@@ -112,11 +116,15 @@ run_step 'Strings check' 'checks/strings.sh'
 run_step 'Strings check suite' 'checks/tests/test_strings.sh'
 run_step 'Strings check step suite' 'checks/tests/test_strings_step.sh'
 run_step 'Own state suite' 'checks/tests/test_own_state.sh'
-# "VM refusal suite", "Launch step suite" and "Own state step suite" launch nothing, so they run
-# before the real launch below.
+# "VM refusal suite", "Launch step suite", "Own state step suite" and "Tree scene helper suite"
+# launch nothing, so they run before the real launch below. The helper's suite holds
+# checks/tree-scene.sh, which launches the bundle and so refuses off a macOS VM, on stand-ins for
+# `open`, `ps` and `kill`; it comes after the other launch-step suites and never after the real
+# launch.
 run_step 'VM refusal suite' 'checks/tests/test_vm_refusal.sh'
 run_step 'Launch step suite' 'checks/tests/test_launch.sh'
 run_step 'Own state step suite' 'checks/tests/test_own_state_step.sh'
+run_step 'Tree scene helper suite' 'checks/tests/test_tree_scene.sh'
 # The app's own log is written by a launch. Steps above this one launch the product, and each may
 # already have left the log behind: "Bundle probe", "Bundle probe suite", "Renderer gate" and
 # "Renderer gate suite". "Own state", the step that runs checks/own-state.sh against this machine's

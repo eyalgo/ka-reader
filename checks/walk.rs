@@ -8,6 +8,15 @@
 //! It prints the number of `list_tree` calls it made, never anything a `select_file` or a Git answer
 //! carries, and exits 0 once the walk is complete, or non-zero when the folder did not open.
 //!
+//! The same walk also drives the model's own operations over the folder, through `FolderModel`:
+//! `TreeRequest::Expand` on every folder the tree listed, `FileRequest::Select` on every file,
+//! `TreeRequest::Invalidate` with a report naming the root and every folder, then
+//! `TreeRequest::Collapse` on every folder. None of them writes.
+//!
+//! Long mode, taken when the second argument is `--long`: the same pass, then one line on stdout
+//! that is exactly `pass-complete`, then the same pass again for as long as the process lives. It
+//! never exits on its own; `checks/read-only.sh --kill` ends it with `SIGKILL` after the marker.
+//!
 //! No-argument mode, taken for any other argument too (a libtest filter is not a folder): walk the
 //! committed fixtures, and exit 0 when both walks complete, each root lists at least one entry, and
 //! every file entry a walk listed got exactly one `select_file` call and no other path got one. The
@@ -18,12 +27,24 @@
 //! adapter's libgit2 reads `HOME` and the XDG variables in-process (`checks/entry-points.allow`).
 
 use std::collections::{BTreeMap, BTreeSet, HashSet};
+use std::io::Write;
 use std::path::{Path, PathBuf};
+use std::thread::sleep;
+use std::time::Duration;
 
 use ka_reader_core::{
-    EntryKind, FolderModel, ItemState, Libgit2, OpenedFolder, list_tree, open_folder, read_git,
-    select_file,
+    EntryKind, FileRequest, FolderModel, ItemState, Libgit2, OpenedFolder, PathReports,
+    TreeRequest, list_tree, open_folder, read_git, select_file,
 };
+
+/// The one line long mode prints, after its first completed pass.
+const PASS_COMPLETE_MARKER: &str = "pass-complete";
+
+/// The second argument that selects long mode.
+const LONG_MODE_ARGUMENT: &str = "--long";
+
+/// How long long mode rests between passes, so a process waiting to be killed does not spin.
+const PASS_PAUSE: Duration = Duration::from_millis(50);
 
 /// What a fixture's walk is held to beyond the coverage judge.
 type FixtureCheck = fn(&Walk) -> Result<(), String>;
@@ -48,12 +69,23 @@ const PLAIN_FILE_ENTRIES: [&str; 5] = [
 /// been restored beside them.
 const REPO_TREE_FILE_ENTRIES: [&str; 3] = ["README.md", "src/main.rs", "src/deep/leaf.txt"];
 
-/// One walk's outcome: how many `list_tree` calls it made, whether the root listed entries, and the
-/// two tallies the coverage judge compares. They are fed from different places and neither is
-/// derived from the other.
+/// How many times a walk drove each model operation. Each count is raised at the one site its
+/// operation goes through, so the tally is the walk's own record and nothing is derived from it.
+#[derive(Debug, Default, Clone, Copy)]
+struct Acts {
+    expand: usize,
+    collapse: usize,
+    invalidate: usize,
+    select: usize,
+}
+
+/// One walk's outcome: how many `list_tree` calls it made, whether the root listed entries, the
+/// two tallies the coverage judge compares, and the model operations it drove. They are fed from
+/// different places and neither is derived from the other.
 struct Walk {
     calls: usize,
     root_has_entries: bool,
+    acts: Acts,
     /// The path of every file entry a `list_tree` answer returned.
     listed_files: BTreeSet<String>,
     /// The number of `select_file` calls made at each path.
@@ -77,6 +109,7 @@ fn walk_from(
     listed: &mut HashSet<String>,
     calls: &mut usize,
     listed_files: &mut BTreeSet<String>,
+    listed_folders: &mut BTreeSet<String>,
     selected: &mut BTreeMap<String, usize>,
 ) -> bool {
     if !listed.insert(path.to_string()) {
@@ -89,7 +122,16 @@ fn walk_from(
     for entry in &entries {
         match entry.kind {
             EntryKind::Folder => {
-                walk_from(opened, &entry.path, listed, calls, listed_files, selected);
+                listed_folders.insert(entry.path.clone());
+                walk_from(
+                    opened,
+                    &entry.path,
+                    listed,
+                    calls,
+                    listed_files,
+                    listed_folders,
+                    selected,
+                );
             }
             EntryKind::File => {
                 listed_files.insert(entry.path.clone());
@@ -104,11 +146,78 @@ fn walk_from(
     !entries.is_empty()
 }
 
+/// The model's own operations, driven and counted. Each count is raised in the one method its
+/// operation goes through. The model is held in an `Option` only so an operation that takes it by
+/// value can move it out and put the result back.
+struct Driven {
+    model: Option<FolderModel>,
+    acts: Acts,
+}
+
+impl Driven {
+    fn new(model: FolderModel) -> Self {
+        Self {
+            model: Some(model),
+            acts: Acts::default(),
+        }
+    }
+
+    fn expand(&mut self, path: &str) {
+        self.acts.expand += 1;
+        self.apply_tree(TreeRequest::Expand(PathBuf::from(path)));
+    }
+
+    fn collapse(&mut self, path: &str) {
+        self.acts.collapse += 1;
+        self.apply_tree(TreeRequest::Collapse(PathBuf::from(path)));
+    }
+
+    /// Reports every path in `paths` as possibly changed, once, as one batch.
+    fn invalidate(&mut self, paths: Vec<PathBuf>) {
+        self.acts.invalidate += 1;
+        self.apply_tree(TreeRequest::Invalidate(PathReports::new(paths)));
+    }
+
+    fn select(&mut self, path: &str) {
+        self.acts.select += 1;
+        self.model = self
+            .model
+            .take()
+            .map(|model| model.select_file(FileRequest::Select(Some(PathBuf::from(path)))));
+    }
+
+    fn apply_tree(&mut self, request: TreeRequest) {
+        self.model = self.model.take().map(|model| model.list_tree(request));
+    }
+}
+
+/// Drives `Expand` on every folder, `Select` on every file, `Invalidate` with the root and every
+/// folder reported, then `Collapse` on every folder, over `folder`. The fixture is only read.
+fn drive_model(folder: &Path, folders: &BTreeSet<String>, files: &BTreeSet<String>) -> Acts {
+    let opened = open_folder(folder).expect("the folder that was just walked opens");
+    let root = opened.root().to_path_buf();
+    let mut driven = Driven::new(FolderModel::new(opened));
+    for path in folders {
+        driven.expand(path);
+    }
+    for path in files {
+        driven.select(path);
+    }
+    let mut reports = vec![root.clone()];
+    reports.extend(folders.iter().map(|path| root.join(path)));
+    driven.invalidate(reports);
+    for path in folders {
+        driven.collapse(path);
+    }
+    driven.acts
+}
+
 fn walk_folder(folder: &Path) -> Option<Walk> {
     let opened = open_folder(folder).expect("the read-only fixture opens");
     let mut calls = 0;
     let mut listed = HashSet::new();
     let mut listed_files = BTreeSet::new();
+    let mut listed_folders = BTreeSet::new();
     let mut selected = BTreeMap::new();
     let root_has_entries = walk_from(
         &opened,
@@ -116,11 +225,14 @@ fn walk_folder(folder: &Path) -> Option<Walk> {
         &mut listed,
         &mut calls,
         &mut listed_files,
+        &mut listed_folders,
         &mut selected,
     );
+    let acts = drive_model(folder, &listed_folders, &listed_files);
     Some(Walk {
         calls,
         root_has_entries,
+        acts,
         listed_files,
         selected,
     })
@@ -151,6 +263,65 @@ fn judge_coverage(
         }
     }
     Ok(())
+}
+
+/// Judges the model operations one walk drove: each of `Expand`, `Collapse`, `Invalidate` and
+/// `Select` must have been reached at least once (QC-2's reviewed half). The `Err` names the first
+/// operation the walk never reached.
+fn judge_acts(acts: &Acts) -> Result<(), String> {
+    let reached = [
+        ("TreeRequest::Expand", acts.expand),
+        ("TreeRequest::Collapse", acts.collapse),
+        ("TreeRequest::Invalidate", acts.invalidate),
+        ("FileRequest::Select", acts.select),
+    ];
+    match reached.iter().find(|(_, count)| *count == 0) {
+        Some((name, _)) => Err(format!("the walk never reached {name}")),
+        None => Ok(()),
+    }
+}
+
+fn judge_accepts_every_act_reached() -> Result<(), String> {
+    let acts = Acts {
+        expand: 1,
+        collapse: 1,
+        invalidate: 1,
+        select: 1,
+    };
+    judge_acts(&acts)
+        .map_err(|message| format!("a walk that reached every act was refused: {message}"))
+}
+
+/// A tally missing one act, which the judge must refuse by naming it.
+fn judge_refuses_a_missing_act(missing: &str, acts: Acts) -> Result<(), String> {
+    match judge_acts(&acts) {
+        Ok(()) => Err(format!(
+            "the judge accepted a walk that never reached {missing}"
+        )),
+        Err(message) if message.contains(missing) => Ok(()),
+        Err(message) => Err(format!(
+            "the judge refused a missing {missing} without naming it: {message}"
+        )),
+    }
+}
+
+fn judge_refuses_every_act_left_out() -> Result<(), String> {
+    let all = Acts {
+        expand: 1,
+        collapse: 1,
+        invalidate: 1,
+        select: 1,
+    };
+    judge_refuses_a_missing_act("Expand", Acts { expand: 0, ..all })?;
+    judge_refuses_a_missing_act("Collapse", Acts { collapse: 0, ..all })?;
+    judge_refuses_a_missing_act(
+        "Invalidate",
+        Acts {
+            invalidate: 0,
+            ..all
+        },
+    )?;
+    judge_refuses_a_missing_act("Select", Acts { select: 0, ..all })
 }
 
 fn tally<const N: usize>(
@@ -221,7 +392,9 @@ fn judge_self_check() -> Result<(), String> {
     judge_accepts_every_listed_file_selected_once()?;
     judge_refuses_a_listed_file_never_selected()?;
     judge_refuses_a_listed_file_selected_twice()?;
-    judge_refuses_a_selected_path_never_listed()
+    judge_refuses_a_selected_path_never_listed()?;
+    judge_accepts_every_act_reached()?;
+    judge_refuses_every_act_left_out()
 }
 
 fn fixture_path(name: &str) -> PathBuf {
@@ -240,6 +413,7 @@ fn check_fixture(name: &str, extra: FixtureCheck) -> Result<(), String> {
     }
     judge_coverage(&walk.listed_files, &walk.selected)
         .map_err(|message| format!("fixture {name}: {message}"))?;
+    judge_acts(&walk.acts).map_err(|message| format!("fixture {name}: {message}"))?;
     extra(&walk)
 }
 
@@ -275,22 +449,46 @@ fn check_repo(walk: &Walk) -> Result<(), String> {
     Ok(())
 }
 
+/// One complete pass over `folder`: the `list_tree` and `select_file` walk, the model's own
+/// operations, and one Git read of a model of the folder. Returns the number of `list_tree` calls.
+fn pass(folder: &str) -> Result<usize, String> {
+    let canonical = Path::new(folder)
+        .canonicalize()
+        .map_err(|_| format!("{folder} did not open as a folder"))?;
+    let walk =
+        walk_folder(&canonical).ok_or_else(|| format!("{folder} did not open as a folder"))?;
+    // The answer is dropped: the proof is that the folder is unchanged afterwards, `.git/index`
+    // included. `canonical` is canonical, as the adapter compares it against the locations it
+    // verifies.
+    let opened = open_folder(&canonical).expect("the folder that was just walked opens");
+    let _ = read_git(FolderModel::new(opened), &Libgit2);
+    Ok(walk.calls)
+}
+
+/// Long mode: one pass, the marker, then passes without end. It returns only on a failed pass.
+fn run_long(folder: &str) -> Result<(), String> {
+    pass(folder)?;
+    let mut stdout = std::io::stdout();
+    writeln!(stdout, "{PASS_COMPLETE_MARKER}").map_err(|error| error.to_string())?;
+    stdout.flush().map_err(|error| error.to_string())?;
+    loop {
+        pass(folder)?;
+        sleep(PASS_PAUSE);
+    }
+}
+
 /// Ends the process with status 0 on `Ok` and non-zero on `Err`, whose text goes to stderr.
 pub(crate) fn run() -> Result<(), String> {
-    let argument = std::env::args().nth(1);
-    match argument.filter(|argument| argument.starts_with('/')) {
+    let mut arguments = std::env::args().skip(1);
+    let folder = arguments
+        .next()
+        .filter(|argument| argument.starts_with('/'));
+    match folder {
+        Some(folder) if arguments.next().as_deref() == Some(LONG_MODE_ARGUMENT) => {
+            run_long(&folder)
+        }
         Some(folder) => {
-            let canonical = Path::new(&folder)
-                .canonicalize()
-                .map_err(|_| format!("{folder} did not open as a folder"))?;
-            let walk = walk_folder(&canonical)
-                .ok_or_else(|| format!("{folder} did not open as a folder"))?;
-            // The answer is dropped: the proof is that the folder is unchanged afterwards, `.git/index`
-            // included. `canonical` is canonical, as the adapter compares it against the locations it
-            // verifies.
-            let opened = open_folder(&canonical).expect("the folder that was just walked opens");
-            let _ = read_git(FolderModel::new(opened), &Libgit2);
-            println!("{}", walk.calls);
+            println!("{}", pass(&folder)?);
             Ok(())
         }
         None => {

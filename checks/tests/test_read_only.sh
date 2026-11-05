@@ -74,6 +74,10 @@ test_signal_during_restore_walk_and_teardown_cleans_up
 test_failed_removal_names_the_outermost_entry
 test_two_residual_roots_get_one_line_each
 test_failed_removal_keeps_the_differing_paths_and_a_failed_walk
+test_kill_prints_unchanged_when_the_walk_is_killed_after_its_marker
+test_kill_is_never_unchanged_when_the_walk_exits_on_its_own
+test_kill_is_never_unchanged_when_the_walk_prints_no_marker
+test_kill_is_never_unchanged_when_the_hash_differs
 "
 
 # --- helpers ---
@@ -990,6 +994,73 @@ test_failed_removal_keeps_the_differing_paths_and_a_failed_walk() {
   expect_stdout_is "" || return 1
   expected="$(printf '%s\n%s' "read-only.sh: walk did not complete: $copy" "$REMOVAL_LINE .git")"
   [ "$ERR" = "$expected" ] || fail "expected the walk failure and the removal line, got [$ERR]"
+}
+
+# --- cases: --kill, the walk killed mid-scene (CP-1014, E16) ---
+
+# A stand-in for the walk host in folder $1, whose body is $2, and a `cargo` stub that answers the
+# script's build with the JSON line cargo prints for the walk test binary, naming that host as its
+# executable. The host is handed the fixture's absolute path first, then `--long`, as the real
+# binary is.
+make_kill_stubs() {
+  mkdir -p "$1"
+  printf '#!/bin/sh\n%s\n' "$2" > "$1/walk-host"
+  chmod +x "$1/walk-host"
+  cat > "$1/cargo" <<EOF
+#!/bin/sh
+echo '{"reason":"compiler-artifact","target":{"kind":["test"],"name":"walk"},"executable":"$1/walk-host"}'
+EOF
+  chmod +x "$1/cargo"
+}
+
+# The host prints the marker after its first pass, then runs until it is killed. `exec` makes the
+# sleeping process the host itself, so the kill reaches it and no orphan is left.
+test_kill_prints_unchanged_when_the_walk_is_killed_after_its_marker() {
+  copy="$(fixture_copy plain killed)"
+  make_kill_stubs "$WORK/stubs-killed" 'echo pass-complete; exec sleep 30'
+
+  run_read_only_with_stubs "$WORK/stubs-killed" --kill "$copy"
+
+  expect_status 0 || return 1
+  expect_stdout_is "unchanged"
+}
+
+# The host prints its marker and ends by itself: the script never killed it, so a kill was not
+# what the hash was taken after.
+test_kill_is_never_unchanged_when_the_walk_exits_on_its_own() {
+  copy="$(fixture_copy plain exitsalone)"
+  make_kill_stubs "$WORK/stubs-exitsalone" 'echo pass-complete'
+
+  run_read_only_with_stubs "$WORK/stubs-exitsalone" --kill "$copy"
+
+  expect_nonzero_status || return 1
+  expect_stdout_lacks_unchanged || return 1
+  expect_stderr_contains "walk did not complete"
+}
+
+# The host runs on and prints something that is not the marker. The wait for the marker is bounded
+# by READ_ONLY_MARKER_WAIT, seconds, so the case does not wait out the default.
+test_kill_is_never_unchanged_when_the_walk_prints_no_marker() {
+  copy="$(fixture_copy plain nomarker)"
+  make_kill_stubs "$WORK/stubs-nomarker" 'echo not-the-marker; exec sleep 30'
+  export READ_ONLY_MARKER_WAIT=2
+
+  run_read_only_with_stubs "$WORK/stubs-nomarker" --kill "$copy"
+
+  expect_nonzero_status || return 1
+  expect_stdout_lacks_unchanged || return 1
+  expect_stderr_contains "walk did not complete"
+}
+
+# A write the host makes before it is killed is a difference, named once, and never `unchanged`.
+test_kill_is_never_unchanged_when_the_hash_differs() {
+  copy="$(fixture_copy plain killedwrite)"
+  make_kill_stubs "$WORK/stubs-killedwrite" 'touch "$1/.DS_Store"; echo pass-complete; exec sleep 30'
+
+  run_read_only_with_stubs "$WORK/stubs-killedwrite" --kill "$copy"
+
+  expect_nonzero_status || return 1
+  expect_stdout_is ".DS_Store"
 }
 
 # --- the runner ---

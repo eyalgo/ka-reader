@@ -42,7 +42,8 @@ final class RootItemsViewMarkerTests: XCTestCase {
             contentRect: NSRect(x: 0, y: 0, width: 260, height: 200), styleMask: [.borderless],
             backing: .buffered, defer: true)
         let fixture = Fixture(view: view, window: window, rest: rest, key: key)
-        view.listTree = { path, answer in
+        view.listTree = { path, act, answer in
+            guard act == .expand else { return }
             fixture.reads.append(path)
             answer(listings[path].map { .observed($0) })
         }
@@ -505,7 +506,10 @@ final class RootItemsViewMarkerTests: XCTestCase {
     func test_aFolderListingArrivingAboveARestingLetterRemovesItsTooltip() throws {
         let fixture = makeFixture([folder("src"), file("b.txt")])
         var answers: [ListTreeAnswer] = []
-        fixture.view.listTree = { _, answer in answers.append(answer) }
+        fixture.view.listTree = { _, act, answer in
+            guard act == .expand else { return }
+            answers.append(answer)
+        }
         fixture.view.showMarkers(markers(changed: [("b.txt", .modified)]))
         fixture.view.outlineView.expandItem(fixture.view.outlineView.item(atRow: 0))
         fixture.view.layoutSubtreeIfNeeded()

@@ -325,3 +325,52 @@ fn test_a_complaint_that_names_no_member_fails_the_listing() {
     ));
     assert!(!only_dependency_members_unreadable(b""));
 }
+
+#[test]
+fn test_the_exported_set_and_the_headers_declarations_stay_the_five() {
+    let _serial = SERIAL
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    build_library().expect("the static library builds");
+    let header = fs::read_to_string(header_path()).expect("the generated header can be read");
+
+    assert_eq!(
+        declared_names(&header_path())
+            .expect("the header can be read")
+            .len(),
+        5,
+        "{header}"
+    );
+    assert!(
+        header.contains(
+            "KAReaderBuffer * ka_reader_open_folder(const char * location, KAReaderModelChanged model_changed, void * context);"
+        ),
+        "{header}"
+    );
+    assert!(
+        header.contains("KAReaderBuffer * ka_reader_list_tree(const char * path, uint32_t act);"),
+        "{header}"
+    );
+}
+
+#[test]
+fn test_the_header_generator_emits_the_typedef_void_pointer_and_uint32() {
+    let _serial = SERIAL
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    build_library().expect("the static library builds");
+    let header = fs::read_to_string(header_path()).expect("the generated header can be read");
+
+    let typedef = header
+        .find("typedef void (*KAReaderModelChanged)(void *, KAReaderBuffer *);")
+        .expect("the callback typedef is emitted");
+    let first_use = header
+        .find("ka_reader_open_folder(")
+        .expect("the export is declared");
+    assert!(
+        typedef < first_use,
+        "the typedef comes before its first use"
+    );
+    assert!(header.contains("void * context"), "{header}");
+    assert!(header.contains("uint32_t act"), "{header}");
+}

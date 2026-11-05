@@ -3,7 +3,7 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::ffi::OsString;
-use std::path::{Path, PathBuf};
+use std::path::{Component, Path, PathBuf};
 
 use crate::fs_reader::{
     self, CannotDisplayReason, Entry, EntryKind, FileContent, ItemState, Listed,
@@ -22,6 +22,21 @@ use crate::language::Language;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct OpenedFolder {
     root: PathBuf,
+}
+
+impl OpenedFolder {
+    /// The canonical root the folder was opened at: a folder chosen through a link names the
+    /// resolved path.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// let opened = ka_reader_core::open_folder(std::env::temp_dir()).expect("the temporary folder opens");
+    /// assert!(opened.root().is_absolute());
+    /// ```
+    pub fn root(&self) -> &Path {
+        &self.root
+    }
 }
 
 /// The closed answer to an attempt to open a chosen path.
@@ -405,6 +420,72 @@ pub enum TreeRequest {
     /// Apply what the disk reported: entries created, changed and removed. Only the listings the
     /// model holds change, and the place and the Git item are carried as they were.
     Delta(ModelDelta),
+    /// Re-read what a batch of reported paths covers. A path names a place on the disk that may
+    /// have changed and says nothing of what happened there: the model decides which held listings
+    /// the paths cover, reads each one whole, drops what lies under an entry that is gone and
+    /// reads again an expanded folder that has returned. The place and the Git item are carried as
+    /// they were.
+    Invalidate(PathReports),
+}
+
+/// A batch of absolute paths the disk reported as possibly changed. The batch is owned and carries
+/// no meaning beyond the places it names: the model decides what, if anything, to read.
+///
+/// # Examples
+///
+/// ```
+/// use std::path::PathBuf;
+/// use ka_reader_core::PathReports;
+///
+/// let reports = PathReports::new(vec![PathBuf::from("/a/folder/src/new.rs")]);
+/// assert!(!reports.is_empty());
+/// assert!(PathReports::new(vec![]).is_empty());
+/// ```
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct PathReports {
+    paths: Vec<PathBuf>,
+}
+
+impl PathReports {
+    pub fn new(paths: Vec<PathBuf>) -> Self {
+        Self { paths }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.paths.is_empty()
+    }
+}
+
+/// The listings one model holds that an earlier one did not hold, or held with other entries or
+/// another state: what a shell must draw again after the model changed. A listing the later model
+/// dropped is not in it. Each comes as its request path (the root as the empty path) and its
+/// listing, in path order with the root first.
+///
+/// # Examples
+///
+/// ```
+/// use ka_reader_core::{FolderModel, open_folder};
+///
+/// let opened = open_folder(std::env::temp_dir()).expect("the temporary folder opens");
+/// let model = FolderModel::new(opened);
+/// let changes = model.changes_since(&model);
+/// assert!(changes.is_empty());
+/// assert!(changes.listings().is_empty());
+/// ```
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct TreeChanges {
+    listings: Vec<(PathBuf, ItemState<Vec<Entry>>)>,
+}
+
+impl TreeChanges {
+    /// The changed listings, in path order with the root's (the empty path) first.
+    pub fn listings(&self) -> &[(PathBuf, ItemState<Vec<Entry>>)] {
+        &self.listings
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.listings.is_empty()
+    }
 }
 
 /// A batch of reports about the disk: entry paths, relative to the opened folder's root, that were
@@ -596,6 +677,54 @@ impl FolderModel {
         &self.place
     }
 
+    /// The model with only its Git item replaced by `item`: the tree, the place and the open file
+    /// are carried over unchanged.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use ka_reader_core::{FolderKind, FolderModel, ItemState, open_folder};
+    ///
+    /// let opened = open_folder(std::env::temp_dir()).expect("the temporary folder opens");
+    /// let model = FolderModel::new(opened).with_git_item(ItemState::Observed(FolderKind::Plain));
+    /// assert_eq!(model.kind(), &ItemState::Observed(FolderKind::Plain));
+    /// ```
+    pub fn with_git_item(self, item: ItemState<FolderKind, GitCondition>) -> Self {
+        Self { kind: item, ..self }
+    }
+
+    /// The listings this model holds that `earlier` did not hold, or held with other entries or
+    /// another state. A listing `earlier` held that this model no longer holds is not listed.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use std::path::Path;
+    /// use ka_reader_core::{FolderModel, open_folder};
+    ///
+    /// let here = FolderModel::new(open_folder(".").expect("the working folder opens"));
+    /// let elsewhere = FolderModel::new(open_folder(std::env::temp_dir()).expect("the temporary folder opens"));
+    ///
+    /// let changes = here.changes_since(&elsewhere);
+    /// let [(path, _listing)] = changes.listings() else { panic!("only the root listing differs") };
+    /// assert_eq!(path, Path::new(""));
+    /// assert!(here.changes_since(&here).is_empty());
+    /// ```
+    pub fn changes_since(&self, earlier: &FolderModel) -> TreeChanges {
+        let listings = std::iter::once((PathBuf::new(), &self.root_listing))
+            .chain(
+                self.listings
+                    .iter()
+                    .map(|(path, held)| (path.clone(), held)),
+            )
+            .filter(|(path, held)| {
+                earlier.held_at(path).map(|before| &before.entries) != Some(&held.entries)
+            })
+            .map(|(path, held)| (path, held.entries.clone()))
+            .collect();
+        TreeChanges { listings }
+    }
+
     pub fn open_file(&self) -> Option<&OpenFile> {
         self.place.open_file()
     }
@@ -633,6 +762,7 @@ impl FolderModel {
             TreeRequest::Expand(path) => self.expand(path),
             TreeRequest::Collapse(path) => self.collapse(path),
             TreeRequest::Delta(delta) => self.apply_delta(&delta),
+            TreeRequest::Invalidate(reports) => self.invalidate(&reports),
         }
     }
 
@@ -706,6 +836,147 @@ impl FolderModel {
         reduce(self, &changes)
     }
 
+    /// Re-reads the held listings `reports` cover and folds the reads into the model. A batch that
+    /// covers nothing leaves the model as it was and reads nothing.
+    fn invalidate(self, reports: &PathReports) -> Self {
+        let scope = self.invalidation_scope(reports);
+        if scope.is_empty() {
+            return self;
+        }
+        let root = self.folder.root.clone();
+        let reads = scope
+            .into_iter()
+            .map(|path| {
+                let observation = fs_reader::observe_listing(&root, &path);
+                (path, observation)
+            })
+            .collect();
+        reduce_invalidation(self, reads, &mut |path| {
+            fs_reader::observe_listing(&root, path)
+        })
+    }
+
+    /// The request paths of the held listings a batch covers. A reported path that lies lexically
+    /// under the root reads as its root-relative path; one that does not, or that holds a `.` or
+    /// `..` step, reads as the root and covers every listing. A listing is covered by a path when
+    /// its request path or its identity is the path, lies under it, or is its parent.
+    fn invalidation_scope(&self, reports: &PathReports) -> BTreeSet<PathBuf> {
+        let reported: BTreeSet<PathBuf> = reports
+            .paths
+            .iter()
+            .map(|path| self.relative_to_root(path))
+            .collect();
+        let root_reported = reported.iter().any(|path| path.as_os_str().is_empty());
+        std::iter::once((PathBuf::new(), &self.root_listing))
+            .chain(
+                self.listings
+                    .iter()
+                    .map(|(path, held)| (path.clone(), held)),
+            )
+            .filter(|(request, held)| {
+                root_reported
+                    || reported
+                        .iter()
+                        .any(|path| covers(request, &held.identity, path))
+            })
+            .map(|(request, _)| request)
+            .collect()
+    }
+
+    fn relative_to_root(&self, path: &Path) -> PathBuf {
+        match path.strip_prefix(&self.folder.root) {
+            Ok(relative)
+                if relative
+                    .components()
+                    .all(|c| matches!(c, Component::Normal(_))) =>
+            {
+                relative.to_path_buf()
+            }
+            _ => PathBuf::new(),
+        }
+    }
+
+    /// Holds `observation` as the listing at the request path `path`, keeping the identity the
+    /// listing was held at when the read has none of its own.
+    fn hold(&mut self, path: PathBuf, observation: ItemState<ListingObservation>) {
+        if path.as_os_str().is_empty() {
+            let identity = self.root_listing.identity.clone();
+            self.root_listing = HeldListing::from_observation(identity, observation);
+            return;
+        }
+        let identity = self
+            .listings
+            .get(&path)
+            .map_or_else(|| path.clone(), |held| held.identity.clone());
+        self.listings
+            .insert(path, HeldListing::from_observation(identity, observation));
+    }
+
+    /// The held listing requested at `path`, the root's for the empty path.
+    fn held_at(&self, path: &Path) -> Option<&HeldListing> {
+        if path.as_os_str().is_empty() {
+            return Some(&self.root_listing);
+        }
+        self.listings.get(path)
+    }
+
+    /// Whether the listing held at `folder` is observed and lists `name` as a folder.
+    fn lists_as_folder(&self, folder: &Path, name: &std::ffi::OsStr) -> bool {
+        self.held_at(folder).is_some_and(|held| {
+            matches!(held.entries, ItemState::Observed(_))
+                && held
+                    .items
+                    .iter()
+                    .any(|item| item.raw_name == name && item.entry.kind == EntryKind::Folder)
+        })
+    }
+
+    /// Drops every held non-root listing that lies under an ancestor re-read in this request when
+    /// that read is not observed or does not list the next path component as a folder. The place is
+    /// untouched: the expanded flags of a dropped listing stay.
+    fn drop_beneath_gone_folders(&mut self, reread: &BTreeSet<PathBuf>) {
+        let gone: Vec<PathBuf> = self
+            .listings
+            .keys()
+            .filter(|path| {
+                path.ancestors().skip(1).any(|ancestor| {
+                    let depth = ancestor.components().count();
+                    reread.contains(ancestor)
+                        && path
+                            .iter()
+                            .nth(depth)
+                            .is_some_and(|next| !self.lists_as_folder(ancestor, next))
+                })
+            })
+            .cloned()
+            .collect();
+        for path in gone {
+            self.listings.remove(&path);
+        }
+    }
+
+    /// Reads, in path order, each path the place holds expanded that has no held listing, when its
+    /// parent's held listing is observed and lists it as a folder. The set is walked in path order,
+    /// so a parent that returns is held before the children under it are asked about.
+    fn return_expanded_folders(
+        &mut self,
+        more: &mut dyn FnMut(&Path) -> ItemState<ListingObservation>,
+    ) {
+        let expanded: Vec<PathBuf> = self.place.expanded.iter().cloned().collect();
+        for path in expanded {
+            if self.listings.contains_key(&path) {
+                continue;
+            }
+            let (Some(parent), Some(name)) = (path.parent(), path.file_name()) else {
+                continue;
+            };
+            if self.lists_as_folder(parent, name) {
+                let observation = more(&path);
+                self.hold(path, observation);
+            }
+        }
+    }
+
     /// The location of `path` when it resolves inside the root to something of `kind`.
     fn admit(&self, path: &Path, kind: EntryKind) -> Option<Location> {
         fs_reader::locate(&self.folder.root, path)
@@ -765,6 +1036,35 @@ impl FolderModel {
     }
 }
 
+/// Whether the reported path `reported` covers the listing requested at `request` and read at
+/// `identity`: it is that path, lies under it, or is its parent.
+fn covers(request: &Path, identity: &Path, reported: &Path) -> bool {
+    let parent = reported.parent();
+    request.starts_with(reported)
+        || identity.starts_with(reported)
+        || parent == Some(request)
+        || parent == Some(identity)
+}
+
+/// The model after an invalidation: each re-read in `reads`, keyed by request path, replaces the
+/// listing held there whole, then every listing under a folder that is gone goes, then every
+/// expanded folder that has no listing and that its parent lists as a folder is read again. Pure,
+/// so a test hands it supplied observations; `more` is how it asks for a read of its own.
+fn reduce_invalidation(
+    mut model: FolderModel,
+    reads: BTreeMap<PathBuf, ItemState<ListingObservation>>,
+    more: &mut dyn FnMut(&Path) -> ItemState<ListingObservation>,
+) -> FolderModel {
+    let mut reread = BTreeSet::new();
+    for (path, observation) in reads {
+        model.hold(path.clone(), observation);
+        reread.insert(path);
+    }
+    model.drop_beneath_gone_folders(&reread);
+    model.return_expanded_folders(more);
+    model
+}
+
 /// The model after a delta: every held listing whose folder `changes` names is reduced, and nothing
 /// else moves. It is pure. It takes the held data, the reports and a fresh read of each reported
 /// folder, and reads nothing itself, so the place, the open file's content and the Git item are
@@ -816,15 +1116,42 @@ fn reduce_listing(held: HeldListing, change: &FolderChange) -> HeldListing {
     HeldListing::from_items(held.identity, items)
 }
 
-/// Asks `port` about the model's folder and returns the model with only the Git item replaced.
+/// Asks `port` about the model's folder and returns the model with only the Git item replaced:
+/// [`read_git_item`] folded in by [`FolderModel::with_git_item`].
+pub fn read_git(model: FolderModel, port: &dyn GitPort) -> FolderModel {
+    let item = read_git_item(&model.folder, port);
+    model.with_git_item(item)
+}
+
+/// Asks `port` about `folder` and returns the Git item the answer makes, touching no model.
 ///
 /// `probe` is asked every call, whatever the item held. `state` is asked only where `probe` says
 /// `Root`, and `status` only if `state` succeeded, so one read holds the branch element, the
 /// repository state and both lists, or the condition of the read that failed, and never a root
 /// missing an element. An item that becomes failed emits one `warn` record naming `git-reader`, the
 /// operation that failed and a fixed phrase, and never a path.
-pub fn read_git(model: FolderModel, port: &dyn GitPort) -> FolderModel {
-    let kind = match ask_git(port, model.folder.root.as_path()) {
+///
+/// # Examples
+///
+/// ```
+/// use ka_reader_core::{FolderKind, GitPort, ItemState, open_folder, read_git_item};
+/// # use ka_reader_core::{GitReadCondition, HeadState, RootFinding, StatusLists};
+/// # use std::path::Path;
+/// # struct Plain;
+/// # impl GitPort for Plain {
+/// #     fn probe(&self, _: &Path) -> RootFinding { RootFinding::Plain }
+/// #     fn state(&self, _: &Path) -> Result<HeadState, GitReadCondition> { Err(GitReadCondition::NotARoot) }
+/// #     fn status(&self, _: &Path) -> Result<StatusLists, GitReadCondition> { Err(GitReadCondition::NotARoot) }
+/// # }
+///
+/// let opened = open_folder(std::env::temp_dir()).expect("the temporary folder opens");
+/// assert_eq!(read_git_item(&opened, &Plain), ItemState::Observed(FolderKind::Plain));
+/// ```
+pub fn read_git_item(
+    folder: &OpenedFolder,
+    port: &dyn GitPort,
+) -> ItemState<FolderKind, GitCondition> {
+    match ask_git(port, folder.root.as_path()) {
         Ok(observed) => ItemState::Observed(observed),
         Err((condition, operation)) => {
             let phrase = condition.log_phrase();
@@ -833,8 +1160,7 @@ pub fn read_git(model: FolderModel, port: &dyn GitPort) -> FolderModel {
             );
             ItemState::Failed(condition)
         }
-    };
-    FolderModel { kind, ..model }
+    }
 }
 
 /// The port's operations one read asks, in order, and the name each is logged under.
@@ -869,9 +1195,9 @@ mod tests {
 
     use super::{
         FileRequest, FileView, FolderChange, FolderKind, FolderModel, GitCondition, HeldListing,
-        ItemState, ModelDelta, OpenFailure, OpenFolderOutcome, OpenedFolder, ReaderPlace,
-        ReadingPosition, ReportedNames, TreeRequest, list_tree, open_folder, read_git, reduce,
-        select_file,
+        ItemState, ModelDelta, OpenFailure, OpenFolderOutcome, OpenedFolder, PathReports,
+        ReaderPlace, ReadingPosition, ReportedNames, TreeChanges, TreeRequest, list_tree,
+        open_folder, read_git, read_git_item, reduce, reduce_invalidation, select_file,
     };
     use crate::fs_reader::{Condition, Entry, EntryKind, Listed, ListingObservation};
     use crate::git_reader::ProbeCondition;
@@ -1262,6 +1588,52 @@ mod tests {
     }
 
     #[test]
+    fn test_with_git_item_changes_only_the_git_item() {
+        let folder = project();
+        let model = open(
+            select(expand(model_over(&folder), "src"), "src/util.rs"),
+            "src/main.rs",
+            &position(b"line=7"),
+        );
+        let item = ItemState::Observed(FolderKind::Plain);
+
+        let replaced = model.clone().with_git_item(item.clone());
+
+        assert_eq!(replaced.kind(), &item);
+        assert_eq!(replaced.tree(), model.tree());
+        assert_eq!(replaced.place(), model.place());
+        assert_eq!(replaced.open_file(), model.open_file());
+        assert_eq!(
+            replaced.listing(Path::new("src")),
+            model.listing(Path::new("src"))
+        );
+    }
+
+    #[test]
+    fn test_read_git_is_the_composition_of_the_two_and_answers_as_before() {
+        let folder = project();
+        let model = expand(model_over(&folder), "src");
+
+        let item = read_git_item(model.folder(), &PlainFolder);
+        let composed = model.clone().with_git_item(item.clone());
+
+        assert_eq!(item, ItemState::Observed(FolderKind::Plain));
+        assert_eq!(read_git(model, &PlainFolder), composed);
+    }
+
+    #[test]
+    fn test_root_names_the_canonical_root() {
+        let folder = project();
+        folder.make_link("link-to-the-project", folder.path());
+        let link = folder.path().join("link-to-the-project");
+
+        let opened = open_folder(&link).expect("the link opens");
+
+        assert_eq!(opened.root(), folder.path());
+        assert_ne!(opened.root(), link.as_path());
+    }
+
+    #[test]
     fn test_tree_is_the_root_projection_of_the_held_root_listing() {
         let folder = project();
         let opened = open_folder(folder.path()).expect("opens");
@@ -1387,6 +1759,471 @@ mod tests {
 
     const FILE: EntryKind = EntryKind::File;
     const FOLDER: EntryKind = EntryKind::Folder;
+
+    // ---- Invalidate: the pure fold over supplied observations ----
+
+    const SUPPLIED_ROOT: &str = "/a/root/that/is/not/read";
+
+    /// A fresh observation of the folder at `identity`, as a read of it would answer.
+    fn observed(identity: &str, entries: &[(&str, EntryKind)]) -> ItemState<ListingObservation> {
+        let mut items: Vec<Listed> = entries
+            .iter()
+            .map(|(name, kind)| listed(identity, name, *kind))
+            .collect();
+        crate::fs_reader::order(&mut items);
+        ItemState::Observed(ListingObservation {
+            location: PathBuf::from(identity),
+            items,
+        })
+    }
+
+    fn reports(paths: &[&str]) -> PathReports {
+        PathReports::new(
+            paths
+                .iter()
+                .map(|path| Path::new(SUPPLIED_ROOT).join(path))
+                .collect(),
+        )
+    }
+
+    fn keys(set: &BTreeSet<PathBuf>) -> Vec<&str> {
+        set.iter()
+            .map(|path| path.to_str().expect("UTF-8"))
+            .collect()
+    }
+
+    /// Applies supplied reads and fails the test if the fold asks for a read of its own.
+    fn fold(model: FolderModel, reads: Vec<(&str, ItemState<ListingObservation>)>) -> FolderModel {
+        let reads = reads
+            .into_iter()
+            .map(|(path, observation)| (PathBuf::from(path), observation))
+            .collect();
+        reduce_invalidation(model, reads, &mut |path| {
+            panic!("the fold asked for a read of {}", path.display())
+        })
+    }
+
+    fn scoped_model() -> FolderModel {
+        supplied_model(
+            held(
+                "",
+                &[
+                    ("docs", FOLDER),
+                    ("link", FOLDER),
+                    ("other", FOLDER),
+                    ("src", FOLDER),
+                ],
+            ),
+            &[
+                ("link", held("docs", &[("guide.md", FILE)])),
+                ("other", held("other", &[("o.rs", FILE)])),
+                ("src", held("src", &[("lib", FOLDER), ("main.rs", FILE)])),
+                ("src/lib", held("src/lib", &[("mod.rs", FILE)])),
+            ],
+            ReaderPlace::default(),
+        )
+    }
+
+    #[test]
+    fn test_an_observed_reread_replaces_the_held_listing_whole() {
+        let model = supplied_model(
+            held("", &[("a.rs", FILE), ("src", FOLDER)]),
+            &[],
+            ReaderPlace::default(),
+        );
+
+        let after = fold(
+            model,
+            vec![(
+                "",
+                observed("", &[("a.rs", FILE), ("b.rs", FILE), ("src", FOLDER)]),
+            )],
+        );
+
+        assert_eq!(root_of(&after), vec!["src", "a.rs", "b.rs"]);
+        assert_eq!(
+            after.tree(),
+            &ItemState::Observed(
+                ["src", "a.rs", "b.rs"]
+                    .iter()
+                    .map(|name| {
+                        let kind = if *name == "src" { FOLDER } else { FILE };
+                        listed("", name, kind).entry
+                    })
+                    .collect()
+            )
+        );
+    }
+
+    #[test]
+    fn test_an_empty_report_batch_is_the_identity() {
+        let model = scoped_model();
+
+        assert!(model.invalidation_scope(&reports(&[])).is_empty());
+        assert_eq!(
+            model
+                .clone()
+                .list_tree(TreeRequest::Invalidate(reports(&[]))),
+            model
+        );
+    }
+
+    #[test]
+    fn test_a_path_outside_the_root_reads_as_the_root() {
+        let model = scoped_model();
+        let outside = PathReports::new(vec![PathBuf::from("/elsewhere/entirely/x.rs")]);
+        let dotted = PathReports::new(vec![Path::new(SUPPLIED_ROOT).join("src/../../x")]);
+
+        for batch in [outside, dotted] {
+            assert_eq!(
+                keys(&model.invalidation_scope(&batch)),
+                vec!["", "link", "other", "src", "src/lib"]
+            );
+        }
+    }
+
+    #[test]
+    fn test_scope_matches_request_path_and_identity() {
+        let model = scoped_model();
+        let scope = |paths: &[&str]| keys(&model.invalidation_scope(&reports(paths))).join(",");
+
+        // equal to, under, and the parent of a listing, by its request path
+        assert_eq!(scope(&["src"]), ",src,src/lib");
+        assert_eq!(scope(&["src/main.rs"]), "src");
+        assert_eq!(scope(&["src/lib/mod.rs"]), "src/lib");
+        // by its identity: the row `link` reads the folder `docs`
+        assert_eq!(scope(&["docs"]), ",link");
+        assert_eq!(scope(&["docs/guide.md"]), "link");
+        assert_eq!(scope(&["link"]), ",link");
+        // an unrelated sibling is not in scope
+        assert_eq!(scope(&["unrelated/x.rs"]), "");
+        assert_eq!(scope(&["other/o.rs", "src/main.rs"]), "other,src");
+        // a root report covers every held listing
+        assert_eq!(scope(&[""]), ",link,other,src,src/lib");
+    }
+
+    #[test]
+    fn test_a_report_naming_the_roots_git_entry_is_in_scope() {
+        let model = scoped_model();
+        let batch = reports(&[".git"]);
+
+        assert_eq!(keys(&model.invalidation_scope(&batch)), vec![""]);
+        let after = fold(
+            model,
+            vec![("", observed("", &[(".git", FOLDER), ("docs", FOLDER)]))],
+        );
+        assert_eq!(root_of(&after), vec![".git", "docs"]);
+    }
+
+    #[test]
+    fn test_a_failed_reread_marks_the_listing_failed_with_the_observed_condition() {
+        let after = fold(
+            scoped_model(),
+            vec![("src", ItemState::Failed(Condition::Unreadable))],
+        );
+
+        let listing = &after.listings[Path::new("src")];
+        assert_eq!(listing.entries, ItemState::Failed(Condition::Unreadable));
+        assert!(listing.items.is_empty());
+        assert_eq!(
+            after.listing(Path::new("other")),
+            scoped_model().listing(Path::new("other"))
+        );
+    }
+
+    // ---- Invalidate: the drop pass ----
+
+    fn expanded_place(expanded: &[&str], selected: &str) -> ReaderPlace {
+        ReaderPlace {
+            expanded: expanded.iter().map(PathBuf::from).collect(),
+            selected: Some(PathBuf::from(selected)),
+            open_file: None,
+        }
+    }
+
+    /// A model that holds `src`, `src/lib` and `src/lib/deep`, all expanded, with a file selected.
+    fn nested_model() -> FolderModel {
+        supplied_model(
+            held("", &[("other", FOLDER), ("src", FOLDER)]),
+            &[
+                ("other", held("other", &[("o.rs", FILE)])),
+                ("src", held("src", &[("lib", FOLDER), ("main.rs", FILE)])),
+                (
+                    "src/lib",
+                    held("src/lib", &[("deep", FOLDER), ("mod.rs", FILE)]),
+                ),
+                ("src/lib/deep", held("src/lib/deep", &[("d.rs", FILE)])),
+            ],
+            expanded_place(&["src", "src/lib", "src/lib/deep"], "src/lib/mod.rs"),
+        )
+    }
+
+    fn held_paths(model: &FolderModel) -> Vec<&str> {
+        model
+            .listings
+            .keys()
+            .map(|path| path.to_str().expect("UTF-8"))
+            .collect()
+    }
+
+    #[test]
+    fn test_a_failed_reread_drops_every_listing_beneath_it_and_keeps_the_place() {
+        let before = nested_model();
+
+        let after = fold(
+            before.clone(),
+            vec![("src", ItemState::Failed(Condition::Unreadable))],
+        );
+
+        assert_eq!(held_paths(&after), vec!["other", "src"]);
+        assert_eq!(
+            after.listing(Path::new("src")),
+            Some(&ItemState::Failed(Condition::Unreadable))
+        );
+        assert_eq!(after.place(), before.place());
+    }
+
+    #[test]
+    fn test_a_missing_entry_drops_the_listing_under_it() {
+        let after = fold(
+            nested_model(),
+            vec![("src", observed("src", &[("main.rs", FILE)]))],
+        );
+
+        assert_eq!(held_paths(&after), vec!["other", "src"]);
+        assert!(after.place().is_expanded(Path::new("src/lib")));
+    }
+
+    #[test]
+    fn test_an_entry_that_is_now_a_file_drops_the_listing_under_it() {
+        let after = fold(
+            nested_model(),
+            vec![("src", observed("src", &[("lib", FILE), ("main.rs", FILE)]))],
+        );
+
+        assert_eq!(held_paths(&after), vec!["other", "src"]);
+        assert!(after.place().is_expanded(Path::new("src/lib")));
+    }
+
+    #[test]
+    fn test_a_removed_folder_is_dropped_rather_than_drawn_as_a_failure() {
+        let after = fold(
+            nested_model(),
+            vec![
+                ("", observed("", &[("other", FOLDER)])),
+                ("src", ItemState::Failed(Condition::Missing)),
+            ],
+        );
+
+        assert_eq!(held_paths(&after), vec!["other"]);
+        assert_eq!(after.listing(Path::new("src")), None);
+        assert!(after.place().is_expanded(Path::new("src")));
+    }
+
+    #[test]
+    fn test_a_listing_under_a_folder_the_reread_still_lists_is_kept() {
+        let before = nested_model();
+
+        let after = fold(
+            before.clone(),
+            vec![(
+                "src",
+                observed(
+                    "src",
+                    &[("lib", FOLDER), ("main.rs", FILE), ("new.rs", FILE)],
+                ),
+            )],
+        );
+
+        assert_eq!(held_paths(&after), held_paths(&before));
+        assert_eq!(
+            after.listing(Path::new("src/lib")),
+            before.listing(Path::new("src/lib"))
+        );
+    }
+
+    // ---- Invalidate: the return pass ----
+
+    /// Applies supplied reads, answers each read the fold asks for with `answer`, and returns the
+    /// model with the paths the fold read, in the order it read them.
+    fn fold_returning(
+        model: FolderModel,
+        reads: Vec<(&str, ItemState<ListingObservation>)>,
+        answer: impl Fn(&Path) -> ItemState<ListingObservation>,
+    ) -> (FolderModel, Vec<String>) {
+        let reads = reads
+            .into_iter()
+            .map(|(path, observation)| (PathBuf::from(path), observation))
+            .collect();
+        let mut asked = Vec::new();
+        let model = reduce_invalidation(model, reads, &mut |path| {
+            asked.push(path.to_str().expect("UTF-8").to_owned());
+            answer(path)
+        });
+        (model, asked)
+    }
+
+    #[test]
+    fn test_the_return_pass_reads_only_expanded_paths_whose_parent_lists_them_as_folders() {
+        let model = supplied_model(
+            held("", &[("src", FOLDER)]),
+            &[("src", held("src", &[("old.rs", FILE)]))],
+            expanded_place(
+                &[
+                    "src",
+                    "src/lib",
+                    "src/mod.rs",
+                    "src/gone",
+                    "nowhere/deep",
+                    "src/lib/deep",
+                ],
+                "src/mod.rs",
+            ),
+        );
+
+        let (after, asked) = fold_returning(
+            model,
+            vec![(
+                "src",
+                observed(
+                    "src",
+                    &[("lib", FOLDER), ("mod.rs", FILE), ("other", FOLDER)],
+                ),
+            )],
+            |path| match path.to_str().expect("UTF-8") {
+                "src/lib" => observed("src/lib", &[("deep", FOLDER)]),
+                "src/lib/deep" => observed("src/lib/deep", &[("d.rs", FILE)]),
+                other => panic!("the return pass read {other}"),
+            },
+        );
+
+        assert_eq!(asked, vec!["src/lib", "src/lib/deep"]);
+        assert_eq!(held_paths(&after), vec!["src", "src/lib", "src/lib/deep"]);
+    }
+
+    #[test]
+    fn test_a_parent_returns_before_its_children() {
+        let model = supplied_model(
+            held("", &[("a", FOLDER)]),
+            &[],
+            expanded_place(&["a/b/c", "a", "a/b"], "a"),
+        );
+
+        let (after, asked) = fold_returning(
+            model,
+            vec![("", observed("", &[("a", FOLDER)]))],
+            |path| match path.to_str().expect("UTF-8") {
+                "a" => observed("a", &[("b", FOLDER)]),
+                "a/b" => observed("a/b", &[("c", FOLDER)]),
+                "a/b/c" => observed("a/b/c", &[("leaf.rs", FILE)]),
+                other => panic!("the return pass read {other}"),
+            },
+        );
+
+        assert_eq!(asked, vec!["a", "a/b", "a/b/c"]);
+        assert_eq!(held_paths(&after), vec!["a", "a/b", "a/b/c"]);
+    }
+
+    // ---- changes_since ----
+
+    fn changed_paths(changes: &TreeChanges) -> Vec<&str> {
+        changes
+            .listings()
+            .iter()
+            .map(|(path, _)| path.to_str().expect("UTF-8"))
+            .collect()
+    }
+
+    fn two_listings(root: HeldListing, a: HeldListing, b: HeldListing) -> FolderModel {
+        supplied_model(
+            root,
+            &[("a", a), ("b", b)],
+            expanded_place(&["a", "b"], "a"),
+        )
+    }
+
+    #[test]
+    fn test_changes_since_lists_new_changed_and_failed_listings() {
+        let earlier = supplied_model(
+            held("", &[("a", FOLDER), ("b", FOLDER), ("c", FOLDER)]),
+            &[
+                ("a", held("a", &[("x.rs", FILE)])),
+                ("b", held("b", &[("y.rs", FILE)])),
+            ],
+            expanded_place(&["a", "b"], "a"),
+        );
+        let mut later = earlier.clone();
+        later.listings.insert(
+            PathBuf::from("a"),
+            held("a", &[("x.rs", FILE), ("z.rs", FILE)]),
+        );
+        later.listings.insert(
+            PathBuf::from("b"),
+            HeldListing::from_observation(
+                PathBuf::from("b"),
+                ItemState::Failed(Condition::Unreadable),
+            ),
+        );
+        later
+            .listings
+            .insert(PathBuf::from("c"), held("c", &[("w.rs", FILE)]));
+
+        let changes = later.changes_since(&earlier);
+
+        assert_eq!(changed_paths(&changes), vec!["a", "b", "c"]);
+        assert_eq!(
+            changes.listings()[1].1,
+            ItemState::Failed(Condition::Unreadable)
+        );
+        assert_eq!(
+            changes.listings()[0].1,
+            later.listing(Path::new("a")).cloned().expect("held")
+        );
+    }
+
+    #[test]
+    fn test_changes_since_never_lists_a_dropped_listing() {
+        let earlier = nested_model();
+        let mut later = earlier.clone();
+        later.listings.remove(Path::new("src/lib"));
+        later.listings.remove(Path::new("src/lib/deep"));
+
+        let changes = later.changes_since(&earlier);
+
+        assert!(changes.is_empty());
+    }
+
+    #[test]
+    fn test_changes_are_in_path_order_with_the_root_first() {
+        let earlier = two_listings(
+            held("", &[("a", FOLDER), ("b", FOLDER)]),
+            held("a", &[]),
+            held("b", &[]),
+        );
+        let mut later = earlier.clone();
+        later.root_listing = held("", &[("a", FOLDER), ("b", FOLDER), ("r.rs", FILE)]);
+        later
+            .listings
+            .insert(PathBuf::from("b"), held("b", &[("b.rs", FILE)]));
+        later
+            .listings
+            .insert(PathBuf::from("a/c"), held("a/c", &[("c.rs", FILE)]));
+        later
+            .listings
+            .insert(PathBuf::from("a"), held("a", &[("a.rs", FILE)]));
+
+        let changes = later.changes_since(&earlier);
+
+        assert_eq!(changed_paths(&changes), vec!["", "a", "a/c", "b"]);
+    }
+
+    #[test]
+    fn test_identical_models_have_empty_changes() {
+        let model = nested_model();
+
+        assert!(model.changes_since(&model).is_empty());
+        assert!(model.changes_since(&model.clone()).is_empty());
+    }
 
     #[test]
     fn test_a_created_path_is_listed_in_its_held_parent() {

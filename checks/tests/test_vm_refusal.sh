@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.2.0 — the tree-scene helper's refusal joins the cases
 # Version: 1.1.0 — gate script holds every rule; workflow calls it; suite readers re-aimed
 # Version: 1.0.0 — first version: the refusal of the guarded suites' entry points (NFDR QC-65)
 #
@@ -32,6 +33,7 @@ set -uo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 BUNDLE_SUITE="$ROOT/checks/tests/test_bundle.sh"
 RENDERER_SUITE="$ROOT/checks/tests/test_renderer.sh"
+TREE_SCENE_HELPER="$ROOT/checks/tree-scene.sh"
 WORKFLOWS="$ROOT/.github/workflows"
 WORKFLOW="$WORKFLOWS/ci.yml"
 GATE="$ROOT/checks/gate.sh"
@@ -46,6 +48,7 @@ test_bundle_suite_refuses_off_vm_before_work
 test_bundle_suite_admits_on_a_vm_reading
 test_renderer_suite_refuses_off_vm_before_work
 test_renderer_suite_admits_on_a_vm_reading
+test_the_helper_refuses_off_a_vm_in_the_refusal_suite
 test_moved_steps_hold_no_block_and_no_timer_setting
 test_moved_steps_are_single_line_commands_in_order
 test_every_toplevel_suite_is_an_entire_fatal_step
@@ -183,6 +186,22 @@ test_renderer_suite_admits_on_a_vm_reading() {
   if grep -q 'refused' "$vmr_case/stdout" "$vmr_case/stderr"; then
     fail "a refusal line appeared on a virtual machine's reading. stderr: $(cat "$vmr_case/stderr")"
   fi
+}
+
+# QC-65: off a macOS virtual machine checks/tree-scene.sh prints its one refusal line and does
+# nothing else, whatever it is given: no `open`, no process listing, no copy of the fixture into the
+# temporary directory, and no write to the home or the working directory. The app it is given is a
+# bare directory, so a helper that did not refuse could not reach a real bundle.
+test_the_helper_refuses_off_a_vm_in_the_refusal_suite() {
+  VMR_TMP="$WORK"
+  scene="$WORK/tree-scene-helper-scene"
+  mkdir -p "$scene/Fake.app/Contents/MacOS" "$scene/tmp"
+  : > "$scene/Fake.app/Contents/MacOS/Fake-Exe"
+  VMR_SCENE="$scene"
+
+  VMR_ENV=("TMPDIR=$scene/tmp")
+  vmr_assert_refusal "$TREE_SCENE_HELPER" tree-scene.sh "$scene/Fake.app" || return 1
+  vmr_assert_refusal "$TREE_SCENE_HELPER" tree-scene.sh || return 1
 }
 
 # CP-792, CP-795: the two moved steps are exactly their scripts, with no timer setting and no
