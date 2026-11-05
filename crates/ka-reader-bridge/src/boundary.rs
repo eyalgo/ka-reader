@@ -7,10 +7,11 @@ use std::os::unix::ffi::OsStrExt;
 use std::panic::{self, AssertUnwindSafe};
 use std::path::PathBuf;
 
+use ka_reader_core::TreeChanges;
 use serde::Serialize;
 
 use crate::exports::{BufferOrigin, KAReaderBuffer};
-use crate::session::{FileAnswerDto, ListAnswerDto, OpenResult, Session, TreeAct};
+use crate::session::{FileAnswerDto, ListAnswerDto, OpenResult, Session, TreeAct, list_answer};
 
 /// Runs `work` under `catch_unwind` and hands its answer across as an owned buffer of JSON bytes.
 ///
@@ -60,6 +61,32 @@ pub(crate) fn is_valid_open_answer(bytes: *mut u8, len: usize) -> bool {
         }
         _ => false,
     }
+}
+
+#[derive(Serialize)]
+struct ChangedListing {
+    path: String,
+    answer: ListAnswerDto,
+}
+
+#[derive(Serialize)]
+struct ChangesPayload {
+    listings: Vec<ChangedListing>,
+}
+
+/// The `model_changed` payload for `changes`: `{"listings":[{"path":…,"answer":…}…]}`, where each
+/// `answer` is exactly what `ka_reader_list_tree` answers for that listing and the root's `path`
+/// is empty.
+pub(crate) fn changes_payload(changes: &TreeChanges) -> Result<Vec<u8>, serde_json::Error> {
+    let listings = changes
+        .listings()
+        .iter()
+        .map(|(path, listing)| ChangedListing {
+            path: path.to_string_lossy().into_owned(),
+            answer: list_answer(listing.clone()),
+        })
+        .collect();
+    serde_json::to_vec(&ChangesPayload { listings })
 }
 
 /// A `list_tree` path, decoded. Root is NULL or empty.

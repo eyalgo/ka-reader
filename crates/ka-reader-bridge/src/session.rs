@@ -2,20 +2,23 @@
 //! delegates to `ka-reader-core` and only formats the result (QC-13). It never presents a panel: the
 //! location comes in as a plain `Option<PathBuf>`, so none of this needs a window or a runtime.
 
+use std::panic::{self, AssertUnwindSafe};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc, Mutex, MutexGuard, PoisonError};
+use std::sync::{Arc, Mutex, MutexGuard, PoisonError, Weak};
 
 use ka_reader_core::{
     BranchElement, CannotDisplayReason, Condition, ConfigNamedPath, Entry, EntryKind, FileRequest,
     FileView, FolderKind, FolderModel, GitCondition, GitPort, GitReadCondition, ItemState,
-    Language, OpenFailure, OpenFolderOutcome, OpenedFolder, ProbeCondition, RepositoryState, Span,
-    StatusCategory, StatusEntry, SubmoduleNamedPath, TokenClass, TreeRequest, list_tree,
-    open_folder, read_git_item, select_file,
+    Language, OpenFailure, OpenFolderOutcome, OpenedFolder, PathReports, ProbeCondition,
+    RepositoryState, Span, StatusCategory, StatusEntry, SubmoduleNamedPath, TokenClass,
+    TreeRequest, list_tree, open_folder, read_git_item, select_file,
 };
 use serde::Serialize;
 
+use crate::boundary::changes_payload;
 use crate::machine_config::{SwitchOutcome, arrive_in_process, production_port};
+use crate::watcher::{FsEvents, PathSink, Subscription, Watching};
 
 /// What `open_folder` answers across the bridge.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -640,8 +643,13 @@ pub enum TreeAct {
     Collapse,
 }
 
+/// Where the session sends a `model_changed` payload: the serialized JSON bytes. A delivery is called
+/// on a thread the watcher owns, never while a model lock is held, and never after the open that
+/// replaces it has returned.
+pub type Delivery = Arc<dyn Fn(Vec<u8>) + Send + Sync>;
+
 /// Core's listing as the answer the shell reads.
-fn list_answer(listing: ItemState<Vec<Entry>>) -> ListAnswerDto {
+pub(crate) fn list_answer(listing: ItemState<Vec<Entry>>) -> ListAnswerDto {
     match listing {
         ItemState::Observed(entries) => ListAnswerDto::Observed {
             entries: entries
@@ -668,6 +676,8 @@ struct Held {
     model: FolderModel,
     wiring: Wiring,
     open: u64,
+    /// The open's watcher subscription, held for its drop: stopping it drains every callback in flight.
+    _subscription: Option<Subscription>,
 }
 
 #[derive(Default)]
@@ -690,6 +700,55 @@ impl State {
     }
 }
 
+/// One watcher batch, for the grant `token`: a batch for any other grant is dropped. The next model
+/// is computed on a clone and assigned only once it and its payload exist, so a panic leaves the held
+/// model as it was. The delivery is called after the lock is released, only when something changed.
+/// A panic, or a payload that cannot be serialized, delivers nothing and writes one `stopped` line.
+fn deliver_batch(
+    state: &Mutex<State>,
+    token: u64,
+    batch: Vec<PathBuf>,
+    reduce: impl FnOnce(FolderModel, PathReports) -> FolderModel,
+    delivery: &Delivery,
+) {
+    let outcome = panic::catch_unwind(AssertUnwindSafe(|| {
+        let payload = apply_batch(state, token, batch, reduce)?;
+        if let Some(payload) = payload {
+            delivery(payload);
+        }
+        Ok::<(), serde_json::Error>(())
+    }));
+    match outcome {
+        Ok(Ok(())) => {}
+        Ok(Err(_)) => {
+            log::warn!("core-bridge: model_changed stopped: answer serialization failed");
+        }
+        Err(_) => log::warn!("core-bridge: model_changed stopped: boundary panicked"),
+    }
+}
+
+/// The locked half of [`deliver_batch`]: reduce, take the changes, serialize, then assign.
+fn apply_batch(
+    state: &Mutex<State>,
+    token: u64,
+    batch: Vec<PathBuf>,
+    reduce: impl FnOnce(FolderModel, PathReports) -> FolderModel,
+) -> Result<Option<Vec<u8>>, serde_json::Error> {
+    let mut guard = state.lock().unwrap_or_else(PoisonError::into_inner);
+    let Some(held) = guard.held.as_mut().filter(|held| held.open == token) else {
+        return Ok(None);
+    };
+    let next = reduce(held.model.clone(), PathReports::new(batch));
+    let changes = next.changes_since(&held.model);
+    let payload = if changes.is_empty() {
+        None
+    } else {
+        Some(changes_payload(&changes)?)
+    };
+    held.model = next;
+    Ok(payload)
+}
+
 /// The session: at most one opened folder, starting empty, replaced whole by a successful open.
 /// The bridge holds exactly one for the life of the process.
 ///
@@ -708,8 +767,9 @@ impl State {
 /// assert_eq!(session.list("", Some(TreeAct::Expand)), ListAnswerDto::Pending);
 /// ```
 pub struct Session {
-    state: Mutex<State>,
+    state: Arc<Mutex<State>>,
     arrive: Arrival,
+    watching: Arc<dyn Watching>,
     switch_failure_logged: AtomicBool,
 }
 
@@ -721,11 +781,35 @@ impl Default for Session {
 }
 
 impl Session {
-    /// A session whose opens arrive through `arrive`, in place of the production switch.
+    /// A session whose opens arrive through `arrive`, in place of the production switch, and whose
+    /// delivering opens watch through the platform's `FsEvents`.
     pub fn with_wiring(arrive: Box<dyn Fn() -> Wiring + Send + Sync>) -> Self {
+        Self::with_parts(arrive, Arc::new(FsEvents))
+    }
+
+    /// A session whose opens arrive through `arrive` and whose delivering opens watch through
+    /// `watching`. A stream starts only for an open that carries a delivery.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use std::sync::Arc;
+    /// use ka_reader_bridge::session::{ListAnswerDto, Session, Wiring};
+    /// use ka_reader_bridge::watcher::fakes::ManualWatching;
+    ///
+    /// let watching = Arc::new(ManualWatching::new());
+    /// let session = Session::with_parts(Box::new(|| Wiring::SwitchFailed), watching.clone());
+    /// assert_eq!(session.list("", None), ListAnswerDto::Pending);
+    /// assert!(watching.recorded().is_empty());
+    /// ```
+    pub fn with_parts(
+        arrive: Box<dyn Fn() -> Wiring + Send + Sync>,
+        watching: Arc<dyn Watching>,
+    ) -> Self {
         Self {
-            state: Mutex::new(State::default()),
+            state: Arc::new(Mutex::new(State::default())),
             arrive,
+            watching,
             switch_failure_logged: AtomicBool::new(false),
         }
     }
@@ -734,34 +818,95 @@ impl Session {
         self.state.lock().unwrap_or_else(PoisonError::into_inner)
     }
 
-    /// Opens one chosen folder. A successful open replaces the held model whole and makes one
-    /// arrival at the composition root; a failed open touches neither.
+    /// Opens one chosen folder, for a host that only sends commands: no watcher subscription starts.
+    /// A successful open replaces the held model whole and makes one arrival at the composition
+    /// root; a failed open touches neither.
     pub fn open(&self, chosen: PathBuf) -> OpenResult {
-        match open_folder(chosen) {
-            OpenFolderOutcome::Opened(folder) => {
-                let wiring = (self.arrive)();
-                if matches!(wiring, Wiring::SwitchFailed)
-                    && !self.switch_failure_logged.swap(true, Ordering::SeqCst)
-                {
-                    log::warn!(
-                        "core-bridge: search-path switch failed: the machine-level config could not be switched off; the Git item stays failed"
-                    );
-                }
-                let model = FolderModel::new(folder);
-                let mut state = self.lock();
-                state.opens += 1;
-                let open = state.opens;
-                state.held = Some(Held {
-                    model,
-                    wiring,
-                    open,
-                });
-                OpenResult::Opened
+        self.open_with(chosen, None)
+    }
+
+    /// Opens one chosen folder and watches it: every change the disk reports reaches `delivery` as
+    /// a serialized payload of the listings that changed. The folder it replaces is no longer
+    /// watched when this returns, and its delivery is never called after. A failed open registers
+    /// nothing, and a watcher that cannot start leaves the folder open with no delivery.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use std::sync::Arc;
+    /// use ka_reader_bridge::session::{OpenResult, Session, Wiring};
+    /// use ka_reader_bridge::watcher::fakes::ManualWatching;
+    ///
+    /// let watching = Arc::new(ManualWatching::new());
+    /// let session = Session::with_parts(Box::new(|| Wiring::SwitchFailed), watching.clone());
+    /// let delivery = Arc::new(|payload: Vec<u8>| drop(payload));
+    ///
+    /// let result = session.open_delivering(std::env::temp_dir(), delivery);
+    /// assert!(matches!(result, OpenResult::Opened));
+    /// assert_eq!(watching.recorded().len(), 1);
+    /// ```
+    pub fn open_delivering(&self, chosen: PathBuf, delivery: Delivery) -> OpenResult {
+        self.open_with(chosen, Some(delivery))
+    }
+
+    fn open_with(&self, chosen: PathBuf, delivery: Option<Delivery>) -> OpenResult {
+        let folder = match open_folder(chosen) {
+            OpenFolderOutcome::Opened(folder) => folder,
+            OpenFolderOutcome::Failed(failure) => {
+                return OpenResult::Failed {
+                    condition: failure.into(),
+                };
             }
-            OpenFolderOutcome::Failed(failure) => OpenResult::Failed {
-                condition: failure.into(),
-            },
+        };
+        let wiring = (self.arrive)();
+        if matches!(wiring, Wiring::SwitchFailed)
+            && !self.switch_failure_logged.swap(true, Ordering::SeqCst)
+        {
+            log::warn!(
+                "core-bridge: search-path switch failed: the machine-level config could not be switched off; the Git item stays failed"
+            );
         }
+        // Under one hold of the lock: take the grant token, start the subscription, read the
+        // snapshot and install. A report that arrives during the snapshot waits on the lock and is
+        // applied right after the install, so nothing between subscribing and reading is lost.
+        let replaced = {
+            let mut state = self.lock();
+            state.opens += 1;
+            let open = state.opens;
+            let subscription =
+                delivery.and_then(|delivery| self.subscribe(folder.root(), open, delivery));
+            let model = FolderModel::new(folder);
+            state.held.replace(Held {
+                model,
+                wiring,
+                open,
+                _subscription: subscription,
+            })
+        };
+        // The replaced grant stops and drains outside the lock, because its callbacks may be waiting on it.
+        drop(replaced);
+        OpenResult::Opened
+    }
+
+    /// Starts the watcher on `root` with a sink tied to the grant `token`. The sink holds the state
+    /// weakly, so a dropped session is not kept alive by its own subscription.
+    fn subscribe(&self, root: &Path, token: u64, delivery: Delivery) -> Option<Subscription> {
+        let state = Arc::downgrade(&self.state);
+        let sink: PathSink = Box::new(move |batch| {
+            if let Some(state) = Weak::upgrade(&state) {
+                deliver_batch(
+                    &state,
+                    token,
+                    batch,
+                    |model, reports| model.list_tree(TreeRequest::Invalidate(reports)),
+                    &delivery,
+                );
+            }
+        });
+        // A subscription that cannot start leaves the folder open with no delivery, and writes no
+        // line: the log holds one line per failed or stopped item (QC-39, QC-52), and a
+        // subscription is no item.
+        self.watching.subscribe(root, sink).ok()
     }
 
     /// Lists `path` inside the opened folder and applies the act the reader made there. `Expand`
@@ -2535,9 +2680,12 @@ mod tests {
 
         const WAIT: Duration = Duration::from_secs(10);
 
+        /// Tells the test the read parked, and waits for the test to release it.
+        type Gate = (Mutex<Sender<()>>, Mutex<Receiver<()>>);
+
         /// A Git port double: a plain answer, and the first `state` call parks when it holds a gate.
         struct Port {
-            gate: Option<(Mutex<Sender<()>>, Mutex<Receiver<()>>)>,
+            gate: Option<Gate>,
             used: AtomicUsize,
         }
 
