@@ -38,6 +38,10 @@ package final class RootItemsView: NSScrollView {
     private var rows: [Row] = []
     private var isReloading = false
     private var isShowingOpenFile = false
+    /// The paths the reader's own acts left expanded: inserted on the reader's expansion, removed on
+    /// the reader's collapse, and never changed while the view reloads its own rows. A returning row
+    /// is drawn expanded from this set, since AppKit forgets the state of a row that left.
+    private var expandedByReader: Set<String> = []
     private var markers = TreeMarkers.none
     private let rootLine: NSTextField
     private let rootMessage: StatusMessageView
@@ -296,6 +300,101 @@ package final class RootItemsView: NSScrollView {
         rowHover.refresh()
     }
 
+    /// Draws the listings the model changed, in place. Each listing replaces what is drawn beneath
+    /// its path's row, or beneath the root for the empty path, in the order given, so a parent is
+    /// drawn before the folders under it. A row whose own read is out is left to its answer, a path
+    /// no row is drawn for is skipped, and a listing of `nil` draws nothing (no pending sentence).
+    /// Rows already drawn keep their identity, so AppKit keeps their disclosure; no change expands or
+    /// collapses a row. A row the reader's acts left expanded is drawn expanded again when it returns
+    /// with a listing, and the open file's row is selected again by path, raising no selection.
+    package func apply(changes: [(path: String, listing: RootListing?)]) {
+        letterTooltip.dismiss()
+        for change in changes {
+            guard let listing = change.listing else { continue }
+            if change.path.isEmpty {
+                applyToRoot(listing)
+            } else if let row = folderRow(atPath: change.path) {
+                applyChange(listing, to: row)
+            }
+        }
+        if let openFilePath { showOpenFile(path: openFilePath) }
+    }
+
+    private func applyToRoot(_ listing: RootListing) {
+        switch listing {
+        case .observed(let entries):
+            rows = merged(entries, parent: nil, holding: rows)
+            rootLineText = entries.isEmpty ? ConditionSentences.emptyRoot : nil
+            rootMessage.glyph = statusGlyphs.empty
+        case .failed:
+            rows = []
+            rootLineText = ConditionSentences.failedRoot
+            rootMessage.glyph = statusGlyphs.failure
+        }
+        rootLine.stringValue = rootLineText ?? ""
+        rootMessage.isHidden = rootLineText == nil
+        isReloading = true
+        defer { isReloading = false }
+        outlineView.reloadItem(nil, reloadChildren: true)
+        rowHover.refresh()
+    }
+
+    private func applyChange(_ listing: RootListing, to row: Row) {
+        if case .reading = row.read { return }
+        row.line = nil
+        switch listing {
+        case .observed(let entries):
+            if entries.isEmpty {
+                row.read = .empty
+                row.children = []
+                row.line = LineItem(ConditionSentences.emptyFolder)
+            } else {
+                row.read = .entries
+                row.children = merged(entries, parent: row, holding: row.children)
+            }
+        case .failed(let condition):
+            row.read = .failed(condition)
+            row.children = []
+        }
+        reload(row)
+        restoreExpansion(of: row)
+    }
+
+    /// Draws `row` expanded again when the reader's acts left its path expanded. Under the reload
+    /// guard, so the expansion starts no read.
+    private func restoreExpansion(of row: Row) {
+        guard row.entry.kind == .folder, expandedByReader.contains(row.entry.path),
+            !outlineView.isItemExpanded(row)
+        else { return }
+        isReloading = true
+        defer { isReloading = false }
+        outlineView.expandItem(row)
+    }
+
+    /// `entries` as rows, in order: a row already held for the same path and kind keeps its identity
+    /// and takes the new entry, so AppKit keeps its disclosure and selection.
+    private func merged(_ entries: [Entry], parent: Row?, holding held: [Row]) -> [Row] {
+        entries.map { entry in
+            guard
+                let kept = held.first(where: {
+                    $0.entry.path == entry.path && $0.entry.kind == entry.kind
+                })
+            else { return Row(entry, parent: parent) }
+            kept.entry = entry
+            return kept
+        }
+    }
+
+    /// The folder row drawn for `path` among the rows the tree holds, or nil when none is.
+    private func folderRow(atPath path: String) -> Row? {
+        var pending = rows
+        while let row = pending.popLast() {
+            if row.entry.kind == .folder, row.entry.path == path { return row }
+            pending.append(contentsOf: row.children)
+        }
+        return nil
+    }
+
     private static let columnIdentifier = NSUserInterfaceItemIdentifier("entry")
     private static let cellIdentifier = NSUserInterfaceItemIdentifier("entryCell")
     private static let lineCellIdentifier = NSUserInterfaceItemIdentifier("lineCell")
@@ -493,7 +592,7 @@ private final class AnswerLatch {
 /// A row's item. `NSOutlineView` identifies items by object, so each entry gets a reference, and a
 /// folder's reference owns its read state, its children and the generation of its latest read.
 private final class Row: NSObject {
-    let entry: Entry
+    var entry: Entry
     weak var parent: Row?
     var read = ReadState.unread
     var generation = 0
@@ -602,6 +701,7 @@ extension RootItemsView: NSOutlineViewDelegate {
     /// measured here: it is held by review, and by the owner's walk of the running app.
     package func outlineViewItemWillExpand(_ notification: Notification) {
         guard !isReloading, let row = notification.userInfo?["NSObject"] as? Row else { return }
+        expandedByReader.insert(row.entry.path)
         beginRead(of: row)
     }
 
@@ -620,6 +720,9 @@ extension RootItemsView: NSOutlineViewDelegate {
 
     /// Rows beneath the collapsed row went, so the rows below it moved (CP-604).
     package func outlineViewItemDidCollapse(_ notification: Notification) {
+        if !isReloading, let row = notification.userInfo?["NSObject"] as? Row {
+            expandedByReader.remove(row.entry.path)
+        }
         rowHover.refresh()
     }
 }

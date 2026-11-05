@@ -19,7 +19,7 @@ struct WorkbenchModelChangesTests {
         let glyphs = StatusGlyphs(empty: glyph, failure: glyph)
         let tree = RootItemsView(
             folderGlyph: glyph, fileGlyph: glyph, fileCodeGlyph: glyph, statusGlyphs: glyphs)
-        let filler = (0..<60).map { entry(String(format: "z%02d.txt", $0), .file) }
+        let filler = (0..<60).map { entry("z\($0 < 10 ? "0" : "")\($0).txt", .file) }
         let root = [entry("src", .folder), entry("a.txt", .file)] + filler
         tree.show(.observed(root))
         let workbench = WorkbenchView(

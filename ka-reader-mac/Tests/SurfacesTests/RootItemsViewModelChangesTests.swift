@@ -13,6 +13,7 @@ struct RootItemsViewModelChangesTests {
     private typealias Change = (path: String, listing: RootListing?)
 
     /// A view drawn in a window, with the intents and the selections it raised recorded.
+    @MainActor
     private final class Harness {
         let view: RootItemsView
         let window: NSWindow
@@ -28,10 +29,10 @@ struct RootItemsViewModelChangesTests {
                 contentRect: NSRect(x: 0, y: 0, width: 300, height: 400), styleMask: [.borderless],
                 backing: .buffered, defer: true)
             window.contentView = view
-            view.listTree = { [unowned self] path, answer in
-                reads.append((path, answer))
+            view.listTree = { [weak self] path, answer in
+                self?.reads.append((path, answer))
             }
-            view.fileSelected = { [unowned self] entry in selected.append(entry) }
+            view.fileSelected = { [weak self] entry in self?.selected.append(entry) }
         }
     }
 
@@ -118,7 +119,8 @@ struct RootItemsViewModelChangesTests {
 
         harness.view.apply(changes: [("docs", .observed([]))])
 
-        #expect(labels(harness.view) == ["docs", "line: \(ConditionSentences.emptyFolder)", "a.txt"])
+        #expect(
+            labels(harness.view) == ["docs", "line: \(ConditionSentences.emptyFolder)", "a.txt"])
 
         harness.view.apply(changes: [("", .observed([]))])
 
@@ -168,7 +170,9 @@ struct RootItemsViewModelChangesTests {
         let harness = makeHarness([folder("docs"), file("a.txt")])
         let subviews = harness.view.subviews.count
 
-        harness.view.apply(changes: [("docs", nil), ("", .observed([folder("docs"), file("a.txt")]))])
+        harness.view.apply(changes: [
+            ("docs", nil), ("", .observed([folder("docs"), file("a.txt")])),
+        ])
 
         #expect(labels(harness.view) == ["docs", "a.txt"])
         #expect(harness.view.subviews.count == subviews)
