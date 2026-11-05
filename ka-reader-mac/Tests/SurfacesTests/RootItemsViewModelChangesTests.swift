@@ -18,6 +18,8 @@ struct RootItemsViewModelChangesTests {
         let view: RootItemsView
         let window: NSWindow
         var reads: [(path: String, answer: ListTreeAnswer)] = []
+        /// Each collapse the view raised: its path and the sink it handed out.
+        var collapses: [(path: String, answer: ListTreeAnswer)] = []
         var selected: [Entry] = []
 
         init() {
@@ -29,8 +31,11 @@ struct RootItemsViewModelChangesTests {
                 contentRect: NSRect(x: 0, y: 0, width: 300, height: 400), styleMask: [.borderless],
                 backing: .buffered, defer: true)
             window.contentView = view
-            view.listTree = { [weak self] path, answer in
-                self?.reads.append((path, answer))
+            view.listTree = { [weak self] path, act, answer in
+                switch act {
+                case .expand: self?.reads.append((path, answer))
+                case .collapse: self?.collapses.append((path, answer))
+                }
             }
             view.fileSelected = { [weak self] entry in self?.selected.append(entry) }
         }
@@ -259,5 +264,39 @@ struct RootItemsViewModelChangesTests {
 
         #expect(labels(view).contains("d/y.rs"))
         #expect(labels(view).filter { $0.hasPrefix("line: ") }.count == 1)
+    }
+    @Test func aCollapseTheReaderMakesRaisesOneListTreeIntentWithTheCollapseAct() throws {
+        let harness = makeHarness([folder("docs"), file("a.txt")])
+        try readerExpands("docs", answering: .observed([file("docs/x.rs")]), in: harness)
+
+        try readerCollapses("docs", in: harness.view)
+
+        #expect(harness.collapses.map(\.path) == ["docs"])
+        #expect(harness.reads.map(\.path) == ["docs"], "the collapse asked for no read")
+        let before = labels(harness.view)
+        harness.collapses[0].answer(.observed([file("docs/y.rs")]))
+        harness.collapses[0].answer(nil)
+        #expect(labels(harness.view) == before, "a collapse's answer draws nothing")
+        #expect(!isExpanded("docs", in: harness.view))
+    }
+
+    @Test func aCollapseOrExpansionPostedDuringAReloadRaisesNoIntent() throws {
+        let harness = makeHarness([folder("docs"), file("b.txt")])
+        try readerExpands("docs", answering: .observed([folder("docs/guides")]), in: harness)
+        try readerExpands("docs/guides", answering: .observed([file("docs/guides/a.md")]), in: harness)
+        let reads = harness.reads.count
+
+        // The folder vanishes (AppKit posts its collapses during the reload) and then returns
+        // (the view draws it expanded again, which posts expansions).
+        harness.view.apply(changes: [("", .observed([file("b.txt")]))])
+        harness.view.apply(changes: [
+            ("", .observed([folder("docs"), file("b.txt")])),
+            ("docs", .observed([folder("docs/guides")])),
+            ("docs/guides", .observed([file("docs/guides/a.md")])),
+        ])
+
+        #expect(harness.collapses.isEmpty)
+        #expect(harness.reads.count == reads)
+        #expect(isExpanded("docs", in: harness.view))
     }
 }

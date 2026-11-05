@@ -7,9 +7,17 @@ private let rootMessageInset: CGFloat = 24
 /// The answer to one folder read: its entries, the reason it failed, or `nil` when none came.
 package typealias ListTreeAnswer = @MainActor (RootListing?) -> Void
 
-/// The read a folder row asks for: the entry's path and the sink its answer goes to.
+/// What the reader did to a folder row: disclosed it or hid it. The act crosses with the path, so the
+/// model holds the place the reader made.
+package nonisolated enum DisclosureAct: Sendable {
+    case expand
+    case collapse
+}
+
+/// The read a folder row asks for: the entry's path, the act the reader made and the sink its
+/// answer goes to. A collapse reads nothing, so its answer draws nothing.
 package typealias ListTreeIntent =
-    @MainActor (_ path: String, _ answer: @escaping ListTreeAnswer) -> Void
+    @MainActor (_ path: String, _ act: DisclosureAct, _ answer: @escaping ListTreeAnswer) -> Void
 
 /// The one file selection a file row raises: the entry whose row was selected.
 package typealias FileSelected = @MainActor (Entry) -> Void
@@ -42,6 +50,12 @@ package final class RootItemsView: NSScrollView {
     /// the reader's collapse, and never changed while the view reloads its own rows. A returning row
     /// is drawn expanded from this set, since AppKit forgets the state of a row that left.
     private var expandedByReader: Set<String> = []
+
+    /// The path of the row the reader is collapsing, from the moment AppKit announces it until it
+    /// has collapsed. AppKit also posts a collapse for each expanded row beneath it, before its own;
+    /// those are not the reader's acts, so they raise no intent and the model keeps those rows
+    /// expanded, as the reader left them.
+    private var collapsingByReader: String?
     private var markers = TreeMarkers.none
     private let rootLine: NSTextField
     private let rootMessage: StatusMessageView
@@ -499,7 +513,7 @@ package final class RootItemsView: NSScrollView {
         row.children = []
         row.line = LineItem(ConditionSentences.readingFolder)
         reload(row)
-        listTree?(row.entry.path, makeAnswerSink(for: row))
+        listTree?(row.entry.path, .expand, makeAnswerSink(for: row))
     }
 
     private func makeAnswerSink(for row: Row) -> ListTreeAnswer {
@@ -718,10 +732,23 @@ extension RootItemsView: NSOutlineViewDelegate {
         rowHover.refresh()
     }
 
+    /// The first collapse announced outside a reload is the reader's.
+    package func outlineViewItemWillCollapse(_ notification: Notification) {
+        guard !isReloading, collapsingByReader == nil,
+            let row = notification.userInfo?["NSObject"] as? Row
+        else { return }
+        collapsingByReader = row.entry.path
+    }
+
     /// Rows beneath the collapsed row went, so the rows below it moved (CP-604).
     package func outlineViewItemDidCollapse(_ notification: Notification) {
         if !isReloading, let row = notification.userInfo?["NSObject"] as? Row {
             expandedByReader.remove(row.entry.path)
+            if collapsingByReader == row.entry.path {
+                collapsingByReader = nil
+                // The reader's collapse reaches the model once; what the model answers draws nothing.
+                listTree?(row.entry.path, .collapse, { _ in })
+            }
         }
         rowHover.refresh()
     }

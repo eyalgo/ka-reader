@@ -297,9 +297,13 @@ final class LaunchFlowTests: XCTestCase {
         XCTAssertEqual(
             try labels(in: root), ["docs", "guides", "This folder has no files.", "a.md"])
 
+        let docsCollapsed = expectation(description: "the collapse was delivered")
+        runner.onDelivery = { docsCollapsed.fulfill() }
+        root.outlineView.collapseItem(root.outlineView.item(atRow: 0))
+        await fulfillment(of: [docsCollapsed], timeout: 10)
+
         let repeatedDocsDelivered = expectation(description: "docs was delivered again")
         runner.onDelivery = { repeatedDocsDelivered.fulfill() }
-        root.outlineView.collapseItem(root.outlineView.item(atRow: 0))
         root.outlineView.expandItem(root.outlineView.item(atRow: 0))
         await fulfillment(of: [repeatedDocsDelivered], timeout: 10)
 
@@ -307,11 +311,13 @@ final class LaunchFlowTests: XCTestCase {
         XCTAssertEqual(bridge.ranOnMain("list_tree:"), [false])
         XCTAssertEqual(bridge.ranOnMain("list_tree:docs"), [false, false])
         XCTAssertEqual(bridge.ranOnMain("list_tree:docs/guides"), [false])
+        XCTAssertEqual(bridge.ranOnMain("list_tree:collapse:docs"), [false])
+        XCTAssertEqual(bridge.ranOnMain("free:collapse:docs"), [false])
         XCTAssertEqual(bridge.ranOnMain("free:open"), [false])
         XCTAssertEqual(bridge.ranOnMain("free:"), [false])
         XCTAssertEqual(bridge.ranOnMain("free:docs"), [false, false])
         XCTAssertEqual(bridge.ranOnMain("free:docs/guides"), [false])
-        XCTAssertEqual(runner.deliveriesOnMain, [true, true, true, true])
+        XCTAssertEqual(runner.deliveriesOnMain, [true, true, true, true, true])
         XCTAssertTrue(presenter.presentationsOnMain.allSatisfy { $0 })
         XCTAssertEqual(try labels(in: root), ["docs", "guides", "a.md"])
     }
@@ -361,6 +367,21 @@ final class LaunchFlowTests: XCTestCase {
             XCTAssertNil(root.rootLineText, member)
             XCTAssertEqual(bridge.handedOut.sorted(), bridge.freed.sorted(), member)
         }
+    }
+
+    func testLaunchFlowSendsTheAct() throws {
+        let (flow, bridge, _, presenter, _) = makeFlow(answers: [chosenFolder], list: docsRootAnswer)
+        bridge.listAnswers["docs"] = emptyDocsAnswer
+        flow.run()
+        let root = try workbench(in: presenter).rootItemsView
+
+        root.outlineView.expandItem(root.outlineView.item(atRow: 0))
+        root.outlineView.collapseItem(root.outlineView.item(atRow: 0))
+
+        XCTAssertEqual(bridge.listedPaths, ["", "docs", "docs"])
+        XCTAssertEqual(bridge.listedActs, [.expand, .expand, .collapse])
+        XCTAssertEqual(bridge.receivers.count, 1, "one open")
+        XCTAssertNil(bridge.receivers[0], "this change's flow passes no receiver yet")
     }
 
     func testLaunchUsesOnlyNamedExportsAndFreesEveryNonNilBufferOnce() throws {

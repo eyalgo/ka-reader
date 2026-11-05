@@ -28,6 +28,8 @@ final class RootItemsViewExpansionTests: XCTestCase {
 
     private final class ReadLog {
         var reads: [Read] = []
+        /// The path of each collapse the view raised, in order.
+        var collapses: [String] = []
         var paths: [String] { reads.map(\.path) }
     }
 
@@ -36,7 +38,12 @@ final class RootItemsViewExpansionTests: XCTestCase {
             folderGlyph: folderGlyph, fileGlyph: fileGlyph, fileCodeGlyph: fileCodeGlyph,
             statusGlyphs: statusGlyphs)
         let log = ReadLog()
-        view.listTree = { path, answer in log.reads.append(Read(path: path, answer: answer)) }
+        view.listTree = { path, act, answer in
+            switch act {
+            case .expand: log.reads.append(Read(path: path, answer: answer))
+            case .collapse: log.collapses.append(path)
+            }
+        }
         view.show(.observed(entries))
         return (view, log)
     }
@@ -373,6 +380,7 @@ final class RootItemsViewExpansionTests: XCTestCase {
         XCTAssertEqual(rowLabels(view), ["locked", "a.txt"])
         XCTAssertEqual(try conditionText(view, "locked"), cantReadSentence)
         XCTAssertEqual(log.paths, ["locked"], "a collapse reads nothing")
+        XCTAssertEqual(log.collapses, ["locked"], "the collapse raised its one intent")
     }
 
     /// CP-198: collapsing a row hides every row beneath it, at every depth, and every row that is not
@@ -391,6 +399,7 @@ final class RootItemsViewExpansionTests: XCTestCase {
         XCTAssertEqual(rowLabels(view), ["docs", "src", "main.rs"])
         XCTAssertTrue(view.outlineView.isItemExpanded(view.outlineView.item(atRow: 1)))
         XCTAssertEqual(log.paths, ["docs", "docs/guides", "src"], "a collapse reads nothing")
+        XCTAssertEqual(log.collapses, ["docs"], "the collapse raised its one intent")
     }
 
     /// CP-198: a child row follows the rules a root row follows, so it carries the glyph for its

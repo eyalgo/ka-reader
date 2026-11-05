@@ -69,14 +69,14 @@ package final class LaunchFlow {
     private nonisolated static func openAndList(_ location: URL, through bridge: Bridging)
         -> LaunchAnswer
     {
-        let openBuffer = bridge.openFolder(location: location)
+        let openBuffer = bridge.openFolder(location: location, changes: nil)
         defer { release(openBuffer, through: bridge) }
         guard let result = BridgePayload.decodeOpen(openBuffer) else {
             return .stopped(path: location.path)
         }
         switch result {
         case .failed(let condition): return .failed(path: location.path, condition: condition)
-        case .opened: return .opened(listing(at: "", through: bridge))
+        case .opened: return .opened(listing(at: "", act: .expand, through: bridge))
         }
     }
 
@@ -107,8 +107,8 @@ package final class LaunchFlow {
             fileGlyph: glyph(named: Self.fileGlyphName),
             fileCodeGlyph: glyph(named: Self.fileCodeGlyphName), statusGlyphs: statusGlyphs)
         view.show(root)
-        view.listTree = { [bridge, reader] path, answer in
-            reader.run({ Self.listing(at: path, through: bridge) }, deliver: answer)
+        view.listTree = { [bridge, reader] path, act, answer in
+            reader.run({ Self.listing(at: path, act: act, through: bridge) }, deliver: answer)
         }
         let workbench = WorkbenchView(
             rootItemsView: view, statusGlyphs: statusGlyphs,
@@ -137,10 +137,10 @@ package final class LaunchFlow {
         return BridgePayload.decodeFile(buffer)
     }
 
-    private nonisolated static func listing(at path: String, through bridge: Bridging)
-        -> RootListing?
-    {
-        let buffer = bridge.listTree(path: path)
+    private nonisolated static func listing(
+        at path: String, act: DisclosureAct, through bridge: Bridging
+    ) -> RootListing? {
+        let buffer = bridge.listTree(path: path, act: act)
         defer { release(buffer, through: bridge) }
         return BridgePayload.decodeRoot(buffer)
     }
