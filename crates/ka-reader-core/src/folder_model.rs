@@ -717,8 +717,19 @@ impl FolderModel {
     /// assert_eq!(path, Path::new(""));
     /// assert!(matches!(listing, ItemState::Observed(entries) if entries.len() == 1));
     /// ```
-    pub fn changes_since(&self, _earlier: &FolderModel) -> TreeChanges {
-        TreeChanges::default()
+    pub fn changes_since(&self, earlier: &FolderModel) -> TreeChanges {
+        let listings = std::iter::once((PathBuf::new(), &self.root_listing))
+            .chain(
+                self.listings
+                    .iter()
+                    .map(|(path, held)| (path.clone(), held)),
+            )
+            .filter(|(path, held)| {
+                earlier.held_at(path).map(|before| &before.entries) != Some(&held.entries)
+            })
+            .map(|(path, held)| (path, held.entries.clone()))
+            .collect();
+        TreeChanges { listings }
     }
 
     pub fn open_file(&self) -> Option<&OpenFile> {
