@@ -33,6 +33,8 @@ Each entry records a change to what a user of a fresh clone installs, runs, type
 - **ka-reader** — `checks/gate.sh` runs every check in one script, the one the build's workflow calls. It runs the sanitizer step, the secret scan over the whole history with a planted-secret control, and the strings lint `checks/strings.sh`. (`8b93322be`, `389adad93`, `82352408c`, `1b3250006`, `cd65c0227`, `f25fdbb62`)
 - **ka-reader** — The dependency scan reads the C and C++ sources for reads of the environment. (`6d56fb32d`)
 - **ka-reader** — The README describes KA-Reader as it is defined, a reader of folders, with its real stack and its documents by path, and links what building it cost. (`2aa3fc2eb`, `33581f3a0`)
+- **ka-reader** — The file tree follows the disk on its own. When something in the open folder is created, changed or removed, including inside a folder you have expanded, the tree shows it with no action from you, and your expanded folders, your selection, the sidebar view, the open file and its scroll position stay as they were. A folder that goes away and comes back is listed afresh, and a folder that can't be read again says so on its own row while the rows beside it keep their own states. (`a5712c889`, `2f1357830`, `f1ab0c91f`, `a0142be08`, `d3b346d4d`, `96d266ff1`, `a685d051e`, `87d7607c1`, `12cbec9a7`)
+- **ka-reader** — `checks/tree-scene.sh` launches the built app on a copy of a fixture folder, changes that copy for thirty seconds and prints the listings the tree should then show. `checks/read-only.sh --kill` stops the walk partway and still checks that the folder is unchanged, and `checks/gate.sh` runs both over the fixture. (`214819bb3`, `5380e4545`, `1498a8358`)
 
 ### Changed
 
