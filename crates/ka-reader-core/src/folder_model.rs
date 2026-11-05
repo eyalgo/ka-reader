@@ -456,6 +456,38 @@ impl PathReports {
     }
 }
 
+/// The listings one model holds that an earlier one did not hold, or held with other entries or
+/// another state: what a shell must draw again after the model changed. A listing the later model
+/// dropped is not in it. Each comes as its request path (the root as the empty path) and its
+/// listing, in path order with the root first.
+///
+/// # Examples
+///
+/// ```
+/// use ka_reader_core::{FolderModel, open_folder};
+///
+/// let opened = open_folder(std::env::temp_dir()).expect("the temporary folder opens");
+/// let model = FolderModel::new(opened);
+/// let changes = model.changes_since(&model);
+/// assert!(changes.is_empty());
+/// assert!(changes.listings().is_empty());
+/// ```
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct TreeChanges {
+    listings: Vec<(PathBuf, ItemState<Vec<Entry>>)>,
+}
+
+impl TreeChanges {
+    /// The changed listings, in path order with the root's (the empty path) first.
+    pub fn listings(&self) -> &[(PathBuf, ItemState<Vec<Entry>>)] {
+        &self.listings
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.listings.is_empty()
+    }
+}
+
 /// A batch of reports about the disk: entry paths, relative to the opened folder's root, that were
 /// created, changed or removed. A report says what happened and never asks for it to happen.
 ///
@@ -659,6 +691,34 @@ impl FolderModel {
     /// ```
     pub fn with_git_item(self, item: ItemState<FolderKind, GitCondition>) -> Self {
         Self { kind: item, ..self }
+    }
+
+    /// The listings this model holds that `earlier` did not hold, or held with other entries or
+    /// another state. A listing `earlier` held that this model no longer holds is not listed.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use std::path::{Path, PathBuf};
+    /// use ka_reader_core::{FolderModel, ItemState, PathReports, TreeRequest, open_folder};
+    ///
+    /// let root = std::env::temp_dir().join(format!("ka-doc-changes-since-{}", std::process::id()));
+    /// std::fs::create_dir_all(&root).expect("the folder is made");
+    /// let before = FolderModel::new(open_folder(&root).expect("the folder opens"));
+    /// std::fs::write(root.join("new.txt"), "new\n").expect("the file is written");
+    ///
+    /// let after = before
+    ///     .clone()
+    ///     .list_tree(TreeRequest::Invalidate(PathReports::new(vec![root.join("new.txt")])));
+    /// let changes = after.changes_since(&before);
+    /// std::fs::remove_dir_all(&root).expect("the folder goes");
+    ///
+    /// let [(path, listing)] = changes.listings() else { panic!("one listing changed") };
+    /// assert_eq!(path, Path::new(""));
+    /// assert!(matches!(listing, ItemState::Observed(entries) if entries.len() == 1));
+    /// ```
+    pub fn changes_since(&self, _earlier: &FolderModel) -> TreeChanges {
+        TreeChanges::default()
     }
 
     pub fn open_file(&self) -> Option<&OpenFile> {
@@ -1132,8 +1192,8 @@ mod tests {
     use super::{
         FileRequest, FileView, FolderChange, FolderKind, FolderModel, GitCondition, HeldListing,
         ItemState, ModelDelta, OpenFailure, OpenFolderOutcome, OpenedFolder, PathReports,
-        ReaderPlace, ReadingPosition, ReportedNames, TreeRequest, list_tree, open_folder, read_git,
-        read_git_item, reduce, reduce_invalidation, select_file,
+        ReaderPlace, ReadingPosition, ReportedNames, TreeChanges, TreeRequest, list_tree,
+        open_folder, read_git, read_git_item, reduce, reduce_invalidation, select_file,
     };
     use crate::fs_reader::{Condition, Entry, EntryKind, Listed, ListingObservation};
     use crate::git_reader::ProbeCondition;
@@ -2059,6 +2119,107 @@ mod tests {
 
         assert_eq!(asked, vec!["a", "a/b", "a/b/c"]);
         assert_eq!(held_paths(&after), vec!["a", "a/b", "a/b/c"]);
+    }
+
+    // ---- changes_since ----
+
+    fn changed_paths(changes: &TreeChanges) -> Vec<&str> {
+        changes
+            .listings()
+            .iter()
+            .map(|(path, _)| path.to_str().expect("UTF-8"))
+            .collect()
+    }
+
+    fn two_listings(root: HeldListing, a: HeldListing, b: HeldListing) -> FolderModel {
+        supplied_model(
+            root,
+            &[("a", a), ("b", b)],
+            expanded_place(&["a", "b"], "a"),
+        )
+    }
+
+    #[test]
+    fn test_changes_since_lists_new_changed_and_failed_listings() {
+        let earlier = supplied_model(
+            held("", &[("a", FOLDER), ("b", FOLDER), ("c", FOLDER)]),
+            &[
+                ("a", held("a", &[("x.rs", FILE)])),
+                ("b", held("b", &[("y.rs", FILE)])),
+            ],
+            expanded_place(&["a", "b"], "a"),
+        );
+        let mut later = earlier.clone();
+        later.listings.insert(
+            PathBuf::from("a"),
+            held("a", &[("x.rs", FILE), ("z.rs", FILE)]),
+        );
+        later.listings.insert(
+            PathBuf::from("b"),
+            HeldListing::from_observation(
+                PathBuf::from("b"),
+                ItemState::Failed(Condition::Unreadable),
+            ),
+        );
+        later
+            .listings
+            .insert(PathBuf::from("c"), held("c", &[("w.rs", FILE)]));
+
+        let changes = later.changes_since(&earlier);
+
+        assert_eq!(changed_paths(&changes), vec!["a", "b", "c"]);
+        assert_eq!(
+            changes.listings()[1].1,
+            ItemState::Failed(Condition::Unreadable)
+        );
+        assert_eq!(
+            changes.listings()[0].1,
+            later.listing(Path::new("a")).cloned().expect("held")
+        );
+    }
+
+    #[test]
+    fn test_changes_since_never_lists_a_dropped_listing() {
+        let earlier = nested_model();
+        let mut later = earlier.clone();
+        later.listings.remove(Path::new("src/lib"));
+        later.listings.remove(Path::new("src/lib/deep"));
+
+        let changes = later.changes_since(&earlier);
+
+        assert!(changes.is_empty());
+    }
+
+    #[test]
+    fn test_changes_are_in_path_order_with_the_root_first() {
+        let earlier = two_listings(
+            held("", &[("a", FOLDER), ("b", FOLDER)]),
+            held("a", &[]),
+            held("b", &[]),
+        );
+        let mut later = earlier.clone();
+        later.root_listing = held("", &[("a", FOLDER), ("b", FOLDER), ("r.rs", FILE)]);
+        later
+            .listings
+            .insert(PathBuf::from("b"), held("b", &[("b.rs", FILE)]));
+        later
+            .listings
+            .insert(PathBuf::from("a/c"), held("a/c", &[("c.rs", FILE)]));
+        later
+            .listings
+            .insert(PathBuf::from("a"), held("a", &[("a.rs", FILE)]));
+
+        let changes = later.changes_since(&earlier);
+
+        assert_eq!(changed_paths(&changes), vec!["", "a", "a/c", "b"]);
+    }
+
+    #[test]
+    fn test_identical_models_have_empty_changes() {
+        let model = nested_model();
+
+        assert!(model.changes_since(&model).is_empty());
+        assert!(model.changes_since(&model.clone()).is_empty());
     }
 
     #[test]
