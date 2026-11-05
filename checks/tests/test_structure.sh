@@ -164,6 +164,14 @@ test_adapter_construction_in_comments_and_strings_is_ignored
 test_bridge_source_may_construct_the_adapter
 test_folder_model_adapter_construction_draws_both_clauses
 test_header_states_the_held_clauses
+test_watcher_native_binding_is_accepted_in_the_watcher_files
+test_binding_in_session_is_rejected_by_attribute_and_by_bare_call
+test_apple_binding_in_a_core_file_is_rejected
+test_watcher_importing_core_or_a_sibling_bridge_module_is_rejected
+test_folder_model_naming_watcher_or_bridge_is_rejected
+test_core_manifest_depending_on_the_bridge_is_rejected
+test_native_vocabulary_without_the_attribute_is_found
+test_the_real_tree_passes
 "
 
 # --- helpers ---
@@ -3167,6 +3175,137 @@ test_header_states_the_held_clauses() {
   case "$logger_next" in
     *"(the exact path component), a path whose first segment is \`log\`"*) ;;
     *) fail "the logger row is split: its first line is followed by: $logger_next" || return 1 ;;
+  esac
+}
+
+# --- the cases of the bridge watcher: its place in the scan, and the edges around it ---
+
+WATCHER_FILE="ka-reader-bridge/src/watcher.rs"
+WATCHER_NATIVE_FILE="ka-reader-bridge/src/watcher/fsevents.rs"
+
+test_watcher_native_binding_is_accepted_in_the_watcher_files() {
+  new_root watcher-binding || return 1
+  for file in "$WATCHER_FILE" "$WATCHER_NATIVE_FILE"; do
+    plant "$R" "$file" '#[link(name = "CoreServices", kind = "framework")]'
+    plant "$R" "$file" 'extern "C" { fn FSEventStreamCreate(); fn CFRelease(); fn dispatch_queue_create(); }'
+  done
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+}
+
+test_binding_in_session_is_rejected_by_attribute_and_by_bare_call() {
+  new_root watcher-binding-elsewhere || return 1
+  plant "$R" "$BRIDGE_FILE" '#[link(name = "CoreServices", kind = "framework")]'
+  attribute_line="$PLANT_LINE"
+  plant "$R" "$BRIDGE_FILE" 'fn f() { unsafe { FSEventStreamCreate(); } }'
+  bare_line="$PLANT_LINE"
+  # The exemption is the exact name: a file that only begins with `watcher` is in the domain.
+  plant "$R" "ka-reader-bridge/src/watcher_ext.rs" 'fn g() { unsafe { FSEventStreamStart(); } }'
+  ext_line="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_finding "crates/$BRIDGE_FILE" "$attribute_line" QC-13 || return 1
+  expect_finding "crates/$BRIDGE_FILE" "$bare_line" QC-13 || return 1
+  expect_finding "crates/ka-reader-bridge/src/watcher_ext.rs" "$ext_line" QC-13 || return 1
+}
+
+test_apple_binding_in_a_core_file_is_rejected() {
+  new_root watcher-binding-core || return 1
+  plant "$R" "$CORE_FILE" '#[link(name = "CoreServices", kind = "framework")]'
+  attribute_line="$PLANT_LINE"
+  plant "$R" "$CORE_FILE" 'fn f() { FSEventStreamCreate(); }'
+  bare_line="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_finding "crates/$CORE_FILE" "$attribute_line" QC-9 || return 1
+  expect_finding "crates/$CORE_FILE" "$bare_line" QC-9 || return 1
+}
+
+test_watcher_importing_core_or_a_sibling_bridge_module_is_rejected() {
+  new_root watcher-edges || return 1
+  plant "$R" "$WATCHER_FILE" 'use ka_reader_core::FolderModel;'
+  core_line="$PLANT_LINE"
+  plant "$R" "$WATCHER_FILE" 'use crate::session::Session;'
+  crate_line="$PLANT_LINE"
+  plant "$R" "$WATCHER_FILE" 'use super::session::Session;'
+  super_line="$PLANT_LINE"
+  plant "$R" "$WATCHER_FILE" 'use crate::{boundary, watcher};'
+  tree_line="$PLANT_LINE"
+  plant "$R" "$WATCHER_NATIVE_FILE" 'fn f() -> u8 { super::super::session::count() }'
+  nested_line="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_finding "crates/$WATCHER_FILE" "$core_line" QC-11 || return 1
+  expect_finding "crates/$WATCHER_FILE" "$crate_line" QC-11 || return 1
+  expect_finding "crates/$WATCHER_FILE" "$super_line" QC-11 || return 1
+  expect_finding "crates/$WATCHER_FILE" "$tree_line" QC-11 || return 1
+  expect_finding "crates/$WATCHER_NATIVE_FILE" "$nested_line" QC-11 || return 1
+  new_root watcher-edges-clean || return 1
+  plant "$R" "$WATCHER_FILE" 'pub use crate::watcher::Subscription;'
+  plant "$R" "$WATCHER_NATIVE_FILE" 'use super::Watching;'
+  plant "$R" "$WATCHER_NATIVE_FILE" 'use crate::watcher::Subscription;'
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+}
+
+test_folder_model_naming_watcher_or_bridge_is_rejected() {
+  new_root folder-model-edges || return 1
+  plant "$R" "$CORE_FILE" 'use crate::watcher::Watching;'
+  unit_line="$PLANT_LINE"
+  plant "$R" "$CORE_FILE" 'fn f() { watcher::go(); }'
+  root_line="$PLANT_LINE"
+  plant "$R" "$CORE_FILE" 'use ka_reader_bridge::session::Session;'
+  bridge_line="$PLANT_LINE"
+  plant "$R" "ka-reader-core/src/language.rs" 'use ka_reader_bridge::boundary;'
+  other_line="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_finding "crates/$CORE_FILE" "$unit_line" QC-10 || return 1
+  expect_finding "crates/$CORE_FILE" "$root_line" QC-10 || return 1
+  expect_finding "crates/$CORE_FILE" "$bridge_line" QC-10 || return 1
+  expect_finding "crates/ka-reader-core/src/language.rs" "$other_line" QC-10 || return 1
+}
+
+test_core_manifest_depending_on_the_bridge_is_rejected() {
+  new_root core-manifest-bridge || return 1
+  plant "$R" "$CORE_MANIFEST" 'ka-reader-bridge = { path = "../ka-reader-bridge" }'
+  key_line="$PLANT_LINE"
+  plant "$R" "$CORE_MANIFEST" 'renamed = { package = "ka-reader-bridge", version = "0.1" }'
+  package_line="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_finding "crates/$CORE_MANIFEST" "$key_line" QC-10 || return 1
+  expect_finding "crates/$CORE_MANIFEST" "$package_line" QC-10 || return 1
+}
+
+test_native_vocabulary_without_the_attribute_is_found() {
+  new_root native-vocabulary || return 1
+  plant "$R" "$BRIDGE_FILE" 'type A = FSEventStreamRef; type B = CFStringRef; type C = dispatch_queue_t;'
+  bridge_line="$PLANT_LINE"
+  plant "$R" "$CORE_FILE" 'type A = CFArrayRef; // dispatch_async'
+  core_line="$PLANT_LINE"
+  run_structure "$R"
+  expect_status 1 || return 1
+  expect_count "crates/$BRIDGE_FILE" "$bridge_line" QC-13 3 || return 1
+  expect_finding "crates/$CORE_FILE" "$core_line" QC-9 || return 1
+  new_root native-near-names || return 1
+  plant "$R" "$BRIDGE_FILE" 'fn near() { let CFish = 1; let cf_string = 2; let dispatcher = 3; let my_dispatch = 4; let NotFSEvent = 5; let fsevent_path = 6; let CF = 7; }'
+  plant "$R" "$CORE_FILE" 'fn near() { let CFish = 1; let dispatcher = 3; let Cfoo = 8; }'
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+}
+
+test_the_real_tree_passes() {
+  new_root real-tree || return 1
+  run_structure "$R"
+  expect_status 0 || return 1
+  expect_stderr_empty || return 1
+  case "$STDOUT" in
+    *"nothing found"*) ;;
+    *) fail "expected 'nothing found'. stdout: $STDOUT" || return 1 ;;
   esac
 }
 
