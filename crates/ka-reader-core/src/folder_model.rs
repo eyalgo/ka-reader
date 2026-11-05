@@ -891,6 +891,28 @@ impl FolderModel {
         }
     }
 
+    /// Reads, in path order, each path the place holds expanded that has no held listing, when its
+    /// parent's held listing is observed and lists it as a folder. The set is walked in path order,
+    /// so a parent that returns is held before the children under it are asked about.
+    fn return_expanded_folders(
+        &mut self,
+        more: &mut dyn FnMut(&Path) -> ItemState<ListingObservation>,
+    ) {
+        let expanded: Vec<PathBuf> = self.place.expanded.iter().cloned().collect();
+        for path in expanded {
+            if self.listings.contains_key(&path) {
+                continue;
+            }
+            let (Some(parent), Some(name)) = (path.parent(), path.file_name()) else {
+                continue;
+            };
+            if self.lists_as_folder(parent, name) {
+                let observation = more(&path);
+                self.hold(path, observation);
+            }
+        }
+    }
+
     /// The location of `path` when it resolves inside the root to something of `kind`.
     fn admit(&self, path: &Path, kind: EntryKind) -> Option<Location> {
         fs_reader::locate(&self.folder.root, path)
@@ -961,12 +983,13 @@ fn covers(request: &Path, identity: &Path, reported: &Path) -> bool {
 }
 
 /// The model after an invalidation: each re-read in `reads`, keyed by request path, replaces the
-/// listing held there whole, and then every listing under a folder that is gone goes. Pure, so a
-/// test hands it supplied observations; `more` is how it asks for a read of its own.
+/// listing held there whole, then every listing under a folder that is gone goes, then every
+/// expanded folder that has no listing and that its parent lists as a folder is read again. Pure,
+/// so a test hands it supplied observations; `more` is how it asks for a read of its own.
 fn reduce_invalidation(
     mut model: FolderModel,
     reads: BTreeMap<PathBuf, ItemState<ListingObservation>>,
-    _more: &mut dyn FnMut(&Path) -> ItemState<ListingObservation>,
+    more: &mut dyn FnMut(&Path) -> ItemState<ListingObservation>,
 ) -> FolderModel {
     let mut reread = BTreeSet::new();
     for (path, observation) in reads {
@@ -974,6 +997,7 @@ fn reduce_invalidation(
         reread.insert(path);
     }
     model.drop_beneath_gone_folders(&reread);
+    model.return_expanded_folders(more);
     model
 }
 
