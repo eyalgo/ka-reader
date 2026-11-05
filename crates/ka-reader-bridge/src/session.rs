@@ -3223,7 +3223,13 @@ mod tests {
 
             open_delivering(&session, &folder, &Received::default());
 
-            assert_eq!(take_log_records(), Vec::<String>::new());
+            // The capture is the process logger, so a test running beside this one that logs from
+            // another crate's code lands here too. Only the bridge's own lines are this test's.
+            let lines: Vec<String> = take_log_records()
+                .into_iter()
+                .filter(|record| record.contains("core-bridge"))
+                .collect();
+            assert_eq!(lines, Vec::<String>::new());
         }
     }
 }
