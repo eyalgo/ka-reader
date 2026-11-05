@@ -1,0 +1,1 @@
+scene: src/a.rs
