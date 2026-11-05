@@ -147,13 +147,21 @@ fn walk_from(
 }
 
 /// The model's own operations, driven and counted. Each count is raised in the one method its
-/// operation goes through.
+/// operation goes through. The model is held in an `Option` only so an operation that takes it by
+/// value can move it out and put the result back.
 struct Driven {
-    model: FolderModel,
+    model: Option<FolderModel>,
     acts: Acts,
 }
 
 impl Driven {
+    fn new(model: FolderModel) -> Self {
+        Self {
+            model: Some(model),
+            acts: Acts::default(),
+        }
+    }
+
     fn expand(&mut self, path: &str) {
         self.acts.expand += 1;
         self.apply_tree(TreeRequest::Expand(PathBuf::from(path)));
@@ -172,20 +180,15 @@ impl Driven {
 
     fn select(&mut self, path: &str) {
         self.acts.select += 1;
-        let model = std::mem::replace(&mut self.model, placeholder());
-        self.model = model.select_file(FileRequest::Select(Some(PathBuf::from(path))));
+        self.model = self
+            .model
+            .take()
+            .map(|model| model.select_file(FileRequest::Select(Some(PathBuf::from(path)))));
     }
 
     fn apply_tree(&mut self, request: TreeRequest) {
-        let model = std::mem::replace(&mut self.model, placeholder());
-        self.model = model.list_tree(request);
+        self.model = self.model.take().map(|model| model.list_tree(request));
     }
-}
-
-/// A model of the system's temporary folder, held for the instant `Driven` moves its own model
-/// through an operation that takes it by value. It is never read.
-fn placeholder() -> FolderModel {
-    FolderModel::new(open_folder(std::env::temp_dir()).expect("the temporary folder opens"))
 }
 
 /// Drives `Expand` on every folder, `Select` on every file, `Invalidate` with the root and every
@@ -193,10 +196,7 @@ fn placeholder() -> FolderModel {
 fn drive_model(folder: &Path, folders: &BTreeSet<String>, files: &BTreeSet<String>) -> Acts {
     let opened = open_folder(folder).expect("the folder that was just walked opens");
     let root = opened.root().to_path_buf();
-    let mut driven = Driven {
-        model: FolderModel::new(opened),
-        acts: Acts::default(),
-    };
+    let mut driven = Driven::new(FolderModel::new(opened));
     for path in folders {
         driven.expand(path);
     }
