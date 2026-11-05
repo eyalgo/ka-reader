@@ -870,8 +870,8 @@ mod tests {
     use super::{
         FileRequest, FileView, FolderChange, FolderKind, FolderModel, GitCondition, HeldListing,
         ItemState, ModelDelta, OpenFailure, OpenFolderOutcome, OpenedFolder, ReaderPlace,
-        ReadingPosition, ReportedNames, TreeRequest, list_tree, open_folder, read_git, reduce,
-        select_file,
+        ReadingPosition, ReportedNames, TreeRequest, list_tree, open_folder, read_git,
+        read_git_item, reduce, select_file,
     };
     use crate::fs_reader::{Condition, Entry, EntryKind, Listed, ListingObservation};
     use crate::git_reader::ProbeCondition;
@@ -1259,6 +1259,53 @@ mod tests {
                 model.listing(Path::new(path))
             );
         }
+    }
+
+    #[test]
+    fn test_with_git_item_changes_only_the_git_item() {
+        let folder = project();
+        let model = open(
+            select(expand(model_over(&folder), "src"), "src/util.rs"),
+            "src/main.rs",
+            &position(b"line=7"),
+        );
+        let item = ItemState::Observed(FolderKind::Plain);
+
+        let replaced = model.clone().with_git_item(item.clone());
+
+        assert_eq!(replaced.kind(), &item);
+        assert_eq!(replaced.tree(), model.tree());
+        assert_eq!(replaced.place(), model.place());
+        assert_eq!(replaced.open_file(), model.open_file());
+        assert_eq!(
+            replaced.listing(Path::new("src")),
+            model.listing(Path::new("src"))
+        );
+    }
+
+    #[test]
+    fn test_read_git_is_the_composition_of_the_two_and_answers_as_before() {
+        let folder = project();
+        let model = expand(model_over(&folder), "src");
+
+        let item = read_git_item(model.folder(), &PlainFolder);
+        let composed = model.clone().with_git_item(item.clone());
+
+        assert_eq!(item, ItemState::Observed(FolderKind::Plain));
+        assert_eq!(read_git(model, &PlainFolder), composed);
+    }
+
+    #[test]
+    fn test_root_names_the_canonical_root() {
+        let folder = project();
+        let link = folder.path().join("link-to-the-project");
+        std::os::unix::fs::symlink(folder.path(), &link).expect("the link is made");
+
+        let opened = open_folder(&link).expect("the link opens");
+
+        let canonical = std::fs::canonicalize(folder.path()).expect("the folder resolves");
+        assert_eq!(opened.root(), canonical.as_path());
+        assert_ne!(opened.root(), link.as_path());
     }
 
     #[test]
