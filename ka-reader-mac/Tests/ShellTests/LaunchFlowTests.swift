@@ -370,7 +370,8 @@ final class LaunchFlowTests: XCTestCase {
     }
 
     func testLaunchFlowSendsTheAct() throws {
-        let (flow, bridge, _, presenter, _) = makeFlow(answers: [chosenFolder], list: docsRootAnswer)
+        let (flow, bridge, _, presenter, _) = makeFlow(
+            answers: [chosenFolder], list: docsRootAnswer)
         bridge.listAnswers["docs"] = emptyDocsAnswer
         flow.run()
         let root = try workbench(in: presenter).rootItemsView

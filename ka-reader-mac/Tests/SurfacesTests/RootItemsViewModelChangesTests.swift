@@ -283,7 +283,8 @@ struct RootItemsViewModelChangesTests {
     @Test func aCollapseOrExpansionPostedDuringAReloadRaisesNoIntent() throws {
         let harness = makeHarness([folder("docs"), file("b.txt")])
         try readerExpands("docs", answering: .observed([folder("docs/guides")]), in: harness)
-        try readerExpands("docs/guides", answering: .observed([file("docs/guides/a.md")]), in: harness)
+        try readerExpands(
+            "docs/guides", answering: .observed([file("docs/guides/a.md")]), in: harness)
         let reads = harness.reads.count
 
         // The folder vanishes (AppKit posts its collapses during the reload) and then returns

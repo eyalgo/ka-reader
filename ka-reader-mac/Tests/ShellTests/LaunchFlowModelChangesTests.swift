@@ -285,7 +285,8 @@ final class LaunchFlowModelChangesTests: XCTestCase {
 
         let receiver = try XCTUnwrap(launch.bridge.receivers.last ?? nil)
         await push(
-            rootChange([entry("src", folder: true), entry("a.txt"), entry("b.txt"), entry("c.txt")]),
+            rootChange([entry("src", folder: true), entry("a.txt"), entry("b.txt"), entry("c.txt")]
+            ),
             through: receiver, handle: 200)
         launch.main.releaseAll()
 
