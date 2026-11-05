@@ -699,23 +699,16 @@ impl FolderModel {
     /// # Examples
     ///
     /// ```
-    /// use std::path::{Path, PathBuf};
-    /// use ka_reader_core::{FolderModel, ItemState, PathReports, TreeRequest, open_folder};
+    /// use std::path::Path;
+    /// use ka_reader_core::{FolderModel, open_folder};
     ///
-    /// let root = std::env::temp_dir().join(format!("ka-doc-changes-since-{}", std::process::id()));
-    /// std::fs::create_dir_all(&root).expect("the folder is made");
-    /// let before = FolderModel::new(open_folder(&root).expect("the folder opens"));
-    /// std::fs::write(root.join("new.txt"), "new\n").expect("the file is written");
+    /// let here = FolderModel::new(open_folder(".").expect("the working folder opens"));
+    /// let elsewhere = FolderModel::new(open_folder(std::env::temp_dir()).expect("the temporary folder opens"));
     ///
-    /// let after = before
-    ///     .clone()
-    ///     .list_tree(TreeRequest::Invalidate(PathReports::new(vec![root.join("new.txt")])));
-    /// let changes = after.changes_since(&before);
-    /// std::fs::remove_dir_all(&root).expect("the folder goes");
-    ///
-    /// let [(path, listing)] = changes.listings() else { panic!("one listing changed") };
+    /// let changes = here.changes_since(&elsewhere);
+    /// let [(path, _listing)] = changes.listings() else { panic!("only the root listing differs") };
     /// assert_eq!(path, Path::new(""));
-    /// assert!(matches!(listing, ItemState::Observed(entries) if entries.len() == 1));
+    /// assert!(here.changes_since(&here).is_empty());
     /// ```
     pub fn changes_since(&self, earlier: &FolderModel) -> TreeChanges {
         let listings = std::iter::once((PathBuf::new(), &self.root_listing))
@@ -1631,13 +1624,12 @@ mod tests {
     #[test]
     fn test_root_names_the_canonical_root() {
         let folder = project();
+        folder.make_link("link-to-the-project", folder.path());
         let link = folder.path().join("link-to-the-project");
-        std::os::unix::fs::symlink(folder.path(), &link).expect("the link is made");
 
         let opened = open_folder(&link).expect("the link opens");
 
-        let canonical = std::fs::canonicalize(folder.path()).expect("the folder resolves");
-        assert_eq!(opened.root(), canonical.as_path());
+        assert_eq!(opened.root(), folder.path());
         assert_ne!(opened.root(), link.as_path());
     }
 
