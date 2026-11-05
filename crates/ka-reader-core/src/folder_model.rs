@@ -1955,6 +1955,88 @@ mod tests {
         );
     }
 
+    // ---- Invalidate: the return pass ----
+
+    /// Applies supplied reads, answers each read the fold asks for with `answer`, and returns the
+    /// model with the paths the fold read, in the order it read them.
+    fn fold_returning(
+        model: FolderModel,
+        reads: Vec<(&str, ItemState<ListingObservation>)>,
+        answer: impl Fn(&Path) -> ItemState<ListingObservation>,
+    ) -> (FolderModel, Vec<String>) {
+        let reads = reads
+            .into_iter()
+            .map(|(path, observation)| (PathBuf::from(path), observation))
+            .collect();
+        let mut asked = Vec::new();
+        let model = reduce_invalidation(model, reads, &mut |path| {
+            asked.push(path.to_str().expect("UTF-8").to_owned());
+            answer(path)
+        });
+        (model, asked)
+    }
+
+    #[test]
+    fn test_the_return_pass_reads_only_expanded_paths_whose_parent_lists_them_as_folders() {
+        let model = supplied_model(
+            held("", &[("src", FOLDER)]),
+            &[("src", held("src", &[("old.rs", FILE)]))],
+            expanded_place(
+                &[
+                    "src",
+                    "src/lib",
+                    "src/mod.rs",
+                    "src/gone",
+                    "nowhere/deep",
+                    "src/lib/deep",
+                ],
+                "src/mod.rs",
+            ),
+        );
+
+        let (after, asked) = fold_returning(
+            model,
+            vec![(
+                "src",
+                observed(
+                    "src",
+                    &[("lib", FOLDER), ("mod.rs", FILE), ("other", FOLDER)],
+                ),
+            )],
+            |path| match path.to_str().expect("UTF-8") {
+                "src/lib" => observed("src/lib", &[("deep", FOLDER)]),
+                "src/lib/deep" => observed("src/lib/deep", &[("d.rs", FILE)]),
+                other => panic!("the return pass read {other}"),
+            },
+        );
+
+        assert_eq!(asked, vec!["src/lib", "src/lib/deep"]);
+        assert_eq!(held_paths(&after), vec!["src", "src/lib", "src/lib/deep"]);
+    }
+
+    #[test]
+    fn test_a_parent_returns_before_its_children() {
+        let model = supplied_model(
+            held("", &[("a", FOLDER)]),
+            &[],
+            expanded_place(&["a/b/c", "a", "a/b"], "a"),
+        );
+
+        let (after, asked) = fold_returning(
+            model,
+            vec![("", observed("", &[("a", FOLDER)]))],
+            |path| match path.to_str().expect("UTF-8") {
+                "a" => observed("a", &[("b", FOLDER)]),
+                "a/b" => observed("a/b", &[("c", FOLDER)]),
+                "a/b/c" => observed("a/b/c", &[("leaf.rs", FILE)]),
+                other => panic!("the return pass read {other}"),
+            },
+        );
+
+        assert_eq!(asked, vec!["a", "a/b", "a/b/c"]);
+        assert_eq!(held_paths(&after), vec!["a", "a/b", "a/b/c"]);
+    }
+
     #[test]
     fn test_a_created_path_is_listed_in_its_held_parent() {
         let model = supplied_model(

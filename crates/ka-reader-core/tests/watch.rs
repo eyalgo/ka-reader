@@ -805,3 +805,54 @@ fn test_a_failed_expanded_folder_keeps_each_sibling_in_its_own_state() {
     ));
     assert_eq!(model.kind(), &ItemState::Pending);
 }
+
+// ---- Invalidate: the return pass ----
+
+#[test]
+fn test_a_returning_folder_shows_a_fresh_listing_not_the_old_one() {
+    let folder = project();
+    let model = select(
+        expand(expand(model_over(&folder), "src"), "src/lib"),
+        "src/util.rs",
+    );
+    fs::remove_dir_all(folder.path().join("src")).expect("the folder goes");
+    let model = invalidate(model, &["src"]);
+    assert_eq!(model.listing(Path::new("src")), None);
+    folder.write_file("src/new.txt", "new\n");
+    folder.write_file("src/util.rs", "// util again\n");
+
+    let model = invalidate(model, &["src"]);
+
+    let listing = model.listing(Path::new("src"));
+    assert!(names(listing).contains(&"new.txt") && names(listing).contains(&"util.rs"));
+    assert!(!names(listing).contains(&"main.rs"));
+    assert_equals_fresh_reads(&model, &["", "src"]);
+    assert!(expanded(&model, "src") && expanded(&model, "src/lib"));
+    assert_eq!(model.listing(Path::new("src/lib")), None);
+    assert_eq!(model.place().selected(), Some(Path::new("src/util.rs")));
+}
+
+#[test]
+fn test_the_next_read_after_a_failure_lists_the_new_entry_and_rereads_nested_expanded_folders() {
+    let folder = project();
+    let model = expand(
+        expand(expand(model_over(&folder), "src"), "src/lib"),
+        "docs",
+    );
+    folder.write_file("src/x.rs", "// x\n");
+    folder.set_mode("src", 0o000);
+    let failed = invalidate(model, &["src"]);
+    folder.set_mode("src", 0o755);
+    assert_eq!(
+        failed.listing(Path::new("src")),
+        Some(&ItemState::Failed(Condition::Unreadable))
+    );
+    assert_eq!(failed.listing(Path::new("src/lib")), None);
+    folder.write_file("src/lib/new.rs", "// new\n");
+
+    let model = invalidate(failed, &["src"]);
+
+    assert!(names(model.listing(Path::new("src"))).contains(&"x.rs"));
+    assert!(names(model.listing(Path::new("src/lib"))).contains(&"new.rs"));
+    assert_equals_fresh_reads(&model, &["", "src", "src/lib", "docs"]);
+}
