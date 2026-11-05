@@ -178,10 +178,7 @@ fn check_stop_waits_for_a_callback_in_flight<H: Harness>(harness: &H) {
             .expect("the release channel")
             .recv_timeout(EXPECTED_WITHIN);
     });
-    let subscription = harness
-        .watcher()
-        .subscribe(&root, sink)
-        .expect("subscribe");
+    let subscription = harness.watcher().subscribe(&root, sink).expect("subscribe");
 
     thread::scope(|scope| {
         scope.spawn(|| harness.provoke(&root));
@@ -225,9 +222,7 @@ fn test_batches_reach_only_their_own_sink() {
 
 #[test]
 fn test_after_stop_returns_nothing_more_is_delivered_and_the_sink_is_released() {
-    check_after_stop_returns_nothing_more_is_delivered_and_the_sink_is_released(
-        &FakeHarness::new(),
-    );
+    check_after_stop_returns_nothing_more_is_delivered_and_the_sink_is_released(&FakeHarness::new());
 }
 
 #[test]

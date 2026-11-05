@@ -6,6 +6,7 @@ pub mod log_install;
 pub mod log_writer;
 pub mod machine_config;
 pub mod session;
+pub mod watcher;
 
 // Shared with the unit tests. It lives under `tests/common/` so `src/` holds no filesystem code but the log module's.
 #[cfg(test)]

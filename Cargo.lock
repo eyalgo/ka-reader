@@ -117,6 +117,7 @@ name = "ka-reader-bridge"
 version = "0.0.0"
 dependencies = [
  "git2",
+ "ka-reader-bridge",
  "ka-reader-core",
  "libc",
  "log",
