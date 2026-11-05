@@ -38,9 +38,12 @@ let package = Package(
                 .linkedLibrary("iconv"),
                 // The libgit2 that ka-reader-core links needs zlib and the Security framework; the
                 // measured list above also names CoreFoundation, which the link carries once named.
+                // The bridge's watcher binds FSEvents, which lives in CoreServices: the same
+                // measured list names it, and the link has no other way to find those symbols.
                 .linkedLibrary("z"),
                 .linkedFramework("Security"),
                 .linkedFramework("CoreFoundation"),
+                .linkedFramework("CoreServices"),
             ]),
         .testTarget(name: "SurfacesTests", dependencies: ["Surfaces"], swiftSettings: strictness),
         .testTarget(

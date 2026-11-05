@@ -12,6 +12,8 @@ use std::path::{Path, PathBuf};
 pub mod fakes;
 mod fsevents;
 
+pub use fsevents::FsEvents;
+
 /// Where a watcher hands each batch of reported paths: absolute, owned and coalesced. A sink is called
 /// on a thread the watcher owns, one batch at a time, until its subscription is stopped.
 pub type PathSink = Box<dyn Fn(Vec<PathBuf>) + Send + Sync>;
