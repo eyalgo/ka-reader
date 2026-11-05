@@ -13,8 +13,13 @@ mod common;
 
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::sync::mpsc;
+use std::thread;
+use std::time::Duration;
+use std::time::Instant;
 use std::time::SystemTime;
 
+use common::Snapshot;
 use common::TempDir;
 use ka_reader_core::{
     Condition, Entry, EntryKind, FileRequest, FolderModel, ItemState, ModelDelta, PathReports,
@@ -855,4 +860,244 @@ fn test_the_next_read_after_a_failure_lists_the_new_entry_and_rereads_nested_exp
     assert!(names(model.listing(Path::new("src"))).contains(&"x.rs"));
     assert!(names(model.listing(Path::new("src/lib"))).contains(&"new.rs"));
     assert_equals_fresh_reads(&model, &["", "src", "src/lib", "docs"]);
+}
+
+// ---- The thirty-second scene (CP-1010) ----
+
+/// How long the writer thread spreads the scene's operations over.
+const SCENE_LENGTH: Duration = Duration::from_secs(30);
+
+/// Seeds the choice of how the model thread delivers each batch of reports, so a run repeats.
+const SCENE_SEED: u64 = 0x5eed_7ee5_ce2e;
+
+/// The scene's starting layout, each file holding [`start_content`].
+const SCENE_START_FILES: &[&str] = &[
+    "README.md",
+    "reading/long.md",
+    "src/a.rs",
+    "src/old.rs",
+    "src/nested/gone.txt",
+    "src/nested/deep/d.rs",
+    "src/nested/deep/stale.rs",
+    "docs/guide.md",
+    "docs/draft.md",
+    "notes/n.txt",
+];
+
+/// The folders the reader holds expanded throughout the scene.
+const SCENE_EXPANDED: &[&str] = &[
+    "src",
+    "src/nested",
+    "src/nested/deep",
+    "docs",
+    "notes",
+    "reading",
+];
+
+/// The file the reader keeps open, which the scene never touches.
+const SCENE_OPEN_FILE: &str = "reading/long.md";
+
+/// The file the reader keeps selected. The scene rewrites it, which changes its listing alone.
+const SCENE_SELECTED_FILE: &str = "src/a.rs";
+
+/// One thing the writer thread does to the folder.
+enum SceneOp {
+    /// Creates or replaces a file with [`scene_content`], making any missing folder above it.
+    Write(&'static str),
+    Remove(&'static str),
+    RemoveFolder(&'static str),
+    Rename(&'static str, &'static str),
+}
+
+/// Every operation, in order. Applied to the starting layout they leave the committed fixture
+/// `checks/fixtures/tree-scene`, which differs from the start in every expanded folder, so a model
+/// that never updated cannot equal it.
+const SCENE: &[SceneOp] = &[
+    SceneOp::Write("src/nested/fresh.txt"),
+    SceneOp::Remove("src/nested/gone.txt"),
+    SceneOp::Write("src/a.rs"),
+    SceneOp::Write("reading/extra.md"),
+    SceneOp::RemoveFolder("src/nested/deep"),
+    SceneOp::Write("src/nested/deep/d.rs"),
+    SceneOp::Write("src/nested/deep/e.rs"),
+    SceneOp::Rename("src/old.rs", "src/nested/deep/moved.rs"),
+    SceneOp::Remove("docs/draft.md"),
+    SceneOp::Write("docs/changelog.md"),
+    SceneOp::RemoveFolder("docs"),
+    SceneOp::Write("docs/guide.md"),
+    SceneOp::Write("docs/changelog.md"),
+    SceneOp::Write("notes/n2.txt"),
+    SceneOp::Remove("notes/n.txt"),
+    SceneOp::Write("notes/n3.txt"),
+    SceneOp::Remove("notes/n3.txt"),
+    SceneOp::Write(".scene-note"),
+    SceneOp::Write("src/newer/n.rs"),
+    SceneOp::Rename("README.md", "README.txt"),
+    SceneOp::Write("tmp/t.txt"),
+    SceneOp::RemoveFolder("tmp"),
+    SceneOp::Write("src/a.rs"),
+    SceneOp::Write("src/nested/fresh.txt"),
+];
+
+fn start_content(path: &str) -> String {
+    format!("start: {path}\n")
+}
+
+fn scene_content(path: &str) -> String {
+    format!("scene: {path}\n")
+}
+
+impl SceneOp {
+    /// Does the operation under `root` and returns the absolute paths a watcher would report for it.
+    fn apply(&self, root: &Path) -> Vec<PathBuf> {
+        match self {
+            Self::Write(path) => {
+                make_parent(root, path);
+                fs::write(root.join(path), scene_content(path)).expect("the file is written");
+                vec![root.join(path)]
+            }
+            Self::Remove(path) => {
+                fs::remove_file(root.join(path)).expect("the file goes");
+                vec![root.join(path)]
+            }
+            Self::RemoveFolder(path) => {
+                fs::remove_dir_all(root.join(path)).expect("the folder goes");
+                vec![root.join(path)]
+            }
+            Self::Rename(from, to) => {
+                make_parent(root, to);
+                fs::rename(root.join(from), root.join(to)).expect("the entry is renamed");
+                vec![root.join(from), root.join(to)]
+            }
+        }
+    }
+}
+
+fn make_parent(root: &Path, path: &str) {
+    if let Some(parent) = root.join(path).parent() {
+        fs::create_dir_all(parent).expect("the folder above is made");
+    }
+}
+
+/// A step of a fixed pseudo-random sequence: the same seed gives the same choices on every run.
+fn next_random(state: &mut u64) -> u64 {
+    *state = state
+        .wrapping_mul(6_364_136_223_846_793_005)
+        .wrapping_add(1_442_695_040_888_963_407);
+    *state >> 33
+}
+
+fn apply_reports(model: FolderModel, paths: Vec<PathBuf>) -> FolderModel {
+    model.list_tree(TreeRequest::Invalidate(PathReports::new(paths)))
+}
+
+/// The folder a coalesced report names in place of `path`: its parent, or the root.
+fn coalesced(root: &Path, path: &Path) -> PathBuf {
+    path.parent()
+        .filter(|parent| parent.starts_with(root))
+        .unwrap_or(root)
+        .to_path_buf()
+}
+
+/// Applies each batch the writer sends, delivered the way a watcher might: at once, delayed until a
+/// later batch, coalesced at the folder above, as a report of the root, or twice. The reports held
+/// back arrive last, once the writer is done.
+fn apply_batches(
+    mut model: FolderModel,
+    root: &Path,
+    batches: mpsc::Receiver<Vec<PathBuf>>,
+) -> FolderModel {
+    let mut seed = SCENE_SEED;
+    let mut delayed = Vec::new();
+    for batch in batches {
+        model = match next_random(&mut seed) % 10 {
+            0..=3 => apply_reports(model, batch),
+            4 | 5 => {
+                delayed.extend(batch);
+                model
+            }
+            6 => apply_reports(
+                model,
+                batch.iter().map(|path| coalesced(root, path)).collect(),
+            ),
+            7 => apply_reports(model, vec![root.to_path_buf()]),
+            8 => apply_reports(apply_reports(model, batch.clone()), batch),
+            _ => {
+                let mut every = std::mem::take(&mut delayed);
+                every.extend(batch);
+                apply_reports(model, every)
+            }
+        };
+    }
+    apply_reports(model, delayed)
+}
+
+/// The scene: for thirty seconds a writer thread creates, changes, renames and deletes entries in
+/// nested expanded folders, removes and recreates two expanded folders and churns the root, while
+/// the model thread applies the reports as `Invalidate` batches that are delayed, coalesced at
+/// ancestors, sometimes the root and sometimes repeated. A file is open and never touched, and no
+/// Git runs. Once the writer is done and the last reports have arrived, every held listing equals a
+/// fresh read, the place and the open file are as they were set, and the folder equals the
+/// committed fixture `checks/fixtures/tree-scene`.
+///
+/// Run it with `cargo test --locked -p ka-reader-core --test watch`; the scene runs whole, so a
+/// filter that selects no test is not proof it passed. It takes thirty seconds.
+#[test]
+fn test_the_thirty_second_scene_ends_equal_to_fresh_reads_and_to_the_fixture() {
+    let folder = TempDir::new();
+    for path in SCENE_START_FILES {
+        folder.write_file(path, &start_content(path));
+    }
+    let mut model = model_over(&folder);
+    for path in SCENE_EXPANDED {
+        model = expand(model, path);
+    }
+    let model = select(model, SCENE_SELECTED_FILE);
+    let model = open_at(model, SCENE_OPEN_FILE, &line_400_anchor());
+    let open_before = model.open_file().cloned();
+    assert!(open_before.is_some(), "the file is open before the scene");
+
+    let (reports, batches) = mpsc::channel();
+    let root = folder.path().to_path_buf();
+    let writer = thread::spawn({
+        let root = root.clone();
+        move || {
+            let start = Instant::now();
+            let count = u32::try_from(SCENE.len()).expect("the scene is short");
+            for (index, op) in (1..=count).zip(SCENE) {
+                thread::sleep(
+                    (start + SCENE_LENGTH * index / count)
+                        .saturating_duration_since(Instant::now()),
+                );
+                reports
+                    .send(op.apply(&root))
+                    .expect("the model thread is receiving");
+            }
+        }
+    });
+    let model = apply_batches(model, &root, batches);
+    writer.join().expect("the writer finishes");
+
+    let mut held = vec![""];
+    held.extend(SCENE_EXPANDED);
+    assert_equals_fresh_reads(&model, &held);
+    for path in SCENE_EXPANDED {
+        assert!(expanded(&model, path), "{path} stays expanded");
+    }
+    assert_eq!(
+        model.place().selected(),
+        Some(Path::new(SCENE_SELECTED_FILE))
+    );
+    assert_eq!(model.open_file().cloned(), open_before);
+    let fixture = TempDir::new();
+    fixture.copy_fixture("tree-scene");
+    let want: Snapshot = fixture
+        .snapshot()
+        .into_iter()
+        .filter_map(|(path, entry)| {
+            let inside = path.strip_prefix("tree-scene").ok()?;
+            (!inside.as_os_str().is_empty()).then(|| (inside.to_path_buf(), entry))
+        })
+        .collect();
+    folder.assert_unchanged_since(&want, "the scene's final folder differs from the fixture");
 }
