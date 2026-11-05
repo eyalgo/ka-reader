@@ -114,6 +114,12 @@ fn check_batches_reach_only_their_own_sink<H: Harness>(harness: &H) {
         .subscribe(&root_b, forwarding_sink(into_b))
         .expect("subscribe b");
 
+    // A real stream can report the creation of a root made just before it started. Let that
+    // report arrive and discard it, so what b hears next is only what a's change caused.
+    harness.settle();
+    while from_a.try_recv().is_ok() {}
+    while from_b.try_recv().is_ok() {}
+
     harness.provoke(&root_a);
 
     let batch = from_a.recv_timeout(EXPECTED_WITHIN).expect("a's sink");
