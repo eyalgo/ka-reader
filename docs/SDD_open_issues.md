@@ -66,3 +66,48 @@ None.
 - **Answer:** <the CTO fills this in>
 
 **How it closes.** `product-sdd` folds it on its next run like every other item in this file.
+
+### 5.2 § 3 `folder-model` still calls the removed-entry drop a known defect
+- **Raised by:** PM — 2026-11-05
+- **Seat:** cto
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-13_the-tree-and-the-open-file-follow-the-disk`
+- **What it blocks:** a reader of § 3 takes the drop pass as unbuilt, and the next slice's design plans around a defect the tree no longer has.
+- **Where it shows:** the `folder-model` row (`docs/SDD.md:L371`), the sentence "At `ka-reader@8ef8c5b` the reducer does not do this, a known defect until a change lands". At `ka-reader@2529a42` the model's `Invalidate` request re-reads, drops every listing held under a removed entry, and reads a returned folder afresh; `cargo test --locked -p ka-reader-core --test watch` holds the removal-and-return case. `TreeRequest::Delta`, which no production code calls, keeps its names-only reduction.
+- **If a document has to be written:** none beyond `SDD.md`, through `product-sdd`.
+- **Answer:** <the CTO fills this in>
+
+### 5.3 SM-4 and SM-5 describe the crossing before tree acts and invalidation were built
+- **Raised by:** PM — 2026-11-05
+- **Seat:** cto
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-13_the-tree-and-the-open-file-follow-the-disk`
+- **What it blocks:** the next slice reads SM-4 to plan the reading position's crossing, and SM-4 says the collapse does not cross yet.
+- **Where it shows:** SM-4 (`docs/SDD.md:L495`) says `list_tree` takes the path alone until the shell's crossing is built. At `ka-reader@2529a42` `ka_reader_list_tree` takes the path and an act (expand `0`, collapse `1`) and the shell sends both; `select_file` still takes the path alone, now applies the selection to the held model, and the open file and the reading position do not cross. SM-5 (`docs/SDD.md:L496`) lists `TreeRequest` as `Expand`, `Collapse`, `Delta`; it now also has `Invalidate`, the model-owned request that the watcher's path hints enter through.
+- **If a document has to be written:** none beyond `SDD.md`, through `product-sdd`.
+- **Answer:** <the CTO fills this in>
+
+### 5.4 § 3 `surfaces` leaves the order of two asks in flight undecided, and the built order lets two selections cross
+- **Raised by:** PM — 2026-11-05
+- **Seat:** cto
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-13_the-tree-and-the-open-file-follow-the-disk`
+- **What it blocks:** the open file following the disk follows the model's selection; if two selections can reach the model out of order, the model can hold a file the tree does not show.
+- **Where it shows:** the `surfaces` row (`docs/SDD.md:L377`) says which side orders two asks in flight is the design of the change that moves the selection into the model (RN-76). As built at `ka-reader@2529a42`: tree acts cross SM-4 on one serial queue in the reader's order (`ka-reader-mac/Sources/Shell/ReadRunning.swift:L37-L48`); selections apply to the model in the order they reach the bridge's model lock and the shell draws only the latest answer, but `select_file` runs on the concurrent runner (`Sources/Shell/LaunchFlow.swift:L177-L179`, `ReadRunning.swift:L18-L27`), so two quick selections can reach the lock in reverse order. The question is what the row states: the order as built, or that the model's selection is always the reader's last.
+- **If a document has to be written:** none beyond `SDD.md`, through `product-sdd`.
+- **Answer:** <the CTO fills this in>
+
+### 5.5 § 4 C-I1 and *Open Questions* still hold the failed re-read of an expanded folder as undecided
+- **Raised by:** PM — 2026-11-05
+- **Seat:** cto
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-13_the-tree-and-the-open-file-follow-the-disk`
+- **What it blocks:** later slices read C-I1 for what a failed folder does to its children, and find "not decided" over a form the product now has.
+- **Where it shows:** § 4 C-I1 says what a failed re-read does to the entries listed under the folder is not decided (*Open Questions*, RN-89). The form built at `ka-reader@2529a42`: the folder's listing item becomes `failed` with the condition observed; the entries under it are no longer held (no row beneath it, every listing at a path under it dropped); the reader's place under it — expanded flags and the selection — is kept, inert; the next successful read replaces the failure with the fresh listing without ceremony, and each folder under it that the place holds expanded is read again in the same update. Held by `--test watch`'s failed-re-read cases and `RootItemsViewModelChangesTests`. *Open Questions* then loses the failed-re-read item, and its collapse-and-scroll item narrows to the scroll's crossing through `select_file` alone, since the collapse now crosses through `list_tree`'s act.
+- **If a document has to be written:** none beyond `SDD.md`, through `product-sdd`.
+- **Answer:** <the CTO fills this in>
+
+### 5.6 § 4 C-I1 says the model sets `stopped` on an item it holds; the model has no such state
+- **Raised by:** PM — 2026-11-05
+- **Seat:** cto
+- **Tracked by:** `ka-reader · nemawashi · 2026-10-13_the-tree-and-the-open-file-follow-the-disk`
+- **What it blocks:** a layer-2 case asked to pin a model-held `stopped` sibling has nothing to pin; NFDR QC-47 repeats the claim (raised on the architecture companion).
+- **Where it shows:** C-I1 (`docs/SDD.md:L825`) says `stopped` is established "by the model, on an item it holds". At `ka-reader@2529a42` `ItemState` is `Pending`, `Observed` or `Failed` (`crates/ka-reader-core/src/fs_reader.rs:L129-L133`), and only the shell sets `stopped`, at SM-4's return. The question is whether the model is to gain the state or C-I1 is to say only the shell sets it.
+- **If a document has to be written:** none beyond `SDD.md`, through `product-sdd`.
+- **Answer:** <the CTO fills this in>
