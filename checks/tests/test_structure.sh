@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Version: 1.6.0 — the cases of the bridge watcher unit, the native vocabulary floor and the
+#   watcher, model-to-watcher and core-to-bridge edges
 # Version: 1.5.0 — the cases of QC-10's adapter, QC-11's git_reader, watcher and markdown_renderer
 #   subjects, and QC-17's adapter construction
 # Version: 1.4.0 — probe answers root for a git file; third QC-15 filesystem owner
@@ -1804,7 +1806,8 @@ test_required_inputs_are_read() {
 test_allowed_unit_edges_pass() {
   new_root allowed-edges || return 1
   plant "$R" "$CORE_FILE" 'use crate::{fs_reader::Entry, highlighter::Span};'
-  plant "$R" "$CORE_FILE" 'use crate::watcher::Event;'
+  # The model-to-watcher edge was admitted here until the bridge gained a watcher; it is refused
+  # now (test_folder_model_naming_watcher_or_bridge_is_rejected).
   plant "$R" "$CORE_FILE" 'use crate::markdown_renderer::render;'
   plant "$R" "$CORE_FILE" 'use self::fs_reader::Entry;'
   plant "$R" "$CORE_FILE" 'use crate::fs_reader; use crate::highlighter;'

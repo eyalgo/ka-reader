@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Version: 1.7.0 — the bridge's watcher is a unit: its files alone stand outside QC-13's Apple row;
+#   the Apple floor reads native vocabulary; the watcher, model-to-watcher and core-to-bridge edges
 # Version: 1.6.0 — structure.sh holds QC-10's adapter, QC-11's git_reader, watcher and
 #   markdown_renderer subjects, and QC-17's adapter construction
 # Version: 1.5.0 — probe answers root for a git file; third QC-15 filesystem owner
@@ -220,6 +222,22 @@
 #            (CP-423)     names and forms read over raw text, reported as QC-13 and naming the
 #                         framework or form. QC-9's own Apple finding stays ka-reader-core's.
 #                         Source: QC-13's "must not import any Apple framework".
+#     QC-13  watcher      In crates/ka-reader-bridge/, the files crates/ka-reader-bridge/src/watcher.rs
+#     QC-11  (the bridge  and every file under crates/ka-reader-bridge/src/watcher/, matched as an
+#     QC-10  unit)        exact name and never as a prefix (src/watcher_ext.rs is in no unit), are
+#                         the only bridge files the Apple row above does not read: the native binding
+#                         is written there and nowhere else, and QC-9's core row exempts nothing.
+#                         The Apple floor, in both crates, also refuses native vocabulary written
+#                         without the framework attribute: a token (comments and strings counting)
+#                         beginning `FSEvent`, `CF` followed by a capital letter, or `dispatch_`.
+#                         A watcher file that names `ka_reader_core`, or reaches another bridge
+#                         module by `crate::<module>` (any but `watcher`), by `super::super::`, or,
+#                         in src/watcher.rs, by `super::<module>` the bridge declares, is a QC-11
+#                         finding. A folder_model file that imports `watcher` (`crate::watcher`, a
+#                         `use` tree reaching it, or `watcher::` as a path root), and any
+#                         ka-reader-core source file or the core manifest that names
+#                         `ka_reader_bridge` or `ka-reader-bridge`, are QC-10 findings. Source:
+#                         QC-10, QC-13 and QC-15's watcher placement.
 #     QC-14  manifest     In crates/ka-reader-core/Cargo.toml and
 #     crates/ka-reader-bridge/Cargo.toml, at
 #            (CP-424,     the line of the offending key: a dependency in [dependencies] or
@@ -324,6 +342,10 @@
 #   rules become executable with the script is read as: a rule is executable from the change
 #   that adds it here. Until then its gate is the design review. Not held: QC-7; QC-12;
 #   QC-20. And these parts of rules the table above holds in part:
+#     - The watcher's native binding is not judged for what it does: that the adapter never stats,
+#       canonicalizes or checks the existence of a reported path (QC-15) names `Path` methods the
+#       scan cannot see, and review of the diff holds it. A native name outside the vocabulary
+#       above (a framework call spelled without FSEvent, CF or dispatch_) is not found.
 #     - QC-15's filesystem owners, in two parts: which read the adapter makes inside its owner
 #       file (every filesystem form there is admitted), and `git-reader`'s `Path`-method reads
 #       (`Path::metadata`, `symlink_metadata`, which name no `fs` module). Review at
@@ -436,7 +458,26 @@ function add_unsafe(ln) {
 
 function add_apple(ln, form) {
   if (is_core) note(ln, "QC-9", 1, "", "Apple framework or binding `" form "` in ka-reader-core")
-  if (is_bridge) note(ln, "QC-13", 2, form, "Apple framework or binding `" form "` in ka-reader-bridge")
+  if (is_bridge && !bwatch) note(ln, "QC-13", 2, form, "Apple framework or binding `" form "` in ka-reader-bridge")
+}
+
+# The native vocabulary a binding can be written in without the framework attribute: a token that
+# begins FSEvent, CF and a capital letter, or dispatch_. A floor in both crates; the bridge's
+# watcher files are the one place the QC-13 clause lets it stand.
+function is_native_vocab(w) {
+  return w ~ /^FSEvent/ || w ~ /^CF[A-Z]/ || w ~ /^dispatch_/
+}
+
+# A path that starts at `crate` or at a run of `super`, written in a bridge watcher file, reaches
+# another bridge module unless it reaches the watcher itself. In src/watcher.rs a single `super` is
+# the crate root, so it reaches a module only by naming one the bridge declares; in a file under
+# src/watcher/ a single `super` is the watcher module, and a second one is the crate root.
+function watcher_reach(ln, parent, w,    n) {
+  if (!bwatch || !is_word_token(w) || w == "watcher") return
+  if (parent == "crate") { note(ln, "QC-11", 3, w, "watcher reaches the bridge module `" w "`"); return }
+  n = gsub(/super/, "super", parent)
+  if (n >= 2 || (n == 1 && !bwatch_nested && index(BMODS, " " w " ") > 0))
+    note(ln, "QC-11", 3, w, "watcher reaches the bridge module `" w "`")
 }
 
 function add_process(ln) {
@@ -517,7 +558,7 @@ function unit_of(w,    p, rest, q) {
 # QC-10's subject and is forbidden own_state alone. A file of watcher or markdown_renderer is judged
 # from the run in which it first appears.
 function forbidden_edge(u) {
-  if (subj == "folder_model") return u == "own_state"
+  if (subj == "folder_model") return u == "own_state" || u == "watcher"
   if (subj == "fs_reader") return index(" folder_model own_state git_reader watcher markdown_renderer highlighter ", " " u " ") > 0
   if (subj == "highlighter") return index(" folder_model own_state git_reader watcher markdown_renderer fs_reader ", " " u " ") > 0
   if (subj == "git_reader") return index(" folder_model own_state fs_reader watcher highlighter markdown_renderer ", " " u " ") > 0
@@ -792,7 +833,7 @@ function use_segment(parent, first, w, atstart, ln) {
   if (parent != "") { use_member_rules(last_seg(parent), w, ln); net_module(first, w, ln) }
   if (first == "libc" && parent == "libc") libc_member_rules(w, ln)
   if (first == "log" && parent != "" && is_logger(w)) add_logger(ln, w)
-  if (is_crate_or_super(parent)) add_unit(ln, w)
+  if (is_crate_or_super(parent)) { add_unit(ln, w); watcher_reach(ln, parent, w) }
   if (subj == "folder_model" && w == "libgit2" && is_git_reader_path(parent)) add_adapter(ln, "git_reader::libgit2")
   if (atstart && parent == "" && is_config_root(w)) add_config_read(ln, "configuration loader `" w "`")
   if (stream_code && parent == "" && atstart) crate_position(w, ln, 0)
@@ -824,11 +865,16 @@ function scan_chain(t, l, k,    first, j, depth, prev) {
 }
 
 # The target of a `crate::<x>` path or of a run of `super::` segments.
-function scan_unit_path(t, l, k,    j) {
+function scan_unit_path(t, l, k,    j, m, prefix) {
   j = k
   if (t[k] == "super") { while (t[j] == "super" && t[j + 1] == "::") j += 2 }
   else j = k + 2
-  if (is_word_token(t[j])) add_unit(l[j], t[j])
+  if (is_word_token(t[j])) {
+    add_unit(l[j], t[j])
+    prefix = "crate"
+    if (t[k] == "super") { prefix = "super"; for (m = k + 2; m < j; m += 2) prefix = prefix "::super" }
+    watcher_reach(l[j], prefix, t[j])
+  }
   if (subj == "folder_model" && t[j] == "git_reader" && t[j + 1] == "::" && t[j + 2] == "libgit2") add_adapter(l[j + 2], "git_reader::libgit2")
 }
 
@@ -908,6 +954,7 @@ function collect_bindings(t, n,    k, m, sp, w, want_alias) {
 # The rules read off the physical line, before the tokenizer splits a string's `/` and `.` apart: a
 # configuration location is its text as written, comments and strings included.
 function raw_line_rules(text, ln) {
+  if (is_core && index(text, "ka-reader-bridge") > 0) note(ln, "QC-10", 4, "ka_reader_bridge", "ka-reader-core names ka_reader_bridge — the core never imports the bridge")
   if (subj == "folder_model" && has_word(text, "Libgit2")) add_adapter(ln, "Libgit2")
   if (index(text, ".config/") > 0 || index(text, ".config\"") > 0) add_config_read(ln, "configuration path `.config`")
   if (index(text, "Library/Preferences") > 0) add_config_read(ln, "configuration path `Library/Preferences`")
@@ -917,6 +964,10 @@ function raw_line_rules(text, ln) {
 function scan_stream(t, l, n,    k) {
   for (k = 1; k <= n; k++) {
     if (t[k] == "unsafe") add_unsafe(l[k])
+    if (is_word_token(t[k]) && is_native_vocab(t[k])) add_apple(l[k], t[k])
+    if (bwatch && t[k] == "ka_reader_core") note(l[k], "QC-11", 4, "ka_reader_core", "watcher names ka_reader_core — it imports no core item")
+    if (is_core && t[k] == "ka_reader_bridge") note(l[k], "QC-10", 4, "ka_reader_bridge", "ka-reader-core names ka_reader_bridge — the core never imports the bridge")
+    if (subj == "folder_model" && t[k] == "watcher" && t[k + 1] == "::" && is_root(t, k)) note(l[k], "QC-10", 1, "watcher", "folder_model imports watcher")
     if (t[k] == "DirBuilder") add_write(l[k], "DirBuilder")
     if (t[k] == "config_dir" || t[k] == "config_local_dir" || t[k] == "preference_dir") add_config_read(l[k], "configuration locator `" t[k] "`")
     if (t[k] == "." && in_set(W4, t[k + 1]) && t[k + 2] == "(" && t[k + 3] == "true" && t[k + 4] == ")") add_write(l[k + 1], "." t[k + 1] "(true)")
@@ -1443,6 +1494,8 @@ else
     exempt=0
     git_exempt=0
     in_bridge_src=0
+    bridge_watcher=0
+    bridge_watcher_nested=0
     subject_unit=""
     value_module=0
     [ "$crate_name" = "ka-reader-core" ] && is_core=1
@@ -1452,6 +1505,12 @@ else
     esac
     case "$relative" in
       crates/ka-reader-bridge/src/*) in_bridge_src=1 ;;
+    esac
+    # The bridge's watcher unit, matched as an exact name: src/watcher.rs and every file under
+    # src/watcher/, never src/watcher_ext.rs.
+    case "$relative" in
+      crates/ka-reader-bridge/src/watcher.rs) bridge_watcher=1 ;;
+      crates/ka-reader-bridge/src/watcher/*) bridge_watcher=1; bridge_watcher_nested=1 ;;
     esac
     # The two files that may name the libgit2 binding: every file of the git_reader unit, and the
     # composition root's search-path switch.
@@ -1490,6 +1549,7 @@ else
     LC_ALL=C awk -v rel="$relative" -v is_core="$is_core" -v is_bridge="$is_bridge" -v exempt="$exempt" -v git_exempt="$git_exempt" \
       -v subj="$subject_unit" -v value_module="$value_module" \
       -v in_src="$in_bridge_src" -v have_allow="$have_allow" \
+      -v bwatch="$bridge_watcher" -v bwatch_nested="$bridge_watcher_nested" \
       -v ALLOWED="$allowed" -v BMODS="$bridge_mods" -v REEXPORT="$reexports" -v UNITS="$unit_names" \
       -f "$work/scan.awk" "$product_root/$relative" >> "$work/findings" \
       || echo "the scan could not read $relative" >> "$work/causes"
@@ -1520,6 +1580,16 @@ for manifest_crate in ka-reader-core ka-reader-bridge; do
     -v root="$product_root" -f "$work/toml.awk" "$product_root/$manifest" >> "$work/findings" \
     || echo "the scan could not read $manifest" >> "$work/causes"
 done
+
+# QC-10: the core's manifest never names the bridge, whatever the key, the package or the path.
+if [ -r "$product_root/crates/ka-reader-core/Cargo.toml" ]; then
+  LC_ALL=C awk '
+    { text = $0; sub(/#.*/, "", text) }
+    index(text, "ka-reader-bridge") > 0 || index(text, "ka_reader_bridge") > 0 {
+      printf "crates/ka-reader-core/Cargo.toml\t%d\t10\t4\tka_reader_bridge\tcrates/ka-reader-core/Cargo.toml:%d: QC-10: ka-reader-core names ka_reader_bridge — the core never depends on the bridge\n", NR, NR
+    }' "$product_root/crates/ka-reader-core/Cargo.toml" >> "$work/findings" \
+    || echo "the scan could not read crates/ka-reader-core/Cargo.toml" >> "$work/causes"
+fi
 
 crate_count=0
 if [ -s "$work/files" ]; then
