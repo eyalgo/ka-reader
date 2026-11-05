@@ -48,12 +48,23 @@ const PLAIN_FILE_ENTRIES: [&str; 5] = [
 /// been restored beside them.
 const REPO_TREE_FILE_ENTRIES: [&str; 3] = ["README.md", "src/main.rs", "src/deep/leaf.txt"];
 
-/// One walk's outcome: how many `list_tree` calls it made, whether the root listed entries, and the
-/// two tallies the coverage judge compares. They are fed from different places and neither is
-/// derived from the other.
+/// How many times a walk drove each model operation. Each count is raised at the one site its
+/// operation goes through, so the tally is the walk's own record and nothing is derived from it.
+#[derive(Debug, Default, Clone, Copy)]
+struct Acts {
+    expand: usize,
+    collapse: usize,
+    invalidate: usize,
+    select: usize,
+}
+
+/// One walk's outcome: how many `list_tree` calls it made, whether the root listed entries, the
+/// two tallies the coverage judge compares, and the model operations it drove. They are fed from
+/// different places and neither is derived from the other.
 struct Walk {
     calls: usize,
     root_has_entries: bool,
+    acts: Acts,
     /// The path of every file entry a `list_tree` answer returned.
     listed_files: BTreeSet<String>,
     /// The number of `select_file` calls made at each path.
@@ -118,9 +129,11 @@ fn walk_folder(folder: &Path) -> Option<Walk> {
         &mut listed_files,
         &mut selected,
     );
+    let acts = Acts::default();
     Some(Walk {
         calls,
         root_has_entries,
+        acts,
         listed_files,
         selected,
     })
@@ -151,6 +164,65 @@ fn judge_coverage(
         }
     }
     Ok(())
+}
+
+/// Judges the model operations one walk drove: each of `Expand`, `Collapse`, `Invalidate` and
+/// `Select` must have been reached at least once (QC-2's reviewed half). The `Err` names the first
+/// operation the walk never reached.
+fn judge_acts(acts: &Acts) -> Result<(), String> {
+    let reached = [
+        ("TreeRequest::Expand", acts.expand),
+        ("TreeRequest::Collapse", acts.collapse),
+        ("TreeRequest::Invalidate", acts.invalidate),
+        ("FileRequest::Select", acts.select),
+    ];
+    match reached.iter().find(|(_, count)| *count == 0) {
+        Some((name, _)) => Err(format!("the walk never reached {name}")),
+        None => Ok(()),
+    }
+}
+
+fn judge_accepts_every_act_reached() -> Result<(), String> {
+    let acts = Acts {
+        expand: 1,
+        collapse: 1,
+        invalidate: 1,
+        select: 1,
+    };
+    judge_acts(&acts)
+        .map_err(|message| format!("a walk that reached every act was refused: {message}"))
+}
+
+/// A tally missing one act, which the judge must refuse by naming it.
+fn judge_refuses_a_missing_act(missing: &str, acts: Acts) -> Result<(), String> {
+    match judge_acts(&acts) {
+        Ok(()) => Err(format!(
+            "the judge accepted a walk that never reached {missing}"
+        )),
+        Err(message) if message.contains(missing) => Ok(()),
+        Err(message) => Err(format!(
+            "the judge refused a missing {missing} without naming it: {message}"
+        )),
+    }
+}
+
+fn judge_refuses_every_act_left_out() -> Result<(), String> {
+    let all = Acts {
+        expand: 1,
+        collapse: 1,
+        invalidate: 1,
+        select: 1,
+    };
+    judge_refuses_a_missing_act("Expand", Acts { expand: 0, ..all })?;
+    judge_refuses_a_missing_act("Collapse", Acts { collapse: 0, ..all })?;
+    judge_refuses_a_missing_act(
+        "Invalidate",
+        Acts {
+            invalidate: 0,
+            ..all
+        },
+    )?;
+    judge_refuses_a_missing_act("Select", Acts { select: 0, ..all })
 }
 
 fn tally<const N: usize>(
@@ -221,7 +293,9 @@ fn judge_self_check() -> Result<(), String> {
     judge_accepts_every_listed_file_selected_once()?;
     judge_refuses_a_listed_file_never_selected()?;
     judge_refuses_a_listed_file_selected_twice()?;
-    judge_refuses_a_selected_path_never_listed()
+    judge_refuses_a_selected_path_never_listed()?;
+    judge_accepts_every_act_reached()?;
+    judge_refuses_every_act_left_out()
 }
 
 fn fixture_path(name: &str) -> PathBuf {
@@ -240,6 +314,7 @@ fn check_fixture(name: &str, extra: FixtureCheck) -> Result<(), String> {
     }
     judge_coverage(&walk.listed_files, &walk.selected)
         .map_err(|message| format!("fixture {name}: {message}"))?;
+    judge_acts(&walk.acts).map_err(|message| format!("fixture {name}: {message}"))?;
     extra(&walk)
 }
 
