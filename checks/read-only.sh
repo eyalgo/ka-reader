@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
+# Version: 1.2.0 — adds --kill: the walk's host is built once, run directly, and ended with SIGKILL
+#   after its first completed pass; the verdict is `unchanged` only if it then hashes the same
 # Version: 1.1.0 — takes out what its own restore laid down, once the verdict is taken, on
 #   every exit
 # Version: 1.0.0 — first version: proves a walk of a fixture folder changed nothing in it
 #
-# checks/read-only.sh <fixture> — hash a fixture, walk it with
+# checks/read-only.sh [--kill] <fixture> — hash a fixture, walk it with
 # ka-reader-core's driver, hash it again.
 #
 # WHY THIS EXISTS
@@ -13,9 +15,21 @@
 #
 # USAGE
 #   checks/read-only.sh checks/fixtures/plain
+#   checks/read-only.sh --kill checks/fixtures/tree-scene
 #   stdout carries the verdict and nothing else: `unchanged` and exit 0, or each differing relative
 #   path once and a non-zero exit. Every message and all build and driver output go to stderr.
 #   A walk that did not complete (the driver failed, or it made no call) is never `unchanged`.
+#
+# WHAT --kill DOES
+#   CP-1014: a host ended in the middle of its work must leave the folder as it found it. With
+#   --kill the walk's test binary is built once (`cargo test --no-run`) and run directly in its
+#   long mode, so the process that is ended is the walk itself and not Cargo. The binary prints one
+#   line, `pass-complete`, after its first completed pass and then goes on passing. The script
+#   waits for that line (up to READ_ONLY_MARKER_WAIT seconds, 120 unless set), sends the host
+#   SIGKILL, waits for it, and hashes. The verdict is `unchanged` only if the line was printed, the
+#   host's end was this SIGKILL and not its own exit, and the hash is the same. A host that exits
+#   on its own, that prints no marker in time, or that cannot be built is a walk that did not
+#   complete.
 #
 # WHAT IS HASHED
 #   Every entry under the fixture, `.git` included, links not followed: relative path, kind, and
@@ -40,6 +54,8 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 NAME="read-only.sh"
+# The one line the walk's long mode prints after its first completed pass (checks/walk.rs).
+MARKER="pass-complete"
 
 # One record per entry: <relative path> TAB <kind> TAB <digest>, sorted by path. `find` does not
 # follow links, so a link is hashed as a link.
@@ -71,8 +87,14 @@ differing_paths() {
   diff "$1" "$2" | sed -n 's/^[<>] //p' | cut -f 1 | LC_ALL=C sort -u || true
 }
 
+kill_mode=0
+if [ "${1:-}" = "--kill" ]; then
+  kill_mode=1
+  shift
+fi
+
 if [ $# -ne 1 ]; then
-  echo "$NAME: usage: $NAME <fixture folder>" >&2
+  echo "$NAME: usage: $NAME [--kill] <fixture folder>" >&2
   exit 2
 fi
 
@@ -373,9 +395,79 @@ walk_driver() {
   cd "$ROOT" && cargo test --locked --quiet -p ka-reader-core --test walk -- "$absolute"
 }
 
+# The walk's test binary, built once, as the JSON line cargo prints for it. Its stdout is the only
+# output read; cargo's stderr passes through to ours.
+build_walk_host() {
+  cd "$ROOT" && cargo test --locked --quiet -p ka-reader-core --test walk --no-run --message-format=json
+}
+
+# Succeeds when the walk's host was run in long mode, printed its marker, was ended by this
+# script's SIGKILL, and nothing else ended it. Every failure says why on stderr. Explicit checks
+# throughout: `set -e` does not reach into a function called as a condition.
+kill_walk() {
+  local host marker_wait ticks waited=0 marker_seen=0 host_pid status=0
+  marker_wait="${READ_ONLY_MARKER_WAIT:-120}"
+  case "$marker_wait" in
+    '' | *[!0-9]*)
+      echo "$NAME: READ_ONLY_MARKER_WAIT is not a whole number of seconds: $marker_wait" >&2
+      return 1
+      ;;
+  esac
+  ticks=$((marker_wait * 10))
+
+  if ! run_child build_walk_host > "$work/build-output"; then
+    echo "$NAME: the walk's test binary did not build" >&2
+    return 1
+  fi
+  # `|| true`: pipefail would otherwise exit before the guard below reports.
+  host="$(grep -F '"name":"walk"' "$work/build-output" | grep -F '"executable":"' | tail -n 1 |
+    sed -n 's/.*"executable":"\([^"]*\)".*/\1/p' || true)"
+  if [ -z "$host" ] || [ ! -x "$host" ]; then
+    echo "$NAME: cargo named no walk binary to run" >&2
+    return 1
+  fi
+
+  "$host" "$absolute" --long < /dev/null > "$work/host-output" &
+  host_pid=$!
+  child_pid="$host_pid"
+  while [ "$waited" -lt "$ticks" ]; do
+    if grep -qx -- "$MARKER" "$work/host-output"; then
+      marker_seen=1
+      break
+    fi
+    kill -0 "$host_pid" 2> /dev/null || break
+    sleep 0.1
+    waited=$((waited + 1))
+  done
+  # The host may have printed its marker and ended in the same instant the loop last looked.
+  if [ "$marker_seen" -eq 0 ] && grep -qx -- "$MARKER" "$work/host-output"; then
+    marker_seen=1
+  fi
+
+  kill -KILL "$host_pid" 2> /dev/null || true
+  # The shell reports a child ended by a signal on its own stderr when it is waited for. That is the
+  # expected end here, so it is not passed on.
+  wait "$host_pid" 2> /dev/null || status=$?
+  child_pid=""
+
+  if [ "$marker_seen" -ne 1 ]; then
+    echo "$NAME: the walk printed no '$MARKER' line within $marker_wait seconds" >&2
+    return 1
+  fi
+  if [ "$status" -ne 137 ]; then
+    echo "$NAME: the walk ended on its own (status $status) before it was killed" >&2
+    return 1
+  fi
+  return 0
+}
+
 walk_started=1
 walked=0
-if run_child walk_driver > "$work/walk-output"; then
+if [ "$kill_mode" -eq 1 ]; then
+  if kill_walk; then
+    walked=1
+  fi
+elif run_child walk_driver > "$work/walk-output"; then
   calls="$(tail -n 1 "$work/walk-output")"
   case "$calls" in
     '' | *[!0-9]*) ;;
