@@ -2511,4 +2511,571 @@ mod tests {
             assert!(after_asks.is_empty(), "an ask logs nothing: {after_asks:?}");
         }
     }
+
+    /// Task 12: delivery. The grant token, the sink adapter and `open_delivering`, over the fake
+    /// watcher a test drives by hand.
+    mod delivery {
+        use std::path::{Path, PathBuf};
+        use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+        use std::sync::mpsc::{Receiver, Sender, channel};
+        use std::sync::{Arc, Mutex, Weak};
+        use std::thread::JoinHandle;
+        use std::time::Duration;
+
+        use ka_reader_core::{
+            BranchElement, Entry, FolderModel, GitPort, GitReadCondition, HeadState, ItemState,
+            RepositoryState, RootFinding, StatusLists, list_tree,
+        };
+        use serde_json::Value;
+
+        use crate::session::{Delivery, OpenResult, Session, TreeAct, Wiring, deliver_batch};
+        use crate::test_support::{TempDir, begin_log_capture, take_log_records};
+        use crate::watcher::fakes::{ManualWatching, RecordedSubscription};
+        use crate::watcher::{PathSink, SubscribeError, Subscription, Watching};
+
+        const WAIT: Duration = Duration::from_secs(10);
+
+        /// A Git port double: a plain answer, and the first `state` call parks when it holds a gate.
+        struct Port {
+            gate: Option<(Mutex<Sender<()>>, Mutex<Receiver<()>>)>,
+            used: AtomicUsize,
+        }
+
+        impl Port {
+            fn plain() -> Self {
+                Self {
+                    gate: None,
+                    used: AtomicUsize::new(0),
+                }
+            }
+        }
+
+        impl GitPort for Port {
+            fn probe(&self, _folder: &Path) -> RootFinding {
+                RootFinding::Root
+            }
+
+            fn state(&self, _root: &Path) -> Result<HeadState, GitReadCondition> {
+                if let Some((parked, release)) = &self.gate
+                    && self.used.fetch_add(1, Ordering::SeqCst) == 0
+                {
+                    parked
+                        .lock()
+                        .expect("the gate lock")
+                        .send(())
+                        .expect("the test is listening");
+                    release
+                        .lock()
+                        .expect("the gate lock")
+                        .recv_timeout(WAIT)
+                        .expect("the test releases the read");
+                }
+                Ok(HeadState {
+                    branch: BranchElement::Branch("main".to_string()),
+                    state: RepositoryState::Normal,
+                })
+            }
+
+            fn status(&self, _root: &Path) -> Result<StatusLists, GitReadCondition> {
+                Ok(StatusLists {
+                    staged: Vec::new(),
+                    changed: Vec::new(),
+                })
+            }
+        }
+
+        /// Every payload a delivery received, parsed, in the order they arrived.
+        #[derive(Clone, Default)]
+        struct Received(Arc<Mutex<Vec<Value>>>);
+
+        impl Received {
+            fn delivery(&self) -> Delivery {
+                let log = Arc::clone(&self.0);
+                Arc::new(move |bytes: Vec<u8>| {
+                    let payload = serde_json::from_slice(&bytes).expect("a JSON payload");
+                    log.lock().expect("the payload log").push(payload);
+                })
+            }
+
+            fn all(&self) -> Vec<Value> {
+                self.0.lock().expect("the payload log").clone()
+            }
+        }
+
+        fn session_over(watching: &Arc<ManualWatching>, port: Port) -> Session {
+            let port: Arc<dyn GitPort + Send + Sync> = Arc::new(port);
+            Session::with_parts(
+                Box::new(move || Wiring::Wired(Arc::clone(&port))),
+                Arc::clone(watching) as Arc<dyn Watching>,
+            )
+        }
+
+        fn session_with(watching: &Arc<ManualWatching>) -> Session {
+            session_over(watching, Port::plain())
+        }
+
+        fn open_delivering(session: &Session, folder: &TempDir, received: &Received) {
+            let result = session.open_delivering(folder.path().to_path_buf(), received.delivery());
+            assert!(matches!(result, OpenResult::Opened), "the folder must open");
+        }
+
+        fn root_of(folder: &TempDir) -> PathBuf {
+            folder.path().canonicalize().expect("a canonical folder")
+        }
+
+        fn subscription_on(watching: &ManualWatching, folder: &TempDir) -> RecordedSubscription {
+            watching
+                .subscription_for(&root_of(folder))
+                .expect("a subscription on the folder")
+        }
+
+        fn held_model(session: &Session) -> FolderModel {
+            session
+                .lock()
+                .held
+                .as_ref()
+                .expect("a folder open")
+                .model
+                .clone()
+        }
+
+        fn root_names(model: &FolderModel) -> Vec<String> {
+            let ItemState::Observed(entries) = model.tree() else {
+                panic!("the root listing is observed");
+            };
+            entries
+                .iter()
+                .map(|entry: &Entry| entry.name.clone())
+                .collect()
+        }
+
+        #[test]
+        fn test_a_pushed_batch_delivers_a_payload_holding_the_changed_listing() {
+            let folder = TempDir::new();
+            folder.write_file("a.txt", "");
+            let watching = Arc::new(ManualWatching::new());
+            let session = session_with(&watching);
+            let received = Received::default();
+            open_delivering(&session, &folder, &received);
+            assert!(received.all().is_empty(), "opening delivers nothing");
+
+            folder.write_file("b.txt", "");
+            subscription_on(&watching, &folder).push(vec![root_of(&folder).join("b.txt")]);
+
+            let payloads = received.all();
+            assert_eq!(payloads.len(), 1, "{payloads:?}");
+            let listings = payloads[0]["listings"]
+                .as_array()
+                .expect("a listings array");
+            assert_eq!(listings.len(), 1, "only the root listing changed");
+            assert_eq!(listings[0]["path"], "");
+            let entries = listings[0]["answer"]["entries"]
+                .as_array()
+                .expect("entries");
+            let names: Vec<&str> = entries
+                .iter()
+                .map(|entry| entry["name"].as_str().expect("a name"))
+                .collect();
+            assert_eq!(names, ["a.txt", "b.txt"]);
+        }
+
+        #[test]
+        fn test_a_batch_that_changes_nothing_delivers_nothing() {
+            let folder = TempDir::new();
+            folder.write_file("a.txt", "");
+            let watching = Arc::new(ManualWatching::new());
+            let session = session_with(&watching);
+            let received = Received::default();
+            open_delivering(&session, &folder, &received);
+
+            let recorded = subscription_on(&watching, &folder);
+            recorded.push(vec![root_of(&folder).join("a.txt")]);
+            recorded.push(vec![]);
+
+            assert!(received.all().is_empty(), "{:?}", received.all());
+        }
+
+        /// A watcher that, between starting a subscription and returning it, changes the disk and
+        /// has a report pushed from another thread, as a real stream can.
+        struct ChangesAtSubscribe {
+            inner: Arc<ManualWatching>,
+            make_change: Box<dyn Fn() + Send + Sync>,
+            report: PathBuf,
+            pushers: Mutex<Vec<JoinHandle<()>>>,
+        }
+
+        impl Watching for ChangesAtSubscribe {
+            fn subscribe(
+                &self,
+                root: &Path,
+                sink: PathSink,
+            ) -> Result<Subscription, SubscribeError> {
+                let subscription = self.inner.subscribe(root, sink)?;
+                (self.make_change)();
+                let recorded = self.inner.subscription_for(root).expect("recorded");
+                let report = self.report.clone();
+                self.pushers
+                    .lock()
+                    .expect("the pusher list")
+                    .push(std::thread::spawn(move || recorded.push(vec![report])));
+                Ok(subscription)
+            }
+        }
+
+        #[test]
+        fn test_a_change_made_at_subscribe_time_is_not_lost() {
+            let folder = Arc::new(TempDir::new());
+            let root = folder.path().canonicalize().expect("canonical");
+            let made = Arc::clone(&folder);
+            let watching = Arc::new(ChangesAtSubscribe {
+                inner: Arc::new(ManualWatching::new()),
+                make_change: Box::new(move || {
+                    made.write_file("early.txt", "");
+                }),
+                report: root.join("early.txt"),
+                pushers: Mutex::new(Vec::new()),
+            });
+            let port: Arc<dyn GitPort + Send + Sync> = Arc::new(Port::plain());
+            let session = Session::with_parts(
+                Box::new(move || Wiring::Wired(Arc::clone(&port))),
+                Arc::clone(&watching) as Arc<dyn Watching>,
+            );
+            let received = Received::default();
+
+            let result = session.open_delivering(root.clone(), received.delivery());
+            assert!(matches!(result, OpenResult::Opened));
+            for pusher in watching.pushers.lock().expect("the pusher list").drain(..) {
+                pusher.join().expect("the report was applied");
+            }
+
+            let model = held_model(&session);
+            assert_eq!(root_names(&model), ["early.txt"]);
+            assert_eq!(
+                model.tree(),
+                &list_tree(model.folder(), ""),
+                "the held root equals a fresh read"
+            );
+        }
+
+        #[test]
+        fn test_two_threads_pushing_while_acts_arrive_end_equal_to_fresh_reads() {
+            let folder = TempDir::new();
+            folder.make_folder("d0");
+            folder.make_folder("d1");
+            let watching = Arc::new(ManualWatching::new());
+            let session = session_with(&watching);
+            let received = Received::default();
+            open_delivering(&session, &folder, &received);
+            session.list("d0", Some(TreeAct::Expand));
+            session.list("d1", Some(TreeAct::Expand));
+            let recorded = subscription_on(&watching, &folder);
+            let root = root_of(&folder);
+
+            std::thread::scope(|scope| {
+                for directory in ["d0", "d1"] {
+                    let recorded = recorded.clone();
+                    let root = &root;
+                    let folder = &folder;
+                    scope.spawn(move || {
+                        for index in 0..20 {
+                            folder.write_file(&format!("{directory}/f{index}.txt"), "");
+                            recorded.push(vec![root.join(directory)]);
+                        }
+                    });
+                }
+                for round in 0..20 {
+                    let act = if round % 2 == 0 {
+                        TreeAct::Collapse
+                    } else {
+                        TreeAct::Expand
+                    };
+                    session.list("d0", Some(act));
+                    session.list("d1", Some(act));
+                }
+            });
+
+            let model = held_model(&session);
+            for directory in ["d0", "d1"] {
+                assert_eq!(
+                    model.listing(Path::new(directory)),
+                    Some(&list_tree(model.folder(), directory)),
+                    "{directory} equals a fresh read"
+                );
+            }
+        }
+
+        /// A misbehaving watcher: its stop does nothing, so a sink the session replaced stays
+        /// callable. The sink adapter's grant token is what must refuse it.
+        struct Leaky {
+            sinks: Mutex<Vec<Arc<PathSink>>>,
+        }
+
+        impl Watching for Leaky {
+            fn subscribe(
+                &self,
+                _root: &Path,
+                sink: PathSink,
+            ) -> Result<Subscription, SubscribeError> {
+                self.sinks
+                    .lock()
+                    .expect("the sink list")
+                    .push(Arc::new(sink));
+                Ok(Subscription::new(|| {}))
+            }
+        }
+
+        #[test]
+        fn test_a_push_to_a_replaced_grants_sink_delivers_nothing_and_leaves_the_model() {
+            let first = TempDir::new();
+            let second = TempDir::new();
+            let leaky = Arc::new(Leaky {
+                sinks: Mutex::new(Vec::new()),
+            });
+            let port: Arc<dyn GitPort + Send + Sync> = Arc::new(Port::plain());
+            let session = Session::with_parts(
+                Box::new(move || Wiring::Wired(Arc::clone(&port))),
+                Arc::clone(&leaky) as Arc<dyn Watching>,
+            );
+            let first_received = Received::default();
+            let second_received = Received::default();
+            open_delivering(&session, &first, &first_received);
+            open_delivering(&session, &second, &second_received);
+            let old_sink = Arc::clone(&leaky.sinks.lock().expect("the sink list")[0]);
+            first.write_file("late.txt", "");
+            second.write_file("kept.txt", "");
+            let before = held_model(&session);
+
+            old_sink(vec![root_of(&first).join("late.txt")]);
+
+            assert!(first_received.all().is_empty());
+            assert!(second_received.all().is_empty());
+            assert_eq!(held_model(&session), before, "the held model is unchanged");
+        }
+
+        #[test]
+        fn test_the_old_subscription_is_stopped_and_drained_before_open_delivering_returns() {
+            let first = TempDir::new();
+            let second = TempDir::new();
+            let watching = Arc::new(ManualWatching::new());
+            let session = Arc::new(session_with(&watching));
+            let (inside_tx, inside_rx) = channel::<()>();
+            let (release_tx, release_rx) = channel::<()>();
+            let release_rx = Mutex::new(release_rx);
+            let inside_tx = Mutex::new(inside_tx);
+            let parked_delivery: Delivery = Arc::new(move |_payload| {
+                inside_tx
+                    .lock()
+                    .expect("the lock")
+                    .send(())
+                    .expect("listening");
+                release_rx
+                    .lock()
+                    .expect("the lock")
+                    .recv_timeout(WAIT)
+                    .expect("released");
+            });
+            let result = session.open_delivering(first.path().to_path_buf(), parked_delivery);
+            assert!(matches!(result, OpenResult::Opened));
+            let old = subscription_on(&watching, &first);
+            first.write_file("x.txt", "");
+            let report = root_of(&first).join("x.txt");
+            let replaced = Arc::new(AtomicBool::new(false));
+
+            std::thread::scope(|scope| {
+                let old_push = old.clone();
+                scope.spawn(move || old_push.push(vec![report]));
+                inside_rx
+                    .recv_timeout(WAIT)
+                    .expect("the callback is in flight");
+                let replacing = Arc::clone(&session);
+                let flag = Arc::clone(&replaced);
+                let second_path = second.path().to_path_buf();
+                let opener = scope.spawn(move || {
+                    let result =
+                        replacing.open_delivering(second_path, Received::default().delivery());
+                    flag.store(true, Ordering::SeqCst);
+                    result
+                });
+                std::thread::sleep(Duration::from_millis(200));
+                assert!(
+                    !replaced.load(Ordering::SeqCst),
+                    "open_delivering waits for the callback in flight"
+                );
+                release_tx.send(()).expect("the callback is parked");
+                let result = opener.join().expect("the replacing open finishes");
+                assert!(matches!(result, OpenResult::Opened));
+            });
+
+            assert!(old.is_stopped());
+            assert!(old.sink_is_released());
+        }
+
+        #[test]
+        fn test_the_delivery_can_call_list_from_inside_itself() {
+            let folder = TempDir::new();
+            folder.write_file("a.txt", "");
+            let watching = Arc::new(ManualWatching::new());
+            let session = Arc::new(session_with(&watching));
+            let (listed_tx, listed_rx) = channel::<Value>();
+            let listed_tx = Mutex::new(listed_tx);
+            let weak: Weak<Session> = Arc::downgrade(&session);
+            let delivery: Delivery = Arc::new(move |_payload| {
+                let session = weak.upgrade().expect("the session is alive");
+                let answer = serde_json::to_value(session.list("", Some(TreeAct::Expand)))
+                    .expect("the answer serializes");
+                listed_tx
+                    .lock()
+                    .expect("the lock")
+                    .send(answer)
+                    .expect("listening");
+            });
+            let result = session.open_delivering(folder.path().to_path_buf(), delivery);
+            assert!(matches!(result, OpenResult::Opened));
+            folder.write_file("b.txt", "");
+            let recorded = subscription_on(&watching, &folder);
+            let report = root_of(&folder).join("b.txt");
+
+            let pusher = std::thread::spawn(move || recorded.push(vec![report]));
+            let answer = listed_rx
+                .recv_timeout(WAIT)
+                .expect("the delivery listed from inside itself");
+            pusher.join().expect("the push finishes");
+
+            assert_eq!(answer["entries"].as_array().expect("entries").len(), 2);
+        }
+
+        #[test]
+        fn test_a_command_only_open_starts_no_subscription() {
+            let folder = TempDir::new();
+            let watching = Arc::new(ManualWatching::new());
+            let session = session_with(&watching);
+
+            let result = session.open(folder.path().to_path_buf());
+
+            assert!(matches!(result, OpenResult::Opened));
+            assert!(watching.recorded().is_empty());
+        }
+
+        #[test]
+        fn test_a_failed_open_leaves_the_earlier_grants_subscription_as_it_was() {
+            let folder = TempDir::new();
+            folder.write_file("a.txt", "");
+            let watching = Arc::new(ManualWatching::new());
+            let session = session_with(&watching);
+            let received = Received::default();
+            open_delivering(&session, &folder, &received);
+            let missing = folder.path().join("no-such-folder");
+
+            let result = session.open_delivering(missing, Received::default().delivery());
+
+            assert!(matches!(result, OpenResult::Failed { .. }));
+            assert_eq!(
+                watching.recorded().len(),
+                1,
+                "a failed open registers nothing"
+            );
+            let recorded = subscription_on(&watching, &folder);
+            assert!(!recorded.is_stopped());
+            folder.write_file("b.txt", "");
+            recorded.push(vec![root_of(&folder).join("b.txt")]);
+            assert_eq!(
+                received.all().len(),
+                1,
+                "the earlier delivery still answers"
+            );
+        }
+
+        #[test]
+        fn test_a_batch_applied_during_a_parked_git_read_survives_the_write_back() {
+            let (parked_tx, parked_rx) = channel::<()>();
+            let (release_tx, release_rx) = channel::<()>();
+            let port = Port {
+                gate: Some((Mutex::new(parked_tx), Mutex::new(release_rx))),
+                used: AtomicUsize::new(0),
+            };
+            let folder = TempDir::new();
+            folder.write_file("a.txt", "");
+            let watching = Arc::new(ManualWatching::new());
+            let session = session_over(&watching, port);
+            let received = Received::default();
+            open_delivering(&session, &folder, &received);
+            let recorded = subscription_on(&watching, &folder);
+
+            let session_ref = &session;
+            std::thread::scope(|scope| {
+                let ask = scope.spawn(move || session_ref.read_git());
+                parked_rx.recv_timeout(WAIT).expect("the Git read parked");
+                folder.write_file("b.txt", "");
+                recorded.push(vec![root_of(&folder).join("b.txt")]);
+                release_tx.send(()).expect("the read is parked");
+                ask.join().expect("the ask finishes");
+            });
+
+            let model = held_model(&session);
+            assert_eq!(root_names(&model), ["a.txt", "b.txt"]);
+            assert!(matches!(model.kind(), ItemState::Observed(_)));
+        }
+
+        #[test]
+        fn test_a_panicking_batch_delivers_nothing_writes_one_stopped_line_and_leaves_the_model_intact()
+         {
+            let _serial = begin_log_capture();
+            let folder = TempDir::new();
+            folder.write_file("a.txt", "");
+            let watching = Arc::new(ManualWatching::new());
+            let session = session_with(&watching);
+            let received = Received::default();
+            open_delivering(&session, &folder, &received);
+            let before = held_model(&session);
+            let token = session.lock().held.as_ref().expect("open").open;
+            take_log_records();
+
+            deliver_batch(
+                &session.state,
+                token,
+                vec![root_of(&folder).join("a.txt")],
+                |_model, _reports| panic!("the reduction failed"),
+                &received.delivery(),
+            );
+
+            let lines: Vec<String> = take_log_records()
+                .into_iter()
+                .filter(|record| record.contains("core-bridge"))
+                .collect();
+            assert!(received.all().is_empty());
+            assert_eq!(held_model(&session), before);
+            assert_eq!(
+                lines,
+                ["core-bridge: model_changed stopped: boundary panicked"]
+            );
+        }
+
+        #[test]
+        fn test_a_subscription_that_cannot_start_opens_the_folder_with_no_delivery() {
+            let folder = TempDir::new();
+            folder.write_file("a.txt", "");
+            let watching = Arc::new(ManualWatching::failing());
+            let session = session_with(&watching);
+            let received = Received::default();
+
+            open_delivering(&session, &folder, &received);
+
+            assert!(watching.recorded().is_empty());
+            assert_eq!(root_names(&held_model(&session)), ["a.txt"]);
+            assert!(received.all().is_empty());
+        }
+
+        #[test]
+        fn test_a_failed_subscribe_logs_nothing() {
+            let _serial = begin_log_capture();
+            let folder = TempDir::new();
+            let watching = Arc::new(ManualWatching::failing());
+            let session = session_with(&watching);
+            take_log_records();
+
+            open_delivering(&session, &folder, &Received::default());
+
+            assert_eq!(take_log_records(), Vec::<String>::new());
+        }
+    }
 }

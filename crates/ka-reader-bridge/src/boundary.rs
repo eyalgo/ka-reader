@@ -451,4 +451,38 @@ mod tests {
 
         assert_eq!(result, None);
     }
+
+    #[test]
+    fn test_the_payload_json_is_exactly_listings_with_list_answer_members() {
+        use ka_reader_core::{FolderModel, TreeRequest, open_folder};
+        use serde_json::json;
+
+        use super::changes_payload;
+        use crate::session::TreeAct;
+        use crate::test_support::TempDir;
+
+        let folder = TempDir::new();
+        folder.write_file("a.txt", "");
+        folder.make_folder("src");
+        let elsewhere = TempDir::new();
+        let earlier = FolderModel::new(open_folder(elsewhere.path()).expect("opens"));
+        let later = FolderModel::new(open_folder(folder.path()).expect("opens"))
+            .list_tree(TreeRequest::Expand("src".into()));
+        let session = Session::default();
+        session.open(folder.path().to_path_buf());
+        let answer = |path: &str| {
+            serde_json::to_value(session.list(path, Some(TreeAct::Expand)))
+                .expect("the answer serializes")
+        };
+
+        let payload = changes_payload(&later.changes_since(&earlier)).expect("serializes");
+
+        assert_eq!(
+            serde_json::from_slice::<serde_json::Value>(&payload).expect("JSON"),
+            json!({ "listings": [
+                { "path": "", "answer": answer("") },
+                { "path": "src", "answer": answer("src") },
+            ] })
+        );
+    }
 }
