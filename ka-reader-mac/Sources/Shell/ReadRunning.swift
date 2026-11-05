@@ -30,3 +30,24 @@ package struct OffMainReadRunner: ReadRunning {
         }
     }
 }
+
+/// The tree acts' runner: every read runs off the main thread, one after another in the order they
+/// were asked, so two acts the reader made reach the bridge in that order. The delivery is dispatched
+/// to a later main-queue turn, as `OffMainReadRunner`'s is.
+package struct SerialReadRunner: ReadRunning {
+    private let queue = DispatchQueue(label: "ka-reader.tree-acts", qos: .userInitiated)
+
+    package nonisolated init() {}
+
+    package func run<Answer: Sendable>(
+        _ read: @escaping @Sendable () -> Answer,
+        deliver: @escaping @MainActor @Sendable (Answer) -> Void
+    ) {
+        queue.async {
+            let listing = read()
+            DispatchQueue.main.async {
+                MainActor.assumeIsolated { deliver(listing) }
+            }
+        }
+    }
+}
