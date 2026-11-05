@@ -2646,7 +2646,7 @@ final class ReadingPanelTests: XCTestCase {
             rootItemsView: tree, statusGlyphs: glyphs, railFolderGlyph: glyph, railGitGlyph: glyph)
         let intents = IntentCounts()
         workbench.selectFile = { _, _ in intents.selectFile += 1 }
-        tree.listTree = { _, _ in intents.listTree += 1 }
+        tree.listTree = { _, _, _ in intents.listTree += 1 }
 
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 800, height: 500), styleMask: [.titled],

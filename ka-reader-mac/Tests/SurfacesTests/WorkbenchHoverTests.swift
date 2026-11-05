@@ -45,7 +45,7 @@ final class WorkbenchHoverTests: XCTestCase {
         let log = Log()
         workbench.selectFile = { path, _ in log.selects.append(path) }
         workbench.readGit = { answer in log.gitAsks.append(answer) }
-        tree.listTree = { path, _ in log.listed.append(path) }
+        tree.listTree = { path, _, _ in log.listed.append(path) }
         workbench.layoutSubtreeIfNeeded()
         return Fixture(workbench: workbench, window: window, log: log, key: key)
     }

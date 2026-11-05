@@ -50,7 +50,10 @@ final class WorkbenchSelectionTests: XCTestCase {
         workbench.selectFile = { path, answer in
             log.selects.append(SelectRead(path: path, answer: answer))
         }
-        tree.listTree = { path, answer in log.listed.append((path, answer)) }
+        tree.listTree = { path, act, answer in
+            guard act == .expand else { return }
+            log.listed.append((path, answer))
+        }
         return (workbench, log)
     }
 

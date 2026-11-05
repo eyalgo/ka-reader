@@ -39,7 +39,7 @@ final class RootItemsViewSelectionTests: XCTestCase {
             backing: .buffered, defer: true)
         // sRGB, so a rendered row reads back in the space its tokens are written in.
         window.colorSpace = .sRGB
-        view.listTree = { path, answer in answer(listings[path]) }
+        view.listTree = { path, _, answer in answer(listings[path]) }
         view.show(.observed(entries))
         view.showMarkers(markers)
         window.contentView = view

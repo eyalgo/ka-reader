@@ -34,7 +34,8 @@ fn take_json(buffer: *mut KAReaderBuffer) -> Value {
 fn open(folder: &Path) {
     let location = CString::new(folder.as_os_str().as_bytes()).expect("no interior NUL");
     // SAFETY: `location` is NUL-terminated and outlives the call.
-    let answer = take_json(unsafe { ka_reader_open_folder(location.as_ptr()) });
+    let answer =
+        take_json(unsafe { ka_reader_open_folder(location.as_ptr(), None, std::ptr::null_mut()) });
     assert_eq!(answer, json!({ "state": "opened" }));
 }
 

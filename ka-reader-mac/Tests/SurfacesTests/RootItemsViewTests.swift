@@ -516,7 +516,8 @@ final class RootItemsViewTests: XCTestCase {
         let selected = SelectedLog()
         let reads = ReadCount()
         view.fileSelected = { selected.paths.append($0.path) }
-        view.listTree = { _, answer in
+        view.listTree = { _, act, answer in
+            guard act == .expand else { return }
             reads.count += 1
             answer(
                 .observed([

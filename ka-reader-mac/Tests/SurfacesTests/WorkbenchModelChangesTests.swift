@@ -30,7 +30,7 @@ struct WorkbenchModelChangesTests {
         window.contentView = workbench
         var selects: [(path: String, answer: SelectFileAnswer)] = []
         workbench.selectFile = { path, answer in selects.append((path, answer)) }
-        tree.listTree = { _, _ in }
+        tree.listTree = { _, _, _ in }
         workbench.layoutSubtreeIfNeeded()
 
         tree.outlineView.selectRowIndexes(IndexSet(integer: 1), byExtendingSelection: false)

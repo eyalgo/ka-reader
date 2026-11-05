@@ -449,7 +449,7 @@ mod tests {
         let (decoded, answer) = unsafe {
             (
                 decode_list_path(path.as_ptr()),
-                list_entries(&session, path.as_ptr()),
+                list_entries(&session, path.as_ptr(), 0),
             )
         };
 
@@ -460,7 +460,7 @@ mod tests {
             "nothing was read, and never a lossy guess"
         );
         // SAFETY: NULL is the root, and the folder holds one entry.
-        let root = unsafe { list_entries(&session, ptr::null::<c_char>()) };
+        let root = unsafe { list_entries(&session, ptr::null::<c_char>(), 0) };
         let root = serde_json::to_value(root).expect("the answer serializes");
         assert_eq!(
             root["state"], "observed",
@@ -474,7 +474,7 @@ mod tests {
         let session = Session::default();
 
         // SAFETY: NULL is the documented cancel.
-        let result = unsafe { open_location(&session, ptr::null()) };
+        let result = unsafe { open_location(&session, ptr::null(), None, ptr::null_mut()) };
 
         assert_eq!(result, None);
     }
@@ -511,5 +511,101 @@ mod tests {
                 { "path": "src", "answer": answer("src") },
             ] })
         );
+    }
+    /// What the test callback received: the payload bytes, copied out before the buffer is freed.
+    #[derive(Default)]
+    struct Received {
+        payloads: std::sync::Mutex<Vec<Vec<u8>>>,
+    }
+
+    /// A callback as the shell writes one: it reads the buffer, then frees it once through
+    /// `ka_reader_free`.
+    unsafe extern "C" fn record_and_free(
+        context: *mut std::ffi::c_void,
+        buffer: *mut KAReaderBuffer,
+    ) {
+        // SAFETY: the tests pass a live `Received` as the context, and it outlives the session.
+        let received = unsafe { &*context.cast::<Received>() };
+        // SAFETY: the bridge hands over a live buffer that nothing else frees.
+        let bytes = unsafe { std::slice::from_raw_parts((*buffer).bytes, (*buffer).len).to_vec() };
+        received
+            .payloads
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .push(bytes);
+        // SAFETY: freed exactly once, here, and never read again.
+        unsafe { ka_reader_free(buffer) };
+    }
+
+    #[test]
+    fn test_act_0_1_and_2_decode_as_expand_collapse_and_none() {
+        use super::decode_act;
+        use crate::session::TreeAct;
+
+        assert_eq!(decode_act(0), Some(TreeAct::Expand));
+        assert_eq!(decode_act(1), Some(TreeAct::Collapse));
+        assert_eq!(decode_act(2), None);
+        assert_eq!(decode_act(u32::MAX), None);
+    }
+
+    #[test]
+    fn test_a_null_callback_opens_with_no_delivery() {
+        use std::sync::Arc;
+
+        use crate::session::{OpenResult, Wiring};
+        use crate::watcher::fakes::ManualWatching;
+
+        let folder = TempDir::new();
+        let watching = Arc::new(ManualWatching::new());
+        let session = Session::with_parts(Box::new(|| Wiring::SwitchFailed), watching.clone());
+        let location = CString::new(folder.path().as_os_str().as_encoded_bytes()).expect("no NUL");
+
+        // SAFETY: `location` is NUL-terminated and outlives the call; a NULL callback is allowed.
+        let result = unsafe { open_location(&session, location.as_ptr(), None, ptr::null_mut()) };
+
+        assert_eq!(result, Some(OpenResult::Opened));
+        assert!(
+            watching.recorded().is_empty(),
+            "no callback means no subscription"
+        );
+    }
+
+    #[test]
+    fn test_each_payload_a_callback_receives_is_freed_once_through_ka_reader_free() {
+        use std::sync::Arc;
+
+        use crate::session::Wiring;
+        use crate::watcher::fakes::ManualWatching;
+
+        let folder = TempDir::new();
+        folder.write_file("a.txt", "");
+        let watching = Arc::new(ManualWatching::new());
+        let session = Session::with_parts(Box::new(|| Wiring::SwitchFailed), watching.clone());
+        let received = Received::default();
+        let location = CString::new(folder.path().as_os_str().as_encoded_bytes()).expect("no NUL");
+        // SAFETY: `location` is NUL-terminated and outlives the call; the context outlives the session.
+        unsafe {
+            open_location(
+                &session,
+                location.as_ptr(),
+                Some(record_and_free),
+                std::ptr::from_ref(&received).cast_mut().cast(),
+            )
+        };
+        let root = folder.path().canonicalize().expect("the folder resolves");
+        let subscription = watching.recorded().pop().expect("a subscription started");
+
+        folder.write_file("b.txt", "");
+        subscription.push(vec![root.join("b.txt")]);
+        folder.write_file("c.txt", "");
+        subscription.push(vec![root.join("c.txt")]);
+
+        let payloads = received.payloads.lock().expect("the lock");
+        assert_eq!(payloads.len(), 2, "one buffer per changing batch");
+        for payload in payloads.iter() {
+            let json: serde_json::Value = serde_json::from_slice(payload).expect("JSON");
+            assert!(json["listings"].is_array(), "{json}");
+        }
+        // The sanitizer step is what catches a second free of either buffer.
     }
 }

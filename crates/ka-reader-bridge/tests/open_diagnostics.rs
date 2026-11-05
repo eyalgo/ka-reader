@@ -69,7 +69,7 @@ fn records() -> Vec<String> {
 fn open(path: &std::path::Path) -> *mut KAReaderBuffer {
     let path = CString::new(path.as_os_str().as_encoded_bytes()).expect("no interior NUL");
     // SAFETY: `path` is NUL-terminated and lives through the call.
-    unsafe { ka_reader_open_folder(path.as_ptr()) }
+    unsafe { ka_reader_open_folder(path.as_ptr(), None, std::ptr::null_mut()) }
 }
 
 fn stopped(records: &[String]) -> Vec<&String> {
@@ -160,7 +160,7 @@ fn test_list_tree_origin_never_emits_stopped_open() {
     // SAFETY: `opened` came from the export and is freed exactly once.
     unsafe { ka_reader_free(opened) };
     // SAFETY: NULL is the documented root path.
-    let listing = unsafe { ka_reader_list_tree(std::ptr::null()) };
+    let listing = unsafe { ka_reader_list_tree(std::ptr::null(), 0) };
     assert!(!listing.is_null());
     // SAFETY: this live list-origin allocation has at least the root answer's first byte.
     unsafe { *(*listing).bytes = b'!' };
