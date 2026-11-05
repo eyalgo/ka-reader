@@ -381,7 +381,7 @@ final class LaunchFlowTests: XCTestCase {
         XCTAssertEqual(bridge.listedPaths, ["", "docs", "docs"])
         XCTAssertEqual(bridge.listedActs, [.expand, .expand, .collapse])
         XCTAssertEqual(bridge.receivers.count, 1, "one open")
-        XCTAssertNil(bridge.receivers[0], "this change's flow passes no receiver yet")
+        XCTAssertNotNil(bridge.receivers[0], "the open passes the flow's receiver")
     }
 
     func testLaunchUsesOnlyNamedExportsAndFreesEveryNonNilBufferOnce() throws {
