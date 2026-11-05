@@ -3,7 +3,7 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::ffi::OsString;
-use std::path::{Path, PathBuf};
+use std::path::{Component, Path, PathBuf};
 
 use crate::fs_reader::{
     self, CannotDisplayReason, Entry, EntryKind, FileContent, ItemState, Listed,
@@ -420,6 +420,40 @@ pub enum TreeRequest {
     /// Apply what the disk reported: entries created, changed and removed. Only the listings the
     /// model holds change, and the place and the Git item are carried as they were.
     Delta(ModelDelta),
+    /// Re-read what a batch of reported paths covers. A path names a place on the disk that may
+    /// have changed and says nothing of what happened there: the model decides which held listings
+    /// the paths cover, reads each one whole, drops what lies under an entry that is gone and
+    /// reads again an expanded folder that has returned. The place and the Git item are carried as
+    /// they were.
+    Invalidate(PathReports),
+}
+
+/// A batch of absolute paths the disk reported as possibly changed. The batch is owned and carries
+/// no meaning beyond the places it names: the model decides what, if anything, to read.
+///
+/// # Examples
+///
+/// ```
+/// use std::path::PathBuf;
+/// use ka_reader_core::PathReports;
+///
+/// let reports = PathReports::new(vec![PathBuf::from("/a/folder/src/new.rs")]);
+/// assert!(!reports.is_empty());
+/// assert!(PathReports::new(vec![]).is_empty());
+/// ```
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct PathReports {
+    paths: Vec<PathBuf>,
+}
+
+impl PathReports {
+    pub fn new(paths: Vec<PathBuf>) -> Self {
+        Self { paths }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.paths.is_empty()
+    }
 }
 
 /// A batch of reports about the disk: entry paths, relative to the opened folder's root, that were
@@ -664,6 +698,7 @@ impl FolderModel {
             TreeRequest::Expand(path) => self.expand(path),
             TreeRequest::Collapse(path) => self.collapse(path),
             TreeRequest::Delta(delta) => self.apply_delta(&delta),
+            TreeRequest::Invalidate(reports) => self.invalidate(&reports),
         }
     }
 
@@ -737,6 +772,82 @@ impl FolderModel {
         reduce(self, &changes)
     }
 
+    /// Re-reads the held listings `reports` cover and folds the reads into the model. A batch that
+    /// covers nothing leaves the model as it was and reads nothing.
+    fn invalidate(self, reports: &PathReports) -> Self {
+        let scope = self.invalidation_scope(reports);
+        if scope.is_empty() {
+            return self;
+        }
+        let root = self.folder.root.clone();
+        let reads = scope
+            .into_iter()
+            .map(|path| {
+                let observation = fs_reader::observe_listing(&root, &path);
+                (path, observation)
+            })
+            .collect();
+        reduce_invalidation(self, reads, &mut |path| {
+            fs_reader::observe_listing(&root, path)
+        })
+    }
+
+    /// The request paths of the held listings a batch covers. A reported path that lies lexically
+    /// under the root reads as its root-relative path; one that does not, or that holds a `.` or
+    /// `..` step, reads as the root and covers every listing. A listing is covered by a path when
+    /// its request path or its identity is the path, lies under it, or is its parent.
+    fn invalidation_scope(&self, reports: &PathReports) -> BTreeSet<PathBuf> {
+        let reported: BTreeSet<PathBuf> = reports
+            .paths
+            .iter()
+            .map(|path| self.relative_to_root(path))
+            .collect();
+        let root_reported = reported.iter().any(|path| path.as_os_str().is_empty());
+        std::iter::once((PathBuf::new(), &self.root_listing))
+            .chain(
+                self.listings
+                    .iter()
+                    .map(|(path, held)| (path.clone(), held)),
+            )
+            .filter(|(request, held)| {
+                root_reported
+                    || reported
+                        .iter()
+                        .any(|path| covers(request, &held.identity, path))
+            })
+            .map(|(request, _)| request)
+            .collect()
+    }
+
+    fn relative_to_root(&self, path: &Path) -> PathBuf {
+        match path.strip_prefix(&self.folder.root) {
+            Ok(relative)
+                if relative
+                    .components()
+                    .all(|c| matches!(c, Component::Normal(_))) =>
+            {
+                relative.to_path_buf()
+            }
+            _ => PathBuf::new(),
+        }
+    }
+
+    /// Holds `observation` as the listing at the request path `path`, keeping the identity the
+    /// listing was held at when the read has none of its own.
+    fn hold(&mut self, path: PathBuf, observation: ItemState<ListingObservation>) {
+        if path.as_os_str().is_empty() {
+            let identity = self.root_listing.identity.clone();
+            self.root_listing = HeldListing::from_observation(identity, observation);
+            return;
+        }
+        let identity = self
+            .listings
+            .get(&path)
+            .map_or_else(|| path.clone(), |held| held.identity.clone());
+        self.listings
+            .insert(path, HeldListing::from_observation(identity, observation));
+    }
+
     /// The location of `path` when it resolves inside the root to something of `kind`.
     fn admit(&self, path: &Path, kind: EntryKind) -> Option<Location> {
         fs_reader::locate(&self.folder.root, path)
@@ -794,6 +905,30 @@ impl FolderModel {
         }
         self
     }
+}
+
+/// Whether the reported path `reported` covers the listing requested at `request` and read at
+/// `identity`: it is that path, lies under it, or is its parent.
+fn covers(request: &Path, identity: &Path, reported: &Path) -> bool {
+    let parent = reported.parent();
+    request.starts_with(reported)
+        || identity.starts_with(reported)
+        || parent == Some(request)
+        || parent == Some(identity)
+}
+
+/// The model after an invalidation: each re-read in `reads`, keyed by request path, replaces the
+/// listing held there whole. Pure, so a test hands it supplied observations; `more` is how it asks
+/// for a read of its own.
+fn reduce_invalidation(
+    mut model: FolderModel,
+    reads: BTreeMap<PathBuf, ItemState<ListingObservation>>,
+    _more: &mut dyn FnMut(&Path) -> ItemState<ListingObservation>,
+) -> FolderModel {
+    for (path, observation) in reads {
+        model.hold(path, observation);
+    }
+    model
 }
 
 /// The model after a delta: every held listing whose folder `changes` names is reduced, and nothing
