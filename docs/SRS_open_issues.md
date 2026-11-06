@@ -66,7 +66,34 @@ None.
   it derives from; the SDD keeps citing them as contradicted, and the seed cut from
   `first-public-release` is held to a theme the PRD says the beta does not wait for. An override
   that keeps the clause is a PRD change — the CPO's run, not this document's.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm — with four additions for the fold. (1) **FR-20 is narrowed,
+  not emptied.** What PRD v18 moves past the beta is *choosing a theme and keeping that choice*
+  (§ Scope (In); the owner's words at `docs/trail/prd/cycle-16.md` § 3.1: "theme choice ... come
+  after it"), while § UX Notes still says "dark and light themes from the start". So FR-20 drops
+  "from the first release", keeps its trace to "from the start", and says that the user's choice
+  between the two themes, kept between sessions (FR-21), is in place before 1.0.0. The beta is not
+  held to the themes at all: cycle-62 § 1.1 says nothing but the tree and the open file following
+  the disk and Markdown reading rendered comes before it. AC-11 follows, as drafted. The basis for
+  the beta shipping without them is § Scope (In) itself. The draft's appeal to C-6 does not carry
+  that weight, because C-6 says only that anything may change before 1.0.0. (2) **Carry the beta's
+  statement**, as the draft leans, and word it as a system state rather than a release, the way
+  RN-37 worded FR-13: where Git state is read once, when the folder is opened, and not followed,
+  the Git view and the tree's changed-file markers say plainly that they show the Git state read
+  at open. Trace it to § UX Notes, "the view never lies" (the rule sentence and its beta bullet),
+  and to § Scope (In). Give it its own acceptance criterion. Put the README's known-gaps line in
+  AC-14's release inspection, with C-9. The criterion is bounded by FR-34: in a plain folder the
+  Git view stays empty, and the statement does not appear there. One case is named and left
+  uncovered on the surface: in that read-at-open state, a repository created at the folder's root
+  after it is opened is not followed (FR-33's live clause). Only the README's known gaps tell the
+  user about it. FR-14's Git half, FR-33's live clause and AC-7's Git clauses remain v1
+  requirements, met before 1.0.0. (3) **The draft answers a smaller question than its heading.**
+  PRD v17 – v18 also adds § Assumptions "Public identity": the repository goes public with its own
+  commit history, and only after that history has been checked for anything private. The fold
+  carries this as a C-12 clause with an AC-14 inspection, on C-7's footing, because both bind the
+  repository before the first public release and both can be checked at release. The beta's
+  "to be used and shown" purpose produces no requirement. (4) The header, the Version line and a
+  reverse walk of PRD v16 → v18 record all of the above. C-4, C-7 and AC-14's existing clauses stand
+  as drafted. Reasoning: `docs/trail/srs/self_answer-4.md` § 2.1.
 
 ## 3. Raised from downstream — an item from a seat that did not write the SRS
 
