@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Version: 1.2.0 — adds the cases of the open file's model calls: the walk's folder mode reaches
+#   read_file, open_read, Position, the Invalidate that covers the open file and reread_open_file, and
+#   its judge names each; the existing judge cases still pass
 # Version: 1.1.0 — adds the cases that fail when the script leaves a restored entry behind; the
 #   restore case asserts `.git` is gone after the return instead of present
 # Version: 1.0.0 — first version: drives the real checks/read-only.sh against the committed fixtures
@@ -78,6 +81,8 @@ test_kill_prints_unchanged_when_the_walk_is_killed_after_its_marker
 test_kill_is_never_unchanged_when_the_walk_exits_on_its_own
 test_kill_is_never_unchanged_when_the_walk_prints_no_marker
 test_kill_is_never_unchanged_when_the_hash_differs
+test_the_folder_mode_reaches_the_open_files_model_calls
+test_the_existing_judge_cases_stay
 "
 
 # --- helpers ---
@@ -1061,6 +1066,29 @@ test_kill_is_never_unchanged_when_the_hash_differs() {
 
   expect_nonzero_status || return 1
   expect_stdout_is ".DS_Store"
+}
+
+# QC-2's reviewed half for the open file: the walk's folder mode drives each model call the displayed
+# file adds, and its self-check judge names each, so a walk that left one out is refused by name. The
+# calls are looked for where they are made, in the one method of `Driven` each goes through, and the
+# names where the judge lists them.
+test_the_folder_mode_reaches_the_open_files_model_calls() {
+  local walk="$ROOT/checks/walk.rs" site name
+  for site in 'read_file(' '.open_read(' 'FileRequest::Position(' '.reread_open_file('; do
+    grep -qF -- "$site" "$walk" || fail "checks/walk.rs never makes the call $site" || return 1
+  done
+  grep -qF 'TreeRequest::Invalidate(' "$walk" || fail "the walk makes no Invalidate" || return 1
+  for name in 'read_file' 'FolderModel::open_read' 'FileRequest::Position' \
+    'TreeRequest::Invalidate over the open file' 'FolderModel::reread_open_file'; do
+    grep -qF -- "(\"$name\"," "$walk" || fail "the walk's judge does not name $name" || return 1
+  done
+}
+
+# The judge's own cases run first in the walk's no-argument mode, on tallies it must refuse, and then
+# the committed fixtures are walked: the existing cases pass unchanged beside the new acts.
+test_the_existing_judge_cases_stay() {
+  (cd "$ROOT" && cargo test --locked --quiet -p ka-reader-core --test walk) > "$WORK/judge.out" 2>&1 \
+    || fail "the walk's self-check and fixture walks failed: $(tail -n 5 "$WORK/judge.out")" || return 1
 }
 
 # --- the runner ---
