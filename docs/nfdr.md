@@ -1,8 +1,9 @@
 # NFDR — KA-Reader
 
-**Status:** Draft
+**Status:** Settled
 **Owner:** Principal Architect
-**Version:** 79 — Fold cycle-70 § 3.1: QC-65's *Tree scene helper suite* locator carries its own commit — `checks/gate.sh:L133` at `ka-reader@d6bc3a3`, with `:L127` at `ka-reader@2529a42` kept as its dated reading; one choice awaits the owner — RN-89.
+**Version:** 80 — Fold cycle-71 § 2.1: § 9 records the displayed-file scene's two gate steps as a reading at `ka-reader@d6bc3a3`, not as `follow-the-file` delivered, and re-pins the tree scene's; § 8 gains the gate's 1.9.0 reading with the ordering comment it carries — RN-90.
+Version 79 — Fold cycle-70 § 3.1: QC-65's *Tree scene helper suite* locator carries its own commit — `checks/gate.sh:L133` at `ka-reader@d6bc3a3`, with `:L127` at `ka-reader@2529a42` kept as its dated reading; one choice awaits the owner — RN-89.
 Version 78 — Fold cycle-69 § 2.1: live refresh is three SDD slices since v68, so the live-refresh obligations cite `follow-the-folder` as SDD § 6 S-8, name `follow-the-file` (S-6) as the slice that first runs the displayed-file scene, § 9 opens on three scenes and QC-48's marker/order allowance ends at S-8; QC-19 names its slice by slug — RN-88.
 Version 77 — Fold cycle-68 §§ 3.1–3.5: the watcher's interim review tails close on the scan that now holds them; QC-66 and QC-65 name the tree scene's proofs and helper; every `checks/gate.sh` locator carries its commit; QC-4 and QC-47 hold the model's three states and C-I1's failed re-read; QC-67 bounds what a check script takes from the environment; QC-50 follows SDD v67's one fake and one contract suite — RN-87.
 Version 76 — Complete the full architecture reread and restore four omitted verification-map checks; no obligation or ADR changes — RN-86.
@@ -2044,7 +2045,16 @@ line is `:L3`) with 36 top-level `run_step` calls (`:L53-L139`): *Read-only, tre
 before *Read-only suite* (`:L108`), and *Tree scene helper suite* (`:L127`) sits after *Own state
 step suite* (`:L126`) and before *Launch the built bundle* (`:L136`). The earlier readings stay
 as their dated measurements. This is a source measurement, not a passing-gate claim *(added at
-v77, on the owner's seat's answer at `docs/trail/architecture/cycle-68.md` § 3.3 — RN-87)*. **The card runs the script
+v77, on the owner's seat's answer at `docs/trail/architecture/cycle-68.md` § 3.3 — RN-87)*.
+At `ka-reader@d6bc3a3` the gate is version 1.9.0 (`checks/gate.sh:L2`; 1.8.0's line is `:L3`) with
+38 top-level `run_step` calls (`:L54-L145`): *Displayed-file scene* (`:L112`) and *Read-only,
+displayed-file scene* (`:L113`) sit after *Read-only, tree scene, killed* (`:L108`) and before
+*Read-only suite* (`:L114`). The comment above them (`:L109-L111`) is the ground for their order:
+the walk's fixture is the scene's final state, which the scene asserts, so a scene that fails names
+the defect before a walk reports a fixture the scene never produced. A change that put the walk
+before the scene would break that ground. The earlier readings stay as their dated measurements.
+This is a source measurement, not a passing-gate claim *(added at v80, on the owner's seat's answer
+at `docs/trail/architecture/cycle-71.md` § 2.1 — RN-90)*. **The card runs the script
 from `kensaiapp-opensource@1941f963`.** The card's test command is `checks/gate.sh` (this section's
 first paragraph), and the pipeline's gate tool issues the card's test command at the developer's
 closing run and at code-integrity (*Why all of them at the change*, above). So every step of the
@@ -2370,9 +2380,16 @@ built-bundle log proof belong to `follow-the-folder` (S-8), not to `follow-the-t
 commands and their regression cases each enter the product gate under QC-64 when their slice
 delivers. The tree scene's have: its read-only walks are the gate's *Read-only,
 tree scene* steps, plain and killed, and its helper's suite is *Tree scene helper suite*
-(`checks/gate.sh:L106-L107`, `:L127` at `ka-reader@2529a42` — RN-87). No scene's pass discharges another's
-(`docs/SDD.md` § 6 S-5, S-6, S-8, § 10 RC-7, RC-8; `docs/trail/architecture/cycle-66.md` § 3.1 —
-RN-85; `docs/trail/architecture/cycle-69.md` § 2.1 — RN-88).
+(`checks/gate.sh:L107-L108`, `:L133` at `ka-reader@d6bc3a3`; `:L106-L107`, `:L127` at
+`ka-reader@2529a42` — RN-87, RN-90). At `ka-reader@d6bc3a3` the gate also holds two steps of the
+displayed-file scene: *Displayed-file scene* (`cargo test --locked -p ka-reader-bridge --test
+open_file_scene`) and *Read-only, displayed-file scene* (`checks/read-only.sh
+checks/fixtures/open-file-scene`), at `checks/gate.sh:L112-L113`. This is a reading of the gate at
+that commit, not a claim that `follow-the-file` has delivered: which of its other regression cases
+join the gate as steps of their own is the next re-measurement's to record. No scene's pass
+discharges another's (`docs/SDD.md` § 6 S-5, S-6, S-8, § 10 RC-7, RC-8;
+`docs/trail/architecture/cycle-66.md` § 3.1 — RN-85; `docs/trail/architecture/cycle-69.md` § 2.1 —
+RN-88; `docs/trail/architecture/cycle-71.md` § 2.1 — RN-90).
 
 The layer set is **not defined here** — it is `testing_doctrine.md` v2.2.0, and this table is one
 project's realization of it. Tooling for the core and the bridge comes from the Rust packet
@@ -7986,3 +8003,44 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   edge, seam or part, and the `Inputs read:` line stands on the statuses as read.
   `docs/trail/architecture/cycle-70.md` holds the answered companion whole. One item stays open,
   so `Status:` is Draft.
+
+- **RN-90:** *(v80 — the cycle-71 fold, § 2.1, and the close)* The owner's seat's committed answer
+  at `docs/trail/architecture/cycle-71.md` § 2.1 authorizes this fold: confirm, with two
+  additions. Its reasoning is `docs/trail/architecture/self_answer-74.md` § 2.1. The item was
+  raised by a `companion-self-answer` run on 2026-11-06, after the gate gained two displayed-file
+  steps at `ka-reader@d6bc3a3`.
+
+  **The draft, folded.** § 9 named only the tree scene's gate steps, so a cold reader would take
+  the displayed-file scene as not yet in the gate, which at `ka-reader@d6bc3a3` is false. § 9 now
+  names *Displayed-file scene* and *Read-only, displayed-file scene* at `checks/gate.sh:L112-L113`,
+  and the tree scene's steps carry the `d6bc3a3` locators (`:L107-L108`, `:L133`) with the
+  `2529a42` ones kept as their dated reading, per RN-87's rule. § 8 gains the 1.9.0 reading in the
+  form the earlier readings use.
+
+  **Addition 1: a reading, not a delivery.** § 9's "The tree scene's have" says that slice has
+  delivered. The displayed-file steps are recorded as present at `ka-reader@d6bc3a3` instead, so
+  the sentence stays true at its commit whatever joins the gate later. The slice's bar still names
+  regression cases that may become steps of their own (`docs/SDD.md` § 6 S-6); the next
+  re-measurement records them.
+
+  **Addition 2: the ordering comment.** § 8's 1.9.0 reading names the comment at
+  `checks/gate.sh:L109-L111` as the ground for running the scene before its read-only walk, as the
+  1.5.0 reading names the *Strings check* comment. A change that swapped the two steps would break
+  that ground, so the reading says so.
+
+  **Read by this run.** At `ka-reader@d6bc3a3`: `:L2` is the 1.9.0 version line and `:L3` is
+  1.8.0's; `grep -c "^run_step '"` prints 38, with the first call at `:L54` and the last at `:L145`;
+  the two displayed-file steps are at `:L112-L113` with the commands above, between `:L108` and
+  `:L114`; the tree scene's steps are at `:L107-L108` and its helper's suite at `:L133`. At
+  `ka-reader@2529a42` the same tree-scene steps are at `:L106-L107` and `:L127`. `checks/gate.sh` has
+  no change between `d6bc3a3` and the commit this fold builds on. The test file
+  `crates/ka-reader-bridge/tests/open_file_scene.rs` and the fixture
+  `checks/fixtures/open-file-scene/` are in the tree at `d6bc3a3`.
+
+  **Limits.** No ADR is written or restatused, and the index is unchanged. No `QC` is added,
+  renumbered or reused, and no obligation changes what it requires. The displayed-file scene stays
+  what RN-88 placed it as: the first run of QC-48's displayed-file half, which neither discharges
+  QC-48 nor gives it a new verifier, so § 10 gains no row. No product check ran. The inputs' status
+  lines read as in the header, and SDD v70, Settled, moves no slice, edge, seam or part, so the
+  `Inputs read:` line stands. `docs/trail/architecture/cycle-71.md` holds the answered companion
+  whole. The companion is removed with nothing left unresolved, so `Status:` is Settled.
