@@ -742,20 +742,38 @@ mod tests {
     }
 
     #[test]
-    fn test_act_2_decodes_to_no_act() {
+    fn test_act_2_decodes_to_the_selection_act() {
+        use super::decode_file_act;
+
+        let position = CString::new("top").expect("no NUL");
+
+        // SAFETY: the pointer is a live NUL-terminated string for the call, or NULL.
+        let (with, without) = unsafe {
+            (
+                decode_file_act(2, position.as_ptr()),
+                decode_file_act(2, ptr::null()),
+            )
+        };
+
+        assert!(with.is_some());
+        assert!(without.is_some());
+    }
+
+    #[test]
+    fn test_any_other_act_decodes_to_no_act() {
         use super::decode_file_act;
 
         let position = CString::new("top").expect("no NUL");
 
         // SAFETY: the pointer is a live NUL-terminated string for the call.
-        let (two, many) = unsafe {
+        let (three, many) = unsafe {
             (
-                decode_file_act(2, position.as_ptr()),
+                decode_file_act(3, position.as_ptr()),
                 decode_file_act(u32::MAX, position.as_ptr()),
             )
         };
 
-        assert_eq!(two, None);
+        assert_eq!(three, None);
         assert_eq!(many, None);
     }
 
