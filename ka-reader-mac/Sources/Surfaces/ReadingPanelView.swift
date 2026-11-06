@@ -54,6 +54,17 @@ package final class ReadingPanelView: NSView {
     /// text with content, and stays pinned: a hidden code view takes no part in what is drawn.
     private var isCodeViewPinned = false
 
+    /// What the panel last drew for a file, so an update can tell what is showing: nil while no file
+    /// is drawn (the prompt, *reading*, *stopped*).
+    private var drawn: (path: String, verdict: FileVerdict)?
+
+    /// Where the code view stood the last time the panel set it or reported it. A scroll report is
+    /// raised only for a position other than this one.
+    private var lastPosition = ReadingPosition.topLeft
+
+    /// Whether a scroll report is waiting for the end of the current main run-loop turn.
+    private var isReportScheduled = false
+
     /// The path line: the entry's folder-relative path, in the path type.
     package let pathLine: NSTextField
 
@@ -114,6 +125,7 @@ package final class ReadingPanelView: NSView {
             pathLine.centerYAnchor.constraint(equalTo: pathRow.centerYAnchor),
         ])
         codeView.isHidden = true
+        codeView.onReaderScroll = { [weak self] in self?.readerScrolled() }
         showNoFile()
     }
 
@@ -140,6 +152,7 @@ package final class ReadingPanelView: NSView {
 
     /// Returns the panel to its no-file state: the prompt, and nothing else visible.
     package func showNoFile() {
+        drawn = nil
         removeMessage()
         isPathLineShown = false
         codeView.isHidden = true
@@ -150,6 +163,7 @@ package final class ReadingPanelView: NSView {
     /// Draws the *reading* state: one status message, led by the empty glyph, and nothing of any
     /// earlier state (CP-345, CP-346).
     package func showReading() {
+        drawn = nil
         removeMessage()
         prompt.isHidden = true
         isPathLineShown = false
@@ -163,6 +177,7 @@ package final class ReadingPanelView: NSView {
     /// Draws the *stopped* state under `path`, the entry's folder-relative path: the failed read's
     /// presentation, with the sentence for a read that answered nothing (CP-348).
     package func showStopped(path: String) {
+        drawn = nil
         removeMessage()
         prompt.isHidden = true
         pathLine.stringValue = path
@@ -170,16 +185,70 @@ package final class ReadingPanelView: NSView {
         showMessage(glyph: statusGlyphs.failure, sentence: ConditionSentences.stoppedReadingFile)
     }
 
-    /// Draws `verdict` beneath `path`, the entry's folder-relative path.
+    /// Draws `verdict` beneath `path`, the entry's folder-relative path. A text answer is drawn
+    /// scrolled to the top-left: this is a selection's answer, the start of reading a file.
     package func show(path: String, verdict: FileVerdict) {
+        beginDrawing(path: path, verdict: verdict)
+        if case .text(let content, let language) = verdict {
+            showText(content, language: language)
+        } else {
+            showNonText(path: path, verdict: verdict)
+        }
+        lastPosition = codeView.readingPosition
+    }
+
+    /// An automatic update of the open file: what a re-read of `path` gave, and the reading position
+    /// the model holds (`docs/SDD.md` § 3 `surfaces`, C-E2).
+    ///
+    /// - With the text of `path` showing, new text replaces it in place and the scroll stays where
+    ///   the reader left it, clamped to the new text. The model's `position` is not applied: the
+    ///   panel's own scroll is the newer, and a position act may still be on its way.
+    /// - A verdict equal to the one drawn changes nothing, the scroll included.
+    /// - Text arriving while the panel shows something else for `path` (a message, another file) is
+    ///   drawn and scrolled to `position`, clamped: a recovery, or the first draw.
+    /// - Gone, a failure and cannot-display are drawn as `show` draws them, with no content.
+    ///
+    /// It never draws the pending sentence, and the code view is never emptied on the way to new text.
+    package func update(path: String, verdict: FileVerdict, position: ReadingPosition) {
+        if let drawn, drawn.path == path, drawn.verdict == verdict { return }
+        guard case .text(let content, let language) = verdict else {
+            beginDrawing(path: path, verdict: verdict)
+            showNonText(path: path, verdict: verdict)
+            lastPosition = codeView.readingPosition
+            return
+        }
+        let wasShowingText: Bool
+        if let drawn, drawn.path == path, case .text = drawn.verdict {
+            wasShowingText = true
+        } else {
+            wasShowingText = false
+        }
+        beginDrawing(path: path, verdict: verdict)
+        if wasShowingText {
+            showText(content, language: language, keepingScroll: true)
+        } else {
+            showText(content, language: language)
+            layoutSubtreeIfNeeded()
+            codeView.restore(position)
+        }
+        lastPosition = codeView.readingPosition
+    }
+
+    /// The part of drawing a file's answer every arm shares: the old message goes, the prompt stays
+    /// away, and the path line shows `path`.
+    private func beginDrawing(path: String, verdict: FileVerdict) {
+        drawn = (path, verdict)
         removeMessage()
         prompt.isHidden = true
         pathLine.stringValue = path
         isPathLineShown = true
+    }
+
+    private func showNonText(path: String, verdict: FileVerdict) {
         let name = path.split(separator: "/").last.map(String.init) ?? path
         switch verdict {
-        case .text(let content, let language):
-            showText(content, language: language)
+        case .text:
+            preconditionFailure("showNonText draws what is not text")
         case .cannotDisplay:
             showMessage(
                 glyph: statusGlyphs.empty,
@@ -193,24 +262,40 @@ package final class ReadingPanelView: NSView {
         }
     }
 
+    /// Where the code view is scrolled to now.
+    var currentPosition: ReadingPosition { codeView.readingPosition }
+
     /// Raised when the reader scrolls the code view, with where the scroll left it. Never raised for
-    /// a scroll the panel makes itself.
+    /// a scroll the panel makes itself. Scrolls are coalesced: at most one report per main run-loop
+    /// turn, carrying the position the turn ended on.
     package var positionChanged: (@MainActor (ReadingPosition) -> Void)?
 
-    /// Where the code view is scrolled to now.
-    var currentPosition: ReadingPosition { .topLeft }
+    private func readerScrolled() {
+        guard !isReportScheduled else { return }
+        isReportScheduled = true
+        DispatchQueue.main.async { [weak self] in
+            MainActor.assumeIsolated { self?.reportPosition() }
+        }
+    }
 
-    /// The code view's text storage, for the tests to watch the edits it takes.
-    var textStorageForTests: NSTextStorage { codeView.storage }
+    private func reportPosition() {
+        isReportScheduled = false
+        let position = codeView.readingPosition
+        guard position != lastPosition else { return }
+        lastPosition = position
+        positionChanged?(position)
+    }
 
-    /// An automatic update of the open file, in place.
-    package func update(path: String, verdict: FileVerdict, position: ReadingPosition) {}
-
-    private func showText(_ content: String, language: Language) {
+    private func showText(_ content: String, language: Language, keepingScroll: Bool = false) {
         // One replacement of the whole text storage, so nothing of the previous file's colours, or
         // the view's typing attributes, reaches this one (CP-313). The code view also rebuilds its
-        // gutter and scrolls to the top-left.
-        codeView.show(Self.attributedText(content, language: language))
+        // gutter. A selection's answer scrolls to the top-left; an update in place keeps the scroll.
+        let text = Self.attributedText(content, language: language)
+        if keepingScroll {
+            codeView.replaceText(text)
+        } else {
+            codeView.show(text)
+        }
         codeView.isHidden = content.isEmpty
         guard !content.isEmpty else { return }
         if !isCodeViewPinned {

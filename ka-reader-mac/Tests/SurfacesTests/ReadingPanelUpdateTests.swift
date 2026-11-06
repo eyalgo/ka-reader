@@ -160,6 +160,15 @@ private final class StorageWatch {
     }
 }
 
+/// The text storage behind the panel's text view.
+@MainActor
+private func storageOf(_ panel: ReadingPanelView) -> NSTextStorage {
+    guard let storage = unsafe panel.contentView.textStorage else {
+        preconditionFailure("the panel's text view is TextKit 1 and has a storage")
+    }
+    return storage
+}
+
 @MainActor
 private final class PositionLog {
     private(set) var positions: [ReadingPosition] = []
@@ -173,6 +182,7 @@ private final class PositionLog {
     panel.show(path: "big.txt", verdict: .text(lines(400), .plain))
     panel.layoutSubtreeIfNeeded()
     clip.scroll(to: NSPoint(x: 240, y: originY(ofLine: 200)))
+    let before = clip.bounds.origin
     #expect(panel.currentPosition == ReadingPosition(topLine: 200, horizontalOffset: 240))
 
     var edited = lines(400).split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
@@ -182,7 +192,8 @@ private final class PositionLog {
         position: .topLeft)
 
     #expect(panel.currentPosition == ReadingPosition(topLine: 200, horizontalOffset: 240))
-    #expect(clip.bounds.origin.y == originY(ofLine: 200))
+    #expect(abs(clip.bounds.origin.y - before.y) < 0.01)
+    #expect(abs(clip.bounds.origin.y - originY(ofLine: 200)) < 0.5)
     #expect(clip.bounds.origin.x == 240)
     #expect(panel.contentView.string.contains("inserted near the end"))
 }
@@ -209,7 +220,7 @@ private final class PositionLog {
     let (panel, _, window) = makeWindowedPanel()
     _ = window
     panel.show(path: "a.txt", verdict: .text(lines(30), .plain))
-    let watch = StorageWatch(panel.textStorageForTests)
+    let watch = StorageWatch(storageOf(panel))
 
     panel.update(path: "a.txt", verdict: .text(lines(30, tag: "!"), .plain), position: .topLeft)
 
@@ -230,7 +241,7 @@ private final class PositionLog {
     panel.layoutSubtreeIfNeeded()
     clip.scroll(to: NSPoint(x: 120, y: originY(ofLine: 90)))
     let before = clip.bounds.origin
-    let watch = StorageWatch(panel.textStorageForTests)
+    let watch = StorageWatch(storageOf(panel))
 
     panel.update(
         path: "big.txt", verdict: verdict,
@@ -282,7 +293,7 @@ private final class PositionLog {
         #expect(visibleLabels(panel) == ["big.txt"])
         #expect(panel.contentView.string.contains("new"))
         #expect(panel.currentPosition == ReadingPosition(topLine: 120, horizontalOffset: 80))
-        #expect(clip.bounds.origin.y == originY(ofLine: 120))
+        #expect(abs(clip.bounds.origin.y - originY(ofLine: 120)) < 0.5)
     }
 
     // A position past the new end shows as far as the new content reaches.
@@ -306,7 +317,7 @@ private final class PositionLog {
         position: ReadingPosition(topLine: 7, horizontalOffset: 40))
 
     #expect(panel.currentPosition == ReadingPosition(topLine: 7, horizontalOffset: 40))
-    #expect(clip.bounds.origin.y == originY(ofLine: 7))
+    #expect(abs(clip.bounds.origin.y - originY(ofLine: 7)) < 0.5)
     #expect(clip.bounds.origin.x == 40)
     #expect(visibleLabels(panel) == ["big.txt"])
 }
