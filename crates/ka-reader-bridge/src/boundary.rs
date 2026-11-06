@@ -220,8 +220,21 @@ pub unsafe fn list_entries(session: &Session, path: *const c_char, act: u32) -> 
 ///
 /// `position` is NULL, or points at a NUL-terminated string that stays valid for the call.
 pub(crate) unsafe fn decode_file_act(act: u32, position: *const c_char) -> Option<FileAct> {
-    let _ = (act, position);
-    None
+    let bytes = if position.is_null() {
+        None
+    } else {
+        // SAFETY: the caller guarantees a valid NUL-terminated string.
+        Some(ReadingPosition::new(
+            unsafe { CStr::from_ptr(position) }.to_bytes(),
+        ))
+    };
+    match act {
+        0 => Some(FileAct::Open(
+            bytes.unwrap_or_else(|| ReadingPosition::new(Vec::new())),
+        )),
+        1 => bytes.map(FileAct::Position),
+        _ => None,
+    }
 }
 
 /// Applies `act` to the file at `path` in `session`. NULL, an empty path and bytes that are not

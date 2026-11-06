@@ -179,7 +179,10 @@ package final class LaunchFlow {
         }
         // A scroll is the position act: it goes in order on the tree-act queue, frees its buffer
         // and draws nothing.
-
+        workbench.filePosition = { [bridge, treeActs] path, position in
+            treeActs.run(
+                { Self.send(position, forFileAt: path, through: bridge) }, deliver: { _ in })
+        }
         workbench.readGit = { [bridge, reader] answer in
             reader.run({ Self.gitItem(through: bridge) }, deliver: answer)
         }
@@ -200,7 +203,7 @@ package final class LaunchFlow {
         -> FileVerdict?
     {
         let buffer = bridge.selectFile(
-            path: path, act: .position, position: "")
+            path: path, act: .open, position: BridgePayload.encodePosition(.topLeft))
         defer { release(buffer, through: bridge) }
         return BridgePayload.decodeFile(buffer)
     }

@@ -1060,13 +1060,41 @@ impl Session {
         position: ReadingPosition,
         read: impl FnOnce(&OpenedFolder, &Path) -> FileRead,
     ) -> FileAnswerDto {
-        let _ = (path, position, read);
-        FileAnswerDto::Pending
+        let held = self
+            .lock()
+            .held
+            .as_ref()
+            .map(|held| (held.model.folder().clone(), held.open, held.batches));
+        let Some((folder, open, batches)) = held else {
+            return FileAnswerDto::Pending;
+        };
+        let read = read(&folder, Path::new(path));
+        let answer = FileAnswerDto::from(read.answer().clone());
+        if let Some(held) = self.lock().held.as_mut()
+            && held.open == open
+        {
+            let mut model = held.model.clone().open_read(read, position);
+            if held.batches != batches {
+                model = model.reread_open_file();
+            }
+            held.model = model;
+        }
+        answer
     }
 
     /// The position act: applied only when `path` is the open file, and it reads nothing.
     fn position_file(&self, path: &str, position: ReadingPosition) {
-        let _ = (path, position);
+        if let Some(held) = self.lock().held.as_mut()
+            && held
+                .model
+                .open_file()
+                .is_some_and(|open| open.path() == Path::new(path))
+        {
+            held.model = held
+                .model
+                .clone()
+                .select_file(FileRequest::Position(position));
+        }
     }
 }
 
