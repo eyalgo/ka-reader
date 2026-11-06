@@ -244,6 +244,8 @@ pub enum FileAnswerDto {
     Failed {
         condition: ConditionDto,
     },
+    /// A re-read of the open file found nothing at its path. It carries no content.
+    Gone,
     Pending,
 }
 
@@ -270,6 +272,7 @@ impl From<ItemState<FileView>> for FileAnswerDto {
             ItemState::Observed(FileView::CannotDisplay(reason)) => Self::CannotDisplay {
                 reason: reason.into(),
             },
+            ItemState::Observed(FileView::Gone) => todo!("task 2: the gone answer"),
             ItemState::Failed(condition) => Self::Failed {
                 condition: condition.into(),
             },
@@ -1022,8 +1025,21 @@ mod tests {
 
     use ka_reader_core::{ItemState, list_tree, open_folder};
 
-    use super::{Session, TreeAct};
+    use super::{FileAnswerDto, Session, TreeAct};
     use crate::test_support::TempDir;
+
+    #[test]
+    fn test_the_gone_answer_maps_to_the_wire_state_gone() {
+        use ka_reader_core::FileView;
+
+        let answer = FileAnswerDto::from(ItemState::Observed(FileView::Gone));
+
+        assert_eq!(answer, FileAnswerDto::Gone);
+        assert_eq!(
+            serde_json::to_string(&answer).expect("the answer serializes"),
+            r#"{"state":"gone"}"#
+        );
+    }
 
     #[test]
     fn test_a_read_in_progress_does_not_hold_the_session_lock() {

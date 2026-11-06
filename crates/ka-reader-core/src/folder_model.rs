@@ -7,7 +7,7 @@ use std::path::{Component, Path, PathBuf};
 
 use crate::fs_reader::{
     self, CannotDisplayReason, Entry, EntryKind, FileContent, ItemState, Listed,
-    ListingObservation, Location, OpenFailure, order,
+    ListingObservation, Location, OpenFailure, Reobserved, order,
 };
 use crate::git_reader::{
     GitPort, GitReadCondition, HeadState, ProbeCondition, RootFinding, StatusLists,
@@ -114,6 +114,32 @@ pub enum FileView {
     },
     /// The file is not text under the text rule, for the reason named.
     CannotDisplay(CannotDisplayReason),
+    /// A re-read of the open file found nothing at its path: no entry at a step of the path as the
+    /// reader spelled it, or a step above it that is no longer a folder, with no link's target
+    /// being resolved there. It carries no content. Only a re-read of the open file yields it:
+    /// [`select_file`] and an open never answer it.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use std::path::PathBuf;
+    /// use ka_reader_core::{FileRequest, FileView, FolderModel, ItemState, PathReports, ReadingPosition, TreeRequest, open_folder};
+    ///
+    /// let folder = std::env::temp_dir().join(format!("ka-reader-doc-gone-{}", std::process::id()));
+    /// std::fs::create_dir_all(&folder).expect("the folder is made");
+    /// std::fs::write(folder.join("note.txt"), "hello").expect("the file is written");
+    /// let opened = open_folder(&folder).expect("the folder opens");
+    /// let model = FolderModel::new(opened)
+    ///     .select_file(FileRequest::Open("note.txt".into(), ReadingPosition::new(b"top".as_slice())));
+    ///
+    /// std::fs::remove_file(folder.join("note.txt")).expect("the file goes");
+    /// let model = model.list_tree(TreeRequest::Invalidate(PathReports::new(vec![folder.join("note.txt")])));
+    ///
+    /// let open = model.open_file().expect("the file is still the open one");
+    /// assert_eq!(open.view(), &ItemState::Observed(FileView::Gone));
+    /// std::fs::remove_dir_all(&folder).expect("the folder goes");
+    /// ```
+    Gone,
 }
 
 impl From<FileContent> for FileView {
@@ -333,6 +359,9 @@ pub struct OpenFile {
     path: PathBuf,
     position: ReadingPosition,
     view: ItemState<FileView>,
+    /// Where the path resolved below the root when the file was last read, which differs from
+    /// `path` for a file reached through a link. `None` while the model has not resolved it.
+    location: Option<PathBuf>,
 }
 
 impl OpenFile {
@@ -1016,16 +1045,40 @@ impl FolderModel {
     }
 
     fn open(mut self, path: PathBuf, position: ReadingPosition) -> Self {
-        if self.admit(&path, EntryKind::File).is_none() {
+        let Some(location) = self.admit(&path, EntryKind::File) else {
             return self;
-        }
+        };
         let view = fs_reader::observe_file(&self.folder.root, &path).map(FileView::from);
         self.place.open_file = Some(OpenFile {
             path,
             position,
             view,
+            location: Some(location.identity),
         });
         self
+    }
+
+    /// Re-reads the open file, once, whether or not anything was reported, and folds the answer in
+    /// beside the open file's path and position. No listing is read or changed, and with no file
+    /// open the model is returned as it was.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use ka_reader_core::{FolderModel, open_folder};
+    ///
+    /// let opened = open_folder(std::env::temp_dir()).expect("the temporary folder opens");
+    /// let model = FolderModel::new(opened);
+    /// assert_eq!(model.clone().reread_open_file(), model);
+    /// ```
+    pub fn reread_open_file(self) -> Self {
+        todo!("task 2: the unconditional re-read of the open file")
+    }
+
+    /// The path of the open file when a batch covers it, so it is to be read again: the batch
+    /// names the root, or a path the open file's path or its resolved location starts with.
+    fn open_file_to_reread(&self, _reports: &PathReports) -> Option<PathBuf> {
+        todo!("task 2: coverage of the open file by a batch")
     }
 
     fn with_position(mut self, position: ReadingPosition) -> Self {
@@ -1034,6 +1087,14 @@ impl FolderModel {
         }
         self
     }
+}
+
+/// The model after the re-read of its open file: `None` is no read and leaves the model as it
+/// was; an absent file is held as [`FileView::Gone`]; a read gives the view the content makes, or
+/// the failure observed, and the location it resolved to when it has one. The path and the
+/// position are the reader's and are never touched. Pure, so a test hands it a supplied read.
+fn reduce_open_file(model: FolderModel, _observation: Option<Reobserved>) -> FolderModel {
+    todo!("task 2: fold the open file's re-read into the model")
 }
 
 /// Whether the reported path `reported` covers the listing requested at `request` and read at
@@ -1195,11 +1256,14 @@ mod tests {
 
     use super::{
         FileRequest, FileView, FolderChange, FolderKind, FolderModel, GitCondition, HeldListing,
-        ItemState, ModelDelta, OpenFailure, OpenFolderOutcome, OpenedFolder, PathReports,
+        ItemState, ModelDelta, OpenFailure, OpenFile, OpenFolderOutcome, OpenedFolder, PathReports,
         ReaderPlace, ReadingPosition, ReportedNames, TreeChanges, TreeRequest, list_tree,
-        open_folder, read_git, read_git_item, reduce, reduce_invalidation, select_file,
+        open_folder, read_git, read_git_item, reduce, reduce_invalidation, reduce_open_file,
+        select_file,
     };
-    use crate::fs_reader::{Condition, Entry, EntryKind, Listed, ListingObservation};
+    use crate::fs_reader::{
+        Condition, Entry, EntryKind, FileContent, Listed, ListingObservation, Reobserved,
+    };
     use crate::git_reader::ProbeCondition;
     use crate::git_reader::{GitPort, GitReadCondition, HeadState, RootFinding, StatusLists};
     use crate::language::Language;
@@ -2567,5 +2631,108 @@ mod tests {
         let after = reduce(model, &change(reported, "", vec![listed("", "a.rs", FILE)]));
 
         assert_eq!(root_of(&after), ["a.rs"]);
+    }
+
+    // ---- The open file's re-read: the pure fold over a supplied observation ----
+
+    fn text_view(content: &str) -> ItemState<FileView> {
+        ItemState::Observed(FileView::Text {
+            content: content.to_owned(),
+            language: Language::Plain,
+            spans: Vec::new(),
+        })
+    }
+
+    fn text_read(content: &str, location: Option<&str>) -> Reobserved {
+        Reobserved::Read {
+            state: ItemState::Observed(FileContent::Text {
+                content: content.to_owned(),
+                language: Language::Plain,
+            }),
+            location: location.map(PathBuf::from),
+        }
+    }
+
+    /// A model over a root that is never read, with `path` open at `line=7` holding `view`.
+    fn model_with_open_file(path: &str, view: ItemState<FileView>, location: &str) -> FolderModel {
+        supplied_model(
+            held("", &[("src", FOLDER)]),
+            &[],
+            ReaderPlace {
+                expanded: BTreeSet::new(),
+                selected: Some(PathBuf::from(path)),
+                open_file: Some(OpenFile {
+                    path: PathBuf::from(path),
+                    position: position(b"line=7"),
+                    view,
+                    location: Some(PathBuf::from(location)),
+                }),
+            },
+        )
+    }
+
+    #[test]
+    fn test_a_reduction_with_an_absent_observation_holds_the_open_file_as_gone() {
+        let model = model_with_open_file("src/a.txt", text_view("old"), "src/a.txt");
+
+        let after = reduce_open_file(model, Some(Reobserved::Absent));
+
+        let open = after.open_file().expect("the file stays the open one");
+        assert_eq!(open.path(), Path::new("src/a.txt"));
+        assert_eq!(open.position(), &position(b"line=7"));
+        assert_ne!(open.view(), &text_view("old"));
+        assert_eq!(open.view(), &ItemState::Observed(FileView::Gone));
+    }
+
+    #[test]
+    fn test_a_reduction_with_a_read_gives_the_new_view_and_a_failed_read_gives_failed() {
+        let model = model_with_open_file("src/a.txt", text_view("old"), "src/a.txt");
+
+        let read = reduce_open_file(model.clone(), Some(text_read("new", Some("real/a.txt"))));
+        let open = read.open_file().expect("open");
+        assert_ne!(open.view(), &text_view("old"));
+        assert_eq!(open.view(), &text_view("new"));
+        assert_eq!(open.location, Some(PathBuf::from("real/a.txt")));
+        assert_eq!(open.path(), Path::new("src/a.txt"));
+        assert_eq!(open.position(), &position(b"line=7"));
+
+        let failed = reduce_open_file(
+            model,
+            Some(Reobserved::Read {
+                state: ItemState::Failed(Condition::Unreadable),
+                location: Some(PathBuf::from("src/a.txt")),
+            }),
+        );
+        let open = failed.open_file().expect("open");
+        assert_ne!(open.view(), &text_view("old"));
+        assert_eq!(open.view(), &ItemState::Failed(Condition::Unreadable));
+        assert_eq!(open.position(), &position(b"line=7"));
+    }
+
+    #[test]
+    fn test_an_uncovered_open_file_is_untouched_and_nothing_is_asked() {
+        let model = model_with_open_file("src/a.txt", text_view("old"), "real/a.txt");
+
+        // Nothing is asked for a sibling's report, and a report of the location is asked for.
+        assert_eq!(model.open_file_to_reread(&reports(&["src/b.txt"])), None);
+        assert_eq!(
+            model.open_file_to_reread(&reports(&["real/a.txt"])),
+            Some(PathBuf::from("src/a.txt"))
+        );
+        assert_eq!(
+            model.open_file_to_reread(&reports(&["src"])),
+            Some(PathBuf::from("src/a.txt"))
+        );
+        assert_eq!(
+            model.open_file_to_reread(&reports(&[""])),
+            Some(PathBuf::from("src/a.txt"))
+        );
+        // Not asked, so not folded: the model is the model it was.
+        assert_eq!(reduce_open_file(model.clone(), None), model);
+
+        // With no file open nothing is asked, whatever is reported.
+        let none_open = supplied_model(held("", &[]), &[], ReaderPlace::default());
+        assert_eq!(none_open.open_file_to_reread(&reports(&[""])), None);
+        assert_eq!(reduce_open_file(none_open.clone(), None), none_open);
     }
 }
