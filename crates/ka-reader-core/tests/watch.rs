@@ -939,7 +939,15 @@ const SCENE: &[SceneOp] = &[
     SceneOp::Write("src/nested/fresh.txt"),
 ];
 
+/// The open file's text in the committed fixture: long, so the built-app walk has something to
+/// scroll. The scene never writes it, so it starts as it ends.
+const SCENE_OPEN_FILE_TEXT: &str =
+    include_str!("../../../checks/fixtures/tree-scene/reading/long.md");
+
 fn start_content(path: &str) -> String {
+    if path == SCENE_OPEN_FILE {
+        return SCENE_OPEN_FILE_TEXT.to_owned();
+    }
     format!("start: {path}\n")
 }
 
