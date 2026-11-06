@@ -1019,7 +1019,7 @@ impl Session {
 }
 
 /// What the reader did to a file row. The boundary decodes the wire's number into this closed set,
-/// and a number that is neither reaches the session as no act at all.
+/// and a number that is none of them reaches the session as no act at all.
 ///
 /// # Examples
 ///
@@ -1038,14 +1038,18 @@ pub enum FileAct {
     Open(ReadingPosition),
     /// The reader scrolled the open file: its position becomes this one.
     Position(ReadingPosition),
+    /// The reader clicked the file, first of the click's two acts: it is selected before any read,
+    /// nothing is read and the answer is `pending`. The open that follows is the model's to fold
+    /// only while this is the latest selection act.
+    Select,
 }
 
 impl Session {
     /// Applies the act the reader made on the file at `path` inside the opened folder. `Open`
-    /// selects and opens it at the position and answers its verdict; `Position` sets the open
-    /// file's position when `path` is the open file, reads nothing and answers `pending`; `None` is
-    /// an act the boundary could not decode and applies nothing. No folder open is `pending`,
-    /// because nothing was read.
+    /// selects and opens it at the position and answers its verdict; `Select` selects it before any
+    /// read, reads nothing and answers `pending`; `Position` sets the open file's position when
+    /// `path` is the open file, reads nothing and answers `pending`; `None` is an act the boundary
+    /// could not decode and applies nothing. No folder open is `pending`, because nothing was read.
     pub fn select_file(&self, path: &str, act: Option<FileAct>) -> FileAnswerDto {
         self.act_on_file(path, act, read_file)
     }
@@ -1078,6 +1082,10 @@ impl Session {
     ) -> FileAnswerDto {
         match act {
             Some(FileAct::Open(position)) => self.open_file(path, position, read),
+            Some(FileAct::Select) => {
+                self.select_path(path);
+                FileAnswerDto::Pending
+            }
             Some(FileAct::Position(position)) => {
                 self.position_file(path, position);
                 FileAnswerDto::Pending
@@ -1139,6 +1147,17 @@ impl Session {
                 log::warn!("core-bridge: model_changed stopped: answer serialization failed");
                 None
             }
+        }
+    }
+
+    /// The selection act: applied under one lock hold, in the order the acts arrive. It reads no
+    /// content and delivers nothing; with no folder open there is nothing to apply it to.
+    fn select_path(&self, path: &str) {
+        if let Some(held) = self.lock().held.as_mut() {
+            held.model = held
+                .model
+                .clone()
+                .select_file(FileRequest::Select(Some(PathBuf::from(path))));
         }
     }
 

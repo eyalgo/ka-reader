@@ -50,6 +50,7 @@ Each entry records a change to what a user of a fresh clone installs, runs, type
 
 - **ka-reader** — Re-entering a folder through a spelling that differs only in case stays inside the opened folder, and that re-entry is limited to case-only spellings. (`368c8a4ec`, `df53a4f46`)
 - **ka-reader** — Two processes writing the shared log keep it within its bound. (`af416967f`)
+- **ka-reader** — When you click two files in quick succession, KA-Reader ends on the second, whichever read finishes first. The panel shows it and follows it on disk, and your place in it is kept. (`068785415`, `0203fbd5e`, `d2874d693`, `5e5f39c2e`, `3bbc07d30`)
 
 ### Security
 

@@ -749,7 +749,22 @@ pub struct FolderModel {
     /// after it was read keeps its listing here.
     listings: BTreeMap<PathBuf, HeldListing>,
     place: ReaderPlace,
+    /// Which selection act still awaits its open. Not part of the reader's place: it decides only
+    /// which [`FolderModel::open_read`] folds.
+    awaited_open: AwaitedOpen,
     kind: ItemState<FolderKind, GitCondition>,
+}
+
+/// Which selection act awaits its open, so that an open folds only for the latest one, and once.
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum AwaitedOpen {
+    /// No selection act was admitted since the model was made, so an open folds as it always has.
+    NoActYet,
+    /// The latest admitted selection act named this file and no open has answered it.
+    Awaiting(PathBuf),
+    /// The latest selection act is answered, or was `Select(None)`: no open folds until the next
+    /// admitted selection.
+    Answered,
 }
 
 impl FolderModel {
@@ -762,6 +777,7 @@ impl FolderModel {
             folder: opened,
             listings: BTreeMap::new(),
             place: ReaderPlace::default(),
+            awaited_open: AwaitedOpen::NoActYet,
             kind: ItemState::Pending,
         }
     }
@@ -887,7 +903,7 @@ impl FolderModel {
 
     /// Applies a selection, open or position act and returns the model that results.
     ///
-    /// `Select` reads no content and changes only the selection. `Open` reads the file as
+    /// `Select` reads no content and changes only the selection, and the open it awaits. `Open` reads the file as
     /// [`select_file`] does and changes only the open file. `Position` changes only the open file's
     /// position. A path that does not resolve inside the root to a file leaves the model as it was.
     ///
@@ -902,9 +918,9 @@ impl FolderModel {
     /// ```
     pub fn select_file(self, request: FileRequest) -> Self {
         match request {
-            FileRequest::Select(None) => self.with_selection(None),
+            FileRequest::Select(None) => self.without_selection(),
             FileRequest::Select(Some(path)) => match self.admit(&path, EntryKind::File) {
-                Some(_) => self.with_selection(Some(path)),
+                Some(_) => self.with_selection_awaiting_its_open(path),
                 None => self,
             },
             FileRequest::Open(path, position) => self.open(path, position),
@@ -1136,8 +1152,17 @@ impl FolderModel {
         self
     }
 
-    fn with_selection(mut self, selected: Option<PathBuf>) -> Self {
-        self.place.selected = selected;
+    /// Clears the selection, and with it the open that selection awaited: no open folds until the
+    /// next admitted selection.
+    fn without_selection(mut self) -> Self {
+        self.place.selected = None;
+        self.awaited_open = AwaitedOpen::Answered;
+        self
+    }
+
+    fn with_selection_awaiting_its_open(mut self, path: PathBuf) -> Self {
+        self.place.selected = Some(path.clone());
+        self.awaited_open = AwaitedOpen::Awaiting(path);
         self
     }
 
@@ -1157,7 +1182,9 @@ impl FolderModel {
 
     /// Folds an open into the model without reading: where `read` resolved to a file, the
     /// selection becomes its path and the open file becomes that path at `position`, holding the
-    /// read's view and location. Otherwise the model is returned as it was, as [`FileRequest`]'s
+    /// read's view and location. The fold is made only when no selection act was admitted since
+    /// the model was made, or when the read answers the latest one not yet answered; a selection
+    /// act is answered by one fold. Otherwise the model is returned as it was, as [`FileRequest`]'s
     /// `Select` and `Open` leave it for a path that is not a file.
     ///
     /// # Examples
@@ -1175,6 +1202,13 @@ impl FolderModel {
         let Some(location) = read.location else {
             return self;
         };
+        match &self.awaited_open {
+            AwaitedOpen::NoActYet => {}
+            AwaitedOpen::Awaiting(awaited) if *awaited == read.path => {
+                self.awaited_open = AwaitedOpen::Answered;
+            }
+            AwaitedOpen::Awaiting(_) | AwaitedOpen::Answered => return self,
+        }
         self.place.selected = Some(read.path.clone());
         self.place.open_file = Some(OpenFile {
             path: read.path,
@@ -1411,10 +1445,10 @@ mod tests {
     use std::ffi::OsString;
 
     use super::{
-        FileRead, FileRequest, FileView, FolderChange, FolderKind, FolderModel, GitCondition,
-        HeldListing, ItemState, ModelDelta, OpenFailure, OpenFile, OpenFolderOutcome, OpenedFolder,
-        PathReports, ReaderPlace, ReadingPosition, ReportedNames, TreeChanges, TreeRequest,
-        list_tree, open_folder, read_git, read_git_item, reduce, reduce_invalidation,
+        AwaitedOpen, FileRead, FileRequest, FileView, FolderChange, FolderKind, FolderModel,
+        GitCondition, HeldListing, ItemState, ModelDelta, OpenFailure, OpenFile, OpenFolderOutcome,
+        OpenedFolder, PathReports, ReaderPlace, ReadingPosition, ReportedNames, TreeChanges,
+        TreeRequest, list_tree, open_folder, read_git, read_git_item, reduce, reduce_invalidation,
         reduce_open_file, select_file,
     };
     use crate::fs_reader::{
@@ -1934,6 +1968,7 @@ mod tests {
                 .map(|(path, listing)| (PathBuf::from(path), listing.clone()))
                 .collect(),
             place,
+            awaited_open: AwaitedOpen::NoActYet,
             kind: ItemState::Pending,
         }
     }
@@ -2933,6 +2968,162 @@ mod tests {
         assert_eq!(open.position(), &position(b"line=9"));
         assert_eq!(open.view(), &text_view("body"));
         assert_eq!(open.location, Some(PathBuf::from("b.txt")));
+    }
+
+    // ---- The open's fold is admitted for the latest selection act only ----
+
+    const FIRST_FILE: &str = "README.md";
+    const SECOND_FILE: &str = "src/main.rs";
+    const THIRD_FILE: &str = "src/util.rs";
+
+    /// `model` after one selection act for each of `paths`, in order.
+    fn after_selections(model: FolderModel, paths: &[&str]) -> FolderModel {
+        paths.iter().fold(model, |model, path| select(model, path))
+    }
+
+    /// `model` after folding a read of the file at `path` that opened at the position `line`.
+    fn after_open_read(model: FolderModel, path: &str, line: &[u8]) -> FolderModel {
+        model.open_read(
+            supplied_read(path, text_view(path), Some(path)),
+            position(line),
+        )
+    }
+
+    /// The path the model's open file is, `None` when no file is open.
+    fn open_path(model: &FolderModel) -> Option<&Path> {
+        model.open_file().map(OpenFile::path)
+    }
+
+    #[test]
+    fn test_with_no_selection_act_every_open_read_folds() {
+        let folder = project();
+
+        let after = [FIRST_FILE, SECOND_FILE]
+            .into_iter()
+            .fold(model_over(&folder), |model, path| {
+                after_open_read(model, path, b"top")
+            });
+
+        assert_eq!(after.place().selected(), Some(Path::new(SECOND_FILE)));
+        assert_eq!(open_path(&after), Some(Path::new(SECOND_FILE)));
+    }
+
+    #[test]
+    fn test_open_read_of_a_file_an_earlier_selection_named_leaves_the_model_equal() {
+        let folder = project();
+        let selected = after_selections(model_over(&folder), &[FIRST_FILE, SECOND_FILE]);
+
+        let after = after_open_read(selected.clone(), FIRST_FILE, b"top");
+
+        assert_eq!(after, selected);
+    }
+
+    #[test]
+    fn test_open_read_answering_the_latest_selection_folds_it() {
+        let folder = project();
+        let selected = after_selections(model_over(&folder), &[FIRST_FILE, SECOND_FILE]);
+
+        let after = after_open_read(selected, SECOND_FILE, b"line=3");
+
+        assert_eq!(after.place().selected(), Some(Path::new(SECOND_FILE)));
+        let open = after
+            .open_file()
+            .expect("the latest selection's file is open");
+        assert_eq!(open.path(), Path::new(SECOND_FILE));
+        assert_eq!(open.position(), &position(b"line=3"));
+    }
+
+    #[test]
+    fn test_a_second_open_read_for_one_selection_leaves_the_model_equal() {
+        let folder = project();
+        let selected = after_selections(model_over(&folder), &[SECOND_FILE]);
+        let first = after_open_read(selected, SECOND_FILE, b"p1");
+
+        let second = after_open_read(first.clone(), SECOND_FILE, b"p2");
+
+        assert_eq!(second, first);
+        assert_eq!(
+            second.open_file().expect("the file is open").position(),
+            &position(b"p1")
+        );
+    }
+
+    #[test]
+    fn test_three_selections_folded_out_of_order_end_on_the_third() {
+        let folder = project();
+        let selected =
+            after_selections(model_over(&folder), &[FIRST_FILE, SECOND_FILE, THIRD_FILE]);
+
+        let after = [THIRD_FILE, FIRST_FILE, SECOND_FILE]
+            .into_iter()
+            .fold(selected, |model, path| after_open_read(model, path, b"top"));
+
+        assert_eq!(after.place().selected(), Some(Path::new(THIRD_FILE)));
+        assert_eq!(open_path(&after), Some(Path::new(THIRD_FILE)));
+    }
+
+    #[test]
+    fn test_a_selection_naming_no_file_leaves_the_earlier_selection_awaited() {
+        let folder = project();
+        let selected = after_selections(model_over(&folder), &[FIRST_FILE, "missing.txt"]);
+
+        let after = after_open_read(selected, FIRST_FILE, b"top");
+
+        assert_eq!(after.place().selected(), Some(Path::new(FIRST_FILE)));
+        assert_eq!(open_path(&after), Some(Path::new(FIRST_FILE)));
+        let no_file = supplied_read("missing.txt", ItemState::Failed(Condition::Missing), None);
+        assert_eq!(after.clone().open_read(no_file, position(b"top")), after);
+    }
+
+    #[test]
+    fn test_after_select_none_an_open_read_leaves_the_model_equal() {
+        let folder = project();
+        let cleared = after_selections(model_over(&folder), &[FIRST_FILE])
+            .select_file(FileRequest::Select(None));
+
+        let after = after_open_read(cleared.clone(), FIRST_FILE, b"top");
+
+        assert_eq!(after, cleared);
+    }
+
+    #[test]
+    fn test_a_read_that_found_no_file_leaves_the_awaited_act_awaited() {
+        let folder = project();
+        let selected = after_selections(model_over(&folder), &[FIRST_FILE]);
+        let no_file = supplied_read(FIRST_FILE, ItemState::Failed(Condition::Missing), None);
+        let unchanged = selected.clone().open_read(no_file, position(b"top"));
+        assert_eq!(unchanged, selected);
+
+        let after = after_open_read(unchanged, FIRST_FILE, b"top");
+
+        assert_eq!(open_path(&after), Some(Path::new(FIRST_FILE)));
+    }
+
+    #[test]
+    fn test_selecting_an_answered_file_again_awaits_a_new_open() {
+        let folder = project();
+        let answered = after_open_read(
+            after_selections(model_over(&folder), &[SECOND_FILE]),
+            SECOND_FILE,
+            b"p1",
+        );
+
+        let after = after_open_read(select(answered, SECOND_FILE), SECOND_FILE, b"p2");
+
+        let open = after.open_file().expect("the file is open");
+        assert_eq!(open.path(), Path::new(SECOND_FILE));
+        assert_eq!(open.position(), &position(b"p2"));
+    }
+
+    #[test]
+    fn test_a_selection_after_select_none_awaits_its_open_again() {
+        let folder = project();
+        let cleared = model_over(&folder).select_file(FileRequest::Select(None));
+
+        let after = after_open_read(select(cleared, FIRST_FILE), FIRST_FILE, b"top");
+
+        assert_eq!(after.place().selected(), Some(Path::new(FIRST_FILE)));
+        assert_eq!(open_path(&after), Some(Path::new(FIRST_FILE)));
     }
 
     // ---- The change set lists the open file ----

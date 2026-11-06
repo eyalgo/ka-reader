@@ -52,6 +52,13 @@ final class LaunchFlowSelectionTests: LaunchWindowTestCase {
         tree.outlineView.selectRowIndexes(IndexSet(integer: row), byExtendingSelection: false)
     }
 
+    /// Releases the `index`th read `holding` holds. A read that is not held fails the test where it
+    /// stands, rather than trapping in the runner and ending the run.
+    private func release(_ index: Int, of holding: HoldingReadRunner) throws {
+        let held = try XCTUnwrap(holding.heldReads > index ? index : nil, "read \(index) is held")
+        holding.release(held)
+    }
+
     private func shownPath(_ workbench: WorkbenchView) -> String? {
         let line = workbench.readingPanel.pathLine
         return line.isHiddenOrHasHiddenAncestor ? nil : line.stringValue
@@ -68,7 +75,9 @@ final class LaunchFlowSelectionTests: LaunchWindowTestCase {
 
         try click("lib.rs", in: workbench)
 
-        XCTAssertEqual(launch.bridge.selectedPaths, ["src/lib.rs"])
+        XCTAssertEqual(
+            launch.bridge.selectedPaths, ["src/lib.rs", "src/lib.rs"],
+            "the select act, then the one open")
         XCTAssertEqual(
             Set(launch.bridge.freed), Set(launch.bridge.handedOut), "every buffer is released")
         XCTAssertEqual(launch.bridge.freed.count, launch.bridge.handedOut.count)
@@ -85,7 +94,7 @@ final class LaunchFlowSelectionTests: LaunchWindowTestCase {
 
         try click("ln", in: workbench)
 
-        XCTAssertEqual(launch.bridge.selectedPaths, ["ln"])
+        XCTAssertEqual(launch.bridge.selectedPaths, ["ln", "ln"])
         XCTAssertEqual(shownPath(workbench), "ln")
         XCTAssertTrue(
             visibleStrings(beneath: workbench.readingPanel).contains {
@@ -103,9 +112,12 @@ final class LaunchFlowSelectionTests: LaunchWindowTestCase {
 
         try click("a.txt", in: workbench)
         try click("b.txt", in: workbench)
-        XCTAssertEqual(holding.heldReads, 3, "the open and two file reads are held")
-        holding.release(2)
-        holding.release(1)
+        XCTAssertEqual(holding.heldReads, 3, "the folder open and the two select acts are held")
+        try release(1, of: holding)
+        try release(2, of: holding)
+        XCTAssertEqual(holding.heldReads, 5, "each select act's delivery sends its own open")
+        try release(4, of: holding)
+        try release(3, of: holding)
 
         XCTAssertEqual(shownPath(workbench), "b.txt")
         XCTAssertEqual(workbench.readingPanel.contentView.string, "from b")
@@ -142,10 +154,15 @@ final class LaunchFlowSelectionTests: LaunchWindowTestCase {
 
         try click("a.txt", in: workbench)
 
-        XCTAssertEqual(holding.heldReads, 2, "the open and the file read are held")
+        XCTAssertEqual(holding.heldReads, 2, "the folder open and the select act are held")
         XCTAssertEqual(
             visibleStrings(beneath: workbench.readingPanel), ["Reading this file."])
-        holding.release(1)
+        try release(1, of: holding)
+        XCTAssertEqual(holding.heldReads, 3, "the open follows the select act")
+        XCTAssertEqual(
+            visibleStrings(beneath: workbench.readingPanel), ["Reading this file."],
+            "the pending sentence stands until the open is answered")
+        try release(2, of: holding)
         XCTAssertEqual(shownPath(workbench), "a.txt")
         XCTAssertEqual(workbench.readingPanel.contentView.string, "from a")
     }

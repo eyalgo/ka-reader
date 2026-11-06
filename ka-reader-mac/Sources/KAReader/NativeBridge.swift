@@ -46,6 +46,7 @@ nonisolated struct NativeBridge: Bridging {
             switch act {
             case .open: 0
             case .position: 1
+            case .select: 2
             }
         #if compiler(>=6.4)
             return path.withCString { path in

@@ -248,8 +248,12 @@ final class LaunchFlowModelChangesTests: XCTestCase {
 
         XCTAssertEqual(launch.bridge.listedPaths, ["", "src", "src/nested", "src"])
         XCTAssertEqual(launch.bridge.listedActs, [.expand, .expand, .expand, .collapse])
-        XCTAssertEqual(acts.runs, 3, "the three acts rode the tree runner, in order")
-        XCTAssertEqual(launch.bridge.selectedPaths, ["a.txt", "b.txt"], "one call for each click")
+        XCTAssertEqual(
+            acts.runs, 5,
+            "the three tree acts and the two select acts rode the tree runner, in order")
+        XCTAssertEqual(
+            launch.bridge.selectedPaths, ["a.txt", "a.txt", "b.txt", "b.txt"],
+            "the select act, then one open, for each click")
         XCTAssertEqual(
             Set(launch.bridge.freed), Set(launch.bridge.handedOut), "every buffer was freed")
 
