@@ -2,7 +2,7 @@
 
 **Status:** Settled
 **Owner:** CPO
-**Version:** 17 — the first public release is a beta below 1.0.0: it comes once the tree and the open file follow the disk and Markdown reads rendered, without waiting for the Git view to follow the disk, and in it the Git view and the changed-file markers say plainly that they show the Git state read when the folder was opened (§ Scope (In), **The first public release — a beta**; § UX Notes, "the view never lies"). The Git view following the disk stays part of v1, in place before 1.0.0. The citations of the project's done now name its finish line.
+**Version:** 18 — the beta comes first and waits for nothing beyond the tree and the open file following the disk and Markdown reading rendered: choosing a theme and keeping that choice come after it, with the Git view following the disk, and both are in place before 1.0.0. The beta is there to be used and shown, as the public evidence of what kensaiapp builds; the repository goes public with its own commit history, once that history is checked for anything private (§ Scope (In), **The first public release — a beta**; § Assumptions, **Public identity**). Prior revision: 17 — the first public release is a beta below 1.0.0, in which the Git view and the changed-file markers say plainly that they show the Git state read when the folder was opened.
 
 > The PRD is the product source of truth: the product-facing **what and why**, read cold
 > by the CTO, the CDO, Principal PM, and Principal Architect. It is updated in place with
@@ -320,12 +320,17 @@ runs on macOS, and promises nothing else. The promise is scoped to the maintenan
 one platform is a narrower promise than three, and a truthful one.
 
 **The first public release — a beta** *(added — not in the input; owner-confirmed:
-trail/prd/cycle-15.md § 3.1)*: the first public release is a beta, below 1.0.0. It comes once
-the tree and the open file follow the disk and Markdown reads rendered, and it does not wait
-for the Git view to follow the disk. In the beta, the Git view and the tree's changed-file
+trail/prd/cycle-15.md § 3.1)*: the first public release is a beta, below 1.0.0, and it comes
+first. It comes once the tree and the open file follow the disk and Markdown reads rendered,
+and it waits for nothing else: not for the Git view to follow the disk, and not for choosing a
+theme and keeping that choice *(the beta first, and the theme choice after it: owner-confirmed:
+trail/prd/cycle-16.md § 3.1)*. In the beta, the Git view and the tree's changed-file
 markers say plainly that they show the Git state read when the folder was opened, and the
-README's known gaps say the same (see UX Notes, "the view never lies"). The Git view following
-the disk stays part of what v1 means, and is in place before 1.0.0.
+README's known gaps say the same (see UX Notes, "the view never lies"). The beta is there to be
+used and to be shown: it is the public, working evidence of what kensaiapp builds, and once it
+is out the owner points to it from kensaiapp's public repository *(owner-confirmed:
+trail/prd/cycle-16.md § 3.1)*. The Git view following the disk stays part of what v1 means;
+it, and choosing a theme and keeping that choice, are in place before 1.0.0.
 
 The full ambition, so the cut reads as deliberate: a complete read-only inspection surface —
 diffs, commit history, search, keyboard-driven navigation, switching which folder is viewed
@@ -412,7 +417,10 @@ browsing, reading, status, and live refresh.
   KA-Reader is a side project *(added — not in the input; owner-confirmed: trail/prd/cycle-7.md.
   The personal handle: changed — supersedes the `kensaiapp` organisation, with no personal handle
   as the public face, owner-confirmed in trail/prd/cycle-7.md; owner-confirmed:
-  trail/prd/cycle-14.md § 3.1)*.
+  trail/prd/cycle-14.md § 3.1)*. The repository goes public with its own commit history, not as
+  a fresh copy: the history is part of the work being shown. Nothing private may stand in that
+  history, so the repository goes public only once its history has been checked for anything
+  private *(owner-confirmed: trail/prd/cycle-16.md § 3.1)*.
 - **Support posture — nothing is promised.** Issues and questions are welcome and read when
   there is time, with no response time, no commitment to fix, and no commitment that a fix ever
   arrives. Security reports have a private channel and are read, with no acknowledgement or
