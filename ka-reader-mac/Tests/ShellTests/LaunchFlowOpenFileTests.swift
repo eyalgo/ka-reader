@@ -6,45 +6,64 @@ import Testing
 @testable import Shell
 @testable import Surfaces
 
-/// The open file across the bridge, through `LaunchFlow` and the real reading panel: a click is one
-/// open act at the top-left, a scroll is one position act on the tree-act runner carrying the
-/// encoded position, and each call frees its buffer (CP-1022 crossing; E4).
+/// The open file across the bridge, through `LaunchFlow` and the real reading panel: a click is a
+/// selection act on the tree-act runner and then one open act at the top-left, a scroll is one
+/// position act on the tree-act runner carrying the encoded position, and each call frees its
+/// buffer (CP-1022 crossing; E4; CP-1047, CP-1048).
 
 private let chosenFolder = URL(fileURLWithPath: "/Users/someone/notes", isDirectory: true)
 
 private let rootAnswer = Data(
     (#"{"state":"observed","entries":["#
-        + #"{"name":"a.txt","path":"a.txt","kind":"file","state":"observed","language":"plain"}]}"#)
+        + #"{"name":"src","path":"src","kind":"folder","state":"pending"},"#
+        + #"{"name":"a.txt","path":"a.txt","kind":"file","state":"observed","language":"plain"},"#
+        + #"{"name":"b.txt","path":"b.txt","kind":"file","state":"observed","language":"plain"}]}"#)
         .utf8)
+
+private let srcAnswer = Data(#"{"state":"observed","entries":[]}"#.utf8)
 
 private let textAnswer = Data(#"{"state":"text","content":"one\ntwo\n","language":"plain"}"#.utf8)
 
+/// Which of the flow's two runners a launch holds. The other runs its work at once.
+private enum HeldRunner {
+    case treeActs
+    case reader
+}
+
+/// `treeActs` and `reader` are both held runners, and the flow is given only the one `holding`
+/// names; the other is handed an inline runner, so the held runner it was not given stays empty.
 @MainActor
 private struct Launch {
     let flow: LaunchFlow
     let bridge: RecordingBridge
     let presenter: FakeWindowPresenter
     let treeActs: HoldingReadRunner
+    let reader: HoldingReadRunner
     let main: HeldMainDelivery
 }
 
 @MainActor
-private func launch(selectAnswer: Data = textAnswer) -> Launch {
+private func launch(selectAnswer: Data = textAnswer, holding: HeldRunner = .treeActs) -> Launch {
     createTheSharedApplication()
     let log = EventLog()
     let bridge = RecordingBridge(log: log)
     bridge.listAnswer = rootAnswer
-    bridge.selectAnswers = ["a.txt": selectAnswer]
+    bridge.listAnswers = ["src": srcAnswer]
+    bridge.selectAnswers = ["a.txt": selectAnswer, "b.txt": textAnswer]
     let presenter = FakeWindowPresenter()
     let treeActs = HoldingReadRunner()
+    let reader = HoldingReadRunner()
     let main = HeldMainDelivery()
     let flow = LaunchFlow(
         panel: FakePanel(answers: [chosenFolder, chosenFolder], log: log), bridge: bridge,
-        glyphs: FakeGlyphSource(), presenter: presenter, reader: InlineReadRunner(),
-        treeActs: treeActs, main: main, terminate: {})
+        glyphs: FakeGlyphSource(), presenter: presenter,
+        reader: holding == .reader ? reader : InlineReadRunner(),
+        treeActs: holding == .treeActs ? treeActs : InlineReadRunner(), main: main,
+        terminate: {})
     flow.run()
     return Launch(
-        flow: flow, bridge: bridge, presenter: presenter, treeActs: treeActs, main: main)
+        flow: flow, bridge: bridge, presenter: presenter, treeActs: treeActs, reader: reader,
+        main: main)
 }
 
 @MainActor
@@ -106,19 +125,100 @@ private func liveReceiver(of launch: Launch) throws -> ModelChangesReceiver {
         let launch = launch()
         let workbench = try workbench(of: launch)
         let before = launch.bridge.selectCalls.count
+        let held = launch.treeActs.heldReads
 
         try click("a.txt", in: workbench)
+        try #require(launch.treeActs.heldReads > held, "the click's selection act is held")
+        launch.treeActs.release(held)
 
         let calls = Array(launch.bridge.selectCalls.dropFirst(before))
         #expect(
             calls == [
                 SelectCall(
-                    path: "a.txt", act: .open,
-                    position: BridgePayload.encodePosition(.topLeft))
+                    path: "a.txt", act: .select, position: BridgePayload.encodePosition(.topLeft)),
+                SelectCall(
+                    path: "a.txt", act: .open, position: BridgePayload.encodePosition(.topLeft)),
             ])
         #expect(Set(launch.bridge.freed) == Set(launch.bridge.handedOut))
         #expect(launch.bridge.freed.count == launch.bridge.handedOut.count)
         #expect(workbench.readingPanel.contentView.string == "one\ntwo\n")
+    }
+
+    @Test func aClickSendsTheSelectActOnTheTreeActRunnerAndItsOpenOnlyAfterThatActReturns() throws {
+        let launch = launch()
+        let workbench = try workbench(of: launch)
+        let before = launch.bridge.selectCalls.count
+        let held = launch.treeActs.heldReads
+
+        try click("a.txt", in: workbench)
+
+        #expect(launch.treeActs.heldReads == held + 1, "one act is held on the tree-act runner")
+        #expect(launch.bridge.selectCalls.count == before, "and no selectFile has reached the bridge")
+        try #require(launch.treeActs.heldReads > held, "the selection act is held")
+        launch.treeActs.release(held)
+
+        let topLeft = BridgePayload.encodePosition(.topLeft)
+        #expect(
+            Array(launch.bridge.selectCalls.dropFirst(before)) == [
+                SelectCall(path: "a.txt", act: .select, position: topLeft),
+                SelectCall(path: "a.txt", act: .open, position: topLeft),
+            ])
+        #expect(Set(launch.bridge.freed) == Set(launch.bridge.handedOut))
+        #expect(
+            launch.bridge.freed.count == launch.bridge.handedOut.count, "every buffer is freed once")
+    }
+
+    @Test func twoClicksSendTheirSelectActsInClickOrder() throws {
+        let launch = launch()
+        let workbench = try workbench(of: launch)
+        let before = launch.bridge.selectCalls.count
+        let held = launch.treeActs.heldReads
+
+        try click("a.txt", in: workbench)
+        try click("b.txt", in: workbench)
+
+        #expect(launch.treeActs.heldReads == held + 2, "two acts are held on the tree-act runner")
+        try #require(launch.treeActs.heldReads > held + 1, "both selection acts are held")
+        launch.treeActs.release(held)
+        launch.treeActs.release(held + 1)
+
+        let topLeft = BridgePayload.encodePosition(.topLeft)
+        #expect(
+            Array(launch.bridge.selectCalls.dropFirst(before)) == [
+                SelectCall(path: "a.txt", act: .select, position: topLeft),
+                SelectCall(path: "a.txt", act: .open, position: topLeft),
+                SelectCall(path: "b.txt", act: .select, position: topLeft),
+                SelectCall(path: "b.txt", act: .open, position: topLeft),
+            ], "the select acts go in click order, and each open follows its own select act")
+        #expect(Set(launch.bridge.freed) == Set(launch.bridge.handedOut))
+        #expect(launch.bridge.freed.count == launch.bridge.handedOut.count)
+    }
+
+    @Test func whileAReadIsHeldAnExpansionAndASecondSelectionReachTheBridge() throws {
+        let launch = launch(holding: .reader)
+        launch.reader.release(0)  // the folder open, which the reader also runs
+        let workbench = try workbench(of: launch)
+        let tree = workbench.rootItemsView
+        let before = launch.bridge.selectCalls.count
+        let topLeft = BridgePayload.encodePosition(.topLeft)
+
+        try click("a.txt", in: workbench)
+        #expect(launch.reader.heldReads == 2, "a.txt's open is held on the reader")
+        let src = try #require(
+            (0..<tree.outlineView.numberOfRows).first { tree.entry(atRow: $0)?.name == "src" })
+        tree.outlineView.expandItem(tree.outlineView.item(atRow: src))
+        try click("b.txt", in: workbench)
+
+        #expect(launch.bridge.listedPaths.last == "src", "the expansion's listTree reached the bridge")
+        #expect(
+            Array(launch.bridge.selectCalls.dropFirst(before)) == [
+                SelectCall(path: "a.txt", act: .select, position: topLeft),
+                SelectCall(path: "b.txt", act: .select, position: topLeft),
+            ], "b.txt's select act reached the bridge while a.txt's open was held")
+        workbench.layoutSubtreeIfNeeded()
+        #expect(
+            textElements(beneath: workbench.readingPanel).map(\.stringValue)
+                == ["Reading this file."], "the panel shows the pending sentence for b.txt")
     }
 
     @Test func aScrollRecordsOneSelectFilePositionCallOnTheTreeActRunnerWithTheEncodedPosition()
@@ -127,6 +227,8 @@ private func liveReceiver(of launch: Launch) throws -> ModelChangesReceiver {
         let launch = launch()
         let workbench = try workbench(of: launch)
         try click("a.txt", in: workbench)
+        try #require(launch.treeActs.heldReads > 0, "the click's selection act is held")
+        launch.treeActs.release(0)
         let calls = launch.bridge.selectCalls.count
         let held = launch.treeActs.heldReads
         let scrolled = ReadingPosition(topLine: 12, horizontalOffset: 30.5)
@@ -239,6 +341,8 @@ private func liveReceiver(of launch: Launch) throws -> ModelChangesReceiver {
         #expect(first !== second)
         let workbench = try workbench(of: launch)
         try click("a.txt", in: workbench)
+        try #require(launch.treeActs.heldReads > 0, "the click's selection act is held")
+        launch.treeActs.release(0)
         let before = launch.bridge.freed.count
         let fresh = #"{"state":"text","content":"fresh\n","language":"plain"}"#
         let stale = #"{"state":"text","content":"stale\n","language":"plain"}"#

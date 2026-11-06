@@ -284,7 +284,7 @@ final class LaunchFlowGitTests: LaunchWindowTestCase {
 
         try click("a.txt", in: workbench)
 
-        XCTAssertEqual(launch.bridge.selectedPaths, ["a.txt"])
+        XCTAssertEqual(launch.bridge.selectedPaths, ["a.txt", "a.txt"])
     }
 
     func test_theBufferIsDecodedAndFreedOffTheMainThread() async throws {
