@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
-# Version: 1.0.0 — first version: the built-app helper for the tree-follows-the-disk walk
+# Version: 2.0.0 — the scene goes on the Desktop, the churn waits for Enter, each step is announced
+#   (1.0.0 copied under the temporary directory and gave a fixed sixty-second lead-in)
 #
-# checks/tree-scene.sh — launches the built KA-Reader.app, stages a copy of checks/fixtures/tree-scene,
-# churns that copy for thirty seconds, and prints what is on disk once the churn has settled.
-# Run from the product root: checks/tree-scene.sh target/release/bundle/macos/KA-Reader.app
+# checks/tree-scene.sh — launches the built KA-Reader.app, stages a copy of checks/fixtures/tree-scene
+# on the Desktop, waits for Enter, churns that copy for thirty seconds, and prints what is on disk
+# once the churn has settled. A person on the host runs it through checks/tree-walk.sh, which builds
+# the app in the guest and runs this there. Run by hand in the guest, from the product root:
+#   checks/tree-scene.sh target/release/bundle/macos/KA-Reader.app
 #
 # WHY THIS EXISTS
 #   The tree an open folder shows follows the disk (docs/SDD.md § 6 S-5). No command can watch the
@@ -16,18 +19,24 @@
 #
 # USAGE
 #   checks/tree-scene.sh <path-to-app>
-#   stderr says which folder to choose in the app and when the churn starts, then the churn runs.
+#   stderr says which folder to choose in the app and what to set before pressing Enter, then the
+#   churn runs and each step is named on stderr as it lands.
 #   stdout is the listings, and only the listings: each folder as `<path>:` with its entries
 #   beneath it, folders first and then files, each by lowercase name, and a folder's entries right
 #   after it. A folder entry ends in `/`.
 #
 # WHAT IT DOES
 #   1. Admission: it asks the host whether it is a macOS virtual machine. See ADMISSION below.
-#   2. It copies the fixture into a temporary directory and launches the bundle once, as
-#      `open -n -g`. The process that came with the launch is the one pid it records.
-#   3. After a lead-in it churns the copy: ten steps of creates, changes, deletes and a rename in
-#      nested folders, three seconds apart. The churn is a fixed list, so a rerun does the same
-#      work. reading/long.md is never touched, and the churn never goes outside the copy.
+#   2. It copies the fixture to ~/Desktop/tree-scene, a folder the open panel shows in its sidebar,
+#      and launches the bundle once, in front, as `open -n`. The process that came with the launch is the
+#      one pid it records. A folder already there is replaced only if it holds the fixture's
+#      .scene-note (a copy a killed run left behind); any other folder of that name stops the run.
+#   3. It waits for a line on standard input: the person chooses the folder, expands the nested
+#      folders, opens reading/long.md and scrolls, then presses Enter. End of input stops the run.
+#      Then it churns the copy: ten steps of creates, changes, deletes and a rename in nested
+#      folders, three seconds apart, each named on stderr. The churn is a fixed list, so a rerun
+#      does the same work. reading/long.md is never touched, and the churn never goes outside the
+#      copy.
 #   4. It waits a quiet interval, then prints a fresh listing of every folder of the copy.
 #   5. On every exit it stops the pid it recorded, and no other, and removes the copy.
 #
@@ -56,10 +65,8 @@ host_os="$(uname -s 2> /dev/null)" && host_vmm="$(sysctl -n kern.hv_vmm_present 
 
 die() { echo "tree-scene.sh: $*" >&2; exit 1; }
 
-# The lead-in, the churn and the quiet interval, in ticks of a whole number of seconds. The step
+# The churn and the quiet interval, in ticks of a whole number of seconds. The step
 # lengths are distinct so a case can count each from the waits it saw.
-LEAD_IN_TICKS=12
-LEAD_IN_TICK_SECONDS=5
 CHURN_STEPS=10
 CHURN_STEP_SECONDS=3
 QUIET_TICKS=2
@@ -73,6 +80,10 @@ TAB="$(printf '\t')"
 [ $# -eq 1 ] || die "usage: checks/tree-scene.sh <path-to-app>"
 app="$1"
 [ -d "$app/Contents/MacOS" ] || die "$app has no Contents/MacOS, so it is not a built app"
+# Absolute and with links resolved, because `ps` names a process by its physical executable path
+# (/tmp reads as /private/tmp). A relative argument, the usage line's own form, never matched
+# the process the launch started.
+app="$(cd "$app" && pwd -P)"
 executables="$(find "$app/Contents/MacOS" -mindepth 1 -maxdepth 1 | LC_ALL=C sort)"
 [ -n "$executables" ] && [ "$(printf '%s\n' "$executables" | wc -l | tr -d ' ')" -eq 1 ] \
   || die "$app does not hold exactly one executable under Contents/MacOS"
@@ -119,19 +130,22 @@ stop_launched_process() {
 
 # --- the scratch copy ---
 
-# An explicit template: a bare `mktemp -d` on macOS ignores TMPDIR, and the copy must go where the
-# caller says temporary files go.
-work="$(mktemp -d "${TMPDIR:-/tmp}/tree-scene.XXXXXX")"
-trap 'stop_launched_process; rm -rf "$work"' EXIT
+# On the Desktop, so the open panel's sidebar reaches it in one click and nobody types a path.
+[ -n "${HOME:-}" ] && [ -d "$HOME/Desktop" ] || die "there is no Desktop folder under the home to put the scene in"
+scratch="$HOME/Desktop/tree-scene"
+if [ -e "$scratch" ]; then
+  [ -f "$scratch/.scene-note" ] || die "$scratch is there and is not a scene copy, so it is left alone; move it and run again"
+  rm -rf "$scratch"
+fi
+trap 'stop_launched_process; rm -rf "$scratch"' EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
-scratch="$work/tree-scene"
 cp -R "$fixture" "$scratch"
 
 # --- launch ---
 
 before="$(executable_pids)"
-open -n -g "$app" || die "cannot be launched: open refused $app"
+open -n "$app" || die "cannot be launched: open refused $app"
 
 poll_ticks=0
 while [ -z "$launched_pid" ] && [ "$poll_ticks" -lt "$LAUNCH_POLL_TICKS" ]; do
@@ -152,15 +166,15 @@ $candidate
 done
 [ -n "$launched_pid" ] || die "no new process of $bundle_executable appeared within $LAUNCH_POLL_TICKS ticks of 0.25s of open"
 
-# --- the lead-in: the person chooses the folder ---
+# --- the lead-in: the person sets the place, then presses Enter ---
 
 echo "tree-scene.sh: choose this folder in the app: $scratch" >&2
-echo "tree-scene.sh: the churn starts in $((LEAD_IN_TICKS * LEAD_IN_TICK_SECONDS)) seconds" >&2
-lead_in=0
-while [ "$lead_in" -lt "$LEAD_IN_TICKS" ]; do
-  sleep "$LEAD_IN_TICK_SECONDS"
-  lead_in=$((lead_in + 1))
-done
+echo "tree-scene.sh: in the app's window, before you press Enter:" >&2
+echo "tree-scene.sh:   1. click KA-Reader in the Dock if its window is not in front; in its panel choose Desktop, then tree-scene, then Open" >&2
+echo "tree-scene.sh:   2. expand src, src/nested, src/nested/deep, docs, notes and reading" >&2
+echo "tree-scene.sh:   3. open reading/long.md and scroll to a section in the middle" >&2
+echo "tree-scene.sh: press Enter here when that is set, then watch the app's window" >&2
+IFS= read -r _ || die "no Enter came (standard input ended), so the churn did not start"
 
 # --- the churn: a fixed list, one step at a time ---
 
@@ -168,23 +182,25 @@ done
 # the step.
 churn_step() {
   case "$1" in
-    1) printf 'step 1\n' > "$scratch/src/nested/deep/stage1.txt" ;;
-    2) printf 'step 2\n' >> "$scratch/src/a.rs" ;;
-    3) mkdir -p "$scratch/src/extra" && printf 'step 3\n' > "$scratch/src/extra/x.txt" ;;
-    4) rm "$scratch/docs/changelog.md" ;;
-    5) printf 'step 5\n' > "$scratch/docs/draft.md" ;;
-    6) rm "$scratch/src/nested/fresh.txt" ;;
-    7) mv "$scratch/src/nested/deep/moved.rs" "$scratch/src/extra/moved.rs" ;;
-    8) printf 'step 8\n' > "$scratch/notes/n3.txt" ;;
-    9) rm "$scratch/notes/n2.txt" ;;
-    10) printf 'step 10\n' > "$scratch/reading/late.md" ;;
+    1) printf 'step 1\n' > "$scratch/src/nested/deep/stage1.txt"; said='created src/nested/deep/stage1.txt' ;;
+    2) printf 'step 2\n' >> "$scratch/src/a.rs"; said='changed src/a.rs' ;;
+    3) mkdir -p "$scratch/src/extra" && printf 'step 3\n' > "$scratch/src/extra/x.txt"; said='created the folder src/extra with x.txt in it' ;;
+    4) rm "$scratch/docs/changelog.md"; said='deleted docs/changelog.md' ;;
+    5) printf 'step 5\n' > "$scratch/docs/draft.md"; said='created docs/draft.md' ;;
+    6) rm "$scratch/src/nested/fresh.txt"; said='deleted src/nested/fresh.txt' ;;
+    7) mv "$scratch/src/nested/deep/moved.rs" "$scratch/src/extra/moved.rs"; said='moved src/nested/deep/moved.rs to src/extra/moved.rs' ;;
+    8) printf 'step 8\n' > "$scratch/notes/n3.txt"; said='created notes/n3.txt' ;;
+    9) rm "$scratch/notes/n2.txt"; said='deleted notes/n2.txt' ;;
+    10) printf 'step 10\n' > "$scratch/reading/late.md"; said='created reading/late.md' ;;
     *) die "no churn step $1" ;;
   esac
 }
 
 step=1
 while [ "$step" -le "$CHURN_STEPS" ]; do
+  said=""
   churn_step "$step"
+  echo "tree-scene.sh: step $step of $CHURN_STEPS: $said" >&2
   sleep "$CHURN_STEP_SECONDS"
   step=$((step + 1))
 done
@@ -234,4 +250,7 @@ print_tree() {
   done
 }
 
+echo "tree-scene.sh: the churn is over. The app's tree should now match the listing below, with the" >&2
+echo "tree-scene.sh: folders you expanded still expanded, long.md still open at the same section, and" >&2
+echo "tree-scene.sh: nothing that flashed, popped up or asked for attention along the way." >&2
 print_tree "$scratch" "."

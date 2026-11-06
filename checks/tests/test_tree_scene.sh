@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
-# Version: 1.0.0 — first version: the tests of checks/tree-scene.sh, the built-app helper for the
-#   tree-follows-the-disk walk
+# Version: 2.0.0 — the scene on the Desktop, the churn on Enter, each step named; three new cases
+#   (no Enter, a foreign folder in the way, a leftover scene copy)
 #
 # checks/tests/test_tree_scene.sh — the tests of checks/tree-scene.sh.
 #
 # WHY THIS EXISTS
-#   checks/tree-scene.sh launches the built KA-Reader.app, stages a copy of checks/fixtures/tree-scene,
-#   churns the copy for thirty seconds and prints what is on disk at quiescence, so a person can
+#   checks/tree-scene.sh launches the built KA-Reader.app, stages a copy of checks/fixtures/tree-scene
+#   on the Desktop, waits for Enter, churns the copy for thirty seconds and prints what is on disk at
+#   quiescence, so a person can
 #   compare the open tree with it (docs/nfdr.md QC-66, SDD § 6 S-5). No command can watch the app's
 #   window, so what a command can hold is the helper's own contract: it refuses off a macOS virtual
 #   machine, launches once, touches only its scratch copy, prints the fresh listings in the tree's
@@ -27,8 +28,9 @@
 #   ps     lists a bystander, another instance of the same executable (pid 4243) and an unrelated
 #          process; once `open` has run it lists the one the helper launched (pid 4242) as well.
 #   kill   records its arguments; once told to stop a pid it reports that pid gone.
-#   sleep  records its argument and returns at once. In the signal case its first start wait holds
-#          for two real seconds, long enough to send the script a signal there.
+#   sleep  records its argument and returns at once.
+#   Enter  is a newline on standard input; the signal case holds standard input open and empty, so
+#          the script waits there until it is sent the signal.
 #
 # WHY NO `set -e`
 #   A case that fails must not end the run before the remaining cases report. Each case returns its
@@ -58,6 +60,10 @@ test_it_prints_the_fresh_listings_at_quiescence
 test_it_stops_only_its_own_pid_on_a_normal_exit_and_on_a_signal
 test_a_missing_argument_or_executable_launches_nothing
 test_a_launch_that_starts_no_process_ends_the_run_and_stops_nothing
+test_no_enter_ends_the_run_without_churning_and_stops_its_pid
+test_a_foreign_folder_in_the_way_is_left_alone_and_nothing_launches
+test_a_leftover_scene_copy_is_replaced
+test_a_relative_app_path_finds_the_launched_process
 "
 
 # --- helpers ---
@@ -73,7 +79,7 @@ new_scene() {
   SCENE_COUNT=$((SCENE_COUNT + 1))
   SCENE="$WORK/scene$SCENE_COUNT"
   rm -rf "$SCENE"
-  mkdir -p "$SCENE/cwd" "$SCENE/bin" "$SCENE/home" "$SCENE/tmp"
+  mkdir -p "$SCENE/cwd" "$SCENE/bin" "$SCENE/home/Desktop" "$SCENE/tmp"
   APP="$SCENE/App.app"
   mkdir -p "$APP/Contents/MacOS"
   : > "$APP/Contents/MacOS/Fake-Exe"
@@ -131,24 +137,33 @@ write_sleep() {
   cat > "$SCENE/bin/sleep" <<EOF
 #!/bin/bash
 printf '%s\n' "\$*" >> '$SCENE/sleeps'
-if [ -f '$SCENE/hold_start_wait' ] && [ "\$1" = "5" ]; then
-  /bin/sleep 2
-fi
 exit 0
 EOF
   chmod +x "$SCENE/bin/sleep"
 }
 
-# The helper's argument vector for the scene, then one run of it: stdout to $SCENE/out, stderr to
-# $SCENE/err, the status in STATUS. The environment holds only the stand-ins' PATH, the scene's
-# home and the scene's temporary directory.
+# The helper's argument vector for the scene, then one run of it with Enter already typed: stdout
+# to $SCENE/out, stderr to $SCENE/err, the status in STATUS. The environment holds only the
+# stand-ins' PATH, the scene's home and the scene's temporary directory.
 run_helper() {
+  run_helper_with_input $'\n' "$@"
+}
+
+# As run_helper, with $1 as the whole of standard input.
+run_helper_with_input() {
+  input="$1"
+  shift
   (
     cd "$SCENE/cwd" || exit 99
     exec /usr/bin/env -i PATH="$SCENE/bin:$SCENE/ordinary" HOME="$SCENE/home" TMPDIR="$SCENE/tmp" \
       "$TREE_SCENE_SH" "$@"
-  ) > "$SCENE/out" 2> "$SCENE/err"
+  ) > "$SCENE/out" 2> "$SCENE/err" < <(printf '%s' "$input")
   STATUS=$?
+}
+
+# Where the helper puts its copy in the scene.
+scene_copy() {
+  echo "$SCENE/home/Desktop/tree-scene"
 }
 
 # How many times the clock stand-in was asked for exactly $1.
@@ -220,9 +235,9 @@ test_off_a_vm_it_exits_non_zero_having_launched_nothing_and_copied_nothing() {
   [ "$(vmr_snapshot "$FIXTURE")" = "$fixture_before" ] || fail "the refused run changed the fixture"
 }
 
-# E19: on a virtual machine's reading the helper opens the bundle once, as `open -n -g`, finds the
-# process that came with it, stages the fixture in the temporary directory, and runs the churn
-# there. The fixture, the home and the working directory are left as they were.
+# E19: on a virtual machine's reading the helper opens the bundle once, as `open -n`, finds the
+# process that came with it, stages the fixture on the Desktop, waits for Enter, and runs the churn
+# there, naming each step. The fixture, the home and the working directory are left as they were.
 test_in_a_vm_it_launches_once_and_churns_only_the_scratch_copy() {
   new_scene
   fixture_before="$(vmr_snapshot "$FIXTURE")"
@@ -232,18 +247,19 @@ test_in_a_vm_it_launches_once_and_churns_only_the_scratch_copy() {
   run_helper "$APP"
 
   [ "$STATUS" -eq 0 ] || fail "expected exit 0, got $STATUS. stderr: $(cat "$SCENE/err")" || return 1
-  [ "$(cat "$SCENE/open_calls")" = "-n -g $APP" ] \
-    || fail "open was not called exactly once as 'open -n -g <app>': $(cat "$SCENE/open_calls")" || return 1
+  [ "$(cat "$SCENE/open_calls")" = "-n $APP" ] \
+    || fail "open was not called exactly once as 'open -n <app>': $(cat "$SCENE/open_calls")" || return 1
   scratch="$(sed -n 's/^tree-scene.sh: choose this folder in the app: //p' "$SCENE/err")"
-  case "$scratch" in
-    "$SCENE/tmp/"*) ;;
-    *) fail "the folder to choose is not under the temporary directory: '$scratch'. stderr: $(cat "$SCENE/err")" || return 1 ;;
-  esac
-  grep -q -x 'tree-scene.sh: the churn starts in 60 seconds' "$SCENE/err" \
-    || fail "stderr does not say when the churn starts. stderr: $(cat "$SCENE/err")" || return 1
-  # Ten steps of three seconds make the thirty-second churn; twelve waits of five make the lead-in.
+  [ "$scratch" = "$(scene_copy)" ] \
+    || fail "the folder to choose is not the Desktop's tree-scene: '$scratch'. stderr: $(cat "$SCENE/err")" || return 1
+  grep -q -x 'tree-scene.sh: press Enter here when that is set, then watch the app.s window' "$SCENE/err" \
+    || fail "stderr does not ask for Enter. stderr: $(cat "$SCENE/err")" || return 1
+  grep -q -x 'tree-scene.sh: step 7 of 10: moved src/nested/deep/moved.rs to src/extra/moved.rs' "$SCENE/err" \
+    || fail "stderr does not name the churn's steps. stderr: $(cat "$SCENE/err")" || return 1
+  [ "$(grep -c '^tree-scene.sh: step [0-9]* of 10: ' "$SCENE/err")" -eq 10 ] \
+    || fail "stderr does not name all ten steps. stderr: $(cat "$SCENE/err")" || return 1
+  # Ten steps of three seconds make the thirty-second churn.
   [ "$(sleeps_of 3)" -eq 10 ] || fail "the churn is not ten steps of three seconds: $(sleeps_of 3) found" || return 1
-  [ "$(sleeps_of 5)" -eq 12 ] || fail "the lead-in is not twelve waits of five seconds: $(sleeps_of 5) found" || return 1
   grep -q 'stage1.txt' "$SCENE/out" || fail "the churn left no trace in the printed listings, so it did not run" || return 1
   [ "$(vmr_snapshot "$FIXTURE")" = "$fixture_before" ] || fail "the churn changed the fixture itself" || return 1
   [ "$(vmr_snapshot "$SCENE/home")" = "$home_before" ] || fail "the run changed the home" || return 1
@@ -266,7 +282,7 @@ test_it_prints_the_fresh_listings_at_quiescence() {
 }
 
 # E19: the helper stops the pid it recorded and no other, when it ends normally and when it is sent
-# SIGTERM during the lead-in. The bystander (another instance of the same executable) and the
+# SIGTERM while it waits for Enter. The bystander (another instance of the same executable) and the
 # unrelated process are never named to `kill`, and the scratch copy is gone either way.
 test_it_stops_only_its_own_pid_on_a_normal_exit_and_on_a_signal() {
   new_scene
@@ -277,22 +293,27 @@ test_it_stops_only_its_own_pid_on_a_normal_exit_and_on_a_signal() {
   [ -n "$scratch" ] && [ ! -e "$scratch" ] || fail "the scratch copy is still there after a normal exit: '$scratch'" || return 1
 
   new_scene
-  : > "$SCENE/hold_start_wait"
+  mkfifo "$SCENE/enter"
+  # Held open for writing and never written, so the helper's read waits.
+  exec 7<> "$SCENE/enter"
   (
     cd "$SCENE/cwd" || exit 99
     exec /usr/bin/env -i PATH="$SCENE/bin:$SCENE/ordinary" HOME="$SCENE/home" TMPDIR="$SCENE/tmp" \
       "$TREE_SCENE_SH" "$APP"
-  ) > "$SCENE/out" 2> "$SCENE/err" &
+  ) > "$SCENE/out" 2> "$SCENE/err" < "$SCENE/enter" &
   helper=$!
   waited=0
-  until grep -q -x -F -e 5 "$SCENE/sleeps" 2> /dev/null; do
+  until grep -q 'press Enter here' "$SCENE/err" 2> /dev/null; do
     waited=$((waited + 1))
-    [ "$waited" -lt 200 ] || { kill -KILL "$helper" 2> /dev/null; fail "the helper never reached its lead-in"; return 1; }
+    [ "$waited" -lt 200 ] || { kill -KILL "$helper" 2> /dev/null; exec 7>&-; fail "the helper never reached its wait for Enter"; return 1; }
     /bin/sleep 0.05
   done
+  /bin/sleep 0.2
   kill -TERM "$helper"
   wait "$helper"
   STATUS=$?
+  exec 7>&-
+  [ "$(sleeps_of 3)" -eq 0 ] || fail "signal: the churn ran though Enter never came" || return 1
   [ "$STATUS" -eq 143 ] || fail "signal: expected 143, got $STATUS. stderr: $(cat "$SCENE/err")" || return 1
   assert_only_the_launched_pid_was_stopped || return 1
   scratch="$(sed -n 's/^tree-scene.sh: choose this folder in the app: //p' "$SCENE/err")"
@@ -331,9 +352,58 @@ test_a_launch_that_starts_no_process_ends_the_run_and_stops_nothing() {
   [ ! -s "$SCENE/kill_log" ] || fail "kill was called though no process was recorded: $(cat "$SCENE/kill_log")"
 }
 
+# Standard input that ends with no line: the helper says no Enter came, exits 1, churns nothing,
+# stops the pid it launched and removes its copy.
+test_no_enter_ends_the_run_without_churning_and_stops_its_pid() {
+  new_scene
+  run_helper_with_input "" "$APP"
+  [ "$STATUS" -eq 1 ] || fail "expected 1, got $STATUS. stderr: $(cat "$SCENE/err")" || return 1
+  grep -q '^tree-scene.sh: no Enter came' "$SCENE/err" || fail "stderr does not say no Enter came. stderr: $(cat "$SCENE/err")" || return 1
+  [ "$(sleeps_of 3)" -eq 0 ] || fail "the churn ran though Enter never came" || return 1
+  assert_only_the_launched_pid_was_stopped || return 1
+  [ ! -e "$(scene_copy)" ] || fail "the copy is still on the Desktop"
+}
+
+# A Desktop tree-scene that is not a scene copy (no .scene-note) is never removed: the run stops
+# with one line, before it launches anything, and the folder is as it was.
+test_a_foreign_folder_in_the_way_is_left_alone_and_nothing_launches() {
+  new_scene
+  mkdir -p "$(scene_copy)"
+  printf 'mine\n' > "$(scene_copy)/keep.txt"
+  run_helper "$APP"
+  [ "$STATUS" -eq 1 ] || fail "expected 1, got $STATUS. stderr: $(cat "$SCENE/err")" || return 1
+  grep -q 'is not a scene copy, so it is left alone' "$SCENE/err" || fail "stderr does not say why. stderr: $(cat "$SCENE/err")" || return 1
+  [ "$(cat "$(scene_copy)/keep.txt" 2> /dev/null)" = "mine" ] || fail "the foreign folder was changed" || return 1
+  [ ! -s "$SCENE/open_calls" ] || fail "open was called" || return 1
+  [ ! -s "$SCENE/kill_log" ] || fail "kill was called: $(cat "$SCENE/kill_log")"
+}
+
+# A scene copy a killed run left behind (it holds .scene-note) is replaced by a fresh copy, so the
+# run's listings are the fixture's churned, with nothing of the old copy in them.
+test_a_leftover_scene_copy_is_replaced() {
+  new_scene
+  cp -R "$FIXTURE" "$(scene_copy)"
+  printf 'old\n' > "$(scene_copy)/stale.txt"
+  run_helper "$APP"
+  [ "$STATUS" -eq 0 ] || fail "expected 0, got $STATUS. stderr: $(cat "$SCENE/err")" || return 1
+  expected_listings > "$SCENE/expected"
+  cmp -s "$SCENE/expected" "$SCENE/out" || fail "the leftover's files reached the listings. got: $(cat "$SCENE/out")" || return 1
+  [ ! -e "$(scene_copy)" ] || fail "the copy is still on the Desktop"
+}
+
+# The usage line's own form is a relative path; `ps` names processes by absolute path, so the helper
+# must still find the process it launched and run the scene (1.0.0 never did, and every walk ended
+# at "no new process").
+test_a_relative_app_path_finds_the_launched_process() {
+  new_scene
+  run_helper "../App.app"
+  [ "$STATUS" -eq 0 ] || fail "expected 0, got $STATUS. stderr: $(cat "$SCENE/err")" || return 1
+  assert_only_the_launched_pid_was_stopped
+}
+
 # --- the runner ---
 
-WORK="$(mktemp -d)"
+WORK="$(cd "$(mktemp -d)" && pwd -P)"
 cleanup() {
   rm -rf "$WORK"
 }
