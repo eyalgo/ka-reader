@@ -66,7 +66,7 @@ None.
 - **If overridden:** the eight pointers stay at S-6 and send every reader of the live-refresh
   obligations to the wrong slice, and `follow-the-file` stays unnamed in the records, so the
   displayed-file proofs are owed by name only to the slice that re-walks them.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm — with two additions the fold makes in the same pass, both facts SDD v68 made false and the draft did not name: (a) § 9's opening paragraph reads "the two slices in SDD § 6" and "the two scene commands"; since RC-8 live refresh is three slices and three scenes — the tree scene (`follow-the-tree`, S-5), the displayed-file scene (`follow-the-file`, S-6) and the full churn (`follow-the-folder`, S-8) — each entering the gate under QC-64 when its slice delivers, and no one scene's pass discharging another's; (b) QC-48's "This allowance continues through `follow-the-tree`" reads as continuing through `follow-the-file` and `first-public-release` too, ending only when `follow-the-folder` (S-8) is reached, as SDD § 3 `surfaces` and RC-8 § *Retained* hold. The SDD has since settled at v69 (`ka-reader@b10c7e9`) and moves no slice, so the fold reads v69. Reasoning: `docs/trail/architecture/self_answer-72.md` § 2.1.
 
 ## 3. Raised from downstream — an item from a seat that did not write these records
 
