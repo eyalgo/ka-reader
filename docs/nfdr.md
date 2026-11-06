@@ -1,8 +1,9 @@
 # NFDR — KA-Reader
 
-**Status:** Settled
+**Status:** Draft
 **Owner:** Principal Architect
-**Version:** 78 — Fold cycle-69 § 2.1: live refresh is three SDD slices since v68, so the live-refresh obligations cite `follow-the-folder` as SDD § 6 S-8, name `follow-the-file` (S-6) as the slice that first runs the displayed-file scene, § 9 opens on three scenes and QC-48's marker/order allowance ends at S-8; QC-19 names its slice by slug — RN-88.
+**Version:** 79 — Fold cycle-70 § 3.1: QC-65's *Tree scene helper suite* locator carries its own commit — `checks/gate.sh:L133` at `ka-reader@d6bc3a3`, with `:L127` at `ka-reader@2529a42` kept as its dated reading; one choice awaits the owner — RN-89.
+Version 78 — Fold cycle-69 § 2.1: live refresh is three SDD slices since v68, so the live-refresh obligations cite `follow-the-folder` as SDD § 6 S-8, name `follow-the-file` (S-6) as the slice that first runs the displayed-file scene, § 9 opens on three scenes and QC-48's marker/order allowance ends at S-8; QC-19 names its slice by slug — RN-88.
 Version 77 — Fold cycle-68 §§ 3.1–3.5: the watcher's interim review tails close on the scan that now holds them; QC-66 and QC-65 name the tree scene's proofs and helper; every `checks/gate.sh` locator carries its commit; QC-4 and QC-47 hold the model's three states and C-I1's failed re-read; QC-67 bounds what a check script takes from the environment; QC-50 follows SDD v67's one fake and one contract suite — RN-87.
 Version 76 — Complete the full architecture reread and restore four omitted verification-map checks; no obligation or ADR changes — RN-86.
 Version 75 — Bind the bridge watcher and separate QC-66's tree proof from QC-48's full churn, QC-46's latency and QC-40's bundle proof; fold cycle-66 § 3.1 — RN-85.
@@ -2294,7 +2295,8 @@ answer at `docs/trail/architecture/cycle-51.md` § 3.2 — RN-69)*.
   `checks/tests/test_vm_refusal.sh` (its header, *WHY THIS EXISTS*, and its `CASES` list, at
   `ka-reader@13e8d42`). For `checks/tree-scene.sh` the case is
   `test_off_a_vm_it_exits_non_zero_having_launched_nothing_and_copied_nothing` in its own suite
-  (the gate's *Tree scene helper suite* step, `checks/gate.sh:L127`), beside
+  (the gate's *Tree scene helper suite* step, `checks/gate.sh:L133` at `ka-reader@d6bc3a3`;
+  `:L127` at `ka-reader@2529a42` — RN-89), beside
   `test_the_helper_refuses_off_a_vm_in_the_refusal_suite` in `checks/tests/test_vm_refusal.sh`
   (`:L191-L204`), all at `ka-reader@2529a42` — RN-87. And the gate tool's `Environment:` line on each change's record names
   `macos-guest` (every change). The refusal and its cases are in the tree from `ka-reader@13e8d42`.
@@ -7956,3 +7958,31 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   not what any command checks. The `Inputs read:` line stands on the statuses as read.
   `docs/trail/architecture/cycle-69.md` holds the answered companion whole. The companion is
   removed with nothing left unresolved, so `Status:` stays Settled.
+
+- **RN-89:** *(v79 — the cycle-70 fold, § 3.1)* The owner's seat's committed answer at
+  `docs/trail/architecture/cycle-70.md` § 3.1 authorizes this fold; its reasoning is
+  `docs/trail/architecture/self_answer-73.md` § 3.1. The item was raised by the PM on 2026-11-06,
+  after the gate gained two displayed-file steps at `ka-reader@d6bc3a3`.
+
+  **The item.** QC-65's sentence on the tree-scene helper's refusal case named the gate's *Tree
+  scene helper suite* step as `checks/gate.sh:L127` with no commit beside it. The sentence's
+  closing "all at `ka-reader@2529a42`" did pin it, but it reads as covering only the
+  `checks/tests/test_vm_refusal.sh` lines, and at `ka-reader@d6bc3a3` line 127 is a comment. The
+  locator now carries its commit itself, in the form § 8 already uses: `checks/gate.sh:L133` at
+  `ka-reader@d6bc3a3`, and `:L127` at `ka-reader@2529a42` as the dated reading. The step keeps its
+  name, so the RN-87 rule that every `checks/gate.sh` locator carries its commit still holds.
+  Read at both commits by this run: `run_step 'Tree scene helper suite'` is line 127 at
+  `ka-reader@2529a42` and line 133 at `ka-reader@d6bc3a3`. The rest of the sentence holds at
+  `ka-reader@d6bc3a3`: the refusal case it names is still in `checks/tests/test_tree_scene.sh`,
+  and `checks/tests/test_vm_refusal.sh` has no change between the two commits.
+
+  **Limits.** No ADR is written or restatused, and the index is unchanged. No `QC` is added,
+  renumbered or reused, and no obligation changes what it requires. The two other passages that
+  cite these steps, in QC-66 and § 9, carry their commit inline and are true at it, so this fold
+  does not move them. Re-measuring § 9's scene list and § 8's dated gate readings at
+  `ka-reader@d6bc3a3` is the open choice at `docs/architecture_open_issues.md` § 2.1. This run
+  does not draft it into the records, because no owner answer or upstream sentence has authorized
+  that change yet. No product check ran. The SDD read is v70, Settled; its fold moves no slice,
+  edge, seam or part, and the `Inputs read:` line stands on the statuses as read.
+  `docs/trail/architecture/cycle-70.md` holds the answered companion whole. One item stays open,
+  so `Status:` is Draft.

@@ -37,13 +37,4 @@ None.
 
 ## 3. Raised from downstream — an item from a seat that did not write these records
 
-### 3.1 An unpinned `checks/gate.sh` line locator in the NFDR now names a different line
-- **Raised by:** PM — 2026-11-06
-- **Which record:** `nfdr.md`, the passage at its line 2297 (the *Tree scene helper suite* locator)
-- **Tracked by:** `ka-reader · nemawashi · 2026-10-13_the-tree-and-the-open-file-follow-the-disk`
-- **What it blocks:** nothing is blocked; a reader following the locator lands on the wrong step.
-- **Where it shows:** "the gate's *Tree scene helper suite* step, `checks/gate.sh:L127`" names no commit. At `ka-reader@d6bc3a3` the gate holds two displayed-file steps after *Read-only, tree scene, killed* (`checks/gate.sh:L112-L113`), and the step is at `checks/gate.sh:L133`; `:L127` is now a comment line. Re-pin it at a commit, or name the step alone.
-- **If a document has to be written:** none.
-- **Answer:** Re-pin it, and keep the step's name. The locator was pinned, but not where a reader looks: the sentence ends "all at `ka-reader@2529a42`", and at that commit `:L127` is the *Tree scene helper suite* step. The "all at" comes after the second parenthesis, so it reads as covering only the `test_vm_refusal.sh` lines. Naming the step alone would break v77's rule that every `checks/gate.sh` locator carries its commit. So the fold puts the commit on the locator itself, in the form § 8 already uses: (the gate's *Tree scene helper suite* step, `checks/gate.sh:L133` at `ka-reader@d6bc3a3`; `:L127` at `ka-reader@2529a42` — RN-87). The rest of the sentence still holds at `ka-reader@d6bc3a3`: the test it names is still in `checks/tests/test_tree_scene.sh`, and `checks/tests/test_vm_refusal.sh` is unchanged since `ka-reader@2529a42`. The two other places that cite these steps (`docs/nfdr.md:L1676` and `:L2371`) carry their commit inline and are true at it, so this item does not move them. Item 2.1 re-measures the `:L2371` sentence. Reasoning: `docs/trail/architecture/self_answer-73.md` § 3.1.
-
-**How it closes.** `product-architecture` folds it on its next run like any other item here.
+None.
