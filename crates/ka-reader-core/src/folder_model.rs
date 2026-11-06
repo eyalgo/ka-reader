@@ -122,22 +122,16 @@ pub enum FileView {
     /// # Examples
     ///
     /// ```
-    /// use std::path::PathBuf;
-    /// use ka_reader_core::{FileRequest, FileView, FolderModel, ItemState, PathReports, ReadingPosition, TreeRequest, open_folder};
+    /// use ka_reader_core::{FileView, ItemState};
     ///
-    /// let folder = std::env::temp_dir().join(format!("ka-reader-doc-gone-{}", std::process::id()));
-    /// std::fs::create_dir_all(&folder).expect("the folder is made");
-    /// std::fs::write(folder.join("note.txt"), "hello").expect("the file is written");
-    /// let opened = open_folder(&folder).expect("the folder opens");
-    /// let model = FolderModel::new(opened)
-    ///     .select_file(FileRequest::Open("note.txt".into(), ReadingPosition::new(b"top".as_slice())));
+    /// // A re-read that found nothing at the path holds the open file as an observed item, not a
+    /// // failed one: nothing went wrong, there was simply nothing there. The deletion itself is
+    /// // proved against a real folder in `tests/watch.rs`; an example here would have to write to
+    /// // one, which this crate's examples do not do.
+    /// let held: ItemState<FileView> = ItemState::Observed(FileView::Gone);
     ///
-    /// std::fs::remove_file(folder.join("note.txt")).expect("the file goes");
-    /// let model = model.list_tree(TreeRequest::Invalidate(PathReports::new(vec![folder.join("note.txt")])));
-    ///
-    /// let open = model.open_file().expect("the file is still the open one");
-    /// assert_eq!(open.view(), &ItemState::Observed(FileView::Gone));
-    /// std::fs::remove_dir_all(&folder).expect("the folder goes");
+    /// assert!(matches!(held, ItemState::Observed(FileView::Gone)));
+    /// assert!(!matches!(held, ItemState::Failed(_)));
     /// ```
     Gone,
 }
