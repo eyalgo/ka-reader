@@ -16,6 +16,9 @@ final class CodeView: NSView {
     let textView: NSTextView
     private let codeTextView: CodeTextView
 
+    /// The text storage the text view reads its characters from.
+    var storage: NSTextStorage { unsafe textView.textStorage ?? NSTextStorage() }
+
     /// The line numbers of `textView`'s rows.
     let gutter: CodeGutterView
 

@@ -193,6 +193,19 @@ package final class ReadingPanelView: NSView {
         }
     }
 
+    /// Raised when the reader scrolls the code view, with where the scroll left it. Never raised for
+    /// a scroll the panel makes itself.
+    package var positionChanged: (@MainActor (ReadingPosition) -> Void)?
+
+    /// Where the code view is scrolled to now.
+    var currentPosition: ReadingPosition { .topLeft }
+
+    /// The code view's text storage, for the tests to watch the edits it takes.
+    var textStorageForTests: NSTextStorage { codeView.storage }
+
+    /// An automatic update of the open file, in place.
+    package func update(path: String, verdict: FileVerdict, position: ReadingPosition) {}
+
     private func showText(_ content: String, language: Language) {
         // One replacement of the whole text storage, so nothing of the previous file's colours, or
         // the view's typing attributes, reaches this one (CP-313). The code view also rebuilds its
