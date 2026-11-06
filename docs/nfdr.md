@@ -2,7 +2,8 @@
 
 **Status:** Settled
 **Owner:** Principal Architect
-**Version:** 77 — Fold cycle-68 §§ 3.1–3.5: the watcher's interim review tails close on the scan that now holds them; QC-66 and QC-65 name the tree scene's proofs and helper; every `checks/gate.sh` locator carries its commit; QC-4 and QC-47 hold the model's three states and C-I1's failed re-read; QC-67 bounds what a check script takes from the environment; QC-50 follows SDD v67's one fake and one contract suite — RN-87.
+**Version:** 78 — Fold cycle-69 § 2.1: live refresh is three SDD slices since v68, so the live-refresh obligations cite `follow-the-folder` as SDD § 6 S-8, name `follow-the-file` (S-6) as the slice that first runs the displayed-file scene, § 9 opens on three scenes and QC-48's marker/order allowance ends at S-8; QC-19 names its slice by slug — RN-88.
+Version 77 — Fold cycle-68 §§ 3.1–3.5: the watcher's interim review tails close on the scan that now holds them; QC-66 and QC-65 name the tree scene's proofs and helper; every `checks/gate.sh` locator carries its commit; QC-4 and QC-47 hold the model's three states and C-I1's failed re-read; QC-67 bounds what a check script takes from the environment; QC-50 follows SDD v67's one fake and one contract suite — RN-87.
 Version 76 — Complete the full architecture reread and restore four omitted verification-map checks; no obligation or ADR changes — RN-86.
 Version 75 — Bind the bridge watcher and separate QC-66's tree proof from QC-48's full churn, QC-46's latency and QC-40's bundle proof; fold cycle-66 § 3.1 — RN-85.
 Version 74 — QC-40 separates writer and own-state tests from the outstanding built-bundle proof; its verification-map row names the interim review gate, on cycle-65 § 3.1 — RN-84.
@@ -839,13 +840,15 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   when the candidate includes that base and the difference contains only the selector
   contribution; refresh it whenever either endpoint changes, and retain the actual landing
   comparisons. Missing commits, a failed command or an unexplained pair leaves isolation
-  unproven. Empty output alone does not prove delivery; all other S-10 checks still apply.
+  unproven. Empty output alone does not prove delivery; all other `switch-the-folder` checks (SDD § 6 S-12)
+  still apply.
   Review at selector-contribution acceptance checks the endpoint evidence and classifies every
   changed file against the allowed parts. This is a review gate because successful diff commands
   report changes but do not judge which architectural part a file implements or whether the
   chosen pair isolates the contribution. The commands and the switch test remain required
   alongside that judgment *(traces to: SRS NFR-12, FR-19; FDR PD-29; SDD § 3 `folder-model`,
-  § 6 S-10 at v65, RC-6 and RN-124; verification corrected at v73 — RN-83)*
+  § 6 S-10 at v65 (S-12 since SDD v68, RC-8 — RN-88), RC-6 and RN-124; verification corrected at
+  v73 — RN-83)*
 - **QC-20:** Swapping `own-state`'s storage format touches `own-state` only; no other unit reads
   the container.
   — *verified by:* `checks/structure.sh` (layer 6): the container path appears only in `own-state`
@@ -1496,7 +1499,8 @@ import nothing forbidden and still read a path it was never granted.
   and exposes no removal (`cargo test --locked -p ka-reader-core`). Writer regressions remain
   required when the writer changes; neither their success nor the own-state retention tests
   discharge the separate layer-5 proof. That proof is owed by `follow-the-folder`, the complete
-  refresh slice in `docs/SDD.md` § 6 S-6, and not by `follow-the-tree` (S-5). The built-bundle
+  refresh slice in `docs/SDD.md` § 6 S-8, and not by `follow-the-tree` (S-5) or `follow-the-file`
+  (S-6). The built-bundle
   scene generates admitted diagnostic output, measures
   the container log against NFR-11's on-disk bound (including two instances writing one file),
   and observes a known pre-launch line absent after relaunch (`docs/SRS.md` AC-13). An empty log
@@ -1512,7 +1516,9 @@ import nothing forbidden and still read a path it was never granted.
   the bound raised from this document and folded at SRS v9 — `docs/trail/architecture/cycle-1.md`
   § 1.2, RN-11; the remembered-folder clause brought to FDR v3 — RN-12;
   verification corrected on `docs/trail/architecture/cycle-65.md` § 3.1 — RN-84;
-  allocation follows SDD § 10 RC-7 and `docs/trail/architecture/cycle-66.md` § 3.1 — RN-85)*
+  allocation follows SDD § 10 RC-7 and `docs/trail/architecture/cycle-66.md` § 3.1 — RN-85;
+  the slice named as SDD v69 § 6 S-8, § 10 RC-8 number it, on
+  `docs/trail/architecture/cycle-69.md` § 2.1 — RN-88)*
 - **QC-41:** Every release carries `LICENSE` (MIT) and a `THIRD_PARTY_NOTICES.md` listing every
   crate and package the bundle ships with its licence.
   — *verified by:* `checks/notices.sh` — the names in `cargo tree` each appear in the notices
@@ -1559,13 +1565,15 @@ binds the *process*, and asserts no number of its own.
 - **QC-46:** `checks/latency.sh` prints file-switch and refresh p95 in milliseconds over the
   reference fixtures `checks/fixtures/scale-small`, `scale-medium` and `scale-large`, beginning
   with the first `follow-the-folder` build with every refresh path and on every CI build
-  thereafter. `follow-the-tree` starts no separate latency measurement or numeric threshold.
+  thereafter. Neither `follow-the-tree` nor `follow-the-file` starts a separate latency
+  measurement or numeric threshold.
   — *verified by:* the script exits 0 and prints three figures per metric (layer 5).
   Until the complete-refresh measurement runs, `development-design` reading this entry holds
   the obligation: at `ka-reader@7b170d71fec3bf9d12975ae48be5f4554e23c2a6`,
   `git ls-files checks/latency.sh` returns no path. Review supplies no latency result.
-  *(traces to: SDD § 4 C-I4, § 6 S-6, § 10 RC-7, § 11 R-5; ADR-0010;
-  `docs/trail/architecture/cycle-66.md` § 3.1 — RN-85)*
+  *(traces to: SDD § 4 C-I4, § 6 S-8, § 10 RC-7, RC-8, § 11 R-5; ADR-0010;
+  `docs/trail/architecture/cycle-66.md` § 3.1 — RN-85; the slice numbered and `follow-the-file`
+  named on `docs/trail/architecture/cycle-69.md` § 2.1 — RN-88)*
 
 ## 6. Availability & reliability
 
@@ -1606,22 +1614,28 @@ binds the *process*, and asserts no number of its own.
   final state. Where a file's Git status changes mid-run, the model's snapshot then carries the
   changed marker on that file's `TreeEntry` and both Git lists in row order: the marker join and
   the row order are `folder-model`'s, and stand in `surfaces` from `see-git-status` through
-  `follow-the-tree` until
-  `follow-the-folder` is reached (SDD § 3 `surfaces` and `GitState`; § 10 RC-5, RC-7).
-  This allowance continues through `follow-the-tree`; QC-66's narrower scene neither
-  substitutes for this full proof nor discharges the marker/order migration.
+  `follow-the-tree`, `follow-the-file` and `first-public-release` until
+  `follow-the-folder` (SDD § 6 S-8) is reached (SDD § 3 `surfaces` and `GitState`; § 10 RC-5,
+  RC-7, RC-8). This allowance runs through S-5, S-6 and S-7 and ends at S-8, at no earlier slice.
+  The displayed-file half of this scene — the open file changed, deleted and recreated, its gone
+  state and recovery, the reading position across SM-4, and two `select_file` calls in both
+  completion orders — is first run by `follow-the-file`'s displayed-file scene (SDD § 6 S-6), and
+  this full churn re-walks it as regression. Neither that scene nor QC-66's tree scene
+  substitutes for this full proof or discharges the marker/order migration.
   — *verified by:* `cargo test --locked -p ka-reader-core --test watch` running `checks/churn.sh <fixture> 30`,
   with the same suite's case for a status change mid-run;
   `checks/read-only.sh` against the churn's final state as baseline (layer 3); and
   `grep -rn 'TreeMarkers\|GitRowOrder' ka-reader-mac/Sources` printing nothing, red while either
-  file remains in the shell. The full proof is owed by `follow-the-folder` (SDD § 6 S-6).
+  file remains in the shell. The full proof is owed by `follow-the-folder` (SDD § 6 S-8).
   Until it runs, `development-design` reading this entry holds that obligation: at
   `ka-reader@7b170d71fec3bf9d12975ae48be5f4554e23c2a6`, `git ls-files checks/churn.sh`
   returns no path. The existing `crates/ka-reader-core/tests/watch.rs` exercises injected
   deltas; its presence alone does not prove concurrent native delivery. The marker/order
   placement remains permitted until this slice is reached. *(traces to: SRS
-  FR-16, NFR-3, NFR-4, AC-8; SDD § 6 S-6, § 10 RC-7; ADR-0010;
-  `docs/trail/architecture/cycle-66.md` § 3.1 — RN-85; the mid-run case, the `grep` and the end of
+  FR-16, NFR-3, NFR-4, AC-8; SDD § 6 S-6, S-8, § 10 RC-7, RC-8; ADR-0010;
+  `docs/trail/architecture/cycle-66.md` § 3.1 — RN-85; the slices numbered, the displayed-file
+  scene placed and the allowance's end restated on `docs/trail/architecture/cycle-69.md` § 2.1 —
+  RN-88; the mid-run case, the `grep` and the end of
   the placement from SDD § 3 `surfaces`, § 6 S-5's command half and § 10 RC-5 as they read at
   v42 (SDD RN-94) — RN-53)*
 - **QC-66:** Tree-only concurrent change preserves the reader's place and converges to fresh
@@ -2341,16 +2355,22 @@ answer at `docs/trail/architecture/cycle-51.md` § 3.2 — RN-69)*.
 
 ## 9. Test strategy
 
-**Refresh proof follows the two slices in SDD § 6.** QC-66's tree scene exercises the model
+**Refresh proof follows the three slices in SDD § 6.** QC-66's tree scene (`follow-the-tree`,
+S-5) exercises the model
 at layer 2, bridge delivery and callback lifetime at layer 2, the shell and surfaces at layer 4,
 the real watcher-to-tree route and kill at layer 5, and watcher placement at layer 6.
+The displayed-file scene (`follow-the-file`, S-6) first runs the open file's half of QC-48: its
+content updated in place, the gone state and its recovery, the reading position across SM-4 and
+the order of two `select_file` calls.
 QC-48's full churn and marker/order migration, QC-46's first latency measurement and QC-40's
-built-bundle log proof belong to `follow-the-folder`, not `follow-the-tree`. The two scene
-commands and their regression cases enter the product gate under QC-64 when their respective
-capabilities are delivered. The tree scene's have: its read-only walks are the gate's *Read-only,
+built-bundle log proof belong to `follow-the-folder` (S-8), not to `follow-the-tree` or
+`follow-the-file`. The three scene
+commands and their regression cases each enter the product gate under QC-64 when their slice
+delivers. The tree scene's have: its read-only walks are the gate's *Read-only,
 tree scene* steps, plain and killed, and its helper's suite is *Tree scene helper suite*
-(`checks/gate.sh:L106-L107`, `:L127` at `ka-reader@2529a42` — RN-87). One scene's pass cannot discharge the other
-(`docs/SDD.md` § 6 S-5–S-6, § 10 RC-7; `docs/trail/architecture/cycle-66.md` § 3.1 — RN-85).
+(`checks/gate.sh:L106-L107`, `:L127` at `ka-reader@2529a42` — RN-87). No scene's pass discharges another's
+(`docs/SDD.md` § 6 S-5, S-6, S-8, § 10 RC-7, RC-8; `docs/trail/architecture/cycle-66.md` § 3.1 —
+RN-85; `docs/trail/architecture/cycle-69.md` § 2.1 — RN-88).
 
 The layer set is **not defined here** — it is `testing_doctrine.md` v2.2.0, and this table is one
 project's realization of it. Tooling for the core and the bridge comes from the Rust packet
@@ -2943,13 +2963,13 @@ is stated once, in § 8 *(added at v56, on the owner's answer at `docs/trail/arc
 | QC-37 | `asset_bytes` and the decoder | `cargo test --locked -p ka-reader-bridge --test asset_bytes`; `swift test --package-path ka-reader-mac` | the change | `development-implementation` |
 | QC-38 | own-state fields | `checks/own-state.sh` (suite `test_own_state.sh`) | the tree | CI build |
 | QC-39, QC-52 | log shape and location | `cargo test --locked -p ka-reader-bridge` (layer 1); `checks/own-state.sh` (suite `test_own_state.sh`) | the change; the tree | `development-implementation`; CI build |
-| QC-40 | writer regressions; own-state retention; separate container-log size and relaunch proof | `cargo test --locked -p ka-reader-bridge`; `cargo test --locked -p ka-reader-core` (layer 1). Layer-5 proof owed by `follow-the-folder` (SDD § 6 S-6), not the tree slice; until its assertions run, review at `development-design`, for the reason in QC-40. No existing own-state check, tree-scene pass or writer-test result discharges that proof. | the change; the built bundle for layer 5 | `development-implementation` for writer and retention tests; `development-design` for the outstanding layer-5 obligation |
+| QC-40 | writer regressions; own-state retention; separate container-log size and relaunch proof | `cargo test --locked -p ka-reader-bridge`; `cargo test --locked -p ka-reader-core` (layer 1). Layer-5 proof owed by `follow-the-folder` (SDD § 6 S-8), not the tree or open-file slice; until its assertions run, review at `development-design`, for the reason in QC-40. No existing own-state check, tree-scene pass or writer-test result discharges that proof. | the change; the built bundle for layer 5 | `development-implementation` for writer and retention tests; `development-design` for the outstanding layer-5 obligation |
 | QC-41 | third-party notices | `checks/notices.sh` | the release | release |
 | QC-42 | private reporting; SECURITY.md | `gh api repos/eyalgo/ka-reader/private-vulnerability-reporting` | the release | release |
 | QC-44 | standing sentences verbatim | `checks/readme.sh` | the release | release |
-| QC-46 | latency figures, beginning with complete refresh | `checks/latency.sh` — three figures per metric on the named scale fixtures; owed by `follow-the-folder` (SDD § 6 S-6), with interim review for the missing script as QC-46 states | the tree | every CI build from the first complete-refresh build; `development-design` until measured |
+| QC-46 | latency figures, beginning with complete refresh | `checks/latency.sh` — three figures per metric on the named scale fixtures; owed by `follow-the-folder` (SDD § 6 S-8), with interim review for the missing script as QC-46 states | the tree | every CI build from the first complete-refresh build; `development-design` until measured |
 | QC-47 | per-item degradation and recovery; the failed re-read of an expanded folder | `cargo test --locked -p ka-reader-core --test watch`, the failed re-read's two cases included; `swift test --package-path ka-reader-mac` (layer 4); the tree cases run under QC-66 without full churn | the change | `development-implementation` |
-| QC-48 | full churn; displayed-file and Git changes; marker and row order in the model | `cargo test --locked -p ka-reader-core --test watch` with `checks/churn.sh <fixture> 30`; `checks/read-only.sh` against churn's final state; QC-48's marker/order grep prints nothing, from `follow-the-folder` (SDD § 6 S-6); interim review and reason in QC-48 | the change; the fixture | `development-implementation` for complete refresh; `development-design` until the full proof runs |
+| QC-48 | full churn; displayed-file and Git changes; marker and row order in the model | `cargo test --locked -p ka-reader-core --test watch` with `checks/churn.sh <fixture> 30`; `checks/read-only.sh` against churn's final state; QC-48's marker/order grep prints nothing, from `follow-the-folder` (SDD § 6 S-8); the displayed-file half first runs in `follow-the-file`'s scene (SDD § 6 S-6); interim review and reason in QC-48 | the change; the fixture | `development-implementation` for complete refresh; `development-design` until the full proof runs |
 | QC-66 | tree-only convergence, preserved place, removal/return, sibling failure, native delivery and callback lifetime | QC-66's thirty-second scene under `cargo test --locked -p ka-reader-core --test watch`; `cargo test --locked -p ka-reader-bridge`, `--test model_changed`, `--test watcher` and `--test exports`; `swift test --package-path ka-reader-mac`; `checks/structure.sh` and its suite; `checks/read-only.sh` and `checks/read-only.sh --kill` over `checks/fixtures/tree-scene`; `checks/no-network.sh` | the change; the tree; the fixture | CI build; `development-implementation`; the built-app scene is a person's walk with `checks/tree-scene.sh`, and no command asserts it (QC-66) |
 | QC-50 | the Git port's one fake and one contract suite | the contract suite under `cargo test --locked -p ka-reader-core`, against the adapter and the fake; `grep -rnE '^[[:space:]]*impl GitPort for' crates` printing the adapter and the fake alone — neither holds at `ka-reader@2529a42` | the change; the tree | `development-design` when a change touches the port, until both hold |
 | QC-49 | promises through kill | `checks/read-only.sh --kill` (suite `test_read_only.sh`) | the tree | CI build; release |
@@ -7893,3 +7913,46 @@ delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a 
   structure scan and its suite, in a disposable clone. No other suite, scene, timing run or bundle
   check ran. `docs/trail/architecture/cycle-68.md` holds the answered companion whole. The
   companion is removed with nothing left unresolved, so `Status:` stays Settled.
+- **RN-88:** *(v78 — the close: the cycle-69 fold, § 2.1 confirmed with two additions)* The
+  owner's seat's committed answer at `docs/trail/architecture/cycle-69.md` § 2.1 authorizes this
+  fold; its reasoning is `docs/trail/architecture/self_answer-72.md` § 2.1. The item was opened by
+  a `companion-self-answer` run in the CPO's seat, not by a `product-architecture` run, because
+  the SDD moved after v77 was authored. The SDD read is v69, Settled (`ka-reader@b10c7e9`); its
+  § 10 RC-8 cut live refresh in three and renumbered S-6 – S-12 to S-7 – S-13, "current
+  references follow these numbers, earlier dated notes keep theirs". That sentence is the new
+  upstream authorization for every pointer below.
+
+  **The item.** Every live citation that paired `follow-the-folder` with `SDD § 6 S-6` now reads
+  S-8: QC-40's entry, QC-46's trace, QC-48's verified-by clause and trace, § 9's opening and the
+  three § 10 rows. Where the records say which slice first runs the displayed-file half of
+  QC-48's scene, they name `follow-the-file` (S-6), whose command half carries it (SDD § 6 S-6,
+  *Reached when*), and say the full churn re-walks it as regression. QC-40's built-bundle proof,
+  QC-46's first latency measurement and QC-48's full churn and marker/order migration stay
+  `follow-the-folder`'s, as RC-8 § *Retained* and S-6's *Not in this slice* hold. QC-40 and QC-46
+  now say the open-file slice owes neither, as they already said of the tree slice.
+
+  **Addition (a).** § 9 opened on "the two slices" and "the two scene commands". It now names
+  three slices and three scenes, each entering the gate under QC-64 when its slice delivers, and
+  states that no scene's pass discharges another's — the S-6 scene's own words: "This scene is
+  neither the tree-only scene nor the full `checks/churn.sh` proof".
+
+  **Addition (b).** QC-48's marker/order allowance read "continues through `follow-the-tree`",
+  written when the next slice was `follow-the-folder`. It now runs through S-5, S-6 and S-7 and
+  ends at S-8, as SDD § 3 `surfaces` holds ("both end when `follow-the-folder` is reached … § 6
+  S-8"). Neither addition changes what an obligation requires.
+
+  **Beyond the item — QC-19.** The same renumbering made one more live pointer false. QC-19's
+  verified-by clause read "all other S-10 checks still apply"; at SDD v69 S-10 is
+  `read-a-diff`, and `switch-the-folder` is S-12. The clause now names the slice by slug
+  and current number. Its trace keeps "§ 6 S-10 at v65", which is a dated reading, and notes the
+  number since v68. Every other `§ 6 S-n` in §§ 1–10 was read against v69's headings: QC-41's
+  S-7 is the beta, which carries `checks/notices.sh` (SDD § 6 S-7), and is right; QC-47's and
+  QC-66's S-5 is `follow-the-tree`; QC-59's S-11 is pinned to `cycle-4.md` and is history. The
+  dated Review Notes keep their numbers, as RC-8 requires.
+
+  **Limits and close.** No ADR is written or restatused, and the index is unchanged: RC-8 moves no
+  part, seam or shape ("no ADR is owed"), and ADR-0009's `S-6` is pinned to a commit. No `QC` is
+  added, renumbered or reused. No product check ran; this fold changes pointers and placements,
+  not what any command checks. The `Inputs read:` line stands on the statuses as read.
+  `docs/trail/architecture/cycle-69.md` holds the answered companion whole. The companion is
+  removed with nothing left unresolved, so `Status:` stays Settled.
