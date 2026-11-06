@@ -22,8 +22,16 @@ package nonisolated enum ConditionSentences {
         "KA-Reader stopped while reading this file and can't tell why. "
         + "The rest of the folder is still readable — select another file."
 
-    // task 5: the file-gone sentence is written from change_text.md in the green commit.
-    package static let fileGone = ""
+    /// The sentence the reading panel draws beneath the path line when a re-read of the open file
+    /// found nothing at its path (`docs/CONTENT.md` § Message patterns, *Recovered*, and the UX-S1
+    /// file-gone row).
+    ///
+    /// Shown in the reading panel, beneath the path line, when the file the reader has open is read
+    /// again after the folder changed and nothing is at its path: the file was deleted, renamed or
+    /// moved away, or a folder above it was removed or replaced. It names no cause, because those
+    /// cases look the same to KA-Reader. It has no placeholder. It is not the sentence for a
+    /// selection whose read found no file.
+    package static let fileGone = "This file is no longer there."
 
     /// The line drawn beneath a folder that was read and holds nothing.
     package static let emptyFolder = emptyRoot

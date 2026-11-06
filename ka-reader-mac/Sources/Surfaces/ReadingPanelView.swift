@@ -1,7 +1,7 @@
 import AppKit
 
 /// The reading panel (`docs/UXD.md` UX-S1, `docs/DESIGN.md` § Components): what the open file
-/// turned out to be, under its folder-relative path. It has six states and is in one of them at a
+/// turned out to be, under its folder-relative path. It has seven states and is in one of them at a
 /// time:
 ///
 /// - *no file*: the prompt, and nothing else visible;
@@ -10,6 +10,8 @@ import AppKit
 ///   colours and every other character in `{colors.primary}`, and a plain file's text in that one
 ///   ink (CP-312, CP-333);
 /// - *cannot-display*: the path line, then one sentence saying the file can't be shown as text;
+/// - *gone*: the path line, then the failure glyph and one sentence saying the file is no longer
+///   there, with no content drawn;
 /// - *failed read*: the path line, then one statement of what KA-Reader observed;
 /// - *reading*: one status message saying the file's read is out, and no path line (CP-345);
 /// - *stopped*: the path line, then one status message saying the read stopped without a cause
@@ -187,7 +189,7 @@ package final class ReadingPanelView: NSView {
                 glyph: statusGlyphs.failure,
                 sentence: ConditionSentences.reading(fileNamed: name, failedWith: condition))
         case .gone:
-            break
+            showMessage(glyph: statusGlyphs.failure, sentence: ConditionSentences.fileGone)
         }
     }
 
