@@ -104,7 +104,11 @@ None.
 - **If overridden:** the two blocks merge back into one `follow-the-folder` owning the open file and
   Git, and `first-public-release` then waits for the Git view to follow the disk — a PRD change,
   which is the CPO's own run to make, not this document's.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm — the cut and the CPO's fields of S-6 and S-8 stand as drafted. One
+  correction for the fold, not for the slot: § 3's `surfaces` row still ends the marker and row-order
+  placement "while either remains (§ 6 S-6)" — that slice is `follow-the-folder`, S-8 since v68; the
+  same stale number in the NFDR is raised at `docs/architecture_open_issues.md` § 2.1, opened by this
+  run at `ka-reader@5986be5`. The reasoning is in `docs/trail/sdd/self_answer-76.md` § 2.3.
 
 ### 2.4 The beta's statement — "the Git state read when the folder was opened" — on the Git view and the tree's markers: S-7's observable half is drafted, and the UXD does not yet draw it
 - **Raised by:** CTO — 2026-11-06
