@@ -153,7 +153,8 @@ private func liveReceiver(of launch: Launch) throws -> ModelChangesReceiver {
         try click("a.txt", in: workbench)
 
         #expect(launch.treeActs.heldReads == held + 1, "one act is held on the tree-act runner")
-        #expect(launch.bridge.selectCalls.count == before, "and no selectFile has reached the bridge")
+        #expect(
+            launch.bridge.selectCalls.count == before, "and no selectFile has reached the bridge")
         try #require(launch.treeActs.heldReads > held, "the selection act is held")
         launch.treeActs.release(held)
 
@@ -165,7 +166,8 @@ private func liveReceiver(of launch: Launch) throws -> ModelChangesReceiver {
             ])
         #expect(Set(launch.bridge.freed) == Set(launch.bridge.handedOut))
         #expect(
-            launch.bridge.freed.count == launch.bridge.handedOut.count, "every buffer is freed once")
+            launch.bridge.freed.count == launch.bridge.handedOut.count, "every buffer is freed once"
+        )
     }
 
     @Test func twoClicksSendTheirSelectActsInClickOrder() throws {
@@ -209,7 +211,8 @@ private func liveReceiver(of launch: Launch) throws -> ModelChangesReceiver {
         tree.outlineView.expandItem(tree.outlineView.item(atRow: src))
         try click("b.txt", in: workbench)
 
-        #expect(launch.bridge.listedPaths.last == "src", "the expansion's listTree reached the bridge")
+        #expect(
+            launch.bridge.listedPaths.last == "src", "the expansion's listTree reached the bridge")
         #expect(
             Array(launch.bridge.selectCalls.dropFirst(before)) == [
                 SelectCall(path: "a.txt", act: .select, position: topLeft),

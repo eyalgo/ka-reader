@@ -184,14 +184,20 @@ package final class LaunchFlow {
             rootItemsView: view, statusGlyphs: statusGlyphs,
             railFolderGlyph: glyph(named: Self.folderGlyphName),
             railGitGlyph: glyph(named: Self.gitBranchGlyphName))
-        workbench.selectFile = { [bridge, reader] path, answer in
-            reader.run({ Self.verdict(at: path, through: bridge) }, deliver: answer)
+        // A click crosses as two acts. The selection act goes in order on the tree-act queue and
+        // frees its buffer; the open goes only from that act's delivery, so the bridge has applied
+        // the selection before the read that answers it can ask to be folded in.
+        workbench.selectFile = { [bridge, treeActs, weak self] path, answer in
+            treeActs.run(
+                { Self.send(.select, at: .topLeft, forFileAt: path, through: bridge) },
+                deliver: { _ in self?.openFile(at: path, answer: answer) })
         }
         // A scroll is the position act: it goes in order on the tree-act queue, frees its buffer
         // and draws nothing.
         workbench.filePosition = { [bridge, treeActs] path, position in
             treeActs.run(
-                { Self.send(position, forFileAt: path, through: bridge) }, deliver: { _ in })
+                { Self.send(.position, at: position, forFileAt: path, through: bridge) },
+                deliver: { _ in })
         }
         workbench.readGit = { [bridge, reader] answer in
             reader.run({ Self.gitItem(through: bridge) }, deliver: answer)
@@ -201,6 +207,11 @@ package final class LaunchFlow {
         let held = heldChanges
         heldChanges = []
         for payload in held { apply(payload, to: workbench) }
+    }
+
+    /// The open act of a click, on the concurrent reader, whose verdict goes to the surface's sink.
+    private func openFile(at path: String, answer: @escaping SelectFileAnswer) {
+        reader.run({ [bridge] in Self.verdict(at: path, through: bridge) }, deliver: answer)
     }
 
     private nonisolated static func gitItem(through bridge: Bridging) -> GitItem {
@@ -218,11 +229,14 @@ package final class LaunchFlow {
         return BridgePayload.decodeFile(buffer)
     }
 
+    /// An act that answers nothing to draw: its buffer is freed and its verdict is not read. The
+    /// selection act carries the top-left position the open carries, and the bridge does not read it.
     private nonisolated static func send(
-        _ position: ReadingPosition, forFileAt path: String, through bridge: Bridging
+        _ act: FileAct, at position: ReadingPosition, forFileAt path: String,
+        through bridge: Bridging
     ) {
         let buffer = bridge.selectFile(
-            path: path, act: .position, position: BridgePayload.encodePosition(position))
+            path: path, act: act, position: BridgePayload.encodePosition(position))
         release(buffer, through: bridge)
     }
 
