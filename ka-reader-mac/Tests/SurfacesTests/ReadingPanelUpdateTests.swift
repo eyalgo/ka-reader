@@ -364,3 +364,28 @@ private final class PositionLog {
     #expect(log.positions.isEmpty)
     #expect(clip.bounds.origin == .zero)
 }
+
+/// CP-1027: recovery shows the position the reader held before the failure or the gone state, and
+/// the panel reports only the reader's own scrolls (CP-1022). Emptying the panel for the gone state
+/// or a failure is the panel's own doing, so it raises nothing: a report there would cross SM-4 as
+/// the reader's position and replace the place the model holds for the recovery.
+@MainActor
+@Test func goingGoneOrFailedFromAScrolledFileRaisesNoPositionChange() async {
+    let (panel, clip, window) = makeWindowedPanel()
+    _ = window
+    for broken in [FileVerdict.gone, .failed(.unreadable)] {
+        panel.show(path: "big.txt", verdict: .text(lines(400), .plain))
+        panel.layoutSubtreeIfNeeded()
+        clip.scroll(to: NSPoint(x: 160, y: originY(ofLine: 200)))
+        await settle()
+        let log = PositionLog()
+        panel.positionChanged = { log.record($0) }
+
+        panel.update(path: "big.txt", verdict: broken, position: .topLeft)
+        panel.layoutSubtreeIfNeeded()
+        await settle()
+
+        #expect(log.positions.isEmpty, "\(broken)")
+        panel.positionChanged = nil
+    }
+}
