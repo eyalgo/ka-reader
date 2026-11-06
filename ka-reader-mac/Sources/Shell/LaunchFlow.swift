@@ -110,7 +110,7 @@ package final class LaunchFlow {
 
     private func apply(_ payload: Data, to tree: RootItemsView) {
         guard let changes = BridgePayload.decodeChanges(payload) else { return }
-        tree.apply(changes: changes)
+        tree.apply(changes: changes.listings)
     }
 
     private nonisolated static func openAndList(

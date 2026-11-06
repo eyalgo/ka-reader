@@ -135,13 +135,21 @@ enum BridgePayload {
         }
     }
 
-    /// The listings a `model_changed` payload carries, in the order written, or `nil` when the
-    /// payload does not conform: one bad listing refuses the whole payload and none is kept. A
-    /// `pending` answer reads as no listing (`nil`), as it does for a folder read.
-    static func decodeChanges(_ payload: Data) -> [(path: String, listing: RootListing?)]? {
+    /// What one `model_changed` payload carries: the changed listings in the order written, and the
+    /// open file when it changed.
+    struct ModelChanges {
+        let listings: [(path: String, listing: RootListing?)]
+        let openFile: (revision: UInt64, update: OpenFileUpdate)?
+    }
+
+    /// The changes a `model_changed` payload carries, or `nil` when the payload does not conform:
+    /// one bad listing refuses the whole payload and none is kept. A `pending` listing answer reads
+    /// as no listing (`nil`), as it does for a folder read.
+    static func decodeChanges(_ payload: Data) -> ModelChanges? {
         guard let decoded = try? JSONDecoder().decode(ChangesPayload.self, from: payload)
         else { return nil }
-        return decoded.changes.map { (path: $0.path, listing: $0.listing) }
+        return ModelChanges(
+            listings: decoded.changes.map { (path: $0.path, listing: $0.listing) }, openFile: nil)
     }
 
     /// The file answer's wire (design § 3 F): one object tagged by `state`, with exactly the

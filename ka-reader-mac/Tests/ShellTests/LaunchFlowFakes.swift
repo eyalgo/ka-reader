@@ -358,3 +358,33 @@ final class DeliveryRecordingReadRunner: ReadRunning {
         }
     }
 }
+
+/// Work the bridge's side handed to the main actor, held until the test releases it. Records whether
+/// it was scheduled from the main thread, so a test can say the delivery crossed threads.
+final class HeldMainDelivery: MainDelivering, @unchecked Sendable {
+    // `@unchecked Sendable` because a receiver calls it from a background thread and the test
+    // releases from the main actor. The lock is enough: both lists are touched only inside it.
+    private let lock = NSLock()
+    private var held: [@MainActor @Sendable () -> Void] = []
+    private var scheduledOnMain: [Bool] = []
+
+    var heldCount: Int { lock.withLock { held.count } }
+    var scheduledFromMain: [Bool] { lock.withLock { scheduledOnMain } }
+
+    func deliver(_ work: @escaping @MainActor @Sendable () -> Void) {
+        lock.withLock {
+            held.append(work)
+            scheduledOnMain.append(Thread.isMainThread)
+        }
+    }
+
+    @MainActor
+    func releaseAll() {
+        let work = lock.withLock {
+            let all = held
+            held = []
+            return all
+        }
+        for piece in work { piece() }
+    }
+}

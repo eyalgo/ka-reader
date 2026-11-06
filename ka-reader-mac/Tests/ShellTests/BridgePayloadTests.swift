@@ -366,7 +366,18 @@ final class BridgePayloadTests: XCTestCase {
 /// answer is the shape `ka_reader_list_tree` answers. A `pending` answer reads as no listing.
 struct BridgePayloadChangesTests {
     private func decode(_ payload: String) -> [(path: String, listing: RootListing?)]? {
+        BridgePayload.decodeChanges(Data(payload.utf8))?.listings
+    }
+
+    private func decodeAll(_ payload: String) -> BridgePayload.ModelChanges? {
         BridgePayload.decodeChanges(Data(payload.utf8))
+    }
+
+    private func openFileMember(
+        revision: String = "7", path: String = #""docs/a.txt""#,
+        position: String = #""line=12;x=30.5""#, answer: String
+    ) -> String {
+        #"{"listings":[],"open_file":{"revision":\#(revision),"path":\#(path),"position":\#(position),"answer":\#(answer)}}"#
     }
 
     private let folder = Entry(name: "src", path: "src", kind: .folder, state: .pending)
@@ -415,6 +426,72 @@ struct BridgePayloadChangesTests {
         #expect(changes.map(\.path) == [""])
         #expect(changes[0].listing == .observed([]))
         #expect(try #require(decode(#"{"listings":[]}"#)).isEmpty)
+    }
+
+    @Test func decodeFileReadsGone() {
+        let gone = BridgePayload.decodeFile(
+            BridgeBuffer(payload: Data(#"{"state":"gone"}"#.utf8), handle: 1))
+
+        #expect(gone == .gone)
+        for malformed in [
+            #"{"state":"gone","condition":"missing"}"#, #"{"state":"gone","content":""}"#,
+        ] {
+            #expect(
+                BridgePayload.decodeFile(BridgeBuffer(payload: Data(malformed.utf8), handle: 1))
+                    == nil, Comment(rawValue: malformed))
+        }
+    }
+
+    @Test func decodeChangesReadsATreeOnlyPayloadAsTodayWithNoOpenFile() throws {
+        let changes = try #require(
+            decodeAll(#"{"listings":[{"path":"","answer":{"state":"observed","entries":[]}}]}"#))
+
+        #expect(changes.listings.map(\.path) == [""])
+        #expect(changes.openFile == nil)
+    }
+
+    @Test func decodeChangesReadsTheOpenFileMemberIntoTheRevisionThePathThePositionAndTheVerdict()
+        throws
+    {
+        let text = #"{"state":"text","content":"one\ntwo\n","language":"plain"}"#
+        let member = try #require(decodeAll(openFileMember(answer: text))?.openFile)
+
+        #expect(member.revision == 7)
+        #expect(
+            member.update
+                == OpenFileUpdate(
+                    path: "docs/a.txt", verdict: .text("one\ntwo\n", .plain),
+                    position: ReadingPosition(topLine: 12, horizontalOffset: 30.5)))
+
+        let gone = try #require(
+            decodeAll(openFileMember(answer: #"{"state":"gone"}"#))?.openFile)
+        #expect(gone.update.verdict == .gone)
+        let failed = try #require(
+            decodeAll(openFileMember(answer: #"{"state":"failed","condition":"unreadable"}"#))?
+                .openFile)
+        #expect(failed.update.verdict == .failed(.unreadable))
+        let malformedPosition = try #require(
+            decodeAll(openFileMember(position: #""top""#, answer: #"{"state":"gone"}"#))?.openFile)
+        #expect(malformedPosition.update.position == .topLeft)
+    }
+
+    @Test func aNonConformingOpenFileMemberAndAPendingAnswerAreNil() {
+        let rejected = [
+            openFileMember(answer: #"{"state":"pending"}"#),
+            openFileMember(answer: #"{"state":"unknown"}"#),
+            openFileMember(revision: #""7""#, answer: #"{"state":"gone"}"#),
+            openFileMember(revision: "-1", answer: #"{"state":"gone"}"#),
+            openFileMember(path: "1", answer: #"{"state":"gone"}"#),
+            openFileMember(position: "1", answer: #"{"state":"gone"}"#),
+            #"{"listings":[],"open_file":{"revision":1,"path":"a","position":"","answer":{"state":"gone"},"extra":1}}"#,
+            #"{"listings":[],"open_file":{"revision":1,"path":"a","answer":{"state":"gone"}}}"#,
+            #"{"listings":[],"open_file":null}"#,
+            #"{"open_file":{"revision":1,"path":"a","position":"","answer":{"state":"gone"}}}"#,
+        ]
+
+        for payload in rejected {
+            #expect(decodeAll(payload) == nil, Comment(rawValue: payload))
+        }
     }
 
     @Test func decodeChangesReturnsNilForAMalformedPayload() {
