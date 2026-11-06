@@ -74,8 +74,20 @@ package final class WorkbenchView: NSView {
     /// time the reader scrolls the open file.
     package var filePosition: FilePositionIntent?
 
-    /// An automatic update of the open file.
-    package func apply(openFile: OpenFileUpdate) {}
+    /// An automatic update of the open file. It is drawn when `openFile.path` is the path of the
+    /// reader's latest selection, and the update is recorded so that selection's own answer, which
+    /// is older, draws nothing. For any other path it draws nothing: the reader has moved on (CP-1024).
+    package func apply(openFile: OpenFileUpdate) {
+        guard openFile.path == latestSelectionPath else { return }
+        readingPanel.update(
+            path: openFile.path, verdict: openFile.verdict, position: openFile.position)
+        hasUpdateForLatestSelection = true
+    }
+
+    /// The path of the reader's latest selection, and whether an update has been drawn for it since
+    /// it was raised.
+    private var latestSelectionPath: String?
+    private var hasUpdateForLatestSelection = false
 
     /// Counts file selections: a sink applies only while its selection is still the latest.
     private var selectionGeneration = 0
@@ -101,6 +113,10 @@ package final class WorkbenchView: NSView {
         rootItemsView.fileSelected = { [weak self] entry in self?.selectFromTree(entry) }
         gitView.rowActivated = { [weak self] path in self?.selectFromGit(path) }
         rail.entryChosen = { [weak self] entry in self?.show(entry) }
+        readingPanel.positionChanged = { [weak self] position in
+            guard let self, let path = self.latestSelectionPath else { return }
+            self.filePosition?(path, position)
+        }
         for pane in [rootItemsView, gitView] {
             pane.translatesAutoresizingMaskIntoConstraints = false
             sidebar.addSubview(pane)
@@ -188,6 +204,8 @@ package final class WorkbenchView: NSView {
     private func readFile(at path: String, markBar: () -> Void) {
         selectionGeneration += 1
         let generation = selectionGeneration
+        latestSelectionPath = path
+        hasUpdateForLatestSelection = false
         markBar()
         // Before the intent is raised, never after: an owner may answer inside that call, and a
         // *reading* drawn afterwards would overwrite the verdict just drawn.
@@ -197,6 +215,8 @@ package final class WorkbenchView: NSView {
             guard !latch.fired else { return }
             latch.fired = true
             guard let self, self.selectionGeneration == generation else { return }
+            // An update drawn for this selection is newer than its answer.
+            guard !self.hasUpdateForLatestSelection else { return }
             if let verdict {
                 self.readingPanel.show(path: path, verdict: verdict)
             } else {
