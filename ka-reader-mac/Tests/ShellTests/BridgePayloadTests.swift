@@ -390,7 +390,9 @@ struct BridgePayloadChangesTests {
         #expect(BridgePayload.decodePosition(BridgePayload.encodePosition(position)) == position)
         #expect(
             BridgePayload.decodePosition(BridgePayload.encodePosition(.topLeft)) == .topLeft)
-        for malformed in ["", "top", "line=;x=", "line=-1;x=2", "line=3", "line=3;x=nan", "x=2;line=3"] {
+        for malformed in [
+            "", "top", "line=;x=", "line=-1;x=2", "line=3", "line=3;x=nan", "x=2;line=3",
+        ] {
             #expect(BridgePayload.decodePosition(malformed) == .topLeft, "\(malformed)")
         }
     }
