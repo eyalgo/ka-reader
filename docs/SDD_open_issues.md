@@ -66,7 +66,15 @@ None.
   command because no command finds a private name, path or message.
 - **If overridden:** the two clauses leave S-7; the bar keeps `gitleaks git` alone and says
   nothing of the history being published or read; the seed cut from it inherits the gap.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm — with three additions for the fold, all on S-7's command half: (1) the
+  person's read and the `gitleaks git` scan cover every ref the public remote will hold, not only the
+  commits `main`'s HEAD reaches — `git ls-remote --heads --tags origin` lists ten branches beside `main`
+  today, and a repository made public publishes all of them — or those refs are deleted before
+  publication and the release page says which; (2) the release page names the commit the read reached,
+  and the public repository's `HEAD` at publication is that commit, so a commit landing after the read
+  reopens the condition; (3) a finding is taken out of the history before publication, the read is
+  repeated on the rewritten history, and the root-commit comparison is made against the checkout that
+  repeated read passed on. The reasoning is in `docs/trail/sdd/self_answer-75.md` § 2.2.
 
 ### 2.3 Live refresh is three slices — `follow-the-file` is cut from `follow-the-folder` — and the CPO's fields of both are drafted
 - **Raised by:** CTO — 2026-11-06
@@ -142,7 +150,12 @@ None.
   release") are unaffected: the beta is the first public release for both.
 - **If overridden:** the edge returns and the beta waits for the theme, contradicting PRD v18 — an
   override here means the PRD moves, which is the CPO's.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm — the SDD follows the PRD, and the SRS half is now raised rather than
+  named: `docs/SRS_open_issues.md` § 2.1, opened by this run at `ka-reader@dfc3607`, carries FR-20 and
+  AC-11 re-said as in place before 1.0.0, with C-6 covering the beta, for a `product-srs` fold reading
+  PRD v18. One correction to this item's text, for the fold and not for the slot: step 4's E-6 entry
+  does not carry the sentence the item says it does; E-1's does. The reasoning is in
+  `docs/trail/sdd/self_answer-75.md` § 2.5.
 
 ## 3. Cut calls to confirm — where the slicing could reasonably have gone another way
 
