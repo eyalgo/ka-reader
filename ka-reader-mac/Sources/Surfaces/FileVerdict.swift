@@ -9,6 +9,8 @@ package nonisolated enum FileVerdict: Equatable, Sendable {
     case cannotDisplay(CannotDisplayReason)
     /// The read could not happen, for the condition named.
     case failed(Condition)
+    /// A re-read of the open file found nothing at its path. It carries no content.
+    case gone
 }
 
 /// How a text file is drawn: `plain`, with no colour, or one of the six floor languages with the

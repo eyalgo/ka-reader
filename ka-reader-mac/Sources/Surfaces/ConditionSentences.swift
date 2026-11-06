@@ -22,6 +22,9 @@ package nonisolated enum ConditionSentences {
         "KA-Reader stopped while reading this file and can't tell why. "
         + "The rest of the folder is still readable — select another file."
 
+    // task 5: the file-gone sentence is written from change_text.md in the green commit.
+    package static let fileGone = ""
+
     /// The line drawn beneath a folder that was read and holds nothing.
     package static let emptyFolder = emptyRoot
 

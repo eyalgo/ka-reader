@@ -186,6 +186,8 @@ package final class ReadingPanelView: NSView {
             showMessage(
                 glyph: statusGlyphs.failure,
                 sentence: ConditionSentences.reading(fileNamed: name, failedWith: condition))
+        case .gone:
+            break
         }
     }
 
