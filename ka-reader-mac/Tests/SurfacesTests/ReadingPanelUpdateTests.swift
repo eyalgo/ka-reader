@@ -185,7 +185,8 @@ private final class PositionLog {
     let before = clip.bounds.origin
     #expect(panel.currentPosition == ReadingPosition(topLine: 200, horizontalOffset: 240))
 
-    var edited = lines(400).split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
+    var edited = lines(400).split(separator: "\n", omittingEmptySubsequences: false).map(
+        String.init)
     edited.insert("inserted near the end", at: 390)
     panel.update(
         path: "big.txt", verdict: .text(edited.joined(separator: "\n"), .plain),
