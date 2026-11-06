@@ -1643,3 +1643,252 @@ fn test_mapping_an_item_state_carries_only_the_observed_value() {
     );
     assert_eq!(pending.map(|value| value * 2), ItemState::Pending);
 }
+
+// --- reobserve_file: the re-read that tells nothing-is-there from cannot-be-read ---
+
+thread_local! {
+    static LOGGED_ON_THIS_THREAD: RefCell<Vec<String>> = const { RefCell::new(Vec::new()) };
+}
+
+/// A logger that keeps each record on the thread that wrote it, so the tests of one process, which
+/// run on threads of their own, never see each other's lines.
+struct ThreadLog;
+
+impl log::Log for ThreadLog {
+    fn enabled(&self, _: &log::Metadata<'_>) -> bool {
+        true
+    }
+    fn log(&self, record: &log::Record<'_>) {
+        LOGGED_ON_THIS_THREAD.with(|lines| lines.borrow_mut().push(record.args().to_string()));
+    }
+    fn flush(&self) {}
+}
+
+static THREAD_LOG: ThreadLog = ThreadLog;
+static INSTALL_THREAD_LOG: std::sync::Once = std::sync::Once::new();
+
+/// What `run` returns, with the `fs-reader` lines it wrote on this thread.
+fn with_log<T>(run: impl FnOnce() -> T) -> (T, Vec<String>) {
+    INSTALL_THREAD_LOG.call_once(|| {
+        log::set_logger(&THREAD_LOG).expect("no other logger is installed in the unit tests");
+        log::set_max_level(log::LevelFilter::Warn);
+    });
+    LOGGED_ON_THIS_THREAD.with(|lines| lines.borrow_mut().clear());
+    let value = run();
+    let lines = LOGGED_ON_THIS_THREAD.with(|lines| std::mem::take(&mut *lines.borrow_mut()));
+    (value, lines)
+}
+
+fn failed_read(condition: Condition) -> Reobserved {
+    Reobserved::Read {
+        state: ItemState::Failed(condition),
+        location: None,
+    }
+}
+
+#[test]
+fn test_a_missing_file_is_absent() {
+    let temp = TempDir::new();
+    temp.make_folder("src");
+
+    assert_eq!(
+        reobserve_file(temp.path(), Path::new("src/gone.txt")),
+        Reobserved::Absent
+    );
+    assert_eq!(
+        reobserve_file(temp.path(), Path::new("gone.txt")),
+        Reobserved::Absent
+    );
+}
+
+#[test]
+fn test_a_missing_folder_above_the_file_is_absent() {
+    let temp = TempDir::new();
+    temp.write_file("src/deep/file.txt", "text");
+    fs::remove_dir_all(temp.path().join("src")).expect("the folder above can be removed");
+
+    assert_eq!(
+        reobserve_file(temp.path(), Path::new("src/deep/file.txt")),
+        Reobserved::Absent
+    );
+}
+
+#[test]
+fn test_a_file_where_the_path_needs_a_folder_is_absent() {
+    let temp = TempDir::new();
+    temp.write_file("src", "a file now stands where the folder was");
+
+    assert_eq!(
+        reobserve_file(temp.path(), Path::new("src/file.txt")),
+        Reobserved::Absent
+    );
+}
+
+#[test]
+fn test_absent_writes_no_log_line() {
+    let temp = TempDir::new();
+    temp.write_file("plain", "a file");
+
+    let (answers, lines) = with_log(|| {
+        [
+            reobserve_file(temp.path(), Path::new("gone.txt")),
+            reobserve_file(temp.path(), Path::new("plain/inside.txt")),
+        ]
+    });
+
+    assert_eq!(answers, [Reobserved::Absent, Reobserved::Absent]);
+    assert!(lines.is_empty(), "no line for an absent file: {lines:?}");
+}
+
+#[test]
+fn test_a_readable_file_answers_read_with_its_content_and_location() {
+    let temp = TempDir::new();
+    temp.write_file("src/main.py", "print(1)\n");
+
+    let ((answer, same_as_observe), lines) = with_log(|| {
+        (
+            reobserve_file(temp.path(), Path::new("src/main.py")),
+            observe_file(temp.path(), Path::new("src/main.py")),
+        )
+    });
+
+    assert_eq!(
+        answer,
+        Reobserved::Read {
+            state: same_as_observe,
+            location: Some(PathBuf::from("src/main.py")),
+        }
+    );
+    assert_eq!(
+        answer,
+        Reobserved::Read {
+            state: text_in("print(1)\n", Language::Python),
+            location: Some(PathBuf::from("src/main.py")),
+        }
+    );
+    assert!(lines.is_empty(), "a readable file logs nothing: {lines:?}");
+}
+
+fn text_in(content: &str, language: Language) -> ItemState<FileContent> {
+    ItemState::Observed(FileContent::Text {
+        content: content.to_string(),
+        language,
+    })
+}
+
+#[test]
+fn test_a_link_to_a_missing_target_is_a_failed_read_never_absent() {
+    let temp = TempDir::new();
+    temp.make_link("dangling", "nowhere");
+
+    let (answer, lines) = with_log(|| reobserve_file(temp.path(), Path::new("dangling")));
+
+    assert_eq!(answer, failed_read(Condition::Missing));
+    assert_eq!(
+        lines
+            .iter()
+            .filter(|line| line.starts_with("fs-reader: read failed: "))
+            .count(),
+        1,
+        "{lines:?}"
+    );
+    assert_eq!(lines.len(), 1, "{lines:?}");
+}
+
+#[test]
+fn test_a_link_leading_outside_the_folder_is_a_failed_read() {
+    let temp = TempDir::new();
+    let root = temp.make_folder("root");
+    // The file outside is readable, so a read that left the root would answer a text.
+    temp.write_file("outside.txt", "secret");
+    temp.make_link("root/escape", "../outside.txt");
+    let filesystem = RecordingFilesystem::new(&root, Some(false), Some(false));
+
+    let answer = reobserve_file_with_filesystem(&filesystem, &root, Path::new("escape"));
+
+    assert_eq!(answer, failed_read(Condition::Outside));
+    assert!(filesystem.outside_queries().is_empty());
+}
+
+#[test]
+fn test_a_link_to_itself_and_a_link_chain_past_the_hop_limit_are_failed_reads() {
+    let temp = TempDir::new();
+    temp.make_link("loop", "loop");
+    for hop in 0..=MAX_LINK_HOPS {
+        temp.make_link(&format!("hop{hop}"), format!("hop{}", hop + 1));
+    }
+    temp.write_file(&format!("hop{}", MAX_LINK_HOPS + 1), "end");
+
+    assert_eq!(
+        reobserve_file(temp.path(), Path::new("loop")),
+        failed_read(Condition::Cycle)
+    );
+    assert_eq!(
+        reobserve_file(temp.path(), Path::new("hop0")),
+        failed_read(Condition::TooManyLinks)
+    );
+}
+
+#[test]
+fn test_a_link_whose_target_passes_through_a_file_is_a_failed_read() {
+    let temp = TempDir::new();
+    temp.write_file("plain", "a file");
+    temp.make_link("through", "plain/inside.txt");
+
+    assert_eq!(
+        reobserve_file(temp.path(), Path::new("through")),
+        failed_read(Condition::Missing)
+    );
+}
+
+#[test]
+fn test_a_folder_at_the_path_is_a_failed_read_never_absent() {
+    let temp = TempDir::new();
+    temp.make_folder("src");
+
+    assert_eq!(
+        reobserve_file(temp.path(), Path::new("src")),
+        failed_read(Condition::Unreadable)
+    );
+}
+
+#[test]
+fn test_an_unreadable_file_is_a_failed_read() {
+    let temp = TempDir::new();
+    temp.write_file("locked.txt", "secret");
+    temp.set_mode("locked.txt", 0o000);
+
+    let (answer, lines) = with_log(|| reobserve_file(temp.path(), Path::new("locked.txt")));
+
+    assert_eq!(
+        answer,
+        Reobserved::Read {
+            state: ItemState::Failed(Condition::Unreadable),
+            location: Some(PathBuf::from("locked.txt")),
+        }
+    );
+    assert_eq!(lines.len(), 1, "{lines:?}");
+    assert!(
+        lines[0].starts_with("fs-reader: read failed: "),
+        "{lines:?}"
+    );
+}
+
+#[test]
+fn test_observe_file_and_read_answer_as_before() {
+    let temp = TempDir::new();
+    temp.write_file("plain", "a file");
+
+    let (answers, lines) = with_log(|| {
+        [
+            observe_file(temp.path(), Path::new("gone.txt")),
+            read(temp.path(), "plain/inside.txt"),
+            read(temp.path(), "plain"),
+        ]
+    });
+
+    assert_eq!(answers[0], ItemState::Failed(Condition::Missing));
+    assert_eq!(answers[1], ItemState::Failed(Condition::NotAFolder));
+    assert_eq!(answers[2], text_in("a file", Language::Plain));
+    assert_eq!(lines.len(), 2, "one line per failed answer: {lines:?}");
+}

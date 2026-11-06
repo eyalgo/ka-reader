@@ -13,8 +13,8 @@ use std::process::Command;
 
 use common::TempDir;
 use ka_reader_core::{
-    CannotDisplayReason, Condition, FileView, ItemState, Language, OpenedFolder, Span, TokenClass,
-    highlight, list_tree, open_folder, select_file,
+    CannotDisplayReason, Condition, FileView, FolderModel, ItemState, Language, OpenedFolder,
+    ReadingPosition, Span, TokenClass, highlight, list_tree, open_folder, read_file, select_file,
 };
 
 fn open(folder: &TempDir) -> OpenedFolder {
@@ -412,4 +412,58 @@ fn test_listing_language_agrees_with_select_file_for_every_readable_name() {
             assert_eq!(listed, Some(read), "{name}");
         }
     }
+}
+
+#[test]
+fn test_a_read_answers_exactly_what_select_file_answers_for_the_path() {
+    let folder = TempDir::new();
+    folder.write_file("text.txt", "hello\n");
+    std::fs::write(folder.path().join("binary.bin"), [0u8, 159, 146, 150]).expect("written");
+    folder.make_folder("a-folder");
+    let opened = open(&folder);
+
+    for path in [
+        "text.txt",
+        "binary.bin",
+        "a-folder",
+        "missing.txt",
+        "../outside",
+    ] {
+        let read = read_file(&opened, std::path::Path::new(path));
+        assert_eq!(read.answer(), &select_file(&opened, path), "{path}");
+    }
+    assert!(matches!(
+        read_file(&opened, std::path::Path::new("text.txt")).answer(),
+        ItemState::Observed(FileView::Text { .. })
+    ));
+    assert!(matches!(
+        read_file(&opened, std::path::Path::new("binary.bin")).answer(),
+        ItemState::Observed(FileView::CannotDisplay(_))
+    ));
+    assert!(matches!(
+        read_file(&opened, std::path::Path::new("a-folder")).answer(),
+        ItemState::Failed(_)
+    ));
+}
+
+#[test]
+fn test_open_read_reads_nothing() {
+    let folder = TempDir::new();
+    folder.write_file("note.txt", "first\n");
+    let opened = open(&folder);
+    let read = read_file(&opened, std::path::Path::new("note.txt"));
+    let wanted = read.answer().clone();
+    std::fs::remove_file(folder.path().join("note.txt")).expect("the file goes");
+
+    let model = FolderModel::new(opened).open_read(read, ReadingPosition::new(b"top".as_slice()));
+
+    let open = model
+        .open_file()
+        .expect("the file is open from the read alone");
+    assert_eq!(open.view(), &wanted);
+    assert!(matches!(wanted, ItemState::Observed(FileView::Text { .. })));
+    assert_eq!(
+        model.place().selected(),
+        Some(std::path::Path::new("note.txt"))
+    );
 }

@@ -41,11 +41,24 @@ nonisolated struct NativeBridge: Bridging {
         #endif
     }
 
-    func selectFile(path: String) -> BridgeBuffer? {
+    func selectFile(path: String, act: FileAct, position: String) -> BridgeBuffer? {
+        let code: UInt32 =
+            switch act {
+            case .open: 0
+            case .position: 1
+            }
         #if compiler(>=6.4)
-            path.withCString { unsafe adopt(unsafe ka_reader_select_file($0)) }
+            return path.withCString { path in
+                position.withCString { position in
+                    unsafe adopt(unsafe ka_reader_select_file(path, code, position))
+                }
+            }
         #else
-            unsafe path.withCString { unsafe adopt(unsafe ka_reader_select_file($0)) }
+            return unsafe path.withCString { path in
+                unsafe position.withCString { position in
+                    unsafe adopt(unsafe ka_reader_select_file(path, code, position))
+                }
+            }
         #endif
     }
 

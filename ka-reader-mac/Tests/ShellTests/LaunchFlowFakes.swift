@@ -34,6 +34,13 @@ final class FakePanel: FolderChoosing {
     }
 }
 
+/// One `selectFile` call the bridge fake saw.
+struct SelectCall: Equatable, Sendable {
+    let path: String
+    let act: FileAct
+    let position: String
+}
+
 /// A receiver the bridge fake was handed, held weakly: the bridge's real pointer to it is unretained.
 struct WeakReceiver {
     weak var receiver: ModelChangesReceiver?
@@ -63,6 +70,7 @@ final class RecordingBridge: Bridging, @unchecked Sendable {
         var listedActs: [DisclosureAct] = []
         var receivers: [WeakReceiver] = []
         var selectedPaths: [String] = []
+        var selectCalls: [SelectCall] = []
         var gitReadCount = 0
         var handedOut: [UInt] = []
         var freed: [UInt] = []
@@ -115,6 +123,8 @@ final class RecordingBridge: Bridging, @unchecked Sendable {
     /// has let go. Held weakly, so a test can see when the flow releases one.
     var receivers: [ModelChangesReceiver?] { lock.withLock { state.receivers.map(\.receiver) } }
     var selectedPaths: [String] { lock.withLock { state.selectedPaths } }
+    /// Every `selectFile` call, with its act and the position string it carried.
+    var selectCalls: [SelectCall] { lock.withLock { state.selectCalls } }
     var gitReadCount: Int { lock.withLock { state.gitReadCount } }
     var handedOut: [UInt] { lock.withLock { state.handedOut } }
     var freed: [UInt] { lock.withLock { state.freed } }
@@ -143,10 +153,11 @@ final class RecordingBridge: Bridging, @unchecked Sendable {
         }
     }
 
-    func selectFile(path: String) -> BridgeBuffer? {
+    func selectFile(path: String, act: FileAct, position: String) -> BridgeBuffer? {
         log.record("select_file")
         return lock.withLock {
             state.selectedPaths.append(path)
+            state.selectCalls.append(SelectCall(path: path, act: act, position: position))
             return makeBuffer(from: state.selectAnswers[path] ?? state.selectAnswer)
         }
     }
@@ -297,7 +308,7 @@ final class ThreadRecordingBridge: Bridging, @unchecked Sendable {
         return makeBuffer(from: payload, named: "\(prefix)\(path)")
     }
 
-    func selectFile(path: String) -> BridgeBuffer? {
+    func selectFile(path: String, act: FileAct, position: String) -> BridgeBuffer? {
         record("select_file:\(path)")
         guard let payload = selectAnswers[path] else { return nil }
         return makeBuffer(from: payload, named: "select:\(path)")
@@ -345,5 +356,35 @@ final class DeliveryRecordingReadRunner: ReadRunning {
             self?.onDelivery?()
             deliver(answer)
         }
+    }
+}
+
+/// Work the bridge's side handed to the main actor, held until the test releases it. Records whether
+/// it was scheduled from the main thread, so a test can say the delivery crossed threads.
+final class HeldMainDelivery: MainDelivering, @unchecked Sendable {
+    // `@unchecked Sendable` because a receiver calls it from a background thread and the test
+    // releases from the main actor. The lock is enough: both lists are touched only inside it.
+    private let lock = NSLock()
+    private var held: [@MainActor @Sendable () -> Void] = []
+    private var scheduledOnMain: [Bool] = []
+
+    var heldCount: Int { lock.withLock { held.count } }
+    var scheduledFromMain: [Bool] { lock.withLock { scheduledOnMain } }
+
+    func deliver(_ work: @escaping @MainActor @Sendable () -> Void) {
+        lock.withLock {
+            held.append(work)
+            scheduledOnMain.append(Thread.isMainThread)
+        }
+    }
+
+    @MainActor
+    func releaseAll() {
+        let work = lock.withLock {
+            let all = held
+            held = []
+            return all
+        }
+        for piece in work { piece() }
     }
 }

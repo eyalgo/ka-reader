@@ -8,15 +8,16 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, MutexGuard, PoisonError, Weak};
 
 use ka_reader_core::{
-    BranchElement, CannotDisplayReason, Condition, ConfigNamedPath, Entry, EntryKind, FileRequest,
-    FileView, FolderKind, FolderModel, GitCondition, GitPort, GitReadCondition, ItemState,
-    Language, OpenFailure, OpenFolderOutcome, OpenedFolder, PathReports, ProbeCondition,
-    RepositoryState, Span, StatusCategory, StatusEntry, SubmoduleNamedPath, TokenClass,
-    TreeRequest, list_tree, open_folder, read_git_item, select_file,
+    BranchElement, CannotDisplayReason, Condition, ConfigNamedPath, Entry, EntryKind, FileRead,
+    FileRequest, FileView, FolderKind, FolderModel, GitCondition, GitPort, GitReadCondition,
+    ItemState, Language, OpenFailure, OpenFolderOutcome, OpenedFolder, PathReports, ProbeCondition,
+    ReadingPosition, RepositoryState, Span, StatusCategory, StatusEntry, SubmoduleNamedPath,
+    TokenClass, TreeChanges, TreeRequest, list_tree, open_folder, read_file, read_git_item,
 };
 use serde::Serialize;
 
 use crate::boundary::changes_payload;
+use crate::delivery_gate::DeliveryGate;
 use crate::machine_config::{SwitchOutcome, arrive_in_process, production_port};
 use crate::watcher::{FsEvents, PathSink, Subscription, Watching};
 
@@ -244,6 +245,8 @@ pub enum FileAnswerDto {
     Failed {
         condition: ConditionDto,
     },
+    /// A re-read of the open file found nothing at its path. It carries no content.
+    Gone,
     Pending,
 }
 
@@ -270,6 +273,7 @@ impl From<ItemState<FileView>> for FileAnswerDto {
             ItemState::Observed(FileView::CannotDisplay(reason)) => Self::CannotDisplay {
                 reason: reason.into(),
             },
+            ItemState::Observed(FileView::Gone) => Self::Gone,
             ItemState::Failed(condition) => Self::Failed {
                 condition: condition.into(),
             },
@@ -676,8 +680,40 @@ struct Held {
     model: FolderModel,
     wiring: Wiring,
     open: u64,
-    /// The open's watcher subscription, held for its drop: stopping it drains every callback in flight.
-    _subscription: Option<Subscription>,
+    /// How many batches this grant has applied, whether or not they changed anything. An open
+    /// compares it before and after its read, outside the lock, to see that a batch landed meanwhile.
+    batches: u64,
+    /// The revision of the last payload that carried the open file; the next carries one more.
+    revision: u64,
+    /// Where this grant's payloads go, when it has one.
+    delivery: Option<Delivery>,
+    /// Lets a delivery run only while the grant is live and lets the replacing open wait for those
+    /// in flight.
+    gate: Arc<DeliveryGate>,
+    /// The open's watcher subscription: stopping it drains every callback in flight.
+    subscription: Option<Subscription>,
+}
+
+impl Held {
+    /// Ends the grant: the subscription stops, then the gate closes and waits for the deliveries
+    /// still in flight, so no callback is called after the open that replaced it has returned.
+    fn retire(mut self) {
+        drop(self.subscription.take());
+        self.gate.close();
+    }
+
+    /// The payload for `changes`, whose revision rises only when it carries the open file.
+    fn payload_for(&mut self, changes: &TreeChanges) -> Result<Option<Vec<u8>>, serde_json::Error> {
+        if changes.is_empty() {
+            return Ok(None);
+        }
+        let revision = self.revision + 1;
+        let payload = changes_payload(changes, revision)?;
+        if changes.open_file().is_some() {
+            self.revision = revision;
+        }
+        Ok(Some(payload))
+    }
 }
 
 #[derive(Default)]
@@ -700,6 +736,9 @@ impl State {
     }
 }
 
+/// A payload with the gate of the grant it is delivered through.
+type Outgoing = (Vec<u8>, Arc<DeliveryGate>);
+
 /// One watcher batch, for the grant `token`: a batch for any other grant is dropped. The next model
 /// is computed on a clone and assigned only once it and its payload exist, so a panic leaves the held
 /// model as it was. The delivery is called after the lock is released, only when something changed.
@@ -713,8 +752,8 @@ fn deliver_batch(
 ) {
     let outcome = panic::catch_unwind(AssertUnwindSafe(|| {
         let payload = apply_batch(state, token, batch, reduce)?;
-        if let Some(payload) = payload {
-            delivery(payload);
+        if let Some((payload, gate)) = payload {
+            gate.deliver(delivery, payload);
         }
         Ok::<(), serde_json::Error>(())
     }));
@@ -733,20 +772,17 @@ fn apply_batch(
     token: u64,
     batch: Vec<PathBuf>,
     reduce: impl FnOnce(FolderModel, PathReports) -> FolderModel,
-) -> Result<Option<Vec<u8>>, serde_json::Error> {
+) -> Result<Option<Outgoing>, serde_json::Error> {
     let mut guard = state.lock().unwrap_or_else(PoisonError::into_inner);
     let Some(held) = guard.held.as_mut().filter(|held| held.open == token) else {
         return Ok(None);
     };
+    held.batches += 1;
     let next = reduce(held.model.clone(), PathReports::new(batch));
     let changes = next.changes_since(&held.model);
-    let payload = if changes.is_empty() {
-        None
-    } else {
-        Some(changes_payload(&changes)?)
-    };
+    let payload = held.payload_for(&changes)?;
     held.model = next;
-    Ok(payload)
+    Ok(payload.map(|payload| (payload, Arc::clone(&held.gate))))
 }
 
 /// The session: at most one opened folder, starting empty, replaced whole by a successful open.
@@ -873,18 +909,26 @@ impl Session {
             let mut state = self.lock();
             state.opens += 1;
             let open = state.opens;
-            let subscription =
-                delivery.and_then(|delivery| self.subscribe(folder.root(), open, delivery));
+            let gate = Arc::new(DeliveryGate::default());
+            let subscription = delivery
+                .clone()
+                .and_then(|delivery| self.subscribe(folder.root(), open, delivery));
             let model = FolderModel::new(folder);
             state.held.replace(Held {
                 model,
                 wiring,
                 open,
-                _subscription: subscription,
+                batches: 0,
+                revision: 0,
+                delivery,
+                gate,
+                subscription,
             })
         };
         // The replaced grant stops and drains outside the lock, because its callbacks may be waiting on it.
-        drop(replaced);
+        if let Some(replaced) = replaced {
+            replaced.retire();
+        }
         OpenResult::Opened
     }
 
@@ -974,40 +1018,143 @@ impl Session {
     }
 }
 
+/// What the reader did to a file row. The boundary decodes the wire's number into this closed set,
+/// and a number that is neither reaches the session as no act at all.
+///
+/// # Examples
+///
+/// ```
+/// use ka_reader_bridge::session::{FileAct, FileAnswerDto, Session};
+/// use ka_reader_core::ReadingPosition;
+///
+/// let session = Session::default();
+/// let top = ReadingPosition::new(b"top".as_slice());
+/// assert_eq!(session.select_file("a.txt", Some(FileAct::Open(top))), FileAnswerDto::Pending);
+/// assert_eq!(session.select_file("a.txt", None), FileAnswerDto::Pending);
+/// ```
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum FileAct {
+    /// The reader clicked the file: it is selected and opened at the position.
+    Open(ReadingPosition),
+    /// The reader scrolled the open file: its position becomes this one.
+    Position(ReadingPosition),
+}
+
 impl Session {
-    /// Reads the file at `path` inside the opened folder and answers its verdict. No folder open
-    /// is `pending`, because nothing was read.
-    pub fn select_file(&self, path: &str) -> FileAnswerDto {
-        self.select_file_with(path, select_file)
+    /// Applies the act the reader made on the file at `path` inside the opened folder. `Open`
+    /// selects and opens it at the position and answers its verdict; `Position` sets the open
+    /// file's position when `path` is the open file, reads nothing and answers `pending`; `None` is
+    /// an act the boundary could not decode and applies nothing. No folder open is `pending`,
+    /// because nothing was read.
+    pub fn select_file(&self, path: &str, act: Option<FileAct>) -> FileAnswerDto {
+        self.act_on_file(path, act, read_file)
     }
 
-    /// `select_file` with the read passed in. The opened folder is cloned under the lock and the
-    /// read runs after it is released, so a long read never stalls a listing behind it (CP-283).
-    fn select_file_with(
+    /// `select_file` with the read passed in, so a test can make a batch land while the read is out.
+    #[cfg(any(test, feature = "testing"))]
+    pub fn select_file_with(
         &self,
         path: &str,
-        read: impl FnOnce(&OpenedFolder, &str) -> ItemState<FileView>,
+        act: Option<FileAct>,
+        read: impl FnOnce(&OpenedFolder, &Path) -> FileRead,
+    ) -> FileAnswerDto {
+        self.act_on_file(path, act, read)
+    }
+
+    /// A copy of the held model's place, for a test that asserts what the session holds.
+    #[cfg(any(test, feature = "testing"))]
+    pub fn held_place(&self) -> Option<ka_reader_core::ReaderPlace> {
+        self.lock()
+            .held
+            .as_ref()
+            .map(|held| held.model.place().clone())
+    }
+
+    fn act_on_file(
+        &self,
+        path: &str,
+        act: Option<FileAct>,
+        read: impl FnOnce(&OpenedFolder, &Path) -> FileRead,
+    ) -> FileAnswerDto {
+        match act {
+            Some(FileAct::Open(position)) => self.open_file(path, position, read),
+            Some(FileAct::Position(position)) => {
+                self.position_file(path, position);
+                FileAnswerDto::Pending
+            }
+            None => FileAnswerDto::Pending,
+        }
+    }
+
+    /// The open act. The opened folder is cloned under the lock and the read runs after it is
+    /// released, so a long read never stalls a listing behind it (CP-283). The fold joins the model
+    /// under the lock, only for the grant the read was made for; where a batch landed meanwhile, the
+    /// open file is read once more under that same hold, so a change during the read is not lost.
+    fn open_file(
+        &self,
+        path: &str,
+        position: ReadingPosition,
+        read: impl FnOnce(&OpenedFolder, &Path) -> FileRead,
     ) -> FileAnswerDto {
         let held = self
             .lock()
             .held
             .as_ref()
-            .map(|held| (held.model.folder().clone(), held.open));
-        let Some((folder, open)) = held else {
+            .map(|held| (held.model.folder().clone(), held.open, held.batches));
+        let Some((folder, open, batches)) = held else {
             return FileAnswerDto::Pending;
         };
-        let answer = read(&folder, path);
-        // The selection joins the model after the read, under the lock, and only for the open the
-        // read was made for.
+        let read = read(&folder, Path::new(path));
+        let answer = FileAnswerDto::from(read.answer().clone());
+        let mut outgoing = None;
         if let Some(held) = self.lock().held.as_mut()
             && held.open == open
+        {
+            let mut model = held.model.clone().open_read(read, position);
+            if held.batches != batches {
+                model = model.reread_open_file();
+            }
+            outgoing = Self::open_payload(held, &model);
+            held.model = model;
+        }
+        // Delivered after the lock is released, from this caller's thread, before the export returns.
+        if let Some((payload, delivery, gate)) = outgoing {
+            gate.deliver(&delivery, payload);
+        }
+        answer
+    }
+
+    /// The payload an open sends, when the open changed the open file and the grant has a delivery.
+    /// A payload that cannot be serialized delivers nothing and writes one `stopped` line.
+    fn open_payload(
+        held: &mut Held,
+        model: &FolderModel,
+    ) -> Option<(Vec<u8>, Delivery, Arc<DeliveryGate>)> {
+        let delivery = held.delivery.clone()?;
+        let changes = model.changes_since(&held.model);
+        changes.open_file()?;
+        match held.payload_for(&changes) {
+            Ok(payload) => Some((payload?, delivery, Arc::clone(&held.gate))),
+            Err(_) => {
+                log::warn!("core-bridge: model_changed stopped: answer serialization failed");
+                None
+            }
+        }
+    }
+
+    /// The position act: applied only when `path` is the open file, and it reads nothing.
+    fn position_file(&self, path: &str, position: ReadingPosition) {
+        if let Some(held) = self.lock().held.as_mut()
+            && held
+                .model
+                .open_file()
+                .is_some_and(|open| open.path() == Path::new(path))
         {
             held.model = held
                 .model
                 .clone()
-                .select_file(FileRequest::Select(Some(PathBuf::from(path))));
+                .select_file(FileRequest::Position(position));
         }
-        answer.into()
     }
 }
 
@@ -1020,17 +1167,33 @@ mod tests {
 
     use serde_json::{Value, json};
 
-    use ka_reader_core::{ItemState, list_tree, open_folder};
+    use ka_reader_core::{ItemState, ReadingPosition, list_tree, open_folder, read_file};
 
-    use super::{Session, TreeAct};
+    use super::{FileAct, FileAnswerDto, Session, TreeAct};
     use crate::test_support::TempDir;
+
+    /// The act a click makes: open at the top.
+    fn top() -> FileAct {
+        FileAct::Open(ReadingPosition::new(b"top".as_slice()))
+    }
+
+    #[test]
+    fn test_the_gone_answer_maps_to_the_wire_state_gone() {
+        use ka_reader_core::FileView;
+
+        let answer = FileAnswerDto::from(ItemState::Observed(FileView::Gone));
+
+        assert_eq!(answer, FileAnswerDto::Gone);
+        assert_eq!(
+            serde_json::to_string(&answer).expect("the answer serializes"),
+            r#"{"state":"gone"}"#
+        );
+    }
 
     #[test]
     fn test_a_read_in_progress_does_not_hold_the_session_lock() {
         use std::sync::mpsc;
         use std::time::Duration;
-
-        use ka_reader_core::{CannotDisplayReason, FileView};
 
         let folder = TempDir::new();
         folder.write_file("a.txt", "x");
@@ -1043,10 +1206,10 @@ mod tests {
         let session = &session;
         std::thread::scope(|scope| {
             scope.spawn(move || {
-                session.select_file_with("a.txt", |_, _| {
+                session.select_file_with("a.txt", Some(top()), |folder, path| {
                     parked_tx.send(()).expect("the test is listening");
                     release_rx.recv().expect("the test releases the read");
-                    ItemState::Observed(FileView::CannotDisplay(CannotDisplayReason::InvalidUtf8))
+                    read_file(folder, path)
                 });
             });
             parked_rx
@@ -1083,7 +1246,7 @@ mod tests {
 
         session.list("src", Some(TreeAct::Expand));
         session.list("docs", Some(TreeAct::Expand));
-        session.select_file("src/main.rs");
+        session.select_file("src/main.rs", Some(top()));
         session.list("docs", Some(TreeAct::Collapse));
 
         let place = held_model(&session).place().clone();
@@ -1125,23 +1288,6 @@ mod tests {
 
         assert_eq!(answered, json!({ "state": "pending" }));
         assert_eq!(held_model(&session), before);
-    }
-
-    #[test]
-    fn test_select_file_applies_the_selection_to_the_held_model() {
-        let folder = TempDir::new();
-        folder.write_file("a.txt", "x");
-        let session = Session::default();
-        opened(&session, &folder);
-
-        session.select_file("a.txt");
-        let model = held_model(&session);
-
-        assert_eq!(
-            model.place().selected(),
-            Some(std::path::Path::new("a.txt"))
-        );
-        assert!(model.open_file().is_none(), "a selection opens nothing");
     }
 
     /// The answer to `path` for `act`, as the JSON the shell reads.
@@ -2404,8 +2550,13 @@ mod tests {
                     .expect("the answer serializes")
             };
             let selected = |session: &Session| {
-                serde_json::to_value(session.select_file("README.md"))
-                    .expect("the answer serializes")
+                serde_json::to_value(session.select_file(
+                    "README.md",
+                    Some(super::super::FileAct::Open(
+                        ka_reader_core::ReadingPosition::new(b"top".as_slice()),
+                    )),
+                ))
+                .expect("the answer serializes")
             };
 
             // CP-542: "whatever state the Git item is in". The real session is answered while its

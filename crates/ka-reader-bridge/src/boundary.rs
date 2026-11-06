@@ -8,12 +8,12 @@ use std::panic::{self, AssertUnwindSafe};
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use ka_reader_core::TreeChanges;
+use ka_reader_core::{ReadingPosition, TreeChanges};
 use serde::Serialize;
 
 use crate::exports::{BufferOrigin, KAReaderBuffer, KAReaderModelChanged};
 use crate::session::{
-    Delivery, FileAnswerDto, ListAnswerDto, OpenResult, Session, TreeAct, list_answer,
+    Delivery, FileAct, FileAnswerDto, ListAnswerDto, OpenResult, Session, TreeAct, list_answer,
 };
 
 /// Runs `work` under `catch_unwind` and hands its answer across as an owned buffer of JSON bytes.
@@ -73,14 +73,29 @@ struct ChangedListing {
 }
 
 #[derive(Serialize)]
+struct ChangedOpenFile {
+    revision: u64,
+    path: String,
+    position: String,
+    answer: FileAnswerDto,
+}
+
+#[derive(Serialize)]
 struct ChangesPayload {
     listings: Vec<ChangedListing>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    open_file: Option<ChangedOpenFile>,
 }
 
 /// The `model_changed` payload for `changes`: `{"listings":[{"path":…,"answer":…}…]}`, where each
 /// `answer` is exactly what `ka_reader_list_tree` answers for that listing and the root's `path`
-/// is empty.
-pub(crate) fn changes_payload(changes: &TreeChanges) -> Result<Vec<u8>, serde_json::Error> {
+/// is empty. When the open file changed it adds
+/// `"open_file":{"revision":…,"path":…,"position":…,"answer":…}`, `answer` being the select answer's
+/// shape or `{"state":"gone"}`; a payload of listings alone is byte for byte as it was.
+pub(crate) fn changes_payload(
+    changes: &TreeChanges,
+    revision: u64,
+) -> Result<Vec<u8>, serde_json::Error> {
     let listings = changes
         .listings()
         .iter()
@@ -89,7 +104,16 @@ pub(crate) fn changes_payload(changes: &TreeChanges) -> Result<Vec<u8>, serde_js
             answer: list_answer(listing.clone()),
         })
         .collect();
-    serde_json::to_vec(&ChangesPayload { listings })
+    let open_file = changes.open_file().map(|open| ChangedOpenFile {
+        revision,
+        path: open.path().to_string_lossy().into_owned(),
+        position: String::from_utf8_lossy(open.position().as_bytes()).into_owned(),
+        answer: FileAnswerDto::from(open.view().clone()),
+    });
+    serde_json::to_vec(&ChangesPayload {
+        listings,
+        open_file,
+    })
 }
 
 /// A `list_tree` path, decoded. Root is NULL or empty.
@@ -211,16 +235,49 @@ pub unsafe fn list_entries(session: &Session, path: *const c_char, act: u32) -> 
     }
 }
 
-/// Reads `path` in `session`. NULL, an empty path and bytes that are not UTF-8 name no file, so
-/// nothing is read and the answer is `{"state":"pending"}`.
+/// What the reader did to a file, decoded from the C `act` and `position`: `0` opened it at
+/// `position`, with NULL meaning the empty position; `1` moved its position to `position`, and
+/// without one there is nothing to apply; any other value is none. Never a `#[repr]` enum read
+/// straight from C, and the position's bytes are carried as they are, never parsed.
 ///
 /// # Safety
 ///
-/// As `decode_list_path`.
-pub unsafe fn select_entry(session: &Session, path: *const c_char) -> FileAnswerDto {
+/// `position` is NULL, or points at a NUL-terminated string that stays valid for the call.
+pub(crate) unsafe fn decode_file_act(act: u32, position: *const c_char) -> Option<FileAct> {
+    let bytes = if position.is_null() {
+        None
+    } else {
+        // SAFETY: the caller guarantees a valid NUL-terminated string.
+        Some(ReadingPosition::new(
+            unsafe { CStr::from_ptr(position) }.to_bytes(),
+        ))
+    };
+    match act {
+        0 => Some(FileAct::Open(
+            bytes.unwrap_or_else(|| ReadingPosition::new(Vec::new())),
+        )),
+        1 => bytes.map(FileAct::Position),
+        _ => None,
+    }
+}
+
+/// Applies `act` to the file at `path` in `session`. NULL, an empty path and bytes that are not
+/// UTF-8 name no file, so nothing is read and the answer is `{"state":"pending"}`.
+///
+/// # Safety
+///
+/// As `decode_list_path`, and `position` as `decode_file_act`.
+pub unsafe fn select_entry(
+    session: &Session,
+    path: *const c_char,
+    act: u32,
+    position: *const c_char,
+) -> FileAnswerDto {
+    // SAFETY: forwarded from the caller.
+    let act = unsafe { decode_file_act(act, position) };
     // SAFETY: forwarded from the caller.
     match unsafe { decode_list_path(path) } {
-        ListPath::Under(relative) => session.select_file(&relative),
+        ListPath::Under(relative) => session.select_file(&relative, act),
         ListPath::Root | ListPath::NotUtf8 => FileAnswerDto::Pending,
     }
 }
@@ -259,9 +316,9 @@ mod tests {
         // SAFETY: each pointer is NULL or a live NUL-terminated string for the call.
         let answers = unsafe {
             [
-                select_entry(&session, ptr::null()),
-                select_entry(&session, empty.as_ptr()),
-                select_entry(&session, non_utf8.as_ptr()),
+                select_entry(&session, ptr::null(), 0, ptr::null()),
+                select_entry(&session, empty.as_ptr(), 0, ptr::null()),
+                select_entry(&session, non_utf8.as_ptr(), 0, ptr::null()),
             ]
         };
 
@@ -556,7 +613,7 @@ mod tests {
                 .expect("the answer serializes")
         };
 
-        let payload = changes_payload(&later.changes_since(&earlier)).expect("serializes");
+        let payload = changes_payload(&later.changes_since(&earlier), 1).expect("serializes");
 
         assert_eq!(
             serde_json::from_slice::<serde_json::Value>(&payload).expect("JSON"),
@@ -628,6 +685,78 @@ mod tests {
         assert_eq!(decode_act(1), Some(TreeAct::Collapse));
         assert_eq!(decode_act(2), None);
         assert_eq!(decode_act(u32::MAX), None);
+    }
+
+    #[test]
+    fn test_act_0_with_a_position_decodes_to_open_with_those_bytes_and_with_null_to_the_empty_position()
+     {
+        use ka_reader_core::ReadingPosition;
+
+        use super::decode_file_act;
+        use crate::session::FileAct;
+
+        let position = CString::new("line=4;x=1.5").expect("no NUL");
+
+        // SAFETY: each pointer is NULL or a live NUL-terminated string for the call.
+        let (with, without) = unsafe {
+            (
+                decode_file_act(0, position.as_ptr()),
+                decode_file_act(0, ptr::null()),
+            )
+        };
+
+        assert_eq!(
+            with,
+            Some(FileAct::Open(ReadingPosition::new(
+                b"line=4;x=1.5".as_slice()
+            )))
+        );
+        assert_eq!(
+            without,
+            Some(FileAct::Open(ReadingPosition::new(Vec::new())))
+        );
+    }
+
+    #[test]
+    fn test_act_1_decodes_to_position_and_with_null_to_no_act() {
+        use ka_reader_core::ReadingPosition;
+
+        use super::decode_file_act;
+        use crate::session::FileAct;
+
+        let position = CString::new("top").expect("no NUL");
+
+        // SAFETY: each pointer is NULL or a live NUL-terminated string for the call.
+        let (with, without) = unsafe {
+            (
+                decode_file_act(1, position.as_ptr()),
+                decode_file_act(1, ptr::null()),
+            )
+        };
+
+        assert_eq!(
+            with,
+            Some(FileAct::Position(ReadingPosition::new(b"top".as_slice())))
+        );
+        assert_eq!(without, None);
+    }
+
+    #[test]
+    fn test_act_2_decodes_to_no_act() {
+        use super::decode_file_act;
+
+        let position = CString::new("top").expect("no NUL");
+
+        // SAFETY: the pointer is a live NUL-terminated string for the call.
+        let (two, many) = unsafe {
+            (
+                decode_file_act(2, position.as_ptr()),
+                decode_file_act(u32::MAX, position.as_ptr()),
+            )
+        };
+
+        assert_eq!(two, None);
+        assert_eq!(many, None);
     }
 
     #[test]

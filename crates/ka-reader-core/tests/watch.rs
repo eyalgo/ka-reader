@@ -22,8 +22,8 @@ use std::time::SystemTime;
 use common::Snapshot;
 use common::TempDir;
 use ka_reader_core::{
-    Condition, Entry, EntryKind, FileRequest, FolderModel, ItemState, ModelDelta, PathReports,
-    ReadingPosition, TreeRequest, list_tree, open_folder,
+    Condition, Entry, EntryKind, FileRequest, FileView, FolderModel, ItemState, ModelDelta,
+    PathReports, ReadingPosition, TreeRequest, list_tree, open_folder, select_file,
 };
 
 /// A project-shaped folder: a root file, nested folders, a `.git` entry and files to open.
@@ -1108,4 +1108,302 @@ fn test_the_thirty_second_scene_ends_equal_to_fresh_reads_and_to_the_fixture() {
         })
         .collect();
     folder.assert_unchanged_since(&want, "the scene's final folder differs from the fixture");
+}
+
+// ---- The open file follows a batch: it is re-read when the batch covers it ----
+
+/// The file at `path` open at a position the tests then expect to find unchanged.
+fn open_file_at(folder: &TempDir, path: &str) -> (FolderModel, ReadingPosition) {
+    let position = ReadingPosition::new(b"line=7".as_slice());
+    (open_at(model_over(folder), path, &position), position)
+}
+
+/// The view the open file holds, and its path and position, which no re-read may move.
+fn assert_open_at(model: &FolderModel, path: &str, position: &ReadingPosition) {
+    let open = model.open_file().expect("the file stays the open one");
+    assert_eq!(open.path(), Path::new(path));
+    assert_eq!(open.position(), position);
+}
+
+fn open_view(model: &FolderModel) -> ItemState<FileView> {
+    model.open_file().expect("a file is open").view().clone()
+}
+
+#[test]
+fn test_a_rewrite_reported_at_the_files_path_updates_the_view_to_equal_a_fresh_read() {
+    let folder = project();
+    let (model, position) = open_file_at(&folder, "src/main.rs");
+    let before = open_view(&model);
+    folder.write_file("src/main.rs", "fn main() { println!(\"changed\"); }\n");
+
+    let after = invalidate(model, &["src/main.rs"]);
+
+    assert_open_at(&after, "src/main.rs", &position);
+    assert_ne!(
+        open_view(&after),
+        before,
+        "the view still holds the old text"
+    );
+    assert_eq!(
+        open_view(&after),
+        select_file(after.folder(), "src/main.rs"),
+        "the view equals what a selection of the path gives now"
+    );
+}
+
+#[test]
+fn test_expansion_selection_and_every_listing_are_equal_before_and_after() {
+    let folder = project();
+    let position = ReadingPosition::new(b"line=7".as_slice());
+    let model = open_at(
+        select(
+            expand(expand(model_over(&folder), "src"), "docs"),
+            "src/util.rs",
+        ),
+        "src/main.rs",
+        &position,
+    );
+    let before = open_view(&model);
+    folder.write_file("src/main.rs", "fn main() { 1 }\n");
+
+    let after = invalidate(model.clone(), &["src/main.rs"]);
+
+    assert_ne!(open_view(&after), before, "the file was not re-read");
+    assert_eq!(after.place().selected(), model.place().selected());
+    assert!(expanded(&after, "src") && expanded(&after, "docs"));
+    for listing in ["", "src", "docs"] {
+        assert_eq!(
+            after.listing(Path::new(listing)),
+            model.listing(Path::new(listing)),
+            "the listing at {listing:?} moved"
+        );
+    }
+}
+
+#[test]
+fn test_a_report_over_unchanged_bytes_leaves_the_model_equal() {
+    let folder = project();
+    let (model, _) = open_file_at(&folder, "src/main.rs");
+    folder.write_file("src/main.rs", "fn main() {}\n");
+
+    let after = invalidate(model.clone(), &["src/main.rs"]);
+
+    assert_eq!(after, model);
+}
+
+#[test]
+fn test_a_report_of_the_files_folder_and_of_the_root_each_reread_it_and_a_siblings_does_not() {
+    let folder = project();
+    let (model, _) = open_file_at(&folder, "src/main.rs");
+    let before = open_view(&model);
+    folder.write_file("src/main.rs", "fn main() { 2 }\n");
+    let fresh = select_file(model.folder(), "src/main.rs");
+    assert_ne!(fresh, before, "the rewrite must change what a read gives");
+
+    assert_eq!(
+        open_view(&invalidate(model.clone(), &["src/util.rs"])),
+        before
+    );
+    assert_eq!(open_view(&invalidate(model.clone(), &["docs"])), before);
+    assert_eq!(open_view(&invalidate(model.clone(), &["src"])), fresh);
+    assert_eq!(open_view(&invalidate(model, &[""])), fresh);
+}
+
+#[test]
+fn test_deletion_rename_away_and_removal_of_the_folder_above_each_give_gone() {
+    type Vanish = fn(&TempDir);
+    let vanishings: [(&str, Vanish); 4] = [
+        ("deleted", |folder| {
+            fs::remove_file(folder.path().join("src/main.rs")).expect("the file goes");
+        }),
+        ("renamed away", |folder| {
+            fs::rename(
+                folder.path().join("src/main.rs"),
+                folder.path().join("src/moved.rs"),
+            )
+            .expect("the file is renamed");
+        }),
+        ("folder above removed", |folder| {
+            fs::remove_dir_all(folder.path().join("src")).expect("the folder goes");
+        }),
+        ("folder above replaced by a file", |folder| {
+            fs::remove_dir_all(folder.path().join("src")).expect("the folder goes");
+            folder.write_file("src", "a file where the folder was\n");
+        }),
+    ];
+    for (how, vanish) in vanishings {
+        let folder = project();
+        let (model, position) = open_file_at(&folder, "src/main.rs");
+        let before = open_view(&model);
+        vanish(&folder);
+
+        let after = invalidate(model, &["src/main.rs", "src", ""]);
+
+        assert_open_at(&after, "src/main.rs", &position);
+        assert_ne!(
+            open_view(&after),
+            before,
+            "{how}: the old text is still shown"
+        );
+        assert_eq!(
+            open_view(&after),
+            ItemState::Observed(FileView::Gone),
+            "{how}"
+        );
+    }
+}
+
+#[test]
+fn test_a_folder_at_the_path_gives_failed_unreadable_never_gone() {
+    let folder = project();
+    let (model, position) = open_file_at(&folder, "old.txt");
+    let before = open_view(&model);
+    fs::remove_file(folder.path().join("old.txt")).expect("the file goes");
+    folder.make_folder("old.txt");
+
+    let after = invalidate(model, &["old.txt"]);
+
+    assert_open_at(&after, "old.txt", &position);
+    assert_ne!(open_view(&after), before);
+    assert_eq!(open_view(&after), ItemState::Failed(Condition::Unreadable));
+}
+
+#[test]
+fn test_the_gone_view_is_an_observed_item() {
+    let folder = project();
+    let (model, _) = open_file_at(&folder, "old.txt");
+    let before = open_view(&model);
+    fs::remove_file(folder.path().join("old.txt")).expect("the file goes");
+
+    let after = invalidate(model, &["old.txt"]);
+
+    assert_ne!(open_view(&after), before);
+    assert!(matches!(
+        open_view(&after),
+        ItemState::Observed(FileView::Gone)
+    ));
+}
+
+#[test]
+fn test_a_file_with_mode_zero_gives_failed_and_recovers_with_the_position_kept() {
+    let folder = project();
+    let position = ReadingPosition::new(b"line=7".as_slice());
+    let model = open_at(expand(model_over(&folder), "src"), "src/main.rs", &position);
+    let before = open_view(&model);
+    let listing_before = model.listing(Path::new("src")).cloned();
+
+    folder.set_mode("src/main.rs", 0o000);
+    let unreadable = invalidate(model, &["src/main.rs"]);
+    assert_ne!(open_view(&unreadable), before);
+    assert_eq!(
+        open_view(&unreadable),
+        ItemState::Failed(Condition::Unreadable)
+    );
+
+    folder.set_mode("src/main.rs", 0o644);
+    folder.write_file("src/main.rs", "fn recovered() {}\n");
+    let recovered = invalidate(unreadable, &["src/main.rs"]);
+    assert_open_at(&recovered, "src/main.rs", &position);
+    assert_eq!(
+        open_view(&recovered),
+        select_file(recovered.folder(), "src/main.rs")
+    );
+    assert!(matches!(
+        open_view(&recovered),
+        ItemState::Observed(FileView::Text { ref content, .. }) if content == "fn recovered() {}\n"
+    ));
+
+    fs::remove_file(folder.path().join("src/main.rs")).expect("the file goes");
+    let gone = invalidate(recovered, &["src/main.rs"]);
+    assert_eq!(open_view(&gone), ItemState::Observed(FileView::Gone));
+    folder.write_file("src/main.rs", "fn again() {}\n");
+    let again = invalidate(gone, &["src/main.rs"]);
+    assert_open_at(&again, "src/main.rs", &position);
+    assert_eq!(
+        open_view(&again),
+        select_file(again.folder(), "src/main.rs")
+    );
+    assert_eq!(again.listing(Path::new("src")), listing_before.as_ref());
+}
+
+#[test]
+fn test_an_open_link_retargeted_outside_missing_or_to_itself_is_failed_never_gone() {
+    let scene = TempDir::new();
+    let folder = scene.make_folder("opened");
+    scene.write_file("opened/docs/guide.md", "guide\n");
+    scene.write_file("outside/secret.txt", "secret\n");
+    scene.make_link("opened/link.txt", "docs/guide.md");
+    let position = ReadingPosition::new(b"line=7".as_slice());
+    let model = open_at(
+        FolderModel::new(open_folder(&folder).expect("the folder opens")),
+        "link.txt",
+        &position,
+    );
+    let before = open_view(&model);
+    let outside_before = outside_of(&scene);
+
+    for (target, expected) in [
+        ("../outside/secret.txt", Condition::Outside),
+        ("missing-target", Condition::Missing),
+        ("link.txt", Condition::Cycle),
+    ] {
+        fs::remove_file(folder.join("link.txt")).expect("the link goes");
+        std::os::unix::fs::symlink(target, folder.join("link.txt"))
+            .expect("the link is retargeted");
+
+        let after = invalidate(model.clone(), &["link.txt"]);
+
+        assert_open_at(&after, "link.txt", &position);
+        assert_ne!(open_view(&after), before, "{target}: the old text is shown");
+        assert_eq!(open_view(&after), ItemState::Failed(expected), "{target}");
+    }
+    assert_eq!(
+        outside_of(&scene),
+        outside_before,
+        "nothing outside the root is touched"
+    );
+}
+
+#[test]
+fn test_a_file_opened_through_a_link_is_reread_when_its_target_path_is_reported() {
+    let folder = TempDir::new();
+    folder.write_file("docs/guide.md", "guide\n");
+    folder.make_link("link.txt", "docs/guide.md");
+    let (model, position) = open_file_at(&folder, "link.txt");
+    let before = open_view(&model);
+    folder.write_file("docs/guide.md", "guide, rewritten\n");
+
+    let after = invalidate(model, &["docs/guide.md"]);
+
+    assert_open_at(&after, "link.txt", &position);
+    assert_ne!(open_view(&after), before);
+    assert_eq!(open_view(&after), select_file(after.folder(), "link.txt"));
+}
+
+#[test]
+fn test_reread_open_file_rereads_unconditionally_touches_no_listing_and_with_no_file_open_returns_the_model()
+ {
+    let folder = project();
+    let position = ReadingPosition::new(b"line=7".as_slice());
+    let model = open_at(expand(model_over(&folder), "src"), "src/main.rs", &position);
+    let before = open_view(&model);
+    folder.write_file("src/main.rs", "fn main() { 3 }\n");
+    folder.write_file("src/added.rs", "// added\n");
+
+    let after = model.clone().reread_open_file();
+
+    assert_ne!(open_view(&after), before, "the file was not re-read");
+    assert_eq!(
+        open_view(&after),
+        select_file(after.folder(), "src/main.rs")
+    );
+    assert_open_at(&after, "src/main.rs", &position);
+    assert_eq!(
+        after.listing(Path::new("src")),
+        model.listing(Path::new("src"))
+    );
+    assert_eq!(after.listing(Path::new("")), model.listing(Path::new("")));
+
+    let none_open = model_over(&folder);
+    assert_eq!(none_open.clone().reread_open_file(), none_open);
 }

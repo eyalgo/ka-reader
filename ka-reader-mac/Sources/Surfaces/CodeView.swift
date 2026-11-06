@@ -22,6 +22,17 @@ final class CodeView: NSView {
     private let scrollView: NSScrollView
     private let gutterWidth: NSLayoutConstraint
 
+    /// Raised when the reader scrolls the view, and never for a scroll the view makes itself: a
+    /// replacement, a restore, or the clamp that follows a text that got shorter.
+    var onReaderScroll: (() -> Void)?
+
+    /// Greater than zero while the view is moving its own scroll.
+    private var selfScrolling = 0
+
+    /// Where each row of the laid-out text starts, in the text container's coordinates, as of the
+    /// last text set.
+    private var rowTops: [CGFloat] = []
+
     init() {
         let layoutManager = NSLayoutManager()
         let storage = NSTextStorage()
@@ -90,6 +101,10 @@ final class CodeView: NSView {
             scrollView.trailingAnchor.constraint(equalTo: trailingAnchor),
             scrollView.bottomAnchor.constraint(equalTo: bottomAnchor),
         ])
+        scrollView.contentView.postsBoundsChangedNotifications = true
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(clipViewBoundsDidChange),
+            name: NSView.boundsDidChangeNotification, object: scrollView.contentView)
     }
 
     @available(*, unavailable)
@@ -103,6 +118,55 @@ final class CodeView: NSView {
     /// attributes, reaches this one (CP-313). It lays the text out, rebuilds the gutter from this text
     /// alone (CP-342) and scrolls to the top-left.
     func show(_ text: NSAttributedString) {
+        scrollingItself {
+            setText(text)
+            scrollView.contentView.scroll(to: .zero)
+            scrollView.reflectScrolledClipView(scrollView.contentView)
+        }
+    }
+
+    /// Replaces the text whole and keeps where the view is scrolled to: the clip view's origin stays,
+    /// and is clamped to the new document, so a text that got shorter shows its last lines. Nothing
+    /// passes through an empty state, and no scroll is reported.
+    func replaceText(_ text: NSAttributedString) {
+        scrollingItself {
+            setText(text)
+            scroll(to: scrollView.contentView.bounds.origin)
+        }
+    }
+
+    /// Scrolls so the row at `position.topLine` is at the top and the view is `horizontalOffset`
+    /// points along, clamped to what the text reaches; a line past the last row is the last row. Line
+    /// zero is the view's own top, with its inset showing. No scroll is reported. The view must have
+    /// its size.
+    func restore(_ position: ReadingPosition) {
+        let line = min(max(position.topLine, 0), rowTops.count - 1)
+        let top =
+            line <= 0 ? 0 : textView.textContainerOrigin.y + rowTops[line]
+        scrollingItself {
+            scroll(to: NSPoint(x: position.horizontalOffset, y: top))
+        }
+    }
+
+    /// Where the view is scrolled to now: the row at its top, and the offset along.
+    var readingPosition: ReadingPosition {
+        let origin = scrollView.contentView.bounds.origin
+        let y = origin.y - textView.textContainerOrigin.y
+        // The first row that starts below the top, less one: the row that holds the top. A row's top
+        // is a float the layout computed, so the comparison allows half a point.
+        var low = 0
+        var high = rowTops.count
+        while low < high {
+            let middle = (low + high) / 2
+            if rowTops[middle] <= y + Self.rowTolerance { low = middle + 1 } else { high = middle }
+        }
+        return ReadingPosition(topLine: max(low - 1, 0), horizontalOffset: Double(origin.x))
+    }
+
+    private static let rowTolerance: CGFloat = 0.5
+
+    /// Sets the text storage whole, then lays out, measures and numbers it.
+    private func setText(_ text: NSAttributedString) {
         unsafe textView.textStorage?.setAttributedString(text)
         if let container = unsafe textView.textContainer {
             unsafe textView.layoutManager?.ensureLayout(for: container)
@@ -111,8 +175,42 @@ final class CodeView: NSView {
         textView.sizeToFit()
         gutter.reload()
         gutterWidth.constant = gutter.width
-        scrollView.contentView.scroll(to: .zero)
-        scrollView.reflectScrolledClipView(scrollView.contentView)
+        rowTops = rowStarts()
+    }
+
+    private func rowStarts() -> [CGFloat] {
+        guard let layoutManager = unsafe textView.layoutManager else { return [] }
+        var tops: [CGFloat] = []
+        unsafe layoutManager.enumerateLineFragments(
+            forGlyphRange: NSRange(location: 0, length: layoutManager.numberOfGlyphs)
+        ) { rect, _, _, _, _ in
+            tops.append(rect.minY)
+        }
+        return tops
+    }
+
+    /// Moves the clip view to `origin`, held inside the document: the view never shows beyond the
+    /// text's end.
+    private func scroll(to origin: NSPoint) {
+        let clip = scrollView.contentView
+        let document = textView.frame.size
+        let reach = NSPoint(
+            x: max(document.width - clip.bounds.width, 0),
+            y: max(document.height - clip.bounds.height, 0))
+        clip.scroll(
+            to: NSPoint(x: min(max(origin.x, 0), reach.x), y: min(max(origin.y, 0), reach.y)))
+        scrollView.reflectScrolledClipView(clip)
+    }
+
+    private func scrollingItself(_ move: () -> Void) {
+        selfScrolling += 1
+        defer { selfScrolling -= 1 }
+        move()
+    }
+
+    @objc private func clipViewBoundsDidChange(_ notification: Notification) {
+        guard selfScrolling == 0 else { return }
+        onReaderScroll?()
     }
 }
 

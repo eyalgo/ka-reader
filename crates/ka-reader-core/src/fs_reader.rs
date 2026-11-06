@@ -270,6 +270,10 @@ impl Filesystem for NativeFilesystem {
 struct Blocked {
     condition: Condition,
     text: String,
+    /// The walk met no entry at a step of the path as the caller spelled it, or a non-folder where
+    /// the spelled path goes on, with no link's target being resolved at that step. It is a fact
+    /// about where the walk stopped, so building a `Blocked` from an error never sets it.
+    nothing_there: bool,
 }
 
 impl Blocked {
@@ -277,6 +281,7 @@ impl Blocked {
         Self {
             condition: Condition::Outside,
             text: OUTSIDE_TEXT.to_string(),
+            nothing_there: false,
         }
     }
 
@@ -284,6 +289,7 @@ impl Blocked {
         Self {
             condition: Condition::Cycle,
             text: CYCLE_TEXT.to_string(),
+            nothing_there: false,
         }
     }
 
@@ -293,6 +299,7 @@ impl Blocked {
         Self {
             condition: Condition::Missing,
             text: io::Error::from(io::ErrorKind::NotADirectory).to_string(),
+            nothing_there: false,
         }
     }
 
@@ -302,6 +309,15 @@ impl Blocked {
         Self {
             condition: Condition::Unreadable,
             text: NOT_A_REGULAR_FILE_TEXT.to_string(),
+            nothing_there: false,
+        }
+    }
+
+    /// The same failure, marked as the walk finding nothing at the caller's spelled path.
+    fn nothing_there(self) -> Self {
+        Self {
+            nothing_there: true,
+            ..self
         }
     }
 
@@ -309,6 +325,7 @@ impl Blocked {
         Self {
             condition: Condition::TooManyLinks,
             text: TOO_MANY_LINKS_TEXT.to_string(),
+            nothing_there: false,
         }
     }
 }
@@ -318,6 +335,7 @@ impl From<&io::Error> for Blocked {
         Self {
             condition: condition_for(error.kind()),
             text: error.to_string(),
+            nothing_there: false,
         }
     }
 }
@@ -450,16 +468,91 @@ fn observe_file_with_filesystem(
     root: &Path,
     requested: &Path,
 ) -> ItemState<FileContent> {
-    let answer = resolve(filesystem, root, requested).and_then(|at| match at.kind {
-        EntryKind::Folder => Err(Blocked::not_a_regular_file()),
-        EntryKind::File => read_bytes(&root.join(at.below_root)).map(|bytes| {
-            decode(
-                bytes,
-                language_of(requested.file_name().unwrap_or_default()),
-            )
-        }),
-    });
-    match answer {
+    failed_or_observed(attempt_file(filesystem, root, requested).outcome)
+}
+
+/// What a re-read of one file found at its path: nothing, or a read with its own outcome.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) enum Reobserved {
+    /// Nothing is at the path as the caller spelled it: the walk met no entry at a step of it, or
+    /// met a non-folder where it goes on, and no link's target was being resolved at that step.
+    /// It carries nothing, and no log line is written for it.
+    Absent,
+    /// Something is at the path, or the walk was stopped by something else: the outcome
+    /// [`observe_file`] gives, and the location below the root when the walk resolved to a file.
+    Read {
+        state: ItemState<FileContent>,
+        location: Option<PathBuf>,
+    },
+}
+
+/// Reads the file at `requested`, a path relative to `root`, as [`observe_file`] does, and tells
+/// the two ways a re-read can come back empty apart: [`Reobserved::Absent`] when nothing is at the
+/// path, and [`Reobserved::Read`] with `Failed(condition)` for everything else that stops it.
+///
+/// Every failure other than *absent* writes the `fs-reader: read failed: ` line [`observe_file`]
+/// writes. A link whose target is missing, outside the folder, looping or too long, a folder at the
+/// path, and an unreadable or non-regular file are each a failed read, never absent. Containment is
+/// the walk's own, so nothing outside `root` is touched.
+pub(crate) fn reobserve_file(root: &Path, requested: &Path) -> Reobserved {
+    reobserve_file_with_filesystem(&NativeFilesystem, root, requested)
+}
+
+fn reobserve_file_with_filesystem(
+    filesystem: &impl Filesystem,
+    root: &Path,
+    requested: &Path,
+) -> Reobserved {
+    let FileAttempt { location, outcome } = attempt_file(filesystem, root, requested);
+    match outcome {
+        Err(blocked) if blocked.nothing_there => Reobserved::Absent,
+        outcome => Reobserved::Read {
+            state: failed_or_observed(outcome),
+            location,
+        },
+    }
+}
+
+/// The walk and the read of one file, before any failure is logged.
+struct FileAttempt {
+    /// The file's location below the root, when the walk resolved to a file.
+    location: Option<PathBuf>,
+    outcome: Result<FileContent, Blocked>,
+}
+
+fn attempt_file(filesystem: &impl Filesystem, root: &Path, requested: &Path) -> FileAttempt {
+    let at = match resolve(filesystem, root, requested) {
+        Ok(at) => at,
+        Err(blocked) => {
+            return FileAttempt {
+                location: None,
+                outcome: Err(blocked),
+            };
+        }
+    };
+    match at.kind {
+        EntryKind::Folder => FileAttempt {
+            location: None,
+            outcome: Err(Blocked::not_a_regular_file()),
+        },
+        EntryKind::File => {
+            let outcome = read_bytes(&root.join(&at.below_root)).map(|bytes| {
+                decode(
+                    bytes,
+                    language_of(requested.file_name().unwrap_or_default()),
+                )
+            });
+            FileAttempt {
+                location: Some(at.below_root),
+                outcome,
+            }
+        }
+    }
+}
+
+/// The item a read's outcome is, with the one `warn` line a failed read writes.
+fn failed_or_observed(outcome: Result<FileContent, Blocked>) -> ItemState<FileContent> {
+    match outcome {
         Ok(content) => ItemState::Observed(content),
         Err(blocked) => {
             log::warn!("fs-reader: read failed: {}", blocked.text);
@@ -657,9 +750,17 @@ fn resolve(
                     continue;
                 }
                 let candidate = position.join(&name);
-                let metadata = filesystem
-                    .symlink_metadata(&candidate)
-                    .map_err(|error| Blocked::from(&error))?;
+                let metadata = filesystem.symlink_metadata(&candidate).map_err(|error| {
+                    let blocked = Blocked::from(&error);
+                    // A queued end-of-link marker means this name is a step of a link's target.
+                    if error.kind() == io::ErrorKind::NotFound
+                        && !a_link_is_being_resolved(&pending)
+                    {
+                        blocked.nothing_there()
+                    } else {
+                        blocked
+                    }
+                })?;
                 if metadata.is_symlink() {
                     if pending.iter().any(
                         |queued| matches!(queued, Step::EndOfLink { link, .. } if *link == candidate),
@@ -689,6 +790,7 @@ fn resolve(
                         Blocked::through_a_file()
                     } else {
                         Blocked::from(&io::Error::from(io::ErrorKind::NotADirectory))
+                            .nothing_there()
                     });
                 } else {
                     kind = if metadata.is_dir() {
@@ -874,6 +976,14 @@ fn goes_on(pending: &VecDeque<Step>) -> bool {
     pending
         .iter()
         .any(|queued| !matches!(queued, Step::EndOfLink { .. }))
+}
+
+/// Whether a link's target is being resolved: its end-of-link marker is still queued. The step
+/// just taken then belongs to that target, and the caller's own steps are queued behind the marker.
+fn a_link_is_being_resolved(pending: &VecDeque<Step>) -> bool {
+    pending
+        .iter()
+        .any(|queued| matches!(queued, Step::EndOfLink { .. }))
 }
 
 /// Whether the next step to take belongs to some link's target. A link's target steps are queued

@@ -12,7 +12,10 @@ mod common;
 use std::sync::Mutex;
 
 use common::TempDir;
-use ka_reader_core::{ItemState, OpenFailure, OpenFolderOutcome, list_tree, open_folder};
+use ka_reader_core::{
+    FileRequest, FileView, FolderModel, ItemState, OpenFailure, OpenFolderOutcome, PathReports,
+    ReadingPosition, TreeRequest, list_tree, open_folder,
+};
 use log::{LevelFilter, Log, Metadata, Record};
 
 struct Capture {
@@ -147,5 +150,76 @@ fn failed_items_emit_one_warn_each_without_a_path_and_others_emit_none() {
         take_records().len(),
         2,
         "each attempt adds exactly one record"
+    );
+
+    // The open file's re-read (E13, QC-39): a failed re-read writes one line naming the part, the
+    // operation and the error text and none of the file's content; a gone re-read writes none.
+    let reread = TempDir::new();
+    reread.write_file("secret.txt", "private fixture content");
+    reread.write_file("vanishing.txt", "private fixture content");
+    let position = ReadingPosition::new(b"top".as_slice());
+    let open = |name: &str| {
+        FolderModel::new(open_folder(reread.path()).expect("the folder opens"))
+            .select_file(FileRequest::Open(name.into(), position.clone()))
+    };
+    let unreadable_model = open("secret.txt");
+    let vanishing_model = open("vanishing.txt");
+    assert!(
+        take_records().is_empty(),
+        "opening a readable file logs nothing"
+    );
+    let reports = || PathReports::new(vec![reread.path().to_path_buf()]);
+
+    reread.set_mode("secret.txt", 0o000);
+    let after = unreadable_model.list_tree(TreeRequest::Invalidate(reports()));
+    let records = take_records();
+    assert_eq!(
+        after.open_file().map(|file| file.view()),
+        Some(&ItemState::Failed(ka_reader_core::Condition::Unreadable))
+    );
+    assert_eq!(
+        records.len(),
+        1,
+        "one line for the failed re-read: {records:?}"
+    );
+    let (level, message) = &records[0];
+    assert_eq!(*level, log::Level::Warn);
+    assert!(message.contains("fs-reader"), "{message}");
+    assert!(message.contains("read"), "{message}");
+    assert!(message.contains("Permission denied"), "{message}");
+    assert!(!message.contains("private fixture content"), "{message}");
+    assert!(!message.contains("secret.txt"), "{message}");
+
+    std::fs::remove_file(reread.path().join("vanishing.txt")).expect("the file goes");
+    let gone = vanishing_model.list_tree(TreeRequest::Invalidate(reports()));
+    assert_eq!(
+        gone.open_file().map(|file| file.view()),
+        Some(&ItemState::Observed(FileView::Gone))
+    );
+    assert!(take_records().is_empty(), "a gone re-read writes no line");
+
+    // The open's read (E13's sibling): a path where nothing is writes the two lines a selection
+    // writes, one `read failed` and one `locate failed`, and a file that is there writes none.
+    let reading = TempDir::new();
+    reading.write_file("there.txt", "present");
+    let folder_opened = open_folder(reading.path()).expect("the folder opens");
+    let _ = ka_reader_core::read_file(&folder_opened, std::path::Path::new("there.txt"));
+    assert!(take_records().is_empty(), "a readable file logs nothing");
+    let missing_read =
+        ka_reader_core::read_file(&folder_opened, std::path::Path::new("missing.txt"));
+    assert!(matches!(missing_read.answer(), ItemState::Failed(_)));
+    let records = take_records();
+    assert_eq!(records.len(), 2, "{records:?}");
+    assert!(
+        records
+            .iter()
+            .any(|(_, message)| message.starts_with("fs-reader: read failed: ")),
+        "{records:?}"
+    );
+    assert!(
+        records
+            .iter()
+            .any(|(_, message)| message.starts_with("fs-reader: locate failed: ")),
+        "{records:?}"
     );
 }

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.9.0 — the displayed-file scene, and the read-only walk of the folder it ends in, join the list
 # Version: 1.8.0 — the read-only walk of the tree scene, whole and killed, joins the list
 # Version: 1.7.0 — the suite of the tree-scene helper joins the list, before the real launch
 # Version: 1.6.0 — the suite that holds the "Strings check" step joins the list, after its suite
@@ -105,6 +106,11 @@ run_step 'Read-only, repository' 'checks/read-only.sh checks/fixtures/repo'
 run_step 'Read-only, submodule' 'checks/read-only.sh checks/fixtures/submodule'
 run_step 'Read-only, tree scene' 'checks/read-only.sh checks/fixtures/tree-scene'
 run_step 'Read-only, tree scene, killed' 'checks/read-only.sh --kill checks/fixtures/tree-scene'
+# The scene comes before its read-only walk: the walk's fixture is the scene's final state, which the
+# scene asserts, so a scene that fails names the defect before a walk reports a fixture it never
+# produced.
+run_step 'Displayed-file scene' 'cargo test --locked -p ka-reader-bridge --test open_file_scene'
+run_step 'Read-only, displayed-file scene' 'checks/read-only.sh checks/fixtures/open-file-scene'
 run_step 'Read-only suite' 'checks/tests/test_read_only.sh'
 run_step 'No-network dependency list' 'checks/no-network.sh'
 run_step 'No-network suite' 'checks/tests/test_no_network.sh'

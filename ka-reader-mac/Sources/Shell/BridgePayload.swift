@@ -123,25 +123,75 @@ enum BridgePayload {
         }
     }
 
-    /// The payload's wire: exactly one `listings` array.
-    private struct ChangesPayload: Decodable {
-        let changes: [WireChange]
+    /// The open file as the `model_changed` payload writes it: exactly `revision`, `path`,
+    /// `position` and `answer`, which is the file answer's shape. A `pending` answer carries no
+    /// verdict, so it refuses the member.
+    private struct WireOpenFile: Decodable {
+        let revision: UInt64
+        let update: OpenFileUpdate
 
         init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: WireKey.self)
-            try BridgePayload.requireMembers(["listings"], in: container)
-            changes = try container.decode(
-                [WireChange].self, forKey: WireKey(stringValue: "listings"))
+            try BridgePayload.requireMembers(
+                ["revision", "path", "position", "answer"], in: container)
+            revision = try container.decode(UInt64.self, forKey: WireKey(stringValue: "revision"))
+            guard
+                let verdict = try container.decode(
+                    FileAnswer.self, forKey: WireKey(stringValue: "answer")
+                ).verdict
+            else {
+                throw DecodingError.dataCorrupted(
+                    .init(
+                        codingPath: container.codingPath,
+                        debugDescription: "an open file member is never pending"))
+            }
+            update = OpenFileUpdate(
+                path: try container.decode(String.self, forKey: WireKey(stringValue: "path")),
+                verdict: verdict,
+                position: BridgePayload.decodePosition(
+                    try container.decode(String.self, forKey: WireKey(stringValue: "position"))))
         }
     }
 
-    /// The listings a `model_changed` payload carries, in the order written, or `nil` when the
-    /// payload does not conform: one bad listing refuses the whole payload and none is kept. A
-    /// `pending` answer reads as no listing (`nil`), as it does for a folder read.
-    static func decodeChanges(_ payload: Data) -> [(path: String, listing: RootListing?)]? {
+    /// The payload's wire: one `listings` array, and an `open_file` member when the open file
+    /// changed.
+    private struct ChangesPayload: Decodable {
+        let changes: [WireChange]
+        let openFile: WireOpenFile?
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: WireKey.self)
+            let members = Set(container.allKeys.map(\.stringValue))
+            guard members == ["listings"] || members == ["listings", "open_file"] else {
+                throw DecodingError.dataCorrupted(
+                    .init(codingPath: container.codingPath, debugDescription: "the wrong members"))
+            }
+            changes = try container.decode(
+                [WireChange].self, forKey: WireKey(stringValue: "listings"))
+            openFile =
+                members.contains("open_file")
+                ? try container.decode(WireOpenFile.self, forKey: WireKey(stringValue: "open_file"))
+                : nil
+        }
+    }
+
+    /// What one `model_changed` payload carries: the changed listings in the order written, and the
+    /// open file, with the revision it is stamped with, when it changed.
+    struct ModelChanges {
+        let listings: [(path: String, listing: RootListing?)]
+        let openFile: (revision: UInt64, update: OpenFileUpdate)?
+    }
+
+    /// The changes a `model_changed` payload carries, or `nil` when the payload does not conform:
+    /// one bad listing, or an open file member that does not conform, refuses the whole payload and
+    /// none is kept. A `pending` listing answer reads as no listing (`nil`), as it does for a folder
+    /// read.
+    static func decodeChanges(_ payload: Data) -> ModelChanges? {
         guard let decoded = try? JSONDecoder().decode(ChangesPayload.self, from: payload)
         else { return nil }
-        return decoded.changes.map { (path: $0.path, listing: $0.listing) }
+        return ModelChanges(
+            listings: decoded.changes.map { (path: $0.path, listing: $0.listing) },
+            openFile: decoded.openFile.map { (revision: $0.revision, update: $0.update) })
     }
 
     /// The file answer's wire (design § 3 F): one object tagged by `state`, with exactly the
@@ -177,6 +227,7 @@ enum BridgePayload {
             case text
             case cannotDisplay = "cannot_display"
             case failed
+            case gone
             case pending
         }
 
@@ -274,7 +325,7 @@ enum BridgePayload {
                 }
             case .cannotDisplay: expected = ["state", "reason"]
             case .failed: expected = ["state", "condition"]
-            case .pending: expected = ["state"]
+            case .gone, .pending: expected = ["state"]
             }
             guard Set(container.allKeys.map(\.stringValue)) == Set(expected) else {
                 throw DecodingError.dataCorruptedError(
@@ -299,10 +350,29 @@ enum BridgePayload {
                     try container.decode(CannotDisplayReason.self, forKey: .reason))
             case .failed:
                 verdict = .failed(try container.decode(Condition.self, forKey: .condition))
+            case .gone:
+                verdict = .gone
             case .pending:
                 verdict = nil
             }
         }
+    }
+
+    /// The wire form of a reading position, `line=<n>;x=<points>`: a short ASCII form this shell
+    /// alone writes and reads, which the model holds as opaque bytes.
+    static func encodePosition(_ position: ReadingPosition) -> String {
+        "line=\(position.topLine);x=\(position.horizontalOffset)"
+    }
+
+    /// The position `encodePosition` wrote. A string that is anything else reads as the top-left.
+    static func decodePosition(_ wire: String) -> ReadingPosition {
+        let members = wire.split(separator: ";", omittingEmptySubsequences: false)
+        guard members.count == 2,
+            members[0].hasPrefix("line="), members[1].hasPrefix("x="),
+            let line = Int(members[0].dropFirst("line=".count)), line >= 0,
+            let offset = Double(members[1].dropFirst("x=".count)), offset.isFinite, offset >= 0
+        else { return .topLeft }
+        return ReadingPosition(topLine: line, horizontalOffset: offset)
     }
 
     /// The verdict a `ka_reader_select_file` answer carries, or `nil` for `pending`, a NULL buffer and

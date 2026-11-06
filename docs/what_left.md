@@ -5,9 +5,6 @@ Each entry names one thing KA-Reader's Agari or PRD wants that its code did not 
 - **Wanted:** A change on disk — file content, the tree, or Git state — appears in the view automatically, with no user action.
   **Source:** PRD § Core Features, **Live refresh**
   **Missing at:** `4a6ee6f10`
-- **Wanted:** When the open file disappears, the view says so plainly, rather than showing what is gone as if it were still there.
-  **Source:** PRD § UX Notes, **The rule for every live state: the view never lies.**
-  **Missing at:** `4a6ee6f10`
 - **Wanted:** Markdown is rendered by default.
   **Source:** PRD § Core Features
   **Missing at:** `4a6ee6f10`
