@@ -149,7 +149,8 @@ private func liveReceiver(of launch: Launch) throws -> ModelChangesReceiver {
             "the position act's buffer is freed once")
     }
 
-    @Test func aPayloadPushedOnABackgroundThreadWithNewerTextAndThatPositionIsAppliedOnTheMainThread()
+    @Test
+    func aPayloadPushedOnABackgroundThreadWithNewerTextAndThatPositionIsAppliedOnTheMainThread()
         async throws
     {
         let launch = launch(selectAnswer: failedAnswer)
@@ -194,7 +195,8 @@ private func liveReceiver(of launch: Launch) throws -> ModelChangesReceiver {
         #expect(launch.treeActs.heldReads == acts, "and none was queued")
     }
 
-    @Test func aMemberWithARevisionNotGreaterThanTheLastAppliedIsDroppedAndTheListingsBesideItApply()
+    @Test
+    func aMemberWithARevisionNotGreaterThanTheLastAppliedIsDroppedAndTheListingsBesideItApply()
         async throws
     {
         let launch = launch()
@@ -213,7 +215,8 @@ private func liveReceiver(of launch: Launch) throws -> ModelChangesReceiver {
         #expect(workbench.readingPanel.contentView.string == "five\n")
 
         let listing = #"{"state":"observed","entries":[]}"#
-        let older = #"{"listings":[{"path":"","answer":\#(listing)}],"open_file":"#
+        let older =
+            #"{"listings":[{"path":"","answer":\#(listing)}],"open_file":"#
             + #"{"revision":5,"path":"a.txt","position":"line=0;x=0","answer":\#(text("stale\\n"))}}"#
         await push(Data(older.utf8), through: receiver, handle: 503)
         launch.main.releaseAll()
@@ -244,7 +247,8 @@ private func liveReceiver(of launch: Launch) throws -> ModelChangesReceiver {
             openFilePayload(revision: 1, position: "line=0;x=0", answer: stale),
             through: first, handle: 505)
         launch.main.releaseAll()
-        #expect(workbench.readingPanel.contentView.string == "one\ntwo\n", "the stale one drew nothing")
+        #expect(
+            workbench.readingPanel.contentView.string == "one\ntwo\n", "the stale one drew nothing")
 
         await push(
             openFilePayload(revision: 1, position: "line=0;x=0", answer: fresh),
