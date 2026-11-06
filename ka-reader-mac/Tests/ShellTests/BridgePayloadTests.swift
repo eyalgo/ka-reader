@@ -372,6 +372,18 @@ struct BridgePayloadChangesTests {
     private let folder = Entry(name: "src", path: "src", kind: .folder, state: .pending)
     private let file = Entry(name: "a.txt", path: "a.txt", kind: .file, state: .observed)
 
+    @Test func thePositionWireFormRoundTripsAndAMalformedOneDecodesAsTheTopLeft() {
+        let position = ReadingPosition(topLine: 400, horizontalOffset: 30.5)
+
+        #expect(BridgePayload.encodePosition(position) == "line=400;x=30.5")
+        #expect(BridgePayload.decodePosition(BridgePayload.encodePosition(position)) == position)
+        #expect(
+            BridgePayload.decodePosition(BridgePayload.encodePosition(.topLeft)) == .topLeft)
+        for malformed in ["", "top", "line=;x=", "line=-1;x=2", "line=3", "line=3;x=nan", "x=2;line=3"] {
+            #expect(BridgePayload.decodePosition(malformed) == .topLeft, "\(malformed)")
+        }
+    }
+
     @Test func decodeChangesReadsObservedFailedAndPendingAnswers() throws {
         let payload = """
             {"listings":[

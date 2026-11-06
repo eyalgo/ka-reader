@@ -14,8 +14,8 @@ use std::hash::{Hash, Hasher};
 use std::path::PathBuf;
 
 use common::TempDir;
-use ka_reader_bridge::session::Session;
-use ka_reader_core::{Language, TokenClass, highlight};
+use ka_reader_bridge::session::{FileAct, Session};
+use ka_reader_core::{Language, ReadingPosition, TokenClass, highlight};
 use serde_json::{Value, json};
 
 /// Fixture M (CP-317): characters 2, 3 and 4 bytes wide before a span and inside one; 36 bytes.
@@ -43,8 +43,13 @@ fn opened(folder: &std::path::Path) -> Session {
     session
 }
 
+/// The open act a click makes, at the top.
+fn open_act() -> Option<FileAct> {
+    Some(FileAct::Open(ReadingPosition::new(b"top".as_slice())))
+}
+
 fn wire(session: &Session, path: &str) -> Value {
-    serde_json::to_value(session.select_file(path)).expect("the answer serializes")
+    serde_json::to_value(session.select_file(path, open_act())).expect("the answer serializes")
 }
 
 #[test]
@@ -151,7 +156,7 @@ fn test_select_file_answers_fixture_m_byte_for_byte() {
     )
     .expect("the shared wire file exists");
 
-    let serialized = serde_json::to_string(&opened(folder.path()).select_file("m.py"))
+    let serialized = serde_json::to_string(&opened(folder.path()).select_file("m.py", open_act()))
         .expect("the answer serializes");
 
     assert_eq!(serialized, committed);

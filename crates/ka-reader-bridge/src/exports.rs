@@ -94,20 +94,29 @@ pub unsafe extern "C" fn ka_reader_list_tree(path: *const c_char, act: u32) -> *
     })
 }
 
-/// Reads the file at a path relative to the open folder's root and answers its verdict as a JSON
-/// object tagged by `state`: `{"state":"text","content":…,"language":"plain"}`,
-/// `{"state":"cannot_display","reason":…}`, `{"state":"failed","condition":…}`, or
-/// `{"state":"pending"}` when nothing was read (no folder open, or a NULL, empty or non-UTF-8
-/// path). NULL on failure; a non-NULL answer is freed with `ka_reader_free`.
+/// Applies what the reader did to the file at a path relative to the open folder's root. `act`
+/// `0` is the open: the file is selected and opened at `position` (NULL is the empty position), and
+/// the answer is its verdict as a JSON object tagged by `state`:
+/// `{"state":"text","content":…,"language":"plain"}`, `{"state":"cannot_display","reason":…}`,
+/// `{"state":"failed","condition":…}`, or `{"state":"pending"}` when nothing was read (no folder
+/// open, or a NULL, empty or non-UTF-8 path). `act` `1` is the position alone: when the path is the
+/// open file its position becomes `position` (a NULL one applies nothing), nothing is read, and the
+/// answer is `{"state":"pending"}`. Any other `act` applies nothing and answers `pending`. The
+/// position's bytes are held as they are, never parsed. NULL on failure; a non-NULL answer is freed
+/// with `ka_reader_free`.
 ///
 /// # Safety
 ///
-/// `path` is NULL, or a NUL-terminated string valid for the call.
+/// `path` and `position` are each NULL, or a NUL-terminated string valid for the call.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn ka_reader_select_file(path: *const c_char) -> *mut KAReaderBuffer {
+pub unsafe extern "C" fn ka_reader_select_file(
+    path: *const c_char,
+    act: u32,
+    position: *const c_char,
+) -> *mut KAReaderBuffer {
     // SAFETY: forwarded from the caller.
     guarded(BufferOrigin::SelectFile, || unsafe {
-        select_entry(&SESSION, path)
+        select_entry(&SESSION, path, act, position)
     })
 }
 

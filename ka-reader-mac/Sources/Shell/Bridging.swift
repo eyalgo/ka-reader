@@ -1,6 +1,12 @@
 import Foundation
 import Surfaces
 
+/// What the reader did to a file: opened it by a click, or moved the position in the open file.
+package enum FileAct: Sendable {
+    case open
+    case position
+}
+
 /// The five exported functions, and nothing else (CP-86, CP-97).
 ///
 /// A `nil` return is the bridge's failure value: a panic was caught or no buffer could be made.
@@ -17,8 +23,10 @@ package protocol Bridging: Sendable {
     /// `ka_reader_list_tree`. The empty path is the root; the act is what the reader did.
     func listTree(path: String, act: DisclosureAct) -> BridgeBuffer?
 
-    /// `ka_reader_select_file`. The path is relative to the open folder's root.
-    func selectFile(path: String) -> BridgeBuffer?
+    /// `ka_reader_select_file`. The path is relative to the open folder's root; the act is what the
+    /// reader did to the file, and the position is the wire form `BridgePayload.encodePosition`
+    /// writes.
+    func selectFile(path: String, act: FileAct, position: String) -> BridgeBuffer?
 
     /// `ka_reader_read_git`. It takes no argument: the open folder is the one read.
     func readGit() -> BridgeBuffer?

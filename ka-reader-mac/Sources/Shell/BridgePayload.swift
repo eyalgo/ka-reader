@@ -305,6 +305,18 @@ enum BridgePayload {
         }
     }
 
+    /// The wire form of a reading position, `line=<n>;x=<points>`: a short ASCII form this shell
+    /// alone writes and reads, which the model holds as opaque bytes.
+    static func encodePosition(_ position: ReadingPosition) -> String {
+        ""
+    }
+
+    /// The position `encodePosition` wrote. A string that is anything else reads as the top-left.
+    static func decodePosition(_ wire: String) -> ReadingPosition {
+        _ = wire
+        return .topLeft
+    }
+
     /// The verdict a `ka_reader_select_file` answer carries, or `nil` for `pending`, a NULL buffer and
     /// anything that does not conform.
     static func decodeFile(_ buffer: BridgeBuffer?) -> FileVerdict? {

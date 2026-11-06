@@ -34,6 +34,13 @@ final class FakePanel: FolderChoosing {
     }
 }
 
+/// One `selectFile` call the bridge fake saw.
+struct SelectCall: Equatable, Sendable {
+    let path: String
+    let act: FileAct
+    let position: String
+}
+
 /// A receiver the bridge fake was handed, held weakly: the bridge's real pointer to it is unretained.
 struct WeakReceiver {
     weak var receiver: ModelChangesReceiver?
@@ -63,6 +70,7 @@ final class RecordingBridge: Bridging, @unchecked Sendable {
         var listedActs: [DisclosureAct] = []
         var receivers: [WeakReceiver] = []
         var selectedPaths: [String] = []
+        var selectCalls: [SelectCall] = []
         var gitReadCount = 0
         var handedOut: [UInt] = []
         var freed: [UInt] = []
@@ -115,6 +123,8 @@ final class RecordingBridge: Bridging, @unchecked Sendable {
     /// has let go. Held weakly, so a test can see when the flow releases one.
     var receivers: [ModelChangesReceiver?] { lock.withLock { state.receivers.map(\.receiver) } }
     var selectedPaths: [String] { lock.withLock { state.selectedPaths } }
+    /// Every `selectFile` call, with its act and the position string it carried.
+    var selectCalls: [SelectCall] { lock.withLock { state.selectCalls } }
     var gitReadCount: Int { lock.withLock { state.gitReadCount } }
     var handedOut: [UInt] { lock.withLock { state.handedOut } }
     var freed: [UInt] { lock.withLock { state.freed } }
@@ -143,10 +153,11 @@ final class RecordingBridge: Bridging, @unchecked Sendable {
         }
     }
 
-    func selectFile(path: String) -> BridgeBuffer? {
+    func selectFile(path: String, act: FileAct, position: String) -> BridgeBuffer? {
         log.record("select_file")
         return lock.withLock {
             state.selectedPaths.append(path)
+            state.selectCalls.append(SelectCall(path: path, act: act, position: position))
             return makeBuffer(from: state.selectAnswers[path] ?? state.selectAnswer)
         }
     }
@@ -297,7 +308,7 @@ final class ThreadRecordingBridge: Bridging, @unchecked Sendable {
         return makeBuffer(from: payload, named: "\(prefix)\(path)")
     }
 
-    func selectFile(path: String) -> BridgeBuffer? {
+    func selectFile(path: String, act: FileAct, position: String) -> BridgeBuffer? {
         record("select_file:\(path)")
         guard let payload = selectAnswers[path] else { return nil }
         return makeBuffer(from: payload, named: "select:\(path)")

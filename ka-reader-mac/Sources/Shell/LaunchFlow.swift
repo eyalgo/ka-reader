@@ -177,6 +177,9 @@ package final class LaunchFlow {
         workbench.selectFile = { [bridge, reader] path, answer in
             reader.run({ Self.verdict(at: path, through: bridge) }, deliver: answer)
         }
+        // A scroll is the position act: it goes in order on the tree-act queue, frees its buffer
+        // and draws nothing.
+
         workbench.readGit = { [bridge, reader] answer in
             reader.run({ Self.gitItem(through: bridge) }, deliver: answer)
         }
@@ -196,9 +199,18 @@ package final class LaunchFlow {
     private nonisolated static func verdict(at path: String, through bridge: Bridging)
         -> FileVerdict?
     {
-        let buffer = bridge.selectFile(path: path)
+        let buffer = bridge.selectFile(
+            path: path, act: .position, position: "")
         defer { release(buffer, through: bridge) }
         return BridgePayload.decodeFile(buffer)
+    }
+
+    private nonisolated static func send(
+        _ position: ReadingPosition, forFileAt path: String, through bridge: Bridging
+    ) {
+        let buffer = bridge.selectFile(
+            path: path, act: .position, position: BridgePayload.encodePosition(position))
+        release(buffer, through: bridge)
     }
 
     private nonisolated static func listing(

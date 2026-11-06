@@ -351,6 +351,12 @@ fn test_the_exported_set_and_the_headers_declarations_stay_the_five() {
         header.contains("KAReaderBuffer * ka_reader_list_tree(const char * path, uint32_t act);"),
         "{header}"
     );
+    assert!(
+        header.contains(
+            "KAReaderBuffer * ka_reader_select_file(const char * path, uint32_t act, const char * position);"
+        ),
+        "{header}"
+    );
 }
 
 #[test]
