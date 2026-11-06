@@ -1,10 +1,12 @@
 import Foundation
 import Surfaces
 
-/// What the reader did to a file: opened it by a click, or moved the position in the open file.
+/// What the reader did to a file: selected it by a click, opened it by that click, or moved the
+/// position in the open file. A click crosses as the selection act first, then the open.
 package enum FileAct: Sendable {
     case open
     case position
+    case select
 }
 
 /// The five exported functions, and nothing else (CP-86, CP-97).
@@ -25,7 +27,7 @@ package protocol Bridging: Sendable {
 
     /// `ka_reader_select_file`. The path is relative to the open folder's root; the act is what the
     /// reader did to the file, and the position is the wire form `BridgePayload.encodePosition`
-    /// writes.
+    /// writes. The selection act carries one too, and the bridge does not read it.
     func selectFile(path: String, act: FileAct, position: String) -> BridgeBuffer?
 
     /// `ka_reader_read_git`. It takes no argument: the open folder is the one read.
