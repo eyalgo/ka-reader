@@ -131,7 +131,21 @@ None.
   statement.
 - **If overridden:** S-7's observable half drops the sentence and the beta's statement has no bar
   in this document until the UXD carries it; the `supersedes` row on S-8 goes with it.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm — with three additions for the fold, all on S-7's observable half: (1) the
+  statement is drawn only once the Git state it describes has been read — before the root finding answers
+  the view shows pending and no statement, and over a read that failed or stopped (UX-S3 Error, UX-I16) none
+  stands, since the sentence is itself an indicator of a state (UX-I13; the instance fence
+  `system/experience/visual_restrictions.md` § `no-unestablished-state`); (2) in a plain folder neither
+  surface says it, as the UXD stands — the view is wordless and the tree carries no markers (UX-I17) — and
+  the README's known gaps carry the beta's limit for that case; (3) "not by colour or a tooltip alone" rests
+  on the PRD's "say plainly" and its "quietly shows that state as if it were current is not admitted"
+  (§ UX Notes, the beta's case), not on UX-A2, which carries the colour half only — the tooltip is drawn
+  under the pointer in the key window alone (`docs/DESIGN.md` § Components "The tooltip"), and a stranger
+  who never hovers never reads it. The UXD half is raised rather than named: `docs/UXD_open_issues.md`
+  § 2.1, opened by this run at `ka-reader@454eda2`, carries the statement as a state of UX-S3 and UX-S2
+  with its bounds and its withdrawal, for a `product-uxd` fold reading PRD v18; and
+  `docs/CONTENT_open_issues.md` § 2.1, opened at `ka-reader@1c46882`, carries the standing sentence S-7's
+  command half greps for. The reasoning is in `docs/trail/sdd/self_answer-77.md` § 2.4.
 
 ### 2.5 The SRS's FR-20 and AC-11 say "from the first release"; PRD v18 places the theme after the first release — the SDD follows the PRD, and the SRS is owed a revision
 - **Raised by:** CTO — 2026-11-06
