@@ -543,10 +543,11 @@ impl PathReports {
     }
 }
 
-/// The listings one model holds that an earlier one did not hold, or held with other entries or
-/// another state: what a shell must draw again after the model changed. A listing the later model
-/// dropped is not in it. Each comes as its request path (the root as the empty path) and its
-/// listing, in path order with the root first.
+/// What one model holds that an earlier one did not hold: the listings held with other entries or
+/// another state, and the open file when its path or its view differs. This is what a shell must
+/// draw again after the model changed. A listing the later model dropped is not in it. Each
+/// listing comes as its request path (the root as the empty path) and its listing, in path order
+/// with the root first.
 ///
 /// # Examples
 ///
@@ -562,6 +563,7 @@ impl PathReports {
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct TreeChanges {
     listings: Vec<(PathBuf, ItemState<Vec<Entry>>)>,
+    open_file: Option<OpenFile>,
 }
 
 impl TreeChanges {
@@ -591,11 +593,11 @@ impl TreeChanges {
     /// assert!(before.changes_since(&before).open_file().is_none());
     /// ```
     pub fn open_file(&self) -> Option<&OpenFile> {
-        todo!("task 4: the open file in the change set")
+        self.open_file.as_ref()
     }
 
     pub fn is_empty(&self) -> bool {
-        self.listings.is_empty()
+        self.listings.is_empty() && self.open_file.is_none()
     }
 }
 
@@ -805,7 +807,8 @@ impl FolderModel {
     }
 
     /// The listings this model holds that `earlier` did not hold, or held with other entries or
-    /// another state. A listing `earlier` held that this model no longer holds is not listed.
+    /// another state, and the open file when `earlier` held none or another path or view. A
+    /// listing `earlier` held that this model no longer holds is not listed.
     ///
     /// # Examples
     ///
@@ -833,7 +836,18 @@ impl FolderModel {
             })
             .map(|(path, held)| (path, held.entries.clone()))
             .collect();
-        TreeChanges { listings }
+        let open_file = self
+            .open_file()
+            .filter(|now| {
+                earlier
+                    .open_file()
+                    .is_none_or(|before| before.path != now.path || before.view != now.view)
+            })
+            .cloned();
+        TreeChanges {
+            listings,
+            open_file,
+        }
     }
 
     pub fn open_file(&self) -> Option<&OpenFile> {
