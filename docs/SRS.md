@@ -2,7 +2,7 @@
 
 **Status:** Settled
 **Owner:** CTO
-**Version:** 13 — one change, with its authorization. C-12 follows PRD v16: the product is published from `github.com/eyalgo/ka-reader`, under the maintainer's personal GitHub handle `eyalgo`, in place of the `kensaiapp` organisation — the owner's answer at `docs/trail/srs/cycle-11.md` § 1.1 (RN-38). C-7 and AC-14 follow C-12 without a change of their own. Nothing is left for the owner to answer; the companion is closed.
+**Version:** 14 — follows PRD v17 – v18, derived against PRD v18, on the owner's answer at `docs/trail/srs/cycle-12.md` § 2.1 (RN-39). FR-20 and AC-11 drop "from the first release": the choice between the two themes, kept between sessions, is in place before 1.0.0. FR-35 and AC-26 carry the beta's statement as a system state: where Git state is read at open and not followed, the Git view and the tree's markers say so. C-12 gains the public history checked for anything private; AC-14 inspects it and the README's known gaps. The finish line's path is repaired (RN-40). Nothing is left for the owner to answer; the companion is closed.
 **Inputs read:** PRD Settled
 
 > The SRS is the technical source of truth: the system-level **what**, derived from the PRD and
@@ -31,26 +31,33 @@ and no configuration.
 ## 2. Scope
 
 **This SRS covers** the whole product the terminus requires — not v1 alone. The terminus it is
-scoped against is the project's 上がり Agari (`system/projects/ka-reader/agari.md`): the v1 cut the
+scoped against is the project's finish line (`system/projects/ka-reader/finish_line.md`): the v1 cut the
 PRD locks in (file tree, reading with highlighting, Git status, live refresh) **plus** the three
-deferred features the Agari places inside done — diff view, commit history, and switching the
+deferred features the finish line places inside done — diff view, commit history, and switching the
 viewed folder without restarting (always one at a time). Requirements below that the PRD places
 beyond v1 are marked *(beyond v1)*; they are product scope, and when they are delivered is the
 Delivery Plan's, not this document's.
+
+**The first public release is a beta, below 1.0.0** *(traces to: PRD Scope (In) "The first public
+release — a beta")*. Which requirements a release meets is delivery, not this document's, with
+the fixed points the PRD itself sets: what binds the first public release (C-4, C-7, C-12) binds
+the beta; the theme choice (FR-20) and the Git view following the disk (FR-14's Git half, FR-33's
+live clause) are in place before 1.0.0; and where Git state is read at open and not followed, the
+view says so (FR-35). See RN-39.
 
 **The input is a local folder, a Git repository or not.** A folder that is not a Git repository —
 a plain folder — is inside v1 and inside the terminus: it is an input the whole surface takes, not
 a capability added to it. The diff view and the commit history are Git's and exist only where the
 folder is a repository (FR-33); the switch takes any folder *(traces to: PRD Scope (In) "a Git
 repository or not"; owner-confirmed `docs/trail/prd/cycle-9.md` § 1.1, `docs/trail/prd/cycle-10.md`
-§ 2.3; the terminus widened to the same input: `system/projects/ka-reader/agari.md`; see RN-31)*.
+§ 2.3; the terminus widened to the same input: `system/projects/ka-reader/finish_line.md`; see RN-31)*.
 
 **Deliberately outside this SRS, with the terminus as the reason** — considered and bounded, not
 forgotten:
 
 - **Sidebar search / filter, pane resizing, keyboard navigation** — the PRD defers them beyond
-  v1, and the Agari places them outside done; KA-Reader is done without them. One accepted
-  consequence, carried from the Agari: the product is mouse-driven and makes no
+  v1, and the finish line places them outside done; KA-Reader is done without them. One accepted
+  consequence, carried from the finish line: the product is mouse-driven and makes no
   keyboard-accessibility promise — with keyboard navigation outside the terminus, that absence is
   permanent, not deferred. History filtering and search stay outside done with them — adjacent to
   the sidebar search, and placed out by the owner when widening the history surface *(owner:
@@ -58,10 +65,10 @@ forgotten:
   history is presented against — is not a filter or a search, and does not reopen this exclusion
   *(owner: `docs/trail/srs/cycle-3.md`)*.
 - **A front end for agent workflows and repository-inspection services** — the PRD's further-out
-  growth direction; the Agari names it as where a next product might go, not where this one
+  growth direction; the finish line names it as where a next product might go, not where this one
   docks. Consequently this system exposes no programmatic surface (§5.2).
 - **Linux and Windows** — the PRD promises macOS only for v1 and states the other two as an
-  exclusion (C-11). The Agari draws the dock as three named surfaces beyond v1 and no platform,
+  exclusion (C-11). The finish line draws the dock as three named surfaces beyond v1 and no platform,
   so a second platform sits outside done — the owner's confirmed reading (RN-30).
 - **The Markdown raw-source switch, and a link in a rendered Markdown file opening its target** —
   the owner placed the switch outside done (`docs/trail/srs/cycle-5.md` §2.3), and made the
@@ -120,8 +127,8 @@ revisitable (FR-19); telemetry and non-essential network calls.
   does in a repository (FR-4 – FR-10, FR-14 – FR-16, FR-23 – FR-25, FR-27 – FR-32). The Git view
   is present and shows nothing: no message, no explanation, no offer of a next step — nothing
   that invites creating or initialising a repository; the tree carries no changed-file markers;
-  and every Git-derived presentation (FR-6, FR-12, FR-13, FR-17, FR-18, FR-22, FR-26) presents
-  nothing. The system needs nothing from Git in this state. It is a working state, not a failure
+  and every Git-derived presentation (FR-6, FR-12, FR-13, FR-17, FR-18, FR-22, FR-26, FR-35)
+  presents nothing. The system needs nothing from Git in this state. It is a working state, not a failure
   (FR-3). That an empty Git view cannot by itself tell a plain folder apart from a failure to read
   a repository is accepted: a fault the user must know about is NFR-3's and NFR-11's, never a
   message in this state. *(traces to: PRD Core Features "Git view … When it is not, the Git view
@@ -225,7 +232,10 @@ revisitable (FR-19); telemetry and non-essential network calls.
 ### 3.5 Live refresh
 
 - **FR-14:** A change on disk — file content, the tree, or Git state — appears in the view
-  automatically, with no user action. *(traces to: PRD Core Features "Live refresh")*
+  automatically, with no user action. *(traces to: PRD Core Features "Live refresh")* Where its
+  Git half is not in place, FR-35 says what the view shows instead; that half stays a v1
+  requirement, in place before 1.0.0 *(traces to: PRD Scope (In) "The Git view following the
+  disk stays part of what v1 means"; RN-39)*.
 - **FR-15:** The system has no manual refresh control. *(traces to: PRD UX Notes "there is no
   refresh control")*
 - **FR-16:** The system tolerates the viewed folder being changed by another process at any
@@ -242,6 +252,20 @@ revisitable (FR-19); telemetry and non-essential network calls.
   folder's current state within the refresh bar (NFR-2), or explicitly marked as no longer
   there; the view never presents stale content as current. *(traces to: PRD UX Notes "the view
   never lies"; crash-safety of the same event is FR-16's; the word widened at v8: RN-31)*
+- **FR-35:** Where the folder is a repository (FR-33) and its Git state is read once, when the
+  folder is opened, and not followed, the Git view and the tree's changed-file markers say plainly
+  that they show the Git state read when the folder was opened — never presenting that state as
+  current. Where Git state is followed (FR-14), the statement does not appear, because it would
+  no longer be true. In a plain folder it does not appear either: the Git view stays empty and
+  the tree carries no markers (FR-34). One case is left uncovered on the surface: in the
+  read-at-open state, a repository created at the opened folder's root after it was opened is not
+  followed (FR-33's live clause), and the view goes on presenting a plain folder, with no
+  statement; the README's known gaps are where the user is told (AC-14). FR-14's Git half,
+  FR-33's live clause and AC-7's Git clauses do not relax: they are met before 1.0.0. *(traces to:
+  PRD UX Notes "the view never lies" — "or, in the beta's Git view, as read when the folder was
+  opened" — and its bullet "In the beta, before the Git view follows the disk", Scope (In) "The
+  first public release — a beta"; owner-confirmed `docs/trail/prd/cycle-15.md` § 3.1 and
+  `docs/trail/srs/cycle-12.md` § 2.1; see RN-39)*
 
 ### 3.6 Beyond v1, inside the terminus
 
@@ -275,8 +299,13 @@ revisitable (FR-19); telemetry and non-essential network calls.
 
 ### 3.7 Appearance & own state
 
-- **FR-20:** The system offers a dark and a light theme from the first release. *(traces to: PRD
-  UX Notes "Dark and light themes from the start")*
+- **FR-20:** *(changed)* The system offers a dark and a light theme, and the user chooses between
+  them; the choice is kept between sessions (FR-21). Both themes and the choice are in place
+  before 1.0.0, and a release below 1.0.0 is not held to them. *(traces to: PRD UX Notes "dark and
+  light themes from the start", Scope (In) "The first public release — a beta" — the beta waits
+  "not for choosing a theme and keeping that choice", which is "in place before 1.0.0";
+  owner-confirmed `docs/trail/prd/cycle-16.md` § 3.1 and `docs/trail/srs/cycle-12.md` § 2.1; see
+  RN-39)*
 - **FR-21:** The system's own remembered state — theme choice, window state, anything kept
   between sessions — persists in the tool's own data location on the machine, never inside the
   viewed folder. *(traces to: PRD Data & Privacy own-state boundary — "never inside the folder it
@@ -397,7 +426,7 @@ see RN-8)*
   (FR-4). Navigation is text-first, icons secondary; the layout explains itself — no onboarding
   surface, no configuration surface. *(traces to: PRD UX Notes)*
 - Dark and light themes (FR-20). Mouse-driven; no keyboard-accessibility promise (§2, from the
-  Agari — permanent). Beyond that line, v1 makes no assistive-technology promise: its
+  finish line — permanent). Beyond that line, v1 makes no assistive-technology promise: its
   accessibility surface is what the product already carries — the two themes, text-first
   navigation — a v1-scoped statement, not a permanent bound (RN-18). *(traces to: PRD UX Notes
   "The bounds v1 draws"; owner-confirmed: `docs/trail/prd/cycle-5.md`)*
@@ -496,10 +525,13 @@ see RN-8)*
   §1.2; the version-floor placement: RN-21)*
 - **C-12:** Public identity: the product is published from `github.com/eyalgo/ka-reader`, under
   the maintainer's personal GitHub handle `eyalgo`, and maintained under that handle; that
-  repository is where C-7's channel is enabled and where releases are offered. *(traces to: PRD
+  repository is where C-7's channel is enabled and where releases are offered. The repository is
+  made public with its own commit history, not as a fresh copy, and only once that history has
+  been checked for anything private. *(traces to: PRD
   Assumptions "Public identity"; owner-confirmed: `docs/trail/prd/cycle-7.md` §1.1; the personal
   handle: changed at v13 with PRD v16, owner-confirmed `docs/trail/prd/cycle-14.md` § 3.1 and
-  `docs/trail/srs/cycle-11.md` § 1.1; see RN-38)*
+  `docs/trail/srs/cycle-11.md` § 1.1; see RN-38; the public history: PRD v18, owner-confirmed
+  `docs/trail/prd/cycle-16.md` § 3.1 and `docs/trail/srs/cycle-12.md` § 2.1; see RN-39)*
 - **C-13:** The README states the support posture in the PRD's terms — "Issues and questions are
   welcome and read when there is time, with no response time, no commitment to fix, and no
   commitment that a fix ever arrives" (`docs/PRD.md` § Assumptions, "Support posture") — and
@@ -549,7 +581,10 @@ see RN-8)*
   guided by the README alone, reaches a viewed file of their own repository in ≤ 5 minutes.
   Verification is a timed manual walk — deliberately not automated, because the thing measured
   is a stranger's path. *(covers: NFR-13, C-3, C-9, C-11)*
-- **AC-11:** Both themes are present and usable from the first release. *(covers: FR-20)*
+- **AC-11:** *(changed)* At 1.0.0, and at every release from the one that ships them, both themes
+  are present and usable, and the theme chosen in one session is the theme the next session
+  opens in. A release below 1.0.0 that ships without them does not fail this criterion.
+  *(covers: FR-20, FR-21; the first-release clause dropped at v14: RN-39)*
 - **AC-12:** At the closing release, the diff view (staged distinguished from unstaged) — opened
   by activating a changed file's row in the Git view, with the file still read from the tree —
   the commit history — against a repository whose history holds more than one branch: the
@@ -570,10 +605,16 @@ see RN-8)*
   README first screen carries its four items, its one-sentence description does not call the
   tool a web app, the README states sidebar search / filter, pane resizing and keyboard
   navigation as outside the product's done rather than promising them, and the README states the
-  support posture in the PRD's terms; the version number obeys C-6; SECURITY.md and the private
+  support posture in the PRD's terms; where the release ships FR-35's read-at-open state, the
+  README's known gaps state that the Git view and the tree's changed-file markers show the Git
+  state read when the folder was opened, and that a repository created at the folder's root after
+  it is opened is not followed — and where the release follows Git state, the README carries no
+  such line; the version number obeys C-6; SECURITY.md and the private
   reporting channel exist per C-7, on the repository C-12 names, and SECURITY.md promises nothing
-  the PRD does not. *(covers: C-4 – C-7, C-9, C-12, C-13; widened at v5: RN-24; the two README
-  lines added at v8: RN-34)*
+  the PRD does not; and before the repository was made public, its own commit history was checked
+  for anything private, per C-12. *(covers: C-4 – C-7, C-9, C-12, C-13, FR-35; widened at v5:
+  RN-24; the two README lines added at v8: RN-34; the known-gaps line and the history check added
+  at v14: RN-39)*
 - **AC-15:** With no file selected the empty state prompts selection; pointed at a path that does
   not exist, is not a folder, or cannot be read, the system states plainly what went wrong and
   what to do next, and a filesystem check shows it touched nothing. *(covers: FR-3, FR-4; widened
@@ -616,6 +657,14 @@ see RN-8)*
   (AC-6); the other two behave exactly as AC-24. A linked worktree and a submodule's folder, each
   opened at its own top level, show their own Git state, not the enclosing repository's.
   *(covers: FR-33; added at v8: RN-32)*
+- **AC-26:** Against a build that reads Git state once, at open, and does not follow it: opened at
+  a repository with changed files, the Git view and the tree's changed-file markers each carry a
+  plain statement that they show the Git state read when the folder was opened; an external Git
+  staging operation after open leaves the state shown unchanged and still under that statement,
+  never presented as current. Opened at a plain folder, the same build behaves exactly as AC-24
+  — no statement, no text, no marker. Against a build that follows Git state, neither surface
+  carries the statement, and AC-7 applies. Verification: inspection of both surfaces in each
+  case. *(covers: FR-35, FR-34; added at v14: RN-39)*
 
 ---
 
@@ -839,7 +888,7 @@ see RN-8)*
   other unit of Goals, Success Metrics, Key Use Cases, Core Features, UX Notes, Scope, Out of
   Scope, Assumptions, Dependencies, Data & Privacy or Risks moved between PRD v6 and v8 beyond
   the four RN-21 – RN-24 derive *(re: §2 – §8)*.
-- **RN-26:** *(the terminus, at v5)* The Agari (`system/projects/ka-reader/agari.md`) is unchanged
+- **RN-26:** *(the terminus, at v5)* The Agari (`system/projects/ka-reader/finish_line.md`) is unchanged
   since v4 of this SRS and predates PRD v7/v8. Two of v5's additions sat against its edge and
   were routed to the owner rather than read into it — the platform (RN-21) and the raw-source
   switch (RN-23); the owner placed both outside done (RN-29, RN-30). Its second condition quotes the promise as "no non-essential network call";
@@ -901,7 +950,7 @@ see RN-8)*
   narrows to the PRD's three — a path that does not exist, is not a folder, or cannot be read —
   and AC-15 with it. AC-24 is the plain folder's criterion end to end, including that finding out
   created nothing. Time-to-first-success stays read against a repository (NFR-13), as the PRD's
-  metric does. The terminus (`system/projects/ka-reader/agari.md`) widened to the same input on the
+  metric does. The terminus (`system/projects/ka-reader/finish_line.md`) widened to the same input on the
   owner's direction, its integrity bar now reading "no write to the viewed folder — whether or
   not it is a repository"; §2 scopes against it as widened, and nothing in this revision sits
   against its edge *(re: as listed; PRD source: Purpose, Success Metrics, Key Use Case 4, Core
@@ -1025,3 +1074,50 @@ see RN-8)*
   and stays the record of that. The PRD states neither when the repository becomes public nor how
   its CI is paid for, so neither lands as a requirement here; C-7 already binds the channel to the
   first public release *(re: C-12, C-7, AC-14, RN-24; PRD source: Assumptions "Public identity")*.
+- **RN-39:** *(changed — FR-20, AC-11; added — FR-35, AC-26, C-12's public history, AC-14's two
+  clauses, §2's beta paragraph; upstream: PRD v17 – v18)* PRD v17 and v18 make the first public
+  release a beta below 1.0.0 that comes once the tree and the open file follow the disk and
+  Markdown reads rendered, and waits neither for the Git view to follow the disk nor for choosing
+  a theme and keeping that choice; both are in place before 1.0.0 (`docs/PRD.md` § Scope (In),
+  "The first public release — a beta"; owner: `docs/trail/prd/cycle-15.md` § 3.1,
+  `docs/trail/prd/cycle-16.md` § 3.1). The owner confirmed the fold, with four additions, at
+  `docs/trail/srs/cycle-12.md` § 2.1; its reasoning is `docs/trail/srs/self_answer-4.md` § 2.1.
+  **FR-20 is narrowed, not emptied:** what moves past the beta is the choice and its keeping, so
+  FR-20 keeps its trace to § UX Notes "dark and light themes from the start" and states that both
+  themes and the kept choice are in place before 1.0.0; the beta is not held to the themes, on
+  § Scope (In)'s own words, not on C-6, which says only that anything may change before 1.0.0.
+  AC-11 follows and, because FR-20 now names the kept choice, checks it across a restart (FR-21).
+  **FR-35 carries the beta's statement as a system state, not a release** — the way RN-37 worded
+  FR-13 — so §2's rule that delivery timing stays out of this document holds; it traces to § UX
+  Notes "the view never lies" (the rule sentence and its beta bullet) and to § Scope (In). That the
+  statement is absent where Git state is followed is the same rule's consequence: a statement that
+  the state is from open, shown beside a followed state, would present the view as staler than it
+  is. FR-34 bounds it — no message in a plain folder's Git view — so the case of a repository
+  created at the root after open, in the read-at-open state, has no surface that could say so
+  without breaking FR-34; it is named in FR-35 and told only in the README's known gaps, which
+  AC-14's release inspection checks, beside C-9's README items. FR-14 gains a pointer to FR-35 and
+  the PRD's "stays part of what v1 means"; FR-14's Git half, FR-33's live clause and AC-7's Git
+  clauses keep their content. FR-34's list of Git-derived presentations gains FR-35, which in a
+  plain folder presents nothing. **C-12 gains the public history:** the repository goes public
+  with its own commit history, once that history is checked for anything private (`docs/PRD.md`
+  § Assumptions, "Public identity"), carried on C-7's footing — a repository obligation that binds
+  before the first public release and is checkable at release — so AC-14 inspects it; RN-24's
+  "archived visibly" landed as no requirement because it is an act after maintenance ends, which
+  this is not. The beta is the first public release for C-4, C-7 and AC-14, whose existing
+  clauses stand. The beta's purpose — to be used and shown as the public evidence of what
+  kensaiapp builds, linked from kensaiapp's public repository — is a product reason with no system
+  behaviour and lands as no requirement *(re: FR-14, FR-20, FR-34, FR-35, C-12, AC-11, AC-14,
+  AC-26, §2; PRD source: Scope (In), UX Notes "the view never lies", Assumptions "Public
+  identity")*.
+- **RN-40:** *(reverse walk, PRD v16 → v18; the finish line's path)* Every unit PRD v17 – v18 moved
+  lands in RN-39 or here: the Version line restates § Scope (In) and § Assumptions; the § UX Notes
+  rule sentence and its new bullet are FR-35's; § Scope (In)'s beta paragraph is §2's, FR-20's,
+  FR-35's and AC-14's; § Assumptions "Public identity" is C-12's. The PRD's remaining v18 edits
+  rename its pointer to the project's done — "Agari", at `system/projects/ka-reader/agari.md`,
+  now the finish line at `system/projects/ka-reader/finish_line.md` (`docs/PRD.md` § Out of
+  Scope, § UX Notes "The bounds v1 draws", § Assumptions "Versioning") — and move no product fact.
+  The old path is gone from the instance (`<CORE>/doctrine/setup/kensaiapp_structure.md` § 6,
+  the migration map), so §2, §5.1, RN-26 and RN-31 now name the finish line and its path; the
+  terminus they describe is the same file. Elsewhere in these notes "the Agari" stays as written
+  and names that same finish line. No other PRD unit moved between v16 and v18 *(re: §2, §5.1,
+  RN-26, RN-31; PRD source: Out of Scope, UX Notes, Assumptions)*.
