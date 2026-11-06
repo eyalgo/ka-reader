@@ -82,7 +82,48 @@ None.
   delivery Architect designing the beta's change has no drawn state to fit the statement into and
   decides its place, its bounds and its withdrawal at the change — structural UX decided after the
   architecture, which is the failure this seat exists to prevent.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm, with four additions for the fold, decided in the CDO's seat.
+  (1) **The case the item leaves open is now settled upstream, and the lean stands on it.** The
+  SRS settled at v14 after this item was written (`ka-reader@c7440d7`). Its FR-35 and AC-26
+  (`docs/SRS.md:L255-L264`, `:L660-L667`) carry the statement as a system state, and they name
+  this very case as uncovered on the surface. In the read-at-open state, a repository created at
+  the opened folder's root after it was opened is not followed: the view goes on presenting a plain
+  folder with no statement, and the README's known gaps tell the user. So UX-I17's wordless view
+  carries no statement in the beta, as the draft leans. The draft's own reason, the owner's wordless
+  view (`docs/trail/prd/cycle-10.md` § 2.2), still holds, and drawing it the other way would
+  contradict a settled requirement. RN-28's *"a transition that cannot occur is not a state this
+  document draws differently"* was written for a narrowing that removes the transition. The beta
+  keeps the change on disk and drops only the following, which is why the SRS names the case and
+  this document should too.
+  (2) **The tree's line stands on a clean repository too.** Each surface carries the statement
+  wherever it shows Git state it read at open. On the tree that includes a repository with nothing
+  changed: no markers in a repository is itself the Git state read at open. In the beta an agent's
+  later edits reach the tree with no marker, and without the line that reads as *unchanged*, which
+  is the driving scenario misled (UX-U2). The draft's "at the head of the tree's markers" therefore
+  reads *at the head of the tree*. The line is absent only where no Git state is shown: before the
+  read (UX-S2 and UX-S3 Loading, UX-I13), in a plain folder (UX-I17), and where finding out
+  stopped (UX-I16).
+  (3) **A Git-state failure observed at open does not recover in the beta, and the UXD says so.**
+  UX-S3 Error ("recovers on refresh"), UX-F2's failure line ("recovers on a later refresh") and
+  UX-I16 ("the next successful read replaces it") each assume a later Git read. In the beta there
+  is none (`docs/SRS.md` FR-35; `docs/SDD.md` § 6 S-4 *Not in this slice*, S-8 *Rests on*). The fold
+  carries the beta's case on each. An item observed unreadable at open, such as a lock or an
+  unreadable file, is part of the state read when the folder was opened, and the view's line stands
+  over it as over the rest of the view. It stays until the folder is opened again, which in v1
+  means starting KA-Reader again (UX-S4). The surface promises no recovery, and the route out stays
+  the tree and the panel (UX-I10, UX-I14). So the draft's bound (3), "never over a fault (UX-S3
+  Error, UX-I16)", narrows to the unexplained fault, whose slot draws only that the work stopped
+  (UX-I16). The words are `docs/CONTENT.md`'s, and its lock message promises the recovery the beta
+  never makes. That is raised at `docs/CONTENT_open_issues.md` § 2.2 (`ka-reader@39e9229`).
+  (4) **UX-F3's and UX-I17's live sentences carry the beta's bound.** UX-F3 has Git state follow
+  the disk, and UX-I17 has a repository appearing or leaving the root mid-session arrive "as every
+  change does". In the beta neither is true (`docs/SDD.md` § 6 S-8 *Delivers*). Each sentence says
+  what holds instead. The tree and the open file follow the disk. Git state stays as read at open,
+  under the statement. A repository leaving the root leaves the read-at-open view standing under
+  its statement, and one appearing is (1)'s uncovered case.
+  The draft's placement, one line on the Git view beside the short status and one at the head of
+  the tree, in words on the surface, is confirmed as this seat's call. So are its withdrawal and the
+  words being `docs/CONTENT.md`'s. Reasoning: `docs/trail/uxd/self_answer-6.md` § 2.1.
 
 ## 3. Raised from downstream — an item from a seat that did not write the UXD
 
