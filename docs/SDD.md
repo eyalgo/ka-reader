@@ -1,12 +1,13 @@
 # SDD — ka-reader
 
-**Status:** Settled
+**Status:** Draft
 <!-- Draft = open issues or choices to confirm remain (open-issues file present).
      Settled = nothing left for the owner to answer and no open technical question — the done
        signal, and the state a finished SDD carries; the open-issues file is gone.
      Locked = ratified as the source of truth. -->
 **Owner:** CTO — writes every part; the CPO and the CDO decide the parts the lane table names, through `SDD_open_issues.md` items carrying their `Seat:`
-**Version:** 67 — Fold cycle-61 items 5.1–5.6, all the CTO's: § 2 declines the four-layer default by name and keeps the shape; SM-2 and § 11 R-1 gain the Git port's one fake and contract suite; § 3 (`folder-model`, `surfaces`, SM-4, SM-5, *What the system holds*), § 4 C-I1, § 6 S-5's pointer and *Open Questions* catch up with the tree at `ka-reader@2529a42` — the removed-entry drop built, the collapse crossing SM-4, the failed re-read's form, the selection order stated as a rule with the built order a known defect, and `stopped` the shell's alone (RN-126).
+**Version:** 68 — Fold cycle-62 items 1.1 and 2.1 and read PRD v18 (`ka-reader@d1ea3ac`): the first public release is a beta placed after the tree and the open file following the disk and Markdown rendered, ahead of the Git half of live refresh and of the theme (§ 10 RC-8); live refresh is cut in three — `follow-the-tree`, the new `follow-the-file`, and `follow-the-folder` narrowed to Git — so thirteen slices, S-6 to S-13 renumbered; the edge `first-public-release` → `choose-a-theme` is withdrawn and `promise-one-point-zero` → `follow-the-folder` added; S-7 carries the beta's statement, the README's known-gaps line and the repository's published, privacy-checked history; the finish line replaces the Agari by name and path in the live body, and the repository's own address is written in the live body as the record rule's `<owner>/<repository>` (RN-130). Three gaps go to the companion beside item 2.2 — the SRS's FR-20 and AC-11 (cto), the UXD's drawing of the beta's statement (cdo), the new slice's CPO fields (cpo) — so `Status:` is Draft (RN-127 – RN-129).
+Version 67 — Fold cycle-61 items 5.1–5.6, all the CTO's: § 2 declines the four-layer default by name and keeps the shape; SM-2 and § 11 R-1 gain the Git port's one fake and contract suite; § 3 (`folder-model`, `surfaces`, SM-4, SM-5, *What the system holds*), § 4 C-I1, § 6 S-5's pointer and *Open Questions* catch up with the tree at `ka-reader@2529a42` — the removed-entry drop built, the collapse crossing SM-4, the failed re-read's form, the selection order stated as a rule with the built order a known defect, and `stopped` the shell's alone (RN-126).
 Version 66 — Move the native watcher to the bridge and split tree refresh from open-file and Git refresh; fold cycle-60 items 5.1–5.2 (RC-7, RN-125).
 Version 65 — Measure each selector contribution between its own before-and-after commits; fold cycle-59 item 5.1, with the corrected command bar recorded in RC-6 and RN-124.
 Version 64 — Re-measure the five changed harness files for the dependency C-read scan and attached text corrections, retaining the earlier pinned inventory.
@@ -19,9 +20,9 @@ Version 58 — CTO, one run, with the one answered companion item folded (`docs/
 Version 57 — CTO, one run, with the one answered companion item folded (`docs/trail/sdd/cycle-52.md` § 5.1), the CTO's column, raised by the PM on 2026-10-22 from a `shukuba-refine` review (`ka-reader@9a765e8`) and answered in the CTO's seat the same day (`ka-reader@bafc176`; the reasoning at `docs/trail/sdd/self_answer-63.md`): § 3, the `read-only-harness` row (re-measured and re-pinned at `ka-reader@389adad`, the merge that landed the gate's twenty-seventh step: `gate.sh` at version 1.1.0, the one ordered list of 27 steps at `checks/gate.sh:L45-L100` and the dispatcher at `:L27-L34`; the new step, *Bridge tests under the address sanitizer* at `:L57`, named by what it runs — `cargo test --locked -p ka-reader-bridge` on `nightly-2026-10-21`, named inside the command alone, the two sanitizer rustflags scoped to the host target, and `RUSTUP_AUTO_INSTALL=1` — paired with no script and no suite, so the counts stand at eleven scripts, eleven suites, thirteen fixture folders and a six-line `fixtures/.gitignore`; whether the globals flag meets `docs/nfdr.md` QC-13 left to the Principal Architect, `docs/architecture_open_issues.md` § 3.2; every locator into the 21 files `ae72bdc` re-wrapped found again by its content and re-pinned, with `checks/read-only.sh`'s one-line shift at `:L6`; the `8b93322` reading kept as a dated note); § 4 C-I3 (the dispatcher locator `:L27-L34`; the *Build KA-Reader.app* and *View check* locators `:L49`, `:L65`; the walk-fixture clause's seventeen `read-only.sh` locators each one line higher, read at `389adad`, their `c268945` readings in a dated note); SDD Review Notes RN-117 (new); trail copy at `docs/trail/sdd/cycle-52.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. Measured in this fold in the main checkout, read-only, at `ka-reader@bafc176`, whose tree outside `docs/` is `389adad`'s (`git diff --stat 389adad bafc176 -- . ':!docs'` prints nothing); `git diff --name-status --diff-filter=ADR 8b93322 389adad -- checks .github/workflows crates/ka-reader-core/tests` prints nothing, so the row's enumeration and its counts stand, and `git diff --stat eb50e87 389adad -- checks` lists `checks/gate.sh` alone, 8 lines added. Every sentence whose claim changed keeps its old words in a dated note beside it. The gate was not run in this fold and GitHub Actions is disabled, so the step's result is unread here. No *Delivers*, no slice added, no § 10 entry, no § 7 edge, no slice order, no part's *Must not own* and no seam altered; § 11 R-13 does not move. Companion items added: none.
 Version 56 — CTO, one run, with the one answered companion item folded (`docs/trail/sdd/cycle-51.md` § 5.1), the CTO's column, raised by the PM on 2026-10-21 from a `shukuba-refine` review (`ka-reader@79e5ef5`) and answered in the CTO's seat on 2026-10-22 (`ka-reader@21d3681`; the reasoning at `docs/trail/sdd/self_answer-62.md`): § 4 C-I3, the walk-fixture clause (the restore re-said as `restore()`, `checks/read-only.sh:L210-L252`, pinned to `ka-reader@c268945`, the merge that landed `read-only.sh` at version 1.1.0: the archive extracted into scratch space, only the entries the fixture lacks copied in, each written to a ledger before it is made, and what the ledger names removed once the verdict is taken, on every exit the script can act on, with `unchanged` printed last and only over a tree left as it was found; the three unpinned locators `:L73-L76`, `:L17-L20` and `:L84` replaced; the rule's sentence stands with "in-place" dropped from the mechanism's label); § 3, the `read-only-harness` row ("in-place" dropped from the four-scene sentence; the `fixtures/.gitignore` sentence re-said — the file on disk at the pin and re-measured at `c268945`, six lines, its two patterns and what they name, the reason it was written for historical since `c268945`, no design reason remaining, what the patterns still do, and its removal a change to `checks/` the row records when it lands); § 6 S-4, "in-place" dropped twice; SDD Review Notes RN-116 (new); trail copy at `docs/trail/sdd/cycle-51.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. Measured in this fold in the main checkout, read-only, at `ka-reader@21d3681`, whose tree outside `docs/` is `c268945`'s (`git diff --stat c268945 21d3681 -- . ':!docs'` prints nothing); `git diff --name-status 8b93322 c268945 -- checks .github crates` lists `read-only.sh`, `tests/test_entry_points.sh` and `tests/test_read_only.sh`, each changed, and no file added or removed, so the row's enumeration, its counts and its pin stand. Every sentence whose claim changed keeps its old words in a dated note beside it. No *Delivers*, no slice added, no § 10 entry, no § 7 edge, no slice order, no part's *Must not own* and no seam altered. Companion items added: none.
 Version 55 — CTO, one run, with the one answered companion item folded (`docs/trail/sdd/cycle-50.md` § 5.1), the CTO's column, raised by the PM on 2026-10-17 from a `shukuba-refine` review (`ka-reader@e602658`) and answered in the CTO's seat on 2026-10-20 (`ka-reader@0543bb7`; the reasoning at `docs/trail/sdd/self_answer-61.md`): § 3, the `read-only-harness` row (re-measured and re-pinned at `ka-reader@8b93322`, the merge that landed `checks/gate.sh` after the `13e8d42` pin: `gate.sh` named as the runner — the one ordered list of the gate's 26 steps, each fatal, the script `docs/nfdr.md` QC-64 asks for, paired with no suite; the workflow's one rule step, *Test gate*, named as running it, followed only by the packaging and the upload of the bundle; `launch.sh`, `own-state-step.sh` and each of the eleven suites re-located from a workflow step of its own to its step of the gate, the six `ci.yml` locators the 39-line workflow no longer has replaced by `checks/gate.sh` lines; `test_vm_refusal.sh` re-described as reading the gate's `run_step` list rather than the workflow's shape, its helper-sourcing locator moved from `:L36` to `:L39`; the counts re-said — eleven scripts, of which ten are checks, and eleven suites; the fixture-folder count stays thirteen and `fixtures/.gitignore` six lines; the `13e8d42` inventory kept as a dated note); § 4 C-I3, the sentence that CI runs `checks/view.sh` after `assemble.sh` on every push, its two `ci.yml` locators moved to the gate's *Build KA-Reader.app* and *View check* steps, called from `ci.yml:L26`; SDD Review Notes RN-115 (new); trail copy at `docs/trail/sdd/cycle-50.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. Measured in this fold in the main checkout, read-only, at `ka-reader@0543bb7`, whose tree outside `docs/` is `8b93322`'s.
-Version 54 — CTO, one run, with the one answered companion item folded (`docs/trail/sdd/cycle-49.md` § 5.1), the CTO's column, raised by the PM on 2026-10-16 from a `shukuba-refine` review (`ka-reader@b340965`) and answered in the CTO's seat the same day (`ka-reader@8832449`; the reasoning at `docs/trail/sdd/self_answer-60.md`): § 3, the `read-only-harness` row (re-measured and re-pinned at `ka-reader@13e8d42`, the merge that landed six files in `checks/` after the `b12e48c` pin: `launch.sh` and `own-state-step.sh` named as scripts, each the whole `run` of its own CI step — *Launch the built bundle* and *Own state* — with what each does first and what it waits on; `tests/test_launch.sh`, `tests/test_own_state_step.sh` and `tests/test_vm_refusal.sh` named as suites on steps of their own, the last paired with no script and holding the refusal cases of the two launching suites; `tests/support/vm_refusal.sh` named as a sourced helper under `support/` and not a suite; the suite sentence re-counted — ten scripts, eleven suites; the fixture-folder count stays thirteen and `fixtures/.gitignore` six lines; the cell's `bundle.sh`, `own-state.sh`, `test_own_state.sh`, `ci.yml` and `git_state.rs` locators re-pinned with a dated note, what each names unchanged); SDD Review Notes RN-114 (new); trail copy at `docs/trail/sdd/cycle-49.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. Measured in this fold in the main checkout, read-only: `git diff --stat 13e8d42 8832449 -- . ':!docs'` prints nothing; `git log --diff-filter=A --name-only b12e48c..13e8d42 -- checks` lists the six files and no other, and over `checks/fixtures` prints nothing; GitHub Actions is disabled on the repository (`gh api repos/eyalgo/ka-reader/actions/permissions` prints `enabled: false`), so the three new steps' hosted result is unread and the row says what is on disk, not that a step is green. No *Delivers*, no slice added, no § 10 entry, no § 7 edge, no slice order, no part's *Must not own* and no seam altered; § 4 C-I3 and § 6 S-4 do not move. Companion items added: none.
 Version 53 — CTO, one run, with two answered companion items folded (`docs/trail/sdd/cycle-48.md` §§ 5.1 – 5.2), both the CTO's column, raised by the PM on 2026-10-16 from a `shukuba-refine` review (`ka-reader@a2b9389`) and answered in the CTO's seat the same day (`ka-reader@5a4b62e`; the reasoning at `docs/trail/sdd/self_answer-59.md`): § 3, the `folder-model` row (the reader's place — the expanded set, the selection, the open file's path and reading position — is the reader's acts and never a read of the disk, and a delta carries it as it was; an entry reported removed leaves the place held, inert, and drops every held listing at and under its path — the listings, never the place — and an entry reported present at a path the place holds expanded is read in that same delta; at `ka-reader@8ef8c5b` the reducer keeps a removed folder's listing, measured, a known defect until a change lands; a collapse or an expand of a path that no longer resolves is refused at admission; `Select(None)` clears the selection); § 3 SM-4 (the first of the collapse-and-scroll item's three forms, found at the model's API: `list_tree` carries the expansion or the collapse of a folder, `select_file` the selection, the open with its reading position, or the position alone — built at `ka-reader@8ef8c5b`, the C ABI taking the path alone until the shell's crossing is built; no function joins the list); § 3 SM-5 (what crosses down is the model's request types, `TreeRequest` and `FileRequest`, pinned; a `Delta` is SM-3's events applied through this seam and no shell call); § 6 `follow-the-folder` *Reached when*, command half (one `--test watch` case: the place surviving the removal and return of its own entries, the returned folder's listing fresh) and *Rests on* (the model holds the place from `ka-reader@8ef8c5b`; the crossing of SM-4 alone stays open); *Open Questions*, the collapse-and-scroll item (narrowed and not closed: the three-form fork is settled on the first form, no § 10 entry is owed, and what stays open is the crossing of SM-4 — settled by the first build in which the shell calls `list_tree` and `select_file` with those arguments and `--test exports` still passes with SM-4's ten; the item's own rule for an eleventh call stands; its old words in a dated note); SDD Review Notes RN-113 (new); trail copy at `docs/trail/sdd/cycle-48.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. Every sentence whose claim changed keeps its old words in a dated note beside it. Measured in this fold on a disposable clone at `ka-reader@5a4b62e`, whose tree outside `docs/` is `8ef8c5b`'s: `--test watch` 13 passed, `--test exports` 11 passed, and the removal-and-return measurement reproduced (RN-113). No *Delivers*, no slice added, no § 10 entry, no § 7 edge, no slice order, no part's *Must not own* and no seam altered; § 4 C-E2 does not move. Companion items added: none.
-Version 52 — CTO, one run, with the one answered companion item folded (`docs/trail/sdd/cycle-47.md` § 5.1), raised and answered by the owner in one hand on 2026-10-16 (`ka-reader@e34d16f`) after PRD v16 (`ka-reader@74ca793`, § Assumptions "Public identity") and SRS v13 (`ka-reader@3a6e021`, C-12) moved the public identity from the `kensaiapp` organisation to the maintainer's personal GitHub handle: every forward-looking mention of the repository reads `github.com/eyalgo/ka-reader`, and `eyalgo/ka-reader` in commands — § 4 C-R4 (the release channel); § 5 step 1 E-7; § 6 `first-public-release` *Delivers*, *Reached when* observable half (the address a stranger opens) and command half (the Release's repository, the `gh api … private-vulnerability-reporting` path and the `gh secret list --repo` value); the header. Each changed sentence keeps its old words in a dated note beside it. Not moved, by the item's own fence and the PRD's "Nothing else about the product changes": the four CI run records in RN-109 – RN-111 (`gh run … --repo kensaiapp/ka-reader`), which record runs made at the old address; the bundle identifier `com.kensaiapp.ka-reader`, which is not a repository address; and the pins that name the instance repositories (`kensaiapp-dev@…`, `kensaiapp-opensource@…`). No slice, edge, seam, part or place in the order moves; § 10 gains no entry; `Status:` stays Settled and the companion is removed — RN-112.
+Version 53 — CTO, one run, with two answered companion items folded (`docs/trail/sdd/cycle-48.md` §§ 5.1 – 5.2), both the CTO's column, raised by the PM on 2026-10-16 from a `shukuba-refine` review (`ka-reader@a2b9389`) and answered in the CTO's seat the same day (`ka-reader@5a4b62e`; the reasoning at `docs/trail/sdd/self_answer-59.md`): § 3, the `folder-model` row (the reader's place — the expanded set, the selection, the open file's path and reading position — is the reader's acts and never a read of the disk, and a delta carries it as it was; an entry reported removed leaves the place held, inert, and drops every held listing at and under its path — the listings, never the place — and an entry reported present at a path the place holds expanded is read in that same delta; at `ka-reader@8ef8c5b` the reducer keeps a removed folder's listing, measured, a known defect until a change lands; a collapse or an expand of a path that no longer resolves is refused at admission; `Select(None)` clears the selection); § 3 SM-4 (the first of the collapse-and-scroll item's three forms, found at the model's API: `list_tree` carries the expansion or the collapse of a folder, `select_file` the selection, the open with its reading position, or the position alone — built at `ka-reader@8ef8c5b`, the C ABI taking the path alone until the shell's crossing is built; no function joins the list); § 3 SM-5 (what crosses down is the model's request types, `TreeRequest` and `FileRequest`, pinned; a `Delta` is SM-3's events applied through this seam and no shell call); § 6 `follow-the-folder` *Reached when*, command half (one `--test watch` case: the place surviving the removal and return of its own entries, the returned folder's listing fresh) and *Rests on* (the model holds the place from `ka-reader@8ef8c5b`; the crossing of SM-4 alone stays open); *Open Questions*, the collapse-and-scroll item (narrowed and not closed: the three-form fork is settled on the first form, no § 10 entry is owed, and what stays open is the crossing of SM-4 — settled by the first build in which the shell calls `list_tree` and `select_file` with those arguments and `--test exports` still passes with SM-4's ten; the item's own rule for an eleventh call stands; its old words in a dated note); SDD Review Notes RN-113 (new); trail copy at `docs/trail/sdd/cycle-48.md`; `docs/SDD_open_issues.md` removed, empty of items, and `Status:` stays Settled. Every sentence whose claim changed keeps its old words in a dated note beside it. Measured in this fold on a disposable clone at `ka-reader@5a4b62e`, whose tree outside `docs/` is `8ef8c5b`'s: `--test watch` 13 passed, `--test exports` 11 passed, and the removal-and-return measurement reproduced (RN-113). No *Delivers*, no slice added, no § 10 entry, no § 7 edge, no slice order, no part's *Must not own* and no seam altered; § 4 C-E2 does not move. Companion items added: none.
+Version 51 — CTO, one run, with two answered companion items folded (`docs/trail/sdd/cycle-46.md` §§ 5.1 – 5.2), both the CTO's column, raised by the Principal PM on 2026-10-14 (`ka-reader@9532dee`) and answered in the CTO's seat the same day (`ka-reader@b236572`): § 4 C-I3, the probe half (the first `macos-26` bundle-probe reading is taken — GitHub Actions run 38577309118 on `ka-reader@f357008`, image `macos-26-arm64` 20260907.0351.1, the first hosted run on `main` that holds `970ad65` and concludes *Bundle probe suite* `success`, on whose log `docs/nfdr.md` QC-25's command prints `out-of-grant-read: denied` — so the hosted-runner narrowing stands, re-dated to that run and image under the clause's own rule, and the "has not been taken" passage with its two-run ground becomes a dated account); § 4 C-I3, the renderer half (the first hosted renderer-gate reading on `macos-26` is recorded — run 38501500758 on `ka-reader@3f7a68d`, the first hosted run to reach the gate on that image, observation 1 and the control unmatched on all 30, inside the C-R5 floor, with run 38577309118 as corroboration; the gate's rule, the frame list's home and ADR-0012 do not move); RN-110 (a dated parenthesis: the item it said was owed is cycle-46 § 5.2); the header. No slice, edge, seam, part or place in the order moves; `Status:` stays Settled and the companion is removed — RN-111.
 Version 51 — CTO, one run, with two answered companion items folded (`docs/trail/sdd/cycle-46.md` §§ 5.1 – 5.2), both the CTO's column, raised by the Principal PM on 2026-10-14 (`ka-reader@9532dee`) and answered in the CTO's seat the same day (`ka-reader@b236572`): § 4 C-I3, the probe half (the first `macos-26` bundle-probe reading is taken — GitHub Actions run 38577309118 on `ka-reader@f357008`, image `macos-26-arm64` 20260907.0351.1, the first hosted run on `main` that holds `970ad65` and concludes *Bundle probe suite* `success`, on whose log `docs/nfdr.md` QC-25's command prints `out-of-grant-read: denied` — so the hosted-runner narrowing stands, re-dated to that run and image under the clause's own rule, and the "has not been taken" passage with its two-run ground becomes a dated account); § 4 C-I3, the renderer half (the first hosted renderer-gate reading on `macos-26` is recorded — run 38501500758 on `ka-reader@3f7a68d`, the first hosted run to reach the gate on that image, observation 1 and the control unmatched on all 30, inside the C-R5 floor, with run 38577309118 as corroboration; the gate's rule, the frame list's home and ADR-0012 do not move); RN-110 (a dated parenthesis: the item it said was owed is cycle-46 § 5.2); the header. No slice, edge, seam, part or place in the order moves; `Status:` stays Settled and the companion is removed — RN-111.
 Version 50 — CTO, one run, with the one answered companion item folded (`docs/trail/sdd/cycle-45.md` § 5.1), the CTO's column, raised by the PM on 2026-10-14 from a `shukuba-refine` review (`ka-reader@0473ba5`) and answered in the CTO's seat the same day (`ka-reader@976ab73`): § 4 C-I3, the probe half (the locator for the line that prints the control's report reads `checks/bundle.sh:L383`, not `:L382`, pinned to the commits it is read at; the clause gains one dated sentence — at `ka-reader@970ad65` the suite requires exactly one `out-of-grant-read:` line in the control's report, fails the case otherwise, and forwards that line after the control's `ok`, so the line owed at `4601cd9` is carried and the *Violated by* missing-line case is live from that commit, enforced by the suite going red; the ground for the untaken `macos-26` reading is restated — the image reaches the suite, runs 38501500758 and 38551538187 on `main` concluded *Bundle probe suite* `success` with `docs/nfdr.md` QC-25's command printing nothing on each, and `origin/main` is `24be581`, which does not hold `970ad65`); RN-109 (its `:L382` corrected to `:L383`, with a dated note that it mis-read the line on the day it was written); the header. No slice, edge, seam, part or place in the order moves; `Status:` stays Settled and the companion is removed — RN-110.
 Version 49 — CTO, one run, with the one answered companion item folded (`docs/trail/sdd/cycle-44.md` § 2.1), the CTO's column, raised by the Principal Architect's unattended run on 2026-10-13 and answered in the owner's seat the same day (`ka-reader@c04dcc6`): § 4 C-I3, the probe half (the hosted-runner narrowing of the read denial is dated to the image it was read on, `macos-14-arm64` 20260831.0302.1 at GitHub Actions run 35797893381, with the `macos-26` reading stated as not taken and the ground stated — the first hosted run on that image, 38463966607 on `ka-reader@4601cd9`, ended at *Test gate* before the probe ran; the clause names where the reading is read, the unentitled control's `out-of-grant-read:` line in the suite's log on every hosted build, owed at `ka-reader@4601cd9`, an empty read the measurable not-yet; a `denied` reading re-dates the narrowing and an `allowed` one lifts it); § 4 C-I3, the renderer-gate half (a hosted reading is the first hosted run that reaches the gate on that image, not a named change's — the v48 words in a dated note); C-I3's *Violated by* gains the missing-line case once the suite prints the line; the header. No slice, edge, seam, part or place in the order moves; `Status:` stays Settled and the companion is removed — RN-109.
@@ -195,8 +196,11 @@ every release; time-to-first-success at or under five minutes on macOS by the RE
 required configuration; and the two immediacy bars, whose numbers are measured from the first
 working build.
 
-The terminus is the project's 上がり Agari (`system/projects/ka-reader/agari.md`), and the cut in § 6
-is scoped to it and no further. Inside done: the v1 surface — the file tree, reading with
+The terminus is the project's finish line (`system/projects/ka-reader/finish_line.md`), and the cut in § 6
+is scoped to it and no further *(the file was `system/projects/ka-reader/agari.md`, and the terminus
+the 上がり Agari, until the instance renamed both on 2026-11-03; the live body of this document
+follows the rename from v68 and its dated records keep the old name — `docs/trail/sdd/cycle-62.md`
+§ 2.1, RN-128)*. Inside done: the v1 surface — the file tree, reading with
 highlighting, Git status, live refresh, against a plain folder as against a repository — plus
 diffs, commit history, and switching the viewed folder without restarting, always one folder at a
 time. Outside done: sidebar search and filter, pane resizing, keyboard navigation, a second
@@ -205,7 +209,11 @@ at version 1.0.0 or later, with the README alone taking a stranger to a viewed f
 folder, and the read-only bar at zero violations at the closing release as at every release before
 it. A design that reaches for an exclusion — a hosted mode, a programmatic surface, an extension
 point, several folders at once — is designing past done, and § 6's *Moves toward* holds every
-slice to this line.
+slice to this line. The first public release is not that closing release: it is a beta below
+1.0.0, placed by the PRD once the tree and the open file follow the disk and Markdown reads
+rendered, and waiting for nothing else — not for the Git view to follow the disk, not for the
+theme (`docs/PRD.md` v18 § Scope (In), *The first public release — a beta*); § 6 S-7 carries it
+and § 10 RC-8 records the move.
 
 The constraints fixed before any shape was chosen are the SRS's; they are named here, not
 re-listed:
@@ -271,7 +279,7 @@ the fact that grounds it is on the line.
    wall for what the wall refuses.
 4. **What must be replaceable inside the terminus.** Two things, both live: the viewed folder —
    "an input, not a structural singleton", and the switch is inside done (`docs/SRS.md` NFR-12,
-   FR-19; `system/projects/ka-reader/agari.md`, first condition) — and the Git mechanism (force 2).
+   FR-19; `system/projects/ka-reader/finish_line.md`, first condition) — and the Git mechanism (force 2).
    Nothing else will be swapped before done: not the platform (C-11), and not the view technology
    *again* — it moved once, before any release, when the system WKWebView was found unable to
    start under the wall (§ 10 RC-2, RC-3; `docs/trail/sdd/cycle-9.md` § 1.1). That reversal was
@@ -304,7 +312,7 @@ the row is named on it.
 |---|---|---|---|
 | **Sandboxed single-process read pipeline** — one process under the App Sandbox with no network entitlement; a Rust library that reads two sources into one in-memory folder model; an AppKit shell that draws the model's projections and holds no I/O of its own, reached across one closed C-ABI seam | The system's rules are negative invariants that must hold through a crash and are held by the process's own entitlements (force 3, force 5); change arrives as read surfaces rather than capabilities (force 1); and what is shown executes nothing — content reaches the view as data a text engine lays out, so no second process is needed to wall a script engine off | Content must be rendered by an engine that executes it — then a view process that can be handed nothing is worth its seam; or the view needs a system service the wall refuses to start | **yes** — it answers § 1's first question with one entitlements file a reviewer reads (`codesign -d --entitlements`) that covers everything the product runs; the second with a watcher and a model that never hold a write; the third with the folder as a value the model is replaced by (§ 3); the fourth with one bundle and no dependency the view brings (§ 4 C-R1, C-R4, C-R6). Taken over the row below on § 10 RC-2 and the owner's (a) (`docs/trail/sdd/cycle-9.md` § 1.1) |
 | **Capability-split read pipeline** — the shape this document held to v12 (ADR-0001): the surfaces in a separate renderer process holding *no* filesystem, network or shell capability, reached through a closed command list and one read-only asset scheme | The renderer executes content — HTML, script — so the process that runs it must be one that can be handed nothing; and the operating system starts that process under the wall | The only renderer that fits refuses to start under the wall (RC-2: WebKit's processes check the host's network entitlement at their own start), or the content is data no engine executes — then the second process guards a threat the design no longer has and costs a serialized seam | no — yes until the owner's (a). No native view process exists that would earn the seam: a view that executes nothing has nothing to be walled off from. It returns if a view that executes content *and* starts under the rule ever exists; none is known |
-| **Hexagonal** — a domain core behind ports, an adapter at every edge | Many volatile edges owned by others, and a core carrying rules worth guarding from them (force 2, force 3 the other way round) | The edges are two, stable, and owned by Apple and Git, and the core would hold a folder model and no rule (force 2, force 3): every port but one guards nothing | no — insulating a stable edge is ceremony; its one useful port, the Git reader (force 2), is kept inside the taken shape (§ 3 SM-2). It would win only if the agent-workflow front end came inside the terminus and brought its own edges, which the Agari places outside done. *(Since 2026-11-05 this row is also read against `<CORE>/doctrine/engineering/arch_defaults.md` § *The four layers*, the doctrine's default form of this shape; the paragraph after the table, *The four-layer default, declined by name*, meets that default's own reason; RN-126.)* |
+| **Hexagonal** — a domain core behind ports, an adapter at every edge | Many volatile edges owned by others, and a core carrying rules worth guarding from them (force 2, force 3 the other way round) | The edges are two, stable, and owned by Apple and Git, and the core would hold a folder model and no rule (force 2, force 3): every port but one guards nothing | no — insulating a stable edge is ceremony; its one useful port, the Git reader (force 2), is kept inside the taken shape (§ 3 SM-2). It would win only if the agent-workflow front end came inside the terminus and brought its own edges, which the finish line places outside done. *(Since 2026-11-05 this row is also read against `<CORE>/doctrine/engineering/arch_defaults.md` § *The four layers*, the doctrine's default form of this shape; the paragraph after the table, *The four-layer default, declined by name*, meets that default's own reason; RN-126.)* |
 | **Layered, one process** — UI over services over a data-access layer | A product whose data layer's generic filesystem and network access is the point | A product whose defining promise is that such access does *not* exist (force 3): not-writing becomes discipline in a layer built to write | no — fails § 1's first question by construction: a reviewer is *told* the data layer never writes; nothing shows it |
 | **Rust-native toolkit, single process** — egui, iced, gpui or Slint: widgets the toolkit draws itself over a GPU surface, one language throughout | One language outweighs the platform's look, and the toolkit's dependency tree is one the product can vouch for | The design starts from what a stock Mac already draws — the platform's fonts, its text sizes, its flat list rows (`docs/DESIGN.md` § Overview; `docs/UXD.md` § 9, "the platform's own controls and appearance are the starting point") — and every dependency is a decision reviewed against an allowlist (§ 4 C-R6): a toolkit that rasterises its own text and ships a GPU stack is a second look and the largest tree of any row, brought to the one seat where the design asks for nothing shipped | no — it keeps one language and loses the look the design is drawn from, and it spends the dependency budget where the platform already provides everything |
 | **In-process web engine** — WebKitLegacy's `WebView`, or HTML imported through `NSAttributedString` | The CSS design language must be kept byte for byte, and a deprecated API is acceptable | The engine is deprecated (macOS 10.14), it executes content inside the one process the wall covers, and whether it starts and stays offline under the rule is unmeasured | no — the renderer wall gone *and* a script engine in the host: the worst of the two rows above, on an API Apple has retired. (The previous table's row 4, "Native single-process model-view (AppKit / SwiftUI)", is the taken row now; what survives re-expression of the design language is the CDO's finding, RN-53, not this table's) |
@@ -406,7 +414,7 @@ interpret gives a different answer twice over the same settled text. Leave both 
 | `own-state` | crates/ka-reader-core | The tool's own remembered state — theme, window frame, and beyond v1 the remembered folders as security-scoped bookmarks with display names and which was viewed last — read whole or discarded whole, written only inside the app's container (FR-21, DR-5) | Anything of the folder's content. The diagnostic log. A path outside the container |
 | `core-bridge` | crates/ka-reader-bridge | The C ABI over `folder-model`'s API and the **Rust-side composition root**: the closed function list the shell calls (SM-4), each function a thin wrapper that decodes its arguments, calls `folder-model` and returns plain data as an owned buffer freed by one `ka_reader_free`; the `model_changed` callback; wiring `watcher`'s path-report sink to the model over SM-5, with the grant and callback lifetimes held at this composition root (SM-3); `asset_bytes`, returning an image's bytes only for a path the containment check passes (SM-7); the diagnostic log writer's install (§ 4 C-I2); wiring the libgit2 adapter to the Git port; and, before that wiring and before any thread can reach libgit2, **the config search-path switch**: four calls to `git2::opts::set_search_path`, one for each of the system, global, XDG and programdata levels, each setting that level's search path to empty, so that a repository open adds none of the four machine-level config files, which lie outside the granted folder (§ 4 C-D1; in `libgit2-sys 0.18.8+1.9.7`, the version `Cargo.lock:L122-L123` resolves, `libgit2/src/libgit2/repository.c:L1316-L1338` adds the four levels and `sysdir.c:L559-L560` returns before any file is touched where a level's search path is empty). The switch fails closed: each call returns a `Result` (`git2-0.21.0/src/opts.rs:L23`), and if any of the four fails the adapter is not wired and the Git item is `failed`, so a repository is never opened with the reads on. The switch runs once per process, and a second arrival at the composition root repeats nothing. The bridge names the libgit2 binding in those calls and their test and nowhere else, and its manifest's `git2` line turns default features off (§ 4 C-R6). **Not covered by the switch:** every path libgit2 takes from a config file it loads for the repository, the domain § 11 R-16 states as a rule and measures. The switch does not reach it; `git-reader`'s check before the open is what refuses a repository whose config names such a path where it spells outside the folder, or in a form the adapter does not locate (§ 11 R-16). One file in that domain, `.gitmodules`, is loaded by libgit2 during the status read and not during the open, and `git-reader` checks it after the open and before that read (answered in the CTO's seat, `docs/trail/sdd/cycle-22.md` § 2.1; RN-87; the domain as a rule, `docs/trail/sdd/cycle-34.md` § 5.3; RN-99; the two observations, `docs/trail/sdd/cycle-36.md` § 5.1; RN-101; the `.gitmodules` check, `docs/trail/sdd/cycle-37.md` § 2.1; RN-102). The part lives in the one unit that holds `unsafe`, with the reason recorded in its manifest and its record (workspace `Cargo.toml`, `[workspace.lints.rust]`) | Read logic — every function delegates and formats. AppKit, or any Apple framework. A window. A path outside the grant. Anything the harness could not exercise through SM-5 |
 | `mac-shell` | ka-reader-mac | The `NSApplication`, the one window and the app's **composition root** on the Swift side: it presents the Open panel and holds the grant the panel returns, calls SM-4 and decodes what returns, marshals `model_changed` onto the main thread, hands projections to `surfaces` and turns their intents into SM-4 calls (SM-8); it owns `Info.plist`, `Entitlements.plist` and the bundle's assembly (§ 4 C-R1, C-R2) | Drawing — that is `surfaces`. Read logic. Any I/O of its own — a file read, a network API, a spawned process, `NSWorkspace.open` (§ 4 C-R7). A second window. A terminal line |
-| `surfaces` | ka-reader-mac | The shell's views as the UXD draws them: the rail, the tree (`NSOutlineView`), the reading panel and its treatments — code, rendered Markdown laid out from a `MarkdownDocument` by TextKit, and beyond v1 the diff — the Git view (and beyond v1 the history beneath its changes list), the chrome with the identity element and the theme control (`docs/UXD.md` § 4, § 6); the theme tokens as values; the message catalogue. It draws projections and draws no state the bridge did not send, with **one exception: that an intent it raised has not been answered yet**. That is the one state the bridge cannot send — a call's answer is its return (SM-4), so until the call returns the bridge has said nothing — and the one thing the shell observes first-hand. Four bounds hold it. **One:** it is the gap of the surface's own ask and says nothing about the folder. It begins when the surface raises an intent across SM-8 and ends on that intent's answer, and it carries the pending sentence alone — no marker, no count, no content and no progress figure (`docs/UXD.md` UX-I13; the sentence is `docs/CONTENT.md` § *Message patterns* → *Loading*'s). **Two:** every answer ends it, whether the answer is a projection or carries no verdict, and no timer starts it, advances it or ends it (§ 4 C-E1; `docs/CONTENT.md` § *Message patterns* → *Error*, "A stopped read is never dressed as a pending one"). **Three:** only an intent the reader's own act raised opens it. A change that arrives unasked opens none, so from `follow-the-tree` on a refresh never draws pending over content being read (§ 4 C-E2). **Four:** `pending` as an `ItemState` stays the model's and still crosses the bridge — `kind` before the root finding answers, and a folder entry not yet read — and a surface originates neither. The gap is not held state: it lasts from one ask to its answer, and the open file, the selection and the expansion stay `folder-model`'s. Two cases the exception does not cover: a read that never returns leaves the pending sentence standing, with the tree the route out; and the order of two asks in flight is this row's rule: **the model's selection is the reader's last selection act, in the order the reader made them, whatever order the reads answer in**, so the row a surface shows selected and the file the model holds selected are one file. **At `ka-reader@2529a42` the built order does not hold it, a known defect until a change lands:** tree acts cross SM-4 on one serial queue in the reader's order (`SerialReadRunner`, `ka-reader-mac/Sources/Shell/ReadRunning.swift:L37-L48`), but `select_file` runs on the concurrent runner (`ka-reader-mac/Sources/Shell/LaunchFlow.swift:L177-L179`; `OffMainReadRunner`, `ReadRunning.swift:L18-L27`) and the selection joins the model after the read (`crates/ka-reader-bridge/src/session.rs:L1000-L1009`), so two quick selections can reach the model's lock in reverse order and leave the model on the first while the surface draws the second (`ka-reader-mac/Sources/Surfaces/WorkbenchView.swift:L61`, `:L69`). No projection reads the model's selection at that commit, so nothing drawn shows it; `follow-the-folder` (§ 6 S-6) will, which is why it is a defect and not a choice. The change that settles it is the crossing RC-7 assigns to `follow-the-folder`: the selection act crosses in the reader's order, on the serial queue tree acts use, and the read — which need not be ordered, and must not stall a listing behind it (`crates/ka-reader-bridge/src/session.rs:L985`) — stays off it; that is the split the model's API already draws (`FileRequest::Select` apart from `Open`), and the bridge applies the act before the read rather than after. Its proof is a bridge case: two selections in order leave the model on the second. *(Until 2026-11-05 this sentence read "and which side orders two asks in flight is the design of the change that moves the selection into the model (RN-76)"; `docs/trail/sdd/cycle-61.md` § 5.4; RN-126.)* (Answered in the owner's seat, `docs/trail/sdd/cycle-19.md` § 5.1; RN-82) **Read with the exception, and not a second one:** what the pointer is over is the shell's own observation of the pointer and is no state of the folder. Whether the window is the key window is the shell's own observation of the window and is no state of the folder. The clickable row's hover fill and the status letter's tooltip are drawn from the pointer and the key status together, and neither is drawn while the window is not the key window (`docs/DESIGN.md` § *Components*, "Rows" and "The tooltip"). What the pointer is over is not held across a redraw, it raises no intent across SM-8, and it says nothing about the folder, so the exception above stays the only one. The same bounds hold the key status. It is asked each time the row or the letter under the pointer is resolved, and at the two moments the window stops being and becomes the key window. It is held across no redraw. It raises no intent across SM-8 and says nothing about the folder. A surface that is in no window reads as not key and draws neither the fill nor the tooltip. The observation stays inside `surfaces` and crosses no seam. Not decided by this clause: which window is the key window while the Open panel or a menu is up, which is the platform's answer. (Answered in the CTO's seat: the pointer, `docs/trail/sdd/cycle-31.md` § 5.1, RN-96; the key status, `docs/trail/sdd/cycle-33.md` § 5.1, RN-98) **Held here from `see-git-status` through the tree-only refresh slice, and not a second exception:** two pieces of projection logic that `folder-model` owns stand in this part until `follow-the-folder` is reached (*What the system holds*, `FolderModel` and `GitState`). The first is the join of the Git item onto the tree's row paths, which decides which row carries which status letter (`ka-reader-mac/Sources/Surfaces/TreeMarkers.swift`, built at `ka-reader@6c49d5c`; that commit is not an ancestor of `main` at `ka-reader@b640345`, and this clause reads the same whether or not it merges). The second is the order of the Git lists' rows (`ka-reader-mac/Sources/Surfaces/GitRowOrder.swift`, on `main` since `ka-reader@d65eec4`). Four bounds hold both. **One:** each derives only from projections the bridge sent, the Git item and the tree listings, so the exception above stays the only one. **Two:** the join marks a row only from an `observed` repository answer (§ 4 C-I1, C-E1). **Three:** neither raises an ask, and neither holds a path it did not receive in a projection (SM-8). **Four:** both end when `follow-the-folder` is reached. The marker and the order move into `folder-model`, the two files leave the shell, and that slice's command half is red while either remains (§ 6 S-6). The order needs no new seam, so a change that opens `crates/` may move it earlier. The marker waits for the `model_changed` delta (§ 10 RC-4, RC-5). RC-7 retains that end at the open-file-and-Git slice, `follow-the-folder`: the tree-only slice neither migrates these projections nor discharges their grep. A later re-cut owes this clause a new end. (Answered in the CTO's seat, `docs/trail/sdd/cycle-29.md` §§ 5.1, 5.2; RN-94) | The bridge — a surface never calls SM-4; it hands `mac-shell` an intent (SM-8). Filesystem, network or process capability of any kind. A URL built from content and handed to any framework. An HTML import. A message not in the catalogue. A dialog, a toast, a notification |
+| `surfaces` | ka-reader-mac | The shell's views as the UXD draws them: the rail, the tree (`NSOutlineView`), the reading panel and its treatments — code, rendered Markdown laid out from a `MarkdownDocument` by TextKit, and beyond v1 the diff — the Git view (and beyond v1 the history beneath its changes list), the chrome with the identity element and the theme control (`docs/UXD.md` § 4, § 6); the theme tokens as values; the message catalogue. It draws projections and draws no state the bridge did not send, with **one exception: that an intent it raised has not been answered yet**. That is the one state the bridge cannot send — a call's answer is its return (SM-4), so until the call returns the bridge has said nothing — and the one thing the shell observes first-hand. Four bounds hold it. **One:** it is the gap of the surface's own ask and says nothing about the folder. It begins when the surface raises an intent across SM-8 and ends on that intent's answer, and it carries the pending sentence alone — no marker, no count, no content and no progress figure (`docs/UXD.md` UX-I13; the sentence is `docs/CONTENT.md` § *Message patterns* → *Loading*'s). **Two:** every answer ends it, whether the answer is a projection or carries no verdict, and no timer starts it, advances it or ends it (§ 4 C-E1; `docs/CONTENT.md` § *Message patterns* → *Error*, "A stopped read is never dressed as a pending one"). **Three:** only an intent the reader's own act raised opens it. A change that arrives unasked opens none, so from `follow-the-tree` on a refresh never draws pending over content being read (§ 4 C-E2). **Four:** `pending` as an `ItemState` stays the model's and still crosses the bridge — `kind` before the root finding answers, and a folder entry not yet read — and a surface originates neither. The gap is not held state: it lasts from one ask to its answer, and the open file, the selection and the expansion stay `folder-model`'s. Two cases the exception does not cover: a read that never returns leaves the pending sentence standing, with the tree the route out; and the order of two asks in flight is this row's rule: **the model's selection is the reader's last selection act, in the order the reader made them, whatever order the reads answer in**, so the row a surface shows selected and the file the model holds selected are one file. **At `ka-reader@2529a42` the built order does not hold it, a known defect until a change lands:** tree acts cross SM-4 on one serial queue in the reader's order (`SerialReadRunner`, `ka-reader-mac/Sources/Shell/ReadRunning.swift:L37-L48`), but `select_file` runs on the concurrent runner (`ka-reader-mac/Sources/Shell/LaunchFlow.swift:L177-L179`; `OffMainReadRunner`, `ReadRunning.swift:L18-L27`) and the selection joins the model after the read (`crates/ka-reader-bridge/src/session.rs:L1000-L1009`), so two quick selections can reach the model's lock in reverse order and leave the model on the first while the surface draws the second (`ka-reader-mac/Sources/Surfaces/WorkbenchView.swift:L61`, `:L69`). No projection reads the model's selection at that commit, so nothing drawn shows it; `follow-the-file` (§ 6 S-6) will, which is why it is a defect and not a choice. The change that settles it is the crossing RC-7 assigned to `follow-the-folder` and RC-8 moves to `follow-the-file`, with the open file's refresh: the selection act crosses in the reader's order, on the serial queue tree acts use, and the read — which need not be ordered, and must not stall a listing behind it (`crates/ka-reader-bridge/src/session.rs:L985`) — stays off it; that is the split the model's API already draws (`FileRequest::Select` apart from `Open`), and the bridge applies the act before the read rather than after. Its proof is a bridge case: two selections in order leave the model on the second. *(Until 2026-11-05 this sentence read "and which side orders two asks in flight is the design of the change that moves the selection into the model (RN-76)"; `docs/trail/sdd/cycle-61.md` § 5.4; RN-126.)* (Answered in the owner's seat, `docs/trail/sdd/cycle-19.md` § 5.1; RN-82) **Read with the exception, and not a second one:** what the pointer is over is the shell's own observation of the pointer and is no state of the folder. Whether the window is the key window is the shell's own observation of the window and is no state of the folder. The clickable row's hover fill and the status letter's tooltip are drawn from the pointer and the key status together, and neither is drawn while the window is not the key window (`docs/DESIGN.md` § *Components*, "Rows" and "The tooltip"). What the pointer is over is not held across a redraw, it raises no intent across SM-8, and it says nothing about the folder, so the exception above stays the only one. The same bounds hold the key status. It is asked each time the row or the letter under the pointer is resolved, and at the two moments the window stops being and becomes the key window. It is held across no redraw. It raises no intent across SM-8 and says nothing about the folder. A surface that is in no window reads as not key and draws neither the fill nor the tooltip. The observation stays inside `surfaces` and crosses no seam. Not decided by this clause: which window is the key window while the Open panel or a menu is up, which is the platform's answer. (Answered in the CTO's seat: the pointer, `docs/trail/sdd/cycle-31.md` § 5.1, RN-96; the key status, `docs/trail/sdd/cycle-33.md` § 5.1, RN-98) **Held here from `see-git-status` through the tree-only refresh slice, and not a second exception:** two pieces of projection logic that `folder-model` owns stand in this part until `follow-the-folder` is reached (*What the system holds*, `FolderModel` and `GitState`). The first is the join of the Git item onto the tree's row paths, which decides which row carries which status letter (`ka-reader-mac/Sources/Surfaces/TreeMarkers.swift`, built at `ka-reader@6c49d5c`; that commit is not an ancestor of `main` at `ka-reader@b640345`, and this clause reads the same whether or not it merges). The second is the order of the Git lists' rows (`ka-reader-mac/Sources/Surfaces/GitRowOrder.swift`, on `main` since `ka-reader@d65eec4`). Four bounds hold both. **One:** each derives only from projections the bridge sent, the Git item and the tree listings, so the exception above stays the only one. **Two:** the join marks a row only from an `observed` repository answer (§ 4 C-I1, C-E1). **Three:** neither raises an ask, and neither holds a path it did not receive in a projection (SM-8). **Four:** both end when `follow-the-folder` is reached. The marker and the order move into `folder-model`, the two files leave the shell, and that slice's command half is red while either remains (§ 6 S-6). The order needs no new seam, so a change that opens `crates/` may move it earlier. The marker waits for the `model_changed` delta (§ 10 RC-4, RC-5). RC-7 retains that end at the open-file-and-Git slice, `follow-the-folder`: the tree-only slice neither migrates these projections nor discharges their grep. A later re-cut owes this clause a new end. (Answered in the CTO's seat, `docs/trail/sdd/cycle-29.md` §§ 5.1, 5.2; RN-94) | The bridge — a surface never calls SM-4; it hands `mac-shell` an intent (SM-8). Filesystem, network or process capability of any kind. A URL built from content and handed to any framework. An HTML import. A message not in the catalogue. A dialog, a toast, a notification |
 | `read-only-harness` | checks | The scripts, their lists and helpers, the fixtures and the suites that prove the promises on every build and every release. The enumeration is measured at `ka-reader@3431b7de250ddf37b8381bdf18d57f4db3a8d038` (2026-10-29) and pinned to it, as `docs/nfdr.md` § 9 pins its suite count: a file landing in `checks/` after that commit is a re-measurement of this cell and not a contradiction of it, and it owes this row an item. The workflow is 41 lines. Its checkout fetches the whole history (`.github/workflows/ci.yml:L21-L23`, `fetch-depth: 0`), because the gate's *Secret scan* step refuses a shallow one (`secret-scan.sh`, below). It holds one rule step, *Test gate*, whose whole `run` is `checks/gate.sh` (`:L27-L28`), followed by the packaging and the upload of the built bundle (`:L33-L34`, `:L36-L41`) and by nothing else, so nothing named below runs as a step of the workflow: every suite and every check script named below runs as a step of the gate. **On disk at that commit:** `gate.sh`, the runner, at version 1.6.0 (`checks/gate.sh:L2`; 1.5.0's line reads at `:L3`, 1.4.0's at `:L4`, 1.3.0's at `:L5` and 1.2.0's at `:L6-L7`) — the one ordered list of the gate's 33 steps, each the whole command of one top-level `run_step` call (`checks/gate.sh:L51-L131`; `grep -c '^run_step' checks/gate.sh` prints 34, the 33 calls and the `run_step()` definition), run in order in a child shell by the one dispatcher, which ends the run on the first non-zero status naming the step that failed (`:L33-L40`); the script `docs/nfdr.md` QC-64 asks for, and this row names the script and not QC-64's rule; paired with no suite of its own. The step added since `cd65c02` is *Strings check* (`:L111`; its comment `:L107-L110`), directly after *No-network suite* (`:L106`) and before *Strings check suite* (`:L112`): the whole command of `checks/strings.sh`, named below, and what it does is said at that file (`grep -c "checks/strings.sh'" checks/gate.sh` prints 1). The comment says why it sits before its suite and never after it: the suite's cases run the real lint over a copy of this tree's own catalogue, so a banned word in a string literal turns the suite red too, and placed after the suite this step would never be the one that names the hit (`:L107-L110`). So a banned term in the catalogue now ends the gate at *Strings check*, named by the dispatcher, with the lint's own `QC-53` line above it, and *Strings check suite* is reached only over a clean catalogue: its case `test_unchanged_catalogue_copy_passes` (`checks/tests/test_strings.sh:L541-L545`) still runs the real lint over a copy of the tree's own catalogue and `docs/CONTENT.md` (`:L121-L127`) and fails on a non-zero exit or a `QC-53` line (`:L183-L196`), so the same term turns it red second. The step added since `1b32500` is *Strings check suite* (`:L112`), directly after *Strings check* and before *Strings check step suite* (`:L113`), carrying no comment of its own — the four-line comment is above *Strings check*: the whole command of `tests/test_strings.sh`, named below, and what it does is said at that file. The step added since `f25fdbb` is *Strings check step suite* (`checks/gate.sh:L113`), directly after *Strings check suite* (`:L112`) and before *Own state suite* (`:L114`): the whole command of `checks/tests/test_strings_step.sh`, the third unpaired suite named below. The step added since `8235240` is *Planted secret suite* (`:L70`; its comment `:L64-L69`), directly after *Build the workspace* (`:L63`) and before *Build KA-Reader.app* (`:L73`): the whole command of `tests/test_secret_scan_planted.sh`, named below, and what it does is said at that file. The comment says why it sits no earlier: *Secret scan suite* runs this list in a fixture that holds no copy of this suite and makes *Build the workspace* exit non-zero, expecting that step to be the one that stops the run after a clean scan, and placed earlier this step would stop it there instead (`:L64-L67`). The two steps added since `389adad` are *Secret scan suite* (`:L52`) and *Secret scan* (`:L62`; its comment `:L53-L61`), between *Toolchain* (`:L51`) and *Build the workspace* (`:L63`), so before any build; each is the whole command of one file named below — `tests/test_secret_scan.sh`, and `secret-scan.sh gitleaks git` — and what each does is said at that file. The step added since `8b93322` is *Bridge tests under the address sanitizer* (`:L81`; its comment `:L75-L80`), after *Test gate* (`:L74`) and before *Structure check* (`:L82`): `cargo test --locked -p ka-reader-bridge` on `nightly-2026-10-21`, the toolchain named inside the step's own command and nowhere else — `rust-toolchain.toml` reads `channel = "stable"` and every other step runs on it — with `-Zsanitizer=address` and `-Cllvm-args=-asan-globals=0` as rustflags scoped to the host target the step reads from `rustc -vV` (the comment at `:L78-L80` gives the reason for each: build scripts and procedural macros build without the flags, and the linker refuses the bridge's load-time initializer once it is instrumented), and with `RUSTUP_AUTO_INSTALL=1`, so a machine without that nightly fetches it on the step's first run, and a machine that cannot ends the run at that step, named, by the dispatcher. It is the run § 11 R-13 names. Paired with no script and no suite of this row's, so it moves none of the counts below. Whether the globals flag meets `docs/nfdr.md` QC-13 is the Principal Architect's (`docs/architecture_open_issues.md` § 3.2), and this row states the flag, not a ruling. GitHub Actions was disabled when checked on 2026-10-28 (`gh api repos/<owner>/<repository>/actions/permissions` printed `enabled: false`, RN-121); this fold did not recheck that setting, read a hosted result or run the gate: this row says what is on disk and on which step, not that a step is green; `read-only.sh` with `walk.rs`, the in-process driver it runs — compiled into a `ka-reader-core` test target by `crates/ka-reader-core/tests/walk.rs:L6`'s `#[path]`, never into the library; `no-network.sh`; `secret-scan.sh`, the whole command of the gate's *Secret scan* step (`checks/gate.sh:L62`), at version 1.0.0 (`checks/secret-scan.sh:L2-L4`) — the scan `docs/nfdr.md` QC-28's *verified by* names (`docs/nfdr.md:L1078`, "`gitleaks git` exits 0 over the repository"), and this row names the script and not QC-28's rule: it takes the two fixed words `gitleaks git` and nothing else (`:L62-L67`); needs `git`, `uname`, `curl`, `tar`, `shasum` and `mktemp` on PATH (`:L71-L74`); takes the commit and its count from `git rev-parse` and `git rev-list --count` (`:L79-L80`) and refuses a shallow checkout (`:L85-L87`); reads `.gitleaksignore` at the product root, an absent file meaning no exception (`:L91-L96`), and refuses a line that is not one full-hash `commit:file:rule:line` fingerprint with a reason comment directly above it (`:L93-L94`, `:L111-L114`) — no `.gitleaksignore` is in the tree at the pin; fetches gitleaks 8.30.1's release archive for Darwin arm64 or x86_64 **on every run** (`:L124-L138`, `:L147-L151`), refuses any other host, checks the archive against the SHA-256 pinned at `:L42-L43` and the unpacked executable's reported version against 8.30.1 (`:L153-L155`, `:L171-L172`), and installs nothing; runs it with the default rules extended by nothing and no exclusion (`:L176-L183`), every `GITLEAKS_` variable cleared (`:L190-L193`), `--exit-code 2` and `--log-opts "--full-history --diff-merges=first-parent <sha>"` over the whole history HEAD reaches (`:L194-L201`); prints each finding by commit, file, line, rule and fingerprint with its text redacted (`:L204-L211`); and exits 0 only on a clean scan with HEAD still the commit it started from (`:L213-L228`). The two pinned digests are the ones `gitleaks_8.30.1_checksums.txt` publishes for those two archives — read at the vendor's release on 2026-10-23 by the run that answered `docs/trail/sdd/cycle-53.md` § 5.1 (`docs/trail/sdd/self_answer-64.md` § Header), and not re-read by this fold. So this step reaches the network on every run, and since `1b32500` so does one other: *Planted secret suite* (`checks/gate.sh:L70`), whose suite fetches the same archive twice per run, once per scan, as its header says (`checks/tests/test_secret_scan_planted.sh:L48-L50`) — three fetches in two steps on every run; the sanitizer step fetches its nightly on the first run alone, and no other step fetches — *Strings check*, the step added at `f25fdbb`, and *Strings check suite*, the step added at `cd65c02`, among them, since neither the lint nor its suite reaches the network (below); the *Strings check step suite* added at `3431b7d` also reaches no network (`checks/tests/test_strings_step.sh:L25-L26`). A machine that cannot reach `github.com` ends the gate at *Secret scan* (`checks/gate.sh:L62`), the earlier of the two, named by the dispatcher, with "nothing was scanned", before any of the three strings steps is reached. *(Until `ka-reader@1b32500` this passage read: "So this step reaches the network on every run — the sanitizer step fetches its nightly on the first run alone, and no other step fetches — and a machine that cannot reach `github.com` ends the gate at *Secret scan*, named by the dispatcher, with 'nothing was scanned'." — true at `8235240`; `docs/trail/sdd/cycle-54.md` § 5.1; RN-119.)* The fetch is the harness's and not the product's: `docs/SRS.md` NFR-8 binds the product during operation, and no condition of § 4 binds the gate to run offline; `bundle.sh` with `sandbox_probe.rs`, which it compiles with `rustc` at run time into its temporary directory because no shell can call `sandbox_check` (`checks/bundle.sh:L347`, `:L350`; § 4 C-I3); `renderer.sh`; `view.sh`; `own-state.sh`; `structure.sh`; `entry-points.sh` with `entry-points.allow`, the reviewed list it diffs the linked tree's environment and argument reads against — the check `docs/nfdr.md` QC-30 half (2) places in this unit; `strings.sh`, at version 1.0.0 (`checks/strings.sh:L2-L3`), mode 100755 (`git ls-files -s checks/strings.sh`) — the lint `docs/nfdr.md` QC-53's *verified by* names (`docs/nfdr.md:L1545`), and this row names the script and not QC-53's rule; the whole command of the gate's *Strings check* step (`checks/gate.sh:L111`), directly before its suite, `tests/test_strings.sh` (below): it takes no argument or one, the product root (`:L14-L23`, `:L424-L435`); when it runs it reads the *Never* cells of the table that follows the line "Banned in the words KA-Reader writes" in `docs/CONTENT.md` (`docs/CONTENT.md:L190`), a gloss in parentheses cut and each cell split at its commas, every term plain text and never a pattern (`:L25-L29`, `:L62-L115`); it reads the text of string literals alone in every `.swift` file at any depth under `ka-reader-mac/Sources/Surfaces/` — identifiers, comments, regex literals, backticked names and the code inside an interpolation skipped, escapes cut and never decoded, a hit a whole word in any ASCII letter case (`:L31-L41`, `:L119-L420`); it prints one `<path>: QC-53: …` line on stderr per file and term pair and exits 1 (`:L484-L494`), and an unreadable `.swift` file is named on stderr and fails it the same way (`:L496-L503`); it exits 0 with one line on stdout counting the files and terms it read (`:L505`), and never passes on reading nothing — no `.swift` file under the catalogue folder, no `docs/CONTENT.md`, no table under its title, or no term in its *Never* column is exit 1 with a line naming which (`:L439-L464`), and since `f25fdbb` each of those exits ends the gate at *Strings check*, named by the dispatcher, before the suite's cases for the same conditions are reached; the scan is two awk programs held in the file, so nothing is installed, fetched or compiled (`:L43-L49`), and it reaches no network; `launch.sh`, the whole command of the gate's *Launch the built bundle* step (`checks/gate.sh:L128`): its first work asks the host whether it is a macOS virtual machine — the admission `docs/nfdr.md` QC-65 states, reaching this row only as what the script does first (`checks/launch.sh:L45-L47`) — then it opens the built bundle once and waits a fixed 240 ticks of 0.25 s for the app's log, the look held in a child so a consent prompt cannot stop the count (`:L53-L74`); `own-state-step.sh`, the whole command of the gate's *Own state* step, the last in the list (`checks/gate.sh:L131`), which runs `own-state.sh` as a child under the same 240-tick bound and has no admission of its own — off a virtual machine the child's refusal is the only output (`checks/own-state-step.sh:L23-L27`, `:L42-L63`); `deps.allow` with `deps.review.md`, the review recorded beside the list it reviews (`highlighter`'s row); `tests/`, fifteen suites, each the whole command of its own step of `checks/gate.sh`, which the workflow runs through *Test gate*: one `test_<name>.sh` for each of the twelve checks above — `test_secret_scan.sh` (`checks/gate.sh:L52`, the first suite in the list and the step before *Secret scan*), at version 1.0.0 (`checks/tests/test_secret_scan.sh:L2-L3`), which drives the real `secret-scan.sh` and the real `gate.sh` against disposable repositories with `uname`, `curl`, `shasum` and the gitleaks the script unpacks as stand-ins on PATH (`:L8-L19`), reaches no network (`:L24`), and by its own header proves the script's protocol and not the vendor's detection (`:L14-L16`) — its header's sentence there, that the planted-secret control is not part of the change that landed it, is true of that change and is history since `1b32500`, the file unchanged between the pins: the control is `test_secret_scan_planted.sh`, named after the paired suites below; `test_structure.sh` (`:L83`), `test_entry_points.sh` (`:L85`), `test_bundle.sh` (`:L88`), `test_view.sh` (`:L90`), `test_renderer.sh` (`:L100`), `test_read_only.sh` (`:L104`), `test_no_network.sh` (`:L106`), `test_strings.sh` (*Strings check suite*, `:L112`, the step directly after the lint's own), at version 1.0.0 (`checks/tests/test_strings.sh:L2-L4`): fifty cases (`:L55-L106`) that drive the real `checks/strings.sh` — never a copy of its logic — against temporary copies of the catalogue and of `docs/CONTENT.md` under one `mktemp -d` outside the product tree, removed by a trap on exit (`:L30-L33`, `:L1105-L1112`); a banned word planted in a literal must fail and the same word in an identifier or a comment must pass; the every-term case reads the table with code that shares nothing with the lint and plants each term alone; three cases run the suite against a lint altered to miss a finding and require it to turn red (`:L8-L16`); its last case compares `git status --porcelain` and the bytes of the product tree before and after (`:L1080-L1099`), so the suite writes nothing into the checkout; no `set -e` — each case returns its own status and the runner counts them, exiting 0 only when every case ran and passed (`:L26-L28`, `:L1122-L1139`); two variables exist for the altered-lint cases and a person sets neither (`:L21-L24`); it launches nothing, sources no helper, and reaches no network; `test_own_state.sh` (`:L114`), `test_launch.sh` (`:L118`) and `test_own_state_step.sh` (`:L119`) — and three beside them, each paired with no script of its own: `test_vm_refusal.sh` (*VM refusal suite*, `:L117`): it runs `test_bundle.sh` and `test_renderer.sh` as subjects, because a suite that refuses off a virtual machine cannot hold its own refusal case (`checks/tests/test_vm_refusal.sh:L5-L19`), and it reads the gate's list, not the workflow's shape — at version 1.1.0 (`:L2`) it binds `GATE` beside `WORKFLOW` (`:L36-L37`), reads the steps off `gate.sh`'s top-level `run_step` lines and takes a list with any other line among them as no list (`:L63-L77`), checks the two moved steps as single-line commands in the gate's order and every top-level suite as the entire command of one gate step (`:L199-L243`; the suites are read off the disk at `:L237`, so `test_secret_scan.sh`, `test_secret_scan_planted.sh`, `test_strings.sh` and `test_strings_step.sh` are covered with no change to this file, which is identical at `389adad`, `8235240`, `1b32500`, `cd65c02`, `f25fdbb` and `3431b7d` — its step reader takes top-level `run_step` lines and passes over a comment, which *Strings check*'s is, and `checks/strings.sh` is not under `checks/tests/`, so the lint's own step asks nothing of it), and reads the workflow only for its one gate step sitting directly before packaging (`:L217-L229`), for the absence of a conditional or non-fatal step (`:L245-L249`) and for every runner naming `macos-26` (`:L251-L258`); and `test_secret_scan_planted.sh` (*Planted secret suite*, `checks/gate.sh:L70`), at version 1.0.0 (`checks/tests/test_secret_scan_planted.sh:L2-L3`), the negative control of `secret-scan.sh` — a scan that can never report a finding passes every history, so it runs the real script, with the real gitleaks fetched and checked against its pinned SHA-256 as *Secret scan* fetches it, twice over one disposable repository: first over a commit that holds no secret-shaped string, which must exit 0, then after one more commit that adds one, which must exit non-zero and print a finding at that commit; nothing in it is a stand-in, and it shows that the pinned gitleaks reports one planted string and nothing about the other kinds of secret it looks for (`:L7-L17`); the string has the shape of a GitHub personal access token, is joined from fragments while the suite runs, is written only into the disposable repository, and is printed neither by the suite nor by the scan's finding (`:L19-L24`); the repository reads none of the machine's Git configuration — global and system configuration off, the author and committer fixed, a hooks path, repository or index the calling session sets cleared (`:L32-L37`); everything a run creates is made under one temporary directory (`:L513`) removed on exit or on a signal it can catch (`:L503-L504`), a run killed outright leaving it behind, and the suite writes nothing to the product's checkout and does not move its HEAD (`:L39-L44`); it takes no argument, no argument or environment variable skips a scan, and it exits 0 only when the clean run exited 0, the planted run exited non-zero with a finding at the planted commit, and both printed the line saying the archive matched its pinned SHA-256 (`:L46-L53`). It is paired with no new script and adds no fixture folder; and `test_strings_step.sh` (*Strings check step suite*, `checks/gate.sh:L113`), at version 1.0.0 (`checks/tests/test_strings_step.sh:L2-L3`), mode 100755 (`git ls-tree 3431b7d checks/tests/test_strings_step.sh`): one text check, `gate_verdict`, requires exactly one full `Strings check` command line, before the first `Strings check suite` line (`checks/tests/test_strings_step.sh:L113-L156`). The real gate is checked independently (`:L333-L338`); the controls delete or move the lint line in disposable copies, prove the edit took effect, and require the same check to reject the copy with the missing-step or ordering reason (`:L346-L382`). It never sources or executes the gate, launches nothing, reaches no network and runs no Git command (`:L7-L26`). It adds no check script and no fixture folder. `test_strings.sh` is paired with `strings.sh`, above, and adds no fixture folder either. So the counts are thirteen scripts — twelve checks with a `test_<name>.sh` each, and `gate.sh`, the runner, with none — and fifteen suites, the twelve paired ones and the three beside them; and, beside the suites and not among them, `tests/support/vm_refusal.sh`, a sourced helper — the one assertion that a guarded script refuses off a virtual machine, sourced by six suites (`test_bundle.sh:L57`, `test_renderer.sh:L52`, `test_own_state.sh:L29`, `test_launch.sh:L43`, `test_own_state_step.sh:L40`, `test_vm_refusal.sh:L40`), refusing to be run as a script (`checks/tests/support/vm_refusal.sh:L53-L56`), and placed under `support/` so that no loop over `checks/tests/*.sh` and no workflow step takes it for a suite (`:L12-L13`); and thirteen fixture folders — `plain`, a plain folder; `repo`, a repository, with `repo.git.tar`, the `.git` the suites unpack into it (`crates/ka-reader-core/tests/root_finding.rs:L55`); `inside-a-repo`, `parent-of-two`, `linked-worktree` and `submodule`, the four root-finding scenes, each with its `<name>.git.tar`, the `.git` entries `root_finding.rs:L63` unpacks at the root of a scene of its own, with the fixture copied beneath it — the four archives are laid out for a scene's root and not for the fixture folder, so `checks/read-only.sh`'s restore builds none of the four as the scene it names (§ 4 C-I3; `docs/trail/sdd/cycle-36.md` § 5.4; RN-101; the label read "in-place restore" until `ka-reader@c268945` — `docs/trail/sdd/cycle-51.md` § 5.1; RN-116); `config-names-outside` and `submodule-config-names-outside`, § 11 R-16's two fixtures, each with its `<name>.git.tar`, which `crates/ka-reader-core/tests/git_state.rs` unpacks (`:L1347-L1348`, `:L1363-L1367`, `:L1900-L1904`) and `root_finding.rs` does not (`docs/trail/sdd/cycle-36.md` § 5.2; RN-101); `alternates-names-outside`, § 11 R-16's third fixture, with `alternates-names-outside.git.tar`, whose `.git/objects/info/alternates` holds the one line `../../../elsewhere/objects` — the tracked folder holds a `README.md` and nothing else, and the repository is in the archive — which `git_state.rs` unpacks (`:L2130-L2134`, `:L2147-L2151`) and `root_finding.rs` does not (`docs/trail/sdd/cycle-38.md` § 5.2; RN-103); `gitmodules-names-outside`, § 11 R-16's fourth fixture, with `gitmodules-names-outside.git.tar` — the tracked folder holds a `.gitmodules` whose one section is `[submodule "sub"]` with `path = link/x`, a `README.md`, and `link`, a link to `../elsewhere`; the repository is in the archive — which `git_state.rs` unpacks (`:L2811-L2815`) and `root_finding.rs` does not (`docs/trail/sdd/cycle-41.md` § 5.1; RN-106); `highlight` and `text`, the corpora `ka-reader-core`'s `highlight.rs` and `read_file.rs` tests read; and `idle-shell`, the renderer gate's control bundle (§ 4 C-I3); and beside those folders one file, `fixtures/.gitignore`, harness data, on disk at the pin and re-measured at `ka-reader@c268945` — six lines, two patterns anchored to its folder, `/submodule/.gitmodules` and `/submodule/submodule/` (`checks/fixtures/.gitignore:L5-L6`), the two members of `submodule.git.tar` that unpack outside `.git` (`tar -tf checks/fixtures/submodule.git.tar | grep -v '^\.git/'` prints `.gitmodules` and `submodule/.git`). **The reason it was written for is historical since `c268945`:** it was written so that `own-state.sh`'s condition 3, `git status --porcelain checks/fixtures` prints nothing (`checks/own-state.sh:L121`; its comment at `:L30`), would hold after the gate's *Read-only, submodule* step's restore (`checks/gate.sh:L103`, which runs before *Own state* at `:L131`, the step that runs `own-state-step.sh`), and the file's own comment gives that reason (`checks/fixtures/.gitignore:L1-L4`); since `c268945` a completed walk removes both members once the verdict is taken (§ 4 C-I3), so after that step the two patterns match nothing. **The design gives the file no reason:** the clean tree is C-I3's teardown, not an ignore pattern, and condition 2 names ignored entries precisely so that nothing under the fixtures hides (`checks/own-state.sh:L25-L29`; `checks/tests/test_own_state.sh:L217`, `:L227`, `:L238`). What the two patterns still do is keep out of `git status` the residue of a walk that ended without its finalizer, which only KILL and STOP reach (`checks/read-only.sh:L180-L181`), for this one fixture: three other archives also hold members outside `.git` — `linked-worktree.git.tar` 38, `parent-of-two.git.tar` 46, `submodule-config-names-outside.git.tar` 4 — and none has a pattern, and inside the gate a killed step ends the run before *Own state* (`checks/gate.sh:L33-L40`, `:L131`), so there the file does nothing. Its removal, and the stale comment with it, is a change to `checks/` and not this document's to make; by this row's own rule the row records it when it lands. *(Until `ka-reader@c268945` this sentence read: "harness data — two patterns anchored to its folder, … — so that `own-state.sh`'s condition 3 … holds after the gate's *Read-only, submodule* step's in-place restore …, while condition 2 still names anything else in those folders because it walks ignored entries too" — `docs/trail/sdd/cycle-51.md` § 5.1; RN-116.)* *(Measured at `ka-reader@f25fdbb` on 2026-10-28, this cell named `gate.sh` at version 1.5.0, counted 32 step calls and fourteen suites, and put *Strings check suite* directly before *Own state suite*. At `3431b7d`, `git diff --name-status f25fdbb 3431b7d -- checks .github` prints only `M checks/gate.sh` and `A checks/tests/test_strings_step.sh`: the new suite is the third unpaired one. Thirteen scripts, thirteen fixture folders, the six-line `fixtures/.gitignore` and the 41-line workflow remain. The gate inserts its version line at new `:L2` and the new step at new `:L113`; old lines 2–111 move one line, old line 112 onward two. Thus the list `:L50-L129` reads `:L51-L131`, the dispatcher `:L32-L39` reads `:L33-L40`, *Build KA-Reader.app* `:L72` reads `:L73`, *View check* `:L88` reads `:L89`, *Strings check* `:L110` reads `:L111`, *Strings check suite* `:L111` reads `:L112`, and *Own state* `:L129` reads `:L131`. Earlier dated notes keep their pins. This is an inventory measurement, not a gate result. `docs/trail/sdd/cycle-57.md` § 5.1; RN-122.)* *(Measured at `ka-reader@cd65c02` on 2026-10-28, this cell counted the gate at 31 steps, its list at `checks/gate.sh:L49-L123` and its dispatcher at `:L31-L38`, named `gate.sh` at version 1.4.0, said that no step runs `checks/strings.sh` itself — "a step whose whole command is `checks/strings.sh` is not in the list, and by this row's own rule the row records one when it lands" — that the lint reaches the gate through its suite alone, and that every suite named below and every check script but one run as steps of the gate, the one, `strings.sh`, "in no step of its own"; `git diff --name-status cd65c02 f25fdbb -- checks` lists `M checks/gate.sh` alone, and the same range over `.github` and `checks/fixtures` prints nothing, so the counts stay thirteen scripts, fourteen suites and thirteen fixture folders, `fixtures/.gitignore` six lines, the workflow 41 lines, and every `ci.yml` locator and every locator into another `checks/` file stands as pinned at `cd65c02`, `strings.sh` and `test_strings.sh` at version 1.0.0 among them. `f25fdbb` is the merge that landed the gate's thirty-second step, and the tip this fold read, `ka-reader@daf3389`, holds its tree outside `docs/` (`git diff --stat f25fdbb daf3389 -- . ':!docs'` prints nothing). `gate.sh` gained one line at `:L2`, the new version line, and five at `:L106-L110`, the comment and the step, so every `gate.sh` locator this cell pinned from old `:L2` to old `:L104` reads one higher and every one at or below old `:L105` reads six higher: the version lines — 1.4.0's `:L2` reads `:L3`, 1.3.0's `:L3` reads `:L4`, 1.2.0's `:L4-L5` reads `:L5-L6`; the list `:L49-L123` reads `:L50-L129`; the dispatcher `:L31-L38` reads `:L32-L39`; *Toolchain* `:L49` reads `:L50`; *Secret scan suite* `:L50` reads `:L51`, its comment `:L51-L59` reads `:L52-L60`; *Secret scan* `:L60` reads `:L61`; *Build the workspace* `:L61` reads `:L62`; *Planted secret suite* `:L68` reads `:L69`, its comment `:L62-L67` reads `:L63-L68` and `:L62-L65` reads `:L63-L66`; *Build KA-Reader.app* `:L71` reads `:L72`; *Test gate* `:L72` reads `:L73`; the sanitizer step `:L79` reads `:L80`, its comment `:L73-L78` reads `:L74-L79` and `:L76-L78` reads `:L77-L79`; *Structure check* `:L80` reads `:L81`; *View check* `:L87` reads `:L88`; the twelve paired suite steps `:L50`, `:L81`, `:L83`, `:L86`, `:L88`, `:L98`, `:L102`, `:L104`, `:L105`, `:L106`, `:L110`, `:L111` read `:L51`, `:L82`, `:L84`, `:L87`, `:L89`, `:L99`, `:L103`, `:L105`, `:L111`, `:L112`, `:L116`, `:L117`; *Read-only, submodule* `:L101` reads `:L102`; *VM refusal suite* `:L109` reads `:L115`; *Launch the built bundle* `:L120` reads `:L126`; *Own state* `:L123` reads `:L129`, in the `launch.sh`, `own-state-step.sh` and `.gitignore` sentences alike. A locator inside an earlier dated note stays as history. `docs/nfdr.md` QC-53's *verified by* and § 10 row, § 8's step count and § 9's suite enumeration are that record's own, carried by `docs/architecture_open_issues.md` § 3.1 and not pre-empted here. `docs/trail/sdd/cycle-56.md` § 5.1; RN-121.)* *(Measured at `ka-reader@1b32500` on 2026-10-27, this cell counted the gate at 30 steps, its list at `checks/gate.sh:L48-L121` and its dispatcher at `:L30-L37`, named `gate.sh` at version 1.3.0, counted twelve scripts and thirteen suites, did not name `strings.sh` or `tests/test_strings.sh`, and said that every script and suite named in it runs as a step of the gate; `git diff --name-status 1b32500 cd65c02 -- checks .github` lists three files — `checks/strings.sh` and `checks/tests/test_strings.sh` added, both mode 100755, and `checks/gate.sh` changed — and nothing else, and the same range over `checks/fixtures` prints nothing, so the fixture-folder count stays thirteen, `fixtures/.gitignore` six lines, the workflow 41 lines, and every `ci.yml` locator and every locator into another `checks/` file stands as pinned at `1b32500`. `cd65c02` is the merge that landed the lint, its suite and the gate's thirty-first step, and the tip this fold read, `ka-reader@ce554b5`, holds its tree outside `docs/` (`git diff --stat cd65c02 ce554b5 -- . ':!docs'` prints nothing). `gate.sh` gained one line at `:L2`, the new version line, and one at `:L105`, the step, so every `gate.sh` locator this cell pinned from old `:L2` to old `:L103` reads one higher and every one at or below old `:L104` reads two higher: the version line `:L2` reads `:L3` for 1.3.0 and `:L3-L4` reads `:L4-L5` for 1.2.0; the list `:L48-L121` reads `:L49-L123`; the dispatcher `:L30-L37` reads `:L31-L38`; *Toolchain* `:L48` reads `:L49`; *Secret scan suite* `:L49` reads `:L50`, its comment `:L50-L58` reads `:L51-L59`; *Secret scan* `:L59` reads `:L60`; *Build the workspace* `:L60` reads `:L61`; *Planted secret suite* `:L67` reads `:L68`, its comment `:L61-L66` reads `:L62-L67` and `:L61-L64` reads `:L62-L65`; *Build KA-Reader.app* `:L70` reads `:L71`; *Test gate* `:L71` reads `:L72`; the sanitizer step `:L78` reads `:L79`, its comment `:L72-L77` reads `:L73-L78` and `:L75-L77` reads `:L76-L78`; *Structure check* `:L79` reads `:L80`; *View check* `:L86` reads `:L87`; the ten suite steps `:L80`, `:L82`, `:L85`, `:L87`, `:L97`, `:L101`, `:L103`, `:L104`, `:L108`, `:L109` read `:L81`, `:L83`, `:L86`, `:L88`, `:L98`, `:L102`, `:L104`, `:L106`, `:L110`, `:L111`; *Read-only, submodule* `:L100` reads `:L101`; *VM refusal suite* `:L107` reads `:L109`; *Launch the built bundle* `:L118` reads `:L120`; *Own state* `:L121` reads `:L123`. A locator inside an earlier dated note stays as history. `docs/nfdr.md` QC-53's *verified by* and § 10 row, § 8's step count and § 9's suite enumeration are that record's own, carried by `docs/architecture_open_issues.md` § 3.1 and not pre-empted here. `docs/trail/sdd/cycle-55.md` § 5.1; RN-120.)* *(Measured at `ka-reader@8235240` on 2026-10-23, this cell counted the gate at 29 steps, its list at `checks/gate.sh:L47-L113` and its dispatcher at `:L29-L36`, named `gate.sh` at version 1.2.0, counted twelve suites, did not name `tests/test_secret_scan_planted.sh`, and said that no step but *Secret scan* fetches on every run; `git diff --name-status 8235240 1b32500 -- checks .github` lists two files — `checks/tests/test_secret_scan_planted.sh` added and `checks/gate.sh` changed — and nothing else, so the script count stays twelve, the fixture-folder count thirteen, `fixtures/.gitignore` six lines, the workflow 41 lines, and every `ci.yml` locator and every locator into another `checks/` file stands as pinned at `8235240`. `1b32500` is the merge that landed the step, and the tip this fold read, `ka-reader@33323b3`, holds its tree outside `docs/` save `README.md` (`git diff --stat 1b32500 33323b3 -- . ':!docs'` lists `README.md` alone, 6 lines added; the same range over `checks .github` prints nothing). `gate.sh` gained one line at `:L2`, the new version line, and seven at `:L61-L67`, the step and its comment, so every `gate.sh` locator this cell pinned from old `:L2` to old `:L60` reads one higher and every one at or below old `:L61` reads eight higher: the version line `:L2-L3` reads `:L2` for 1.3.0, with 1.2.0's at `:L3-L4`; the dispatcher `:L29-L36` reads `:L30-L37`; *Toolchain* `:L47` reads `:L48`; *Secret scan suite* `:L48` reads `:L49`, its comment `:L49-L57` reads `:L50-L58`; *Secret scan* `:L58` reads `:L59`; *Build the workspace* `:L59` reads `:L60`; *Build KA-Reader.app* `:L62` reads `:L70`; *Test gate* `:L63` reads `:L71`; the sanitizer step `:L70` reads `:L78`, its comment `:L64-L69` reads `:L72-L77` and `:L67-L69` reads `:L75-L77`; *Structure check* `:L71` reads `:L79`; *View check* `:L78` reads `:L86`; the ten suite steps `:L72`, `:L74`, `:L77`, `:L79`, `:L89`, `:L93`, `:L95`, `:L96`, `:L100`, `:L101` read `:L80`, `:L82`, `:L85`, `:L87`, `:L97`, `:L101`, `:L103`, `:L104`, `:L108`, `:L109`; *VM refusal suite* `:L99` reads `:L107`; *Read-only, submodule* `:L92` reads `:L100`; *Launch the built bundle* `:L110` reads `:L118`; *Own state* `:L113` reads `:L121`. A locator inside an earlier dated note stays as history. `docs/nfdr.md` QC-28's *verified by*, § 8's step count and § 9's suite enumeration are that record's own, carried by `docs/architecture_open_issues.md` § 3.1 and not pre-empted here. `docs/trail/sdd/cycle-54.md` § 5.1; RN-119.)* *(Measured at `ka-reader@389adad` on 2026-10-22, this cell counted the gate at 27 steps, its list at `checks/gate.sh:L45-L100` and its dispatcher at `:L27-L34`, named `gate.sh` at version 1.1.0, counted eleven scripts and eleven suites, and did not name `secret-scan.sh` or `tests/test_secret_scan.sh`; `git diff --name-status 389adad 8235240 -- checks .github` lists eight files — `checks/secret-scan.sh` and `checks/tests/test_secret_scan.sh` added; `.github/workflows/ci.yml`, `checks/gate.sh`, `checks/no-network.sh`, `checks/structure.sh`, `checks/tests/test_no_network.sh` and `checks/tests/test_structure.sh` changed — and none under `fixtures/`, so the fixture-folder count stays thirteen and `fixtures/.gitignore` six lines. `8235240` is the merge that landed the two steps, and the tip this fold read, `ka-reader@36613bf`, holds its tree outside `docs/` (`git diff --stat 8235240 36613bf -- . ':!docs'` prints nothing). The two steps sit before every step that was in the list, so old `:L45` reads `:L47` and every `gate.sh` locator this cell pinned at or below old `:L46` reads thirteen higher: the dispatcher `:L27-L34` reads `:L29-L36`; the sanitizer step `:L57` reads `:L70`, its comment `:L51-L56` reads `:L64-L69` and `:L54-L56` reads `:L67-L69`; *Test gate* `:L50` reads `:L63`; *Structure check* `:L58` reads `:L71`; the ten suite steps `:L59`, `:L61`, `:L64`, `:L66`, `:L76`, `:L80`, `:L82`, `:L83`, `:L87`, `:L88` read `:L72`, `:L74`, `:L77`, `:L79`, `:L89`, `:L93`, `:L95`, `:L96`, `:L100`, `:L101`; *VM refusal suite* `:L86` reads `:L99`; *Read-only, submodule* `:L79` reads `:L92`; *Launch the built bundle* `:L97` reads `:L110`; *Own state* `:L100` reads `:L113`. The workflow gained `fetch-depth: 0` on its checkout (`.github/workflows/ci.yml:L22-L23`), so *Test gate* `:L25-L26`, the packaging `:L31-L32` and the upload `:L34-L39` read `:L27-L28`, `:L33-L34`, `:L36-L41`, and `runs-on: macos-26` stays at `:L18`. The four other changed files move no locator — this cell pins no line in any of them, and names the scripts and not their rules: `no-network.sh` 1.1.0 → 1.2.0 with `tests/test_no_network.sh` 1.2.0 → 1.3.0 (a Swift target of type `system` is refused, by name), and `structure.sh` 1.5.0 → 1.6.0 with `tests/test_structure.sh` 1.4.0 → 1.5.0 (QC-10's adapter, QC-11's `git_reader`, `watcher` and `markdown_renderer` subjects, and QC-17's adapter construction, each file's own `:L2-L3`). Every other locator in this cell stands as pinned at `389adad`: no other file in `checks/` changed. `docs/nfdr.md` QC-28's *verified by* and § 8's step count are that record's own, carried by `docs/architecture_open_issues.md` § 3.1 and not pre-empted here. `docs/trail/sdd/cycle-53.md` § 5.1; RN-118.)* *(Measured at `ka-reader@8b93322` on 2026-10-17, this cell counted the gate at 26 steps, its list at `checks/gate.sh:L43-L91` and its dispatcher at `:L26-L33`, and did not name the sanitizer step; `git diff --stat eb50e87 389adad -- checks` lists `checks/gate.sh` alone, 8 lines added — the step at `:L57` and its comment at `:L51-L56` — and `git diff --name-status --diff-filter=ADR 8b93322 389adad -- checks .github/workflows crates/ka-reader-core/tests` prints nothing, so no script, suite or fixture was added, removed or renamed between the two pins, and the counts stand — eleven scripts, eleven suites, thirteen fixture folders, `fixtures/.gitignore` six lines. `389adad` is the merge that landed the step, and the tip this fold read, `ka-reader@bafc176`, holds its tree outside `docs/` (`git diff --stat 389adad bafc176 -- . ':!docs'` prints nothing). Between the two pins `ae72bdc`, merged at `eb50e87`, re-wrapped comments in 21 files under `checks/` (`git diff --name-status 8b93322 389adad -- checks` lists 22 files, every one changed), so most of this cell's other locators moved under it; each was found again by its content with nothing it names changed, and reads at `389adad` as the cell now says: the ten suite steps `:L50`, `:L52`, `:L55`, `:L57`, `:L67`, `:L71`, `:L73`, `:L74`, `:L78`, `:L79` read `:L59`, `:L61`, `:L64`, `:L66`, `:L76`, `:L80`, `:L82`, `:L83`, `:L87`, `:L88`; *VM refusal suite* `:L77` reads `:L86`; *Launch the built bundle* `:L88` reads `:L97`; *Own state* `:L91` reads `:L100`; *Read-only, submodule* `:L70` reads `:L79`; `checks/bundle.sh:L338`, `:L341` read `:L347`, `:L350`; `checks/launch.sh:L42-L44`, `:L50-L71` read `:L45-L47`, `:L53-L74`; `checks/own-state-step.sh:L22-L26`, `:L41-L62` read `:L23-L27`, `:L42-L63`; `checks/tests/test_vm_refusal.sh:L5-L18`, `:L35-L36`, `:L39`, `:L62-L76`, `:L193-L237`, `:L211-L223`, `:L239-L243`, `:L245-L251` read `:L5-L19`, `:L36-L37`, `:L40`, `:L63-L77`, `:L199-L243`, `:L217-L229`, `:L245-L249`, `:L251-L258`, and its `:L2` does not move; of the six sourcing lines, `test_bundle.sh:L53`, `test_launch.sh:L41` and `test_own_state_step.sh:L39` read `:L57`, `:L43` and `:L40`, and `test_renderer.sh:L52` and `test_own_state.sh:L29` do not move; `checks/tests/support/vm_refusal.sh:L43-L46`, `:L11-L12` read `:L53-L56`, `:L12-L13`; `checks/own-state.sh:L118`, `:L28`, `:L23-L27` read `:L121`, `:L30`, `:L25-L29`; `checks/tests/test_own_state.sh:L217`, `:L227`, `:L238` do not move; `checks/read-only.sh` gained one line at `:L6`, its usage line wrapped into two (`git diff c268945 389adad -- checks/read-only.sh` shows that change alone), so every locator into it below that line reads one higher — `:L179-L180` reads `:L180-L181` — while `checks/tests/test_read_only.sh:L922`, `checks/fixtures/.gitignore:L1-L6`, every `crates/ka-reader-core/tests/root_finding.rs` and `git_state.rs` locator, and `.github/workflows/ci.yml:L25-L26`, `:L31-L32`, `:L34-L39` do not move. A locator inside an earlier dated note stays as history. `docs/trail/sdd/cycle-52.md` § 5.1; RN-117.)* *(Measured at `ka-reader@13e8d42` on 2026-10-16, this cell did not name `gate.sh`, and it put `launch.sh`, `own-state-step.sh` and each of the eleven suites on a workflow step of its own — *Launch the built bundle* at `.github/workflows/ci.yml:L112-L113`, *Own state* at `:L117-L118`, *VM refusal suite* at `:L95-L96`, *Launch step suite* at `:L98-L99`, *Own state step suite* at `:L101-L102` — and the `Read-only, submodule` step at `:L79-L80`; `git diff --name-status 13e8d42 8b93322 -- checks` lists `checks/gate.sh`, added, and `checks/tests/test_vm_refusal.sh`, changed, and nothing else, and the same range over `.github/workflows` lists `ci.yml`, changed. `8b93322` is the merge that landed the gate, and the tip this fold read, `ka-reader@0543bb7`, holds its tree outside `docs/` (`git diff --stat 8b93322 0543bb7 -- . ':!docs'` prints nothing). The workflow is 39 lines at `8b93322` (`wc -l .github/workflows/ci.yml`), so each of those six locators named a line that was no longer there, and each moved to a step of `checks/gate.sh`, as the cell now says; the order the `.gitignore` sentence rests on holds inside the gate. The script count moved from ten to eleven and the suite count did not: `gate.sh` is paired with no `test_gate.sh`. `test_vm_refusal.sh` moved from holding the workflow's shape (its `:L4-L17` at `13e8d42`) to reading the gate's `run_step` list, and its `source` of the helper moved from `:L36` to `:L39`; the other five sourcing lines do not move. The fixture-folder count stays thirteen and `fixtures/.gitignore` six lines (the same diff over `checks/fixtures` prints nothing); the slice-owed list does not move. Every other locator in this cell stands as pinned at `13e8d42`: no other file in `checks/` changed. QC-65's admission rule reaches this row only as what `launch.sh` does first, and `docs/nfdr.md` § 9's suite-as-step rule is that record's own, carried by `docs/architecture_open_issues.md` § 3.3 and not pre-empted here. GitHub Actions is still disabled on the repository (`gh api repos/<owner>/<repository>/actions/permissions` prints `enabled: false`, re-read at this fold on 2026-10-20), so the gate's hosted result is unread: this row says what is on disk and on which step of the gate, not that a step is green. `docs/trail/sdd/cycle-50.md` § 5.1; RN-115.)* *(Measured at `ka-reader@b12e48c` on 2026-10-07, this cell named eight scripts and "one `test_<name>.sh` suite for each of the eight", and did not name `launch.sh`, `own-state-step.sh`, `tests/test_launch.sh`, `tests/test_own_state_step.sh`, `tests/test_vm_refusal.sh` or `tests/support/vm_refusal.sh`; `git log --diff-filter=A --name-only b12e48c..13e8d42 -- checks` lists those six files and no other, and the same command over `checks/fixtures` prints nothing, so the fixture-folder count stays thirteen and `fixtures/.gitignore` is still six lines. `13e8d42` is the merge that landed them, and the tip this fold read, `ka-reader@8832449`, holds its tree outside `docs/` (`git diff --stat 13e8d42 8832449 -- . ':!docs'` prints nothing). The cell's locators moved under it and are re-pinned at `ka-reader@13e8d42`, each read at `b12e48c` and found again by its content: `checks/bundle.sh:L321-L322` reads `:L338`, `:L341`; `checks/own-state.sh:L21` reads `:L118`, its comment `:L28`, and the implied-folder pass the note below cites at `:L16-L20`, `:L64-L68` reads `:L24-L28`, `:L59-L68` with its calls at `:L77`, `:L84`; `checks/tests/test_own_state.sh:L212`, `:L222`, `:L233` read `:L217`, `:L227`, `:L238`; `.github/workflows/ci.yml:L73-L74` reads `:L79-L80` and `:L116` reads `:L117-L118`, the *Own state* step now running `own-state-step.sh`, so the order the `.gitignore` sentence rests on still holds; the six `git_state.rs` locators `:L1339-L1340`, `:L1355-L1359`, `:L1892-L1896`, `:L2122-L2126`, `:L2139-L2143` and `:L2807-L2811` read `:L1347-L1348`, `:L1363-L1367`, `:L1900-L1904`, `:L2130-L2134`, `:L2147-L2151` and `:L2811-L2815`; `root_finding.rs:L55`, `:L63` and `tests/walk.rs:L6` do not move. What each names is unchanged. The admission the launching and home-reading scripts make first is `docs/nfdr.md` QC-65's rule, and this row names the script and not its conditions; `docs/nfdr.md` § 9's suite count is that record's own, carried by `docs/architecture_open_issues.md` § 3.3, and this cell does not pre-empt it. GitHub Actions is disabled on the repository at this fold (`gh api repos/<owner>/<repository>/actions/permissions` prints `enabled: false`, 2026-10-16), so the three new steps' hosted result is unread: this row says what is on disk and on which step, and does not say a step is green. `docs/trail/sdd/cycle-49.md` § 5.1; RN-114.)* *(Measured at `ka-reader@1d5c3cf`, earlier on 2026-10-07, this cell did not name `fixtures/.gitignore`; `git diff --stat 1d5c3cf b12e48c -- checks` lists that file, new, six lines, with `own-state.sh` and `tests/test_own_state.sh` and nothing else, so no other file in `checks/` moved, and the counts do not move: the `.gitignore` is a file and not a fourteenth folder, and no script and no suite landed, so `docs/nfdr.md` § 9's suite count is owed nothing. The `own-state.sh` change passes the archive's listing through the implied-folder pass in condition 2 (`checks/own-state.sh:L16-L20`, `:L64-L68`); this row names the script and not its conditions, so no other word in it goes false. The cell's six locators into `crates/ka-reader-core/tests/git_state.rs` had moved under it again — the change inserted 125 lines, all above them (`git diff --stat 1d5c3cf b12e48c -- crates/ka-reader-core/tests`, the only file in that diff) — and are re-pinned at `ka-reader@b12e48c`: `:L1214-L1215`, `:L1230-L1234`, `:L1767-L1771`, `:L1997-L2001`, `:L2014-L2018` and `:L2682-L2686` read `:L1339-L1340`, `:L1355-L1359`, `:L1892-L1896`, `:L2122-L2126`, `:L2139-L2143` and `:L2807-L2811`; what each names is unchanged, and `root_finding.rs:L55` and `:L63` do not move. `docs/trail/sdd/cycle-42.md` § 5.2; RN-107.)* *(Measured at `ka-reader@5331b85` on 2026-10-06, this cell counted twelve folders and did not name the `.gitmodules` fixture; `git diff --stat 5331b85 1d5c3cf -- checks` lists that fixture's archive, its `.gitmodules`, its `README.md` and its `link` and nothing else, so no other file in `checks/` moved. The cell's locators into `crates/ka-reader-core/tests/` had moved under it — `git_state.rs` gained the cases § 11 R-16 names and `root_finding.rs` nine lines — and are re-pinned at `ka-reader@1d5c3cf`: `root_finding.rs:L49` and `:L57` read `:L55` and `:L63`; `git_state.rs:L1204-L1205`, `:L1220-L1224`, `:L1736-L1739` and `:L1753-L1756` read `:L1214-L1215`, `:L1230-L1234` with `:L1767-L1771`, and `:L1997-L2001` with `:L2014-L2018`; what each names is unchanged. `docs/trail/sdd/cycle-41.md` § 5.1; RN-106.)* *(Measured at `ka-reader@2d7692c`, earlier on 2026-10-06, this cell counted eleven folders and did not name the alternates fixture; `git diff --stat 2d7692c 5331b85 -- checks` lists that fixture's archive and its `README.md` and nothing else, so nothing else in the cell moved. `docs/trail/sdd/cycle-38.md` § 5.2; RN-103.)* *(Re-measured at `ka-reader@a184404aaec6ee65b9ebfa661ab633e02b3a3099` on 2026-10-30: `entry-points.sh` version 1.1.0 reads the three C environment names into the shared comparison (`checks/entry-points.sh:L299`); `entry-points.allow` holds the nine-name vocabulary and the reviewed matching-source evidence beside each added pair; `test_entry_points.sh` version 1.2.0 adds the independently reported C/C++ controls and whole-run report check (`checks/tests/test_entry_points.sh:L513`). `test_secret_scan.sh` version 1.0.1 distinguishes stand-in protocol evidence from the separate real planted-secret control in its header (`checks/tests/test_secret_scan.sh:L12`). `test_strings.sh` version 1.0.1 corrects the no-table nested-run diagnostic (`checks/tests/test_strings.sh:L874`), retaining its fixture and both failure assertions. The diff from `d2499c5da4a8fb92718512a6b76d12e7fe7d9859` to this measurement changes only those five existing files: the four physical units, eleven parts, thirteen scripts, fifteen suites, thirteen fixture folders, 33 gate steps and 41-line workflow are unchanged. The earlier pinned inventory above remains the reading at its named commit.)* **Owed by a slice and not on disk at that commit:** the tree-only scene and watcher delivery proof (`follow-the-tree`, § 6 S-5); `churn.sh` and `latency.sh` with `fixtures/scale-small`, `scale-medium` and `scale-large` (`follow-the-folder`; § 4 C-I4); `fixtures/hostile.md`, the hostile Markdown corpus (`read-markdown`); `fixtures/history` (`read-the-history`); and, from `promise-one-point-zero`, `contract.sh` with the pin `contract/<major>` it reads (§ 4 C-I6) | Being a dependency of any shipped unit. Driving the AppKit views. Shipping in the bundle |
 
 **Four physical units carry the eleven parts.** `crates/ka-reader-core` is a Rust library that
@@ -445,7 +453,7 @@ The composition root supplies a sink receiving owned path batches. `watcher` kno
 `folder-model` nor its request types; the sink's adapter belongs to `core-bridge` and submits the
 paths to the model through SM-5. These are invalidation hints, not claims that a file was created,
 deleted or successfully read. The model decides which contained listings and reads to repeat,
-including affected expanded descendants and, in `follow-the-folder`, the open file and Git state.
+including affected expanded descendants and, in `follow-the-file`, the open file, and, in `follow-the-folder`, Git state (RC-8).
 Apple documents that events may coalesce at an ancestor and that dropped events require a wider
 scan ([FSEvents event handling](https://developer.apple.com/library/archive/documentation/Darwin/Conceptual/FSEvents_ProgGuide/UsingtheFSEventsFramework/UsingtheFSEventsFramework.html)).
 The path-only seam handles uncertain coverage conservatively by reporting the granted root;
@@ -626,7 +634,7 @@ section already says arguments start over.>
   on `main` from `ka-reader@67d103d`, the merge that landed it, under the four bounds § 3's
   `surfaces` row states (`docs/trail/sdd/cycle-30.md` § 5.1; RN-95). § 3's
   `surfaces` row names both files and bounds both placements, and both move into the model no
-  later than `follow-the-folder` (§ 6 S-6). This document names who computes the order. It
+  later than `follow-the-folder` (§ 6 S-8; S-6 until v68, RC-8). This document names who computes the order. It
   states no order rule.
 - **`OwnState`** — what the tool remembers between sessions (DR-5): the theme, the window frame,
   and beyond v1 up to ten remembered folders as security-scoped bookmarks with display names and
@@ -725,7 +733,7 @@ the UXD binds on every surface, is the CDO's clause and follows them.
   accepts a path by argument, environment or configuration file (NFR-14), that prints a surface to
   a terminal, or that exits or re-presents the panel on dismissal.
 - **C-R4.** The one acquisition-and-start path (C-3) is a **GitHub Release on
-  `github.com/eyalgo/ka-reader`** (C-12) *(`github.com/kensaiapp/ka-reader` until v51; PRD v16, SRS v13 C-12, RN-112)* carrying `KA-Reader-<version>.dmg` and `SHA256SUMS`, built
+  `github.com/<owner>/<repository>`** (C-12) *(`github.com/kensaiapp/ka-reader` until v51; PRD v16, SRS v13 C-12, RN-112)* carrying `KA-Reader-<version>.dmg` and `SHA256SUMS`, built
   by CI from the tagged commit and never on a maintainer's machine, and the artifact verified to
   match the tag before it is offered. The bundle is **ad-hoc signed** (`codesign --sign -`) — what
   binds the entitlements to the binary at no cost — and is never Developer ID-signed or
@@ -1394,7 +1402,7 @@ here, with the reason.>
 ### Step 1 — List what becomes observably different
 
 Before any slicing, list the things that would be **observably different** about the running product
-between where it is now and its Agari. Write each as one sentence in the form *after this, <someone>
+between where it is now and its finish line. Write each as one sentence in the form *after this, <someone>
 can <do something they could not>*.
 
 The list is made from behaviour, never from the architecture's boxes. "Set up the database", "build
@@ -1403,7 +1411,7 @@ entry cannot be finished in that sentence form, it is not yet a candidate.
 
 **Applied to ka-reader — the list.** *Now* is nothing built: at this run's start the product root
 holds `docs/`, `README.md`, `scripts/` and `third_party/` and no source (`ls` of the product root,
-2026-09-03). The entries are made from the PRD's use cases and features and from the Agari's three
+2026-09-03). The entries are made from the PRD's use cases and features and from the finish line's three
 conditions, each tagged with its source; § 3's parts are not consulted. The CPO holds the entries
 and the CDO holds that each is genuinely observable; an entry the CDO bounces is rewritten or
 struck by the CPO. Step 2 is applied to this list after that read.
@@ -1442,35 +1450,41 @@ struck by the CPO. Step 2 is applied to this list after that read.
   chrome, the first theme following the platform's appearance, and find the choice remembered at
   the next launch — kept in the tool's own data location, nothing of it in the folder. *(PRD § UX
   Notes "The character"; § Data & Privacy)*
-- **E-7** — After this, a stranger can find KA-Reader at `github.com/eyalgo/ka-reader` *(`github.com/kensaiapp/ka-reader` until v51; PRD v16, SRS v13 C-12, RN-112)*, install it
+- **E-7** — After this, a stranger can find KA-Reader at `github.com/<owner>/<repository>` *(`github.com/kensaiapp/ka-reader` until v51; PRD v16, SRS v13 C-12, RN-112)*, install it
   by the one path the README's first screen names, and be reading a file of their own repository
   within five minutes — the README stating what the tool will and will not touch, the support
   posture, what is outside done, the MIT licence and what the version number promises, and a
-  SECURITY.md naming where to report. *(PRD § Goals "Pick-it-up adoption"; § Assumptions
-  "Licence", "Public identity", "Support posture", "Versioning"; Agari, third condition)*
+  SECURITY.md naming where to report — at a beta below 1.0.0 whose Git view and changed-file
+  markers say plainly that they show the Git state read when the folder was opened, the README's
+  known gaps saying the same, and whose repository carries its own commit history, checked for
+  anything private before it is public *(the beta, its statement and its history added at v68 —
+  PRD v17 – v18; `docs/trail/sdd/cycle-62.md` § 1.1; RC-8, RN-127)*. *(PRD § Goals "Pick-it-up
+  adoption"; § Scope (In) "The first public release — a beta"; § UX Notes "the view never lies",
+  the beta's case; § Assumptions "Licence", "Public identity", "Support posture", "Versioning";
+  finish line, third condition)*
 - **E-8** — After this, a reviewer at a release can show — not be told — that exercising the
   whole surface against a repository and against a plain folder left both byte-identical, the
   repository's Git state identical, and no outbound traffic sent. *(PRD § Success Metrics
-  "Read-only integrity"; § Risks "The promise breaks incidentally"; Agari, second condition)*
+  "Read-only integrity"; § Risks "The promise breaks incidentally"; finish line, second condition)*
 - **E-9** — After this, a developer can open a changed file's diff from its row in the Git view,
   in the reading panel, staged changes distinguished from unstaged — the file itself still read
-  from the tree. *(PRD § Scope (In) full ambition "diffs"; Agari, first condition; beyond v1)*
+  from the tree. *(PRD § Scope (In) full ambition "diffs"; finish line, first condition; beyond v1)*
 - **E-10** — After this, a developer can open the commit history from the Git view — branches
   drawn as branches where more than one exists, against a chosen branch set whose default asks
   nothing — see each commit's identifier, message, author and date, and open any commit's diff.
-  *(PRD § Scope (In) full ambition "commit history"; Agari, first condition; beyond v1)*
+  *(PRD § Scope (In) full ambition "commit history"; finish line, first condition; beyond v1)*
 - **E-11** — After this, a developer can switch the viewed folder without restarting — from the
   shell chrome, choosing one of the ten most recently viewed or browsing for another, a repository
   or a plain folder alike — and arrive at that folder's tree with the previous folder untouched.
   *(PRD § Scope (In) "one folder at a time is a v1 cut"; § Out of Scope "Changing the viewed
-  folder without restarting"; Agari, first condition; beyond v1)*
+  folder without restarting"; finish line, first condition; beyond v1)*
 
 **Not on the list, with the reason.** The Markdown raw-source switch and a relative link opening
 its target are permitted, not required, and outside the terminus (`docs/PRD.md` § Core Features
 "A switch to the raw source is permitted, not promised"; `docs/SRS.md` FR-31, FR-32) — an entry no
-Agari claims; a slice that ships either at no cost says so in its own block, and it is never an
+finish line claims; a slice that ships either at no cost says so in its own block, and it is never an
 entry. Sidebar search and filter, pane resizing, keyboard navigation and a second platform are
-outside done (`system/projects/ka-reader/agari.md`, first condition). The immediacy thresholds are
+outside done (`system/projects/ka-reader/finish_line.md`, first condition). The immediacy thresholds are
 measured from the first working build and folded into the SRS by revision (`docs/SRS.md` RN-4) —
 a bar a slice's *Reached when* inherits, not a difference a slice delivers.
 
@@ -1479,7 +1493,7 @@ could someone who did not build it watch it happen on a surface the product has?
 and none goes back to the CPO. Three were weighed rather than waved through. **E-8** names no
 graphical surface and passes anyway: the harness's output at a release is a surface, and *show, not
 be told* — the folder byte-identical, the Git state identical, no traffic — is a result a reviewer
-watches arrive, not a layer being ready (`system/projects/ka-reader/agari.md`, second condition). What
+watches arrive, not a layer being ready (`system/projects/ka-reader/finish_line.md`, second condition). What
 it is at step 2 is the CPO's; this seat's expectation, stated as a view and not a strike, is that it
 folds into every slice's *Reached when* as the promise clause rather than standing as a slice,
 because a check with nothing yet exercised has nothing to show. **E-4** packs two conditions and is
@@ -1544,19 +1558,29 @@ A because \<fact\>* — and where the sentence needs "should" it is marked a pre
 - **E-5's filesystem clause cannot exist without E-1 and E-2** — there is no tree to follow and no
   open file to update — and **its Git clause cannot exist without E-4** because Git state has no
   surface to change until the Git view exists (FR-14). The owner split the delivery into tree refresh first and open-file plus Git refresh second
-  (`docs/trail/sdd/cycle-60.md` § 5.2; step 4). The second reuses the first's watcher-to-model delivery; the tree
-  slice needs E-2 to prove the open file and reading position are undisturbed, but needs no
-  live Git update. *Dependency.*
+  (`docs/trail/sdd/cycle-60.md` § 5.2; step 4), and PRD v18 splits the second again: the open
+  file follows the disk before the beta and Git state after it (`docs/PRD.md` § Scope (In), *The
+  first public release — a beta*; `docs/trail/sdd/cycle-62.md` § 1.1; RC-8). The second and the
+  third each reuse the first's watcher-to-model delivery; the tree slice needs E-2 to prove the
+  open file and reading position are undisturbed, but needs no live Git update; the Git clause's
+  full scene changes and deletes the displayed file (AC-8), so it cannot be met before the
+  open-file clause is built. *Dependency.*
 - **E-6 cannot exist without E-1** because the theme control lives in the shell chrome
   (`docs/UXD.md` § 4). Nothing else depends on it structurally — but see E-7. *Dependency on E-1
   only.*
-- **E-7 cannot exist without E-1** (there is nothing to release) **and without E-6** because
-  both themes are a first-release requirement, not a v1-eventually one (FR-20, AC-11).
-  *Dependency.* That E-7 should wait for E-3, E-4 and E-5 is a **preference** — C-6 lets a
-  pre-1.0.0 release ship less, and the Agari's third condition binds the *closing* release —
-  and it is the CPO's to state, not this seat's. What is not a preference: the bundle, the
-  entitlement list and the probe are proved from the first slice's first build (§ 4 C-I3), so
-  E-7's *mechanism* is exercised long before E-7 lands.
+- **E-7 cannot exist without E-1** (there is nothing to release). *Dependency.* **It no longer
+  depends on E-6:** PRD v18 places the theme after the beta, so the first-release clause of
+  FR-20 and AC-11 — "from the first release" — is contradicted by the document it traces to,
+  and the SRS is owed a revision (`docs/SDD_open_issues.md`, the SRS item; RC-8). That E-7 waits
+  for E-3 and for E-5's tree and open-file clauses, and not for E-5's Git clause or for E-6, is
+  the PRD's own placement (§ Scope (In), *The first public release — a beta*) — a decided
+  ordering, not a dependency and not a preference, carried in § 7 as a placement. What is not a
+  preference: the bundle, the entitlement list and the probe are proved from the first slice's
+  first build (§ 4 C-I3), so E-7's *mechanism* is exercised long before E-7 lands. *(Until v68
+  this bullet read: "**and without E-6** because both themes are a first-release requirement, not
+  a v1-eventually one (FR-20, AC-11). *Dependency.* That E-7 should wait for E-3, E-4 and E-5 is
+  a **preference** — C-6 lets a pre-1.0.0 release ship less, and the Agari's third condition
+  binds the *closing* release — and it is the CPO's to state, not this seat's." — RN-127.)*
 - **E-8 cannot exist without every entry whose surface it exercises** — its own sentence says
   "the whole surface". The harness that produces the proof exists from the first slice (C-I3);
   what E-8 adds is the release-time run over the complete surface. Whether E-8 is a slice or the
@@ -1588,8 +1612,8 @@ Cut where the decision changes, not where the size is convenient.
 **Applied to ka-reader.** Each of the ten remaining entries is sized against the bar it will carry,
 named here in one phrase; the bar's wording is § 6's — the observable half the CDO's, the command
 half the CTO's. Where two entries could have been one slice, or one entry two, the reason the cut
-fell where it did is stated. The result is twelve slices: eleven from the entries, and one the Agari
-names that no entry did.
+fell where it did is stated. The result is thirteen slices: twelve from the entries, and one the
+finish line names that no entry did *(twelve and eleven until v68; RC-8)*.
 
 - **E-1 → `open-a-folder`**, one slice. Bar: a folder chosen in the panel shows its tree in the
   window, a bad path and a dismissed panel show UX-S4, and the bundle CI ships carries the
@@ -1619,7 +1643,9 @@ names that no entry did.
   is added for it: § 6 holds no slice whose decision is a surface's drawing, and `choose-a-theme`'s
   decision is own state — its bar is the two themes over surfaces already drawn (E-6, below) — so
   placing the drawing there would put two answers in one slice, the case this step names. RN-73.*
-  **E-6 is not folded into it**, though FR-20 makes both themes a first-release condition: the
+  **E-6 is not folded into it** — FR-20 as the SRS states it makes both themes a first-release
+  condition, a clause PRD v18 withdraws (RC-8; the companion's SRS item), and the reason holds
+  either way: the
   theme is the first thing the tool ever writes, and the slice whose job is to prove the wall is
   kept free of any write at all, so that a red `read-only.sh` on it has one possible cause.
 - **E-2 → `read-a-file`**, one slice. Bar: every AC-5 case reads as stated, and typing, pasting and
@@ -1656,30 +1682,49 @@ names that no entry did.
   asks nothing of the root finding, which is this slice's one decision answered both ways, and no
   result of the scroll and the switch changes what the Git view shows on a repository or on a
   plain folder. RN-79.*
-- **E-5 → `follow-the-tree`, then `follow-the-folder`**, two slices authorized by the owner
-  (`docs/trail/sdd/cycle-60.md` § 5.2; RC-7). The first delivers a live tree while preserving the
-  reader's place and leaving the displayed file untouched; its independent thirty-second scene
-  proves the path-report/re-read decision, fresh listings on return, failure isolation and the
-  read-only promise. The second delivers the remaining open-file and Git refresh, including root
-  finding changes, and runs the original full churn scene. It also discharges the marker/order
-  migration, first latency measurement and built-bundle diagnostic-retention proof. Neither is a
-  fragment: a tree that follows the disk is visible value before the reading panel and Git follow,
-  and the second completes that live view. The tree scene cannot stand for the full scene.
-  This replaces the one-slice sizing defended at RN-79; the product's E-5 and its full bar remain.
+- **E-5 → `follow-the-tree`, then `follow-the-file`, then `follow-the-folder`**, three slices:
+  the first two cut by the owner (`docs/trail/sdd/cycle-60.md` § 5.2; RC-7), the third cut from
+  the second by PRD v18 (`docs/trail/sdd/cycle-62.md` § 1.1; RC-8). The first delivers a live
+  tree while preserving the reader's place and leaving the displayed file untouched; its
+  independent thirty-second scene proves the path-report/re-read decision, fresh listings on
+  return, failure isolation and the read-only promise. The second delivers the open file following
+  the disk — content updated in place, the reading position kept, the file-gone state and its
+  recovery — through its own displayed-file scene. The third delivers Git state following the
+  disk, including root-finding changes, and runs the original full churn scene; it also discharges
+  the marker/order migration, the first latency measurement and the built-bundle
+  diagnostic-retention proof. None is a fragment: a tree that follows the disk is visible value
+  before the reading panel follows, an open file that follows is the beta's own condition, and the
+  third completes the live view. Neither narrower scene can stand for the full scene. The cut
+  between the second and the third falls where the beta falls — a slice owning the open file and
+  Git together could land on neither side of a release that waits for one and not the other,
+  which is step 4's too-broad case. This replaces the two-slice sizing (RC-7) and the one-slice
+  sizing defended at RN-79; the product's E-5 and its full bar remain. *(Until v68: "two slices
+  authorized by the owner ... The second delivers the remaining open-file and Git refresh,
+  including root finding changes, and runs the original full churn scene.")*
 - **E-6 → `choose-a-theme`**, one slice. Bar: AC-11 and AC-13 — both themes present, the choice
   remembered, and the only new file under the tool's own container. Small, and not too narrow: its
   result — that own state lands in the container and nowhere else — is what `switch-the-folder`'s
   remembered list rests on.
-- **E-7 → `first-public-release`**, one slice, placed after the v1 cut and before the three
-  beyond-v1 slices, as a release below 1.0.0. Bar: AC-10 on the floor's macOS, AC-14 on the
-  release, and AC-1 – AC-3 green over the whole surface built so far. The alternative — one public
-  release at 1.0.0 with the terminus whole — passes the four tests too; the choice between them was
-  the owner's, raised at `docs/trail/sdd/cycle-1.md` § 3.1 and answered **keep**: the owner had already
-  ruled it — "The first public release waits for the full v1 cut the PRD names, so the first thing
-  a stranger meets is the product `docs/PRD.md` calls v1, not a partial" (the previous SDD's
-  `cycle-1.md` § 3.3, quoted in the § 3.1 answer and bound to this run by the § 1.1 answer). So the
-  placement is an owner decision, not this seat's preference: the release lands after the whole v1
-  cut and at it — before the beyond-v1 three (RN-17).
+- **E-7 → `first-public-release`**, one slice, placed after the tree and the open file following
+  the disk and Markdown rendered — `follow-the-file`, carrying `follow-the-tree`, and
+  `read-markdown` — and before the Git half of live refresh and the theme, as a beta below 1.0.0.
+  Bar: AC-10 on the floor's macOS, AC-14 on the release, AC-1 – AC-3 green over the whole surface
+  built so far, and the beta's statement on the Git view and the markers. The placement is the
+  owner's, twice over: first ruled as "after the full v1 cut" (RN-17; `docs/trail/sdd/cycle-1.md`
+  § 3.1), then withdrawn for the beta by PRD v17 – v18 (`docs/PRD.md` § Scope (In), *The first
+  public release — a beta*; `docs/trail/prd/cycle-15.md` § 3.1, its last sentence) and answered
+  on this document at `docs/trail/sdd/cycle-62.md` § 1.1 — so the release lands after
+  `follow-the-file` and before `follow-the-folder` and `choose-a-theme` (RC-8, RN-127). *(Until
+  v68 this entry read: "placed after the v1 cut and before the three beyond-v1 slices, as a
+  release below 1.0.0. Bar: AC-10 on the floor's macOS, AC-14 on the release, and AC-1 – AC-3
+  green over the whole surface built so far. The alternative — one public release at 1.0.0 with
+  the terminus whole — passes the four tests too; the choice between them was the owner's, raised
+  at `docs/trail/sdd/cycle-1.md` § 3.1 and answered **keep**: the owner had already ruled it —
+  'The first public release waits for the full v1 cut the PRD names, so the first thing a
+  stranger meets is the product `docs/PRD.md` calls v1, not a partial' (the previous SDD's
+  `cycle-1.md` § 3.3, quoted in the § 3.1 answer and bound to this run by the § 1.1 answer). So
+  the placement is an owner decision, not this seat's preference: the release lands after the
+  whole v1 cut and at it — before the beyond-v1 three (RN-17).")*
 - **E-9 → `read-a-diff`** and **E-10 → `read-the-history`**, two slices, not one. Bars: AC-12's
   diff clause; AC-12's history clause. The history carries a decision the diff does not — what the
   branch-set default draws, and how a graph is presented in the sidebar — so a merged slice would
@@ -1687,7 +1732,7 @@ names that no entry did.
 - **E-11 → `switch-the-folder`**, one slice, the selector and launch-restores-the-last-viewed
   together. Bar: AC-12's switching clause, to a repository and to a plain folder, and NFR-12's
   proof — the tree, the Git view and the panel untouched by the change that adds the selector.
-- **One slice no entry named: `promise-one-point-zero`.** The Agari's third condition has two
+- **One slice no entry named: `promise-one-point-zero`.** The finish line's third condition has two
   halves — public by the README alone, and at 1.0.0 with the promise in force — and
   `first-public-release` meets the first at a version below 1.0.0. The second is a product event
   the PRD names as one (`docs/PRD.md` § Assumptions "Versioning": "Reaching 1.0.0 is a product
@@ -1727,13 +1772,21 @@ but the reasons survive a merge: **E-2** next, because reading is what every lat
 treatment of; **E-3**, because it is the first slice that renders untrusted content and so the
 first that must prove C-D3's three walls — cheaper to prove on one treatment than on three;
 **E-4**, because it is the first slice that links `git-reader` and asks `probe`, the one
-mechanism the design expects to swap (§ 11 R-1); **E-5**, as `follow-the-tree` then `follow-the-folder`: first prove tree refresh and place
-preservation against the existing read surfaces, then extend the same delivery to the open file
-and Git, when the complete refresh latency can first be measured (C-I4). Together they deliver
-the scenario the product is *for* (`docs/PRD.md` § Target Users); **E-6**, which could sit anywhere after
-E-1 and is placed before the release only because FR-20 makes it a release condition; **E-7**
-(with E-8 as its proof), which the CPO may place earlier under C-6 — this seat has no dependency
-that forbids it; **E-9** then **E-10**, in dependency order; **E-11 last**, because it is the
+mechanism the design expects to swap (§ 11 R-1); **E-5**, as `follow-the-tree`, then
+`follow-the-file`, then `follow-the-folder`: first prove tree refresh and place preservation
+against the existing read surfaces, then extend the same delivery to the open file, then to Git,
+when the complete refresh latency can first be measured (C-I4). Together they deliver the
+scenario the product is *for* (`docs/PRD.md` § Target Users); **E-7** (with E-8 as its proof)
+between the open-file and the Git halves of E-5, where PRD v18 places the beta — this seat has
+no dependency that forbids it and none that forces it; **E-5's Git half** next, because it
+finishes the scenario and the full churn proof before any preference is kept; **E-6**, which
+could sit anywhere after E-1, after the beta by the PRD's placement and before E-11 by
+dependency; **E-9** then **E-10**, in dependency order; *(until v68: "**E-5**, as
+`follow-the-tree` then `follow-the-folder`: first prove tree refresh and place preservation
+against the existing read surfaces, then extend the same delivery to the open file and Git ...;
+**E-6**, which could sit anywhere after E-1 and is placed before the release only because FR-20
+makes it a release condition; **E-7** (with E-8 as its proof), which the CPO may place earlier
+under C-6 — this seat has no dependency that forbids it;" — RC-8, RN-127)* **E-11 last**, because it is the
 one slice that adds an entitlement (C-R2) and so is the one that changes the wall — landing it
 last keeps the entitlement list frozen through every release gate before it — and because it is
 the slice that *validates* NFR-12 against the fullest viewing surface: the bar is that the tree,
@@ -1758,7 +1811,7 @@ the sixth is what a plan drifts into when it has a monitor in it.>
 
 - **A dependency stated as an ordering preference** — a fact and a habit are not the same thing.
 - **A slice whose only value is that a later slice needs it.**
-- **A slice no Agari claims.**
+- **A slice no finish line claims.**
 - **A slice no project would own any of** — which project owns which seed is settled at the cut,
   not here, and a slice may well split across two.
 - **A milestone that only restates its last task's completion.**
@@ -1776,14 +1829,14 @@ the sixth is what a plan drifts into when it has a monitor in it.>
 <One block per slice, in the order they are to be built. Number them `S-1`, `S-2`, … and refer to a
 slice by its slug everywhere else in this document. Copy the block below once per slice.>
 
-The twelve slices below carry the CPO's fields — *Slug*, *Delivers*, *Moves toward*, *Not in this
+The thirteen slices below *(twelve until v68; RC-8)* carry the CPO's fields — *Slug*, *Delivers*, *Moves toward*, *Not in this
 slice*, and the PRD clause of *Traces to* — as cut at § 5 steps 2 and 4. *Reached when* is the
 CDO's observable half and the CTO's command half; *Rests on*, *Why here in the order* and the SRS
 clause of *Traces to* are the CTO's; the UXD clause of *Traces to* is the CDO's. A slot marked for
 another seat is filled by that seat in its turn. The slugs name deliveries and share no spelling
-with § 3's parts. *Moves toward* names the Agari's conditions by number — **first**, the surface
+with § 3's parts. *Moves toward* names the finish line's conditions by number — **first**, the surface
 complete as drawn; **second**, the promise held at every release; **third**, standing on its own,
-public at 1.0.0 or later (`system/projects/ka-reader/agari.md`).
+public at 1.0.0 or later (`system/projects/ka-reader/finish_line.md`).
 
 ### S-1 — A granted folder, its tree in the window
 
@@ -1910,7 +1963,7 @@ public at 1.0.0 or later (`system/projects/ka-reader/agari.md`).
   build, so that "the promise has held the whole way" has a first build to be counted from.
 - **Not in this slice:** reading a file — `read-a-file`; the rail's Git entry and the Git view —
   `see-git-status`, so in this slice the sidebar holds the Files view alone; the view following
-  the disk — `follow-the-tree` and `follow-the-folder`; the theme control — `choose-a-theme`; the README's install path
+  the disk — `follow-the-tree`, `follow-the-file` and `follow-the-folder`; the theme control — `choose-a-theme`; the README's install path
   and the public release — `first-public-release`; remembering the folder across launches, and
   switching it — `switch-the-folder`.
 - **Why here in the order:** First because it is the smallest reversible slice that proves the
@@ -1975,7 +2028,8 @@ public at 1.0.0 or later (`system/projects/ka-reader/agari.md`).
   would write from, and here it cannot.
 - **Not in this slice:** Markdown rendered — `read-markdown`; until it lands, a `.md` file is
   shown as plain text, an intermediate no release ships (RN-18); the raw-source switch — not built
-  (§ 9 TO-5); the open file following the disk, and the file-gone state — `follow-the-folder`;
+  (§ 9 TO-5); the open file following the disk, and the file-gone state — `follow-the-file`
+  (`follow-the-folder` until v68; RC-8);
   the file-switch number — measured (§ 4 C-I4), never delivered by a slice.
 - **Why here in the order:** Second because reading is what every later surface is a treatment
   of — rendered Markdown, the diff and a commit's diff all land in the panel this slice opens — and
@@ -2278,7 +2332,8 @@ public at 1.0.0 or later (`system/projects/ka-reader/agari.md`).
 - **Moves toward:** first — Git status, against a plain folder as against a repository.
 - **Not in this slice:** a changed file's diff, and the row's second reading — `read-a-diff`; the
   commit history — `read-the-history`; Git state following the disk — `follow-the-folder`, so in
-  this slice the Git view shows the state read when the folder opened; the installed-`git`
+  this slice the Git view shows the state read when the folder opened — the state the beta ships
+  and says so (S-7); the installed-`git`
   substitute — built when § 11 R-1 fires, never a slice.
 - **Why here in the order:** Fourth because it is the first slice that links `git-reader` and asks
   `probe` — the one mechanism the design expects to swap (R-1), and the second Open Question
@@ -2325,31 +2380,211 @@ public at 1.0.0 or later (`system/projects/ka-reader/agari.md`).
   `folder-model`'s reader-owned invalidation and preserved place, and `surfaces`; SM-1, SM-3,
   SM-4, SM-5 and SM-8; C-I1, C-I3, C-E1, C-E2 and C-E3. Slice: `read-a-file`, carrying
   `open-a-folder`. Disclosure and collapse crossing SM-4 settle here; the open-file scroll
-  transport remains the later slice's, while this slice must preserve the position already shown.
+  transport remains `follow-the-file`'s (RC-8), while this slice must preserve the position already shown.
 - **Traces to:** PRD § Core Features "Live refresh" and § Key Use Cases 3; SRS FR-14 (tree),
   FR-15, FR-16, FR-27, NFR-3 and NFR-4; UXD UX-F3 (tree), UX-I2, UX-I3, UX-I5, UX-I10;
   owner decision `docs/trail/sdd/cycle-60.md` § 5.2.
 - **Moves toward:** The live-folder scenario, by delivering the independently useful tree half.
-- **Not in this slice:** Displayed-file refresh, deletion and recovery; live Git state, markers,
-  row-order migration, `git init` and `.git` removal; full churn, first latency measurements and
-  built-bundle diagnostic-retention proof — all `follow-the-folder`. Existing diagnostic bounds
+- **Not in this slice:** Displayed-file refresh, deletion and recovery — `follow-the-file`; live
+  Git state, markers, row-order migration, `git init` and `.git` removal, full churn, first latency
+  measurements and built-bundle diagnostic-retention proof — `follow-the-folder` *(all
+  `follow-the-folder` until v68; RC-8)*. Existing diagnostic bounds
   remain in force. No manual refresh control or new numeric threshold.
 - **Why here in the order:** The owner's split puts the tree first (RC-7). It needs a working
   reading panel to prove that tree updates preserve its place, and provides the native delivery
-  the later open-file and Git slice extends. Its position after `see-git-status` is this seat's
+  the later open-file and Git slices extend (RC-8). Its position after `see-git-status` is this seat's
   preference to exercise the established surfaces; the tree slice has no dependency on live Git.
 
-### S-6 — The open file and Git follow the disk
+### S-6 — The open file follows the disk, or says it is gone
+
+- **Slug:** `follow-the-file`
+- **Delivers:** With the live tree from `follow-the-tree`, a developer can leave a file open while
+  another process changes it and watch its content follow the disk in place, their reading
+  position kept; when the file is deleted, the panel keeps the file's name and says plainly that
+  it is gone, never showing the vanished content as current; and when it is readable again, the
+  new content replaces the gone state without ceremony.
+- **Reached when:** *Observable (CDO):* with KA-Reader open on a plain folder, they open a file
+  longer than the panel and scroll partway down it, then in a terminal change that file's
+  content: the panel updates in place within the refresh bar and their reading position does not
+  jump (`docs/UXD.md` UX-I3, UX-F3). They delete it: the panel keeps the file's name and states
+  plainly that it is no longer there, and its old content is not shown as current (UX-S1 Error,
+  UX-I4). They recreate it: the new content takes the panel with no message, flash or badge
+  (UX-I2). Throughout, the tree, their expanded nodes, their selection and the sidebar's mode
+  hold; no refresh control exists; and the window never blanks, blocks or closes (UX-I5, UX-I10).
+  They click two files in quick succession: the file the panel shows is the second, every time.
+  When they stop, what the panel shows is what `cat` shows. *Command (CTO):* a repeatable
+  displayed-file scene, with its runnable command and fixture setup kept with the check, opens a
+  file in a plain-folder fixture and changes, deletes and recreates it, performing no Git
+  operation, through the running watcher-to-model delivery and not injected deltas alone; after
+  each step settles the displayed content equals a fresh read, or the panel holds the gone state
+  with the file's name and none of the old content. `cargo test --locked -p ka-reader-core
+  --test watch` passes with cases that a change updates the open file's content and leaves the
+  reading position and the rest of the reader's place as set, that a deletion yields a gone state
+  carrying the name and none of the content, and that a successful read after a failed read or
+  after the gone state replaces it with no message; each gone-state case is shown failing against
+  the model before the state exists. `swift test`, after `ka-reader-mac/assemble.sh`, passes cases
+  that the reading position crosses SM-4 on an update through `select_file` — the crossing *Open
+  Questions*' collapse-and-scroll item leaves to this slice, `--test exports` still passing with
+  SM-4's ten (C-R7) — and that the gone state and the recovery draw as the observable half
+  states. Two `select_file` calls in quick succession, in both completion orders, leave the
+  model's selection and open file as the reader's last act — the rule § 3's `surfaces` row states
+  and names a known defect at `ka-reader@2529a42`; a case that leaves the earlier file held
+  fails. `checks/structure.sh` passes with `watcher` in the bridge. *The promise clause:*
+  `checks/read-only.sh` against the displayed-file scene's own final state prints `unchanged`;
+  `checks/no-network.sh` exits 0. This scene is neither the tree-only scene nor the full
+  `checks/churn.sh` proof.
+- **Rests on:** § 3 `watcher` delivery built by `follow-the-tree`; `folder-model`'s reader-owned
+  re-read of the open `FileView`, its selection rule and its reader's place; `surfaces`' file-gone
+  state and the reading panel; SM-4 (`select_file` carrying the reading position), SM-5; § 4 C-I1,
+  C-I3, C-E1, C-E2, C-E3. Slices: `follow-the-tree`, carrying `read-a-file` and `open-a-folder`.
+  The form of the gone state in the model is this slice's building design's call, within UX-S1
+  Error's drawing; the form found is written into § 3's `folder-model` row.
+- **Traces to:** PRD § Core Features "Live refresh"; § UX Notes "the view never lies", the first
+  two of its concrete cases; § Key Use Cases 3; § Scope (In) "The first public release — a beta"
+  (the open file following the disk, a condition of the beta). SRS: FR-14 (file content), FR-15,
+  FR-16, FR-27, FR-28; NFR-3, NFR-4; DR-2, DR-3; AC-19, AC-20. UXD: UX-F3 (the open file); UX-S1
+  Error (the open file gone) and Success (position preserved); UX-I2, UX-I3, UX-I4, UX-I5, UX-I10;
+  § 4 C-E1, C-E2, C-E3 of this document; owner decision `docs/trail/sdd/cycle-62.md` § 1.1 (RC-8).
+- **Moves toward:** first — live refresh's open-file half, the second of its three; and the beta's
+  condition, which `first-public-release` then meets.
+- **Not in this slice:** Git state following the disk, the markers, the row-order migration,
+  `git init` and `.git` removal, the full churn scene, the first latency measurement and the
+  built-bundle diagnostic-retention proof — `follow-the-folder`; a numeric refresh threshold —
+  measured (§ 4 C-I4), never written here; a manual refresh control — never.
+- **Why here in the order:** After `follow-the-tree` by dependency — it extends that slice's
+  watcher-to-model delivery to the open file — and before `first-public-release` by the owner's
+  decided ordering: the beta ships once the tree and the open file follow the disk (`docs/PRD.md`
+  v18 § Scope (In); RC-8). It is cut from the former `follow-the-folder` by that same placement:
+  a slice owning the open file and Git together could land on neither side of a release that
+  waits for one and not the other (§ 5 step 4; RN-127).
+
+### S-7 — A stranger can pick it up: the beta
+
+- **Slug:** `first-public-release`
+- **Delivers:** After this, a stranger can find KA-Reader at `github.com/<owner>/<repository>` *(`github.com/kensaiapp/ka-reader` until v51; PRD v16, SRS v13 C-12, RN-112)*, install
+  it by the one path the README's first screen names, and be reading a file of their own
+  repository within five minutes — the README stating what the tool will and will not touch, the
+  support posture, what is outside done, the MIT licence, and that before 1.0.0 anything may
+  change; the Git view and the tree's changed-file markers saying plainly that they show the Git
+  state read when the folder was opened, and the README's known gaps saying the same; the
+  repository public with its own commit history, checked for anything private first; a
+  SECURITY.md naming where to report; and the release carrying the whole-surface proof —
+  the folder and the repository byte-identical after every command, no outbound traffic — as a
+  result a reviewer reads rather than a claim *(the beta's statement, the known-gaps line and the
+  published history added at v68 — `docs/PRD.md` v17 – v18; `docs/trail/sdd/cycle-62.md` § 1.1,
+  and § 2.2's draft for the history; RC-8, RN-127, RN-129)*.
+- **Reached when:** *Observable (CDO):* a stranger on a Mac holding only stock macOS opens
+  `github.com/<owner>/<repository>` *(`github.com/kensaiapp/ka-reader` until v51; RN-112)* in a browser. The README's first screen tells them in one sentence
+  what the tool does, shows one install path, and shows a screenshot that is the shell of the
+  release they are about to download — not a mock-up, not an earlier build (`docs/UXD.md` UX-I11).
+  The page's images all come from the repository itself; no badge or picture is served from
+  anywhere else (UX-I15; the fence § `no-runtime-remote-asset`, the README clause). Further down —
+  not on the first screen — one plain sentence states the posture: mouse-driven, no keyboard
+  navigation, no assistive-technology promise, said as a fact and not an apology (UX-A3, UX-A1).
+  They follow the install path, walk Gatekeeper, launch, choose a repository of their own in the
+  Open panel, and are reading one of its files — a wall clock started at the README says under
+  five minutes. Every surface they meet on the way behaves as S-1 to S-6's observable halves state.
+  They switch the sidebar to Git: the view, and the tree's changed-file markers, say plainly — in
+  words on the surface, not by colour or a tooltip alone (UX-A2) — that they show the Git state
+  read when the folder was opened; the README's known gaps say the same. *Where the statement
+  sits on the Git view and on the markers is the UXD's to draw, and its words are
+  `docs/CONTENT.md`'s; this half holds only that it is there, in words, and readable — drafted for
+  the CDO, `docs/SDD_open_issues.md`, the UXD item.*
+  On the release page, beside the download, a reviewer reads — as text, not a claim — that the
+  whole surface was exercised against a repository and a plain folder and left both byte-identical
+  and the repository's Git state unchanged, with no outbound connection recorded. `SECURITY.md`
+  names where to report. *Command (CTO):* `.github/workflows/release.yml`, on a tag `v0.y.z`,
+  builds `KA-Reader-<version>.dmg` and `SHA256SUMS` from that tag and attaches both to a
+  GitHub Release on `<owner>/<repository>` *(`kensaiapp/ka-reader` here and in the two `gh` commands below until v51; RN-112)*; on the *downloaded* bundle, `shasum -a 256 -c SHA256SUMS`
+  passes, `codesign -dv KA-Reader.app` reports `Signature=adhoc`, `/usr/libexec/PlistBuddy -c 'Print
+  :LSMinimumSystemVersion' KA-Reader.app/Contents/Info.plist` prints `26.0` *(`14.0` until v48; § 4 C-R5, RN-108)*, and `checks/bundle.sh`
+  passes with C-R2's two entries; `checks/notices.sh` finds every name in `cargo tree` in
+  `THIRD_PARTY_NOTICES.md` — the Swift package declares no dependency to notice (C-R6); `LICENSE`
+  is MIT; `SECURITY.md` exists and `gh api
+  repos/<owner>/<repository>/private-vulnerability-reporting` returns `"enabled": true`; `cargo audit`
+  exits 0; `gitleaks git` exits 0 — the secrets half of the history check; the other half, that
+  nothing private stands in the history the repository goes public with, is a person's read of
+  `git log -p` over every commit HEAD reaches, since no command finds a private name or path, and
+  its result is written on the release page as text a reviewer reads, beside the whole-surface
+  proof, before the repository is made public; the repository is made public with that history
+  and not re-initialised: `git rev-list --max-parents=0 HEAD` on a fresh clone of the public
+  repository prints the same root commit as the private checkout (PRD v18 § Assumptions "Public
+  identity"; drafted — `docs/trail/sdd/cycle-62.md` § 2.2, RN-129); the README's known gaps carry
+  the beta's statement — a `grep` of `README.md` for the sentence `docs/CONTENT.md` fixes prints
+  it — and `gh secret list --repo
+  <owner>/<repository>` prints no entry; the version in `Cargo.toml` and `CFBundleShortVersionString`
+  is below 1.0.0. *The promise clause, over the whole surface built so far:* `checks/read-only.sh`
+  prints `unchanged` on every fixture after every command the build grants (§ 4 C-R7); `checks/no-network.sh`
+  exits 0; and a network monitor across one full session against the downloaded bundle records zero
+  outbound connections (AC-3) — the result attached to the release as text a reviewer reads.
+- **Rests on:** § 3 `read-only-harness`; § 4 C-R1, C-R4, C-R5, C-R6, C-I3; § 9 TO-8, TO-9; § 11
+  R-2, R-7. Slices: `read-markdown` as an edge (§ 7); `follow-the-file`, carrying
+  `follow-the-tree`, `read-a-file` and `open-a-folder`, and `see-git-status`, by the owner's decided
+  ordering — the beta ships once the tree and the open file follow the disk and Markdown reads
+  rendered (`docs/PRD.md` v18 § Scope (In); RC-8) — which § 7 carries as a placement, not an
+  edge, and which only a re-cut (§ 10) may move. *(Until v68: "`read-markdown` and
+  `choose-a-theme` as edges (§ 7); `open-a-folder`, `read-a-file`, `see-git-status`,
+  `follow-the-folder` by the owner's decided ordering — the first public release waits for the
+  full v1 cut (RN-17)" — withdrawn, RC-8.)*
+- **Traces to:** PRD § Goals "Pick-it-up adoption"; § Success Metrics "Read-only integrity",
+  "Time-to-first-success"; § Assumptions "Licence", "Public identity", "Support posture",
+  "Versioning", "Regulatory posture"; § Scope (In) "Run posture", "Platform", "The first public
+  release — a beta"; § UX Notes "the view never lies", the beta's case; § Assumptions "Public
+  identity", the history clause (v18); § Risks "The promise breaks incidentally", "Maintenance is
+  a standing liability". SRS: NFR-7, NFR-8, NFR-9, NFR-13,
+  NFR-15; C-3, C-4, C-5, C-6 (the pre-1.0.0 statement), C-7, C-9, C-10, C-11, C-12, C-13; AC-1,
+  AC-2, AC-3, AC-10, AC-14. UXD: UX-I11 (the README screenshot is product surface, checked at
+  release); UX-A3 (the posture sentence, its place and its bound); UX-A1 (the posture it states);
+  UX-I15 as the instance fence § `no-runtime-remote-asset` extends it to the README; § 4 C-E7,
+  C-E10 of this document; UX-I4 and UX-I13, which the beta's statement keeps true — the UXD does
+  not yet draw the statement, a gap for the CDO (`docs/SDD_open_issues.md`, the UXD item). The
+  README's claims, its licence and its support posture are the PRD's and are not traced here.
+- **Moves toward:** third — a stranger, by the README alone, at a release below 1.0.0; second — the
+  bar at zero violations at the first public release, from which "every release before it" is
+  counted. Not the 1.0.0 half of the third condition — that is `promise-one-point-zero`.
+- **Not in this slice:** the Git view following the disk — `follow-the-folder`, which also
+  withdraws the beta's statement; the theme control and own state — `choose-a-theme`; version
+  1.0.0 and the promise it starts — `promise-one-point-zero`;
+  diffs, history and folder switching — `read-a-diff`, `read-the-history`, `switch-the-folder`; a
+  second install channel, and notarization — never (§ 4 C-R4, § 9 TO-9); sidebar search and
+  filter, pane resizing and keyboard navigation — outside done, and the README says so rather than
+  promising them (PRD § Out of Scope).
+- **Why here in the order:** Its one hard edge is `read-markdown` (no release ships a `.md` as
+  plain text — FR-30, RN-18); nothing else it needs is unbuilt earlier. Its place after
+  `follow-the-file` and before `follow-the-folder` and `choose-a-theme` is the owner's decided
+  ordering (`docs/PRD.md` v18 § Scope (In); `docs/trail/sdd/cycle-62.md` § 1.1), not a dependency
+  and not a preference: step 3's test is what can be built, and this slice could be built earlier
+  or later; but a decided placement is not reordered for free the way a preference is, so § 7
+  carries it as a placement and moving it is a re-cut (§ 10 — RC-8 records this one), never a
+  re-sort. What this seat adds: its mechanism — the bundle, the entitlements, the probe — has
+  passed on every build since `open-a-folder`, so the slice's technical risk is the stranger's
+  Gatekeeper walk (R-2), not the artifact. *(Until v68: "Its two hard edges are `read-markdown`
+  (no release ships a `.md` as plain text — FR-30, RN-18) and `choose-a-theme` (FR-20); nothing
+  else it needs is unbuilt earlier. Its place after `follow-the-folder` — after the whole v1 cut,
+  and at it rather than at the terminus — is the owner's decided ordering (RN-17)" — the
+  `choose-a-theme` edge withdrawn with PRD v18, its ground FR-20/AC-11 being the companion's SRS
+  item; RC-8.)*
+
+### S-8 — Git follows the disk, and the beta's statement comes down
 
 - **Slug:** `follow-the-folder`
-- **Delivers:** With the live tree from `follow-the-tree`, a developer can leave KA-Reader open
+- **Delivers:** With the live tree and the live open file from `follow-the-tree` and
+  `follow-the-file`, a developer can leave KA-Reader open while an agent changes the folder and
+  also watch the Git state follow — the Git view and the tree's changed-file markers, within the
+  refresh bar, with no refresh control, their expanded nodes, open file and reading position kept,
+  and nothing crashing or writing however fast the folder moves; a repository appearing at the
+  root mid-session, or leaving it, fills or empties the Git view the same way; and the beta's
+  statement that the Git view and the markers show the state read when the folder was opened is
+  gone — from both surfaces and from the README's known gaps — because it is no longer true.
+  *(Until v68: "With the live tree from `follow-the-tree`, a developer can leave KA-Reader open
   while an agent changes the folder and also watch the open file's content and Git state follow —
   within the refresh bar, with no refresh control, their expanded nodes, open file and reading
   position kept, a vanished open file said to be gone, and nothing crashing or writing however
   fast the folder moves; a repository appearing at the root mid-session, or leaving it, fills or
-  empties the Git view the same way.
-- **Reached when:** The full scene below completes E-5 and retains the tree behavior as regression
-  coverage; the tree-only scene cannot substitute for it. *Observable (CDO):* with KA-Reader open on a folder, they expand some nodes,
+  empties the Git view the same way." — the open file's half is `follow-the-file`'s; RC-8.)*
+- **Reached when:** The full scene below completes E-5 and retains the tree and open-file
+  behaviour as regression coverage; neither the tree-only scene nor the displayed-file scene can
+  substitute for it. *Observable (CDO):* with KA-Reader open on a folder, they expand some nodes,
   collapse one of them again, open a file longer than the panel and scroll partway down it, and
   then run a script in a terminal that creates, changes and deletes files for thirty seconds. The
   tree changes on its own as the disk does, and nothing else moves: the nodes they left expanded
@@ -2368,7 +2603,8 @@ public at 1.0.0 or later (`system/projects/ka-reader/agari.md`).
   their place untouched (UX-I17). Throughout, the window never blanks, blocks or closes; an entry
   made unreadable mid-run is marked with what was observed and the rest of the tree stands (UX-S2
   Error, UX-I10). When the script stops, what the window shows is what `ls -R` and `git status`
-  show. They quit mid-run: no prompt (UX-I5). *Command (CTO):* `cargo test --locked -p ka-reader-core
+  show. They quit mid-run: no prompt (UX-I5). No surface says the Git state was read when the
+  folder was opened, and the README's known gaps no longer say so. *Command (CTO):* `cargo test --locked -p ka-reader-core
   --test watch` passes while `checks/churn.sh <fixture> 30` runs — thirty seconds of create,
   modify and delete including the displayed file, Git operations mid-flight, and `git init` at a
   plain root followed by its removal — with no panic, the model's final snapshot equal to a fresh
@@ -2383,21 +2619,30 @@ public at 1.0.0 or later (`system/projects/ka-reader/agari.md`).
   the host mid-churn — prints `unchanged` (NFR-4); `checks/latency.sh` exits 0 and prints file-switch and refresh
   p95 in milliseconds over `checks/fixtures/scale-small`, `scale-medium` and `scale-large` on every
   CI build — the first figures, which go to the SRS by revision and are asserted nowhere here
-  (C-I4). The built-bundle diagnostic-retention scene required by `docs/nfdr.md` QC-40
+  (C-I4). The Swift catalogue holds no string stating that Git state was read when the folder
+  was opened — the entry `docs/CONTENT.md` names for the beta's statement, once it names one, is
+  gone — and `README.md`'s known gaps hold no such line. The built-bundle diagnostic-retention
+  scene required by `docs/nfdr.md` QC-40
   runs here with the full churn capability: generate admitted diagnostics, measure the on-disk
   log bound under NFR-11 (including two app instances writing one file), and show a known
   pre-launch line absent after relaunch (SRS AC-13). An empty log or the writer's unit tests
   cannot substitute for that proof. *The promise clause:* the two `read-only.sh` runs above; `checks/no-network.sh` exits 0.
 - **Rests on:** § 3 `watcher` delivery built by `follow-the-tree`; `folder-model`'s reducer,
-  reader's place and fresh listings on return; the open `FileView`'s reading-position transport
-  across SM-4 (*Open Questions*, the collapse-and-scroll item); the root finding re-run on the
-  `.git` entry; `surfaces`' file-gone state. This slice ends the temporary placement of the marker
+  reader's place and fresh listings on return; the open `FileView`'s refresh and reading-position
+  transport across SM-4, built by `follow-the-file` *(until v68: "the open `FileView`'s
+  reading-position transport across SM-4 (*Open Questions*, the collapse-and-scroll item)" —
+  RC-8)*; the root finding re-run on the
+  `.git` entry; `surfaces`' file-gone state, built by `follow-the-file`. This slice ends the temporary placement of the marker
   join and Git row ordering in `surfaces`: both move to `folder-model` and travel as model
   projections/deltas (§ 3 `surfaces`; RC-5, RC-7). SM-3, SM-4 and SM-5; C-I1, C-I2, C-I3
-  (`--kill`), C-I4; R-5, R-6, R-8. Slices: `follow-the-tree`, `read-a-file`, `see-git-status`.
+  (`--kill`), C-I4; R-5, R-6, R-8. Slices: `follow-the-tree`, `follow-the-file`, `read-a-file`,
+  `see-git-status`. Placed after `first-public-release`, whose beta statement it withdraws (§ 7,
+  `supersedes`) — a placement, not an edge.
 - **Traces to:** PRD § Key Use Cases 3; § Target Users, the driving scenario; § Core Features
   "Live refresh"; § UX Notes "The path" 4, "the view never lies"; § Success Metrics "Refresh
-  immediacy". SRS: FR-14, FR-15, FR-16, FR-27, FR-28, FR-33 (the live clause); NFR-2 and NFR-10
+  immediacy"; § Scope (In) "The first public release — a beta" — the Git view following the disk
+  in place before 1.0.0. SRS: FR-14 (Git state; file content re-walked), FR-15, FR-16, FR-27,
+  FR-28 (re-walked — `follow-the-file`'s), FR-33 (the live clause); NFR-2 and NFR-10
   (measured — C-I4), NFR-3, NFR-4; DR-2, DR-6; AC-7, AC-8, AC-19, AC-20. UXD: UX-U2 (the driving
   scenario — read in glances, never asking for an action to stay current); UX-F3 whole; UX-S1 Error
   (the open file gone) and Success (position preserved across refreshes); UX-S2 Loading and Error;
@@ -2405,15 +2650,24 @@ public at 1.0.0 or later (`system/projects/ka-reader/agari.md`).
   leaving; § 4 C-E1, C-E2, C-E3, C-E6 of this document.
 - **Moves toward:** first — live refresh, the last of the v1 surface; and the scenario the product
   exists for (PRD § Purpose, "it exists *now* because").
-- **Not in this slice:** the refresh and file-switch numbers — printed here for the first time
+- **Not in this slice:** the open file's own refresh and the file-gone state — `follow-the-file`,
+  re-walked here as regression and not delivered here; the beta's statement — made by
+  `first-public-release`, only withdrawn here; the refresh and file-switch numbers — printed here for the first time
   (§ 4 C-I4) and folded into the SRS by revision, never fixed by a slice; switching folders —
   `switch-the-folder`; a manual refresh control — never (PRD § UX Notes "The path" 4).
-- **Why here in the order:** After `follow-the-tree`, reusing its path delivery and preservation
-  proof, and after the reading and Git surfaces exist. This completes live refresh, permits the
-  first complete refresh-latency measurement and discharges the full churn and bundle-retention
-  proofs. The owner's first-public-release placement still waits for this complete v1 cut.
+- **Why here in the order:** After `follow-the-file` by dependency — its full scene changes and
+  deletes the displayed file, which cannot pass before the open file follows the disk — and after
+  the Git surface exists; and after `first-public-release` by the owner's decided ordering (PRD
+  v18 § Scope (In): the beta does not wait for the Git view to follow the disk, and the Git view
+  following the disk is in place before 1.0.0), which § 7 carries as a placement. This completes
+  live refresh, permits the first complete refresh-latency measurement and discharges the full
+  churn and bundle-retention proofs. It sits directly after the beta and before `choose-a-theme`
+  by this seat's preference: the scenario the product exists for is finished before a preference
+  is kept. *(Until v68 this read: "After `follow-the-tree`, reusing its path delivery and
+  preservation proof, and after the reading and Git surfaces exist. ... The owner's
+  first-public-release placement still waits for this complete v1 cut." — withdrawn, RC-8.)*
 
-### S-7 — A theme chosen, and remembered outside the folder
+### S-9 — A theme chosen, and remembered outside the folder
 
 - **Slug:** `choose-a-theme`
 - **Delivers:** After this, a developer can switch between a dark and a light theme from the shell
@@ -2445,7 +2699,8 @@ public at 1.0.0 or later (`system/projects/ka-reader/agari.md`).
   `SM-4` (`set_theme`), `SM-6`; § 4 C-D2, C-D4. Slices: `open-a-folder`.
 - **Traces to:** PRD § UX Notes "The character" — "dark and light themes from the start"; § Data &
   Privacy — own state "never inside the folder it is pointed at". SRS: FR-20, FR-21; NFR-5, NFR-7;
-  DR-5; AC-11, AC-13. UXD: UX-I9 whole — both themes first-class, the platform default and its
+  DR-5; AC-11, AC-13 — FR-20 and AC-11 as v13 states them; their "from the first release" is
+  contradicted by PRD v18 and is the companion's SRS item (RC-8). UXD: UX-I9 whole — both themes first-class, the platform default and its
   signal-less fallback, the remembered override, the control's home; § 4 (the theme control in the
   chrome, RN-22); UX-I7 (a preference reversible by its own control); UX-A2, UX-A4; § 8 *Minimum
   contrast* (the floor `docs/DESIGN.md` states); § 9 *Design-System Direction* — two themes; § 4
@@ -2455,83 +2710,15 @@ public at 1.0.0 or later (`system/projects/ka-reader/agari.md`).
 - **Not in this slice:** the remembered folders — `switch-the-folder`; any token value —
   `docs/DESIGN.md`'s; a preference beyond the theme and the window frame — none exists (§ 4 C-D4).
 - **Why here in the order:** It could sit anywhere after `open-a-folder` — nothing structural
-  waits on it — and it sits sixth only because FR-20 makes both themes a first-release condition,
-  so it must precede `first-public-release`; and because it builds `own-state`, which
-  `switch-the-folder`'s remembered list is stored in.
+  waits on it. It sits after `first-public-release` and `follow-the-folder` by the owner's
+  placement — PRD v18 puts choosing and keeping a theme after the beta, in place before 1.0.0
+  (§ Scope (In); `docs/trail/sdd/cycle-62.md` § 1.1) — and before `switch-the-folder` because it
+  builds `own-state`, which that slice's remembered list is stored in. *(Until v68: "it sits
+  sixth only because FR-20 makes both themes a first-release condition, so it must precede
+  `first-public-release`" — RC-8; FR-20 and AC-11's "from the first release" is the SRS's and is
+  owed a revision, the companion's SRS item.)*
 
-### S-8 — A stranger can pick it up
-
-- **Slug:** `first-public-release`
-- **Delivers:** After this, a stranger can find KA-Reader at `github.com/eyalgo/ka-reader` *(`github.com/kensaiapp/ka-reader` until v51; PRD v16, SRS v13 C-12, RN-112)*, install
-  it by the one path the README's first screen names, and be reading a file of their own
-  repository within five minutes — the README stating what the tool will and will not touch, the
-  support posture, what is outside done, the MIT licence, and that before 1.0.0 anything may
-  change; a SECURITY.md naming where to report; and the release carrying the whole-surface proof —
-  the folder and the repository byte-identical after every command, no outbound traffic — as a
-  result a reviewer reads rather than a claim.
-- **Reached when:** *Observable (CDO):* a stranger on a Mac holding only stock macOS opens
-  `github.com/eyalgo/ka-reader` *(`github.com/kensaiapp/ka-reader` until v51; RN-112)* in a browser. The README's first screen tells them in one sentence
-  what the tool does, shows one install path, and shows a screenshot that is the shell of the
-  release they are about to download — not a mock-up, not an earlier build (`docs/UXD.md` UX-I11).
-  The page's images all come from the repository itself; no badge or picture is served from
-  anywhere else (UX-I15; the fence § `no-runtime-remote-asset`, the README clause). Further down —
-  not on the first screen — one plain sentence states the posture: mouse-driven, no keyboard
-  navigation, no assistive-technology promise, said as a fact and not an apology (UX-A3, UX-A1).
-  They follow the install path, walk Gatekeeper, launch, choose a repository of their own in the
-  Open panel, and are reading one of its files — a wall clock started at the README says under
-  five minutes. Every surface they meet on the way behaves as S-1 to S-7's observable halves state.
-  On the release page, beside the download, a reviewer reads — as text, not a claim — that the
-  whole surface was exercised against a repository and a plain folder and left both byte-identical
-  and the repository's Git state unchanged, with no outbound connection recorded. `SECURITY.md`
-  names where to report. *Command (CTO):* `.github/workflows/release.yml`, on a tag `v0.y.z`,
-  builds `KA-Reader-<version>.dmg` and `SHA256SUMS` from that tag and attaches both to a
-  GitHub Release on `eyalgo/ka-reader` *(`kensaiapp/ka-reader` here and in the two `gh` commands below until v51; RN-112)*; on the *downloaded* bundle, `shasum -a 256 -c SHA256SUMS`
-  passes, `codesign -dv KA-Reader.app` reports `Signature=adhoc`, `/usr/libexec/PlistBuddy -c 'Print
-  :LSMinimumSystemVersion' KA-Reader.app/Contents/Info.plist` prints `26.0` *(`14.0` until v48; § 4 C-R5, RN-108)*, and `checks/bundle.sh`
-  passes with C-R2's two entries; `checks/notices.sh` finds every name in `cargo tree` in
-  `THIRD_PARTY_NOTICES.md` — the Swift package declares no dependency to notice (C-R6); `LICENSE`
-  is MIT; `SECURITY.md` exists and `gh api
-  repos/eyalgo/ka-reader/private-vulnerability-reporting` returns `"enabled": true`; `cargo audit`
-  exits 0; `gitleaks git` exits 0 and `gh secret list --repo
-  eyalgo/ka-reader` prints no entry; the version in `Cargo.toml` and `CFBundleShortVersionString`
-  is below 1.0.0. *The promise clause, over the whole surface built so far:* `checks/read-only.sh`
-  prints `unchanged` on every fixture after every command the build grants (§ 4 C-R7); `checks/no-network.sh`
-  exits 0; and a network monitor across one full session against the downloaded bundle records zero
-  outbound connections (AC-3) — the result attached to the release as text a reviewer reads.
-- **Rests on:** § 3 `read-only-harness`; § 4 C-R1, C-R4, C-R5, C-R6, C-I3; § 9 TO-8, TO-9; § 11
-  R-2, R-7. Slices: `read-markdown` and `choose-a-theme` as edges (§ 7); `open-a-folder`,
-  `read-a-file`, `see-git-status`, `follow-the-folder` by the owner's decided ordering — the first
-  public release waits for the full v1 cut (RN-17) — which § 7 carries as a placement, not an
-  edge, and which only a re-cut (§ 10) may move.
-- **Traces to:** PRD § Goals "Pick-it-up adoption"; § Success Metrics "Read-only integrity",
-  "Time-to-first-success"; § Assumptions "Licence", "Public identity", "Support posture",
-  "Versioning", "Regulatory posture"; § Scope (In) "Run posture", "Platform"; § Risks "The promise
-  breaks incidentally", "Maintenance is a standing liability". SRS: NFR-7, NFR-8, NFR-9, NFR-13,
-  NFR-15; C-3, C-4, C-5, C-6 (the pre-1.0.0 statement), C-7, C-9, C-10, C-11, C-12, C-13; AC-1,
-  AC-2, AC-3, AC-10, AC-14. UXD: UX-I11 (the README screenshot is product surface, checked at
-  release); UX-A3 (the posture sentence, its place and its bound); UX-A1 (the posture it states);
-  UX-I15 as the instance fence § `no-runtime-remote-asset` extends it to the README; § 4 C-E7,
-  C-E10 of this document. The README's claims, its licence and its support posture are the PRD's
-  and are not traced here.
-- **Moves toward:** third — a stranger, by the README alone, at a release below 1.0.0; second — the
-  bar at zero violations at the first public release, from which "every release before it" is
-  counted. Not the 1.0.0 half of the third condition — that is `promise-one-point-zero`.
-- **Not in this slice:** version 1.0.0 and the promise it starts — `promise-one-point-zero`;
-  diffs, history and folder switching — `read-a-diff`, `read-the-history`, `switch-the-folder`; a
-  second install channel, and notarization — never (§ 4 C-R4, § 9 TO-9); sidebar search and
-  filter, pane resizing and keyboard navigation — outside done, and the README says so rather than
-  promising them (PRD § Out of Scope).
-- **Why here in the order:** Its two hard edges are `read-markdown` (no release ships a `.md` as
-  plain text — FR-30, RN-18) and `choose-a-theme` (FR-20); nothing else it needs is unbuilt
-  earlier. Its place after `follow-the-folder` — after the whole v1 cut, and at it rather than at
-  the terminus — is the owner's decided ordering (RN-17), not a dependency and not a preference:
-  step 3's test is what can be built, and this slice could be built earlier; but a decided
-  placement is not reordered for free the way a preference is, so § 7 carries it as a placement
-  and moving it is a re-cut (§ 10), never a re-sort. What this seat adds: its mechanism — the
-  bundle, the entitlements, the probe — has passed on every build since `open-a-folder`, so the
-  slice's technical risk is the stranger's Gatekeeper walk (R-2), not the artifact.
-
-### S-9 — A changed file's changes, read
+### S-10 — A changed file's changes, read
 
 - **Slug:** `read-a-diff`
 - **Delivers:** After this, a developer can activate a changed file's row in the Git view and read
@@ -2569,7 +2756,7 @@ public at 1.0.0 or later (`system/projects/ka-reader/agari.md`).
   UXD: UX-F2 — the row's second reading, one click target, the never-falls-back rule; UX-F4 — the
   diff steps and the read-only clause; UX-S5 all four cells; UX-I1, UX-I10; UX-A2; UX-I17 (nothing
   to open in a plain folder); § 4 C-E3, C-E5, C-E8 of this document.
-- **Moves toward:** first — diffs, the first of the three beyond-v1 features the Agari places
+- **Moves toward:** first — diffs, the first of the three beyond-v1 features the finish line places
   inside done.
 - **Not in this slice:** a commit's diff — `read-the-history`; the row's first reading, opening
   the file — `see-git-status`'s, which this slice replaces on the row; a diff in a plain folder —
@@ -2579,7 +2766,7 @@ public at 1.0.0 or later (`system/projects/ka-reader/agari.md`).
   of the Git port after the release, so a libgit2 lag (R-1) on the diff path is met before the walk
   path widens it further.
 
-### S-10 — The history, branches drawn as branches
+### S-11 — The history, branches drawn as branches
 
 - **Slug:** `read-the-history`
 - **Delivers:** After this, a developer can open the commit history from the Git view — commit
@@ -2631,7 +2818,7 @@ public at 1.0.0 or later (`system/projects/ka-reader/agari.md`).
   contract is complete — and R-1's substitute, if ever built, has a fixed surface to match —
   before the one slice that changes the wall lands.
 
-### S-11 — Another folder, without restarting
+### S-12 — Another folder, without restarting
 
 - **Slug:** `switch-the-folder`
 - **Delivers:** After this, a developer can switch the viewed folder from the shell chrome without
@@ -2672,14 +2859,14 @@ public at 1.0.0 or later (`system/projects/ka-reader/agari.md`).
   including a deletion or a move. Do not narrow the path filter to allowed files or subtract
   changes from the result. This measures the viewing surface untouched by the selector
   contribution (NFR-12); earlier diff and history work is already in the before state.
-  When several changes deliver S-11, retain and check every contributing pair. The last pair
+  When several changes deliver S-12, retain and check every contributing pair. The last pair
   alone does not prove the slice, and an interval containing unrelated work is not a substitute.
   A pre-landing comparison may use a candidate and its recorded destination base only when the
   candidate includes that base and the difference contains only the selector contribution.
   Refresh that check whenever either endpoint changes. Retain the actual landing comparisons,
   including conflict resolutions. Missing commits, a failed command or an unexplained endpoint
   pair leaves isolation unproven. Empty output alone does not prove that switching was delivered:
-  all other S-11 observable, command and promise checks still apply. The correction and its
+  all other S-12 observable, command and promise checks still apply. The correction and its
   authority are RC-6 and RN-124. *The promise clause:* `checks/read-only.sh` prints `unchanged` on A
   and on B after the switch, `.git` hashed where present; `checks/own-state.sh` finds every write
   inside the container; `checks/no-network.sh` exits 0.
@@ -2708,7 +2895,7 @@ public at 1.0.0 or later (`system/projects/ka-reader/agari.md`).
   panel are all built, and the bar is that none of them moves. It depends on nothing after
   `choose-a-theme` and could have landed earlier; the reason above is a preference, stated as one.
 
-### S-12 — The number becomes a promise
+### S-13 — The number becomes a promise
 
 - **Slug:** `promise-one-point-zero`
 - **Delivers:** After this, an adopter can rely on the version number: the release reads 1.0.0, the
@@ -2728,9 +2915,9 @@ public at 1.0.0 or later (`system/projects/ka-reader/agari.md`).
   (`docs/trail/sdd/cycle-2.md` § 2.2); which kind a member is follows the rule RN-19 states.
 - **Reached when:** *Observable (CDO):* this slice adds no surface, so what a person watches is
   the whole surface again, on the 1.0.0 bundle they downloaded: every observable half of S-1 to
-  S-11 walks as written, in both themes, against a repository and a plain folder. The release page
+  S-12 walks as written, in both themes, against a repository and a plain folder. The release page
   reads 1.0.0. The README's "anything may change" sentence is gone and the contract stands in its
-  place, in the two kinds S-12's *Delivers* states; the posture sentence is still there, still not
+  place, in the two kinds S-13's *Delivers* states; the posture sentence is still there, still not
   on the first screen; the screenshot is 1.0.0's shell (`docs/UXD.md` UX-A3, UX-I11). They launch
   1.0.0 over the state a previous release left: their theme, their window and their remembered
   folders are as they were, and no surface says anything about a migration. They launch it over a
@@ -2757,7 +2944,7 @@ public at 1.0.0 or later (`system/projects/ka-reader/agari.md`).
   diffs, history and a switch records zero outbound connections (AC-12 with AC-1 – AC-3).
 - **Rests on:** § 4 C-R4, C-R5, C-D4, C-I3, C-I4, C-I6; § 9 TO-8 (raising the floor is now a
   major version); § 11 R-7, R-12. Slices: `first-public-release`, `switch-the-folder`,
-  `read-the-history`.
+  `read-the-history`, `follow-the-folder`.
 - **Traces to:** PRD § Assumptions "Versioning" — "Reaching 1.0.0 is a product event — the moment
   the promise starts"; § Goals "Pick-it-up adoption"; § Success Metrics "Read-only integrity",
   reckoned at the closing release. SRS: C-6 (the 1.0.0 half), C-11, C-3; NFR-9; DR-5; AC-12,
@@ -2774,7 +2961,9 @@ public at 1.0.0 or later (`system/projects/ka-reader/agari.md`).
   the draft as it stands (`docs/trail/sdd/cycle-2.md` § 2.2), and widening it changes what the
   product promises, which the routing rule sends to the owner (RN-19), never to a slice.
 - **Why here in the order:** Last by dependency: the promise it starts covers every surface the
-  PRD names, so the surface must be whole (`switch-the-folder`, `read-the-history`); the caveat it
+  PRD names, so the surface must be whole (`switch-the-folder`, `read-the-history`, and
+  `follow-the-folder` — the Git view following the disk is in place before 1.0.0, `docs/PRD.md`
+  v18 § Scope (In)); the caveat it
   withdraws was made by `first-public-release`; and the own-state test across versions needs a
   previous release to read from.
 
@@ -2795,22 +2984,24 @@ the rest describe the cut without ordering it.>
 | `see-git-status` | `depends_on` | `open-a-folder` | The root finding is asked of a granted folder (FR-33) |
 | `see-git-status` | `depends_on` | `read-a-file` | A changed file's row opens the file for reading exactly as a tree selection does (FR-13, first reading) |
 | `follow-the-tree` | `depends_on` | `read-a-file` | Tree churn must preserve an existing open file and reading position; this carries `open-a-folder` |
-| `follow-the-folder` | `depends_on` | `follow-the-tree` | Open-file and Git refresh extend the watcher-to-model delivery and place preservation built in the tree slice |
-| `follow-the-folder` | `depends_on` | `read-a-file` | There is no open file to update and no file-gone state to show without the reading panel (FR-14, FR-28) |
+| `follow-the-file` | `depends_on` | `follow-the-tree` | Open-file refresh extends the watcher-to-model delivery and place preservation built in the tree slice (RC-7, RC-8) |
+| `follow-the-file` | `depends_on` | `read-a-file` | There is no open file to update and no file-gone state to show without the reading panel (FR-14, FR-28) |
+| `follow-the-folder` | `depends_on` | `follow-the-file` | Its bar is the full churn scene, which changes and deletes the displayed file (AC-8); that half of the scene cannot pass before the open file follows the disk (FR-14, FR-28) |
 | `follow-the-folder` | `depends_on` | `see-git-status` | Git state has no surface to change on until the Git view exists; the Git clause of FR-14 cannot be met without it |
 | `choose-a-theme` | `depends_on` | `open-a-folder` | The theme control lives in the shell chrome (`docs/UXD.md` § 4) |
 | `first-public-release` | `depends_on` | `read-markdown` | No release ships a `.md` shown as plain text — FR-30 "displayed rendered by default" (RN-18) |
-| `first-public-release` | `depends_on` | `choose-a-theme` | Both themes are a first-release requirement (FR-20, AC-11) |
 | `read-a-diff` | `depends_on` | `see-git-status` | The diff is opened from the Git view's row, whose reading changes when the diff is present (FR-13, FR-17) |
 | `read-the-history` | `depends_on` | `see-git-status` | The history is entered from the Git view (`docs/UXD.md` UX-S6) |
 | `read-the-history` | `depends_on` | `read-a-diff` | A commit's diff uses the same presentation as a file's (FR-22) |
 | `switch-the-folder` | `depends_on` | `open-a-folder` | Switching replaces a folder that was granted; the second folder is opened exactly as the first (FR-19, FR-33) |
 | `switch-the-folder` | `depends_on` | `choose-a-theme` | The remembered list lives in `own-state`, which `choose-a-theme` builds (`SM-6`, C-D4) |
 | `promise-one-point-zero` | `depends_on` | `first-public-release` | The caveat it withdraws was made there, and the own-state test across versions needs a previous release to read from (C-D4) |
-| `promise-one-point-zero` | `depends_on` | `switch-the-folder` | The promise covers every surface the PRD names; the surface must be whole (Agari, first condition) |
+| `promise-one-point-zero` | `depends_on` | `switch-the-folder` | The promise covers every surface the PRD names; the surface must be whole (finish line, first condition) |
 | `promise-one-point-zero` | `depends_on` | `read-the-history` | The same — and `read-the-history` carries `read-a-diff` by its own edge |
+| `promise-one-point-zero` | `depends_on` | `follow-the-folder` | The promise covers every surface the PRD names, live refresh whole included — the Git view following the disk is in place before 1.0.0 (`docs/PRD.md` v18 § Scope (In)) — and S-13's bar walks S-8's observable half |
 | `first-public-release` | `validates` | `open-a-folder` | The wall proven on every CI build is proven again on a downloaded, ad-hoc-signed artifact through a stranger's Gatekeeper walk (R-2, R-8) |
 | `follow-the-tree` | `validates` | `read-a-file` | Tree-only churn and kill preserve the reader's place (FR-27, NFR-4) |
+| `follow-the-file` | `validates` | `read-a-file` | Change and deletion of the displayed file preserve the reading position and state the file gone (FR-27, FR-28, NFR-4) |
 | `follow-the-folder` | `validates` | `read-a-file` | Full churn extends that preservation proof to displayed-file and Git changes (FR-27, NFR-4) |
 | `switch-the-folder` | `validates` | `open-a-folder` | Replace-whole, designed into the model at the first slice, is shown by the change that adds the selector touching no viewing surface (NFR-12) |
 | `see-git-status` | `hands_off_to` | `read-a-diff` | The row control: one click target whose reading `read-a-diff` changes (FR-13) |
@@ -2818,18 +3009,28 @@ the rest describe the cut without ordering it.>
 | `open-a-folder` | `hands_off_to` | `switch-the-folder` | The grant and the identity element: the folder's name in the chrome becomes the selector (`docs/UXD.md` § 4, UX-F5) |
 | `read-a-diff` | `supersedes` | `see-git-status` | On the row's reading only: where the diff is present the row opens it and the file is read from the tree (FR-13, second reading); nothing else of `see-git-status` is superseded |
 | `promise-one-point-zero` | `supersedes` | `first-public-release` | On the version statement only: "anything may change" is withdrawn and the contract stated in its place (C-6) |
+| `follow-the-folder` | `supersedes` | `first-public-release` | On the beta's statement only: the Git view and the markers no longer say they show the state read when the folder was opened, and the README's known gaps drop the line (`docs/PRD.md` v18 § Scope (In)) |
 
-The order § 6 states is the `depends_on` rows above plus four placements no edge forces, each
-carried in its slice's *Why here in the order*. They are not all of one kind. **One is the owner's
-decided ordering:** `first-public-release` after `follow-the-folder` — the first public release
-waits for the full v1 cut (RN-17). It is not a `depends_on` row, because step 3's test is what can
-be built and that slice could be built earlier — a row there would be a ruling wearing a
-dependency's clothes, which is the failure step 3 exists to catch; and it is not a preference,
-because a preference reorders for free and this does not: moving it is a re-cut under § 10 with
-RN-17 as the ground, never a re-sort at the cut. **Three are this seat's preferences,** stated as
-such: `follow-the-tree` after `see-git-status` (the established surfaces available during tree churn); `read-the-history` before `switch-the-folder` (the port completed before the wall changes);
-`switch-the-folder` last (the one entitlement change, and NFR-12 validated against the fullest
-surface).
+The order § 6 states is the `depends_on` rows above plus six placements no edge forces, each
+carried in its slice's *Why here in the order*. They are not all of one kind. **Two are the
+owner's decided ordering,** both PRD v18's (§ Scope (In), *The first public release — a beta*;
+`docs/trail/sdd/cycle-62.md` § 1.1; RC-8): `first-public-release` after `follow-the-file` — the
+beta ships once the tree and the open file follow the disk and Markdown reads rendered — and
+`follow-the-folder` and `choose-a-theme` after `first-public-release` — the beta waits for neither,
+and nothing but the tree and the open file following the disk and Markdown rendered precedes it.
+Neither is a `depends_on` row, because step 3's test is what can be built and each could be built
+in the other order — a row there would be a ruling wearing a dependency's clothes, which is the
+failure step 3 exists to catch; and neither is a preference, because a preference reorders for
+free and these do not: moving one is a re-cut under § 10, never a re-sort at the cut. **Four are
+this seat's preferences,** stated as such: `follow-the-tree` after `see-git-status` (the
+established surfaces available during tree churn); `follow-the-folder` directly after
+`first-public-release` and before `choose-a-theme` (the scenario the product exists for finished
+before a preference is kept); `read-the-history` before `switch-the-folder` (the port completed
+before the wall changes); `switch-the-folder` last (the one entitlement change, and NFR-12
+validated against the fullest surface). *(Until v68 the placements were four and the one decided
+ordering read: "`first-public-release` after `follow-the-folder` — the first public release waits
+for the full v1 cut (RN-17)" — withdrawn by the owner for the beta, `docs/trail/prd/cycle-15.md`
+§ 3.1, folded at `docs/trail/sdd/cycle-62.md` § 1.1.)*
 
 ## 8. Slice → seeds
 
@@ -2851,7 +3052,7 @@ delivery. **Stays here** — a fact about this slice's place among slices, which
 | **Slug** | recorded in `## Source` as the slice this seed came from | repeats |
 | **Delivers** | `## What it is` | divides — each share must be worth something on its own, or it is a fragment (§ 5 step 2) |
 | **Rests on**, the SDD sections it realizes | `## What it is` | repeats |
-| **Moves toward** | `## What it is` | repeats — a seed that advances no Agari is a finding |
+| **Moves toward** | `## What it is` | repeats — a seed that advances no finish line is a finding |
 | **Traces to**, and this SDD's path | `## Source` | repeats, narrowed to what the seed's share touches |
 | **Rests on**, the slices it names by slug | `## Relation to existing work` | repeats — the order *among* these seeds is decided at the cut and is not in this SDD |
 | **Not in this slice** | `## Out (later / elsewhere)` | repeats, and grows — each seed also fences off its siblings' shares, naming the seed that owns each |
@@ -3354,6 +3555,69 @@ The seat whose ground moved is the CTO's: S-10's command comparison, on the answ
   this run neither edits nor silently claims agreement with that historical mapping. The NFDR
   allocation is already raised separately by the owner (cycle-60 provenance); this SDD fold
   does not rewrite that producer's record. No further owner answer is needed for these two items.
+
+### RC-8 — 2026-11-06 — the first public release becomes the beta, ahead of the Git half of live refresh and of the theme; live refresh cut in three
+
+The seat whose ground moved is the CPO's: the PRD changed upstream. `docs/PRD.md` v17
+(`ka-reader@ce9ba62`, folding `docs/trail/prd/cycle-15.md` § 3.1) and v18 (`ka-reader@d1ea3ac`,
+folding `docs/trail/prd/cycle-16.md` § 3.1) add § Scope (In) *The first public release — a beta*,
+the beta's case under § UX Notes *the view never lies*, and the history clause of § Assumptions
+*Public identity*. The CPO raised the contradiction on this document and the owner answered it at
+`docs/trail/sdd/cycle-62.md` § 1.1 (`ka-reader@0f53847`, amended at `ka-reader@cb25715`). The CTO
+writes the record.
+
+- **Prior assumption:** `first-public-release` lands after the whole v1 cut and at it — after
+  `follow-the-folder`, with `choose-a-theme` a `depends_on` edge before it — on the owner's
+  ruling quoted at RN-17; live refresh is two slices, `follow-the-tree` and `follow-the-folder`,
+  the second owning the open file and Git together (RC-7); the Git view's "read when the folder
+  opened" state is an intermediate no release ships (S-4 *Not in this slice*, as it read).
+- **Observed reality:** PRD v18 § Scope (In): "the first public release is a beta, below 1.0.0,
+  and it comes first. It comes once the tree and the open file follow the disk and Markdown reads
+  rendered, and it waits for nothing else: not for the Git view to follow the disk, and not for
+  choosing a theme and keeping that choice"; "In the beta, the Git view and the tree's
+  changed-file markers say plainly that they show the Git state read when the folder was opened,
+  and the README's known gaps say the same"; § Assumptions *Public identity*: "The repository goes
+  public with its own commit history, not as a fresh copy ... the repository goes public only once
+  its history has been checked for anything private". The owner's answer on this document
+  (cycle-62 § 1.1): "nothing but the tree and open file following the disk and Markdown rendered
+  precedes the beta". RN-17's ruling is withdrawn for the beta by the owner
+  (`docs/trail/prd/cycle-15.md` § 3.1, its answer's last sentence).
+- **Retained:** § 2's shape and § 3's parts and seams — nothing here moves them, so no ADR is
+  owed; every slice's bar as written, the landed tree slice's included; the three beyond-v1
+  slices, `promise-one-point-zero` and their order; the promise clause on every slice; RN-17's
+  argument beneath the withdrawn ruling, kept as history; the NFDR's references to
+  `follow-the-folder`, which concern the marker and row-order migration, the full churn and the
+  retention proof and so stay true of the narrowed slice.
+- **Changed:** (1) Live refresh is three slices: `follow-the-tree` (S-5, landed),
+  `follow-the-file` (S-6, new — the open file's content following the disk, the file-gone state
+  and its recovery, the reading-position transport through `select_file`, and the
+  selection-order rule § 3's `surfaces` row names a known defect) and `follow-the-folder` (S-8,
+  narrowed to Git state following the disk, the marker and row-order migration RC-5 assigned it,
+  the full churn scene, the first complete latency measurement and the built-bundle retention
+  proof; it also withdraws the beta's statement). The Git half keeps the slug because the
+  obligations recorded against it downstream are Git's. (2) `first-public-release` is S-7, placed
+  after `follow-the-file` and `read-markdown` and before `follow-the-folder` and `choose-a-theme`;
+  its *Delivers* and both halves of its bar carry the beta's statement, the README's known-gaps
+  line and the repository's published, privacy-checked history. (3) `choose-a-theme` is S-9,
+  after `follow-the-folder`; the edge `first-public-release` → `choose-a-theme` leaves § 7, its
+  ground (FR-20, AC-11, "from the first release") being contradicted by PRD v18 — the SRS is owed
+  a revision, raised in the companion. (4) § 7 gains `follow-the-file` → `follow-the-tree`,
+  `follow-the-file` → `read-a-file`, `follow-the-folder` → `follow-the-file` and
+  `promise-one-point-zero` → `follow-the-folder` (`depends_on`), `follow-the-file` → `read-a-file`
+  (`validates`) and `follow-the-folder` → `first-public-release` (`supersedes`, the statement);
+  two decided orderings replace the one. (5) S-6 – S-12 become S-7 – S-13; current references
+  follow these numbers, earlier dated notes keep theirs. (6) § 1 names the beta; § 3's
+  `folder-model`, `surfaces` and *What the system holds* follow the split; § 5 steps 1, 3, 4 and 5
+  and § 12's PRD boundary follow.
+- **Stopped:** Holding the first public release to the full v1 cut; treating the theme as a
+  first-release condition in this document; delivering the open file's refresh and Git's in one
+  slice.
+- **Still unresolved:** The SRS's FR-20 and AC-11 (the CTO's, by `product-srs`); where the UXD
+  draws the beta's statement on the Git view and the markers, and how UX-I4 and UX-I13 read it
+  (the CDO's); the CPO's fields of `follow-the-file` and of the narrowed `follow-the-folder` as
+  drafted (the CPO's); the history-check condition on S-7 as drafted from PRD v18 (item 2.2,
+  the CTO's) — all in `docs/SDD_open_issues.md`. What the Git view's "read at open" words are is
+  `docs/CONTENT.md`'s, not this document's.
 
 ## 11. Technical risks
 
@@ -4011,8 +4275,9 @@ is written, and what to do with a decision visible in the design but argued in n
 **The PRD boundary** — the CPO's clause.
 
 This design changes no product goal and no scope. Every PRD section cited above is cited as
-`docs/PRD.md` v15 (Settled) states it; the cut in § 6 delivers what the PRD names and nothing it
-excludes, and § 1 holds every slice to the Agari the PRD is scoped against. The PRD delegates no
+`docs/PRD.md` v18 (Settled) states it *(v15 here until v68, though v16 reached this document at v51
+— RN-112 — and v17 – v18 through `docs/trail/sdd/cycle-62.md` §§ 1.1 – 2.2; RC-8)*; the cut in § 6 delivers what the PRD names and nothing it
+excludes, and § 1 holds every slice to the finish line the PRD is scoped against. The PRD delegates no
 value to this document directly — its delegations run through the SRS (the acquisition channel,
 the macOS floor) and this document takes the SRS's word for them. A gap in the PRD found here is a
 companion item for the CPO's own PRD run, never a rewrite from this document — **even by the seat
@@ -4035,10 +4300,18 @@ stays at v15. What the exit costs in product terms is a date and not a surface �
 rests on `open-a-folder` (§ 7), so the first public release moves later, not smaller — and the
 one public sentence it does reach is the README's, not the PRD's (RN-59). The immediacy
 thresholds the PRD leaves TBD are the SRS's to fold in by revision, and no slice here writes a
-number for them.
+number for them. Two further upstream changes reached this document at v68 and opened no PRD gap:
+the beta (PRD v17 – v18 § Scope (In)) moved the first public release's place and the cut around
+it — recorded at § 10 RC-8 and folded from the owner's answer at `docs/trail/sdd/cycle-62.md`
+§ 1.1 — and the history clause (§ Assumptions *Public identity*) reached S-7's bar as a draft
+(cycle-62 § 2.2, still open). What that fold found are gaps below the PRD, not in it: the SRS's
+FR-20 and AC-11, whose "from the first release" the PRD now contradicts — the first SRS gap this
+document has raised — and the UXD's drawing of the beta's statement; each is a companion item for
+its own seat.
 
 **The SRS boundary.** This design changes no requirement. Every `FR-n`, `NFR-n`, `DR-n` and `C-n`
-cited above is cited as `docs/SRS.md` v12 states it, and where the SRS delegates a value to this
+cited above is cited as `docs/SRS.md` v13 states it *(v12 until v68; v13's one change, C-12,
+reached this document at v51 — RN-112)*, and where the SRS delegates a value to this
 document — the acquisition channel (C-3, RN-7), the macOS floor (C-11), the Git mechanism (§ 5.3),
 the extension set (FR-29), the build-cost judgment on the raw-source switch and the relative link
 (FR-31, FR-32), how the root finding is made (FR-33) — the value is fixed here and traced back. A
@@ -9744,6 +10017,95 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   SM-2, SM-4, SM-5, *What the system holds*; § 4 C-I1; § 6 S-5; § 11 R-1; *Open Questions*;
   source: `docs/trail/sdd/cycle-61.md` §§ 5.1–5.6.)*
 
+- **RN-127:** *(CTO)* *(changed — the cut, on PRD v17 – v18 and the owner's answer at
+  `docs/trail/sdd/cycle-62.md` § 1.1)* The CPO raised item 1.1 on 2026-11-06 and the owner answered
+  it in the same hand (`ka-reader@0f53847`), amending it to place the theme after the beta
+  (`ka-reader@cb25715`): the first public release is a beta below 1.0.0, placed once the tree and
+  the open file follow the disk and Markdown reads rendered, ahead of the Git half of live refresh
+  and of the theme, and "nothing but the tree and open file following the disk and Markdown
+  rendered precedes the beta". The answer's authority is the PRD's: v17 and v18, read whole this
+  run (`docs/PRD.md` § Scope (In) *The first public release — a beta*; § UX Notes, the beta's case;
+  § Assumptions *Public identity*; `git diff 93ebbc2 d1ea3ac -- docs/PRD.md` shows those three
+  additions and the two finish-line renames and nothing else of substance). § 10 RC-8 records the
+  re-cut and this note records the calls inside it that were this seat's. **The split of live
+  refresh into three.** The answer names "the Git half of live refresh" and the PRD places the
+  beta after the open file follows the disk and before Git does; the slice that owned both (S-6
+  `follow-the-folder`, RC-7) could land on neither side of that release, which is step 4's
+  too-broad case, so the open file's refresh is its own slice, `follow-the-file`, and the Git half
+  keeps the slug — the NFDR's twelve references to `follow-the-folder` at v77 (`grep -c`) are the
+  marker and row-order migration, the full churn and the retention proof, all of which stay with
+  the Git half. Sizing is the CPO's column: the split is drafted here and raised for the CPO to
+  confirm (the companion, item 2.3). **The selection-order rule** § 3's `surfaces` row names a
+  known defect at `ka-reader@2529a42` moves from `follow-the-folder` to `follow-the-file` with the
+  open file's refresh, since it is the open file's selection. **§ 7.** The edge
+  `first-public-release` → `choose-a-theme` is removed: its ground, FR-20 and AC-11 "from the
+  first release" (`docs/SRS.md:L278-L279`, `:L552`), is contradicted by PRD v18, and the SDD
+  follows the PRD, the document the SRS derives from — the SRS is owed a `product-srs` revision
+  (the companion, item 2.5). Three `depends_on` rows are added, each a step 3 answer with its fact
+  on the row; `promise-one-point-zero` → `follow-the-folder` answers the question the self-answer
+  of 2026-11-06 left standing (`docs/trail/sdd/self_answer-73.md` § *Skipped*): with the release
+  moved, no edge ordered the Git half before 1.0.0, and the PRD says it is in place before 1.0.0.
+  The two decided orderings are carried as placements, not edges, by the same reasoning RN-17's
+  placement was. **S-7's beta clauses.** The statement on the Git view and the markers, and the
+  README's known-gaps line, enter *Delivers* (the CPO's — settled by the PRD) and the observable
+  half (the CDO's — drafted; the UXD at v12 does not draw the statement: UX-I4 says stale content
+  is never presented as current and UX-I13 that no indicator is drawn before its state is
+  observed, and neither names the beta's case — the companion, item 2.4). S-8 withdraws the
+  statement, a `supersedes` row. **Verification limits:** no product test ran; the test names in
+  S-6's bar are this design's, not read from a build; the SRS, UXD and NFDR were read at their
+  headers and at the clauses named here, not whole; the PRD was read whole; no journey file is
+  cited. **Document checks:** `docs/trail/sdd/cycle-62.md` is a byte-for-byte copy of the
+  companion as this run opened it; every replaced passage keeps its old words in a dated note
+  beside it; the parts table keeps its eleven parts and § 6 holds thirteen slices; `git diff
+  --check` prints nothing *(re: § 1; § 3 `folder-model`, `surfaces`, *What the system holds*; § 5
+  steps 1, 3, 4, 5; § 6 S-1, S-2, S-4, S-5, S-6, S-7, S-8, S-9, S-13; § 7; § 10 RC-8; § 12;
+  source: `docs/PRD.md` v18; `docs/trail/sdd/cycle-62.md` § 1.1; `docs/trail/prd/cycle-15.md`
+  § 3.1, `cycle-16.md` § 3.1)*.
+- **RN-128:** *(CTO)* *(changed — the finish line by name and path)* Item 2.1 of
+  `docs/trail/sdd/cycle-62.md`, raised by a `companion-self-answer` run on 2026-11-06
+  (`ka-reader@5bc79c2`; reasoning `docs/trail/sdd/self_answer-73.md`) and confirmed in the CTO's
+  seat the same day (`ka-reader@29ea746`; `self_answer-74.md` § 2.1), is folded: in the live body —
+  Part A through § 12, the Review Notes and the header's dated version lines excluded — every
+  `system/projects/ka-reader/agari.md` reads `system/projects/ka-reader/finish_line.md` (five
+  places) and every *Agari* reads *finish line* (nineteen places, the five paths' sentences
+  among them), by one replacement over that range and no other edit. The instance renamed the
+  file on 2026-11-03 (instance commit `de384e69`, `git mv`; the migration row at
+  `<CORE>/doctrine/setup/kensaiapp_structure.md` § 6), and `finish_line.md` carries the three
+  conditions § 1 restates, so the pointer moves and no claim does. § 1 carries the one dated
+  note; § 10's entries, these notes and every trail citation keep the old name as written *(re:
+  § 1, § 2 force 4 and the hexagonal row, § 5 steps 1 – 4 and *Six cuts*, § 6's preamble and
+  S-10, § 7, § 8, § 12; source: `docs/trail/sdd/cycle-62.md` § 2.1)*.
+- **RN-129:** *(CTO)* *(added — the history clause, drafted; and the three items raised)* Item 2.2
+  of cycle-62, raised by the same self-answer run (`ka-reader@29ea746`; reasoning
+  `self_answer-74.md` § *Raised on this document*), carries no answer; its slot is left to the
+  seat it names. The clause it concerns is nonetheless the PRD's own, settled at v18
+  (§ Assumptions *Public identity*, owner-confirmed at `docs/trail/prd/cycle-16.md` § 3.1), and a
+  fold that reads the PRD whole cannot leave S-7 contradicting it: so the repository's published
+  history and its privacy check are drafted into S-7's *Delivers* and command half, and the item
+  stays open in the companion, its *Drafted into the SDD* field now naming what v68 wrote. The
+  check's two halves are this seat's design: `gitleaks git` over every commit HEAD reaches is the
+  secrets half and already stood in the bar; "anything private" is wider than a secret — a name, a
+  path, a message — and no command finds it, so that half is a person's read, written on the
+  release page as a result, and the publication form is checked by root commit. Three further
+  items are raised this run, each for the seat whose column it is: 2.3 (cpo) the three-way cut
+  and the new slice's CPO fields; 2.4 (cdo) the beta's statement on S-7's observable half and
+  the UXD's gap; 2.5 (cto) the SRS's FR-20 and AC-11 against PRD v18. `Status:` reads Draft while
+  the companion stands *(re: § 6 S-7; § 12; source: `docs/PRD.md` v18 § Assumptions "Public
+  identity"; `docs/trail/sdd/cycle-62.md` § 2.2)*.
+- **RN-130:** *(CTO)* *(changed — the repository's address, in the live body)* Seven places in the
+  live body — § 4 C-R4, § 5 step 1 E-7, and § 6 S-7's *Delivers*, observable half and three
+  commands — wrote the repository's own `<owner>/<name>` address, as RN-112 set it at v51 from
+  SRS C-12. From v68 each writes `<owner>/<repository>` instead, the form
+  `<CORE>/doctrine/governance/records_name_no_machine.md` § *What is written instead* fixes for a
+  record's own address, with nothing else in the line changed; the dated notes beside them, these
+  notes and every trail copy keep what they held. The occasion is this fold's move of S-7 in
+  § 6's order: a block moved within a file is, to the check held at commit (§ *Where the rule is
+  held*), a set of added lines, and an added line naming the address is refused, so the lines are
+  scrubbed as the rule says a scrub may be made anywhere. The repository the address named is the
+  one SRS C-12 names, under the maintainer's personal handle; a reader who needs it opens C-12.
+  *(re: § 4 C-R4; § 5 step 1 E-7; § 6 S-7; source: `records_name_no_machine.md` § *What a line in
+  a record never names*, § *What is written instead*)*.
+
 ## Open Questions
 
 <A technical question this SDD leaves standing — recorded so a reader does not mistake silence for
@@ -9796,8 +10158,9 @@ question.>
   crosses: `list_tree` takes the path and the act, the shell sends both, and `--test exports` still
   passes with SM-4's ten (§ 3 SM-4). **What stays open is the scroll's crossing through
   `select_file` alone:** the export takes the path alone (`crates/ka-reader-bridge/src/exports.rs:L107`)
-  and the reading position reaches the model from nowhere yet at that pin; RC-7 assigns
-  reading-position transport through `select_file` to `follow-the-folder`, and tree-only refresh
+  and the reading position reaches the model from nowhere yet at that pin; RC-7 assigned
+  reading-position transport through `select_file` to `follow-the-folder`, and RC-8 moves it with
+  the open file's refresh to `follow-the-file` (§ 6 S-6); tree-only refresh
   leaves the displayed position untouched meanwhile. Settled by the first build in which the shell
   supplies that argument, `--test exports` still passing with SM-4's ten; a crossing that
   needs an eleventh call is the third form again, recorded in § 10 before it is built, and an

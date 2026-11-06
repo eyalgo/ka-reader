@@ -31,86 +31,117 @@
 > finding something only the SDD can fix. Its `Raised by:` therefore takes a wider set than §§ 1–3's,
 > which stay fixed to the three lane seats on purpose.
 
----
-
 ## 1. Open issues — questions with no answer yet
 
-### 1.1 The first public release no longer waits for the full v1 cut — PRD v17 moved it ahead of the Git view's live refresh
-- **Raised by:** CPO — 2026-11-06
-- **Seat:** cto
-- **What moved upstream:** `docs/PRD.md` v17 (`ka-reader@ce9ba62`, folding `docs/trail/prd/cycle-15.md` § 3.1, the owner's answer of 2026-11-06): the first public release is a beta below 1.0.0. It comes once the tree and the open file follow the disk and Markdown reads rendered, and it does not wait for the Git view to follow the disk. In the beta the Git view and the changed-file markers say plainly that they show the Git state read when the folder was opened, and the README's known gaps say the same. The Git view's live refresh stays part of v1 and lands before 1.0.0.
-- **What it contradicts here:** § 5 step 1 E-7 (`SDD.md` lines 1673–1682) places `first-public-release` "after the v1 cut", on the owner's quoted ruling "The first public release waits for the full v1 cut the PRD names" (RN-17); the slice whose *Why here in the order* reads "The owner's first-public-release placement still waits for this complete v1 cut" (line 2414). That ruling is withdrawn for the beta.
-- **What it reaches:** `first-public-release`'s place in § 6 and § 7 (its edges now: after the tree-and-open-file slices and Markdown rendered; not after the Git half of `follow-the-folder`), its *Reached when* (the Git view's "read at open" statement and the README's known gap), the edge that puts `choose-a-theme` before the release (removed: the theme slice comes after the beta), and the beyond-v1 order.
-- **Answer:** Move `first-public-release` ahead of the Git half of live refresh, as PRD v17 states: it follows the tree and the open file following the disk and Markdown rendered, and is a release below 1.0.0. Add to its bar that the Git view and the changed markers state they show the state read at open, and that the README's known gaps say so. Move `choose-a-theme` after `first-public-release`: nothing but the tree and open file following the disk and Markdown rendered precedes the beta (owner, 2026-11-06 — the beta is the highest priority). Keep the Git view's live refresh and the theme slice before `promise-one-point-zero`. Record the owner's earlier ruling as withdrawn for the beta, with its old words kept beside it.
+None.
 
 ## 2. Choices to confirm — a best-effort answer was drafted; confirm or override
 
-### 2.1 The SDD points at the project's done by a file that no longer exists, under a name the instance retired
-
-> **No `product-sdd` run wrote this item.** A `companion-self-answer` run raised it on 2026-11-06,
-> while reading `SDD.md` to answer this companion. Its reasoning is in
-> `docs/trail/sdd/self_answer-73.md` § *Raised on this document*.
-
-- **Raised by:** CTO — 2026-11-06
-- **Seat:** cto
-- **Drafted into the SDD:** nothing — this run writes no document. Proposed: in the live body,
-  replace the path `system/projects/ka-reader/agari.md` with
-  `system/projects/ka-reader/finish_line.md` in the five places that cite it (§ 1, the terminus
-  sentence; § 2 force 4, *What must be replaceable*; § 5 step 1, the outside-done sentence and the
-  CDO's observability clause on E-8; § 6's preamble on *Moves toward*), and write "finish line"
-  where the live body says "Agari" (§ 1; § 2's hexagonal row; § 5 steps 1–4 and *Six cuts*; § 6
-  S-9 *Moves toward*; § 7's `promise-one-point-zero` → `switch-the-folder` row; § 8's *Moves
-  toward* row; § 12's PRD boundary). Dated records stay as written: the header's version lines,
-  § 10's entries, the SDD Review Notes and every trail citation. Nothing the SDD designs changes.
-- **Rationale:** the instance renamed the Agari to the finish line on 2026-11-03 and moved the
-  file with `git mv` (instance commit `de384e69`). `system/projects/ka-reader/agari.md` is not on
-  disk (`test -e` exits 1) and `finish_line.md` is; the instance's migration map lists the move
-  (`<CORE>/doctrine/setup/kensaiapp_structure.md` § 6). What the SDD cites the file for still
-  holds at the new path: `finish_line.md` keeps the three conditions as § 1 states them — the v1
-  surface plus diffs, history and switching inside done; search / filter, pane resizing and
-  keyboard navigation outside; the promise at zero violations; public under MIT at 1.0.0 or
-  later. The PRD took the same repair at v17 (`docs/trail/prd/self_answer-4.md` § *Raised on this
-  document*; `ka-reader@ce9ba62`), and its report named this document as carrying the same dead
-  path. It costs no extra run: the SDD is owed a `product-sdd` fold for item 1.1, and this rides
-  it. Seen beside it and left to that fold: § 12's PRD-boundary sentence still pins the PRD at
-  v15, and item 1.1's fold re-reads the PRD at v17.
-- **If overridden:** nothing in the design moves. The SDD keeps a path no reader can follow and a
-  name the instance no longer uses, in five path citations and some seventeen uses of the name
-  outside the Review Notes.
-- **Confirm or override:** confirm — the reasoning is in `docs/trail/sdd/self_answer-74.md` § 2.1.
-
 ### 2.2 The SDD's first public release has not seen PRD v18 — the repository goes public with its own history, after a privacy check
 
-> **No `product-sdd` run wrote this item.** A `companion-self-answer` run raised it on 2026-11-06,
-> while reading `docs/PRD.md` (v18, `ka-reader@d1ea3ac`) against `SDD.md` to answer this companion.
-> Its reasoning is in `docs/trail/sdd/self_answer-74.md` § *Raised on this document*.
+> **No `product-sdd` run raised this item.** A `companion-self-answer` run raised it on 2026-11-06,
+> while reading `docs/PRD.md` (v18, `ka-reader@d1ea3ac`) against `SDD.md`. Its reasoning is in
+> `docs/trail/sdd/self_answer-74.md` § *Raised on this document*. The `product-sdd` run of
+> 2026-11-06 (SDD v68) drafted the proposal into the SDD and left this slot open; the item as it
+> stood before that run is at `docs/trail/sdd/cycle-62.md` § 2.2.
 
 - **Raised by:** CTO — 2026-11-06
 - **Seat:** cto
-- **Drafted into the SDD:** nothing — this run writes no document. Proposed, for the fold item 1.1
-  already owes: the fold reads the PRD at v18, not v17 as item 1.1 cites it. v18 adds two things
-  after item 1.1 was written (`ka-reader@d1ea3ac`, 16:50; the item's last edit `ka-reader@cb25715`,
-  16:42). One reaches the design: the repository goes public with its own commit history, not as a
-  fresh copy, and only once that history has been checked for anything private (`docs/PRD.md`
-  § Assumptions **Public identity**, the clause owner-confirmed at `trail/prd/cycle-16.md` § 3.1).
-  § 6 S-8 `first-public-release` should carry it: *Delivers* says the repository a stranger finds
-  carries its history; *Reached when*'s command half names the privacy check of that history as a
-  release condition — `gitleaks git` exits 0 is already there and is the secrets half; the "anything
-  private" half is a read of the history by a person, recorded on the release as a result, since no
-  command finds a private name or path; *Traces to* adds the v18 clause. The other does not reach
-  the design: the beta's purpose — to be shown, pointed to from kensaiapp's public repository — is
-  the owner's act outside the product, as the PRD v18 fold's own record says in excluding it from
-  `docs/what_left.md` (`ka-reader@d1ea3ac`, the commit message). § 12's PRD
-  boundary pins the PRD at v18 (it still says v15; item 2.1 names the same sentence).
-- **Rationale:** *something upstream moved and the SDD has not seen it.* Item 1.1 folds the beta's
-  placement and the theme's order, both of which v18 keeps as v17 and cycle 16 stated them; the
-  history clause is the one v18 addition no item carries, and a `first-public-release` seed cut from
-  S-8 as it stands would not know that the repository's history is published and must be checked
-  first. The mechanism already in S-8's bar — `gitleaks git` over the full history — shows the SDD
-  half-anticipated it; what is missing is the publication form and the check as a stated condition.
-  It costs no extra run: it rides item 1.1's fold.
-- **If overridden:** S-8 keeps a bar that proves no secret in the history and says nothing about the
-  history being published or read for anything private; the seed cut from it inherits the gap.
+- **Drafted into the SDD:** at v68, § 6 S-7 `first-public-release`: *Delivers* says the repository
+  is public with its own commit history, checked for anything private first; *Reached when*'s
+  command half names the check as a release condition in two halves — `gitleaks git` exits 0 as
+  the secrets half, and a person's read of `git log -p` over every commit HEAD reaches as the
+  "anything private" half, its result written on the release page as text a reviewer reads before
+  the repository is made public — and names the publication form: `git rev-list --max-parents=0
+  HEAD` on a fresh clone of the public repository prints the same root commit as the private
+  checkout; *Traces to* adds § Assumptions "Public identity", the history clause (v18). § 12's PRD
+  boundary pins the PRD at v18. RN-129 records the draft.
+- **Rationale:** *something upstream moved and the SDD had not seen it.* PRD v18 adds the clause
+  after item 1.1 was written (`ka-reader@d1ea3ac`; the item's last edit `ka-reader@cb25715`), and
+  the clause is owner-confirmed (`docs/trail/prd/cycle-16.md` § 3.1). A `first-public-release`
+  seed cut from S-7 without it would not know that the repository's history is published and
+  must be read first. The mechanism already in S-7's bar — `gitleaks git` over the full history —
+  shows the SDD half-anticipated it; what was missing was the publication form and the check as a
+  stated condition, and v68 states both. The person's read is a release condition and not a
+  command because no command finds a private name, path or message.
+- **If overridden:** the two clauses leave S-7; the bar keeps `gitleaks git` alone and says
+  nothing of the history being published or read; the seed cut from it inherits the gap.
+- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+
+### 2.3 Live refresh is three slices — `follow-the-file` is cut from `follow-the-folder` — and the CPO's fields of both are drafted
+- **Raised by:** CTO — 2026-11-06
+- **Seat:** cpo
+- **Drafted into the SDD:** § 6 S-6 `follow-the-file` (new): *Delivers* — the open file's content
+  follows the disk in place with the reading position kept, a deleted file is said to be gone with
+  its name kept and none of its content shown as current, and a readable file again replaces the
+  gone state without ceremony; *Not in this slice* — Git state following the disk, the markers,
+  the row-order migration, `git init` and `.git` removal, the full churn scene, the first latency
+  measurement and the built-bundle retention proof, all `follow-the-folder`; *Moves toward* — the
+  first condition's live refresh, open-file half, and the beta's own condition. § 6 S-8
+  `follow-the-folder` narrowed: *Delivers* — Git state following the disk, the Git view and the
+  markers, and the beta's statement withdrawn from both surfaces and from the README's known gaps;
+  *Not in this slice* — the open file's own refresh, re-walked as regression and not delivered
+  there. § 5 step 4's E-5 sizing and § 10 RC-8 record the cut; § 7 carries three new `depends_on`
+  rows and one `supersedes` row for it.
+- **Rationale:** your answer at `docs/trail/sdd/cycle-62.md` § 1.1 places the beta "ahead of the
+  Git half of live refresh", and PRD v18 places it once "the tree and the open file follow the
+  disk" (§ Scope (In)). The slice that owned the open file and Git together (RC-7's
+  `follow-the-folder`) could land on neither side of a release that waits for one and not the
+  other — step 4's too-broad case — so the cut is forced by the placement; what is yours is the
+  slicing itself (step 4) and the fields the table gives the CPO. The Git half keeps the slug
+  because every obligation recorded against `follow-the-folder` downstream (`docs/nfdr.md`, twelve
+  references at v77) is Git's — the marker and row-order migration, the churn and retention proofs.
+  No alternative cut passes the four tests and the PRD: keeping one slice puts the beta after Git
+  follows the disk, which v18 rules out.
+- **If overridden:** the two blocks merge back into one `follow-the-folder` owning the open file and
+  Git, and `first-public-release` then waits for the Git view to follow the disk — a PRD change,
+  which is the CPO's own run to make, not this document's.
+- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+
+### 2.4 The beta's statement — "the Git state read when the folder was opened" — on the Git view and the tree's markers: S-7's observable half is drafted, and the UXD does not yet draw it
+- **Raised by:** CTO — 2026-11-06
+- **Seat:** cdo
+- **Drafted into the SDD:** § 6 S-7 `first-public-release`, *Reached when*, the observable half:
+  switching the sidebar to Git, the view and the tree's changed-file markers say plainly — in words
+  on the surface, not by colour or a tooltip alone (UX-A2) — that they show the Git state read
+  when the folder was opened, and the README's known gaps say the same; where the statement sits
+  is left to the UXD and its words to `docs/CONTENT.md`. § 6 S-8 `follow-the-folder` withdraws it:
+  no surface says so once the Git view follows the disk. *Traces to* on S-7 names UX-I4 and
+  UX-I13 as the invariants the statement keeps true.
+- **Rationale:** PRD v18 requires the statement ("In the beta, the Git view and the tree's
+  changed-file markers say plainly that they show the Git state read when the folder was opened,
+  and the README's known gaps say the same", § Scope (In); the beta's case under § UX Notes "the
+  view never lies"). `docs/UXD.md` v12 carries no such case: UX-I4 (`:L259-L261`) says stale
+  content is never presented as current, UX-I13 (`:L309-L314`) that no indicator is drawn before
+  its state is observed, and the UX-S3 row draws the Git view's cells with no "read at open"
+  state. A UXD revision is your own run (`product-uxd`), never this document's; this item asks
+  only whether the bar as drafted is the one S-7's seed closes against until the UXD draws the
+  statement.
+- **If overridden:** S-7's observable half drops the sentence and the beta's statement has no bar
+  in this document until the UXD carries it; the `supersedes` row on S-8 goes with it.
+- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+
+### 2.5 The SRS's FR-20 and AC-11 say "from the first release"; PRD v18 places the theme after the first release — the SDD follows the PRD, and the SRS is owed a revision
+- **Raised by:** CTO — 2026-11-06
+- **Seat:** cto
+- **Drafted into the SDD:** the § 7 edge `first-public-release` → `choose-a-theme` ("Both themes
+  are a first-release requirement (FR-20, AC-11)") is removed; § 5 step 3's E-7 bullet, step 4's
+  E-1 and E-6 entries, S-7's *Why here in the order* and S-9's *Traces to* and *Why here in the
+  order* each say that FR-20 and AC-11 are cited as v13 states them and that their first-release
+  clause is contradicted by PRD v18; § 12's SRS boundary records it as the first SRS gap this
+  document has raised. Nothing else that traces to FR-20 or AC-11 moves.
+- **Rationale:** `docs/SRS.md` v13 FR-20 (`:L278-L279`) — "The system offers a dark and a light
+  theme from the first release" — traces to PRD UX Notes "dark and light themes from the start",
+  and AC-11 (`:L552`) covers it. PRD v18 keeps that UX Notes sentence and adds, in § Scope (In),
+  that the first public release "waits for nothing else: not for the Git view to follow the disk,
+  and not for choosing a theme and keeping that choice" — so the SRS's "first release" and the
+  PRD's are no longer the same release. The SRS derives from the PRD, and the SDD takes the PRD's
+  word over a derived clause the PRD has since moved past; the repair is a `product-srs` run
+  folding v18 — FR-20 and AC-11 re-said as in place before 1.0.0, with C-6's pre-1.0.0 statement
+  covering the beta's missing theme. C-4 ("MIT at first release") and C-7 ("before the first public
+  release") are unaffected: the beta is the first public release for both.
+- **If overridden:** the edge returns and the beta waits for the theme, contradicting PRD v18 — an
+  override here means the PRD moves, which is the CPO's.
 - **Confirm or override:** <"confirm", or "override: <what to do instead>">
 
 ## 3. Cut calls to confirm — where the slicing could reasonably have gone another way
