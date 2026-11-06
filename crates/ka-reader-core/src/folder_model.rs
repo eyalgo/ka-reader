@@ -2997,6 +2997,20 @@ mod tests {
     }
 
     #[test]
+    fn test_with_no_selection_act_every_open_read_folds() {
+        let folder = project();
+
+        let after = [FIRST_FILE, SECOND_FILE]
+            .into_iter()
+            .fold(model_over(&folder), |model, path| {
+                after_open_read(model, path, b"top")
+            });
+
+        assert_eq!(after.place().selected(), Some(Path::new(SECOND_FILE)));
+        assert_eq!(open_path(&after), Some(Path::new(SECOND_FILE)));
+    }
+
+    #[test]
     fn test_open_read_of_a_file_an_earlier_selection_named_leaves_the_model_equal() {
         let folder = project();
         let selected = after_selections(model_over(&folder), &[FIRST_FILE, SECOND_FILE]);
