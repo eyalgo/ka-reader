@@ -67,6 +67,46 @@ None.
   S-7 cannot close. Nothing else in the document derives from the row.
 - **Confirm or override:** <"confirm", or "override: <what to do instead>">
 
+### 2.2 In the beta nothing re-reads Git state, so the Git view's lock message — "the Git view shows the status as soon as KA-Reader can read it" — promises a recovery the beta never makes
+
+> **No `product-content` run wrote this item.** A `companion-self-answer` run appended it on
+> 2026-11-06, in the CDO's seat, while answering `docs/UXD_open_issues.md` § 2.1 — the beta's
+> statement as a state of the Git view and the tree. Checking that answer's failure paths found
+> that the UXD's Git-view error cell recovers "on refresh", and that in the beta no refresh of Git
+> state comes. The UXD answer carries the experience half; this item is the words. The reasoning is
+> in `docs/trail/uxd/self_answer-6.md` § 2.1 and § *Companions opened*.
+
+- **Written into CONTENT.md:** nothing — this run writes no document. Proposed, for the
+  `product-content` run that folds this item, reading `docs/SRS.md` v14 FR-35 and `docs/UXD.md` at
+  the version that folds `docs/UXD_open_issues.md` § 2.1: the Git view's observed-condition error
+  gains its beta case. Today it is § Traceability's row *UX-S3 Git view — error (lock)*, "the
+  nothing-to-do form, with the condition that ends the wait", and § Message patterns § *Error — an
+  observed condition*'s example, *"KA-Reader can't read this repository's Git status while
+  `.git/index.lock` is there. There's nothing to do: the Git view shows the status as soon as
+  KA-Reader can read it."* Where Git state is read once, when the folder is opened, and not
+  followed, that wait never ends on its own. Nothing reads Git state again until the folder is
+  opened again, which in v1 means starting KA-Reader again (`docs/UXD.md` UX-S4). So in that state
+  the message takes the formula's other branch, *what you can do next*, and names opening the folder
+  again. It says nothing that waits on a later read, and it states the lock as observed at open, in
+  the simple past this document already uses for what the tool observed. A present-tense *"is
+  there"* would claim something about now that the tool is no longer checking. The same holds for
+  any other Git-view message whose *what ends the wait* is a later read. Retired with the beta's
+  statement, the day the Git view follows the disk (`docs/SDD.md` § 6 S-8), when the present form is
+  true again. The wording is this seat's.
+- **Grounds:** the example and the row (`docs/CONTENT.md:L269-L270`, `:L529`); the formula's own
+  two branches (`:L261-L263`, *"what you can do next, or that there is nothing to do and what ends
+  the wait"*); the read-at-open state as a settled system requirement (`docs/SRS.md` FR-35,
+  `:L255-L264` — Git state "read once, when the folder is opened, and not followed"); and the
+  slices: in `see-git-status` and the beta the Git view shows "the state read when the folder
+  opened", and only `follow-the-folder` re-runs the read (`docs/SDD.md` § 6 S-4 *Not in this slice*;
+  S-8 *Rests on*). A message promising a state the tool will not reach this session is the view
+  lying forward: what it says is not what will happen (`docs/UXD.md` UX-I4, UX-I13).
+- **What moves if you override:** the beta ships a message telling the reader there is nothing to
+  do and the status will come, and in that session it never comes. The lock clears, and the view
+  goes on saying it is there. A reader who trusts the message waits for nothing. That is the stale
+  state presented as current, the one case the beta's statement exists to rule out.
+- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+
 ## 3. Raised from downstream — an item from a seat that did not write the verbal language
 
 None.
