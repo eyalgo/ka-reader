@@ -570,6 +570,30 @@ impl TreeChanges {
         &self.listings
     }
 
+    /// The open file the later model holds when the earlier one held none, or one with another
+    /// path or another view. A change of position or of resolved location alone is not listed.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use ka_reader_core::{FileRequest, FolderModel, ReadingPosition, open_folder};
+    ///
+    /// let opened = open_folder(env!("CARGO_MANIFEST_DIR")).expect("the crate folder opens");
+    /// let before = FolderModel::new(opened);
+    /// let after = before.clone().select_file(FileRequest::Open(
+    ///     "Cargo.toml".into(),
+    ///     ReadingPosition::new(b"top".as_slice()),
+    /// ));
+    ///
+    /// let changes = after.changes_since(&before);
+    /// assert_eq!(changes.open_file(), after.open_file());
+    /// assert!(!changes.is_empty());
+    /// assert!(before.changes_since(&before).open_file().is_none());
+    /// ```
+    pub fn open_file(&self) -> Option<&OpenFile> {
+        todo!("task 4: the open file in the change set")
+    }
+
     pub fn is_empty(&self) -> bool {
         self.listings.is_empty()
     }
@@ -2901,5 +2925,88 @@ mod tests {
         assert_eq!(open.position(), &position(b"line=9"));
         assert_eq!(open.view(), &text_view("body"));
         assert_eq!(open.location, Some(PathBuf::from("b.txt")));
+    }
+
+    // ---- The change set lists the open file ----
+
+    fn model_with_view(path: &str, view: ItemState<FileView>, line: &[u8]) -> FolderModel {
+        let mut model = model_with_open_file(path, view, path);
+        model
+            .place
+            .open_file
+            .as_mut()
+            .expect("a file is open")
+            .position = position(line);
+        model
+    }
+
+    fn nothing_open() -> FolderModel {
+        supplied_model(held("", &[("src", FOLDER)]), &[], ReaderPlace::default())
+    }
+
+    #[test]
+    fn test_changes_since_lists_the_open_file_when_the_earlier_model_had_none() {
+        let later = model_with_view("src/a.txt", text_view("body"), b"line=7");
+
+        let changes = later.changes_since(&nothing_open());
+
+        assert_eq!(changes.open_file(), later.open_file());
+        assert!(changes.open_file().is_some());
+    }
+
+    #[test]
+    fn test_changes_since_lists_the_open_file_for_a_new_path_and_for_a_new_view() {
+        let earlier = model_with_view("src/a.txt", text_view("old"), b"line=7");
+
+        let other_path = model_with_view("src/b.txt", text_view("old"), b"line=7");
+        assert_eq!(
+            other_path.changes_since(&earlier).open_file(),
+            other_path.open_file()
+        );
+        for view in [
+            text_view("new"),
+            ItemState::Observed(FileView::Gone),
+            ItemState::Failed(Condition::Unreadable),
+        ] {
+            let later = model_with_view("src/a.txt", view.clone(), b"line=7");
+            let changes = later.changes_since(&earlier);
+            assert_eq!(changes.open_file(), later.open_file(), "{view:?}");
+            assert!(!changes.is_empty(), "{view:?}");
+        }
+    }
+
+    #[test]
+    fn test_changes_since_never_lists_the_open_file_for_a_position_alone() {
+        let earlier = model_with_view("src/a.txt", text_view("old"), b"line=7");
+        let mut later = model_with_view("src/a.txt", text_view("old"), b"line=99");
+        later
+            .place
+            .open_file
+            .as_mut()
+            .expect("a file is open")
+            .location = Some(PathBuf::from("elsewhere/a.txt"));
+
+        let changes = later.changes_since(&earlier);
+
+        assert_eq!(changes.open_file(), None);
+        assert!(changes.is_empty());
+    }
+
+    #[test]
+    fn test_changes_since_is_empty_for_an_equal_model() {
+        let model = model_with_view("src/a.txt", text_view("old"), b"line=7");
+        let none_open = nothing_open();
+
+        assert!(model.changes_since(&model.clone()).is_empty());
+        assert!(none_open.changes_since(&none_open.clone()).is_empty());
+        // The open file alone differs: the listings agree, and it is not empty.
+        assert!(
+            model
+                .changes_since(&none_open)
+                .listings()
+                .iter()
+                .all(|(path, _)| path.as_os_str().is_empty())
+        );
+        assert!(!model.changes_since(&none_open).is_empty());
     }
 }
