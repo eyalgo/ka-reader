@@ -182,6 +182,53 @@ pub fn select_file(opened: &OpenedFolder, path: &str) -> ItemState<FileView> {
     }
 }
 
+/// What reading one path for opening gave: the verdict [`select_file`] gives for that path, and
+/// whether the path resolved inside the root to a file, with where. Opaque: hand it to
+/// [`FolderModel::open_read`] to fold the open into a model without reading again.
+///
+/// # Examples
+///
+/// ```
+/// use ka_reader_core::{ItemState, open_folder, read_file, select_file};
+///
+/// let opened = open_folder(std::env::temp_dir()).expect("the temporary folder opens");
+/// let read = read_file(&opened, std::path::Path::new(".."));
+/// assert_eq!(read.answer(), &select_file(&opened, ".."));
+/// assert!(matches!(read.answer(), ItemState::Failed(_)));
+/// ```
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FileRead {
+    path: PathBuf,
+    answer: ItemState<FileView>,
+    /// Where the path resolved below the root, when it resolved to a file.
+    location: Option<PathBuf>,
+}
+
+impl FileRead {
+    /// Exactly what [`select_file`] answers for the path that was read.
+    pub fn answer(&self) -> &ItemState<FileView> {
+        &self.answer
+    }
+}
+
+/// Reads the file at `path` inside `folder`, relative to its root, for opening it: the answer
+/// [`select_file`] gives for the path, together with whether the path resolved to a file. It
+/// touches no model. A path where nothing is writes the diagnostic lines a selection writes, one
+/// `read failed` and one `locate failed`.
+///
+/// # Examples
+///
+/// ```
+/// use ka_reader_core::{ItemState, open_folder, read_file};
+///
+/// let opened = open_folder(env!("CARGO_MANIFEST_DIR")).expect("the crate folder opens");
+/// let read = read_file(&opened, std::path::Path::new("Cargo.toml"));
+/// assert!(matches!(read.answer(), ItemState::Observed(_)));
+/// ```
+pub fn read_file(_folder: &OpenedFolder, _path: &Path) -> FileRead {
+    todo!("task 3: the read half of the open")
+}
+
 /// What an opened folder is to Git: the top level of a repository, with what is known of it, or a
 /// plain folder that holds no Git state.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -1067,6 +1114,26 @@ impl FolderModel {
         self
     }
 
+    /// Folds an open into the model without reading: where `read` resolved to a file, the
+    /// selection becomes its path and the open file becomes that path at `position`, holding the
+    /// read's view and location. Otherwise the model is returned as it was, as [`FileRequest`]'s
+    /// `Select` and `Open` leave it for a path that is not a file.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use ka_reader_core::{FolderModel, ReadingPosition, open_folder, read_file};
+    ///
+    /// let opened = open_folder(env!("CARGO_MANIFEST_DIR")).expect("the crate folder opens");
+    /// let read = read_file(&opened, std::path::Path::new("Cargo.toml"));
+    /// let model = FolderModel::new(opened).open_read(read, ReadingPosition::new(b"top".as_slice()));
+    /// assert_eq!(model.place().selected(), Some(std::path::Path::new("Cargo.toml")));
+    /// assert!(model.open_file().is_some());
+    /// ```
+    pub fn open_read(self, read: FileRead, position: ReadingPosition) -> Self {
+        todo!("task 3: fold the read into the selection and the open file")
+    }
+
     /// Re-reads the open file, once, whether or not anything was reported, and folds the answer in
     /// beside the open file's path and position. No listing is read or changed, and with no file
     /// open the model is returned as it was.
@@ -1293,11 +1360,11 @@ mod tests {
     use std::ffi::OsString;
 
     use super::{
-        FileRequest, FileView, FolderChange, FolderKind, FolderModel, GitCondition, HeldListing,
-        ItemState, ModelDelta, OpenFailure, OpenFile, OpenFolderOutcome, OpenedFolder, PathReports,
-        ReaderPlace, ReadingPosition, ReportedNames, TreeChanges, TreeRequest, list_tree,
-        open_folder, read_git, read_git_item, reduce, reduce_invalidation, reduce_open_file,
-        select_file,
+        FileRead, FileRequest, FileView, FolderChange, FolderKind, FolderModel, GitCondition,
+        HeldListing, ItemState, ModelDelta, OpenFailure, OpenFile, OpenFolderOutcome, OpenedFolder,
+        PathReports, ReaderPlace, ReadingPosition, ReportedNames, TreeChanges, TreeRequest,
+        list_tree, open_folder, read_git, read_git_item, reduce, reduce_invalidation,
+        reduce_open_file, select_file,
     };
     use crate::fs_reader::{
         Condition, Entry, EntryKind, FileContent, Listed, ListingObservation, Reobserved,
@@ -2772,5 +2839,48 @@ mod tests {
         let none_open = supplied_model(held("", &[]), &[], ReaderPlace::default());
         assert_eq!(none_open.open_file_to_reread(&reports(&[""])), None);
         assert_eq!(reduce_open_file(none_open.clone(), None), none_open);
+    }
+
+    // ---- The open's split: a read, then a fold ----
+
+    fn supplied_read(path: &str, answer: ItemState<FileView>, location: Option<&str>) -> FileRead {
+        FileRead {
+            path: PathBuf::from(path),
+            answer,
+            location: location.map(PathBuf::from),
+        }
+    }
+
+    #[test]
+    fn test_open_read_with_a_read_that_found_no_file_returns_the_model_equal() {
+        let model = model_with_open_file("src/a.txt", text_view("old"), "src/a.txt");
+
+        for (path, answer) in [
+            ("missing.txt", ItemState::Failed(Condition::Missing)),
+            ("src", ItemState::Failed(Condition::Unreadable)),
+            ("../out.txt", ItemState::Failed(Condition::Outside)),
+        ] {
+            let read = supplied_read(path, answer, None);
+            assert_eq!(
+                model.clone().open_read(read, position(b"top")),
+                model,
+                "{path}"
+            );
+        }
+    }
+
+    #[test]
+    fn test_open_read_of_a_file_sets_the_selection_and_the_open_file_at_the_position() {
+        let model = supplied_model(held("", &[("b.txt", FILE)]), &[], ReaderPlace::default());
+        let read = supplied_read("b.txt", text_view("body"), Some("b.txt"));
+
+        let after = model.open_read(read, position(b"line=9"));
+
+        assert_eq!(after.place().selected(), Some(Path::new("b.txt")));
+        let open = after.open_file().expect("the file is open");
+        assert_eq!(open.path(), Path::new("b.txt"));
+        assert_eq!(open.position(), &position(b"line=9"));
+        assert_eq!(open.view(), &text_view("body"));
+        assert_eq!(open.location, Some(PathBuf::from("b.txt")));
     }
 }

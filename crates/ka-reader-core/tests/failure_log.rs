@@ -197,4 +197,29 @@ fn failed_items_emit_one_warn_each_without_a_path_and_others_emit_none() {
         Some(&ItemState::Observed(FileView::Gone))
     );
     assert!(take_records().is_empty(), "a gone re-read writes no line");
+
+    // The open's read (E13's sibling): a path where nothing is writes the two lines a selection
+    // writes, one `read failed` and one `locate failed`, and a file that is there writes none.
+    let reading = TempDir::new();
+    reading.write_file("there.txt", "present");
+    let folder_opened = open_folder(reading.path()).expect("the folder opens");
+    let _ = ka_reader_core::read_file(&folder_opened, std::path::Path::new("there.txt"));
+    assert!(take_records().is_empty(), "a readable file logs nothing");
+    let missing_read =
+        ka_reader_core::read_file(&folder_opened, std::path::Path::new("missing.txt"));
+    assert!(matches!(missing_read.answer(), ItemState::Failed(_)));
+    let records = take_records();
+    assert_eq!(records.len(), 2, "{records:?}");
+    assert!(
+        records
+            .iter()
+            .any(|(_, message)| message.starts_with("fs-reader: read failed: ")),
+        "{records:?}"
+    );
+    assert!(
+        records
+            .iter()
+            .any(|(_, message)| message.starts_with("fs-reader: locate failed: ")),
+        "{records:?}"
+    );
 }
