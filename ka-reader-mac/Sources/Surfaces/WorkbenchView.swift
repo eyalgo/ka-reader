@@ -19,6 +19,10 @@ package typealias GitAnswer = @MainActor (GitItem) -> Void
 /// `SelectFileIntent`, without a path, because the bridge holds the one item).
 package typealias GitReadIntent = @MainActor (_ answer: @escaping GitAnswer) -> Void
 
+/// Where the reader's scroll of the open file reached: the latest selection's path, and the position.
+package typealias FilePositionIntent =
+    @MainActor (_ path: String, _ position: ReadingPosition) -> Void
+
 /// Makes a sink answer once.
 private final class SelectionLatch {
     var fired = false
@@ -65,6 +69,13 @@ package final class WorkbenchView: NSView {
     /// first showing of the Git view, with a sink for the Git item. The first answer the sink
     /// receives is drawn and kept: a later switch to Git draws it again and asks nothing.
     package var readGit: GitReadIntent?
+
+    /// Set by the view's owner, and called on the main actor with the latest selection's path each
+    /// time the reader scrolls the open file.
+    package var filePosition: FilePositionIntent?
+
+    /// An automatic update of the open file.
+    package func apply(openFile: OpenFileUpdate) {}
 
     /// Counts file selections: a sink applies only while its selection is still the latest.
     private var selectionGeneration = 0
