@@ -222,6 +222,18 @@ private func liveReceiver(of launch: Launch) throws -> ModelChangesReceiver {
         #expect(
             textElements(beneath: workbench.readingPanel).map(\.stringValue)
                 == ["Reading this file."], "the panel shows the pending sentence for b.txt")
+
+        // The pending sentence reads the same for any file, so it is b.txt's only if a.txt's answer
+        // cannot replace it and b.txt's answer can.
+        try #require(launch.reader.heldReads == 3, "b.txt's open is held on the reader too")
+        launch.reader.release(1)
+        workbench.layoutSubtreeIfNeeded()
+        #expect(
+            textElements(beneath: workbench.readingPanel).map(\.stringValue)
+                == ["Reading this file."], "a.txt's late answer leaves b.txt's pending state")
+        launch.reader.release(2)
+        #expect(workbench.readingPanel.pathLine.stringValue == "b.txt")
+        #expect(workbench.readingPanel.contentView.string == "one\ntwo\n")
     }
 
     @Test func aScrollRecordsOneSelectFilePositionCallOnTheTreeActRunnerWithTheEncodedPosition()

@@ -268,6 +268,47 @@ fn test_a_b_a_with_the_second_a_released_first_holds_a_at_its_last_position() {
 }
 
 #[test]
+fn test_one_file_selected_twice_quickly_is_held_once_in_both_completion_orders() {
+    for first_released_first in [true, false] {
+        let case = if first_released_first {
+            "the first a released first"
+        } else {
+            "the second a released first"
+        };
+        let folder = folder_of_three_files();
+        let watching = Arc::new(ManualWatching::new());
+        let session = session_over(&watching);
+        let received = open_delivering(&session, &folder);
+        let first_a = click_held(&session, "a.txt", TOP);
+        let second_a = click_held(&session, "a.txt", TOP);
+        let (earlier, later) = if first_released_first {
+            (first_a, second_a)
+        } else {
+            (second_a, first_a)
+        };
+
+        earlier.release();
+        assert_holds_text(&session, "a.txt", "a text\n", case);
+        assert_eq!(held_position(&session), Some(position(TOP)), "{case}");
+        session.select_file("a.txt", Some(FileAct::Position(position(b"line=9"))));
+        let delivered = open_files(&received).len();
+        later.release();
+
+        assert_holds_text(&session, "a.txt", "a text\n", case);
+        assert_eq!(
+            held_position(&session),
+            Some(position(b"line=9")),
+            "{case}: the late open folds nothing, so the reader's position stands"
+        );
+        assert_eq!(
+            open_files(&received).len(),
+            delivered,
+            "{case}: the late open delivers no open file"
+        );
+    }
+}
+
+#[test]
 fn test_a_file_that_cannot_be_displayed_is_held_when_the_earlier_read_finishes_last() {
     let folder = folder_of_three_files();
     fs::write(folder.path().join("photo.png"), [0xFF, 0xD8, 0xFF, 0xE0]).expect("written");
