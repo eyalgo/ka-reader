@@ -14,7 +14,12 @@ pub use folder_model::{
     TreeChanges, TreeRequest, list_tree, open_folder, read_file, read_git, read_git_item,
     select_file,
 };
-pub use fs_reader::{CannotDisplayReason, Condition, Entry, EntryKind, ItemState, OpenFailure};
+#[cfg(feature = "testing")]
+pub use fs_reader::fakes::SeededContainment;
+pub use fs_reader::{
+    CannotDisplayReason, Condition, ContainedEntry, ContainmentCheck, Entry, EntryKind,
+    FolderContainment, ItemState, OpenFailure,
+};
 pub use git_reader::{
     BranchElement, ConfigNamedPath, GitPort, GitReadCondition, HeadState, Libgit2, ProbeCondition,
     RepositoryState, RootFinding, StatusCategory, StatusEntry, StatusLists, SubmoduleNamedPath,

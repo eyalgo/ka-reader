@@ -408,6 +408,104 @@ fn observe_listing_with_filesystem(
     }
 }
 
+/// The entry a reference reached: its path below the root, as the walk resolved it, and what it is.
+///
+/// A link is the folder or file it reaches, so `path` names the target and never the spelling the
+/// reference used.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ContainedEntry {
+    pub path: PathBuf,
+    pub kind: EntryKind,
+}
+
+/// The containment check for a path derived from content, such as the target of an image or a link in
+/// a Markdown file.
+///
+/// `folder` is the folder that holds the file, below the root (empty for the root itself). `reference`
+/// is the path text exactly as the parser gave it, with no scheme and any fragment already removed by
+/// the caller. The reference is percent-decoded, placed under `folder` (a reference that starts with
+/// `/` stays as written), and walked from the root by the same walk [`list`] uses, so nothing outside
+/// the root is touched. The answer is the entry reached, or the [`Condition`] the walk observed. No
+/// log line is written: a refused reference is an answer the caller holds, not a failed read.
+///
+/// # Examples
+///
+/// ```
+/// use std::path::Path;
+///
+/// use ka_reader_core::{Condition, ContainmentCheck, FolderContainment, open_folder};
+///
+/// let opened = open_folder(std::env::temp_dir()).expect("the temporary folder opens");
+/// let check = FolderContainment::new(opened.root().to_path_buf());
+/// assert_eq!(check.check(Path::new(""), "%2E%2E/escape.png"), Err(Condition::Outside));
+/// ```
+pub trait ContainmentCheck {
+    fn check(&self, folder: &Path, reference: &str) -> Result<ContainedEntry, Condition>;
+}
+
+/// The real [`ContainmentCheck`], over one canonical root.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FolderContainment {
+    root: PathBuf,
+}
+
+impl FolderContainment {
+    /// A check over `root`, which must be canonical, as an opened folder's root is.
+    pub fn new(root: PathBuf) -> Self {
+        Self { root }
+    }
+}
+
+impl ContainmentCheck for FolderContainment {
+    fn check(&self, folder: &Path, reference: &str) -> Result<ContainedEntry, Condition> {
+        // Only the reference is decoded, and before it is placed: a folder whose own name holds `%`
+        // is a name, not an encoding. `resolve` is called directly because `locate` writes a line.
+        let requested = folder.join(percent_decode(reference));
+        resolve(&NativeFilesystem, &self.root, &requested)
+            .map(|at| ContainedEntry {
+                path: at.below_root,
+                kind: at.kind,
+            })
+            .map_err(|blocked| blocked.condition)
+    }
+}
+
+/// `reference` with each `%` and the two hex digits after it turned into their byte, and every other
+/// byte, an invalid escape included, kept as it is. It works on bytes, so a decoded byte that is not
+/// UTF-8 reaches the walk unchanged, and it runs once: `%252E` becomes the three characters `%2E`.
+fn percent_decode(reference: &str) -> PathBuf {
+    let bytes = reference.as_bytes();
+    let mut decoded = Vec::with_capacity(bytes.len());
+    let mut at = 0;
+    while at < bytes.len() {
+        let escaped = (bytes[at] == b'%')
+            .then(|| bytes.get(at + 1..at + 3))
+            .flatten()
+            .and_then(hex_byte);
+        match escaped {
+            Some(byte) => {
+                decoded.push(byte);
+                at += PERCENT_ESCAPE_LENGTH;
+            }
+            None => {
+                decoded.push(bytes[at]);
+                at += 1;
+            }
+        }
+    }
+    PathBuf::from(OsString::from_vec(decoded))
+}
+
+/// The length of a percent escape: the `%` and its two hex digits.
+const PERCENT_ESCAPE_LENGTH: usize = 3;
+
+/// The byte two hex digits spell, or `None` when either is not a hex digit.
+fn hex_byte(digits: &[u8]) -> Option<u8> {
+    let high = char::from(*digits.first()?).to_digit(16)?;
+    let low = char::from(*digits.get(1)?).to_digit(16)?;
+    u8::try_from(high * 16 + low).ok()
+}
+
 /// Where a requested path resolves to, below the root, and what the last step found there.
 ///
 /// `identity` is the resolved location, so two requests that reach one folder (a link shown as a

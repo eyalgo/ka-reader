@@ -2003,5 +2003,8 @@ fn test_a_refused_reference_writes_no_log_line() {
     assert_eq!(answers[0], Err(Condition::Outside));
     assert_eq!(answers[1], Err(Condition::Missing));
     assert_eq!(answers[2], Err(Condition::Cycle));
-    assert!(lines.is_empty(), "a refused reference logs nothing: {lines:?}");
+    assert!(
+        lines.is_empty(),
+        "a refused reference logs nothing: {lines:?}"
+    );
 }
