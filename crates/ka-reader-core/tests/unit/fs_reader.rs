@@ -1785,7 +1785,10 @@ fn test_a_link_to_a_missing_target_is_a_failed_read_never_absent() {
 
     assert_eq!(answer, failed_read(Condition::Missing));
     assert_eq!(
-        lines.iter().filter(|line| line.starts_with("fs-reader: read failed: ")).count(),
+        lines
+            .iter()
+            .filter(|line| line.starts_with("fs-reader: read failed: "))
+            .count(),
         1,
         "{lines:?}"
     );
@@ -1865,7 +1868,10 @@ fn test_an_unreadable_file_is_a_failed_read() {
         }
     );
     assert_eq!(lines.len(), 1, "{lines:?}");
-    assert!(lines[0].starts_with("fs-reader: read failed: "), "{lines:?}");
+    assert!(
+        lines[0].starts_with("fs-reader: read failed: "),
+        "{lines:?}"
+    );
 }
 
 #[test]
