@@ -26,7 +26,26 @@ None.
 
 ## 2. Choices to confirm — the CPO drafted a best-effort answer; confirm or override
 
-None.
+### 2.1 The PRD points at the project's done by a file that no longer exists, under a name the instance retired
+
+> **No `product-prd` run wrote this item.** A `companion-self-answer` run raised it on 2026-11-06,
+> while reading `PRD.md` whole to answer this companion. Its reasoning is in
+> `docs/trail/prd/self_answer-4.md` § *Raised on this document*.
+
+- **Proposed for the PRD:** in § *Out of Scope*, the search / filter line, replace the path
+  `system/projects/ka-reader/agari.md` with `system/projects/ka-reader/finish_line.md`, and "the
+  project's Agari" with "the project's finish line". In the two relation markers that name it,
+  § *UX Notes* "The bounds v1 draws" ("the project Agari's") and § *Assumptions* **Versioning**
+  ("the project Agari's"), use "the project finish line's" as well. The trail citations beside
+  them stay as written: they are records. Nothing the PRD says about the product changes. The
+  finish line still puts sidebar search / filter, pane resizing and keyboard navigation outside
+  the terminus (`finish_line.md` line 27), and still closes on a public 1.0.0 (line 40).
+- **Rationale:** the instance renamed Agari to the finish line on 2026-11-03 and moved the file
+  with `git mv` (instance commit `de384e69`). `system/projects/ka-reader/agari.md` is no longer
+  on disk, so a cold reader who follows the PRD's one path citation finds nothing. The
+  instance's migration map lists the old path and the new one (`<CORE>/doctrine/setup/kensaiapp_structure.md`
+  § 6). The PRD is already owed a fold this round for § 3.1, so this item adds no extra run.
+- **Confirm or override:** <"confirm", or "override: <what to do instead>">
 
 ## 3. Raised from downstream — an item from a seat that did not write this document
 
