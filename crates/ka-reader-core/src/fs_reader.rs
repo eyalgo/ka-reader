@@ -468,6 +468,32 @@ fn observe_file_with_filesystem(
     }
 }
 
+/// What a re-read of one file found at its path: nothing, or a read with its own outcome.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) enum Reobserved {
+    /// Nothing is at the path as the caller spelled it.
+    Absent,
+    /// Something is at the path: the outcome a read of it gives, and where the walk resolved to
+    /// when it resolved to a file.
+    Read {
+        state: ItemState<FileContent>,
+        location: Option<PathBuf>,
+    },
+}
+
+/// Re-reads the file at `requested`, a path relative to `root`.
+pub(crate) fn reobserve_file(root: &Path, requested: &Path) -> Reobserved {
+    reobserve_file_with_filesystem(&NativeFilesystem, root, requested)
+}
+
+fn reobserve_file_with_filesystem(
+    _filesystem: &impl Filesystem,
+    _root: &Path,
+    _requested: &Path,
+) -> Reobserved {
+    todo!("reobserve_file is not written yet")
+}
+
 /// The whole contents of the regular file at `location`.
 ///
 /// It is opened for reading only (QC-2). `O_NOFOLLOW` makes a link swapped in after the walk fail
