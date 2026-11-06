@@ -77,6 +77,40 @@
 - **If overridden:** nothing in the design moves. The SDD keeps a path no reader can follow and a
   name the instance no longer uses, in five path citations and some seventeen uses of the name
   outside the Review Notes.
+- **Confirm or override:** confirm — the reasoning is in `docs/trail/sdd/self_answer-74.md` § 2.1.
+
+### 2.2 The SDD's first public release has not seen PRD v18 — the repository goes public with its own history, after a privacy check
+
+> **No `product-sdd` run wrote this item.** A `companion-self-answer` run raised it on 2026-11-06,
+> while reading `docs/PRD.md` (v18, `ka-reader@d1ea3ac`) against `SDD.md` to answer this companion.
+> Its reasoning is in `docs/trail/sdd/self_answer-74.md` § *Raised on this document*.
+
+- **Raised by:** CTO — 2026-11-06
+- **Seat:** cto
+- **Drafted into the SDD:** nothing — this run writes no document. Proposed, for the fold item 1.1
+  already owes: the fold reads the PRD at v18, not v17 as item 1.1 cites it. v18 adds two things
+  after item 1.1 was written (`ka-reader@d1ea3ac`, 16:50; the item's last edit `ka-reader@cb25715`,
+  16:42). One reaches the design: the repository goes public with its own commit history, not as a
+  fresh copy, and only once that history has been checked for anything private (`docs/PRD.md`
+  § Assumptions **Public identity**, the clause owner-confirmed at `trail/prd/cycle-16.md` § 3.1).
+  § 6 S-8 `first-public-release` should carry it: *Delivers* says the repository a stranger finds
+  carries its history; *Reached when*'s command half names the privacy check of that history as a
+  release condition — `gitleaks git` exits 0 is already there and is the secrets half; the "anything
+  private" half is a read of the history by a person, recorded on the release as a result, since no
+  command finds a private name or path; *Traces to* adds the v18 clause. The other does not reach
+  the design: the beta's purpose — to be shown, pointed to from kensaiapp's public repository — is
+  the owner's act outside the product, as the PRD v18 fold's own record says in excluding it from
+  `docs/what_left.md` (`ka-reader@d1ea3ac`, the commit message). § 12's PRD
+  boundary pins the PRD at v18 (it still says v15; item 2.1 names the same sentence).
+- **Rationale:** *something upstream moved and the SDD has not seen it.* Item 1.1 folds the beta's
+  placement and the theme's order, both of which v18 keeps as v17 and cycle 16 stated them; the
+  history clause is the one v18 addition no item carries, and a `first-public-release` seed cut from
+  S-8 as it stands would not know that the repository's history is published and must be checked
+  first. The mechanism already in S-8's bar — `gitleaks git` over the full history — shows the SDD
+  half-anticipated it; what is missing is the publication form and the check as a stated condition.
+  It costs no extra run: it rides item 1.1's fold.
+- **If overridden:** S-8 keeps a bar that proves no secret in the history and says nothing about the
+  history being published or read for anything private; the seed cut from it inherits the gap.
 - **Confirm or override:** <"confirm", or "override: <what to do instead>">
 
 ## 3. Cut calls to confirm — where the slicing could reasonably have gone another way
