@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
-# Version: 2.0.0 — the scene goes on the Desktop, the churn waits for Enter, each step is announced
-#   (1.0.0 copied under the temporary directory and gave a fixed sixty-second lead-in)
+# Version: 2.1.0 — after the listing the script captures the screen to
+#   ~/Desktop/tree-scene-end.png, and the app stays open until a second Enter, so the end state can
+#   be compared with the window without a person timing a screenshot (2.0.0 closed it at once: the scene goes on the Desktop, the churn
+#   waits for Enter, each step is announced; 1.0.0 copied under the temporary directory and gave a fixed sixty-second lead-in)
 #
 # checks/tree-scene.sh — launches the built KA-Reader.app, stages a copy of checks/fixtures/tree-scene
 # on the Desktop, waits for Enter, churns that copy for thirty seconds, and prints what is on disk
@@ -133,6 +135,8 @@ stop_launched_process() {
 # On the Desktop, so the open panel's sidebar reaches it in one click and nobody types a path.
 [ -n "${HOME:-}" ] && [ -d "$HOME/Desktop" ] || die "there is no Desktop folder under the home to put the scene in"
 scratch="$HOME/Desktop/tree-scene"
+capture="$HOME/Desktop/tree-scene-end.png"
+rm -f "$capture"
 if [ -e "$scratch" ]; then
   [ -f "$scratch/.scene-note" ] || die "$scratch is there and is not a scene copy, so it is left alone; move it and run again"
   rm -rf "$scratch"
@@ -254,3 +258,16 @@ echo "tree-scene.sh: the churn is over. The app's tree should now match the list
 echo "tree-scene.sh: folders you expanded still expanded, long.md still open at the same section, and" >&2
 echo "tree-scene.sh: nothing that flashed, popped up or asked for attention along the way." >&2
 print_tree "$scratch" "."
+
+# The window at quiescence, captured by the script itself: no person can time a screenshot between
+# the listing and the exit trap. It goes beside the Desktop copy, never in it, so the trap keeps it.
+if screencapture -x "$capture"; then
+  echo "tree-scene.sh: the screen at quiescence is captured at $capture" >&2
+else
+  echo "tree-scene.sh: the screen could not be captured; compare the window by eye" >&2
+fi
+
+# The app stays open until a second Enter, so the person can compare the window with the listing
+# before the exit trap closes it. End of input closes it at once.
+echo "tree-scene.sh: the app stays open for comparing; press Enter here to close it" >&2
+IFS= read -r _ || true

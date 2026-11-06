@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Version: 2.0.0 — the scene on the Desktop, the churn on Enter, each step named; three new cases
+# Version: 2.1.0 — screencapture is a stand-in, and the run case holds the one capture it leaves
+#   (2.0.0: the scene on the Desktop, the churn on Enter, each step named; three new cases
 #   (no Enter, a foreign folder in the way, a leftover scene copy)
 #
 # checks/tests/test_tree_scene.sh — the tests of checks/tree-scene.sh.
@@ -93,6 +94,19 @@ new_scene() {
   write_ps
   write_kill
   write_sleep
+  write_screencapture
+}
+
+# Records its arguments and writes the file it was named, so nothing captures the real screen.
+write_screencapture() {
+  cat > "$SCENE/bin/screencapture" <<EOF
+#!/bin/bash
+printf '%s\n' "\$*" >> '$SCENE/captures'
+for last in "\$@"; do :; done
+printf 'png' > "\$last"
+exit 0
+EOF
+  chmod +x "$SCENE/bin/screencapture"
 }
 
 write_open() {
@@ -262,6 +276,10 @@ test_in_a_vm_it_launches_once_and_churns_only_the_scratch_copy() {
   [ "$(sleeps_of 3)" -eq 10 ] || fail "the churn is not ten steps of three seconds: $(sleeps_of 3) found" || return 1
   grep -q 'stage1.txt' "$SCENE/out" || fail "the churn left no trace in the printed listings, so it did not run" || return 1
   [ "$(vmr_snapshot "$FIXTURE")" = "$fixture_before" ] || fail "the churn changed the fixture itself" || return 1
+  # The one thing the run leaves in the home: its capture of the window at quiescence, taken once.
+  [ "$(cat "$SCENE/captures" 2> /dev/null)" = "-x $SCENE/home/Desktop/tree-scene-end.png" ] \
+    || fail "the screen was not captured once to the Desktop's tree-scene-end.png: $(cat "$SCENE/captures" 2> /dev/null)" || return 1
+  rm -f "$SCENE/home/Desktop/tree-scene-end.png"
   [ "$(vmr_snapshot "$SCENE/home")" = "$home_before" ] || fail "the run changed the home" || return 1
   [ "$(vmr_snapshot "$SCENE/cwd")" = "$cwd_before" ] || fail "the run changed the working directory"
 }

@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Version: 1.0.0 — first version: the host's one command for the tree-follows-the-disk walk
+# Version: 1.1.0 — after the scene, the guest's capture of the window comes to ~/Desktop/tree-walk-end.png
+#   (1.0.0: first version, the host's one command for the tree-follows-the-disk walk)
 #
 # checks/tree-walk.sh — run on the host, from the product root, with no argument. It opens the macOS
 # guest with a window, copies this checkout into it, builds KA-Reader.app there, and runs
@@ -23,6 +24,7 @@
 #      second walk does not rebuild from nothing; everything else in the copy is replaced.
 #   3. Builds the app in the guest with ka-reader-mac/assemble.sh.
 #   4. Runs checks/tree-scene.sh in the guest on that app, with this terminal as its terminal.
+#   5. Copies the scene's capture of the window at quiescence to ~/Desktop/tree-walk-end.png here.
 #
 # USAGE
 #   checks/tree-walk.sh
@@ -93,7 +95,21 @@ fi
 say "starting the scene. Look at the window named $GUEST (Cmd-Tab: tart): KA-Reader opens there"
 # A remote terminal only when this side has one: tart fails to size one for a pipe or a file.
 scene_command="export PATH=$GUEST_PATH && cd $COPY && checks/tree-scene.sh target/release/bundle/macos/KA-Reader.app"
+scene_status=0
 if [ -t 0 ] && [ -t 1 ]; then
-  exec tart exec -i -t "$GUEST" sh -c "$scene_command"
+  tart exec -i -t "$GUEST" sh -c "$scene_command" || scene_status=$?
+else
+  tart exec -i "$GUEST" sh -c "$scene_command" || scene_status=$?
 fi
-exec tart exec -i "$GUEST" sh -c "$scene_command"
+
+# --- 5. the scene's own capture of the window at quiescence, onto this host's Desktop ---
+
+host_capture="$HOME/Desktop/tree-walk-end.png"
+if tart exec "$GUEST" sh -c 'cat "$HOME/Desktop/tree-scene-end.png"' > "$host_capture" 2> /dev/null \
+  && [ -s "$host_capture" ]; then
+  say "the window at quiescence is at $host_capture"
+else
+  rm -f "$host_capture"
+  say "the scene left no capture of the window"
+fi
+exit "$scene_status"
