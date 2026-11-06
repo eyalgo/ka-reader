@@ -47,7 +47,9 @@ private func makeFixture() -> Fixture {
         backing: .buffered, defer: true)
     window.contentView = workbench
     let log = Log()
-    workbench.selectFile = { path, answer in log.selects.append(SelectRead(path: path, answer: answer)) }
+    workbench.selectFile = { path, answer in
+        log.selects.append(SelectRead(path: path, answer: answer))
+    }
     workbench.filePosition = { path, position in log.positions.append((path, position)) }
     workbench.layoutSubtreeIfNeeded()
     return Fixture(workbench: workbench, window: window, log: log)
@@ -56,7 +58,10 @@ private func makeFixture() -> Fixture {
 @MainActor
 private func select(_ name: String, in workbench: WorkbenchView) {
     let tree = workbench.rootItemsView
-    guard let index = (0..<tree.outlineView.numberOfRows).first(where: { tree.entry(atRow: $0)?.name == name })
+    guard
+        let index = (0..<tree.outlineView.numberOfRows).first(where: {
+            tree.entry(atRow: $0)?.name == name
+        })
     else {
         Issue.record("no row named \(name)")
         return
@@ -92,8 +97,8 @@ private func settle() async {
 }
 
 @MainActor
-@Test func anUpdateForAFileThatIsNoLongerTheLatestSelectionDrawsNothingAndTheTreeKeepsTheNewSelection()
-{
+@Test
+func anUpdateForAFileThatIsNoLongerTheLatestSelectionDrawsNothingAndTheTreeKeepsTheNewSelection() {
     let fixture = makeFixture()
     let workbench = fixture.workbench
     select("a.txt", in: workbench)
@@ -114,7 +119,8 @@ private func settle() async {
 }
 
 @MainActor
-@Test func anUpdateForThePendingSelectionsPathIsDrawnAndThatSelectionsLaterAnswerThenDrawsNothing() {
+@Test func anUpdateForThePendingSelectionsPathIsDrawnAndThatSelectionsLaterAnswerThenDrawsNothing()
+{
     let fixture = makeFixture()
     let workbench = fixture.workbench
     select("a.txt", in: workbench)
@@ -169,7 +175,8 @@ private func settle() async {
 
     #expect(fixture.log.positions.count == 1)
     #expect(fixture.log.positions.first?.path == "a.txt")
-    #expect(fixture.log.positions.first?.position == ReadingPosition(topLine: 30, horizontalOffset: 80))
+    #expect(
+        fixture.log.positions.first?.position == ReadingPosition(topLine: 30, horizontalOffset: 80))
 }
 
 @MainActor
