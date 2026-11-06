@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Version: 1.1.0 — after the scene, the guest's capture of the window comes to ~/Desktop/tree-walk-end.png
+# Version: 1.2.0 — a guest this script starts gets the login job's shared folders, so later gates see their checkouts
+#   (1.1.0: after the scene, the guest's capture of the window comes to ~/Desktop/tree-walk-end.png)
 #   (1.0.0: first version, the host's one command for the tree-follows-the-disk walk)
 #
 # checks/tree-walk.sh — run on the host, from the product root, with no argument. It opens the macOS
@@ -55,8 +56,20 @@ if [ "$guest_state" = "running" ]; then
   fi
   say "using the running guest $GUEST"
 else
+  # The same shared folders the host's login job gives the guest, so the gates that use it after
+  # this walk still see their checkouts. A guest started without them made the next gate refuse.
+  shares=()
+  login_job="$HOME/Library/LaunchAgents/local.kensaiapp.macos-guest.plist"
+  if [ -f "$login_job" ]; then
+    index=0
+    while argument="$(plutil -extract "ProgramArguments.$index" raw -o - "$login_job" 2> /dev/null)"; do
+      case "$argument" in --dir=*) shares+=("$argument") ;; esac
+      index=$((index + 1))
+    done
+  fi
+  [ "${#shares[@]}" -gt 0 ] || say "no shared folders found in $login_job; a gate run in this guest will not see its checkout until the guest is restarted by that job"
   say "starting $GUEST with a window"
-  nohup tart run "$GUEST" > /dev/null 2>&1 &
+  nohup tart run ${shares[@]+"${shares[@]}"} "$GUEST" > /dev/null 2>&1 &
   disown
 fi
 
