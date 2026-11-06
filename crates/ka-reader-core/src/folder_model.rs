@@ -225,8 +225,17 @@ impl FileRead {
 /// let read = read_file(&opened, std::path::Path::new("Cargo.toml"));
 /// assert!(matches!(read.answer(), ItemState::Observed(_)));
 /// ```
-pub fn read_file(_folder: &OpenedFolder, _path: &Path) -> FileRead {
-    todo!("task 3: the read half of the open")
+pub fn read_file(folder: &OpenedFolder, path: &Path) -> FileRead {
+    let answer = fs_reader::observe_file(&folder.root, path).map(FileView::from);
+    let location = fs_reader::locate(&folder.root, path)
+        .ok()
+        .filter(|location| location.kind == EntryKind::File)
+        .map(|location| location.identity);
+    FileRead {
+        path: path.to_path_buf(),
+        answer,
+        location,
+    }
 }
 
 /// What an opened folder is to Git: the top level of a repository, with what is known of it, or a
@@ -1130,8 +1139,18 @@ impl FolderModel {
     /// assert_eq!(model.place().selected(), Some(std::path::Path::new("Cargo.toml")));
     /// assert!(model.open_file().is_some());
     /// ```
-    pub fn open_read(self, read: FileRead, position: ReadingPosition) -> Self {
-        todo!("task 3: fold the read into the selection and the open file")
+    pub fn open_read(mut self, read: FileRead, position: ReadingPosition) -> Self {
+        let Some(location) = read.location else {
+            return self;
+        };
+        self.place.selected = Some(read.path.clone());
+        self.place.open_file = Some(OpenFile {
+            path: read.path,
+            position,
+            view: read.answer,
+            location: Some(location),
+        });
+        self
     }
 
     /// Re-reads the open file, once, whether or not anything was reported, and folds the answer in
