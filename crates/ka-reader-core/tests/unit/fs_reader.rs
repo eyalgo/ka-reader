@@ -1892,3 +1892,116 @@ fn test_observe_file_and_read_answer_as_before() {
     assert_eq!(answers[2], text_in("a file", Language::Plain));
     assert_eq!(lines.len(), 2, "one line per failed answer: {lines:?}");
 }
+
+// --- ContainmentCheck: the check a path derived from content goes through ---
+
+fn contained(path: &str, kind: EntryKind) -> Result<ContainedEntry, Condition> {
+    Ok(ContainedEntry {
+        path: PathBuf::from(path),
+        kind,
+    })
+}
+
+#[test]
+fn test_a_percent_encoded_name_reaches_the_file_it_spells() {
+    let temp = TempDir::new();
+    temp.write_file("my image.png", "bytes");
+    let check = FolderContainment::new(temp.path().to_path_buf());
+
+    assert_eq!(
+        check.check(Path::new(""), "my%20image.png"),
+        contained("my image.png", EntryKind::File)
+    );
+}
+
+#[test]
+fn test_an_encoded_climb_is_refused_as_outside() {
+    let temp = TempDir::new();
+    let check = FolderContainment::new(temp.path().to_path_buf());
+
+    assert_eq!(
+        check.check(Path::new(""), "%2E%2E/c.png"),
+        Err(Condition::Outside)
+    );
+}
+
+#[test]
+fn test_an_invalid_escape_is_kept_literal() {
+    let temp = TempDir::new();
+    temp.write_file("%zz.png", "bytes");
+    let check = FolderContainment::new(temp.path().to_path_buf());
+
+    assert_eq!(
+        check.check(Path::new(""), "%zz.png"),
+        contained("%zz.png", EntryKind::File)
+    );
+}
+
+#[test]
+fn test_a_reference_is_placed_under_the_folder_given() {
+    let temp = TempDir::new();
+    temp.write_file("docs/img/a.png", "bytes");
+    let check = FolderContainment::new(temp.path().to_path_buf());
+
+    assert_eq!(
+        check.check(Path::new("docs"), "img/a.png"),
+        contained("docs/img/a.png", EntryKind::File)
+    );
+}
+
+#[test]
+fn test_a_slash_absolute_reference_naming_the_canonical_root_reaches_inside_it() {
+    let temp = TempDir::new();
+    temp.write_file("top.png", "bytes");
+    let check = FolderContainment::new(temp.path().to_path_buf());
+    let reference = format!("{}/top.png", temp.path().display());
+
+    assert_eq!(
+        check.check(Path::new("docs"), &reference),
+        contained("top.png", EntryKind::File)
+    );
+}
+
+#[test]
+fn test_a_percent_encoded_separator_decodes_into_a_path_step() {
+    let temp = TempDir::new();
+    temp.write_file("a/b.png", "bytes");
+    let check = FolderContainment::new(temp.path().to_path_buf());
+
+    assert_eq!(
+        check.check(Path::new(""), "a%2Fb.png"),
+        contained("a/b.png", EntryKind::File)
+    );
+}
+
+#[test]
+fn test_a_reference_is_decoded_once() {
+    let temp = TempDir::new();
+    temp.write_file("%2E", "bytes");
+    let check = FolderContainment::new(temp.path().to_path_buf());
+
+    assert_eq!(
+        check.check(Path::new(""), "%252E"),
+        contained("%2E", EntryKind::File)
+    );
+}
+
+#[test]
+fn test_a_refused_reference_writes_no_log_line() {
+    let temp = TempDir::new();
+    temp.make_link("loop", "loop");
+    let check = FolderContainment::new(temp.path().to_path_buf());
+
+    let (answers, lines) = with_log(|| {
+        [
+            check.check(Path::new(""), "../outside.png"),
+            check.check(Path::new(""), "nothing.png"),
+            check.check(Path::new(""), "loop"),
+        ]
+    });
+
+    assert_eq!(answers[0], Err(Condition::Outside));
+    assert_eq!(answers[1], Err(Condition::Missing));
+    assert_eq!(answers[2], Err(Condition::Cycle));
+    assert!(lines.is_empty(), "a refused reference logs nothing: {lines:?}");
+}

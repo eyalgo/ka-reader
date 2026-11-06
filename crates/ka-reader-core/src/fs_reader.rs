@@ -13,6 +13,9 @@ use rustix::fs::OFlags;
 
 use crate::language::Language;
 
+#[cfg(any(test, feature = "testing"))]
+pub mod fakes;
+
 /// The observed condition that stopped opening a chosen folder.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum OpenFailure {

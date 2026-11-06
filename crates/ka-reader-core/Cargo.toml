@@ -5,6 +5,15 @@ edition = "2024"
 [lints]
 workspace = true
 
+# The fakes a unit test is handed (`fs_reader::fakes`) are built for tests and for this feature alone,
+# and no default feature turns it on, so a release build carries none. The crate names itself below so
+# a `tests/` file reaches them too (`<CORE>/doctrine/engineering/languages/rust/testing.md`).
+[features]
+testing = []
+
+[dev-dependencies]
+ka-reader-core = { path = ".", features = ["testing"] }
+
 [dependencies]
 git2 = { version = "0.21.0", default-features = false, features = ["vendored-libgit2"] }
 log = "0.4.34"
