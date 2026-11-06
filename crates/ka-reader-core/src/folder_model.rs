@@ -375,7 +375,8 @@ impl OpenFile {
         &self.position
     }
 
-    /// What reading the file gave when it was opened, as [`select_file`] answers it.
+    /// What the latest read of the file gave, as [`select_file`] answers it, or [`FileView::Gone`]
+    /// when the latest read found nothing at its path.
     pub fn view(&self) -> &ItemState<FileView> {
         &self.view
     }
@@ -452,8 +453,9 @@ pub enum TreeRequest {
     /// Re-read what a batch of reported paths covers. A path names a place on the disk that may
     /// have changed and says nothing of what happened there: the model decides which held listings
     /// the paths cover, reads each one whole, drops what lies under an entry that is gone and
-    /// reads again an expanded folder that has returned. The place and the Git item are carried as
-    /// they were.
+    /// reads again an expanded folder that has returned. The open file is read again too when the
+    /// batch covers it. The place's paths and the reading position, and the Git item, are carried
+    /// as they were.
     Invalidate(PathReports),
 }
 
@@ -869,20 +871,27 @@ impl FolderModel {
     /// covers nothing leaves the model as it was and reads nothing.
     fn invalidate(self, reports: &PathReports) -> Self {
         let scope = self.invalidation_scope(reports);
-        if scope.is_empty() {
+        let open_path = self.open_file_to_reread(reports);
+        if scope.is_empty() && open_path.is_none() {
             return self;
         }
         let root = self.folder.root.clone();
-        let reads = scope
-            .into_iter()
-            .map(|path| {
-                let observation = fs_reader::observe_listing(&root, &path);
-                (path, observation)
+        let observation = open_path.map(|path| fs_reader::reobserve_file(&root, &path));
+        let model = if scope.is_empty() {
+            self
+        } else {
+            let reads = scope
+                .into_iter()
+                .map(|path| {
+                    let observation = fs_reader::observe_listing(&root, &path);
+                    (path, observation)
+                })
+                .collect();
+            reduce_invalidation(self, reads, &mut |path| {
+                fs_reader::observe_listing(&root, path)
             })
-            .collect();
-        reduce_invalidation(self, reads, &mut |path| {
-            fs_reader::observe_listing(&root, path)
-        })
+        };
+        reduce_open_file(model, observation)
     }
 
     /// The request paths of the held listings a batch covers. A reported path that lies lexically
@@ -1072,13 +1081,31 @@ impl FolderModel {
     /// assert_eq!(model.clone().reread_open_file(), model);
     /// ```
     pub fn reread_open_file(self) -> Self {
-        todo!("task 2: the unconditional re-read of the open file")
+        let observation = self
+            .place
+            .open_file
+            .as_ref()
+            .map(|open| fs_reader::reobserve_file(&self.folder.root, &open.path));
+        reduce_open_file(self, observation)
     }
 
     /// The path of the open file when a batch covers it, so it is to be read again: the batch
     /// names the root, or a path the open file's path or its resolved location starts with.
-    fn open_file_to_reread(&self, _reports: &PathReports) -> Option<PathBuf> {
-        todo!("task 2: coverage of the open file by a batch")
+    fn open_file_to_reread(&self, reports: &PathReports) -> Option<PathBuf> {
+        let open = self.place.open_file.as_ref()?;
+        let covered = reports
+            .paths
+            .iter()
+            .map(|path| self.relative_to_root(path))
+            .any(|reported| {
+                reported.as_os_str().is_empty()
+                    || open.path.starts_with(&reported)
+                    || open
+                        .location
+                        .as_deref()
+                        .is_some_and(|location| location.starts_with(&reported))
+            });
+        covered.then(|| open.path.clone())
     }
 
     fn with_position(mut self, position: ReadingPosition) -> Self {
@@ -1093,8 +1120,19 @@ impl FolderModel {
 /// was; an absent file is held as [`FileView::Gone`]; a read gives the view the content makes, or
 /// the failure observed, and the location it resolved to when it has one. The path and the
 /// position are the reader's and are never touched. Pure, so a test hands it a supplied read.
-fn reduce_open_file(model: FolderModel, _observation: Option<Reobserved>) -> FolderModel {
-    todo!("task 2: fold the open file's re-read into the model")
+fn reduce_open_file(mut model: FolderModel, observation: Option<Reobserved>) -> FolderModel {
+    if let (Some(observation), Some(open)) = (observation, model.place.open_file.as_mut()) {
+        match observation {
+            Reobserved::Absent => open.view = ItemState::Observed(FileView::Gone),
+            Reobserved::Read { state, location } => {
+                open.view = state.map(FileView::from);
+                if location.is_some() {
+                    open.location = location;
+                }
+            }
+        }
+    }
+    model
 }
 
 /// Whether the reported path `reported` covers the listing requested at `request` and read at

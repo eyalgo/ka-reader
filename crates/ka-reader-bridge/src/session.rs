@@ -272,7 +272,7 @@ impl From<ItemState<FileView>> for FileAnswerDto {
             ItemState::Observed(FileView::CannotDisplay(reason)) => Self::CannotDisplay {
                 reason: reason.into(),
             },
-            ItemState::Observed(FileView::Gone) => todo!("task 2: the gone answer"),
+            ItemState::Observed(FileView::Gone) => Self::Gone,
             ItemState::Failed(condition) => Self::Failed {
                 condition: condition.into(),
             },
