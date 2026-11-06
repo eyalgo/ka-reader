@@ -749,7 +749,22 @@ pub struct FolderModel {
     /// after it was read keeps its listing here.
     listings: BTreeMap<PathBuf, HeldListing>,
     place: ReaderPlace,
+    /// Which selection act still awaits its open. Not part of the reader's place: it decides only
+    /// which [`FolderModel::open_read`] folds.
+    awaited_open: AwaitedOpen,
     kind: ItemState<FolderKind, GitCondition>,
+}
+
+/// Which selection act awaits its open, so that an open folds only for the latest one, and once.
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum AwaitedOpen {
+    /// No selection act was admitted since the model was made, so an open folds as it always has.
+    NoActYet,
+    /// The latest admitted selection act named this file and no open has answered it.
+    Awaiting(PathBuf),
+    /// The latest selection act is answered, or was `Select(None)`: no open folds until the next
+    /// admitted selection.
+    Answered,
 }
 
 impl FolderModel {
@@ -762,6 +777,7 @@ impl FolderModel {
             folder: opened,
             listings: BTreeMap::new(),
             place: ReaderPlace::default(),
+            awaited_open: AwaitedOpen::NoActYet,
             kind: ItemState::Pending,
         }
     }
@@ -887,7 +903,7 @@ impl FolderModel {
 
     /// Applies a selection, open or position act and returns the model that results.
     ///
-    /// `Select` reads no content and changes only the selection. `Open` reads the file as
+    /// `Select` reads no content and changes only the selection, and the open it awaits. `Open` reads the file as
     /// [`select_file`] does and changes only the open file. `Position` changes only the open file's
     /// position. A path that does not resolve inside the root to a file leaves the model as it was.
     ///
@@ -902,9 +918,9 @@ impl FolderModel {
     /// ```
     pub fn select_file(self, request: FileRequest) -> Self {
         match request {
-            FileRequest::Select(None) => self.with_selection(None),
+            FileRequest::Select(None) => self.without_selection(),
             FileRequest::Select(Some(path)) => match self.admit(&path, EntryKind::File) {
-                Some(_) => self.with_selection(Some(path)),
+                Some(_) => self.with_selection_awaiting_its_open(path),
                 None => self,
             },
             FileRequest::Open(path, position) => self.open(path, position),
@@ -1136,8 +1152,17 @@ impl FolderModel {
         self
     }
 
-    fn with_selection(mut self, selected: Option<PathBuf>) -> Self {
-        self.place.selected = selected;
+    /// Clears the selection, and with it the open that selection awaited: no open folds until the
+    /// next admitted selection.
+    fn without_selection(mut self) -> Self {
+        self.place.selected = None;
+        self.awaited_open = AwaitedOpen::Answered;
+        self
+    }
+
+    fn with_selection_awaiting_its_open(mut self, path: PathBuf) -> Self {
+        self.place.selected = Some(path.clone());
+        self.awaited_open = AwaitedOpen::Awaiting(path);
         self
     }
 
@@ -1157,7 +1182,9 @@ impl FolderModel {
 
     /// Folds an open into the model without reading: where `read` resolved to a file, the
     /// selection becomes its path and the open file becomes that path at `position`, holding the
-    /// read's view and location. Otherwise the model is returned as it was, as [`FileRequest`]'s
+    /// read's view and location. The fold is made only when no selection act was admitted since
+    /// the model was made, or when the read answers the latest one not yet answered; a selection
+    /// act is answered by one fold. Otherwise the model is returned as it was, as [`FileRequest`]'s
     /// `Select` and `Open` leave it for a path that is not a file.
     ///
     /// # Examples
@@ -1175,6 +1202,15 @@ impl FolderModel {
         let Some(location) = read.location else {
             return self;
         };
+        let admitted = match &self.awaited_open {
+            AwaitedOpen::NoActYet => true,
+            AwaitedOpen::Awaiting(awaited) => *awaited == read.path,
+            AwaitedOpen::Answered => false,
+        };
+        if !admitted {
+            return self;
+        }
+        self.awaited_open = AwaitedOpen::Answered;
         self.place.selected = Some(read.path.clone());
         self.place.open_file = Some(OpenFile {
             path: read.path,
@@ -1411,10 +1447,10 @@ mod tests {
     use std::ffi::OsString;
 
     use super::{
-        FileRead, FileRequest, FileView, FolderChange, FolderKind, FolderModel, GitCondition,
-        HeldListing, ItemState, ModelDelta, OpenFailure, OpenFile, OpenFolderOutcome, OpenedFolder,
-        PathReports, ReaderPlace, ReadingPosition, ReportedNames, TreeChanges, TreeRequest,
-        list_tree, open_folder, read_git, read_git_item, reduce, reduce_invalidation,
+        AwaitedOpen, FileRead, FileRequest, FileView, FolderChange, FolderKind, FolderModel,
+        GitCondition, HeldListing, ItemState, ModelDelta, OpenFailure, OpenFile, OpenFolderOutcome,
+        OpenedFolder, PathReports, ReaderPlace, ReadingPosition, ReportedNames, TreeChanges,
+        TreeRequest, list_tree, open_folder, read_git, read_git_item, reduce, reduce_invalidation,
         reduce_open_file, select_file,
     };
     use crate::fs_reader::{
@@ -1934,6 +1970,7 @@ mod tests {
                 .map(|(path, listing)| (PathBuf::from(path), listing.clone()))
                 .collect(),
             place,
+            awaited_open: AwaitedOpen::NoActYet,
             kind: ItemState::Pending,
         }
     }
