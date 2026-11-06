@@ -45,7 +45,39 @@
 
 ## 2. Choices to confirm — a best-effort answer was drafted; confirm or override
 
-None.
+### 2.1 The SDD points at the project's done by a file that no longer exists, under a name the instance retired
+
+> **No `product-sdd` run wrote this item.** A `companion-self-answer` run raised it on 2026-11-06,
+> while reading `SDD.md` to answer this companion. Its reasoning is in
+> `docs/trail/sdd/self_answer-73.md` § *Raised on this document*.
+
+- **Raised by:** CTO — 2026-11-06
+- **Seat:** cto
+- **Drafted into the SDD:** nothing — this run writes no document. Proposed: in the live body,
+  replace the path `system/projects/ka-reader/agari.md` with
+  `system/projects/ka-reader/finish_line.md` in the five places that cite it (§ 1, the terminus
+  sentence; § 2 force 4, *What must be replaceable*; § 5 step 1, the outside-done sentence and the
+  CDO's observability clause on E-8; § 6's preamble on *Moves toward*), and write "finish line"
+  where the live body says "Agari" (§ 1; § 2's hexagonal row; § 5 steps 1–4 and *Six cuts*; § 6
+  S-9 *Moves toward*; § 7's `promise-one-point-zero` → `switch-the-folder` row; § 8's *Moves
+  toward* row; § 12's PRD boundary). Dated records stay as written: the header's version lines,
+  § 10's entries, the SDD Review Notes and every trail citation. Nothing the SDD designs changes.
+- **Rationale:** the instance renamed the Agari to the finish line on 2026-11-03 and moved the
+  file with `git mv` (instance commit `de384e69`). `system/projects/ka-reader/agari.md` is not on
+  disk (`test -e` exits 1) and `finish_line.md` is; the instance's migration map lists the move
+  (`<CORE>/doctrine/setup/kensaiapp_structure.md` § 6). What the SDD cites the file for still
+  holds at the new path: `finish_line.md` keeps the three conditions as § 1 states them — the v1
+  surface plus diffs, history and switching inside done; search / filter, pane resizing and
+  keyboard navigation outside; the promise at zero violations; public under MIT at 1.0.0 or
+  later. The PRD took the same repair at v17 (`docs/trail/prd/self_answer-4.md` § *Raised on this
+  document*; `ka-reader@ce9ba62`), and its report named this document as carrying the same dead
+  path. It costs no extra run: the SDD is owed a `product-sdd` fold for item 1.1, and this rides
+  it. Seen beside it and left to that fold: § 12's PRD-boundary sentence still pins the PRD at
+  v15, and item 1.1's fold re-reads the PRD at v17.
+- **If overridden:** nothing in the design moves. The SDD keeps a path no reader can follow and a
+  name the instance no longer uses, in five path citations and some seventeen uses of the name
+  outside the Review Notes.
+- **Confirm or override:** <"confirm", or "override: <what to do instead>">
 
 ## 3. Cut calls to confirm — where the slicing could reasonably have gone another way
 
