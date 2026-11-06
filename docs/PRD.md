@@ -2,7 +2,7 @@
 
 **Status:** Settled
 **Owner:** CPO
-**Version:** 16 — the public identity moves to the maintainer's personal GitHub handle: KA-Reader lives at `github.com/eyalgo/ka-reader`, and the handle `eyalgo` is its public face in place of the `kensaiapp` organisation (§ Assumptions, **Public identity**). Nothing else about the product changes.
+**Version:** 17 — the first public release is a beta below 1.0.0: it comes once the tree and the open file follow the disk and Markdown reads rendered, without waiting for the Git view to follow the disk, and in it the Git view and the changed-file markers say plainly that they show the Git state read when the folder was opened (§ Scope (In), **The first public release — a beta**; § UX Notes, "the view never lies"). The Git view following the disk stays part of v1, in place before 1.0.0. The citations of the project's done now name its finish line.
 
 > The PRD is the product source of truth: the product-facing **what and why**, read cold
 > by the CTO, the CDO, Principal PM, and Principal Architect. It is updated in place with
@@ -14,7 +14,7 @@
 > beside the decision itself, in whatever section it lives, so a cold reader can tell what came
 > from the input and what the CPO put there without holding the two documents side by side. Which
 > relations exist, which marker each takes, and when one is owed are the authoring prompt's
-> (`<CORE>/prompts/cpo_create_prd.md` § *Every decision cites its relation to your input*); this
+> (`<CORE>/../skills/cpo/.claude/skills/product-prd/prompts/rich.md` § *Every decision cites its relation to your input*); this
 > template says only that the markers sit in the body, never in a section of their own. A
 > **suggested removal** has nothing to mark here — the thing it concerns is not in the document —
 > and lives only in the companion as a choice to confirm.
@@ -242,8 +242,9 @@ KA-Reader's to find out, never the person's to declare.
    trail/prd/self_answer-2.md § 2.1)*.
 
 **The rule for every live state: the view never lies.** What is shown is the folder's
-current state, or is explicitly marked as no longer there; the view never presents stale
-content as current. And an update the person did not ask for never takes their place away —
+current state, or is explicitly marked as no longer there — or, in the beta's Git view, as read
+when the folder was opened; the view never presents stale content as current *(the beta's
+case: owner-confirmed: trail/prd/cycle-15.md § 3.1)*. And an update the person did not ask for never takes their place away —
 the tree they expanded, the file they have open, the position they are reading stay theirs;
 only what actually changed changes *(the folder's, not the repository's: the widening
 owner-confirmed at trail/prd/cycle-9.md § 1.1, applied here; confirmed at
@@ -256,6 +257,10 @@ trail/prd/self_answer-2.md § 2.1)*. Concretely:
 - The repository is mid-operation (a merge, a rebase, a detached state): an inspection
   subject, not an error — the Git view presents whatever state the repository is truly in.
   Those are exactly the trees that must not be perturbed.
+- In the beta, before the Git view follows the disk: the Git view and the tree's changed-file
+  markers say plainly that they show the Git state read when the folder was opened. A Git view
+  that quietly shows that state as if it were current is not admitted (see Scope (In), **The
+  first public release — a beta**) *(owner-confirmed: trail/prd/cycle-15.md § 3.1)*.
 
 **Failure states speak the user's language.** Error and edge states are pitched at the
 no-learning-curve bar — someone who works with Git, not necessarily an expert in it *(the
@@ -287,7 +292,7 @@ floor: owner-confirmed: trail/prd/cycle-8.md § 1.1)*:
 
 - KA-Reader is mouse-driven — keyboard navigation is outside the product's done (see Out of
   Scope), so the absence of a keyboard-accessibility promise is permanent, not deferred *(the
-  permanence: the project Agari's; owner-confirmed: trail/prd/cycle-8.md § 1.2)*.
+  permanence: the project finish line's; owner-confirmed: trail/prd/cycle-8.md § 1.2)*.
 - Beyond that line, v1 makes no assistive-technology promise: its accessibility surface is
   what the product already carries — two themes, text-first navigation — kept small with the
   rest of the surface *(added — not in the input; owner-confirmed: trail/prd/cycle-5.md)*.
@@ -314,6 +319,14 @@ and simple is the product's, and the time-to-first-success bar measures it.
 runs on macOS, and promises nothing else. The promise is scoped to the maintenance it will get —
 one platform is a narrower promise than three, and a truthful one.
 
+**The first public release — a beta** *(added — not in the input; owner-confirmed:
+trail/prd/cycle-15.md § 3.1)*: the first public release is a beta, below 1.0.0. It comes once
+the tree and the open file follow the disk and Markdown reads rendered, and it does not wait
+for the Git view to follow the disk. In the beta, the Git view and the tree's changed-file
+markers say plainly that they show the Git state read when the folder was opened, and the
+README's known gaps say the same (see UX Notes, "the view never lies"). The Git view following
+the disk stays part of what v1 means, and is in place before 1.0.0.
+
 The full ambition, so the cut reads as deliberate: a complete read-only inspection surface —
 diffs, commit history, search, keyboard-driven navigation, switching which folder is viewed
 without restarting (always one at a time) *(folder, not repository: the word § Out of Scope
@@ -333,7 +346,7 @@ browsing, reading, status, and live refresh.
 - **Git operations** — staging, committing, pushing, branch switching, discarding: viewer only.
 - **Diff and commit-history views** — beyond v1 (the input's own roadmap defers them).
 - **Sidebar search / filter** — outside the product's done, not merely beyond v1: the project's
-  Agari (`system/projects/ka-reader/agari.md`) places it outside the terminus, and the README says
+  finish line (`system/projects/ka-reader/finish_line.md`) places it outside the terminus, and the README says
   so rather than promising it *(changed — the input's roadmap lists it as a later phase;
   owner-confirmed: trail/prd/cycle-8.md § 1.2)*.
 - **Pane resizing and keyboard navigation** — outside the product's done, on the same footing as
@@ -411,7 +424,7 @@ browsing, reading, status, and live refresh.
   release is offered. Reaching 1.0.0 is a product event — the moment the promise starts — and
   after it a breaking change to what users rely on is priced, batched, and announced, never
   casual. *(added — not in the input; the 1.0.0-or-later closing condition is the project
-  Agari's, owner-confirmed: trail/srs/cycle-1.md §2.4)*
+  finish line's, owner-confirmed: trail/srs/cycle-1.md §2.4)*
 - **Regulatory posture:** published as free, non-monetized open source outside any commercial
   activity, KA-Reader is outside the EU Cyber Resilience Act's scope *(verified (external):
   https://digital-strategy.ec.europa.eu/en/policies/cra-open-source — non-monetised free
