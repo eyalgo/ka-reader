@@ -237,8 +237,9 @@ pub unsafe fn list_entries(session: &Session, path: *const c_char, act: u32) -> 
 
 /// What the reader did to a file, decoded from the C `act` and `position`: `0` opened it at
 /// `position`, with NULL meaning the empty position; `1` moved its position to `position`, and
-/// without one there is nothing to apply; any other value is none. Never a `#[repr]` enum read
-/// straight from C, and the position's bytes are carried as they are, never parsed.
+/// without one there is nothing to apply; `2` selected it, whatever `position` holds, NULL
+/// included, because the selection act never reads it; any other value is none. Never a `#[repr]`
+/// enum read straight from C, and the position's bytes are carried as they are, never parsed.
 ///
 /// # Safety
 ///
@@ -257,6 +258,7 @@ pub(crate) unsafe fn decode_file_act(act: u32, position: *const c_char) -> Optio
             bytes.unwrap_or_else(|| ReadingPosition::new(Vec::new())),
         )),
         1 => bytes.map(FileAct::Position),
+        2 => Some(FileAct::Select),
         _ => None,
     }
 }
@@ -744,6 +746,7 @@ mod tests {
     #[test]
     fn test_act_2_decodes_to_the_selection_act() {
         use super::decode_file_act;
+        use crate::session::FileAct;
 
         let position = CString::new("top").expect("no NUL");
 
@@ -755,8 +758,8 @@ mod tests {
             )
         };
 
-        assert!(with.is_some());
-        assert!(without.is_some());
+        assert_eq!(with, Some(FileAct::Select));
+        assert_eq!(without, Some(FileAct::Select));
     }
 
     #[test]

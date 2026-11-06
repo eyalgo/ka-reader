@@ -101,7 +101,9 @@ pub unsafe extern "C" fn ka_reader_list_tree(path: *const c_char, act: u32) -> *
 /// `{"state":"failed","condition":…}`, or `{"state":"pending"}` when nothing was read (no folder
 /// open, or a NULL, empty or non-UTF-8 path). `act` `1` is the position alone: when the path is the
 /// open file its position becomes `position` (a NULL one applies nothing), nothing is read, and the
-/// answer is `{"state":"pending"}`. Any other `act` applies nothing and answers `pending`. The
+/// answer is `{"state":"pending"}`. `act` `2` is the selection act, first of a click's two: the file
+/// is selected before any read, `position` is not read, nothing is read, and the answer is
+/// `{"state":"pending"}`. Any other `act` applies nothing and answers `pending`. The
 /// position's bytes are held as they are, never parsed. NULL on failure; a non-NULL answer is freed
 /// with `ka_reader_free`.
 ///
