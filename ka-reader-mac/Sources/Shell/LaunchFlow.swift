@@ -41,9 +41,12 @@ package final class LaunchFlow {
     /// The receiver the open in flight replaces. The bridge keeps calling it until that open has
     /// returned `opened`, because only then has it drained its callbacks, so it is held until then.
     private var replacedReceiver: ModelChangesReceiver?
-    /// The tree the workbench draws, once the workbench is presented and until a startup surface
+    /// The workbench a live delivery draws on, once it is presented and until a startup surface
     /// replaces it.
-    private weak var presentedTree: RootItemsView?
+    private weak var presentedWorkbench: WorkbenchView?
+    /// The newest open-file revision applied for the current receiver, `nil` before any. The bridge
+    /// numbers each grant from 1, so a new receiver starts from none.
+    private var lastOpenFileRevision: UInt64?
     /// The current receiver's deliveries that arrived before the workbench was presented, in order.
     private var heldChanges: [Data] = []
 
@@ -83,6 +86,7 @@ package final class LaunchFlow {
         let receiver = makeReceiver()
         replacedReceiver = currentReceiver
         currentReceiver = receiver
+        lastOpenFileRevision = nil
         heldChanges = []
         reader.run(
             { [bridge] in Self.openAndList(location, changes: receiver, through: bridge) },
@@ -101,16 +105,22 @@ package final class LaunchFlow {
     /// is dropped here. A live one waits for the workbench, then draws.
     private func receive(_ payload: Data, from receiver: ModelChangesReceiver) {
         guard receiver === currentReceiver else { return }
-        guard let tree = presentedTree else {
+        guard let workbench = presentedWorkbench else {
             heldChanges.append(payload)
             return
         }
-        apply(payload, to: tree)
+        apply(payload, to: workbench)
     }
 
-    private func apply(_ payload: Data, to tree: RootItemsView) {
+    /// The listings go to the tree, and the open file to the workbench only if its revision is newer
+    /// than the last one applied: deliveries from different threads can arrive out of order.
+    private func apply(_ payload: Data, to workbench: WorkbenchView) {
         guard let changes = BridgePayload.decodeChanges(payload) else { return }
-        tree.apply(changes: changes.listings)
+        workbench.rootItemsView.apply(changes: changes.listings)
+        if let openFile = changes.openFile, openFile.revision > (lastOpenFileRevision ?? 0) {
+            lastOpenFileRevision = openFile.revision
+            workbench.apply(openFile: openFile.update)
+        }
     }
 
     private nonisolated static func openAndList(
@@ -151,7 +161,7 @@ package final class LaunchFlow {
     }
 
     private func presentStartup(_ projection: StartupProjection) {
-        presentedTree = nil
+        presentedWorkbench = nil
         presenter.present(
             StartupView(projection: projection, glyphs: statusGlyphs) { [weak self] intent in
                 switch intent {
@@ -187,10 +197,10 @@ package final class LaunchFlow {
             reader.run({ Self.gitItem(through: bridge) }, deliver: answer)
         }
         presenter.present(workbench)
-        presentedTree = view
+        presentedWorkbench = workbench
         let held = heldChanges
         heldChanges = []
-        for payload in held { apply(payload, to: view) }
+        for payload in held { apply(payload, to: workbench) }
     }
 
     private nonisolated static func gitItem(through bridge: Bridging) -> GitItem {
