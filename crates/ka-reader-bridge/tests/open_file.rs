@@ -106,6 +106,7 @@ fn test_the_position_act_on_the_open_file_sets_it_and_answers_pending() {
     let session = session_over(&watching);
     let received = open_delivering(&session, &folder);
     session.select_file("a.txt", Some(FileAct::Open(position(b"top"))));
+    let delivered = received.lock().expect("the payload log").len();
 
     let answer = session.select_file("a.txt", Some(FileAct::Position(position(b"line=40;x=0"))));
 
@@ -115,8 +116,9 @@ fn test_the_position_act_on_the_open_file_sets_it_and_answers_pending() {
         place.open_file().expect("still open").position(),
         &position(b"line=40;x=0")
     );
-    assert!(
-        received.lock().expect("the payload log").is_empty(),
+    assert_eq!(
+        received.lock().expect("the payload log").len(),
+        delivered,
         "a position act delivers nothing"
     );
 }
@@ -547,7 +549,7 @@ fn test_a_delivery_blocked_inside_an_opens_callback_holds_a_replacing_open_until
         let replaced = Arc::clone(&replaced);
         let second = second.path().to_path_buf();
         std::thread::spawn(move || {
-            session.open_delivering(second, Arc::new(|payload| drop(payload)));
+            session.open_delivering(second, Arc::new(drop));
             replaced.store(true, Ordering::SeqCst);
         })
     };

@@ -12,11 +12,12 @@ use ka_reader_core::{
     FileRequest, FileView, FolderKind, FolderModel, GitCondition, GitPort, GitReadCondition,
     ItemState, Language, OpenFailure, OpenFolderOutcome, OpenedFolder, PathReports, ProbeCondition,
     ReadingPosition, RepositoryState, Span, StatusCategory, StatusEntry, SubmoduleNamedPath,
-    TokenClass, TreeRequest, list_tree, open_folder, read_file, read_git_item,
+    TokenClass, TreeChanges, TreeRequest, list_tree, open_folder, read_file, read_git_item,
 };
 use serde::Serialize;
 
 use crate::boundary::changes_payload;
+use crate::delivery_gate::DeliveryGate;
 use crate::machine_config::{SwitchOutcome, arrive_in_process, production_port};
 use crate::watcher::{FsEvents, PathSink, Subscription, Watching};
 
@@ -682,8 +683,37 @@ struct Held {
     /// How many batches this grant has applied, whether or not they changed anything. An open
     /// compares it before and after its read, outside the lock, to see that a batch landed meanwhile.
     batches: u64,
-    /// The open's watcher subscription, held for its drop: stopping it drains every callback in flight.
-    _subscription: Option<Subscription>,
+    /// The revision of the last payload that carried the open file; the next carries one more.
+    revision: u64,
+    /// Where this grant's payloads go, when it has one.
+    delivery: Option<Delivery>,
+    /// Lets a delivery run only while the grant is live and lets the replacing open wait for those
+    /// in flight.
+    gate: Arc<DeliveryGate>,
+    /// The open's watcher subscription: stopping it drains every callback in flight.
+    subscription: Option<Subscription>,
+}
+
+impl Held {
+    /// Ends the grant: the subscription stops, then the gate closes and waits for the deliveries
+    /// still in flight, so no callback is called after the open that replaced it has returned.
+    fn retire(mut self) {
+        drop(self.subscription.take());
+        self.gate.close();
+    }
+
+    /// The payload for `changes`, whose revision rises only when it carries the open file.
+    fn payload_for(&mut self, changes: &TreeChanges) -> Result<Option<Vec<u8>>, serde_json::Error> {
+        if changes.is_empty() {
+            return Ok(None);
+        }
+        let revision = self.revision + 1;
+        let payload = changes_payload(changes, revision)?;
+        if changes.open_file().is_some() {
+            self.revision = revision;
+        }
+        Ok(Some(payload))
+    }
 }
 
 #[derive(Default)]
@@ -706,6 +736,9 @@ impl State {
     }
 }
 
+/// A payload with the gate of the grant it is delivered through.
+type Outgoing = (Vec<u8>, Arc<DeliveryGate>);
+
 /// One watcher batch, for the grant `token`: a batch for any other grant is dropped. The next model
 /// is computed on a clone and assigned only once it and its payload exist, so a panic leaves the held
 /// model as it was. The delivery is called after the lock is released, only when something changed.
@@ -719,8 +752,8 @@ fn deliver_batch(
 ) {
     let outcome = panic::catch_unwind(AssertUnwindSafe(|| {
         let payload = apply_batch(state, token, batch, reduce)?;
-        if let Some(payload) = payload {
-            delivery(payload);
+        if let Some((payload, gate)) = payload {
+            gate.deliver(delivery, payload);
         }
         Ok::<(), serde_json::Error>(())
     }));
@@ -739,7 +772,7 @@ fn apply_batch(
     token: u64,
     batch: Vec<PathBuf>,
     reduce: impl FnOnce(FolderModel, PathReports) -> FolderModel,
-) -> Result<Option<Vec<u8>>, serde_json::Error> {
+) -> Result<Option<Outgoing>, serde_json::Error> {
     let mut guard = state.lock().unwrap_or_else(PoisonError::into_inner);
     let Some(held) = guard.held.as_mut().filter(|held| held.open == token) else {
         return Ok(None);
@@ -747,13 +780,9 @@ fn apply_batch(
     held.batches += 1;
     let next = reduce(held.model.clone(), PathReports::new(batch));
     let changes = next.changes_since(&held.model);
-    let payload = if changes.is_empty() {
-        None
-    } else {
-        Some(changes_payload(&changes)?)
-    };
+    let payload = held.payload_for(&changes)?;
     held.model = next;
-    Ok(payload)
+    Ok(payload.map(|payload| (payload, Arc::clone(&held.gate))))
 }
 
 /// The session: at most one opened folder, starting empty, replaced whole by a successful open.
@@ -880,19 +909,26 @@ impl Session {
             let mut state = self.lock();
             state.opens += 1;
             let open = state.opens;
-            let subscription =
-                delivery.and_then(|delivery| self.subscribe(folder.root(), open, delivery));
+            let gate = Arc::new(DeliveryGate::default());
+            let subscription = delivery
+                .clone()
+                .and_then(|delivery| self.subscribe(folder.root(), open, delivery));
             let model = FolderModel::new(folder);
             state.held.replace(Held {
                 model,
                 wiring,
                 open,
                 batches: 0,
-                _subscription: subscription,
+                revision: 0,
+                delivery,
+                gate,
+                subscription,
             })
         };
         // The replaced grant stops and drains outside the lock, because its callbacks may be waiting on it.
-        drop(replaced);
+        if let Some(replaced) = replaced {
+            replaced.retire();
+        }
         OpenResult::Opened
     }
 
@@ -1070,6 +1106,7 @@ impl Session {
         };
         let read = read(&folder, Path::new(path));
         let answer = FileAnswerDto::from(read.answer().clone());
+        let mut outgoing = None;
         if let Some(held) = self.lock().held.as_mut()
             && held.open == open
         {
@@ -1077,9 +1114,32 @@ impl Session {
             if held.batches != batches {
                 model = model.reread_open_file();
             }
+            outgoing = Self::open_payload(held, &model);
             held.model = model;
         }
+        // Delivered after the lock is released, from this caller's thread, before the export returns.
+        if let Some((payload, delivery, gate)) = outgoing {
+            gate.deliver(&delivery, payload);
+        }
         answer
+    }
+
+    /// The payload an open sends, when the open changed the open file and the grant has a delivery.
+    /// A payload that cannot be serialized delivers nothing and writes one `stopped` line.
+    fn open_payload(
+        held: &mut Held,
+        model: &FolderModel,
+    ) -> Option<(Vec<u8>, Delivery, Arc<DeliveryGate>)> {
+        let delivery = held.delivery.clone()?;
+        let changes = model.changes_since(&held.model);
+        changes.open_file()?;
+        match held.payload_for(&changes) {
+            Ok(payload) => Some((payload?, delivery, Arc::clone(&held.gate))),
+            Err(_) => {
+                log::warn!("core-bridge: model_changed stopped: answer serialization failed");
+                None
+            }
+        }
     }
 
     /// The position act: applied only when `path` is the open file, and it reads nothing.

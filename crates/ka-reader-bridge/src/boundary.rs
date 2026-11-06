@@ -73,14 +73,29 @@ struct ChangedListing {
 }
 
 #[derive(Serialize)]
+struct ChangedOpenFile {
+    revision: u64,
+    path: String,
+    position: String,
+    answer: FileAnswerDto,
+}
+
+#[derive(Serialize)]
 struct ChangesPayload {
     listings: Vec<ChangedListing>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    open_file: Option<ChangedOpenFile>,
 }
 
 /// The `model_changed` payload for `changes`: `{"listings":[{"path":…,"answer":…}…]}`, where each
 /// `answer` is exactly what `ka_reader_list_tree` answers for that listing and the root's `path`
-/// is empty.
-pub(crate) fn changes_payload(changes: &TreeChanges) -> Result<Vec<u8>, serde_json::Error> {
+/// is empty. When the open file changed it adds
+/// `"open_file":{"revision":…,"path":…,"position":…,"answer":…}`, `answer` being the select answer's
+/// shape or `{"state":"gone"}`; a payload of listings alone is byte for byte as it was.
+pub(crate) fn changes_payload(
+    changes: &TreeChanges,
+    revision: u64,
+) -> Result<Vec<u8>, serde_json::Error> {
     let listings = changes
         .listings()
         .iter()
@@ -89,7 +104,16 @@ pub(crate) fn changes_payload(changes: &TreeChanges) -> Result<Vec<u8>, serde_js
             answer: list_answer(listing.clone()),
         })
         .collect();
-    serde_json::to_vec(&ChangesPayload { listings })
+    let open_file = changes.open_file().map(|open| ChangedOpenFile {
+        revision,
+        path: open.path().to_string_lossy().into_owned(),
+        position: String::from_utf8_lossy(open.position().as_bytes()).into_owned(),
+        answer: FileAnswerDto::from(open.view().clone()),
+    });
+    serde_json::to_vec(&ChangesPayload {
+        listings,
+        open_file,
+    })
 }
 
 /// A `list_tree` path, decoded. Root is NULL or empty.
@@ -589,7 +613,7 @@ mod tests {
                 .expect("the answer serializes")
         };
 
-        let payload = changes_payload(&later.changes_since(&earlier)).expect("serializes");
+        let payload = changes_payload(&later.changes_since(&earlier), 1).expect("serializes");
 
         assert_eq!(
             serde_json::from_slice::<serde_json::Value>(&payload).expect("JSON"),

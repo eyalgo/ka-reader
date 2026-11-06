@@ -1,6 +1,7 @@
 //! ka-reader-bridge: the crate's public surface. No implementation lives here.
 
 pub mod boundary;
+pub mod delivery_gate;
 pub mod exports;
 pub mod log_install;
 pub mod log_writer;
