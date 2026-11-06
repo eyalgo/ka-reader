@@ -1202,15 +1202,13 @@ impl FolderModel {
         let Some(location) = read.location else {
             return self;
         };
-        let admitted = match &self.awaited_open {
-            AwaitedOpen::NoActYet => true,
-            AwaitedOpen::Awaiting(awaited) => *awaited == read.path,
-            AwaitedOpen::Answered => false,
-        };
-        if !admitted {
-            return self;
+        match &self.awaited_open {
+            AwaitedOpen::NoActYet => {}
+            AwaitedOpen::Awaiting(awaited) if *awaited == read.path => {
+                self.awaited_open = AwaitedOpen::Answered;
+            }
+            AwaitedOpen::Awaiting(_) | AwaitedOpen::Answered => return self,
         }
-        self.awaited_open = AwaitedOpen::Answered;
         self.place.selected = Some(read.path.clone());
         self.place.open_file = Some(OpenFile {
             path: read.path,
