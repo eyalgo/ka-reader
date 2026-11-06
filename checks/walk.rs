@@ -10,8 +10,11 @@
 //!
 //! The same walk also drives the model's own operations over the folder, through `FolderModel`:
 //! `TreeRequest::Expand` on every folder the tree listed, `FileRequest::Select` on every file,
-//! `TreeRequest::Invalidate` with a report naming the root and every folder, then
-//! `TreeRequest::Collapse` on every folder. None of them writes.
+//! `read_file` then `FolderModel::open_read` at a fixed position on every file, so the last one is the
+//! open file, `FileRequest::Position` on the open file, `TreeRequest::Invalidate` with a report
+//! naming the root and every folder, which now covers the open file, `FolderModel::reread_open_file`,
+//! then `TreeRequest::Collapse` on every folder. None of them writes. None of them is a
+//! `select_file` call, so the `select_file` tally and the judge over it are as they were.
 //!
 //! Long mode, taken when the second argument is `--long`: the same pass, then one line on stdout
 //! that is exactly `pass-complete`, then the same pass again for as long as the process lives. It
@@ -33,8 +36,8 @@ use std::thread::sleep;
 use std::time::Duration;
 
 use ka_reader_core::{
-    EntryKind, FileRequest, FolderModel, ItemState, Libgit2, OpenedFolder, PathReports,
-    TreeRequest, list_tree, open_folder, read_git, select_file,
+    EntryKind, FileRead, FileRequest, FolderModel, ItemState, Libgit2, OpenedFolder, PathReports,
+    ReadingPosition, TreeRequest, list_tree, open_folder, read_file, read_git, select_file,
 };
 
 /// The one line long mode prints, after its first completed pass.
@@ -77,7 +80,20 @@ struct Acts {
     collapse: usize,
     invalidate: usize,
     select: usize,
+    read_file: usize,
+    open_read: usize,
+    position: usize,
+    /// The `Invalidate` batches applied while a file was open, which they cover (the root is
+    /// reported in each).
+    invalidate_over_open_file: usize,
+    reread_open_file: usize,
 }
+
+/// The reading position every file is opened at: the wire form the shell writes for the top-left.
+/// The model holds it as opaque bytes.
+const OPEN_POSITION: &[u8] = b"line=0;x=0";
+/// The position the open file is then moved to.
+const MOVED_POSITION: &[u8] = b"line=3;x=7";
 
 /// One walk's outcome: how many `list_tree` calls it made, whether the root listed entries, the
 /// two tallies the coverage judge compares, and the model operations it drove. They are fed from
@@ -175,6 +191,13 @@ impl Driven {
     /// Reports every path in `paths` as possibly changed, once, as one batch.
     fn invalidate(&mut self, paths: Vec<PathBuf>) {
         self.acts.invalidate += 1;
+        if self
+            .model
+            .as_ref()
+            .is_some_and(|model| model.open_file().is_some())
+        {
+            self.acts.invalidate_over_open_file += 1;
+        }
         self.apply_tree(TreeRequest::Invalidate(PathReports::new(paths)));
     }
 
@@ -186,26 +209,60 @@ impl Driven {
             .map(|model| model.select_file(FileRequest::Select(Some(PathBuf::from(path)))));
     }
 
+    /// The read half of the open: `path` read from `folder`, nothing yet held.
+    fn read(&mut self, folder: &OpenedFolder, path: &str) -> FileRead {
+        self.acts.read_file += 1;
+        read_file(folder, Path::new(path))
+    }
+
+    /// The fold half of the open: the file `read` found becomes the open file at `position`.
+    fn open_read(&mut self, read: FileRead, position: &[u8]) {
+        self.acts.open_read += 1;
+        self.model = self
+            .model
+            .take()
+            .map(|model| model.open_read(read, ReadingPosition::new(position)));
+    }
+
+    fn position(&mut self, position: &[u8]) {
+        self.acts.position += 1;
+        self.model = self
+            .model
+            .take()
+            .map(|model| model.select_file(FileRequest::Position(ReadingPosition::new(position))));
+    }
+
+    fn reread_open_file(&mut self) {
+        self.acts.reread_open_file += 1;
+        self.model = self.model.take().map(FolderModel::reread_open_file);
+    }
+
     fn apply_tree(&mut self, request: TreeRequest) {
         self.model = self.model.take().map(|model| model.list_tree(request));
     }
 }
 
-/// Drives `Expand` on every folder, `Select` on every file, `Invalidate` with the root and every
-/// folder reported, then `Collapse` on every folder, over `folder`. The fixture is only read.
+/// Drives `Expand` on every folder, `Select` and the open's two halves on every file, `Position` on
+/// the open file, `Invalidate` with the root and every folder reported, `reread_open_file`, then
+/// `Collapse` on every folder, over `folder`. The fixture is only read.
 fn drive_model(folder: &Path, folders: &BTreeSet<String>, files: &BTreeSet<String>) -> Acts {
     let opened = open_folder(folder).expect("the folder that was just walked opens");
     let root = opened.root().to_path_buf();
+    let reading = open_folder(folder).expect("the folder that was just walked opens");
     let mut driven = Driven::new(FolderModel::new(opened));
     for path in folders {
         driven.expand(path);
     }
     for path in files {
         driven.select(path);
+        let read = driven.read(&reading, path);
+        driven.open_read(read, OPEN_POSITION);
     }
+    driven.position(MOVED_POSITION);
     let mut reports = vec![root.clone()];
     reports.extend(folders.iter().map(|path| root.join(path)));
     driven.invalidate(reports);
+    driven.reread_open_file();
     for path in folders {
         driven.collapse(path);
     }
@@ -265,8 +322,8 @@ fn judge_coverage(
     Ok(())
 }
 
-/// Judges the model operations one walk drove: each of `Expand`, `Collapse`, `Invalidate` and
-/// `Select` must have been reached at least once (QC-2's reviewed half). The `Err` names the first
+/// Judges the model operations one walk drove: each of `Expand`, `Collapse`, `Invalidate`, `Select`
+/// and the five the open file adds must have been reached at least once (QC-2's reviewed half). The `Err` names the first
 /// operation the walk never reached.
 fn judge_acts(acts: &Acts) -> Result<(), String> {
     let reached = [
@@ -274,6 +331,14 @@ fn judge_acts(acts: &Acts) -> Result<(), String> {
         ("TreeRequest::Collapse", acts.collapse),
         ("TreeRequest::Invalidate", acts.invalidate),
         ("FileRequest::Select", acts.select),
+        ("read_file", acts.read_file),
+        ("FolderModel::open_read", acts.open_read),
+        ("FileRequest::Position", acts.position),
+        (
+            "TreeRequest::Invalidate over the open file",
+            acts.invalidate_over_open_file,
+        ),
+        ("FolderModel::reread_open_file", acts.reread_open_file),
     ];
     match reached.iter().find(|(_, count)| *count == 0) {
         Some((name, _)) => Err(format!("the walk never reached {name}")),
@@ -281,14 +346,23 @@ fn judge_acts(acts: &Acts) -> Result<(), String> {
     }
 }
 
-fn judge_accepts_every_act_reached() -> Result<(), String> {
-    let acts = Acts {
+/// A tally in which every act was reached once.
+fn every_act_reached() -> Acts {
+    Acts {
         expand: 1,
         collapse: 1,
         invalidate: 1,
         select: 1,
-    };
-    judge_acts(&acts)
+        read_file: 1,
+        open_read: 1,
+        position: 1,
+        invalidate_over_open_file: 1,
+        reread_open_file: 1,
+    }
+}
+
+fn judge_accepts_every_act_reached() -> Result<(), String> {
+    judge_acts(&every_act_reached())
         .map_err(|message| format!("a walk that reached every act was refused: {message}"))
 }
 
@@ -306,12 +380,7 @@ fn judge_refuses_a_missing_act(missing: &str, acts: Acts) -> Result<(), String> 
 }
 
 fn judge_refuses_every_act_left_out() -> Result<(), String> {
-    let all = Acts {
-        expand: 1,
-        collapse: 1,
-        invalidate: 1,
-        select: 1,
-    };
+    let all = every_act_reached();
     judge_refuses_a_missing_act("Expand", Acts { expand: 0, ..all })?;
     judge_refuses_a_missing_act("Collapse", Acts { collapse: 0, ..all })?;
     judge_refuses_a_missing_act(
@@ -321,7 +390,36 @@ fn judge_refuses_every_act_left_out() -> Result<(), String> {
             ..all
         },
     )?;
-    judge_refuses_a_missing_act("Select", Acts { select: 0, ..all })
+    judge_refuses_a_missing_act("Select", Acts { select: 0, ..all })?;
+    judge_refuses_a_missing_act(
+        "read_file",
+        Acts {
+            read_file: 0,
+            ..all
+        },
+    )?;
+    judge_refuses_a_missing_act(
+        "open_read",
+        Acts {
+            open_read: 0,
+            ..all
+        },
+    )?;
+    judge_refuses_a_missing_act("Position", Acts { position: 0, ..all })?;
+    judge_refuses_a_missing_act(
+        "Invalidate over the open file",
+        Acts {
+            invalidate_over_open_file: 0,
+            ..all
+        },
+    )?;
+    judge_refuses_a_missing_act(
+        "reread_open_file",
+        Acts {
+            reread_open_file: 0,
+            ..all
+        },
+    )
 }
 
 fn tally<const N: usize>(

@@ -1080,7 +1080,7 @@ test_the_folder_mode_reaches_the_open_files_model_calls() {
   grep -qF 'TreeRequest::Invalidate(' "$walk" || fail "the walk makes no Invalidate" || return 1
   for name in 'read_file' 'FolderModel::open_read' 'FileRequest::Position' \
     'TreeRequest::Invalidate over the open file' 'FolderModel::reread_open_file'; do
-    grep -qF -- "(\"$name\"," "$walk" || fail "the walk's judge does not name $name" || return 1
+    grep -qF -- "\"$name\"," "$walk" || fail "the walk's judge does not name $name" || return 1
   done
 }
 
