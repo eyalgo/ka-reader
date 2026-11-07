@@ -13,6 +13,17 @@ package nonisolated enum FileVerdict: Equatable, Sendable {
     case gone
 }
 
+/// What the bridge answered to a relative link's activation. The link's selection act and its read
+/// are one call, so the answer says whether the target opened.
+package nonisolated enum RelativeLinkAnswer: Equatable, Sendable {
+    /// The target is a contained file and opened, with its verdict.
+    case opened(FileVerdict)
+    /// The bridge answered `pending`: no contained file, so nothing changed.
+    case nothing
+    /// The call carried no verdict: it failed, or its answer did not conform.
+    case stopped
+}
+
 /// Where the reader is in the open file: the first line shown at the panel's top, zero-based, and
 /// the code view's horizontal offset in points. The model holds it as opaque bytes; this is the
 /// shell's and the panel's reading of them.
