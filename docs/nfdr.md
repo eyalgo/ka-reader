@@ -1,8 +1,9 @@
 # NFDR — KA-Reader
 
-**Status:** Settled
+**Status:** Draft
 **Owner:** Principal Architect
-**Version:** 81 — Fold cycle-72 §§ 3.1–3.4: ADR-0025 supersedes ADR-0015 with the closed node set as the core builds it, and the six entries that traced to ADR-0015 trace to ADR-0025; QC-11's tail measures `markdown-renderer` on its code at `ka-reader@71f9f69`; § 9's layer-2 row names the containment port's contract suite; QC-10 sets aside the Rust packet's trait-collaborator line for the model's edge into `fs-reader`, within three bounds; QC-68 binds the containment port's one fake and one contract suite, on SDD v73 — RN-91.
+**Version:** 82 — Fold cycle-73 § 3.1 and draft § 2.1, on SDD v74: QC-10's edge into the renderer names `is_bitmap`'s call for `asset_bytes`, bound (2) and the review clause name `asset_bytes` and `link_file`, the model's reads are held to SM-1's read seam and point at its cell, and the setting-aside narrows to building `FolderContainment`; QC-69, drafted, binds the read seam's one fake and one contract suite as owed; one choice awaits the owner — RN-92.
+Version 81 — Fold cycle-72 §§ 3.1–3.4: ADR-0025 supersedes ADR-0015 with the closed node set as the core builds it, and the six entries that traced to ADR-0015 trace to ADR-0025; QC-11's tail measures `markdown-renderer` on its code at `ka-reader@71f9f69`; § 9's layer-2 row names the containment port's contract suite; QC-10 sets aside the Rust packet's trait-collaborator line for the model's edge into `fs-reader`, within three bounds; QC-68 binds the containment port's one fake and one contract suite, on SDD v73 — RN-91.
 Version 80 — Fold cycle-71 § 2.1: § 9 records the displayed-file scene's two gate steps as a reading at `ka-reader@d6bc3a3`, not as `follow-the-file` delivered, and re-pins the tree scene's; § 8 gains the gate's 1.9.0 reading with the ordering comment it carries — RN-90.
 Version 79 — Fold cycle-70 § 3.1: QC-65's *Tree scene helper suite* locator carries its own commit — `checks/gate.sh:L133` at `ka-reader@d6bc3a3`, with `:L127` at `ka-reader@2529a42` kept as its dated reading; one choice awaits the owner — RN-89.
 Version 78 — Fold cycle-69 § 2.1: live refresh is three SDD slices since v68, so the live-refresh obligations cite `follow-the-folder` as SDD § 6 S-8, name `follow-the-file` (S-6) as the slice that first runs the displayed-file scene, § 9 opens on three scenes and QC-48's marker/order allowance ends at S-8; QC-19 names its slice by slug — RN-88.
@@ -433,7 +434,9 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   `markdown-renderer` and `highlighter` — the last two to fill the open `FileView`: the model
   calls `highlighter` for a text file in a floor language and `markdown-renderer` for a Markdown
   file, on the bytes `fs-reader` returned, and holds a call that fails as that item's
-  `failed(condition)`. That is the one edge from the model into the two, in that direction only;
+  `failed(condition)`. It also calls the renderer's bitmap-format test, `is_bitmap`, for
+  `asset_bytes`, and only on a path the check has already admitted. That is the one edge from the
+  model into the two, in that direction only;
   neither imports the model (QC-11). It **must not import** the libgit2 binding, `git-reader`'s
   adapter, `own-state`, `watcher` or `ka-reader-bridge`. The bridge composition root delivers
   owned path reports over SM-5; the model owns their meaning and decides which contained reads
@@ -442,18 +445,25 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   `docs/trail/architecture/cycle-66.md` § 3.1 — RN-85).
   The model's "I/O of any kind" holds through the edge: the renderer's
   containment call reaches the filesystem through `fs-reader` over `SM-7`, never through the
-  model. `folder-model` reaches `fs-reader` directly: the reads (`read`, `observe_file`,
-  `reobserve_file`) and the building of `FolderContainment` from the model's own root. This sets
-  aside the Rust packet's "a unit is given its collaborators through a trait"
-  (`languages/rust/conventions.md`) for that edge alone, on `docs/SDD.md` § 2 *The four-layer
-  default, declined by name*, which declines porting `fs-reader`: the filesystem under the grant is
-  the product's subject, and `folder-model`'s tests run on folders they make, which
-  `testing_doctrine.md` admits at layer 1. The setting-aside has three bounds. (1) It reaches
-  `fs-reader` and nothing else: the Git port still arrives through SM-2's trait, and any other
-  collaborator the model would build is fixed in the run that meets it. (2) `markdown-renderer`,
-  and the model's `fill_view` and `reduce_open_file`, keep taking the check through
-  `ContainmentCheck`, so a layer-1 test of any of them is handed `SeededContainment` (QC-68).
-  (3) If the SDD's decline paragraph moves, the setting-aside loses its ground and is re-opened.
+  model. `folder-model` reaches `fs-reader` in two ways, and they are bound differently. **Its
+  reads** cross SM-1 in the form `docs/SDD.md` § 2 *One read seam beside the decline* states: a
+  trait defined in `fs-reader`, its real reader handed to the model's entry points from the
+  composition roots — the bridge's session and SDD § 4 C-I3's in-process harness — as the Git port
+  is over SM-2, with one fake and one contract suite (QC-69). That is the Rust packet's "a unit is
+  given its collaborators through a trait" (`languages/rust/conventions.md`), taken for this edge.
+  Which reads cross the seam is SDD § 3 SM-1's cell to name, not this entry's. **The building of
+  `FolderContainment`** from the model's own root stays where it is, and for that alone this entry
+  sets the packet line aside, on § 2 *The four-layer default, declined by name*, which declines
+  porting `fs-reader` and keeps the containment walk outside the read seam: a fake walk could pass
+  a path the real walk refuses, and a real walk on a readable folder the test makes proves the
+  same for every runner, which `testing_doctrine.md` admits at layer 1. The setting-aside has three
+  bounds. (1) It reaches the building of the walk and nothing else: the Git port arrives through
+  SM-2's trait, the reads through SM-1's, and any other collaborator the model would build is fixed
+  in the run that meets it. (2) `markdown-renderer`, the model's `fill_view` and
+  `reduce_open_file`, and its `asset_bytes` and `link_file`, which ask it once per call, keep
+  taking the check through `ContainmentCheck`, so a layer-1 test of any of them is handed
+  `SeededContainment` (QC-68). (3) If either of those two § 2 paragraphs moves, the setting-aside
+  loses its ground and is re-opened.
   — *verified by:* `checks/structure.sh` (layer 6), including the forbidden model-to-watcher
   and core-to-bridge edges: a `folder_model` file that imports `watcher`, and a core source file
   or the core manifest that names `ka_reader_bridge` or `ka-reader-bridge`, are QC-10 findings
@@ -469,10 +479,27 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   are held by review at `development-design`, and the downgrade is argued: no scan can tell a
   permitted construction of `FolderContainment` inside `folder_model` from a forbidden one, nor a
   check handed in from one built in place. A change that builds a collaborator other than
-  `fs-reader`'s inside `folder-model`, or that has the renderer, `fill_view` or `reduce_open_file`
-  build its own check, fails that review *(traces to: ADR-0019; ADR-0020; the setting-aside on SDD
-  § 2 *The four-layer default, declined by name* (`docs/SDD.md:L340-L390` at v73, `:L339-L363` at
-  v72; SDD RN-126, RN-148) and `languages/README.md` § *A fix that hands a collaborator in is not a
+  `FolderContainment` inside `folder-model`, or that has the renderer, `fill_view`,
+  `reduce_open_file`, `asset_bytes` or `link_file` build its own check, fails that review. The read
+  seam is held the same way until it is built, and the downgrade is argued too: at
+  `ka-reader@98aaa71` it is design and not code, the model's reads being free-function calls (SDD
+  § 3 SM-1 names them), and the trait's name and methods are the building change's, so no pattern
+  for a scan can be written before it lands. Until then a change that adds a direct read from
+  `folder-model` into `fs-reader`, or has the model build a reader for itself, fails that review
+  *(through v81 this entry read "`folder-model` reaches `fs-reader` directly: the reads (`read`,
+  `observe_file`, `reobserve_file`) and the building of `FolderContainment` from the model's own
+  root", set the packet line aside "for that edge alone", named only the renderer, `fill_view` and
+  `reduce_open_file` in bound (2) and the review clause, and named one call across the edge into
+  the renderer — true of the bounds and the edge at `ka-reader@71f9f69`, though the list of reads
+  named three of the eight the model made there; SDD v74 moved the decline and stated the read
+  seam, and `ka-reader@98aaa71` added `asset_bytes`, `link_file` and `is_bitmap`'s call; on the owner's seat's answer at
+  `docs/trail/architecture/cycle-73.md` § 3.1 and this run's draft at § 2.1 — RN-92)*
+  *(traces to: ADR-0019; ADR-0020; the reads on SDD § 2 *One read seam beside the decline*
+  (`docs/SDD.md:L404-L449` at v74) and § 3 SM-1 at v74 (SDD RN-154); the edge's second call on SDD
+  § 3's units paragraph at v74 (`docs/SDD.md:L522-L530`; SDD RN-152); bound (2)'s two functions on
+  SDD § 3 SM-7 at v74 (SDD RN-151); the setting-aside on SDD § 2 *The four-layer default, declined
+  by name* (`docs/SDD.md:L340-L402` at v74, `:L340-L390` at v73, `:L339-L363` at v72; SDD RN-126,
+  RN-148, RN-151) and `languages/README.md` § *A fix that hands a collaborator in is not a
   topology decision*, which lets this document set the packet line aside where the SDD alone does
   not, on the owner's seat's answer at `docs/trail/architecture/cycle-72.md` § 3.4 — RN-91; SDD § 3 SM-2 at v26
   — "the model imports the trait and those types, and never the adapter" — added on the owner's
@@ -1786,6 +1813,37 @@ binds the *process*, and asserts no number of its own.
   second port — SDD RN-148; `testing_doctrine.md` v2.9.0 § *A fake is verified against its port's
   contract*; QC-50, the Git port's counterpart; the hand-off recorded at
   `docs/trail/architecture/cycle-72.md` § 3.3, owed once the SDD stated the port — RN-91)*
+- **QC-69:** The model's read seam, SM-1's trait, has one production implementation, one fake and
+  one contract suite. The trait is defined in `fs-reader`, so the readers still import nothing
+  from the model (QC-11). Its one production implementation is `fs-reader`'s real reads. Its one
+  fake sits in the test-support module beside `SeededContainment`, under the same
+  `#[cfg(any(test, feature = "testing"))]` gate, so a release build compiles one implementor; for a
+  path a test names it answers the bytes or the condition SM-1's Up carries, and refuses what is
+  not seeded. No test defines a reader double of its own; a test that needs behaviour the fake
+  lacks adds it to the fake, with that behaviour's case in the suite. The suite is written against
+  the trait alone and runs at layer 2 against both, the real run inside a folder the test makes.
+  The fake answers what a read of an admitted path returns and never which path is admitted: the
+  containment walk stays outside the seam (QC-10, QC-68). Once the seam is built, a case that needs
+  a failed read hands its unit a failing reader and never forces one with a file mode, which
+  `root` ignores; the real reader's own failure path is proven at layer 2 by a condition every
+  runner sees, which the building change names.
+  — *verified by:* the contract suite against the real reader and the fake (layer 2), run through
+  `cargo test --workspace --locked` in the gate's *Test gate* step; a grep of `crates` for the
+  trait's `impl … for` lines printing the real reader's and the fake's and nothing else; and
+  `git grep -n '0o000' -- crates` printing nothing. None holds at `ka-reader@98aaa71`, where SDD
+  § 3 SM-1 states the seam as design and not code: there is no trait, no fake and no suite, the
+  model calls `fs-reader`'s reads as free functions (SM-1's cell names them), and
+  `git grep -c '0o000' -- crates` counts 37 lines in 13 files (measured at `ka-reader@f340603`,
+  whose `crates/` is `98aaa71`'s). The trait's name is the building change's (SDD § 2), so that
+  change fixes the suite's target and the grep's pattern and writes both into this tail, with a
+  row in § 10. Until it lands, `development-design` reading this entry is the gate when a change
+  touches the model's reads, and QC-10's review clause holds the interim: no new direct read from
+  `folder-model` into `fs-reader`, and no reader the model builds for itself *(traces to: SDD § 2
+  *One read seam beside the decline* (`docs/SDD.md:L404-L449` at v74) and § 3 SM-1 at v74, SDD
+  RN-154 — the verified-fake rule's third port; `testing_doctrine.md` v2.9.0 § *A fake is verified
+  against its port's contract* and § *A test reads nothing of the machine it runs on*; QC-50 and
+  QC-68, the Git and containment ports' counterparts; drafted at
+  `docs/trail/architecture/cycle-73.md` § 2.1, awaiting the owner's confirmation — RN-92)*
 
 ## 7. Observability & monitoring
 
@@ -3066,7 +3124,7 @@ is stated once, in § 8 *(added at v56, on the owner's answer at `docs/trail/arc
 | QC-68 | the containment port's one implementation, one fake and one contract suite | `cargo test --locked -p ka-reader-core --test containment`, against `FolderContainment` and `SeededContainment` (layer 2); `grep -rnE '^[[:space:]]*impl ContainmentCheck for' crates` printing the two alone; the two manifest greps QC-68 names | the change; the tree | `development-implementation` (the suite, through the gate's *Test gate*); `development-design` when a change touches the port (the greps) |
 
 Entries with no row are review gates, each arguing its downgrade in its own tail: QC-10 (the setting-aside
-of the trait-collaborator line), QC-13 (the delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a listed crate and name), QC-18, QC-21, QC-31, QC-33, QC-43, QC-45, QC-50, QC-54, QC-57, and QC-59's behaviour member.
+of the trait-collaborator line, and the read seam until it is built), QC-13 (the delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a listed crate and name), QC-18, QC-21, QC-31, QC-33, QC-43, QC-45, QC-50, QC-54, QC-57, QC-69 (until the read seam is built), and QC-59's behaviour member.
 
 ---
 
@@ -8177,3 +8235,58 @@ of the trait-collaborator line), QC-13 (the delegation half), QC-63 (the types-a
   moves no slice, edge, part or condition, so the `Inputs read:` line stands.
   `docs/trail/architecture/cycle-72.md` holds the answered companion whole. The companion is
   removed with nothing left unresolved, so `Status:` is Settled.
+
+- **RN-92:** *(v82 — the cycle-73 fold, § 3.1, SDD v74, and § 2.1 drafted)* The owner's seat's
+  committed answer at `docs/trail/architecture/cycle-73.md` § 3.1 authorizes the QC-10
+  corrections. Its reasoning is `docs/trail/architecture/self_answer-76.md` § 3.1. The PM raised
+  the item on 2026-11-07, reading both records against the bridge's image-and-link merge at
+  `ka-reader@98aaa71`. A new upstream sentence authorizes the rest: `docs/SDD.md` v74 (Settled)
+  narrows § 2 *The four-layer default, declined by name* to the building of the containment walk,
+  adds *One read seam beside the decline*, and states SM-1's form as design (SDD RN-151, RN-152,
+  RN-154). Its text names QC-10 as the one entry that moves and the re-opening as this seat's
+  (`docs/SDD.md:L441-L444`).
+
+  **§ 3.1 → QC-10.** (a) The edge into the renderer names its second call, `is_bitmap` for
+  `asset_bytes`, on a path the check has already admitted; the allowed import set does not move,
+  so QC-11 and `checks/structure.sh` do not either. (b) The parenthetical list of reads is gone.
+  It named three, the model calls nine at `98aaa71`, and the list moves again once SM-1's trait is
+  built, so the entry points at SM-1's cell, as the answer asks. (c) Bound (2) and the review
+  clause name `asset_bytes` and `link_file`. Their tests sit in `tests/markdown.rs`, which § 9
+  places at layer 2, and `folder_model.rs`'s `mod tests` calls neither, so the bound breaks no
+  current test.
+
+  **§ 2.1, drafted into the records and awaiting confirmation.** QC-10's bound (3) fired: the
+  paragraph its setting-aside stood on moved. The draft follows the companion item's own lean.
+  The setting-aside narrows to the building of `FolderContainment`, the one thing SDD v74 keeps
+  outside a seam. The reads are stated as SM-1's trait, handed in from the composition roots.
+  Bound (1) names SM-1's trait beside SM-2's, and bound (3) watches both § 2 paragraphs. Until the
+  building change lands, the review clause holds the interim, and its downgrade is argued: the
+  trait's name is the change's, so no scan pattern exists yet. QC-69 is new. It is QC-68's
+  counterpart for the third port SDD § 2 names, written owed the way QC-50 was, and § 10's
+  closing list names it. This is § *When upstream is silent* case 3: SDD v74 fixes every part of
+  it, so two readers would derive the same entry. It stays a choice to confirm because the
+  companion raised it as one and no answer has reached it.
+
+  **Weighed and not recorded.** The read seam was weighed for a record and fails the first gate.
+  Reversing it touches `fs-reader`, `folder-model` and their two composition roots, and nothing on
+  the C ABI or the tool's public surface. The containment port took no record at v81 on the same
+  ground. No accepted record states the decline, so nothing is superseded.
+
+  **Seen and not raised.** SDD SM-1's cell and § 2 count "fifteen free-function calls". The
+  locators they give hold sixteen calls, because `:L232-L233` holds two (`observe_file` and
+  `locate`). This run measured that at `ka-reader@f340603`, whose `crates/` matches `98aaa71`
+  (`git diff --stat 98aaa71 f340603 -- crates checks` prints nothing). QC-10 and QC-69 point at the
+  cell and restate no count, so no sentence here depends on it. The count is the CTO's to correct.
+
+  **Read and measured by this run.** At `ka-reader@f340603`: `folder_model.rs:L18`, `:L251`,
+  `:L278-L288` and `:L305`; every `fs_reader::` call before `mod tests` (`:L1524`); the five
+  `FolderContainment::new` sites at `:L182`, `:L230`, `:L1057`, `:L1248` and `:L1318`; the two
+  `impl ContainmentCheck for` lines (`fs_reader.rs:463`, `fs_reader/fakes.rs:49`); and 37
+  `0o000` lines under `crates/`. At `ka-reader@71f9f69`: the model's eight reads, for QC-10's
+  dated reading. No product check ran, because nothing this fold changes runs.
+
+  **Limits.** No ADR is written or restatused, and the index is unchanged. One `QC` is added, and
+  no `QC` is renumbered or reused. QC-10's allowed and forbidden import sets do not change. The
+  inputs' status lines read as in the header, so the `Inputs read:` line stands.
+  `docs/trail/architecture/cycle-73.md` holds the answered companion whole. One choice stays open
+  in the companion, so `Status:` is Draft.
