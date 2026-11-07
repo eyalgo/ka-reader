@@ -15,6 +15,12 @@ use pulldown_cmark::{Options, Parser};
 
 use crate::{ContainmentCheck, Language, Span};
 
+#[expect(
+    unused_imports,
+    reason = "folder-model asks it from the next task of this change"
+)]
+pub(crate) use references::is_bitmap;
+
 /// A Markdown file as a document: its blocks, in source order.
 ///
 /// # Examples
