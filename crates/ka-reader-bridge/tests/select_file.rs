@@ -226,19 +226,35 @@ fn test_select_file_answers_an_empty_span_list_for_an_empty_python_file() {
 #[test]
 fn test_select_file_answers_plain_with_exactly_three_members() {
     let folder = TempDir::new();
-    folder.write_file("README.md", "# title\n");
     folder.write_file("notes.txt", "words\n");
     folder.write_file("run", "#!/bin/sh\necho hi\n");
     let session = opened(folder.path());
 
-    for (name, content) in [
-        ("README.md", "# title\n"),
-        ("notes.txt", "words\n"),
-        ("run", "#!/bin/sh\necho hi\n"),
-    ] {
+    for (name, content) in [("notes.txt", "words\n"), ("run", "#!/bin/sh\necho hi\n")] {
         assert_eq!(
             wire(&session, name),
             json!({ "state": "text", "content": content, "language": "plain" }),
+            "{name}"
+        );
+    }
+}
+
+/// CP-1082: a Markdown file's answer is exactly `{"state":"markdown"}`, one member, whatever the
+/// document holds.
+#[test]
+fn test_select_file_export_answers_markdown_with_exactly_one_member() {
+    let folder = TempDir::new();
+    folder.write_file("README.md", "# title\n\nSome *words*.\n");
+    folder.write_file("guide.markdown", "plain words\n");
+    let session = opened(folder.path());
+
+    for name in ["README.md", "guide.markdown"] {
+        let answer = wire(&session, name);
+
+        assert_eq!(answer, json!({ "state": "markdown" }), "{name}");
+        assert_eq!(
+            answer.as_object().map(serde_json::Map::len),
+            Some(1),
             "{name}"
         );
     }

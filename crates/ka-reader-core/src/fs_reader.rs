@@ -13,6 +13,9 @@ use rustix::fs::OFlags;
 
 use crate::language::Language;
 
+#[cfg(any(test, feature = "testing"))]
+pub mod fakes;
+
 /// The observed condition that stopped opening a chosen folder.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum OpenFailure {
@@ -163,6 +166,10 @@ pub struct Entry {
 pub enum FileContent {
     /// The file's decoded characters, whole, with no byte-order mark among them.
     Text { content: String, language: Language },
+    /// The decoded characters of a text file whose name is a Markdown name (see
+    /// [`MARKDOWN_EXTENSIONS`]), whole, with no byte-order mark among them. The model renders it;
+    /// this part only names it.
+    Markdown { content: String },
     /// The file is not text under the text rule, for the reason named.
     CannotDisplay(CannotDisplayReason),
 }
@@ -405,6 +412,104 @@ fn observe_listing_with_filesystem(
     }
 }
 
+/// The entry a reference reached: its path below the root, as the walk resolved it, and what it is.
+///
+/// A link is the folder or file it reaches, so `path` names the target and never the spelling the
+/// reference used.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ContainedEntry {
+    pub path: PathBuf,
+    pub kind: EntryKind,
+}
+
+/// The containment check for a path derived from content, such as the target of an image or a link in
+/// a Markdown file.
+///
+/// `folder` is the folder that holds the file, below the root (empty for the root itself). `reference`
+/// is the path text exactly as the parser gave it, with no scheme and any fragment already removed by
+/// the caller. The reference is percent-decoded, placed under `folder` (a reference that starts with
+/// `/` stays as written), and walked from the root by the same walk [`list`] uses, so nothing outside
+/// the root is touched. The answer is the entry reached, or the [`Condition`] the walk observed. No
+/// log line is written: a refused reference is an answer the caller holds, not a failed read.
+///
+/// # Examples
+///
+/// ```
+/// use std::path::Path;
+///
+/// use ka_reader_core::{Condition, ContainmentCheck, FolderContainment, open_folder};
+///
+/// let opened = open_folder(std::env::temp_dir()).expect("the temporary folder opens");
+/// let check = FolderContainment::new(opened.root().to_path_buf());
+/// assert_eq!(check.check(Path::new(""), "%2E%2E/escape.png"), Err(Condition::Outside));
+/// ```
+pub trait ContainmentCheck {
+    fn check(&self, folder: &Path, reference: &str) -> Result<ContainedEntry, Condition>;
+}
+
+/// The real [`ContainmentCheck`], over one canonical root.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FolderContainment {
+    root: PathBuf,
+}
+
+impl FolderContainment {
+    /// A check over `root`, which must be canonical, as an opened folder's root is.
+    pub fn new(root: PathBuf) -> Self {
+        Self { root }
+    }
+}
+
+impl ContainmentCheck for FolderContainment {
+    fn check(&self, folder: &Path, reference: &str) -> Result<ContainedEntry, Condition> {
+        // Only the reference is decoded, and before it is placed: a folder whose own name holds `%`
+        // is a name, not an encoding. `resolve` is called directly because `locate` writes a line.
+        let requested = folder.join(percent_decode(reference));
+        resolve(&NativeFilesystem, &self.root, &requested)
+            .map(|at| ContainedEntry {
+                path: at.below_root,
+                kind: at.kind,
+            })
+            .map_err(|blocked| blocked.condition)
+    }
+}
+
+/// `reference` with each `%` and the two hex digits after it turned into their byte, and every other
+/// byte, an invalid escape included, kept as it is. It works on bytes, so a decoded byte that is not
+/// UTF-8 reaches the walk unchanged, and it runs once: `%252E` becomes the three characters `%2E`.
+fn percent_decode(reference: &str) -> PathBuf {
+    let bytes = reference.as_bytes();
+    let mut decoded = Vec::with_capacity(bytes.len());
+    let mut at = 0;
+    while at < bytes.len() {
+        let escaped = (bytes[at] == b'%')
+            .then(|| bytes.get(at + 1..at + 3))
+            .flatten()
+            .and_then(hex_byte);
+        match escaped {
+            Some(byte) => {
+                decoded.push(byte);
+                at += PERCENT_ESCAPE_LENGTH;
+            }
+            None => {
+                decoded.push(bytes[at]);
+                at += 1;
+            }
+        }
+    }
+    PathBuf::from(OsString::from_vec(decoded))
+}
+
+/// The length of a percent escape: the `%` and its two hex digits.
+const PERCENT_ESCAPE_LENGTH: usize = 3;
+
+/// The byte two hex digits spell, or `None` when either is not a hex digit.
+fn hex_byte(digits: &[u8]) -> Option<u8> {
+    let high = char::from(*digits.first()?).to_digit(16)?;
+    let low = char::from(*digits.get(1)?).to_digit(16)?;
+    u8::try_from(high * 16 + low).ok()
+}
+
 /// Where a requested path resolves to, below the root, and what the last step found there.
 ///
 /// `identity` is the resolved location, so two requests that reach one folder (a link shown as a
@@ -536,12 +641,9 @@ fn attempt_file(filesystem: &impl Filesystem, root: &Path, requested: &Path) -> 
             outcome: Err(Blocked::not_a_regular_file()),
         },
         EntryKind::File => {
-            let outcome = read_bytes(&root.join(&at.below_root)).map(|bytes| {
-                decode(
-                    bytes,
-                    language_of(requested.file_name().unwrap_or_default()),
-                )
-            });
+            let file_name = requested.file_name().unwrap_or_default();
+            let outcome =
+                read_bytes(&root.join(&at.below_root)).map(|bytes| decode(bytes, file_name));
             FileAttempt {
                 location: Some(at.below_root),
                 outcome,
@@ -588,7 +690,10 @@ fn read_bytes(location: &Path) -> Result<Vec<u8>, Blocked> {
 /// The text rule. UTF-8, with or without its mark, is text; so is UTF-16 that begins with its mark
 /// and decodes in the order that mark names. Anything else is not text. The decode is strict, never
 /// lossy, so a file that is not text can never come back as text full of U+FFFD.
-fn decode(bytes: Vec<u8>, language: Language) -> FileContent {
+///
+/// A text file is `Markdown` when its name says so, and otherwise `Text` in the language its name
+/// gives; both are decided from `file_name` alone, as the spelling the reader was asked with.
+fn decode(bytes: Vec<u8>, file_name: &OsStr) -> FileContent {
     let (content, reason) = if let Some(units) = bytes.strip_prefix(&UTF16_LITTLE_ENDIAN_MARK) {
         (
             decode_utf16(units, u16::from_le_bytes),
@@ -607,7 +712,11 @@ fn decode(bytes: Vec<u8>, language: Language) -> FileContent {
         )
     };
     match content {
-        Some(content) => FileContent::Text { content, language },
+        Some(content) if is_markdown_name(file_name) => FileContent::Markdown { content },
+        Some(content) => FileContent::Text {
+            content,
+            language: language_of(file_name),
+        },
         None => FileContent::CannotDisplay(reason),
     }
 }
@@ -624,7 +733,8 @@ fn decode_utf16(units: &[u8], to_unit: fn([u8; 2]) -> u16) -> Option<String> {
 }
 
 /// The floor languages and the extensions that name them (SDD § 4 C-I5). Compared without ASCII case.
-const EXTENSIONS_BY_LANGUAGE: [(Language, &[&str]); 6] = [
+/// Crate-visible so the model's tests can hold the renderer's fence table to it.
+pub(crate) const EXTENSIONS_BY_LANGUAGE: [(Language, &[&str]); 6] = [
     (Language::Python, &["py", "pyi", "pyw"]),
     (Language::Shell, &["sh", "bash", "zsh"]),
     (Language::JavaScript, &["js", "mjs", "cjs", "jsx"]),
@@ -632,6 +742,23 @@ const EXTENSIONS_BY_LANGUAGE: [(Language, &[&str]); 6] = [
     (Language::Yaml, &["yaml", "yml"]),
     (Language::Toml, &["toml"]),
 ];
+
+/// The extensions that name a Markdown file, the extension map's Markdown row. Compared without
+/// ASCII case, by the same last-extension rule [`language_of`] uses.
+const MARKDOWN_EXTENSIONS: [&str; 2] = ["md", "markdown"];
+
+/// Whether the last extension of `file_name` is a Markdown one. `.md` alone and `notes.md.txt` are
+/// not Markdown, for the reasons `language_of` gives for its own table.
+fn is_markdown_name(file_name: &OsStr) -> bool {
+    Path::new(file_name)
+        .extension()
+        .and_then(OsStr::to_str)
+        .is_some_and(|extension| {
+            MARKDOWN_EXTENSIONS
+                .iter()
+                .any(|known| known.eq_ignore_ascii_case(extension))
+        })
+}
 
 /// The language a text file is drawn as, from the last extension of its name alone, so content never
 /// reaches it. The extension is the text after the name's last `.` when that `.` is neither its first

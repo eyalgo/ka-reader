@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.7.1 — the unit-edge header comment says watcher and markdown_renderer have files
 # Version: 1.7.0 — the bridge's watcher is a unit: its files alone stand outside QC-13's Apple row;
 #   the Apple floor reads native vocabulary; the watcher, model-to-watcher and core-to-bridge edges
 # Version: 1.6.0 — structure.sh holds QC-10's adapter, QC-11's git_reader, watcher and
@@ -122,8 +123,8 @@
 #                         below forbids is a QC-11 finding, `<subject> imports <unit>`. A file of
 #                         `fs_reader` or `highlighter` that names the libgit2 binding is a QC-11
 #                         finding too; the binding in the other three is the libgit2-binding row's.
-#                         watcher and markdown_renderer have no file today, and a file of either is
-#                         judged from the run in which it first appears, with no edit here. The sets
+#                         watcher and markdown_renderer have files, and each is judged on them, with
+#                         no edit here for a file added later. The sets
 #                         are QC-11's "must not import `folder-model`, `own-state`, or one another",
 #                         less its two stated edges.
 #                         Forbidden for fs_reader: folder_model, own_state, git_reader, watcher,

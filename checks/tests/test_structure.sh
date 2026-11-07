@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.6.1 — the future-unit-files case plants into the real markdown_renderer.rs, which now exists
 # Version: 1.6.0 — the cases of the bridge watcher unit, the native vocabulary floor and the
 #   watcher, model-to-watcher and core-to-bridge edges
 # Version: 1.5.0 — the cases of QC-10's adapter, QC-11's git_reader, watcher and markdown_renderer
@@ -2673,12 +2674,14 @@ test_every_forbidden_pair_is_rejected() {
   expect_edge "$SRC/git_reader/pairs.rs" "$reexport_line" "git_reader imports fs_reader" || return 1
 }
 
-# QC-11 for the two units with no file yet. A watcher or markdown_renderer file created in the copy
-# is judged in the run in which it appears, with nothing in the script edited, and each forbidden
-# import planted in it draws its line. These files exist only in the copy.
+# QC-11 for files the scan has not met. A watcher file, or a markdown_renderer file added under the
+# unit's folder, created in the copy is judged in the run in which it appears, with nothing in the
+# script edited, and each forbidden import planted in it draws its line. The watcher files and
+# markdown_renderer/nested/x.rs exist only in the copy; markdown_renderer.rs is the real file, which
+# the copy holds and the planted line is appended to.
 test_future_unit_files_are_judged_without_editing_the_scan() {
   new_root future-units || return 1
-  for file in watcher.rs watcher/fsevents.rs markdown_renderer.rs markdown_renderer/nested/x.rs; do
+  for file in watcher.rs watcher/fsevents.rs markdown_renderer/nested/x.rs; do
     [ ! -e "$R/crates/$SRC/$file" ] || fail "$file must not exist in the tree" || return 1
   done
   plant "$R" "$SRC/watcher.rs" 'use crate::folder_model::FolderModel;'

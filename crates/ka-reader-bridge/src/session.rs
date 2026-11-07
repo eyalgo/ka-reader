@@ -227,7 +227,8 @@ impl From<CannotDisplayReason> for CannotDisplayReasonDto {
 
 /// What `select_file` answers across the bridge, tagged by `state`: `text` with its decoded
 /// `content`, its `language` and, for a floor language, its `spans`; `cannot_display` with a
-/// `reason`; `failed` with a `condition`; or `pending` when nothing was read.
+/// `reason`; `markdown` with no member beside the tag; `failed` with a `condition`; or `pending`
+/// when nothing was read.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[serde(tag = "state", rename_all = "snake_case")]
 pub enum FileAnswerDto {
@@ -242,6 +243,8 @@ pub enum FileAnswerDto {
     CannotDisplay {
         reason: CannotDisplayReasonDto,
     },
+    /// A Markdown file. The answer names the kind and carries none of the document.
+    Markdown,
     Failed {
         condition: ConditionDto,
     },
@@ -273,6 +276,7 @@ impl From<ItemState<FileView>> for FileAnswerDto {
             ItemState::Observed(FileView::CannotDisplay(reason)) => Self::CannotDisplay {
                 reason: reason.into(),
             },
+            ItemState::Observed(FileView::Markdown(_)) => Self::Markdown,
             ItemState::Observed(FileView::Gone) => Self::Gone,
             ItemState::Failed(condition) => Self::Failed {
                 condition: condition.into(),
@@ -2595,7 +2599,7 @@ mod tests {
                 "a failed Git item changes no other answer"
             );
             assert_eq!(observed.0["state"], "observed");
-            assert_eq!(observed.1["state"], "text");
+            assert_eq!(observed.1["state"], "markdown");
         }
 
         /// A port double whose first `probe` panics and whose later ones answer `plain`.

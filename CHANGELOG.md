@@ -41,6 +41,7 @@ Each entry records a change to what a user of a fresh clone installs, runs, type
 
 - **ka-reader** — The launch steps refuse to run off a virtual machine. (`13e8d42e9`)
 - **ka-reader** — The bridge's C-string calls build under both Swift 6.3 and 6.4. (`24be58134`)
+- **ka-reader** — A Markdown file you open, one named `.md` or `.markdown`, no longer shows its text. The reading panel says *KA-Reader stopped while reading this file and can't tell why.* in its place. When an open Markdown file changes on disk, the window shows neither that change nor the changes to the file tree that arrive with it. (`89275360e`, `681135152`)
 
 ### Removed
 

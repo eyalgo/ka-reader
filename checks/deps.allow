@@ -30,15 +30,16 @@ hashbrown
 indexmap
 itoa
 jobserver
+ka-reader-bridge
+ka-reader-core
 libc
 libgit2-sys
 libz-sys
 log
 memchr
-ka-reader-bridge
-ka-reader-core
 pkg-config
 proc-macro2
+pulldown-cmark
 quote
 regex
 regex-automata
@@ -62,6 +63,7 @@ tree-sitter-language
 tree-sitter-python
 tree-sitter-toml-ng
 tree-sitter-yaml
+unicase
 unicode-ident
 vcpkg
 zmij

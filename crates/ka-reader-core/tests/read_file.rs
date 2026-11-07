@@ -13,8 +13,9 @@ use std::process::Command;
 
 use common::TempDir;
 use ka_reader_core::{
-    CannotDisplayReason, Condition, FileView, FolderModel, ItemState, Language, OpenedFolder,
-    ReadingPosition, Span, TokenClass, highlight, list_tree, open_folder, read_file, select_file,
+    Block, CannotDisplayReason, Condition, EmphasisStrength, FileView, FolderModel, HeadingLevel,
+    Inline, ItemState, Language, MarkdownDocument, OpenedFolder, ReadingPosition, Span, TokenClass,
+    highlight, list_tree, open_folder, read_file, select_file,
 };
 
 fn open(folder: &TempDir) -> OpenedFolder {
@@ -159,8 +160,6 @@ fn test_select_file_names_the_language_of_each_example_name() {
         ("Cargo.toml", Language::Toml),
         ("package.json", Language::Json),
         ("ci.yaml", Language::Yaml),
-        ("README.md", Language::Plain),
-        ("guide.MARKDOWN", Language::Plain),
         ("main.rs", Language::Plain),
     ];
     let folder = TempDir::new();
@@ -309,6 +308,9 @@ fn test_select_file_spans_equal_the_highlighter_for_each_floor_sample() {
     }
 }
 
+/// The three Markdown names of the table, which `select_file` answers as a document.
+const MARKDOWN_NAMES: [&str; 3] = ["README.md", "guide.markdown", "notes.MARKDOWN"];
+
 /// Every readable file name of the name table, for the two cases that set a listing beside a read.
 const READABLE_NAME_TABLE: [&str; 30] = [
     "setup.sh",
@@ -386,6 +388,7 @@ fn test_listing_language_agrees_with_select_file_for_every_readable_name() {
         .into_iter()
         .filter(|name| *name != MIXED_CASE_NAME)
         .collect();
+    let is_markdown = |name: &str| MARKDOWN_NAMES.contains(&name);
     let folder = TempDir::new();
     let mixed_case_folder = TempDir::new();
     for name in &main_names {
@@ -407,6 +410,12 @@ fn test_listing_language_agrees_with_select_file_for_every_readable_name() {
                 .find(|entry| entry.name == name)
                 .unwrap_or_else(|| panic!("{name} is listed"))
                 .language;
+            if is_markdown(name) {
+                // A Markdown name is read as a document, which carries no language of its own; the
+                // listing still names it plain (CP-1083).
+                assert_eq!(listed, Some(Language::Plain), "{name}");
+                continue;
+            }
             let (_, read) = text_of(select_file(&opened, name));
 
             assert_eq!(listed, Some(read), "{name}");
@@ -466,4 +475,91 @@ fn test_open_read_reads_nothing() {
         model.place().selected(),
         Some(std::path::Path::new("note.txt"))
     );
+}
+
+/// The heading and paragraph a Markdown file of `# Title` and `Some *words*.` is.
+fn title_and_words() -> Vec<Block> {
+    vec![
+        Block::Heading {
+            level: HeadingLevel::One,
+            content: vec![Inline::Text("Title".to_string())],
+        },
+        Block::Paragraph(vec![
+            Inline::Text("Some ".to_string()),
+            Inline::Emphasis {
+                strength: EmphasisStrength::Single,
+                content: vec![Inline::Text("words".to_string())],
+            },
+            Inline::Text(".".to_string()),
+        ]),
+    ]
+}
+
+#[test]
+fn test_select_file_on_a_markdown_name_gives_a_document() {
+    let folder = TempDir::new();
+    for name in ["README.MD", "guide.markdown", "notes.MARKDOWN"] {
+        folder.write_file(name, "# Title\n\nSome *words*.\n");
+    }
+    let opened = open(&folder);
+
+    for name in ["README.MD", "guide.markdown", "notes.MARKDOWN"] {
+        assert_eq!(
+            select_file(&opened, name),
+            ItemState::Observed(FileView::Markdown(MarkdownDocument {
+                blocks: title_and_words()
+            })),
+            "{name}"
+        );
+    }
+}
+
+#[test]
+fn test_select_file_keeps_every_other_name_as_text() {
+    let folder = TempDir::new();
+    for name in ["notes.md.txt", "README", ".md"] {
+        folder.write_file(name, "# Not a document\n");
+    }
+    std::fs::write(folder.path().join("bad.md"), [0x63, 0x61, 0x66, 0xE9]).expect("written");
+    folder.write_file("empty.md", "");
+    let opened = open(&folder);
+
+    for name in ["notes.md.txt", "README", ".md"] {
+        assert_eq!(
+            select_file(&opened, name),
+            ItemState::Observed(FileView::Text {
+                content: "# Not a document\n".to_string(),
+                language: Language::Plain,
+                spans: Vec::new(),
+            }),
+            "{name}"
+        );
+    }
+    assert_eq!(
+        select_file(&opened, "bad.md"),
+        ItemState::Observed(FileView::CannotDisplay(CannotDisplayReason::InvalidUtf8))
+    );
+    assert_eq!(
+        select_file(&opened, "empty.md"),
+        ItemState::Observed(FileView::Markdown(MarkdownDocument { blocks: Vec::new() }))
+    );
+    assert_eq!(
+        select_file(&opened, "missing.md"),
+        ItemState::Failed(Condition::Missing)
+    );
+}
+
+#[test]
+fn test_read_file_answers_what_select_file_answers_for_a_markdown_name() {
+    let folder = TempDir::new();
+    folder.write_file("README.md", "# Title\n\nSome *words*.\n");
+    let opened = open(&folder);
+
+    let read = read_file(&opened, std::path::Path::new("README.md"));
+
+    assert_eq!(read.answer(), &select_file(&opened, "README.md"));
+    assert!(matches!(
+        read.answer(),
+        ItemState::Observed(FileView::Markdown(_))
+    ));
 }

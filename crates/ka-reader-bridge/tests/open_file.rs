@@ -628,3 +628,32 @@ fn test_a_tree_only_payloads_exact_shape_still_holds() {
     let members: Vec<&String> = payload.as_object().expect("an object").keys().collect();
     assert_eq!(members, vec!["listings"]);
 }
+
+#[test]
+fn test_an_open_markdown_file_in_a_model_change_is_markdown() {
+    let folder = TempDir::new();
+    folder.write_file("README.md", "# before\n");
+    let watching = Arc::new(ManualWatching::new());
+    let session = session_over(&watching);
+    let received = open_delivering(&session, &folder);
+    open_at(&session, "README.md", b"top");
+    assert_eq!(
+        open_files(&received)
+            .last()
+            .map(|member| member["answer"].clone()),
+        Some(json!({ "state": "markdown" })),
+        "the open itself carries the document's tag"
+    );
+
+    folder.write_file("README.md", "# after\n");
+    watching
+        .subscription_for(&root_of(&folder))
+        .expect("a subscription")
+        .push(vec![root_of(&folder).join("README.md")]);
+
+    let members = open_files(&received);
+    assert_eq!(members.len(), 2, "the re-read delivered the open file");
+    let reread = members.last().expect("a member");
+    assert_eq!(reread["path"], json!("README.md"));
+    assert_eq!(reread["answer"], json!({ "state": "markdown" }));
+}
