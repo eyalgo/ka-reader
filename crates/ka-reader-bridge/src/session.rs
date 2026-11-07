@@ -9,10 +9,11 @@ use std::sync::{Arc, Mutex, MutexGuard, PoisonError, Weak};
 
 use ka_reader_core::{
     BranchElement, CannotDisplayReason, Condition, ConfigNamedPath, Entry, EntryKind, FileRead,
-    FileRequest, FileView, FolderKind, FolderModel, GitCondition, GitPort, GitReadCondition,
-    ItemState, Language, OpenFailure, OpenFolderOutcome, OpenedFolder, PathReports, ProbeCondition,
-    ReadingPosition, RepositoryState, Span, StatusCategory, StatusEntry, SubmoduleNamedPath,
-    TokenClass, TreeChanges, TreeRequest, list_tree, open_folder, read_file, read_git_item,
+    FileRequest, FileView, FolderContainment, FolderKind, FolderModel, GitCondition, GitPort,
+    GitReadCondition, ItemState, Language, OpenFailure, OpenFolderOutcome, OpenedFolder,
+    PathReports, ProbeCondition, ReadingPosition, RepositoryState, Span, StatusCategory,
+    StatusEntry, SubmoduleNamedPath, TokenClass, TreeChanges, TreeRequest, link_file, list_tree,
+    open_folder, read_file, read_git_item,
 };
 use serde::Serialize;
 
@@ -678,6 +679,27 @@ pub(crate) fn list_answer(listing: ItemState<Vec<Entry>>) -> ListAnswerDto {
     }
 }
 
+/// The reading position a link opens at: empty, which the shell reads as the top-left.
+const EMPTY_POSITION: &[u8] = b"";
+
+/// What an open takes under the lock to read and fold from outside it: the folder to read, the grant
+/// the read is for, and how many batches that grant had applied.
+struct OpenSnapshot {
+    folder: OpenedFolder,
+    open: u64,
+    batches: u64,
+}
+
+impl OpenSnapshot {
+    fn of(held: &Held) -> Self {
+        Self {
+            folder: held.model.folder().clone(),
+            open: held.open,
+            batches: held.batches,
+        }
+    }
+}
+
 /// An opened folder as a model, with the wiring of the arrival its open made and a token naming that
 /// open, so a read answers only for the open it was made for.
 struct Held {
@@ -1069,6 +1091,34 @@ impl Session {
         self.act_on_file(path, act, read)
     }
 
+    /// The bytes of the bitmap file `path` names inside the held folder, or `None` for every other
+    /// request: no folder open, an absolute path, a path the check refuses, a file that is not a
+    /// bitmap, or one that cannot be read. The folder is cloned under the lock and the core is
+    /// called after it is released; the check is built afresh and asked on every call.
+    pub fn asset_bytes(&self, path: &str) -> Option<Vec<u8>> {
+        let folder = self.lock().held.as_ref()?.model.folder().clone();
+        let check = FolderContainment::new(folder.root().to_path_buf());
+        ka_reader_core::asset_bytes(&folder, path, &check)
+    }
+
+    /// Opens the file a relative link names, as a click on it in the tree would, at the empty reading
+    /// position, and answers the file answer a click gives. For a path that is not a contained file,
+    /// and with no folder open, nothing changes, nothing is read or delivered and the answer is
+    /// `pending`.
+    pub fn open_relative_link(&self, path: &str) -> FileAnswerDto {
+        self.link_to(path, read_file)
+    }
+
+    /// `open_relative_link` with the read passed in, so a test can make an act land while it is out.
+    #[cfg(any(test, feature = "testing"))]
+    pub fn open_relative_link_with(
+        &self,
+        path: &str,
+        read: impl FnOnce(&OpenedFolder, &Path) -> FileRead,
+    ) -> FileAnswerDto {
+        self.link_to(path, read)
+    }
+
     /// A copy of the held model's place, for a test that asserts what the session holds.
     #[cfg(any(test, feature = "testing"))]
     pub fn held_place(&self) -> Option<ka_reader_core::ReaderPlace> {
@@ -1108,22 +1158,31 @@ impl Session {
         position: ReadingPosition,
         read: impl FnOnce(&OpenedFolder, &Path) -> FileRead,
     ) -> FileAnswerDto {
-        let held = self
-            .lock()
-            .held
-            .as_ref()
-            .map(|held| (held.model.folder().clone(), held.open, held.batches));
-        let Some((folder, open, batches)) = held else {
+        let held = self.lock().held.as_ref().map(OpenSnapshot::of);
+        let Some(snapshot) = held else {
             return FileAnswerDto::Pending;
         };
-        let read = read(&folder, Path::new(path));
+        self.read_and_fold(snapshot, path, position, read)
+    }
+
+    /// The read and the fold of an open, entered with the snapshot taken under the lock: the read
+    /// runs outside it, the fold joins the model under it for the snapshot's grant only, and the
+    /// payload is delivered after it is released, before this returns.
+    fn read_and_fold(
+        &self,
+        snapshot: OpenSnapshot,
+        path: &str,
+        position: ReadingPosition,
+        read: impl FnOnce(&OpenedFolder, &Path) -> FileRead,
+    ) -> FileAnswerDto {
+        let read = read(&snapshot.folder, Path::new(path));
         let answer = FileAnswerDto::from(read.answer().clone());
         let mut outgoing = None;
         if let Some(held) = self.lock().held.as_mut()
-            && held.open == open
+            && held.open == snapshot.open
         {
             let mut model = held.model.clone().open_read(read, position);
-            if held.batches != batches {
+            if held.batches != snapshot.batches {
                 model = model.reread_open_file();
             }
             outgoing = Self::open_payload(held, &model);
@@ -1134,6 +1193,34 @@ impl Session {
             gate.deliver(&delivery, payload);
         }
         answer
+    }
+
+    /// The link act. Under one lock hold the held folder's root is checked and, for a file, the
+    /// selection is admitted, so the link takes its place among the acts in the order they arrive
+    /// and a select act that comes later is admitted after it (CP-1094). Nothing else is done for a
+    /// path that is not a contained file. The open's read-and-fold then runs from the snapshot taken
+    /// in that same hold.
+    fn link_to(
+        &self,
+        path: &str,
+        read: impl FnOnce(&OpenedFolder, &Path) -> FileRead,
+    ) -> FileAnswerDto {
+        let snapshot = {
+            let mut state = self.lock();
+            let Some(held) = state.held.as_mut() else {
+                return FileAnswerDto::Pending;
+            };
+            let check = FolderContainment::new(held.model.folder().root().to_path_buf());
+            let Some(linked) = link_file(path, &check) else {
+                return FileAnswerDto::Pending;
+            };
+            held.model = held
+                .model
+                .clone()
+                .select_file(FileRequest::Select(Some(linked)));
+            OpenSnapshot::of(held)
+        };
+        self.read_and_fold(snapshot, path, ReadingPosition::new(EMPTY_POSITION), read)
     }
 
     /// The payload an open sends, when the open changed the open file and the grant has a delivery.
