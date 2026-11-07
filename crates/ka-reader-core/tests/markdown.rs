@@ -571,3 +571,46 @@ fn test_a_relative_link_nodes_target_fed_back_as_given_is_a_contained_file() {
         );
     }
 }
+
+#[test]
+fn test_asset_bytes_answers_each_bitmap_format_in_any_letter_case_and_refuses_any_other_extension()
+{
+    let (scene, opened) = byte_scene();
+    let check = check_of(&opened);
+    // Each name is a file of its own, so no answer depends on whether the volume ignores letter case.
+    let answered = [
+        "shot.png",
+        "shot.jpg",
+        "shot.jpeg",
+        "shot.gif",
+        "shot.webp",
+        "upper.PNG",
+        "mixed.JpEg",
+        "mixed.WebP",
+    ];
+    let refused = [
+        "shot.bmp",
+        "shot.tiff",
+        "notes.txt",
+        "shot.png.txt",
+        "noextension",
+    ];
+    for name in answered.iter().chain(refused.iter()) {
+        scene.folder.write_bytes(name, name.as_bytes());
+    }
+
+    for name in answered {
+        assert_eq!(
+            asset_bytes(&opened, name, &check),
+            Some(name.as_bytes().to_vec()),
+            "{name} is one of the four bitmap formats"
+        );
+    }
+    for name in refused {
+        assert_eq!(
+            asset_bytes(&opened, name, &check),
+            None,
+            "{name} is no bitmap format"
+        );
+    }
+}

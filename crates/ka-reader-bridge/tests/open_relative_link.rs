@@ -141,6 +141,58 @@ fn test_open_relative_link_answers_a_text_file_in_the_open_grammar() {
 }
 
 #[test]
+fn test_open_relative_link_replaces_the_open_file_and_opens_at_the_empty_position() {
+    let folder = TempDir::new();
+    folder.write_file("a.md", "# A\n");
+    folder.write_file("b.rs", "fn b() {}\n");
+    let session = Session::default();
+    session.open(folder.path().to_path_buf());
+    open_at(&session, "a.md", b"line=9;x=4");
+
+    session.open_relative_link("b.rs");
+
+    assert_eq!(
+        place_of(&session),
+        (
+            Some(PathBuf::from("b.rs")),
+            Some(PathBuf::from("b.rs")),
+            Some(ReadingPosition::new(Vec::new())),
+        ),
+        "the link's file is selected and open, at the empty position and not the last file's"
+    );
+}
+
+#[test]
+fn test_open_relative_link_answers_each_verdict_as_a_click_on_the_file_does() {
+    let folder = TempDir::new();
+    folder.write_file("tool.py", "def run():\n    return 1\n");
+    folder.write_bytes("data.bin", &[0xFF, 0xFE, 0x00, 0xD8, 0x80]);
+    let linked = Session::default();
+    linked.open(folder.path().to_path_buf());
+    let clicked = Session::default();
+    clicked.open(folder.path().to_path_buf());
+
+    for path in ["tool.py", "data.bin"] {
+        let by_link = wire(linked.open_relative_link(path));
+        let by_click =
+            wire(clicked.select_file(path, Some(FileAct::Open(ReadingPosition::new(Vec::new())))));
+
+        assert_eq!(by_link, by_click, "{path}: the answer a click gives");
+    }
+    let python = wire(linked.open_relative_link("tool.py"));
+    assert_eq!(python["state"], json!("text"));
+    assert_eq!(python["language"], json!("python"));
+    assert!(
+        python.get("spans").is_some(),
+        "a floor language carries its spans: {python}"
+    );
+    assert_eq!(
+        wire(linked.open_relative_link("data.bin"))["state"],
+        json!("cannot_display")
+    );
+}
+
+#[test]
 fn test_open_relative_link_does_nothing_for_what_is_not_a_contained_file() {
     let folder = TempDir::new();
     let outside = TempDir::new();
@@ -156,6 +208,7 @@ fn test_open_relative_link_does_nothing_for_what_is_not_a_contained_file() {
 
     for refused in [
         "src",
+        "missing.md",
         "../outside.md",
         "escape.png",
         absolute.to_str().expect("the path is text"),
@@ -199,20 +252,29 @@ fn test_a_link_target_swapped_for_a_symlink_out_after_the_document_rendered_does
     let outside = TempDir::new();
     folder.write_file("doc.md", "[notes](notes.md)\n");
     folder.write_file("notes.md", "# Notes\n");
-    let session = Session::default();
-    session.open(folder.path().to_path_buf());
+    let watching = Arc::new(ManualWatching::new());
+    let session = session_over(&watching);
+    let received = open_delivering(&session, folder.path());
     open_at(&session, "doc.md", b"line=1;x=0");
     let place = place_of(&session);
+    let payloads_before = delivered(&received).len();
     fs::remove_file(folder.path().join("notes.md")).expect("the file is removed");
     folder.make_link(
         "notes.md",
         outside.write_file("notes.md", "# Not for the page\n"),
     );
+    let read_ran = Arc::new(AtomicBool::new(false));
 
-    let answer = session.open_relative_link("notes.md");
+    let answer = session.open_relative_link_with("notes.md", watched_read(&read_ran));
 
     assert_eq!(wire(answer), pending());
     assert_eq!(place_of(&session), place, "nothing changed");
+    assert!(!read_ran.load(Ordering::SeqCst), "no read happens");
+    assert_eq!(
+        delivered(&received).len(),
+        payloads_before,
+        "nothing is delivered"
+    );
 }
 
 #[test]
