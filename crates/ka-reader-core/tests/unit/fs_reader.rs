@@ -2059,3 +2059,11 @@ fn test_an_empty_markdown_file_is_markdown_with_empty_content() {
     assert_eq!(read(temp.path(), "empty.md"), markdown(""));
     assert_eq!(read(temp.path(), "marked.md"), markdown("# a"));
 }
+
+#[test]
+fn test_a_utf16_markdown_file_reads_as_markdown_with_its_decoded_content() {
+    let temp = TempDir::new();
+    write_bytes(&temp, "wide.md", &[0xFF, 0xFE, b'#', 0, b' ', 0, b'a', 0]);
+
+    assert_eq!(read(temp.path(), "wide.md"), markdown("# a"));
+}

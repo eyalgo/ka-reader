@@ -1439,8 +1439,19 @@ fn test_an_open_markdown_file_holds_the_document_through_every_route() {
         select_file(rewritten.folder(), "README.md")
     );
 
+    folder.write_file("README.md", "# Again\n");
+    let reread = rewritten.reread_open_file();
+    assert_eq!(
+        open_view(&reread),
+        select_file(reread.folder(), "README.md")
+    );
+    assert!(matches!(
+        open_view(&reread),
+        ItemState::Observed(FileView::Markdown(_))
+    ));
+
     fs::remove_file(folder.path().join("README.md")).expect("the file goes");
-    let gone = rewritten.reread_open_file();
+    let gone = reread.reread_open_file();
     assert_eq!(open_view(&gone), ItemState::Observed(FileView::Gone));
     assert_open_at(&gone, "README.md", &position);
 }
