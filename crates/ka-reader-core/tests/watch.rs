@@ -22,8 +22,9 @@ use std::time::SystemTime;
 use common::Snapshot;
 use common::TempDir;
 use ka_reader_core::{
-    Condition, Entry, EntryKind, FileRequest, FileView, FolderModel, ItemState, ModelDelta,
-    PathReports, ReadingPosition, TreeRequest, list_tree, open_folder, select_file,
+    Block, Condition, Entry, EntryKind, FileRequest, FileView, FolderModel, HeadingLevel, Inline,
+    ItemState, MarkdownDocument, ModelDelta, PathReports, ReadingPosition, TreeRequest, list_tree,
+    open_folder, read_file, select_file,
 };
 
 /// A project-shaped folder: a root file, nested folders, a `.git` entry and files to open.
@@ -1406,4 +1407,40 @@ fn test_reread_open_file_rereads_unconditionally_touches_no_listing_and_with_no_
 
     let none_open = model_over(&folder);
     assert_eq!(none_open.clone().reread_open_file(), none_open);
+}
+
+#[test]
+fn test_an_open_markdown_file_holds_the_document_through_every_route() {
+    let folder = TempDir::new();
+    folder.write_file("README.md", "# Old\n");
+    let position = ReadingPosition::new(b"line=7".as_slice());
+    let opened = open_folder(folder.path()).expect("the folder opens");
+    let read = read_file(&opened, Path::new("README.md"));
+    let wanted = select_file(&opened, "README.md");
+
+    let model = FolderModel::new(opened).open_read(read, position.clone());
+
+    assert_eq!(open_view(&model), wanted);
+    assert!(matches!(wanted, ItemState::Observed(FileView::Markdown(_))));
+
+    folder.write_file("README.md", "# New\n");
+    let rewritten = invalidate(model, &["README.md"]);
+    assert_eq!(
+        open_view(&rewritten),
+        ItemState::Observed(FileView::Markdown(MarkdownDocument {
+            blocks: vec![Block::Heading {
+                level: HeadingLevel::One,
+                content: vec![Inline::Text("New".to_string())],
+            }],
+        }))
+    );
+    assert_eq!(
+        open_view(&rewritten),
+        select_file(rewritten.folder(), "README.md")
+    );
+
+    fs::remove_file(folder.path().join("README.md")).expect("the file goes");
+    let gone = rewritten.reread_open_file();
+    assert_eq!(open_view(&gone), ItemState::Observed(FileView::Gone));
+    assert_open_at(&gone, "README.md", &position);
 }

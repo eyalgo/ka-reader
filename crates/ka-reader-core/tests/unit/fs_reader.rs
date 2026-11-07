@@ -2008,3 +2008,54 @@ fn test_a_refused_reference_writes_no_log_line() {
         "a refused reference logs nothing: {lines:?}"
     );
 }
+
+fn markdown(content: &str) -> ItemState<FileContent> {
+    ItemState::Observed(FileContent::Markdown {
+        content: content.to_string(),
+    })
+}
+
+#[test]
+fn test_markdown_names_read_as_markdown_in_any_letter_case() {
+    let temp = TempDir::new();
+    for name in ["README.md", "README.MD", "guide.markdown", "notes.MARKDOWN"] {
+        temp.write_file(name, "# title\n");
+    }
+
+    for name in ["README.md", "README.MD", "guide.markdown", "notes.MARKDOWN"] {
+        assert_eq!(read(temp.path(), name), markdown("# title\n"), "{name}");
+    }
+}
+
+#[test]
+fn test_names_that_are_not_markdown_read_as_plain_text() {
+    let temp = TempDir::new();
+    for name in ["notes.md.txt", "README", ".md"] {
+        temp.write_file(name, "# title\n");
+    }
+
+    for name in ["notes.md.txt", "README", ".md"] {
+        assert_eq!(read(temp.path(), name), text("# title\n"), "{name}");
+    }
+}
+
+#[test]
+fn test_markdown_that_is_not_text_cannot_be_displayed() {
+    let temp = TempDir::new();
+    write_bytes(&temp, "bad.md", &[0x63, 0x61, 0x66, 0xE9]);
+
+    assert_eq!(
+        read(temp.path(), "bad.md"),
+        cannot_display(CannotDisplayReason::InvalidUtf8)
+    );
+}
+
+#[test]
+fn test_an_empty_markdown_file_is_markdown_with_empty_content() {
+    let temp = TempDir::new();
+    temp.write_file("empty.md", "");
+    write_bytes(&temp, "marked.md", &[0xEF, 0xBB, 0xBF, b'#', b' ', b'a']);
+
+    assert_eq!(read(temp.path(), "empty.md"), markdown(""));
+    assert_eq!(read(temp.path(), "marked.md"), markdown("# a"));
+}

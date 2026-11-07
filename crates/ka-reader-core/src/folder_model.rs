@@ -1451,12 +1451,14 @@ mod tests {
         TreeRequest, list_tree, open_folder, read_git, read_git_item, reduce, reduce_invalidation,
         reduce_open_file, select_file,
     };
+    use crate::fs_reader::fakes::SeededContainment;
     use crate::fs_reader::{
         Condition, Entry, EntryKind, FileContent, Listed, ListingObservation, Reobserved,
     };
     use crate::git_reader::ProbeCondition;
     use crate::git_reader::{GitPort, GitReadCondition, HeadState, RootFinding, StatusLists};
     use crate::language::Language;
+    use crate::markdown_renderer::{Block, HeadingLevel, Inline, MarkdownDocument};
     use crate::test_support::TempDir;
 
     #[test]
@@ -2866,7 +2868,7 @@ mod tests {
     fn test_a_reduction_with_an_absent_observation_holds_the_open_file_as_gone() {
         let model = model_with_open_file("src/a.txt", text_view("old"), "src/a.txt");
 
-        let after = reduce_open_file(model, Some(Reobserved::Absent));
+        let after = reduce_open_file(model, Some(Reobserved::Absent), &SeededContainment::new());
 
         let open = after.open_file().expect("the file stays the open one");
         assert_eq!(open.path(), Path::new("src/a.txt"));
@@ -2879,7 +2881,11 @@ mod tests {
     fn test_a_reduction_with_a_read_gives_the_new_view_and_a_failed_read_gives_failed() {
         let model = model_with_open_file("src/a.txt", text_view("old"), "src/a.txt");
 
-        let read = reduce_open_file(model.clone(), Some(text_read("new", Some("real/a.txt"))));
+        let read = reduce_open_file(
+            model.clone(),
+            Some(text_read("new", Some("real/a.txt"))),
+            &SeededContainment::new(),
+        );
         let open = read.open_file().expect("open");
         assert_ne!(open.view(), &text_view("old"));
         assert_eq!(open.view(), &text_view("new"));
@@ -2893,6 +2899,7 @@ mod tests {
                 state: ItemState::Failed(Condition::Unreadable),
                 location: Some(PathBuf::from("src/a.txt")),
             }),
+            &SeededContainment::new(),
         );
         let open = failed.open_file().expect("open");
         assert_ne!(open.view(), &text_view("old"));
@@ -2919,12 +2926,80 @@ mod tests {
             Some(PathBuf::from("src/a.txt"))
         );
         // Not asked, so not folded: the model is the model it was.
-        assert_eq!(reduce_open_file(model.clone(), None), model);
+        assert_eq!(
+            reduce_open_file(model.clone(), None, &SeededContainment::new()),
+            model
+        );
 
         // With no file open nothing is asked, whatever is reported.
         let none_open = supplied_model(held("", &[]), &[], ReaderPlace::default());
         assert_eq!(none_open.open_file_to_reread(&reports(&[""])), None);
-        assert_eq!(reduce_open_file(none_open.clone(), None), none_open);
+        assert_eq!(
+            reduce_open_file(none_open.clone(), None, &SeededContainment::new()),
+            none_open
+        );
+    }
+
+    #[test]
+    fn test_a_supplied_markdown_re_read_folds_to_a_document() {
+        let model = model_with_open_file("src/a.md", text_view("old"), "src/a.md");
+        let read = Reobserved::Read {
+            state: ItemState::Observed(FileContent::Markdown {
+                content: "# New\n".to_owned(),
+            }),
+            location: Some(PathBuf::from("src/a.md")),
+        };
+
+        let after = reduce_open_file(model, Some(read), &SeededContainment::new());
+
+        let open = after.open_file().expect("the file stays the open one");
+        assert_eq!(
+            open.view(),
+            &ItemState::Observed(FileView::Markdown(MarkdownDocument {
+                blocks: vec![Block::Heading {
+                    level: HeadingLevel::One,
+                    content: vec![Inline::Text("New".to_owned())],
+                }],
+            }))
+        );
+        assert_eq!(open.position(), &position(b"line=7"));
+    }
+
+    #[test]
+    fn test_a_supplied_markdown_re_read_asks_the_check_with_the_folder_of_the_open_path() {
+        let model = model_with_open_file("src/a.md", text_view("old"), "src/a.md");
+        let read = Reobserved::Read {
+            state: ItemState::Observed(FileContent::Markdown {
+                content: "![x](img/p.png)\n".to_owned(),
+            }),
+            location: None,
+        };
+        let check = SeededContainment::new();
+
+        let _ = reduce_open_file(model, Some(read), &check);
+
+        assert_eq!(
+            check.asked(),
+            vec![(PathBuf::from("src"), "img/p.png".to_owned())]
+        );
+    }
+
+    #[test]
+    fn test_an_open_markdown_file_that_fails_to_re_read_holds_the_failure() {
+        let model = model_with_open_file(
+            "src/a.md",
+            ItemState::Observed(FileView::Markdown(MarkdownDocument { blocks: Vec::new() })),
+            "src/a.md",
+        );
+        let failed = Reobserved::Read {
+            state: ItemState::Failed(Condition::Unreadable),
+            location: Some(PathBuf::from("src/a.md")),
+        };
+
+        let after = reduce_open_file(model, Some(failed), &SeededContainment::new());
+
+        let open = after.open_file().expect("the file stays the open one");
+        assert_eq!(open.view(), &ItemState::Failed(Condition::Unreadable));
     }
 
     // ---- The open's split: a read, then a fold ----

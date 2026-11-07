@@ -222,4 +222,25 @@ fn failed_items_emit_one_warn_each_without_a_path_and_others_emit_none() {
             .any(|(_, message)| message.starts_with("fs-reader: locate failed: ")),
         "{records:?}"
     );
+    // `test_a_markdown_file_whose_references_are_all_refused_writes_no_warn_line` (CP-1080): a
+    // refused reference is an answer the document holds, not a failed read, so selecting a Markdown
+    // file whose every reference is refused writes no line. It is a section of this test and not a
+    // test of its own because the logger is global to the binary (see the head of this file).
+    let refused = TempDir::new();
+    refused.write_file(
+        "docs/guide.md",
+        "![remote](https://example.invalid/a.png)\n\n![climb](../../out.png)\n\n\
+         ![absent](nope.png)\n\n[gone](missing.md) [up](../../up.md)\n",
+    );
+    let refused_opened = open_folder(refused.path()).expect("the folder opens");
+    let document = ka_reader_core::select_file(&refused_opened, "docs/guide.md");
+    assert!(
+        matches!(document, ItemState::Observed(FileView::Markdown(_))),
+        "{document:?}"
+    );
+    assert!(
+        take_records().is_empty(),
+        "refused references write no line: {:?}",
+        take_records()
+    );
 }

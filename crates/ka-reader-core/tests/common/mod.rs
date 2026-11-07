@@ -90,6 +90,16 @@ impl TempDir {
         path
     }
 
+    /// Creates a file with exactly `bytes`, and any missing parent folder, and returns its path.
+    pub fn write_bytes(&self, relative: &str, bytes: &[u8]) -> PathBuf {
+        let path = self.root.join(relative);
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent).expect("the parent folder can be created");
+        }
+        fs::write(&path, bytes).expect("the file can be written");
+        path
+    }
+
     /// Creates a symlink at `relative` whose target is written exactly as `target`.
     pub fn make_link(&self, relative: &str, target: impl AsRef<Path>) {
         let path = self.root.join(relative);
