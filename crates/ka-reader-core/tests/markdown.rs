@@ -537,7 +537,6 @@ fn test_link_file_refuses_what_is_not_a_contained_file() {
 fn test_link_file_reads_a_name_holding_a_percent_as_that_name() {
     let (scene, opened) = byte_scene();
     scene.folder.write_file("a%41.md", "# literal\n");
-    scene.folder.write_file("aA.md", "# decoded\n");
 
     assert_eq!(
         link_file("a%41.md", &check_of(&opened)),

@@ -514,13 +514,6 @@ fn hex_byte(digits: &[u8]) -> Option<u8> {
 /// every other character as it is. A path the check already resolved is a decoded name, so passing it
 /// to the check unquoted would decode it a second time, and a file named `100%41.png` would be read
 /// as `100A.png`.
-#[cfg_attr(
-    not(test),
-    expect(
-        dead_code,
-        reason = "folder-model calls it from the next task of this change"
-    )
-)]
 pub(crate) fn reference_for(path: &str) -> String {
     path.replace('%', "%25")
 }
@@ -708,13 +701,6 @@ fn read_bytes(location: &Path) -> Result<Vec<u8>, Blocked> {
 /// The answer is `None` for a folder entry and for a file that cannot be opened or read; a failed read
 /// is logged at `warn` as `fs-reader: read failed: ` with the operating system's error text or a fixed
 /// phrase and no path.
-#[cfg_attr(
-    not(test),
-    expect(
-        dead_code,
-        reason = "folder-model calls it from the next task of this change"
-    )
-)]
 pub(crate) fn read_contained_bytes(root: &Path, entry: &ContainedEntry) -> Option<Vec<u8>> {
     if entry.kind == EntryKind::Folder {
         return None;

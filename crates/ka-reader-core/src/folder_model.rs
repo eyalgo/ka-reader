@@ -6,15 +6,16 @@ use std::ffi::OsString;
 use std::path::{Component, Path, PathBuf};
 
 use crate::fs_reader::{
-    self, CannotDisplayReason, ContainmentCheck, Entry, EntryKind, FileContent, FolderContainment,
-    ItemState, Listed, ListingObservation, Location, OpenFailure, Reobserved, order,
+    self, CannotDisplayReason, ContainedEntry, ContainmentCheck, Entry, EntryKind, FileContent,
+    FolderContainment, ItemState, Listed, ListingObservation, Location, OpenFailure, Reobserved,
+    order, read_contained_bytes, reference_for,
 };
 use crate::git_reader::{
     GitPort, GitReadCondition, HeadState, ProbeCondition, RootFinding, StatusLists,
 };
 use crate::highlighter::{Span, highlight};
 use crate::language::Language;
-use crate::markdown_renderer::{MarkdownDocument, render};
+use crate::markdown_renderer::{MarkdownDocument, is_bitmap, render};
 
 /// A folder the user chose, held as its canonical path.
 ///
@@ -238,6 +239,71 @@ pub fn read_file(folder: &OpenedFolder, path: &Path) -> FileRead {
         answer,
         location,
     }
+}
+
+/// The file `path` names inside the folder `check` guards, or `None`. `path` is relative to the root
+/// and is the check's own resolved, decoded path when it comes from a rendered page.
+///
+/// An absolute path is refused first and asks nothing: the check keeps a leading `/` as written and
+/// could pass an absolute path that spells a place inside the folder. Every other path asks the check
+/// exactly once, from the root and with the path quoted, so the check's percent-decoding gives the
+/// name back as it was written.
+fn contained_file(path: &str, check: &impl ContainmentCheck) -> Option<ContainedEntry> {
+    if Path::new(path).is_absolute() {
+        return None;
+    }
+    check
+        .check(Path::new(""), &reference_for(path))
+        .ok()
+        .filter(|entry| entry.kind == EntryKind::File)
+}
+
+/// The exact bytes of the bitmap file `path` names inside `folder`, relative to its root, or `None`.
+///
+/// `None` is every other answer: an absolute path, a path the check refuses (one that climbs out of
+/// the folder, a link that leaves it, a missing entry), a folder, a file whose resolved name is not a
+/// bitmap (so a `.png` link to an SVG is refused), and a file that cannot be read. Nothing is decoded.
+/// The check is asked once per call and no answer is kept, so a file swapped for a link out of the
+/// folder is refused on the next call. The folder is only read, never written.
+///
+/// # Examples
+///
+/// ```
+/// use ka_reader_core::{FolderContainment, asset_bytes, open_folder};
+///
+/// let opened = open_folder(std::env::temp_dir()).expect("the temporary folder opens");
+/// let check = FolderContainment::new(opened.root().to_path_buf());
+/// assert_eq!(asset_bytes(&opened, "../escape.png", &check), None);
+/// ```
+pub fn asset_bytes(
+    folder: &OpenedFolder,
+    path: &str,
+    check: &impl ContainmentCheck,
+) -> Option<Vec<u8>> {
+    let entry = contained_file(path, check)?;
+    if !is_bitmap(&entry.path) {
+        return None;
+    }
+    read_contained_bytes(&folder.root, &entry)
+}
+
+/// The path as given, when it names a file inside the folder `check` guards, and `None` otherwise.
+///
+/// A relative link opens a file and nothing else. `None` is an absolute path, a path the check
+/// refuses, a folder and a missing entry. No file's content is read, and no model is touched. The
+/// check is asked once per call and no answer is kept.
+///
+/// # Examples
+///
+/// ```
+/// use ka_reader_core::{FolderContainment, link_file, open_folder};
+///
+/// let opened = open_folder(std::env::temp_dir()).expect("the temporary folder opens");
+/// let check = FolderContainment::new(opened.root().to_path_buf());
+/// assert_eq!(link_file("../escape.md", &check), None);
+/// ```
+pub fn link_file(path: &str, check: &impl ContainmentCheck) -> Option<PathBuf> {
+    contained_file(path, check).map(|_| PathBuf::from(path))
 }
 
 /// What an opened folder is to Git: the top level of a repository, with what is known of it, or a
