@@ -27,6 +27,10 @@ pub use git_reader::{
 };
 pub use highlighter::{Span, TokenClass, highlight};
 pub use language::Language;
+pub use markdown_renderer::{
+    Block, EmphasisStrength, HeadingLevel, ImageTarget, Inline, LinkTarget, ListKind,
+    MarkdownDocument, PlaceholderCondition,
+};
 
 // Shared with the integration tests, which reach the same file as `tests/common/mod.rs`.
 #[cfg(test)]

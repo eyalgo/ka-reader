@@ -3,7 +3,7 @@
 The one-time transport review `docs/nfdr.md` QC-3 owes, recorded as code beside the list it reviews and
 landing in the same commit as that list and `Cargo.lock` (QC-26, CP-301, CP-302). It covers every name on
 the list at that commit: the 17 names QC-3 says were never reviewed, the three added at `21589c7`
-(`bitflags`, `errno`, `rustix`), the 20 the grammar-engine change added, and the six `2026-10-03_git-reader-probes-the-root` adds (`git2`, `jobserver`, `libgit2-sys`, `libz-sys`, `pkg-config`, `vcpkg`).
+(`bitflags`, `errno`, `rustix`), the 20 the grammar-engine change added, and the six `2026-10-03_git-reader-probes-the-root` adds (`git2`, `jobserver`, `libgit2-sys`, `libz-sys`, `pkg-config`, `vcpkg`), and the two `2026-11-06_markdown-becomes-a-closed-typed-document` adds (`pulldown-cmark`, `unicase`).
 
 ## The engine chosen
 
@@ -14,6 +14,19 @@ into `ka-reader-core` through `cc`, with ka-reader's own query files compiled in
 on the grammar engine in `docs/SDD.md:L4521-L4524` (CP-303). Hand-written lexers would add no names but
 would put six grammars' worth of lexing in the core; `syntect` needs vendored Sublime syntaxes for TOML and
 its default dump holds far more than six grammars (`change_design.md` § Architect Review Notes).
+
+## The Markdown parser chosen
+
+**The Markdown parser is `pulldown-cmark`**, added to `ka-reader-core` with its default features off, and
+with it `unicase`, the one name it brings that the list did not already hold (`bitflags` and `memchr` were
+listed). It is pure Rust and CommonMark-conformant, has no transport and no build step that does work, and
+its offset iterator gives the source slice of each construct, which the renderer needs to keep any
+construct it has no kind for as text. The core parses with `Options::empty()`, so a table, strikethrough,
+footnote or task marker reaches the renderer as paragraph text. `comrak` was ruled out for the arena,
+entity and Unicode-category crates it brings and a GFM-first model whose tree would need translating
+anyway; `markdown` (markdown-rs) for an mdast tree that needs a second translation and another dependency
+(`change_design.md` § Architect Review Notes, *QC-26*). The default features it leaves off would have
+brought `getopts` and the HTML writer (`pulldown-cmark-escape`), neither of which the renderer needs.
 
 ## The question
 
@@ -59,6 +72,7 @@ addition is deliberate. A name alone cannot answer that: `cargo tree --offline -
 | `ka-reader-core` | 0.0.0 | QC-3 owes (list at `0aca57e`) | `cargo tree --offline --locked -e features -i ka-reader-core` resolves: default. | No — Workspace member: its own source is this repository's, and a recursive grep over `crates/` for the scanned patterns finds no hit. | — |
 | `pkg-config` | 0.3.34 | added by `2026-10-03_git-reader-probes-the-root` | `cargo tree --locked --offline --target aarch64-apple-darwin -e features -i pkg-config` resolves: `default`; reached only as a build-dependency of `libgit2-sys`. | No — Registry copy scanned for `std::net`, `TcpStream`, `UdpSocket`, `getaddrinfo`, `connect(` and `socket(` in `.rs`, `.c` and `.h` files: no hit. Build-time only: a build-dependency of `libgit2-sys`. | `MIT OR Apache-2.0` — Permits shipping inside the MIT product: a permissive licence, no copyleft term, the product's licence does not change (SRS C-4, C-5). |
 | `proc-macro2` | 1.0.107 | QC-3 owes (list at `0aca57e`) | `cargo tree --offline --locked -e features -i proc-macro2` resolves: default, proc-macro. | No — Registry copy scanned for `std::net`, `TcpStream`, `UdpSocket`, `getaddrinfo`, `connect(` and `socket(` in `.rs`, `.c` and `.h` files: no hit. | — |
+| `pulldown-cmark` | 0.13.6 | added by `2026-11-06_markdown-becomes-a-closed-typed-document` | `cargo tree --offline --locked -e features -i pulldown-cmark` resolves: no feature (default features off, so no `getopts`, no `html`, no `pulldown-cmark-escape`, no `simd`). | No — Registry copy scanned for `std::net`, `TcpStream`, `UdpSocket`, `getaddrinfo`, `connect(` and `socket(` in `.rs`, `.c` and `.h` files: no hit. Its `build.rs` is a no-op unless the `gen-tests` feature is on, which the lock does not resolve. | `MIT` — Permits shipping inside the MIT product: a permissive licence, no copyleft term, the product's licence does not change (SRS C-4, C-5). |
 | `quote` | 1.0.47 | QC-3 owes (list at `0aca57e`) | `cargo tree --offline --locked -e features -i quote` resolves: default, proc-macro. | No — The one hit is `tests/ui/not-quotable.rs:L2`, a compile-fail test that names `Ipv4Addr`; it is not compiled into the library. | — |
 | `regex` | 1.13.1 | added by this change | `cargo tree --offline --locked -e features -i regex` resolves: 17 features in the `perf`, `unicode`, `nfa`, `dfa` and `syntax` families (`default`, `std`, `alloc` among them; none names a network). | No — Registry copy scanned for `std::net`, `TcpStream`, `UdpSocket`, `getaddrinfo`, `connect(` and `socket(` in `.rs`, `.c` and `.h` files: no hit. | `MIT OR Apache-2.0` — Permits shipping inside the MIT product: a permissive licence, no copyleft term, the product's licence does not change (SRS C-4, C-5). |
 | `regex-automata` | 0.4.18 | added by this change | `cargo tree --offline --locked -e features -i regex-automata` resolves: 22 features in the `perf`, `unicode`, `nfa`, `dfa` and `syntax` families (`default`, `std`, `alloc` among them; none names a network). | No — Registry copy scanned for `std::net`, `TcpStream`, `UdpSocket`, `getaddrinfo`, `connect(` and `socket(` in `.rs`, `.c` and `.h` files: no hit. | `MIT OR Apache-2.0` — Permits shipping inside the MIT product: a permissive licence, no copyleft term, the product's licence does not change (SRS C-4, C-5). |
@@ -82,6 +96,7 @@ addition is deliberate. A name alone cannot answer that: `cargo tree --offline -
 | `tree-sitter-python` | 0.25.0 | added by this change | `cargo tree --offline --locked -e features -i tree-sitter-python` resolves: default. | No — Registry copy scanned for `std::net`, `TcpStream`, `UdpSocket`, `getaddrinfo`, `connect(` and `socket(` in `.rs`, `.c` and `.h` files: no hit. | `MIT` — Permits shipping inside the MIT product: a permissive licence, no copyleft term, the product's licence does not change (SRS C-4, C-5). |
 | `tree-sitter-toml-ng` | 0.7.0 | added by this change | `cargo tree --offline --locked -e features -i tree-sitter-toml-ng` resolves: default. | No — Registry copy scanned for `std::net`, `TcpStream`, `UdpSocket`, `getaddrinfo`, `connect(` and `socket(` in `.rs`, `.c` and `.h` files: no hit. | `MIT` — Permits shipping inside the MIT product: a permissive licence, no copyleft term, the product's licence does not change (SRS C-4, C-5). |
 | `tree-sitter-yaml` | 0.7.2 | added by this change | `cargo tree --offline --locked -e features -i tree-sitter-yaml` resolves: default. | No — Registry copy scanned for `std::net`, `TcpStream`, `UdpSocket`, `getaddrinfo`, `connect(` and `socket(` in `.rs`, `.c` and `.h` files: no hit. | `MIT` — Permits shipping inside the MIT product: a permissive licence, no copyleft term, the product's licence does not change (SRS C-4, C-5). |
+| `unicase` | 2.10.0 | added by `2026-11-06_markdown-becomes-a-closed-typed-document` | `cargo tree --offline --locked -e features -i unicase` resolves: default; reached only through `pulldown-cmark`. | No — Registry copy scanned for `std::net`, `TcpStream`, `UdpSocket`, `getaddrinfo`, `connect(` and `socket(` in `.rs`, `.c` and `.h` files: no hit. | `MIT OR Apache-2.0` — Permits shipping inside the MIT product: a permissive licence, no copyleft term, the product's licence does not change (SRS C-4, C-5). |
 | `unicode-ident` | 1.0.26 | QC-3 owes (list at `0aca57e`) | `cargo tree --offline --locked -e features -i unicode-ident` resolves: default. | No — Registry copy scanned for `std::net`, `TcpStream`, `UdpSocket`, `getaddrinfo`, `connect(` and `socket(` in `.rs`, `.c` and `.h` files: no hit. | — |
 | `vcpkg` | 0.2.15 | added by `2026-10-03_git-reader-probes-the-root` | `cargo tree --locked --offline --target aarch64-apple-darwin -e features -i vcpkg` resolves: `default`; reached only as a build-dependency of `libz-sys`. | No — Registry copy scanned for `std::net`, `TcpStream`, `UdpSocket`, `getaddrinfo`, `connect(` and `socket(` in `.rs`, `.c` and `.h` files: no hit. | `MIT/Apache-2.0` — Permits shipping inside the MIT product: a permissive licence, no copyleft term, the product's licence does not change (SRS C-4, C-5). |
 | `zmij` | 1.0.23 | QC-3 owes (list at `0aca57e`) | `cargo tree --offline --locked -e features -i zmij` resolves: default. | No — Registry copy scanned for `std::net`, `TcpStream`, `UdpSocket`, `getaddrinfo`, `connect(` and `socket(` in `.rs`, `.c` and `.h` files: no hit. | — |

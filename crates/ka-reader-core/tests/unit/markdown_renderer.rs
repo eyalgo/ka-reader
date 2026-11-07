@@ -86,13 +86,14 @@ fn test_a_heading_and_emphasis_become_nodes() {
 
 #[test]
 fn test_every_heading_level_has_its_own_value() {
-    let levels: Vec<HeadingLevel> = blocks_of("# a\n\n## b\n\n### c\n\n#### d\n\n##### e\n\n###### f\n")
-        .into_iter()
-        .map(|block| match block {
-            Block::Heading { level, .. } => level,
-            other => panic!("expected a heading, got {other:?}"),
-        })
-        .collect();
+    let levels: Vec<HeadingLevel> =
+        blocks_of("# a\n\n## b\n\n### c\n\n#### d\n\n##### e\n\n###### f\n")
+            .into_iter()
+            .map(|block| match block {
+                Block::Heading { level, .. } => level,
+                other => panic!("expected a heading, got {other:?}"),
+            })
+            .collect();
     assert_eq!(
         levels,
         [
@@ -163,10 +164,7 @@ fn test_a_table_and_a_strikethrough_are_text() {
         blocks_of(&format!("{table}\n")),
         [paragraph(vec![text(table)])]
     );
-    assert_eq!(
-        blocks_of("~~gone~~\n"),
-        [paragraph(vec![text("~~gone~~")])]
-    );
+    assert_eq!(blocks_of("~~gone~~\n"), [paragraph(vec![text("~~gone~~")])]);
 }
 
 #[test]
@@ -234,6 +232,35 @@ fn test_a_floor_language_fence_carries_the_highlighters_spans() {
         panic!("expected a code block");
     };
     assert!(!spans.is_empty(), "a Python fence is highlighted");
+}
+
+#[test]
+fn test_every_fence_word_names_its_floor_language() {
+    let words = [
+        ("python", Language::Python),
+        ("py", Language::Python),
+        ("pyi", Language::Python),
+        ("pyw", Language::Python),
+        ("shell", Language::Shell),
+        ("sh", Language::Shell),
+        ("bash", Language::Shell),
+        ("zsh", Language::Shell),
+        ("javascript", Language::JavaScript),
+        ("js", Language::JavaScript),
+        ("mjs", Language::JavaScript),
+        ("cjs", Language::JavaScript),
+        ("jsx", Language::JavaScript),
+        ("json", Language::Json),
+        ("yaml", Language::Yaml),
+        ("yml", Language::Yaml),
+        ("toml", Language::Toml),
+    ];
+    for (word, expected) in words {
+        let Block::Code { language, .. } = &blocks_of(&format!("```{word}\nx\n```\n"))[0] else {
+            panic!("expected a code block for `{word}`");
+        };
+        assert_eq!(*language, expected, "fence word `{word}`");
+    }
 }
 
 #[test]
@@ -350,6 +377,13 @@ fn test_an_image_alt_is_the_flattened_plain_text_of_its_content() {
             placeholder(PlaceholderCondition::Missing, "none.png")
         )]
     );
+    assert_eq!(
+        inlines_of("![one\ntwo](none.png)\n", "", &SeededContainment::new()),
+        [image(
+            "one two",
+            placeholder(PlaceholderCondition::Missing, "none.png")
+        )]
+    );
 }
 
 #[test]
@@ -444,10 +478,7 @@ fn test_a_reference_is_asked_with_the_folder_of_the_markdown_file() {
 
     let at_root = SeededContainment::new();
     render("![a](img/a.png)\n", Path::new(""), &at_root);
-    assert_eq!(
-        at_root.asked(),
-        [(PathBuf::new(), "img/a.png".to_string())]
-    );
+    assert_eq!(at_root.asked(), [(PathBuf::new(), "img/a.png".to_string())]);
 }
 
 #[test]
