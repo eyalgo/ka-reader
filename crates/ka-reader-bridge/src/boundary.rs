@@ -293,8 +293,8 @@ mod tests {
     use std::ptr;
 
     use super::{
-        ListPath, decode_list_path, decode_location, guarded, is_valid_open_answer, list_entries,
-        open_location, select_entry,
+        ListPath, decode_list_path, decode_location, guarded, guarded_bytes, is_valid_open_answer,
+        list_entries, open_location, select_entry,
     };
     use crate::exports::{BufferOrigin, KAReaderBuffer, install_silent_panic_hook, ka_reader_free};
     use crate::session::Session;
@@ -481,6 +481,32 @@ mod tests {
 
         assert_eq!(bytes, br#"["a","b"]"#);
         assert_eq!(length, bytes.len());
+    }
+
+    #[test]
+    fn test_guarded_bytes_returns_null_when_the_work_panics() {
+        let buffer = guarded_bytes(BufferOrigin::AssetBytes, || -> Option<Vec<u8>> {
+            panic!("a panic the boundary must catch")
+        });
+
+        assert!(buffer.is_null(), "an unwind is NULL and never a buffer");
+    }
+
+    #[test]
+    fn test_guarded_bytes_tells_an_empty_answer_from_a_refusal() {
+        let empty = guarded_bytes(BufferOrigin::AssetBytes, || Some(Vec::new()));
+        let refusal = guarded_bytes(BufferOrigin::AssetBytes, || None);
+
+        assert!(!empty.is_null() && !refusal.is_null(), "both are buffers");
+        // SAFETY: both pointers were made by `guarded_bytes` a moment ago and are freed below, once.
+        unsafe {
+            assert!(!(*empty).bytes.is_null(), "an empty file is still bytes");
+            assert_eq!((*empty).len, 0);
+            assert!((*refusal).bytes.is_null(), "a refusal has NULL bytes");
+            assert_eq!((*refusal).len, 0);
+            ka_reader_free(empty);
+            ka_reader_free(refusal);
+        }
     }
 
     #[test]

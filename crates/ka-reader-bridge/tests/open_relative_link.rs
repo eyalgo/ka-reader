@@ -10,12 +10,16 @@
 )]
 mod common;
 
+use std::ffi::CString;
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::ptr;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 
 use common::TempDir;
+use ka_reader_bridge::boundary::link_entry;
+use ka_reader_bridge::exports::{ka_reader_free, ka_reader_open_relative_link};
 use ka_reader_bridge::session::{FileAct, FileAnswerDto, OpenResult, Session, Wiring};
 use ka_reader_bridge::watcher::fakes::ManualWatching;
 use ka_reader_core::{FileRead, OpenedFolder, ReadingPosition, read_file};
@@ -231,4 +235,66 @@ fn test_a_later_select_act_during_the_links_read_wins() {
         Some(PathBuf::from("a.md")),
         "a.md is not the open file"
     );
+}
+
+#[test]
+fn test_link_entry_answers_pending_for_a_null_an_empty_and_a_non_utf8_path() {
+    let folder = TempDir::new();
+    folder.write_file("a.md", "# A\n");
+    let watching = Arc::new(ManualWatching::new());
+    let session = session_over(&watching);
+    let received = open_delivering(&session, folder.path());
+    open_at(&session, "a.md", b"line=3;x=1");
+    let place = place_of(&session);
+    let payloads_before = delivered(&received).len();
+    let empty = CString::new("").expect("no interior NUL");
+    let non_utf8 = CString::new(vec![b'a', 0xFF, b'.', b'm', b'd']).expect("no interior NUL");
+
+    // SAFETY: each pointer is NULL or a live NUL-terminated string for the call.
+    let answers = unsafe {
+        [
+            link_entry(&session, ptr::null()),
+            link_entry(&session, empty.as_ptr()),
+            link_entry(&session, non_utf8.as_ptr()),
+        ]
+    };
+
+    for answer in answers {
+        assert_eq!(wire(answer), pending());
+    }
+    assert_eq!(place_of(&session), place, "nothing changed");
+    assert_eq!(delivered(&received).len(), payloads_before, "nothing delivered");
+}
+
+#[test]
+fn test_link_entry_opens_a_valid_contained_path() {
+    let folder = TempDir::new();
+    folder.write_file("a.md", "# A\n");
+    let session = Session::default();
+    session.open(folder.path().to_path_buf());
+    let path = CString::new("a.md").expect("no interior NUL");
+
+    // SAFETY: `path` is a live NUL-terminated string for the call.
+    let answer = unsafe { link_entry(&session, path.as_ptr()) };
+
+    assert_eq!(wire(answer), json!({ "state": "markdown" }));
+}
+
+/// The only test of this target that reaches the process-global session, so no folder is open in it.
+#[test]
+fn test_the_link_export_with_no_folder_open_answers_pending_as_json() {
+    let path = CString::new("a.md").expect("no interior NUL");
+
+    // SAFETY: `path` is a live NUL-terminated string for the call.
+    let buffer = unsafe { ka_reader_open_relative_link(path.as_ptr()) };
+
+    assert!(!buffer.is_null());
+    // SAFETY: the buffer was returned a moment ago, is read before the free and freed once.
+    let answer: Value = unsafe {
+        let bytes = std::slice::from_raw_parts((*buffer).bytes, (*buffer).len);
+        let answer = serde_json::from_slice(bytes).expect("the answer is JSON");
+        ka_reader_free(buffer);
+        answer
+    };
+    assert_eq!(answer, pending());
 }
