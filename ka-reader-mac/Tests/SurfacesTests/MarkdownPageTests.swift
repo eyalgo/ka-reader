@@ -261,9 +261,10 @@ func theRenderedPageShowsThePathLineAboveIt() {
 
     #expect(panel.pathLine.stringValue == "docs/guide.md")
     #expect(!panel.pathLine.isHiddenOrHasHiddenAncestor)
-    let pathBottom = panel.pathLine.convert(panel.pathLine.bounds, to: panel).maxY
-    let pageTop = panel.markdownPage.convert(panel.markdownPage.bounds, to: panel).minY
-    #expect(pathBottom <= pageTop)
+    // The panel is not flipped: "above" is a larger y.
+    let pathBottom = panel.pathLine.convert(panel.pathLine.bounds, to: panel).minY
+    let pageTop = panel.markdownPage.convert(panel.markdownPage.bounds, to: panel).maxY
+    #expect(pathBottom >= pageTop)
 }
 
 @MainActor

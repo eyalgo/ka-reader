@@ -88,7 +88,13 @@ package final class MarkdownPageView: NSView, NSTextViewDelegate {
 
     /// Draws `document`, replacing the page whole. `imageBytes` holds the answered bytes of each
     /// resolved image by its folder-relative path; a path it lacks was refused.
-    package func show(_ document: MarkdownDocument, imageBytes: [String: Data]) {
+    ///
+    /// The page starts at the top, or with `keepingScroll` stays where the reader scrolled it,
+    /// clamped to the new page.
+    package func show(
+        _ document: MarkdownDocument, imageBytes: [String: Data], keepingScroll: Bool = false
+    ) {
+        let offset = scrollOffset
         relativeTargets = []
         var builder = PageBuilder(imageBytes: imageBytes)
         builder.append(blocks: document.blocks)
@@ -96,6 +102,19 @@ package final class MarkdownPageView: NSView, NSTextViewDelegate {
         unsafe textView.textStorage?.setAttributedString(builder.text)
         if let container = unsafe textView.textContainer {
             unsafe textView.layoutManager?.ensureLayout(for: container)
+        }
+        textView.sizeToFit()
+        scrollOffset = keepingScroll ? offset : 0
+    }
+
+    /// How far down the page the reader has scrolled it, in points. Setting it clamps to the page.
+    package var scrollOffset: CGFloat {
+        get { scrollView.contentView.bounds.origin.y }
+        set {
+            let clip = scrollView.contentView
+            let reach = max(textView.frame.height - clip.bounds.height, 0)
+            clip.scroll(to: NSPoint(x: 0, y: min(max(newValue, 0), reach)))
+            scrollView.reflectScrolledClipView(clip)
         }
     }
 

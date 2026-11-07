@@ -20,6 +20,11 @@ import AppKit
 /// The panel has no control: nothing in it edits, saves or writes (CP-286). The text sits in a code
 /// view, its gutter and scroll view, pinned to the panel's edges, so the document's size never
 /// reaches the window.
+/// How the panel asks for the bytes of a resolved image: the folder-relative path, and a call back
+/// with the bytes, or `nil` for none whatever the reason.
+package typealias AssetBytesIntent =
+    @MainActor (_ path: String, _ answer: @escaping @MainActor (Data?) -> Void) -> Void
+
 @MainActor
 package final class ReadingPanelView: NSView {
     private static let readingPrompt = "Select a file to view."
@@ -49,6 +54,21 @@ package final class ReadingPanelView: NSView {
     private let prompt: StatusMessageView
     private var message: StatusMessageView?
     private let codeView: CodeView
+
+    /// The rendered Markdown page, pinned beneath the path line by the first page drawn.
+    package let markdownPage: MarkdownPageView
+    private var isMarkdownPagePinned = false
+
+    /// Asks for the bytes of one resolved image. While it is unset every ask is answered as no
+    /// bytes, so the page still draws.
+    package var assetBytes: AssetBytesIntent?
+
+    /// Raised with the target path of a relative link the reader activates on the page.
+    package var relativeLinkActivated: (@MainActor (String) -> Void)?
+
+    /// Names the Markdown draw that is current; an answer for an earlier one draws nothing.
+    private var drawToken = 0
+    private var isShowingMarkdown = false
 
     /// Whether the code view has been pinned beneath the path line. It is pinned once, by the first
     /// text with content, and stays pinned: a hidden code view takes no part in what is drawn.
@@ -90,10 +110,11 @@ package final class ReadingPanelView: NSView {
 
         codeView = CodeView()
         contentView = codeView.textView
+        markdownPage = MarkdownPageView()
 
         super.init(frame: .zero)
 
-        for view in [prompt, pathRow, pathHairline, codeView] {
+        for view in [prompt, pathRow, pathHairline, codeView, markdownPage] {
             view.translatesAutoresizingMaskIntoConstraints = false
             addSubview(view)
         }
@@ -125,6 +146,8 @@ package final class ReadingPanelView: NSView {
             pathLine.centerYAnchor.constraint(equalTo: pathRow.centerYAnchor),
         ])
         codeView.isHidden = true
+        markdownPage.isHidden = true
+        markdownPage.relativeLinkSink = { [weak self] path in self?.relativeLinkActivated?(path) }
         codeView.onReaderScroll = { [weak self] in self?.readerScrolled() }
         showNoFile()
     }
@@ -153,9 +176,11 @@ package final class ReadingPanelView: NSView {
     /// Returns the panel to its no-file state: the prompt, and nothing else visible.
     package func showNoFile() {
         drawn = nil
+        drawToken += 1
         removeMessage()
         isPathLineShown = false
         codeView.isHidden = true
+        hideMarkdownPage()
         contentView.string = ""
         prompt.isHidden = false
     }
@@ -164,6 +189,7 @@ package final class ReadingPanelView: NSView {
     /// earlier state (CP-345, CP-346).
     package func showReading() {
         drawn = nil
+        drawToken += 1
         removeMessage()
         prompt.isHidden = true
         isPathLineShown = false
@@ -178,6 +204,7 @@ package final class ReadingPanelView: NSView {
     /// presentation, with the sentence for a read that answered nothing (CP-348).
     package func showStopped(path: String) {
         drawn = nil
+        drawToken += 1
         removeMessage()
         prompt.isHidden = true
         pathLine.stringValue = path
@@ -188,6 +215,10 @@ package final class ReadingPanelView: NSView {
     /// Draws `verdict` beneath `path`, the entry's folder-relative path. A text answer is drawn
     /// scrolled to the top-left: this is a selection's answer, the start of reading a file.
     package func show(path: String, verdict: FileVerdict) {
+        if case .markdown(let document) = verdict {
+            requestMarkdown(path: path, document: document, keepingScroll: false)
+            return
+        }
         beginDrawing(path: path, verdict: verdict)
         if case .text(let content, let language) = verdict {
             showText(content, language: language)
@@ -211,6 +242,12 @@ package final class ReadingPanelView: NSView {
     /// It never draws the pending sentence, and the code view is never emptied on the way to new text.
     package func update(path: String, verdict: FileVerdict, position: ReadingPosition) {
         if let drawn, drawn.path == path, drawn.verdict == verdict { return }
+        if case .markdown(let document) = verdict {
+            var wasMarkdown = false
+            if let drawn, drawn.path == path, case .markdown = drawn.verdict { wasMarkdown = true }
+            requestMarkdown(path: path, document: document, keepingScroll: wasMarkdown)
+            return
+        }
         guard case .text(let content, let language) = verdict else {
             beginDrawing(path: path, verdict: verdict)
             showNonText(path: path, verdict: verdict)
@@ -238,6 +275,7 @@ package final class ReadingPanelView: NSView {
     /// away, and the path line shows `path`.
     private func beginDrawing(path: String, verdict: FileVerdict) {
         drawn = (path, verdict)
+        drawToken += 1
         removeMessage()
         prompt.isHidden = true
         pathLine.stringValue = path
@@ -248,7 +286,9 @@ package final class ReadingPanelView: NSView {
         let name = path.split(separator: "/").last.map(String.init) ?? path
         switch verdict {
         case .text:
-            preconditionFailure("showNonText draws what is not text")
+            preconditionFailure("showNonText draws what is neither text nor Markdown")
+        case .markdown:
+            preconditionFailure("showNonText draws what is neither text nor Markdown")
         case .cannotDisplay:
             showMessage(
                 glyph: statusGlyphs.empty,
@@ -263,7 +303,9 @@ package final class ReadingPanelView: NSView {
     }
 
     /// Where the code view is scrolled to now.
-    var currentPosition: ReadingPosition { codeView.readingPosition }
+    var currentPosition: ReadingPosition {
+        isShowingMarkdown ? .topLeft : codeView.readingPosition
+    }
 
     /// Raised when the reader scrolls the code view, with where the scroll left it. Never raised for
     /// a scroll the panel makes itself. Scrolls are coalesced: at most one report per main run-loop
@@ -296,6 +338,7 @@ package final class ReadingPanelView: NSView {
         } else {
             codeView.show(text)
         }
+        hideMarkdownPage()
         codeView.isHidden = content.isEmpty
         guard !content.isEmpty else { return }
         if !isCodeViewPinned {
@@ -310,6 +353,67 @@ package final class ReadingPanelView: NSView {
         }
     }
 
+    private func hideMarkdownPage() {
+        markdownPage.isHidden = true
+        isShowingMarkdown = false
+    }
+
+    /// Asks for the bytes of every resolved image in `document`, one ask per node, and draws the page
+    /// once every ask has been answered. Until then the panel keeps what it showed: the *reading*
+    /// state for a click, the previous page for an update. `drawn` is recorded now, so an update equal
+    /// to the one in flight changes nothing, and an answer for a superseded draw draws nothing.
+    private func requestMarkdown(path: String, document: MarkdownDocument, keepingScroll: Bool) {
+        drawn = (path, .markdown(document))
+        drawToken += 1
+        let token = drawToken
+        let paths = document.resolvedImagePaths
+        let answers = MarkdownAnswers(remaining: paths.count)
+        let finish: @MainActor () -> Void = { [weak self] in
+            guard let self, token == drawToken else { return }
+            drawMarkdown(
+                path: path, document: document, imageBytes: answers.bytes,
+                keepingScroll: keepingScroll)
+        }
+        guard !paths.isEmpty else { return finish() }
+        for imagePath in paths {
+            let answer: @MainActor (Data?) -> Void = { data in
+                if let data { answers.bytes[imagePath] = data }
+                answers.remaining -= 1
+                if answers.remaining == 0 { finish() }
+            }
+            if let assetBytes {
+                assetBytes(imagePath, answer)
+            } else {
+                answer(nil)
+            }
+        }
+    }
+
+    private func drawMarkdown(
+        path: String, document: MarkdownDocument, imageBytes: [String: Data], keepingScroll: Bool
+    ) {
+        removeMessage()
+        prompt.isHidden = true
+        pathLine.stringValue = path
+        isPathLineShown = true
+        codeView.isHidden = true
+        contentView.string = ""
+        if !isMarkdownPagePinned {
+            NSLayoutConstraint.activate([
+                markdownPage.topAnchor.constraint(equalTo: pathHairline.bottomAnchor),
+                markdownPage.leadingAnchor.constraint(equalTo: leadingAnchor),
+                markdownPage.trailingAnchor.constraint(equalTo: trailingAnchor),
+                markdownPage.bottomAnchor.constraint(equalTo: bottomAnchor),
+            ])
+            isMarkdownPagePinned = true
+        }
+        markdownPage.isHidden = false
+        isShowingMarkdown = true
+        layoutSubtreeIfNeeded()
+        markdownPage.show(document, imageBytes: imageBytes, keepingScroll: keepingScroll)
+        lastPosition = .topLeft
+    }
+
     private func showMessage(glyph: NSImage, sentence: String) {
         placeMessage(
             glyph: glyph, sentence: sentence, below: pathHairline.bottomAnchor, gap: Self.gap)
@@ -319,6 +423,7 @@ package final class ReadingPanelView: NSView {
         glyph: NSImage, sentence: String, below anchor: NSLayoutYAxisAnchor, gap: CGFloat
     ) {
         codeView.isHidden = true
+        hideMarkdownPage()
         contentView.string = ""
         let label = NSTextField(wrappingLabelWithString: sentence)
         label.isSelectable = false
@@ -359,5 +464,15 @@ package final class ReadingPanelView: NSView {
                 .foregroundColor, value: CodeColors.color(for: span.tokenClass), range: range)
         }
         return text
+    }
+}
+
+/// The answers one Markdown draw has gathered: the bytes by path, and how many asks are still out.
+private final class MarkdownAnswers {
+    var bytes: [String: Data] = [:]
+    var remaining: Int
+
+    init(remaining: Int) {
+        self.remaining = remaining
     }
 }

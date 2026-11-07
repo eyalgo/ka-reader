@@ -123,10 +123,9 @@ func withNoAssetBytesIntentSetEveryResolvedImageDrawsTheUnreadableBox() throws {
         path: "README.md",
         verdict: .markdown(
             pageDocument([
-                .paragraph([
-                    .image(alt: "one", .resolved(path: "one.png")),
-                    .image(alt: "two", .resolved(path: "two.png")),
-                ])
+                .paragraph([.image(alt: "one", .resolved(path: "one.png"))]),
+                textParagraph("between"),
+                .paragraph([.image(alt: "two", .resolved(path: "two.png"))]),
             ])))
 
     #expect(
