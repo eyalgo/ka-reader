@@ -1,6 +1,6 @@
 # ADR-0014: The view is AppKit in Swift, in the one process — no web engine of any kind; the core stays Rust behind a C ABI; one bundle
 
-**Status:** Accepted — supersedes ADR-0002
+**Status:** Superseded by ADR-0027
 **Date:** 2026-09-23
 
 ## Context

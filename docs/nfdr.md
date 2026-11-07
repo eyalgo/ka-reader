@@ -2,7 +2,8 @@
 
 **Status:** Settled
 **Owner:** Principal Architect
-**Version:** 83 — Fold cycle-74 § 2.1, the close, on SDD v75: QC-10 is taken as drafted; QC-69 is taken as drafted but for its third verifier, which narrows from the whole tree's `0o000` grep to the files the seam's building change names — 23 of the 37 lines at `ka-reader@98aaa71`, in 8 files — and its obligation sentence narrows the same way; the 14 lines outside the seam are named as outside it. The companion is removed; Status is Settled — RN-93.
+**Version:** 84 — Fold cycle-75 §§ 3.1–3.3, the close: ADR-0026 supersedes ADR-0025 — a *relative* link is a contained file's path, sent as one `open_relative_link` call, and a folder target is *external* — and ADR-0027 supersedes ADR-0014, whose *rests on* paragraph names TextKit 1's `NSLayoutManager`; the thirteen entries that traced to either record trace to its successor, and no obligation changes. The companion is removed; Status is Settled — RN-94.
+Version 83 — Fold cycle-74 § 2.1, the close, on SDD v75: QC-10 is taken as drafted; QC-69 is taken as drafted but for its third verifier, which narrows from the whole tree's `0o000` grep to the files the seam's building change names — 23 of the 37 lines at `ka-reader@98aaa71`, in 8 files — and its obligation sentence narrows the same way; the 14 lines outside the seam are named as outside it. The companion is removed; Status is Settled — RN-93.
 Version 82 — Fold cycle-73 § 3.1 and draft § 2.1, on SDD v74: QC-10's edge into the renderer names `is_bitmap`'s call for `asset_bytes`, bound (2) and the review clause name `asset_bytes` and `link_file`, the model's reads are held to SM-1's read seam and point at its cell, and the setting-aside narrows to building `FolderContainment`; QC-69, drafted, binds the read seam's one fake and one contract suite as owed; one choice awaits the owner — RN-92.
 Version 81 — Fold cycle-72 §§ 3.1–3.4: ADR-0025 supersedes ADR-0015 with the closed node set as the core builds it, and the six entries that traced to ADR-0015 trace to ADR-0025; QC-11's tail measures `markdown-renderer` on its code at `ka-reader@71f9f69`; § 9's layer-2 row names the containment port's contract suite; QC-10 sets aside the Rust packet's trait-collaborator line for the model's edge into `fs-reader`, within three bounds; QC-68 binds the containment port's one fake and one contract suite, on SDD v73 — RN-91.
 Version 80 — Fold cycle-71 § 2.1: § 9 records the displayed-file scene's two gate steps as a reading at `ka-reader@d6bc3a3`, not as `follow-the-file` delivered, and re-pins the tree scene's; § 8 gains the gate's 1.9.0 reading with the ordering comment it carries — RN-90.
@@ -93,7 +94,7 @@ new units while they were unbuilt.
   a source scan and a link check on every build, not a process boundary.
   — *verified by:* `checks/view.sh` (test layer 6) over `ka-reader-mac/Sources` and the built
   executable (QC-34); the bridge's export set (QC-24); `checks/no-network.sh` *(traces to:
-  ADR-0021; ADR-0014; SDD § 3
+  ADR-0021; ADR-0027, which superseded ADR-0014 at v84; SDD § 3
   SM-4; § 4 C-R7; re-derived at v11 — RN-22; `ka_reader_free` named at v13 on the owner's addition at
   `docs/trail/architecture/cycle-10.md` § 2.1 — RN-24)*
 - **QC-2:** No code path in any shipped unit opens a file under the granted folder for writing,
@@ -379,7 +380,7 @@ new units while they were unbuilt.
   --test markdown` — the `..` and symlink-out fixtures yield a placeholder node — and `cargo test
   --locked -p ka-reader-bridge --test asset_bytes` — `asset_bytes` refuses them, tested in the bridge's
   crate where § 3 places the function (SDD § 6 S-3 at v14, RN-64) (layer 2). What `git-reader`'s
-  check holds is QC-35's to verify *(traces to: ADR-0025, which superseded ADR-0015 at v81; ADR-0023, which superseded ADR-0022 at
+  check holds is QC-35's to verify *(traces to: ADR-0026, which superseded ADR-0025 at v84; ADR-0023, which superseded ADR-0022 at
   v45 — RN-56;
   ADR-0011; SDD § 3 `fs-reader` at v20, SM-7; § 4 C-D1, C-D3 — its uncovered case at v27, RN-43; § 9 TO-6; § 11 R-10, R-16; SRS FR-32,
   NFR-16; FDR R-34, R-59, R-62, R-183, R-184; the owner's answer at `docs/trail/sdd/cycle-15.md`
@@ -413,7 +414,7 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   and `otool -L` on the built executable naming neither `WebKit` nor `JavaScriptCore`;
   `checks/no-network.sh` — no Swift dependency, no `Package.resolved`; `swift test --package-path
   ka-reader-mac` — the shell issues no call `SM-4` does not name (SDD § 6 S-1) *(traces to:
-  ADR-0021; ADR-0014; ADR-0020; SDD § 3 `mac-shell` and `surfaces` "Must not own", SM-8; § 4 C-R6, C-R7;
+  ADR-0021; ADR-0027, which superseded ADR-0014 at v84; ADR-0020; SDD § 3 `mac-shell` and `surfaces` "Must not own", SM-8; § 4 C-R6, C-R7;
   re-derived at v11 — RN-22)*
 - **QC-9:** `ka-reader-core` **must not import** any Apple framework or a binding to one, any crate
   outside `checks/deps.allow`, or `std::process`, and **holds no `unsafe`** — the workspace forbids
@@ -595,7 +596,7 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   `docs/trail/architecture/cycle-36.md` § 3.1 — RN-53)* *(drafted at v38 — RN-49; confirmed in the
   owner's seat at `docs/trail/architecture/cycle-35.md` § 2.1 — RN-50; through v37 this tail pinned the script at `:L249-L250` at `ka-reader@8edec4f` and named
   changing it for the exception as the design of the change that builds the switch, SDD
-  RN-87)* *(traces to: ADR-0019; ADR-0025, which superseded ADR-0015 at v81;
+  RN-87)* *(traces to: ADR-0019; ADR-0026, which superseded ADR-0025 at v84;
   ADR-0020; SDD § 3, the units paragraph at v27 — the exception, RN-87; SDD § 3, the units paragraph's stated edges as it reads at v14 — the two into `fs-reader` and
   `highlighter`; the model's edge into the two runs the other way and is QC-10's — the
   `markdown-renderer` and `highlighter` rows; re-derived at v11 — RN-22; the third edge placed at
@@ -706,7 +707,7 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   import rule is the part that is; the allowlist admits a crate to the workspace and not to a
   purpose, so a listed parser or grammar engine imported to put read logic in the bridge is that
   review's catch, and QC-11 keeps the libgit2 binding out by name but for the search-path switch
-  and its test (QC-17) *(traces to: ADR-0014; ADR-0020; SDD § 3 `core-bridge`
+  and its test (QC-17) *(traces to: ADR-0027, which superseded ADR-0014 at v84; ADR-0020; SDD § 3 `core-bridge`
   "Owns" and "Must not own" as they read at v27 — the switch, RN-87, re-derived at v32, RN-43 —
   SM-4; § 4 C-I2; § 11 R-13; `arch_defaults.md` § Application Layer; re-derived at v11 —
   RN-22; the *may import* set answered in the owner's seat at
@@ -869,7 +870,7 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   `development-design` until the change that wires the adapter in the bridge; that change landed at
   `ka-reader@392177d` — RN-49)*. A libgit2 release that adds a fifth
   level is not caught by a test naming four, and the lockfile change reviewed as code (QC-26) is
-  the only gate for it *(traces to: ADR-0014; ADR-0020; SDD § 3 `core-bridge`
+  the only gate for it *(traces to: ADR-0027, which superseded ADR-0014 at v84; ADR-0020; SDD § 3 `core-bridge`
   as it reads at v27, `mac-shell`, SM-8; § 4 C-I3 at v27 — the bridge test and what it does not
   reach; SDD RN-87; `arch_defaults.md` § Composition Root; re-derived at v11 — RN-22; the switch
   re-derived at v32 — RN-43; the switch, its read-back and its fail-closed and once-per-process
@@ -919,13 +920,13 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
 - **QC-21:** No swap invariant is held for the platform or for the view technology. The platform
   is not replaceable inside the terminus. The view technology was replaced **once, before any
   public release** — from the system WKWebView to AppKit in Swift, on the owner's ruling
-  (ADR-0014, superseding ADR-0002) — and is not replaceable again inside
-  the terminus; reversing it now costs what ADR-0014 states, every surface rewritten. A change that
+  (ADR-0014, superseding ADR-0002; restated whole by ADR-0027, which superseded ADR-0014 at v84) — and is not replaceable again inside
+  the terminus; reversing it now costs what ADR-0027 states, every surface rewritten. A change that
   claims either is cheap to replace is wrong, and a second swap of the view is a change that
   contradicts `docs/fdr.md` PD-29 and goes to the owner, never a design call inside a change.
   — *verified by:* review at `development-design` — a stated non-invariant has nothing to run
   *(traces to: FDR PD-29 as it reads at v8 — the owner's confirm at `docs/trail/fdr/cycle-5.md`
-  § 2.1; SDD § 2 force 4, "Undoing it", § 9 TO-4, § 10 RC-3; ADR-0014;
+  § 2.1; SDD § 2 force 4, "Undoing it", § 9 TO-4, § 10 RC-3; ADR-0027, which superseded ADR-0014 at v84;
   re-derived at v11 — RN-22)*
 
 ## 2. Security
@@ -953,7 +954,7 @@ reviewed tag.
   — *verified by:* `cargo test --locked -p ka-reader-core --test markdown` over `checks/fixtures/hostile.md`
   (layer 2) *(traces to: SRS NFR-16, FR-32, AC-23; SDD § 3 `markdown-renderer` and the
   `MarkdownDocument` entity; § 4 C-D3; § 6 S-3, command half; § SDD Review Notes RN-8 — the SVG
-  case; ADR-0025, which superseded ADR-0015 at v81; re-derived at v11 —
+  case; ADR-0026, which superseded ADR-0025 at v84; re-derived at v11 —
   RN-22)*
 - **QC-23:** No web engine of any kind is in the product: `ka-reader-mac` links neither `WebKit` nor
   `JavaScriptCore`; its sources hold no `WKWebView`, `WebView`, `JSContext`, or
@@ -965,8 +966,8 @@ reviewed tag.
   and `otool -L` on the built executable; `checks/no-network.sh` with QC-3's second half — an
   allowlist change that admits a web engine or a binding to one is refused at the same-change
   review, by name, under C-R1 (the tree; the change) *(traces to: SDD § 4 C-R1 — "no web engine of
-  any kind", C-R7; § 10 RC-3; ADR-0014;
-  ADR-0025, which superseded ADR-0015 at v81; the two-state form this entry carried through v10 was answered in the
+  any kind", C-R7; § 10 RC-3; ADR-0027, which superseded ADR-0014 at v84;
+  ADR-0026, which superseded ADR-0025 at v84; the two-state form this entry carried through v10 was answered in the
   owner's seat at `docs/trail/architecture/cycle-5.md` § 3.2 — RN-18 — and is history; re-derived
   at v11 — RN-22)*
 - **QC-24:** A build exports to the shell exactly the functions its landed changes built — set
@@ -1224,7 +1225,7 @@ reviewed tag.
   a Swift dependency declared, or on a `Package.resolved` present; the lockfile diff at
   `development-design` (the change) *(traces to: SDD § 4 C-R6, C-I3; `quality_defaults.md`
   § Dependencies; `languages/rust/toolchain.md` § Adding, pinning and locking a dependency;
-  ADR-0019; ADR-0014; ADR-0017; re-derived at v11 — RN-22)*
+  ADR-0019; ADR-0027, which superseded ADR-0014 at v84; ADR-0017; re-derived at v11 — RN-22)*
 - **QC-27:** A dependency with a known critical vulnerability blocks the next release, for as
   long as it takes to fix, replace or remove the dependency. **No remediation window exists** —
   none, not undecided: the support posture promises "no commitment to fix, and no commitment that
@@ -1394,7 +1395,7 @@ reviewed tag.
   — *verified by:* review at `development-design` against the entry points the change touches —
   no machine check tells a real validation from a truthy test; the path half is QC-6's machine
   check *(traces to: `quality_defaults.md` § Input at the boundary; SRS DR-6, FR-10; SDD § 3
-  `fs-reader`; FDR R-46, R-154; ADR-0025, which superseded ADR-0015 at v81 and carries ADR-0006's containment half; the rule's second encoding read at SDD v5 — RN-17)*
+  `fs-reader`; FDR R-46, R-154; ADR-0026, which superseded ADR-0025 at v84 and carries ADR-0006's containment half; the rule's second encoding read at SDD v5 — RN-17)*
 - **QC-32:** The set of destinations the product connects to is empty.
   — *verified by:* network monitoring across a full session shows zero outbound traffic
   (`docs/SRS.md` AC-3, the release); `checks/no-network.sh` (the tree); the absent network
@@ -1531,7 +1532,7 @@ import nothing forbidden and still read a path it was never granted.
   path, on a second call with the same inputs (layer 2); `swift test --package-path ka-reader-mac` — a
   *resolved* image node is drawn from the bytes `asset_bytes` returned and a placeholder node from
   no bytes at all (layer 4) *(traces to: SDD § 3 `core-bridge`, SM-7; § 4 C-D3; § 6 S-3, command
-  half; § SDD Review Notes RN-8; ADR-0025, which superseded ADR-0015 at v81;
+  half; § SDD Review Notes RN-8; ADR-0026, which superseded ADR-0025 at v84;
   the format clause added at v5 on the re-authored SDD — RN-16; re-derived at v11 — RN-22; the
   command follows S-3 at v14 — RN-23)*
 
@@ -2220,7 +2221,7 @@ answer at `docs/trail/architecture/cycle-51.md` § 3.2 — RN-69)*.
   — *verified by:* `checks/bundle.sh` — one executable under `Contents/MacOS`, the fourteen icons
   under `Contents/Resources`, and no second executable and no font anywhere under `Contents/`
   (layer 5) *(traces to: SDD § 4 C-R1 as it reads at v13; § 3 "Two libraries, one executable, one
-  bundle"; SRS C-3; FDR R-131, PD-15, PD-28; ADR-0014; re-derived at v11 — RN-22)*
+  bundle"; SRS C-3; FDR R-131, PD-15, PD-28; ADR-0027, which superseded ADR-0014 at v84; re-derived at v11 — RN-22)*
 - **QC-56:** The minimum macOS version is 26: the bundle's `LSMinimumSystemVersion` is `26.0`, and
   the floor is stated wherever the install path is offered. Every `runs-on` in the product's CI
   names the `macos-26` label: never an alias such as `macos-latest`, which moves to the next major
@@ -8358,3 +8359,54 @@ of the trait-collaborator line, and the read seam until it is built), QC-13 (the
   the seam is built. The inputs' status lines read as in the header, so the `Inputs read:` line
   stands. `docs/trail/architecture/cycle-74.md` holds the answered companion whole. Nothing is
   left open, so the companion is removed and `Status:` is Settled.
+
+- **RN-94:** *(v84 — the cycle-75 fold, §§ 3.1–3.3, and the close)* The owner's seat's committed
+  answers at `docs/trail/architecture/cycle-75.md` §§ 3.1–3.3 authorize this fold. Their reasoning
+  is `docs/trail/architecture/self_answer-78.md`. The PM raised § 3.1 on 2026-11-07, reading the
+  records against the product at `ka-reader@e95896f`; a `companion-self-answer` run in the CTO's
+  seat raised §§ 3.2 and 3.3 the same day, from its answers to the SDD's companion. SDD v77
+  (Settled), which landed after the answers, restates § 9 TO-5 to the call the shell makes (SDD
+  RN-163) and moves nothing else this fold reads.
+
+  **§§ 3.1, 3.2 → ADR-0026.** ADR-0025 is Accepted, so it is not edited. ADR-0026 restates it whole
+  and changes only the link sentence: *relative* is a contained file's path, sent as one
+  `open_relative_link` call that the bridge checks again and, for a contained file, admits through
+  the model's `select_file` operation and opens; a link whose target the check reaches at a folder
+  is *external*. The record says the kind is read at render, and that the link form is the settled
+  SDD's and not yet built for a folder. ADR-0025's Status line reads `Superseded by ADR-0026`, its
+  only changed line. ADR-0026 binds the five ADR-0025 bound.
+
+  **§ 3.3 → ADR-0027.** ADR-0014 is Accepted, so it is not edited. ADR-0027 restates it whole and
+  corrects the *rests on* paragraph to TextKit 1's `NSLayoutManager`, which the Markdown page and
+  the code view lay out with (`ka-reader-mac/Sources/Surfaces/MarkdownPageView.swift:L29-L36`,
+  `CodeView.swift:L37` at `e95896f`), and says what the decision becomes if Apple narrows TextKit 1.
+  Its traces name the records in force, and its `macos-14` sentence is re-read against C-R5 and
+  C-I3's hosted readings. ADR-0014's Status line reads `Superseded by ADR-0027`, its only changed
+  line. ADR-0027 binds the seven ADR-0014 bound.
+
+  **The traces.** The answers say no NFDR entry moves, and none moves in what it requires. Each
+  entry that traced to a superseded record now traces to its successor, as RN-91 re-pointed
+  ADR-0015's and RN-66 ADR-0007's, so every `## Binds` is navigable back. To ADR-0026, which
+  superseded ADR-0025 at v84: QC-6, QC-11, QC-22, QC-23, QC-31 and QC-37. To ADR-0027, which
+  superseded ADR-0014 at v84: QC-1, QC-8, QC-13, QC-17, QC-21, QC-23, QC-26 and QC-55. QC-21's
+  obligation sentence names ADR-0014 as the record of the one replacement and ADR-0027 as its
+  restatement, and the cost it points at is ADR-0027's; the cost is the same. QC-24 already lists
+  `open_relative_link`, and QC-22's fixture link targets a file (`checks/fixtures/hostile.md:L38`),
+  so both read true under ADR-0026 unchanged. No entry names either TextKit class.
+
+  **Beyond the answers' words.** Each record lists its own under its `## Traces to`. Here, one:
+  QC-23 and QC-26 trace to a record that does not bind them, as RN-91's *Seen and not raised* left
+  QC-23. They are re-pointed with the rest and the records' Binds are not widened, because the
+  answers fixed them.
+
+  **Read by this run.** At `ka-reader@d6e9e4d`, whose tree outside `docs/` is `e95896f`'s
+  (`git diff --stat e95896f HEAD -- ':!docs'` prints nothing): both superseded records and the
+  index; the code at every line the answers cite; `.github/workflows/ci.yml:L18`; SDD v77 at § 3's
+  `surfaces` row and `MarkdownDocument` entity, SM-4, SM-5, § 4 C-R5 and C-I3, § 9 TO-5, § 11 R-11;
+  FDR PD-29; `README.md` § Stack; `docs/DESIGN.md:L932-L938`. No product test ran: nothing under
+  `crates/`, `checks/` or `ka-reader-mac/` is changed by this fold, and no entry's check changes.
+
+  **Limits.** Two ADRs are written and two are restatused. No `QC` is added, renumbered or reused,
+  and § 10 is unchanged. The inputs' status lines read as in the header, so the `Inputs read:` line
+  stands. `docs/trail/architecture/cycle-75.md` holds the answered companion whole. Nothing is left
+  open, so the companion is removed and `Status:` is Settled.
