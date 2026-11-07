@@ -358,6 +358,8 @@ fn every_act_reached() -> Acts {
         position: 1,
         invalidate_over_open_file: 1,
         reread_open_file: 1,
+        asset_bytes: 1,
+        link_file: 1,
     }
 }
 
@@ -417,6 +419,20 @@ fn judge_refuses_every_act_left_out() -> Result<(), String> {
         "reread_open_file",
         Acts {
             reread_open_file: 0,
+            ..all
+        },
+    )?;
+    judge_refuses_a_missing_act(
+        "asset_bytes",
+        Acts {
+            asset_bytes: 0,
+            ..all
+        },
+    )?;
+    judge_refuses_a_missing_act(
+        "link_file",
+        Acts {
+            link_file: 0,
             ..all
         },
     )
