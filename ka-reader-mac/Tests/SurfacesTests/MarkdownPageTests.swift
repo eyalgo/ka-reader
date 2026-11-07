@@ -250,3 +250,38 @@ func theContextualMenuHoldsCopyAlone() throws {
     let actions = (menu?.items ?? []).compactMap(\.action)
     #expect(actions == [#selector(NSText.copy(_:))])
 }
+
+@MainActor
+@Test
+func theRenderedPageShowsThePathLineAboveIt() {
+    let panel = makeMarkdownPanel(recorder: AssetRecorder())
+
+    panel.show(path: "docs/guide.md", verdict: .markdown(pageDocument([textParagraph("words")])))
+    panel.layoutSubtreeIfNeeded()
+
+    #expect(panel.pathLine.stringValue == "docs/guide.md")
+    #expect(!panel.pathLine.isHiddenOrHasHiddenAncestor)
+    let pathBottom = panel.pathLine.convert(panel.pathLine.bounds, to: panel).maxY
+    let pageTop = panel.markdownPage.convert(panel.markdownPage.bounds, to: panel).minY
+    #expect(pathBottom <= pageTop)
+}
+
+@MainActor
+@Test
+func noControlAndNoSentenceMentionsARawView() {
+    let panel = makeMarkdownPanel(recorder: AssetRecorder())
+
+    panel.show(
+        path: "README.md", verdict: .markdown(pageDocument([textParagraph("The page words")])))
+    panel.layoutSubtreeIfNeeded()
+
+    let visible = panel.allDescendants.filter { !$0.isHiddenOrHasHiddenAncestor }
+    let strings = visible.compactMap { ($0 as? NSTextField)?.stringValue }
+    #expect(strings == ["README.md"])
+    #expect(panel.markdownPage.textView.string == "The page words")
+    #expect(!visible.contains { $0 is NSButton })
+    for text in strings + [panel.markdownPage.textView.string] {
+        #expect(!text.localizedCaseInsensitiveContains("raw"))
+        #expect(!text.localizedCaseInsensitiveContains("switch"))
+    }
+}
