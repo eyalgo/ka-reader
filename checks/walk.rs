@@ -16,6 +16,11 @@
 //! then `TreeRequest::Collapse` on every folder. None of them writes. None of them is a
 //! `select_file` call, so the `select_file` tally and the judge over it are as they were.
 //!
+//! Before that loop it also calls `asset_bytes` and `link_file` through the real containment check on
+//! the root path and on every file entry, and drives the open a link makes (`Select`, `read_file`,
+//! `open_read`) where `link_file` answers a file. Folder mode refuses a pass that reached either of
+//! the two zero times.
+//!
 //! Long mode, taken when the second argument is `--long`: the same pass, then one line on stdout
 //! that is exactly `pass-complete`, then the same pass again for as long as the process lives. It
 //! never exits on its own; `checks/read-only.sh --kill` ends it with `SIGKILL` after the marker.
@@ -36,8 +41,9 @@ use std::thread::sleep;
 use std::time::Duration;
 
 use ka_reader_core::{
-    EntryKind, FileRead, FileRequest, FolderModel, ItemState, Libgit2, OpenedFolder, PathReports,
-    ReadingPosition, TreeRequest, list_tree, open_folder, read_file, read_git, select_file,
+    EntryKind, FileRead, FileRequest, FolderContainment, FolderModel, ItemState, Libgit2,
+    OpenedFolder, PathReports, ReadingPosition, TreeRequest, asset_bytes, link_file, list_tree,
+    open_folder, read_file, read_git, select_file,
 };
 
 /// The one line long mode prints, after its first completed pass.
@@ -87,6 +93,8 @@ struct Acts {
     /// reported in each).
     invalidate_over_open_file: usize,
     reread_open_file: usize,
+    asset_bytes: usize,
+    link_file: usize,
 }
 
 /// The reading position every file is opened at: the wire form the shell writes for the top-left.
@@ -224,6 +232,18 @@ impl Driven {
             .map(|model| model.open_read(read, ReadingPosition::new(position)));
     }
 
+    /// Asks for the bytes of `path` and drops the answer: the proof is that the folder is unchanged.
+    fn asset_bytes(&mut self, folder: &OpenedFolder, check: &FolderContainment, path: &str) {
+        self.acts.asset_bytes += 1;
+        let _ = asset_bytes(folder, path, check);
+    }
+
+    /// Asks whether `path` is a file a link may open. True when it answered one.
+    fn link_file(&mut self, check: &FolderContainment, path: &str) -> bool {
+        self.acts.link_file += 1;
+        link_file(path, check).is_some()
+    }
+
     fn position(&mut self, position: &[u8]) {
         self.acts.position += 1;
         self.model = self
@@ -242,14 +262,27 @@ impl Driven {
     }
 }
 
-/// Drives `Expand` on every folder, `Select` and the open's two halves on every file, `Position` on
-/// the open file, `Invalidate` with the root and every folder reported, `reread_open_file`, then
-/// `Collapse` on every folder, over `folder`. The fixture is only read.
+/// Drives `asset_bytes` and `link_file` on the root and on every file, with the open a link makes
+/// where `link_file` answers a file, then `Expand` on every folder, `Select` and the open's two halves
+/// on every file, `Position` on the open file, `Invalidate` with the root and every folder reported,
+/// `reread_open_file`, then `Collapse` on every folder, over `folder`. The fixture is only read.
 fn drive_model(folder: &Path, folders: &BTreeSet<String>, files: &BTreeSet<String>) -> Acts {
     let opened = open_folder(folder).expect("the folder that was just walked opens");
     let root = opened.root().to_path_buf();
     let reading = open_folder(folder).expect("the folder that was just walked opens");
+    let check = FolderContainment::new(root.clone());
     let mut driven = Driven::new(FolderModel::new(opened));
+    // The root path is asked as well, so every pass reaches each operation whatever the fixture holds.
+    // It resolves to the root folder and both answer nothing. These calls come before the loop below,
+    // so its last open still decides the open file the later acts see.
+    for path in std::iter::once("").chain(files.iter().map(String::as_str)) {
+        driven.asset_bytes(&reading, &check, path);
+        if driven.link_file(&check, path) {
+            driven.select(path);
+            let read = driven.read(&reading, path);
+            driven.open_read(read, OPEN_POSITION);
+        }
+    }
     for path in folders {
         driven.expand(path);
     }
@@ -322,9 +355,31 @@ fn judge_coverage(
     Ok(())
 }
 
-/// Judges the model operations one walk drove: each of `Expand`, `Collapse`, `Invalidate`, `Select`
-/// and the five the open file adds must have been reached at least once (QC-2's reviewed half). The `Err` names the first
-/// operation the walk never reached.
+/// The two operations the bridge exports for the shell, each with how many times a walk reached it.
+fn bridge_operations(acts: &Acts) -> [(&'static str, usize); 2] {
+    [
+        ("asset_bytes", acts.asset_bytes),
+        ("link_file", acts.link_file),
+    ]
+}
+
+/// The first of `reached` that a walk never reached, as the `Err` that names it.
+fn first_never_reached(reached: &[(&str, usize)]) -> Result<(), String> {
+    match reached.iter().find(|(_, count)| *count == 0) {
+        Some((name, _)) => Err(format!("the walk never reached {name}")),
+        None => Ok(()),
+    }
+}
+
+/// Judges the two operations folder mode holds a pass to: `asset_bytes` and `link_file` must each have
+/// been reached at least once (CP-1097). The `Err` names the first one the pass never reached.
+fn judge_bridge_operations(acts: &Acts) -> Result<(), String> {
+    first_never_reached(&bridge_operations(acts))
+}
+
+/// Judges the model operations one walk drove: each of `Expand`, `Collapse`, `Invalidate`, `Select`,
+/// the five the open file adds, and the two the bridge exports for the shell must have been reached
+/// at least once (QC-2's reviewed half). The `Err` names the first operation the walk never reached.
 fn judge_acts(acts: &Acts) -> Result<(), String> {
     let reached = [
         ("TreeRequest::Expand", acts.expand),
@@ -340,10 +395,8 @@ fn judge_acts(acts: &Acts) -> Result<(), String> {
         ),
         ("FolderModel::reread_open_file", acts.reread_open_file),
     ];
-    match reached.iter().find(|(_, count)| *count == 0) {
-        Some((name, _)) => Err(format!("the walk never reached {name}")),
-        None => Ok(()),
-    }
+    first_never_reached(&reached)?;
+    judge_bridge_operations(acts)
 }
 
 /// A tally in which every act was reached once.
@@ -571,6 +624,7 @@ fn pass(folder: &str) -> Result<usize, String> {
         .map_err(|_| format!("{folder} did not open as a folder"))?;
     let walk =
         walk_folder(&canonical).ok_or_else(|| format!("{folder} did not open as a folder"))?;
+    judge_bridge_operations(&walk.acts).map_err(|message| format!("{folder}: {message}"))?;
     // The answer is dropped: the proof is that the folder is unchanged afterwards, `.git/index`
     // included. `canonical` is canonical, as the adapter compares it against the locations it
     // verifies.
