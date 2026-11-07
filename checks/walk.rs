@@ -917,7 +917,17 @@ fn markdown_predicate_answers_only_for_a_markdown_answer() -> Result<(), String>
     };
     for (case, answer) in [
         ("a text answer", ItemState::Observed(text)),
+        (
+            "a cannot-display answer",
+            ItemState::Observed(FileView::CannotDisplay(
+                ka_reader_core::CannotDisplayReason::InvalidUtf8,
+            )),
+        ),
         ("a pending answer", ItemState::Pending),
+        (
+            "a failed answer",
+            ItemState::Failed(ka_reader_core::Condition::Unreadable),
+        ),
     ] {
         if markdown_document(answer).is_some() {
             return Err(format!("the Markdown predicate gave a document for {case}"));
@@ -977,12 +987,31 @@ fn image_judge_refuses_a_file_asked_more_times_than_it_has_nodes() -> Result<(),
     }
 }
 
+/// The image tally of one Markdown file whose asks were recorded as the ask loop records them, each
+/// with whether bytes came back.
+fn recorded_tally(asks: &[(ImageAsk, bool)]) -> ImageTally {
+    let mut tally = ImageTally::default();
+    for (ask, answered) in asks {
+        tally.record_call("guide.md", ask, *answered);
+    }
+    tally
+}
+
 fn repo_image_check_refuses_a_walk_where_no_resolved_node_was_answered_bytes() -> Result<(), String>
 {
-    let tally = ImageTally {
-        outside_the_folder: 1,
-        ..ImageTally::default()
-    };
+    // A resolved node that was asked and answered no bytes, beside a placeholder outside the folder:
+    // the tally is fed by the recording the ask loop uses, so an unanswered resolved node counting as
+    // answered fails here too.
+    let tally = recorded_tally(&[
+        (ImageAsk::Resolved("diagram.png".to_string()), false),
+        (
+            ImageAsk::Placeholder {
+                condition: PlaceholderCondition::OutsideTheFolder,
+                source: "https://example.com/diagram.png".to_string(),
+            },
+            false,
+        ),
+    ]);
     match judge_repo_images(&tally) {
         Ok(()) => Err(
             "the image check of fixture repo accepted an image tally in which no resolved image node was answered bytes"
@@ -996,10 +1025,18 @@ fn repo_image_check_refuses_a_walk_where_no_resolved_node_was_answered_bytes() -
 }
 
 fn repo_image_check_refuses_a_placeholder_that_is_not_outside_the_folder() -> Result<(), String> {
-    let tally = ImageTally {
-        resolved_answered: 1,
-        ..ImageTally::default()
-    };
+    // A resolved node answered bytes, and a placeholder carrying another condition than outside the
+    // folder: a placeholder of any condition counting as outside the folder fails here.
+    let tally = recorded_tally(&[
+        (ImageAsk::Resolved("diagram.png".to_string()), true),
+        (
+            ImageAsk::Placeholder {
+                condition: PlaceholderCondition::Missing,
+                source: "missing.png".to_string(),
+            },
+            false,
+        ),
+    ]);
     match judge_repo_images(&tally) {
         Ok(()) => Err(
             "the image check of fixture repo accepted an image tally in which no placeholder node was outside the folder"

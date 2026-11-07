@@ -263,7 +263,11 @@ exit 3"
   expect_nonzero_status || return 1
   expect_stdout_lacks_same || return 1
   expect_stderr_contains "did not complete over" || return 1
-  expect_stderr_contains "offline-page.sh: the render with the network allowed did not complete over"
+  expect_stderr_contains "offline-page.sh: the render with the network allowed did not complete over" || return 1
+  # The refusal says the render's own reason "is on the line before this one", so the stand-in's
+  # reason is the line directly above it.
+  expect_stderr_contains "the stand-in walk stops here
+offline-page.sh: the render with the network allowed did not complete over"
 }
 
 # The denied render alone fails to complete: the stand-in walk program prints the same page both
