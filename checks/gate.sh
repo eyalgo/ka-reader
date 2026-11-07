@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Version: 1.10.0 — the check that a page reads the same with the network denied, and its suite, join
 #   the list, after the no-network suite
-# Version: 1.9.0— the displayed-file scene, and the read-only walk of the folder it ends in, join the list
+# Version: 1.9.0 — the displayed-file scene, and the read-only walk of the folder it ends in, join the list
 # Version: 1.8.0 — the read-only walk of the tree scene, whole and killed, joins the list
 # Version: 1.7.0 — the suite of the tree-scene helper joins the list, before the real launch
 # Version: 1.6.0 — the suite that holds the "Strings check" step joins the list, after its suite
