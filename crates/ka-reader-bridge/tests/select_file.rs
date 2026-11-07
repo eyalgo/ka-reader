@@ -308,16 +308,14 @@ fn test_select_file_on_the_hostile_scene_answers_every_block_in_source_order() {
         .iter()
         .map(|block| block["kind"].as_str().expect("a kind"))
         .collect();
-    assert_eq!(kinds.first(), Some(&"heading"));
-    assert!(
-        kinds
-            .iter()
-            .all(|kind| ["heading", "paragraph"].contains(kind))
-    );
+    // One heading, then one paragraph block for each of the file's seventeen paragraphs and raw blocks, in source order.
+    let mut expected_kinds = vec!["heading"];
+    expected_kinds.extend(std::iter::repeat_n("paragraph", 17));
+    assert_eq!(kinds, expected_kinds);
 
     let mut inlines = Vec::new();
     collect_inlines(&answer["blocks"], &mut inlines);
-    let texts: String = inlines
+    let text_nodes: Vec<&str> = inlines
         .iter()
         .filter(|inline| inline["kind"] == "text")
         .map(|inline| inline["text"].as_str().expect("text"))
@@ -327,10 +325,18 @@ fn test_select_file_on_the_hostile_scene_answers_every_block_in_source_order() {
         "<b onclick=\"steal()\">",
         "<iframe src=\"https://example.com/frame\"></iframe>",
         "<style>body { display: none }</style>",
-        "<div class=\"box\">",
     ] {
-        assert!(texts.contains(piece), "{piece} reads as text");
+        assert!(
+            text_nodes.iter().any(|node| node.trim_end() == piece),
+            "{piece} is a text node holding exactly its source: {text_nodes:?}"
+        );
     }
+    assert!(
+        text_nodes
+            .iter()
+            .any(|node| node.starts_with("<div class=\"box\">") && node.contains("</div>")),
+        "the raw block is a text node holding its source: {text_nodes:?}"
+    );
     assert!(inlines.iter().all(|inline| {
         !["image", "link"].contains(&inline["kind"].as_str().unwrap_or(""))
             || inline.get("target").is_some()
