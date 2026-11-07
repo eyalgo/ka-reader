@@ -21,6 +21,12 @@
 //! `open_read`) where `link_file` answers a file. Folder mode refuses a pass that reached either of
 //! the two zero times.
 //!
+//! Beside those calls it keeps each Markdown document a `select_file` answer gives, whatever the
+//! file's extension, and asks `asset_bytes` once for every image node in it: a resolved node by its
+//! folder-relative path, a placeholder node by its source as written. The answers are dropped and none
+//! stops the walk. A pass in which a Markdown file's `asset_bytes` calls do not equal its image nodes
+//! is refused, naming the file.
+//!
 //! Long mode, taken when the second argument is `--long`: the same pass, then one line on stdout
 //! that is exactly `pass-complete`, then the same pass again for as long as the process lives. It
 //! never exits on its own; `checks/read-only.sh --kill` ends it with `SIGKILL` after the marker.
@@ -161,73 +167,163 @@ struct ImageTally {
     outside_the_folder: usize,
 }
 
+impl ImageTally {
+    /// Raises the call count of `path` for one ask, and the resolved or outside-the-folder count
+    /// the ask belongs to. `answered` is whether bytes came back.
+    fn record_call(&mut self, path: &str, ask: &ImageAsk, answered: bool) {
+        *self.calls.entry(path.to_string()).or_insert(0) += 1;
+        match ask {
+            ImageAsk::Resolved(_) if answered => self.resolved_answered += 1,
+            ImageAsk::Placeholder {
+                condition: PlaceholderCondition::OutsideTheFolder,
+                ..
+            } => self.outside_the_folder += 1,
+            ImageAsk::Resolved(_) | ImageAsk::Placeholder { .. } => {}
+        }
+    }
+}
+
 /// The document of a `select_file` answer when it is a Markdown document, and nothing otherwise.
-fn markdown_document(_answer: ItemState<FileView>) -> Option<MarkdownDocument> {
-    None
+fn markdown_document(answer: ItemState<FileView>) -> Option<MarkdownDocument> {
+    match answer {
+        ItemState::Observed(FileView::Markdown(document)) => Some(document),
+        ItemState::Pending | ItemState::Failed(_) | ItemState::Observed(_) => None,
+    }
 }
 
 /// What `asset_bytes` is asked for each image node of `document`, in document order.
-fn image_asks(_document: &MarkdownDocument) -> Vec<ImageAsk> {
-    Vec::new()
+fn image_asks(document: &MarkdownDocument) -> Vec<ImageAsk> {
+    let mut asks = Vec::new();
+    collect_block_asks(&document.blocks, &mut asks);
+    asks
+}
+
+/// Appends the asks of `blocks` to `asks`, each block's in source order. The match names every
+/// variant, so a node kind added later is a compile error here and never a silently skipped image.
+fn collect_block_asks(blocks: &[Block], asks: &mut Vec<ImageAsk>) {
+    for block in blocks {
+        match block {
+            Block::Heading { content, .. } | Block::Paragraph(content) => {
+                collect_inline_asks(content, asks);
+            }
+            Block::List { items, .. } => {
+                for item in items {
+                    collect_block_asks(item, asks);
+                }
+            }
+            Block::Quote(inner) => collect_block_asks(inner, asks),
+            Block::Rule | Block::Code { .. } => {}
+        }
+    }
+}
+
+/// Appends the asks of `inlines` to `asks`, descending into an emphasis and a link's content.
+fn collect_inline_asks(inlines: &[Inline], asks: &mut Vec<ImageAsk>) {
+    for inline in inlines {
+        match inline {
+            Inline::Image { target, .. } => asks.push(match target {
+                ImageTarget::Resolved(path) => {
+                    ImageAsk::Resolved(path.to_string_lossy().into_owned())
+                }
+                ImageTarget::Placeholder { condition, source } => ImageAsk::Placeholder {
+                    condition: *condition,
+                    source: source.clone(),
+                },
+            }),
+            Inline::Emphasis { content, .. } | Inline::Link { content, .. } => {
+                collect_inline_asks(content, asks);
+            }
+            Inline::Text(_) | Inline::Code(_) => {}
+        }
+    }
 }
 
 /// Judges the image tally of one walk: every Markdown file's calls must equal its image nodes.
-fn judge_images(_tally: &ImageTally) -> Result<(), String> {
+/// The `Err` names the first such file in path order.
+fn judge_images(tally: &ImageTally) -> Result<(), String> {
+    let paths: BTreeSet<&String> = tally.nodes.keys().chain(tally.calls.keys()).collect();
+    for path in paths {
+        let nodes = tally.nodes.get(path).copied().unwrap_or(0);
+        let calls = tally.calls.get(path).copied().unwrap_or(0);
+        if calls < nodes {
+            return Err(format!(
+                "an image node of the Markdown file {path} got no asset_bytes call (image nodes: {nodes}, asset_bytes calls: {calls})"
+            ));
+        }
+        if calls > nodes {
+            return Err(format!(
+                "the Markdown file {path} got more asset_bytes calls than it has image nodes (image nodes: {nodes}, asset_bytes calls: {calls})"
+            ));
+        }
+    }
     Ok(())
 }
 
 /// Judges what the `repo` fixture's walk exercised of its images.
-fn judge_repo_images(_tally: &ImageTally) -> Result<(), String> {
+fn judge_repo_images(tally: &ImageTally) -> Result<(), String> {
+    if tally.resolved_answered == 0 {
+        return Err("fixture repo: the walk answered bytes for no resolved image node, so no image inside the folder was exercised. Check that diagram.png is beside guide.md in the fixture.".to_string());
+    }
+    if tally.outside_the_folder == 0 {
+        return Err("fixture repo: the walk met no image node outside the folder, so no remote image was exercised. Check that guide.md in the fixture still holds its https:// image.".to_string());
+    }
     Ok(())
 }
 
 /// Reads the file at `path` and counts the call. This is the one site every `select_file` call goes
-/// through. The answer is dropped: the proof is that the folder is unchanged afterwards, whatever
-/// the file reads as, so no answer stops the walk or reaches stdout.
-fn select_counted(opened: &OpenedFolder, path: &str, selected: &mut BTreeMap<String, usize>) {
+/// through. The answer is handed back for the walk to keep a Markdown document; the proof is that
+/// the folder is unchanged afterwards, whatever the file reads as, so no answer stops the walk or
+/// reaches stdout.
+fn select_counted(
+    opened: &OpenedFolder,
+    path: &str,
+    selected: &mut BTreeMap<String, usize>,
+) -> ItemState<FileView> {
     *selected.entry(path.to_string()).or_insert(0) += 1;
-    select_file(opened, path);
+    select_file(opened, path)
+}
+
+/// What one descent over a folder gathers.
+#[derive(Default)]
+struct Gathered {
+    /// The paths already listed, so no path is listed twice.
+    listed: HashSet<String>,
+    /// The `list_tree` calls made.
+    calls: usize,
+    listed_files: BTreeSet<String>,
+    listed_folders: BTreeSet<String>,
+    selected: BTreeMap<String, usize>,
+    /// The document of each Markdown file the walk read, by path.
+    documents: BTreeMap<String, MarkdownDocument>,
 }
 
 /// Calls `list_tree` on `path`, then on each entry it returns. A folder entry is walked in turn, and
-/// every other entry is listed once and not descended, then read once with `select_file`. A failed
+/// every other entry is listed once and not descended, then read once with `select_file`, whose
+/// Markdown document is kept. A failed
 /// answer stops nothing: it has no entries to go on to. No path is listed twice, so folder links that reach each other end.
-fn walk_from(
-    opened: &OpenedFolder,
-    path: &str,
-    listed: &mut HashSet<String>,
-    calls: &mut usize,
-    listed_files: &mut BTreeSet<String>,
-    listed_folders: &mut BTreeSet<String>,
-    selected: &mut BTreeMap<String, usize>,
-) -> bool {
-    if !listed.insert(path.to_string()) {
+fn walk_from(opened: &OpenedFolder, path: &str, gathered: &mut Gathered) -> bool {
+    if !gathered.listed.insert(path.to_string()) {
         return false;
     }
-    *calls += 1;
+    gathered.calls += 1;
     let ItemState::Observed(entries) = list_tree(opened, path) else {
         return false;
     };
     for entry in &entries {
         match entry.kind {
             EntryKind::Folder => {
-                listed_folders.insert(entry.path.clone());
-                walk_from(
-                    opened,
-                    &entry.path,
-                    listed,
-                    calls,
-                    listed_files,
-                    listed_folders,
-                    selected,
-                );
+                gathered.listed_folders.insert(entry.path.clone());
+                walk_from(opened, &entry.path, gathered);
             }
             EntryKind::File => {
-                listed_files.insert(entry.path.clone());
-                if listed.insert(entry.path.clone()) {
-                    *calls += 1;
+                gathered.listed_files.insert(entry.path.clone());
+                if gathered.listed.insert(entry.path.clone()) {
+                    gathered.calls += 1;
                     list_tree(opened, &entry.path);
-                    select_counted(opened, &entry.path, selected);
+                    let answer = select_counted(opened, &entry.path, &mut gathered.selected);
+                    if let Some(document) = markdown_document(answer) {
+                        gathered.documents.insert(entry.path.clone(), document);
+                    }
                 }
             }
         }
@@ -297,10 +393,16 @@ impl Driven {
             .map(|model| model.open_read(read, ReadingPosition::new(position)));
     }
 
-    /// Asks for the bytes of `path` and drops the answer: the proof is that the folder is unchanged.
-    fn asset_bytes(&mut self, folder: &OpenedFolder, check: &FolderContainment, path: &str) {
+    /// Asks for the bytes of `path` and drops them: the proof is that the folder is unchanged. True
+    /// when bytes came back.
+    fn asset_bytes(
+        &mut self,
+        folder: &OpenedFolder,
+        check: &FolderContainment,
+        path: &str,
+    ) -> bool {
         self.acts.asset_bytes += 1;
-        let _ = asset_bytes(folder, path, check);
+        asset_bytes(folder, path, check).is_some()
     }
 
     /// Asks whether `path` is a file a link may open. True when it answered one.
@@ -330,8 +432,14 @@ impl Driven {
 /// Drives `asset_bytes` and `link_file` on the root and on every file, with the open a link makes
 /// where `link_file` answers a file, then `Expand` on every folder, `Select` and the open's two halves
 /// on every file, `Position` on the open file, `Invalidate` with the root and every folder reported,
-/// `reread_open_file`, then `Collapse` on every folder, over `folder`. The fixture is only read.
-fn drive_model(folder: &Path, folders: &BTreeSet<String>, files: &BTreeSet<String>) -> Acts {
+/// `reread_open_file`, then `Collapse` on every folder, over `folder`. Each Markdown document in
+/// `documents` is also asked `asset_bytes` once per image node. The fixture is only read.
+fn drive_model(
+    folder: &Path,
+    folders: &BTreeSet<String>,
+    files: &BTreeSet<String>,
+    documents: &BTreeMap<String, MarkdownDocument>,
+) -> (Acts, ImageTally) {
     let opened = open_folder(folder).expect("the folder that was just walked opens");
     let root = opened.root().to_path_buf();
     let reading = open_folder(folder).expect("the folder that was just walked opens");
@@ -346,6 +454,16 @@ fn drive_model(folder: &Path, folders: &BTreeSet<String>, files: &BTreeSet<Strin
             driven.select(path);
             let read = driven.read(&reading, path);
             driven.open_read(read, OPEN_POSITION);
+        }
+    }
+    // `asset_bytes` touches no model, so the last open above still decides the open file.
+    let mut images = ImageTally::default();
+    for (path, document) in documents {
+        let asks = image_asks(document);
+        images.nodes.insert(path.clone(), asks.len());
+        for ask in &asks {
+            let answered = driven.asset_bytes(&reading, &check, ask.path());
+            images.record_call(path, ask, answered);
         }
     }
     for path in folders {
@@ -364,33 +482,26 @@ fn drive_model(folder: &Path, folders: &BTreeSet<String>, files: &BTreeSet<Strin
     for path in folders {
         driven.collapse(path);
     }
-    driven.acts
+    (driven.acts, images)
 }
 
 fn walk_folder(folder: &Path) -> Option<Walk> {
     let opened = open_folder(folder).expect("the read-only fixture opens");
-    let mut calls = 0;
-    let mut listed = HashSet::new();
-    let mut listed_files = BTreeSet::new();
-    let mut listed_folders = BTreeSet::new();
-    let mut selected = BTreeMap::new();
-    let root_has_entries = walk_from(
-        &opened,
-        "",
-        &mut listed,
-        &mut calls,
-        &mut listed_files,
-        &mut listed_folders,
-        &mut selected,
+    let mut gathered = Gathered::default();
+    let root_has_entries = walk_from(&opened, "", &mut gathered);
+    let (acts, images) = drive_model(
+        folder,
+        &gathered.listed_folders,
+        &gathered.listed_files,
+        &gathered.documents,
     );
-    let acts = drive_model(folder, &listed_folders, &listed_files);
     Some(Walk {
-        calls,
+        calls: gathered.calls,
         root_has_entries,
         acts,
-        listed_files,
-        selected,
-        images: ImageTally::default(),
+        listed_files: gathered.listed_files,
+        selected: gathered.selected,
+        images,
     })
 }
 
@@ -907,6 +1018,7 @@ fn pass(folder: &str) -> Result<usize, String> {
     let walk =
         walk_folder(&canonical).ok_or_else(|| format!("{folder} did not open as a folder"))?;
     judge_bridge_operations(&walk.acts).map_err(|message| format!("{folder}: {message}"))?;
+    judge_images(&walk.images).map_err(|message| format!("{folder}: {message}"))?;
     // The answer is dropped: the proof is that the folder is unchanged afterwards, `.git/index`
     // included. `canonical` is canonical, as the adapter compares it against the locations it
     // verifies.
