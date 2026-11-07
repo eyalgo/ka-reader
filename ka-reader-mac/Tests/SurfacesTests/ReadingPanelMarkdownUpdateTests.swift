@@ -60,6 +60,31 @@ func aFirstDrawStartsAtTheTopWhateverPositionTheUpdateCarries() {
     #expect(panel.markdownPage.scrollOffset == 0)
 }
 
+/// CP-1118: a Markdown file drawn for the first time is drawn from the top. A re-read that arrives
+/// while the file's first draw still waits on its images is still that file's first draw, so it
+/// starts at the top too, never at the scroll of the page the panel showed before it.
+@MainActor
+@Test
+func aFirstDrawOvertakenByAnUpdateStartsAtTheTopNotAtThePreviousPagesScroll() {
+    let recorder = AssetRecorder()
+    let panel = makeMarkdownPanel(recorder: recorder)
+    panel.show(path: "other.md", verdict: .markdown(longPage("other", paragraphs: 200)))
+    panel.layoutSubtreeIfNeeded()
+    panel.markdownPage.scrollOffset = 600
+    #expect(panel.markdownPage.scrollOffset > 0)
+    recorder.holds = true
+
+    panel.show(path: "README.md", verdict: .markdown(imageDocument("first", paths: ["a.png"])))
+    panel.update(
+        path: "README.md", verdict: .markdown(longPage("second", paragraphs: 200)),
+        position: .topLeft)
+    panel.layoutSubtreeIfNeeded()
+
+    #expect(panel.markdownPage.textView.string.contains("second paragraph 0"))
+    #expect(panel.pathLine.stringValue == "README.md")
+    #expect(panel.markdownPage.scrollOffset == 0)
+}
+
 @MainActor
 @Test
 func aChangedDocumentForTheOpenPathRedrawsInPlaceAndKeepsTheScrollClamped() {
