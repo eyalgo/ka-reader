@@ -62,6 +62,9 @@ const LONG_MODE_ARGUMENT: &str = "--long";
 /// How long long mode rests between passes, so a process waiting to be killed does not spin.
 const PASS_PAUSE: Duration = Duration::from_millis(50);
 
+/// The second argument that selects pages mode.
+const PAGES_MODE_ARGUMENT: &str = "--pages";
+
 /// What a fixture's walk is held to beyond the coverage judge.
 type FixtureCheck = fn(&Walk) -> Result<(), String>;
 
@@ -257,6 +260,22 @@ fn judge_images(tally: &ImageTally) -> Result<(), String> {
         }
     }
     Ok(())
+}
+
+/// The page lines of `documents`, one per Markdown file in path byte order: the folder-relative path,
+/// a tab, then the page. `ask` answers `asset_bytes` for one text. A listed path holding a tab or a
+/// newline cannot be carried by a line, so it is an `Err` naming it and no line is produced.
+fn page_lines(
+    _documents: &BTreeMap<String, MarkdownDocument>,
+    _ask: impl FnMut(&str) -> Option<Vec<u8>>,
+) -> Result<Vec<String>, String> {
+    Ok(Vec::new())
+}
+
+/// The page lines of the folder at `folder`: the walk's descent, then `asset_bytes` through the real
+/// containment check for each image node.
+fn pages_over(_folder: &Path) -> Result<Vec<String>, String> {
+    Ok(Vec::new())
 }
 
 /// Judges what the `repo` fixture's walk exercised of its images.
@@ -937,6 +956,105 @@ fn repo_image_check_refuses_a_placeholder_that_is_not_outside_the_folder() -> Re
     }
 }
 
+/// A document holding one paragraph of `text` and one image resolved to `path`.
+fn page_document(text: &str, path: &str) -> MarkdownDocument {
+    MarkdownDocument {
+        blocks: vec![Block::Paragraph(vec![
+            Inline::Text(text.to_string()),
+            resolved_image(path),
+        ])],
+    }
+}
+
+/// The page lines for one file `path` holding `document`, where `asset_bytes` answers `bytes`.
+fn one_page_line(
+    path: &str,
+    document: MarkdownDocument,
+    bytes: Option<Vec<u8>>,
+) -> Result<Vec<String>, String> {
+    let documents = BTreeMap::from([(path.to_string(), document)]);
+    page_lines(&documents, |_| bytes.clone())
+}
+
+fn page_line_holds_no_tab_and_no_newline() -> Result<(), String> {
+    let document = MarkdownDocument {
+        blocks: vec![Block::Paragraph(vec![
+            Inline::Text("tab\there\nnewline\rreturn".to_string()),
+            Inline::Image {
+                alt: "alt\tand\nmore".to_string(),
+                target: ImageTarget::Placeholder {
+                    condition: PlaceholderCondition::OutsideTheFolder,
+                    source: "https://example.com/a\tb\nc.png".to_string(),
+                },
+            },
+        ])],
+    };
+    let lines = one_page_line("page.md", document, None)?;
+    let [line] = lines.as_slice() else {
+        return Err(format!(
+            "the pages gave {} lines for one file, expected 1",
+            lines.len()
+        ));
+    };
+    let tabs = line.matches('\t').count();
+    if tabs != 1 || line.contains(['\n', '\r']) {
+        return Err(format!(
+            "the page line for a page holding a tab, a newline and a carriage return held {tabs} tabs or a line break: {line:?}"
+        ));
+    }
+    Ok(())
+}
+
+fn equal_answers_give_equal_page_lines_and_a_differing_answer_a_differing_one() -> Result<(), String>
+{
+    let line = |document: MarkdownDocument, bytes: &[u8]| {
+        one_page_line("page.md", document, Some(bytes.to_vec()))
+    };
+    let base = line(page_document("text", "a.png"), b"one")?;
+    if base != line(page_document("text", "a.png"), b"one")? {
+        return Err("two equal answers gave differing page lines".to_string());
+    }
+    if base == line(page_document("text", "a.png"), b"two")? {
+        return Err("a differing asset_bytes answer gave an equal page line".to_string());
+    }
+    if base == line(page_document("other text", "a.png"), b"one")? {
+        return Err("a differing document gave an equal page line".to_string());
+    }
+    Ok(())
+}
+
+fn a_listed_path_holding_a_tab_or_a_newline_is_refused() -> Result<(), String> {
+    for path in ["tab\there.md", "new\nline.md"] {
+        let documents = BTreeMap::from([(path.to_string(), page_document("text", "a.png"))]);
+        match page_lines(&documents, |_| None) {
+            Err(message) if message.contains("a page line cannot carry") => {}
+            Err(message) => {
+                return Err(format!(
+                    "the pages refused the path {path:?} without saying a page line cannot carry it: {message}"
+                ));
+            }
+            Ok(lines) => {
+                return Err(format!("the pages carried the path {path:?}: {lines:?}"));
+            }
+        }
+    }
+    Ok(())
+}
+
+fn the_pages_mode_lists_only_markdown_files_in_byte_order() -> Result<(), String> {
+    let lines = pages_over(&fixture_path("repo"))?;
+    let paths: Vec<&str> = lines
+        .iter()
+        .filter_map(|line| line.split_once('\t').map(|(path, _)| path))
+        .collect();
+    if paths != ["README.md", "guide.md"] || paths.len() != lines.len() {
+        return Err(format!(
+            "the pages over fixture repo listed {lines:?}, expected a line for README.md and one for guide.md, each with a tab"
+        ));
+    }
+    Ok(())
+}
+
 /// Runs the judge on tallies built by hand, so every no-argument run shows that it accepts the walk
 /// CP-327 wants and refuses the three it forbids.
 fn judge_self_check() -> Result<(), String> {
@@ -953,7 +1071,11 @@ fn judge_self_check() -> Result<(), String> {
     image_judge_refuses_a_file_with_an_unasked_node_naming_it()?;
     image_judge_refuses_a_file_asked_more_times_than_it_has_nodes()?;
     repo_image_check_refuses_a_walk_where_no_resolved_node_was_answered_bytes()?;
-    repo_image_check_refuses_a_placeholder_that_is_not_outside_the_folder()
+    repo_image_check_refuses_a_placeholder_that_is_not_outside_the_folder()?;
+    page_line_holds_no_tab_and_no_newline()?;
+    equal_answers_give_equal_page_lines_and_a_differing_answer_a_differing_one()?;
+    a_listed_path_holding_a_tab_or_a_newline_is_refused()?;
+    the_pages_mode_lists_only_markdown_files_in_byte_order()
 }
 
 fn fixture_path(name: &str) -> PathBuf {
