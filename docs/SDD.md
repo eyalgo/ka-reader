@@ -6,7 +6,8 @@
        signal, and the state a finished SDD carries; the open-issues file is gone.
      Locked = ratified as the source of truth. -->
 **Owner:** CTO — writes every part; the CPO and the CDO decide the parts the lane table names, through `SDD_open_issues.md` items carrying their `Seat:`
-**Version:** 76 — Fold cycle-70 §§ 5.1–5.4, all the CTO's, raised by the PM on 2026-11-07 against the reading panel's Markdown page at `ka-reader@e95896f` (`docs/trail/sdd/cycle-70.md`) and answered in the CTO's seat (`docs/trail/sdd/self_answer-84.md`): § 3's `surfaces` row narrows its built-order sentence to a click's read and states beside it that a relative link's read is ordered on the serial tree-act runner, why — the export admits the selection and reads in one call — and what bounds the wait (RN-158); the same row names the layout form found — TextKit 1's `NSLayoutManager`, an `NSTextAttachment` for a resolved image, an `NSTextBlock` for the placeholder box — with the code cell's missing canvas surface a known defect at the pin and an `NSTextBlock` its form, § 4 C-R5's TextKit sentence moves to the class used, S-3's command half records the close, and *Open Questions*' third item is struck (RN-159); the `read-only-harness` row is re-measured and re-pinned at `e95896f` — sixteen fixture folders, `malformed-images` with its four files and the two Swift suites that read them, and `checks/walk.rs`'s change named (RN-160); § 3's `MarkdownDocument` makes a relative link whose target is a folder an *external* node and *relative* a contained file's path, a known defect at the pin until a change lands, with ADR-0025's link sentence raised for the Principal Architect (RN-161); the *Inputs read* line reads the NFDR at Settled, v83, and names DESIGN (RN-162). The companion is removed, empty of items; Status is Settled (RN-162).
+**Version:** 77 — Fold cycle-71 § 2.1, the CTO's, raised on 2026-11-07 by a `companion-self-answer` run in the Principal Architect's seat — from outside the SDD's lanes, while it answered `docs/architecture_open_issues.md` § 3.1 — against § 9 TO-5 at v76 (`docs/trail/sdd/cycle-71.md`) and answered in the CTO's seat (`docs/trail/sdd/self_answer-85.md`), confirmed with addition: TO-5's link sentence stops naming "the existing `select_file` call" — the call the design had before the export was built — and states the call the shell makes, one `open_relative_link` call (SM-4), with the bridge's check-again, admit and open order (SM-5's fourth fixed order) and the node's definition as § 3 holds it since v76, a contained file's path; the addition states what the link cost — one export with its suite and the walk's coverage, and an ordered read on the serial tree-act runner, bounded — what it bought, and the ground on which FR-32's "costs nothing" still holds (RN-163). The *Inputs read* line names what this run read (RN-163). No slice, edge, seam, part, condition or place in the order moves. The companion is removed, empty of items; Status is Settled.
+Version 76 — Fold cycle-70 §§ 5.1–5.4, all the CTO's, raised by the PM on 2026-11-07 against the reading panel's Markdown page at `ka-reader@e95896f` (`docs/trail/sdd/cycle-70.md`) and answered in the CTO's seat (`docs/trail/sdd/self_answer-84.md`): § 3's `surfaces` row narrows its built-order sentence to a click's read and states beside it that a relative link's read is ordered on the serial tree-act runner, why — the export admits the selection and reads in one call — and what bounds the wait (RN-158); the same row names the layout form found — TextKit 1's `NSLayoutManager`, an `NSTextAttachment` for a resolved image, an `NSTextBlock` for the placeholder box — with the code cell's missing canvas surface a known defect at the pin and an `NSTextBlock` its form, § 4 C-R5's TextKit sentence moves to the class used, S-3's command half records the close, and *Open Questions*' third item is struck (RN-159); the `read-only-harness` row is re-measured and re-pinned at `e95896f` — sixteen fixture folders, `malformed-images` with its four files and the two Swift suites that read them, and `checks/walk.rs`'s change named (RN-160); § 3's `MarkdownDocument` makes a relative link whose target is a folder an *external* node and *relative* a contained file's path, a known defect at the pin until a change lands, with ADR-0025's link sentence raised for the Principal Architect (RN-161); the *Inputs read* line reads the NFDR at Settled, v83, and names DESIGN (RN-162). The companion is removed, empty of items; Status is Settled (RN-162).
 Version 75 — Fold cycle-69 § 2.1, the CTO's, raised on 2026-11-07 by a `companion-self-answer` run in the Principal Architect's seat against the read-seam paragraph added at v74 (`docs/trail/sdd/cycle-69.md`) and answered in the CTO's seat (`docs/trail/sdd/self_answer-83.md`): § 2's grep sentence narrows to the files the building change names — 23 of the 37 `0o000` lines at `ka-reader@98aaa71`, in 8 files — and states the other 14 lines, in 5 files, as outside the seam's reach: a known defect at the pin under the condition-every-runner-sees rule, with no second seam cut for them; one of the 23 is the walk's guard, re-stated by the seam change all the same; SM-1's call count reads sixteen — the fifteen `fs_reader::`-qualified sites and `read_contained_bytes`, imported by name (RN-156). The header's version history regains its v73 line, dropped by the v74 close, and the *Inputs read* line reads the NFDR at Draft (RN-157). The companion is removed, empty of items; Status is Settled (RN-157).
 Version 74 — Fold cycle-68 §§ 5.1–5.5, the CTO's, raised by the PM on 2026-11-07 against the bridge's image-and-link merge at `ka-reader@98aaa71` (`docs/trail/sdd/cycle-68.md`) and answered in the CTO's seat (`docs/trail/sdd/self_answer-82.md`). Four re-statements at that pin: SM-5's Down cell counts five functions beside the request types — `asset_bytes` and `link_file` join the three — and the relative link is the bridge's fourth fixed order (RN-150); SM-7 and two sentences of § 2 read `asset_bytes` as built and handed `FolderContainment` by the bridge, seven production constructions and one implementation (RN-151); § 3's units paragraph carries the model's second call into the renderer, `is_bitmap`, still the one edge (RN-152); SM-4's admitted-set locator is re-pinned to `tests/exports.rs:L26-L34`, seven names (RN-153). One addition: § 2 states one read seam beside the decline of the four-layer default — SM-1 as a trait in `fs-reader`, one real implementation, one `cfg`-gated fake, one contract suite, the real reader handed in from the composition roots, the containment walk outside it — because a failed read forced with a file mode proves nothing under `root`, 37 sites at the pin (RN-154). The companion is removed, empty of items; Status is Settled (RN-155).
 Version 73 — Fold cycle-67 item 2.1, the CTO's, raised by the Principal Architect on 2026-11-07 from outside the SDD's lanes against the typed Markdown document's merge at `ka-reader@71f9f69` (`docs/trail/sdd/cycle-67.md`), confirmed with one clause replaced and three additions: § 3's `fs-reader` row states the containment port the core has had since that merge — `ContainmentCheck`, one method; `FolderContainment` the walk's one implementation; `SeededContainment` the port's one fake, compiled for tests alone and refusing by default; one contract suite over both — and SM-7 names who takes the port at the pin, the renderer and the model's `fill_view` and `reduce_open_file`, with `asset_bytes` standing as design (RN-148); § 2's decline of the four-layer default stands for `folder-model`'s entry points and says how the built port sits beside it — what keeps the walk's one implementation true is structural, the `cfg` gate and the five production construction sites, not the contract suite — and its verified-fake sentence names the containment port as the second the rule reaches (RN-148). The companion is removed, empty of items; Status is Settled (RN-149).
@@ -104,7 +105,7 @@ folded since run 1 (§§ 1.1, 2.1, 2.3, 3.1, 5.1, 5.2) from the transient `SDD_o
 permanent copy at `docs/trail/sdd/cycle-1.md`, across all three lanes. Version 1 — first complete
 cut: §§ 1–7, 9, 11, 12 and Review Notes RN-1–RN-37 written across a run interrupted once (API 529,
 resumed clean per `docs/trail/sdd/run-1.md`).
-**Inputs read:** PRD Settled · SRS Settled · UXD Settled · DESIGN Settled · SDD Settled · NFDR Settled · writing bar Draft
+**Inputs read:** PRD Settled · SRS Settled · UXD Settled · SDD Settled · NFDR Settled · writing bar Draft
 
 > The SDD is the technical **how**, and it ends in a **cut**. It states the architecture the rest of
 > the system builds against — derived from the PRD (the *what and why*), the SRS (the system-level
@@ -3341,9 +3342,28 @@ been weighed. For each, say what undoing it would take if it turned out wrong.>
   (`docs/UXD.md` UX-I12), which needs a rendered↔source position mapping with no other use.
   A release ships rendered-only and says so where it is offered (AC-22); *buys* nothing added to
   the reading panel for a feature outside done; *undoing it costs* the mapping and one control.
-  **The relative link opening its target is built** (FR-32's permission): a *relative* link node
-  the shell turns into the existing `select_file` call, on a path the containment check already
-  validates — one node kind and no new capability (RN-10). *(Re-read under the native view,
+  **The relative link opening its target is built** (FR-32's permission): a *relative* link node —
+  a contained file's path (§ 3 `MarkdownDocument`; RN-161) — which the shell sends as one
+  `open_relative_link` call (SM-4; `ka-reader-mac/Sources/Shell/LaunchFlow.swift:L206-L207`,
+  `:L230`); the bridge runs the containment check again and, for a contained file, admits the
+  selection through the model's `select_file` operation and opens the file as a tree selection
+  does — `link_file`, then `select_file(FileRequest::Select(Some(linked)))` under one lock hold,
+  then the open's read-and-fold (`crates/ka-reader-bridge/src/session.rs:L1249-L1270`; SM-5's
+  fourth fixed order, RN-150) — one node kind, and no new capability: the call reads nothing a
+  selection could not. What the link *costs*: one export on SM-4's list,
+  `ka_reader_open_relative_link` (`crates/ka-reader-bridge/src/exports.rs:L219`), with its bridge
+  suite (`crates/ka-reader-bridge/tests/open_relative_link.rs`) and the walk's coverage of it
+  (§ 4 C-I3; `checks/walk.rs:L19-L21`), and an ordered read — the call goes on the serial tree-act
+  runner, so a tree act raised after a link waits behind one read of one contained file, and
+  behind nothing but the lock hold when the check refuses (§ 3's `surfaces` row, RN-158). It
+  *buys* a selection admitted only for a path the check reaches at activation, which is why it is
+  one call and not a click's two. "Costs nothing" stays true of what FR-32 measures: no new node
+  kind, no new seam, no new capability, and nothing new in the model — `link_file`, `select_file`
+  and the fold are the operations a click already drives (RN-10, the judgment's origin; RN-163).
+  *(Until 2026-11-07 this sentence read "a *relative* link node the shell turns into the existing
+  `select_file` call, on a path the containment check already validates — one node kind and no
+  new capability (RN-10)" — the call the design had before the export was built;
+  `docs/trail/sdd/cycle-71.md` § 2.1; RN-163.)* *(Re-read under the native view,
   2026-09-23: the switch is no cheaper when both treatments are TextKit's — the raw source is the
   code treatment over the same bytes, and the position between a rendered block and its source
   line is still a mapping with no other use; the judgment stands. RN-60.)*
@@ -11157,6 +11177,50 @@ SDD states something they do not) or *changed* (it departs from what they say).>
   **Verification limits:** no product test ran; the code was read at every line the answers cite, at
   `877e8d8`, whose `crates/`, `checks/`, `ka-reader-mac/` and `docs/SDD.md` are `e95896f`'s; no
   journey file is cited. *(re: header; source: `docs/trail/sdd/cycle-70.md`.)*
+- **RN-163:** *(CTO)* *(changed — § 9 TO-5, the relative link's sentence; and the header)* Item 2.1 of
+  `docs/trail/sdd/cycle-71.md`, raised on 2026-11-07 by a `companion-self-answer` run in the
+  Principal Architect's seat — from outside the SDD's lanes, while it answered
+  `docs/architecture_open_issues.md` § 3.1 — and answered in the CTO's seat the same day
+  (`docs/trail/sdd/self_answer-85.md` § 2.1), is folded as confirmed with addition. **What was
+  false:** TO-5 named "the existing `select_file` call" as what the shell makes of a relative
+  link; the shell makes one `open_relative_link` call, which SM-4 lists among its ten and SM-5's
+  Down cell gives its own fixed order (RN-150) — TO-5 was the one live sentence of this document
+  still naming the call the design had before the export was built, found by the raising run over
+  every line `grep -n 'select_file' docs/SDD.md` returns. **What the sentence now says:** the
+  item's proposed reading — a *relative* node is a contained file's path (RN-161), the shell sends
+  it as one call, the bridge checks the path again and admits the selection through the model's
+  `select_file` operation, then opens the file as a tree selection does. **The addition, and
+  why:** TO-5 is a trade-off entry, and its whole cost accounting was the reuse of an existing
+  call; with the call its own export that ground is gone, so the sentence states what the link
+  cost — the export with its suite and the walk's coverage, and the ordered read on the serial
+  tree-act runner with its bound — what it bought, and on what ground FR-32's "costs nothing"
+  still holds: nothing new in the node set, the seams, the capabilities or the model. RN-10 stays
+  cited as the judgment's origin and is not rewritten; the old words stay in a dated note beside
+  the sentence, as this document keeps them. **Measured at `2dfee99`**, whose tree outside
+  `docs/` is `e95896f`'s (`git diff --stat e95896f 2dfee99 -- . ':!docs'` prints nothing):
+  `ka-reader-mac/Sources/Shell/LaunchFlow.swift:L206-L207` wires `openRelativeLink` to
+  `treeActs.run` and `:L230` calls `bridge.openRelativeLink(path:)`;
+  `crates/ka-reader-bridge/src/session.rs:L1249-L1270` is `link_to` — the check built over the
+  held root, `link_file`, `select_file(FileRequest::Select(Some(linked)))` under the one lock
+  hold, then `read_and_fold`; `crates/ka-reader-bridge/src/exports.rs:L219` is
+  `ka_reader_open_relative_link`; `checks/walk.rs:L19-L21` calls `link_file` on the root and on
+  every file entry and drives the open a link makes, under `read-only.sh`, which C-I3 names;
+  SM-4's list and SM-5's fourth fixed order read as cited (`docs/SDD.md:L656-L657` at v76), and
+  `MarkdownDocument`'s link sentence at `:L738-L741`. **Nothing else moves:** no slice, edge,
+  part, seam, condition or place in the order; § 10 and § 12 are unchanged; *Open Questions* holds
+  its four items. **The header:** the PRD, SRS and UXD stand at v18, v14 and v13, Settled, each
+  read at its header; the NFDR at v83, Settled; the writing bar at Draft. DESIGN was not read this
+  run and leaves the *Inputs read* line, which names what a revision read and not what an earlier
+  one did; the FDR and the ADRs were not read — ADR-0025's link sentence is the Principal
+  Architect's, already answered on the architecture companion
+  (`docs/trail/architecture/self_answer-78.md` § 3.1), and this fold raises nothing for it.
+  **Document checks:** `docs/trail/sdd/cycle-71.md` is a byte-for-byte copy of the companion as
+  this run opened it (`cmp`); the parts table keeps its eleven parts and § 6 its thirteen slices;
+  `git diff --check` prints nothing; `Status:` reads Settled because the companion is removed,
+  empty of items. **Verification limits:** no product test ran; the code was read at the lines
+  named above and nowhere else; `crates/ka-reader-bridge/tests/open_relative_link.rs` was located
+  on disk, not read; no journey file is cited. *(re: § 9 TO-5, header; source:
+  `docs/trail/sdd/cycle-71.md` § 2.1; SRS FR-32; UXD UX-I12.)*
 
 ## Open Questions
 
