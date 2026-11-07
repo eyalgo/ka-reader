@@ -5,14 +5,6 @@
 //! to decide about it, never something a surface could fetch or open. The renderer opens nothing,
 //! reads no byte and logs nothing; the one door to the disk is the containment check it is handed.
 
-// `render` has no caller outside the tests until the model fills the open file with it, and the
-// private functions behind it are unreached with it. The expectation fails, and so reports itself,
-// in the change that adds the caller.
-#![cfg_attr(
-    not(test),
-    expect(dead_code, reason = "the model's fill is the first caller of `render`")
-)]
-
 mod fence;
 mod fold;
 mod references;

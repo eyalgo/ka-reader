@@ -2,6 +2,10 @@
 //! from one helper, copies its scene into a temporary root of its own, and checks that the answer
 //! carries no path and that nothing under that root changed.
 
+#[allow(
+    dead_code,
+    reason = "each test crate uses a subset of the shared helpers"
+)]
 mod common;
 
 use std::fs;

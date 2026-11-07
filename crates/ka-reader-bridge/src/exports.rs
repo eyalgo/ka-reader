@@ -98,6 +98,7 @@ pub unsafe extern "C" fn ka_reader_list_tree(path: *const c_char, act: u32) -> *
 /// `0` is the open: the file is selected and opened at `position` (NULL is the empty position), and
 /// the answer is its verdict as a JSON object tagged by `state`:
 /// `{"state":"text","content":…,"language":"plain"}`, `{"state":"cannot_display","reason":…}`,
+/// `{"state":"markdown"}` for a Markdown file, which carries no member of the document,
 /// `{"state":"failed","condition":…}`, or `{"state":"pending"}` when nothing was read (no folder
 /// open, or a NULL, empty or non-UTF-8 path). `act` `1` is the position alone: when the path is the
 /// open file its position becomes `position` (a NULL one applies nothing), nothing is read, and the

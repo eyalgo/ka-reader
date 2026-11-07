@@ -6,14 +6,15 @@ use std::ffi::OsString;
 use std::path::{Component, Path, PathBuf};
 
 use crate::fs_reader::{
-    self, CannotDisplayReason, Entry, EntryKind, FileContent, ItemState, Listed,
-    ListingObservation, Location, OpenFailure, Reobserved, order,
+    self, CannotDisplayReason, ContainmentCheck, Entry, EntryKind, FileContent, FolderContainment,
+    ItemState, Listed, ListingObservation, Location, OpenFailure, Reobserved, order,
 };
 use crate::git_reader::{
     GitPort, GitReadCondition, HeadState, ProbeCondition, RootFinding, StatusLists,
 };
 use crate::highlighter::{Span, highlight};
 use crate::language::Language;
+use crate::markdown_renderer::{MarkdownDocument, render};
 
 /// A folder the user chose, held as its canonical path.
 ///
@@ -101,8 +102,8 @@ pub fn list_tree(opened: &OpenedFolder, path: &str) -> ItemState<Vec<Entry>> {
 }
 
 /// What the open file is, as the reading panel needs it: its text with the language it is drawn as
-/// and the spans that language's grammar yields for that text, or the fact that it cannot be shown
-/// as text.
+/// and the spans that language's grammar yields for that text, a Markdown file as a document, or the
+/// fact that it cannot be shown as text.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum FileView {
     /// The decoded content, its language, and exactly `highlight(&content, language)` in its order.
@@ -112,6 +113,9 @@ pub enum FileView {
         language: Language,
         spans: Vec<Span>,
     },
+    /// A Markdown file as a closed, typed document. It carries no spans: its code blocks hold their
+    /// own, by construction, and nothing else in it is highlighted.
+    Markdown(MarkdownDocument),
     /// The file is not text under the text rule, for the reason named.
     CannotDisplay(CannotDisplayReason),
     /// A re-read of the open file found nothing at its path: no entry at a step of the path as the
@@ -136,21 +140,26 @@ pub enum FileView {
     Gone,
 }
 
-impl From<FileContent> for FileView {
-    fn from(content: FileContent) -> Self {
-        match content {
-            FileContent::Text { content, language } => {
-                // Spans are taken from the content the answer carries, after any byte-order mark is
-                // gone, so their offsets count the bytes the reader is shown (CP-307).
-                let spans = highlight(&content, language);
-                Self::Text {
-                    content,
-                    language,
-                    spans,
-                }
+/// The view the decoded `content` of the file at `path` makes. `path` is the file's path as the
+/// reader spelled it, so a Markdown file is rendered with its parent as the folder its references are
+/// placed under (empty at the root), and `check` is how the renderer reaches the disk.
+fn fill_view(content: FileContent, path: &Path, check: &impl ContainmentCheck) -> FileView {
+    match content {
+        FileContent::Text { content, language } => {
+            // Spans are taken from the content the answer carries, after any byte-order mark is
+            // gone, so their offsets count the bytes the reader is shown (CP-307).
+            let spans = highlight(&content, language);
+            FileView::Text {
+                content,
+                language,
+                spans,
             }
-            FileContent::CannotDisplay(reason) => Self::CannotDisplay(reason),
         }
+        FileContent::Markdown { content } => {
+            let folder = path.parent().unwrap_or(Path::new(""));
+            FileView::Markdown(render(&content, folder, check))
+        }
+        FileContent::CannotDisplay(reason) => FileView::CannotDisplay(reason),
     }
 }
 
@@ -169,11 +178,8 @@ impl From<FileContent> for FileView {
 /// assert_eq!(select_file(&opened, ".."), ItemState::Failed(Condition::Outside));
 /// ```
 pub fn select_file(opened: &OpenedFolder, path: &str) -> ItemState<FileView> {
-    match fs_reader::read(&opened.root, path) {
-        ItemState::Observed(content) => ItemState::Observed(content.into()),
-        ItemState::Failed(condition) => ItemState::Failed(condition),
-        ItemState::Pending => ItemState::Pending,
-    }
+    let check = FolderContainment::new(opened.root.clone());
+    fs_reader::read(&opened.root, path).map(|content| fill_view(content, Path::new(path), &check))
 }
 
 /// What reading one path for opening gave: the verdict [`select_file`] gives for that path, and
@@ -220,7 +226,9 @@ impl FileRead {
 /// assert!(matches!(read.answer(), ItemState::Observed(_)));
 /// ```
 pub fn read_file(folder: &OpenedFolder, path: &Path) -> FileRead {
-    let answer = fs_reader::observe_file(&folder.root, path).map(FileView::from);
+    let check = FolderContainment::new(folder.root.clone());
+    let answer =
+        fs_reader::observe_file(&folder.root, path).map(|content| fill_view(content, path, &check));
     let location = fs_reader::locate(&folder.root, path)
         .ok()
         .filter(|location| location.kind == EntryKind::File)
@@ -980,6 +988,7 @@ impl FolderModel {
             return self;
         }
         let root = self.folder.root.clone();
+        let check = FolderContainment::new(root.clone());
         let observation = open_path.map(|path| fs_reader::reobserve_file(&root, &path));
         let model = if scope.is_empty() {
             self
@@ -995,7 +1004,7 @@ impl FolderModel {
                 fs_reader::observe_listing(&root, path)
             })
         };
-        reduce_open_file(model, observation)
+        reduce_open_file(model, observation, &check)
     }
 
     /// The request paths of the held listings a batch covers. A reported path that lies lexically
@@ -1170,7 +1179,9 @@ impl FolderModel {
         let Some(location) = self.admit(&path, EntryKind::File) else {
             return self;
         };
-        let view = fs_reader::observe_file(&self.folder.root, &path).map(FileView::from);
+        let check = FolderContainment::new(self.folder.root.clone());
+        let view = fs_reader::observe_file(&self.folder.root, &path)
+            .map(|content| fill_view(content, &path, &check));
         self.place.open_file = Some(OpenFile {
             path,
             position,
@@ -1238,7 +1249,8 @@ impl FolderModel {
             .open_file
             .as_ref()
             .map(|open| fs_reader::reobserve_file(&self.folder.root, &open.path));
-        reduce_open_file(self, observation)
+        let check = FolderContainment::new(self.folder.root.clone());
+        reduce_open_file(self, observation, &check)
     }
 
     /// The path of the open file when a batch covers it, so it is to be read again: the batch
@@ -1271,13 +1283,18 @@ impl FolderModel {
 /// The model after the re-read of its open file: `None` is no read and leaves the model as it
 /// was; an absent file is held as [`FileView::Gone`]; a read gives the view the content makes, or
 /// the failure observed, and the location it resolved to when it has one. The path and the
-/// position are the reader's and are never touched. Pure, so a test hands it a supplied read.
-fn reduce_open_file(mut model: FolderModel, observation: Option<Reobserved>) -> FolderModel {
+/// position are the reader's and are never touched. Pure but for `check`, which a Markdown read
+/// renders its references through, so a test hands it a supplied read and a fake check.
+fn reduce_open_file(
+    mut model: FolderModel,
+    observation: Option<Reobserved>,
+    check: &impl ContainmentCheck,
+) -> FolderModel {
     if let (Some(observation), Some(open)) = (observation, model.place.open_file.as_mut()) {
         match observation {
             Reobserved::Absent => open.view = ItemState::Observed(FileView::Gone),
             Reobserved::Read { state, location } => {
-                open.view = state.map(FileView::from);
+                open.view = state.map(|content| fill_view(content, &open.path, check));
                 if location.is_some() {
                     open.location = location;
                 }

@@ -166,6 +166,10 @@ pub struct Entry {
 pub enum FileContent {
     /// The file's decoded characters, whole, with no byte-order mark among them.
     Text { content: String, language: Language },
+    /// The decoded characters of a text file whose name is a Markdown name (see
+    /// [`MARKDOWN_EXTENSIONS`]), whole, with no byte-order mark among them. The model renders it;
+    /// this part only names it.
+    Markdown { content: String },
     /// The file is not text under the text rule, for the reason named.
     CannotDisplay(CannotDisplayReason),
 }
@@ -637,12 +641,9 @@ fn attempt_file(filesystem: &impl Filesystem, root: &Path, requested: &Path) -> 
             outcome: Err(Blocked::not_a_regular_file()),
         },
         EntryKind::File => {
-            let outcome = read_bytes(&root.join(&at.below_root)).map(|bytes| {
-                decode(
-                    bytes,
-                    language_of(requested.file_name().unwrap_or_default()),
-                )
-            });
+            let file_name = requested.file_name().unwrap_or_default();
+            let outcome =
+                read_bytes(&root.join(&at.below_root)).map(|bytes| decode(bytes, file_name));
             FileAttempt {
                 location: Some(at.below_root),
                 outcome,
@@ -689,7 +690,10 @@ fn read_bytes(location: &Path) -> Result<Vec<u8>, Blocked> {
 /// The text rule. UTF-8, with or without its mark, is text; so is UTF-16 that begins with its mark
 /// and decodes in the order that mark names. Anything else is not text. The decode is strict, never
 /// lossy, so a file that is not text can never come back as text full of U+FFFD.
-fn decode(bytes: Vec<u8>, language: Language) -> FileContent {
+///
+/// A text file is `Markdown` when its name says so, and otherwise `Text` in the language its name
+/// gives; both are decided from `file_name` alone, as the spelling the reader was asked with.
+fn decode(bytes: Vec<u8>, file_name: &OsStr) -> FileContent {
     let (content, reason) = if let Some(units) = bytes.strip_prefix(&UTF16_LITTLE_ENDIAN_MARK) {
         (
             decode_utf16(units, u16::from_le_bytes),
@@ -708,7 +712,11 @@ fn decode(bytes: Vec<u8>, language: Language) -> FileContent {
         )
     };
     match content {
-        Some(content) => FileContent::Text { content, language },
+        Some(content) if is_markdown_name(file_name) => FileContent::Markdown { content },
+        Some(content) => FileContent::Text {
+            content,
+            language: language_of(file_name),
+        },
         None => FileContent::CannotDisplay(reason),
     }
 }
@@ -733,6 +741,23 @@ const EXTENSIONS_BY_LANGUAGE: [(Language, &[&str]); 6] = [
     (Language::Yaml, &["yaml", "yml"]),
     (Language::Toml, &["toml"]),
 ];
+
+/// The extensions that name a Markdown file, the extension map's Markdown row. Compared without
+/// ASCII case, by the same last-extension rule [`language_of`] uses.
+const MARKDOWN_EXTENSIONS: [&str; 2] = ["md", "markdown"];
+
+/// Whether the last extension of `file_name` is a Markdown one. `.md` alone and `notes.md.txt` are
+/// not Markdown, for the reasons `language_of` gives for its own table.
+fn is_markdown_name(file_name: &OsStr) -> bool {
+    Path::new(file_name)
+        .extension()
+        .and_then(OsStr::to_str)
+        .is_some_and(|extension| {
+            MARKDOWN_EXTENSIONS
+                .iter()
+                .any(|known| known.eq_ignore_ascii_case(extension))
+        })
+}
 
 /// The language a text file is drawn as, from the last extension of its name alone, so content never
 /// reaches it. The extension is the text after the name's last `.` when that `.` is neither its first
