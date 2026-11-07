@@ -1,8 +1,10 @@
 /// A Markdown file as the shell holds it: its blocks, in source order, as the bridge sent them. The
 /// shell draws only what the document holds; no node carries markup or a URL the shell fetches.
 package nonisolated struct MarkdownDocument: Equatable, Sendable {
+    /// The document's top-level blocks, in source order.
     package let blocks: [MarkdownBlock]
 
+    /// A document holding `blocks`, in source order, as the bridge sent them.
     package init(blocks: [MarkdownBlock]) {
         self.blocks = blocks
     }

@@ -25,6 +25,7 @@ package final class MarkdownPageView: NSView, NSTextViewDelegate {
     /// holds. The attribute never holds a URL or the destination (CP-1115).
     private var relativeTargets: [String] = []
 
+    /// An empty page, not editable, accepting no drop, with nothing drawn until `show` is called.
     package init() {
         let layoutManager = NSLayoutManager()
         let storage = NSTextStorage()
@@ -84,6 +85,7 @@ package final class MarkdownPageView: NSView, NSTextViewDelegate {
         preconditionFailure("MarkdownPageView is built in code only")
     }
 
+    /// Laid out from the top, so the page's first block sits under the path line.
     package override var isFlipped: Bool { true }
 
     /// Draws `document`, replacing the page whole. `imageBytes` holds the answered bytes of each

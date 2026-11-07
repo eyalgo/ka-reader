@@ -1,7 +1,12 @@
 import AppKit
 
+/// How the panel asks for the bytes of a resolved image: the folder-relative path, and a call back
+/// with the bytes, or `nil` for none whatever the reason.
+package typealias AssetBytesIntent =
+    @MainActor (_ path: String, _ answer: @escaping @MainActor (Data?) -> Void) -> Void
+
 /// The reading panel (`docs/UXD.md` UX-S1, `docs/DESIGN.md` § Components): what the open file
-/// turned out to be, under its folder-relative path. It has seven states and is in one of them at a
+/// turned out to be, under its folder-relative path. It has eight states and is in one of them at a
 /// time:
 ///
 /// - *no file*: the prompt, and nothing else visible;
@@ -9,6 +14,8 @@ import AppKit
 ///   `surface` ground, beside a line-number gutter: a floor-language file's spans in their code
 ///   colours and every other character in `{colors.primary}`, and a plain file's text in that one
 ///   ink (CP-312, CP-333);
+/// - *markdown*: the path line, then the file's document drawn as a rendered page that cannot be
+///   edited, once every resolved image's ask has been answered (CP-1104, CP-1105);
 /// - *cannot-display*: the path line, then one sentence saying the file can't be shown as text;
 /// - *gone*: the path line, then the failure glyph and one sentence saying the file is no longer
 ///   there, with no content drawn;
@@ -20,11 +27,6 @@ import AppKit
 /// The panel has no control: nothing in it edits, saves or writes (CP-286). The text sits in a code
 /// view, its gutter and scroll view, pinned to the panel's edges, so the document's size never
 /// reaches the window.
-/// How the panel asks for the bytes of a resolved image: the folder-relative path, and a call back
-/// with the bytes, or `nil` for none whatever the reason.
-package typealias AssetBytesIntent =
-    @MainActor (_ path: String, _ answer: @escaping @MainActor (Data?) -> Void) -> Void
-
 @MainActor
 package final class ReadingPanelView: NSView {
     private static let readingPrompt = "Select a file to view."
@@ -68,7 +70,9 @@ package final class ReadingPanelView: NSView {
 
     /// Names the Markdown draw that is current; an answer for an earlier one draws nothing.
     private var drawToken = 0
-    private var isShowingMarkdown = false
+    /// The path whose rendered page is showing, or `nil` while no page is. An update keeps the
+    /// scroll only over this path's own page; over anything else it is the file's first draw.
+    private var shownMarkdownPath: String?
 
     /// Whether the code view has been pinned beneath the path line. It is pinned once, by the first
     /// text with content, and stays pinned: a hidden code view takes no part in what is drawn.
@@ -238,14 +242,16 @@ package final class ReadingPanelView: NSView {
     /// - Text arriving while the panel shows something else for `path` (a message, another file) is
     ///   drawn and scrolled to `position`, clamped: a recovery, or the first draw.
     /// - Gone, a failure and cannot-display are drawn as `show` draws them, with no content.
+    /// - A Markdown document for `path` redraws in place and keeps the panel's own scroll, clamped,
+    ///   only while `path`'s own page is the one showing. Otherwise it is the file's first draw,
+    ///   and it starts at the top (CP-1118).
     ///
     /// It never draws the pending sentence, and the code view is never emptied on the way to new text.
     package func update(path: String, verdict: FileVerdict, position: ReadingPosition) {
         if let drawn, drawn.path == path, drawn.verdict == verdict { return }
         if case .markdown(let document) = verdict {
-            var wasMarkdown = false
-            if let drawn, drawn.path == path, case .markdown = drawn.verdict { wasMarkdown = true }
-            requestMarkdown(path: path, document: document, keepingScroll: wasMarkdown)
+            requestMarkdown(
+                path: path, document: document, keepingScroll: shownMarkdownPath == path)
             return
         }
         guard case .text(let content, let language) = verdict else {
@@ -304,7 +310,7 @@ package final class ReadingPanelView: NSView {
 
     /// Where the code view is scrolled to now.
     var currentPosition: ReadingPosition {
-        isShowingMarkdown ? .topLeft : codeView.readingPosition
+        shownMarkdownPath != nil ? .topLeft : codeView.readingPosition
     }
 
     /// Raised when the reader scrolls the code view, with where the scroll left it. Never raised for
@@ -355,7 +361,7 @@ package final class ReadingPanelView: NSView {
 
     private func hideMarkdownPage() {
         markdownPage.isHidden = true
-        isShowingMarkdown = false
+        shownMarkdownPath = nil
     }
 
     /// Asks for the bytes of every resolved image in `document`, one ask per node, and draws the page
@@ -408,7 +414,7 @@ package final class ReadingPanelView: NSView {
             isMarkdownPagePinned = true
         }
         markdownPage.isHidden = false
-        isShowingMarkdown = true
+        shownMarkdownPath = path
         layoutSubtreeIfNeeded()
         markdownPage.show(document, imageBytes: imageBytes, keepingScroll: keepingScroll)
         lastPosition = .topLeft
