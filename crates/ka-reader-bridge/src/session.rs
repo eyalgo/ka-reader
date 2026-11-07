@@ -1095,6 +1095,20 @@ impl Session {
     /// request: no folder open, an absolute path, a path the check refuses, a file that is not a
     /// bitmap, or one that cannot be read. The folder is cloned under the lock and the core is
     /// called after it is released; the check is built afresh and asked on every call.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use ka_reader_bridge::session::Session;
+    ///
+    /// let folder = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../checks/fixtures/repo");
+    /// let session = Session::default();
+    /// assert_eq!(session.asset_bytes("logo.png"), None, "no folder is open yet");
+    ///
+    /// session.open(folder);
+    /// assert_eq!(session.asset_bytes("../logo.png"), None, "a climb out is refused");
+    /// assert_eq!(session.asset_bytes("README.md"), None, "a file that is not a bitmap is refused");
+    /// ```
     pub fn asset_bytes(&self, path: &str) -> Option<Vec<u8>> {
         let folder = self.lock().held.as_ref()?.model.folder().clone();
         let check = FolderContainment::new(folder.root().to_path_buf());
@@ -1105,11 +1119,37 @@ impl Session {
     /// position, and answers the file answer a click gives. For a path that is not a contained file,
     /// and with no folder open, nothing changes, nothing is read or delivered and the answer is
     /// `pending`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use ka_reader_bridge::session::{FileAnswerDto, Session};
+    ///
+    /// let folder = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../checks/fixtures/repo");
+    /// let session = Session::default();
+    /// assert_eq!(session.open_relative_link("README.md"), FileAnswerDto::Pending, "no folder is open");
+    ///
+    /// session.open(folder);
+    /// assert_eq!(session.open_relative_link("README.md"), FileAnswerDto::Markdown);
+    /// assert_eq!(session.open_relative_link("../README.md"), FileAnswerDto::Pending);
+    /// ```
     pub fn open_relative_link(&self, path: &str) -> FileAnswerDto {
         self.link_to(path, read_file)
     }
 
     /// `open_relative_link` with the read passed in, so a test can make an act land while it is out.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use ka_reader_bridge::session::{FileAnswerDto, Session};
+    ///
+    /// let session = Session::default();
+    /// let answer = session.open_relative_link_with("notes.md", |_, _| {
+    ///     unreachable!("with no folder open nothing is read")
+    /// });
+    /// assert_eq!(answer, FileAnswerDto::Pending);
+    /// ```
     #[cfg(any(test, feature = "testing"))]
     pub fn open_relative_link_with(
         &self,

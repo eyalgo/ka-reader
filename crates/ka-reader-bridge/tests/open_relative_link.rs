@@ -263,7 +263,11 @@ fn test_link_entry_answers_pending_for_a_null_an_empty_and_a_non_utf8_path() {
         assert_eq!(wire(answer), pending());
     }
     assert_eq!(place_of(&session), place, "nothing changed");
-    assert_eq!(delivered(&received).len(), payloads_before, "nothing delivered");
+    assert_eq!(
+        delivered(&received).len(),
+        payloads_before,
+        "nothing delivered"
+    );
 }
 
 #[test]

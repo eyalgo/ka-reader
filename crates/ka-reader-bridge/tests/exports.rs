@@ -409,8 +409,8 @@ fn test_the_asset_export_answers_a_bytes_buffer_freed_once() {
     let folder = common::TempDir::new();
     folder.write_bytes("logo.png", &PNG_SIGNATURE);
     folder.write_bytes("empty.png", &[]);
-    let location = CString::new(folder.path().to_str().expect("the path is text"))
-        .expect("no interior NUL");
+    let location =
+        CString::new(folder.path().to_str().expect("the path is text")).expect("no interior NUL");
     // SAFETY: `location` is a live NUL-terminated string; a NULL callback opens with no delivery.
     let opened = unsafe { ka_reader_open_folder(location.as_ptr(), None, std::ptr::null_mut()) };
     // SAFETY: the open's buffer was returned a moment ago and is freed once.

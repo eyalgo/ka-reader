@@ -37,11 +37,30 @@ pub(crate) fn guarded<T: Serialize>(
     }
 }
 
+/// The byte-answer sibling of `guarded`: runs `work` under `catch_unwind` and hands its answer
+/// across as an owned buffer. `Some(bytes)` is a buffer holding exactly those bytes, an empty file's
+/// included; `None` is the refusal buffer, whose `bytes` is NULL. NULL is the failure value, returned
+/// when `work` panics. No JSON is made for this answer.
+pub(crate) fn guarded_bytes(
+    origin: BufferOrigin,
+    work: impl FnOnce() -> Option<Vec<u8>>,
+) -> *mut KAReaderBuffer {
+    match panic::catch_unwind(AssertUnwindSafe(work)) {
+        Ok(Some(bytes)) => KAReaderBuffer::allocate(bytes, origin),
+        Ok(None) => KAReaderBuffer::refusal(origin),
+        Err(_) => stopped_open(origin, "boundary panicked"),
+    }
+}
+
 fn stopped_open(origin: BufferOrigin, detail: &str) -> *mut KAReaderBuffer {
     match origin {
         BufferOrigin::OpenFolder => log::warn!("core-bridge: open_folder stopped: {detail}"),
         BufferOrigin::ReadGit => log::warn!("core-bridge: read_git stopped: {detail}"),
-        BufferOrigin::ListTree | BufferOrigin::SelectFile | BufferOrigin::ModelChanged => {}
+        BufferOrigin::ListTree
+        | BufferOrigin::SelectFile
+        | BufferOrigin::AssetBytes
+        | BufferOrigin::OpenRelativeLink
+        | BufferOrigin::ModelChanged => {}
     }
     std::ptr::null_mut()
 }
@@ -280,6 +299,34 @@ pub unsafe fn select_entry(
     // SAFETY: forwarded from the caller.
     match unsafe { decode_list_path(path) } {
         ListPath::Under(relative) => session.select_file(&relative, act),
+        ListPath::Root | ListPath::NotUtf8 => FileAnswerDto::Pending,
+    }
+}
+
+/// The relative path of an image the shell asks for, decoded from a C string. NULL, an empty path and
+/// bytes that are not UTF-8 name no file, so the session is not called and the answer is a refusal.
+///
+/// # Safety
+///
+/// As `decode_list_path`.
+pub unsafe fn asset_answer(session: &Session, path: *const c_char) -> Option<Vec<u8>> {
+    // SAFETY: forwarded from the caller.
+    match unsafe { decode_list_path(path) } {
+        ListPath::Under(relative) => session.asset_bytes(&relative),
+        ListPath::Root | ListPath::NotUtf8 => None,
+    }
+}
+
+/// Opens the relative link `path` in `session`. NULL, an empty path and bytes that are not UTF-8 name
+/// no file, so the session is not called and the answer is `{"state":"pending"}`.
+///
+/// # Safety
+///
+/// As `decode_list_path`.
+pub unsafe fn link_entry(session: &Session, path: *const c_char) -> FileAnswerDto {
+    // SAFETY: forwarded from the caller.
+    match unsafe { decode_list_path(path) } {
+        ListPath::Under(relative) => session.open_relative_link(&relative),
         ListPath::Root | ListPath::NotUtf8 => FileAnswerDto::Pending,
     }
 }
