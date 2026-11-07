@@ -3019,6 +3019,29 @@ mod tests {
         assert_eq!(open.view(), &ItemState::Failed(Condition::Unreadable));
     }
 
+    /// Task 4's agreement rule, held over the extension map itself rather than over a copy of it: for
+    /// every extension the map names, a fence written with that word takes the same language. The
+    /// model is the one part that may reach both tables, so the check lives here.
+    #[test]
+    fn test_every_extension_in_the_map_names_the_same_language_in_a_fence() {
+        for (language, extensions) in crate::fs_reader::EXTENSIONS_BY_LANGUAGE {
+            for extension in extensions {
+                let document = crate::markdown_renderer::render(
+                    &format!("```{extension}\nx\n```\n"),
+                    Path::new(""),
+                    &SeededContainment::new(),
+                );
+                assert!(
+                    matches!(
+                        &document.blocks[..],
+                        [Block::Code { language: fenced, .. }] if *fenced == language
+                    ),
+                    "a fence of `{extension}` takes {language:?}: {document:?}"
+                );
+            }
+        }
+    }
+
     // ---- The open's split: a read, then a fold ----
 
     fn supplied_read(path: &str, answer: ItemState<FileView>, location: Option<&str>) -> FileRead {

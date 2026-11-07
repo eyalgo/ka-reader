@@ -557,3 +557,180 @@ fn test_a_block_construct_with_no_kind_becomes_a_paragraph_of_source_text() {
     );
     assert_eq!(document.blocks, [paragraph(vec![text("| a |")])]);
 }
+
+// --- Added at code integrity, each from the rule it names ---
+
+/// CP-1059: `_x_` and `__x__` are the same two strengths `*x*` and `**x**` are.
+#[test]
+fn test_underscore_emphasis_carries_the_same_two_strengths() {
+    assert_eq!(
+        blocks_of("_one_ __two__\n"),
+        [paragraph(vec![
+            Inline::Emphasis {
+                strength: EmphasisStrength::Single,
+                content: vec![text("one")],
+            },
+            text(" "),
+            Inline::Emphasis {
+                strength: EmphasisStrength::Strong,
+                content: vec![text("two")],
+            },
+        ])]
+    );
+}
+
+/// CP-1071: a link carries its own text as inline nodes, not flattened.
+#[test]
+fn test_a_links_content_is_inline_nodes() {
+    assert_eq!(
+        inlines_of(
+            "[*a* `b`](https://x.example)\n",
+            "",
+            &SeededContainment::new()
+        ),
+        [Inline::Link {
+            content: vec![
+                Inline::Emphasis {
+                    strength: EmphasisStrength::Single,
+                    content: vec![text("a")],
+                },
+                text(" "),
+                Inline::Code("b".to_string()),
+            ],
+            destination: "https://x.example".to_string(),
+            target: LinkTarget::External,
+        }]
+    );
+}
+
+/// CP-1068: a scheme is a letter, then letters, digits, `+`, `-` or `.`, then `:`. Each scheme here
+/// is seeded as a file, so a check that was consulted would resolve it; each non-scheme reaches the
+/// check and resolves.
+#[test]
+fn test_the_scheme_test_follows_its_grammar() {
+    let schemes = [
+        "http://x.example/a.png",
+        "svn+ssh://h/a.png",
+        "x-1.y:a.png",
+        "Z:a.png",
+    ];
+    let paths = ["1a:b.png", "img/a:b.png", ":a.png"];
+    let mut check = SeededContainment::new();
+    for reference in schemes.iter().chain(paths.iter()) {
+        check = check.seeded(reference, file(reference));
+    }
+
+    for source in schemes {
+        assert_eq!(
+            inlines_of(&format!("![x]({source})\n"), "", &check),
+            [image(
+                "x",
+                placeholder(PlaceholderCondition::OutsideTheFolder, source)
+            )],
+            "`{source}` begins with a scheme"
+        );
+    }
+    assert!(check.asked().is_empty(), "no scheme reached the check");
+
+    for source in paths {
+        assert_eq!(
+            inlines_of(&format!("![x]({source})\n"), "", &check),
+            [image("x", ImageTarget::Resolved(PathBuf::from(source)))],
+            "`{source}` is a path"
+        );
+    }
+    let asked: Vec<String> = check
+        .asked()
+        .into_iter()
+        .map(|(_, reference)| reference)
+        .collect();
+    assert_eq!(asked, paths);
+}
+
+/// CP-1068 and the design's reference rule: an image reference goes to the check whole, `#` and all;
+/// only a link's destination is cut at its first `#`.
+#[test]
+fn test_an_image_reference_goes_to_the_check_whole() {
+    let check = SeededContainment::new();
+
+    render("![x](a.png#part)\n", Path::new(""), &check);
+
+    assert_eq!(check.asked(), [(PathBuf::new(), "a.png#part".to_string())]);
+}
+
+/// CP-1069, as the design reads "the last extension of its name" for "the entry": the format is the
+/// name of the entry the check reached, never the spelling of the reference.
+#[test]
+fn test_an_image_format_is_judged_on_the_entry_the_check_reached() {
+    let check = SeededContainment::new()
+        .seeded("alias.png", file("drawing.svg"))
+        .seeded("picture", file("img/real.png"));
+
+    assert_eq!(
+        inlines_of("![a](alias.png) ![b](picture)\n", "", &check),
+        [
+            image(
+                "a",
+                placeholder(PlaceholderCondition::FormatNotDecoded, "alias.png")
+            ),
+            text(" "),
+            image("b", ImageTarget::Resolved(PathBuf::from("img/real.png"))),
+        ]
+    );
+}
+
+/// CP-1072: a link the check locates at any entry inside the folder is relative, and carries the
+/// path the check reached; whether that entry is a file is decided when the link is activated.
+#[test]
+fn test_a_relative_link_carries_the_entry_the_check_reached_whatever_its_kind() {
+    let check = SeededContainment::new()
+        .seeded("docs", folder_entry("docs"))
+        .seeded("alias.md", file("real/guide.md"));
+
+    assert_eq!(
+        inlines_of("[d](docs) [a](alias.md)\n", "", &check),
+        [
+            Inline::Link {
+                content: vec![text("d")],
+                destination: "docs".to_string(),
+                target: LinkTarget::Relative(PathBuf::from("docs")),
+            },
+            text(" "),
+            Inline::Link {
+                content: vec![text("a")],
+                destination: "alias.md".to_string(),
+                target: LinkTarget::Relative(PathBuf::from("real/guide.md")),
+            },
+        ]
+    );
+}
+
+/// CP-1072: every path the check refuses, for whichever reason it observes, is an external link.
+#[test]
+fn test_a_link_the_check_refuses_for_any_reason_is_external() {
+    let refusals = [
+        ("outside.md", Condition::Outside),
+        ("missing.md", Condition::Missing),
+        ("through.md", Condition::NotAFolder),
+        ("loop.md", Condition::Cycle),
+        ("long.md", Condition::TooManyLinks),
+        ("denied.md", Condition::Unreadable),
+    ];
+    let check = refusals
+        .iter()
+        .fold(SeededContainment::new(), |check, (reference, condition)| {
+            check.seeded(reference, Err(*condition))
+        });
+
+    for (reference, condition) in refusals {
+        assert_eq!(
+            inlines_of(&format!("[l]({reference})\n"), "", &check),
+            [Inline::Link {
+                content: vec![text("l")],
+                destination: reference.to_string(),
+                target: LinkTarget::External,
+            }],
+            "a link refused as {condition:?}"
+        );
+    }
+}

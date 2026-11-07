@@ -733,7 +733,8 @@ fn decode_utf16(units: &[u8], to_unit: fn([u8; 2]) -> u16) -> Option<String> {
 }
 
 /// The floor languages and the extensions that name them (SDD § 4 C-I5). Compared without ASCII case.
-const EXTENSIONS_BY_LANGUAGE: [(Language, &[&str]); 6] = [
+/// Crate-visible so the model's tests can hold the renderer's fence table to it.
+pub(crate) const EXTENSIONS_BY_LANGUAGE: [(Language, &[&str]); 6] = [
     (Language::Python, &["py", "pyi", "pyw"]),
     (Language::Shell, &["sh", "bash", "zsh"]),
     (Language::JavaScript, &["js", "mjs", "cjs", "jsx"]),

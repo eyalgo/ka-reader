@@ -14,8 +14,8 @@ use std::path::{Path, PathBuf};
 use common::TempDir;
 use ka_reader_core::{
     Block, FileRequest, FileView, FolderModel, ImageTarget, Inline, ItemState, Language,
-    LinkTarget, MarkdownDocument, PlaceholderCondition, ReadingPosition, open_folder, read_file,
-    select_file,
+    LinkTarget, MarkdownDocument, PathReports, PlaceholderCondition, ReadingPosition, TreeRequest,
+    open_folder, read_file, select_file,
 };
 
 /// The eight bytes every PNG file begins with, then nothing a decoder is asked about: the renderer
@@ -208,10 +208,7 @@ fn test_each_hostile_piece_is_inert_in_the_document() {
     let walked = walked(&document);
     for piece in PIECES.iter().take(5) {
         assert!(
-            walked
-                .texts
-                .iter()
-                .any(|text| text.trim_end() == piece.source),
+            walked.texts.iter().any(|text| text == piece.source),
             "{} is a text node holding its source verbatim: {:?}",
             piece.name,
             walked.texts
@@ -309,4 +306,84 @@ fn test_a_fence_and_a_file_extension_agree_on_the_language() {
             "a fence of `{word}` takes {file:?}: {document:?}"
         );
     }
+}
+
+/// The document a file in `docs` makes of an image `img/a.png` and a link `../README.md`, read from
+/// `docs`: both resolve. Read from the root instead, the image would be missing and the link outside.
+fn image_and_link_from_docs(alt: &str) -> ItemState<FileView> {
+    ItemState::Observed(FileView::Markdown(MarkdownDocument {
+        blocks: vec![
+            Block::Paragraph(vec![Inline::Image {
+                alt: alt.to_string(),
+                target: ImageTarget::Resolved(PathBuf::from("docs/img/a.png")),
+            }]),
+            Block::Paragraph(vec![Inline::Link {
+                content: vec![Inline::Text("up".to_string())],
+                destination: "../README.md".to_string(),
+                target: LinkTarget::Relative(PathBuf::from("README.md")),
+            }]),
+        ],
+    }))
+}
+
+fn image_and_link_source(alt: &str) -> String {
+    format!("![{alt}](img/a.png)\n\n[up](../README.md)\n")
+}
+
+/// CP-1055 with CP-1068: every route that fills the open file reads a Markdown file's references
+/// from the folder that holds it, so a file below the root resolves what it names beside it.
+#[test]
+fn test_every_route_reads_references_from_the_markdown_files_own_folder() {
+    let folder = TempDir::new();
+    folder.write_file("README.md", "# Top\n");
+    folder.write_bytes("docs/img/a.png", &PNG_SIGNATURE);
+    folder.write_file("docs/guide.md", &image_and_link_source("first"));
+    let opened = open_folder(folder.path()).expect("the folder opens");
+    let position = ReadingPosition::new(b"top".as_slice());
+
+    assert_eq!(
+        select_file(&opened, "docs/guide.md"),
+        image_and_link_from_docs("first"),
+        "select_file"
+    );
+    let read = read_file(&opened, Path::new("docs/guide.md"));
+    assert_eq!(
+        read.answer(),
+        &image_and_link_from_docs("first"),
+        "read_file"
+    );
+
+    let by_open = FolderModel::new(opened.clone())
+        .select_file(FileRequest::Open("docs/guide.md".into(), position.clone()));
+    assert_eq!(
+        by_open.open_file().expect("open").view(),
+        &image_and_link_from_docs("first"),
+        "a FolderModel open"
+    );
+
+    let by_open_read = FolderModel::new(opened).open_read(read, position);
+    assert_eq!(
+        by_open_read.open_file().expect("open").view(),
+        &image_and_link_from_docs("first"),
+        "open_read"
+    );
+
+    folder.write_file("docs/guide.md", &image_and_link_source("second"));
+    let root = by_open_read.folder().root().to_path_buf();
+    let invalidated = by_open_read.list_tree(TreeRequest::Invalidate(PathReports::new(vec![
+        root.join("docs/guide.md"),
+    ])));
+    assert_eq!(
+        invalidated.open_file().expect("open").view(),
+        &image_and_link_from_docs("second"),
+        "a re-read by invalidation"
+    );
+
+    folder.write_file("docs/guide.md", &image_and_link_source("third"));
+    let reread = invalidated.reread_open_file();
+    assert_eq!(
+        reread.open_file().expect("open").view(),
+        &image_and_link_from_docs("third"),
+        "reread_open_file"
+    );
 }
