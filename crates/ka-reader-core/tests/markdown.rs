@@ -9,13 +9,14 @@
 )]
 mod common;
 
+use std::os::unix::fs::PermissionsExt as _;
 use std::path::{Path, PathBuf};
 
 use common::TempDir;
 use ka_reader_core::{
-    Block, FileRequest, FileView, FolderModel, ImageTarget, Inline, ItemState, Language,
-    LinkTarget, MarkdownDocument, PathReports, PlaceholderCondition, ReadingPosition, TreeRequest,
-    open_folder, read_file, select_file,
+    Block, FileRequest, FileView, FolderContainment, FolderModel, ImageTarget, Inline, ItemState,
+    Language, LinkTarget, MarkdownDocument, OpenedFolder, PathReports, PlaceholderCondition,
+    ReadingPosition, TreeRequest, asset_bytes, link_file, open_folder, read_file, select_file,
 };
 
 /// The eight bytes every PNG file begins with, then nothing a decoder is asked about: the renderer
@@ -386,4 +387,188 @@ fn test_every_route_reads_references_from_the_markdown_files_own_folder() {
         &image_and_link_from_docs("third"),
         "reread_open_file"
     );
+}
+
+/// The real check over the opened folder's root, as the bridge's session builds it.
+fn check_of(opened: &OpenedFolder) -> FolderContainment {
+    FolderContainment::new(opened.root().to_path_buf())
+}
+
+/// The scene, opened, with the folder (`images`) and the unreadable file (`locked.png`) the byte
+/// cases also ask about.
+fn byte_scene() -> (Scene, OpenedFolder) {
+    let scene = scene();
+    std::fs::create_dir(scene.folder.path().join("images")).expect("the folder can be made");
+    let locked = scene.folder.write_bytes("locked.png", &PNG_SIGNATURE);
+    std::fs::set_permissions(&locked, std::fs::Permissions::from_mode(0o000))
+        .expect("the file can be locked");
+    let opened = open_folder(scene.folder.path()).expect("the folder opens");
+    (scene, opened)
+}
+
+#[test]
+fn test_asset_bytes_gives_a_contained_pngs_exact_bytes_twice() {
+    let (_scene, opened) = byte_scene();
+    let check = check_of(&opened);
+
+    for call in ["first", "second"] {
+        assert_eq!(
+            asset_bytes(&opened, "logo.png", &check),
+            Some(PNG_SIGNATURE.to_vec()),
+            "the {call} call"
+        );
+    }
+}
+
+#[test]
+fn test_asset_bytes_refuses_an_svg_a_climb_out_a_symlink_out_and_an_absolute_path() {
+    let (scene, opened) = byte_scene();
+    let check = check_of(&opened);
+    let absolute = scene.folder.path().join("logo.png");
+
+    for refused in [
+        "diagram.svg",
+        "../outside.png",
+        "escape.png",
+        absolute.to_str().expect("the path is text"),
+    ] {
+        assert_eq!(asset_bytes(&opened, refused, &check), None, "{refused}");
+    }
+}
+
+#[test]
+fn test_asset_bytes_refuses_a_folder_a_missing_entry_and_an_unreadable_file() {
+    let (_scene, opened) = byte_scene();
+    let check = check_of(&opened);
+
+    for refused in ["images", "missing.png", "locked.png"] {
+        assert_eq!(asset_bytes(&opened, refused, &check), None, "{refused}");
+    }
+}
+
+#[test]
+fn test_asset_bytes_judges_the_resolved_file_not_the_spelled_name() {
+    let (scene, opened) = byte_scene();
+    scene.folder.make_link("pic.png", "diagram.svg");
+
+    assert_eq!(
+        asset_bytes(&opened, "pic.png", &check_of(&opened)),
+        None,
+        "a bitmap name that reaches an SVG"
+    );
+}
+
+#[test]
+fn test_asset_bytes_reads_a_name_holding_a_percent_as_that_name() {
+    let (scene, opened) = byte_scene();
+    scene.folder.write_bytes("100%41.png", b"its own bytes");
+    scene.folder.write_bytes("100A.png", b"the other file");
+
+    assert_eq!(
+        asset_bytes(&opened, "100%41.png", &check_of(&opened)),
+        Some(b"its own bytes".to_vec())
+    );
+}
+
+#[test]
+fn test_asset_bytes_ignores_ascii_case_in_the_extension() {
+    let (scene, opened) = byte_scene();
+    let letter_case_is_ignored = scene.folder.path().join("LOGO.PNG").exists();
+
+    let answer = asset_bytes(&opened, "LOGO.PNG", &check_of(&opened));
+
+    if letter_case_is_ignored {
+        assert_eq!(
+            answer,
+            Some(PNG_SIGNATURE.to_vec()),
+            "a volume that ignores letter case gives logo.png's bytes"
+        );
+    } else {
+        assert_eq!(
+            answer, None,
+            "a volume that keeps letter case has no LOGO.PNG"
+        );
+    }
+}
+
+#[test]
+fn test_an_empty_path_is_refused_by_both_operations() {
+    let (_scene, opened) = byte_scene();
+    let check = check_of(&opened);
+
+    assert_eq!(asset_bytes(&opened, "", &check), None);
+    assert_eq!(link_file("", &check), None);
+}
+
+#[test]
+fn test_link_file_gives_the_path_as_given_for_a_contained_file() {
+    let (scene, opened) = byte_scene();
+    scene.folder.write_file("src/main.rs", "fn main() {}\n");
+    let check = check_of(&opened);
+
+    assert_eq!(
+        link_file("other.md", &check),
+        Some(PathBuf::from("other.md"))
+    );
+    assert_eq!(
+        link_file("src/main.rs", &check),
+        Some(PathBuf::from("src/main.rs"))
+    );
+}
+
+#[test]
+fn test_link_file_refuses_what_is_not_a_contained_file() {
+    let (scene, opened) = byte_scene();
+    let check = check_of(&opened);
+    let absolute = scene.folder.path().join("other.md");
+
+    for refused in [
+        "images",
+        "../outside.md",
+        "escape.png",
+        absolute.to_str().expect("the path is text"),
+        "missing.md",
+    ] {
+        assert_eq!(link_file(refused, &check), None, "{refused}");
+    }
+}
+
+#[test]
+fn test_link_file_reads_a_name_holding_a_percent_as_that_name() {
+    let (scene, opened) = byte_scene();
+    scene.folder.write_file("a%41.md", "# literal\n");
+    scene.folder.write_file("aA.md", "# decoded\n");
+
+    assert_eq!(
+        link_file("a%41.md", &check_of(&opened)),
+        Some(PathBuf::from("a%41.md"))
+    );
+}
+
+#[test]
+fn test_a_relative_link_nodes_target_fed_back_as_given_is_a_contained_file() {
+    let (_scene, opened) = byte_scene();
+    let document = document_of(select_file(&opened, "hostile.md"));
+    let targets: Vec<PathBuf> = walked(&document)
+        .links
+        .into_iter()
+        .filter_map(|(_, target)| match target {
+            LinkTarget::Relative(path) => Some(path),
+            LinkTarget::External => None,
+        })
+        .collect();
+    assert_eq!(
+        targets,
+        vec![PathBuf::from("other.md")],
+        "the corpus's relative link"
+    );
+
+    for target in targets {
+        let as_given = target.to_str().expect("the target is text");
+        assert_eq!(
+            link_file(as_given, &check_of(&opened)),
+            Some(target.clone()),
+            "{as_given}"
+        );
+    }
 }
