@@ -39,7 +39,9 @@ func aResolvedImageInsideAListItemAQuoteEmphasisAndALinkIsListed() {
         .heading(.two, [resolvedImage("heading.png")]),
         .list(
             .ordered(start: 3),
-            items: [[.quote([.list(.unordered, items: [[paragraph([resolvedImage("deep.png")])]])])]]
+            items: [
+                [.quote([.list(.unordered, items: [[paragraph([resolvedImage("deep.png")])]])])]
+            ]
         ),
     ])
 
