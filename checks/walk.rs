@@ -27,6 +27,14 @@
 //! stops the walk. A pass in which a Markdown file's `asset_bytes` calls do not equal its image nodes
 //! is refused, naming the file.
 //!
+//! Pages mode, taken when the second argument is `--pages`: the same descent and `select_file` calls,
+//! then, for each Markdown file in path byte order, `asset_bytes` for each image node the collector
+//! names. It prints one line per Markdown file, the folder-relative path, a tab and the page, which is
+//! the `select_file` answer with the `asset_bytes` answers in the single-line debug form, and nothing
+//! else. It drives no model operation, reads no Git and prints no call count. It exits 0 once the walk
+//! is complete, and non-zero with nothing on stdout when the folder did not open or a listed path
+//! holds a tab or a newline.
+//!
 //! Long mode, taken when the second argument is `--long`: the same pass, then one line on stdout
 //! that is exactly `pass-complete`, then the same pass again for as long as the process lives. It
 //! never exits on its own; `checks/read-only.sh --kill` ends it with `SIGKILL` after the marker.
@@ -49,8 +57,9 @@ use std::time::Duration;
 use ka_reader_core::{
     Block, EmphasisStrength, EntryKind, FileRead, FileRequest, FileView, FolderContainment,
     FolderModel, HeadingLevel, ImageTarget, Inline, ItemState, Libgit2, LinkTarget, ListKind,
-    MarkdownDocument, OpenedFolder, PathReports, PlaceholderCondition, ReadingPosition,
-    TreeRequest, asset_bytes, link_file, list_tree, open_folder, read_file, read_git, select_file,
+    MarkdownDocument, OpenFolderOutcome, OpenedFolder, PathReports, PlaceholderCondition,
+    ReadingPosition, TreeRequest, asset_bytes, link_file, list_tree, open_folder, read_file,
+    read_git, select_file,
 };
 
 /// The one line long mode prints, after its first completed pass.
@@ -266,16 +275,63 @@ fn judge_images(tally: &ImageTally) -> Result<(), String> {
 /// a tab, then the page. `ask` answers `asset_bytes` for one text. A listed path holding a tab or a
 /// newline cannot be carried by a line, so it is an `Err` naming it and no line is produced.
 fn page_lines(
-    _documents: &BTreeMap<String, MarkdownDocument>,
-    _ask: impl FnMut(&str) -> Option<Vec<u8>>,
+    documents: &BTreeMap<String, MarkdownDocument>,
+    mut ask: impl FnMut(&str) -> Option<Vec<u8>>,
 ) -> Result<Vec<String>, String> {
-    Ok(Vec::new())
+    if let Some(path) = documents.keys().find(|path| path.contains(['\t', '\n'])) {
+        return Err(format!(
+            "the walk listed a path holding a tab or a newline, which a page line cannot carry, so no page was printed: {path:?}"
+        ));
+    }
+    Ok(documents
+        .iter()
+        .map(|(path, document)| {
+            let answers: Vec<Option<Vec<u8>>> = image_asks(document)
+                .iter()
+                .map(|image| ask(image.path()))
+                .collect();
+            // The single-line debug form escapes every control character inside a string, so the
+            // line holds no raw tab or newline beyond the one that separates the path.
+            format!("{path}\t{document:?} {answers:?}")
+        })
+        .collect())
 }
 
-/// The page lines of the folder at `folder`: the walk's descent, then `asset_bytes` through the real
-/// containment check for each image node.
-fn pages_over(_folder: &Path) -> Result<Vec<String>, String> {
-    Ok(Vec::new())
+/// The folder at `folder` opened, or the refusal that names it as `label`.
+fn opened_or_refused(label: &str, folder: &Path) -> Result<OpenedFolder, String> {
+    match open_folder(folder) {
+        OpenFolderOutcome::Opened(opened) => Ok(opened),
+        OpenFolderOutcome::Failed(_) => Err(format!("{label} did not open as a folder")),
+    }
+}
+
+/// The page lines of the folder at `folder`, which `label` names in a refusal: the walk's descent,
+/// then `asset_bytes` through the real containment check for each image node. It reads no Git and
+/// drives no model operation.
+fn pages_over(label: &str, folder: &Path) -> Result<Vec<String>, String> {
+    let opened = opened_or_refused(label, folder)?;
+    let reading = opened_or_refused(label, folder)?;
+    let check = FolderContainment::new(opened.root().to_path_buf());
+    let mut gathered = Gathered::default();
+    walk_from(&opened, "", &mut gathered);
+    page_lines(&gathered.documents, |path| {
+        asset_bytes(&reading, path, &check)
+    })
+    .map_err(|message| format!("{label}: {message}"))
+}
+
+/// Pages mode: prints one page line per Markdown file under `folder`, and nothing when the folder
+/// did not open or a line cannot be carried.
+fn run_pages(folder: &str) -> Result<(), String> {
+    let canonical = Path::new(folder)
+        .canonicalize()
+        .map_err(|_| format!("{folder} did not open as a folder"))?;
+    let lines = pages_over(folder, &canonical)?;
+    let mut stdout = std::io::stdout();
+    for line in lines {
+        writeln!(stdout, "{line}").map_err(|error| error.to_string())?;
+    }
+    stdout.flush().map_err(|error| error.to_string())
 }
 
 /// Judges what the `repo` fixture's walk exercised of its images.
@@ -1042,7 +1098,7 @@ fn a_listed_path_holding_a_tab_or_a_newline_is_refused() -> Result<(), String> {
 }
 
 fn the_pages_mode_lists_only_markdown_files_in_byte_order() -> Result<(), String> {
-    let lines = pages_over(&fixture_path("repo"))?;
+    let lines = pages_over("fixture repo", &fixture_path("repo"))?;
     let paths: Vec<&str> = lines
         .iter()
         .filter_map(|line| line.split_once('\t').map(|(path, _)| path))
@@ -1168,13 +1224,14 @@ pub(crate) fn run() -> Result<(), String> {
         .next()
         .filter(|argument| argument.starts_with('/'));
     match folder {
-        Some(folder) if arguments.next().as_deref() == Some(LONG_MODE_ARGUMENT) => {
-            run_long(&folder)
-        }
-        Some(folder) => {
-            println!("{}", pass(&folder)?);
-            Ok(())
-        }
+        Some(folder) => match arguments.next().as_deref() {
+            Some(LONG_MODE_ARGUMENT) => run_long(&folder),
+            Some(PAGES_MODE_ARGUMENT) => run_pages(&folder),
+            _ => {
+                println!("{}", pass(&folder)?);
+                Ok(())
+            }
+        },
         None => {
             judge_self_check()?;
             let failures: Vec<String> = FIXTURES
