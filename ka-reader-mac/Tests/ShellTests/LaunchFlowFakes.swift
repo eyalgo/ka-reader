@@ -72,6 +72,11 @@ final class RecordingBridge: Bridging, @unchecked Sendable {
         var selectedPaths: [String] = []
         var selectCalls: [SelectCall] = []
         var gitReadCount = 0
+        var assetAnswers: [String: Data] = [:]
+        var assetRefusals: Set<String> = []
+        var assetPaths: [String] = []
+        var linkAnswers: [String: Data] = [:]
+        var linkPaths: [String] = []
         var handedOut: [UInt] = []
         var freed: [UInt] = []
     }
@@ -126,6 +131,25 @@ final class RecordingBridge: Bridging, @unchecked Sendable {
     /// Every `selectFile` call, with its act and the position string it carried.
     var selectCalls: [SelectCall] { lock.withLock { state.selectCalls } }
     var gitReadCount: Int { lock.withLock { state.gitReadCount } }
+
+    /// The bytes `assetBytes` answers by path. A path with no entry here and not in
+    /// `assetRefusals` gets the bridge's failure value, `nil`.
+    var assetAnswers: [String: Data] {
+        get { lock.withLock { state.assetAnswers } }
+        set { lock.withLock { state.assetAnswers = newValue } }
+    }
+    /// Paths `assetBytes` answers with a refusal buffer: empty bytes, `isRefusal` true.
+    var assetRefusals: Set<String> {
+        get { lock.withLock { state.assetRefusals } }
+        set { lock.withLock { state.assetRefusals = newValue } }
+    }
+    /// What `openRelativeLink` answers by path; a path with no entry gets `pending`.
+    var linkAnswers: [String: Data] {
+        get { lock.withLock { state.linkAnswers } }
+        set { lock.withLock { state.linkAnswers = newValue } }
+    }
+    var assetPaths: [String] { lock.withLock { state.assetPaths } }
+    var linkPaths: [String] { lock.withLock { state.linkPaths } }
     var handedOut: [UInt] { lock.withLock { state.handedOut } }
     var freed: [UInt] { lock.withLock { state.freed } }
 
@@ -167,6 +191,29 @@ final class RecordingBridge: Bridging, @unchecked Sendable {
         return lock.withLock {
             state.gitReadCount += 1
             return makeBuffer(from: state.gitAnswer)
+        }
+    }
+
+    func assetBytes(path: String) -> BridgeBuffer? {
+        log.record("asset_bytes")
+        return lock.withLock {
+            state.assetPaths.append(path)
+            if state.assetRefusals.contains(path) {
+                let handle = state.nextHandle
+                state.nextHandle += 1
+                state.handedOut.append(handle)
+                return BridgeBuffer(payload: Data(), handle: handle, isRefusal: true)
+            }
+            return makeBuffer(from: state.assetAnswers[path])
+        }
+    }
+
+    func openRelativeLink(path: String) -> BridgeBuffer? {
+        log.record("open_relative_link")
+        return lock.withLock {
+            state.linkPaths.append(path)
+            return makeBuffer(
+                from: state.linkAnswers[path] ?? Data(#"{"state":"pending"}"#.utf8))
         }
     }
 
@@ -318,6 +365,16 @@ final class ThreadRecordingBridge: Bridging, @unchecked Sendable {
         record("read_git")
         guard let gitAnswer else { return nil }
         return makeBuffer(from: gitAnswer, named: "git")
+    }
+
+    func assetBytes(path: String) -> BridgeBuffer? {
+        record("asset_bytes:\(path)")
+        return nil
+    }
+
+    func openRelativeLink(path: String) -> BridgeBuffer? {
+        record("open_relative_link:\(path)")
+        return nil
     }
 
     func free(_ buffer: BridgeBuffer) {
