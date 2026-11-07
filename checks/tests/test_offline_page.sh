@@ -35,6 +35,7 @@ WORK=""
 CASES="
 test_the_repo_fixture_reads_the_same_with_the_network_denied
 test_a_page_that_differs_between_the_two_runs_is_named
+test_a_page_in_only_one_render_is_named_with_the_others_in_byte_order
 test_a_denial_that_does_not_hold_is_refused
 test_a_folder_with_no_markdown_file_is_refused
 test_a_run_that_did_not_complete_is_refused
@@ -173,6 +174,27 @@ printf 'guide.md\\tpage of run %s\\n' \"\$runs\""
 
   expect_status 1 || return 1
   expect_stdout_is "guide.md"
+}
+
+# A file rendered in one run and not the other differs, and every differing path is named once, in
+# byte order. The stand-in walk program prints one more file on its second run, and a changed page
+# for guide.md, so the two paths come out as a.md and guide.md.
+test_a_page_in_only_one_render_is_named_with_the_others_in_byte_order() {
+  local stand_ins="$WORK/only-one-render"
+  make_cargo_stand_in "$stand_ins"
+  make_walk_stand_in "$stand_ins" "counter='$stand_ins/count'
+runs=1
+[ ! -f \"\$counter\" ] || runs=\$((\$(cat \"\$counter\") + 1))
+echo \"\$runs\" > \"\$counter\"
+[ \"\$runs\" -ne 2 ] || printf 'a.md\\tonly in the second render\\n'
+printf 'guide.md\\tpage of run %s\\n' \"\$runs\"
+printf 'README.md\\tthe same page\\n'"
+
+  run_offline_page_with_stand_ins "$stand_ins" "$REPO_FIXTURE"
+
+  expect_status 1 || return 1
+  expect_stdout_is "a.md
+guide.md"
 }
 
 # CP-1133: a denial that is not in force. The stand-in sandbox-exec runs its command undenied, so the
