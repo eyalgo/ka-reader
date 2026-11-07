@@ -3,7 +3,7 @@ import Foundation
 import Shell
 import Surfaces
 
-/// The one C-backed bridge: `Shell`'s protocol over the five exported functions.
+/// The one C-backed bridge: `Shell`'s protocol over the seven exported functions.
 ///
 /// It is the only type in the package that sees the C struct. A returned buffer is copied into a
 /// Swift value the moment it arrives, and its pointer travels as the buffer's handle until the flow
@@ -67,9 +67,41 @@ nonisolated struct NativeBridge: Bridging {
         unsafe adopt(unsafe ka_reader_read_git())
     }
 
+    // Same two branches as `listTree`, for the same reason.
+    func openRelativeLink(path: String) -> BridgeBuffer? {
+        #if compiler(>=6.4)
+            return path.withCString { unsafe adopt(unsafe ka_reader_open_relative_link($0)) }
+        #else
+            return unsafe path.withCString {
+                unsafe adopt(unsafe ka_reader_open_relative_link($0))
+            }
+        #endif
+    }
+
+    /// An `asset_bytes` refusal is a buffer with NULL `bytes` and `len` 0, which `adopt` would trap
+    /// on. It is adopted without reading its bytes and keeps its handle so it is freed once. A
+    /// non-NULL `bytes` with `len` 0 is an empty file's bytes, not a refusal (`KAReaderBuffer`).
+    func assetBytes(path: String) -> BridgeBuffer? {
+        #if compiler(>=6.4)
+            return path.withCString { unsafe adoptAsset(unsafe ka_reader_asset_bytes($0)) }
+        #else
+            return unsafe path.withCString { unsafe adoptAsset(unsafe ka_reader_asset_bytes($0)) }
+        #endif
+    }
+
     func free(_ buffer: BridgeBuffer) {
         unsafe ka_reader_free(
             unsafe UnsafeMutablePointer<KAReaderBuffer>(bitPattern: buffer.handle))
+    }
+
+    @unsafe private func adoptAsset(_ raw: UnsafeMutablePointer<KAReaderBuffer>?) -> BridgeBuffer? {
+        guard let raw = unsafe raw else {
+            return nil
+        }
+        guard unsafe raw.pointee.bytes != nil else {
+            return BridgeBuffer(payload: Data(), handle: UInt(bitPattern: raw), isRefusal: true)
+        }
+        return unsafe adopt(raw)
     }
 
     @unsafe private func adopt(_ raw: UnsafeMutablePointer<KAReaderBuffer>?) -> BridgeBuffer? {

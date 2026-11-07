@@ -629,6 +629,12 @@ fn test_a_tree_only_payloads_exact_shape_still_holds() {
     assert_eq!(members, vec!["listings"]);
 }
 
+/// The Markdown answer for a file holding one level-one heading with `words`.
+fn heading_document(words: &str) -> Value {
+    json!({ "state": "markdown", "blocks": [{ "kind": "heading", "level": 1,
+            "content": [{ "kind": "text", "text": words }] }] })
+}
+
 #[test]
 fn test_an_open_markdown_file_in_a_model_change_is_markdown() {
     let folder = TempDir::new();
@@ -641,8 +647,8 @@ fn test_an_open_markdown_file_in_a_model_change_is_markdown() {
         open_files(&received)
             .last()
             .map(|member| member["answer"].clone()),
-        Some(json!({ "state": "markdown" })),
-        "the open itself carries the document's tag"
+        Some(heading_document("before")),
+        "the open itself carries the document"
     );
 
     folder.write_file("README.md", "# after\n");
@@ -655,5 +661,9 @@ fn test_an_open_markdown_file_in_a_model_change_is_markdown() {
     assert_eq!(members.len(), 2, "the re-read delivered the open file");
     let reread = members.last().expect("a member");
     assert_eq!(reread["path"], json!("README.md"));
-    assert_eq!(reread["answer"], json!({ "state": "markdown" }));
+    assert_eq!(
+        reread["answer"],
+        heading_document("after"),
+        "a changed heading reaches the payload"
+    );
 }

@@ -23,6 +23,14 @@ package typealias GitReadIntent = @MainActor (_ answer: @escaping GitAnswer) -> 
 package typealias FilePositionIntent =
     @MainActor (_ path: String, _ position: ReadingPosition) -> Void
 
+/// What a relative link's read answered: whether its target opened, and with which verdict.
+package typealias RelativeLinkAnswerSink = @MainActor (RelativeLinkAnswer) -> Void
+
+/// The call a relative link makes: the node's target path (never its destination) and the sink its
+/// answer goes to. Named after its SM-4 function, `open_relative_link`.
+package typealias RelativeLinkIntent =
+    @MainActor (_ path: String, _ answer: @escaping RelativeLinkAnswerSink) -> Void
+
 /// Makes a sink answer once.
 private final class SelectionLatch {
     var fired = false
@@ -74,6 +82,15 @@ package final class WorkbenchView: NSView {
     /// time the reader scrolls the open file.
     package var filePosition: FilePositionIntent?
 
+    /// Set by the view's owner, and called on the main actor once for each resolved image of a
+    /// Markdown page the panel draws. While it is unset every image is answered as no bytes.
+    package var assetBytes: AssetBytesIntent?
+
+    /// Set by the view's owner, and called on the main actor when the reader activates a relative
+    /// link, with the link's target path. Raising it changes nothing; the answer decides (see
+    /// `drawLinkAnswer`). While it is unset an activation does nothing.
+    package var openRelativeLink: RelativeLinkIntent?
+
     /// An automatic update of the open file. It is drawn when `openFile.path` is the path of the
     /// reader's latest selection, and the update is recorded so that selection's own answer, which
     /// is older, draws nothing. For any other path it draws nothing: the reader has moved on (CP-1024).
@@ -91,6 +108,11 @@ package final class WorkbenchView: NSView {
 
     /// Counts file selections: a sink applies only while its selection is still the latest.
     private var selectionGeneration = 0
+
+    /// Counts the reader's tree and Git selection acts, apart from `selectionGeneration`, which a
+    /// link's own draw also bumps. A link's answer draws only if this has not moved since the link
+    /// was raised.
+    private var selectionActs = 0
 
     /// Whether the Git view has been shown, and so whether `readGit` has been raised.
     private var hasAskedGit = false
@@ -113,6 +135,14 @@ package final class WorkbenchView: NSView {
         rootItemsView.fileSelected = { [weak self] entry in self?.selectFromTree(entry) }
         gitView.rowActivated = { [weak self] path in self?.selectFromGit(path) }
         rail.entryChosen = { [weak self] entry in self?.show(entry) }
+        readingPanel.assetBytes = { [weak self] path, answer in
+            if let intent = self?.assetBytes {
+                intent(path, answer)
+            } else {
+                answer(nil)
+            }
+        }
+        readingPanel.relativeLinkActivated = { [weak self] path in self?.raiseLink(to: path) }
         readingPanel.positionChanged = { [weak self] position in
             guard let self, let path = self.latestSelectionPath else { return }
             self.filePosition?(path, position)
@@ -202,6 +232,7 @@ package final class WorkbenchView: NSView {
     /// panel shows the verdict under `path` once it comes, if no later selection has been made. A
     /// `nil` answer draws the *stopped* state for that path and leaves the bar where it is.
     private func readFile(at path: String, markBar: () -> Void) {
+        selectionActs += 1
         selectionGeneration += 1
         let generation = selectionGeneration
         latestSelectionPath = path
@@ -224,6 +255,41 @@ package final class WorkbenchView: NSView {
                 // marked as the file the panel is about.
                 self.readingPanel.showStopped(path: path)
             }
+        }
+    }
+
+    /// Raises the link's call. Nothing is drawn or moved until it answers: a link may open nothing,
+    /// and then nothing changes (CP-1117).
+    private func raiseLink(to path: String) {
+        let actsWhenRaised = selectionActs
+        let latch = SelectionLatch()
+        openRelativeLink?(path) { [weak self] answer in
+            guard !latch.fired else { return }
+            latch.fired = true
+            // The reader's later tree or Git selection is the model's last selection act, so it wins.
+            guard let self, self.selectionActs == actsWhenRaised else { return }
+            self.drawLinkAnswer(answer, at: path)
+        }
+    }
+
+    /// Draws a link's answer the way a selection of `path` would end: the answer is newer than any
+    /// tree answer still out, the Git row's selection goes, and the tree's mark moves to `path`
+    /// without expanding a folder or raising a selection.
+    private func drawLinkAnswer(_ answer: RelativeLinkAnswer, at path: String) {
+        if case .nothing = answer { return }
+        selectionGeneration += 1
+        latestSelectionPath = path
+        hasUpdateForLatestSelection = false
+        openGitPath = nil
+        gitView.clearSelection()
+        rootItemsView.showOpenFile(path: path)
+        switch answer {
+        case .opened(let verdict):
+            readingPanel.show(path: path, verdict: verdict)
+        case .stopped:
+            readingPanel.showStopped(path: path)
+        case .nothing:
+            preconditionFailure("a nothing answer returns before anything is drawn")
         }
     }
 

@@ -214,6 +214,32 @@ final class CodeView: NSView {
     }
 }
 
+/// Where a span of the wire sits in AppKit's text, shared by every view that colours code.
+enum SpanRanges {
+    /// The UTF-16 range each span covers. The spans' offsets are UTF-8 bytes (the wire's unit) and
+    /// AppKit counts UTF-16 units, so one forward pass over the content's Unicode scalars adds up
+    /// both widths and maps each offset as the pass reaches it. The spans ascend and fall on scalar
+    /// boundaries (the decoder guarantees it), and a Swift `Character` is a grapheme, not the
+    /// core's boundary.
+    static func utf16(of spans: [CodeSpan], in content: String) -> [NSRange] {
+        var scalars = content.unicodeScalars.makeIterator()
+        var bytes = 0
+        var units = 0
+        func unit(atByte target: Int) -> Int {
+            while bytes < target, let scalar = scalars.next() {
+                bytes += UTF8.width(scalar)
+                units += UTF16.width(scalar)
+            }
+            return units
+        }
+        return spans.map { span in
+            let start = unit(atByte: span.start)
+            let end = unit(atByte: span.end)
+            return NSRange(location: start, length: end - start)
+        }
+    }
+}
+
 // The actions the reading panel's text menu offers: Copy and nothing else (R-49, CP-377 – CP-379).
 // A keep-list rather than a strike-list, so an entry a later macOS adds is out by construction
 // (change_design.md § 4). The selector is compile-time: `NSSelectorFromString` is a refused token

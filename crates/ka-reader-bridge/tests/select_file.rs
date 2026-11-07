@@ -239,24 +239,171 @@ fn test_select_file_answers_plain_with_exactly_three_members() {
     }
 }
 
-/// CP-1082: a Markdown file's answer is exactly `{"state":"markdown"}`, one member, whatever the
-/// document holds.
+/// CP-1100: a Markdown file's answer keeps the tag `markdown` and carries the document as `blocks`,
+/// and those are its only members, whatever the extension.
 #[test]
-fn test_select_file_export_answers_markdown_with_exactly_one_member() {
+fn test_select_file_export_answers_markdown_with_the_state_and_blocks_alone() {
     let folder = TempDir::new();
     folder.write_file("README.md", "# title\n\nSome *words*.\n");
     folder.write_file("guide.markdown", "plain words\n");
     let session = opened(folder.path());
 
-    for name in ["README.md", "guide.markdown"] {
-        let answer = wire(&session, name);
+    let readme = wire(&session, "README.md");
+    assert_eq!(
+        readme,
+        json!({ "state": "markdown", "blocks": [
+            { "kind": "heading", "level": 1, "content": [{ "kind": "text", "text": "title" }] },
+            { "kind": "paragraph", "content": [
+                { "kind": "text", "text": "Some " },
+                { "kind": "emphasis", "strength": "single",
+                  "content": [{ "kind": "text", "text": "words" }] },
+                { "kind": "text", "text": "." },
+            ] },
+        ] })
+    );
+    let guide = wire(&session, "guide.markdown");
+    assert_eq!(
+        guide,
+        json!({ "state": "markdown", "blocks": [
+            { "kind": "paragraph", "content": [{ "kind": "text", "text": "plain words" }] },
+        ] })
+    );
+    for answer in [&readme, &guide] {
+        let members: Vec<&String> = answer.as_object().expect("an object").keys().collect();
+        assert_eq!(members, vec!["blocks", "state"]);
+    }
+}
 
-        assert_eq!(answer, json!({ "state": "markdown" }), "{name}");
-        assert_eq!(
-            answer.as_object().map(serde_json::Map::len),
-            Some(1),
-            "{name}"
+/// CP-1100, Examples row 1: the hostile scene answers every block in source order. Raw HTML is text,
+/// the PNG is resolved, the remote, `..` and symlink-out images are outside the folder, the SVG is a
+/// format not decoded, and the two links are one external and one relative.
+#[test]
+fn test_select_file_on_the_hostile_scene_answers_every_block_in_source_order() {
+    let folder = TempDir::new();
+    let outside = TempDir::new();
+    let target = outside.write_file("secret.png", "not for the page");
+    let corpus = fs::read_to_string(
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../checks/fixtures/hostile.md"),
+    )
+    .expect("the committed corpus reads");
+    folder.write_file("hostile.md", &corpus);
+    folder.write_bytes(
+        "logo.png",
+        &[0x89, b'P', b'N', b'G', 0x0D, 0x0A, 0x1A, 0x0A],
+    );
+    folder.write_file(
+        "diagram.svg",
+        "<svg xmlns=\"http://www.w3.org/2000/svg\"/>\n",
+    );
+    folder.make_link("escape.png", target);
+    folder.write_file("other.md", "# Other\n");
+    let session = opened(folder.path());
+
+    let answer = wire(&session, "hostile.md");
+
+    let members: Vec<&String> = answer.as_object().expect("an object").keys().collect();
+    assert_eq!(members, vec!["blocks", "state"]);
+    let blocks = answer["blocks"].as_array().expect("blocks");
+    let kinds: Vec<&str> = blocks
+        .iter()
+        .map(|block| block["kind"].as_str().expect("a kind"))
+        .collect();
+    // One heading, then one paragraph block for each of the file's seventeen paragraphs and raw blocks, in source order.
+    let mut expected_kinds = vec!["heading"];
+    expected_kinds.extend(std::iter::repeat_n("paragraph", 17));
+    assert_eq!(kinds, expected_kinds);
+
+    let mut inlines = Vec::new();
+    collect_inlines(&answer["blocks"], &mut inlines);
+    let text_nodes: Vec<&str> = inlines
+        .iter()
+        .filter(|inline| inline["kind"] == "text")
+        .map(|inline| inline["text"].as_str().expect("text"))
+        .collect();
+    for piece in [
+        "<script>alert(1)</script>",
+        "<b onclick=\"steal()\">",
+        "<iframe src=\"https://example.com/frame\"></iframe>",
+        "<style>body { display: none }</style>",
+    ] {
+        assert!(
+            text_nodes.iter().any(|node| node.trim_end() == piece),
+            "{piece} is a text node holding exactly its source: {text_nodes:?}"
         );
+    }
+    assert!(
+        text_nodes
+            .iter()
+            .any(|node| node.starts_with("<div class=\"box\">") && node.contains("</div>")),
+        "the raw block is a text node holding its source: {text_nodes:?}"
+    );
+    assert!(inlines.iter().all(|inline| {
+        !["image", "link"].contains(&inline["kind"].as_str().unwrap_or(""))
+            || inline.get("target").is_some()
+    }));
+
+    let images: Vec<&Value> = inlines
+        .iter()
+        .copied()
+        .filter(|i| i["kind"] == "image")
+        .collect();
+    let target_of = |source: &str| -> Value {
+        let found = images
+            .iter()
+            .find(|image| image["alt"] == source)
+            .unwrap_or_else(|| panic!("an image with alt {source}"));
+        (*found).clone()
+    };
+    assert_eq!(
+        target_of("logo"),
+        json!({ "kind": "image", "alt": "logo", "target": "resolved", "path": "logo.png" })
+    );
+    for (alt, source) in [
+        ("remote", "https://example.com/remote.png"),
+        ("climb", "../outside.png"),
+        ("escape", "escape.png"),
+    ] {
+        assert_eq!(
+            target_of(alt),
+            json!({ "kind": "image", "alt": alt, "target": "placeholder",
+                    "condition": "outside_the_folder", "source": source }),
+            "{alt}"
+        );
+    }
+    assert_eq!(
+        target_of("diagram"),
+        json!({ "kind": "image", "alt": "diagram", "target": "placeholder",
+                "condition": "format_not_decoded", "source": "diagram.svg" })
+    );
+
+    let links: Vec<&Value> = inlines
+        .iter()
+        .copied()
+        .filter(|i| i["kind"] == "link")
+        .collect();
+    assert_eq!(links.len(), 2);
+    assert_eq!(links[0]["target"], "external");
+    assert_eq!(links[0]["destination"], "https://example.com/page");
+    assert!(links[0].get("path").is_none());
+    assert_eq!(links[1]["target"], "relative");
+    assert_eq!(links[1]["path"], "other.md");
+}
+
+/// Every inline of `blocks`, depth first, in source order.
+fn collect_inlines<'a>(blocks: &'a Value, found: &mut Vec<&'a Value>) {
+    for block in blocks.as_array().expect("an array of blocks") {
+        if let Some(content) = block.get("content") {
+            collect_inline_nodes(content, found);
+        }
+    }
+}
+
+fn collect_inline_nodes<'a>(content: &'a Value, found: &mut Vec<&'a Value>) {
+    for inline in content.as_array().expect("an array of inlines") {
+        found.push(inline);
+        if let Some(inner) = inline.get("content") {
+            collect_inline_nodes(inner, found);
+        }
     }
 }
 

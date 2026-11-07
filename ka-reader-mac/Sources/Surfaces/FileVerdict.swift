@@ -11,6 +11,19 @@ package nonisolated enum FileVerdict: Equatable, Sendable {
     case failed(Condition)
     /// A re-read of the open file found nothing at its path. It carries no content.
     case gone
+    /// A Markdown file: the document the core built from it, drawn as a rendered page.
+    case markdown(MarkdownDocument)
+}
+
+/// What the bridge answered to a relative link's activation. The link's selection act and its read
+/// are one call, so the answer says whether the target opened.
+package nonisolated enum RelativeLinkAnswer: Equatable, Sendable {
+    /// The target is a contained file and opened, with its verdict.
+    case opened(FileVerdict)
+    /// The bridge answered `pending`: no contained file, so nothing changed.
+    case nothing
+    /// The call carried no verdict: it failed, or its answer did not conform.
+    case stopped
 }
 
 /// Where the reader is in the open file: the first line shown at the panel's top, zero-based, and

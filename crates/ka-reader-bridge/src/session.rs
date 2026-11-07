@@ -20,6 +20,7 @@ use serde::Serialize;
 use crate::boundary::changes_payload;
 use crate::delivery_gate::DeliveryGate;
 use crate::machine_config::{SwitchOutcome, arrive_in_process, production_port};
+use crate::markdown_answer::{BlockDto, document_blocks};
 use crate::watcher::{FsEvents, PathSink, Subscription, Watching};
 
 /// What `open_folder` answers across the bridge.
@@ -228,8 +229,8 @@ impl From<CannotDisplayReason> for CannotDisplayReasonDto {
 
 /// What `select_file` answers across the bridge, tagged by `state`: `text` with its decoded
 /// `content`, its `language` and, for a floor language, its `spans`; `cannot_display` with a
-/// `reason`; `markdown` with no member beside the tag; `failed` with a `condition`; or `pending`
-/// when nothing was read.
+/// `reason`; `markdown` with the document as `blocks` and no other member beside the tag; `failed`
+/// with a `condition`; or `pending` when nothing was read.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[serde(tag = "state", rename_all = "snake_case")]
 pub enum FileAnswerDto {
@@ -244,8 +245,11 @@ pub enum FileAnswerDto {
     CannotDisplay {
         reason: CannotDisplayReasonDto,
     },
-    /// A Markdown file. The answer names the kind and carries none of the document.
-    Markdown,
+    /// A Markdown file. The answer names the kind and carries the whole document as `blocks`, in
+    /// source order, in the form `markdown_answer` writes.
+    Markdown {
+        blocks: Vec<BlockDto>,
+    },
     Failed {
         condition: ConditionDto,
     },
@@ -277,7 +281,9 @@ impl From<ItemState<FileView>> for FileAnswerDto {
             ItemState::Observed(FileView::CannotDisplay(reason)) => Self::CannotDisplay {
                 reason: reason.into(),
             },
-            ItemState::Observed(FileView::Markdown(_)) => Self::Markdown,
+            ItemState::Observed(FileView::Markdown(document)) => Self::Markdown {
+                blocks: document_blocks(document),
+            },
             ItemState::Observed(FileView::Gone) => Self::Gone,
             ItemState::Failed(condition) => Self::Failed {
                 condition: condition.into(),
@@ -1130,7 +1136,7 @@ impl Session {
     /// assert_eq!(session.open_relative_link("README.md"), FileAnswerDto::Pending, "no folder is open");
     ///
     /// session.open(folder);
-    /// assert_eq!(session.open_relative_link("README.md"), FileAnswerDto::Markdown);
+    /// assert!(matches!(session.open_relative_link("README.md"), FileAnswerDto::Markdown { .. }));
     /// assert_eq!(session.open_relative_link("../README.md"), FileAnswerDto::Pending);
     /// ```
     pub fn open_relative_link(&self, path: &str) -> FileAnswerDto {

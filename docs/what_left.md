@@ -5,9 +5,6 @@ Each entry names one thing KA-Reader's Agari or PRD wants that its code did not 
 - **Wanted:** A change on disk — file content, the tree, or Git state — appears in the view automatically, with no user action.
   **Source:** PRD § Core Features, **Live refresh**
   **Missing at:** `4a6ee6f10`
-- **Wanted:** Markdown is rendered by default.
-  **Source:** PRD § Core Features
-  **Missing at:** `4a6ee6f10`
 - **Wanted:** Where the viewed folder is a Git repository, the person sees its diffs.
   **Source:** Agari § 上がり Agari — ka-reader's "done", **The surface is complete — as drawn, not as listed.**
   **Missing at:** `4a6ee6f10`

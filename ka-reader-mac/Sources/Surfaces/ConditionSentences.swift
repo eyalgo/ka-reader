@@ -36,6 +36,41 @@ package nonisolated enum ConditionSentences {
     /// The line drawn beneath a folder that was read and holds nothing.
     package static let emptyFolder = emptyRoot
 
+    /// The box's sentence for an image outside the folder: a remote address, a path that climbs
+    /// out of the folder, or a link inside it that leads out. Shown when the reader is on a
+    /// rendered Markdown page whose image KA-Reader did not try to read. It has no placeholder.
+    package static let imageOutsideTheFolder =
+        "This image is outside the folder you opened, so KA-Reader doesn't read it."
+
+    /// The box's sentence for an image that points inside the folder where no file is: nothing at
+    /// that path, or a folder. It has no placeholder.
+    package static let imageMissing = "There's no file where this image points."
+
+    /// The box's sentence for an image inside the folder that did not draw: its file could not be
+    /// read, the panel's ask for its bytes got none, or the bytes make no image. One sentence for
+    /// all three, whether KA-Reader learned it before or while it drew the page. It has no
+    /// placeholder.
+    package static let imageUnreadable = "KA-Reader can't read this image."
+
+    /// The box's sentence for an image inside the folder in a format KA-Reader does not show, such
+    /// as an SVG. It has no placeholder.
+    package static let imageFormatNotDecoded = "KA-Reader doesn't show images in this format."
+
+    /// The sentence for the box where an image with `condition` would sit. The switch has no
+    /// `default`, so a fifth condition fails to compile here instead of drawing no sentence.
+    package static func imagePlaceholder(for condition: ImagePlaceholderCondition) -> String {
+        switch condition {
+        case .outsideTheFolder:
+            return imageOutsideTheFolder
+        case .missing:
+            return imageMissing
+        case .unreadable:
+            return imageUnreadable
+        case .formatNotDecoded:
+            return imageFormatNotDecoded
+        }
+    }
+
     /// The sentence shown on the row of an entry that failed with `condition`.
     package static func row(for condition: Condition) -> String {
         switch condition {
