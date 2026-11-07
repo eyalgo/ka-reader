@@ -57,7 +57,13 @@ None.
   ADR moved. QC-10 then rests on a paragraph SDD v74 no longer holds. The change that builds the
   read seam would meet an entry that still allows the free-function calls that change removes, and
   nothing would bind the seam's fake to a contract suite.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** override: take QC-10 as drafted and QC-69 as drafted, except QC-69's
+  third verifier. Replace "`git grep -n '0o000' -- crates` printing nothing" with "no case whose
+  failed read crosses SM-1 forces it with a file mode", checked by a `git grep` over the files the
+  building change names. At `98aaa71` those are 23 of the 37 lines, in 8 files. The other 14 lines,
+  in 5 files, sit where SM-1 cannot reach: the Git adapter (12), the containment walk (1) and the
+  bridge log writer's write (1). QC-69's trace names that the SDD sentence it narrows is raised at
+  `docs/SDD_open_issues.md` § 2.1. Reasoning: `docs/trail/architecture/self_answer-77.md`.
 
 ## 3. Raised from downstream — an item from a seat that did not write these records
 
