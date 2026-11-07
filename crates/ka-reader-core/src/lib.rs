@@ -12,8 +12,8 @@ pub use error::Error;
 pub use folder_model::{
     FileRead, FileRequest, FileView, FolderKind, FolderModel, GitCondition, GitState, ModelDelta,
     OpenFile, OpenFolderOutcome, OpenedFolder, PathReports, ReaderPlace, ReadingPosition,
-    TreeChanges, TreeRequest, list_tree, open_folder, read_file, read_git, read_git_item,
-    select_file,
+    TreeChanges, TreeRequest, asset_bytes, link_file, list_tree, open_folder, read_file, read_git,
+    read_git_item, select_file,
 };
 #[cfg(feature = "testing")]
 pub use fs_reader::fakes::SeededContainment;

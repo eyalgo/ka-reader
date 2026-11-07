@@ -30,7 +30,9 @@ fn begins_with_scheme(reference: &str) -> bool {
     false
 }
 
-fn is_bitmap(path: &Path) -> bool {
+/// Whether `path` names one of the bitmap formats, by its extension and without ASCII case. The one
+/// list of formats: it decides a resolved image node and the bytes `folder-model` hands a surface.
+pub(crate) fn is_bitmap(path: &Path) -> bool {
     path.extension()
         .and_then(|extension| extension.to_str())
         .is_some_and(|extension| {

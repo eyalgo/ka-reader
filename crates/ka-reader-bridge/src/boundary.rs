@@ -37,10 +37,29 @@ pub(crate) fn guarded<T: Serialize>(
     }
 }
 
+/// The byte-answer sibling of `guarded`: runs `work` under `catch_unwind` and hands its answer
+/// across as an owned buffer. `Some(bytes)` is a buffer holding exactly those bytes, an empty file's
+/// included; `None` is the refusal buffer, whose `bytes` is NULL. NULL is the failure value, returned
+/// when `work` panics. No JSON is made for this answer.
+pub(crate) fn guarded_bytes(
+    origin: BufferOrigin,
+    work: impl FnOnce() -> Option<Vec<u8>>,
+) -> *mut KAReaderBuffer {
+    match panic::catch_unwind(AssertUnwindSafe(work)) {
+        Ok(Some(bytes)) => KAReaderBuffer::allocate(bytes, origin),
+        Ok(None) => KAReaderBuffer::refusal(origin),
+        Err(_) => stopped_open(origin, "boundary panicked"),
+    }
+}
+
 fn stopped_open(origin: BufferOrigin, detail: &str) -> *mut KAReaderBuffer {
     match origin {
         BufferOrigin::OpenFolder => log::warn!("core-bridge: open_folder stopped: {detail}"),
         BufferOrigin::ReadGit => log::warn!("core-bridge: read_git stopped: {detail}"),
+        BufferOrigin::AssetBytes => log::warn!("core-bridge: asset_bytes stopped: {detail}"),
+        BufferOrigin::OpenRelativeLink => {
+            log::warn!("core-bridge: open_relative_link stopped: {detail}");
+        }
         BufferOrigin::ListTree | BufferOrigin::SelectFile | BufferOrigin::ModelChanged => {}
     }
     std::ptr::null_mut()
@@ -284,6 +303,68 @@ pub unsafe fn select_entry(
     }
 }
 
+/// The relative path of an image the shell asks for, decoded from a C string. NULL, an empty path and
+/// bytes that are not UTF-8 name no file, so the session is not called and the answer is a refusal.
+///
+/// # Examples
+///
+/// ```
+/// use std::ffi::CString;
+/// use ka_reader_bridge::boundary::asset_answer;
+/// use ka_reader_bridge::session::Session;
+///
+/// let session = Session::default();
+/// let path = CString::new("logo.png").expect("no interior NUL");
+///
+/// // SAFETY: NULL and a live NUL-terminated string are the two pointers the call accepts.
+/// unsafe {
+///     assert_eq!(asset_answer(&session, std::ptr::null()), None);
+///     assert_eq!(asset_answer(&session, path.as_ptr()), None, "no folder is open");
+/// }
+/// ```
+///
+/// # Safety
+///
+/// As `decode_list_path`.
+pub unsafe fn asset_answer(session: &Session, path: *const c_char) -> Option<Vec<u8>> {
+    // SAFETY: forwarded from the caller.
+    match unsafe { decode_list_path(path) } {
+        ListPath::Under(relative) => session.asset_bytes(&relative),
+        ListPath::Root | ListPath::NotUtf8 => None,
+    }
+}
+
+/// Opens the relative link `path` in `session`. NULL, an empty path and bytes that are not UTF-8 name
+/// no file, so the session is not called and the answer is `{"state":"pending"}`.
+///
+/// # Examples
+///
+/// ```
+/// use std::ffi::CString;
+/// use ka_reader_bridge::boundary::link_entry;
+/// use ka_reader_bridge::session::{FileAnswerDto, Session};
+///
+/// let session = Session::default();
+/// let path = CString::new("notes.md").expect("no interior NUL");
+///
+/// // SAFETY: NULL and a live NUL-terminated string are the two pointers the call accepts.
+/// unsafe {
+///     assert_eq!(link_entry(&session, std::ptr::null()), FileAnswerDto::Pending);
+///     assert_eq!(link_entry(&session, path.as_ptr()), FileAnswerDto::Pending, "no folder is open");
+/// }
+/// ```
+///
+/// # Safety
+///
+/// As `decode_list_path`.
+pub unsafe fn link_entry(session: &Session, path: *const c_char) -> FileAnswerDto {
+    // SAFETY: forwarded from the caller.
+    match unsafe { decode_list_path(path) } {
+        ListPath::Under(relative) => session.open_relative_link(&relative),
+        ListPath::Root | ListPath::NotUtf8 => FileAnswerDto::Pending,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     //! Layer 1: the C boundary's own logic, without calling an export: the exports touch the
@@ -293,8 +374,8 @@ mod tests {
     use std::ptr;
 
     use super::{
-        ListPath, decode_list_path, decode_location, guarded, is_valid_open_answer, list_entries,
-        open_location, select_entry,
+        ListPath, decode_list_path, decode_location, guarded, guarded_bytes, is_valid_open_answer,
+        list_entries, open_location, select_entry,
     };
     use crate::exports::{BufferOrigin, KAReaderBuffer, install_silent_panic_hook, ka_reader_free};
     use crate::session::Session;
@@ -481,6 +562,60 @@ mod tests {
 
         assert_eq!(bytes, br#"["a","b"]"#);
         assert_eq!(length, bytes.len());
+    }
+
+    #[test]
+    fn test_guarded_bytes_returns_null_when_the_work_panics() {
+        let _serial = begin_log_capture();
+
+        let buffer = guarded_bytes(BufferOrigin::AssetBytes, || -> Option<Vec<u8>> {
+            panic!("a panic the boundary must catch")
+        });
+
+        assert!(buffer.is_null(), "an unwind is NULL and never a buffer");
+    }
+
+    #[test]
+    fn test_a_panic_under_each_new_origin_writes_one_stopped_line_naming_it() {
+        for (origin, name) in [
+            (BufferOrigin::AssetBytes, "asset_bytes"),
+            (BufferOrigin::OpenRelativeLink, "open_relative_link"),
+        ] {
+            let _serial = begin_log_capture();
+
+            let bytes = guarded_bytes(origin, || -> Option<Vec<u8>> { panic!("caught") });
+            let link = guarded(origin, || -> Vec<String> { panic!("caught") });
+            let records = take_log_records();
+
+            assert!(
+                bytes.is_null() && link.is_null(),
+                "{name}: an unwind is NULL"
+            );
+            assert_eq!(records.len(), 2, "{name}: {records:?}");
+            for record in &records {
+                assert!(
+                    record.starts_with(&format!("core-bridge: {name} stopped")),
+                    "{name}: {records:?}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn test_guarded_bytes_tells_an_empty_answer_from_a_refusal() {
+        let empty = guarded_bytes(BufferOrigin::AssetBytes, || Some(Vec::new()));
+        let refusal = guarded_bytes(BufferOrigin::AssetBytes, || None);
+
+        assert!(!empty.is_null() && !refusal.is_null(), "both are buffers");
+        // SAFETY: both pointers were made by `guarded_bytes` a moment ago and are freed below, once.
+        unsafe {
+            assert!(!(*empty).bytes.is_null(), "an empty file is still bytes");
+            assert_eq!((*empty).len, 0);
+            assert!((*refusal).bytes.is_null(), "a refusal has NULL bytes");
+            assert_eq!((*refusal).len, 0);
+            ka_reader_free(empty);
+            ka_reader_free(refusal);
+        }
     }
 
     #[test]

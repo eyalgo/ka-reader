@@ -4,21 +4,32 @@
 //! build script wrote. The comparison is a pure function of three sets, so its negative cases run on
 //! synthetic inputs.
 
+#[allow(
+    dead_code,
+    reason = "each test crate uses a subset of the shared helpers"
+)]
+mod common;
+
 use std::collections::BTreeSet;
 use std::env;
+use std::ffi::CString;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::Mutex;
 
+use ka_reader_bridge::exports::{ka_reader_asset_bytes, ka_reader_free, ka_reader_open_folder};
+
 /// The rule, written here on purpose: the export and declared sets come from the library and the
 /// header, and never from a list kept in this test. A name joins this array with the change that lands
 /// the function (SM-4's diff opener, for one, is not here yet).
-const ADMITTED: [&str; 5] = [
+const ADMITTED: [&str; 7] = [
     "ka_reader_open_folder",
     "ka_reader_list_tree",
     "ka_reader_select_file",
     "ka_reader_read_git",
+    "ka_reader_asset_bytes",
+    "ka_reader_open_relative_link",
     "ka_reader_free",
 ];
 
@@ -327,7 +338,7 @@ fn test_a_complaint_that_names_no_member_fails_the_listing() {
 }
 
 #[test]
-fn test_the_exported_set_and_the_headers_declarations_stay_the_five() {
+fn test_the_exported_set_and_the_headers_declarations_stay_the_seven() {
     let _serial = SERIAL
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner());
@@ -338,7 +349,7 @@ fn test_the_exported_set_and_the_headers_declarations_stay_the_five() {
         declared_names(&header_path())
             .expect("the header can be read")
             .len(),
-        5,
+        7,
         "{header}"
     );
     assert!(
@@ -355,6 +366,14 @@ fn test_the_exported_set_and_the_headers_declarations_stay_the_five() {
         header.contains(
             "KAReaderBuffer * ka_reader_select_file(const char * path, uint32_t act, const char * position);"
         ),
+        "{header}"
+    );
+    assert!(
+        header.contains("KAReaderBuffer * ka_reader_asset_bytes(const char * path);"),
+        "{header}"
+    );
+    assert!(
+        header.contains("KAReaderBuffer * ka_reader_open_relative_link(const char * path);"),
         "{header}"
     );
 }
@@ -379,4 +398,48 @@ fn test_the_header_generator_emits_the_typedef_void_pointer_and_uint32() {
     );
     assert!(header.contains("void * context"), "{header}");
     assert!(header.contains("uint32_t act"), "{header}");
+}
+
+/// The eight bytes every PNG file begins with; not UTF-8, so a text path would not give them back.
+const PNG_SIGNATURE: [u8; 8] = [0x89, b'P', b'N', b'G', 0x0D, 0x0A, 0x1A, 0x0A];
+
+/// The only test of this target that opens the process-global session.
+#[test]
+fn test_the_asset_export_answers_a_bytes_buffer_freed_once() {
+    let folder = common::TempDir::new();
+    folder.write_bytes("logo.png", &PNG_SIGNATURE);
+    folder.write_bytes("empty.png", &[]);
+    let location =
+        CString::new(folder.path().to_str().expect("the path is text")).expect("no interior NUL");
+    // SAFETY: `location` is a live NUL-terminated string; a NULL callback opens with no delivery.
+    let opened = unsafe { ka_reader_open_folder(location.as_ptr(), None, std::ptr::null_mut()) };
+    // SAFETY: the open's buffer was returned a moment ago and is freed once.
+    unsafe { ka_reader_free(opened) };
+    let logo = CString::new("logo.png").expect("no interior NUL");
+    let empty = CString::new("empty.png").expect("no interior NUL");
+
+    // SAFETY: each path is a live NUL-terminated string for its call.
+    let (bytes, empty_file) = unsafe {
+        (
+            ka_reader_asset_bytes(logo.as_ptr()),
+            ka_reader_asset_bytes(empty.as_ptr()),
+        )
+    };
+
+    assert!(!bytes.is_null() && !empty_file.is_null());
+    // SAFETY: both buffers were returned a moment ago, are read before the free and freed once.
+    unsafe {
+        assert!(!(*bytes).bytes.is_null());
+        assert_eq!(
+            std::slice::from_raw_parts((*bytes).bytes, (*bytes).len),
+            PNG_SIGNATURE
+        );
+        assert!(
+            !(*empty_file).bytes.is_null(),
+            "an empty in-folder PNG is bytes, not a refusal"
+        );
+        assert_eq!((*empty_file).len, 0);
+        ka_reader_free(bytes);
+        ka_reader_free(empty_file);
+    }
 }

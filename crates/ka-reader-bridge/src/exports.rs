@@ -1,15 +1,19 @@
-//! The C ABI: the `#[repr(C)]` buffer, the five exports, and the process's one session. Each
+//! The C ABI: the `#[repr(C)]` buffer, the seven exports, and the process's one session. Each
 //! export decodes, calls the session, and formats through the wrapper, and does nothing else
 //! (QC-13). The header generator reads this file, so it holds only what the header must declare.
 
 use std::ffi::{c_char, c_void};
 use std::sync::LazyLock;
 
-use crate::boundary::{guarded, list_entries, open_location, select_entry};
+use crate::boundary::{
+    asset_answer, guarded, guarded_bytes, link_entry, list_entries, open_location, select_entry,
+};
 use crate::log_install::install_if_application_bundle;
 use crate::session::Session;
 
-/// An owned buffer of JSON bytes, made by the bridge and released by `ka_reader_free`.
+/// An owned buffer made by the bridge and released by `ka_reader_free`: JSON bytes, or for
+/// `ka_reader_asset_bytes` a file's raw bytes. A NULL `bytes` with `len` 0 is a refusal, made by
+/// `ka_reader_asset_bytes` alone; an empty file is a non-NULL `bytes` with `len` 0.
 #[repr(C)]
 pub struct KAReaderBuffer {
     pub bytes: *mut u8,
@@ -26,6 +30,8 @@ pub(crate) enum BufferOrigin {
     ListTree,
     SelectFile,
     ReadGit,
+    AssetBytes,
+    OpenRelativeLink,
     ModelChanged,
 }
 
@@ -42,6 +48,19 @@ impl KAReaderBuffer {
         let bytes = Box::into_raw(payload.into_boxed_slice()).cast::<u8>();
         let owner = Box::new(OwnedBuffer {
             public: KAReaderBuffer { bytes, len },
+            origin,
+        });
+        Box::into_raw(owner).cast::<KAReaderBuffer>()
+    }
+
+    /// The refusal buffer: non-NULL, `bytes` NULL and `len` 0. The caller tells it from an empty
+    /// answer by the pointer, and frees it once like any other buffer.
+    pub(crate) fn refusal(origin: BufferOrigin) -> *mut KAReaderBuffer {
+        let owner = Box::new(OwnedBuffer {
+            public: KAReaderBuffer {
+                bytes: std::ptr::null_mut(),
+                len: 0,
+            },
             origin,
         });
         Box::into_raw(owner).cast::<KAReaderBuffer>()
@@ -134,8 +153,79 @@ pub extern "C" fn ka_reader_read_git() -> *mut KAReaderBuffer {
     guarded(BufferOrigin::ReadGit, || SESSION.read_git())
 }
 
-/// Releases a buffer returned by `ka_reader_open_folder`, `ka_reader_list_tree`, `ka_reader_select_file`
-/// or `ka_reader_read_git`, or handed to a `model_changed` callback. NULL does nothing.
+/// Answers the exact bytes of the image at a path relative to the open folder's root, as an owned
+/// buffer: a non-NULL `bytes` is the file's content (an empty file's `len` is 0), and a NULL `bytes`
+/// with `len` 0 is a refusal. The request is refused for no folder open, a NULL, empty, absolute or
+/// non-UTF-8 path, a path the containment check does not pass, a file that is not a PNG, JPEG, GIF
+/// or WebP, and a file that cannot be read. The check is made afresh on every call. NULL on boundary
+/// failure; every non-NULL answer, a refusal included, is freed with `ka_reader_free`.
+///
+/// # Examples
+///
+/// ```
+/// use std::ffi::CString;
+/// use ka_reader_bridge::exports::{ka_reader_asset_bytes, ka_reader_free};
+///
+/// let path = CString::new("logo.png").expect("no interior NUL");
+///
+/// // SAFETY: `path` is live for the call, and the buffer is read before it is freed once.
+/// unsafe {
+///     let buffer = ka_reader_asset_bytes(path.as_ptr());
+///     assert!(!buffer.is_null());
+///     assert!((*buffer).bytes.is_null(), "no folder is open, so the answer is a refusal");
+///     ka_reader_free(buffer);
+/// }
+/// ```
+///
+/// # Safety
+///
+/// `path` is NULL, or a NUL-terminated string valid for the call.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn ka_reader_asset_bytes(path: *const c_char) -> *mut KAReaderBuffer {
+    // SAFETY: forwarded from the caller.
+    guarded_bytes(BufferOrigin::AssetBytes, || unsafe {
+        asset_answer(&SESSION, path)
+    })
+}
+
+/// Opens the file a relative link names, as a click on it in the tree would, at the empty reading
+/// position, and answers the open's verdict in the grammar `ka_reader_select_file` act `0` uses. A
+/// link to anything but a contained file (a folder, a path out of the folder, an absolute path, a
+/// NULL, empty or non-UTF-8 path, a missing entry, or no folder open) changes nothing and answers
+/// `{"state":"pending"}`. NULL on boundary failure; a non-NULL answer is freed with `ka_reader_free`.
+///
+/// # Examples
+///
+/// ```
+/// use std::ffi::CString;
+/// use ka_reader_bridge::exports::{ka_reader_free, ka_reader_open_relative_link};
+///
+/// let path = CString::new("notes.md").expect("no interior NUL");
+///
+/// // SAFETY: `path` is live for the call, and the buffer is read before it is freed once.
+/// unsafe {
+///     let buffer = ka_reader_open_relative_link(path.as_ptr());
+///     assert!(!buffer.is_null());
+///     let answer = std::slice::from_raw_parts((*buffer).bytes, (*buffer).len);
+///     assert_eq!(answer, br#"{"state":"pending"}"#, "no folder is open");
+///     ka_reader_free(buffer);
+/// }
+/// ```
+///
+/// # Safety
+///
+/// `path` is NULL, or a NUL-terminated string valid for the call.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn ka_reader_open_relative_link(path: *const c_char) -> *mut KAReaderBuffer {
+    // SAFETY: forwarded from the caller.
+    guarded(BufferOrigin::OpenRelativeLink, || unsafe {
+        link_entry(&SESSION, path)
+    })
+}
+
+/// Releases a buffer returned by `ka_reader_open_folder`, `ka_reader_list_tree`,
+/// `ka_reader_select_file`, `ka_reader_read_git`, `ka_reader_asset_bytes` or
+/// `ka_reader_open_relative_link`, or handed to a `model_changed` callback. NULL does nothing.
 ///
 /// # Safety
 ///
@@ -152,6 +242,10 @@ pub unsafe extern "C" fn ka_reader_free(buffer: *mut KAReaderBuffer) {
     {
         log::warn!("core-bridge: open_folder stopped: invalid returned answer");
     }
+    if buffer.public.bytes.is_null() {
+        // A refusal owns no slice, and rebuilding a box from a NULL slice pointer is undefined.
+        return;
+    }
     // SAFETY: `bytes` and `len` are exactly the boxed slice `allocate` leaked.
     drop(unsafe {
         Box::from_raw(std::ptr::slice_from_raw_parts_mut(
@@ -162,7 +256,7 @@ pub unsafe extern "C" fn ka_reader_free(buffer: *mut KAReaderBuffer) {
 }
 
 /// The load-time initializer: one function pointer in Mach-O's `__DATA,__mod_init_func`, run when
-/// the process loads the image. It sits in this file, the same object as the four exports, because
+/// the process loads the image. It sits in this file, the same object as the seven exports, because
 /// the linker pulls an archive member only for a symbol it resolves, and an initializer anywhere else
 /// would be dropped silently. No export installs the writer, and no test process does: the guard
 /// answers no unless the process is an application bundle's executable.
