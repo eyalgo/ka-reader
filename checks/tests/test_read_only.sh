@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Version: 1.3.0 — adds the case that the walk's folder pass applies the image judge beside the
+#   bridge-operations judge, and that the walk decides a Markdown file by matching FileView::Markdown
+#   and never by a file extension; every existing case is unchanged
 # Version: 1.2.0 — adds the cases of the open file's model calls: the walk's folder mode reaches
 #   read_file, open_read, Position, the Invalidate that covers the open file and reread_open_file, and
 #   its judge names each; the existing judge cases still pass
@@ -82,6 +85,7 @@ test_kill_is_never_unchanged_when_the_walk_exits_on_its_own
 test_kill_is_never_unchanged_when_the_walk_prints_no_marker
 test_kill_is_never_unchanged_when_the_hash_differs
 test_the_folder_mode_reaches_the_open_files_model_calls
+test_the_folder_pass_applies_the_image_judge_and_the_walk_decides_markdown_by_the_answer
 test_the_existing_judge_cases_stay
 "
 
@@ -1082,6 +1086,28 @@ test_the_folder_mode_reaches_the_open_files_model_calls() {
     'TreeRequest::Invalidate over the open file' 'FolderModel::reread_open_file'; do
     grep -qF -- "\"$name\"," "$walk" || fail "the walk's judge does not name $name" || return 1
   done
+}
+
+# CP-1126's folder-mode wiring, which the real walk never trips: it asks every image node, so a pass
+# that left one unasked cannot be made to happen. The wiring is read where it is made. The folder pass,
+# `pass()`, applies the image judge beside the bridge-operations judge, and the walk decides what a
+# Markdown file is by matching the answer, `FileView::Markdown`, with no test on a file extension.
+test_the_folder_pass_applies_the_image_judge_and_the_walk_decides_markdown_by_the_answer() {
+  local walk="$ROOT/checks/walk.rs" pass_body
+  pass_body="$(awk '/^fn pass\(/,/^}/' "$walk")"
+  case "$pass_body" in
+    *'judge_bridge_operations('*) ;;
+    *) fail "checks/walk.rs's folder pass does not apply the bridge-operations judge" || return 1 ;;
+  esac
+  case "$pass_body" in
+    *'judge_images('*) ;;
+    *) fail "checks/walk.rs's folder pass does not apply the image judge" || return 1 ;;
+  esac
+  grep -qF 'FileView::Markdown' "$walk" \
+    || fail "the walk does not match FileView::Markdown" || return 1
+  if grep -nE '\.(ends_with|extension)\(' "$walk"; then
+    fail "the walk tests a file extension" || return 1
+  fi
 }
 
 # The judge's own cases run first in the walk's no-argument mode, on tallies it must refuse, and then
