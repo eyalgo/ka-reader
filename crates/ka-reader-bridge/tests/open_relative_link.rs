@@ -87,6 +87,13 @@ fn watched_read(ran: &Arc<AtomicBool>) -> impl FnOnce(&OpenedFolder, &Path) -> F
     }
 }
 
+/// The answer for `checks/fixtures/repo/README.md` (`# repo fixture`): the tag and `blocks`, and
+/// nothing else (CP-1100).
+fn readme_document() -> Value {
+    json!({ "state": "markdown", "blocks": [{ "kind": "heading", "level": 1,
+            "content": [{ "kind": "text", "text": "repo fixture" }] }] })
+}
+
 #[test]
 fn test_open_relative_link_opens_a_markdown_file_at_the_empty_position_and_delivers_once() {
     let watching = Arc::new(ManualWatching::new());
@@ -96,7 +103,7 @@ fn test_open_relative_link_opens_a_markdown_file_at_the_empty_position_and_deliv
 
     let answer = session.open_relative_link("README.md");
 
-    assert_eq!(wire(answer), json!({ "state": "markdown" }));
+    assert_eq!(wire(answer), readme_document());
     assert_eq!(
         place_of(&session),
         (
@@ -114,7 +121,7 @@ fn test_open_relative_link_opens_a_markdown_file_at_the_empty_position_and_deliv
     let open_file = &payloads[before]["open_file"];
     assert_eq!(open_file["path"], json!("README.md"));
     assert_eq!(open_file["position"], json!(""));
-    assert_eq!(open_file["answer"], json!({ "state": "markdown" }));
+    assert_eq!(open_file["answer"], readme_document());
 }
 
 #[test]
@@ -343,7 +350,11 @@ fn test_link_entry_opens_a_valid_contained_path() {
     // SAFETY: `path` is a live NUL-terminated string for the call.
     let answer = unsafe { link_entry(&session, path.as_ptr()) };
 
-    assert_eq!(wire(answer), json!({ "state": "markdown" }));
+    assert_eq!(
+        wire(answer),
+        json!({ "state": "markdown", "blocks": [{ "kind": "heading", "level": 1,
+                "content": [{ "kind": "text", "text": "A" }] }] })
+    );
 }
 
 /// The only test of this target that reaches the process-global session, so no folder is open in it.

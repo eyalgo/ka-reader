@@ -6,6 +6,7 @@ pub mod exports;
 pub mod log_install;
 pub mod log_writer;
 pub mod machine_config;
+pub mod markdown_answer;
 pub mod session;
 pub mod watcher;
 
