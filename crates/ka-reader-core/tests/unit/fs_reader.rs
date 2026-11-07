@@ -2067,3 +2067,42 @@ fn test_a_utf16_markdown_file_reads_as_markdown_with_its_decoded_content() {
 
     assert_eq!(read(temp.path(), "wide.md"), markdown("# a"));
 }
+
+#[test]
+fn test_reference_for_round_trips_through_percent_decode() {
+    for path in [
+        "%41",
+        "%",
+        "%%",
+        "%2E%2E",
+        "100%",
+        "docs/100%41.png",
+        "plain.png",
+    ] {
+        assert_eq!(
+            percent_decode(&reference_for(path)),
+            PathBuf::from(path),
+            "{path:?} must come back from the check's decoding exactly as given"
+        );
+    }
+}
+
+#[test]
+fn test_reference_for_leaves_every_other_character_as_it_is() {
+    assert_eq!(reference_for("img/logo one.png"), "img/logo one.png");
+    assert_eq!(reference_for("é/ü.png"), "é/ü.png");
+    assert_eq!(reference_for(""), "");
+}
+
+#[test]
+fn test_read_contained_bytes_answers_none_for_a_folder_entry() {
+    let folder_entry = ContainedEntry {
+        path: PathBuf::from("images"),
+        kind: EntryKind::Folder,
+    };
+
+    assert_eq!(
+        read_contained_bytes(Path::new("/no/such/root"), &folder_entry),
+        None
+    );
+}
