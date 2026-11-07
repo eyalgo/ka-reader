@@ -1,6 +1,6 @@
 # ADR-0015: Markdown becomes a typed document on the host and never markup; image bytes cross the seam as bytes for a contained path and are decoded by the platform inside the one process
 
-**Status:** Accepted — supersedes ADR-0006
+**Status:** Superseded by ADR-0025
 **Date:** 2026-09-23
 
 ## Context
