@@ -98,7 +98,29 @@ None.
   narrower than the SDD it traces to. That gap is recorded in the NFDR's trace, not hidden, but a
   later reader meets two documents that disagree about what building the seam empties. SM-1's
   count stays one short.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm, with two additions and one reading of the item's own text
+  corrected. (1) Taken as drafted: the sentence at `docs/SDD.md:L444-L446` narrows to what the seam
+  reaches — once the seam is built, every case whose failed read crosses SM-1 hands its unit a failing
+  reader, the real reader's own failure cases are proven at layer 2 by a condition every runner sees,
+  and `git grep '0o000'` over the files the building change names prints nothing; at
+  `ka-reader@98aaa71` those files are the eight the item lists, 23 lines, and the count is the pin's.
+  (2) Added — one of those 23 lines is not a read: `crates/ka-reader-core/tests/unit/fs_reader.rs:L613`
+  locks a link's target outside the root to prove the walk answers `Outside` without touching it, the
+  same guard as `tests/tree_links.rs:L95`, so it is the walk's and not the reader's own failure path as
+  the item reads it. The building change re-states it all the same, because the reader's own suite is
+  that change's and the guard holds for every runner with a target that does not exist; so the
+  file-level check holds and the item's line counts stand. (3) Added — what § 2 says of the 14 lines in
+  5 files outside the seam: each forces its failure with a mode and proves nothing when `root` runs
+  it, so they are a known defect at `98aaa71` under the rule this paragraph already states for the
+  adapter's own failure path — proven by a condition every runner sees, named by the change that
+  re-states each — and no second seam is added for them: the Git adapter's 12 are SM-2's adapter-side
+  layer-2 cases, the walk's guard at `tests/tree_links.rs:L95` needs no door because its assertion is
+  `Outside`, and `crates/ka-reader-bridge/src/log_writer.rs:L419` is a write, which this seam never
+  covers. None of the three is the seam change's. (4) Taken as drafted — SM-1's cell (`:L622`) reads
+  sixteen calls: the fifteen `fs_reader::`-qualified sites, `:L232` and `:L233` both among them, and
+  `read_contained_bytes` at `:L287`, imported by name (`folder_model.rs:L11`); the cell carries the
+  correction with a dated note, and RN-154's "fifteen" stands as that run's record. Reasoning:
+  `docs/trail/sdd/self_answer-83.md`.
 
 ## 3. Cut calls to confirm — where the slicing could reasonably have gone another way
 
