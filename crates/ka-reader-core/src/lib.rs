@@ -6,6 +6,7 @@ mod fs_reader;
 mod git_reader;
 mod highlighter;
 mod language;
+mod markdown_renderer;
 
 pub use error::Error;
 pub use folder_model::{
